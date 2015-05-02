@@ -130,9 +130,9 @@ namespace gctools {
 #ifdef USE_BOEHM
                 // Handle splatting
                 if (!k.raw_()) {
-                    keys->set(i,value_type(gctools::tag_deleted<core::T_O>()));
+                    keys->set(i,value_type((Tagged)gctools::tag_deleted<core::T_O>()));
                     ValueBucketsType* values = dynamic_cast<ValueBucketsType*>(keys->dependent);
-                    (*values)[i] = value_type(gctools::tag_unbound<core::T_O>());
+                    (*values)[i] = value_type((Tagged)gctools::tag_unbound<core::T_O>());
                 }
 #endif
                 if ( result == 0 && ( k.deletedp() )) {
@@ -514,8 +514,8 @@ namespace gctools {
 	    {
 		size_t len = (*this->_Keys).length();
 		for ( size_t i(0); i<len; ++i ) {
-		    this->_Keys->set(i,value_type(gctools::tag_unbound<core::T_O>()));
-		    (*this->_Values)[i] = value_type(gctools::tag_unbound<core::T_O>());
+		    this->_Keys->set(i,value_type((Tagged)gctools::tag_unbound<core::T_O>()));
+		    (*this->_Values)[i] = value_type((Tagged)gctools::tag_unbound<core::T_O>());
 		}
 		(*this->_Keys).setUsed(0);
 		(*this->_Keys).setDeleted(0);
@@ -584,7 +584,7 @@ extern "C" {
                         if ( res != MPS_RES_OK ) return res;
                         if ( p == NULL && obj->dependent ) {
                             obj->dependent->bucket = WeakBucketsObjectType::value_type(gctools::tagged_ptr<core::T_O>::tagged_deleted);
-                            obj->bucket = WeakBucketsObjectType::value_type(gctools::tagged_ptr<core::T_O>::tagged_deleted);
+                            obj->bucket = WeakBucketsObjectType::value_type(WHAAAAgctools::tagged_ptr<core::T_O>::tagged_deleted);
                         } else {
                             obj->bucket.raw_() = reinterpret_cast<core::T_O*>(p);
                         }

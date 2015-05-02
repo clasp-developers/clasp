@@ -106,10 +106,7 @@ namespace gctools
 
 
 	operator bool() const {
-	    if (this->_number_of_values == 0 ) {
-		return false;
-	    }
-	    return !this->nilp();
+	    return this->theObject != NULL;
 	}
 	    
 

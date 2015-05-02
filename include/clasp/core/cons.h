@@ -111,7 +111,7 @@ namespace core
 #define	CONS_CDR(x) (x.as<Cons_O>()->_Cdr)
 #define	CAR(x) oCar(x)
 #define	CDR(x) oCdr(x)
-#define CONSP(x) ((!(x).nilp())&&(x.isA<Cons_O>()))
+#define CONSP(x) ((x).consp())
 };
 
 namespace core {
@@ -127,7 +127,7 @@ template<> struct gctools::GCInfo<core::Cons_O> {
     
 
 namespace core {
-    
+
     class Cons_O : public T_O
     {
 	LISP_BASE1(T_O);
@@ -467,6 +467,10 @@ namespace core {
 	int last_line;
 	int last_column;
     } LispParserPos;
+
+
+    inline T_sp cons_car(core::Cons_O* cur) {return cur->_Car;}
+    inline T_sp cons_cdr(core::Cons_O* cur) {return cur->_Cdr;}
 
 
     inline T_sp oCar(List_sp obj) {

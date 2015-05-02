@@ -95,11 +95,10 @@ namespace core
 	}
 
 
-	List_sp listOfPackageDesignators(List_sp obj)
+	List_sp listOfPackageDesignators(T_sp obj)
 	{_G();
-	    if ( obj.nilp() ) return _Nil<List_V>();
-	    if ( cl_consp(obj) )
-	    {
+	    if ( obj.nilp() ) return _Nil<T_O>();
+	    if ( obj.consp() ) {
 		ql::list res(_lisp);
 		List_sp lobj = obj;
 		for ( auto cur : lobj ) {
@@ -113,7 +112,7 @@ namespace core
 
 
 
-	List_sp listOfSymbols(List_sp syms)
+	List_sp listOfSymbols(T_sp syms)
 	{_G();
 	    if ( syms.nilp() ) return _Nil<List_V>();
 	    List_sp symbols;
@@ -144,14 +143,14 @@ namespace core
 	    SIMPLE_ERROR(BF("Illegal string designator[%s] of class[%s]") % _rep_(obj) % _rep_(lisp_instance_class(obj)) );
 	}
 
-	List_sp listOfStringDesignators(List_sp obj)
+	List_sp listOfStringDesignators(T_sp obj)
 	{_G();
 	    if ( obj.nilp() ) return _Nil<List_V>();
-	    if ( cl_consp(obj) )
-	    {
+	    if ( Cons_sp cobj = obj.asOrNull<Cons_O>() ) {
+		List_sp lobj = cobj;
 		Cons_sp first = Cons_O::create(_Nil<T_O>());
 		Cons_sp cur = first;
-		for ( auto ic : obj ) {
+		for ( auto ic : lobj ) {
 		    Cons_sp one = Cons_O::create(stringDesignator(oCar(ic)));
 		    cur->setCdr(one);
 		    cur = one;

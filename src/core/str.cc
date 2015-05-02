@@ -1331,7 +1331,8 @@ namespace core
 
     void Str_O::fillInitialContents(T_sp seq)
     {
-	if ( List_sp ls = seq.asOrNull<Cons_O>() ) {
+	if ( Cons_sp cls = seq.asOrNull<Cons_O>() ) {
+	    List_sp ls = cls;
 	    if ( cl_length(seq) != this->size() ) goto ERROR;
 	    size_t i = 0;
 	    for ( auto cur : ls ) {

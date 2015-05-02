@@ -2147,7 +2147,7 @@ namespace core
 	T_sp expansionFunction = _Nil<T_O>();
 	if ( form.nilp() ) {
 	    return form;
-	} else if ( List_sp cform = form ) {
+	} else if ( Cons_sp cform = form.asOrNull<Cons_O>() ) {
 	    T_sp head = oCar(cform);
 	    if ( af_symbolp(head) ) {
 		Symbol_sp headSymbol = head.as<Symbol_O>();

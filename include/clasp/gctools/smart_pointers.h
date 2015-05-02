@@ -78,6 +78,7 @@ extern void lisp_errorBadCast(type_info const& toType, type_info const& fromType
 extern void lisp_errorBadCastFromT_O(type_info const& toType,core::T_O* objP );
 extern void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP );
 extern void lisp_errorBadCastFromSymbol_O(type_info const& toType,core::Symbol_O* objP );
+extern void lisp_errorDereferencedNonPointer(core::T_O* objP );
 
 namespace gctools {
 
@@ -699,12 +700,18 @@ namespace gctools {
 	template<class From>
         inline smart_ptr( smart_ptr<From> const & rhs )
         {
-            if ( LIKELY(rhs.objectp()) ) {
+            if ( LIKELY(rhs.otherp()) ) {
 		Type* px = DynamicCast<Type*,From*>::castOrNULL(untag_other<From>(rhs.theObject));
                 if ( px==0 ) {
                     THROW_HARD_ERROR(BF("DynamicCast<Type*,From*> failed due to an illegal cast To* = %s  From* = %s") % typeid(Type*).name() % typeid(From*).name() );
                 }
 		this->theObject = tag_other<Type>(px);
+	    } else if ( LIKELY(rhs.consp()) ) {
+		Type* px = DynamicCast<Type*,From*>::castOrNULL(untag_cons<From>(rhs.theObject));
+                if ( px==0 ) {
+                    THROW_HARD_ERROR(BF("DynamicCast<Type*,From*> failed due to an illegal cast To* = %s  From* = %s") % typeid(Type*).name() % typeid(From*).name() );
+                }
+		this->theObject = tag_cons<Type>(px);
             } else {
                 this->theObject = reinterpret_cast<Type*>(rhs.theObject);
             }
@@ -928,31 +935,21 @@ namespace gctools {
 
 	int number_of_values() const { return this->theObject == NULL ? 0 : 1;};
 
-	/*! Dereferencing operator - remove the other tag */
-	Type* operator->() {
-	    GCTOOLS_ASSERT(this->otherp());
-	    return untag_other(this->theObject);
-	};
-
-	Type* operator->() const {
-	    GCTOOLS_ASSERT(this->otherp());
-	    return untag_other(this->theObject);
-	};
-
-	Type& operator*() const {
-	    GCTOOLS_ASSERT(this->objectp());
-	    return *(this->untag_object());
-	};
-	
-	Type* untag_object() const {
+	inline Type* untag_object() const {
 	    GCTOOLS_ASSERT(this->otherp()||this->consp());
 	    if ( this->otherp() ) {
 		return untag_other<Type>(this->theObject);
 	    } else if ( this->consp() ) {
 		return untag_cons<Type>(this->theObject);
-	    } 		
-	    THROW_HARD_ERROR(BF("This should never happen"));
+	    }
+	    lisp_errorDereferencedNonPointer(this->theObject);
+	    HARD_UNREACHABLE();
 	}
+
+	/*! Dereferencing operator - remove the other tag */
+	inline Type* operator->() {return this->untag_object(); };
+	inline Type* operator->() const {return this->untag_object(); };
+	inline Type& operator*() const {return *this->untag_object(); };
 
 	Type* get() const { return this->untag_object(); };
 	bool _NULLp() const { return this->theObject==NULL; };
@@ -1513,7 +1510,9 @@ namespace gctools {
 			   );
 	};
 #endif
-	   
+
+	// A constructor used by the iterator to bypass any tagged pointer checking
+	explicit inline smart_ptr(Tagged ptr,bool dummy) : theObject(reinterpret_cast<core::Cons_O*>(ptr)) {};
 	
         public:
             explicit operator bool() const { return this->theObject!=NULL; }
@@ -1533,25 +1532,16 @@ namespace gctools {
             inline bool valid() const { return this->consp(); } // || this->nilp(); };
 #endif
             inline bool unboundp() const { return tagged_unboundp(this->theObject); };
+	    inline Type*& rawRef_() { return this->theObject; };
 
             operator smart_ptr<core::T_O>() const { return smart_ptr<core::T_O>((Tagged)const_cast<core::T_O* const>(reinterpret_cast<core::T_O*>(this->theObject)));};
 
             //	operator smart_ptr<core::List_V>() const { return smart_ptr<core::List_V>((Tagged)const_cast<core::T_O* const>(reinterpret_cast<core::T_O*>(this->theObject)));};
 
 
-            core::Cons_O* untag_object() const {
-                GCTOOLS_ASSERT(this->otherp()||this->consp());
-                if ( this->consp() ) {
-                    return untag_cons<core::Cons_O>(this->theObject);
-                }
-#ifdef ALLOW_CONS_NIL
-                else {
-                    if ( this->nilp() ) {
-                        return tag_nil<core::Cons_O>();
-                    }
-                }
-#endif
-                THROW_HARD_ERROR(BF("Figure out what to do when untag_object Cons_O would not return a Cons_O*"));
+            inline core::Cons_O* untag_object() const {
+                GCTOOLS_ASSERT(this->consp());
+		return untag_cons<core::Cons_O>(this->theObject);
             }
 
             inline void swap(smart_ptr<core::Cons_O>& other)
@@ -1731,11 +1721,26 @@ namespace gctools {
 	template <class List_sp, bool fast>
 	class List_sp_iterator {
 	public:
-	List_sp_iterator() {}	// XXX: What happens if someone tries to increment end() ?
+	    // This is the end iterator - it sets the ptr to the symbol NIL!
+	    // Note: It's spoofing the iterator ptr field by sticking
+	    // the SYMBOL NIL into a slot that is set up to be a tagged CONS!!!!
+	    // This is what we have to do to make things fast.
+	    // To do this I'm using a special smart_ptr<core::Cons_O> constructor
+	    // that takes TWO arguments, where the second one is a dummy
+	    // 
+	    // XXX: What happens if someone tries to increment end()?
+	    //    Answer: Something bad - don't do this
+	List_sp_iterator() : ptr((Tagged)tag_nil<core::Cons_O>(),false) {}
 	List_sp_iterator(const List_sp& ptr) : ptr(ptr.asCons()) {};
 		List_sp_iterator &operator++() {
 			GCTOOLS_ASSERT(ptr.consp());
-			ptr = smart_ptr<core::T_O>(cons_cdr(&*ptr)).as<core::Cons_O>();
+			core::T_O* rawcdr = cons_cdr(&*ptr).raw_();
+			ptr.rawRef_() = reinterpret_cast<core::Cons_O*>(rawcdr);
+
+#if 0
+			// SAL9000's original operator++;
+			ptr = smart_ptr<core::Cons_O>((Tagged)cons_cdr(&*ptr).raw_());//.as<core::Cons_O>();
+#endif
 			// GCTOOLS_ASSERT(tagged_consp<Type>(ptr));
 			// this->ptr = cons_cdr(untag_cons<core::Cons_O>(reinterpret_cast<core::Cons_O*>(ptr)));
 			return *this;
@@ -1815,14 +1820,14 @@ namespace gctools {
 	};
     };
 
-    bool operator==(const List_sp::iterator &a, const List_sp::iterator &b) {return *a == *b;}
-    bool operator!=(const List_sp::iterator &a, const List_sp::iterator &b) {return !(a == b);}
+    inline bool operator==(const List_sp::iterator &a, const List_sp::iterator &b) {return *a == *b;}
+    inline bool operator!=(const List_sp::iterator &a, const List_sp::iterator &b) {return *a!=*b;}
 	// XXX: BAD VOODOO!
 	// Justification:
 	// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2243.html#the-range-based-for-statement
 	// Range-for will, supposedly, use != as current != end, always.
-    bool operator==(const List_sp::fast_iterator &a, const List_sp::fast_iterator &b) {return !a->consp();}
-    bool operator!=(const List_sp::fast_iterator &a, const List_sp::fast_iterator &b) {return a->consp();}
+    inline bool operator==(const List_sp::fast_iterator &a, const List_sp::fast_iterator &b) {return !a->consp();}
+    inline bool operator!=(const List_sp::fast_iterator &a, const List_sp::fast_iterator &b) {return a->consp();}
 
 
 

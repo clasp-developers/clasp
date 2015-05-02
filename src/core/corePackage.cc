@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <clasp/core/commonLispPackage.h>
 #include <clasp/core/keywordPackage.h>
 #include <clasp/core/extensionPackage.h>
+#include <clasp/core/lightProfiler.h>
 #include <clasp/core/package.h>
 #include <clasp/core/compPackage.h>
 #include <clasp/core/grayPackage.h>
@@ -628,22 +629,43 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     void testConses()
     {
         printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__ );
-        Cons_sp cur = Cons_O::create(Fixnum_O::create(1));
-        cur = Cons_O::create(Fixnum_O::create(2),cur);
-        cur = Cons_O::create(Fixnum_O::create(3),cur);
-        cur = Cons_O::create(Fixnum_O::create(4),cur);
-        cur = Cons_O::create(Fixnum_O::create(5),cur);
-        cur = Cons_O::create(Fixnum_O::create(6),cur);
+        List_sp cur = _Nil<T_O>();
+	for ( int i=1; i<1000; ++i ) {
+	    cur = Cons_O::create(Fixnum_O::create(i),cur);
+	}
         List_sp l = coerce_to_list(cur);
-        for ( auto c : l ) {
-            printf("%s:%d  List contents: %d\n", __FILE__, __LINE__,
-                   oCar(c).as<Fixnum_O>()->get());
-        }
+	for ( int trials=0; trials<3; ++trials ) {
+	    int times = 0xdead;
+	    long long fastCount = 0;
+	    LightTimer fastTimer;
+	    fastTimer.reset();
+	    fastTimer.start();
+            for ( int i=0; i<times; ++i ) {
+                for ( auto c : l.full() ) {
+                    T_sp t = c->_Car;
+                    fastCount += t.as<Fixnum_O>()->get();
+                }
+            }
+	    fastTimer.stop();
+	    printf("%s:%d Fast list traversal time: %lf counted %lld elements\n", __FILE__, __LINE__, fastTimer.getAccumulatedTime(), fastCount );
+	    long long normalCount = 0;
+	    LightTimer normalTimer;
+	    normalTimer.reset();
+	    normalTimer.start();
+	    for ( int i=0; i<times; ++i ) {
+		for ( auto c : l ) {
+		    T_sp t = c->_Car;
+		    normalCount += t.as<Fixnum_O>()->get();
+		}
+	    }
+	    normalTimer.stop();
+	    printf("%s:%d Normal list traversal time: %lf counted %lld elements\n", __FILE__, __LINE__, normalTimer.getAccumulatedTime(), normalCount );
+	}
     };
 
     CoreExposer::CoreExposer(Lisp_sp lisp) : Exposer(lisp,CorePkg,CorePkg_nicknames)
     {
-	testConses();
+	//	testConses();
 	this->package()->usePackage(_lisp->findPackage("CL",true).as<Package_O>());
     };
 

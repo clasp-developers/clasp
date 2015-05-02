@@ -222,7 +222,6 @@ namespace gctools {
 
         void set(size_t idx, const value_type& val) {
 #ifdef USE_BOEHM
-	    GCTOOLS_ASSERT(this->bucket[idx].objectp());
             if ( !unboundOrDeleted(this->bucket[idx]) ) {
 		auto& rawRef = this->bucket[idx].rawRef_();
 		void** linkAddress = reinterpret_cast<void**>(&rawRef);
@@ -231,7 +230,6 @@ namespace gctools {
                     THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
                 }
             }
-	    GCTOOLS_ASSERT(val.objectp());
             if ( !unboundOrDeleted(val) ) {
                 this->bucket[idx] = val;
                 GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].rawRef_())

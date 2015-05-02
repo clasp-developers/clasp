@@ -425,7 +425,7 @@ extern "C" {
 		printf("cons_tag: %p  typeid: %s\n", &(*obj), typeid(obj).name() );
 		printf("List:  \n");
 		for ( auto c : coerce_to_list(obj) ) {
-		    printf("car@%p  cdr@%p\n", oCar(c).raw_(), oCdr(c).raw_() );
+		    printf("@%p > car@%p  cdr@%p : %s\n", c.raw_(), oCar(c).raw_(), oCdr(c).raw_(), _rep_(oCar(c)).c_str() );
 		}
 		return;
 	    } else {

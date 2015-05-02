@@ -1809,6 +1809,7 @@ namespace core {
             set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, _Nil<T_O>())), set);
         }
         set = cl_nreverse(set);
+	T_sp savedSet = set;
         oCdr(pair).as<Cons_O>()->rplaca(set);
         return set;
     }
@@ -2060,16 +2061,17 @@ namespace core {
 #define DOCS_af_translateLogicalPathname "translateLogicalPathname"
     Pathname_sp af_translateLogicalPathname(T_sp tsource)
     {_G();
-	T_sp l, pair;
 	Pathname_sp pathname = cl_pathname(tsource);
     begin:
 	if (!af_logicalPathnameP(pathname)){
+	    printf("%s:%d Returning non-logical pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str() );
 	    return pathname;
 	}
-	l = eval::funcall(core::_sym_pathnameTranslations,pathname->_Host);
-	for(; !af_endp(l); l = CDR(l)) {
-	    pair = CAR(l);
+	List_sp l = eval::funcall(core::_sym_pathnameTranslations,pathname->_Host);
+	for( auto cur : l ) { // ; !af_endp(l); l = CDR(l)) {
+	    T_sp pair = oCar(l);
 	    if (af_pathnameMatchP(pathname, CAR(pair))) {
+		printf("%s:%d Trying to translate pathname: %s   pair: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str(), _rep_(pair).c_str() );
 		pathname = af_translatePathname( pathname,
 						 CAR(pair),
 						 oCadr(pair),

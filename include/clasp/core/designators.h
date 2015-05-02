@@ -59,7 +59,7 @@ namespace core
 	extern string packageNameDesignator(T_sp obj );
 
 	/*! Return a List of packages by interpreting as a list of package designators */
-	extern List_sp listOfPackageDesignators(List_sp obj);
+	extern List_sp listOfPackageDesignators(T_sp obj);
 
 	/*! Return a String object by interpreting the object
 	  as a string designator */
@@ -67,11 +67,11 @@ namespace core
 
 	/*! Return a List of strings by interpreting the
 	  object as a list of string designators */
-	extern List_sp listOfStringDesignators(List_sp obj);
+	extern List_sp listOfStringDesignators(T_sp obj);
 
 
 	/*! Return a List of symbols by interpreting a designator for a list of symbols */
-	extern List_sp listOfSymbols(List_sp obj);
+	extern List_sp listOfSymbols(T_sp obj);
 
 
 /*! Convert an Object input stream designator (as described by CLHS) into a Stream */

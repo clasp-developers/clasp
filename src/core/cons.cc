@@ -58,14 +58,6 @@ namespace core
 	TYPE_ERROR(o,cl::_sym_list);
     }
 
-    T_sp cons_car(core::Cons_O* cur)
-    {
-	return cur->_Car;
-    }
-    T_sp cons_cdr(core::Cons_O* cur)
-    {
-	return cur->_Cdr;
-    }
     
 
 
@@ -114,11 +106,11 @@ namespace core
 #define LOCK_af_cons 1
 #define ARGS_af_cons "(object1 object2)"
 #define DECL_af_cons ""
-    T_mv af_cons(T_sp obj1, T_sp obj2)
+    Cons_sp af_cons(T_sp obj1, T_sp obj2)
     {_G();
 	ASSERTNOTNULL(obj1);
 	ASSERTNOTNULL(obj2);
-	return(Values(Cons_O::create(obj1,obj2)));
+	return Cons_O::create(obj1,obj2);
     };
 
 
@@ -762,13 +754,11 @@ namespace core
 
     List_sp Cons_O::nreverse()
     {_OF();
-	List_sp reversed = _Nil<List_V>();
+	List_sp reversed = _Nil<T_O>();
 	List_sp cur = this->asSmartPtr();
-	List_sp hold = _Nil<List_V>();
+	List_sp hold = _Nil<T_O>();
 	while (cur.consp()) {
-	    T_sp next(oCdr(cur));
-	    if ( next.nilp() ) break;
-	    hold = next;
+	    hold = oCdr(cur);
 	    cur.asCons()->setCdr(reversed);
 	    reversed = cur;
 	    cur = hold;
@@ -972,7 +962,8 @@ namespace core
 	ASSERTNOTNULL(obj);
 	Cons_sp rootCopy = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	List_sp cobj;
-	if ( List_sp cobj = obj.asOrNull<Cons_O>() ) {
+	if ( Cons_sp ccobj = obj.asOrNull<Cons_O>() ) {
+	    List_sp cobj = ccobj;
 	    List_sp carTree = cobj.nilp() ? cobj : cobj.asCons()->copyTree();
 	    rootCopy->setCar(carTree);
 	} else {

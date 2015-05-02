@@ -41,7 +41,8 @@ namespace core
     static bool member_charbag(claspChar c, SEQUENCE_sp char_bag)
     {
         if ( char_bag.nilp() ) return false;
-	if ( List_sp lcur = char_bag.asOrNull<Cons_O>() ) {
+	if ( Cons_sp clcur = char_bag.asOrNull<Cons_O>() ) {
+	    List_sp lcur = clcur;
 	    for ( ; lcur.notnilp(); lcur = oCdr(lcur) ) {
 		if ( oCar(lcur)->eql(Character_O::create(c))) return true;
 	    }

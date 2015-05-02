@@ -30,7 +30,7 @@ THE SOFTWARE.
 #define LCC_FROM_SMART_PTR(x) (x.raw_())
 // Pass ActivationFrames as T_O*
 #define LCC_FROM_ACTIVATION_FRAME_SMART_PTR(x) (x.raw_())
-#define LCC_TO_SMART_PTR(x) (gctools::smart_ptr<core::T_O>(x))
+#define LCC_TO_SMART_PTR(x) (gctools::smart_ptr<core::T_O>((gc::Tagged)x))
 
 #define LCC_UNUSED_1() LCC_UNUSED
 #define LCC_UNUSED_2() LCC_UNUSED,LCC_UNUSED
@@ -69,11 +69,11 @@ THE SOFTWARE.
 
 #define MULTIPLE_VALUES_ARRAY core::lisp_multipleValues()
 
-#define LCC_ARG0() gctools::smart_ptr<core::T_O>(lcc_fixed_arg0)
-#define LCC_ARG1() gctools::smart_ptr<core::T_O>(lcc_fixed_arg1)
-#define LCC_ARG2() gctools::smart_ptr<core::T_O>(lcc_fixed_arg2)
-#define LCC_ARG3() gctools::smart_ptr<core::T_O>(lcc_fixed_arg3)
-#define LCC_ARG4() gctools::smart_ptr<core::T_O>(lcc_fixed_arg4)
+#define LCC_ARG0() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg0)
+#define LCC_ARG1() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg1)
+#define LCC_ARG2() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg2)
+#define LCC_ARG3() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg3)
+#define LCC_ARG4() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg4)
 /*! LCC_ARGS_IN_REGISTERS is defined in src/core/config.h and is currently 5 (five)*/
 #define LCC_FIXED_NUM LCC_ARGS_IN_REGISTERS
 //#define MULTIPLE_VALUES_SETUP() core::T_sp* __multipleValuesPtr = core::lisp_multipleValues().start_address()

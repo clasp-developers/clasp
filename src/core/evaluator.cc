@@ -881,7 +881,7 @@ namespace core
 			if ( valueIndex >= numTemps ) {
 			    SIMPLE_ERROR(BF("Overflow in LET temporary variables only %d available") % numTemps );
 			}
-			T_sp result = gctools::smart_ptr<T_O>(tempValues[valueIndex]);
+			T_sp result = gctools::smart_ptr<T_O>((gc::Tagged)tempValues[valueIndex]);
 			++valueIndex;
 			scope.new_variable(classified,result);
 		    } else if ( shead == _sym_declaredSpecial )
@@ -1390,8 +1390,8 @@ namespace core
 		}
 		LOG(BF("     Found form: %s") % fn->__repr__() );
 		return(Values(fn));
-	    } else if ( List_sp consArg = arg.asOrNull<Cons_O>() )
-	    {
+	    } else if ( Cons_sp cconsArg = arg.asOrNull<Cons_O>() ) {
+		List_sp consArg = cconsArg;
 		T_sp head = oCar(consArg);
 		if ( head == cl::_sym_setf )
 		{
@@ -2234,7 +2234,7 @@ namespace core
                 printf("%s:%d t1Progn args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
             }
             T_mv result(_Nil<T_O>());
-	    Environment_sp localEnv(environment);
+	    T_sp localEnv(environment);
             for ( auto cur : args ) {
                 result = t1Evaluate(oCar(cur),localEnv);
             }
@@ -2459,7 +2459,8 @@ namespace core
 //	    LOG(BF("Evaluating cons[%s]") % exp->__repr__() );
 //	    printf("    Evaluating: %s\n", _rep_(exp).c_str() );
 //	    printf("    In env: %s\n", _rep_(environment).c_str() );
-	    List_sp form = exp.asOrNull<Cons_O>();
+	    Cons_sp cform = exp.asOrNull<Cons_O>();
+	    List_sp form = cform;
 	    ASSERTNOTNULL(form);
 	    T_sp head = oCar(form);
 	    if ( Symbol_sp headSym = head.asOrNull<Symbol_O>() ) {

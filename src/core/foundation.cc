@@ -129,6 +129,10 @@ namespace reg {
         SIMPLE_ERROR(BF("Tried to dereference px=%p") % v);
     }
 
+void lisp_errorDereferencedNonPointer(core::T_O* v)
+{
+    SIMPLE_ERROR(BF("Tried to dereference immediate value: %p") % v);
+}
 
     void lisp_errorDereferencedNil()
     {

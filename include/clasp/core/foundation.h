@@ -641,6 +641,7 @@ namespace core {
 #define SET_SIGNAL(s) {core::_global_signalTrap = s;}
 #define POLL_SIGNALS() core::lisp_pollSignals();
 
+void lisp_errorDereferencedNonPointer(core::T_O* objP );
 void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP );
 void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP );
 void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP );
