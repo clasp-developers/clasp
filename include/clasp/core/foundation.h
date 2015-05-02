@@ -111,8 +111,8 @@ namespace std { class type_info; };
 
 
 
-#define brcl_unlikely(x) __builtin_expect((x),0)
-#define brcl_likely(x) 	__builtin_expect((x),1)
+#define brcl_unlikely(x) __builtin_expect(!!(x),0)
+#define brcl_likely(x) 	__builtin_expect(!!(x),1)
 #define UNLIKELY(x) brcl_unlikely(x)
 #define LIKELY(x) brcl_likely(x)
 
