@@ -2554,7 +2554,7 @@ namespace core
 		for ( auto p : args ) {
 		    T_sp inObj = oCar(p);
 		    T_sp result = eval::evaluate(inObj,environment);
-		    ASSERTNOTNULL(result);
+		    ASSERT(result);
 		    LOG(BF("After evaluation result = %s")% _rep_(result) );
 		    af->set_entry(idx,result);
 		    ++idx;

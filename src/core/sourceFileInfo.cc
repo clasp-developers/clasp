@@ -312,12 +312,12 @@ namespace core
                         T_sp spisub = core_walkToFindSourcePosInfo(oCar(cur));
                         if ( spisub.notnilp() ) return spisub;
                     } else {
-                        return defaultSpi.as<SourcePosInfo_O>();
+                        return defaultSpi;
                     }
                 }
             }
         }
-	return defaultSpi.as<SourcePosInfo_O>();
+	return defaultSpi;
     };
 
 

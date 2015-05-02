@@ -2151,7 +2151,7 @@ namespace core
 	    T_sp head = oCar(cform);
 	    if ( af_symbolp(head) ) {
 		Symbol_sp headSymbol = head.as<Symbol_O>();
-		T_sp func = eval::funcall(cl::_sym_macroFunction,headSymbol,env).as<Function_O>();
+		T_sp func = eval::funcall(cl::_sym_macroFunction,headSymbol,env);
 		expansionFunction = func;
 	    }
 	    if ( expansionFunction.notnilp() ) {

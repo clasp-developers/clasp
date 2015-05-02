@@ -9,13 +9,13 @@
 :pause-hir
 
 (setq core:*echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
+(setq *echo-repl-read* t)
+(setq *load-print* nil)
+(setq *print-source-code-cons* nil)
 
 (sys:*make-special 'core::*boot-verbose*)
 (setq core::*boot-verbose* nil)
 (setq cl:*print-circle* nil)
-(setq *echo-repl-read* nil)
-(setq *load-print* nil)
-(setq *print-source-code-cons* nil)
 
 ;;(setq *features* (cons :ecl-min *features*))
 (setq *features* (cons :clasp *features*))
