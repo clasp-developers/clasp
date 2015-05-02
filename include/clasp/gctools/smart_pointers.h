@@ -2102,10 +2102,7 @@ namespace gctools {
 namespace gctools {
     // An idea suggested by Georgiy Tugai.
     // Nilable<Foo_sp> is a variable that has the type (OR NULL FOO)
-    // It inherits from Foo_sp and stores an extra value that
-    // indicates if Nilable<Foo_sp> is NIL or not.
-    // I need to store an extra value because some smart_ptr values like
-    // smart_ptr<Fixnum_V> cannot themselves be set to NIL.
+    // It inherits from Foo_sp
 
     
     template <typename T> class Nilable {};
@@ -2116,18 +2113,14 @@ namespace gctools {
 	typedef T Type;
 	typedef smart_ptr<Type> Base;
 	typedef Nilable<Base> MyType;
-    private:
-	// Some types can't themselves store NIL - like FIXNUM
-	// So we have to store it alongside.
-	bool isNil;
     public:
+	Nilable() : Base(Base::make_tagged_nil()) {};
 	Nilable(smart_ptr<core::T_O> const& ot) {
 	    if ( Base b = ot.asOrNull<Type>() ) {
 		this->theObject = b.theObject;
-		this->isNil = false;
 		return;
 	    } else if (tagged_nilp(b.theObject)) {
-		this->isNil = true;
+		this->theObject = reinterpret_cast<Type*>(global_Symbol_OP_nil);
 		return;
 	    }
 	    class_id expected_typ = reg::registered_class<Type>::id;
@@ -2136,26 +2129,24 @@ namespace gctools {
 
 
 	// Construct from the Base type
-    Nilable(Base const& b) : Base(b), isNil(false) {};
+    Nilable(Base const& b) : Base(b) {};
+    inline Nilable(Base&& b) : Base(std::move(b)) {};
 
 	//Copy constructor
-    Nilable(MyType const& b) : Base(b), isNil(b.isNil) {};
+    Nilable(MyType const& b) : Base(b) {};
        
 
 	MyType& operator= (Base const& orig) {
 	    this->theObject = orig.theObject;
-	    this->isNil = false;
 	    return *this;
 	}
 
 	MyType& operator= (smart_ptr<core::T_O> const& orig) {
 	    if ( tagged_nilp(orig.theObject) ) {
-		this->theObject = orig.theObject;
-		this->isNil = true;
+		this->theObject = reinterpret_cast<Type*>(global_Symbol_OP_nil);
 		return *this;
 	    } else if ( Base foo = orig.asOrNull<Type>() ) {
 		this->theObject = foo.theObject;
-		this->isNil = false;
 		return *this;
 	    }
 	    class_id expected_typ = reg::registered_class<Type>::id;
@@ -2172,12 +2163,17 @@ namespace gctools {
 	    return untag_other(this->theObject);
 	};
 
-	Type* operator->() const {
+	const Type* operator->() const {
 	    GCTOOLS_ASSERT(this->notnilp());
 	    return untag_other(this->theObject);
 	};
 
-	Type& operator*() const {
+	const Type& operator*() const {
+	    GCTOOLS_ASSERT(this->notnilp());
+	    return *(this->untag_object());
+	};
+
+	Type& operator*() {
 	    GCTOOLS_ASSERT(this->notnilp());
 	    return *(this->untag_object());
 	};
