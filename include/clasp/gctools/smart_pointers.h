@@ -1820,8 +1820,8 @@ namespace gctools {
 	};
     };
 
-    inline bool operator==(const List_sp::iterator &a, const List_sp::iterator &b) {return *a == *b;}
-    inline bool operator!=(const List_sp::iterator &a, const List_sp::iterator &b) {return *a!=*b;}
+	inline bool operator==(const List_sp::iterator &a, const List_sp::iterator &b) {return UNLIKELY(*a == *b);}
+	inline bool operator!=(const List_sp::iterator &a, const List_sp::iterator &b) {return LIKELY(*a!=*b);}
 	// XXX: BAD VOODOO!
 	// Justification:
 	// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2243.html#the-range-based-for-statement
