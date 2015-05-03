@@ -459,8 +459,8 @@ namespace core
     public:
 	/*! Create an environment that extends a parent environment
 	 */
-	static FunctionValueEnvironment_sp createEmpty(Environment_sp parent);
-	static FunctionValueEnvironment_sp createForEntries(int numEntries, Environment_sp parent);
+	static FunctionValueEnvironment_sp createEmpty(gc::Nilable<Environment_sp> parent);
+	static FunctionValueEnvironment_sp createForEntries(int numEntries, gc::Nilable<Environment_sp> parent);
 	ActivationFrame_sp getActivationFrame() const;
     public:
 	virtual string summaryOfContents() const;
@@ -560,7 +560,7 @@ namespace core
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
     public:
-	static UnwindProtectEnvironment_sp make(List_sp cleanupForm, Environment_sp parent);
+	static UnwindProtectEnvironment_sp make(List_sp cleanupForm, gc::Nilable<Environment_sp> parent);
     public:
 	virtual string summaryOfContents() const;
 	List_sp cleanupForm() const { return this->_CleanupForm;};
@@ -659,7 +659,7 @@ namespace core
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
     public:
-	static CatchEnvironment_sp make(Environment_sp parent);
+	static CatchEnvironment_sp make(gc::Nilable<Environment_sp> parent);
     public:
 	virtual string summaryOfContents() const;
     public:
@@ -688,8 +688,8 @@ namespace core
     public:
 	void	initialize();
     public:
-	static FunctionContainerEnvironment_sp create(Environment_sp parent);
-	static FunctionContainerEnvironment_sp make( Environment_sp parent);
+	static FunctionContainerEnvironment_sp create(gc::Nilable<Environment_sp> parent);
+	static FunctionContainerEnvironment_sp make( gc::Nilable<Environment_sp> parent);
     public:
 	virtual string summaryOfContents() const;
     public:
@@ -739,7 +739,7 @@ namespace core
         gctools::Vec0<List_sp>	_TagCode;
 	ActivationFrame_sp 	        _ActivationFrame;
     public: // Codes here
-	static TagbodyEnvironment_sp make(Environment_sp env);
+	static TagbodyEnvironment_sp make(gc::Nilable<Environment_sp> env);
     public:
 
 	virtual ActivationFrame_sp getActivationFrame() const;
@@ -804,7 +804,7 @@ namespace core
     GCPRIVATE: // instance variables here
         HashTableEq_sp          _Macros;
     public: // Codes here
-	static MacroletEnvironment_sp make(Environment_sp env);
+	static MacroletEnvironment_sp make(gc::Nilable<Environment_sp> env);
     public:
 	void addMacro(Symbol_sp name, Function_sp macro);
 
@@ -850,7 +850,7 @@ namespace core
     GCPRIVATE: // instance variables here
 	HashTableEq_sp          _Macros;
     public: // Codes here
-	static SymbolMacroletEnvironment_sp make(Environment_sp env);
+	static SymbolMacroletEnvironment_sp make(gc::Nilable<Environment_sp> env);
     public:
 	
 	void addSymbolMacro(Symbol_sp sym, Function_sp expansion);
@@ -898,7 +898,7 @@ namespace core
     GCPRIVATE: // instance variables here
 	HashTableEq_sp          _Values;
     public: // Codes here
-	static StackValueEnvironment_sp make(Environment_sp env);
+	static StackValueEnvironment_sp make(gc::Nilable<Environment_sp> env);
     public:
 	
 	void addValue(T_sp sym, T_sp value);

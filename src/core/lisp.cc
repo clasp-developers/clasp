@@ -368,15 +368,16 @@ namespace core
 	gctools::global_Symbol_OP_unbound   = reinterpret_cast<Symbol_O*>(symbol_unbound.raw_());
 	gctools::global_Symbol_OP_deleted   = reinterpret_cast<Symbol_O*>(symbol_deleted.raw_());
 	gctools::global_Symbol_OP_sameAsKey = reinterpret_cast<Symbol_O*>(symbol_sameAsKey.raw_());
-	printf("%s:%d Remember to finalizeSpecialSymbols - set their pointer values\n", __FILE__, __LINE__ );
-	
     }
 
     void Lisp_O::finalizeSpecialSymbols() {
-    	Symbol_sp symbol_nil = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_nil);
-    	Symbol_sp symbol_unbound = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_unbound);
-    	Symbol_sp symbol_deleted = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_deleted);
-    	Symbol_sp symbol_sameAsKey = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_sameAsKey);
+    	Symbol_sp symbol_nil = gctools::smart_ptr<Symbol_O>((gc::Tagged)gctools::global_Symbol_OP_nil);
+	symbol_nil->setf_symbolValue(_Nil<T_O>());
+	symbol_nil->setf_name(Str_O::create("NIL"));
+	symbol_nil->setPackage(_lisp->findPackage("COMMON-LISP"));
+	//    	Symbol_sp symbol_unbound = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_unbound);
+	//    	Symbol_sp symbol_deleted = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_deleted);
+	//    	Symbol_sp symbol_sameAsKey = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_sameAsKey);
     }
 
 
@@ -391,6 +392,7 @@ namespace core
 //	lisp->__resetInitializationOwner();
 	_lisp->_DebugStream = new DebugStream(mpiRank);
 	LOG(BF("The lisp environment DebugStream has been created"));
+	Lisp_O::finalizeSpecialSymbols();
 	return _lisp;
     }
 
@@ -802,11 +804,9 @@ namespace core
 	{
 	    LoadTimeValues_sp vo = LoadTimeValues_O::make(numberOfLoadTimeValues, numberOfLoadTimeSymbols);
 	    this->_Roots._LoadTimeValueArrays->setf_gethash(key,vo);
-	    TESTING();
             return vo; // gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(vo.pbase()));
 	}
         LoadTimeValues_sp ltv = it.as<LoadTimeValues_O>();
-	TESTING();
 	return ltv; // return gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(ltv.pbase()));
     }
 
@@ -1717,7 +1717,7 @@ namespace core
 #define ARGS_af_acons "(key datum alist)"
 #define DECL_af_acons ""
 #define DOCS_af_acons "acons"
-    Cons_sp af_acons(T_sp key, T_sp val, Cons_sp alist)
+    List_sp af_acons(T_sp key, T_sp val, List_sp alist)
     {_G();
 	Cons_sp acons = Cons_O::create(key,val);
 	return Cons_O::create(acons,alist);

@@ -161,7 +161,7 @@ namespace llvmo
 #define ARGS_af_throwIfMismatchedStructureSizes "(&key tsp tmv ihf)"
 #define DECL_af_throwIfMismatchedStructureSizes ""
 #define DOCS_af_throwIfMismatchedStructureSizes "throwIfMismatchedStructureSizes"
-    void af_throwIfMismatchedStructureSizes(Fixnum_sp tspSize, Fixnum_sp tmvSize, Fixnum_sp givenIhfSize)
+    void af_throwIfMismatchedStructureSizes(Fixnum_sp tspSize, Fixnum_sp tmvSize, gc::Nilable<Fixnum_sp> givenIhfSize)
     {_G();
 	int T_sp_size = sizeof(core::T_sp);
 	if ( tspSize->get() != T_sp_size ) {
@@ -172,7 +172,7 @@ namespace llvmo
 	    SIMPLE_ERROR(BF("Mismatch between tmv size[%d] and core::T_mv size[%d]") % tmvSize->get() % T_mv_size );
 	}
 	int InvocationHistoryFrame_size = sizeof(core::InvocationHistoryFrame);
-	if ( givenIhfSize->get() != InvocationHistoryFrame_size ) {
+	if ( givenIhfSize.notnilp() && givenIhfSize->get() != InvocationHistoryFrame_size ) {
 	    SIMPLE_ERROR(BF("Mismatch between IR lisp-compiled-function-ihf size[%d]"
 			    " and sizeof(LispCompiledFunctionIHF)=[%d]")
 			 % _rep_(givenIhfSize) % InvocationHistoryFrame_size );

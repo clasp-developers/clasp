@@ -556,6 +556,7 @@ extern "C"
     void sp_makeNil(core::T_sp* result)
     {_G();
 	(*result) = _Nil<core::T_O>();
+	printf("%s:%d sp_makeNil nil@%p    cl::_sym_nil@%p\n", __FILE__, __LINE__, (*result).raw_(), cl::_sym_nil.raw_());
     }
 
     void mv_makeNil(core::T_mv* result)

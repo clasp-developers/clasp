@@ -728,11 +728,11 @@ namespace core {
 	    version = aux;
 	} else {
 	    T_mv version_mv = af_parseInteger(aux.as<Str_O>(),0,_Nil<T_O>(),10,_lisp->_true());
-	    Integer_sp iversion = version_mv.as<Integer_O>();
+	    T_sp tversion = version_mv;
 	    Fixnum_sp parsed_length = version_mv.valueGet(1).as<Fixnum_O>();
 	    if (parsed_length->get() == cl_length(aux) &&
-		af_integerP(iversion) && iversion->plusp()) {
-		version = iversion;
+		af_integerP(tversion) && tversion.as<Integer_O>()->plusp()) {
+		version = tversion.as<Integer_O>();
 	    } else if (af_string_equal(aux, kw::_sym_newest).notnilp()) {
 		version = kw::_sym_newest;
 	    } else {
@@ -2064,14 +2064,14 @@ namespace core {
 	Pathname_sp pathname = cl_pathname(tsource);
     begin:
 	if (!af_logicalPathnameP(pathname)){
-	    printf("%s:%d Returning non-logical pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str() );
+	    //	    printf("%s:%d Returning non-logical pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str() );
 	    return pathname;
 	}
 	List_sp l = eval::funcall(core::_sym_pathnameTranslations,pathname->_Host);
 	for( auto cur : l ) { // ; !af_endp(l); l = CDR(l)) {
 	    T_sp pair = oCar(l);
 	    if (af_pathnameMatchP(pathname, CAR(pair))) {
-		printf("%s:%d Trying to translate pathname: %s   pair: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str(), _rep_(pair).c_str() );
+		//printf("%s:%d Trying to translate pathname: %s   pair: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str(), _rep_(pair).c_str() );
 		pathname = af_translatePathname( pathname,
 						 CAR(pair),
 						 oCadr(pair),

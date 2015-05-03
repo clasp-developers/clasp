@@ -57,13 +57,13 @@ namespace core
 	InvocationHistoryFrame*	_Next;
 	int			_Bds;
 	Closure* 	        closure;
-        ActivationFrame_sp      environment;
+        T_sp      environment;
         int                     runningSourceFileInfoHandle;
 	size_t                  runningFilePos;
         int                     runningLineNumber;
         int                     runningColumn;
     public:
-	InvocationHistoryFrame(Closure* fc, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
+	InvocationHistoryFrame(Closure* fc, T_sp env=_Nil<T_O>());
 	//	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
 	ATTR_WEAK virtual ~InvocationHistoryFrame();
 	InvocationHistoryFrame* next() { return this->_Next;};
@@ -87,14 +87,14 @@ namespace core
 	    //	    printf("%s:%d setSourcePos fileHandle=%d  lineno=%d\n", __FILE__, __LINE__, this->runningSourceFileInfoHandle, this->runningLineNumber );
         };
 
-	virtual void setActivationFrame(ActivationFrame_sp af) { this->environment = af; };
+	virtual void setActivationFrame(T_sp af) { this->environment = af; };
 	virtual string asString();
 	string asStringLowLevel(Closure* closure,
 				// const string& functionName,
 				// const string& sourceFileName,
 				uint lineNumber, uint column ) const;
 
-	virtual ActivationFrame_sp activationFrame() const { return this->environment; };
+	virtual T_sp activationFrame() const { return this->environment; };
 	virtual int bds() const {return this->_Bds;};
     public:
     };
@@ -161,7 +161,7 @@ namespace core
 	    this->_Top->setSourcePos(info);
 	}
 
-	void setActivationFrameForTop(ActivationFrame_sp af)
+	void setActivationFrameForTop(T_sp af)
 	{
 	    if ( this->_Top==NULL )
 	    {

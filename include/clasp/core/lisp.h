@@ -315,7 +315,7 @@ namespace core
 	friend List_sp core_allSourceFiles();
 	template <class oclass> friend void define_base_class(Class_sp co, Class_sp cob, uint& classesUpdated );
 	template <class oclass> friend BuiltInClass_sp hand_initialize_allocatable_class(uint& classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class );
-	friend T_mv af_put_sysprop(T_sp key, T_sp area, T_sp value);
+	friend T_sp af_put_sysprop(T_sp key, T_sp area, T_sp value);
 	friend T_mv af_get_sysprop(T_sp key, T_sp area);
 
 	friend void af_clearGfunHash(T_sp what);

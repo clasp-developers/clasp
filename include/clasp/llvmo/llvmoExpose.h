@@ -1386,7 +1386,7 @@ namespace llvmo
     public:
         typedef void (*fptr_type) (LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS );
     public:
-        Function_sp             llvmFunction;
+	core::T_sp             llvmFunction;
 	fptr_type		fptr;
         core::T_sp           associatedFunctions;
 	core::T_sp              _lambdaList;
@@ -1400,7 +1400,7 @@ namespace llvmo
 			 , core::SourcePosInfo_sp spi
 			 , core::Symbol_sp type
 			 , fptr_type ptr
-			 , Function_sp llvmFunc
+			 , core::T_sp llvmFunc
 			 , core::T_sp renv
 			 , core::T_sp assocFuncs,
 			 core::T_sp ll)

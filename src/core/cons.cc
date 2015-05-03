@@ -910,9 +910,9 @@ namespace core
 	    List_sp carNode = p.asCons()->copyListCar();
 	    cur.asCons()->setCdr(carNode);
 	    cur = oCdr(cur);
-	    List_sp cdr = oCdr(p);
+	    T_sp cdr = oCdr(p);
 	    if ( cdr.nilp() ) break;
-	    if ( !cl_consp(cdr) ) {
+	    if ( !cdr.consp() ) {
 		cur.asCons()->setCdr(cdr);
 		break;
 	    }
@@ -947,8 +947,9 @@ namespace core
 	    cur.asCons()->setCdr(carCopy);
 	    cur = carCopy;
 	    op = oCdr(p);
-	    if ( !(p = op.asOrNull<Cons_O>()) )
-	    {
+	    if ( op.consp() ) {
+		p = op.as<Cons_O>();
+	    } else {
 		cur.asCons()->setCdr(op);
 		break;
 	    }

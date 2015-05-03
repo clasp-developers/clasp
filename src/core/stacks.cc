@@ -90,7 +90,7 @@ namespace core
     }
 	    
 
-    InvocationHistoryFrame::InvocationHistoryFrame(Closure* c, ActivationFrame_sp env)
+    InvocationHistoryFrame::InvocationHistoryFrame(Closure* c, T_sp env)
         :closure(c), environment(env)
         , runningSourceFileInfoHandle(c->sourceFileInfoHandle())
 	, runningFilePos(c->filePos())

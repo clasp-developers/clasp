@@ -1260,8 +1260,9 @@ namespace llvmo
        core::T_sp save_elements = elements;
        if ( elements.nilp() ) {
 	   return;
-       } else if ( core::List_sp celements = elements.asOrNull<core::Cons_O>() ) {
-	   for ( auto cur : celements ) {
+       } else if ( core::Cons_sp celements = elements.asOrNull<core::Cons_O>() ) {
+	   core::List_sp lelements = celements;
+	   for ( auto cur : lelements ) {
 	       velements.push_back(oCar(cur).as<Type_O>()->wrappedPtr());
 	   }
 	   return;
@@ -2089,7 +2090,8 @@ namespace llvmo
     {_G();
 	Constant_sp ca = ConstantDataArray_O::create();
 	vector<uint32_t> vector_IdxList;
-	if ( core::List_sp lvalues = ovalues.asOrNull<core::Cons_O>() ) {
+	if ( core::Cons_sp cvalues = ovalues.asOrNull<core::Cons_O>() ) {
+	    core::List_sp lvalues = cvalues;
 	    for ( auto cur : lvalues ) {
 		vector_IdxList.push_back(oCar(cur).as<core::Fixnum_O>()->get());
 	    }

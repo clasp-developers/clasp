@@ -35,7 +35,7 @@ namespace core
 {
 
 
-    T_mv af_put_sysprop(T_sp key, T_sp area, T_sp value);
+    T_sp af_put_sysprop(T_sp key, T_sp area, T_sp value);
 
     T_mv af_get_sysprop(T_sp key, T_sp area);
 

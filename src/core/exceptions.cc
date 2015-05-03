@@ -150,7 +150,7 @@ namespace core {
     {_G();
 	printf("%s:%d af_signalSimpleError  caught because signal-simple-error is not installed yet\n", __FILE__, __LINE__ );
 	printf("%s\n", _rep_(baseCondition).c_str() );
-	af_format(_lisp->_true(), formatControl, formatArgs.as<Cons_O>() );
+	af_format(_lisp->_true(), formatControl, formatArgs );
 	dbg_hook("af_signalSimpleError");
 	af_invokeInternalDebugger(_Nil<core::T_O>());
 	printf("%s:%d  Continuing...\n",__FILE__,__LINE__);

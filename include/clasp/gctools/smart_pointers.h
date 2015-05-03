@@ -317,12 +317,12 @@ namespace gctools {
 	//
 	//
 	// Make a tagged fixnum
-	inline static smart_ptr<Type> make_tagged_fixnum(Fixnum val) {return smart_ptr<Type>(tag_fixnum<Type>(val));}
+	inline static smart_ptr<Type> make_tagged_fixnum(Fixnum val) {return smart_ptr<Type>((Tagged)tag_fixnum<Type>(val));}
 	inline static smart_ptr<Type> make_tagged_other(Type* p) {return smart_ptr<Type>(p);}
-	inline static smart_ptr<Type> make_tagged_nil() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_nil));};
-	inline static smart_ptr<Type> make_tagged_unbound() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_unbound));};
-	inline static smart_ptr<Type> make_tagged_deleted() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_deleted));};
-	inline static smart_ptr<Type> make_tagged_sameAsKey() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_sameAsKey));};
+	inline static smart_ptr<Type> make_tagged_nil() {return smart_ptr<Type>((Tagged)reinterpret_cast<Type*>(global_Symbol_OP_nil));};
+	inline static smart_ptr<Type> make_tagged_unbound() {return smart_ptr<Type>((Tagged)reinterpret_cast<Type*>(global_Symbol_OP_unbound));};
+	inline static smart_ptr<Type> make_tagged_deleted() {return smart_ptr<Type>((Tagged)reinterpret_cast<Type*>(global_Symbol_OP_deleted));};
+	inline static smart_ptr<Type> make_tagged_sameAsKey() {return smart_ptr<Type>((Tagged)reinterpret_cast<Type*>(global_Symbol_OP_sameAsKey));};
 
 	/*! Get the pointer typcast to an integer quantity for hashing */
 	cl_intptr_t intptr() const { return ((uintptr_t)(this->theObject));};
@@ -2119,7 +2119,7 @@ namespace gctools {
 	    if ( Base b = ot.asOrNull<Type>() ) {
 		this->theObject = b.theObject;
 		return;
-	    } else if (tagged_nilp(b.theObject)) {
+	    } else if (tagged_nilp(ot.theObject)) {
 		this->theObject = reinterpret_cast<Type*>(global_Symbol_OP_nil);
 		return;
 	    }
@@ -2177,6 +2177,15 @@ namespace gctools {
 	    GCTOOLS_ASSERT(this->notnilp());
 	    return *(this->untag_object());
 	};
+
+	//Type conversion operator to T_sp can be Base or NIL
+	operator smart_ptr<core::T_O>() const {
+	    if ( tagged_nilp(this->theObject) ) {
+		return smart_ptr<core::T_O>((Tagged)tag_nil<core::T_O>());
+	    }
+	    return smart_ptr<core::T_O>(*this);
+	} 
+	
     };
 };
 

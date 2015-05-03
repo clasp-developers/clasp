@@ -663,12 +663,58 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	}
     };
 
+
+    void setNilable(gc::Nilable<Str_sp>& val, bool s)
+    {
+	if (!s) {
+	    val = _Nil<T_O>();
+	} else {
+	    val = Str_O::create("Yahoo");
+	}
+    }
+
+    gc::Nilable<Str_sp> getNilable(bool s)
+    {
+	gc::Nilable<Str_sp> val;
+	if (!s) {
+	    val = _Nil<T_O>();
+	} else {
+	    val = Str_O::create("Yahoo");
+	}
+	return val;
+    }
+
+    void testNilable()
+    {
+	gc::Nilable<Str_sp> foo;
+	printf("%s:%d initialized foo = %s\n", __FILE__, __LINE__, _rep_(static_cast<T_sp>(foo)).c_str());
+	foo = Str_O::create("This is a test");
+	printf("%s:%d assigned foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
+	foo = _Nil<T_O>();
+	printf("%s:%d nil'd foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
+	setNilable(foo,false);
+	printf("%s:%d set false foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
+	setNilable(foo,true);
+	printf("%s:%d set true foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
+	foo = getNilable(false);
+	printf("%s:%d get false foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
+	foo = getNilable(true);
+	printf("%s:%d get true foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
+    }
+    
+    void testFeatures()
+    {
+	testNilable();
+	testConses();
+    }
+    
     CoreExposer::CoreExposer(Lisp_sp lisp) : Exposer(lisp,CorePkg,CorePkg_nicknames)
     {
-	//	testConses();
+	//	testFeatures();
 	this->package()->usePackage(_lisp->findPackage("CL",true).as<Package_O>());
     };
 
+    
 
 
     void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const
@@ -852,7 +898,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	};
 	/* Set the values of some essential global symbols */
 	cl::_sym_nil = gctools::smart_ptr<core::Symbol_O>((gctools::Tagged)gctools::global_Symbol_OP_nil);//->initialize();
-#if 0
+#if 1
 	cl::_sym_nil->_Name = Str_O::create("NIL");
 #if 1
 //        printf("%s:%d About to add NIL to the COMMON-LISP package - is it defined at this point\n", __FILE__, __LINE__ );

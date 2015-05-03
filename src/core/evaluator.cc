@@ -266,36 +266,29 @@ namespace core
 	    LOG(BF("Evaluated test_key = %s\n") % _rep_(test_key) );
 	    for ( auto cur : clauses ) {
 		T_sp oclause = oCar(cur);
-		if ( cl_consp(oclause) )
-		{
+		if ( cl_consp(oclause) ) {
 		    List_sp clause = oclause;
-		    List_sp keys = oCar(clause);
+		    T_sp keys = oCar(clause);
 		    List_sp forms = oCdr(clause);
 		    SYMBOL_EXPORT_SC_(ClPkg,otherwise);
-		    if ( keys == cl::_sym_otherwise || keys == _lisp->_true() )
-		    {
-			if ( oCdr(cur).notnilp() )
-			{
+		    if ( keys == cl::_sym_otherwise || keys == _lisp->_true() ) {
+			if ( oCdr(cur).notnilp() ) {
 			    SIMPLE_ERROR(BF("otherwise-clause must be the last clause of case - it is not"));
 			}
 			return eval::sp_progn(forms,environment);
-		    } else if ( af_atom(keys) )
-		    {
-			if ( cl_eql(keys,test_key) )
-			{
+		    } else if ( af_atom(keys) ) {
+			if ( cl_eql(keys,test_key) ) {
 			    return eval::sp_progn(forms,environment);
 			}
-		    } else if ( cl_consp(keys) )
-		    {
-			for (auto kcur : keys ) {
-			    if ( cl_eql(oCar(kcur),test_key) )
-			    {
+		    } else if ( keys.consp() ) {
+			List_sp lkeys = keys;
+			for (auto kcur : lkeys ) {
+			    if ( cl_eql(oCar(kcur),test_key) ) {
 				return eval::sp_progn(forms,environment);
 			    }
 			}
 		    }
-		} else
-		{
+		} else {
 		    SIMPLE_ERROR(BF("Bad case clause: %s") % _rep_(oclause) );
 		}
 	    }
@@ -374,10 +367,9 @@ namespace core
 	  Return the list of declarations, the documentation string and the rest
 	  of the forms in CODE.  Identify the local special declarations and
 	return them in SPECIALS but leave them in the DECLARES list */
-	void extract_declares_docstring_code_specials(List_sp inputBody, List_sp& declares, bool expectDocString, Str_sp& retDocumentation, List_sp& code, List_sp& specials )
+	void extract_declares_docstring_code_specials(List_sp inputBody, List_sp& declares, bool expectDocString, gc::Nilable<Str_sp>& documentation, List_sp& code, List_sp& specials )
 	{_G();
 	    List_sp body = inputBody;
-	    gc::Nilable<Str_sp> documentation = _Nil<Str_O>();
 	    declares = _Nil<T_O>();
 	    specials = _Nil<T_O>();
 	    for (; body.notnilp(); body=oCdr(body) )
@@ -458,14 +450,14 @@ namespace core
 
 	void extract_declares_code(List_sp args, List_sp& declares, List_sp& code )
 	{_G();
-	    Str_sp dummy_docstring;
+	    gc::Nilable<Str_sp> dummy_docstring;
 	    List_sp specials;
 	    IMPLEMENT_MEF(BF("Check who is using this and why they aren't calling extract_declares_docstring_code_specials directly"));
 	    extract_declares_docstring_code_specials(args,declares,false,dummy_docstring,code,specials);
 	}
 
 
-	void parse_lambda_body(List_sp body, List_sp& declares, Str_sp& docstring, List_sp& code)
+	void parse_lambda_body(List_sp body, List_sp& declares, gc::Nilable<Str_sp>& docstring, List_sp& code)
 	{_G();
 	    LOG(BF("Parsing lambda body: %s") % body->__repr__() );
 	    List_sp specials;
@@ -560,7 +552,7 @@ namespace core
 	T_mv sp_locally( List_sp args, T_sp env)
 	{_G();
 	    List_sp declares;
-	    Str_sp docstring;
+	    gc::Nilable<Str_sp> docstring;
 	    List_sp code;
 	    List_sp specials;
 	    extract_declares_docstring_code_specials(args,declares,false,docstring,code,specials);
@@ -828,7 +820,7 @@ namespace core
 	    //    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
 	    //    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
 	    List_sp declares;
-	    Str_sp docstring;
+	    gc::Nilable<Str_sp> docstring;
 	    List_sp code;
 	    List_sp declaredSpecials;
 	    extract_declares_docstring_code_specials(body,declares,false,docstring,code,declaredSpecials);
@@ -908,7 +900,7 @@ namespace core
 	    //    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
 	    //    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
 	    List_sp declares;
-	    Str_sp docstring;
+	    gc::Nilable<Str_sp> docstring;
 	    List_sp code;
 	    List_sp declaredSpecials;
 	    extract_declares_docstring_code_specials(body,declares,false,docstring,code,declaredSpecials);
@@ -1236,14 +1228,14 @@ namespace core
 	T_mv af_processDeclarations(List_sp inputBody, T_sp expectDocString)
 	{_G();
 	    bool b_expect_doc = expectDocString.isTrue();
-	    List_sp declares;
-	    Str_sp docstring;
+	    List_sp declares = _Nil<T_O>();
+	    gc::Nilable<Str_sp> docstring;
 	    List_sp code;
 	    List_sp specials;
 	    extract_declares_docstring_code_specials(inputBody, declares,
 						     b_expect_doc, docstring, code, specials);
 	    T_sp tdeclares = declares;
-	    return(Values(tdeclares,code,docstring,specials));
+	    return(Values(tdeclares,code,(T_sp)docstring,specials));
 	};
 
 
@@ -1272,7 +1264,7 @@ namespace core
 	{
 	    List_sp body = oCddr(lambdaExpression);
 	    List_sp declares;
-	    Str_sp docstring;
+	    gc::Nilable<Str_sp> docstring;
 	    List_sp form;
 	    parse_lambda_body(body,declares,docstring,form);
 	    // First check for a (declare (core:function-name XXX))
@@ -1299,7 +1291,7 @@ namespace core
 	Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T_sp env)
 	{_G();
 	    List_sp declares;
-	    Str_sp docstring;
+	    gc::Nilable<Str_sp> docstring;
 	    List_sp form;
 	    parse_lambda_body(body,declares,docstring,form);
 	    LOG(BF("lambda is closing over environment\n%s") % env->__repr__() );
@@ -1562,7 +1554,7 @@ namespace core
 	    }
 	    List_sp declares;
 	    List_sp code;
-	    Str_sp docstring;
+	    gc::Nilable<Str_sp> docstring;
 	    List_sp specials;
 	    extract_declares_docstring_code_specials(body,declares,false,docstring,code,specials);
 	    return eval::sp_progn(code,newEnvironment);
@@ -1597,7 +1589,7 @@ namespace core
 	    }
 	    List_sp declares;
 	    List_sp code;
-	    Str_sp docstring;
+	    gc::Nilable<Str_sp> docstring;
 	    List_sp specials;
 	    extract_declares_docstring_code_specials(body,declares,false,docstring,code,specials);
 	    return eval::sp_progn(code,newEnvironment);
@@ -1624,7 +1616,7 @@ namespace core
 		T_sp olambdaList = oCadr(oneDef);
 		List_sp inner_body = oCdr(oCdr(oneDef));
 		List_sp inner_declares;
-		Str_sp inner_docstring;
+		gc::Nilable<Str_sp> inner_docstring;
 		List_sp inner_code;
 		parse_lambda_body(inner_body,inner_declares,inner_docstring,inner_code);
 		// printf("   name = %s\n", _rep_(name).c_str());
@@ -1649,7 +1641,7 @@ namespace core
 		    List_sp outer_body = oCddr(outer_func_cons);
 		    //		printf("%s:%d sp_macrolet outer_body = %s\n", __FILE__, __LINE__, _rep_(outer_body).c_str());
 		    List_sp declares;
-		    Str_sp docstring;
+		    gc::Nilable<Str_sp> docstring;
 		    List_sp code;
 		    parse_lambda_body(outer_body,declares,docstring,code);
 		    LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
@@ -1671,7 +1663,7 @@ namespace core
 	    }
 	    List_sp declares;
 	    List_sp code;
-	    Str_sp docstring;
+	    gc::Nilable<Str_sp> docstring;
 	    List_sp specials;
 	    extract_declares_docstring_code_specials(body,declares,false,docstring,code,specials);
 	    if (toplevel) {
@@ -2260,7 +2252,7 @@ namespace core
                 printf("%s:%d t1Locally args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
             }
 	    List_sp declares;
-	    Str_sp docstring;
+	    gc::Nilable<Str_sp> docstring;
 	    List_sp code;
 	    List_sp specials;
 	    extract_declares_docstring_code_specials(args,declares,false,docstring,code,specials);

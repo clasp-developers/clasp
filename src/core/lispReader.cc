@@ -630,12 +630,12 @@ namespace core
 	/* See the CLHS 2.2 Reader Algorithm  - continue has the effect of jumping to step 1 */
     step1:
 	LOG(BF("step1"));
-	x = cl_readChar(sin,_Nil<T_O>(),_Unbound<Character_O>(),_lisp->_true()).as<Character_O>();
-	if ( x.unboundp() )
-	{
+	T_sp tx = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_lisp->_true());
+	if ( tx.nilp() ) {
 	    if ( eofErrorP ) STREAM_ERROR(sin);
 	    return Values(eofValue);
 	}
+	x = tx.as<Character_O>();
 	LOG(BF("Reading character x[%s]") % x->asChar() );
 	Symbol_sp x1_syntax_type = readTable->syntax_type(x);
 //    step2:
@@ -757,10 +757,9 @@ namespace core
 	    if ( y9_syntax_type == kw::_sym_single_escape_character )
 	    {
 		LOG(BF("Handling single_escape_character"));
-		z = cl_readChar(sin,_Nil<T_O>(),_Unbound<Character_O>(),_lisp->_true()).as<Character_O>();
-		if ( z.unboundp() ) {
-		    STREAM_ERROR(sin);
-		}
+		T_sp tz = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_lisp->_true());
+		if ( tz.nilp() ) STREAM_ERROR(sin);
+		z = tz.as<Character_O>();
 		token.push_back(constituentChar(z,TRAIT_ALPHABETIC));
 		LOG(BF("Read z[%s] accumulated token[%s]") % z->asChar() % tokenStr(token));
 		goto step9;

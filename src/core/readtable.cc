@@ -663,7 +663,7 @@ namespace core
 #define DOCS_af_sharp_r "sharp_r"
 #define ARGS_af_sharp_r "(stream subchar radix)"
 #define DECL_af_sharp_r ""
-    T_mv af_sharp_r(T_sp sin, Character_sp ch, /*Fixnum_sp*/T_sp tradix)
+    T_mv af_sharp_r(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> tradix)
     {_G();
 	if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
 	{
@@ -697,7 +697,7 @@ namespace core
 #define DOCS_af_sharp_b "sharp_b"
 #define ARGS_af_sharp_b "(stream ch num)"
 #define DECL_af_sharp_b ""
-    T_mv af_sharp_b(T_sp sin, Character_sp ch, Fixnum_sp num)
+    T_mv af_sharp_b(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> num)
     {_G();
 	return af_sharp_r(sin,ch,Fixnum_O::create(2));
     };
@@ -707,7 +707,7 @@ namespace core
 #define DOCS_af_sharp_o "sharp_o"
 #define ARGS_af_sharp_o "(stream ch num)"
 #define DECL_af_sharp_o ""
-    T_mv af_sharp_o(T_sp sin, Character_sp ch, Fixnum_sp num)
+    T_mv af_sharp_o(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> num)
     {_G();
 	return af_sharp_r(sin,ch,Fixnum_O::create(8));
     };

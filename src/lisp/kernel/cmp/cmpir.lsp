@@ -240,7 +240,7 @@
   "Create a new function environment and a new runtime environment"
   (let ((new-env (irc-new-unbound-function-value-environment old-env :number-of-functions (length functions))))
     (dolist (fn functions)
-      (bind-function new-env (car fn) nil))
+      (bind-function new-env (car fn) #'(lambda () (print "Dummy func"))))
     new-env))
 
 

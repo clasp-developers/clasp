@@ -349,6 +349,7 @@ namespace core {
 	string asChar() const;
 	virtual int as_int() const;
 	virtual uint64_t as_uint64() const;
+	virtual uint as_uint() const {return this->as_uint64(); };
 	virtual Bignum as_mpz() const;
 	virtual LongLongInt as_LongLongInt() const;
 	virtual float as_float() const;

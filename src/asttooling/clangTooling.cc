@@ -87,7 +87,8 @@ namespace translate {
         DeclareType _v;
         from_object(core::T_sp o) {
 	    if ( o.notnilp() ) {
-		if ( core::List_sp args = o.asOrNull<core::Cons_O>() ) {
+		if ( core::Cons_sp cargs = o.asOrNull<core::Cons_O>() ) {
+		    core::List_sp args = cargs;
 		    _v.clear();
 		    for ( auto cur : args ) {
 			core::Str_sp s = oCar(cur).as<core::Str_O>();

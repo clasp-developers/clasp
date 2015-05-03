@@ -1567,20 +1567,16 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     {_G();
 	LOG(BF("Looking for binding for function name[%s]") % _rep_(functionName) );
 //    LOG(BF("The frame stack is %d deep") % this->depth() );
-	bool foundp;
-	Fixnum_sp val;
-	{MULTIPLE_VALUES_CONTEXT();
-	    T_mv mv = this->_FunctionIndices->gethash(functionName,_Nil<T_O>());
-	    val = mv.as<Fixnum_O>();
-	    foundp = mv.valueGet(1).isTrue();
-	}
+	T_mv mv = this->_FunctionIndices->gethash(functionName,_Nil<T_O>());
+	T_sp val = mv;
+	bool foundp = mv.valueGet(1).isTrue();
 	if ( !foundp )
-	{
 	    return this->Base::_findFunction(functionName,depth,index,value);
-	}
-	index = val->get();
+	index = val.as<Fixnum_O>()->get();
 	LOG(BF(" Found binding %d")% index );
-	value = this->_FunctionFrame->entry(index).as<Function_O>();
+	T_sp tvalue = this->_FunctionFrame->entry(index);
+	ASSERT(tvalue.notnilp());
+	value = tvalue.as<Function_O>();
 	return true;
     }
 
@@ -1590,14 +1586,14 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 // Constructor
 //
 
-    FunctionValueEnvironment_sp FunctionValueEnvironment_O::createEmpty( Environment_sp parent )
+    FunctionValueEnvironment_sp FunctionValueEnvironment_O::createEmpty( gc::Nilable<Environment_sp> parent )
     {_G();
         GC_ALLOCATE(FunctionValueEnvironment_O,environ );
 	environ->setupParent(parent);
 	return environ;
     }
 
-    FunctionValueEnvironment_sp FunctionValueEnvironment_O::createForEntries( int numEntries, Environment_sp parent )
+    FunctionValueEnvironment_sp FunctionValueEnvironment_O::createForEntries( int numEntries, gc::Nilable<Environment_sp> parent )
     {_G();
 	FunctionValueEnvironment_sp environ(FunctionValueEnvironment_O::createEmpty(parent));
 	environ->_FunctionFrame = FunctionFrame_O::create(numEntries,clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
@@ -1667,6 +1663,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     int FunctionValueEnvironment_O::bind_function(T_sp functionName, Function_sp form)
     {_G();
+	ASSERT(form.notnilp());
 	int nextIdx = this->_FunctionIndices->hashTableCount();
 	this->_FunctionIndices->hash_table_setf_gethash(functionName,Fixnum_O::create(nextIdx));
 	this->_FunctionFrame->set_entry(nextIdx,form);
@@ -1735,7 +1732,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(List_sp cleanupForm, Environment_sp parent)
+    UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(List_sp cleanupForm, gc::Nilable<Environment_sp> parent)
     {_G();
 	UnwindProtectEnvironment_sp environ = UnwindProtectEnvironment_O::create();
 	environ->_CleanupForm = cleanupForm;
@@ -1927,7 +1924,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    CatchEnvironment_sp CatchEnvironment_O::make(Environment_sp parent)
+    CatchEnvironment_sp CatchEnvironment_O::make(gc::Nilable<Environment_sp> parent)
     {_G();
 	CatchEnvironment_sp environ = CatchEnvironment_O::create();
 	environ->setupParent(parent);
@@ -1991,7 +1988,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::create(Environment_sp parent)
+    FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::create(gc::Nilable<Environment_sp> parent)
     {_G();
 	FunctionContainerEnvironment_sp environ = FunctionContainerEnvironment_O::create();
 	environ->setupParent(parent);
@@ -2002,7 +1999,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::make(Environment_sp parent)
+    FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::make(gc::Nilable<Environment_sp> parent)
     {_G();
 	FunctionContainerEnvironment_sp environ = FunctionContainerEnvironment_O::create(parent);
 	return environ;
@@ -2094,7 +2091,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 // Destructor
 //
 
-    TagbodyEnvironment_sp TagbodyEnvironment_O::make(Environment_sp parent)
+    TagbodyEnvironment_sp TagbodyEnvironment_O::make(gc::Nilable<Environment_sp> parent)
     {_G();
 	TagbodyEnvironment_sp environ = TagbodyEnvironment_O::create();
 	environ->setupParent(parent);
@@ -2243,7 +2240,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 // Destructor
 //
 
-    MacroletEnvironment_sp MacroletEnvironment_O::make(Environment_sp parent)
+    MacroletEnvironment_sp MacroletEnvironment_O::make(gc::Nilable<Environment_sp> parent)
     {_G();
 	MacroletEnvironment_sp environ = MacroletEnvironment_O::create();
 	environ->setupParent(parent);
@@ -2316,7 +2313,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    SymbolMacroletEnvironment_sp SymbolMacroletEnvironment_O::make(Environment_sp parent)
+    SymbolMacroletEnvironment_sp SymbolMacroletEnvironment_O::make(gc::Nilable<Environment_sp> parent)
     {_G();
 	SymbolMacroletEnvironment_sp environ = SymbolMacroletEnvironment_O::create();
 	environ->setupParent(parent);
@@ -2395,7 +2392,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    StackValueEnvironment_sp StackValueEnvironment_O::make(Environment_sp parent)
+    StackValueEnvironment_sp StackValueEnvironment_O::make(gc::Nilable<Environment_sp> parent)
     {_G();
 	StackValueEnvironment_sp environ = StackValueEnvironment_O::create();
 	environ->setupParent(parent);

@@ -109,6 +109,7 @@ namespace core {
 	/*! Return a pointer to the value cell */
 	inline T_sp* valueReference() { return &(this->_Value);};
 
+	void setf_name(Str_sp nm) { this->_Name = nm; };
 
 	List_sp plist() const;
 	void setf_plist(List_sp plist);

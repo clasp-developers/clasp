@@ -889,7 +889,7 @@ void bind_aux
 			if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
 			    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
 			    restarg.setTarget(sarg);
-			} else if ( List_sp carg = oarg.asOrNull<Cons_O>() ) {
+			} else if ( Cons_sp carg = oarg.asOrNull<Cons_O>() ) {
 			    restarg.setTarget(carg);
 			}
 #endif

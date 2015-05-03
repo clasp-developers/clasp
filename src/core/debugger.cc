@@ -213,7 +213,7 @@ namespace core
 		    string sexp = line.substr(3,99999);
 //		    ControlSingleStep singleStep(false);
 		    T_mv result;
-		    Environment_sp env = af_ihsEnv(af_ihsCurrentFrame());
+		    T_sp env = af_ihsEnv(af_ihsCurrentFrame());
 //		    DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
 		    result = _lisp->readEvalPrintString(sexp,env,true);
 		    if (!result)
@@ -232,7 +232,7 @@ namespace core
 	    {
 		string sexp = line.substr(0,99999);
 //		ControlSingleStep singleStep(false);
-		Environment_sp env = af_ihsEnv(af_ihsCurrentFrame());
+		T_sp env = af_ihsEnv(af_ihsCurrentFrame());
 //		DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
 		try {
 		    _lisp->readEvalPrintString(sexp,env,true);
@@ -246,7 +246,7 @@ namespace core
 	    {
 		string sexp = line.substr(2,99999);
 //		ControlSingleStep singleStep(false);
-		Environment_sp env = af_ihsEnv(af_ihsCurrentFrame());
+		T_sp env = af_ihsEnv(af_ihsCurrentFrame());
 //		DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
 		try {
 		    DynamicScopeManager scope(_sym_STARimplicit_compile_hookSTAR,_sym_implicit_compile_hook_default->symbolFunction());
@@ -407,7 +407,7 @@ extern "C" {
             printf("If this locks up then there was an error in the evaluation\n");
             printf("Figure out how to make debugger.cc>>af_evalPrint always return\n");
             int ihsCur = af_ihsCurrentFrame();
-            Environment_sp env = af_ihsEnv(ihsCur);
+            T_sp env = af_ihsEnv(ihsCur);
             _lisp->readEvalPrintString(expr,env,true);
         };
 

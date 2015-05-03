@@ -155,6 +155,14 @@ namespace translate
         from_object(const core::T_sp& o) : _v(o.as<T>()) {};
     };
 
+    template <typename T> struct from_object<gc::Nilable<gc::smart_ptr<T>>,std::true_type>
+    {
+        typedef gctools::Nilable<gc::smart_ptr<T>> ExpectedType;
+        typedef ExpectedType DeclareType;
+        DeclareType _v;
+        from_object(const core::T_sp& o) : _v(o) {};
+    };
+
     template <class T>
     struct to_object<gctools::smart_ptr<T> >
     {
@@ -163,6 +171,15 @@ namespace translate
             return o;
         }
     };
+
+    template <class T>
+	struct to_object<gc::Nilable<gctools::smart_ptr<T>> >
+	{
+	    static core::T_sp convert(const gc::Nilable<gc::smart_ptr<T>>& o)
+	    {
+		return static_cast<core::T_sp>(o);
+	    }
+	};
 
 
 };

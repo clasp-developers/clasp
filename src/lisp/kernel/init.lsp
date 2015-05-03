@@ -9,7 +9,7 @@
 :pause-hir
 
 (setq core:*echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
-(setq *echo-repl-read* t)
+(setq *echo-repl-read* nil)
 (setq *load-print* nil)
 (setq *print-source-code-cons* nil)
 
