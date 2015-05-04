@@ -129,7 +129,7 @@ namespace core
 	virtual	bool operator>(T_sp obj) const;
 	virtual	bool operator>=(T_sp obj) const;
 
-	virtual int as_int() const { SUBIMP();}
+	virtual gc::Fixnum as_int() const { SUBIMP();}
         virtual uint as_uint() const {SUBIMP();}
 	virtual Bignum as_mpz() const { SUBIMP();}
 	virtual LongLongInt as_LongLongInt() const {SUBIMP();};
@@ -185,7 +185,7 @@ namespace core
 	static Rational_sp create(Integer_sp num, Integer_sp denom);
     public:
 
-	int as_int() const {SUBIMP();};
+	virtual gc::Fixnum as_int() const {SUBIMP();};
 
 	virtual Number_sp log1() const;
 	virtual Number_sp log1p() const;
@@ -293,8 +293,8 @@ namespace core {
 	//	int& ref() { return this->_Value;};
 	virtual Number_sp copy() const;
 	string __repr__() const;
-	void set(int val) { this->_Value = val; };
-	int get() const { return this->_Value; };
+	void set(gc::Fixnum val) { this->_Value = val; };
+	gc::Fixnum get() const { return this->_Value; };
 	Number_sp abs() const { return Fixnum_O::create(std::abs(this->_Value)); };
 	Number_sp signum() const;
 
@@ -347,9 +347,9 @@ namespace core {
 	Integer_sp shift(int bits) const;
 
 	string asChar() const;
-	virtual int as_int() const;
+	virtual gc::Fixnum as_int() const;
 	virtual uint64_t as_uint64() const;
-	virtual uint as_uint() const {return this->as_uint64(); };
+	virtual uint as_uint() const;
 	virtual Bignum as_mpz() const;
 	virtual LongLongInt as_LongLongInt() const;
 	virtual float as_float() const;

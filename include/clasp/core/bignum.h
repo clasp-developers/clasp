@@ -133,7 +133,7 @@ namespace core
 	virtual	string	valueAsString() const { stringstream ss; ss<<this->_value;return ss.str();};
 	virtual	void	setFromString( const string& strVal );
 
-	virtual int as_int() const;
+	virtual gc::Fixnum as_int() const;
 	virtual uint64_t as_uint64() const;
 	string as_uint64_string() const;
 	virtual Bignum as_mpz() const;

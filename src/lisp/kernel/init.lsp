@@ -331,7 +331,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cl))
 (defvar *print-pretty* nil)  ;; Turn this on by default

@@ -396,7 +396,7 @@ namespace core
 	} else
 	{
 	    target._ArgTargetFrameIndex = this->lexicalIndex;
-	    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_heapVar,Cons_O::create(target._ArgTarget,Fixnum_O::create(target._ArgTargetFrameIndex)));
+	    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_lexicalVar,Cons_O::create(target._ArgTarget,Fixnum_O::create(target._ArgTargetFrameIndex)));
 	    this->advanceLexicalIndex();
 	}
     }
@@ -1112,7 +1112,7 @@ void bind_aux
     }
 
 
-#define ARGS_LambdaListHandler_O_makeLambdaListHandler "(lambda-list &optional declares (context 'ordinary))"
+#define ARGS_LambdaListHandler_O_makeLambdaListHandler "(lambda-list &optional declares (context 'core::function))"
 #define DECL_LambdaListHandler_O_makeLambdaListHandler ""
 #define DOCS_LambdaListHandler_O_makeLambdaListHandler "makeLambdaListHandler"
     LambdaListHandler_sp LambdaListHandler_O::makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context)
@@ -1344,7 +1344,7 @@ void bind_aux
     {_G();
 	List_sp namesRev = _Nil<T_O>();
 	for ( auto cur : this->_ClassifiedSymbolList ) {
-	    if ( oCar(oCar(cur)) == ext::_sym_heapVar ) {
+	    if ( oCar(oCar(cur)) == ext::_sym_lexicalVar ) {
 		namesRev = Cons_O::create(oCadr(oCar(cur)),namesRev);
 	    }
 	}

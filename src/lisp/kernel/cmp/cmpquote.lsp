@@ -689,7 +689,8 @@ the value is put into *default-load-time-value-vector* and its index is returned
 				       pn-gv (list (jit-constant-i32 0) (jit-constant-i32 0)) "pn")))
                    (irc-low-level-trace :ltv)
 		   (irc-intrinsic "internSymbol_symsp" lts-temp sn-value-ptr pn-value-ptr))
-		 (irc-intrinsic "makeSymbol_symsp" lts-temp sn-value-ptr)
+		 (progn
+		   (irc-intrinsic "makeSymbol_symsp" lts-temp sn-value-ptr))
 		 ))
     :push-and-get-reference-fn-name "loadTimeSymbolReference"
     :copy-value-fn-name "copyLoadTimeSymbol"

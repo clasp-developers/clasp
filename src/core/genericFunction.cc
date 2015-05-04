@@ -95,7 +95,7 @@ In ecl/src/c/interpreter.d  is the following code
 	List_sp arglist = _Nil<T_O>();
 	for ( int p=nargs-1; p>=0; --p)
 	{
-	    T_sp co = af_classOf(gctools::smart_ptr<T_O>(args[p]));
+	    T_sp co = af_classOf(gctools::smart_ptr<T_O>((gc::Tagged)args[p]));
 #if DEBUG_CLOS>=2
 	    printf("MLOG frame_to_classes class[%d] --> %lX  --> %s\n",
 		   p, co.intptr(), co->__repr__().c_str() );
@@ -193,7 +193,7 @@ In ecl/src/c/interpreter.d  is the following code
 		core::T_O** frameImpl(first.unsafe_frame());
 		frame::ElementType* values(frame::ValuesArray(frameImpl));
 		for ( int i(0), iEnd(frame::ValuesArraySize(frameImpl)); i<iEnd; ++i ) {
-		    expanded = Cons_O::create(gctools::smart_ptr<T_O>(values[i]),expanded);
+		    expanded = Cons_O::create(gctools::smart_ptr<T_O>((gc::Tagged)values[i]),expanded);
 		}
 		return cl_nreverse(expanded);
 	    } else {
@@ -257,7 +257,6 @@ In ecl/src/c/interpreter.d  is the following code
 	    if (!cl_listp(spec_type) || 
 		spec_type.as<Cons_O>()->memberEql(gctools::smart_ptr<T_O>((gctools::Tagged)(args[spec_position]))).nilp() ) // Was as_or_nil
 	    {
-		TESTINGF(BF("Handle tagged pointers"));
 		Class_sp mc = lisp_instance_class(gctools::smart_ptr<T_O>((gctools::Tagged)(args[spec_position])));
 #if DEBUG_CLOS>=2
 		printf("MLOG fill_spec_vector argtype[%d] using class_of(args[%d]): %s\n", spec_no, spec_position, mc->__repr__().c_str() );

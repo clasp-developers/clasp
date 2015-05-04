@@ -92,8 +92,9 @@ namespace core
     }
 
 
-    int Bignum_O::as_int() const
+    gc::Fixnum Bignum_O::as_int() const
     {_G();
+	IMPLEMENT_MEF(BF("Implement conversion of Bignum to Fixnum"));
 	if ( this->_value.fits_sint_p() )
 	{
 	    return((this->_value.get_si()));

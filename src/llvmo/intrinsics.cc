@@ -284,7 +284,7 @@ extern "C" {
 	int istartRest = startRest;
 	for ( int i=inargs-1; i>=istartRest; i-- )
 	{
-	    result = core::Cons_O::create(core::T_sp(argArray[i]),result);
+	    result = core::Cons_O::create(gc::smart_ptr<core::T_O>((gc::Tagged)argArray[i]),result);
 	}
 	(*restP) = result;
 	ASSERTNOTNULL(*restP);
@@ -443,7 +443,7 @@ extern "C" {
 
         extern void sp_copyTspTptr(core::T_sp* destP, core::T_O** sourceP)
     {_G();
-	*destP = core::T_sp(*sourceP);
+	*destP = gc::smart_ptr<core::T_O>((gc::Tagged)*sourceP);
     }
 
 
@@ -451,9 +451,8 @@ extern "C" {
     {_G();
 	ASSERT(sourceP!=NULL);
 	ASSERT(destP!=NULL);
-	*destP = Values(core::T_sp(*sourceP));
+	*destP = Values(gc::smart_ptr<core::T_O>((gc::Tagged)*sourceP));
     }
-
 
 
 
@@ -556,7 +555,7 @@ extern "C"
     void sp_makeNil(core::T_sp* result)
     {_G();
 	(*result) = _Nil<core::T_O>();
-	printf("%s:%d sp_makeNil nil@%p    cl::_sym_nil@%p\n", __FILE__, __LINE__, (*result).raw_(), cl::_sym_nil.raw_());
+	//	printf("%s:%d sp_makeNil nil@%p    cl::_sym_nil@%p\n", __FILE__, __LINE__, (*result).raw_(), cl::_sym_nil.raw_());
     }
 
     void mv_makeNil(core::T_mv* result)
@@ -804,15 +803,14 @@ extern "C"
     };
 
 
-    void invokeMainFunctions( fnLispCallingConvention fptr[], int* numfunP)
+    void invokeMainFunctions( T_mv* result, fnLispCallingConvention fptr[], int* numfunP)
     {
         int numfun = *numfunP;
 	//        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
-	core::T_mv result;
         for ( int i=0; i<numfun; ++i ) {
 	    //            printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
 	    
-            (fptr[i])(&result,_Nil<core::T_O>().raw_(),LCC_PASS_ARGS0());
+            (fptr[i])(result,_Nil<core::T_O>().raw_(),LCC_PASS_ARGS0());
         }
     }
 
@@ -1858,9 +1856,9 @@ extern "C"
     void kw_ifNotKeywordException(core::T_O** objP)
     {
 	ASSERT(objP!=NULL);
-	if ( !af_keywordP((core::T_sp(*objP))) )
+	if ( !af_keywordP((gc::smart_ptr<core::T_O>((gc::Tagged)*objP))) )
 	{
-            SIMPLE_ERROR(BF("Not keyword %s")% _rep_(gctools::smart_ptr<core::T_O>(*objP)));
+            SIMPLE_ERROR(BF("Not keyword %s")% _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)*objP)));
 //            core::throwUnrecognizedKeywordArgumentError(*objP);
 	}
     }
@@ -1940,7 +1938,7 @@ extern "C"
 	_lisp->invocationHistoryStack().setSourcePosForTop(*sourceFileInfoHandleP,fileOffset,ln,col);
     }
 
-    void trace_setActivationFrameForIHSTop(core::ActivationFrame_sp* afP)
+    void trace_setActivationFrameForIHSTop(core::T_sp* afP)
     {_G();
 	_lisp->invocationHistoryStack().setActivationFrameForTop(*afP);
     }
@@ -1972,7 +1970,12 @@ extern "C"
 extern "C" {
 
     //#define DEBUG_CC
-    
+
+    void cc_setTmvToNil(core::T_mv* sharedP)
+    {
+	*sharedP = Values(_Nil<core::T_O>());
+    }
+
     T_O* cc_precalcSymbol(core::LoadTimeValues_O** tarray, size_t idx)
     {
 	LoadTimeValues_O* array = *tarray;
@@ -2007,16 +2010,17 @@ extern "C" {
 
     void cc_writeCell(core::T_O* cell, core::T_O* val)
     {
-	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
+	//	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
+	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>((gc::Tagged)cell);
 #ifdef DEBUG_CC
 	printf("%s:%d writeCell cell[%p]  val[%p]\n", __FILE__, __LINE__, cell, val);
 #endif
-	c->setCar(gctools::smart_ptr<core::T_O>(val));
+	c->setCar(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
     }
 
     core::T_O* cc_readCell(core::T_O* cell)
     {
-	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
+	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>((gc::Tagged)cell);
 	core::T_sp val = c->ocar();
 #ifdef DEBUG_CC
 	printf("%s:%d readCell cell[%p] --> value[%p]\n", __FILE__, __LINE__, cell, val.px );
@@ -2026,7 +2030,8 @@ extern "C" {
 
     core::T_O* cc_fetch(core::T_O* array, std::size_t idx)
     {
-	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
+	//	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
+	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>((gc::Tagged)array);
 #ifdef DEBUG_CC
 	printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*a)[idx].raw_());
 #endif
@@ -2035,7 +2040,8 @@ extern "C" {
 
     T_O* cc_fdefinition(core::T_O* sym)
     {
-	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	//	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
 	if (!s->fboundp()) SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
 	core::Function_sp fn = core::af_symbolFunction(s);
 	return &(*fn);
@@ -2043,7 +2049,8 @@ extern "C" {
 
     T_O* cc_getSetfFdefinition(core::T_O* sym)
     {
-	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	//	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
 	if (!s->setf_fboundp()) SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
 	core::Function_sp fn = s->getSetfFdefinition();//_lisp->get_setfDefinition(s);
 	return &(*fn);
@@ -2053,7 +2060,8 @@ extern "C" {
     
     T_O* cc_symbolValue(core::T_O* sym)
     {
-	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	//	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
 	core::T_sp v = core::af_symbolValue(s);
 	return &(*v);
     }
@@ -2062,14 +2070,16 @@ extern "C" {
 #define CATCH_cc_setSymbolValue false
     void cc_setSymbolValue(core::T_O* sym, core::T_O* val)
     {
-	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	//	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
 	s->setf_symbolValue(gctools::smart_ptr<core::T_O>(val));
     }
 
 
     void cc_call(core::T_mv* result, core::T_O* tfunc, LCC_ARGS_BASE)
     {
-	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	//	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	core::Function_O* func = gc::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(gc::untag_other<core::T_O>(tfunc));
 	ASSERT(func!=NULL);
 	auto closure = func->closure.as<core::Closure>();
 	closure->invoke(result,LCC_PASS_ARGS);
@@ -2077,7 +2087,8 @@ extern "C" {
 
     void cc_invoke(core::T_mv* result, core::T_O* tfunc, LCC_ARGS_BASE)
     {
-	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	//	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	core::Function_O* func = gc::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(gc::untag_other<core::T_O>(tfunc));
 	ASSERT(func!=NULL);
 	auto closure = func->closure;
 	closure->invoke(result,LCC_PASS_ARGS);
@@ -2089,7 +2100,7 @@ extern "C" {
 
     core::T_O* cc_enclose(core::T_O* lambdaName, fnLispCallingConvention llvm_func, std::size_t numCells, ... )
     {
-	core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>(lambdaName);
+	core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
 	core::ValueFrame_sp vo = core::ValueFrame_O::create(numCells,_Nil<core::T_O>());
 	core::T_O* p;
         va_list argp;
@@ -2130,10 +2141,12 @@ extern "C" {
     /*! Take the multiple-value inputs from the thread local MultipleValues and call tfunc with them.
      This function looks exactly like the cc_invoke_multipleValueOneFormCall intrinsic but
     in cmpintrinsics.lsp it is set not to require a landing pad */
+    //    void cc_call_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
     void cc_call_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
     {
 	core::MultipleValues& mvThreadLocal = core::lisp_multipleValues();
-	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	//	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(gc::untag_other<core::T_O>(tfunc));
 	ASSERT(func!=NULL);
 	auto closure = func->closure;
 	closure->invoke(result,result->number_of_values(),result->raw_(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
@@ -2146,7 +2159,7 @@ extern "C" {
     void cc_invoke_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
     {
 	core::MultipleValues& mvThreadLocal = core::lisp_multipleValues();
-	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(gc::untag_other<core::T_O>(tfunc));
 	ASSERT(func!=NULL);
 	auto closure = func->closure;
 	closure->invoke(result,result->number_of_values(),result->raw_(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);

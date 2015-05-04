@@ -18,8 +18,8 @@
       t)
 
 
-(fset '1- #'(lambda (num) (declare (function-name 1-)) (- num 1)))
-(fset '1+ #'(lambda (num) (declare (function-name 1+)) (+ num 1)))
+(fset '1- #'(lambda (num) (declare (core::lambda-name 1-)) (- num 1)))
+(fset '1+ #'(lambda (num) (declare (core::lambda-name 1+)) (+ num 1)))
 
 
 

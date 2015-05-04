@@ -82,7 +82,7 @@ namespace core
 
     bool ActivationFrame_O::_findTag(Symbol_sp sym, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv ) const
     {_G();
-	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+	T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
         ++depth;
 	return clasp_findTag(parent,sym,depth,index,interFunction,tagbodyEnv);
     }
@@ -91,7 +91,7 @@ namespace core
 
     bool ActivationFrame_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind,T_sp& value) const
     {_G();
-	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+	T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	++depth;
 	return clasp_findValue(parent,sym,depth,index,valueKind,value);
     }
@@ -99,7 +99,7 @@ namespace core
 
     bool ActivationFrame_O::_findFunction(T_sp functionName, int& depth, int& index, Function_sp& func) const
     {
-	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+	T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	++depth;
 	return clasp_findFunction(parent,functionName,depth,index,func);
     }
@@ -367,7 +367,7 @@ namespace core
 	    {
 		index = i;
 		value = this->_Objects[i];
-		valueKind = heapValue;
+		valueKind = lexicalValue;
 		return true;
 	    }
 	}

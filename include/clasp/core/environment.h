@@ -58,7 +58,7 @@ namespace core
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,Environment_O,"Environment");
     public:
-	typedef enum { undeterminedValue, specialValue, stackValue, heapValue } ValueKind;
+	typedef enum { undeterminedValue, specialValue, /*stackValue,*/ lexicalValue } ValueKind;
     protected:
 	uint		_EnvId;
     public:

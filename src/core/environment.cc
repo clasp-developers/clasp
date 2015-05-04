@@ -833,10 +833,12 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	if ( this->findValue(sym,depth,index,valueKind,value) )
 	{
 	    switch (valueKind) {
-	    case heapValue:
-		return Cons_O::createList(ext::_sym_heapVar,sym,Fixnum_O::create(depth),Fixnum_O::create(index));
+	    case lexicalValue:
+		return Cons_O::createList(ext::_sym_lexicalVar,sym,Fixnum_O::create(depth),Fixnum_O::create(index));
+#if 0
 	    case stackValue:
 		return Cons_O::createList(ext::_sym_stackVar,sym,value);
+#endif
 	    case specialValue:
 		return Cons_O::create(ext::_sym_specialVar,sym);
 	    default:
@@ -1339,7 +1341,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	    valueKind = specialValue;
 	    return true;   // This was returning false for special values
 	}
-	valueKind = heapValue;
+	valueKind = lexicalValue;
 	LOG(BF(" Found binding %s")% fi->second );
 	value = this->_ActivationFrame->entry(index);
 	return true;
@@ -1408,7 +1410,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	for ( auto cur : classifiedSymbols ) {
 	    List_sp classifiedSymbol = coerce_to_list(oCar(cur));
 	    Symbol_sp classification = oCar(classifiedSymbol).as<Symbol_O>();
-	    if ( classification == ext::_sym_heapVar )
+	    if ( classification == ext::_sym_lexicalVar )
 	    {
 		++numberOfLexicals;
 	    } else if ( classification == ext::_sym_specialVar )
@@ -2401,6 +2403,8 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     bool StackValueEnvironment_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const
     {_G();
+	DEPRECIATED();
+#if 0
 	LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym) );
 	value = this->_Values->find(sym);
 	if ( value.nilp() ) {
@@ -2408,6 +2412,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	}
 	LOG(BF(" Found binding %s")% fi->second );
 	valueKind = stackValue;
+#endif
 	return true;
     }
 

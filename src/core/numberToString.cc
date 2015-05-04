@@ -123,18 +123,18 @@ namespace core {
 	}
 	if ( integer.isA<Fixnum_O>() ) {
 	    char txt[64];
-	    int fn = integer.as<Fixnum_O>()->get();
+	    gc::Fixnum fn = integer.as<Fixnum_O>()->get();
 	    switch (base->get()) {
 	    case 8:
-		sprintf(txt,"%o",fn);
+		sprintf(txt,"%lo",fn);
 		buffer->pushString(txt);
 		break;
 	    case 10:
-		sprintf(txt,"%d",fn);
+		sprintf(txt,"%ld",fn);
 		buffer->pushString(txt);
 		break;
 	    case 16:
-		sprintf(txt,"%X",fn);
+		sprintf(txt,"%lX",fn);
 		buffer->pushString(txt);
 		break;
 	    default:

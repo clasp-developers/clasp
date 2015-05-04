@@ -199,6 +199,11 @@ namespace gctools {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==other_tag);
 	return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(ptr)-other_tag);
     }
+#if 0
+    template <> inline core::T_O* untag_other<Tagged>(Tagged v) {
+	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==other_tag);
+	return reinterpret_cast<core::
+#endif
     template <class T> inline core::T_O** untag_frame(T* ptr) {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==frame_tag);
 	return reinterpret_cast<core::T_O**>(reinterpret_cast<uintptr_t>(ptr)-frame_tag);
@@ -776,6 +781,9 @@ namespace gctools {
 		if ( cast == NULL ) return smart_ptr<o_class>();
 		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
 		return ret;
+	    } else if (this->framep() || this->fixnump() || this->characterp() || this->single_floatp()) {
+		smart_ptr<o_class> ret((Tagged)this->theObject);
+		return ret;
 	    }
             class_id expected_typ = reg::registered_class<o_class>::id;
 	    lisp_errorBadCastFromT_O(expected_typ,this->theObject);
@@ -797,7 +805,11 @@ namespace gctools {
 		if ( cast == NULL ) return smart_ptr<o_class>();
 		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
 		return ret;
+	    } else if (this->framep() || this->fixnump() || this->characterp() || this->single_floatp()) {
+		smart_ptr<o_class> ret((Tagged)this->theObject);
+		return ret;
 	    }
+		
             class_id expected_typ = reg::registered_class<o_class>::id;
 	    lisp_errorBadCastFromT_O(expected_typ,this->theObject);
 	    // unreachable
@@ -1733,16 +1745,9 @@ namespace gctools {
 	List_sp_iterator() : ptr((Tagged)tag_nil<core::Cons_O>(),false) {}
 	List_sp_iterator(const List_sp& ptr) : ptr(ptr.asCons()) {};
 		List_sp_iterator &operator++() {
-			GCTOOLS_ASSERT(ptr.consp());
+			GCTOOLS_ASSERT(this->consp());
 			core::T_O* rawcdr = cons_cdr(&*ptr).raw_();
 			ptr.rawRef_() = reinterpret_cast<core::Cons_O*>(rawcdr);
-
-#if 0
-			// SAL9000's original operator++;
-			ptr = smart_ptr<core::Cons_O>((Tagged)cons_cdr(&*ptr).raw_());//.as<core::Cons_O>();
-#endif
-			// GCTOOLS_ASSERT(tagged_consp<Type>(ptr));
-			// this->ptr = cons_cdr(untag_cons<core::Cons_O>(reinterpret_cast<core::Cons_O*>(ptr)));
 			return *this;
 		}
 		List_sp_iterator &operator++(int) { // postfix
@@ -1750,6 +1755,7 @@ namespace gctools {
 			++*this;
 			return *clone;
 		}
+		bool consp() const { return tagged_consp(ptr.raw_()); };
 		smart_ptr<core::Cons_O> *operator->() { return &ptr; }
 		const smart_ptr<core::Cons_O> *operator->() const { return &ptr; }
 		const smart_ptr<core::Cons_O> &operator*() const { return ptr; }
@@ -1783,9 +1789,9 @@ namespace gctools {
 		    fast_iterator_proxy(const List_sp& ptr) : ptr(ptr) {}
 		    fast_iterator begin() {
 			    if (ptr.consp())
-				    return fast_iterator(ptr);
+				return fast_iterator(ptr);
 			    else
-				    return fast_iterator();}
+				return fast_iterator();}
 		    fast_iterator end() { return fast_iterator(); }
 
 		    fast_iterator const begin() const {

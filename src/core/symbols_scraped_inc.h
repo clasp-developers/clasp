@@ -27,7 +27,7 @@
 // SYMBOL_TABLE_ENTRY        ClPkg   24 file_string_length             FILE-STRING-LENGTH             export ; cName=_sym_file_string_length lispName=FILE-STRING-LENGTH
 // SYMBOL_TABLE_ENTRY   KeywordPkg   25 internal                       INTERNAL                       export ; cName=_sym_internal lispName=INTERNAL
 // SYMBOL_TABLE_ENTRY      CorePkg   26 reader_read_double_quote_string READER-READ-DOUBLE-QUOTE-STRING private ; cName=_sym_reader_read_double_quote_string lispName=READER-READ-DOUBLE-QUOTE-STRING
-// SYMBOL_TABLE_ENTRY       ExtPkg   27 heapVar                        HEAP-VAR                       export ; cName=_sym_heapVar lispName=HEAP-VAR
+// SYMBOL_TABLE_ENTRY        ClPkg   27 float                          FLOAT                          export ; cName=_sym_float lispName=FLOAT
 // SYMBOL_TABLE_ENTRY        ClPkg   28 gentemp                        GENTEMP                        export ; cName=_sym_gentemp lispName=GENTEMP
 // SYMBOL_TABLE_ENTRY        ClPkg   29 conjugate                      CONJUGATE                      export ; cName=_sym_conjugate lispName=CONJUGATE
 // SYMBOL_TABLE_ENTRY      CorePkg   30 STARdebugInterpretedClosureSTAR *DEBUG-INTERPRETED-CLOSURE*    export ; cName=_sym_STARdebugInterpretedClosureSTAR lispName=*DEBUG-INTERPRETED-CLOSURE*
@@ -148,7 +148,7 @@
 // SYMBOL_TABLE_ENTRY   KeywordPkg  145 blockFrame                     BLOCK-FRAME                    export ; cName=_sym_blockFrame lispName=BLOCK-FRAME
 // SYMBOL_TABLE_ENTRY   KeywordPkg  146 non_terminating_macro_character NON-TERMINATING-MACRO-CHARACTER export ; cName=_sym_non_terminating_macro_character lispName=NON-TERMINATING-MACRO-CHARACTER
 // SYMBOL_TABLE_ENTRY   KeywordPkg  147 allow_other_keys               ALLOW-OTHER-KEYS               export ; cName=_sym_allow_other_keys lispName=ALLOW-OTHER-KEYS
-// SYMBOL_TABLE_ENTRY        ClPkg  148 float                          FLOAT                          export ; cName=_sym_float lispName=FLOAT
+// SYMBOL_TABLE_ENTRY   KeywordPkg  148 end                            END                            export ; cName=_sym_end lispName=END
 // SYMBOL_TABLE_ENTRY      CorePkg  149 float_to_digits                FLOAT-TO-DIGITS                export ; cName=_sym_float_to_digits lispName=FLOAT-TO-DIGITS
 // SYMBOL_TABLE_ENTRY        ClPkg  150 fileStream                     FILE-STREAM                    export ; cName=_sym_fileStream lispName=FILE-STREAM
 // SYMBOL_TABLE_ENTRY        ClPkg  151 makePackage                    MAKE-PACKAGE                   export ; cName=_sym_makePackage lispName=MAKE-PACKAGE
@@ -1202,22 +1202,22 @@
 // SYMBOL_TABLE_ENTRY      CorePkg 1199 parse_macro                    PARSE-MACRO                    private ; cName=_sym_parse_macro lispName=PARSE-MACRO
 // SYMBOL_TABLE_ENTRY        ClPkg 1200 STARprint_caseSTAR             *PRINT-CASE*                   export ; cName=_sym_STARprint_caseSTAR lispName=*PRINT-CASE*
 // SYMBOL_TABLE_ENTRY      CorePkg 1201 dlopen                         DLOPEN                         private ; cName=_sym_dlopen lispName=DLOPEN
-// SYMBOL_TABLE_ENTRY        ClPkg 1202 char_name                      CHAR-NAME                      export ; cName=_sym_char_name lispName=CHAR-NAME
-// SYMBOL_TABLE_ENTRY        ClPkg 1203 stringRightTrim                STRING-RIGHT-TRIM              export ; cName=_sym_stringRightTrim lispName=STRING-RIGHT-TRIM
-// SYMBOL_TABLE_ENTRY        ClPkg 1204 string_NE_                     STRING/=                       export ; cName=_sym_string_NE_ lispName=STRING/=
-// SYMBOL_TABLE_ENTRY        ClPkg 1205 pi                             PI                             export ; cName=_sym_pi lispName=PI
-// SYMBOL_TABLE_ENTRY      CorePkg 1206 sharp_r                        SHARP-R                        private ; cName=_sym_sharp_r lispName=SHARP-R
-// SYMBOL_TABLE_ENTRY      CorePkg 1207 HashTableEqualp_O              HASH-TABLE-EQUALP              export ; cName=_sym_HashTableEqualp_O lispName=HASH-TABLE-EQUALP
-// SYMBOL_TABLE_ENTRY        ClPkg 1208 numberp                        NUMBERP                        export ; cName=_sym_numberp lispName=NUMBERP
-// SYMBOL_TABLE_ENTRY      CorePkg 1209 STARserializerArchiveSTAR      *SERIALIZER-ARCHIVE*           export ; cName=_sym_STARserializerArchiveSTAR lispName=*SERIALIZER-ARCHIVE*
-// SYMBOL_TABLE_ENTRY      CorePkg 1210 ActivationFrame_O              ACTIVATION-FRAME               export ; cName=_sym_ActivationFrame_O lispName=ACTIVATION-FRAME
-// SYMBOL_TABLE_ENTRY      CorePkg 1211 monitorReader                  MONITOR-READER                 private ; cName=_sym_monitorReader lispName=MONITOR-READER
-// SYMBOL_TABLE_ENTRY      CorePkg 1212 preserve_whitespace            PRESERVE-WHITESPACE            private ; cName=_sym_preserve_whitespace lispName=PRESERVE-WHITESPACE
-// SYMBOL_TABLE_ENTRY      CorePkg 1213 STARnestedErrorDepthSTAR       *NESTED-ERROR-DEPTH*           private ; cName=_sym_STARnestedErrorDepthSTAR lispName=*NESTED-ERROR-DEPTH*
-// SYMBOL_TABLE_ENTRY      CorePkg 1214 STARpollTicksPerGcSTAR         *POLL-TICKS-PER-GC*            export ; cName=_sym_STARpollTicksPerGcSTAR lispName=*POLL-TICKS-PER-GC*
-// SYMBOL_TABLE_ENTRY        ClPkg 1215 bit_vector_p                   BIT-VECTOR-P                   export ; cName=_sym_bit_vector_p lispName=BIT-VECTOR-P
-// SYMBOL_TABLE_ENTRY        ClPkg 1216 nbutlast                       NBUTLAST                       export ; cName=_sym_nbutlast lispName=NBUTLAST
-// SYMBOL_TABLE_ENTRY   KeywordPkg 1217 end                            END                            export ; cName=_sym_end lispName=END
+// SYMBOL_TABLE_ENTRY       ExtPkg 1202 lexicalVar                     LEXICAL-VAR                    export ; cName=_sym_lexicalVar lispName=LEXICAL-VAR
+// SYMBOL_TABLE_ENTRY        ClPkg 1203 char_name                      CHAR-NAME                      export ; cName=_sym_char_name lispName=CHAR-NAME
+// SYMBOL_TABLE_ENTRY        ClPkg 1204 stringRightTrim                STRING-RIGHT-TRIM              export ; cName=_sym_stringRightTrim lispName=STRING-RIGHT-TRIM
+// SYMBOL_TABLE_ENTRY        ClPkg 1205 string_NE_                     STRING/=                       export ; cName=_sym_string_NE_ lispName=STRING/=
+// SYMBOL_TABLE_ENTRY        ClPkg 1206 pi                             PI                             export ; cName=_sym_pi lispName=PI
+// SYMBOL_TABLE_ENTRY      CorePkg 1207 sharp_r                        SHARP-R                        private ; cName=_sym_sharp_r lispName=SHARP-R
+// SYMBOL_TABLE_ENTRY      CorePkg 1208 HashTableEqualp_O              HASH-TABLE-EQUALP              export ; cName=_sym_HashTableEqualp_O lispName=HASH-TABLE-EQUALP
+// SYMBOL_TABLE_ENTRY        ClPkg 1209 numberp                        NUMBERP                        export ; cName=_sym_numberp lispName=NUMBERP
+// SYMBOL_TABLE_ENTRY      CorePkg 1210 STARserializerArchiveSTAR      *SERIALIZER-ARCHIVE*           export ; cName=_sym_STARserializerArchiveSTAR lispName=*SERIALIZER-ARCHIVE*
+// SYMBOL_TABLE_ENTRY      CorePkg 1211 ActivationFrame_O              ACTIVATION-FRAME               export ; cName=_sym_ActivationFrame_O lispName=ACTIVATION-FRAME
+// SYMBOL_TABLE_ENTRY      CorePkg 1212 monitorReader                  MONITOR-READER                 private ; cName=_sym_monitorReader lispName=MONITOR-READER
+// SYMBOL_TABLE_ENTRY      CorePkg 1213 preserve_whitespace            PRESERVE-WHITESPACE            private ; cName=_sym_preserve_whitespace lispName=PRESERVE-WHITESPACE
+// SYMBOL_TABLE_ENTRY      CorePkg 1214 STARnestedErrorDepthSTAR       *NESTED-ERROR-DEPTH*           private ; cName=_sym_STARnestedErrorDepthSTAR lispName=*NESTED-ERROR-DEPTH*
+// SYMBOL_TABLE_ENTRY      CorePkg 1215 STARpollTicksPerGcSTAR         *POLL-TICKS-PER-GC*            export ; cName=_sym_STARpollTicksPerGcSTAR lispName=*POLL-TICKS-PER-GC*
+// SYMBOL_TABLE_ENTRY        ClPkg 1216 bit_vector_p                   BIT-VECTOR-P                   export ; cName=_sym_bit_vector_p lispName=BIT-VECTOR-P
+// SYMBOL_TABLE_ENTRY        ClPkg 1217 nbutlast                       NBUTLAST                       export ; cName=_sym_nbutlast lispName=NBUTLAST
 // SYMBOL_TABLE_ENTRY      CorePkg 1218 SourceManager_O                SOURCE-MANAGER                 export ; cName=_sym_SourceManager_O lispName=SOURCE-MANAGER
 // SYMBOL_TABLE_ENTRY        ClPkg 1219 logorc1                        LOGORC1                        export ; cName=_sym_logorc1 lispName=LOGORC1
 // SYMBOL_TABLE_ENTRY        ClPkg 1220 multipleValueSetq              MULTIPLE-VALUE-SETQ            export ; cName=_sym_multipleValueSetq lispName=MULTIPLE-VALUE-SETQ
@@ -1327,6 +1327,7 @@ DO_SYMBOL(_sym_boole_clr,19,ClPkg,"BOOLE-CLR",true);
 DO_SYMBOL(_sym_imagpart,20,ClPkg,"IMAGPART",true);
 DO_SYMBOL(_sym_hostNamestring,21,ClPkg,"HOST-NAMESTRING",true);
 DO_SYMBOL(_sym_file_string_length,24,ClPkg,"FILE-STRING-LENGTH",true);
+DO_SYMBOL(_sym_float,27,ClPkg,"FLOAT",true);
 DO_SYMBOL(_sym_gentemp,28,ClPkg,"GENTEMP",true);
 DO_SYMBOL(_sym_conjugate,29,ClPkg,"CONJUGATE",true);
 DO_SYMBOL(_sym_streamError,31,ClPkg,"STREAM-ERROR",true);
@@ -1376,7 +1377,6 @@ DO_SYMBOL(_sym_Complex_O,140,ClPkg,"COMPLEX",true);
 DO_SYMBOL(_sym_lcm,141,ClPkg,"LCM",true);
 DO_SYMBOL(_sym_simple_bit_vector_p,142,ClPkg,"SIMPLE-BIT-VECTOR-P",true);
 DO_SYMBOL(_sym_atom,143,ClPkg,"ATOM",true);
-DO_SYMBOL(_sym_float,148,ClPkg,"FLOAT",true);
 DO_SYMBOL(_sym_fileStream,150,ClPkg,"FILE-STREAM",true);
 DO_SYMBOL(_sym_makePackage,151,ClPkg,"MAKE-PACKAGE",true);
 DO_SYMBOL(_sym_string_not_greaterp,152,ClPkg,"STRING-NOT-GREATERP",true);
@@ -1864,13 +1864,13 @@ DO_SYMBOL(_sym_safety,1195,ClPkg,"SAFETY",true);
 DO_SYMBOL(_sym_probe_file,1196,ClPkg,"PROBE-FILE",true);
 DO_SYMBOL(_sym_pathnameType,1198,ClPkg,"PATHNAME-TYPE",true);
 DO_SYMBOL(_sym_STARprint_caseSTAR,1200,ClPkg,"*PRINT-CASE*",true);
-DO_SYMBOL(_sym_char_name,1202,ClPkg,"CHAR-NAME",true);
-DO_SYMBOL(_sym_stringRightTrim,1203,ClPkg,"STRING-RIGHT-TRIM",true);
-DO_SYMBOL(_sym_string_NE_,1204,ClPkg,"STRING/=",true);
-DO_SYMBOL(_sym_pi,1205,ClPkg,"PI",true);
-DO_SYMBOL(_sym_numberp,1208,ClPkg,"NUMBERP",true);
-DO_SYMBOL(_sym_bit_vector_p,1215,ClPkg,"BIT-VECTOR-P",true);
-DO_SYMBOL(_sym_nbutlast,1216,ClPkg,"NBUTLAST",true);
+DO_SYMBOL(_sym_char_name,1203,ClPkg,"CHAR-NAME",true);
+DO_SYMBOL(_sym_stringRightTrim,1204,ClPkg,"STRING-RIGHT-TRIM",true);
+DO_SYMBOL(_sym_string_NE_,1205,ClPkg,"STRING/=",true);
+DO_SYMBOL(_sym_pi,1206,ClPkg,"PI",true);
+DO_SYMBOL(_sym_numberp,1209,ClPkg,"NUMBERP",true);
+DO_SYMBOL(_sym_bit_vector_p,1216,ClPkg,"BIT-VECTOR-P",true);
+DO_SYMBOL(_sym_nbutlast,1217,ClPkg,"NBUTLAST",true);
 DO_SYMBOL(_sym_logorc1,1219,ClPkg,"LOGORC1",true);
 DO_SYMBOL(_sym_multipleValueSetq,1220,ClPkg,"MULTIPLE-VALUE-SETQ",true);
 DO_SYMBOL(_sym_nreconc,1222,ClPkg,"NRECONC",true);
@@ -2376,14 +2376,14 @@ DO_SYMBOL(_sym_STARprint_structureSTAR,1194,CorePkg,"*PRINT-STRUCTURE*",true);
 DO_SYMBOL(_sym_SingleDispatchGenericFunction_O,1197,CorePkg,"SINGLE-DISPATCH-GENERIC-FUNCTION",true);
 DO_SYMBOL(_sym_parse_macro,1199,CorePkg,"PARSE-MACRO",false);
 DO_SYMBOL(_sym_dlopen,1201,CorePkg,"DLOPEN",false);
-DO_SYMBOL(_sym_sharp_r,1206,CorePkg,"SHARP-R",false);
-DO_SYMBOL(_sym_HashTableEqualp_O,1207,CorePkg,"HASH-TABLE-EQUALP",true);
-DO_SYMBOL(_sym_STARserializerArchiveSTAR,1209,CorePkg,"*SERIALIZER-ARCHIVE*",true);
-DO_SYMBOL(_sym_ActivationFrame_O,1210,CorePkg,"ACTIVATION-FRAME",true);
-DO_SYMBOL(_sym_monitorReader,1211,CorePkg,"MONITOR-READER",false);
-DO_SYMBOL(_sym_preserve_whitespace,1212,CorePkg,"PRESERVE-WHITESPACE",false);
-DO_SYMBOL(_sym_STARnestedErrorDepthSTAR,1213,CorePkg,"*NESTED-ERROR-DEPTH*",false);
-DO_SYMBOL(_sym_STARpollTicksPerGcSTAR,1214,CorePkg,"*POLL-TICKS-PER-GC*",true);
+DO_SYMBOL(_sym_sharp_r,1207,CorePkg,"SHARP-R",false);
+DO_SYMBOL(_sym_HashTableEqualp_O,1208,CorePkg,"HASH-TABLE-EQUALP",true);
+DO_SYMBOL(_sym_STARserializerArchiveSTAR,1210,CorePkg,"*SERIALIZER-ARCHIVE*",true);
+DO_SYMBOL(_sym_ActivationFrame_O,1211,CorePkg,"ACTIVATION-FRAME",true);
+DO_SYMBOL(_sym_monitorReader,1212,CorePkg,"MONITOR-READER",false);
+DO_SYMBOL(_sym_preserve_whitespace,1213,CorePkg,"PRESERVE-WHITESPACE",false);
+DO_SYMBOL(_sym_STARnestedErrorDepthSTAR,1214,CorePkg,"*NESTED-ERROR-DEPTH*",false);
+DO_SYMBOL(_sym_STARpollTicksPerGcSTAR,1215,CorePkg,"*POLL-TICKS-PER-GC*",true);
 DO_SYMBOL(_sym_SourceManager_O,1218,CorePkg,"SOURCE-MANAGER",true);
 DO_SYMBOL(_sym_STARimplicit_compile_hookSTAR,1221,CorePkg,"*IMPLICIT-COMPILE-HOOK*",true);
 DO_SYMBOL(_sym_sharp_s,1228,CorePkg,"SHARP-S",false);
@@ -2416,7 +2416,6 @@ DO_SYMBOL(_sym_macroFunction,800,CleavirEnvPkg,"MACRO-FUNCTION",true);
 DO_SYMBOL(_sym_symbolMacroExpansion,1281,CleavirEnvPkg,"SYMBOL-MACRO-EXPANSION",true);
 #endif
 #ifdef ExtPkg_SYMBOLS
-DO_SYMBOL(_sym_heapVar,27,ExtPkg,"HEAP-VAR",true);
 DO_SYMBOL(_sym_getenv,66,ExtPkg,"GETENV",true);
 DO_SYMBOL(_sym_setenv,112,ExtPkg,"SETENV",true);
 DO_SYMBOL(_sym_STARloadHooksSTAR,332,ExtPkg,"*LOAD-HOOKS*",true);
@@ -2435,6 +2434,7 @@ DO_SYMBOL(_sym_getEnv,1081,ExtPkg,"GET-ENV",true);
 DO_SYMBOL(_sym_compiledFunctionName,1117,ExtPkg,"COMPILED-FUNCTION-NAME",true);
 DO_SYMBOL(_sym__PLUS_processStandardInput_PLUS_,1130,ExtPkg,"+PROCESS-STANDARD-INPUT+",true);
 DO_SYMBOL(_sym_STARinspectorHookSTAR,1147,ExtPkg,"*INSPECTOR-HOOK*",true);
+DO_SYMBOL(_sym_lexicalVar,1202,ExtPkg,"LEXICAL-VAR",true);
 DO_SYMBOL(_sym_STARdefault_external_formatSTAR,1271,ExtPkg,"*DEFAULT-EXTERNAL-FORMAT*",true);
 DO_SYMBOL(_sym_truly_the,1302,ExtPkg,"TRULY-THE",true);
 #endif
@@ -2516,6 +2516,7 @@ DO_SYMBOL(_sym_version,126,KeywordPkg,"VERSION",true);
 DO_SYMBOL(_sym_blockFrame,145,KeywordPkg,"BLOCK-FRAME",true);
 DO_SYMBOL(_sym_non_terminating_macro_character,146,KeywordPkg,"NON-TERMINATING-MACRO-CHARACTER",true);
 DO_SYMBOL(_sym_allow_other_keys,147,KeywordPkg,"ALLOW-OTHER-KEYS",true);
+DO_SYMBOL(_sym_end,148,KeywordPkg,"END",true);
 DO_SYMBOL(_sym_defaults,161,KeywordPkg,"DEFAULTS",true);
 DO_SYMBOL(_sym_elementType,173,KeywordPkg,"ELEMENT-TYPE",true);
 DO_SYMBOL(_sym_case,185,KeywordPkg,"CASE",true);
@@ -2628,7 +2629,6 @@ DO_SYMBOL(_sym_target_os_darwin,1150,KeywordPkg,"TARGET-OS-DARWIN",true);
 DO_SYMBOL(_sym_stream,1159,KeywordPkg,"STREAM",true);
 DO_SYMBOL(_sym_macro,1173,KeywordPkg,"MACRO",true);
 DO_SYMBOL(_sym_class,1182,KeywordPkg,"CLASS",true);
-DO_SYMBOL(_sym_end,1217,KeywordPkg,"END",true);
 DO_SYMBOL(_sym_multiple_escape_character,1226,KeywordPkg,"MULTIPLE-ESCAPE-CHARACTER",true);
 DO_SYMBOL(_sym_invert,1254,KeywordPkg,"INVERT",true);
 DO_SYMBOL(_sym_unbound,1258,KeywordPkg,"UNBOUND",true);

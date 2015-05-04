@@ -140,10 +140,6 @@ namespace core
 #define DOCS_af_symbolName "symbolName"
     Str_sp af_symbolName(Symbol_sp arg)
     {_G();
-	if ( arg.nilp() )
-	{
-	    return Str_O::create("NIL");
-	}
 	return arg->symbolName();
     }
     
@@ -156,12 +152,9 @@ namespace core
 #define DOCS_af_symbolValue "symbolValue"
     T_sp af_symbolValue(const Symbol_sp arg)
     {_G();
-	if ( arg.nilp() )
+	if ( !arg->boundP() )
 	{
-	    return _Nil<T_O>();
-	} else if ( arg.unboundp() )
-	{
-	    SIMPLE_ERROR(BF("Symbol %s is unbound") % _rep_(arg));
+	    SIMPLE_ERROR(BF("Symbol %s@%p is unbound") % _rep_(arg) % (void*)arg.raw_());
 	}
 	return arg->symbolValue();
     };
@@ -236,7 +229,7 @@ namespace core {
 	ASSERTF(pkg,BF("The package is UNDEFINED"));
 	//	printf("%s:%d finish_setup of symbol: %s:%s\n", __FILE__, __LINE__, pkg->getName().c_str(), this->_Name->get().c_str());
 	this->_HomePackage = pkg;
-	this->_Value = _Nil<T_O>();
+	this->_Value = _Unbound<T_O>();
 	this->_Function = _Unbound<Function_O>();
 	this->_SetfFunction = _Unbound<Function_O>();
 	pkg->add_symbol_to_package(this->symbolName()->get().c_str(),this->sharedThis<Symbol_O>(),exportp);
@@ -459,7 +452,7 @@ namespace core {
 	ASSERTF(this->_Value,BF("NULL symbol-value for %s") % this->_Name->c_str() );
 	if ( this->_Value.unboundp() )
 	{
-	    SIMPLE_ERROR(BF("Unbound symbol-value for %s") % this->_Name->c_str() );
+	    SIMPLE_ERROR(BF("Unbound symbol-value for %s@@%p") % this->_Name->c_str() % this );
 	}
 	return this->_Value;
     }

@@ -124,12 +124,10 @@ namespace core
             bool found = Environment_O::clasp_findValue(env,sym,depth,index,valueKind,value);
 	    if (found) {
 		switch (valueKind) {
-		case Environment_O::heapValue:
+		case Environment_O::lexicalValue:
 		    return value;
 		case Environment_O::specialValue:
 		    return sym->symbolValue();
-		case Environment_O::stackValue:
-		    SIMPLE_ERROR(BF("Interpreter should never return a stackValue for: %s") % _rep_(sym) );
 		default:
 		    // do nothing;
 		    break;
@@ -540,7 +538,7 @@ namespace core
 	}
 
 
-	T_mv sp_heapVar(List_sp args, T_sp env)
+	T_mv sp_lexicalVar(List_sp args, T_sp env)
 	{_G();
 	    int depth = oCadr(args).as<Fixnum_O>()->get();
 	    int index = oCddr(args).as<Fixnum_O>()->get();
@@ -778,7 +776,7 @@ namespace core
 			indices->hash_table_setf_gethash(sym,Fixnum_O::create(idx));
 			++indicesSize;
 		    }
-		    classified << Cons_O::create(ext::_sym_heapVar,
+		    classified << Cons_O::create(ext::_sym_lexicalVar,
 						 Cons_O::create(sym,Fixnum_O::create(idx)));
 		}
 	    }
@@ -852,7 +850,7 @@ namespace core
 	    for ( auto curClassified : classified ) {
 		List_sp classified = oCar(curClassified);
 		Symbol_sp shead = oCar(classified).as<Symbol_O>();
-		if ( shead == ext::_sym_specialVar || shead == ext::_sym_heapVar ) {
+		if ( shead == ext::_sym_specialVar || shead == ext::_sym_lexicalVar ) {
 		    T_sp expr = oCar(curExp);
 		    T_sp result = eval::evaluate(expr,evaluateEnvironment);
 		    //			printf("%s:%d Evaluated %s --> %s\n", __FILE__, __LINE__, _rep_(expr).c_str(), _rep_(result).c_str());
@@ -868,7 +866,7 @@ namespace core
 	    for ( auto curClassified : classified ) {
 		List_sp classified = oCar(curClassified);
 		Symbol_sp shead = oCar(classified).as<Symbol_O>();
-		if ( shead == ext::_sym_specialVar || shead == ext::_sym_heapVar )
+		if ( shead == ext::_sym_specialVar || shead == ext::_sym_lexicalVar )
 		    {
 			if ( valueIndex >= numTemps ) {
 			    SIMPLE_ERROR(BF("Overflow in LET temporary variables only %d available") % numTemps );
@@ -880,7 +878,7 @@ namespace core
 		    {
 			scope.new_special(classified);
 		    }
-		if ( shead == ext::_sym_heapVar )
+		if ( shead == ext::_sym_lexicalVar )
 		    {
 			debuggingInfo->setf_elt(debugInfoIndex,oCadr(classified));
 			debugInfoIndex++;
@@ -930,7 +928,7 @@ namespace core
 	    for ( auto curClassified : classified ) {
 		List_sp classified = oCar(curClassified);
 		Symbol_sp shead = oCar(classified).as<Symbol_O>();
-		if ( shead == ext::_sym_specialVar || shead == ext::_sym_heapVar )
+		if ( shead == ext::_sym_specialVar || shead == ext::_sym_lexicalVar )
 		    {
 			T_sp expr = oCar(curExp);
 			T_sp result = eval::evaluate(expr,evaluateEnvironment);
@@ -940,7 +938,7 @@ namespace core
 		    {
 			scope.new_special(classified);
 		    }
-		if ( shead == ext::_sym_heapVar )
+		if ( shead == ext::_sym_lexicalVar )
 		    {
 			debuggingInfo->setf_elt(debugInfoIndex,oCadr(classified));
 			debugInfoIndex++;
@@ -1995,7 +1993,7 @@ namespace core
 	    frame::ElementType* tailValues(frame::ValuesArray(frameImpl));
 	    int idx=0;
 	    for ( int i(lenFirst); i<nargs; ++i ) {
-		frame->operator[](i) = gctools::smart_ptr<T_O>(tailValues[idx]);
+		frame->operator[](i) = gctools::smart_ptr<T_O>((gc::Tagged)tailValues[idx]);
 		++idx;
 	    }
 	    Function_sp func = coerce::functionDesignator(head);
@@ -2495,7 +2493,7 @@ namespace core
 //			_lisp->error(cond.conditionObject()/*,environment*/);
 		    };// catch (...) {throw;};
                     result = eval::evaluate(expanded,environment);
-		    if ( !result ) goto NULL_RESULT;
+		    ASSERT(!!result);
 		    return(result);
 		}
 		theadFunc = af_interpreter_lookup_function(headSym,environment);
@@ -2515,7 +2513,7 @@ namespace core
 								 _Nil<T_O>()));
 		evaluateIntoActivationFrame(evaluatedArgs,oCdr(form),environment);
 		result = eval::applyToActivationFrame(headFunc,evaluatedArgs);
-		if ( !result ) goto NULL_RESULT;
+		ASSERT(!!result);
 		return(result);
 	    }
 	    {
@@ -2523,8 +2521,6 @@ namespace core
 		ASSERTF(headCons,BF("Illegal head %s - must be a LAMBDA expression") % _rep_(head) );
 		return evaluate_lambdaHead( headCons, form, environment );
 	    }
-	NULL_RESULT:
-	    SIMPLE_ERROR(BF("result was NULL"));
 	}
 
 
@@ -2643,7 +2639,7 @@ namespace core
 	    SYMBOL_EXPORT_SC_(ClPkg,progn);
 	    SYMBOL_EXPORT_SC_(ClPkg,throw);
 	    _lisp->defineSpecialOperator(ExtPkg,"special-var", &sp_specialVar);
-	    _lisp->defineSpecialOperator(ExtPkg,"heap-var", &sp_heapVar);
+	    _lisp->defineSpecialOperator(ExtPkg,"lexical-var", &sp_lexicalVar);
 	    _lisp->defineSpecialOperator(ClPkg,"block", &sp_block);
 	    _lisp->defineSpecialOperator(ClPkg,"catch",&sp_catch);
 	    _lisp->defineSpecialOperator(ClPkg,"eval-when",&sp_eval_when);

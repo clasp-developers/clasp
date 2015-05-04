@@ -203,7 +203,7 @@ namespace core
     SYMBOL_EXPORT_SC_(ExtPkg,STARdefault_external_formatSTAR);
     SYMBOL_EXPORT_SC_(ExtPkg,truly_the);
     SYMBOL_EXPORT_SC_(ExtPkg,specialVar);
-    SYMBOL_EXPORT_SC_(ExtPkg,heapVar);
+    SYMBOL_EXPORT_SC_(ExtPkg,lexicalVar);
     SYMBOL_EXPORT_SC_(ExtPkg,stackVar);
     SYMBOL_EXPORT_SC_(CorePkg,_PLUS_numberOfFixedArguments_PLUS_);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugLoadTimeValuesSTAR);

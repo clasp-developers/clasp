@@ -46,6 +46,8 @@
 		     (irc-low-level-trace)
 		     (cmp-log "About to add invokeLlvmFunctionVoid for ltv-manager-fn\n")
 		     (irc-intrinsic "invokeLlvmFunctionVoid" ltv-manager-fn)
+		     (let ((fn-result (car (llvm-sys:get-argument-list main-fn))))
+		       (irc-intrinsic "cc_setTmvToNil" fn-result))
 		     ))))
     ;;    (cmp-log-dump main-fn)
     (cmp-log "Done compile-main-function")

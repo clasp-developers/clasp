@@ -94,7 +94,7 @@ namespace core
 #define ARGS_af_inheritDefaultAllocator "(class directSuperclasses)"
 #define DECL_af_inheritDefaultAllocator ""
 #define DOCS_af_inheritDefaultAllocator "inheritDefaultAllocator - make this a regular function so that there are no dispatching problems at boot time"
-    void af_inheritDefaultAllocator(Class_sp cl, Cons_sp directSuperclasses)
+    void af_inheritDefaultAllocator(Class_sp cl, T_sp directSuperclasses)
     {_G();
 //        printf("%s:%d In af_inheritDefaultAllocator for class: %s direct-superclasses: %s\n",__FILE__,__LINE__, _rep_(cl).c_str(), _rep_(directSuperclasses).c_str());
         cl->inheritDefaultAllocator(directSuperclasses);

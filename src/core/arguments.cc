@@ -51,7 +51,7 @@ namespace core
 	    return coerce_to_list(Cons_O::create(ext::_sym_specialVar,this->_ArgTarget));
 	} else if ( this->_ArgTargetFrameIndex >= 0 )
 	{
-	    return coerce_to_list(Cons_O::create(ext::_sym_heapVar,Cons_O::create(this->_ArgTarget,Fixnum_O::create(this->_ArgTargetFrameIndex))));
+	    return coerce_to_list(Cons_O::create(ext::_sym_lexicalVar,Cons_O::create(this->_ArgTarget,Fixnum_O::create(this->_ArgTargetFrameIndex))));
 	} else if ( this->_ArgTargetFrameIndex == UNDEFINED_TARGET )
 	{
 	    return((_Nil<List_V>()));
@@ -272,7 +272,7 @@ namespace core
 	    Symbol_sp sym = oCdr(classified).as<Symbol_O>();
 	    this->DynamicScopeManager::pushSpecialVariableAndSet(sym,val);
 	    return;
-	} else if ( type == ext::_sym_heapVar )
+	} else if ( type == ext::_sym_lexicalVar )
 	{
 	    Symbol_sp sym = oCadr(classified).as<Symbol_O>();
 	    int idx = oCddr(classified).as<Fixnum_O>()->get();

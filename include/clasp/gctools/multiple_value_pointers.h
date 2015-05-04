@@ -40,7 +40,7 @@ namespace gctools
 	mutable size_t 	_number_of_values;
     public:
     multiple_values() : smart_ptr<T>(), _number_of_values(0) {};
-    multiple_values(void* p, size_t num) : smart_ptr<T>((T*)p), _number_of_values(num) {};
+    multiple_values(void* p, size_t num) : smart_ptr<T>((gc::Tagged)p), _number_of_values(num) {};
 
     multiple_values(const smart_ptr<T>& v,int num) : smart_ptr<T>(v), _number_of_values(num) {};
 
@@ -90,7 +90,7 @@ namespace gctools
             }
 	    this->_number_of_values = values.size();
 	    this->setRaw_(values[0].raw_());
-	    GCTOOLS_ASSERT(this->valid());
+	    //	    GCTOOLS_ASSERT(this->valid());
 #if 0
 	    if ( this->_number_of_values > 0 ) {
 		// This is wrong!!!! What about tagged values?

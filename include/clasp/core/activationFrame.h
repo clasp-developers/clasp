@@ -94,9 +94,8 @@ namespace core
 	/*! Method for interogating ActivationFrames as Environments */
 	virtual string summaryOfContents() const;
 
-	void setParentFrame(T_O* parent) {
-	    IMPLEMENT_MEF(BF("tagged ptr"));
-	    //	    this->parentFrameRef().px_ref() = parent;
+	inline void setParentFrame(T_O* parent) {
+	    this->parentFrameRef().rawRef_() = parent;
 	}
 	void setParentFrame(T_sp parent) { this->parentFrameRef() = parent;};
 	/*! Return the number of arguments */

@@ -619,7 +619,7 @@ namespace core
 #if 1
 	static int monitorReaderStep = 0;
 	if ( (monitorReaderStep % 1000 ) == 0 && af_member(_sym_monitorReader,_sym_STARdebugMonitorSTAR->symbolValue(),_Nil<T_O>()).notnilp()) {
-	    printf("%s:%d:%s stream %s -> pos = %d\n",__FILE__,__LINE__,__FUNCTION__, _rep_(clasp_filename(sin,false)).c_str(),clasp_file_position(sin).as<Fixnum_O>()->get());
+	    printf("%s:%d:%s stream %s -> pos = %ld\n",__FILE__,__LINE__,__FUNCTION__, _rep_(clasp_filename(sin,false)).c_str(),clasp_file_position(sin).as<Fixnum_O>()->get());
 	}
 	++monitorReaderStep;
 #endif

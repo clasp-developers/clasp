@@ -490,7 +490,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun gather-lexical-variable-names (classified-symbols)
   (error "This may now be redundant given LambdaListHandler_O::namesOfAllLexicalVariables")
   (let (result)
-    (mapc #'(lambda (x) (if (eq (car x) 'ext:heap-var)
+    (mapc #'(lambda (x) (if (eq (car x) 'ext:lexical-var)
 			    (setq result (cons (cadr x) result))))
 	  classified-symbols)
     (let ((rev-res (nreverse result)))

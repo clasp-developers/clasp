@@ -1433,16 +1433,20 @@ List_sp af_append(List_sp lists)
 {_G();
     ql::list list;
     LOG(BF("Carrying out append with arguments: %s") % _rep_(lists) );
-    List_sp appendArg = lists;
-    for ( auto appendArg : lists ) {
-	List_sp oneList = oCar(appendArg);
-	for ( auto element : oneList ) {
-	    list << oCar(element);
+    auto it = lists.begin();
+    auto end = lists.end();
+    auto curit = it;
+    while ( it != end ) {
+	curit = it;
+	it++;
+	if ( it == end ) break;
+	for ( auto inner : (List_sp)oCar(*curit) ) {
+	    list << oCar(inner);
 	}
     }
     /* Now append the last argument by setting the new lists last element cdr
        to the last argument of append */
-    return(list.dot(oCar(appendArg)).cons());
+    return(list.dot(oCar(*curit)).cons());
 }
 
 

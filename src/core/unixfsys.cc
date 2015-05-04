@@ -845,7 +845,7 @@ Pathname_sp brcl_homedir_pathname(T_sp tuser)
 #if defined(ECL_MS_WINDOWS_HOST)
     const char *d;
 #endif
-    if (Str_sp user = tuser.as<Str_O>() ) {
+    if (Str_sp user = tuser.asOrNull<Str_O>() ) {
 #ifdef HAVE_PWD_H
 	struct passwd *pwent = NULL;
 #endif

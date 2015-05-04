@@ -930,12 +930,11 @@ namespace core
 #define DOCS_af__MINUS_ "See CLHS: +"
     T_mv af__MINUS_(Number_sp num, List_sp numbers)
     {_G();
-	if ( numbers.nilp() )
-	{
+	if ( numbers.nilp() ) {
 	    return(Values(num->negate()));
 	}
 	Number_sp result = num;
-	for ( auto cur : (List_sp)oCdr(numbers) ) {
+	for ( auto cur : (List_sp)(numbers) ) {
 	    result = contagen_sub(result, oCar(cur).as<Number_O>());
 	}
 	return(Values(result));
@@ -1427,7 +1426,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	Number_sp b;
         for ( auto cur : (List_sp)oCdr(args) ) {
             b = oCar(cur).as<Number_O>();
-            if ( basic_equalp(a,b)==0 ) return _Nil<T_O>();
+            if ( basic_equalp(a,b) ) return _Nil<T_O>();
         }
 	return _lisp->_true();
     }
@@ -1898,7 +1897,12 @@ namespace core {
     }
 
 
-    int Fixnum_O::as_int() const
+    gc::Fixnum Fixnum_O::as_int() const
+    {
+	return this->_Value;
+    }
+
+    uint Fixnum_O::as_uint() const
     {
 	return this->_Value;
     }
@@ -1935,7 +1939,7 @@ namespace core {
 
     int Fixnum_O::number_of_bits()
     {
-	int num = sizeof(gctools::Fixnum)*sizeof(unsigned char)*8;
+	int num = gc::fixnum_bits;
 	return num;
     }
 

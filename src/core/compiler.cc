@@ -62,7 +62,7 @@ namespace core
 
 
 
-    typedef void (*InitFnPtr)();
+    typedef void (*InitFnPtr)(LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS_BASE );
 
 
 
@@ -202,7 +202,8 @@ namespace core
 	    SIMPLE_ERROR(BF("Could not find initialization function %s") % mainName );
 	}
 	//	printf("%s:%d Found initialization function %s at address %p\n", __FILE__, __LINE__, mainName.c_str(), mainFunctionPointer);
-	(*mainFunctionPointer)();
+	T_mv result;
+	(*mainFunctionPointer)(&result,NULL,LCC_PASS_ARGS0());
 	return(Values(Pointer_O::create(handle),_Nil<T_O>()));
     };
 
@@ -342,7 +343,8 @@ namespace core
     void core_callDlMainFunction(Pointer_sp addr)
     {
 	InitFnPtr mainFunctionPointer = (InitFnPtr)addr->ptr();
-	(*mainFunctionPointer)();
+	T_mv result;
+	(*mainFunctionPointer)(&result,NULL,LCC_PASS_ARGS0());
     }
 
 

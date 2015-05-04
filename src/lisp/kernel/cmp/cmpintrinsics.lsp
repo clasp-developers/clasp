@@ -317,7 +317,8 @@ Boehm and MPS use a single pointer"
                        (boot-functions-size (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t))
                        (bc-bf (llvm-sys:create-bit-cast *irbuilder* boot-functions +fn-prototype**+ "fnptr-pointer"))
                        )
-                  (irc-intrinsic "invokeMainFunctions" bc-bf boot-functions-size)))))
+		  (let* ((fn-result (car (llvm-sys:get-argument-list *current-function*))))
+		    (irc-intrinsic "invokeMainFunctions" fn-result bc-bf boot-functions-size))))))
       fn)))
 
 
@@ -553,7 +554,7 @@ Boehm and MPS use a single pointer"
 
   (primitive module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
 
-  (primitive module "invokeMainFunctions" +void+ (list +fn-prototype**+ +i32*+))
+  (primitive module "invokeMainFunctions" +void+ (list +tmv*+ +fn-prototype**+ +i32*+))
   (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +i64+ +i32+ +i32+ +ltv**+))
   (primitive module "invokeLlvmFunctionVoid" +void+ (list +fn-prototype*+))
 
@@ -681,6 +682,7 @@ Boehm and MPS use a single pointer"
 
   ;; Primitives for Cleavir code
 
+  (primitive-nounwind module "cc_setTmvToNil" +void+ (list +tmv*+))
   (primitive-nounwind module "cc_precalcSymbol" +t*+ (list +ltv**+ +size_t+))
   (primitive-nounwind module "cc_precalcValue" +t*+ (list +ltv**+ +size_t+))
   (primitive-nounwind module "cc_makeCell" +t*+ nil)

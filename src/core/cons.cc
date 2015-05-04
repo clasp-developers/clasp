@@ -66,25 +66,23 @@ namespace core
 #define DOCS_af_putF "putF"
     List_sp af_putF(List_sp place, T_sp value, T_sp indicator)
     {_G();
-	auto it = place.begin();
-	List_sp cur;
-	while ( it != place.end() ) {
-	    cur = *it;
-	    List_sp cdr_l = oCdr(cur);
-	    if ( !cdr_l.consp()) break;
-	    if ( oCar(cur) == indicator ) {
-		cdr_l.asCons()->rplaca(value);
-		return place;
-	    }
-	    cur = oCdr(cdr_l); //CONS_CDR(cdr_l);
-	}
-	if ( cur.notnilp() )
-	{
-	    SIMPLE_ERROR(BF("type_error_plist %s") % _rep_(place) );
-	}
-	place = Cons_O::create(value,place);
-	place = Cons_O::create(indicator,place);
-	return place;
+        auto it = place.begin();
+        auto end = place.end();
+        List_sp cur;
+        while ( it.consp() ) {
+            cur = *it; // cur is guaranteed to be a Cons_sp
+            ++it;
+            if ( !it.consp() ) break;
+            if ( oCar(cur) == indicator ) {
+                (*it)->rplaca(value); // *it is guaranteed to be a Cons_sp
+                return place;
+            }
+            ++it;
+        }
+        if ( it!=end ) SIMPLE_ERROR(BF("type_error_plist %s") % _rep_(place) );
+        place = Cons_O::create(value,place);
+        place = Cons_O::create(indicator,place);
+        return place;
     };
 
 
