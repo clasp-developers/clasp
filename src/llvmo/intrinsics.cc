@@ -644,7 +644,7 @@ extern "C"
 
 
 
-    void makeFixnum( core::T_sp* fnP, int s)
+    void makeFixnum( core::T_sp* fnP, gc::Fixnum s)
     {_G();
 	ASSERT(fnP!=NULL);
 	(*fnP) = core::Fixnum_sp(core::Fixnum_O::create(s));
@@ -920,11 +920,11 @@ extern "C"
 
     extern void makeValueFrameFromReversedCons(core::ActivationFrame_sp* afP, core::T_sp* consP, uint id )
     {_G();
-	core::Cons_sp cons = (*consP).as<core::Cons_O>();
-	core::ValueFrame_sp vf = core::ValueFrame_O::createFromReversedCons(cons,_Nil<core::T_O>());
-	vf->setEnvironmentId(id);
-	(*afP) = vf;
-	ASSERTNOTNULL(*afP);
+        core::List_sp cons = (*consP);
+        core::ValueFrame_sp vf = core::ValueFrame_O::createFromReversedCons(cons,_Nil<core::T_O>());
+        vf->setEnvironmentId(id);
+        (*afP) = vf;
+        ASSERTNOTNULL(*afP);
     }
 
 
@@ -1113,7 +1113,6 @@ extern "C"
 	ASSERT(frameP!=NULL);
 	ASSERT(frameP->objectp());
 	ASSERT(argIdx>=0);
-	ASSERT(argIdx<(*frameP).as<core::Cons_O>()->length());
 	core::ActivationFrame_sp frame = (*frameP).as<core::ActivationFrame_O>();
 	if ( argIdx < frame->length() )
 	{

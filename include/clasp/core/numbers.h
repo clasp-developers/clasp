@@ -283,8 +283,8 @@ namespace core {
 	gctools::Fixnum	_Value;
     public:
 	static Fixnum_sp create(gctools::Fixnum nm);
-	static Fixnum_sp create(int nm) {return Fixnum_O::create((gctools::Fixnum)nm); };
-	static Fixnum_sp create(uint nm) {return Fixnum_O::create((gctools::Fixnum)nm); };
+	//	static Fixnum_sp create(int nm) {return Fixnum_O::create((gctools::Fixnum)nm); };
+	//	static Fixnum_sp create(uint nm) {return Fixnum_O::create((gctools::Fixnum)nm); };
     public:
 	static int number_of_bits();
     public:

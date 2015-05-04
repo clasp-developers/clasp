@@ -107,7 +107,7 @@ by (documentation 'NAME 'type)."
   '(member nil t))
 
 (deftype index ()
-  '(INTEGER 0 #.array-dimension-limit))
+  '(INTEGER 0 #.(1- array-dimension-limit)))
 
 (deftype fixnum ()
   "A FIXNUM is an integer between MOST-NEGATIVE-FIXNUM (= - 2^29 in ECL) and

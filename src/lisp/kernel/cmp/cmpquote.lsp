@@ -350,7 +350,7 @@ and walk the car and cdr"
 (defun codegen-ltv-fixnum (result obj env)
   (with-coalesce-load-time-value (ltv-ref result obj env)
     :coalesce-hash-table *fixnum-coalesce*
-    :maker (irc-intrinsic "makeFixnum" ltv-ref (jit-constant-i32 obj))))
+    :maker (irc-intrinsic "makeFixnum" ltv-ref #+address-model-64(jit-constant-i64 obj) #-address-model-64(error "Fix for non-64bit address model"))))
 
 
 

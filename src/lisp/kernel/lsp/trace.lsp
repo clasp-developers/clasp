@@ -156,6 +156,7 @@ all functions."
 	   (floor indent 4)
 	 (dotimes (i bars) (princ (if (< i 10) "|   " "|    ") *trace-output*))
 	 (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
+       (break "Check variables")
        #+formatter(format *trace-output*
                           "~D> (~S~{ ~S~})~%"
                           *trace-level* fname vals)

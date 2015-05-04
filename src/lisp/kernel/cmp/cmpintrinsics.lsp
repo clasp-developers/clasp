@@ -72,6 +72,8 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +i8*+ (llvm-sys:type-get-pointer-to +i8+))
 (defvar +i8**+ (llvm-sys:type-get-pointer-to +i8*+))
 (defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*))
+(defvar +fixnum+ #+address-model-64 +i64+
+	#-address-model-64(error "Add support for non 64-bit"))
 ;;(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
 (defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
 
@@ -514,7 +516,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "makeNil" +void+ (list +tsp*-or-tmv*+))
   (primitive-nounwind module "makeT" +void+ (list +tsp*+))
   (primitive-nounwind module "makeCons" +void+ (list +tsp*+ +tsp*+ +tsp*+))
-  (primitive-nounwind module "makeFixnum" +void+ (list +tsp*+ +i32+))
+  (primitive-nounwind module "makeFixnum" +void+ (list +tsp*+ +fixnum+))
   (primitive-nounwind module "makeCharacter" +void+ (list +tsp*+ +i32+))
   (primitive-nounwind module "makeBignum" +void+ (list +tsp*+ +i8*+))
   #+short-float (primitive-nounwind module "makeShortFloat" +void+ (list +tsp*+ +double+))
