@@ -292,6 +292,9 @@ namespace core {
 
 namespace core{
     void core_lowLevelBacktrace();
+    void core_exceptionStackDump();
+    void core_dynamicBindingStackDump();
+
     void initialize_stacks();
 };
 

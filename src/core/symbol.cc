@@ -289,18 +289,6 @@ namespace core {
 	this->_PropertyList = plist;
     }
     
-
-#if 0
-    T_sp Symbol_O::evaluate(Cons_sp exp, Lisp_sp env)
-    {_G();
-	LOG(BF("Evaluating symbol: %s") % this->_Value.c_str()  );
-	T_sp res = env->environment()->oget(this->sharedThis<Symbol_O>());
-	// oget throws if variable is not found
-	return res;
-    };
-#endif
-
-
     void Symbol_O::sxhash(HashGenerator& hg) const
     {_OF();
 	Bignum bn = Str_O::stringToBignum(this->fullName().c_str());
@@ -317,7 +305,6 @@ namespace core {
 	Symbol_sp new_symbol = Symbol_O::create(this->_Name->get());
 	if ( copy_properties.isTrue() )
 	{
-	    ASSERT(this->_Value);
 	    ASSERT(this->_Function);
 	    new_symbol->_Value = this->_Value;
 	    new_symbol->_Function = this->_Function;
@@ -403,7 +390,6 @@ namespace core {
 	}
 #endif
 	this->_Value = val;
-	ASSERTF(this->_Value,BF("In Symbol_O::setf_symbolValue symbol[%s] to illegal value: %s") % _rep_(this->sharedThis<Symbol_O>()) % _rep_(this->_Value));
 	return val;
     }
 
@@ -417,7 +403,6 @@ namespace core {
     void Symbol_O::makeConstant(T_sp val)
     {_G();
 	this->_Value = val;
-	ASSERT(this->_Value);
 	this->_IsSpecial = true;
 	this->_IsConstant = true;
     }
@@ -444,12 +429,10 @@ namespace core {
     {_OF();
 	this->_IsConstant = true;
 	this->_Value = val;
-	ASSERT(this->_Value);
     }
 
     T_sp Symbol_O::symbolValue() const
     {
-	ASSERTF(this->_Value,BF("NULL symbol-value for %s") % this->_Name->c_str() );
 	if ( this->_Value.unboundp() )
 	{
 	    SIMPLE_ERROR(BF("Unbound symbol-value for %s@@%p") % this->_Name->c_str() % this );

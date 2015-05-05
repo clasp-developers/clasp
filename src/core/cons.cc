@@ -267,13 +267,13 @@ namespace core
 #define ARGS_af_append2 "(l1 l2)"
 #define DECL_af_append2 ""
 #define DOCS_af_append2 "append2 - append l2 to l1 by copying l1 and pointing the end of it to l2"
-    T_sp af_append2(Cons_sp x, Cons_sp y)
+    T_sp af_append2(List_sp x, List_sp y)
     {_G();
         return Cons_O::append(x,y);
     };
 
 
-    T_sp Cons_O::append(T_sp x, T_sp y)
+    T_sp Cons_O::append(List_sp x, List_sp y)
     {
 	T_sp head(_Nil<T_O>()); // This will root the new list
         T_sp* tailP = &head;    // This will keep track of the end of the new list
@@ -1235,7 +1235,7 @@ namespace core
 
 
     SourceCodeCons_sp SourceCodeCons_O::createWithDuplicateSourceCodeInfo(T_sp car, Cons_sp cdr,
-									  Cons_sp parsed, Lisp_sp env)
+									  List_sp parsed)
     {
 	int lineNumber, col;
 	parsed->getParsePos(lineNumber,col);

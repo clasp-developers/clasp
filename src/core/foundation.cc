@@ -873,17 +873,17 @@ namespace core
     }
 
 
-    T_sp lisp_ocar(Cons_sp args)
+    T_sp lisp_ocar(List_sp args)
     {_G();
 	return oCar(args);
     }
 
-    T_sp lisp_ocadr(Cons_sp args)
+    T_sp lisp_ocadr(List_sp args)
     {_G();
 	return oCadr(args);
     }
 
-    T_sp lisp_ocaddr(Cons_sp args)
+    T_sp lisp_ocaddr(List_sp args)
     {_G();
 	return oCaddr(args);
     }

@@ -49,7 +49,7 @@ namespace core
 #define ARGS_cl_vector "(&rest args)"
 #define DECL_cl_vector ""
 #define DOCS_cl_vector "vector"
-    Vector_sp cl_vector(Cons_sp args)
+    Vector_sp cl_vector(List_sp args)
     {_G();
 	Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(),args,cl_length(args),false);
         return vec;
@@ -125,7 +125,7 @@ namespace core
 #define ARGS_core_adjustVector "(array dimensions initial-element initial-contents)"
 #define DECL_core_adjustVector ""
 #define DOCS_core_adjustVector "adjustVector"
-    T_sp core_adjustVector(T_sp array, int new_dimensions, T_sp initial_element, Cons_sp initial_contents )
+    T_sp core_adjustVector(T_sp array, int new_dimensions, T_sp initial_element, List_sp initial_contents )
     {_G();
 	if ( VectorObjects_sp vo = array.asOrNull<VectorObjects_O>() )
 	{

@@ -124,29 +124,6 @@ namespace core
     };
 
 
-    
-#if 0    
-#define ARGS_af_makeSureClosClassSlotsMatchClass "(class-slots)"
-#define DECL_af_makeSureClosClassSlotsMatchClass ""
-#define DOCS_af_makeSureClosClassSlotsMatchClass "makeSureClosClassSlotsMatchClass"
-    void af_makeSureClosClassSlotsMatchClass(Cons_sp classSlots)
-    {_G();
-	global_closClassSlots = classSlots;
-    };
-
-    T_sp closClassSlotInfo(int idx)
-    {_G();
-	if ( global_closClassSlots )
-	{
-	    Cons_sp cur = global_closClassSlots;
-	    for ( ; idx>0; cur=cCdr(cur), --idx ) {}
-	    return oCar(cur);
-	}
-	return _Nil<T_O>();
-    }
-	    
-#endif
-
 
     Class_O::Class_O() : Class_O::Base()
                        , _Signature_ClassSlots(_Unbound<T_O>())

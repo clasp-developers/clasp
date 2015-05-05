@@ -224,7 +224,7 @@ void VectorObjects_O::fillInitialContents(T_sp ic)
 	return (*this->_Values)[idx];
     }
 
-    int VectorObjects_O::arrayRowMajorIndex(Cons_sp indices) const
+    int VectorObjects_O::arrayRowMajorIndex(List_sp indices) const
     {
 	ASSERTF(cl_length(indices) == 1, BF("Vectors have only one dimension - you passed indices %s") % _rep_(indices) );
 	return oCar(indices).as<Fixnum_O>()->get();
@@ -242,7 +242,7 @@ void VectorObjects_O::fillInitialContents(T_sp ic)
 	return (*this->_Values)[index];
     }
 
-    T_sp VectorObjects_O::aref(Cons_sp indices) const
+    T_sp VectorObjects_O::aref(List_sp indices) const
     {_G();
 	ASSERTF(cl_length(indices)==1,BF("Vectors only support one index - passed: %s") % _rep_(indices) );
 	return this->elt(oCar(indices).as<Integer_O>()->as_int());
@@ -255,7 +255,7 @@ void VectorObjects_O::fillInitialContents(T_sp ic)
 	return obj;
     }
 
-    T_sp VectorObjects_O::setf_aref(Cons_sp indices_val)
+    T_sp VectorObjects_O::setf_aref(List_sp indices_val)
     {_G();
 	ASSERTF(cl_length(indices_val)==2,BF("Vectors only support one index followed by a value - passed: %s") % _rep_(indices_val) );
 	return this->setf_elt(oCar(indices_val).as<Integer_O>()->as_int(),oCadr(indices_val));

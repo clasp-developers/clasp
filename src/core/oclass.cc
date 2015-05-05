@@ -268,36 +268,6 @@ namespace core
 #endif
 
 
-#if 0
-    void StandardClass_O::appendInstanceVariablesFromListOfSymbols(Cons_sp instanceVariableNames)
-    {_G();
-	StandardClass_O::slotIterator si;
-	for (Cons_sp ci = instanceVariableNames; ci.notnilp(); ci=ci->cdr() )
-	{
-	    Symbol_sp sym = ci->ocar().as<Symbol_O>();
-	    if ( this->find(sym) != this->_SlotSpecifiers.end() )
-	    {
-		SIMPLE_ERROR(BF(boost::format("There is already a slot with name(%s)")%sym->currentName()));
-	    }
-	    LOG(BF("Appending symbol(%s) as a slot")% sym->currentName() );
-	    this->_SlotNames.insert(sym);
-	}
-    }
-    void StandardClass_O::appendInstanceVariablesFromStandardClass(StandardClass_sp cc)
-    {_G();
-	StandardClass_O::slotIterator si;
-	for (si = cc->begin(); si!=cc->end(); si++ )
-	{
-	    if ( this->_SlotNames.count(*si)>0 )
-	    {
-		SIMPLE_ERROR(BF("There is already a slot with name(%s)")%(*si)->currentName());
-	    }
-	    this->_SlotNames.insert(*si);
-	}
-    }
-#endif
-
-
     void StandardClass_O::resetSlots()
     {_G();
 	this->_SlotSpecifiers.clear();
@@ -305,7 +275,7 @@ namespace core
 
 
 
-    void StandardClass_O::setupAccessors(Cons_sp slotNames)
+    void StandardClass_O::setupAccessors(List_sp slotNames)
     {_G();
 	IMPLEMENT_ME(); // Dont pass the slot names, use the slots already defined
 #if 0

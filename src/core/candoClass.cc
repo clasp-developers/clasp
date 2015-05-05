@@ -118,7 +118,7 @@ void CandoClass_O::archiveBase(ArchiveP node)
 
 
 
-    void CandoClass_O::setupAccessors(Cons_sp slotNames)
+    void CandoClass_O::setupAccessors(List_sp slotNames)
     {_G();
 	IMPLEMENT_ME(); // Dont pass the slot names, use the slots already defined
 #if 0

@@ -555,38 +555,6 @@ namespace core
 	return false;
     };
 
-
-
-
-    
-
-
-    
-#if 0    
-#define ARGS_af_sourceCodeConsP "(arg)"
-#define DECL_af_sourceCodeConsP ""
-#define DOCS_af_sourceCodeConsP "sourceCodeConsP"
-    bool af_sourceCodeConsP(T_sp o)
-    {_G();
-	if ( o.nilp() ) return false;
-	if ( Cons_sp scc = o.asOrNull<ourceCodeCons_O>() )
-	{
-	    return true;
-	}
-	return false;
-    };
-#endif
-
-
-
-    
-    
-
-    
-    
-
-    
-    
 #define ARGS_af_properListP "(arg)"
 #define DECL_af_properListP ""
 #define DOCS_af_properListP "Return true if arg is a proper list"

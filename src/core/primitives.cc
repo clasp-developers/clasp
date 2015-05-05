@@ -257,35 +257,6 @@ namespace core
 
 
 
-#define ARGS_af_exceptionStackDump "()"
-#define DECL_af_exceptionStackDump ""
-#define DOCS_af_exceptionStackDump "exceptionStackDump"
-    void af_exceptionStackDump()
-    {_G();
-        ExceptionStack& stack = _lisp->exceptionStack();
-        printf("Exception stack size: %zu members\n", stack.size());
-        for ( int i(0); i<stack.size(); ++i ) {
-            string kind;
-            switch (stack[i]._FrameKind) {
-            case CatchFrame:
-                kind = "catch";
-                break;
-            case BlockFrame:
-                kind = "block";
-                break;
-            case TagbodyFrame:
-                kind = "tagbody";
-                break;
-            default:
-                kind = "unknown";
-                break;
-            };
-            printf("Exception stack[%2d] = %8s %s@%p\n", i, kind.c_str(), _rep_(stack[i]._Key).c_str(), stack[i]._Key.raw_());
-        }
-        printf("----Done----\n");
-    };
-
-
 
 
 #define ARGS_af_allRegisteredClassNames "()"
@@ -2098,7 +2069,6 @@ void initialize_primitives()
 	Defun(getEnv);
 	CoreDefun(setenv);
 
-        Defun(exceptionStackDump);
 	SYMBOL_EXPORT_SC_(CorePkg,toTaggedFixnum);
 	SYMBOL_EXPORT_SC_(CorePkg,fromTaggedFixnum);
 	SYMBOL_EXPORT_SC_(CorePkg,dumpTaggedFixnum);

@@ -234,7 +234,7 @@ namespace core {
 #endif
     public:
 	static void appendInto(T_sp head, T_sp*& tailP, T_sp l);
-	static T_sp append(T_sp x, T_sp y);
+	static T_sp append(List_sp x, List_sp y);
     public:
 	/*! Recursively hash the car and cdr parts - until the HashGenerator fills up */
 	void sxhash(HashGenerator& hg) const;

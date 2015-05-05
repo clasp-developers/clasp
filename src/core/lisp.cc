@@ -277,9 +277,10 @@ namespace core
         return one;
     }
 
-    void Lisp_O::catchUnwindTag(Cons_sp catchStore)
+    void Lisp_O::catchUnwindTag(T_sp catchStore)
     {_G();
-        this->_Roots._CatchInfo = cCdr(catchStore);
+	ASSERT(catchStore.consp());
+        this->_Roots._CatchInfo = cCdr(catchStore.as<Cons_O>());
     }
 
     List_sp Lisp_O::catchFindTag(T_sp tag)
@@ -2685,7 +2686,7 @@ namespace core
 #define ARGS_af_universalErrorHandler "(continue-string datum initializers)"
 #define DECL_af_universalErrorHandler ""
 #define DOCS_af_universalErrorHandler "universalErrorHandler"
-    T_mv af_universalErrorHandler(T_sp continueString, T_sp datum, Cons_sp initializers)
+    T_mv af_universalErrorHandler(T_sp continueString, T_sp datum, List_sp initializers)
     {_G();
 	if ( af_stringP(datum) ) {
 	    af_format(_lisp->_true(),datum,initializers);
@@ -2787,7 +2788,7 @@ extern "C"
 #define ARGS_cl_cerror "(cformat eformat &rest arguments)"
 #define DECL_cl_cerror ""
 #define DOCS_cl_cerror "See CLHS cerror"
-    void cl_cerror(T_sp cformat, T_sp eformat, Cons_sp arguments)
+    void cl_cerror(T_sp cformat, T_sp eformat, List_sp arguments)
     {_G();
         eval::funcall(_sym_universalErrorHandler,cformat, eformat, arguments);
     }

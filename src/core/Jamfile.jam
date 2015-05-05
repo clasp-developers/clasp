@@ -41,6 +41,8 @@ local unity_sources =
       all.cc ;
 
 local sources =
+      write_object.cc
+      print.cc
 	    sourceFileInfo.cc
 		symbolToEnumConverter.cc
 		globals.cc
@@ -119,10 +121,8 @@ local sources =
       allClSymbols.cc
       keywordPackage.cc
       extensionPackage.cc
-      print.cc
       vectorObjectsWithFillPtr.cc
       vectorObjects.cc
-      write_object.cc
 	    array.cc
       strWithFillPtr.cc
 	    lispMath.cc

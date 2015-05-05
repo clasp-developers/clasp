@@ -88,7 +88,7 @@ namespace core
 #define ARGS_af_makeSureClosClassSlotsMatchClass "(class-slots)"
 #define DECL_af_makeSureClosClassSlotsMatchClass ""
 #define DOCS_af_makeSureClosClassSlotsMatchClass "makeSureClosClassSlotsMatchClass"
-    void af_makeSureClosClassSlotsMatchClass(Cons_sp classSlots)
+    void af_makeSureClosClassSlotsMatchClass(List_sp classSlots)
     {_G();
 	global_closClassSlots = classSlots;
     };

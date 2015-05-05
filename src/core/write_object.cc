@@ -103,8 +103,9 @@ namespace core
 		return 0;
 	    } else if (code == _lisp->_true() ) {
 		/* This object is referenced twice, but has no code yet */
-		Fixnum new_code = circle_counter.as<Fixnum_O>()->get() + 1;
-		circle_counter = Fixnum_O::create(new_code);
+		ASSERT(circle_counter.fixnump());
+		Fixnum new_code = circle_counter.unsafe_fixnum() + 1;
+		circle_counter = gc::smart_ptr<core::T_O>::make_tagged_fixnum(new_code);
 		circle_stack->hash_table_setf_gethash(x,circle_counter);
 		_sym_STARcircle_counterSTAR->setf_symbolValue(circle_counter);
 		return -new_code;
@@ -148,7 +149,7 @@ namespace core
 		scope.pushSpecialVariableAndSet(_sym_STARcircle_counterSTAR,_lisp->_true());
 		scope.pushSpecialVariableAndSet(_sym_STARcircle_stackSTAR,hash);
 		write_object(x,_lisp->nullStream());
-		_sym_STARcircle_counterSTAR->setf_symbolValue(Fixnum_O::create(0));
+		_sym_STARcircle_counterSTAR->setf_symbolValue(gc::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(0));
 		write_object(x, stream);
 		hash->clrhash();
 		goto OUTPUT;

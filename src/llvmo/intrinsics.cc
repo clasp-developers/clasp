@@ -48,6 +48,7 @@ extern "C" {
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/multipleValues.h>
+#include <clasp/core/stacks.h>
 #include <clasp/core/posixTime.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/activationFrame.h>
@@ -1915,7 +1916,15 @@ extern "C"
     void popDynamicBinding(core::Symbol_sp* symbolP)
     {
 	core::Symbol_sp sym = *symbolP;
-	ASSERTF(sym == _lisp->bindings().topSymbol(),BF("Mismatch in popDynamicBinding"));
+	core::Symbol_sp top = _lisp->bindings().topSymbol();
+	if ( sym != _lisp->bindings().topSymbol() ) {
+	    printf("%s:%d popDynamicBinding: %s\n", __FILE__, __LINE__, _rep_(*symbolP).c_str());
+	    printf("   mismatch with top of dynamic binding stack: %s\n", _rep_(top).c_str());
+	    printf("   dumping stack\n");
+	    core::core_dynamicBindingStackDump();
+	    SIMPLE_ERROR(BF("Mismatch in popDynamicBinding"));
+	    
+	}
 	_lisp->bindings().pop();
 //	printf("%s:%d - popDynamicBinding symbol: %s  restored value: %s\n", __FILE__, __LINE__, sym->__repr__().c_str(), sym->symbolValueOrUnbound()->__repr__().c_str() );
     }

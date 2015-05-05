@@ -230,16 +230,15 @@ bool switch_add_argument_mode(Symbol_sp symbol, ArgumentMode& mode, Lisp_sp lisp
 }
 
 
-void extract_lambda_list(Cons_sp arguments,
+void extract_lambda_list(List_sp arguments,
 			 Symbol_sp context,
-			 Cons_sp& reqs,
-			 Cons_sp& optionals,
+			 List_sp& reqs,
+			 List_sp& optionals,
 			 Symbol_sp& restvar,
 			 T_sp&	key_flag,
-			 Cons_sp& keys,
+			 List_sp& keys,
 			 T_sp&  allow_other_keys,
-			 Cons_sp& auxs,
-			 Lisp_sp lisp)
+			 List_sp& auxs)
 {_G();
     LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % arguments->__repr__() );
     ArgumentMode add_argument_mode = required;

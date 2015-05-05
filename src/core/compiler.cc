@@ -415,7 +415,7 @@ namespace core
 #define ARGS_core_applysPerSecond "(fn &rest args)"
 #define DECL_core_applysPerSecond ""
 #define DOCS_core_applysPerSecond "applysPerSecond"
-    T_sp core_applysPerSecond(T_sp fn, Cons_sp args)
+    T_sp core_applysPerSecond(T_sp fn, List_sp args)
     {_G();
         LightTimer timer;
         int nargs = cl_length(args);
@@ -493,7 +493,7 @@ namespace core {
 #define ARGS_core_globalFuncallCyclesPerSecond "(stage fn &rest args)"
 #define DECL_core_globalFuncallCyclesPerSecond ""
 #define DOCS_core_globalFuncallCyclesPerSecond "globalFuncallCyclesPerSecond"
-    T_sp core_globalFuncallCyclesPerSecond(int stage, Symbol_sp fn, Cons_sp args )
+    T_sp core_globalFuncallCyclesPerSecond(int stage, Symbol_sp fn, List_sp args )
     {_G();
         LightTimer timer;
         int nargs = cl_length(args);

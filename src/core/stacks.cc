@@ -230,7 +230,7 @@ namespace core
     void DynamicBindingStack::push(Symbol_sp var)
     {
         if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValueUnsafe().notnilp() ) {
-            List_sp assoc = cl_assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue().as<Cons_O>(),_Nil<T_O>());
+            List_sp assoc = cl_assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
             if ( assoc.notnilp() ) {
                 T_sp funcDesig = oCdr(assoc);
                 if ( funcDesig.notnilp() ) {
@@ -250,7 +250,7 @@ namespace core
     {
 	DynamicBinding& bind = this->_Bindings.back();
         if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-            List_sp assoc = cl_assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue().as<Cons_O>(),_Nil<T_O>());
+            List_sp assoc = cl_assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
             if ( assoc.notnilp() ) {
                 T_sp funcDesig = oCdr(assoc);
                 if ( funcDesig.notnilp() ) {
@@ -589,33 +589,80 @@ void    core_lowLevelBacktrace()
     }
 
 
+    
+#define ARGS_core_exceptionStackDump "()"
+#define DECL_core_exceptionStackDump ""
+#define DOCS_core_exceptionStackDump "exceptionStackDump"
+    void core_exceptionStackDump()
+    {_G();
+        ExceptionStack& stack = _lisp->exceptionStack();
+        printf("Exception stack size: %zu members\n", stack.size());
+        for ( int i(0); i<stack.size(); ++i ) {
+            string kind;
+            switch (stack[i]._FrameKind) {
+            case CatchFrame:
+                kind = "catch";
+                break;
+            case BlockFrame:
+                kind = "block";
+                break;
+            case TagbodyFrame:
+                kind = "tagbody";
+                break;
+            default:
+                kind = "unknown";
+                break;
+            };
+            printf("Exception stack[%2d] = %8s %s@%p\n", i, kind.c_str(), _rep_(stack[i]._Key).c_str(), stack[i]._Key.raw_());
+        }
+        printf("----Done----\n");
+    };
+
+
+#define ARGS_core_dynamicBindingStackDump "()"
+#define DECL_core_dynamicBindingStackDump ""
+#define DOCS_core_dynamicBindingStackDump "dynamicBindingStackDump"
+    void core_dynamicBindingStackDump()
+    {
+	DynamicBindingStack& bd = _lisp->bindings();
+	for ( int i(0), iEnd(bd.size()); i<iEnd; ++i ) {
+	    printf("stack[%3d] -->  %s\n", i, _rep_(bd.var(i)).c_str() );
+	};
+    }
+
+    
+};
 
 
 
-
+namespace core {
+    
     void initialize_stacks()
     {
-    SYMBOL_SC_(CorePkg,ihsBacktrace);
-    Defun(ihsBacktrace);
-    SYMBOL_SC_(CorePkg,ihsTop);
-    Defun(ihsTop);
-    SYMBOL_SC_(CorePkg,ihsPrev);
-    Defun(ihsPrev);
-    SYMBOL_SC_(CorePkg,ihsNext);
-    Defun(ihsNext);
-    SYMBOL_SC_(CorePkg,ihsFun);
-    Defun(ihsFun);
-    SYMBOL_SC_(CorePkg,ihsEnv);
-    Defun(ihsEnv);
-    SYMBOL_SC_(CorePkg,bdsTop);
-    Defun(bdsTop);
-    SYMBOL_SC_(CorePkg,bdsVar);
-    Defun(bdsVar);
-    SYMBOL_SC_(CorePkg,bdsVal);
-    Defun(bdsVal);
-    CoreDefun(lowLevelBacktrace);
-    CoreDefun(exceptionStack);
-}
+	SYMBOL_SC_(CorePkg,ihsBacktrace);
+	Defun(ihsBacktrace);
+	SYMBOL_SC_(CorePkg,ihsTop);
+	Defun(ihsTop);
+	SYMBOL_SC_(CorePkg,ihsPrev);
+	Defun(ihsPrev);
+	SYMBOL_SC_(CorePkg,ihsNext);
+	Defun(ihsNext);
+	SYMBOL_SC_(CorePkg,ihsFun);
+	Defun(ihsFun);
+	SYMBOL_SC_(CorePkg,ihsEnv);
+	Defun(ihsEnv);
+	SYMBOL_SC_(CorePkg,bdsTop);
+	Defun(bdsTop);
+	SYMBOL_SC_(CorePkg,bdsVar);
+	Defun(bdsVar);
+	SYMBOL_SC_(CorePkg,bdsVal);
+	Defun(bdsVal);
+	CoreDefun(lowLevelBacktrace);
+	CoreDefun(exceptionStack);
+	CoreDefun(exceptionStackDump);
+	CoreDefun(dynamicBindingStackDump);
+
+    }
 
 
 

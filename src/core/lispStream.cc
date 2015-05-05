@@ -2389,7 +2389,7 @@ namespace core
 #define ARGS_cl_makeBroadcastStream "(&rest ap)"
 #define DECL_cl_makeBroadcastStream ""
 #define DOCS_cl_makeBroadcastStream "makeBroadcastStream"
-    T_sp cl_makeBroadcastStream(Cons_sp ap)
+    T_sp cl_makeBroadcastStream(List_sp ap)
     {_G();
       T_sp x, streams;
       streams = ap;
@@ -2722,7 +2722,7 @@ namespace core
 #define ARGS_cl_makeConcatenatedStream "(&rest ap)"
 #define DECL_cl_makeConcatenatedStream ""
 #define DOCS_cl_makeConcatenatedStream "makeConcatenatedStream"
-    T_sp cl_makeConcatenatedStream(Cons_sp ap)
+    T_sp cl_makeConcatenatedStream(List_sp ap)
     {_G();
       T_sp x, streams;
       streams = ap;

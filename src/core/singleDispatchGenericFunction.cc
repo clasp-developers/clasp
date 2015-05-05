@@ -425,7 +425,7 @@ Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc)
     };
 
 
-        Function_sp SingleDispatchGenericFunction_O::compute_effective_method_function(Cons_sp applicable_methods)
+        Function_sp SingleDispatchGenericFunction_O::compute_effective_method_function(List_sp applicable_methods)
         {_OF();
             if ( applicable_methods.nilp() )
             {

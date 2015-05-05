@@ -2493,7 +2493,6 @@ namespace core
 //			_lisp->error(cond.conditionObject()/*,environment*/);
 		    };// catch (...) {throw;};
                     result = eval::evaluate(expanded,environment);
-		    ASSERT(!!result);
 		    return(result);
 		}
 		theadFunc = af_interpreter_lookup_function(headSym,environment);
@@ -2513,7 +2512,6 @@ namespace core
 								 _Nil<T_O>()));
 		evaluateIntoActivationFrame(evaluatedArgs,oCdr(form),environment);
 		result = eval::applyToActivationFrame(headFunc,evaluatedArgs);
-		ASSERT(!!result);
 		return(result);
 	    }
 	    {
@@ -2542,7 +2540,6 @@ namespace core
 		for ( auto p : args ) {
 		    T_sp inObj = oCar(p);
 		    T_sp result = eval::evaluate(inObj,environment);
-		    ASSERT(result);
 		    LOG(BF("After evaluation result = %s")% _rep_(result) );
 		    af->set_entry(idx,result);
 		    ++idx;

@@ -2,6 +2,9 @@
 ;; :clos to compile with CLOS
 ;;
 
+(setq *features* (cons :debug-format *features*))
+
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package "CORE"))
 

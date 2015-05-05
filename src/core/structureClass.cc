@@ -288,7 +288,7 @@ namespace core
 
 
 
-    void StructureClass_O::setupAccessors(Cons_sp slotNames)
+    void StructureClass_O::setupAccessors(List_sp slotNames)
     {_G();
 	IMPLEMENT_ME(); // Dont pass the slot names, use the slots already defined
 #if 0

@@ -322,7 +322,6 @@ namespace gctools {
 	//
 	//
 	// Make a tagged fixnum
-	inline static smart_ptr<Type> make_tagged_fixnum(Fixnum val) {return smart_ptr<Type>((Tagged)tag_fixnum<Type>(val));}
 	inline static smart_ptr<Type> make_tagged_other(Type* p) {return smart_ptr<Type>(p);}
 	inline static smart_ptr<Type> make_tagged_nil() {return smart_ptr<Type>((Tagged)reinterpret_cast<Type*>(global_Symbol_OP_nil));};
 	inline static smart_ptr<Type> make_tagged_unbound() {return smart_ptr<Type>((Tagged)reinterpret_cast<Type*>(global_Symbol_OP_unbound));};
@@ -671,7 +670,40 @@ namespace gctools {
 
 };
 
-namespace core {
+ namespace core {
+     class Fixnum_I {};
+ };
+
+ namespace gctools {
+     template <>
+	 class smart_ptr<core::Fixnum_I> /*: public tagged_ptr<Type>*/ {
+     public:
+	 typedef core::Fixnum_I Type;
+	 Type* theObject;
+     public:
+	 /*! Constructor that takes Tagged assumes that the pointer is tagged.
+	  Any ptr passed to this constructor must have the CONS tag.
+	*/
+	explicit inline smart_ptr(Tagged ptr)
+	    : theObject(reinterpret_cast<Type *>(ptr)) {
+	    GCTOOLS_ASSERT(tagged_fixnump<Type>(reinterpret_cast<Type *>(ptr)));
+	};
+
+     public:
+	 inline static smart_ptr<Type> make_tagged_fixnum(Fixnum val) {return smart_ptr<Type>((Tagged)tag_fixnum<Type>(val));};
+     public:
+	 inline bool nilp() const { return tagged_nilp(this->theObject); }
+	 inline bool notnilp() const { return (!this->nilp());};
+	 inline bool fixnump() const {return tagged_fixnump(this->theObject);};
+	 inline bool otherp() const {return tagged_otherp(this->theObject);};
+	 inline bool consp() const {return tagged_consp(this->theObject);};
+	 inline Fixnum unsafe_fixnum() const {return untag_fixnum(this->theObject);};
+	 inline Tagged raw_() const { return (Tagged)this->theObject; };
+     };
+ };
+
+ 
+ namespace core {
     class List_V {}; // Virtual class representing Common Lisp LIST
     extern gctools::smart_ptr<core::T_O> cons_car(core::Cons_O* cur);
     extern gctools::smart_ptr<core::T_O> cons_cdr(core::Cons_O* cur);
@@ -698,8 +730,17 @@ namespace gctools {
 	explicit inline smart_ptr(Type* ptr) : theObject(tag_other<Type>(ptr)) {
 	    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==0);
 	};
-	
+
 	inline smart_ptr(const smart_ptr<Type>& obj) : theObject(obj.theObject) {};
+
+        inline smart_ptr( smart_ptr<core::Fixnum_I> const & rhs )
+        {
+	    if ( LIKELY(rhs.fixnump()) ) {
+		this->theObject = reinterpret_cast<Type*>(rhs.raw_());
+		return;
+	    }
+	    THROW_HARD_ERROR(BF("Illegal Fixnum_sp value (non-fixnum) to T_sp"));
+	}
 
 
 	template<class From>
@@ -721,19 +762,6 @@ namespace gctools {
                 this->theObject = reinterpret_cast<Type*>(rhs.theObject);
             }
         }
-
-
-	uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject)&tag_mask; };
-	
-	// Convert one type of smart_ptr to another
-	// TODO: Implement this but check for type conversions!!!!!
-#if 0
-	template <class Y> smart_ptr(const smart_ptr<Type>& yy) : theObject(yy.theObject) {
-	    GCTOOLS_ASSERT(false);
-	};
-#endif
-
-
     public:
 	//----------------------------------------------------------------------
 	//
@@ -747,6 +775,18 @@ namespace gctools {
 	inline static smart_ptr<Type> make_tagged_unbound() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_unbound));};
 	inline static smart_ptr<Type> make_tagged_deleted() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_deleted));};
 	inline static smart_ptr<Type> make_tagged_sameAsKey() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_sameAsKey));};
+    public:
+	uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject)&tag_mask; };
+	
+	// Convert one type of smart_ptr to another
+	// TODO: Implement this but check for type conversions!!!!!
+#if 0
+	template <class Y> smart_ptr(const smart_ptr<Type>& yy) : theObject(yy.theObject) {
+	    GCTOOLS_ASSERT(false);
+	};
+#endif
+
+
 
 	/*! Get the pointer typcast to an integer quantity for hashing */
 	cl_intptr_t intptr() const { return ((uintptr_t)(this->theObject));};
@@ -1480,14 +1520,6 @@ namespace core {
     extern gctools::smart_ptr<core::T_O> lisp_createList(gctools::smart_ptr<core::T_O> a1, gctools::smart_ptr<core::T_O> a2, gctools::smart_ptr<core::T_O> a3, gctools::smart_ptr<core::T_O> a4);
     extern void lisp_error_condition(const char* functionName, const char* fileName, int lineNumber, gctools::smart_ptr<core::T_O> baseCondition, gctools::smart_ptr<core::T_O> initializers);
 }
-
-
-
-namespace core {
-    class Fixnum_I;
-};
-
-
 
 
 

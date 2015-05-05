@@ -17,7 +17,7 @@
 
 (in-package "SYS")
 
-;;(defmacro fmt-log (&rest args) `(print (list "FMT-LOG" ,@args)))
+;;(defmacro fmt-log (&rest args) `(core:bformat t "FMT-LOG: %s\n" (list ,@args)))
 (defmacro fmt-log (&rest args) nil)
 
 

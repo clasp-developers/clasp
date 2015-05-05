@@ -183,9 +183,10 @@ void    core_DebugHashTable(bool don)
 #define ARGS_af_hashTableEntryDeletedP "(cons)"
 #define DECL_af_hashTableEntryDeletedP ""
 #define DOCS_af_hashTableEntryDeletedP "hashTableEntryDeletedP"
-    bool af_hashTableEntryDeletedP(Cons_sp cons)
+    bool af_hashTableEntryDeletedP(T_sp cons)
     {_G();
-        return oCdr(cons).unboundp();
+	if (!cons.consp()) SIMPLE_ERROR(BF("Arg must be a cons"));
+        return oCdr(cons.as<Cons_O>()).unboundp();
     };
 
 
