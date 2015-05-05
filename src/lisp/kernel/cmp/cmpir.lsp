@@ -434,13 +434,13 @@
 
 
 (defun irc-do-unwind-environment (env)
+  (cmp-log "irc-do-unwind-environment for: %s\n" env)
   (let ((unwind (local-metadata env :unwind)))
     (dolist (cc unwind)
       (let ((head (car cc)))
 	(cond
-	  ((eq head 'exit-lexical-scope) (error "Depreciated"))	;;(handle-exit-scope cc env))
-	  ;;	  ((eq head 'symbolValueRestore) (irc-intrinsic "copyTsp" (irc-symbol-value-ref env (caddr cc)) (cadr cc) ))
 	  ((eq head 'symbolValueRestore)
+	   (cmp-log "popDynamicBinding of %s\n" (cadr cc))
 	   (irc-intrinsic "popDynamicBinding" (irc-global-symbol (cadr cc) env)))
 	  (t (error (bformat nil "Unknown cleanup code: %s" cc))))
 	)))
@@ -448,11 +448,8 @@
 
 (defun irc-unwind-environment (env)
   (cmp-log "in irc-unwind-environment with: %s u-p-e?: %s\n" (type-of env) (unwind-protect-environment-p env))
-  (cond
-    ((unwind-protect-environment-p env)
-     (irc-unwind-unwind-protect-environment env))
-    ;; Do nothing for now with other environments
-    (t nil))
+  (when (unwind-protect-environment-p env)
+    (irc-unwind-unwind-protect-environment env))
   (irc-do-unwind-environment env)
   )
 
@@ -510,6 +507,13 @@
 
 
 ;;  "Control if low-level block tracing is on or off"
+;;
+;;
+;;  You can do things like:
+;; Put (push :flow cmp::*low-level-trace*) / (pop cmp::*low-level-trace*)
+;;   around a function and it will get low-level-trace commands inserted before
+;;   every function call and within every landing pad.
+
 (defparameter *next-low-level-trace-index* 1000000001)
 (defmacro irc-low-level-trace (&optional where)
   `(if (or (member :all ',cmp:*low-level-trace*) (member ,where cmp:*low-level-trace*))

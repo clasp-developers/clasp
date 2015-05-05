@@ -105,8 +105,12 @@ Options are :tagbody :go :all :eh-landing-pads
 
 
 
-
-#-debug-compiler
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Turn off compiler debugging code once we are confident it works
+;;;
+;;;
+#-(or)
 (progn
   (defmacro debug-print-i32 (num) nil)
   (defmacro cmp-log-dump (fn) nil)
@@ -115,23 +119,19 @@ Options are :tagbody :go :all :eh-landing-pads
   )
 
 
-#+debug-compiler
 (progn
   (defun is-debug-compiler-on ()
     *debug-compiler*)
-
   (defmacro debug-print-i32 (num)
     `(if (is-debug-compiler-on)
 	 (irc-intrinsic "debugPrintI32" (jit-constant-i32 ,num))
 	 nil))
-
   (defmacro cmp-log (fmt &rest args)
     `(if (is-debug-compiler-on)
 	 (progn
 	   (bformat t "%s:%s " (source-file-name) (source-line-column))
 	   (bformat t ,fmt ,@args))
 	 nil))
-
   (defmacro cmp-log-dump (fn-or-module)
     `(if (is-debug-compiler-on)
 	 (llvm-sys:dump ,fn-or-module)

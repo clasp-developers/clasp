@@ -37,14 +37,14 @@ namespace core
     class MultipleValues
     {
     public: // ctor
-	static const int MultipleValuesLimit = CALL_ARGUMENTS_LIMIT;
+        static const int MultipleValuesLimit = CALL_ARGUMENTS_LIMIT;
     public: // instance variables here
-	size_t 		_Size;
-	T_O* 		_Values[MultipleValuesLimit];
+        size_t          _Size;
+        T_O*            _Values[MultipleValuesLimit];
         /*! Allocate the GCVector in the NonMoveable memory.
-	 This needs to stay pinned or things will go very bad if functions are called with arguments in
-	this array (those beyond the arguments that can be passed in registers) or multiple values are returned
-	and this array moved in memory */
+         This needs to stay pinned or things will go very bad if functions are called with arguments in
+        this array (those beyond the arguments that can be passed in registers) or multiple values are returned
+        and this array moved in memory */
     public:
         void initialize();
     public: // Functions here

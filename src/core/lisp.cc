@@ -1696,6 +1696,11 @@ namespace core
 #define DOCS_core_exit "exit"
     void core_exit(int exitValue)
     {_G();
+#if 0//debugging
+	printf("%s:%d In core_exit dynamicBindingStackDump:\n", __FILE__, __LINE__ );
+	core_exceptionStackDump();
+	core_dynamicBindingStackDump();
+#endif
 	_global_debuggerOnSIGABRT = false;
 	throw(ExitProgram(exitValue));
     };
@@ -2765,6 +2770,7 @@ extern "C"
 	    // It's only here to identify errors that would cause infinite looping
 	    // as we get error handling and conditions working properly
 	    printf("%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str() );
+	    asm("int $03");
 	    if ( initializers.notnilp() )
 	    {
 		printf("               initializers: %s\n", _rep_(initializers).c_str() );

@@ -210,6 +210,7 @@ exceptions to higher levels of the code and unwinding the stack.
 	)
     (multiple-value-bind (cleanup-clause-body exception-clauses)
 	(try.separate-clauses catch-clauses)
+      (or cleanup-clause-body (warn "You should include a cleanup-clause otherwise eh may break"))
       (let* ((my-clause-types (mapcar #'caar exception-clauses))
 	     (dispatcher-block-gensyms
 	      (mapcar #'(lambda (x) (gensym (bformat nil "dispatch-%s-" (symbol-name (caar x)))))
@@ -265,6 +266,7 @@ exceptions to higher levels of the code and unwinding the stack.
 			  `(irc-set-cleanup ,landpad-gs t))
 		   (multiple-value-bind (,exn.slot-gs ,ehselector.slot-gs)
 		       (irc-preserve-exception-info ,env ,landpad-gs)
+		     (irc-low-level-trace :flow)
 		     (irc-branch-to-and-begin-block ,dispatch-header-gs)
 		     ,@(when cleanup-clause-body
 			     cleanup-clause-body)

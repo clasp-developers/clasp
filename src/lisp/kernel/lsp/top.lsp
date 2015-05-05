@@ -549,6 +549,12 @@ Use special code 0 to cancel this operation.")
   #-threads
   (single-threaded-terminal-interrupt))
 
+
+#+(or)(eval-when (:compile-toplevel :execute)
+  (push :flow cmp:*low-level-trace*)
+  (setq cmp:*debug-compiler* t)
+  )
+
 (defun tpl (&key ((:commands *tpl-commands*) tpl-commands)
 	      ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
 	      (broken-at nil)
@@ -623,6 +629,12 @@ Use special code 0 to cancel this operation.")
 		     (rep)))
 	       nil)
 	   (setf quiet nil))))))
+
+
+#+(or)(eval-when (:compile-toplevel :execute)
+  (pop cmp:*low-level-trace*)
+  (setq cmp:*debug-compiler* nil)
+  )
 
 (defun tpl-prompt ()
   (typecase *tpl-prompt-hook*

@@ -615,20 +615,12 @@ env is the parent environment of the (result-af) value frame"
 		(irc-branch-to-and-begin-block (irc-basic-block-create
 						(bformat nil "%s-start" (symbol-name operator-symbol))))
 		(if (eq operator-symbol 'let)
-		    (progn
-		      (trace-enter-let-scope new-env code)
-		      (codegen-fill-let-environment new-env lambda-list-handler expressions env evaluate-env))
-		    (progn
-		      (trace-enter-let*-scope new-env code)
-		      (codegen-fill-let*-environment new-env lambda-list-handler expressions env evaluate-env)))
-		(irc-single-step-callback new-env)
+		    (codegen-fill-let-environment new-env lambda-list-handler expressions env evaluate-env)
+		    (codegen-fill-let*-environment new-env lambda-list-handler expressions env evaluate-env))
 		(cmp-log "About to evaluate codegen-progn\n")
 		(codegen-progn result code new-env))
 	      ((cleanup)
                (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-parent-renv new-env))
-	       (if (eq operator-symbol 'let)
-		   (trace-exit-let-scope new-env traceid)
-		   (trace-exit-let*-scope new-env traceid))
 	       (irc-unwind-environment new-env)
 	       ))
 	    )
@@ -788,6 +780,7 @@ jump to blocks within this tagbody."
 		      ))
 		enumerated-tag-blocks))
         ;;        ((cleanup) (codegen-literal result nil env))
+	((cleanup) (irc-unwind-environment tagbody-env))
         ((typeid-core-dynamic-go exception-ptr)
          (let* ((go-index (irc-intrinsic "tagbodyDynamicGoIndexElseRethrow" exception-ptr frame))
                 (default-block (irc-basic-block-create "switch-default"))
@@ -851,11 +844,8 @@ jump to blocks within this tagbody."
 	  (irc-begin-block block-start)
           (let* ((frame (irc-intrinsic "pushBlockFrame" (irc-global-symbol block-symbol block-env))))
             (with-try block-env
-              (progn
-                (setq traceid (trace-enter-block-scope block-env `(block ,block-symbol ,body)))
-                (codegen-progn result body block-env))
+	      (codegen-progn result body block-env)
               ((cleanup)
-               (trace-exit-block-scope block-env traceid)
                (irc-unwind-environment block-env))
               ((typeid-core-return-from exception-ptr)
                (irc-intrinsic "blockHandleReturnFrom" result exception-ptr frame)))
@@ -1264,7 +1254,6 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
        (codegen result expansion env)))
     (t
      ;; It's a regular function call
-     (irc-low-level-trace)
      (codegen-call result form env))))
 
 

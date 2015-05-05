@@ -229,6 +229,7 @@ namespace core
     SYMBOL_EXPORT_SC_(CorePkg,STARwatchDynamicBindingStackSTAR);
     void DynamicBindingStack::push(Symbol_sp var)
     {
+#if 0 // debugging
         if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValueUnsafe().notnilp() ) {
             List_sp assoc = cl_assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
             if ( assoc.notnilp() ) {
@@ -236,10 +237,18 @@ namespace core
                 if ( funcDesig.notnilp() ) {
                     eval::funcall(funcDesig,var,_lisp->_true());
                 } else {
-                    printf("%s:%d  *watch-dynamic-binding-stack* caught push[%zu] of %s  value = %s\n", __FILE__, __LINE__, this->_Bindings.size(), _rep_(var).c_str(), _rep_(var->symbolValue()).c_str() );
+                    printf("%s:%d  *watch-dynamic-binding-stack* caught push[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->formattedName(true).c_str());
                 }
             }
         }
+#endif
+#if 0 // debugging
+        if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValueUnsafe().notnilp() ) {
+	    //	    printf("%s:%d  *watch-dynamic-binding-stack* caught push[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->formattedName(true).c_str());
+	    printf("%s:%d  *watch-dynamic-binding-stack* caught push[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->symbolNameAsString().c_str());
+	    //printf("%s:%d  *watch-dynamic-binding-stack* caught push[%zu]\n", __FILE__, __LINE__, this->_Bindings.size() );
+	};
+#endif
 	T_sp val = var->symbolValueUnsafe();
 	DynamicBinding bind(var,var->symbolValueUnsafe());
 	this->_Bindings.push_back(bind);
@@ -249,6 +258,7 @@ namespace core
     void DynamicBindingStack::pop()
     {
 	DynamicBinding& bind = this->_Bindings.back();
+#if 0 // debugging
         if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
             List_sp assoc = cl_assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
             if ( assoc.notnilp() ) {
@@ -260,6 +270,14 @@ namespace core
                 }
             }
         }
+#endif
+#if 0 // debugging
+	if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValueUnsafe().notnilp() ) {
+	    //	    printf("%s:%d  *watch-dynamic-binding-stack* caught pop[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size()-1, bind._Var->formattedName(true).c_str());
+	    printf("%s:%d  *watch-dynamic-binding-stack* caught pop[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), bind._Var->symbolNameAsString().c_str());
+	    //printf("%s:%d  *watch-dynamic-binding-stack* caught pop[%zu]\n", __FILE__, __LINE__, this->_Bindings.size() );
+	}	    
+#endif
 	bind._Var->setf_symbolValue(bind._Val);
 	this->_Bindings.pop_back();
     }
