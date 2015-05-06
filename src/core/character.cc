@@ -313,8 +313,8 @@ int clasp_string_case(Str_sp s)
 	    return cx == cy;
 	}
 	// Get rid of this when we lose Character_O
-	int icx = toupper(cx.as<Character_O>()->get());
-	int icy = toupper(cy.as<Character_O>()->get());
+	int icx = toupper(x.as<Character_O>()->get());
+	int icy = toupper(y.as<Character_O>()->get());
 	return icx==icy;
     }	
 	
