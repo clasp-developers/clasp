@@ -32,130 +32,108 @@ THE SOFTWARE.
 #include <boost/config.hpp>
 #include <boost/utility/binary.hpp>
 
-
 extern "C" {
-    typedef struct SegStruct* Seg;
-    typedef mps_arena_t Arena;
-    typedef mps_addr_t Addr;
-    extern int SegOfAddr(Seg *segReturn, Arena arena, Addr addr);
+typedef struct SegStruct *Seg;
+typedef mps_arena_t Arena;
+typedef mps_addr_t Addr;
+extern int SegOfAddr(Seg *segReturn, Arena arena, Addr addr);
 //    extern int SegPM(Seg segReturn);
-    extern void ShieldExpose(Arena arena, Seg seg);
-    extern void ShieldCover(Arena arena, Seg seg);
+extern void ShieldExpose(Arena arena, Seg seg);
+extern void ShieldCover(Arena arena, Seg seg);
 };
-
-
 
 namespace gctools {
 
-    struct MpsMetrics {
-        size_t finalizationRequests=0;
-        size_t movingAllocations=0;
-        size_t movingZeroRankAllocations=0;
-        size_t nonMovingAllocations=0;
-        size_t unknownAllocations=0;
-        size_t totalMemoryAllocated=0;
-        void movingAllocation(size_t sz) {
-            this->totalMemoryAllocated += sz;
-            ++this->movingAllocations;
-        }
-        void movingZeroRankAllocation(size_t sz) {
-            this->totalMemoryAllocated += sz;
-            ++this->movingZeroRankAllocations;
-        }
-        void unknownAllocation(size_t sz) {
-            this->totalMemoryAllocated += sz;
-            ++this->unknownAllocations;
-        }
-        void nonMovingAllocation(size_t sz) {
-            this->totalMemoryAllocated += sz;
-            ++this->nonMovingAllocations;
-        }
-    };
+struct MpsMetrics {
+  size_t finalizationRequests = 0;
+  size_t movingAllocations = 0;
+  size_t movingZeroRankAllocations = 0;
+  size_t nonMovingAllocations = 0;
+  size_t unknownAllocations = 0;
+  size_t totalMemoryAllocated = 0;
+  void movingAllocation(size_t sz) {
+    this->totalMemoryAllocated += sz;
+    ++this->movingAllocations;
+  }
+  void movingZeroRankAllocation(size_t sz) {
+    this->totalMemoryAllocated += sz;
+    ++this->movingZeroRankAllocations;
+  }
+  void unknownAllocation(size_t sz) {
+    this->totalMemoryAllocated += sz;
+    ++this->unknownAllocations;
+  }
+  void nonMovingAllocation(size_t sz) {
+    this->totalMemoryAllocated += sz;
+    ++this->nonMovingAllocations;
+  }
+};
 
-    extern MpsMetrics globalMpsMetrics;
-
+extern MpsMetrics globalMpsMetrics;
 
 #define GC_RESULT mps_res_t
 #define GC_SCAN_STATE_TYPE mps_ss_t
 #define GC_SCAN_STATE ss
 
-
-    class GCObject
-    {
-    public:
-//	bool isNil() const { return false;};
-//	bool isUnbound() const { return false;};
-//	bool isObject() const { return true;};
-        virtual ~GCObject() {};
-    };
-
-
+class GCObject {
+public:
+  //	bool isNil() const { return false;};
+  //	bool isUnbound() const { return false;};
+  //	bool isObject() const { return true;};
+  virtual ~GCObject(){};
+};
 
 #if !defined(RUNNING_GC_BUILDER)
 #define GC_ENUM
-    typedef
+typedef
 #include GARBAGE_COLLECTION_INCLUDE //"main/clasp_gc.cc"
-    GCKindEnum ;
+    GCKindEnum;
 #undef GC_ENUM
 #else
-    typedef enum { KIND_null, KIND_max } GCKindEnum;
+typedef enum { KIND_null,
+               KIND_max } GCKindEnum;
 #endif
-
-
 };
-
-
-
 
 extern "C" {
 
-    const char* obj_name(gctools::GCKindEnum kind);
+const char *obj_name(gctools::GCKindEnum kind);
 
-    /*! Implemented in gc_interace.cc */
-    mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
+/*! Implemented in gc_interace.cc */
+mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 
-    /*! Dump a representation of the object at the base pointer to stdout */
-    void obj_dump_base(mps_addr_t base);
+/*! Dump a representation of the object at the base pointer to stdout */
+void obj_dump_base(mps_addr_t base);
 
-    /*! Implemented in gc_interace.cc */
-    mps_addr_t obj_skip(mps_addr_t base);
+/*! Implemented in gc_interace.cc */
+mps_addr_t obj_skip(mps_addr_t base);
 
-    /*! Implemented in gc_interace.cc */
-    void obj_finalize(mps_addr_t base);
+/*! Implemented in gc_interace.cc */
+void obj_finalize(mps_addr_t base);
 
-    /*! This must be implemented in the main directory */
-    extern mps_res_t main_thread_roots_scan(mps_ss_t GC_SCAN_STATE, void *p, size_t s);
+/*! This must be implemented in the main directory */
+extern mps_res_t main_thread_roots_scan(mps_ss_t GC_SCAN_STATE, void *p, size_t s);
 };
-
-
-
-
-
-
-
-
-
-
 
 namespace gctools {
 
-    template <class T> inline size_t sizeof_with_header();
+template <class T>
+inline size_t sizeof_with_header();
 
-
-    // ----------------------------------------------------------------------
-    // ----------------------------------------------------------------------
-    // ----------------------------------------------------------------------
-    // ----------------------------------------------------------------------
-    // ----------------------------------------------------------------------
-    // ----------------------------------------------------------------------
-    //
-    // Define Header_s and stuff that can exist in the header
-    //
-    //
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+//
+// Define Header_s and stuff that can exist in the header
+//
+//
 
 //    typedef Header_s<void>* Header_t;
 
-    /*!
+/*!
 
       A Header is 16 bytes long and consists of two uintptr_t (8 bytes) values.
       The first uintptr_t is (header) the second uintptr_t is data[0].
@@ -174,80 +152,76 @@ namespace gctools {
       1r11 == This indicates that the header contains a pad; check the
       bit at 1r0100 to see if the pad is a pad1 (==0) or a pad (==1)
     */
-      
-    class Header_s {
-    public:
-        static const uintptr_t  tag_mask        = BOOST_BINARY(011);
-        static const uintptr_t  kind_tag        = BOOST_BINARY(001);
-        static const uintptr_t  fwd_tag         = BOOST_BINARY(010);
-        static const uintptr_t  pad_mask        = BOOST_BINARY(111);
-        static const uintptr_t  pad_test        = BOOST_BINARY(011);
-        static const uintptr_t  pad_tag         = BOOST_BINARY(011);
-        static const uintptr_t  pad1_tag        = BOOST_BINARY(111);
-        static const uintptr_t  fwd_ptr_mask    = ~tag_mask;
-//        static const uintptr_t  fwd2_tag        = BOOST_BINARY(001);
-        
-    private:
-        uintptr_t       header;
-        uintptr_t       data[1]; // After this is where the client pointer starts
-    public:
-        Header_s(GCKindEnum k) : header((k<<2)|kind_tag)
-                               , data{0xDEADBEEF01234567}
-        {};
 
-        bool kindP() const { return (this->header&tag_mask)==kind_tag;};
-        bool fwdP() const { return (this->header&tag_mask)==fwd_tag;};
-        bool anyPadP() const { return (this->header&pad_test)==pad_tag;};
-        bool padP() const { return (this->header&pad_mask)==pad_tag;};
-        bool pad1P() const { return (this->header&pad_mask)==pad1_tag;};
+class Header_s {
+public:
+  static const uintptr_t tag_mask = BOOST_BINARY(011);
+  static const uintptr_t kind_tag = BOOST_BINARY(001);
+  static const uintptr_t fwd_tag = BOOST_BINARY(010);
+  static const uintptr_t pad_mask = BOOST_BINARY(111);
+  static const uintptr_t pad_test = BOOST_BINARY(011);
+  static const uintptr_t pad_tag = BOOST_BINARY(011);
+  static const uintptr_t pad1_tag = BOOST_BINARY(111);
+  static const uintptr_t fwd_ptr_mask = ~tag_mask;
+  //        static const uintptr_t  fwd2_tag        = BOOST_BINARY(001);
 
-        /*! No sanity checking done - this function assumes kindP == true */
-        GCKindEnum kind() const { return (GCKindEnum)(this->header>>2); };
-        void setKind(GCKindEnum k) { this->header = (k<<2)|kind_tag; };
-        /*! No sanity checking done - this function assumes fwdP == true */
-        void* fwdPointer() const { return reinterpret_cast<void*>(this->header&fwd_ptr_mask); };
-        /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
-        void setFwdPointer(void* ptr) { this->header = reinterpret_cast<uintptr_t>(ptr)|fwd_tag; };
-        uintptr_t fwdSize() const { return this->data[0]; };
-        /*! This writes into the first uintptr_t sized word of the client data. */
-        void setFwdSize(size_t sz) { this->data[0] = sz; };
-        /*! Define the header as a pad, pass pad_tag or pad1_tag */
-        void setPad(uintptr_t p) { this->header = p; };
-        /*! Return the pad1 size */
-        uintptr_t pad1Size() const { return sizeof(Header_s); };
-        /*! Return the size of the pad block - without the header */
-        uintptr_t padSize() const { return data[0]; };
-        /*! This writes into the first uintptr_t sized word of the client data. */
-        void setPadSize(size_t sz) { this->data[0] = sz; };
-        string description() const {
-            if ( this->kindP() ) {
-                std::stringstream ss;
-                ss << "Header=" << (void*)(this->header);
-                ss << "/";
-                ss << obj_name(this->kind());
-                return ss.str();
-            } else if ( this->fwdP() ) {
-                std::stringstream ss;
-                ss << "Fwd/ptr=" << this->fwdPointer() <<"/sz="<<this->fwdSize();
-                return ss.str();
-            } else if (this->pad1P()) {
-                return "Pad1";
-            } else if (this->padP()) {
-                stringstream ss;
-                ss << "Pad/sz=" << this->padSize();
-                return ss.str();
-            }
-            stringstream ss;
-            ss << "IllegalHeader=";
-            ss << (void*)(this->header);
-            printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str() );
-            return ss.str();;
-        }
-   };
+private:
+  uintptr_t header;
+  uintptr_t data[1]; // After this is where the client pointer starts
+public:
+  Header_s(GCKindEnum k) : header((k << 2) | kind_tag), data{0xDEADBEEF01234567} {};
 
+  bool kindP() const { return (this->header & tag_mask) == kind_tag; };
+  bool fwdP() const { return (this->header & tag_mask) == fwd_tag; };
+  bool anyPadP() const { return (this->header & pad_test) == pad_tag; };
+  bool padP() const { return (this->header & pad_mask) == pad_tag; };
+  bool pad1P() const { return (this->header & pad_mask) == pad1_tag; };
 
+  /*! No sanity checking done - this function assumes kindP == true */
+  GCKindEnum kind() const { return (GCKindEnum)(this->header >> 2); };
+  void setKind(GCKindEnum k) { this->header = (k << 2) | kind_tag; };
+  /*! No sanity checking done - this function assumes fwdP == true */
+  void *fwdPointer() const { return reinterpret_cast<void *>(this->header & fwd_ptr_mask); };
+  /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
+  void setFwdPointer(void *ptr) { this->header = reinterpret_cast<uintptr_t>(ptr) | fwd_tag; };
+  uintptr_t fwdSize() const { return this->data[0]; };
+  /*! This writes into the first uintptr_t sized word of the client data. */
+  void setFwdSize(size_t sz) { this->data[0] = sz; };
+  /*! Define the header as a pad, pass pad_tag or pad1_tag */
+  void setPad(uintptr_t p) { this->header = p; };
+  /*! Return the pad1 size */
+  uintptr_t pad1Size() const { return sizeof(Header_s); };
+  /*! Return the size of the pad block - without the header */
+  uintptr_t padSize() const { return data[0]; };
+  /*! This writes into the first uintptr_t sized word of the client data. */
+  void setPadSize(size_t sz) { this->data[0] = sz; };
+  string description() const {
+    if (this->kindP()) {
+      std::stringstream ss;
+      ss << "Header=" << (void *)(this->header);
+      ss << "/";
+      ss << obj_name(this->kind());
+      return ss.str();
+    } else if (this->fwdP()) {
+      std::stringstream ss;
+      ss << "Fwd/ptr=" << this->fwdPointer() << "/sz=" << this->fwdSize();
+      return ss.str();
+    } else if (this->pad1P()) {
+      return "Pad1";
+    } else if (this->padP()) {
+      stringstream ss;
+      ss << "Pad/sz=" << this->padSize();
+      return ss.str();
+    }
+    stringstream ss;
+    ss << "IllegalHeader=";
+    ss << (void *)(this->header);
+    printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str());
+    return ss.str();
+    ;
+  }
 };
-
+};
 
 #if 0
 namespace gctools {    
@@ -293,18 +267,16 @@ namespace gctools {
 };
 #endif
 
-
 namespace gctools {
 
-        constexpr size_t Alignment() {
-            return sizeof(Header_s);
-//            return alignof(Header_s);
-        };
-        constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1);};
+constexpr size_t Alignment() {
+  return sizeof(Header_s);
+  //            return alignof(Header_s);
+};
+constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
 
-
-
-    template <class T> inline size_t sizeof_with_header() {return AlignUp(sizeof(T))+sizeof(Header_s);}
+template <class T>
+inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
 
 #if 0
     template <> inline size_t sizeof_with_header<gctools::Pad1_s>() { return AlignUp(sizeof(gctools::Pad1_s)); };
@@ -325,50 +297,48 @@ namespace gctools {
      : gctools::sizeof_with_header<gctools::Fwd_s>() ) 
 */
 namespace gctools {
-    extern size_t global_sizeof_fwd;
-    extern size_t global_alignup_sizeof_header;
-    inline size_t Align(size_t size) {
-        return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd);
-    };
+extern size_t global_sizeof_fwd;
+extern size_t global_alignup_sizeof_header;
+inline size_t Align(size_t size) {
+  return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd);
+};
 };
 
 namespace gctools {
 
 #define NON_MOVING_POOL_ALLOCATION_POINT global_non_moving_ap; //_global_mvff_allocation_point
 
-    extern mps_arena_t _global_arena;
+extern mps_arena_t _global_arena;
 
-    extern mps_pool_t _global_amc_pool;
+extern mps_pool_t _global_amc_pool;
 //    extern mps_pool_t _global_mvff_pool;
-    extern mps_pool_t _global_amcz_pool;
-    extern mps_pool_t global_non_moving_pool;
+extern mps_pool_t _global_amcz_pool;
+extern mps_pool_t global_non_moving_pool;
 
-    extern mps_ap_t _global_automatic_mostly_copying_allocation_point;
+extern mps_ap_t _global_automatic_mostly_copying_allocation_point;
 //    extern mps_ap_t _global_mvff_allocation_point;
-    extern mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
-    extern mps_ap_t global_non_moving_ap;
+extern mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
+extern mps_ap_t global_non_moving_ap;
 
-    extern mps_pool_t _global_awl_pool;
-    extern mps_ap_t _global_weak_link_allocation_point;
-    extern mps_ap_t _global_strong_link_allocation_point;
+extern mps_pool_t _global_awl_pool;
+extern mps_ap_t _global_weak_link_allocation_point;
+extern mps_ap_t _global_strong_link_allocation_point;
 
-
-    template <typename T> struct GCAllocationPoint
-    {
+template <typename T>
+struct GCAllocationPoint {
 #ifdef USE_AMC_POOL
-        static mps_ap_t get() { return _global_automatic_mostly_copying_allocation_point; };
+  static mps_ap_t get() { return _global_automatic_mostly_copying_allocation_point; };
 #define DEFAULT_ALLOCATION_POINT _global_automatic_mostly_copying_allocation_point
 #else
-        static mps_ap_t get() { return NON_MOVING_POOL_ALLOCATION_POINT; };
+  static mps_ap_t get() { return NON_MOVING_POOL_ALLOCATION_POINT; };
 #define DEFAULT_ALLOCATION_POINT NON_MOVING_POOL_ALLOCATION_POINT
 #endif
-    };
-
+};
 };
 
 namespace core {
-    class Fixnum_O;
-    class Cons_O;
+class Fixnum_O;
+class Cons_O;
 };
 
 #ifdef USE_PUT_SELECT_CLASSES_IN_AMC_POOL
@@ -383,19 +353,12 @@ namespace gctools {
         static mps_ap_t get() { return AMC_AP;};
     };
 #endif
-    template <>
-    struct allocation_point<core::Cons_O> {
-        static mps_ap_t get() { return AMC_AP;};
-    };
+template <>
+struct allocation_point<core::Cons_O> {
+  static mps_ap_t get() { return AMC_AP; };
+};
 };
 #endif
-
-
-
-
-
-
-
 
 /* ------------------------------------------------------------
    ------------------------------------------------------------
@@ -405,45 +368,33 @@ namespace gctools {
    ------------------------------------------------------------
 */
 
-
 /*! Return the block address of the object pointed to by the smart_ptr */
 #define GC_BASE_ADDRESS_FROM_SMART_PTR(_smartptr_) ((_smartptr_).pbase_ref())
-#define GC_BASE_ADDRESS_FROM_PTR(_ptr_) (const_cast<void*>(dynamic_cast<const void*>(_ptr_)))
-
-
-
-
+#define GC_BASE_ADDRESS_FROM_PTR(_ptr_) (const_cast<void *>(dynamic_cast<const void *>(_ptr_)))
 
 namespace gctools {
 
-    inline void* ClientPtrToBasePtr(void* mostDerived)
-    {
-        void* ptr = reinterpret_cast<char*>(mostDerived) - sizeof(Header_s);
-        return ptr;
-    }
+inline void *ClientPtrToBasePtr(void *mostDerived) {
+  void *ptr = reinterpret_cast<char *>(mostDerived) - sizeof(Header_s);
+  return ptr;
+}
 
-    template <typename T>
-    inline T* BasePtrToMostDerivedPtr(void* base)
-    {
-        T* ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(base) + sizeof(Header_s));
-        return ptr;
-    }
-
-
-
+template <typename T>
+inline T *BasePtrToMostDerivedPtr(void *base) {
+  T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + sizeof(Header_s));
+  return ptr;
+}
 };
-
-
 
 namespace core {
-    class T_O;
-    class WrappedPointer_O;
-    class Functoid;
-    class Creator;
-    class Iterator_O;
+class T_O;
+class WrappedPointer_O;
+class Functoid;
+class Creator;
+class Iterator_O;
 };
 namespace clbind {
-    class ConstructorCreator;
+class ConstructorCreator;
 };
 
 #ifndef RUNNING_GC_BUILDER
@@ -458,161 +409,112 @@ namespace gctools {
 #include GARBAGE_COLLECTION_INCLUDE // "main/clasp_gc.cc"
 #undef GC_DYNAMIC_CAST
 #endif
-
 };
-
-
-
-
-
-
-        
 
 namespace gctools {
-    template <typename T> class smart_ptr;
+template <typename T>
+class smart_ptr;
 };
-
 
 #if 1
 template <typename T>
-inline mps_res_t smartPtrFix(mps_ss_t _ss
-                        , mps_word_t _mps_zs
-                        , mps_word_t _mps_w
-                        , mps_word_t& _mps_ufs
-                        , mps_word_t _mps_wt
-                        , const gctools::smart_ptr<T>* sptrP
+inline mps_res_t smartPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, const gctools::smart_ptr<T> *sptrP
 #ifdef DEBUG_MPS
-                        , const char* sptr_name
+                             ,
+                             const char *sptr_name
 #endif
-    ) {
-    DEBUG_MPS_MESSAGE(boost::format("SMART_PTR_FIX of %s@%p px: %p") % sptr_name % (sptrP)  % (sptrP)->px_ref()); 
-    if ( sptrP->pointerp() ) {                                    
-	if ( MPS_FIX1(_ss,(sptrP)->px_ref()) ) {          
-	    mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&sptrP->px_ref())); 
-            if (res != MPS_RES_OK) return res;              
-        }								
-    };
-    return MPS_RES_OK;
+                             ) {
+  DEBUG_MPS_MESSAGE(boost::format("SMART_PTR_FIX of %s@%p px: %p") % sptr_name % (sptrP) % (sptrP)->px_ref());
+  if (sptrP->pointerp()) {
+    if (MPS_FIX1(_ss, (sptrP)->px_ref())) {
+      mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&sptrP->px_ref()));
+      if (res != MPS_RES_OK)
+        return res;
+    }
+  };
+  return MPS_RES_OK;
 };
 #else
 template <typename T>
-inline mps_res_t smartPtrFix(mps_ss_t _ss
-                        , mps_word_t _mps_zs
-                        , mps_word_t _mps_w
-                        , mps_word_t& _mps_ufs
-                        , mps_word_t _mps_wt
-                        , const gctools::smart_ptr<T>* sptrP
+inline mps_res_t smartPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, const gctools::smart_ptr<T> *sptrP
 #ifdef DEBUG_MPS
-                        , const char* sptr_name
+                             ,
+                             const char *sptr_name
 #endif
-    ) {
-    DEBUG_MPS_MESSAGE(boost::format("SMART_PTR_FIX of %s@%p px: %p") % sptr_name % (sptrP)  % (sptrP)->px_ref()); 
-    if ( sptrP->pointerp() ) {                                    
-	if ( MPS_FIX1(_ss,(sptrP)->px_ref()) ) {          
-            Seg seg;
-            mps_addr_t client;
-            if (SegOfAddr(&seg,gctools::_global_arena,sptrP->px_ref())) {
-                    ShieldExpose(gctools::_global_arena,seg);
-                    client = dynamic_cast<void*>(sptrP->px_ref());
-                    ShieldCover(gctools::_global_arena,seg);
-            } else {
-                THROW_HARD_ERROR(BF("SegOfAddr for address: %p failed - this should never happen") % sptrP->px_ref());
-            }
-	    int offset = reinterpret_cast<char*>((sptrP)->px_ref()) - reinterpret_cast<char*>(client); 
-            DEBUG_MPS_MESSAGE(boost::format("  px_ref()=%p client=%p  offset=%d  Seg=%p") % sptrP->px_ref() % client % offset % seg); 
-	    mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&client)); 
-            DEBUG_MPS_MESSAGE(boost::format("  new client=%p") % client);
-            if (res != MPS_RES_OK) return res;              
-            mps_addr_t new_obj = reinterpret_cast<void*>(reinterpret_cast<char*>(client)+offset);
-            DEBUG_MPS_MESSAGE(boost::format("  old_obj=%p  new_obj = %p\n") % (sptrP->px_ref()) % new_obj ); 
-            (sptrP)->_pxset(new_obj); 
-        }								
-    };
-    return MPS_RES_OK;
+                             ) {
+  DEBUG_MPS_MESSAGE(boost::format("SMART_PTR_FIX of %s@%p px: %p") % sptr_name % (sptrP) % (sptrP)->px_ref());
+  if (sptrP->pointerp()) {
+    if (MPS_FIX1(_ss, (sptrP)->px_ref())) {
+      Seg seg;
+      mps_addr_t client;
+      if (SegOfAddr(&seg, gctools::_global_arena, sptrP->px_ref())) {
+        ShieldExpose(gctools::_global_arena, seg);
+        client = dynamic_cast<void *>(sptrP->px_ref());
+        ShieldCover(gctools::_global_arena, seg);
+      } else {
+        THROW_HARD_ERROR(BF("SegOfAddr for address: %p failed - this should never happen") % sptrP->px_ref());
+      }
+      int offset = reinterpret_cast<char *>((sptrP)->px_ref()) - reinterpret_cast<char *>(client);
+      DEBUG_MPS_MESSAGE(boost::format("  px_ref()=%p client=%p  offset=%d  Seg=%p") % sptrP->px_ref() % client % offset % seg);
+      mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&client));
+      DEBUG_MPS_MESSAGE(boost::format("  new client=%p") % client);
+      if (res != MPS_RES_OK)
+        return res;
+      mps_addr_t new_obj = reinterpret_cast<void *>(reinterpret_cast<char *>(client) + offset);
+      DEBUG_MPS_MESSAGE(boost::format("  old_obj=%p  new_obj = %p\n") % (sptrP->px_ref()) % new_obj);
+      (sptrP)->_pxset(new_obj);
+    }
+  };
+  return MPS_RES_OK;
 };
 #endif
 
-
-
-
-
-
-
-
 #ifdef DEBUG_MPS
-#define SMART_PTR_FIX(_smartptr_) smartPtrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,&_smartptr_,#_smartptr_)
+#define SMART_PTR_FIX(_smartptr_) smartPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, &_smartptr_, #_smartptr_)
 #else
-#define SMART_PTR_FIX(_smartptr_) smartPtrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,&_smartptr_)
+#define SMART_PTR_FIX(_smartptr_) smartPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, &_smartptr_)
 #endif
-
 
 template <typename T>
-inline mps_res_t ptrFix(mps_ss_t _ss
-                        , mps_word_t _mps_zs
-                        , mps_word_t _mps_w
-                        , mps_word_t& _mps_ufs
-                        , mps_word_t _mps_wt
-                        , T* clientP
+inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, T *clientP
 #ifdef DEBUG_MPS
-                        , const char* client_name
+                        ,
+                        const char *client_name
 #endif
- )
-{
-    DEBUG_MPS_MESSAGE(boost::format("POINTER_FIX of %s@%p px: %p") % client_name % clientP  % *clientP );
-   if ( MPS_FIX1(GC_SCAN_STATE,*clientP) ) {                              
-        mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(clientP)); 
-        if (res != MPS_RES_OK) return res;                              
-    };
-   return MPS_RES_OK;
+                        ) {
+  DEBUG_MPS_MESSAGE(boost::format("POINTER_FIX of %s@%p px: %p") % client_name % clientP % *clientP);
+  if (MPS_FIX1(GC_SCAN_STATE, *clientP)) {
+    mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(clientP));
+    if (res != MPS_RES_OK)
+      return res;
+  };
+  return MPS_RES_OK;
 };
 
-
 #ifdef DEBUG_MPS
-#define POINTER_FIX(_ptr_) ptrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,&_ptr_,#_ptr_)
+#define POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, &_ptr_, #_ptr_)
 #else
-#define POINTER_FIX(_ptr_) ptrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,&_ptr_)
+#define POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, &_ptr_)
 #endif
 
+namespace gctools {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-namespace gctools
-{
-
-    /*! Initialize the memory pool system and call the startup function which
+/*! Initialize the memory pool system and call the startup function which
       has the type: int startup(int argc, char* argv[]) just like main.
       Also pass an optional object-format for MPS
     */
-    int initializeMemoryPoolSystem( MainFunctionType startup, int argc, char* argv[],  mps_fmt_auto_header_s* mps_fmt, bool mpiEnabled, int mpiRank, int mpiSize );
+int initializeMemoryPoolSystem(MainFunctionType startup, int argc, char *argv[], mps_fmt_auto_header_s *mps_fmt, bool mpiEnabled, int mpiRank, int mpiSize);
 
-
-
-
-    /*! Search the heap and the stack for an address and print hits
+/*! Search the heap and the stack for an address and print hits
       This can't currently be called from within obj_skip - so it's not
       useful.    Come up with another way to determine ownership of pointers */
-    void searchHeapAndStackForAddress(mps_addr_t addr);
-
+void searchHeapAndStackForAddress(mps_addr_t addr);
 };
-
 
 extern "C" {
 
-    /*! Return the number of messages processed */
-    extern int processMpsMessages(void );
-
+/*! Return the number of messages processed */
+extern int processMpsMessages(void);
 };
-
 
 #endif // _brcl_memoryPoolSystem_H

@@ -31,13 +31,9 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/keywordPackage.fwd.h>
 
-namespace kw
-{
+namespace kw {
 
-    core::Package_sp initialize_keywordPackage();
-
-
+core::Package_sp initialize_keywordPackage();
 };
-
 
 #endif

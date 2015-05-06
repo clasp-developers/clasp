@@ -24,29 +24,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-       
+
 //
 // (C) 2004 Christian E. Schafmeister
 //
-
-
 
 #include <stdio.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/holder.h>
 
-namespace core
-{
+namespace core {
 
-    StringMap<T_O>	stuff;
+StringMap<T_O> stuff;
 
-
-main()
-{
-    Atom_sp*	result;
-    result = subroutine();
-    printf( "Returned from subroutine\n" );
+main() {
+  Atom_sp *result;
+  result = subroutine();
+  printf("Returned from subroutine\n");
 }
-
-
 };

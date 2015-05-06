@@ -46,7 +46,6 @@ THE SOFTWARE.
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 #ifndef CLBIND_ENUM_MAKER_HPP_INCLUDED
 #define CLBIND_ENUM_MAKER_HPP_INCLUDED
 
@@ -59,130 +58,108 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbolToEnumConverter.h>
 
-namespace clbind
-{
-    struct value;
+namespace clbind {
+struct value;
 
-    struct value_vector : public std::vector<value>
-    {
-        // a bug in intel's compiler forces us to declare these constructors explicitly.
-        value_vector();
-        virtual ~value_vector();
-        value_vector(const value_vector& v);
-        value_vector& operator,(const value& rhs);
-    };
+struct value_vector : public std::vector<value> {
+  // a bug in intel's compiler forces us to declare these constructors explicitly.
+  value_vector();
+  virtual ~value_vector();
+  value_vector(const value_vector &v);
+  value_vector &operator, (const value &rhs);
+};
 
-    struct value
-    {
-	friend class std::vector<value>;
-        template<class T>
-        value(const char* name, T v)
-            : name_(name)
-            , val_(v)
-        {}
+struct value {
+  friend class std::vector<value>;
+  template <class T>
+  value(const char *name, T v)
+      : name_(name), val_(v) {}
 
-        const char* name_;
-        int val_;
+  const char *name_;
+  int val_;
 
-        value_vector operator,(const value& rhs) const
-        {
-            value_vector v;
+  value_vector operator, (const value &rhs) const {
+    value_vector v;
 
-            v.push_back(*this);
-            v.push_back(rhs);
+    v.push_back(*this);
+    v.push_back(rhs);
 
-            return v;
-        }
+    return v;
+  }
 
-    private: 
+private:
+  value() {}
+};
 
-        value() {}
-    };
-
-    inline value_vector::value_vector()
-        : std::vector<value>()
-    {
-    }
-
-    inline value_vector::~value_vector() {}
-
-    inline value_vector::value_vector(const value_vector& rhs)
-        : std::vector<value>(rhs)
-    {
-    }
-
-    inline value_vector& value_vector::operator,(const value& rhs)
-    {
-        push_back(rhs);
-        return *this;
-    }
-
-
-
-
-
-    namespace detail
-    {
-        template<class From, class EnumType>
-        struct enum_maker
-        {
-            explicit enum_maker(From& from, core::Symbol_sp converterSym): _from(from), _converterSym(converterSym) {}
-            From& operator[](const value& val)
-            {
-                core::SymbolToEnumConverter_sp converter = core::SymbolToEnumConverter_O::create(this->_converterSym->symbolName());
-                this->_converterSym->setf_symbolValue(converter);
-                core::Symbol_sp nameSym = core::lispify_intern(val.name_,core::lisp_currentPackageName(),true);
-                core::lisp_extendSymbolToEnumConverter(converter,nameSym,nameSym,val.val_);
-                return _from;
-            }
-			
-            From& operator[](const value_vector& values)
-            {
-                core::SymbolToEnumConverter_sp converter = core::SymbolToEnumConverter_O::create(this->_converterSym->symbolName()->get());
-                this->_converterSym->setf_symbolValue(converter);
-                for (value_vector::const_iterator i = values.begin(); i != values.end(); ++i)
-                {
-                    core::Symbol_sp nameSym = core::lispify_intern(i->name_,core::lisp_currentPackageName(),true);
-                    core::lisp_extendSymbolToEnumConverter(converter,nameSym,nameSym,i->val_);
-                }
-                return _from;
-            }
-
-            From& _from;
-            core::Symbol_sp _converterSym;
-
-        private:
-//            void operator=(enum_maker const&); // C4512, assignment operator could not be generated
-            template<class T> void operator,(T const&) const;
-        };
-    }
+inline value_vector::value_vector()
+    : std::vector<value>() {
 }
 
-#define CLBIND_TRANSLATE_SYMBOL_TO_ENUM(_ENUM_TYPE_,_SYM_) \
-    namespace translate {                                               \
-    template <>                                                         \
-    struct from_object<_ENUM_TYPE_>                                     \
-    {                                                                   \
-	typedef _ENUM_TYPE_	DeclareType;                            \
-	DeclareType _v;                                                 \
-	from_object(T_P object)                                         \
-	{_G();                                                          \
-            if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() ) { \
-		core::SymbolToEnumConverter_sp converter = _SYM_->symbolValue().as<core::SymbolToEnumConverter_O>(); \
-		this->_v = converter->enumForSymbol<_ENUM_TYPE_>(sym);  \
-		return;                                                 \
-	    }                                                           \
-	    SIMPLE_ERROR(BF("Cannot convert object %s to " #_ENUM_TYPE_) % _rep_(object) ); \
-	}                                                               \
-    };                                                                  \
-    template <>                                                         \
-    struct to_object<_ENUM_TYPE_>                                       \
-    {                                                                   \
-	static core::T_sp convert(_ENUM_TYPE_ val) {                    \
-            core::SymbolToEnumConverter_sp converter = _SYM_->symbolValue().as<core::SymbolToEnumConverter_O>(); \
-            return converter->symbolForEnum<_ENUM_TYPE_>(val);          \
-        };                                                              \
-    };                                                                  \
-    };
+inline value_vector::~value_vector() {}
+
+inline value_vector::value_vector(const value_vector &rhs)
+    : std::vector<value>(rhs) {
+}
+
+inline value_vector &value_vector::operator, (const value &rhs) {
+  push_back(rhs);
+  return *this;
+}
+
+namespace detail {
+template <class From, class EnumType>
+struct enum_maker {
+  explicit enum_maker(From &from, core::Symbol_sp converterSym) : _from(from), _converterSym(converterSym) {}
+  From &operator[](const value &val) {
+    core::SymbolToEnumConverter_sp converter = core::SymbolToEnumConverter_O::create(this->_converterSym->symbolName());
+    this->_converterSym->setf_symbolValue(converter);
+    core::Symbol_sp nameSym = core::lispify_intern(val.name_, core::lisp_currentPackageName(), true);
+    core::lisp_extendSymbolToEnumConverter(converter, nameSym, nameSym, val.val_);
+    return _from;
+  }
+
+  From &operator[](const value_vector &values) {
+    core::SymbolToEnumConverter_sp converter = core::SymbolToEnumConverter_O::create(this->_converterSym->symbolName()->get());
+    this->_converterSym->setf_symbolValue(converter);
+    for (value_vector::const_iterator i = values.begin(); i != values.end(); ++i) {
+      core::Symbol_sp nameSym = core::lispify_intern(i->name_, core::lisp_currentPackageName(), true);
+      core::lisp_extendSymbolToEnumConverter(converter, nameSym, nameSym, i->val_);
+    }
+    return _from;
+  }
+
+  From &_from;
+  core::Symbol_sp _converterSym;
+
+private:
+  //            void operator=(enum_maker const&); // C4512, assignment operator could not be generated
+  template <class T>
+  void operator, (T const &) const;
+};
+}
+}
+
+#define CLBIND_TRANSLATE_SYMBOL_TO_ENUM(_ENUM_TYPE_, _SYM_)                                                  \
+  namespace translate {                                                                                      \
+  template <> struct from_object<_ENUM_TYPE_> {                                                              \
+    typedef _ENUM_TYPE_ DeclareType;                                                                         \
+    DeclareType _v;                                                                                          \
+    from_object(T_P object) {                                                                                \
+      _G();                                                                                                  \
+      if (core::Symbol_sp sym = object.asOrNull<core::Symbol_O>()) {                                         \
+        core::SymbolToEnumConverter_sp converter = _SYM_->symbolValue().as<core::SymbolToEnumConverter_O>(); \
+        this->_v = converter->enumForSymbol<_ENUM_TYPE_>(sym);                                               \
+        return;                                                                                              \
+      }                                                                                                      \
+      SIMPLE_ERROR(BF("Cannot convert object %s to " #_ENUM_TYPE_) % _rep_(object));                         \
+    }                                                                                                        \
+  };                                                                                                         \
+  template <> struct to_object<_ENUM_TYPE_> {                                                                \
+    static core::T_sp convert(_ENUM_TYPE_ val) {                                                             \
+      core::SymbolToEnumConverter_sp converter = _SYM_->symbolValue().as<core::SymbolToEnumConverter_O>();   \
+      return converter->symbolForEnum<_ENUM_TYPE_>(val);                                                     \
+    };                                                                                                       \
+  };                                                                                                         \
+  };
 
 #endif // CLBIND_ENUM_MAKER_HPP_INCLUDED

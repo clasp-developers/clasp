@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_write_object_H
+#ifndef _core_write_object_H
 #define _core_write_object_H
 
 #include <clasp/core/object.h>
@@ -32,13 +32,11 @@ THE SOFTWARE.
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/wrappers.h>
 
-namespace core
-{
+namespace core {
 
-    bool will_print_as_hash(T_sp x);
-    T_sp write_object(T_sp x, T_sp stream);
+bool will_print_as_hash(T_sp x);
+T_sp write_object(T_sp x, T_sp stream);
 
-    void initialize_write_object();
-
+void initialize_write_object();
 };
 #endif

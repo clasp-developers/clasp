@@ -24,89 +24,84 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_ReadTable_H
+#ifndef _core_ReadTable_H
 #define _core_ReadTable_H
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/hashTable.fwd.h>
 
-
-namespace core
-{
+namespace core {
 
 enum clasp_readtable_case {
-	clasp_case_upcase,
-	clasp_case_downcase,
-	clasp_case_invert,
-	clasp_case_preserve
+  clasp_case_upcase,
+  clasp_case_downcase,
+  clasp_case_invert,
+  clasp_case_preserve
 };
 
+FORWARD(ReadTable);
+class ReadTable_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_CLASS(core, ClPkg, ReadTable_O, "readtable");
+  DECLARE_INIT();
+  //    DECLARE_ARCHIVE();
+  friend T_sp cl_setSyntaxFromChar(Character_sp toChar, Character_sp fromChar, ReadTable_sp toReadTable, ReadTable_sp fromReadTable);
 
-    FORWARD(ReadTable);
-    class ReadTable_O : public T_O
-    {
-	LISP_BASE1(T_O);
-	LISP_CLASS(core,ClPkg,ReadTable_O,"readtable");
-	DECLARE_INIT();
-//    DECLARE_ARCHIVE();
-	friend T_sp cl_setSyntaxFromChar(Character_sp toChar, Character_sp fromChar, ReadTable_sp toReadTable, ReadTable_sp fromReadTable );
-    public: // Simple default ctor/dtor
-	DEFAULT_CTOR_DTOR(ReadTable_O);
-    public:
-	void initialize();
+public: // Simple default ctor/dtor
+  DEFAULT_CTOR_DTOR(ReadTable_O);
 
-    GCPRIVATE: // instance variables here
-	Symbol_sp	_Case;
-	/*! _Syntax is a HashTable and each value is a plist */
-	// HashTable_sp	_Syntax; 
-        HashTable_sp _SyntaxTypes;
-        HashTable_sp _MacroCharacters;
-        HashTable_sp _DispatchMacroCharacters;
-    public: // static functions here
-	static ReadTable_sp create_standard_readtable();
-	/*! Create a basic syntax table that describes the syntax of
+public:
+  void initialize();
+
+GCPRIVATE: // instance variables here
+  Symbol_sp _Case;
+  /*! _Syntax is a HashTable and each value is a plist */
+  // HashTable_sp	_Syntax;
+  HashTable_sp _SyntaxTypes;
+  HashTable_sp _MacroCharacters;
+  HashTable_sp _DispatchMacroCharacters;
+
+public: // static functions here
+  static ReadTable_sp create_standard_readtable();
+  /*! Create a basic syntax table that describes the syntax of
 	  the charactes: tab, newline, linefeed, page, return, space
 	  and '\\'(single-escape) and '|'(multiple-escape)
 	  macro characters need to be added to this to create a standard readtable
 	*/
-	static HashTable_sp create_standard_syntax_table();
+  static HashTable_sp create_standard_syntax_table();
 
+public: // instance member functions here
+  ReadTable_sp copyReadTable(ReadTable_sp dest);
 
-    public: // instance member functions here
+  string __repr__() const;
 
-	ReadTable_sp copyReadTable(ReadTable_sp dest);
+  T_sp set_syntax_type(Character_sp ch, T_sp syntaxType);
+  Symbol_sp setf_readtable_case(Symbol_sp newCase);
+  clasp_readtable_case getReadTableCaseAsEnum();
+  Symbol_sp getReadTableCase() const { return this->_Case; };
 
-	string __repr__() const;
+  /*! syntax-type returns the syntax type of a character */
+  Symbol_sp syntax_type(Character_sp ch) const;
 
-	T_sp set_syntax_type(Character_sp ch, T_sp syntaxType );
-	Symbol_sp setf_readtable_case(Symbol_sp newCase);
-        clasp_readtable_case getReadTableCaseAsEnum();
-        Symbol_sp getReadTableCase() const { return this->_Case;};
+  /*! Define a macro character */
+  T_sp set_macro_character(Character_sp ch, T_sp funcDesig, T_sp non_terminating);
 
-	/*! syntax-type returns the syntax type of a character */
-	Symbol_sp syntax_type(Character_sp ch) const;
+  /*! CLHS get-macro-character */
+  T_mv get_macro_character(Character_sp ch);
 
-	/*! Define a macro character */
-	T_sp set_macro_character(Character_sp ch, T_sp funcDesig, T_sp non_terminating );
+  /*! Define a dispatch macro character */
+  T_sp make_dispatch_macro_character(Character_sp ch,
+                                     T_sp non_terminating_p);
 
-	/*! CLHS get-macro-character */
-	T_mv get_macro_character(Character_sp ch );
+  Function_sp get_dispatch_macro_character(Character_sp disp_char, Character_sp sub_chDar);
+  T_sp set_dispatch_macro_character(Character_sp ch,
+                                    Character_sp second,
+                                    T_sp funcDesig);
 
-	/*! Define a dispatch macro character */
-	T_sp make_dispatch_macro_character(Character_sp ch,
-					   T_sp non_terminating_p );
-
-
-	Function_sp get_dispatch_macro_character(Character_sp disp_char, Character_sp sub_chDar );
-	T_sp set_dispatch_macro_character(Character_sp ch,
-					  Character_sp second,
-					  T_sp funcDesig );
-
-
-	Character_sp convert_case(Character_sp c);
-	Function_sp lookup_reader_macro(Character_sp c);
-    };
+  Character_sp convert_case(Character_sp c);
+  Function_sp lookup_reader_macro(Character_sp c);
+};
 
 }; /* core */
 

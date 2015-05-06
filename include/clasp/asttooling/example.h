@@ -24,15 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	asttooling_example_H
+#ifndef asttooling_example_H
 #define asttooling_example_H
 
 #include <clasp/core/common.h>
 
-namespace asttooling
-{
-
+namespace asttooling {
 };
-
 
 #endif

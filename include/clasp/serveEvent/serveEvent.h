@@ -29,8 +29,7 @@ THE SOFTWARE.
 
 namespace serveEvent {
 
-    void initialize_serveEvent_functions();
-    void initialize_serveEvent_globals();
-
+void initialize_serveEvent_functions();
+void initialize_serveEvent_globals();
 };
 #endif

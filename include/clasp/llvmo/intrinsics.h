@@ -24,28 +24,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	llvmo_primitives_H
+#ifndef llvmo_primitives_H
 #define llvmo_primitives_H
 
-extern "C"
-{
+extern "C" {
 
-    typedef void (*fnLispCallingConvention)(LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS );
-    typedef void (*fnVoidType)();
-
-
-
+typedef void (*fnLispCallingConvention)(LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS);
+typedef void (*fnVoidType)();
 };
 
+namespace llvmo {
 
+void redirect_llvm_interface_addSymbol();
 
-
-namespace llvmo
-{
-
-    void redirect_llvm_interface_addSymbol();
-
-    void initialize_intrinsics();
+void initialize_intrinsics();
 }
 
 #endif

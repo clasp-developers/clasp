@@ -25,10 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-namespace core
-{
-
+namespace core {
 
 extern void initializePackagesAndClasses(Lisp_sp);
-
 };

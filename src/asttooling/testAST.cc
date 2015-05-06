@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <clasp/core/str.h>
 #include <clasp/asttooling/testAST.h>
 
-
 #if 0
 namespace asttooling {
 

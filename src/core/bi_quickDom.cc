@@ -24,15 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-       
+
 //
 // (C) 2004 Christian E. Schafmeister
 //
 
-
-
 #include <clasp/core/mainBoostPython.h>
-
 
 #include <vector3.h>
 #include <matrix.h>
@@ -42,11 +39,8 @@ THE SOFTWARE.
 //#i n c l u d e "execContext.h"
 #include <clasp/core/pythonCallback.h>
 
-
-
 #include <mySaxInterface.h>
 
 #include <xmlAggregate.h>
-
 
 #include <quickDom.h>

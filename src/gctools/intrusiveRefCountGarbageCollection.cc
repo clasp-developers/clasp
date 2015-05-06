@@ -25,16 +25,11 @@ THE SOFTWARE.
 */
 /* -^- */
 
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/intrusiveRefCountGarbageCollection.h>
 
-
-
 namespace gctools {
-
-
 };

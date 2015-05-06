@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	SEXP_LOAD_ARCHIVE_H //[
-#define	SEXP_LOAD_ARCHIVE_H
+#ifndef SEXP_LOAD_ARCHIVE_H //[
+#define SEXP_LOAD_ARCHIVE_H
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -35,19 +35,17 @@ THE SOFTWARE.
 
 namespace core {
 
+SMART(SexpLoadArchive);
+class SexpLoadArchive_O : public LoadArchive_O {
+  LISP_BASE1(LoadArchive_O);
+  LISP_CLASS(core, CorePkg, SexpLoadArchive_O, "SexpLoadArchive");
 
-    SMART(SexpLoadArchive);
-    class SexpLoadArchive_O : public LoadArchive_O
-    {
-	LISP_BASE1(LoadArchive_O);
-	LISP_CLASS(core,CorePkg,SexpLoadArchive_O,"SexpLoadArchive");
-    public:
-	virtual void 	parseFromObject( T_sp object );
-	virtual void	parseFromStream( T_sp streamDesignator );
+public:
+  virtual void parseFromObject(T_sp object);
+  virtual void parseFromStream(T_sp streamDesignator);
 
-	DEFAULT_CTOR_DTOR(SexpLoadArchive_O);
-    };
-
+  DEFAULT_CTOR_DTOR(SexpLoadArchive_O);
+};
 
 }; // namespace core
 

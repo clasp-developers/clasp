@@ -24,14 +24,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/weakKeyMapping.h>
 #include <clasp/core/wrappers.h>
-namespace core
-{
+namespace core {
 
 // ----------------------------------------------------------------------
 //
@@ -39,73 +38,57 @@ namespace core
 #define ARGS_WeakKeyMapping_O_make "(key val)"
 #define DECL_WeakKeyMapping_O_make ""
 #define DOCS_WeakKeyMapping_O_make "make WeakKeyMapping args: obj"
-    WeakKeyMapping_sp WeakKeyMapping_O::make(T_sp key, T_sp tval)
-    {_G();
-        T_sp val(tval);
-        if ( key == tval ) {
-            val = gctools::smart_ptr<T_O>(gctools::tagged_ptr<T_O>::tagged_sameAsKey);
-        }
-        GC_ALLOCATE_VARIADIC(WeakKeyMapping_O,me,key,val);
-	return me;
-    };
+WeakKeyMapping_sp WeakKeyMapping_O::make(T_sp key, T_sp tval) {
+  _G();
+  T_sp val(tval);
+  if (key == tval) {
+    val = gctools::smart_ptr<T_O>(gctools::tagged_ptr<T_O>::tagged_sameAsKey);
+  }
+  GC_ALLOCATE_VARIADIC(WeakKeyMapping_O, me, key, val);
+  return me;
+};
 
+EXPOSE_CLASS(core, WeakKeyMapping_O);
 
-    EXPOSE_CLASS(core,WeakKeyMapping_O);
+void WeakKeyMapping_O::exposeCando(Lisp_sp lisp) {
+  class_<WeakKeyMapping_O>()
+      .def("weakKeyMappingValid", &WeakKeyMapping_O::valid)
+      .def("weakKeyMappingKeyValue", &WeakKeyMapping_O::keyValue);
+  Defun_maker(CorePkg, WeakKeyMapping);
+}
 
-    void WeakKeyMapping_O::exposeCando(Lisp_sp lisp)
-    {
-	class_<WeakKeyMapping_O>()
-	    .def("weakKeyMappingValid",&WeakKeyMapping_O::valid)
-	    .def("weakKeyMappingKeyValue",&WeakKeyMapping_O::keyValue)
-	;
-	Defun_maker(CorePkg,WeakKeyMapping);
-       
-    }
-
-    void WeakKeyMapping_O::exposePython(Lisp_sp lisp)
-    {_G();
+void WeakKeyMapping_O::exposePython(Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,WeakKeyMapping,"","",_lisp)
-	    .def("weakKeyMappingValid",&WeakKeyMapping_O::valid)
-	    .def("weakKeyMappingValue",&WeakKeyMapping_O::value)
-	;
+  PYTHON_CLASS(CorePkg, WeakKeyMapping, "", "", _lisp)
+      .def("weakKeyMappingValid", &WeakKeyMapping_O::valid)
+      .def("weakKeyMappingValue", &WeakKeyMapping_O::value);
 #endif
-    }
-
-
-
-
-
+}
 
 #if defined(OLD_SERIALIZE)
-    void WeakKeyMapping_O::serialize(serialize::SNode snode)
-    {
-	CR_HINT(snode,false);
-	snode->archiveWeakKeyMapping("weakObject",this->_WeakObject);
-	CR_HINT(snode,false);
-    }
+void WeakKeyMapping_O::serialize(serialize::SNode snode) {
+  CR_HINT(snode, false);
+  snode->archiveWeakKeyMapping("weakObject", this->_WeakObject);
+  CR_HINT(snode, false);
+}
 #endif // defined(OLD_SERIALIZE)
 
 #if defined(XML_ARCHIVE)
-    void WeakKeyMapping_O::archiveBase(ArchiveP node)
-    {
-        this->Base::archiveBase(node);
-	node->archiveWeakKeyMapping("weakObject",this->_WeakObject);
-    }
+void WeakKeyMapping_O::archiveBase(ArchiveP node) {
+  this->Base::archiveBase(node);
+  node->archiveWeakKeyMapping("weakObject", this->_WeakObject);
+}
 #endif // defined(XML_ARCHIVE)
 
+bool WeakKeyMapping_O::valid() const {
+  return this->_WeakObject.valid();
+}
 
-    bool WeakKeyMapping_O::valid() const
-    {
-        return this->_WeakObject.valid();
-    }
-
-    /*! Return (values key value t) or (values nil nil nil) */
-    T_mv WeakKeyMapping_O::keyValue() const
-    {_OF();
-        return this->_WeakObject.keyValue();
-    }
-
-    
+/*! Return (values key value t) or (values nil nil nil) */
+T_mv WeakKeyMapping_O::keyValue() const {
+  _OF();
+  return this->_WeakObject.keyValue();
+}
 
 }; /* core */

@@ -26,8 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #ifndef microHeap_fwd_H
 #define microHeap_fwd_H
-namespace core
-{
+namespace core {
 FORWARD(MicroHeap);
 }
 #endif

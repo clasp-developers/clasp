@@ -24,10 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
-#ifdef	USE_MPI
+#ifdef USE_MPI
 #include <boost/mpi.hpp>
 #endif
 #include <clasp/core/object.h>
@@ -41,8 +41,6 @@ THE SOFTWARE.
 #include <clasp/mpip/claspMpi.h>
 #include <clasp/mpip/symbolTable.h>
 #include <clasp/core/wrappers.h>
-
-
 
 /*
 __BEGIN_DOC( mpi, chapter, MPI Message Passing core::Interface )
@@ -121,31 +119,16 @@ You can run it by saving it in the file mpi.csc and running: mpirun -np 5 candoM
 __END_DOC
 */
 
+namespace mpip {
 
+SYMBOL_EXPORT_SC_(MpiPkg, MpiTermConverter);
 
-
-
-
-
-
-
-namespace mpip
-{
-
-
-    SYMBOL_EXPORT_SC_(MpiPkg,MpiTermConverter);
-
-
-#ifdef	USE_MPI
-    static	boost::mpi::environment*	_MpiEnvironment;
+#ifdef USE_MPI
+static boost::mpi::environment *_MpiEnvironment;
 #endif
-    static	bool				_MpiInitialized = false;
-    static	bool				_MpiWorldInitialized = false;
-    static	Mpi_sp				_MpiWorld;
-
-
-
-
+static bool _MpiInitialized = false;
+static bool _MpiWorldInitialized = false;
+static Mpi_sp _MpiWorld;
 
 /*
   __BEGIN_DOC( mpi.commands, section, MPI Functions)
@@ -162,15 +145,14 @@ namespace mpip
   __END_DOC
 */
 
-    bool Mpi_O::mpiEnabled()
-    {_G();
-#ifdef	USE_MPI
-	return true;
+bool Mpi_O::mpiEnabled() {
+  _G();
+#ifdef USE_MPI
+  return true;
 #else
-	return false;
+  return false;
 #endif
-    }
-
+}
 
 /*
   __BEGIN_DOC( mpi.commands.mpiSize, subsection, mpiSize)
@@ -179,16 +161,14 @@ namespace mpip
   Returns the number of processes available.  This function is available in all implementations of {\CANDOSCRIPT} but if MPI is not enabled it returns 1.
   __END_DOC
 */
-    int Mpi_O::mpiSize()
-    {_G();
-#ifdef	USE_MPI
-	return mpiCommWorld()->Get_size();
+int Mpi_O::mpiSize() {
+  _G();
+#ifdef USE_MPI
+  return mpiCommWorld()->Get_size();
 #else
-	return 1;
+  return 1;
 #endif
-    }
-
-
+}
 
 /*
   __BEGIN_DOC( mpi.commands.mpiRank, subsection, mpiRank)
@@ -197,43 +177,36 @@ namespace mpip
   Returns the rank of the current processes. The rank is a number from 0 to ([mpiSize] - 1). This function is available in all implementations of {\CANDOSCRIPT} but if MPI is not enabled it returns 0.
   __END_DOC
 */
-    int Mpi_O::mpiRank()
-    {
-#ifdef	USE_MPI
-	return mpiCommWorld()->Get_rank();
+int Mpi_O::mpiRank() {
+#ifdef USE_MPI
+  return mpiCommWorld()->Get_rank();
 #else
-	return 0;
+  return 0;
 #endif
-    }
+}
 
-
-
-    void Mpi_O::Init( int& argc, char** &argv, bool& mpiEnabled, int& rank, int& msize)
-    {
-	mpiEnabled = false;
-	rank = -1;
-	msize = -1;
-	// Do not touch the debug log in this function
-#ifdef	USE_MPI
-	_MpiEnvironment = new boost::mpi::environment(argc,argv);
-	HARD_ASSERTF(_MpiEnvironment,BF("Could not create MPI environment although mpi should be enabled"));
-	_MpiInitialized = _MpiEnvironment->initialized();
-	if (_MpiInitialized)
-	{
-	    boost::mpi::communicator world;
-	    mpiEnabled = true;
-	    rank = world.rank();
-	    msize = world.size();
-	} else
-	{
-	    printf("%s %d Could not initialize mpi - exiting\n", __FILE__, __LINE__);
-	    exit(1);
-	}
+void Mpi_O::Init(int &argc, char **&argv, bool &mpiEnabled, int &rank, int &msize) {
+  mpiEnabled = false;
+  rank = -1;
+  msize = -1;
+// Do not touch the debug log in this function
+#ifdef USE_MPI
+  _MpiEnvironment = new boost::mpi::environment(argc, argv);
+  HARD_ASSERTF(_MpiEnvironment, BF("Could not create MPI environment although mpi should be enabled"));
+  _MpiInitialized = _MpiEnvironment->initialized();
+  if (_MpiInitialized) {
+    boost::mpi::communicator world;
+    mpiEnabled = true;
+    rank = world.rank();
+    msize = world.size();
+  } else {
+    printf("%s %d Could not initialize mpi - exiting\n", __FILE__, __LINE__);
+    exit(1);
+  }
 #else
-	_MpiInitialized = false;
+  _MpiInitialized = false;
 #endif
-    }
-
+}
 
 /*
   __BEGIN_DOC( mpi.commands.mpiCommWorld, subsection, mpiCommWorld)
@@ -242,31 +215,28 @@ namespace mpip
   Returns the MPI object that encompases the entire group of processes.
   __END_DOC
 */
-    Mpi_sp Mpi_O::mpiCommWorld()
-    {_G();
-	if ( !_MpiWorldInitialized )
-	{
-	    _MpiWorldInitialized = true;
-	    LOG(BF("_MpiWorld creating") ); // vp0(( "_MpiWorld creating" ));
-	    _MpiWorld = Mpi_O::create();
-	    ANN(_MpiWorld);
-	    LOG(BF("status") ); // vp0(("status" ));
-	    ASSERT(_MpiWorld.notnilp());
-	    LOG(BF("status") ); // vp0(("status" ));
-	}
-	ANN(_MpiWorld);
-	ASSERTP(_MpiWorld.notnilp(),"_MpiWorld is nil" );
-	return _MpiWorld;
-    }
+Mpi_sp Mpi_O::mpiCommWorld() {
+  _G();
+  if (!_MpiWorldInitialized) {
+    _MpiWorldInitialized = true;
+    LOG(BF("_MpiWorld creating")); // vp0(( "_MpiWorld creating" ));
+    _MpiWorld = Mpi_O::create();
+    ANN(_MpiWorld);
+    LOG(BF("status")); // vp0(("status" ));
+    ASSERT(_MpiWorld.notnilp());
+    LOG(BF("status")); // vp0(("status" ));
+  }
+  ANN(_MpiWorld);
+  ASSERTP(_MpiWorld.notnilp(), "_MpiWorld is nil");
+  return _MpiWorld;
+}
 
-
-
-    void Mpi_O::Finalize()
-    {_G();
-#ifdef USE_MPI	
-	delete(_MpiEnvironment);
+void Mpi_O::Finalize() {
+  _G();
+#ifdef USE_MPI
+  delete (_MpiEnvironment);
 #endif
-    }
+}
 
 /*
   __BEGIN_DOC(mpi.MpiObject,section,MPI Object methods)
@@ -275,41 +245,32 @@ namespace mpip
   __END_DOC
 */
 
+void Mpi_O::initialize() {
+  this->Base::initialize();
+  this->_Source = 0;
+  this->_Tag = 0;
+}
 
-    void	Mpi_O::initialize()
-    {
-	this->Base::initialize();
-	this->_Source = 0;
-	this->_Tag = 0;
-    }
-
-
-
-
-
-    int	Mpi_O::Get_size()
-    {_G();
-#ifdef	USE_MPI
-	int size;
-	size = this->_Communicator.size();
-	return size;
+int Mpi_O::Get_size() {
+  _G();
+#ifdef USE_MPI
+  int size;
+  size = this->_Communicator.size();
+  return size;
 #else
-	return 1;
+  return 1;
 #endif
-    }
+}
 
-    int	Mpi_O::Get_rank()
-    {
-#ifdef	USE_MPI
-	int rank;
-	rank = this->_Communicator.rank();
-	return rank;
+int Mpi_O::Get_rank() {
+#ifdef USE_MPI
+  int rank;
+  rank = this->_Communicator.rank();
+  return rank;
 #else
-	return 0;
+  return 0;
 #endif
-    }
-
-
+}
 
 // Object_sp obj, int dest, int tag )
 /*
@@ -319,19 +280,18 @@ namespace mpip
   Sends the \sa{Object::data} to the process \sa{dest} with the tag \sa{tag}. The data can be any Cando-Script object - it is archived into XML format and then sent to the process \sa{dest} and then dearchived back into a Cando-Script object on the other side.
   __END_DOC
 */
-    core::T_sp Mpi_O::prim_Send( int dest, int tag, core::T_sp obj)
-    {_G();
-#ifdef	USE_MPI
-	core::SexpSaveArchive_sp archive = core::SexpSaveArchive_O::create();
-	archive->put(KW("only"),obj);
-	core::StringOutStream_sp sos = core::StringOutStream_O::make();
-	archive->sexpSaveArchiveWrite(sos);
-	LOG(BF("About to call MPI_Send\n%s\n") % sos->str() );
-	this->_Communicator.send(dest, tag, sos->str() );
+core::T_sp Mpi_O::prim_Send(int dest, int tag, core::T_sp obj) {
+  _G();
+#ifdef USE_MPI
+  core::SexpSaveArchive_sp archive = core::SexpSaveArchive_O::create();
+  archive->put(KW("only"), obj);
+  core::StringOutStream_sp sos = core::StringOutStream_O::make();
+  archive->sexpSaveArchiveWrite(sos);
+  LOG(BF("About to call MPI_Send\n%s\n") % sos->str());
+  this->_Communicator.send(dest, tag, sos->str());
 #endif
-	return _Nil<core::T_O>();
-    }
-
+  return _Nil<core::T_O>();
+}
 
 /*
   __BEGIN_DOC( mpi.Mpicore::T.Recv, subsection, Recv)
@@ -340,27 +300,26 @@ namespace mpip
   Blocks and waits for data from the process \sa{dest} with the requested tag \sa{tag}. You can provide the value MPI::ANY\_SOURCE if you want to receive data from any source and MPI::ANY\_TAG if you want any tag. You can use the \scmd{GetSource} and \scmd{GetTag} to query the source and tag that the sender sent. The data that is received is returned in \sa{core::T::data}.
   __END_DOC
 */
-    core::T_mv Mpi_O::prim_Recv(int source, int tag )
-    {_G();
-#ifdef	USE_MPI
-        LOG(BF("About to call MPI_Probe") ); // vp0(("About to call MPI_Probe"));
-	boost::mpi::status stat = this->_Communicator.probe(source,tag);
-	this->_Source= stat.source();
-	this->_Tag= stat.tag();
-	LOG(BF("Probe command returned source %d") % this->_Source  ); // vp0(("Probe command returned source %d", this->_Source ));
-	string buffer;
-	this->_Communicator.recv(source,tag,buffer);
-	core::StringInputStream_sp sis = core::StringInputStream_O::create(buffer);
-	core::SexpLoadArchive_sp arch = core::SexpLoadArchive_O::create();
-	arch->parseFromStream(sis);
-	core::T_sp obj = arch->get(KW("only"));
-//    free(buffer);
-	return Values(obj,core::Fixnum_O::create(this->_Source),core::Fixnum_O::create(this->_Tag));
+core::T_mv Mpi_O::prim_Recv(int source, int tag) {
+  _G();
+#ifdef USE_MPI
+  LOG(BF("About to call MPI_Probe")); // vp0(("About to call MPI_Probe"));
+  boost::mpi::status stat = this->_Communicator.probe(source, tag);
+  this->_Source = stat.source();
+  this->_Tag = stat.tag();
+  LOG(BF("Probe command returned source %d") % this->_Source); // vp0(("Probe command returned source %d", this->_Source ));
+  string buffer;
+  this->_Communicator.recv(source, tag, buffer);
+  core::StringInputStream_sp sis = core::StringInputStream_O::create(buffer);
+  core::SexpLoadArchive_sp arch = core::SexpLoadArchive_O::create();
+  arch->parseFromStream(sis);
+  core::T_sp obj = arch->get(KW("only"));
+  //    free(buffer);
+  return Values(obj, core::Fixnum_O::create(this->_Source), core::Fixnum_O::create(this->_Tag));
 #else
-	return _Nil<T_O>();
+  return _Nil<T_O>();
 #endif
-    }
-
+}
 
 /*
   __BEGIN_DOC( mpi.Mpicore::T.GetSource, subsection, GetSource)
@@ -369,11 +328,9 @@ namespace mpip
   Returns the source for the most recent Recv command.
   __END_DOC
 */
-    int Mpi_O::Get_source()
-    {
-	return this->_Source;
-    }
-
+int Mpi_O::Get_source() {
+  return this->_Source;
+}
 
 /*
   __BEGIN_DOC( mpi.Mpicore::T.GetTag, subsection, GetTag)
@@ -382,50 +339,42 @@ namespace mpip
   Returns the tag for the most recent Recv command.
   __END_DOC
 */
-    int Mpi_O::Get_tag()
-    {
-	return this->_Tag;
-    }
+int Mpi_O::Get_tag() {
+  return this->_Tag;
+}
 
+void Mpi_O::lisp_initGlobals(core::Lisp_sp lisp) {
+  SYMBOL_EXPORT_SC_(MpiPkg, _PLUS_anySource_PLUS_);
+  SYMBOL_EXPORT_SC_(MpiPkg, _PLUS_anyTag_PLUS_);
+  core::Symbol_sp anySource = _lisp->internWithPackageName(MpiPkg, "ANY_SOURCE");
+  mpip::_sym__PLUS_anySource_PLUS_->defconstant(core::Fixnum_O::create(boost::mpi::any_source));
+  mpip::_sym__PLUS_anyTag_PLUS_->defconstant(core::Fixnum_O::create(boost::mpi::any_tag));
+  SYMBOL_EXPORT_SC_(MpiPkg, STARworldSTAR);
+  Mpi_sp world = Mpi_O::mpiCommWorld();
+  _sym_STARworldSTAR->defparameter(world);
+}
 
-    void Mpi_O::lisp_initGlobals(core::Lisp_sp lisp)
-    {
-	SYMBOL_EXPORT_SC_(MpiPkg,_PLUS_anySource_PLUS_);
-	SYMBOL_EXPORT_SC_(MpiPkg,_PLUS_anyTag_PLUS_);
-	core::Symbol_sp anySource = _lisp->internWithPackageName(MpiPkg,"ANY_SOURCE");
-	mpip::_sym__PLUS_anySource_PLUS_->defconstant(core::Fixnum_O::create(boost::mpi::any_source));
-	mpip::_sym__PLUS_anyTag_PLUS_->defconstant(core::Fixnum_O::create(boost::mpi::any_tag));
-	SYMBOL_EXPORT_SC_(MpiPkg,STARworldSTAR);
-	Mpi_sp world = Mpi_O::mpiCommWorld();
-	_sym_STARworldSTAR->defparameter(world);
-    }
+void Mpi_O::exposeCando(core::Lisp_sp lisp) {
+  _G();
+  LOG(BF("Exposing Mpi_O")); // vp0(("Exposing Mpi_O"));
+  core::af_def(MpiPkg, "world", &Mpi_O::mpiCommWorld);
+  core::class_<Mpi_O>()
+      .def("size", &Mpi_O::Get_size)
+      .def("rank", &Mpi_O::Get_rank)
+      .def("source", &Mpi_O::Get_source)
+      .def("tag", &Mpi_O::Get_tag)
+      .def("send", &Mpi_O::prim_Send)
+      .def("recv", &Mpi_O::prim_Recv);
+}
 
-    void Mpi_O::exposeCando(core::Lisp_sp lisp)
-    {_G();
-	LOG(BF("Exposing Mpi_O") ); // vp0(("Exposing Mpi_O"));
-	core::af_def(MpiPkg,"world",&Mpi_O::mpiCommWorld);
-	core::class_<Mpi_O>()
-	    .def("size",&Mpi_O::Get_size)
-	    .def("rank",&Mpi_O::Get_rank)
-	    .def("source",&Mpi_O::Get_source)
-	    .def("tag",&Mpi_O::Get_tag)
-	    .def("send",&Mpi_O::prim_Send)
-	    .def("recv",&Mpi_O::prim_Recv)
-	    ;
-    }
-
-    void Mpi_O::exposePython(core::Lisp_sp lisp)
-    {
-#ifdef	USEBOOSTPYTHON //[
-    boost::python::class_<Mpi_O,
-	boost::shared_ptr<Mpi_O>,
-	boost::python::bases <core::T_O>,
-	boost::noncopyable> ("Mpi_O", boost::python::no_init )
-    ;
+void Mpi_O::exposePython(core::Lisp_sp lisp) {
+#ifdef USEBOOSTPYTHON //[
+  boost::python::class_<Mpi_O,
+                        boost::shared_ptr<Mpi_O>,
+                        boost::python::bases<core::T_O>,
+                        boost::noncopyable>("Mpi_O", boost::python::no_init);
 #endif
 }
 
-
-
-    EXPOSE_CLASS_AND_GLOBALS(mpip,Mpi_O);
+EXPOSE_CLASS_AND_GLOBALS(mpip, Mpi_O);
 };

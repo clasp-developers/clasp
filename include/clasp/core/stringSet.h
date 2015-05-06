@@ -24,12 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-       
-       
+
 //
 // (C) 2004 Christian E. Schafmeister
 //
-
 
 #ifndef StringSet_H
 #define StringSet_H
@@ -43,79 +41,75 @@ THE SOFTWARE.
 #include <clasp/core/lispVector.h>
 #include <clasp/core/cons.h>
 
-
 namespace core {
-
 
 SMART(Residue);
 SMART(StringSet);
 SMART(StringList);
 
-
 /*!
 	A class that stores a set of strings
 */
 SMART(StringSet);
-class StringSet_O : public T_O
-{
-    LISP_BASE1(T_O);
-    LISP_CLASS(core,CorePkg,StringSet_O,"StringSet");
-    DECLARE_INIT();
+class StringSet_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_CLASS(core, CorePkg, StringSet_O, "StringSet");
+  DECLARE_INIT();
+
 public:
-    void initialize();
-    void	archiveBase(ArchiveP node);
+  void initialize();
+  void archiveBase(ArchiveP node);
 
 private:
-	set<string>	strs;
-	bool		rest;
-public:
-
+  set<string> strs;
+  bool rest;
 
 public:
-	typedef	set<string>::iterator	iterator;
+public:
+  typedef set<string>::iterator iterator;
 
-	iterator begin() { return this->strs.begin(); };
-	iterator end() { return this->strs.end(); };
+  iterator begin() { return this->strs.begin(); };
+  iterator end() { return this->strs.end(); };
 
-	StringSet_sp	copy();
+  StringSet_sp copy();
 
-	string	first() { return *(this->strs.begin());};
-	uint	size() { return this->strs.size(); };
-	void	remove(const string& s);
-	bool	contains(const string& s);
-	bool	containsSubset(StringSet_sp sub);
-	void	insert(const string& s) { this->strs.insert(s);};
-	void	insertVectorStrings(VectorStrings s);
-	void	insertStringSet(StringSet_sp ss);
-	void	insertStringList(StringList_sp ss);
-	StringSet_sp insertConsStrings(Cons_sp list);
-	void	clear();
+  string first() { return *(this->strs.begin()); };
+  uint size() { return this->strs.size(); };
+  void remove(const string &s);
+  bool contains(const string &s);
+  bool containsSubset(StringSet_sp sub);
+  void insert(const string &s) { this->strs.insert(s); };
+  void insertVectorStrings(VectorStrings s);
+  void insertStringSet(StringSet_sp ss);
+  void insertStringList(StringList_sp ss);
+  StringSet_sp insertConsStrings(Cons_sp list);
+  void clear();
 
-	Cons_sp	asCons() const;
-    Vector_sp asVector() const;
+  Cons_sp asCons() const;
+  Vector_sp asVector() const;
 
-	bool	equal(T_sp ss) const;
+  bool equal(T_sp ss) const;
 
-		// Set theory operations
+  // Set theory operations
 
-		//! A setUnion B = (x:x E A || x E B)
-	StringSet_sp	setUnion(StringSet_sp b);
+  //! A setUnion B = (x:x E A || x E B)
+  StringSet_sp setUnion(StringSet_sp b);
 
-		//! A intersection B = (x:x E A && x E B)
-	StringSet_sp	intersection(StringSet_sp b);
+  //! A intersection B = (x:x E A && x E B)
+  StringSet_sp intersection(StringSet_sp b);
 
-		//! A-B = (x: x E A && not x E B )
-	StringSet_sp	relativeComplement(StringSet_sp b);
+  //! A-B = (x: x E A && not x E B )
+  StringSet_sp relativeComplement(StringSet_sp b);
 
-	StringSet_sp	removeAll(StringSet_sp b) { return this->relativeComplement(b); };
+  StringSet_sp removeAll(StringSet_sp b) { return this->relativeComplement(b); };
 
-		//! AxB = ("x,y": x E A ; y E B )
-	StringSet_sp	cartesianProduct(StringSet_sp b) {
-		return this->cartesianProductInsert("->",b);
-	};
-	StringSet_sp	cartesianProductInsert(string ins, StringSet_sp b);
+  //! AxB = ("x,y": x E A ; y E B )
+  StringSet_sp cartesianProduct(StringSet_sp b) {
+    return this->cartesianProductInsert("->", b);
+  };
+  StringSet_sp cartesianProductInsert(string ins, StringSet_sp b);
 
-	void	setFromString(const string& s);
+  void setFromString(const string &s);
 
 #if 0
 	template <class oclass>
@@ -129,21 +123,17 @@ public:
 	    }
 	}
 #endif
-	string	asString();
-    std::ostream&	dumpToStream( std::ostream& o );
+  string asString();
+  std::ostream &dumpToStream(std::ostream &o);
 
-	string __repr__() const;
+  string __repr__() const;
 
-	StringSet_O( const StringSet_O& ss ); //!< Copy constructor
+  StringSet_O(const StringSet_O &ss); //!< Copy constructor
 
-
-	DEFAULT_CTOR(StringSet_O);
-	virtual ~StringSet_O();
+  DEFAULT_CTOR(StringSet_O);
+  virtual ~StringSet_O();
 };
-
-
 };
-
 
 TRANSLATE(core::StringSet_O);
 #endif

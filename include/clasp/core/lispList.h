@@ -24,15 +24,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_List_H
+#ifndef _core_List_H
 #define _core_List_H
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/numbers.fwd.h>
 
-namespace core
-{
+namespace core {
 
 #if 0
     FORWARD(List);
@@ -64,28 +63,23 @@ namespace core
 #endif
 };
 
-
-
 namespace core {
-    T_sp cl_revappend(T_sp tail);
-    T_sp cl_nreconc(T_sp list, T_sp tail);
-    T_sp cl_nth(int idx, T_sp arg);
-    T_sp cl_nthcdr(int idx, T_sp arg);
-    
+T_sp cl_revappend(T_sp tail);
+T_sp cl_nreconc(T_sp list, T_sp tail);
+T_sp cl_nth(int idx, T_sp arg);
+T_sp cl_nthcdr(int idx, T_sp arg);
 
-    T_sp cl_copyList(T_sp arg);
+T_sp cl_copyList(T_sp arg);
 
-    T_sp cl_nconc(Cons_sp rest);
+T_sp cl_nconc(Cons_sp rest);
 
-    /*! Replace the last CONS of l with y and return l,  if l was nil return y */
-    T_sp clasp_nconc(T_sp l, T_sp y);
+/*! Replace the last CONS of l with y and return l,  if l was nil return y */
+T_sp clasp_nconc(T_sp l, T_sp y);
 
-    T_sp cl_last(T_sp list, int n=1);
-    T_sp cl_nbutlast(T_sp list, Integer_sp n);
+T_sp cl_last(T_sp list, int n = 1);
+T_sp cl_nbutlast(T_sp list, Integer_sp n);
 
-
-    void initialize_list();
+void initialize_list();
 };
-
 
 #endif /* _core_List_H */

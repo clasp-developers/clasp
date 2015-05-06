@@ -25,35 +25,26 @@ THE SOFTWARE.
 */
 /* -^- */
 
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/package.h>
 #include <clasp/core/lisp.h>
 
 #include <wxWidgetsExpose.h>
 
-namespace core 
-{
+namespace core {
 
 //
 // Initialize classes with WxWidgets
 //
-void initializePackagesAndClasses(Lisp_sp lisp)
-{
+void initializePackagesAndClasses(Lisp_sp lisp) {
 
-    lisp->makePackage(WxPackage);
-
+  lisp->makePackage(WxPackage);
 
 #define Use_CorePkg
 #define Use_MbbPackage
 #define Use_WxPackage
 #include <core_initClasses_inc.h>
 
-    lisp->installGlobalInitializationCallback(initializeWxWidgetsConstants);
+  lisp->installGlobalInitializationCallback(initializeWxWidgetsConstants);
 };
-
-
-
-
-
 };

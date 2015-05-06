@@ -26,8 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #ifndef symbolList_fwd_H
 #define symbolList_fwd_H
-namespace core
-{
+namespace core {
 FORWARD(SymbolList);
 }
 #endif

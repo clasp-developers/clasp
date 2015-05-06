@@ -40,27 +40,27 @@ THE SOFTWARE.
 namespace asttooling {
 
 ArgStream Diagnostics::pushContextFrame(ContextType Type,
-                                                     core::Cons_sp Range) {
+                                        core::Cons_sp Range) {
   ContextStack.push_back(ContextFrame());
-  ContextFrame& data = ContextStack.back();
+  ContextFrame &data = ContextStack.back();
   data.Type = Type;
   data.Range = Range;
   return ArgStream(&data.Args);
 }
 
 Context::Context(ConstructMatcherEnum,
-                              Diagnostics *Error,
-                              core::Symbol_sp MatcherName,
-                              core::Cons_sp MatcherRange)
+                 Diagnostics *Error,
+                 core::Symbol_sp MatcherName,
+                 core::Cons_sp MatcherRange)
     : Error(Error) {
-    Error->pushContextFrame(CT_MatcherConstruct, MatcherRange) << MatcherName->symbolName()->get();
+  Error->pushContextFrame(CT_MatcherConstruct, MatcherRange) << MatcherName->symbolName()->get();
 }
 
 Context::Context(MatcherArgEnum,
-                              Diagnostics *Error,
-                              core::Symbol_sp MatcherName,
-                              core::Cons_sp MatcherRange,
-                              unsigned ArgNumber)
+                 Diagnostics *Error,
+                 core::Symbol_sp MatcherName,
+                 core::Cons_sp MatcherRange,
+                 unsigned ArgNumber)
     : Error(Error) {
   Error->pushContextFrame(CT_MatcherArg, MatcherRange) << ArgNumber
                                                        << MatcherName->symbolName()->get();
@@ -92,24 +92,24 @@ ArgStream &ArgStream::operator<<(const Twine &Arg) {
   return *this;
 }
 
-    ArgStream Diagnostics::addError(core::Cons_sp Range,
-                                             ErrorType Error) {
-        ErrorContent ec;
-        Errors.push_back(ec);
-        ErrorContent &Last = Errors.back();
-        Last.ContextStack = ContextStack;
-        Last.Messages.push_back(Message());
-        Last.Messages.back().Range = Range;
-        Last.Messages.back().Type = Error;
-        return ArgStream(&Last.Messages.back().Args);
-    }
+ArgStream Diagnostics::addError(core::Cons_sp Range,
+                                ErrorType Error) {
+  ErrorContent ec;
+  Errors.push_back(ec);
+  ErrorContent &Last = Errors.back();
+  Last.ContextStack = ContextStack;
+  Last.Messages.push_back(Message());
+  Last.Messages.back().Range = Range;
+  Last.Messages.back().Type = Error;
+  return ArgStream(&Last.Messages.back().Args);
+}
 
 StringRef contextTypeToFormatString(ContextType Type) {
   switch (Type) {
-    case CT_MatcherConstruct:
-      return "Error building matcher $0.";
-    case CT_MatcherArg:
-      return "Error parsing argument $0 for matcher $1.";
+  case CT_MatcherConstruct:
+    return "Error building matcher $0.";
+  case CT_MatcherArg:
+    return "Error parsing argument $0 for matcher $1.";
   }
   llvm_unreachable("Unknown ContextType value.");
 }
@@ -162,7 +162,8 @@ void formatErrorString(StringRef FormatString, ArrayRef<std::string> Args,
   while (!FormatString.empty()) {
     std::pair<StringRef, StringRef> Pieces = FormatString.split("$");
     OS << Pieces.first.str();
-    if (Pieces.second.empty()) break;
+    if (Pieces.second.empty())
+      break;
 
     const char Next = Pieces.second.front();
     FormatString = Pieces.second.drop_front();
@@ -177,10 +178,10 @@ void formatErrorString(StringRef FormatString, ArrayRef<std::string> Args,
   }
 }
 
-    static void maybeAddLineAndColumn(core::Cons_sp Range,
+static void maybeAddLineAndColumn(core::Cons_sp Range,
                                   llvm::raw_ostream &OS) {
-        OS << core::_rep_(Range);
-    }
+  OS << core::_rep_(Range);
+}
 
 static void printContextFrameToStream(const ContextFrame &Frame,
                                       llvm::raw_ostream &OS) {
@@ -202,7 +203,8 @@ static void printErrorContentToStream(const ErrorContent &Content,
     printMessageToStream(Content.Messages[0], "", OS);
   } else {
     for (size_t i = 0, e = Content.Messages.size(); i != e; ++i) {
-      if (i != 0) OS << "\n";
+      if (i != 0)
+        OS << "\n";
       printMessageToStream(Content.Messages[i],
                            "Candidate " + Twine(i + 1) + ": ", OS);
     }
@@ -211,7 +213,8 @@ static void printErrorContentToStream(const ErrorContent &Content,
 
 void Diagnostics::printToStream(llvm::raw_ostream &OS) const {
   for (size_t i = 0, e = Errors.size(); i != e; ++i) {
-    if (i != 0) OS << "\n";
+    if (i != 0)
+      OS << "\n";
     printErrorContentToStream(Errors[i], OS);
   }
 }
@@ -225,7 +228,8 @@ std::string Diagnostics::toString() const {
 
 void Diagnostics::printToStreamFull(llvm::raw_ostream &OS) const {
   for (size_t i = 0, e = Errors.size(); i != e; ++i) {
-    if (i != 0) OS << "\n";
+    if (i != 0)
+      OS << "\n";
     const ErrorContent &Error = Errors[i];
     for (size_t i = 0, e = Error.ContextStack.size(); i != e; ++i) {
       printContextFrameToStream(Error.ContextStack[i], OS);
@@ -242,4 +246,4 @@ std::string Diagnostics::toStringFull() const {
   return OS.str();
 }
 
-}  // namespace asttooling
+} // namespace asttooling

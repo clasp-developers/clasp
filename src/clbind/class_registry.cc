@@ -62,23 +62,19 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace clbind {
 
-    CLBIND_API void push_instance_metatable();
-    EXPOSE_CLASS(clbind,ClassRegistry_O);
+CLBIND_API void push_instance_metatable();
+EXPOSE_CLASS(clbind, ClassRegistry_O);
 
-
-    void ClassRegistry_O::exposeCando(core::Lisp_sp lisp)
-    {_G();
-        core::class_<ClassRegistry_O>()
-            ;
-    }
-    void ClassRegistry_O::exposePython(core::Lisp_sp lisp)
-    {_G();
+void ClassRegistry_O::exposeCando(core::Lisp_sp lisp) {
+  _G();
+  core::class_<ClassRegistry_O>();
+}
+void ClassRegistry_O::exposePython(core::Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,ClassRegistry,"","",_lisp)
-	    ;
+  PYTHON_CLASS(CorePkg, ClassRegistry, "", "", _lisp);
 #endif
-    }
-
+}
 
 #if 0
     namespace {
@@ -163,39 +159,32 @@ namespace clbind {
 
 #endif
 
-    void ClassRegistry_O::initialize()
-    {
-        this->Base::initialize();
-        this->m_classes = core::HashTableEql_O::create_default();
-    }
+void ClassRegistry_O::initialize() {
+  this->Base::initialize();
+  this->m_classes = core::HashTableEql_O::create_default();
+}
 
+ClassRegistry_sp ClassRegistry_O::get_registry() {
+  SYMBOL_EXPORT_SC_(ClbindPkg, STARtheClassRegistrySTAR);
+  return clbind::_sym_STARtheClassRegistrySTAR->symbolValue().as<ClassRegistry_O>();
+}
 
-    ClassRegistry_sp ClassRegistry_O::get_registry()
-    {
-        SYMBOL_EXPORT_SC_(ClbindPkg,STARtheClassRegistrySTAR);
-        return clbind::_sym_STARtheClassRegistrySTAR->symbolValue().as<ClassRegistry_O>();
-    }
+core::Integer_sp type_id_toClassRegistryKey(type_id const &info) {
+  mpz_class zz((uintptr_t)(const_cast<void *>(static_cast<const void *>(info.get_type_info()))));
+  core::Integer_sp p = core::Integer_O::create(zz);
+  return p;
+}
 
-    core::Integer_sp type_id_toClassRegistryKey(type_id const& info)
-    {
-        mpz_class zz((uintptr_t)(const_cast<void*>(static_cast<const void*>(info.get_type_info()))));
-        core::Integer_sp p = core::Integer_O::create(zz);
-        return p;
-    }
+void ClassRegistry_O::add_class(type_id const &info, ClassRep_sp crep) {
+  core::Integer_sp key = type_id_toClassRegistryKey(info);
+  ASSERTF(!this->m_classes->contains(key),
+          BF("You are trying to register the class %s twice") % info.name());
+  this->m_classes->setf_gethash(key, crep);
+}
 
-
-    void ClassRegistry_O::add_class(type_id const& info, ClassRep_sp crep)
-    {
-        core::Integer_sp key = type_id_toClassRegistryKey(info);
-        ASSERTF(!this->m_classes->contains(key),
-                BF("You are trying to register the class %s twice") % info.name() );
-        this->m_classes->setf_gethash(key,crep);
-    }
-
-    ClassRep_sp ClassRegistry_O::find_class(type_id const& info) const
-    {
-        core::Integer_sp key = type_id_toClassRegistryKey(info);
-        return this->m_classes->gethash(key,_Nil<ClassRep_O>()).as<ClassRep_O>();
-    }
+ClassRep_sp ClassRegistry_O::find_class(type_id const &info) const {
+  core::Integer_sp key = type_id_toClassRegistryKey(info);
+  return this->m_classes->gethash(key, _Nil<ClassRep_O>()).as<ClassRep_O>();
+}
 
 } // namespace clbind

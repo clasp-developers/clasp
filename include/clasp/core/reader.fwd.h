@@ -26,8 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #ifndef reader_fwd_H
 #define reader_fwd_H
-namespace core
-{
+namespace core {
 FORWARD(Reader);
 }
 #endif

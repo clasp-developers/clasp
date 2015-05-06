@@ -24,38 +24,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	mpiPackage_H
+#ifndef mpiPackage_H
 #define mpiPackage_H
 
 #include "core/foundation.h"
 #include "core/lisp.h"
 
+NAMESPACE_PACKAGE_ASSOCIATION(mpi, MpiPkg, "MPI");
 
+namespace mpi {
 
-NAMESPACE_PACKAGE_ASSOCIATION(mpi,MpiPkg,"MPI");
+class MpiExposer : public core::Exposer {
+private:
+  int _stuff;
 
-
-
-namespace mpi
-{
-
-
-
-    class MpiExposer : public core::Exposer
-    {
-    private:
-	int _stuff;
-    public:
-        DISABLE_NEW();
-        // Why is there no constructor like other exposers have?
-	virtual string packageName() const { return MpiPkg;};
-        virtual void expose(core::Lisp_sp lisp,WhatToExpose what) const;
-    };
-
-
-
-
+public:
+  DISABLE_NEW();
+  // Why is there no constructor like other exposers have?
+  virtual string packageName() const { return MpiPkg; };
+  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 };
-
+};
 
 #endif

@@ -35,46 +35,36 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/core/wrappers.h>
 
+namespace llvmo {
 
-namespace llvmo
-{
+DebugLoc_sp DebugLoc_O::get(int lineno, int column, DebugInfo_sp debugInfo) {
+  _G();
+  GC_ALLOCATE(DebugLoc_O, oip);
+  llvm::DIDescriptor *didescriptor = debugInfo->operator llvm::DIDescriptor *();
+  llvm::DebugLoc dl = llvm::DebugLoc::get(lineno, column, didescriptor->operator llvm::MDNode *());
+  oip->_DebugLoc = dl;
+  return oip;
+}
 
+EXPOSE_CLASS(llvmo, DebugLoc_O);
 
-    DebugLoc_sp DebugLoc_O::get(int lineno, int column, DebugInfo_sp debugInfo)
-    {_G();
-        GC_ALLOCATE(DebugLoc_O,oip );
-	llvm::DIDescriptor* didescriptor = debugInfo->operator llvm::DIDescriptor* ();
-	llvm::DebugLoc dl = llvm::DebugLoc::get(lineno,column,didescriptor->operator llvm::MDNode* ());
-	oip->_DebugLoc = dl;
-	return oip;
-    }
+void DebugLoc_O::exposeCando(core::Lisp_sp lisp) {
+  core::class_<DebugLoc_O>()
+      .def("getLine", &DebugLoc_O::getLine)
+      .def("getCol", &DebugLoc_O::getCol)
+      .def("getScope", &DebugLoc_O::getScope);
+  core::af_def(LlvmoPkg, "DebugLoc-get", &DebugLoc_O::get);
+}
 
-
-
-
-    EXPOSE_CLASS(llvmo,DebugLoc_O);
-
-    void DebugLoc_O::exposeCando(core::Lisp_sp lisp)
-    {
-	core::class_<DebugLoc_O>()
-	    .def("getLine",&DebugLoc_O::getLine)
-	    .def("getCol",&DebugLoc_O::getCol)
-	    .def("getScope",&DebugLoc_O::getScope)
-	    ;
-	core::af_def(LlvmoPkg,"DebugLoc-get",&DebugLoc_O::get);
-    }
-
-    void DebugLoc_O::exposePython(core::Lisp_sp lisp)
-    {_G();
+void DebugLoc_O::exposePython(core::Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(LlvmoPkg,DebugLoc,"","",_lisp)
-	    ;
+  PYTHON_CLASS(LlvmoPkg, DebugLoc, "", "", _lisp);
 #endif
-    }
+}
 
-    MDNode_sp DebugLoc_O::getScope(LLVMContext_sp context) const
-    {_G();
-	return translate::to_object<llvm::MDNode*>::convert(this->_DebugLoc.getScope(*(context->wrappedPtr())));
-    }
-
+MDNode_sp DebugLoc_O::getScope(LLVMContext_sp context) const {
+  _G();
+  return translate::to_object<llvm::MDNode *>::convert(this->_DebugLoc.getScope(*(context->wrappedPtr())));
+}
 };

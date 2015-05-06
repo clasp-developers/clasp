@@ -24,21 +24,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_num_co_H //[
-#define	_core_num_co_H
+#ifndef _core_num_co_H //[
+#define _core_num_co_H
 
 #include <clasp/core/clasp_gmpxx.h>
 #include <math.h>
 
-
 namespace core {
 
+Real_mv cl_integerDecodeFloat(Float_sp x);
 
-    Real_mv cl_integerDecodeFloat(Float_sp x);
-
-    void initialize_num_co();
-
-
+void initialize_num_co();
 };
 
 #endif

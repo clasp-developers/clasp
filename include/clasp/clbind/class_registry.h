@@ -46,7 +46,6 @@ THE SOFTWARE.
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 #ifndef CLBIND_CLASS_REGISTRY_HPP_INCLUDED
 #define CLBIND_CLASS_REGISTRY_HPP_INCLUDED
 
@@ -59,20 +58,20 @@ THE SOFTWARE.
 
 namespace clbind {
 
+FORWARD(ClassRep);
 
-    FORWARD(ClassRep);
+FORWARD(ClassRegistry);
+class ClassRegistry_O : public core::T_O {
+  LISP_BASE1(core::T_O);
+  LISP_CLASS(clbind, ClbindPkg, ClassRegistry_O, "ClassRegistry");
+  void initialize();
 
-    FORWARD(ClassRegistry);
-    class ClassRegistry_O : public core::T_O
-    {
-        LISP_BASE1(core::T_O);
-        LISP_CLASS(clbind,ClbindPkg,ClassRegistry_O,"ClassRegistry");
-        void initialize();
-    public:
-        ClassRegistry_O() {};
-        virtual ~ClassRegistry_O() {};
-    public:
-        static ClassRegistry_sp get_registry();
+public:
+  ClassRegistry_O(){};
+  virtual ~ClassRegistry_O(){};
+
+public:
+  static ClassRegistry_sp get_registry();
 
 #if 0
         int cpp_instance() const { return m_instance_metatable; }
@@ -82,16 +81,15 @@ namespace clbind {
         int cl_class() const { return m_cl_class_metatable; }
         int cl_function() const { return m_cl_function_metatable; }
 #endif
-        void add_class(type_id const& info, ClassRep_sp crep);
+  void add_class(type_id const &info, ClassRep_sp crep);
 
-        ClassRep_sp find_class(type_id const& info) const;
+  ClassRep_sp find_class(type_id const &info) const;
 
-    GCPRIVATE:
+GCPRIVATE:
 
-        /*! Index on the type_id.id converted to a core::Pointer and use EQL equality */
-        core::HashTableEql_sp         m_classes;
+  /*! Index on the type_id.id converted to a core::Pointer and use EQL equality */
+  core::HashTableEql_sp m_classes;
 //        std::map<type_id, ClassRep_sp> m_classes;
-
 
 #if 0
         // this is a cl reference that points to the cl table
@@ -111,8 +109,7 @@ namespace clbind {
         // for clbind::Detail::free_functions::function_rep
         int m_cl_function_metatable;
 #endif
-    };
-
+};
 }
 
 #endif // CLBIND_CLASS_REGISTRY_HPP_INCLUDED

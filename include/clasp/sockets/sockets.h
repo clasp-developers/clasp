@@ -30,18 +30,9 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
+namespace sockets {
 
-
-
-
-
-
-
-namespace sockets
-{
-
-    void initialize_sockets();
-    void initialize_sockets_globals();
-
+void initialize_sockets();
+void initialize_sockets_globals();
 };
 #endif /* _core_ffi_H_ */

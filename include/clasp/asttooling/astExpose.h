@@ -24,24 +24,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	asttooling_astExpose_H
+#ifndef asttooling_astExpose_H
 #define asttooling_astExpose_H
 
 #include <clasp/core/common.h>
 #include <clang/AST/DeclBase.h>
 
-namespace asttooling
-{
+namespace asttooling {
 
+core::T_sp mostDerivedDecl(const clang::Decl *d);
+core::T_sp mostDerivedStmt(const clang::Stmt *d);
+core::T_sp mostDerivedType(const clang::Type *d);
 
-    core::T_sp mostDerivedDecl(const clang::Decl* d);
-    core::T_sp mostDerivedStmt(const clang::Stmt* d);
-    core::T_sp mostDerivedType(const clang::Type* d);
-
-
-    void initialize_astExpose();
-
-
-
+void initialize_astExpose();
 };
 #endif

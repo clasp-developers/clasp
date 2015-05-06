@@ -25,13 +25,13 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#define	DEBUG_LEVEL_NONE
+#define DEBUG_LEVEL_NONE
 #include <float.h>
 #include <math.h>
 
 #include <clasp/core/lisp.h>
 #include <clasp/core/numerics.h>
-#ifdef	darwin
+#ifdef darwin
 #include <stdint.h>
 #include <mach/mach_time.h>
 #else
@@ -42,195 +42,149 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 
-
 namespace core {
 
+Bignum mixedBaseDigitsToBignum(const vector<int> &bases, const vector<int> &digits) {
+  _G();
+  Bignum index;
+  vector<int>::const_iterator bi, di;
+  ASSERT(bases.size() == digits.size());
+  ASSERT(bases.size() >= 1);
+  ASSERT(digits[0] < bases[0]);
+  index = digits[0];
+  for (bi = bases.begin() + 1, di = digits.begin() + 1;
+       bi != bases.end(); bi++, di++) {
+    index = index * (*bi) + (*di);
+    if (index < 0)
+      break;
+  }
+  return index;
+}
 
-
-
-
-
-
-    Bignum	mixedBaseDigitsToBignum(const vector<int>& bases, const vector<int>& digits)
-    {_G();
-        Bignum			index;
-        vector<int>::const_iterator	bi, di;
-        ASSERT(bases.size()==digits.size());
-        ASSERT(bases.size()>=1);
-        ASSERT(digits[0]<bases[0]);
-        index = digits[0];
-        for ( bi=bases.begin()+1,di=digits.begin()+1;
-              bi!=bases.end(); bi++, di++ )
-        {
-            index = index*(*bi)+(*di);
-            if ( index < 0 ) break;
-        }
-        return index;
-    }
-
-    Bignum numberOfIndicesForMixedBase(const vector<int>& bases)
-    {_G();
-        vector<int>::const_iterator	bi;
-        Bignum				numSeq;
-        ASSERT(bases.size()>=1);
-        numSeq = 1;
-        for ( bi=bases.begin(); bi!=bases.end(); bi++ )
-        {
-            numSeq = numSeq*(*bi);
-            if ( numSeq < 0 ) break;
-        }
-        return numSeq;
-    }
+Bignum numberOfIndicesForMixedBase(const vector<int> &bases) {
+  _G();
+  vector<int>::const_iterator bi;
+  Bignum numSeq;
+  ASSERT(bases.size() >= 1);
+  numSeq = 1;
+  for (bi = bases.begin(); bi != bases.end(); bi++) {
+    numSeq = numSeq * (*bi);
+    if (numSeq < 0)
+      break;
+  }
+  return numSeq;
+}
 
 /*! Convert a collection of positive mixed-base digits to a LongLongInt index.
  * If the index can not be stored in a LongLongInt then return -1
  */
-    vector<int> bignumToMixedBaseDigits(const Bignum& index, const vector<int>& bases)
-    {_G();
-        Bignum	curIndex;
-        vector<int>	digits;
-        vector<int>::const_reverse_iterator	bi;
-        vector<int>::reverse_iterator		di;
-        int	digitIdx;
-        curIndex = index;
-        LOG(BF("*starting index=%20lld") % curIndex  );
-        ASSERT(bases.size()>=1);
-        digits.resize(bases.size());
-        digitIdx = digits.size()-1;
-        for ( bi=bases.rbegin(),di=digits.rbegin(); digitIdx>=0; bi++,di++,digitIdx-- )
-        {
-            Bignum bb = (curIndex % (*bi));
-            *di = bb.get_si();
-            curIndex /= *bi;
-            LOG(BF("*di=%d  *bi=%d curIndex=%20lld") % *di % *bi % curIndex  );
-        }
-        LOG(BF("digits[0] = %d") % digits[0]  );
-        return digits;
-    }
-
-
-
-
-
+vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &bases) {
+  _G();
+  Bignum curIndex;
+  vector<int> digits;
+  vector<int>::const_reverse_iterator bi;
+  vector<int>::reverse_iterator di;
+  int digitIdx;
+  curIndex = index;
+  LOG(BF("*starting index=%20lld") % curIndex);
+  ASSERT(bases.size() >= 1);
+  digits.resize(bases.size());
+  digitIdx = digits.size() - 1;
+  for (bi = bases.rbegin(), di = digits.rbegin(); digitIdx >= 0; bi++, di++, digitIdx--) {
+    Bignum bb = (curIndex % (*bi));
+    *di = bb.get_si();
+    curIndex /= *bi;
+    LOG(BF("*di=%d  *bi=%d curIndex=%20lld") % *di % *bi % curIndex);
+  }
+  LOG(BF("digits[0] = %d") % digits[0]);
+  return digits;
+}
 
 #define ARGS_af_getUniversalTime "()"
 #define DECL_af_getUniversalTime ""
 #define DOCS_af_getUniversalTime "getUniversalTime"
-    Integer_mv af_getUniversalTime()
-    {_G();
-	time_t currentTime;
-	time(&currentTime);
-	stringstream ss;
-	ss << ((long long int) currentTime);
-	return(Values(Integer_O::create(ss.str())));
-    }
+Integer_mv af_getUniversalTime() {
+  _G();
+  time_t currentTime;
+  time(&currentTime);
+  stringstream ss;
+  ss << ((long long int)currentTime);
+  return (Values(Integer_O::create(ss.str())));
+}
 
-
-
-
-    boost::mt11213b	globalRealRandom01Producer;
-    boost::uniform_real<>	globalRealRandom01Distribution(0,1);
-    boost::variate_generator<boost::mt11213b&,boost::uniform_real<> >
+boost::mt11213b globalRealRandom01Producer;
+boost::uniform_real<> globalRealRandom01Distribution(0, 1);
+boost::variate_generator<boost::mt11213b &, boost::uniform_real<>>
     globalRandomReal01Generator(globalRealRandom01Producer,
                                 globalRealRandom01Distribution);
-    boost::mt11213b	globalRealRandomNormal01Producer;
-    boost::normal_distribution<double>	globalNormal01Distribution(0,1);
-    boost::variate_generator<boost::mt11213b&,boost::normal_distribution<double> >
-    globalRandomRealNormal01Generator(globalRealRandomNormal01Producer,globalNormal01Distribution);
+boost::mt11213b globalRealRandomNormal01Producer;
+boost::normal_distribution<double> globalNormal01Distribution(0, 1);
+boost::variate_generator<boost::mt11213b &, boost::normal_distribution<double>>
+    globalRandomRealNormal01Generator(globalRealRandomNormal01Producer, globalNormal01Distribution);
 
+void seedRandomNumberGenerators(uint i) {
+  _G();
+  globalRealRandom01Producer.seed(static_cast<uint>(i));
+  globalRealRandomNormal01Producer.seed(static_cast<uint>(i));
+}
 
-
-
-    void	seedRandomNumberGenerators(uint i)
-    {_G();
-        globalRealRandom01Producer.seed(static_cast<uint>(i));
-        globalRealRandomNormal01Producer.seed(static_cast<uint>(i));
-    }
-
-    void	seedRandomNumberGeneratorsUsingTime()
-    {_G();
-        clock_t	currentTime;
-        int	tt;
-#ifdef	darwin
-        currentTime = mach_absolute_time();
+void seedRandomNumberGeneratorsUsingTime() {
+  _G();
+  clock_t currentTime;
+  int tt;
+#ifdef darwin
+  currentTime = mach_absolute_time();
 #else
-        currentTime = clock();
+  currentTime = clock();
 #endif
-        tt = currentTime%32768;
-        LOG(BF("seedRandomNumberGeneratorsUsingTime using value(%d)") % tt  );
-        seedRandomNumberGenerators(tt);
-    }
-
-
+  tt = currentTime % 32768;
+  LOG(BF("seedRandomNumberGeneratorsUsingTime using value(%d)") % tt);
+  seedRandomNumberGenerators(tt);
+}
 
 #define ARGS_af_random "(olimit &optional random-state)"
 #define DECL_af_random ""
 #define DOCS_af_random "random"
-    T_sp af_random(T_sp olimit, T_sp random_state)
-    {_G();
-	if ( random_state.notnilp() )
-	{
-	    SIMPLE_ERROR(BF("Support random-state in random"));
-	}
+T_sp af_random(T_sp olimit, T_sp random_state) {
+  _G();
+  if (random_state.notnilp()) {
+    SIMPLE_ERROR(BF("Support random-state in random"));
+  }
 
-	if ( olimit.isA<Fixnum_O>() )
-	{
-	    int limit = olimit.as<Fixnum_O>()->get();
-	    return Fixnum_O::create((int)(globalRandomReal01Generator()*limit));
-	} else if ( olimit.isA<Bignum_O>())
-	{
-	    IMPLEMENT_MEF(BF("Implement generating Bignum random numbers"));
-	} else if ( olimit.isA<DoubleFloat_O>() )
-	{
-	    double limit = olimit.as<DoubleFloat_O>()->get();
-	    return DoubleFloat_O::create(globalRandomReal01Generator()*limit);
-	}
-	SIMPLE_ERROR(BF("Currently unsupported limit for random: %s") % _rep_(olimit));
-    }
+  if (olimit.isA<Fixnum_O>()) {
+    int limit = olimit.as<Fixnum_O>()->get();
+    return Fixnum_O::create((int)(globalRandomReal01Generator() * limit));
+  } else if (olimit.isA<Bignum_O>()) {
+    IMPLEMENT_MEF(BF("Implement generating Bignum random numbers"));
+  } else if (olimit.isA<DoubleFloat_O>()) {
+    double limit = olimit.as<DoubleFloat_O>()->get();
+    return DoubleFloat_O::create(globalRandomReal01Generator() * limit);
+  }
+  SIMPLE_ERROR(BF("Currently unsupported limit for random: %s") % _rep_(olimit));
+}
 
+double randomNumber01() {
+  return globalRandomReal01Generator();
+}
 
+double randomNumberNormal01() {
+  return globalRandomRealNormal01Generator();
+}
 
-
-    double	randomNumber01()
-    {
-        return globalRandomReal01Generator();
-    }
-
-
-    double	randomNumberNormal01()
-    {
-        return globalRandomRealNormal01Generator();
-    }
-
-
-    bool	almostEqualAbsoluteOrRelative(double va, double vb,
-                                              double absEpsilon,
-                                              double relEpsilon )
-    {
-        if ( fabs(va-vb) < absEpsilon ) return true;
-        if ( fabs(va)>fabs(vb) ) {
-            if ( fabs(va-vb) < vb*relEpsilon ) return true;
-        } else {
-            if ( fabs(va-vb) < va*relEpsilon ) return true;
-        }
-        return false;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+bool almostEqualAbsoluteOrRelative(double va, double vb,
+                                   double absEpsilon,
+                                   double relEpsilon) {
+  if (fabs(va - vb) < absEpsilon)
+    return true;
+  if (fabs(va) > fabs(vb)) {
+    if (fabs(va - vb) < vb * relEpsilon)
+      return true;
+  } else {
+    if (fabs(va - vb) < va * relEpsilon)
+      return true;
+  }
+  return false;
+}
 
 #if 0
 
@@ -443,10 +397,6 @@ namespace core {
 	ecl_return2(the_env, v0, v1);
     }
 
-
-
-
-
 #define ARGS_af_ceiling "(x &optional y)"
 #define DECL_af_ceiling ""
 #define DOCS_af_ceiling "ceiling"
@@ -457,8 +407,6 @@ namespace core {
     }
 
 #endif
-
-
 
 #if 0
 
@@ -1318,152 +1266,128 @@ namespace core {
 	@(return x)
             }
 
-
 #endif
-
-
 
 #define ARGS_core_asin "(arg)"
 #define DECL_core_asin ""
 #define DOCS_core_asin "asinh"
-    double core_asin(double x)
-    {_G();
-        return asin(x);
-    }
-
+double core_asin(double x) {
+  _G();
+  return asin(x);
+}
 
 #define ARGS_core_acos "(arg)"
 #define DECL_core_acos ""
 #define DOCS_core_acos "acosh"
-    double core_acos(double x)
-    {_G();
-        return acos(x);
-    }
-
-
-
+double core_acos(double x) {
+  _G();
+  return acos(x);
+}
 
 #define ARGS_core_asinh "(arg)"
 #define DECL_core_asinh ""
 #define DOCS_core_asinh "asinh"
-    double core_asinh(double x)
-    {_G();
-        return log(x+sqrt(1.0+x*x));
-    }
-
-
+double core_asinh(double x) {
+  _G();
+  return log(x + sqrt(1.0 + x * x));
+}
 
 #define ARGS_core_acosh "(arg)"
 #define DECL_core_acosh ""
 #define DOCS_core_acosh "acosh"
-    double core_acosh(double x)
-    {_G();
-        return log(x+sqrt((x-1)*(x+1)));
-    }
-
+double core_acosh(double x) {
+  _G();
+  return log(x + sqrt((x - 1) * (x + 1)));
+}
 
 #define ARGS_core_atanh "(arg)"
 #define DECL_core_atanh ""
 #define DOCS_core_atanh "atanh"
-    double core_atanh(double x)
-    {_G();
-        return log((1+x)/(1-x))/2;
-    }
-
-
-
-
-
-
-
-
+double core_atanh(double x) {
+  _G();
+  return log((1 + x) / (1 - x)) / 2;
+}
 };
 
+namespace core {
 
-namespace core
-{
+void exposeCando_Numerics() {
+  _G();
+  LOG(BF("Initializing numerics random"));
+  af_def(CorePkg, "seedRandomNumberGenerators", &seedRandomNumberGenerators);
+  af_def(CorePkg, "seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
+  Defun(random);
+  af_def(CorePkg, "randomNumber01", &randomNumber01);
+  af_def(CorePkg, "randomNumberNormal01", &randomNumberNormal01);
+  SYMBOL_EXPORT_SC_(ClPkg, getUniversalTime);
+  Defun(getUniversalTime);
+  CoreDefun(asin);
+  CoreDefun(acos);
+  CoreDefun(asinh);
+  CoreDefun(acosh);
+  CoreDefun(atanh);
 
-void exposeCando_Numerics()
-{_G();
-    LOG(BF("Initializing numerics random") );
-    af_def(CorePkg,"seedRandomNumberGenerators", &seedRandomNumberGenerators);
-    af_def(CorePkg,"seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
-    Defun(random);
-    af_def(CorePkg,"randomNumber01", &randomNumber01 );
-    af_def(CorePkg,"randomNumberNormal01", &randomNumberNormal01 );
-    SYMBOL_EXPORT_SC_(ClPkg,getUniversalTime);
-    Defun(getUniversalTime);
-    CoreDefun(asin);
-    CoreDefun(acos);
-    CoreDefun(asinh);
-    CoreDefun(acosh);
-    CoreDefun(atanh);
+  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveSingleFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeSingleFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, mostPositiveSingleFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, mostNegativeSingleFloat);
+  cl::_sym_mostPositiveSingleFloat->defconstant(SingleFloat_O::create(FLT_MAX));
+  cl::_sym_mostNegativeSingleFloat->defconstant(SingleFloat_O::create(-FLT_MAX));
+  cl::_sym_leastPositiveSingleFloat->defconstant(SingleFloat_O::create(FLT_MIN));
+  cl::_sym_leastNegativeSingleFloat->defconstant(SingleFloat_O::create(-FLT_MIN));
 
-    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveSingleFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeSingleFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,mostPositiveSingleFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,mostNegativeSingleFloat);
-    cl::_sym_mostPositiveSingleFloat->defconstant(SingleFloat_O::create(FLT_MAX));
-    cl::_sym_mostNegativeSingleFloat->defconstant(SingleFloat_O::create(-FLT_MAX));
-    cl::_sym_leastPositiveSingleFloat->defconstant(SingleFloat_O::create(FLT_MIN));
-    cl::_sym_leastNegativeSingleFloat->defconstant(SingleFloat_O::create(-FLT_MIN));
+  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveShortFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeShortFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, mostPositiveShortFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, mostNegativeShortFloat);
+  cl::_sym_mostPositiveShortFloat->defconstant(ShortFloat_O::create(FLT_MAX));
+  cl::_sym_mostNegativeShortFloat->defconstant(ShortFloat_O::create(-FLT_MAX));
+  cl::_sym_leastPositiveShortFloat->defconstant(ShortFloat_O::create(FLT_MIN));
+  cl::_sym_leastNegativeShortFloat->defconstant(ShortFloat_O::create(-FLT_MIN));
 
-    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveShortFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeShortFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,mostPositiveShortFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,mostNegativeShortFloat);
-    cl::_sym_mostPositiveShortFloat->defconstant(ShortFloat_O::create(FLT_MAX));
-    cl::_sym_mostNegativeShortFloat->defconstant(ShortFloat_O::create(-FLT_MAX));
-    cl::_sym_leastPositiveShortFloat->defconstant(ShortFloat_O::create(FLT_MIN));
-    cl::_sym_leastNegativeShortFloat->defconstant(ShortFloat_O::create(-FLT_MIN));
+  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveDoubleFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeDoubleFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, mostPositiveDoubleFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, mostNegativeDoubleFloat);
+  cl::_sym_mostPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MAX));
+  cl::_sym_mostNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MAX));
+  cl::_sym_leastPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
+  cl::_sym_leastNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
 
-    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveDoubleFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeDoubleFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,mostPositiveDoubleFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,mostNegativeDoubleFloat);
-    cl::_sym_mostPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MAX));
-    cl::_sym_mostNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MAX));
-    cl::_sym_leastPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
-    cl::_sym_leastNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
+  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedSingleFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedShortFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedDoubleFloat);
+  // SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedLongFloat);
+  cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(SingleFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+  cl::_sym_leastNegativeNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+  cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
+  // cl::_sym_leastNegativeNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
 
+  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedSingleFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedShortFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedDoubleFloat);
+  // SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedLongFloat);
+  cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(SingleFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+  cl::_sym_leastPositiveNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+  cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
+  // cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
 
-    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedSingleFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedShortFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedDoubleFloat);
-    // SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedLongFloat);
-    cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(SingleFloat_O::create(-std::numeric_limits<float>::denorm_min()));
-    cl::_sym_leastNegativeNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
-    cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
-    // cl::_sym_leastNegativeNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
-
-    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedSingleFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedShortFloat);
-    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedDoubleFloat);
-    // SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedLongFloat);
-    cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(SingleFloat_O::create(-std::numeric_limits<float>::denorm_min()));
-    cl::_sym_leastPositiveNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
-    cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
-    // cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
-
-    SYMBOL_EXPORT_SC_(ClPkg,pi);
-    cl::_sym_pi->defconstant(DoubleFloat_O::create(3.14159265358979323846264338));
+  SYMBOL_EXPORT_SC_(ClPkg, pi);
+  cl::_sym_pi->defconstant(DoubleFloat_O::create(3.14159265358979323846264338));
 }
 
+#ifdef USEBOOSTPYTHON
 
-
-#ifdef	USEBOOSTPYTHON
-
-    void exposePython_Numerics()
-    {
-        boost::python::def("mixedBaseDigitsToBignum",&mixedBaseDigitsToBignum);
-        boost::python::def("bignumToMixedBaseDigits",&bignumToMixedBaseDigits);
-        boost::python::def("numberOfIndicesForMixedBase",&numberOfIndicesForMixedBase);
-        boost::python::def("seedRandomNumberGenerators", &seedRandomNumberGenerators);
-        boost::python::def("seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
-        boost::python::def("randomNumber01", &randomNumber01);
-        boost::python::def("randomNumberNormal01", &randomNumberNormal01);
-        boost::python::def("almostEqualAbsoluteOrRelative", &almostEqualAbsoluteOrRelative);
-    }
+void exposePython_Numerics() {
+  boost::python::def("mixedBaseDigitsToBignum", &mixedBaseDigitsToBignum);
+  boost::python::def("bignumToMixedBaseDigits", &bignumToMixedBaseDigits);
+  boost::python::def("numberOfIndicesForMixedBase", &numberOfIndicesForMixedBase);
+  boost::python::def("seedRandomNumberGenerators", &seedRandomNumberGenerators);
+  boost::python::def("seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
+  boost::python::def("randomNumber01", &randomNumber01);
+  boost::python::def("randomNumberNormal01", &randomNumberNormal01);
+  boost::python::def("almostEqualAbsoluteOrRelative", &almostEqualAbsoluteOrRelative);
+}
 
 #endif
 };

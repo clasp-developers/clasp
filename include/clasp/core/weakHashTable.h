@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_WeakHashTable_H
+#ifndef _core_WeakHashTable_H
 #define _core_WeakHashTable_H
 
 #include <clasp/core/foundation.h>
@@ -34,108 +34,96 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/corePackage.fwd.h>
 
-namespace core
-{
+namespace core {
 
-    FORWARD(WeakHashTable);
-    class WeakHashTable_O : public T_O
-    {
-	LISP_BASE1(T_O);
-	LISP_CLASS(core,CorePkg,WeakHashTable_O,"WeakHashTable");
+FORWARD(WeakHashTable);
+class WeakHashTable_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_CLASS(core, CorePkg, WeakHashTable_O, "WeakHashTable");
 #if defined(XML_ARCHIVE)
-	DECLARE_ARCHIVE();
+  DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
-	DEFAULT_CTOR_DTOR(WeakHashTable_O);
-    private: // instance variables here
+  DEFAULT_CTOR_DTOR(WeakHashTable_O);
 
-    public: // Functions here
-
-
-    };
+private: // instance variables here
+public:  // Functions here
+};
 
 }; /* core */
-template<> struct gctools::GCInfo<core::WeakHashTable_O> {
-    static bool constexpr NeedsInitialization = false;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true;
-    static bool constexpr Atomic = false;
+template <>
+struct gctools::GCInfo<core::WeakHashTable_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static bool constexpr Moveable = true;
+  static bool constexpr Atomic = false;
 };
 
 TRANSLATE(core::WeakHashTable_O);
 
+namespace core {
 
-
-namespace core
-{
-
-    FORWARD(WeakKeyHashTable);
-    class WeakKeyHashTable_O : public WeakHashTable_O
-    {
-	LISP_BASE1(WeakHashTable_O);
-	LISP_CLASS(core,CorePkg,WeakKeyHashTable_O,"WeakKeyHashTable");
+FORWARD(WeakKeyHashTable);
+class WeakKeyHashTable_O : public WeakHashTable_O {
+  LISP_BASE1(WeakHashTable_O);
+  LISP_CLASS(core, CorePkg, WeakKeyHashTable_O, "WeakKeyHashTable");
 #if defined(XML_ARCHIVE)
-	DECLARE_ARCHIVE();
-#endif // defined(XML_ARCHIVE)
-    public: // instance variables here
+  DECLARE_ARCHIVE();
+#endif  // defined(XML_ARCHIVE)
+public: // instance variables here
 #if 1
-        typedef typename gctools::WeakHashTable::value_type value_type;
-        typedef typename gctools::WeakHashTable::KeyBucketsType KeyBucketsType;
-        typedef typename gctools::WeakHashTable::ValueBucketsType ValueBucketsType;
-        typedef typename gctools::WeakHashTable::KeyBucketsAllocatorType KeyBucketsAllocatorType;
-        typedef typename gctools::WeakHashTable::ValueBucketsAllocatorType ValueBucketsAllocatorType;
-        typedef gctools::WeakHashTable  HashTableType;
+  typedef typename gctools::WeakHashTable::value_type value_type;
+  typedef typename gctools::WeakHashTable::KeyBucketsType KeyBucketsType;
+  typedef typename gctools::WeakHashTable::ValueBucketsType ValueBucketsType;
+  typedef typename gctools::WeakHashTable::KeyBucketsAllocatorType KeyBucketsAllocatorType;
+  typedef typename gctools::WeakHashTable::ValueBucketsAllocatorType ValueBucketsAllocatorType;
+  typedef gctools::WeakHashTable HashTableType;
 #else
-        typedef gctools::tagged_backcastable_base_ptr<T_O> value_type;
-        typedef gctools::Buckets<value_type,value_type,gctools::WeakLinks> KeyBucketsType;
-        typedef gctools::Buckets<value_type,value_type,gctools::StrongLinks> ValueBucketsType;
-        typedef gctools::GCBucketAllocator<KeyBucketsType> KeyBucketsAllocatorType;
-        typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
-        typedef gctools::WeakHashTable<KeyBucketsType,ValueBucketsType> HashTableType;
+  typedef gctools::tagged_backcastable_base_ptr<T_O> value_type;
+  typedef gctools::Buckets<value_type, value_type, gctools::WeakLinks> KeyBucketsType;
+  typedef gctools::Buckets<value_type, value_type, gctools::StrongLinks> ValueBucketsType;
+  typedef gctools::GCBucketAllocator<KeyBucketsType> KeyBucketsAllocatorType;
+  typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
+  typedef gctools::WeakHashTable<KeyBucketsType, ValueBucketsType> HashTableType;
 #endif
-        HashTableType  _HashTable;
-        
-    public:
-        WeakKeyHashTable_O() : _HashTable(16) {};
-        WeakKeyHashTable_O(uint sz) : _HashTable(sz) {};
-    public:
-        virtual int tableSize() const;
-	int size() const { return this->tableSize();};
+  HashTableType _HashTable;
 
-	void setf_gethash(T_sp key, T_sp value);
+public:
+  WeakKeyHashTable_O() : _HashTable(16){};
+  WeakKeyHashTable_O(uint sz) : _HashTable(sz){};
 
-        bool fullp();
+public:
+  virtual int tableSize() const;
+  int size() const { return this->tableSize(); };
 
+  void setf_gethash(T_sp key, T_sp value);
 
-        void describe(); 
-	virtual T_sp hashTableTest() const { return cl::_sym_eq;};
-	bool keyTest(T_sp entryKey, T_sp searchKey) const;
+  bool fullp();
 
-	int sxhashKey(T_sp key,int bound, bool willAddKey) const;
+  void describe();
+  virtual T_sp hashTableTest() const { return cl::_sym_eq; };
+  bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-	void maphash(std::function<void(T_sp,T_sp)> const& fn);
+  int sxhashKey(T_sp key, int bound, bool willAddKey) const;
 
-        T_mv gethash(T_sp key, T_sp defaultValue=_Nil<T_O>());
-	void remhash(T_sp key);
-	void clrhash();
+  void maphash(std::function<void(T_sp, T_sp)> const &fn);
 
-
-    };
+  T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>());
+  void remhash(T_sp key);
+  void clrhash();
+};
 }; /* core */
-template<> struct gctools::GCInfo<core::WeakKeyHashTable_O> {
-    static bool constexpr NeedsInitialization = false;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true;
-    static bool constexpr Atomic = false;
+template <>
+struct gctools::GCInfo<core::WeakKeyHashTable_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static bool constexpr Moveable = true;
+  static bool constexpr Atomic = false;
 };
 
 TRANSLATE(core::WeakKeyHashTable_O);
 
-
-
 namespace core {
-    WeakKeyHashTable_sp core_makeWeakKeyHashTable(Fixnum_sp size);
+WeakKeyHashTable_sp core_makeWeakKeyHashTable(Fixnum_sp size);
 };
-
-
 
 #endif /* _core_WeakHashTable_H */

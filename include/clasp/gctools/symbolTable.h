@@ -24,39 +24,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_gctools_symbolTable_H
+#ifndef _gctools_symbolTable_H
 #define _gctools_symbolTable_H
 
 #include <clasp/core/foundation.h>
 
-namespace gctools
-{
+namespace gctools {
 
-#define	GcToolsPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,export) extern core::Symbol_sp cname;
+#define GcToolsPkg_SYMBOLS
+#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
 #include <clasp/gctools/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GcToolsPkg_SYMBOLS
 
 }; /* llbmo */
 
+namespace gctoolsTooling {
 
-namespace gctoolsTooling
-{
-
-#define	GcToolsToolingPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,export) extern core::Symbol_sp cname;
+#define GcToolsToolingPkg_SYMBOLS
+#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
 #include <clasp/gctools/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GcToolsToolingPkg_SYMBOLS
 
 }; /* gctoolsTooling */
 
-namespace gctoolsMatching
-{
+namespace gctoolsMatching {
 
-#define	GcToolsMatchingPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,export) extern core::Symbol_sp cname;
+#define GcToolsMatchingPkg_SYMBOLS
+#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
 #include <clasp/gctools/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GcToolsMatchingPkg_SYMBOLS

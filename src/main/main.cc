@@ -24,10 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #ifdef _TARGET_OS_LINUX
-# include <signal.h>
+#include <signal.h>
 #endif
 
 #ifdef USE_MPI
@@ -56,83 +56,76 @@ THE SOFTWARE.
 #include <clasp/mpip/claspMpi.h>
 #endif
 
+int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize) {
+  core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
+  int exitCode = 0;
+  try {
+    core::MultipleValues mainMultipleValues(true);
+    lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
 
+    clbind::ClbindExposer ClbindPkg(_lisp);
+    _lisp->installPackage(&ClbindPkg);
 
-int startup(int argc, char* argv[], bool& mpiEnabled, int& mpiRank, int& mpiSize )
-{
-    core::LispHolder lispHolder(mpiEnabled,mpiRank,mpiSize);
-    int exitCode = 0;
-    try
-    {
-	core::MultipleValues mainMultipleValues(true);
-	lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
+    llvmo::LlvmoExposer llvmopkg(_lisp);
+    _lisp->installPackage(&llvmopkg);
 
-	clbind::ClbindExposer ClbindPkg(_lisp);
-	_lisp->installPackage(&ClbindPkg);
+    cffi::CffiExposer cffipkg(_lisp);
+    _lisp->installPackage(&cffipkg);
 
-	llvmo::LlvmoExposer llvmopkg(_lisp);
-	_lisp->installPackage(&llvmopkg);
+    gctools::GcToolsExposer GcToolsPkg(_lisp);
+    _lisp->installPackage(&GcToolsPkg);
 
-	cffi::CffiExposer cffipkg(_lisp);
-	_lisp->installPackage(&cffipkg);
+    sockets::SocketsExposer SocketsPkg(_lisp);
+    _lisp->installPackage(&SocketsPkg);
 
-	gctools::GcToolsExposer GcToolsPkg(_lisp);
-	_lisp->installPackage(&GcToolsPkg);
+    serveEvent::ServeEventExposer ServeEventPkg(_lisp);
+    _lisp->installPackage(&ServeEventPkg);
 
-	sockets::SocketsExposer SocketsPkg(_lisp);
-	_lisp->installPackage(&SocketsPkg);
-
-	serveEvent::ServeEventExposer ServeEventPkg(_lisp);
-	_lisp->installPackage(&ServeEventPkg);
-
-	asttooling::AsttoolingExposer AsttoolingPkg(_lisp);
-	_lisp->installPackage(&AsttoolingPkg);
+    asttooling::AsttoolingExposer AsttoolingPkg(_lisp);
+    _lisp->installPackage(&AsttoolingPkg);
 
 #ifdef USE_MPI
-	mpip::MpiExposer TheMpiPkg(_lisp);
-	_lisp->installPackage(&TheMpiPkg);
-	if ( mpiEnabled ) {
-	    core::Symbol_sp mpi = _lisp->internKeyword("MPI-ENABLED");
-	    core::Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as<core::Cons_O>();
-	    cl::_sym_STARfeaturesSTAR->defparameter(core::Cons_O::create(mpi,features));
-	} else {
-	    SIMPLE_ERROR(BF("USE_MPI is true but mpiEnabled is false!!!!"));
-	}
-#endif	
-	_lisp->run();
-    } catch (...) { exitCode = gctools::handleFatalCondition(); }
-    return exitCode;
+    mpip::MpiExposer TheMpiPkg(_lisp);
+    _lisp->installPackage(&TheMpiPkg);
+    if (mpiEnabled) {
+      core::Symbol_sp mpi = _lisp->internKeyword("MPI-ENABLED");
+      core::Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as<core::Cons_O>();
+      cl::_sym_STARfeaturesSTAR->defparameter(core::Cons_O::create(mpi, features));
+    } else {
+      SIMPLE_ERROR(BF("USE_MPI is true but mpiEnabled is false!!!!"));
+    }
+#endif
+    _lisp->run();
+  } catch (...) {
+    exitCode = gctools::handleFatalCondition();
+  }
+  return exitCode;
 }
 
-
-
-
-
-int main(int argc, char* argv[] )
-{	// Do not touch debug log until after MPI init
-    bool mpiEnabled = false;
-    int mpiRank = 0;
-    int mpiSize = 1;
+int main(int argc, char *argv[]) { // Do not touch debug log until after MPI init
+  bool mpiEnabled = false;
+  int mpiRank = 0;
+  int mpiSize = 1;
 #ifdef USE_MPI
-    try {
-	mpip::Mpi_O::Init(argc,argv,mpiEnabled,mpiRank,mpiSize);
-    } catch (core::HardError& err) {
-	printf("Could not start MPI\n");
-	exit(1);
-    }
+  try {
+    mpip::Mpi_O::Init(argc, argv, mpiEnabled, mpiRank, mpiSize);
+  } catch (core::HardError &err) {
+    printf("Could not start MPI\n");
+    exit(1);
+  }
 #endif
-    int maxThreads = 1;
+  int maxThreads = 1;
+  {
     {
-	{
-	    maxThreads = core::cando_omp_get_num_threads();
-	}
+      maxThreads = core::cando_omp_get_num_threads();
     }
+  }
 
-    core::CommandLineOptions options(argc,argv);
-    int exitCode = gctools::startupGarbageCollectorAndSystem(&startup,argc,argv,mpiEnabled,mpiRank,mpiSize);
+  core::CommandLineOptions options(argc, argv);
+  int exitCode = gctools::startupGarbageCollectorAndSystem(&startup, argc, argv, mpiEnabled, mpiRank, mpiSize);
 
 #ifdef USE_MPI
-    mpip::Mpi_O::Finalize();
+  mpip::Mpi_O::Finalize();
 #endif
-    return exitCode;
+  return exitCode;
 }

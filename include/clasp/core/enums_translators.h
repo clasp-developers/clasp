@@ -25,15 +25,9 @@ THE SOFTWARE.
 */
 /* -^- */
 
-
-#ifndef	enums_translators_h
+#ifndef enums_translators_h
 #define enums_translators_h
 
-
-
-namespace core
-{
-
-
+namespace core {
 };
 #endif

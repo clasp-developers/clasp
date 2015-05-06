@@ -30,9 +30,5 @@ THE SOFTWARE.
 #include <clasp/clbind/adapter.h>
 #include <clasp/core/wrappers.h>
 
-
-namespace clbind
-{
-
-
+namespace clbind {
 };

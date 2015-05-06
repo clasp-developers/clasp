@@ -30,23 +30,20 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
-namespace core
-{
+namespace core {
 
 // Arguments are passed in the multiple_values structure
 
-    T_mv notFuncallableDispatch( Instance_sp gf);
-    
-    T_mv generic_function_dispatch( Instance_sp gf);
+T_mv notFuncallableDispatch(Instance_sp gf);
 
-    T_mv slotReaderDispatch( Instance_sp gf, int nargs, ArgArray args);
+T_mv generic_function_dispatch(Instance_sp gf);
 
-    T_mv slotWriterDispatch( Instance_sp gf, int nargs, ArgArray args);
+T_mv slotReaderDispatch(Instance_sp gf, int nargs, ArgArray args);
 
-    T_mv userFunctionDispatch( Instance_sp gf, int nargs, ArgArray args);
+T_mv slotWriterDispatch(Instance_sp gf, int nargs, ArgArray args);
 
+T_mv userFunctionDispatch(Instance_sp gf, int nargs, ArgArray args);
 
-    void initialize_genericFunction();
-    
+void initialize_genericFunction();
 };
 #endif /* _core_genericFunction_H_ */
