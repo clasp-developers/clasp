@@ -124,7 +124,11 @@ class Predicate:
     def __init__(self,group,target,requirements,fileName,lineNumber,ignoreMe=False,classType=ClassType.simple,specializeOn=None):
         self._Group = group
         self._Target = target
-        self._Requirements = set(requirements)
+## Only the first requirement is used!!
+## See  https://github.com/drmeister/clasp/wiki/Clasp-developers
+        print( "requirements = %s" % requirements)
+        print( "requirements[0] = %s" % requirements[0] )
+        self._Requirements = set([ requirements[0] ])  # Only the first item is used!!!!!
         self._FileName = fileName
         self._LineNumber = lineNumber
         self._IgnoreMe = ignoreMe
