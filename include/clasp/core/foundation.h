@@ -39,6 +39,7 @@ THE SOFTWARE.
 //#define USE_BOEHM_MEMORY_MARKER
 #endif
 
+// clang-format off
 #ifdef CANDO_COMPILE
 #define GARBAGE_COLLECTION_INCLUDE <cando/main/clasp_gc.cc>
 #define GC_INTERFACE_HEADER <cando/main/gc_interface.h>
@@ -46,6 +47,7 @@ THE SOFTWARE.
 #define GARBAGE_COLLECTION_INCLUDE <clasp/main/clasp_gc.cc>
 #define GC_INTERFACE_HEADER <clasp/main/gc_interface.h>
 #endif
+// clang-format on
 
 
 
