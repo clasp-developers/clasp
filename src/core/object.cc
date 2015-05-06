@@ -288,14 +288,11 @@ namespace core
 
     bool T_O::equal(T_sp obj) const
     {_G();
-	bool b = this->eq(obj);
-	LOG(BF("Checking to see if this(%s) is equal to other(%s) result = %d") % this->__repr__() % _rep_(obj) % b );
-	return b;
+	return this->eq(obj);
     }
 
     bool T_O::equalp(T_sp obj) const
     {
-	if ( obj.nilp() ) return false;
 	return this->equal(obj);
     }
 

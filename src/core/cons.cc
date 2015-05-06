@@ -645,51 +645,24 @@ namespace core
     bool Cons_O::equal(T_sp obj) const
     {_OF();
 	if ( this->eq(obj) ) return((true));
-	if ( !cl_consp(obj) )
-	{
-	    LOG(BF("Arg not Cons"));
-	    return((false));
-	}
+	if ( !obj.consp() ) return false;
 	List_sp other = obj;
-	if ( !cl_equal(this->_Car,oCar(other) ) )
-	{
-	    LOG(BF("First args dont match"));
-	    return((false));
-	}
+	if ( !cl_equal(this->_Car,oCar(other) ) ) return false;
 	T_sp this_cdr = this->_Cdr;
 	T_sp other_cdr = oCdr(other);
-	if ( !cl_equal(this_cdr,other_cdr))
-	{
-	    LOG(BF("Rest of args don't match"));
-	    return((false));
-	}
-	return((true));
+	return cl_equal(this_cdr,other_cdr);
     }
 
 
     bool Cons_O::equalp(T_sp obj) const
     {
-        if ( obj.nilp() ) return false;
-	if ( this->eq(obj) ) return((true));
-	if ( !cl_consp(obj) )
-	{
-	    LOG(BF("Arg not Cons"));
-	    return((false));
-	}
+	if ( this->eq(obj) ) return true;
+	if ( !obj.consp() ) return false;
 	List_sp other = obj;
-	if ( !cl_equalp(this->_Car,oCar(other) ) )
-	{
-	    LOG(BF("First args dont match"));
-	    return((false));
-	}
+	if ( !cl_equalp(this->_Car,oCar(other) ) ) return false;
 	T_sp this_cdr = this->_Cdr;
 	T_sp other_cdr = oCdr(other);
-	if ( !cl_equalp(this_cdr,other_cdr))
-	{
-	    LOG(BF("Rest of args don't match"));
-	    return((false));
-	}
-	return((true));
+	return cl_equalp(this_cdr,other_cdr);
     }
 
 
