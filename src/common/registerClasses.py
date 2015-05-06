@@ -126,8 +126,6 @@ class Predicate:
         self._Target = target
 ## Only the first requirement is used!!
 ## See  https://github.com/drmeister/clasp/wiki/Clasp-developers
-        print( "requirements = %s" % requirements)
-        print( "requirements[0] = %s" % requirements[0] )
         self._Requirements = set([ requirements[0] ])  # Only the first item is used!!!!!
         self._FileName = fileName
         self._LineNumber = lineNumber
