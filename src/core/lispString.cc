@@ -48,7 +48,8 @@ namespace core
 	    }
 	} else if ( Vector_sp vcur = char_bag.asOrNull<Vector_O>() ) {
 	    for ( size_t i=0, iEnd(vcur->length()); i<iEnd; ++i ) {
-		if ( cl_eql(vcur->elt(i),Character_O::create(c)) ) return true;
+		if ( cl_eql(vcur->elt(i),
+			    Character_O::create(c)) ) return true;
 	    }
 	}
 	return false;

@@ -126,7 +126,11 @@ class Predicate:
         self._Target = target
 ## Only the first requirement is used!!
 ## See  https://github.com/drmeister/clasp/wiki/Clasp-developers
-        self._Requirements = set([ requirements[0] ])  # Only the first item is used!!!!!
+        print( "Group: %s  target: %s   filename: %s" % ( group, target, fileName))
+        if ( len(requirements) > 0 ):
+            self._Requirements = set([ requirements[0] ])  # Only the first item is used!!!!!
+        else:
+            self._Requirements = set()
         self._FileName = fileName
         self._LineNumber = lineNumber
         self._IgnoreMe = ignoreMe
