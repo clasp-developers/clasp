@@ -67,7 +67,7 @@ namespace core {
     GCPRIVATE:
         Class_sp _Class;
     public:
-	virtual bool eql(T_sp obj) const;
+	virtual bool eql_(T_sp obj) const;
 	virtual bool isUndefined() const { return this->externalObject()==NULL; };
 	virtual void* externalObject() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual void set_externalObject(void* ptr) {_OF(); SUBCLASS_MUST_IMPLEMENT();};

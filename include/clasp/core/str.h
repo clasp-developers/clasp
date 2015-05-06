@@ -134,7 +134,7 @@ namespace core
 	virtual T_sp elementType() const;
 	virtual bool	equal(T_sp obj) const;
         virtual bool    equalp(T_sp obj) const;
-	virtual	bool	eql(T_sp obj) const;
+	virtual	bool	eql_(T_sp obj) const;
 	virtual	bool	operator<(T_sp obj) const;
 	virtual	bool	operator<=(T_sp obj) const;
 	virtual	bool	operator>(T_sp obj) const;

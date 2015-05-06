@@ -52,7 +52,7 @@ namespace core {
     public:
         virtual bool validp() const {SUBIMP();};
         virtual size_t templatedSizeof() const {SUBIMP();};
-	virtual bool eql(core::T_sp obj) const;
+	virtual bool eql_(core::T_sp obj) const;
 	virtual void* mostDerivedPointer() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
         Pointer_sp  address() const;
         virtual void* castTo(class_id cid) const {SUBIMP();};

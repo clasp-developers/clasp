@@ -825,12 +825,12 @@ namespace core
 #endif
     }
 
-    bool	Str_O::eql(T_sp obj) const
+    bool	Str_O::eql_(T_sp obj) const
     {
 	if ( Str_sp t = obj.asOrNull<Str_O>() ) {
 	    return this->get() == t->get();
 	}
-	return this->Base::eql(obj);
+	return this->Base::eql_(obj);
     }
 
 
@@ -838,7 +838,7 @@ namespace core
     {
 	if (af_strP(obj) )
 	{
-	    return this->eql(obj);
+	    return this->eql_(obj);
 	}
 	return false;
     }

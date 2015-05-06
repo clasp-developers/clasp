@@ -167,7 +167,7 @@ namespace core {
 	LongLongInt operator-(LongLongInt y) const { return ((LongLongInt)(this->_Value))-y;};
 
 	virtual	bool	eqn(T_sp obj) const;
-	virtual	bool	eql(T_sp obj) const;
+	virtual	bool	eql_(T_sp obj) const;
 	virtual	bool	operator<(T_sp obj) const;
 	virtual	bool	operator<=(T_sp obj) const;
 	virtual	bool	operator>(T_sp obj) const;

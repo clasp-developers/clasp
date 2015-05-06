@@ -305,6 +305,19 @@ int clasp_string_case(Str_sp s)
     }
 
 
+    bool clasp_charEqual2(T_sp x, T_sp y)
+    {
+	if ( x.characterp() && y.characterp() ) {
+	    int cx = toupper(x.unsafe_character());
+	    int cy = toupper(y.unsafe_character());
+	    return cx == cy;
+	}
+	// Get rid of this when we lose Character_O
+	int icx = toupper(cx.as<Character_O>()->get());
+	int icy = toupper(cy.as<Character_O>()->get());
+	return icx==icy;
+    }	
+	
 #define DOCS_af_charEqual "Like char_EQ_, ignore case"
 #define LOCK_af_charEqual 1
 #define ARGS_af_charEqual "(&rest args)"
@@ -767,7 +780,7 @@ void Character_O::archiveBase(::core::ArchiveP node)
 
     bool Character_O::equal(T_sp other) const
     {_OF();
-	return this->eql(other);
+	return this->eql_(other);
     }
 
 
@@ -980,7 +993,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 	SIMPLE_ERROR(BF("Wrong format for comparison with Char"));
     }
 
-    bool StandardChar_O::eql(T_sp obj) const
+    bool StandardChar_O::eql_(T_sp obj) const
     {_OF();
 	if ( obj.nilp() ) return false;
 	if ( Character_sp wn = obj.asOrNull<Character_O>() )

@@ -124,8 +124,8 @@ namespace core
 	  If BITS < 0 shift right, if BITS >0 shift left. */
 	Integer_sp shift(int bits) const;
 
-	virtual	bool	eqn(T_sp obj) const;
-	virtual	bool	eql(T_sp obj) const;
+	//	virtual	bool	eqn(T_sp obj) const;
+	virtual	bool	eql_(T_sp obj) const;
 
 
 //	Fixnum_sp	asInt() { return this->sharedThis<Fixnum_O>();};

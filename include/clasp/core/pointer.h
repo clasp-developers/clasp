@@ -56,7 +56,7 @@ namespace core
     public: // Functions here
 	void* ptr() const { return this->_Pointer;};
 
-	virtual bool eql(T_sp obj) const;
+	virtual bool eql_(T_sp obj) const;
 
 	string __repr__() const;
 

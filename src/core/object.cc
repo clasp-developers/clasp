@@ -123,57 +123,6 @@ namespace core
 
 
 
-#define ARGS_cl_eq "(x y)"
-#define DECL_cl_eq ""
-#define DOCS_cl_eq "eq"
-    bool cl_eq(T_sp x, T_sp y)
-    {_G();
-	return ( x==y );
-    };
-
-
-
-
-#define ARGS_cl_eql "(x y)"
-#define DECL_cl_eql ""
-#define DOCS_cl_eql "eql"
-    bool cl_eql(T_sp x, T_sp y)
-    {_G();
-	if ( x.nilp() )
-	{
-	    return y.nilp();
-	}
-	return x->eql(y);
-    };
-
-
-
-
-#define ARGS_cl_equal "(x y)"
-#define DECL_cl_equal ""
-#define DOCS_cl_equal "equal"
-    bool cl_equal(T_sp x, T_sp y)
-    {_G();
-	if ( x.nilp() )
-	{
-	    return y.nilp();
-	}
-	return x->equal(y);
-    };
-
-
-#define ARGS_cl_equalp "(x y)"
-#define DECL_cl_equalp ""
-#define DOCS_cl_equalp "equalp"
-    bool cl_equalp(T_sp x, T_sp y)
-    {_G();
-	if ( x.nilp() )
-	{
-	    return y.nilp();
-	}
-	return x->equalp(y);
-    };
-
 
 
 
@@ -332,7 +281,7 @@ namespace core
     }
 
 
-    bool T_O::eql(T_sp obj) const
+    bool T_O::eql_(T_sp obj) const
     {
 	return this->eq(obj);
     }

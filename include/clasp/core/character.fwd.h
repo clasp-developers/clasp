@@ -34,6 +34,8 @@ FORWARD(StandardChar);
 FORWARD(ExtendedChar);
 
 
+ bool clasp_charEqual2(T_sp x, T_sp y);
+
 
 
     struct CharacterInfo  {

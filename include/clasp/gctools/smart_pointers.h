@@ -130,6 +130,7 @@ namespace gctools {
     static const uintptr_t character_shift    = 5;
     static const uintptr_t single_float_tag   = BOOST_BINARY( 01111); // single-float
     static const uintptr_t single_float_shift = 5;
+    static const uintptr_t single_float_mask  = 0x1FFFFFFFFF;  // single-floats are in these 32+5bits
 
     template <class T>
     uintptr_t tag(T* ptr) { return reinterpret_cast<uintptr_t>(ptr)&tag_mask; };
@@ -235,6 +236,9 @@ namespace gctools {
 	uintptr_t val;
 	memcpy(&val,&fn,sizeof(fn));
 	return reinterpret_cast<T*>((val<<single_float_shift)+single_float_tag);
+    }
+    template <class T> inline uintptr_t tagged_single_float_masked(T* const ptr) {
+	return reinterpret_cast<uintptr_t>(reinterpret_cast<uintptr_t>(ptr)&single_float_mask);
     }
     template <class T> inline float untag_single_float(T* const ptr)  {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==single_float_tag);
@@ -637,7 +641,7 @@ namespace gctools {
 	/*! Return the raw smart_ptr value interpreted as a T_O* */
 	core::T_O* raw_() const { return reinterpret_cast<core::T_O*>(this->theObject);}
 
-	void setRaw_(core::T_O* p) {this->theObject = reinterpret_cast<core::T_O*>(p);}
+	void setRaw_(Type* p) {this->theObject = reinterpret_cast<Type*>(p);}
 
 	/*! This should almost NEVER be used!!!!!!   
 	  The only reason to ever use this is when theObject will be set to NULL

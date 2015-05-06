@@ -62,7 +62,7 @@ namespace core
 #endif
     }
 
-    bool Pointer_O::eql(T_sp obj) const
+    bool Pointer_O::eql_(T_sp obj) const
     {
         if ( this->eq(obj) ) return true;
         if ( Pointer_sp pobj = obj.asOrNull<Pointer_O>() ) {

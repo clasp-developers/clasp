@@ -73,6 +73,8 @@ namespace core {
     bool clasp_oddp(Integer_sp num);
     Number_sp clasp_abs(Number_sp num);
     Number_sp clasp_signum(Number_sp num);
+    Number_sp clasp_one_plus(Number_sp num);
+    Number_sp clasp_one_minus(Number_sp num);
 	
     
 };
@@ -314,8 +316,8 @@ namespace core {
 	virtual bool evenp_() const { return !(this->_Value&1); };
 	virtual bool oddp_() const { return (this->_Value&1);};
 
-	virtual	bool	eqn(T_sp obj) const;
-	virtual	bool	eql(T_sp obj) const;
+	//	virtual	bool eqn(T_sp obj) const;
+	virtual	bool eql_(T_sp obj) const;
 
 	virtual Number_sp onePlus() const
 	{
@@ -419,8 +421,8 @@ namespace core {
     public:
 	virtual	string	valueAsString() const;
 	virtual	void	setFromString( const string& strVal );
-	virtual	bool	eqn(T_sp obj) const;
-	virtual	bool	eql(T_sp obj) const;
+	//	virtual	bool	eqn(T_sp obj) const;
+	virtual	bool	eql_(T_sp obj) const;
 	virtual Number_sp reciprocal() const;
 
 
@@ -484,8 +486,8 @@ namespace core {
     public:
 	virtual	string	valueAsString() const;
 	virtual	void	setFromString( const string& strVal );
-	virtual	bool	eqn(T_sp obj) const;
-	virtual	bool	eql(T_sp obj) const;
+	//	virtual	bool	eqn(T_sp obj) const;
+	virtual	bool	eql_(T_sp obj) const;
 	virtual Number_sp reciprocal() const;
 
 	// math routines shared by all numbers
@@ -565,8 +567,8 @@ namespace core {
     public:
 	virtual	string	valueAsString() const;
 	virtual	void	setFromString( const string& strVal );
-	virtual	bool	eqn(T_sp obj) const;
-	virtual	bool	eql(T_sp obj) const;
+	///	virtual	bool	eqn(T_sp obj) const;
+	virtual	bool	eql_(T_sp obj) const;
 
 	// math routines shared by all numbers
 	bool zerop() const { return this->_Value == 0.0; };
@@ -648,8 +650,8 @@ namespace core {
     public:
 	virtual	string	valueAsString() const;
 	virtual	void	setFromString( const string& strVal );
-	virtual	bool	eqn(T_sp obj) const;
-	virtual	bool	eql(T_sp obj) const;
+	//	virtual	bool	eqn(T_sp obj) const;
+	virtual	bool	eql_(T_sp obj) const;
 
 
 	// math routines shared by all numbers
@@ -747,8 +749,8 @@ namespace core {
     public:
 	virtual	string	valueAsString() const;
 	virtual	void	setFromString( const string& str);
-	virtual	bool	eqn(T_sp obj) const;
-	virtual	bool	eql(T_sp obj) const;
+	//	virtual	bool	eqn(T_sp obj) const;
+	virtual	bool	eql_(T_sp obj) const;
 
 
 	// math routines shared by all numbers
@@ -849,8 +851,8 @@ namespace core {
     public:
 	virtual	string	valueAsString() const;
 	virtual	void	setFromString( const string& str);
-	virtual	bool	eqn(T_sp obj) const;
-	virtual	bool	eql(T_sp obj) const;
+	//	virtual	bool	eqn(T_sp obj) const;
+	virtual	bool	eql_(T_sp obj) const;
 
 	Number_sp onePlus() const { return create(contagen_add(this->_numerator,this->_denominator).as<Integer_O>(),this->_denominator);};
 	Number_sp oneMinus() const { return create(contagen_sub(this->_numerator,this->_denominator).as<Integer_O>(),this->_denominator);};
@@ -1153,7 +1155,31 @@ namespace core {
 	}
 	return num->signum_();
     }
-	
+
+    inline Number_sp clasp_one_plus(Number_sp num)
+    {
+	if (num.fixnump()) {
+	    num.setRaw_(reinterpret_cast<Number_O*>(reinterpret_cast<gc::Fixnum>(num.raw_()) + reinterpret_cast<gc::Fixnum>(immediate_fixnum<Number_O>(1).raw_())));
+	} else if ( num.single_floatp() ) {
+	    float fl = num.unsafe_single_float();
+	    fl += 1.0;
+	    return immediate_single_float<Number_O>(fl);
+	}
+	return num->onePlus();
+    }
+
+    inline Number_sp clasp_one_minus(Number_sp num)
+    {
+	if (num.fixnump()) {
+	    num.setRaw_(reinterpret_cast<Number_O*>(reinterpret_cast<gc::Fixnum>(num.raw_()) - reinterpret_cast<gc::Fixnum>(immediate_fixnum<Number_O>(1).raw_())));
+	} else if ( num.single_floatp() ) {
+	    float fl = num.unsafe_single_float();
+	    fl -= 1.0;
+	    return immediate_single_float<Number_O>(fl);
+	}
+	return num->oneMinus();
+    }
+
     
 };
 

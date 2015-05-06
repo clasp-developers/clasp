@@ -1576,7 +1576,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     bool Number_O::equal(T_sp obj) const
     {
 	if ( this->eq(obj) ) return true;
-	return this->eql(obj);
+	return this->eql_(obj);
     }
 
     string Number_O::valueAsString() const
@@ -2071,7 +2071,7 @@ namespace core {
 
 
 
-    bool	Fixnum_O::eql(T_sp obj) const
+    bool	Fixnum_O::eql_(T_sp obj) const
     {_G();
 	if ( this->eq(obj) ) return true;
 	if ( af_fixnumP(obj) )
@@ -2086,6 +2086,7 @@ namespace core {
 	return false;
     }
 
+#if 0
     bool	Fixnum_O::eqn(T_sp obj) const
     {_G();
 	if ( this->eq(obj) ) return true;
@@ -2112,7 +2113,7 @@ namespace core {
 	ASSERT(!cl_numberp(obj) );
 	return false;
     }
-
+#endif
 
 
 
@@ -2253,7 +2254,7 @@ namespace core {
     }
 
 
-    bool	ShortFloat_O::eql(T_sp obj) const
+    bool	ShortFloat_O::eql_(T_sp obj) const
     {
 	if ( this->eq(obj) ) return true;
 	if ( obj.isA<Number_O>() )
@@ -2264,6 +2265,7 @@ namespace core {
 	return false;
     }
 
+#if 0
     bool	ShortFloat_O::eqn(T_sp obj) const
     {_OF();
 	if ( af_shortFloatP(obj) )
@@ -2278,7 +2280,7 @@ namespace core {
 	ASSERT(!cl_numberp(obj) );
 	return false;
     }
-
+#endif
 
 
 
@@ -2401,7 +2403,7 @@ namespace core {
     }
 
 
-    bool	SingleFloat_O::eql(T_sp obj) const
+    bool	SingleFloat_O::eql_(T_sp obj) const
     {
 	if ( this->eq(obj) ) return true;
 	if ( obj.isA<Number_O>() )
@@ -2412,6 +2414,7 @@ namespace core {
 	return false;
     }
 
+#if 0
     bool	SingleFloat_O::eqn(T_sp obj) const
     {_OF();
 	if ( af_singleFloatP(obj) )
@@ -2426,7 +2429,7 @@ namespace core {
 	ASSERT(!cl_numberp(obj) );
 	return false;
     }
-
+#endif
 
 
 
@@ -2585,7 +2588,7 @@ namespace core {
     }
 
 
-    bool	DoubleFloat_O::eql(T_sp obj) const
+    bool	DoubleFloat_O::eql_(T_sp obj) const
     {
 	if ( this->eq(obj) ) return true;
 	if ( obj.isA<Number_O>() )
@@ -2596,6 +2599,7 @@ namespace core {
 	return false;
     }
 
+#if 0
     bool	DoubleFloat_O::eqn(T_sp obj) const
     {_OF();
 	if ( af_doubleFloatP(obj) )
@@ -2610,7 +2614,7 @@ namespace core {
 	ASSERT(!cl_numberp(obj));
 	return false;
     }
-
+#endif
 
 
 
@@ -2874,7 +2878,7 @@ namespace core {
 	return Ratio_O::create(clasp_abs(this->_numerator.as<Integer_O>()), this->_denominator);
     }
 
-    bool Ratio_O::eql(T_sp obj) const
+    bool Ratio_O::eql_(T_sp obj) const
     {_G();
 	if ( this->eq(obj) ) return true;
 	if ( !cl_numberp(obj) ) return false;
@@ -2882,11 +2886,13 @@ namespace core {
 	return false;
     }
 
+#if 0
     bool Ratio_O::eqn(T_sp other) const
     {
 	return this->eql(other);
     }
-
+#endif
+    
     Number_sp Ratio_O::copy() const
     {_G();
 	return Ratio_O::create(this->_numerator,this->_denominator);
@@ -3025,6 +3031,7 @@ namespace core {
 	return Complex_O::create(this->_real,this->_imaginary);
     }
 
+#if 0
     bool Complex_O::eqn(T_sp o) const
     {
 	if ( this->eq(o) ) return true;
@@ -3032,8 +3039,8 @@ namespace core {
 	Complex_sp co = o.as<Complex_O>();
 	return ( this->_real == co->_real && this->_imaginary == co->_imaginary );
     }
-
-    bool Complex_O::eql(T_sp o) const
+#endif
+    bool Complex_O::eql_(T_sp o) const
     {
 	if ( this->eq(o) ) return true;
 	if ( !af_complexP(o) ) return false;

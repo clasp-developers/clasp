@@ -90,6 +90,15 @@ namespace core
     class Function_O;
     typedef	gctools::smart_ptr<Function_O>	Function_sp;
 
+    class Character_O;
+    typedef	gctools::smart_ptr<Character_O>	Character_sp;
+
+    
+    bool cl_eq(T_sp x, T_sp y);
+    bool cl_eql(T_sp x, T_sp y);
+    bool cl_equal(T_sp x, T_sp y);
+    bool cl_equalp(T_sp x, T_sp y);
+    bool clasp_charEqual2(T_sp,T_sp);
 };
 
 /*! \page objects How to use the Object hierarchy
@@ -224,10 +233,6 @@ namespace core
 // }
 
 // #endif
-
-
-
-
 
 
 
@@ -729,7 +734,7 @@ namespace core
 	 * If they aren't the same object for numbers and values
 	 * the values are compared.
 	 */
-	virtual bool eql(T_sp obj) const;
+	virtual bool eql_(T_sp obj) const;
 
 	/*! Only compares numbers. Return true if the two numbers are equivalent ignoring type.
 	 * If they aren't the same object for numbers and values
@@ -748,9 +753,6 @@ namespace core
 	 */
 	virtual bool equalp(T_sp obj) const;
 
-	virtual bool neql(T_sp obj) const { return !this->eql(obj);};
-	virtual bool nequal(T_sp obj) const { return !this->equal(obj);};
-
 	/*! Return true if the this is less than obj
 	 * All other relative comparisons call this one
 	 * so if you define this in a subclass then all the other comparisons
@@ -761,7 +763,7 @@ namespace core
 	 * but the others can be defined to improve efficiency
 	 */
 	virtual bool operator<(T_sp obj) const { _OF(); SUBCLASS_MUST_IMPLEMENT(); };	// This is the only one that absolutely has to be defined in a subclass
-	virtual bool operator<=(T_sp obj) const { if ( this->eql(obj) ) return true; return this->operator<(obj); };
+	virtual bool operator<=(T_sp obj) const { if ( cl_eql(this->asSmartPtr(),obj) ) return true; return this->operator<(obj); };
 	virtual bool operator>(T_sp obj) const { return !this->operator<=(obj); };
 	virtual bool operator>=(T_sp obj) const { return !this->operator<(obj); };
 
@@ -809,6 +811,90 @@ namespace core
 
     };
 
+
+
+
+};
+
+
+
+namespace core {
+
+
+#define ARGS_cl_eq "(x y)"
+#define DECL_cl_eq ""
+#define DOCS_cl_eq "eq"
+    inline bool cl_eq(T_sp x, T_sp y)
+    {
+	return ( x==y );
+    };
+
+
+
+
+#define ARGS_cl_eql "(x y)"
+#define DECL_cl_eql ""
+#define DOCS_cl_eql "eql"
+    inline bool cl_eql(T_sp x, T_sp y)
+    {
+	if ( x.fixnump() ) {
+	    return x.raw_() == y.raw_();
+	} else if ( x.single_floatp() ) {
+	    if (y.single_floatp()) {
+		return gc::tagged_single_float_masked(x.raw_()) == gc::tagged_single_float_masked(y.raw_());
+	    }
+	    return false;
+	} else if ( x.characterp() ) {
+	    if ( y.characterp() ) {
+		return x.unsafe_character() == y.unsafe_character();
+	    }
+	    return false;
+	}
+	return x->eql_(y);
+    };
+
+
+
+
+#define ARGS_cl_equal "(x y)"
+#define DECL_cl_equal ""
+#define DOCS_cl_equal "equal"
+    inline bool cl_equal(T_sp x, T_sp y)
+    {
+	if ( x.fixnump() ) {
+	    return x.raw_() == y.raw_();
+	} else if ( x.single_floatp() ) {
+	    if (y.single_floatp()) {
+		return gc::tagged_single_float_masked(x.raw_()) == gc::tagged_single_float_masked(y.raw_());
+	    }
+	    return false;
+	} else if ( x.characterp() ) {
+	    if ( y.characterp() ) {
+		return x.unsafe_character() == y.unsafe_character();
+	    }
+	    return false;
+	}
+	return x->equal(y);
+    };
+
+
+#define ARGS_cl_equalp "(x y)"
+#define DECL_cl_equalp ""
+#define DOCS_cl_equalp "equalp"
+    inline bool cl_equalp(T_sp x, T_sp y)
+    {
+	if ( x.fixnump() ) {
+	    return x.raw_() == y.raw_();
+	} else if ( x.single_floatp() ) {
+	    if (y.single_floatp()) {
+		return gc::tagged_single_float_masked(x.raw_()) == gc::tagged_single_float_masked(y.raw_());
+	    }
+	    return false;
+	} else if ( x.characterp() ) {
+	    return clasp_charEqual2(x,y);
+	}
+	return x->equalp(y);
+    };
 
 
 

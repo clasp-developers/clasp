@@ -269,21 +269,6 @@ class	OneClass(Predicate):
 	
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #
 # Define a function to call to initialize a class or other data structures
 # that must be called after aBaseInitializer
@@ -368,7 +353,8 @@ class	ClassGroup:
         bases = set(basesList)
         cl = self._LatestClass
         if ( len(bases) != len(cl.getBases()) or (not bases.issubset(cl.getBases())) ):
-            raise Exception("In %s:%d for class[%s] mismatch between the specification of LISP_BASES(%s) and the c++ bases[%s]" % (fileName,lineNumber,cl.getClassName(),bases,cl.getBases()))
+#            raise Exception("WARNING!!!!!!  In %s:%d for class[%s] mismatch between the specification of LISP_BASES(%s) and the c++ bases[%s]" % (fileName,lineNumber,cl.getClassName(),bases,cl.getBases()))
+            print( "WARNING!!!!!!  In %s:%d for class[%s] mismatch between the specification of LISP_BASES(%s) and the c++ bases[%s]" % (fileName,lineNumber,cl.getClassName(),bases,cl.getBases()))
                             
     def errorIfClassNameDoesntMatchLatestClass(self,className):
         cl = self._LatestClass
@@ -568,8 +554,11 @@ class	ClassGroup:
                     args["BASE2"] = ("%s::static_classSymbol()"%bases[1])
                 if ( not cl.ignore() ):
                     fout.write("%(CLASSNAME)s->addInstanceBaseClassDoNotCalculateClassPrecedenceList(%(BASE1)s);\n" % args)
-                    if ( len(cl.getBases())> 1):
-                        fout.write("%(CLASSNAME)s->addInstanceBaseClassDoNotCalculateClassPrecedenceList(%(BASE2)s);\n" % args)
+#### This is where I ignore the second base class if it is provided!
+#### Only the first class will be defined using addInstanceBaseClass...
+#### See https://github.com/drmeister/clasp/wiki/Clasp-developers
+#                    if ( len(cl.getBases())> 1):
+#                        fout.write("%(CLASSNAME)s->addInstanceBaseClassDoNotCalculateClassPrecedenceList(%(BASE2)s);\n" % args)
         fout.write("#endif // } DEFINE_BASE_CLASSES\n")
         fout.write("#undef DEFINE_BASE_CLASSES\n")
 

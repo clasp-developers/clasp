@@ -236,7 +236,7 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 
 
 
-    bool Bignum_O::eql(T_sp o) const
+    bool Bignum_O::eql_(T_sp o) const
     {_G();
 	if ( this->eq(o) ) return((true));
 	if ( af_integerP(o) )
@@ -247,11 +247,12 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
     }
 
 
+#if 0
     bool Bignum_O::eqn(T_sp o) const
     {
 	return((this->eql(o)));
     }
-
+#endif
 
 
 

@@ -44,11 +44,11 @@ namespace core
 	if ( Cons_sp clcur = char_bag.asOrNull<Cons_O>() ) {
 	    List_sp lcur = clcur;
 	    for ( ; lcur.notnilp(); lcur = oCdr(lcur) ) {
-		if ( oCar(lcur)->eql(Character_O::create(c))) return true;
+		if ( cl_eql(oCar(lcur),Character_O::create(c))) return true;
 	    }
 	} else if ( Vector_sp vcur = char_bag.asOrNull<Vector_O>() ) {
 	    for ( size_t i=0, iEnd(vcur->length()); i<iEnd; ++i ) {
-		if ( vcur->elt(i)->eql(Character_O::create(c)) ) return true;
+		if ( cl_eql(vcur->elt(i),Character_O::create(c)) ) return true;
 	    }
 	}
 	return false;

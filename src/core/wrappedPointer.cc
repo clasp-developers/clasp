@@ -75,7 +75,7 @@ namespace core {
     }
 
 
-    bool WrappedPointer_O::eql(T_sp obj) const
+    bool WrappedPointer_O::eql_(T_sp obj) const
     {_G();
 	if ( WrappedPointer_sp wo = obj.as<WrappedPointer_O>() )
 	{

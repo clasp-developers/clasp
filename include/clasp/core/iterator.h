@@ -56,7 +56,7 @@ public:
     virtual void step() {SUBIMP();};
     virtual bool operator==(T_sp other) const {SUBIMP();};
     virtual bool operator<(T_sp other) const {SUBIMP();};
-    virtual bool eql(T_sp other) const { return this->operator==(other);};
+    virtual bool eql_(T_sp other) const { return this->operator==(other);};
 
     virtual size_t templatedSizeof() const {SUBIMP();};
 
