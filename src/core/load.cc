@@ -223,26 +223,10 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	if (!function.nilp()) {
 	    ok = eval::funcall( function, filename, verbose, print, external_format);
 	} else {
-#if 0 /* defined(ENABLE_DLOPEN) && !defined(ECL_MS_WINDOWS_HOST)*/
-	    /*
-	     * DISABLED BECAUSE OF SECURITY ISSUES!
-	     * In systems where we can do this, we try to load the file
-	     * as a binary. When it fails, we will revert to source
-	     * loading below. Is this safe? Well, it depends on whether
-	     * your op.sys. checks integrity of binary exectables or
-	     * just loads _anything_.
-	     */
-	    if (not_a_filename) {
-		ok = ECL_T;
-	    } else {
-		ok = si_load_binary(filename, verbose, print);
-	    }
-	    if (!Null(ok))
-#endif
-		ok = af_loadSource(filename, verbose.isTrue(), print.isTrue(), external_format);
+	    ok = af_loadSource(filename, verbose.isTrue(), print.isTrue(), external_format);
 	}
 	if (ok.nilp()) {
-	    SIMPLE_ERROR(BF("LOAD: Could not load file %s (Error: %s") % _rep_(filename) % _rep_(ok));
+	    SIMPLE_ERROR(BF("LOAD: Could not load file %s") % _rep_(filename));
 	}
 	if (print.notnilp() ) {
 	    eval::funcall(cl::_sym_format, _lisp->_true(),

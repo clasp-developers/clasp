@@ -102,14 +102,14 @@ namespace core
 	void setFixnum(gctools::Fixnum val) { this->_value = val; };
 	Bignum get() const;
 	Bignum get_or_if_nil_default(Bignum default_value) const;
-	Number_sp abs() const;
+	Number_sp abs_() const;
 	void increment(int i) { this->_value += i; };
 	int sign() const { return this->_value > 0 ? 1 : (this->_value < 0 ? -1 : 0 ); };
 
 
 	virtual bool zerop() const {return((this->_value == 0));}
-	virtual bool plusp() const {return((this->_value > 0));}
-	virtual bool minusp() const {return((this->_value < 0));}
+	virtual bool plusp_() const {return((this->_value > 0));}
+	virtual bool minusp_() const {return((this->_value < 0));}
 
 	virtual Number_sp oneMinus() const {
 	    return Integer_O::create(this->_value-1);
@@ -144,8 +144,8 @@ namespace core
 
 	void sxhash(HashGenerator& hg) const;
 
-	virtual bool evenp() const { return (mpz_get_ui(this->_value.get_mpz_t())&1)==0;};
-	virtual bool oddp() const { return (mpz_get_ui(this->_value.get_mpz_t())&1)!=0;};
+	virtual bool evenp_() const { return (mpz_get_ui(this->_value.get_mpz_t())&1)==0;};
+	virtual bool oddp_() const { return (mpz_get_ui(this->_value.get_mpz_t())&1)!=0;};
 
 
 

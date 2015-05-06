@@ -1461,12 +1461,14 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     {_G();
 	class_<Number_O>()
 	    //	    .def("core:zerop",&Number_O::zerop)
-	    .def("signum",&Number_O::signum)
-	    .def("abs",&Number_O::abs)
+	    //	    .def("signum",&Number_O::signum)
+	    //      .def("abs",&Number_O::abs)
 	    .def("core:onePlus",&Number_O::onePlus)
 	    .def("core:oneMinus",&Number_O::oneMinus)
 	    ;
 	;
+	af_def(ClPkg,"abs",&clasp_abs);
+	af_def(ClPkg,"signum",&clasp_signum);
 	SYMBOL_EXPORT_SC_(ClPkg,max);
 	ClDefun(max);
 	SYMBOL_EXPORT_SC_(ClPkg,min);
@@ -1594,9 +1596,11 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     void Real_O::exposeCando(Lisp_sp lisp)
     {
 	class_<Real_O>()
-	    .def("minusp",&Real_O::minusp)
-	    .def("plusp",&Real_O::plusp)
+	    //	    .def("minusp",&Real_O::minusp)
+	    //      .def("plusp",&Real_O::plusp)
 	    ;
+	af_def(ClPkg,"minusp",&clasp_minusp);
+	af_def(ClPkg,"plusp",&clasp_plusp);
     }
 
 
@@ -1840,9 +1844,11 @@ namespace core {
     void Integer_O::exposeCando(Lisp_sp lisp)
     {
 	class_<Integer_O>()
-	    .def("evenp",&Integer_O::evenp)
-	    .def("oddp",&Integer_O::oddp)
+	    // .def("evenp",&Integer_O::evenp)
+	    // .def("oddp",&Integer_O::oddp)
 	    ;
+	af_def(ClPkg,"evenp",&clasp_evenp);
+	af_def(ClPkg,"oddp",&clasp_oddp);
 	SYMBOL_EXPORT_SC_(ClPkg,logand);
 	ClDefun(logand);
 	SYMBOL_EXPORT_SC_(ClPkg,logior);
@@ -1971,14 +1977,12 @@ namespace core {
 	return (LongFloat)this->_Value;
     }
 
-
-    Number_sp Fixnum_O::signum() const
+    Number_sp Fixnum_O::signum_() const
     {_G();
 	if ( this->_Value == 0 ) return Fixnum_O::create(0);
 	if ( this->_Value > 0 ) return Fixnum_O::create(1);
 	return Fixnum_O::create(-1);
     }
-
 
 
 
@@ -2182,11 +2186,10 @@ namespace core {
 	return ShortFloat_O::create(1.0/this->_Value);
     }
 
-    Number_sp ShortFloat_O::signum() const
+    Number_sp ShortFloat_O::signum_() const
     {
 	return ShortFloat_O::create(this->_Value>0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0 ));
     }
-
 
     string ShortFloat_O::valueAsString() const
     {_G();
@@ -2195,11 +2198,10 @@ namespace core {
 	return ss.str();
     }
 
-    Number_sp ShortFloat_O::abs() const
+    Number_sp ShortFloat_O::abs_() const
     {_G();
 	return ShortFloat_O::create(fabs(this->_Value));
     }
-
 
 
     Number_sp ShortFloat_O::copy() const
@@ -2375,11 +2377,10 @@ namespace core {
 
 
 
-    Number_sp SingleFloat_O::signum() const
+    Number_sp SingleFloat_O::signum_() const
     {
 	return SingleFloat_O::create(this->_Value>0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0 ));
     }
-
 
 
 
@@ -2443,11 +2444,10 @@ namespace core {
 	return ss.str();
     }
 
-    Number_sp SingleFloat_O::abs() const
+    Number_sp SingleFloat_O::abs_() const
     {_G();
 	return SingleFloat_O::create(fabs(this->_Value));
     }
-
 
     string SingleFloat_O::__repr__() const
     {_G();
@@ -2568,11 +2568,10 @@ namespace core {
     }
 
 
-    Number_sp DoubleFloat_O::signum() const
+    Number_sp DoubleFloat_O::signum_() const
     {
 	return DoubleFloat_O::create(this->_Value>0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0 ));
     }
-
 
 
 
@@ -2870,9 +2869,9 @@ namespace core {
 	return this->_denominator->as_mpz();
     }
 
-    Number_sp Ratio_O::abs() const
+    Number_sp Ratio_O::abs_() const
     {_G();
-	return Ratio_O::create(this->_numerator->abs().as<Integer_O>(), this->_denominator);
+	return Ratio_O::create(clasp_abs(this->_numerator.as<Integer_O>()), this->_denominator);
     }
 
     bool Ratio_O::eql(T_sp obj) const
@@ -2902,10 +2901,10 @@ namespace core {
     }
 
 
-    Number_sp Ratio_O::signum() const
+    Number_sp Ratio_O::signum_() const
     {_G();
-	ASSERT(this->_denominator->plusp());
-	return this->_numerator->signum();
+	ASSERT(clasp_plusp(this->_denominator));
+	return clasp_signum(this->_numerator);
     }
 
 
@@ -2974,10 +2973,10 @@ namespace core {
     }
 
 
-    Number_sp Complex_O::signum() const
+    Number_sp Complex_O::signum_() const
     {_G();
-	return Complex_O::create(this->_real->signum().as<Real_O>(),
-				 this->_imaginary->signum().as<Real_O>());
+	return Complex_O::create(clasp_signum(this->_real),
+				 clasp_signum(this->_imaginary));
     }
 
 
@@ -3042,7 +3041,7 @@ namespace core {
 	return ( this->_real == co->_real && this->_imaginary == co->_imaginary );
     }
 
-    Number_sp Complex_O::abs() const
+    Number_sp Complex_O::abs_() const
     {_G();
 	IMPLEMENT_ME();
     }
@@ -3104,7 +3103,7 @@ namespace core {
 
 Number_sp Rational_O::sqrt() const
 {
-    if ( this->minusp() ) {
+    if ( clasp_minusp(this->asSmartPtr()) ) {
 	Real_sp x = this->negate()->sqrt().as<Real_O>();
 	return Complex_O::create(SingleFloat_O::create(0.0),x);
     } else {
@@ -3114,7 +3113,7 @@ Number_sp Rational_O::sqrt() const
 
 Number_sp SingleFloat_O::sqrt() const
 {
-    if ( this->minusp() ) {
+    if ( clasp_minusp(this->asSmartPtr()) ) {
 	Number_sp x = this->negate()->sqrt();
 	return Complex_O::create(SingleFloat_O::create(0.0),x.as<Real_O>());
     } else {
@@ -3124,7 +3123,7 @@ Number_sp SingleFloat_O::sqrt() const
 
 Number_sp DoubleFloat_O::sqrt() const
 {
-    if ( this->minusp() ) {
+    if ( clasp_minusp(this->asSmartPtr()) ) {
 	Number_sp x = this->negate()->sqrt();
 	return Complex_O::create(DoubleFloat_O::create(0.0),x.as<Real_O>());
     } else {
@@ -3830,7 +3829,7 @@ brcl_expt(Number_sp x, Number_sp y)
     }
     if (brcl_zerop(x)) {
 	z = brcl_times(x, y);
-	if (!brcl_plusp((ty==number_Complex)?y.as<Complex_O>()->real():y.as<Real_O>()))
+	if (!clasp_plusp((ty==number_Complex)?y.as<Complex_O>()->real():y.as<Real_O>()))
 	    z = brcl_divide(brcl_make_fixnum(1), z);
     } else if (ty != number_Fixnum && ty != number_Bignum) {
 	/* The following could be just
@@ -3841,7 +3840,7 @@ brcl_expt(Number_sp x, Number_sp y)
 	z = brcl_log1(brcl_times(x, expt_zero(x, y)));
 	z = brcl_times(z, y);
 	z = cl_exp(z);
-    } else if (brcl_minusp(y.as<Real_O>())) {
+    } else if (clasp_minusp(y.as<Real_O>())) {
 	z = brcl_negate(y);
 	z = brcl_expt(x, z);
 	z = brcl_divide(brcl_make_fixnum(1), z);
@@ -3851,7 +3850,7 @@ brcl_expt(Number_sp x, Number_sp y)
 	Integer_sp iy = y.as<Integer_O>();
 	do {
 	    /* INV: brcl_integer_divide outputs an integer */
-	    if (!brcl_evenp(iy))
+	    if (!clasp_evenp(iy))
 		z = brcl_times(z, x);
 	    iy = brcl_integer_divide(iy, brcl_make_fixnum(2));
 	    if (brcl_zerop(iy)) break;
@@ -4058,8 +4057,8 @@ Number_sp brcl_atan1(Number_sp y)
 
     Number_sp brcl_log1_complex_inner(Number_sp r, Number_sp i)
     {
-	Real_sp a = r->abs().as<Real_O>();
-	Real_sp p = i->abs().as<Real_O>();
+	Real_sp a = clasp_abs(r);
+	Real_sp p = clasp_abs(i);
 	int rel = brcl_number_compare(a, p);
 	if (rel > 0) {
 	    Real_sp aux = p;
@@ -4088,7 +4087,7 @@ Number_sp brcl_atan1(Number_sp y)
 
     Number_sp Bignum_O::log1() const
     {
-	if ( this->minusp()) {
+	if ( clasp_minusp(this->asSmartPtr())) {
 	    return brcl_log1_complex_inner(this->const_sharedThis<Bignum_O>(),Fixnum_O::create(0));
 	} else {
 	    Fixnum l = clasp_integer_length(this->const_sharedThis<Bignum_O>()) - 1;

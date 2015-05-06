@@ -1918,12 +1918,13 @@ extern "C"
 	core::Symbol_sp sym = *symbolP;
 	core::Symbol_sp top = _lisp->bindings().topSymbol();
 	if ( sym != _lisp->bindings().topSymbol() ) {
-	    printf("%s:%d popDynamicBinding: %s\n", __FILE__, __LINE__, _rep_(*symbolP).c_str());
-	    printf("   mismatch with top of dynamic binding stack: %s\n", _rep_(top).c_str());
-	    printf("   dumping stack\n");
-	    core::core_dynamicBindingStackDump();
-	    SIMPLE_ERROR(BF("Mismatch in popDynamicBinding"));
-	    
+	    stringstream ss;
+	    ss << __FILE__ << ":" <<__LINE__;
+	    ss << " popDynamicBinding of " << _rep_(*symbolP) << std::endl;
+	    ss << "  mismatch with top of dynamic binding stack: " << _rep_(top) << std::endl;
+	    ss << "  dumping stack: " << std::endl;
+	    core::core_dynamicBindingStackDump(ss);
+	    SIMPLE_ERROR(BF("Mismatch in popDynamicBinding:\n%s") % ss.str());
 	}
 	_lisp->bindings().pop();
 //	printf("%s:%d - popDynamicBinding symbol: %s  restored value: %s\n", __FILE__, __LINE__, sym->__repr__().c_str(), sym->symbolValueOrUnbound()->__repr__().c_str() );

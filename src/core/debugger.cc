@@ -431,6 +431,7 @@ extern "C" {
 	    } else {
 		printf("lowLevelDescribe handle: %p\n", obj.raw_());
 	    }
+	    fflush(stdout);
 	}
 
 	void dbg_describe_tagged_T_Optr(T_O* p)
@@ -449,6 +450,7 @@ extern "C" {
             printf("dbg_describe object class--> %s\n",_rep_(obj->__class()->className()).c_str());
             ss << _rep_(obj);
             printf("dbg_describe: %s\n", ss.str().c_str());
+	    fflush(stdout);
         }
 
 
@@ -493,6 +495,7 @@ void dbg_describe_symbol(Symbol_sp obj)
             printf("dbg_describe object class--> %s\n",_rep_(obj->__class()->className()).c_str());
             ss << _rep_(obj);
             printf("dbg_describe: %s\n", ss.str().c_str());
+	    fflush(stdout);
         }
 
     };

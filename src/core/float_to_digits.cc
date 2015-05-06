@@ -94,7 +94,7 @@ namespace core {
 	default:
 	    SIMPLE_ERROR(BF("Illegal type"));
 	}
-	approx->low_ok = approx->high_ok = brcl_evenp(f);
+	approx->low_ok = approx->high_ok = clasp_evenp(f);
 	if (e > 0) {
 	    Fixnum_sp zz(Fixnum_O::create(1));
 	    Real_sp be = EXPT_RADIX(e);

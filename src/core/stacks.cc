@@ -631,7 +631,7 @@ void    core_lowLevelBacktrace()
                 kind = "unknown";
                 break;
             };
-            printf("Exception stack[%2d] = %8s %s@%p\n", i, kind.c_str(), _rep_(stack[i]._Key).c_str(), stack[i]._Key.raw_());
+            printf("Exception exceptionstack[%2d] = %8s %s@%p\n", i, kind.c_str(), _rep_(stack[i]._Key).c_str(), stack[i]._Key.raw_());
         }
         printf("----Done----\n");
     };
@@ -640,11 +640,11 @@ void    core_lowLevelBacktrace()
 #define ARGS_core_dynamicBindingStackDump "()"
 #define DECL_core_dynamicBindingStackDump ""
 #define DOCS_core_dynamicBindingStackDump "dynamicBindingStackDump"
-    void core_dynamicBindingStackDump()
+    void core_dynamicBindingStackDump(std::ostream& out)
     {
 	DynamicBindingStack& bd = _lisp->bindings();
 	for ( int i(0), iEnd(bd.size()); i<iEnd; ++i ) {
-	    printf("stack[%3d] -->  %s\n", i, _rep_(bd.var(i)).c_str() );
+	    out << "  dbstack[" << i << " --> " << _rep_(bd.var(i)) << std::endl;
 	};
     }
 
@@ -678,7 +678,7 @@ namespace core {
 	CoreDefun(lowLevelBacktrace);
 	CoreDefun(exceptionStack);
 	CoreDefun(exceptionStackDump);
-	CoreDefun(dynamicBindingStackDump);
+	//	CoreDefun(dynamicBindingStackDump);
 
     }
 

@@ -131,18 +131,18 @@ namespace gctools {
 
     struct WeakObject {
         struct metadata_always_fix_pointers_to_derived_classes;
-        typedef gctools::smart_ptr<gctools::Fixnum_ty> KindType;
-    WeakObject(WeakKinds k) : Kind(gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(k)) {};
+        typedef gctools::smart_ptr<core::Fixnum_I> KindType;
+    WeakObject(WeakKinds k) : Kind(gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(k)) {};
         KindType Kind;
-        int kind() const { return this->Kind.asFixnum(); };
-        void setKind(WeakKinds k) { this->Kind = gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(k); };
+        int kind() const { return this->Kind.unsafe_fixnum(); };
+        void setKind(WeakKinds k) { this->Kind = gc::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(k); };
         virtual void* dependentPtr() const { return NULL; };
         
     };
 
     struct weak_fwd_s : public WeakObject {
         WeakObject* fwd;                    /* forwarded object */
-        gctools::smart_ptr<gctools::Fixnum_ty> size; /* total size of this object */
+        gctools::smart_ptr<core::Fixnum_I> size; /* total size of this object */
     };
 
     struct weak_fwd2_s : public WeakObject {
@@ -152,7 +152,7 @@ namespace gctools {
 
     struct weak_pad_s : public WeakObject {
         WeakObject* fwd;                    /* forwarded object */
-        gctools::smart_ptr<gctools::Fixnum_ty> size; /* total size of this object */
+        gctools::smart_ptr<core::Fixnum_I> size; /* total size of this object */
     };
 
     struct weak_pad1_s : public WeakObject {
@@ -164,9 +164,9 @@ namespace gctools {
     struct BucketsBase : public WeakObject {
     BucketsBase(WeakKinds k,int l) : WeakObject(k)
 	    , dependent(NULL)
-	    , _length(gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(l))
-	    , _used(gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(0))
-	    , _deleted(gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(0))
+	    , _length(gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(l))
+	    , _used(gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(0))
+	    , _deleted(gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(0))
 	    {
 		GCWEAK_LOG(BF("Created BucketsBase with length: %d") % this->length() );
 		for (size_t i(0); i<l; ++i ) {
@@ -181,17 +181,17 @@ namespace gctools {
         T& operator[](size_t idx) { return this->bucket[idx];};
         typedef T   value_type;
         BucketsBase<U,T>* dependent;  /* the dependent object */
-        gctools::smart_ptr<gctools::Fixnum_ty> _length;                /* number of buckets (tagged) */
-        gctools::smart_ptr<gctools::Fixnum_ty> _used;                  /* number of buckets in use (tagged) */
-        gctools::smart_ptr<gctools::Fixnum_ty> _deleted;               /* number of deleted buckets (tagged) */
+        gctools::smart_ptr<core::Fixnum_I> _length;                /* number of buckets (tagged) */
+        gctools::smart_ptr<core::Fixnum_I> _used;                  /* number of buckets in use (tagged) */
+        gctools::smart_ptr<core::Fixnum_I> _deleted;               /* number of deleted buckets (tagged) */
         T bucket[0];              /* hash buckets */
 
-        int length() const { return this->_length.asFixnum(); };
-	void setLength(int l) { this->_length = gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(l); };
-        int used() const { return this->_used.asFixnum(); };
-        void setUsed(int val) { this->_used = gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(val); };
-        int deleted() const { return this->_deleted.asFixnum(); };
-        void setDeleted(int val) { this->_deleted = gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(val); };
+        int length() const { GCTOOLS_ASSERT(this->_length.fixnump());return this->_length.unsafe_fixnum(); };
+	void setLength(int l) { this->_length = gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(l); };
+        int used() const { GCTOOLS_ASSERT(this->_used.fixnump());return this->_used.unsafe_fixnum(); };
+        void setUsed(int val) { this->_used = gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(val); };
+        int deleted() const { GCTOOLS_ASSERT(this->_deleted.fixnump()); return this->_deleted.unsafe_fixnum(); };
+        void setDeleted(int val) { this->_deleted = gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(val); };
     };
 
 

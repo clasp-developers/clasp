@@ -731,7 +731,7 @@ namespace core {
 	    T_sp tversion = version_mv;
 	    Fixnum_sp parsed_length = version_mv.valueGet(1).as<Fixnum_O>();
 	    if (parsed_length->get() == cl_length(aux) &&
-		af_integerP(tversion) && tversion.as<Integer_O>()->plusp()) {
+		af_integerP(tversion) && clasp_plusp(tversion.as<Integer_O>())) {
 		version = tversion.as<Integer_O>();
 	    } else if (af_string_equal(aux, kw::_sym_newest).notnilp()) {
 		version = kw::_sym_newest;

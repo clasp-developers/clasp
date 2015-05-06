@@ -98,7 +98,7 @@ namespace core {
 	Integer_sp gcd = oCar(nums).as<Integer_O>();
 	nums = oCdr(nums);
 	if (nums.nilp()) {
-	    return (brcl_minusp(gcd) ? brcl_negate(gcd).as<Integer_O>() : gcd);
+	    return (clasp_minusp(gcd) ? brcl_negate(gcd).as<Integer_O>() : gcd);
 	}
 	while (nums.consp()) {
 	    gcd = brcl_gcd(gcd, oCar(nums).as<Integer_O>());
@@ -159,7 +159,7 @@ namespace core {
 		lcm = brcl_divide(t, g).as<Integer_O>();
 	    }
 	}
-	return brcl_minusp(lcm) ? brcl_negate(lcm).as<Integer_O>() : lcm.as<Integer_O>();
+	return clasp_minusp(lcm) ? brcl_negate(lcm).as<Integer_O>() : lcm.as<Integer_O>();
     };
 
 

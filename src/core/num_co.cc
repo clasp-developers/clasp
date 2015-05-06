@@ -734,7 +734,7 @@ namespace core {
 
     Real_mv brcl_truncate2(Real_sp x, Real_sp y)
     {
-	if (brcl_plusp(x) != brcl_plusp(y))
+	if (clasp_plusp(x) != clasp_plusp(y))
 	    return brcl_ceiling2(x, y);
 	else
 	    return clasp_floor2(x, y);
@@ -850,14 +850,14 @@ namespace core {
 	    Ratio_sp rq = q.as<Ratio_O>();
 	    Integer_sp q1 = brcl_integer_divide(rq->num(), rq->den());
 	    Real_sp r = brcl_minus(q, q1).as<Real_O>();
-	    if (brcl_minusp(r)) {
+	    if (clasp_minusp(r)) {
 		int c = brcl_number_compare(_lisp->minusHalf(), r);
-		if (c > 0 || (c == 0 && brcl_oddp(q1))) {
+		if (c > 0 || (c == 0 && clasp_oddp(q1))) {
 		    q1 = brcl_one_minus(q1).as<Integer_O>();
 		}
 	    } else {
 		int c = brcl_number_compare(r, _lisp->plusHalf());
-		if (c > 0 || (c == 0 && brcl_oddp(q1))) {
+		if (c > 0 || (c == 0 && clasp_oddp(q1))) {
 		    q1 = brcl_one_plus(q1).as<Integer_O>();
 		}
 	    }

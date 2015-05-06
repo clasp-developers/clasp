@@ -83,7 +83,7 @@ extern void lisp_errorDereferencedNonPointer(core::T_O* objP );
 namespace gctools {
 
 
-    typedef core::T_O Fixnum_ty;
+    //    typedef core::T_O Fixnum_ty;
     
     template <class T> class smart_ptr;
 
@@ -322,6 +322,8 @@ namespace gctools {
 	//
 	//
 	// Make a tagged fixnum
+	inline static smart_ptr<Type> make_tagged_fixnum(Fixnum val) {return smart_ptr<Type>((Tagged)tag_fixnum<Type>(val));};
+	inline static smart_ptr<Type> make_tagged_single_float(float val) {THROW_HARD_ERROR(BF("Implement make_tagged_single_float"));};
 	inline static smart_ptr<Type> make_tagged_other(Type* p) {return smart_ptr<Type>(p);}
 	inline static smart_ptr<Type> make_tagged_nil() {return smart_ptr<Type>((Tagged)reinterpret_cast<Type*>(global_Symbol_OP_nil));};
 	inline static smart_ptr<Type> make_tagged_unbound() {return smart_ptr<Type>((Tagged)reinterpret_cast<Type*>(global_Symbol_OP_unbound));};

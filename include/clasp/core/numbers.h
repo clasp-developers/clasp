@@ -54,6 +54,29 @@ THE SOFTWARE.
 #define BRCL_PI2_L 1.57079632679489661923132169163975144l
 
 
+namespace core {
+
+    template <typename T>
+	gc::smart_ptr<T> immediate_fixnum(Fixnum f)
+	{
+	    return gc::smart_ptr<T>::make_tagged_fixnum(f);
+	};
+    template <typename T>
+	gc::smart_ptr<T> immediate_single_float(float f)
+	{
+	    return gc::smart_ptr<T>::make_tagged_single_float(f);
+	};
+    
+    bool clasp_plusp(Real_sp num);
+    bool clasp_minusp(Real_sp num);
+    bool clasp_evenp(Integer_sp num);
+    bool clasp_oddp(Integer_sp num);
+    Number_sp clasp_abs(Number_sp num);
+    Number_sp clasp_signum(Number_sp num);
+	
+    
+};
+
 namespace core
 {
 
@@ -98,9 +121,9 @@ namespace core
 	virtual Number_sp copy() const { _OF(); SUBCLASS_MUST_IMPLEMENT();}
 	virtual T_sp deepCopy() const { return this->copy();};
 	virtual T_sp shallowCopy() const { return this->copy();};
-	virtual Number_sp signum() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
+	virtual Number_sp signum_() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual Number_sp reciprocal() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
-	virtual Number_sp abs() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
+	virtual Number_sp abs_() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual T_sp floor(Number_sp divisor) const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual T_sp ffloor(Number_sp divisor) const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual bool equal(T_sp obj) const;
@@ -165,8 +188,8 @@ namespace core
 	virtual double as_double() const {SUBIMP();};
 
 	// functions shared by all Real
-	virtual bool plusp() const {SUBIMP();};
-	virtual bool minusp() const {SUBIMP();};
+	virtual bool plusp_() const {SUBIMP();};
+	virtual bool minusp_() const {SUBIMP();};
 
 	virtual Number_sp conjugate() const;
 
@@ -231,8 +254,8 @@ namespace core
 	static Integer_sp createLongFloat(LongFloat f);
     public:
 
-	virtual bool evenp() const { SUBIMP(); };
-	virtual bool oddp() const { SUBIMP(); };
+	virtual bool evenp_() const { SUBIMP(); };
+	virtual bool oddp_() const { SUBIMP(); };
 
 	virtual int bit_length() const {SUBIMP();};
 
@@ -265,52 +288,31 @@ namespace core {
 
     public:
 	friend class boost::serialization::access;
-#if 0
-	template<class Archive>
-	    void serialize(Archive &ar, const unsigned int version)
-	{
-	    ar & this->_Value;
-	}
-#endif
     public:
-#if defined(OLD_SERIALIZE)
-	void	serialize(serialize::SNode node);
-#endif
-#if defined(XML_ARCHIVE)
-	void	archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
     private:
 	gctools::Fixnum	_Value;
     public:
 	static Fixnum_sp create(gctools::Fixnum nm);
-	//	static Fixnum_sp create(int nm) {return Fixnum_O::create((gctools::Fixnum)nm); };
-	//	static Fixnum_sp create(uint nm) {return Fixnum_O::create((gctools::Fixnum)nm); };
     public:
 	static int number_of_bits();
     public:
 	NumberType number_type() const { return number_Fixnum;};
-
-	//	int& ref() { return this->_Value;};
 	virtual Number_sp copy() const;
 	string __repr__() const;
 	void set(gc::Fixnum val) { this->_Value = val; };
 	gc::Fixnum get() const { return this->_Value; };
-	Number_sp abs() const { return Fixnum_O::create(std::abs(this->_Value)); };
-	Number_sp signum() const;
-
+	Number_sp abs_() const { return Fixnum_O::create(std::abs(this->_Value)); };
+	Number_sp signum_() const;
 
 	// math routines shared by all numbers
 	virtual bool zerop() const { return this->_Value == 0; };
 	virtual Number_sp negate() const { return Fixnum_O::create(-this->_Value);};
 
 	// Shared by real
-	virtual bool plusp() const { return this->_Value > 0; };
-	virtual bool minusp() const { return this->_Value < 0; };
-
-
-
-	virtual bool evenp() const { return !(this->_Value&1); };
-	virtual bool oddp() const { return (this->_Value&1);};
+	virtual bool plusp_() const { return this->_Value > 0; };
+	virtual bool minusp_() const { return this->_Value < 0; };
+	virtual bool evenp_() const { return !(this->_Value&1); };
+	virtual bool oddp_() const { return (this->_Value&1);};
 
 	virtual	bool	eqn(T_sp obj) const;
 	virtual	bool	eql(T_sp obj) const;
@@ -410,9 +412,9 @@ namespace core {
 	float get() const {return this->_Value;};
 	void sxhash(HashGenerator& hg) const;
 	virtual Number_sp copy() const;
-	Number_sp signum() const;
+	Number_sp signum_() const;
 	string __repr__() const;
-	Number_sp abs() const;
+	Number_sp abs_() const;
 	bool isnan() const {return this->_Value != this->_Value;}; // NaN is supposed to be the only value that != itself!!!!
     public:
 	virtual	string	valueAsString() const;
@@ -430,8 +432,8 @@ namespace core {
 	virtual Number_sp oneMinus() const { return ShortFloat_O::create(this->_Value-1.0);};
 
 	// shared by real
-	virtual bool plusp() const { return this->_Value > 0.0; };
-	virtual bool minusp() const { return this->_Value < 0.0; };
+	virtual bool plusp_() const { return this->_Value > 0.0; };
+	virtual bool minusp_() const { return this->_Value < 0.0; };
 
 
 
@@ -476,8 +478,8 @@ namespace core {
 	float get() const { return this->_Value;};
 	string __repr__() const;
 	virtual Number_sp copy() const;
-	Number_sp signum() const;
-	Number_sp abs() const;
+	Number_sp signum_() const;
+	Number_sp abs_() const;
 	bool isnan() const {return this->_Value != this->_Value;}; // NaN is supposed to be the only value that != itself!!!!
     public:
 	virtual	string	valueAsString() const;
@@ -491,8 +493,8 @@ namespace core {
 	virtual Number_sp negate() const { return SingleFloat_O::create(-this->_Value);};
 
 	// shared by real
-	virtual bool plusp() const { return this->_Value > 0.0; };
-	virtual bool minusp() const { return this->_Value < 0.0; };
+	virtual bool plusp_() const { return this->_Value > 0.0; };
+	virtual bool minusp_() const { return this->_Value < 0.0; };
 
 	virtual Number_sp log1() const;
 	virtual Number_sp log1p() const;
@@ -557,8 +559,8 @@ namespace core {
 	string __repr__() const;
 	void set(double val) { this->_Value = val; };
 	double get() const { return this->_Value; };
-	Number_sp signum() const;
-	Number_sp abs() const { return DoubleFloat_O::create(fabs(this->_Value));};
+	Number_sp signum_() const;
+	Number_sp abs_() const { return DoubleFloat_O::create(fabs(this->_Value));};
 	bool isnan() const {return this->_Value != this->_Value;}; // NaN is supposed to be the only value that != itself!!!!
     public:
 	virtual	string	valueAsString() const;
@@ -571,8 +573,8 @@ namespace core {
 	virtual Number_sp negate() const { return DoubleFloat_O::create(-this->_Value);};
 
 	// Shared by real
-	bool plusp() const { return this->_Value > 0.0; };
-	bool minusp() const { return this->_Value < 0.0; };
+	bool plusp_() const { return this->_Value > 0.0; };
+	bool minusp_() const { return this->_Value < 0.0; };
 
 	virtual Number_sp sqrt() const;
 
@@ -640,8 +642,8 @@ namespace core {
 	LongFloat& ref() { return this->_Value;};
 	string __repr__() const;
 	virtual Number_sp copy() const;
-	Number_sp signum() const;
-	Number_sp abs() const;
+	Number_sp signum_() const;
+	Number_sp abs_() const;
 	bool isnan() const {return this->_Value != this->_Value;}; // NaN is supposed to be the only value that != itself!!!!
     public:
 	virtual	string	valueAsString() const;
@@ -655,8 +657,8 @@ namespace core {
 	virtual Number_sp negate() const { return LongFloat_O::create(-this->_Value);};
 
 	// shared by real
-	bool plusp() const { return this->_Value > 0.0; };
-	bool minusp() const { return this->_Value < 0.0; };
+	bool plusp_() const { return this->_Value > 0.0; };
+	bool minusp_() const { return this->_Value < 0.0; };
 
 	virtual Number_sp reciprocal() const;
 
@@ -739,8 +741,8 @@ namespace core {
 	void sxhash(HashGenerator& hg) const;
 	virtual Number_sp copy() const;
 	string __repr__() const;
-	Number_sp signum() const;
-	Number_sp abs() const;
+	Number_sp signum_() const;
+	Number_sp abs_() const;
 	bool isnan() const;
     public:
 	virtual	string	valueAsString() const;
@@ -841,8 +843,8 @@ namespace core {
 	void sxhash(HashGenerator& hg) const;
 	virtual Number_sp copy() const;
 	string __repr__() const;
-	Number_sp signum() const;
-	Number_sp abs() const;
+	Number_sp signum_() const;
+	Number_sp abs_() const;
 	bool isnan() const;
     public:
 	virtual	string	valueAsString() const;
@@ -859,12 +861,12 @@ namespace core {
 
 	// functions shared by all Real
 
-	bool plusp() const {
-	    return this->_numerator->plusp();
+	bool plusp_() const {
+	    return clasp_plusp(this->_numerator);
 	}
 
-    bool minusp() const {
-	return this->_numerator->minusp();
+    bool minusp_() const {
+	return clasp_minusp(this->_numerator);
     }
 
 	DEFAULT_CTOR_DTOR(Ratio_O);
@@ -931,27 +933,7 @@ namespace core {
 	return x->oneMinus();
     }
 
-    inline bool brcl_plusp(Real_sp n)
-    {
-	return n->plusp();
-    }
 
-    inline bool brcl_minusp(Real_sp n)
-    {
-	return n->minusp();
-    }
-
-    inline bool brcl_evenp(Integer_sp n)
-    {
-	ASSERTF(!n.fixnump(),BF("Add support for immediate fixnums"));
-	return n->evenp();
-    }
-
-    inline bool brcl_oddp(Integer_sp n)
-    {
-	ASSERTF(!n.fixnump(),BF("Add support for immediate fixnums"));
-	return n->oddp();
-    };
 
 
     Number_sp cl_expt(Number_sp x, Number_sp y);
@@ -1104,6 +1086,76 @@ TRANSLATE(core::LongFloat_O);
 #endif
 TRANSLATE(core::Ratio_O);	// superclass Rational_O
 TRANSLATE(core::Complex_O);	// superclass Number_O
+
+
+
+
+namespace core {
+
+    inline bool clasp_plusp(Real_sp num)
+    {
+	if (num.fixnump()) {
+	    return num.raw_()>0;
+	} else if (num.single_floatp()) {
+	    return num.unsafe_single_float()>0.0;
+	}
+	return num->plusp_();
+    }
+
+    inline bool clasp_minusp(Real_sp num)
+    {
+	if (num.fixnump()) {
+	    return num.raw_()<0;
+	} else if (num.single_floatp()) {
+	    return num.unsafe_single_float()<0.0;
+	}
+	return num->minusp_();
+    }
+
+    inline bool clasp_evenp(Integer_sp num)
+    {
+	if (num.fixnump()) {
+	    return (num.unsafe_fixnum() % 2)==0;
+	}
+	return num->evenp_();
+    }
+
+    inline bool clasp_oddp(Integer_sp num)
+    {
+	if (num.fixnump()) {
+	    return (num.unsafe_fixnum() % 2)==1;
+	}
+	return num->oddp_();
+    }
+
+
+    inline Number_sp clasp_abs(Number_sp num)
+    {
+	if (num.fixnump()) {
+	    return immediate_fixnum<Number_O>(std::abs(num.unsafe_fixnum()));
+	} else if (num.single_floatp()) {
+	    return immediate_fixnum<Number_O>(std::fabs(num.unsafe_single_float()));
+	}
+	return num->abs_();
+    }
+
+    inline Number_sp clasp_signum(Number_sp num)
+    {
+	if (num.fixnump()) {
+	    if (num.raw_() == 0 ) return immediate_fixnum<Number_O>(0);
+	    if (num.raw_() > 0 ) return immediate_fixnum<Number_O>(1);
+	    return immediate_fixnum<Number_O>(-1);
+	} else if (num.single_floatp()) {
+	    float fl = num.unsafe_single_float();
+	    if ( fl == 0.0 ) return immediate_single_float<Number_O>(0.0);
+	    if ( fl < 0.0 ) return immediate_single_float<Number_O>(-1.0);
+	    return immediate_single_float<Number_O>(1.0);
+	}
+	return num->signum_();
+    }
+	
+    
+};
 
 
 

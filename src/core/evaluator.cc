@@ -1780,7 +1780,7 @@ namespace core
 
 
 
-	T_mv handleConditionInEvaluate(Environment_sp environment)
+	T_mv handleConditionInEvaluate(T_sp environment)
 	{_G();
 	    T_mv result;
 	    try

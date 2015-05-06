@@ -335,7 +335,7 @@ namespace core
         size_t_pair p;
 	size_t  l;
 	p.length = l = cl_length(sequence);
-	unlikely_if (!af_fixnumP(start) || start->minusp()) {
+	unlikely_if (!af_fixnumP(start) || clasp_minusp(start)) {
 	    af_wrongTypeKeyArg(file,line,_lisp->internWithPackageName(functionName,packageName.c_str()),
 			       kw::_sym_start,start,cl::_sym_UnsignedByte);
         }
@@ -343,7 +343,7 @@ namespace core
 	if ( end.nilp() ) {
 	    p.end = l;
 	} else {
-	    unlikely_if (!af_fixnumP(end) || end.as<Fixnum_O>()->minusp()) {
+	    unlikely_if (!af_fixnumP(end) || clasp_minusp(end.as<Fixnum_O>()) ) {
 		af_wrongTypeKeyArg(file,line,_lisp->internWithPackageName(functionName,packageName.c_str()),
 				   kw::_sym_end,end,
 				   Cons_O::createList(cl::_sym_or,cl::_sym_null,cl::_sym_UnsignedByte));

@@ -225,7 +225,7 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 	return((cp));
     };
 
-    Number_sp Bignum_O::abs() const
+    Number_sp Bignum_O::abs_() const
     {_G();
         GC_ALLOCATE(Bignum_O,cp );
         cp->_value = this->_value*::sgn(this->_value);
