@@ -38,11 +38,8 @@ THE SOFTWARE.
 //#define USE_BOEHM_MEMORY_MARKER
 #endif
 
-// clang-format off
-
 /*! Configure the application Clasp or Cando currently */
 #include APPLICATION_CONFIG
-// clang-format on
 
 /*! Old way of doing #= and ## used alists which are slow
   Switch to hash-tables to speed things up */
