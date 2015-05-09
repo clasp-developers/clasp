@@ -60,9 +60,13 @@ In each source directory is a file called: "symbols_scraped_inc.h"
 The following script is run:
 python src/common/symbolScraper.py *.cc include/*.h
 
-It extracts all of the macros named the following from all of these files:
+The include/*.h is a symbolic link to a clasp/include/clasp/xxx directory that contains header files for each source directory.
+
+The script extracts macros named the following from all of these files:
 SYMBOL_EXPORT_SC_(pkg,name)     // exported symbol in pkg
 SYMBOL_SC_(pkg,name)            // internal symbol in pkg
+LISP_CLASS(...)
+...others...
 
 It builds a symbol table and compares it to the contents of symbols_scraped_inc.h,
 if there are any differences (symbols added, removed or changed) then it generates a new symbols_scraped_inc.h file.
