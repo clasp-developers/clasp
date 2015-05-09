@@ -5,6 +5,20 @@ APPRES-LISP
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+Source directories
+
+src/gctools/
+src/core/
+src/clbind/
+src/llvmo/
+src/cffi/
+src/asttooling/
+src/serveEvent/
+src/sockets/
+src/mpip/
+
+
+
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 Google pump
@@ -39,6 +53,21 @@ The pump.py code is in clasp/src/common/pump.py
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 Symbol scraping
+
+In each source directory is a file called: "symbols_scraped_inc.h"
+- it lists the names and packages of Common Lisp SYMBOLs that are accessible to C++ as symbols with the names prefixed with "_sym_" ie: "_sym_list".
+
+The following script is run:
+python src/common/symbolScraper.py *.cc include/*.h
+
+It extracts all of the macros named the following from all of these files:
+SYMBOL_EXPORT_SC_(pkg,name)
+SYMBOL_SC_(pkg,name)
+
+It builds a symbol table and compares it to the contents of symbols_scraped_inc.h,
+if there are any differences (symbols added, removed or changed) then it generates a new symbols_scraped_inc.h file.
+
+The symbols_scraped_inc.h file is included by almost every .cc file so that they have access to Common Lisp symbols without having to mess around with strings.
 
 
 
