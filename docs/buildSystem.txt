@@ -86,7 +86,10 @@ Register classes
 /usr/bin/python /Users/meister/Development/clasp/src/common/registerClasses.py ../../src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/core_initClasses_inc.h ../../src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/${bname}_initScripting_inc.h include/*Package.h include/*.h ../../src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/*.h *.cc ../../src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/*.cc > registerClasses.log
 
 Searches through all header files looking for macros like:
-LISP_CLASS(...)  
+LISP_CLASS(...)
+
+It populates the file XXX_initClasses_inc.h with code that exposes these C++ classes to Common Lisp
+
 
 
 
