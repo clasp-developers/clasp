@@ -50,8 +50,6 @@ The pump.py code is in clasp/src/common/pump.py
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
-----------------------------------------------------------------------
-----------------------------------------------------------------------
 Symbol scraping
 
 In each source directory is a file called: "symbols_scraped_inc.h"
@@ -80,7 +78,15 @@ This is a complication in the build system.
 For the most part it works.  But when you add new symbols it forces lots of recompilation 
 
 
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+Register classes
 
+
+/usr/bin/python /Users/meister/Development/clasp/src/common/registerClasses.py ../../src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/core_initClasses_inc.h ../../src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/${bname}_initScripting_inc.h include/*Package.h include/*.h ../../src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/*.h *.cc ../../src/core/bin/boehm/clang-darwin-4.2.1/release/link-static/*.cc > registerClasses.log
+
+Searches through all header files looking for macros like:
+LISP_CLASS(...)  
 
 
 
