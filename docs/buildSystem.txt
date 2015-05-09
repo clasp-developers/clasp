@@ -61,15 +61,19 @@ The following script is run:
 python src/common/symbolScraper.py *.cc include/*.h
 
 It extracts all of the macros named the following from all of these files:
-SYMBOL_EXPORT_SC_(pkg,name)
-SYMBOL_SC_(pkg,name)
+SYMBOL_EXPORT_SC_(pkg,name)     // exported symbol in pkg
+SYMBOL_SC_(pkg,name)            // internal symbol in pkg
 
 It builds a symbol table and compares it to the contents of symbols_scraped_inc.h,
 if there are any differences (symbols added, removed or changed) then it generates a new symbols_scraped_inc.h file.
 
 The symbols_scraped_inc.h file is included by almost every .cc file so that they have access to Common Lisp symbols without having to mess around with strings.
 
+This is a complication in the build system.
+1) Symbol scraping depends on .cc files.
+2) .cc files depend on the results of symbol scraping.
 
+For the most part it works.  But when you add new symbols it forces lots of recompilation 
 
 
 
