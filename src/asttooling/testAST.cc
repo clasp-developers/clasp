@@ -49,7 +49,7 @@ namespace asttooling {
     {
         gctools::Vec0<core::T_sp>  _vecObjects;
         for ( int i(0); i<10; ++i ) {
-            _vecObjects.push_back(core::Fixnum_O::create(i));
+            _vecObjects.push_back(core::make_fixnum(i));
         }
         printf("Hi there, this is tinyFunc\n");
     }

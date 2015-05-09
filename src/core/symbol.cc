@@ -289,9 +289,9 @@ namespace core {
 	this->_PropertyList = plist;
     }
     
-    void Symbol_O::sxhash(HashGenerator& hg) const
+    void Symbol_O::sxhash_(HashGenerator& hg) const
     {_OF();
-	Bignum bn = Str_O::stringToBignum(this->fullName().c_str());
+	Bignum bn = Str_O::stringToBignum(this->_Name->c_str());
 	hg.addPart(bn);
     }
 

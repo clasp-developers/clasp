@@ -750,7 +750,7 @@ namespace core
 	{_G();
 	    SymbolSet_sp specialsSet = SymbolSet_O::make(declaredSpecials);
 	    SymbolSet_sp specialInVariables(SymbolSet_O::create());
-	    HashTable_sp indices = af_make_hash_table(cl::_sym_eq,Fixnum_O::create(8),
+	    HashTable_sp indices = af_make_hash_table(cl::_sym_eq,make_fixnum(8),
                                                       DoubleFloat_O::create(1.5),
                                                       DoubleFloat_O::create(1.0));
 	    ql::list classified(_lisp);
@@ -773,11 +773,11 @@ namespace core
 			idx = fi.as<Fixnum_O>()->get();
 		    } else {
 			idx = indicesSize;
-			indices->hash_table_setf_gethash(sym,Fixnum_O::create(idx));
+			indices->hash_table_setf_gethash(sym,make_fixnum(idx));
 			++indicesSize;
 		    }
 		    classified << Cons_O::create(ext::_sym_lexicalVar,
-						 Cons_O::create(sym,Fixnum_O::create(idx)));
+						 Cons_O::create(sym,make_fixnum(idx)));
 		}
 	    }
             specialsSet->map( [&classified,&specialInVariables] (Symbol_sp s) {
@@ -786,7 +786,7 @@ namespace core
                     }
                 } );
 	    T_sp tclassified = classified.cons();
-	    return Values(tclassified,Fixnum_O::create((int)indicesSize));
+	    return Values(tclassified,make_fixnum((int)indicesSize));
 	}
 
 

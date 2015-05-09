@@ -70,13 +70,13 @@ namespace core
 
 
 
-    Bignum Bignum_O::as_mpz() const
+    Bignum Bignum_O::as_mpz_() const
     {_G();
 	return((this->_value));
     }
 
 
-    LongLongInt Bignum_O::as_LongLongInt() const
+    LongLongInt Bignum_O::as_LongLongInt_() const
     {_G();
 	if ( this->_value.fits_sint_p() )
 	{
@@ -85,26 +85,35 @@ namespace core
 	SIMPLE_ERROR(BF("Cannot convert Bignum %s to sint") % this->__repr__() );
     }
 
+    unsigned long long Bignum_O::as_unsigned_long_long_() const
+    {_G();
+	if ( sizeof(unsigned long long) == sizeof(uint64_t) ) {
+	    return this->as_uint64_();
+	}
+	SIMPLE_ERROR(BF("Handle unsigned long long != uint64_t"));
+	//	TYPE_ERROR(this->asSmartPtr(),Cons_O::createList(cl::_sym_Integer_O,make_fixnum(0),Integer_O::create(gc::most_positive_unsigned_long_long)));
+    }
 
-    void Bignum_O::sxhash(HashGenerator& hg) const
+
+    void Bignum_O::sxhash_(HashGenerator& hg) const
     {
 	hg.addPart(this->_value);
     }
 
 
-    gc::Fixnum Bignum_O::as_int() const
+    gc::Fixnum Bignum_O::as_int_() const
     {_G();
 	IMPLEMENT_MEF(BF("Implement conversion of Bignum to Fixnum"));
 	if ( this->_value.fits_sint_p() )
 	{
 	    return((this->_value.get_si()));
 	}
-	SIMPLE_ERROR(BF("Cannot convert Bignum %s to sint") % this->__repr__() );
+	TYPE_ERROR(this->asSmartPtr(),Cons_O::createList(cl::_sym_Integer_O,make_fixnum(gc::most_negative_int),make_fixnum(gc::most_positive_int)));
     }
 
 static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 
-    uint64_t Bignum_O::as_uint64() const
+    uint64_t Bignum_O::as_uint64_() const
     {_G();
 	unsigned int* valsP = static_Bignum_O_as_uint64_buffer.getOrAllocate(this->_value,0);
 	size_t count;
@@ -133,13 +142,13 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 		return((ret));
 	    }
 	}
-	SIMPLE_ERROR(BF("Cannot convert Bignum %s to sint") % this->__repr__() );
+	TYPE_ERROR(this->asSmartPtr(),Cons_O::createList(cl::_sym_Integer_O,make_fixnum(0),Integer_O::create(gc::most_positive_uint64)));
     }
 
     /*! This helps us debug the as_uint64 function by returning a string representation of the uint64 */
     string Bignum_O::as_uint64_string() const
     {_G();
-	uint64_t ui64 = this->as_uint64();
+	uint64_t ui64 = clasp_to_uint64(this->asSmartPtr());
 	stringstream ss;
 	ss << ui64;
 	return((ss.str()));
@@ -154,18 +163,18 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 
 
 
-    float Bignum_O::as_float() const
+    float Bignum_O::as_float_() const
     {
 	return((this->_value.get_d()));
     }
 
 
-    double Bignum_O::as_double() const
+    double Bignum_O::as_double_() const
     {
 	return((this->_value.get_d()));
     }
 
-    LongFloat Bignum_O::as_long_float() const
+    LongFloat Bignum_O::as_long_float_() const
     {
 	return((this->_value.get_d()));
     }
@@ -178,7 +187,7 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 
 
 
-    int Bignum_O::bit_length() const
+    int Bignum_O::bit_length_() const
     {
 	Bignum x = this->_value;
 	if ( this->sign() < 0 ) {
@@ -189,7 +198,7 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 
     /*! Return the value shifted by BITS bits.
       If BITS < 0 shift right, if BITS >0 shift left. */
-    Integer_sp Bignum_O::shift(int bits) const
+    Integer_sp Bignum_O::shift_(int bits) const
     {
 	if ( bits == 0 ) return this->asSmartPtr();
 	Bignum res;
@@ -218,13 +227,15 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
     }
 
 
+#if 0
     Number_sp Bignum_O::copy() const
     {_G();
         GC_ALLOCATE(Bignum_O,cp );
         cp->_value = this->_value;
 	return((cp));
     };
-
+#endif
+    
     Number_sp Bignum_O::abs_() const
     {_G();
         GC_ALLOCATE(Bignum_O,cp );
@@ -238,12 +249,10 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 
     bool Bignum_O::eql_(T_sp o) const
     {_G();
-	if ( this->eq(o) ) return((true));
-	if ( af_integerP(o) )
-	{
-	    if ( this->_value == o.as<Integer_O>()->as_mpz() ) return((true));
+	if ( Integer_sp oi = o.asOrNull<Integer_O>() ) {
+	    return (this->_value == clasp_to_mpz(oi));
 	}
-	return((false));
+	return false;
     }
 
 

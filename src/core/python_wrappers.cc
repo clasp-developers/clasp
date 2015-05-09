@@ -183,7 +183,7 @@ namespace core
 	    else result = _Nil<T_O>();
 	}
 	else if (PyInt_Check(value)) {
-	    result = Fixnum_O::create((LongLongInt)PyInt_AsLong(value));
+	    result = make_fixnum((LongLongInt)PyInt_AsLong(value));
 	    LOG(BF("Argument --> Fixnum"));
 	}
 	else if (PyLong_Check(value)) {

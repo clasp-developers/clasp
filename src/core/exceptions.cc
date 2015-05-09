@@ -681,7 +681,7 @@ void af_wrongTypeNthArg(const string& sourceFile, int lineno, Symbol_sp function
 		cl::_sym_typeError, 		//arg0
 		_Nil<T_O>(),		// arg1
 		Str_O::create(message.str()),	// arg2
-		Cons_O::createList(function,Fixnum_O::create(narg),value,type),
+		Cons_O::createList(function,make_fixnum(narg),value,type),
 		kw::_sym_expectedType, type,
 		  kw::_sym_datum, value );
 };
@@ -701,14 +701,14 @@ void af_wrongIndex(const string& sourceFile, int lineno, Symbol_sp function, T_s
 	"the ~:R index into the object~% ~A~%"
 	"takes a value ~D out of the range ~A.";
     T_sp limit = Integer_O::create(nonincl_limit-1);
-    T_sp type = Cons_O::createList(cl::_sym_Integer_O,Fixnum_O::create(0),limit);
+    T_sp type = Cons_O::createList(cl::_sym_Integer_O,make_fixnum(0),limit);
     const char* msg = (which<0) ? message1 : message2;
     Str_sp message = Str_O::create(msg);
     eval::funcall(_sym_signalSimpleError,
 		cl::_sym_typeError, 		//arg0
 		_Nil<T_O>(),		// arg1
 		message, // arg2 
-		Cons_O::createList(function,Fixnum_O::create(which+1), array, index, type ),
+		Cons_O::createList(function,make_fixnum(which+1), array, index, type ),
 		kw::_sym_expectedType, type,
 		  kw::_sym_datum, index );
 };

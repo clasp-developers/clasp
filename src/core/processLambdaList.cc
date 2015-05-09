@@ -394,14 +394,14 @@ void extract_lambda_list(List_sp arguments,
 	}
     }
     reqs = qlrequireds.all();
-    reqs->setCar(Fixnum_O::create(num_requireds));
+    reqs->setCar(make_fixnum(num_requireds));
     optionals = qloptionals.all();
-    optionals->setCar(Fixnum_O::create(num_optionals));
+    optionals->setCar(make_fixnum(num_optionals));
     key_flag = _lisp->_boolean(num_keys>0);
     keys = qlkeys.all();
-    keys->setCar(Fixnum_O::create(num_keys));
+    keys->setCar(make_fixnum(num_keys));
     auxs = qlauxs.all();
-    auxs->setCar(Fixnum_O::create(num_auxs));
+    auxs->setCar(make_fixnum(num_auxs));
 }
 
 /*!

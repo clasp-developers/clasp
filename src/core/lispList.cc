@@ -247,7 +247,7 @@ namespace core
 #define DOCS_af_butlast "butlast"
     List_sp af_butlast(List_sp list, Integer_sp n)
     {_G();
-	int ni = n->as_int();
+	int ni = clasp_to_int(n);
 	int keepi = cl_length(list)-ni;
 	if ( keepi <= 0 ) return(Values(_Nil<T_O>()));
 	ql::list res;
@@ -266,7 +266,7 @@ namespace core
 #define DOCS_cl_nbutlast "butlast"
     List_sp cl_nbutlast(List_sp list, Integer_sp n)
     {_G();
-	int ni = n->as_int();
+	int ni = clasp_to_int(n);
 	int keepi = cl_length(list)-ni;
 	if ( keepi <= 0 ) return (_Nil<T_O>());
 	List_sp cur = list;
@@ -327,7 +327,7 @@ namespace core
 	if ( list.nilp() ) return list;
 	if ( n < 0 )
 	    {
-		CELL_ERROR(Fixnum_O::create(n));
+		CELL_ERROR(make_fixnum(n));
 	    }
         if ( Cons_sp clist = list.asOrNull<Cons_O>() ) {
             return clist->last(n);

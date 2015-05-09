@@ -81,7 +81,7 @@ namespace core
                 clasp_write_char('#',stream);
 		return;
 	    } else {
-		ref = Fixnum_O::create(snodeToRef->hashTableCount()+1);
+		ref = make_fixnum(snodeToRef->hashTableCount()+1);
 		snodeToRef->hash_table_setf_gethash(snode,ref);
 		clasp_write_char('#',stream);
 		ref->__write__(stream);
@@ -109,7 +109,7 @@ namespace core
 	    ASSERT(!bsnode->_VectorSNodes.unboundp());
 	    if ( !bsnode->_VectorSNodes.unboundp() && bsnode->_VectorSNodes->length()>0) {
 		clasp_write_string(" #",stream);
-		write_ugly_object(Fixnum_O::create(bsnode->_VectorSNodes->length()),stream);
+		write_ugly_object(make_fixnum(bsnode->_VectorSNodes->length()),stream);
 		clasp_write_string("( ",stream);
 		for ( int i(0), iEnd(bsnode->_VectorSNodes->length()); i<iEnd; ++i ) {
 		    SNode_sp snode = bsnode->_VectorSNodes->elt(i).as<SNode_O>();

@@ -59,7 +59,7 @@ namespace core
 	Vector_sp result = af_make_vector(_Nil<T_O>()
 					  ,this->_Stack.size()
 					  ,false
-					  ,Fixnum_O::create((int)(this->_Stack.size()))
+					  ,make_fixnum((int)(this->_Stack.size()))
 					 );
 	for ( int i(0), iEnd(this->_Stack.size()); i<iEnd; ++i ) {
 	    Symbol_sp kind;
@@ -146,7 +146,7 @@ namespace core
 	T_sp funcNameObj = closure->name;
 	string funcName = _rep_(funcNameObj);
 	int sourceFileInfoHandle = this->runningSourceFileInfoHandle;
-	SourceFileInfo_sp sfi = core_sourceFileInfo(Fixnum_O::create(sourceFileInfoHandle));
+	SourceFileInfo_sp sfi = core_sourceFileInfo(make_fixnum(sourceFileInfoHandle));
 	string sourceFileName = sfi->fileName();
 	stringstream ss;
         string closureType = "/?";
@@ -169,7 +169,7 @@ namespace core
 
     string InvocationHistoryFrame::sourcePathName() const
     {
-        return core_sourceFileInfo(Fixnum_O::create(this->runningSourceFileInfoHandle)).as<SourceFileInfo_O>()->namestring();
+        return core_sourceFileInfo(make_fixnum(this->runningSourceFileInfoHandle)).as<SourceFileInfo_O>()->namestring();
     }
 
 
@@ -380,7 +380,7 @@ void    core_lowLevelBacktrace()
 		    }
 		}
 	    }
-	    /*Nilable?*/T_sp sfi = core_sourceFileInfo(Fixnum_O::create(closure->sourceFileInfoHandle()));
+	    /*Nilable?*/T_sp sfi = core_sourceFileInfo(make_fixnum(closure->sourceFileInfoHandle()));
 	    string sourceName = "cannot-determine";
 	    if ( sfi.notnilp() ) {
 		sourceName = sfi.as<SourceFileInfo_O>()->fileName();
@@ -538,11 +538,11 @@ void    core_lowLevelBacktrace()
         }
         int icf = cf.as<Fixnum_O>()->get();
         if (icf < 0) {	
-            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(icf));
+            _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(icf));
             return 0;
         }
         if (icf >= af_ihsTop() ) {
-            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsTop()));
+            _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(af_ihsTop()));
             return af_ihsTop();
         }
         return icf;
@@ -556,7 +556,7 @@ void    core_lowLevelBacktrace()
     {_G();
         if (icf < 0) icf = 0;
         else if (icf >= af_ihsTop() ) icf = af_ihsTop();
-        _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(icf));
+        _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(icf));
         return icf;
     }
 

@@ -77,7 +77,7 @@ namespace core
 		{
 		    Bignum_sp flli = fobj.as<Bignum_O>();
 		    stringstream ss;
-		    ss << flli->as_mpz();
+		    ss << clasp_to_mpz(flli);
 		    fmter % ss.str();
 		} else if ( af_strP(fobj) )
 		{

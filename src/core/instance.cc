@@ -129,12 +129,12 @@ namespace core
 
     T_sp Instance_O::oinstancep() const
     {
-	return Fixnum_O::create((gctools::Fixnum)(this->_Slots.size()));
+	return make_fixnum((gctools::Fixnum)(this->_Slots.size()));
     }
 
     T_sp Instance_O::oinstancepSTAR() const
     {
-	return Fixnum_O::create((gctools::Fixnum)(this->_Slots.size()));
+	return make_fixnum((gctools::Fixnum)(this->_Slots.size()));
     }
 
 
@@ -463,7 +463,7 @@ namespace core
     }
 
 
-    void Instance_O::sxhash(HashGenerator& hg) const
+    void Instance_O::sxhash_(HashGenerator& hg) const
     {
 	if ( hg.isFilling() ) hg.hashObject(this->_Class);
 	for ( int i(0), iEnd(this->_Slots.size()); i<iEnd; ++i ) {

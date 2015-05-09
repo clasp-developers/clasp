@@ -203,7 +203,7 @@ namespace cffi
     {
 	SIMPLE_ERROR(BF("Cannot determine alignment of %s") % _rep_(atype) );
     }
-    return core::Fixnum_O::create(align);
+    return core::make_fixnum(align);
 };
 
 
@@ -298,7 +298,7 @@ namespace cffi
     {
 	SIMPLE_ERROR(BF("Cannot determine size of %s") % _rep_(atype) );
     }
-    return core::Fixnum_O::create(align);
+    return core::make_fixnum(align);
 };
 
 
@@ -313,7 +313,7 @@ namespace cffi
 #define DOCS_af_foreign_alloc "foreign_alloc"
 Pointer_sp af_foreign_alloc(core::Integer_sp size)
     {_G();
-	int sz = size->as_int();
+	int sz = clasp_to_int(size);
 	void* ptr = malloc(sz);
 	if ( ptr == NULL )
 	{
@@ -386,22 +386,22 @@ Pointer_sp Pointer_O::null_pointer()
 #define DOCS_Pointer_O_PERCENTmem_ref "PERCENTmem_ref"
 core::T_sp Pointer_O::PERCENTmem_ref(core::Symbol_sp atype, core::Integer_sp offset)
 {_G();
-    void* ptr = ((char*)(this->_ptr)+offset->as_int());
+    void* ptr = ((char*)(this->_ptr)+clasp_to_int(offset));
     if ( atype == _sym_char )
     {
 	return core::Character_O::create(*(char*)(ptr));
     } else if ( atype == _sym_unsigned_char)
     {
-	return core::Fixnum_O::create(*(unsigned char*)(ptr));
+	return core::make_fixnum(*(unsigned char*)(ptr));
     } else if ( atype == _sym_short)
     {
-	return core::Fixnum_O::create(*(short*)(ptr));
+	return core::make_fixnum(*(short*)(ptr));
     } else if ( atype == _sym_unsigned_short)
     {
-	return core::Fixnum_O::create(*(unsigned short*)(ptr));
+	return core::make_fixnum(*(unsigned short*)(ptr));
     } else if ( atype == _sym_int)
     {
-	return core::Fixnum_O::create(*(int*)(ptr));
+	return core::make_fixnum(*(int*)(ptr));
 #if 0
     } else if ( atype == _sym_long)
     {
@@ -486,7 +486,7 @@ core::T_sp Pointer_O::PERCENTsetf_mem_ref(core::Symbol_sp atype, core::Cons_sp r
 	value = oCar(rest);
     } else if ( rest->length() == 2 )
     {
-	offset = oCar(rest).as<core::Integer_O>()->as_int();
+	offset = clasp_to_int(oCar(rest).as<core::Integer_O>());
 	value = oCadr(rest);
     }
     void* ptr = ((char*)(this->_ptr)+offset);
@@ -498,23 +498,23 @@ core::T_sp Pointer_O::PERCENTsetf_mem_ref(core::Symbol_sp atype, core::Cons_sp r
 	    return value;
 	} else if ( af_integerP(value) )
 	{
-	    core::LongLongInt lli = value.as<core::Integer_O>()->as_int();
+	    core::LongLongInt lli = clasp_to_int(value.as<core::Integer_O>());
 	    *(char*)(ptr) = lli;
 	    return value;
 	}
 #if 0
     } else if ( atype == _sym_unsigned_char)
     {
-	return core::Fixnum_O::create(*(unsigned char*)(ptr),_lisp);
+	return core::make_fixnum(*(unsigned char*)(ptr),_lisp);
     } else if ( atype == _sym_short)
     {
-	return core::Fixnum_O::create(*(short*)(ptr),_lisp);
+	return core::make_fixnum(*(short*)(ptr),_lisp);
     } else if ( atype == _sym_unsigned_short)
     {
-	return core::Fixnum_O::create(*(unsigned short*)(ptr),_lisp);
+	return core::make_fixnum(*(unsigned short*)(ptr),_lisp);
     } else if ( atype == _sym_int)
     {
-	return core::Fixnum_O::create(*(int*)(ptr),_lisp);
+	return core::make_fixnum(*(int*)(ptr),_lisp);
     } else if ( atype == _sym_unsigned_int)
     {
 	return core::LongLongInt_O::create((core::LongLongInt)*(unsigned int*)(ptr),_lisp);
@@ -613,7 +613,7 @@ void Pointer_O::foreign_free()
 
 Pointer_sp Pointer_O::inc_pointer(core::Integer_sp offset)
 {_G();
-    void* new_ptr = (void*)((char*)(this->_ptr) + offset->as_int());
+    void* new_ptr = (void*)((char*)(this->_ptr) + clasp_to_int(offset));
     return Pointer_O::create(new_ptr);
 }
 

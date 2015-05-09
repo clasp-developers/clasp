@@ -648,7 +648,7 @@ extern "C"
     void makeFixnum( core::T_sp* fnP, gc::Fixnum s)
     {_G();
 	ASSERT(fnP!=NULL);
-	(*fnP) = core::Fixnum_sp(core::Fixnum_O::create(s));
+	(*fnP) = core::Fixnum_sp(core::make_fixnum(s));
     }
 
     void makeCharacter( core::T_sp* fnP, int s)
@@ -795,8 +795,8 @@ extern "C"
 	    core::Number_sp endTime = core::cl_getInternalRealTime().as<core::Number_O>();
 	    core::Number_sp diff = core::contagen_sub(endTime,startTime);
 	    core::Number_sp seconds = core::contagen_div(diff,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<Number_O>());
-	    double dseconds = seconds->as_double();
-	    core::SourceFileInfo_sp sfi = core::core_sourceFileInfo(core::Fixnum_O::create(*sourceFileInfoHandleP));
+	    double dseconds = clasp_to_double(seconds);
+	    core::SourceFileInfo_sp sfi = core::core_sourceFileInfo(core::make_fixnum(*sourceFileInfoHandleP));
 	    printf("TOP-LEVEL-FUNCTION-TIME %lf %s %d\n", dseconds, sfi->namestring().c_str(), lineno);
 	}
 #endif
@@ -1591,7 +1591,7 @@ extern "C"
     void debugSourceFileInfoHandle(int* sourceFileInfoHandleP)
     {
         int sfindex = *sourceFileInfoHandleP;
-        core::Fixnum_sp fn = core::Fixnum_O::create(sfindex);
+        core::Fixnum_sp fn = core::make_fixnum(sfindex);
         SourceFileInfo_sp sfi = core::core_sourceFileInfo(fn);
         printf("%s:%d debugSourceFileInfoHandle[%d] --> %s\n", __FILE__, __LINE__, sfindex, _rep_(sfi).c_str());
     }
@@ -1719,7 +1719,7 @@ extern "C"
 	{
 	    core::List_sp dims = _Nil<core::T_O>();
 	    for ( int i= rank-1; i>= 0; i-- ) {
-		dims = core::Cons_O::create(core::Fixnum_O::create(dimensions[i]),dims);
+		dims = core::Cons_O::create(core::make_fixnum(dimensions[i]),dims);
 	    }
 	    *resultP = core::ArrayObjects_O::make(dims,cl::_sym_T_O,*elementTypeP);
 	}

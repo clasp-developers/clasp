@@ -98,7 +98,7 @@ namespace core {
 	// Include the apply function for symbols up to some high arity
 //#include "symbol_apply_inc.h"
 
-	void sxhash(HashGenerator& hg) const;
+	void sxhash_(HashGenerator& hg) const;
 
 	bool isKeywordSymbol();
 	Symbol_sp asKeywordSymbol();

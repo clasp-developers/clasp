@@ -88,7 +88,7 @@ SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string& whatDoesE
 	{
 	    sym = archiveSym;
 	}
-        Fixnum_sp enumIndexKey = Fixnum_O::create(enumIndex);
+        Fixnum_sp enumIndexKey = make_fixnum(enumIndex);
 	this->_EnumToSymbol->setf_gethash(enumIndexKey,sym); // [enumIndex] = sym;
         this->_ArchiveSymbolToEnum->setf_gethash(archiveSym,enumIndexKey);
 	this->_EnumToArchiveSymbol->setf_gethash(enumIndexKey,archiveSym);
@@ -107,7 +107,7 @@ int SymbolToEnumConverter_O::enumIndexForSymbol(Symbol_sp sym)
 
 Symbol_sp SymbolToEnumConverter_O::symbolForEnumIndex(int index)
 {_OF();
-    Fixnum_sp indexKey = Fixnum_O::create(index);
+    Fixnum_sp indexKey = make_fixnum(index);
     ASSERTF(this->_EnumToSymbol->contains(indexKey),BF("Could not find symbol for EnumIndex(%d) in SymbolToEnumConverter(%s)") % index % this->_WhatTheEnumsRepresent.c_str() );
     return this->_EnumToSymbol->gethash(indexKey).as<Symbol_O>();
 }
@@ -154,7 +154,7 @@ bool SymbolToEnumConverter_O::recognizesSymbolString(const string& enumStr)
 
 bool SymbolToEnumConverter_O::recognizesEnumIndex(int ei)
 {_OF();
-    Fixnum_sp eif = Fixnum_O::create(ei);
+    Fixnum_sp eif = make_fixnum(ei);
     return this->_EnumToSymbol->contains(eif);
 }
 

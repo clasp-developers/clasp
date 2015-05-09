@@ -140,7 +140,7 @@ namespace clbind { namespace detail {
                     ASSERTF(bcrep.notnilp(),BF("Could not find base class %s") % i->first.name());
                     // Add it to the DirectSuperClass list
                     crep->addInstanceBaseClass(bcrep->className());
-                    crep->add_base_class(core::Fixnum_O::create(0),bcrep);
+                    crep->add_base_class(core::make_fixnum(0),bcrep);
                 }
             }
 

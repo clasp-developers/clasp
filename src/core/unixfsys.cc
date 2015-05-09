@@ -172,7 +172,7 @@ safe_chdir(const char *path, T_sp tprefix)
 #define DOCS_af_fork "fork"
     T_sp af_fork()
     {_G();
-        Fixnum_sp pid = Fixnum_O::create(fork());
+        Fixnum_sp pid = make_fixnum(fork());
         return pid;
     };
 
@@ -197,7 +197,7 @@ safe_chdir(const char *path, T_sp tprefix)
 #define DOCS_af_getpid "getpid"
     T_sp af_getpid()
     {_G();
-        Fixnum_sp pid = Fixnum_O::create(getpid());
+        Fixnum_sp pid = make_fixnum(getpid());
         return pid;
     };
 
@@ -206,7 +206,7 @@ safe_chdir(const char *path, T_sp tprefix)
 #define DOCS_af_getppid "getppid"
     T_sp af_getppid()
     {_G();
-        Fixnum_sp pid = Fixnum_O::create(getppid());
+        Fixnum_sp pid = make_fixnum(getppid());
         return pid;
     };
 
@@ -427,7 +427,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure)
     }
     if (subdir == kw::_sym_up) {
 	T_sp newdir= output->_Directory;
-	newdir = cl_nbutlast(newdir,Fixnum_O::create(2));
+	newdir = cl_nbutlast(newdir,make_fixnum(2));
 	if (newdir.nilp()) {
 	    if (ignore_if_failure) return _Nil<Pathname_O>();
 	    SIMPLE_ERROR(BF("Pathname contained an :UP component  "
@@ -1483,7 +1483,7 @@ T_sp cl_directory(T_sp mask, T_sp resolveSymlinks)
 #define DOCS_af_unixDaylightSavingTime "unixDaylightSavingTime return true if in daylight saving time"
 bool af_unixDaylightSavingTime(Integer_sp unix_time)
 {_G();
-    time_t when = unix_time->as_uint64();
+    time_t when = clasp_to_uint64(unix_time);
     struct tm *ltm = localtime(&when);
     return ltm->tm_isdst;
 }
@@ -1516,7 +1516,7 @@ Ratio_sp af_unixGetLocalTimeZone()
   else if (gtm.tm_wday == (ltm.tm_wday + 1) % 7)
     mw += 24*60;
 #endif
-  return Ratio_O::create(Fixnum_O::create(mw),Fixnum_O::create(60));
+  return Ratio_O::create(make_fixnum(mw),make_fixnum(60));
 }
 
 
@@ -1546,7 +1546,7 @@ T_sp core_mkdir(T_sp directory, T_sp mode)
             if (IS_DIR_SEPARATOR(c))
                 last--;
         }
-        filename = filename->subseq(0,Fixnum_O::create(last));
+        filename = filename->subseq(0,make_fixnum(last));
     }
 //    brcl_disable_interrupts();
 #if defined(ECL_MS_WINDOWS_HOST)

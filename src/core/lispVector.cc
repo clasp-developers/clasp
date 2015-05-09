@@ -101,7 +101,7 @@ namespace core
 		Cons_sp cet = element_type.as<Cons_O>(); 
 		if ( oCar(cet) == cl::_sym_UnsignedByte
 		     && initial_element.nilp() ) {
-		    initial_element = Fixnum_O::create(0);
+		    initial_element = make_fixnum(0);
 		}
 	    }
 	    if ( fill_pointer.notnilp() )
@@ -161,7 +161,7 @@ namespace core
 
     List_sp Vector_O::arrayDimensions() const
     {
-	return Cons_O::create(Fixnum_O::create(this->dimension()),_Nil<T_O>());
+	return Cons_O::create(make_fixnum(this->dimension()),_Nil<T_O>());
     }
 
 
@@ -169,7 +169,7 @@ namespace core
     T_sp Vector_O::reverse()
     {_OF();
 	int thisLength = this->length();
-	Vector_sp newVec = eval::funcall(_sym_make_vector,this->_instanceClass()->className(),Fixnum_O::create(thisLength)).as<T_O>().as<Vector_O>();
+	Vector_sp newVec = eval::funcall(_sym_make_vector,this->_instanceClass()->className(),make_fixnum(thisLength)).as<T_O>().as<Vector_O>();
 	for ( int i=0; i<thisLength; i++ )
 	{
 	    int ri = thisLength - i;

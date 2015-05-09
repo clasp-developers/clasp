@@ -78,7 +78,7 @@ public:
     void setPath(const boost_filesystem::path& p);
 	void setPathFromString(const string& path);
 
-	void sxhash(HashGenerator& hg) const;
+	void sxhash_(HashGenerator& hg) const;
 	Path_sp parent_path();
 
 	/*! Return just the fileName (*--end) as a string*/

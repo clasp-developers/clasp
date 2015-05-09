@@ -87,7 +87,7 @@ namespace core
 		    this->_Contents[this->_FillPointer] = ch->asChar();
 		    int newIndex = this->_FillPointer;
 		    this->_FillPointer++;
-		    return Fixnum_O::create(newIndex);
+		    return make_fixnum(newIndex);
 		}
 		return _Nil<Fixnum_O>();
 	    }
@@ -152,7 +152,7 @@ namespace core
 	{
 	    if ( Character_sp ch = newElement.asOrNull<Character_O>() )
 	    {
-		return Fixnum_O::create(this->pushCharExtend(ch->asChar(),extension));
+		return make_fixnum(this->pushCharExtend(ch->asChar(),extension));
 	    }
 	}
 	TYPE_ERROR(newElement,cl::_sym_Character_O);

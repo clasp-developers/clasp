@@ -51,7 +51,7 @@ namespace core
 	    return coerce_to_list(Cons_O::create(ext::_sym_specialVar,this->_ArgTarget));
 	} else if ( this->_ArgTargetFrameIndex >= 0 )
 	{
-	    return coerce_to_list(Cons_O::create(ext::_sym_lexicalVar,Cons_O::create(this->_ArgTarget,Fixnum_O::create(this->_ArgTargetFrameIndex))));
+	    return coerce_to_list(Cons_O::create(ext::_sym_lexicalVar,Cons_O::create(this->_ArgTarget,make_fixnum(this->_ArgTargetFrameIndex))));
 	} else if ( this->_ArgTargetFrameIndex == UNDEFINED_TARGET )
 	{
 	    return((_Nil<List_V>()));

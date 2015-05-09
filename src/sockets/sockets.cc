@@ -211,9 +211,9 @@ namespace sockets {
 
 	    for (addrs = hostent->h_addr_list; *addrs != NULL; addrs++) {
 		int pos;
-		Vector_sp vector = eval::funcall(cl::_sym_makeArray,Fixnum_O::create(length)).as<Vector_O>();
+		Vector_sp vector = eval::funcall(cl::_sym_makeArray,make_fixnum(length)).as<Vector_O>();
 		for (pos = 0; pos < length; pos++)
-		    vector->operator[](pos) = Fixnum_O::create((unsigned char)((*addrs)[pos]));
+		    vector->operator[](pos) = make_fixnum((unsigned char)((*addrs)[pos]));
 		addr_list = Cons_O::create(vector, addr_list);
 	    }
 	    eval::funcall(/*#5*/ setf_host_ent_addresses,addr_list,/*#1*/ tHostEnt);
@@ -267,9 +267,9 @@ namespace sockets {
 
 	    for (addrs = hostent->h_addr_list; *addrs != NULL; addrs++) {
 		int pos;
-		Vector_sp vector = eval::funcall(cl::_sym_makeArray,Fixnum_O::create(length)).as<Vector_O>();
+		Vector_sp vector = eval::funcall(cl::_sym_makeArray,make_fixnum(length)).as<Vector_O>();
 		for (pos = 0; pos < length; pos++)
-		    vector->setf_elt(pos, Fixnum_O::create((unsigned char)((*addrs)[pos])));
+		    vector->setf_elt(pos, make_fixnum((unsigned char)((*addrs)[pos])));
 		addr_list = Cons_O::create(vector, addr_list);
 	    }
 	    eval::funcall(/*#5*/setf_host_ent_addresses,addr_list,tHostEnt);
@@ -313,7 +313,7 @@ namespace sockets {
 		SIMPLE_ERROR(BF("Vector must have fill pointer to be socket buffer: %s") % _rep_(vec));
 	    }
 	}
-	return Values(Integer_O::create(static_cast<uint>(len)),Fixnum_O::create(errno));
+	return Values(Integer_O::create(static_cast<uint>(len)),make_fixnum(errno));
     }
 
 
@@ -369,11 +369,11 @@ namespace sockets {
 	if (new_fd != -1) {
 	    uint32_t ip = ntohl(sockaddr.sin_addr.s_addr);
 	    uint16_t port = ntohs(sockaddr.sin_port);
-	    Vector_sp vector = eval::funcall(cl::_sym_makeArray,Fixnum_O::create(4)).as<Vector_O>();
-	    vector->setf_elt(0, Fixnum_O::create( ip>>24 ));
-	    vector->setf_elt(1, Fixnum_O::create( (ip>>16) & 0xFF));
-	    vector->setf_elt(2, Fixnum_O::create( (ip>>8) & 0xFF));
-	    vector->setf_elt(3, Fixnum_O::create( ip & 0xFF ));
+	    Vector_sp vector = eval::funcall(cl::_sym_makeArray,make_fixnum(4)).as<Vector_O>();
+	    vector->setf_elt(0, make_fixnum( ip>>24 ));
+	    vector->setf_elt(1, make_fixnum( (ip>>16) & 0xFF));
+	    vector->setf_elt(2, make_fixnum( (ip>>8) & 0xFF));
+	    vector->setf_elt(3, make_fixnum( ip & 0xFF ));
 	    return1 = vector;
 	    return2 = port;
 	}
@@ -420,10 +420,10 @@ namespace sockets {
 	    uint32_t ip = ntohl(name.sin_addr.s_addr);
 	    uint16_t port = ntohs(name.sin_port);
 
-	    vector->setf_elt(0, Fixnum_O::create( ip>>24 ));
-	    vector->setf_elt(1, Fixnum_O::create( (ip>>16) & 0xFF));
-	    vector->setf_elt(2, Fixnum_O::create( (ip>>8) & 0xFF));
-	    vector->setf_elt(3, Fixnum_O::create( ip & 0xFF ));
+	    vector->setf_elt(0, make_fixnum( ip>>24 ));
+	    vector->setf_elt(1, make_fixnum( (ip>>16) & 0xFF));
+	    vector->setf_elt(2, make_fixnum( (ip>>8) & 0xFF));
+	    vector->setf_elt(3, make_fixnum( ip & 0xFF ));
 	    return port;
 	} else {
 	    return -1;
@@ -452,10 +452,10 @@ namespace sockets {
 	    uint32_t ip = ntohl(name.sin_addr.s_addr);
 	    uint16_t port = ntohs(name.sin_port);
 
-	    vector->setf_elt(0, Fixnum_O::create( ip>>24 ));
-	    vector->setf_elt(1, Fixnum_O::create( (ip>>16) & 0xFF));
-	    vector->setf_elt(2, Fixnum_O::create( (ip>>8) & 0xFF));
-	    vector->setf_elt(3, Fixnum_O::create( ip & 0xFF ));
+	    vector->setf_elt(0, make_fixnum( ip>>24 ));
+	    vector->setf_elt(1, make_fixnum( (ip>>16) & 0xFF));
+	    vector->setf_elt(2, make_fixnum( (ip>>8) & 0xFF));
+	    vector->setf_elt(3, make_fixnum( ip & 0xFF ));
 
 	    return port;
 	} else {

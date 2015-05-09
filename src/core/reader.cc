@@ -195,7 +195,7 @@ namespace core
 	    {
 		if ( this->suppressRead() ) return _Nil<T_O>();
 		LOG(BF("Returning Fixnum"));
-		Fixnum_sp oi = Fixnum_O::create(li);
+		Fixnum_sp oi = make_fixnum(li);
 		return oi;
 	    }
 	    goto INTERPRET_SYMBOL;

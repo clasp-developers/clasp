@@ -432,7 +432,7 @@ namespace core {
 
 
 
-    void Pathname_O::sxhash(HashGenerator& hg) const
+    void Pathname_O::sxhash_(HashGenerator& hg) const
     {
 	if ( hg.isFilling() ) hg.hashObject(this->_Host);
 	if ( hg.isFilling() ) hg.hashObject(this->_Device);
@@ -481,7 +481,7 @@ namespace core {
     static T_sp
     make_one(T_sp s, size_t start, size_t end)
     {
-	return s.as<Str_O>()->subseq(start,Fixnum_O::create((uint)end));
+	return s.as<Str_O>()->subseq(start,make_fixnum((uint)end));
     }
 
     static int is_colon(int c) { return c == ':'; }
@@ -1164,12 +1164,12 @@ namespace core {
 		truncate_if_unreadable)
 		return _Nil<T_O>();
 	    if (host.notnilp()) {
-		cl_writeSequence(host.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
+		cl_writeSequence(host.as<Str_O>(), buffer, make_fixnum(0), _Nil<Fixnum_O>());
 		clasp_write_string(":",buffer);
 	    }
 	} else {
 	    if ((y = x->_Device).notnilp()) {
-		cl_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
+		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<Fixnum_O>());
 		clasp_write_string(":",buffer);
 	    }
 	    if (host.notnilp()) {
@@ -1179,7 +1179,7 @@ namespace core {
 		}
 #endif
 		clasp_write_string("//",buffer);
-		cl_writeSequence(host.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
+		cl_writeSequence(host.as<Str_O>(), buffer, make_fixnum(0), _Nil<Fixnum_O>());
 	    }
 	}
 	l = x->_Directory;
@@ -1203,7 +1203,7 @@ namespace core {
 	    } else if (y == kw::_sym_wild_inferiors) {
 		clasp_write_string("**",buffer);
 	    } else if (y != kw::_sym_back) {
-		cl_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
+		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<Fixnum_O>());
 	    } else {
 		/* Directory :back has no namestring representation */
 		return _Nil<T_O>();
@@ -1223,7 +1223,7 @@ namespace core {
 	    if (y == kw::_sym_wild) {
 		clasp_write_string("*",buffer);
 	    } else {
-		cl_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
+		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<Fixnum_O>());
 	    }
 	} else if (!logical && !x->_Type.nilp()) {
 	    /* #P".txt" is :NAME = ".txt" :TYPE = NIL and
@@ -1239,7 +1239,7 @@ namespace core {
 		clasp_write_string(".*",buffer);
 	    } else {
 		clasp_write_string(".",buffer);
-		cl_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
+		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<Fixnum_O>());
 	    }
 	}
 	y = x->_Version;
@@ -1250,7 +1250,7 @@ namespace core {
 		    clasp_write_string("*",buffer);
 		} else if (y == kw::_sym_newest) {
 		    cl_writeSequence(af_symbolName(y.as<Symbol_O>()), buffer,
-					 Fixnum_O::create(0), _Nil<Fixnum_O>());
+					 make_fixnum(0), _Nil<Fixnum_O>());
 		} else {
 		    /* Since the printer is not reentrant,
 		     * we cannot use cl_write and friends.
@@ -1337,7 +1337,7 @@ namespace core {
 	    p = sequenceStartEnd(__FILE__,__LINE__,__FUNCTION__,CurrentPkg,
 				 thing.as<Str_O>(), start, end);
 	    output = brcl_parseNamestring(thing, p.start, p.end, &ee, default_host);
-	    start = Fixnum_O::create(static_cast<uint>(ee));
+	    start = make_fixnum(static_cast<uint>(ee));
 	    if (output.nilp() || ee != p.end) {
 		if (junkAllowed) {
 		    PARSE_ERROR(Str_O::create("Cannot parse the namestring ~S~%from ~S to ~S."),
@@ -1558,7 +1558,7 @@ namespace core {
 	} else {
 	    ASSERTF(!tdir_begin.fixnump(),BF("Handle tagged fixnum!"));
 	    Integer_sp dir_begin = tdir_begin.as<Integer_O>();
-	    if (dir_begin->as_int() == cl_length(defaultdir)) {
+	    if (clasp_to_int(dir_begin) == cl_length(defaultdir)) {
 		pathdir = eval::funcall(cl::_sym_subseq, pathdir, dir_begin);
 		pathdir = Cons_O::create(kw::_sym_relative, pathdir);
 	    }

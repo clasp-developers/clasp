@@ -3062,7 +3062,7 @@ namespace llvmo
 	if (af_fixnumP(value) )
 	{
 	    core::Fixnum_sp fixnum_value = value.as<core::Fixnum_O>();
-	    self->_value = llvm::APInt(core::Fixnum_O::number_of_bits(),fixnum_value->as_int(),true);
+	    self->_value = llvm::APInt(gc::fixnum_bits,clasp_to_int(fixnum_value),true);
 	} else
 	{
 	    // It's a bignum so lets convert the bignum to a string and put it into an APInt
@@ -3091,7 +3091,7 @@ namespace llvmo
 	if (af_fixnumP(value) )
 	{
 	    core::Fixnum_sp fixnum_value = value.as<core::Fixnum_O>();
-	    self->_value = llvm::APInt(1,fixnum_value->as_int()&1,false);
+	    self->_value = llvm::APInt(1,clasp_to_int(fixnum_value)&1,false);
 	} else
 	{
 	    if ( value.isTrue() )
@@ -3121,8 +3121,8 @@ namespace llvmo
 	    {
 		SIMPLE_ERROR(BF("You tried to create an unsigned APInt32 with the negative value: %d") % fixnum_value->get() );
 	    }
-	    apint = llvm::APInt(width,fixnum_value->as_int(),sign);
-	    numbits = core::Fixnum_O::number_of_bits();
+	    apint = llvm::APInt(width,clasp_to_int(fixnum_value),sign);
+	    numbits = gc::fixnum_bits;
 	} else
 	{
 	    // It's a bignum so lets convert the bignum to a string and put it into an APInt
@@ -4339,12 +4339,12 @@ namespace llvmo
         double thisTime = timer.getAccumulatedTime();
         core::DoubleFloat_sp df = core::DoubleFloat_O::create(thisTime);
         _sym_STARmostRecentLlvmFinalizationTimeSTAR->setf_symbolValue(df);
-        double accTime = _sym_STARaccumulatedLlvmFinalizationTimeSTAR->symbolValue().as<core::Float_O>()->as_double();
+        double accTime = clasp_to_double(_sym_STARaccumulatedLlvmFinalizationTimeSTAR->symbolValue().as<core::Float_O>());
         accTime += thisTime;
         _sym_STARaccumulatedLlvmFinalizationTimeSTAR->setf_symbolValue(core::DoubleFloat_O::create(accTime));
         int num = _sym_STARnumberOfLlvmFinalizationsSTAR->symbolValue().as<core::Fixnum_O>()->get();
         ++num;
-        _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::Fixnum_O::create(num));
+        _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::make_fixnum(num));
     }
 
 
@@ -4820,7 +4820,7 @@ namespace llvmo
         SYMBOL_EXPORT_SC_(LlvmoPkg,STARnumberOfLlvmFinalizationsSTAR);
         _sym_STARmostRecentLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
         _sym_STARaccumulatedLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
-        _sym_STARnumberOfLlvmFinalizationsSTAR->defparameter(core::Fixnum_O::create(0));
+        _sym_STARnumberOfLlvmFinalizationsSTAR->defparameter(core::make_fixnum(0));
 
 
 	core::af_def(LlvmoPkg,"TargetRegistryLookupTarget", &TargetRegistryLookupTarget); 

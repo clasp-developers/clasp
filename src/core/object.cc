@@ -263,7 +263,7 @@ namespace core
     }
 
 
-    void T_O::sxhash(HashGenerator& hg) const
+    void T_O::sxhash_(HashGenerator& hg) const
     {_G();
 	int res = (int)((reinterpret_cast<unsigned long long int>(GC_BASE_ADDRESS_FROM_PTR(this)) >> 4)&INT_MAX);
 	hg.addPart(res);
@@ -309,11 +309,7 @@ namespace core
 
     void HashGenerator::hashObject(T_sp obj)
     {
-	if ( obj.nilp() ) {
-	    this->addPart(0);
-	    return;
-	}
-	obj->sxhash(*this);
+	clasp_sxhash(obj,*this);
     }
 
 

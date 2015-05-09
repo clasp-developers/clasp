@@ -222,7 +222,7 @@ namespace core
     T_mv af_reader_backquoted_expression(T_sp sin, Character_sp ch)
     {_G();
 	Fixnum_sp backquote_level = _sym_STARbackquote_levelSTAR->symbolValue().as<Fixnum_O>();
-	Fixnum_sp new_backquote_level = Fixnum_O::create(backquote_level->get()+1);
+	Fixnum_sp new_backquote_level = make_fixnum(backquote_level->get()+1);
 	// DynamicScopeManager will save the dynamic value of the symbol and restore it in dtor
 	DynamicScopeManager scope(_sym_STARbackquote_levelSTAR,new_backquote_level);
 	T_sp quoted_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
@@ -241,7 +241,7 @@ namespace core
     T_sp af_reader_comma_form(T_sp sin, Character_sp ch)
     {_G();
 	Fixnum_sp backquote_level = _sym_STARbackquote_levelSTAR->symbolValue().as<Fixnum_O>();
-	Fixnum_sp new_backquote_level = Fixnum_O::create(backquote_level->get()-1);
+	Fixnum_sp new_backquote_level = make_fixnum(backquote_level->get()-1);
 	DynamicScopeManager scope(_sym_STARbackquote_levelSTAR,new_backquote_level);
 	char nextc = clasp_peek_char(sin);
 //	ql::source_code_list list(sin->lineNumber(),sin->column(),core_sourceFileInfo(sin));
@@ -352,7 +352,7 @@ namespace core
 	Fixnum_sp onumarg = _Nil<Fixnum_O>();
 	if ( sawnumarg )
 	{
-	    onumarg = Fixnum_O::create(numarg);
+	    onumarg = make_fixnum(numarg);
 	}
 	Character_sp subchar = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	T_sp macro_func = cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>()->get_dispatch_macro_character(ch,subchar);
@@ -678,7 +678,7 @@ namespace core
 		SIMPLE_ERROR(BF("Illegal radix for #R: %d") % iradix);
 	    }
 	    {
-		Fixnum_sp oradix = Fixnum_O::create(iradix);
+		Fixnum_sp oradix = make_fixnum(iradix);
 		DynamicScopeManager scope(cl::_sym_STARread_baseSTAR,oradix);
 		T_sp val = read_lisp_object(sin,true,_Nil<T_O>(),true);
 		if ( !val.isA<Rational_O>() )
@@ -699,7 +699,7 @@ namespace core
 #define DECL_af_sharp_b ""
     T_mv af_sharp_b(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> num)
     {_G();
-	return af_sharp_r(sin,ch,Fixnum_O::create(2));
+	return af_sharp_r(sin,ch,make_fixnum(2));
     };
 
 
@@ -709,7 +709,7 @@ namespace core
 #define DECL_af_sharp_o ""
     T_mv af_sharp_o(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> num)
     {_G();
-	return af_sharp_r(sin,ch,Fixnum_O::create(8));
+	return af_sharp_r(sin,ch,make_fixnum(8));
     };
 
 
@@ -719,7 +719,7 @@ namespace core
 #define DECL_af_sharp_x ""
     T_mv af_sharp_x(T_sp sin, Character_sp ch, T_sp num)
     {_G();
-	return af_sharp_r(sin,ch,Fixnum_O::create(16));
+	return af_sharp_r(sin,ch,make_fixnum(16));
     };
 
 

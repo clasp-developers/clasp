@@ -101,7 +101,7 @@ namespace core {
     Vector_sp af_make_vector(T_sp element_type,
 			int dimension,
 			bool adjustable,
-			T_sp fill_pointer=Fixnum_O::create(0),
+			T_sp fill_pointer=make_fixnum(0),
 			T_sp displaced_to=_Nil<T_O>(),
 			T_sp displaced_index_offset=_Nil<T_O>(),
 			T_sp initial_element=_Nil<T_O>(),

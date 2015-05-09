@@ -269,7 +269,7 @@ extern "C" {
 #if 0
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
         core::Number_sp endTime = core::cl_getInternalRunTime().as<core::Number_O>();
-        core::Number_sp deltaTime = core::contagen_mul(core::contagen_sub(endTime,startTime),core::Fixnum_O::create(1000));
+        core::Number_sp deltaTime = core::contagen_mul(core::contagen_sub(endTime,startTime),core::make_fixnum(1000));
         core::Number_sp deltaSeconds = core::contagen_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
         printf("%s:%d [processMpsMessages %s millisecs for  %d finalization/ %d gc-start/ %d gc messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), mFinalize, mGcStart, mGc );
         fflush(stdout);

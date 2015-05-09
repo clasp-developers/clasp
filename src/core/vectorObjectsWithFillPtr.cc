@@ -146,7 +146,7 @@ namespace core
 	    int idx = this->_FillPtr;
 	    this->_Values[idx] = newElement;
 	    this->_FillPtr++;
-	    return Fixnum_O::create(idx);
+	    return make_fixnum(idx);
 	}
 	return _Nil<Fixnum_O>();
     }
@@ -161,7 +161,7 @@ namespace core
 	int idx = this->_FillPtr;
 	this->_Values[idx] = newElement;
 	this->_FillPtr++;
-	return Fixnum_O::create(idx);
+	return make_fixnum(idx);
     }
 
 

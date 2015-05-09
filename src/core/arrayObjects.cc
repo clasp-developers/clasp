@@ -52,8 +52,8 @@ namespace core
 	List_sp dim;
 	if ( af_atom(dim_desig) )
 	{
-	    int idim = dim_desig.as<Integer_O>()->as_int();
-	    dim = Cons_O::create(Fixnum_O::create(idim));
+	    int idim = clasp_to_int(dim_desig.as<Integer_O>());
+	    dim = Cons_O::create(make_fixnum(idim));
 	} else
 	{
 	    dim = dim_desig;
@@ -213,7 +213,7 @@ void ArrayObjects_O::archiveBase(::core::ArchiveP node)
 	int idx = 0;
 	for ( ; dim.notnilp(); dim = oCdr(dim) )
 	{
-	    int oneDim = oCar(dim).as<Rational_O>()->as_int();
+	    int oneDim = clasp_to_int(oCar(dim).as<Rational_O>());
 	    this->_Dimensions[idx] = oneDim;
 	    elements *= oneDim;
 	    idx++;

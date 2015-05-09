@@ -151,7 +151,7 @@ namespace core {
     public:
 	claspChar asChar() const { return this->_Value;};
 	claspChar get() const { return this->_Value;};
-	void sxhash(HashGenerator& hg) const;
+	void sxhash_(HashGenerator& hg) const;
 	virtual T_sp deepCopy() const;
 	string __repr__() const;
 	void set(int val) { this->_Value = val; };

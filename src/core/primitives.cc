@@ -94,7 +94,7 @@ namespace core
         if ( seconds.nilp() ) {
             ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_sleep,seconds,cl::_sym_Number_O);
         }
-        double dsec = seconds.as<Real_O>()->as_double();
+        double dsec = clasp_to_double(seconds.as<Real_O>());
         int usec = dsec*1000.0;
         usleep(usec);
     }
@@ -390,8 +390,8 @@ namespace core
 	Symbol_sp ptrType = _sym_intrusiveReferenceCountedPointer;
 #endif
 	T_sp dummy;
-	Fixnum_sp pxOffset = Fixnum_O::create(0);
-	Fixnum_sp pxSize = Fixnum_O::create((gctools::Fixnum)gctools::pointer_size);
+	Fixnum_sp pxOffset = make_fixnum(0);
+	Fixnum_sp pxSize = make_fixnum((gctools::Fixnum)gctools::pointer_size);
 	return Values(ptrType,pxOffset,pxSize);
     }
 
@@ -659,17 +659,10 @@ namespace core
 #define ARGS_cl_ash "(integer count)"
 #define DECL_cl_ash ""
 #define DOCS_cl_ash "CLHS: ash"
-    Integer_sp cl_ash(T_sp integer, Integer_sp count)
+    Integer_sp cl_ash(Integer_sp integer, Integer_sp count)
     {
-	int cnt = count->as_int();
-	if ( integer.notnilp() ) {
-	    if ( Bignum_sp bnint = integer.asOrNull<Bignum_O>() ) {
-		return bnint->shift(cnt);
-	    } else if ( Fixnum_sp fnint = integer.asOrNull<Fixnum_O>() ) {
-		return fnint->shift(cnt);
-	    }
-	};
-	TYPE_ERROR(integer,cl::_sym_Integer_O);
+	int cnt = clasp_to_int(count);
+	return clasp_shift(integer,cnt);
     }
 
 
@@ -1445,7 +1438,7 @@ List_sp af_append(List_sp lists)
     T_mv af_sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, T_sp end)
     {_G();
 	uint len = cl_length(sequence);
-	if ( end.nilp() ) end = Fixnum_O::create(len);
+	if ( end.nilp() ) end = make_fixnum(len);
 	Fixnum_sp fnend = end.as<Fixnum_O>();
 	if ( start->get() < 0 )
 	{
@@ -1455,7 +1448,7 @@ List_sp af_append(List_sp lists)
 	{
 	    SIMPLE_ERROR(BF("end[%d] must be <= length of sequence[%d]") % _rep_(end) % len );
 	}
-	Fixnum_sp length = Fixnum_O::create(len);
+	Fixnum_sp length = make_fixnum(len);
 	if ( fnend->get() < start->get() )
 	{
 	    SIMPLE_ERROR(BF("end[%d] is less than start[%d]") % _rep_(end) % _rep_(start) );
@@ -1584,18 +1577,18 @@ Symbol_mv af_gensym(T_sp x)
     if ( x.nilp() )
     {
 	int counter = cl::_sym_STARgensym_counterSTAR->symbolValue().as<Fixnum_O>()->get();
-	cl::_sym_STARgensym_counterSTAR->setf_symbolValue(Fixnum_O::create(counter+1));
+	cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter+1));
 	ss << "G";
 	ss << counter;
     } else if ( af_stringP(x) )
     {
 	int counter = cl::_sym_STARgensym_counterSTAR->symbolValue().as<Fixnum_O>()->get();
-	cl::_sym_STARgensym_counterSTAR->setf_symbolValue(Fixnum_O::create(counter+1));
+	cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter+1));
 	ss << x.as<Str_O>()->get();
 	ss << counter;
     } else if ( af_integerP(x) )
     {
-	int counter = x.as<Integer_O>()->as_int();
+	int counter = clasp_to_int(x.as<Integer_O>());
 	ASSERTF(counter >=0, BF("gensym argument %d must be >= 0") % counter );
 	ss << "G";
 	ss << counter;
@@ -1708,7 +1701,7 @@ T_sp type_of(T_sp x)
 	{
 	    t = cl::_sym_array;
 	} else t = cl::_sym_simple_array;
-	return (ql::list(_lisp) << t << cl::_sym_BaseChar_O << Cons_O::createList(Fixnum_O::create(1),Fixnum_O::create(cl_length(sx)))).cons();
+	return (ql::list(_lisp) << t << cl::_sym_BaseChar_O << Cons_O::createList(make_fixnum(1),make_fixnum(cl_length(sx)))).cons();
     } else if ( af_vectorP(x) )
     {
 	Vector_sp vx = x.as<Vector_O>();
@@ -1720,7 +1713,7 @@ T_sp type_of(T_sp x)
 	    return (ql::list(_lisp) << cl::_sym_simple_array << vx->element_type_as_symbol() << vx->arrayDimensions() ).cons();
 	} else
 	{
-	    return (ql::list(_lisp) << cl::_sym_simple_vector << Fixnum_O::create(cl_length(vx))).cons();
+	    return (ql::list(_lisp) << cl::_sym_simple_vector << make_fixnum(cl_length(vx))).cons();
 	}
     } else if (af_arrayP(x))
     {
@@ -1739,7 +1732,7 @@ T_sp type_of(T_sp x)
 	{
 	    t = cl::_sym_array;
 	} else t = cl::_sym_simple_array;
-	return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(Fixnum_O::create(1),Fixnum_O::create(cl_length(bx)))).cons();
+	return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(make_fixnum(1),make_fixnum(cl_length(bx)))).cons();
     } else if ( WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>() ) {
         return pp->_instanceClass()->className();
     } else if ( af_structurep(x) )
@@ -1823,9 +1816,9 @@ T_mv af_rem_f(List_sp plist, Symbol_sp indicator)
 #define DOCS_cl_sxhash "sxhash"
 Integer_sp cl_sxhash(T_sp obj)
 {_G();
-    if ( obj.nilp() ) return Fixnum_O::create(1);
+    if ( obj.nilp() ) return make_fixnum(1);
     HashGenerator hg;
-    obj->sxhash(hg);
+    clasp_sxhash(obj,hg);
     return Integer_O::create(hg.hash());
 }
 

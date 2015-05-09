@@ -58,7 +58,7 @@ namespace core {
     StrWithFillPtr_sp core_bignumToString(StrWithFillPtr_sp buffer, const Bignum& bn, Fixnum_sp base)
     {_G();
 	if ( base->get()<2 || base->get()>36) {
-	    QERROR_WRONG_TYPE_NTH_ARG(3,base,Cons_O::createList(cl::_sym_integer,Fixnum_O::create(2),Fixnum_O::create(36)));
+	    QERROR_WRONG_TYPE_NTH_ARG(3,base,Cons_O::createList(cl::_sym_integer,make_fixnum(2),make_fixnum(36)));
 	}
 	int ibase = base->get();
 	size_t str_size = mpz_sizeinbase(bn.get_mpz_t(), ibase);

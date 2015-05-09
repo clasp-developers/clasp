@@ -82,8 +82,8 @@ THE SOFTWARE.
 	{
 	    ScoreOperationEnum sop = (ScoreOperationEnum)(it->_Operation);
 	    Cons_sp oneOp = Cons_O::createList(symbolForScoreOperation(sop,_lisp),
-					       Fixnum_O::create((int)(it->_ArrayId)),
-					       Fixnum_O::create((int)(it->_Index)));
+					       make_fixnum((int)(it->_ArrayId)),
+					       make_fixnum((int)(it->_Index)));
 	    Cons_sp one = _lisp->create<Cons_O>(oneOp);
 	    cur->setCdr(one);
 	    cur = one;

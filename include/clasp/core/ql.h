@@ -118,7 +118,7 @@ namespace ql
 	inline list& operator<<(int const& val)
 	{
 
-	    return ( (*this) << core::Fixnum_O::create(val));
+	    return ( (*this) << core::make_fixnum(val));
 	}
       
 

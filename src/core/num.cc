@@ -207,7 +207,7 @@ int	tt;
 	if ( olimit.isA<Fixnum_O>() )
 	{
 	    int limit = olimit.as<Fixnum_O>()->get();
-	    return Fixnum_O::create((int)(globalRandomReal01Generator()*limit));
+	    return make_fixnum((int)(globalRandomReal01Generator()*limit));
 	} else if ( olimit.isA<Bignum_O>())
 	{
 	    IMPLEMENT_MEF(BF("Implement generating Bignum random numbers"));

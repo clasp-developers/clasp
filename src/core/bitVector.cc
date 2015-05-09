@@ -307,7 +307,7 @@ void	SimpleBitVector_O::dump()
 
 
 
-void SimpleBitVector_O::sxhash(HashGenerator& hg) const
+void SimpleBitVector_O::sxhash_(HashGenerator& hg) const
     {_OF();
 	Bignum bn;
 	for ( int i=0; i<this->vector_length(); i++ )

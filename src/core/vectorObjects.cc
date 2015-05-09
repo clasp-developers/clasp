@@ -249,7 +249,7 @@ void VectorObjects_O::fillInitialContents(T_sp ic)
     T_sp VectorObjects_O::aref(List_sp indices) const
     {_G();
 	ASSERTF(cl_length(indices)==1,BF("Vectors only support one index - passed: %s") % _rep_(indices) );
-	return this->elt(oCar(indices).as<Integer_O>()->as_int());
+	return this->elt(clasp_to_int(oCar(indices).as<Integer_O>()));
     }
 
     T_sp VectorObjects_O::setf_elt(int index, T_sp obj)
@@ -261,7 +261,7 @@ void VectorObjects_O::fillInitialContents(T_sp ic)
     T_sp VectorObjects_O::setf_aref(List_sp indices_val)
     {_G();
 	ASSERTF(cl_length(indices_val)==2,BF("Vectors only support one index followed by a value - passed: %s") % _rep_(indices_val) );
-	return this->setf_elt(oCar(indices_val).as<Integer_O>()->as_int(),oCadr(indices_val));
+	return this->setf_elt(clasp_to_int(oCar(indices_val).as<Integer_O>()),oCadr(indices_val));
     }
 
 

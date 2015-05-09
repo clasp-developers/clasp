@@ -253,7 +253,7 @@ namespace core
 	return *this;
     }
 
-    void Path_O::sxhash(HashGenerator& hg) const
+    void Path_O::sxhash_(HashGenerator& hg) const
     {_OF();
 	string ts = this->_Path.string();
 	Bignum bn = Str_O::stringToBignum(ts.c_str());

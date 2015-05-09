@@ -234,9 +234,9 @@ T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int line
         T_sp spi = this->closure->sourcePosInfo();
         T_sp sfi = core_sourceFileInfo(spi);
 	if ( sfi.nilp() || spi.nilp() ) {
-	    return Values(sfi,Integer_O::create(0),Fixnum_O::create(0));
+	    return Values(sfi,Integer_O::create(0),make_fixnum(0));
 	}
-        return Values(sfi,Integer_O::create((size_t)spi.as<SourcePosInfo_O>()->filepos()), Fixnum_O::create(spi.as<SourcePosInfo_O>()->lineno()));
+        return Values(sfi,Integer_O::create((size_t)spi.as<SourcePosInfo_O>()->filepos()), make_fixnum(spi.as<SourcePosInfo_O>()->lineno()));
     }
 
 
@@ -257,14 +257,14 @@ T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int line
         } catch (TooManyArgumentsError& error) {
             lisp_error(core::_sym_tooManyArgumentsError
                        , lisp_createList(kw::_sym_calledFunction,func
-                                         , kw::_sym_givenNumberOfArguments,Fixnum_O::create(error.givenNumberOfArguments)
-                                         , kw::_sym_requiredNumberOfArguments,Fixnum_O::create(error.requiredNumberOfArguments)
+                                         , kw::_sym_givenNumberOfArguments,make_fixnum(error.givenNumberOfArguments)
+                                         , kw::_sym_requiredNumberOfArguments,make_fixnum(error.requiredNumberOfArguments)
                            ));
         } catch (TooFewArgumentsError& error) {
             lisp_error(core::_sym_tooFewArgumentsError
                        , lisp_createList(kw::_sym_calledFunction,func
-                                         , kw::_sym_givenNumberOfArguments,Fixnum_O::create(error.givenNumberOfArguments)
-                                         , kw::_sym_requiredNumberOfArguments,Fixnum_O::create(error.requiredNumberOfArguments)
+                                         , kw::_sym_givenNumberOfArguments,make_fixnum(error.givenNumberOfArguments)
+                                         , kw::_sym_requiredNumberOfArguments,make_fixnum(error.requiredNumberOfArguments)
                            ));
         } catch (UnrecognizedKeywordArgumentError& error ) {
             lisp_error(core::_sym_unrecognizedKeywordArgumentError

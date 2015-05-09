@@ -324,7 +324,7 @@ namespace core {
         if ( Fixnum_sp fnx = x.asOrNull<Fixnum_O>() ) {
             if ( Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
 		gctools::Fixnum z = fixnum_operations[op](fnx->get(), fny->get());
-                return Fixnum_O::create(z);
+                return make_fixnum(z);
             } else if ( Bignum_sp bny = y.asOrNull<Bignum_O>() ) {
                 Bignum_sp x_copy = _lisp->bigRegister0();
                 x_copy->setFixnum(fnx->get());
@@ -783,22 +783,22 @@ namespace core {
         SYMBOL_EXPORT_SC_(ClPkg,boole_set);
         SYMBOL_EXPORT_SC_(ClPkg,boole_xor);
 
-        cl::_sym_boole_1->defconstant(Fixnum_O::create(boole_1));
-        cl::_sym_boole_2->defconstant(Fixnum_O::create(boole_2));
-        cl::_sym_boole_and->defconstant(Fixnum_O::create(boole_and));
-        cl::_sym_boole_andc1->defconstant(Fixnum_O::create(boole_andc1));
-        cl::_sym_boole_andc2->defconstant(Fixnum_O::create(boole_andc2));
-        cl::_sym_boole_c1->defconstant(Fixnum_O::create(boole_c1));
-        cl::_sym_boole_c2->defconstant(Fixnum_O::create(boole_c2));
-        cl::_sym_boole_clr->defconstant(Fixnum_O::create(boole_clr));
-        cl::_sym_boole_eqv->defconstant(Fixnum_O::create(boole_eqv));
-        cl::_sym_boole_ior->defconstant(Fixnum_O::create(boole_ior));
-        cl::_sym_boole_nand->defconstant(Fixnum_O::create(boole_nand));
-        cl::_sym_boole_nor->defconstant(Fixnum_O::create(boole_nor));
-        cl::_sym_boole_orc1->defconstant(Fixnum_O::create(boole_orc1));
-        cl::_sym_boole_orc2->defconstant(Fixnum_O::create(boole_orc2));
-        cl::_sym_boole_set->defconstant(Fixnum_O::create(boole_set));
-        cl::_sym_boole_xor->defconstant(Fixnum_O::create(boole_xor));
+        cl::_sym_boole_1->defconstant(make_fixnum(boole_1));
+        cl::_sym_boole_2->defconstant(make_fixnum(boole_2));
+        cl::_sym_boole_and->defconstant(make_fixnum(boole_and));
+        cl::_sym_boole_andc1->defconstant(make_fixnum(boole_andc1));
+        cl::_sym_boole_andc2->defconstant(make_fixnum(boole_andc2));
+        cl::_sym_boole_c1->defconstant(make_fixnum(boole_c1));
+        cl::_sym_boole_c2->defconstant(make_fixnum(boole_c2));
+        cl::_sym_boole_clr->defconstant(make_fixnum(boole_clr));
+        cl::_sym_boole_eqv->defconstant(make_fixnum(boole_eqv));
+        cl::_sym_boole_ior->defconstant(make_fixnum(boole_ior));
+        cl::_sym_boole_nand->defconstant(make_fixnum(boole_nand));
+        cl::_sym_boole_nor->defconstant(make_fixnum(boole_nor));
+        cl::_sym_boole_orc1->defconstant(make_fixnum(boole_orc1));
+        cl::_sym_boole_orc2->defconstant(make_fixnum(boole_orc2));
+        cl::_sym_boole_set->defconstant(make_fixnum(boole_set));
+        cl::_sym_boole_xor->defconstant(make_fixnum(boole_xor));
 
         ClDefun(boole);
     };

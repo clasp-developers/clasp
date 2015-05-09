@@ -222,7 +222,7 @@ namespace core
         if ( pos == string::npos ) {
             return _Nil<T_O>();
         }
-        return Fixnum_O::create(static_cast<int>(pos+start2->get()));
+        return make_fixnum(static_cast<int>(pos+start2->get()));
     };
 
 
@@ -248,10 +248,10 @@ namespace core
 	    // normal exit
 	    if ( numDigits > 0 )
 	    {
-		return(Values(Integer_O::create(result),Fixnum_O::create(cur)));
+		return(Values(Integer_O::create(result),make_fixnum(cur)));
 	    } else
 	    {
-		return(Values(_Nil<T_O>(),Fixnum_O::create(cur)));
+		return(Values(_Nil<T_O>(),make_fixnum(cur)));
 	    }
 	}
 	PARSE_ERROR(Str_O::create("Could not parse integer from ~S"), Cons_O::create(str));
@@ -645,7 +645,7 @@ namespace core
     }
 #endif // defined(XML_ARCHIVE)
 
-    void Str_O::sxhash(HashGenerator& hg) const
+    void Str_O::sxhash_(HashGenerator& hg) const
     {_OF();
 	Bignum bn = Str_O::stringToBignum(this->get().c_str());
 	hg.addPart(bn);
@@ -655,7 +655,7 @@ namespace core
     Fixnum_sp	Str_O::asInt() const
     {
 	Fixnum_sp i;
-	i = Fixnum_O::create(atoi(this->get().c_str()));
+	i = make_fixnum(atoi(this->get().c_str()));
 	return i;
     }
 
@@ -978,7 +978,7 @@ namespace core
     END_STRING1:
 	    if ( num2 == 0 ) goto RETURN_FALSE;
     RETURN_TRUE:
-	    return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
+	    return make_fixnum((int)(cp1-this->_Contents.c_str()));
     END_STRING2:
     RETURN_FALSE:
 	    return _Nil<T_O>();
@@ -1009,7 +1009,7 @@ namespace core
 	return _Nil<T_O>();
     END_STRING2:
     RETURN_TRUE:
-	return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
+	return make_fixnum((int)(cp1-this->_Contents.c_str()));
     }
 
 
@@ -1041,7 +1041,7 @@ namespace core
     RETURN_FALSE:
 	    return _Nil<T_O>();
     RETURN_TRUE:
-	    return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
+	    return make_fixnum((int)(cp1-this->_Contents.c_str()));
     }
 
 
@@ -1071,7 +1071,7 @@ namespace core
     RETURN_FALSE:
 	return _Nil<T_O>();
     RETURN_TRUE:
-	return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
+	return make_fixnum((int)(cp1-this->_Contents.c_str()));
     }
 
 
@@ -1155,7 +1155,7 @@ namespace core
     END_STRING1:
 	    if ( num2 == 0 ) goto RETURN_FALSE;
     RETURN_TRUE:
-	    return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
+	    return make_fixnum((int)(cp1-this->_Contents.c_str()));
     END_STRING2:
     RETURN_FALSE:
 	    return _Nil<T_O>();
@@ -1188,7 +1188,7 @@ namespace core
 	return _Nil<T_O>();
     END_STRING2:
     RETURN_TRUE:
-	return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
+	return make_fixnum((int)(cp1-this->_Contents.c_str()));
     }
 
 
@@ -1222,7 +1222,7 @@ namespace core
     RETURN_FALSE:
 	    return _Nil<T_O>();
     RETURN_TRUE:
-	    return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
+	    return make_fixnum((int)(cp1-this->_Contents.c_str()));
     }
 
 
@@ -1254,7 +1254,7 @@ namespace core
     RETURN_FALSE:
 	return _Nil<T_O>();
     RETURN_TRUE:
-	return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
+	return make_fixnum((int)(cp1-this->_Contents.c_str()));
     }
 
 

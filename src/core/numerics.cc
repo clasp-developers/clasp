@@ -176,7 +176,7 @@ namespace core {
 	if ( olimit.isA<Fixnum_O>() )
 	{
 	    int limit = olimit.as<Fixnum_O>()->get();
-	    return Fixnum_O::create((int)(globalRandomReal01Generator()*limit));
+	    return make_fixnum((int)(globalRandomReal01Generator()*limit));
 	} else if ( olimit.isA<Bignum_O>())
 	{
 	    IMPLEMENT_MEF(BF("Implement generating Bignum random numbers"));
@@ -241,11 +241,11 @@ namespace core {
     {_G();
 	Number_sp v0, v1;
 	Number_mv mv_v1;
-	switch (x->number_type()) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = x;
-	    v1 = Fixnum_O::create(0);
+	    v1 = make_fixnum(0);
 	    break;
 	case number_Ratio: {
 //		const cl_env_ptr the_env = ecl_process_env();
@@ -289,22 +289,22 @@ namespace core {
 	const cl_env_ptr the_env = ecl_process_env();
 	Number_sp v0, v1;
 	cl_type ty;
-        ty = y->number_type();
+        ty = clasp_t_of(y);
 	if (ecl_unlikely(!ECL_REAL_TYPE_P(ty))) {
             FEwrong_type_nth_arg(@[ceiling],2, y, @[real]);
 	}
-	switch(x->number_type()) {
+	switch(clasp_t_of(x)) {
 	case number_Fixnum:
             switch(ty) {
             case number_Fixnum: {	/* FIX / FIX */
                 gctools::Fixnum a = ecl_fixnum(x); cl_fixnum b = ecl_fixnum(y);
                 gctools::Fixnum q = a / b;  cl_fixnum r = a % b;
                 if ((r^b) > 0 && r) {	/* same signs and some remainder */
-		    v0 = Fixnum_O::create(q+1);
-		    v1 = Fixnum_O::create(r-b);
+		    v0 = make_fixnum(q+1);
+		    v1 = make_fixnum(r-b);
                 } else {
-		    v0 = Fixnum_O::create(q);
-		    v1 = Fixnum_O::create(r);
+		    v0 = make_fixnum(q);
+		    v1 = make_fixnum(r);
                 }
                 break;
             }
@@ -354,7 +354,7 @@ namespace core {
             }
             break;
 	case number_Bignum:
-	    switch(y->number_type()) {
+	    switch(clasp_t_of(y)) {
             case number_Fixnum: {	/* BIG / FIX */
                 ECL_WITH_TEMP_BIGNUM(by,4);
                 _ecl_big_senumber_Fixnum(by, ecl_fixnum(y));
@@ -400,7 +400,7 @@ namespace core {
             }
             break;
 	case number_Ratio:
-	    switch(y->number_type()) {
+	    switch(clasp_t_of(y)) {
             case number_Ratio:		/* RAT / RAT */
                 v0 = ecl_ceiling2(ecl_times(x->ratio.num, y->ratio.den),
                                   ecl_times(x->ratio.den, y->ratio.num));
@@ -479,11 +479,11 @@ namespace core {
       cl_type ty, tx;
       @
       if (y != OBJNULL) {
-          ty = y->number_type();
+          ty = clasp_t_of(y);
       } else {
           ty = number_SingleFloat;
       }
-      switch (tx = x->number_type()) {
+      switch (tx = clasp_t_of(x)) {
       case number_SingleFloat:
       case number_DoubleFloat:
 #ifdef CLASP_LONG_FLOAT
@@ -516,7 +516,7 @@ namespace core {
     cl_object
     cl_numerator(cl_object x)
     {
-        switch (x->number_type()) {
+        switch (clasp_t_of(x)) {
 	case number_Ratio:
             x = x->ratio.num;
             break;
@@ -532,13 +532,13 @@ namespace core {
     cl_object
     cl_denominator(cl_object x)
     {
-        switch (x->number_type()) {
+        switch (clasp_t_of(x)) {
 	case number_Ratio:
             x = x->ratio.den;
             break;
 	case number_Fixnum:
 	case number_Bignum:
-            x = Fixnum_O::create(1);
+            x = make_fixnum(1);
             break;
 	default:
             FEwrong_type_nth_arg(@[numerator],1,x,@[rational]);
@@ -551,11 +551,11 @@ namespace core {
     {
 	const cl_env_ptr the_env = ecl_process_env();
 	cl_object v0, v1;
-	switch (x->number_type()) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
             v0 = x;
-            v1 = Fixnum_O::create(0);
+            v1 = make_fixnum(0);
             break;
 	case number_Ratio:
             v0 = ecl_floor2(x->ratio.num, x->ratio.den);
@@ -596,22 +596,22 @@ namespace core {
 	const cl_env_ptr the_env = ecl_process_env();
 	cl_object v0, v1;
 	cl_type ty;
-        ty = y->number_type();
+        ty = clasp_t_of(y);
 	if (ecl_unlikely(!ECL_REAL_TYPE_P(ty))) {
             FEwrong_type_nth_arg(@[floor],2,y,@[real]);
 	}
-	switch(x->number_type()) {
+	switch(clasp_t_of(x)) {
 	case number_Fixnum:
             switch(ty) {
             case number_Fixnum: {	/* FIX / FIX */
                 gctools::Fixnum a = ecl_fixnum(x), b = ecl_fixnum(y);
                 gctools::Fixnum q = a / b,  r = a % b;
                 if ((r^b) < 0 && r) {	/* opposite sign and some remainder*/
-		    v0 = Fixnum_O::create(q-1);
-		    v1 = Fixnum_O::create(r+b);
+		    v0 = make_fixnum(q-1);
+		    v1 = make_fixnum(r+b);
                 } else {
-		    v0 = Fixnum_O::create(q);
-		    v1 = Fixnum_O::create(r);
+		    v0 = make_fixnum(q);
+		    v1 = make_fixnum(r);
                 }
                 break;
             }
@@ -767,11 +767,11 @@ namespace core {
     {
 	const cl_env_ptr the_env = ecl_process_env();
 	cl_object v0, v1;
-	switch (x->number_type()) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
             v0 = x;
-            v1 = Fixnum_O::create(0);
+            v1 = make_fixnum(0);
             break;
 	case number_Ratio:
             v0 = ecl_truncate2(x->ratio.num, x->ratio.den);
@@ -864,11 +864,11 @@ namespace core {
     {
 	const cl_env_ptr the_env = ecl_process_env();
 	cl_object v0, v1;
-	switch (x->number_type()) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
             v0 = x;
-            v1 = Fixnum_O::create(0);
+            v1 = make_fixnum(0);
             break;
 	case number_Ratio:
             v0 = ecl_round2(x->ratio.num, x->ratio.den);
@@ -911,11 +911,11 @@ namespace core {
 	cl_object q;
 
 	q = ecl_divide(x, y);
-	switch (q->number_type()) {
+	switch (clasp_t_of(q)) {
 	case number_Fixnum:
 	case number_Bignum:
             v0 = q;
-            v1 = Fixnum_O::create(0);
+            v1 = make_fixnum(0);
             break;
 	case number_Ratio: {
             cl_object q1 = ecl_integer_divide(q->ratio.num, q->ratio.den);
@@ -973,7 +973,7 @@ namespace core {
     {
 	const cl_env_ptr the_env = ecl_process_env();
 	int e, s;
-	cl_type tx = x->number_type();
+	cl_type tx = clasp_t_of(x);
 	float f;
 
 	switch (tx) {
@@ -1018,7 +1018,7 @@ namespace core {
 	default:
             FEwrong_type_nth_arg(@[decode-float],1,x,@[float]);
 	}
-	ecl_return3(the_env, x, Fixnum_O::create(e), ecl_make_single_float(s));
+	ecl_return3(the_env, x, make_fixnum(e), ecl_make_single_float(s));
     }
 
     cl_object
@@ -1032,7 +1032,7 @@ namespace core {
 	} else {
             FEwrong_type_nth_arg(@[scale-float],2,y,@[fixnum]);
 	}
-	switch (x->number_type()) {
+	switch (clasp_t_of(x)) {
 	case number_SingleFloat:
             x = ecl_make_single_float(ldexpf(ecl_single_float(x), k));
             break;
@@ -1057,13 +1057,13 @@ namespace core {
 	if (ecl_unlikely(cl_floatp(x) != ECL_T)) {
             FEwrong_type_nth_arg(@[float-radix],1,x,@[float]);
 	}
-	ecl_return1(the_env, Fixnum_O::create(FLT_RADIX));
+	ecl_return1(the_env, make_fixnum(FLT_RADIX));
     }
 
     int
     ecl_signbit(cl_object x)
     {
-        switch (x->number_type()) {
+        switch (clasp_t_of(x)) {
 	case number_SingleFloat:
             return signbit(ecl_single_float(x));
 	case number_DoubleFloat:
@@ -1081,10 +1081,10 @@ namespace core {
       int negativep;
       @
       if (!yp) {
-          y = cl_float(2, Fixnum_O::create(1), x);
+          y = cl_float(2, make_fixnum(1), x);
       }
       negativep = ecl_signbit(x);
-      switch (y->number_type()) {
+      switch (clasp_t_of(y)) {
       case number_SingleFloat: {
           float f = ecl_single_float(y);
           if (signbit(f) != negativep) y = ecl_make_single_float(-f);
@@ -1112,16 +1112,16 @@ namespace core {
     cl_float_digits(cl_object x)
     {
 	const cl_env_ptr the_env = ecl_process_env();
-	switch (x->number_type()) {
+	switch (clasp_t_of(x)) {
 	case number_SingleFloat:
-            x = Fixnum_O::create(FLT_MANT_DIG);
+            x = make_fixnum(FLT_MANT_DIG);
             break;
 	case number_DoubleFloat:
-            x = Fixnum_O::create(DBL_MANT_DIG);
+            x = make_fixnum(DBL_MANT_DIG);
             break;
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
-            x = Fixnum_O::create(LDBL_MANT_DIG);
+            x = make_fixnum(LDBL_MANT_DIG);
             break;
 #endif
 	default:
@@ -1135,7 +1135,7 @@ namespace core {
     {
 	const cl_env_ptr the_env = ecl_process_env();
 	int precision;
-	switch (x->number_type()) {
+	switch (clasp_t_of(x)) {
 	case number_SingleFloat: {
             float f = ecl_single_float(x);
             if (f == 0.0) {
@@ -1186,7 +1186,7 @@ namespace core {
 	default:
             FEwrong_type_nth_arg(@[float-precision],1,x,@[float]);
 	}
-	ecl_return1(the_env, Fixnum_O::create(precision));
+	ecl_return1(the_env, make_fixnum(precision));
     }
 
     cl_object
@@ -1195,7 +1195,7 @@ namespace core {
 	const cl_env_ptr the_env = ecl_process_env();
 	int e, s = 1;
 
-	switch (x->number_type()) {
+	switch (clasp_t_of(x)) {
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
             LongFloat d = ecl_long_float(x);
@@ -1205,7 +1205,7 @@ namespace core {
             }
             if (d == 0.0) {
                 e = 0;
-                x = Fixnum_O::create(0);
+                x = make_fixnum(0);
             } else {
                 d = frexpl(d, &e);
                 x = _ecl_long_double_to_integer(ldexpl(d, LDBL_MANT_DIG));
@@ -1222,7 +1222,7 @@ namespace core {
             }
             if (d == 0.0) {
                 e = 0;
-                x = Fixnum_O::create(0);
+                x = make_fixnum(0);
             } else {
                 d = frexp(d, &e);
                 x = _ecl_double_to_integer(ldexp(d, DBL_MANT_DIG));
@@ -1238,7 +1238,7 @@ namespace core {
             }
             if (d == 0.0) {
                 e = 0;
-                x = Fixnum_O::create(0);
+                x = make_fixnum(0);
             } else {
                 d = frexpf(d, &e);
                 x = _ecl_double_to_integer(ldexp(d, FLT_MANT_DIG));
@@ -1249,11 +1249,11 @@ namespace core {
 	default:
             FEwrong_type_nth_arg(@[integer-decode-float],1,x,@[float]);
 	}
-	ecl_return3(the_env, x, Fixnum_O::create(e), Fixnum_O::create(s));
+	ecl_return3(the_env, x, make_fixnum(e), make_fixnum(s));
     }
 
 
-    @(defun complex (r &optional (i Fixnum_O::create(0)))
+    @(defun complex (r &optional (i make_fixnum(0)))
       @	/* INV: ecl_make_complex() checks types */
       @(return ecl_make_complex(r, i))
       @)
@@ -1261,7 +1261,7 @@ namespace core {
     cl_object
     cl_realpart(cl_object x)
     {
-        switch (x->number_type()) {
+        switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	case number_Ratio:
@@ -1283,11 +1283,11 @@ namespace core {
     cl_object
     cl_imagpart(cl_object x)
     {
-        switch (x->number_type()) {
+        switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	case number_Ratio:
-            x = Fixnum_O::create(0);
+            x = make_fixnum(0);
             break;
 	case number_SingleFloat:
             if (signbit(ecl_single_float(x)))

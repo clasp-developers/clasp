@@ -59,7 +59,7 @@ namespace core {
     T_mv af_parseNamestring(T_sp thing,
 				   T_sp host=_Nil<T_O>(),
 				   T_sp defaultPathname=_Nil<T_O>(),
-				   Fixnum_sp start=Fixnum_O::create(0),
+				   Fixnum_sp start=make_fixnum(0),
 				   T_sp end=_Nil<T_O>(),
 				   bool junkAllowed=false);
 
@@ -141,7 +141,7 @@ namespace core
 
 	virtual bool equal(T_sp obj) const;
 	virtual bool equalp(T_sp obj) const { return this->equal(obj); };
-	virtual void sxhash(HashGenerator& hg) const;
+	virtual void sxhash_(HashGenerator& hg) const;
 	
 	virtual string __repr__() const;
 	//! Common Lisp __write__(T_sp strm) 

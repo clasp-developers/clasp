@@ -213,7 +213,7 @@ namespace llvmo
 	int index;
 	if ( this->findValue(sym,depth,index) )
 	{
-	    return core::Cons_O::createList(core::_sym_lexicalVar,sym,core::Cons_O::create(core::Fixnum_O::create(depth),core::Fixnum_O::create(index),_lisp),_lisp);
+	    return core::Cons_O::createList(core::_sym_lexicalVar,sym,core::Cons_O::create(core::make_fixnum(depth),core::make_fixnum(index),_lisp),_lisp);
 	}
 	THROW(_lisp->error(BF("Could not find %s in lexica/dynamic environment") % sym->__repr__() ));
     }
@@ -227,7 +227,7 @@ namespace llvmo
 	int index;
 	if ( this->findValue(sym,depth,index) )
 	{
-	    return core::Cons_O::createList(core::_sym_lexicalFunction,sym,core::Cons_O::create(core::Fixnum_O::create(depth),core::Fixnum_O::create(index),_lisp),_lisp);
+	    return core::Cons_O::createList(core::_sym_lexicalFunction,sym,core::Cons_O::create(core::make_fixnum(depth),core::make_fixnum(index),_lisp),_lisp);
 	}
 	if ( sym->fboundp() )
 	{

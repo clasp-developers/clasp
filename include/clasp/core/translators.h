@@ -70,17 +70,7 @@ namespace translate
     struct	from_object<uint,std::true_type>
     {
 	uint    _v;
-        from_object(T_P o)
-        {
-            if (o.fixnump()) {
-                _v = o.asFixnum();
-                return;
-            } else if (core::Integer_sp i = o.asOrNull<core::Integer_O>()) {
-                _v = i->as_uint();
-                return;
-            }
-	    SIMPLE_ERROR(BF("Add support to convert type: %s to uint") % _rep_(o));
-	}
+    from_object(core::T_sp o) : _v(clasp_to_uint(o.as<core::Integer_O>())) {};
     };
 
 
@@ -89,17 +79,7 @@ namespace translate
     {
 	typedef	int		DeclareType;
 	DeclareType _v;
-        from_object(T_P o)
-        {
-            if (o.fixnump()) {
-                _v = o.asFixnum();
-                return;
-            } else if (core::Integer_sp i = o.asOrNull<core::Integer_O>()) {
-                _v = i->as_int();
-                return;
-            }
-	    SIMPLE_ERROR(BF("Add support to convert type: %s to int") % _rep_(o));
-	}
+    from_object(core::T_sp o) : _v(clasp_to_int(o.as<core::Integer_O>())) {};
     };
 
 
@@ -126,32 +106,14 @@ namespace translate
 
 #endif
 
-
     template <>
     struct	from_object<unsigned long long,std::true_type>
     {
 	typedef	unsigned long long		ExpectedType;
 	typedef	unsigned long long		DeclareType;
 	DeclareType _v;
-	from_object(T_P o)
-        {
-            if ( core::Fixnum_sp fn = o.asOrNull<core::Fixnum_O>() )
-	    {
-		core::Fixnum f = fn->get();
-                ASSERTF(f>=0,BF("Cannot convert %s to unsigned long long") % _rep_(o));
-		this->_v = f;
-		return;
-	    } else if (core::Integer_sp io = o.asOrNull<core::Integer_O>() )
-            {
-                core::LongLongInt lli = io->as_LongLongInt();
-                ASSERT(lli >= 0);
-                this->_v = lli;
-                return;
-            }
-	    SIMPLE_ERROR(BF("Add support to convert other types to unsigned long long"));
-        }
+    from_object(T_P o) : _v(clasp_to_unsigned_long_long(o.as<core::Integer_O>())) {}
     };
-
 
 #if 1
 
@@ -183,15 +145,7 @@ namespace translate
 	typedef	double	ExpectedType;
 	typedef	double	DeclareType;
 	DeclareType _v;
-        from_object(T_P o)
-        {
-	    if ( core::Number_sp vv = o.asOrNull<core::Number_O>() )
-	    {
-		this->_v = vv->as_double();
-		return;
-	    }
-	    SIMPLE_ERROR(BF("Add support to convert other types to double"));
-	}
+    from_object(core::T_sp o) : _v(clasp_to_double(o.as<core::Number_O>())) {};
     };
 
     template <>
@@ -366,7 +320,7 @@ namespace translate
 	typedef	int GivenType;
 	static core::T_sp convert(GivenType v)
 	{_G();
-	    core::Fixnum_sp oi = core::Fixnum_O::create(v);
+	    core::Fixnum_sp oi = core::make_fixnum(v);
 	    return oi;
 	}
     };

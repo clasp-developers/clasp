@@ -49,10 +49,9 @@ THE SOFTWARE.
 namespace core
 {
 
-#define DEBUG_HASH_TABLE
     bool DebugHashTable = false;
 
-    #define ARGS_core_DebugHashTable "(on)"
+#define ARGS_core_DebugHashTable "(on)"
 #define DECL_core_DebugHashTable ""
 #define DOCS_core_DebugHashTable "DebugHashTable"
 void    core_DebugHashTable(bool don)
@@ -99,7 +98,10 @@ void    core_DebugHashTable(bool don)
 #define DECL_af_make_hash_table ""
     HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold)
     {_G();
-	int isize = size->as_int();
+#ifdef DEBUG_HASH_TABLE
+	printf("%s:%d make_hash_table WARNING DEBUG_HASH_TABLE is on\n", __FILE__, __LINE__ );
+#endif
+	int isize = clasp_to_int(size);
 	double rehash_threshold = orehash_threshold->get();
 	HashTable_sp table = _Nil<HashTable_O>();
 //	_lisp->print(BF("%s:%d - make_hash_table - fix me so that I grow by powers of 2\n") % __FILE__ % __LINE__ );
@@ -126,7 +128,7 @@ void    core_DebugHashTable(bool don)
 
     HashTable_sp HashTable_O::create(T_sp test)
     {_G();
-	Fixnum_sp size = Fixnum_O::create(16);
+	Fixnum_sp size = make_fixnum(16);
 	DoubleFloat_sp rehashSize = DoubleFloat_O::create(2.0);
 	DoubleFloat_sp rehashThreshold = DoubleFloat_O::create(0.9);
 	HashTable_sp ht = af_make_hash_table(test,size,rehashSize,rehashThreshold);
@@ -256,7 +258,7 @@ void    core_DebugHashTable(bool don)
 
     void HashTable_O::clrhash()
     {_G();
-	ASSERT(!this->_RehashSize->zerop());
+	ASSERT(!clasp_zerop(this->_RehashSize));
 	this->setup(4,this->_RehashSize,this->_RehashThreshold);
     }
 
@@ -267,7 +269,7 @@ void    core_DebugHashTable(bool don)
 	sz = this->resizeEmptyTable(sz);
 	this->_InitialSize = sz;
 	this->_RehashSize = rehashSize;
-	ASSERT(!this->_RehashSize->zerop());
+	ASSERT(!clasp_zerop(this->_RehashSize));
 	this->_RehashThreshold = rehashThreshold;
     }
 
@@ -279,24 +281,17 @@ void    core_DebugHashTable(bool don)
 
     void HashTable_O::sxhash_eq(HashGenerator& hg, T_sp obj, LocationDependencyPtrT ld )
     {_G();
-	if ( obj.nilp() ) {
-	    hg.addPart(0);
-	    return;
-	}
 #ifdef USE_MPS
         if (ld) mps_ld_add(ld,gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
-	obj->T_O::sxhash(hg);
+	clasp_sxhash(obj,hg); // obj->T_O::sxhash_(hg);
     }
 
 
 
     void HashTable_O::sxhash_eql(HashGenerator& hg, T_sp obj, LocationDependencyPtrT ld )
     {_G();
-	if ( obj.nilp() ) {
-	    hg.addPart(0);
-	    return;
-	} else if ( obj.objectp() ) {
+	if ( obj.objectp() ) {
 	    if ( cl_numberp(obj) || af_characterP(obj) )
 		{
 		    hg.hashObject(obj);
@@ -308,19 +303,15 @@ void    core_DebugHashTable(bool don)
 #ifdef USE_MPS
         if (ld) mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
-	obj->T_O::sxhash(hg);
+	clasp_sxhash(obj,hg); // obj->T_O::sxhash_(hg);
     }
 
 
     void HashTable_O::sxhash_equal(HashGenerator& hg, T_sp obj, LocationDependencyPtrT ld )
     {_G();
-	if ( obj.nilp() )
-	{
-	    hg.addPart(0);
-	    return;
-	} else if ( obj.objectp() ) {
+	if ( obj.objectp() ) {
 	    if ( af_fixnumP(obj) || af_characterP(obj) || af_symbolp(obj) || cl_numberp(obj) || af_stringP(obj) ) {
-		if ( hg.isFilling() ) obj->sxhash(hg);
+		if ( hg.isFilling() ) clasp_sxhash(obj,hg);
 		return;
 	    } else if ( Pathname_sp pobj = obj.asOrNull<Pathname_O>() ) {
 		if ( hg.isFilling() ) HashTable_O::sxhash_equal(hg,pobj->_Host,ld);
@@ -341,22 +332,19 @@ void    core_DebugHashTable(bool don)
 #ifdef USE_MPS
         if (ld) mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
-	obj->T_O::sxhash(hg);
+	clasp_sxhash(obj,hg);
     }
 
 
     void HashTable_O::sxhash_equalp(HashGenerator& hg, T_sp obj, LocationDependencyPtrT ld )
     {_G();
-	if ( obj.nilp() ) {
-	    hg.addPart(0);
-	    return;
-	} else if ( obj.objectp() ) {
+	if ( obj.objectp() ) {
 	    if ( Str_sp str = obj.asOrNull<Str_O>() ) {
 		Str_sp upstr = cl_string_upcase(str);
 		hg.hashObject(upstr);
 		return;
 	    } else if ( af_fixnumP(obj) || af_characterP(obj) || af_symbolp(obj) || cl_numberp(obj) ) {
-		if ( hg.isFilling() ) obj->sxhash(hg);
+		if ( hg.isFilling() ) clasp_sxhash(obj,hg);
 		return;
 	    } else if ( Pathname_sp pobj = obj.asOrNull<Pathname_O>() ) {
 		if ( hg.isFilling() ) HashTable_O::sxhash_equalp(hg,pobj->_Host,ld);
@@ -388,7 +376,7 @@ void    core_DebugHashTable(bool don)
 #ifdef USE_MPS
         if (ld) mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
-	obj->T_O::sxhash(hg);
+	clasp_sxhash(obj,hg); // obj->T_O::sxhash(hg);
     }
 
     bool HashTable_O::equalp(T_sp other) const
@@ -550,7 +538,7 @@ void    core_DebugHashTable(bool don)
             void* blockAddr = SmartPtrToBasePtr(key);
             if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)),gctools::_global_arena,blockAddr)) {
                 keyValueCons = this->rehash(false,key);
-            }
+             }
         }
 #endif
         return keyValueCons;
@@ -661,7 +649,7 @@ void    core_DebugHashTable(bool don)
     List_sp HashTable_O::rehash(bool expandTable, T_sp findKey )
     {_OF();
 //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
-	ASSERTF(!this->_RehashSize->zerop(),BF("RehashSize is zero - it shouldn't be"));
+	ASSERTF(!clasp_zerop(this->_RehashSize),BF("RehashSize is zero - it shouldn't be"));
 	ASSERTF(cl_length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
         List_sp foundKeyValuePair(_Nil<T_O>());
         uint startCount = this->hashTableCount();
@@ -669,9 +657,9 @@ void    core_DebugHashTable(bool don)
         uint newSize = 0;
         if ( expandTable ) {
             if ( af_integerP(this->_RehashSize) ) {
-                newSize = cl_length(this->_HashTable) + this->_RehashSize.as<Integer_O>()->as_int();
+                newSize = cl_length(this->_HashTable) + clasp_to_int(this->_RehashSize.as<Integer_O>());
             } else if ( af_floatP(this->_RehashSize) ) {
-                newSize = cl_length(this->_HashTable) * this->_RehashSize->as_double();
+                newSize = cl_length(this->_HashTable) * clasp_to_double(this->_RehashSize);
             }
         } else {
             newSize = cl_length(this->_HashTable);
@@ -913,8 +901,6 @@ void    core_DebugHashTable(bool don)
 	Defun(make_hash_table);
 	SYMBOL_EXPORT_SC_(ClPkg,maphash);
 	Defun(maphash);
-//	SYMBOL_EXPORT_SC_(ClPkg,gethash);
-//	Defun(gethash);
 	SYMBOL_EXPORT_SC_(ClPkg,clrhash);
 	Defun(clrhash);
 	SYMBOL_SC_(CorePkg,hash_eql);

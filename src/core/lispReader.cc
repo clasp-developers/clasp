@@ -594,9 +594,9 @@ namespace core
 #ifndef USE_SHARP_EQUAL_HASH_TABLES
 	    DynamicScopeManager scope(_sym_STARsharp_equal_alistSTAR,_Nil<T_O>());
 #else
-	    DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR,HashTableEql_O::create(40,Fixnum_O::create(4000),0.8));
-	    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_temp_tableSTAR,HashTableEql_O::create(40,Fixnum_O::create(4000),0.8));
-	    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_repl_tableSTAR,HashTableEq_O::create(40,Fixnum_O::create(4000),0.8));
+	    DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR,HashTableEql_O::create(40,make_fixnum(4000),0.8));
+	    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_temp_tableSTAR,HashTableEql_O::create(40,make_fixnum(4000),0.8));
+	    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_repl_tableSTAR,HashTableEq_O::create(40,make_fixnum(4000),0.8));
 #endif
 
 	    result = read_lisp_object(sin,eofErrorP,eofValue,true);

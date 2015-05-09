@@ -50,7 +50,7 @@ extern "C" {
         if ( _lisp->sourceDatabase().notnilp() ) {
             core::T_sp tspi = _lisp->sourceDatabase().as<core::SourceManager_O>()->lookupSourcePosInfo(exp);
             if ( core::SourcePosInfo_sp spi = tspi.as<core::SourcePosInfo_O>() ) {
-                core::SourceFileInfo_sp sfi = core_sourceFileInfo(core::Fixnum_O::create(spi->fileHandle()));
+                core::SourceFileInfo_sp sfi = core_sourceFileInfo(core::make_fixnum(spi->fileHandle()));
 		string sf = sfi->sourceDebugNamestring();
                 size_t filepos = spi->_Filepos;
 		int lineno = spi->_Lineno;
@@ -89,7 +89,7 @@ namespace core
     T_mv core_sourceFileInfo(T_sp sourceFile,T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno)
     {
         if ( sourceFile.nilp() ) {
-            return core_sourceFileInfo(Fixnum_O::create(0));
+            return core_sourceFileInfo(make_fixnum(0));
         } else if ( Str_sp strSourceFile = sourceFile.asOrNull<Str_O>() ) {
             return _lisp->getOrRegisterSourceFileInfo(strSourceFile->get(),sourceDebugNamestring,sourceDebugOffset,useLineno);
         } else if ( Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>() ) {
@@ -112,7 +112,7 @@ namespace core
         } else if ( SourceFileInfo_sp sfi = sourceFile.asOrNull<SourceFileInfo_O>() ) {
             return _lisp->getOrRegisterSourceFileInfo(sfi->namestring(),sourceDebugNamestring,sourceDebugOffset,useLineno);
         } else if ( SourcePosInfo_sp spi = sourceFile.asOrNull<SourcePosInfo_O>() ) {
-            return core_sourceFileInfo(Fixnum_O::create(spi->_FileId));
+            return core_sourceFileInfo(make_fixnum(spi->_FileId));
         }
         SIMPLE_ERROR(BF("Add support for source-file-info for %s") % _rep_(sourceFile));
     };
@@ -158,7 +158,7 @@ namespace core
 #define DOCS_core_sourcePosInfoLineno "sourcePosInfoLineno"
     Fixnum_sp core_sourcePosInfoLineno(SourcePosInfo_sp info)
     {
-	return Fixnum_O::create(clasp_sourcePosInfo_lineno(info));
+	return make_fixnum(clasp_sourcePosInfo_lineno(info));
     }
 
     uint clasp_sourcePosInfo_column(SourcePosInfo_sp info)
@@ -171,7 +171,7 @@ namespace core
 #define DOCS_core_sourcePosInfoColumn "sourcePosInfoColumn"
     Fixnum_sp core_sourcePosInfoColumn(SourcePosInfo_sp info)
     {
-	return Fixnum_O::create(clasp_sourcePosInfo_column(info));
+	return make_fixnum(clasp_sourcePosInfo_column(info));
     }
 
 };
@@ -238,9 +238,9 @@ namespace core
             if ( cl_consp(obj) ) {
 		T_sp tspi = _lisp->sourceDatabase().as<SourceManager_O>()->lookupSourcePosInfo(obj);
 		if ( SourcePosInfo_sp spi = tspi.asOrNull<SourcePosInfo_O>() ) {
-		    SourceFileInfo_sp sfi = core_sourceFileInfo(Fixnum_O::create(spi->fileHandle()));
-		    Fixnum_sp fnlineno = Fixnum_O::create(spi->_Lineno);
-		    Fixnum_sp fncolumn = Fixnum_O::create(spi->_Column);
+		    SourceFileInfo_sp sfi = core_sourceFileInfo(make_fixnum(spi->fileHandle()));
+		    Fixnum_sp fnlineno = make_fixnum(spi->_Lineno);
+		    Fixnum_sp fncolumn = make_fixnum(spi->_Column);
 		    Integer_sp fnfilepos = Integer_O::create((size_t)spi->_Filepos);
 		    return Values(sfi,fnfilepos,fnlineno,fncolumn);
 		}
@@ -567,7 +567,7 @@ namespace core
     void SourceManager_O::initialize()
     {
         this->Base::initialize();
-	//        this->_SourcePosInfo = core_makeWeakKeyHashTable(Fixnum_O::create(1024));
+	//        this->_SourcePosInfo = core_makeWeakKeyHashTable(make_fixnum(1024));
 	//	printf("%s:%d>>%s  WARNING:   SourceManager uses a regular hash table - this will gobble memory\n", __FILE__, __LINE__, __FUNCTION__ );
 #ifdef USE_WEAK_HASH_TABLE_FOR_SOURCE_POS_INFO
 	this->_SourcePosInfo = WeakKeyHashTable_O::create();

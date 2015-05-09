@@ -237,7 +237,7 @@ namespace core {
 	static T_sp append(List_sp x, List_sp y);
     public:
 	/*! Recursively hash the car and cdr parts - until the HashGenerator fills up */
-	void sxhash(HashGenerator& hg) const;
+	void sxhash_(HashGenerator& hg) const;
 
 	/*! Depth first search to find a Cons with ParsePos information */
 	virtual List_sp walkToFindParsePos() const;

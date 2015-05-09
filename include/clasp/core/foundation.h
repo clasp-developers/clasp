@@ -519,6 +519,8 @@ namespace core
     class Pointer_O;
     class Vector_O;
     class VectorObjects_O;
+    class Number_O;
+    class Integer_O;
     class LoadTimeValues_O;
     /* AMS pool classes */
     class Symbol_O;

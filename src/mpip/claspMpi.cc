@@ -355,7 +355,7 @@ namespace mpip
 	arch->parseFromStream(sis);
 	core::T_sp obj = arch->get(KW("only"));
 //    free(buffer);
-	return Values(obj,core::Fixnum_O::create(this->_Source),core::Fixnum_O::create(this->_Tag));
+	return Values(obj,core::make_fixnum(this->_Source),core::make_fixnum(this->_Tag));
 #else
 	return _Nil<T_O>();
 #endif
@@ -393,8 +393,8 @@ namespace mpip
 	SYMBOL_EXPORT_SC_(MpiPkg,_PLUS_anySource_PLUS_);
 	SYMBOL_EXPORT_SC_(MpiPkg,_PLUS_anyTag_PLUS_);
 	core::Symbol_sp anySource = _lisp->internWithPackageName(MpiPkg,"ANY_SOURCE");
-	mpip::_sym__PLUS_anySource_PLUS_->defconstant(core::Fixnum_O::create(boost::mpi::any_source));
-	mpip::_sym__PLUS_anyTag_PLUS_->defconstant(core::Fixnum_O::create(boost::mpi::any_tag));
+	mpip::_sym__PLUS_anySource_PLUS_->defconstant(core::make_fixnum(boost::mpi::any_source));
+	mpip::_sym__PLUS_anyTag_PLUS_->defconstant(core::make_fixnum(boost::mpi::any_tag));
 	SYMBOL_EXPORT_SC_(MpiPkg,STARworldSTAR);
 	Mpi_sp world = Mpi_O::mpiCommWorld();
 	_sym_STARworldSTAR->defparameter(world);

@@ -338,7 +338,7 @@ namespace core
 	if ( IS_SYMBOL_UNDEFINED(mc->className()) ) return;
 	//	printf("%s:%d accumulateSuperClasses of: %s\n", __FILE__, __LINE__, _rep_(mc->className()).c_str() );
 	if ( supers->contains(mc) ) return;
-	Fixnum_sp arraySuperLength = Fixnum_O::create(arrayedSupers->length());
+	Fixnum_sp arraySuperLength = make_fixnum(arrayedSupers->length());
         supers->setf_gethash(mc,arraySuperLength);
 	arrayedSupers->vectorPushExtend(mc);
 	List_sp directSuperclasses = mc->directSuperclasses();

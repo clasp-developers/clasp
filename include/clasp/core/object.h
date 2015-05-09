@@ -237,6 +237,8 @@ namespace core
 
 
 
+
+
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
@@ -364,7 +366,6 @@ template <class T_Base1, class T_Base2>
 namespace core
 {
 
-
     class KeyValueMapper
     {
     public:
@@ -379,10 +380,10 @@ namespace core
 	static const int MaxParts = 32;
     private:
 	int    	_NextPartIndex;
-	uint	_Parts[MaxParts];
+	Fixnum	_Parts[MaxParts];
     public:
 	HashGenerator() : _NextPartIndex(0) {};
-	bool addPart(uint part)
+	bool addPart(Fixnum part)
 	{
 	    if ( this->_NextPartIndex >= MaxParts ) return false;
 	    this->_Parts[this->_NextPartIndex] = part;
@@ -434,6 +435,8 @@ namespace core
 
 	void hashObject(T_sp obj);
     };
+
+
 
 
 
@@ -560,7 +563,7 @@ namespace core
 	/*! Return a deep copy of the object */
 	virtual T_sp deepCopy() const;
     public:
-	virtual void sxhash(HashGenerator& hg) const;
+	virtual void sxhash_(HashGenerator& hg) const;
     public:
 
 
@@ -809,6 +812,22 @@ namespace core
 	 */
 	virtual T_sp oGetReference(core::ObjRef_sp ref) { return _Nil<T_O>(); };
 
+    };
+
+
+
+    inline void clasp_sxhash(T_sp obj, HashGenerator& hg) {
+	if ( obj.fixnump() ) {
+	    hg.addPart(obj.unsafe_fixnum());
+	    return;
+	} else if ( obj.single_floatp() ) {
+	    hg.addPart(std::abs(::floor(obj.unsafe_single_float())));
+	    return;
+	} else if ( obj.characterp() ) {
+	    hg.addPart(obj.unsafe_character());
+	    return;
+	}
+	obj->sxhash_(hg);
     };
 
 

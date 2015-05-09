@@ -142,7 +142,7 @@ namespace core
 	    T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
 	    if (circle_counter.nilp() ) {
 		HashTable_sp hash = af_make_hash_table(cl::_sym_eq,
-						       Fixnum_O::create(1024),
+						       make_fixnum(1024),
 						       _lisp->rehashSize(),
 						       _lisp->rehashThreshold() );
 		DynamicScopeManager scope;

@@ -410,7 +410,7 @@ namespace core
 #ifdef USE_REFCOUNT
     void testContainers()
     {
-        Fixnum_sp fn = Fixnum_O::create(1);
+        Fixnum_sp fn = make_fixnum(1);
         printf("%s:%d  fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.raw_(), fn->referenceCount() );
         gctools::Vec0<T_sp> container;
         container.push_back(fn);
@@ -662,8 +662,8 @@ namespace core
 	    this->_Roots._RehashThreshold = DoubleFloat_O::create(0.9);
 	    this->_Roots._ImaginaryUnit = Complex_O::create(0.0,1.0);
 	    this->_Roots._ImaginaryUnitNegative = Complex_O::create(0.0,-1.0);
-	    this->_Roots._PlusHalf = Ratio_O::create(Fixnum_O::create(1),Fixnum_O::create(2));
-	    this->_Roots._MinusHalf = Ratio_O::create(Fixnum_O::create(-1),Fixnum_O::create(2));
+	    this->_Roots._PlusHalf = Ratio_O::create(make_fixnum(1),make_fixnum(2));
+	    this->_Roots._MinusHalf = Ratio_O::create(make_fixnum(-1),make_fixnum(2));
 	    this->_Roots._SingleFloatOne = SingleFloat_O::create(1.0);
 	    this->_Roots._DoubleFloatOne = DoubleFloat_O::create(1.0);
 	    this->_Roots._SingleFloatMinusZero = SingleFloat_O::create(-0.0);
@@ -1887,7 +1887,7 @@ namespace core
     {_G();
 	string command = cmd->get();
 	int ret = system(command.c_str());
-	core::Fixnum_sp iret = core::Fixnum_O::create(ret);
+	core::Fixnum_sp iret = core::make_fixnum(ret);
 	return(Values(iret));
     }
 
@@ -2116,7 +2116,7 @@ namespace core
 #define DOCS_af_mpi_rank "Return the mpi_rank or 0 if mpi is disabled"
     T_mv af_mpi_rank()
     {_G();
-	return(Values(Fixnum_O::create(_lisp->mpiRank())));
+	return(Values(make_fixnum(_lisp->mpiRank())));
     }
 
 
@@ -2135,7 +2135,7 @@ namespace core
 #define DOCS_af_mpi_size "Return mpi_size or 0 if mpi is not enabled"
     T_mv af_mpi_size()
     {_G();
-	return(Values(Fixnum_O::create(_lisp->mpiSize())));
+	return(Values(make_fixnum(_lisp->mpiSize())));
     }
 
 
@@ -2450,7 +2450,7 @@ namespace core
     T_mv af_sourceLineColumn()
     {_G();
 	InvocationHistoryFrame* frame = _lisp->invocationHistoryStack().top();
-	return Values(Fixnum_O::create(frame->lineno()),Fixnum_O::create(frame->column()));
+	return Values(make_fixnum(frame->lineno()),make_fixnum(frame->column()));
     }
 
 
@@ -2779,7 +2779,7 @@ extern "C"
 	    core_lowLevelBacktrace();
 	}
 	++nestedErrorDepth;
-	DynamicScopeManager scope(_sym_STARnestedErrorDepthSTAR,Fixnum_O::create(nestedErrorDepth));
+	DynamicScopeManager scope(_sym_STARnestedErrorDepthSTAR,make_fixnum(nestedErrorDepth));
 	if ( _sym_universalErrorHandler->fboundp() )
 	{
 	    Function_sp fn = _sym_universalErrorHandler->symbolFunction();
@@ -3520,7 +3520,7 @@ extern "C"
             this->_SourceFileIndices[fileName] = idx;
             SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName,idx,sourceDebugNamestring,sourceDebugOffset,useLineno);
             this->_Roots._SourceFiles.push_back(sfi);
-            return Values(sfi,Fixnum_O::create(idx));
+            return Values(sfi,make_fixnum(idx));
         }
 	SourceFileInfo_sp sfi = this->_Roots._SourceFiles[it->second];
 	if ( sourceDebugNamestring.notnilp() ) {
@@ -3528,7 +3528,7 @@ extern "C"
 	    sfi->_SourceDebugOffset = sourceDebugOffset;
 	    sfi->_TrackLineno = useLineno;
 	}
-        return Values(sfi,Fixnum_O::create(it->second));
+        return Values(sfi,make_fixnum(it->second));
     }
 
 

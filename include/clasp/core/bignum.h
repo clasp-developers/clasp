@@ -84,7 +84,7 @@ namespace core
 	    return b;
 	};
     public:
-	NumberType number_type() const { return number_Bignum;};
+	NumberType number_type_() const { return number_Bignum;};
 
 
 	mpz_class& ref() { return this->_value;};
@@ -96,7 +96,7 @@ namespace core
 
 	virtual void increment() {++this->_value;};
 	virtual void decrement() {--this->_value;};
-	virtual Number_sp copy() const;
+	//virtual Number_sp copy() const;
 	string description() const { stringstream ss; ss << this->_value;return ss.str();};
 	void set(int val) { this->_value = val; };
 	void setFixnum(gctools::Fixnum val) { this->_value = val; };
@@ -107,22 +107,22 @@ namespace core
 	int sign() const { return this->_value > 0 ? 1 : (this->_value < 0 ? -1 : 0 ); };
 
 
-	virtual bool zerop() const {return((this->_value == 0));}
+	virtual bool zerop_() const {return((this->_value == 0));}
 	virtual bool plusp_() const {return((this->_value > 0));}
 	virtual bool minusp_() const {return((this->_value < 0));}
 
-	virtual Number_sp oneMinus() const {
+	virtual Number_sp oneMinus_() const {
 	    return Integer_O::create(this->_value-1);
 	}
-	virtual Number_sp onePlus() const {
+	virtual Number_sp onePlus_() const {
 	    return Integer_O::create(this->_value+1);
 	}
 
-	virtual int bit_length() const;
+	virtual int bit_length_() const;
 
 	/*! Return the value shifted by BITS bits.
 	  If BITS < 0 shift right, if BITS >0 shift left. */
-	Integer_sp shift(int bits) const;
+	Integer_sp shift_(int bits) const;
 
 	//	virtual	bool	eqn(T_sp obj) const;
 	virtual	bool	eql_(T_sp obj) const;
@@ -133,16 +133,17 @@ namespace core
 	virtual	string	valueAsString() const { stringstream ss; ss<<this->_value;return ss.str();};
 	virtual	void	setFromString( const string& strVal );
 
-	virtual gc::Fixnum as_int() const;
-	virtual uint64_t as_uint64() const;
+	virtual gc::Fixnum as_int_() const;
+	virtual uint64_t as_uint64_() const;
 	string as_uint64_string() const;
-	virtual Bignum as_mpz() const;
-	virtual LongLongInt as_LongLongInt() const;
-	virtual float as_float() const;
-	virtual double as_double() const;
-	virtual LongFloat as_long_float() const;
+	virtual Bignum as_mpz_() const;
+	virtual LongLongInt as_LongLongInt_() const;
+	virtual unsigned long long as_unsigned_long_long_() const;
+	virtual float as_float_() const;
+	virtual double as_double_() const;
+	virtual LongFloat as_long_float_() const;
 
-	void sxhash(HashGenerator& hg) const;
+	void sxhash_(HashGenerator& hg) const;
 
 	virtual bool evenp_() const { return (mpz_get_ui(this->_value.get_mpz_t())&1)==0;};
 	virtual bool oddp_() const { return (mpz_get_ui(this->_value.get_mpz_t())&1)!=0;};
@@ -209,7 +210,7 @@ namespace core
     }
 
     inline double _brcl_big_to_double(Bignum_sp a) {
-	return a->as_double();
+	return a->as_double_();
     }
 
     void clasp_big_register_free(Bignum_sp x);

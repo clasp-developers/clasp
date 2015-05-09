@@ -74,7 +74,7 @@ namespace core {
 	Fixnum_sp fne = mv_f.valueGet(1).as<Fixnum_O>();
 	Fixnum e = clasp_fixnum(fne), min_e;
 	bool limit_f = 0;
-	switch (brcl_t_of(number)) {
+	switch (clasp_t_of(number)) {
 	case number_SingleFloat:
 	    min_e = FLT_MIN_EXP;
 	    limit_f = (number.as<SingleFloat_O>()->get() ==
@@ -96,7 +96,7 @@ namespace core {
 	}
 	approx->low_ok = approx->high_ok = clasp_evenp(f);
 	if (e > 0) {
-	    Fixnum_sp zz(Fixnum_O::create(1));
+	    Fixnum_sp zz(make_fixnum(1));
 	    Real_sp be = EXPT_RADIX(e);
 	    if (limit_f) {
 		Real_sp be1 = brcl_times(be, brcl_make_fixnum(FLT_RADIX)).as<Real_O>();
@@ -209,7 +209,7 @@ namespace core {
 	    Real_sp l = brcl_make_fixnum(1);
 	    while (brcl_lower(brcl_times(approx->s, l),
 			      brcl_plus(approx->r, approx->mp))) {
-		k = brcl_one_plus(k).as<Real_O>();
+		k = clasp_one_plus(k).as<Real_O>();
 		l = brcl_times(l, PRINT_BASE).as<Real_O>();
 	    }
 	    position = brcl_minus(k, position).as<Real_O>();
@@ -219,7 +219,7 @@ namespace core {
 		Real_sp e3 = cl_expt(PRINT_BASE, k).as<Real_O>(); 
 		if (brcl_greatereq(brcl_plus(approx->r, brcl_times(approx->s, e1)),
 				   brcl_times(approx->s, e2)))
-		    position = brcl_one_minus(position).as<Real_O>();
+		    position = clasp_one_minus(position).as<Real_O>();
 	    }
         }
         {

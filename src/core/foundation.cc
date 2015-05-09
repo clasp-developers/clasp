@@ -980,7 +980,7 @@ namespace core
 	Package_sp pkg = _lisp->findPackage(packageName,true).as<Package_O>();
 	ChangePackage changePackage(pkg);
         Str_sp ss = Str_O::create(args);
-	Stream_sp str = cl_make_string_input_stream(ss,Fixnum_O::create(0),_Nil<Fixnum_O>());
+	Stream_sp str = cl_make_string_input_stream(ss,make_fixnum(0),_Nil<Fixnum_O>());
 	Reader_sp reader = Reader_O::create(str);
 	T_sp osscons = reader->primitive_read(true,_Nil<T_O>(),false);
 	List_sp sscons = osscons;
@@ -994,7 +994,7 @@ namespace core
 	Package_sp pkg = _lisp->findPackage(packageName,true).as<Package_O>();
 	ChangePackage changePackage(pkg);
         Str_sp ss = Str_O::create(declarestring);
-	Stream_sp str = cl_make_string_input_stream(ss,Fixnum_O::create(0),_Nil<T_O>());
+	Stream_sp str = cl_make_string_input_stream(ss,make_fixnum(0),_Nil<T_O>());
 	Reader_sp reader = Reader_O::create(str);
 	List_sp sscons = reader->primitive_read(true,_Nil<T_O>(),false);
 	return sscons;
@@ -1661,7 +1661,7 @@ namespace core
 
     T_sp lisp_createFixnum(int fn)
     {_G();
-	return Fixnum_O::create(fn);
+	return make_fixnum(fn);
     }
 
     SourcePosInfo_sp lisp_createSourcePosInfo(const string& fileName, size_t filePos, int lineno )

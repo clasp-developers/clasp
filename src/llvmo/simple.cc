@@ -39,6 +39,6 @@ THE SOFTWARE.
 
 int main(int argc, char* argv[] )
 {	// Do not touch debug log until after MPI init
-    core::Fixnum_sp fn = core::Fixnum_O::create(1234);
+    core::Fixnum_sp fn = core::make_fixnum(1234);
     printf("in main: %s\n", fn->__repr__().c_str());
 }

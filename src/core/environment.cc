@@ -141,7 +141,7 @@ namespace core
         int index = 0;
         Function_sp func;
         if ( Environment_O::clasp_findFunction(env,name,depth,index,func) ) {
-            return Values(_lisp->_true(),func,Fixnum_O::create(depth),Fixnum_O::create(index));
+            return Values(_lisp->_true(),func,make_fixnum(depth),make_fixnum(index));
         }
         return Values(_Nil<T_O>());
     };
@@ -155,7 +155,7 @@ namespace core
         int index = 0;
         Function_sp func;
         if ( Environment_O::clasp_findMacro(env,name,depth,index,func) ) {
-            return Values(_lisp->_true(),func,Fixnum_O::create(depth),Fixnum_O::create(index));
+            return Values(_lisp->_true(),func,make_fixnum(depth),make_fixnum(index));
         }
         return Values(_Nil<T_O>());
     };
@@ -443,6 +443,12 @@ namespace core
 	return sout.str();
     }
 
+    void Environment_O::dump()
+    {
+	stringstream sout;
+	this->_environmentStackFill(1,sout);
+	printf("%s:%d Dumping environment\n%s\n", __FILE__, __LINE__, sout.str().c_str());
+    }
 
     List_sp Environment_O::clasp_gather_metadata(T_sp env, Symbol_sp key)
     {
@@ -576,7 +582,7 @@ namespace core
 	{
 	    ss << (BF("--------------------------- %20s :id %5d -----") % this->_instanceClass()->classNameAsString() % this->_EnvId ).str() << std::endl;
 	    tab += _sym_STARenvironmentPrintingTabIncrementSTAR->symbolValue().as<Fixnum_O>()->get();
-	    Fixnum_sp fntab = Fixnum_O::create(tab);
+	    Fixnum_sp fntab = make_fixnum(tab);
 	    DynamicScopeManager scope(_sym_STARenvironmentPrintingTabSTAR,fntab);
 	    ss <<this->summaryOfContents();
 	    if ( this->getParentEnvironment().notnilp() )
@@ -834,7 +840,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	{
 	    switch (valueKind) {
 	    case lexicalValue:
-		return Cons_O::createList(ext::_sym_lexicalVar,sym,Fixnum_O::create(depth),Fixnum_O::create(index));
+		return Cons_O::createList(ext::_sym_lexicalVar,sym,make_fixnum(depth),make_fixnum(index));
 #if 0
 	    case stackValue:
 		return Cons_O::createList(ext::_sym_stackVar,sym,value);
@@ -860,9 +866,9 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	if (this->findTag(tag,depth,index,interFunction,tagbodyEnv))
 	{
 	    if ( interFunction ) {
-		return Cons_O::createList(_sym_dynamicGo,Fixnum_O::create(depth),Fixnum_O::create(index));
+		return Cons_O::createList(_sym_dynamicGo,make_fixnum(depth),make_fixnum(index));
 	    } else {
-		return Cons_O::createList(_sym_localGo,Fixnum_O::create(depth),Fixnum_O::create(index),tagbodyEnv);
+		return Cons_O::createList(_sym_localGo,make_fixnum(depth),make_fixnum(index),tagbodyEnv);
 	    }
 	}
 	SIMPLE_ERROR(BF("Could not find tag %s") % _rep_(tag) );
@@ -877,7 +883,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	Function_sp value;
 	if ( this->findFunction(functionName,depth,index,value) )
 	{
-	    return Cons_O::createList(_sym_lexicalFunction,functionName,Fixnum_O::create(depth),Fixnum_O::create(index));
+	    return Cons_O::createList(_sym_lexicalFunction,functionName,make_fixnum(depth),make_fixnum(index));
 	}
 	// If the function was not lexical then it is automatically special
 	return Cons_O::create(_sym_globalFunction,functionName);
@@ -1305,7 +1311,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	    return;
 #endif
 	}
-        this->_SymbolIndex->hash_table_setf_gethash(sym,Fixnum_O::create(idx));
+        this->_SymbolIndex->hash_table_setf_gethash(sym,make_fixnum(idx));
     }
 
     void ValueEnvironment_O::defineSpecialBinding(Symbol_sp sym)
@@ -1319,7 +1325,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	    }
 	    return;
 	}
-	this->_SymbolIndex->hash_table_setf_gethash(sym,Fixnum_O::create(SPECIAL_TARGET));
+	this->_SymbolIndex->hash_table_setf_gethash(sym,make_fixnum(SPECIAL_TARGET));
     }
 
 
@@ -1491,7 +1497,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	{
 	    SIMPLE_ERROR(BF("The symbol[%s] is already in the environment") % _rep_(sym) );
 	}
-	this->_SymbolIndex->hash_table_setf_gethash(sym,Fixnum_O::create(idx));
+	this->_SymbolIndex->hash_table_setf_gethash(sym,make_fixnum(idx));
 	this->_ActivationFrame->set_entry(idx,obj);
 	return obj;
     }
@@ -1667,7 +1673,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     {_G();
 	ASSERT(form.notnilp());
 	int nextIdx = this->_FunctionIndices->hashTableCount();
-	this->_FunctionIndices->hash_table_setf_gethash(functionName,Fixnum_O::create(nextIdx));
+	this->_FunctionIndices->hash_table_setf_gethash(functionName,make_fixnum(nextIdx));
 	this->_FunctionFrame->set_entry(nextIdx,form);
 	return nextIdx;
     }
@@ -2147,7 +2153,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     {_OF();
 	ASSERTF(this->_Tags->find(tag).nilp(),BF("The tag[%s] has already been defined in this tagbody"));
 	int index = this->_TagCode.size();
-	this->_Tags->hash_table_setf_gethash(tag,Fixnum_O::create(index));
+	this->_Tags->hash_table_setf_gethash(tag,make_fixnum(index));
 	this->_TagCode.push_back(ip);
 	return index;
     };

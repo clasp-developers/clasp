@@ -54,7 +54,20 @@ THE SOFTWARE.
 #define BRCL_PI2_L 1.57079632679489661923132169163975144l
 
 
+namespace cl {
+    extern core::Symbol_sp _sym_Integer_O;  // CL:INTEGER
+};
+
 namespace core {
+    typedef enum { number_Fixnum=0,
+		   number_Bignum=1,
+		   number_Ratio=2,
+		   number_ShortFloat=3,
+		   number_SingleFloat=4,
+		   number_DoubleFloat=5,
+		   number_LongFloat=6,
+		   number_Complex=7,
+		   number_NUM=8 } NumberType;
 
     template <typename T>
 	gc::smart_ptr<T> immediate_fixnum(Fixnum f)
@@ -66,7 +79,9 @@ namespace core {
 	{
 	    return gc::smart_ptr<T>::make_tagged_single_float(f);
 	};
+
     
+    bool clasp_zerop(Number_sp num);
     bool clasp_plusp(Real_sp num);
     bool clasp_minusp(Real_sp num);
     bool clasp_evenp(Integer_sp num);
@@ -75,8 +90,11 @@ namespace core {
     Number_sp clasp_signum(Number_sp num);
     Number_sp clasp_one_plus(Number_sp num);
     Number_sp clasp_one_minus(Number_sp num);
-	
-    
+    Number_sp clasp_negate(Number_sp num);
+    NumberType clasp_t_of(Number_sp num);
+    Integer_sp clasp_shift(Integer_sp num, int bits);
+    int clasp_integer_length(Integer_sp x);
+
 };
 
 namespace core
@@ -86,15 +104,6 @@ namespace core
     typedef double LongFloat;
 
 
-    typedef enum { number_Fixnum=0,
-		   number_Bignum=1,
-		   number_Ratio=2,
-		   number_ShortFloat=3,
-		   number_SingleFloat=4,
-		   number_DoubleFloat=5,
-		   number_LongFloat=6,
-		   number_Complex=7,
-		   number_NUM=8 } NumberType;
 
 
     Number_sp contagen_add(Number_sp na, Number_sp nb);
@@ -117,12 +126,12 @@ namespace core
 	static Number_sp create(uint val);
 //	static Number_sp create(size_t val);
     public:
-	virtual NumberType number_type() const {SUBIMP();};
-	int number_type_int() const { return (int)(this->number_type());};
-	virtual	string	valueAsString() const;
-	virtual Number_sp copy() const { _OF(); SUBCLASS_MUST_IMPLEMENT();}
-	virtual T_sp deepCopy() const { return this->copy();};
-	virtual T_sp shallowCopy() const { return this->copy();};
+	virtual NumberType number_type_() const {SUBIMP();};
+	int number_type_int() const { return (int)(clasp_t_of(this->asSmartPtr()));;};
+	//	virtual	string	valueAsString_() const;
+	//	virtual Number_sp copy() const { _OF(); SUBCLASS_MUST_IMPLEMENT();}
+	//	virtual T_sp deepCopy() const { return this->copy();};
+	//virtual T_sp shallowCopy() const { return this->copy();};
 	virtual Number_sp signum_() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual Number_sp reciprocal() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual Number_sp abs_() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
@@ -137,13 +146,13 @@ namespace core
 	virtual Number_sp sqrt() const {SUBIMP();};
 
 	/*! Add one to the number */
-	virtual Number_sp onePlus() const {SUBIMP();};
+	virtual Number_sp onePlus_() const {SUBIMP();};
 	/*! Subtrace one from the number */
-	virtual Number_sp oneMinus() const {SUBIMP();};
+	virtual Number_sp oneMinus_() const {SUBIMP();};
 
 	// math routines shared by all numbers
-	virtual bool zerop() const {SUBIMP();}
-	virtual Number_sp negate() const { SUBIMP(); };
+	virtual bool zerop_() const {SUBIMP();}
+	virtual Number_sp negate_() const { SUBIMP(); };
 
 
 	virtual Number_sp exp() const { SUBIMP(); };
@@ -154,13 +163,13 @@ namespace core
 	virtual	bool operator>(T_sp obj) const;
 	virtual	bool operator>=(T_sp obj) const;
 
-	virtual gc::Fixnum as_int() const { SUBIMP();}
-        virtual uint as_uint() const {SUBIMP();}
-	virtual Bignum as_mpz() const { SUBIMP();}
-	virtual LongLongInt as_LongLongInt() const {SUBIMP();};
-	virtual float as_float() const {SUBIMP();};
-	virtual double as_double() const {SUBIMP();}
-	virtual LongFloat as_long_float() const {SUBIMP();};
+	virtual gc::Fixnum as_int_() const { SUBIMP();}
+        virtual uint as_uint_() const {SUBIMP();}
+	virtual Bignum as_mpz_() const { SUBIMP();}
+	virtual LongLongInt as_LongLongInt_() const {SUBIMP();};
+	virtual float as_float_() const {SUBIMP();};
+	virtual double as_double_() const {SUBIMP();}
+	virtual LongFloat as_long_float_() const {SUBIMP();};
 
 
 	virtual Number_sp conjugate() const {SUBIMP();};
@@ -174,7 +183,7 @@ namespace core
 
 
 
-	virtual void sxhash(HashGenerator& hg) const {SUBIMP();};
+	virtual void sxhash_(HashGenerator& hg) const {SUBIMP();};
 	DEFAULT_CTOR_DTOR(Number_O);
     };
 
@@ -187,7 +196,7 @@ namespace core
 	LISP_CLASS(core,ClPkg,Real_O,"real");
 
     public:
-	virtual double as_double() const {SUBIMP();};
+	virtual double as_double_() const {SUBIMP();};
 
 	// functions shared by all Real
 	virtual bool plusp_() const {SUBIMP();};
@@ -210,7 +219,7 @@ namespace core
 	static Rational_sp create(Integer_sp num, Integer_sp denom);
     public:
 
-	virtual gc::Fixnum as_int() const {SUBIMP();};
+	virtual gc::Fixnum as_int_() const {SUBIMP();};
 
 	virtual Number_sp log1() const;
 	virtual Number_sp log1p() const;
@@ -250,6 +259,7 @@ namespace core
 	//	static Integer_sp create(uint v);
 #ifndef _TARGET_OS_LINUX
 	static Integer_sp create(uint64_t v);
+
 #endif
 	static Integer_sp create(float f);
 	static Integer_sp create(double f);
@@ -259,13 +269,14 @@ namespace core
 	virtual bool evenp_() const { SUBIMP(); };
 	virtual bool oddp_() const { SUBIMP(); };
 
-	virtual int bit_length() const {SUBIMP();};
+	virtual int bit_length_() const {SUBIMP();};
 
 	/*! Return the value shifted by BITS bits.
 	  If BITS < 0 shift right, if BITS >0 shift left. */
-	virtual Integer_sp shift(int bits) const {SUBIMP();};
+	virtual Integer_sp shift_(int bits) const {SUBIMP();};
 
-	virtual uint64_t as_uint64() const;
+	virtual uint64_t as_uint64_() const;
+	virtual unsigned long long  as_unsigned_long_long_() const {SUBIMP();};
 	virtual void __write__(T_sp strm) const;
         Integer_O() {};
         virtual ~Integer_O();
@@ -282,7 +293,12 @@ template <> struct gctools::GCInfo<core::Fixnum_O> {
 };
 
 namespace core {
+
     SMART(Fixnum);
+
+    Fixnum_sp make_fixnum(gc::Fixnum x);
+    gc::Fixnum get_fixnum(Fixnum_sp x);
+
     class Fixnum_O : public Integer_O
     {
 	LISP_BASE1(Integer_O);
@@ -294,21 +310,23 @@ namespace core {
     private:
 	gctools::Fixnum	_Value;
     public:
-	static Fixnum_sp create(gctools::Fixnum nm);
+	static Fixnum_sp createFn(gctools::Fixnum nm);
     public:
-	static int number_of_bits();
+	//	static int number_of_bits();
     public:
-	NumberType number_type() const { return number_Fixnum;};
-	virtual Number_sp copy() const;
-	string __repr__() const;
-	void set(gc::Fixnum val) { this->_Value = val; };
 	gc::Fixnum get() const { return this->_Value; };
-	Number_sp abs_() const { return Fixnum_O::create(std::abs(this->_Value)); };
+
+
+    public:
+	NumberType number_type_() const { return number_Fixnum;};
+	//	virtual Number_sp copy() const;
+	string __repr__() const;
+	Number_sp abs_() const { return make_fixnum(std::abs(this->_Value)); };
 	Number_sp signum_() const;
 
 	// math routines shared by all numbers
-	virtual bool zerop() const { return this->_Value == 0; };
-	virtual Number_sp negate() const { return Fixnum_O::create(-this->_Value);};
+	virtual bool zerop_() const { return this->_Value == 0; };
+	virtual Number_sp negate_() const { return make_fixnum(-this->_Value);};
 
 	// Shared by real
 	virtual bool plusp_() const { return this->_Value > 0; };
@@ -316,54 +334,58 @@ namespace core {
 	virtual bool evenp_() const { return !(this->_Value&1); };
 	virtual bool oddp_() const { return (this->_Value&1);};
 
-	//	virtual	bool eqn(T_sp obj) const;
 	virtual	bool eql_(T_sp obj) const;
 
-	virtual Number_sp onePlus() const
+	virtual Number_sp onePlus_() const
 	{
 	    if ( this->_Value == gctools::mostPositiveFixnum) {
 		Bignum bn(this->_Value);
 		bn = bn + 1;
 		return Integer_O::create(bn);
 	    } else {
-		return Fixnum_O::create(this->_Value+1);
+		return make_fixnum(this->_Value+1);
 	    }
 	};
 
-	virtual Number_sp oneMinus() const
+	virtual Number_sp oneMinus_() const
 	{
 	    if ( this->_Value == gctools::mostNegativeFixnum ) {
 		Bignum bn(this->_Value);
 		bn = bn - 1;
 		return Integer_O::create(bn);
 	    } else {
-		return Fixnum_O::create(this->_Value-1);
+		return make_fixnum(this->_Value-1);
 	    }
 	};
 
     public:
-	virtual	string	valueAsString() const { stringstream ss; ss<<this->_Value;return ss.str();};
-	virtual	void	setFromString( const string& strVal ) { this->_Value = atoi(strVal.c_str());};
+	//	virtual	string	valueAsString_() const { stringstream ss; ss<<this->_Value;return ss.str();};
+	//	virtual	void	setFromString( const string& strVal ) { this->_Value = atoi(strVal.c_str());};
 
-	int bit_length() const;
+	int bit_length_() const;
 	/*! Return the value shifted by BITS bits.
 	  If BITS < 0 shift right, if BITS >0 shift left. */
-	Integer_sp shift(int bits) const;
+	Integer_sp shift_(int bits) const;
 
-	string asChar() const;
-	virtual gc::Fixnum as_int() const;
-	virtual uint64_t as_uint64() const;
-	virtual uint as_uint() const;
-	virtual Bignum as_mpz() const;
-	virtual LongLongInt as_LongLongInt() const;
-	virtual float as_float() const;
-	virtual double as_double() const;
-	virtual LongFloat as_long_float() const;
+	string asChar_() const;
+	virtual gc::Fixnum as_int_() const;
+	virtual uint64_t as_uint64_() const;
+	virtual uint as_uint_() const;
+	virtual Bignum as_mpz_() const;
+	virtual LongLongInt as_LongLongInt_() const;
+	virtual float as_float_() const;
+	virtual double as_double_() const;
+	virtual LongFloat as_long_float_() const;
+	virtual unsigned long long as_unsigned_long_long_() const;
+	void sxhash_(HashGenerator& hg) const;
 
-	void sxhash(HashGenerator& hg) const;
-
-	DEFAULT_CTOR_DTOR(Fixnum_O);
+    Fixnum_O(gc::Fixnum f) : _Value(f) {};
+    Fixnum_O() : _Value(0) {};
     };
+
+
+    inline Fixnum_sp make_fixnum(gc::Fixnum x) {return Fixnum_O::createFn(x);};
+    inline gc::Fixnum get_fixnum(Fixnum_sp x) {return x->get(); };
 };
 
 namespace core {
@@ -410,28 +432,28 @@ namespace core {
 	    return sf;
 	};
     public:
-	NumberType number_type() const { return number_ShortFloat;};
+	NumberType number_type_() const { return number_ShortFloat;};
 	float get() const {return this->_Value;};
-	void sxhash(HashGenerator& hg) const;
-	virtual Number_sp copy() const;
+	void sxhash_(HashGenerator& hg) const;
+	//	virtual Number_sp copy() const;
 	Number_sp signum_() const;
 	string __repr__() const;
 	Number_sp abs_() const;
 	bool isnan() const {return this->_Value != this->_Value;}; // NaN is supposed to be the only value that != itself!!!!
     public:
-	virtual	string	valueAsString() const;
-	virtual	void	setFromString( const string& strVal );
+	//	virtual	string	valueAsString_() const;
+	//	virtual	void	setFromString( const string& strVal );
 	//	virtual	bool	eqn(T_sp obj) const;
 	virtual	bool	eql_(T_sp obj) const;
 	virtual Number_sp reciprocal() const;
 
 
 	// math routines shared by all numbers
-	virtual bool zerop() const { return this->_Value == 0.0; };
-	virtual Number_sp negate() const { return ShortFloat_O::create(-this->_Value);};
+	virtual bool zerop_() const { return this->_Value == 0.0; };
+	virtual Number_sp negate_() const { return ShortFloat_O::create(-this->_Value);};
 
-	virtual Number_sp onePlus() const { return ShortFloat_O::create(this->_Value+1.0);};
-	virtual Number_sp oneMinus() const { return ShortFloat_O::create(this->_Value-1.0);};
+	virtual Number_sp onePlus_() const { return ShortFloat_O::create(this->_Value+1.0);};
+	virtual Number_sp oneMinus_() const { return ShortFloat_O::create(this->_Value-1.0);};
 
 	// shared by real
 	virtual bool plusp_() const { return this->_Value > 0.0; };
@@ -440,9 +462,9 @@ namespace core {
 
 
 
-	virtual float as_float() const;
-	virtual double as_double() const;
-	virtual LongFloat as_long_float() const;
+	virtual float as_float_() const;
+	virtual double as_double_() const;
+	virtual LongFloat as_long_float_() const;
 
 	Integer_sp castToInteger() const;
 
@@ -475,24 +497,24 @@ namespace core {
 	    return sf;
 	};
     public:
-	NumberType number_type() const { return number_SingleFloat;};
-	void sxhash(HashGenerator& hg) const;
+	NumberType number_type_() const { return number_SingleFloat;};
+	void sxhash_(HashGenerator& hg) const;
 	float get() const { return this->_Value;};
 	string __repr__() const;
-	virtual Number_sp copy() const;
+	//	virtual Number_sp copy() const;
 	Number_sp signum_() const;
 	Number_sp abs_() const;
 	bool isnan() const {return this->_Value != this->_Value;}; // NaN is supposed to be the only value that != itself!!!!
     public:
-	virtual	string	valueAsString() const;
-	virtual	void	setFromString( const string& strVal );
+	//	virtual	string	valueAsString_() const;
+	//	virtual	void	setFromString( const string& strVal );
 	//	virtual	bool	eqn(T_sp obj) const;
 	virtual	bool	eql_(T_sp obj) const;
 	virtual Number_sp reciprocal() const;
 
 	// math routines shared by all numbers
-	virtual bool zerop() const { return this->_Value == 0.0; };
-	virtual Number_sp negate() const { return SingleFloat_O::create(-this->_Value);};
+	virtual bool zerop_() const { return this->_Value == 0.0; };
+	virtual Number_sp negate_() const { return SingleFloat_O::create(-this->_Value);};
 
 	// shared by real
 	virtual bool plusp_() const { return this->_Value > 0.0; };
@@ -502,8 +524,8 @@ namespace core {
 	virtual Number_sp log1p() const;
 	virtual Number_sp sqrt() const;
 
-	virtual Number_sp onePlus() const { return create(this->_Value+1.0);};
-	virtual Number_sp oneMinus() const { return create(this->_Value-1.0);};
+	virtual Number_sp onePlus_() const { return create(this->_Value+1.0);};
+	virtual Number_sp oneMinus_() const { return create(this->_Value-1.0);};
 
 	virtual Number_sp exp() const;
 
@@ -516,9 +538,9 @@ namespace core {
 
 
 
-	virtual float as_float() const;
-	virtual double as_double() const;
-	virtual LongFloat as_long_float() const;
+	virtual float as_float_() const;
+	virtual double as_double_() const;
+	virtual LongFloat as_long_float_() const;
 
 	Integer_sp castToInteger() const;
 
@@ -555,9 +577,9 @@ namespace core {
 	    return v;
 	};
     public:
-	NumberType number_type() const { return number_DoubleFloat;};
-	void sxhash(HashGenerator& hg) const;
-	virtual Number_sp copy() const;
+	NumberType number_type_() const { return number_DoubleFloat;};
+	void sxhash_(HashGenerator& hg) const;
+	//	virtual Number_sp copy() const;
 	string __repr__() const;
 	void set(double val) { this->_Value = val; };
 	double get() const { return this->_Value; };
@@ -565,14 +587,13 @@ namespace core {
 	Number_sp abs_() const { return DoubleFloat_O::create(fabs(this->_Value));};
 	bool isnan() const {return this->_Value != this->_Value;}; // NaN is supposed to be the only value that != itself!!!!
     public:
-	virtual	string	valueAsString() const;
-	virtual	void	setFromString( const string& strVal );
-	///	virtual	bool	eqn(T_sp obj) const;
+	//	virtual	string	valueAsString_() const;
+	//	virtual	void	setFromString( const string& strVal );
 	virtual	bool	eql_(T_sp obj) const;
 
 	// math routines shared by all numbers
-	bool zerop() const { return this->_Value == 0.0; };
-	virtual Number_sp negate() const { return DoubleFloat_O::create(-this->_Value);};
+	bool zerop_() const { return this->_Value == 0.0; };
+	virtual Number_sp negate_() const { return DoubleFloat_O::create(-this->_Value);};
 
 	// Shared by real
 	bool plusp_() const { return this->_Value > 0.0; };
@@ -580,17 +601,17 @@ namespace core {
 
 	virtual Number_sp sqrt() const;
 
-	virtual Number_sp onePlus() const { return create(this->_Value+1.0);};
-	virtual Number_sp oneMinus() const { return create(this->_Value-1.0);};
+	virtual Number_sp onePlus_() const { return create(this->_Value+1.0);};
+	virtual Number_sp oneMinus_() const { return create(this->_Value-1.0);};
 
 
 	virtual Number_sp log1() const;
 	virtual Number_sp log1p() const;
 
 
-	virtual float as_float() const;
-	virtual double as_double() const;
-	virtual LongFloat as_long_float() const;
+	virtual float as_float_() const;
+	virtual double as_double_() const;
+	virtual LongFloat as_long_float_() const;
 
 	Integer_sp castToInteger() const;
 
@@ -638,25 +659,25 @@ namespace core {
 	    return v;
 	};
     public:
-	NumberType number_type() const { return number_LongFloat;};
-	void sxhash(HashGenerator& hg) const;
+	NumberType number_type_() const { return number_LongFloat;};
+	void sxhash_(HashGenerator& hg) const;
 	double get() const { return this->_Value;};
 	LongFloat& ref() { return this->_Value;};
 	string __repr__() const;
-	virtual Number_sp copy() const;
+	//	virtual Number_sp copy() const;
 	Number_sp signum_() const;
 	Number_sp abs_() const;
 	bool isnan() const {return this->_Value != this->_Value;}; // NaN is supposed to be the only value that != itself!!!!
     public:
-	virtual	string	valueAsString() const;
-	virtual	void	setFromString( const string& strVal );
+	//	virtual	string	valueAsString_() const;
+	//	virtual	void	setFromString( const string& strVal );
 	//	virtual	bool	eqn(T_sp obj) const;
 	virtual	bool	eql_(T_sp obj) const;
 
 
 	// math routines shared by all numbers
-	bool zerop() const { return this->_Value == 0.0; };
-	virtual Number_sp negate() const { return LongFloat_O::create(-this->_Value);};
+	bool zerop_() const { return this->_Value == 0.0; };
+	virtual Number_sp negate_() const { return LongFloat_O::create(-this->_Value);};
 
 	// shared by real
 	bool plusp_() const { return this->_Value > 0.0; };
@@ -668,14 +689,14 @@ namespace core {
 
 
 
-	virtual Number_sp onePlus() const { return create(this->_Value+1.0);};
-	virtual Number_sp oneMinus() const { return create(this->_Value-1.0);};
+	virtual Number_sp onePlus_() const { return create(this->_Value+1.0);};
+	virtual Number_sp oneMinus_() const { return create(this->_Value-1.0);};
 
 
 
-	virtual float as_float() const;
-	virtual double as_double() const;
-	virtual LongFloat as_long_float() const;
+	virtual float as_float_() const;
+	virtual double as_double_() const;
+	virtual LongFloat as_long_float_() const;
 
 	Integer_sp castToInteger() const;
 
@@ -732,7 +753,7 @@ namespace core {
 
 
     public:
-	NumberType number_type() const { return number_Complex;};
+	NumberType number_type_() const { return number_Complex;};
 
 	Real_sp real() const { return this->_real;};
 	Real_sp imaginary() const { return this->_imaginary;};
@@ -740,31 +761,31 @@ namespace core {
 
 
 
-	void sxhash(HashGenerator& hg) const;
-	virtual Number_sp copy() const;
+	void sxhash_(HashGenerator& hg) const;
+	//	virtual Number_sp copy() const;
 	string __repr__() const;
 	Number_sp signum_() const;
 	Number_sp abs_() const;
 	bool isnan() const;
     public:
-	virtual	string	valueAsString() const;
-	virtual	void	setFromString( const string& str);
+	//	virtual	string	valueAsString_() const;
+	//	virtual	void	setFromString( const string& str);
 	//	virtual	bool	eqn(T_sp obj) const;
 	virtual	bool	eql_(T_sp obj) const;
 
 
 	// math routines shared by all numbers
-	bool zerop() const { return (this->_real->zerop() && this->_imaginary->zerop());};
+	bool zerop_() const { return (clasp_zerop(this->_real) && clasp_zerop(this->_imaginary));};
 
-	virtual Number_sp negate() const { return Complex_O::create(this->_real->negate().as<Real_O>(),
-								    this->_imaginary->negate().as<Real_O>());};
+	virtual Number_sp negate_() const { return Complex_O::create(clasp_negate(this->_real).as<Real_O>(),
+								     clasp_negate(this->_imaginary).as<Real_O>());};
 
 	virtual Number_sp log1() const;
 	virtual Number_sp log1p() const;
 
-	virtual Number_sp onePlus() const { return create(this->_real->onePlus().as<Real_O>(),
+	virtual Number_sp onePlus_() const { return create(clasp_one_plus(this->_real).as<Real_O>(),
 							  this->_imaginary);};
-	virtual Number_sp oneMinus() const { return create(this->_real->oneMinus().as<Real_O>(),
+	virtual Number_sp oneMinus_() const { return create(clasp_one_minus(this->_real).as<Real_O>(),
 							   this->_imaginary);};
 
 	Number_sp sqrt() const;
@@ -807,10 +828,10 @@ namespace core {
 	static Ratio_sp create(Integer_sp num, Integer_sp denom)
 	{_G();
             GC_ALLOCATE(Ratio_O,v );
-	    if ( denom->as_mpz() < 0 )
+	    if ( denom->as_mpz_() < 0 )
 	    {
-		v->_numerator = num->negate().as<Integer_O>();
-		v->_denominator = denom->negate().as<Integer_O>();
+		v->_numerator = clasp_negate(num).as<Integer_O>();
+		v->_denominator = clasp_negate(denom).as<Integer_O>();
 	    } else
 	    {
 		v->_numerator = num;
@@ -833,7 +854,7 @@ namespace core {
 	}
 
     public:
-	NumberType number_type() const { return number_Ratio;};
+	NumberType number_type_() const { return number_Ratio;};
 
 	Integer_sp numerator() const { return this->_numerator;};
 	Integer_sp denominator() const { return this->_denominator;};
@@ -842,24 +863,23 @@ namespace core {
 	mpz_class numerator_as_mpz() const;
 	mpz_class denominator_as_mpz() const;
 
-	void sxhash(HashGenerator& hg) const;
-	virtual Number_sp copy() const;
+	void sxhash_(HashGenerator& hg) const;
+	//	virtual Number_sp copy() const;
 	string __repr__() const;
 	Number_sp signum_() const;
 	Number_sp abs_() const;
 	bool isnan() const;
     public:
-	virtual	string	valueAsString() const;
-	virtual	void	setFromString( const string& str);
-	//	virtual	bool	eqn(T_sp obj) const;
+	//	virtual	string	valueAsString_() const;
+	void	setFromString( const string& str);
 	virtual	bool	eql_(T_sp obj) const;
 
-	Number_sp onePlus() const { return create(contagen_add(this->_numerator,this->_denominator).as<Integer_O>(),this->_denominator);};
-	Number_sp oneMinus() const { return create(contagen_sub(this->_numerator,this->_denominator).as<Integer_O>(),this->_denominator);};
+	Number_sp onePlus_() const { return create(contagen_add(this->_numerator,this->_denominator).as<Integer_O>(),this->_denominator);};
+	Number_sp oneMinus_() const { return create(contagen_sub(this->_numerator,this->_denominator).as<Integer_O>(),this->_denominator);};
 
-	virtual float as_float() const;
-	virtual double as_double() const;
-	virtual LongFloat as_long_float() const;
+	virtual float as_float_() const;
+	virtual double as_double_() const;
+	virtual LongFloat as_long_float_() const;
 
 	// functions shared by all Real
 
@@ -908,33 +928,6 @@ namespace core {
     };
 
 
-    inline bool brcl_zerop(Number_sp n)
-    {
-	if (n.fixnump()) {
-	    return n.asFixnum() == 0;
-	}
-	ASSERTF(!n.fixnump(),BF("Add support for immediate fixnums"));
-	return n->zerop();
-    }
-
-    inline Number_sp brcl_negate(Number_sp n)
-    {
-	ASSERTF(!n.fixnump(),BF("Add support for immediate fixnums"));
-	return n->negate();
-    }
-
-    inline Number_sp brcl_one_plus(Number_sp x)
-    {
-	ASSERTF(!x.fixnump(),BF("Add support for immediate fixnums"));
-	return x->onePlus();
-    }
-
-    inline Number_sp brcl_one_minus(Number_sp x)
-    {
-	ASSERTF(!x.fixnump(),BF("Add support for immediate fixnums"));
-	return x->oneMinus();
-    }
-
 
 
 
@@ -943,17 +936,9 @@ namespace core {
 
 
 
-    inline int clasp_integer_length(Integer_sp x)
-    {
-	return x->bit_length();
-    }
 
     Integer_sp clasp_ash(Integer_sp x, int bits);
 
-    inline float brcl_to_float(Number_sp x) { return x->as_float(); };
-    inline double brcl_to_double(Number_sp x) { return x->as_double(); };
-    inline LongFloat brcl_to_long_float(Number_sp x) { return x->as_long_float(); };
-    inline LongFloat brcl_to_long_double(Number_sp x) { return x->as_long_float(); };
 
     inline gctools::Fixnum clasp_fixnum(Number_sp x) {
 	return x.as<Fixnum_O>()->get();
@@ -980,7 +965,7 @@ namespace core {
 
     inline Fixnum_sp brcl_make_fixnum(int i)
     {
-	return Fixnum_O::create(i);
+	return make_fixnum(i);
     }
 
     inline Integer_sp _brcl_float_to_integer(float d)
@@ -1023,9 +1008,8 @@ namespace core {
 
 #define brcl_return2(ENV,n1,n2) return Values(n1,n2);
 #define BRCL_REAL_TYPE_P(y) (y.isA<Real_O>())
-    inline NumberType brcl_t_of(Number_sp n) {
-	return n->number_type();
-    }
+
+    
 
 #define BRCL_FIXNUMP(n) (n.isA<Fixnum_O>())
 
@@ -1159,28 +1143,177 @@ namespace core {
     inline Number_sp clasp_one_plus(Number_sp num)
     {
 	if (num.fixnump()) {
-	    num.setRaw_(reinterpret_cast<Number_O*>(reinterpret_cast<gc::Fixnum>(num.raw_()) + reinterpret_cast<gc::Fixnum>(immediate_fixnum<Number_O>(1).raw_())));
+	    return immediate_fixnum<Number_O>(num.unsafe_fixnum() + 1);
 	} else if ( num.single_floatp() ) {
 	    float fl = num.unsafe_single_float();
 	    fl += 1.0;
 	    return immediate_single_float<Number_O>(fl);
 	}
-	return num->onePlus();
+	return num->onePlus_();
     }
 
     inline Number_sp clasp_one_minus(Number_sp num)
     {
 	if (num.fixnump()) {
-	    num.setRaw_(reinterpret_cast<Number_O*>(reinterpret_cast<gc::Fixnum>(num.raw_()) - reinterpret_cast<gc::Fixnum>(immediate_fixnum<Number_O>(1).raw_())));
+	    return immediate_fixnum<Number_O>(num.unsafe_fixnum() - 1);
 	} else if ( num.single_floatp() ) {
 	    float fl = num.unsafe_single_float();
 	    fl -= 1.0;
 	    return immediate_single_float<Number_O>(fl);
 	}
-	return num->oneMinus();
+	return num->oneMinus_();
     }
 
-    
+    inline bool clasp_zerop(Number_sp num)
+    {
+	if (num.fixnump()) {
+	    return num.unsafe_fixnum() == 0;
+	} else if ( num.single_floatp() ) {
+	    float fl = num.unsafe_single_float();
+	    return fl == 0.0;
+	}
+	return num->zerop_();
+    }
+
+
+    inline Number_sp clasp_negate(Number_sp num)
+    {
+	if (num.fixnump()) {
+	    return immediate_fixnum<Number_O>( - num.unsafe_fixnum());
+	} else if ( num.single_floatp() ) {
+	    float fl = num.unsafe_single_float();
+	    fl = - fl;
+	    return immediate_single_float<Number_O>(fl);
+	}
+	return num->negate_();
+    }
+
+
+    inline NumberType clasp_t_of(Number_sp n) {
+	if ( n.fixnump() ) {
+	    return number_Fixnum;
+	} else if ( n.single_floatp() ) {
+	    return number_SingleFloat;
+	}
+	return n->number_type_();
+    }
+
+    inline Integer_sp clasp_shift(Integer_sp n, int bits) {
+	if ( n.fixnump() ) {
+	    if ( bits < 0 ) {
+		Fixnum y = n.unsafe_fixnum();
+		bits = - bits;
+		if ( bits >= gc::fixnum_bits ) {
+		    y = (y < 0 ) ? -1 : 0;
+		} else {
+		    y >>= bits;
+		}
+		return immediate_fixnum<Number_O>(y);
+	    } else {
+		Bignum val(n.unsafe_fixnum());
+		Bignum res;
+		mpz_mul_2exp(res.get_mpz_t(),val.get_mpz_t(),bits);
+		return Integer_O::create(res);
+	    }
+	}
+	return n->shift_(bits);
+    }
+
+
+    inline int clasp_integer_length(Integer_sp x)
+    {
+	if ( x.fixnump() ) {
+	    Fixnum i(x.unsafe_fixnum());
+	    int count;
+	    if ( i < 0 ) i = ~i;
+	    for ( count=0; i && (count<FIXNUM_BITS); i >>= 1, count++ );
+	    return count;
+	}
+	return x->bit_length_();
+    }
+
+    inline int clasp_to_int(Integer_sp x)
+    {
+	if (x.fixnump()) {
+	    Fixnum fn = x.unsafe_fixnum();
+	    if (fn<gc::most_negative_int || fn>=gc::most_positive_int) {
+		TYPE_ERROR(x,Cons_O::createList(cl::_sym_Integer_O,make_fixnum(gc::most_negative_int),make_fixnum(gc::most_positive_int)));
+	    }
+	    return (uint)fn;
+	}
+	return x->as_uint_();
+    }
+
+    inline uint clasp_to_uint(Integer_sp x)
+    {
+	if (x.fixnump()) {
+	    Fixnum fn = x.unsafe_fixnum();
+	    if (fn<0 || fn>=gc::most_positive_uint) {
+		TYPE_ERROR(x,Cons_O::createList(cl::_sym_Integer_O,make_fixnum(0),make_fixnum(gc::most_positive_uint)));
+	    }
+	    return (uint)fn;
+	}
+	return x->as_uint_();
+    }
+
+    inline uint64_t clasp_to_uint64(Integer_sp x)
+    {
+	if (x.fixnump()) {
+	    Fixnum fn = x.unsafe_fixnum();
+	    if (fn>=0 & fn<=gc::most_positive_uint64) {
+		return (uint64_t)fn;
+	    }
+	    TYPE_ERROR(x,Cons_O::createList(cl::_sym_Integer_O,make_fixnum(0),make_fixnum(gc::most_positive_uint64)));
+	}
+	return x->as_uint64_();
+    }
+
+    inline mpz_class clasp_to_mpz(Integer_sp x)
+    {
+	if (x.fixnump()) {
+	    Fixnum fn = x.unsafe_fixnum();
+	    mpz_class z = fn;
+	    return z;
+	} 
+	return x->as_mpz_();
+    }
+
+    inline unsigned long long clasp_to_unsigned_long_long(Integer_sp i)
+    {
+	if ( i.fixnump() ) {
+	    gc::Fixnum f = i.unsafe_fixnum();
+	    if ( f >= 0 && f <= gc::most_positive_unsigned_long_long ) {
+		return f;
+	    }
+	    TYPE_ERROR(i,Cons_O::createList(cl::_sym_Integer_O,make_fixnum(0),Integer_O::create(gc::most_positive_unsigned_long_long)));
+	}
+	return i->as_unsigned_long_long_();
+    };
+
+
+    inline float clasp_to_float(Number_sp x) {
+	if ( x.fixnump() ) {
+	    float d = x.unsafe_fixnum();
+	    return d;
+	} else if ( x.single_floatp() ) {
+	    float d = x.unsafe_single_float();
+	    return d;
+	}
+	return x->as_float_();
+    };
+    inline double clasp_to_double(Number_sp x) {
+	if ( x.fixnump() ) {
+	    double d = x.unsafe_fixnum();
+	    return d;
+	} else if ( x.single_floatp() ) {
+	    double d = x.unsafe_single_float();
+	    return d;
+	}
+	return x->as_double_();
+    };
+    inline LongFloat clasp_to_long_float(Number_sp x) { return x->as_long_float_(); };
+    inline LongFloat clasp_to_long_double(Number_sp x) { return x->as_long_float_(); };
+
 };
 
 

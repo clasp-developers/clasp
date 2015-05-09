@@ -444,7 +444,7 @@ namespace core
 		this->mapVector( [&v] (T_sp pair) {
 			string key = str_get(oCar(pair));
 			Integer_sp ival = oCdr(pair).as<Integer_O>();
-			v[key] = ival->as_int();
+			v[key] = clasp_to_int(ival);
 		    });
 	    }
 	}

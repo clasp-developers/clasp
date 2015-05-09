@@ -330,7 +330,7 @@ extern "C" {
 #define DOCS_af_gotoIhsTop "gotoIhsTop"
         void af_gotoIhsTop()
         {_G();
-            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsTop()));
+            _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(af_ihsTop()));
         };
 	
 
@@ -340,7 +340,7 @@ extern "C" {
         void af_gotoIhsPrev()
         {_G();
             int ihsCur = af_ihsCurrentFrame();
-            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsPrev(ihsCur)));
+            _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(af_ihsPrev(ihsCur)));
         };
 	
 
@@ -350,7 +350,7 @@ extern "C" {
         void af_gotoIhsNext()
         {_G();
             int ihsCur = af_ihsCurrentFrame();
-            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsNext(ihsCur)));
+            _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(af_ihsNext(ihsCur)));
         };
 
 
@@ -362,7 +362,7 @@ extern "C" {
 	    if ( frame_index < 0 ) frame_index = 0;
 	    if ( frame_index >= af_ihsTop() ) frame_index = af_ihsTop()-1;
             int ihsCur = frame_index;
-            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(ihsCur));
+            _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(ihsCur));
         };
 	
 

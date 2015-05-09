@@ -87,6 +87,7 @@ namespace core
 	static List_sp clasp_gather_metadata(T_sp env, Symbol_sp key);
 	static string clasp_summaryOfContents(T_sp env);
     public:
+	void dump();
 	uint environmentId() const { return this->_EnvId;};
 	void setEnvironmentId(uint id) { this->_EnvId = id;};
 	virtual bool lexicalEnvironmentP() const { return false;};

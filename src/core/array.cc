@@ -53,7 +53,7 @@ namespace core
     {
 	if ( array.notnilp() ) {
 	    if ( Array_sp arr = array.asOrNull<Array_O>() ) {
-		return Values(_Nil<T_O>(),Fixnum_O::create(0));
+		return Values(_Nil<T_O>(),make_fixnum(0));
 	    }
 	}
 	TYPE_ERROR(array,cl::_sym_array);
@@ -233,7 +233,7 @@ namespace core
 	    if ( oCdr(cur).nilp() && last_value_is_val ) break;
 	    if ( idx >= 0 ) offset *= curDimension;
 	    idx++;
-	    int oneIndex = oCar(cur).as<Rational_O>()->as_int();
+	    int oneIndex = clasp_to_int(oCar(cur).as<Rational_O>());
 	    if ( oneIndex >= curDimension )
 	    {
 		SIMPLE_ERROR(BF("Bad index"));
@@ -267,7 +267,7 @@ namespace core
 	List_sp indices = _Nil<T_O>();
 	for ( int i=this->rank()-1; i>=0; i-- )
 	{
-	    indices = Cons_O::create(Fixnum_O::create(this->arrayDimension(i)),indices);
+	    indices = Cons_O::create(make_fixnum(this->arrayDimension(i)),indices);
 	}
 	return((indices));
     }

@@ -609,7 +609,7 @@ namespace core
 	if (StreamOps(strm).read_byte8(strm, &c, 1) < 1) {
             return _Nil<T_O>();
 	}
-	return Fixnum_O::create(c);
+	return make_fixnum(c);
     }
 
     static void
@@ -625,7 +625,7 @@ namespace core
 	signed char c;
 	if (StreamOps(strm).read_byte8(strm, (unsigned char *)&c, 1) < 1)
             return _Nil<T_O>();
-	return Fixnum_O::create(c);
+	return make_fixnum(c);
     }
 
     static void
@@ -641,7 +641,7 @@ namespace core
 	cl_index (*read_byte8)(T_sp, unsigned char *, cl_index);
 	unsigned char c;
 	cl_index nb, bs;
-	T_sp output = Fixnum_O::create(0);
+	T_sp output = make_fixnum(0);
 	read_byte8 = StreamOps(strm).read_byte8;
 	bs = StreamByteSize(strm);
 	for (nb = 0; bs >= 8; bs -= 8, nb += 8) {
@@ -649,9 +649,9 @@ namespace core
             if (read_byte8(strm, &c, 1) < 1)
                 return _Nil<T_O>();
             if (bs <= 8 && (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES))
-                aux = Fixnum_O::create((signed char)c);
+                aux = make_fixnum((signed char)c);
             else
-                aux = Fixnum_O::create((unsigned char)c);
+                aux = make_fixnum((unsigned char)c);
             output = cl_logior(Cons_O::createList( output, clasp_ash(aux, nb)));
 	}
 	return output;
@@ -665,7 +665,7 @@ namespace core
 	write_byte8 = StreamOps(strm).write_byte8;
 	bs = StreamByteSize(strm);
 	do {
-            T_sp b = cl_logand(Cons_O::createList( c, Fixnum_O::create(0xFF)));
+            T_sp b = cl_logand(Cons_O::createList( c, make_fixnum(0xFF)));
             unsigned char aux = (unsigned char)(b.as<Fixnum_O>()->get());
             if (write_byte8(strm, &aux, 1) < 1)
                 break;
@@ -687,12 +687,12 @@ namespace core
             if (read_byte8(strm, &c, 1) < 1)
                 return _Nil<T_O>();
             if (output.notnilp()) {
-                output = cl_logior(Cons_O::createList(Fixnum_O::create(c),
+                output = cl_logior(Cons_O::createList(make_fixnum(c),
                                                       clasp_ash(output, 8)));
             } else if (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES) {
-                output = Fixnum_O::create((signed char)c);
+                output = make_fixnum((signed char)c);
             } else {
-                output = Fixnum_O::create((unsigned char)c);
+                output = make_fixnum((unsigned char)c);
             }
 	}
 	return output;
@@ -709,7 +709,7 @@ namespace core
             unsigned char aux;
             T_sp b;
             bs -= 8;
-            b = cl_logand(Cons_O::createList(Fixnum_O::create(0xFF), bs ? clasp_ash(c, -bs).as<T_O>() : c));
+            b = cl_logand(Cons_O::createList(make_fixnum(0xFF), bs ? clasp_ash(c, -bs).as<T_O>() : c));
             aux = (unsigned char)clasp_fixnum(b);
             if (write_byte8(strm, &aux, 1) < 1)
                 break;
@@ -878,7 +878,7 @@ namespace core
                 ndx += StreamEncoder(strm)(strm, buffer+ndx, i);
             }
             while (ndx != 0) {
-                l = Cons_O::create(Fixnum_O::create(buffer[--ndx]), l);
+                l = Cons_O::create(make_fixnum(buffer[--ndx]), l);
             }
             StreamByteStack(strm) = l.as<Cons_O>();
             StreamLastChar(strm) = EOF;
@@ -1504,7 +1504,7 @@ namespace core
 	cl_index i;
 	for (i = 0; i < n; i++) {
             T_sp byte = eval::funcall(gray::_sym_stream_write_byte, strm,
-                                      Fixnum_O::create(c[i]));
+                                      make_fixnum(c[i]));
             if (!af_fixnumP(byte))
                 break;
 	}
@@ -2308,7 +2308,7 @@ namespace core
     {
 	T_sp l = BroadcastStreamList(strm);
 	if (l.nilp())
-            return Fixnum_O::create(0);
+            return make_fixnum(0);
 	return clasp_file_length(oCar(l));
     }
 
@@ -2317,7 +2317,7 @@ namespace core
     {
 	T_sp l = BroadcastStreamList(strm);
 	if (l.nilp())
-            return Fixnum_O::create(0);
+            return make_fixnum(0);
 	return clasp_file_position(oCar(l));
     }
 
@@ -3157,7 +3157,7 @@ namespace core
 	T_sp output = clasp_file_len(f);
 	if (StreamByteSize(strm) != 8) {
             cl_index bs = StreamByteSize(strm);
-            Real_mv output_mv = clasp_floor2(output, Fixnum_O::create(bs/8));
+            Real_mv output_mv = clasp_floor2(output, make_fixnum(bs/8));
             Fixnum_sp fn1 = output_mv.valueGet(1).as<Fixnum_O>();
             unlikely_if (fn1->get() != 0 ) {
                 FEerror("File length is not on byte boundary", 0);
@@ -3188,12 +3188,12 @@ namespace core
              * these bytes begin! */
             T_sp l = StreamByteStack(strm);
             while (cl_consp(l)) {
-                output = brcl_one_minus(output);
+                output = clasp_one_minus(output);
                 l = oCdr(l);
             }
 	}
 	if (StreamByteSize(strm) != 8) {
-            output = clasp_floor2(output, Fixnum_O::create(StreamByteSize(strm) / 8));
+            output = clasp_floor2(output, make_fixnum(StreamByteSize(strm) / 8));
 	}
 	return output;
     }
@@ -3210,7 +3210,7 @@ namespace core
 	} else {
             if (StreamByteSize(strm) != 8) {
                 large_disp = brcl_times(large_disp,
-                                       Fixnum_O::create(StreamByteSize(strm) / 8));
+                                       make_fixnum(StreamByteSize(strm) / 8));
             }
             disp = clasp_integer_to_off_t(large_disp);
             mode = SEEK_SET;
@@ -3498,7 +3498,7 @@ namespace core
 	StreamOps(stream).write_char = eformat_write_char;
 	switch (flags & CLASP_STREAM_FORMAT) {
 	case CLASP_STREAM_BINARY:
-            FileStreamEltType(stream) = Cons_O::createList( _lisp->_true(), Fixnum_O::create(byte_size));
+            FileStreamEltType(stream) = Cons_O::createList( _lisp->_true(), make_fixnum(byte_size));
             StreamFormat(stream) = t;
             StreamOps(stream).read_char = not_character_read_char;
             StreamOps(stream).write_char = not_character_write_char;
@@ -3589,7 +3589,7 @@ namespace core
 #endif
 	default:
             FEerror("Invalid or unsupported external format ~A with code ~D",
-                    2, external_format.raw_(), Fixnum_O::create(flags).raw_());
+                    2, external_format.raw_(), make_fixnum(flags).raw_());
  	}
 	t = kw::_sym_lf;
 	if (StreamOps(stream).write_char == eformat_write_char &&
@@ -3830,7 +3830,7 @@ namespace core
 	if (StreamByteSize(strm) != 8) {
 //            const cl_env_ptr the_env = clasp_process_env();
             cl_index bs = StreamByteSize(strm);
-            T_mv output_mv = clasp_floor2(output, Fixnum_O::create(bs/8));
+            T_mv output_mv = clasp_floor2(output, make_fixnum(bs/8));
             Fixnum_sp fn1 = output_mv.valueGet(1).as<Fixnum_O>();
             unlikely_if (fn1->get() != 0 ) {
                 FEerror("File length is not on byte boundary", 0);
@@ -3850,7 +3850,7 @@ namespace core
 	offset = clasp_ftello(f);
 	clasp_enable_interrupts();
 	if (offset < 0) {
-            return Fixnum_O::create(0);
+            return make_fixnum(0);
             //io_error(strm);
         }
 	if (sizeof(clasp_off_t) == sizeof(long)) {
@@ -3863,12 +3863,12 @@ namespace core
              * these bytes begin! */
             T_sp l = StreamByteStack(strm);
             while (cl_consp(l)) {
-                output = brcl_one_minus(output);
+                output = clasp_one_minus(output);
                 l = oCdr(l);
             }
 	}
 	if (StreamByteSize(strm) != 8) {
-            output = clasp_floor2(output, Fixnum_O::create(StreamByteSize(strm) / 8));
+            output = clasp_floor2(output, make_fixnum(StreamByteSize(strm) / 8));
 	}
 	return output;
     }
@@ -3885,7 +3885,7 @@ namespace core
 	} else {
             if (StreamByteSize(strm) != 8) {
                 large_disp = brcl_times(large_disp,
-                                       Fixnum_O::create(StreamByteSize(strm) / 8));
+                                       make_fixnum(StreamByteSize(strm) / 8));
             }
             disp = clasp_integer_to_off_t(large_disp);
             mode = SEEK_SET;
@@ -4278,7 +4278,7 @@ namespace core
                     } else {
                         StreamByteStack(strm) =
                             clasp_nconc(StreamByteStack(strm),
-                                      clasp_list1(Fixnum_O::create(aux[i])));
+                                      clasp_list1(make_fixnum(aux[i])));
                     }
                 }
             }
@@ -4493,7 +4493,7 @@ namespace core
             break;
 #endif
 	default:
-            FEerror("Not a valid mode ~D for clasp_make_stream_from_FILE", 1, Fixnum_O::create(smm).raw_());
+            FEerror("Not a valid mode ~D for clasp_make_stream_from_FILE", 1, make_fixnum(smm).raw_());
 	}
 	set_stream_elt_type(stream, byte_size, flags, external_format);
 	FileStreamFilename(stream) = fname; /* not really used */
@@ -4603,12 +4603,12 @@ namespace core
 	case clasp_smm_input:
 	case clasp_smm_output:
 	case clasp_smm_io:
-            ret = Fixnum_O::create(fileno(IOStreamStreamFile(s)));
+            ret = make_fixnum(fileno(IOStreamStreamFile(s)));
             break;
 	case clasp_smm_input_file:
 	case clasp_smm_output_file:
 	case clasp_smm_io_file:
-            ret = Fixnum_O::create(IOFileStreamDescriptor(s));
+            ret = make_fixnum(IOFileStreamDescriptor(s));
             break;
 	default:
             clasp_internal_error("not a file stream");
@@ -4761,7 +4761,7 @@ namespace core
     }
 
     @(defun ext::make_sequence_input_stream (vector &key
-                                             (start Fixnum_O::create(0))
+                                             (start make_fixnum(0))
                                              (end _Nil<T_O>())
                                              (external_format _Nil<T_O>()))
       cl_index_pair p;
@@ -4788,7 +4788,7 @@ namespace core
             if (delta < n) {
                 /* Not enough space, enlarge */
                 vector = eval::funcall(@'adjust-array', vector,
-				       clasp_ash(Fixnum_O::create(last), 1));
+				       clasp_ash(make_fixnum(last), 1));
                 SEQ_OUTPUT_VECTOR(strm) = vector;
                 goto AGAIN;
             }
@@ -5130,7 +5130,7 @@ namespace core
 	if (StreamMode(stream) == clasp_smm_broadcast) {
             stream = BroadcastStreamList(stream);
             if (stream.nilp()) {
-                return Fixnum_O::create(1);
+                return make_fixnum(1);
             } else {
                 goto BEGIN;
             }
@@ -5147,7 +5147,7 @@ namespace core
         } else {
             ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_file_string_length,2, string, cl::_sym_String_O);
 	}
-	return Fixnum_O::create(l);
+	return make_fixnum(l);
     }
 
 
@@ -5252,19 +5252,19 @@ namespace core
                 T_sp orig = seq;
                 for ( ; seq.notnilp(); seq=oCdr(seq) ) {
                     if (start >= end) {
-                        return Fixnum_O::create(start);
+                        return make_fixnum(start);
                     } else {
                         T_sp c;
                         if (ischar) {
                             int i = ops.read_char(stream);
                             if (i < 0) {
-                                return Fixnum_O::create(start);
+                                return make_fixnum(start);
                             }
                             c = Character_O::create(i);
                         } else {
                             c = ops.read_byte(stream);
                             if (c == _Nil<T_O>()) {
-                                return Fixnum_O::create(start);
+                                return make_fixnum(start);
                             }
                         }
                         seq.as<Cons_O>()->rplaca(c);
@@ -5275,7 +5275,7 @@ namespace core
                 start = ops.read_vector(stream, seq, start, end);
             }
         }
-	return Fixnum_O::create(start);
+	return make_fixnum(start);
     }
 
 
@@ -5301,7 +5301,7 @@ namespace core
     T_sp
     si_file_column(T_sp strm)
     {
-	return Fixnum_O::create(clasp_file_column(strm));
+	return make_fixnum(clasp_file_column(strm));
     }
 
 
@@ -5330,7 +5330,7 @@ namespace core
           output = clasp_file_position(stream);
       } else {
           if (position == kw::_sym_start) {
-              position = Fixnum_O::create(0);
+              position = make_fixnum(0);
           } else if (position == kw::_sym_end) {
               position = _Nil<T_O>();
           }
@@ -5482,7 +5482,7 @@ namespace core
 	for (size = 8; 1; size++) {
             T_sp type;
             type = Cons_O::createList( sign>0? cl::_sym_UnsignedByte : cl::_sym_SignedByte,
-                           Fixnum_O::create(size));
+                           make_fixnum(size));
             if (eval::funcall(cl::_sym_subtypep, element_type, type) != _Nil<T_O>()) {
                 return size * sign;
             }
@@ -5571,7 +5571,7 @@ namespace core
                 }
             }
 	} else {
-            FEerror("Illegal stream mode ~S", 1, Fixnum_O::create(smm).raw_());
+            FEerror("Illegal stream mode ~S", 1, make_fixnum(smm).raw_());
 	}
 	if (flags & CLASP_STREAM_C_STREAM) {
             FILE *fp = NULL;
@@ -5602,7 +5602,7 @@ namespace core
             StreamFlags(output) |= CLASP_STREAM_MIGHT_SEEK;
 //            si_set_finalizer(output, _lisp->_true());
             /* Set file pointer to the correct position */
-            clasp_file_position_set(output, appending? _Nil<Fixnum_O>() : Fixnum_O::create(0));
+            clasp_file_position_set(output, appending? _Nil<Fixnum_O>() : make_fixnum(0));
 	}
 	return output;
     }
@@ -5768,7 +5768,7 @@ namespace core
             break;
         }
         default:
-            FEerror("Unsupported Windows file type: ~A", 1, Fixnum_O::create(GetFileType(hnd)).raw_());
+            FEerror("Unsupported Windows file type: ~A", 1, make_fixnum(GetFileType(hnd)).raw_());
             break;
 	}
 #endif
@@ -5820,7 +5820,7 @@ namespace core
 	if (sizeof(clasp_off_t) == sizeof(gctools::Fixnum)) {
             output = Integer_O::create((gctools::Fixnum)offset);
 	} else if (offset <= MOST_POSITIVE_FIXNUM) {
-            output = Fixnum_O::create((gctools::Fixnum)offset);
+            output = make_fixnum((gctools::Fixnum)offset);
 	} else {
             IMPLEMENT_MEF(BF("Handle breaking converting clasp_off_t to Bignum"));
 #if 0
@@ -6056,7 +6056,7 @@ namespace core
     {
         T_sp octets = _Nil<T_O>(), code;
         while (length > 0) {
-            octets = CONS(Fixnum_O::create(buffer[--length]), octets);
+            octets = CONS(make_fixnum(buffer[--length]), octets);
         }
         code = eval::funcall(@'ext::decoding-error', stream,
                              StreamExternalFormat(stream),
@@ -6548,7 +6548,7 @@ namespace core {
     T_sp StringInputStream_O::make(const string& str)
     {
         Str_sp s = str_create(str);
-        return cl_make_string_input_stream(s,Fixnum_O::create(0),_Nil<Fixnum_O>());
+        return cl_make_string_input_stream(s,make_fixnum(0),_Nil<Fixnum_O>());
     }
 
 
@@ -6691,10 +6691,10 @@ namespace core {
     T_mv cl_read_from_string(Str_sp content, T_sp eof_error_p, T_sp eof_value, Fixnum_sp start, T_sp end, T_sp preserve_whitespace )
     {_G();
 	bool eofErrorP = eof_error_p.isTrue();
-	int istart = start->as_int();
+	int istart = clasp_to_int(start);
 	int iend;
 	if ( end.nilp() ) iend = content->get().size();
-	else iend = end.as<Fixnum_O>()->as_int();
+	else iend = clasp_to_int(end.as<Fixnum_O>());
 	bool preserveWhitespace = preserve_whitespace.isTrue();
 	if ( preserveWhitespace )
 	{
@@ -6822,7 +6822,7 @@ namespace core {
     {
         stream = coerce::outputStreamDesignator(stream);
         if ( !AnsiStreamP(stream) ) {
-            Fixnum_sp fnstart = Fixnum_O::create(istart);
+            Fixnum_sp fnstart = make_fixnum(istart);
             eval::funcall(gray::_sym_stream_write_string, stream, str, fnstart, end);
             return str;
         }
@@ -6957,7 +6957,7 @@ namespace core {
     T_sp core_fileColumn(T_sp strm)
     {_G();
 	strm = coerce::outputStreamDesignator(strm);
-        return Fixnum_O::create(clasp_file_column(strm));
+        return make_fixnum(clasp_file_column(strm));
     };
 
 

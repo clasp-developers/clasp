@@ -350,7 +350,7 @@ namespace core
 	    }
 	    p.end = end.as<Fixnum_O>()->get();
 	    unlikely_if (p.end > l) {
-		T_sp fillp = Fixnum_O::create(static_cast<uint>(l));
+		T_sp fillp = make_fixnum(static_cast<uint>(l));
 		af_wrongTypeKeyArg(file,line,_lisp->internWithPackageName(functionName,packageName.c_str()),
 				   kw::_sym_end, end,
 				   Integer_O::makeIntegerType(start->get(),static_cast<int>(l)));

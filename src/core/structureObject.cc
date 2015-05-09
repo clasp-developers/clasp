@@ -265,7 +265,7 @@ namespace core
 
     T_sp StructureObject_O::oinstancepSTAR() const
     {
-	return Fixnum_O::create((int)(this->_Slots.size()));
+	return make_fixnum((int)(this->_Slots.size()));
     }
 
 

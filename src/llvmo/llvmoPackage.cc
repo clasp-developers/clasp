@@ -146,14 +146,14 @@ namespace llvmo
 #define DOCS_af_cxxDataStructuresInfo "cxxDataStructuresInfo: Return an alist of C++ data structure sizes ((name . size-of-in-bytes))"
     T_sp af_cxxDataStructuresInfo()
     {
-	Cons_sp list = Cons_O::create(Cons_O::create(_sym_tsp,Fixnum_O::create((int)sizeof(T_sp))),_Nil<T_O>());
-	list = Cons_O::create(Cons_O::create(_sym_tmv,Fixnum_O::create((int)sizeof(T_mv))),list);
-	list = Cons_O::create(Cons_O::create(_sym_invocationHistoryFrame,Fixnum_O::create((int)sizeof(InvocationHistoryFrame))),list);
-	list = Cons_O::create(Cons_O::create(_sym_size_t,Fixnum_O::create((int)sizeof(size_t))),list);
-	list = Cons_O::create(Cons_O::create(_sym_threadInfo,Fixnum_O::create((int)sizeof(ThreadInfo))),list);
-	list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-LIMIT"),Fixnum_O::create((int)MultipleValues::MultipleValuesLimit)),list);
-	list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-SIZEOF"), Fixnum_O::create((int)sizeof(MultipleValues))),list);
-	//	list = Cons_O::create(Cons_O::create(lisp_internKeyword("NIL-VALUE"),Fixnum_O::create((int)gctools::tagged_ptr<core::T_O>::tagged_nil)),list); // don't use this
+	Cons_sp list = Cons_O::create(Cons_O::create(_sym_tsp,make_fixnum((int)sizeof(T_sp))),_Nil<T_O>());
+	list = Cons_O::create(Cons_O::create(_sym_tmv,make_fixnum((int)sizeof(T_mv))),list);
+	list = Cons_O::create(Cons_O::create(_sym_invocationHistoryFrame,make_fixnum((int)sizeof(InvocationHistoryFrame))),list);
+	list = Cons_O::create(Cons_O::create(_sym_size_t,make_fixnum((int)sizeof(size_t))),list);
+	list = Cons_O::create(Cons_O::create(_sym_threadInfo,make_fixnum((int)sizeof(ThreadInfo))),list);
+	list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-LIMIT"),make_fixnum((int)MultipleValues::MultipleValuesLimit)),list);
+	list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-SIZEOF"), make_fixnum((int)sizeof(MultipleValues))),list);
+	//	list = Cons_O::create(Cons_O::create(lisp_internKeyword("NIL-VALUE"),make_fixnum((int)gctools::tagged_ptr<core::T_O>::tagged_nil)),list); // don't use this
 	return list;
     }
 

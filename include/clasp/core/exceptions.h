@@ -91,9 +91,9 @@ struct _TRACE {
 #define TYPE_ERROR_INDEX(_seq_, _idx_) \
     ERROR(cl::_sym_simpleTypeError,					\
 	  core::lisp_createList(kw::_sym_formatControl,core::lisp_createStr("~S is not a valid index into the object ~S"), \
-				kw::_sym_formatArguments, core::lisp_createList(Fixnum_O::create(_idx_),_seq_), \
-				kw::_sym_expectedType, core::lisp_createList(cl::_sym_integer, Fixnum_O::create(0), Fixnum_O::create(((_seq_).isA<Instance_O>() ? (_seq_).as<Instance_O>()->numberOfSlots() : (_seq_)->length()) - 1)), \
-				kw::_sym_datum, Fixnum_O::create(_idx_) ));
+				kw::_sym_formatArguments, core::lisp_createList(make_fixnum(_idx_),_seq_), \
+				kw::_sym_expectedType, core::lisp_createList(cl::_sym_integer, make_fixnum(0), make_fixnum(((_seq_).isA<Instance_O>() ? (_seq_).as<Instance_O>()->numberOfSlots() : (_seq_)->length()) - 1)), \
+				kw::_sym_datum, make_fixnum(_idx_) ));
 
 
 #define TYPE_ERROR_PROPER_LIST(_lst_) \

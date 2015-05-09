@@ -159,7 +159,7 @@ namespace core
 	    T_sp x = this->structureAsList();
 	    write_object(x,stream);
         } else {
-	    eval::funcall(print_function,this->asSmartPtr(),stream,Fixnum_O::create(0));
+	    eval::funcall(print_function,this->asSmartPtr(),stream,make_fixnum(0));
         }
     }
 
@@ -169,10 +169,10 @@ namespace core
 	StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
         int print_base = clasp_print_base();
         core_integerToString(buffer,this->const_sharedThis<Integer_O>(),
-			   Fixnum_O::create(print_base),
+			   make_fixnum(print_base),
 			   cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
 			   true);
-        cl_writeSequence(buffer,stream,Fixnum_O::create(0),_Nil<Fixnum_O>());
+        cl_writeSequence(buffer,stream,make_fixnum(0),_Nil<Fixnum_O>());
     }
 
 
@@ -440,7 +440,7 @@ namespace core
     void write_fixnum(T_sp strm, T_sp i)
     {
 	ASSERT(i.fixnump());
-	Fixnum_sp fn = Fixnum_O::create(i.unsafe_fixnum());
+	Fixnum_sp fn = make_fixnum(i.unsafe_fixnum());
 	fn->__write__(strm);
     }
 

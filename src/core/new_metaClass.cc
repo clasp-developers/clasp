@@ -239,7 +239,7 @@ namespace core
     {_G();
 	if ( IS_SYMBOL_UNDEFINED(mc->className()) ) return;
 	if ( !supers->gethash(mc,_Unbound<T_O>()).unboundp() ) return;
-	supers->hash_table_setf_gethash(mc,Fixnum_O::create(cl_length(arrayedSupers)));
+	supers->hash_table_setf_gethash(mc,make_fixnum(cl_length(arrayedSupers)));
 	arrayedSupers->vectorPushExtend(mc,8);
 	for ( Cons_sp cur=mc->directSuperclasses(); cur.notnilp(); cur=cCdr(cur) )
 	{
@@ -251,7 +251,7 @@ namespace core
     void Class_O::lowLevel_calculateClassPrecedenceList()
     {_G();
 	using namespace boost;
-	HashTable_sp supers(af_make_hash_table(cl::_sym_eq,Fixnum_O::create(8),DoubleFloat_O::create(1.5),DoubleFloat_O::create(2.0)));
+	HashTable_sp supers(af_make_hash_table(cl::_sym_eq,make_fixnum(8),DoubleFloat_O::create(1.5),DoubleFloat_O::create(2.0)));
 	VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<T_O>(),16,0,true));
 	this->accumulateSuperClasses(supers,arrayedSupers,this->sharedThis<Class_O>());
 	vector<list<int> > graph(cl_length(arrayedSupers));

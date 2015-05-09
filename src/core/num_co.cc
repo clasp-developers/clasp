@@ -100,11 +100,11 @@ namespace core {
     {_G();
 	NumberType ty, tx;
 	if (y.notnilp()) {
-	    ty = y.as<Float_O>()->number_type();
+	    ty = clasp_t_of(y.as<Float_O>());
 	} else {
 	    ty = number_SingleFloat;
 	}
-	switch (tx = x->number_type()) {
+	switch (tx = clasp_t_of(x)) {
 	case number_SingleFloat:
 	case number_DoubleFloat:
 #ifdef CLASP_LONG_FLOAT
@@ -117,10 +117,10 @@ namespace core {
 	case number_Ratio:
 	    switch (ty) {
 	    case number_SingleFloat:
-		x = brcl_make_single_float(brcl_to_double(x)).as<Real_O>();
+		x = brcl_make_single_float(clasp_to_double(x)).as<Real_O>();
 		break;
 	    case number_DoubleFloat:
-		x = brcl_make_double_float(brcl_to_double(x)).as<Real_O>();
+		x = brcl_make_double_float(clasp_to_double(x)).as<Real_O>();
 		break;
 #ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat:
@@ -146,7 +146,7 @@ namespace core {
 #define DOCS_cl_numerator "numerator"
     Number_sp cl_numerator(Number_sp x)
     {_G();
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 	case number_Ratio:
 	    x = x.as<Ratio_O>()->numerator();
 	    break;
@@ -167,7 +167,7 @@ namespace core {
 #define DOCS_cl_denominator "denominator"
     Number_sp cl_denominator(Number_sp x)
     {_G();
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 	case number_Ratio:
 	    x = x.as<Ratio_O>()->denominator();
 	    break;
@@ -186,7 +186,7 @@ namespace core {
     Real_mv clasp_floor1(Real_sp x)
     {
 	Real_sp v0, v1;
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = x;
@@ -234,11 +234,11 @@ namespace core {
 //	const cl_env_ptr the_env = brcl_process_env();
 	Real_sp v0, v1;
 	NumberType ty;
-	ty = brcl_t_of(y);
+	ty = clasp_t_of(y);
 	if (brcl_unlikely(!BRCL_REAL_TYPE_P(y))) {
 	    QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Real_O);
 	}
-	switch(brcl_t_of(x)) {
+	switch(clasp_t_of(x)) {
 	case number_Fixnum:
 	    switch(ty) {
 	    case number_Fixnum: {	/* FIX / FIX */
@@ -384,7 +384,7 @@ namespace core {
 	    }
 	    }
 	case number_SingleFloat: {		/* SF / ANY */
-	    float n = brcl_to_double(y);
+	    float n = clasp_to_double(y);
 	    float p = brcl_single_float(x)/n;
 	    float q = floorf(p);
 	    v0 = _brcl_float_to_integer(q);
@@ -395,7 +395,7 @@ namespace core {
 	    break;
 	}
 	case number_DoubleFloat: {		/* DF / ANY */
-	    double n = brcl_to_double(y);
+	    double n = clasp_to_double(y);
 	    double p = brcl_double_float(x)/n;
 	    double q = floor(p);
 	    v0 = _brcl_double_to_integer(q);
@@ -438,7 +438,7 @@ namespace core {
     Real_mv brcl_ceiling1(Real_sp x)
     {
 	Real_sp v0, v1;
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = x;
@@ -486,11 +486,11 @@ namespace core {
     {
 	Real_sp v0, v1;
 	NumberType ty;
-	ty = brcl_t_of(y);
+	ty = clasp_t_of(y);
 	if (brcl_unlikely(!BRCL_REAL_TYPE_P(y))) {
 	    QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_Real_O);
 	}
-	switch(brcl_t_of(x)) {
+	switch(clasp_t_of(x)) {
 	case number_Fixnum: {
 	    switch(ty) {
 	    case number_Fixnum: {	/* FIX / FIX */
@@ -560,7 +560,7 @@ namespace core {
 	    break;
 	}
 	case number_Bignum: {
-	    switch(brcl_t_of(y)) {
+	    switch(clasp_t_of(y)) {
 	    case number_Fixnum: {	/* BIG / FIX */
 //		BRCL_WITH_TEMP_BIGNUM(by,4);
 		Bignum_sp by(Bignum_O::create(clasp_fixnum(y)));
@@ -613,7 +613,7 @@ namespace core {
 	    break;
 	}
 	case number_Ratio: {
-	    switch(brcl_t_of(y)) {
+	    switch(clasp_t_of(y)) {
 	    case number_Ratio:		/* RAT / RAT */
 	    {
 		Ratio_sp rx = x.as<Ratio_O>();
@@ -637,7 +637,7 @@ namespace core {
 	    break;
 	}
 	case number_SingleFloat: {		/* SF / ANY */
-	    float n = brcl_to_double(y);
+	    float n = clasp_to_double(y);
 	    float p = brcl_single_float(x)/n;
 	    float q = ceilf(p);
 	    v0 = _brcl_float_to_integer(q);
@@ -645,7 +645,7 @@ namespace core {
 	    break;
 	}
 	case number_DoubleFloat: {		/* DF / ANY */
-	    double n = brcl_to_double(y);
+	    double n = clasp_to_double(y);
 	    double p = brcl_double_float(x)/n;
 	    double q = ceil(p);
 	    v0 = _brcl_double_to_integer(q);
@@ -689,7 +689,7 @@ namespace core {
     Real_mv brcl_truncate1(Real_sp x)
     {
 	Real_sp v0, v1;
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = x;
@@ -790,7 +790,7 @@ namespace core {
     Real_mv brcl_round1(Real_sp x)
     {
 	Real_sp v0, v1;
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = x;
@@ -840,7 +840,7 @@ namespace core {
 	Real_sp q;
 
 	q = brcl_divide(x, y).as<Real_O>();
-	switch (brcl_t_of(q)) {
+	switch (clasp_t_of(q)) {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = q;
@@ -853,12 +853,12 @@ namespace core {
 	    if (clasp_minusp(r)) {
 		int c = brcl_number_compare(_lisp->minusHalf(), r);
 		if (c > 0 || (c == 0 && clasp_oddp(q1))) {
-		    q1 = brcl_one_minus(q1).as<Integer_O>();
+		    q1 = clasp_one_minus(q1).as<Integer_O>();
 		}
 	    } else {
 		int c = brcl_number_compare(r, _lisp->plusHalf());
 		if (c > 0 || (c == 0 && clasp_oddp(q1))) {
-		    q1 = brcl_one_plus(q1).as<Integer_O>();
+		    q1 = clasp_one_plus(q1).as<Integer_O>();
 		}
 	    }
 	    v0 = q1;
@@ -924,7 +924,7 @@ namespace core {
     Number_mv cl_decodeFloat(Float_sp x)
     {_G();
 	int e=0, s=0;
-	NumberType tx = brcl_t_of(x);
+	NumberType tx = clasp_t_of(x);
 	float f;
 	switch (tx) {
 	case number_SingleFloat: {
@@ -987,7 +987,7 @@ namespace core {
 	} else {
 	    QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Fixnum_O);
 	}
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 	case number_SingleFloat:
 	    x = brcl_make_single_float(ldexpf(brcl_single_float(x), k));
 	    break;
@@ -1013,7 +1013,7 @@ namespace core {
     int
     brcl_signbit(Number_sp x)
     {
-	    switch (brcl_t_of(x)) {
+	    switch (clasp_t_of(x)) {
 	    case number_SingleFloat:
 		    return std::signbit(brcl_single_float(x));
 	    case number_DoubleFloat:
@@ -1041,7 +1041,7 @@ namespace core {
 	  y = cl_float( brcl_make_fixnum(1), x);
       }
       negativep = brcl_signbit(x);
-      switch (brcl_t_of(y)) {
+      switch (clasp_t_of(y)) {
       case number_SingleFloat: {
 	  float f = brcl_single_float(y);
 	  if (std::signbit(f) != negativep) y = brcl_make_single_float(-f);
@@ -1075,7 +1075,7 @@ namespace core {
     Integer_sp cl_floatDigits(Float_sp x)
     {_G();
 	Integer_sp ix(_Nil<Integer_O>());
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 	case number_SingleFloat:
 	    ix = brcl_make_fixnum(FLT_MANT_DIG);
 	    break;
@@ -1102,7 +1102,7 @@ namespace core {
     Integer_sp cl_floatPrecision(Float_sp x)
     {_G();
 	int precision = 0;
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 	case number_SingleFloat: {
 	    float f = brcl_single_float(x);
 	    if (f == 0.0) {
@@ -1167,7 +1167,7 @@ namespace core {
     {_G();
 	int e = 0, s = 1;
 	Real_sp rx(_Nil<Real_O>());
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 	    LongFloat d = brcl_long_float(x);
@@ -1246,7 +1246,7 @@ namespace core {
 #define DOCS_cl_realpart "realpart"
     Real_sp cl_realpart(Number_sp x)
     {_G();
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	case number_Ratio:
@@ -1276,7 +1276,7 @@ namespace core {
 #define DOCS_cl_imagpart "imagpart"
     Real_sp cl_imagpart(Number_sp x)
     {_G();
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	case number_Ratio:

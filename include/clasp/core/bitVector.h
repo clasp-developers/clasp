@@ -88,7 +88,7 @@ public:
     uint	testBit(uint i) const;
 	void	erase();
 
-    void sxhash(HashGenerator& hg) const;
+    void sxhash_(HashGenerator& hg) const;
     uint lowestIndex();
 
 

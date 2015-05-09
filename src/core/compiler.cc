@@ -102,14 +102,14 @@ namespace core
 		ss << "SYM(" << sym->symbolName()->get() << ")";
 		name = Str_O::create(ss.str());
 	    }
-	    return Values(_Nil<T_O>(),name,Fixnum_O::create(0),Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+	    return Values(_Nil<T_O>(),name,make_fixnum(0),make_fixnum(CALL_ARGUMENTS_LIMIT));
 	}
 	Function_sp fsym = coerce::functionDesignator(sym);
 	gctools::tagged_functor<Closure> closure = fsym->closure;
 	if ( gctools::tagged_functor<BuiltinClosure> bcc = closure.asOrNull<BuiltinClosure>() ) {
-	    return Values(_lisp->_true(),Str_O::create("Provide-c-func-name"), Fixnum_O::create(0),Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+	    return Values(_lisp->_true(),Str_O::create("Provide-c-func-name"), make_fixnum(0),make_fixnum(CALL_ARGUMENTS_LIMIT));
 	}
-	return Values(_Nil<T_O>(),Str_O::create("Provide-func-name"),Fixnum_O::create(0),Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+	return Values(_Nil<T_O>(),Str_O::create("Provide-func-name"),make_fixnum(0),make_fixnum(CALL_ARGUMENTS_LIMIT));
     }
     
 
@@ -356,7 +356,7 @@ namespace core
 #define DOCS_af_dladdr "(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)"
     T_mv af_dladdr(Integer_sp addr)
     {_G();
-	uint64_t val = addr->as_uint64();
+	uint64_t val = clasp_to_uint64(addr);
 	void* ptr = (void*)val;
 	Dl_info info;
 	int ret = dladdr(ptr,&info);
@@ -642,7 +642,7 @@ namespace core {
 
     T_sp allocFixnum()
     {
-        Fixnum_sp fn = Fixnum_O::create(3);
+        Fixnum_sp fn = make_fixnum(3);
         return fn;
     }
 
@@ -699,15 +699,15 @@ namespace core {
         frame::SetParentFrame(frame1,_Nil<T_O>());
         T_O** values1 = frame::ValuesArray(frame1);
         int val=0;
-        for (int i=0; i<5; ++i ) values1[i] = Fixnum_O::create(++val).raw_();
+        for (int i=0; i<5; ++i ) values1[i] = make_fixnum(++val).raw_();
         ALLOC_STACK_VALUE_FRAME(frameImpl2,frame2,5);
         frame::SetParentFrame(frame2,frame1);
         T_O** values2 = frame::ValuesArray(frame1);
-        for (int i=0; i<5; ++i ) values2[i] = Fixnum_O::create(++val).raw_();
+        for (int i=0; i<5; ++i ) values2[i] = make_fixnum(++val).raw_();
         ALLOC_STACK_VALUE_FRAME(frameImpl3,frame3,5);
         frame::SetParentFrame(frame3,frame2);
         T_O** values3 = frame::ValuesArray(frame1);
-        for (int i=0; i<5; ++i ) values3[i] = Fixnum_O::create(++val).raw_();
+        for (int i=0; i<5; ++i ) values3[i] = make_fixnum(++val).raw_();
         LightTimer timer;
         T_sp v1, v2, v3, v4;
         T_sp ocons = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());

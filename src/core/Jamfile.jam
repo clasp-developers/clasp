@@ -41,6 +41,13 @@ local unity_sources =
       all.cc ;
 
 local sources =
+      numbers.cc
+		numerics.cc
+      num_arith.cc
+      numberToString.cc
+      num_co.cc
+      load.cc
+	    bignum.cc
       write_object.cc
       print.cc
 	    sourceFileInfo.cc
@@ -49,7 +56,6 @@ local sources =
 		externalObject.cc
 		myReadLine.cc
 		specialForm.cc
-	    bignum.cc
       unixfsys.cc
       executables.cc
 	    lispList.cc
@@ -77,7 +83,6 @@ local sources =
 		lispDefinitions.cc
 		objRef.cc
 		bundle.cc
-		numerics.cc
 		object.cc
 	    stringSet.cc
 	    stringList.cc
@@ -93,11 +98,6 @@ local sources =
 	    readtable.cc
       debugger.cc
       float_to_digits.cc
-      num_arith.cc
-      numbers.cc
-      numberToString.cc
-      load.cc
-      num_co.cc
       pathname.cc
       commandLineOptions.cc
       exceptions.cc

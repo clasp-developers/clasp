@@ -45,11 +45,11 @@ namespace core
 	T_sp v0, v1;
 	T_mv v0v1;
 	Integer_sp tv1;
-	switch (x->number_type()) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = x;
-	    v1 = Fixnum_O::create(0);
+	    v1 = make_fixnum(0);
 	    break;
 	case number_Ratio: {
 	    Ratio_sp rx = x.as<Ratio_O>();
@@ -99,8 +99,8 @@ namespace core
 	T_mv v0v1;
 	Real_sp tv1;
 	NumberType ty;
-        ty = y->number_type();
-	switch(x->number_type())
+        ty = clasp_t_of(y);
+	switch(clasp_t_of(x))
 	{
 	case number_Fixnum:
 	    switch(ty) {
@@ -112,11 +112,11 @@ namespace core
 		int q = a / b;
 		int r = a % b;
 		if ((r^b) > 0 && r) {	/* same signs and some remainder */
-		    v0 = Fixnum_O::create(q+1);
-		    v1 = Fixnum_O::create(r-b);
+		    v0 = make_fixnum(q+1);
+		    v1 = make_fixnum(r-b);
 		} else {
-		    v0 = Fixnum_O::create(q);
-		    v1 = Fixnum_O::create(r);
+		    v0 = make_fixnum(q);
+		    v1 = make_fixnum(r);
 		}
 		break;
 	    }
@@ -237,7 +237,7 @@ namespace core
 	    }
 	    break;
 	case number_Ratio:
-	    switch(y->number_type()) {
+	    switch(clasp_t_of(y)) {
 	    case number_Ratio:{		/* RAT / RAT */
 		Ratio_sp rx = x.as<Ratio_O>();
 		Ratio_sp ry = y.as<Ratio_O>();
@@ -300,11 +300,11 @@ namespace core
 	T_mv v0v1;
 	Real_sp tv1;
 	Integer_sp iv1;
-	switch (x->number_type()) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = x;
-	    v1 = Fixnum_O::create(0);
+	    v1 = make_fixnum(0);
 	    break;
 	case number_Ratio: {
 	    Ratio_sp rx = x.as<Ratio_O>();
@@ -359,11 +359,11 @@ T_mv floor1(Real_sp x)
     T_sp v0,v1;
     Integer_sp iv1;
     T_mv v0v1;
-    switch (x->number_type()) {
+    switch (clasp_t_of(x)) {
     case number_Fixnum:
     case number_Bignum:
 	v0 = x;
-	v1 = Fixnum_O::create(0);
+	v1 = make_fixnum(0);
 	break;
     case number_Ratio:{
 	Ratio_sp rx = x.as<Ratio_O>();
@@ -414,8 +414,8 @@ T_mv floor1(Real_sp x)
 	T_mv v0v1;
 	Real_sp tv1;
 	Integer_sp iv1;
-        ty = y->number_type();
-	switch(x->number_type()) {
+        ty = clasp_t_of(y);
+	switch(clasp_t_of(x)) {
 	case number_Fixnum:
 	    switch(ty) {
 	    case number_Fixnum: {	/* FIX / FIX */
@@ -426,11 +426,11 @@ T_mv floor1(Real_sp x)
 		int q = a / b;
 		int r = a % b;
 		if ((r^b) < 0 && r) {	/* opposite signs and some remainder */
-		    v0 = Fixnum_O::create(q-1);
-		    v1 = Fixnum_O::create(r+b);
+		    v0 = make_fixnum(q-1);
+		    v1 = make_fixnum(r+b);
 		} else {
-		    v0 = Fixnum_O::create(q);
-		    v1 = Fixnum_O::create(r);
+		    v0 = make_fixnum(q);
+		    v1 = make_fixnum(r);
 		}
 		break;
 	    }
@@ -551,7 +551,7 @@ T_mv floor1(Real_sp x)
 	    }
 	    break;
 	case number_Ratio:
-	    switch(y->number_type()) {
+	    switch(clasp_t_of(y)) {
 	    case number_Ratio:{		/* RAT / RAT */
 		Ratio_sp rx = x.as<Ratio_O>();
 		Ratio_sp ry = y.as<Ratio_O>();

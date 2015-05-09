@@ -118,7 +118,7 @@ namespace core
 #define DECL_af_make_list ""
     List_sp af_make_list(Integer_sp osize, T_sp initial_element)
     {_G();
-	int size = osize->as_int();
+	int size = clasp_to_int(osize);
 	if ( size < 0 )
 	{
 	    SIMPLE_ERROR(BF("Illegal size %d for list") % size );
@@ -211,7 +211,7 @@ namespace core
     {_G();
 	if ( isAllDigits(s) )
 	{
-	    return((Fixnum_O::create(atoi(s.c_str()))));
+	    return((make_fixnum(atoi(s.c_str()))));
 	}
 	if ( s == "false" || s == "False" ) return((_Nil<T_O>()));
 	return(Str_O::create(s));
@@ -326,7 +326,7 @@ namespace core
 
 
 
-    void Cons_O::sxhash(HashGenerator& hg) const
+    void Cons_O::sxhash_(HashGenerator& hg) const
     {_OF();
 	if ( hg.isFilling() ) hg.hashObject(this->_Car);
 	if ( hg.isFilling() ) hg.hashObject(this->_Cdr);

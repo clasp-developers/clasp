@@ -583,7 +583,7 @@ namespace core
 	if ( value<0 ) {
 	    return _Nil<T_O>();
 	}
-	return Fixnum_O::create(value);
+	return make_fixnum(value);
     };
 
 
@@ -624,7 +624,7 @@ namespace core
 	{_G();
 	    int ch = och->asChar();
 	    if ( ch < CHAR_CODE_LIMIT ) {
-		return Fixnum_O::create((int)ch);
+		return make_fixnum((int)ch);
 	    }
 	    SIMPLE_ERROR(BF("Character is beyon CHAR_CODE_LIMIT: %d") % CHAR_CODE_LIMIT);
 	};
@@ -635,7 +635,7 @@ namespace core
     Fixnum_sp cl_char_int(Character_sp och)
 	{_G();
 	    char ch = och->asChar();
-	    return Fixnum_O::create((int)ch);
+	    return make_fixnum((int)ch);
 	};
 
 #define DOCS_cl_code_char "code_char"
@@ -643,7 +643,7 @@ namespace core
 #define DECL_cl_code_char ""
     Character_sp cl_code_char(Integer_sp ich)
 	{_G();
-	    int ii = ich->as_int();
+	    int ii = clasp_to_int(ich);
 	    if ( ii >= 0 && ii < CHAR_CODE_LIMIT ) {
 		return Character_O::create(ii);
 	    }
@@ -917,7 +917,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 	return ss.str();
     }
 
-    void StandardChar_O::sxhash(HashGenerator& hg) const
+    void StandardChar_O::sxhash_(HashGenerator& hg) const
     {
 	hg.addPart(this->_Value);
     }

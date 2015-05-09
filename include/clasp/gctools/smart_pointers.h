@@ -104,6 +104,11 @@ namespace gctools {
     typedef uintptr_t Tagged;
     static const int fixnum_bits = 63;
     static const int fixnum_shift = 1;
+    static const int most_positive_int = std::numeric_limits<int>::max();
+    static const int most_negative_int = std::numeric_limits<int>::min();
+    static const uint most_positive_uint = std::numeric_limits<unsigned int>::max();
+    static const uint64_t most_positive_uint64 = std::numeric_limits<uint64_t>::max();
+    static const unsigned long long most_positive_unsigned_long_long = std::numeric_limits<unsigned long long>::max();
     static const long int mostPositiveFixnum =  4611686018427387903;
     static const long int mostNegativeFixnum = -4611686018427387904;
 #define MOST_POSITIVE_FIXNUM gctools::mostPositiveFixnum
@@ -2095,6 +2100,11 @@ namespace gctools {
 
 namespace gctools {
 
+    ////////////////////////////////////////////////////////////////////////
+    ///
+    /// Specialize type conversions to simulate Common Lisp semantics and
+    /// Common Lisp type hierarchy (is that the term)
+    ///
 	
     template <>
 	inline smart_ptr<core::List_V> smart_ptr<core::T_O>::asOrNull<core::List_V>() {
@@ -2133,13 +2143,39 @@ namespace gctools {
 
     template <>
 	inline smart_ptr<core::List_V> smart_ptr<core::T_O>::as<core::List_V>() const {
-	smart_ptr<core::List_V> ret = this->asOrNull<core::List_V>();
-	if (!ret) {
-	    class_id expected_typ = reg::registered_class<core::List_V>::id;
-	    lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
+	if ( smart_ptr<core::List_V> ret = this->asOrNull<core::List_V>() ) {
+	    return ret;
 	}
-	return ret;
+	class_id expected_typ = reg::registered_class<core::List_V>::id;
+	lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
+	HARD_UNREACHABLE();
     };
+
+    template <>
+	inline smart_ptr<core::Integer_O> smart_ptr<core::T_O>::as<core::Integer_O>() const {
+	if ( this->fixnump() ) {
+	    return *this;
+	} else if ( smart_ptr<core::Integer_O> ret = this->asOrNull<core::Integer_O>() ) {
+	    return ret;
+	}
+	class_id expected_typ = reg::registered_class<core::List_V>::id;
+	lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
+	HARD_UNREACHABLE();
+    };
+    template <>
+	inline smart_ptr<core::Number_O> smart_ptr<core::T_O>::as<core::Number_O>() const {
+	if ( this->fixnump() ) {
+	    return *this;
+	} else if ( this->single_floatp() ) {
+	    return *this;
+	} else if ( smart_ptr<core::Number_O> ret = this->asOrNull<core::Number_O>() ) {
+	    return ret;
+	}
+	class_id expected_typ = reg::registered_class<core::List_V>::id;
+	lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
+	HARD_UNREACHABLE();
+    };
+
 
 };
 

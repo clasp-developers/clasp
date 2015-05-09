@@ -281,7 +281,7 @@ namespace core
 	    }
 	}
 	T_sp tllprocessed = llprocessed;
-	return(Values(tllprocessed,sd_symbol,sd_class,Fixnum_O::create(dispatchIndex)));
+	return(Values(tllprocessed,sd_symbol,sd_class,make_fixnum(dispatchIndex)));
     }
 
 
@@ -396,7 +396,7 @@ namespace core
 	} else
 	{
 	    target._ArgTargetFrameIndex = this->lexicalIndex;
-	    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_lexicalVar,Cons_O::create(target._ArgTarget,Fixnum_O::create(target._ArgTargetFrameIndex)));
+	    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_lexicalVar,Cons_O::create(target._ArgTarget,make_fixnum(target._ArgTargetFrameIndex)));
 	    this->advanceLexicalIndex();
 	}
     }
@@ -1023,7 +1023,7 @@ void bind_aux
 			  auxs);
 	ql::list lreqs(_lisp);
 	{ // required arguments  req = ( num req1 req2 ...)
-	    lreqs << Fixnum_O::create((int)reqs.size());
+	    lreqs << make_fixnum((int)reqs.size());
 	    for ( auto& it : reqs )
 	    {
 		lreqs << it._ArgTarget;
@@ -1031,7 +1031,7 @@ void bind_aux
 	}
 	ql::list lopts(_lisp);
 	{ // optional arguments   opts = (num opt1 init1 flag1 ...)
-	    lopts << Fixnum_O::create((int)optionals.size());
+	    lopts << make_fixnum((int)optionals.size());
 	    for ( auto& it : optionals )
 	    {
 		lopts << it._ArgTarget << it._Default << it._Sensor._ArgTarget;
@@ -1039,7 +1039,7 @@ void bind_aux
 	}
 	ql::list lkeys(_lisp);
 	{ // optional arguments   keys = (num key1 var1 init1 flag1 ...)
-	    lkeys << Fixnum_O::create((int)keys.size());
+	    lkeys << make_fixnum((int)keys.size());
 	    for ( auto& it : keys )
 	    {
 		lkeys << it._Keyword << it._ArgTarget << it._Default << it._Sensor._ArgTarget;
@@ -1049,7 +1049,7 @@ void bind_aux
 	if ( auxs.size() != 0 )
 	{ // auxes arguments   auxs = (num aux1 init1 ...)
 	    // !!!! The above is not true auxs = nil or (aux1 init1 aux2 init 2)
-//	    lauxs << Fixnum_O::create((int)auxs.size());
+//	    lauxs << make_fixnum((int)auxs.size());
 	    for ( auto& it : auxs )
 	    {
 		lauxs << it._ArgTarget << it._Expression;
@@ -1270,7 +1270,7 @@ void bind_aux
 
 	ql::list reqs(_lisp);
 	{ // required arguments  req = ( num req1 req2 ...)
-	    reqs << Fixnum_O::create((int)this->_RequiredArguments.size());
+	    reqs << make_fixnum((int)this->_RequiredArguments.size());
 	    for ( gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
 		  it!=this->_RequiredArguments.end(); it++ )
 	    {
@@ -1279,7 +1279,7 @@ void bind_aux
 	}
 	ql::list opts(_lisp);
 	{ // optional arguments   opts = (num opt1 init1 flag1 ...)
-	    opts << Fixnum_O::create((int)this->_OptionalArguments.size());
+	    opts << make_fixnum((int)this->_OptionalArguments.size());
 	    for ( gctools::Vec0<OptionalArgument>::const_iterator it = this->_OptionalArguments.begin();
 		  it!=this->_OptionalArguments.end(); it++ )
 	    {
@@ -1289,7 +1289,7 @@ void bind_aux
 	ql::list keys(_lisp);
 	bool keyFlag = this->_KeyFlag.notnilp();
 	{ // optional arguments   keys = (num key1 var1 init1 flag1 ...)
-	    keys << Fixnum_O::create((int)this->_KeywordArguments.size());
+	    keys << make_fixnum((int)this->_KeywordArguments.size());
 	    for ( gctools::Vec0<KeywordArgument>::const_iterator it = this->_KeywordArguments.begin();
 		  it!=this->_KeywordArguments.end(); it++ )
 	    {
@@ -1299,7 +1299,7 @@ void bind_aux
 	}
 	ql::list auxs(_lisp);
 	{ // auxes arguments   auxs = (num aux1 init1 ...)
-	    auxs << Fixnum_O::create((int)this->_AuxArguments.size());
+	    auxs << make_fixnum((int)this->_AuxArguments.size());
 	    for ( gctools::Vec0<AuxArgument>::const_iterator it = this->_AuxArguments.begin();
 		  it!=this->_AuxArguments.end(); it++ )
 	    {

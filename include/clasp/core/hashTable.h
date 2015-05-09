@@ -35,6 +35,7 @@ THE SOFTWARE.
 
 namespace core
 {
+    //#define DEBUG_HASH_TABLE
 
     extern bool DebugHashTable;
 

@@ -57,8 +57,8 @@ namespace core {
     Integer_sp brcl_integer_divide(Integer_sp x, Integer_sp y)
     {
 	NumberType tx, ty;
-	tx = brcl_t_of(x);
-	ty = brcl_t_of(y);
+	tx = clasp_t_of(x);
+	ty = clasp_t_of(y);
 	if (tx == number_Fixnum) {
 	    if (ty == number_Fixnum) {
 		if (y == brcl_make_fixnum(0))
@@ -98,7 +98,7 @@ namespace core {
 	Integer_sp gcd = oCar(nums).as<Integer_O>();
 	nums = oCdr(nums);
 	if (nums.nilp()) {
-	    return (clasp_minusp(gcd) ? brcl_negate(gcd).as<Integer_O>() : gcd);
+	    return (clasp_minusp(gcd) ? clasp_negate(gcd).as<Integer_O>() : gcd);
 	}
 	while (nums.consp()) {
 	    gcd = brcl_gcd(gcd, oCar(nums).as<Integer_O>());
@@ -109,7 +109,7 @@ namespace core {
 
     Integer_sp brcl_gcd(Integer_sp x, Integer_sp y, int yidx)
     {
-	switch (brcl_t_of(x)) {
+	switch (clasp_t_of(x)) {
 	case number_Fixnum: {
 	    Bignum_sp big(Bignum_O::create(clasp_fixnum(x)));
 	    x = big;
@@ -119,7 +119,7 @@ namespace core {
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG(yidx,x,cl::_sym_Integer_O);
 	}
-	switch (brcl_t_of(y)) {
+	switch (clasp_t_of(y)) {
 	case number_Fixnum: {
 	    Bignum_sp big(Bignum_O::create(clasp_fixnum(y)));
 	    y = big;
@@ -155,11 +155,11 @@ namespace core {
 	    yidx++;
 	    Number_sp t = brcl_times(lcm, numi);
 	    Number_sp g = brcl_gcd(numi, lcm);
-	    if (!g->zerop()) {
+	    if (!clasp_zerop(g)) {
 		lcm = brcl_divide(t, g).as<Integer_O>();
 	    }
 	}
-	return clasp_minusp(lcm) ? brcl_negate(lcm).as<Integer_O>() : lcm.as<Integer_O>();
+	return clasp_minusp(lcm) ? clasp_negate(lcm).as<Integer_O>() : lcm.as<Integer_O>();
     };
 
 

@@ -115,7 +115,7 @@ namespace core
     {_G();
 	int i;
 	for (i = 0; i < n; i++) {
-	    T_sp byte = eval::funcall(gray::_sym_stream_write_byte, strm,Fixnum_O::create(c[i]));
+	    T_sp byte = eval::funcall(gray::_sym_stream_write_byte, strm,make_fixnum(c[i]));
 	    if (!af_fixnumP(byte)) break;
 	}
 	return i;
@@ -454,7 +454,7 @@ namespace core
     T_sp af_fileColumn(T_sp ostrm)
     {_G();
 	Stream_sp strm = coerce::outputStreamDesignator(ostrm);
-	return Fixnum_O::create(strm->outputColumn());
+	return make_fixnum(strm->outputColumn());
     };
 
 
@@ -709,7 +709,7 @@ namespace core
 		return(Values(eof_value,_lisp->_true()));
 	    }
 	}	
-	return(Values(res,Fixnum_O::create(sin->tell())));
+	return(Values(res,make_fixnum(sin->tell())));
     }
 
 
@@ -815,7 +815,7 @@ namespace core
 	} else {
 	    this->writeByte(vec->elt(start));
 	}
-	return Fixnum_O::create(static_cast<int>(start));
+	return make_fixnum(static_cast<int>(start));
     };
 	    
 

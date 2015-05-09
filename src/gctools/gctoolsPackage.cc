@@ -135,15 +135,15 @@ namespace gctools
         gctools::Array0<core::T_sp> w;
         w.allocate(4,_Nil<T_O>());
         for (int i(0); i<4; ++i ) {
-            w[i] = core::Fixnum_O::create(i);
+            w[i] = core::make_fixnum(i);
         }
         Array0_dump(w,"Fixnum*4");
         printf("Creating ValueFrame\n");
-        core::ValueFrame_sp vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::Fixnum_O::create(1), core::Fixnum_O::create(2), core::Fixnum_O::create(3));
+        core::ValueFrame_sp vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::make_fixnum(1), core::make_fixnum(2), core::make_fixnum(3));
         printf("Creating another 1 ValueFrame\n");
-        vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::Fixnum_O::create(1), core::Fixnum_O::create(2), core::Fixnum_O::create(3));
+        vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::make_fixnum(1), core::make_fixnum(2), core::make_fixnum(3));
         printf("Creating another 2 ValueFrame\n");
-        vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::Fixnum_O::create(1), core::Fixnum_O::create(2), core::Fixnum_O::create(3));
+        vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::make_fixnum(1), core::make_fixnum(2), core::make_fixnum(3));
         printf("Leaving scope\n");
     }
 #endif
@@ -499,7 +499,7 @@ namespace gctools {
 extern "C" {
     void dbg_room()
     {
-        af_room(_Nil<core::T_O>(),core::Fixnum_O::create(0),_Nil<core::Str_O>());
+        af_room(_Nil<core::T_O>(),core::make_fixnum(0),_Nil<core::Str_O>());
     }
 
 }
@@ -552,7 +552,7 @@ namespace gctools {
         int z=0;
         void* zp = &z;
         size_t stackDepth =  (char*)_global_stack_marker - (char*)zp;
-        return core::Fixnum_O::create((uint)stackDepth);
+        return core::make_fixnum((uint)stackDepth);
     };
 
 
@@ -634,17 +634,17 @@ namespace gctools {
     {_G();
         core::Pointer_sp p;
         {
-            core::Fixnum_sp fn = core::Fixnum_O::create(20);
+            core::Fixnum_sp fn = core::make_fixnum(20);
             p = af_gcaddress(fn);
             af_gcheader(p,"Start");
             core::Fixnum_sp fn2 = fn;
             af_gcheader(p,"Assignment");
             fn2 = fn2;
             af_gcheader(p,"fn2 = fn2");
-            fn2 = core::Fixnum_O::create(1);
-            af_gcheader(p,"fn2 = Fixnum_O::create(1)");
-            fn = core::Fixnum_O::create(0);
-//            af_gcheader(p,"fn = Fixnum_O::create(0)");
+            fn2 = core::make_fixnum(1);
+            af_gcheader(p,"fn2 = make_fixnum(1)");
+            fn = core::make_fixnum(0);
+//            af_gcheader(p,"fn = make_fixnum(0)");
         }
 //        af_gcheader(p,"fn went out of scope");
     };
@@ -772,7 +772,7 @@ namespace gctools {
         {
 //            printf("%s:%d i[%d]Checking if %s == %s\n", __FILE__, __LINE__, i, global_HardcodedKinds[i], name.c_str());
             if (strcmp(global_HardcodedKinds[i],name.c_str()) == 0 ) {
-                return core::Fixnum_O::create(i);
+                return core::make_fixnum(i);
             }
         }
         return _Nil<core::T_O>();
