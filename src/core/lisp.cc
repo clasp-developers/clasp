@@ -3595,7 +3595,7 @@ extern "C"
 
     void Lisp_O::exposeCando()
     {_G();
-	printf("%s:%d in core::Lisp_O::exposeCando\n", __FILE__, __LINE__ );
+	//	printf("%s:%d in core::Lisp_O::exposeCando\n", __FILE__, __LINE__ );
 	SYMBOL_SC_(CorePkg,find_single_dispatch_generic_function);
 	af_def(CorePkg,"find-single-dispatch-generic-function",
 	       &Lisp_O::find_single_dispatch_generic_function,

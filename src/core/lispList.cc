@@ -172,7 +172,6 @@ namespace core
 #define DOCS_cl_rassoc "See CLHS rassoc"
     T_sp cl_rassoc (T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_sp key)
     {
-	TESTING();
 	struct cl_test t;
 	if ( test.notnilp() ) test = coerce::functionDesignator(test);
 	if ( test_not.notnilp() ) test_not = coerce::functionDesignator(test_not);

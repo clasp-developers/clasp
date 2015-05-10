@@ -67,7 +67,7 @@ namespace core
 	static SingleDispatchMethod_sp create(Symbol_sp name,
 					      Class_sp receiver,
 					      LambdaListHandler_sp lambda_list_handler,
-					      List_sp declares, T_sp docstr,
+					      List_sp declares, gc::Nilable<Str_sp> docstr,
 					      Function_sp body );
     public: // Functions here
 

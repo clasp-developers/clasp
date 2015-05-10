@@ -56,9 +56,14 @@ THE SOFTWARE.
 #include <clasp/core/str.h>
 #include <clasp/core/wrappers.h>
 
+namespace core {
+    namespace eval {
+	T_mv t1Evaluate(T_sp exp, T_sp environment);
+    };
+};
+
 namespace core
 {
-
 
 
     List_sp separateTopLevelForms(List_sp accumulated, T_sp possibleForms)
@@ -567,7 +572,8 @@ namespace core
 #define DECL_af_eval ""
 	T_mv af_eval(T_sp form)
 	{_G();
-	    return eval::evaluate(form,_Nil<T_O>());
+	    return t1Evaluate(form,_Nil<T_O>());
+	    //	    return eval::evaluate(form,_Nil<T_O>());
 	};
 
 
@@ -2216,7 +2222,6 @@ namespace core
 
 
         SYMBOL_EXPORT_SC_(CompPkg,compileInEnv);
-        T_mv t1Evaluate(T_sp exp, T_sp environment);
 
 	T_mv t1Progn(List_sp args, T_sp environment)
 	{_G();

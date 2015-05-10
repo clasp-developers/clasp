@@ -347,7 +347,7 @@ T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int line
 	}
 	T_sp name = this->closure->name;
 	stringstream ss;
-	ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(name);
+	ss << "#<" << this->_instanceClass()->classNameAsString() << " " << this->closure->describe() << " " << _rep_(name);
 	auto closure = this->closure;
 	void* fptr = closure->functionAddress();
 	if ( fptr!=NULL ) {

@@ -75,7 +75,8 @@ This is a complication in the build system.
 1) Symbol scraping depends on .cc files.
 2) .cc files depend on the results of symbol scraping.
 
-For the most part it works.  But when you add new symbols it forces lots of recompilation 
+There is one very annoying bug that a user encounters when building Clasp.  The very first time a fresh repo is built with "make", a lot of errors will be reported.  If the user halts the make with Control-C and then types "make" again - the problem disappears, never to return.  We tracked down the problem to a problem with boost build (https://github.com/drmeister/clasp/issues/17) but it is not clear how to resolve it.
+When you add new symbols it forces lots of recompilation 
 
 
 ----------------------------------------------------------------------
@@ -90,6 +91,9 @@ LISP_CLASS(...)
 
 It populates the file XXX_initClasses_inc.h with code that exposes these C++ classes to Common Lisp
 
+
+----------------------------------------------------------------------
+----------------------------------------------------------------------
 
 
 

@@ -150,7 +150,7 @@ namespace translate {
 		SIMPLE_ERROR(BF("You cannot pass nil as a function"));
 	    } else if ( core::Function_sp func = o.asOrNull<core::Function_O>() ) {
 		gctools::tagged_functor<core::Closure> closure = func->closure;
-		if ( auto compiledClosure = closure.as<llvmo::CompiledClosure>() ) {
+		if ( auto compiledClosure = closure.asOrNull<llvmo::CompiledClosure>() ) {
 		    llvmo::CompiledClosure::fptr_type fptr = compiledClosure->fptr;
 		    this->_v = [fptr] (const clang::tooling::CommandLineArguments& args)->clang::tooling::CommandLineArguments {
 			// Should resolve to vector<string>
@@ -166,6 +166,8 @@ namespace translate {
 			// Convert result to CommandLineArguments and return them
 		    };
 		    return;
+		} else {
+		    SIMPLE_ERROR(BF("Figure out what to do with the %s Closure %s ") % closure->describe() % _rep_(closure->name));
 		}
 	    } else if ( clang::tooling::ArgumentsAdjuster* argAdj = o.as<core::WrappedPointer_O>()->cast<clang::tooling::ArgumentsAdjuster>() ) {
 		this->_v = *argAdj;

@@ -81,8 +81,8 @@ namespace core
 #define LOCK_af_ensureSingleDispatchMethod 0
 #define ARGS_af_ensureSingleDispatchMethod "(gfname receiver-class &key lambda-list-handler declares (docstring \"\") body )"
 #define DECL_af_ensureSingleDispatchMethod ""    
-    void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, Str_sp docstring, Function_sp body )
-    {_G();
+    void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body )
+    {
 //	string docstr = docstring->get();
         if ( !gfname->fboundp() ) {
             SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));

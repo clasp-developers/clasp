@@ -2369,7 +2369,7 @@ namespace llvmo {
     void initialize_intrinsics()
     {
 	//	PRIMITIVE(cc_setSymbolValue);
-	printf("%s:%d  Initializing intrinsics.cc\n", __FILE__, __LINE__ );
+	//printf("%s:%d  Initializing intrinsics.cc\n", __FILE__, __LINE__ );
 #if 0
 	T_mv foo = testTwoReturns();
 	printf("Called testTwoReturns  foo.raw_() = %p   foo.two = %d\n", foo.raw_(), foo.number_of_values() );

@@ -12,9 +12,6 @@
 
 (in-package "SB-BSD-SOCKETS")
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (format t "Loading sockets.lisp"))
-
 #+clasp
 (export '(
 	  GET-HOST-BY-NAME GET-HOST-BY-ADDRESS

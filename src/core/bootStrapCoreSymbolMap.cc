@@ -50,7 +50,7 @@ namespace core
 //	this->attachToGCRoot();
 //#define LOOKUP_SYMBOL(pkgName,symName) bootStrapSymbolMap.lookupSymbol(pkgName,symName)
 
-	printf("%s:%d BootStrapCoreSymbolMap\n", __FILE__, __LINE__ );
+	//printf("%s:%d BootStrapCoreSymbolMap\n", __FILE__, __LINE__ );
 	
 #define ClPkg_SYMBOLS
 #define DO_SYMBOL(cname,rsid,pkgName,symName,exportp) cl::cname = this->allocate_unique_symbol(pkgName,symName,exportp);
@@ -140,7 +140,7 @@ namespace core
 
     void BootStrapCoreSymbolMap::finish_setup_of_symbols()
     {_G();
-	printf("%s:%d finish_setup_of_symbols\n", __FILE__, __LINE__ );
+	//printf("%s:%d finish_setup_of_symbols\n", __FILE__, __LINE__ );
 	for ( map<string,int>::const_iterator it=this->_SymbolNamesToIndex.begin();
 	      it!=this->_SymbolNamesToIndex.end(); it++ )
 	{

@@ -138,7 +138,7 @@ namespace gctools {
 };
 
 
-
+#include <clasp/gctools/pointer_tagging.h>
 
 
 
