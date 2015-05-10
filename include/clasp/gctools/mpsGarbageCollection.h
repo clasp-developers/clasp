@@ -489,14 +489,8 @@ inline mps_res_t smartPtrFix(mps_ss_t _ss
     if ( sptrP->objectp() ) {
 	Type* tagged_obj = (sptrP)->raw_();
 	if ( MPS_FIX1(_ss,tagged_obj) ) {
-	    Type* obj(NULL);
-	    if ( gctools::tagged_otherp<Type>(tagged_obj) ) {
-		obj = gctools::untag_other<Type>(tagged_obj);
-	    } else if ( gctools::tagged_consp<Type>(tagged_obj) ) {
-		obj = gctools::untag_cons<Type>(tagged_obj);
-	    } else {
-		THROW_HARD_ERROR(BF("Trying to untag non-other or non-cons: %p") % (void*)(tagged_obj));
-	    }
+	    //	    Type* obj(NULL);
+	    Type* obj = gctools::untag_object<Type>(tagged_obj);
 	    Type* tag = gctools::tag<Type>(tagged_obj);
 	    mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&obj));
             if (res != MPS_RES_OK) return res;              

@@ -134,11 +134,11 @@ namespace gctools {
     static const uintptr_t single_float_mask  = 0x1FFFFFFFFF;  // single-floats are in these 32+5bits
 
     template <class T>
-    uintptr_t tag(T* ptr) { return reinterpret_cast<uintptr_t>(ptr)&tag_mask; };
+	T* tag(T* ptr) { return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(ptr)&tag_mask); };
 
 
     template <class T> inline bool tagged_consp(T* ptr) {
-	return (tag(ptr)==cons_tag);
+	return (reinterpret_cast<uintptr_t>(tag(ptr))==cons_tag);
     };
 
     template <class T> inline T* tag_cons(T* p) {
@@ -257,6 +257,17 @@ namespace gctools {
     template <class T> inline bool tagged_framep(T* ptr) {
 	return ((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==frame_tag);
     };
+
+    template <class Type> inline Type* untag_object(Type* tagged_obj) {
+	if ( gctools::tagged_otherp<Type>(tagged_obj) ) {
+	    return gctools::untag_other<Type>(tagged_obj);
+	} else if ( gctools::tagged_consp<Type>(tagged_obj) ) {
+	    return gctools::untag_cons<Type>(tagged_obj);
+	} else {
+	    THROW_HARD_ERROR(BF("Trying to untag non-other or non-cons: %p") % (void*)(tagged_obj));
+	}
+    };
+
 };
 
 

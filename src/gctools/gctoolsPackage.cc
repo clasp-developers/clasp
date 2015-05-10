@@ -381,7 +381,7 @@ namespace gctools {
     {
 #ifdef USE_MPS
         if ( pattern == _sym_ramp || pattern == _sym_rampCollectAll ) {
-            core::Cons_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
+            core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
             patternStack = core::Cons_O::create(pattern,patternStack);
             gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(patternStack);
             if ( pattern == _sym_ramp ) {
@@ -394,9 +394,9 @@ namespace gctools {
             return;
         }
         SIMPLE_ERROR(BF("Only options for alloc-pattern-begin is %s@%p and %s@%p - you passed: %s@%p")
-                     % _rep_(_sym_ramp) % _sym_rampCollectAll.px_ref()
-                     % _rep_(_sym_rampCollectAll) % _sym_rampCollectAll.px_ref()
-                     % _rep_(pattern) % pattern.px_ref());
+                     % _rep_(_sym_ramp) % _sym_rampCollectAll.raw_()
+                     % _rep_(_sym_rampCollectAll) % _sym_rampCollectAll.raw_()
+                     % _rep_(pattern) % pattern.raw_());
 #endif
     };
 
@@ -409,7 +409,7 @@ namespace gctools {
     {
         Symbol_sp pattern(_Nil<core::Symbol_O>());
 #ifdef USE_MPS
-        core::Cons_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
+        core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
         if ( patternStack.nilp() ) return _Nil<core::Symbol_O>();
         pattern = oCar(patternStack).as<core::Symbol_O>();
         gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(oCdr(patternStack));
@@ -499,7 +499,7 @@ namespace gctools {
 extern "C" {
     void dbg_room()
     {
-        af_room(_Nil<core::T_O>(),core::make_fixnum(0),_Nil<core::Str_O>());
+        af_room(_Nil<core::T_O>(),core::make_fixnum(0),_Nil<core::T_O>());
     }
 
 }

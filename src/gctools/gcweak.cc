@@ -66,7 +66,7 @@ namespace gctools {
             )
         {
 #ifdef USE_MPS
-            if ( locationDependencyP && key.pointerp()) {
+            if ( locationDependencyP && key.objectp()) {
  		GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void*)key.raw_());
                 mps_ld_add(locationDependencyP
                            ,gctools::_global_arena
@@ -417,7 +417,7 @@ namespace gctools {
 		    GCWEAK_LOG(BF("Falling through"));
 		}
 #ifdef USE_MPS
-		if (key.pointerp() && mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.raw_() )) {
+		if (key.objectp() && mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.raw_() )) {
 		    if (this->rehash( this->_Keys->length(), key, pos)) {
 			core::T_sp value((*this->_Values)[pos]);
 			if ( value.sameAsKeyP() ) {
@@ -489,7 +489,7 @@ namespace gctools {
 		    (*this->_Keys)[b].deletedp() )
 		    {
 #ifdef USE_MPS
-			if(key.pointerp() && !mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.raw_()))
+			if(key.objectp() && !mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.raw_()))
 			    return;
 #endif
 			if(!this->rehash( (*this->_Keys).length(), key, b))
@@ -547,17 +547,17 @@ extern "C" {
                     WeakBucketsObjectType* obj = reinterpret_cast<WeakBucketsObjectType*>(weakObj);
                     MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&obj->dependent));
                     for ( int i(0), iEnd(obj->length()); i<iEnd; ++i ) {
-                        mps_addr_t p = reinterpret_cast<mps_addr_t>(obj->bucket[i].raw_());
+			core::T_O* p = reinterpret_cast<core::T_O*>(obj->bucket[i].raw_());
                         if (MPS_FIX1(ss,p)) {
-			    void* obj = gctools::untag_object(p);
-			    void* tag = gctools::tag_of_object(p);
-                            mps_res_t res = MPS_FIX2(ss,&obj);
+			    core::T_O* obj = gctools::untag_object<core::T_O>(p);
+			    core::T_O* tag = gctools::tag<core::T_O>(p);
+                            mps_res_t res = MPS_FIX2(ss,reinterpret_cast<mps_addr_t*>(&obj));
                             if ( res != MPS_RES_OK ) return res;
                             if ( p == NULL && obj->dependent ) {
                                 obj->dependent->bucket[i] = WeakBucketsObjectType::value_type(gctools::tagged_ptr<core::T_O>::tagged_deleted);
                                 obj->bucket[i] = WeakBucketsObjectType::value_type(gctools::tagged_ptr<core::T_O>::tagged_deleted);
                             } else {
-                                obj->bucket[i].raw_() = reinterpret_cast<core::T_O*>(p);//reinterpret_cast<gctools::Header_s*>(p);
+                                obj->bucket[i].setRaw_(reinterpret_cast<core::T_O*>(p));//reinterpret_cast<gctools::Header_s*>(p);
                             }
                         }
                     }
