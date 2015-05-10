@@ -55,7 +55,7 @@ Symbol scraping
 In each source directory is a file called: "symbols_scraped_inc.h"
 - it lists the names and packages of Common Lisp SYMBOLs that are accessible to C++ as symbols with the names prefixed with "_sym_" ie: "_sym_list".
 
-The following script is run:
+Before any files are built and at the beginning of every build the following script is run:
 python src/common/symbolScraper.py *.cc include/*.h
 
 The include/*.h is a symbolic link to a clasp/include/clasp/xxx directory that contains header files for each source directory.
@@ -71,12 +71,12 @@ if there are any differences (symbols added, removed or changed) then it generat
 
 The symbols_scraped_inc.h file is included by almost every .cc file so that they have access to Common Lisp symbols without having to mess around with strings.
 
-This is a complication in the build system.
-1) Symbol scraping depends on .cc files.
-2) .cc files depend on the results of symbol scraping.
+To summarize:
+1) Symbol scraping scrapes all of the .cc files and may or may not generate a new symbols_scraped_inc.h file
+2) .cc files #include the symbols_scraped_inc.h file
 
 There is one very annoying bug that a user encounters when building Clasp.  The very first time a fresh repo is built with "make", a lot of errors will be reported.  If the user halts the make with Control-C and then types "make" again - the problem disappears, never to return.  We tracked down the problem to a problem with boost build (https://github.com/drmeister/clasp/issues/17) but it is not clear how to resolve it.
-When you add new symbols it forces lots of recompilation 
+When you add new symbols it forces lots of recompilation because almost every .cc file #include's symbols_scraped_inc.h either directly or indirectly.
 
 
 ----------------------------------------------------------------------

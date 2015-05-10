@@ -1290,6 +1290,8 @@ namespace asttooling {
             , CLASS_STMT(CallExpr, Expr)
             , CLASS_STMT(CUDAKernelCallExpr, CallExpr)
             , CLASS_STMT(CXXMemberCallExpr, CallExpr)
+	    .    def("getMethodDecl",&clang::CXXMemberCallExpr::getMethodDecl)
+	    .    def("getImplicitObjectArgument",&clang::CXXMemberCallExpr::getImplicitObjectArgument)
             , CLASS_STMT(CXXOperatorCallExpr, CallExpr)
             , CLASS_STMT(UserDefinedLiteral, CallExpr)
             , CLASS_STMT(CastExpr, Expr)

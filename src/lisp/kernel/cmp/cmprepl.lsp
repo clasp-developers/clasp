@@ -39,7 +39,7 @@
 (setq *implicit-compile-hook*
       (compile nil '(lambda (form &optional environment) 
 		     (declare (core:lambda-name cmp-repl-implicit-compile))
-		     (bformat t "*implicit-compile-hook* *load-truename* = %s   compiling form: %s\n" *load-truename* form)
+;;		     (bformat t "*implicit-compile-hook* *load-truename* = %s   compiling form: %s\n" *load-truename* form)
                      (multiple-value-bind (compiled-function warn fail)
                          (compile-in-env nil `(lambda () 
 						(declare (core:lambda-name implicit-repl))
