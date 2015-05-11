@@ -338,7 +338,7 @@ namespace core {
 
 	virtual Number_sp onePlus_() const
 	{
-	    if ( this->_Value == gctools::mostPositiveFixnum) {
+	    if ( this->_Value == gctools::most_positive_fixnum) {
 		Bignum bn(this->_Value);
 		bn = bn + 1;
 		return Integer_O::create(bn);
@@ -349,7 +349,7 @@ namespace core {
 
 	virtual Number_sp oneMinus_() const
 	{
-	    if ( this->_Value == gctools::mostNegativeFixnum ) {
+	    if ( this->_Value == gctools::most_negative_fixnum ) {
 		Bignum bn(this->_Value);
 		bn = bn - 1;
 		return Integer_O::create(bn);
@@ -1288,6 +1288,18 @@ namespace core {
 	    TYPE_ERROR(i,Cons_O::createList(cl::_sym_Integer_O,make_fixnum(0),Integer_O::create(gc::most_positive_unsigned_long_long)));
 	}
 	return i->as_unsigned_long_long_();
+    };
+
+    inline Fixnum clasp_to_fixnum(Fixnum_sp i)
+    {
+	if ( i.fixnump() ) {
+	    gc::Fixnum f = i.unsafe_fixnum();
+	    if ( f >= gc::most_negative_fixnum && f <= gc::most_positive_fixnum ) {
+		return f;
+	    }
+	    TYPE_ERROR(i,Cons_O::createList(cl::_sym_Integer_O,make_fixnum(gc::most_negative_fixnum),make_fixnum(gc::most_positive_fixnum)));
+	}
+	return i->as_int_();
     };
 
 

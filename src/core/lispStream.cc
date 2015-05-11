@@ -3831,8 +3831,9 @@ namespace core
 //            const cl_env_ptr the_env = clasp_process_env();
             cl_index bs = StreamByteSize(strm);
             T_mv output_mv = clasp_floor2(output, make_fixnum(bs/8));
-            Fixnum_sp fn1 = output_mv.valueGet(1).as<Fixnum_O>();
-            unlikely_if (fn1->get() != 0 ) {
+            Fixnum_sp ofn1 = output_mv.valueGet(1).as<Fixnum_O>();
+	    Fixnum fn = ofn1->get();
+            unlikely_if (fn != 0 ) {
                 FEerror("File length is not on byte boundary", 0);
             }
 	}

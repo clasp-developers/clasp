@@ -82,6 +82,14 @@ namespace translate
     from_object(core::T_sp o) : _v(clasp_to_int(o.as<core::Integer_O>())) {};
     };
 
+    template <>
+	struct	from_object<gc::Fixnum,std::true_type>
+    {
+	typedef	gc::Fixnum		DeclareType;
+	DeclareType _v;
+    from_object(core::T_sp o) : _v(clasp_to_fixnum(o.as<core::Fixnum_O>())) {};
+    };
+
 
 
 #if 0

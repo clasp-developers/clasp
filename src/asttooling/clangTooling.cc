@@ -608,6 +608,7 @@ namespace asttooling {
             .  def_constructor("newRefactoringTool",constructor<const clang::tooling::CompilationDatabase&,llvm::ArrayRef<std::string> >())
             .  def("getReplacements",&clang::tooling::RefactoringTool::getReplacements)
             .  def("applyAllReplacements",&clang::tooling::RefactoringTool::applyAllReplacements)
+            .  def("runAndSave",&clang::tooling::RefactoringTool::runAndSave)
             ,class_<clang::Rewriter>("Rewriter",no_default_constructor)
             .  def_constructor("newRewriter",constructor<clang::SourceManager&,const clang::LangOptions&>())
             ,class_<clang::ASTUnit>("ASTUnit",no_default_constructor)

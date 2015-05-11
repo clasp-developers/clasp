@@ -506,7 +506,7 @@ This can only be run in the context set up by the code-match-callback::run metho
      )))
 
 
-(defun batch-run-matcher (match-sexp &key callback filenames arguments-adjuster-code)
+(defun batch-run-matcher (match-sexp &key callback filenames arguments-adjuster-code run-and-save)
   (declare (type list match-sexp)
            (type match-callback callback)
            (type list filenames))
@@ -525,8 +525,10 @@ This can only be run in the context set up by the code-match-callback::run metho
                          (add-dynamic-matcher mf matcher callback)
                          mf))
          (factory (new-frontend-action-factory match-finder)))
-    (time (ast-tooling:clang-tool-run tool factory))
-    (format t "Number of matches ~a~%" *match-counter*)
+    (time (if (not run-and-save)
+	      (ast-tooling:clang-tool-run tool factory)
+	      (ast-tooling:run-and-save tool factory))
+	  (format t "Number of matches ~a~%" *match-counter*))
     ))
 
 
@@ -676,20 +678,22 @@ This can only be run in the context set up by the code-match-callback::run metho
     ))
 
 
-(defun match-run (match-sexp &key limit code &allow-other-keys)
+(defun match-run (match-sexp &key limit code)
   "Run code on every match"
   (setq *match-replacements* nil) ;; reset *match-replacements*
   (time (run-matcher match-sexp
                      :callback (make-instance 'code-match-callback :code code)
                      :counter-limit limit)))
 
-(defun batch-match-run (match-sexp &key limit code filenames arguments-adjuster-code &allow-other-keys)
+(defun batch-match-run (match-sexp &key limit code filenames arguments-adjuster-code run-and-save)
   "Run code on every match in every filename in batch mode"
+  (or code (error "You must provide code to batch-match-run"))
   (setq *match-replacements* nil) ;; reset *match-replacements*
   (time (batch-run-matcher match-sexp
                            :callback (make-instance 'code-match-callback :code code)
                            :filenames filenames
-                           :arguments-adjuster-code arguments-adjuster-code)))
+                           :arguments-adjuster-code arguments-adjuster-code
+			   :run-and-save run-and-save)))
 
 
 

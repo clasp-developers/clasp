@@ -131,10 +131,10 @@ namespace translate {
                     _v[i] = vo->elt(i).as<core::Str_O>()->get();
                 }
                 return;
-            } else if ( core::List_sp lo = o.asOrNull<core::Cons_O>() ) {
-                _v.resize(lo.asCons()->length());
+            } else if ( core::Cons_sp co = o.asOrNull<core::Cons_O>() ) {
+                _v.resize(co->length());
                 int i=0;
-                for ( auto cur : lo ) {
+                for ( auto cur : (core::List_sp)co ) {
                     _v[i] = oCar(cur).as<core::Str_O>()->get();
                     ++i;
                 }
@@ -164,7 +164,7 @@ namespace translate {
         typedef std::vector<std::unique_ptr<clang::ASTUnit>> GivenType;
         static core::T_sp convert(std::vector<std::unique_ptr<clang::ASTUnit> >& vals )
         {
-            core::VectorObjectsWithFillPtr_sp vo = core::VectorObjectsWithFillPtr_O::make(_Nil<core::T_O>(),_Nil<core::Cons_O>(),vals.size(),0,true);
+            core::VectorObjectsWithFillPtr_sp vo = core::VectorObjectsWithFillPtr_O::make(_Nil<core::T_O>(),_Nil<core::T_O>(),vals.size(),0,true);
             for ( int i(0),iEnd(vals.size()); i<iEnd; ++i ) {
                 vo->vectorPushExtend(clbind::Wrapper<clang::ASTUnit,std::unique_ptr<clang::ASTUnit> >::create(std::move(vals[i]),reg::registered_class<clang::ASTUnit>::id));
             }
@@ -179,7 +179,7 @@ namespace translate {
         typedef std::vector<clang::tooling::CompileCommand> GivenType;
         static core::T_sp convert(GivenType vals)
         {
-            core::VectorObjectsWithFillPtr_sp vo = core::VectorObjectsWithFillPtr_O::make(_Nil<core::T_O>(),_Nil<core::Cons_O>(),vals.size(),0,true);
+            core::VectorObjectsWithFillPtr_sp vo = core::VectorObjectsWithFillPtr_O::make(_Nil<core::T_O>(),_Nil<core::T_O>(),vals.size(),0,true);
             for ( int i(0),iEnd(vals.size()); i<iEnd; ++i ) {
                 vo->vectorPushExtend(clbind::Wrapper<clang::tooling::CompileCommand,std::unique_ptr<clang::tooling::CompileCommand> >::create(vals[i],reg::registered_class<clang::tooling::CompileCommand>::id));
             }

@@ -105,10 +105,10 @@ namespace gctools {
     static const uint most_positive_uint = std::numeric_limits<unsigned int>::max();
     static const uint64_t most_positive_uint64 = std::numeric_limits<uint64_t>::max();
     static const unsigned long long most_positive_unsigned_long_long = std::numeric_limits<unsigned long long>::max();
-    static const long int mostPositiveFixnum =  4611686018427387903;
-    static const long int mostNegativeFixnum = -4611686018427387904;
-#define MOST_POSITIVE_FIXNUM gctools::mostPositiveFixnum
-#define MOST_NEGATIVE_FIXNUM gctools::mostNegativeFixnum
+    static const long int most_positive_fixnum =  4611686018427387903;
+    static const long int most_negative_fixnum = -4611686018427387904;
+#define MOST_POSITIVE_FIXNUM gctools::most_positive_fixnum
+#define MOST_NEGATIVE_FIXNUM gctools::most_negative_fixnum
 #define FIXNUM_BITS gctools::fixnum_bits
 #endif
 #ifdef _ADDRESS_MODEL_32

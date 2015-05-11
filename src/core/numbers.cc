@@ -941,7 +941,7 @@ namespace core
 	    return((num->reciprocal()));
 	}
 	Number_sp result = num;
-	for ( auto cur : (List_sp)oCdr(numbers) ) {
+	for ( auto cur : (List_sp)(numbers) ) {
 	    result = contagen_div(result, oCar(cur).as<Number_O>());
 	}
 	return((result));

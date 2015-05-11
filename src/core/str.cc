@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 #define	DEBUG_LEVEL_FULL
-
+#include <algorithm>
 //#include "clasp_gmpxx.h"
 #include <ctype.h>
 #include <clasp/core/common.h>
@@ -231,13 +231,13 @@ namespace core
 #define ARGS_af_parseInteger "(string &key (start 0) end (radix 10) junk-allowed)"
 #define DECL_af_parseInteger ""
 #define DOCS_af_parseInteger "parseInteger"
-    T_mv af_parseInteger(Str_sp str, uint start, T_sp end, uint radix, T_sp junkAllowed)
+    T_mv af_parseInteger(Str_sp str, Fixnum start, T_sp end, uint radix, T_sp junkAllowed)
     {_G();
-	int istart = MAX(0,start);
-	int iend = cl_length(str);
+	Fixnum istart = std::max((Fixnum)0,start);
+	Fixnum iend = cl_length(str);
 	if ( end.notnilp() )
 	{
-	    iend = MIN(iend,end.as<Fixnum_O>()->get());
+	    iend = std::min(iend,end.as<Fixnum_O>()->get());
 	}
 	mpz_class result;
 	bool sawJunk = false;

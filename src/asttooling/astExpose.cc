@@ -82,6 +82,7 @@ namespace translate {
     struct to_object<clang::_T_##Decl*> {                     \
         static core::T_sp convert(clang::_T_##Decl* p)        \
         {                                               \
+	    if (!p) return _Nil<core::T_O>();		\
             return asttooling::mostDerivedDecl(p);      \
         }                                               \
     };
@@ -166,6 +167,7 @@ namespace translate {
     struct to_object<clang::_T_*> {                     \
         static core::T_sp convert(clang::_T_* p)        \
         {                                               \
+	    if (!p) return _Nil<core::T_O>();		\
             return asttooling::mostDerivedStmt(p);      \
         }                                               \
     };
@@ -327,6 +329,7 @@ namespace translate {
     struct to_object<clang::_T_##Type*> {                     \
         static core::T_sp convert(clang::_T_##Type* p)        \
         {                                               \
+	    if (!p) return _Nil<core::T_O>();		\
             return asttooling::mostDerivedType(p);      \
         }                                               \
     };
@@ -722,6 +725,9 @@ namespace asttooling {
     core::T_sp mostDerivedDecl(const clang::Decl* cd)
     {
         clang::Decl* d = const_cast<clang::Decl*>(cd);
+	if ( !d ) {
+	    SIMPLE_ERROR(BF("Could not downcast clang::Decl @%p to most derived object") % (void*)(cd));
+	}
 #define DECL(_C_,_B_) case clang::Decl:: _C_: {core::T_sp res = cast_decl<clang::_C_##Decl>(d); return res;}
         switch (d->getKind()) {
             DECL(AccessSpec, Decl);
@@ -806,6 +812,10 @@ namespace asttooling {
     core::T_sp mostDerivedStmt(const clang::Stmt* x)
     {
         clang::Stmt* s = const_cast<clang::Stmt*>(x);
+	if ( !s ) {
+	    SIMPLE_ERROR(BF("Could not downcast clang::Stmt @%p to most derived object") % (void*)(x));
+	}
+
 #define CASE_STMT(_C_) case clang::Stmt:: _C_##Class: {core::T_sp res = cast_stmt<clang::_C_>(s); return res;}
         switch (s->getStmtClass()) {
         case clang::Stmt::NoStmtClass: break;
@@ -977,6 +987,9 @@ namespace asttooling {
     core::T_sp mostDerivedType(const clang::Type* x)
     {
         clang::Type* s = const_cast<clang::Type*>(x);
+	if ( !s ) {
+	    SIMPLE_ERROR(BF("Could not downcast clang::Type @%p to most derived object") % (void*)(x));
+	}
 
 #define TYPE(_C_,_B_) case clang::Type:: _C_ : {core::T_sp res = cast_type<clang::_C_##Type>(s); return res;}
 #define ABSTRACT_TYPE(_C_,_B_)
@@ -1256,6 +1269,7 @@ namespace asttooling {
             , CLASS_STMT(DoStmt, Stmt)
             , CLASS_STMT(Expr, Stmt)
             .   def("getType",&Expr::getType)
+	    .   def("getBestDynamicClassType",&clang::Expr::getBestDynamicClassType)
             , CLASS_STMT(AbstractConditionalOperator, Expr)
             , CLASS_STMT(BinaryConditionalOperator, AbstractConditionalOperator)
             , CLASS_STMT(ConditionalOperator, AbstractConditionalOperator)
