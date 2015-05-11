@@ -135,7 +135,7 @@ namespace translate
 	{_G();
 	    if ( core::Fixnum_sp fn = o.asOrNull<core::Fixnum_O>() )
 	    {
-		this->_v = fn->get();
+		this->_v = unbox_fixnum(fn);
 		return;
 	    }
 	    SIMPLE_ERROR(BF("Add support to convert other types to unsigned long long"));

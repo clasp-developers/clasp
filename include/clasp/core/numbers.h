@@ -315,7 +315,8 @@ namespace core {
 	//	static int number_of_bits();
     public:
 	gc::Fixnum get() const { return this->_Value; };
-
+	// Switch to this in unbox_fixnum() impl while doing source-to-source translation
+	gc::Fixnum get_() const { return this->_Value; };
 
     public:
 	NumberType number_type_() const { return number_Fixnum;};
@@ -385,7 +386,7 @@ namespace core {
 
 
     inline Fixnum_sp make_fixnum(gc::Fixnum x) {return Fixnum_O::createFn(x);};
-    inline gc::Fixnum get_fixnum(Fixnum_sp x) {return x->get(); };
+    inline gc::Fixnum unbox_fixnum(Fixnum_sp x) {return x->get_(); };
 };
 
 namespace core {
@@ -941,7 +942,7 @@ namespace core {
 
 
     inline gctools::Fixnum clasp_fixnum(Number_sp x) {
-	return x.as<Fixnum_O>()->get();
+	return unbox_fixnum(x.as<Fixnum_O>());
     }
 
     inline float brcl_single_float(Number_sp x) {

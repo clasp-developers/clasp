@@ -666,7 +666,7 @@ namespace core
 	bs = StreamByteSize(strm);
 	do {
             T_sp b = cl_logand(Cons_O::createList( c, make_fixnum(0xFF)));
-            unsigned char aux = (unsigned char)(b.as<Fixnum_O>()->get());
+            unsigned char aux = (unsigned char)(unbox_fixnum(b.as<Fixnum_O>()));
             if (write_byte8(strm, &aux, 1) < 1)
                 break;
             c = clasp_ash(c, -8);
@@ -3832,7 +3832,7 @@ namespace core
             cl_index bs = StreamByteSize(strm);
             T_mv output_mv = clasp_floor2(output, make_fixnum(bs/8));
             Fixnum_sp ofn1 = output_mv.valueGet(1).as<Fixnum_O>();
-	    Fixnum fn = ofn1->get();
+	    Fixnum fn = unbox_fixnum(ofn1);
             unlikely_if (fn != 0 ) {
                 FEerror("File length is not on byte boundary", 0);
             }
@@ -6240,7 +6240,7 @@ namespace core {
 	    return 0;
 	    //	    SIMPLE_ERROR(BF("Stream does not have file position"));
 	} else if ( Fixnum_sp ii = position.asOrNull<Fixnum_O>() ) {
-	    return ii->get();
+	    return unbox_fixnum(ii);
 	}
 	return 0;
     }
@@ -6859,7 +6859,7 @@ namespace core {
     String_sp cl_writeLine(Str_sp str, T_sp stream, Fixnum_sp start, T_sp end)
     {_G();
 	stream = coerce::outputStreamDesignator(stream);
-        clasp_writeString(str,stream,start->get(),end);
+        clasp_writeString(str,stream,unbox_fixnum(start),end);
         clasp_terpri(stream);
         return str;
     };
@@ -6979,7 +6979,7 @@ namespace core {
 	    ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence,kw::_sym_start,fstart,
                                      Integer_O::makeIntegerType(0,limit-1));
 	}
-	int start = fstart->get();
+	int start = unbox_fixnum(fstart);
 	int end = limit;
 	if ( tend.notnilp() ) {
 	    unlikely_if (!af_fixnumP(tend) ||
@@ -6988,7 +6988,7 @@ namespace core {
 		ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence,kw::_sym_end,tend,
 				   Integer_O::makeIntegerType(0,limit-1));
 	    }
-	    end = tend.as<Fixnum_O>()->get();
+	    end = unbox_fixnum(tend.as<Fixnum_O>());
 	}
 	if ( end <= start ) {
             return seq;

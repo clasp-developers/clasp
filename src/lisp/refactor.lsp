@@ -1,4 +1,6 @@
 (getpid)
+
+
 (progn
   (format t "---- 1. Setup and load $test-search asts~%")
   (require 'clang-tool)
@@ -7,7 +9,7 @@
    "/Users/meister/Development/clasp/build/clasp/Contents/Resources/build-databases/clasp_compile_commands.json")
 
 
-  (defparameter $test-search (lsel $* ".*/lispStream\.cc"))
+  (defparameter $test-search (lsel $* ".*/numbers\.cc"))
 
   (defparameter *arg-adjuster*
     (lambda (args)
@@ -27,6 +29,13 @@
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Define the ASTMatcher and the code to carry out the refactoring
+;;;
+
+
+
 (progn
   (format t "---- 2. Defining the matcher for class/field/method~%")
   (defparameter *matcher*
@@ -36,97 +45,67 @@
        (:member-call-expr))
       ))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Define some helper functions
-;;;
-
-
   (format t "---- 3. Define some helper functions~%")
-  (defparameter *match-code*
-    (lambda ()
-      (let* ((call (mtag-node :CALL))
-	     (call-source (mtag-source :CALL))
-	     (loc (mtag-loc-start :CALL))
-	     (method-decl (cast:get-method-decl call)))
-	(when method-decl
-	  (let* ((method-name (cast:get-name-as-string method-decl))
-		 (expr (cast:get-implicit-object-argument call))
-		 (expr-source (mtag-source-impl expr))
-		 (most-derived-type (cast:get-best-dynamic-class-type expr))
-		 (m-d-t-name (cast:get-qualified-name-as-string most-derived-type))
-		 )
-	    (when (and (eql method-name "get") (string= m-d-t-name "core::Fixnum_O") )
-	      (format t "-------- loc: ~a~%" loc )
-	      (format t "Call: ~a name: ~a~%" call method-name)
-	      (format t "call-source: ~a~%" call-source)
-	      (format t "expr: ~a~%" expr)
-	      (format t "most-derived-type: ~a~%" most-derived-type)
-	      (format t "m-d-t-name: ~a~%" m-d-t-name)
-	      (format t "Source: ~a~%" expr-source)
-	      (if (string/= call-source "")
-		  (mtag-replace :CALL "unbox_fixnum(~a)" expr-source)
-		  (format t "!!!!!Skipping replacement due to macro~%"))))))))
+  (defparameter *refactor-fixnum-get*
+    (make-instance
+     'code-match-callback
+     :match-code (lambda ()
+		   (let* ((call (mtag-node :CALL))
+			  (call-source (mtag-source :CALL))
+			  (loc (mtag-loc-start :CALL))
+			  (method-decl (cast:get-method-decl call)))
+		     (when method-decl
+		       (let* ((method-name (cast:get-name-as-string method-decl))
+			      (expr (cast:get-implicit-object-argument call))
+			      (expr-source (mtag-source-impl expr))
+			      (most-derived-type (cast:get-best-dynamic-class-type expr))
+			      (m-d-t-name (cast:get-qualified-name-as-string most-derived-type)))
+			 (when (and (eql method-name "get") (string= m-d-t-name "core::Fixnum_O") )
+			   (format t "-------- loc: ~a~%" loc )
+			   (format t "Call: ~a name: ~a~%" call method-name)
+			   (format t "call-source: ~a~%" call-source)
+			   (format t "expr: ~a~%" expr)
+			   (format t "most-derived-type: ~a~%" most-derived-type)
+			   (format t "m-d-t-name: ~a~%" m-d-t-name)
+			   (format t "Source: ~a~%" expr-source)
+			   (if (string/= call-source "")
+			       (when *match-refactoring-tool*
+				 (mtag-replace :CALL "unbox_fixnum(~a)" expr-source))
+			       (format t "!!!!!Skipping replacement due to macro~%")))))))
+     :end-of-translation-unit-code (lambda ()
+				     (format t "!!!!!!!! Hit the end-of-translation-unit~%")
+				     (format t "*match-refactoring-tool* ~a~%" *match-refactoring-tool*)
+				     (format t "*run-and-save* ~a~%" *run-and-save*)
+				     (let ((repl (ast-tooling:get-replacements *match-refactoring-tool*)))
+				       (format t "replacements: ~a~%" repl))
+				     )))
       
-  (defun get-rewrites ()
-    (match-run
-     *matcher*
-     :code *match-code* ))
-  )
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Run and print info
 ;;;
 
-;;; Run a test on the loaded asts
+;;;
+;;; Test the matcher on the loaded asts
+;;;
 (progn
-  (match-run *matcher* :code *match-code*)
+  (match-run *matcher* :the-code-match-callback *refactor-fixnum-get*)
   (print "Done"))
 
+;;;
 ;;; Generate replacements but don't save them
+;;;
 (batch-match-run *matcher*
-		 :filenames $*
-		 :code *match-code*
+		 :filenames $test-search
+		 :the-code-match-callback *refactor-fixnum-get*
 		 :arguments-adjuster-code *arg-adjuster*)
 
-
-;;; Generate replacements and save them
+;;;
+;;; Generate replacements and write them back to the C++ code
+;;; WARNING: No backups are kept - use git to rewind changes if they don't work
+;;;
 (batch-match-run *matcher*
-		 :filenames $*
-		 :code *match-code*
+		 :filenames $test-search
+		 :the-code-match-callback *refactor-fixnum-get*
 		 :arguments-adjuster-code *arg-adjuster*
 		 :run-and-save t)
-
-(ast-tooling:to-string (car *match-replacements*))
-
-
-(dolist (r *match-replacements*)
-  (print (ast-tooling:to-string r)))
-
-
-(loop for v being the hash-values in *classes*
-	 do (format t "#S(~A :NAME ~S~{~@[~&   :~A ~S~]~})~&"
-		    (type-of v) (cxx-class-name v)
-		    (list :fields (cxx-class-fields v)
-			  :methods (cxx-class-methods v))))
-
-(length *match-replacements*)
-
-(defparameter *replace* (ast-tooling:deduplicate *match-replacements*))
-(length *replace*)
-
-(dolist (r *replace*)
-  (print (ast-tooling:to-string r)))
-(print *match-source-manager*)
-
-$*
-
-(print *asts*)
-(time (core:sleep 1000))
-
-(get-internal-real-time)
-(print internal-time-units-per-second)
-(time (core::sleep 50))
-(/ 5 2)
-(*)

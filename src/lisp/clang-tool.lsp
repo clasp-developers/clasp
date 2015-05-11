@@ -133,6 +133,8 @@ Return nil if no matcher could be compiled."
 
 
 
+(defparameter *match-refactoring-tool* nil)
+(defparameter *run-and-save* nil)
 
 
 
@@ -198,24 +200,31 @@ Return nil if no matcher could be compiled."
 ;;but runs in a dynamic environment where *match-id-to-node-map*
 ;;*match-ast-context* and *match-source-manager* are defined for the match
 (defclass code-match-callback (match-callback)
-  ((code :initarg :code :accessor callback-code)
-   )
-  )
+  ((start-of-translation-unit-code :initarg :start-of-translation-unit-code :accessor start-of-translation-unit-code)
+   (match-code :initarg :match-code :accessor match-code)
+   (end-of-translation-unit-code :initarg :end-of-translation-unit-code :accessor end-of-translation-unit-code)))
+
+(core:defvirtual on-start-of-translation-unit ((self code-match-callback))
+  (when (slot-boundp self 'start-of-translation-unit-code)
+    (funcall (start-of-translation-unit-code self))))
+
 (core:defvirtual run ((self code-match-callback) match)
   (let* ((nodes (nodes match))
          (*match-id-to-node-map* (idto-node-map nodes))
          (*match-ast-context* (context match))
          (*match-source-manager* (ast-tooling:source-manager match)))
-    (prog1
-        (funcall (callback-code self))
-      (advance-match-counter)
-    )))
+    (when (match-code self)
+      (funcall (match-code self))
+      (advance-match-counter))))
+
+(core:defvirtual on-end-of-translation-unit ((self code-match-callback))
+  (when (slot-boundp self 'end-of-translation-unit-code)
+    (funcall (end-of-translation-unit-code self))))
 
 
 
 (defclass source-loc-match-callback (code-match-callback)
-  ((comments-regex-list :accessor comments-regex-list :initarg :comments-regex-list)
-  ))
+  ((comments-regex-list :accessor comments-regex-list :initarg :comments-regex-list)))
 
 
 (defun source-loc-equal (source-loc-match-callback node)
@@ -241,8 +250,8 @@ Return nil if no matcher could be compiled."
          (*match-ast-context* (context match))
          (*match-source-manager* (ast-tooling:source-manager match)))
     (when (source-loc-equal self node)
-      (when (callback-code self)
-        (funcall (callback-code self))
+      (when (match-code self)
+        (funcall (match-code self))
         )
       (setq *match-source-location* node))
     (advance-match-counter))
@@ -258,7 +267,7 @@ Return nil if no matcher could be compiled."
                       (begin (get-loc-start node)))
                  (if (source-loc-equal self source-manager begin)
                      (progn
-                       (if (callback-code self)
+                       (if (match-code self)
                            (call-next-method self match)
                            (advance-match-counter))
                        (setq *match-source-location* node))
@@ -403,7 +412,6 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 
 
-(defparameter *match-replacements* nil)
 (defmacro mtag-replace (tag fmt &rest fmt-args)
   (let ((rep-src-gs (gensym))
         (node-gs (gensym))
@@ -412,13 +420,14 @@ This can only be run in the context set up by the code-match-callback::run metho
         (rep-range-gs (gensym))
         (rep-gs (gensym))
         )
-  `(let* ((,rep-src-gs (format nil ,fmt ,@fmt-args))
-          (,node-gs (mtag-node ,tag)) ;; *match-id-to-node-map*))
-          (,begin-gs (get-loc-start ,node-gs))
-          (,end-gs (get-loc-end ,node-gs))
-          (,rep-range-gs (new-char-source-range-get-token-range ,begin-gs ,end-gs))
-          (,rep-gs (new-replacement *match-source-manager* ,rep-range-gs ,rep-src-gs)))
-     (push ,rep-gs *match-replacements*))))
+    `(let* ((,rep-src-gs (format nil ,fmt ,@fmt-args))
+	    (,node-gs (mtag-node ,tag)) ;; *match-id-to-node-map*))
+	    (,begin-gs (get-loc-start ,node-gs))
+	    (,end-gs (get-loc-end ,node-gs))
+	    (,rep-range-gs (new-char-source-range-get-token-range ,begin-gs ,end-gs))
+	    (,rep-gs (new-replacement *match-source-manager* ,rep-range-gs ,rep-src-gs)))
+       (let ((replacements (ast-tooling:get-replacements *match-refactoring-tool*)))
+	 (ast-tooling:replacements-insert replacements ,rep-gs)))))
 
 
 (defparameter *match-results* nil)
@@ -440,6 +449,7 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 
 (defvar *asts* nil)
+
 
 (defmacro lnew (list-name) "Create a dynamic variable to contain a list of names" `(defvar ,list-name nil))
 (defun lsel (list-name regex-str)
@@ -510,26 +520,28 @@ This can only be run in the context set up by the code-match-callback::run metho
   (declare (type list match-sexp)
            (type match-callback callback)
            (type list filenames))
-  (let* ((tool (let ((temp (ast-tooling:new-refactoring-tool *db* filenames))
-                     (syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))
-                     (strip-output-adjuster (ast-tooling:get-clang-strip-output-adjuster)))
-                 (ast-tooling:clear-arguments-adjusters temp)
-                 (ast-tooling:append-arguments-adjuster temp syntax-only-adjuster)
-                 (ast-tooling:append-arguments-adjuster temp strip-output-adjuster)
-		 (warn "The following line may error out - append-arguments-adjuster now takes an llvm::ArgumentsAdjuster which is just a function that takes a vector<string> and returns a vector<string>")
-                 (when arguments-adjuster-code
-                   (ast-tooling:append-arguments-adjuster temp arguments-adjuster-code))
-                 temp))
+  (let* ((*match-refactoring-tool*
+	  (let ((temp (ast-tooling:new-refactoring-tool *db* filenames))
+		(syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))
+		(strip-output-adjuster (ast-tooling:get-clang-strip-output-adjuster)))
+	    (ast-tooling:clear-arguments-adjusters temp)
+	    (ast-tooling:append-arguments-adjuster temp syntax-only-adjuster)
+	    (ast-tooling:append-arguments-adjuster temp strip-output-adjuster)
+	    (warn "The following line may error out - append-arguments-adjuster now takes an llvm::ArgumentsAdjuster which is just a function that takes a vector<string> and returns a vector<string>")
+	    (when arguments-adjuster-code
+	      (ast-tooling:append-arguments-adjuster temp arguments-adjuster-code))
+	    temp))
+	 (*run-and-save* run-and-save)
          (matcher (compile-matcher `(:bind :whole ,match-sexp)))
          (match-finder (let ((mf (new-match-finder)))
                          (add-dynamic-matcher mf matcher callback)
                          mf))
          (factory (new-frontend-action-factory match-finder)))
     (time (if (not run-and-save)
-	      (ast-tooling:clang-tool-run tool factory)
-	      (ast-tooling:run-and-save tool factory))
-	  (format t "Number of matches ~a~%" *match-counter*))
-    ))
+	      (ast-tooling:clang-tool-run *match-refactoring-tool* factory)
+	      (ast-tooling:run-and-save *match-refactoring-tool* factory)))
+    (format t "Number of matches ~a~%" *match-counter*))
+  )
 
 
 
@@ -580,12 +592,12 @@ This can only be run in the context set up by the code-match-callback::run metho
   (mapcar (lambda (t) (single-tool-name t)) (multitool-active-tools mtool)))
 
 
-(defun batch-run-multitool (mtool &key (filenames $*) arguments-adjuster-code)
+(defun batch-run-multitool (mtool &key (filenames $*) arguments-adjuster-code run-and-save)
   "Run the multitool on the given collection of filenames"
   (declare (type list match-sexp)
            (type match-callback callback)
            (type list filenames))
-  (let* ((clang-tool (let ((temp (ast-tooling:new-refactoring-tool *db* filenames))
+  (let* ((*match-refactoring-tool* (let ((temp (ast-tooling:new-refactoring-tool *db* filenames))
                            (syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))
                            (strip-output-adjuster (ast-tooling:get-clang-strip-output-adjuster)))
                        (ast-tooling:clear-arguments-adjusters temp)
@@ -595,6 +607,7 @@ This can only be run in the context set up by the code-match-callback::run metho
                        (when (multitool-arguments-adjuster mtool)
                          (ast-tooling:append-arguments-adjuster temp (multitool-arguments-adjuster mtool)))
                        temp))
+	 (*run-and-save* run-and-save)
          (tools (multitool-active-tools mtool))
          (match-finder (let ((mf (new-match-finder)))
                          (dolist (tool tools)
@@ -605,7 +618,9 @@ This can only be run in the context set up by the code-match-callback::run metho
       (let ((initializer (single-tool-initializer tool)))
         (unless initializer (error "You did not provide an initializer for ~a" (single-tool-name tool))
         (funcall (single-tool-initializer tool)))))
-    (time (ast-tooling:clang-tool-run clang-tool factory))
+    (time (if run-and-save
+	      (ast-tooling:run-and-save *match-refactoring-tool* factory)
+	      (ast-tooling:clang-tool-run *match-refactoring-tool* factory)))
     (format t "Ran tools: ~a~%" (multitool-active-tool-names mtool))
     (format t "Number of matches ~a~%" *match-counter*)
     ))
@@ -622,7 +637,7 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 (defun sub-match-run (compiled-matcher node code)
   (let ((sub-match-finder (new-match-finder))
-        (callback (make-instance 'code-match-callback :code code)))
+        (callback (make-instance 'code-match-callback :match-code code)))
     (add-dynamic-matcher sub-match-finder compiled-matcher callback)
     (match sub-match-finder node *match-ast-context*))
   )
@@ -678,19 +693,17 @@ This can only be run in the context set up by the code-match-callback::run metho
     ))
 
 
-(defun match-run (match-sexp &key limit code)
+(defun match-run (match-sexp &key limit the-code-match-callback)
   "Run code on every match"
-  (setq *match-replacements* nil) ;; reset *match-replacements*
   (time (run-matcher match-sexp
-                     :callback (make-instance 'code-match-callback :code code)
+                     :callback the-code-match-callback
                      :counter-limit limit)))
 
-(defun batch-match-run (match-sexp &key limit code filenames arguments-adjuster-code run-and-save)
+(defun batch-match-run (match-sexp &key limit the-code-match-callback filenames arguments-adjuster-code run-and-save)
   "Run code on every match in every filename in batch mode"
-  (or code (error "You must provide code to batch-match-run"))
-  (setq *match-replacements* nil) ;; reset *match-replacements*
+  (or the-code-match-callback (error "You must provide the-code-match-callback to batch-match-run"))
   (time (batch-run-matcher match-sexp
-                           :callback (make-instance 'code-match-callback :code code)
+                           :callback the-code-match-callback
                            :filenames filenames
                            :arguments-adjuster-code arguments-adjuster-code
 			   :run-and-save run-and-save)))
@@ -699,11 +712,6 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 
 
-(defun dump-replacements (begin end &optional (replacements *match-replacements*))
-  (do ((idx begin (1+ idx)))
-      ((>= idx end) nil)
-    (format t "#~a: ~a~%" idx (to-string (elt replacements idx)))))
-       
 #|
 
 (format t "Use (gather-asts [:test t]) - to gather the ASTs into *asts*~%")

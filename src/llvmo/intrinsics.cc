@@ -237,7 +237,9 @@ extern "C" {
 	    SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % _rep_((*symP)));
 	}
         core::Function_sp func = (*symP)->_Function.as<Function_O>();
-        return &(*func->closure);
+	core::Closure* funcPtr = &(*func->closure);
+	ASSERTF(funcPtr,BF("Tried to look up symbol-function for %s - got NULL") % _rep_(*symP).c_str() );
+        return funcPtr;
     }
 
 

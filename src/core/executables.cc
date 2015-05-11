@@ -77,11 +77,11 @@ namespace core
 #define ARGS_core_functionSourcePosInfo "(function)"
 #define DECL_core_functionSourcePosInfo ""
 #define DOCS_core_functionSourcePosInfo "functionSourcePosInfo"
-    SourcePosInfo_sp core_functionSourcePosInfo(T_sp functionDesignator)
+    gc::Nilable<SourcePosInfo_sp> core_functionSourcePosInfo(T_sp functionDesignator)
     {
 	Function_sp func = coerce::functionDesignator(functionDesignator);
 	gctools::tagged_functor<Closure> closure = func->closure;
-	SourcePosInfo_sp sourcePosInfo = closure->sourcePosInfo();
+	gc::Nilable<SourcePosInfo_sp> sourcePosInfo = closure->sourcePosInfo();
 	return sourcePosInfo;
     }
 
@@ -347,12 +347,16 @@ T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int line
 	}
 	T_sp name = this->closure->name;
 	stringstream ss;
-	ss << "#<" << this->_instanceClass()->classNameAsString() << " " << this->closure->describe() << " " << _rep_(name);
+	ss << "#<" << this->_instanceClass()->classNameAsString();
+	ss << " " << _rep_(name);
+	ss << " " << this->closure->describe();
+#if 0
 	auto closure = this->closure;
 	void* fptr = closure->functionAddress();
 	if ( fptr!=NULL ) {
 	    ss << " :address " << fptr;
 	}
+#endif
 	ss << ">";
 	return ss.str();
     }
