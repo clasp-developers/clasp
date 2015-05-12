@@ -163,7 +163,7 @@ namespace core
     T_sp cl_subseq(T_sp seq, int start, T_sp end)
     {_G();
         if ( seq.nilp() ) {
-            if ( start == 0 && (end.nilp() || (end.fixnump() && end.as<Fixnum_O>()->get() == 0))  ) {
+            if ( start == 0 && (end.nilp() || (end.fixnump() && unbox_fixnum(end.as<Fixnum_O>()) == 0))  ) {
                 return _Nil<T_O>();
             }
             SIMPLE_ERROR(BF("Illegal arguments for subseq on NIL - they must be (subseq NIL 0 NIL)"));
@@ -339,7 +339,7 @@ namespace core
 	    af_wrongTypeKeyArg(file,line,_lisp->internWithPackageName(functionName,packageName.c_str()),
 			       kw::_sym_start,start,cl::_sym_UnsignedByte);
         }
-        p.start = start->get();
+        p.start = unbox_fixnum(start);
 	if ( end.nilp() ) {
 	    p.end = l;
 	} else {
@@ -348,12 +348,12 @@ namespace core
 				   kw::_sym_end,end,
 				   Cons_O::createList(cl::_sym_or,cl::_sym_null,cl::_sym_UnsignedByte));
 	    }
-	    p.end = end.as<Fixnum_O>()->get();
+	    p.end = unbox_fixnum(end.as<Fixnum_O>());
 	    unlikely_if (p.end > l) {
 		T_sp fillp = make_fixnum(static_cast<uint>(l));
 		af_wrongTypeKeyArg(file,line,_lisp->internWithPackageName(functionName,packageName.c_str()),
 				   kw::_sym_end, end,
-				   Integer_O::makeIntegerType(start->get(),static_cast<int>(l)));
+				   Integer_O::makeIntegerType(unbox_fixnum(start),static_cast<int>(l)));
 	    }
 	}
         unlikely_if (p.end < p.start) {

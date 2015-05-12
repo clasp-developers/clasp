@@ -301,7 +301,7 @@ namespace core
 	    Cons_sp slotNameCons = Cons_O::create(_lisp->internKeyword(oCar(slotDesc).as<Symbol_O>()->symbolName()->get()));
 	    *curP = slotNameCons; // cur.setPointee(slotNameCons); // *cur = slotNameCons;
 	    curP = slotNameCons->cdrPtr(); // cur.setPointer(slotNameCons->cdrPtr()); // cur = slotNameCons->cdrPtr();
-	    int idx = oFifth(slotDesc).as<Fixnum_O>()->get();
+	    int idx = unbox_fixnum(oFifth(slotDesc).as<Fixnum_O>());
 	    T_sp val = this->structureRef(idx);
 	    Cons_sp slotValueCons = Cons_O::create(val);
 	    *curP = slotValueCons; // cur.setPointee(slotValueCons); // *cur = slotValueCons;

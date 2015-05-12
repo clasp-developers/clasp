@@ -110,7 +110,7 @@ namespace core
 		_sym_STARcircle_counterSTAR->setf_symbolValue(circle_counter);
 		return -new_code;
 	    } else {
-		return code.as<Fixnum_O>()->get();
+		return unbox_fixnum(code.as<Fixnum_O>());
 	    }
 	}
     }

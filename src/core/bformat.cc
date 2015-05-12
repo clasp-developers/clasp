@@ -72,7 +72,7 @@ namespace core
 		} else if ( af_fixnumP(fobj) )
 		{
 		    Fixnum_sp fint = fobj.as<Fixnum_O>();
-		    fmter % fint->get();
+		    fmter % unbox_fixnum(fint);
 		} else if ( af_bignumP(fobj) )
 		{
 		    Bignum_sp flli = fobj.as<Bignum_O>();

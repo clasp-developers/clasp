@@ -120,7 +120,7 @@ T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int line
     {
         SourceFileInfo_mv sfi = core_sourceFileInfo(sourceFile);
         Fixnum_sp fileId = sfi.valueGet(1).as<Fixnum_O>();
-        SourcePosInfo_sp spi = SourcePosInfo_O::create(fileId->get(),filePos,lineno,column);
+        SourcePosInfo_sp spi = SourcePosInfo_O::create(unbox_fixnum(fileId),filePos,lineno,column);
         this->_SourcePosInfo = spi;
         return spi;
     }

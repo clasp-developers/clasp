@@ -526,7 +526,7 @@ namespace gctools {
 #define DOCS_af_mpsTelemetrySet "mpsTelemetrySet"
     void af_mpsTelemetrySet(Fixnum_sp flags)
     {_G();
-        mps_telemetry_set(flags->get());
+        mps_telemetry_set(unbox_fixnum(flags));
     };
 
 #define ARGS_af_mpsTelemetryReset "(flags)"
@@ -534,7 +534,7 @@ namespace gctools {
 #define DOCS_af_mpsTelemetryReset "mpsTelemetryReset"
     void af_mpsTelemetryReset(Fixnum_sp flags)
     {_G();
-        mps_telemetry_reset(flags->get());
+        mps_telemetry_reset(unbox_fixnum(flags));
     };
 
 #endif

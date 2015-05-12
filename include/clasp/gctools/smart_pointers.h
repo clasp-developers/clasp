@@ -477,6 +477,7 @@ namespace gctools {
 
  namespace core {
      class Fixnum_I {};
+     typedef Fixnum_I Fixnum_O;
  };
 
  namespace gctools {
@@ -509,9 +510,12 @@ namespace gctools {
 
  
  namespace core {
-    class List_V {}; // Virtual class representing Common Lisp LIST
-    extern gctools::smart_ptr<core::T_O> cons_car(core::Cons_O* cur);
-    extern gctools::smart_ptr<core::T_O> cons_cdr(core::Cons_O* cur);
+
+     typedef gctools::smart_ptr<Fixnum_I> Fixnum_sp;
+     
+     class List_V {}; // Virtual class representing Common Lisp LIST
+     extern gctools::smart_ptr<core::T_O> cons_car(core::Cons_O* cur);
+     extern gctools::smart_ptr<core::T_O> cons_cdr(core::Cons_O* cur);
 };
 
 namespace gctools {
@@ -1899,78 +1903,86 @@ namespace gctools {
     /// Specialize type conversions to simulate Common Lisp semantics and
     /// Common Lisp type hierarchy (is that the term)
     ///
-	
+        
     template <>
-	inline smart_ptr<core::List_V> smart_ptr<core::T_O>::asOrNull<core::List_V>() {
-	if (this->consp() || this->nilp()) return smart_ptr<core::List_V>((Tagged)this->theObject);
-	return smart_ptr<core::List_V>();
+        inline smart_ptr<core::List_V> smart_ptr<core::T_O>::asOrNull<core::List_V>() {
+        if (this->consp() || this->nilp()) return smart_ptr<core::List_V>((Tagged)this->theObject);
+        return smart_ptr<core::List_V>();
     };
 
     template <>
-	inline smart_ptr<core::List_V> smart_ptr<core::T_O>::asOrNull<core::List_V>() const {
-	if (this->consp() || this->nilp()) return smart_ptr<core::List_V>((Tagged)this->theObject);
-	return smart_ptr<core::List_V>();
+        inline smart_ptr<core::List_V> smart_ptr<core::T_O>::asOrNull<core::List_V>() const {
+        if (this->consp() || this->nilp()) return smart_ptr<core::List_V>((Tagged)this->theObject);
+        return smart_ptr<core::List_V>();
     };
 
     template <>
-	inline smart_ptr<core::List_V> smart_ptr<core::Symbol_O>::asOrNull<core::List_V>() {
-	if (this->nilp()) return smart_ptr<core::List_V>((Tagged)this->theObject);
-	return smart_ptr<core::List_V>();
+        inline smart_ptr<core::List_V> smart_ptr<core::Symbol_O>::asOrNull<core::List_V>() {
+        if (this->nilp()) return smart_ptr<core::List_V>((Tagged)this->theObject);
+        return smart_ptr<core::List_V>();
     };
-	 
+         
     template <>
-	inline smart_ptr<core::List_V> smart_ptr<core::Symbol_O>::asOrNull<core::List_V>() const {
-	if (this->nilp()) return smart_ptr<core::List_V>((Tagged)this->theObject);
-	return smart_ptr<core::List_V>();
-    };
-
-
-    template <>
-	inline smart_ptr<core::List_V> smart_ptr<core::T_O>::as<core::List_V>() {
-	smart_ptr<core::List_V> ret = this->asOrNull<core::List_V>();
-	if (!ret) {
-	    class_id expected_typ = reg::registered_class<core::List_V>::id;
-	    lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
-	}
-	return ret;
+        inline smart_ptr<core::List_V> smart_ptr<core::Symbol_O>::asOrNull<core::List_V>() const {
+        if (this->nilp()) return smart_ptr<core::List_V>((Tagged)this->theObject);
+        return smart_ptr<core::List_V>();
     };
 
+
     template <>
-	inline smart_ptr<core::List_V> smart_ptr<core::T_O>::as<core::List_V>() const {
-	if ( smart_ptr<core::List_V> ret = this->asOrNull<core::List_V>() ) {
-	    return ret;
-	}
-	class_id expected_typ = reg::registered_class<core::List_V>::id;
-	lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
-	HARD_UNREACHABLE();
+        inline smart_ptr<core::List_V> smart_ptr<core::T_O>::as<core::List_V>() {
+        smart_ptr<core::List_V> ret = this->asOrNull<core::List_V>();
+        if (!ret) {
+            class_id expected_typ = reg::registered_class<core::List_V>::id;
+            lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
+        }
+        return ret;
     };
 
     template <>
-	inline smart_ptr<core::Integer_O> smart_ptr<core::T_O>::as<core::Integer_O>() const {
-	if ( this->fixnump() ) {
-	    return *this;
-	} else if ( smart_ptr<core::Integer_O> ret = this->asOrNull<core::Integer_O>() ) {
-	    return ret;
-	}
-	class_id expected_typ = reg::registered_class<core::List_V>::id;
-	lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
-	HARD_UNREACHABLE();
+        inline smart_ptr<core::List_V> smart_ptr<core::T_O>::as<core::List_V>() const {
+        if ( smart_ptr<core::List_V> ret = this->asOrNull<core::List_V>() ) {
+            return ret;
+        }
+        class_id expected_typ = reg::registered_class<core::List_V>::id;
+        lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
+        HARD_UNREACHABLE();
+    };
+
+    template <>
+        inline smart_ptr<core::Integer_O> smart_ptr<core::T_O>::as<core::Integer_O>() const {
+        if ( this->fixnump() ) {
+            return *this;
+        } else if ( smart_ptr<core::Integer_O> ret = this->asOrNull<core::Integer_O>() ) {
+            return ret;
+        }
+        class_id expected_typ = reg::registered_class<core::List_V>::id;
+        lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
+        HARD_UNREACHABLE();
     };
     template <>
-	inline smart_ptr<core::Number_O> smart_ptr<core::T_O>::as<core::Number_O>() const {
-	if ( this->fixnump() ) {
-	    return *this;
-	} else if ( this->single_floatp() ) {
-	    return *this;
-	} else if ( smart_ptr<core::Number_O> ret = this->asOrNull<core::Number_O>() ) {
-	    return ret;
-	}
-	class_id expected_typ = reg::registered_class<core::List_V>::id;
-	lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
-	HARD_UNREACHABLE();
+        inline smart_ptr<core::Number_O> smart_ptr<core::T_O>::as<core::Number_O>() const {
+        if ( this->fixnump() ) {
+            return *this;
+        } else if ( this->single_floatp() ) {
+            return *this;
+        } else if ( smart_ptr<core::Number_O> ret = this->asOrNull<core::Number_O>() ) {
+            return ret;
+        }
+        class_id expected_typ = reg::registered_class<core::List_V>::id;
+        lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
+        HARD_UNREACHABLE();
     };
 
-
+    template <class From>
+	template<>
+        inline smart_ptr<core::Fixnum_I> smart_ptr<From>::as<core::Fixnum_I>() const {
+        if ( rhs.fixnump() ) {
+            return smart_ptr<core::Fixnum_O>((Tagged)rhs.raw_());
+        }
+        class_id from_typ = reg::registered_class<From>::id;
+        lisp_errorBadCastToFixnum_O(from_typ,static_cast<core::T_O*>(this->untag_object()));
+    }
 };
 
 namespace gctools {
@@ -1982,84 +1994,84 @@ namespace gctools {
     template <typename T> class Nilable {};
     
     template <typename T>
-	class Nilable<smart_ptr<T>> : public smart_ptr<T> {
+        class Nilable<smart_ptr<T>> : public smart_ptr<T> {
     public:
-	typedef T Type;
-	typedef smart_ptr<Type> Base;
-	typedef Nilable<Base> MyType;
+        typedef T Type;
+        typedef smart_ptr<Type> Base;
+        typedef Nilable<Base> MyType;
     public:
-	Nilable() : Base(Base::make_tagged_nil()) {};
-	Nilable(smart_ptr<core::T_O> const& ot) {
-	    if ( Base b = ot.asOrNull<Type>() ) {
-		this->theObject = b.theObject;
-		return;
-	    } else if (tagged_nilp(ot.theObject)) {
-		this->theObject = reinterpret_cast<Type*>(global_Symbol_OP_nil);
-		return;
-	    }
-	    class_id expected_typ = reg::registered_class<Type>::id;
-	    lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
-	};
+        Nilable() : Base(Base::make_tagged_nil()) {};
+        Nilable(smart_ptr<core::T_O> const& ot) {
+            if ( Base b = ot.asOrNull<Type>() ) {
+                this->theObject = b.theObject;
+                return;
+            } else if (tagged_nilp(ot.theObject)) {
+                this->theObject = reinterpret_cast<Type*>(global_Symbol_OP_nil);
+                return;
+            }
+            class_id expected_typ = reg::registered_class<Type>::id;
+            lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
+        };
 
 
-	// Construct from the Base type
+        // Construct from the Base type
     Nilable(Base const& b) : Base(b) {};
     inline Nilable(Base&& b) : Base(std::move(b)) {};
 
-	//Copy constructor
+        //Copy constructor
     Nilable(MyType const& b) : Base(b) {};
        
 
-	MyType& operator= (Base const& orig) {
-	    this->theObject = orig.theObject;
-	    return *this;
-	}
+        MyType& operator= (Base const& orig) {
+            this->theObject = orig.theObject;
+            return *this;
+        }
 
-	MyType& operator= (smart_ptr<core::T_O> const& orig) {
-	    if ( tagged_nilp(orig.theObject) ) {
-		this->theObject = reinterpret_cast<Type*>(global_Symbol_OP_nil);
-		return *this;
-	    } else if ( Base foo = orig.asOrNull<Type>() ) {
-		this->theObject = foo.theObject;
-		return *this;
-	    }
-	    class_id expected_typ = reg::registered_class<Type>::id;
-	    lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
-	    THROW_HARD_ERROR(BF("Unreachable"));
-	}
+        MyType& operator= (smart_ptr<core::T_O> const& orig) {
+            if ( tagged_nilp(orig.theObject) ) {
+                this->theObject = reinterpret_cast<Type*>(global_Symbol_OP_nil);
+                return *this;
+            } else if ( Base foo = orig.asOrNull<Type>() ) {
+                this->theObject = foo.theObject;
+                return *this;
+            }
+            class_id expected_typ = reg::registered_class<Type>::id;
+            lisp_errorBadCastFromT_O(expected_typ,static_cast<core::T_O*>(this->untag_object()));
+            THROW_HARD_ERROR(BF("Unreachable"));
+        }
 
-	bool nilp() const { return tagged_nilp(this->theObject); }
-	bool notnilp() const { return !tagged_nilp(this->theObject); }
+        bool nilp() const { return tagged_nilp(this->theObject); }
+        bool notnilp() const { return !tagged_nilp(this->theObject); }
 
 
-	Type* operator->() {
-	    GCTOOLS_ASSERT(this->notnilp());
-	    return untag_other(this->theObject);
-	};
+        Type* operator->() {
+            GCTOOLS_ASSERT(this->notnilp());
+            return untag_other(this->theObject);
+        };
 
-	const Type* operator->() const {
-	    GCTOOLS_ASSERT(this->notnilp());
-	    return untag_other(this->theObject);
-	};
+        const Type* operator->() const {
+            GCTOOLS_ASSERT(this->notnilp());
+            return untag_other(this->theObject);
+        };
 
-	const Type& operator*() const {
-	    GCTOOLS_ASSERT(this->notnilp());
-	    return *(this->untag_object());
-	};
+        const Type& operator*() const {
+            GCTOOLS_ASSERT(this->notnilp());
+            return *(this->untag_object());
+        };
 
-	Type& operator*() {
-	    GCTOOLS_ASSERT(this->notnilp());
-	    return *(this->untag_object());
-	};
+        Type& operator*() {
+            GCTOOLS_ASSERT(this->notnilp());
+            return *(this->untag_object());
+        };
 
-	//Type conversion operator to T_sp can be Base or NIL
-	operator smart_ptr<core::T_O>() const {
-	    if ( tagged_nilp(this->theObject) ) {
-		return smart_ptr<core::T_O>((Tagged)tag_nil<core::T_O>());
-	    }
-	    return smart_ptr<core::T_O>(*this);
-	} 
-	
+        //Type conversion operator to T_sp can be Base or NIL
+        operator smart_ptr<core::T_O>() const {
+            if ( tagged_nilp(this->theObject) ) {
+                return smart_ptr<core::T_O>((Tagged)tag_nil<core::T_O>());
+            }
+            return smart_ptr<core::T_O>(*this);
+        } 
+        
     };
 };
 

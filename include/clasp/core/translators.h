@@ -133,9 +133,13 @@ namespace translate
 	DeclareType _v;
 	inline void set(core::T_sp o)
 	{_G();
-	    if ( core::Fixnum_sp fn = o.asOrNull<core::Fixnum_O>() )
+	    if ( o.fixnump() ) // core::Fixnum_sp fn = o.asOrNull<core::Fixnum_O>() )
 	    {
-		this->_v = unbox_fixnum(fn);
+#ifdef USE_HEAP_FIXNUM
+		this->_v = unbox_fixnum(o);
+#else
+		this->_v = o.unsafe_fixnum();
+#endif
 		return;
 	    }
 	    SIMPLE_ERROR(BF("Add support to convert other types to unsigned long long"));

@@ -400,7 +400,7 @@ namespace core
         if ( core::_sym_STARpollTicksPerGcSTAR
              && !core::_sym_STARpollTicksPerGcSTAR.unboundp()
              && !core::_sym_STARpollTicksPerGcSTAR->symbolValueUnsafe().unboundp()
-             && _global_pollTicksGC >= core::_sym_STARpollTicksPerGcSTAR->symbolValue().as<Fixnum_O>()->get()) {
+             && _global_pollTicksGC >= unbox_fixnum(core::_sym_STARpollTicksPerGcSTAR->symbolValue().as<Fixnum_O>())) {
             _global_pollTicksGC = 0;
             gctools::af_cleanup();
         }
@@ -764,7 +764,7 @@ namespace core
     Fixnum lisp_asFixnum(T_sp o)
     {
         if (o.fixnump()) return o.unsafe_fixnum();
-        if (af_fixnumP(o)) return o.as<Fixnum_O>()->get();
+        if (af_fixnumP(o)) return unbox_fixnum(o.as<Fixnum_O>());
         SIMPLE_ERROR(BF("Not fixnum %s") % _rep_(o));
     }
 
@@ -1673,7 +1673,7 @@ namespace core
         SourceFileInfo_mv sfi_mv = core_sourceFileInfo(fn);
 	SourceFileInfo_sp sfi = sfi_mv;
 	Fixnum_sp handle = sfi_mv.valueGet(1).as<Fixnum_O>();
-        int sfindex = handle->get();
+        int sfindex = unbox_fixnum(handle);
         return SourcePosInfo_O::create(sfindex,filePos,lineno,0);
     }
 

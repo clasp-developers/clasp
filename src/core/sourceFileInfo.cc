@@ -98,8 +98,8 @@ namespace core
 		SIMPLE_ERROR(BF("No namestring could be generated for %s") % _rep_(pnSourceFile));
 	    }
             return _lisp->getOrRegisterSourceFileInfo(ns.as<Str_O>()->get(),sourceDebugNamestring,sourceDebugOffset,useLineno);
-        } else if ( Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
-	    size_t idx = fnSourceFile->get();
+        } else if ( sourceFile.fixnump() ) { // Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
+	    size_t idx = unbox_fixnum(sourceFile);
             if ( idx >= _lisp->_Roots._SourceFiles.size() ) {
 		idx = 0;
 		//                SIMPLE_ERROR(BF("Illegal index %d for source file info") % fnSourceFile->get() );

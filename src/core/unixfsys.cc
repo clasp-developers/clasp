@@ -185,9 +185,9 @@ safe_chdir(const char *path, T_sp tprefix)
 #define DOCS_af_waitpid "waitpid - see unix waitpid - returns status"
     int af_waitpid(Fixnum_sp pid, Fixnum_sp options)
     {_G();
-        pid_t p = pid->get();
+        pid_t p = unbox_fixnum(pid);
         int status(0);
-        int iopts = options->get();
+        int iopts = unbox_fixnum(options);
         waitpid(p,&status,iopts);
         return status;
     };
@@ -1531,8 +1531,8 @@ T_sp core_mkdir(T_sp directory, T_sp mode)
     int modeint = 0;
     int ok;
     Str_sp filename = coerce::stringDesignator(directory);
-    if ( Fixnum_sp fn = mode.asOrNull<Fixnum_O>() ) {
-        modeint = fn->get();
+    if ( mode.fixnump() ) { // Fixnum_sp fn = mode.asOrNull<Fixnum_O>() ) {
+        modeint = unbox_fixnum(mode);
         if ( modeint < 0 || modeint > 0777 ) {
             QERROR_WRONG_TYPE_NTH_ARG(2,mode,cl::_sym_Fixnum_O);
         }

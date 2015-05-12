@@ -57,15 +57,15 @@ namespace core {
 #define DOCS_core_bignumToString "bignumToString"
     StrWithFillPtr_sp core_bignumToString(StrWithFillPtr_sp buffer, const Bignum& bn, Fixnum_sp base)
     {_G();
-	if ( base->get()<2 || base->get()>36) {
+	if ( unbox_fixnum(base)<2 || unbox_fixnum(base)>36) {
 	    QERROR_WRONG_TYPE_NTH_ARG(3,base,Cons_O::createList(cl::_sym_integer,make_fixnum(2),make_fixnum(36)));
 	}
-	int ibase = base->get();
+	int ibase = unbox_fixnum(base);
 	size_t str_size = mpz_sizeinbase(bn.get_mpz_t(), ibase);
 	if ( bn<0 ) str_size++;
 	buffer->ensureSpaceAfterFillPointer(str_size+1);
 	char* bufferStart = static_cast<char*>(buffer->addressOfFillPtr());
-	mpz_get_str(bufferStart,-base->get(),bn.get_mpz_t());
+	mpz_get_str(bufferStart,-unbox_fixnum(base),bn.get_mpz_t());
 	//	printf("%s:%d str_size = %zu\n    bufferStart[str_size-1] = %d  bufferStart[str_size] = %d bufferStart=[%s]\n", __FILE__, __LINE__, str_size, bufferStart[str_size-1], bufferStart[str_size], bufferStart);
 	if ( bufferStart[str_size-1] == '\0' ) {
 	    buffer->incrementFillPointer(str_size-1);
@@ -111,20 +111,20 @@ namespace core {
 					 Fixnum_sp base, bool radix, bool decimalp)
     {	
 	if (radix) {
-	    if (!decimalp || base->get() != 10 ) {
+	    if (!decimalp || unbox_fixnum(base) != 10 ) {
 		buffer->ensureSpaceAfterFillPointer(10);
-		write_base_prefix(buffer,base->get());
+		write_base_prefix(buffer,unbox_fixnum(base));
 	    }
 	    buffer = core_integerToString(buffer, integer, base, false, false );
-	    if (decimalp && base->get() == 10) {
+	    if (decimalp && unbox_fixnum(base) == 10) {
 		buffer->pushCharExtend('.');
 	    }
 	    return buffer;
 	}
 	if ( integer.isA<Fixnum_O>() ) {
 	    char txt[64];
-	    gc::Fixnum fn = integer.as<Fixnum_O>()->get();
-	    switch (base->get()) {
+	    gc::Fixnum fn = unbox_fixnum(integer.as<Fixnum_O>());
+	    switch (unbox_fixnum(base)) {
 	    case 8:
 		sprintf(txt,"%lo",fn);
 		buffer->pushString(txt);

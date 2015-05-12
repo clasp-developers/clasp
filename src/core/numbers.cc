@@ -2068,8 +2068,8 @@ namespace core {
     bool	Fixnum_O::eql_(T_sp obj) const
     {_G();
 	if ( this->eq(obj) ) return true;
-	if ( Fixnum_sp fobj = obj.asOrNull<Fixnum_O>()) {
-	    return this->_Value == unbox_fixnum(fobj);
+	if ( obj.fixnump() ) { // Fixnum_sp fobj = obj.asOrNull<Fixnum_O>()) {
+	    return this->_Value == unbox_fixnum(obj);
 	} else if ( Bignum_sp bobj = obj.asOrNull<Bignum_O>() ) {
 	    mpz_class me = this->_Value;
 	    return me == bobj->ref();

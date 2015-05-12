@@ -80,12 +80,12 @@ namespace core
     {_G();
 	// TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
 	//       Currently this is very inefficient
-	int iLen = len->get();
+	int iLen = unbox_fixnum(len);
 	if (iLen == 0 ) return;
 	ASSERTF(out->rank() == 1,BF("out array must be rank 1 - instead it is %d") % out->rank());
 	ASSERTF(in->rank() == 1,BF("in array must be rank 1 - instead it is %d") % in->rank());
-	int iOutStart = outStart->get();
-	int iInStart = inStart->get();
+	int iOutStart = unbox_fixnum(outStart);
+	int iInStart = unbox_fixnum(inStart);
 	if ( (iLen+iOutStart) >= out->arrayDimension(0) ) iLen = out->arrayDimension(0)-iOutStart;
 	if ( (iLen+iInStart) >= in->arrayDimension(0) ) iLen = in->arrayDimension(0)-iInStart;
 	if ( iOutStart < iInStart ) {
@@ -152,9 +152,8 @@ namespace core
 
     int Array_O::checkedIndex(const string& filename, int lineno, const string& function, Array_sp array, int which, T_sp index, int nonincl_index )
     {
-	if ( Fixnum_sp fn = index.asOrNull<Fixnum_O>() )
-	{
-	    int ifn = fn->get();
+	if ( index.fixnump() ) {
+	    int ifn = unbox_fixnum(index);
 	    if (ifn<0 || ifn >= nonincl_index)
 	    {
 		af_wrongIndex(filename,lineno,lisp_intern(function,CurrentPkg),array,which,index,nonincl_index);

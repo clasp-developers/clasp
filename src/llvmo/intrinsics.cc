@@ -739,7 +739,7 @@ core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, char* sou
     // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
     core::Str_sp sourceStr = core::Str_O::create(sourceName);
     core::SourceFileInfo_mv sfi = core::core_sourceFileInfo(sourceStr);
-    int sfindex = sfi.valueGet(1).as<core::Fixnum_O>()->get();   // sfindex could be written into the Module global for debugging
+    int sfindex = unbox_fixnum(sfi.valueGet(1).as<core::Fixnum_O>());   // sfindex could be written into the Module global for debugging
     core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,lineno,column);
     core::FunctionClosure* closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP,spi,kw::_sym_function,funcPtr,_Nil<core::T_O>(),*frameP,*compiledFuncsP,*lambdaListP);
     core::CompiledFunction_sp compiledFunction = core::CompiledFunction_O::make(closure);
@@ -1579,7 +1579,7 @@ extern "C"
         core::Str_sp mname = core::Str_O::create(moduleName);
 	core::Str_sp struename = core::Str_O::create(sourceDebugPathname);
         SourceFileInfo_mv sfi_mv = core::core_sourceFileInfo(mname,struename,sourceDebugOffset,useLineno ? true : false);
-        int sfindex = sfi_mv.valueGet(1).as<core::Fixnum_O>()->get();
+        int sfindex = unbox_fixnum(sfi_mv.valueGet(1).as<core::Fixnum_O>());
 #if 0
 	if ( sfindex == 0 ) {
 	    printf("%s:%d Could not get a SourceFileInfoHandle for %s\n", __FILE__, __LINE__, moduleName );

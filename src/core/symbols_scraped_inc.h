@@ -1177,140 +1177,139 @@
 // SYMBOL_TABLE_ENTRY        ClPkg 1174 floatingPointInvalidOperation  FLOATING-POINT-INVALID-OPERATION export ; cName=_sym_floatingPointInvalidOperation lispName=FLOATING-POINT-INVALID-OPERATION
 // SYMBOL_TABLE_ENTRY        ClPkg 1175 STARstandard_inputSTAR         *STANDARD-INPUT*               export ; cName=_sym_STARstandard_inputSTAR lispName=*STANDARD-INPUT*
 // SYMBOL_TABLE_ENTRY      CorePkg 1176 implementationClass            IMPLEMENTATION-CLASS           export ; cName=_sym_implementationClass lispName=IMPLEMENTATION-CLASS
-// SYMBOL_TABLE_ENTRY        ClPkg 1177 Fixnum_O                       FIXNUM                         export ; cName=_sym_Fixnum_O lispName=FIXNUM
-// SYMBOL_TABLE_ENTRY      CorePkg 1178 SNode_O                        SNODE                          export ; cName=_sym_SNode_O lispName=SNODE
-// SYMBOL_TABLE_ENTRY        ClPkg 1179 unboundVariable                UNBOUND-VARIABLE               export ; cName=_sym_unboundVariable lispName=UNBOUND-VARIABLE
-// SYMBOL_TABLE_ENTRY      CorePkg 1180 loadBitcode                    LOAD-BITCODE                   export ; cName=_sym_loadBitcode lispName=LOAD-BITCODE
-// SYMBOL_TABLE_ENTRY      CorePkg 1181 log1p                          LOG1P                          export ; cName=_sym_log1p lispName=LOG1P
-// SYMBOL_TABLE_ENTRY   KeywordPkg 1182 class                          CLASS                          export ; cName=_sym_class lispName=CLASS
-// SYMBOL_TABLE_ENTRY      CorePkg 1183 integerToString                INTEGER-TO-STRING              export ; cName=_sym_integerToString lispName=INTEGER-TO-STRING
-// SYMBOL_TABLE_ENTRY        ClPkg 1184 tanh                           TANH                           export ; cName=_sym_tanh lispName=TANH
-// SYMBOL_TABLE_ENTRY        ClPkg 1185 STARprint_circleSTAR           *PRINT-CIRCLE*                 export ; cName=_sym_STARprint_circleSTAR lispName=*PRINT-CIRCLE*
-// SYMBOL_TABLE_ENTRY      CorePkg 1186 STARcircleCounterSTAR          *CIRCLE-COUNTER*               private ; cName=_sym_STARcircleCounterSTAR lispName=*CIRCLE-COUNTER*
-// SYMBOL_TABLE_ENTRY        ClPkg 1187 Bignum_O                       BIGNUM                         export ; cName=_sym_Bignum_O lispName=BIGNUM
-// SYMBOL_TABLE_ENTRY        ClPkg 1188 fileNamestring                 FILE-NAMESTRING                export ; cName=_sym_fileNamestring lispName=FILE-NAMESTRING
-// SYMBOL_TABLE_ENTRY        ClPkg 1189 SimpleBitVector_O              SIMPLE-BIT-VECTOR              export ; cName=_sym_SimpleBitVector_O lispName=SIMPLE-BIT-VECTOR
-// SYMBOL_TABLE_ENTRY        ClPkg 1190 consp                          CONSP                          export ; cName=_sym_consp lispName=CONSP
-// SYMBOL_TABLE_ENTRY      CorePkg 1191 saveCando                      SAVE-CANDO                     private ; cName=_sym_saveCando lispName=SAVE-CANDO
-// SYMBOL_TABLE_ENTRY        ClPkg 1192 acons                          ACONS                          export ; cName=_sym_acons lispName=ACONS
-// SYMBOL_TABLE_ENTRY      CorePkg 1193 copy_subarray                  COPY-SUBARRAY                  private ; cName=_sym_copy_subarray lispName=COPY-SUBARRAY
-// SYMBOL_TABLE_ENTRY      CorePkg 1194 STARprint_structureSTAR        *PRINT-STRUCTURE*              export ; cName=_sym_STARprint_structureSTAR lispName=*PRINT-STRUCTURE*
-// SYMBOL_TABLE_ENTRY        ClPkg 1195 safety                         SAFETY                         export ; cName=_sym_safety lispName=SAFETY
-// SYMBOL_TABLE_ENTRY        ClPkg 1196 probe_file                     PROBE-FILE                     export ; cName=_sym_probe_file lispName=PROBE-FILE
-// SYMBOL_TABLE_ENTRY      CorePkg 1197 SingleDispatchGenericFunction_O SINGLE-DISPATCH-GENERIC-FUNCTION export ; cName=_sym_SingleDispatchGenericFunction_O lispName=SINGLE-DISPATCH-GENERIC-FUNCTION
-// SYMBOL_TABLE_ENTRY        ClPkg 1198 pathnameType                   PATHNAME-TYPE                  export ; cName=_sym_pathnameType lispName=PATHNAME-TYPE
-// SYMBOL_TABLE_ENTRY      CorePkg 1199 parse_macro                    PARSE-MACRO                    private ; cName=_sym_parse_macro lispName=PARSE-MACRO
-// SYMBOL_TABLE_ENTRY        ClPkg 1200 STARprint_caseSTAR             *PRINT-CASE*                   export ; cName=_sym_STARprint_caseSTAR lispName=*PRINT-CASE*
-// SYMBOL_TABLE_ENTRY      CorePkg 1201 dlopen                         DLOPEN                         private ; cName=_sym_dlopen lispName=DLOPEN
-// SYMBOL_TABLE_ENTRY       ExtPkg 1202 lexicalVar                     LEXICAL-VAR                    export ; cName=_sym_lexicalVar lispName=LEXICAL-VAR
-// SYMBOL_TABLE_ENTRY        ClPkg 1203 char_name                      CHAR-NAME                      export ; cName=_sym_char_name lispName=CHAR-NAME
-// SYMBOL_TABLE_ENTRY        ClPkg 1204 stringRightTrim                STRING-RIGHT-TRIM              export ; cName=_sym_stringRightTrim lispName=STRING-RIGHT-TRIM
-// SYMBOL_TABLE_ENTRY        ClPkg 1205 string_NE_                     STRING/=                       export ; cName=_sym_string_NE_ lispName=STRING/=
-// SYMBOL_TABLE_ENTRY        ClPkg 1206 pi                             PI                             export ; cName=_sym_pi lispName=PI
-// SYMBOL_TABLE_ENTRY      CorePkg 1207 sharp_r                        SHARP-R                        private ; cName=_sym_sharp_r lispName=SHARP-R
-// SYMBOL_TABLE_ENTRY      CorePkg 1208 HashTableEqualp_O              HASH-TABLE-EQUALP              export ; cName=_sym_HashTableEqualp_O lispName=HASH-TABLE-EQUALP
-// SYMBOL_TABLE_ENTRY        ClPkg 1209 numberp                        NUMBERP                        export ; cName=_sym_numberp lispName=NUMBERP
-// SYMBOL_TABLE_ENTRY      CorePkg 1210 STARserializerArchiveSTAR      *SERIALIZER-ARCHIVE*           export ; cName=_sym_STARserializerArchiveSTAR lispName=*SERIALIZER-ARCHIVE*
-// SYMBOL_TABLE_ENTRY      CorePkg 1211 ActivationFrame_O              ACTIVATION-FRAME               export ; cName=_sym_ActivationFrame_O lispName=ACTIVATION-FRAME
-// SYMBOL_TABLE_ENTRY      CorePkg 1212 monitorReader                  MONITOR-READER                 private ; cName=_sym_monitorReader lispName=MONITOR-READER
-// SYMBOL_TABLE_ENTRY      CorePkg 1213 preserve_whitespace            PRESERVE-WHITESPACE            private ; cName=_sym_preserve_whitespace lispName=PRESERVE-WHITESPACE
-// SYMBOL_TABLE_ENTRY      CorePkg 1214 STARnestedErrorDepthSTAR       *NESTED-ERROR-DEPTH*           private ; cName=_sym_STARnestedErrorDepthSTAR lispName=*NESTED-ERROR-DEPTH*
-// SYMBOL_TABLE_ENTRY      CorePkg 1215 STARpollTicksPerGcSTAR         *POLL-TICKS-PER-GC*            export ; cName=_sym_STARpollTicksPerGcSTAR lispName=*POLL-TICKS-PER-GC*
-// SYMBOL_TABLE_ENTRY        ClPkg 1216 bit_vector_p                   BIT-VECTOR-P                   export ; cName=_sym_bit_vector_p lispName=BIT-VECTOR-P
-// SYMBOL_TABLE_ENTRY        ClPkg 1217 nbutlast                       NBUTLAST                       export ; cName=_sym_nbutlast lispName=NBUTLAST
-// SYMBOL_TABLE_ENTRY      CorePkg 1218 SourceManager_O                SOURCE-MANAGER                 export ; cName=_sym_SourceManager_O lispName=SOURCE-MANAGER
-// SYMBOL_TABLE_ENTRY        ClPkg 1219 logorc1                        LOGORC1                        export ; cName=_sym_logorc1 lispName=LOGORC1
-// SYMBOL_TABLE_ENTRY        ClPkg 1220 multipleValueSetq              MULTIPLE-VALUE-SETQ            export ; cName=_sym_multipleValueSetq lispName=MULTIPLE-VALUE-SETQ
-// SYMBOL_TABLE_ENTRY      CorePkg 1221 STARimplicit_compile_hookSTAR  *IMPLICIT-COMPILE-HOOK*        export ; cName=_sym_STARimplicit_compile_hookSTAR lispName=*IMPLICIT-COMPILE-HOOK*
-// SYMBOL_TABLE_ENTRY        ClPkg 1222 nreconc                        NRECONC                        export ; cName=_sym_nreconc lispName=NRECONC
-// SYMBOL_TABLE_ENTRY      GrayPkg 1223 streamClearInput               STREAM-CLEAR-INPUT             export ; cName=_sym_streamClearInput lispName=STREAM-CLEAR-INPUT
-// SYMBOL_TABLE_ENTRY        ClPkg 1224 complex                        COMPLEX                        export ; cName=_sym_complex lispName=COMPLEX
-// SYMBOL_TABLE_ENTRY        ClPkg 1225 length                         LENGTH                         export ; cName=_sym_length lispName=LENGTH
-// SYMBOL_TABLE_ENTRY   KeywordPkg 1226 multiple_escape_character      MULTIPLE-ESCAPE-CHARACTER      export ; cName=_sym_multiple_escape_character lispName=MULTIPLE-ESCAPE-CHARACTER
-// SYMBOL_TABLE_ENTRY        ClPkg 1227 pathnamep                      PATHNAMEP                      export ; cName=_sym_pathnamep lispName=PATHNAMEP
-// SYMBOL_TABLE_ENTRY      CorePkg 1228 sharp_s                        SHARP-S                        private ; cName=_sym_sharp_s lispName=SHARP-S
-// SYMBOL_TABLE_ENTRY      CorePkg 1229 dlload                         DLLOAD                         private ; cName=_sym_dlload lispName=DLLOAD
-// SYMBOL_TABLE_ENTRY        ClPkg 1230 make_synonym_stream            MAKE-SYNONYM-STREAM            export ; cName=_sym_make_synonym_stream lispName=MAKE-SYNONYM-STREAM
-// SYMBOL_TABLE_ENTRY      CorePkg 1231 STARwatchDynamicBindingStackSTAR *WATCH-DYNAMIC-BINDING-STACK*  export ; cName=_sym_STARwatchDynamicBindingStackSTAR lispName=*WATCH-DYNAMIC-BINDING-STACK*
-// SYMBOL_TABLE_ENTRY        ClPkg 1232 make_string                    MAKE-STRING                    export ; cName=_sym_make_string lispName=MAKE-STRING
-// SYMBOL_TABLE_ENTRY      CorePkg 1233 fixnum_number_of_bits          FIXNUM-NUMBER-OF-BITS          private ; cName=_sym_fixnum_number_of_bits lispName=FIXNUM-NUMBER-OF-BITS
-// SYMBOL_TABLE_ENTRY        ClPkg 1234 acos                           ACOS                           export ; cName=_sym_acos lispName=ACOS
-// SYMBOL_TABLE_ENTRY        ClPkg 1235 UnsignedByte                   UNSIGNED-BYTE                  export ; cName=_sym_UnsignedByte lispName=UNSIGNED-BYTE
-// SYMBOL_TABLE_ENTRY        ClPkg 1236 elt                            ELT                            export ; cName=_sym_elt lispName=ELT
-// SYMBOL_TABLE_ENTRY      GrayPkg 1237 stream_read_sequence           STREAM-READ-SEQUENCE           export ; cName=_sym_stream_read_sequence lispName=STREAM-READ-SEQUENCE
-// SYMBOL_TABLE_ENTRY      CorePkg 1238 serialize                      SERIALIZE                      export ; cName=_sym_serialize lispName=SERIALIZE
-// SYMBOL_TABLE_ENTRY      CorePkg 1239 sharp_plus                     SHARP-PLUS                     private ; cName=_sym_sharp_plus lispName=SHARP-PLUS
-// SYMBOL_TABLE_ENTRY        ClPkg 1240 STARread_evalSTAR              *READ-EVAL*                    export ; cName=_sym_STARread_evalSTAR lispName=*READ-EVAL*
-// SYMBOL_TABLE_ENTRY      GrayPkg 1241 stream_peek_char               STREAM-PEEK-CHAR               export ; cName=_sym_stream_peek_char lispName=STREAM-PEEK-CHAR
-// SYMBOL_TABLE_ENTRY        ClPkg 1242 read_delimited_list            READ-DELIMITED-LIST            export ; cName=_sym_read_delimited_list lispName=READ-DELIMITED-LIST
-// SYMBOL_TABLE_ENTRY      CorePkg 1243 ihsEnv                         IHS-ENV                        private ; cName=_sym_ihsEnv lispName=IHS-ENV
-// SYMBOL_TABLE_ENTRY        ClPkg 1244 get_output_stream_string       GET-OUTPUT-STREAM-STRING       export ; cName=_sym_get_output_stream_string lispName=GET-OUTPUT-STREAM-STRING
-// SYMBOL_TABLE_ENTRY        ClPkg 1245 intersection                   INTERSECTION                   export ; cName=_sym_intersection lispName=INTERSECTION
-// SYMBOL_TABLE_ENTRY        ClPkg 1246 type                           TYPE                           export ; cName=_sym_type lispName=TYPE
-// SYMBOL_TABLE_ENTRY        ClPkg 1247 vectorPush                     VECTOR-PUSH                    export ; cName=_sym_vectorPush lispName=VECTOR-PUSH
-// SYMBOL_TABLE_ENTRY      CorePkg 1248 pathnameTranslations           PATHNAME-TRANSLATIONS          export ; cName=_sym_pathnameTranslations lispName=PATHNAME-TRANSLATIONS
-// SYMBOL_TABLE_ENTRY        ClPkg 1249 readByte                       READ-BYTE                      export ; cName=_sym_readByte lispName=READ-BYTE
-// SYMBOL_TABLE_ENTRY      CorePkg 1250 STARbackquote_expand_hookSTAR  *BACKQUOTE-EXPAND-HOOK*        private ; cName=_sym_STARbackquote_expand_hookSTAR lispName=*BACKQUOTE-EXPAND-HOOK*
-// SYMBOL_TABLE_ENTRY        ClPkg 1251 remhash                        REMHASH                        export ; cName=_sym_remhash lispName=REMHASH
-// SYMBOL_TABLE_ENTRY        ClPkg 1252 printObject                    PRINT-OBJECT                   export ; cName=_sym_printObject lispName=PRINT-OBJECT
-// SYMBOL_TABLE_ENTRY      CorePkg 1253 STARdebugInterpretedFunctionsSTAR *DEBUG-INTERPRETED-FUNCTIONS*  export ; cName=_sym_STARdebugInterpretedFunctionsSTAR lispName=*DEBUG-INTERPRETED-FUNCTIONS*
-// SYMBOL_TABLE_ENTRY   KeywordPkg 1254 invert                         INVERT                         export ; cName=_sym_invert lispName=INVERT
-// SYMBOL_TABLE_ENTRY        ClPkg 1255 dynamic_extent                 DYNAMIC-EXTENT                 export ; cName=_sym_dynamic_extent lispName=DYNAMIC-EXTENT
-// SYMBOL_TABLE_ENTRY        ClPkg 1256 sequence                       SEQUENCE                       export ; cName=_sym_sequence lispName=SEQUENCE
-// SYMBOL_TABLE_ENTRY        ClPkg 1257 FileStream_O                   FILE-STREAM                    export ; cName=_sym_FileStream_O lispName=FILE-STREAM
-// SYMBOL_TABLE_ENTRY   KeywordPkg 1258 unbound                        UNBOUND                        export ; cName=_sym_unbound lispName=UNBOUND
-// SYMBOL_TABLE_ENTRY      CorePkg 1259 fileColumn                     FILE-COLUMN                    export ; cName=_sym_fileColumn lispName=FILE-COLUMN
-// SYMBOL_TABLE_ENTRY        ClPkg 1260 mergePathnames                 MERGE-PATHNAMES                export ; cName=_sym_mergePathnames lispName=MERGE-PATHNAMES
-// SYMBOL_TABLE_ENTRY      CorePkg 1261 universalErrorHandler          UNIVERSAL-ERROR-HANDLER        private ; cName=_sym_universalErrorHandler lispName=UNIVERSAL-ERROR-HANDLER
-// SYMBOL_TABLE_ENTRY        ClPkg 1262 boole_ior                      BOOLE-IOR                      export ; cName=_sym_boole_ior lispName=BOOLE-IOR
-// SYMBOL_TABLE_ENTRY        ClPkg 1263 STARdebuggerHookSTAR           *DEBUGGER-HOOK*                export ; cName=_sym_STARdebuggerHookSTAR lispName=*DEBUGGER-HOOK*
-// SYMBOL_TABLE_ENTRY      CorePkg 1264 SymbolSet_O                    SYMBOL-SET                     export ; cName=_sym_SymbolSet_O lispName=SYMBOL-SET
-// SYMBOL_TABLE_ENTRY        ClPkg 1265 apropos                        APROPOS                        export ; cName=_sym_apropos lispName=APROPOS
-// SYMBOL_TABLE_ENTRY      CorePkg 1266 ihsNext                        IHS-NEXT                       private ; cName=_sym_ihsNext lispName=IHS-NEXT
-// SYMBOL_TABLE_ENTRY      CorePkg 1267 STARcommandLineArgumentsSTAR   *COMMAND-LINE-ARGUMENTS*       export ; cName=_sym_STARcommandLineArgumentsSTAR lispName=*COMMAND-LINE-ARGUMENTS*
-// SYMBOL_TABLE_ENTRY        ClPkg 1268 restart                        RESTART                        export ; cName=_sym_restart lispName=RESTART
-// SYMBOL_TABLE_ENTRY        ClPkg 1269 standard_char                  STANDARD-CHAR                  export ; cName=_sym_standard_char lispName=STANDARD-CHAR
-// SYMBOL_TABLE_ENTRY        ClPkg 1270 BroadcastStream_O              BROADCAST-STREAM               export ; cName=_sym_BroadcastStream_O lispName=BROADCAST-STREAM
-// SYMBOL_TABLE_ENTRY       ExtPkg 1271 STARdefault_external_formatSTAR *DEFAULT-EXTERNAL-FORMAT*      export ; cName=_sym_STARdefault_external_formatSTAR lispName=*DEFAULT-EXTERNAL-FORMAT*
-// SYMBOL_TABLE_ENTRY   KeywordPkg 1272 splatted                       SPLATTED                       export ; cName=_sym_splatted lispName=SPLATTED
-// SYMBOL_TABLE_ENTRY        ClPkg 1273 STARpackageSTAR                *PACKAGE*                      export ; cName=_sym_STARpackageSTAR lispName=*PACKAGE*
-// SYMBOL_TABLE_ENTRY      GrayPkg 1274 stream_finish_output           STREAM-FINISH-OUTPUT           export ; cName=_sym_stream_finish_output lispName=STREAM-FINISH-OUTPUT
-// SYMBOL_TABLE_ENTRY        ClPkg 1275 find_restart                   FIND-RESTART                   export ; cName=_sym_find_restart lispName=FIND-RESTART
-// SYMBOL_TABLE_ENTRY      CorePkg 1276 localGo                        LOCAL-GO                       export ; cName=_sym_localGo lispName=LOCAL-GO
-// SYMBOL_TABLE_ENTRY   KeywordPkg 1277 lf                             LF                             export ; cName=_sym_lf lispName=LF
-// SYMBOL_TABLE_ENTRY        ClPkg 1278 eq                             EQ                             export ; cName=_sym_eq lispName=EQ
-// SYMBOL_TABLE_ENTRY   KeywordPkg 1279 device                         DEVICE                         export ; cName=_sym_device lispName=DEVICE
-// SYMBOL_TABLE_ENTRY   KeywordPkg 1280 rename_and_delete              RENAME-AND-DELETE              export ; cName=_sym_rename_and_delete lispName=RENAME-AND-DELETE
-// SYMBOL_TABLE_ENTRY CleavirEnvPkg 1281 symbolMacroExpansion           SYMBOL-MACRO-EXPANSION         export ; cName=_sym_symbolMacroExpansion lispName=SYMBOL-MACRO-EXPANSION
-// SYMBOL_TABLE_ENTRY        ClPkg 1282 invoke_restart                 INVOKE-RESTART                 export ; cName=_sym_invoke_restart lispName=INVOKE-RESTART
-// SYMBOL_TABLE_ENTRY        ClPkg 1283 STARtrace_outputSTAR           *TRACE-OUTPUT*                 export ; cName=_sym_STARtrace_outputSTAR lispName=*TRACE-OUTPUT*
-// SYMBOL_TABLE_ENTRY        ClPkg 1284 truncate                       TRUNCATE                       export ; cName=_sym_truncate lispName=TRUNCATE
-// SYMBOL_TABLE_ENTRY   KeywordPkg 1285 compile_toplevel               COMPILE-TOPLEVEL               export ; cName=_sym_compile_toplevel lispName=COMPILE-TOPLEVEL
-// SYMBOL_TABLE_ENTRY        ClPkg 1286 pathnameName                   PATHNAME-NAME                  export ; cName=_sym_pathnameName lispName=PATHNAME-NAME
-// SYMBOL_TABLE_ENTRY        ClPkg 1287 symbolValue                    SYMBOL-VALUE                   export ; cName=_sym_symbolValue lispName=SYMBOL-VALUE
-// SYMBOL_TABLE_ENTRY        ClPkg 1288 STARquery_ioSTAR               *QUERY-IO*                     export ; cName=_sym_STARquery_ioSTAR lispName=*QUERY-IO*
-// SYMBOL_TABLE_ENTRY      CorePkg 1289 structure_slot_descriptions    STRUCTURE-SLOT-DESCRIPTIONS    export ; cName=_sym_structure_slot_descriptions lispName=STRUCTURE-SLOT-DESCRIPTIONS
-// SYMBOL_TABLE_ENTRY      CorePkg 1290 STARpreserve_whitespace_pSTAR  *PRESERVE-WHITESPACE-P*        private ; cName=_sym_STARpreserve_whitespace_pSTAR lispName=*PRESERVE-WHITESPACE-P*
-// SYMBOL_TABLE_ENTRY   KeywordPkg 1291 input                          INPUT                          export ; cName=_sym_input lispName=INPUT
-// SYMBOL_TABLE_ENTRY        ClPkg 1292 block                          BLOCK                          export ; cName=_sym_block lispName=BLOCK
-// SYMBOL_TABLE_ENTRY        ClPkg 1293 defparameter                   DEFPARAMETER                   export ; cName=_sym_defparameter lispName=DEFPARAMETER
-// SYMBOL_TABLE_ENTRY      CorePkg 1294 STARenvironmentPrintingTabSTAR *ENVIRONMENT-PRINTING-TAB*     private ; cName=_sym_STARenvironmentPrintingTabSTAR lispName=*ENVIRONMENT-PRINTING-TAB*
-// SYMBOL_TABLE_ENTRY   KeywordPkg 1295 inherited                      INHERITED                      export ; cName=_sym_inherited lispName=INHERITED
-// SYMBOL_TABLE_ENTRY        ClPkg 1296 list                           LIST                           export ; cName=_sym_list lispName=LIST
-// SYMBOL_TABLE_ENTRY      CompPkg 1297 compileInEnv                   COMPILE-IN-ENV                 export ; cName=_sym_compileInEnv lispName=COMPILE-IN-ENV
-// SYMBOL_TABLE_ENTRY      CorePkg 1298 ifDoesNotExist                 IF-DOES-NOT-EXIST              private ; cName=_sym_ifDoesNotExist lispName=IF-DOES-NOT-EXIST
-// SYMBOL_TABLE_ENTRY        ClPkg 1299 parseNamestring                PARSE-NAMESTRING               export ; cName=_sym_parseNamestring lispName=PARSE-NAMESTRING
-// SYMBOL_TABLE_ENTRY        ClPkg 1300 null                           NULL                           export ; cName=_sym_null lispName=NULL
-// SYMBOL_TABLE_ENTRY      CorePkg 1301 sharp_a                        SHARP-A                        private ; cName=_sym_sharp_a lispName=SHARP-A
-// SYMBOL_TABLE_ENTRY       ExtPkg 1302 truly_the                      TRULY-THE                      export ; cName=_sym_truly_the lispName=TRULY-THE
-// SYMBOL_TABLE_ENTRY      CorePkg 1303 backquote_frob                 BACKQUOTE-FROB                 private ; cName=_sym_backquote_frob lispName=BACKQUOTE-FROB
-// SYMBOL_TABLE_ENTRY      GrayPkg 1304 stream_line_column             STREAM-LINE-COLUMN             export ; cName=_sym_stream_line_column lispName=STREAM-LINE-COLUMN
-// SYMBOL_TABLE_ENTRY        ClPkg 1305 CompiledFunction_O             COMPILED-FUNCTION              export ; cName=_sym_CompiledFunction_O lispName=COMPILED-FUNCTION
-// SYMBOL_TABLE_ENTRY      CorePkg 1306 processDeclarations            PROCESS-DECLARATIONS           private ; cName=_sym_processDeclarations lispName=PROCESS-DECLARATIONS
-// SYMBOL_TABLE_ENTRY        ClPkg 1307 nil                            NIL                            export ; cName=_sym_nil lispName=NIL
-// SYMBOL_TABLE_ENTRY        ClPkg 1308 synonymStreamSymbol            SYNONYM-STREAM-SYMBOL          export ; cName=_sym_synonymStreamSymbol lispName=SYNONYM-STREAM-SYMBOL
-// SYMBOL_TABLE_ENTRY        ClPkg 1309 divisionByZero                 DIVISION-BY-ZERO               export ; cName=_sym_divisionByZero lispName=DIVISION-BY-ZERO
-// SYMBOL_TABLE_ENTRY      CorePkg 1310 structureSubtypep              STRUCTURE-SUBTYPEP             export ; cName=_sym_structureSubtypep lispName=STRUCTURE-SUBTYPEP
+// SYMBOL_TABLE_ENTRY      CorePkg 1177 SNode_O                        SNODE                          export ; cName=_sym_SNode_O lispName=SNODE
+// SYMBOL_TABLE_ENTRY        ClPkg 1178 unboundVariable                UNBOUND-VARIABLE               export ; cName=_sym_unboundVariable lispName=UNBOUND-VARIABLE
+// SYMBOL_TABLE_ENTRY      CorePkg 1179 loadBitcode                    LOAD-BITCODE                   export ; cName=_sym_loadBitcode lispName=LOAD-BITCODE
+// SYMBOL_TABLE_ENTRY      CorePkg 1180 log1p                          LOG1P                          export ; cName=_sym_log1p lispName=LOG1P
+// SYMBOL_TABLE_ENTRY   KeywordPkg 1181 class                          CLASS                          export ; cName=_sym_class lispName=CLASS
+// SYMBOL_TABLE_ENTRY      CorePkg 1182 integerToString                INTEGER-TO-STRING              export ; cName=_sym_integerToString lispName=INTEGER-TO-STRING
+// SYMBOL_TABLE_ENTRY        ClPkg 1183 tanh                           TANH                           export ; cName=_sym_tanh lispName=TANH
+// SYMBOL_TABLE_ENTRY        ClPkg 1184 STARprint_circleSTAR           *PRINT-CIRCLE*                 export ; cName=_sym_STARprint_circleSTAR lispName=*PRINT-CIRCLE*
+// SYMBOL_TABLE_ENTRY      CorePkg 1185 STARcircleCounterSTAR          *CIRCLE-COUNTER*               private ; cName=_sym_STARcircleCounterSTAR lispName=*CIRCLE-COUNTER*
+// SYMBOL_TABLE_ENTRY        ClPkg 1186 Bignum_O                       BIGNUM                         export ; cName=_sym_Bignum_O lispName=BIGNUM
+// SYMBOL_TABLE_ENTRY        ClPkg 1187 fileNamestring                 FILE-NAMESTRING                export ; cName=_sym_fileNamestring lispName=FILE-NAMESTRING
+// SYMBOL_TABLE_ENTRY        ClPkg 1188 SimpleBitVector_O              SIMPLE-BIT-VECTOR              export ; cName=_sym_SimpleBitVector_O lispName=SIMPLE-BIT-VECTOR
+// SYMBOL_TABLE_ENTRY        ClPkg 1189 consp                          CONSP                          export ; cName=_sym_consp lispName=CONSP
+// SYMBOL_TABLE_ENTRY      CorePkg 1190 saveCando                      SAVE-CANDO                     private ; cName=_sym_saveCando lispName=SAVE-CANDO
+// SYMBOL_TABLE_ENTRY        ClPkg 1191 acons                          ACONS                          export ; cName=_sym_acons lispName=ACONS
+// SYMBOL_TABLE_ENTRY      CorePkg 1192 copy_subarray                  COPY-SUBARRAY                  private ; cName=_sym_copy_subarray lispName=COPY-SUBARRAY
+// SYMBOL_TABLE_ENTRY      CorePkg 1193 STARprint_structureSTAR        *PRINT-STRUCTURE*              export ; cName=_sym_STARprint_structureSTAR lispName=*PRINT-STRUCTURE*
+// SYMBOL_TABLE_ENTRY        ClPkg 1194 safety                         SAFETY                         export ; cName=_sym_safety lispName=SAFETY
+// SYMBOL_TABLE_ENTRY        ClPkg 1195 probe_file                     PROBE-FILE                     export ; cName=_sym_probe_file lispName=PROBE-FILE
+// SYMBOL_TABLE_ENTRY      CorePkg 1196 SingleDispatchGenericFunction_O SINGLE-DISPATCH-GENERIC-FUNCTION export ; cName=_sym_SingleDispatchGenericFunction_O lispName=SINGLE-DISPATCH-GENERIC-FUNCTION
+// SYMBOL_TABLE_ENTRY        ClPkg 1197 pathnameType                   PATHNAME-TYPE                  export ; cName=_sym_pathnameType lispName=PATHNAME-TYPE
+// SYMBOL_TABLE_ENTRY      CorePkg 1198 parse_macro                    PARSE-MACRO                    private ; cName=_sym_parse_macro lispName=PARSE-MACRO
+// SYMBOL_TABLE_ENTRY        ClPkg 1199 STARprint_caseSTAR             *PRINT-CASE*                   export ; cName=_sym_STARprint_caseSTAR lispName=*PRINT-CASE*
+// SYMBOL_TABLE_ENTRY      CorePkg 1200 dlopen                         DLOPEN                         private ; cName=_sym_dlopen lispName=DLOPEN
+// SYMBOL_TABLE_ENTRY       ExtPkg 1201 lexicalVar                     LEXICAL-VAR                    export ; cName=_sym_lexicalVar lispName=LEXICAL-VAR
+// SYMBOL_TABLE_ENTRY        ClPkg 1202 char_name                      CHAR-NAME                      export ; cName=_sym_char_name lispName=CHAR-NAME
+// SYMBOL_TABLE_ENTRY        ClPkg 1203 stringRightTrim                STRING-RIGHT-TRIM              export ; cName=_sym_stringRightTrim lispName=STRING-RIGHT-TRIM
+// SYMBOL_TABLE_ENTRY        ClPkg 1204 string_NE_                     STRING/=                       export ; cName=_sym_string_NE_ lispName=STRING/=
+// SYMBOL_TABLE_ENTRY        ClPkg 1205 pi                             PI                             export ; cName=_sym_pi lispName=PI
+// SYMBOL_TABLE_ENTRY      CorePkg 1206 sharp_r                        SHARP-R                        private ; cName=_sym_sharp_r lispName=SHARP-R
+// SYMBOL_TABLE_ENTRY      CorePkg 1207 HashTableEqualp_O              HASH-TABLE-EQUALP              export ; cName=_sym_HashTableEqualp_O lispName=HASH-TABLE-EQUALP
+// SYMBOL_TABLE_ENTRY        ClPkg 1208 numberp                        NUMBERP                        export ; cName=_sym_numberp lispName=NUMBERP
+// SYMBOL_TABLE_ENTRY      CorePkg 1209 STARserializerArchiveSTAR      *SERIALIZER-ARCHIVE*           export ; cName=_sym_STARserializerArchiveSTAR lispName=*SERIALIZER-ARCHIVE*
+// SYMBOL_TABLE_ENTRY      CorePkg 1210 ActivationFrame_O              ACTIVATION-FRAME               export ; cName=_sym_ActivationFrame_O lispName=ACTIVATION-FRAME
+// SYMBOL_TABLE_ENTRY      CorePkg 1211 monitorReader                  MONITOR-READER                 private ; cName=_sym_monitorReader lispName=MONITOR-READER
+// SYMBOL_TABLE_ENTRY      CorePkg 1212 preserve_whitespace            PRESERVE-WHITESPACE            private ; cName=_sym_preserve_whitespace lispName=PRESERVE-WHITESPACE
+// SYMBOL_TABLE_ENTRY      CorePkg 1213 STARnestedErrorDepthSTAR       *NESTED-ERROR-DEPTH*           private ; cName=_sym_STARnestedErrorDepthSTAR lispName=*NESTED-ERROR-DEPTH*
+// SYMBOL_TABLE_ENTRY      CorePkg 1214 STARpollTicksPerGcSTAR         *POLL-TICKS-PER-GC*            export ; cName=_sym_STARpollTicksPerGcSTAR lispName=*POLL-TICKS-PER-GC*
+// SYMBOL_TABLE_ENTRY        ClPkg 1215 bit_vector_p                   BIT-VECTOR-P                   export ; cName=_sym_bit_vector_p lispName=BIT-VECTOR-P
+// SYMBOL_TABLE_ENTRY        ClPkg 1216 nbutlast                       NBUTLAST                       export ; cName=_sym_nbutlast lispName=NBUTLAST
+// SYMBOL_TABLE_ENTRY      CorePkg 1217 SourceManager_O                SOURCE-MANAGER                 export ; cName=_sym_SourceManager_O lispName=SOURCE-MANAGER
+// SYMBOL_TABLE_ENTRY        ClPkg 1218 logorc1                        LOGORC1                        export ; cName=_sym_logorc1 lispName=LOGORC1
+// SYMBOL_TABLE_ENTRY        ClPkg 1219 multipleValueSetq              MULTIPLE-VALUE-SETQ            export ; cName=_sym_multipleValueSetq lispName=MULTIPLE-VALUE-SETQ
+// SYMBOL_TABLE_ENTRY      CorePkg 1220 STARimplicit_compile_hookSTAR  *IMPLICIT-COMPILE-HOOK*        export ; cName=_sym_STARimplicit_compile_hookSTAR lispName=*IMPLICIT-COMPILE-HOOK*
+// SYMBOL_TABLE_ENTRY        ClPkg 1221 nreconc                        NRECONC                        export ; cName=_sym_nreconc lispName=NRECONC
+// SYMBOL_TABLE_ENTRY      GrayPkg 1222 streamClearInput               STREAM-CLEAR-INPUT             export ; cName=_sym_streamClearInput lispName=STREAM-CLEAR-INPUT
+// SYMBOL_TABLE_ENTRY        ClPkg 1223 complex                        COMPLEX                        export ; cName=_sym_complex lispName=COMPLEX
+// SYMBOL_TABLE_ENTRY        ClPkg 1224 length                         LENGTH                         export ; cName=_sym_length lispName=LENGTH
+// SYMBOL_TABLE_ENTRY   KeywordPkg 1225 multiple_escape_character      MULTIPLE-ESCAPE-CHARACTER      export ; cName=_sym_multiple_escape_character lispName=MULTIPLE-ESCAPE-CHARACTER
+// SYMBOL_TABLE_ENTRY        ClPkg 1226 pathnamep                      PATHNAMEP                      export ; cName=_sym_pathnamep lispName=PATHNAMEP
+// SYMBOL_TABLE_ENTRY      CorePkg 1227 sharp_s                        SHARP-S                        private ; cName=_sym_sharp_s lispName=SHARP-S
+// SYMBOL_TABLE_ENTRY      CorePkg 1228 dlload                         DLLOAD                         private ; cName=_sym_dlload lispName=DLLOAD
+// SYMBOL_TABLE_ENTRY        ClPkg 1229 make_synonym_stream            MAKE-SYNONYM-STREAM            export ; cName=_sym_make_synonym_stream lispName=MAKE-SYNONYM-STREAM
+// SYMBOL_TABLE_ENTRY      CorePkg 1230 STARwatchDynamicBindingStackSTAR *WATCH-DYNAMIC-BINDING-STACK*  export ; cName=_sym_STARwatchDynamicBindingStackSTAR lispName=*WATCH-DYNAMIC-BINDING-STACK*
+// SYMBOL_TABLE_ENTRY        ClPkg 1231 make_string                    MAKE-STRING                    export ; cName=_sym_make_string lispName=MAKE-STRING
+// SYMBOL_TABLE_ENTRY      CorePkg 1232 fixnum_number_of_bits          FIXNUM-NUMBER-OF-BITS          private ; cName=_sym_fixnum_number_of_bits lispName=FIXNUM-NUMBER-OF-BITS
+// SYMBOL_TABLE_ENTRY        ClPkg 1233 acos                           ACOS                           export ; cName=_sym_acos lispName=ACOS
+// SYMBOL_TABLE_ENTRY        ClPkg 1234 UnsignedByte                   UNSIGNED-BYTE                  export ; cName=_sym_UnsignedByte lispName=UNSIGNED-BYTE
+// SYMBOL_TABLE_ENTRY        ClPkg 1235 elt                            ELT                            export ; cName=_sym_elt lispName=ELT
+// SYMBOL_TABLE_ENTRY      GrayPkg 1236 stream_read_sequence           STREAM-READ-SEQUENCE           export ; cName=_sym_stream_read_sequence lispName=STREAM-READ-SEQUENCE
+// SYMBOL_TABLE_ENTRY      CorePkg 1237 serialize                      SERIALIZE                      export ; cName=_sym_serialize lispName=SERIALIZE
+// SYMBOL_TABLE_ENTRY      CorePkg 1238 sharp_plus                     SHARP-PLUS                     private ; cName=_sym_sharp_plus lispName=SHARP-PLUS
+// SYMBOL_TABLE_ENTRY        ClPkg 1239 STARread_evalSTAR              *READ-EVAL*                    export ; cName=_sym_STARread_evalSTAR lispName=*READ-EVAL*
+// SYMBOL_TABLE_ENTRY      GrayPkg 1240 stream_peek_char               STREAM-PEEK-CHAR               export ; cName=_sym_stream_peek_char lispName=STREAM-PEEK-CHAR
+// SYMBOL_TABLE_ENTRY        ClPkg 1241 read_delimited_list            READ-DELIMITED-LIST            export ; cName=_sym_read_delimited_list lispName=READ-DELIMITED-LIST
+// SYMBOL_TABLE_ENTRY      CorePkg 1242 ihsEnv                         IHS-ENV                        private ; cName=_sym_ihsEnv lispName=IHS-ENV
+// SYMBOL_TABLE_ENTRY        ClPkg 1243 get_output_stream_string       GET-OUTPUT-STREAM-STRING       export ; cName=_sym_get_output_stream_string lispName=GET-OUTPUT-STREAM-STRING
+// SYMBOL_TABLE_ENTRY        ClPkg 1244 intersection                   INTERSECTION                   export ; cName=_sym_intersection lispName=INTERSECTION
+// SYMBOL_TABLE_ENTRY        ClPkg 1245 type                           TYPE                           export ; cName=_sym_type lispName=TYPE
+// SYMBOL_TABLE_ENTRY        ClPkg 1246 vectorPush                     VECTOR-PUSH                    export ; cName=_sym_vectorPush lispName=VECTOR-PUSH
+// SYMBOL_TABLE_ENTRY      CorePkg 1247 pathnameTranslations           PATHNAME-TRANSLATIONS          export ; cName=_sym_pathnameTranslations lispName=PATHNAME-TRANSLATIONS
+// SYMBOL_TABLE_ENTRY        ClPkg 1248 readByte                       READ-BYTE                      export ; cName=_sym_readByte lispName=READ-BYTE
+// SYMBOL_TABLE_ENTRY      CorePkg 1249 STARbackquote_expand_hookSTAR  *BACKQUOTE-EXPAND-HOOK*        private ; cName=_sym_STARbackquote_expand_hookSTAR lispName=*BACKQUOTE-EXPAND-HOOK*
+// SYMBOL_TABLE_ENTRY        ClPkg 1250 remhash                        REMHASH                        export ; cName=_sym_remhash lispName=REMHASH
+// SYMBOL_TABLE_ENTRY        ClPkg 1251 printObject                    PRINT-OBJECT                   export ; cName=_sym_printObject lispName=PRINT-OBJECT
+// SYMBOL_TABLE_ENTRY      CorePkg 1252 STARdebugInterpretedFunctionsSTAR *DEBUG-INTERPRETED-FUNCTIONS*  export ; cName=_sym_STARdebugInterpretedFunctionsSTAR lispName=*DEBUG-INTERPRETED-FUNCTIONS*
+// SYMBOL_TABLE_ENTRY   KeywordPkg 1253 invert                         INVERT                         export ; cName=_sym_invert lispName=INVERT
+// SYMBOL_TABLE_ENTRY        ClPkg 1254 dynamic_extent                 DYNAMIC-EXTENT                 export ; cName=_sym_dynamic_extent lispName=DYNAMIC-EXTENT
+// SYMBOL_TABLE_ENTRY        ClPkg 1255 sequence                       SEQUENCE                       export ; cName=_sym_sequence lispName=SEQUENCE
+// SYMBOL_TABLE_ENTRY        ClPkg 1256 FileStream_O                   FILE-STREAM                    export ; cName=_sym_FileStream_O lispName=FILE-STREAM
+// SYMBOL_TABLE_ENTRY   KeywordPkg 1257 unbound                        UNBOUND                        export ; cName=_sym_unbound lispName=UNBOUND
+// SYMBOL_TABLE_ENTRY      CorePkg 1258 fileColumn                     FILE-COLUMN                    export ; cName=_sym_fileColumn lispName=FILE-COLUMN
+// SYMBOL_TABLE_ENTRY        ClPkg 1259 mergePathnames                 MERGE-PATHNAMES                export ; cName=_sym_mergePathnames lispName=MERGE-PATHNAMES
+// SYMBOL_TABLE_ENTRY      CorePkg 1260 universalErrorHandler          UNIVERSAL-ERROR-HANDLER        private ; cName=_sym_universalErrorHandler lispName=UNIVERSAL-ERROR-HANDLER
+// SYMBOL_TABLE_ENTRY        ClPkg 1261 boole_ior                      BOOLE-IOR                      export ; cName=_sym_boole_ior lispName=BOOLE-IOR
+// SYMBOL_TABLE_ENTRY        ClPkg 1262 STARdebuggerHookSTAR           *DEBUGGER-HOOK*                export ; cName=_sym_STARdebuggerHookSTAR lispName=*DEBUGGER-HOOK*
+// SYMBOL_TABLE_ENTRY      CorePkg 1263 SymbolSet_O                    SYMBOL-SET                     export ; cName=_sym_SymbolSet_O lispName=SYMBOL-SET
+// SYMBOL_TABLE_ENTRY        ClPkg 1264 apropos                        APROPOS                        export ; cName=_sym_apropos lispName=APROPOS
+// SYMBOL_TABLE_ENTRY      CorePkg 1265 ihsNext                        IHS-NEXT                       private ; cName=_sym_ihsNext lispName=IHS-NEXT
+// SYMBOL_TABLE_ENTRY      CorePkg 1266 STARcommandLineArgumentsSTAR   *COMMAND-LINE-ARGUMENTS*       export ; cName=_sym_STARcommandLineArgumentsSTAR lispName=*COMMAND-LINE-ARGUMENTS*
+// SYMBOL_TABLE_ENTRY        ClPkg 1267 restart                        RESTART                        export ; cName=_sym_restart lispName=RESTART
+// SYMBOL_TABLE_ENTRY        ClPkg 1268 standard_char                  STANDARD-CHAR                  export ; cName=_sym_standard_char lispName=STANDARD-CHAR
+// SYMBOL_TABLE_ENTRY        ClPkg 1269 BroadcastStream_O              BROADCAST-STREAM               export ; cName=_sym_BroadcastStream_O lispName=BROADCAST-STREAM
+// SYMBOL_TABLE_ENTRY       ExtPkg 1270 STARdefault_external_formatSTAR *DEFAULT-EXTERNAL-FORMAT*      export ; cName=_sym_STARdefault_external_formatSTAR lispName=*DEFAULT-EXTERNAL-FORMAT*
+// SYMBOL_TABLE_ENTRY   KeywordPkg 1271 splatted                       SPLATTED                       export ; cName=_sym_splatted lispName=SPLATTED
+// SYMBOL_TABLE_ENTRY        ClPkg 1272 STARpackageSTAR                *PACKAGE*                      export ; cName=_sym_STARpackageSTAR lispName=*PACKAGE*
+// SYMBOL_TABLE_ENTRY      GrayPkg 1273 stream_finish_output           STREAM-FINISH-OUTPUT           export ; cName=_sym_stream_finish_output lispName=STREAM-FINISH-OUTPUT
+// SYMBOL_TABLE_ENTRY        ClPkg 1274 find_restart                   FIND-RESTART                   export ; cName=_sym_find_restart lispName=FIND-RESTART
+// SYMBOL_TABLE_ENTRY      CorePkg 1275 localGo                        LOCAL-GO                       export ; cName=_sym_localGo lispName=LOCAL-GO
+// SYMBOL_TABLE_ENTRY   KeywordPkg 1276 lf                             LF                             export ; cName=_sym_lf lispName=LF
+// SYMBOL_TABLE_ENTRY        ClPkg 1277 eq                             EQ                             export ; cName=_sym_eq lispName=EQ
+// SYMBOL_TABLE_ENTRY   KeywordPkg 1278 device                         DEVICE                         export ; cName=_sym_device lispName=DEVICE
+// SYMBOL_TABLE_ENTRY   KeywordPkg 1279 rename_and_delete              RENAME-AND-DELETE              export ; cName=_sym_rename_and_delete lispName=RENAME-AND-DELETE
+// SYMBOL_TABLE_ENTRY CleavirEnvPkg 1280 symbolMacroExpansion           SYMBOL-MACRO-EXPANSION         export ; cName=_sym_symbolMacroExpansion lispName=SYMBOL-MACRO-EXPANSION
+// SYMBOL_TABLE_ENTRY        ClPkg 1281 invoke_restart                 INVOKE-RESTART                 export ; cName=_sym_invoke_restart lispName=INVOKE-RESTART
+// SYMBOL_TABLE_ENTRY        ClPkg 1282 STARtrace_outputSTAR           *TRACE-OUTPUT*                 export ; cName=_sym_STARtrace_outputSTAR lispName=*TRACE-OUTPUT*
+// SYMBOL_TABLE_ENTRY        ClPkg 1283 truncate                       TRUNCATE                       export ; cName=_sym_truncate lispName=TRUNCATE
+// SYMBOL_TABLE_ENTRY   KeywordPkg 1284 compile_toplevel               COMPILE-TOPLEVEL               export ; cName=_sym_compile_toplevel lispName=COMPILE-TOPLEVEL
+// SYMBOL_TABLE_ENTRY        ClPkg 1285 pathnameName                   PATHNAME-NAME                  export ; cName=_sym_pathnameName lispName=PATHNAME-NAME
+// SYMBOL_TABLE_ENTRY        ClPkg 1286 symbolValue                    SYMBOL-VALUE                   export ; cName=_sym_symbolValue lispName=SYMBOL-VALUE
+// SYMBOL_TABLE_ENTRY        ClPkg 1287 STARquery_ioSTAR               *QUERY-IO*                     export ; cName=_sym_STARquery_ioSTAR lispName=*QUERY-IO*
+// SYMBOL_TABLE_ENTRY      CorePkg 1288 structure_slot_descriptions    STRUCTURE-SLOT-DESCRIPTIONS    export ; cName=_sym_structure_slot_descriptions lispName=STRUCTURE-SLOT-DESCRIPTIONS
+// SYMBOL_TABLE_ENTRY      CorePkg 1289 STARpreserve_whitespace_pSTAR  *PRESERVE-WHITESPACE-P*        private ; cName=_sym_STARpreserve_whitespace_pSTAR lispName=*PRESERVE-WHITESPACE-P*
+// SYMBOL_TABLE_ENTRY   KeywordPkg 1290 input                          INPUT                          export ; cName=_sym_input lispName=INPUT
+// SYMBOL_TABLE_ENTRY        ClPkg 1291 block                          BLOCK                          export ; cName=_sym_block lispName=BLOCK
+// SYMBOL_TABLE_ENTRY        ClPkg 1292 defparameter                   DEFPARAMETER                   export ; cName=_sym_defparameter lispName=DEFPARAMETER
+// SYMBOL_TABLE_ENTRY      CorePkg 1293 STARenvironmentPrintingTabSTAR *ENVIRONMENT-PRINTING-TAB*     private ; cName=_sym_STARenvironmentPrintingTabSTAR lispName=*ENVIRONMENT-PRINTING-TAB*
+// SYMBOL_TABLE_ENTRY   KeywordPkg 1294 inherited                      INHERITED                      export ; cName=_sym_inherited lispName=INHERITED
+// SYMBOL_TABLE_ENTRY        ClPkg 1295 list                           LIST                           export ; cName=_sym_list lispName=LIST
+// SYMBOL_TABLE_ENTRY      CompPkg 1296 compileInEnv                   COMPILE-IN-ENV                 export ; cName=_sym_compileInEnv lispName=COMPILE-IN-ENV
+// SYMBOL_TABLE_ENTRY      CorePkg 1297 ifDoesNotExist                 IF-DOES-NOT-EXIST              private ; cName=_sym_ifDoesNotExist lispName=IF-DOES-NOT-EXIST
+// SYMBOL_TABLE_ENTRY        ClPkg 1298 parseNamestring                PARSE-NAMESTRING               export ; cName=_sym_parseNamestring lispName=PARSE-NAMESTRING
+// SYMBOL_TABLE_ENTRY        ClPkg 1299 null                           NULL                           export ; cName=_sym_null lispName=NULL
+// SYMBOL_TABLE_ENTRY      CorePkg 1300 sharp_a                        SHARP-A                        private ; cName=_sym_sharp_a lispName=SHARP-A
+// SYMBOL_TABLE_ENTRY       ExtPkg 1301 truly_the                      TRULY-THE                      export ; cName=_sym_truly_the lispName=TRULY-THE
+// SYMBOL_TABLE_ENTRY      CorePkg 1302 backquote_frob                 BACKQUOTE-FROB                 private ; cName=_sym_backquote_frob lispName=BACKQUOTE-FROB
+// SYMBOL_TABLE_ENTRY      GrayPkg 1303 stream_line_column             STREAM-LINE-COLUMN             export ; cName=_sym_stream_line_column lispName=STREAM-LINE-COLUMN
+// SYMBOL_TABLE_ENTRY        ClPkg 1304 CompiledFunction_O             COMPILED-FUNCTION              export ; cName=_sym_CompiledFunction_O lispName=COMPILED-FUNCTION
+// SYMBOL_TABLE_ENTRY      CorePkg 1305 processDeclarations            PROCESS-DECLARATIONS           private ; cName=_sym_processDeclarations lispName=PROCESS-DECLARATIONS
+// SYMBOL_TABLE_ENTRY        ClPkg 1306 nil                            NIL                            export ; cName=_sym_nil lispName=NIL
+// SYMBOL_TABLE_ENTRY        ClPkg 1307 synonymStreamSymbol            SYNONYM-STREAM-SYMBOL          export ; cName=_sym_synonymStreamSymbol lispName=SYNONYM-STREAM-SYMBOL
+// SYMBOL_TABLE_ENTRY        ClPkg 1308 divisionByZero                 DIVISION-BY-ZERO               export ; cName=_sym_divisionByZero lispName=DIVISION-BY-ZERO
+// SYMBOL_TABLE_ENTRY      CorePkg 1309 structureSubtypep              STRUCTURE-SUBTYPEP             export ; cName=_sym_structureSubtypep lispName=STRUCTURE-SUBTYPEP
 #ifdef ClPkg_SYMBOLS
 DO_SYMBOL(_sym_wildPathnameP,0,ClPkg,"WILD-PATHNAME-P",true);
 DO_SYMBOL(_sym_not,2,ClPkg,"NOT",true);
@@ -1851,74 +1850,73 @@ DO_SYMBOL(_sym_gethash,1168,ClPkg,"GETHASH",true);
 DO_SYMBOL(_sym_some,1170,ClPkg,"SOME",true);
 DO_SYMBOL(_sym_floatingPointInvalidOperation,1174,ClPkg,"FLOATING-POINT-INVALID-OPERATION",true);
 DO_SYMBOL(_sym_STARstandard_inputSTAR,1175,ClPkg,"*STANDARD-INPUT*",true);
-DO_SYMBOL(_sym_Fixnum_O,1177,ClPkg,"FIXNUM",true);
-DO_SYMBOL(_sym_unboundVariable,1179,ClPkg,"UNBOUND-VARIABLE",true);
-DO_SYMBOL(_sym_tanh,1184,ClPkg,"TANH",true);
-DO_SYMBOL(_sym_STARprint_circleSTAR,1185,ClPkg,"*PRINT-CIRCLE*",true);
-DO_SYMBOL(_sym_Bignum_O,1187,ClPkg,"BIGNUM",true);
-DO_SYMBOL(_sym_fileNamestring,1188,ClPkg,"FILE-NAMESTRING",true);
-DO_SYMBOL(_sym_SimpleBitVector_O,1189,ClPkg,"SIMPLE-BIT-VECTOR",true);
-DO_SYMBOL(_sym_consp,1190,ClPkg,"CONSP",true);
-DO_SYMBOL(_sym_acons,1192,ClPkg,"ACONS",true);
-DO_SYMBOL(_sym_safety,1195,ClPkg,"SAFETY",true);
-DO_SYMBOL(_sym_probe_file,1196,ClPkg,"PROBE-FILE",true);
-DO_SYMBOL(_sym_pathnameType,1198,ClPkg,"PATHNAME-TYPE",true);
-DO_SYMBOL(_sym_STARprint_caseSTAR,1200,ClPkg,"*PRINT-CASE*",true);
-DO_SYMBOL(_sym_char_name,1203,ClPkg,"CHAR-NAME",true);
-DO_SYMBOL(_sym_stringRightTrim,1204,ClPkg,"STRING-RIGHT-TRIM",true);
-DO_SYMBOL(_sym_string_NE_,1205,ClPkg,"STRING/=",true);
-DO_SYMBOL(_sym_pi,1206,ClPkg,"PI",true);
-DO_SYMBOL(_sym_numberp,1209,ClPkg,"NUMBERP",true);
-DO_SYMBOL(_sym_bit_vector_p,1216,ClPkg,"BIT-VECTOR-P",true);
-DO_SYMBOL(_sym_nbutlast,1217,ClPkg,"NBUTLAST",true);
-DO_SYMBOL(_sym_logorc1,1219,ClPkg,"LOGORC1",true);
-DO_SYMBOL(_sym_multipleValueSetq,1220,ClPkg,"MULTIPLE-VALUE-SETQ",true);
-DO_SYMBOL(_sym_nreconc,1222,ClPkg,"NRECONC",true);
-DO_SYMBOL(_sym_complex,1224,ClPkg,"COMPLEX",true);
-DO_SYMBOL(_sym_length,1225,ClPkg,"LENGTH",true);
-DO_SYMBOL(_sym_pathnamep,1227,ClPkg,"PATHNAMEP",true);
-DO_SYMBOL(_sym_make_synonym_stream,1230,ClPkg,"MAKE-SYNONYM-STREAM",true);
-DO_SYMBOL(_sym_make_string,1232,ClPkg,"MAKE-STRING",true);
-DO_SYMBOL(_sym_acos,1234,ClPkg,"ACOS",true);
-DO_SYMBOL(_sym_UnsignedByte,1235,ClPkg,"UNSIGNED-BYTE",true);
-DO_SYMBOL(_sym_elt,1236,ClPkg,"ELT",true);
-DO_SYMBOL(_sym_STARread_evalSTAR,1240,ClPkg,"*READ-EVAL*",true);
-DO_SYMBOL(_sym_read_delimited_list,1242,ClPkg,"READ-DELIMITED-LIST",true);
-DO_SYMBOL(_sym_get_output_stream_string,1244,ClPkg,"GET-OUTPUT-STREAM-STRING",true);
-DO_SYMBOL(_sym_intersection,1245,ClPkg,"INTERSECTION",true);
-DO_SYMBOL(_sym_type,1246,ClPkg,"TYPE",true);
-DO_SYMBOL(_sym_vectorPush,1247,ClPkg,"VECTOR-PUSH",true);
-DO_SYMBOL(_sym_readByte,1249,ClPkg,"READ-BYTE",true);
-DO_SYMBOL(_sym_remhash,1251,ClPkg,"REMHASH",true);
-DO_SYMBOL(_sym_printObject,1252,ClPkg,"PRINT-OBJECT",true);
-DO_SYMBOL(_sym_dynamic_extent,1255,ClPkg,"DYNAMIC-EXTENT",true);
-DO_SYMBOL(_sym_sequence,1256,ClPkg,"SEQUENCE",true);
-DO_SYMBOL(_sym_FileStream_O,1257,ClPkg,"FILE-STREAM",true);
-DO_SYMBOL(_sym_mergePathnames,1260,ClPkg,"MERGE-PATHNAMES",true);
-DO_SYMBOL(_sym_boole_ior,1262,ClPkg,"BOOLE-IOR",true);
-DO_SYMBOL(_sym_STARdebuggerHookSTAR,1263,ClPkg,"*DEBUGGER-HOOK*",true);
-DO_SYMBOL(_sym_apropos,1265,ClPkg,"APROPOS",true);
-DO_SYMBOL(_sym_restart,1268,ClPkg,"RESTART",true);
-DO_SYMBOL(_sym_standard_char,1269,ClPkg,"STANDARD-CHAR",true);
-DO_SYMBOL(_sym_BroadcastStream_O,1270,ClPkg,"BROADCAST-STREAM",true);
-DO_SYMBOL(_sym_STARpackageSTAR,1273,ClPkg,"*PACKAGE*",true);
-DO_SYMBOL(_sym_find_restart,1275,ClPkg,"FIND-RESTART",true);
-DO_SYMBOL(_sym_eq,1278,ClPkg,"EQ",true);
-DO_SYMBOL(_sym_invoke_restart,1282,ClPkg,"INVOKE-RESTART",true);
-DO_SYMBOL(_sym_STARtrace_outputSTAR,1283,ClPkg,"*TRACE-OUTPUT*",true);
-DO_SYMBOL(_sym_truncate,1284,ClPkg,"TRUNCATE",true);
-DO_SYMBOL(_sym_pathnameName,1286,ClPkg,"PATHNAME-NAME",true);
-DO_SYMBOL(_sym_symbolValue,1287,ClPkg,"SYMBOL-VALUE",true);
-DO_SYMBOL(_sym_STARquery_ioSTAR,1288,ClPkg,"*QUERY-IO*",true);
-DO_SYMBOL(_sym_block,1292,ClPkg,"BLOCK",true);
-DO_SYMBOL(_sym_defparameter,1293,ClPkg,"DEFPARAMETER",true);
-DO_SYMBOL(_sym_list,1296,ClPkg,"LIST",true);
-DO_SYMBOL(_sym_parseNamestring,1299,ClPkg,"PARSE-NAMESTRING",true);
-DO_SYMBOL(_sym_null,1300,ClPkg,"NULL",true);
-DO_SYMBOL(_sym_CompiledFunction_O,1305,ClPkg,"COMPILED-FUNCTION",true);
-DO_SYMBOL(_sym_nil,1307,ClPkg,"NIL",true);
-DO_SYMBOL(_sym_synonymStreamSymbol,1308,ClPkg,"SYNONYM-STREAM-SYMBOL",true);
-DO_SYMBOL(_sym_divisionByZero,1309,ClPkg,"DIVISION-BY-ZERO",true);
+DO_SYMBOL(_sym_unboundVariable,1178,ClPkg,"UNBOUND-VARIABLE",true);
+DO_SYMBOL(_sym_tanh,1183,ClPkg,"TANH",true);
+DO_SYMBOL(_sym_STARprint_circleSTAR,1184,ClPkg,"*PRINT-CIRCLE*",true);
+DO_SYMBOL(_sym_Bignum_O,1186,ClPkg,"BIGNUM",true);
+DO_SYMBOL(_sym_fileNamestring,1187,ClPkg,"FILE-NAMESTRING",true);
+DO_SYMBOL(_sym_SimpleBitVector_O,1188,ClPkg,"SIMPLE-BIT-VECTOR",true);
+DO_SYMBOL(_sym_consp,1189,ClPkg,"CONSP",true);
+DO_SYMBOL(_sym_acons,1191,ClPkg,"ACONS",true);
+DO_SYMBOL(_sym_safety,1194,ClPkg,"SAFETY",true);
+DO_SYMBOL(_sym_probe_file,1195,ClPkg,"PROBE-FILE",true);
+DO_SYMBOL(_sym_pathnameType,1197,ClPkg,"PATHNAME-TYPE",true);
+DO_SYMBOL(_sym_STARprint_caseSTAR,1199,ClPkg,"*PRINT-CASE*",true);
+DO_SYMBOL(_sym_char_name,1202,ClPkg,"CHAR-NAME",true);
+DO_SYMBOL(_sym_stringRightTrim,1203,ClPkg,"STRING-RIGHT-TRIM",true);
+DO_SYMBOL(_sym_string_NE_,1204,ClPkg,"STRING/=",true);
+DO_SYMBOL(_sym_pi,1205,ClPkg,"PI",true);
+DO_SYMBOL(_sym_numberp,1208,ClPkg,"NUMBERP",true);
+DO_SYMBOL(_sym_bit_vector_p,1215,ClPkg,"BIT-VECTOR-P",true);
+DO_SYMBOL(_sym_nbutlast,1216,ClPkg,"NBUTLAST",true);
+DO_SYMBOL(_sym_logorc1,1218,ClPkg,"LOGORC1",true);
+DO_SYMBOL(_sym_multipleValueSetq,1219,ClPkg,"MULTIPLE-VALUE-SETQ",true);
+DO_SYMBOL(_sym_nreconc,1221,ClPkg,"NRECONC",true);
+DO_SYMBOL(_sym_complex,1223,ClPkg,"COMPLEX",true);
+DO_SYMBOL(_sym_length,1224,ClPkg,"LENGTH",true);
+DO_SYMBOL(_sym_pathnamep,1226,ClPkg,"PATHNAMEP",true);
+DO_SYMBOL(_sym_make_synonym_stream,1229,ClPkg,"MAKE-SYNONYM-STREAM",true);
+DO_SYMBOL(_sym_make_string,1231,ClPkg,"MAKE-STRING",true);
+DO_SYMBOL(_sym_acos,1233,ClPkg,"ACOS",true);
+DO_SYMBOL(_sym_UnsignedByte,1234,ClPkg,"UNSIGNED-BYTE",true);
+DO_SYMBOL(_sym_elt,1235,ClPkg,"ELT",true);
+DO_SYMBOL(_sym_STARread_evalSTAR,1239,ClPkg,"*READ-EVAL*",true);
+DO_SYMBOL(_sym_read_delimited_list,1241,ClPkg,"READ-DELIMITED-LIST",true);
+DO_SYMBOL(_sym_get_output_stream_string,1243,ClPkg,"GET-OUTPUT-STREAM-STRING",true);
+DO_SYMBOL(_sym_intersection,1244,ClPkg,"INTERSECTION",true);
+DO_SYMBOL(_sym_type,1245,ClPkg,"TYPE",true);
+DO_SYMBOL(_sym_vectorPush,1246,ClPkg,"VECTOR-PUSH",true);
+DO_SYMBOL(_sym_readByte,1248,ClPkg,"READ-BYTE",true);
+DO_SYMBOL(_sym_remhash,1250,ClPkg,"REMHASH",true);
+DO_SYMBOL(_sym_printObject,1251,ClPkg,"PRINT-OBJECT",true);
+DO_SYMBOL(_sym_dynamic_extent,1254,ClPkg,"DYNAMIC-EXTENT",true);
+DO_SYMBOL(_sym_sequence,1255,ClPkg,"SEQUENCE",true);
+DO_SYMBOL(_sym_FileStream_O,1256,ClPkg,"FILE-STREAM",true);
+DO_SYMBOL(_sym_mergePathnames,1259,ClPkg,"MERGE-PATHNAMES",true);
+DO_SYMBOL(_sym_boole_ior,1261,ClPkg,"BOOLE-IOR",true);
+DO_SYMBOL(_sym_STARdebuggerHookSTAR,1262,ClPkg,"*DEBUGGER-HOOK*",true);
+DO_SYMBOL(_sym_apropos,1264,ClPkg,"APROPOS",true);
+DO_SYMBOL(_sym_restart,1267,ClPkg,"RESTART",true);
+DO_SYMBOL(_sym_standard_char,1268,ClPkg,"STANDARD-CHAR",true);
+DO_SYMBOL(_sym_BroadcastStream_O,1269,ClPkg,"BROADCAST-STREAM",true);
+DO_SYMBOL(_sym_STARpackageSTAR,1272,ClPkg,"*PACKAGE*",true);
+DO_SYMBOL(_sym_find_restart,1274,ClPkg,"FIND-RESTART",true);
+DO_SYMBOL(_sym_eq,1277,ClPkg,"EQ",true);
+DO_SYMBOL(_sym_invoke_restart,1281,ClPkg,"INVOKE-RESTART",true);
+DO_SYMBOL(_sym_STARtrace_outputSTAR,1282,ClPkg,"*TRACE-OUTPUT*",true);
+DO_SYMBOL(_sym_truncate,1283,ClPkg,"TRUNCATE",true);
+DO_SYMBOL(_sym_pathnameName,1285,ClPkg,"PATHNAME-NAME",true);
+DO_SYMBOL(_sym_symbolValue,1286,ClPkg,"SYMBOL-VALUE",true);
+DO_SYMBOL(_sym_STARquery_ioSTAR,1287,ClPkg,"*QUERY-IO*",true);
+DO_SYMBOL(_sym_block,1291,ClPkg,"BLOCK",true);
+DO_SYMBOL(_sym_defparameter,1292,ClPkg,"DEFPARAMETER",true);
+DO_SYMBOL(_sym_list,1295,ClPkg,"LIST",true);
+DO_SYMBOL(_sym_parseNamestring,1298,ClPkg,"PARSE-NAMESTRING",true);
+DO_SYMBOL(_sym_null,1299,ClPkg,"NULL",true);
+DO_SYMBOL(_sym_CompiledFunction_O,1304,ClPkg,"COMPILED-FUNCTION",true);
+DO_SYMBOL(_sym_nil,1306,ClPkg,"NIL",true);
+DO_SYMBOL(_sym_synonymStreamSymbol,1307,ClPkg,"SYNONYM-STREAM-SYMBOL",true);
+DO_SYMBOL(_sym_divisionByZero,1308,ClPkg,"DIVISION-BY-ZERO",true);
 #endif
 #ifdef CorePkg_SYMBOLS
 DO_SYMBOL(_sym_isSubClassOf,1,CorePkg,"IS-SUB-CLASS-OF",false);
@@ -2365,55 +2363,55 @@ DO_SYMBOL(_sym_backquote_process,1169,CorePkg,"BACKQUOTE-PROCESS",false);
 DO_SYMBOL(_sym_sourceFileName,1171,CorePkg,"SOURCE-FILE-NAME",false);
 DO_SYMBOL(_sym_STARcircle_counterSTAR,1172,CorePkg,"*CIRCLE-COUNTER*",true);
 DO_SYMBOL(_sym_implementationClass,1176,CorePkg,"IMPLEMENTATION-CLASS",true);
-DO_SYMBOL(_sym_SNode_O,1178,CorePkg,"SNODE",true);
-DO_SYMBOL(_sym_loadBitcode,1180,CorePkg,"LOAD-BITCODE",true);
-DO_SYMBOL(_sym_log1p,1181,CorePkg,"LOG1P",true);
-DO_SYMBOL(_sym_integerToString,1183,CorePkg,"INTEGER-TO-STRING",true);
-DO_SYMBOL(_sym_STARcircleCounterSTAR,1186,CorePkg,"*CIRCLE-COUNTER*",false);
-DO_SYMBOL(_sym_saveCando,1191,CorePkg,"SAVE-CANDO",false);
-DO_SYMBOL(_sym_copy_subarray,1193,CorePkg,"COPY-SUBARRAY",false);
-DO_SYMBOL(_sym_STARprint_structureSTAR,1194,CorePkg,"*PRINT-STRUCTURE*",true);
-DO_SYMBOL(_sym_SingleDispatchGenericFunction_O,1197,CorePkg,"SINGLE-DISPATCH-GENERIC-FUNCTION",true);
-DO_SYMBOL(_sym_parse_macro,1199,CorePkg,"PARSE-MACRO",false);
-DO_SYMBOL(_sym_dlopen,1201,CorePkg,"DLOPEN",false);
-DO_SYMBOL(_sym_sharp_r,1207,CorePkg,"SHARP-R",false);
-DO_SYMBOL(_sym_HashTableEqualp_O,1208,CorePkg,"HASH-TABLE-EQUALP",true);
-DO_SYMBOL(_sym_STARserializerArchiveSTAR,1210,CorePkg,"*SERIALIZER-ARCHIVE*",true);
-DO_SYMBOL(_sym_ActivationFrame_O,1211,CorePkg,"ACTIVATION-FRAME",true);
-DO_SYMBOL(_sym_monitorReader,1212,CorePkg,"MONITOR-READER",false);
-DO_SYMBOL(_sym_preserve_whitespace,1213,CorePkg,"PRESERVE-WHITESPACE",false);
-DO_SYMBOL(_sym_STARnestedErrorDepthSTAR,1214,CorePkg,"*NESTED-ERROR-DEPTH*",false);
-DO_SYMBOL(_sym_STARpollTicksPerGcSTAR,1215,CorePkg,"*POLL-TICKS-PER-GC*",true);
-DO_SYMBOL(_sym_SourceManager_O,1218,CorePkg,"SOURCE-MANAGER",true);
-DO_SYMBOL(_sym_STARimplicit_compile_hookSTAR,1221,CorePkg,"*IMPLICIT-COMPILE-HOOK*",true);
-DO_SYMBOL(_sym_sharp_s,1228,CorePkg,"SHARP-S",false);
-DO_SYMBOL(_sym_dlload,1229,CorePkg,"DLLOAD",false);
-DO_SYMBOL(_sym_STARwatchDynamicBindingStackSTAR,1231,CorePkg,"*WATCH-DYNAMIC-BINDING-STACK*",true);
-DO_SYMBOL(_sym_fixnum_number_of_bits,1233,CorePkg,"FIXNUM-NUMBER-OF-BITS",false);
-DO_SYMBOL(_sym_serialize,1238,CorePkg,"SERIALIZE",true);
-DO_SYMBOL(_sym_sharp_plus,1239,CorePkg,"SHARP-PLUS",false);
-DO_SYMBOL(_sym_ihsEnv,1243,CorePkg,"IHS-ENV",false);
-DO_SYMBOL(_sym_pathnameTranslations,1248,CorePkg,"PATHNAME-TRANSLATIONS",true);
-DO_SYMBOL(_sym_STARbackquote_expand_hookSTAR,1250,CorePkg,"*BACKQUOTE-EXPAND-HOOK*",false);
-DO_SYMBOL(_sym_STARdebugInterpretedFunctionsSTAR,1253,CorePkg,"*DEBUG-INTERPRETED-FUNCTIONS*",true);
-DO_SYMBOL(_sym_fileColumn,1259,CorePkg,"FILE-COLUMN",true);
-DO_SYMBOL(_sym_universalErrorHandler,1261,CorePkg,"UNIVERSAL-ERROR-HANDLER",false);
-DO_SYMBOL(_sym_SymbolSet_O,1264,CorePkg,"SYMBOL-SET",true);
-DO_SYMBOL(_sym_ihsNext,1266,CorePkg,"IHS-NEXT",false);
-DO_SYMBOL(_sym_STARcommandLineArgumentsSTAR,1267,CorePkg,"*COMMAND-LINE-ARGUMENTS*",true);
-DO_SYMBOL(_sym_localGo,1276,CorePkg,"LOCAL-GO",true);
-DO_SYMBOL(_sym_structure_slot_descriptions,1289,CorePkg,"STRUCTURE-SLOT-DESCRIPTIONS",true);
-DO_SYMBOL(_sym_STARpreserve_whitespace_pSTAR,1290,CorePkg,"*PRESERVE-WHITESPACE-P*",false);
-DO_SYMBOL(_sym_STARenvironmentPrintingTabSTAR,1294,CorePkg,"*ENVIRONMENT-PRINTING-TAB*",false);
-DO_SYMBOL(_sym_ifDoesNotExist,1298,CorePkg,"IF-DOES-NOT-EXIST",false);
-DO_SYMBOL(_sym_sharp_a,1301,CorePkg,"SHARP-A",false);
-DO_SYMBOL(_sym_backquote_frob,1303,CorePkg,"BACKQUOTE-FROB",false);
-DO_SYMBOL(_sym_processDeclarations,1306,CorePkg,"PROCESS-DECLARATIONS",false);
-DO_SYMBOL(_sym_structureSubtypep,1310,CorePkg,"STRUCTURE-SUBTYPEP",true);
+DO_SYMBOL(_sym_SNode_O,1177,CorePkg,"SNODE",true);
+DO_SYMBOL(_sym_loadBitcode,1179,CorePkg,"LOAD-BITCODE",true);
+DO_SYMBOL(_sym_log1p,1180,CorePkg,"LOG1P",true);
+DO_SYMBOL(_sym_integerToString,1182,CorePkg,"INTEGER-TO-STRING",true);
+DO_SYMBOL(_sym_STARcircleCounterSTAR,1185,CorePkg,"*CIRCLE-COUNTER*",false);
+DO_SYMBOL(_sym_saveCando,1190,CorePkg,"SAVE-CANDO",false);
+DO_SYMBOL(_sym_copy_subarray,1192,CorePkg,"COPY-SUBARRAY",false);
+DO_SYMBOL(_sym_STARprint_structureSTAR,1193,CorePkg,"*PRINT-STRUCTURE*",true);
+DO_SYMBOL(_sym_SingleDispatchGenericFunction_O,1196,CorePkg,"SINGLE-DISPATCH-GENERIC-FUNCTION",true);
+DO_SYMBOL(_sym_parse_macro,1198,CorePkg,"PARSE-MACRO",false);
+DO_SYMBOL(_sym_dlopen,1200,CorePkg,"DLOPEN",false);
+DO_SYMBOL(_sym_sharp_r,1206,CorePkg,"SHARP-R",false);
+DO_SYMBOL(_sym_HashTableEqualp_O,1207,CorePkg,"HASH-TABLE-EQUALP",true);
+DO_SYMBOL(_sym_STARserializerArchiveSTAR,1209,CorePkg,"*SERIALIZER-ARCHIVE*",true);
+DO_SYMBOL(_sym_ActivationFrame_O,1210,CorePkg,"ACTIVATION-FRAME",true);
+DO_SYMBOL(_sym_monitorReader,1211,CorePkg,"MONITOR-READER",false);
+DO_SYMBOL(_sym_preserve_whitespace,1212,CorePkg,"PRESERVE-WHITESPACE",false);
+DO_SYMBOL(_sym_STARnestedErrorDepthSTAR,1213,CorePkg,"*NESTED-ERROR-DEPTH*",false);
+DO_SYMBOL(_sym_STARpollTicksPerGcSTAR,1214,CorePkg,"*POLL-TICKS-PER-GC*",true);
+DO_SYMBOL(_sym_SourceManager_O,1217,CorePkg,"SOURCE-MANAGER",true);
+DO_SYMBOL(_sym_STARimplicit_compile_hookSTAR,1220,CorePkg,"*IMPLICIT-COMPILE-HOOK*",true);
+DO_SYMBOL(_sym_sharp_s,1227,CorePkg,"SHARP-S",false);
+DO_SYMBOL(_sym_dlload,1228,CorePkg,"DLLOAD",false);
+DO_SYMBOL(_sym_STARwatchDynamicBindingStackSTAR,1230,CorePkg,"*WATCH-DYNAMIC-BINDING-STACK*",true);
+DO_SYMBOL(_sym_fixnum_number_of_bits,1232,CorePkg,"FIXNUM-NUMBER-OF-BITS",false);
+DO_SYMBOL(_sym_serialize,1237,CorePkg,"SERIALIZE",true);
+DO_SYMBOL(_sym_sharp_plus,1238,CorePkg,"SHARP-PLUS",false);
+DO_SYMBOL(_sym_ihsEnv,1242,CorePkg,"IHS-ENV",false);
+DO_SYMBOL(_sym_pathnameTranslations,1247,CorePkg,"PATHNAME-TRANSLATIONS",true);
+DO_SYMBOL(_sym_STARbackquote_expand_hookSTAR,1249,CorePkg,"*BACKQUOTE-EXPAND-HOOK*",false);
+DO_SYMBOL(_sym_STARdebugInterpretedFunctionsSTAR,1252,CorePkg,"*DEBUG-INTERPRETED-FUNCTIONS*",true);
+DO_SYMBOL(_sym_fileColumn,1258,CorePkg,"FILE-COLUMN",true);
+DO_SYMBOL(_sym_universalErrorHandler,1260,CorePkg,"UNIVERSAL-ERROR-HANDLER",false);
+DO_SYMBOL(_sym_SymbolSet_O,1263,CorePkg,"SYMBOL-SET",true);
+DO_SYMBOL(_sym_ihsNext,1265,CorePkg,"IHS-NEXT",false);
+DO_SYMBOL(_sym_STARcommandLineArgumentsSTAR,1266,CorePkg,"*COMMAND-LINE-ARGUMENTS*",true);
+DO_SYMBOL(_sym_localGo,1275,CorePkg,"LOCAL-GO",true);
+DO_SYMBOL(_sym_structure_slot_descriptions,1288,CorePkg,"STRUCTURE-SLOT-DESCRIPTIONS",true);
+DO_SYMBOL(_sym_STARpreserve_whitespace_pSTAR,1289,CorePkg,"*PRESERVE-WHITESPACE-P*",false);
+DO_SYMBOL(_sym_STARenvironmentPrintingTabSTAR,1293,CorePkg,"*ENVIRONMENT-PRINTING-TAB*",false);
+DO_SYMBOL(_sym_ifDoesNotExist,1297,CorePkg,"IF-DOES-NOT-EXIST",false);
+DO_SYMBOL(_sym_sharp_a,1300,CorePkg,"SHARP-A",false);
+DO_SYMBOL(_sym_backquote_frob,1302,CorePkg,"BACKQUOTE-FROB",false);
+DO_SYMBOL(_sym_processDeclarations,1305,CorePkg,"PROCESS-DECLARATIONS",false);
+DO_SYMBOL(_sym_structureSubtypep,1309,CorePkg,"STRUCTURE-SUBTYPEP",true);
 #endif
 #ifdef CleavirEnvPkg_SYMBOLS
 DO_SYMBOL(_sym_macroFunction,800,CleavirEnvPkg,"MACRO-FUNCTION",true);
-DO_SYMBOL(_sym_symbolMacroExpansion,1281,CleavirEnvPkg,"SYMBOL-MACRO-EXPANSION",true);
+DO_SYMBOL(_sym_symbolMacroExpansion,1280,CleavirEnvPkg,"SYMBOL-MACRO-EXPANSION",true);
 #endif
 #ifdef ExtPkg_SYMBOLS
 DO_SYMBOL(_sym_getenv,66,ExtPkg,"GETENV",true);
@@ -2434,15 +2432,15 @@ DO_SYMBOL(_sym_getEnv,1081,ExtPkg,"GET-ENV",true);
 DO_SYMBOL(_sym_compiledFunctionName,1117,ExtPkg,"COMPILED-FUNCTION-NAME",true);
 DO_SYMBOL(_sym__PLUS_processStandardInput_PLUS_,1130,ExtPkg,"+PROCESS-STANDARD-INPUT+",true);
 DO_SYMBOL(_sym_STARinspectorHookSTAR,1147,ExtPkg,"*INSPECTOR-HOOK*",true);
-DO_SYMBOL(_sym_lexicalVar,1202,ExtPkg,"LEXICAL-VAR",true);
-DO_SYMBOL(_sym_STARdefault_external_formatSTAR,1271,ExtPkg,"*DEFAULT-EXTERNAL-FORMAT*",true);
-DO_SYMBOL(_sym_truly_the,1302,ExtPkg,"TRULY-THE",true);
+DO_SYMBOL(_sym_lexicalVar,1201,ExtPkg,"LEXICAL-VAR",true);
+DO_SYMBOL(_sym_STARdefault_external_formatSTAR,1270,ExtPkg,"*DEFAULT-EXTERNAL-FORMAT*",true);
+DO_SYMBOL(_sym_truly_the,1301,ExtPkg,"TRULY-THE",true);
 #endif
 #ifdef CompPkg_SYMBOLS
 DO_SYMBOL(_sym_aSingleCompilerSymbol,39,CompPkg,"A-SINGLE-COMPILER-SYMBOL",false);
 DO_SYMBOL(_sym_STARlowLevelTraceSTAR,915,CompPkg,"*LOW-LEVEL-TRACE*",true);
 DO_SYMBOL(_sym_STARlowLevelTracePrintSTAR,989,CompPkg,"*LOW-LEVEL-TRACE-PRINT*",true);
-DO_SYMBOL(_sym_compileInEnv,1297,CompPkg,"COMPILE-IN-ENV",true);
+DO_SYMBOL(_sym_compileInEnv,1296,CompPkg,"COMPILE-IN-ENV",true);
 #endif
 #ifdef GrayPkg_SYMBOLS
 DO_SYMBOL(_sym_aSingleGraySymbol,38,GrayPkg,"A-SINGLE-GRAY-SYMBOL",false);
@@ -2469,11 +2467,11 @@ DO_SYMBOL(_sym_output_stream_p,928,GrayPkg,"OUTPUT-STREAM-P",true);
 DO_SYMBOL(_sym_input_stream_p,940,GrayPkg,"INPUT-STREAM-P",true);
 DO_SYMBOL(_sym_stream_force_output,1064,GrayPkg,"STREAM-FORCE-OUTPUT",true);
 DO_SYMBOL(_sym_stream_write_string,1120,GrayPkg,"STREAM-WRITE-STRING",true);
-DO_SYMBOL(_sym_streamClearInput,1223,GrayPkg,"STREAM-CLEAR-INPUT",true);
-DO_SYMBOL(_sym_stream_read_sequence,1237,GrayPkg,"STREAM-READ-SEQUENCE",true);
-DO_SYMBOL(_sym_stream_peek_char,1241,GrayPkg,"STREAM-PEEK-CHAR",true);
-DO_SYMBOL(_sym_stream_finish_output,1274,GrayPkg,"STREAM-FINISH-OUTPUT",true);
-DO_SYMBOL(_sym_stream_line_column,1304,GrayPkg,"STREAM-LINE-COLUMN",true);
+DO_SYMBOL(_sym_streamClearInput,1222,GrayPkg,"STREAM-CLEAR-INPUT",true);
+DO_SYMBOL(_sym_stream_read_sequence,1236,GrayPkg,"STREAM-READ-SEQUENCE",true);
+DO_SYMBOL(_sym_stream_peek_char,1240,GrayPkg,"STREAM-PEEK-CHAR",true);
+DO_SYMBOL(_sym_stream_finish_output,1273,GrayPkg,"STREAM-FINISH-OUTPUT",true);
+DO_SYMBOL(_sym_stream_line_column,1303,GrayPkg,"STREAM-LINE-COLUMN",true);
 #endif
 #ifdef ClosPkg_SYMBOLS
 DO_SYMBOL(_sym_clearGfunHash,10,ClosPkg,"CLEAR-GFUN-HASH",false);
@@ -2628,15 +2626,15 @@ DO_SYMBOL(_sym_latin_1,1141,KeywordPkg,"LATIN-1",true);
 DO_SYMBOL(_sym_target_os_darwin,1150,KeywordPkg,"TARGET-OS-DARWIN",true);
 DO_SYMBOL(_sym_stream,1159,KeywordPkg,"STREAM",true);
 DO_SYMBOL(_sym_macro,1173,KeywordPkg,"MACRO",true);
-DO_SYMBOL(_sym_class,1182,KeywordPkg,"CLASS",true);
-DO_SYMBOL(_sym_multiple_escape_character,1226,KeywordPkg,"MULTIPLE-ESCAPE-CHARACTER",true);
-DO_SYMBOL(_sym_invert,1254,KeywordPkg,"INVERT",true);
-DO_SYMBOL(_sym_unbound,1258,KeywordPkg,"UNBOUND",true);
-DO_SYMBOL(_sym_splatted,1272,KeywordPkg,"SPLATTED",true);
-DO_SYMBOL(_sym_lf,1277,KeywordPkg,"LF",true);
-DO_SYMBOL(_sym_device,1279,KeywordPkg,"DEVICE",true);
-DO_SYMBOL(_sym_rename_and_delete,1280,KeywordPkg,"RENAME-AND-DELETE",true);
-DO_SYMBOL(_sym_compile_toplevel,1285,KeywordPkg,"COMPILE-TOPLEVEL",true);
-DO_SYMBOL(_sym_input,1291,KeywordPkg,"INPUT",true);
-DO_SYMBOL(_sym_inherited,1295,KeywordPkg,"INHERITED",true);
+DO_SYMBOL(_sym_class,1181,KeywordPkg,"CLASS",true);
+DO_SYMBOL(_sym_multiple_escape_character,1225,KeywordPkg,"MULTIPLE-ESCAPE-CHARACTER",true);
+DO_SYMBOL(_sym_invert,1253,KeywordPkg,"INVERT",true);
+DO_SYMBOL(_sym_unbound,1257,KeywordPkg,"UNBOUND",true);
+DO_SYMBOL(_sym_splatted,1271,KeywordPkg,"SPLATTED",true);
+DO_SYMBOL(_sym_lf,1276,KeywordPkg,"LF",true);
+DO_SYMBOL(_sym_device,1278,KeywordPkg,"DEVICE",true);
+DO_SYMBOL(_sym_rename_and_delete,1279,KeywordPkg,"RENAME-AND-DELETE",true);
+DO_SYMBOL(_sym_compile_toplevel,1284,KeywordPkg,"COMPILE-TOPLEVEL",true);
+DO_SYMBOL(_sym_input,1290,KeywordPkg,"INPUT",true);
+DO_SYMBOL(_sym_inherited,1294,KeywordPkg,"INHERITED",true);
 #endif

@@ -3159,7 +3159,7 @@ namespace core
             cl_index bs = StreamByteSize(strm);
             Real_mv output_mv = clasp_floor2(output, make_fixnum(bs/8));
             Fixnum_sp fn1 = output_mv.valueGet(1).as<Fixnum_O>();
-            unlikely_if (fn1->get() != 0 ) {
+            unlikely_if (unbox_fixnum(fn1) != 0 ) {
                 FEerror("File length is not on byte boundary", 0);
             }
 	}
@@ -6239,8 +6239,8 @@ namespace core {
 	} else if ( position.nilp() ) {
 	    return 0;
 	    //	    SIMPLE_ERROR(BF("Stream does not have file position"));
-	} else if ( Fixnum_sp ii = position.asOrNull<Fixnum_O>() ) {
-	    return unbox_fixnum(ii);
+	} else if ( position.fixnump() ) { // Fixnum_sp ii = position.asOrNull<Fixnum_O>() ) {
+	    return unbox_fixnum(position);
 	}
 	return 0;
     }
@@ -6830,7 +6830,7 @@ namespace core {
 	int iend = cl_length(str);
 	if ( end.notnilp() )
 	{
-	    iend = MIN(iend,end.as<Fixnum_O>()->get());
+	    iend = MIN(iend,unbox_fixnum(end.as<Fixnum_O>()));
 	}
         int ilen = iend-istart;
         clasp_write_characters(&(str->get().c_str()[istart]),ilen,stream);
@@ -6974,8 +6974,8 @@ namespace core {
 	}
 	int limit = cl_length(seq);
 	unlikely_if( !af_fixnumP(fstart) ||
-		     (fstart->get()<0) ||
-		     (fstart->get() > limit)) {
+		     (unbox_fixnum(fstart)<0) ||
+		     (unbox_fixnum(fstart) > limit)) {
 	    ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence,kw::_sym_start,fstart,
                                      Integer_O::makeIntegerType(0,limit-1));
 	}

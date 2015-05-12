@@ -249,7 +249,7 @@ namespace core
 #define DOCS_af_incompleteNextHigherPowerOf_2 "incompleteNextHigherPowerOf_2 - see the incompleteNextHigherPowerOf_2 builtin - only works for Fixnums and not the full range; just for testing"
     int af_incompleteNextHigherPowerOf_2(Fixnum_sp fn)
     {_G();
-        unsigned int f = fn->get();
+        unsigned int f = unbox_fixnum(fn);
         return 1<< ((sizeof(f)*8) - __builtin_clz(f));
     };
 
@@ -1440,16 +1440,16 @@ List_sp af_append(List_sp lists)
 	uint len = cl_length(sequence);
 	if ( end.nilp() ) end = make_fixnum(len);
 	Fixnum_sp fnend = end.as<Fixnum_O>();
-	if ( start->get() < 0 )
+	if ( unbox_fixnum(start) < 0 )
 	{
 	    SIMPLE_ERROR(BF("start[%d] must be greater than zero") % _rep_(start));
 	}
-	if ( fnend->get() > len )
+	if ( unbox_fixnum(fnend) > len )
 	{
 	    SIMPLE_ERROR(BF("end[%d] must be <= length of sequence[%d]") % _rep_(end) % len );
 	}
 	Fixnum_sp length = make_fixnum(len);
-	if ( fnend->get() < start->get() )
+	if ( unbox_fixnum(fnend) < unbox_fixnum(start) )
 	{
 	    SIMPLE_ERROR(BF("end[%d] is less than start[%d]") % _rep_(end) % _rep_(start) );
 	}
@@ -1576,13 +1576,13 @@ Symbol_mv af_gensym(T_sp x)
     stringstream ss;
     if ( x.nilp() )
     {
-	int counter = cl::_sym_STARgensym_counterSTAR->symbolValue().as<Fixnum_O>()->get();
+	int counter = unbox_fixnum(cl::_sym_STARgensym_counterSTAR->symbolValue().as<Fixnum_O>());
 	cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter+1));
 	ss << "G";
 	ss << counter;
     } else if ( af_stringP(x) )
     {
-	int counter = cl::_sym_STARgensym_counterSTAR->symbolValue().as<Fixnum_O>()->get();
+	int counter = unbox_fixnum(cl::_sym_STARgensym_counterSTAR->symbolValue().as<Fixnum_O>());
 	cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter+1));
 	ss << x.as<Str_O>()->get();
 	ss << counter;

@@ -2093,13 +2093,13 @@ namespace llvmo
 	if ( core::Cons_sp cvalues = ovalues.asOrNull<core::Cons_O>() ) {
 	    core::List_sp lvalues = cvalues;
 	    for ( auto cur : lvalues ) {
-		vector_IdxList.push_back(oCar(cur).as<core::Fixnum_O>()->get());
+		vector_IdxList.push_back(unbox_fixnum(oCar(cur).as<core::Fixnum_O>()));
 	    }
 	} else if ( core::Vector_sp vvalues = ovalues.asOrNull<core::Vector_O>()) 
 	{
 	    for ( int i=0; i<vvalues->length(); i++ )
 	    {
-		vector_IdxList.push_back(vvalues->svref(i).as<core::Fixnum_O>()->get());
+		vector_IdxList.push_back(unbox_fixnum(vvalues->svref(i).as<core::Fixnum_O>()));
 	    }
 	}
 	llvm::ArrayRef<uint32_t> array_ref_vector_IdxList(vector_IdxList);
@@ -3114,17 +3114,16 @@ namespace llvmo
         GC_ALLOCATE(APInt_O,self );
 	llvm::APInt    apint;
 	int	       numbits;
-	if (af_fixnumP(value) )
+	if ( value.fixnump() )
 	{
 	    core::Fixnum_sp fixnum_value = value.as<core::Fixnum_O>();
-	    if ( !sign && fixnum_value->get() < 0 )
+	    if ( !sign && unbox_fixnum(fixnum_value) < 0 )
 	    {
-		SIMPLE_ERROR(BF("You tried to create an unsigned APInt32 with the negative value: %d") % fixnum_value->get() );
+		SIMPLE_ERROR(BF("You tried to create an unsigned APInt32 with the negative value: %d") % unbox_fixnum(fixnum_value) );
 	    }
 	    apint = llvm::APInt(width,clasp_to_int(fixnum_value),sign);
 	    numbits = gc::fixnum_bits;
-	} else
-	{
+	} else {
 	    // It's a bignum so lets convert the bignum to a string and put it into an APInt
 	    char* asString = NULL;
 	    core::Bignum_sp bignum_value = value.as<core::Bignum_O>();
@@ -3343,7 +3342,7 @@ namespace llvmo
     {
 	vector<unsigned int> vector_IdxList;
 	for ( auto cur : IdxList ) {
-	    vector_IdxList.push_back(oCar(cur).as<core::Fixnum_O>()->get());
+	    vector_IdxList.push_back(unbox_fixnum(oCar(cur).as<core::Fixnum_O>()));
 	}
 	llvm::ArrayRef<unsigned int> array_ref_vector_IdxList(vector_IdxList);
 	return this->wrappedPtr()->CreateExtractValue(Ptr,array_ref_vector_IdxList,Name);
@@ -3353,7 +3352,7 @@ namespace llvmo
     {
 	vector<unsigned int> vector_IdxList;
 	for ( auto cur : IdxList ) {
-	    vector_IdxList.push_back(oCar(cur).as<core::Fixnum_O>()->get());
+	    vector_IdxList.push_back(unbox_fixnum(oCar(cur).as<core::Fixnum_O>()));
 	}
 	llvm::ArrayRef<unsigned int> array_ref_vector_IdxList(vector_IdxList);
 	return this->wrappedPtr()->CreateInsertValue(Agg,Val,array_ref_vector_IdxList,Name);
@@ -4342,7 +4341,7 @@ namespace llvmo
         double accTime = clasp_to_double(_sym_STARaccumulatedLlvmFinalizationTimeSTAR->symbolValue().as<core::Float_O>());
         accTime += thisTime;
         _sym_STARaccumulatedLlvmFinalizationTimeSTAR->setf_symbolValue(core::DoubleFloat_O::create(accTime));
-        int num = _sym_STARnumberOfLlvmFinalizationsSTAR->symbolValue().as<core::Fixnum_O>()->get();
+        int num = unbox_fixnum(_sym_STARnumberOfLlvmFinalizationsSTAR->symbolValue().as<core::Fixnum_O>());
         ++num;
         _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::make_fixnum(num));
     }
@@ -4363,7 +4362,7 @@ namespace llvmo
         finalizeEngineAndTime(engine);
 #ifdef USE_MPS
 	IMPLEMENT_MEF(BF("globaLoadTimeValueName will be nil - do something about it"));
-        void* globalPtr = reinterpret_cast<void*>(engine->getGlobalValueAddress(globalLoadTimeValueName->get()));
+        void* globalPtr = reinterpret_cast<void*>(engine->getGlobalValueAddress(globalRunTimeValueName->get()));
 //        printf("%s:%d  engine->getGlobalValueAddress(%s) = %p\n", __FILE__, __LINE__, globalLoadTimeValueName->get().c_str(), globalPtr );
         ASSERT(globalPtr!=NULL);
         registerLoadTimeValuesRoot(reinterpret_cast<core::LoadTimeValues_O**>(globalPtr));
@@ -4376,7 +4375,7 @@ namespace llvmo
 	CompiledClosure::fptr_type lisp_funcPtr = (CompiledClosure::fptr_type)(p);
         core::Cons_sp associatedFunctions = core::Cons_O::create(fn,_Nil<core::T_O>());
         core::SourceFileInfo_mv sfi = core_sourceFileInfo(fileName);
-        int sfindex = sfi.valueGet(1).as<core::Fixnum_O>()->get();
+        int sfindex = unbox_fixnum(sfi.valueGet(1).as<core::Fixnum_O>());
         core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,linenumber,0);
 	//	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
         CompiledClosure* functoid 

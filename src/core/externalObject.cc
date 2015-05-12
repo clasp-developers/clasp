@@ -145,7 +145,7 @@ namespace core {
 	Cons_sp ckind = kind.as<Cons_O>();
 	ASSERTF(oCar(ckind)==cl::_sym_array || oCar(ckind)==kw::_sym_array,BF("The first element of a foreign-data type must be ARRAY or :ARRAY"));
 	ASSERTF(oCadr(ckind)==cl::_sym_UnsignedByte || oCadr(ckind)==kw::_sym_UnsignedByte,BF("The first element of a foreign-data type must be UNSIGNED-BYTE or :UNSIGNED-BYTE"));
-	size_t size = oCaddr(ckind).as<Fixnum_O>()->get();
+	size_t size = unbox_fixnum(oCaddr(ckind).as<Fixnum_O>());
 	obj->allocate(kind,DeleteOnDtor,size);
 	return obj;
     }

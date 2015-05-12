@@ -1673,11 +1673,11 @@ namespace core
     {_G();
 	if ( !warnSize.nilp() )
 	{
-	    _lisp->_StackWarnSize = warnSize.as<Fixnum_O>()->get();
+	    _lisp->_StackWarnSize = unbox_fixnum(warnSize.as<Fixnum_O>());
 	}
 	if ( !sampleSize.nilp() )
 	{
-	    _lisp->_StackSampleSize = sampleSize.as<Fixnum_O>()->get();
+	    _lisp->_StackSampleSize = unbox_fixnum(sampleSize.as<Fixnum_O>());
 	    _lisp->_StackSampleCount = 0;
 	    _lisp->_StackSampleMax = 0;
 	}
@@ -2763,7 +2763,7 @@ extern "C"
 #define DOCS_cl_error "See CLHS error"
     void cl_error(T_sp datum, List_sp initializers)
     {_G();
-	int nestedErrorDepth = _sym_STARnestedErrorDepthSTAR->symbolValue().as<Fixnum_O>()->get();
+	int nestedErrorDepth = unbox_fixnum(_sym_STARnestedErrorDepthSTAR->symbolValue().as<Fixnum_O>());
 	if ( nestedErrorDepth > 10 )
 	{
 	    // TODO: Disable this code once error handling and conditions work properly

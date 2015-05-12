@@ -222,7 +222,7 @@ namespace core
     T_mv af_reader_backquoted_expression(T_sp sin, Character_sp ch)
     {_G();
 	Fixnum_sp backquote_level = _sym_STARbackquote_levelSTAR->symbolValue().as<Fixnum_O>();
-	Fixnum_sp new_backquote_level = make_fixnum(backquote_level->get()+1);
+	Fixnum_sp new_backquote_level = make_fixnum(unbox_fixnum(backquote_level)+1);
 	// DynamicScopeManager will save the dynamic value of the symbol and restore it in dtor
 	DynamicScopeManager scope(_sym_STARbackquote_levelSTAR,new_backquote_level);
 	T_sp quoted_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
@@ -241,7 +241,7 @@ namespace core
     T_sp af_reader_comma_form(T_sp sin, Character_sp ch)
     {_G();
 	Fixnum_sp backquote_level = _sym_STARbackquote_levelSTAR->symbolValue().as<Fixnum_O>();
-	Fixnum_sp new_backquote_level = make_fixnum(backquote_level->get()-1);
+	Fixnum_sp new_backquote_level = make_fixnum(unbox_fixnum(backquote_level)-1);
 	DynamicScopeManager scope(_sym_STARbackquote_levelSTAR,new_backquote_level);
 	char nextc = clasp_peek_char(sin);
 //	ql::source_code_list list(sin->lineNumber(),sin->column(),core_sourceFileInfo(sin));
@@ -559,9 +559,9 @@ namespace core
 	    int list_length = cl_length(list);
 	    if ( tnum.notnilp() ) {
 		Fixnum_sp num = tnum.as<Fixnum_O>();
-		if ( list_length > num->get() )
-		    SIMPLE_ERROR(BF("vector is longer than specified length %s: %s") % num->get() % _rep_(list) );
-		int need_length = num->get();
+		if ( list_length > unbox_fixnum(num) )
+		    SIMPLE_ERROR(BF("vector is longer than specified length %s: %s") % unbox_fixnum(num) % _rep_(list) );
+		int need_length = unbox_fixnum(num);
 		if ( list_length < need_length )
 		{
 		    List_sp reversed = cl_nreverse(list);
@@ -614,7 +614,7 @@ namespace core
 	if (num.nilp()) {
 	    dim = dimcount;
 	} else if (num.isA<Fixnum_O>()) {
-	    dim = num.as<Fixnum_O>()->get();
+	    dim = unbox_fixnum(num.as<Fixnum_O>());
 	    unlikely_if ( dim < 0 ||
 			  (dim > BRCL_ARRAY_DIMENSION_LIMIT))
 	{
@@ -673,7 +673,7 @@ namespace core
 	    SIMPLE_ERROR(BF("Radix missing in #R reader macro"));
 	} else {
 	    Fixnum_sp radix = tradix.as<Fixnum_O>();
-	    int iradix = radix->get();
+	    int iradix = unbox_fixnum(radix);
 	    if ( iradix < 2 || iradix > 36 ) {
 		SIMPLE_ERROR(BF("Illegal radix for #R: %d") % iradix);
 	    }

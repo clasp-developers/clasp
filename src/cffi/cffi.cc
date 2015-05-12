@@ -351,9 +351,9 @@ Pointer_sp Pointer_O::make(core::Number_sp arg)
 {_G();
     if ( af_fixnumP(arg) )
     {
-	if ( sizeof(arg.as<core::Fixnum_O>()->get()) != sizeof(void*) )
+	if ( sizeof(unbox_fixnum(arg.as<core::Fixnum_O>())) != sizeof(void*) )
 	{
-	    SIMPLE_ERROR(BF("You cannot make a pointer using an integer as the address sizeof(void*)=%d sizeof(Fixnum)=%d") % sizeof(void*) % sizeof(arg.as<core::Fixnum_O>()->get()));
+	    SIMPLE_ERROR(BF("You cannot make a pointer using an integer as the address sizeof(void*)=%d sizeof(Fixnum)=%d") % sizeof(void*) % sizeof(unbox_fixnum(arg.as<core::Fixnum_O>())));
 	}
 	IMPLEMENT_MEF(BF("Deal with converting Fixnum or Bignum to void*"));
 #if 0

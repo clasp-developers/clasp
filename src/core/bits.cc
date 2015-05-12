@@ -321,13 +321,13 @@ namespace core {
         if ( x.nilp() || y.nilp() ) {
             SIMPLE_ERROR(BF("boole cannot accept nil"));
         }
-        if ( Fixnum_sp fnx = x.asOrNull<Fixnum_O>() ) {
-            if ( Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
-		gctools::Fixnum z = fixnum_operations[op](fnx->get(), fny->get());
+        if ( x.fixnump() ) { //Fixnum_sp fnx = x.asOrNull<Fixnum_O>() ) {
+            if ( y.fixnump() ) { //Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
+		gctools::Fixnum z = fixnum_operations[op](unbox_fixnum(x), unbox_fixnum(y));
                 return make_fixnum(z);
             } else if ( Bignum_sp bny = y.asOrNull<Bignum_O>() ) {
                 Bignum_sp x_copy = _lisp->bigRegister0();
-                x_copy->setFixnum(fnx->get());
+                x_copy->setFixnum(unbox_fixnum(fnx));
                 (bignum_operations[op])(x_copy, x_copy, bny);
                 return _clasp_big_register_normalize(x_copy);
             } else {
@@ -335,9 +335,9 @@ namespace core {
             }
         } else if ( Bignum_sp bnx = x.asOrNull<Bignum_O>() ) {
             Bignum_sp x_copy = _lisp->bigRegister0();
-            if ( Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
+            if ( y.fixnump() ) { // Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
                 Bignum_sp bny = _lisp->bigRegister1();
-                bny->setFixnum(fny->get());
+                bny->setFixnum(unbox_fixnum(y));
                 (bignum_operations[op])(x_copy, bnx, bny);
                 clasp_big_register_free(bny);
             } else if ( Bignum_sp bny = y.asOrNull<Bignum_O>() ) {
@@ -371,7 +371,7 @@ namespace core {
         if ( ty.nilp() || !ty.isA<SimpleBitVector_O>() ) {
             ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,3,ty,cl::_sym_BitVector_O);
         }
-        int opval = o.as<Fixnum_O>()->get();
+        int opval = unbox_fixnum(o.as<Fixnum_O>());
 	gctools::Fixnum i, j, n, d;
 	SimpleBitVector_sp r0;
 	bit_operator op;
@@ -760,7 +760,7 @@ namespace core {
             ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole,1,op,cl::_sym_integer);
         }
         Fixnum_sp fnop = op.as<Fixnum_O>();
-        return clasp_boole(fnop->get(),arg1,arg2);
+        return clasp_boole(unbox_fixnum(fnop),arg1,arg2);
     };
 
 

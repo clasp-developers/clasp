@@ -91,7 +91,7 @@ namespace core
 	    {
 		int ifp = 0;
 		if ( fill_pointer == _lisp->_true() ) ifp = dimension;
-		else ifp = MIN(dimension,abs(fill_pointer.as<Fixnum_O>()->get()));
+		else ifp = MIN(dimension,abs(unbox_fixnum(fill_pointer.as<Fixnum_O>())));
 		return StrWithFillPtr_O::create(c,dimension,ifp,adjustable,initialContents);
 	    }
 	    return(Str_O::create(' ',dimension,initialContents));
@@ -108,7 +108,7 @@ namespace core
 	    {
 		int ifp = 0;
 		if ( fill_pointer == _lisp->_true() ) ifp = dimension;
-		else ifp = fill_pointer.as<Fixnum_O>()->get();
+		else ifp = unbox_fixnum(fill_pointer.as<Fixnum_O>());
 		return VectorObjectsWithFillPtr_O::make(initial_element,initialContents,dimension,ifp,adjustable);
 	    } else
 	    {

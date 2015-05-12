@@ -153,8 +153,6 @@ namespace core
 	    vec_indices.clear();
 	} else if ( indices.fixnump() ) {
 	    vec_indices.push_back(indices.unsafe_fixnum());
-	} else if ( Fixnum_sp fn = indices.asOrNull<Fixnum_O>() ) {
-	    vec_indices.push_back(fn->get());
 	} else if ( Cons_sp ccur = indices.asOrNull<Cons_O>() ) {
 	    List_sp cur = ccur;
 	    for ( ; cur.notnilp(); cur=oCdr(cur) ) {
@@ -162,8 +160,6 @@ namespace core
 		if ( val.notnilp() ) {
 		    if ( val.fixnump() ) {
 			vec_indices.push_back(val.unsafe_fixnum());
-		    } else if (Fixnum_sp fnval = val.asOrNull<Fixnum_O>() ) {
-			vec_indices.push_back(fnval->get());
 		    } else {
 			SIMPLE_ERROR(BF("Illegal index"));
 		    }

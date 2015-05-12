@@ -101,7 +101,7 @@ int SymbolToEnumConverter_O::enumIndexForSymbol(Symbol_sp sym)
     if ( !this->_SymbolToEnum->contains(sym) ) {
 	SIMPLE_ERROR(BF("Could not find %s in symbol-to-enum-converter: %s") % _rep_(sym) % _rep_(this->sharedThis<SymbolToEnumConverter_O>()));
     }
-    return this->_SymbolToEnum->gethash(sym).as<Fixnum_O>()->get();
+    return unbox_fixnum(this->_SymbolToEnum->gethash(sym).as<Fixnum_O>());
 }
 
 

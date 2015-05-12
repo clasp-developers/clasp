@@ -32,7 +32,9 @@ FORWARD(Number);
     FORWARD(Real);
     FORWARD(Rational);
     FORWARD(Integer);
+#ifdef USE_HEAP_FIXNUM
     FORWARD(Fixnum);
+#endif
     FORWARD(Float);
     FORWARD(ShortFloat);
     FORWARD(SingleFloat);

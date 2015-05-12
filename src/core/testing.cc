@@ -112,7 +112,7 @@ namespace core
 #define DOCS_af_testVal "testVal"
     T_sp af_testVal(T_sp v)
     {_G();
-	if ( Fixnum_sp fn = v.asOrNull<Fixnum_O>() ) {
+	if ( v.fixnump() ) { // Fixnum_sp fn = v.asOrNull<Fixnum_O>() ) {
 	    return Str_O::create("val is fixnum");
 	} else if ( Symbol_sp sym = v.asOrNull<Symbol_O>() ) {
 	    return Str_O::create("arg is symbol");

@@ -285,24 +285,23 @@ namespace core
 };
 
 
+#if 0
 template <> struct gctools::GCInfo<core::Fixnum_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;
     static bool constexpr Atomic = true;
 };
-
+#endif
 namespace core {
-
-    SMART(Fixnum);
 
     Fixnum_sp make_fixnum(gc::Fixnum x);
     gc::Fixnum get_fixnum(Fixnum_sp x);
-
-    class Fixnum_O : public Integer_O
+#if 0
+    c l a s s Fixnum_O : public Integer_O
     {
 	LISP_BASE1(Integer_O);
-	LISP_CLASS(core,ClPkg,Fixnum_O,"fixnum");
+	L I S P_CLASS(core,ClPkg,Fixnum_O,"fixnum");
 
     public:
 	friend class boost::serialization::access;
@@ -314,7 +313,7 @@ namespace core {
     public:
 	//	static int number_of_bits();
     public:
-	gc::Fixnum get() const { return this->_Value; };
+	// gc::Fixnum get() const { return this->_Value; };
 	// Switch to this in unbox_fixnum() impl while doing source-to-source translation
 	gc::Fixnum get_() const { return this->_Value; };
 
@@ -383,10 +382,9 @@ namespace core {
     Fixnum_O(gc::Fixnum f) : _Value(f) {};
     Fixnum_O() : _Value(0) {};
     };
-
-
-    inline Fixnum_sp make_fixnum(gc::Fixnum x) {return Fixnum_O::createFn(x);};
-    inline gc::Fixnum unbox_fixnum(Fixnum_sp x) {return x->get_(); };
+#endif
+    inline Fixnum_sp make_fixnum(gc::Fixnum x) {return Fixnum_sp::make_tagged_fixnum(x);};
+    inline gc::Fixnum unbox_fixnum(Fixnum_sp x) {return x.unsafe_fixnum(); };
 };
 
 namespace core {
@@ -1300,7 +1298,11 @@ namespace core {
 	    }
 	    TYPE_ERROR(i,Cons_O::createList(cl::_sym_Integer_O,make_fixnum(gc::most_negative_fixnum),make_fixnum(gc::most_positive_fixnum)));
 	}
+#ifndef USE_HEAP_FIXNUM
+	TYPE_ERROR(i,Cons_O::createList(cl::_sym_Integer_O,make_fixnum(gc::most_negative_fixnum),make_fixnum(gc::most_positive_fixnum)));
+#else
 	return i->as_int_();
+#endif
     };
 
 

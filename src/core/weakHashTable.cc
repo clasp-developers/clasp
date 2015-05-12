@@ -242,7 +242,7 @@ namespace core {
 #define DOCS_core_makeWeakKeyHashTable "makeWeakKeyHashTable"
     WeakKeyHashTable_sp core_makeWeakKeyHashTable(Fixnum_sp size)
     {_G();
-        int sz = size->get();
+        int sz = unbox_fixnum(size);
         WeakKeyHashTable_sp ht = gctools::GCObjectAllocator<WeakKeyHashTable_O>::allocate(sz);
         return ht;
     }
@@ -294,7 +294,7 @@ namespace core {
 	T_sp splatted; // This will be NULL
 	splatted.reset_(); // This will force it to be NULL
 	TESTING(); // Test the NULL value
-        (*ht->_HashTable._Keys).set(idx->get(),WeakKeyHashTable_O::value_type(splatted));
+        (*ht->_HashTable._Keys).set(unbox_fixnum(idx),WeakKeyHashTable_O::value_type(splatted));
     };
     
 
@@ -307,7 +307,7 @@ namespace core {
         if ( sz.nilp() ) {
             newLength = ht->_HashTable._Keys->length()*2;
         } else {
-            newLength = sz.as<Fixnum_O>()->get();
+            newLength = unbox_fixnum(sz.as<Fixnum_O>());
         }
         WeakKeyHashTable_O::value_type dummyKey;
         size_t dummyPos;

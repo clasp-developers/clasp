@@ -643,7 +643,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
             for ( int i=0; i<times; ++i ) {
                 for ( auto c : l.full() ) {
                     T_sp t = c->_Car;
-                    fastCount += t.as<Fixnum_O>()->get();
+                    fastCount += unbox_fixnum(t.as<Fixnum_O>());
                 }
             }
 	    fastTimer.stop();
@@ -655,7 +655,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	    for ( int i=0; i<times; ++i ) {
 		for ( auto c : l ) {
 		    T_sp t = c->_Car;
-		    normalCount += t.as<Fixnum_O>()->get();
+		    normalCount += unbox_fixnum(t.as<Fixnum_O>());
 		}
 	    }
 	    normalTimer.stop();

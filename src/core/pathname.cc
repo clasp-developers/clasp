@@ -730,7 +730,7 @@ namespace core {
 	    T_mv version_mv = af_parseInteger(aux.as<Str_O>(),0,_Nil<T_O>(),10,_lisp->_true());
 	    T_sp tversion = version_mv;
 	    Fixnum_sp parsed_length = version_mv.valueGet(1).as<Fixnum_O>();
-	    if (parsed_length->get() == cl_length(aux) &&
+	    if (unbox_fixnum(parsed_length) == cl_length(aux) &&
 		af_integerP(tversion) && clasp_plusp(tversion.as<Integer_O>())) {
 		version = tversion.as<Integer_O>();
 	    } else if (af_string_equal(aux, kw::_sym_newest).notnilp()) {
@@ -1211,7 +1211,7 @@ namespace core {
 	    clasp_write_char(logical? ';' : DIR_SEPARATOR_CHAR,buffer);
 	}
     NO_DIRECTORY:
-	if (clasp_file_position(buffer).as<Fixnum_O>()->get() == 0 ) {
+	if (unbox_fixnum(clasp_file_position(buffer).as<Fixnum_O>()) == 0 ) {
 	    if ((af_stringP(x->_Name) &&
 		 brcl_memberChar(':', x->_Name)) ||
 		(af_stringP(x->_Type) &&
@@ -1255,7 +1255,7 @@ namespace core {
 		    /* Since the printer is not reentrant,
 		     * we cannot use cl_write and friends.
 		     */
-		    int n = y.as<Fixnum_O>()->get();
+		    int n = unbox_fixnum(y.as<Fixnum_O>());
 		    int i;
 		    char b[FIXNUM_BITS/2];
 		    for (i = 0; n; i++) {

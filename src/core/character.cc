@@ -575,7 +575,7 @@ namespace core
 #define DOCS_cl_digitCharP "digitCharP"
     T_sp cl_digitCharP(Character_sp c, Fixnum_sp radix)
     {_G();
-	Fixnum basis = radix->get();
+	Fixnum basis = unbox_fixnum(radix);
 	if ( basis < 2 || basis > 36 ) {
 	    QERROR_WRONG_TYPE_NTH_ARG(2,radix,Integer_O::makeIntegerType(2,36));
 	}
@@ -742,7 +742,7 @@ namespace core
     {_G();
 	if ( af_fixnumP(val) )
 	{
-	    int v = val.as<Fixnum_O>()->get();
+	    int v = unbox_fixnum(val.as<Fixnum_O>());
 	    return Character_O::create(v);
 	}
 	SIMPLE_ERROR(BF("Cannot create Character from %s") % _rep_(val) );

@@ -472,7 +472,7 @@ namespace core
 	    iend = this->length();
 	} else if (af_fixnumP(end))
 	{
-	    iend = end.as<Fixnum_O>()->get();
+	    iend = unbox_fixnum(end.as<Fixnum_O>());
 	} else
 	{
 	    SIMPLE_ERROR(BF("Illegal end for subseq[%s]") % _rep_(end) );

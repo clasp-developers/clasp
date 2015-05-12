@@ -545,8 +545,8 @@ namespace core
 
 	T_mv sp_lexicalVar(List_sp args, T_sp env)
 	{_G();
-	    int depth = oCadr(args).as<Fixnum_O>()->get();
-	    int index = oCddr(args).as<Fixnum_O>()->get();
+	    int depth = unbox_fixnum(oCadr(args).as<Fixnum_O>());
+	    int index = unbox_fixnum(oCddr(args).as<Fixnum_O>());
             return Values(Environment_O::clasp_lookupValue(env,depth,index));
 	}
 
@@ -776,7 +776,7 @@ namespace core
 		    int idx;
 		    T_sp fi = indices->gethash(sym,_Unbound<T_O>());
 		    if ( !fi.unboundp() ) {
-			idx = fi.as<Fixnum_O>()->get();
+			idx = unbox_fixnum(fi.as<Fixnum_O>());
 		    } else {
 			idx = indicesSize;
 			indices->hash_table_setf_gethash(sym,make_fixnum(idx));
@@ -831,7 +831,7 @@ namespace core
 	    LOG(BF("Assignment part=%s") % assignments->__repr__() );
 	    T_mv classifiedAndCount = af_classifyLetVariablesAndDeclares(variables,declaredSpecials);
 	    List_sp classified = coerce_to_list(classifiedAndCount);
-	    int numberOfLexicalVariables = classifiedAndCount.valueGet(1).as<Fixnum_O>()->get();
+	    int numberOfLexicalVariables = unbox_fixnum(classifiedAndCount.valueGet(1).as<Fixnum_O>());
 	    ValueEnvironment_sp newEnvironment =
 		ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables,parentEnvironment);
 	    ValueEnvironmentDynamicScopeManager scope(newEnvironment);
@@ -911,7 +911,7 @@ namespace core
 	    LOG(BF("Assignment part=%s") % assignments->__repr__() );
 	    T_mv classifiedAndCount = af_classifyLetVariablesAndDeclares(variables,declaredSpecials);
 	    List_sp classified = coerce_to_list(classifiedAndCount);
-	    int numberOfLexicalVariables = classifiedAndCount.valueGet(1).as<Fixnum_O>()->get();
+	    int numberOfLexicalVariables = unbox_fixnum(classifiedAndCount.valueGet(1).as<Fixnum_O>());
 	    ValueEnvironment_sp newEnvironment =
 		ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables,parentEnvironment);
 	    ValueEnvironmentDynamicScopeManager scope(newEnvironment);
@@ -2097,7 +2097,7 @@ namespace core
 #define DOCS_af_evaluateVerbosity "evaluateVerbosity"
 	void af_evaluateVerbosity(Fixnum_sp level)
 	{_G();
-	    _evaluateVerbosity = level->get();
+	    _evaluateVerbosity = unbox_fixnum(level);
 	};
 
 	struct EvaluateDepthUpdater

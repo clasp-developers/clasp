@@ -243,10 +243,10 @@ namespace sockets {
     {_G();
 	unsigned char vector[4];
 	struct hostent *hostent;
-	vector[0] = address->operator[](0).as<Fixnum_O>()->get();
-	vector[1] = address->operator[](1).as<Fixnum_O>()->get();
-	vector[2] = address->operator[](2).as<Fixnum_O>()->get();
-	vector[3] = address->operator[](3).as<Fixnum_O>()->get();
+	vector[0] = unbox_fixnum(address->operator[](0).as<Fixnum_O>());
+	vector[1] = unbox_fixnum(address->operator[](1).as<Fixnum_O>());
+	vector[2] = unbox_fixnum(address->operator[](2).as<Fixnum_O>());
+	vector[3] = unbox_fixnum(address->operator[](3).as<Fixnum_O>());
 	brcl_disable_interrupts();
 	hostent = gethostbyaddr(REINTERPRET_CAST(const char *, vector),4,AF_INET);
 	brcl_enable_interrupts();

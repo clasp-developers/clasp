@@ -189,10 +189,10 @@ void VectorObjects_O::fillInitialContents(T_sp ic)
 
     void VectorObjects_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end)
     {_OF();
-	uint istart = start->get();
+	uint istart = unbox_fixnum(start);
 	uint last = this->_Values.size();
 	uint iend = last;
-	if ( end.notnilp() ) iend = end.as<Fixnum_O>()->get();
+	if ( end.notnilp() ) iend = unbox_fixnum(end.as<Fixnum_O>());
 	ASSERTF(iend>=istart,BF("Illegal fill range istart=%d iend=%d") % istart % iend );
 	ASSERTF(iend<=last,BF("Illegal value for end[%d] - must be between istart[%d] and less than %d") % iend % istart % last );
 	ASSERTF(istart>=0 <= iend,BF("Illegal value for start[%d] - must be between 0 and %d") % istart % iend );
@@ -232,7 +232,7 @@ void VectorObjects_O::fillInitialContents(T_sp ic)
     int VectorObjects_O::arrayRowMajorIndex(List_sp indices) const
     {
 	ASSERTF(cl_length(indices) == 1, BF("Vectors have only one dimension - you passed indices %s") % _rep_(indices) );
-	return oCar(indices).as<Fixnum_O>()->get();
+	return unbox_fixnum(oCar(indices).as<Fixnum_O>());
     }
 
 
@@ -278,7 +278,7 @@ void VectorObjects_O::fillInitialContents(T_sp ic)
 
     T_sp VectorObjects_O::subseq(int istart, T_sp end) const
     {_G();
-	int iend = (end.nilp()) ? this->length() : end.as<Fixnum_O>()->get();
+	int iend = (end.nilp()) ? this->length() : unbox_fixnum(end.as<Fixnum_O>());
 	if ( istart < 0 || iend > this->length() )
 	{
 	    SIMPLE_ERROR(BF("out of bounds for subseq"));

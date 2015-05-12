@@ -646,6 +646,7 @@ namespace core {
 void lisp_errorDereferencedNonPointer(core::T_O* objP );
 void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP );
 void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP );
+void lisp_errorBadCastToFixnum_O(class_id fromType, core::T_O* objP );
 void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP );
 void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O* objP );
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP);
@@ -901,9 +902,10 @@ namespace core {
     typedef gctools::smart_ptr<Function_O>	Function_sp;
     class Str_O;
     typedef gctools::smart_ptr<Str_O> Str_sp;
+#ifdef USE_HEAP_FIXNUM
     class Fixnum_O;
     typedef gctools::smart_ptr<Fixnum_O> Fixnum_sp;
-
+#endif
     class LambdaListHandler_O;
     typedef gctools::smart_ptr<LambdaListHandler_O>	LambdaListHandler_sp;
     class Environment_O;

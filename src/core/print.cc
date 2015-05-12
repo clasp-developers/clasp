@@ -46,7 +46,7 @@ namespace core
     {
 	T_sp object = cl::_sym_STARprint_baseSTAR->symbolValue();
 	int base;
-	if ( !af_fixnumP(object) || (base = object.as<Fixnum_O>()->get()) < 2 || base > 36 )
+	if ( !af_fixnumP(object) || (base = unbox_fixnum(object.as<Fixnum_O>())) < 2 || base > 36 )
 	{
 	    SIMPLE_ERROR(BF("The value of *PRINT-BASE*\n %s\n"
 			    "is not of the expected type (INTEGER 2 36)") % _rep_(object) );
@@ -65,7 +65,7 @@ namespace core
 	    level = MOST_POSITIVE_FIXNUM;
 	} else if ( af_fixnumP(object) )
 	{
-	    level = object.as<Fixnum_O>()->get();
+	    level = unbox_fixnum(object.as<Fixnum_O>());
 	    if ( level < 0 )
 	    {
 	    ERROR:
@@ -93,7 +93,7 @@ namespace core
 	    length = MOST_POSITIVE_FIXNUM;
 	} else if ( af_fixnumP(object) )
 	{
-	    length = object.as<Fixnum_O>()->get();
+	    length = unbox_fixnum(object.as<Fixnum_O>());
 	    if ( length < 0 ) {
 	    ERROR:
 		cl::_sym_STARprint_lengthSTAR->setf_symbolValue(_Nil<T_O>());

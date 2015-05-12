@@ -275,7 +275,7 @@ namespace core
 	} else if ( type == ext::_sym_lexicalVar )
 	{
 	    Symbol_sp sym = oCadr(classified).as<Symbol_O>();
-	    int idx = oCddr(classified).as<Fixnum_O>()->get();
+	    int idx = unbox_fixnum(oCddr(classified).as<Fixnum_O>());
 	    ASSERTF(idx >= 0, BF("Illegal target index[%d] for lexical variable[%s]") % idx % _rep_(sym) );
 	    this->_Environment->new_binding(sym,idx,val);
 	    return;
