@@ -472,7 +472,7 @@ namespace core
 	    iend = this->length();
 	} else if (af_fixnumP(end))
 	{
-	    iend = unbox_fixnum(end.as<Fixnum_O>());
+	    iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
 	} else
 	{
 	    SIMPLE_ERROR(BF("Illegal end for subseq[%s]") % _rep_(end) );
@@ -1048,7 +1048,7 @@ namespace core
 	List_sp lp = this->asSmartPtr();
 	LOG(BF("Got start of list to search: %s") % _rep_(lp)  );
 	for ( auto p : lp ) {
-	    if ( af_symbolp(oCar(p)))
+	    if ( cl_symbolp(oCar(p)))
 	    {
 		Symbol_sp ps = oCar(p).as<Symbol_O>();
 		if ( ps->isKeywordSymbol() )

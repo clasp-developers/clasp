@@ -74,6 +74,7 @@ namespace gctools
 };    
 
 
+extern void lisp_errorUnexpectedNil(type_info const& toType );
 extern void lisp_errorBadCast(type_info const& toType, type_info const& fromType, core::T_O* objP );
 extern void lisp_errorBadCastFromT_O(type_info const& toType,core::T_O* objP );
 extern void lisp_errorBadCastToFixnum_O(type_info const& fromType,core::T_O* objP );
@@ -216,7 +217,7 @@ namespace gctools {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&fixnum_mask)==0);
 	return (Fixnum)(reinterpret_cast<uintptr_t>(ptr)>>fixnum_shift);
     }
-    template <class T> inline bool tagged_fixnump(T* ptr) {
+    template <class T> inline bool tagged_fixnump(T ptr) {
 	return ((reinterpret_cast<uintptr_t>(ptr)&fixnum_mask)==fixnum_tag);};
     template <class T> inline T* tag_character(int ch) {
 	return reinterpret_cast<T*>((ch<<character_shift)|character_tag);

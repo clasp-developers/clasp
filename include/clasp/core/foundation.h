@@ -646,7 +646,7 @@ namespace core {
 void lisp_errorDereferencedNonPointer(core::T_O* objP );
 void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP );
 void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP );
-void lisp_errorBadCastToFixnum_O(class_id fromType, core::T_O* objP );
+void lisp_errorBadCastToFixnum(class_id fromType, core::T_O* objP );
 void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP );
 void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O* objP );
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP);

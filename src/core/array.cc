@@ -153,9 +153,8 @@ namespace core
     int Array_O::checkedIndex(const string& filename, int lineno, const string& function, Array_sp array, int which, T_sp index, int nonincl_index )
     {
 	if ( index.fixnump() ) {
-	    int ifn = unbox_fixnum(index);
-	    if (ifn<0 || ifn >= nonincl_index)
-	    {
+	    int ifn = unbox_fixnum(gc::As<Fixnum_sp>(index));
+	    if (ifn<0 || ifn >= nonincl_index) {
 		af_wrongIndex(filename,lineno,lisp_intern(function,CurrentPkg),array,which,index,nonincl_index);
 	    }
 	    return ifn;

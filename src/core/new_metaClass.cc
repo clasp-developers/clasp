@@ -263,11 +263,11 @@ namespace core
 	public:
 	    TopoSortSetup(HashTable_sp asupers,vector<list<int> >* gP) : supers(asupers), graphP(gP) {};
 	    virtual bool mapKeyValue(T_sp key, T_sp value) {
-		int mcIndex = value.as<Fixnum_O>()->get();
+		int mcIndex = gc::As<Fixnum_sp>(value)->get();
 		Class_sp mc = key.as<Class_O>();
 		for ( Cons_sp mit=mc->directSuperclasses(); mit.notnilp(); mit=cCdr(mit) )
 		{
-		    int aSuperIndex = this->supers->gethash(oCar(mit),_Unbound<T_O>()).as<Fixnum_O>()->get();
+		    int aSuperIndex = gc::As<Fixnum_sp>(this->supers->gethash(oCar(mit),_Unbound<T_O>()))->get();
 		    (*this->graphP)[mcIndex].push_front(aSuperIndex);
 		}
 		return true;

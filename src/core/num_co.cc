@@ -985,7 +985,7 @@ namespace core {
 	if (BRCL_FIXNUMP(y)) {
 	    k = clasp_fixnum(y);
 	} else {
-	    QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Fixnum_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_fixnum);
 	}
 	switch (clasp_t_of(x)) {
 	case number_SingleFloat:

@@ -307,7 +307,8 @@ namespace core {
         if ( sz.nilp() ) {
             newLength = ht->_HashTable._Keys->length()*2;
         } else {
-            newLength = unbox_fixnum(sz.as<Fixnum_O>());
+            newLength = unbox_fixnum(gc::As<Fixnum_sp>(sz));
+	    //	    newLength = unbox_fixnum(As<Fixnum_O>(sz));
         }
         WeakKeyHashTable_O::value_type dummyKey;
         size_t dummyPos;

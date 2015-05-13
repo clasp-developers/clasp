@@ -116,7 +116,7 @@ namespace core
 	{_G();
 	    if ( syms.nilp() ) return _Nil<List_V>();
 	    List_sp symbols;
-	    if ( af_symbolp(syms) )
+	    if ( cl_symbolp(syms) )
 	    {
 		symbols = Cons_O::create(syms);
 	    } else

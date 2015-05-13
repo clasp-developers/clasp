@@ -742,7 +742,7 @@ namespace core
     {_G();
 	if ( af_fixnumP(val) )
 	{
-	    int v = unbox_fixnum(val.as<Fixnum_O>());
+	    int v = unbox_fixnum(gc::As<Fixnum_sp>(val));
 	    return Character_O::create(v);
 	}
 	SIMPLE_ERROR(BF("Cannot create Character from %s") % _rep_(val) );

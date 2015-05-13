@@ -279,7 +279,7 @@ namespace core
 			    SIMPLE_ERROR(BF("otherwise-clause must be the last clause of case - it is not"));
 			}
 			return eval::sp_progn(forms,environment);
-		    } else if ( af_atom(keys) ) {
+		    } else if ( cl_atom(keys) ) {
 			if ( cl_eql(keys,test_key) ) {
 			    return eval::sp_progn(forms,environment);
 			}
@@ -398,7 +398,7 @@ namespace core
 			break;
 		    }
 		}
-		if ( af_atom(form) || oCar(form) != cl::_sym_declare )
+		if ( cl_atom(form) || oCar(form) != cl::_sym_declare )
 		{
 		    break;
 		}
@@ -416,7 +416,7 @@ namespace core
 			{
 			    T_sp v = oCar(sentence);
 			    sentence = oCdr(sentence);
-			    if ( !af_symbolp(v) )
+			    if ( !cl_symbolp(v) )
 			    {
 				SIMPLE_ERROR(BF("Illegal object[%s] in declare special") % _rep_(v));
 			    }
@@ -545,8 +545,8 @@ namespace core
 
 	T_mv sp_lexicalVar(List_sp args, T_sp env)
 	{_G();
-	    int depth = unbox_fixnum(oCadr(args).as<Fixnum_O>());
-	    int index = unbox_fixnum(oCddr(args).as<Fixnum_O>());
+	    int depth = unbox_fixnum(gc::As<Fixnum_sp>(oCadr(args)));
+	    int index = unbox_fixnum(gc::As<Fixnum_sp>(oCddr(args)));
             return Values(Environment_O::clasp_lookupValue(env,depth,index));
 	}
 
@@ -681,7 +681,7 @@ namespace core
 	    //
 	    for ( auto cur : args ) {
 	        T_sp tagOrForm = oCar(cur);
-		if ( af_symbolp(tagOrForm) )
+		if ( cl_symbolp(tagOrForm) )
 		{
 		    Symbol_sp tag = tagOrForm.as<Symbol_O>();
 		    // The tag is associated with its position in list of forms
@@ -776,7 +776,7 @@ namespace core
 		    int idx;
 		    T_sp fi = indices->gethash(sym,_Unbound<T_O>());
 		    if ( !fi.unboundp() ) {
-			idx = unbox_fixnum(fi.as<Fixnum_O>());
+			idx = unbox_fixnum(gc::As<Fixnum_sp>(fi));
 		    } else {
 			idx = indicesSize;
 			indices->hash_table_setf_gethash(sym,make_fixnum(idx));
@@ -831,7 +831,7 @@ namespace core
 	    LOG(BF("Assignment part=%s") % assignments->__repr__() );
 	    T_mv classifiedAndCount = af_classifyLetVariablesAndDeclares(variables,declaredSpecials);
 	    List_sp classified = coerce_to_list(classifiedAndCount);
-	    int numberOfLexicalVariables = unbox_fixnum(classifiedAndCount.valueGet(1).as<Fixnum_O>());
+	    int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(classifiedAndCount.valueGet(1)));
 	    ValueEnvironment_sp newEnvironment =
 		ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables,parentEnvironment);
 	    ValueEnvironmentDynamicScopeManager scope(newEnvironment);
@@ -911,7 +911,7 @@ namespace core
 	    LOG(BF("Assignment part=%s") % assignments->__repr__() );
 	    T_mv classifiedAndCount = af_classifyLetVariablesAndDeclares(variables,declaredSpecials);
 	    List_sp classified = coerce_to_list(classifiedAndCount);
-	    int numberOfLexicalVariables = unbox_fixnum(classifiedAndCount.valueGet(1).as<Fixnum_O>());
+	    int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(classifiedAndCount.valueGet(1)));
 	    ValueEnvironment_sp newEnvironment =
 		ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables,parentEnvironment);
 	    ValueEnvironmentDynamicScopeManager scope(newEnvironment);
@@ -2118,8 +2118,7 @@ namespace core
 	{
 	    T_mv result;
 	    LOG(BF("Evaluating atom: %s")% exp->__repr__());
-	    if ( exp.nilp() ) return Values(_Nil<T_O>());
-            else if ( Symbol_sp sym = exp.asOrNull<Symbol_O>() )
+	    if ( Symbol_sp sym = exp.asOrNull<Symbol_O>() )
 	    {_BLOCK_TRACEF(BF("Evaluating symbol: %s")% exp->__repr__() );
 		if ( sym->isKeywordSymbol() ) return Values(sym);
 		if ( core_lookup_symbol_macro(sym,environment).notnilp() )
@@ -2393,7 +2392,7 @@ namespace core
                 }
                 // TODO: Deal with Compiler macros here
                 T_sp macroFunction(_Nil<T_O>());
-                if ( af_symbolp(head) ) {
+                if ( cl_symbolp(head) ) {
                     macroFunction = eval::funcall(cl::_sym_macroFunction,head,environment);
                     if ( macroFunction.notnilp() ) {
                         T_sp expanded = eval::funcall(macroFunction,exp,environment);
@@ -2447,7 +2446,7 @@ namespace core
 //		LOG(BF("Expression is nil - returning nil"));
  		return Values(exp);
 	    }
-	    if ( af_atom(exp) ) return evaluate_atom(exp,environment);
+	    if ( cl_atom(exp) ) return evaluate_atom(exp,environment);
 	    //
 	    // If it reached here then exp is a cons
 	    //

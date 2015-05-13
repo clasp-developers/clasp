@@ -139,7 +139,7 @@ namespace core
     }
 
 
-    Fixnum_sp VectorObjectsWithFillPtr_O::vectorPush(T_sp newElement)
+    T_sp VectorObjectsWithFillPtr_O::vectorPush(T_sp newElement)
     {_G();
 	if ( this->_FillPtr < this->_Values.size() )
 	{
@@ -148,7 +148,7 @@ namespace core
 	    this->_FillPtr++;
 	    return make_fixnum(idx);
 	}
-	return _Nil<Fixnum_O>();
+	return _Nil<T_O>();
     }
 
     Fixnum_sp VectorObjectsWithFillPtr_O::vectorPushExtend(T_sp newElement,int extension)

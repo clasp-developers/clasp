@@ -175,7 +175,7 @@ namespace core {
 
 	if ( olimit.isA<Fixnum_O>() )
 	{
-	    int limit = unbox_fixnum(olimit.as<Fixnum_O>());
+	    int limit = unbox_fixnum(gc::As<Fixnum_sp>(olimit));
 	    return make_fixnum((int)(globalRandomReal01Generator()*limit));
 	} else if ( olimit.isA<Bignum_O>())
 	{

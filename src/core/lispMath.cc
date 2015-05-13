@@ -105,8 +105,8 @@ namespace core
 	case number_Fixnum:
 	    switch(ty) {
 	    case number_Fixnum: {	/* FIX / FIX */
-		Fixnum_sp fnx = x.as<Fixnum_O>();
-		Fixnum_sp fny = y.as<Fixnum_O>();
+		Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
+		Fixnum_sp fny = gc::As<Fixnum_sp>(y);
 		int a = fnx->get();
 		int b = fny->get();
 		int q = a / b;
@@ -126,7 +126,7 @@ namespace core
 		 *	x = MOST_NEGATIVE_FIXNUM
 		 *    y = - MOST_NEGATIVE_FIXNUM
 		 */
-		Bignum_sp bnx = Bignum_O::create(x.as<Fixnum_O>()->get());
+		Bignum_sp bnx = Bignum_O::create(gc::As<Fixnum_sp>(x)->get());
 		Bignum_sp bny = y.as<Bignum_O>();
 		v0v1 = big_ceiling(bnx,bny);
 		v0 = v0v1;
@@ -143,7 +143,7 @@ namespace core
 		break;
 	    }
 	    case number_SingleFloat: {	/* FIX / SF */
-		Fixnum_sp fnx = x.as<Fixnum_O>();
+		Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
 		SingleFloat_sp sfy = y.as<SingleFloat_O>();
 		float n = sfy->get();
 		float p = fnx->get()/n;
@@ -153,7 +153,7 @@ namespace core
 		break;
 	    }
 	    case number_DoubleFloat: {	/* FIX / DF */
-		Fixnum_sp fnx = x.as<Fixnum_O>();
+		Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
 		DoubleFloat_sp dfy = y.as<DoubleFloat_O>();
 		double n = dfy->get();	
 		double p = fnx->get()/n;
@@ -163,7 +163,7 @@ namespace core
 		break;
 	    }
 	    case number_LongFloat: {	/* FIX / LF */
-		Fixnum_sp fnx = x.as<Fixnum_O>();
+		Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
 		LongFloat_sp lfy = y.as<LongFloat_O>();
 		LongFloat n = lfy->get();	
 		LongFloat p = fnx->get()/n;
@@ -180,7 +180,7 @@ namespace core
 	    switch(ty) {
 	    case number_Fixnum: {	/* BIG / FIX */
 		Bignum_sp bx = x.as<Bignum_O>();
-		Bignum_sp by = Bignum_O::create(y.as<Fixnum_O>()->get());
+		Bignum_sp by = Bignum_O::create(gc::As<Fixnum_sp>(y)->get());
 		v0v1 = big_ceiling(bx,by);
 		v0 = v0v1;
 		v1 = v0v1.valueGet(1);
@@ -419,8 +419,8 @@ T_mv floor1(Real_sp x)
 	case number_Fixnum:
 	    switch(ty) {
 	    case number_Fixnum: {	/* FIX / FIX */
-		Fixnum_sp fnx = x.as<Fixnum_O>();
-		Fixnum_sp fny = y.as<Fixnum_O>();
+		Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
+		Fixnum_sp fny = gc::As<Fixnum_sp>(y);
 		int a = fnx->get();
 		int b = fny->get();
 		int q = a / b;
@@ -440,7 +440,7 @@ T_mv floor1(Real_sp x)
 		 *	x = MOST_NEGATIVE_FIXNUM
 		 *    y = - MOST_NEGATIVE_FIXNUM
 		 */
-		Bignum_sp bnx = Bignum_O::create(x.as<Fixnum_O>()->get());
+		Bignum_sp bnx = Bignum_O::create(gc::As<Fixnum_sp>(x)->get());
 		Bignum_sp bny = y.as<Bignum_O>();
 		v0v1 = big_floor(bnx,bny);
 		v0 = v0v1;
@@ -457,7 +457,7 @@ T_mv floor1(Real_sp x)
 		break;
 	    }
 	    case number_SingleFloat: {	/* FIX / SF */
-		Fixnum_sp fnx = x.as<Fixnum_O>();
+		Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
 		SingleFloat_sp sfy = y.as<SingleFloat_O>();
 		float n = sfy->get();
 		float p = fnx->get()/n;
@@ -467,7 +467,7 @@ T_mv floor1(Real_sp x)
 		break;
 	    }
 	    case number_DoubleFloat: {	/* FIX / DF */
-		Fixnum_sp fnx = x.as<Fixnum_O>();
+		Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
 		DoubleFloat_sp sfy = y.as<DoubleFloat_O>();
 		double n = sfy->get();	
 		double p = fnx->get()/n;
@@ -477,7 +477,7 @@ T_mv floor1(Real_sp x)
 		break;
 	    }
 	    case number_LongFloat: {	/* FIX / LF */
-		Fixnum_sp fnx = x.as<Fixnum_O>();
+		Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
 		LongFloat_sp lfy = y.as<LongFloat_O>();
 		LongFloat n = lfy->get();	
 		LongFloat p = fnx->get()/n;
@@ -494,7 +494,7 @@ T_mv floor1(Real_sp x)
 	    switch(ty) {
 	    case number_Fixnum: {	/* BIG / FIX */
 		Bignum_sp bx = x.as<Bignum_O>();
-		Bignum_sp by = Bignum_O::create(y.as<Fixnum_O>()->get());
+		Bignum_sp by = Bignum_O::create(gc::As<Fixnum_sp>(y)->get());
 		v0v1 = big_floor(bx,by);
 		v0 = v0v1;
 		v1 = v0v1.valueGet(1);

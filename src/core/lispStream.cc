@@ -666,7 +666,7 @@ namespace core
 	bs = StreamByteSize(strm);
 	do {
             T_sp b = cl_logand(Cons_O::createList( c, make_fixnum(0xFF)));
-            unsigned char aux = (unsigned char)(unbox_fixnum(b.as<Fixnum_O>()));
+            unsigned char aux = (unsigned char)(unbox_fixnum(gc::As<Fixnum_sp>(b)));
             if (write_byte8(strm, &aux, 1) < 1)
                 break;
             c = clasp_ash(c, -8);
@@ -3158,7 +3158,7 @@ namespace core
 	if (StreamByteSize(strm) != 8) {
             cl_index bs = StreamByteSize(strm);
             Real_mv output_mv = clasp_floor2(output, make_fixnum(bs/8));
-            Fixnum_sp fn1 = output_mv.valueGet(1).as<Fixnum_O>();
+            Fixnum_sp fn1 = gc::As<Fixnum_sp>(output_mv.valueGet(1));
             unlikely_if (unbox_fixnum(fn1) != 0 ) {
                 FEerror("File length is not on byte boundary", 0);
             }
@@ -3831,7 +3831,7 @@ namespace core
 //            const cl_env_ptr the_env = clasp_process_env();
             cl_index bs = StreamByteSize(strm);
             T_mv output_mv = clasp_floor2(output, make_fixnum(bs/8));
-            Fixnum_sp ofn1 = output_mv.valueGet(1).as<Fixnum_O>();
+            Fixnum_sp ofn1 = gc::As<Fixnum_sp>(output_mv.valueGet(1));
 	    Fixnum fn = unbox_fixnum(ofn1);
             unlikely_if (fn != 0 ) {
                 FEerror("File length is not on byte boundary", 0);
@@ -5603,7 +5603,11 @@ namespace core
             StreamFlags(output) |= CLASP_STREAM_MIGHT_SEEK;
 //            si_set_finalizer(output, _lisp->_true());
             /* Set file pointer to the correct position */
-            clasp_file_position_set(output, appending? _Nil<Fixnum_O>() : make_fixnum(0));
+	    if ( appending ) {
+		clasp_file_position_set(output,_Nil<T_O>());
+	    } else {
+		clasp_file_position_set(output, make_fixnum(0));
+	    }
 	}
 	return output;
     }
@@ -6240,7 +6244,7 @@ namespace core {
 	    return 0;
 	    //	    SIMPLE_ERROR(BF("Stream does not have file position"));
 	} else if ( position.fixnump() ) { // Fixnum_sp ii = position.asOrNull<Fixnum_O>() ) {
-	    return unbox_fixnum(position);
+	    return unbox_fixnum(gc::As<Fixnum_sp>(position));
 	}
 	return 0;
     }
@@ -6549,7 +6553,7 @@ namespace core {
     T_sp StringInputStream_O::make(const string& str)
     {
         Str_sp s = str_create(str);
-        return cl_make_string_input_stream(s,make_fixnum(0),_Nil<Fixnum_O>());
+        return cl_make_string_input_stream(s,make_fixnum(0),_Nil<T_O>());
     }
 
 
@@ -6695,7 +6699,7 @@ namespace core {
 	int istart = clasp_to_int(start);
 	int iend;
 	if ( end.nilp() ) iend = content->get().size();
-	else iend = clasp_to_int(end.as<Fixnum_O>());
+	else iend = clasp_to_int(gc::As<Fixnum_sp>(end));
 	bool preserveWhitespace = preserve_whitespace.isTrue();
 	if ( preserveWhitespace )
 	{
@@ -6830,7 +6834,7 @@ namespace core {
 	int iend = cl_length(str);
 	if ( end.notnilp() )
 	{
-	    iend = MIN(iend,unbox_fixnum(end.as<Fixnum_O>()));
+	    iend = MIN(iend,unbox_fixnum(gc::As<Fixnum_sp>(end)));
 	}
         int ilen = iend-istart;
         clasp_write_characters(&(str->get().c_str()[istart]),ilen,stream);
@@ -6988,7 +6992,7 @@ namespace core {
 		ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence,kw::_sym_end,tend,
 				   Integer_O::makeIntegerType(0,limit-1));
 	    }
-	    end = unbox_fixnum(tend.as<Fixnum_O>());
+	    end = unbox_fixnum(gc::As<Fixnum_sp>(tend));
 	}
 	if ( end <= start ) {
             return seq;

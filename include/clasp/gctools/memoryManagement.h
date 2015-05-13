@@ -128,18 +128,103 @@ namespace gctools {
 namespace gctools {
     template <typename TOPTR, typename FROMPTR>
     struct DynamicCast {
-        static bool isA(FROMPTR ptr) {
-            return (dynamic_cast<TOPTR>(ptr)!=NULL);
+	typedef TOPTR   ToType;
+	typedef FROMPTR FromType;
+        static bool isA(FromType ptr) {
+            return (dynamic_cast<ToType>(ptr)!=NULL);
         }
-        static TOPTR castOrNULL(FROMPTR client) {
-            return dynamic_cast<TOPTR>(client);
+        static ToType castOrNULL(FromType client) {
+            return dynamic_cast<ToType>(client);
         }
     };
 };
 
 
+
 #include <clasp/gctools/pointer_tagging.h>
 
+namespace core {
+    class Fixnum_I {};
+    class Integer_O;
+    class Rational_O;
+    class Real_O;
+    class Number_O;
+    class T_O;
+     typedef Fixnum_I Fixnum_O;
+};
+
+namespace gctools {
+    ////////////////////////////////////////////////////////////////////////
+    // Cast to Integer_O* from Fixnum_I*
+    template <>
+	struct DynamicCast<core::Integer_O*,core::Fixnum_I*> {
+	typedef core::Integer_O* ToType;
+	typedef core::Fixnum_I* FromType;
+        static bool isA(FromType ptr) {
+            return (tagged_fixnump<FromType>(ptr));
+        }
+        static ToType castOrNULL(FromType client) {
+	    if ( DynamicCast<ToType,FromType>::isA(client) ) return reinterpret_cast<ToType>(client);
+	    return NULL;
+        }
+    };
+    ////////////////////////////////////////////////////////////////////////
+    // Cast to Rational_O* from Fixnum_I*
+    template <>
+	struct DynamicCast<core::Rational_O*,core::Fixnum_I*> {
+	typedef core::Rational_O* ToType;
+	typedef core::Fixnum_I* FromType;
+        static bool isA(FromType ptr) {
+            return (tagged_fixnump<FromType>(ptr));
+        }
+        static ToType castOrNULL(FromType client) {
+	    if ( DynamicCast<ToType,FromType>::isA(client) ) return reinterpret_cast<ToType>(client);
+	    return NULL;
+        }
+    };
+    ////////////////////////////////////////////////////////////////////////
+    // Cast to Real_O* from Fixnum_I*
+    template <>
+	struct DynamicCast<core::Real_O*,core::Fixnum_I*> {
+	typedef core::Real_O* ToType;
+	typedef core::Fixnum_I* FromType;
+        static bool isA(FromType ptr) {
+            return (tagged_fixnump<FromType>(ptr));
+        }
+        static ToType castOrNULL(FromType client) {
+	    if ( DynamicCast<ToType,FromType>::isA(client) ) return reinterpret_cast<ToType>(client);
+	    return NULL;
+        }
+    };
+    ////////////////////////////////////////////////////////////////////////
+    // Cast to Number_O* from Fixnum_I*
+    template <>
+	struct DynamicCast<core::Number_O*,core::Fixnum_I*> {
+	typedef core::Number_O* ToType;
+	typedef core::Fixnum_I* FromType;
+        static bool isA(FromType ptr) {
+            return (tagged_fixnump<FromType>(ptr));
+        }
+        static ToType castOrNULL(FromType client) {
+	    if ( DynamicCast<ToType,FromType>::isA(client) ) return reinterpret_cast<ToType>(client);
+	    return NULL;
+        }
+    };
+    ////////////////////////////////////////////////////////////////////////
+    // Cast to T_O* from Fixnum_I*
+    template <>
+	struct DynamicCast<core::T_O*,core::Fixnum_I*> {
+	typedef core::T_O* ToType;
+	typedef core::Fixnum_I* FromType;
+        static bool isA(FromType ptr) {
+            return (tagged_fixnump<FromType>(ptr));
+        }
+        static ToType castOrNULL(FromType client) {
+	    if ( DynamicCast<ToType,FromType>::isA(client) ) return reinterpret_cast<ToType>(client);
+	    return NULL;
+        }
+    };
+};
 
 
 

@@ -89,7 +89,7 @@ namespace core
 	claspChar x(ch->asChar());
 	if ( trait!=0 ) return (x|trait);
 	uint result = 0;
-	int readBase = unbox_fixnum(cl::_sym_STARread_baseSTAR->symbolValue().as<Fixnum_O>());
+	int readBase = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARread_baseSTAR->symbolValue()));
 	if ( x >= '0' && x <= '9' ) {
 	    uint uix = x-'0';
 	    if ( uix < readBase ) {
@@ -365,7 +365,7 @@ namespace core
 	case tintt: case tintp:
 	    // interpret ints
 	{
-	    int read_base = unbox_fixnum(cl::_sym_STARread_baseSTAR->symbolValue().as<Fixnum_O>());
+	    int read_base = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARread_baseSTAR->symbolValue()));
 	    string num = tokenStr(token,start-token.data());
 	    mpz_class z(num.c_str(),read_base);
 	    return Integer_O::create(z);
@@ -619,7 +619,7 @@ namespace core
 #if 1
 	static int monitorReaderStep = 0;
 	if ( (monitorReaderStep % 1000 ) == 0 && af_member(_sym_monitorReader,_sym_STARdebugMonitorSTAR->symbolValue(),_Nil<T_O>()).notnilp()) {
-	    printf("%s:%d:%s stream %s -> pos = %ld\n",__FILE__,__LINE__,__FUNCTION__, _rep_(clasp_filename(sin,false)).c_str(),unbox_fixnum(clasp_file_position(sin).as<Fixnum_O>()));
+	    printf("%s:%d:%s stream %s -> pos = %ld\n",__FILE__,__LINE__,__FUNCTION__, _rep_(clasp_filename(sin,false)).c_str(),unbox_fixnum(gc::As<Fixnum_sp>(clasp_file_position(sin))));
 	}
 	++monitorReaderStep;
 #endif

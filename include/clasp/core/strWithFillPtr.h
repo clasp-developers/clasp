@@ -89,7 +89,7 @@ namespace core
 	void incrementFillPtr(size_t size);
 	
 
-	virtual Fixnum_sp vectorPush(T_sp newElement);
+	virtual T_sp vectorPush(T_sp newElement);
 	virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension=0);
 
 	int pushCharExtend(claspChar c, int extension = 0);

@@ -113,13 +113,6 @@ namespace ql
 	    return *this;
 	}
 
-	/*! Handle automatic conversion from a c++ int to Fixnum_O */
-
-	inline list& operator<<(int const& val)
-	{
-
-	    return ( (*this) << core::make_fixnum(val));
-	}
       
 
 	/*! dot the list argument to the end of the list */

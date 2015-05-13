@@ -50,7 +50,7 @@ namespace core
         GC_ALLOCATE(ArrayObjects_O,array );
 	array->_ElementType = elementType;
 	List_sp dim;
-	if ( af_atom(dim_desig) )
+	if ( cl_atom(dim_desig) )
 	{
 	    int idim = clasp_to_int(dim_desig.as<Integer_O>());
 	    dim = Cons_O::create(make_fixnum(idim));

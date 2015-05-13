@@ -536,7 +536,7 @@ void    core_lowLevelBacktrace()
             int icf = af_ihsTop();
             return af_setIhsCurrentFrame(icf);
         }
-        int icf = unbox_fixnum(cf.as<Fixnum_O>());
+        int icf = unbox_fixnum(gc::As<Fixnum_sp>(cf));
         if (icf < 0) {	
             _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(icf));
             return 0;

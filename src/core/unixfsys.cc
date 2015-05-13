@@ -1532,9 +1532,10 @@ T_sp core_mkdir(T_sp directory, T_sp mode)
     int ok;
     Str_sp filename = coerce::stringDesignator(directory);
     if ( mode.fixnump() ) { // Fixnum_sp fn = mode.asOrNull<Fixnum_O>() ) {
-        modeint = unbox_fixnum(mode);
+	Fixnum_sp fnMode(gc::As<Fixnum_sp>(mode));
+        modeint = unbox_fixnum(fnMode);
         if ( modeint < 0 || modeint > 0777 ) {
-            QERROR_WRONG_TYPE_NTH_ARG(2,mode,cl::_sym_Fixnum_O);
+            QERROR_WRONG_TYPE_NTH_ARG(2,mode,cl::_sym_fixnum);
         }
     }
     {

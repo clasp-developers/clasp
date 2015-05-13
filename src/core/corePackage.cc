@@ -135,6 +135,7 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,arrayTotalSizeLimit);
     SYMBOL_EXPORT_SC_(ClPkg,lambdaParametersLimit);
     SYMBOL_EXPORT_SC_(ClPkg,schar);
+    SYMBOL_EXPORT_SC_(ClPkg,fixnum);
     SYMBOL_EXPORT_SC_(CorePkg,topLevel);
     SYMBOL_EXPORT_SC_(CorePkg,scharSet);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugInterpretedClosureSTAR);
@@ -643,7 +644,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
             for ( int i=0; i<times; ++i ) {
                 for ( auto c : l.full() ) {
                     T_sp t = c->_Car;
-                    fastCount += unbox_fixnum(t.as<Fixnum_O>());
+                    fastCount += unbox_fixnum(gc::As<Fixnum_sp>(t));
                 }
             }
 	    fastTimer.stop();
@@ -655,7 +656,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	    for ( int i=0; i<times; ++i ) {
 		for ( auto c : l ) {
 		    T_sp t = c->_Car;
-		    normalCount += unbox_fixnum(t.as<Fixnum_O>());
+		    normalCount += unbox_fixnum(gc::As<Fixnum_sp>(t));
 		}
 	    }
 	    normalTimer.stop();

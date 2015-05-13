@@ -110,7 +110,7 @@ namespace core
 		_sym_STARcircle_counterSTAR->setf_symbolValue(circle_counter);
 		return -new_code;
 	    } else {
-		return unbox_fixnum(code.as<Fixnum_O>());
+		return unbox_fixnum(gc::As<Fixnum_sp>(code));
 	    }
 	}
     }
@@ -136,7 +136,7 @@ namespace core
         }
 #endif /* ECL_CMU_FORMAT */
 	bool circle = brcl_print_circle();
-	if (circle && (x) && !x.fixnump() && !x.framep() && !x.characterp() && !x.single_floatp() && (cl_listp(x) || !af_symbolp(x) || !x.as<Symbol_O>()->homePackage().nilp() ))
+	if (circle && (x) && !x.fixnump() && !x.framep() && !x.characterp() && !x.single_floatp() && (cl_listp(x) || !cl_symbolp(x) || !x.as<Symbol_O>()->homePackage().nilp() ))
 	{
 	    Fixnum code;
 	    T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();

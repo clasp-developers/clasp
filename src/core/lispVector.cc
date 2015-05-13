@@ -71,7 +71,7 @@ namespace core
 			T_sp initialContents )
     {_G();
 	ASSERTF(displaced_to.nilp(),BF("Add support for make-vector :displaced-to"));
-	ASSERTF(displaced_index_offset.nilp() || displaced_index_offset.as<Fixnum_O>()->get()==0,BF("Add support for make-vector non-zero :displaced-index-offset "));
+	ASSERTF(displaced_index_offset.nilp() || unbox_fixnum(gc::As<Fixnum_sp>(displaced_index_offset))==0,BF("Add support for make-vector non-zero :displaced-index-offset "));
 	if ( element_type == cl::_sym_bit )
 	{
 	    IMPLEMENT_MEF(BF("Handle bitvectors"));
@@ -91,7 +91,7 @@ namespace core
 	    {
 		int ifp = 0;
 		if ( fill_pointer == _lisp->_true() ) ifp = dimension;
-		else ifp = MIN(dimension,abs(unbox_fixnum(fill_pointer.as<Fixnum_O>())));
+		else ifp = MIN(dimension,abs(unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer))));
 		return StrWithFillPtr_O::create(c,dimension,ifp,adjustable,initialContents);
 	    }
 	    return(Str_O::create(' ',dimension,initialContents));
@@ -108,7 +108,7 @@ namespace core
 	    {
 		int ifp = 0;
 		if ( fill_pointer == _lisp->_true() ) ifp = dimension;
-		else ifp = unbox_fixnum(fill_pointer.as<Fixnum_O>());
+		else ifp = unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer));
 		return VectorObjectsWithFillPtr_O::make(initial_element,initialContents,dimension,ifp,adjustable);
 	    } else
 	    {
@@ -207,7 +207,7 @@ namespace core
 #define ARGS_cl_vectorPush "(newElement vector)"
 #define DECL_cl_vectorPush ""
 #define DOCS_cl_vectorPush "vectorPush"
-    Fixnum_sp cl_vectorPush(T_sp newElement, Vector_sp vec)
+    T_sp cl_vectorPush(T_sp newElement, Vector_sp vec)
     {_G();
         return vec->vectorPush(newElement);
     };

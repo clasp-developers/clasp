@@ -255,7 +255,7 @@ namespace core
 	    return Py_BuildValue("s",obj.as<Str_O>()->get().c_str());
 	} else if ( obj.isA<Fixnum_O>() )
 	{
-	    return PyInt_FromLong(obj.as<Fixnum_O>()->get());
+	    return PyInt_FromLong(gc::As<Fixnum_sp>(obj)->get());
 	} else if ( obj.isA<Bignum_O>())
 	{
 	    Bignum_sp bn = obj.as<Bignum_O>();

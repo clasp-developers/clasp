@@ -275,7 +275,7 @@ namespace core
 	} else if ( type == ext::_sym_lexicalVar )
 	{
 	    Symbol_sp sym = oCadr(classified).as<Symbol_O>();
-	    int idx = unbox_fixnum(oCddr(classified).as<Fixnum_O>());
+	    int idx = unbox_fixnum(gc::As<Fixnum_sp>(oCddr(classified)));
 	    ASSERTF(idx >= 0, BF("Illegal target index[%d] for lexical variable[%s]") % idx % _rep_(sym) );
 	    this->_Environment->new_binding(sym,idx,val);
 	    return;
@@ -284,26 +284,13 @@ namespace core
     }
 
 
-    void ValueEnvironmentDynamicScopeManager::new_special(List_sp classified)
-    {
+    void ValueEnvironmentDynamicScopeManager::new_special(List_sp classified) {
 	ASSERT(oCar(classified)==_sym_declaredSpecial);
 	Symbol_sp sym = oCdr(classified).as<Symbol_O>();
 	this->_Environment->defineSpecialBinding(sym);
     }
-
     
-
-
-
-
-
-
-
-
-
-
-    void ActivationFrameDynamicScopeManager::new_binding(const Argument& argument, T_sp val)
-    {
+    void ActivationFrameDynamicScopeManager::new_binding(const Argument& argument, T_sp val) {
 	if ( argument._ArgTargetFrameIndex == SPECIAL_TARGET )
 	{
 	    this->DynamicScopeManager::new_binding(argument,val);

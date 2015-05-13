@@ -237,7 +237,7 @@ namespace core
         int idx = 0;
 	for ( auto cur : llprocessed ) {
 	    T_sp arg = oCar(cur);
-	    if ( af_symbolp(arg) )
+	    if ( cl_symbolp(arg) )
 	    {
 		if ( arg.as<Symbol_O>()->amp_symbol_p() )
 		{
@@ -828,7 +828,7 @@ void bind_aux
 	{
 	    LOG(BF("Handing argument: %s")%_rep_(oCar(cur)));
 	    T_sp oarg = oCar(cur);
-	    if ( af_symbolp(oarg) )
+	    if ( cl_symbolp(oarg) )
 	    {
 		T_sp sym = oarg;
 		if ( switch_add_argument_mode(context,sym,add_argument_mode,key_flag) )
@@ -917,7 +917,7 @@ void bind_aux
 		    T_sp localTarget = _Nil<T_O>();
 		    T_sp defaultValue = _Nil<T_O>();
 		    T_sp sensorSymbol = _Nil<T_O>();
-		    if ( af_symbolp(oarg) ) {
+		    if ( cl_symbolp(oarg) ) {
 			localTarget = oarg;
 			keySymbol = localTarget.as<Symbol_O>()->asKeywordSymbol();
 		    } else if ( cl_consp(oarg) ) {

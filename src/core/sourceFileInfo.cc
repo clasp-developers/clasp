@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/str.h>
+#include <clasp/core/numbers.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/pathname.h>
@@ -99,7 +100,8 @@ namespace core
 	    }
             return _lisp->getOrRegisterSourceFileInfo(ns.as<Str_O>()->get(),sourceDebugNamestring,sourceDebugOffset,useLineno);
         } else if ( sourceFile.fixnump() ) { // Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
-	    size_t idx = unbox_fixnum(sourceFile);
+	    Fixnum_sp fnSourceFile(gc::As<Fixnum_sp>(sourceFile));
+	    size_t idx = unbox_fixnum(fnSourceFile);
             if ( idx >= _lisp->_Roots._SourceFiles.size() ) {
 		idx = 0;
 		//                SIMPLE_ERROR(BF("Illegal index %d for source file info") % fnSourceFile->get() );

@@ -58,7 +58,7 @@ namespace core
 	}
 	List_sp classified() const;
 	inline bool isDefined() const { return (this->_ArgTarget)&&(this->_ArgTarget.notnilp());};
-	inline bool _symbolP() const { return af_symbolp(this->_ArgTarget); };
+	inline bool _symbolP() const { return cl_symbolp(this->_ArgTarget); };
 	Symbol_sp symbol() const;
 	inline bool _lambdaListHandlerP() const { return af_lambda_list_handler_p(this->_ArgTarget); };
 	LambdaListHandler_sp lambdaListHandler() const;

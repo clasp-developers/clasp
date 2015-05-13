@@ -65,7 +65,7 @@ namespace core
 	int fillPointer() const { return this->_FillPtr;};
 	void setf_fillPointer(int fp);
 
-	Fixnum_sp vectorPush(T_sp newElement);
+	T_sp vectorPush(T_sp newElement);
 	Fixnum_sp vectorPushExtend(T_sp newElement, int extension=16);
 
     };

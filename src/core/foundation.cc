@@ -170,6 +170,12 @@ void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O
     TYPE_ERROR(obj,expectedSym);
 }
 
+void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O* objP )
+{
+    class_id to_typ = reg::registered_class<core::Fixnum_I>::id;
+    lisp_errorUnexpectedType(to_typ,from_typ,objP);
+}
+    
 
 void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP)
 {
@@ -400,7 +406,7 @@ namespace core
         if ( core::_sym_STARpollTicksPerGcSTAR
              && !core::_sym_STARpollTicksPerGcSTAR.unboundp()
              && !core::_sym_STARpollTicksPerGcSTAR->symbolValueUnsafe().unboundp()
-             && _global_pollTicksGC >= unbox_fixnum(core::_sym_STARpollTicksPerGcSTAR->symbolValue().as<Fixnum_O>())) {
+             && _global_pollTicksGC >= unbox_fixnum(gc::As<Fixnum_sp>(core::_sym_STARpollTicksPerGcSTAR->symbolValue()))) {
             _global_pollTicksGC = 0;
             gctools::af_cleanup();
         }
@@ -764,7 +770,7 @@ namespace core
     Fixnum lisp_asFixnum(T_sp o)
     {
         if (o.fixnump()) return o.unsafe_fixnum();
-        if (af_fixnumP(o)) return unbox_fixnum(o.as<Fixnum_O>());
+        if (af_fixnumP(o)) return unbox_fixnum(gc::As<Fixnum_sp>(o));
         SIMPLE_ERROR(BF("Not fixnum %s") % _rep_(o));
     }
 
@@ -983,7 +989,7 @@ namespace core
 	Package_sp pkg = _lisp->findPackage(packageName,true).as<Package_O>();
 	ChangePackage changePackage(pkg);
         Str_sp ss = Str_O::create(args);
-	Stream_sp str = cl_make_string_input_stream(ss,make_fixnum(0),_Nil<Fixnum_O>());
+	Stream_sp str = cl_make_string_input_stream(ss,make_fixnum(0),_Nil<T_O>());
 	Reader_sp reader = Reader_O::create(str);
 	T_sp osscons = reader->primitive_read(true,_Nil<T_O>(),false);
 	List_sp sscons = osscons;
@@ -1672,7 +1678,7 @@ namespace core
         Str_sp fn = Str_O::create(fileName);
         SourceFileInfo_mv sfi_mv = core_sourceFileInfo(fn);
 	SourceFileInfo_sp sfi = sfi_mv;
-	Fixnum_sp handle = sfi_mv.valueGet(1).as<Fixnum_O>();
+	Fixnum_sp handle = gc::As<Fixnum_sp>(sfi_mv.valueGet(1));
         int sfindex = unbox_fixnum(handle);
         return SourcePosInfo_O::create(sfindex,filePos,lineno,0);
     }

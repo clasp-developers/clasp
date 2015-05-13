@@ -152,9 +152,16 @@ namespace translate
         typedef gctools::smart_ptr<T> ExpectedType;
         typedef gctools::smart_ptr<T> DeclareType;
         DeclareType _v;
-        from_object(const core::T_sp& o) : _v(o.as<T>()) {};
+    from_object(const core::T_sp& o) : _v(gc::As<gctools::smart_ptr<T>>(o)) {};
     };
 
+    template <> struct from_object<core::T_sp,std::true_type> {
+	typedef core::T_sp ExpectedType;
+	typedef core::T_sp DeclareType;
+	DeclareType _v;
+    from_object(const core::T_sp& o) : _v(o) {};
+    };
+	    
     template <typename T> struct from_object<gc::Nilable<gc::smart_ptr<T>>,std::true_type>
     {
         typedef gctools::Nilable<gc::smart_ptr<T>> ExpectedType;

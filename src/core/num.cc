@@ -206,7 +206,7 @@ int	tt;
 	
 	if ( olimit.isA<Fixnum_O>() )
 	{
-	    int limit = olimit.as<Fixnum_O>()->get();
+	    int limit = gc::As<Fixnum_sp>(olimit)->get();
 	    return make_fixnum((int)(globalRandomReal01Generator()*limit));
 	} else if ( olimit.isA<Bignum_O>())
 	{

@@ -578,10 +578,10 @@ namespace core
 	stringstream ss;
         ss << "#<" << lisp_classNameAsString(af_classOf(this->asSmartPtr())) << ">";
 #if 0
-	int tab = _sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>()->get();
+	int tab = gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue())->get();
 	{
 	    ss << (BF("--------------------------- %20s :id %5d -----") % this->_instanceClass()->classNameAsString() % this->_EnvId ).str() << std::endl;
-	    tab += _sym_STARenvironmentPrintingTabIncrementSTAR->symbolValue().as<Fixnum_O>()->get();
+	    tab += gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabIncrementSTAR->symbolValue())->get();
 	    Fixnum_sp fntab = make_fixnum(tab);
 	    DynamicScopeManager scope(_sym_STARenvironmentPrintingTabSTAR,fntab);
 	    ss <<this->summaryOfContents();
@@ -973,7 +973,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     string Environment_O::clasp_summaryOfContents(T_sp env)
     {
-	int tab = unbox_fixnum(_sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>());
+	int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
 	stringstream ss;
 	if ( env.nilp() )
 	{
@@ -990,7 +990,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     string Environment_O::summaryOfContents() const
     {_G();
-	int tab = unbox_fixnum(_sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>());
+	int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
 	stringstream ss;
 	ss << string(tab,' ')<<"#<Environment_O::-no-contents->" << std::endl;
 	return ss.str();
@@ -1116,7 +1116,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     string LexicalEnvironment_O::summaryOfContents() const
     {_G();
-	int tab = unbox_fixnum(_sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>());
+	int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
 	stringstream ss;
 	if ( this->_Metadata->hashTableSize() > 0 )
 	{
@@ -1262,7 +1262,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	    return this->Base::lexicalSpecialP(sym);
 	}
 	// If the target index is a SPECIAL_TARGET then return true otherwise false
-	return (unbox_fixnum(oCdr(fi).as<Fixnum_O>()) == SPECIAL_TARGET);
+	return (unbox_fixnum(gc::As<Fixnum_sp>(oCdr(fi))) == SPECIAL_TARGET);
     }
 
 
@@ -1304,7 +1304,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	if ( it.notnilp() )
 	{
 #if 0
-	    if ( idx != oCdr(it).as<Fixnum_O>()->get() )
+	    if ( idx != gc::As<Fixnum_sp>(oCdr(it))->get() )
 	    {
 		SIMPLE_ERROR(BF("The lexical variable[%s] is already defined with index[%d] - we tried to set it to[%d]") % _rep_(sym) % _rep_(oCdr(it)) % idx );
 	    }
@@ -1319,7 +1319,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
         List_sp it= this->_SymbolIndex->find(sym);
 	if ( it.notnilp() )
 	{
-	    if ( SPECIAL_TARGET != unbox_fixnum(oCdr(it).as<Fixnum_O>()) )
+	    if ( SPECIAL_TARGET != unbox_fixnum(gc::As<Fixnum_sp>(oCdr(it))) )
 	    {
 		SIMPLE_ERROR(BF("The lexical variable[%s] is already defined idx[%s]  - we tried to set it to special") % _rep_(sym) % _rep_(oCdr(it)) );
 	    }
@@ -1341,7 +1341,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	if ( fi.nilp() ) {
 	    return this->Base::_findValue(sym,depth,index,valueKind,value);
 	}
-	index = unbox_fixnum(oCdr(fi).as<Fixnum_O>());
+	index = unbox_fixnum(gc::As<Fixnum_sp>(oCdr(fi)));
 	if ( index < 0 )
 	{
 	    valueKind = specialValue;
@@ -1363,7 +1363,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	{
 	    return this->Base::_findSymbolMacro(sym,depth,index,shadowed,fn);
 	}
-	index = unbox_fixnum(oCdr(fi).as<Fixnum_O>());
+	index = unbox_fixnum(gc::As<Fixnum_sp>(oCdr(fi)));
 	shadowed = true;
 	return false;
     }
@@ -1432,10 +1432,10 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     string	ValueEnvironment_O::summaryOfContents() const
     {_G();
-	int tab = unbox_fixnum(_sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>());
+	int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
 	stringstream ss;
         this->_SymbolIndex->mapHash( [this,tab,&ss] (T_sp key, T_sp value) {
-                int ivalue = unbox_fixnum(value.as<Fixnum_O>());
+                int ivalue = unbox_fixnum(gc::As<Fixnum_sp>(value));
                 ss << string(tab,' ') << _rep_(key) << "#" << ivalue << " -> ";
                 if ( ivalue == SPECIAL_TARGET )
                 {
@@ -1476,7 +1476,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	    }
 	    return af_updateValue(clasp_currentVisibleEnvironment(parent),sym,obj);
 	}
-        int ivalue = unbox_fixnum(oCdr(it).as<Fixnum_O>());
+        int ivalue = unbox_fixnum(gc::As<Fixnum_sp>(oCdr(it)));
 	if ( ivalue < 0 )
 	{
 //	    sym->setf_symbolValue(obj);
@@ -1580,7 +1580,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	bool foundp = mv.valueGet(1).isTrue();
 	if ( !foundp )
 	    return this->Base::_findFunction(functionName,depth,index,value);
-	index = unbox_fixnum(val.as<Fixnum_O>());
+	index = unbox_fixnum(gc::As<Fixnum_sp>(val));
 	LOG(BF(" Found binding %d")% index );
 	T_sp tvalue = this->_FunctionFrame->entry(index);
 	ASSERT(tvalue.notnilp());
@@ -1639,7 +1639,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	virtual bool mapKeyValue(T_sp key, T_sp value)
 	{
 	    this->ss << string(this->tab,' ') << _rep_(key) << "#" << _rep_(value);
-	    int idx = unbox_fixnum(value.as<Fixnum_O>());
+	    int idx = unbox_fixnum(gc::As<Fixnum_sp>(value));
 	    ss << " -> ";
 	    FunctionFrame_sp fframe = this->_env.getActivationFrame().as<FunctionFrame_O>();
 	    T_sp entry = fframe->entry(idx);
@@ -1659,7 +1659,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     string FunctionValueEnvironment_O::summaryOfContents() const
     {_G();
-	int tab = unbox_fixnum(_sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>());
+	int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
 	FunctionValueMapper mapper(tab,*this);
 	this->_FunctionIndices->lowLevelMapHash(&mapper);
 	stringstream ss;
@@ -1874,7 +1874,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     string BlockEnvironment_O::summaryOfContents() const
     {_G();
-	int tab = unbox_fixnum(_sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>());
+	int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
 	stringstream ss;
 	ss << string(tab,' ') << (BF("    :block-name %s\n") % _rep_(this->getBlockSymbol()) ).str();
 	ss << this->Base::summaryOfContents();
@@ -1963,7 +1963,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     string CatchEnvironment_O::summaryOfContents() const
     {_G();
-//	int tab = _sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>()->get();
+//	int tab = gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue())->get();
 	stringstream ss;
 	ss << this->Base::summaryOfContents();
 	return ss.str();
@@ -2130,7 +2130,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     string TagbodyEnvironment_O::summaryOfContents() const
     {_G();
-	int tab = unbox_fixnum(_sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>());
+	int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
 	stringstream ss;
 	ss << ":tagbody-id " << (void*)(this->getActivationFrame().as<TagbodyFrame_O>().get()) << std::endl;
         this->_Tags->mapHash([tab,&ss] (T_sp key, T_sp value) {
@@ -2189,7 +2189,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	List_sp it = this->_Tags->find(sym);
 	if ( it.notnilp() )
 	{
-	    index = unbox_fixnum(oCdr(it).as<Fixnum_O>());
+	    index = unbox_fixnum(gc::As<Fixnum_sp>(oCdr(it)));
 	    tagbodyEnv = this->asSmartPtr();
 	    return true;
 	}
@@ -2284,7 +2284,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     string MacroletEnvironment_O::summaryOfContents() const
     {_G();
-	int tab = unbox_fixnum(_sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>());
+	int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
 	stringstream ss;
         this->_Macros->mapHash( [tab,&ss] (T_sp key, T_sp value) {
                 ss << string(tab,' ') << _rep_(key) << std::endl;
@@ -2379,7 +2379,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     string SymbolMacroletEnvironment_O::summaryOfContents() const
     {_G();
-	int tab = unbox_fixnum(_sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>());
+	int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
 	stringstream ss;
 	this->_Macros->mapHash( [tab,&ss] (T_sp key, T_sp value ) {
                 ss << string(tab,' ') << _rep_(key);
@@ -2455,7 +2455,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     string StackValueEnvironment_O::summaryOfContents() const
     {_G();
-	int tab = unbox_fixnum(_sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>());
+	int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
 	stringstream ss;
 	this->_Values->mapHash( [tab,&ss] (T_sp key, T_sp value ) {
                 ss << string(tab,' ') << _rep_(key);

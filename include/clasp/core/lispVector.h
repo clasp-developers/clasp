@@ -69,7 +69,7 @@ namespace core
         virtual List_sp arrayDimensions() const;
         virtual int arrayTotalSize() const { return this->length();};
 
-        virtual Fixnum_sp vectorPush(T_sp newElement) {SUBIMP();};
+        virtual T_sp vectorPush(T_sp newElement) {SUBIMP();};
         virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension=1) {SUBIMP();};
 
 	virtual int fillPointer() const {SUBIMP();};

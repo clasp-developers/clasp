@@ -51,7 +51,7 @@ namespace core
     {
 	if ( obj.nilp() ) {
 	    return LeafSNode_O::create(_Nil<T_O>());
-	} else if ( af_atom(obj) ) {
+	} else if ( cl_atom(obj) ) {
 	    SNode_sp node = objToNode->gethash(obj,_Unbound<T_O>()).as<SNode_O>();
 	    if ( node.unboundp() ) {
 		node = LeafSNode_O::create(obj);

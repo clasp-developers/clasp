@@ -34,15 +34,22 @@ THE SOFTWARE.
 namespace core
 {
 
-    bool af_symbolp(T_sp obj);
-    bool af_endp(T_sp obj);
-    bool af_atom(T_sp obj);
+    inline bool cl_symbolp(T_sp obj) {
+	return obj.isA<Symbol_O>();
+    }
+    
+    bool cl_endp(T_sp obj);
+    inline bool cl_atom(T_sp obj) {
+	return !obj.consp();
+    }
 
-    bool cl_listp(T_sp obj);
+    inline bool cl_listp(T_sp obj) {
+	if ( obj.nilp() ) return true;
+	return obj.consp();
+    }
 
     bool af_llvm_sys_value_p(T_sp obj);
     bool af_interpretedFunctionP(T_sp obj);
-    bool af_endp(T_sp obj);
     bool af_classp(T_sp obj);
     bool af_integerP(T_sp obj);
     bool af_realP(T_sp obj);

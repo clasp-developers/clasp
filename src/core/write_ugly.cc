@@ -172,7 +172,7 @@ namespace core
 			   make_fixnum(print_base),
 			   cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
 			   true);
-        cl_writeSequence(buffer,stream,make_fixnum(0),_Nil<Fixnum_O>());
+        cl_writeSequence(buffer,stream,make_fixnum(0),_Nil<T_O>());
     }
 
 
@@ -439,9 +439,14 @@ namespace core
 
     void write_fixnum(T_sp strm, T_sp i)
     {
-	ASSERT(i.fixnump());
-	Fixnum_sp fn = make_fixnum(i.unsafe_fixnum());
-	fn->__write__(strm);
+	Fixnum_sp fn = gc::As<Fixnum_sp>(i);
+	StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
+        int print_base = clasp_print_base();
+        core_integerToString(buffer,fn,
+			   make_fixnum(print_base),
+			   cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
+			   true);
+        cl_writeSequence(buffer,strm,make_fixnum(0),_Nil<T_O>());
     }
 
     void write_single_float(T_sp strm, T_sp i)

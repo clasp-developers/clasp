@@ -437,11 +437,11 @@ namespace core
 
     Symbol_sp functionBlockName(T_sp functionName)
     {_G();
-	if ( af_symbolp(functionName) ) return functionName.as<Symbol_O>();
+	if ( cl_symbolp(functionName) ) return functionName.as<Symbol_O>();
 	if ( cl_consp(functionName) )
 	{
 	    List_sp cfn = functionName;
-	    if ( oCar(cfn) == cl::_sym_setf && af_symbolp(oCadr(cfn))& oCadr(cfn).notnilp() )
+	    if ( oCar(cfn) == cl::_sym_setf && cl_symbolp(oCadr(cfn))& oCadr(cfn).notnilp() )
 	    {
 		return oCadr(cfn).as<Symbol_O>();
 	    }
@@ -523,7 +523,7 @@ namespace core
 	ql::list seconds(_lisp);
 	for ( auto cur : listOfPairs ) {
 	    T_sp element = oCar(cur);
-	    if ( af_atom(element) )
+	    if ( cl_atom(element) )
 	    {
 		firsts << element;
 		seconds << _Nil<T_O>();
@@ -725,7 +725,7 @@ namespace core
 	// TODO add various kinds of array
 	if ( cl_consp(obj) && oCar(obj) == cl::_sym_quote) return true;
 	if ( obj.nilp() ) return true;
-	if ( af_symbolp(obj) )
+	if ( cl_symbolp(obj) )
 	{
 	    if ( af_keywordP(obj) ) return true;
 	    return obj.as<Symbol_O>()->isConstant();
@@ -820,7 +820,7 @@ namespace core
         } else {
             functionObject->setKind(kw::_sym_function);
         }
-	if ( af_symbolp(functionName) )
+	if ( cl_symbolp(functionName) )
 	{
 	    Symbol_sp symbol = functionName.as<Symbol_O>();
 	    symbol->setf_symbolFunction(functionObject);
@@ -850,7 +850,7 @@ namespace core
 #define DOCS_af_fdefinition "fdefinition"
     Function_mv af_fdefinition(T_sp functionName)
     {_G();
-	if ( af_symbolp(functionName) )
+	if ( cl_symbolp(functionName) )
 	{
 	    Symbol_sp sym = functionName.as<Symbol_O>();
 	    return(Values(sym->symbolFunction()));
@@ -880,7 +880,7 @@ namespace core
         if (functionName.nilp() ) {
 	    return false;
         }
-	if ( af_symbolp(functionName) )
+	if ( cl_symbolp(functionName) )
 	{
 	    Symbol_sp sym = functionName.as<Symbol_O>();
 	    return sym->fboundp();
@@ -905,7 +905,7 @@ namespace core
 #define DOCS_af_fmakunbound "fmakunbound"
     T_mv af_fmakunbound(T_sp functionName)
     {_G();
-	if ( af_symbolp(functionName) )
+	if ( cl_symbolp(functionName) )
 	{
 	    Symbol_sp sym = functionName.as<Symbol_O>();
 	    sym->setf_symbolFunction(_Unbound<Function_O>());
@@ -1439,7 +1439,7 @@ List_sp af_append(List_sp lists)
     {_G();
 	uint len = cl_length(sequence);
 	if ( end.nilp() ) end = make_fixnum(len);
-	Fixnum_sp fnend = end.as<Fixnum_O>();
+	Fixnum_sp fnend = gc::As<Fixnum_sp>(end);
 	if ( unbox_fixnum(start) < 0 )
 	{
 	    SIMPLE_ERROR(BF("start[%d] must be greater than zero") % _rep_(start));
@@ -1576,13 +1576,13 @@ Symbol_mv af_gensym(T_sp x)
     stringstream ss;
     if ( x.nilp() )
     {
-	int counter = unbox_fixnum(cl::_sym_STARgensym_counterSTAR->symbolValue().as<Fixnum_O>());
+	int counter = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()));
 	cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter+1));
 	ss << "G";
 	ss << counter;
     } else if ( af_stringP(x) )
     {
-	int counter = unbox_fixnum(cl::_sym_STARgensym_counterSTAR->symbolValue().as<Fixnum_O>());
+	int counter = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()));
 	cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter+1));
 	ss << x.as<Str_O>()->get();
 	ss << counter;
@@ -1614,31 +1614,28 @@ Symbol_mv af_gensym(T_sp x)
 #define DOCS_af_type_to_symbol "type_to_symbol"
 Symbol_mv af_type_to_symbol(T_sp x)
 {_G();
-    if ( af_characterP(x) ) return(Values(cl::_sym_Character_O));
-    else if ( af_fixnumP(x) ) return(Values(cl::_sym_Fixnum_O));
-    else if ( af_bignumP(x) ) return(Values(cl::_sym_Bignum_O));
-    else if ( af_ratioP(x) ) return(Values(cl::_sym_Ratio_O));
-    else if ( af_singleFloatP(x) ) return(Values(cl::_sym_SingleFloat_O));
-    else if ( af_doubleFloatP(x) ) return(Values(cl::_sym_DoubleFloat_O));
+    if ( x.fixnump() ) return(Values(cl::_sym_fixnum));
+    else if ( Character_sp ccx = x.asOrNull<Character_O>() ) return(Values(cl::_sym_Character_O));
+    else if ( SingleFloat_sp sfx = x.asOrNull<SingleFloat_O>() ) return(Values(cl::_sym_SingleFloat_O));
+    else if ( x.nilp() ) return(Values(cl::_sym_Symbol_O));  // Return _sym_null??
+    else if ( Symbol_sp sx = x.asOrNull<Symbol_O>() ) return(Values(cl::_sym_Symbol_O));
+    else if ( x.consp() ) return(Values(cl::_sym_list));
+    else if ( DoubleFloat_sp dfx = x.asOrNull<DoubleFloat_O>() ) return(Values(cl::_sym_DoubleFloat_O));
+    else if ( Bignum_sp bnx = x.asOrNull<Bignum_O>() ) return(Values(cl::_sym_Bignum_O));
+    else if ( Ratio_sp rx = x.asOrNull<Ratio_O>() ) return(Values(cl::_sym_Ratio_O));
 #ifdef CLASP_LONG_FLOAT
-    else if ( af_longFloatP(x) ) return(Values(cl::_sym_LongFloat_O));
+    else if ( LongFloat_sp lfx = x.asOrNull<LongFloat_O>() ) return(Values(cl::_sym_LongFloat_O));
 #endif
-    else if ( af_complexP(x) ) return(Values(cl::_sym_Complex_O));
-    else if ( af_symbolp(x) ) return(Values(cl::_sym_Symbol_O));
-    else if ( cl_packagep(x) ) return(Values(cl::_sym_Package_O));
-    else if ( cl_listp(x) ) return(Values(cl::_sym_list));
-    else if ( af_hashTableP(x) ) return(Values(cl::_sym_HashTable_O));
-    else if ( af_vectorP(x) ) return(Values(cl::_sym_Vector_O));
-    else if ( af_bitVectorP(x) ) return(Values(cl::_sym_BitVector_O));
-    else if ( af_arrayP(x) ) return(Values(cl::_sym_Array_O));
-    else if ( af_stringP(x) ) return(Values(cl::_sym_String_O));
+    else if ( Complex_sp cx = x.asOrNull<Complex_O>() ) return(Values(cl::_sym_Complex_O));
+    else if ( Package_sp px = x.asOrNull<Package_O>() ) return(Values(cl::_sym_Package_O));
+    else if ( HashTable_sp htx = x.asOrNull<HashTable_O>() ) return(Values(cl::_sym_HashTable_O));
+    else if ( Vector_sp vx = x.asOrNull<Vector_O>() ) return(Values(cl::_sym_Vector_O));
+    else if ( BitVector_sp bvx = x.asOrNull<BitVector_O>() ) return(Values(cl::_sym_BitVector_O));
+    else if ( Array_sp ax = x.asOrNull<Array_O>() ) return(Values(cl::_sym_Array_O));
+    else if ( Str_sp strx = x.asOrNull<Str_O>() )  return(Values(cl::_sym_String_O));
 //    else if ( x.isA<BaseString_O>() ) return(Values(_sym_BaseString_O));
-    else if ( cl_streamp(x) ) return(Values(cl::_sym_Stream_O));
-    else if ( cl_readtablep(x) ) return(Values(cl::_sym_ReadTable_O));
-    else if ( CandoException_sp ce = x.asOrNull<CandoException_O>() )
-    {
-	return(Values(_sym_CandoException_O));
-    }
+    else if ( Stream_sp streamx = x.asOrNull<Stream_O>() ) return(Values(cl::_sym_Stream_O));
+    else if ( ReadTable_sp rtx = x.asOrNull<ReadTable_O>() ) return(Values(cl::_sym_ReadTable_O));
     return Values(x->__class()->className());
     SIMPLE_ERROR(BF("Add af_type_to_symbol support for type: %s") % x->_instanceClass()->classNameAsString() );
 }
@@ -1651,119 +1648,86 @@ T_sp type_of(T_sp x)
 {_G();
     if ( x.nilp() ) return cl::_sym_null;
 #ifdef CLOS
-    if ( Instance_sp instance = x.asOrNull<Instance_O>() )
-    {
+    if ( Instance_sp instance = x.asOrNull<Instance_O>() ) {
 	T_sp cl = lisp_instance_class(instance);
 	T_sp t;
-        if (Class_sp mcl = cl.asOrNull<Class_O>() )
-	{
+	if (Class_sp mcl = cl.asOrNull<Class_O>() ) {
 	    t = mcl->className();
-	} else if ( Instance_sp icl = cl.asOrNull<Instance_O>() )
-	{
-            DEPRECIATEDP("Classes of instances should always be of Class_O type, not Instance_O");
-//	    t = icl->_CLASS_NAME();
-	} else
-	{
+	} else if ( Instance_sp icl = cl.asOrNull<Instance_O>() ) {
+	    DEPRECIATEDP("Classes of instances should always be of Class_O type, not Instance_O");
+	    //	    t = icl->_CLASS_NAME();
+	} else {
 	    SIMPLE_ERROR(BF("Illegal class %s for instance class of %s") % _rep_(cl) % _rep_(instance) );
 	}
 	Symbol_sp st = t.as<Symbol_O>();
-	if ( t.nilp() || cl != eval::funcall(cl::_sym_findClass,st,_Nil<T_O>()))
-	{
+	if ( t.nilp() || cl != eval::funcall(cl::_sym_findClass,st,_Nil<T_O>())) {
 	    t = cl;
 	}
 	return t;
-    } else if ( Class_sp mc = x.asOrNull<Class_O>() )
-    {
+    } else if ( Class_sp mc = x.asOrNull<Class_O>() ) {
 	Class_sp mcc = lisp_static_class(mc);
 	return mcc->className();
-    }
-    else
+    } else
 #endif
-    if ( af_integerP(x) )
-    {
-	ql::list res(_lisp);
-	res << cl::_sym_integer << x << x;
-	return res.cons();
-    } else if ( af_characterP(x) )
-    {
-	if ( af_standard_char_p(x.as<Character_O>()) ) return cl::_sym_standard_char;
-	return cl::_sym_Character_O;
-    } else if ( af_symbolp(x) )
-    {
-	if ( x == _lisp->_true() ) return cl::_sym_boolean;
-	if ( af_keywordP(x.as<Symbol_O>()) ) return cl::_sym_keyword;
-	return cl::_sym_symbol;
-    } else if ( af_stringP(x) )
-    {
-	String_sp sx = x.as<String_O>();
-	Symbol_sp t;
-	if ( sx->adjustable_array_p() || sx->array_has_fill_pointer_p() || sx->_displaced_array_p() )
-	{
-	    t = cl::_sym_array;
-	} else t = cl::_sym_simple_array;
-	return (ql::list(_lisp) << t << cl::_sym_BaseChar_O << Cons_O::createList(make_fixnum(1),make_fixnum(cl_length(sx)))).cons();
-    } else if ( af_vectorP(x) )
-    {
-	Vector_sp vx = x.as<Vector_O>();
-	if ( vx->adjustable_array_p() || vx->_displaced_array_p() )
-	{
-	    return (ql::list(_lisp) << cl::_sym_vector << vx->element_type_as_symbol() << vx->arrayDimensions() ).cons();
-	} else if ( vx->array_has_fill_pointer_p() /* || (cl_elttype)x->vector.elttype != aet_object) */ )
-	{
-	    return (ql::list(_lisp) << cl::_sym_simple_array << vx->element_type_as_symbol() << vx->arrayDimensions() ).cons();
-	} else
-	{
-	    return (ql::list(_lisp) << cl::_sym_simple_vector << make_fixnum(cl_length(vx))).cons();
+	if ( Integer_sp ix = x.asOrNull<Integer_O>() ) {
+	    ql::list res(_lisp);
+	    res << cl::_sym_integer << x << x;
+	    return res.cons();
+	} else if ( af_characterP(x) ) {
+	    if ( af_standard_char_p(x.as<Character_O>()) ) return cl::_sym_standard_char;
+	    return cl::_sym_Character_O;
+	} else if ( Symbol_sp symx = x.asOrNull<Symbol_O>() ) {
+	    if ( x == _lisp->_true() ) return cl::_sym_boolean;
+	    if ( af_keywordP(symx) ) return cl::_sym_keyword;
+	    return cl::_sym_symbol;
+	} else if ( String_sp sx = x.asOrNull<String_O>() ) {
+	    Symbol_sp t;
+	    if ( sx->adjustable_array_p() || sx->array_has_fill_pointer_p() || sx->_displaced_array_p() ) {
+		t = cl::_sym_array;
+	    } else t = cl::_sym_simple_array;
+	    return (ql::list(_lisp) << t << cl::_sym_BaseChar_O << Cons_O::createList(make_fixnum(1),make_fixnum(cl_length(sx)))).cons();
+	} else if ( Vector_sp vx = x.asOrNull<Vector_O>() ) {
+	    if ( vx->adjustable_array_p() || vx->_displaced_array_p() ) {
+		return (ql::list(_lisp) << cl::_sym_vector << vx->element_type_as_symbol() << vx->arrayDimensions() ).cons();
+	    } else if ( vx->array_has_fill_pointer_p() /* || (cl_elttype)x->vector.elttype != aet_object) */ ) {
+		return (ql::list(_lisp) << cl::_sym_simple_array << vx->element_type_as_symbol() << vx->arrayDimensions() ).cons();
+	    } else {
+		return (ql::list(_lisp) << cl::_sym_simple_vector << make_fixnum(cl_length(vx))).cons();
+	    }
+	} else if ( Array_sp ax = x.asOrNull<Array_O>() ) {
+	    Symbol_sp t;
+	    if ( ax->adjustable_array_p() || ax->_displaced_array_p() ) {
+		t = cl::_sym_array;
+	    } else t = cl::_sym_simple_array;
+	    return (ql::list(_lisp) << t << ax->element_type_as_symbol() << ax->arrayDimensions() ).cons();
+	} else if ( BitVector_sp bx = x.asOrNull<BitVector_O>() ) {
+	    Symbol_sp t;
+	    if ( bx->adjustable_array_p() || bx->array_has_fill_pointer_p() || bx->_displaced_array_p() ) {
+		t = cl::_sym_array;
+	    } else t = cl::_sym_simple_array;
+	    return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(make_fixnum(1),make_fixnum(cl_length(bx)))).cons();
+	} else if ( WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>() ) {
+	    return pp->_instanceClass()->className();
+	} else if ( af_structurep(x) ) {
+	    return x.as<StructureObject_O>()->structureType();
+	} else if ( Stream_sp stx = x.asOrNull<Stream_O>() ) {
+	    if ( stx.isA<SynonymStream_O>() ) 		return cl::_sym_SynonymStream_O;
+	    else if (stx.isA<BroadcastStream_O>() ) 		return cl::_sym_BroadcastStream_O;
+	    else if (stx.isA<ConcatenatedStream_O>() ) 	return cl::_sym_ConcatenatedStream_O;
+	    else if (stx.isA<TwoWayStream_O>() ) 		return cl::_sym_TwoWayStream_O;
+	    else if (stx.isA<StringInputStream_O>() ) 	return _sym_StringInputStream_O;
+	    else if (stx.isA<StringOutputStream_O>() ) 	return _sym_StringOutputStream_O;
+	    else if (stx.isA<EchoStream_O>() ) 		return cl::_sym_EchoStream_O;
+	    else return cl::_sym_FileStream_O;
+	} else if ( x.consp() ) {
+	    return cl::_sym_cons;
+	} else if ( Pathname_sp px = x.asOrNull<Pathname_O>() ) {
+	    if (af_logicalPathnameP(x)) {
+		return cl::_sym_logical_pathname;
+	    } else {
+		return cl::_sym_pathname;
+	    }
 	}
-    } else if (af_arrayP(x))
-    {
-	Symbol_sp t;
-	Array_sp ax = x.as<Array_O>();
-	if ( ax->adjustable_array_p() || ax->_displaced_array_p() )
-	{
-	    t = cl::_sym_array;
-	} else t = cl::_sym_simple_array;
-	return (ql::list(_lisp) << t << ax->element_type_as_symbol() << ax->arrayDimensions() ).cons();
-    } else if ( af_bitVectorP(x) )
-    {
-	BitVector_sp bx = x.as<BitVector_O>();
-	Symbol_sp t;
-	if ( bx->adjustable_array_p() || bx->array_has_fill_pointer_p() || bx->_displaced_array_p() )
-	{
-	    t = cl::_sym_array;
-	} else t = cl::_sym_simple_array;
-	return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(make_fixnum(1),make_fixnum(cl_length(bx)))).cons();
-    } else if ( WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>() ) {
-        return pp->_instanceClass()->className();
-    } else if ( af_structurep(x) )
-    {
-	return x.as<StructureObject_O>()->structureType();
-    } else if ( cl_streamp(x) )
-    {
-	if ( x.isA<SynonymStream_O>() ) 		return cl::_sym_SynonymStream_O;
-	else if (x.isA<BroadcastStream_O>() ) 		return cl::_sym_BroadcastStream_O;
-	else if (x.isA<ConcatenatedStream_O>() ) 	return cl::_sym_ConcatenatedStream_O;
-	else if (x.isA<TwoWayStream_O>() ) 		return cl::_sym_TwoWayStream_O;
-	else if (x.isA<StringInputStream_O>() ) 	return _sym_StringInputStream_O;
-	else if (x.isA<StringOutputStream_O>() ) 	return _sym_StringOutputStream_O;
-	else if (x.isA<EchoStream_O>() ) 		return cl::_sym_EchoStream_O;
-	else return cl::_sym_FileStream_O;
-    } else if ( cl_listp(x) )
-    {
-	return cl::_sym_cons;
-    } else if ( af_pathnamep(x) )
-    {
-        if (af_logicalPathnameP(x)) {
-            return cl::_sym_logical_pathname;
-        } else {
-            return cl::_sym_pathname;
-        }
-#if 0
-    case t_pathname:
-	t = x->pathname.logical? @'logical-pathname' : @'pathname';
-	break;
-#endif
-    }
     return af_type_to_symbol(x);
 }
 

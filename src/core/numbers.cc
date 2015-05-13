@@ -353,14 +353,14 @@ namespace core
 	{
         case_Fixnum_v_Fixnum:
 	    {
-		mpz_class za(unbox_fixnum(na.as<Fixnum_O>()));
-		mpz_class zb(unbox_fixnum(nb.as<Fixnum_O>()));
+		mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
+		mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
 		mpz_class zc = za+zb;
 		return Integer_O::create(zc);
 	    }
         case_Fixnum_v_Bignum:
 	    {
-		mpz_class za(unbox_fixnum(na.as<Fixnum_O>()));
+		mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
 		mpz_class zc = za+nb.as<Bignum_O>()->ref();
 		return Integer_O::create(zc);
 	    }
@@ -384,7 +384,7 @@ namespace core
 	    }
         case_Bignum_v_Fixnum:
 	    {
-		mpz_class zb(unbox_fixnum(nb.as<Fixnum_O>()));
+		mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
 		mpz_class zc = na.as<Bignum_O>()->ref() + zb;
 		return Integer_O::create(zc);
 	    }
@@ -495,14 +495,14 @@ namespace core
 	{
         case_Fixnum_v_Fixnum:
 	    {
-		mpz_class za(unbox_fixnum(na.as<Fixnum_O>()));
-		mpz_class zb(unbox_fixnum(nb.as<Fixnum_O>()));
+		mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
+		mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
 		mpz_class zc = za-zb;
 		return Integer_O::create(zc);
 	    }
         case_Fixnum_v_Bignum:
 	    {
-		mpz_class za(unbox_fixnum(na.as<Fixnum_O>()));
+		mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
 		mpz_class zc = za-nb.as<Bignum_O>()->ref();
 		return Integer_O::create(zc);
 	    }
@@ -526,7 +526,7 @@ namespace core
 	    }
         case_Bignum_v_Fixnum:
 	    {
-		mpz_class zb(unbox_fixnum(nb.as<Fixnum_O>()));
+		mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
 		mpz_class zc = na.as<Bignum_O>()->ref() - zb;
 		return Integer_O::create(zc);
 	    }
@@ -634,14 +634,14 @@ namespace core
 	{
         case_Fixnum_v_Fixnum:
 	    {
-		mpz_class za(unbox_fixnum(na.as<Fixnum_O>()));
-		mpz_class zb(unbox_fixnum(nb.as<Fixnum_O>()));
+		mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
+		mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
 		mpz_class zc = za * zb;
 		return Integer_O::create(zc);
 	    }
         case_Fixnum_v_Bignum:
 	    {
-		mpz_class za(unbox_fixnum(na.as<Fixnum_O>()));
+		mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
 		mpz_class zc = za * nb.as<Bignum_O>()->ref();
 		return Integer_O::create(zc);
 	    }
@@ -663,7 +663,7 @@ namespace core
 	    }
         case_Bignum_v_Fixnum:
 	    {
-		mpz_class zb(unbox_fixnum(nb.as<Fixnum_O>()));
+		mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
 		mpz_class zc = na.as<Bignum_O>()->ref() * zb;
 		return Integer_O::create(zc);
 	    }
@@ -892,9 +892,9 @@ namespace core
     T_mv af__PLUS_(List_sp numbers)
     {_G();
 	if ( numbers.nilp() ) return(Values(make_fixnum(0)));
-	Number_sp result = oCar(numbers).as<Number_O>();
+	Number_sp result = gc::As<Number_sp>(oCar(numbers));
 	for ( auto cur : (List_sp)oCdr(numbers) ) {
-	    result = contagen_add(result, oCar(cur).as<Number_O>());
+	    result = contagen_add(result, gc::As<Number_sp>(oCar(cur)));
 	}
 	return(Values(result));
     }
@@ -1050,15 +1050,14 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	{
         case_Fixnum_v_Fixnum:
 	    {
-		gctools::Fixnum fa = unbox_fixnum(na.as<Fixnum_O>());
-		gctools::Fixnum fb = unbox_fixnum(nb.as<Fixnum_O>());
+		gctools::Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
+		gctools::Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
 		if ( fa < fb ) return -1;
 		if ( fa == fb ) return 0;
 		return 1;
 	    }
-        case_Fixnum_v_Bignum:
-	    {
-		mpz_class za = clasp_to_mpz(na.as<Fixnum_O>());
+        case_Fixnum_v_Bignum: {
+		mpz_class za = clasp_to_mpz(gc::As<Fixnum_sp>(na));
 		mpz_class& zb = nb.as<Bignum_O>()->ref();
 		if ( za < zb ) return -1;
 		if ( za == zb ) return 0;
@@ -1086,7 +1085,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    }
         case_Fixnum_v_DoubleFloat:
 	    {
-		return double_fix_compare(unbox_fixnum(na.as<Fixnum_O>()),nb.as<DoubleFloat_O>()->get());
+		return double_fix_compare(unbox_fixnum(gc::As<Fixnum_sp>(na)),nb.as<DoubleFloat_O>()->get());
 		break;
 /*
 		double a = clasp_to_double(na);
@@ -1099,7 +1098,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
         case_Bignum_v_Fixnum:
 	    {
 		mpz_class& za(na.as<Bignum_O>()->ref());
-		mpz_class zb = unbox_fixnum(nb.as<Fixnum_O>());
+		mpz_class zb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
 		if (za < zb ) return -1;
 		if ( za==zb ) return 0;
 		return 1;
@@ -1162,7 +1161,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 		return 1;
 	    }
         case_DoubleFloat_v_Fixnum:
-	    return -double_fix_compare(unbox_fixnum(nb.as<Fixnum_O>()),na.as<DoubleFloat_O>()->get());
+	    return -double_fix_compare(unbox_fixnum(gc::As<Fixnum_sp>(nb)),na.as<DoubleFloat_O>()->get());
 	    break;
         case_SingleFloat_v_DoubleFloat:
         case_DoubleFloat_v_Bignum:
@@ -1178,10 +1177,10 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    }
 #ifdef CLASP_LONG_FLOAT
         case_Fixnum_v_LongFloat:
-	    return long_double_fix_compare(na.as<Fixnum_O>()->get(),nb.as<LongFloat_O>()->get());
+	    return long_double_fix_compare(gc::As<Fixnum_sp>(na)->get(),nb.as<LongFloat_O>()->get());
 	    break;
         case_LongFloat_v_Fixnum:
-	    return -long_double_fix_compare(nb.as<Fixnum_O>()->get(),na.as<LongFloat_O>()->get());
+	    return -long_double_fix_compare(gc::As<Fixnum_sp>(nb)->get(),na.as<LongFloat_O>()->get());
 	    break;
         case_Bignum_v_LongFloat:
 	case_Ratio_v_LongFloat:
@@ -1285,13 +1284,13 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	{
         case_Fixnum_v_Fixnum:
 	    {
-		gctools::Fixnum fa = unbox_fixnum(na.as<Fixnum_O>());
-		gctools::Fixnum fb = unbox_fixnum(nb.as<Fixnum_O>());
+		gctools::Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
+		gctools::Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
 		return fa == fb;
 	    }
         case_Fixnum_v_Bignum:
 	    {
-		mpz_class za = clasp_to_mpz(na.as<Fixnum_O>());
+		mpz_class za = clasp_to_mpz(gc::As<Fixnum_sp>(na));
 		mpz_class& zb = nb.as<Bignum_O>()->ref();
 		return za==zb;
 	    }
@@ -1320,7 +1319,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
         case_Bignum_v_Fixnum:
 	    {
 		mpz_class& za(na.as<Bignum_O>()->ref());
-		mpz_class zb = unbox_fixnum(nb.as<Fixnum_O>());
+		mpz_class zb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
 		return za==zb;
 	    }
         case_Bignum_v_Bignum:
@@ -1430,10 +1429,10 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     T_sp af__EQ_(List_sp args)
     {_G();
 	if ( args.nilp() ) return(_lisp->_true());
-	Number_sp a = oCar(args).as<Number_O>();
+	Number_sp a = gc::As<Number_sp>(oCar(args));
 	Number_sp b;
 	for ( auto cur : (List_sp)oCdr(args) ) {
-	    b = oCar(cur).as<Number_O>();
+	    b = gc::As<Number_sp>(oCar(cur));
 	    if ( !basic_equalp(a,b) ) return _Nil<T_O>();
 	}
 	return _lisp->_true();
@@ -1880,6 +1879,7 @@ namespace core {
 
 
 
+#ifdef USE_HEAP_FIXNUM
     EXPOSE_CLASS(core,Fixnum_O);
 
 
@@ -2087,7 +2087,7 @@ namespace core {
 	    return this->get() == t->get();
 	} else if ( af_fixnumP(obj) )
 	{
-	    Fixnum_sp t = obj.as<Fixnum_O>();
+	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    bool b = (this->get() == t->get());
 	    LOG(BF("Compared if %d == %d -> %d") % this->get() % t->get() % b  );
 	    return b;
@@ -2132,7 +2132,7 @@ namespace core {
 //    boost::python::def("create_Fixnum",&create_Fixnum );
 #endif
     }
-
+#endif // ifdef USE_HEAP_FIXNUM
 
 
 
@@ -2268,7 +2268,7 @@ namespace core {
 	    return this->get() == t->get();
 	} else if ( af_fixnumP(obj) )
 	{
-	    Fixnum_sp t = obj.as<Fixnum_O>();
+	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
 	}
 	ASSERT(!cl_numberp(obj) );
@@ -2419,7 +2419,7 @@ namespace core {
 	    return this->get() == t->get();
 	} else if ( af_fixnumP(obj) )
 	{
-	    Fixnum_sp t = obj.as<Fixnum_O>();
+	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
 	}
 	ASSERT(!cl_numberp(obj) );
@@ -2609,7 +2609,7 @@ namespace core {
 	    return this->get() == t->get();
 	} else if ( af_fixnumP(obj) )
 	{
-	    Fixnum_sp t = obj.as<Fixnum_O>();
+	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
 	}
 	ASSERT(!cl_numberp(obj));
@@ -2779,7 +2779,7 @@ namespace core {
 	    return this->get() == t->get();
 	} else if ( af_fixnumP(obj) )
 	{
-	    Fixnum_sp t = obj.as<Fixnum_O>();
+	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
 	}
 	ASSERT(!cl_numberp(obj));
@@ -4280,7 +4280,7 @@ Integer_sp clasp_ash(Integer_sp x, int bits)
     unsigned char clasp_toUint8(T_sp n)
     {
 	if ( n.notnilp() ) {
-	    if (Fixnum_sp fn = n.as<Fixnum_O>()) {
+	    if (Fixnum_sp fn = gc::AsOrNull<Fixnum_sp>(n)) {
 		Fixnum fi = unbox_fixnum(fn);
 		if ( fi>=0 && fi<=255 ) {
 		    return fi;
@@ -4292,7 +4292,7 @@ Integer_sp clasp_ash(Integer_sp x, int bits)
 
 signed char clasp_toSignedInt8(T_sp n)
     {
-        if (Fixnum_sp fn = n.as<Fixnum_O>()) {
+        if (Fixnum_sp fn = gc::As<Fixnum_sp>(n)) {
             Fixnum fi = unbox_fixnum(fn);
             if ( fi>=-128 && fi<=127 ) {
                 return fi;
@@ -4304,7 +4304,7 @@ signed char clasp_toSignedInt8(T_sp n)
 
 cl_index clasp_toSize(T_sp f)
 {
-    if ( Fixnum_sp fn = f.as<Fixnum_O>() ) {
+    if ( Fixnum_sp fn = gc::As<Fixnum_sp>(f) ) {
         Fixnum ff = unbox_fixnum(fn);
         if ( ff >= 0 ) {
             return ff;
@@ -4318,7 +4318,7 @@ cl_index clasp_toSize(T_sp f)
 fixint(T_sp x)
 {
     if (af_fixnumP(x))
-        return unbox_fixnum(x.as<Fixnum_O>());
+        return unbox_fixnum(gc::As<Fixnum_sp>(x));
     if (af_bignumP(x)) {
         IMPLEMENT_MEF(BF("Implement convert Bignum to fixint"));
 #if 0
@@ -4327,7 +4327,7 @@ fixint(T_sp x)
         }
 #endif
     }
-    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_Fixnum_O,x,cl::_sym_Fixnum_O);
+    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_fixnum,x,cl::_sym_fixnum);
     UNREACHABLE();
 }
 

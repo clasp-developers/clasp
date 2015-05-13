@@ -724,12 +724,12 @@ namespace core {
 			 WORD_EMPTY_IS_NIL, *ep, end, ep);
 	if (aux == kw::_sym_error) {
 	    return _Nil<Pathname_O>();
-	} else if (af_symbolp(aux)) {
+	} else if (cl_symbolp(aux)) {
 	    version = aux;
 	} else {
 	    T_mv version_mv = af_parseInteger(aux.as<Str_O>(),0,_Nil<T_O>(),10,_lisp->_true());
 	    T_sp tversion = version_mv;
-	    Fixnum_sp parsed_length = version_mv.valueGet(1).as<Fixnum_O>();
+	    Fixnum_sp parsed_length = gc::As<Fixnum_sp>(version_mv.valueGet(1));
 	    if (unbox_fixnum(parsed_length) == cl_length(aux) &&
 		af_integerP(tversion) && clasp_plusp(tversion.as<Integer_O>())) {
 		version = tversion.as<Integer_O>();
@@ -1164,12 +1164,12 @@ namespace core {
 		truncate_if_unreadable)
 		return _Nil<T_O>();
 	    if (host.notnilp()) {
-		cl_writeSequence(host.as<Str_O>(), buffer, make_fixnum(0), _Nil<Fixnum_O>());
+		cl_writeSequence(host.as<Str_O>(), buffer, make_fixnum(0), _Nil<T_O>());
 		clasp_write_string(":",buffer);
 	    }
 	} else {
 	    if ((y = x->_Device).notnilp()) {
-		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<Fixnum_O>());
+		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<T_O>());
 		clasp_write_string(":",buffer);
 	    }
 	    if (host.notnilp()) {
@@ -1179,11 +1179,11 @@ namespace core {
 		}
 #endif
 		clasp_write_string("//",buffer);
-		cl_writeSequence(host.as<Str_O>(), buffer, make_fixnum(0), _Nil<Fixnum_O>());
+		cl_writeSequence(host.as<Str_O>(), buffer, make_fixnum(0), _Nil<T_O>());
 	    }
 	}
 	l = x->_Directory;
-	if (af_endp(l))
+	if (cl_endp(l))
 	    goto NO_DIRECTORY;
 	y = CONS_CAR(l);
 	if (y == kw::_sym_relative) {
@@ -1203,7 +1203,7 @@ namespace core {
 	    } else if (y == kw::_sym_wild_inferiors) {
 		clasp_write_string("**",buffer);
 	    } else if (y != kw::_sym_back) {
-		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<Fixnum_O>());
+		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<T_O>());
 	    } else {
 		/* Directory :back has no namestring representation */
 		return _Nil<T_O>();
@@ -1211,7 +1211,7 @@ namespace core {
 	    clasp_write_char(logical? ';' : DIR_SEPARATOR_CHAR,buffer);
 	}
     NO_DIRECTORY:
-	if (unbox_fixnum(clasp_file_position(buffer).as<Fixnum_O>()) == 0 ) {
+	if (unbox_fixnum(gc::As<Fixnum_sp>(clasp_file_position(buffer))) == 0 ) {
 	    if ((af_stringP(x->_Name) &&
 		 brcl_memberChar(':', x->_Name)) ||
 		(af_stringP(x->_Type) &&
@@ -1223,7 +1223,7 @@ namespace core {
 	    if (y == kw::_sym_wild) {
 		clasp_write_string("*",buffer);
 	    } else {
-		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<Fixnum_O>());
+		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<T_O>());
 	    }
 	} else if (!logical && !x->_Type.nilp()) {
 	    /* #P".txt" is :NAME = ".txt" :TYPE = NIL and
@@ -1239,7 +1239,7 @@ namespace core {
 		clasp_write_string(".*",buffer);
 	    } else {
 		clasp_write_string(".",buffer);
-		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<Fixnum_O>());
+		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<T_O>());
 	    }
 	}
 	y = x->_Version;
@@ -1250,12 +1250,12 @@ namespace core {
 		    clasp_write_string("*",buffer);
 		} else if (y == kw::_sym_newest) {
 		    cl_writeSequence(af_symbolName(y.as<Symbol_O>()), buffer,
-					 make_fixnum(0), _Nil<Fixnum_O>());
+					 make_fixnum(0), _Nil<T_O>());
 		} else {
 		    /* Since the printer is not reentrant,
 		     * we cannot use cl_write and friends.
 		     */
-		    int n = unbox_fixnum(y.as<Fixnum_O>());
+		    int n = unbox_fixnum(gc::As<Fixnum_sp>(y));
 		    int i;
 		    char b[FIXNUM_BITS/2];
 		    for (i = 0; n; i++) {
@@ -1671,19 +1671,19 @@ namespace core {
     static bool
     path_list_match(T_sp a, T_sp mask) {
 	T_sp item_mask;
-	while (!af_endp(mask)) {
+	while (!cl_endp(mask)) {
 	    item_mask = CAR(mask);
 	    mask = CDR(mask);
 	    if (item_mask == kw::_sym_wild_inferiors) {
-		if (af_endp(mask))
+		if (cl_endp(mask))
 		    return true;
-		while (!af_endp(a)) {
+		while (!cl_endp(a)) {
 		    if (path_list_match(a, mask))
 			return true;
 		    a = CDR(a);
 		}
 		return false;
-	    } else if (af_endp(a)) {
+	    } else if (cl_endp(a)) {
 		/* A NIL directory should match against :absolute
 		   or :relative, in order to perform suitable translations. */
 		if (item_mask != kw::_sym_absolute && item_mask != kw::_sym_relative)
@@ -1694,7 +1694,7 @@ namespace core {
 		a = CDR(a);
 	    }
 	}
-	if (!af_endp(a))
+	if (!cl_endp(a))
 	    return false;
 	return true;
     }
@@ -1802,7 +1802,7 @@ namespace core {
             pair = Cons_O::create(host, Cons_O::create(_Nil<T_O>(), _Nil<T_O>()));
             _lisp->setPathnameTranslations(Cons_O::create(pair, _lisp->pathnameTranslations()));
         }
-        for (l = set, set = _Nil<T_O>(); !af_endp(l); l = CDR(l)) {
+        for (l = set, set = _Nil<T_O>(); !cl_endp(l); l = CDR(l)) {
             T_sp item = CAR(l);
             T_sp from = coerce_to_from_pathname(oCar(item), host);
             T_sp to = cl_pathname(oCadr(item));
@@ -1856,19 +1856,19 @@ namespace core {
     {
 	T_sp l = _Nil<T_O>(), l2;
 
-	while (!af_endp(mask)) {
+	while (!cl_endp(mask)) {
 	    T_sp item_mask = CAR(mask);
 	    mask = CDR(mask);
 	    if (item_mask == kw::_sym_wild_inferiors) {
 		l2 = _Nil<T_O>();
 		while (!path_list_match(a, mask)) {
-		    if (af_endp(a))
+		    if (cl_endp(a))
 			return kw::_sym_error;
 		    l2 = Cons_O::create(CAR(a),l2);
 		    a = CDR(a);
 		}
 		l = Cons_O::create(l2, l);
-	    } else if (af_endp(a)) {
+	    } else if (cl_endp(a)) {
 		/* A NIL directory should match against :absolute
 		   or :relative, in order to perform suitable translations. */
 		if (item_mask != kw::_sym_absolute && item_mask != kw::_sym_relative)
@@ -1893,7 +1893,7 @@ namespace core {
 	T_sp wilds = *wilds_list;
 
 	if (pattern == kw::_sym_wild) {
-	    if (af_endp(wilds))
+	    if (cl_endp(wilds))
 		return kw::_sym_error;
 	    pattern = CAR(wilds);
 	    *wilds_list = CDR(wilds);
@@ -1917,7 +1917,7 @@ namespace core {
 		token->pushSubString(pattern, j, i);
 	    }
 	    new_string = true;
-	    if (af_endp(wilds)) {
+	    if (cl_endp(wilds)) {
 		return kw::_sym_error;
 	    }
 	    token->pushString(CAR(wilds));
@@ -1938,11 +1938,11 @@ namespace core {
     {
 	T_sp l = _Nil<T_O>();
 
-	while (!af_endp(to)) {
+	while (!cl_endp(to)) {
 	    T_sp d, mask = CAR(to);
 	    if (mask == kw::_sym_wild_inferiors) {
 		T_sp list = *wilds;
-		if (af_endp(list))
+		if (cl_endp(list))
 		    return kw::_sym_error;
 		else {
 		    T_sp dirlist = CAR(list);
@@ -2068,7 +2068,7 @@ namespace core {
 	    return pathname;
 	}
 	List_sp l = eval::funcall(core::_sym_pathnameTranslations,pathname->_Host);
-	for( auto cur : l ) { // ; !af_endp(l); l = CDR(l)) {
+	for( auto cur : l ) { // ; !cl_endp(l); l = CDR(l)) {
 	    T_sp pair = oCar(l);
 	    if (af_pathnameMatchP(pathname, CAR(pair))) {
 		//printf("%s:%d Trying to translate pathname: %s   pair: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str(), _rep_(pair).c_str() );

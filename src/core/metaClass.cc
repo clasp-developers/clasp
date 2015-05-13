@@ -240,7 +240,7 @@ namespace core
 	if ( this->_creator == NULL ) {
             IMPLEMENT_MEF(BF("All allocation should be done through _creator"));
 	    // if the newNil_callback is NULL then allocate an instance
-	    int slots = unbox_fixnum(this->_MetaClassSlots[REF_SIZE].as<Fixnum_O>());
+	    int slots = unbox_fixnum(gc::As<Fixnum_sp>(this->_MetaClassSlots[REF_SIZE]));
 	    printf("%s:%d:%s  Allocating new instance of %s with %d slots\n", __FILE__,__LINE__,__FUNCTION__,_rep_(this->asSmartPtr()).c_str(),slots);
 	    return Instance_O::allocateInstance(this->asSmartPtr(),slots);
 //	    SIMPLE_ERROR(BF("_creator for %s is NULL!!") % _rep_(this->asSmartPtr()) );
@@ -384,11 +384,14 @@ namespace core {
 	public:
 	    TopoSortSetup(HashTable_sp asupers,vector<list<int> >* gP) : supers(asupers), graphP(gP) {};
 	    virtual bool mapKeyValue(T_sp key, T_sp value) {
-		int mcIndex = unbox_fixnum(value.as<Fixnum_O>());
+		Fixnum_sp fnValue(gc::As<Fixnum_sp>(value));
+		int mcIndex = unbox_fixnum(fnValue);
 		Class_sp mc = key.as<Class_O>();
-		for ( auto mit : (List_sp)(mc->directSuperclasses()) )
-		{
-		    int aSuperIndex = unbox_fixnum(this->supers->gethash(oCar(mit),_Unbound<T_O>()).as<Fixnum_O>());
+		for ( auto mit : (List_sp)(mc->directSuperclasses()) ) {
+		    T_sp val = this->supers->gethash(oCar(mit));
+		    ASSERT(val.notnilp());
+		    Fixnum_sp fnval = gc::As<Fixnum_sp>(val);
+		    int aSuperIndex = unbox_fixnum(fnval);
 		    (*this->graphP)[mcIndex].push_front(aSuperIndex);
 		}
 		return true;

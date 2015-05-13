@@ -64,10 +64,10 @@ namespace ext
 #define DOCS_af_maybeQuote "Quotes a form only if strictly required. This happens when FORM is either a symbol and not a keyword"
     T_sp af_maybeQuote(T_sp form)
     {_G();
-	if ( af_atom(form) ) {
+	if ( cl_atom(form) ) {
 	    if ( form.nilp() ) goto DONTQUOTEIT; // nil
 	    if ( form == _lisp->_true() ) goto DONTQUOTEIT; // t
-	    if ( af_symbolp(form) ) {
+	    if ( cl_symbolp(form) ) {
 		if ( af_keywordP(form) ) {
 		    goto DONTQUOTEIT; // symbol keyword
 		} else goto QUOTEIT; // symbol not keyword

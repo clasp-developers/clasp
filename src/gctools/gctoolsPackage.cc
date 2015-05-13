@@ -461,7 +461,7 @@ namespace gctools {
         return Values(_Nil<T_O>());
 #endif
 #ifdef USE_BOEHM
-        globalSearchMarker = marker->get();
+        globalSearchMarker = core::unbox_fixnum(marker);
         static_ReachableClassKinds = new(ReachableClassMap);
         static_ReachableLispKinds = new(ReachableClassMap);
         static_ReachableContainerKinds = new(ReachableContainerMap);

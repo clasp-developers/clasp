@@ -77,7 +77,7 @@ namespace core
 	    T_sp ref = snodeToRef->gethash(snode,_Nil<T_O>());
 	    if ( ref.notnilp() ) {
                 clasp_write_char('#',stream);
-		ref.as<Fixnum_O>()->__write__(stream);
+		write_fixnum(stream,ref);
                 clasp_write_char('#',stream);
 		return;
 	    } else {

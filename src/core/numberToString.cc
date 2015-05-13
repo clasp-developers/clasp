@@ -121,9 +121,9 @@ namespace core {
 	    }
 	    return buffer;
 	}
-	if ( integer.isA<Fixnum_O>() ) {
+	if ( integer.fixnump() ) {
 	    char txt[64];
-	    gc::Fixnum fn = unbox_fixnum(integer.as<Fixnum_O>());
+	    gc::Fixnum fn = unbox_fixnum(gc::As<Fixnum_sp>(integer));
 	    switch (unbox_fixnum(base)) {
 	    case 8:
 		sprintf(txt,"%lo",fn);
@@ -143,8 +143,8 @@ namespace core {
 		break;
 	    }
 	    return buffer;
-	} else if ( integer.isA<Bignum_O>() ) {
-	    core_bignumToString(buffer,integer.as<Bignum_O>()->get(),base);
+	} else if ( Bignum_sp bi = integer.asOrNull<Bignum_O>() ) {
+	    core_bignumToString(buffer,bi->get(),base);
 	} else {
 	    QERROR_WRONG_TYPE_NTH_ARG(2,base,cl::_sym_integer);
 	}

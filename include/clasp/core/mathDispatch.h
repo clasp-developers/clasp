@@ -36,8 +36,8 @@ THE SOFTWARE.
 //
 //
 #define MATH_DISPATCH_BEGIN(a,b) {		\
-int ta = a->number_type_int();			\
-int tb = b->number_type_int();			\
+    int ta = (int)(clasp_t_of(a));		\
+    int tb = (int)(clasp_t_of(b));		\
 int dispatch_combo = ta*(number_NUM)+tb;	\
 switch (dispatch_combo)			
 

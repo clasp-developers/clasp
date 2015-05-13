@@ -61,9 +61,9 @@ namespace core {
 	ty = clasp_t_of(y);
 	if (tx == number_Fixnum) {
 	    if (ty == number_Fixnum) {
-		if (y == brcl_make_fixnum(0))
+		if (y.unsafe_fixnum() == 0)
 		    ERROR_DIVISION_BY_ZERO(x,y);
-		return brcl_make_fixnum(clasp_fixnum(x) / clasp_fixnum(y));
+		return (brcl_make_fixnum(clasp_fixnum(x) / clasp_fixnum(y)));
 	    } else if (ty == number_Bignum) {
 		return _brcl_fix_divided_by_big(clasp_fixnum(x), y.as<Bignum_O>()->get());
 	    } else {

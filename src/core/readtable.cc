@@ -221,7 +221,7 @@ namespace core
 #define DECL_af_reader_backquoted_expression ""
     T_mv af_reader_backquoted_expression(T_sp sin, Character_sp ch)
     {_G();
-	Fixnum_sp backquote_level = _sym_STARbackquote_levelSTAR->symbolValue().as<Fixnum_O>();
+	Fixnum_sp backquote_level = gc::As<Fixnum_sp>(_sym_STARbackquote_levelSTAR->symbolValue());
 	Fixnum_sp new_backquote_level = make_fixnum(unbox_fixnum(backquote_level)+1);
 	// DynamicScopeManager will save the dynamic value of the symbol and restore it in dtor
 	DynamicScopeManager scope(_sym_STARbackquote_levelSTAR,new_backquote_level);
@@ -240,7 +240,7 @@ namespace core
 #define DECL_af_reader_comma_form ""
     T_sp af_reader_comma_form(T_sp sin, Character_sp ch)
     {_G();
-	Fixnum_sp backquote_level = _sym_STARbackquote_levelSTAR->symbolValue().as<Fixnum_O>();
+	Fixnum_sp backquote_level = gc::As<Fixnum_sp>(_sym_STARbackquote_levelSTAR->symbolValue());
 	Fixnum_sp new_backquote_level = make_fixnum(unbox_fixnum(backquote_level)-1);
 	DynamicScopeManager scope(_sym_STARbackquote_levelSTAR,new_backquote_level);
 	char nextc = clasp_peek_char(sin);
@@ -349,7 +349,7 @@ namespace core
 	    numarg += (cget - '0');
 	    cpeek = clasp_peek_char(sin);
 	}
-	Fixnum_sp onumarg = _Nil<Fixnum_O>();
+	Fixnum_sp onumarg;
 	if ( sawnumarg )
 	{
 	    onumarg = make_fixnum(numarg);
@@ -558,7 +558,7 @@ namespace core
 	{
 	    int list_length = cl_length(list);
 	    if ( tnum.notnilp() ) {
-		Fixnum_sp num = tnum.as<Fixnum_O>();
+		Fixnum_sp num = gc::As<Fixnum_sp>(tnum);
 		if ( list_length > unbox_fixnum(num) )
 		    SIMPLE_ERROR(BF("vector is longer than specified length %s: %s") % unbox_fixnum(num) % _rep_(list) );
 		int need_length = unbox_fixnum(num);
@@ -614,7 +614,7 @@ namespace core
 	if (num.nilp()) {
 	    dim = dimcount;
 	} else if (num.isA<Fixnum_O>()) {
-	    dim = unbox_fixnum(num.as<Fixnum_O>());
+	    dim = unbox_fixnum(gc::As<Fixnum_sp>(num));
 	    unlikely_if ( dim < 0 ||
 			  (dim > BRCL_ARRAY_DIMENSION_LIMIT))
 	{
@@ -663,16 +663,16 @@ namespace core
 #define DOCS_af_sharp_r "sharp_r"
 #define ARGS_af_sharp_r "(stream subchar radix)"
 #define DECL_af_sharp_r ""
-    T_mv af_sharp_r(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> tradix)
+    T_mv af_sharp_r(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> nradix)
     {_G();
-	if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
-	{
+	if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() ) {
 	    T_sp object = read_lisp_object(sin,true,_Nil<T_O>(),true);
 	    return(Values(_Nil<T_O>()));
-	} else if (tradix.nilp()) {
+	} else if (nradix.nilp()) {
 	    SIMPLE_ERROR(BF("Radix missing in #R reader macro"));
 	} else {
-	    Fixnum_sp radix = tradix.as<Fixnum_O>();
+	    T_sp tradix = nradix;
+	    Fixnum_sp radix = gc::As<Fixnum_sp>(tradix);
 	    int iradix = unbox_fixnum(radix);
 	    if ( iradix < 2 || iradix > 36 ) {
 		SIMPLE_ERROR(BF("Illegal radix for #R: %d") % iradix);
@@ -857,7 +857,7 @@ namespace core
     T_sp af_reader_feature_p(T_sp feature_test)
     {_G();
 	if ( feature_test.nilp() ) return _Nil<T_O>();
-	else if ( af_atom(feature_test) )
+	else if ( cl_atom(feature_test) )
 	{
 	    List_sp features_list = cl::_sym_STARfeaturesSTAR->symbolValue();
 	    if (features_list.nilp()) return _Nil<T_O>();

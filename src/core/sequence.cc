@@ -99,7 +99,7 @@ namespace core
 	{MULTIPLE_VALUES_ACCESS(_VALUES)
 		_sym_closest_sequence_type->mv_apply(type);
 	    element_type = _VALUES->get(0).as<Symbol_O>();
-	    length = _VALUES.valueGet(1).as<Fixnum_O>();
+	    length = gc::As<Fixnum_sp>(_VALUES.valueGet(1));
 	}
 	if ( element_type == cl::_sym_list )
 	{
@@ -163,7 +163,7 @@ namespace core
     T_sp cl_subseq(T_sp seq, int start, T_sp end)
     {_G();
         if ( seq.nilp() ) {
-            if ( start == 0 && (end.nilp() || (end.fixnump() && unbox_fixnum(end.as<Fixnum_O>()) == 0))  ) {
+            if ( start == 0 && (end.nilp() || (end.fixnump() && unbox_fixnum(gc::As<Fixnum_sp>(end)) == 0))  ) {
                 return _Nil<T_O>();
             }
             SIMPLE_ERROR(BF("Illegal arguments for subseq on NIL - they must be (subseq NIL 0 NIL)"));
@@ -343,12 +343,12 @@ namespace core
 	if ( end.nilp() ) {
 	    p.end = l;
 	} else {
-	    unlikely_if (!af_fixnumP(end) || clasp_minusp(end.as<Fixnum_O>()) ) {
+	    unlikely_if (!af_fixnumP(end) || clasp_minusp(gc::As<Fixnum_sp>(end)) ) {
 		af_wrongTypeKeyArg(file,line,_lisp->internWithPackageName(functionName,packageName.c_str()),
 				   kw::_sym_end,end,
 				   Cons_O::createList(cl::_sym_or,cl::_sym_null,cl::_sym_UnsignedByte));
 	    }
-	    p.end = unbox_fixnum(end.as<Fixnum_O>());
+	    p.end = unbox_fixnum(gc::As<Fixnum_sp>(end));
 	    unlikely_if (p.end > l) {
 		T_sp fillp = make_fixnum(static_cast<uint>(l));
 		af_wrongTypeKeyArg(file,line,_lisp->internWithPackageName(functionName,packageName.c_str()),

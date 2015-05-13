@@ -71,7 +71,7 @@ namespace core
 		    fmter % "!!!!UNDEFINED-BFORMAT-ARGUMENT!!!!!";
 		} else if ( af_fixnumP(fobj) )
 		{
-		    Fixnum_sp fint = fobj.as<Fixnum_O>();
+		    Fixnum_sp fint = gc::As<Fixnum_sp>(fobj);
 		    fmter % unbox_fixnum(fint);
 		} else if ( af_bignumP(fobj) )
 		{

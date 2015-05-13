@@ -71,7 +71,7 @@ namespace core {
     {
 	Real_mv mv_f = cl_integerDecodeFloat(number);
 	Integer_sp f = mv_f.as<Integer_O>();
-	Fixnum_sp fne = mv_f.valueGet(1).as<Fixnum_O>();
+	Fixnum_sp fne = gc::As<Fixnum_sp>(mv_f.valueGet(1));
 	Fixnum e = clasp_fixnum(fne), min_e;
 	bool limit_f = 0;
 	switch (clasp_t_of(number)) {

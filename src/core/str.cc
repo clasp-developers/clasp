@@ -215,8 +215,8 @@ namespace core
 #define DOCS_af_searchString "searchString"
     T_sp af_searchString(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_sp str2, Fixnum_sp start2, T_sp end2)
     {_G();
-        string s1 = str1->get().substr(unbox_fixnum(start1),end1.nilp()?str1->get().size() : unbox_fixnum(end1.as<Fixnum_O>()));
-        string s2 = str2->get().substr(unbox_fixnum(start2),end2.nilp()?str2->get().size() : unbox_fixnum(end2.as<Fixnum_O>()));
+        string s1 = str1->get().substr(unbox_fixnum(start1),end1.nilp()?str1->get().size() : unbox_fixnum(gc::As<Fixnum_sp>(end1)));
+        string s2 = str2->get().substr(unbox_fixnum(start2),end2.nilp()?str2->get().size() : unbox_fixnum(gc::As<Fixnum_sp>(end2)));
 //        printf("%s:%d Searching for \"%s\" in \"%s\"\n", __FILE__, __LINE__, s1.c_str(), s2.c_str());
         size_t pos = s2.find(s1);
         if ( pos == string::npos ) {
@@ -237,7 +237,7 @@ namespace core
 	Fixnum iend = cl_length(str);
 	if ( end.notnilp() )
 	{
-	    iend = std::min(iend,unbox_fixnum(end.as<Fixnum_O>()));
+	    iend = std::min(iend,unbox_fixnum(gc::As<Fixnum_sp>(end)));
 	}
 	mpz_class result;
 	bool sawJunk = false;
@@ -364,9 +364,9 @@ namespace core
 	string1 = coerce::stringDesignator(string1_desig);
 	string2 = coerce::stringDesignator(string2_desig);
 	istart1 = MAX(unbox_fixnum(start1),0);
-	iend1 = MIN(end1.nilp() ? cl_length(string1) : unbox_fixnum(end1.as<Fixnum_O>()),cl_length(string1));
+	iend1 = MIN(end1.nilp() ? cl_length(string1) : unbox_fixnum(gc::As<Fixnum_sp>(end1)),cl_length(string1));
 	istart2 = MAX(unbox_fixnum(start2),0);
-	iend2 = MIN(end2.nilp() ? cl_length(string2) : unbox_fixnum(end2.as<Fixnum_O>()),cl_length(string2));
+	iend2 = MIN(end2.nilp() ? cl_length(string2) : unbox_fixnum(gc::As<Fixnum_sp>(end2)),cl_length(string2));
     }
 
 
@@ -706,14 +706,14 @@ namespace core
     T_sp Str_O::aref(List_sp indices) const
     {_OF();
 	ASSERTF(cl_length(indices)==1,BF("Illegal index for string: %s") % _rep_(indices) );
-	int index = unbox_fixnum(oCar(indices).as<Fixnum_O>());
+	int index = unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices)));
 	return this->elt(index);
     }
 
     T_sp Str_O::setf_aref(List_sp indices_val)
     {_OF();
 	ASSERTF(cl_length(indices_val)==2,BF("Illegal index/val for setf_aref of string: %s") % _rep_(indices_val) );
-	int index = unbox_fixnum(oCar(indices_val).as<Fixnum_O>());
+	int index = unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices_val)));
 	return this->setf_elt(index,oCadr(indices_val));
     }
 
@@ -1276,7 +1276,7 @@ namespace core
 	    ilen = this->get().size()-start;
 	} else
 	{
-	    ilen = unbox_fixnum(end.as<Fixnum_O>())-start;
+	    ilen = unbox_fixnum(gc::As<Fixnum_sp>(end))-start;
 	}
 	Str_sp news = Str_O::create(this->get().substr(start,ilen));
 	return news;
@@ -1311,7 +1311,7 @@ namespace core
 	uint istart = unbox_fixnum(start);
 	uint last = this->size();
 	uint iend = last;
-	if ( end.notnilp() ) iend = unbox_fixnum(end.as<Fixnum_O>());
+	if ( end.notnilp() ) iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
 	ASSERTF(iend>=istart,BF("Illegal fill range istart=%d iend=%d") % istart % iend );
 	ASSERTF(iend<=last,BF("Illegal value for end[%d] - must be between istart[%d] and less than %d") % iend % istart % last );
 	ASSERTF(istart>=0 <= iend,BF("Illegal value for start[%d] - must be between 0 and %d") % istart % iend );

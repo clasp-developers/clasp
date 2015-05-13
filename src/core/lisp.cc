@@ -415,7 +415,7 @@ namespace core
         gctools::Vec0<T_sp> container;
         container.push_back(fn);
         printf("%s:%d  after push_back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.raw_(), fn->referenceCount() );
-        Fixnum_sp fn2 = container.back().as<Fixnum_O>();
+        Fixnum_sp fn2 = gc::As<Fixnum_sp>(container.back());
         printf("%s:%d  after back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.raw_(), fn->referenceCount() );
         container.pop_back();
         printf("%s:%d  after pop_back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.raw_(), fn->referenceCount() );
@@ -1673,11 +1673,11 @@ namespace core
     {_G();
 	if ( !warnSize.nilp() )
 	{
-	    _lisp->_StackWarnSize = unbox_fixnum(warnSize.as<Fixnum_O>());
+	    _lisp->_StackWarnSize = unbox_fixnum(gc::As<Fixnum_sp>(warnSize));
 	}
 	if ( !sampleSize.nilp() )
 	{
-	    _lisp->_StackSampleSize = unbox_fixnum(sampleSize.as<Fixnum_O>());
+	    _lisp->_StackSampleSize = unbox_fixnum(gc::As<Fixnum_sp>(sampleSize));
 	    _lisp->_StackSampleCount = 0;
 	    _lisp->_StackSampleMax = 0;
 	}
@@ -2155,7 +2155,7 @@ namespace core
 	    return form;
 	} else if ( Cons_sp cform = form.asOrNull<Cons_O>() ) {
 	    T_sp head = oCar(cform);
-	    if ( af_symbolp(head) ) {
+	    if ( cl_symbolp(head) ) {
 		Symbol_sp headSymbol = head.as<Symbol_O>();
 		T_sp func = eval::funcall(cl::_sym_macroFunction,headSymbol,env);
 		expansionFunction = func;
@@ -2763,7 +2763,7 @@ extern "C"
 #define DOCS_cl_error "See CLHS error"
     void cl_error(T_sp datum, List_sp initializers)
     {_G();
-	int nestedErrorDepth = unbox_fixnum(_sym_STARnestedErrorDepthSTAR->symbolValue().as<Fixnum_O>());
+	int nestedErrorDepth = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARnestedErrorDepthSTAR->symbolValue()));
 	if ( nestedErrorDepth > 10 )
 	{
 	    // TODO: Disable this code once error handling and conditions work properly

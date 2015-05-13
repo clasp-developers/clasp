@@ -123,7 +123,7 @@ namespace core
 	    x = oCdr(x);
 	    write_object(y,stream);
 	    /* FIXME! */
-	    if (!x || af_atom(x) || 
+	    if (!x || cl_atom(x) || 
 		(circle && will_print_as_hash(x)))
 	    {
 		if (!x.nilp()) {
@@ -133,7 +133,7 @@ namespace core
 		}
 		break;
 	    }
-	    if (i == 0 && !y._NULLp() && af_symbolp(y))
+	    if (i == 0 && !y._NULLp() && cl_symbolp(y))
 		clasp_write_char(' ',stream);
 	    else
 		clasp_write_char(' ',stream);

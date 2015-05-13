@@ -322,8 +322,10 @@ namespace core {
             SIMPLE_ERROR(BF("boole cannot accept nil"));
         }
         if ( x.fixnump() ) { //Fixnum_sp fnx = x.asOrNull<Fixnum_O>() ) {
+	    Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
             if ( y.fixnump() ) { //Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
-		gctools::Fixnum z = fixnum_operations[op](unbox_fixnum(x), unbox_fixnum(y));
+		Fixnum_sp fny = gc::As<Fixnum_sp>(y);
+		gctools::Fixnum z = fixnum_operations[op](unbox_fixnum(fnx),unbox_fixnum(fny));
                 return make_fixnum(z);
             } else if ( Bignum_sp bny = y.asOrNull<Bignum_O>() ) {
                 Bignum_sp x_copy = _lisp->bigRegister0();
@@ -336,8 +338,9 @@ namespace core {
         } else if ( Bignum_sp bnx = x.asOrNull<Bignum_O>() ) {
             Bignum_sp x_copy = _lisp->bigRegister0();
             if ( y.fixnump() ) { // Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
+		Fixnum_sp fny(gc::As<Fixnum_sp>(y));
                 Bignum_sp bny = _lisp->bigRegister1();
-                bny->setFixnum(unbox_fixnum(y));
+                bny->setFixnum(unbox_fixnum(fny));
                 (bignum_operations[op])(x_copy, bnx, bny);
                 clasp_big_register_free(bny);
             } else if ( Bignum_sp bny = y.asOrNull<Bignum_O>() ) {
@@ -363,7 +366,7 @@ namespace core {
     T_sp core_bitArrayOp(T_sp o, T_sp tx, T_sp ty, T_sp tr)
     {_G();
         if ( o.nilp() ) {
-            ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,1,o,cl::_sym_Fixnum_O);
+            ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,1,o,cl::_sym_fixnum);
         }
         if ( tx.nilp() || !tx.isA<SimpleBitVector_O>() ) {
             ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,2,tx,cl::_sym_BitVector_O);
@@ -371,7 +374,7 @@ namespace core {
         if ( ty.nilp() || !ty.isA<SimpleBitVector_O>() ) {
             ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,3,ty,cl::_sym_BitVector_O);
         }
-        int opval = unbox_fixnum(o.as<Fixnum_O>());
+        int opval = unbox_fixnum(gc::As<Fixnum_sp>(o));
 	gctools::Fixnum i, j, n, d;
 	SimpleBitVector_sp r0;
 	bit_operator op;
@@ -759,7 +762,7 @@ namespace core {
         if ( op.nilp() ) {
             ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole,1,op,cl::_sym_integer);
         }
-        Fixnum_sp fnop = op.as<Fixnum_O>();
+        Fixnum_sp fnop = gc::As<Fixnum_sp>(op);
         return clasp_boole(unbox_fixnum(fnop),arg1,arg2);
     };
 

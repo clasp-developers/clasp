@@ -246,7 +246,7 @@ In ecl/src/c/interpreter.d  is the following code
 	{
 	    List_sp spec_how = oCar(spec_how_list);
 	    T_sp spec_type = oCar(spec_how);
-	    int spec_position = unbox_fixnum(oCdr(spec_how).as<Fixnum_O>());
+	    int spec_position = unbox_fixnum(gc::As<Fixnum_sp>(oCdr(spec_how)));
 	    if ( spec_position >= narg )
 	    {
 		SIMPLE_ERROR(BF("Insufficient arguments for %s - expected specializer argument at position %d of specializer-type %s but only %d arguments were passed") % _rep_(gf) % (spec_position+1) % _rep_(spec_type) % narg );

@@ -291,6 +291,10 @@ void    core_DebugHashTable(bool don)
 
     void HashTable_O::sxhash_eql(HashGenerator& hg, T_sp obj, LocationDependencyPtrT ld )
     {_G();
+	if ( obj.fixnump() || obj.characterp() || obj.single_floatp() ) {
+	    if ( hg.isFilling() ) clasp_sxhash(obj,hg);
+	    return;
+	}
 	if ( obj.objectp() ) {
 	    if ( cl_numberp(obj) || af_characterP(obj) )
 		{
@@ -309,8 +313,12 @@ void    core_DebugHashTable(bool don)
 
     void HashTable_O::sxhash_equal(HashGenerator& hg, T_sp obj, LocationDependencyPtrT ld )
     {_G();
+	if ( obj.fixnump() || obj.characterp() || obj.single_floatp() ) {
+	    if ( hg.isFilling() ) clasp_sxhash(obj,hg);
+	    return;
+	}
 	if ( obj.objectp() ) {
-	    if ( af_fixnumP(obj) || af_characterP(obj) || af_symbolp(obj) || cl_numberp(obj) || af_stringP(obj) ) {
+	    if ( af_characterP(obj) || cl_symbolp(obj) || cl_numberp(obj) || af_stringP(obj) ) {
 		if ( hg.isFilling() ) clasp_sxhash(obj,hg);
 		return;
 	    } else if ( Pathname_sp pobj = obj.asOrNull<Pathname_O>() ) {
@@ -338,12 +346,16 @@ void    core_DebugHashTable(bool don)
 
     void HashTable_O::sxhash_equalp(HashGenerator& hg, T_sp obj, LocationDependencyPtrT ld )
     {_G();
+	if ( obj.fixnump() || obj.characterp() || obj.single_floatp() ) {
+	    if ( hg.isFilling() ) clasp_sxhash(obj,hg);
+	    return;
+	}
 	if ( obj.objectp() ) {
 	    if ( Str_sp str = obj.asOrNull<Str_O>() ) {
 		Str_sp upstr = cl_string_upcase(str);
 		hg.hashObject(upstr);
 		return;
-	    } else if ( af_fixnumP(obj) || af_characterP(obj) || af_symbolp(obj) || cl_numberp(obj) ) {
+	    } else if ( af_fixnumP(obj) || af_characterP(obj) || cl_symbolp(obj) || cl_numberp(obj) ) {
 		if ( hg.isFilling() ) clasp_sxhash(obj,hg);
 		return;
 	    } else if ( Pathname_sp pobj = obj.asOrNull<Pathname_O>() ) {

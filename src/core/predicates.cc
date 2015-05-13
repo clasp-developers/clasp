@@ -58,26 +58,12 @@ namespace core
 
 
     
-    
-#define ARGS_af_atom "(arg)"
-#define DECL_af_atom ""
-#define DOCS_af_atom "atom"
-    bool af_atom(T_sp obj)
-    {_G();
-	if (obj.nilp()) return true;
-	if (Cons_sp c = obj.asOrNull<Cons_O>() )
-	{
-	    return false;
-	}
-	return true;
-    };
-
 
         
     
 #define ARGS_core_baseCharP "(arg)"
 #define DECL_core_baseCharP ""
-#define DOCS_core_baseCharP "endp"
+#define DOCS_core_baseCharP "baseCharP"
     bool core_baseCharP(T_sp arg)
     {_G();
 	if ( arg.nilp() ) return false;
@@ -89,23 +75,14 @@ namespace core
 
     
     
-#define ARGS_af_endp "(arg)"
-#define DECL_af_endp ""
-#define DOCS_af_endp "endp"
-    bool af_endp(T_sp arg)
+#define ARGS_cl_endp "(arg)"
+#define DECL_cl_endp ""
+#define DOCS_cl_endp "endp"
+    bool cl_endp(T_sp arg)
     {_G();
 	return arg.nilp();
     };
 
-
-#define ARGS_cl_listp "(arg)"
-#define DECL_cl_listp ""
-#define DOCS_cl_listp "listp"
-    bool cl_listp(T_sp arg)
-    {_G();
-	if ( arg.nilp() ) return true;
-	return arg.isA<Cons_O>();
-    };
 
 
 
@@ -199,14 +176,6 @@ namespace core
 	return obj.isA<Cons_O>();
     };
 
-#define ARGS_af_symbolp "(arg)"
-#define DECL_af_symbolp ""
-#define DOCS_af_symbolp "symbolP"
-    bool af_symbolp(T_sp obj)
-    {_G();
-	if (obj.nilp()) return true; // nil is a symbol
-	return obj.isA<Symbol_O>();
-    };
 
 
 #define ARGS_cl_packagep "(arg)"
@@ -604,11 +573,11 @@ namespace core
 
     void initialize_predicates()
     {
-	Defun(endp);
+	af_def(ClPkg,"endp",&cl_endp);
 #define newNameDefun(pkg,myname,lispname) af_def(pkg,#lispname,&af_##myname,ARGS_af_##myname,DECL_af_##myname,DOCS_af_##myname)
-	newNameDefun(ClPkg,symbolp,symbolp);
+	af_def(ClPkg,"symbolp",&cl_symbolp);
 	ClDefun(consp);
-	ClDefun(listp);
+	af_def(ClPkg,"listp",&cl_listp);
 	ClDefun(numberp);
 	newNameDefun(ClPkg,integerP,integerp);
 	newNameDefun(ClPkg,rationalP,rationalp);
@@ -629,7 +598,7 @@ namespace core
 	newNameDefun(CorePkg,genericFunctionP,genericFunctionP);
 	newNameDefun(ClPkg,keywordP,keywordp);
 	SYMBOL_EXPORT_SC_(ClPkg,atom);
-	Defun(atom);
+	af_def(ClPkg,"atom",&cl_atom);
 	CoreDefun(baseCharP);
 	newNameDefun(CorePkg,fixnumP,fixnump);
 	newNameDefun(CorePkg,bignumP,bignump);

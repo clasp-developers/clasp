@@ -76,7 +76,7 @@ namespace core
 	}
 
 
-    Fixnum_sp StrWithFillPtr_O::vectorPush(T_sp newElement)
+    T_sp StrWithFillPtr_O::vectorPush(T_sp newElement)
     {
 	if ( newElement.notnilp() )
 	{
@@ -89,7 +89,7 @@ namespace core
 		    this->_FillPointer++;
 		    return make_fixnum(newIndex);
 		}
-		return _Nil<Fixnum_O>();
+		return _Nil<T_O>();
 	    }
 	}
 	TYPE_ERROR(newElement,cl::_sym_Character_O);

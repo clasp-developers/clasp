@@ -34,7 +34,7 @@ THE SOFTWARE.
 
 namespace core
 {
-
+    void write_fixnum(T_sp strm, T_sp i);
     T_sp write_ugly_object(T_sp x, T_sp stream);
 
 

@@ -94,6 +94,8 @@ namespace core {
     NumberType clasp_t_of(Number_sp num);
     Integer_sp clasp_shift(Integer_sp num, int bits);
     int clasp_integer_length(Integer_sp x);
+    mpz_class clasp_to_mpz(Integer_sp x);
+
 
 };
 
@@ -127,7 +129,7 @@ namespace core
 //	static Number_sp create(size_t val);
     public:
 	virtual NumberType number_type_() const {SUBIMP();};
-	int number_type_int() const { return (int)(clasp_t_of(this->asSmartPtr()));;};
+	//	int number_type_int() const { return (int)(clasp_t_of(this->asSmartPtr()));;};
 	//	virtual	string	valueAsString_() const;
 	//	virtual Number_sp copy() const { _OF(); SUBCLASS_MUST_IMPLEMENT();}
 	//	virtual T_sp deepCopy() const { return this->copy();};
@@ -827,7 +829,7 @@ namespace core {
 	static Ratio_sp create(Integer_sp num, Integer_sp denom)
 	{_G();
             GC_ALLOCATE(Ratio_O,v );
-	    if ( denom->as_mpz_() < 0 )
+	    if ( clasp_to_mpz(denom) < 0 )
 	    {
 		v->_numerator = clasp_negate(num).as<Integer_O>();
 		v->_denominator = clasp_negate(denom).as<Integer_O>();
@@ -940,7 +942,7 @@ namespace core {
 
 
     inline gctools::Fixnum clasp_fixnum(Number_sp x) {
-	return unbox_fixnum(x.as<Fixnum_O>());
+	return unbox_fixnum(Fixnum_sp(x));
     }
 
     inline float brcl_single_float(Number_sp x) {
@@ -962,7 +964,7 @@ namespace core {
 	return Ratio_O::create(num,denom);
     }
 
-    inline Fixnum_sp brcl_make_fixnum(int i)
+    inline Fixnum_sp brcl_make_fixnum(gc::Fixnum i)
     {
 	return make_fixnum(i);
     }
@@ -1333,7 +1335,51 @@ namespace core {
 
 
 
-
-
+namespace gctools {
+    template <>
+	inline core::Fixnum_sp As<core::Fixnum_sp>(core::Integer_sp const& rhs) {
+	if ( rhs.fixnump() ) return core::Fixnum_sp((Tagged)rhs.raw_());
+	class_id from_typ = reg::registered_class<core::Integer_O>::id;
+	lisp_errorBadCastToFixnum(from_typ,reinterpret_cast<core::T_O*>(rhs.raw_()));
+	HARD_UNREACHABLE();
+    };
+    template <>
+	inline core::Fixnum_sp As<core::Fixnum_sp>(core::Rational_sp const& rhs) {
+	if ( rhs.fixnump() ) return core::Fixnum_sp((Tagged)rhs.raw_());
+	class_id from_typ = reg::registered_class<core::Rational_O>::id;
+	lisp_errorBadCastToFixnum(from_typ,reinterpret_cast<core::T_O*>(rhs.raw_()));
+	HARD_UNREACHABLE();
+    };
+    template <>
+	inline core::Fixnum_sp As<core::Fixnum_sp>(core::Real_sp const& rhs) {
+	if ( rhs.fixnump() ) return core::Fixnum_sp((Tagged)rhs.raw_());
+	class_id from_typ = reg::registered_class<core::Real_O>::id;
+	lisp_errorBadCastToFixnum(from_typ,reinterpret_cast<core::T_O*>(rhs.raw_()));
+	HARD_UNREACHABLE();
+    };
+    template <>
+	inline core::Fixnum_sp As<core::Fixnum_sp>(core::Number_sp const& rhs) {
+	if ( rhs.fixnump() ) return core::Fixnum_sp((Tagged)rhs.raw_());
+	class_id from_typ = reg::registered_class<core::Number_O>::id;
+	lisp_errorBadCastToFixnum(from_typ,reinterpret_cast<core::T_O*>(rhs.raw_()));
+	HARD_UNREACHABLE();
+    };
+    template <>
+	inline core::Fixnum_sp As<core::Fixnum_sp>(core::T_sp const& rhs) {
+	if ( rhs.fixnump() ) return core::Fixnum_sp((Tagged)rhs.raw_());
+	class_id from_typ = reg::registered_class<core::Integer_O>::id;
+	lisp_errorBadCastToFixnum(from_typ,reinterpret_cast<core::T_O*>(rhs.raw_()));
+	HARD_UNREACHABLE();
+    };
+    template <>
+	inline core::Number_sp As<core::Number_sp>(core::T_sp const& rhs) {
+	if ( rhs.fixnump() ) return core::Number_sp((Tagged)rhs.raw_());
+	if ( rhs.single_floatp() ) return core::Number_sp((Tagged)rhs.raw_());
+	class_id to_typ = reg::registered_class<core::Number_O>::id;
+	class_id from_typ = reg::registered_class<core::T_O>::id;
+	lisp_errorBadCast(to_typ,from_typ,reinterpret_cast<core::T_O*>(rhs.raw_()));
+	HARD_UNREACHABLE();
+    };
+};
 
 #endif //]

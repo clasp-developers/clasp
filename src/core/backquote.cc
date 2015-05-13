@@ -155,7 +155,7 @@ namespace core
 	T_sp x;
 	T_sp nreconc;
 	T_sp ax;
-	if ( af_atom(ox) )
+	if ( cl_atom(ox) )
 	{
 	    result = Cons_O::createList(_sym_STARbq_quoteSTAR,ox);
 	    goto DONE;
@@ -181,7 +181,7 @@ namespace core
 	p = x;
 	q = _Nil<T_O>();
 	step = 0;
-	while (!af_atom(p))
+	while (!cl_atom(p))
 	{
 	    cp = p;
 	    if ( oCar(cp) == _sym_unquote )
@@ -234,7 +234,7 @@ namespace core
 	SYMBOL_SC_(CorePkg,bq_bracket);
 	return(Values(eval::funcall(_sym_bq_bracket,x)));
 #else
-	if ( af_atom(x) )
+	if ( cl_atom(x) )
 	{
             //	    return Cons_O::createList(_sym_STARbq_listSTAR,eval::funcall(_sym_backquote_process,x));
             return Cons_O::createList(_sym_STARbq_listSTAR,af_backquote_process(x)); 
@@ -304,7 +304,7 @@ namespace core
     SYMBOL_SC_(CorePkg,backquote_maptree);
     T_sp af_backquote_maptree(Function_sp op, T_sp x)
     {_G();
-	if ( af_atom(x) )
+	if ( cl_atom(x) )
 	{
 	    T_sp result = eval::funcall(op,x);
 	    return result;
@@ -323,7 +323,7 @@ namespace core
 #if 0 //   Function pointer version - this should be faster than the version above
     T_sp backquote_maptree(T_sp (*op)(T_sp), T_sp x)
     {_G();
-	if ( af_atom(x) )
+	if ( cl_atom(x) )
 	{
 	    T_sp result = op(x);
 	    return((result));
@@ -348,7 +348,7 @@ namespace core
 #define DOCS_af_backquote_simplify "temp_backquote_simplify"
     T_sp af_backquote_simplify(T_sp x)
     {_G();
-	if ( af_atom(x) ) return(Values(x));
+	if ( cl_atom(x) ) return(Values(x));
 	List_sp cx = x;
 	if ( oCar(cx) == _sym_STARbq_quoteSTAR )
 	{
@@ -386,7 +386,7 @@ namespace core
 	    // Advance args
 	    args = oCdr(args);
 	    // Advance result
-	    if ( af_atom(oCar(args)) )
+	    if ( cl_atom(oCar(args)) )
 	    {
 		result = af_backquote_attach_append(_sym_STARbq_appendSTAR,oCar(args),result);
 	    } else if (( oCaar(args) == _sym_STARbq_listSTAR ) &&
@@ -518,7 +518,7 @@ namespace core
 	if ( x == _sym_STARbq_nconcSTAR ) return cl::_sym_nconc;
 	if ( x == _sym_STARbq_listSTARSTAR ) return cl::_sym_listSTAR;
 	if ( x == _sym_STARbq_quoteSTAR ) return cl::_sym_quote;
-	if (af_atom(x)) return x;
+	if (cl_atom(x)) return x;
 	List_sp cx = x;
 	if ( oCar(cx) == _sym_STARbq_clobberableSTAR )
 	{

@@ -153,7 +153,7 @@ void	Binder_O::archiveBase(ArchiveP node)
 	{
 	    SIMPLE_ERROR(BF("Could not find variable binding for %s") % _rep_(sym) );
 	}
-	return((this->_Values->operator[](unbox_fixnum(val.as<Fixnum_O>()))));
+	return((this->_Values->operator[](unbox_fixnum(gc::As<Fixnum_sp>(val)))));
     }
 
 #if 0
@@ -216,7 +216,7 @@ void	Binder_O::archiveBase(ArchiveP node)
 	{
 	    return((defVal));
 	}
-	return((unbox_fixnum(this->lookup(sym).as<Fixnum_O>())));
+	return (unbox_fixnum(gc::As<Fixnum_sp>(this->lookup(sym))));
     }
 
 
