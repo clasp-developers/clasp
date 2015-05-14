@@ -6,7 +6,7 @@
   (require 'clang-tool)
 
   (load-compilation-database
-   "/Users/meister/Development/clasp/build/clasp/Contents/Resources/build-databases/clasp_compile_commands.json")
+   "/Users/meister/Development/clasp-fixnum/build/clasp/Contents/Resources/build-databases/clasp_compile_commands.json")
 
   (defparameter *arg-adjuster*
     (lambda (args)
@@ -40,7 +40,7 @@
       (:bind :CALL
        (:member-call-expr))
       ))
-
+ 
   (format t "---- 3. Define some helper functions~%")
   (defparameter *refactor-fixnum-get*
     (make-instance
@@ -63,18 +63,18 @@
 			   (format t "expr: ~a~%" expr)
 			   (format t "most-derived-type: ~a~%" most-derived-type)
 			   (format t "m-d-t-name: ~a~%" m-d-t-name)
+;;			   (format t "template type name: ~a~%" (mtag-source :template-type))
 			   (format t "Source: ~a~%" expr-source)
 			   (if (string/= call-source "")
 			       (let ((type-start (position #\< call-source :from-end t))
 				     (type-end (search "_O>" call-source :from-end t)))
-				 (when type-end
+				 (when (and type-end (null (search ".as<" expr-source)))
 				   (let* ((type (substr call-source (1+ type-start) (- type-end type-start 1)))
 					  (replace-with (format nil "gc::As<~a_sp>(~a)" type expr-source)))
 				     (format t "replace-with: ~a~%" replace-with)
 				     (when *match-refactoring-tool*
 
-				       (mtag-replace :CALL "~a" replace-with))
-				     (format t "!!!!!Skipping replacement due to macro~%"))))))))))
+				       (mtag-replace :CALL "~a" replace-with)))))))))))
      :end-of-translation-unit-code (lambda ()
 				     (format t "!!!!!!!! Hit the end-of-translation-unit~%")
 				     (format t "*match-refactoring-tool* ~a~%" *match-refactoring-tool*)
@@ -90,17 +90,39 @@
 ;;; Test the matcher on the loaded asts
 ;;;
 (progn
-  (defparameter $test-search (lsel $* ".*/numbers\.cc"))
+  (defparameter $test-search (lsel $* ".*/testAST\.cc"))
   (load-asts $test-search :arguments-adjuster-code *arg-adjuster*))
 
+(let* ((base-matcher
+        '((:argument-count-is 0)
+          (:has-declaration (:has-name "as")
+	   (:template-specialization-type (:template-argument-count-is 1)))))
+       (template-type-matcher
+        '((:type (:is-same-or-derived-from "T_O"))))
+       (negated-matcher `(:member-call-expr
+			  ,@base-matcher
+			  (:has-template-argument 1
+						  (:refers-to-type ,@template-type-matcher)))))
+  (defparameter *new-matcher*
+    `(:member-call-expr
+      ,@base-matcher
+      (:has-template-argument 1
+                              (:refers-to-type
+                               (:bind :template-type
+                                      ,@template-type-matcher)))
+      (:on (:not (:any-of
+                  ,negated-matcher
+                  (:has-descendant ,negated-matcher)))))))
+
+
 (progn
-  (match-run *matcher* :the-code-match-callback *refactor-fixnum-get*)
+  (match-run *new-matcher* :the-code-match-callback *refactor-fixnum-get*)
   (print "Done"))
 
 ;;;
 ;;; Generate replacements but don't save them
 ;;;
-(batch-match-run *matcher*
+(batch-match-run *new-matcher*
 		 :filenames $test-search
 		 :the-code-match-callback *refactor-fixnum-get*
 		 :arguments-adjuster-code *arg-adjuster*)

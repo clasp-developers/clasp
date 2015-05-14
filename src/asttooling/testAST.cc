@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include <clasp/asttooling/testAST.h>
 
 
-#if 0
 namespace asttooling {
 
 
@@ -47,6 +46,8 @@ namespace asttooling {
 
     void tinyFunc()
     {
+	core::Integer_sp i;
+	core::Number_sp n = i.as<core::Number_O>();
         gctools::Vec0<core::T_sp>  _vecObjects;
         for ( int i(0); i<10; ++i ) {
             _vecObjects.push_back(core::make_fixnum(i));
@@ -55,4 +56,3 @@ namespace asttooling {
     }
 
 };
-#endif
