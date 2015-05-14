@@ -367,7 +367,6 @@ namespace gctools {
 };
 
 namespace core {
-    class Fixnum_O;
     class Cons_O;
 };
 
