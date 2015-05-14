@@ -495,7 +495,7 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 (defun load-asts (list-name &key arguments-adjuster-code )
   (let* ((files list-name)
-         (tool (ast-tooling:new-refactoring-tool *db* files))
+         (tool (ast-tooling:new-deduplicating-refactoring-tool *db* files))
          (syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))
          (strip-output-adjuster (ast-tooling:get-clang-strip-output-adjuster)))
     ;;         (factory (new-frontend-action-factory match-finder)))
@@ -521,7 +521,7 @@ This can only be run in the context set up by the code-match-callback::run metho
            (type match-callback callback)
            (type list filenames))
   (let* ((*match-refactoring-tool*
-	  (let ((temp (ast-tooling:new-refactoring-tool *db* filenames))
+	  (let ((temp (ast-tooling:new-deduplicating-refactoring-tool *db* filenames))
 		(syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))
 		(strip-output-adjuster (ast-tooling:get-clang-strip-output-adjuster)))
 	    (ast-tooling:clear-arguments-adjusters temp)
@@ -532,18 +532,21 @@ This can only be run in the context set up by the code-match-callback::run metho
 	      (ast-tooling:append-arguments-adjuster temp arguments-adjuster-code))
 	    temp))
 	 (*run-and-save* run-and-save)
-         (matcher (compile-matcher `(:bind :whole ,match-sexp)))
-         (match-finder (let ((mf (new-match-finder)))
-                         (add-dynamic-matcher mf matcher callback)
-                         mf))
-         (factory (new-frontend-action-factory match-finder)))
-    (time (if (not run-and-save)
-	      (ast-tooling:clang-tool-run *match-refactoring-tool* factory)
-	      (ast-tooling:run-and-save *match-refactoring-tool* factory)))
-    (format t "Number of matches ~a~%" *match-counter*))
-  )
-
-
+	 (matcher (compile-matcher `(:bind :whole ,match-sexp)))
+	 (match-finder (let ((mf (new-match-finder)))
+			 (add-dynamic-matcher mf matcher callback)
+			 mf))
+	 (factory (new-frontend-action-factory match-finder)))
+    (time (progn
+	    (ast-tooling:clang-tool-run *match-refactoring-tool* factory)
+	    (let ((replacements (ast-tooling:replacements-as-list *match-refactoring-tool*)))
+	      (format t "After run ~a replacements~%" (length replacements)))
+	    (ast-tooling:deduplicate *match-refactoring-tool*)
+	    (let ((replacements (ast-tooling:replacements-as-list *match-refactoring-tool*)))
+	      (format t "After deduplication ~a replacements~%" (length replacements)))
+	    (when run-and-save
+	      (ast-tooling:write-replacements *match-refactoring-tool*))))
+    (format t "Number of matches ~a~%" *match-counter*)))
 
 (defstruct multitool
   "Store multiple tools to run in one go across a bunch of source files."
@@ -597,7 +600,7 @@ This can only be run in the context set up by the code-match-callback::run metho
   (declare (type list match-sexp)
            (type match-callback callback)
            (type list filenames))
-  (let* ((*match-refactoring-tool* (let ((temp (ast-tooling:new-refactoring-tool *db* filenames))
+  (let* ((*match-refactoring-tool* (let ((temp (ast-tooling:new-deduplicating-refactoring-tool *db* filenames))
                            (syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))
                            (strip-output-adjuster (ast-tooling:get-clang-strip-output-adjuster)))
                        (ast-tooling:clear-arguments-adjusters temp)

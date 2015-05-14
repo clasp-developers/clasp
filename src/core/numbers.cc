@@ -349,6 +349,7 @@ namespace core
 
     Number_sp contagen_add(Number_sp na, Number_sp nb)
     {_G();
+	Number_sp x = na.as<Number_O>().as<Number_O>().as<Number_O>();
 	MATH_DISPATCH_BEGIN(na,nb)
 	{
         case_Fixnum_v_Fixnum:

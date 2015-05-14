@@ -8,9 +8,6 @@
   (load-compilation-database
    "/Users/meister/Development/clasp/build/clasp/Contents/Resources/build-databases/clasp_compile_commands.json")
 
-
-  (defparameter $test-search (lsel $* ".*/numbers\.cc"))
-
   (defparameter *arg-adjuster*
     (lambda (args)
       (prog1
@@ -24,7 +21,6 @@
 			       ))
 	(format t "Leaving arg-adjuster~%")
 	)))
-  (load-asts $test-search :arguments-adjuster-code *arg-adjuster*)
   )
 
 
@@ -93,6 +89,10 @@
 ;;;
 ;;; Test the matcher on the loaded asts
 ;;;
+(progn
+  (defparameter $test-search (lsel $* ".*/numbers\.cc"))
+  (load-asts $test-search :arguments-adjuster-code *arg-adjuster*))
+
 (progn
   (match-run *matcher* :the-code-match-callback *refactor-fixnum-get*)
   (print "Done"))
