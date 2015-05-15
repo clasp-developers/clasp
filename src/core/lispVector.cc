@@ -98,7 +98,7 @@ namespace core
 	} else {
 	    if ( cl_consp(element_type)) {
 		// For type = '(unsigned-byte XXX) set initial_element if it hasn't been set
-		Cons_sp cet = element_type.as<Cons_O>(); 
+		Cons_sp cet = gc::As<Cons_sp>(element_type); 
 		if ( oCar(cet) == cl::_sym_UnsignedByte
 		     && initial_element.nilp() ) {
 		    initial_element = make_fixnum(0);
@@ -169,7 +169,7 @@ namespace core
     T_sp Vector_O::reverse()
     {_OF();
 	int thisLength = this->length();
-	Vector_sp newVec = eval::funcall(_sym_make_vector,this->_instanceClass()->className(),make_fixnum(thisLength)).as<T_O>().as<Vector_O>();
+	Vector_sp newVec = gc::As<Vector_sp>(eval::funcall(_sym_make_vector,this->_instanceClass()->className(),make_fixnum(thisLength)));
 	for ( int i=0; i<thisLength; i++ )
 	{
 	    int ri = thisLength - i;

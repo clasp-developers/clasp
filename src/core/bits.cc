@@ -368,10 +368,10 @@ namespace core {
         if ( o.nilp() ) {
             ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,1,o,cl::_sym_fixnum);
         }
-        if ( tx.nilp() || !tx.isA<SimpleBitVector_O>() ) {
+        if ( tx.nilp() || !gc::IsA<SimpleBitVector_sp>(tx) ) {
             ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,2,tx,cl::_sym_BitVector_O);
         }
-        if ( ty.nilp() || !ty.isA<SimpleBitVector_O>() ) {
+        if ( ty.nilp() || !gc::IsA<SimpleBitVector_sp>(ty) ) {
             ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,3,ty,cl::_sym_BitVector_O);
         }
         int opval = unbox_fixnum(gc::As<Fixnum_sp>(o));

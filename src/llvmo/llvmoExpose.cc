@@ -251,7 +251,7 @@ namespace translate
 		SIMPLE_ERROR(BF("You must pass a valid CodeGenOpt"));
 	    }
 	    if ( core::Symbol_sp so = object.asOrNull<core::Symbol_O>() ) {
-		core::SymbolToEnumConverter_sp converter = llvmo::_sym_CodeGenOpt->symbolValue().as<core::SymbolToEnumConverter_O>();
+		core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeGenOpt->symbolValue());
 		this->_v = converter->enumForSymbol<llvm::CodeGenOpt::Level>(so);
 	    } else {
 		SIMPLE_ERROR(BF("You must pass a valid CodeGenOpt"));
@@ -269,7 +269,7 @@ namespace translate
 		SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
 	    }
 	    if ( core::Symbol_sp so = object.asOrNull<core::Symbol_O>() ) {
-		core::SymbolToEnumConverter_sp converter = llvmo::_sym_RelocModel->symbolValue().as<core::SymbolToEnumConverter_O>();
+		core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_RelocModel->symbolValue());
 		this->_v = converter->enumForSymbol<llvm::Reloc::Model>(so);
 	    } else {
 		SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
@@ -287,7 +287,7 @@ namespace translate
 		SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
 	    }
 	    if ( core::Symbol_sp so = object.asOrNull<core::Symbol_O>() ) {
-		core::SymbolToEnumConverter_sp converter = llvmo::_sym_CodeModel->symbolValue().as<core::SymbolToEnumConverter_O>();
+		core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeModel->symbolValue());
 		this->_v = converter->enumForSymbol<llvm::CodeModel::Model>(so);
 	    } else {
 		SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
@@ -302,7 +302,7 @@ namespace translate
 	from_object(T_P object) : _v(llvm::TargetMachine::CGFT_ObjectFile) {
 	    if ( object.notnilp() ) {
 		if ( core::Symbol_sp so = object.asOrNull<core::Symbol_O>() ) {
-		    core::SymbolToEnumConverter_sp converter = llvmo::_sym_CodeGenFileType->symbolValue().as<core::SymbolToEnumConverter_O>();
+		    core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeGenFileType->symbolValue());
 		    this->_v = converter->enumForSymbol<llvm::TargetMachine::CodeGenFileType>(so);
 		    return;
 		}
@@ -1051,7 +1051,7 @@ namespace llvmo {
 #define DOCS_af_valuep "Return true if the arg is derived from llvm::Value"
     bool af_valuep(core::T_sp arg)
     {_G();
-	return arg.isA<Value_O>();
+	return gc::IsA<Value_sp>(arg);
     };
 
 #if 0
@@ -1195,7 +1195,7 @@ namespace llvmo {
 							    StrConstant);
 	GV->setName(":::str");
 	GV->setUnnamedAddr(true);
-	return translate::to_object<llvm::Value*>::convert(GV).as<Value_O>();
+	return gc::As<Value_sp>(translate::to_object<llvm::Value*>::convert(GV));
     }
 
 
@@ -1241,7 +1241,7 @@ namespace llvmo {
     {_G();
 	// nil is a valid
 	if ( value.nilp() ) return true;
-	else if ( Value_sp val = value.as<Value_O>() ) {
+	else if ( Value_sp val = gc::As<Value_sp>(value) ) {
 	    return val->valid();
 	}
 	SIMPLE_ERROR(BF("Illegal argument for VALID: %s") % _rep_(value));
@@ -1263,14 +1263,14 @@ namespace llvmo
        } else if ( core::Cons_sp celements = elements.asOrNull<core::Cons_O>() ) {
 	   core::List_sp lelements = celements;
 	   for ( auto cur : lelements ) {
-	       velements.push_back(oCar(cur).as<Type_O>()->wrappedPtr());
+	       velements.push_back(gc::As<Type_sp>(oCar(cur))->wrappedPtr());
 	   }
 	   return;
        } else if ( core::Vector_sp vecelements = elements.asOrNull<core::Vector_O>() ) {
 	   for ( int i=0; i< vecelements->length(); i++ )
 	   {
 	       core::T_sp element = vecelements->elt(i);
-	       Type_sp ty = element.as<Type_O>();
+	       Type_sp ty = gc::As<Type_sp>(element);
 	       velements.push_back(ty->wrappedPtr());
 	   }
 	   return;
@@ -1310,7 +1310,7 @@ namespace llvmo
        for ( llvm::Module::FunctionListType::const_iterator it=functionList.begin();
 	     it!=functionList.end(); it++ )
        {
-	   Function_sp wrapped_func = translate::to_object<const llvm::Function&>::convert(*it).as<Function_O>();
+	   Function_sp wrapped_func = gc::As<Function_sp>(translate::to_object<const llvm::Function&>::convert(*it));
 	   fl << wrapped_func;
        }
        return fl.cons();
@@ -1442,11 +1442,11 @@ namespace llvmo
 //	    return holder._LlvmValue;
             return second;
 	}
-	if ( oCar(it).as<core::Str_O>()->get() != value ) // as<Str_Oit->second._String != value )
+	if ( gc::As<core::Str_sp>(oCar(it))->get() != value ) // as<Str_Oit->second._String != value )
 	{
-	    SIMPLE_ERROR(BF("You tried to getOrCreateUniquedStringGlobalVariable with name[%s] and value[%s] - there was already a StringGlobalVariable with that name but it has a different value!!!! value[%s]") % name % value % oCar(it).as<core::Str_O>()->get() ); // it->second._String );
+	    SIMPLE_ERROR(BF("You tried to getOrCreateUniquedStringGlobalVariable with name[%s] and value[%s] - there was already a StringGlobalVariable with that name but it has a different value!!!! value[%s]") % name % value % gc::As<core::Str_sp>(oCar(it))->get() ); // it->second._String );
 	}
-	return oCdr(it).as<GlobalVariable_O>(); // it->second._LlvmValue;
+	return gc::As<GlobalVariable_sp>(oCdr(it)); // it->second._LlvmValue;
     }
 
 
@@ -1521,7 +1521,7 @@ namespace llvmo
 	{
 	    SIMPLE_ERROR(BF("Could not find named module %s") % name );
 	}
-        Module_sp mod = mi.as<Module_O>();
+        Module_sp mod = gc::As<Module_sp>(mi);
 	this->wrappedPtr()->clearGlobalMappingsFromModule(mod->wrappedPtr());
 	this->wrappedPtr()->removeModule(mod->wrappedPtr());
 	this->_DependentModules->remhash(key);
@@ -2093,13 +2093,13 @@ namespace llvmo
 	if ( core::Cons_sp cvalues = ovalues.asOrNull<core::Cons_O>() ) {
 	    core::List_sp lvalues = cvalues;
 	    for ( auto cur : lvalues ) {
-		vector_IdxList.push_back(unbox_fixnum(oCar(cur).as<core::Fixnum_O>()));
+		vector_IdxList.push_back(unbox_fixnum(gc::As<core::Fixnum_sp>(oCar(cur))));
 	    }
 	} else if ( core::Vector_sp vvalues = ovalues.asOrNull<core::Vector_O>()) 
 	{
 	    for ( int i=0; i<vvalues->length(); i++ )
 	    {
-		vector_IdxList.push_back(unbox_fixnum(vvalues->svref(i).as<core::Fixnum_O>()));
+		vector_IdxList.push_back(unbox_fixnum(gc::As<core::Fixnum_sp>(vvalues->svref(i))));
 	    }
 	}
 	llvm::ArrayRef<uint32_t> array_ref_vector_IdxList(vector_IdxList);
@@ -2151,7 +2151,7 @@ namespace llvmo
 	Constant_sp ca = ConstantArray_O::create();
 	vector<llvm::Constant*> vector_IdxList;
 	for ( auto cur : values ) {
-	    vector_IdxList.push_back(oCar(cur).as<Constant_O>()->wrappedPtr());
+	    vector_IdxList.push_back(gc::As<Constant_sp>(oCar(cur))->wrappedPtr());
 	}
 	llvm::ArrayRef<llvm::Constant*> array_ref_vector_IdxList(vector_IdxList);
 	llvm::Constant* llvm_ca = llvm::ConstantArray::get(type->wrapped(),array_ref_vector_IdxList);
@@ -2238,7 +2238,7 @@ namespace llvmo
         GC_ALLOCATE(Constant_O,res );
 	vector<llvm::Constant*> vector_IdxList;
 	for ( auto cur : idxList ) {
-	    vector_IdxList.push_back(oCar(cur).as<Constant_O>()->wrappedPtr());
+	    vector_IdxList.push_back(gc::As<Constant_sp>(oCar(cur))->wrappedPtr());
 	}
 	llvm::ArrayRef<llvm::Constant*> array_ref_vector_IdxList(vector_IdxList);
 	llvm::Constant* llvm_res = llvm::ConstantExpr::getInBoundsGetElementPtr(constant->wrappedPtr(),array_ref_vector_IdxList);
@@ -2313,11 +2313,11 @@ namespace llvmo
 	translate::from_object<llvm::GlobalValue::LinkageTypes> llinkage(linkage);
 	llvm::Constant* llvm_initializer = NULL;
 	if ( initializer.notnilp() ) {
-	    llvm_initializer = initializer.as<Constant_O>()->wrappedPtr();
+	    llvm_initializer = gc::As<Constant_sp>(initializer)->wrappedPtr();
 	}
 	llvm::GlobalVariable* lInsertBefore = NULL;
 	if ( insertBefore.notnilp() ) {
-	    lInsertBefore = insertBefore.as<GlobalVariable_O>()->wrappedPtr();
+	    lInsertBefore = gc::As<GlobalVariable_sp>(insertBefore)->wrappedPtr();
 	}
 	translate::from_object<llvm::GlobalValue::ThreadLocalMode> lThreadLocalMode(threadLocalMode);
 	llvm::GlobalVariable* gv = new llvm::GlobalVariable(*(mod->wrappedPtr()),type->wrappedPtr(),isConstant,llinkage._v,llvm_initializer,name->get(),lInsertBefore,lThreadLocalMode._v);
@@ -3061,13 +3061,13 @@ namespace llvmo
         GC_ALLOCATE(APInt_O,self );
 	if (af_fixnumP(value) )
 	{
-	    core::Fixnum_sp fixnum_value = value.as<core::Fixnum_O>();
+	    core::Fixnum_sp fixnum_value = gc::As<core::Fixnum_sp>(value);
 	    self->_value = llvm::APInt(gc::fixnum_bits,clasp_to_int(fixnum_value),true);
 	} else
 	{
 	    // It's a bignum so lets convert the bignum to a string and put it into an APInt
 	    char* asString = NULL;
-	    core::Bignum_sp bignum_value = value.as<core::Bignum_O>();
+	    core::Bignum_sp bignum_value = gc::As<core::Bignum_sp>(value);
 	    mpz_class& mpz_val = bignum_value->ref();
 	    int mpz_size_in_bits = mpz_sizeinbase(mpz_val.get_mpz_t(),2);
 	    asString = ::mpz_get_str(NULL,10,mpz_val.get_mpz_t());
@@ -3090,7 +3090,7 @@ namespace llvmo
         GC_ALLOCATE(APInt_O,self );
 	if (af_fixnumP(value) )
 	{
-	    core::Fixnum_sp fixnum_value = value.as<core::Fixnum_O>();
+	    core::Fixnum_sp fixnum_value = gc::As<core::Fixnum_sp>(value);
 	    self->_value = llvm::APInt(1,clasp_to_int(fixnum_value)&1,false);
 	} else
 	{
@@ -3116,7 +3116,7 @@ namespace llvmo
 	int	       numbits;
 	if ( value.fixnump() )
 	{
-	    core::Fixnum_sp fixnum_value = value.as<core::Fixnum_O>();
+	    core::Fixnum_sp fixnum_value = gc::As<core::Fixnum_sp>(value);
 	    if ( !sign && unbox_fixnum(fixnum_value) < 0 )
 	    {
 		SIMPLE_ERROR(BF("You tried to create an unsigned APInt32 with the negative value: %d") % unbox_fixnum(fixnum_value) );
@@ -3126,7 +3126,7 @@ namespace llvmo
 	} else {
 	    // It's a bignum so lets convert the bignum to a string and put it into an APInt
 	    char* asString = NULL;
-	    core::Bignum_sp bignum_value = value.as<core::Bignum_O>();
+	    core::Bignum_sp bignum_value = gc::As<core::Bignum_sp>(value);
 	    mpz_class& mpz_val = bignum_value->ref();
 	    int mpz_size_in_bits = mpz_sizeinbase(mpz_val.get_mpz_t(),2);
 	    asString = ::mpz_get_str(NULL,10,mpz_val.get_mpz_t());
@@ -3330,7 +3330,7 @@ namespace llvmo
     {
 	vector<llvm::Value*> vector_IdxList;
 	for ( auto cur : IdxList ) {
-	    vector_IdxList.push_back(oCar(cur).as<Value_O>()->wrappedPtr());
+	    vector_IdxList.push_back(gc::As<Value_sp>(oCar(cur))->wrappedPtr());
 	}
 	llvm::ArrayRef<llvm::Value*> array_ref_vector_IdxList(vector_IdxList);
 	return this->wrappedPtr()->CreateInBoundsGEP(Ptr,array_ref_vector_IdxList,Name);
@@ -3342,7 +3342,7 @@ namespace llvmo
     {
 	vector<unsigned int> vector_IdxList;
 	for ( auto cur : IdxList ) {
-	    vector_IdxList.push_back(unbox_fixnum(oCar(cur).as<core::Fixnum_O>()));
+	    vector_IdxList.push_back(unbox_fixnum(gc::As<core::Fixnum_sp>(oCar(cur))));
 	}
 	llvm::ArrayRef<unsigned int> array_ref_vector_IdxList(vector_IdxList);
 	return this->wrappedPtr()->CreateExtractValue(Ptr,array_ref_vector_IdxList,Name);
@@ -3352,7 +3352,7 @@ namespace llvmo
     {
 	vector<unsigned int> vector_IdxList;
 	for ( auto cur : IdxList ) {
-	    vector_IdxList.push_back(unbox_fixnum(oCar(cur).as<core::Fixnum_O>()));
+	    vector_IdxList.push_back(unbox_fixnum(gc::As<core::Fixnum_sp>(oCar(cur))));
 	}
 	llvm::ArrayRef<unsigned int> array_ref_vector_IdxList(vector_IdxList);
 	return this->wrappedPtr()->CreateInsertValue(Agg,Val,array_ref_vector_IdxList,Name);
@@ -3638,7 +3638,7 @@ namespace llvmo
     {_G();
 	vector<llvm::Metadata*> valvec;
 	for ( auto cur : values ) {
-	    llvm::Metadata* val = oCar(cur).as<Metadata_O>()->wrappedPtr();
+	    llvm::Metadata* val = gc::As<Metadata_sp>(oCar(cur))->wrappedPtr();
 	    valvec.push_back(val);
 	}
 	llvm::MDNode* mdnode = llvm::MDNode::get(*context->wrappedPtr(),valvec);
@@ -3780,7 +3780,7 @@ namespace llvmo
 	translate::from_object<llvm::Module*> m(modulesp);
 //        printf("%s:%d FunctionCreate %s with linkage %d\n", __FILE__, __LINE__, nsp->get().c_str(), linkage);
 	llvm::Function* func = llvm::Function::Create(ty._v,linkage,nsp->get(),m._v);
-	Function_sp funcsp = translate::to_object<llvm::Function*>::convert(func).as<Function_O>();
+	Function_sp funcsp = gc::As<Function_sp>(translate::to_object<llvm::Function*>::convert(func));
 	return funcsp;
     };
 
@@ -4338,10 +4338,10 @@ namespace llvmo
         double thisTime = timer.getAccumulatedTime();
         core::DoubleFloat_sp df = core::DoubleFloat_O::create(thisTime);
         _sym_STARmostRecentLlvmFinalizationTimeSTAR->setf_symbolValue(df);
-        double accTime = clasp_to_double(_sym_STARaccumulatedLlvmFinalizationTimeSTAR->symbolValue().as<core::Float_O>());
+        double accTime = clasp_to_double(gc::As<core::Float_sp>(_sym_STARaccumulatedLlvmFinalizationTimeSTAR->symbolValue()));
         accTime += thisTime;
         _sym_STARaccumulatedLlvmFinalizationTimeSTAR->setf_symbolValue(core::DoubleFloat_O::create(accTime));
-        int num = unbox_fixnum(_sym_STARnumberOfLlvmFinalizationsSTAR->symbolValue().as<core::Fixnum_O>());
+        int num = unbox_fixnum(gc::As<core::Fixnum_sp>(_sym_STARnumberOfLlvmFinalizationsSTAR->symbolValue()));
         ++num;
         _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::make_fixnum(num));
     }
@@ -4375,7 +4375,7 @@ namespace llvmo
 	CompiledClosure::fptr_type lisp_funcPtr = (CompiledClosure::fptr_type)(p);
         core::Cons_sp associatedFunctions = core::Cons_O::create(fn,_Nil<core::T_O>());
         core::SourceFileInfo_mv sfi = core_sourceFileInfo(fileName);
-        int sfindex = unbox_fixnum(sfi.valueGet(1).as<core::Fixnum_O>());
+        int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1)));
         core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,linenumber,0);
 	//	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
         CompiledClosure* functoid 

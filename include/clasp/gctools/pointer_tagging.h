@@ -136,110 +136,110 @@ namespace gctools {
     static const uintptr_t single_float_mask  = 0x1FFFFFFFFF;  // single-floats are in these 32+5bits
 
     template <class T>
-	T* tag(T* ptr) { return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(ptr)&tag_mask); };
+	T tag(T ptr) { return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr)&tag_mask); };
 
 
-    template <class T> inline bool tagged_consp(T* ptr) {
+    template <class T> inline bool tagged_consp(T ptr) {
 	return (reinterpret_cast<uintptr_t>(tag(ptr))==cons_tag);
     };
 
-    template <class T> inline T* tag_cons(T* p) {
+    template <class T> inline T tag_cons(T p) {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p)&tag_mask) == 0);
-	return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(p)+cons_tag);
+	return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p)+cons_tag);
     }
     
-    template <class T> inline T* untag_cons(T* ptr) {
+    template <class T> inline T untag_cons(T ptr) {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask) == cons_tag);
-	return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(ptr)-cons_tag);
+	return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr)-cons_tag);
     }
 
 
-    template <class T> inline T* tag_other(T* p) {
+    template <class T> inline T tag_other(T p) {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p)&tag_mask) == 0);
-	return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(p)+other_tag);
+	return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p)+other_tag);
     }
 
-    template <class T> inline T* tag_object(T* ptr) {
+    template <class T> inline T tag_object(T ptr) {
 	return tag_other<T>(ptr);
     }
-    template <> inline core::Cons_O* tag_object<core::Cons_O>(core::Cons_O* ptr) {
-	return tag_cons<core::Cons_O>(ptr);
+    template <> inline core::Cons_O* tag_object<core::Cons_O*>(core::Cons_O* ptr) {
+	return tag_cons<core::Cons_O*>(ptr);
     }
 
-    template <class T> inline bool tagged_nilp(T* ptr) {
+    template <class T> inline bool tagged_nilp(T ptr) {
 	return (reinterpret_cast<void*>(ptr) == global_Symbol_OP_nil);
     }
-    template <class T> inline bool tagged_unboundp(T* ptr) {
+    template <class T> inline bool tagged_unboundp(T ptr) {
 	return (reinterpret_cast<void*>(ptr) == global_Symbol_OP_unbound);
     }
-    template <class T> inline bool tagged_deletedp(T* ptr) {
+    template <class T> inline bool tagged_deletedp(T ptr) {
 	return (reinterpret_cast<void*>(ptr) == global_Symbol_OP_deleted);
     }
-    template <class T> inline bool tagged_sameAsKeyp(T* ptr) {
+    template <class T> inline bool tagged_sameAsKeyp(T ptr) {
 	return (reinterpret_cast<void*>(ptr) == global_Symbol_OP_sameAsKey);
     }
 
-    template <class T> inline T* tag_nil() {
+    template <class T> inline T tag_nil() {
 	GCTOOLS_ASSERT(tagged_nilp(global_Symbol_OP_nil));
-	return reinterpret_cast<T*>(global_Symbol_OP_nil);
+	return reinterpret_cast<T>(global_Symbol_OP_nil);
     }
-    template <class T> inline T* tag_unbound() {
+    template <class T> inline T tag_unbound() {
 	GCTOOLS_ASSERT(tagged_unboundp(global_Symbol_OP_unbound));
-	return reinterpret_cast<T*>(global_Symbol_OP_unbound);
+	return reinterpret_cast<T>(global_Symbol_OP_unbound);
     }
-    template <class T> inline T* tag_deleted() {
+    template <class T> inline T tag_deleted() {
 	GCTOOLS_ASSERT(tagged_deletedp(global_Symbol_OP_deleted));
-	return reinterpret_cast<T*>(global_Symbol_OP_deleted);
+	return reinterpret_cast<T>(global_Symbol_OP_deleted);
     }
-    template <class T> inline T* tag_sameAsKey() {
+    template <class T> inline T tag_sameAsKey() {
 	GCTOOLS_ASSERT(tagged_sameAsKeyp(global_Symbol_OP_sameAsKey));
-	return reinterpret_cast<T*>(global_Symbol_OP_sameAsKey);
+	return reinterpret_cast<T>(global_Symbol_OP_sameAsKey);
     }
-    template <class T> inline T* tag_frame(core::T_O** p) {
+    template <class T> inline T tag_frame(core::T_O** p) {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p)&tag_mask)==0);
-	return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(p)+frame_tag);
+	return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p)+frame_tag);
     }
 
-    template <class T> inline T* untag_other(T* ptr) {
+    template <class T> inline T untag_other(T ptr) {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==other_tag);
-	return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(ptr)-other_tag);
+	return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr)-other_tag);
     }
-    template <class T> inline core::T_O** untag_frame(T* ptr) {
+    template <class T> inline core::T_O** untag_frame(T ptr) {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==frame_tag);
 	return reinterpret_cast<core::T_O**>(reinterpret_cast<uintptr_t>(ptr)-frame_tag);
     }
 
 
-    template <class T> inline T* tag_fixnum(Fixnum fn) {
-	return reinterpret_cast<T*>((fn<<fixnum_shift));
+    template <class T> inline T tag_fixnum(Fixnum fn) {
+	return reinterpret_cast<T>((fn<<fixnum_shift));
     }
-    template <class T> inline Fixnum untag_fixnum(T* const ptr)  {
+    template <class T> inline Fixnum untag_fixnum(T const ptr)  {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&fixnum_mask)==0);
 	return (Fixnum)(reinterpret_cast<uintptr_t>(ptr)>>fixnum_shift);
     }
     template <class T> inline bool tagged_fixnump(T ptr) {
 	return ((reinterpret_cast<uintptr_t>(ptr)&fixnum_mask)==fixnum_tag);};
-    template <class T> inline T* tag_character(int ch) {
-	return reinterpret_cast<T*>((ch<<character_shift)|character_tag);
+    template <class T> inline T tag_character(int ch) {
+	return reinterpret_cast<T>((ch<<character_shift)|character_tag);
     }
-    template <class T> inline int untag_character(T* ptr) {
+    template <class T> inline int untag_character(T ptr) {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&fixnum_mask)==character_tag);
 	return (int)(reinterpret_cast<uintptr_t>(ptr)>>character_shift);
     }
-    template <class T> inline bool tagged_characterp(T* ptr) {
+    template <class T> inline bool tagged_characterp(T ptr) {
 	return ((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==character_tag);
     };
-    template <class T> inline T* tag_single_float(float fn) {
+    template <class T> inline T tag_single_float(float fn) {
 	GCTOOLS_ASSERT(sizeof(uintptr_t)==8);
 	GCTOOLS_ASSERT(sizeof(float)==4);
 	uintptr_t val;
 	memcpy(&val,&fn,sizeof(fn));
-	return reinterpret_cast<T*>((val<<single_float_shift)+single_float_tag);
+	return reinterpret_cast<T>((val<<single_float_shift)+single_float_tag);
     }
-    template <class T> inline uintptr_t tagged_single_float_masked(T* const ptr) {
+    template <class T> inline uintptr_t tagged_single_float_masked(T const ptr) {
 	return reinterpret_cast<uintptr_t>(reinterpret_cast<uintptr_t>(ptr)&single_float_mask);
     }
-    template <class T> inline float untag_single_float(T* const ptr)  {
+    template <class T> inline float untag_single_float(T const ptr)  {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==single_float_tag);
 	GCTOOLS_ASSERT(sizeof(uintptr_t)==8);
 	GCTOOLS_ASSERT(sizeof(float)==4);
@@ -249,18 +249,18 @@ namespace gctools {
 	memcpy(&result,&val,sizeof(result));
 	return result;
     }
-    template <class T> inline bool tagged_single_floatp(T* ptr) {
+    template <class T> inline bool tagged_single_floatp(T ptr) {
 	return ((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==single_float_tag);
     };
 
-    template <class T> inline bool tagged_otherp(T* ptr) {
+    template <class T> inline bool tagged_otherp(T ptr) {
 	return ((uintptr_t)(ptr)&tag_mask)==other_tag;
     }
-    template <class T> inline bool tagged_framep(T* ptr) {
+    template <class T> inline bool tagged_framep(T ptr) {
 	return ((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==frame_tag);
     };
 
-    template <class Type> inline Type* untag_object(Type* tagged_obj) {
+    template <class Type> inline Type untag_object(Type tagged_obj) {
 	if ( gctools::tagged_otherp<Type>(tagged_obj) ) {
 	    return gctools::untag_other<Type>(tagged_obj);
 	} else if ( gctools::tagged_consp<Type>(tagged_obj) ) {

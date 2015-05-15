@@ -67,13 +67,13 @@ namespace core
         // Remove the old names from the Lisp system
         _lisp->unmapNameToPackage(package->getName());
         for ( auto cur : package->getNicknames() ) {
-            _lisp->unmapNameToPackage(oCar(cur).as<Str_O>()->get());
+            _lisp->unmapNameToPackage(gc::As<Str_sp>(oCar(cur))->get());
         }
         // Set up the new names
         package->setName(newName);
         _lisp->mapNameToPackage(newName,package);
         for ( auto cur : nickNames ) {
-            _lisp->mapNameToPackage(oCar(cur).as<Str_O>()->get(),package);
+            _lisp->mapNameToPackage(gc::As<Str_sp>(oCar(cur))->get(),package);
         };
         package->setNicknames(nickNames);
         return package;
@@ -150,7 +150,7 @@ namespace core
 	}
 	list<string> lup;
 	for ( auto uc : use_packages ) {
-	    lup.push_front(oCar(uc).as<Package_O>()->packageName());
+	    lup.push_front(gc::As<Package_sp>(oCar(uc))->packageName());
 	}
 	return(Values(_lisp->makePackage(package_name->get(),lnn,lup)));
     }
@@ -203,7 +203,7 @@ namespace core
 	List_sp packages_to_use = coerce::listOfPackageDesignators(packages_to_use_desig);
 	Package_sp package = coerce::packageDesignator(package_desig);
 	for ( auto cur : packages_to_use ) {
-	    Package_sp package_to_use = oCar(cur).as<Package_O>();
+	    Package_sp package_to_use = gc::As<Package_sp>(oCar(cur));
 	    package->usePackage(package_to_use);
 	}
 	return _lisp->_true();
@@ -217,7 +217,7 @@ namespace core
 	List_sp packages_to_unuse = coerce::listOfPackageDesignators(packages_to_unuse_desig);
 	Package_sp package = coerce::packageDesignator(package_desig);
 	for ( auto cur : packages_to_unuse ) {
-	    Package_sp package_to_unuse = oCar(cur).as<Package_O>();
+	    Package_sp package_to_unuse = gc::As<Package_sp>(oCar(cur));
 	    package->unusePackage(package_to_unuse);
 	}
 	return _lisp->_true();
@@ -304,7 +304,7 @@ namespace core
 	stringstream ss;
 	string spref = "T";
 	Package_sp pkg = coerce::packageDesignator(package_designator);
-	if ( prefix.notnilp() ) spref = prefix.as<Str_O>()->get();
+	if ( prefix.notnilp() ) spref = gc::As<Str_sp>(prefix)->get();
 	T_sp retval;
 	for ( int i=0; i<1000; i++ )
 	{
@@ -314,7 +314,7 @@ namespace core
 	    ++static_gentemp_counter;
 	    {MULTIPLE_VALUES_CONTEXT();
 		T_mv mv = pkg->findSymbol(ss.str());
-		if ( mv.valueGet(1).as<T_O>().nilp() )
+		if ( gc::As<T_sp>(mv.valueGet(1)).nilp() )
 		{
 		    {MULTIPLE_VALUES_CONTEXT();
 			retval = pkg->intern(ss.str());
@@ -486,8 +486,8 @@ namespace core
 	    bool foundp;
 	    {MULTIPLE_VALUES_CONTEXT();
 		T_mv ei = this->_ExternalSymbols->gethash(nameKey,_Nil<T_O>());
-		val = ei.as<Symbol_O>();
-		foundp = ei.valueGet(1).as<T_O>().isTrue();
+		val = gc::As<Symbol_sp>(ei);
+		foundp = gc::As<T_sp>(ei.valueGet(1)).isTrue();
 	    }
 	    if ( foundp )
 	    {
@@ -500,8 +500,8 @@ namespace core
 	    Symbol_sp first;
 	    {MULTIPLE_VALUES_CONTEXT();
 		T_mv ej = this->_InternalSymbols->gethash(nameKey,_Nil<T_O>());
-		first = ej.as<Symbol_O>();
-		foundp = ej.valueGet(1).as<T_O>().isTrue();
+		first = gc::As<Symbol_sp>(ej);
+		foundp = gc::As<T_sp>(ej.valueGet(1)).isTrue();
 	    }
 	    if ( foundp )
 	    {
@@ -521,8 +521,8 @@ namespace core
 	T_mv mv = this->findSymbolDirectlyContained(nameKey);
 	int isize = mv.number_of_values();
 	if ( isize != 0 ) {
-	    retval = mv.as<Symbol_O>();
-	    retstatus = mv.valueGet(1).as<Symbol_O>();
+	    retval = gc::As<Symbol_sp>(mv);
+	    retstatus = gc::As<Symbol_sp>(mv.valueGet(1));
 	    return(Values(retval,retstatus));
 	}
 	{_BLOCK_TRACEF(BF("Looking in _UsingPackages"));
@@ -533,8 +533,8 @@ namespace core
 		LOG(BF("Looking in package[%s]") % _rep_(pkg) );
 		T_mv tmv = pkg->findSymbolDirectlyContained(nameKey);
 		if ( tmv.number_of_values()==0 ) continue;
-		Symbol_sp uf = tmv.as<Symbol_O>();
-		Symbol_sp status = tmv.valueGet(1).as<Symbol_O>();
+		Symbol_sp uf = gc::As<Symbol_sp>(tmv);
+		Symbol_sp status = gc::As<Symbol_sp>(tmv.valueGet(1));
 		if ( status.notnilp() )
 		{
 		    if (status != kw::_sym_external) continue;
@@ -669,7 +669,7 @@ namespace core
     void Package_O::_export(List_sp symbols)
     {_OF();
 	for ( auto cur : symbols ) {
-	    Symbol_sp sym = oCar(cur).as<Symbol_O>();
+	    Symbol_sp sym = gc::As<Symbol_sp>(oCar(cur));
 	    if ( sym.notnilp() && sym->symbolNameAsString() == "" )
 	    {
 		SIMPLE_ERROR(BF("Problem exporting symbol - it has no name"));
@@ -683,8 +683,8 @@ namespace core
 	    Symbol_sp foundSym, status;
 	    {MULTIPLE_VALUES_CONTEXT();
 		T_mv values = this->findSymbol(nameKey);
-		foundSym = values.as<Symbol_O>();
-		status = values.valueGet(1).as<Symbol_O>();
+		foundSym = gc::As<Symbol_sp>(values);
+		status = gc::As<Symbol_sp>(values.valueGet(1));
 	    }
 	    LOG(BF("findSymbol status[%s]") % _rep_(status) );
 	    if ( status.nilp() )
@@ -714,7 +714,7 @@ namespace core
         Symbol_sp shadowSym, status;
         Symbol_mv values = this->findSymbol(symbolName->get());
         shadowSym = values;
-        status = values.valueGet(1).as<Symbol_O>();
+        status = gc::As<Symbol_sp>(values.valueGet(1));
         if ( status.nilp() || (status != kw::_sym_internal && status!=kw::_sym_external) )
         {
             shadowSym = Symbol_O::create(symbolName->get());
@@ -732,7 +732,7 @@ namespace core
     bool Package_O::shadow(List_sp symbolNames)
     {_OF();
 	for ( auto cur : symbolNames ) {
-	    Str_sp name = oCar(cur).as<Str_O>();
+	    Str_sp name = gc::As<Str_sp>(oCar(cur));
             this->shadow(name);
         }
 	return true;
@@ -788,7 +788,7 @@ namespace core
     {_OF();
 	Symbol_mv values = this->findSymbol(name);
 	Symbol_sp sym = values;
-	Symbol_sp status = values.valueGet(1).as<Symbol_O>();
+	Symbol_sp status = gc::As<Symbol_sp>(values.valueGet(1));
 	if ( status.nilp() )
 	{
 	    sym = Symbol_O::create(name);
@@ -822,7 +822,7 @@ namespace core
 	    {MULTIPLE_VALUES_CONTEXT();
 		Symbol_mv values = this->findSymbol(nameKey);
 		sym = values;
-		status = values.valueGet(1).as<Symbol_O>();
+		status = gc::As<Symbol_sp>(values.valueGet(1));
 	    }
 	    if ( status.notnilp() )
 	    {
@@ -852,7 +852,7 @@ namespace core
 		{MULTIPLE_VALUES_CONTEXT();
 		    Symbol_mv values = (*it)->findSymbol(nameKey);
 		    uf = values;
-		    status = values.valueGet(1).as<Symbol_O>();
+		    status = gc::As<Symbol_sp>(values.valueGet(1));
 		}
 		if ( status.notnilp() )
 		{
@@ -884,11 +884,11 @@ namespace core
     void Package_O::import(List_sp symbols)
     {_OF();
 	for ( auto cur : symbols ) {
-	    Symbol_sp symbolToImport = oCar(cur).as<Symbol_O>();
+	    Symbol_sp symbolToImport = gc::As<Symbol_sp>(oCar(cur));
             Bignum_sp nameKey = symbolNameToKey(symbolToImport);
             Symbol_mv values = this->findSymbol(nameKey);
             Symbol_sp foundSymbol = values;
-            Symbol_sp status = values.valueGet(1).as<Symbol_O>();
+            Symbol_sp status = gc::As<Symbol_sp>(values.valueGet(1));
 	    if ( status == kw::_sym_external || status == kw::_sym_internal )
 	    {
 		// do nothing
@@ -906,11 +906,11 @@ namespace core
     void Package_O::shadowingImport(List_sp symbols)
     {
 	for ( auto cur : symbols ) {
-	    Symbol_sp symbolToImport = oCar(cur).as<Symbol_O>();
+	    Symbol_sp symbolToImport = gc::As<Symbol_sp>(oCar(cur));
 	    Bignum_sp nameKey = symbolNameToKey(symbolToImport);
 	    Symbol_mv values = this->findSymbol(nameKey);
 	    Symbol_sp foundSymbol = values;
-	    Symbol_sp status = values.valueGet(1).as<Symbol_O>();
+	    Symbol_sp status = gc::As<Symbol_sp>(values.valueGet(1));
 	    if ( status == kw::_sym_internal || status == kw::_sym_external ) {
 		    this->unintern(foundSymbol);
 	    }

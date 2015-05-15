@@ -91,17 +91,6 @@ namespace gctools
 	    this->_number_of_values = values.size();
 	    this->setRaw_(values[0].raw_());
 	    //	    GCTOOLS_ASSERT(this->valid());
-#if 0
-	    if ( this->_number_of_values > 0 ) {
-		// This is wrong!!!! What about tagged values?
-		this->px = gctools::DynamicCast<T*,core::T_O*>::castOrNULL(values[0].px);
-		// this->setRaw_(values[0].raw_());
-		// or (*this) = values[0];  //Use templated operator= ?????
-		GCTOOLS_ASSERT(this->px!=NULL);
-	    } else {
-		this->px = _Nil<T>().px;
-	    }
-#endif
 	}
 
 

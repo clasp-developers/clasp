@@ -174,13 +174,13 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	       that the file exists */
 	    T_sp kind;
 	    filename = af_coerceToFilePathname(pathname);
-	    kind = af_file_kind(filename.as<Pathname_O>(), true);
+	    kind = af_file_kind(gc::As<Pathname_sp>(filename), true);
 	    if (kind != kw::_sym_file && kind != kw::_sym_special) {
 		filename = _Nil<T_O>();
 	    } else {
 		function = _Nil<T_O>();
 		if ( cl_consp(hooks) ) {
-		    function = oCdr(hooks.as<Cons_O>()->assoc(pathname->_Type,
+		    function = oCdr(gc::As<Cons_sp>(hooks)->assoc(pathname->_Type,
 							      _Nil<T_O>(),
 							      cl::_sym_string_EQ_,
 							      _Nil<T_O>()));

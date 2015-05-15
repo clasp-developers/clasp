@@ -55,10 +55,10 @@ namespace core
     SNode_sp SNode_O::makeAppropriateSNode(T_sp val, HashTable_sp objToSNodeMap)
     {_G();
 	if ( val.nilp() ||
-	     val.isA<Fixnum_O>() ||
-	     val.isA<Number_O>() ||
-	     val.isA<Str_O>() ||
-	     val.isA<Symbol_O>() ) {
+	     gc::IsA<Fixnum_sp>(val) ||
+	     gc::IsA<Number_sp>(val) ||
+	     gc::IsA<Str_sp>(val) ||
+	     gc::IsA<Symbol_sp>(val) ) {
 	    LeafSNode_sp lnode = LeafSNode_O::create(val);
 	    lnode->incRefCount();
 	    objToSNodeMap->hash_table_setf_gethash(val,lnode);
@@ -204,7 +204,7 @@ namespace core
     SNode_sp BranchSNode_O::getAttributeSNode(Symbol_sp name, SNode_sp defaultValue) const
     {
 	if (this->_SNodePList.notnilp()) {
-	    SNode_sp result = this->_SNodePList.asCons()->getf(name,_Unbound<T_O>()).as<SNode_O>();
+	    SNode_sp result = gc::As<SNode_sp>(this->_SNodePList.asCons()->getf(name,_Unbound<T_O>()));
 	    if ( !result.unboundp() ) {
 		return result;
 	    }
@@ -224,7 +224,7 @@ namespace core
     T_sp BranchSNode_O::getAttribute(Symbol_sp name, T_sp defaultValue) const
     {
 	if ( this->_SNodePList.notnilp() ) {
-	    SNode_sp result = this->_SNodePList.asCons()->getf(name,_Unbound<T_O>()).as<SNode_O>();
+	    SNode_sp result = gc::As<SNode_sp>(this->_SNodePList.asCons()->getf(name,_Unbound<T_O>()));
 	    if ( !result.unboundp() ) {
 		return result->object();
 	    }
@@ -238,7 +238,7 @@ namespace core
 	vec.clear();
 	if ( Vector_sp vectorSNodes = this->_VectorSNodes.asOrNull<Vector_O>() ) {
 	    for (int i(0), iEnd(vectorSNodes->length()); i<iEnd; ++i ) {
-		SNode_sp snode = vectorSNodes->elt(i).as<SNode_O>();
+		SNode_sp snode = gc::As<SNode_sp>(vectorSNodes->elt(i));
 		vec.push_back(snode->object());
 	    };
 	}
@@ -252,7 +252,7 @@ namespace core
 	if (this->_VectorSNodes.unboundp())
 	    SIMPLE_ERROR(BF("BranchSNode VectorSNodes is unbound"));
 	for (int i(0), iEnd(this->_VectorSNodes->length()); i<iEnd; ++i ) {
-	    SNode_sp snode = this->_VectorSNodes->elt(i).as<SNode_O>();
+	    SNode_sp snode = gc::As<SNode_sp>(this->_VectorSNodes->elt(i));
 	    T_sp obj = snode->object();
 	    fn(obj);
 	};
@@ -312,7 +312,7 @@ namespace core
     T_sp BranchSNode_O::getUniqueId() const
     {
 	for (List_sp cur=this->_SNodePList; cur.consp(); cur=oCddr(cur) ) {
-	    Symbol_sp propertyName = oCar(cur).as<Symbol_O>();
+	    Symbol_sp propertyName = gc::As<Symbol_sp>(oCar(cur));
 	    if ( propertyName == kw::_sym__uid ) {
 		T_sp property = oCadr(cur);
 		return property;
@@ -325,7 +325,7 @@ namespace core
     {
 	for (int i(0),iEnd(this->_VectorSNodes->length());i<iEnd;++i)
 	{
-	    SNode_sp child = this->_VectorSNodes->elt(i).as<SNode_O>();
+	    SNode_sp child = gc::As<SNode_sp>(this->_VectorSNodes->elt(i));
 	    if ( child->getUniqueId() == uid ) {
 		return child;
 	    }
@@ -402,11 +402,11 @@ namespace core
     Archive_sp Archive_O::currentArchive()
     {
 	SYMBOL_EXPORT_SC_(CorePkg,STARserializerArchiveSTAR);
-	T_sp archive = _sym_STARserializerArchiveSTAR->symbolValue().as<Archive_O>();
+	T_sp archive = gc::As<Archive_sp>(_sym_STARserializerArchiveSTAR->symbolValue());
 	if ( archive.nilp() ) {
 	    SIMPLE_ERROR(BF("You must define core:*serializer-archive*"));
 	}
-	return archive.as<Archive_O>();
+	return gc::As<Archive_sp>(archive);
     }
 
     LoadArchive_sp Archive_O::currentLoadArchive()
@@ -443,7 +443,7 @@ namespace core
 
     SNode_sp SaveArchive_O::getOrCreateSNodeForObjectIncRefCount(T_sp val)
     {
-	SNode_sp snode = this->_SNodeForObject->gethash(val,_Unbound<T_O>()).as<SNode_O>();
+	SNode_sp snode = gc::As<SNode_sp>(this->_SNodeForObject->gethash(val,_Unbound<T_O>()));
 	if (snode.unboundp()) {
 	    snode = SNode_O::makeAppropriateSNode(val,this->_SNodeForObject);
 	} else {
@@ -487,16 +487,16 @@ namespace core
 	if ( LeafSNode_sp leafSNode = node.asOrNull<LeafSNode_O>() ) {
 	    return node->object();
 	}
-	BranchSNode_sp branchSNode = node.as<BranchSNode_O>();
+	BranchSNode_sp branchSNode = gc::As<BranchSNode_sp>(node);
 	if ( node == this->_TopNode ) {
 	    // Don't create an object for the top node - just for it's children
 	    for ( List_sp cur = branchSNode->_SNodePList; cur.consp(); cur=oCddr(cur) ) {
-		this->loadObjectDirectly(oCadr(cur).as<SNode_O>());
+		this->loadObjectDirectly(gc::As<SNode_sp>(oCadr(cur)));
 	    }
 	    if ( !branchSNode->_VectorSNodes.unboundp()) {
-		Vector_sp branchSNodeVectorSNodes = branchSNode->_VectorSNodes.as<Vector_O>();
+		Vector_sp branchSNodeVectorSNodes = gc::As<Vector_sp>(branchSNode->_VectorSNodes);
 		for ( int i(0),iEnd(branchSNodeVectorSNodes->length());i<iEnd;++i) {
-		    this->loadObjectDirectly(branchSNodeVectorSNodes->elt(i).as<SNode_O>());
+		    this->loadObjectDirectly(gc::As<SNode_sp>(branchSNodeVectorSNodes->elt(i)));
 		}
 	    }
 	    IMPLEMENT_MEF(BF("Should I return NIL at this point?  The BranchSNode was not completely initialized"));
@@ -528,7 +528,7 @@ namespace core
     {_G();
         T_sp obj;
         this->_NodesToFinalize->mapHash( [&obj] (T_sp node, T_sp dummy) {
-                node.as<SNode_O>()->object()->loadFinalize(node.as<SNode_O>());
+                gc::As<SNode_sp>(node)->object()->loadFinalize(gc::As<SNode_sp>(node));
             } );
 #if 0
 	this->_NodesToFinalize.map( [] (gctools::smart_ptr<SNode_O> node)  {
@@ -554,7 +554,7 @@ namespace core
 	if ( this->_TopNode.unboundp() ) SIMPLE_ERROR(BF("No archive is loaded"));
 	DynamicScopeManager scope(_sym_STARserializerArchiveSTAR,this->asSmartPtr());
 	BranchSNode_sp bnode = this->_TopNode;
-	SNode_sp property = bnode->_SNodePList.asCons()->getf(sym,_Unbound<T_O>()).as<SNode_O>();
+	SNode_sp property = gc::As<SNode_sp>(bnode->_SNodePList.asCons()->getf(sym,_Unbound<T_O>()));
 	if (property.unboundp()) {
 	    SIMPLE_ERROR(BF("Could not find property for key: %s") % _rep_(sym));
 	}

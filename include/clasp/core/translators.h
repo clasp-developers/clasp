@@ -70,7 +70,7 @@ namespace translate
     struct	from_object<uint,std::true_type>
     {
 	uint    _v;
-    from_object(core::T_sp o) : _v(clasp_to_uint(o.as<core::Integer_O>())) {};
+    from_object(core::T_sp o) : _v(clasp_to_uint(gc::As<core::Integer_sp>(o))) {};
     };
 
 
@@ -79,7 +79,7 @@ namespace translate
     {
 	typedef	int		DeclareType;
 	DeclareType _v;
-    from_object(core::T_sp o) : _v(clasp_to_int(o.as<core::Integer_O>())) {};
+    from_object(core::T_sp o) : _v(clasp_to_int(gc::As<core::Integer_sp>(o))) {};
     };
 
     template <>
@@ -120,7 +120,7 @@ namespace translate
 	typedef	unsigned long long		ExpectedType;
 	typedef	unsigned long long		DeclareType;
 	DeclareType _v;
-    from_object(T_P o) : _v(clasp_to_unsigned_long_long(o.as<core::Integer_O>())) {}
+    from_object(T_P o) : _v(clasp_to_unsigned_long_long(gc::As<core::Integer_sp>(o))) {}
     };
 
 #if 1
@@ -157,7 +157,7 @@ namespace translate
 	typedef	double	ExpectedType;
 	typedef	double	DeclareType;
 	DeclareType _v;
-    from_object(core::T_sp o) : _v(clasp_to_double(o.as<core::Number_O>())) {};
+    from_object(core::T_sp o) : _v(clasp_to_double(gc::As<core::Number_sp>(o))) {};
     };
 
     template <>

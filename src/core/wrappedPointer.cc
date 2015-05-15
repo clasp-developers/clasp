@@ -70,16 +70,16 @@ namespace core {
 
     void WrappedPointer_O::setInstanceClassUsingSymbol(Symbol_sp classSymbol)
     {
-        Class_sp cl = cl_findClass(classSymbol).as<Class_O>();
+        Class_sp cl = gc::As<Class_sp>(cl_findClass(classSymbol));
         this->instanceClassSet(cl);
     }
 
 
     bool WrappedPointer_O::eql_(T_sp obj) const
     {_G();
-	if ( WrappedPointer_sp wo = obj.as<WrappedPointer_O>() )
+	if ( WrappedPointer_sp wo = gc::As<WrappedPointer_sp>(obj) )
 	{
-	    return (obj.as<WrappedPointer_O>()->mostDerivedPointer() == this->mostDerivedPointer() );
+	    return (gc::As<WrappedPointer_sp>(obj)->mostDerivedPointer() == this->mostDerivedPointer() );
 	}
 	return false;
     }

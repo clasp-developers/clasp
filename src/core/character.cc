@@ -104,14 +104,14 @@ int clasp_string_case(Str_sp s)
 
     T_sp monotonic(int s, int t, List_sp args, bool preserve_case=true)
     {_G();
-	char c = oCar(args).as<Character_O>()->get();
+	char c = gc::As<Character_sp>(oCar(args))->get();
 	if ( !preserve_case ) c = toupper(c);
 	char d;
 	int dir;
 	args = oCdr(args);
 	while ( args.notnilp() )
 	{
-	    d = oCar(args).as<Character_O>()->get();
+	    d = gc::As<Character_sp>(oCar(args))->get();
 	    if ( !preserve_case ) d = toupper(d);
 	    dir = s*char_basic_compare(c,d);
 	    if ( dir < t) return _Nil<T_O>();
@@ -252,10 +252,10 @@ int clasp_string_case(Str_sp s)
     {_G();
 	while ( args.notnilp() )
 	{
-	    int a = oCar(args).as<Character_O>()->get();
+	    int a = gc::As<Character_sp>(oCar(args))->get();
 	    for ( List_sp cur = oCdr(args); cur.notnilp(); cur=oCdr(cur) )
 	    {
-		int b = oCar(cur).as<Character_O>()->get();
+		int b = gc::As<Character_sp>(oCar(cur))->get();
 		if ( a==b ) return((_Nil<T_O>()));
 	    }
 	    args = oCdr(args);
@@ -271,11 +271,11 @@ int clasp_string_case(Str_sp s)
     T_sp af_char_EQ_(List_sp args)
     {_G();
 	if ( args.nilp() ) return((_lisp->_true()));
-	int a = oCar(args).as<Character_O>()->get();
+	int a = gc::As<Character_sp>(oCar(args))->get();
 	args = oCdr(args);
 	while ( args.notnilp() )
 	{
-	    int b = oCar(args).as<Character_O>()->get();
+	    int b = gc::As<Character_sp>(oCar(args))->get();
 	    if ( a!=b ) return((_Nil<T_O>()));
 	    args = oCdr(args);
 	}
@@ -291,11 +291,11 @@ int clasp_string_case(Str_sp s)
     {_G();
 	while ( args.notnilp() )
 	{
-	    int a = oCar(args).as<Character_O>()->get();
+	    int a = gc::As<Character_sp>(oCar(args))->get();
 	    a = toupper(a);
 	    for ( List_sp cur = oCdr(args); cur.notnilp(); cur=oCdr(cur) )
 	    {
-		int b = oCar(cur).as<Character_O>()->get();
+		int b = gc::As<Character_sp>(oCar(cur))->get();
 		b = toupper(b);
 		if ( a==b ) return(Values(_Nil<T_O>()));
 	    }
@@ -313,8 +313,8 @@ int clasp_string_case(Str_sp s)
 	    return cx == cy;
 	}
 	// Get rid of this when we lose Character_O
-	int icx = toupper(x.as<Character_O>()->get());
-	int icy = toupper(y.as<Character_O>()->get());
+	int icx = toupper(gc::As<Character_sp>(x)->get());
+	int icy = toupper(gc::As<Character_sp>(y)->get());
 	return icx==icy;
     }	
 	
@@ -325,12 +325,12 @@ int clasp_string_case(Str_sp s)
     bool af_charEqual(List_sp args)
     {_G();
 	if ( args.nilp() ) return true;
-	int a = oCar(args).as<Character_O>()->get();
+	int a = gc::As<Character_sp>(oCar(args))->get();
 	a = toupper(a);
 	args = oCdr(args);
 	while ( args.notnilp() )
 	{
-	    int b = oCar(args).as<Character_O>()->get();
+	    int b = gc::As<Character_sp>(oCar(args))->get();
 	    b = toupper(b);
 	    if ( a!=b ) return false;
 	    args = oCdr(args);
@@ -653,7 +653,7 @@ namespace core
 
     claspChar clasp_charCode(T_sp c)
     {
-        Character_sp cc = c.as<Character_O>();
+        Character_sp cc = gc::As<Character_sp>(c);
         return cc->asChar();
     }
 
@@ -787,7 +787,7 @@ void Character_O::archiveBase(::core::ArchiveP node)
     bool Character_O::equalp(T_sp other) const
     {_OF();
         if ( other.nilp() ) return false;
-	if ( Character_sp cother = other.as<Character_O>() ) {
+	if ( Character_sp cother = gc::As<Character_sp>(other) ) {
 	    return ( toupper(cother->asChar()) == toupper(this->asChar()) );
 	}
 	return false;
@@ -948,7 +948,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
     {_OF();
 	if ( af_characterP(obj) )
 	{
-	    Character_sp wn = obj.as<Character_O>();
+	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = wn->asChar();
 	    return this->_Value >= v;
 	}
@@ -961,7 +961,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
     {_OF();
 	if ( af_characterP(obj) )
 	{
-	    Character_sp wn = obj.as<Character_O>();
+	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = wn->asChar();
 	    return this->_Value <= v;
 	}
@@ -973,7 +973,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
     {_OF();
 	if ( af_characterP(obj) )
 	{
-	    Character_sp wn = obj.as<Character_O>();
+	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = wn->asChar();
 	    return this->_Value < v;
 	}
@@ -986,7 +986,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 	if ( obj.get() == this ) return true;
 	if ( af_characterP(obj) )
 	{
-	    Character_sp wn = obj.as<Character_O>();
+	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = wn->asChar();
 	    return this->_Value == v;
 	}
@@ -1008,7 +1008,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
     {_OF();
 	if ( af_characterP(obj) )
 	{
-	    Character_sp wn = obj.as<Character_O>();
+	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = wn->asChar();
 	    return this->_Value > v;
 	}

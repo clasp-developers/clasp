@@ -62,7 +62,7 @@ namespace core {
     StringSet_sp StringSet_O::insertConsStrings(List_sp vals)
     {
 	for ( auto p : vals ) {
-	    Str_sp t = oCar(p).as<Str_O>();
+	    Str_sp t = gc::As<Str_sp>(oCar(p));
 	    this->insert(t->get());
 	}
 	return this->sharedThis<StringSet_O>();
@@ -140,8 +140,8 @@ namespace core {
 	    Vector_sp vec = node->getVectorSNodes();
 	    this->strs.clear();
 	    for ( int i(0),iEnd(vec->length()); i<iEnd; ++i ) {
-		LeafSNode_sp ln = vec->elt(i).as<LeafSNode_O>();
-		this->insert(ln->object().as<Str_O>()->get());
+		LeafSNode_sp ln = gc::As<LeafSNode_sp>(vec->elt(i));
+		this->insert(gc::As<Str_sp>(ln->object())->get());
 	    }
 	} else {
 	    VectorObjects_sp vec = VectorObjects_O::create(_Nil<T_O>(),this->strs.size(),core::_sym_LeafSNode_O);
@@ -194,10 +194,10 @@ namespace core {
     bool	StringSet_O::equal(T_sp obj) const
     {
 	if ( this->eq(obj) ) return true;
-	if ( obj.isA<StringSet_O>() )
+	if ( gc::IsA<StringSet_sp>(obj) )
 	{
 	    set<string>::iterator	si;
-	    StringSet_sp ss = obj.as<StringSet_O>();
+	    StringSet_sp ss = gc::As<StringSet_sp>(obj);
 	    if ( this->strs.size() != ss->strs.size() ) return false;
 	    for (si=this->strs.begin();si!=this->strs.end();si++)
 	    {

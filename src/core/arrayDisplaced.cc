@@ -59,7 +59,7 @@ namespace core
 	List_sp dim;
 	if ( cl_atom(dim_desig) )
 	{
-	    int idim = clasp_to_int(dim_desig.as<Integer_O>());
+	    int idim = clasp_to_int(gc::As<Integer_sp>(dim_desig));
 	    dim = Cons_O::create(make_fixnum(idim));
 	} else
 	{
@@ -208,7 +208,7 @@ void ArrayDisplaced_O::archiveBase(::core::ArchiveP node)
 	this->_Dimensions.resize(cl_length(ldim));
 	int idx = 0;
 	for ( auto dim : ldim ) {
-	    int oneDim = clasp_to_int(oCar(dim).as<Rational_O>());
+	    int oneDim = clasp_to_int(gc::As<Rational_sp>(oCar(dim)));
 	    this->_Dimensions[idx] = oneDim;
 	    elements *= oneDim;
 	    idx++;

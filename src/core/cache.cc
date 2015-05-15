@@ -58,7 +58,7 @@ namespace core
 	T_sp key = this->_table[i]._key;
 	if ( key.notnilp() )
 	  {
-	    if ( target == key.as<VectorObjects_O>()->operator[](0) )
+	    if ( target == gc::As<VectorObjects_sp>(key)->operator[](0) )
 	      {
 		this->_table[i]._key = _Nil<T_O>();
 		this->_table[i]._generation = 0;
@@ -143,10 +143,10 @@ namespace core
 	}
 	/* Else we only know that the record has been
 	 * deleted, but we might find our data ahead. */
-      } else if ( argno == cl_length(hkey.as<VectorObjects_O>()) ) { // if (argno == hkey->vector.fillp) {
+      } else if ( argno == cl_length(gc::As<VectorObjects_sp>(hkey)) ) { // if (argno == hkey->vector.fillp) {
 	int n; // cl_index n;
 	for (n = 0; n < argno; n++) {
-	  if ( keys[n] != hkey.as<VectorObjects_O>()->operator[](n))
+	  if ( keys[n] != gc::As<VectorObjects_sp>(hkey)->operator[](n))
 	    // if (keys->vector.self.t[n] != hkey->vector.self.t[n])
 	    goto NO_MATCH;
 	}

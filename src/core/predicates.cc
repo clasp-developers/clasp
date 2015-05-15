@@ -93,8 +93,7 @@ namespace core
 #define DOCS_af_bignumP "bignumP"
     bool af_bignumP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Bignum_O>();
+	return gc::IsA<Bignum_sp>(obj);
     };
 
 #define ARGS_af_fixnumP "(arg)"
@@ -113,8 +112,7 @@ namespace core
 #define DOCS_af_stringP "stringP"
     bool af_stringP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<String_O>();
+	return gc::IsA<String_sp>(obj);
     };
 
 #define ARGS_af_strP "(arg)"
@@ -122,8 +120,7 @@ namespace core
 #define DOCS_af_strP "strP"
     bool af_strP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Str_O>();
+	return gc::IsA<Str_sp>(obj);
     };
 
 
@@ -133,8 +130,7 @@ namespace core
 #define DOCS_af_doubleFloatP "doubleFloatP"
     bool af_doubleFloatP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<DoubleFloat_O>();
+	return gc::IsA<DoubleFloat_sp>(obj);
     };
 
 
@@ -143,8 +139,7 @@ namespace core
 #define DOCS_af_functionP "functionP"
     bool af_functionP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Function_O>();
+	return gc::IsA<Function_sp>(obj);
     };
 
 
@@ -157,9 +152,8 @@ namespace core
 #define DOCS_af_interpretedFunctionP "interpretedFunctionP"
     bool af_interpretedFunctionP(T_sp arg)
     {_G();
-	if ( arg.nilp() ) return false;
-        if ( arg.isA<Function_O>() ) {
-            if ( auto intfunc = arg.as<Function_O>()->closure.asOrNull<InterpretedClosure>()) {
+        if ( gc::IsA<Function_sp>(arg) ) {
+            if ( auto intfunc = gc::As<Function_sp>(arg)->closure.asOrNull<InterpretedClosure>()) {
                 return true;
             }
         }
@@ -172,8 +166,7 @@ namespace core
 #define DOCS_cl_consp "consp"
     bool cl_consp(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Cons_O>();
+	return gc::IsA<Cons_sp>(obj);
     };
 
 
@@ -183,8 +176,7 @@ namespace core
 #define DOCS_cl_packagep "See CLHS packagep"
     bool cl_packagep(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Package_O>();
+	return gc::IsA<Package_sp>(obj);
     };
 
 #define ARGS_af_classp "(arg)"
@@ -192,8 +184,7 @@ namespace core
 #define DOCS_af_classp "classp"
     bool af_classp(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Class_O>();
+	return gc::IsA<Class_sp>(obj);
     };
 
 #define ARGS_core_builtInClassP "(arg)"
@@ -202,7 +193,7 @@ namespace core
     bool core_builtInClassP(T_sp obj)
     {_G();
 	if (!af_classp(obj)) return false;
-	Class_sp c = obj.as<Class_O>();
+	Class_sp c = gc::As<Class_sp>(obj);
 	return c->builtInClassP();
     };
 
@@ -226,8 +217,7 @@ namespace core
 #define DOCS_af_lambda_list_handler_p "lambda_list_handler_p"
     bool af_lambda_list_handler_p(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<LambdaListHandler_O>();
+	return gc::IsA<LambdaListHandler_sp>(obj);
     };
 
 
@@ -237,8 +227,7 @@ namespace core
 #define DOCS_cl_numberp "numberP"
     bool cl_numberp(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Number_O>();
+	return gc::IsA<Number_sp>(obj);
     };
 
 #define ARGS_af_complexP "(arg)"
@@ -246,8 +235,7 @@ namespace core
 #define DOCS_af_complexP "complexP"
     bool af_complexP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Complex_O>();
+	return gc::IsA<Complex_sp>(obj);
     };
 
 #define ARGS_af_ratioP "(arg)"
@@ -255,8 +243,7 @@ namespace core
 #define DOCS_af_ratioP "ratioP"
     bool af_ratioP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Ratio_O>();
+	return gc::IsA<Ratio_sp>(obj);
     };
 
 
@@ -265,8 +252,7 @@ namespace core
 #define DOCS_af_rationalP "rationalP"
     bool af_rationalP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Rational_O>();
+	return gc::IsA<Rational_sp>(obj);
     };
 
 #ifdef CLASP_LONG_FLOAT
@@ -275,8 +261,7 @@ namespace core
 #define DOCS_af_longFloatP "longFloatP"
     bool af_longFloatP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<LongFloat_O>();
+	return gc::IsA<LongFloat_sp>(obj);
     };
 #endif
 
@@ -285,8 +270,7 @@ namespace core
 #define DOCS_af_shortFloatP "shortFloatP"
     bool af_shortFloatP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<ShortFloat_O>();
+	return gc::IsA<ShortFloat_sp>(obj);
     };
 
 
@@ -295,8 +279,7 @@ namespace core
 #define DOCS_af_singleFloatP "singleFloatP"
     bool af_singleFloatP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<SingleFloat_O>();
+	return gc::IsA<SingleFloat_sp>(obj);
     };
 
 
@@ -305,8 +288,7 @@ namespace core
 #define DOCS_af_realP "realP"
     bool af_realP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Real_O>();
+	return gc::IsA<Real_sp>(obj);
     };
 
 
@@ -315,8 +297,7 @@ namespace core
 #define DOCS_af_floatP "floatP"
     bool af_floatP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Float_O>();
+	return gc::IsA<Float_sp>(obj);
     };
 
 
@@ -325,8 +306,7 @@ namespace core
 #define DOCS_af_characterP "characterP"
     bool af_characterP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Character_O>();
+	return gc::IsA<Character_sp>(obj);
     };
 
 #define ARGS_af_vectorP "(arg)"
@@ -334,8 +314,7 @@ namespace core
 #define DOCS_af_vectorP "vectorP"
     bool af_vectorP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Vector_O>();
+	return gc::IsA<Vector_sp>(obj);
     };
 
 #define ARGS_af_integerP "(arg)"
@@ -343,8 +322,7 @@ namespace core
 #define DOCS_af_integerP "integerP"
     bool af_integerP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Integer_O>();
+	return gc::IsA<Integer_sp>(obj);
     };
 
 #define ARGS_af_keywordP "(arg)"
@@ -367,8 +345,7 @@ namespace core
 #define DOCS_af_pathP "pathP"
     bool af_pathP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Path_O>();
+	return gc::IsA<Path_sp>(obj);
     };
 
 
@@ -377,8 +354,7 @@ namespace core
 #define DOCS_af_bitVectorP "bitVectorP"
     bool af_bitVectorP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<BitVector_O>();
+	return gc::IsA<BitVector_sp>(obj);
     };
 
 
@@ -400,8 +376,7 @@ namespace core
 #define DOCS_cl_readtablep "readtablep"
     bool cl_readtablep(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<ReadTable_O>();
+	return gc::IsA<ReadTable_sp>(obj);
     };
 
 #define ARGS_af_structureObjectP "(arg)"
@@ -409,9 +384,8 @@ namespace core
 #define DOCS_af_structureObjectP "structureObjectP"
     bool af_structureObjectP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	if (obj.isA<StructureObject_O>()) return true;
-	return obj.isA<Instance_O>();
+	if (gc::IsA<StructureObject_sp>(obj)) return true;
+	return gc::IsA<Instance_sp>(obj);
     };
 
 #define ARGS_af_arrayP "(arg)"
@@ -419,8 +393,7 @@ namespace core
 #define DOCS_af_arrayP "arrayP"
     bool af_arrayP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<Array_O>();
+	return gc::IsA<Array_sp>(obj);
     };
 
 
@@ -429,8 +402,7 @@ namespace core
 #define DOCS_af_singleDispatchGenericFunctionP "singleDispatchGenericFunctionP"
     bool af_singleDispatchGenericFunctionP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<SingleDispatchGenericFunction_O>();
+	return gc::IsA<SingleDispatchGenericFunction_sp>(obj);
     };
 
 
@@ -439,8 +411,7 @@ namespace core
 #define DOCS_af_activation_frame_p "activation_frame_p"
     bool af_activation_frame_p(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<ActivationFrame_O>();
+	return gc::IsA<ActivationFrame_sp>(obj);
     };
 
 #define ARGS_af_externalObjectP "(arg)"
@@ -448,8 +419,7 @@ namespace core
 #define DOCS_af_externalObjectP "externalObjectP"
     bool af_externalObjectP(T_sp obj)
     {_G();
-	if (obj.nilp()) return false;
-	return obj.isA<ExternalObject_O>();
+	return gc::IsA<ExternalObject_sp>(obj);
     };
 
 
@@ -551,8 +521,7 @@ namespace core
 #define DECL_af_pathnamep ""
 #define DOCS_af_pathnamep "pathnamep"
     bool af_pathnamep(T_sp obj) {
-	if ( obj.nilp() ) return false;
-	return obj.isA<Pathname_O>();
+	return gc::IsA<Pathname_sp>(obj);
     };
 
 
@@ -562,8 +531,7 @@ namespace core
 #define DECL_af_logicalPathnameP ""
 #define DOCS_af_logicalPathnameP "logicalPathnameP"
     bool af_logicalPathnameP(T_sp obj) {
-	if ( obj.nilp() ) return false;
-	return obj.isA<LogicalPathname_O>();
+	return gc::IsA<LogicalPathname_sp>(obj);
     };
 
 

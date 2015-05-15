@@ -135,7 +135,7 @@ namespace core
     {_G();
         
 	for ( auto cur : s ) {
-	    Symbol_sp sym = _lisp->intern(oCar(cur).as<Str_O>()->get());
+	    Symbol_sp sym = _lisp->intern(gc::As<Str_sp>(oCar(cur))->get());
 	    this->_Contents.push_back(sym);
 	}
     }

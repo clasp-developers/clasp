@@ -52,16 +52,16 @@ namespace core
 	    _lisp->_Roots._SystemProperties = HashTableEql_O::create_default();
 	}
 	bool foundHashTable = false;
-	const T_mv& values = _lisp->_Roots._SystemProperties.as<HashTable_O>()->gethash(area);
+	const T_mv& values = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->gethash(area);
 	T_sp area_hash_table = values;
-	foundHashTable = values.valueGet(1).as<T_O>().isTrue();
+	foundHashTable = gc::As<T_sp>(values.valueGet(1)).isTrue();
 	T_sp retval;
 	if ( foundHashTable ) {
-	    retval = area_hash_table.as<HashTable_O>()->hash_table_setf_gethash(key,value);
+	    retval = gc::As<HashTable_sp>(area_hash_table)->hash_table_setf_gethash(key,value);
 	} else {
 	    HashTable_sp new_hash_table = HashTableEql_O::create_default();
 	    new_hash_table->hash_table_setf_gethash(key,value);
-	    retval = _lisp->_Roots._SystemProperties.as<HashTable_O>()->hash_table_setf_gethash(area,new_hash_table);
+	    retval = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->hash_table_setf_gethash(area,new_hash_table);
 	}
 	return(retval);
     }
@@ -77,11 +77,11 @@ namespace core
     {_G();
 	if ( _lisp->_Roots._SystemProperties.notnilp() ) 
 	{
-	    T_mv values = _lisp->_Roots._SystemProperties.as<HashTable_O>()->gethash(area,_Nil<T_O>());
+	    T_mv values = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->gethash(area,_Nil<T_O>());
 	    T_sp hashTable = values;
-	    bool foundHashTable = values.valueGet(1).as<T_O>().isTrue();
+	    bool foundHashTable = gc::As<T_sp>(values.valueGet(1)).isTrue();
 	    if ( foundHashTable ) {
-		return hashTable.as<HashTable_O>()->gethash(key,_Nil<T_O>());
+		return gc::As<HashTable_sp>(hashTable)->gethash(key,_Nil<T_O>());
 	    }
 	}
 	return(Values(_Nil<T_O>(),_Nil<T_O>()) );
@@ -96,9 +96,9 @@ namespace core
 #define DOCS_af_rem_sysprop "rem_sysprop"
     T_sp af_rem_sysprop(T_sp key, T_sp area)
     {_G();
-	T_mv mv_values = _lisp->_Roots._SystemProperties.as<HashTable_O>()->gethash(area,_Nil<T_O>());
-	HashTable_sp hashTable = mv_values.as<HashTable_O>();
-	bool foundHashTable = mv_values.valueGet(1).as<T_O>().isTrue();
+	T_mv mv_values = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->gethash(area,_Nil<T_O>());
+	HashTable_sp hashTable = gc::As<HashTable_sp>(mv_values);
+	bool foundHashTable = gc::As<T_sp>(mv_values.valueGet(1)).isTrue();
 	if (foundHashTable) {
 	    bool found = hashTable->remhash(key);
 	    return _lisp->_boolean(found);

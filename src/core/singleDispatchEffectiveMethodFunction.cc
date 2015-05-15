@@ -96,7 +96,7 @@ namespace core
     {_OF();
 	stringstream ss;
 	for ( auto cur : this->_Methods ) {
-	    ss << "method has Receiver class[" << _rep_(oCar(cur).as<SingleDispatchMethod_O>()->receiver_class()) << "]" << std::endl;
+	    ss << "method has Receiver class[" << _rep_(gc::As<SingleDispatchMethod_sp>(oCar(cur))->receiver_class()) << "]" << std::endl;
 	}
 	return ss.str();
     }

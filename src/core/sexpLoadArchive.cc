@@ -52,7 +52,7 @@ namespace core
 	if ( obj.nilp() ) {
 	    return LeafSNode_O::create(_Nil<T_O>());
 	} else if ( cl_atom(obj) ) {
-	    SNode_sp node = objToNode->gethash(obj,_Unbound<T_O>()).as<SNode_O>();
+	    SNode_sp node = gc::As<SNode_sp>(objToNode->gethash(obj,_Unbound<T_O>()));
 	    if ( node.unboundp() ) {
 		node = LeafSNode_O::create(obj);
 		objToNode->hash_table_setf_gethash(obj,node);
@@ -69,15 +69,15 @@ namespace core
 	    }
 #endif
 	    Cons_sp consObj = obj.asOrNull<Cons_O>();
-	    SNode_sp snode = objToNode->gethash(consObj,_Unbound<T_O>()).as<SNode_O>();
+	    SNode_sp snode = gc::As<SNode_sp>(objToNode->gethash(consObj,_Unbound<T_O>()));
 	    if ( snode.unboundp() ) {
 		snode = BranchSNode_O::create();
 		objToNode->hash_table_setf_gethash(obj,snode);
-		Symbol_sp head = oFirst(consObj).as<Symbol_O>();
+		Symbol_sp head = gc::As<Symbol_sp>(oFirst(consObj));
 		Cons_sp dummyCons = Cons_O::create(_Nil<T_O>());
 		Cons_sp result = dummyCons;
 		for ( List_sp cur = oSecond(consObj); cur.consp(); cur=oCddr(cur) ) {
-		    Symbol_sp propertyName = oCar(cur).as<Symbol_O>();
+		    Symbol_sp propertyName = gc::As<Symbol_sp>(oCar(cur));
 		    T_sp rawData = oCadr(cur);
 		    SNode_sp propertyData = parseNode(objToNode,rawData);
 		    Cons_sp one = Cons_O::create(propertyName);
@@ -89,7 +89,7 @@ namespace core
 		}
 		VectorObjects_sp vresult(_Nil<VectorObjects_O>());
 		if ( oCddr(consObj).notnilp()) {
-		    Vector_sp vdata = oThird(consObj).as<Vector_O>();
+		    Vector_sp vdata = gc::As<Vector_sp>(oThird(consObj));
 		    vresult = VectorObjects_O::make(_Nil<T_O>(),_Nil<T_O>(), vdata->length(), true);
 		    for ( int i=0,iEnd(vdata->length());i<iEnd;++i) {
 			SNode_sp data = parseNode(objToNode,vdata->elt(i));
@@ -131,7 +131,7 @@ namespace core
     {
 	DynamicScopeManager scope(_sym_STARserializerArchiveSTAR,this->asSmartPtr());
 	HashTable_sp objToNode = HashTable_O::create(cl::_sym_eq);
-	this->_TopNode = parseNode(objToNode,object).as<BranchSNode_O>();
+	this->_TopNode = gc::As<BranchSNode_sp>(parseNode(objToNode,object));
 	this->createContents();
     };
 

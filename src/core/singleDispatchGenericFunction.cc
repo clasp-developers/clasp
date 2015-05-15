@@ -87,7 +87,7 @@ namespace core
         if ( !gfname->fboundp() ) {
             SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));
         }
-	SingleDispatchGenericFunction_sp gf = gfname->symbolFunction().as<SingleDispatchGenericFunction_O>();
+	SingleDispatchGenericFunction_sp gf = gc::As<SingleDispatchGenericFunction_sp>(gfname->symbolFunction());
 	SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(gfname,receiver_class,lambda_list_handler,declares,docstring,body);
         ASSERT(lambda_list_handler.notnilp());
 	gctools::tagged_functor<SingleDispatchGenericFunctionClosure> gfc = gf->closure.as<SingleDispatchGenericFunctionClosure>();
@@ -128,7 +128,7 @@ namespace core
 	bool replacedMethod = false;
 	{_BLOCK_TRACEF(BF("Checking if the receiver class already has a method"));
 	    for ( auto cur : this->_Methods ) {
-		SingleDispatchMethod_sp existing = oCar(cur).as<SingleDispatchMethod_O>();
+		SingleDispatchMethod_sp existing = gc::As<SingleDispatchMethod_sp>(oCar(cur));
 		LOG(BF("An existing method has receiverClass[%s]") % _rep_(existing->receiver_class()) );
 		if ( existing->receiver_class() == method->receiver_class() )
 		{
@@ -169,7 +169,7 @@ namespace core
         }
 //        printf("%s:%d searched on %s/%s  cache record = %p\n", __FILE__, __LINE__, _rep_(vektor[0]).c_str(), _rep_(vektor[1]).c_str(), e );
         if ( e->_key.notnilp() ) {
-            func = e->_value.as<Function_O>();
+            func = gc::As<Function_sp>(e->_value);
         } else {
             func = this->slowMethodLookup(dispatchArgClass);
             T_sp keys = VectorObjects_O::create(vektor);
@@ -188,8 +188,8 @@ namespace core
     public:
 	bool operator()(T_sp const& x, T_sp const& y )
 	{
-            SingleDispatchMethod_sp sx = x.as<SingleDispatchMethod_O>();
-            SingleDispatchMethod_sp sy = y.as<SingleDispatchMethod_O>();
+            SingleDispatchMethod_sp sx = gc::As<SingleDispatchMethod_sp>(x);
+            SingleDispatchMethod_sp sy = gc::As<SingleDispatchMethod_sp>(y);
 	    return sx->receiver_class()->isSubClassOf(sy->receiver_class()); // or should it be y->isSubClassOf(x)?????
 	}
     };  
@@ -199,7 +199,7 @@ Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc)
 	LOG(BF("Looking for applicable methods for receivers of class[%s]") % _rep_(mc) );
         gctools::Vec0<SingleDispatchMethod_sp> applicableMethods;
 	for ( auto cur : this->_Methods ) {
-	    SingleDispatchMethod_sp sdm = oCar(cur).as<SingleDispatchMethod_O>();
+	    SingleDispatchMethod_sp sdm = gc::As<SingleDispatchMethod_sp>(oCar(cur));
 	    Class_sp ac = sdm->receiver_class();
 	    if ( mc->isSubClassOf(ac) )
 	    {

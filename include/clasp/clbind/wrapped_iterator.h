@@ -58,7 +58,7 @@ namespace clbind
             return false;
         }
         bool operator<(core::T_sp other) {
-            if ( Iterator<IT>* io = other.as<Iterator<IT> >() ) {
+            if ( Iterator<IT>* io = gc::As<gc::smart_ptr<Iterator<IT>> >(other) ) {
                 return this->_Iterator < io->rawIterator();
             }
             return false;

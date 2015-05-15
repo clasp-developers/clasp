@@ -147,7 +147,7 @@ In ecl/src/c/interpreter.d  is the following code
 		SYMBOL_EXPORT_SC_(ClPkg,no_applicable_method);
 		T_sp func = eval::funcall(cl::_sym_no_applicable_method,
 					  gf,arglist);
-		args[0] = (T_O*)(gctools::tag_nil<T_O>());
+		args[0] = (T_O*)(gctools::tag_nil<T_O*>());
 		return(Values(func,_Nil<T_O>()));
 	    }
 	}
@@ -168,9 +168,9 @@ In ecl/src/c/interpreter.d  is the following code
 	T_sp methods = eval::funcall(clos::_sym_std_compute_applicable_methods,igf,arglist);
 	if ( methods.nilp() )
 	{
-	    Function_sp func = eval::funcall(cl::_sym_no_applicable_method,
-					     igf,arglist).as<Function_O>();
-	    args[0] = (T_O*)(gctools::tag_nil<T_O>());
+	    Function_sp func = gc::As<Function_sp>(eval::funcall(cl::_sym_no_applicable_method,
+					     igf,arglist));
+	    args[0] = (T_O*)(gctools::tag_nil<T_O*>());
 	    return(Values(func,_Nil<T_O>()));
 	}
 	methods = eval::funcall(clos::_sym_std_compute_effective_method,igf,gf->GFUN_COMB(),methods);
@@ -209,7 +209,7 @@ In ecl/src/c/interpreter.d  is the following code
 
     T_mv compute_applicable_method(Instance_sp gf, int nargs, ArgArray args)
 {
-    if (gf.as<Instance_O>()->isgf() == ECL_RESTRICTED_DISPATCH )
+    if (gc::As<Instance_sp>(gf)->isgf() == ECL_RESTRICTED_DISPATCH )
     {
 	return restricted_compute_applicable_method(gf,nargs,args);
     } else
@@ -255,7 +255,7 @@ In ecl/src/c/interpreter.d  is the following code
 		SIMPLE_ERROR(BF("Too many arguments to fill_spec_vector()"));
 	    }
 	    if (!cl_listp(spec_type) || 
-		spec_type.as<Cons_O>()->memberEql(gctools::smart_ptr<T_O>((gctools::Tagged)(args[spec_position]))).nilp() ) // Was as_or_nil
+		gc::As<Cons_sp>(spec_type)->memberEql(gctools::smart_ptr<T_O>((gctools::Tagged)(args[spec_position]))).nilp() ) // Was as_or_nil
 	    {
 		Class_sp mc = lisp_instance_class(gctools::smart_ptr<T_O>((gctools::Tagged)(args[spec_position])));
 #if DEBUG_CLOS>=2
@@ -328,14 +328,14 @@ In ecl/src/c/interpreter.d  is the following code
 	ASSERT(e!=NULL);
 	Function_sp func;
 	if (e->_key.notnilp()) {
-	    func = e->_value.as<Function_O>();
+	    func = gc::As<Function_sp>(e->_value);
 	} else {
 	    /* The keys and the cache may change while we
 	     * compute the applicable methods. We must save
 	     * the keys and recompute the cache location if
 	     * it was filled. */
 	    T_mv mv = compute_applicable_method(gf, callArgs.getSize(), callArgs.callingArgsStart() );
-	    func = mv.as<Function_O>();
+	    func = gc::As<Function_sp>(mv);
 	    if (mv.valueGet(1).notnilp() ) {
 	      T_sp keys = VectorObjects_O::create(vektor);
 		if (e->_key.notnilp()) {

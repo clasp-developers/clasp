@@ -137,7 +137,7 @@ namespace core
     {_G();
         GC_ALLOCATE(CandoException_O,condition );
 	Cons_sp all = Cons_O::createList(type,slot_initializations);
-	Str_sp msg = af_bformat(_Nil<T_O>(),"%s %s",all).as<Str_O>();
+	Str_sp msg = gc::As<Str_sp>(af_bformat(_Nil<T_O>(),"%s %s",all));
 	condition->setMessage(msg->get());
 	return condition;
     };
@@ -156,7 +156,7 @@ namespace core
 	}
 	T_sp sout = clasp_make_string_output_stream();
 	eval::funcall(cl::_sym_printObject,condition,sout);
-	return cl_get_output_stream_string(sout).as<Str_O>()->get();
+	return gc::As<Str_sp>(cl_get_output_stream_string(sout))->get();
     }
 
 

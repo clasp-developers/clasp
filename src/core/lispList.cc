@@ -139,20 +139,20 @@ namespace core
 		t->test_c_function = test_equalp;
 	    } else {
 		t->test_c_function = test_compare;
-		t->test_fn = test.as<Function_O>(); //ecl_function_dispatch(env, test);
+		t->test_fn = gc::As<Function_sp>(test); //ecl_function_dispatch(env, test);
 		t->test_function = t->test_fn; // env->function;
 	    }
 	} else if (test_not.notnilp()) {
 	    t->test_c_function = test_compare_not;
 	    test_not = coerce::functionDesignator(test_not);
-	    t->test_fn = test_not.as<Function_O>(); // ecl_function_dispatch(env, test_not);
+	    t->test_fn = gc::As<Function_sp>(test_not); // ecl_function_dispatch(env, test_not);
 	    t->test_function = t->test_fn; // env->function;
 	} else {
 	    t->test_c_function = test_eql;
 	}
 	if (key.notnilp()) {
 	    key = coerce::functionDesignator(key);
-	    t->key_fn = key.as<Function_O>(); // ecl_function_dispatch(env, key);
+	    t->key_fn = gc::As<Function_sp>(key); // ecl_function_dispatch(env, key);
 	    t->key_function = t->key_fn; // env->function;
 	    t->key_c_function = key_function;
 	} else {
@@ -362,7 +362,7 @@ namespace core
             if (head.nilp()) {
                 head = other;
             } else {
-                tail.as<Cons_O>()->rplacd(other);
+                gc::As<Cons_sp>(tail)->rplacd(other);
             }
             tail = new_tail;
         }
@@ -375,7 +375,7 @@ namespace core
             return y;
         }
         if ( Cons_sp conslist = l.asOrNull<Cons_O>()) {
-            Cons_sp last = cl_last(conslist,1).as<Cons_O>();
+            Cons_sp last = gc::As<Cons_sp>(cl_last(conslist,1));
             last->rplacd(y);
             return conslist;
         }

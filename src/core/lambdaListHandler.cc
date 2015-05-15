@@ -104,7 +104,7 @@ namespace core
     List_sp TargetClassifier::finalClassifiedSymbols()
     {
 	if ( this->_SpecialSymbols.notnilp() ) {
-            this->_SpecialSymbols.as<SymbolSet_O>()->map( [this] (Symbol_sp s) {
+            gc::As<SymbolSet_sp>(this->_SpecialSymbols)->map( [this] (Symbol_sp s) {
                     if ( !this->_LambdaListSpecials->contains(s) )
                     {
                         this->_AccumulatedClassifiedSymbols
@@ -162,7 +162,7 @@ namespace core
 		  it!=this->_KeywordArguments.end(); it++ )
 	    {
 		T_sp keywordTarget = it->_ArgTarget;
-		if ( it->_Keyword.as<Symbol_O>()->symbolName()->get() != keywordTarget.as<Symbol_O>()->symbolName()->get() ) {
+		if ( gc::As<Symbol_sp>(it->_Keyword)->symbolName()->get() != gc::As<Symbol_sp>(keywordTarget)->symbolName()->get() ) {
 		    keywordTarget = Cons_O::createList(it->_Keyword,keywordTarget);
 		}
 		if (it->_Sensor._ArgTarget.notnilp() ) {
@@ -202,7 +202,7 @@ namespace core
 		T_sp entry = oCar(cur);
 		if ( cl_consp(entry) && oCar(entry) == cl::_sym_special ) {
 		    for ( auto spcur : coerce_to_list(oCdr(entry)) ) {
-			specials->insert(oCar(spcur).as<Symbol_O>());
+			specials->insert(gc::As<Symbol_sp>(oCar(spcur)));
 		    }
 		}
 	    }
@@ -239,7 +239,7 @@ namespace core
 	    T_sp arg = oCar(cur);
 	    if ( cl_symbolp(arg) )
 	    {
-		if ( arg.as<Symbol_O>()->amp_symbol_p() )
+		if ( gc::As<Symbol_sp>(arg)->amp_symbol_p() )
 		{
 		    saw_amp = true;
 		    break;
@@ -258,8 +258,8 @@ namespace core
 		    ERROR(_sym_singleDispatchTooManyArgumentsError,
 			  Cons_O::createList(kw::_sym_arguments,llraw));
 		}
-		sd_symbol = oCar(carg).as<Symbol_O>();
-		sd_class = oCadr(carg).as<Symbol_O>();
+		sd_symbol = gc::As<Symbol_sp>(oCar(carg));
+		sd_class = gc::As<Symbol_sp>(oCadr(carg));
 		cur->setCar(sd_symbol);
                 dispatchIndex = idx;
 	    } else
@@ -273,7 +273,7 @@ namespace core
 	if ( sd_symbol.nilp() ) {
 	    if ( allow_first_argument_default_dispatcher ) {
 		T_sp car = oCar(llprocessed);
-		sd_symbol = car.as<Symbol_O>();
+		sd_symbol = gc::As<Symbol_sp>(car);
 	    } else {
 		SYMBOL_SC_(CorePkg,singleDispatchMissingDispatchArgumentError);
 		ERROR(_sym_singleDispatchMissingDispatchArgumentError,
@@ -295,18 +295,18 @@ namespace core
 	Symbol_sp whole_symbol = _Nil<Symbol_O>();
 	Symbol_sp environment_symbol = _Nil<Symbol_O>();
 	if ( oCar(new_lambda_list) == cl::_sym_AMPwhole ) {
-	    whole_symbol = oCadr(new_lambda_list).as<Symbol_O>();
+	    whole_symbol = gc::As<Symbol_sp>(oCadr(new_lambda_list));
 	    new_lambda_list = oCddr(new_lambda_list);
 	}
 	if ( oCar(new_lambda_list) == cl::_sym_AMPenvironment ) {
-	    environment_symbol = oCadr(new_lambda_list).as<Symbol_O>();
+	    environment_symbol = gc::As<Symbol_sp>(oCadr(new_lambda_list));
 	    new_lambda_list = oCddr(new_lambda_list);
 	} else {
 	    List_sp cur = oCdr(new_lambda_list);
 	    Cons_sp prev = new_lambda_list.asCons();
 	    for ( ; cur.notnilp(); prev=cur.asCons(), cur=oCdr(cur) ) {
 		if ( oCar(cur) == cl::_sym_AMPenvironment ) {
-		    environment_symbol = oCadr(cur).as<Symbol_O>();
+		    environment_symbol = gc::As<Symbol_sp>(oCadr(cur));
 		    // remove the &environment from the lambda-list
 		    prev->setCdr(oCddr(cur));
 		    break;
@@ -322,7 +322,7 @@ namespace core
 	sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol,new_lambda_list);
 	List_sp macro_ll = sclist.cons();
         if ( _lisp->sourceDatabase().notnilp() ) {
-            _lisp->sourceDatabase().as<SourceManager_O>()->duplicateSourcePosInfo(lambda_list,macro_ll);
+            gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(lambda_list,macro_ll);
         }
 	return macro_ll;
     }
@@ -387,8 +387,8 @@ namespace core
 
     void TargetClassifier::classifyTarget(Argument& target)
     {
-	Symbol_sp sym = target._ArgTarget.as<Symbol_O>();
-	if ( sym->specialP() || (this->_SpecialSymbols.notnilp() && this->_SpecialSymbols.as<SymbolSet_O>()->contains(sym) ))
+	Symbol_sp sym = gc::As<Symbol_sp>(target._ArgTarget);
+	if ( sym->specialP() || (this->_SpecialSymbols.notnilp() && gc::As<SymbolSet_sp>(this->_SpecialSymbols)->contains(sym) ))
 	{
 	    target._ArgTargetFrameIndex = SPECIAL_TARGET;
 	    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_specialVar,target._ArgTarget);
@@ -919,20 +919,20 @@ void bind_aux
 		    T_sp sensorSymbol = _Nil<T_O>();
 		    if ( cl_symbolp(oarg) ) {
 			localTarget = oarg;
-			keySymbol = localTarget.as<Symbol_O>()->asKeywordSymbol();
+			keySymbol = gc::As<Symbol_sp>(localTarget)->asKeywordSymbol();
 		    } else if ( cl_consp(oarg) ) {
 			List_sp carg = oarg;
 			T_sp head = oCar(carg);
 			if ( cl_consp(head) ) {
 			    List_sp namePart = head;
-			    keySymbol = oCar(namePart).as<Symbol_O>();			// This is the keyword name
+			    keySymbol = gc::As<Symbol_sp>(oCar(namePart));			// This is the keyword name
 			    if (!keySymbol->isKeywordSymbol()) {
 				SIMPLE_ERROR(BF("With key arguments of the form ((:x y) ...) the first argument must be a keyword symbol - you gave: ") % _rep_(keySymbol));
 			    }
 			    localTarget = oCadr(namePart);		 // this is the symbol to rename it to
 			} else {
 			    localTarget = head;
-			    keySymbol = localTarget.as<Symbol_O>()->asKeywordSymbol();
+			    keySymbol = gc::As<Symbol_sp>(localTarget)->asKeywordSymbol();
 			}
 
 			//
@@ -962,7 +962,7 @@ void bind_aux
 			if ( cl_consp(oarg) )
 			    {
 				List_sp carg = oarg;
-				localSymbol = oCar(carg).as<Symbol_O>();
+				localSymbol = gc::As<Symbol_sp>(oCar(carg));
 				//
 				// Is there an expression
 				//
@@ -1363,7 +1363,7 @@ void bind_aux
 	{
 	    this->calculateNamesOfLexicalVariablesForDebugging();
 	}
-	return this->_LexicalVariableNamesForDebugging.as<VectorObjects_O>();
+	return gc::As<VectorObjects_sp>(this->_LexicalVariableNamesForDebugging);
     }
 
 

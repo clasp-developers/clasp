@@ -62,7 +62,7 @@ namespace core
 	    ASSERTF(!type.nilp(), BF("Tried to make-structure with type = nil"));
 //	printf("%s:%d  af_makeStructure of %s  slot_values: %s\n",
 //	       __FILE__, __LINE__, _rep_(type).c_str(), _rep_(slot_values).c_str());
-	    Instance_sp so = Instance_O::allocateInstance(ctype,cl_length(slot_values)).as<Instance_O>();
+	    Instance_sp so = gc::As<Instance_sp>(Instance_O::allocateInstance(ctype,cl_length(slot_values)));
 	    int idx = 0;
 	    for ( auto slot : slot_values ) {
 		so->instanceSet(idx,oCar(slot));
@@ -213,7 +213,7 @@ namespace core
 		return true;
 	    } else {
 		for ( auto sup : cx->directSuperclasses() ) {
-		    if (af_structureSubtypep(oCar(sup).as<Class_O>(),y) ) return true;
+		    if (af_structureSubtypep(gc::As<Class_sp>(oCar(sup)),y) ) return true;
 		}
 		return false;
 	    }
@@ -223,7 +223,7 @@ namespace core
 	    do {
 		if (sx == y) return true;
 		SYMBOL_EXPORT_SC_(CorePkg,structure_include);
-		sx = af_get_sysprop(sx,_sym_structure_include).as<Symbol_O>();
+		sx = gc::As<Symbol_sp>(af_get_sysprop(sx,_sym_structure_include));
 	    } while (!sx.nilp());
 	    return false;
 	}
@@ -298,7 +298,7 @@ namespace core
 	List_sp slots = af_get_sysprop(this->_Type,_sym_structure_slot_descriptions);
 	for ( ; slots.notnilp(); slots = oCdr(slots) ) {
 	    List_sp slotDesc = oCar(slots);
-	    Cons_sp slotNameCons = Cons_O::create(_lisp->internKeyword(oCar(slotDesc).as<Symbol_O>()->symbolName()->get()));
+	    Cons_sp slotNameCons = Cons_O::create(_lisp->internKeyword(gc::As<Symbol_sp>(oCar(slotDesc))->symbolName()->get()));
 	    *curP = slotNameCons; // cur.setPointee(slotNameCons); // *cur = slotNameCons;
 	    curP = slotNameCons->cdrPtr(); // cur.setPointer(slotNameCons->cdrPtr()); // cur = slotNameCons->cdrPtr();
 	    int idx = unbox_fixnum(gc::As<Fixnum_sp>(oFifth(slotDesc)));

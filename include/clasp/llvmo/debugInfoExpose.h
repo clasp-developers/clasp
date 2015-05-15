@@ -127,7 +127,7 @@ namespace translate
 	typedef llvm::DIDescriptor& DeclareType;
         DeclareType _v;
         //! Handle inheritance by casting up to DebugInfo_O and then down to the desired class
-	from_object(T_P object) : _v(*(object.as<llvmo::DebugInfo_O>()->operator llvm::DIDescriptor*())) {};
+	from_object(T_P object) : _v(*(gc::As<llvmo::DebugInfo_sp>(object)->operator llvm::DIDescriptor*())) {};
     };
 };
 
@@ -171,7 +171,7 @@ namespace translate
     {
 	typedef llvm::DIScope& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*object.as<llvmo::DIScope_O>()) {};
+	from_object(T_P object) : _v(*gc::As<llvmo::DIScope_sp>(object)) {};
     };
 };
 
@@ -230,7 +230,7 @@ namespace translate
     {
 	typedef llvm::DIArray& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*(object.as<llvmo::DIArray_O>())) {};
+	from_object(T_P object) : _v(*(gc::As<llvmo::DIArray_sp>(object))) {};
     };
 };
 
@@ -270,7 +270,7 @@ namespace translate
     {
 	typedef llvm::DITypeArray& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*(object.as<llvmo::DITypeArray_O>())) {};
+	from_object(T_P object) : _v(*(gc::As<llvmo::DITypeArray_sp>(object))) {};
     };
 };
 
@@ -326,7 +326,7 @@ namespace translate
     {
 	typedef llvm::DIFile& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*object.as<llvmo::DIFile_O>()) {};
+	from_object(T_P object) : _v(*gc::As<llvmo::DIFile_sp>(object)) {};
     };
 };
 
@@ -429,7 +429,7 @@ namespace translate
 	typedef llvm::DIType& DeclareType;
 	DeclareType _v;
         //! Handle inheritance by casting up to DebugInfo_O and then down to the desired class
-	from_object(T_P object) : _v(*(object.as<llvmo::DebugInfo_O>()->operator llvm::DIType*())) {};
+	from_object(T_P object) : _v(*(gc::As<llvmo::DebugInfo_sp>(object)->operator llvm::DIType*())) {};
     };
 
 };
@@ -480,7 +480,7 @@ namespace translate
 	static DeclareType convert(core::T_sp object)
 	{
 	    ASSERT(object.objectp());
-	    return *(object.as<llvmo::DIDerivedType_O>());
+	    return *(gc::As<llvmo::DIDerivedType_sp>(object));
 	}
     };
 };
@@ -530,7 +530,7 @@ namespace translate
 	static DeclareType convert(core::T_sp object)
 	{
 	    ASSERT(object.objectp());
-	    return *(object.as<llvmo::DIBasicType_O>());
+	    return *(gc::As<llvmo::DIBasicType_sp>(object));
 	}
     };
 };
@@ -584,7 +584,7 @@ namespace translate
 	typedef llvm::DICompositeType& DeclareType;
 	DeclareType _v;
         //! Handle inheritance by casting up to DebugInfo_O and then down to the desired class
-	from_object(T_P object) : _v(*(object.as<llvmo::DebugInfo_O>()->operator llvm::DICompositeType*())) {};
+	from_object(T_P object) : _v(*(gc::As<llvmo::DebugInfo_sp>(object)->operator llvm::DICompositeType*())) {};
     };
 };
 
@@ -635,7 +635,7 @@ namespace translate
     {
 	typedef llvm::DISubroutineType& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*(object.as<llvmo::DISubroutineType_O>())) {};
+	from_object(T_P object) : _v(*(gc::As<llvmo::DISubroutineType_sp>(object))) {};
     };
 };
 
@@ -685,7 +685,7 @@ namespace translate
 	static DeclareType convert(core::T_sp object)
 	{
 	    ASSERT(object.objectp());
-	    return *(object.as<llvmo::DILexicalBlock_O>());
+	    return *(gc::As<llvmo::DILexicalBlock_sp>(object));
 	}
     };
 };
@@ -734,7 +734,7 @@ namespace translate
 	static DeclareType convert(core::T_sp object)
 	{
 	    ASSERT(object.objectp());
-	    return *(object.as<llvmo::DICompileUnit_O>());
+	    return *(gc::As<llvmo::DICompileUnit_sp>(object));
 	}
     };
 };
@@ -795,7 +795,7 @@ namespace translate
     {
         typedef llvm::DIBuilder& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*object.as<llvmo::DIBuilder_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(*gc::As<llvmo::DIBuilder_sp>(object)->wrappedPtr()) {};
     };
 };
 ;

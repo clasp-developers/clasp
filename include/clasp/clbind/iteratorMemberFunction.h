@@ -60,7 +60,7 @@ namespace clbind {
         void LISP_CALLING_CONVENTION()
         {
             if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-            OT* objPtr = (LCC_ARG0()).as<core::WrappedPointer_O>()->cast<OT>();
+            OT* objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
             IteratorType itBegin = ((*objPtr).*(this->_begin))();
             IteratorType itEnd = ((*objPtr).*(this->_end))();
             GC_ALLOCATE_VARIADIC(WrappedIteratorType,smart_itBegin,itBegin);

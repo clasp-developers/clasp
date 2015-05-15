@@ -70,7 +70,7 @@ namespace core {
     SymbolSet_sp SymbolSet_O::insertConsSymbols(List_sp vals)
     {
         for ( auto p : vals ) {
-            Symbol_sp t = oCar(p).as<Symbol_O>();
+            Symbol_sp t = gc::As<Symbol_sp>(oCar(p));
             this->insert(t);
         }
         return this->sharedThis<SymbolSet_O>();
@@ -156,7 +156,7 @@ namespace core {
     void SymbolSet_O::insertVector(Vector_sp vec)
     {
 	for ( int i=0, iEnd(vec->length()); i<iEnd; ++i ) {
-	    Symbol_sp sym = vec->elt(i).as<Symbol_O>();
+	    Symbol_sp sym = gc::As<Symbol_sp>(vec->elt(i));
 	    this->insert(sym);
 	}
     }
@@ -196,9 +196,9 @@ namespace core {
     bool	SymbolSet_O::equal(T_sp obj) const
     {
         if ( this->eq(obj) ) return true;
-        if ( obj.isA<SymbolSet_O>() )
+        if ( gc::IsA<SymbolSet_sp>(obj) )
         {
-            SymbolSet_sp ss = obj.as<SymbolSet_O>();
+            SymbolSet_sp ss = gc::As<SymbolSet_sp>(obj);
             if ( this->size() != ss->size() ) return false;
             bool missed(false);
             this->map( [&missed,&ss] (Symbol_sp s) {
@@ -341,14 +341,14 @@ namespace core {
     void SymbolSet_O::map(std::function<void(Symbol_sp)> const& fn)
     {
         this->_Symbols->mapHash([&fn] (T_sp key, T_sp val) {
-                fn(key.as<Symbol_O>());
+                fn(gc::As<Symbol_sp>(key));
             });
     }
 
     void SymbolSet_O::map(std::function<void(Symbol_sp)> const& fn) const
     {
         this->_Symbols->mapHash([&fn] (T_sp key, T_sp val) {
-                fn(key.as<Symbol_O>());
+                fn(gc::As<Symbol_sp>(key));
             });
     }
 

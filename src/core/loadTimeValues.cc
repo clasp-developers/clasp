@@ -96,7 +96,7 @@ namespace core
     T_sp af_lookupLoadTimeValue(const string& name, int idx)
     {_G();
 	int count=0;
-	LoadTimeValues_sp ltva = _lisp->findLoadTimeValuesWithNameContaining(name,count).as<LoadTimeValues_O>();
+	LoadTimeValues_sp ltva = gc::As<LoadTimeValues_sp>(_lisp->findLoadTimeValuesWithNameContaining(name,count));
 	if ( count != 1 ) {
 	    SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % name );
 	}
@@ -118,7 +118,7 @@ namespace core
 	if ( tltva.nilp() ) {
 	    SIMPLE_ERROR(BF("Could not find load-time-values %s") % name);
 	}
-	LoadTimeValues_sp ltva = tltva.as<LoadTimeValues_O>();
+	LoadTimeValues_sp ltva = gc::As<LoadTimeValues_sp>(tltva);
 	if ( count != 1 ) {
 	    SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % name );
 	}
@@ -139,7 +139,7 @@ namespace core
     {_G();
         List_sp names = _lisp->loadTimeValuesIds();
         for ( auto cur : names ) {
-            Str_sp nm = oCar(cur).as<Str_O>();
+            Str_sp nm = gc::As<Str_sp>(oCar(cur));
             T_sp ltv = _lisp->findLoadTimeValues(nm->get());
             printf("%s:%d LTV[%s]@%p = %s\n", __FILE__, __LINE__, nm->get().c_str(), ltv.raw_(), _rep_(ltv).c_str() );
         }
@@ -176,12 +176,12 @@ namespace core
 	LoadTimeValues_sp ltv;
 	if ( af_stringP(nameOrLtv) ) {
 	    int count = 0;
-	    ltv = _lisp->findLoadTimeValuesWithNameContaining(nameOrLtv.as<Str_O>()->get(),count);
+	    ltv = _lisp->findLoadTimeValuesWithNameContaining(gc::As<Str_sp>(nameOrLtv)->get(),count);
 	    if ( count != 1 ) {
-		SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % nameOrLtv.as<Str_O>()->get() );
+		SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % gc::As<Str_sp>(nameOrLtv)->get() );
 	    }
 	} else {
-	    ltv = nameOrLtv.as<LoadTimeValues_O>();
+	    ltv = gc::As<LoadTimeValues_sp>(nameOrLtv);
 	}
 	vector<gctools::Fixnum> vi;
 	parseIndices(vi,indices);
@@ -196,12 +196,12 @@ namespace core
 	LoadTimeValues_sp ltv;
 	if ( af_stringP(nameOrLtv) ) {
 	    int count = 0;
-	    ltv = _lisp->findLoadTimeValuesWithNameContaining(nameOrLtv.as<Str_O>()->get(),count);
+	    ltv = _lisp->findLoadTimeValuesWithNameContaining(gc::As<Str_sp>(nameOrLtv)->get(),count);
 	    if ( count != 1 ) {
-		SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % nameOrLtv.as<Str_O>()->get() );
+		SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % gc::As<Str_sp>(nameOrLtv)->get() );
 	    }
 	} else {
-	    ltv = nameOrLtv.as<LoadTimeValues_O>();
+	    ltv = gc::As<LoadTimeValues_sp>(nameOrLtv);
 	}
 	vector<gctools::Fixnum> vi;
 	parseIndices(vi,indices);

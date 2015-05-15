@@ -130,9 +130,9 @@ namespace gctools {
 #ifdef USE_BOEHM
                 // Handle splatting
                 if (!k.raw_()) {
-                    keys->set(i,value_type((Tagged)gctools::tag_deleted<core::T_O>()));
+                    keys->set(i,value_type((Tagged)gctools::tag_deleted<core::T_O*>()));
                     ValueBucketsType* values = dynamic_cast<ValueBucketsType*>(keys->dependent);
-                    (*values)[i] = value_type((Tagged)gctools::tag_unbound<core::T_O>());
+                    (*values)[i] = value_type((Tagged)gctools::tag_unbound<core::T_O*>());
                 }
 #endif
                 if ( result == 0 && ( k.deletedp() )) {
@@ -498,9 +498,9 @@ namespace gctools {
 		if( !(*this->_Keys)[b].unboundp() &&
 		    !(*this->_Keys)[b].deletedp() )
 		    {
-			this->_Keys->set(b, value_type(gctools::tag_deleted<core::T_O>())); //[b] = value_type(gctools::tagged_ptr<T_O>::tagged_deleted);
+			this->_Keys->set(b, value_type(gctools::tag_deleted<core::T_O*>())); //[b] = value_type(gctools::tagged_ptr<T_O>::tagged_deleted);
 			(*this->_Keys).setDeleted((*this->_Keys).deleted()+1);
-			(*this->_Values)[b] = value_type(gctools::tag_unbound<core::T_O>());
+			(*this->_Values)[b] = value_type(gctools::tag_unbound<core::T_O*>());
 		    }
 	    } );
     }
@@ -514,8 +514,8 @@ namespace gctools {
 	    {
 		size_t len = (*this->_Keys).length();
 		for ( size_t i(0); i<len; ++i ) {
-		    this->_Keys->set(i,value_type((Tagged)gctools::tag_unbound<core::T_O>()));
-		    (*this->_Values)[i] = value_type((Tagged)gctools::tag_unbound<core::T_O>());
+		    this->_Keys->set(i,value_type((Tagged)gctools::tag_unbound<core::T_O*>()));
+		    (*this->_Values)[i] = value_type((Tagged)gctools::tag_unbound<core::T_O*>());
 		}
 		(*this->_Keys).setUsed(0);
 		(*this->_Keys).setDeleted(0);

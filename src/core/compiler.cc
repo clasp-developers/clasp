@@ -120,7 +120,7 @@ namespace core
 #define DOCS_core_startupImagePathname "startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cleavir-boehm, cleavir-mps based on *features* :ECL-MIN, :USE-MPS, :CLEAVIR"
     T_sp core_startupImagePathname()
     {_G();
-	Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as<Cons_O>();
+	Cons_sp features = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue());
         List_sp min = features->memberEq(kw::_sym_ecl_min);
         List_sp mps = features->memberEq(kw::_sym_use_mps);
 	List_sp cleavir = features->memberEq(kw::_sym_cleavir);
@@ -172,7 +172,7 @@ namespace core
 	string name = nameStr->get();
 
 	/* Look up the initialization function. */
-	string stem = cl_string_downcase(path->_Name.as<Str_O>())->get();
+	string stem = cl_string_downcase(gc::As<Str_sp>(path->_Name))->get();
 	size_t dsp = 0;
 	if ( (dsp = stem.find("_dbg")) != string::npos) stem = stem.substr(0,dsp);
 	else if ( (dsp = stem.find("_opt")) != string::npos) stem = stem.substr(0,dsp);
@@ -302,7 +302,7 @@ namespace core
 	} else if ( Pointer_sp phandle = ohandle.asOrNull<Pointer_O>() )
 	{
 	    handle = phandle->ptr();
-	} else if (ohandle.isA<Symbol_O>() )
+	} else if (gc::IsA<Symbol_sp>(ohandle) )
 	{
 	    Symbol_sp sym = ohandle.asOrNull<Symbol_O>();
 	    SYMBOL_SC_(KeywordPkg,rtld_default);
@@ -648,7 +648,7 @@ namespace core {
 
     void dynamicCastArg(T_sp a)
     {
-        Cons_sp c = a.as<Cons_O>();
+        Cons_sp c = gc::As<Cons_sp>(a);
     }
 
     void allocateValueFrame5()
@@ -917,7 +917,7 @@ namespace core {
 	mvAccumulate._Size = 0;
 	size_t idx = 0;
 	for ( auto cur : functions ) {
-	    Function_sp func = oCar(cur).as<Function_O>();
+	    Function_sp func = gc::As<Function_sp>(oCar(cur));
 	    T_mv result = eval::funcall(func);
 	    mvAccumulate[idx] = result.raw_();
 	    ++idx;
@@ -1015,7 +1015,7 @@ namespace core {
     {
 	DynamicScopeManager manager;
 	for ( auto curSym : symbols ) {
-	    Symbol_sp symbol = oCar(curSym).as<Symbol_O>();
+	    Symbol_sp symbol = gc::As<Symbol_sp>(oCar(curSym));
 	    T_sp value = oCar(values);
 	    manager.pushSpecialVariableAndSet(symbol,value);
 	    values = oCdr(values);

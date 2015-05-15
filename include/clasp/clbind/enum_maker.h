@@ -168,7 +168,7 @@ namespace clbind
 	from_object(T_P object)                                         \
 	{_G();                                                          \
             if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() ) { \
-		core::SymbolToEnumConverter_sp converter = _SYM_->symbolValue().as<core::SymbolToEnumConverter_O>(); \
+		core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(_SYM_->symbolValue()); \
 		this->_v = converter->enumForSymbol<_ENUM_TYPE_>(sym);  \
 		return;                                                 \
 	    }                                                           \
@@ -179,7 +179,7 @@ namespace clbind
     struct to_object<_ENUM_TYPE_>                                       \
     {                                                                   \
 	static core::T_sp convert(_ENUM_TYPE_ val) {                    \
-            core::SymbolToEnumConverter_sp converter = _SYM_->symbolValue().as<core::SymbolToEnumConverter_O>(); \
+            core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(_SYM_->symbolValue()); \
             return converter->symbolForEnum<_ENUM_TYPE_>(val);          \
         };                                                              \
     };                                                                  \

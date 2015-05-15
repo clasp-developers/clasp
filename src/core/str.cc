@@ -44,8 +44,8 @@ THE SOFTWARE.
 namespace core
 {
 
-    string str_get(Str_sp str) { return str.as<Str_O>()->get(); };
-    string str_get(T_sp str) {  if (str.nilp()) {SIMPLE_ERROR(BF("Could not convert nil to Str"));}; return str.as<Str_O>()->get(); };
+    string str_get(Str_sp str) { return gc::As<Str_sp>(str)->get(); };
+    string str_get(T_sp str) {  if (str.nilp()) {SIMPLE_ERROR(BF("Could not convert nil to Str"));}; return gc::As<Str_sp>(str)->get(); };
     T_sp str_create(const string& str) { return Str_O::create(str);};
     T_sp str_create(const char* str) { return Str_O::create(str);};
 
@@ -326,7 +326,7 @@ namespace core
     {_G();
 	stringstream ss;
 	char ch(' ');
-	if ( initial_element.notnilp() ) ch = initial_element.as<Character_O>()->asChar();
+	if ( initial_element.notnilp() ) ch = gc::As<Character_sp>(initial_element)->asChar();
 	int isize = unbox_fixnum(size);
 	for ( int i=0; i<isize; i++ )
 	{
@@ -688,14 +688,14 @@ namespace core
     T_sp Str_O::setf_elt(int index, T_sp val)
     {_OF();
 	ASSERTF(index>=0 && index<this->size(),BF("Index out of range for string: %d") % index );
-	char ch = val.as<Character_O>()->asChar();
+	char ch = gc::As<Character_sp>(val)->asChar();
 	this->_Contents[index] = ch;
 	return val;
     }
 
     T_sp Str_O::asetUnsafe(int index, T_sp val)
     {_OF();
-	char ch = val.as<Character_O>()->asChar();
+	char ch = gc::As<Character_sp>(val)->asChar();
 	this->_Contents[index] = ch;
 	return val;
     }
@@ -780,7 +780,7 @@ namespace core
     {
 	if ( af_strP(obj) )
 	{
-	    Str_sp t = obj.as<Str_O>();
+	    Str_sp t = gc::As<Str_sp>(obj);
 	    return this->get() < t->get();
 	}
 	return this->Base::operator<(obj);
@@ -790,7 +790,7 @@ namespace core
     {
 	if ( af_strP(obj) )
 	{
-	    Str_sp t = obj.as<Str_O>();
+	    Str_sp t = gc::As<Str_sp>(obj);
 	    return this->get() <= t->get();
 	}
 	return this->Base::operator<=(obj);
@@ -1307,7 +1307,7 @@ namespace core
 
     void Str_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end )
     {_G();
-	char celement = element.as<Character_O>()->asChar();
+	char celement = gc::As<Character_sp>(element)->asChar();
 	uint istart = unbox_fixnum(start);
 	uint last = this->size();
 	uint iend = last;
@@ -1336,7 +1336,7 @@ namespace core
 	    if ( cl_length(seq) != this->size() ) goto ERROR;
 	    size_t i = 0;
 	    for ( auto cur : ls ) {
-		this->_Contents[i] = oCar(cur).as<Character_O>()->asChar();
+		this->_Contents[i] = gc::As<Character_sp>(oCar(cur))->asChar();
 		++i;
 	    }
 	} else if ( Str_sp ss = seq.asOrNull<Str_O>() ) {
@@ -1347,7 +1347,7 @@ namespace core
 	} else if ( Vector_sp vs = seq.asOrNull<Vector_O>() ) {
 	    if ( vs->length() != this->size() ) goto ERROR;
 	    for ( size_t i=0; i<this->size(); ++i ) {
-		this->_Contents[i] = vs->elt(i).as<Character_O>()->asChar();
+		this->_Contents[i] = gc::As<Character_sp>(vs->elt(i))->asChar();
 	    }
 	} else {
 	    SIMPLE_ERROR(BF("Illegal :INITIAL-CONTENTS"));

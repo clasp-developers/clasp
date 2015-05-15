@@ -96,7 +96,7 @@ namespace clbind {
         template <> struct from_object<oclass*> {                       \
         typedef oclass* DeclareType;                                    \
         DeclareType _v;                                                 \
-        from_object(core::T_sp o) : _v(&(*o.as<oclass>())) {};	\
+        from_object(core::T_sp o) : _v(&(*gc::As<gc::smart_ptr<oclass>>(o))) {}; \
     };};
     
 

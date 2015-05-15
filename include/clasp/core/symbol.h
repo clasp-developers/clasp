@@ -135,10 +135,6 @@ namespace core {
 	/*! Return the value slot of the symbol or UNBOUND if unbound */
 	T_sp symbolValueUnsafe() const;
 
-	/*! Return the dynamic value as type T */
-	template <class T>
-	gctools::smart_ptr<T> dyn() { return this->symbolValue().as<T>(); };
-
 	void makeSpecial();
 
 	void makeConstant(T_sp val);

@@ -204,14 +204,14 @@ int	tt;
 	    SIMPLE_ERROR(BF("Support random-state in random")_);
 	}
 	
-	if ( olimit.isA<Fixnum_O>() )
+	if ( gc::IsA<Fixnum_sp>(olimit) )
 	{
 	    int limit = gc::As<Fixnum_sp>(olimit)->get();
 	    return make_fixnum((int)(globalRandomReal01Generator()*limit));
-	} else if ( olimit.isA<Bignum_O>())
+	} else if ( gc::IsA<Bignum_sp>(olimit))
 	{
 	    IMPLEMENT_MEF(BF("Implement generating Bignum random numbers"));
-	} else if ( olimit.isA<DoubleFloat_O>() )
+	} else if ( gc::IsA<DoubleFloat_sp>(olimit) )
 	{
 	    double limit = olimit.as<DoubleFloat_O>()->get();
 	    return DoubleFloat_O::create(globalRandomReal01Generator()*limit);

@@ -114,7 +114,7 @@ namespace core
 	    // Check out ecl/src/c/instance.d/si_allocate_raw_instance
 	}
         ASSERTF(metaClass->hasCreator(),BF("The metaClass allocator should always be defined - for class %s it hasn't been") % _rep_(metaClass));
-	Class_sp newClass = metaClass->allocate_newNil().as<Class_O>();
+	Class_sp newClass = gc::As<Class_sp>(metaClass->allocate_newNil());
 	newClass->initialize();
 	newClass->initializeSlots(slots);
 #if DEBUG_CLOS >= 2
@@ -167,7 +167,7 @@ namespace core
             }
         }
         for ( auto supers : aClass->directSuperclasses() ) {
-            Class_sp aSuperClass = oCar(supers).as<Class_O>();
+            Class_sp aSuperClass = gc::As<Class_sp>(oCar(supers));
 	    gc::Nilable<Class_sp> taPossibleCxxDerivableAncestorClass
 		= identifyCxxDerivableAncestorClass(aSuperClass);
             if ( taPossibleCxxDerivableAncestorClass.notnilp() ) 
@@ -184,7 +184,7 @@ namespace core
         if ( this->hasCreator() ) return;
         Class_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
         for ( auto cur : superclasses ) {
-            Class_sp aSuperClass = oCar(cur).as<Class_O>();
+            Class_sp aSuperClass = gc::As<Class_sp>(oCar(cur));
             if ( aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP() ) {
                 SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
                                 "any C++ class you want to derive from must inherit from clbind::Adapter")
@@ -303,7 +303,7 @@ namespace core
 
     string Class_O::getPackageName() const
     {
-	return this->name()->getPackage().as<Package_O>()->getName();
+	return gc::As<Package_sp>(this->name()->getPackage())->getName();
     }
 
 
@@ -321,7 +321,7 @@ namespace core
 	ss << "_FullName[" << this->name()->fullName() << "]" <<std::endl;
 	ss << boost::format("    _Class = %X  this._Class.instanceClassName()=%s\n") % this->__class().get() % this->__class()->instanceClassName();
 	for ( auto cc : this->directSuperclasses() ) {
-	    ss << "Base class: " << oCar(cc).as<Class_O>()->instanceClassName() << std::endl;
+	    ss << "Base class: " << gc::As<Class_sp>(oCar(cc))->instanceClassName() << std::endl;
 	}
 	ss << boost::format("this.instanceCreator* = %p") % (void*)(this->getCreator()) << std::endl;
 	return ss.str();
@@ -346,7 +346,7 @@ namespace core
 	for ( auto cur : directSuperclasses ) // ; cur.notnilp(); cur=cCdr(cur) )
 	{
 	    T_sp one = oCar(cur);
-	    Class_sp oneClass = one.as<Class_O>();
+	    Class_sp oneClass = gc::As<Class_sp>(one);
 	    accumulateSuperClasses(supers,arrayedSupers,oneClass);
 	}
     }
@@ -386,7 +386,7 @@ namespace core {
 	    virtual bool mapKeyValue(T_sp key, T_sp value) {
 		Fixnum_sp fnValue(gc::As<Fixnum_sp>(value));
 		int mcIndex = unbox_fixnum(fnValue);
-		Class_sp mc = key.as<Class_O>();
+		Class_sp mc = gc::As<Class_sp>(key);
 		for ( auto mit : (List_sp)(mc->directSuperclasses()) ) {
 		    T_sp val = this->supers->gethash(oCar(mit));
 		    ASSERT(val.notnilp());
@@ -431,7 +431,7 @@ namespace core {
 	List_sp cpl = _Nil<T_O>();
 	for ( deque<int>::const_reverse_iterator it=topo_order.rbegin(); it!=topo_order.rend(); it++ )
 	{
-	    Class_sp mc = arrayedSupers->operator[](*it).as<Class_O>();
+	    Class_sp mc = gc::As<Class_sp>(arrayedSupers->operator[](*it));
 	    LOG(BF("pushing superclass[%s] to front of ClassPrecedenceList") % mc->instanceClassName() );
 	    cpl = Cons_O::create(mc,cpl);
 	}
@@ -500,7 +500,7 @@ namespace core {
 
     void Class_O::addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp className)
     {_OF();
-	Class_sp cl = eval::funcall(cl::_sym_findClass,className,_lisp->_true()).as<Class_O>();
+	Class_sp cl = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass,className,_lisp->_true()));
 	// When booting _DirectSuperClasses may be undefined
 	ASSERT(this->directSuperclasses());
 	List_sp dsc = _Nil<List_V>();
@@ -556,7 +556,7 @@ namespace core {
 	    printf("There are no super-classes!!!!!!\n");
 	} else {
 	    for ( Cons_sp cc : this->directSuperclasses() ) {
-		printf("directSuperclasses: %s\n", oCar(cc).as<Class_O>()->instanceClassName().c_str() );
+		printf("directSuperclasses: %s\n", gc::As<Class_sp>(oCar(cc))->instanceClassName().c_str() );
 	    }
 	}
 	printf(" this.instanceCreator* = %p\n", (void*)(this->getCreator()));
@@ -610,7 +610,7 @@ namespace core {
     T_sp Class_O::instanceSigSet()
     {
 	// Do nothing
-	Class_sp mc = this->_instanceClass().as<Class_O>();
+	Class_sp mc = gc::As<Class_sp>(this->_instanceClass());
 	ASSERTNOTNULL(mc);
 	T_sp sig = mc->slots();
 	ASSERTNOTNULL(sig);
@@ -649,7 +649,7 @@ namespace core {
 	this->setName(className);
 	T_sp tmc = this->_instanceClass();
 	ASSERTNOTNULL(tmc);
-	Class_sp mc = tmc.as<Class_O>();
+	Class_sp mc = gc::As<Class_sp>(tmc);
 	this->lowLevel_calculateClassPrecedenceList();
     }
 

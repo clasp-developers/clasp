@@ -309,12 +309,12 @@ namespace core
 //	if ( this->hasParsePos() ) return((this->asSmartPtr()));
 	if ( this->_Cdr.notnilp() && cl_consp(this->_Cdr) )
 	{
-	    List_sp wcdr = this->_Cdr.as<Cons_O>()->walkToFindParsePos();
+	    List_sp wcdr = gc::As<Cons_sp>(this->_Cdr)->walkToFindParsePos();
 	    if ( wcdr.notnilp() ) return((wcdr));
 	}
 	if ( this->_Car.notnilp() && cl_consp(this->_Car) )
 	{
-	    List_sp wcar = this->_Car.as<Cons_O>()->walkToFindParsePos();
+	    List_sp wcar = gc::As<Cons_sp>(this->_Car)->walkToFindParsePos();
 	    if ( wcar.notnilp() ) return((wcar));
 	}
 	return((_Nil<T_O>()));
@@ -601,9 +601,9 @@ namespace core
         } else { // loading
             Vector_sp vec = node->getVectorSNodes();
             int len = vec->length();
-            Cons_sp cur = Cons_O::create((*vec)[len-2].as<SNode_O>()->object(),(*vec)[len-1].as<SNode_O>()->object());
+            Cons_sp cur = Cons_O::create(gc::As<SNode_sp>((*vec)[len-2])->object(),gc::As<SNode_sp>((*vec)[len-1])->object());
             for ( int i(len-3); i>=0; --i ) {
-                Cons_sp one = Cons_O::create((*vec)[i].as<SNode_O>()->object(),cur);
+                Cons_sp one = Cons_O::create(gc::As<SNode_sp>((*vec)[i])->object(),cur);
                 cur = one;
             }
             this->_Car = cur->_Car;
@@ -919,7 +919,7 @@ namespace core
 	    cur = carCopy;
 	    op = oCdr(p);
 	    if ( op.consp() ) {
-		p = op.as<Cons_O>();
+		p = gc::As<Cons_sp>(op);
 	    } else {
 		cur.asCons()->setCdr(op);
 		break;
@@ -1050,7 +1050,7 @@ namespace core
 	for ( auto p : lp ) {
 	    if ( cl_symbolp(oCar(p)))
 	    {
-		Symbol_sp ps = oCar(p).as<Symbol_O>();
+		Symbol_sp ps = gc::As<Symbol_sp>(oCar(p));
 		if ( ps->isKeywordSymbol() )
 		{
 		    if ( ps == keyword )
@@ -1093,7 +1093,7 @@ namespace core
 	{
 	    if ( cl_consp(cdr) )
 	    {
-		Cons_sp p = cdr.as<Cons_O>();
+		Cons_sp p = gc::As<Cons_sp>(cdr);
 		T_sp po = p->_Car;
 		if ( !po)
 		{

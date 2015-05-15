@@ -94,7 +94,7 @@ namespace core
         if ( seconds.nilp() ) {
             ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_sleep,seconds,cl::_sym_Number_O);
         }
-        double dsec = clasp_to_double(seconds.as<Real_O>());
+        double dsec = clasp_to_double(gc::As<Real_sp>(seconds));
         int usec = dsec*1000.0;
         usleep(usec);
     }
@@ -437,13 +437,13 @@ namespace core
 
     Symbol_sp functionBlockName(T_sp functionName)
     {_G();
-	if ( cl_symbolp(functionName) ) return functionName.as<Symbol_O>();
+	if ( cl_symbolp(functionName) ) return gc::As<Symbol_sp>(functionName);
 	if ( cl_consp(functionName) )
 	{
 	    List_sp cfn = functionName;
 	    if ( oCar(cfn) == cl::_sym_setf && cl_symbolp(oCadr(cfn))& oCadr(cfn).notnilp() )
 	    {
-		return oCadr(cfn).as<Symbol_O>();
+		return gc::As<Symbol_sp>(oCadr(cfn));
 	    }
 	}
 	return _Nil<Symbol_O>();
@@ -674,7 +674,7 @@ namespace core
     void af_break(T_sp fmt, List_sp args)
     {_G();
 	if ( fmt.notnilp() ) {
-	    af_format(_lisp->_true(),fmt.as<Str_O>(),args);
+	    af_format(_lisp->_true(),gc::As<Str_sp>(fmt),args);
 	}
 	dbg_hook("built in break");
 	af_invokeInternalDebugger(_Nil<core::T_O>());
@@ -728,7 +728,7 @@ namespace core
 	if ( cl_symbolp(obj) )
 	{
 	    if ( af_keywordP(obj) ) return true;
-	    return obj.as<Symbol_O>()->isConstant();
+	    return gc::As<Symbol_sp>(obj)->isConstant();
 	}
 	return false;
     };
@@ -822,7 +822,7 @@ namespace core
         }
 	if ( cl_symbolp(functionName) )
 	{
-	    Symbol_sp symbol = functionName.as<Symbol_O>();
+	    Symbol_sp symbol = gc::As<Symbol_sp>(functionName);
 	    symbol->setf_symbolFunction(functionObject);
 	    return functionObject;
 	} else if (cl_consp(functionName))
@@ -831,7 +831,7 @@ namespace core
 	    List_sp cur = functionName;
 	    if ( oCar(cur) == cl::_sym_setf )
 	    {
-		Symbol_sp symbol = oCadr(cur).as<Symbol_O>();
+		Symbol_sp symbol = gc::As<Symbol_sp>(oCadr(cur));
 		symbol->setSetfFdefinition(functionObject);
 		return functionObject;
 	    }
@@ -852,14 +852,14 @@ namespace core
     {_G();
 	if ( cl_symbolp(functionName) )
 	{
-	    Symbol_sp sym = functionName.as<Symbol_O>();
+	    Symbol_sp sym = gc::As<Symbol_sp>(functionName);
 	    return(Values(sym->symbolFunction()));
 	} else if ( cl_consp(functionName) )
 	{
 	    List_sp cname = functionName;
 	    if ( oCar(cname) == cl::_sym_setf )
 	    {
-		Symbol_sp name = oCadr(cname).as<Symbol_O>();
+		Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
 		if ( name.notnilp() )
 		{
 		    return(Values(name->getSetfFdefinition()));
@@ -882,14 +882,14 @@ namespace core
         }
 	if ( cl_symbolp(functionName) )
 	{
-	    Symbol_sp sym = functionName.as<Symbol_O>();
+	    Symbol_sp sym = gc::As<Symbol_sp>(functionName);
 	    return sym->fboundp();
 	} else if ( cl_consp(functionName) )
 	{
 	    List_sp cname = functionName;
 	    if ( oCar(cname) == cl::_sym_setf )
 	    {
-		Symbol_sp name = oCadr(cname).as<Symbol_O>();
+		Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
 		if ( name.notnilp() ) return name->setf_fboundp();
 	    }
 	}
@@ -907,7 +907,7 @@ namespace core
     {_G();
 	if ( cl_symbolp(functionName) )
 	{
-	    Symbol_sp sym = functionName.as<Symbol_O>();
+	    Symbol_sp sym = gc::As<Symbol_sp>(functionName);
 	    sym->setf_symbolFunction(_Unbound<Function_O>());
 	    return(Values(sym));
 	} else if ( cl_consp(functionName) )
@@ -915,7 +915,7 @@ namespace core
 	    List_sp cname = functionName;
 	    if ( oCar(cname) == cl::_sym_setf )
 	    {
-		Symbol_sp name = oCadr(cname).as<Symbol_O>();
+		Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
 		if ( name.notnilp() )
 		{
 		    name->resetSetfFdefinition();//_lisp->remove_setfDefinition(name);
@@ -1584,11 +1584,11 @@ Symbol_mv af_gensym(T_sp x)
     {
 	int counter = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()));
 	cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter+1));
-	ss << x.as<Str_O>()->get();
+	ss << gc::As<Str_sp>(x)->get();
 	ss << counter;
     } else if ( af_integerP(x) )
     {
-	int counter = clasp_to_int(x.as<Integer_O>());
+	int counter = clasp_to_int(gc::As<Integer_sp>(x));
 	ASSERTF(counter >=0, BF("gensym argument %d must be >= 0") % counter );
 	ss << "G";
 	ss << counter;
@@ -1659,7 +1659,7 @@ T_sp type_of(T_sp x)
 	} else {
 	    SIMPLE_ERROR(BF("Illegal class %s for instance class of %s") % _rep_(cl) % _rep_(instance) );
 	}
-	Symbol_sp st = t.as<Symbol_O>();
+	Symbol_sp st = gc::As<Symbol_sp>(t);
 	if ( t.nilp() || cl != eval::funcall(cl::_sym_findClass,st,_Nil<T_O>())) {
 	    t = cl;
 	}
@@ -1674,7 +1674,7 @@ T_sp type_of(T_sp x)
 	    res << cl::_sym_integer << x << x;
 	    return res.cons();
 	} else if ( af_characterP(x) ) {
-	    if ( af_standard_char_p(x.as<Character_O>()) ) return cl::_sym_standard_char;
+	    if ( af_standard_char_p(gc::As<Character_sp>(x)) ) return cl::_sym_standard_char;
 	    return cl::_sym_Character_O;
 	} else if ( Symbol_sp symx = x.asOrNull<Symbol_O>() ) {
 	    if ( x == _lisp->_true() ) return cl::_sym_boolean;
@@ -1709,15 +1709,15 @@ T_sp type_of(T_sp x)
 	} else if ( WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>() ) {
 	    return pp->_instanceClass()->className();
 	} else if ( af_structurep(x) ) {
-	    return x.as<StructureObject_O>()->structureType();
+	    return gc::As<StructureObject_sp>(x)->structureType();
 	} else if ( Stream_sp stx = x.asOrNull<Stream_O>() ) {
-	    if ( stx.isA<SynonymStream_O>() ) 		return cl::_sym_SynonymStream_O;
-	    else if (stx.isA<BroadcastStream_O>() ) 		return cl::_sym_BroadcastStream_O;
-	    else if (stx.isA<ConcatenatedStream_O>() ) 	return cl::_sym_ConcatenatedStream_O;
-	    else if (stx.isA<TwoWayStream_O>() ) 		return cl::_sym_TwoWayStream_O;
-	    else if (stx.isA<StringInputStream_O>() ) 	return _sym_StringInputStream_O;
-	    else if (stx.isA<StringOutputStream_O>() ) 	return _sym_StringOutputStream_O;
-	    else if (stx.isA<EchoStream_O>() ) 		return cl::_sym_EchoStream_O;
+	    if ( gc::IsA<SynonymStream_sp>(stx) ) 		return cl::_sym_SynonymStream_O;
+	    else if (gc::IsA<BroadcastStream_sp>(stx) ) 		return cl::_sym_BroadcastStream_O;
+	    else if (gc::IsA<ConcatenatedStream_sp>(stx) ) 	return cl::_sym_ConcatenatedStream_O;
+	    else if (gc::IsA<TwoWayStream_sp>(stx) ) 		return cl::_sym_TwoWayStream_O;
+	    else if (gc::IsA<StringInputStream_sp>(stx) ) 	return _sym_StringInputStream_O;
+	    else if (gc::IsA<StringOutputStream_sp>(stx) ) 	return _sym_StringOutputStream_O;
+	    else if (gc::IsA<EchoStream_sp>(stx) ) 		return cl::_sym_EchoStream_O;
 	    else return cl::_sym_FileStream_O;
 	} else if ( x.consp() ) {
 	    return cl::_sym_cons;

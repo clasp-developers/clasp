@@ -139,7 +139,7 @@ namespace core
     void StringList_O::appendConsOfStrings(List_sp s)
     {_G();
 	for ( auto cur: s ) {
-	    this->_Contents.push_back(oCar(cur).as<Str_O>()->get());
+	    this->_Contents.push_back(gc::As<Str_sp>(oCar(cur))->get());
 	}
     }
 

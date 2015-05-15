@@ -226,11 +226,11 @@ namespace core
             ss << "#<";
             if (type.notnilp()) {
                 type = af_type_of(o);
-                if ( !type.isA<Symbol_O>() )
+                if ( !gc::IsA<Symbol_sp>(type) )
                 {
                     type = cl::_sym_StandardObject_O;
                 }
-                Symbol_sp typesym = type.as<Symbol_O>();
+                Symbol_sp typesym = gc::As<Symbol_sp>(type);
                 ss << typesym->symbolNameAsString();
                 ss << " ";
             }

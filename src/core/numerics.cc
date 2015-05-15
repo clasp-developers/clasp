@@ -173,16 +173,16 @@ namespace core {
 	    SIMPLE_ERROR(BF("Support random-state in random"));
 	}
 
-	if ( olimit.isA<Fixnum_O>() )
+	if ( gc::IsA<Fixnum_sp>(olimit) )
 	{
 	    int limit = unbox_fixnum(gc::As<Fixnum_sp>(olimit));
 	    return make_fixnum((int)(globalRandomReal01Generator()*limit));
-	} else if ( olimit.isA<Bignum_O>())
+	} else if ( gc::IsA<Bignum_sp>(olimit))
 	{
 	    IMPLEMENT_MEF(BF("Implement generating Bignum random numbers"));
-	} else if ( olimit.isA<DoubleFloat_O>() )
+	} else if ( gc::IsA<DoubleFloat_sp>(olimit) )
 	{
-	    double limit = olimit.as<DoubleFloat_O>()->get();
+	    double limit = gc::As<DoubleFloat_sp>(olimit)->get();
 	    return DoubleFloat_O::create(globalRandomReal01Generator()*limit);
 	}
 	SIMPLE_ERROR(BF("Currently unsupported limit for random: %s") % _rep_(olimit));

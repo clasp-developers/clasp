@@ -63,26 +63,26 @@ namespace core {
 
     Real_sp times2(Real_sp x)
     {
-	return brcl_plus(x, x).as<Real_O>();
+	return gc::As<Real_sp>(brcl_plus(x, x));
     }
 
 
     static float_approx* setup(Float_sp number, float_approx *approx)
     {
 	Real_mv mv_f = cl_integerDecodeFloat(number);
-	Integer_sp f = mv_f.as<Integer_O>();
+	Integer_sp f = gc::As<Integer_sp>(mv_f);
 	Fixnum_sp fne = gc::As<Fixnum_sp>(mv_f.valueGet(1));
 	Fixnum e = clasp_fixnum(fne), min_e;
 	bool limit_f = 0;
 	switch (clasp_t_of(number)) {
 	case number_SingleFloat:
 	    min_e = FLT_MIN_EXP;
-	    limit_f = (number.as<SingleFloat_O>()->get() ==
+	    limit_f = (gc::As<SingleFloat_sp>(number)->get() ==
 		       ldexpf(FLT_RADIX, FLT_MANT_DIG-1));
 	    break;
 	case number_DoubleFloat:
 	    min_e = DBL_MIN_EXP;
-	    limit_f = (number.as<DoubleFloat_O>()->get() ==
+	    limit_f = (gc::As<DoubleFloat_sp>(number)->get() ==
 		       ldexp(FLT_RADIX, DBL_MANT_DIG-1));
 	    break;
 #ifdef CLASP_LONG_FLOAT
@@ -99,13 +99,13 @@ namespace core {
 	    Fixnum_sp zz(make_fixnum(1));
 	    Real_sp be = EXPT_RADIX(e);
 	    if (limit_f) {
-		Real_sp be1 = brcl_times(be, brcl_make_fixnum(FLT_RADIX)).as<Real_O>();
-		approx->r = times2(brcl_times(f, be1).as<Real_O>());
+		Real_sp be1 = gc::As<Real_sp>(brcl_times(be, brcl_make_fixnum(FLT_RADIX)));
+		approx->r = times2(gc::As<Real_sp>(brcl_times(f, be1)));
 		approx->s = brcl_make_fixnum(FLT_RADIX*2);
 		approx->mm = be;
 		approx->mp = be1;
 	    } else {
-		approx->r = times2(brcl_times(f, be).as<Real_O>());
+		approx->r = times2(gc::As<Real_sp>(brcl_times(f, be)));
 		approx->s = brcl_make_fixnum(2);
 		approx->mm = be;
 		approx->mp = be;
@@ -127,7 +127,7 @@ namespace core {
     static Fixnum    scale(float_approx *approx)
     {
         Fixnum k = 0;
-        Real_sp x = brcl_plus(approx->r, approx->mp).as<Real_O>();
+        Real_sp x = gc::As<Real_sp>(brcl_plus(approx->r, approx->mp));
         int sign;
         do {
 	    sign = brcl_number_compare(x, approx->s);
@@ -138,11 +138,11 @@ namespace core {
 		if (sign <= 0)
 		    break;
 	    }
-	    approx->s = brcl_times(approx->s, PRINT_BASE).as<Real_O>();
+	    approx->s = gc::As<Real_sp>(brcl_times(approx->s, PRINT_BASE));
 	    k++;
         } while(1);
         do {
-	    x = brcl_times(x, PRINT_BASE).as<Real_O>();
+	    x = gc::As<Real_sp>(brcl_times(x, PRINT_BASE));
 	    sign = brcl_number_compare(x, approx->s);
 	    if (approx->high_ok) {
 		if (sign >= 0)
@@ -152,9 +152,9 @@ namespace core {
 		    break;
 	    }
 	    k--;
-	    approx->r = brcl_times(approx->r, PRINT_BASE).as<Real_O>();
-	    approx->mm = brcl_times(approx->mm, PRINT_BASE).as<Real_O>();
-	    approx->mp = brcl_times(approx->mp, PRINT_BASE).as<Real_O>();
+	    approx->r = gc::As<Real_sp>(brcl_times(approx->r, PRINT_BASE));
+	    approx->mm = gc::As<Real_sp>(brcl_times(approx->mm, PRINT_BASE));
+	    approx->mp = gc::As<Real_sp>(brcl_times(approx->mp, PRINT_BASE));
         } while(1);
         return k;
     }
@@ -166,15 +166,15 @@ namespace core {
 	gctools::Fixnum digit;
         bool tc1, tc2;
         do {
-	    Real_mv mv_d = brcl_truncate2(brcl_times(approx->r, PRINT_BASE).as<Real_O>(), approx->s);
+	    Real_mv mv_d = brcl_truncate2(gc::As<Real_sp>(brcl_times(approx->r, PRINT_BASE)), approx->s);
 	    d = mv_d;
-	    approx->r = mv_d.valueGet(1).as<Real_O>();
-	    approx->mp = brcl_times(approx->mp, PRINT_BASE).as<Real_O>();
-	    approx->mm = brcl_times(approx->mm, PRINT_BASE).as<Real_O>();
+	    approx->r = gc::As<Real_sp>(mv_d.valueGet(1));
+	    approx->mp = gc::As<Real_sp>(brcl_times(approx->mp, PRINT_BASE));
+	    approx->mm = gc::As<Real_sp>(brcl_times(approx->mm, PRINT_BASE));
 	    tc1 = approx->low_ok?
 		brcl_lowereq(approx->r, approx->mm) :
 		brcl_lower(approx->r, approx->mm);
-	    x = brcl_plus(approx->r, approx->mp).as<Real_O>();
+	    x = gc::As<Real_sp>(brcl_plus(approx->r, approx->mp));
 	    tc2 = approx->high_ok?
 		brcl_greatereq(x, approx->s) :
 		brcl_greater(x, approx->s);
@@ -202,29 +202,29 @@ namespace core {
 	gctools::Fixnum pos;
         if (tposition.nilp())
 	    return;
-	Real_sp position = tposition.as<Real_O>();
+	Real_sp position = gc::As<Real_sp>(tposition);
         pos = clasp_fixnum(position);
         if (!relativep.nilp()) {
 	    Real_sp k = brcl_make_fixnum(0);
 	    Real_sp l = brcl_make_fixnum(1);
 	    while (brcl_lower(brcl_times(approx->s, l),
 			      brcl_plus(approx->r, approx->mp))) {
-		k = clasp_one_plus(k).as<Real_O>();
-		l = brcl_times(l, PRINT_BASE).as<Real_O>();
+		k = gc::As<Real_sp>(clasp_one_plus(k));
+		l = gc::As<Real_sp>(brcl_times(l, PRINT_BASE));
 	    }
-	    position = brcl_minus(k, position).as<Real_O>();
+	    position = gc::As<Real_sp>(brcl_minus(k, position));
 	    {
-		Real_sp e1 = cl_expt(PRINT_BASE, position).as<Real_O>();
-		Real_sp e2 = brcl_divide(e1, brcl_make_fixnum(2)).as<Real_O>();
-		Real_sp e3 = cl_expt(PRINT_BASE, k).as<Real_O>(); 
+		Real_sp e1 = gc::As<Real_sp>(cl_expt(PRINT_BASE, position));
+		Real_sp e2 = gc::As<Real_sp>(brcl_divide(e1, brcl_make_fixnum(2)));
+		Real_sp e3 = gc::As<Real_sp>(cl_expt(PRINT_BASE, k)); 
 		if (brcl_greatereq(brcl_plus(approx->r, brcl_times(approx->s, e1)),
 				   brcl_times(approx->s, e2)))
-		    position = clasp_one_minus(position).as<Real_O>();
+		    position = gc::As<Real_sp>(clasp_one_minus(position));
 	    }
         }
         {
-	    Real_sp x = brcl_times(approx->s, cl_expt(PRINT_BASE, position)).as<Real_O>();
-	    Real_sp e = brcl_divide(x, brcl_make_fixnum(2)).as<Real_O>();
+	    Real_sp x = gc::As<Real_sp>(brcl_times(approx->s, cl_expt(PRINT_BASE, position)));
+	    Real_sp e = gc::As<Real_sp>(brcl_divide(x, brcl_make_fixnum(2)));
 	    Real_sp low = brcl_max2( approx->mm, e);
 	    Real_sp high = brcl_max2( approx->mp, e);
 	    if (brcl_lowereq(approx->mm, low)) {
@@ -256,16 +256,16 @@ namespace core {
         k = scale(approx);
 	StrWithFillPtr_sp digits;
         if (tdigits.nilp()) {
-	    digits = af_make_vector(cl::_sym_BaseChar_O,
+	    digits = gc::As<StrWithFillPtr_sp>(af_make_vector(cl::_sym_BaseChar_O,
 				    10,
 				    true /* adjustable */,
 				    brcl_make_fixnum(0) /* fill pointer */,
 				    _Nil<T_O>() /* displacement */,
 				    _Nil<T_O>() /* displ. offset */,
 				    _Nil<T_O>() /* initial_element */,
-				    _Nil<T_O>() /* initial_contents */).as<StrWithFillPtr_O>();
+				    _Nil<T_O>() /* initial_contents */));
 	} else {
-	    digits = tdigits.as<StrWithFillPtr_O>();
+	    digits = gc::As<StrWithFillPtr_sp>(tdigits);
 	}
         generate(digits, approx);
         return Values(brcl_make_fixnum(k), digits);

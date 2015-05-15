@@ -173,7 +173,7 @@ namespace clbind {
     ClassRegistry_sp ClassRegistry_O::get_registry()
     {
         SYMBOL_EXPORT_SC_(ClbindPkg,STARtheClassRegistrySTAR);
-        return clbind::_sym_STARtheClassRegistrySTAR->symbolValue().as<ClassRegistry_O>();
+        return gc::As<ClassRegistry_sp>(clbind::_sym_STARtheClassRegistrySTAR->symbolValue());
     }
 
     core::Integer_sp type_id_toClassRegistryKey(type_id const& info)
@@ -195,7 +195,7 @@ namespace clbind {
     ClassRep_sp ClassRegistry_O::find_class(type_id const& info) const
     {
         core::Integer_sp key = type_id_toClassRegistryKey(info);
-        return this->m_classes->gethash(key,_Nil<ClassRep_O>()).as<ClassRep_O>();
+        return gc::As<ClassRep_sp>(this->m_classes->gethash(key,_Nil<ClassRep_O>()));
     }
 
 } // namespace clbind

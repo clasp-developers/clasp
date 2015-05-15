@@ -223,7 +223,7 @@ extern "C" {
         int mFinalize(0);
         int mGcStart(0);
         int mGc(0);
-        core::Number_sp startTime = core::cl_getInternalRunTime().as<core::Number_O>();
+        core::Number_sp startTime = gc::As<core::Number_sp>(core::cl_getInternalRunTime());
         mps_message_type_t type;
         while (mps_message_queue_type(&type, gctools::_global_arena)) {
             mps_message_t message;

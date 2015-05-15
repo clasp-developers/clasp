@@ -195,7 +195,7 @@ namespace core
 	  Reduce the clutter to one function to get the name and one to set the name */
 
 	void setName(Symbol_sp id) { this->instanceSet(REF_CLASS_NAME,id);};
-	Symbol_sp name() const { return this->instanceRef(REF_CLASS_NAME).as<Symbol_O>();};
+	Symbol_sp name() const { return gc::As<Symbol_sp>(this->instanceRef(REF_CLASS_NAME));};
 
 	Symbol_sp className() const;
 	string classNameAsString() const;

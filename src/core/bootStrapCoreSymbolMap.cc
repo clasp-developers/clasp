@@ -146,7 +146,7 @@ namespace core
 	{
 	    //	    printf("%s:%d  Adding symbol to package: %s\n", __FILE__, __LINE__, this->_IndexToSymbol[it->second]._PackageName.c_str()  );
 	    string packageName = this->_IndexToSymbol[it->second]._PackageName;
-	    Package_sp pkg = _lisp->findPackage(packageName,true).as<Package_O>();
+	    Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName,true));
 //            printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.pbase());
             int idx = it->second;
 //            printf("%s:%d  The symbol index is %d\n", __FILE__, __LINE__, idx );

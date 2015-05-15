@@ -75,17 +75,17 @@ namespace core
 		    fmter % unbox_fixnum(fint);
 		} else if ( af_bignumP(fobj) )
 		{
-		    Bignum_sp flli = fobj.as<Bignum_O>();
+		    Bignum_sp flli = gc::As<Bignum_sp>(fobj);
 		    stringstream ss;
 		    ss << clasp_to_mpz(flli);
 		    fmter % ss.str();
 		} else if ( af_strP(fobj) )
 		{
-		    Str_sp ftext = fobj.as<Str_O>();
+		    Str_sp ftext = gc::As<Str_sp>(fobj);
 		    fmter % ftext->get();
 		} else if ( af_doubleFloatP(fobj) )
 		{
-		    DoubleFloat_sp freal= fobj.as<DoubleFloat_O>();
+		    DoubleFloat_sp freal= gc::As<DoubleFloat_sp>(fobj);
 		    fmter % freal->get();
 		} else
 		{
@@ -142,7 +142,7 @@ namespace core
 	{
 	    SIMPLE_ERROR(BF("FORMAT control must be a string or a function - you gave: %s") % _rep_(control) );
 	}
-	string ts = control.as<Str_O>()->get();
+	string ts = gc::As<Str_sp>(control)->get();
 	const char* cur = ts.c_str();
 	while ( *cur )
 	{

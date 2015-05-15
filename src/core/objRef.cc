@@ -62,7 +62,7 @@ namespace core
 	T_sp obj = o->oGetReference(this->sharedThis<ObjRef_O>());
 	if ( this->_SubRef.notnilp() )
 	{
-	    obj = this->_SubRef.as<ObjRef_O>()->relativeTo(obj);
+	    obj = gc::As<ObjRef_sp>(this->_SubRef)->relativeTo(obj);
 	}
 	return obj;
     }
@@ -81,7 +81,7 @@ namespace core
 	}
 	if ( this->_SubRef.notnilp() )
 	{
-	    ss << "/" << this->_SubRef.as<ObjRef_O>()->asString();
+	    ss << "/" << gc::As<ObjRef_sp>(this->_SubRef)->asString();
 	}
 	return ss.str();
     }

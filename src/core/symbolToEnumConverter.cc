@@ -109,7 +109,7 @@ Symbol_sp SymbolToEnumConverter_O::symbolForEnumIndex(int index)
 {_OF();
     Fixnum_sp indexKey = make_fixnum(index);
     ASSERTF(this->_EnumToSymbol->contains(indexKey),BF("Could not find symbol for EnumIndex(%d) in SymbolToEnumConverter(%s)") % index % this->_WhatTheEnumsRepresent.c_str() );
-    return this->_EnumToSymbol->gethash(indexKey).as<Symbol_O>();
+    return gc::As<Symbol_sp>(this->_EnumToSymbol->gethash(indexKey));
 }
 
 #if 0

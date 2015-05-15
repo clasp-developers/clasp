@@ -236,7 +236,7 @@ extern "C" {
 	if ( !(*symP)->fboundp() ) {
 	    SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % _rep_((*symP)));
 	}
-        core::Function_sp func = (*symP)->_Function.as<Function_O>();
+        core::Function_sp func = gc::As<Function_sp>((*symP)->_Function);
 	core::Closure* funcPtr = &(*func->closure);
 	ASSERTF(funcPtr,BF("Tried to look up symbol-function for %s - got NULL") % _rep_(*symP).c_str() );
         return funcPtr;
@@ -739,7 +739,7 @@ core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, char* sou
     // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
     core::Str_sp sourceStr = core::Str_O::create(sourceName);
     core::SourceFileInfo_mv sfi = core::core_sourceFileInfo(sourceStr);
-    int sfindex = unbox_fixnum(sfi.valueGet(1).as<core::Fixnum_O>());   // sfindex could be written into the Module global for debugging
+    int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1)));   // sfindex could be written into the Module global for debugging
     core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,lineno,column);
     core::FunctionClosure* closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP,spi,kw::_sym_function,funcPtr,_Nil<core::T_O>(),*frameP,*compiledFuncsP,*lambdaListP);
     core::CompiledFunction_sp compiledFunction = core::CompiledFunction_O::make(closure);
@@ -787,16 +787,16 @@ extern "C"
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
 	core::Number_sp startTime;
 	if ( core::_sym_STARdebugStartupSTAR->symbolValue().notnilp() ) {
-	    startTime = core::cl_getInternalRealTime().as<core::Number_O>();
+	    startTime = gc::As<core::Number_sp>(core::cl_getInternalRealTime());
 	}
 #endif
 	// Evaluate the function
 	fptr(resultP,LCC_FROM_SMART_PTR(closedEnv),LCC_PASS_ARGS1(ltvP));
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
 	if ( core::_sym_STARdebugStartupSTAR->symbolValue().notnilp() ) {
-	    core::Number_sp endTime = core::cl_getInternalRealTime().as<core::Number_O>();
+	    core::Number_sp endTime = gc::As<core::Number_sp>(core::cl_getInternalRealTime());
 	    core::Number_sp diff = core::contagen_sub(endTime,startTime);
-	    core::Number_sp seconds = core::contagen_div(diff,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<Number_O>());
+	    core::Number_sp seconds = core::contagen_div(diff,gc::As<Number_sp>(cl::_sym_internalTimeUnitsPerSecond->symbolValue()));
 	    double dseconds = clasp_to_double(seconds);
 	    core::SourceFileInfo_sp sfi = core::core_sourceFileInfo(core::make_fixnum(*sourceFileInfoHandleP));
 	    printf("TOP-LEVEL-FUNCTION-TIME %lf %s %d\n", dseconds, sfi->namestring().c_str(), lineno);
@@ -936,7 +936,7 @@ extern "C"
         if ( resultP->framep() ) {
             frame::SetParentFrame(*resultP,gctools::smart_ptr<core::T_O>(parentP));
             return;
-        } else if (ActivationFrame_sp af = (*resultP).as<ActivationFrame_O>() ) {
+        } else if (ActivationFrame_sp af = gc::As<ActivationFrame_sp>((*resultP)) ) {
             af->setParentFrame(parentP);
             return;
         }
@@ -949,7 +949,7 @@ extern "C"
         if ( resultP->framep() ) {
             frame::SetParentFrame(*resultP,gctools::smart_ptr<core::T_O>(parentP));
             return;
-        } else if (ActivationFrame_sp af = (*resultP).as<ActivationFrame_O>() ) {
+        } else if (ActivationFrame_sp af = gc::As<ActivationFrame_sp>((*resultP)) ) {
             af->setParentFrame(parentP);
             return;
         }
@@ -968,8 +968,8 @@ extern "C"
 	ASSERT(resultP!=NULL);
 	ASSERT(debuggingInfoP!=NULL);
 	ASSERT((*resultP));
-	core::ValueFrame_sp vf = (*resultP).as<core::ValueFrame_O>();
-	core::VectorObjects_sp vo = (*debuggingInfoP).as<core::VectorObjects_O>();
+	core::ValueFrame_sp vf = gc::As<core::ValueFrame_sp>((*resultP));
+	core::VectorObjects_sp vo = gc::As<core::VectorObjects_sp>((*debuggingInfoP));
 	ASSERTF(vf->length()==vo->length(),BF("There is a mismatch between the size of the ValueFrame[%d] and the number of Symbols[%d] attaching to it") % vf->length() % vo->length() );
 	vf->attachDebuggingInfo(vo);
     }
@@ -980,7 +980,7 @@ extern "C"
 	ASSERT(frameP!=NULL);
 	ASSERT((*frameP));
 	ASSERTF(idx>=0 && idx<((*frameP)->length()),BF("Illegal value of idx[%d] must be in range [0<=idx<%d]") % idx % (*frameP)->length());
-	core::ValueFrame_sp frame = (*frameP).as<core::ValueFrame_O>();
+	core::ValueFrame_sp frame = gc::As<core::ValueFrame_sp>((*frameP));
         core::T_sp* pos_gc_safe = const_cast<core::T_sp*>(&frame->entryReference(idx));
 	return pos_gc_safe;
     }
@@ -993,7 +993,7 @@ extern "C"
 	ASSERT(frameP!=NULL);
 	ASSERT(*frameP);
 	ASSERT(ridx>=0 && ridx<(*frameP)->length());
-	core::ValueFrame_sp frame = (*frameP).as<core::ValueFrame_O>();
+	core::ValueFrame_sp frame = gc::As<core::ValueFrame_sp>((*frameP));
 	core::T_sp* pos_gc_safe = const_cast<core::T_sp*>(&frame->entryReference(ridx));
 	return pos_gc_safe;
     }
@@ -1013,7 +1013,7 @@ extern "C"
     {_G();
 	ASSERT(frameP!=NULL);
 	ASSERT(frameP->objectp());
-	core::FunctionFrame_sp frame = (*frameP).as<core::FunctionFrame_O>();
+	core::FunctionFrame_sp frame = gc::As<core::FunctionFrame_sp>((*frameP));
 	if ( idx < 0 || idx >= frame->length())
 	{
 	    SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % idx % frame->length());
@@ -1051,7 +1051,7 @@ extern "C"
 	ASSERT(frameP!=NULL);
 	ASSERT(frameP->objectp());
 	ASSERT(argIdx>=0);
-	core::ValueFrame_sp vf = (*frameP).as<core::ValueFrame_O>();
+	core::ValueFrame_sp vf = gc::As<core::ValueFrame_sp>((*frameP));
 	if ( argIdx >= vf->length() ) return 0;
 	int argsLeft = vf->length()-argIdx;
 	if ( (argsLeft % 2) != 0 )
@@ -1116,7 +1116,7 @@ extern "C"
 	ASSERT(frameP!=NULL);
 	ASSERT(frameP->objectp());
 	ASSERT(argIdx>=0);
-	core::ActivationFrame_sp frame = (*frameP).as<core::ActivationFrame_O>();
+	core::ActivationFrame_sp frame = gc::As<core::ActivationFrame_sp>((*frameP));
 	if ( argIdx < frame->length() )
 	{
 	    stringstream serr;
@@ -1579,7 +1579,7 @@ extern "C"
         core::Str_sp mname = core::Str_O::create(moduleName);
 	core::Str_sp struename = core::Str_O::create(sourceDebugPathname);
         SourceFileInfo_mv sfi_mv = core::core_sourceFileInfo(mname,struename,sourceDebugOffset,useLineno ? true : false);
-        int sfindex = unbox_fixnum(sfi_mv.valueGet(1).as<core::Fixnum_O>());
+        int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet(1)));
 #if 0
 	if ( sfindex == 0 ) {
 	    printf("%s:%d Could not get a SourceFileInfoHandle for %s\n", __FILE__, __LINE__, moduleName );
@@ -1739,20 +1739,20 @@ extern "C"
     void rplaca(core::T_sp* resultP, core::T_sp* carP)
     {
 	ASSERT(resultP!=NULL);
-	(*resultP).as<core::Cons_O>()->setCar(*carP);
+	gc::As<core::Cons_sp>((*resultP))->setCar(*carP);
     }
 
     void rplacd(core::T_sp* resultP, core::T_sp* carP)
     {
 	ASSERT(resultP!=NULL);
-	(*resultP).as<core::Cons_O>()->setCdr(*carP);
+	gc::As<core::Cons_sp>((*resultP))->setCdr(*carP);
     }
 
 
 
     void ltv_initializeArrayObjectsRowMajorArefOrder(core::T_sp* arrayP, core::LoadTimeValues_O** ltvPP, int* indices )
     {
-	core::Array_sp array = (*arrayP).as<core::Array_O>();
+	core::Array_sp array = gc::As<core::Array_sp>((*arrayP));
 	int arrayTotalSize = array->arrayTotalSize();
 	for (int i=0; i<arrayTotalSize; i++ )
 	{
@@ -1762,7 +1762,7 @@ extern "C"
 
     void ltv_initializeHashTable(core::T_sp* hashTableP, int numEntries, core::LoadTimeValues_O** ltvPP, int* indices )
     {
-	core::HashTable_sp hashTable = (*hashTableP).as<core::HashTable_O>();
+	core::HashTable_sp hashTable = gc::As<core::HashTable_sp>((*hashTableP));
 	int j = 0;
 	for (int i=0; i<numEntries; i++ )
 	{
@@ -1826,7 +1826,7 @@ extern "C"
             return;
         }
         ASSERTF(*vectorObjectsP,BF("*vectorObjectsP is UNDEFINED"));
-	core::VectorObjects_sp vo = (*vectorObjectsP).as<core::VectorObjects_O>();
+	core::VectorObjects_sp vo = gc::As<core::VectorObjects_sp>((*vectorObjectsP));
 //	printf("intrinsics.cc loadValues vo->length() = %d\n", vo->length() );
 	if ( vo->length() == 0 )
 	{
@@ -1850,7 +1850,7 @@ extern "C"
     {
 	if (saw_aok) return saw_aok;
 	ASSERTNOTNULL(*afP);
-	core::ValueFrame_sp valueFrame = (*afP).as<core::ValueFrame_O>();
+	core::ValueFrame_sp valueFrame = gc::As<core::ValueFrame_sp>((*afP));
 	bool aokTrue = valueFrame->entryReference(argIdx+1).isTrue();
 	return aokTrue ? 2 : 1;
     }
@@ -1889,7 +1889,7 @@ extern "C"
 	core::List_sp values = (*valuesP);
 	for ( ; symbols.notnilp(); symbols=oCdr(symbols), values=oCdr(values) )
 	{
-	    core::Symbol_sp symbol = oCar(symbols).as<Symbol_O>();
+	    core::Symbol_sp symbol = gc::As<Symbol_sp>(oCar(symbols));
 	    core::T_sp value = oCar(values);
 	    managerP->pushSpecialVariableAndSet(symbol,value);
 	}
@@ -2090,18 +2090,18 @@ extern "C" {
     void cc_call(core::T_mv* result, core::T_O* tfunc, LCC_ARGS_BASE)
     {
 	//	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
-	core::Function_O* func = gc::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(gc::untag_other<core::T_O>(tfunc));
-	ASSERT(func!=NULL);
-	auto closure = func->closure.as<core::Closure>();
+	core::Function_O* tagged_func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	ASSERT(tagged_func!=NULL);
+	auto closure = gc::untag_other<core::Function_O*>(tagged_func)->closure.as<core::Closure>();
 	closure->invoke(result,LCC_PASS_ARGS);
     }
 
     void cc_invoke(core::T_mv* result, core::T_O* tfunc, LCC_ARGS_BASE)
     {
 	//	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
-	core::Function_O* func = gc::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(gc::untag_other<core::T_O>(tfunc));
-	ASSERT(func!=NULL);
-	auto closure = func->closure;
+	core::Function_O* tagged_func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	ASSERT(tagged_func!=NULL);
+	auto closure = gc::untag_other<core::Function_O*>(tagged_func)->closure;
 	closure->invoke(result,LCC_PASS_ARGS);
     }
 
@@ -2156,10 +2156,9 @@ extern "C" {
     void cc_call_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
     {
 	core::MultipleValues& mvThreadLocal = core::lisp_multipleValues();
-	//	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
-	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(gc::untag_other<core::T_O>(tfunc));
-	ASSERT(func!=NULL);
-	auto closure = func->closure;
+	core::Function_O* tagged_func = gctools::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	ASSERT(tagged_func!=NULL);
+	auto closure = gc::untag_other<core::Function_O*>(tagged_func)->closure;
 	closure->invoke(result,result->number_of_values(),result->raw_(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
     }
 
@@ -2170,9 +2169,9 @@ extern "C" {
     void cc_invoke_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
     {
 	core::MultipleValues& mvThreadLocal = core::lisp_multipleValues();
-	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(gc::untag_other<core::T_O>(tfunc));
-	ASSERT(func!=NULL);
-	auto closure = func->closure;
+	core::Function_O* tagged_func = gctools::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	ASSERT(tagged_func!=NULL);
+	auto closure = gc::untag_other<core::Function_O*>(tagged_func)->closure;
 	closure->invoke(result,result->number_of_values(),result->raw_(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
     }
 
@@ -2318,7 +2317,7 @@ extern "C" {
 #endif
 	size_t index = _lisp->exceptionStack().push(LandingPadFrame,ptr);
 	//	printf("%s:%d pushLandingPadFrame frame: %lu  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void*)&typeid(core::Unwind));
-        return gctools::tag_fixnum<core::T_O>(index);
+        return gctools::tag_fixnum<core::T_O*>(index);
     }
 
     void cc_popLandingPadFrame(T_O* frameFixnum)

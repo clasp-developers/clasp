@@ -107,8 +107,8 @@ namespace core
     T_sp oNinth(T_sp o);
     T_sp oTenth(T_sp o);
 
-#define	CONS_CAR(x) (x.as<Cons_O>()->_Car)
-#define	CONS_CDR(x) (x.as<Cons_O>()->_Cdr)
+#define	CONS_CAR(x) (gc::As<Cons_sp>(x)->_Car)
+#define	CONS_CDR(x) (gc::As<Cons_sp>(x)->_Cdr)
 #define	CAR(x) oCar(x)
 #define	CDR(x) oCdr(x)
 #define CONSP(x) ((x).consp())
@@ -178,7 +178,7 @@ namespace core {
 	    TESTING();
             vec.clear();
             for ( auto me : (List_sp)(this->asSmartPtr()) ) { //Cons_sp me=this->asSmartPtr(); me.consp(); me=cCdr(me) ) {
-                vec.emplace_back(me->_Car.as<typename T::Type>());
+                vec.emplace_back(gc::As<typename T::Type>(me->_Car));
             }
         }
 	
@@ -289,7 +289,7 @@ namespace core {
 
 	/*! Get the data for the first element */
 	template <class o_class>
-	gctools::smart_ptr<o_class> car() { ASSERTNOTNULL(this->_Car);return this->_Car.as<o_class>();};
+	    gctools::smart_ptr<o_class> car() { ASSERTNOTNULL(this->_Car);return gc::As<o_class>(this->_Car);};
 
 	virtual bool equal(T_sp obj) const;
         virtual bool equalp(T_sp obj) const;
@@ -424,7 +424,7 @@ namespace core {
 	gctools::smart_ptr<oreturnType> lookup(Symbol_sp s)
 	{
 	    T_sp oret = this->olookupKeyObject(s);
-	    return oret.as<oreturnType>();
+	    return gc::As<oreturnType>(oret);
 	}
 
 	string __repr__() const;

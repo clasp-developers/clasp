@@ -249,14 +249,14 @@ namespace core
 	{
 	    Py_INCREF(Py_None);
 	    return Py_None;
-	} else if ( obj.isA<Str_O>() )
+	} else if ( gc::IsA<Str_sp>(obj) )
 	{
 //	    printf("Returning a string value[%s]\n", obj.as<Str_O>()->get().c_str() );
 	    return Py_BuildValue("s",obj.as<Str_O>()->get().c_str());
-	} else if ( obj.isA<Fixnum_O>() )
+	} else if ( gc::IsA<Fixnum_sp>(obj) )
 	{
 	    return PyInt_FromLong(gc::As<Fixnum_sp>(obj)->get());
-	} else if ( obj.isA<Bignum_O>())
+	} else if ( gc::IsA<Bignum_sp>(obj))
 	{
 	    Bignum_sp bn = obj.as<Bignum_O>();
 	    if (bn->as_mpz().fits_sint_p())
@@ -264,7 +264,7 @@ namespace core
 		return PyInt_FromLong(bn->as_mpz().get_si());
 	    }
 	    SIMPLE_ERROR(BF("Cannot convert Bignum %s to python int")%bn->valueAsString() );
-	} else if ( obj.isA<DoubleFloat_O>())
+	} else if ( gc::IsA<DoubleFloat_sp>(obj))
 	{
 	    return PyFloat_FromDouble(obj.as<DoubleFloat_O>()->get());
 	}

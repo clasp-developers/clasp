@@ -100,7 +100,7 @@ namespace core {
     {_G();
 	NumberType ty, tx;
 	if (y.notnilp()) {
-	    ty = clasp_t_of(y.as<Float_O>());
+	    ty = clasp_t_of(gc::As<Float_sp>(y));
 	} else {
 	    ty = number_SingleFloat;
 	}
@@ -117,10 +117,10 @@ namespace core {
 	case number_Ratio:
 	    switch (ty) {
 	    case number_SingleFloat:
-		x = brcl_make_single_float(clasp_to_double(x)).as<Real_O>();
+		x = gc::As<Real_sp>(brcl_make_single_float(clasp_to_double(x)));
 		break;
 	    case number_DoubleFloat:
-		x = brcl_make_double_float(clasp_to_double(x)).as<Real_O>();
+		x = gc::As<Real_sp>(brcl_make_double_float(clasp_to_double(x)));
 		break;
 #ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat:
@@ -134,7 +134,7 @@ namespace core {
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
-	return x.as<Float_O>();
+	return gc::As<Float_sp>(x);
     }
 
 
@@ -148,7 +148,7 @@ namespace core {
     {_G();
 	switch (clasp_t_of(x)) {
 	case number_Ratio:
-	    x = x.as<Ratio_O>()->numerator();
+	    x = gc::As<Ratio_sp>(x)->numerator();
 	    break;
 	case number_Fixnum:
 	case number_Bignum:
@@ -169,7 +169,7 @@ namespace core {
     {_G();
 	switch (clasp_t_of(x)) {
 	case number_Ratio:
-	    x = x.as<Ratio_O>()->denominator();
+	    x = gc::As<Ratio_sp>(x)->denominator();
 	    break;
 	case number_Fixnum:
 	case number_Bignum:
@@ -193,10 +193,10 @@ namespace core {
 	    v1 = brcl_make_fixnum(0);
 	    break;
 	case number_Ratio: {
-	    Ratio_sp rx(x.as<Ratio_O>());
+	    Ratio_sp rx(gc::As<Ratio_sp>(x));
 	    Real_mv mv_v0 = clasp_floor2(rx->numerator(),rx->denominator());
 	    v0 = mv_v0;
-	    Integer_sp tv1 = mv_v0.valueGet(1).as<Integer_O>();
+	    Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet(1));
 	    v1 = brcl_make_ratio(tv1, rx->den());
 	    break;
 	}
@@ -235,7 +235,7 @@ namespace core {
 	Real_sp v0, v1;
 	NumberType ty;
 	ty = clasp_t_of(y);
-	if (brcl_unlikely(!BRCL_REAL_TYPE_P(y))) {
+	if (UNLIKELY(!CLASP_REAL_TYPE_P(y))) {
 	    QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Real_O);
 	}
 	switch(clasp_t_of(x)) {
@@ -262,16 +262,16 @@ namespace core {
 		Bignum_sp bx(Bignum_O::create(clasp_fixnum(x)));
 //		BRCL_WITH_TEMP_BIGNUM(bx,4);
 //		_brcl_big_set_fixnum(bx, clasp_fixnum(x));
-		Bignum_sp by = y.as<Bignum_O>();
+		Bignum_sp by = gc::As<Bignum_sp>(y);
 		v0 = _brcl_big_floor(bx, by, &v1);
 		break;
 	    }
 	    case number_Ratio:		/* FIX / RAT */
 	    {
-		Ratio_sp ry = y.as<Ratio_O>();
-		Real_mv mv_v0 = clasp_floor2(brcl_times(x, ry->den()).as<Real_O>(), ry->num());
+		Ratio_sp ry = gc::As<Ratio_sp>(y);
+		Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(brcl_times(x, ry->den())), ry->num());
 		v0 = mv_v0;
-		Integer_sp t1 = mv_v0.valueGet(1).as<Integer_O>();
+		Integer_sp t1 = gc::As<Integer_sp>(mv_v0.valueGet(1));
 //		v1 = brcl_make_ratio(brcl_nth_value(the_env, 1), y->den());
 		v1 = brcl_make_ratio(t1,ry->den());
 		break;
@@ -314,25 +314,25 @@ namespace core {
 		Bignum_sp by(Bignum_O::create(clasp_fixnum(y)));
 //		BRCL_WITH_TEMP_BIGNUM(by,4);
 //		_brcl_big_set_fixnum(by, clasp_fixnum(y));
-		v0 = _brcl_big_floor(x.as<Bignum_O>(), by, &v1);
+		v0 = _brcl_big_floor(gc::As<Bignum_sp>(x), by, &v1);
 		break;
 	    }
 	    case number_Bignum: {	/* BIG / BIG */
-		v0 = _brcl_big_floor(x.as<Bignum_O>(), y.as<Bignum_O>(), &v1);
+		v0 = _brcl_big_floor(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y), &v1);
 		break;
 	    }
 	    case number_Ratio:		/* BIG / RAT */
 	    {
-		Ratio_sp ry = y.as<Ratio_O>();
-		Real_mv mv_v0 = clasp_floor2(brcl_times(x, ry->den()).as<Real_O>(), ry->num());
+		Ratio_sp ry = gc::As<Ratio_sp>(y);
+		Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(brcl_times(x, ry->den())), ry->num());
 		v0 = mv_v0;
-		Integer_sp tv1 = mv_v0.valueGet(1).as<Integer_O>();
+		Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet(1));
 		v1 = brcl_make_ratio(tv1, ry->den());
 		break;
 	    }
 	    case number_SingleFloat: {	/* BIG / SF */
 		float n = brcl_single_float(y);
-		float p = _brcl_big_to_double(x.as<Bignum_O>()) / n;
+		float p = _brcl_big_to_double(gc::As<Bignum_sp>(x)) / n;
 		float q = floorf(p);
 		v0 = _brcl_float_to_integer(q);
 		v1 = brcl_make_single_float((p - q)*n);
@@ -340,7 +340,7 @@ namespace core {
 	    }
 	    case number_DoubleFloat: {	/* BIG / DF */
 		double n = brcl_double_float(y);
-		double p = _brcl_big_to_double(x.as<Bignum_O>()) / n;
+		double p = _brcl_big_to_double(gc::As<Bignum_sp>(x)) / n;
 		double q = floor(p);
 		v0 = _brcl_double_to_integer(q);
 		v1 = brcl_make_double_float((p - q)*n);
@@ -364,22 +364,22 @@ namespace core {
 	    switch(ty) {
 	    case number_Ratio:		/* RAT / RAT */
 	    {
-		Ratio_sp rx = x.as<Ratio_O>();
-		Ratio_sp ry = y.as<Ratio_O>();
-		Real_mv mv_v0 = clasp_floor2(brcl_times(rx->num(), ry->den()).as<Real_O>(),
-					    brcl_times(rx->den(), ry->num()).as<Real_O>());
+		Ratio_sp rx = gc::As<Ratio_sp>(x);
+		Ratio_sp ry = gc::As<Ratio_sp>(y);
+		Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(brcl_times(rx->num(), ry->den())),
+					    gc::As<Real_sp>(brcl_times(rx->den(), ry->num())));
 		v0 = mv_v0;
-		Integer_sp tv1 = mv_v0.valueGet(1).as<Integer_O>();
-		v1 = brcl_make_ratio(tv1, brcl_times(rx->den(), ry->den()).as<Integer_O>());
+		Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet(1));
+		v1 = brcl_make_ratio(tv1, gc::As<Integer_sp>(brcl_times(rx->den(), ry->den())));
 		break;
 	    }
 	    default:		/* RAT / ANY */
 	    {
-		Ratio_sp rx = x.as<Ratio_O>();
-		Real_mv mv_v0 = clasp_floor2(rx->num(), brcl_times(rx->den(), y).as<Real_O>());
+		Ratio_sp rx = gc::As<Ratio_sp>(x);
+		Real_mv mv_v0 = clasp_floor2(rx->num(), gc::As<Real_sp>(brcl_times(rx->den(), y)));
 		v0 = mv_v0;
-		Number_sp tv1 = mv_v0.valueGet(1).as<Number_O>();
-		v1 = brcl_divide(tv1, rx->den()).as<Real_O>();
+		Number_sp tv1 = gc::As<Number_sp>(mv_v0.valueGet(1));
+		v1 = gc::As<Real_sp>(brcl_divide(tv1, rx->den()));
 		break;
 	    }
 	    }
@@ -428,7 +428,7 @@ namespace core {
     Real_mv cl_floor(Real_sp x, T_sp y)
     {_G();
 	if (y.nilp()) return clasp_floor1(x);
-	else return clasp_floor2(x, y.as<Real_O>());
+	else return clasp_floor2(x, gc::As<Real_sp>(y));
     }
 
 
@@ -446,10 +446,10 @@ namespace core {
 	    break;
 	case number_Ratio: {
 //	    const cl_env_ptr the_env = brcl_process_env();
-	    Ratio_sp rx = x.as<Ratio_O>();
+	    Ratio_sp rx = gc::As<Ratio_sp>(x);
 	    Real_mv mv_v = brcl_ceiling2(rx->num(), rx->den());
 	    v0 = mv_v;
-	    Integer_sp tv1 = mv_v.valueGet(1).as<Integer_O>();
+	    Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
 	    v1 = brcl_make_ratio(tv1, rx->den());
 	    break;
 	}
@@ -487,7 +487,7 @@ namespace core {
 	Real_sp v0, v1;
 	NumberType ty;
 	ty = clasp_t_of(y);
-	if (brcl_unlikely(!BRCL_REAL_TYPE_P(y))) {
+	if (UNLIKELY(!CLASP_REAL_TYPE_P(y))) {
 	    QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_Real_O);
 	}
 	switch(clasp_t_of(x)) {
@@ -516,15 +516,15 @@ namespace core {
 //		BRCL_WITH_TEMP_BIGNUM(bx,4);
 		Bignum_sp bx(Bignum_O::create(clasp_fixnum(x)));
 //		_brcl_big_set_fixnum(bx, clasp_fixnum(x));
-		v0 = _brcl_big_ceiling(bx, y.as<Bignum_O>(), &v1);
+		v0 = _brcl_big_ceiling(bx, gc::As<Bignum_sp>(y), &v1);
 		break;
 	    }
 	    case number_Ratio:		/* FIX / RAT */
 	    {
-		Ratio_sp ry = y.as<Ratio_O>();
-		Real_mv mv_v = brcl_ceiling2(brcl_times(x, ry->den()).as<Real_O>(), ry->num());
+		Ratio_sp ry = gc::As<Ratio_sp>(y);
+		Real_mv mv_v = brcl_ceiling2(gc::As<Real_sp>(brcl_times(x, ry->den())), ry->num());
 		v0 = mv_v;
-		Integer_sp tv1 = mv_v.valueGet(1).as<Integer_O>();
+		Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
 		v1 = brcl_make_ratio(tv1, ry->den());
 		break;
 	    }
@@ -565,25 +565,25 @@ namespace core {
 //		BRCL_WITH_TEMP_BIGNUM(by,4);
 		Bignum_sp by(Bignum_O::create(clasp_fixnum(y)));
 //		_brcl_big_set_fixnum(by, clasp_fixnum(y));
-		v0 = _brcl_big_ceiling(x.as<Bignum_O>(), by, &v1);
+		v0 = _brcl_big_ceiling(gc::As<Bignum_sp>(x), by, &v1);
 		break;
 	    }
 	    case number_Bignum: {	/* BIG / BIG */
-		v0 = _brcl_big_ceiling(x.as<Bignum_O>(), y.as<Bignum_O>(), &v1);
+		v0 = _brcl_big_ceiling(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y), &v1);
 		break;
 	    }
 	    case number_Ratio:		/* BIG / RAT */
 	    {
-		Ratio_sp ry = y.as<Ratio_O>();
-		Real_mv mv_v = brcl_ceiling2(brcl_times(x, ry->den()).as<Real_O>(), ry->num());
+		Ratio_sp ry = gc::As<Ratio_sp>(y);
+		Real_mv mv_v = brcl_ceiling2(gc::As<Real_sp>(brcl_times(x, ry->den())), ry->num());
 		v0 = mv_v;
-		Integer_sp tv1 = mv_v.valueGet(1).as<Integer_O>();
+		Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
 		v1 = brcl_make_ratio(tv1, ry->den());
 		break;
 	    }
 	    case number_SingleFloat: {	/* BIG / SF */
 		float n = brcl_single_float(y);
-		float p = _brcl_big_to_double(x.as<Bignum_O>())/n;
+		float p = _brcl_big_to_double(gc::As<Bignum_sp>(x))/n;
 		float q = ceilf(p);
 		v0 = _brcl_float_to_integer(q);
 		v1 = brcl_make_single_float(p*n - q*n);
@@ -591,7 +591,7 @@ namespace core {
 	    }
 	    case number_DoubleFloat: {	/* BIG / DF */
 		double n = brcl_double_float(y);
-		double p = _brcl_big_to_double(x.as<Bignum_O>())/n;
+		double p = _brcl_big_to_double(gc::As<Bignum_sp>(x))/n;
 		double q = ceil(p);
 		v0 = _brcl_double_to_integer(q);
 		v1 = brcl_make_double_float(p*n - q*n);
@@ -616,22 +616,22 @@ namespace core {
 	    switch(clasp_t_of(y)) {
 	    case number_Ratio:		/* RAT / RAT */
 	    {
-		Ratio_sp rx = x.as<Ratio_O>();
-		Ratio_sp ry = y.as<Ratio_O>();
-		Real_mv mv_v = brcl_ceiling2(brcl_times(rx->num(), ry->den()).as<Real_O>(),
-					     brcl_times(rx->den(), ry->num()).as<Real_O>());
+		Ratio_sp rx = gc::As<Ratio_sp>(x);
+		Ratio_sp ry = gc::As<Ratio_sp>(y);
+		Real_mv mv_v = brcl_ceiling2(gc::As<Real_sp>(brcl_times(rx->num(), ry->den())),
+					     gc::As<Real_sp>(brcl_times(rx->den(), ry->num())));
 		v0 = mv_v;
-		Integer_sp tv1 = mv_v.valueGet(1).as<Integer_O>();
-		v1 = brcl_make_ratio(tv1, brcl_times(rx->den(), ry->den()).as<Integer_O>());
+		Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
+		v1 = brcl_make_ratio(tv1, gc::As<Integer_sp>(brcl_times(rx->den(), ry->den())));
 		break;
 	    }
 	    default:		/* RAT / ANY */
 	    {
-		Ratio_sp rx = x.as<Ratio_O>();
-		Real_mv mv_v = brcl_ceiling2(rx->num(), brcl_times(rx->den(), y).as<Real_O>());
+		Ratio_sp rx = gc::As<Ratio_sp>(x);
+		Real_mv mv_v = brcl_ceiling2(rx->num(), gc::As<Real_sp>(brcl_times(rx->den(), y)));
 		v0 = mv_v;
-		Number_sp tv1 = mv_v.valueGet(1).as<Number_O>();
-		v1 = brcl_divide(tv1, rx->den()).as<Real_O>();
+		Number_sp tv1 = gc::As<Number_sp>(mv_v.valueGet(1));
+		v1 = gc::As<Real_sp>(brcl_divide(tv1, rx->den()));
 	    }
 	    }
 	    break;
@@ -678,7 +678,7 @@ namespace core {
     Real_mv cl_ceiling(Real_sp x, T_sp y)
     {_G();
 	if (y.nilp()) return brcl_ceiling1(x);
-	else return brcl_ceiling2(x, y.as<Real_O>());
+	else return brcl_ceiling2(x, gc::As<Real_sp>(y));
     }
 
 
@@ -696,10 +696,10 @@ namespace core {
 	    v1 = brcl_make_fixnum(0);
 	    break;
 	case number_Ratio: {
-	    Ratio_sp rx = x.as<Ratio_O>();
+	    Ratio_sp rx = gc::As<Ratio_sp>(x);
 	    Real_mv mv_v = brcl_truncate2(rx->num(), rx->den());
 	    v0 = mv_v;
-	    Integer_sp tv1 = mv_v.valueGet(1).as<Integer_O>();
+	    Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
 	    v1 = brcl_make_ratio(tv1, rx->den());
 	    break;
 	}
@@ -750,7 +750,7 @@ namespace core {
     Real_mv cl_truncate(Real_sp x, T_sp y)
     {_G();
 	if (y.nilp()) return brcl_truncate1(x);
-	else return brcl_truncate2(x, y.as<Real_O>());
+	else return brcl_truncate2(x, gc::As<Real_sp>(y));
     }
 
     static double round_double(double d)
@@ -798,10 +798,10 @@ namespace core {
 	    break;
 	case number_Ratio:
 	{
-	    Ratio_sp rx = x.as<Ratio_O>();
+	    Ratio_sp rx = gc::As<Ratio_sp>(x);
 	    Real_mv mv_v = brcl_round2(rx->num(), rx->den());
 	    v0 = mv_v;
-	    Integer_sp tv1 = mv_v.valueGet(1).as<Integer_O>();
+	    Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
 	    v1 = brcl_make_ratio(tv1, rx->den());
 	    break;
 	}
@@ -839,7 +839,7 @@ namespace core {
 	Real_sp v0, v1;
 	Real_sp q;
 
-	q = brcl_divide(x, y).as<Real_O>();
+	q = gc::As<Real_sp>(brcl_divide(x, y));
 	switch (clasp_t_of(q)) {
 	case number_Fixnum:
 	case number_Bignum:
@@ -847,27 +847,27 @@ namespace core {
 	    v1 = brcl_make_fixnum(0);
 	    break;
 	case number_Ratio: {
-	    Ratio_sp rq = q.as<Ratio_O>();
+	    Ratio_sp rq = gc::As<Ratio_sp>(q);
 	    Integer_sp q1 = brcl_integer_divide(rq->num(), rq->den());
-	    Real_sp r = brcl_minus(q, q1).as<Real_O>();
+	    Real_sp r = gc::As<Real_sp>(brcl_minus(q, q1));
 	    if (clasp_minusp(r)) {
 		int c = brcl_number_compare(_lisp->minusHalf(), r);
 		if (c > 0 || (c == 0 && clasp_oddp(q1))) {
-		    q1 = clasp_one_minus(q1).as<Integer_O>();
+		    q1 = gc::As<Integer_sp>(clasp_one_minus(q1));
 		}
 	    } else {
 		int c = brcl_number_compare(r, _lisp->plusHalf());
 		if (c > 0 || (c == 0 && clasp_oddp(q1))) {
-		    q1 = clasp_one_plus(q1).as<Integer_O>();
+		    q1 = gc::As<Integer_sp>(clasp_one_plus(q1));
 		}
 	    }
 	    v0 = q1;
-	    v1 = number_remainder(x, y, q1).as<Real_O>();
+	    v1 = gc::As<Real_sp>(number_remainder(x, y, q1));
 	    break;
 	}
 	default:
-	    v0 = q = brcl_round1(q).as<Integer_O>();
-	    v1 = number_remainder(x, y, q).as<Real_O>();
+	    v0 = q = gc::As<Integer_sp>(brcl_round1(q));
+	    v1 = gc::As<Real_sp>(number_remainder(x, y, q));
 	}
 	brcl_return2(the_env, v0, v1);
     }
@@ -882,7 +882,7 @@ namespace core {
     Number_mv cl_round(Real_sp x, T_sp y)
     {_G();
 	if (y.nilp()) return brcl_round1(x);
-	else return brcl_round2(x, y.as<Real_O>());
+	else return brcl_round2(x, gc::As<Real_sp>(y));
     }
 
 
@@ -896,7 +896,7 @@ namespace core {
     {
 	/* INV: #'floor always outputs two values */
 	Real_mv mv_v = cl_floor(x, y);
-	return mv_v.valueGet(1).as<Real_O>();
+	return gc::As<Real_sp>(mv_v.valueGet(1));
     }
 
 
@@ -911,7 +911,7 @@ namespace core {
     Real_sp cl_rem(Real_sp x, Real_sp y)
     {_G();
 	Real_mv mv_v = cl_truncate(x, y);
-	return mv_v.valueGet(1).as<Real_O>();
+	return gc::As<Real_sp>(mv_v.valueGet(1));
     }
 
 
@@ -981,8 +981,7 @@ namespace core {
     Number_sp cl_scaleFloat(Number_sp x, Number_sp y)
     {_G();
 	Fixnum k;
-
-	if (BRCL_FIXNUMP(y)) {
+	if (CLASP_FIXNUMP(y)) {
 	    k = clasp_fixnum(y);
 	} else {
 	    QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_fixnum);
@@ -1257,13 +1256,13 @@ namespace core {
 #endif
 	    break;
 	case number_Complex: {
-	    x = x.as<Complex_O>()->real();
+	    x = gc::As<Complex_sp>(x)->real();
 	    break;
 	}
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Number_O);
 	}
-	return x.as<Real_O>();
+	return gc::As<Real_sp>(x);
     }
 
 
@@ -1303,12 +1302,12 @@ namespace core {
 	    break;
 #endif
 	case number_Complex:
-	    x = x.as<Complex_O>()->imaginary();
+	    x = gc::As<Complex_sp>(x)->imaginary();
 	    break;
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Number_O);
 	}
-	return x.as<Real_O>();
+	return gc::As<Real_sp>(x);
     }
 
 

@@ -122,7 +122,7 @@ namespace core {
     {_G();
 	if ( af_externalObjectP(obj) )
 	{
-	    return (obj.as<ExternalObject_O>()->externalObject() == this->externalObject() );
+	    return (gc::As<ExternalObject_sp>(obj)->externalObject() == this->externalObject() );
 	}
 	return false;
     }
@@ -142,7 +142,7 @@ namespace core {
     ForeignData_sp ForeignData_O::allocateForeignObject(T_sp kind)
     {
 	GC_ALLOCATE(ForeignData_O,obj);
-	Cons_sp ckind = kind.as<Cons_O>();
+	Cons_sp ckind = gc::As<Cons_sp>(kind);
 	ASSERTF(oCar(ckind)==cl::_sym_array || oCar(ckind)==kw::_sym_array,BF("The first element of a foreign-data type must be ARRAY or :ARRAY"));
 	ASSERTF(oCadr(ckind)==cl::_sym_UnsignedByte || oCadr(ckind)==kw::_sym_UnsignedByte,BF("The first element of a foreign-data type must be UNSIGNED-BYTE or :UNSIGNED-BYTE"));
 	size_t size = unbox_fixnum(gc::As<Fixnum_sp>(oCaddr(ckind)));

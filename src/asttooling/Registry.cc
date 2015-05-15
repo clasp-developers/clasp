@@ -349,7 +349,7 @@ namespace asttooling {
     {
         args.resize(lispArgs->length());
         for ( int i(0),iEnd(lispArgs->length()); i<iEnd; i++ ) {
-            args[i] = *(lispArgs->elt(i).as<core::WrappedPointer_O>()->cast<ParserValue>());
+            args[i] = *(gc::As<core::WrappedPointer_sp>(lispArgs->elt(i))->cast<ParserValue>());
         }
     }
                 

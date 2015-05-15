@@ -69,7 +69,7 @@ namespace core
 	    ss << "#<"<<af->_instanceClass()->classNameAsString()<<" NIL>";
 	    return((ss.str()));
 	}
-	return af.as<ActivationFrame_O>()->asString();
+	return gc::As<ActivationFrame_sp>(af)->asString();
     }
 
     string ActivationFrame_O::asString() const
@@ -198,13 +198,13 @@ namespace core
 	T_sp debuggingInfo = _Nil<T_O>();
 	if ( this->_DebuggingInfo.notnilp() )
 	{
-	    debuggingInfo = this->_DebuggingInfo.as<Vector_O>();
+	    debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
 	}
 	for ( int i=0; i<this->_Objects.capacity(); ++i )
 	{
-	    if ( debuggingInfo.notnilp() && (i < cl_length(debuggingInfo.as<Vector_O>())) )
+	    if ( debuggingInfo.notnilp() && (i < cl_length(gc::As<Vector_sp>(debuggingInfo))) )
 	    {
-		ss << _rep_(debuggingInfo.as<Vector_O>()->elt(i)) << " ";
+		ss << _rep_(gc::As<Vector_sp>(debuggingInfo)->elt(i)) << " ";
 	    } else
 	    {
 		ss << ":arg"<<i<<"@" << (void*)(&(this->operator[](i))) << " ";
@@ -334,9 +334,9 @@ namespace core
 	{
 	    return this->Base::_updateValue(sym,obj);
 	}
-	Vector_sp debuggingInfo = this->_DebuggingInfo.as<Vector_O>();
+	Vector_sp debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
 	for ( int i(0), iEnd(this->length()); i<iEnd; ++i ) {
-	    if ( debuggingInfo->elt(i).as<Symbol_O>() == sym ) {
+	    if ( gc::As<Symbol_sp>(debuggingInfo->elt(i)) == sym ) {
 		this->_Objects[i] = obj;
 		return true;
 	    }
@@ -359,11 +359,11 @@ namespace core
         if ( !this->_DebuggingInfo ) {
             THROW_HARD_ERROR(BF("The debugging info was NULL!!!!! Why is this happening?"));
         }
-	Vector_sp debuggingInfo = this->_DebuggingInfo.as<Vector_O>();
+	Vector_sp debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
 	int i=0;
 	for ( ; i<this->length(); ++i )
 	{
-	    if ( debuggingInfo->elt(i).as<Symbol_O>() == sym )
+	    if ( gc::As<Symbol_sp>(debuggingInfo->elt(i)) == sym )
 	    {
 		index = i;
 		value = this->_Objects[i];
@@ -448,7 +448,7 @@ namespace core
 	    {
 		SIMPLE_ERROR(BF("Out of range index[%d] for FunctionFrame with %d entries") % index % this->_Objects.capacity() );
 	    }
-	    return(this->entry(index)).as<Function_O>();
+	    return gc::As<Function_sp>((this->entry(index)));
 	}
 	--depth;
 	return Environment_O::clasp_lookupFunction(this->parentFrame(),depth,index);

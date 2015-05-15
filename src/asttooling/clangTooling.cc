@@ -91,14 +91,14 @@ namespace translate {
 		    core::List_sp args = cargs;
 		    _v.clear();
 		    for ( auto cur : args ) {
-			core::Str_sp s = oCar(cur).as<core::Str_O>();
+			core::Str_sp s = gc::As<core::Str_sp>(oCar(cur));
 			_v.push_back(s->get());
 		    }
 		    return;
 		} else if ( core::Vector_sp vargs = o.asOrNull<core::Vector_O>() ) {
                     _v.clear();
                     for ( int i(0), iEnd(vargs->length()); i<iEnd; ++i ) {
-                        core::Str_sp s = (*vargs)[i].as<core::Str_O>();
+                        core::Str_sp s = gc::As<core::Str_sp>((*vargs)[i]);
                         _v.push_back(s->get());
                     }
                     return;
@@ -169,7 +169,7 @@ namespace translate {
 		} else {
 		    SIMPLE_ERROR(BF("Figure out what to do with the %s Closure %s ") % closure->describe() % _rep_(closure->name));
 		}
-	    } else if ( clang::tooling::ArgumentsAdjuster* argAdj = o.as<core::WrappedPointer_O>()->cast<clang::tooling::ArgumentsAdjuster>() ) {
+	    } else if ( clang::tooling::ArgumentsAdjuster* argAdj = gc::As<core::WrappedPointer_sp>(o)->cast<clang::tooling::ArgumentsAdjuster>() ) {
 		this->_v = *argAdj;
 		return;
 	    }
@@ -342,7 +342,7 @@ namespace asttooling {
 #define DOCS_af_getSingleMatcher "getSingleMatcher"
     core::T_sp af_getSingleMatcher(core::T_sp variantMatcher)
     {_G();
-        clang::ast_matchers::dynamic::VariantMatcher* vp = variantMatcher.as<core::WrappedPointer_O>()->cast<clang::ast_matchers::dynamic::VariantMatcher>();
+        clang::ast_matchers::dynamic::VariantMatcher* vp = gc::As<core::WrappedPointer_sp>(variantMatcher)->cast<clang::ast_matchers::dynamic::VariantMatcher>();
         llvm::Optional<clang::ast_matchers::internal::DynTypedMatcher> dtm = vp->getSingleMatcher();
         if ( dtm.hasValue() ) {
             return clbind::Wrapper<clang::ast_matchers::internal::DynTypedMatcher>::create(*dtm,reg::registered_class<clang::ast_matchers::internal::DynTypedMatcher>::id);
@@ -359,7 +359,7 @@ namespace asttooling {
 #define DOCS_af_IDToNodeMap "IDToNodeMap - returns a HashTable of bound keyword symbols to wrapped nodes"
     core::HashTable_sp af_IDToNodeMap(core::T_sp bn)
     {_G();
-        if ( const clang::ast_matchers::BoundNodes* boundNodes = bn.as<core::WrappedPointer_O>()->cast<const clang::ast_matchers::BoundNodes>() ) {
+        if ( const clang::ast_matchers::BoundNodes* boundNodes = gc::As<core::WrappedPointer_sp>(bn)->cast<const clang::ast_matchers::BoundNodes>() ) {
             core::HashTable_sp ht = core::HashTable_O::create(::cl::_sym_eq);
             const clang::ast_matchers::BoundNodes::IDToNodeMap& nodemap = boundNodes->getMap();
             clang::ast_matchers::BoundNodes::IDToNodeMap::const_iterator it;
@@ -397,10 +397,10 @@ namespace asttooling {
     void af_match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp tastContext )
     {_G();
         clang::ast_matchers::MatchFinder* matchFinder
-            = tmatchFinder.as<core::WrappedPointer_O>()->cast<clang::ast_matchers::MatchFinder>();
+            = gc::As<core::WrappedPointer_sp>(tmatchFinder)->cast<clang::ast_matchers::MatchFinder>();
         clang::ASTContext* astContext
-            = tastContext.as<core::WrappedPointer_O>()->cast<clang::ASTContext>();
-        core::WrappedPointer_sp wp_node = tnode.as<core::WrappedPointer_O>();
+            = gc::As<core::WrappedPointer_sp>(tastContext)->cast<clang::ASTContext>();
+        core::WrappedPointer_sp wp_node = gc::As<core::WrappedPointer_sp>(tnode);
         if ( clang::Decl* decl = wp_node->castOrNull<clang::Decl>() ) {
             matchFinder->match(*decl,*astContext);
         } else if ( clang::Stmt* stmt = wp_node->castOrNull<clang::Stmt>() ) {
@@ -425,7 +425,7 @@ namespace asttooling {
 #define DOCS_af_newFrontendActionFactory "newFrontendActionFactory"
     core::T_sp af_newFrontendActionFactory(core::T_sp consumerFactory)
     {_G();
-        if ( clang::ast_matchers::MatchFinder* matchFinder = consumerFactory.as<core::WrappedPointer_O>()->cast<clang::ast_matchers::MatchFinder>() ) {
+        if ( clang::ast_matchers::MatchFinder* matchFinder = gc::As<core::WrappedPointer_sp>(consumerFactory)->cast<clang::ast_matchers::MatchFinder>() ) {
 	    typedef clbind::Wrapper<clang::tooling::FrontendActionFactory,std::unique_ptr<clang::tooling::FrontendActionFactory>> wrapped_type;
 	    std::unique_ptr<clang::tooling::FrontendActionFactory> val = clang::tooling::newFrontendActionFactory(matchFinder);
 #if 0
@@ -467,7 +467,7 @@ namespace asttooling {
         vector<clang::tooling::Replacement> vreps;
         for ( ; creps.notnilp(); creps = oCdr(creps) ) {
             core::T_sp one = oCar(creps);
-            clang::tooling::Replacement oneRep = *(one.as<core::WrappedPointer_O>()->cast<clang::tooling::Replacement>());
+            clang::tooling::Replacement oneRep = *(gc::As<core::WrappedPointer_sp>(one)->cast<clang::tooling::Replacement>());
             vreps.push_back(oneRep);
         }
         vector<clang::tooling::Range> vranges;

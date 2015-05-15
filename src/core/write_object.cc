@@ -55,7 +55,7 @@ namespace core
     bool will_print_as_hash(T_sp x)
     {
 	T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
-	HashTable_sp circle_stack = _sym_STARcircle_stackSTAR->symbolValue().as<HashTable_O>();
+	HashTable_sp circle_stack = gc::As<HashTable_sp>(_sym_STARcircle_stackSTAR->symbolValue());
 	T_sp code = circle_stack->gethash(x,_Unbound<T_O>());
 	if ( circle_counter.fixnump() ) {
 	    return !(code.unboundp() || code.nilp());
@@ -80,7 +80,7 @@ namespace core
     {
 //        printf("%s:%d Entered search_print_circle with x.px=%p\n", __FILE__, __LINE__, x.raw_());
 	T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
-	HashTable_sp circle_stack = _sym_STARcircle_stackSTAR->symbolValue().as<HashTable_O>();
+	HashTable_sp circle_stack = gc::As<HashTable_sp>(_sym_STARcircle_stackSTAR->symbolValue());
 	T_sp code;
     	if (!circle_counter.fixnump()) {
 	    code = circle_stack->gethash(x,_Unbound<T_O>());
@@ -136,7 +136,7 @@ namespace core
         }
 #endif /* ECL_CMU_FORMAT */
 	bool circle = brcl_print_circle();
-	if (circle && (x) && !x.fixnump() && !x.framep() && !x.characterp() && !x.single_floatp() && (cl_listp(x) || !cl_symbolp(x) || !x.as<Symbol_O>()->homePackage().nilp() ))
+	if (circle && (x) && !x.fixnump() && !x.framep() && !x.characterp() && !x.single_floatp() && (cl_listp(x) || !cl_symbolp(x) || !gc::As<Symbol_sp>(x)->homePackage().nilp() ))
 	{
 	    Fixnum code;
 	    T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();

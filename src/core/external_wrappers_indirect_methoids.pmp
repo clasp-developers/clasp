@@ -59,7 +59,7 @@ $for isConst [[
         {
           $for Args_ [[translate::from_object<ARG$Args_> a$Args_(arg$Args_);
           ]]
-          gctools::smart_ptr<OT> ot((arg0).template as<OT>());
+          gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(arg0));
           $if ret==RetVoid [[]] $else [[ RT retval = ]] ((*(ot->wrappedPtr())).*(this->mptr))($for Args_ ,[[a$Args_._v]]);
 $$          $if ret==RetVoid [[
 $$            *lcc_resultP = Values0<core::T_O>();

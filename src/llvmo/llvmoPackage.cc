@@ -260,7 +260,7 @@ namespace llvmo
 	    core::List_sp cfuncs = funcs;
 	    for ( auto cur : cfuncs ) {
 		core::T_sp func = oCar(cur);
-		if ( llvmo::Function_sp f = func.as<llvmo::Function_O>() )
+		if ( llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func) )
 		{
 		    f->dump();
 		} else
@@ -297,7 +297,7 @@ namespace llvmo
                 core::List_sp cfuncs = funcs;
                 for ( auto cur : cfuncs ) {
                     core::T_sp func = oCar(cur);
-                    if ( llvmo::Function_sp f = func.as<llvmo::Function_O>() )
+                    if ( llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func) )
                     {
                         if (only.notnilp()) {
                             f->wrappedPtr()->viewCFGOnly();

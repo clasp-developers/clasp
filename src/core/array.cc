@@ -231,7 +231,7 @@ namespace core
 	    if ( oCdr(cur).nilp() && last_value_is_val ) break;
 	    if ( idx >= 0 ) offset *= curDimension;
 	    idx++;
-	    int oneIndex = clasp_to_int(oCar(cur).as<Rational_O>());
+	    int oneIndex = clasp_to_int(gc::As<Rational_sp>(oCar(cur)));
 	    if ( oneIndex >= curDimension )
 	    {
 		SIMPLE_ERROR(BF("Bad index"));

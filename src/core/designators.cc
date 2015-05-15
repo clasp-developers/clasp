@@ -60,10 +60,10 @@ namespace core
 	{_G();
 	    if ( af_strP(obj) )
 	    {
-		return Path_O::create(obj.as<Str_O>()->get());
-	    } else if (obj.isA<Path_O>())
+		return Path_O::create(gc::As<Str_sp>(obj)->get());
+	    } else if (gc::IsA<Path_sp>(obj))
 	    {
-		return obj.as<Path_O>();
+		return gc::As<Path_sp>(obj);
 	    }
 	    SIMPLE_ERROR(BF("Illegal path designator[%s]") % _rep_(obj));
 	}
@@ -80,7 +80,7 @@ namespace core
                 return apkg;
 	    }
 	    Str_sp packageName = stringDesignator(obj);
-	    Package_sp pkg = _lisp->findPackage(packageName->get(),true).as<Package_O>();
+	    Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName->get(),true));
 	    return pkg;
 	}
 
@@ -88,7 +88,7 @@ namespace core
 	{_G();
             if (cl_packagep(obj) )
 	    {
-		return obj.as<Package_O>()->getName();
+		return gc::As<Package_sp>(obj)->getName();
 	    }
 	    Str_sp packageName = stringDesignator(obj);
             return packageName->get();

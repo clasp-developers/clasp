@@ -93,7 +93,7 @@ namespace core
 	    write_ugly_object(obj,stream);
 	    clasp_write_char(' ',stream);
 	} else {
-	    BranchSNode_sp bsnode = snode.as<BranchSNode_O>();
+	    BranchSNode_sp bsnode = gc::As<BranchSNode_sp>(snode);
 	    clasp_write_char('\n',stream);
 	    clasp_write_char('(',stream);
 	    write_ugly_object(bsnode->_Kind,stream);
@@ -101,7 +101,7 @@ namespace core
 	    for ( List_sp cur=bsnode->_SNodePList; cur.notnilp(); cur=oCddr(cur) ) {
 		write_ugly_object(oCar(cur),stream);
 		clasp_write_char(' ',stream);
-		SNode_sp property = oCadr(cur).as<SNode_O>();
+		SNode_sp property = gc::As<SNode_sp>(oCadr(cur));
 		this->write(property,snodeToRef,stream);
 		clasp_write_char(' ',stream);
 	    }
@@ -112,7 +112,7 @@ namespace core
 		write_ugly_object(make_fixnum(bsnode->_VectorSNodes->length()),stream);
 		clasp_write_string("( ",stream);
 		for ( int i(0), iEnd(bsnode->_VectorSNodes->length()); i<iEnd; ++i ) {
-		    SNode_sp snode = bsnode->_VectorSNodes->elt(i).as<SNode_O>();
+		    SNode_sp snode = gc::As<SNode_sp>(bsnode->_VectorSNodes->elt(i));
 		    this->write(snode,snodeToRef,stream);
 		    clasp_write_char(' ',stream);
 		}

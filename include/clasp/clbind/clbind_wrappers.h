@@ -521,7 +521,7 @@ namespace translate {
                 this->_v = std::unique_ptr<T>(static_cast<T*>(NULL));
                 return;
             } else if ( core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>() ) {
-                this->_v = std::unique_ptr<T>(o.as<core::WrappedPointer_O>()->cast<T>());
+                this->_v = std::unique_ptr<T>(gc::As<core::WrappedPointer_sp>(o)->cast<T>());
                 return;
             } else if ( core::Pointer_sp pp = o.asOrNull<core::Pointer_O>() ) {
                 this->_v = std::unique_ptr<T>(static_cast<T*>(pp->ptr()));
@@ -558,7 +558,7 @@ namespace translate {
                 this->_v = static_cast<T*>(NULL);
                 return;
             } else if ( core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>() ) {
-                this->_v = o.as<core::WrappedPointer_O>()->cast<T>();
+                this->_v = gc::As<core::WrappedPointer_sp>(o)->cast<T>();
                 return;
             } else if ( core::Pointer_sp pp = o.asOrNull<core::Pointer_O>() ) {
                 this->_v = static_cast<T*>(pp->ptr());
@@ -596,7 +596,7 @@ namespace translate {
                 this->_v = static_cast<T*>(NULL);
                 return;
             } else if ( core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>() ) {
-                this->_v = o.as<core::WrappedPointer_O>()->cast<T>();
+                this->_v = gc::As<core::WrappedPointer_sp>(o)->cast<T>();
                 return;
             } else if ( core::Pointer_sp pp = o.asOrNull<core::Pointer_O>() ) {
                 this->_v = static_cast<T*>(pp->ptr());

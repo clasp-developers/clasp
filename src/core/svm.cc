@@ -124,7 +124,7 @@ THE SOFTWARE.
 	for ( uint i=0; i<this->_PointProviders.size(); i++ )
 	{
 	    PointProviderHolder& ph = this->_PointProviders[i];
-	    if ( ph.provider().isA<O_Builder>() )
+	    if ( gc::IsA<Builder_O>(ph.provider()) )
 	    {
 		this->_DynamicPointProviders.push_back(i);
 	    } else

@@ -65,16 +65,16 @@ namespace core {
 		    ERROR_DIVISION_BY_ZERO(x,y);
 		return (brcl_make_fixnum(clasp_fixnum(x) / clasp_fixnum(y)));
 	    } else if (ty == number_Bignum) {
-		return _brcl_fix_divided_by_big(clasp_fixnum(x), y.as<Bignum_O>()->get());
+		return _brcl_fix_divided_by_big(clasp_fixnum(x), gc::As<Bignum_sp>(y)->get());
 	    } else {
 		ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide,2,y,cl::_sym_Integer_O);
 	    }
 	}
 	if (tx == number_Bignum) {
 	    if (ty == number_Bignum) {
-		return _brcl_big_divided_by_big(x.as<Bignum_O>()->get(), y.as<Bignum_O>()->get());
+		return _brcl_big_divided_by_big(gc::As<Bignum_sp>(x)->get(), gc::As<Bignum_sp>(y)->get());
 	    } else if (ty == number_Fixnum) {
-		return _brcl_big_divided_by_fix(x.as<Bignum_O>()->get(), clasp_fixnum(y));
+		return _brcl_big_divided_by_fix(gc::As<Bignum_sp>(x)->get(), clasp_fixnum(y));
 	    } else {
 		QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Integer_O);
 	    }
@@ -95,13 +95,13 @@ namespace core {
 	if (nums.nilp())
 	    return brcl_make_fixnum(0);
 	/* INV: brcl_gcd() checks types */
-	Integer_sp gcd = oCar(nums).as<Integer_O>();
+	Integer_sp gcd = gc::As<Integer_sp>(oCar(nums));
 	nums = oCdr(nums);
 	if (nums.nilp()) {
-	    return (clasp_minusp(gcd) ? clasp_negate(gcd).as<Integer_O>() : gcd);
+	    return (clasp_minusp(gcd) ? gc::As<Integer_sp>(clasp_negate(gcd)) : gcd);
 	}
 	while (nums.consp()) {
-	    gcd = brcl_gcd(gcd, oCar(nums).as<Integer_O>());
+	    gcd = brcl_gcd(gcd, gc::As<Integer_sp>(oCar(nums)));
 	    nums = oCdr(nums);
 	}
 	return gcd;
@@ -129,7 +129,7 @@ namespace core {
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG(1+yidx,y,cl::_sym_Integer_O);
         }
-        return _brcl_big_gcd(x.as<Bignum_O>(), y.as<Bignum_O>());
+        return _brcl_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y));
     }
 
 
@@ -146,20 +146,20 @@ namespace core {
 	    return brcl_make_fixnum(1);
 	/* INV: brcl_gcd() checks types. By placing `numi' before `lcm' in
 	   this call, we make sure that errors point to `numi' */
-	Integer_sp lcm = oCar(nums).as<Integer_O>();
+	Integer_sp lcm = gc::As<Integer_sp>(oCar(nums));
 	int yidx=1;
 	nums = oCdr(nums);
 	while (nums.consp()) {
-	    Integer_sp numi = oCar(nums).as<Integer_O>();
+	    Integer_sp numi = gc::As<Integer_sp>(oCar(nums));
 	    nums = oCdr(nums);
 	    yidx++;
 	    Number_sp t = brcl_times(lcm, numi);
 	    Number_sp g = brcl_gcd(numi, lcm);
 	    if (!clasp_zerop(g)) {
-		lcm = brcl_divide(t, g).as<Integer_O>();
+		lcm = gc::As<Integer_sp>(brcl_divide(t, g));
 	    }
 	}
-	return clasp_minusp(lcm) ? clasp_negate(lcm).as<Integer_O>() : lcm.as<Integer_O>();
+	return clasp_minusp(lcm) ? gc::As<Integer_sp>(clasp_negate(lcm)) : gc::As<Integer_sp>(lcm);
     };
 
 

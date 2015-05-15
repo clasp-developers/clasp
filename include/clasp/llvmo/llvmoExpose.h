@@ -126,7 +126,7 @@ namespace translate
     {
         typedef llvm::LLVMContext& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*(object.as<llvmo::LLVMContext_O>()->wrappedPtr())) {};
+	from_object(T_P object) : _v(*(gc::As<llvmo::LLVMContext_sp>(object)->wrappedPtr())) {};
     };
 };
 ;
@@ -178,7 +178,7 @@ namespace translate
     {
         typedef llvm::Linker& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*(object.as<llvmo::Linker_O>()->wrappedPtr())) {};
+	from_object(T_P object) : _v(*(gc::As<llvmo::Linker_sp>(object)->wrappedPtr())) {};
     };
 };
 ;
@@ -227,7 +227,7 @@ namespace translate
     {
         typedef llvm::Pass* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::Pass_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::Pass_sp>(object)->wrappedPtr()) {};
     };
 };
 
@@ -275,7 +275,7 @@ namespace translate
     {
         typedef llvm::AttributeSet DeclareType;
 	DeclareType _v;
-	from_object(core::T_sp object) : _v(object.as<llvmo::AttributeSet_O>()->getAttributeSet()) {};
+	from_object(core::T_sp object) : _v(gc::As<llvmo::AttributeSet_sp>(object)->getAttributeSet()) {};
     };
     template <>
     struct to_object<llvm::AttributeSet>
@@ -295,9 +295,9 @@ namespace translate {
                 _v.clear();
                 return;
             } else if ( core::List_sp lcvals = o.asOrNull<core::Cons_O>() ) {
-		core::SymbolToEnumConverter_sp converter = llvmo::_sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
+		core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_AttributeEnum->symbolValue());
                 for ( auto cvals : lcvals ) {
-                    llvm::Attribute::AttrKind ak = converter->enumForSymbol<llvm::Attribute::AttrKind>(core::oCar(cvals).as<core::Symbol_O>());
+                    llvm::Attribute::AttrKind ak = converter->enumForSymbol<llvm::Attribute::AttrKind>(gc::As<core::Symbol_sp>(core::oCar(cvals)));
                     _v.push_back(ak);
                 }
                 return;
@@ -355,7 +355,7 @@ namespace translate
     {
         typedef llvm::Triple* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v( object.nilp() ? NULL : object.as<llvmo::Triple_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v( object.nilp() ? NULL : gc::As<llvmo::Triple_sp>(object)->wrappedPtr()) {};
     };
 
     template <>
@@ -363,7 +363,7 @@ namespace translate
     {
         typedef llvm::Triple& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v( *object.as<llvmo::Triple_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v( *gc::As<llvmo::Triple_sp>(object)->wrappedPtr()) {};
     };
 };
 
@@ -435,14 +435,14 @@ namespace translate
     {
         typedef llvm::TargetOptions* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v( object.nilp() ? NULL : object.as<llvmo::TargetOptions_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v( object.nilp() ? NULL : gc::As<llvmo::TargetOptions_sp>(object)->wrappedPtr()) {};
     };
     template <>
     struct from_object<const llvm::TargetOptions&,std::true_type>
     {
         typedef const llvm::TargetOptions& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*object.as<llvmo::TargetOptions_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(*gc::As<llvmo::TargetOptions_sp>(object)->wrappedPtr()) {};
     };
 };
 
@@ -502,7 +502,7 @@ namespace translate
     {
         typedef llvm::Target* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v( object.nilp() ? NULL : object.as<llvmo::Target_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v( object.nilp() ? NULL : gc::As<llvmo::Target_sp>(object)->wrappedPtr()) {};
     };
 };
 /* to_object translators */
@@ -573,7 +573,7 @@ namespace translate
     {
         typedef llvm::MCSubtargetInfo* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v( object.nilp() ? NULL : object.as<llvmo::MCSubtargetInfo_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v( object.nilp() ? NULL : gc::As<llvmo::MCSubtargetInfo_sp>(object)->wrappedPtr()) {};
     };
 };
 /* to_object translators */
@@ -629,7 +629,7 @@ namespace translate
     {
         typedef llvm::TargetSubtargetInfo* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::TargetSubtargetInfo_O>()->wrappedPtr()) {};
+    from_object(T_P object) : _v(gc::As<gc::smart_ptr<llvmo::TargetSubtargetInfo_O>>(object)->wrappedPtr()) {};
     };
     template <>
     struct to_object<const llvm::TargetSubtargetInfo*>
@@ -694,7 +694,7 @@ namespace translate
     {
         typedef llvm::TargetMachine* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v( object.nilp() ? NULL : object.as<llvmo::TargetMachine_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v( object.nilp() ? NULL : gc::As<llvmo::TargetMachine_sp>(object)->wrappedPtr()) {};
     };
 };
 
@@ -761,7 +761,7 @@ namespace translate
     {
         typedef llvm::LLVMTargetMachine* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::LLVMTargetMachine_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::LLVMTargetMachine_sp>(object)->wrappedPtr()) {};
     };
 };
 ;
@@ -821,7 +821,7 @@ namespace translate
     {
         typedef llvm::FunctionPass* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::FunctionPass_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::FunctionPass_sp>(object)->wrappedPtr()) {};
     };
 };
 ;
@@ -868,7 +868,7 @@ namespace translate
     {
         typedef llvm::ModulePass* DeclareType;
 	DeclareType _v;
-        from_object(T_P object) : _v(object.as<llvmo::ModulePass_O>()->wrappedPtr()) {};
+        from_object(T_P object) : _v(gc::As<llvmo::ModulePass_sp>(object)->wrappedPtr()) {};
     };
 };
 ;
@@ -917,7 +917,7 @@ namespace translate
     {
         typedef llvm::ImmutablePass* DeclareType;
 	DeclareType _v;
-        from_object(T_P object) : _v(object.as<llvmo::ImmutablePass_O>()->wrappedPtr()) {};
+        from_object(T_P object) : _v(gc::As<llvmo::ImmutablePass_sp>(object)->wrappedPtr()) {};
     };
 };
 ;
@@ -977,14 +977,14 @@ namespace translate
     {
         typedef llvm::PassManagerBase* DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::PassManagerBase_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::PassManagerBase_sp>(object)->wrappedPtr()) {};
     };
     template <>
     struct from_object<llvm::PassManagerBase&,std::true_type>
     {
         typedef llvm::PassManagerBase& DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(*object.as<llvmo::PassManagerBase_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(*gc::As<llvmo::PassManagerBase_sp>(object)->wrappedPtr()) {};
     };
 };
 ;
@@ -1048,7 +1048,7 @@ namespace translate
     {
         typedef llvm::Value* DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::Value_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::Value_sp>(object)->wrappedPtr()) {};
     };
     template <>
     struct from_object<llvm::ArrayRef<llvm::Value*> > {
@@ -1060,14 +1060,14 @@ namespace translate
                 return;
             } else if ( core::List_sp lcvals = o.asOrNull<core::Cons_O>() ) {
                 for ( auto cvals : lcvals ) {
-                    llvm::Value* vP = core::oCar(cvals).as<llvmo::Value_O>()->wrappedPtr();
+                    llvm::Value* vP = gc::As<llvmo::Value_sp>(core::oCar(cvals))->wrappedPtr();
                     _v.push_back(vP);
                 }
                 return;
             } else if ( core::Vector_sp vvals = o.asOrNull<core::Vector_O>() ) {
                 _v.resize(vvals->length());
                 for (int i(0),iEnd(vvals->length()); i<iEnd; ++i ) {
-                    _v[i] = vvals->elt(i).as<llvmo::Value_O>()->wrappedPtr();
+                    _v[i] = gc::As<llvmo::Value_sp>(vvals->elt(i))->wrappedPtr();
                 }
                 return;
             }
@@ -1142,7 +1142,7 @@ namespace translate
     {
         typedef llvm::Metadata* DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::Metadata_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::Metadata_sp>(object)->wrappedPtr()) {};
     };
     template <>
     struct from_object<llvm::ArrayRef<llvm::Metadata*> > {
@@ -1154,14 +1154,14 @@ namespace translate
                 return;
             } else if ( core::List_sp lcvals = o.asOrNull<core::Cons_O>() ) {
                 for ( auto cvals : lcvals ) {
-                    llvm::Metadata* vP = core::oCar(cvals).as<llvmo::Metadata_O>()->wrappedPtr();
+                    llvm::Metadata* vP = gc::As<llvmo::Metadata_sp>(core::oCar(cvals))->wrappedPtr();
                     _v.push_back(vP);
                 }
                 return;
             } else if ( core::Vector_sp vvals = o.asOrNull<core::Vector_O>() ) {
                 _v.resize(vvals->length());
                 for (int i(0),iEnd(vvals->length()); i<iEnd; ++i ) {
-                    _v[i] = vvals->elt(i).as<llvmo::Metadata_O>()->wrappedPtr();
+                    _v[i] = gc::As<llvmo::Metadata_sp>(vvals->elt(i))->wrappedPtr();
                 }
                 return;
             }
@@ -1255,7 +1255,7 @@ namespace translate
 	    from_object(core::T_sp object)
 		{_G();
 		    if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() ) {
-			core::SymbolToEnumConverter_sp converter = llvmo::_sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
+			core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_AttributeEnum->symbolValue());
 			this->_v = converter->enumForSymbol<llvm::Attribute::AttrKind>(sym);
 			return;
 		    }
@@ -1271,7 +1271,7 @@ namespace translate
 	{
 	    typedef llvm::Attribute DeclareType;
 	    DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::Attribute_O>()->attributes()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::Attribute_sp>(object)->attributes()) {};
 	};
 };
 ;
@@ -1335,7 +1335,7 @@ namespace translate
     {
         typedef llvm::DataLayout* DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::DataLayout_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::DataLayout_sp>(object)->wrappedPtr()) {};
     };
 
     template <>
@@ -1343,7 +1343,7 @@ namespace translate
     {
         typedef llvm::DataLayout* DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::DataLayout_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::DataLayout_sp>(object)->wrappedPtr()) {};
     };
 
     template <>
@@ -1351,7 +1351,7 @@ namespace translate
     {
         typedef llvm::DataLayout const& DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(*(object.as<llvmo::DataLayout_O>()->wrappedPtr())) {};
+	from_object(T_P object) : _v(*(gc::As<llvmo::DataLayout_sp>(object)->wrappedPtr())) {};
     };
 
     template <>
@@ -1467,7 +1467,7 @@ namespace translate
     {
         typedef llvm::Constant* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::Constant_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::Constant_sp>(object)->wrappedPtr()) {};
     };
 
 
@@ -1481,14 +1481,14 @@ namespace translate
                 return;
             } else if ( core::List_sp lcvals = o.asOrNull<core::Cons_O>() ) {
                 for ( auto cvals : lcvals ) {
-                    llvm::Constant* vP = core::oCar(cvals).as<llvmo::Constant_O>()->wrappedPtr();
+                    llvm::Constant* vP = gc::As<llvmo::Constant_sp>(core::oCar(cvals))->wrappedPtr();
                     _v.push_back(vP);
                 }
                 return;
             } else if ( core::Vector_sp vvals = o.asOrNull<core::Vector_O>() ) {
                 _v.resize(vvals->length());
                 for (int i(0),iEnd(vvals->length()); i<iEnd; ++i ) {
-                    _v[i] = vvals->elt(i).as<llvmo::Constant_O>()->wrappedPtr();
+                    _v[i] = gc::As<llvmo::Constant_sp>(vvals->elt(i))->wrappedPtr();
                 }
                 return;
             }
@@ -1727,7 +1727,7 @@ namespace translate
     {
         typedef llvm::GlobalVariable* DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::GlobalVariable_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::GlobalVariable_sp>(object)->wrappedPtr()) {};
     };
 };
 ;
@@ -1892,14 +1892,14 @@ namespace translate
     {
         typedef llvm::Module* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::Module_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::Module_sp>(object)->wrappedPtr()) {};
     };
     template <>
     struct from_object<llvm::Module&,std::true_type>
     {
         typedef llvm::Module& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*object.as<llvmo::Module_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(*gc::As<llvmo::Module_sp>(object)->wrappedPtr()) {};
     };
 };
 ;
@@ -1938,7 +1938,7 @@ namespace translate
     {
         typedef llvm::ExecutionEngine* DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::ExecutionEngine_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::ExecutionEngine_sp>(object)->wrappedPtr()) {};
     };
 };
 ;
@@ -1991,14 +1991,14 @@ namespace translate
     {
         typedef llvm::DataLayoutPass* DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::DataLayoutPass_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::DataLayoutPass_sp>(object)->wrappedPtr()) {};
     };
     template <>
     struct from_object<llvm::DataLayoutPass const&,std::true_type>
     {
         typedef llvm::DataLayoutPass const& DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(*(object.as<llvmo::DataLayoutPass_O>()->wrappedPtr())) {};
+	from_object(T_P object) : _v(*(gc::As<llvmo::DataLayoutPass_sp>(object)->wrappedPtr())) {};
     };
 };
 ;
@@ -2061,14 +2061,14 @@ namespace translate
     {
         typedef llvm::TargetLibraryInfo* DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::TargetLibraryInfo_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::TargetLibraryInfo_sp>(object)->wrappedPtr()) {};
     };
     template <>
     struct from_object<llvm::TargetLibraryInfo const&,std::true_type>
     {
         typedef llvm::TargetLibraryInfo const& DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(*(object.as<llvmo::TargetLibraryInfo_O>()->wrappedPtr())) {};
+	from_object(T_P object) : _v(*(gc::As<llvmo::TargetLibraryInfo_sp>(object)->wrappedPtr())) {};
     };
     template <>
     struct to_object<llvm::TargetLibraryInfo*>
@@ -2261,7 +2261,7 @@ namespace translate
     {
         typedef llvm::FunctionPassManager* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::FunctionPassManager_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::FunctionPassManager_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -2319,7 +2319,7 @@ namespace translate
     {
         typedef llvm::PassManager* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::PassManager_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::PassManager_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -2398,7 +2398,7 @@ namespace translate
     {
         typedef llvm::EngineBuilder* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {_G(); this->_v = (object.as<llvmo::EngineBuilder_O>()->wrappedPtr());};
+	from_object(T_P object) {_G(); this->_v = (gc::As<llvmo::EngineBuilder_sp>(object)->wrappedPtr());};
     };
 };
 ;
@@ -2469,7 +2469,7 @@ namespace translate
     {
         typedef llvm::PassManagerBuilder* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {_G(); this->_v = (object.as<llvmo::PassManagerBuilder_O>()->wrappedPtr());};
+	from_object(T_P object) {_G(); this->_v = (gc::As<llvmo::PassManagerBuilder_sp>(object)->wrappedPtr());};
     };
 };
 ;
@@ -2503,7 +2503,7 @@ namespace translate
     {
         typedef const llvm::APFloat& DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::APFloat_O>()->_value) {};
+	from_object(T_P object) : _v(gc::As<llvmo::APFloat_sp>(object)->_value) {};
     };
 };
 /* to_object translators */
@@ -2544,7 +2544,7 @@ namespace translate
     {
         typedef const llvm::APInt& DeclareType;
         DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::APInt_O>()->_value) {};
+	from_object(T_P object) : _v(gc::As<llvmo::APInt_sp>(object)->_value) {};
     };
 /* to_object translators */
 
@@ -2615,7 +2615,7 @@ namespace translate
     {
         typedef llvm::IRBuilderBase* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::IRBuilderBase_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::IRBuilderBase_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -2711,7 +2711,7 @@ namespace translate
     {
         typedef llvm::Instruction* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::Instruction_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::Instruction_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -2768,7 +2768,7 @@ namespace translate
     {
         typedef llvm::StoreInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::StoreInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::StoreInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -2816,7 +2816,7 @@ namespace translate
     {
         typedef llvm::FenceInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::FenceInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::FenceInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -2864,7 +2864,7 @@ namespace translate
     {
         typedef llvm::AtomicCmpXchgInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::AtomicCmpXchgInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::AtomicCmpXchgInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -2912,7 +2912,7 @@ namespace translate
     {
         typedef llvm::AtomicRMWInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::AtomicRMWInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::AtomicRMWInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -2960,7 +2960,7 @@ namespace translate
     {
         typedef llvm::PHINode* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::PHINode_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::PHINode_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3008,7 +3008,7 @@ namespace translate
     {
         typedef llvm::CallInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::CallInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::CallInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3057,7 +3057,7 @@ namespace translate
     {
         typedef llvm::LandingPadInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::LandingPadInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::LandingPadInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3129,7 +3129,7 @@ namespace translate
     {
         typedef llvm::AllocaInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::AllocaInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::AllocaInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3177,7 +3177,7 @@ namespace translate
     {
         typedef llvm::VAArgInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::VAArgInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::VAArgInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3225,7 +3225,7 @@ namespace translate
     {
         typedef llvm::LoadInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::LoadInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::LoadInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3298,7 +3298,7 @@ namespace translate
     {
         typedef llvm::BranchInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::BranchInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::BranchInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3348,7 +3348,7 @@ namespace translate
     {
         typedef llvm::SwitchInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::SwitchInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::SwitchInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3396,7 +3396,7 @@ namespace translate
     {
         typedef llvm::IndirectBrInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::IndirectBrInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::IndirectBrInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3444,7 +3444,7 @@ namespace translate
     {
         typedef llvm::InvokeInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::InvokeInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::InvokeInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3492,7 +3492,7 @@ namespace translate
     {
         typedef llvm::ResumeInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::ResumeInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::ResumeInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3540,7 +3540,7 @@ namespace translate
     {
         typedef llvm::UnreachableInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::UnreachableInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::UnreachableInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3588,7 +3588,7 @@ namespace translate
     {
         typedef llvm::ReturnInst* DeclareType;
         DeclareType _v;
-	from_object(T_P object) {this->_v = object.as<llvmo::ReturnInst_O>()->wrappedPtr();};
+	from_object(T_P object) {this->_v = gc::As<llvmo::ReturnInst_sp>(object)->wrappedPtr();};
     };
 };
 ;
@@ -3839,7 +3839,7 @@ namespace translate
     {
         typedef llvm::ConstantPointerNull* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(object.as<llvmo::ConstantPointerNull_O>()->wrappedPtr()) {};
+	from_object(T_P object) : _v(gc::As<llvmo::ConstantPointerNull_sp>(object)->wrappedPtr()) {};
     };
 
 };
@@ -3890,7 +3890,7 @@ namespace translate
     {
         typedef llvm::MDNode* DeclareType;
 	DeclareType _v;
-        from_object(T_P o) : _v(o.nilp() ? NULL : o.as<llvmo::MDNode_O>()->wrappedPtr()) {};
+        from_object(T_P o) : _v(o.nilp() ? NULL : gc::As<llvmo::MDNode_sp>(o)->wrappedPtr()) {};
     };
 };
 ;
@@ -3947,7 +3947,7 @@ namespace translate
         typedef llvm::MDString* DeclareType;
 	DeclareType _v;
 	from_object(T_P object) {
-	    this->_v = object.as<llvmo::MDString_O>()->wrappedPtr();
+	    this->_v = gc::As<llvmo::MDString_sp>(object)->wrappedPtr();
 	};
     };
 };
@@ -4001,7 +4001,7 @@ namespace translate
         typedef llvm::ValueAsMetadata* DeclareType;
 	DeclareType _v;
 	from_object(T_P object) {
-	    this->_v = object.as<llvmo::ValueAsMetadata_O>()->wrappedPtr();
+	    this->_v = gc::As<llvmo::ValueAsMetadata_sp>(object)->wrappedPtr();
 	};
     };
 };
@@ -4061,7 +4061,7 @@ namespace translate
 	DeclareType _v;
 	from_object(T_P object)
         {
-	    this->_v = object.nilp() ? NULL : object.as<llvmo::NamedMDNode_O>()->wrappedPtr();
+	    this->_v = object.nilp() ? NULL : gc::As<llvmo::NamedMDNode_sp>(object)->wrappedPtr();
 	};
     };
 };
@@ -4157,7 +4157,7 @@ namespace translate
 		this->_v = NULL;
 	    } else
 	    {
-		this->_v = static_cast<llvm::Function*>(object.as<llvmo::Function_O>()->wrappedPtr());
+		this->_v = static_cast<llvm::Function*>(gc::As<llvmo::Function_sp>(object)->wrappedPtr());
 	    }
 	}
     };
@@ -4166,14 +4166,14 @@ namespace translate
     {
 	typedef llvm::Function const & DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*(static_cast<llvm::Function*>(object.as<llvmo::Function_O>()->wrappedPtr()))) {};
+	from_object(T_P object) : _v(*(static_cast<llvm::Function*>(gc::As<llvmo::Function_sp>(object)->wrappedPtr()))) {};
     };
     template <>
     struct from_object<llvm::Function&,std::true_type>
     {
 	typedef llvm::Function& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*(static_cast<llvm::Function*>(object.as<llvmo::Function_O>()->wrappedPtr()))) {};
+	from_object(T_P object) : _v(*(static_cast<llvm::Function*>(gc::As<llvmo::Function_sp>(object)->wrappedPtr()))) {};
     };
 };
 
@@ -4234,7 +4234,7 @@ namespace translate
 	typedef llvm::BasicBlock* DeclareType;
 	DeclareType _v;
 	from_object(T_P object) {
-	    this->_v = object.nilp() ? NULL : static_cast<llvm::BasicBlock*>(object.as<llvmo::BasicBlock_O>()->wrappedPtr());
+	    this->_v = object.nilp() ? NULL : static_cast<llvm::BasicBlock*>(gc::As<llvmo::BasicBlock_sp>(object)->wrappedPtr());
 	}
     };
 };
@@ -4380,7 +4380,7 @@ namespace translate
     {
         typedef llvm::Type* DeclareType;
 	DeclareType _v;
-	from_object(T_P object) {_G(); this->_v = (object.as<llvmo::Type_O>()->wrappedPtr());};
+	from_object(T_P object) {_G(); this->_v = (gc::As<llvmo::Type_sp>(object)->wrappedPtr());};
     };
 
 /* to_object translators */
@@ -4444,7 +4444,7 @@ namespace translate
 	typedef llvm::FunctionType* DeclareType;
 	DeclareType _v;
 	from_object(T_P object) {
-	    this->_v = static_cast<llvm::FunctionType*>(object.as<llvmo::FunctionType_O>()->wrappedPtr());
+	    this->_v = static_cast<llvm::FunctionType*>(gc::As<llvmo::FunctionType_sp>(object)->wrappedPtr());
 	}
     };
 
@@ -4498,7 +4498,7 @@ namespace translate
 	typedef llvm::IntegerType* DeclareType;
 	DeclareType _v;
 	from_object(T_P object) {
-	    this->_v = static_cast<llvm::IntegerType*>(object.as<llvmo::IntegerType_O>()->wrappedPtr());
+	    this->_v = static_cast<llvm::IntegerType*>(gc::As<llvmo::IntegerType_sp>(object)->wrappedPtr());
 	}
     };
 
@@ -4548,7 +4548,7 @@ namespace translate
 	typedef llvm::CompositeType* DeclareType;
 	DeclareType _v;
 	from_object(T_P object) {
-	    this->_v = static_cast<llvm::CompositeType*>(object.as<llvmo::CompositeType_O>()->wrappedPtr());
+	    this->_v = static_cast<llvm::CompositeType*>(gc::As<llvmo::CompositeType_sp>(object)->wrappedPtr());
 	}
     };
 
@@ -4608,7 +4608,7 @@ namespace translate
 	typedef llvm::StructType* DeclareType;
 	DeclareType _v;
 	from_object(T_P object) {
-	    this->_v = static_cast<llvm::StructType*>(object.as<llvmo::StructType_O>()->wrappedPtr());
+	    this->_v = static_cast<llvm::StructType*>(gc::As<llvmo::StructType_sp>(object)->wrappedPtr());
 	}
     };
 
@@ -4659,7 +4659,7 @@ namespace translate
 	typedef llvm::SequentialType* DeclareType;
 	DeclareType _v;
 	from_object(T_P object) {
-	    this->_v = static_cast<llvm::SequentialType*>(object.as<llvmo::SequentialType_O>()->wrappedPtr());
+	    this->_v = static_cast<llvm::SequentialType*>(gc::As<llvmo::SequentialType_sp>(object)->wrappedPtr());
 	}
     };
 
@@ -4717,7 +4717,7 @@ namespace translate
 	typedef llvm::PointerType* DeclareType;
 	DeclareType _v;
 	from_object(T_P object) {
-	    this->_v = static_cast<llvm::PointerType*>(object.as<llvmo::PointerType_O>()->wrappedPtr());
+	    this->_v = static_cast<llvm::PointerType*>(gc::As<llvmo::PointerType_sp>(object)->wrappedPtr());
 	}
     };
 
@@ -4770,7 +4770,7 @@ namespace translate
 	typedef llvm::ArrayType* DeclareType;
 	DeclareType _v;
 	from_object(T_P object) {
-	    this->_v = static_cast<llvm::ArrayType*>(object.as<llvmo::ArrayType_O>()->wrappedPtr());
+	    this->_v = static_cast<llvm::ArrayType*>(gc::As<llvmo::ArrayType_sp>(object)->wrappedPtr());
 	}
     };
 
@@ -4820,7 +4820,7 @@ namespace translate
 	typedef llvm::VectorType* DeclareType;
 	DeclareType _v;
 	from_object(T_P object) {
-	    this->_v = static_cast<llvm::VectorType*>(object.as<llvmo::VectorType_O>()->wrappedPtr());
+	    this->_v = static_cast<llvm::VectorType*>(gc::As<llvmo::VectorType_sp>(object)->wrappedPtr());
 	}
     };
 
@@ -4857,7 +4857,7 @@ namespace translate
 	string _Storage;
 	from_object(T_P object)
 	{
-	    this->_Storage = object.as<core::Str_O>()->get();
+	    this->_Storage = gc::As<core::Str_sp>(object)->get();
 	    this->_v = llvm::StringRef(this->_Storage);
 	}
     };
@@ -4874,7 +4874,7 @@ namespace translate
 	{_G();
 	    if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() )
 	    {
-		core::SymbolToEnumConverter_sp converter = llvmo::_sym_STARglobal_value_linkage_typesSTAR->symbolValue().as<core::SymbolToEnumConverter_O>();
+		core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARglobal_value_linkage_typesSTAR->symbolValue());
 		this->_v = converter->enumForSymbol<llvm::GlobalValue::LinkageTypes>(sym);
 		return;
 	    }
@@ -4893,7 +4893,7 @@ namespace translate
 	    if ( object.notnilp() ) {
 		if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() )
 		    {
-			core::SymbolToEnumConverter_sp converter = llvmo::_sym_STARglobal_ThreadLocalModesSTAR->symbolValue().as<core::SymbolToEnumConverter_O>();
+			core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARglobal_ThreadLocalModesSTAR->symbolValue());
 			this->_v = converter->enumForSymbol<llvm::GlobalValue::ThreadLocalMode>(sym);
 			return;
 		    }
@@ -4932,7 +4932,7 @@ namespace translate
 	{_G();
 	    if ( object.notnilp() ) {
 		if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() ) {
-		    core::SymbolToEnumConverter_sp converter = llvmo::_sym_STARatomic_orderingSTAR->symbolValue().as<core::SymbolToEnumConverter_O>();
+		    core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARatomic_orderingSTAR->symbolValue());
 		    this->_v = converter->enumForSymbol<llvm::AtomicOrdering>(sym);
 		    return;
 		}
@@ -4952,7 +4952,7 @@ namespace translate
 	{_G();
 	    if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() )
 	    {
-		core::SymbolToEnumConverter_sp converter = llvmo::_sym_STARsynchronization_scopeSTAR->symbolValue().as<core::SymbolToEnumConverter_O>();
+		core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARsynchronization_scopeSTAR->symbolValue());
 		this->_v = converter->enumForSymbol<llvm::SynchronizationScope>(sym);
 		return;
 	    }
@@ -4971,7 +4971,7 @@ namespace translate
 	{_G();
 	    if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() )
 	    {
-		core::SymbolToEnumConverter_sp converter = llvmo::_sym_STARAtomicRMWInstBinOpSTAR->symbolValue().as<core::SymbolToEnumConverter_O>();
+		core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARAtomicRMWInstBinOpSTAR->symbolValue());
 		this->_v = converter->enumForSymbol<llvm::AtomicRMWInst::BinOp>(sym);
 		return;
 	    }
@@ -4990,7 +4990,7 @@ namespace translate
 	{_G();
 	    if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() )
 	    {
-		core::SymbolToEnumConverter_sp converter = llvmo::_sym_STARInstructionCastOpsSTAR->symbolValue().as<core::SymbolToEnumConverter_O>();
+		core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARInstructionCastOpsSTAR->symbolValue());
 		this->_v = converter->enumForSymbol<llvm::Instruction::CastOps>(sym);
 		return;
 	    }
@@ -5007,7 +5007,7 @@ namespace translate
 	{_G();
 	    if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() )
 	    {
-		core::SymbolToEnumConverter_sp converter = llvmo::_sym_STARBinaryOpsSTAR->symbolValue().as<core::SymbolToEnumConverter_O>();
+		core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARBinaryOpsSTAR->symbolValue());
 		this->_v = converter->enumForSymbol<llvm::Instruction::BinaryOps>(sym);
 		return;
 	    }
@@ -5026,7 +5026,7 @@ namespace translate
 	{_G();
 	    if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() )
 	    {
-		core::SymbolToEnumConverter_sp converter = llvmo::_sym_STARCmpInstPredicateSTAR->symbolValue().as<core::SymbolToEnumConverter_O>();
+		core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARCmpInstPredicateSTAR->symbolValue());
 		this->_v = converter->enumForSymbol<llvm::CmpInst::Predicate>(sym);
 		return;
 	    }

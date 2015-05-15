@@ -123,8 +123,8 @@ uint		i;
 bool	SimpleBitVector_O::equal(T_sp obv) const
 {
     uint		i;
-    if ( !obv.isA<SimpleBitVector_O>() ) return((false));
-    SimpleBitVector_sp bv = obv.as<SimpleBitVector_O>();
+    if ( !gc::IsA<SimpleBitVector_sp>(obv) ) return((false));
+    SimpleBitVector_sp bv = gc::As<SimpleBitVector_sp>(obv);
     if ( this->vector_length() != bv->vector_length() ) return((false));
     for ( i=0; i<this->bits.size(); i++ ) {
 	if ( this->bits[i] != bv->bits[i] ) {
@@ -220,7 +220,7 @@ uint	i;
 
 SimpleBitVector_sp	SimpleBitVector_O::bitOr(SimpleBitVector_sp bv)
 {
-    SimpleBitVector_sp	res = this->deepCopy().as<SimpleBitVector_O>();
+    SimpleBitVector_sp	res = gc::As<SimpleBitVector_sp>(this->deepCopy());
     res->inPlaceOr(bv);
     return((res));
 }
@@ -228,14 +228,14 @@ SimpleBitVector_sp	SimpleBitVector_O::bitOr(SimpleBitVector_sp bv)
 
 SimpleBitVector_sp	SimpleBitVector_O::bitAnd(SimpleBitVector_sp bv)
 {
-    SimpleBitVector_sp	res = this->deepCopy().as<SimpleBitVector_O>();
+    SimpleBitVector_sp	res = gc::As<SimpleBitVector_sp>(this->deepCopy());
     res->inPlaceAnd(bv);
     return((res));
 }
 
 SimpleBitVector_sp	SimpleBitVector_O::bitXor(SimpleBitVector_sp bv)
 {
-    SimpleBitVector_sp	res = this->deepCopy().as<SimpleBitVector_O>();
+    SimpleBitVector_sp	res = gc::As<SimpleBitVector_sp>(this->deepCopy());
     res->inPlaceXor(bv);
     return((res));
 }

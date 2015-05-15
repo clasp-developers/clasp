@@ -198,15 +198,15 @@ public:
 
 	virtual bool mapKeyValue(T_sp key, T_sp value)
 	{
-	    Bignum_sp nameKey = key.as<Bignum_O>();
-	    Symbol_sp svalue = value.as<Symbol_O>();
+	    Bignum_sp nameKey = gc::As<Bignum_sp>(key);
+	    Symbol_sp svalue = gc::As<Symbol_sp>(value);
 	    
 	    Symbol_sp mine;
 	    T_sp foundp;
 	    {MULTIPLE_VALUES_CONTEXT();
 		T_mv values = this->_me->findSymbol(nameKey);
-		mine = values.as<Symbol_O>();;
-		foundp = values.valueGet(1).as<T_O>();
+		mine = gc::As<Symbol_sp>(values);
+		foundp = gc::As<T_sp>(values.valueGet(1));
 	    }
 	    if ( foundp.notnilp() && mine != svalue )
 	    {

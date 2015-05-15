@@ -228,7 +228,7 @@ namespace core
     {_G();
 	Path_sp me(Path_O::create());
         while (args.notnilp()) {
-            me->path_append(oCar(args).as<Str_O>()->get());
+            me->path_append(gc::As<Str_sp>(oCar(args))->get());
             args = oCdr(args);
         }
         return(Values(me));
@@ -238,11 +238,11 @@ namespace core
 
     bool Path_O::lt(T_sp obj) const
     {
-	if ( !obj.isA<Path_O>() )
+	if ( !gc::IsA<Path_sp>(obj) )
 	{
 	    return this->Base::operator<(obj);
 	}
-	Path_sp other = obj.as<Path_O>();
+	Path_sp other = gc::As<Path_sp>(obj);
 	return this->asString()<other->asString();
     }
 

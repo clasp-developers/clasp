@@ -192,7 +192,7 @@ namespace core
 		_lisp->print(BF("activationFrame->%p    .nilp()->%d  .nilp()->%d") % env.raw_() % env.nilp() % env.nilp() );
 		if ( env.notnilp() )
 		{
-		    _lisp->print(BF("%s") % env.as<Environment_O>()->environmentStackAsString());
+		    _lisp->print(BF("%s") % gc::As<Environment_sp>(env)->environmentStackAsString());
 		} else
 		{
 		    _lisp->print(BF("-- Only global environment available --"));
@@ -391,7 +391,7 @@ extern "C" {
             T_sp env = af_ihsEnv(af_ihsCurrentFrame());
             if ( env.notnilp() )
             {
-                printf("%s\n", env.as<Environment_O>()->environmentStackAsString().c_str());
+                printf("%s\n", gc::As<Environment_sp>(env)->environmentStackAsString().c_str());
             } else 
             {
                 printf("-- Only global environment available --\n");

@@ -141,7 +141,7 @@ coerce_to_posix_filename(T_sp pathname)
 	 * this is not supported on all POSIX platforms (most notably Windows)
 	 */
     ASSERT(pathname);
-    Str_sp sfilename = af_coerceToFilename(pathname).as<Str_O>();
+    Str_sp sfilename = gc::As<Str_sp>(af_coerceToFilename(pathname));
     return cl_stringRightTrim(Str_O::create(DIR_SEPARATOR), sfilename);
 }
 
@@ -150,7 +150,7 @@ safe_chdir(const char *path, T_sp tprefix)
 {
     if ( Str_sp prefix = tprefix.asOrNull<Str_O>() ) {
 	stringstream ss;
-	ss << prefix.as<Str_O>()->get() << path;
+	ss << gc::As<Str_sp>(prefix)->get() << path;
 	return safe_chdir(ss.str().c_str(), _Nil<T_O>());
     } else {
 	int output;
@@ -381,9 +381,9 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure)
     Pathname_sp output;
     Symbol_sp kind;
     if (subdir == kw::_sym_absolute) {
-	return eval::funcall(cl::_sym_makePathname,
+	return gc::As<Pathname_sp>(eval::funcall(cl::_sym_makePathname,
 			     kw::_sym_directory, Cons_O::createList(subdir),
-			     kw::_sym_defaults, base_dir).as<Pathname_O>();
+			     kw::_sym_defaults, base_dir));
     } else if (subdir == kw::_sym_relative) {
 /* Nothing to do */
 	return base_dir;
@@ -393,15 +393,15 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure)
 	SIMPLE_ERROR(BF("Directory component %s found in pathname %s"
 			"is not allowed in TRUENAME or DIRECTORY") % _rep_(subdir) % _rep_(base_dir));
     } else {
-	aux = subdir.as<Str_O>();
+	aux = gc::As<Str_sp>(subdir);
     }
 /* We now compose a new path based on the base directory and
  * the new component. We have to verify that the new pathname is
  * a directory and if it is a link recover the true name. */
     T_sp ldir = Cons_O::append(base_dir->_Directory, Cons_O::createList(aux));
-    output = eval::funcall(cl::_sym_makePathname,
+    output = gc::As<Pathname_sp>(eval::funcall(cl::_sym_makePathname,
 			   kw::_sym_directory, ldir,
-			   kw::_sym_defaults, base_dir).as<Pathname_O>();
+			   kw::_sym_defaults, base_dir));
     aux = brcl_namestring(output, BRCL_NAMESTRING_FORCE_BASE_STRING);
     aux = Str_O::create(aux->substr(0,aux->length()-1));
 //    aux->_contents()[aux->base_string.fillp-1] = 0;
@@ -478,7 +478,7 @@ file_truename(T_sp pathname, T_sp filename, int flags)
 	    SIMPLE_ERROR(BF("Unprintable pathname %s found in TRUENAME") % _rep_(pathname));
 	}
     }
-    kind = file_kind((char*)filename.as<Str_O>()->c_str(), false);
+    kind = file_kind((char*)gc::As<Str_sp>(filename)->c_str(), false);
     if (kind.nilp()) {
 	CANNOT_OPEN_FILE_ERROR(filename);
 #ifdef HAVE_LSTAT
@@ -486,7 +486,7 @@ file_truename(T_sp pathname, T_sp filename, int flags)
 	/* The link might be a relative pathname. In that case we have
 	 * to merge with the original pathname */
 	filename = si_readlink(filename);
-	Pathname_sp pn = pathname.as<Pathname_O>();
+	Pathname_sp pn = gc::As<Pathname_sp>(pathname);
 	pathname = Pathname_O::makePathname(pn->_Host,
 					    pn->_Device,
 					    pn->_Directory,
@@ -501,26 +501,26 @@ file_truename(T_sp pathname, T_sp filename, int flags)
 	/* If the pathname is a directory but we have supplied
 	   a file name, correct the type by appending a directory
 	   separator and re-parsing again the namestring */
-	if (pathname.as<Pathname_O>()->_Name.notnilp() ||
-	    pathname.as<Pathname_O>()->_Type.notnilp()) {
-	    Str_sp spathname = (*(filename.as<Str_O>())) + DIR_SEPARATOR;
+	if (gc::As<Pathname_sp>(pathname)->_Name.notnilp() ||
+	    gc::As<Pathname_sp>(pathname)->_Type.notnilp()) {
+	    Str_sp spathname = (*(gc::As<Str_sp>(filename))) + DIR_SEPARATOR;
 	    pathname = af_truename(spathname);
 	}
     }
     /* ECL does not contemplate version numbers
        in directory pathnames */
-    if (pathname.as<Pathname_O>()->_Name.nilp() &&
-	pathname.as<Pathname_O>()->_Type.nilp()) {
+    if (gc::As<Pathname_sp>(pathname)->_Name.nilp() &&
+	gc::As<Pathname_sp>(pathname)->_Type.nilp()) {
 	/* We have to destructively change the
 	 * pathname version here. Otherwise
 	 * merge_pathnames will not do it. It is
 	 * safe because coerce_to_file_pathname
 	 * created a copy. */
-	pathname.as<Pathname_O>()->_Version = _Nil<T_O>();
+	gc::As<Pathname_sp>(pathname)->_Version = _Nil<T_O>();
     } else {
-	pathname.as<Pathname_O>()->_Version = kw::_sym_newest;
+	gc::As<Pathname_sp>(pathname)->_Version = kw::_sym_newest;
     }
-    return Values(pathname.as<Pathname_O>(),kind);
+    return Values(gc::As<Pathname_sp>(pathname),kind);
 }
 
 
@@ -939,7 +939,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
     struct dirent *entry;
 
     brcl_disable_interrupts();
-    dir = opendir((char*)prefix.as<Str_O>()->c_str());
+    dir = opendir((char*)gc::As<Str_sp>(prefix)->c_str());
     if (dir == NULL) {
 	out = _Nil<T_O>();
 	goto OUTPUT;
@@ -1345,7 +1345,7 @@ dir_files(T_sp base_dir, T_sp tpathname, int flags)
 {
 	T_sp all_files, output = _Nil<T_O>();
 	T_sp mask;
-        Pathname_sp pathname = tpathname.as<Pathname_O>();
+        Pathname_sp pathname = gc::As<Pathname_sp>(tpathname);
 	T_sp name = pathname->_Name;
 	T_sp type = pathname->_Type;
 	if (name.nilp() && type.nilp()) {

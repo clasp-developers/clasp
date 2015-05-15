@@ -180,8 +180,8 @@ namespace core
         };
 	virtual bool mapKeyValue(T_sp key, T_sp value)
 	{
-	    Bignum_sp skey = key.as<Bignum_O>();
-	    Symbol_sp svalue = value.as<Symbol_O>();
+	    Bignum_sp skey = gc::As<Bignum_sp>(key);
+	    Symbol_sp svalue = gc::As<Symbol_sp>(value);
 	    string symbolName = lisp_symbolNameAsString(svalue);
 	    string::size_type pos = symbolName.find(this->_substr);
 //	    LOG(BF("Looking at symbol(%s) for (%s) found: %d") % symbolName % this->_substring % pos );
@@ -705,14 +705,14 @@ namespace core
 
     Path_sp Lisp_O::getCurrentWorkingDirectory()
     {
-	return _sym_STARcurrent_working_directorySTAR->symbolValue().as<Path_O>();
+	return gc::As<Path_sp>(_sym_STARcurrent_working_directorySTAR->symbolValue());
     }
 
 
 
     ReadTable_sp Lisp_O::getCurrentReadTable()
     {
-	return cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>();
+	return gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
     }
 
     void Lisp_O::setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc)
@@ -807,7 +807,7 @@ namespace core
 	    this->_Roots._LoadTimeValueArrays->setf_gethash(key,vo);
             return vo; // gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(vo.pbase()));
 	}
-        LoadTimeValues_sp ltv = it.as<LoadTimeValues_O>();
+        LoadTimeValues_sp ltv = gc::As<LoadTimeValues_sp>(it);
 	return ltv; // return gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(ltv.pbase()));
     }
 
@@ -817,15 +817,15 @@ namespace core
         Str_sp key = Str_O::create(name);
         T_sp it = this->_Roots._LoadTimeValueArrays->gethash(key,_Nil<T_O>());
 	if ( it.nilp() ) return _Nil<LoadTimeValues_O>();
-        return it.as<LoadTimeValues_O>();
+        return gc::As<LoadTimeValues_sp>(it);
     }
     LoadTimeValues_sp Lisp_O::findLoadTimeValuesWithNameContaining(const string& name, int& count)
     {
         LoadTimeValues_sp result = _Nil<LoadTimeValues_O>();
 	count = 0;
         this->_Roots._LoadTimeValueArrays->mapHash( [&count,&result,&name] (T_sp key, T_sp val) -> void {
-                if ( key.as<Str_O>()->find(name,0).notnilp() ) {
-                    result = val.as<LoadTimeValues_O>();
+                if ( gc::As<Str_sp>(key)->find(name,0).notnilp() ) {
+                    result = gc::As<LoadTimeValues_sp>(val);
 		    ++count;
                 }
             });
@@ -983,7 +983,7 @@ namespace core
 
     void Lisp_O::addClassNameToPackageAsDynamic(const string& package, const string& name, Class_sp mc)
     {_G();
-	Symbol_sp classSymbol = _lisp->intern(name,_lisp->findPackage(package,true).as<Package_O>());
+	Symbol_sp classSymbol = _lisp->intern(name,gc::As<Package_sp>(_lisp->findPackage(package,true)));
 	classSymbol->exportYourself();
 	classSymbol->setf_symbolValue(mc);
 //    this->globalEnvironment()->extend(classSymbol,mc);
@@ -1161,7 +1161,7 @@ namespace core
 
 	for ( list<string>::const_iterator jit=usePackages.begin(); jit!=usePackages.end(); jit++ )
 	{
-	    Package_sp usePkg = this->findPackage(*jit,true).as<Package_O>();
+	    Package_sp usePkg = gc::As<Package_sp>(this->findPackage(*jit,true));
 	    LOG(BF("Using package[%s]") % usePkg->getName() );
 	    newPackage->usePackage(usePkg);
 	}
@@ -1211,7 +1211,7 @@ namespace core
 	}
 	cur = _sym_STARsourceDatabaseSTAR->symbolValue();
         if ( cur.nilp() ) return cur;
-        return cur.as<SourceManager_O>();
+        return gc::As<SourceManager_sp>(cur);
     }
 
 
@@ -1231,7 +1231,7 @@ namespace core
 	    cur = this->_Roots._CorePackage;
 	    goto DONE;
 	}
-	cur = cl::_sym_STARpackageSTAR->symbolValue().as<Package_O>();
+	cur = gc::As<Package_sp>(cl::_sym_STARpackageSTAR->symbolValue());
     DONE:
 	ASSERTNOTNULL(cur);
 	return cur;
@@ -1305,7 +1305,7 @@ namespace core
 	    LOG(BF("PATH variable = %s") % _rep_(pathList).c_str()  );
 	    while ( pathList.notnilp() )
 	    {
-		boost_filesystem::path onePath(oCar(pathList).as<Str_O>()->get());
+		boost_filesystem::path onePath(gc::As<Str_sp>(oCar(pathList))->get());
 		onePath /= fileName;
 		LOG(BF("Checking path[%s]") % onePath.string() );
 		if ( boost_filesystem::exists(onePath) )
@@ -1477,7 +1477,7 @@ namespace core
 	    TRY() {
 		if ( prompt ) {
 		    stringstream prompts;
-		    prompts << std::endl << cl::_sym_STARpackageSTAR->symbolValue().as<Package_O>()->getName() << "> ";
+		    prompts << std::endl << gc::As<Package_sp>(cl::_sym_STARpackageSTAR->symbolValue())->getName() << "> ";
 		    clasp_write_string(prompts.str(),stream);
 		}
 		DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
@@ -1969,9 +1969,9 @@ namespace core
 	ASSERTF(env.nilp(),BF("Handle non nil environment"));
 	// Use the same global variable that ECL uses
 	SYMBOL_SC_(CorePkg,STARclassNameHashTableSTAR);
-	HashTable_sp classNames = _sym_STARclassNameHashTableSTAR->symbolValue().as<HashTable_O>();
+	HashTable_sp classNames = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
 	T_mv mc = classNames->gethash(symbol,_Nil<T_O>());
-	Class_sp omc = mc.as_or_nil<Class_O>();
+	T_sp cla = mc;
 	bool foundp = mc.valueGet(1).notnilp();
 	if ( !foundp )
 	{
@@ -1981,6 +1981,7 @@ namespace core
 	    }
 	    return(Values(_Nil<Class_O>()));
 	}
+	Class_sp omc = gc::As<Class_sp>(cla);
 #if DEBUG_CLOS>=3
 	printf("\nMLOG find-class returning class %p name--> %s\n", (void*)(result.get()), symbol->__repr__().c_str() );
 #endif
@@ -2002,9 +2003,9 @@ namespace core
 	}
 	if ( _lisp->bootClassTableIsValid() )
 	{
-	    return Values(_lisp->boot_setf_findClass(name,newValue.as<Class_O>()));
+	    return Values(_lisp->boot_setf_findClass(name,gc::As<Class_sp>(newValue)));
 	}
-	HashTable_sp ht = _sym_STARclassNameHashTableSTAR->symbolValue().as<HashTable_O>();
+	HashTable_sp ht = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
 	T_sp oldClass = eval::funcall(cl::_sym_findClass, name, _Nil<T_O>());
 	if ( af_classp(oldClass) )
 	{
@@ -2016,7 +2017,7 @@ namespace core
 	{
 	    ht->hash_table_setf_gethash(name,newValue);
 	}
-	return Values(newValue.as<Class_O>());
+	return Values(gc::As<Class_sp>(newValue));
     };
 
 
@@ -2156,7 +2157,7 @@ namespace core
 	} else if ( Cons_sp cform = form.asOrNull<Cons_O>() ) {
 	    T_sp head = oCar(cform);
 	    if ( cl_symbolp(head) ) {
-		Symbol_sp headSymbol = head.as<Symbol_O>();
+		Symbol_sp headSymbol = gc::As<Symbol_sp>(head);
 		T_sp func = eval::funcall(cl::_sym_macroFunction,headSymbol,env);
 		expansionFunction = func;
 	    }
@@ -2165,7 +2166,7 @@ namespace core
 		Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
 		T_sp expanded = eval::funcall(hookFunc,expansionFunction,form,env);
 		if ( _lisp->sourceDatabase().notnilp() ) {
-		    _lisp->sourceDatabase().as<SourceManager_O>()->duplicateSourcePosInfo(form,expanded,expansionFunction);
+		    gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(form,expanded,expansionFunction);
 		}
 		return(Values(expanded,_lisp->_true()) );
 	    }
@@ -2191,7 +2192,7 @@ namespace core
 		Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
 		T_sp expanded = eval::funcall(hookFunc,expansionFunction,form,env);
 		if ( _lisp->sourceDatabase().notnilp() ) {
-		    _lisp->sourceDatabase().as<SourceManager_O>()->duplicateSourcePosInfo(form,expanded,expansionFunction);
+		    gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(form,expanded,expansionFunction);
 		}
 		if ( expanded != form ) {
 		    return(Values(expanded,_lisp->_true()) );
@@ -2221,7 +2222,7 @@ namespace core
 	do {
 	    T_mv mv = cl_macroexpand_1(cur,env);
 	    cur = mv;
-	    sawAMacro = mv.valueGet(1).as<T_O>().isTrue();
+	    sawAMacro = gc::As<T_sp>(mv.valueGet(1)).isTrue();
 	    expandedMacro |= sawAMacro;
 	    macroExpansionCount++;
 	    if ( macroExpansionCount > 100 )
@@ -2247,13 +2248,13 @@ namespace core
 	FindApropos apropos(substring);
 	LOG(BF("Searching for symbols apropos to(%s)") % substring);
 	for ( auto cur : packages ) {
-	    Package_sp pkg = oCar(cur).as<Package_O>();
+	    Package_sp pkg = gc::As<Package_sp>(oCar(cur));
 	    pkg->mapExternals(&apropos);
 	    pkg->mapInternals(&apropos);
 	}
         apropos._symbols->mapHash( [&print_values] (T_sp key, T_sp dummy) {
                 stringstream ss;
-                Symbol_sp sym = key.as<Symbol_O>();
+                Symbol_sp sym = gc::As<Symbol_sp>(key);
                 ss << (BF("%50s") % (sym)->fullName()).str();
                 if ( (sym)->specialP() || (sym)->fboundp() )
                 {
@@ -2262,7 +2263,7 @@ namespace core
                         ss << " ";
                         ss << af_classOf(af_symbolFunction((sym)))->classNameAsString();
 			Function_sp fn = af_symbolFunction(sym);
-                        if ( !fn.unboundp() && fn->closure && af_symbolFunction(sym).as<Function_O>()->closure->macroP() )
+                        if ( !fn.unboundp() && fn->closure && gc::As<Function_sp>(af_symbolFunction(sym))->closure->macroP() )
                         {
                             ss << "(MACRO)";
                         }
@@ -2665,7 +2666,7 @@ namespace core
     {_G();
 	List_sp symbols = coerce::listOfSymbols(symbolsDesig);
 	for ( Cons_sp cur : symbols ) {
-	    Symbol_sp one = oCar(cur).as<Symbol_O>();
+	    Symbol_sp one = gc::As<Symbol_sp>(oCar(cur));
 	    LOG(BF("Exporting symbol[%s] to python") % _rep_(one) );
 	    _lisp->exportToPython(one);
 	}
@@ -2972,7 +2973,7 @@ extern "C"
 	{
 	    LOG(BF("createObjectOfClass(%s)") % _rep_(mc));
 	    IMPLEMENT_ME();
-	    T_sp obj = mc.as<Class_O>()->allocate_newNil();
+	    T_sp obj = gc::As<Class_sp>(mc)->allocate_newNil();
 	    obj->initialize();
 	    return obj;
 	}
@@ -3040,7 +3041,7 @@ extern "C"
     void Lisp_O::switchToClassNameHashTable()
     {_G();
 	ASSERTF(this->_BootClassTableIsValid,BF("switchToClassNameHashTable should only be called once after boot"));
-	HashTable_sp ht = _sym_STARclassNameHashTableSTAR->symbolValue().as<HashTable_O>();
+	HashTable_sp ht = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
 #if 0
 	for ( SymbolDict<Class_O>::iterator it=this->_Roots._BootClassTable.begin();
 	      it!=this->_Roots._BootClassTable.end(); it++ )
@@ -3072,7 +3073,7 @@ extern "C"
             }
             return _Nil<SingleDispatchGenericFunction_O>();
         }
-        return fn.as<SingleDispatchGenericFunction_O>();
+        return gc::As<SingleDispatchGenericFunction_sp>(fn);
     }
 
 
@@ -3211,7 +3212,7 @@ extern "C"
 		SIMPLE_ERROR(BF("There can only be one ':' or '::' in a symbol name"));
 	    }
 	}
-	package = this->findPackage(name.substr(0,colonPos),true).as<Package_O>();
+	package = gc::As<Package_sp>(this->findPackage(name.substr(0,colonPos),true));
 	symbolName = name.substr(secondPart,99999);
 	LOG(BF("It's a packaged symbol (%s :: %s)") % package->getName()% symbolName );
 	return;
@@ -3236,7 +3237,7 @@ extern "C"
 	ASSERTNOTNULL(package);
 	ASSERT(package.notnilp());
         T_mv symStatus = package->intern(symbolName);
-        Symbol_sp sym = symStatus;
+        Symbol_sp sym = gc::As<Symbol_sp>(symStatus);
         T_sp status = symStatus.second();
         return Values(sym,status);
     }
@@ -3265,7 +3266,7 @@ extern "C"
 	{
 	    package = coerce::packageDesignator(optionalPackageDesignator);
 	}
-	return package->findSymbol(symbolName).as<Symbol_O>();
+	return gc::As<Symbol_sp>(package->findSymbol(symbolName));
     }
 
 
@@ -3293,7 +3294,7 @@ extern "C"
 
     Symbol_sp Lisp_O::internWithPackageName(string const& packageName, string const& symbolName)
     {_G();
-	Package_sp package = this->findPackage(packageName,true).as<Package_O>();
+	Package_sp package = gc::As<Package_sp>(this->findPackage(packageName,true));
 	return this->intern(symbolName,package);
     }
 
@@ -3337,7 +3338,7 @@ extern "C"
 	    SIMPLE_ERROR(BF("You cannot intern[%s] as a keyword - it has package designating ':' characters in it at pos[%d]") % realName % colonPos);
 	}
 	boost::to_upper(realName);
-	return this->_Roots._KeywordPackage->intern(realName).as<Symbol_O>();
+	return gc::As<Symbol_sp>(this->_Roots._KeywordPackage->intern(realName));
     }
 
 
@@ -3473,7 +3474,7 @@ extern "C"
 	//	printf("%s:%d core:*debug-startup* is: %s\n", __FILE__, __LINE__, _rep_(core::_sym_STARdebugStartupSTAR->symbolValue()).c_str());
 	if ( !this->_IgnoreInitImage )
 	{
-            Pathname_sp initPathname = _sym_STARcommandLineImageSTAR->symbolValue().as<Pathname_O>();
+            Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
             T_mv result = eval::funcall(cl::_sym_load,initPathname); // core_loadBundle(initPathname);
             if ( result.nilp() ) {
                 T_sp err = result.second();
@@ -3524,7 +3525,7 @@ extern "C"
         }
 	SourceFileInfo_sp sfi = this->_Roots._SourceFiles[it->second];
 	if ( sourceDebugNamestring.notnilp() ) {
-	    sfi->_SourceDebugNamestring = sourceDebugNamestring.as<Str_O>();
+	    sfi->_SourceDebugNamestring = gc::As<Str_sp>(sourceDebugNamestring);
 	    sfi->_SourceDebugOffset = sourceDebugOffset;
 	    sfi->_TrackLineno = useLineno;
 	}
@@ -3567,7 +3568,7 @@ extern "C"
 #endif
         } else
               {
-                  HashTable_sp ht = _sym_STARclassNameHashTableSTAR->symbolValue().as<HashTable_O>();
+                  HashTable_sp ht = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
                   ht->lowLevelMapHash(mapper);
               }
         }
@@ -3950,7 +3951,7 @@ extern "C"
 	    this->_Package = lisp->makePackage(packageName,lnnames,lp);
 	} else
 	{
-	    this->_Package = lisp->findPackage(packageName,true).as<Package_O>();
+	    this->_Package = gc::As<Package_sp>(lisp->findPackage(packageName,true));
 	}
 	this->_PackageName = packageName;
     }
@@ -3965,7 +3966,7 @@ extern "C"
 	    this->_Package = lisp->makePackage(packageName,lnnames,lpkgs);
 	} else
 	{
-	    this->_Package = lisp->findPackage(packageName,true).as<Package_O>();
+	    this->_Package = gc::As<Package_sp>(lisp->findPackage(packageName,true));
 	}
 	this->_PackageName = packageName;
     }

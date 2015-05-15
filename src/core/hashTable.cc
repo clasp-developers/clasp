@@ -149,7 +149,7 @@ void    core_DebugHashTable(bool don)
             SIMPLE_ERROR(BF("maphash called with nil hash-table"));
         }
 //        HASH_TABLE_LOCK();
-	HashTable_sp hash_table = thash_table.as<HashTable_O>();
+	HashTable_sp hash_table = gc::As<HashTable_sp>(thash_table);
         VectorObjects_sp table = hash_table->_HashTable;
 	for ( size_t it=0, itEnd = cl_length(table); it<itEnd; ++it )
 	{
@@ -188,7 +188,7 @@ void    core_DebugHashTable(bool don)
     bool af_hashTableEntryDeletedP(T_sp cons)
     {_G();
 	if (!cons.consp()) SIMPLE_ERROR(BF("Arg must be a cons"));
-        return oCdr(cons.as<Cons_O>()).unboundp();
+        return oCdr(gc::As<Cons_sp>(cons)).unboundp();
     };
 
 
@@ -371,7 +371,7 @@ void    core_DebugHashTable(bool don)
 		if ( hg.isFilling() ) HashTable_O::sxhash_equalp(hg,oCdr(cobj),ld);
 		return;
 	    } else if ( obj->instancep() ) {
-		Instance_sp iobj = obj.as<Instance_O>();
+		Instance_sp iobj = gc::As<Instance_sp>(obj);
 		if ( hg.isFilling() ) HashTable_O::sxhash_equalp(hg,iobj->_Class->className(),ld);
 		for ( int i(0), iEnd(iobj->_Slots.size()); i<iEnd; ++i ) {
 		    if ( !iobj->_Slots[i].unboundp() && hg.isFilling() ) HashTable_O::sxhash_equalp(hg,iobj->_Slots[i],ld);
@@ -520,7 +520,7 @@ void    core_DebugHashTable(bool don)
 	    
 	}
 #endif
-        HashTable_sp ht = hashTable.as<HashTable_O>();
+        HashTable_sp ht = gc::As<HashTable_sp>(hashTable);
         return ht->gethash(key,default_value);
     };
 
@@ -669,7 +669,7 @@ void    core_DebugHashTable(bool don)
         uint newSize = 0;
         if ( expandTable ) {
             if ( af_integerP(this->_RehashSize) ) {
-                newSize = cl_length(this->_HashTable) + clasp_to_int(this->_RehashSize.as<Integer_O>());
+                newSize = cl_length(this->_HashTable) + clasp_to_int(gc::As<Integer_sp>(this->_RehashSize));
             } else if ( af_floatP(this->_RehashSize) ) {
                 newSize = cl_length(this->_HashTable) * clasp_to_double(this->_RehashSize);
             }
@@ -857,7 +857,7 @@ void    core_DebugHashTable(bool don)
 	    //	    for ( auto it = l.begin(); it != l.end(); ++it ) {
 		//Cons_sp cur(reinterpret_cast<core::Cons_O*>(&**it));
 	    //	    	for ( Cons_sp cur=first.as<List_V>(); cur.consp(); cur = cCdr(cur) )
-                Cons_sp pair = oCar(cur).as<Cons_O>();
+                Cons_sp pair = gc::As<Cons_sp>(oCar(cur));
                 T_sp key = oCar(pair);
                 T_sp value = oCdr(pair);
                 if ( !value.unboundp() ) {

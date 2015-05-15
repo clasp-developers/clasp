@@ -141,7 +141,7 @@ namespace core
     /*! See ECL>>instance.d>>si_allocate_instance */
     T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots )
     {_G();
-        Class_sp cl = theClass.as<Class_O>();
+        Class_sp cl = gc::As<Class_sp>(theClass);
         if ( !cl->hasCreator() ) {
             IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots );
         }
@@ -151,7 +151,7 @@ namespace core
 	{
 	    printf("%s:%d allocateInstance returning nil!!!\n", __FILE__, __LINE__);
 	}
-	obj->instanceClassSet(theClass.as<Class_O>());
+	obj->instanceClassSet(gc::As<Class_sp>(theClass));
 	obj->initializeSlots(numberOfSlots);
 	return(obj);
     }
@@ -163,7 +163,7 @@ namespace core
 	if ( orig.nilp() ) {
 	    orig = output;
 	} else if ( Instance_sp iorig = orig.asOrNull<Instance_O>() ) {
-	    iorig->instanceClassSet(theClass.as<Class_O>());
+	    iorig->instanceClassSet(gc::As<Class_sp>(theClass));
 	    iorig->_Slots = output->_Slots; // orig->adoptSlots(output);
 	}
 	return(orig);
@@ -188,7 +188,7 @@ namespace core
 #if 1
 	    Symbol_sp className = node->getKind();
 //	    node->attribute(kw::_sym_iclass,className);
-	    Class_sp cl = eval::funcall(cl::_sym_findClass,className,_lisp->_true()).as<Class_O>();
+	    Class_sp cl = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass,className,_lisp->_true()));
 	    this->_Class = cl;
 	    this->initializeSlots(node->vectorSize());
 #endif
@@ -346,7 +346,7 @@ namespace core
 
     T_sp Instance_O::copyInstance() const
     {
-	Instance_sp iobj = Instance_O::allocateInstance(this->_Class).as<Instance_O>();
+	Instance_sp iobj = gc::As<Instance_sp>(Instance_O::allocateInstance(this->_Class));
 	iobj->_isgf = this->_isgf;
 	iobj->_Slots = this->_Slots;
         if ( (bool)(this->closure)) {

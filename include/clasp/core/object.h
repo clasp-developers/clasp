@@ -614,10 +614,11 @@ namespace core
 	template <class o_class>
 	bool isAssignableTo() const { return this->isAssignableToByClassSymbol(o_class::static_classSymbol()); }
 
-
+#if 0
 	/*! isA is a shorter way to write isAssignableTo */
 	template <class o_class>
-	bool isA() const { return this->isAssignableToByClassSymbol(o_class::static_classSymbol());};
+	bool i s A() const { return this->isAssignableToByClassSymbol(o_class::static_classSymbol());};
+#endif
 
 
 
@@ -773,7 +774,7 @@ namespace core
     public:	// Instance protocol
 
 	//! Some Class objects will create instances of classes different from themselves
-	virtual core::Class_sp _instanceClass() const { return this->__class().as<Class_O>();};
+	virtual core::Class_sp _instanceClass() const { return this->__class();};
 
         virtual T_sp instanceClassSet(Class_sp mc);
 

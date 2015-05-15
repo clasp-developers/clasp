@@ -548,14 +548,11 @@ namespace core {
 	DEFAULT_CTOR_DTOR(SingleFloat_O);
     };
 
+};
 
 
 
-
-
-
-
-
+namespace core {
     SMART(DoubleFloat);
     class DoubleFloat_O : public Float_O
     {
@@ -778,15 +775,15 @@ namespace core {
 	// math routines shared by all numbers
 	bool zerop_() const { return (clasp_zerop(this->_real) && clasp_zerop(this->_imaginary));};
 
-	virtual Number_sp negate_() const { return Complex_O::create(clasp_negate(this->_real).as<Real_O>(),
-								     clasp_negate(this->_imaginary).as<Real_O>());};
+	virtual Number_sp negate_() const { return Complex_O::create(gc::As<Real_sp>(clasp_negate(this->_real)),
+								     gc::As<Real_sp>(clasp_negate(this->_imaginary)));};
 
 	virtual Number_sp log1() const;
 	virtual Number_sp log1p() const;
 
-	virtual Number_sp onePlus_() const { return create(clasp_one_plus(this->_real).as<Real_O>(),
+	virtual Number_sp onePlus_() const { return create(gc::As<Real_sp>(clasp_one_plus(this->_real)),
 							  this->_imaginary);};
-	virtual Number_sp oneMinus_() const { return create(clasp_one_minus(this->_real).as<Real_O>(),
+	virtual Number_sp oneMinus_() const { return create(gc::As<Real_sp>(clasp_one_minus(this->_real)),
 							   this->_imaginary);};
 
 	Number_sp sqrt() const;
@@ -831,8 +828,8 @@ namespace core {
             GC_ALLOCATE(Ratio_O,v );
 	    if ( clasp_to_mpz(denom) < 0 )
 	    {
-		v->_numerator = clasp_negate(num).as<Integer_O>();
-		v->_denominator = clasp_negate(denom).as<Integer_O>();
+		v->_numerator = gc::As<Integer_sp>(clasp_negate(num));
+		v->_denominator = gc::As<Integer_sp>(clasp_negate(denom));
 	    } else
 	    {
 		v->_numerator = num;
@@ -875,8 +872,8 @@ namespace core {
 	void	setFromString( const string& str);
 	virtual	bool	eql_(T_sp obj) const;
 
-	Number_sp onePlus_() const { return create(contagen_add(this->_numerator,this->_denominator).as<Integer_O>(),this->_denominator);};
-	Number_sp oneMinus_() const { return create(contagen_sub(this->_numerator,this->_denominator).as<Integer_O>(),this->_denominator);};
+	Number_sp onePlus_() const { return create(gc::As<Integer_sp>(contagen_add(this->_numerator,this->_denominator)),this->_denominator);};
+	Number_sp oneMinus_() const { return create(gc::As<Integer_sp>(contagen_sub(this->_numerator,this->_denominator)),this->_denominator);};
 
 	virtual float as_float_() const;
 	virtual double as_double_() const;
@@ -946,11 +943,11 @@ namespace core {
     }
 
     inline float brcl_single_float(Number_sp x) {
-	return x.as<SingleFloat_O>()->get();
+	return gc::As<SingleFloat_sp>(x)->get();
     }
 
     inline double brcl_double_float(Number_sp x) {
-	return x.as<DoubleFloat_O>()->get();
+	return gc::As<DoubleFloat_sp>(x)->get();
     }
 
 #ifdef CLASP_LONG_FLOAT
@@ -1008,11 +1005,11 @@ namespace core {
 
 
 #define brcl_return2(ENV,n1,n2) return Values(n1,n2);
-#define BRCL_REAL_TYPE_P(y) (y.isA<Real_O>())
+#define CLASP_REAL_TYPE_P(y) (gc::IsA<Real_sp>(y))
 
     
 
-#define BRCL_FIXNUMP(n) (n.isA<Fixnum_O>())
+#define CLASP_FIXNUMP(n) (gc::IsA<Fixnum_sp>(n))
 
     /*! In num_co.cc */
     Real_mv clasp_floor1(Real_sp x);
@@ -1333,53 +1330,5 @@ namespace core {
 
 };
 
-
-
-namespace gctools {
-    template <>
-	inline core::Fixnum_sp As<core::Fixnum_sp>(core::Integer_sp const& rhs) {
-	if ( rhs.fixnump() ) return core::Fixnum_sp((Tagged)rhs.raw_());
-	class_id from_typ = reg::registered_class<core::Integer_O>::id;
-	lisp_errorBadCastToFixnum(from_typ,reinterpret_cast<core::T_O*>(rhs.raw_()));
-	HARD_UNREACHABLE();
-    };
-    template <>
-	inline core::Fixnum_sp As<core::Fixnum_sp>(core::Rational_sp const& rhs) {
-	if ( rhs.fixnump() ) return core::Fixnum_sp((Tagged)rhs.raw_());
-	class_id from_typ = reg::registered_class<core::Rational_O>::id;
-	lisp_errorBadCastToFixnum(from_typ,reinterpret_cast<core::T_O*>(rhs.raw_()));
-	HARD_UNREACHABLE();
-    };
-    template <>
-	inline core::Fixnum_sp As<core::Fixnum_sp>(core::Real_sp const& rhs) {
-	if ( rhs.fixnump() ) return core::Fixnum_sp((Tagged)rhs.raw_());
-	class_id from_typ = reg::registered_class<core::Real_O>::id;
-	lisp_errorBadCastToFixnum(from_typ,reinterpret_cast<core::T_O*>(rhs.raw_()));
-	HARD_UNREACHABLE();
-    };
-    template <>
-	inline core::Fixnum_sp As<core::Fixnum_sp>(core::Number_sp const& rhs) {
-	if ( rhs.fixnump() ) return core::Fixnum_sp((Tagged)rhs.raw_());
-	class_id from_typ = reg::registered_class<core::Number_O>::id;
-	lisp_errorBadCastToFixnum(from_typ,reinterpret_cast<core::T_O*>(rhs.raw_()));
-	HARD_UNREACHABLE();
-    };
-    template <>
-	inline core::Fixnum_sp As<core::Fixnum_sp>(core::T_sp const& rhs) {
-	if ( rhs.fixnump() ) return core::Fixnum_sp((Tagged)rhs.raw_());
-	class_id from_typ = reg::registered_class<core::Integer_O>::id;
-	lisp_errorBadCastToFixnum(from_typ,reinterpret_cast<core::T_O*>(rhs.raw_()));
-	HARD_UNREACHABLE();
-    };
-    template <>
-	inline core::Number_sp As<core::Number_sp>(core::T_sp const& rhs) {
-	if ( rhs.fixnump() ) return core::Number_sp((Tagged)rhs.raw_());
-	if ( rhs.single_floatp() ) return core::Number_sp((Tagged)rhs.raw_());
-	class_id to_typ = reg::registered_class<core::Number_O>::id;
-	class_id from_typ = reg::registered_class<core::T_O>::id;
-	lisp_errorBadCast(to_typ,from_typ,reinterpret_cast<core::T_O*>(rhs.raw_()));
-	HARD_UNREACHABLE();
-    };
-};
 
 #endif //]

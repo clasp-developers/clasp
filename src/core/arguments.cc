@@ -41,7 +41,7 @@ namespace core
 
     Symbol_sp Argument::symbol() const
     {
-	return((this->_ArgTarget.as<Symbol_O>()));
+	return((gc::As<Symbol_sp>(this->_ArgTarget)));
     };
 
     List_sp Argument::classified() const
@@ -61,7 +61,7 @@ namespace core
 
     LambdaListHandler_sp Argument::lambdaListHandler() const
     {
-	return((this->_ArgTarget.as<LambdaListHandler_O>()));
+	return((gc::As<LambdaListHandler_sp>(this->_ArgTarget)));
     }
 
 
@@ -213,7 +213,7 @@ namespace core
     {
 	if ( arg._ArgTargetFrameIndex == SPECIAL_TARGET )
 	{
-	    Symbol_sp sym = arg._ArgTarget.as<Symbol_O>();
+	    Symbol_sp sym = gc::As<Symbol_sp>(arg._ArgTarget);
 	    this->pushSpecialVariableAndSet(sym,val);
 	    return;
 	}
@@ -259,22 +259,22 @@ namespace core
 	    return;
 	}
 	ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget) );
-	this->_Environment->new_binding(argument._ArgTarget.as<Symbol_O>(),argument._ArgTargetFrameIndex,val);
+	this->_Environment->new_binding(gc::As<Symbol_sp>(argument._ArgTarget),argument._ArgTargetFrameIndex,val);
     }
 
 
 
     void ValueEnvironmentDynamicScopeManager::new_variable(List_sp classified, T_sp val)
     {
-	Symbol_sp type = oCar(classified).as<Symbol_O>();
+	Symbol_sp type = gc::As<Symbol_sp>(oCar(classified));
 	if ( type == ext::_sym_specialVar )
 	{
-	    Symbol_sp sym = oCdr(classified).as<Symbol_O>();
+	    Symbol_sp sym = gc::As<Symbol_sp>(oCdr(classified));
 	    this->DynamicScopeManager::pushSpecialVariableAndSet(sym,val);
 	    return;
 	} else if ( type == ext::_sym_lexicalVar )
 	{
-	    Symbol_sp sym = oCadr(classified).as<Symbol_O>();
+	    Symbol_sp sym = gc::As<Symbol_sp>(oCadr(classified));
 	    int idx = unbox_fixnum(gc::As<Fixnum_sp>(oCddr(classified)));
 	    ASSERTF(idx >= 0, BF("Illegal target index[%d] for lexical variable[%s]") % idx % _rep_(sym) );
 	    this->_Environment->new_binding(sym,idx,val);
@@ -286,7 +286,7 @@ namespace core
 
     void ValueEnvironmentDynamicScopeManager::new_special(List_sp classified) {
 	ASSERT(oCar(classified)==_sym_declaredSpecial);
-	Symbol_sp sym = oCdr(classified).as<Symbol_O>();
+	Symbol_sp sym = gc::As<Symbol_sp>(oCdr(classified));
 	this->_Environment->defineSpecialBinding(sym);
     }
     

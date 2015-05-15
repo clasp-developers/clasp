@@ -74,55 +74,55 @@ namespace core
 {
     FileOps& StreamOps(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->ops;
     }
 
     int& StreamByteSize(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_ByteSize;
     };
 
     int& StreamFlags(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_Flags;
     }
 
     StreamMode& StreamMode(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_Mode;
     }
 
     int& StreamLastOp(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_LastOp;
     }
 
     char*& StreamBuffer(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_Buffer;
     }
 
     T_sp& StreamFormat(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_Format;
     }
 
     T_sp& StreamExternalFormat(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_ExternalFormat;
     }
 
     int& StreamClosed(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_Closed;
     }
 
@@ -151,63 +151,63 @@ namespace core
 
     int& StreamLastChar(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_LastChar;
     }
 
     List_sp& StreamByteStack(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_ByteStack;
     }
 
     StreamCursor& StreamInputCursor(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_InputCursor;
     }
 
     Fixnum& StreamLastCode(T_sp strm, int index)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_LastCode[index];
     }
 
 
     cl_eformat_decoder& StreamDecoder(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_Decoder;
     }
 
     cl_eformat_encoder& StreamEncoder(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_Encoder;
     }
 
     claspCharacter& StreamEofChar(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_EofChar;
     }
 
     int& StreamOutputColumn(T_sp strm)
     {
-        Stream_sp stream = strm.as<Stream_O>();
+        Stream_sp stream = gc::As<Stream_sp>(strm);
         return stream->_OutputColumn;
     }
 
 
     StrWithFillPtr_sp& StringOutputStreamOutputString(T_sp strm)
     {
-        StringOutputStream_sp sout = strm.as<StringOutputStream_O>();
+        StringOutputStream_sp sout = gc::As<StringOutputStream_sp>(strm);
         return sout->_Contents;
     }
 
     int& StringFillp(StrWithFillPtr_sp s)
     {
-        StrWithFillPtr_sp ss = s.as<StrWithFillPtr_O>();
+        StrWithFillPtr_sp ss = gc::As<StrWithFillPtr_sp>(s);
         return ss->_FillPointer;
     }
 
@@ -216,62 +216,62 @@ namespace core
 
     gctools::Fixnum& StringInputStreamInputPosition(T_sp strm)
     {
-        StringInputStream_sp ss = strm.as<StringInputStream_O>();
+        StringInputStream_sp ss = gc::As<StringInputStream_sp>(strm);
         return ss->_InputPosition;
     }
 
     gctools::Fixnum& StringInputStreamInputLimit(T_sp strm)
     {
-        StringInputStream_sp ss = strm.as<StringInputStream_O>();
+        StringInputStream_sp ss = gc::As<StringInputStream_sp>(strm);
         return ss->_InputLimit;
     }
 
     Str_sp& StringInputStreamInputString(T_sp strm)
     {
-        StringInputStream_sp ss = strm.as<StringInputStream_O>();
+        StringInputStream_sp ss = gc::As<StringInputStream_sp>(strm);
         return ss->_Contents;
     }
 
     T_sp& TwoWayStreamInput(T_sp strm)
     {
-        TwoWayStream_sp s = strm.as<TwoWayStream_O>();
+        TwoWayStream_sp s = gc::As<TwoWayStream_sp>(strm);
         return s->_In;
     }
 
     T_sp& TwoWayStreamOutput(T_sp strm)
     {
-        TwoWayStream_sp s = strm.as<TwoWayStream_O>();
+        TwoWayStream_sp s = gc::As<TwoWayStream_sp>(strm);
         return s->_Out;
     }
 
 
     T_sp& BroadcastStreamList(T_sp strm)
     {
-        BroadcastStream_sp s = strm.as<BroadcastStream_O>();
+        BroadcastStream_sp s = gc::As<BroadcastStream_sp>(strm);
         return s->_Streams;
     }
 
     T_sp& EchoStreamInput(T_sp strm)
     {
-        EchoStream_sp e = strm.as<EchoStream_O>();
+        EchoStream_sp e = gc::As<EchoStream_sp>(strm);
         return e->_In;
     }
 
     T_sp& EchoStreamOutput(T_sp strm)
     {
-        EchoStream_sp e = strm.as<EchoStream_O>();
+        EchoStream_sp e = gc::As<EchoStream_sp>(strm);
         return e->_Out;
     }
 
     T_sp& ConcatenatedStreamList(T_sp strm)
     {
-        ConcatenatedStream_sp c = strm.as<ConcatenatedStream_O>();
+        ConcatenatedStream_sp c = gc::As<ConcatenatedStream_sp>(strm);
         return c->_List;
     }
 
     Symbol_sp& SynonymStreamSymbol(T_sp strm)
     {
-        SynonymStream_sp ss = strm.as<SynonymStream_O>();
+        SynonymStream_sp ss = gc::As<SynonymStream_sp>(strm);
         return ss->_SynonymSymbol;
     }
 
@@ -284,26 +284,26 @@ namespace core
 
     T_sp& FileStreamFilename(T_sp strm)
     {
-        FileStream_sp fds = strm.as<FileStream_O>();
+        FileStream_sp fds = gc::As<FileStream_sp>(strm);
         return fds->_Filename;
     }
 
     T_sp& FileStreamEltType(T_sp strm)
     {
-        FileStream_sp iofs = strm.as<FileStream_O>();
+        FileStream_sp iofs = gc::As<FileStream_sp>(strm);
         return iofs->_ElementType;
     }
 
     int& IOFileStreamDescriptor(T_sp strm)
     {
-        IOFileStream_sp fds = strm.as<IOFileStream_O>();
+        IOFileStream_sp fds = gc::As<IOFileStream_sp>(strm);
         return fds->_FileDescriptor;
     }
 
 
     FILE*& IOStreamStreamFile(T_sp strm)
     {
-        IOStreamStream_sp io = strm.as<IOStreamStream_O>();
+        IOStreamStream_sp io = gc::As<IOStreamStream_sp>(strm);
         return io->_File;
     }
 
@@ -709,7 +709,7 @@ namespace core
             unsigned char aux;
             T_sp b;
             bs -= 8;
-            b = cl_logand(Cons_O::createList(make_fixnum(0xFF), bs ? clasp_ash(c, -bs).as<T_O>() : c));
+            b = cl_logand(Cons_O::createList(make_fixnum(0xFF), bs ? gc::As<T_sp>(clasp_ash(c, -bs)) : c));
             aux = (unsigned char)clasp_fixnum(b);
             if (write_byte8(strm, &aux, 1) < 1)
                 break;
@@ -790,7 +790,7 @@ namespace core
     {
 	if (start >= end) return start;
 	const FileOps& ops = stream_dispatch_table(strm);
-        Vector_sp vec = data.as<Vector_O>();
+        Vector_sp vec = gc::As<Vector_sp>(data);
         T_sp elementType = vec->elementType();
         if ( elementType == cl::_sym_BaseChar_O && af_characterP(vec->elt(0))) {
             claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;
@@ -831,7 +831,7 @@ namespace core
     generic_read_vector(T_sp strm, T_sp data, cl_index start, cl_index end)
     {
 	if (start >= end) return start;
-        Vector_sp vec = data.as<Vector_O>();
+        Vector_sp vec = gc::As<Vector_sp>(data);
         const FileOps& ops = stream_dispatch_table(strm);
 	T_sp expected_type = clasp_stream_element_type(strm);
 	if (expected_type == cl::_sym_BaseChar_O || expected_type == cl::_sym_Character_O) {
@@ -880,7 +880,7 @@ namespace core
             while (ndx != 0) {
                 l = Cons_O::create(make_fixnum(buffer[--ndx]), l);
             }
-            StreamByteStack(strm) = l.as<Cons_O>();
+            StreamByteStack(strm) = gc::As<Cons_sp>(l);
             StreamLastChar(strm) = EOF;
             StreamInputCursor(strm).backup(strm,c);
 	}
@@ -1691,7 +1691,7 @@ namespace core
     static claspCharacter
     str_out_write_char(T_sp strm, claspCharacter c)
     {
-        StringOutputStream_sp sout = strm.as<StringOutputStream_O>();
+        StringOutputStream_sp sout = gc::As<StringOutputStream_sp>(strm);
 	int column = StreamOutputColumn(strm);
 	if (c == '\n')
             StreamOutputColumn(strm) = 0;
@@ -1786,7 +1786,7 @@ namespace core
     T_sp core_make_string_output_stream_from_string(T_sp s)
     {_G();
 	T_sp strm = StringOutputStream_O::create();
-	unlikely_if (!af_stringP(s) || !s.as<Array_O>()->arrayHasFillPointerP() )
+	unlikely_if (!af_stringP(s) || !gc::As<Array_sp>(s)->arrayHasFillPointerP() )
             FEerror("~S is not a -string with a fill-pointer.", 1, s.raw_());
 	StreamOps(strm) = str_out_ops; // duplicate_dispatch_table(&str_out_ops);
 	StreamMode(strm) = clasp_smm_string_output;
@@ -2343,7 +2343,7 @@ namespace core
     broadcast_close(T_sp strm)
     {
 	if (StreamFlags(strm) & CLASP_STREAM_CLOSE_COMPONENTS) {
-            cl_mapc(cl::_sym_close, BroadcastStreamList(strm).as<Cons_O>());
+            cl_mapc(cl::_sym_close, gc::As<Cons_sp>(BroadcastStreamList(strm)));
 	}
 	return generic_close(strm);
     }
@@ -2677,7 +2677,7 @@ namespace core
     concatenated_close(T_sp strm)
     {
 	if (StreamFlags(strm) & CLASP_STREAM_CLOSE_COMPONENTS) {
-            cl_mapc(cl::_sym_close, ConcatenatedStreamList(strm).as<Cons_O>());
+            cl_mapc(cl::_sym_close, gc::As<Cons_sp>(ConcatenatedStreamList(strm)));
 	}
 	return generic_close(strm);
     }
@@ -2929,9 +2929,8 @@ namespace core
 #define DOCS_cl_make_synonym_stream "make-synonym-stream"
     T_sp cl_make_synonym_stream(T_sp tsym)
     {
-	T_sp x;
-        T_sp sym = tsym.as<Symbol_O>();
-	x = SynonymStream_O::create();
+        Symbol_sp sym = gc::As<Symbol_sp>(tsym);
+	T_sp x = SynonymStream_O::create();
 	StreamOps(x) = duplicate_dispatch_table(synonym_ops);
 	StreamMode(x) = clasp_smm_synonym;
 	SynonymStreamSymbol(x) = sym;
@@ -5268,7 +5267,7 @@ namespace core
                                 return make_fixnum(start);
                             }
                         }
-                        seq.as<Cons_O>()->rplaca(c);
+                        gc::As<Cons_sp>(seq)->rplaca(c);
                         start++;
                     }
                 };
@@ -6222,7 +6221,7 @@ namespace core {
     {
         T_sp fn = _Nil<T_O>();
         if ( AnsiStreamP(strm) ) {
-            Stream_sp ss = strm.as<Stream_O>();
+            Stream_sp ss = gc::As<Stream_sp>(strm);
             fn = ss->filename();
         }
         if ( fn.nilp() ) {
@@ -6609,7 +6608,7 @@ namespace core {
 	}
 	if ( af_characterP(peek_type) )
 	{
-	    int looking_for = peek_type.as<Character_O>()->charCode();
+	    int looking_for = gc::As<Character_sp>(peek_type)->charCode();
 	    while (1)
 	    {
 		int c = clasp_peek_char(strm);
@@ -6622,7 +6621,7 @@ namespace core {
 	if ( peek_type !=_lisp->_true() ) {
 	    SIMPLE_ERROR(BF("Illegal first argument for PEEK-CHAR %s") % _rep_(peek_type));
 	} else {
-	    ReadTable_sp readtable = cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>();
+	    ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
 	    while (1)
 	    {
 		int c = clasp_peek_char(strm);
@@ -6759,7 +6758,7 @@ namespace core {
 		    return(Values(eof_value/*Str_O::create(sbuf.str())*/,_lisp->_true()));
 		}
 	    } else {
-		char cc = tch.as<Character_O>()->get();
+		char cc = gc::As<Character_sp>(tch)->get();
 		if ( cc == '\n') {
 		    break;
 		} else if ( cc == '\r' ) {
@@ -7006,16 +7005,16 @@ namespace core {
 		if (start < end) {
 		    T_sp elt = oCar(s);
 		    if (ischar)
-			clasp_write_char(elt.as<Character_O>()->charCode(),stream);
+			clasp_write_char(gc::As<Character_sp>(elt)->charCode(),stream);
 		    else
-			clasp_write_byte(elt.as<Integer_O>(),stream);
+			clasp_write_byte(gc::As<Integer_sp>(elt),stream);
 		    start++;
 		} else {
 		    goto OUTPUT;
 		}
 	    }
 	} else {
-	    ops.write_vector(stream,seq.as<Vector_O>(), start, end );
+	    ops.write_vector(stream,gc::As<Vector_sp>(seq), start, end );
 	}
     OUTPUT:
 	return seq;

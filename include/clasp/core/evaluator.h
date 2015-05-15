@@ -98,7 +98,9 @@ namespace core
 	template <class...Args>
 	inline T_mv applyLastArgsPLUSFirst( T_sp fn, List_sp argsPLUS, Args...args)
 	{
-	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+	    T_sp tfunc = lookupFunction(fn,_Nil<T_O>());
+	    if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
+	    Function_sp func = gc::As<Function_sp>(tfunc);
 	    int numArgsPassed = sizeof...(Args);
 	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
@@ -140,7 +142,9 @@ namespace core
 
 
 	inline T_mv funcall(T_sp fn) {
-	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+	    T_sp tfunc = lookupFunction(fn,_Nil<T_O>());
+	    if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
+	    Function_sp func = gc::As<Function_sp>(tfunc);
 	    gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             (*ft)(&result, 0
@@ -150,7 +154,9 @@ namespace core
 
 	template <class ARG0>
 	inline T_mv funcall(T_sp fn, ARG0 arg0) {
-	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+	    T_sp tfunc = lookupFunction(fn,_Nil<T_O>());
+	    if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
+	    Function_sp func = gc::As<Function_sp>(tfunc);
 	    gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             (*ft)(&result, 1
@@ -166,7 +172,7 @@ namespace core
                 // While booting, cl::_sym_findClass will apply'd before
 		// it is bound to a symbol
                 if ( fn == cl::_sym_findClass ) {
-                    return(cl_findClass(arg0.template as<Symbol_O>(),true,_Nil<T_O>()));
+                    return(cl_findClass(gc::As<Symbol_sp>(arg0),true,_Nil<T_O>()));
                 }
                 ERROR_UNDEFINED_FUNCTION(fn);
             }
@@ -183,7 +189,9 @@ namespace core
 
 	template <class ARG0, class ARG1, class ARG2>
 	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
-	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+	    T_sp tfunc = lookupFunction(fn,_Nil<T_O>());
+	    if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
+	    Function_sp func = gc::As<Function_sp>(tfunc);
 	    gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             (*ft)(&result, 3
@@ -196,7 +204,9 @@ namespace core
 
 	template <class ARG0, class ARG1, class ARG2, class ARG3>
 	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
-	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+	    T_sp tfunc = lookupFunction(fn,_Nil<T_O>());
+	    if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
+	    Function_sp func = gc::As<Function_sp>(tfunc);
 	    gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             (*ft)(&result, 4
@@ -210,7 +220,9 @@ namespace core
 
         template <class ARG0, class ARG1, class ARG2, class ARG3, class ARG4>
         inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) {
-	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+	    T_sp tfunc = lookupFunction(fn,_Nil<T_O>());
+	    if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
+	    Function_sp func = gc::As<Function_sp>(tfunc);
             gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             (*ft)(&result, 5
@@ -226,7 +238,9 @@ namespace core
 // Do I need a variadic funcall???
 	template <class ARG0, class ARG1, class ARG2, class ARG3, class ARG4, class...ARGS>
 	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARGS&&...args) {
-	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+	    T_sp tfunc = lookupFunction(fn,_Nil<T_O>());
+	    if (tfunc.nilp()) ERROR_UNDEFINED_FUNCTION(fn);
+	    Function_sp func = gc::As<Function_sp>(tfunc);
 	    gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             size_t vnargs = sizeof...(ARGS);

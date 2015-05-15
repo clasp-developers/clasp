@@ -116,7 +116,7 @@ namespace core {
     static bool
     needs_to_be_escaped(Str_sp s, T_sp readtable, T_sp print_case)
     {
-	int action = readtable.as<ReadTable_O>()->getReadTableCaseAsEnum();
+	int action = gc::As<ReadTable_sp>(readtable)->getReadTableCaseAsEnum();
 	if (potential_number_p(s, clasp_print_base()))
             return 1;
 	/* The value of *PRINT-ESCAPE* is T. We need to check whether the
@@ -129,7 +129,7 @@ namespace core {
             int c = clasp_char(s, i);
             Character_sp cc = Character_O::create(c);
 //            int syntax = clasp_readtable_get(readtable, c, 0);
-            Symbol_sp syntax = readtable.as<ReadTable_O>()->syntax_type(cc);
+            Symbol_sp syntax = gc::As<ReadTable_sp>(readtable)->syntax_type(cc);
 #if 0
             if (syntax != cat_constituent ||
                 clasp_invalid_character_p(c) ||
@@ -220,13 +220,13 @@ namespace core {
             package = cl::_sym_nil->homePackage();
             name = cl::_sym_nil->symbolName();
 	} else {
-            package = x.as<Symbol_O>()->homePackage();
-            name = x.as<Symbol_O>()->symbolName();
+            package = gc::As<Symbol_sp>(x)->homePackage();
+            name = gc::As<Symbol_sp>(x)->symbolName();
 	}
 
 	if (!print_readably && !clasp_print_escape()) {
 //            printf("%s:%d quick print of symbol print_readably=%d print_escape=%d\n",__FILE__,__LINE__, print_readably, clasp_print_escape());
-            write_symbol_string(name, readtable.as<ReadTable_O>()->getReadTableCaseAsEnum(),
+            write_symbol_string(name, gc::As<ReadTable_sp>(readtable)->getReadTableCaseAsEnum(),
                                 print_case, stream, 0);
             return;
 	}
@@ -245,19 +245,19 @@ namespace core {
             if (!print_package) {
                 T_mv symbol_mv = cl_findSymbol(name->get(),_lisp->getCurrentPackage());
                 Symbol_sp sym = symbol_mv;
-                Symbol_sp intern_flag = symbol_mv.valueGet(1).as<Symbol_O>();
+                Symbol_sp intern_flag = gc::As<Symbol_sp>(symbol_mv.valueGet(1));
                 if ( (sym != x) || intern_flag.nilp() ) print_package = true;
             }
             if (print_package)
             {
-                T_sp name = Str_O::create(package.as<Package_O>()->packageName());
+                T_sp name = Str_O::create(gc::As<Package_sp>(package)->packageName());
                 write_symbol_string(name, readtable->getReadTableCaseAsEnum(),
                                     print_case, stream,
                                     needs_to_be_escaped(name, readtable, print_case));
 		if ( !x.nilp() ) {
 		    Symbol_mv sym2_mv = cl_findSymbol(x->symbolName()->get(),package);
 		    Symbol_sp sym2 = sym2_mv;
-		    Symbol_sp intern_flag2 = sym2_mv.valueGet(1).as<Symbol_O>();
+		    Symbol_sp intern_flag2 = gc::As<Symbol_sp>(sym2_mv.valueGet(1));
 		    if (sym2 != x)
 			SIMPLE_ERROR(BF("Cannot print symbol[%s]") % _rep_(x) );
 		    if (intern_flag2 == kw::_sym_internal || forced_package) {

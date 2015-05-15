@@ -411,7 +411,7 @@ namespace gctools {
 #ifdef USE_MPS
         core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
         if ( patternStack.nilp() ) return _Nil<core::Symbol_O>();
-        pattern = oCar(patternStack).as<core::Symbol_O>();
+        pattern = gc::As<core::Symbol_sp>(oCar(patternStack));
         gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(oCdr(patternStack));
         if ( pattern == _sym_ramp ) {
             mps_ap_alloc_pattern_end(_global_automatic_mostly_copying_allocation_point

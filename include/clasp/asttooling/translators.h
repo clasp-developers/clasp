@@ -50,9 +50,8 @@ namespace translate {
 	DeclareType _v;
 	from_object(core::T_sp o) : _v(0)
 	{_G();
-	    if ( core::Fixnum_sp fn = o.asOrNull<core::Fixnum_O>() )
-	    {
-		this->_v = (int)(unbox_fixnum(fn));
+	    if ( o.fixnump() ) {
+		this->_v = (int)(o.unsafe_fixnum());
 		return;
 	    }
 	    SIMPLE_ERROR(BF("Add support to convert other types to int"));
@@ -128,14 +127,14 @@ namespace translate {
             } else if ( core::VectorObjects_sp vo = o.asOrNull<core::VectorObjects_O>() ) {
                 _v.resize(vo->length());
                 for ( int i(0), iEnd(vo->length()); i<iEnd; ++i ) {
-                    _v[i] = vo->elt(i).as<core::Str_O>()->get();
+                    _v[i] = gc::As<core::Str_sp>(vo->elt(i))->get();
                 }
                 return;
             } else if ( core::Cons_sp co = o.asOrNull<core::Cons_O>() ) {
                 _v.resize(co->length());
                 int i=0;
                 for ( auto cur : (core::List_sp)co ) {
-                    _v[i] = oCar(cur).as<core::Str_O>()->get();
+                    _v[i] = gc::As<core::Str_sp>(oCar(cur))->get();
                     ++i;
                 }
                 return;

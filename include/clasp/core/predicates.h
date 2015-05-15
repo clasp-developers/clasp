@@ -35,7 +35,7 @@ namespace core
 {
 
     inline bool cl_symbolp(T_sp obj) {
-	return obj.isA<Symbol_O>();
+	return gc::IsA<Symbol_sp>(obj);
     }
     
     bool cl_endp(T_sp obj);

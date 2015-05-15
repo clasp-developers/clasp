@@ -200,7 +200,7 @@ namespace core
     {_G();
 	if ( env.nilp() ) return env;
         if ( env.framep() ) return env;
-	return env.as<Environment_O>()->getActivationFrame();
+	return gc::As<Environment_sp>(env)->getActivationFrame();
     };
 
 
@@ -212,7 +212,7 @@ namespace core
     T_sp af_environmentList(T_sp env)
     {_G();
 	List_sp result = _Nil<T_O>();
-	for ( T_sp ecur=env; ecur.notnilp(); ecur=ecur.as<Environment_O>()->getParentEnvironment() )
+	for ( T_sp ecur=env; ecur.notnilp(); ecur=gc::As<Environment_sp>(ecur)->getParentEnvironment() )
 	{
 	    result = Cons_O::create(ecur,result);
 	}
@@ -227,7 +227,7 @@ namespace core
     T_sp af_environmentTypeList(T_sp env)
     {_G();
 	List_sp result = _Nil<T_O>();
-	for ( T_sp ecur=env; ecur.notnilp(); ecur=ecur.as<Environment_O>()->getParentEnvironment() )
+	for ( T_sp ecur=env; ecur.notnilp(); ecur=gc::As<Environment_sp>(ecur)->getParentEnvironment() )
 	{
 	    result = Cons_O::create(lisp_static_class(ecur),result);
 	}
@@ -953,7 +953,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	{
 	    SIMPLE_ERROR(BF("Could not find block with name[%s]") % _rep_(blockName) );
 	}
-	return parent.as<Environment_O>()->find_block_named_environment(blockName);
+	return gc::As<Environment_sp>(parent)->find_block_named_environment(blockName);
     }
 
 
@@ -1176,7 +1176,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	    {
 		return(Values(_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()));
 	    }
-	    return this->_ParentEnvironment.as<Environment_O>()->lookupMetadata(key);
+	    return gc::As<Environment_sp>(this->_ParentEnvironment)->lookupMetadata(key);
 	}
 	return(Values(oCdr(it),_lisp->_true(),this->const_sharedThis<Environment_O>()));
     }
@@ -1401,7 +1401,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	env->setupParent(parent);
 	env->_ActivationFrame = ValueFrame_O::create(0,clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
 	for ( auto cur : specials ) {
-	    env->defineSpecialBinding(oCar(cur).as<Symbol_O>());
+	    env->defineSpecialBinding(gc::As<Symbol_sp>(oCar(cur)));
 	}
 	return env;
     }
@@ -1415,14 +1415,14 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	int numberOfLexicals = 0;
 	for ( auto cur : classifiedSymbols ) {
 	    List_sp classifiedSymbol = coerce_to_list(oCar(cur));
-	    Symbol_sp classification = oCar(classifiedSymbol).as<Symbol_O>();
+	    Symbol_sp classification = gc::As<Symbol_sp>(oCar(classifiedSymbol));
 	    if ( classification == ext::_sym_lexicalVar )
 	    {
 		++numberOfLexicals;
 	    } else if ( classification == ext::_sym_specialVar )
 	    {
 		// handle special declarations
-		Symbol_sp sym = oCdr(classifiedSymbol).as<Symbol_O>();
+		Symbol_sp sym = gc::As<Symbol_sp>(oCdr(classifiedSymbol));
 		this->defineSpecialBinding(sym);
 	    }
 	}
@@ -1584,7 +1584,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	LOG(BF(" Found binding %d")% index );
 	T_sp tvalue = this->_FunctionFrame->entry(index);
 	ASSERT(tvalue.notnilp());
-	value = tvalue.as<Function_O>();
+	value = gc::As<Function_sp>(tvalue);
 	return true;
     }
 
@@ -1641,14 +1641,14 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	    this->ss << string(this->tab,' ') << _rep_(key) << "#" << _rep_(value);
 	    int idx = unbox_fixnum(gc::As<Fixnum_sp>(value));
 	    ss << " -> ";
-	    FunctionFrame_sp fframe = this->_env.getActivationFrame().as<FunctionFrame_O>();
+	    FunctionFrame_sp fframe = gc::As<FunctionFrame_sp>(this->_env.getActivationFrame());
 	    T_sp entry = fframe->entry(idx);
 	    if ( entry.nilp() ) {
 		ss << "NIL";
 	    } else if ( entry.unboundp() ) {
 		ss << "UNBOUND";
 	    } else {
-		Function_sp func = entry.as<Function_O>();
+		Function_sp func = gc::As<Function_sp>(entry);
 		ss << "function "<< _rep_(func->closure->name);
 	    }
 	    ss << std::endl;
@@ -2132,7 +2132,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     {_G();
 	int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
 	stringstream ss;
-	ss << ":tagbody-id " << (void*)(this->getActivationFrame().as<TagbodyFrame_O>().get()) << std::endl;
+	ss << ":tagbody-id " << (void*)(gc::As<TagbodyFrame_sp>(this->getActivationFrame()).get()) << std::endl;
         this->_Tags->mapHash([tab,&ss] (T_sp key, T_sp value) {
                 ss << string(tab,' ') << " :tag " << _rep_(key) << std::endl;
             } );
@@ -2225,7 +2225,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	GlueEnvironment_sp env(GlueEnvironment_O::create());
 	ql::list args(_lisp);
 	for ( List_sp cur=parts; cur.notnilp(); cur=oCdr(oCdr(cur))) {
-	    Symbol_sp sym = oCar(cur).as<Symbol_O>();
+	    Symbol_sp sym = gc::As<Symbol_sp>(oCar(cur));
 	    T_sp val = oCadr(cur);
 	    env->_Map->hash_table_setf_gethash(sym,val);
 	    args << val;
@@ -2307,7 +2307,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	    return this->Base::_findMacro(sym,depth,index,value);
 	}
 	LOG(BF(" Found binding %s")% fi->second );
-	value = oCdr(fi).as<Function_O>();
+	value = gc::As<Function_sp>(oCdr(fi));
 	return true;
     }
 
@@ -2339,7 +2339,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	    return this->Base::_findSymbolMacro(sym,depth,index,shadowed,value);
 	}
 	LOG(BF(" Found binding %s")% fi->second );
-	value = oCdr(fi).as<Function_O>();
+	value = gc::As<Function_sp>(oCdr(fi));
 	shadowed = false;
 	return true;
     }

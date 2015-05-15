@@ -655,6 +655,13 @@ void lisp_errorDereferencedNil();
 void lisp_errorDereferencedUnbound();
 void lisp_errorIllegalDereference(void* v);
 
+template <typename To, typename From, typename ObjPtrType>
+    void __attribute__((noreturn)) lisp_errorCast(ObjPtrType objP) {
+    class_id to_typ = reg::registered_class<To>::id;
+    class_id from_typ = reg::registered_class<From>::id;
+    lisp_errorBadCast(to_typ,from_typ,reinterpret_cast<core::T_O*>(objP));
+    __builtin_unreachable(); 
+}
 
 namespace core {
     class ThreadInfo;

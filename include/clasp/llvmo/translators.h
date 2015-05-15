@@ -46,7 +46,7 @@ namespace translate {
         typedef llvm::StringRef DeclareType;
 	string _Storage; // Store the string here so it won't get wiped out before its used by the callee
         DeclareType _v;;
-	from_object(T_P o) : _Storage(o.as<core::Str_O>()->get()), _v(llvm::StringRef(this->_Storage)) {};
+	from_object(T_P o) : _Storage(gc::As<core::Str_sp>(o)->get()), _v(llvm::StringRef(this->_Storage)) {};
     };
 
 
@@ -56,7 +56,7 @@ namespace translate {
         typedef llvm::Twine DeclareType;
 	string _Storage; // Store the string here so it won't get wiped out before its used by the callee
         DeclareType _v;;
-	from_object(T_P o) : _Storage(o.as<core::Str_O>()->get()), _v(llvm::Twine(this->_Storage)) {};
+	from_object(T_P o) : _Storage(gc::As<core::Str_sp>(o)->get()), _v(llvm::Twine(this->_Storage)) {};
     };
 
 
@@ -91,11 +91,7 @@ namespace translate {
         typedef llvm::DIBuilder::DebugEmissionKind DeclareType;
         DeclareType _v;
         from_object(core::T_sp o) {
-            if ( o.nilp() ) {
-                goto INVALID;
-            }
-            if ( o.isA<core::Symbol_O>() ) {
-                core::Symbol_sp sym = o.as<core::Symbol_O>();
+            if ( core::Symbol_sp sym = o.asOrNull<core::Symbol_O>() ) {
                 if ( sym == kw::_sym_FullDebug ) {
                     this->_v = llvm::DIBuilder::FullDebug;
                     return;
@@ -121,14 +117,14 @@ namespace translate {
                 return;
             } else if ( core::List_sp lcstrs = o.asOrNull<core::Cons_O>() ) {
                 for ( auto cstrs : lcstrs ) {
-                    core::Str_sp s = core::oCar(cstrs).as<core::Str_O>();
+                    core::Str_sp s = gc::As<core::Str_sp>(core::oCar(cstrs));
                     _v.push_back(std::string(s->get()));
                 }
                 return;
             } else if ( core::Vector_sp vstrs = o.asOrNull<core::Vector_O>() ) {
                 _v.resize(vstrs->length());
                 for (int i(0),iEnd(vstrs->length()); i<iEnd; ++i ) {
-                    _v[i] = vstrs->elt(i).as<core::Str_O>()->get();
+                    _v[i] = gc::As<core::Str_sp>(vstrs->elt(i))->get();
                 }
                 return;
             }

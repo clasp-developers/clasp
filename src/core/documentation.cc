@@ -76,7 +76,7 @@ namespace core
 #define DECL_af_set_record_field ""
     T_sp af_set_record_field(List_sp record, T_sp key, T_sp sub_key, Str_sp value)
     {_G();
-	List_sp field = eval::funcall(_sym_record_cons,record,key,sub_key).as<List_V>();
+	List_sp field = gc::As<List_sp>(eval::funcall(_sym_record_cons,record,key,sub_key));
 	if ( field.notnilp() )
 	{
 	    field.asCons()->setCdr(value);
@@ -122,7 +122,7 @@ namespace core
 #define DECL_af_annotate ""
     T_mv af_annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value )
     {_G();
-	HashTable_sp dict = oCar(_sym_STARdocumentation_poolSTAR->symbolValue()).as<HashTable_O>();
+	HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
 	List_sp record = coerce_to_list(dict->gethash(object,_Nil<T_O>()));
 	record = coerce_to_list(af_set_record_field(record,key,sub_key,value));
         T_sp result = dict->hash_table_setf_gethash(object,record);

@@ -105,15 +105,15 @@ namespace core
     }
     int FunctionClosure::sourceFileInfoHandle() const {
 	if ( this->_SourcePosInfo.notnilp() ) {
-	    return this->_SourcePosInfo.as<SourcePosInfo_O>()->fileHandle();
+	    return gc::As<SourcePosInfo_sp>(this->_SourcePosInfo)->fileHandle();
 	}
 	return 0;
     };
 
-    size_t FunctionClosure::filePos() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo.as<SourcePosInfo_O>()->filepos() : 0; };
+    size_t FunctionClosure::filePos() const { return this->_SourcePosInfo.notnilp() ? gc::As<SourcePosInfo_sp>(this->_SourcePosInfo)->filepos() : 0; };
 
-    int FunctionClosure::lineNumber() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo.as<SourcePosInfo_O>()->lineno() : 0; };
-    int FunctionClosure::column() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo.as<SourcePosInfo_O>()->column() : 0; };
+    int FunctionClosure::lineNumber() const { return this->_SourcePosInfo.notnilp() ? gc::As<SourcePosInfo_sp>(this->_SourcePosInfo)->lineno() : 0; };
+    int FunctionClosure::column() const { return this->_SourcePosInfo.notnilp() ? gc::As<SourcePosInfo_sp>(this->_SourcePosInfo)->column() : 0; };
 
 
 T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column )
@@ -147,7 +147,7 @@ T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int line
             , _code(c)
     {
 	if ( sp.nilp() ) {
-	    sp = core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue().as<SourcePosInfo_O>();
+	    sp = gc::As<SourcePosInfo_sp>(core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
 	    if ( sp.nilp() ) {
 		printf("%s:%d Caught creation of InterpretedClosure %s with nil SourcePosInfo\n", __FILE__,__LINE__,_rep_(fn).c_str());
 	    } else {
@@ -168,7 +168,7 @@ T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int line
         ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
 	InvocationHistoryFrame _frame(this);
         lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-        ValueFrame_sp newActivationFrame = newValueEnvironment->getActivationFrame().as<ValueFrame_O>();
+        ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
         VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();
         newActivationFrame->attachDebuggingInfo(debuggingInfo);
 	//        InvocationHistoryFrame _frame(this,newActivationFrame);
@@ -236,7 +236,7 @@ T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int line
 	if ( sfi.nilp() || spi.nilp() ) {
 	    return Values(sfi,Integer_O::create(0),make_fixnum(0));
 	}
-        return Values(sfi,Integer_O::create((size_t)spi.as<SourcePosInfo_O>()->filepos()), make_fixnum(spi.as<SourcePosInfo_O>()->lineno()));
+        return Values(sfi,Integer_O::create((size_t)gc::As<SourcePosInfo_sp>(spi)->filepos()), make_fixnum(gc::As<SourcePosInfo_sp>(spi)->lineno()));
     }
 
 

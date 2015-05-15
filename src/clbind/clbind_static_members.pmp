@@ -55,7 +55,7 @@ $var ConstTypeCount = 1
                     void invoke(core::T_mv* lcc_resultP, core::T_sp arg0 $for Args_ [[, core::T_sp arg$Args_]] )      
                     {
                       // translate::from_object<OT*> objPtr(arg0);
-                      OT* objPtr = (arg0).as<core::WrappedPointer_O>()->cast<OT>();
+                      OT* objPtr = gc::As<core::WrappedPointer_sp>(arg0)->cast<OT>();
                       $for Args_ [[
                               translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$Args_> >::type > a$Args_(arg$Args_);
                               // IncWhen<typename DoesNotContain_<Pols,pureOutValue<$Args_> >::type >::go(args);

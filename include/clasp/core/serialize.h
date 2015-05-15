@@ -85,7 +85,7 @@ namespace core
 	virtual SNode_sp getAttributeSNodeOrError(Symbol_sp name) const {SUBIMP();};
 	virtual T_sp getAttribute(Symbol_sp name,T_sp defaultValue) const {SUBIMP();};
 	inline T_sp getAttributeOrError(Symbol_sp name) {
-	    T_sp val = this->getAttribute(name,_Unbound<T_O>()).as<T_O>();
+	    T_sp val = this->getAttribute(name,_Unbound<T_O>());
 	    if ( val.unboundp() ) {
 		SIMPLE_ERROR(BF("Could not find attribute %s in %s") % _rep_(val) % _rep_(this->asSmartPtr()) );
 	    }
@@ -131,7 +131,7 @@ namespace core
 	void attribute(Symbol_sp name, gctools::smart_ptr<T>& val)
 	{
 	    if (this->loading()) {
-		val = this->getAttributeOrError(name).as<T>();
+		val = gc::As<gc::smart_ptr<T>>(this->getAttributeOrError(name));
 	    } else {
 		this->addAttribute(name,val);
 	    }
@@ -231,7 +231,7 @@ namespace core
 		if ( oval.unboundp() ) {
 		    val = _Nil<T>();
 		} else {
-		    val = oval.as<T>();
+		    val = gc::As<T>(oval);
 		}
 	    } else {
 		if ( val.notnilp() ) {
@@ -274,10 +274,10 @@ namespace core
 	template <typename SymbolEnumType>
 	void attributeSymbolEnumHiddenConverter(Symbol_sp name, SymbolEnumType& val, Symbol_sp converterName)
 	{
-	    SymbolToEnumConverter_sp converter = converterName->symbolValue().as<SymbolToEnumConverter_O>();
+	    SymbolToEnumConverter_sp converter = gc::As<SymbolToEnumConverter_sp>(converterName->symbolValue());
 	    if ( this->loading() ) {
 		T_sp tval = this->getAttributeOrError(name);
-		val = converter->enumForSymbol<SymbolEnumType>(tval.as<Symbol_O>());
+		val = converter->enumForSymbol<SymbolEnumType>(gc::As<Symbol_sp>(tval));
 	    } else {
 		converter->throwIfUnrecognizedEnum<SymbolEnumType>(val);
 		Symbol_sp enumSym(converter->symbolForEnum<SymbolEnumType>(val));
@@ -298,13 +298,13 @@ namespace core
 	template <typename SymbolEnumType>
 	void attributeSymbolEnumHiddenConverterIfNotDefault(Symbol_sp name, SymbolEnumType& val, Symbol_sp converterName, SymbolEnumType defVal)
 	{
-	    SymbolToEnumConverter_sp converter = converterName->symbolValue().as<SymbolToEnumConverter_O>();
+	    SymbolToEnumConverter_sp converter = gc::As<SymbolToEnumConverter_sp>(converterName->symbolValue());
 	    if ( this->loading() ) {
 		T_sp tval = this->getAttribute(name,_Unbound<T_O>());
 		if ( tval.unboundp() ) {
 		    val = defVal;
 		} else {
-		    val = converter->enumForSymbol<SymbolEnumType>(tval.as<Symbol_O>());
+		    val = converter->enumForSymbol<SymbolEnumType>(gc::As<Symbol_sp>(tval));
 		}
 	    } else {
 		if ( val != defVal ) {
@@ -443,7 +443,7 @@ namespace core
 		v.clear();
 		this->mapVector( [&v] (T_sp pair) {
 			string key = str_get(oCar(pair));
-			Integer_sp ival = oCdr(pair).as<Integer_O>();
+			Integer_sp ival = gc::As<Integer_sp>(oCdr(pair));
 			v[key] = clasp_to_int(ival);
 		    });
 	    }

@@ -256,7 +256,7 @@ void extract_lambda_list(List_sp arguments,
     {
 	LOG(BF("Handing argument: %s")%cur->ocar()->__repr__() );
 	T_sp oarg = cur->ocar();
-	if ( oarg.isA<Symbol_O>() )
+	if ( gc::IsA<Symbol_sp>(oarg) )
 	{
 	    Symbol_sp sym = oarg.as<Symbol_O>();
 	    if ( switch_add_argument_mode(sym,add_argument_mode,_lisp) ) continue;
@@ -369,7 +369,7 @@ void extract_lambda_list(List_sp arguments,
 	{
 	    Symbol_sp localSymbol = _Nil<Symbol_O>();
 	    T_sp expression = _Nil<T_O>();
-	    if ( oarg.isA<Symbol_O>() )
+	    if ( gc::IsA<Symbol_sp>(oarg) )
 	    {
 		localSymbol = oarg.as<Symbol_O>();
 	    } else if ( oarg->consP() )

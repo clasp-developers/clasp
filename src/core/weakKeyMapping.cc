@@ -43,7 +43,7 @@ namespace core
     {_G();
         T_sp val(tval);
         if ( key == tval ) {
-            val = gctools::smart_ptr<T_O>(gctools::tag_sameAsKey<T_O>());
+            val = gctools::smart_ptr<T_O>(gctools::tag_sameAsKey<T_O*>());
         }
         GC_ALLOCATE_VARIADIC(WeakKeyMapping_O,me,key,val);
 	return me;

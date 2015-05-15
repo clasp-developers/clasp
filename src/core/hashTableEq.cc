@@ -74,7 +74,7 @@ namespace core
     {
         HashTableEq_sp ht = HashTableEq_O::create_default();
         while ( plist.notnilp() ) {
-            Symbol_sp key = oCar(plist).as<Symbol_O>();
+            Symbol_sp key = gc::As<Symbol_sp>(oCar(plist));
             T_sp val = oCadr(plist);
             plist = oCddr(plist);
             bool hit = false;

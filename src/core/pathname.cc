@@ -117,7 +117,7 @@ namespace core {
     in_local_case_p(T_sp str, T_sp cas)
     {
 	if (cas == kw::_sym_downcase)
-	    return clasp_string_case(str.as<Str_O>()) < 0;
+	    return clasp_string_case(gc::As<Str_sp>(str)) < 0;
 	return true;
     }
 
@@ -125,7 +125,7 @@ namespace core {
     in_antilocal_case_p(T_sp str, T_sp cas)
     {
 	if (cas == kw::_sym_downcase)
-	    return clasp_string_case(str.as<Str_O>()) > 0;
+	    return clasp_string_case(gc::As<Str_sp>(str)) > 0;
 	return false;
     }
 
@@ -158,7 +158,7 @@ namespace core {
     static T_sp
     translate_from_common(T_sp tstr, T_sp tocase)
     {
-	Str_sp str = tstr.as<Str_O>();
+	Str_sp str = gc::As<Str_sp>(tstr);
 	int string_case = clasp_string_case(str);
 	if (string_case > 0) { /* ALL_UPPER */
 	    return to_local_case(str, tocase);
@@ -188,7 +188,7 @@ namespace core {
 	 * numbers, etc, which need not be translated */
 	if (str.nilp()) {
 	    return str;
-	} else if (!str.isA<Str_O>()) {
+	} else if (!gc::IsA<Str_sp>(str)) {
 #ifdef BRCL_UNICODE
 	    if (BRCL_EXTENDED_STRING_P(str) && brcl_fits_in_base_string(str)) {
 		str = si_coerce_to_base_string(str);
@@ -265,7 +265,7 @@ namespace core {
 		if (delete_back && i >= 2) {
 		    T_sp next = oCdr(ptr);
 		    ptr = cl_nthcdr(i-2, directory);
-		    ptr.as<Cons_O>()->rplacd(next);
+		    gc::As<Cons_sp>(ptr)->rplacd(next);
 		    i = i - 2 ; // Was i--;
 		}
 	    } else if (item == kw::_sym_up) {
@@ -284,8 +284,8 @@ namespace core {
 		//		    item = si_copy_to_simple_base_string(item);
 		//		} else {
 #endif
-		item = cl_copySeq(item.as<T_O>());
-		ptr.as<Cons_O>()->rplaca(item);
+		item = cl_copySeq(gc::As<T_sp>(item));
+		gc::As<Cons_sp>(ptr)->rplaca(item);
 		if (logical) {
 		    continue;
 		}
@@ -294,9 +294,9 @@ namespace core {
 			/* Single dot */
 			if (i == 0)
 			    return kw::_sym_error;
-			cl_nthcdr(--i, directory).as<Cons_O>()->rplacd(oCdr(ptr));
+			gc::As<Cons_sp>(cl_nthcdr(--i, directory))->rplacd(oCdr(ptr));
 		    } else if (l == 2 && af_char(item,1) == '.') {
-			ptr.as<Cons_O>()->rplaca(kw::_sym_up);
+			gc::As<Cons_sp>(ptr)->rplaca(kw::_sym_up);
 			goto BEGIN;
 		    }
 		}
@@ -463,8 +463,8 @@ namespace core {
 	if (af_stringP(head) && cl_length(head) > 0 &&
 	    af_char(head,0) == '~') {
 	    /* Remove the tilde component */
-	    directory.as<Cons_O>()->rplacd(oCddr(directory));
-	    pathname = af_mergePathnames(pathname,homedirPathname(head.as<Str_O>()),kw::_sym_default);
+	    gc::As<Cons_sp>(directory)->rplacd(oCddr(directory));
+	    pathname = af_mergePathnames(pathname,homedirPathname(gc::As<Str_sp>(head)),kw::_sym_default);
 	}
 	return pathname;
     }
@@ -481,7 +481,7 @@ namespace core {
     static T_sp
     make_one(T_sp s, size_t start, size_t end)
     {
-	return s.as<Str_O>()->subseq(start,make_fixnum((uint)end));
+	return gc::As<Str_sp>(s)->subseq(start,make_fixnum((uint)end));
     }
 
     static int is_colon(int c) { return c == ':'; }
@@ -727,12 +727,12 @@ namespace core {
 	} else if (cl_symbolp(aux)) {
 	    version = aux;
 	} else {
-	    T_mv version_mv = af_parseInteger(aux.as<Str_O>(),0,_Nil<T_O>(),10,_lisp->_true());
+	    T_mv version_mv = af_parseInteger(gc::As<Str_sp>(aux),0,_Nil<T_O>(),10,_lisp->_true());
 	    T_sp tversion = version_mv;
 	    Fixnum_sp parsed_length = gc::As<Fixnum_sp>(version_mv.valueGet(1));
 	    if (unbox_fixnum(parsed_length) == cl_length(aux) &&
-		af_integerP(tversion) && clasp_plusp(tversion.as<Integer_O>())) {
-		version = tversion.as<Integer_O>();
+		af_integerP(tversion) && clasp_plusp(gc::As<Integer_sp>(tversion))) {
+		version = gc::As<Integer_sp>(tversion);
 	    } else if (af_string_equal(aux, kw::_sym_newest).notnilp()) {
 		version = kw::_sym_newest;
 	    } else {
@@ -833,7 +833,7 @@ namespace core {
 	 * coerced to type PATHNAME. Special care is taken so that we do
 	 * not enter an infinite loop when using PARSE-NAMESTRING, because
 	 * this routine might itself try to use the value of this variable. */
-	Pathname_sp path = af_symbolValue(cl::_sym_STARdefaultPathnameDefaultsSTAR).as<Pathname_O>();
+	Pathname_sp path = gc::As<Pathname_sp>(af_symbolValue(cl::_sym_STARdefaultPathnameDefaultsSTAR));
 	unlikely_if (!af_pathnamep(path)) {
 	    DynamicScopeManager(cl::_sym_STARdefaultPathnameDefaultsSTAR,getcwd());
 	    ERROR_WRONG_TYPE_KEY_ARG(core::_sym_defaultPathnameDefaults,cl::_sym_STARdefaultPathnameDefaultsSTAR,path,cl::_sym_Pathname_O);
@@ -857,15 +857,15 @@ namespace core {
         if ( Str_sp strx = x.asOrNull<Str_O>() )
         {
             x = af_parseNamestring(x);
-        } else if ( x.isA<Pathname_O>() ) {
+        } else if ( gc::IsA<Pathname_sp>(x) ) {
             // do nothing
-        } else if ( x.isA<Stream_O>() ) {
+        } else if ( gc::IsA<Stream_sp>(x) ) {
             x = clasp_filename(x);
             goto L;
         } else {
             ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_pathname,x,Cons_O::createList(cl::_sym_or,cl::_sym_fileStream,cl::_sym_string,cl::_sym_pathname));
         }
-	return x.as<Pathname_O>();
+	return gc::As<Pathname_sp>(x);
     }
 
     T_sp
@@ -1128,7 +1128,7 @@ namespace core {
 			 % _rep_(pathname->_Type)
 			 % _rep_(pathname->_Version));
 	}
-	Str_sp namestring = tnamestring.as<Str_O>();
+	Str_sp namestring = gc::As<Str_sp>(tnamestring);
 	if (_lisp->pathMax() != -1 &&
 	    cl_length(namestring) >= _lisp->pathMax() - 16)
 	    SIMPLE_ERROR(BF("Too long filename: %s.") % namestring->get());
@@ -1164,12 +1164,12 @@ namespace core {
 		truncate_if_unreadable)
 		return _Nil<T_O>();
 	    if (host.notnilp()) {
-		cl_writeSequence(host.as<Str_O>(), buffer, make_fixnum(0), _Nil<T_O>());
+		cl_writeSequence(gc::As<Str_sp>(host), buffer, make_fixnum(0), _Nil<T_O>());
 		clasp_write_string(":",buffer);
 	    }
 	} else {
 	    if ((y = x->_Device).notnilp()) {
-		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<T_O>());
+		cl_writeSequence(gc::As<Str_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
 		clasp_write_string(":",buffer);
 	    }
 	    if (host.notnilp()) {
@@ -1179,7 +1179,7 @@ namespace core {
 		}
 #endif
 		clasp_write_string("//",buffer);
-		cl_writeSequence(host.as<Str_O>(), buffer, make_fixnum(0), _Nil<T_O>());
+		cl_writeSequence(gc::As<Str_sp>(host), buffer, make_fixnum(0), _Nil<T_O>());
 	    }
 	}
 	l = x->_Directory;
@@ -1203,7 +1203,7 @@ namespace core {
 	    } else if (y == kw::_sym_wild_inferiors) {
 		clasp_write_string("**",buffer);
 	    } else if (y != kw::_sym_back) {
-		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<T_O>());
+		cl_writeSequence(gc::As<Str_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
 	    } else {
 		/* Directory :back has no namestring representation */
 		return _Nil<T_O>();
@@ -1223,7 +1223,7 @@ namespace core {
 	    if (y == kw::_sym_wild) {
 		clasp_write_string("*",buffer);
 	    } else {
-		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<T_O>());
+		cl_writeSequence(gc::As<Str_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
 	    }
 	} else if (!logical && !x->_Type.nilp()) {
 	    /* #P".txt" is :NAME = ".txt" :TYPE = NIL and
@@ -1239,7 +1239,7 @@ namespace core {
 		clasp_write_string(".*",buffer);
 	    } else {
 		clasp_write_string(".",buffer);
-		cl_writeSequence(y.as<Str_O>(), buffer, make_fixnum(0), _Nil<T_O>());
+		cl_writeSequence(gc::As<Str_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
 	    }
 	}
 	y = x->_Version;
@@ -1249,7 +1249,7 @@ namespace core {
 		if (y == kw::_sym_wild) {
 		    clasp_write_string("*",buffer);
 		} else if (y == kw::_sym_newest) {
-		    cl_writeSequence(af_symbolName(y.as<Symbol_O>()), buffer,
+		    cl_writeSequence(af_symbolName(gc::As<Symbol_sp>(y)), buffer,
 					 make_fixnum(0), _Nil<T_O>());
 		} else {
 		    /* Since the printer is not reentrant,
@@ -1280,7 +1280,7 @@ namespace core {
 		return _Nil<T_O>();
 	    }
 	}
-        Str_sp sbuffer = cl_get_output_stream_string(buffer).as<Str_O>();
+        Str_sp sbuffer = gc::As<Str_sp>(cl_get_output_stream_string(buffer));
 #ifdef BRCL_UNICODE
 	if (BRCL_EXTENDED_STRING_P(buffer) &&
             (flags & BRCL_NAMESTRING_FORCE_BASE_STRING)) {
@@ -1316,7 +1316,7 @@ namespace core {
 #define DOCS_af_parseNamestring "parseNamestring"
     T_mv af_parseNamestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum_sp start, T_sp end, bool junkAllowed)
     {_G();
-	T_sp tempdefaults = (tdefaults.nilp()) ? cl::_sym_STARdefaultPathnameDefaultsSTAR->symbolValue().as_or_nil<Pathname_O>() : cl_pathname(tdefaults);
+	T_sp tempdefaults = (tdefaults.nilp()) ? cl::_sym_STARdefaultPathnameDefaultsSTAR->symbolValue() : gc::As<T_sp>(cl_pathname(tdefaults));
 	T_sp output;
 	if (host.notnilp()) {
 	    host = af_string(host);
@@ -1329,13 +1329,13 @@ namespace core {
 	    size_t ee;
 	    if (default_host.nilp() && tempdefaults.notnilp()) {
 		tempdefaults = cl_pathname(tempdefaults);
-		default_host = tempdefaults.as<Pathname_O>()->_Host;
+		default_host = gc::As<Pathname_sp>(tempdefaults)->_Host;
 	    }
 #ifdef BRCL_UNICODE
 	    thing = si_coerce_to_base_string(thing);
 #endif
 	    p = sequenceStartEnd(__FILE__,__LINE__,__FUNCTION__,CurrentPkg,
-				 thing.as<Str_O>(), start, end);
+				 gc::As<Str_sp>(thing), start, end);
 	    output = brcl_parseNamestring(thing, p.start, p.end, &ee, default_host);
 	    start = make_fixnum(static_cast<uint>(ee));
 	    if (output.nilp() || ee != p.end) {
@@ -1349,7 +1349,7 @@ namespace core {
 	if (output.nilp()) {
 	    SIMPLE_ERROR(BF("output is nil"));
 	}
-	if (host.notnilp() && !output.as<Pathname_O>()->_Host->equal(host)) {
+	if (host.notnilp() && !gc::As<Pathname_sp>(output)->_Host->equal(host)) {
 	    SIMPLE_ERROR(BF("The pathname %sS does not contain the required host %s.")
 			 % _rep_(thing) % _rep_(host));
 	}
@@ -1519,7 +1519,7 @@ namespace core {
 	if (host.nilp() || host == kw::_sym_wild) {
 	    shost = Str_O::create("");
 	} else {
-	    shost = host.as<Str_O>();
+	    shost = gc::As<Str_sp>(host);
 	}
 	return shost;
     }
@@ -1557,7 +1557,7 @@ namespace core {
 	    pathdir = _Nil<T_O>();
 	} else {
 	    ASSERTF(!tdir_begin.fixnump(),BF("Handle tagged fixnum!"));
-	    Integer_sp dir_begin = tdir_begin.as<Integer_O>();
+	    Integer_sp dir_begin = gc::As<Integer_sp>(tdir_begin);
 	    if (clasp_to_int(dir_begin) == cl_length(defaultdir)) {
 		pathdir = eval::funcall(cl::_sym_subseq, pathdir, dir_begin);
 		pathdir = Cons_O::create(kw::_sym_relative, pathdir);
@@ -1810,7 +1810,7 @@ namespace core {
         }
         set = cl_nreverse(set);
 	T_sp savedSet = set;
-        oCdr(pair).as<Cons_O>()->rplaca(set);
+        gc::As<Cons_sp>(oCdr(pair))->rplaca(set);
         return set;
     }
 
@@ -2106,7 +2106,7 @@ namespace core {
     string Pathname_O::__repr__() const
     {
 	stringstream ss;
-	gc::Nilable<Str_sp> str = af_namestring(this->asSmartPtr()).as_or_nil<Str_O>();
+	gc::Nilable<Str_sp> str = af_namestring(this->asSmartPtr());
 	if ( str.nilp() ) {
 	    ss << "#P" << '"' << '"';
 	} else {

@@ -53,7 +53,7 @@ namespace core {
     T_sp cl_getInternalRealTime()
     {_G();
         PosixTime_sp now = PosixTime_O::createNow();
-        PosixTimeDuration_sp diff = now->sub(_sym_STARstartRunTimeSTAR->symbolValue().as<PosixTime_O>());
+        PosixTimeDuration_sp diff = now->sub(gc::As<PosixTime_sp>(_sym_STARstartRunTimeSTAR->symbolValue()));
         return Integer_O::create(diff->totalMilliseconds());
     };
 

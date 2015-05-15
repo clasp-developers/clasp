@@ -429,7 +429,7 @@ namespace core
 	} else if ( Cons_sp cname = this->name.asOrNull<Cons_O>() ) {
 	    stringstream ss;
 	    ss << "Function-name(setf ";
-	    ss << oCadr(cname).as<Symbol_O>()->symbolNameAsString();
+	    ss << gc::As<Symbol_sp>(oCadr(cname))->symbolNameAsString();
 	    ss << ")";
 	    return ss.str();
 	} else if ( Str_sp strname = this->name.asOrNull<Str_O>() ) {
@@ -697,7 +697,7 @@ namespace core
         if ( p.nilp() ) {
             return "";
         }
-        return p.as<Package_O>()->packageName();
+        return gc::As<Package_sp>(p)->packageName();
     }
 
     string symbol_repr(Symbol_sp sym)
@@ -946,7 +946,7 @@ namespace core
 
     T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol)
     {_G();
-	Class_sp mc = eval::funcall(cl::_sym_findClass,_lisp->_true()).as<Class_O>();
+	Class_sp mc = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass,_lisp->_true()));
 	return mc;
     }
 
@@ -986,7 +986,7 @@ namespace core
     List_sp lisp_parse_arguments(const string& packageName, const string& args)
     {_G();
 	if ( args == "" ) return _Nil<T_O>();
-	Package_sp pkg = _lisp->findPackage(packageName,true).as<Package_O>();
+	Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName,true));
 	ChangePackage changePackage(pkg);
         Str_sp ss = Str_O::create(args);
 	Stream_sp str = cl_make_string_input_stream(ss,make_fixnum(0),_Nil<T_O>());
@@ -1000,7 +1000,7 @@ namespace core
     List_sp lisp_parse_declares(const string& packageName, const string& declarestring)
     {_G();
 	if ( declarestring == "" ) return _Nil<T_O>();
-	Package_sp pkg = _lisp->findPackage(packageName,true).as<Package_O>();
+	Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName,true));
 	ChangePackage changePackage(pkg);
         Str_sp ss = Str_O::create(declarestring);
 	Stream_sp str = cl_make_string_input_stream(ss,make_fixnum(0),_Nil<T_O>());
@@ -1032,7 +1032,7 @@ namespace core
 					 int number_of_required_arguments,
                                          const std::set<int> pureOutIndices )
     {_G();
-	Class_sp receiver_class = eval::funcall(cl::_sym_findClass,classSymbol,_lisp->_true()).as<Class_O>();
+	Class_sp receiver_class = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass,classSymbol,_lisp->_true()));
 	Symbol_sp className = receiver_class->name();
 #if 0
 	if ( sym->symbolName()->get().find("JSONDATABASE-LOAD-FROM-FILE") != string::npos )
@@ -1040,7 +1040,7 @@ namespace core
             printf("%s:%d - Caught lisp_defineSingleDispatchMethod for %s\n", __FILE__, __LINE__, sym->symbolName()->get().c_str() );
 	}
 #endif
-	List_sp ldeclares = lisp_parse_declares(className->getPackage().as<Package_O>()->getName(),declares);
+	List_sp ldeclares = lisp_parse_declares(gc::As<Package_sp>(className->getPackage())->getName(),declares);
 	// NOTE: We are compiling the llhandler in the package of the class - not the package of the
 	// method name  -- sometimes the method name will belong to another class (ie: core:--init--)
 	LambdaListHandler_sp llhandler;
@@ -1051,13 +1051,13 @@ namespace core
 	    llhandler = LambdaListHandler_O::create(number_of_required_arguments,pureOutIndices);
 	} else if ( arguments != "" )
 	{
-	    List_sp llraw = lisp_parse_arguments(className->getPackage().as<Package_O>()->getName(),arguments);
+	    List_sp llraw = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(),arguments);
 	    /*-----*/
 	    MULTIPLE_VALUES_CONTEXT();
 	    T_mv mv_llprocessed = LambdaListHandler_O::process_single_dispatch_lambda_list(llraw,true);
 	    T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
-	    Symbol_sp sd_symbol = mv_llprocessed.valueGet(1).as<Symbol_O>();
-	    Symbol_sp sd_class_symbol = mv_llprocessed.valueGet(2).as<Symbol_O>();
+	    Symbol_sp sd_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet(1));
+	    Symbol_sp sd_class_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet(2));
 	    List_sp llproc = coerce_to_list(tllproc);
 	    /*-----*/
 
@@ -1112,7 +1112,7 @@ namespace core
 
     Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol)
     {_G();
-	return eval::funcall(cl::_sym_findClass,classSymbol,_lisp->_true()).as<Class_O>();
+	return gc::As<Class_sp>(eval::funcall(cl::_sym_findClass,classSymbol,_lisp->_true()));
     }
 
 
@@ -1322,14 +1322,14 @@ namespace core
 
     int lisp_lookupEnumForSymbol(Symbol_sp predefSymId, T_sp symbol )
     {
-	SymbolToEnumConverter_sp converter = predefSymId->symbolValue().as<SymbolToEnumConverter_O>();
-	return converter->enumIndexForSymbol(symbol.as<Symbol_O>());
+	SymbolToEnumConverter_sp converter = gc::As<SymbolToEnumConverter_sp>(predefSymId->symbolValue());
+	return converter->enumIndexForSymbol(gc::As<Symbol_sp>(symbol));
     }
 
 
     Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal )
     {
-	SymbolToEnumConverter_sp converter = predefSymId->symbolValue().as<SymbolToEnumConverter_O>();
+	SymbolToEnumConverter_sp converter = gc::As<SymbolToEnumConverter_sp>(predefSymId->symbolValue());
 	return converter->symbolForEnumIndex(enumVal);
     }
 
@@ -1756,7 +1756,7 @@ namespace core
 	  dbg.invoke();
 	  //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
 	}
-      Cons_sp cargs = arguments.as<Cons_O>();
+      Cons_sp cargs = gc::As<Cons_sp>(arguments);
       eval::applyLastArgsPLUSFirst(cl::_sym_error, cargs, datum );
     }
 

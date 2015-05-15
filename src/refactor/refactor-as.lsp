@@ -65,7 +65,7 @@
 			   (format t "m-d-t-name: ~a~%" m-d-t-name)
 ;;			   (format t "template type name: ~a~%" (mtag-source :template-type))
 			   (format t "Source: ~a~%" expr-source)
-			   (if (string/= call-source "")
+			   (if (and (string/= call-source "") (null (search "Spelling" loc)))
 			       (let ((type-start (position #\< call-source :from-end t))
 				     (type-end (search "_O>" call-source :from-end t)))
 				 (when (and type-end (null (search ".as<" expr-source)))
@@ -90,39 +90,20 @@
 ;;; Test the matcher on the loaded asts
 ;;;
 (progn
-  (defparameter $test-search (lsel $* ".*/testAST\.cc"))
+  (defparameter $test-search (lsel $* ".*/numbers\.cc"))
   (load-asts $test-search :arguments-adjuster-code *arg-adjuster*))
 
-(let* ((base-matcher
-        '((:argument-count-is 0)
-          (:has-declaration (:has-name "as")
-	   (:template-specialization-type (:template-argument-count-is 1)))))
-       (template-type-matcher
-        '((:type (:is-same-or-derived-from "T_O"))))
-       (negated-matcher `(:member-call-expr
-			  ,@base-matcher
-			  (:has-template-argument 1
-						  (:refers-to-type ,@template-type-matcher)))))
-  (defparameter *new-matcher*
-    `(:member-call-expr
-      ,@base-matcher
-      (:has-template-argument 1
-                              (:refers-to-type
-                               (:bind :template-type
-                                      ,@template-type-matcher)))
-      (:on (:not (:any-of
-                  ,negated-matcher
-                  (:has-descendant ,negated-matcher)))))))
+
 
 
 (progn
-  (match-run *new-matcher* :the-code-match-callback *refactor-fixnum-get*)
+  (match-run *matcher* :the-code-match-callback *refactor-fixnum-get*)
   (print "Done"))
 
 ;;;
 ;;; Generate replacements but don't save them
 ;;;
-(batch-match-run *new-matcher*
+(batch-match-run *matcher*
 		 :filenames $test-search
 		 :the-code-match-callback *refactor-fixnum-get*
 		 :arguments-adjuster-code *arg-adjuster*)
@@ -132,7 +113,7 @@
 ;;; WARNING: No backups are kept - use git to rewind changes if they don't work
 ;;;
 (batch-match-run *matcher*
-		 :filenames $test-search
+		 :filenames $*
 		 :the-code-match-callback *refactor-fixnum-get*
 		 :arguments-adjuster-code *arg-adjuster*
 		 :run-and-save t)

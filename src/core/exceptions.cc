@@ -746,7 +746,7 @@ void af_readerError(const string& sourceFile, uint lineno, Symbol_sp function,
 
 void assert_type_integer(int index, T_sp p)
 {
-    if ( !p.isA<Integer_O>() )
+    if ( !gc::IsA<Integer_sp>(p) )
     {
 	QERROR_WRONG_TYPE_NTH_ARG(index,p,cl::_sym_Integer_O);
     }

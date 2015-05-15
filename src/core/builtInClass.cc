@@ -87,7 +87,7 @@ namespace core
 	_lisp->print(BF("-------------  Class name: %s")
 		     % _rep_(this->name()) ); //InstanceClassSymbol );
 	for ( auto cur : this->directSuperclasses() ) {
-	    _lisp->print(BF("Base class: %s") % _rep_((oCar(cur).as<Class_O>())->className()) );
+	    _lisp->print(BF("Base class: %s") % _rep_((gc::As<Class_sp>(oCar(cur)))->className()) );
 	}
 	_lisp->print(BF("%s") % this->dumpInfo() );
         if ( this->_creator == NULL ) {

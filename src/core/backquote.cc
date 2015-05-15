@@ -379,7 +379,7 @@ namespace core
     T_sp af_backquote_simplify_args(T_sp x)
     {_G();
 	List_sp cx = x;
-	List_sp args = oCdr(cx).as<Cons_O>()->reverse();
+	List_sp args = gc::As<Cons_sp>(oCdr(cx))->reverse();
 	T_sp result = _Nil<T_O>();
 	while (args.notnilp())
 	{

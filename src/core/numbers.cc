@@ -81,7 +81,7 @@ namespace core
 #define DOCS_cl_zerop "zerop"
     bool cl_zerop(T_sp num)
     {_G();
-	return clasp_zerop(num.as<Number_O>());
+	return clasp_zerop(gc::As<Number_sp>(num));
     }
 
 
@@ -155,9 +155,9 @@ namespace core
     Integer_sp cl_logand(List_sp integers)
     {_G();
 	if ( integers.nilp() ) return Integer_O::create(-1);
-	mpz_class acc = clasp_to_mpz(oCar(integers).as<Integer_O>());
+	mpz_class acc = clasp_to_mpz(gc::As<Integer_sp>(oCar(integers)));
 	for ( auto cur : (List_sp)oCdr(integers) ) {
-	    Integer_sp icur = oCar(cur).as<Integer_O>();
+	    Integer_sp icur = gc::As<Integer_sp>(oCar(cur));
 	    mpz_class temp;
 	    mpz_and(temp.get_mpz_t(),acc.get_mpz_t(),clasp_to_mpz(icur).get_mpz_t());
 	    acc = temp;
@@ -172,11 +172,11 @@ namespace core
     Integer_sp cl_logior(List_sp integers)
     {_G();
 	if ( integers.nilp() ) return Integer_O::create(0);
-	Integer_sp ifirst = oCar(integers).as<Integer_O>();
+	Integer_sp ifirst = gc::As<Integer_sp>(oCar(integers));
 	mpz_class acc = clasp_to_mpz(ifirst);
 	List_sp rints = oCdr(integers);
 	for ( auto cur : rints ) {
-	    Integer_sp icur = oCar(cur).as<Integer_O>();
+	    Integer_sp icur = gc::As<Integer_sp>(oCar(cur));
 	    mpz_class temp;
 	    mpz_ior(temp.get_mpz_t(),acc.get_mpz_t(),clasp_to_mpz(icur).get_mpz_t());
 	    acc = temp;
@@ -190,10 +190,10 @@ namespace core
     Integer_sp af_logxor(List_sp integers)
     {_G();
 	if ( integers.nilp() ) return Integer_O::create(0);
-	Integer_sp ifirst = oCar(integers).as<Integer_O>();
+	Integer_sp ifirst = gc::As<Integer_sp>(oCar(integers));
 	mpz_class acc = clasp_to_mpz(ifirst);
 	for ( auto cur : (List_sp)oCdr(integers) ) {
-	    Integer_sp icur = oCar(cur).as<Integer_O>();
+	    Integer_sp icur = gc::As<Integer_sp>(oCar(cur));
 	    mpz_class temp;
 	    mpz_xor(temp.get_mpz_t(),acc.get_mpz_t(),clasp_to_mpz(icur).get_mpz_t());
 	    acc = temp;
@@ -209,10 +209,10 @@ namespace core
     Integer_mv af_logeqv(List_sp integers)
     {_G();
 	if (integers.nilp() ) return Integer_O::create(-1);
-	Integer_sp ifirst = oCar(integers).as<Integer_O>();
+	Integer_sp ifirst = gc::As<Integer_sp>(oCar(integers));
 	mpz_class x = clasp_to_mpz(ifirst);
 	for ( auto cur : (List_sp)oCdr(integers) ) {
-	    Integer_sp icur = oCar(cur).as<Integer_O>();
+	    Integer_sp icur = gc::As<Integer_sp>(oCar(cur));
 	    mpz_class y = clasp_to_mpz(icur);
 	    mpz_class x_and_y;
 	    mpz_and(x_and_y.get_mpz_t(),x.get_mpz_t(),y.get_mpz_t());
@@ -349,7 +349,6 @@ namespace core
 
     Number_sp contagen_add(Number_sp na, Number_sp nb)
     {_G();
-	Number_sp x = na.as<Number_O>().as<Number_O>().as<Number_O>();
 	MATH_DISPATCH_BEGIN(na,nb)
 	{
         case_Fixnum_v_Fixnum:
@@ -362,14 +361,14 @@ namespace core
         case_Fixnum_v_Bignum:
 	    {
 		mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
-		mpz_class zc = za+nb.as<Bignum_O>()->ref();
+		mpz_class zc = za+gc::As<Bignum_sp>(nb)->ref();
 		return Integer_O::create(zc);
 	    }
         case_Fixnum_v_Ratio:
         case_Bignum_v_Ratio:
 	    {
 		mpz_class za(clasp_to_mpz(na));
-		Ratio_sp rb = nb.as<Ratio_O>();
+		Ratio_sp rb = gc::As<Ratio_sp>(nb);
 		mpz_class zb_den = rb->denominator_as_mpz();
 		mpz_class za_scaled = za*zb_den;
 		mpz_class zr = za_scaled+rb->numerator_as_mpz();
@@ -386,13 +385,13 @@ namespace core
         case_Bignum_v_Fixnum:
 	    {
 		mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
-		mpz_class zc = na.as<Bignum_O>()->ref() + zb;
+		mpz_class zc = gc::As<Bignum_sp>(na)->ref() + zb;
 		return Integer_O::create(zc);
 	    }
         case_Bignum_v_Bignum:
 	    {
-		return Integer_O::create(na.as<Bignum_O>()->ref()
-					 +nb.as<Bignum_O>()->ref());
+		return Integer_O::create(gc::As<Bignum_sp>(na)->ref()
+					 +gc::As<Bignum_sp>(nb)->ref());
 	    }
         case_Bignum_v_SingleFloat:
         case_Ratio_v_SingleFloat:
@@ -407,15 +406,15 @@ namespace core
         case_Ratio_v_Fixnum:
         case_Ratio_v_Bignum:
 	    {
-		Ratio_sp ra = na.as<Ratio_O>();
+		Ratio_sp ra = gc::As<Ratio_sp>(na);
 		mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
 		mpz_class res = ra->numerator_as_mpz() + z;
 		return Ratio_O::create(res,ra->denominator_as_mpz());
 	    }
         case_Ratio_v_Ratio:
 	    {
-		Ratio_sp ra = na.as<Ratio_O>();
-		Ratio_sp rb = nb.as<Ratio_O>();
+		Ratio_sp ra = gc::As<Ratio_sp>(na);
+		Ratio_sp rb = gc::As<Ratio_sp>(nb);
 		mpz_class z1 = ra->numerator_as_mpz()*rb->denominator_as_mpz();
 		mpz_class z = ra->denominator_as_mpz()*rb->numerator_as_mpz();
 		z = z1 + z;
@@ -470,12 +469,12 @@ namespace core
         case_LongFloat_v_Complex:
 #endif
 	Complex_v_Y:
-	    return Complex_O::create(contagen_add(na,nb.as<Complex_O>()->real()).as<Real_O>(),
-				     nb.as<Complex_O>()->imaginary());
+	    return Complex_O::create(gc::As<Real_sp>(contagen_add(na,gc::As<Complex_sp>(nb)->real())),
+				     gc::As<Complex_sp>(nb)->imaginary());
 	case_Complex_v_Complex:
 	    {
-                Real_sp r = contagen_add(na.as<Complex_O>()->real(),nb.as<Complex_O>()->real()).as<Real_O>();
-		Real_sp i = contagen_add(na.as<Complex_O>()->imaginary(),nb.as<Complex_O>()->imaginary()).as<Real_O>();
+                Real_sp r = gc::As<Real_sp>(contagen_add(gc::As<Complex_sp>(na)->real(),gc::As<Complex_sp>(nb)->real()));
+		Real_sp i = gc::As<Real_sp>(contagen_add(gc::As<Complex_sp>(na)->imaginary(),gc::As<Complex_sp>(nb)->imaginary()));
 		return Complex_O::create(r,i);
 	    }
 	    break;
@@ -504,14 +503,14 @@ namespace core
         case_Fixnum_v_Bignum:
 	    {
 		mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
-		mpz_class zc = za-nb.as<Bignum_O>()->ref();
+		mpz_class zc = za-gc::As<Bignum_sp>(nb)->ref();
 		return Integer_O::create(zc);
 	    }
         case_Fixnum_v_Ratio:
         case_Bignum_v_Ratio:
 	    {
 		mpz_class za(clasp_to_mpz(na));
-		Ratio_sp rb = nb.as<Ratio_O>();
+		Ratio_sp rb = gc::As<Ratio_sp>(nb);
 		mpz_class zb_den = rb->denominator_as_mpz();
 		mpz_class za_scaled = za*zb_den;
 		mpz_class zr = za_scaled-rb->numerator_as_mpz();
@@ -528,13 +527,13 @@ namespace core
         case_Bignum_v_Fixnum:
 	    {
 		mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
-		mpz_class zc = na.as<Bignum_O>()->ref() - zb;
+		mpz_class zc = gc::As<Bignum_sp>(na)->ref() - zb;
 		return Integer_O::create(zc);
 	    }
         case_Bignum_v_Bignum:
 	    {
-		return Integer_O::create(na.as<Bignum_O>()->ref()
-					 -nb.as<Bignum_O>()->ref());
+		return Integer_O::create(gc::As<Bignum_sp>(na)->ref()
+					 -gc::As<Bignum_sp>(nb)->ref());
 	    }
         case_Bignum_v_SingleFloat:
         case_Ratio_v_SingleFloat:
@@ -549,15 +548,15 @@ namespace core
         case_Ratio_v_Fixnum:
         case_Ratio_v_Bignum:
 	    {
-		Ratio_sp ra = na.as<Ratio_O>();
+		Ratio_sp ra = gc::As<Ratio_sp>(na);
 		mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
 		mpz_class res = ra->numerator_as_mpz() - z;
 		return Ratio_O::create(res,ra->denominator_as_mpz());
 	    }
         case_Ratio_v_Ratio:
 	    {
-		Ratio_sp ra = na.as<Ratio_O>();
-		Ratio_sp rb = nb.as<Ratio_O>();
+		Ratio_sp ra = gc::As<Ratio_sp>(na);
+		Ratio_sp rb = gc::As<Ratio_sp>(nb);
 		mpz_class z1 = ra->numerator_as_mpz()*rb->denominator_as_mpz();
 		mpz_class z = ra->denominator_as_mpz()*rb->numerator_as_mpz();
 		z = z1 - z;
@@ -598,8 +597,8 @@ namespace core
         case_Complex_v_SingleFloat:
         case_Complex_v_DoubleFloat:
 	    {
-		return Complex_O::create(contagen_sub(na.as<Complex_O>()->real(),nb).as<Real_O>(),
-					 nb.as<Complex_O>()->imaginary());
+		return Complex_O::create(gc::As<Real_sp>(contagen_sub(gc::As<Complex_sp>(na)->real(),nb)),
+					 gc::As<Complex_sp>(nb)->imaginary());
 	    }
 	case_Fixnum_v_Complex:
 	case_Bignum_v_Complex:
@@ -607,12 +606,12 @@ namespace core
 	case_SingleFloat_v_Complex:
 	case_DoubleFloat_v_Complex:
         case_LongFloat_v_Complex:
-	    return Complex_O::create(contagen_sub(na,nb.as<Complex_O>()->real()).as<Real_O>(),
-				     clasp_negate(nb.as<Complex_O>()->imaginary()).as<Real_O>());
+	    return Complex_O::create(gc::As<Real_sp>(contagen_sub(na,gc::As<Complex_sp>(nb)->real())),
+				     gc::As<Real_sp>(clasp_negate(gc::As<Complex_sp>(nb)->imaginary())));
 	case_Complex_v_Complex:
 	    {
-                Real_sp r = contagen_sub(na.as<Complex_O>()->real(),nb.as<Complex_O>()->real()).as<Real_O>();
-		Real_sp i = contagen_sub(na.as<Complex_O>()->imaginary(),nb.as<Complex_O>()->imaginary()).as<Real_O>();
+                Real_sp r = gc::As<Real_sp>(contagen_sub(gc::As<Complex_sp>(na)->real(),gc::As<Complex_sp>(nb)->real()));
+		Real_sp i = gc::As<Real_sp>(contagen_sub(gc::As<Complex_sp>(na)->imaginary(),gc::As<Complex_sp>(nb)->imaginary()));
 		return Complex_O::create(r,i);
 	    }
 	    break;
@@ -643,14 +642,14 @@ namespace core
         case_Fixnum_v_Bignum:
 	    {
 		mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
-		mpz_class zc = za * nb.as<Bignum_O>()->ref();
+		mpz_class zc = za * gc::As<Bignum_sp>(nb)->ref();
 		return Integer_O::create(zc);
 	    }
         case_Fixnum_v_Ratio:
         case_Bignum_v_Ratio:
 	    {
 		mpz_class za(clasp_to_mpz(na));
-		Ratio_sp rb = nb.as<Ratio_O>();
+		Ratio_sp rb = gc::As<Ratio_sp>(nb);
 		mpz_class zr = za * rb->numerator_as_mpz();
 		return Ratio_O::create(zr,rb->denominator_as_mpz());
 	    }
@@ -665,12 +664,12 @@ namespace core
         case_Bignum_v_Fixnum:
 	    {
 		mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
-		mpz_class zc = na.as<Bignum_O>()->ref() * zb;
+		mpz_class zc = gc::As<Bignum_sp>(na)->ref() * zb;
 		return Integer_O::create(zc);
 	    }
         case_Bignum_v_Bignum:
 	    {
-		return Integer_O::create(na.as<Bignum_O>()->ref() * nb.as<Bignum_O>()->ref());
+		return Integer_O::create(gc::As<Bignum_sp>(na)->ref() * gc::As<Bignum_sp>(nb)->ref());
 	    }
         case_Bignum_v_SingleFloat:
         case_Ratio_v_SingleFloat:
@@ -685,14 +684,14 @@ namespace core
         case_Ratio_v_Fixnum:
         case_Ratio_v_Bignum:
 	    {
-		Ratio_sp ra = na.as<Ratio_O>();
+		Ratio_sp ra = gc::As<Ratio_sp>(na);
 		mpz_class z = clasp_to_mpz(nb);
 		return Rational_O::create(z*ra->numerator_as_mpz(),ra->denominator_as_mpz());
 	    }
         case_Ratio_v_Ratio:
 	    {
-		Ratio_sp ra = na.as<Ratio_O>();
-		Ratio_sp rb = nb.as<Ratio_O>();
+		Ratio_sp ra = gc::As<Ratio_sp>(na);
+		Ratio_sp rb = gc::As<Ratio_sp>(nb);
 		return Rational_O::create(ra->numerator_as_mpz()*rb->numerator_as_mpz(),ra->denominator_as_mpz()*rb->denominator_as_mpz());
 	    }
         case_SingleFloat_v_Fixnum:
@@ -740,19 +739,19 @@ namespace core
 	case_DoubleFloat_v_Complex:
         case_LongFloat_v_Complex:
 	Complex_v_Y:
-	    return Complex_O::create(contagen_mul(na,nb.as<Complex_O>()->real()).as<Real_O>(),
-				     contagen_mul(na,nb.as<Complex_O>()->imaginary()).as<Real_O>());
+	    return Complex_O::create(gc::As<Real_sp>(contagen_mul(na,gc::As<Complex_sp>(nb)->real())),
+				     gc::As<Real_sp>(contagen_mul(na,gc::As<Complex_sp>(nb)->imaginary())));
 	case_Complex_v_Complex:
 	    {
-		Complex_sp ca = na.as<Complex_O>();
-		Complex_sp cb = nb.as<Complex_O>();
+		Complex_sp ca = gc::As<Complex_sp>(na);
+		Complex_sp cb = gc::As<Complex_sp>(nb);
 		Real_sp x = ca->real();
 		Real_sp y = ca->imaginary();
 		Real_sp u = cb->real();
 		Real_sp v = cb->imaginary();
 		// (x + yi)(u + vi) = (xu – yv) + (xv + yu)i.
-		return Complex_O::create(contagen_sub(contagen_mul(x,u),contagen_mul(y,v)).as<Real_O>(),
-					 contagen_add(contagen_mul(x,v),contagen_mul(y,u)).as<Real_O>());
+		return Complex_O::create(gc::As<Real_sp>(contagen_sub(contagen_mul(x,u),contagen_mul(y,v))),
+					 gc::As<Real_sp>(contagen_add(contagen_mul(x,v),contagen_mul(y,u))));
 	    }
 	    break;
 	default:
@@ -789,8 +788,8 @@ namespace core
 	    return Rational_O::create(clasp_to_mpz(na),clasp_to_mpz(nb));
 	case_Fixnum_v_Ratio:
 	case_Bignum_v_Ratio:
-	    return Rational_O::create(contagen_mul(na,nb.as<Ratio_O>()->denominator()).as<Integer_O>(),
-				      nb.as<Ratio_O>()->numerator());
+	    return Rational_O::create(gc::As<Integer_sp>(contagen_mul(na,gc::As<Ratio_sp>(nb)->denominator())),
+				      gc::As<Ratio_sp>(nb)->numerator());
 	case_Fixnum_v_SingleFloat:
 	    return SingleFloat_O::create(clasp_to_float(na)/clasp_to_float(nb));
 	case_Fixnum_v_DoubleFloat:
@@ -804,15 +803,15 @@ namespace core
 	case_Ratio_v_Fixnum:
 	case_Ratio_v_Bignum:
 	    {
-		Integer_sp z = contagen_mul(na.as<Ratio_O>()->denominator(),nb).as<Integer_O>();
-		return Rational_O::create(na.as<Ratio_O>()->numerator(),z);
+		Integer_sp z = gc::As<Integer_sp>(contagen_mul(gc::As<Ratio_sp>(na)->denominator(),nb));
+		return Rational_O::create(gc::As<Ratio_sp>(na)->numerator(),z);
 	    }
 	case_Ratio_v_Ratio:
 	    {
-		Ratio_sp ra = na.as<Ratio_O>();
-		Ratio_sp rb = nb.as<Ratio_O>();
-		Integer_sp num = contagen_mul(ra->numerator(),rb->denominator()).as<Integer_O>();
-		Integer_sp denom = contagen_mul(ra->denominator(),rb->numerator()).as<Integer_O>();
+		Ratio_sp ra = gc::As<Ratio_sp>(na);
+		Ratio_sp rb = gc::As<Ratio_sp>(nb);
+		Integer_sp num = gc::As<Integer_sp>(contagen_mul(ra->numerator(),rb->denominator()));
+		Integer_sp denom = gc::As<Integer_sp>(contagen_mul(ra->denominator(),rb->numerator()));
 		return Rational_O::create(num,denom);
 	    }
 	case_SingleFloat_v_Fixnum:
@@ -848,21 +847,21 @@ namespace core
 	case_Complex_v_DoubleFloat:
 	case_Complex_v_LongFloat:
 	    {
-		Complex_sp ca = na.as<Complex_O>();
-		return Complex_O::create(contagen_div(ca->real(),nb).as<Real_O>(),
-					 contagen_div(ca->imaginary(),nb).as<Real_O>());
+		Complex_sp ca = gc::As<Complex_sp>(na);
+		return Complex_O::create(gc::As<Real_sp>(contagen_div(ca->real(),nb)),
+					 gc::As<Real_sp>(contagen_div(ca->imaginary(),nb)));
 	    }
 	case_Fixnum_v_Complex:
 	case_Bignum_v_Complex:
 	    {
-		Complex_sp cb = nb.as<Complex_O>();
+		Complex_sp cb = gc::As<Complex_sp>(nb);
 		return complex_divide(clasp_to_double(na),0.0,
 				      clasp_to_double(cb->real()),clasp_to_double(cb->imaginary()));
 	    }
 	case_Complex_v_Complex:
 	    {
-		Complex_sp ca = na.as<Complex_O>();
-		Complex_sp cb = nb.as<Complex_O>();
+		Complex_sp ca = gc::As<Complex_sp>(na);
+		Complex_sp cb = gc::As<Complex_sp>(nb);
 		return complex_divide(clasp_to_double(ca->real()),clasp_to_double(ca->imaginary()),
 				      clasp_to_double(cb->real()),clasp_to_double(cb->imaginary()));
 	    }
@@ -871,7 +870,7 @@ namespace core
 	case_DoubleFloat_v_Complex:
 	case_LongFloat_v_Complex:
 	    {
-		Complex_sp cb = nb.as<Complex_O>();
+		Complex_sp cb = gc::As<Complex_sp>(nb);
 		return complex_divide(clasp_to_double(na),0.0,
 				      clasp_to_double(cb->real()),clasp_to_double(cb->imaginary()));
 	    }
@@ -908,9 +907,9 @@ namespace core
     T_mv af__TIMES_(List_sp numbers)
     {_G();
 	if ( numbers.nilp() ) return(Values(make_fixnum(1)));
-	Number_sp result = oCar(numbers).as<Number_O>();
+	Number_sp result = gc::As<Number_sp>(oCar(numbers));
 	for ( auto cur : (List_sp)oCdr(numbers) ) {
-	    result = contagen_mul(result, oCar(cur).as<Number_O>());
+	    result = contagen_mul(result, gc::As<Number_sp>(oCar(cur)));
 	}
 	return(Values(result));
     }
@@ -927,7 +926,7 @@ namespace core
 	}
 	Number_sp result = num;
 	for ( auto cur : (List_sp)(numbers) ) {
-	    result = contagen_sub(result, oCar(cur).as<Number_O>());
+	    result = contagen_sub(result, gc::As<Number_sp>(oCar(cur)));
 	}
 	return(Values(result));
     }
@@ -943,7 +942,7 @@ namespace core
 	}
 	Number_sp result = num;
 	for ( auto cur : (List_sp)(numbers) ) {
-	    result = contagen_div(result, oCar(cur).as<Number_O>());
+	    result = contagen_div(result, gc::As<Number_sp>(oCar(cur)));
 	}
 	return((result));
     }
@@ -1059,7 +1058,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    }
         case_Fixnum_v_Bignum: {
 		mpz_class za = clasp_to_mpz(gc::As<Fixnum_sp>(na));
-		mpz_class& zb = nb.as<Bignum_O>()->ref();
+		mpz_class& zb = gc::As<Bignum_sp>(nb)->ref();
 		if ( za < zb ) return -1;
 		if ( za == zb ) return 0;
 		return 1;
@@ -1068,7 +1067,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
         case_Bignum_v_Ratio:
 	    {
 		mpz_class za(clasp_to_mpz(na));
-		Ratio_sp rb = nb.as<Ratio_O>();
+		Ratio_sp rb = gc::As<Ratio_sp>(nb);
 		mpz_class zb_den = rb->denominator_as_mpz();
 		mpz_class za_scaled = za*rb->denominator_as_mpz();
 		mpz_class zr = za_scaled-rb->numerator_as_mpz();
@@ -1086,7 +1085,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    }
         case_Fixnum_v_DoubleFloat:
 	    {
-		return double_fix_compare(unbox_fixnum(gc::As<Fixnum_sp>(na)),nb.as<DoubleFloat_O>()->get());
+		return double_fix_compare(unbox_fixnum(gc::As<Fixnum_sp>(na)),gc::As<DoubleFloat_sp>(nb)->get());
 		break;
 /*
 		double a = clasp_to_double(na);
@@ -1098,7 +1097,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    }
         case_Bignum_v_Fixnum:
 	    {
-		mpz_class& za(na.as<Bignum_O>()->ref());
+		mpz_class& za(gc::As<Bignum_sp>(na)->ref());
 		mpz_class zb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
 		if (za < zb ) return -1;
 		if ( za==zb ) return 0;
@@ -1106,8 +1105,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    }
         case_Bignum_v_Bignum:
 	    {
-		mpz_class& za = na.as<Bignum_O>()->ref();
-		mpz_class& zb = nb.as<Bignum_O>()->ref();
+		mpz_class& za = gc::As<Bignum_sp>(na)->ref();
+		mpz_class& zb = gc::As<Bignum_sp>(nb)->ref();
 		if ( za < zb ) return -1;
 		if ( za == zb ) return 0;
 		if ( za > zb ) return 1;
@@ -1133,7 +1132,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
         case_Ratio_v_Fixnum:
         case_Ratio_v_Bignum:
 	    {
-		Ratio_sp ra = na.as<Ratio_O>();
+		Ratio_sp ra = gc::As<Ratio_sp>(na);
 		mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
 		mpz_class raz = ra->numerator_as_mpz();
 		if ( raz < z ) return -1;
@@ -1142,8 +1141,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    }
         case_Ratio_v_Ratio:
 	    {
-		Ratio_sp ra = na.as<Ratio_O>();
-		Ratio_sp rb = nb.as<Ratio_O>();
+		Ratio_sp ra = gc::As<Ratio_sp>(na);
+		Ratio_sp rb = gc::As<Ratio_sp>(nb);
 		mpz_class z1 = ra->numerator_as_mpz()*rb->denominator_as_mpz();
 		mpz_class z = ra->denominator_as_mpz()*rb->numerator_as_mpz();
 		if ( z1 < z ) return -1;
@@ -1162,7 +1161,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 		return 1;
 	    }
         case_DoubleFloat_v_Fixnum:
-	    return -double_fix_compare(unbox_fixnum(gc::As<Fixnum_sp>(nb)),na.as<DoubleFloat_O>()->get());
+	    return -double_fix_compare(unbox_fixnum(gc::As<Fixnum_sp>(nb)),gc::As<DoubleFloat_sp>(na)->get());
 	    break;
         case_SingleFloat_v_DoubleFloat:
         case_DoubleFloat_v_Bignum:
@@ -1210,13 +1209,13 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     T_sp numbers_monotonic(int s, int t, List_sp args)
     {_G();
-	Number_sp c = oCar(args).as<Number_O>();
+	Number_sp c = gc::As<Number_sp>(oCar(args));
 	Number_sp d;
 	int dir;
 	args = oCdr(args);
 	while ( args.notnilp() )
 	{
-	    d = oCar(args).as<Number_O>();
+	    d = gc::As<Number_sp>(oCar(args));
 	    dir = s*basic_compare(c,d);
 	    if ( dir < t) return _lisp->_false();
 	    c = d;
@@ -1292,14 +1291,14 @@ long_double_fix_compare(Fixnum n, LongFloat d)
         case_Fixnum_v_Bignum:
 	    {
 		mpz_class za = clasp_to_mpz(gc::As<Fixnum_sp>(na));
-		mpz_class& zb = nb.as<Bignum_O>()->ref();
+		mpz_class& zb = gc::As<Bignum_sp>(nb)->ref();
 		return za==zb;
 	    }
         case_Fixnum_v_Ratio:
         case_Bignum_v_Ratio:
 	    {
 		mpz_class za(clasp_to_mpz(na));
-		Ratio_sp rb = nb.as<Ratio_O>();
+		Ratio_sp rb = gc::As<Ratio_sp>(nb);
 		mpz_class zb_den = rb->denominator_as_mpz();
 		mpz_class za_scaled = za*rb->denominator_as_mpz();
 		mpz_class zr = za_scaled-rb->numerator_as_mpz();
@@ -1319,14 +1318,14 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    }
         case_Bignum_v_Fixnum:
 	    {
-		mpz_class& za(na.as<Bignum_O>()->ref());
+		mpz_class& za(gc::As<Bignum_sp>(na)->ref());
 		mpz_class zb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
 		return za==zb;
 	    }
         case_Bignum_v_Bignum:
 	    {
-		mpz_class& za = na.as<Bignum_O>()->ref();
-		mpz_class& zb = nb.as<Bignum_O>()->ref();
+		mpz_class& za = gc::As<Bignum_sp>(na)->ref();
+		mpz_class& zb = gc::As<Bignum_sp>(nb)->ref();
 		return (za==zb);
 	    }
         case_Bignum_v_SingleFloat:
@@ -1346,15 +1345,15 @@ long_double_fix_compare(Fixnum n, LongFloat d)
         case_Ratio_v_Fixnum:
         case_Ratio_v_Bignum:
 	    {
-		Ratio_sp ra = na.as<Ratio_O>();
+		Ratio_sp ra = gc::As<Ratio_sp>(na);
 		mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
 		mpz_class raz = ra->numerator_as_mpz();
 		return raz==z;
 	    }
         case_Ratio_v_Ratio:
 	    {
-		Ratio_sp ra = na.as<Ratio_O>();
-		Ratio_sp rb = nb.as<Ratio_O>();
+		Ratio_sp ra = gc::As<Ratio_sp>(na);
+		Ratio_sp rb = gc::As<Ratio_sp>(nb);
 		mpz_class z1 = ra->numerator_as_mpz()*rb->denominator_as_mpz();
 		mpz_class z = ra->denominator_as_mpz()*rb->numerator_as_mpz();
 		return (z1==z);
@@ -1413,10 +1412,10 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     T_sp af__NE_(List_sp args)
     {_G();
         if ( args.nilp() ) return _lisp->_true();
-        Number_sp a = oCar(args).as<Number_O>();
+        Number_sp a = gc::As<Number_sp>(oCar(args));
 	Number_sp b;
         for ( auto cur : (List_sp)oCdr(args) ) {
-            b = oCar(cur).as<Number_O>();
+            b = gc::As<Number_sp>(oCar(cur));
             if ( basic_equalp(a,b) ) return _Nil<T_O>();
         }
 	return _lisp->_true();
@@ -1533,7 +1532,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     {
 	if ( cl_numberp(obj) )
 	{
-	    return basic_compare(this->asSmartPtr(),obj.as<Number_O>())<0;
+	    return basic_compare(this->asSmartPtr(),gc::As<Number_sp>(obj))<0;
 	}
 	return this->Base::operator<(obj);
     }
@@ -1542,7 +1541,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     {
 	if ( cl_numberp(obj) )
 	{
-	    return basic_compare(this->asSmartPtr(),obj.as<Number_O>())<=0;
+	    return basic_compare(this->asSmartPtr(),gc::As<Number_sp>(obj))<=0;
 	}
 	return this->Base::operator<=(obj);
     }
@@ -1551,7 +1550,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     {
 	if ( cl_numberp(obj) )
 	{
-	    return basic_compare(this->asSmartPtr(),obj.as<Number_O>())>0;
+	    return basic_compare(this->asSmartPtr(),gc::As<Number_sp>(obj))>0;
 	}
 	return this->Base::operator>(obj);
     }
@@ -1560,7 +1559,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     {
 	if ( cl_numberp(obj) )
 	{
-	    return basic_compare(this->asSmartPtr(),obj.as<Number_O>())>=0;
+	    return basic_compare(this->asSmartPtr(),gc::As<Number_sp>(obj))>=0;
 	}
 	return this->Base::operator>=(obj);
     }
@@ -2166,7 +2165,7 @@ namespace core {
 	if (this->_Value < 0) {
 	    float f = -this->_Value;
 	    int cf = *(int*)&f;
-	    return clasp_negate(Integer_O::create(cf)).as<Integer_O>();
+	    return gc::As<Integer_sp>(clasp_negate(Integer_O::create(cf)));
 	}
 	int cf = *(int*)&this->_Value;
 	return Integer_O::create(cf);
@@ -2252,9 +2251,9 @@ namespace core {
     bool	ShortFloat_O::eql_(T_sp obj) const
     {
 	if ( this->eq(obj) ) return true;
-	if ( obj.isA<Number_O>() )
+	if ( gc::IsA<Number_sp>(obj) )
 	{
-	    Number_sp num = obj.as<Number_O>();
+	    Number_sp num = gc::As<Number_sp>(obj);
 	    return this->get() == clasp_to_double(num);
 	}
 	return false;
@@ -2336,7 +2335,7 @@ namespace core {
 	if (this->_Value < 0) {
 	    float f = -this->_Value;
 	    int cf = *(int*)&f;
-	    return clasp_negate(Integer_O::create(cf)).as<Integer_O>();
+	    return gc::As<Integer_sp>(clasp_negate(Integer_O::create(cf)));
 	}
 	int cf = *(int*)&this->_Value;
 	return Integer_O::create(cf);
@@ -2403,9 +2402,9 @@ namespace core {
     bool	SingleFloat_O::eql_(T_sp obj) const
     {
 	if ( this->eq(obj) ) return true;
-	if ( obj.isA<Number_O>() )
+	if ( gc::IsA<Number_sp>(obj) )
 	{
-	    Number_sp num = obj.as<Number_O>();
+	    Number_sp num = gc::As<Number_sp>(obj);
 	    return this->get() == clasp_to_double(num);
 	}
 	return false;
@@ -2516,7 +2515,7 @@ namespace core {
 	if (this->_Value < 0) {
 	    double f = -this->_Value;
 	    long long int cf = *(long long int*)&f;
-	    return clasp_negate(Integer_O::create((gctools::Fixnum)cf)).as<Integer_O>();
+	    return gc::As<Integer_sp>(clasp_negate(Integer_O::create((gctools::Fixnum)cf)));
 	}
 	long long int cf = *(long long int*)&this->_Value;
 	return Integer_O::create((gctools::Fixnum)cf);
@@ -2593,9 +2592,9 @@ namespace core {
     bool	DoubleFloat_O::eql_(T_sp obj) const
     {
 	if ( this->eq(obj) ) return true;
-	if ( obj.isA<Number_O>() )
+	if ( gc::IsA<Number_sp>(obj) )
 	{
-	    Number_sp num = obj.as<Number_O>();
+	    Number_sp num = gc::As<Number_sp>(obj);
 	    return this->get() == clasp_to_double(num);
 	}
 	return false;
@@ -2764,7 +2763,7 @@ namespace core {
     bool	LongFloat_O::eql(T_sp obj) const
     {
 	if ( this->eq(obj) ) return true;
-	if ( obj.isA<Number_O>() )
+	if ( gc::IsA<Number_sp>(obj) )
 	{
 	    Number_sp num = obj.as<Number_O>();
 	    return this->get() == num->as_double();
@@ -2879,14 +2878,14 @@ namespace core {
 
     Number_sp Ratio_O::abs_() const
     {_G();
-	return Ratio_O::create(clasp_abs(this->_numerator.as<Integer_O>()), this->_denominator);
+	return Ratio_O::create(clasp_abs(gc::As<Integer_sp>(this->_numerator)), this->_denominator);
     }
 
     bool Ratio_O::eql_(T_sp obj) const
     {_G();
 	if ( this->eq(obj) ) return true;
 	if ( !cl_numberp(obj) ) return false;
-	if ( basic_compare(this->const_sharedThis<Ratio_O>(),obj.as<Number_O>()) == 0 ) return true;
+	if ( basic_compare(this->const_sharedThis<Ratio_O>(),gc::As<Number_sp>(obj)) == 0 ) return true;
 	return false;
     }
 
@@ -3053,7 +3052,7 @@ namespace core {
     {
 	if ( this->eq(o) ) return true;
 	if ( !af_complexP(o) ) return false;
-	Complex_sp co = o.as<Complex_O>();
+	Complex_sp co = gc::As<Complex_sp>(o);
 	return ( this->_real == co->_real && this->_imaginary == co->_imaginary );
     }
 
@@ -3120,7 +3119,7 @@ namespace core {
 Number_sp Rational_O::sqrt() const
 {
     if ( clasp_minusp(this->asSmartPtr()) ) {
-	Real_sp x = clasp_negate(this->asSmartPtr())->sqrt().as<Real_O>();
+	Real_sp x = gc::As<Real_sp>(clasp_negate(this->asSmartPtr())->sqrt());
 	return Complex_O::create(SingleFloat_O::create(0.0),x);
     } else {
 	return SingleFloat_O::create(sqrtf(this->as_float_()));
@@ -3131,7 +3130,7 @@ Number_sp SingleFloat_O::sqrt() const
 {
     if ( clasp_minusp(this->asSmartPtr()) ) {
 	Number_sp x = clasp_negate( this->asSmartPtr())->sqrt();
-	return Complex_O::create(SingleFloat_O::create(0.0),x.as<Real_O>());
+	return Complex_O::create(SingleFloat_O::create(0.0),gc::As<Real_sp>(x));
     } else {
 	return SingleFloat_O::create(sqrtf(this->_Value));
     }
@@ -3141,7 +3140,7 @@ Number_sp DoubleFloat_O::sqrt() const
 {
     if ( clasp_minusp(this->asSmartPtr()) ) {
 	Number_sp x = clasp_negate(this->asSmartPtr())->sqrt();
-	return Complex_O::create(DoubleFloat_O::create(0.0),x.as<Real_O>());
+	return Complex_O::create(DoubleFloat_O::create(0.0),gc::As<Real_sp>(x));
     } else {
 	return DoubleFloat_O::create(::sqrt(this->_Value));
     }
@@ -3243,7 +3242,7 @@ Number_sp Complex_O::sin() const
     Number_sp dy = this->_imaginary;
     Number_sp a = brcl_times(dx->sin(), dy->cosh()); //brcl_sin(dx), brcl_cosh(dy));
     Number_sp b = brcl_times(dx->cos(), dy->sinh()); // brcl_cos(dx), brcl_sinh(dy));
-    return Complex_O::create(a.as<Real_O>(),b.as<Real_O>());
+    return Complex_O::create(gc::As<Real_sp>(a),gc::As<Real_sp>(b));
 }
 
 
@@ -3317,7 +3316,7 @@ Number_sp Complex_O::cos() const
     Number_sp dy = this->_imaginary;
     Number_sp a = brcl_times(dx->cos(), dy->cosh()); // brcl_cos(dx), brcl_cosh(dy));
     Number_sp b = brcl_times(clasp_negate(dx->sin()), dy->sinh()); // brcl_negate(brcl_sin(dx)), brcl_sinh(dy));
-    return Complex_O::create(a.as<Real_O>(),b.as<Real_O>()); // brcl_make_complex(a, b);
+    return Complex_O::create(gc::As<Real_sp>(a),gc::As<Real_sp>(b)); // brcl_make_complex(a, b);
 }
 
 
@@ -3468,7 +3467,7 @@ Number_sp Complex_O::sinh() const
     Number_sp dy = this->_imaginary;
     Number_sp a = brcl_times(dx->sinh(), dy->cos()); // brcl_sinh(dx), brcl_cos(dy));
     Number_sp b = brcl_times(dx->cosh(), dy->sin()); // brcl_cosh(dx), brcl_sin(dy));
-    return Complex_O::create(a.as<Real_O>(), b.as<Real_O>()); // brcl_make_complex(a, b);
+    return Complex_O::create(gc::As<Real_sp>(a), gc::As<Real_sp>(b)); // brcl_make_complex(a, b);
 }
 
 
@@ -3541,7 +3540,7 @@ Number_sp Complex_O::cosh() const
     Number_sp dy = this->_imaginary;
     Number_sp a = brcl_times(dx->cosh(), dy->cos()); // brcl_cosh(dx), brcl_cos(dy));
     Number_sp b = brcl_times(dx->sinh(), dy->sin()); // brcl_sinh(dx), brcl_sin(dy));
-    return Complex_O::create(a.as<Real_O>(),b.as<Real_O>()); // brcl_make_complex(a, b);
+    return Complex_O::create(gc::As<Real_sp>(a),gc::As<Real_sp>(b)); // brcl_make_complex(a, b);
 }
 
 
@@ -3656,7 +3655,7 @@ Number_sp Real_O::conjugate() const
 
 Number_sp Complex_O::conjugate() const
 {
-    return Complex_O::create(this->_real,clasp_negate(this->_imaginary).as<Real_O>());
+    return Complex_O::create(this->_real,gc::As<Real_sp>(clasp_negate(this->_imaginary)));
 }
 
 
@@ -3727,9 +3726,9 @@ Number_sp LongFloat_O::exp() const
     {
         Real_sp y, y1;
         y = this->_imaginary;
-        Real_sp x = this->_real->exp().as<Real_O>();
-        y1 = y->cos().as<Real_O>(); // brcl_cos(y);
-        y = y->sin().as<Real_O>(); // brcl_sin(y);
+        Real_sp x = gc::As<Real_sp>(this->_real->exp());
+        y1 = gc::As<Real_sp>(y->cos()); // brcl_cos(y);
+        y = gc::As<Real_sp>(y->sin()); // brcl_sin(y);
         Complex_sp cy = Complex_O::create(y1,y);
         return brcl_times(x, cy);
     }
@@ -3802,7 +3801,7 @@ expt_zero(Number_sp x, Number_sp y)
     Number_sp z;
     ty = clasp_t_of(y);
     tx = clasp_t_of(x);
-    if (brcl_unlikely(!x.isA<Number_O>())) {
+    if (brcl_unlikely(!gc::IsA<Number_sp>(x))) {
 	QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
     }
     /* INV: The most specific numeric types come first. */
@@ -3820,9 +3819,9 @@ expt_zero(Number_sp x, Number_sp y)
 	return _lisp->longFloatOne();
 #endif
     case number_Complex:
-	z = expt_zero((tx == number_Complex)? x.as<Complex_O>()->real().as<Number_O>() : x,
-		      (ty == number_Complex)? y.as<Complex_O>()->real().as<Number_O>() : y);
-	return Complex_O::create(z.as<Real_O>(), brcl_make_fixnum(0));
+	z = expt_zero((tx == number_Complex)? gc::As<Number_sp>(gc::As<Complex_sp>(x)->real()) : x,
+		      (ty == number_Complex)? gc::As<Number_sp>(gc::As<Complex_sp>(y)->real()) : y);
+	return Complex_O::create(gc::As<Real_sp>(z), brcl_make_fixnum(0));
     default:
 	/* We will never reach this */
 	(void)0;
@@ -3840,12 +3839,12 @@ brcl_expt(Number_sp x, Number_sp y)
     }
     ty = clasp_t_of(y);
     tx = clasp_t_of(x);
-    if (brcl_unlikely(!x.isA<Number_O>())) {
+    if (brcl_unlikely(!gc::IsA<Number_sp>(x))) {
 	QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Number_O);
     }
     if (clasp_zerop(x)) {
 	z = brcl_times(x, y);
-	if (!clasp_plusp((ty==number_Complex)?y.as<Complex_O>()->real():y.as<Real_O>()))
+	if (!clasp_plusp((ty==number_Complex)?gc::As<Complex_sp>(y)->real():gc::As<Real_sp>(y)))
 	    z = brcl_divide(brcl_make_fixnum(1), z);
     } else if (ty != number_Fixnum && ty != number_Bignum) {
 	/* The following could be just
@@ -3856,14 +3855,14 @@ brcl_expt(Number_sp x, Number_sp y)
 	z = brcl_log1(brcl_times(x, expt_zero(x, y)));
 	z = brcl_times(z, y);
 	z = cl_exp(z);
-    } else if (clasp_minusp(y.as<Real_O>())) {
+    } else if (clasp_minusp(gc::As<Real_sp>(y))) {
 	z = clasp_negate(y);
 	z = brcl_expt(x, z);
 	z = brcl_divide(brcl_make_fixnum(1), z);
     } else {
 	BRCL_MATHERR_CLEAR;
 	z = brcl_make_fixnum(1);
-	Integer_sp iy = y.as<Integer_O>();
+	Integer_sp iy = gc::As<Integer_sp>(y);
 	do {
 	    /* INV: brcl_integer_divide outputs an integer */
 	    if (!clasp_evenp(iy))
@@ -4049,7 +4048,7 @@ Number_sp brcl_atan1(Number_sp y)
 	/* FIXME brcl_atan() and brcl_atan2() produce generic errors
 	   without recovery and function information. */
 	if (y.nilp()) return brcl_atan1(x);
-	return brcl_atan2(x,y.as<Number_O>());
+	return brcl_atan2(x,gc::As<Number_sp>(y));
     }
 
 /* ----------------------------------------------------------------------
@@ -4083,18 +4082,18 @@ Number_sp brcl_atan1(Number_sp y)
 	    /* if a == p,
 	     * log(sqrt(a^2+p^2)) = log(2a^2)/2
 	     */
-	    a = brcl_times(a, a).as<Real_O>();
-	    a = brcl_divide(brcl_log1(brcl_plus(a, a)), make_fixnum(2)).as<Real_O>();
+	    a = gc::As<Real_sp>(brcl_times(a, a));
+	    a = gc::As<Real_sp>(brcl_divide(brcl_log1(brcl_plus(a, a)), make_fixnum(2)));
 	    goto OUTPUT;
 	}
 	/* For the real part of the output we use the formula
 	 *	log(sqrt(p^2 + a^2)) = log(sqrt(p^2*(1 + (a/p)^2)))
 	 *			     = log(p) + log(1 + (a/p)^2)/2; */
-	a = brcl_divide(a, p).as<Real_O>();
-	a = brcl_plus(brcl_divide(brcl_log1p(brcl_times(a,a)), make_fixnum(2)),
-		      brcl_log1(p)).as<Real_O>();
+	a = gc::As<Real_sp>(brcl_divide(a, p));
+	a = gc::As<Real_sp>(brcl_plus(brcl_divide(brcl_log1p(brcl_times(a,a)), make_fixnum(2)),
+		      brcl_log1(p)));
     OUTPUT:
-	p = brcl_atan2(i, r).as<Real_O>();
+	p = gc::As<Real_sp>(brcl_atan2(i, r));
 	return Complex_O::create(a, p);
     }
 
@@ -4256,7 +4255,7 @@ Number_sp brcl_atan1(Number_sp y)
     Number_sp af_log(Number_sp number, T_sp base)
     {_G();
 	if ( base.nilp() ) return brcl_log1(number);
-	return brcl_log2(base.as<Number_O>(),number);
+	return brcl_log2(gc::As<Number_sp>(base),number);
     }
 
 

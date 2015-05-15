@@ -351,9 +351,9 @@ Pointer_sp Pointer_O::make(core::Number_sp arg)
 {_G();
     if ( af_fixnumP(arg) )
     {
-	if ( sizeof(unbox_fixnum(arg.as<core::Fixnum_O>())) != sizeof(void*) )
+	if ( sizeof(unbox_fixnum(gc::As<core::Fixnum_sp>(arg))) != sizeof(void*) )
 	{
-	    SIMPLE_ERROR(BF("You cannot make a pointer using an integer as the address sizeof(void*)=%d sizeof(Fixnum)=%d") % sizeof(void*) % sizeof(unbox_fixnum(arg.as<core::Fixnum_O>())));
+	    SIMPLE_ERROR(BF("You cannot make a pointer using an integer as the address sizeof(void*)=%d sizeof(Fixnum)=%d") % sizeof(void*) % sizeof(unbox_fixnum(gc::As<core::Fixnum_sp>(arg))));
 	}
 	IMPLEMENT_MEF(BF("Deal with converting Fixnum or Bignum to void*"));
 #if 0
@@ -486,7 +486,7 @@ core::T_sp Pointer_O::PERCENTsetf_mem_ref(core::Symbol_sp atype, core::Cons_sp r
 	value = oCar(rest);
     } else if ( rest->length() == 2 )
     {
-	offset = clasp_to_int(oCar(rest).as<core::Integer_O>());
+	offset = clasp_to_int(gc::As<core::Integer_sp>(oCar(rest)));
 	value = oCadr(rest);
     }
     void* ptr = ((char*)(this->_ptr)+offset);
@@ -494,11 +494,11 @@ core::T_sp Pointer_O::PERCENTsetf_mem_ref(core::Symbol_sp atype, core::Cons_sp r
     {
 	if ( af_characterP(value) )
 	{
-	    *(char*)(ptr) = value.as<core::Character_O>()->asChar();
+	    *(char*)(ptr) = gc::As<core::Character_sp>(value)->asChar();
 	    return value;
 	} else if ( af_integerP(value) )
 	{
-	    core::LongLongInt lli = clasp_to_int(value.as<core::Integer_O>());
+	    core::LongLongInt lli = clasp_to_int(gc::As<core::Integer_sp>(value));
 	    *(char*)(ptr) = lli;
 	    return value;
 	}

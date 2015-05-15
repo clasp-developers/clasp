@@ -124,7 +124,7 @@ namespace core
 	} else {
 	    clasp_write_string("#\\",stream);
 	    if (i < 32 || i >= 127) {
-		Str_sp name = eval::funcall(cl::_sym_char_name,this->const_sharedThis<Character_O>()).as<Str_O>();
+		Str_sp name = gc::As<Str_sp>(eval::funcall(cl::_sym_char_name,this->const_sharedThis<Character_O>()));
 		clasp_write_string(name->get(),stream);
 	    } else {
 		clasp_write_char(i,stream);
@@ -145,7 +145,7 @@ namespace core
 
     void StructureObject_O::__write__(T_sp stream) const
     {
-        if (UNLIKELY(!this->_Type.isA<Symbol_O>()) )
+        if (UNLIKELY(!gc::IsA<Symbol_sp>(this->_Type)) )
 	    SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type name~%  ~S") % _rep_(this->_Type));
 	SYMBOL_EXPORT_SC_(CorePkg,structure_print_function);
 	SYMBOL_EXPORT_SC_(CorePkg,STARprint_structureSTAR);

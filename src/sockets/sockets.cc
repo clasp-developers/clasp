@@ -211,7 +211,7 @@ namespace sockets {
 
 	    for (addrs = hostent->h_addr_list; *addrs != NULL; addrs++) {
 		int pos;
-		Vector_sp vector = eval::funcall(cl::_sym_makeArray,make_fixnum(length)).as<Vector_O>();
+		Vector_sp vector = gc::As<Vector_sp>(eval::funcall(cl::_sym_makeArray,make_fixnum(length)));
 		for (pos = 0; pos < length; pos++)
 		    vector->operator[](pos) = make_fixnum((unsigned char)((*addrs)[pos]));
 		addr_list = Cons_O::create(vector, addr_list);
@@ -267,7 +267,7 @@ namespace sockets {
 
 	    for (addrs = hostent->h_addr_list; *addrs != NULL; addrs++) {
 		int pos;
-		Vector_sp vector = eval::funcall(cl::_sym_makeArray,make_fixnum(length)).as<Vector_O>();
+		Vector_sp vector = gc::As<Vector_sp>(eval::funcall(cl::_sym_makeArray,make_fixnum(length)));
 		for (pos = 0; pos < length; pos++)
 		    vector->setf_elt(pos, make_fixnum((unsigned char)((*addrs)[pos])));
 		addr_list = Cons_O::create(vector, addr_list);
@@ -307,7 +307,7 @@ namespace sockets {
 	len = recvfrom(fd, REINTERPRET_CAST(char*, safe_buffer_pointer(buffer, length)), length, flags, NULL,NULL);
 	brcl_enable_interrupts();
 	if (len >= 0) {
-	    if ( Vector_sp vec = buffer.as<Vector_O>() ) {
+	    if ( Vector_sp vec = gc::As<Vector_sp>(buffer) ) {
 		vec->setFillPointer(len);
 	    } else {
 		SIMPLE_ERROR(BF("Vector must have fill pointer to be socket buffer: %s") % _rep_(vec));
@@ -369,7 +369,7 @@ namespace sockets {
 	if (new_fd != -1) {
 	    uint32_t ip = ntohl(sockaddr.sin_addr.s_addr);
 	    uint16_t port = ntohs(sockaddr.sin_port);
-	    Vector_sp vector = eval::funcall(cl::_sym_makeArray,make_fixnum(4)).as<Vector_O>();
+	    Vector_sp vector = gc::As<Vector_sp>(eval::funcall(cl::_sym_makeArray,make_fixnum(4)));
 	    vector->setf_elt(0, make_fixnum( ip>>24 ));
 	    vector->setf_elt(1, make_fixnum( (ip>>16) & 0xFF));
 	    vector->setf_elt(2, make_fixnum( (ip>>8) & 0xFF));

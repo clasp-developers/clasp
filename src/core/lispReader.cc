@@ -343,7 +343,7 @@ namespace core
 	    LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]")
 		% packageSin.str() % symbolName );
 	    string packageName = packageSin.str();
-	    Package_sp pkg = _lisp->findPackage(packageName,true).as<Package_O>();
+	    Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName,true));
             Symbol_sp sym = pkg->intern(symbolName);
 	    return sym;
 	}
@@ -470,7 +470,7 @@ namespace core
 	while (1)
 	{
 	    SourcePosInfo_sp info = core_inputStreamSourcePosInfo(sin);
-	    Character_sp cp = cl_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()).as<Character_O>();
+	    Character_sp cp = gc::As<Character_sp>(cl_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()));
 	    LOG(BF("read_list ---> peeked char[%s]") % _rep_(cp) );
 	    if ( cp->asChar() == end_char )
 	    {
@@ -503,7 +503,7 @@ namespace core
 		    if ( allow_consing_dot )
 		    {
 			got_dotted = true;
-			Character_sp cdotp = cl_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()).as<Character_O>();
+			Character_sp cdotp = gc::As<Character_sp>(cl_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()));
 			if ( cdotp->asChar() == end_char )
 			{
 			    SIMPLE_ERROR(BF("Nothing after consing dot"));
@@ -635,7 +635,7 @@ namespace core
 	    if ( eofErrorP ) STREAM_ERROR(sin);
 	    return Values(eofValue);
 	}
-	x = tx.as<Character_O>();
+	x = gc::As<Character_sp>(tx);
 	LOG(BF("Reading character x[%s]") % x->asChar() );
 	Symbol_sp x1_syntax_type = readTable->syntax_type(x);
 //    step2:
@@ -667,7 +667,7 @@ namespace core
 	{
 	    LOG(BF("step5 - single-escape-character char[%c]") % x->asChar());
 	    LOG(BF("Handling single escape"));
-	    y = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
+	    y = gc::As<Character_sp>(cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()));
 	    token.clear();
 	    token.push_back(constituentChar(y,TRAIT_ALPHABETIC));
 	    LOG(BF("Read y[%s]") % y->asChar() );
@@ -712,7 +712,7 @@ namespace core
 	    }
 	    if ( y8_syntax_type == kw::_sym_single_escape_character)
 	    {
-		z = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
+		z = gc::As<Character_sp>(cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()));
 		token.push_back(constituentChar(z,TRAIT_ALPHABETIC));
 		LOG(BF("Single escape read z[%s] accumulated token[%s]")
 		    % z->asChar() % tokenStr(token) );
@@ -740,7 +740,7 @@ namespace core
     step9:
 	LOG(BF("step9"));
 	{
-	    y = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
+	    y = gc::As<Character_sp>(cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()));
 	    Symbol_sp y9_syntax_type = readTable->syntax_type(y);
 	    LOG(BF("Step9: Read y[%s] y9_syntax_type[%s]") % y->asChar() % _rep_(y9_syntax_type) );
 	    if ( (y9_syntax_type == kw::_sym_constituent_character)
@@ -759,7 +759,7 @@ namespace core
 		LOG(BF("Handling single_escape_character"));
 		T_sp tz = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_lisp->_true());
 		if ( tz.nilp() ) STREAM_ERROR(sin);
-		z = tz.as<Character_O>();
+		z = gc::As<Character_sp>(tz);
 		token.push_back(constituentChar(z,TRAIT_ALPHABETIC));
 		LOG(BF("Read z[%s] accumulated token[%s]") % z->asChar() % tokenStr(token));
 		goto step9;

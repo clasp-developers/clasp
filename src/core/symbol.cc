@@ -320,7 +320,7 @@ namespace core {
     bool Symbol_O::isKeywordSymbol()
     { 
 	if ( this->_HomePackage.nilp() ) return false;
-	Package_sp pkg = this->_HomePackage.as_or_error<Package_O>([this] () {TYPE_ERROR(this->_HomePackage,cl::_sym_package);});
+	Package_sp pkg = gc::As<Package_sp>(this->_HomePackage); //
 	return pkg->isKeywordPackage();
     };
 
@@ -360,13 +360,9 @@ namespace core {
 
     Symbol_sp Symbol_O::asKeywordSymbol()
     {_OF();
-	if ( this->symbolNameAsString().find(":") != string::npos )
-	{
-	    SIMPLE_ERROR(BF("You are trying to convert the string[%s] into a keyword symbol and it contains colons") % this->symbolNameAsString());
-	}
-	if ( !this->_HomePackage.nilp() )
-	{
-	    if ( this->_HomePackage.as_or_error<Package_O>([this](){TYPE_ERROR(this->_HomePackage,cl::_sym_package);})->isKeywordPackage() ) return this->sharedThis<Symbol_O>();
+	if ( this->_HomePackage.notnilp() ) {
+	    Package_sp pkg = gc::As<Package_sp>(this->_HomePackage);
+	    if ( pkg->isKeywordPackage() ) return this->asSmartPtr();
 	}
 	Symbol_sp kwSymbol = _lisp->internKeyword(this->symbolNameAsString());
 	return kwSymbol;
@@ -516,7 +512,7 @@ namespace core {
 	//#error "Why is this assignment possible?  Translating constructor?????"
 	T_sp myPackage = this->getPackage();
 	if ( myPackage.nilp() ) return false;
-	return myPackage.as<Package_O>()->isExported(this->sharedThis<Symbol_O>());
+	return gc::As<Package_sp>(myPackage)->isExported(this->sharedThis<Symbol_O>());
     }
 
 
@@ -527,7 +523,7 @@ namespace core {
 	    if ( !this->isExported() ) {
 		if ( this->_HomePackage.nilp() )
 		    SIMPLE_ERROR(BF("Cannot export - no package"));
-		Package_sp pkg = this->getPackage().as<Package_O>();
+		Package_sp pkg = gc::As<Package_sp>(this->getPackage());
 		if ( !pkg->isKeywordPackage()) {   
 		    pkg->_export(Cons_O::create(this->asSmartPtr()));
 		}
