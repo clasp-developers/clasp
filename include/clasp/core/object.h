@@ -733,7 +733,7 @@ namespace core
 	/*! Return true iff the two objects are the same object.
 	 * Meaning their memory addresses are identical
 	 */
-	inline bool eq(T_sp obj) const { return this == obj.get(); };
+	inline bool eq(T_sp obj) const { return obj.objectp()&&(this == obj.get()); };
 	/*! Return true if the two objects are the same object.
 	 * If they aren't the same object for numbers and values
 	 * the values are compared.

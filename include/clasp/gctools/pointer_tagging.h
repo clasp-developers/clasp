@@ -215,7 +215,7 @@ namespace gctools {
     }
     template <class T> inline Fixnum untag_fixnum(T const ptr)  {
 	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&fixnum_mask)==0);
-	return (Fixnum)(reinterpret_cast<uintptr_t>(ptr)>>fixnum_shift);
+	return (Fixnum)(reinterpret_cast<Fixnum>(ptr)>>fixnum_shift);
     }
     template <class T> inline bool tagged_fixnump(T ptr) {
 	return ((reinterpret_cast<uintptr_t>(ptr)&fixnum_mask)==fixnum_tag);};

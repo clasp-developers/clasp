@@ -3121,7 +3121,7 @@ namespace llvmo
 	    {
 		SIMPLE_ERROR(BF("You tried to create an unsigned APInt32 with the negative value: %d") % unbox_fixnum(fixnum_value) );
 	    }
-	    apint = llvm::APInt(width,clasp_to_int(fixnum_value),sign);
+	    apint = llvm::APInt(width,clasp_to_fixnum(fixnum_value),sign);
 	    numbits = gc::fixnum_bits;
 	} else {
 	    // It's a bignum so lets convert the bignum to a string and put it into an APInt
