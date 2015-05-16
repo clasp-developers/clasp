@@ -49,125 +49,110 @@ THE SOFTWARE.
 #include <clasp/core/num_arith.h>
 #include <clasp/core/wrappers.h>
 
-
 namespace core {
 
-
-    SYMBOL_EXPORT_SC_(CorePkg,integer_divide);
-    Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y)
-    {
-	NumberType tx, ty;
-	tx = clasp_t_of(x);
-	ty = clasp_t_of(y);
-	if (tx == number_Fixnum) {
-	    if (ty == number_Fixnum) {
-		if (y.unsafe_fixnum() == 0)
-		    ERROR_DIVISION_BY_ZERO(x,y);
-		return (clasp_make_fixnum(clasp_fixnum(x) / clasp_fixnum(y)));
-	    } else if (ty == number_Bignum) {
-		return _clasp_fix_divided_by_big(clasp_fixnum(x), gc::As<Bignum_sp>(y)->get());
-	    } else {
-		ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide,2,y,cl::_sym_Integer_O);
-	    }
-	}
-	if (tx == number_Bignum) {
-	    if (ty == number_Bignum) {
-		return _clasp_big_divided_by_big(gc::As<Bignum_sp>(x)->get(), gc::As<Bignum_sp>(y)->get());
-	    } else if (ty == number_Fixnum) {
-		return _clasp_big_divided_by_fix(gc::As<Bignum_sp>(x)->get(), clasp_fixnum(y));
-	    } else {
-		QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Integer_O);
-	    }
-	}
-	ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide,1,x,cl::_sym_Integer_O);
-	UNREACHABLE();
+SYMBOL_EXPORT_SC_(CorePkg, integer_divide);
+Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
+  NumberType tx, ty;
+  tx = clasp_t_of(x);
+  ty = clasp_t_of(y);
+  if (tx == number_Fixnum) {
+    if (ty == number_Fixnum) {
+      if (y.unsafe_fixnum() == 0)
+        ERROR_DIVISION_BY_ZERO(x, y);
+      return (clasp_make_fixnum(clasp_fixnum(x) / clasp_fixnum(y)));
+    } else if (ty == number_Bignum) {
+      return _clasp_fix_divided_by_big(clasp_fixnum(x), gc::As<Bignum_sp>(y)->get());
+    } else {
+      ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide, 2, y, cl::_sym_Integer_O);
     }
+  }
+  if (tx == number_Bignum) {
+    if (ty == number_Bignum) {
+      return _clasp_big_divided_by_big(gc::As<Bignum_sp>(x)->get(), gc::As<Bignum_sp>(y)->get());
+    } else if (ty == number_Fixnum) {
+      return _clasp_big_divided_by_fix(gc::As<Bignum_sp>(x)->get(), clasp_fixnum(y));
+    } else {
+      QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_Integer_O);
+    }
+  }
+  ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide, 1, x, cl::_sym_Integer_O);
+  UNREACHABLE();
+}
 
-
-
-    
-    
 #define ARGS_cl_gcd "(&rest nums)"
 #define DECL_cl_gcd ""
 #define DOCS_cl_gcd "gcd"
-    Integer_sp cl_gcd(List_sp nums)
-    {_G();
-	if (nums.nilp())
-	    return clasp_make_fixnum(0);
-	/* INV: clasp_gcd() checks types */
-	Integer_sp gcd = gc::As<Integer_sp>(oCar(nums));
-	nums = oCdr(nums);
-	if (nums.nilp()) {
-	    return (clasp_minusp(gcd) ? gc::As<Integer_sp>(clasp_negate(gcd)) : gcd);
-	}
-	while (nums.consp()) {
-	    gcd = clasp_gcd(gcd, gc::As<Integer_sp>(oCar(nums)));
-	    nums = oCdr(nums);
-	}
-	return gcd;
-    }
+Integer_sp cl_gcd(List_sp nums) {
+  _G();
+  if (nums.nilp())
+    return clasp_make_fixnum(0);
+  /* INV: clasp_gcd() checks types */
+  Integer_sp gcd = gc::As<Integer_sp>(oCar(nums));
+  nums = oCdr(nums);
+  if (nums.nilp()) {
+    return (clasp_minusp(gcd) ? gc::As<Integer_sp>(clasp_negate(gcd)) : gcd);
+  }
+  while (nums.consp()) {
+    gcd = clasp_gcd(gcd, gc::As<Integer_sp>(oCar(nums)));
+    nums = oCdr(nums);
+  }
+  return gcd;
+}
 
-    Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx)
-    {
-	switch (clasp_t_of(x)) {
-	case number_Fixnum: {
-	    Bignum_sp big(Bignum_O::create(clasp_fixnum(x)));
-	    x = big;
-	}
-	case number_Bignum:
-	    break;
-	default:
-	    QERROR_WRONG_TYPE_NTH_ARG(yidx,x,cl::_sym_Integer_O);
-	}
-	switch (clasp_t_of(y)) {
-	case number_Fixnum: {
-	    Bignum_sp big(Bignum_O::create(clasp_fixnum(y)));
-	    y = big;
-	}
-	case number_Bignum:
-	    break;
-	default:
-	    QERROR_WRONG_TYPE_NTH_ARG(1+yidx,y,cl::_sym_Integer_O);
-        }
-        return _clasp_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y));
-    }
+Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
+  switch (clasp_t_of(x)) {
+  case number_Fixnum: {
+    Bignum_sp big(Bignum_O::create(clasp_fixnum(x)));
+    x = big;
+  }
+  case number_Bignum:
+    break;
+  default:
+    QERROR_WRONG_TYPE_NTH_ARG(yidx, x, cl::_sym_Integer_O);
+  }
+  switch (clasp_t_of(y)) {
+  case number_Fixnum: {
+    Bignum_sp big(Bignum_O::create(clasp_fixnum(y)));
+    y = big;
+  }
+  case number_Bignum:
+    break;
+  default:
+    QERROR_WRONG_TYPE_NTH_ARG(1 + yidx, y, cl::_sym_Integer_O);
+  }
+  return _clasp_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y));
+}
 
-
-
-
-    
-    
 #define ARGS_cl_lcm "(&rest args)"
 #define DECL_cl_lcm ""
 #define DOCS_cl_lcm "lcm"
-    Integer_sp cl_lcm(List_sp nums)
-    {_G();
-	if (nums.nilp())
-	    return clasp_make_fixnum(1);
-	/* INV: clasp_gcd() checks types. By placing `numi' before `lcm' in
+Integer_sp cl_lcm(List_sp nums) {
+  _G();
+  if (nums.nilp())
+    return clasp_make_fixnum(1);
+  /* INV: clasp_gcd() checks types. By placing `numi' before `lcm' in
 	   this call, we make sure that errors point to `numi' */
-	Integer_sp lcm = gc::As<Integer_sp>(oCar(nums));
-	int yidx=1;
-	nums = oCdr(nums);
-	while (nums.consp()) {
-	    Integer_sp numi = gc::As<Integer_sp>(oCar(nums));
-	    nums = oCdr(nums);
-	    yidx++;
-	    Number_sp t = clasp_times(lcm, numi);
-	    Number_sp g = clasp_gcd(numi, lcm);
-	    if (!clasp_zerop(g)) {
-		lcm = gc::As<Integer_sp>(clasp_divide(t, g));
-	    }
-	}
-	return clasp_minusp(lcm) ? gc::As<Integer_sp>(clasp_negate(lcm)) : gc::As<Integer_sp>(lcm);
-    };
+  Integer_sp lcm = gc::As<Integer_sp>(oCar(nums));
+  int yidx = 1;
+  nums = oCdr(nums);
+  while (nums.consp()) {
+    Integer_sp numi = gc::As<Integer_sp>(oCar(nums));
+    nums = oCdr(nums);
+    yidx++;
+    Number_sp t = clasp_times(lcm, numi);
+    Number_sp g = clasp_gcd(numi, lcm);
+    if (!clasp_zerop(g)) {
+      lcm = gc::As<Integer_sp>(clasp_divide(t, g));
+    }
+  }
+  return clasp_minusp(lcm) ? gc::As<Integer_sp>(clasp_negate(lcm)) : gc::As<Integer_sp>(lcm);
+};
 
-
-    void initialize_num_arith()
-    {
-	SYMBOL_EXPORT_SC_(ClPkg,gcd);
-	ClDefun(gcd);
-	SYMBOL_EXPORT_SC_(ClPkg,lcm);
-	ClDefun(lcm);
-    };
+void initialize_num_arith() {
+  SYMBOL_EXPORT_SC_(ClPkg, gcd);
+  ClDefun(gcd);
+  SYMBOL_EXPORT_SC_(ClPkg, lcm);
+  ClDefun(lcm);
+};
 };

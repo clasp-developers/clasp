@@ -10,4 +10,4 @@ eval $(perl -ne 'if (/^export\s+[A-Z_]+ /) {s/\$\K\((.*?)\)/{$1}/g;s/\s+=\s+/=/;
 # Hackety hack hack
 git ls-files src/ include/ \
 	| perl -ne 'chomp;print "$_\n" if -f $_ and (/\.[hc][hcp]?p?$/) and not -l;' \
-	| xargs -P$PJOBS -n1 --verbose ${EXTERNALS_SOURCE_DIR}/build/release/bin/clang-format -i
+	| xargs -P$PJOBS -n1 ${EXTERNALS_SOURCE_DIR}/build/release/bin/clang-format -i

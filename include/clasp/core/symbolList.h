@@ -24,12 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-       
-       
+
 //
 // (C) 2004 Christian E. Schafmeister
 //
-
 
 #ifndef SymbolList_H
 #define SymbolList_H
@@ -40,10 +38,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
-
-
 namespace core {
-
 
 SMART(Residue);
 SMART(SymbolSet);
@@ -53,55 +48,53 @@ SMART(SymbolList);
 	A class that stores a set of strings
 */
 SMART(SymbolList);
-class SymbolList_O : public T_O
-{
-    LISP_BASE1(T_O);
-    LISP_CLASS(core,CorePkg,SymbolList_O,"SymbolList");
+class SymbolList_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_CLASS(core, CorePkg, SymbolList_O, "SymbolList");
+
 public:
 #if defined(XML_ARCHIVE)
-	void	archiveBase(ArchiveP node);
+  void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 GCPRIVATE:
-    gctools::Vec0<Symbol_sp>	_Contents;
+  gctools::Vec0<Symbol_sp> _Contents;
+
 public:
-    typedef	gctools::Vec0<Symbol_sp>::iterator	iterator;
-    typedef	gctools::Vec0<Symbol_sp>::const_iterator	const_iterator;
+  typedef gctools::Vec0<Symbol_sp>::iterator iterator;
+  typedef gctools::Vec0<Symbol_sp>::const_iterator const_iterator;
 
-    iterator begin() { return this->_Contents.begin();};
-    iterator end() { return this->_Contents.end();};
-    const_iterator begin() const { return this->_Contents.begin();};
-    const_iterator end() const { return this->_Contents.end();};
+  iterator begin() { return this->_Contents.begin(); };
+  iterator end() { return this->_Contents.end(); };
+  const_iterator begin() const { return this->_Contents.begin(); };
+  const_iterator end() const { return this->_Contents.end(); };
 
-	int	size() { return this->_Contents.size(); };
-	void	prepend(Symbol_sp s);
-	void	append(Symbol_sp s);
-	void	appendSymbolList(SymbolList_sp strings);
-	void	appendConsOfStrings(List_sp strings);
+  int size() { return this->_Contents.size(); };
+  void prepend(Symbol_sp s);
+  void append(Symbol_sp s);
+  void appendSymbolList(SymbolList_sp strings);
+  void appendConsOfStrings(List_sp strings);
 
-	bool	contains(Symbol_sp nm);
-	int	indexOf(Symbol_sp nm);
-	Symbol_sp get(uint i) {_G(); ASSERT_lt(i,this->_Contents.size()); return this->_Contents[i];};
-	void	clear();
+  bool contains(Symbol_sp nm);
+  int indexOf(Symbol_sp nm);
+  Symbol_sp get(uint i) {
+    _G();
+    ASSERT_lt(i, this->_Contents.size());
+    return this->_Contents[i];
+  };
+  void clear();
 
-	void	setFromVectorStrings( VectorStrings vs);
-	string	asString();
+  void setFromVectorStrings(VectorStrings vs);
+  string asString();
 
-	SymbolSet_sp asStringSet();
+  SymbolSet_sp asStringSet();
 
+  void map(std::function<void(Symbol_sp)> const &fn);
 
-	void map(std::function<void(Symbol_sp)> const& fn);
+  SymbolList_O(const SymbolList_O &ss); //!< Copy constructor
 
-	SymbolList_O( const SymbolList_O& ss ); //!< Copy constructor
-
-	DEFAULT_CTOR_DTOR(SymbolList_O);
+  DEFAULT_CTOR_DTOR(SymbolList_O);
 };
-
-
-
-
-
 };
-
 
 TRANSLATE(core::SymbolList_O);
 #endif

@@ -32,44 +32,36 @@ THE SOFTWARE.
 #include <clasp/core/executables.h>
 #include <clasp/core/singleDispatchEffectiveMethodFunction.fwd.h>
 
+namespace core {
+class SingleDispatchEffectiveMethodFunction_O : public Function_O {
+  LISP_BASE1(Function_O);
+  LISP_CLASS(core, CorePkg, SingleDispatchEffectiveMethodFunction_O, "SingleDispatchEffectiveMethodFunction");
+  DECLARE_INIT();
+  //    DECLARE_ARCHIVE();
+public: // Simple default ctor/dtor
+  DEFAULT_CTOR_DTOR(SingleDispatchEffectiveMethodFunction_O);
 
+public: // ctor/dtor for classes with shared virtual base
+        //    explicit SingleDispatchEffectiveMethodFunction_O(core::Class_sp const& mc) : T_O(mc), T(mc) {};
+        //    virtual ~SingleDispatchEffectiveMethodFunction_O() {};
+public:
+  static SingleDispatchEffectiveMethodFunction_sp create(List_sp methods);
 
-namespace core
-{
-    class SingleDispatchEffectiveMethodFunction_O : public Function_O
-    {
-	LISP_BASE1(Function_O);
-	LISP_CLASS(core,CorePkg,SingleDispatchEffectiveMethodFunction_O,"SingleDispatchEffectiveMethodFunction");
-	DECLARE_INIT();
-//    DECLARE_ARCHIVE();
-    public: // Simple default ctor/dtor
-	DEFAULT_CTOR_DTOR(SingleDispatchEffectiveMethodFunction_O);
-    public: // ctor/dtor for classes with shared virtual base
-//    explicit SingleDispatchEffectiveMethodFunction_O(core::Class_sp const& mc) : T_O(mc), T(mc) {};
-//    virtual ~SingleDispatchEffectiveMethodFunction_O() {};
-    public:
-	static SingleDispatchEffectiveMethodFunction_sp create(List_sp methods);
-    public:
-	void initialize();
-	
-    GCPRIVATE: // instance variables here
-	List_sp	_Methods;
+public:
+  void initialize();
 
-    private:
-	void LISP_INVOKE();
-	
-    public: // Functions here
+GCPRIVATE: // instance variables here
+  List_sp _Methods;
 
-	string __repr__() const;
+private:
+  void LISP_INVOKE();
 
+public: // Functions here
+  string __repr__() const;
 
-    }; // SingleDispatchEffectiveMethodFunction class
-    
+}; // SingleDispatchEffectiveMethodFunction class
+
 }; // core namespace
 TRANSLATE(core::SingleDispatchEffectiveMethodFunction_O);
-
-
-
-
 
 #endif // _core_singleDispatchEffectiveMethodFunction_H_

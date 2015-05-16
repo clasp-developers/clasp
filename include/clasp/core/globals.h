@@ -25,18 +25,15 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#ifndef	globals_H
-#define	globals_H
+#ifndef globals_H
+#define globals_H
 
 #include <clasp/core/foundation.h>
 
-namespace core
-{
+namespace core {
 
 /*! Used in lisp.cc to keep track of new predefined symbols
  */
-extern	uint	__nextPredefinedSymbolIndex;
-
-
+extern uint __nextPredefinedSymbolIndex;
 };
 #endif

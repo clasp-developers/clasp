@@ -24,82 +24,73 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_ArrayDisplaced_H
+#ifndef _core_ArrayDisplaced_H
 #define _core_ArrayDisplaced_H
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/array.h>
 #include <clasp/core/corePackage.fwd.h>
 
-namespace core
-{
+namespace core {
 
 FORWARD(ArrayDisplaced);
-class ArrayDisplaced_O : public Array_O
-{
-    LISP_BASE1(Array_O);
-    LISP_CLASS(core,CorePkg,ArrayDisplaced_O,"ArrayDisplaced");
+class ArrayDisplaced_O : public Array_O {
+  LISP_BASE1(Array_O);
+  LISP_CLASS(core, CorePkg, ArrayDisplaced_O, "ArrayDisplaced");
 #if defined(XML_ARCHIVE)
-    DECLARE_ARCHIVE();
+  DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
 #if defined(OLD_SERIALIZE)
-    DECLARE_SERIALIZE();
+  DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)
- public:
-    explicit ArrayDisplaced_O() : Base() {};
-    virtual ~ArrayDisplaced_O() {};
- public:
-    void initialize();
+public:
+  explicit ArrayDisplaced_O() : Base(){};
+  virtual ~ArrayDisplaced_O(){};
 
- GCPRIVATE: // instance variables here
-    vector<int>			_Dimensions;
-    T_sp   _ElementType;
-    Array_sp _Array;
-    int    _DisplacedIndexOffset;
- public: // Functions here
-    static ArrayDisplaced_sp make(T_sp dim, T_sp elementType,T_sp displacedTo, int displacedOffset );
+public:
+  void initialize();
 
- public:
-    virtual T_sp asetUnsafe(int j, T_sp val);
-    T_sp elementType() const { return this->_Array->elementType();};
+GCPRIVATE: // instance variables here
+  vector<int> _Dimensions;
+  T_sp _ElementType;
+  Array_sp _Array;
+  int _DisplacedIndexOffset;
 
-    virtual void rowMajorAset( int idx, T_sp value);
-    virtual T_sp rowMajorAref(int idx) const;
+public: // Functions here
+  static ArrayDisplaced_sp make(T_sp dim, T_sp elementType, T_sp displacedTo, int displacedOffset);
 
-    virtual T_mv arrayDisplacement() const;
-    virtual int rank() const { return this->_Dimensions.size();};
+public:
+  virtual T_sp asetUnsafe(int j, T_sp val);
+  T_sp elementType() const { return this->_Array->elementType(); };
 
-    virtual int arrayDimension(int axisNumber) const;
+  virtual void rowMajorAset(int idx, T_sp value);
+  virtual T_sp rowMajorAref(int idx) const;
 
-    LongLongInt setDimensions(List_sp dims,T_sp initialElement);
+  virtual T_mv arrayDisplacement() const;
+  virtual int rank() const { return this->_Dimensions.size(); };
 
-    void setElementType(T_sp et) { this->_ElementType = et;};
-    /*! Return the value at the indices */
-    virtual T_sp aref(List_sp indices) const;
+  virtual int arrayDimension(int axisNumber) const;
 
-    /*! Return the value at the indices */
-    virtual T_sp setf_aref(List_sp indices_val);
+  LongLongInt setDimensions(List_sp dims, T_sp initialElement);
 
+  void setElementType(T_sp et) { this->_ElementType = et; };
+  /*! Return the value at the indices */
+  virtual T_sp aref(List_sp indices) const;
 
-    /*! Return a shallow copy of this object */
-    virtual T_sp shallowCopy() const;
+  /*! Return the value at the indices */
+  virtual T_sp setf_aref(List_sp indices_val);
 
-    /*! Return the value at the indices */
-    virtual void arrayFill(T_sp val);
+  /*! Return a shallow copy of this object */
+  virtual T_sp shallowCopy() const;
 
+  /*! Return the value at the indices */
+  virtual void arrayFill(T_sp val);
 
-    /*! Return a deepCopy of the ArrayDisplaced */
-    virtual T_sp deepCopy() const;
+  /*! Return a deepCopy of the ArrayDisplaced */
+  virtual T_sp deepCopy() const;
 
-
-
-    virtual T_sp svref(int index) const;
-    virtual T_sp setf_svref(int index, T_sp value);
-
-
-
-
-
+  virtual T_sp svref(int index) const;
+  virtual T_sp setf_svref(int index, T_sp value);
 };
 
 }; /* core */

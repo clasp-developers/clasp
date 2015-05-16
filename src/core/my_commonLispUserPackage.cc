@@ -33,29 +33,22 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/package.h>
 
-namespace cluser
-{
+namespace cluser {
 
-    core::Package_sp globalCommonLispUserPkg;
-
+core::Package_sp globalCommonLispUserPkg;
 
 #pragma GCC visibility push(default)
 #define CommonLispUserPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname;
+#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
 #include <clasp/core/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CommonLispUserPkg_SYMBOLS
 #pragma GCC visibility pop
 
-
-
-    void initialize_commonLispUserPackage()
-    {
-	list<string> lnicknames = {"CL-USER", "USER"};
-	list<string> luse = { "CL" };
-	globalCommonLispUserPkg = _lisp->makePackage("COMMON-LISP-USER",lnicknames,luse);
-	// We don't have to create the COMMONLISPUSER symbols here - it's done in bootStrapCoreSymbolMap
-    }
-
-
+void initialize_commonLispUserPackage() {
+  list<string> lnicknames = {"CL-USER", "USER"};
+  list<string> luse = {"CL"};
+  globalCommonLispUserPkg = _lisp->makePackage("COMMON-LISP-USER", lnicknames, luse);
+  // We don't have to create the COMMONLISPUSER symbols here - it's done in bootStrapCoreSymbolMap
+}
 };

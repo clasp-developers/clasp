@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_write_symbol_H
+#ifndef _core_write_symbol_H
 #define _core_write_symbol_H
 
 #include <clasp/core/object.h>
@@ -32,10 +32,8 @@ THE SOFTWARE.
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/wrappers.h>
 
-namespace core
-{
+namespace core {
 
-    void clasp_write_symbol(Symbol_sp x, T_sp stream);
-
+void clasp_write_symbol(Symbol_sp x, T_sp stream);
 };
 #endif

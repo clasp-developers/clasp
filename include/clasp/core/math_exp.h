@@ -31,11 +31,10 @@ THE SOFTWARE.
 
 namespace core {
 
-    Number_sp clasp_exp(Number_sp x);
+Number_sp clasp_exp(Number_sp x);
 
+Number_sp af_exp(Number_sp x, Number_sp y);
 
-    Number_sp af_exp(Number_sp x, Number_sp y);
-
-    void initialize_math_exp();
+void initialize_math_exp();
 };
 #endif

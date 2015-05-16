@@ -26,21 +26,16 @@ THE SOFTWARE.
 /* -^- */
 #ifndef character_fwd_H
 #define character_fwd_H
-namespace core
-{
+namespace core {
 
- bool clasp_charEqual2(T_sp x, T_sp y);
+bool clasp_charEqual2(T_sp x, T_sp y);
 
-
-
-    struct CharacterInfo  {
-        map<string,int>                 gNamesToCharacterIndex;
-        gctools::Vec0<T_sp>             gIndexedCharacters;
-        gctools::Vec0<T_sp>		gCharacterNames;
-        const char* repr() const { return "CharacterInfo";};
-	CharacterInfo(); 
-    };
-
-
+struct CharacterInfo {
+  map<string, int> gNamesToCharacterIndex;
+  gctools::Vec0<T_sp> gIndexedCharacters;
+  gctools::Vec0<T_sp> gCharacterNames;
+  const char *repr() const { return "CharacterInfo"; };
+  CharacterInfo();
+};
 }
 #endif

@@ -32,14 +32,14 @@ THE SOFTWARE.
 // All class forward declarations
 //
 namespace core {
-    class T_O;
-    class WrappedPointer_O;
-    class Functoid;
-    class Creator;
-    class Iterator_O;
+class T_O;
+class WrappedPointer_O;
+class Functoid;
+class Creator;
+class Iterator_O;
 };
 namespace clbind {
-    class ConstructorCreator;
+class ConstructorCreator;
 };
 
 #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
@@ -50,9 +50,6 @@ namespace clbind {
 #endif
 #endif // ifndef RUNNING_GC_BUILDER
 
-
-
-
 namespace gctools {
 
 #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
@@ -62,7 +59,5 @@ namespace gctools {
 #undef GC_KIND_SELECTORS
 #endif
 #endif // ifndef RUNNING_GC_BUILDER
-
-
 };
 #endif

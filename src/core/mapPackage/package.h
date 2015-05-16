@@ -24,10 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	Package_H //[
+#ifndef Package_H //[
 #define Package_H
-
-
 
 #include <stdio.h>
 #include <string>
@@ -41,126 +39,120 @@ THE SOFTWARE.
 
 namespace core {
 
+SMART(Package);
+class Package_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_CLASS(CorePkg, Package_O, "Package");
+  DECLARE_INIT();
 
-    SMART(Package );
-    class Package_O : public T_O
-    {
-	LISP_BASE1(T_O);
-	LISP_CLASS(CorePkg,Package_O,"Package");
-	DECLARE_INIT();
 public: // virtual functions inherited from Object
-	void	initialize();
-	void	archiveBase(ArchiveP node);
-	string	__repr__() const;
+  void initialize();
+  void archiveBase(ArchiveP node);
+  string __repr__() const;
 
 private: // instance variables
-	string		_Name;
-	StringMap<Symbol_O>	_InternalSymbols;
-	StringMap<Symbol_O>	_ExternalSymbols;
-	StringMap<Symbol_O>	_ShadowingSymbols;
-	Set<Package_O>	_UsingPackages;
-	bool		_KeywordPackage;
-	bool		_AmpPackage;
+  string _Name;
+  StringMap<Symbol_O> _InternalSymbols;
+  StringMap<Symbol_O> _ExternalSymbols;
+  StringMap<Symbol_O> _ShadowingSymbols;
+  Set<Package_O> _UsingPackages;
+  bool _KeywordPackage;
+  bool _AmpPackage;
 
 public:
-	typedef StringMap<Symbol_O>::iterator	symbolIterator;
-	typedef StringMap<Symbol_O>::const_iterator	const_symbolIterator;
-public:	// Creation class functions
-    static Package_sp create(Lisp_sp e,const string& p);
-    public:
-	/*! Very low level - add to internal symbols unless keyword
+  typedef StringMap<Symbol_O>::iterator symbolIterator;
+  typedef StringMap<Symbol_O>::const_iterator const_symbolIterator;
+
+public: // Creation class functions
+  static Package_sp create(Lisp_sp e, const string &p);
+
+public:
+  /*! Very low level - add to internal symbols unless keyword
 	  package, in that case add to external symbols */
-	void _add_symbol_to_package(Symbol_sp sym);
+  void _add_symbol_to_package(Symbol_sp sym);
 
 public:
+  bool packageP() const { return this->notNil(); };
 
-	bool packageP() const {return this->notNil();};
+  string packageName() const { return this->_Name; };
 
-	string packageName() const { return this->_Name;};
+  symbolIterator beginExternals() { return this->_ExternalSymbols.begin(); };
+  symbolIterator endExternals() { return this->_ExternalSymbols.end(); };
 
-	symbolIterator beginExternals() { return this->_ExternalSymbols.begin();};
-	symbolIterator endExternals() { return this->_ExternalSymbols.end();};
+  const_symbolIterator beginExternals() const { return this->_ExternalSymbols.begin(); };
+  const_symbolIterator endExternals() const { return this->_ExternalSymbols.end(); };
 
-	const_symbolIterator beginExternals() const { return this->_ExternalSymbols.begin();};
-	const_symbolIterator endExternals() const { return this->_ExternalSymbols.end();};
+  symbolIterator beginInternals() { return this->_InternalSymbols.begin(); };
+  symbolIterator endInternals() { return this->_InternalSymbols.end(); };
 
-	symbolIterator beginInternals() { return this->_InternalSymbols.begin();};
-	symbolIterator endInternals() { return this->_InternalSymbols.end();};
+  const_symbolIterator beginInternals() const { return this->_InternalSymbols.begin(); };
+  const_symbolIterator endInternals() const { return this->_InternalSymbols.end(); };
 
-	const_symbolIterator beginInternals() const { return this->_InternalSymbols.begin();};
-	const_symbolIterator endInternals() const { return this->_InternalSymbols.end();};
+  void setKeywordPackage(bool b) { this->_KeywordPackage = b; };
+  bool isKeywordPackage() { return this->_KeywordPackage; };
 
-	void setKeywordPackage(bool b) { this->_KeywordPackage = b;};
-	bool isKeywordPackage() { return this->_KeywordPackage;};
+  string allSymbols();
 
-	string allSymbols();
+  /*! support for CLHS::shadow */
+  bool shadow(Cons_sp listOfSymbolNames);
 
-	/*! support for CLHS::shadow */
-	bool shadow(Cons_sp listOfSymbolNames);
+  bool areThereNameCollisions(Package_sp otherPackage);
 
-	bool areThereNameCollisions(Package_sp otherPackage);
+  string getName() { return this->_Name; };
+  void setName(const string &n) { this->_Name = n; };
 
-	string getName() { return this->_Name; };
-	void setName(const string& n) { this->_Name = n; };
+  bool isExported(Symbol_sp sym);
 
-	bool isExported(Symbol_sp sym);
+  /*! See CLHS:export function */
+  void _export(Cons_sp listOfSymbols);
 
-	/*! See CLHS:export function */
-	void _export(Cons_sp listOfSymbols);
+  /*! Return the symbol if we contain it directly */
+  MultipleValues_sp findSymbolDirectlyContained(const string &symbolName);
 
-	/*! Return the symbol if we contain it directly */
-	MultipleValues_sp findSymbolDirectlyContained(const string& symbolName);
-
-		/*! Return the Smbol if we contain it 
+  /*! Return the Smbol if we contain it 
 		 * and return nil if we don't
 		 */
-	MultipleValues_sp findSymbol(const string& symbolName);
+  MultipleValues_sp findSymbol(const string &symbolName);
 
-
-		/*! Return the Symbol if we contain it 
+  /*! Return the Symbol if we contain it 
 		 * and create it and return it if we don't
 		 */
-	MultipleValues_sp intern(const string& symbolName);
+  MultipleValues_sp intern(const string &symbolName);
 
-	/*! Remove the symbol from the package */
-	bool unintern(Symbol_sp sym );
+  /*! Remove the symbol from the package */
+  bool unintern(Symbol_sp sym);
 
-	Cons_sp packageUseList();
+  Cons_sp packageUseList();
 
-	/*! Import the symbols into this package - see CLHS */
-	void import( Cons_sp symbols );
+  /*! Import the symbols into this package - see CLHS */
+  void import(Cons_sp symbols);
 
-	/*! Shadow import the symbols into this package - see CLHS */
-	void shadowingImport( Cons_sp listOfSymbols );
+  /*! Shadow import the symbols into this package - see CLHS */
+  void shadowingImport(Cons_sp listOfSymbols);
 
-	/*! Return a list of all shadowing symbols */
-	Cons_sp shadowingSymbols() const;
+  /*! Return a list of all shadowing symbols */
+  Cons_sp shadowingSymbols() const;
 
-
-		/*! Use the package, if there are any overlapping symbols
+  /*! Use the package, if there are any overlapping symbols
 		 * then don't use the package and return false.
 		 * If you use the package return true.
 		 */
-	bool usePackage(Package_sp usePackage);
+  bool usePackage(Package_sp usePackage);
 
-	/*! Dump all the symbols to stdout */
-	void dumpSymbols();
+  /*! Dump all the symbols to stdout */
+  void dumpSymbols();
 
+  /*! Map over the External key/value pairs */
+  void mapExternals(KeyValueMapper *mapper);
 
-	/*! Map over the External key/value pairs */
-	void mapExternals(KeyValueMapper* mapper);
-
-	/*! Map over the Internal key/value pairs */
-	void mapInternals(KeyValueMapper* mapper);
-
+  /*! Map over the Internal key/value pairs */
+  void mapInternals(KeyValueMapper *mapper);
 
 public:
-	Package_O( const Package_O& ss ); //!< Copy constructor
+  Package_O(const Package_O &ss); //!< Copy constructor
 
-	DEFAULT_CTOR_DTOR(Package_O);
-    };
-
-
+  DEFAULT_CTOR_DTOR(Package_O);
+};
 };
 TRANSLATE(core::Package_O);
 #endif //]

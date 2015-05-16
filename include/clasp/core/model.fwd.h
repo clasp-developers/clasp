@@ -26,10 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #ifndef model_fwd_H
 #define model_fwd_H
-namespace core
-{
+namespace core {
 FORWARD(Model);
-
-
 }
 #endif

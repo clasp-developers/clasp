@@ -25,7 +25,6 @@ THE SOFTWARE.
 */
 /* -^- */
 
-
 #if 0
 inline T_sp ocar(T_sp obj) {
 	if (obj.nilp()) return _Nil<T_O>();

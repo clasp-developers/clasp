@@ -24,10 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	Special_H //[
+#ifndef Special_H //[
 #define Special_H
-
-
 
 #include <stdio.h>
 #include <string>
@@ -37,43 +35,38 @@ THE SOFTWARE.
 #include <clasp/core/executables.h>
 #include <clasp/core/object.h>
 
-
 namespace core {
 
+SMART(SpecialForm);
+class SpecialForm_O : public Function_O {
+  LISP_BASE1(Function_O);
+  LISP_CLASS(core, CorePkg, SpecialForm_O, "SpecialForm");
+  DECLARE_INIT();
 
-
-    SMART(SpecialForm );
-    class SpecialForm_O : public Function_O
-    {
-	LISP_BASE1(Function_O);
-	LISP_CLASS(core,CorePkg,SpecialForm_O,"SpecialForm");
-	DECLARE_INIT();
 public: // virtual functions inherited from Object
-	void	initialize();
+  void initialize();
 #if defined(XML_ARCHIVE)
-	void	archiveBase(ArchiveP node);
+  void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 //	string	__repr__() const;
 
 GCPRIVATE: // instance variables
-	Symbol_sp		_SpecialSymbol;
-	SpecialFormCallback	_fptr;
+  Symbol_sp _SpecialSymbol;
+  SpecialFormCallback _fptr;
+
 public:
-    static SpecialForm_sp create(Symbol_sp symbol, SpecialFormCallback cb);
-public:	// initialize
+  static SpecialForm_sp create(Symbol_sp symbol, SpecialFormCallback cb);
 
-	virtual bool isSpecialForm() { return true;};
+public: // initialize
+  virtual bool isSpecialForm() { return true; };
 
-	string __repr__() const;
-	T_mv evaluate( List_sp args, T_sp environment);
+  string __repr__() const;
+  T_mv evaluate(List_sp args, T_sp environment);
 
+  SpecialForm_O(const SpecialForm_O &ss); //!< Copy constructor
 
-	SpecialForm_O( const SpecialForm_O& ss ); //!< Copy constructor
-
-	DEFAULT_CTOR_DTOR(SpecialForm_O);
-    };
-
-
+  DEFAULT_CTOR_DTOR(SpecialForm_O);
+};
 };
 TRANSLATE(core::SpecialForm_O);
 #endif //]

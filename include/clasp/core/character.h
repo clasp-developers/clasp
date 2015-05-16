@@ -24,35 +24,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_character_H
+#ifndef _core_character_H
 #define _core_character_H
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/str.fwd.h>
 #include <clasp/core/character.fwd.h>
-namespace core
-{
-    claspChar clasp_as_char(Character_sp c);
-    Character_sp clasp_make_character(claspCharacter c);
-    Character_sp clasp_make_standard_character(claspCharacter c);
-    inline claspCharacter unbox_character(Character_sp c) {
-	return c.unsafe_character();
-    };
-    
-    Str_sp cl_char_name(Character_sp och);
+namespace core {
+claspChar clasp_as_char(Character_sp c);
+Character_sp clasp_make_character(claspCharacter c);
+Character_sp clasp_make_standard_character(claspCharacter c);
+inline claspCharacter unbox_character(Character_sp c) {
+  return c.unsafe_character();
+};
 
-    int clasp_string_case(Str_sp s);
-    Fixnum clasp_digitp( int ch, int basis );
+Str_sp cl_char_name(Character_sp och);
 
-    bool af_standard_char_p(Character_sp ch);
+int clasp_string_case(Str_sp s);
+Fixnum clasp_digitp(int ch, int basis);
 
-    class Character_dummy_O : public T_O
-    {
-	LISP_BASE1(T_O);
-	LISP_VIRTUAL_CLASS(core,ClPkg,Character_dummy_O,"character");
+bool af_standard_char_p(Character_sp ch);
+
+class Character_dummy_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_VIRTUAL_CLASS(core, ClPkg, Character_dummy_O, "character");
 #if 0
-	
+
 #if defined(XML_ARCHIVE)
 	DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
@@ -93,7 +91,7 @@ namespace core
 	int charCode() const { return this->toInt(); };
 	void __write__(T_sp sout) const; // Look in write_ugly.cc
 #endif
-    };
+};
 };
 #if 0
 template<> struct gctools::GCInfo<core::Character_O> {
@@ -196,8 +194,6 @@ template<> struct gctools::GCInfo<core::StandardChar_O> {
 };
 #endif
 
-
-
 #if 0
 namespace core {
     FORWARD(ExtendedChar);
@@ -224,113 +220,95 @@ template<> struct gctools::GCInfo<core::ExtendedChar_O> {
 };
 #endif
 
-
 namespace core {
-    inline short clasp_digit_char(Fixnum w, Fixnum r)
-    {
-	if (r < 2 || r > 36 || w < 0 || w >= r)
-	    return(-1);
-	if (w < 10)
-	    return(w + '0');
-	else
-	    return(w - 10 + 'A');
-    }
-
-
-
+inline short clasp_digit_char(Fixnum w, Fixnum r) {
+  if (r < 2 || r > 36 || w < 0 || w >= r)
+    return (-1);
+  if (w < 10)
+    return (w + '0');
+  else
+    return (w - 10 + 'A');
+}
 
 }; /* core */
 
+namespace translate {
+template <>
+struct from_object<claspChar, std::true_type> {
+  typedef claspChar DeclareType;
+  DeclareType _v;
+  from_object(T_P o) {
+    if (core::Character_sp ch = o.asOrNull<core::Character_O>()) {
+      this->_v = clasp_as_char(ch);
+      return;
+    }
+    SIMPLE_ERROR(BF("Could not convert %s to CHARACTER") % _rep_(o));
+  }
+};
 
-
-namespace translate
-{
-    template <>
-    struct	from_object<claspChar,std::true_type>
-    {
-	typedef	claspChar	DeclareType;
-	DeclareType _v;
-	from_object(T_P o)
-	{
-	    if ( core::Character_sp ch = o.asOrNull<core::Character_O>() )
-	    {
-		this->_v = clasp_as_char(ch);
-		return;
-	    }
-	    SIMPLE_ERROR(BF("Could not convert %s to CHARACTER") % _rep_(o));
-	}
-    };
-
-
-
-    template <>
-	struct	to_object<char>
-    {
-	typedef	uint		GivenType;
-	static core::T_sp convert(GivenType v)
-	{_G();
-	    return core::clasp_make_character(v);
-	}
-    };
+template <>
+struct to_object<char> {
+  typedef uint GivenType;
+  static core::T_sp convert(GivenType v) {
+    _G();
+    return core::clasp_make_character(v);
+  }
+};
 };
 TRANSLATE(core::Character_O);
 
-
 namespace core {
-    claspChar clasp_charCode(T_sp elt); // like ecl_char_code
+claspChar clasp_charCode(T_sp elt); // like ecl_char_code
 
-    
-    inline bool clasp_invalid_character_p(int c) {
-	return (c <= 32) || (c == 127);
-    }
-	
+inline bool clasp_invalid_character_p(int c) {
+  return (c <= 32) || (c == 127);
+}
 
-    inline Character_sp clasp_char_upcase(claspCharacter code) {
-	unsigned char uc = toupper(code);
-	return clasp_make_character(uc);
-    }
+inline Character_sp clasp_char_upcase(claspCharacter code) {
+  unsigned char uc = toupper(code);
+  return clasp_make_character(uc);
+}
 
-    inline Character_sp clasp_char_downcase(claspCharacter code) {
-	unsigned char uc = tolower(code);
-	return clasp_make_character(uc);
-    }
+inline Character_sp clasp_char_downcase(claspCharacter code) {
+  unsigned char uc = tolower(code);
+  return clasp_make_character(uc);
+}
 
-    inline Character_sp clasp_char_upcase(Character_sp code) {
-	unsigned char uc = toupper(clasp_as_char(code));
-	return clasp_make_character(uc);
-    }
+inline Character_sp clasp_char_upcase(Character_sp code) {
+  unsigned char uc = toupper(clasp_as_char(code));
+  return clasp_make_character(uc);
+}
 
-    inline Character_sp clasp_char_downcase(Character_sp code) {
-	unsigned char uc = tolower(clasp_as_char(code));
-	return clasp_make_character(uc);
-    }
+inline Character_sp clasp_char_downcase(Character_sp code) {
+  unsigned char uc = tolower(clasp_as_char(code));
+  return clasp_make_character(uc);
+}
 
+inline bool clasp_alphanumericp(claspCharacter i) {
+  return isalnum(i);
+}
 
-    inline bool clasp_alphanumericp(claspCharacter i) {
-	return isalnum(i);
-    }
+inline claspChar clasp_as_char(Character_sp c) {
+  return c.unsafe_character();
+}
 
-    inline claspChar clasp_as_char(Character_sp c) {
-	return c.unsafe_character();
-    }
+inline claspCharacter clasp_as_character(Character_sp c) {
+  return c.unsafe_character();
+}
 
-    inline claspCharacter clasp_as_character(Character_sp c) {
-	return c.unsafe_character();
-    }
+inline Character_sp clasp_make_character(claspCharacter c) {
+  return Character_sp::make_tagged_character(c);
+}
 
-    inline Character_sp clasp_make_character(claspCharacter c) {
-	return Character_sp::make_tagged_character(c);
-    }
+inline Character_sp clasp_make_standard_character(claspCharacter c) {
+  return Character_sp::make_tagged_character(c);
+}
 
-    inline Character_sp clasp_make_standard_character(claspCharacter c) {
-	return Character_sp::make_tagged_character(c);
-    }
+inline claspCharacter clasp_char_code(Character_sp c) {
+  return unbox_character(c);
+}
 
-    inline claspCharacter clasp_char_code(Character_sp c) {
-	return unbox_character(c);
-    }
-
-    Character_sp clasp_character_create_from_name(string const& name);
+Character_sp clasp_character_create_from_name(string const &name);
 };
 
 #endif

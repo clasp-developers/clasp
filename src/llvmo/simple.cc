@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <string>
 #include <clasp/core/foundation.h>
@@ -35,10 +35,7 @@ THE SOFTWARE.
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/cons.h>
 
-
-
-int main(int argc, char* argv[] )
-{	// Do not touch debug log until after MPI init
-    core::Fixnum_sp fn = core::make_fixnum(1234);
-    printf("in main: %s\n", fn->__repr__().c_str());
+int main(int argc, char *argv[]) { // Do not touch debug log until after MPI init
+  core::Fixnum_sp fn = core::make_fixnum(1234);
+  printf("in main: %s\n", fn->__repr__().c_str());
 }

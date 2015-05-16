@@ -27,18 +27,13 @@ THE SOFTWARE.
 #ifndef _core_brclconfig_H
 #define _core_brclconfig_H
 
-
-#define	CLASP_MAJOR_VERSION 2
+#define CLASP_MAJOR_VERSION 2
 #define CLASP_MINOR_VERSION 7
 
-
-#include <pyconfig.h>  // Steal the configuration of python
+#include <pyconfig.h> // Steal the configuration of python
 
 #define CLASP_FORMAT_LONG_LONG PY_FORMAT_LONG_LONG
 #define CLASP_FORMAT_SIZE_T PY_FORMAT_SIZE_T
 #define CLASP_UNICODE_TYPE PY_UNICODE_TYPE
-
-
-
 
 #endif

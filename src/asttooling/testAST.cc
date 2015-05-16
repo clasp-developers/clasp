@@ -31,28 +31,22 @@ THE SOFTWARE.
 #include <clasp/core/str.h>
 #include <clasp/asttooling/testAST.h>
 
-
 namespace asttooling {
 
+template <class T>
+class Bar {
+  void testFunction() {
+    static core::T_sp _staticObj;
+  };
+};
 
-    template <class T>
-    class Bar {
-        void testFunction() {
-            static core::T_sp _staticObj;
-        };
-    };
-
-
-
-    void tinyFunc()
-    {
-	core::Integer_sp i;
-	core::Number_sp n = gc::As<core::Number_sp>(gc::As<core::Number_sp>(i));
-        gctools::Vec0<core::T_sp>  _vecObjects;
-        for ( int i(0); i<10; ++i ) {
-            _vecObjects.push_back(core::make_fixnum(i));
-        }
-        printf("Hi there, this is tinyFunc\n");
-    }
-
+void tinyFunc() {
+  core::Integer_sp i;
+  core::Number_sp n = gc::As<core::Number_sp>(gc::As<core::Number_sp>(i));
+  gctools::Vec0<core::T_sp> _vecObjects;
+  for (int i(0); i < 10; ++i) {
+    _vecObjects.push_back(core::make_fixnum(i));
+  }
+  printf("Hi there, this is tinyFunc\n");
+}
 };

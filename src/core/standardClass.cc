@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/standardClass.h>
@@ -36,12 +36,10 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/wrappers.h>
 
-namespace core
-{
+namespace core {
 
-    StandardClass_O::StandardClass_O()
-    {
-    }
+StandardClass_O::StandardClass_O() {
+}
 
 #if 0
     StandardClass_sp StandardClass_O::create(Class_sp mc)
@@ -52,27 +50,23 @@ namespace core
     }
 #endif
 
+StandardClass_sp StandardClass_O::createUncollectable() {
+  GC_ALLOCATE_UNCOLLECTABLE(StandardClass_O, bic);
+  return bic;
+}
 
-    StandardClass_sp StandardClass_O::createUncollectable()
-    {
-        GC_ALLOCATE_UNCOLLECTABLE(StandardClass_O,bic);
-	return bic;
-    }
-
-    void StandardClass_O::initialize()
-    {_OF();
-	this->Base::initialize();
-	this->_InstanceCoreClass = _Nil<Class_O>();
-	this->initializeSlots(REF_NUMBER_OF_SLOTS_IN_CLASSES);
-    }
+void StandardClass_O::initialize() {
+  _OF();
+  this->Base::initialize();
+  this->_InstanceCoreClass = _Nil<Class_O>();
+  this->initializeSlots(REF_NUMBER_OF_SLOTS_IN_CLASSES);
+}
 
 #if defined(XML_ARCHIVE)
-    void StandardClass_O::archiveBase(ArchiveP node)
-    {
-	IMPLEMENT_ME();
-    }
+void StandardClass_O::archiveBase(ArchiveP node) {
+  IMPLEMENT_ME();
+}
 #endif // defined(XML_ARCHIVE)
-
 
 #if 0 // All functions
     void	StandardClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)
@@ -207,7 +201,6 @@ namespace core
 #endif
     }
 
-
 #if 0
     StandardClass_O::slotIterator StandardClass_O::find(Symbol_sp sym)
     {_G();
@@ -220,7 +213,7 @@ namespace core
 	{
 	    if ( (*it)->_SlotName == sym ) break;
 	}
-#ifdef	DEBUG_ON
+#ifdef DEBUG_ON
 	if ( it==this->_SlotSpecifiers.end() )
 	{
 	    LOG(BF("Could not find slot"));
@@ -233,11 +226,6 @@ namespace core
 #endif
     }
 #endif
-
-
-
-
-
 
 #if 0
     T_sp StandardClass_O::allocate_newNil()
@@ -287,23 +275,15 @@ namespace core
 
 #endif
 
-
-
-
-    void StandardClass_O::exposeCando(Lisp_sp lisp)
-    {
-	class_<StandardClass_O>()
-	    ;
-    }
-    void StandardClass_O::exposePython(Lisp_sp lisp)
-    {_G();
+void StandardClass_O::exposeCando(Lisp_sp lisp) {
+  class_<StandardClass_O>();
+}
+void StandardClass_O::exposePython(Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,StandardClass,"","",_lisp)
-	    ;
+  PYTHON_CLASS(CorePkg, StandardClass, "", "", _lisp);
 #endif
-    }
+}
 
-
-    EXPOSE_CLASS(core,StandardClass_O);
-
+EXPOSE_CLASS(core, StandardClass_O);
 };

@@ -29,24 +29,15 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/llvmo/intrinsics.h>
 
+namespace llvmo {
 
-namespace llvmo
-{
-
-    /*! This is a dummy function that creates and returns a Fixnum */
-core::T_sp dummyFunction(core::ActivationFrame_sp af)
-{
-    return _Nil<core::T_O>();
+/*! This is a dummy function that creates and returns a Fixnum */
+core::T_sp dummyFunction(core::ActivationFrame_sp af) {
+  return _Nil<core::T_O>();
 }
-	
 
+SYMBOL_EXPORT_SC_(LlvmoPkg, STARaSTAR);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg,STARaSTAR);
-
-void test_setq(core::T_sp* result)
-{
-    
+void test_setq(core::T_sp *result) {
 }
-    
-    
 };

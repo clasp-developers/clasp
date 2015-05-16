@@ -25,11 +25,11 @@ THE SOFTWARE.
 */
 /* -^- */
 #undef USEBOOSTPYTHON
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #ifdef _TARGET_OS_LINUX
-# include <sys/time.h>
-# include <sys/resource.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #endif
 
 #include <clasp/core/common.h>
@@ -41,101 +41,78 @@ THE SOFTWARE.
 // last include is wrappers.h
 #include <clasp/core/wrappers.h>
 
-
 namespace core {
 
-
-    
-    
 #define ARGS_cl_getInternalRealTime "()"
 #define DECL_cl_getInternalRealTime ""
 #define DOCS_cl_getInternalRealTime "getInternalRealTime"
-    T_sp cl_getInternalRealTime()
-    {_G();
-        PosixTime_sp now = PosixTime_O::createNow();
-        PosixTimeDuration_sp diff = now->sub(gc::As<PosixTime_sp>(_sym_STARstartRunTimeSTAR->symbolValue()));
-        return Integer_O::create(diff->totalMilliseconds());
-    };
+T_sp cl_getInternalRealTime() {
+  _G();
+  PosixTime_sp now = PosixTime_O::createNow();
+  PosixTimeDuration_sp diff = now->sub(gc::As<PosixTime_sp>(_sym_STARstartRunTimeSTAR->symbolValue()));
+  return Integer_O::create(diff->totalMilliseconds());
+};
 
-
-
-    
-    
 #define ARGS_cl_getInternalRunTime "()"
 #define DECL_cl_getInternalRunTime ""
 #define DOCS_cl_getInternalRunTime "getInternalRunTime"
-    T_sp cl_getInternalRunTime()
-    {_G();
-        struct rusage r;
-        getrusage(RUSAGE_SELF,&r);
-        size_t usec = r.ru_utime.tv_usec;
-        size_t sec = r.ru_utime.tv_sec;
-        mpz_class bn(sec);
-        bn = bn * CLASP_INTERNAL_TIME_UNITS_PER_SECOND;
-        bn = bn + usec/(1000000/CLASP_INTERNAL_TIME_UNITS_PER_SECOND);
-	return Integer_O::create(bn);
-    };
+T_sp cl_getInternalRunTime() {
+  _G();
+  struct rusage r;
+  getrusage(RUSAGE_SELF, &r);
+  size_t usec = r.ru_utime.tv_usec;
+  size_t sec = r.ru_utime.tv_sec;
+  mpz_class bn(sec);
+  bn = bn * CLASP_INTERNAL_TIME_UNITS_PER_SECOND;
+  bn = bn + usec / (1000000 / CLASP_INTERNAL_TIME_UNITS_PER_SECOND);
+  return Integer_O::create(bn);
+};
 
-
-
-PosixTime_sp PosixTime_O::createNow()
-{_G();
-    PosixTime_sp now = PosixTime_O::create();
-    now->setToLocalTime();
-    return now;
+PosixTime_sp PosixTime_O::createNow() {
+  _G();
+  PosixTime_sp now = PosixTime_O::create();
+  now->setToLocalTime();
+  return now;
 }
 
-
-
-void	PosixTime_O::initialize()
-{
-    this->Base::initialize();
+void PosixTime_O::initialize() {
+  this->Base::initialize();
 }
 
 #if defined(XML_ARCHIVE)
-void	PosixTime_O::archiveBase(ArchiveP node)
-{
-    this->Base::archiveBase(node);
-    if ( node->loading() )
-    {
-	string iso;
-	node->attribute("iso",iso);
-	this->_Time = boost::posix_time::from_iso_string(iso);
-    } else
-    {
-	string iso;
-	iso = boost::posix_time::to_iso_string(this->_Time);
-	node->attribute("iso",iso);
-    }
+void PosixTime_O::archiveBase(ArchiveP node) {
+  this->Base::archiveBase(node);
+  if (node->loading()) {
+    string iso;
+    node->attribute("iso", iso);
+    this->_Time = boost::posix_time::from_iso_string(iso);
+  } else {
+    string iso;
+    iso = boost::posix_time::to_iso_string(this->_Time);
+    node->attribute("iso", iso);
+  }
 }
 #endif // defined(XML_ARCHIVE)
 
-
-PosixTime_sp PosixTime_O::setToLocalTime()
-{_G();
-    this->_Time = boost::posix_time::microsec_clock::local_time();
-    return this->sharedThis<PosixTime_O>();
+PosixTime_sp PosixTime_O::setToLocalTime() {
+  _G();
+  this->_Time = boost::posix_time::microsec_clock::local_time();
+  return this->sharedThis<PosixTime_O>();
 }
 
-string	PosixTime_O::toSimpleString()
-{_G();
-    stringstream ss;
-    ss << to_simple_string(this->_Time);
-    return ss.str();
+string PosixTime_O::toSimpleString() {
+  _G();
+  stringstream ss;
+  ss << to_simple_string(this->_Time);
+  return ss.str();
 }
 
-
-
-PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp t)
-{_G();
-    PosixTimeDuration_sp result = PosixTimeDuration_O::create();
-    result->_Duration = this->_Time - t->_Time;
-    return result;
+PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp t) {
+  _G();
+  PosixTimeDuration_sp result = PosixTimeDuration_O::create();
+  result->_Duration = this->_Time - t->_Time;
+  return result;
 }
-
-
-
-
 
 #if 0
     PosixTimeDuration_sp PosixTimeDuration_O::make(uint hours, uint minutes, uint seconds, uint milliseconds )
@@ -151,148 +128,124 @@ PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp t)
     return _Nil<T_O>();
 }
 #endif
-PosixTimeDuration_sp PosixTimeDuration_O::createDurationSince(PosixTime_sp past)
-{
-    PosixTime_sp now = PosixTime_O::createNow();
-    PosixTimeDuration_sp delta = now->sub(past);
-    return delta;
+PosixTimeDuration_sp PosixTimeDuration_O::createDurationSince(PosixTime_sp past) {
+  PosixTime_sp now = PosixTime_O::createNow();
+  PosixTimeDuration_sp delta = now->sub(past);
+  return delta;
 }
-void	PosixTimeDuration_O::initialize()
-{
-    this->Base::initialize();
+void PosixTimeDuration_O::initialize() {
+  this->Base::initialize();
 }
 
 #if defined(XML_ARCHIVE)
-void	PosixTimeDuration_O::archiveBase(ArchiveP node)
-{
-    this->Base::archiveBase(node);
-    IMPLEMENT_ME();
+void PosixTimeDuration_O::archiveBase(ArchiveP node) {
+  this->Base::archiveBase(node);
+  IMPLEMENT_ME();
 }
 #endif // defined(XML_ARCHIVE)
 
-
-PosixTimeDuration_sp PosixTimeDuration_O::sub(PosixTimeDuration_sp t)
-{_G();
-    PosixTimeDuration_sp result = PosixTimeDuration_O::create();
-    result->_Duration = this->_Duration - t->_Duration;
-    return result;
+PosixTimeDuration_sp PosixTimeDuration_O::sub(PosixTimeDuration_sp t) {
+  _G();
+  PosixTimeDuration_sp result = PosixTimeDuration_O::create();
+  result->_Duration = this->_Duration - t->_Duration;
+  return result;
 }
 
-
-mpz_class PosixTimeDuration_O::totalSeconds()
-{_OF();
-    return mpz_class(this->_Duration.total_seconds());
+mpz_class PosixTimeDuration_O::totalSeconds() {
+  _OF();
+  return mpz_class(this->_Duration.total_seconds());
 }
 
-mpz_class PosixTimeDuration_O::totalMilliseconds()
-{_OF();
-    stringstream ss;
-    ss << this->_Duration.total_milliseconds();
-    return mpz_class(ss.str());
+mpz_class PosixTimeDuration_O::totalMilliseconds() {
+  _OF();
+  stringstream ss;
+  ss << this->_Duration.total_milliseconds();
+  return mpz_class(ss.str());
 }
 
-mpz_class PosixTimeDuration_O::totalMicroseconds()
-{_OF();
-    stringstream ss;
-    ss << this->_Duration.total_microseconds();
-    return mpz_class(ss.str());
+mpz_class PosixTimeDuration_O::totalMicroseconds() {
+  _OF();
+  stringstream ss;
+  ss << this->_Duration.total_microseconds();
+  return mpz_class(ss.str());
 }
 
-mpz_class PosixTimeDuration_O::fractionalSeconds()
-{_OF();
-    stringstream ss;
-    ss << this->_Duration.fractional_seconds();
-    return mpz_class(ss.str());
+mpz_class PosixTimeDuration_O::fractionalSeconds() {
+  _OF();
+  stringstream ss;
+  ss << this->_Duration.fractional_seconds();
+  return mpz_class(ss.str());
 }
 
-uint PosixTimeDuration_O::seconds()
-{_G();
-    return this->_Duration.seconds();
+uint PosixTimeDuration_O::seconds() {
+  _G();
+  return this->_Duration.seconds();
 }
 
-uint PosixTimeDuration_O::minutes()
-{_G();
-    return this->_Duration.minutes();
+uint PosixTimeDuration_O::minutes() {
+  _G();
+  return this->_Duration.minutes();
 }
 
-uint PosixTimeDuration_O::hours()
-{_G();
-    return this->_Duration.hours();
+uint PosixTimeDuration_O::hours() {
+  _G();
+  return this->_Duration.hours();
 }
 
-string PosixTimeDuration_O::toSimpleString()
-{_G();
-    return boost::posix_time::to_simple_string(this->_Duration);
+string PosixTimeDuration_O::toSimpleString() {
+  _G();
+  return boost::posix_time::to_simple_string(this->_Duration);
 }
 
-string PosixTimeDuration_O::toIsoString()
-{_G();
-    return boost::posix_time::to_iso_string(this->_Duration);
+string PosixTimeDuration_O::toIsoString() {
+  _G();
+  return boost::posix_time::to_iso_string(this->_Duration);
 }
 
-
-
-
-
-    void PosixTime_O::exposeCando(Lisp_sp lisp)
-{
-	class_<PosixTime_O>()
-	.def("setToLocalTime",&PosixTime_O::setToLocalTime)
-	.def("now",&PosixTime_O::setToLocalTime)
-	.def("sub",&PosixTime_O::sub)
-	;
-        ClDefun(getInternalRealTime);
-        ClDefun(getInternalRunTime);
-
+void PosixTime_O::exposeCando(Lisp_sp lisp) {
+  class_<PosixTime_O>()
+      .def("setToLocalTime", &PosixTime_O::setToLocalTime)
+      .def("now", &PosixTime_O::setToLocalTime)
+      .def("sub", &PosixTime_O::sub);
+  ClDefun(getInternalRealTime);
+  ClDefun(getInternalRunTime);
 }
 
-    void PosixTime_O::exposePython(Lisp_sp lisp)
-    {_G();
-#ifdef	USEBOOSTPYTHON //[
-	PYTHON_CLASS(CorePkg,PosixTime,"","",_lisp)
-	.def("setToLocalTime",&PosixTime_O::setToLocalTime)
-	.def("sub",&PosixTime_O::sub)
-    ;
+void PosixTime_O::exposePython(Lisp_sp lisp) {
+  _G();
+#ifdef USEBOOSTPYTHON //[
+  PYTHON_CLASS(CorePkg, PosixTime, "", "", _lisp)
+      .def("setToLocalTime", &PosixTime_O::setToLocalTime)
+      .def("sub", &PosixTime_O::sub);
 #endif //]
 }
 
-
-
-
-
-
-
-    void PosixTimeDuration_O::exposeCando(Lisp_sp lisp)
-{
-	class_<PosixTimeDuration_O>()
-	.def("sub",&PosixTimeDuration_O::sub)
-	.def("totalSeconds",&PosixTimeDuration_O::totalSeconds)
-	.def("totalMilliseconds",&PosixTimeDuration_O::totalMilliseconds)
-	.def("posix-time-duration-seconds",&PosixTimeDuration_O::seconds)
-	.def("minutes",&PosixTimeDuration_O::minutes)
-	.def("hours",&PosixTimeDuration_O::hours)
-	.def("toSimpleString",&PosixTimeDuration_O::toSimpleString)
-	.def("toIsoString",&PosixTimeDuration_O::toIsoString)
-	;
+void PosixTimeDuration_O::exposeCando(Lisp_sp lisp) {
+  class_<PosixTimeDuration_O>()
+      .def("sub", &PosixTimeDuration_O::sub)
+      .def("totalSeconds", &PosixTimeDuration_O::totalSeconds)
+      .def("totalMilliseconds", &PosixTimeDuration_O::totalMilliseconds)
+      .def("posix-time-duration-seconds", &PosixTimeDuration_O::seconds)
+      .def("minutes", &PosixTimeDuration_O::minutes)
+      .def("hours", &PosixTimeDuration_O::hours)
+      .def("toSimpleString", &PosixTimeDuration_O::toSimpleString)
+      .def("toIsoString", &PosixTimeDuration_O::toIsoString);
 }
 
-    void PosixTimeDuration_O::exposePython(Lisp_sp lisp)
-    {_G();
-#ifdef	USEBOOSTPYTHON //[
-	PYTHON_CLASS(CorePkg,PosixTimeDuration,"","",_lisp)
-	.def("sub",&PosixTimeDuration_O::sub)
-	.def("totalSeconds",&PosixTimeDuration_O::totalSeconds)
-	.def("posix_time_duration_seconds",&PosixTimeDuration_O::seconds)
-	.def("minutes",&PosixTimeDuration_O::minutes)
-	.def("hours",&PosixTimeDuration_O::hours)
-	.def("toSimpleString",&PosixTimeDuration_O::toSimpleString)
-	.def("toIsoString",&PosixTimeDuration_O::toIsoString)
-    ;
+void PosixTimeDuration_O::exposePython(Lisp_sp lisp) {
+  _G();
+#ifdef USEBOOSTPYTHON //[
+  PYTHON_CLASS(CorePkg, PosixTimeDuration, "", "", _lisp)
+      .def("sub", &PosixTimeDuration_O::sub)
+      .def("totalSeconds", &PosixTimeDuration_O::totalSeconds)
+      .def("posix_time_duration_seconds", &PosixTimeDuration_O::seconds)
+      .def("minutes", &PosixTimeDuration_O::minutes)
+      .def("hours", &PosixTimeDuration_O::hours)
+      .def("toSimpleString", &PosixTimeDuration_O::toSimpleString)
+      .def("toIsoString", &PosixTimeDuration_O::toIsoString);
 #endif //]
 }
 
-
-
-    EXPOSE_CLASS(core,PosixTime_O);
-    EXPOSE_CLASS(core,PosixTimeDuration_O);
+EXPOSE_CLASS(core, PosixTime_O);
+EXPOSE_CLASS(core, PosixTimeDuration_O);
 };

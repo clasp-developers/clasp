@@ -46,8 +46,7 @@ THE SOFTWARE.
 
 */
 
-
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -70,51 +69,44 @@ THE SOFTWARE.
 
 #include <clasp/core/character.h>
 
-
 #include <clasp/core/wrappers.h>
 
-namespace core
-{
+namespace core {
 
+void Pathname_O::__writeReadable__(T_sp strm) const {
+  ql::list l;
+  l << cl::_sym_makePathname
+    << kw::_sym_host << this->_Host
+    << kw::_sym_device << this->_Device
+    << kw::_sym_directory
+    << eval::funcall(ext::_sym_maybeQuote, this->_Directory)
+    << kw::_sym_name << this->_Name
+    << kw::_sym_type << this->_Type
+    << kw::_sym_version << this->_Version
+    << kw::_sym_defaults << _Nil<T_O>();
+  clasp_write_string("#.", strm);
+  write_object(l.cons(), strm);
+}
 
-    void Pathname_O::__writeReadable__(T_sp strm) const
-    {
-	ql::list l;
-	l << cl::_sym_makePathname
-	  << kw::_sym_host << this->_Host
-	  << kw::_sym_device << this->_Device
-	  << kw::_sym_directory 
-	  << eval::funcall(ext::_sym_maybeQuote,this->_Directory)
-	  << kw::_sym_name << this->_Name
-	  << kw::_sym_type << this->_Type
-	  << kw::_sym_version << this->_Version
-	  << kw::_sym_defaults << _Nil<T_O>();
-	clasp_write_string("#.",strm);
-	write_object(l.cons(),strm);
+void Pathname_O::__write__(T_sp strm) const {
+  Pathname_sp path = this->const_sharedThis<Pathname_O>();
+  T_sp namestring = clasp_namestring(path, 0);
+  bool readably = clasp_print_readably();
+  if (namestring.nilp()) {
+    if (readably) {
+      path->__writeReadable__(strm);
+      return;
     }
-
-	    
-
-    void Pathname_O::__write__(T_sp strm) const
-    {
-	Pathname_sp path = this->const_sharedThis<Pathname_O>();
-        T_sp namestring = clasp_namestring(path, 0);
-        bool readably = clasp_print_readably();
-        if (namestring.nilp()) {
-	    if (readably) {
-		path->__writeReadable__(strm);
-		return;
-	    }
-	    namestring = clasp_namestring(path, 1);
-	    if (namestring.nilp()) {
-		clasp_write_string("#<Unprintable pathname>",strm);
-		return;
-	    }
-        }
-        if (readably || clasp_print_escape())
-	    clasp_write_string("#P",strm);
-        write_ugly_object(namestring,strm);
+    namestring = clasp_namestring(path, 1);
+    if (namestring.nilp()) {
+      clasp_write_string("#<Unprintable pathname>", strm);
+      return;
     }
+  }
+  if (readably || clasp_print_escape())
+    clasp_write_string("#P", strm);
+  write_ugly_object(namestring, strm);
+}
 
 #if 0
     void write_character(T_sp stream, Character_sp char) const
@@ -134,48 +126,38 @@ namespace core
     }
 #endif
 
+void Instance_O::__write__(T_sp stream) const {
+  eval::funcall(cl::_sym_printObject, this->const_sharedThis<Instance_O>(), stream);
+}
 
-
-    void Instance_O::__write__(T_sp stream) const
-    {
-	eval::funcall(cl::_sym_printObject, this->const_sharedThis<Instance_O>(), stream );
-    }
-
-
-
-
-    void StructureObject_O::__write__(T_sp stream) const
-    {
-        if (UNLIKELY(!gc::IsA<Symbol_sp>(this->_Type)) )
-	    SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type name~%  ~S") % _rep_(this->_Type));
-	SYMBOL_EXPORT_SC_(CorePkg,structure_print_function);
-	SYMBOL_EXPORT_SC_(CorePkg,STARprint_structureSTAR);
-        T_sp print_function = af_get_sysprop(this->_Type,_sym_structure_print_function);
-        if (print_function.nilp() || !_sym_STARprint_structureSTAR->symbolValue().isTrue()) {
-	    clasp_write_string("#S",stream);
-	    /* structure_to_list conses slot names and values into
+void StructureObject_O::__write__(T_sp stream) const {
+  if (UNLIKELY(!gc::IsA<Symbol_sp>(this->_Type)))
+    SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type name~%  ~S") % _rep_(this->_Type));
+  SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
+  SYMBOL_EXPORT_SC_(CorePkg, STARprint_structureSTAR);
+  T_sp print_function = af_get_sysprop(this->_Type, _sym_structure_print_function);
+  if (print_function.nilp() || !_sym_STARprint_structureSTAR->symbolValue().isTrue()) {
+    clasp_write_string("#S", stream);
+    /* structure_to_list conses slot names and values into
 	     * a list to be printed.  print shouldn't allocate
 	     * memory - Beppe
 	     */
-	    T_sp x = this->structureAsList();
-	    write_object(x,stream);
-        } else {
-	    eval::funcall(print_function,this->asSmartPtr(),stream,make_fixnum(0));
-        }
-    }
+    T_sp x = this->structureAsList();
+    write_object(x, stream);
+  } else {
+    eval::funcall(print_function, this->asSmartPtr(), stream, make_fixnum(0));
+  }
+}
 
-
-    void Integer_O::__write__(T_sp stream) const
-    {
-	StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
-        int print_base = clasp_print_base();
-        core_integerToString(buffer,this->const_sharedThis<Integer_O>(),
-			   make_fixnum(print_base),
-			   cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
-			   true);
-        cl_writeSequence(buffer,stream,make_fixnum(0),_Nil<T_O>());
-    }
-
+void Integer_O::__write__(T_sp stream) const {
+  StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
+  int print_base = clasp_print_base();
+  core_integerToString(buffer, this->const_sharedThis<Integer_O>(),
+                       make_fixnum(print_base),
+                       cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
+                       true);
+  cl_writeSequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
+}
 
 #if 0 // working
 
@@ -434,88 +416,75 @@ namespace core
     }
 //#endif /* !CLOS */
 
-
 #endif // working
 
+void write_fixnum(T_sp strm, T_sp i) {
+  Fixnum_sp fn = gc::As<Fixnum_sp>(i);
+  StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
+  int print_base = clasp_print_base();
+  core_integerToString(buffer, fn,
+                       make_fixnum(print_base),
+                       cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
+                       true);
+  cl_writeSequence(buffer, strm, make_fixnum(0), _Nil<T_O>());
+}
 
-    void write_fixnum(T_sp strm, T_sp i)
-    {
-	Fixnum_sp fn = gc::As<Fixnum_sp>(i);
-	StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
-        int print_base = clasp_print_base();
-        core_integerToString(buffer,fn,
-			   make_fixnum(print_base),
-			   cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
-			   true);
-        cl_writeSequence(buffer,strm,make_fixnum(0),_Nil<T_O>());
+void write_single_float(T_sp strm, SingleFloat_sp i) {
+  stringstream ss;
+  ss << unbox_single_float(i);
+  clasp_write_string(ss.str(), strm);
+}
+
+void write_character(T_sp strm, T_sp chr) {
+  ASSERT(chr.characterp());
+  claspChar i = chr.unsafe_character();
+  if (!clasp_print_escape() && !clasp_print_readably()) {
+    clasp_write_char(i, strm);
+  } else {
+    clasp_write_string("#\\", strm);
+    if (i < 32 || i >= 127) {
+      Str_sp name = cl_char_name(clasp_make_character(i));
+      clasp_write_string(name->get(), strm);
+    } else {
+      clasp_write_char(i, strm);
     }
+  }
+}
 
-    void write_single_float(T_sp strm, SingleFloat_sp i)
-    {
-	stringstream ss;
-	ss << unbox_single_float(i);
-	clasp_write_string(ss.str(),strm);
-    }
-
-
-    void write_character(T_sp strm, T_sp chr)
-    {
-	ASSERT(chr.characterp());
-        claspChar i = chr.unsafe_character();
-	if (!clasp_print_escape() && !clasp_print_readably()) {
-	    clasp_write_char(i,strm);
-	} else {
-	    clasp_write_string("#\\",strm);
-	    if (i < 32 || i >= 127) {
-		Str_sp name = cl_char_name(clasp_make_character(i));
-		clasp_write_string(name->get(),strm);
-	    } else {
-		clasp_write_char(i,strm);
-	    }
-	}
-    }
-
-
-    T_sp write_ugly_object(T_sp x, T_sp stream)
-    {
-	if ( !x ) {
-	    if (clasp_print_readably())
-		PRINT_NOT_READABLE_ERROR(x);
-	    clasp_write_string("#<OBJNULL>",stream);
-	    goto DONE;
-	}
-	if ( x.fixnump() ) {
-	    write_fixnum(stream,x);
-	} else if ( x.characterp() ) {
-	    write_character(stream,x);
-	} else if ( x.single_floatp() ) {
-	    write_single_float(stream,gc::As<SingleFloat_sp>(x));
-	} else if ( x.otherp() || x.consp() ) {
-	    x->__write__(stream);
-	} else if ( x.framep() ) {
-	    clasp_write_string("#<stack-based-frame>",stream);
-	} else {
-	    SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());
-	}
-    DONE:
-	return x;
-    }
-
-
+T_sp write_ugly_object(T_sp x, T_sp stream) {
+  if (!x) {
+    if (clasp_print_readably())
+      PRINT_NOT_READABLE_ERROR(x);
+    clasp_write_string("#<OBJNULL>", stream);
+    goto DONE;
+  }
+  if (x.fixnump()) {
+    write_fixnum(stream, x);
+  } else if (x.characterp()) {
+    write_character(stream, x);
+  } else if (x.single_floatp()) {
+    write_single_float(stream, gc::As<SingleFloat_sp>(x));
+  } else if (x.otherp() || x.consp()) {
+    x->__write__(stream);
+  } else if (x.framep()) {
+    clasp_write_string("#<stack-based-frame>", stream);
+  } else {
+    SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());
+  }
+DONE:
+  return x;
+}
 
 #define ARGS_af_writeUglyObject "(obj &optional strm)"
 #define DECL_af_writeUglyObject ""
 #define DOCS_af_writeUglyObject "writeUglyObject"
-	T_sp af_writeUglyObject(T_sp obj, T_sp ostrm)
-    {_G();
-        T_sp strm = coerce::outputStreamDesignator(ostrm);
-        return write_ugly_object(obj,strm);
-    };
+T_sp af_writeUglyObject(T_sp obj, T_sp ostrm) {
+  _G();
+  T_sp strm = coerce::outputStreamDesignator(ostrm);
+  return write_ugly_object(obj, strm);
+};
 
-    void initialize_write_ugly_object() {
-        Defun(writeUglyObject);
-    }
-
-
-
+void initialize_write_ugly_object() {
+  Defun(writeUglyObject);
+}
 };

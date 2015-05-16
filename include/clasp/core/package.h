@@ -24,10 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	Package_H //[
+#ifndef Package_H //[
 #define Package_H
-
-
 
 #include <stdio.h>
 #include <string>
@@ -42,45 +40,44 @@ THE SOFTWARE.
 
 namespace core {
 
+SMART(Package);
+class Package_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_CLASS(core, ClPkg, Package_O, "Package");
 
-
-    SMART(Package );
-    class Package_O : public T_O
-    {
-	LISP_BASE1(T_O);
-	LISP_CLASS(core,ClPkg,Package_O,"Package");
 public: // virtual functions inherited from Object
-	void	initialize();
+  void initialize();
 #if defined(XML_ARCHIVE)
-	void	archiveBase(ArchiveP node);
+  void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-	string	__repr__() const;
+  string __repr__() const;
 
 GCPRIVATE: // instance variables
-        gctools::gcstring  _Name;
-	HashTableEql_sp 	_InternalSymbols;
-	HashTableEql_sp 	_ExternalSymbols;
-	HashTableEqual_sp       _ShadowingSymbols;
-        gctools::Vec0<Package_sp>	_UsingPackages;
-        gctools::Vec0<Package_sp>       _PackagesUsedBy;
-	bool		_KeywordPackage;
-	bool		_AmpPackage;
-	List_sp		_Nicknames;
-public:	// Creation class functions
-    static Package_sp create(const string& p);
-    public:
-	/*! Very low level - add to internal symbols unless keyword
-	  package, in that case add to external symbols */
-	void add_symbol_to_package(const char* symName, Symbol_sp sym, bool exportp=false);
+  gctools::gcstring _Name;
+  HashTableEql_sp _InternalSymbols;
+  HashTableEql_sp _ExternalSymbols;
+  HashTableEqual_sp _ShadowingSymbols;
+  gctools::Vec0<Package_sp> _UsingPackages;
+  gctools::Vec0<Package_sp> _PackagesUsedBy;
+  bool _KeywordPackage;
+  bool _AmpPackage;
+  List_sp _Nicknames;
+
+public: // Creation class functions
+  static Package_sp create(const string &p);
 
 public:
+  /*! Very low level - add to internal symbols unless keyword
+	  package, in that case add to external symbols */
+  void add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp = false);
 
-	string packageName() const { return this->_Name.asStdString();};
+public:
+  string packageName() const { return this->_Name.asStdString(); };
 
-	T_mv packageHashTables() const;
+  T_mv packageHashTables() const;
 
-	void setNicknames(List_sp nicknames) { this->_Nicknames = nicknames;};
-	List_sp getNicknames() const { return this->_Nicknames;};
+  void setNicknames(List_sp nicknames) { this->_Nicknames = nicknames; };
+  List_sp getNicknames() const { return this->_Nicknames; };
 #if 0
 	symbolIterator beginExternals() { return this->_ExternalSymbols.begin();};
 	symbolIterator endExternals() { return this->_ExternalSymbols.end();};
@@ -95,133 +92,117 @@ public:
 	const_symbolIterator endInternals() const { return this->_InternalSymbols.end();};
 #endif
 
+  void setKeywordPackage(bool b) { this->_KeywordPackage = b; };
+  bool isKeywordPackage() { return this->_KeywordPackage; };
 
-	void setKeywordPackage(bool b) { this->_KeywordPackage = b;};
-	bool isKeywordPackage() { return this->_KeywordPackage;};
+  string allSymbols();
 
-	string allSymbols();
+  /*! support for CLHS::shadow */
+  bool shadow(List_sp listOfSymbolNames);
 
-	/*! support for CLHS::shadow */
-	bool shadow(List_sp listOfSymbolNames);
+  /*! support for CLHS::shadow */
+  bool shadow(Str_sp sym);
 
-	/*! support for CLHS::shadow */
-	bool shadow(Str_sp sym);
+  //	bool areThereNameCollisions(Package_sp otherPackage);
 
-//	bool areThereNameCollisions(Package_sp otherPackage);
+  string getName() const { return this->_Name.asStdString(); };
+  void setName(const string &n) { this->_Name = n; };
 
-        string getName() const { return this->_Name.asStdString(); };
-	void setName(const string& n) { this->_Name = n; };
+  bool isExported(Symbol_sp sym);
 
-	bool isExported(Symbol_sp sym);
+  /*! See CLHS:export function */
+  void _export(List_sp listOfSymbols);
 
-	/*! See CLHS:export function */
-	void _export(List_sp listOfSymbols);
+  /*! Return the symbol if we contain it directly */
+  Symbol_mv findSymbolDirectlyContained(Bignum_sp nameKey) const;
 
-	/*! Return the symbol if we contain it directly */
-	Symbol_mv findSymbolDirectlyContained(Bignum_sp nameKey) const;
-	
-	Symbol_mv findSymbol(Bignum_sp nameKey) const;
+  Symbol_mv findSymbol(Bignum_sp nameKey) const;
 
-	/*! Return the (values symbol [:inherited,:external,:internal])
+  /*! Return the (values symbol [:inherited,:external,:internal])
 	 */
-	Symbol_mv findSymbol(const string& name) const;
+  Symbol_mv findSymbol(const string &name) const;
 
-//	T_mv findSymbol(const string& symbolName);
+  //	T_mv findSymbol(const string& symbolName);
 
-
-		/*! Return the Symbol if we contain it 
+  /*! Return the Symbol if we contain it 
 		 * and create it and return it if we don't
 		 */
-	T_mv intern(const string& symbolName);
+  T_mv intern(const string &symbolName);
 
-	/*! Remove the symbol from the package */
-	bool unintern(Symbol_sp sym );
+  /*! Remove the symbol from the package */
+  bool unintern(Symbol_sp sym);
 
-	List_sp packageUseList();
-        List_sp packageUsedByList();
+  List_sp packageUseList();
+  List_sp packageUsedByList();
 
-	/*! Import the symbols into this package - see CLHS */
-	void import( List_sp symbols );
+  /*! Import the symbols into this package - see CLHS */
+  void import(List_sp symbols);
 
-	/*! Shadow import the symbols into this package - see CLHS */
-	void shadowingImport( List_sp listOfSymbols );
+  /*! Shadow import the symbols into this package - see CLHS */
+  void shadowingImport(List_sp listOfSymbols);
 
-	/*! Return a list of all shadowing symbols */
-	List_sp shadowingSymbols() const;
+  /*! Return a list of all shadowing symbols */
+  List_sp shadowingSymbols() const;
 
-
-		/*! Use the package, if there are any overlapping symbols
+  /*! Use the package, if there are any overlapping symbols
 		 * then don't use the package and return false.
 		 * If you use the package return true.
 		 */
-	bool usePackage(Package_sp usePackage);
+  bool usePackage(Package_sp usePackage);
 
-		/*! Unuse the package, the reverse of usePackage
+  /*! Unuse the package, the reverse of usePackage
 		 */
-	bool unusePackage(Package_sp usePackage);
+  bool unusePackage(Package_sp usePackage);
 
-	/*! Return true if we are using the package */
-	bool usingPackageP(Package_sp pkg) const;
+  /*! Return true if we are using the package */
+  bool usingPackageP(Package_sp pkg) const;
 
-	/*! Dump all the symbols to stdout */
-	void dumpSymbols();
+  /*! Dump all the symbols to stdout */
+  void dumpSymbols();
 
-	/*! Return the External(HashTable), Internal(HashTable) and UseList(list) */
-	T_mv hashTables() const;
+  /*! Return the External(HashTable), Internal(HashTable) and UseList(list) */
+  T_mv hashTables() const;
 
+  /*! Map over the External key/value pairs */
+  void mapExternals(KeyValueMapper *mapper);
 
-	/*! Map over the External key/value pairs */
-	void mapExternals(KeyValueMapper* mapper);
-
-	/*! Map over the Internal key/value pairs */
-	void mapInternals(KeyValueMapper* mapper);
-
-
-
+  /*! Map over the Internal key/value pairs */
+  void mapInternals(KeyValueMapper *mapper);
 
 public:
-	Package_O() : _Nicknames(_Nil<T_O>()) {};
-	virtual ~Package_O() {};
-    };
+  Package_O() : _Nicknames(_Nil<T_O>()){};
+  virtual ~Package_O(){};
+};
 
+struct FindConflicts : public KeyValueMapper {
+public:
+  set<string> _conflicts;
+  Package_sp _me;
+  FindConflicts(Package_sp me) {
+    this->_me = me;
+  }
 
-    struct FindConflicts : public KeyValueMapper
+  virtual bool mapKeyValue(T_sp key, T_sp value) {
+    Bignum_sp nameKey = gc::As<Bignum_sp>(key);
+    Symbol_sp svalue = gc::As<Symbol_sp>(value);
+
+    Symbol_sp mine;
+    T_sp foundp;
     {
-    public:
-	set<string> _conflicts;
-	Package_sp  _me;
-	FindConflicts(Package_sp me)
-	{
-	    this->_me = me;
-	}
+      MULTIPLE_VALUES_CONTEXT();
+      T_mv values = this->_me->findSymbol(nameKey);
+      mine = gc::As<Symbol_sp>(values);
+      foundp = gc::As<T_sp>(values.valueGet(1));
+    }
+    if (foundp.notnilp() && mine != svalue) {
+      LOG(BF("usePackage conflict - my symbol[%s] : usePackage symbol[%s]") % _rep_(mine) % _rep_(svalue));
+      this->_conflicts.insert(svalue->symbolNameAsString());
+    }
+    return true;
+  }
+};
 
-
-	virtual bool mapKeyValue(T_sp key, T_sp value)
-	{
-	    Bignum_sp nameKey = gc::As<Bignum_sp>(key);
-	    Symbol_sp svalue = gc::As<Symbol_sp>(value);
-	    
-	    Symbol_sp mine;
-	    T_sp foundp;
-	    {MULTIPLE_VALUES_CONTEXT();
-		T_mv values = this->_me->findSymbol(nameKey);
-		mine = gc::As<Symbol_sp>(values);
-		foundp = gc::As<T_sp>(values.valueGet(1));
-	    }
-	    if ( foundp.notnilp() && mine != svalue )
-	    {
-		LOG(BF("usePackage conflict - my symbol[%s] : usePackage symbol[%s]")
-		    % _rep_(mine) % _rep_(svalue));
-		this->_conflicts.insert(svalue->symbolNameAsString());
-	    }
-	    return true;
-	}
-    };
-
-
-
-    T_mv cl_findSymbol(const string& symbolName, T_sp packageDesig);
-
+T_mv cl_findSymbol(const string &symbolName, T_sp packageDesig);
 };
 TRANSLATE(core::Package_O);
 #endif //]

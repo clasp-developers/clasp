@@ -24,10 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_BuiltInClass_O_H //[
+#ifndef _core_BuiltInClass_O_H //[
 #define _core_BuiltInClass_O_H
-
-
 
 #include <stdio.h>
 #include <string>
@@ -39,50 +37,46 @@ THE SOFTWARE.
 
 namespace core {
 
+SMART(BuiltInClass);
+class BuiltInClass_O : public Class_O {
+  LISP_META_CLASS(StandardClass);
+  LISP_BASE1(Class_O);
+  LISP_CLASS(core, ClPkg, BuiltInClass_O, "BuiltInClass");
 
-    SMART(BuiltInClass );
-    class BuiltInClass_O : public Class_O
-    {
-        LISP_META_CLASS(StandardClass);
-        LISP_BASE1(Class_O);
-        LISP_CLASS(core,ClPkg,BuiltInClass_O,"BuiltInClass");
-    private:
-//	string			_InitializationArgumentString;
-//	LambdaListHandler_sp	_InitializationArguments;
-    public:
+private:
+  //	string			_InitializationArgumentString;
+  //	LambdaListHandler_sp	_InitializationArguments;
+public:
 #if defined(XML_ARCHIVE)
-	void	archive(ArchiveP node);
+  void archive(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-	void	initialize();
-    public:
-	/*! The normal BuiltInClass creator used once the Lisp environment has been bootstrapped */
-        static BuiltInClass_sp create(Symbol_sp instanceClassSymbol);
-        /*! Create a BuiltInClass_sp that will always be considered a root object */
-        static BuiltInClass_sp createUncollectable();
-    public:
+  void initialize();
 
-        virtual void describe();
+public:
+  /*! The normal BuiltInClass creator used once the Lisp environment has been bootstrapped */
+  static BuiltInClass_sp create(Symbol_sp instanceClassSymbol);
+  /*! Create a BuiltInClass_sp that will always be considered a root object */
+  static BuiltInClass_sp createUncollectable();
 
-	virtual bool builtInClassP() const { return true;}
-	
-        /*! Allocate and initialize an instance of this class
+public:
+  virtual void describe();
+
+  virtual bool builtInClassP() const { return true; }
+
+  /*! Allocate and initialize an instance of this class
          */
-        T_sp allocateAndInitialize();
-        explicit BuiltInClass_O();
-        virtual ~BuiltInClass_O();
-    };
-
-
-
+  T_sp allocateAndInitialize();
+  explicit BuiltInClass_O();
+  virtual ~BuiltInClass_O();
+};
 };
 TRANSLATE(core::BuiltInClass_O);
-template<> struct gctools::GCInfo<core::BuiltInClass_O> {
-    static bool constexpr NeedsInitialization = true;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true; // old=false
-    static bool constexpr Atomic = false;
+template <>
+struct gctools::GCInfo<core::BuiltInClass_O> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = false;
+  static bool constexpr Moveable = true; // old=false
+  static bool constexpr Atomic = false;
 };
-
-
 
 #endif //]

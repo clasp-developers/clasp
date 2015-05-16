@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/structureClass.h>
@@ -36,14 +36,11 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/wrappers.h>
 
-namespace core
-{
-    StructureClass_sp StructureClass_O::createUncollectable()
-    {
-        GC_ALLOCATE_UNCOLLECTABLE(StructureClass_O,bic);
-	return bic;
-    }
-
+namespace core {
+StructureClass_sp StructureClass_O::createUncollectable() {
+  GC_ALLOCATE_UNCOLLECTABLE(StructureClass_O, bic);
+  return bic;
+}
 
 #if 0
     StructureClass_sp StructureClass_O::create(Class_sp mc)
@@ -54,26 +51,21 @@ namespace core
     }
 #endif
 
+StructureClass_O::StructureClass_O() {
+}
 
-    StructureClass_O::StructureClass_O()
-    {
-    }
-
-
-    void StructureClass_O::initialize()
-    {_OF();
-	this->Base::initialize();
-	this->initializeSlots(REF_NUMBER_OF_SLOTS_IN_CLASSES);
-	this->_InstanceCoreClass = _Nil<Class_O>();
-    }
+void StructureClass_O::initialize() {
+  _OF();
+  this->Base::initialize();
+  this->initializeSlots(REF_NUMBER_OF_SLOTS_IN_CLASSES);
+  this->_InstanceCoreClass = _Nil<Class_O>();
+}
 
 #if defined(XML_ARCHIVE)
-    void StructureClass_O::archiveBase(ArchiveP node)
-    {
-	IMPLEMENT_ME();
-    }
+void StructureClass_O::archiveBase(ArchiveP node) {
+  IMPLEMENT_ME();
+}
 #endif // defined(XML_ARCHIVE)
-
 
 #if 0 // All functions
     void	StructureClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)
@@ -201,7 +193,6 @@ namespace core
 #endif
     }
 
-
 #if 0
     StructureClass_O::slotIterator StructureClass_O::find(Symbol_sp sym)
     {_G();
@@ -214,7 +205,7 @@ namespace core
 	{
 	    if ( (*it)->_SlotName == sym ) break;
 	}
-#ifdef	DEBUG_ON
+#ifdef DEBUG_ON
 	if ( it==this->_SlotSpecifiers.end() )
 	{
 	    LOG(BF("Could not find slot"));
@@ -227,10 +218,6 @@ namespace core
 #endif
     }
 #endif
-
-
-
-
 
 #if 0
     T_sp StructureClass_O::allocate_newNil()
@@ -246,7 +233,6 @@ namespace core
 #endif
     }
 #endif
-
 
 #if 0
     void StructureClass_O::appendInstanceVariablesFromListOfSymbols(Cons_sp instanceVariableNames)
@@ -311,23 +297,15 @@ namespace core
 
 #endif
 
-
-
-
-    void StructureClass_O::exposeCando(Lisp_sp lisp)
-    {
-	class_<StructureClass_O>()
-	    ;
-    }
-    void StructureClass_O::exposePython(Lisp_sp lisp)
-    {_G();
+void StructureClass_O::exposeCando(Lisp_sp lisp) {
+  class_<StructureClass_O>();
+}
+void StructureClass_O::exposePython(Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,StructureClass,"","",_lisp)
-	    ;
+  PYTHON_CLASS(CorePkg, StructureClass, "", "", _lisp);
 #endif
-    }
+}
 
-
-    EXPOSE_CLASS(core,StructureClass_O);
-
+EXPOSE_CLASS(core, StructureClass_O);
 };

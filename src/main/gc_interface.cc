@@ -80,15 +80,12 @@ typedef bool _Bool;
 #include <clang/ASTMatchers/Dynamic/VariantValue.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 
-
 #include <clasp/gctools/symbolTable.h>
 #include <clasp/sockets/symbolTable.h>
 #include <clasp/serveEvent/symbolTable.h>
 #include <clasp/clbind/symbolTable.h>
 
 #include <clasp/gctools/gctoolsPackage.h>
-
-
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/weakPointer.h>
@@ -164,250 +161,219 @@ typedef bool _Bool;
 #include <clasp/asttooling/Marshallers.h>
 #include <clasp/asttooling/testAST.h>
 
-
 #define NAMESPACE_gctools
 #define NAMESPACE_core
 #include <clasp/main/gc_interface.h>
 #undef NAMESPACE_gctools
 #undef NAMESPACE_core
 
-
-
 #ifdef USE_MPS
 
 #ifdef DEBUG_MPS
-#define MPS_LOG(fm) {printf("%s:%d %s --> %s\n", __FILE__, __LINE__, __FUNCTION__, (fm).str().c_str());}
+#define MPS_LOG(fm) \
+  { printf("%s:%d %s --> %s\n", __FILE__, __LINE__, __FUNCTION__, (fm).str().c_str()); }
 #else
 #define MPS_LOG(fm)
 #endif
 
-extern "C"  {
-    using namespace gctools;
+extern "C" {
+using namespace gctools;
 
-
-
-
-    const char* obj_name( gctools::GCKindEnum kind )
-    {
+const char *obj_name(gctools::GCKindEnum kind) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_KIND_NAME_MAP_TABLE
 #include <clasp/main/clasp_gc.cc>
 #undef GC_KIND_NAME_MAP_TABLE
-        goto *(KIND_NAME_MAP_table[kind]);
+  goto *(KIND_NAME_MAP_table[kind]);
 #define GC_KIND_NAME_MAP
 #include <clasp/main/clasp_gc.cc>
 #undef GC_KIND_NAME_MAP
 #endif
-      return "NONE";
-    }
-
-
+  return "NONE";
+}
 };
-
 
 extern "C" {
 
+using namespace gctools;
 
-    using namespace gctools;
-
-
-
-    /*! I'm using a format_header so MPS gives me the object-pointer */
-    mps_addr_t obj_skip( mps_addr_t client )
-    {
+/*! I'm using a format_header so MPS gives me the object-pointer */
+mps_addr_t obj_skip(mps_addr_t client) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SKIP_TABLE
 #include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_SKIP_TABLE
 #endif
-        gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-        MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
-        if ( header->kindP() ) {
-            gctools::GCKindEnum kind = header->kind();
+  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+  MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
+  if (header->kindP()) {
+    gctools::GCKindEnum kind = header->kind();
 #ifndef RUNNING_GC_BUILDER
-	    goto *(OBJ_SKIP_table[kind]);
+    goto *(OBJ_SKIP_table[kind]);
 #define GC_OBJ_SKIP
 #include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_SKIP
 #else
-            return NULL;
+    return NULL;
 #endif
-        } else if (header->fwdP()) {
-            client = (char*)(client)+header->fwdSize();
-        } else if (header->pad1P()) {
-            client = (char*)(client)+header->pad1Size();
-        } else if (header->padP()) {
-            client = (char*)(client)+header->padSize();
-        } else {
-            THROW_HARD_ERROR(BF("Illegal header at %p") % header );
-        }
-        DEBUG_MPS_MESSAGE(BF("Leaving obj_skip with client@%p") % client);
-	return client;
-    }
-
-
+  } else if (header->fwdP()) {
+    client = (char *)(client) + header->fwdSize();
+  } else if (header->pad1P()) {
+    client = (char *)(client) + header->pad1Size();
+  } else if (header->padP()) {
+    client = (char *)(client) + header->padSize();
+  } else {
+    THROW_HARD_ERROR(BF("Illegal header at %p") % header);
+  }
+  DEBUG_MPS_MESSAGE(BF("Leaving obj_skip with client@%p") % client);
+  return client;
+}
 };
 
-
 extern "C" {
-    /*! I'm using a format_header so MPS gives me the object-pointer */
-    void obj_dump_base( mps_addr_t base )
-    {
+/*! I'm using a format_header so MPS gives me the object-pointer */
+void obj_dump_base(mps_addr_t base) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_DUMP_MAP_TABLE
 #include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_DUMP_MAP_TABLE
 #endif
 
-        mps_bool_t inArena = mps_arena_has_addr(_global_arena,base);
-        if ( !inArena ) {
-            printf("Address@%p is not in the arena\n", base);
-            return;
-        }
-        gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(base);
-        void* client = BasePtrToMostDerivedPtr<void>(base);
-        MPS_LOG(BF("obj_dump base=%p header-desc: %s") % base % header->description());
-        stringstream sout;
-        if ( header->kindP() ) {
-            gctools::GCKindEnum kind = header->kind();
+  mps_bool_t inArena = mps_arena_has_addr(_global_arena, base);
+  if (!inArena) {
+    printf("Address@%p is not in the arena\n", base);
+    return;
+  }
+  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(base);
+  void *client = BasePtrToMostDerivedPtr<void>(base);
+  MPS_LOG(BF("obj_dump base=%p header-desc: %s") % base % header->description());
+  stringstream sout;
+  if (header->kindP()) {
+    gctools::GCKindEnum kind = header->kind();
 #ifndef RUNNING_GC_BUILDER
-	    goto *(OBJ_DUMP_MAP_table[kind]);
+    goto *(OBJ_DUMP_MAP_table[kind]);
 #define GC_OBJ_DUMP_MAP
 #include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_DUMP_MAP
 #else
-            // do nothing
+// do nothing
 #endif
-        } else if (header->fwdP()) {
-            void* forwardPointer = header->fwdPointer();
-            sout << "FWD pointer[" << forwardPointer << "] size[" << header->fwdSize() << "]";
-        } else if (header->pad1P()) {
-            sout << "PAD1 size[" << header->pad1Size() << "]";
-        } else if (header->padP()) {
-            sout << "PAD size[" << header->padSize() << "]";
-        } else {
-            sout << "INVALID HEADER!!!!!";
-        }
-    BOTTOM:
-        printf("Base@%p %s\n", base, sout.str().c_str());
-    }
+  } else if (header->fwdP()) {
+    void *forwardPointer = header->fwdPointer();
+    sout << "FWD pointer[" << forwardPointer << "] size[" << header->fwdSize() << "]";
+  } else if (header->pad1P()) {
+    sout << "PAD1 size[" << header->pad1Size() << "]";
+  } else if (header->padP()) {
+    sout << "PAD size[" << header->padSize() << "]";
+  } else {
+    sout << "INVALID HEADER!!!!!";
+  }
+BOTTOM:
+  printf("Base@%p %s\n", base, sout.str().c_str());
+}
 
-    int trap_obj_scan = 0;
+int trap_obj_scan = 0;
 
 //core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR.notnilp()
 
 #ifdef DEBUG_LOAD_TIME_VALUES
-#define SHIELD_SAFE_TELEMETRY(CLIENT,FMT)                               \
-    if ( core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR->symbolValue().notnilp() ) { \
-        Seg seg;                                                        \
-        if ( SegOfAddr(&seg,gctools::_global_arena,CLIENT)) {           \
-            ShieldExpose(gctools::_global_arena,seg);                   \
-            printf("%s\n", (FMT).str().c_str());                        \
-            ShieldCover(gctools::_global_arena,seg);                    \
-        }                                                               \
-    }
+#define SHIELD_SAFE_TELEMETRY(CLIENT, FMT)                                                                         \
+  if (core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR->symbolValue().notnilp()) { \
+    Seg seg;                                                                                                       \
+    if (SegOfAddr(&seg, gctools::_global_arena, CLIENT)) {                                                         \
+      ShieldExpose(gctools::_global_arena, seg);                                                                   \
+      printf("%s\n", (FMT).str().c_str());                                                                         \
+      ShieldCover(gctools::_global_arena, seg);                                                                    \
+    }                                                                                                              \
+  }
 #else
-#define SHIELD_SAFE_TELEMETRY(CLIENT,PARGS)
+#define SHIELD_SAFE_TELEMETRY(CLIENT, PARGS)
 #endif
 
-    GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit)
-    {
+GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_TABLE
 #include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_SCAN_TABLE
 #endif
 
-        DEBUG_MPS_MESSAGE(BF("obj_scan started - Incoming client %p   limit: %p") % client % limit );
-        MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-            while (client<limit)
-            {
-                gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-                MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
-                if ( header->kindP() ) {
-                    GCKindEnum kind = header->kind();
+  DEBUG_MPS_MESSAGE(BF("obj_scan started - Incoming client %p   limit: %p") % client % limit);
+  MPS_SCAN_BEGIN(GC_SCAN_STATE) {
+    while (client < limit) {
+      gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+      MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
+      if (header->kindP()) {
+        GCKindEnum kind = header->kind();
 #ifndef RUNNING_GC_BUILDER
-		    goto *(OBJ_SCAN_table[kind]);
+        goto *(OBJ_SCAN_table[kind]);
 #define GC_OBJ_SCAN
 #include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_SCAN
 #endif
-                } else if (header->fwdP()) {
-                    client = (char*)(client)+header->fwdSize();
-                } else if (header->pad1P()) {
-                    client = (char*)(client)+header->pad1Size();
-                } else if (header->padP()) {
-                    client = (char*)(client)+header->padSize();
-                } else {
-                    THROW_HARD_ERROR(BF("Illegal header at %p") % header );
-                }
-            TOP:
-                continue;
-            }
-        } MPS_SCAN_END(GC_SCAN_STATE);
-        return MPS_RES_OK;
+      } else if (header->fwdP()) {
+        client = (char *)(client) + header->fwdSize();
+      } else if (header->pad1P()) {
+        client = (char *)(client) + header->pad1Size();
+      } else if (header->padP()) {
+        client = (char *)(client) + header->padSize();
+      } else {
+        THROW_HARD_ERROR(BF("Illegal header at %p") % header);
+      }
+    TOP:
+      continue;
     }
+  }
+  MPS_SCAN_END(GC_SCAN_STATE);
+  return MPS_RES_OK;
+}
 
-
-            /*! I'm using a format_header so MPS gives me the object-pointer */
+/*! I'm using a format_header so MPS gives me the object-pointer */
 #define GC_FINALIZE_METHOD
-            void obj_finalize( mps_addr_t client )
-            {
+void obj_finalize(mps_addr_t client) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_FINALIZE_TABLE
 #include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_FINALIZE_TABLE
 #endif
 
-	      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-	      ASSERTF(header->kindP(),BF("obj_finalized called without a valid object"));
-	      gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
-	      DEBUG_MPS_MESSAGE(BF("Finalizing client@%p   kind=%s") % client % header->description() );
+  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+  ASSERTF(header->kindP(), BF("obj_finalized called without a valid object"));
+  gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
+  DEBUG_MPS_MESSAGE(BF("Finalizing client@%p   kind=%s") % client % header->description());
 #ifndef RUNNING_GC_BUILDER
-	      goto *(OBJ_FINALIZE_table[kind]);
+  goto *(OBJ_FINALIZE_table[kind]);
 #define GC_OBJ_FINALIZE
 #include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_FINALIZE
 #else
-              // do nothing
+// do nothing
 #endif
-
-	    };
+};
 #undef GC_FINALIZE_METHOD
 
+vector<core::LoadTimeValues_O **> globalLoadTimeValuesRoots;
 
+void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr) {
+  globalLoadTimeValuesRoots.push_back(ptr);
+}
 
+mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
+  DEBUG_MPS_MESSAGE(BF("in main_thread_roots_scan"));
+  //	mps_thr_t gc__thr = 0; // This isn't passed in but the scanners need it
+  MPS_SCAN_BEGIN(GC_SCAN_STATE) {
+    MPS_LOG(BF("Starting rooted_HeapRoots"));
 
-    vector<core::LoadTimeValues_O**>   globalLoadTimeValuesRoots;
-
-    void registerLoadTimeValuesRoot(core::LoadTimeValues_O** ptr)
-    {
-        globalLoadTimeValuesRoots.push_back(ptr);
+    //            printf("%s:%d  Fixing globalLoadTimeValuesRoots[%d]\n", __FILE__, __LINE__, globalLoadTimeValuesRoots.size() );
+    for (auto &it : globalLoadTimeValuesRoots) {
+      POINTER_FIX(*it);
     }
-
-
-
-
-
-    mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s)
-    {
-        DEBUG_MPS_MESSAGE(BF("in main_thread_roots_scan"));
-//	mps_thr_t gc__thr = 0; // This isn't passed in but the scanners need it 
-        MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-            MPS_LOG(BF("Starting rooted_HeapRoots"));
-
-//            printf("%s:%d  Fixing globalLoadTimeValuesRoots[%d]\n", __FILE__, __LINE__, globalLoadTimeValuesRoots.size() );
-            for ( auto& it : globalLoadTimeValuesRoots ) {
-                POINTER_FIX(*it);
-            }
 //            printf("---------Done\n");
 
-
-	    // Do I need to fix these pointers explicitly???
-	    //gctools::global_Symbol_OP_nil       = symbol_nil.raw_();
-	    //gctools::global_Symbol_OP_unbound   = symbol_unbound.raw_();
-	    //gctools::global_Symbol_OP_deleted   = symbol_deleted.raw_();
-	    //gctools::global_Symbol_OP_sameAsKey = symbol_sameAsKey.raw_();
+// Do I need to fix these pointers explicitly???
+//gctools::global_Symbol_OP_nil       = symbol_nil.raw_();
+//gctools::global_Symbol_OP_unbound   = symbol_unbound.raw_();
+//gctools::global_Symbol_OP_deleted   = symbol_deleted.raw_();
+//gctools::global_Symbol_OP_sameAsKey = symbol_sameAsKey.raw_();
 
 #ifndef RUNNING_GC_BUILDER
 #define GC_GLOBALS
@@ -415,18 +381,16 @@ extern "C" {
 #undef GC_GLOBALS
 #endif
 
-
-	    
 #ifndef RUNNING_GC_BUILDER
 #if USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
- #define GC_GLOBAL_SYMBOLS
- #include "main/clasp_gc.cc"
- #undef GC_GLOBAL_SYMBOLS
+#define GC_GLOBAL_SYMBOLS
+#include "main/clasp_gc.cc"
+#undef GC_GLOBAL_SYMBOLS
 #else
 
 //
-// Ok, this looks nasty but it allows us to avoid running the static analyzer 
-// every time we add or remove a symbol.  Every symbol that is scraped from 
+// Ok, this looks nasty but it allows us to avoid running the static analyzer
+// every time we add or remove a symbol.  Every symbol that is scraped from
 // the source must be listed here and fixed for the garbage collector
 //
 
@@ -454,7 +418,7 @@ extern "C" {
 //#define ClangAstPkg clang
 #define ClbindPkg clbind
 #define ClosPkg clos
-#define CommonLispUserPkg 
+#define CommonLispUserPkg
 #define CompPkg comp
 #define CorePkg core
 #define ExtPkg ext
@@ -466,8 +430,7 @@ extern "C" {
 #define ServeEventPkg serveEvent
 #define SocketsPkg sockets
 
-
-#define DO_SYMBOL(sym,id,pkg,name,exprt) SMART_PTR_FIX(pkg::sym)
+#define DO_SYMBOL(sym, id, pkg, name, exprt) SMART_PTR_FIX(pkg::sym)
 #include <clasp/core/symbols_scraped_inc.h>
 #include <clasp/asttooling/symbols_scraped_inc.h>
 #include <clasp/cffi/symbols_scraped_inc.h>
@@ -518,20 +481,14 @@ extern "C" {
 #endif
 #endif // RUNNING_GC_BUILDER
 
-            MPS_LOG(BF("Done roots_scan"));
-        } MPS_SCAN_END(GC_SCAN_STATE);
-	return MPS_RES_OK;
-    }
-
+    MPS_LOG(BF("Done roots_scan"));
+  }
+  MPS_SCAN_END(GC_SCAN_STATE);
+  return MPS_RES_OK;
+}
 };
 
-
 namespace gctools {
-
-
-
-
-
 };
 //
 // We don't want the static analyzer gc-builder.lsp to see the generated scanners
@@ -547,15 +504,12 @@ namespace gctools {
 // identified by the static analyzer to throw errors in the compilation
 // of gc_interface.cc
 //
-#if 0 
+#if 0
 #ifndef RUNNING_GC_BUILDER
 #define GC_LOCAL_VARIABLES_DANGEROUS_UNROOTED
 #include <clasp/main/clasp_gc.cc>
 #undef GC_LOCAL_VARIABLES_DANGEROUS_UNROOTED
 #endif
 #endif
-
-
-
 
 #endif // ifdef USE_MPS

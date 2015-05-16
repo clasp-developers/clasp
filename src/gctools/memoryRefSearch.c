@@ -1,16 +1,14 @@
 
 #ifdef USE_MPS
-#include "mps/code/mpscams.h"  // AMS pool
+#include "mps/code/mpscams.h" // AMS pool
 #include "mps/code/mpscamc.h" // AMC pool
 #include "mps/code/ring.h"
 #include "mps/code/mpm.h"
 #include "mps/code/mpmtypes.h"
 
+extern void pointerSearcherAddRef(void *searcher, mps_addr_t q);
 
-extern void pointerSearcherAddRef(void* searcher, mps_addr_t q);
-
-void memory_find_ref(Arena arena, Addr ref, void* searcher )
-{
+void memory_find_ref(Arena arena, Addr ref, void *searcher) {
 #if 0
     Ring node, next;  
     Addr base, limit, p;

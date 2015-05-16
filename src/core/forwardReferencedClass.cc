@@ -24,39 +24,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/forwardReferencedClass.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/wrappers.h>
-namespace core
-{
+namespace core {
 
 // ----------------------------------------------------------------------
 //
 
-    EXPOSE_CLASS(core,ForwardReferencedClass_O);
+EXPOSE_CLASS(core, ForwardReferencedClass_O);
 
-    void ForwardReferencedClass_O::exposeCando(::core::Lisp_sp lisp)
-    {
-	::core::class_<ForwardReferencedClass_O>()
-//	.initArgs("(self)")
-	;
-    }
+void ForwardReferencedClass_O::exposeCando(::core::Lisp_sp lisp) {
+  ::core::class_<ForwardReferencedClass_O>()
+      //	.initArgs("(self)")
+      ;
+}
 
-    void ForwardReferencedClass_O::exposePython(::core::Lisp_sp lisp)
-    {
+void ForwardReferencedClass_O::exposePython(::core::Lisp_sp lisp) {
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(Pkg(),ForwardReferencedClass,"","",_LISP)
-//	.initArgs("(self)")
-	;
+  PYTHON_CLASS(Pkg(), ForwardReferencedClass, "", "", _LISP)
+      //	.initArgs("(self)")
+      ;
 #endif
-    }
-
-
-
+}
 
 #if 0
     void ForwardReferencedClass_O::serialize(::serialize::SNodeP node)
@@ -74,25 +68,20 @@ namespace core
     }
 #endif
 
+void ForwardReferencedClass_O::initialize() {
+  _OF();
+  this->Base::initialize();
+  this->_InstanceCoreClass = _Nil<BuiltInClass_O>();
+}
 
-    void ForwardReferencedClass_O::initialize()
-    {_OF();
-        this->Base::initialize();
-	this->_InstanceCoreClass = _Nil<BuiltInClass_O>();
-    }
+void ForwardReferencedClass_O::setInstanceCoreClass(BuiltInClass_sp bic) {
+  _OF();
+  this->_InstanceCoreClass = bic;
+}
 
-
-    void ForwardReferencedClass_O::setInstanceCoreClass(BuiltInClass_sp bic)
-    {_OF();
-	this->_InstanceCoreClass = bic;
-    }
-
-
-    void ForwardReferencedClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)
-    {_OF();
-	IMPLEMENT_MEF(BF("Implement %s") % __FUNCTION__);
-    }
-
-    
+void ForwardReferencedClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node) {
+  _OF();
+  IMPLEMENT_MEF(BF("Implement %s") % __FUNCTION__);
+}
 
 }; /* core */

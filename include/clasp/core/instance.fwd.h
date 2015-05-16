@@ -24,14 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_instance_fwd_H
-#define	_core_instance_fwd_H
+#ifndef _core_instance_fwd_H
+#define _core_instance_fwd_H
 
-namespace core
-{
+namespace core {
 
-    FORWARD(Instance);
-
+FORWARD(Instance);
 };
 
 #endif // _core_instance_fwd_H

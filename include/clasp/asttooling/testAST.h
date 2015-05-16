@@ -55,5 +55,4 @@ namespace asttooling {
 };
 #endif
 
-
 #endif

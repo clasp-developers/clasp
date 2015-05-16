@@ -31,14 +31,9 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/cleavirEnvPackage.fwd.h>
 
-namespace cleavirEnv
-{
+namespace cleavirEnv {
 
-
-    void initialize_cleavirEnvPackage();
-
-
+void initialize_cleavirEnvPackage();
 };
-
 
 #endif

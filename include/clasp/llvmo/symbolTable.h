@@ -24,27 +24,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_llvmo_symbolTable_H
+#ifndef _llvmo_symbolTable_H
 #define _llvmo_symbolTable_H
 
 #include <clasp/core/foundation.h>
 
-namespace kw
-{
+namespace kw {
 
-#define	KeywordPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,export) extern core::Symbol_sp cname;
+#define KeywordPkg_SYMBOLS
+#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
 #include <clasp/llvmo/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
 
 }; /* kw */
 
-namespace llvmo
-{
+namespace llvmo {
 
-#define	LlvmoPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,export) extern core::Symbol_sp cname;
+#define LlvmoPkg_SYMBOLS
+#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
 #include <clasp/llvmo/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef LlvmoPkg_SYMBOLS

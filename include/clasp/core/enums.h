@@ -24,15 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	enums_h
+#ifndef enums_h
 #define enums_h
 
-
-namespace core
-{
-
-
-
-
+namespace core {
 };
 #endif

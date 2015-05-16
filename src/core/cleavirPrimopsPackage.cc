@@ -33,29 +33,22 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/package.h>
 
-namespace cleavirPrimops
-{
+namespace cleavirPrimops {
 
 #pragma GCC visibility push(default)
 #define CleavirPrimopsPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname;
+#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
 #include <clasp/core/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CleavirPrimopsPkg_SYMBOLS
 #pragma GCC visibility pop
 
+SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, callWithVariableBound);
 
-    SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, callWithVariableBound);
-
-
-
-    void initialize_cleavirPrimopsPackage()
-    {
-	list<string> lnicknames;
-	list<string> luse = {"COMMON-LISP"};
-	_lisp->makePackage(CleavirPrimopsPkg,lnicknames,luse);
-	// We don't have to create the CLEAVIR-PRIMOPS symbols here - it's done in bootStrapCoreSymbolMap
-    }
-
-
+void initialize_cleavirPrimopsPackage() {
+  list<string> lnicknames;
+  list<string> luse = {"COMMON-LISP"};
+  _lisp->makePackage(CleavirPrimopsPkg, lnicknames, luse);
+  // We don't have to create the CLEAVIR-PRIMOPS symbols here - it's done in bootStrapCoreSymbolMap
+}
 };

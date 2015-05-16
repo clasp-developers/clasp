@@ -31,14 +31,9 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/closPackage.fwd.h>
 
-namespace clos
-{
+namespace clos {
 
-
-    void initialize_closPackage();
-
-
+void initialize_closPackage();
 };
-
 
 #endif

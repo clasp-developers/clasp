@@ -33,39 +33,35 @@ THE SOFTWARE.
 #define LCC_TO_SMART_PTR(x) (gctools::smart_ptr<core::T_O>((gc::Tagged)x))
 
 #define LCC_UNUSED_1() LCC_UNUSED
-#define LCC_UNUSED_2() LCC_UNUSED,LCC_UNUSED
-#define LCC_UNUSED_3() LCC_UNUSED,LCC_UNUSED,LCC_UNUSED
-#define LCC_UNUSED_4() LCC_UNUSED,LCC_UNUSED,LCC_UNUSED,LCC_UNUSED
-#define LCC_UNUSED_5() LCC_UNUSED,LCC_UNUSED,LCC_UNUSED,LCC_UNUSED,LCC_UNUSED
+#define LCC_UNUSED_2() LCC_UNUSED, LCC_UNUSED
+#define LCC_UNUSED_3() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
+#define LCC_UNUSED_4() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
+#define LCC_UNUSED_5() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
 #define LCC_UNUSED_rest4() LCC_UNUSED
-#define LCC_UNUSED_rest3() LCC_UNUSED,LCC_UNUSED
-#define LCC_UNUSED_rest2() LCC_UNUSED,LCC_UNUSED,LCC_UNUSED
-#define LCC_UNUSED_rest1() LCC_UNUSED,LCC_UNUSED,LCC_UNUSED,LCC_UNUSED
-#define LCC_UNUSED_rest0() LCC_UNUSED,LCC_UNUSED,LCC_UNUSED,LCC_UNUSED,LCC_UNUSED
+#define LCC_UNUSED_rest3() LCC_UNUSED, LCC_UNUSED
+#define LCC_UNUSED_rest2() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
+#define LCC_UNUSED_rest1() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
+#define LCC_UNUSED_rest0() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
 
 #define LCC_PASS_ARGS0() 0, LCC_UNUSED_rest0()
 #define LCC_PASS_ARGS1(a0) 1, a0, LCC_UNUSED_rest1()
-#define LCC_PASS_ARGS2(a0,a1) 2, a0, a1, LCC_UNUSED_rest2()
-#define LCC_PASS_ARGS3(a0,a1,a2) 3, a0, a1, a2, LCC_UNUSED_rest3()
-
+#define LCC_PASS_ARGS2(a0, a1) 2, a0, a1, LCC_UNUSED_rest2()
+#define LCC_PASS_ARGS3(a0, a1, a2) 3, a0, a1, a2, LCC_UNUSED_rest3()
 
 //#define LCC_ARGS_INTRINSICS size_t lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, core::T_O* lcc_fixed_arg3, core::T_O* lcc_fixed_arg4
 
-#define LCC_ARGS_BASE std::size_t lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, core::T_O* lcc_fixed_arg3, core::T_O* lcc_fixed_arg4
+#define LCC_ARGS_BASE std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, core::T_O *lcc_fixed_arg3, core::T_O *lcc_fixed_arg4
 #define LCC_ARGS_ELIPSIS LCC_ARGS_BASE
 #define LCC_ARGS LCC_ARGS_BASE
 // When you pass args to another function use LCC_PASS_ARGS
-#define LCC_PASS_ARGS lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3,lcc_fixed_arg4
+#define LCC_PASS_ARGS lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_fixed_arg3, lcc_fixed_arg4
 
-#define LCC_CLOSED_ENVIRONMENT core::T_O* lcc_closedEnvironment
-#define LCC_RETURN core::T_mv* lcc_resultP
+#define LCC_CLOSED_ENVIRONMENT core::T_O *lcc_closedEnvironment
+#define LCC_RETURN core::T_mv *lcc_resultP
 //#define LCC_RETURN_ARGS core::T_mv* lcc_resultP, LCC_ARGS
 
-
-
 /*! This is a void function */
-#define LISP_CALLING_CONVENTION() invoke( LCC_RETURN, LCC_ARGS )
-
+#define LISP_CALLING_CONVENTION() invoke(LCC_RETURN, LCC_ARGS)
 
 #define MULTIPLE_VALUES_ARRAY core::lisp_multipleValues()
 
@@ -95,24 +91,21 @@ THE SOFTWARE.
 #define LCC_ARG20() (MULTIPLE_VALUES_ARRAY[20])
 
 /* This is a switch statement that copies passed arguments in registers into the MultipleValues array */
-#define LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(_mv)		 \
-    MultipleValues& _mv = lisp_callArgs();						\
-    _mv.setSize(lcc_nargs);						\
-    switch (lcc_nargs)							\
-	{								\
-	default:							\
-	case 5:								\
-	    _mv[4] = lcc_fixed_arg4;					\
-	case 4:								\
-	    _mv[3] = lcc_fixed_arg3;					\
-	case 3:								\
-	    _mv[2] = lcc_fixed_arg2;					\
-	case 2:								\
-	    _mv[1] = lcc_fixed_arg1;					\
-	case 1:								\
-	    _mv[0] = lcc_fixed_arg0;					\
-	case 0:								\
-	    break;							\
-	}
-
-
+#define LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(_mv) \
+  MultipleValues &_mv = lisp_callArgs();                               \
+  _mv.setSize(lcc_nargs);                                              \
+  switch (lcc_nargs) {                                                 \
+  default:                                                             \
+  case 5:                                                              \
+    _mv[4] = lcc_fixed_arg4;                                           \
+  case 4:                                                              \
+    _mv[3] = lcc_fixed_arg3;                                           \
+  case 3:                                                              \
+    _mv[2] = lcc_fixed_arg2;                                           \
+  case 2:                                                              \
+    _mv[1] = lcc_fixed_arg1;                                           \
+  case 1:                                                              \
+    _mv[0] = lcc_fixed_arg0;                                           \
+  case 0:                                                              \
+    break;                                                             \
+  }

@@ -30,81 +30,68 @@ THE SOFTWARE.
 #include <clasp/core/weakHashTable.h>
 #include <clasp/core/wrappers.h>
 
-
 #define WEAK_LOG(x) printf("%s:%d %s\n", __FILE__, __LINE__, (x).str().c_str())
 
 namespace core {
 
-    EXPOSE_CLASS(core,WeakHashTable_O);
+EXPOSE_CLASS(core, WeakHashTable_O);
 
-        
-    void WeakHashTable_O::exposeCando(::core::Lisp_sp lisp)
-    {
-	::core::class_<WeakHashTable_O>()
-	    ;
-    }
-    
-    void WeakHashTable_O::exposePython(Lisp_sp lisp)
-    {_G();
+void WeakHashTable_O::exposeCando(::core::Lisp_sp lisp) {
+  ::core::class_<WeakHashTable_O>();
+}
+
+void WeakHashTable_O::exposePython(Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,WeakHashTable,"","",_lisp)
-	    ;
+  PYTHON_CLASS(CorePkg, WeakHashTable, "", "", _lisp);
 #endif
+}
+
+EXPOSE_CLASS(core, WeakKeyHashTable_O);
+
+void WeakKeyHashTable_O::describe() {
+  KeyBucketsType &keys = *this->_HashTable._Keys;
+  ValueBucketsType &values = *this->_HashTable._Values;
+  printf("WeakKeyHashTable   size: %zu\n", this->_HashTable.length());
+  printf("   keys memory range:  %p  - %p \n", &keys[0].rawRef_(), &keys[this->_HashTable.length()].rawRef_());
+  printf("   _HashTable.length = %d\n", keys.length());
+  printf("   _HashTable.used = %d\n", keys.used());
+  printf("   _HashTable.deleted = %d\n", keys.deleted());
+  for (int i(0), iEnd(this->_HashTable.length()); i < iEnd; ++i) {
+    value_type &key = keys[i];
+    stringstream sentry;
+    sentry.width(3);
+    sentry << i << "  key.px@" << (void *)(&key.rawRef_()) << "  ";
+    if (!key) {
+      sentry << "splatted";
+    } else if (key.unboundp()) {
+      sentry << "unbound";
+    } else if (key.deletedp()) {
+      sentry << "deleted";
+    } else {
+      // key.base_ref().nilp() ) {
+      T_sp okey = key;
+      sentry << _rep_(okey);
+      sentry << "@" << (void *)(key.raw_());
+      sentry << "   -->   ";
+      value_type val = values[i];
+      if (val.sameAsKeyP()) {
+        sentry << "sameAsKey!!!";
+      } else {
+        sentry << _rep_(val);
+      }
     }
+    printf("   %s\n", sentry.str().c_str());
+  }
+}
 
-    EXPOSE_CLASS(core,WeakKeyHashTable_O);
+int WeakKeyHashTable_O::tableSize() const {
+  return this->_HashTable.tableSize();
+}
 
-
-    void WeakKeyHashTable_O::describe()
-    {
-        KeyBucketsType& keys = *this->_HashTable._Keys;
-        ValueBucketsType& values = *this->_HashTable._Values;
-        printf("WeakKeyHashTable   size: %zu\n", this->_HashTable.length());
-        printf("   keys memory range:  %p  - %p \n", &keys[0].rawRef_(), &keys[this->_HashTable.length()].rawRef_());
-        printf("   _HashTable.length = %d\n", keys.length() );
-        printf("   _HashTable.used = %d\n", keys.used() );
-        printf("   _HashTable.deleted = %d\n", keys.deleted() );
-        for ( int i(0), iEnd(this->_HashTable.length()); i<iEnd; ++i ) {
-            value_type& key = keys[i];
-            stringstream sentry;
-            sentry.width(3);
-            sentry << i << "  key.px@" << (void*)(&key.rawRef_()) << "  ";
-            if ( !key ) {
-                sentry << "splatted";
-            } else if ( key.unboundp() ) {
-                sentry << "unbound";
-            } else if ( key.deletedp() ) {
-                sentry << "deleted";
-            } else {
-                // key.base_ref().nilp() ) {
-                T_sp okey = key;
-                sentry << _rep_(okey);
-                sentry << "@" << (void*)(key.raw_());
-                sentry << "   -->   ";
-                value_type val = values[i];
-                if ( val.sameAsKeyP() ) {
-                    sentry << "sameAsKey!!!";
-                } else {
-                    sentry << _rep_(val);
-                }
-            }
-            printf("   %s\n", sentry.str().c_str() );
-        }
-    }
-
-
-
-    int WeakKeyHashTable_O::tableSize() const {
-        return this->_HashTable.tableSize();
-    }
-
-
-
-    bool WeakKeyHashTable_O::fullp()
-    {
-        return this->_HashTable.fullp();
-    }
-
+bool WeakKeyHashTable_O::fullp() {
+  return this->_HashTable.fullp();
+}
 
 #if 0
     /*! Return the key/value as three values
@@ -132,10 +119,9 @@ namespace core {
         return Values(_Nil<T_O>(), val, keyInfo );
     }
 #endif
-    SYMBOL_EXPORT_SC_(KeywordPkg,splatted);
-    SYMBOL_EXPORT_SC_(KeywordPkg,unbound);
-    SYMBOL_EXPORT_SC_(KeywordPkg,deleted);
-
+SYMBOL_EXPORT_SC_(KeywordPkg, splatted);
+SYMBOL_EXPORT_SC_(KeywordPkg, unbound);
+SYMBOL_EXPORT_SC_(KeywordPkg, deleted);
 
 #if 0
 /* Rehash 'tbl' so that it has 'new_length' buckets. If 'key' is found
@@ -189,9 +175,6 @@ namespace core {
         return result;
     }
 #endif
-        
-
-
 
 /* %%MPS: If we fail to find 'key' in the table, and if mps_ld_isstale
  * returns true, then some of the keys in the table might have been
@@ -199,146 +182,112 @@ namespace core {
  * table. See topic/location.
  * Return (values value t) or (values nil nil)
  */
-    T_mv WeakKeyHashTable_O::gethash(T_sp key, T_sp defaultValue)
-    {
-        return this->_HashTable.gethash(key,defaultValue);
-    }
+T_mv WeakKeyHashTable_O::gethash(T_sp key, T_sp defaultValue) {
+  return this->_HashTable.gethash(key, defaultValue);
+}
 
+void WeakKeyHashTable_O::setf_gethash(T_sp key, T_sp value) {
+  this->_HashTable.set(key, value);
+}
 
+void WeakKeyHashTable_O::maphash(std::function<void(T_sp, T_sp)> const &fn) {
+  this->_HashTable.maphash(fn);
+}
 
+void WeakKeyHashTable_O::remhash(T_sp tkey) {
+  this->_HashTable.remhash(tkey);
+}
 
-    void WeakKeyHashTable_O::setf_gethash( T_sp key, T_sp value )
-    {
-        this->_HashTable.set(key,value);
-    }
+void WeakKeyHashTable_O::clrhash() {
+  this->_HashTable.clrhash();
+}
 
-
-
-    void WeakKeyHashTable_O::maphash(std::function<void(T_sp,T_sp)> const& fn)
-    {
-	this->_HashTable.maphash(fn);
-    }
-
-
-
-    void WeakKeyHashTable_O::remhash( T_sp tkey )
-    {
-        this->_HashTable.remhash(tkey);
-    }
-
-
-
-    void WeakKeyHashTable_O::clrhash()
-    {
-        this->_HashTable.clrhash();
-    }
-
-
-
-    
-    
 #define ARGS_core_makeWeakKeyHashTable "(&optional (size 16))"
 #define DECL_core_makeWeakKeyHashTable ""
 #define DOCS_core_makeWeakKeyHashTable "makeWeakKeyHashTable"
-    WeakKeyHashTable_sp core_makeWeakKeyHashTable(Fixnum_sp size)
-    {_G();
-        int sz = unbox_fixnum(size);
-        WeakKeyHashTable_sp ht = gctools::GCObjectAllocator<WeakKeyHashTable_O>::allocate(sz);
-        return ht;
-    }
+WeakKeyHashTable_sp core_makeWeakKeyHashTable(Fixnum_sp size) {
+  _G();
+  int sz = unbox_fixnum(size);
+  WeakKeyHashTable_sp ht = gctools::GCObjectAllocator<WeakKeyHashTable_O>::allocate(sz);
+  return ht;
+}
 
-
-
-    
-    
 #define ARGS_core_weakGethash "(key hash-table &optional default-value)"
 #define DECL_core_weakGethash ""
 #define DOCS_core_weakGethash "weakGethash"
-    T_mv core_weakGethash(T_sp tkey, WeakKeyHashTable_sp ht, T_sp defaultValue)
-    {_G();
-        return ht->gethash(tkey,defaultValue);
-    };
+T_mv core_weakGethash(T_sp tkey, WeakKeyHashTable_sp ht, T_sp defaultValue) {
+  _G();
+  return ht->gethash(tkey, defaultValue);
+};
 
 #define ARGS_core_weakSetfGethash "(ht key value)"
 #define DECL_core_weakSetfGethash ""
 #define DOCS_core_weakSetfGethash "weakSetfGethash"
-    void core_weakSetfGethash(T_sp key, WeakKeyHashTable_sp ht, T_sp val)
-    {_G();
-        ht->setf_gethash(key,val);
-    };
+void core_weakSetfGethash(T_sp key, WeakKeyHashTable_sp ht, T_sp val) {
+  _G();
+  ht->setf_gethash(key, val);
+};
 
-    
 #define ARGS_core_weakRemhash "(ht key)"
 #define DECL_core_weakRemhash ""
 #define DOCS_core_weakRemhash "weakRemhash"
-    void core_weakRemhash(WeakKeyHashTable_sp ht, T_sp key)
-    {_G();
-        ht->remhash(key);
-    };
-
+void core_weakRemhash(WeakKeyHashTable_sp ht, T_sp key) {
+  _G();
+  ht->remhash(key);
+};
 
 #define ARGS_core_weakClrhash "(ht)"
 #define DECL_core_weakClrhash ""
 #define DOCS_core_weakClrhash "weakClrhash"
-    void core_weakClrhash(WeakKeyHashTable_sp ht)
-    {_G();
-        ht->clrhash();
-    };
-
+void core_weakClrhash(WeakKeyHashTable_sp ht) {
+  _G();
+  ht->clrhash();
+};
 
 #define ARGS_core_weakSplat "(ht idx)"
 #define DECL_core_weakSplat ""
 #define DOCS_core_weakSplat "weakSplat"
-    void core_weakSplat(WeakKeyHashTable_sp ht, Fixnum_sp idx)
-    {_G();
-	T_sp splatted; // This will be NULL
-	splatted.reset_(); // This will force it to be NULL
-	TESTING(); // Test the NULL value
-        (*ht->_HashTable._Keys).set(unbox_fixnum(idx),WeakKeyHashTable_O::value_type(splatted));
-    };
-    
+void core_weakSplat(WeakKeyHashTable_sp ht, Fixnum_sp idx) {
+  _G();
+  T_sp splatted;     // This will be NULL
+  splatted.reset_(); // This will force it to be NULL
+  TESTING();         // Test the NULL value
+  (*ht->_HashTable._Keys).set(unbox_fixnum(idx), WeakKeyHashTable_O::value_type(splatted));
+};
 
 #define ARGS_core_weakRehash "(ht &optional sz)"
 #define DECL_core_weakRehash ""
 #define DOCS_core_weakRehash "weakRehash"
-    void core_weakRehash(WeakKeyHashTable_sp ht, T_sp sz)
-    {_G();
-        size_t newLength;
-        if ( sz.nilp() ) {
-            newLength = ht->_HashTable._Keys->length()*2;
-        } else {
-            newLength = unbox_fixnum(gc::As<Fixnum_sp>(sz));
-	    //	    newLength = unbox_fixnum(As<Fixnum_O>(sz));
-        }
-        WeakKeyHashTable_O::value_type dummyKey;
-        size_t dummyPos;
-        ht->_HashTable.rehash(newLength,dummyKey,dummyPos);
-    };
-    
-    
+void core_weakRehash(WeakKeyHashTable_sp ht, T_sp sz) {
+  _G();
+  size_t newLength;
+  if (sz.nilp()) {
+    newLength = ht->_HashTable._Keys->length() * 2;
+  } else {
+    newLength = unbox_fixnum(gc::As<Fixnum_sp>(sz));
+    //	    newLength = unbox_fixnum(As<Fixnum_O>(sz));
+  }
+  WeakKeyHashTable_O::value_type dummyKey;
+  size_t dummyPos;
+  ht->_HashTable.rehash(newLength, dummyKey, dummyPos);
+};
 
+void WeakKeyHashTable_O::exposeCando(::core::Lisp_sp lisp) {
+  ::core::class_<WeakKeyHashTable_O>()
+      .def("weakHashTableSize", &WeakKeyHashTable_O::tableSize);
+  CoreDefun(makeWeakKeyHashTable);
+  CoreDefun(weakGethash);
+  CoreDefun(weakSetfGethash);
+  CoreDefun(weakRemhash);
+  CoreDefun(weakClrhash);
+  CoreDefun(weakSplat);
+  CoreDefun(weakRehash);
+}
 
-
-    void WeakKeyHashTable_O::exposeCando(::core::Lisp_sp lisp)
-    {
-	::core::class_<WeakKeyHashTable_O>()
-            .def("weakHashTableSize",&WeakKeyHashTable_O::tableSize)
-	    ;
-        CoreDefun(makeWeakKeyHashTable);
-        CoreDefun(weakGethash);
-        CoreDefun(weakSetfGethash);
-        CoreDefun(weakRemhash);
-        CoreDefun(weakClrhash);
-        CoreDefun(weakSplat);
-        CoreDefun(weakRehash);
-    }
-    
-    void WeakKeyHashTable_O::exposePython(Lisp_sp lisp)
-    {_G();
+void WeakKeyHashTable_O::exposePython(Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,WeakKeyHashTable,"","",_lisp)
-	    ;
+  PYTHON_CLASS(CorePkg, WeakKeyHashTable, "", "", _lisp);
 #endif
-    }
-
+}
 };

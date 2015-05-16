@@ -24,12 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-       
-       
+
 //
 // (C) 2004 Christian E. Schafmeister
 //
-
 
 /* tnc : truncated newton bound contrained minimization
          using gradient information, in C */
@@ -94,23 +92,21 @@ typedef enum {
   TNC_MSG_VERS = 4, /* Version info */
   TNC_MSG_EXIT = 8, /* Exit reasons */
 
-  TNC_MSG_ALL = TNC_MSG_ITER | TNC_MSG_INFO
-    | TNC_MSG_VERS | TNC_MSG_EXIT /* All messages */
+  TNC_MSG_ALL = TNC_MSG_ITER | TNC_MSG_INFO | TNC_MSG_VERS | TNC_MSG_EXIT /* All messages */
 } tnc_message;
 
 /*
  * Possible return values for tnc
  */
-typedef enum
-{
-  TNC_EINVAL       = -2, /* Invalid parameters (n<1)*/
-  TNC_INFEASIBLE   = -1, /* Infeasible (low > up) */
-  TNC_LOCALMINIMUM =  0, /* Local minima reach (|pg| ~= 0) */
-  TNC_CONVERGED    =  1, /* Converged (]f_n-f_(n-1)] ~= 0) */
-  TNC_MAXFUN       =  2, /* Max. number of function evaluations reach */
-  TNC_LSFAIL       =  3, /* Linear search failed */
-  TNC_CONSTANT     =  4, /* All lower bounds are equal to the upper bounds */
-  TNC_NOPROGRESS   =  5  /* Unable to progress */
+typedef enum {
+  TNC_EINVAL = -2,      /* Invalid parameters (n<1)*/
+  TNC_INFEASIBLE = -1,  /* Infeasible (low > up) */
+  TNC_LOCALMINIMUM = 0, /* Local minima reach (|pg| ~= 0) */
+  TNC_CONVERGED = 1,    /* Converged (]f_n-f_(n-1)] ~= 0) */
+  TNC_MAXFUN = 2,       /* Max. number of function evaluations reach */
+  TNC_LSFAIL = 3,       /* Linear search failed */
+  TNC_CONSTANT = 4,     /* All lower bounds are equal to the upper bounds */
+  TNC_NOPROGRESS = 5    /* Unable to progress */
 } tnc_rc;
 
 /*
@@ -167,10 +163,10 @@ typedef void tnc_function(double x[], double *f, double g[], void *state);
  *
  */
 extern int tnc(int n, double x[], double *f, double g[],
-  tnc_function *function, void *state,
-  double low[], double up[], double scale[],
-  int messages, int maxCGit, int maxnfeval, double eta, double stepmx,
-  double accuracy, double fmin, double ftol, double rescale);
+               tnc_function *function, void *state,
+               double low[], double up[], double scale[],
+               int messages, int maxCGit, int maxnfeval, double eta, double stepmx,
+               double accuracy, double fmin, double ftol, double rescale);
 
 #ifdef __cplusplus
 }

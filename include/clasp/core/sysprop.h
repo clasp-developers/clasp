@@ -24,26 +24,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_sysprop_H
+#ifndef _core_sysprop_H
 #define _core_sysprop_H
 
 #include <clasp/core/object.h>
 #include <clasp/core/corePackage.fwd.h>
 
+namespace core {
 
-namespace core
-{
+T_sp af_put_sysprop(T_sp key, T_sp area, T_sp value);
 
+T_mv af_get_sysprop(T_sp key, T_sp area);
 
-    T_sp af_put_sysprop(T_sp key, T_sp area, T_sp value);
-
-    T_mv af_get_sysprop(T_sp key, T_sp area);
-
-
-
-
-    void initialize_sysprop();
-
+void initialize_sysprop();
 };
 
 #endif /* _core_sysprop_H */

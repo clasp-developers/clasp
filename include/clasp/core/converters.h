@@ -24,11 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	converters_H
+#ifndef converters_H
 #define converters_H
-
-
-
 
 // ------------------------------------------------------------
 //
@@ -37,10 +34,9 @@ THE SOFTWARE.
 //
 //
 template <typename T_return>
-struct from_object
-{
-    typedef	T_return	ExpectedType;
-    typedef	T_return	DeclareType;
+struct from_object {
+  typedef T_return ExpectedType;
+  typedef T_return DeclareType;
 #if 0
     static ExpectedType convert(core::T_sp o)
     {_G();
@@ -59,7 +55,5 @@ struct from_object
     }
 #endif
 };
-
-
 
 #endif // converters_H

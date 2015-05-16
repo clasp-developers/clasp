@@ -24,35 +24,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	asttooling_asttoolingPackage_H
+#ifndef asttooling_asttoolingPackage_H
 #define asttooling_asttoolingPackage_H
 
 #include <clasp/core/common.h>
 
+NAMESPACE_PACKAGE_ASSOCIATION(asttooling, AstToolingPkg, "AST-TOOLING");
 
-NAMESPACE_PACKAGE_ASSOCIATION(asttooling,AstToolingPkg,"AST-TOOLING");
+namespace asttooling {
 
+class AsttoolingExposer : public core::Exposer {
+private:
+public:
+  DISABLE_NEW();
+  AsttoolingExposer(core::Lisp_sp lisp) : Exposer(lisp, AstToolingPkg){
 
-namespace asttooling
-{
-
-
-
-
-    class AsttoolingExposer : public core::Exposer
-    {
-    private:
-    public:
-        DISABLE_NEW();
-        AsttoolingExposer(core::Lisp_sp lisp) : Exposer(lisp,AstToolingPkg) {
-        
-    };
-        virtual void expose(core::Lisp_sp lisp,WhatToExpose what) const;
-    };
-
-
-
-
-
+                                          };
+  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
+};
 };
 #endif

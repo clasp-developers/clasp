@@ -26,27 +26,23 @@ THE SOFTWARE.
 /* -^- */
 #ifndef lispStream_fwd_H
 #define lispStream_fwd_H
-namespace core
-{
-    FORWARD(Stream);
-    FORWARD(AnsiStream);
-    FORWARD(StringStream);
-    FORWARD(StringInputStream);
-    FORWARD(StringOutputStream);
-    FORWARD(SynonymStream);
-    FORWARD(TwoWayStream);
-    FORWARD(BroadcastStream);
-    FORWARD(EchoStream);
-    FORWARD(FileStream);
-    FORWARD(IOFileStream);
-    FORWARD(IOStreamStream);
-    FORWARD(ConcatenatedStream);
+namespace core {
+FORWARD(Stream);
+FORWARD(AnsiStream);
+FORWARD(StringStream);
+FORWARD(StringInputStream);
+FORWARD(StringOutputStream);
+FORWARD(SynonymStream);
+FORWARD(TwoWayStream);
+FORWARD(BroadcastStream);
+FORWARD(EchoStream);
+FORWARD(FileStream);
+FORWARD(IOFileStream);
+FORWARD(IOStreamStream);
+FORWARD(ConcatenatedStream);
 
-    void clasp_write_string(const string& str, T_sp strm);
+void clasp_write_string(const string &str, T_sp strm);
 
-#define STDOUT_BFORMAT(x) core::clasp_write_string((x).str(),cl::_sym_STARstandard_outputSTAR->symbolValue())
-
-
-
+#define STDOUT_BFORMAT(x) core::clasp_write_string((x).str(), cl::_sym_STARstandard_outputSTAR->symbolValue())
 }
 #endif

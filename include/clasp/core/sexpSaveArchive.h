@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	SEXP_SAVE_ARCHIVE_H //[
-#define	SEXP_SAVE_ARCHIVE_H
+#ifndef SEXP_SAVE_ARCHIVE_H //[
+#define SEXP_SAVE_ARCHIVE_H
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -35,20 +35,18 @@ THE SOFTWARE.
 
 namespace core {
 
+SMART(SexpSaveArchive);
+class SexpSaveArchive_O : public SaveArchive_O {
+  LISP_BASE1(SaveArchive_O);
+  LISP_CLASS(core, CorePkg, SexpSaveArchive_O, "SexpSaveArchive");
 
-    SMART(SexpSaveArchive);
-    class SexpSaveArchive_O : public SaveArchive_O
-    {
-	LISP_BASE1(SaveArchive_O);
-	LISP_CLASS(core,CorePkg,SexpSaveArchive_O,"SexpSaveArchive");
-    public:
-	void write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stream );
+public:
+  void write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stream);
 
-	virtual void 	sexpSaveArchiveWrite( T_sp streamDesignator );
+  virtual void sexpSaveArchiveWrite(T_sp streamDesignator);
 
-	DEFAULT_CTOR_DTOR(SexpSaveArchive_O);
-    };
-
+  DEFAULT_CTOR_DTOR(SexpSaveArchive_O);
+};
 
 }; // namespace core
 

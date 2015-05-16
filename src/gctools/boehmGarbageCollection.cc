@@ -25,19 +25,15 @@ THE SOFTWARE.
 */
 /* -^- */
 
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/boehmGarbageCollection.h>
 
-
-
 namespace gctools {
 
 #ifdef USE_BOEHM_MEMORY_MARKER
-    int globalBoehmMarker = 0;
+int globalBoehmMarker = 0;
 #endif
-
 };

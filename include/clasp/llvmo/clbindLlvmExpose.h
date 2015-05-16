@@ -29,9 +29,7 @@ THE SOFTWARE.
 
 namespace llvmo {
 
-
-    void initialize_clbind_llvm_expose();
-
+void initialize_clbind_llvm_expose();
 };
 
 #endif

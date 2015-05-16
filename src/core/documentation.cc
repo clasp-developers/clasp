@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 #include <clasp/core/common.h>
 #include <clasp/core/str.h>
 #include <clasp/core/symbolTable.h>
@@ -36,135 +36,112 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/documentation.h>
 #include <clasp/core/wrappers.h>
-namespace core
-{
-
+namespace core {
 
 #define DOCS_af_record_cons "record_cons - see ECL helpfile.lsp>>record-cons"
 #define LOCK_af_record_cons 1
 #define ARGS_af_record_cons "(record key sub-key)"
 #define DECL_af_record_cons ""
-    T_sp af_record_cons(List_sp record, T_sp key, T_sp sub_key)
-    {_G();
-	Cons_sp cons = Cons_O::create(key,sub_key);
-	for ( auto cur : coerce_to_list(record) ) {
-	    List_sp i = oCar(cur);
-	    T_sp obj = oCar(i);
-	    if ( eval::funcall(cl::_sym_equalp,obj,cons).isTrue() ) return(i);
-	}
-	return (_Nil<T_O>());
-    }
-
-
-
+T_sp af_record_cons(List_sp record, T_sp key, T_sp sub_key) {
+  _G();
+  Cons_sp cons = Cons_O::create(key, sub_key);
+  for (auto cur : coerce_to_list(record)) {
+    List_sp i = oCar(cur);
+    T_sp obj = oCar(i);
+    if (eval::funcall(cl::_sym_equalp, obj, cons).isTrue())
+      return (i);
+  }
+  return (_Nil<T_O>());
+}
 
 #define DOCS_af_record_field "record_field see ecl>>helpfile.lsp>>record-field"
 #define LOCK_af_record_field 1
 #define ARGS_af_record_field "(record key sub-key)"
 #define DECL_af_record_field ""
-    T_sp af_record_field(List_sp record, T_sp key, T_sp sub_key)
-    {_G();
-	List_sp cons = eval::funcall(_sym_record_cons,record,key,sub_key);;
-	return oCdr(cons);
-    }
-
-
+T_sp af_record_field(List_sp record, T_sp key, T_sp sub_key) {
+  _G();
+  List_sp cons = eval::funcall(_sym_record_cons, record, key, sub_key);
+  ;
+  return oCdr(cons);
+}
 
 #define DOCS_af_set_record_field "set_record_field"
 #define LOCK_af_set_record_field 1
 #define ARGS_af_set_record_field "(record key sub-key value)"
 #define DECL_af_set_record_field ""
-    T_sp af_set_record_field(List_sp record, T_sp key, T_sp sub_key, Str_sp value)
-    {_G();
-	List_sp field = gc::As<List_sp>(eval::funcall(_sym_record_cons,record,key,sub_key));
-	if ( field.notnilp() )
-	{
-	    field.asCons()->setCdr(value);
-	} else
-	{
-	    Cons_sp total_key = Cons_O::create(key,sub_key);
-	    Cons_sp new_field = Cons_O::create(total_key,value);
-	    record = Cons_O::create(new_field,record);
-	}
-	return record;
-    };
-
-
+T_sp af_set_record_field(List_sp record, T_sp key, T_sp sub_key, Str_sp value) {
+  _G();
+  List_sp field = gc::As<List_sp>(eval::funcall(_sym_record_cons, record, key, sub_key));
+  if (field.notnilp()) {
+    field.asCons()->setCdr(value);
+  } else {
+    Cons_sp total_key = Cons_O::create(key, sub_key);
+    Cons_sp new_field = Cons_O::create(total_key, value);
+    record = Cons_O::create(new_field, record);
+  }
+  return record;
+};
 
 #define DOCS_af_rem_record_field "rem_record_field"
 #define LOCK_af_rem_record_field 1
 #define ARGS_af_rem_record_field "(record key sub-key)"
 #define DECL_af_rem_record_field ""
-    T_sp af_rem_record_field(List_sp record, T_sp key, T_sp sub_key )
-    {_G();
-	List_sp x = af_record_cons(record,key,sub_key);
-	if ( x.notnilp() )
-	{
-	    List_sp output = _Nil<T_O>();
-	    for ( auto cur : record ) {
-		List_sp i = oCar(cur);
-		if ( i != x ) {
-		    output = Cons_O::create(i,output);
-		}
-	    }
-	    return output;
-	}
-	return record;
+T_sp af_rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
+  _G();
+  List_sp x = af_record_cons(record, key, sub_key);
+  if (x.notnilp()) {
+    List_sp output = _Nil<T_O>();
+    for (auto cur : record) {
+      List_sp i = oCar(cur);
+      if (i != x) {
+        output = Cons_O::create(i, output);
+      }
     }
-
-
-
-
+    return output;
+  }
+  return record;
+}
 
 #define DOCS_af_annotate "annotate - see ecl>>helpfile.lsp>>annotate; key is either 'documentation or 'setf-documentation and I currently think (object) must be a symbol so I'll trigger an exception if it isn't"
 #define LOCK_af_annotate 1
 #define ARGS_af_annotate "(object key sub-key value)"
 #define DECL_af_annotate ""
-    T_mv af_annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value )
-    {_G();
-	HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
-	List_sp record = coerce_to_list(dict->gethash(object,_Nil<T_O>()));
-	record = coerce_to_list(af_set_record_field(record,key,sub_key,value));
-        T_sp result = dict->hash_table_setf_gethash(object,record);
-	return(Values(result));
-    };
-
-
+T_mv af_annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value) {
+  _G();
+  HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
+  List_sp record = coerce_to_list(dict->gethash(object, _Nil<T_O>()));
+  record = coerce_to_list(af_set_record_field(record, key, sub_key, value));
+  T_sp result = dict->hash_table_setf_gethash(object, record);
+  return (Values(result));
+};
 
 #define DOCS_af_ensure_documentation "ensure_documentation"
 #define LOCK_af_ensure_documentation 1
 #define ARGS_af_ensure_documentation "(sub-key symbol value)"
 #define DECL_af_ensure_documentation ""
-    SYMBOL_EXPORT_SC_(ClPkg,documentation);
-    void af_ensure_documentation(T_sp sub_key, Symbol_sp symbol, Str_sp value )
-    {_G();
-	af_annotate(symbol,cl::_sym_documentation,sub_key,value);
-    };
+SYMBOL_EXPORT_SC_(ClPkg, documentation);
+void af_ensure_documentation(T_sp sub_key, Symbol_sp symbol, Str_sp value) {
+  _G();
+  af_annotate(symbol, cl::_sym_documentation, sub_key, value);
+};
 
-
-
-
-
-
-    void initialize_documentation_primitives(Lisp_sp lisp)
-    {_G();
-	SYMBOL_SC_(CorePkg,record_cons);
-	Defun(record_cons);
-	SYMBOL_SC_(CorePkg,record_field);
-	Defun(record_field);
-	SYMBOL_SC_(CorePkg,set_record_field);
-	Defun(set_record_field);
-	SYMBOL_SC_(CorePkg,rem_record_field);
-	Defun(rem_record_field);
-	SYMBOL_SC_(CorePkg,annotate);
-	Defun(annotate);
-	SYMBOL_SC_(CorePkg,ensure_documentation);
-	Defun(ensure_documentation);
-	// TODO move help_file.dat definition somewhere better
-	_sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(),Str_O::create("help_file.dat")));
-	_sym_STARdocumentation_poolSTAR->exportYourself();
-    }
-
-
+void initialize_documentation_primitives(Lisp_sp lisp) {
+  _G();
+  SYMBOL_SC_(CorePkg, record_cons);
+  Defun(record_cons);
+  SYMBOL_SC_(CorePkg, record_field);
+  Defun(record_field);
+  SYMBOL_SC_(CorePkg, set_record_field);
+  Defun(set_record_field);
+  SYMBOL_SC_(CorePkg, rem_record_field);
+  Defun(rem_record_field);
+  SYMBOL_SC_(CorePkg, annotate);
+  Defun(annotate);
+  SYMBOL_SC_(CorePkg, ensure_documentation);
+  Defun(ensure_documentation);
+  // TODO move help_file.dat definition somewhere better
+  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), Str_O::create("help_file.dat")));
+  _sym_STARdocumentation_poolSTAR->exportYourself();
+}
 
 }; /* namespace */

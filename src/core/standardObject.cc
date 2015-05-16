@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/lisp.h>
 #include <clasp/core/standardObject.h>
@@ -34,16 +34,10 @@ THE SOFTWARE.
 #include <clasp/core/standardClass.h>
 #include <clasp/core/wrappers.h>
 
+namespace core {
 
-namespace core
-{
-
-
-
-
-
-    StandardObject_O::StandardObject_O() : StandardObject_O::Base()  { /*this->_InstanceClass.reset();*/ };
-    StandardObject_O::~StandardObject_O() {};
+StandardObject_O::StandardObject_O() : StandardObject_O::Base(){/*this->_InstanceClass.reset();*/};
+StandardObject_O::~StandardObject_O(){};
 #if 0
     StandardObject_sp StandardObject_O::create(StandardClass_sp instanceClass, Lisp_sp lisp)
     {_G();
@@ -53,46 +47,37 @@ namespace core
     }
 #endif
 
-    void	StandardObject_O::initialize()
-    {_G();
-	LOG(BF("Initializing StandardObject"));
-	this->Base::initialize();
-//	Class_mv sc = cl_findClass(cl::_sym_StandardClass_O,true,_Nil<Environment_O>());
-//	this->_InstanceClass = sc.as<StandardClass_O>();
-    }
-
-
+void StandardObject_O::initialize() {
+  _G();
+  LOG(BF("Initializing StandardObject"));
+  this->Base::initialize();
+  //	Class_mv sc = cl_findClass(cl::_sym_StandardClass_O,true,_Nil<Environment_O>());
+  //	this->_InstanceClass = sc.as<StandardClass_O>();
+}
 
 #if defined(OLD_SERIALIZE)
-    void	StandardObject_O::serialize(serialize::SNode node)
-    {
-	IMPLEMENT_ME(); // handle slots properly so they are indexed by name
+void StandardObject_O::serialize(serialize::SNode node) {
+  IMPLEMENT_ME(); // handle slots properly so they are indexed by name
 #if 0
 	this->Base::serialize(node); 
 	node->archiveObject("slots",this->_SlotBinder);
 #endif
-    }
+}
 #endif
 
-
-
-
 #if defined(XML_ARCHIVE)
-    void	StandardObject_O::archiveBase(ArchiveP node)
-    {
-	IMPLEMENT_ME(); // handle slots properly so that they are indexed by name
+void StandardObject_O::archiveBase(ArchiveP node) {
+  IMPLEMENT_ME(); // handle slots properly so that they are indexed by name
 #if 0
 	this->Base::archiveBase(node); 
 	node->archiveObject("slots",this->_SlotBinder);
 #endif
-    }
+}
 #endif // defined(XML_ARCHIVE)
 
-
-    string StandardObject_O::__repr__() const
-    {
-	stringstream ss;
-	ss << this->_instanceClass()->classNameAsString() << " ";
+string StandardObject_O::__repr__() const {
+  stringstream ss;
+  ss << this->_instanceClass()->classNameAsString() << " ";
 #if 0
 	ASSERT(this->_InstanceClass);
 	if ( this->_InstanceClass.unboundp() )
@@ -117,9 +102,8 @@ namespace core
 	    ss << "]" << std::endl;
 	}
 #endif
-	return ss.str();
-    }
-
+  return ss.str();
+}
 
 #if 0
     T_sp& StandardObject_O::slot_ref(Symbol_sp slot_name) throw(SlotRefFailed)
@@ -137,7 +121,6 @@ namespace core
     }
 #endif
 
-
 #if 0
     void StandardObject_O::allocate_slot_storage(uint numSlots, T_sp initialValue )
     {_G();
@@ -145,22 +128,16 @@ namespace core
     }
 #endif
 
+void StandardObject_O::exposeCando(Lisp_sp lisp) {
+  class_<StandardObject_O>();
+}
 
-    void StandardObject_O::exposeCando(Lisp_sp lisp)
-	{
-	    class_<StandardObject_O>()
-		;
-	}
-
-    void StandardObject_O::exposePython(Lisp_sp lisp)
-    {_G();
+void StandardObject_O::exposePython(Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,StandardObject,"","",_lisp)
-		;
+  PYTHON_CLASS(CorePkg, StandardObject, "", "", _lisp);
 #endif
-	}
+}
 
-
-
-    EXPOSE_CLASS(core,StandardObject_O);
+EXPOSE_CLASS(core, StandardObject_O);
 };

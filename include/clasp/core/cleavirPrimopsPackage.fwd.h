@@ -27,8 +27,6 @@ THE SOFTWARE.
 #ifndef cleavirPrimopsPackage_fwd_H
 #define cleavirPrimopsPackage_fwd_H
 
-NAMESPACE_PACKAGE_ASSOCIATION(cleavirPrimops,CleavirPrimopsPkg,"CLEAVIR-PRIMOP")
-
-
+NAMESPACE_PACKAGE_ASSOCIATION(cleavirPrimops, CleavirPrimopsPkg, "CLEAVIR-PRIMOP")
 
 #endif

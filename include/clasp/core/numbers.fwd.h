@@ -26,23 +26,22 @@ THE SOFTWARE.
 /* -^- */
 #ifndef values_fwd_H
 #define values_fwd_H
-namespace core
-{
+namespace core {
 FORWARD(Number);
-    FORWARD(Real);
-    FORWARD(Rational);
-    FORWARD(Integer);
+FORWARD(Real);
+FORWARD(Rational);
+FORWARD(Integer);
 #ifdef USE_HEAP_FIXNUM
-    FORWARD(Fixnum);
+FORWARD(Fixnum);
 #endif
-    FORWARD(Float);
-    FORWARD(ShortFloat);
-    FORWARD(DoubleFloat);
+FORWARD(Float);
+FORWARD(ShortFloat);
+FORWARD(DoubleFloat);
 #ifdef CLASP_LONG_FLOAT
-    FORWARD(LongFloat);
+FORWARD(LongFloat);
 #endif
-    FORWARD(Complex);
-    FORWARD(Ratio);
-    FORWARD(Bool);
+FORWARD(Complex);
+FORWARD(Ratio);
+FORWARD(Bool);
 }
 #endif

@@ -28,272 +28,219 @@ namespace core {
  * BIT OPERATIONS FOR FIXNUMS
  */
 
-    static gctools::Fixnum
-    ior_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(i | j);
-    }
+static gctools::Fixnum
+ior_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (i | j);
+}
 
-    static gctools::Fixnum
-    xor_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(i ^ j);
-    }
+static gctools::Fixnum
+xor_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (i ^ j);
+}
 
-    static gctools::Fixnum
-    and_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(i & j);
-    }
+static gctools::Fixnum
+and_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (i & j);
+}
 
-    static gctools::Fixnum
-    eqv_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(~(i ^ j));
-    }
+static gctools::Fixnum
+eqv_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (~(i ^ j));
+}
 
-    static gctools::Fixnum
-    nand_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(~(i & j));
-    }
+static gctools::Fixnum
+nand_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (~(i & j));
+}
 
-    static gctools::Fixnum
-    nor_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(~(i | j));
-    }
+static gctools::Fixnum
+nor_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (~(i | j));
+}
 
-    static gctools::Fixnum
-    andc1_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return((~i) & j);
-    }
+static gctools::Fixnum
+andc1_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return ((~i) & j);
+}
 
-    static gctools::Fixnum
-    andc2_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(i & (~j));
-    }
+static gctools::Fixnum
+andc2_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (i & (~j));
+}
 
-    static gctools::Fixnum
-    orc1_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return((~i) | j);
-    }
+static gctools::Fixnum
+orc1_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return ((~i) | j);
+}
 
-    static gctools::Fixnum
-    orc2_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(i | (~j));
-    }
+static gctools::Fixnum
+orc2_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (i | (~j));
+}
 
-    static gctools::Fixnum
-    b_clr_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(0);
-    }
+static gctools::Fixnum
+b_clr_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (0);
+}
 
-    static gctools::Fixnum
-    b_set_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(-1);
-    }
+static gctools::Fixnum
+b_set_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (-1);
+}
 
-    static gctools::Fixnum
-    b_1_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(i);
-    }
+static gctools::Fixnum
+b_1_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (i);
+}
 
-    static gctools::Fixnum
-    b_2_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(j);
-    }
+static gctools::Fixnum
+b_2_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (j);
+}
 
-    static gctools::Fixnum
-    b_c1_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(~i);
-    }
+static gctools::Fixnum
+b_c1_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (~i);
+}
 
-    static gctools::Fixnum
-    b_c2_op(gctools::Fixnum i, gctools::Fixnum j)
-    {
-	return(~j);
-    }
+static gctools::Fixnum
+b_c2_op(gctools::Fixnum i, gctools::Fixnum j) {
+  return (~j);
+}
 
-    typedef gctools::Fixnum (*bit_operator)(gctools::Fixnum, gctools::Fixnum);
+typedef gctools::Fixnum (*bit_operator)(gctools::Fixnum, gctools::Fixnum);
 
-    static bit_operator fixnum_operations[16] = {
-	b_clr_op,
-	and_op,
-	andc2_op,
-	b_1_op,
-	andc1_op,
-	b_2_op,
-	xor_op,
-	ior_op,
-	nor_op,
-	eqv_op,
-	b_c2_op,
-	orc2_op,
-	b_c1_op,
-	orc1_op,
-	nand_op,
-	b_set_op};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+static bit_operator fixnum_operations[16] = {
+    b_clr_op,
+    and_op,
+    andc2_op,
+    b_1_op,
+    andc1_op,
+    b_2_op,
+    xor_op,
+    ior_op,
+    nor_op,
+    eqv_op,
+    b_c2_op,
+    orc2_op,
+    b_c1_op,
+    orc1_op,
+    nand_op,
+    b_set_op};
 
 // ----------------------------------------------------------------------
 
+static void
+mpz_ior_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  mpz_ior(out->get().get_mpz_t(), i->get().get_mpz_t(), j->get().get_mpz_t());
+}
 
+static void
+mpz_xor_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  mpz_xor(out->get().get_mpz_t(), i->get().get_mpz_t(), j->get().get_mpz_t());
+}
 
-    static void
-    mpz_ior_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-        mpz_ior(out->get().get_mpz_t(), i->get().get_mpz_t(), j->get().get_mpz_t() );
-    }
+static void
+mpz_and_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  mpz_and(out->get().get_mpz_t(), i->get().get_mpz_t(), j->get().get_mpz_t());
+}
 
-    static void
-    mpz_xor_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	mpz_xor(out->get().get_mpz_t(), i->get().get_mpz_t(), j->get().get_mpz_t());
-    }
+static void
+mpz_eqv_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  mpz_xor(out->get().get_mpz_t(), i->get().get_mpz_t(), j->get().get_mpz_t());
+  mpz_com(out->get().get_mpz_t(), out->get().get_mpz_t());
+}
 
-    static void
-    mpz_and_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	mpz_and(out->get().get_mpz_t(), i->get().get_mpz_t(), j->get().get_mpz_t());
-    }
+static void
+mpz_nand_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  mpz_and(out->get().get_mpz_t(), i->get().get_mpz_t(), j->get().get_mpz_t());
+  mpz_com(out->get().get_mpz_t(), out->get().get_mpz_t());
+}
 
-    static void
-    mpz_eqv_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	mpz_xor(out->get().get_mpz_t(), i->get().get_mpz_t(), j->get().get_mpz_t());
-	mpz_com(out->get().get_mpz_t(), out->get().get_mpz_t());
-    }
+static void
+mpz_nor_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  mpz_ior(out->get().get_mpz_t(), i->get().get_mpz_t(), j->get().get_mpz_t());
+  mpz_com(out->get().get_mpz_t(), out->get().get_mpz_t());
+}
 
-    static void
-    mpz_nand_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	mpz_and(out->get().get_mpz_t(), i->get().get_mpz_t(), j->get().get_mpz_t());
-	mpz_com(out->get().get_mpz_t(), out->get().get_mpz_t());
-    }
+static void
+mpz_andc1_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  mpz_com(out->get().get_mpz_t(), i->get().get_mpz_t());
+  mpz_and(out->get().get_mpz_t(), out->get().get_mpz_t(), j->get().get_mpz_t());
+}
 
-    static void
-    mpz_nor_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	mpz_ior(out->get().get_mpz_t(), i->get().get_mpz_t(), j->get().get_mpz_t());
-	mpz_com(out->get().get_mpz_t(), out->get().get_mpz_t());
-    }
+static void
+mpz_orc1_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  mpz_com(out->get().get_mpz_t(), i->get().get_mpz_t());
+  mpz_ior(out->get().get_mpz_t(), out->get().get_mpz_t(), j->get().get_mpz_t());
+}
 
-    static void
-    mpz_andc1_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	mpz_com(out->get().get_mpz_t(), i->get().get_mpz_t());
-	mpz_and(out->get().get_mpz_t(), out->get().get_mpz_t(), j->get().get_mpz_t());
-    }
+static void
+mpz_andc2_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  /* (i & ~j) = ~((~i) | j) */
+  mpz_orc1_op(out, i, j);
+  mpz_com(out->get().get_mpz_t(), out->get().get_mpz_t());
+}
 
-    static void
-    mpz_orc1_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	mpz_com(out->get().get_mpz_t(), i->get().get_mpz_t());
-	mpz_ior(out->get().get_mpz_t(), out->get().get_mpz_t(), j->get().get_mpz_t());
-    }
+static void
+mpz_orc2_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  /* (i | ~j) = ~((~i) & j) */
+  mpz_andc1_op(out, i, j);
+  mpz_com(out->get().get_mpz_t(), out->get().get_mpz_t());
+}
 
-    static void
-    mpz_andc2_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	/* (i & ~j) = ~((~i) | j) */
-	mpz_orc1_op(out, i, j);
-	mpz_com(out->get().get_mpz_t(), out->get().get_mpz_t());
-    }
+static void
+mpz_b_clr_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  mpz_set_si(out->get().get_mpz_t(), 0);
+}
 
-    static void
-    mpz_orc2_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	/* (i | ~j) = ~((~i) & j) */
-	mpz_andc1_op(out, i, j);
-	mpz_com(out->get().get_mpz_t(), out->get().get_mpz_t());
-    }
+static void
+mpz_b_set_op(Bignum_sp o, Bignum_sp i, Bignum_sp j) {
+  mpz_set_si(o->get().get_mpz_t(), -1);
+}
 
-    static void
-    mpz_b_clr_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	mpz_set_si(out->get().get_mpz_t(), 0);
-    }
+static void
+mpz_b_1_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  if (i != out)
+    mpz_set(out->get().get_mpz_t(), i->get().get_mpz_t());
+}
 
-    static void
-    mpz_b_set_op(Bignum_sp o, Bignum_sp i, Bignum_sp j)
-    {
-	mpz_set_si(o->get().get_mpz_t(), -1);
-    }
+static void
+mpz_b_2_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  mpz_set(out->get().get_mpz_t(), j->get().get_mpz_t());
+}
 
-    static void
-    mpz_b_1_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-        if (i != out)
-            mpz_set(out->get().get_mpz_t(), i->get().get_mpz_t());
-    }
+static void
+mpz_b_c1_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  mpz_com(out->get().get_mpz_t(), i->get().get_mpz_t());
+}
 
-    static void
-    mpz_b_2_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	mpz_set(out->get().get_mpz_t(), j->get().get_mpz_t());
-    }
+static void
+mpz_b_c2_op(Bignum_sp out, Bignum_sp i, Bignum_sp j) {
+  mpz_com(out->get().get_mpz_t(), j->get().get_mpz_t());
+}
 
-    static void
-    mpz_b_c1_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	mpz_com(out->get().get_mpz_t(), i->get().get_mpz_t());
-    }
+typedef void (*_clasp_big_binary_op)(Bignum_sp out, Bignum_sp o1, Bignum_sp o2);
 
-    static void
-    mpz_b_c2_op(Bignum_sp out, Bignum_sp i, Bignum_sp j)
-    {
-	mpz_com(out->get().get_mpz_t(), j->get().get_mpz_t());
-    }
-
-    typedef void (*_clasp_big_binary_op)(Bignum_sp out, Bignum_sp o1, Bignum_sp o2);
-
-    static _clasp_big_binary_op bignum_operations[16] = {
-	mpz_b_clr_op,
-	mpz_and_op,
-	mpz_andc2_op,
-	mpz_b_1_op,
-	mpz_andc1_op,
-	mpz_b_2_op,
-	mpz_xor_op,
-	mpz_ior_op,
-	mpz_nor_op,
-	mpz_eqv_op,
-	mpz_b_c2_op,
-	mpz_orc2_op,
-	mpz_b_c1_op,
-	mpz_orc1_op,
-	mpz_nand_op,
-	mpz_b_set_op};
-
-
+static _clasp_big_binary_op bignum_operations[16] = {
+    mpz_b_clr_op,
+    mpz_and_op,
+    mpz_andc2_op,
+    mpz_b_1_op,
+    mpz_andc1_op,
+    mpz_b_2_op,
+    mpz_xor_op,
+    mpz_ior_op,
+    mpz_nor_op,
+    mpz_eqv_op,
+    mpz_b_c2_op,
+    mpz_orc2_op,
+    mpz_b_c1_op,
+    mpz_orc1_op,
+    mpz_nand_op,
+    mpz_b_set_op};
 
 // ----------------------------------------------------------------------
-
-
 
 #if 0
     static cl_object
@@ -314,167 +261,159 @@ namespace core {
     }
 #endif
 
-
-    T_sp
-    clasp_boole(int op, T_sp x, T_sp y)
-    {
-        if ( x.nilp() || y.nilp() ) {
-            SIMPLE_ERROR(BF("boole cannot accept nil"));
-        }
-        if ( x.fixnump() ) { 
-	    Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
-            if ( y.fixnump() ) { //Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
-		Fixnum_sp fny = gc::As<Fixnum_sp>(y);
-		gctools::Fixnum z = fixnum_operations[op](unbox_fixnum(fnx),unbox_fixnum(fny));
-                return make_fixnum(z);
-            } else if ( Bignum_sp bny = y.asOrNull<Bignum_O>() ) {
-                Bignum_sp x_copy = _lisp->bigRegister0();
-                x_copy->setFixnum(unbox_fixnum(fnx));
-                (bignum_operations[op])(x_copy, x_copy, bny);
-                return _clasp_big_register_normalize(x_copy);
-            } else {
-                ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole,2,y,cl::_sym_integer);
-            }
-        } else if ( Bignum_sp bnx = x.asOrNull<Bignum_O>() ) {
-            Bignum_sp x_copy = _lisp->bigRegister0();
-            if ( y.fixnump() ) { // Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
-		Fixnum_sp fny(gc::As<Fixnum_sp>(y));
-                Bignum_sp bny = _lisp->bigRegister1();
-                bny->setFixnum(unbox_fixnum(fny));
-                (bignum_operations[op])(x_copy, bnx, bny);
-                clasp_big_register_free(bny);
-            } else if ( Bignum_sp bny = y.asOrNull<Bignum_O>() ) {
-                (bignum_operations[op])(x_copy, x, y);
-            } else {
-                ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 2, y, cl::_sym_integer );
-            }
-            return _clasp_big_register_normalize(x_copy);
-        } else {
-            ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole,1,x,cl::_sym_integer);
-        }
-        return x;
+T_sp clasp_boole(int op, T_sp x, T_sp y) {
+  if (x.nilp() || y.nilp()) {
+    SIMPLE_ERROR(BF("boole cannot accept nil"));
+  }
+  if (x.fixnump()) {
+    Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
+    if (y.fixnump()) { //Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
+      Fixnum_sp fny = gc::As<Fixnum_sp>(y);
+      gctools::Fixnum z = fixnum_operations[op](unbox_fixnum(fnx), unbox_fixnum(fny));
+      return make_fixnum(z);
+    } else if (Bignum_sp bny = y.asOrNull<Bignum_O>()) {
+      Bignum_sp x_copy = _lisp->bigRegister0();
+      x_copy->setFixnum(unbox_fixnum(fnx));
+      (bignum_operations[op])(x_copy, x_copy, bny);
+      return _clasp_big_register_normalize(x_copy);
+    } else {
+      ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 2, y, cl::_sym_integer);
     }
-
-
-
-
-
+  } else if (Bignum_sp bnx = x.asOrNull<Bignum_O>()) {
+    Bignum_sp x_copy = _lisp->bigRegister0();
+    if (y.fixnump()) { // Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
+      Fixnum_sp fny(gc::As<Fixnum_sp>(y));
+      Bignum_sp bny = _lisp->bigRegister1();
+      bny->setFixnum(unbox_fixnum(fny));
+      (bignum_operations[op])(x_copy, bnx, bny);
+      clasp_big_register_free(bny);
+    } else if (Bignum_sp bny = y.asOrNull<Bignum_O>()) {
+      (bignum_operations[op])(x_copy, x, y);
+    } else {
+      ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 2, y, cl::_sym_integer);
+    }
+    return _clasp_big_register_normalize(x_copy);
+  } else {
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 1, x, cl::_sym_integer);
+  }
+  return x;
+}
 
 #define ARGS_core_bitArrayOp "(op x y &optional r)"
 #define DECL_core_bitArrayOp ""
 #define DOCS_core_bitArrayOp "bitArrayOp"
-    T_sp core_bitArrayOp(T_sp o, T_sp tx, T_sp ty, T_sp tr)
-    {_G();
-        if ( o.nilp() ) {
-            ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,1,o,cl::_sym_fixnum);
-        }
-        if ( tx.nilp() || !gc::IsA<SimpleBitVector_sp>(tx) ) {
-            ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,2,tx,cl::_sym_BitVector_O);
-        }
-        if ( ty.nilp() || !gc::IsA<SimpleBitVector_sp>(ty) ) {
-            ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,3,ty,cl::_sym_BitVector_O);
-        }
-        int opval = unbox_fixnum(gc::As<Fixnum_sp>(o));
-	gctools::Fixnum i, j, n, d;
-	SimpleBitVector_sp r0;
-	bit_operator op;
-	bool replace = false;
-	int xi, yi, ri;
-	byte *xp, *yp, *rp;
-	int xo, yo, ro;
-        SimpleBitVector_sp x = tx.asOrNull<SimpleBitVector_O>();
-        SimpleBitVector_sp y = ty.asOrNull<SimpleBitVector_O>();
-        SimpleBitVector_sp r;
-        d = x->dimension();
-        xp = x->bytes();
-        xo = x->offset();
-        if (d != y->dimension() ) goto ERROR;
-        yp = y->bytes();
-        yo = x->offset();
-        if (tr == _lisp->_true() )
-            tr = x;
-        if (tr.notnilp() ) {
-            r = tr.asOrNull<SimpleBitVector_O>();
-            if ( !r ) {
-                ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,4,tr,cl::_sym_BitVector_O);
-            }
-            if (r->dimension() != d) goto ERROR;
-            i = (r->bytes() - xp)*8 + (r->offset() - xo);
-            if ((i > 0 && i < d) || (i < 0 && -i < d)) {
-                r0 = r;
-                r = _Nil<SimpleBitVector_O>();
-                replace = true;
-                goto L1;
-            }
-            i = (r->bytes() - yp)*8 + (r->offset() - yo);
-            if ((i > 0 && i < d) || (i < 0 && -i < d)) {
-                r0 = r;
-                r = _Nil<SimpleBitVector_O>();
-                replace = true;
-            }
-        }
-    L1:
-        if (!r) r = SimpleBitVector_O::create(d);
-        rp = r->bytes();
-        ro = r->offset();
-        op = fixnum_operations[opval];
-#define	set_high(place, nbits, value)                                   \
-        (place)=((place)&~(-0400>>(nbits)))|((value)&(-0400>>(nbits)));
-
-#define	set_low(place, nbits, value)                                    \
-        (place)=((place)&(-0400>>(8-(nbits))))|((value)&~(-0400>>(8-(nbits))));
-
-#define	extract_byte(integer, pointer, index, offset)                   \
-        (integer) = (pointer)[(index)+1] & 0377;                        \
-        (integer) = ((pointer)[index]<<(offset))|((integer)>>(8-(offset)));
-
-#define	store_byte(pointer, index, offset, value)                       \
-        set_low((pointer)[index], 8-(offset), (value)>>(offset));       \
-        set_high((pointer)[(index)+1], offset, (value)<<(8-(offset)));
-
-        //
-        if (xo == 0 && yo == 0 && ro == 0) {
-            for (n = d/8, i = 0;  i < n;  i++)
-                rp[i] = (*op)(xp[i], yp[i]);
-            if ((j = d%8) > 0)
-                set_high(rp[n], j, (*op)(xp[n], yp[n]));
-            if (!replace)
-                return r;
-        } else {
-            for (n = d/8, i = 0;  i <= n;  i++) {
-                extract_byte(xi, xp, i, xo);
-                extract_byte(yi, yp, i, yo);
-                if (i == n) {
-                    if ((j = d%8) == 0)
-                        break;
-                    extract_byte(ri, rp, n, ro);
-                    set_high(ri, j, (*op)(xi, yi));
-                } else
-                    ri = (*op)(xi, yi);
-                store_byte(rp, i, ro, ri);
-            }
-            if (!replace) return r;
-        }
-        rp = r0->bytes();
-        ro = r0->offset();
-        for (n = d/8, i = 0;  i <= n;  i++) {
-            if (i == n) {
-                if ((j = d%8) == 0)
-                    break;
-                extract_byte(ri, rp, n, ro);
-                set_high(ri, j, r->bytes()[n]);
-            } else
-                ri = r->bytes()[i];
-            store_byte(rp, i, ro, ri);
-        }
-        return r0;
-    ERROR:
-        SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
+T_sp core_bitArrayOp(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
+  _G();
+  if (o.nilp()) {
+    ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 1, o, cl::_sym_fixnum);
+  }
+  if (tx.nilp() || !gc::IsA<SimpleBitVector_sp>(tx)) {
+    ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 2, tx, cl::_sym_BitVector_O);
+  }
+  if (ty.nilp() || !gc::IsA<SimpleBitVector_sp>(ty)) {
+    ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 3, ty, cl::_sym_BitVector_O);
+  }
+  int opval = unbox_fixnum(gc::As<Fixnum_sp>(o));
+  gctools::Fixnum i, j, n, d;
+  SimpleBitVector_sp r0;
+  bit_operator op;
+  bool replace = false;
+  int xi, yi, ri;
+  byte *xp, *yp, *rp;
+  int xo, yo, ro;
+  SimpleBitVector_sp x = tx.asOrNull<SimpleBitVector_O>();
+  SimpleBitVector_sp y = ty.asOrNull<SimpleBitVector_O>();
+  SimpleBitVector_sp r;
+  d = x->dimension();
+  xp = x->bytes();
+  xo = x->offset();
+  if (d != y->dimension())
+    goto ERROR;
+  yp = y->bytes();
+  yo = x->offset();
+  if (tr == _lisp->_true())
+    tr = x;
+  if (tr.notnilp()) {
+    r = tr.asOrNull<SimpleBitVector_O>();
+    if (!r) {
+      ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 4, tr, cl::_sym_BitVector_O);
     }
+    if (r->dimension() != d)
+      goto ERROR;
+    i = (r->bytes() - xp) * 8 + (r->offset() - xo);
+    if ((i > 0 && i < d) || (i < 0 && -i < d)) {
+      r0 = r;
+      r = _Nil<SimpleBitVector_O>();
+      replace = true;
+      goto L1;
+    }
+    i = (r->bytes() - yp) * 8 + (r->offset() - yo);
+    if ((i > 0 && i < d) || (i < 0 && -i < d)) {
+      r0 = r;
+      r = _Nil<SimpleBitVector_O>();
+      replace = true;
+    }
+  }
+L1:
+  if (!r)
+    r = SimpleBitVector_O::create(d);
+  rp = r->bytes();
+  ro = r->offset();
+  op = fixnum_operations[opval];
+#define set_high(place, nbits, value) \
+  (place) = ((place) & ~(-0400 >> (nbits))) | ((value) & (-0400 >> (nbits)));
 
+#define set_low(place, nbits, value) \
+  (place) = ((place) & (-0400 >> (8 - (nbits)))) | ((value) & ~(-0400 >> (8 - (nbits))));
 
+#define extract_byte(integer, pointer, index, offset) \
+  (integer) = (pointer)[(index) + 1] & 0377;          \
+  (integer) = ((pointer)[index] << (offset)) | ((integer) >> (8 - (offset)));
 
+#define store_byte(pointer, index, offset, value)               \
+  set_low((pointer)[index], 8 - (offset), (value) >> (offset)); \
+  set_high((pointer)[(index) + 1], offset, (value) << (8 - (offset)));
 
+  //
+  if (xo == 0 && yo == 0 && ro == 0) {
+    for (n = d / 8, i = 0; i < n; i++)
+      rp[i] = (*op)(xp[i], yp[i]);
+    if ((j = d % 8) > 0)
+      set_high(rp[n], j, (*op)(xp[n], yp[n]));
+    if (!replace)
+      return r;
+  } else {
+    for (n = d / 8, i = 0; i <= n; i++) {
+      extract_byte(xi, xp, i, xo);
+      extract_byte(yi, yp, i, yo);
+      if (i == n) {
+        if ((j = d % 8) == 0)
+          break;
+        extract_byte(ri, rp, n, ro);
+        set_high(ri, j, (*op)(xi, yi));
+      } else
+        ri = (*op)(xi, yi);
+      store_byte(rp, i, ro, ri);
+    }
+    if (!replace)
+      return r;
+  }
+  rp = r0->bytes();
+  ro = r0->offset();
+  for (n = d / 8, i = 0; i <= n; i++) {
+    if (i == n) {
+      if ((j = d % 8) == 0)
+        break;
+      extract_byte(ri, rp, n, ro);
+      set_high(ri, j, r->bytes()[n]);
+    } else
+      ri = r->bytes()[i];
+    store_byte(rp, i, ro, ri);
+  }
+  return r0;
+ERROR:
+  SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
+}
 
 #if 0
     T_sp
@@ -750,63 +689,53 @@ namespace core {
 
 #endif
 
-
-
-
-
 #define ARGS_cl_boole "(op arg1 arg2)"
 #define DECL_cl_boole ""
 #define DOCS_cl_boole "boole"
-    T_sp cl_boole(T_sp op, T_sp arg1, T_sp arg2)
-    {_G();
-        if ( op.nilp() ) {
-            ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole,1,op,cl::_sym_integer);
-        }
-        Fixnum_sp fnop = gc::As<Fixnum_sp>(op);
-        return clasp_boole(unbox_fixnum(fnop),arg1,arg2);
-    };
+T_sp cl_boole(T_sp op, T_sp arg1, T_sp arg2) {
+  _G();
+  if (op.nilp()) {
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 1, op, cl::_sym_integer);
+  }
+  Fixnum_sp fnop = gc::As<Fixnum_sp>(op);
+  return clasp_boole(unbox_fixnum(fnop), arg1, arg2);
+};
 
+void initialize_bits() {
+  SYMBOL_EXPORT_SC_(ClPkg, boole_1);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_2);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_and);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_andc1);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_andc2);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_c1);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_c2);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_clr);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_eqv);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_ior);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_nand);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_nor);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_orc1);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_orc2);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_set);
+  SYMBOL_EXPORT_SC_(ClPkg, boole_xor);
 
-    void initialize_bits()
-    {
-        SYMBOL_EXPORT_SC_(ClPkg,boole_1);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_2);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_and);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_andc1);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_andc2);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_c1);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_c2);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_clr);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_eqv);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_ior);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_nand);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_nor);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_orc1);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_orc2);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_set);
-        SYMBOL_EXPORT_SC_(ClPkg,boole_xor);
+  cl::_sym_boole_1->defconstant(make_fixnum(boole_1));
+  cl::_sym_boole_2->defconstant(make_fixnum(boole_2));
+  cl::_sym_boole_and->defconstant(make_fixnum(boole_and));
+  cl::_sym_boole_andc1->defconstant(make_fixnum(boole_andc1));
+  cl::_sym_boole_andc2->defconstant(make_fixnum(boole_andc2));
+  cl::_sym_boole_c1->defconstant(make_fixnum(boole_c1));
+  cl::_sym_boole_c2->defconstant(make_fixnum(boole_c2));
+  cl::_sym_boole_clr->defconstant(make_fixnum(boole_clr));
+  cl::_sym_boole_eqv->defconstant(make_fixnum(boole_eqv));
+  cl::_sym_boole_ior->defconstant(make_fixnum(boole_ior));
+  cl::_sym_boole_nand->defconstant(make_fixnum(boole_nand));
+  cl::_sym_boole_nor->defconstant(make_fixnum(boole_nor));
+  cl::_sym_boole_orc1->defconstant(make_fixnum(boole_orc1));
+  cl::_sym_boole_orc2->defconstant(make_fixnum(boole_orc2));
+  cl::_sym_boole_set->defconstant(make_fixnum(boole_set));
+  cl::_sym_boole_xor->defconstant(make_fixnum(boole_xor));
 
-        cl::_sym_boole_1->defconstant(make_fixnum(boole_1));
-        cl::_sym_boole_2->defconstant(make_fixnum(boole_2));
-        cl::_sym_boole_and->defconstant(make_fixnum(boole_and));
-        cl::_sym_boole_andc1->defconstant(make_fixnum(boole_andc1));
-        cl::_sym_boole_andc2->defconstant(make_fixnum(boole_andc2));
-        cl::_sym_boole_c1->defconstant(make_fixnum(boole_c1));
-        cl::_sym_boole_c2->defconstant(make_fixnum(boole_c2));
-        cl::_sym_boole_clr->defconstant(make_fixnum(boole_clr));
-        cl::_sym_boole_eqv->defconstant(make_fixnum(boole_eqv));
-        cl::_sym_boole_ior->defconstant(make_fixnum(boole_ior));
-        cl::_sym_boole_nand->defconstant(make_fixnum(boole_nand));
-        cl::_sym_boole_nor->defconstant(make_fixnum(boole_nor));
-        cl::_sym_boole_orc1->defconstant(make_fixnum(boole_orc1));
-        cl::_sym_boole_orc2->defconstant(make_fixnum(boole_orc2));
-        cl::_sym_boole_set->defconstant(make_fixnum(boole_set));
-        cl::_sym_boole_xor->defconstant(make_fixnum(boole_xor));
-
-        ClDefun(boole);
-    };
-
-
-
-
+  ClDefun(boole);
+};
 };

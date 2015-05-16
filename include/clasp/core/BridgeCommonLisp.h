@@ -31,7 +31,6 @@ THE SOFTWARE.
 // Plays the role of Python.h
 //
 
-
 #include <assert.h>
 #include <brclport.h>
 
@@ -45,7 +44,6 @@ typedef core::T_O BrclObject;
 typedef core::Class_O BrclTypeObject;
 typedef core::SingleDispatchMethod_O BrclMethodObject;
 
-core::T_O* Brcl_None = _Nil<core::T_O>().get();
-
+core::T_O *Brcl_None = _Nil<core::T_O>().get();
 
 #endif

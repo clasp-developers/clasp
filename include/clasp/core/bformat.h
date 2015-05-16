@@ -30,18 +30,11 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
-namespace core
-{
+namespace core {
 
-    T_sp af_format(T_sp dest, T_sp control, List_sp args );
-    T_sp af_bformat(T_sp dest, const string& control, List_sp args );
+T_sp af_format(T_sp dest, T_sp control, List_sp args);
+T_sp af_bformat(T_sp dest, const string &control, List_sp args);
 
-
-
-
-    void initialize_bformat(Lisp_sp lisp);
-
-    
-    
+void initialize_bformat(Lisp_sp lisp);
 };
 #endif /* _bformat_H_ */

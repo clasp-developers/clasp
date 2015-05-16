@@ -27,8 +27,6 @@ THE SOFTWARE.
 #ifndef cleavirEnvPackage_fwd_H
 #define cleavirEnvPackage_fwd_H
 
-NAMESPACE_PACKAGE_ASSOCIATION(cleavirEnv,CleavirEnvPkg,"CLEAVIR-ENVIRONMENT")
-
-
+NAMESPACE_PACKAGE_ASSOCIATION(cleavirEnv, CleavirEnvPkg, "CLEAVIR-ENVIRONMENT")
 
 #endif

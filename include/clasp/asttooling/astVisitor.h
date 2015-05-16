@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef asttooling_astVisitor_H
 #define asttooling_astVisitor_H
 
-
 #include <clang/AST/RecursiveASTVisitor.h>
 
 #include <clasp/core/foundation.h>
@@ -37,26 +36,27 @@ THE SOFTWARE.
 
 namespace asttooling {
 
-    FORWARD(AstVisitor);
-    class AstVisitor_O : public core::T_O, public clang::RecursiveASTVisitor<AstVisitor_O> {
-        LISP_BASE1(core::T_O);
-        LISP_CLASS(asttooling,AstToolingPkg,AstVisitor_O,"AstVisitor");
-        
-    GCPRIVATE:
-        core::T_sp        _Target;
-    public:
+FORWARD(AstVisitor);
+class AstVisitor_O : public core::T_O, public clang::RecursiveASTVisitor<AstVisitor_O> {
+  LISP_BASE1(core::T_O);
+  LISP_CLASS(asttooling, AstToolingPkg, AstVisitor_O, "AstVisitor");
 
-        AstVisitor_O() : _Target(_Nil<T_O>()) {};
-        AstVisitor_O(core::T_sp target) : _Target(target) {};
-        virtual ~AstVisitor_O() {};
-    public:
-        static AstVisitor_sp create(core::T_sp target) {
-            GC_ALLOCATE_VARIADIC(AstVisitor_O,obj,target);
-            return obj;
-        };
-    public:
+GCPRIVATE:
+  core::T_sp _Target;
 
-        bool VisitStmt(clang::Stmt *node);
+public:
+  AstVisitor_O() : _Target(_Nil<T_O>()){};
+  AstVisitor_O(core::T_sp target) : _Target(target){};
+  virtual ~AstVisitor_O(){};
+
+public:
+  static AstVisitor_sp create(core::T_sp target) {
+    GC_ALLOCATE_VARIADIC(AstVisitor_O, obj, target);
+    return obj;
+  };
+
+public:
+  bool VisitStmt(clang::Stmt *node);
 
 #if 0
         bool VisitAsmStmt(clang::AsmStmt *node) {
@@ -1435,10 +1435,8 @@ namespace asttooling {
             return true;
         }
 #endif
-    };
+};
 
-
-    void initialize_astVisitor();
-
+void initialize_astVisitor();
 };
 #endif

@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef core_math_fenv_H
 #define core_math_fenv_H
 
-
 /* -*- mode: c; c-basic-offset: 4 -*- */
 /*
     math_fenv.h -- inlined versions of fenv.h
@@ -45,8 +44,6 @@ THE SOFTWARE.
 */
 
 namespace core {
-
-
 
 /*
  * ECL admits two ways to process floating point errors
@@ -73,41 +70,48 @@ namespace core {
  */
 
 #if defined(HAVE_FEENABLEEXCEPT) && !defined(_GNU_SOURCE)
-# define _GNU_SOURCE
+#define _GNU_SOURCE
 #endif
 #ifdef HAVE_FENV_H
-# include <fenv.h>
+#include <fenv.h>
 #endif
 #if defined(ECL_MS_WINDOWS_HOST)
-# include <ecl/impl/math_fenv_msvc.h>
+#include <ecl/impl/math_fenv_msvc.h>
 #endif
 
 #ifdef HAVE_FENV_H
-# define CLASP_WITHOUT_FPE_BEGIN do { fenv_t env; feholdexcept(&env);
-# define CLASP_WITHOUT_FPE_END } while (0)
+#define CLASP_WITHOUT_FPE_BEGIN \
+  do {                          \
+    fenv_t env;                 \
+    feholdexcept(&env);
+#define CLASP_WITHOUT_FPE_END \
+  }                           \
+  while (0)
 #else
-# define FE_INVALID 1
-# define FE_DIVBYZERO 2
-# define FE_INEXACT 0
-# define FE_OVERFLOW 3
-# define FE_UNDERFLOW 0
-# define CLASP_WITHOUT_FPE_BEGIN
-# define CLASP_WITHOUT_FPE_END
-# define feclearexcept(x)
+#define FE_INVALID 1
+#define FE_DIVBYZERO 2
+#define FE_INEXACT 0
+#define FE_OVERFLOW 3
+#define FE_UNDERFLOW 0
+#define CLASP_WITHOUT_FPE_BEGIN
+#define CLASP_WITHOUT_FPE_END
+#define feclearexcept(x)
 #endif /* !HAVE_FENV_H */
 
 #if defined(HAVE_FENV_H) && !defined(HAVE_FEENABLEEXCEPT) && !defined(CLASP_AVOID_FPE_H)
-# define CLASP_USED_EXCEPTIONS (FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW|FE_UNDERFLOW)
-# define CLASP_MATHERR_CLEAR feclearexcept(FE_ALL_EXCEPT)
-# define CLASP_MATHERR_TEST do {                                  \
-        int bits = fetestexcept(CLASP_USED_EXCEPTIONS);           \
-    unlikely_if (bits) ecl_deliver_fpe(bits); } while(0)
+#define CLASP_USED_EXCEPTIONS (FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW)
+#define CLASP_MATHERR_CLEAR feclearexcept(FE_ALL_EXCEPT)
+#define CLASP_MATHERR_TEST                          \
+  do {                                              \
+    int bits = fetestexcept(CLASP_USED_EXCEPTIONS); \
+    unlikely_if(bits) ecl_deliver_fpe(bits);        \
+  } while (0)
 #else
-# define CLASP_MATHERR_CLEAR
-# define CLASP_MATHERR_TEST
+#define CLASP_MATHERR_CLEAR
+#define CLASP_MATHERR_TEST
 #endif
 
-#if 0   // __APPLE__ doesn't need feclearexcept or fetestexcept
+#if 0 // __APPLE__ doesn't need feclearexcept or fetestexcept
 #if defined(__APPLE__) && defined(__amd64__)
 #define feclearexcept myfeclearexcept
 static inline void myfeclearexcept(int flags)
@@ -138,10 +142,6 @@ static inline void myfeclearexcept(int flags)
 #endif /* __APPLE__ && __amd64__ */
 #endif // 0  __APPLE__ doesn't need  fetestexcept  defined?
 
-
 extern void ecl_deliver_fpe(int flags);
-
-
-
 };
 #endif

@@ -28,15 +28,10 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/globals.h>
 
-
 /*! Move all global/static variable definitions into this file so that we can control them
  */
 
+namespace core {
 
-namespace core
-{
-
-uint	__nextPredefinedSymbolIndex = 0;
-
-
+uint __nextPredefinedSymbolIndex = 0;
 };
