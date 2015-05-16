@@ -127,7 +127,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,wild);
 namespace core {
 
 
-    static Str_sp brcl_strerror(int e)
+    static Str_sp clasp_strerror(int e)
     {
 	return Str_O::create(strerror(e));
     }
@@ -154,9 +154,9 @@ safe_chdir(const char *path, T_sp tprefix)
 	return safe_chdir(ss.str().c_str(), _Nil<T_O>());
     } else {
 	int output;
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	output = chdir((char *)path);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	return output;
     }
 }
@@ -217,7 +217,7 @@ safe_chdir(const char *path, T_sp tprefix)
 #define DOCS_af_chdir "chdir"
     T_sp af_chdir(Pathname_sp dir)
     {_G();
-        Str_sp sdir = brcl_namestring(dir,true);
+        Str_sp sdir = clasp_namestring(dir,true);
         return Integer_O::create(safe_chdir(sdir->get().c_str(),_Nil<T_O>()));
     };
 
@@ -225,9 +225,9 @@ static int
 safe_stat(const char *path, struct stat *sb)
 {
 	int output;
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	output = stat(path, sb);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	return output;
 }
 
@@ -236,9 +236,9 @@ static int
 safe_lstat(const char *path, struct stat *sb)
 {
 	int output;
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	output = lstat(path, sb);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	return output;
 }
 #endif
@@ -275,9 +275,9 @@ Str_sp af_currentDir()
     StrWithFillPtr_sp output(StrWithFillPtr_O::create(' ',1,0,true));
     do {
 	output->setSize(size);
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	ok = ::getcwd((char*)output->addressOfBuffer(),size-1);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	size += 256;
     } while (ok == NULL);
     size = strlen((char*)output->addressOfBuffer());
@@ -352,10 +352,10 @@ si_readlink(Str_sp filename) {
 	Symbol_sp kind;
 	do {
 	    output = StrWithFillPtr_O::create(' ',size,0,true);
-	    brcl_disable_interrupts();
+	    clasp_disable_interrupts();
 	    written = readlink((char*)filename->c_str(),
 			       (char*)output->c_str(), size);
-	    brcl_enable_interrupts();
+	    clasp_enable_interrupts();
 	    size += 256;
 	} while (written == size);
 	(*output)[written] = '\0';
@@ -402,7 +402,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure)
     output = gc::As<Pathname_sp>(eval::funcall(cl::_sym_makePathname,
 			   kw::_sym_directory, ldir,
 			   kw::_sym_defaults, base_dir));
-    aux = brcl_namestring(output, BRCL_NAMESTRING_FORCE_BASE_STRING);
+    aux = clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING);
     aux = Str_O::create(aux->substr(0,aux->length()-1));
 //    aux->_contents()[aux->base_string.fillp-1] = 0;
     kind = file_kind((char*)aux->c_str(), false);
@@ -444,7 +444,7 @@ make_absolute_pathname(T_sp orig_pathname)
 {
     Pathname_sp base_dir = getcwd(false);
     Pathname_sp pathname = af_coerceToFilePathname(orig_pathname);
-    Pathname_sp result = brcl_mergePathnames(pathname, base_dir, kw::_sym_default);
+    Pathname_sp result = clasp_mergePathnames(pathname, base_dir, kw::_sym_default);
     return result;
 }
 
@@ -473,7 +473,7 @@ file_truename(T_sp pathname, T_sp filename, int flags)
 	}
 	pathname = cl_pathname(filename);
     } else if (filename.nilp()) {
-	filename = brcl_namestring(pathname, BRCL_NAMESTRING_FORCE_BASE_STRING);
+	filename = clasp_namestring(pathname, CLASP_NAMESTRING_FORCE_BASE_STRING);
 	if (filename.nilp()) {
 	    SIMPLE_ERROR(BF("Unprintable pathname %s found in TRUENAME") % _rep_(pathname));
 	}
@@ -494,7 +494,7 @@ file_truename(T_sp pathname, T_sp filename, int flags)
 					    _Nil<T_O>(),
 					    _Nil<T_O>(),
 					    kw::_sym_local);
-	pathname = brcl_mergePathnames(filename, pathname, kw::_sym_default);
+	pathname = clasp_mergePathnames(filename, pathname, kw::_sym_default);
 	return Values(af_truename(pathname),kind);
 #endif
     } else if (kind == kw::_sym_directory){
@@ -550,7 +550,7 @@ Pathname_sp af_truename(T_sp orig_pathname)
     for ( auto dir : coerce_to_list(pathname->_Directory) ) {
 	base_dir = enter_directory(base_dir, oCar(dir), false);
     }
-    pathname = brcl_mergePathnames(base_dir, pathname, kw::_sym_default);
+    pathname = clasp_mergePathnames(base_dir, pathname, kw::_sym_default);
     return file_truename(pathname, _Nil<T_O>(), FOLLOW_SYMLINKS);
 }
 
@@ -563,22 +563,22 @@ clasp_backup_open(const char *filename, int option, int mode)
     stringstream sbackup;
     sbackup << filename << ".BAK";
     string backupfilename = sbackup.str();
-    brcl_disable_interrupts();
+    clasp_disable_interrupts();
 #if defined(ECL_MS_WINDOWS_HOST)
     /* Windows' rename doesn't replace an existing file */
     if (access(backupfilename, F_OK) == 0 && unlink(backupfilename)) {
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	FElibc_error("Cannot remove the file ~S", 1,
 		     ecl_make_constant_base_string(backupfilename,-1));
     }
 #endif
     if (rename(filename, backupfilename.c_str())) {
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	SIMPLE_ERROR(BF("Cannot rename the file %s to %s.")
 		     % _rep_(Str_O::create(filename))
 		     % _rep_(Str_O::create(backupfilename)));
     }
-    brcl_enable_interrupts();
+    clasp_enable_interrupts();
     return open(filename, option, mode);
 }
 
@@ -586,9 +586,9 @@ Integer_sp
 clasp_file_len(int f)
 {
 	struct stat filestatus;
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	fstat(f, &filestatus);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	return Integer_O::create(static_cast<uint>(filestatus.st_size));
 }
 
@@ -612,7 +612,7 @@ T_mv cl_renameFile(T_sp oldn, T_sp newn, T_sp if_exists)
     old_filename = coerce_to_posix_filename(old_truename);
 
 /* 2) Create the new file name. */
-    Pathname_sp pnewn = brcl_mergePathnames(newn, oldn, kw::_sym_newest);
+    Pathname_sp pnewn = clasp_mergePathnames(newn, oldn, kw::_sym_newest);
     new_filename = af_coerceToFilename(pnewn);
 
     while (if_exists == kw::_sym_error || if_exists.nilp())
@@ -643,7 +643,7 @@ T_mv cl_renameFile(T_sp oldn, T_sp newn, T_sp if_exists)
 	SIMPLE_ERROR(BF("%s is an illegal IF-EXISTS option for RENAME-FILE.") % _rep_(if_exists))
     }
     {
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 #if defined(ECL_MS_WINDOWS_HOST)
 	int error = SetErrorMode(0);
 	if (MoveFile((char*)old_filename->base_string.self,
@@ -694,9 +694,9 @@ T_mv cl_renameFile(T_sp oldn, T_sp newn, T_sp if_exists)
 #if defined(ECL_MS_WINDOWS_HOST)
 FAILURE_CLOBBER:
 #endif
-    brcl_enable_interrupts();
+    clasp_enable_interrupts();
     {
-	T_sp c_error = brcl_strerror(errno);
+	T_sp c_error = clasp_strerror(errno);
 	const char *msg = "Unable to rename file ~S to ~S.~%C library error: ~S";
 	eval::funcall(_sym_signalSimpleError,
 		      cl::_sym_fileError, /* condition */
@@ -708,7 +708,7 @@ FAILURE_CLOBBER:
     }
 
 SUCCESS:
-    brcl_enable_interrupts();
+    clasp_enable_interrupts();
     new_truename = af_truename(newn);
     return Values(newn,old_truename,new_truename);
 }
@@ -737,16 +737,16 @@ T_sp af_deleteFile(T_sp file)
     Str_sp filename = coerce_to_posix_filename(path);
     int ok;
 
-    brcl_disable_interrupts();
+    clasp_disable_interrupts();
     ok = (isdir? rmdir : unlink)((char*)filename->c_str());
-    brcl_enable_interrupts();
+    clasp_enable_interrupts();
 
     if (ok < 0) {
 	const char *msg =
 	    isdir?
 	    "Cannot delete the file ~S.~%C library error: ~S" :
 	    "Cannot delete the directory ~S.~%C library error: ~S";
-	T_sp c_error = brcl_strerror(errno);
+	T_sp c_error = clasp_strerror(errno);
 	eval::funcall(_sym_signalSimpleError,
 		      cl::_sym_fileError,
 		      _lisp->_true(), // continuable
@@ -813,7 +813,7 @@ T_sp cl_fileAuthor(T_sp file)
     if (safe_stat((char*)filename->c_str(), &filestatus) < 0) {
 	const char *msg = "Unable to read file author for ~S."
 	    "~%C library error: ~S";
-	T_sp c_error = brcl_strerror(errno);
+	T_sp c_error = clasp_strerror(errno);
 	eval::funcall(_sym_signalSimpleError,
 		      cl::_sym_fileError, /* condition */
 		      _lisp->_true(), /* continuable */
@@ -825,9 +825,9 @@ T_sp cl_fileAuthor(T_sp file)
 #ifdef HAVE_PWD_H
     {
 	struct passwd *pwent;
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	pwent = ::getpwuid(filestatus.st_uid);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	output = Str_O::create(pwent->pw_name);
     }
 #else
@@ -837,7 +837,7 @@ T_sp cl_fileAuthor(T_sp file)
 }
 
 
-Pathname_sp brcl_homedir_pathname(T_sp tuser)
+Pathname_sp clasp_homedir_pathname(T_sp tuser)
 {
     size_t i;
     Str_sp namestring;
@@ -860,7 +860,7 @@ Pathname_sp brcl_homedir_pathname(T_sp tuser)
 	    i--;
 	}
 	if (i == 0)
-	    return brcl_homedir_pathname(_Nil<T_O>());
+	    return clasp_homedir_pathname(_Nil<T_O>());
 #ifdef HAVE_PWD_H
 	pwent = getpwnam(p);
 	if (pwent == NULL) {
@@ -900,7 +900,7 @@ Pathname_sp brcl_homedir_pathname(T_sp tuser)
 Pathname_sp af_userHomedirPathname(T_sp host)
 {_G();
     /* Ignore optional host argument. */
-    return brcl_homedir_pathname(_Nil<T_O>());
+    return clasp_homedir_pathname(_Nil<T_O>());
 }
 
 
@@ -931,14 +931,14 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
                int flags)
 {
     T_sp out = _Nil<T_O>();
-    T_sp prefix = brcl_namestring(base_dir, BRCL_NAMESTRING_FORCE_BASE_STRING);
+    T_sp prefix = clasp_namestring(base_dir, CLASP_NAMESTRING_FORCE_BASE_STRING);
     T_sp component, component_path, kind;
     char *text;
 #if defined(HAVE_DIRENT_H)
     DIR *dir;
     struct dirent *entry;
 
-    brcl_disable_interrupts();
+    clasp_disable_interrupts();
     dir = opendir((char*)gc::As<Str_sp>(prefix)->c_str());
     if (dir == NULL) {
 	out = _Nil<T_O>();
@@ -953,7 +953,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
 	HANDLE hFind = NULL;
 	BOOL found = false;
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	for (;;) {
 	    if (hFind == NULL) {
 		T_sp aux = make_constant_base_string(".\\*");
@@ -975,7 +975,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
 	    char iobuffer[BUFSIZ];
 	    DIRECTORY dir;
 
-	    brcl_disable_interrupts();
+	    clasp_disable_interrupts();
 	    fp = fopen((char*)prefix->c_str(), OPEN_R);
 	    if (fp == NULL) {
 		out = _Nil<T_O>();
@@ -1017,7 +1017,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
 	    fclose(fp);
 # endif /* !ECL_MS_WINDOWS_HOST */
 #endif /* !HAVE_DIRENT_H */
-	    brcl_enable_interrupts();
+	    clasp_enable_interrupts();
 	OUTPUT:
 	    return cl_nreverse(out);
 	}
@@ -1055,10 +1055,10 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
 		if (*s == '/')
 		    *s = '\\';
 
-	    brcl_disable_interrupts();
+	    clasp_disable_interrupts();
 	    ok = GetTempFileName(strTempDir, (char*)file->c_str(), 0,
 				 strTempFileName);
-	    brcl_enable_interrupts();
+	    clasp_enable_interrupts();
 	    if (!ok) {
 		output = _Nil<T_O>();
 	    } else {
@@ -1137,10 +1137,10 @@ si_get_library_pathname(void)
 	cl_index len, ep;
         s = ecl_alloc_adjustable_base_string(cl_core.path_max);
         buffer = (char*)s->c_str();
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	hnd = GetModuleHandle("ecl.dll");
 	len = GetModuleFileName(hnd, buffer, cl_core.path_max-1);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	if (len == 0) {
 		FEerror("GetModuleFileName failed (last error = ~S)",
 			1, ecl_make_fixnum(GetLastError()));
@@ -1151,7 +1151,7 @@ si_get_library_pathname(void)
         s = cl_make_pathname(8, kw::_sym_name, _Nil<T_O>(), kw::_sym_type, _Nil<T_O>(),
 			     kw::_sym_version, _Nil<T_O>(),
                              kw::_sym_defaults, s);
-        s = ecl_namestring(s, BRCL_NAMESTRING_FORCE_BASE_STRING);
+        s = ecl_namestring(s, CLASP_NAMESTRING_FORCE_BASE_STRING);
 	}
 #else
         s = make_constant_base_string(ECLDIR "/");
@@ -1163,7 +1163,7 @@ si_get_library_pathname(void)
                         s = current_dir();
                 } else {
                         /* Produce a string */
-                        s = ecl_namestring(s, BRCL_NAMESTRING_FORCE_BASE_STRING);
+                        s = ecl_namestring(s, CLASP_NAMESTRING_FORCE_BASE_STRING);
                 }
         }
         cl_core.library_pathname = s;
@@ -1181,10 +1181,10 @@ si_get_library_pathname(void)
 	    directory->_Type.notnilp())
 		FEerror("~A is not a directory pathname.", 1, directory);
 	namestring = ecl_namestring(directory,
-                                    BRCL_NAMESTRING_TRUNCATE_IF_ERROR |
-                                    BRCL_NAMESTRING_FORCE_BASE_STRING);
+                                    CLASP_NAMESTRING_TRUNCATE_IF_ERROR |
+                                    CLASP_NAMESTRING_FORCE_BASE_STRING);
 	if (safe_chdir((char*)namestring->c_str(), _Nil<T_O>()) < 0) {
-		T_sp c_error = brcl_strerror(errno);
+		T_sp c_error = clasp_strerror(errno);
 		const char *msg = "Can't change the current directory to ~A."
 			"~%C library error: ~S";
 		eval::funcall(_sym_signalSimpleError,
@@ -1231,10 +1231,10 @@ T_sp core_mkstemp(T_sp template)
 	if (*s == '/')
 	    *s = '\\';
 
-    brcl_disable_interrupts();
+    clasp_disable_interrupts();
     ok = GetTempFileName(strTempDir, (char*)file->c_str(), 0,
 			 strTempFileName);
-    brcl_enable_interrupts();
+    clasp_enable_interrupts();
     if (!ok) {
 	output = _Nil<T_O>();
     } else {
@@ -1249,7 +1249,7 @@ T_sp core_mkstemp(T_sp template)
     memcpy(output->c_str(), template->c_str(), l);
     memcpy(output->c_str() + l, "XXXXXX", 6);
 
-    brcl_disable_interrupts();
+    clasp_disable_interrupts();
 # ifdef HAVE_MKSTEMP
     fd = mkstemp((char*)output->c_str());
 # else
@@ -1259,7 +1259,7 @@ T_sp core_mkstemp(T_sp template)
 	fd = -1;
     }
 # endif
-    brcl_enable_interrupts();
+    clasp_enable_interrupts();
 
     if (fd < 0) {
 	output = _Nil<T_O>();
@@ -1285,7 +1285,7 @@ si_chmod(T_sp file, T_sp mode)
 	mode_t code = ecl_to_uint32_t(mode);
 	T_sp filename = coerce_to_posix_filename(file);
 	unlikely_if (chmod((char*)filename->c_str(), code)) {
-		T_sp c_error = brcl_strerror(errno);
+		T_sp c_error = clasp_strerror(errno);
 		const char *msg = "Unable to change mode of file ~S to value ~O"
 			"~%C library error: ~S";
 		eval::funcall(_sym_signalSimpleError,
@@ -1311,7 +1311,7 @@ si_chmod(T_sp file, T_sp mode)
      int ok = 0;
      Str_sp sorig = af_coerceToFilename(orig);
      Str_sp sdest = af_coerceToFilename(dest);
-     brcl_disable_interrupts();
+     clasp_disable_interrupts();
      in = fopen(sorig->c_str(), "r");
      if (in) {
 	 out = fopen(sdest->c_str(), "w");
@@ -1328,7 +1328,7 @@ si_chmod(T_sp file, T_sp mode)
 	 }
 	 fclose(in);
      }
-     brcl_enable_interrupts();
+     clasp_enable_interrupts();
      if ( ok ) return _lisp->_true();
      return _Nil<T_O>();
  }
@@ -1400,7 +1400,7 @@ AGAIN:
      */
     item = oCar(directory);
 
-    if (item == kw::_sym_wild || brcl_wild_string_p(item)) {
+    if (item == kw::_sym_wild || clasp_wild_string_p(item)) {
         /*
          * 2.1) If CAR(DIRECTORY) is a string or :WILD, we have to
          * enter & scan all subdirectories in our curent directory.
@@ -1549,16 +1549,16 @@ T_sp core_mkdir(T_sp directory, T_sp mode)
         }
         filename = filename->subseq(0,make_fixnum(last));
     }
-//    brcl_disable_interrupts();
+//    clasp_disable_interrupts();
 #if defined(ECL_MS_WINDOWS_HOST)
     ok = mkdir((char*)filename->c_str());
 #else
     ok = mkdir((char*)filename->c_str(), modeint);
 #endif
-//    brcl_enable_interrupts();
+//    clasp_enable_interrupts();
 
     if (UNLIKELY(ok < 0)) {
-        T_sp c_error = brcl_strerror(errno);
+        T_sp c_error = clasp_strerror(errno);
         const char *msg = "Could not create directory ~S"
             "~%C library error: ~S";
         eval::funcall(_sym_signalSimpleError,

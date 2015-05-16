@@ -127,7 +127,7 @@ namespace core {
 	 * of 22.1.3.3.2. */
 	for (cl_index i = 0, iEnd(s->length()); i < iEnd;  i++) {
             int c = clasp_char(s, i);
-            Character_sp cc = Character_O::create(c);
+            Character_sp cc = clasp_make_character(c);
 //            int syntax = clasp_readtable_get(readtable, c, 0);
             Symbol_sp syntax = gc::As<ReadTable_sp>(readtable)->syntax_type(cc);
 #if 0
@@ -175,7 +175,7 @@ namespace core {
                          ((print_case == kw::_sym_downcase) ||
                           ((print_case == kw::_sym_capitalize) && !capitalize))))
                     {
-                        c = clasp_char_downcase(c);
+                        c = tolower(c);
                     }
                     capitalize = 0;
                 } else if (islower(c)) {
@@ -184,7 +184,7 @@ namespace core {
                          ((print_case == kw::_sym_upcase) ||
                           ((print_case == kw::_sym_capitalize) && capitalize))))
                     {
-                        c = clasp_char_upcase(c);
+                        c = toupper(c);
                     }
                     capitalize = 0;
                 } else {

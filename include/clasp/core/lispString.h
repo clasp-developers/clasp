@@ -82,7 +82,7 @@ namespace core {
 
     claspChar af_char(T_sp str, int idx);
 
-    bool brcl_memberChar(claspChar c, T_sp charBag);
+    bool clasp_memberChar(claspChar c, T_sp charBag);
 
     Str_sp cl_stringTrim(T_sp charbag, T_sp str);
     Str_sp cl_stringLeftTrim(T_sp charbag, T_sp str);

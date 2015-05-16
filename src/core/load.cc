@@ -62,7 +62,7 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
     } else {
 	strm = cl_open(source,
 		       kw::_sym_input,
-		       cl::_sym_Character_O,
+		       cl::_sym_character,
 		       _Nil<T_O>(), false,
 		       _Nil<T_O>(), false,
 		       kw::_sym_default,

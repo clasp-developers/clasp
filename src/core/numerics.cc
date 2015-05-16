@@ -258,7 +258,7 @@ namespace core {
 	    float d = x.as<SingleFloat_O>()->get();
 	    float y = ceilf(d);
 	    v0 = Integer_O::create(y);
-	    v1 = SingleFloat_O::create(d - y);
+	    v1 = clasp_make_single_float(d - y);
 	    break;
 	}
 	case number_DoubleFloat: {
@@ -1403,10 +1403,10 @@ void exposeCando_Numerics()
     SYMBOL_EXPORT_SC_(ClPkg,leastNegativeSingleFloat);
     SYMBOL_EXPORT_SC_(ClPkg,mostPositiveSingleFloat);
     SYMBOL_EXPORT_SC_(ClPkg,mostNegativeSingleFloat);
-    cl::_sym_mostPositiveSingleFloat->defconstant(SingleFloat_O::create(FLT_MAX));
-    cl::_sym_mostNegativeSingleFloat->defconstant(SingleFloat_O::create(-FLT_MAX));
-    cl::_sym_leastPositiveSingleFloat->defconstant(SingleFloat_O::create(FLT_MIN));
-    cl::_sym_leastNegativeSingleFloat->defconstant(SingleFloat_O::create(-FLT_MIN));
+    cl::_sym_mostPositiveSingleFloat->defconstant(clasp_make_single_float(FLT_MAX));
+    cl::_sym_mostNegativeSingleFloat->defconstant(clasp_make_single_float(-FLT_MAX));
+    cl::_sym_leastPositiveSingleFloat->defconstant(clasp_make_single_float(FLT_MIN));
+    cl::_sym_leastNegativeSingleFloat->defconstant(clasp_make_single_float(-FLT_MIN));
 
     SYMBOL_EXPORT_SC_(ClPkg,leastPositiveShortFloat);
     SYMBOL_EXPORT_SC_(ClPkg,leastNegativeShortFloat);
@@ -1431,7 +1431,7 @@ void exposeCando_Numerics()
     SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedShortFloat);
     SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedDoubleFloat);
     // SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedLongFloat);
-    cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(SingleFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+    cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
     cl::_sym_leastNegativeNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
     cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
     // cl::_sym_leastNegativeNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
@@ -1440,7 +1440,7 @@ void exposeCando_Numerics()
     SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedShortFloat);
     SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedDoubleFloat);
     // SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedLongFloat);
-    cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(SingleFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+    cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
     cl::_sym_leastPositiveNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
     cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
     // cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));

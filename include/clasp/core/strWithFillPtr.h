@@ -110,7 +110,7 @@ namespace core
 	virtual ~StrWithFillPtr_O() {};
     };
 
-    inline void brcl_string_push_extend(StrWithFillPtr_sp str, Fixnum c) {
+    inline void clasp_string_push_extend(StrWithFillPtr_sp str, Fixnum c) {
 	str->pushCharExtend(c);
     }
 	

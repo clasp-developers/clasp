@@ -24,9 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_brcl_H
-#define _core_brcl_H
+#ifndef _core_clasp_H
+#define _core_clasp_H
 
+
+#error "This file doesn't do anything"
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -35,29 +37,29 @@ THE SOFTWARE.
 
 
 
-struct brcl_State
+struct clasp_State
 {
     int x;
 };
 
-#define	BRCL_NOREF 0
-#define	brcl_NOREF 0
-#define BRCL_REGISTRYINDEX 0
+#define	CLASP_NOREF 0
+#define	clasp_NOREF 0
+#define CLASP_REGISTRYINDEX 0
 
-int brclL_ref(brcl_State*, int);
-void brcl_rawgeti(brcl_State*, int, int );
-void brcl_rawseti(brcl_State*, int, int );
-void brclL_unref(brcl_State*, int, int );
-void* brcl_touserdata(brcl_State*, int );
-void brcl_pushvalue(brcl_State*, int);
-void brcl_pushnil(brcl_State*);
-bool brcl_isnil(brcl_State*,int);
-void brcl_pop(brcl_State*,int);
-void brcl_pushliteral(brcl_State*,const char*);
-void brcl_rawget(brcl_State*,int);
-int brcl_gettop(brcl_State*);
-void brcl_pushnumber(brcl_State*,int);
-double brcl_tonumber(brcl_State*,int);
-bool brcl_isnumber(brcl_State*,int);
+int brclL_ref(clasp_State*, int);
+void clasp_rawgeti(clasp_State*, int, int );
+void clasp_rawseti(clasp_State*, int, int );
+void brclL_unref(clasp_State*, int, int );
+void* clasp_touserdata(clasp_State*, int );
+void clasp_pushvalue(clasp_State*, int);
+void clasp_pushnil(clasp_State*);
+bool clasp_isnil(clasp_State*,int);
+void clasp_pop(clasp_State*,int);
+void clasp_pushliteral(clasp_State*,const char*);
+void clasp_rawget(clasp_State*,int);
+int clasp_gettop(clasp_State*);
+void clasp_pushnumber(clasp_State*,int);
+double clasp_tonumber(clasp_State*,int);
+bool clasp_isnumber(clasp_State*,int);
 
 #endif

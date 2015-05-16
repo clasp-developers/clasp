@@ -84,7 +84,7 @@ namespace core
 	    {
 		if ( this->_FillPointer < this->_Contents.size() )
 		{
-		    this->_Contents[this->_FillPointer] = ch->asChar();
+		    this->_Contents[this->_FillPointer] = clasp_as_char(ch);
 		    int newIndex = this->_FillPointer;
 		    this->_FillPointer++;
 		    return make_fixnum(newIndex);
@@ -92,7 +92,7 @@ namespace core
 		return _Nil<T_O>();
 	    }
 	}
-	TYPE_ERROR(newElement,cl::_sym_Character_O);
+	TYPE_ERROR(newElement,cl::_sym_character);
     }
 
     void StrWithFillPtr_O::setFillPointer(size_t fp)
@@ -152,10 +152,10 @@ namespace core
 	{
 	    if ( Character_sp ch = newElement.asOrNull<Character_O>() )
 	    {
-		return make_fixnum(this->pushCharExtend(ch->asChar(),extension));
+		return make_fixnum(this->pushCharExtend(clasp_as_char(ch),extension));
 	    }
 	}
-	TYPE_ERROR(newElement,cl::_sym_Character_O);
+	TYPE_ERROR(newElement,cl::_sym_character);
     }
 
 
@@ -191,7 +191,7 @@ namespace core
      {
 	 Str_sp str = af_string(tstr);
 	 while (start < end) {
-	     this->vectorPushExtend( Character_O::create(af_char(str, start)));
+	     this->vectorPushExtend( clasp_make_character(af_char(str, start)));
 	     start++;
 	 }
     }

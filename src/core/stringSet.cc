@@ -332,7 +332,7 @@ namespace core {
 	Vector_sp vec = af_make_vector(cl::_sym_Str_O,
 				       this->strs.size() /* dim */,
 				       true /* adjustable */,
-				       brcl_make_fixnum(0) /* fill pointer */ );
+				       clasp_make_fixnum(0) /* fill pointer */ );
 	int i=0;
 	set<string>::iterator	si;
 	for ( si=this->strs.begin();si!=this->strs.end();si++) {

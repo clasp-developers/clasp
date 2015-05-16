@@ -314,7 +314,7 @@ namespace core
 
 
     T_sp Str_O::elementType() const {
-	return cl::_sym_BaseChar_O;
+	return cl::_sym_base_char;
     }
 
 
@@ -326,12 +326,9 @@ namespace core
     {_G();
 	stringstream ss;
 	char ch(' ');
-	if ( initial_element.notnilp() ) ch = gc::As<Character_sp>(initial_element)->asChar();
+	if ( initial_element.notnilp() ) ch = unbox_character(gc::As<Character_sp>(initial_element));
 	int isize = unbox_fixnum(size);
-	for ( int i=0; i<isize; i++ )
-	{
-	    ss << ch;
-	}
+	for ( int i=0; i<isize; i++ ) ss << ch;
 	Str_sp ns = Str_O::create(ss.str());
 	return(Values(ns));
     };
@@ -681,21 +678,21 @@ namespace core
     {_OF();
 	ASSERTF(index>=0 && index<this->size(),BF("Index %d out of range for elt of string size: %d") % index % this->size() );
 	char c = this->_Contents[index];
-	Character_sp ch = Character_O::create(c);
+	Character_sp ch = clasp_make_character(c);
 	return ch;
     }
 
     T_sp Str_O::setf_elt(int index, T_sp val)
     {_OF();
 	ASSERTF(index>=0 && index<this->size(),BF("Index out of range for string: %d") % index );
-	char ch = gc::As<Character_sp>(val)->asChar();
+	char ch = clasp_as_char(gc::As<Character_sp>(val));
 	this->_Contents[index] = ch;
 	return val;
     }
 
     T_sp Str_O::asetUnsafe(int index, T_sp val)
     {_OF();
-	char ch = gc::As<Character_sp>(val)->asChar();
+	char ch = clasp_as_char(gc::As<Character_sp>(val));
 	this->_Contents[index] = ch;
 	return val;
     }
@@ -1307,7 +1304,7 @@ namespace core
 
     void Str_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end )
     {_G();
-	char celement = gc::As<Character_sp>(element)->asChar();
+	char celement = clasp_as_char(gc::As<Character_sp>(element));
 	uint istart = unbox_fixnum(start);
 	uint last = this->size();
 	uint iend = last;
@@ -1336,7 +1333,7 @@ namespace core
 	    if ( cl_length(seq) != this->size() ) goto ERROR;
 	    size_t i = 0;
 	    for ( auto cur : ls ) {
-		this->_Contents[i] = gc::As<Character_sp>(oCar(cur))->asChar();
+		this->_Contents[i] = clasp_as_char(gc::As<Character_sp>(oCar(cur)));
 		++i;
 	    }
 	} else if ( Str_sp ss = seq.asOrNull<Str_O>() ) {
@@ -1347,7 +1344,7 @@ namespace core
 	} else if ( Vector_sp vs = seq.asOrNull<Vector_O>() ) {
 	    if ( vs->length() != this->size() ) goto ERROR;
 	    for ( size_t i=0; i<this->size(); ++i ) {
-		this->_Contents[i] = gc::As<Character_sp>(vs->elt(i))->asChar();
+		this->_Contents[i] = clasp_as_char(gc::As<Character_sp>(vs));
 	    }
 	} else {
 	    SIMPLE_ERROR(BF("Illegal :INITIAL-CONTENTS"));

@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _brcl_memoryManagement_H
-#define _brcl_memoryManagement_H
+#ifndef _clasp_memoryManagement_H
+#define _clasp_memoryManagement_H
 
 #include <clasp/gctools/hardErrors.h>
 
@@ -271,4 +271,4 @@ namespace gctools {
 
 
 
-#endif // _brcl_memoryManagement_H
+#endif // _clasp_memoryManagement_H

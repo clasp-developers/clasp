@@ -792,7 +792,7 @@ namespace core
 	const FileOps& ops = stream_dispatch_table(strm);
         Vector_sp vec = gc::As<Vector_sp>(data);
         T_sp elementType = vec->elementType();
-        if ( elementType == cl::_sym_BaseChar_O && af_characterP(vec->elt(0))) {
+        if ( elementType == cl::_sym_base_char && af_characterP(vec->elt(0))) {
             claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;
             for (; start < end; start++) {
                 write_char(strm, clasp_charCode(vec->elt(start)));
@@ -834,12 +834,12 @@ namespace core
         Vector_sp vec = gc::As<Vector_sp>(data);
         const FileOps& ops = stream_dispatch_table(strm);
 	T_sp expected_type = clasp_stream_element_type(strm);
-	if (expected_type == cl::_sym_BaseChar_O || expected_type == cl::_sym_Character_O) {
+	if (expected_type == cl::_sym_base_char || expected_type == cl::_sym_character) {
             claspCharacter (*read_char)(T_sp) = ops.read_char;
             for (; start < end; start++) {
 		gctools::Fixnum c = read_char(strm);
                 if (c == EOF) break;
-                vec->setf_elt(start, Character_O::create(c) );//clasp_charCode(c));
+                vec->setf_elt(start, clasp_make_character(c) );//clasp_charCode(c));
             }
 	} else {
             T_sp (*read_byte)(T_sp) = ops.read_byte;
@@ -1546,17 +1546,17 @@ namespace core
     static claspCharacter
     clos_stream_write_char(T_sp strm, claspCharacter c)
     {
-	eval::funcall(gray::_sym_stream_write_char, strm, Character_O::create(c));
+	eval::funcall(gray::_sym_stream_write_char, strm, clasp_make_character(c));
 	return c;
     }
 
     static void
     clos_stream_unread_char(T_sp strm, claspCharacter c)
     {
-	eval::funcall(gray::_sym_stream_unread_char, strm, Character_O::create(c));
+	eval::funcall(gray::_sym_stream_unread_char, strm, clasp_make_character(c));
     }
 
-    static int
+    static claspCharacter
     clos_stream_peek_char(T_sp strm)
     {
 	T_sp out = eval::funcall(gray::_sym_stream_peek_char, strm);
@@ -1708,8 +1708,8 @@ namespace core
     {
 	T_sp string = StringOutputStreamOutputString(strm);
 	if (af_strP(string))
-            return cl::_sym_BaseChar_O;
-	return cl::_sym_Character_O;
+            return cl::_sym_base_char;
+	return cl::_sym_character;
     }
 
     T_sp str_out_get_position(T_sp strm)
@@ -1834,15 +1834,15 @@ namespace core
     T_sp cl_makeStringOutputStream(Symbol_sp elementType)
     {
         int extended = 0;
-        if (elementType == cl::_sym_BaseChar_O) {
+        if (elementType == cl::_sym_base_char) {
             (void)0;
-        } else if (elementType == cl::_sym_Character_O) {
+        } else if (elementType == cl::_sym_character) {
 #ifdef ECL_UNICODE
             extended = 1;
 #endif
-        } else if (!(eval::funcall(cl::_sym_subtypep, elementType, cl::_sym_BaseChar_O)).nilp()) {
+        } else if (!(eval::funcall(cl::_sym_subtypep, elementType, cl::_sym_base_char)).nilp()) {
             (void)0;
-        } else if (!(eval::funcall(cl::_sym_subtypep, elementType, cl::_sym_Character_O)).nilp()) {
+        } else if (!(eval::funcall(cl::_sym_subtypep, elementType, cl::_sym_character)).nilp()) {
 #ifdef ECL_UNICODE
             extended = 1;
 #endif
@@ -1925,8 +1925,8 @@ namespace core
     {
 	T_sp string = StringInputStreamInputString(strm);
 	if (af_strP(string))
-            return cl::_sym_BaseChar_O;
-	return cl::_sym_Character_O;
+            return cl::_sym_base_char;
+	return cl::_sym_character;
     }
 
     static T_sp
@@ -3208,7 +3208,7 @@ namespace core
             mode = SEEK_END;
 	} else {
             if (StreamByteSize(strm) != 8) {
-                large_disp = brcl_times(large_disp,
+                large_disp = clasp_times(large_disp,
                                        make_fixnum(StreamByteSize(strm) / 8));
             }
             disp = clasp_integer_to_off_t(large_disp);
@@ -3505,28 +3505,28 @@ namespace core
 #ifdef ECL_UNICODE
             /*case ECL_ISO_8859_1:*/
 	case CLASP_STREAM_LATIN_1:
-            FileStreamEltType(stream) = cl::_sym_BaseChar_O;
+            FileStreamEltType(stream) = cl::_sym_base_char;
             byte_size = 8;
             StreamFormat(stream) = kw::_sym_latin_1;
             stream->stream.encoder = passthrough_encoder;
             StreamDecoder(stream) = passthrough_decoder;
             break;
 	case CLASP_STREAM_UTF_8:
-            FileStreamEltType(stream) = cl::_sym_Character_O;
+            FileStreamEltType(stream) = cl::_sym_character;
             byte_size = 8;
             StreamFormat(stream) = @':utf-8';
             stream->stream.encoder = utf_8_encoder;
             StreamDecoder(stream) = utf_8_decoder;
             break;
 	case CLASP_STREAM_UCS_2:
-            FileStreamEltType(stream) = cl::_sym_Character_O;
+            FileStreamEltType(stream) = cl::_sym_character;
             byte_size = 8*2;
             StreamFormat(stream) = @':ucs-2';
             stream->stream.encoder = ucs_2_encoder;
             StreamDecoder(stream) = ucs_2_decoder;
             break;
 	case CLASP_STREAM_UCS_2BE:
-            FileStreamEltType(stream) = cl::_sym_Character_O;
+            FileStreamEltType(stream) = cl::_sym_character;
             byte_size = 8*2;
             if (flags & CLASP_STREAM_LITTLE_ENDIAN) {
                 StreamFormat(stream) = @':ucs-2le';
@@ -3539,14 +3539,14 @@ namespace core
             }
             break;
 	case CLASP_STREAM_UCS_4:
-            FileStreamEltType(stream) = cl::_sym_Character_O;
+            FileStreamEltType(stream) = cl::_sym_character;
             byte_size = 8*4;
             StreamFormat(stream) = @':ucs-4be';
             stream->stream.encoder = ucs_4_encoder;
             StreamDecoder(stream) = ucs_4_decoder;
             break;
 	case CLASP_STREAM_UCS_4BE:
-            FileStreamEltType(stream) = cl::_sym_Character_O;
+            FileStreamEltType(stream) = cl::_sym_character;
             byte_size = 8*4;
             if (flags & CLASP_STREAM_LITTLE_ENDIAN) {
                 StreamFormat(stream) = @':ucs-4le';
@@ -3559,7 +3559,7 @@ namespace core
             }
             break;
 	case CLASP_STREAM_USER_FORMAT:
-            FileStreamEltType(stream) = cl::_sym_Character_O;
+            FileStreamEltType(stream) = cl::_sym_character;
             byte_size = 8;
             StreamFormat(stream) = StreamFormat(stream)_table;
             if (cl_consp(StreamFormat(stream))) {
@@ -3571,7 +3571,7 @@ namespace core
             }
             break;
 	case CLASP_STREAM_US_ASCII:
-            FileStreamEltType(stream) = cl::_sym_BaseChar_O;
+            FileStreamEltType(stream) = cl::_sym_base_char;
             byte_size = 8;
             StreamFormat(stream) = @':us-ascii';
             StreamEncoder(stream) = ascii_encoder;
@@ -3579,7 +3579,7 @@ namespace core
             break;
 #else
 	case CLASP_STREAM_DEFAULT_FORMAT:
-            FileStreamEltType(stream) = cl::_sym_BaseChar_O;
+            FileStreamEltType(stream) = cl::_sym_base_char;
             byte_size = 8;
             StreamFormat(stream) = kw::_sym_passThrough;
             StreamEncoder(stream) = passthrough_encoder;
@@ -3655,8 +3655,8 @@ namespace core
 #endif
         {
             T_sp elt_type = clasp_stream_element_type(stream);
-            unlikely_if (elt_type != cl::_sym_Character_O &&
-                         elt_type != cl::_sym_BaseChar_O)
+            unlikely_if (elt_type != cl::_sym_character &&
+                         elt_type != cl::_sym_base_char)
                 FEerror("Cannot change external format"
                         "of binary stream ~A", 1, stream.raw_());
             set_stream_elt_type(stream, StreamByteSize(stream),
@@ -3884,7 +3884,7 @@ namespace core
             mode = SEEK_END;
 	} else {
             if (StreamByteSize(strm) != 8) {
-                large_disp = brcl_times(large_disp,
+                large_disp = clasp_times(large_disp,
                                        make_fixnum(StreamByteSize(strm) / 8));
             }
             disp = clasp_integer_to_off_t(large_disp);
@@ -5185,7 +5185,7 @@ namespace core
             const FileOps& ops = stream_dispatch_table(stream);
             if (cl_listp(seq)) {
                 T_sp elt_type = cl_stream_element_type(stream);
-                bool ischar = (elt_type == cl::_sym_BaseChar_O) || (elt_type == cl::_sym_Character_O);
+                bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
                 T_sp s = cl_nthcdr(start, seq);
                 T_sp orig = s;
                 for ( ; s.notnilp(); s = oCdr(s) ) {
@@ -5247,7 +5247,7 @@ namespace core
             const FileOps& ops = stream_dispatch_table(stream);
             if (cl_listp(seq)) {
                 T_sp elt_type = cl_stream_element_type(stream);
-                bool ischar = (elt_type == cl::_sym_BaseChar_O) || (elt_type == cl::_sym_Character_O);
+                bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
                 seq = cl_nthcdr(start, seq);
                 T_sp orig = seq;
                 for ( ; seq.notnilp(); seq=oCdr(seq) ) {
@@ -5260,7 +5260,7 @@ namespace core
                             if (i < 0) {
                                 return make_fixnum(start);
                             }
-                            c = Character_O::create(i);
+                            c = clasp_make_character(i);
                         } else {
                             c = ops.read_byte(stream);
                             if (c == _Nil<T_O>()) {
@@ -5462,9 +5462,9 @@ namespace core
             return 8;
 	} else if (element_type == kw::_sym_default) {
             return 0;
-        } else if (element_type == cl::_sym_BaseChar_O || element_type == cl::_sym_Character_O) {
+        } else if (element_type == cl::_sym_base_char || element_type == cl::_sym_character) {
             return 0;
-	} else if (eval::funcall(cl::_sym_subtypep, element_type, cl::_sym_Character_O) != _Nil<T_O>()) {
+	} else if (eval::funcall(cl::_sym_subtypep, element_type, cl::_sym_character) != _Nil<T_O>()) {
             return 0;
 	} else if (eval::funcall(cl::_sym_subtypep, element_type, cl::_sym_UnsignedByte) != _Nil<T_O>()) {
             sign = +1;
@@ -5944,7 +5944,7 @@ namespace core
 	cl_error( cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
 		 Str_O::create("~A is not a character stream"),
 		 kw::_sym_formatArguments, Cons_O::createList( s),
-		 kw::_sym_expectedType, cl::_sym_Character_O,
+		 kw::_sym_expectedType, cl::_sym_character,
                                                                kw::_sym_datum, cl_stream_element_type(s)));
     }
 
@@ -6604,16 +6604,16 @@ namespace core {
 	if ( peek_type.nilp() ) {
 	    int c = clasp_peek_char(strm);
 	    if ( c == EOF ) goto HANDLE_EOF;
-	    return Character_O::create(clasp_peek_char(strm));
+	    return clasp_make_character(clasp_peek_char(strm));
 	}
 	if ( af_characterP(peek_type) )
 	{
-	    int looking_for = gc::As<Character_sp>(peek_type)->charCode();
+	    int looking_for = clasp_char_code(gc::As<Character_sp>(peek_type));
 	    while (1)
 	    {
 		int c = clasp_peek_char(strm);
 		if ( c == EOF ) goto HANDLE_EOF;
-		if ( c == looking_for ) return Character_O::create(c);
+		if ( c == looking_for ) return clasp_make_character(c);
 		clasp_read_char(strm);
 	    }
 	}
@@ -6626,7 +6626,7 @@ namespace core {
 	    {
 		int c = clasp_peek_char(strm);
 		if ( c == EOF ) goto HANDLE_EOF;
-		Character_sp charc = Character_O::create(c);
+		Character_sp charc = clasp_make_character(c);
 		if ( readtable->syntax_type(charc) != kw::_sym_whitespace_character) return charc;
 		clasp_read_char(strm);
 	    }
@@ -6654,7 +6654,7 @@ namespace core {
 	    ERROR_END_OF_FILE(strm);
 	}
 	LOG(BF("Read and returning char[%s]") % c );
-	return StandardChar_O::create(c);
+	return clasp_make_character(c);
     }
 
 
@@ -6678,7 +6678,7 @@ namespace core {
 	    int f = clasp_listen_stream(strm);
 	    if ( f == CLASP_LISTEN_AVAILABLE ) {
 		int c = clasp_read_char(strm);
-		if ( c != EOF ) return StandardChar_O::create(c);
+		if ( c != EOF ) return clasp_make_standard_character(c);
 	    } else if ( f == CLASP_LISTEN_NO_CHAR) {
 		return _Nil<T_O>();
 	    }
@@ -6758,7 +6758,7 @@ namespace core {
 		    return(Values(eof_value/*Str_O::create(sbuf.str())*/,_lisp->_true()));
 		}
 	    } else {
-		char cc = gc::As<Character_sp>(tch)->get();
+		char cc = clasp_as_char(gc::As<Character_sp>(tch));
 		if ( cc == '\n') {
 		    break;
 		} else if ( cc == '\r' ) {
@@ -6884,7 +6884,7 @@ namespace core {
     Character_sp cl_writeChar(Character_sp chr, T_sp stream)
     {_G();
         stream = coerce::outputStreamDesignator(stream);
-        clasp_write_char(chr->asChar(),stream);
+        clasp_write_char(clasp_as_char(chr),stream);
         return chr;
     };
 
@@ -6951,7 +6951,7 @@ namespace core {
     void cl_unread_char(Character_sp ch, T_sp dstrm)
     {_G();
         dstrm = coerce::inputStreamDesignator(dstrm);
-        clasp_unread_char(ch->asChar(),dstrm);
+        clasp_unread_char(clasp_as_char(ch),dstrm);
     };
 
 
@@ -6999,13 +6999,13 @@ namespace core {
         const FileOps& ops = stream_dispatch_table(stream);
 	if (cl_listp(seq)) {
 	    T_sp elt_type = cl_stream_element_type(stream);
-	    bool ischar = (elt_type == cl::_sym_BaseChar_O) || (elt_type == cl::_sym_Character_O);
+	    bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
 	    T_sp s = cl_nthcdr(start, seq);
 	    for ( ; ; s = CONS_CDR(s) ) {
 		if (start < end) {
 		    T_sp elt = oCar(s);
 		    if (ischar)
-			clasp_write_char(gc::As<Character_sp>(elt)->charCode(),stream);
+			clasp_write_char(clasp_char_code(gc::As<Character_sp>(elt)),stream);
 		    else
 			clasp_write_byte(gc::As<Integer_sp>(elt),stream);
 		    start++;

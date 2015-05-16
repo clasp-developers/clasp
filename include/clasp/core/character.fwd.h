@@ -28,11 +28,6 @@ THE SOFTWARE.
 #define character_fwd_H
 namespace core
 {
-FORWARD(Character);
-FORWARD(BaseChar);
-FORWARD(StandardChar);
-FORWARD(ExtendedChar);
-
 
  bool clasp_charEqual2(T_sp x, T_sp y);
 

@@ -241,13 +241,13 @@ DebugStream::DebugStream(int rank) : DebugLogAsXml(false)
     boost::format fileName("_candoDebug%05d.log");
     fileName % this->DebugLogProcessRank;
     this->_LogFileName = fileName.str();
-    char* cstr = getenv("BRCL_DEBUG");
+    char* cstr = getenv("CLASP_DEBUG");
     if ( cstr != NULL )
     {
         printf("=== Initializing source code debug/log system\n");
 	printf("--- Writing log to file: %s\n", this->_LogFileName.c_str() );
-	printf("--- Writing log messages for source files listed in BRCL_DEBUG environment variable\n" );
-	printf("--- BRCL_DEBUG environment variable is: %s\n", cstr );
+	printf("--- Writing log messages for source files listed in CLASP_DEBUG environment variable\n" );
+	printf("--- CLASP_DEBUG environment variable is: %s\n", cstr );
 	fflush(stdout);
 	string allFileNames = cstr;
 	vector<string> fileNameVector;

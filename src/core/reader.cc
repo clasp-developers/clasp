@@ -378,7 +378,7 @@ namespace core
 			result = _Nil<T_O>();
 			goto RETURN;
 		    }
-		    result = Character_O::create(ss.str()[0]);
+		    result = clasp_make_character(ss.str()[0]);
 		    goto RETURN;
 		} else
 		{
@@ -387,7 +387,7 @@ namespace core
 			result = _Nil<T_O>();
 			goto RETURN;
 		    }
-		    ch = Character_O::create_from_name(ss.str());
+		    ch = clasp_character_create_from_name(ss.str());
 		}
 	    }
 

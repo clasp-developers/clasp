@@ -223,11 +223,11 @@ namespace gctools {
 	return reinterpret_cast<T>((ch<<character_shift)|character_tag);
     }
     template <class T> inline int untag_character(T ptr) {
-	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&fixnum_mask)==character_tag);
+	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&immediate_mask)==character_tag);
 	return (int)(reinterpret_cast<uintptr_t>(ptr)>>character_shift);
     }
     template <class T> inline bool tagged_characterp(T ptr) {
-	return ((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==character_tag);
+	return ((reinterpret_cast<uintptr_t>(ptr)&immediate_mask)==character_tag);
     };
     template <class T> inline T tag_single_float(float fn) {
 	GCTOOLS_ASSERT(sizeof(uintptr_t)==8);
@@ -240,7 +240,7 @@ namespace gctools {
 	return reinterpret_cast<uintptr_t>(reinterpret_cast<uintptr_t>(ptr)&single_float_mask);
     }
     template <class T> inline float untag_single_float(T const ptr)  {
-	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==single_float_tag);
+	GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&immediate_mask)==single_float_tag);
 	GCTOOLS_ASSERT(sizeof(uintptr_t)==8);
 	GCTOOLS_ASSERT(sizeof(float)==4);
 	uintptr_t val(reinterpret_cast<uintptr_t>(ptr));
@@ -250,7 +250,7 @@ namespace gctools {
 	return result;
     }
     template <class T> inline bool tagged_single_floatp(T ptr) {
-	return ((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==single_float_tag);
+	return ((reinterpret_cast<uintptr_t>(ptr)&immediate_mask)==single_float_tag);
     };
 
     template <class T> inline bool tagged_otherp(T ptr) {

@@ -252,12 +252,12 @@ namespace core
                         T_mv sfisub = core_walkToFindSourceInfo(oCar(cur));
                         if ( sfisub.notnilp() ) return sfisub;
                     } else {
-                        return Values(_Nil<SourceFileInfo_O>());
+                        return Values(_Nil<T_O>());
                     }
                 }
             }
         }
-	return Values(_Nil<SourceFileInfo_O>());
+	return Values(_Nil<T_O>());
     };
 
 
@@ -580,7 +580,7 @@ namespace core
 
 
     SYMBOL_EXPORT_SC_(CorePkg,STARmonitorRegisterSourceInfoSTAR);
-    SourcePosInfo_sp SourceManager_O::registerSourceInfo(T_sp key,
+    T_sp SourceManager_O::registerSourceInfo(T_sp key,
                                                          T_sp sourceFile,
 							 size_t filepos,
                                                          uint lineno,
@@ -598,17 +598,17 @@ namespace core
             this->_SourcePosInfo->setf_gethash(key,info);
             return info;
         }
-        return _Nil<SourcePosInfo_O>();
+        return _Nil<T_O>();
     }
 
 
-    SourcePosInfo_sp SourceManager_O::registerSourcePosInfo(T_sp obj, SourcePosInfo_sp info)
+    T_sp SourceManager_O::registerSourcePosInfo(T_sp obj, SourcePosInfo_sp info)
     {_G();
-        if ( this->availablep() ) {
+        if ( this->availablep() && !cl_atom(obj) ) {
             this->_SourcePosInfo->setf_gethash(obj,info);
             return info;
         }
-        return _Nil<SourcePosInfo_O>();
+        return _Nil<T_O>();
     }
 
 #if 0

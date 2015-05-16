@@ -247,9 +247,9 @@ namespace sockets {
 	vector[1] = unbox_fixnum(gc::As<Fixnum_sp>(address->operator[](1)));
 	vector[2] = unbox_fixnum(gc::As<Fixnum_sp>(address->operator[](2)));
 	vector[3] = unbox_fixnum(gc::As<Fixnum_sp>(address->operator[](3)));
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	hostent = gethostbyaddr(REINTERPRET_CAST(const char *, vector),4,AF_INET);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	if (hostent != NULL) {
 	    char **aliases;
 	    char **addrs;
@@ -303,9 +303,9 @@ namespace sockets {
 	    ( peek ? MSG_PEEK : 0 ) |
 	    ( waitall ? MSG_WAITALL : 0 );
 	ssize_t len;
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	len = recvfrom(fd, REINTERPRET_CAST(char*, safe_buffer_pointer(buffer, length)), length, flags, NULL,NULL);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	if (len >= 0) {
 	    if ( Vector_sp vec = gc::As<Vector_sp>(buffer) ) {
 		vec->setFillPointer(len);
@@ -338,10 +338,10 @@ namespace sockets {
     {_G();
 	struct sockaddr_in sockaddr;
 	int output;
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	fill_inet_sockaddr(&sockaddr, port, ip0, ip1, ip2, ip3 );
 	output = ::bind(socketFileDescriptor,(struct sockaddr*)&sockaddr, sizeof(struct sockaddr_in));
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	return output;
     }
 
@@ -359,9 +359,9 @@ namespace sockets {
 	socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_in);
 	int new_fd;
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	new_fd = accept(sfd, (struct sockaddr*)&sockaddr, &addr_len);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 
 	int return0 = new_fd;
 	core::T_sp return1 = _Nil<core::T_O>();
@@ -391,10 +391,10 @@ namespace sockets {
     {_G();
 	struct sockaddr_in sockaddr;
 	int output;
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	fill_inet_sockaddr(&sockaddr, port, ip0, ip1, ip2, ip3 );
 	output = connect(socket_file_descriptor,(struct sockaddr*)&sockaddr, sizeof(struct sockaddr_in));
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	return output;
     }
 
@@ -412,9 +412,9 @@ namespace sockets {
 	struct sockaddr_in name;
 	socklen_t len = sizeof(struct sockaddr_in);
 	int ret;
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	ret = getpeername(fd,(struct sockaddr*)&name,&len);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 
 	if (ret == 0) {
 	    uint32_t ip = ntohl(name.sin_addr.s_addr);
@@ -444,9 +444,9 @@ namespace sockets {
 	socklen_t len = sizeof(struct sockaddr_in);
 	int ret;
     
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	ret = getsockname(fd,(struct sockaddr*)&name,&len);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
     
 	if (ret == 0) {
 	    uint32_t ip = ntohl(name.sin_addr.s_addr);
@@ -509,7 +509,7 @@ namespace sockets {
 	struct sockaddr_in sockaddr;
 	ssize_t len;
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	fill_inet_sockaddr(&sockaddr, secondAddress, ip0, ip1, ip2, ip3 );
 #if (MSG_NOSIGNAL == 0) && defined(SO_NOSIGPIPE)
 	{
@@ -522,7 +522,7 @@ namespace sockets {
 	len = sendto(sock, REINTERPRET_CAST(char *,buffer),
 		     length, flags,(struct sockaddr*)&sockaddr, 
 		     sizeof(struct sockaddr_in));
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	return Integer_O::create(static_cast<uint>(len));
     }
 
@@ -554,7 +554,7 @@ namespace sockets {
 	    ( nosignal ? MSG_NOSIGNAL : 0 ) |
 	    ( confirm ? MSG_CONFIRM : 0 );
         ssize_t len;
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 #if (MSG_NOSIGNAL == 0) && defined(SO_NOSIGPIPE)
 	{
 	    int sockopt = nosignal;
@@ -564,7 +564,7 @@ namespace sockets {
 	}
 #endif
 	len = send(sock, REINTERPRET_CAST(char *, buffer), length, flags);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
         return Integer_O::create(static_cast<uint>(len));
     }
 
@@ -589,9 +589,9 @@ namespace sockets {
         strncpy(sockaddr.sun_path,name.c_str(),sizeof(sockaddr.sun_path));
 	sockaddr.sun_path[sizeof(sockaddr.sun_path)-1] = '\0';
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	output = ::bind(fd,(struct sockaddr*)&sockaddr, sizeof(struct sockaddr_un));
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	return output;
 
     }
@@ -609,9 +609,9 @@ namespace sockets {
 	struct sockaddr_un sockaddr;
 	socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_un);
 	int new_fd;
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	new_fd = accept(socketFileDescriptor, (struct sockaddr *)&sockaddr, &addr_len);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	return Values(Integer_O::create(new_fd),(new_fd==-1) ? _Nil<core::Str_O>() : Str_O::create(sockaddr.sun_path));
     }
 
@@ -632,9 +632,9 @@ namespace sockets {
 	strncpy(sockaddr.sun_path,path.c_str(),sizeof(sockaddr.sun_path));
 	sockaddr.sun_path[sizeof(sockaddr.sun_path)-1] = '\0';
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	output = connect(fd,(struct sockaddr*)&sockaddr, sizeof(struct sockaddr_un));
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 
 	return output;
     }
@@ -654,9 +654,9 @@ namespace sockets {
 	socklen_t len = sizeof(struct sockaddr_un);
 	int ret;
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	ret = getpeername(fd,(struct sockaddr*)&name,&len);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 
 	if (ret == 0) {
 	    return Str_O::create(name.sun_path);
@@ -693,9 +693,9 @@ namespace sockets {
 	int oldflags = fcntl(fd,F_GETFL,NULL);
 	int newflags = (oldflags & ~O_NONBLOCK) |
 	    (nblock ? O_NONBLOCK : 0);
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	int ret = fcntl(fd,F_SETFL,newflags);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	return ret;
     }
 
@@ -795,9 +795,9 @@ namespace sockets {
 	int sockopt, ret;
 	socklen_t socklen = sizeof(int);
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	ret = getsockopt(fd,level,constant,REINTERPRET_CAST(char*,&sockopt),&socklen);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 
 	return (ret == 0) ? Integer_O::create(sockopt) : _Nil<core::Integer_O>();
     }
@@ -812,9 +812,9 @@ namespace sockets {
 	int sockopt, ret;
 	socklen_t socklen = sizeof(int);
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	ret = getsockopt(fd,level,constant,REINTERPRET_CAST(char*,&sockopt),&socklen);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	return (ret == 0) ? _lisp->_boolean(sockopt) : _Nil<core::T_O>();
     }
 
@@ -827,9 +827,9 @@ namespace sockets {
 	struct timeval tv;
 	socklen_t socklen = sizeof(struct timeval);
 	int ret;
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	ret = getsockopt(fd,level,constant,REINTERPRET_CAST(char*,&tv),&socklen);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 	return (ret == 0) ? DoubleFloat_O::create((double)tv.tv_sec + ((double)tv.tv_usec) / 1000000.0) : _Nil<core::DoubleFloat_O>();
     }
 
@@ -845,9 +845,9 @@ namespace sockets {
 	socklen_t socklen = sizeof(struct linger);
 	int ret;
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	ret = getsockopt(fd,level,constant,REINTERPRET_CAST(char*,&sockopt),&socklen);
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 
 	return (ret == 0) ? Integer_O::create((sockopt.l_onoff != 0) ? sockopt.l_linger : 0) : _Nil<core::Integer_O>();
     }
@@ -863,9 +863,9 @@ namespace sockets {
 	int sockopt = value;
 	int ret;
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	ret = setsockopt(fd,level,constant,REINTERPRET_CAST(char *,&sockopt),sizeof(int));
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 
 	return (ret == 0) ? true : false;
     }
@@ -879,9 +879,9 @@ namespace sockets {
 	int sockopt = value ? 1 : 0;
 	int ret;
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	ret = setsockopt(fd,level,constant,REINTERPRET_CAST(char *,&sockopt),sizeof(int));
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 
 	return (ret == 0) ? true : false;
     }
@@ -899,11 +899,11 @@ namespace sockets {
 	double tmp = value;
 	int ret;
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	tv.tv_sec = (int)tmp;
 	tv.tv_usec = (int)((tmp-floor(tmp))*1000000.0);
 	ret = setsockopt(fd,level,constant,&tv,sizeof(struct timeval));
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 
 	return (ret == 0) ? true : false;
     }
@@ -927,10 +927,10 @@ namespace sockets {
 	    sockopt.l_linger = value;
 	}
 
-	brcl_disable_interrupts();
+	clasp_disable_interrupts();
 	ret = setsockopt(fd,level,constant,REINTERPRET_CAST(char *,&sockopt),
 			 sizeof(struct linger));
-	brcl_enable_interrupts();
+	clasp_enable_interrupts();
 
 	return (ret == 0) ? true : false;
     }

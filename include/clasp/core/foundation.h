@@ -92,12 +92,12 @@ namespace std { class type_info; };
 
 #if defined(DEBUG_MPS)
 #define DEBUG_MPS_MESSAGE(_bf_) printf("%s:%d %s\n", __FILE__, __LINE__, (_bf_).str().c_str())
-#define DEBUG_MPS_ALLOCATION(poolName,addr,gcobject_addr,size,kind)  brcl_mps_debug_allocation(poolName,addr,gcobject_addr,size,kind)
-//#define DEBUG_MPS_FIX1_BEFORE(base,smartaddr) brcl_mps_debug_fix1_before(base,smartaddr)
-#define DEBUG_MPS_FIX_BEFORE(pbase,px,offset) brcl_mps_debug_fix_before(pbase,px,offset)
-#define	DEBUG_MPS_FIX_AFTER(pbase,px) brcl_mps_debug_fix_after(pbase,px)
-#define DEBUG_MPS_CONTAINER(ctype,cnt) brcl_mps_debug_container(ctype,#cnt,cnt.size())
-#define DEBUG_SCAN_OBJECT(obj) brcl_mps_debug_scan_object(obj)
+#define DEBUG_MPS_ALLOCATION(poolName,addr,gcobject_addr,size,kind)  clasp_mps_debug_allocation(poolName,addr,gcobject_addr,size,kind)
+//#define DEBUG_MPS_FIX1_BEFORE(base,smartaddr) clasp_mps_debug_fix1_before(base,smartaddr)
+#define DEBUG_MPS_FIX_BEFORE(pbase,px,offset) clasp_mps_debug_fix_before(pbase,px,offset)
+#define	DEBUG_MPS_FIX_AFTER(pbase,px) clasp_mps_debug_fix_after(pbase,px)
+#define DEBUG_MPS_CONTAINER(ctype,cnt) clasp_mps_debug_container(ctype,#cnt,cnt.size())
+#define DEBUG_SCAN_OBJECT(obj) clasp_mps_debug_scan_object(obj)
 #else
 #define DEBUG_MPS_ALLOCATION(poolName,addr,gcobject_addr,size,kind)
 //#define DEBUG_MPS_FIX1_BEFORE(base,smartaddr)
@@ -111,10 +111,10 @@ namespace std { class type_info; };
 
 
 
-#define brcl_unlikely(x) __builtin_expect(!!(x),0)
-#define brcl_likely(x) 	__builtin_expect(!!(x),1)
-#define UNLIKELY(x) brcl_unlikely(x)
-#define LIKELY(x) brcl_likely(x)
+#define clasp_unlikely(x) __builtin_expect(!!(x),0)
+#define clasp_likely(x) 	__builtin_expect(!!(x),1)
+#define UNLIKELY(x) clasp_unlikely(x)
+#define LIKELY(x) clasp_likely(x)
 
 
 typedef std::size_t class_id;
@@ -673,12 +673,12 @@ namespace core {
 
 
 
-extern void brcl_mps_debug_allocation(const char* poolName,void* base, void* objAddr, int size, int kind);
-extern void brcl_mps_debug_fix1_before(void* base, void* smartAddr);
-extern void brcl_mps_debug_fix_before(void* pbase, void* px, int offset);
-extern void brcl_mps_debug_fix_after(void* pbase, void* px);
-extern void brcl_mps_debug_container(const char* ctype,const char* name, int size);
-//extern void brcl_mps_debug_scan_object(gctools::GCObject*  obj);
+extern void clasp_mps_debug_allocation(const char* poolName,void* base, void* objAddr, int size, int kind);
+extern void clasp_mps_debug_fix1_before(void* base, void* smartAddr);
+extern void clasp_mps_debug_fix_before(void* pbase, void* px, int offset);
+extern void clasp_mps_debug_fix_after(void* pbase, void* px);
+extern void clasp_mps_debug_container(const char* ctype,const char* name, int size);
+//extern void clasp_mps_debug_scan_object(gctools::GCObject*  obj);
 
 
 #include <clasp/gctools/memoryManagement.h>
@@ -1501,8 +1501,8 @@ namespace core
 }
 
 
-#define brcl_disable_interrupts()
-#define brcl_enable_interrupts()
+#define clasp_disable_interrupts()
+#define clasp_enable_interrupts()
 
 
 #define unlikely_if(x) if(UNLIKELY(x))
@@ -1521,8 +1521,8 @@ namespace core {
     inline cl_env_ptr clasp_process_env() { return NULL;};
     inline void clasp_disable_interrupts_env(const cl_env_ptr) {};
     inline void clasp_enable_interrupts_env(const cl_env_ptr) {};
-    inline void clasp_disable_interrupts() {};
-    inline void clasp_enable_interrupts() {};
+//    inline void clasp_disable_interrupts() {};
+//    inline void clasp_enable_interrupts() {};
 
 };
 

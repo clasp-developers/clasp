@@ -48,16 +48,16 @@ THE SOFTWARE.
 #define CHAR_CODE_LIMIT	256 /* ASCII or unicode character code limit */
 
 typedef char claspChar;
-typedef int claspCharacter;
-#define BRCL_CHAR(x) ((x)&0xff)
+typedef unsigned int claspCharacter;
+#define CLASP_CHAR(x) ((x)&0xff)
 
 
 #define IS_DIR_SEPARATOR(c) ((c)=='/')
 #define DIR_SEPARATOR "/"
 #define DIR_SEPARATOR_CHAR '/'
 
-#define BRCL_NAMESTRING_TRUNCATE_IF_ERROR 1
-#define BRCL_NAMESTRING_FORCE_BASE_STRING 2
+#define CLASP_NAMESTRING_TRUNCATE_IF_ERROR 1
+#define CLASP_NAMESTRING_FORCE_BASE_STRING 2
 
 /*! Configure if system has getpwnam */
 
@@ -89,7 +89,7 @@ typedef int claspCharacter;
 // Use an array on the stack to store multiple_values
 #define USE_MULTIPLE_VALUES_ARRAY
 
-#define BRCL_ARRAY_DIMENSION_LIMIT (1024*1024)
+#define CLASP_ARRAY_DIMENSION_LIMIT (1024*1024)
 
 
 /*! Pass five arguments in registers, the rest in memory */
@@ -102,7 +102,7 @@ typedef int claspCharacter;
 #define CHAR_CODE_LIMIT 256
 
 
-#define BRCL_INTERNAL_TIME_UNITS_PER_SECOND 1000
+#define CLASP_INTERNAL_TIME_UNITS_PER_SECOND 1000
 #endif
 
 

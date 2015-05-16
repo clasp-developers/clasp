@@ -96,7 +96,7 @@ TRANSLATE(core::Vector_O);
 
 namespace core {
     // Like ecl_vector_start_end
-    T_mv brcl_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp end); 
+    T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp end); 
 
     Vector_sp af_make_vector(T_sp element_type,
 			int dimension,

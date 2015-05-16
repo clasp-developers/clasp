@@ -154,11 +154,11 @@ namespace core {
         bool availablep() const { return true; };
 
 	/*! Register the object with the source manager */
-	SourcePosInfo_sp registerSourceInfo(T_sp obj, T_sp sourceFile, size_t filepos, uint lineno, uint column);
+	T_sp registerSourceInfo(T_sp obj, T_sp sourceFile, size_t filepos, uint lineno, uint column);
 
 	void dump();
 	
-	SourcePosInfo_sp registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
+	T_sp registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
 
 //        SourceFileInfo_sp sourceFileInfoFromIndex(int idx) const;
 

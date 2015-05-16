@@ -142,7 +142,7 @@ namespace core {
     {
 	if (host.nilp() )
 	    return kw::_sym_local;
-	if (brcl_logical_hostname_p(host))
+	if (clasp_logical_hostname_p(host))
 	    return kw::_sym_upcase;
 	return kw::_sym_downcase;
     }
@@ -189,8 +189,8 @@ namespace core {
 	if (str.nilp()) {
 	    return str;
 	} else if (!gc::IsA<Str_sp>(str)) {
-#ifdef BRCL_UNICODE
-	    if (BRCL_EXTENDED_STRING_P(str) && brcl_fits_in_base_string(str)) {
+#ifdef CLASP_UNICODE
+	    if (CLASP_EXTENDED_STRING_P(str) && brcl_fits_in_base_string(str)) {
 		str = si_coerce_to_base_string(str);
 		return translate_component_case(str, fromcase, tocase);
 	    }
@@ -279,8 +279,8 @@ namespace core {
 		    return kw::_sym_error;
 	    } else if (af_stringP(item)) {
 		size_t l = cl_length(item);
-#ifdef BRCL_UNICODE
-		//		if (brcl_fits_in_base_string(item)) {
+#ifdef CLASP_UNICODE
+		//		if (clasp_fits_in_base_string(item)) {
 		//		    item = si_copy_to_simple_base_string(item);
 		//		} else {
 #endif
@@ -323,7 +323,7 @@ namespace core {
 	    p = LogicalPathname_O::create();
 	} else {
 	    if (af_stringP(host)) {
-		if ( brcl_logical_hostname_p(host) ) {
+		if ( clasp_logical_hostname_p(host) ) {
 		    p = LogicalPathname_O::create();
 		    logical = true;
 		} else {
@@ -365,7 +365,7 @@ namespace core {
 
 	if ( directory.nilp() ) {
 	    // do nothing
-#ifdef BRCL_UNICODE
+#ifdef CLASP_UNICODE
 	} else if ( String_sp sd = directory.asOrNull<String_O>() )  {
 	    directory = lisp_createList(kw::_sym_absolute, directory);
 #endif
@@ -623,7 +623,7 @@ namespace core {
     }
 
     bool
-    brcl_logical_hostname_p(T_sp host)
+    clasp_logical_hostname_p(T_sp host)
     {
 	if (!af_stringP(host))
 	    return false;
@@ -665,7 +665,7 @@ namespace core {
  *
  */
     Pathname_sp
-    brcl_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
+    clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
 			  T_sp default_host)
     {
 	T_sp host, device, path, name, type, aux, version;
@@ -687,7 +687,7 @@ namespace core {
 	    if (host.nilp() || host == kw::_sym_error)
 		host = default_host;
 	}
-	if (!brcl_logical_hostname_p(host))
+	if (!clasp_logical_hostname_p(host))
 	    goto physical;
 	/*
 	 * Logical pathname format:
@@ -752,7 +752,7 @@ namespace core {
 	 * we need "//FOO/" to be separately handled, for it is a shared
 	 * resource.
 	 */
-#if defined(BRCL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
 	if ((start+1 <= end) && is_slash(af_char(s, start))) {
 	    device = _Nil<T_O>();
 	    goto maybe_parse_host;
@@ -768,7 +768,7 @@ namespace core {
 	if (!af_stringP(device)) {
 	    return _Nil<Pathname_O>();
 	}
-#if defined(BRCL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
     maybe_parse_host:
 #endif
 	/* Files have no effective device. */
@@ -889,7 +889,7 @@ namespace core {
 
 
 
-    Pathname_sp brcl_mergePathnames(T_sp tpath, T_sp tdefaults, T_sp defaultVersion)
+    Pathname_sp clasp_mergePathnames(T_sp tpath, T_sp tdefaults, T_sp defaultVersion)
     {_G();
 	T_sp host, device, directory, name, type, version;
 	Symbol_sp tocase;
@@ -964,7 +964,7 @@ namespace core {
 	}
 	path = cl_pathname(path);
 	defaults = cl_pathname(defaults);
-	return brcl_mergePathnames(path,defaults,defaultVersion);
+	return clasp_mergePathnames(path,defaults,defaultVersion);
     }
 
 
@@ -1003,14 +1003,14 @@ namespace core {
 	if (component.nilp() || component == kw::_sym_name) {
 	    T_sp name = pathname->_Name;
 	    if (name.notnilp() &&
-		(name == kw::_sym_wild || brcl_wild_string_p(name)))
+		(name == kw::_sym_wild || clasp_wild_string_p(name)))
 		return true;
 	    checked = 1;
 	}
 	if (component.nilp() || component == kw::_sym_type) {
 	    T_sp name = pathname->_Type;
 	    if (name.notnilp() &&
-		(name == kw::_sym_wild || brcl_wild_string_p(name)))
+		(name == kw::_sym_wild || clasp_wild_string_p(name)))
 		return true;
 	    checked = 1;
 	}
@@ -1021,7 +1021,7 @@ namespace core {
 		T_sp name = CONS_CAR(list);
 		if (name.notnilp() &&
 		    (name == kw::_sym_wild || name == kw::_sym_wild_inferiors ||
-		     brcl_wild_string_p(name)))
+		     clasp_wild_string_p(name)))
 		{
 		    return true;
 		}
@@ -1053,7 +1053,7 @@ namespace core {
 	Pathname_sp pathname = af_coerceToPhysicalPathname(tpathname);
 	pathname = af_mergePathnames(pathname);
 #if 0
-#if !defined(cygwin) && !defined(BRCL_MS_WINDOWS_HOST)
+#if !defined(cygwin) && !defined(CLASP_MS_WINDOWS_HOST)
 	if (pathname->_Device.notnilp())
 	    FEerror("Device ~S not yet supported.", 1,
 		    pathname->_Device);
@@ -1110,9 +1110,9 @@ namespace core {
 	{
 	    ERROR(cl::_sym_fileError,Cons_O::createList(kw::_sym_pathname,pathname_orig));
 	}
-	T_sp tnamestring = brcl_namestring(pathname,
-				     BRCL_NAMESTRING_TRUNCATE_IF_ERROR |
-				     BRCL_NAMESTRING_FORCE_BASE_STRING);
+	T_sp tnamestring = clasp_namestring(pathname,
+				     CLASP_NAMESTRING_TRUNCATE_IF_ERROR |
+				     CLASP_NAMESTRING_FORCE_BASE_STRING);
 	if (tnamestring.nilp()) {
 	    SIMPLE_ERROR(BF("Pathname without a physical namestring:"
 			    "\n :HOST %s"
@@ -1137,23 +1137,23 @@ namespace core {
 
 
 /*
-  brcl_namestring(x, flag) converts a pathname to a namestring.
+  clasp_namestring(x, flag) converts a pathname to a namestring.
   if flag is true, then the pathname may be coerced to the requirements
   of the filesystem, removing fields that have no meaning (such as
   version, or type, etc); otherwise, when it is not possible to
   produce a readable representation of the pathname, NIL is returned.
 */
-    T_sp brcl_namestring(T_sp tx, int flags)
+    T_sp clasp_namestring(T_sp tx, int flags)
     {
 	bool logical;
 	T_sp l, y;
 	T_sp host;
-        bool truncate_if_unreadable = flags & BRCL_NAMESTRING_TRUNCATE_IF_ERROR;
+        bool truncate_if_unreadable = flags & CLASP_NAMESTRING_TRUNCATE_IF_ERROR;
 
 	Pathname_sp x = cl_pathname(tx);
 
 	/* INV: Pathnames can only be created by mergin, parsing namestrings
-	 * or using brcl_make_pathname(). In all of these cases BRCL will complain
+	 * or using clasp_make_pathname(). In all of these cases BRCL will complain
 	 * at creation time if the pathname has wrong components.
 	 */
 	T_sp buffer = clasp_make_string_output_stream(); //(128, 1);
@@ -1173,7 +1173,7 @@ namespace core {
 		clasp_write_string(":",buffer);
 	    }
 	    if (host.notnilp()) {
-#if !defined(BRCL_MS_WINDOWS_HOST)
+#if !defined(CLASP_MS_WINDOWS_HOST)
 		if (y.nilp()) {
 		    clasp_write_string("file:",buffer);
 		}
@@ -1213,9 +1213,9 @@ namespace core {
     NO_DIRECTORY:
 	if (unbox_fixnum(gc::As<Fixnum_sp>(clasp_file_position(buffer))) == 0 ) {
 	    if ((af_stringP(x->_Name) &&
-		 brcl_memberChar(':', x->_Name)) ||
+		 clasp_memberChar(':', x->_Name)) ||
 		(af_stringP(x->_Type) &&
-		 brcl_memberChar(':', x->_Type)))
+		 clasp_memberChar(':', x->_Type)))
 		clasp_write_string(":",buffer);
 	}
 	y = x->_Name;
@@ -1281,10 +1281,10 @@ namespace core {
 	    }
 	}
         Str_sp sbuffer = gc::As<Str_sp>(cl_get_output_stream_string(buffer));
-#ifdef BRCL_UNICODE
-	if (BRCL_EXTENDED_STRING_P(buffer) &&
-            (flags & BRCL_NAMESTRING_FORCE_BASE_STRING)) {
-	    unlikely_if (!brcl_fits_in_base_string(buffer))
+#ifdef CLASP_UNICODE
+	if (CLASP_EXTENDED_STRING_P(buffer) &&
+            (flags & CLASP_NAMESTRING_FORCE_BASE_STRING)) {
+	    unlikely_if (!clasp_fits_in_base_string(buffer))
 		FEerror("The filesystem does not accept filenames "
 			"with extended characters: ~S",
 			1, buffer);
@@ -1303,7 +1303,7 @@ namespace core {
 #define DOCS_af_namestring "namestring"
     T_sp af_namestring(T_sp x)
     {_G();
-	return brcl_namestring(x, BRCL_NAMESTRING_TRUNCATE_IF_ERROR);
+	return clasp_namestring(x, CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
     }
 
 
@@ -1331,12 +1331,12 @@ namespace core {
 		tempdefaults = cl_pathname(tempdefaults);
 		default_host = gc::As<Pathname_sp>(tempdefaults)->_Host;
 	    }
-#ifdef BRCL_UNICODE
+#ifdef CLASP_UNICODE
 	    thing = si_coerce_to_base_string(thing);
 #endif
 	    p = sequenceStartEnd(__FILE__,__LINE__,__FUNCTION__,CurrentPkg,
 				 gc::As<Str_sp>(thing), start, end);
-	    output = brcl_parseNamestring(thing, p.start, p.end, &ee, default_host);
+	    output = clasp_parseNamestring(thing, p.start, p.end, &ee, default_host);
 	    start = make_fixnum(static_cast<uint>(ee));
 	    if (output.nilp() || ee != p.end) {
 		if (junkAllowed) {
@@ -1480,12 +1480,12 @@ namespace core {
     Str_sp af_fileNamestring(T_sp tpname)
     {
 	Pathname_sp pname = cl_pathname(tpname);
-	return brcl_namestring(Pathname_O::makePathname(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
+	return clasp_namestring(Pathname_O::makePathname(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
 							pname->_Name,
 							pname->_Type,
 							pname->_Version,
 							kw::_sym_local),
-			       BRCL_NAMESTRING_TRUNCATE_IF_ERROR);
+			       CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
     }
 
 
@@ -1498,11 +1498,11 @@ namespace core {
     Str_sp af_directoryNamestring(T_sp tpname)
     {_G();
 	Pathname_sp pname = cl_pathname(tpname);
-	return brcl_namestring(Pathname_O::makePathname(_Nil<T_O>(), _Nil<T_O>(),
+	return clasp_namestring(Pathname_O::makePathname(_Nil<T_O>(), _Nil<T_O>(),
 							pname->_Directory,
 							_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
 							kw::_sym_local),
-			       BRCL_NAMESTRING_TRUNCATE_IF_ERROR);
+			       CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
     }
 
 
@@ -1525,7 +1525,7 @@ namespace core {
     }
 
 
-//#define EN_MATCH(p1,p2,el) (brcl_equalp(p1->pathname.el, p2->pathname.el)? _Nil<T_O>() : p1->pathname.el)
+//#define EN_MATCH(p1,p2,el) (clasp_equalp(p1->pathname.el, p2->pathname.el)? _Nil<T_O>() : p1->pathname.el)
 #define EN_MATCH(p1,p2,el) (cl_equalp(p1->el,p2->el) ? _Nil<T_O>() : p1->el)
 
 
@@ -1576,7 +1576,7 @@ namespace core {
 				   kw::_sym_local);
     ASSERTF(af_logicalPathnameP(newpath) == af_logicalPathnameP(path),
 	    BF("Mismatch between the newpath and path - they must be the same kind and it is the responsibility of makePathname to ensure that they are the same kind"));
-    return brcl_namestring(newpath, BRCL_NAMESTRING_TRUNCATE_IF_ERROR);
+    return clasp_namestring(newpath, CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
 };
 #undef EN_MATCH
 
@@ -1585,7 +1585,7 @@ namespace core {
     /* --------------- PATHNAME MATCHING ------------------ */
 
     bool
-    brcl_wild_string_p(T_sp item)
+    clasp_wild_string_p(T_sp item)
     {
 	if (af_stringP(item)) {
 	    size_t i, l = cl_length(item);
@@ -1739,7 +1739,7 @@ namespace core {
     static T_sp
     coerce_to_from_pathname(T_sp x, T_sp host)
     {
-#ifdef BRCL_UNICODE
+#ifdef CLASP_UNICODE
 	if ( String_sp stringx = x.asOrNull<String_O>() )
 	{
 	x = af_parseNamestring(x,host);
@@ -1772,7 +1772,7 @@ namespace core {
         size_t parsed_len, len;
         T_sp pair, l;
         /* Check that host is a valid host name */
-        if (brcl_unlikely(!af_stringP(host)))
+        if (clasp_unlikely(!af_stringP(host)))
             QERROR_WRONG_TYPE_NTH_ARG(1, host, cl::_sym_string);
         host = cl_string_upcase( host);
         len = cl_length(host);
@@ -1795,7 +1795,7 @@ namespace core {
             return (pair.nilp()) ? _Nil<T_O>() : oCadr(pair);
         }
         /* Set the new translation list */
-        if (brcl_unlikely(!cl_listp(set))) {
+        if (clasp_unlikely(!cl_listp(set))) {
             QERROR_WRONG_TYPE_NTH_ARG(2,set,cl::_sym_list);
         }
         if (pair.nilp()) {

@@ -44,12 +44,12 @@ namespace core
 	if ( Cons_sp clcur = char_bag.asOrNull<Cons_O>() ) {
 	    List_sp lcur = clcur;
 	    for ( ; lcur.notnilp(); lcur = oCdr(lcur) ) {
-		if ( cl_eql(oCar(lcur),Character_O::create(c))) return true;
+		if ( cl_eql(oCar(lcur),clasp_make_character(c))) return true;
 	    }
 	} else if ( Vector_sp vcur = char_bag.asOrNull<Vector_O>() ) {
 	    for ( size_t i=0, iEnd(vcur->length()); i<iEnd; ++i ) {
 		if ( cl_eql(vcur->elt(i),
-			    Character_O::create(c)) ) return true;
+			    clasp_make_character(c)) ) return true;
 	    }
 	}
 	return false;
@@ -213,7 +213,7 @@ namespace core
 
 
 
-    bool brcl_memberChar(claspChar c, T_sp charBag )
+    bool clasp_memberChar(claspChar c, T_sp charBag )
     {_G();
 	if ( Str_sp scharBag = charBag.asOrNull<Str_O>() )
 	{
@@ -222,7 +222,7 @@ namespace core
 	    }
 	    return false;
 	}
-	SIMPLE_ERROR(BF("Handle brcl_memberChar for %s") % _rep_(charBag));
+	SIMPLE_ERROR(BF("Handle clasp_memberChar for %s") % _rep_(charBag));
     }
 
 

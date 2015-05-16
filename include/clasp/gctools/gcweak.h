@@ -227,6 +227,9 @@ namespace gctools {
         }
 
         void set(size_t idx, const value_type& val) {
+	    if ( !val.objectp() ) {
+		THROW_HARD_ERROR(BF("Only objectp() objects can be added to Mapping"));
+	    }
 #ifdef USE_BOEHM
 	    //	    printf("%s:%d ---- Buckets set idx: %zu   this->bucket[idx] = %p\n", __FILE__, __LINE__, idx, this->bucket[idx].raw_() );
             if ( !unboundOrDeletedOrSplatted(this->bucket[idx]) ) {
@@ -241,6 +244,7 @@ namespace gctools {
             if ( !unboundOrDeletedOrSplatted(val) ) {
                 this->bucket[idx] = val;
 		//		printf("%s:%d Buckets set idx: %zu register disappearing link @%p\n", __FILE__, __LINE__, idx, &this->bucket[idx].rawRef_());
+		GCTOOLS_ASSERT(val.objectp());
                 GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].rawRef_())
                                                       ,reinterpret_cast<void*>(this->bucket[idx].rawRef_()));
             } else {
@@ -404,10 +408,14 @@ namespace gctools {
     struct Mapping<T,U,WeakLinks> : public MappingBase<T,U> {
         typedef typename MappingBase<T,U>::value_type value_type;
         Mapping(const T& val) : MappingBase<T,U>(val) {
+	    if ( !val.objectp() ) {
+		THROW_HARD_ERROR(BF("Only objectp() objects can be added to Mapping"));
+	    }
 #ifdef USE_BOEHM
 	    GCTOOLS_ASSERT(this->bucket.objectp());
             if ( !unboundOrDeletedOrSplatted(this->bucket)) {
                 printf("%s:%d Mapping register disappearing link\n", __FILE__, __LINE__);
+		GCTOOLS_ASSERT(val.objectp());
                 GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket.rawRef_())
                                                       ,reinterpret_cast<void*>(this->bucket.rawRef_()));
             }
@@ -539,10 +547,14 @@ namespace gctools {
         typedef gctools::GCWeakPointerAllocator<WeakPointer> AllocatorType;
 
         WeakPointerManager(const value_type& val) {
+	    if ( !val.objectp() ) {
+		THROW_HARD_ERROR(BF("Only objectp() objects can be added to Mapping"));
+	    }
             this->pointer = AllocatorType::allocate(val);
 #ifdef USE_BOEHM
 	    GCTOOLS_ASSERT(this->pointer->value.objectp());
             if ( !unboundOrDeletedOrSplatted(this->pointer->value) ) {
+		GCTOOLS_ASSERT(val.objectp());
                 GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.rawRef_())
                                                       , reinterpret_cast<void*>(this->pointer->value.rawRef_()));
             } else {

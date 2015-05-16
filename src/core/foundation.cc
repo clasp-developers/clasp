@@ -235,17 +235,17 @@ extern "C"
 };
 
 
-void brcl_mps_debug_allocation(const char* poolName, void* base, void* client, int size, int kind)
+void clasp_mps_debug_allocation(const char* poolName, void* base, void* client, int size, int kind)
 {
     if (!debug_mps) return;
     if ( kind == 0 ) {
-        printf("%s:%d brcl_mps_debug_allocation kind == 0  ----------------- !!!!\n", __FILE__, __LINE__ );
+        printf("%s:%d clasp_mps_debug_allocation kind == 0  ----------------- !!!!\n", __FILE__, __LINE__ );
         __builtin_debugtrap();
     };
 
 #if defined(USE_MPS)  && !defined(RUNNING_GC_BUILDER)
     const char* kindName = obj_name((gctools::GCKindEnum)(kind));
-    printf("%s:%d brcl_mps_allocation poolName: %s  base: %p  client: %p  size: %3d  kind[%d/%s]  \n",
+    printf("%s:%d clasp_mps_allocation poolName: %s  base: %p  client: %p  size: %3d  kind[%d/%s]  \n",
            __FILE__, __LINE__,
            poolName,
            base, client, size,
@@ -253,53 +253,53 @@ void brcl_mps_debug_allocation(const char* poolName, void* base, void* client, i
 #endif
 }
 
-void brcl_mps_debug_fix1_before(void* base, void* smartAddr)
+void clasp_mps_debug_fix1_before(void* base, void* smartAddr)
 {
 #if defined(USE_MPS)
     if (!debug_mps) return;
-    printf("brcl_mps_debug_fix1_before  base: %p  smartAddr: %p\n", base, smartAddr );
+    printf("clasp_mps_debug_fix1_before  base: %p  smartAddr: %p\n", base, smartAddr );
 #endif
 }
 
-    void brcl_mps_debug_fix_before(void* pbase, void* px, int offset)
+    void clasp_mps_debug_fix_before(void* pbase, void* px, int offset)
     {
 #if defined(USE_MPS)
 #if defined(DEBUG_LOG_MPS_KINDS)
     if (!debug_mps) return;
 	gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(pbase);
 	const char* kindName = gctools::obj_name((gctools::GCKindEnum)(header->kind._Kind));
-	printf("brcl_mps_debug_fix_before   pbase: %p  px: %p   kind: %s\n", pbase, px, kindName);
+	printf("clasp_mps_debug_fix_before   pbase: %p  px: %p   kind: %s\n", pbase, px, kindName);
 #else
-	printf("brcl_mps_debug_fix_before   pbase: %p  px: %p\n", pbase, px);
+	printf("clasp_mps_debug_fix_before   pbase: %p  px: %p\n", pbase, px);
 #endif
 #endif
     }
 
-void brcl_mps_debug_fix_after(void* pbase, void* px)
+void clasp_mps_debug_fix_after(void* pbase, void* px)
     {
 #if defined(USE_MPS)
     if (!debug_mps) return;
-	printf("brcl_mps_debug_fix_after    pbase: %p  px: %p\n", pbase, px);
+	printf("clasp_mps_debug_fix_after    pbase: %p  px: %p\n", pbase, px);
 #endif
     }
 
-void brcl_mps_debug_scan_object(gctools::GCObject* dobj)
+void clasp_mps_debug_scan_object(gctools::GCObject* dobj)
 {
 #if defined(USE_MPS)
     if (!debug_mps) return;
     if ( core::T_O* tobj_gc_safe = dynamic_cast<core::T_O*>(dobj) )
     {
         gctools::smart_ptr<core::T_O> tsp(tobj_gc_safe);
-	printf("brcl_mps_debug_scan_object   T_O*: %p\n", tobj_gc_safe );
+	printf("clasp_mps_debug_scan_object   T_O*: %p\n", tobj_gc_safe );
     }
 #endif
 }
 
-void brcl_mps_debug_container(const char* ctype, const char* name, int size)
+void clasp_mps_debug_container(const char* ctype, const char* name, int size)
 {
 #if defined(USE_MPS)
     if (!debug_mps) return;
-    printf("brcl_mps_debug_container   type: %s   name: %s    size: %d\n",
+    printf("clasp_mps_debug_container   type: %s   name: %s    size: %d\n",
 	   ctype, name, size );
 #endif
 };
@@ -714,14 +714,12 @@ namespace core
 	if (o.nilp()) {
 	    return core::Null_O::___staticClass;
 	} else if (o.fixnump()) {
-	    IMPLEMENT_MEF(BF("Handle returning the class for fixnum"));
+	    return core::Fixnum_dummy_O::___staticClass;
 	    //	    return core::Fixnum_O::___staticClass;
 	} else if (o.characterp()) {
-	    IMPLEMENT_MEF(BF("Handle returning the class for character"));
-	    //	    return core::Fixnum_O::___staticClass;
+	    return core::Character_dummy_O::___staticClass;
 	} else if (o.single_floatp()) {
-	    IMPLEMENT_MEF(BF("Handle returning the class for single-float"));
-	    //	    return core::Fixnum_O::___staticClass;
+	    return core::SingleFloat_dummy_O::___staticClass;
 	} else if ( o.framep() ) {
 	    // What do I return for this?
 	    return core::T_O::___staticClass;

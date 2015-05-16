@@ -656,7 +656,7 @@ extern "C"
     void makeCharacter( core::T_sp* fnP, int s)
     {_G();
 	ASSERT(fnP!=NULL);
-	(*fnP) = core::StandardChar_O::create((char)s);
+	(*fnP) = core::clasp_make_character((char)s);
     }
 
     void makeBignum( core::T_sp* fnP, const char* cP)
@@ -707,7 +707,7 @@ extern "C"
     void makeSingleFloat( core::T_sp* fnP, float s)
     {_G();
 	ASSERT(fnP!=NULL);
-	(*fnP) = core::SingleFloat_sp(core::SingleFloat_O::create(s));
+	(*fnP) = clasp_make_single_float(s);
     }
 
     void makeDoubleFloat( core::T_sp* fnP, double s)

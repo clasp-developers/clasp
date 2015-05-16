@@ -31,7 +31,7 @@ THE SOFTWARE.
 
 namespace core {
 
-    Number_sp brcl_exp(Number_sp x);
+    Number_sp clasp_exp(Number_sp x);
 
 
     Number_sp af_exp(Number_sp x, Number_sp y);

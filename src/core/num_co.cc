@@ -83,8 +83,8 @@ namespace core {
     {
 	Number_sp z;
     
-	z = brcl_times(q, y);
-	z = brcl_minus(x, z);
+	z = clasp_times(q, y);
+	z = clasp_minus(x, z);
 	return(z);
     }
 
@@ -117,14 +117,14 @@ namespace core {
 	case number_Ratio:
 	    switch (ty) {
 	    case number_SingleFloat:
-		x = gc::As<Real_sp>(brcl_make_single_float(clasp_to_double(x)));
+		x = gc::As<Real_sp>(clasp_make_single_float(clasp_to_double(x)));
 		break;
 	    case number_DoubleFloat:
-		x = gc::As<Real_sp>(brcl_make_double_float(clasp_to_double(x)));
+		x = gc::As<Real_sp>(clasp_make_double_float(clasp_to_double(x)));
 		break;
 #ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat:
-		x = brcl_make_long_float(brcl_to_long_float(x)).as<Real_O>();
+		x = clasp_make_long_float(clasp_to_long_float(x)).as<Real_O>();
 		break;
 #endif
 	    default:
@@ -173,7 +173,7 @@ namespace core {
 	    break;
 	case number_Fixnum:
 	case number_Bignum:
-	    x = brcl_make_fixnum(1);
+	    x = clasp_make_fixnum(1);
 	    break;
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Rational_O);
@@ -190,48 +190,48 @@ namespace core {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = x;
-	    v1 = brcl_make_fixnum(0);
+	    v1 = clasp_make_fixnum(0);
 	    break;
 	case number_Ratio: {
 	    Ratio_sp rx(gc::As<Ratio_sp>(x));
 	    Real_mv mv_v0 = clasp_floor2(rx->numerator(),rx->denominator());
 	    v0 = mv_v0;
 	    Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet(1));
-	    v1 = brcl_make_ratio(tv1, rx->den());
+	    v1 = clasp_make_ratio(tv1, rx->den());
 	    break;
 	}
 	case number_SingleFloat: {
-	    float d = brcl_single_float(x);
+	    float d = clasp_single_float(x);
 	    float y = floorf(d);
-	    v0 = _brcl_float_to_integer(y);
-	    v1 = brcl_make_single_float(d - y);
+	    v0 = _clasp_float_to_integer(y);
+	    v1 = clasp_make_single_float(d - y);
 	    break;
 	}
 	case number_DoubleFloat: {
-	    double d = brcl_double_float(x);
+	    double d = clasp_double_float(x);
 	    double y = floor(d);
-	    v0 = _brcl_double_to_integer(y);
-	    v1 = brcl_make_double_float(d - y);
+	    v0 = _clasp_double_to_integer(y);
+	    v1 = clasp_make_double_float(d - y);
 	    break;
 	}
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
-	    LongFloat d = brcl_long_float(x);
+	    LongFloat d = clasp_long_float(x);
 	    LongFloat y = floorl(d);
-	    v0 = _brcl_long_double_to_integer(y);
-	    v1 = brcl_make_long_float(d - y);
+	    v0 = _clasp_long_double_to_integer(y);
+	    v1 = clasp_make_long_float(d - y);
 	    break;
 	}
 #endif
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
-	brcl_return2(the_env, v0, v1);
+	clasp_return2(the_env, v0, v1);
     }
 
     Real_mv clasp_floor2(Real_sp x, Real_sp y)
     {
-//	const cl_env_ptr the_env = brcl_process_env();
+//	const cl_env_ptr the_env = clasp_process_env();
 	Real_sp v0, v1;
 	NumberType ty;
 	ty = clasp_t_of(y);
@@ -245,11 +245,11 @@ namespace core {
 		Fixnum a = clasp_fixnum(x), b = clasp_fixnum(y);
 		Fixnum q = a / b,  r = a % b;
 		if ((r^b) < 0 && r) {	/* opposite sign and some remainder*/
-		    v0 = brcl_make_fixnum(q-1);
-		    v1 = brcl_make_fixnum(r+b);
+		    v0 = clasp_make_fixnum(q-1);
+		    v1 = clasp_make_fixnum(r+b);
 		} else {
-		    v0 = brcl_make_fixnum(q);
-		    v1 = brcl_make_fixnum(r);
+		    v0 = clasp_make_fixnum(q);
+		    v1 = clasp_make_fixnum(r);
 		}
 		break;
 	    }
@@ -260,46 +260,46 @@ namespace core {
  *    y = - MOST_NEGATIVE_FIXNUM
  */
 		Bignum_sp bx(Bignum_O::create(clasp_fixnum(x)));
-//		BRCL_WITH_TEMP_BIGNUM(bx,4);
-//		_brcl_big_set_fixnum(bx, clasp_fixnum(x));
+//		CLASP_WITH_TEMP_BIGNUM(bx,4);
+//		_clasp_big_set_fixnum(bx, clasp_fixnum(x));
 		Bignum_sp by = gc::As<Bignum_sp>(y);
-		v0 = _brcl_big_floor(bx, by, &v1);
+		v0 = _clasp_big_floor(bx, by, &v1);
 		break;
 	    }
 	    case number_Ratio:		/* FIX / RAT */
 	    {
 		Ratio_sp ry = gc::As<Ratio_sp>(y);
-		Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(brcl_times(x, ry->den())), ry->num());
+		Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
 		v0 = mv_v0;
 		Integer_sp t1 = gc::As<Integer_sp>(mv_v0.valueGet(1));
-//		v1 = brcl_make_ratio(brcl_nth_value(the_env, 1), y->den());
-		v1 = brcl_make_ratio(t1,ry->den());
+//		v1 = clasp_make_ratio(clasp_nth_value(the_env, 1), y->den());
+		v1 = clasp_make_ratio(t1,ry->den());
 		break;
 	    }
 	    case number_SingleFloat: 	/* FIX / SF */
 	    {
-		float n = brcl_single_float(y);
+		float n = clasp_single_float(y);
 		float p = clasp_fixnum(x) / n;
 		float q = floorf(p);
-		v0 = _brcl_float_to_integer(q);
-		v1 = brcl_make_single_float((p - q)*n);
+		v0 = _clasp_float_to_integer(q);
+		v1 = clasp_make_single_float((p - q)*n);
 		break;
 	    }
 	    case number_DoubleFloat: {	/* FIX / DF */
-		double n = brcl_double_float(y);
+		double n = clasp_double_float(y);
 		double p = clasp_fixnum(x) / n;
 		double q = floor(p);
-		v0 = _brcl_double_to_integer(q);
-		v1 = brcl_make_double_float((p - q)*n);
+		v0 = _clasp_double_to_integer(q);
+		v1 = clasp_make_double_float((p - q)*n);
 		break;
 	    }
 #ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat: {	/* FIX / LF */
-		LongFloat n = brcl_long_float(y);
+		LongFloat n = clasp_long_float(y);
 		LongFloat p = clasp_fixnum(x) / n;
 		LongFloat q = floorl(p);
-		v0 = _brcl_long_double_to_integer(q);
-		v1 = brcl_make_long_float((p - q)*n);
+		v0 = _clasp_long_double_to_integer(q);
+		v1 = clasp_make_long_float((p - q)*n);
 		break;
 	    }
 #endif
@@ -312,47 +312,47 @@ namespace core {
 	    case number_Fixnum: {	/* BIG / FIX */
 //		INCOMPLETE(BF("Ensure that this produces the intended result"));
 		Bignum_sp by(Bignum_O::create(clasp_fixnum(y)));
-//		BRCL_WITH_TEMP_BIGNUM(by,4);
-//		_brcl_big_set_fixnum(by, clasp_fixnum(y));
-		v0 = _brcl_big_floor(gc::As<Bignum_sp>(x), by, &v1);
+//		CLASP_WITH_TEMP_BIGNUM(by,4);
+//		_clasp_big_set_fixnum(by, clasp_fixnum(y));
+		v0 = _clasp_big_floor(gc::As<Bignum_sp>(x), by, &v1);
 		break;
 	    }
 	    case number_Bignum: {	/* BIG / BIG */
-		v0 = _brcl_big_floor(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y), &v1);
+		v0 = _clasp_big_floor(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y), &v1);
 		break;
 	    }
 	    case number_Ratio:		/* BIG / RAT */
 	    {
 		Ratio_sp ry = gc::As<Ratio_sp>(y);
-		Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(brcl_times(x, ry->den())), ry->num());
+		Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
 		v0 = mv_v0;
 		Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet(1));
-		v1 = brcl_make_ratio(tv1, ry->den());
+		v1 = clasp_make_ratio(tv1, ry->den());
 		break;
 	    }
 	    case number_SingleFloat: {	/* BIG / SF */
-		float n = brcl_single_float(y);
-		float p = _brcl_big_to_double(gc::As<Bignum_sp>(x)) / n;
+		float n = clasp_single_float(y);
+		float p = _clasp_big_to_double(gc::As<Bignum_sp>(x)) / n;
 		float q = floorf(p);
-		v0 = _brcl_float_to_integer(q);
-		v1 = brcl_make_single_float((p - q)*n);
+		v0 = _clasp_float_to_integer(q);
+		v1 = clasp_make_single_float((p - q)*n);
 		break;
 	    }
 	    case number_DoubleFloat: {	/* BIG / DF */
-		double n = brcl_double_float(y);
-		double p = _brcl_big_to_double(gc::As<Bignum_sp>(x)) / n;
+		double n = clasp_double_float(y);
+		double p = _clasp_big_to_double(gc::As<Bignum_sp>(x)) / n;
 		double q = floor(p);
-		v0 = _brcl_double_to_integer(q);
-		v1 = brcl_make_double_float((p - q)*n);
+		v0 = _clasp_double_to_integer(q);
+		v1 = clasp_make_double_float((p - q)*n);
 		break;
 	    }
 #ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat: {	/* BIG / LF */
-		LongFloat n = brcl_long_float(y);
-		LongFloat p = _brcl_big_to_double(x.as<Bignum_O>()) / n;
+		LongFloat n = clasp_long_float(y);
+		LongFloat p = _clasp_big_to_double(x.as<Bignum_O>()) / n;
 		LongFloat q = floorl(p);
-		v0 = _brcl_long_double_to_integer(q);
-		v1 = brcl_make_long_float((p - q)*n);
+		v0 = _clasp_long_double_to_integer(q);
+		v1 = clasp_make_long_float((p - q)*n);
 		break;
 	    }
 #endif
@@ -366,49 +366,49 @@ namespace core {
 	    {
 		Ratio_sp rx = gc::As<Ratio_sp>(x);
 		Ratio_sp ry = gc::As<Ratio_sp>(y);
-		Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(brcl_times(rx->num(), ry->den())),
-					    gc::As<Real_sp>(brcl_times(rx->den(), ry->num())));
+		Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(rx->num(), ry->den())),
+					    gc::As<Real_sp>(clasp_times(rx->den(), ry->num())));
 		v0 = mv_v0;
 		Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet(1));
-		v1 = brcl_make_ratio(tv1, gc::As<Integer_sp>(brcl_times(rx->den(), ry->den())));
+		v1 = clasp_make_ratio(tv1, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
 		break;
 	    }
 	    default:		/* RAT / ANY */
 	    {
 		Ratio_sp rx = gc::As<Ratio_sp>(x);
-		Real_mv mv_v0 = clasp_floor2(rx->num(), gc::As<Real_sp>(brcl_times(rx->den(), y)));
+		Real_mv mv_v0 = clasp_floor2(rx->num(), gc::As<Real_sp>(clasp_times(rx->den(), y)));
 		v0 = mv_v0;
 		Number_sp tv1 = gc::As<Number_sp>(mv_v0.valueGet(1));
-		v1 = gc::As<Real_sp>(brcl_divide(tv1, rx->den()));
+		v1 = gc::As<Real_sp>(clasp_divide(tv1, rx->den()));
 		break;
 	    }
 	    }
 	case number_SingleFloat: {		/* SF / ANY */
 	    float n = clasp_to_double(y);
-	    float p = brcl_single_float(x)/n;
+	    float p = clasp_single_float(x)/n;
 	    float q = floorf(p);
-	    v0 = _brcl_float_to_integer(q);
+	    v0 = _clasp_float_to_integer(q);
 	    /* We cannot factor these two multiplications because
 	     * if we have signed zeros (1 - 1) * (-1) = -0 while
 	     * 1*(-1) - 1*(-1) = +0 */
-	    v1 = brcl_make_single_float(p*n - q*n);
+	    v1 = clasp_make_single_float(p*n - q*n);
 	    break;
 	}
 	case number_DoubleFloat: {		/* DF / ANY */
 	    double n = clasp_to_double(y);
-	    double p = brcl_double_float(x)/n;
+	    double p = clasp_double_float(x)/n;
 	    double q = floor(p);
-	    v0 = _brcl_double_to_integer(q);
-	    v1 = brcl_make_double_float(p*n - q*n);
+	    v0 = _clasp_double_to_integer(q);
+	    v1 = clasp_make_double_float(p*n - q*n);
 	    break;
 	}
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {		/* LF / ANY */
-	    LongFloat n = brcl_to_long_double(y);
-	    LongFloat p = brcl_long_float(x)/n;
+	    LongFloat n = clasp_to_long_double(y);
+	    LongFloat p = clasp_long_float(x)/n;
 	    LongFloat q = floorl(p);
-	    v0 = _brcl_long_double_to_integer(q);
-	    v1 = brcl_make_long_float(p*n - q*n);
+	    v0 = _clasp_long_double_to_integer(q);
+	    v1 = clasp_make_long_float(p*n - q*n);
 	    break;
 	}
 #endif
@@ -435,44 +435,44 @@ namespace core {
 
 
 
-    Real_mv brcl_ceiling1(Real_sp x)
+    Real_mv clasp_ceiling1(Real_sp x)
     {
 	Real_sp v0, v1;
 	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = x;
-	    v1 = brcl_make_fixnum(0);
+	    v1 = clasp_make_fixnum(0);
 	    break;
 	case number_Ratio: {
-//	    const cl_env_ptr the_env = brcl_process_env();
+//	    const cl_env_ptr the_env = clasp_process_env();
 	    Ratio_sp rx = gc::As<Ratio_sp>(x);
-	    Real_mv mv_v = brcl_ceiling2(rx->num(), rx->den());
+	    Real_mv mv_v = clasp_ceiling2(rx->num(), rx->den());
 	    v0 = mv_v;
 	    Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
-	    v1 = brcl_make_ratio(tv1, rx->den());
+	    v1 = clasp_make_ratio(tv1, rx->den());
 	    break;
 	}
 	case number_SingleFloat: {
-	    float d = brcl_single_float(x);
+	    float d = clasp_single_float(x);
 	    float y = ceilf(d);
-	    v0 = _brcl_float_to_integer(y);
-	    v1 = brcl_make_single_float(d - y);
+	    v0 = _clasp_float_to_integer(y);
+	    v1 = clasp_make_single_float(d - y);
 	    break;
 	}
 	case number_DoubleFloat: {
-	    double d = brcl_double_float(x);
+	    double d = clasp_double_float(x);
 	    double y = ceil(d);
-	    v0 = _brcl_double_to_integer(y);
-	    v1 = brcl_make_double_float(d - y);
+	    v0 = _clasp_double_to_integer(y);
+	    v1 = clasp_make_double_float(d - y);
 	    break;
 	}
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
-	    LongFloat d = brcl_long_float(x);
+	    LongFloat d = clasp_long_float(x);
 	    LongFloat y = ceill(d);
-	    v0 = _brcl_long_double_to_integer(y);
-	    v1 = brcl_make_long_float(d - y);
+	    v0 = _clasp_long_double_to_integer(y);
+	    v1 = clasp_make_long_float(d - y);
 	    break;
 	}
 #endif
@@ -482,7 +482,7 @@ namespace core {
 	return Values(v0,v1);
     }
 
-    Real_mv brcl_ceiling2(Real_sp x, Real_sp y)
+    Real_mv clasp_ceiling2(Real_sp x, Real_sp y)
     {
 	Real_sp v0, v1;
 	NumberType ty;
@@ -499,11 +499,11 @@ namespace core {
 		Fixnum q = a / b;
 		Fixnum r = a % b;
 		if ((r^b) > 0 && r) {	/* same signs and some remainder */
-		    v0 = brcl_make_fixnum(q+1);
-		    v1 = brcl_make_fixnum(r-b);
+		    v0 = clasp_make_fixnum(q+1);
+		    v1 = clasp_make_fixnum(r-b);
 		} else {
-		    v0 = brcl_make_fixnum(q);
-		    v1 = brcl_make_fixnum(r);
+		    v0 = clasp_make_fixnum(q);
+		    v1 = clasp_make_fixnum(r);
 		}
 		break;
 	    }
@@ -513,44 +513,44 @@ namespace core {
 		 *	x = MOST_NEGATIVE_FIXNUM
 		 *    y = - MOST_NEGATIVE_FIXNUM
 		 */
-//		BRCL_WITH_TEMP_BIGNUM(bx,4);
+//		CLASP_WITH_TEMP_BIGNUM(bx,4);
 		Bignum_sp bx(Bignum_O::create(clasp_fixnum(x)));
-//		_brcl_big_set_fixnum(bx, clasp_fixnum(x));
-		v0 = _brcl_big_ceiling(bx, gc::As<Bignum_sp>(y), &v1);
+//		_clasp_big_set_fixnum(bx, clasp_fixnum(x));
+		v0 = _clasp_big_ceiling(bx, gc::As<Bignum_sp>(y), &v1);
 		break;
 	    }
 	    case number_Ratio:		/* FIX / RAT */
 	    {
 		Ratio_sp ry = gc::As<Ratio_sp>(y);
-		Real_mv mv_v = brcl_ceiling2(gc::As<Real_sp>(brcl_times(x, ry->den())), ry->num());
+		Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
 		v0 = mv_v;
 		Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
-		v1 = brcl_make_ratio(tv1, ry->den());
+		v1 = clasp_make_ratio(tv1, ry->den());
 		break;
 	    }
 	    case number_SingleFloat: {	/* FIX / SF */
-		float n = brcl_single_float(y);
+		float n = clasp_single_float(y);
 		float p = clasp_fixnum(x)/n;
 		float q = ceilf(p);
-		v0 = _brcl_float_to_integer(q);
-		v1 = brcl_make_single_float(p*n - q*n);
+		v0 = _clasp_float_to_integer(q);
+		v1 = clasp_make_single_float(p*n - q*n);
 		break;
 	    }
 	    case number_DoubleFloat: {	/* FIX / DF */
-		double n = brcl_double_float(y);
+		double n = clasp_double_float(y);
 		double p = clasp_fixnum(x)/n;
 		double q = ceil(p);
-		v0 = _brcl_double_to_integer(q);
-		v1 = brcl_make_double_float(p*n - q*n);
+		v0 = _clasp_double_to_integer(q);
+		v1 = clasp_make_double_float(p*n - q*n);
 		break;
 	    }
 #ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat: {	/* FIX / LF */
-		LongFloat n = brcl_long_float(y);
+		LongFloat n = clasp_long_float(y);
 		LongFloat p = clasp_fixnum(x)/n;
 		LongFloat q = ceill(p);
-		v0 = _brcl_long_double_to_integer(q);
-		v1 = brcl_make_long_float(p*n - q*n);
+		v0 = _clasp_long_double_to_integer(q);
+		v1 = clasp_make_long_float(p*n - q*n);
 		break;
 	    }
 #endif
@@ -562,48 +562,48 @@ namespace core {
 	case number_Bignum: {
 	    switch(clasp_t_of(y)) {
 	    case number_Fixnum: {	/* BIG / FIX */
-//		BRCL_WITH_TEMP_BIGNUM(by,4);
+//		CLASP_WITH_TEMP_BIGNUM(by,4);
 		Bignum_sp by(Bignum_O::create(clasp_fixnum(y)));
-//		_brcl_big_set_fixnum(by, clasp_fixnum(y));
-		v0 = _brcl_big_ceiling(gc::As<Bignum_sp>(x), by, &v1);
+//		_clasp_big_set_fixnum(by, clasp_fixnum(y));
+		v0 = _clasp_big_ceiling(gc::As<Bignum_sp>(x), by, &v1);
 		break;
 	    }
 	    case number_Bignum: {	/* BIG / BIG */
-		v0 = _brcl_big_ceiling(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y), &v1);
+		v0 = _clasp_big_ceiling(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y), &v1);
 		break;
 	    }
 	    case number_Ratio:		/* BIG / RAT */
 	    {
 		Ratio_sp ry = gc::As<Ratio_sp>(y);
-		Real_mv mv_v = brcl_ceiling2(gc::As<Real_sp>(brcl_times(x, ry->den())), ry->num());
+		Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
 		v0 = mv_v;
 		Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
-		v1 = brcl_make_ratio(tv1, ry->den());
+		v1 = clasp_make_ratio(tv1, ry->den());
 		break;
 	    }
 	    case number_SingleFloat: {	/* BIG / SF */
-		float n = brcl_single_float(y);
-		float p = _brcl_big_to_double(gc::As<Bignum_sp>(x))/n;
+		float n = clasp_single_float(y);
+		float p = _clasp_big_to_double(gc::As<Bignum_sp>(x))/n;
 		float q = ceilf(p);
-		v0 = _brcl_float_to_integer(q);
-		v1 = brcl_make_single_float(p*n - q*n);
+		v0 = _clasp_float_to_integer(q);
+		v1 = clasp_make_single_float(p*n - q*n);
 		break;
 	    }
 	    case number_DoubleFloat: {	/* BIG / DF */
-		double n = brcl_double_float(y);
-		double p = _brcl_big_to_double(gc::As<Bignum_sp>(x))/n;
+		double n = clasp_double_float(y);
+		double p = _clasp_big_to_double(gc::As<Bignum_sp>(x))/n;
 		double q = ceil(p);
-		v0 = _brcl_double_to_integer(q);
-		v1 = brcl_make_double_float(p*n - q*n);
+		v0 = _clasp_double_to_integer(q);
+		v1 = clasp_make_double_float(p*n - q*n);
 		break;
 	    }
 #ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat: {	/* BIG / LF */
-		LongFloat n = brcl_long_float(y);
-		LongFloat p = _brcl_big_to_double(x.as<Bignum_O>())/n;
+		LongFloat n = clasp_long_float(y);
+		LongFloat p = _clasp_big_to_double(x.as<Bignum_O>())/n;
 		LongFloat q = ceill(p);
-		v0 = _brcl_long_double_to_integer(q);
-		v1 = brcl_make_long_float(p*n - q*n);
+		v0 = _clasp_long_double_to_integer(q);
+		v1 = clasp_make_long_float(p*n - q*n);
 		break;
 	    }
 #endif
@@ -618,54 +618,54 @@ namespace core {
 	    {
 		Ratio_sp rx = gc::As<Ratio_sp>(x);
 		Ratio_sp ry = gc::As<Ratio_sp>(y);
-		Real_mv mv_v = brcl_ceiling2(gc::As<Real_sp>(brcl_times(rx->num(), ry->den())),
-					     gc::As<Real_sp>(brcl_times(rx->den(), ry->num())));
+		Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(rx->num(), ry->den())),
+					     gc::As<Real_sp>(clasp_times(rx->den(), ry->num())));
 		v0 = mv_v;
 		Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
-		v1 = brcl_make_ratio(tv1, gc::As<Integer_sp>(brcl_times(rx->den(), ry->den())));
+		v1 = clasp_make_ratio(tv1, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
 		break;
 	    }
 	    default:		/* RAT / ANY */
 	    {
 		Ratio_sp rx = gc::As<Ratio_sp>(x);
-		Real_mv mv_v = brcl_ceiling2(rx->num(), gc::As<Real_sp>(brcl_times(rx->den(), y)));
+		Real_mv mv_v = clasp_ceiling2(rx->num(), gc::As<Real_sp>(clasp_times(rx->den(), y)));
 		v0 = mv_v;
 		Number_sp tv1 = gc::As<Number_sp>(mv_v.valueGet(1));
-		v1 = gc::As<Real_sp>(brcl_divide(tv1, rx->den()));
+		v1 = gc::As<Real_sp>(clasp_divide(tv1, rx->den()));
 	    }
 	    }
 	    break;
 	}
 	case number_SingleFloat: {		/* SF / ANY */
 	    float n = clasp_to_double(y);
-	    float p = brcl_single_float(x)/n;
+	    float p = clasp_single_float(x)/n;
 	    float q = ceilf(p);
-	    v0 = _brcl_float_to_integer(q);
-	    v1 = brcl_make_single_float(p*n - q*n);
+	    v0 = _clasp_float_to_integer(q);
+	    v1 = clasp_make_single_float(p*n - q*n);
 	    break;
 	}
 	case number_DoubleFloat: {		/* DF / ANY */
 	    double n = clasp_to_double(y);
-	    double p = brcl_double_float(x)/n;
+	    double p = clasp_double_float(x)/n;
 	    double q = ceil(p);
-	    v0 = _brcl_double_to_integer(q);
-	    v1 = brcl_make_double_float(p*n - q*n);
+	    v0 = _clasp_double_to_integer(q);
+	    v1 = clasp_make_double_float(p*n - q*n);
 	    break;
 	}
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {		/* LF / ANY */
-	    LongFloat n = brcl_to_long_double(y);
-	    LongFloat p = brcl_long_float(x)/n;
+	    LongFloat n = clasp_to_long_double(y);
+	    LongFloat p = clasp_long_float(x)/n;
 	    LongFloat q = ceill(p);
-	    v0 = _brcl_long_double_to_integer(q);
-	    v1 = brcl_make_long_float(p*n - q*n);
+	    v0 = _clasp_long_double_to_integer(q);
+	    v1 = clasp_make_long_float(p*n - q*n);
 	    break;
 	}
 #endif
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG( 1, x, cl::_sym_Real_O);
 	}
-	brcl_return2(the_env, v0, v1);
+	clasp_return2(the_env, v0, v1);
     }
 
 
@@ -677,8 +677,8 @@ namespace core {
 #define DOCS_cl_ceiling "ceiling"
     Real_mv cl_ceiling(Real_sp x, T_sp y)
     {_G();
-	if (y.nilp()) return brcl_ceiling1(x);
-	else return brcl_ceiling2(x, gc::As<Real_sp>(y));
+	if (y.nilp()) return clasp_ceiling1(x);
+	else return clasp_ceiling2(x, gc::As<Real_sp>(y));
     }
 
 
@@ -686,56 +686,56 @@ namespace core {
 
 
 
-    Real_mv brcl_truncate1(Real_sp x)
+    Real_mv clasp_truncate1(Real_sp x)
     {
 	Real_sp v0, v1;
 	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = x;
-	    v1 = brcl_make_fixnum(0);
+	    v1 = clasp_make_fixnum(0);
 	    break;
 	case number_Ratio: {
 	    Ratio_sp rx = gc::As<Ratio_sp>(x);
-	    Real_mv mv_v = brcl_truncate2(rx->num(), rx->den());
+	    Real_mv mv_v = clasp_truncate2(rx->num(), rx->den());
 	    v0 = mv_v;
 	    Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
-	    v1 = brcl_make_ratio(tv1, rx->den());
+	    v1 = clasp_make_ratio(tv1, rx->den());
 	    break;
 	}
 	case number_SingleFloat: {
-	    float d = brcl_single_float(x);
+	    float d = clasp_single_float(x);
 	    float y = d > 0? floorf(d) : ceilf(d);
-	    v0 = _brcl_float_to_integer(y);
-	    v1 = brcl_make_single_float(d - y);
+	    v0 = _clasp_float_to_integer(y);
+	    v1 = clasp_make_single_float(d - y);
 	    break;
 	}
 	case number_DoubleFloat: {
-	    double d = brcl_double_float(x);
+	    double d = clasp_double_float(x);
 	    double y = d > 0? floor(d) : ceil(d);
-	    v0 = _brcl_double_to_integer(y);
-	    v1 = brcl_make_double_float(d - y);
+	    v0 = _clasp_double_to_integer(y);
+	    v1 = clasp_make_double_float(d - y);
 	    break;
 	}
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
-	    LongFloat d = brcl_long_float(x);
+	    LongFloat d = clasp_long_float(x);
 	    LongFloat y = d > 0? floorl(d) : ceill(d);
-	    v0 = _brcl_long_double_to_integer(y);
-	    v1 = brcl_make_long_float(d - y);
+	    v0 = _clasp_long_double_to_integer(y);
+	    v1 = clasp_make_long_float(d - y);
 	    break;
 	}
 #endif
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
-	brcl_return2(the_env, v0, v1);
+	clasp_return2(the_env, v0, v1);
     }
 
-    Real_mv brcl_truncate2(Real_sp x, Real_sp y)
+    Real_mv clasp_truncate2(Real_sp x, Real_sp y)
     {
 	if (clasp_plusp(x) != clasp_plusp(y))
-	    return brcl_ceiling2(x, y);
+	    return clasp_ceiling2(x, y);
 	else
 	    return clasp_floor2(x, y);
     }
@@ -749,8 +749,8 @@ namespace core {
 #define DOCS_cl_truncate "truncate"
     Real_mv cl_truncate(Real_sp x, T_sp y)
     {_G();
-	if (y.nilp()) return brcl_truncate1(x);
-	else return brcl_truncate2(x, gc::As<Real_sp>(y));
+	if (y.nilp()) return clasp_truncate1(x);
+	else return clasp_truncate2(x, gc::As<Real_sp>(y));
     }
 
     static double round_double(double d)
@@ -787,76 +787,76 @@ namespace core {
     }
 #endif
 
-    Real_mv brcl_round1(Real_sp x)
+    Real_mv clasp_round1(Real_sp x)
     {
 	Real_sp v0, v1;
 	switch (clasp_t_of(x)) {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = x;
-	    v1 = brcl_make_fixnum(0);
+	    v1 = clasp_make_fixnum(0);
 	    break;
 	case number_Ratio:
 	{
 	    Ratio_sp rx = gc::As<Ratio_sp>(x);
-	    Real_mv mv_v = brcl_round2(rx->num(), rx->den());
+	    Real_mv mv_v = clasp_round2(rx->num(), rx->den());
 	    v0 = mv_v;
 	    Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
-	    v1 = brcl_make_ratio(tv1, rx->den());
+	    v1 = clasp_make_ratio(tv1, rx->den());
 	    break;
 	}
 	case number_SingleFloat: {
-	    float d = brcl_single_float(x);
+	    float d = clasp_single_float(x);
 	    float q = round_double(d);
-	    v0 = _brcl_float_to_integer(q);
-	    v1 = brcl_make_single_float(d - q);
+	    v0 = _clasp_float_to_integer(q);
+	    v1 = clasp_make_single_float(d - q);
 	    break;
 	}
 	case number_DoubleFloat: {
-	    double d = brcl_double_float(x);
+	    double d = clasp_double_float(x);
 	    double q = round_double(d);
-	    v0 = _brcl_double_to_integer(q);
-	    v1 = brcl_make_double_float(d - q);
+	    v0 = _clasp_double_to_integer(q);
+	    v1 = clasp_make_double_float(d - q);
 	    break;
 	}
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
-	    LongFloat d = brcl_long_float(x);
+	    LongFloat d = clasp_long_float(x);
 	    LongFloat q = round_long_double(d);
-	    v0 = _brcl_long_double_to_integer(q);
-	    v1 = brcl_make_long_float(d - q);
+	    v0 = _clasp_long_double_to_integer(q);
+	    v1 = clasp_make_long_float(d - q);
 	    break;
 	}
 #endif
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
-	brcl_return2(the_env, v0, v1);
+	clasp_return2(the_env, v0, v1);
     }
 
-    Real_mv brcl_round2(Real_sp x, Real_sp y)
+    Real_mv clasp_round2(Real_sp x, Real_sp y)
     {
 	Real_sp v0, v1;
 	Real_sp q;
 
-	q = gc::As<Real_sp>(brcl_divide(x, y));
+	q = gc::As<Real_sp>(clasp_divide(x, y));
 	switch (clasp_t_of(q)) {
 	case number_Fixnum:
 	case number_Bignum:
 	    v0 = q;
-	    v1 = brcl_make_fixnum(0);
+	    v1 = clasp_make_fixnum(0);
 	    break;
 	case number_Ratio: {
 	    Ratio_sp rq = gc::As<Ratio_sp>(q);
-	    Integer_sp q1 = brcl_integer_divide(rq->num(), rq->den());
-	    Real_sp r = gc::As<Real_sp>(brcl_minus(q, q1));
+	    Integer_sp q1 = clasp_integer_divide(rq->num(), rq->den());
+	    Real_sp r = gc::As<Real_sp>(clasp_minus(q, q1));
 	    if (clasp_minusp(r)) {
-		int c = brcl_number_compare(_lisp->minusHalf(), r);
+		int c = clasp_number_compare(_lisp->minusHalf(), r);
 		if (c > 0 || (c == 0 && clasp_oddp(q1))) {
 		    q1 = gc::As<Integer_sp>(clasp_one_minus(q1));
 		}
 	    } else {
-		int c = brcl_number_compare(r, _lisp->plusHalf());
+		int c = clasp_number_compare(r, _lisp->plusHalf());
 		if (c > 0 || (c == 0 && clasp_oddp(q1))) {
 		    q1 = gc::As<Integer_sp>(clasp_one_plus(q1));
 		}
@@ -866,10 +866,10 @@ namespace core {
 	    break;
 	}
 	default:
-	    v0 = q = gc::As<Integer_sp>(brcl_round1(q));
+	    v0 = q = gc::As<Integer_sp>(clasp_round1(q));
 	    v1 = gc::As<Real_sp>(number_remainder(x, y, q));
 	}
-	brcl_return2(the_env, v0, v1);
+	clasp_return2(the_env, v0, v1);
     }
 
 
@@ -881,8 +881,8 @@ namespace core {
 #define DOCS_cl_round "round"
     Number_mv cl_round(Real_sp x, T_sp y)
     {_G();
-	if (y.nilp()) return brcl_round1(x);
-	else return brcl_round2(x, gc::As<Real_sp>(y));
+	if (y.nilp()) return clasp_round1(x);
+	else return clasp_round2(x, gc::As<Real_sp>(y));
     }
 
 
@@ -928,7 +928,7 @@ namespace core {
 	float f;
 	switch (tx) {
 	case number_SingleFloat: {
-	    f = brcl_single_float(x);
+	    f = clasp_single_float(x);
 	    if (f >= 0.0) {
 		s = 1;
 	    } else {
@@ -936,11 +936,11 @@ namespace core {
 		s = 0;
 	    }
 	    f = frexpf(f, &e);
-	    x = brcl_make_single_float(f);
+	    x = clasp_make_single_float(f);
 	    break;
 	}
 	case number_DoubleFloat: {
-	    double d = brcl_double_float(x);
+	    double d = clasp_double_float(x);
 	    if (d >= 0.0) {
 		s = 1;
 	    } else {
@@ -948,12 +948,12 @@ namespace core {
 		s = 0;
 	    }
 	    d = frexp(d, &e);
-	    x = brcl_make_double_float(d);
+	    x = clasp_make_double_float(d);
 	    break;
 	}
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
-	    LongFloat d = brcl_long_float(x);
+	    LongFloat d = clasp_long_float(x);
 	    if (d >= 0.0)
 		s = 1;
 	    else {
@@ -961,14 +961,14 @@ namespace core {
 		s = 0;
 	    }
 	    d = frexpl(d, &e);
-	    x = brcl_make_long_float(d);
+	    x = clasp_make_long_float(d);
 	    break;
 	}
 #endif
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
 	}
-	return Values(x, brcl_make_fixnum(e), brcl_make_single_float(s));
+	return Values(x, clasp_make_fixnum(e), clasp_make_single_float(s));
     }
 
 
@@ -988,14 +988,14 @@ namespace core {
 	}
 	switch (clasp_t_of(x)) {
 	case number_SingleFloat:
-	    x = brcl_make_single_float(ldexpf(brcl_single_float(x), k));
+	    x = clasp_make_single_float(ldexpf(clasp_single_float(x), k));
 	    break;
 	case number_DoubleFloat:
-	    x = brcl_make_double_float(ldexp(brcl_double_float(x), k));
+	    x = clasp_make_double_float(ldexp(clasp_double_float(x), k));
 	    break;
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
-	    x = brcl_make_long_float(ldexpl(brcl_long_float(x), k));
+	    x = clasp_make_long_float(ldexpl(clasp_long_float(x), k));
 	    break;
 #endif
 	default:
@@ -1006,25 +1006,25 @@ namespace core {
 
     Integer_sp cl_float_radix(Float_sp x)
     {
-	return brcl_make_fixnum(FLT_RADIX);
+	return clasp_make_fixnum(FLT_RADIX);
     }
 
     int
-    brcl_signbit(Number_sp x)
+    clasp_signbit(Number_sp x)
     {
 	    switch (clasp_t_of(x)) {
 	    case number_SingleFloat:
-		    return std::signbit(brcl_single_float(x));
+		    return std::signbit(clasp_single_float(x));
 	    case number_DoubleFloat:
-		    return std::signbit(brcl_double_float(x));
+		    return std::signbit(clasp_double_float(x));
 #ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat:
-		    return signbit(brcl_long_float(x));
+		    return signbit(clasp_long_float(x));
 #endif
 	    default:
 		    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
 	    }
-	    SIMPLE_ERROR(BF("Illegal argument for brcl_signbit: %s") % _rep_(x));
+	    SIMPLE_ERROR(BF("Illegal argument for clasp_signbit: %s") % _rep_(x));
     }
 
 
@@ -1037,24 +1037,24 @@ namespace core {
     {_G();
       int negativep;
       if (yp.nilp()) {
-	  y = cl_float( brcl_make_fixnum(1), x);
+	  y = cl_float( clasp_make_fixnum(1), x);
       }
-      negativep = brcl_signbit(x);
+      negativep = clasp_signbit(x);
       switch (clasp_t_of(y)) {
       case number_SingleFloat: {
-	  float f = brcl_single_float(y);
-	  if (std::signbit(f) != negativep) y = brcl_make_single_float(-f);
+	  float f = clasp_single_float(y);
+	  if (std::signbit(f) != negativep) y = clasp_make_single_float(-f);
 	  break;
       }
       case number_DoubleFloat: {
-	  double f = brcl_double_float(y);
-	  if (std::signbit(f) != negativep) y = brcl_make_double_float(-f);
+	  double f = clasp_double_float(y);
+	  if (std::signbit(f) != negativep) y = clasp_make_double_float(-f);
 	  break;
       }
 #ifdef CLASP_LONG_FLOAT
       case number_LongFloat: {
-	  LongFloat f = brcl_long_float(y);
-	  if (std::signbit(f) != negativep) y = brcl_make_long_float(-f);
+	  LongFloat f = clasp_long_float(y);
+	  if (std::signbit(f) != negativep) y = clasp_make_long_float(-f);
 	  break;
       }
 #endif
@@ -1076,14 +1076,14 @@ namespace core {
 	Integer_sp ix(_Nil<Integer_O>());
 	switch (clasp_t_of(x)) {
 	case number_SingleFloat:
-	    ix = brcl_make_fixnum(FLT_MANT_DIG);
+	    ix = clasp_make_fixnum(FLT_MANT_DIG);
 	    break;
 	case number_DoubleFloat:
-	    ix = brcl_make_fixnum(DBL_MANT_DIG);
+	    ix = clasp_make_fixnum(DBL_MANT_DIG);
 	    break;
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
-	    ix = brcl_make_fixnum(LDBL_MANT_DIG);
+	    ix = clasp_make_fixnum(LDBL_MANT_DIG);
 	    break;
 #endif
 	default:
@@ -1103,7 +1103,7 @@ namespace core {
 	int precision = 0;
 	switch (clasp_t_of(x)) {
 	case number_SingleFloat: {
-	    float f = brcl_single_float(x);
+	    float f = clasp_single_float(x);
 	    if (f == 0.0) {
 		precision = 0;
 	    } else {
@@ -1118,7 +1118,7 @@ namespace core {
 	    break;
 	}
 	case number_DoubleFloat: {
-	    double f = brcl_double_float(x);
+	    double f = clasp_double_float(x);
 	    if (f == 0.0) {
 		precision = 0;
 	    } else {
@@ -1134,7 +1134,7 @@ namespace core {
 	}
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
-	    LongFloat f = brcl_long_float(x);
+	    LongFloat f = clasp_long_float(x);
 	    if (f == 0.0) {
 		precision = 0;
 	    } else {
@@ -1152,7 +1152,7 @@ namespace core {
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
 	}
-	return brcl_make_fixnum(precision);
+	return clasp_make_fixnum(precision);
     }
 
 
@@ -1169,50 +1169,50 @@ namespace core {
 	switch (clasp_t_of(x)) {
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
-	    LongFloat d = brcl_long_float(x);
+	    LongFloat d = clasp_long_float(x);
 	    if (std::signbit(d)) {
 		s = -1;
 		d = -d;
 	    }
 	    if (d == 0.0) {
 		e = 0;
-		rx = brcl_make_fixnum(0);
+		rx = clasp_make_fixnum(0);
 	    } else {
 		d = frexpl(d, &e);
-		rx = _brcl_long_double_to_integer(ldexpl(d, LDBL_MANT_DIG));
+		rx = _clasp_long_double_to_integer(ldexpl(d, LDBL_MANT_DIG));
 		e -= LDBL_MANT_DIG;
 	    }
 	    break;
 	}
 #endif
 	case number_DoubleFloat: {
-	    double d = brcl_double_float(x);
+	    double d = clasp_double_float(x);
 	    if (std::signbit(d)) {
 		s = -1;
 		d = -d;
 	    }
 	    if (d == 0.0) {
 		e = 0;
-		rx = brcl_make_fixnum(0);
+		rx = clasp_make_fixnum(0);
 	    } else {
 		d = frexp(d, &e);
-		rx = _brcl_double_to_integer(ldexp(d, DBL_MANT_DIG));
+		rx = _clasp_double_to_integer(ldexp(d, DBL_MANT_DIG));
 		e -= DBL_MANT_DIG;
 	    }
 	    break;
 	}
 	case number_SingleFloat: {
-	    float d = brcl_single_float(x);
+	    float d = clasp_single_float(x);
 	    if (std::signbit(d)) {
 		s = -1;
 		d = -d;
 	    }
 	    if (d == 0.0) {
 		e = 0;
-		rx = brcl_make_fixnum(0);
+		rx = clasp_make_fixnum(0);
 	    } else {
 		d = frexpf(d, &e);
-		rx = _brcl_double_to_integer(ldexp(d, FLT_MANT_DIG));
+		rx = _clasp_double_to_integer(ldexp(d, FLT_MANT_DIG));
 		e -= FLT_MANT_DIG;
 	    }
 	    break;
@@ -1221,7 +1221,7 @@ namespace core {
 	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
 	}
 	ASSERT(rx.notnilp());
-	return Values( rx, brcl_make_fixnum(e), brcl_make_fixnum(s));
+	return Values( rx, clasp_make_fixnum(e), clasp_make_fixnum(s));
     }
 
 
@@ -1279,23 +1279,23 @@ namespace core {
 	case number_Fixnum:
 	case number_Bignum:
 	case number_Ratio:
-	    x = brcl_make_fixnum(0);
+	    x = clasp_make_fixnum(0);
 	    break;
 	case number_SingleFloat:
-	    if (std::signbit(brcl_single_float(x)))
+	    if (std::signbit(clasp_single_float(x)))
 		x = _lisp->singleFloatMinusZero();
 	    else
 		x = _lisp->singleFloatPlusZero();
 	    break;
 	case number_DoubleFloat:
-	    if (std::signbit(brcl_double_float(x)))
+	    if (std::signbit(clasp_double_float(x)))
 		x = _lisp->doubleFloatMinusZero();
 	    else
 		x = _lisp->doubleFloatPlusZero();
 	    break;
 #ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
-	    if (std::signbit(brcl_long_float(x)))
+	    if (std::signbit(clasp_long_float(x)))
 		x = _lisp->longFloatMinusZero();
 	    else
 		x = _lisp->longFloatPlusZero();

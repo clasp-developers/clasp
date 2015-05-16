@@ -56,7 +56,7 @@ namespace core
     void extra_argument(char macro, T_sp sin, T_sp arg)
     {
 	READER_ERROR(Str_O::create("~S is an extra argument for the #~C readmacro."),
-		     Cons_O::createList(arg,Character_O::create(macro)),sin);
+		     Cons_O::createList(arg,clasp_make_character(macro)),sin);
     }
 
 
@@ -201,12 +201,12 @@ namespace core
 	while (!done)
 	{
 	    Character_sp nc = gc::As<Character_sp>(cl_readChar(stream,_lisp->_true(),_Nil<T_O>(),_lisp->_true()));
-	    char cc = nc->asChar();
+	    char cc = clasp_as_char(nc);
 	    if ( cc == '"' ) break;
 	    if ( cc == '\\' )
 	    {
 		nc = gc::As<Character_sp>(cl_readChar(stream,_lisp->_true(),_Nil<T_O>(),_lisp->_true()));
-		cc = nc->asChar();
+		cc = clasp_as_char(nc);
 		if ( cc == 'n' ) cc = '\n';
 	    }
 	    str << cc;
@@ -317,7 +317,7 @@ namespace core
 	while (!done)
 	{
 	    Character_sp nc = gc::As<Character_sp>(cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()));
-	    char cc = nc->asChar();
+	    char cc = clasp_as_char(nc);
 	    if ( cc == '\n' ) break;
 	}
 	// Return one value in a MultipleValues object to indicate that something is being returned
@@ -376,7 +376,7 @@ namespace core
     /*! See SACLA reader.lisp::unread-ch */
     void unread_ch(T_sp sin, Character_sp c)
     {_G();
-	clasp_unread_char(c->asChar(),sin);
+	clasp_unread_char(clasp_as_char(c),sin);
     }
 
 
@@ -457,8 +457,8 @@ namespace core
 		make_str(sout,obj,preserveCase);
 	    } else if ( af_characterP(obj) )
 	    {
-		if ( preserveCase ) sout << gc::As<Character_sp>(obj)->asChar();
-		else sout << gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue())->convert_case(gc::As<Character_sp>(obj))->asChar();
+		if ( preserveCase ) sout << clasp_as_char(gc::As<Character_sp>(obj));
+		else sout << clasp_as_char(gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue())->convert_case(gc::As<Character_sp>(obj)));
 	    } else
 	    {
 		SIMPLE_ERROR(BF("Illegal entry for make_str[%s]") % _rep_(obj) );
@@ -482,7 +482,7 @@ namespace core
 	    string lexeme_str = sslexemes.str();
 	    if ( lexeme_str.size() == 1 )
 	    {
-		return(Values(Character_O::create(lexeme_str[0])));
+		return(Values(clasp_make_character(lexeme_str[0])));
 	    } else
 	    {
 		Str_sp name = Str_O::create(lexeme_str);
@@ -548,7 +548,7 @@ namespace core
 #define DECL_af_sharp_left_parenthesis ""
     T_mv af_sharp_left_parenthesis(T_sp sin, Character_sp ch, /*Fixnum_sp*/T_sp tnum)
     {_G();
-	Character_sp right_paren = Character_O::create(')');
+	Character_sp right_paren = clasp_make_character(')');
 	T_sp olist = af_read_delimited_list(right_paren,sin,_lisp->_true());
 	List_sp list = olist;
 	if ( !cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
@@ -603,17 +603,17 @@ namespace core
 	    }
 	    unlikely_if (syntaxType == kw::_sym_single_escape_character ||
 			 syntaxType == kw::_sym_multiple_escape_character ||
-			 ( ch->asChar() != '0' && ch->asChar() != '1')) {
+			 ( clasp_as_char(ch) != '0' && clasp_as_char(ch) != '1')) {
 		READER_ERROR(Str_O::create("Character ~:C is not allowed after #*"),Cons_O::create(ch),sin);
 	    }
-	    pattern << ch->asChar();
+	    pattern << clasp_as_char(ch);
 	}
 	if (num.nilp()) {
 	    dim = dimcount;
 	} else if (gc::IsA<Fixnum_sp>(num)) {
 	    dim = unbox_fixnum(gc::As<Fixnum_sp>(num));
 	    unlikely_if ( dim < 0 ||
-			  (dim > BRCL_ARRAY_DIMENSION_LIMIT))
+			  (dim > CLASP_ARRAY_DIMENSION_LIMIT))
 	{
 		READER_ERROR(Str_O::create("Wrong vector dimension size ~D in #*."), Cons_O::create(num), sin);
 	    }
@@ -727,7 +727,7 @@ namespace core
 #define DECL_af_sharp_c ""
     T_mv af_sharp_c(T_sp sin, Character_sp ch, T_sp num)
     {_G();
-	Character_sp right_paren = Character_O::create(')');
+	Character_sp right_paren = clasp_make_character(')');
 	T_sp olist = read_lisp_object(sin,true,_Nil<T_O>(),true);
 	List_sp list = olist;
 	if ( !cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
@@ -951,7 +951,7 @@ namespace core
 	while (!done)
 	{
 	    Character_sp nc = gc::As<Character_sp>(cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()));
-	    char cc = nc->asChar();
+	    char cc = clasp_as_char(nc);
 	    if ( cc == '#' )
 	    {
 		char nextc = clasp_peek_char(sin);
@@ -996,16 +996,16 @@ namespace core
     HashTable_sp ReadTable_O::create_standard_syntax_table()
     {_G();
 	HashTableEql_sp syntax = HashTableEql_O::create_default();
-        syntax->setf_gethash(StandardChar_O::create_from_name("TAB"),kw::_sym_whitespace_character);
-        syntax->setf_gethash(StandardChar_O::create_from_name("NEWLINE"),kw::_sym_whitespace_character);
-        syntax->setf_gethash(StandardChar_O::create_from_name("LINEFEED"),kw::_sym_whitespace_character);
-        syntax->setf_gethash(StandardChar_O::create_from_name("PAGE"),kw::_sym_whitespace_character);
-        syntax->setf_gethash(StandardChar_O::create_from_name("RETURN"),kw::_sym_whitespace_character);
-        syntax->setf_gethash(StandardChar_O::create_from_name("SPACE"),kw::_sym_whitespace_character);
+        syntax->setf_gethash(clasp_character_create_from_name("TAB"),kw::_sym_whitespace_character);
+        syntax->setf_gethash(clasp_character_create_from_name("NEWLINE"),kw::_sym_whitespace_character);
+        syntax->setf_gethash(clasp_character_create_from_name("LINEFEED"),kw::_sym_whitespace_character);
+        syntax->setf_gethash(clasp_character_create_from_name("PAGE"),kw::_sym_whitespace_character);
+        syntax->setf_gethash(clasp_character_create_from_name("RETURN"),kw::_sym_whitespace_character);
+        syntax->setf_gethash(clasp_character_create_from_name("SPACE"),kw::_sym_whitespace_character);
 	SYMBOL_SC_(KeywordPkg,single_escape_character);
 	SYMBOL_SC_(KeywordPkg,multiple_escape_character);
-	syntax->hash_table_setf_gethash(StandardChar_O::create('\\'),kw::_sym_single_escape_character);
-	syntax->hash_table_setf_gethash(StandardChar_O::create('|'), kw::_sym_multiple_escape_character);
+	syntax->hash_table_setf_gethash(clasp_make_standard_character('\\'),kw::_sym_single_escape_character);
+	syntax->hash_table_setf_gethash(clasp_make_standard_character('|'), kw::_sym_multiple_escape_character);
 	return syntax;
     }
 
@@ -1016,54 +1016,54 @@ namespace core
 	rt->_SyntaxTypes = ReadTable_O::create_standard_syntax_table();
 	ASSERTNOTNULL(_sym_reader_backquoted_expression->symbolFunction());
 	ASSERT(_sym_reader_backquoted_expression->symbolFunction().notnilp());
-	rt->set_macro_character(StandardChar_O::create('`'),
+	rt->set_macro_character(clasp_make_standard_character('`'),
 				_sym_reader_backquoted_expression->symbolFunction(),
 				_Nil<T_O>());
-	rt->set_macro_character(StandardChar_O::create(','),
+	rt->set_macro_character(clasp_make_standard_character(','),
 				_sym_reader_comma_form->symbolFunction(),
 				_Nil<T_O>());
 	SYMBOL_SC_(CorePkg,read_list_allow_consing_dot);
-	rt->set_macro_character(StandardChar_O::create('('),
+	rt->set_macro_character(clasp_make_standard_character('('),
 				_sym_reader_list_allow_consing_dot->symbolFunction(),
 				_Nil<T_O>());
 	SYMBOL_SC_(CorePkg,reader_error_unmatched_close_parenthesis);
-	rt->set_macro_character(StandardChar_O::create(')'),
+	rt->set_macro_character(clasp_make_standard_character(')'),
 				_sym_reader_error_unmatched_close_parenthesis->symbolFunction(),
 				_Nil<T_O>());
 	SYMBOL_SC_(CorePkg,reader_quote);
-	rt->set_macro_character(StandardChar_O::create('\''),
+	rt->set_macro_character(clasp_make_standard_character('\''),
 				_sym_reader_quote->symbolFunction(),
 				_Nil<T_O>());
 	SYMBOL_SC_(CorePkg,reader_skip_semicolon_comment);
-	rt->set_macro_character(StandardChar_O::create(';'),
+	rt->set_macro_character(clasp_make_standard_character(';'),
 				_sym_reader_skip_semicolon_comment->symbolFunction(),
 				_Nil<T_O>());
 	SYMBOL_SC_(CorePkg,reader_read_double_quote_string);
-	rt->set_macro_character(StandardChar_O::create('"'),
+	rt->set_macro_character(clasp_make_standard_character('"'),
 				_sym_reader_double_quote_string->symbolFunction(),
 				_Nil<T_O>());
-	Character_sp sharp = StandardChar_O::create('#');
+	Character_sp sharp = clasp_make_standard_character('#');
 	rt->make_dispatch_macro_character(sharp,_lisp->_true());
 	ql::list dispatchers(_lisp);
-	dispatchers << StandardChar_O::create('\\') << _sym_sharp_backslash
-		    << StandardChar_O::create('\'') << _sym_sharp_single_quote
-		    << StandardChar_O::create('(') << _sym_sharp_left_parenthesis
-		    << StandardChar_O::create('*') << _sym_sharp_asterisk
-		    << StandardChar_O::create(':') << _sym_sharp_colon
-		    << StandardChar_O::create('.') << _sym_sharp_dot
-		    << StandardChar_O::create('b') << _sym_sharp_b
-		    << StandardChar_O::create('o') << _sym_sharp_o
-		    << StandardChar_O::create('x') << _sym_sharp_x
-		    << StandardChar_O::create('r') << _sym_sharp_r
-		    << StandardChar_O::create('c') << _sym_sharp_c
-		    << StandardChar_O::create('a') << _sym_sharp_a
-		    << StandardChar_O::create('s') << _sym_sharp_s
-		    << StandardChar_O::create('p') << _sym_sharp_p
-//		    << StandardChar_O::create('=') << _sym_sharp_equal
-//		    << StandardChar_O::create('#') << _sym_sharp_sharp
-		    << StandardChar_O::create('+') << _sym_sharp_plus
-		    << StandardChar_O::create('-') << _sym_sharp_minus
-		    << StandardChar_O::create('|') << _sym_sharp_vertical_bar;
+	dispatchers << clasp_make_standard_character('\\') << _sym_sharp_backslash
+		    << clasp_make_standard_character('\'') << _sym_sharp_single_quote
+		    << clasp_make_standard_character('(') << _sym_sharp_left_parenthesis
+		    << clasp_make_standard_character('*') << _sym_sharp_asterisk
+		    << clasp_make_standard_character(':') << _sym_sharp_colon
+		    << clasp_make_standard_character('.') << _sym_sharp_dot
+		    << clasp_make_standard_character('b') << _sym_sharp_b
+		    << clasp_make_standard_character('o') << _sym_sharp_o
+		    << clasp_make_standard_character('x') << _sym_sharp_x
+		    << clasp_make_standard_character('r') << _sym_sharp_r
+		    << clasp_make_standard_character('c') << _sym_sharp_c
+		    << clasp_make_standard_character('a') << _sym_sharp_a
+		    << clasp_make_standard_character('s') << _sym_sharp_s
+		    << clasp_make_standard_character('p') << _sym_sharp_p
+//		    << clasp_make_standard_character('=') << _sym_sharp_equal
+//		    << clasp_make_standard_character('#') << _sym_sharp_sharp
+		    << clasp_make_standard_character('+') << _sym_sharp_plus
+		    << clasp_make_standard_character('-') << _sym_sharp_minus
+		    << clasp_make_standard_character('|') << _sym_sharp_vertical_bar;
 	for ( List_sp cur=dispatchers.cons(); cur.notnilp(); cur = oCdr(oCdr(cur)) )
 	{
 	    Character_sp ch = gc::As<Character_sp>(oCar(cur));
@@ -1238,7 +1238,7 @@ namespace core
 	}
         HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
 	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
-	Character_sp upcase_sub_char = sub_char->char_upcase();
+	Character_sp upcase_sub_char = clasp_char_upcase(sub_char);
 	Function_sp new_func = coerce::functionDesignator(new_func_desig);
 	dispatch_table->hash_table_setf_gethash(upcase_sub_char,new_func);
 	return _lisp->_true();
@@ -1252,7 +1252,7 @@ namespace core
 	List_sp disp_char_plist = syntax_table->gethash(disp_char,_Nil<T_O>());
 	HashTable_sp dispatch_table = disp_char_plist->getf(kw::_sym_dispatch_table,_Nil<HashTable_O>() ).as<HashTable_O>();
 	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
-	Character_sp upcase_sub_char = sub_char->char_upcase();
+	Character_sp upcase_sub_char = clasp_char_upcase(sub_char);
 	Function_sp new_func = coerce::functionDesignator(new_func_desig);
 	dispatch_table->hash_table_setf_gethash(upcase_sub_char,new_func);
 	return _lisp->_true();
@@ -1269,7 +1269,7 @@ namespace core
 	}
         HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
 	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
-	Character_sp upcase_sub_char = sub_char->char_upcase();
+	Character_sp upcase_sub_char = clasp_char_upcase(sub_char);
 	Function_sp func = gc::As<Function_sp>(dispatch_table->gethash(upcase_sub_char,_Nil<T_O>()));
         return func;
 #if 0
@@ -1277,7 +1277,7 @@ namespace core
 	Cons_sp disp_char_plist = syntax_table->gethash(disp_char,_Nil<T_O>());
 	HashTable_sp dispatch_table = disp_char_plist->getf(kw::_sym_dispatch_table,_Nil<HashTable_O>() ).as<HashTable_O>();
 	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
-	Character_sp upcase_sub_char = sub_char->char_upcase();
+	Character_sp upcase_sub_char = clasp_char_upcase(sub_char);
 	Function_sp func = dispatch_table->gethash(upcase_sub_char,_Nil<T_O>()).as<Function_O>();
 	return func;
 #endif
@@ -1292,10 +1292,10 @@ namespace core
     {_OF();
 	if ( this->_Case == kw::_sym_upcase )
 	{
-	    return cc->char_upcase();
+	    return clasp_char_upcase(cc);
 	} else if (this->_Case == kw::_sym_downcase)
 	{
-	    return cc->char_downcase();
+	    return clasp_char_downcase(cc);
 	} else if (this->_Case == kw::_sym_preserve)
 	{
 	    return cc;

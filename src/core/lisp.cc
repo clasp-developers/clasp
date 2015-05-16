@@ -664,10 +664,10 @@ namespace core
 	    this->_Roots._ImaginaryUnitNegative = Complex_O::create(0.0,-1.0);
 	    this->_Roots._PlusHalf = Ratio_O::create(make_fixnum(1),make_fixnum(2));
 	    this->_Roots._MinusHalf = Ratio_O::create(make_fixnum(-1),make_fixnum(2));
-	    this->_Roots._SingleFloatOne = SingleFloat_O::create(1.0);
+	    this->_Roots._SingleFloatOne = clasp_make_single_float(1.0);
 	    this->_Roots._DoubleFloatOne = DoubleFloat_O::create(1.0);
-	    this->_Roots._SingleFloatMinusZero = SingleFloat_O::create(-0.0);
-	    this->_Roots._SingleFloatPlusZero = SingleFloat_O::create(0.0);
+	    this->_Roots._SingleFloatMinusZero = clasp_make_single_float(-0.0);
+	    this->_Roots._SingleFloatPlusZero = clasp_make_single_float(0.0);
 	    this->_Roots._DoubleFloatMinusZero = DoubleFloat_O::create(-0.0);
 	    this->_Roots._DoubleFloatPlusZero = DoubleFloat_O::create(0.0);
 #ifdef CLASP_LONG_FLOAT

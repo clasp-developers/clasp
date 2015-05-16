@@ -98,14 +98,14 @@ namespace core
     void Pathname_O::__write__(T_sp strm) const
     {
 	Pathname_sp path = this->const_sharedThis<Pathname_O>();
-        T_sp namestring = brcl_namestring(path, 0);
+        T_sp namestring = clasp_namestring(path, 0);
         bool readably = clasp_print_readably();
         if (namestring.nilp()) {
 	    if (readably) {
 		path->__writeReadable__(strm);
 		return;
 	    }
-	    namestring = brcl_namestring(path, 1);
+	    namestring = clasp_namestring(path, 1);
 	    if (namestring.nilp()) {
 		clasp_write_string("#<Unprintable pathname>",strm);
 		return;
@@ -116,22 +116,23 @@ namespace core
         write_ugly_object(namestring,strm);
     }
 
-    void Character_O::__write__(T_sp stream) const
+#if 0
+    void write_character(T_sp stream, Character_sp char) const
     {
-        int i = this->charCode();
+        int i = char->charCode();
 	if (!clasp_print_escape() && !clasp_print_readably()) {
 	    clasp_write_char(i,stream);
 	} else {
 	    clasp_write_string("#\\",stream);
 	    if (i < 32 || i >= 127) {
-		Str_sp name = gc::As<Str_sp>(eval::funcall(cl::_sym_char_name,this->const_sharedThis<Character_O>()));
+		Str_sp name = gc::As<Str_sp>(eval::funcall(cl::_sym_char_name,char));
 		clasp_write_string(name->get(),stream);
 	    } else {
 		clasp_write_char(i,stream);
 	    }
 	}
     }
-
+#endif
 
 
 
@@ -449,9 +450,11 @@ namespace core
         cl_writeSequence(buffer,strm,make_fixnum(0),_Nil<T_O>());
     }
 
-    void write_single_float(T_sp strm, T_sp i)
+    void write_single_float(T_sp strm, SingleFloat_sp i)
     {
-	IMPLEMENT_MEF(BF("Implement write_single_float"));
+	stringstream ss;
+	ss << unbox_single_float(i);
+	clasp_write_string(ss.str(),strm);
     }
 
 
@@ -464,7 +467,7 @@ namespace core
 	} else {
 	    clasp_write_string("#\\",strm);
 	    if (i < 32 || i >= 127) {
-		Str_sp name = cl_char_name(Character_O::create(i));
+		Str_sp name = cl_char_name(clasp_make_character(i));
 		clasp_write_string(name->get(),strm);
 	    } else {
 		clasp_write_char(i,strm);
@@ -483,25 +486,16 @@ namespace core
 	}
 	if ( x.fixnump() ) {
 	    write_fixnum(stream,x);
+	} else if ( x.characterp() ) {
+	    write_character(stream,x);
+	} else if ( x.single_floatp() ) {
+	    write_single_float(stream,gc::As<SingleFloat_sp>(x));
+	} else if ( x.otherp() || x.consp() ) {
+	    x->__write__(stream);
+	} else if ( x.framep() ) {
+	    clasp_write_string("#<stack-based-frame>",stream);
 	} else {
-	    switch (x.tag()) {
-	    case gctools::other_tag:
-	    case gctools::cons_tag:
-		x->__write__(stream);
-		break;
-	    case gctools::frame_tag:
-		clasp_write_string("#<stack-based-frame>",stream);
-		break;
-	    case gctools::character_tag:
-		write_character(stream,x);
-		break;
-	    case gctools::single_float_tag:
-		write_single_float(stream,x);
-		break;
-	    default:
-		SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());
-		break;
-	    }
+	    SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());
 	}
     DONE:
 	return x;

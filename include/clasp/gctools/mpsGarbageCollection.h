@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _brcl_mpsGarbageCollection_H
-#define _brcl_mpsGarbageCollection_H
+#ifndef _clasp_mpsGarbageCollection_H
+#define _clasp_mpsGarbageCollection_H
 
 #include <sstream>
 #include <type_traits>
@@ -621,4 +621,4 @@ extern "C" {
 };
 
 
-#endif // _brcl_memoryPoolSystem_H
+#endif // _clasp_memoryPoolSystem_H

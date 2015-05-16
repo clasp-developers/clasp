@@ -180,9 +180,10 @@
     (defvar +the-funcallable-standard-class+))
   
 (let* ((class-hierarchy '#.+class-hierarchy+))
-  (let ((all-classes (loop for c in class-hierarchy
-			for class = (apply #'make-empty-standard-class c)
-			collect class)))
+  (format t "About to time 183~%")
+  (let ((all-classes (time (loop for c in class-hierarchy
+			      for class = (apply #'make-empty-standard-class c)
+			      collect class))))
     #+ecl
     (progn
       (defconstant +the-t-class+ (find-class 't nil))
@@ -217,12 +218,13 @@
     ;;    obsolete and need to be updated
     ;;
     #+compare(print (list "MLOG STAGE 5"))
-    (with-early-accessors (+standard-class-slots+)
+    (format t "About to time line 220~%")
+    (time(with-early-accessors (+standard-class-slots+)
       (loop for c in all-classes
 	 do (loop for s in (class-direct-slots c)
 	       do (si::instance-sig-set s))
 	 do (loop for s in (class-slots c)
-	       do (si::instance-sig-set s))))
+	       do (si::instance-sig-set s)))))
     ))
 
 

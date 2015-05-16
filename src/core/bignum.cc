@@ -243,18 +243,15 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 	return((cp));
     }
 
-
-
-
-
     bool Bignum_O::eql_(T_sp o) const
     {_G();
-	if ( Integer_sp oi = o.asOrNull<Integer_O>() ) {
+	if ( o.fixnump() ) {
+	    return (this->_value == clasp_to_mpz(gc::As<Fixnum_sp>(o)));
+	} else if ( Integer_sp oi = o.asOrNull<Integer_O>() ) {
 	    return (this->_value == clasp_to_mpz(oi));
 	}
 	return false;
     }
-
 
 #if 0
     bool Bignum_O::eqn(T_sp o) const
@@ -314,7 +311,7 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 
 
 
-    Integer_sp _brcl_big_gcd(Bignum_sp x, Bignum_sp y)
+    Integer_sp _clasp_big_gcd(Bignum_sp x, Bignum_sp y)
     {
 	Bignum zz;
 	mpz_gcd(zz.get_mpz_t(),x->ref().get_mpz_t(),y->ref().get_mpz_t());
@@ -322,10 +319,10 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
     }
 
 
-    Integer_sp _brcl_big_divided_by_big(const Bignum& a, const Bignum& b)
+    Integer_sp _clasp_big_divided_by_big(const Bignum& a, const Bignum& b)
     {
-	size_t size_a = BRCL_BIGNUM_ABS_SIZE(a.get_mpz_t());
-	size_t size_b = BRCL_BIGNUM_ABS_SIZE(b.get_mpz_t());
+	size_t size_a = CLASP_BIGNUM_ABS_SIZE(a.get_mpz_t());
+	size_t size_b = CLASP_BIGNUM_ABS_SIZE(b.get_mpz_t());
 	Fixnum size_z = size_a - size_b + 1;
 	if (size_z <= 0) size_z = 1;
 	Bignum z;
@@ -334,16 +331,16 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
     }
 
 
-    Integer_sp _brcl_big_divided_by_fix(const Bignum& x, const Fixnum& y)
+    Integer_sp _clasp_big_divided_by_fix(const Bignum& x, const Fixnum& y)
     {
 	Bignum by(y);
-	return _brcl_big_divided_by_big(x, by);
+	return _clasp_big_divided_by_big(x, by);
     }
 
-    Integer_sp _brcl_fix_divided_by_big(const Fixnum& x, const Bignum& y)
+    Integer_sp _clasp_fix_divided_by_big(const Fixnum& x, const Bignum& y)
     {
 	Bignum bx(x);
-	return _brcl_big_divided_by_big(bx, y);
+	return _clasp_big_divided_by_big(bx, y);
     }
 
     void clasp_big_register_free(Bignum_sp b)

@@ -48,10 +48,10 @@ THE SOFTWARE.
 #include <clasp/core/numerics.h>
 
 
-#define BRCL_PI_D 3.14159265358979323846264338327950288
-#define BRCL_PI_L 3.14159265358979323846264338327950288l
-#define BRCL_PI2_D 1.57079632679489661923132169163975144
-#define BRCL_PI2_L 1.57079632679489661923132169163975144l
+#define CLASP_PI_D 3.14159265358979323846264338327950288
+#define CLASP_PI_L 3.14159265358979323846264338327950288l
+#define CLASP_PI2_D 1.57079632679489661923132169163975144
+#define CLASP_PI2_L 1.57079632679489661923132169163975144l
 
 
 namespace cl {
@@ -80,6 +80,45 @@ namespace core {
 	    return gc::smart_ptr<T>::make_tagged_single_float(f);
 	};
 
+    template <typename FLOAT>
+	inline FLOAT _log1p(FLOAT x)
+	{
+	    IMPLEMENT_MEF(BF("Implement specialized log1p for basic float type"));
+	}
+
+    template <>
+	inline float _log1p<float>(float x)
+	{
+	    float u = (float)1 + x;
+	    if ( u==1 ) {
+		return (float)0;
+	    }
+	    return (logf(u)*x)/(u-(float)1);
+	}
+
+    template <>
+	inline double _log1p<double>(double x)
+	{
+	    double u = (double)1 + x;
+	    if ( u==1 ) {
+		return (double)0;
+	    }
+	    return (log(u)*x)/(u-(double)1);
+	}
+
+#ifdef CLASP_LONG_FLOAT
+    template <>
+	inline LongFloat _log1p<LongFloat>(LongFloat x)
+	{
+	    LongFloat u = (LongFloat)1 + x;
+	    if ( u==1 ) {
+		return (LongFloat)0;
+	    }
+	    return (logl(u)*x)/(u-(LongFloat)1);
+	}
+#endif
+
+
     
     bool clasp_zerop(Number_sp num);
     bool clasp_plusp(Real_sp num);
@@ -95,6 +134,10 @@ namespace core {
     Integer_sp clasp_shift(Integer_sp num, int bits);
     int clasp_integer_length(Integer_sp x);
     mpz_class clasp_to_mpz(Integer_sp x);
+    Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
+    SingleFloat_sp clasp_make_single_float(float d);
+    DoubleFloat_sp clasp_make_double_float(double d);
+    Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
 
 
 };
@@ -135,17 +178,17 @@ namespace core
 	//	virtual T_sp deepCopy() const { return this->copy();};
 	//virtual T_sp shallowCopy() const { return this->copy();};
 	virtual Number_sp signum_() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
-	virtual Number_sp reciprocal() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
+	virtual Number_sp reciprocal_() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual Number_sp abs_() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual T_sp floor(Number_sp divisor) const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual T_sp ffloor(Number_sp divisor) const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual bool equal(T_sp obj) const;
 
 
-	virtual Number_sp log1() const { SUBIMP();};
-	virtual Number_sp log1p() const;
+	virtual Number_sp log1_() const { SUBIMP();};
+	virtual Number_sp log1p_() const;
 
-	virtual Number_sp sqrt() const {SUBIMP();};
+	virtual Number_sp sqrt_() const {SUBIMP();};
 
 	/*! Add one to the number */
 	virtual Number_sp onePlus_() const {SUBIMP();};
@@ -157,7 +200,7 @@ namespace core
 	virtual Number_sp negate_() const { SUBIMP(); };
 
 
-	virtual Number_sp exp() const { SUBIMP(); };
+	virtual Number_sp exp_() const { SUBIMP(); };
 
 
 	virtual	bool operator<(T_sp obj) const;
@@ -174,13 +217,13 @@ namespace core
 	virtual LongFloat as_long_float_() const {SUBIMP();};
 
 
-	virtual Number_sp conjugate() const {SUBIMP();};
-	virtual Number_sp sin() const {SUBIMP();};
-	virtual Number_sp cos() const {SUBIMP();};
-	virtual Number_sp tan() const {SUBIMP();};
-	virtual Number_sp sinh() const {SUBIMP();};
-	virtual Number_sp cosh() const {SUBIMP();};
-	virtual Number_sp tanh() const {SUBIMP();};
+	virtual Number_sp conjugate_() const {SUBIMP();};
+	virtual Number_sp sin_() const {SUBIMP();};
+	virtual Number_sp cos_() const {SUBIMP();};
+	virtual Number_sp tan_() const {SUBIMP();};
+	virtual Number_sp sinh_() const {SUBIMP();};
+	virtual Number_sp cosh_() const {SUBIMP();};
+	virtual Number_sp tanh_() const {SUBIMP();};
 
 
 
@@ -204,7 +247,7 @@ namespace core
 	virtual bool plusp_() const {SUBIMP();};
 	virtual bool minusp_() const {SUBIMP();};
 
-	virtual Number_sp conjugate() const;
+	virtual Number_sp conjugate_() const;
 
 	DEFAULT_CTOR_DTOR(Real_O);
     };
@@ -222,19 +265,17 @@ namespace core
     public:
 
 	virtual gc::Fixnum as_int_() const {SUBIMP();};
+   	virtual Number_sp log1_() const;
+	virtual Number_sp log1p_() const;
+	//	virtual Number_sp sqrt_() const;
+	virtual Number_sp exp_() const;
 
-	virtual Number_sp log1() const;
-	virtual Number_sp log1p() const;
-
-	virtual Number_sp sqrt() const;
-	virtual Number_sp exp() const;
-
-	virtual Number_sp sin() const;
-	virtual Number_sp cos() const;
-	virtual Number_sp tan() const;
-	virtual Number_sp sinh() const;
-	virtual Number_sp cosh() const;
-	virtual Number_sp tanh() const;
+	virtual Number_sp sin_() const;
+	virtual Number_sp cos_() const;
+	virtual Number_sp tan_() const;
+	virtual Number_sp sinh_() const;
+	virtual Number_sp cosh_() const;
+	virtual Number_sp tanh_() const;
 
 	DEFAULT_CTOR_DTOR(Rational_O);
     };
@@ -287,23 +328,24 @@ namespace core
 };
 
 
-#if 0
 template <> struct gctools::GCInfo<core::Fixnum_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;
     static bool constexpr Atomic = true;
 };
-#endif
+
+
 namespace core {
 
     Fixnum_sp make_fixnum(gc::Fixnum x);
     gc::Fixnum get_fixnum(Fixnum_sp x);
-#if 0
-    c l a s s Fixnum_O : public Integer_O
+    
+    class Fixnum_dummy_O : public Integer_O
     {
 	LISP_BASE1(Integer_O);
-	L I S P_CLASS(core,ClPkg,Fixnum_O,"fixnum");
+	LISP_CLASS(core,ClPkg,Fixnum_dummy_O,"fixnum");
+#if 0
 
     public:
 	friend class boost::serialization::access;
@@ -381,10 +423,10 @@ namespace core {
 	virtual unsigned long long as_unsigned_long_long_() const;
 	void sxhash_(HashGenerator& hg) const;
 
-    Fixnum_O(gc::Fixnum f) : _Value(f) {};
-    Fixnum_O() : _Value(0) {};
-    };
+    Fixnum_dummy_O(gc::Fixnum f) : _Value(f) {};
+    Fixnum_dummy_O() : _Value(0) {};
 #endif
+    };
     inline Fixnum_sp make_fixnum(gc::Fixnum x) {return Fixnum_sp::make_tagged_fixnum(x);};
     inline gc::Fixnum unbox_fixnum(Fixnum_sp x) {return x.unsafe_fixnum(); };
 };
@@ -446,7 +488,7 @@ namespace core {
 	//	virtual	void	setFromString( const string& strVal );
 	//	virtual	bool	eqn(T_sp obj) const;
 	virtual	bool	eql_(T_sp obj) const;
-	virtual Number_sp reciprocal() const;
+	virtual Number_sp reciprocal_() const;
 
 
 	// math routines shared by all numbers
@@ -472,15 +514,18 @@ namespace core {
 	DEFAULT_CTOR_DTOR(ShortFloat_O);
     };
 
-
-
-
-
-    SMART(SingleFloat);
-    class SingleFloat_O : public Float_O
+    class SingleFloat_dummy_O : public Float_O
     {
 	LISP_BASE1(Float_O);
-	LISP_CLASS(core,ClPkg,SingleFloat_O,"SingleFloat");
+	LISP_CLASS(core,ClPkg,SingleFloat_dummy_O,"SingleFloat");
+    public:
+#if 0
+	static SingleFloat_sp create(float nm)
+	{_G();
+            GC_ALLOCATE(SingleFloat_O,sf);
+            sf->_Value = nm;
+	    return sf;
+	};
     public:
 #if defined(OLD_SERIALIZE)
 	void	serialize(serialize::SNode node);
@@ -491,12 +536,6 @@ namespace core {
     private:
 	float	_Value;
     public:
-	static SingleFloat_sp create(float nm)
-	{_G();
-            GC_ALLOCATE(SingleFloat_O,sf);
-            sf->_Value = nm;
-	    return sf;
-	};
     public:
 	NumberType number_type_() const { return number_SingleFloat;};
 	void sxhash_(HashGenerator& hg) const;
@@ -511,42 +550,44 @@ namespace core {
 	//	virtual	void	setFromString( const string& strVal );
 	//	virtual	bool	eqn(T_sp obj) const;
 	virtual	bool	eql_(T_sp obj) const;
-	virtual Number_sp reciprocal() const;
 
 	// math routines shared by all numbers
 	virtual bool zerop_() const { return this->_Value == 0.0; };
-	virtual Number_sp negate_() const { return SingleFloat_O::create(-this->_Value);};
+	virtual Number_sp negate_() const { return make_single_float(-this->_Value);};
 
 	// shared by real
 	virtual bool plusp_() const { return this->_Value > 0.0; };
 	virtual bool minusp_() const { return this->_Value < 0.0; };
 
-	virtual Number_sp log1() const;
-	virtual Number_sp log1p() const;
-	virtual Number_sp sqrt() const;
+	//	virtual Number_sp log1_() const;
+	//	virtual Number_sp log1p_() const;
+	virtual Number_sp sqrt_() const;
 
 	virtual Number_sp onePlus_() const { return create(this->_Value+1.0);};
 	virtual Number_sp oneMinus_() const { return create(this->_Value-1.0);};
-
-	virtual Number_sp exp() const;
-
-	virtual Number_sp sin() const;
-	virtual Number_sp cos() const;
-	virtual Number_sp tan() const;
-	virtual Number_sp sinh() const;
-	virtual Number_sp cosh() const;
-	virtual Number_sp tanh() const;
-
-
 
 	virtual float as_float_() const;
 	virtual double as_double_() const;
 	virtual LongFloat as_long_float_() const;
 
-	Integer_sp castToInteger() const;
+	virtual Number_sp reciprocal_() const;
+	virtual Number_sp exp_() const;
+
+	virtual Number_sp sin_() const;
+	virtual Number_sp cos_() const;
+	virtual Number_sp tan_() const;
+	virtual Number_sp sinh_() const;
+	virtual Number_sp cosh_() const;
+	virtual Number_sp tanh_() const;
+
+	//Integer_sp castToInteger() const;
 
 	DEFAULT_CTOR_DTOR(SingleFloat_O);
+#endif
     };
+
+    inline SingleFloat_sp make_single_float(float x) {return SingleFloat_sp::make_tagged_single_float(x);};
+    inline float unbox_single_float(SingleFloat_sp x) {return x.unsafe_single_float(); };
 
 };
 
@@ -597,14 +638,15 @@ namespace core {
 	bool plusp_() const { return this->_Value > 0.0; };
 	bool minusp_() const { return this->_Value < 0.0; };
 
-	virtual Number_sp sqrt() const;
+	virtual Number_sp reciprocal_() const;
+	virtual Number_sp sqrt_() const;
 
 	virtual Number_sp onePlus_() const { return create(this->_Value+1.0);};
 	virtual Number_sp oneMinus_() const { return create(this->_Value-1.0);};
 
 
-	virtual Number_sp log1() const;
-	virtual Number_sp log1p() const;
+	virtual Number_sp log1_() const;
+	virtual Number_sp log1p_() const;
 
 
 	virtual float as_float_() const;
@@ -613,14 +655,14 @@ namespace core {
 
 	Integer_sp castToInteger() const;
 
-	virtual Number_sp exp() const;
+	virtual Number_sp exp_() const;
 
-	virtual Number_sp sin() const;
-	virtual Number_sp cos() const;
-	virtual Number_sp tan() const;
-	virtual Number_sp sinh() const;
-	virtual Number_sp cosh() const;
-	virtual Number_sp tanh() const;
+	virtual Number_sp sin_() const;
+	virtual Number_sp cos_() const;
+	virtual Number_sp tan_() const;
+	virtual Number_sp sinh_() const;
+	virtual Number_sp cosh_() const;
+	virtual Number_sp tanh_() const;
 
 	DEFAULT_CTOR_DTOR(DoubleFloat_O);
     };
@@ -681,9 +723,9 @@ namespace core {
 	bool plusp_() const { return this->_Value > 0.0; };
 	bool minusp_() const { return this->_Value < 0.0; };
 
-	virtual Number_sp reciprocal() const;
+	virtual Number_sp reciprocal_() const;
 
-	virtual Number_sp sqrt() const;
+	virtual Number_sp sqrt_() const;
 
 
 
@@ -699,16 +741,16 @@ namespace core {
 	Integer_sp castToInteger() const;
 
 #ifdef CLASP_LONG_FLOAT
-	virtual Number_sp log1() const;
-	virtual Number_sp log1p() const;
+	virtual Number_sp log1_() const;
+	virtual Number_sp log1p_() const;
 
-	virtual Number_sp exp() const;
-	virtual Number_sp sin() const;
-	virtual Number_sp cos() const;
-	virtual Number_sp tan() const;
-	virtual Number_sp sinh() const;
-	virtual Number_sp cosh() const;
-	virtual Number_sp tanh() const;
+	virtual Number_sp exp_() const;
+	virtual Number_sp sin_() const;
+	virtual Number_sp cos_() const;
+	virtual Number_sp tan_() const;
+	virtual Number_sp sinh_() const;
+	virtual Number_sp cosh_() const;
+	virtual Number_sp tanh_() const;
 #endif
 
 	DEFAULT_CTOR_DTOR(LongFloat_O);
@@ -778,27 +820,27 @@ namespace core {
 	virtual Number_sp negate_() const { return Complex_O::create(gc::As<Real_sp>(clasp_negate(this->_real)),
 								     gc::As<Real_sp>(clasp_negate(this->_imaginary)));};
 
-	virtual Number_sp log1() const;
-	virtual Number_sp log1p() const;
+	virtual Number_sp log1_() const;
+	virtual Number_sp log1p_() const;
 
 	virtual Number_sp onePlus_() const { return create(gc::As<Real_sp>(clasp_one_plus(this->_real)),
 							  this->_imaginary);};
 	virtual Number_sp oneMinus_() const { return create(gc::As<Real_sp>(clasp_one_minus(this->_real)),
 							   this->_imaginary);};
 
-	Number_sp sqrt() const;
+	Number_sp sqrt_() const;
 
 
-	virtual Number_sp exp() const;
+	virtual Number_sp exp_() const;
 
-	virtual Number_sp sin() const;
-	virtual Number_sp cos() const;
-	virtual Number_sp tan() const;
-	virtual Number_sp sinh() const;
-	virtual Number_sp cosh() const;
-	virtual Number_sp tanh() const;
+	virtual Number_sp sin_() const;
+	virtual Number_sp cos_() const;
+	virtual Number_sp tan_() const;
+	virtual Number_sp sinh_() const;
+	virtual Number_sp cosh_() const;
+	virtual Number_sp tanh_() const;
 
-	virtual Number_sp conjugate() const;
+	virtual Number_sp conjugate_() const;
 
 	DEFAULT_CTOR_DTOR(Complex_O);
     };
@@ -898,31 +940,54 @@ namespace core {
 
 
 
-    void brcl_deliver_fpe(int status);
+    void clasp_deliver_fpe(int status);
 
-    inline Number_sp brcl_plus(Number_sp na, Number_sp nb)    { return contagen_add(na,nb);};
-    inline Number_sp brcl_minus(Number_sp na, Number_sp nb)    { return contagen_sub(na,nb);};
-    inline Number_sp brcl_times(Number_sp na, Number_sp nb)  { return contagen_mul(na,nb);};
-    inline Number_sp brcl_divide(Number_sp na, Number_sp nb) { return contagen_div(na,nb);};
+    inline Number_sp clasp_plus(Number_sp na, Number_sp nb)    { return contagen_add(na,nb);};
+    inline Number_sp clasp_minus(Number_sp na, Number_sp nb)    { return contagen_sub(na,nb);};
+    inline Number_sp clasp_times(Number_sp na, Number_sp nb)  { return contagen_mul(na,nb);};
+    inline Number_sp clasp_divide(Number_sp na, Number_sp nb) { return contagen_div(na,nb);};
 
-    inline int brcl_number_compare(Number_sp x, Number_sp y) { return basic_compare(x,y);};
+    inline int clasp_number_compare(Number_sp x, Number_sp y) { return basic_compare(x,y);};
 
-    Number_sp brcl_atan2(Number_sp x, Number_sp y);
+    Number_sp clasp_atan2(Number_sp x, Number_sp y);
 
-    inline Number_sp brcl_sqrt(Number_sp z) {
-	ASSERTF(!z.fixnump(),BF("Add support for immediate fixnums"));
-	return z->sqrt();
-    }
-
-    inline Number_sp brcl_log1(Number_sp x) {
-	ASSERTF(!x.fixnump(),BF("Add support for immediate fixnums"));
-	return x->log1();
-    }
-
-    inline Number_sp brcl_log1p(Number_sp x)
+    inline Number_sp float_sqrt(float f)
     {
-	ASSERTF(!x.fixnump(),BF("Add support for immediate fixnums"));
-	return x->log1p();
+	if ( f < 0.0 ) {
+	    return Complex_O::create(clasp_make_single_float(0.0),clasp_make_single_float(sqrtf(-f)));
+	} else {
+	    return clasp_make_single_float(sqrtf(f));
+	}
+    }
+
+    
+    inline Number_sp clasp_log1(Number_sp x) {
+	if ( x.fixnump() ) {
+	    float f = x.unsafe_fixnum();
+	    if ( f<0 ) return clasp_log1_complex_inner(x,clasp_make_fixnum(0));
+	    return clasp_make_single_float(logf(f));
+	} else if ( x.single_floatp() ) {
+	    float f = x.unsafe_single_float();
+	    if (::isnan(f)) return x;
+	    if (f < 0) return clasp_log1_complex_inner(x, clasp_make_fixnum(0));
+	    return clasp_make_single_float(logf(f));
+	}
+	return x->log1_();
+    }
+
+    inline Number_sp clasp_log1p(Number_sp x)
+    {
+	if ( x.fixnump() ) {
+	    float f = x.unsafe_fixnum();
+	    if (f < -1) return clasp_log1_complex_inner(clasp_one_plus(x),clasp_make_fixnum(0));
+	    return clasp_make_single_float(_log1p(f));
+	} else if ( x.single_floatp() ) {
+	    float f = x.unsafe_single_float();
+	    if (::isnan(f)) return x;
+	    if (f < -1) return clasp_log1_complex_inner(clasp_one_plus(x),clasp_make_fixnum(0));
+	    return clasp_make_single_float(_log1p(f));
+	}
+	return x->log1p_();
     };
 
 
@@ -942,69 +1007,69 @@ namespace core {
 	return unbox_fixnum(Fixnum_sp(x));
     }
 
-    inline float brcl_single_float(Number_sp x) {
-	return gc::As<SingleFloat_sp>(x)->get();
+    inline float clasp_single_float(Number_sp x) {
+	return unbox_single_float(x);
     }
 
-    inline double brcl_double_float(Number_sp x) {
+    inline double clasp_double_float(Number_sp x) {
 	return gc::As<DoubleFloat_sp>(x)->get();
     }
 
 #ifdef CLASP_LONG_FLOAT
-    inline LongFloat brcl_long_float(Number_sp x) {
+    inline LongFloat clasp_long_float(Number_sp x) {
 	return x.as<LongFloat_O>()->get();
     }
 #endif
 
-    inline Ratio_sp brcl_make_ratio(Integer_sp num, Integer_sp denom)
+    inline Ratio_sp clasp_make_ratio(Integer_sp num, Integer_sp denom)
     {
 	return Ratio_O::create(num,denom);
     }
 
-    inline Fixnum_sp brcl_make_fixnum(gc::Fixnum i)
+    inline Fixnum_sp clasp_make_fixnum(gc::Fixnum i)
     {
 	return make_fixnum(i);
     }
 
-    inline Integer_sp _brcl_float_to_integer(float d)
+    inline Integer_sp _clasp_float_to_integer(float d)
     {
 	return Integer_O::create(d);
     }
 
-    inline Integer_sp _brcl_double_to_integer(double d)
+    inline Integer_sp _clasp_double_to_integer(double d)
     {
 	return Integer_O::create(d);
     }
 
-    inline Integer_sp _brcl_long_float_to_integer(LongFloat d)
+    inline Integer_sp _clasp_long_float_to_integer(LongFloat d)
     {
 	return Integer_O::create(d);
     }
 
-    inline Integer_sp _brcl_long_double_to_integer(LongFloat d)
+    inline Integer_sp _clasp_long_double_to_integer(LongFloat d)
     {
 	return Integer_O::create(d);
     }
 
-    inline SingleFloat_sp brcl_make_single_float(float d)
+    inline SingleFloat_sp clasp_make_single_float(float d)
     {
-	return SingleFloat_O::create(d);
+	return SingleFloat_sp::make_tagged_single_float(d);
     }
 
-    inline DoubleFloat_sp brcl_make_double_float(double d)
+    inline DoubleFloat_sp clasp_make_double_float(double d)
     {
 	return DoubleFloat_O::create(d);
     }
 
 #ifdef CLASP_LONG_FLOAT
-    inline LongFloat_sp brcl_make_long_float(LongFloat d)
+    inline LongFloat_sp clasp_make_long_float(LongFloat d)
     {
 	return LongFloat_O::create(d);
     }
 #endif
 
 
-#define brcl_return2(ENV,n1,n2) return Values(n1,n2);
+#define clasp_return2(ENV,n1,n2) return Values(n1,n2);
 #define CLASP_REAL_TYPE_P(y) (gc::IsA<Real_sp>(y))
 
     
@@ -1014,22 +1079,22 @@ namespace core {
     /*! In num_co.cc */
     Real_mv clasp_floor1(Real_sp x);
     Real_mv clasp_floor2(Real_sp x,Real_sp y);
-    Real_mv brcl_ceiling1(Real_sp x);
-    Real_mv brcl_ceiling2(Real_sp x,Real_sp y);
+    Real_mv clasp_ceiling1(Real_sp x);
+    Real_mv clasp_ceiling2(Real_sp x,Real_sp y);
 
-    Real_mv brcl_truncate1(Real_sp x);
-    Real_mv brcl_truncate2(Real_sp x,Real_sp y);
+    Real_mv clasp_truncate1(Real_sp x);
+    Real_mv clasp_truncate2(Real_sp x,Real_sp y);
 
-    Real_mv brcl_round1(Real_sp x);
-    Real_mv brcl_round2(Real_sp x,Real_sp y);
+    Real_mv clasp_round1(Real_sp x);
+    Real_mv clasp_round2(Real_sp x,Real_sp y);
 
-    Real_sp brcl_max2(Real_sp x, Real_sp y);
-    Real_sp brcl_min2(Real_sp x, Real_sp y);
+    Real_sp clasp_max2(Real_sp x, Real_sp y);
+    Real_sp clasp_min2(Real_sp x, Real_sp y);
 
-#define brcl_lowereq(x,y) (brcl_number_compare((x),(y)) <= 0)
-#define brcl_greatereq(x,y) (brcl_number_compare((x),(y)) >= 0)
-#define brcl_lower(x,y) (brcl_number_compare((x),(y)) < 0)
-#define brcl_greater(x,y) (brcl_number_compare((x),(y)) > 0)
+#define clasp_lowereq(x,y) (clasp_number_compare((x),(y)) <= 0)
+#define clasp_greatereq(x,y) (clasp_number_compare((x),(y)) >= 0)
+#define clasp_lower(x,y) (clasp_number_compare((x),(y)) < 0)
+#define clasp_greater(x,y) (clasp_number_compare((x),(y)) > 0)
 
 
     unsigned char clasp_toUint8(T_sp n);
@@ -1327,6 +1392,74 @@ namespace core {
     };
     inline LongFloat clasp_to_long_float(Number_sp x) { return x->as_long_float_(); };
     inline LongFloat clasp_to_long_double(Number_sp x) { return x->as_long_float_(); };
+
+    inline Number_sp clasp_sqrt(Number_sp z) {
+	if ( z.fixnump() ) {
+	    float f = z.unsafe_fixnum();
+	    return float_sqrt(f);
+	} else if ( z.single_floatp() ) {
+	    float f = z.unsafe_single_float();
+	    return float_sqrt(f);
+	}
+	return z->sqrt_();
+    }
+
+    inline Number_sp clasp_reciprocal(Number_sp x)
+    {
+	if ( x.single_floatp() ) {
+	    float f = x.unsafe_single_float();
+	    return clasp_make_single_float(1.0/f);
+	}
+	return x->reciprocal_();
+    }
+
+    inline Number_sp clasp_exp(Number_sp x)
+    {
+	if ( x.single_floatp() ) {
+	    float f = x.unsafe_single_float();
+	    return clasp_make_single_float(expf(f));
+	}
+	return x->exp_();
+    }
+
+    inline Number_sp clasp_sin(Number_sp x) {
+	if (x.single_floatp())
+	    return clasp_make_single_float(sinf(x.unsafe_single_float()));
+	return x->sin_();
+    }
+    inline Number_sp clasp_cos(Number_sp x) {
+	if (x.single_floatp())
+	    return clasp_make_single_float(cosf(x.unsafe_single_float()));
+	return x->cos_();
+    }
+    inline Number_sp clasp_tan(Number_sp x) {
+	if (x.single_floatp())
+	    return clasp_make_single_float(tanf(x.unsafe_single_float()));
+	return x->tan_();
+    }
+
+
+    inline Number_sp clasp_sinh(Number_sp x) {
+	if (x.single_floatp())
+	    return clasp_make_single_float(sinhf(x.unsafe_single_float()));
+	return x->sinh_();
+    }
+    inline Number_sp clasp_cosh(Number_sp x) {
+	if (x.single_floatp())
+	    return clasp_make_single_float(coshf(x.unsafe_single_float()));
+	return x->cosh_();
+    }
+    inline Number_sp clasp_tanh(Number_sp x) {
+	if (x.single_floatp())
+	    return clasp_make_single_float(tanhf(x.unsafe_single_float()));
+	return x->tanh_();
+    }
+
+    inline Number_sp clasp_conjugate(Number_sp x) {
+	if (x.fixnump()) return x;
+	if (x.single_floatp()) return x;
+	return x->conjugate_();
+    }
 
 };
 

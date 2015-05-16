@@ -294,6 +294,9 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_EXPORT_SC_(ClPkg,floatp);
     SYMBOL_EXPORT_SC_(ClPkg,realp);
     SYMBOL_EXPORT_SC_(ClPkg,complexp);
+    SYMBOL_EXPORT_SC_(ClPkg,character);
+    SYMBOL_EXPORT_SC_(ClPkg,base_char); 
+    SYMBOL_EXPORT_SC_(ClPkg,single_float);
     SYMBOL_EXPORT_SC_(ClPkg,characterp);
     SYMBOL_EXPORT_SC_(ClPkg,stringp);
     SYMBOL_EXPORT_SC_(ClPkg,bit_vector_p);
@@ -452,6 +455,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 
     SYMBOL_EXPORT_SC_(ClPkg,STARgensym_counterSTAR);
     SYMBOL_EXPORT_SC_(ClPkg,standard_char);
+    SYMBOL_EXPORT_SC_(ClPkg,extended_char);
     SYMBOL_EXPORT_SC_(ClPkg,special);
     SYMBOL_EXPORT_SC_(ClPkg,nconc);
     SYMBOL_EXPORT_SC_(ClPkg,cons);
@@ -856,8 +860,35 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 #define DEFINE_CLASS_NAMES
 	string NSPkg = CorePkg;
 #include <core_initClasses_inc.h>
+	
 	};
 
+#if 0
+	{// Create classes for the immediate types fixnum, base-char, extended-char, single-float
+	    core::Fixnum_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Fixnum_O::static_packageName(),core::Fixnum_O::static_className()));
+	    LOG(BF("Creating class[classcore__Fixnum_Oval]"));
+	    core::BuiltInClass_sp classcore__Fixnum_Oval = core::BuiltInClass_O::createUncollectable();
+	    classcore__Fixnum_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__Fixnum_Oval,_lisp,core::Fixnum_O::static_classSymbol());
+	    reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<core::Fixnum_O>::id,core::Fixnum_O::static_classSymbol());
+	    core::Fixnum_O::___staticClass = classcore__Fixnum_Oval;
+#ifdef USE_MPS
+	    core::Fixnum_O::static_Kind = gctools::GCKind<core::Fixnum_O>::Kind;
+#endif
+	    core::af_setf_findClass(classcore__Fixnum_Oval,core::Fixnum_O::static_classSymbol(),true,_Nil<core::Environment_O>());
+	    {
+		core::LispObjectCreator<core::Fixnum_O>* cb = gctools::ClassAllocator<core::LispObjectCreator<core::Fixnum_O>>::allocateClass();
+		core::Fixnum_O::___set_static_creator(cb);
+	    }
+	    LOG(BF("Set static_allocator for class(%s) to %X")% core::Fixnum_O::static_className() % (void*)(core::Fixnum_O::static_allocator) );
+	    classcore__Fixnum_Oval->setCreator(core::Fixnum_O::static_creator);
+	    {
+		LOG(BF("Created nil for class[%s]") % core::Fixnum_O::static_className() );
+	    }
+	    /* ----- the class and its nil are now defined and so is classcore__Fixnum_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
+	    classcore__Fixnum_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::Integer_O::static_classSymbol());
+	    classcore__Fixnum_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::Fixnum_O::static_classSymbol());
+	}
+#endif
 
 #if 0
         //
@@ -1025,11 +1056,11 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	_sym_STARcurrentSourcePosInfoSTAR->defparameter(_Nil<T_O>());
 	_sym_STARcodeWalkerSTAR->defparameter(_Nil<T_O>());
 	_sym_STARsharpEqContextSTAR->defparameter(_Nil<T_O>());
-	cl::_sym_STARreadDefaultFloatFormatSTAR->defparameter(cl::_sym_SingleFloat_O);
+	cl::_sym_STARreadDefaultFloatFormatSTAR->defparameter(cl::_sym_single_float);
 	_sym_STARnestedErrorDepthSTAR->defparameter(make_fixnum(0));
 	cl::_sym_STARbreakOnSignalsSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARdebuggerHookSTAR->defparameter(_Nil<T_O>());
-        cl::_sym_internalTimeUnitsPerSecond->defparameter(make_fixnum(BRCL_INTERNAL_TIME_UNITS_PER_SECOND));
+        cl::_sym_internalTimeUnitsPerSecond->defparameter(make_fixnum(CLASP_INTERNAL_TIME_UNITS_PER_SECOND));
         _sym_STARstartRunTimeSTAR->defparameter(PosixTime_O::createNow());
 	cl::_sym_MultipleValuesLimit->defconstant(make_fixnum(MultipleValues::MultipleValuesLimit));
 	_sym_STARprintStructureSTAR->defparameter(_Nil<T_O>());

@@ -49,8 +49,8 @@ THE SOFTWARE.
 
 namespace core {
 
-#define PRINT_BASE brcl_make_fixnum(10)
-#define EXPT_RADIX(x) clasp_ash(brcl_make_fixnum(1),x)
+#define PRINT_BASE clasp_make_fixnum(10)
+#define EXPT_RADIX(x) clasp_ash(clasp_make_fixnum(1),x)
 
     typedef struct {
         Real_sp r;
@@ -63,7 +63,7 @@ namespace core {
 
     Real_sp times2(Real_sp x)
     {
-	return gc::As<Real_sp>(brcl_plus(x, x));
+	return gc::As<Real_sp>(clasp_plus(x, x));
     }
 
 
@@ -77,7 +77,7 @@ namespace core {
 	switch (clasp_t_of(number)) {
 	case number_SingleFloat:
 	    min_e = FLT_MIN_EXP;
-	    limit_f = (gc::As<SingleFloat_sp>(number)->get() ==
+	    limit_f = (unbox_single_float(gc::As<SingleFloat_sp>(number)) ==
 		       ldexpf(FLT_RADIX, FLT_MANT_DIG-1));
 	    break;
 	case number_DoubleFloat:
@@ -99,27 +99,27 @@ namespace core {
 	    Fixnum_sp zz(make_fixnum(1));
 	    Real_sp be = EXPT_RADIX(e);
 	    if (limit_f) {
-		Real_sp be1 = gc::As<Real_sp>(brcl_times(be, brcl_make_fixnum(FLT_RADIX)));
-		approx->r = times2(gc::As<Real_sp>(brcl_times(f, be1)));
-		approx->s = brcl_make_fixnum(FLT_RADIX*2);
+		Real_sp be1 = gc::As<Real_sp>(clasp_times(be, clasp_make_fixnum(FLT_RADIX)));
+		approx->r = times2(gc::As<Real_sp>(clasp_times(f, be1)));
+		approx->s = clasp_make_fixnum(FLT_RADIX*2);
 		approx->mm = be;
 		approx->mp = be1;
 	    } else {
-		approx->r = times2(gc::As<Real_sp>(brcl_times(f, be)));
-		approx->s = brcl_make_fixnum(2);
+		approx->r = times2(gc::As<Real_sp>(clasp_times(f, be)));
+		approx->s = clasp_make_fixnum(2);
 		approx->mm = be;
 		approx->mp = be;
 	    }
 	} else if (!limit_f || (e == min_e)) {
 	    approx->r = times2(f);
 	    approx->s = times2(EXPT_RADIX(-e));
-	    approx->mp = brcl_make_fixnum(1);
-	    approx->mm = brcl_make_fixnum(1);
+	    approx->mp = clasp_make_fixnum(1);
+	    approx->mm = clasp_make_fixnum(1);
 	} else {
-	    approx->r = times2(brcl_make_fixnum(FLT_RADIX));
+	    approx->r = times2(clasp_make_fixnum(FLT_RADIX));
 	    approx->s = times2(EXPT_RADIX(1-e));
-	    approx->mp = brcl_make_fixnum(FLT_RADIX);
-	    approx->mm = brcl_make_fixnum(1);
+	    approx->mp = clasp_make_fixnum(FLT_RADIX);
+	    approx->mm = clasp_make_fixnum(1);
 	}
 	return approx;
     }
@@ -127,10 +127,10 @@ namespace core {
     static Fixnum    scale(float_approx *approx)
     {
         Fixnum k = 0;
-        Real_sp x = gc::As<Real_sp>(brcl_plus(approx->r, approx->mp));
+        Real_sp x = gc::As<Real_sp>(clasp_plus(approx->r, approx->mp));
         int sign;
         do {
-	    sign = brcl_number_compare(x, approx->s);
+	    sign = clasp_number_compare(x, approx->s);
 	    if (approx->high_ok) {
 		if (sign < 0)
 		    break;
@@ -138,12 +138,12 @@ namespace core {
 		if (sign <= 0)
 		    break;
 	    }
-	    approx->s = gc::As<Real_sp>(brcl_times(approx->s, PRINT_BASE));
+	    approx->s = gc::As<Real_sp>(clasp_times(approx->s, PRINT_BASE));
 	    k++;
         } while(1);
         do {
-	    x = gc::As<Real_sp>(brcl_times(x, PRINT_BASE));
-	    sign = brcl_number_compare(x, approx->s);
+	    x = gc::As<Real_sp>(clasp_times(x, PRINT_BASE));
+	    sign = clasp_number_compare(x, approx->s);
 	    if (approx->high_ok) {
 		if (sign >= 0)
 		    break;
@@ -152,9 +152,9 @@ namespace core {
 		    break;
 	    }
 	    k--;
-	    approx->r = gc::As<Real_sp>(brcl_times(approx->r, PRINT_BASE));
-	    approx->mm = gc::As<Real_sp>(brcl_times(approx->mm, PRINT_BASE));
-	    approx->mp = gc::As<Real_sp>(brcl_times(approx->mp, PRINT_BASE));
+	    approx->r = gc::As<Real_sp>(clasp_times(approx->r, PRINT_BASE));
+	    approx->mm = gc::As<Real_sp>(clasp_times(approx->mm, PRINT_BASE));
+	    approx->mp = gc::As<Real_sp>(clasp_times(approx->mp, PRINT_BASE));
         } while(1);
         return k;
     }
@@ -166,33 +166,33 @@ namespace core {
 	gctools::Fixnum digit;
         bool tc1, tc2;
         do {
-	    Real_mv mv_d = brcl_truncate2(gc::As<Real_sp>(brcl_times(approx->r, PRINT_BASE)), approx->s);
+	    Real_mv mv_d = clasp_truncate2(gc::As<Real_sp>(clasp_times(approx->r, PRINT_BASE)), approx->s);
 	    d = mv_d;
 	    approx->r = gc::As<Real_sp>(mv_d.valueGet(1));
-	    approx->mp = gc::As<Real_sp>(brcl_times(approx->mp, PRINT_BASE));
-	    approx->mm = gc::As<Real_sp>(brcl_times(approx->mm, PRINT_BASE));
+	    approx->mp = gc::As<Real_sp>(clasp_times(approx->mp, PRINT_BASE));
+	    approx->mm = gc::As<Real_sp>(clasp_times(approx->mm, PRINT_BASE));
 	    tc1 = approx->low_ok?
-		brcl_lowereq(approx->r, approx->mm) :
-		brcl_lower(approx->r, approx->mm);
-	    x = gc::As<Real_sp>(brcl_plus(approx->r, approx->mp));
+		clasp_lowereq(approx->r, approx->mm) :
+		clasp_lower(approx->r, approx->mm);
+	    x = gc::As<Real_sp>(clasp_plus(approx->r, approx->mp));
 	    tc2 = approx->high_ok?
-		brcl_greatereq(x, approx->s) :
-		brcl_greater(x, approx->s);
+		clasp_greatereq(x, approx->s) :
+		clasp_greater(x, approx->s);
 	    if (tc1 || tc2) {
 		break;
 	    }
-	    brcl_string_push_extend(digits, brcl_digit_char(clasp_fixnum(d), 10));
+	    clasp_string_push_extend(digits, clasp_digit_char(clasp_fixnum(d), 10));
         } while (1);
         if (tc2 && !tc1) {
 	    digit = clasp_fixnum(d) + 1;
         } else if (tc1 && !tc2) {
 	    digit = clasp_fixnum(d);
-        } else if (brcl_lower(times2(approx->r), approx->s)) {
+        } else if (clasp_lower(times2(approx->r), approx->s)) {
 	    digit = clasp_fixnum(d);
         } else {
 	    digit = clasp_fixnum(d) + 1;
         }
-        brcl_string_push_extend(digits, brcl_digit_char(digit, 10));
+        clasp_string_push_extend(digits, clasp_digit_char(digit, 10));
         return digits;
     }
 
@@ -205,33 +205,33 @@ namespace core {
 	Real_sp position = gc::As<Real_sp>(tposition);
         pos = clasp_fixnum(position);
         if (!relativep.nilp()) {
-	    Real_sp k = brcl_make_fixnum(0);
-	    Real_sp l = brcl_make_fixnum(1);
-	    while (brcl_lower(brcl_times(approx->s, l),
-			      brcl_plus(approx->r, approx->mp))) {
+	    Real_sp k = clasp_make_fixnum(0);
+	    Real_sp l = clasp_make_fixnum(1);
+	    while (clasp_lower(clasp_times(approx->s, l),
+			      clasp_plus(approx->r, approx->mp))) {
 		k = gc::As<Real_sp>(clasp_one_plus(k));
-		l = gc::As<Real_sp>(brcl_times(l, PRINT_BASE));
+		l = gc::As<Real_sp>(clasp_times(l, PRINT_BASE));
 	    }
-	    position = gc::As<Real_sp>(brcl_minus(k, position));
+	    position = gc::As<Real_sp>(clasp_minus(k, position));
 	    {
 		Real_sp e1 = gc::As<Real_sp>(cl_expt(PRINT_BASE, position));
-		Real_sp e2 = gc::As<Real_sp>(brcl_divide(e1, brcl_make_fixnum(2)));
+		Real_sp e2 = gc::As<Real_sp>(clasp_divide(e1, clasp_make_fixnum(2)));
 		Real_sp e3 = gc::As<Real_sp>(cl_expt(PRINT_BASE, k)); 
-		if (brcl_greatereq(brcl_plus(approx->r, brcl_times(approx->s, e1)),
-				   brcl_times(approx->s, e2)))
+		if (clasp_greatereq(clasp_plus(approx->r, clasp_times(approx->s, e1)),
+				   clasp_times(approx->s, e2)))
 		    position = gc::As<Real_sp>(clasp_one_minus(position));
 	    }
         }
         {
-	    Real_sp x = gc::As<Real_sp>(brcl_times(approx->s, cl_expt(PRINT_BASE, position)));
-	    Real_sp e = gc::As<Real_sp>(brcl_divide(x, brcl_make_fixnum(2)));
-	    Real_sp low = brcl_max2( approx->mm, e);
-	    Real_sp high = brcl_max2( approx->mp, e);
-	    if (brcl_lowereq(approx->mm, low)) {
+	    Real_sp x = gc::As<Real_sp>(clasp_times(approx->s, cl_expt(PRINT_BASE, position)));
+	    Real_sp e = gc::As<Real_sp>(clasp_divide(x, clasp_make_fixnum(2)));
+	    Real_sp low = clasp_max2( approx->mm, e);
+	    Real_sp high = clasp_max2( approx->mp, e);
+	    if (clasp_lowereq(approx->mm, low)) {
 		approx->mm = low;
 		approx->low_ok = 1;
 	    }
-	    if (brcl_lowereq(approx->mp, high)) {
+	    if (clasp_lowereq(approx->mp, high)) {
 		approx->mp = high;
 		approx->high_ok = 1;
 	    }
@@ -256,10 +256,10 @@ namespace core {
         k = scale(approx);
 	StrWithFillPtr_sp digits;
         if (tdigits.nilp()) {
-	    digits = gc::As<StrWithFillPtr_sp>(af_make_vector(cl::_sym_BaseChar_O,
+	    digits = gc::As<StrWithFillPtr_sp>(af_make_vector(cl::_sym_base_char,
 				    10,
 				    true /* adjustable */,
-				    brcl_make_fixnum(0) /* fill pointer */,
+				    clasp_make_fixnum(0) /* fill pointer */,
 				    _Nil<T_O>() /* displacement */,
 				    _Nil<T_O>() /* displ. offset */,
 				    _Nil<T_O>() /* initial_element */,
@@ -268,7 +268,7 @@ namespace core {
 	    digits = gc::As<StrWithFillPtr_sp>(tdigits);
 	}
         generate(digits, approx);
-        return Values(brcl_make_fixnum(k), digits);
+        return Values(clasp_make_fixnum(k), digits);
     }
 
 

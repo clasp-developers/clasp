@@ -100,13 +100,13 @@ namespace core
 		return;
 	    }
 	}
-	circle = brcl_print_circle();
+	circle = clasp_print_circle();
 	if (clasp_print_readably()) {
 	    print_level = MOST_POSITIVE_FIXNUM;
 	    print_length = MOST_POSITIVE_FIXNUM;
 	} else {
-	    print_level = brcl_print_level();
-	    print_length = brcl_print_length();
+	    print_level = clasp_print_level();
+	    print_length = clasp_print_length();
 	}
 	if (print_level == 0) {
 	    clasp_write_char('#',stream);

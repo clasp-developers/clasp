@@ -135,7 +135,7 @@ namespace core
             }
         }
 #endif /* ECL_CMU_FORMAT */
-	bool circle = brcl_print_circle();
+	bool circle = clasp_print_circle();
 	if (circle && (x) && !x.fixnump() && !x.framep() && !x.characterp() && !x.single_floatp() && (cl_listp(x) || !cl_symbolp(x) || !gc::As<Symbol_sp>(x)->homePackage().nilp() ))
 	{
 	    Fixnum code;

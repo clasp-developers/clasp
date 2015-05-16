@@ -71,8 +71,8 @@ namespace core {
         size_t usec = r.ru_utime.tv_usec;
         size_t sec = r.ru_utime.tv_sec;
         mpz_class bn(sec);
-        bn = bn * BRCL_INTERNAL_TIME_UNITS_PER_SECOND;
-        bn = bn + usec/(1000000/BRCL_INTERNAL_TIME_UNITS_PER_SECOND);
+        bn = bn * CLASP_INTERNAL_TIME_UNITS_PER_SECOND;
+        bn = bn + usec/(1000000/CLASP_INTERNAL_TIME_UNITS_PER_SECOND);
 	return Integer_O::create(bn);
     };
 

@@ -137,7 +137,7 @@ namespace core
 		return af_symbolName(sym);
 	    } else if ( Character_sp chr = obj.asOrNull<Character_O>() ) {
 		stringstream ss;
-		ss << chr->asChar();
+		ss << clasp_as_char(chr);
 		return Str_O::create(ss.str());
 	    }
 	    SIMPLE_ERROR(BF("Illegal string designator[%s] of class[%s]") % _rep_(obj) % _rep_(lisp_instance_class(obj)) );

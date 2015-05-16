@@ -33,8 +33,13 @@ THE SOFTWARE.
 #include <clasp/core/character.fwd.h>
 namespace core
 {
-
-
+    claspChar clasp_as_char(Character_sp c);
+    Character_sp clasp_make_character(claspCharacter c);
+    Character_sp clasp_make_standard_character(claspCharacter c);
+    inline claspCharacter unbox_character(Character_sp c) {
+	return c.unsafe_character();
+    };
+    
     Str_sp cl_char_name(Character_sp och);
 
     int clasp_string_case(Str_sp s);
@@ -42,11 +47,12 @@ namespace core
 
     bool af_standard_char_p(Character_sp ch);
 
-    FORWARD(Character);
-    class Character_O : public T_O
+    class Character_dummy_O : public T_O
     {
 	LISP_BASE1(T_O);
-	LISP_VIRTUAL_CLASS(core,ClPkg,Character_O,"character");
+	LISP_VIRTUAL_CLASS(core,ClPkg,Character_dummy_O,"character");
+#if 0
+	
 #if defined(XML_ARCHIVE)
 	DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
@@ -86,32 +92,29 @@ namespace core
 	virtual int toInt() const {SUBIMP();};
 	int charCode() const { return this->toInt(); };
 	void __write__(T_sp sout) const; // Look in write_ugly.cc
+#endif
     };
 };
+#if 0
 template<> struct gctools::GCInfo<core::Character_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;
     static bool constexpr Atomic = true;
 };
-
+#endif
+#if 0
 namespace core {
-
-
-
     FORWARD(BaseChar);
-    class BaseChar_O : public Character_O
+    c l a s s BaseChar_O : public Character_O
     {
 	LISP_BASE1(Character_O);
-	LISP_CLASS(core,ClPkg,BaseChar_O,"base-char");
+	L I S P_CLASS(core,ClPkg,BaseChar_O,"base-char");
     public: // Simple default ctor/dtor
 	DEFAULT_CTOR_DTOR(BaseChar_O);
     public:
 	void initialize();
-
     private: // instance variables here
-
-
     public: // Functions here
     };
 };
@@ -121,19 +124,15 @@ template<> struct gctools::GCInfo<core::BaseChar_O> {
     static bool constexpr Moveable = true;
     static bool constexpr Atomic = true;
 };
+#endif
 
-
+#if 0
 namespace core {
-
-
-
-
-
     SMART(StandardChar);
-    class StandardChar_O : public BaseChar_O
+    c l a s s StandardChar_O : public BaseChar_O
     {
 	LISP_BASE1(BaseChar_O);
-	LISP_CLASS(core,ClPkg,StandardChar_O,"standard-char");
+	L I S P_CLASS(core,ClPkg,StandardChar_O,"standard-char");
     public:
 #if defined(OLD_SERIALIZE)
 	void serialize(serialize::SNode node);
@@ -189,24 +188,23 @@ namespace core {
 	DEFAULT_CTOR_DTOR(StandardChar_O);
     };
 };
-
 template<> struct gctools::GCInfo<core::StandardChar_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;
     static bool constexpr Atomic = true;
 };
+#endif
 
+
+
+#if 0
 namespace core {
-
-
-
-
     FORWARD(ExtendedChar);
-    class ExtendedChar_O : public Character_O
+    c l a s s ExtendedChar_O : public Character_O
     {
 	LISP_BASE1(Character_O);
-	LISP_CLASS(core,ClPkg,ExtendedChar_O,"extended-char");
+	L I S P_CLASS(core,ClPkg,ExtendedChar_O,"extended-char");
 #if defined(XML_ARCHIVE)
 	DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
@@ -214,13 +212,9 @@ namespace core {
 	DEFAULT_CTOR_DTOR(ExtendedChar_O);
     public:
 	void initialize();
-
     private: // instance variables here
-
-
     public: // Functions here
     };
-
 };
 template<> struct gctools::GCInfo<core::ExtendedChar_O> {
     static bool constexpr NeedsInitialization = false;
@@ -228,13 +222,11 @@ template<> struct gctools::GCInfo<core::ExtendedChar_O> {
     static bool constexpr Moveable = true;
     static bool constexpr Atomic = true;
 };
+#endif
+
 
 namespace core {
-
-
-
-
-    inline short brcl_digit_char(Fixnum w, Fixnum r)
+    inline short clasp_digit_char(Fixnum w, Fixnum r)
     {
 	if (r < 2 || r > 36 || w < 0 || w >= r)
 	    return(-1);
@@ -262,7 +254,7 @@ namespace translate
 	{
 	    if ( core::Character_sp ch = o.asOrNull<core::Character_O>() )
 	    {
-		this->_v = ch->asChar();
+		this->_v = clasp_as_char(ch);
 		return;
 	    }
 	    SIMPLE_ERROR(BF("Could not convert %s to CHARACTER") % _rep_(o));
@@ -277,28 +269,68 @@ namespace translate
 	typedef	uint		GivenType;
 	static core::T_sp convert(GivenType v)
 	{_G();
-	    return core::StandardChar_O::create(v);
+	    return core::clasp_make_character(v);
 	}
     };
 };
-
-
-
-
 TRANSLATE(core::Character_O);
 
 
 namespace core {
     claspChar clasp_charCode(T_sp elt); // like ecl_char_code
-    bool clasp_invalid_character_p(int c);
 
-    claspCharacter clasp_char_upcase(claspCharacter code);
+    
+    inline bool clasp_invalid_character_p(int c) {
+	return (c <= 32) || (c == 127);
+    }
+	
 
-    claspCharacter clasp_char_downcase(claspCharacter code);
-    bool clasp_alphanumericp(claspCharacter i);
+    inline Character_sp clasp_char_upcase(claspCharacter code) {
+	unsigned char uc = toupper(code);
+	return clasp_make_character(uc);
+    }
+
+    inline Character_sp clasp_char_downcase(claspCharacter code) {
+	unsigned char uc = tolower(code);
+	return clasp_make_character(uc);
+    }
+
+    inline Character_sp clasp_char_upcase(Character_sp code) {
+	unsigned char uc = toupper(clasp_as_char(code));
+	return clasp_make_character(uc);
+    }
+
+    inline Character_sp clasp_char_downcase(Character_sp code) {
+	unsigned char uc = tolower(clasp_as_char(code));
+	return clasp_make_character(uc);
+    }
 
 
+    inline bool clasp_alphanumericp(claspCharacter i) {
+	return isalnum(i);
+    }
 
+    inline claspChar clasp_as_char(Character_sp c) {
+	return c.unsafe_character();
+    }
+
+    inline claspCharacter clasp_as_character(Character_sp c) {
+	return c.unsafe_character();
+    }
+
+    inline Character_sp clasp_make_character(claspCharacter c) {
+	return Character_sp::make_tagged_character(c);
+    }
+
+    inline Character_sp clasp_make_standard_character(claspCharacter c) {
+	return Character_sp::make_tagged_character(c);
+    }
+
+    inline claspCharacter clasp_char_code(Character_sp c) {
+	return unbox_character(c);
+    }
+
+    Character_sp clasp_character_create_from_name(string const& name);
 };
 
 #endif

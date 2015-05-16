@@ -321,7 +321,7 @@ namespace core {
         if ( x.nilp() || y.nilp() ) {
             SIMPLE_ERROR(BF("boole cannot accept nil"));
         }
-        if ( x.fixnump() ) { //Fixnum_sp fnx = x.asOrNull<Fixnum_O>() ) {
+        if ( x.fixnump() ) { 
 	    Fixnum_sp fnx = gc::As<Fixnum_sp>(x);
             if ( y.fixnump() ) { //Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
 		Fixnum_sp fny = gc::As<Fixnum_sp>(y);

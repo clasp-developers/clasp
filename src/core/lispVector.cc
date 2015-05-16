@@ -75,17 +75,17 @@ namespace core
 	if ( element_type == cl::_sym_bit )
 	{
 	    IMPLEMENT_MEF(BF("Handle bitvectors"));
-	} else if ( element_type == cl::_sym_BaseChar_O
-		    || element_type == cl::_sym_Character_O
-		    || element_type == cl::_sym_StandardChar_O
-		    || element_type == cl::_sym_ExtendedChar_O )
+	} else if ( element_type == cl::_sym_base_char
+		    || element_type == cl::_sym_character
+		    || element_type == cl::_sym_standard_char
+		    || element_type == cl::_sym_extended_char )
 	{
 	    // Currently any kind of Character vector is a Str or subclass
 	    // TODO: Maybe use other types of strings - unicode?
 	    char c = ' ';
 	    if ( Character_sp cc = initial_element.asOrNull<Character_O>() )
 	    {
-		c = cc->asChar();
+		c = clasp_as_char(cc);
 	    }
 	    if ( fill_pointer.notnilp() )
 	    {

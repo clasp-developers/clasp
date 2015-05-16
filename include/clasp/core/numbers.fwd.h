@@ -37,7 +37,6 @@ FORWARD(Number);
 #endif
     FORWARD(Float);
     FORWARD(ShortFloat);
-    FORWARD(SingleFloat);
     FORWARD(DoubleFloat);
 #ifdef CLASP_LONG_FLOAT
     FORWARD(LongFloat);

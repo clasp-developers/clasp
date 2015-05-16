@@ -56,7 +56,7 @@ namespace core
 
 
 
-    int brcl_print_level(void)
+    int clasp_print_level(void)
     {
 	T_sp object = cl::_sym_STARprint_levelSTAR->symbolValue();
 	gctools::Fixnum level;
@@ -84,7 +84,7 @@ namespace core
 	return level;
     }
 
-    int brcl_print_length(void)
+    int clasp_print_length(void)
     {
 	T_sp object = cl::_sym_STARprint_lengthSTAR->symbolValue();
 	gctools::Fixnum length;
@@ -109,7 +109,7 @@ namespace core
 	return length;
     }
 
-    bool brcl_print_radix(void)
+    bool clasp_print_radix(void)
     {
 	return cl::_sym_STARprint_radixSTAR->symbolValue().isTrue();
     }
@@ -136,7 +136,7 @@ namespace core
 	return cl::_sym_STARprint_gensymSTAR->symbolValue().isTrue();
     }
 
-    bool brcl_print_array(void)
+    bool clasp_print_array(void)
     {
 	return cl::_sym_STARprint_arraySTAR->symbolValue().isTrue();
     }
@@ -151,7 +151,7 @@ namespace core
 	return cl::_sym_STARprint_escapeSTAR->symbolValue().isTrue();
     }
 
-    bool brcl_print_circle(void)
+    bool clasp_print_circle(void)
     {
 	return cl::_sym_STARprint_circleSTAR->symbolValue().isTrue();
     }

@@ -90,10 +90,6 @@ namespace core
     class Function_O;
     typedef	gctools::smart_ptr<Function_O>	Function_sp;
 
-    class Character_O;
-    typedef	gctools::smart_ptr<Character_O>	Character_sp;
-
-    
     bool cl_eq(T_sp x, T_sp y);
     bool cl_eql(T_sp x, T_sp y);
     bool cl_equal(T_sp x, T_sp y);

@@ -86,7 +86,7 @@ namespace core
       See CLHS 2.1.4.2 */
     uint constituentChar(Character_sp ch, uint trait=0)
     {
-	claspChar x(ch->asChar());
+	claspChar x(clasp_as_char(ch));
 	if ( trait!=0 ) return (x|trait);
 	uint result = 0;
 	int readBase = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARread_baseSTAR->symbolValue()));
@@ -397,14 +397,14 @@ namespace core
 		char* lastValid = NULL;
 		string numstr = fix_exponent_char(tokenStr(token,start-token.data()).c_str());
 		double d = ::strtod(numstr.c_str(),&lastValid);
-		return SingleFloat_O::create(d);
+		return clasp_make_single_float(d);
 	    }
 	    case single_float_exp:
 	    {
 		char* lastValid = NULL;
 		string numstr = fix_exponent_char(tokenStr(token,start-token.data()).c_str());
 		double d = ::strtod(numstr.c_str(),&lastValid);
-		return SingleFloat_O::create(d);
+		return clasp_make_single_float(d);
 	    }
 	    case double_float_exp:
 	    {
@@ -472,7 +472,7 @@ namespace core
 	    SourcePosInfo_sp info = core_inputStreamSourcePosInfo(sin);
 	    Character_sp cp = gc::As<Character_sp>(cl_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()));
 	    LOG(BF("read_list ---> peeked char[%s]") % _rep_(cp) );
-	    if ( cp->asChar() == end_char )
+	    if ( clasp_as_char(cp) == end_char )
 	    {
 		cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true());
 		if ( dotted_object.notnilp() )
@@ -504,7 +504,7 @@ namespace core
 		    {
 			got_dotted = true;
 			Character_sp cdotp = gc::As<Character_sp>(cl_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()));
-			if ( cdotp->asChar() == end_char )
+			if ( clasp_as_char(cdotp) == end_char )
 			{
 			    SIMPLE_ERROR(BF("Nothing after consing dot"));
 			}
@@ -636,25 +636,25 @@ namespace core
 	    return Values(eofValue);
 	}
 	x = gc::As<Character_sp>(tx);
-	LOG(BF("Reading character x[%s]") % x->asChar() );
+	LOG(BF("Reading character x[%s]") % clasp_as_char(x) );
 	Symbol_sp x1_syntax_type = readTable->syntax_type(x);
 //    step2:
 	if ( x1_syntax_type == kw::_sym_invalid_character )
 	{
-	    LOG(BF("step2 - invalid-character[%c]") % x->asChar() );
+	    LOG(BF("step2 - invalid-character[%c]") % clasp_as_char(x) );
 	    SIMPLE_ERROR(BF("ReaderError_O::create(sin,_lisp)"));
 	}
 //    step3:
 	if ( x1_syntax_type == kw::_sym_whitespace_character)
 	{
-	    LOG(BF("step3 - whitespace character[%c/%d]") % x->asChar() % x->asChar() );
+	    LOG(BF("step3 - whitespace character[%c/%d]") % clasp_as_char(x) % clasp_as_char(x) );
 	    goto step1;
 	}
 //    step4:
 	if ( (x1_syntax_type == kw::_sym_terminating_macro_character)
 	     || (x1_syntax_type == kw::_sym_non_terminating_macro_character ))
-	{_BLOCK_TRACEF(BF("Processing macro character x[%s]") % x->asChar() );
-	    LOG(BF("step4 - terminating-macro-character or non-terminating-macro-character char[%c]") % x->asChar());
+	    {_BLOCK_TRACEF(BF("Processing macro character x[%s]") % clasp_as_char(x) );
+	    LOG(BF("step4 - terminating-macro-character or non-terminating-macro-character char[%c]") % clasp_as_char(x));
 	    T_sp reader_macro;
 	    {MULTIPLE_VALUES_CONTEXT();
 		reader_macro = readTable->get_macro_character(x);
@@ -665,18 +665,18 @@ namespace core
 //    step5:
 	if ( x1_syntax_type == kw::_sym_single_escape_character)
 	{
-	    LOG(BF("step5 - single-escape-character char[%c]") % x->asChar());
+	    LOG(BF("step5 - single-escape-character char[%c]") % clasp_as_char(x));
 	    LOG(BF("Handling single escape"));
 	    y = gc::As<Character_sp>(cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()));
 	    token.clear();
 	    token.push_back(constituentChar(y,TRAIT_ALPHABETIC));
-	    LOG(BF("Read y[%s]") % y->asChar() );
+	    LOG(BF("Read y[%s]") % clasp_as_char(y) );
 	    goto step8;
 	}
 //    step6:
 	if ( x1_syntax_type == kw::_sym_multiple_escape_character )
 	{
-	    LOG(BF("step6 - multiple-escape-character char[%c]") % x->asChar());
+	    LOG(BF("step6 - multiple-escape-character char[%c]") % clasp_as_char(x));
 	    LOG(BF("Handling multiple escape - clearing token"));
 	    token.clear();
 	    goto step9;
@@ -684,11 +684,11 @@ namespace core
 //    step7:
 	if ( readTable->syntax_type(x) == kw::_sym_constituent_character )
 	{
-	    LOG(BF("step7 - constituent-character char[%c]") % x->asChar());
+	    LOG(BF("step7 - constituent-character char[%c]") % clasp_as_char(x));
 	    LOG(BF("Handling constituent character"));
 	    token.clear();
 	    X = readTable->convert_case(x);
-	    LOG(BF("Converted case X[%s]") % X->asChar());
+	    LOG(BF("Converted case X[%s]") % clasp_as_char(X));
 	    token.push_back(constituentChar(X));
 	}
     step8:
@@ -700,7 +700,7 @@ namespace core
 		goto step10;
 	    }
 	    Character_sp y(ty);
-	    LOG(BF("Step8: Read y[%s]") % y->asChar() );
+	    LOG(BF("Step8: Read y[%s]") % clasp_as_char(y) );
 	    Symbol_sp y8_syntax_type = readTable->syntax_type(y);
 	    LOG(BF("y8_syntax_type=%s") % _rep_(y8_syntax_type) );
 	    if ( (y8_syntax_type == kw::_sym_constituent_character)
@@ -715,15 +715,15 @@ namespace core
 		z = gc::As<Character_sp>(cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()));
 		token.push_back(constituentChar(z,TRAIT_ALPHABETIC));
 		LOG(BF("Single escape read z[%s] accumulated token[%s]")
-		    % z->asChar() % tokenStr(token) );
+		    % clasp_as_char(z) % tokenStr(token) );
 		goto step8;
 	    }
 	    if ( y8_syntax_type == kw::_sym_multiple_escape_character) goto step9;
 	    if ( y8_syntax_type == kw::_sym_invalid_character) SIMPLE_ERROR(BF("ReaderError_O::create()"));
 	    if ( y8_syntax_type == kw::_sym_terminating_macro_character )
 	    {
-		LOG(BF("UNREADING char y[%s]") % y->asChar() );
-		clasp_unread_char(y->asChar(),sin);
+		LOG(BF("UNREADING char y[%s]") % clasp_as_char(y) );
+		clasp_unread_char(clasp_as_char(y),sin);
 		goto step10;
 	    }
 	    if ( y8_syntax_type == kw::_sym_whitespace_character )
@@ -731,8 +731,8 @@ namespace core
 		LOG(BF("y is whitespace"));
 		if (_sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue() )
 		{
-		    LOG(BF("unreading y[%s]") % y->asChar() );
-		    clasp_unread_char(y->asChar(),sin);
+		    LOG(BF("unreading y[%s]") % clasp_as_char(y) );
+		    clasp_unread_char(clasp_as_char(y),sin);
 		}
 		goto step10;
 	    }
@@ -742,7 +742,7 @@ namespace core
 	{
 	    y = gc::As<Character_sp>(cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()));
 	    Symbol_sp y9_syntax_type = readTable->syntax_type(y);
-	    LOG(BF("Step9: Read y[%s] y9_syntax_type[%s]") % y->asChar() % _rep_(y9_syntax_type) );
+	    LOG(BF("Step9: Read y[%s] y9_syntax_type[%s]") % clasp_as_char(y) % _rep_(y9_syntax_type) );
 	    if ( (y9_syntax_type == kw::_sym_constituent_character)
 		 || (y9_syntax_type == kw::_sym_non_terminating_macro_character)
 		 || (y9_syntax_type == kw::_sym_terminating_macro_character)
@@ -761,7 +761,7 @@ namespace core
 		if ( tz.nilp() ) STREAM_ERROR(sin);
 		z = gc::As<Character_sp>(tz);
 		token.push_back(constituentChar(z,TRAIT_ALPHABETIC));
-		LOG(BF("Read z[%s] accumulated token[%s]") % z->asChar() % tokenStr(token));
+		LOG(BF("Read z[%s] accumulated token[%s]") % clasp_as_char(z) % tokenStr(token));
 		goto step9;
 	    }
 	    if ( y9_syntax_type == kw::_sym_multiple_escape_character )

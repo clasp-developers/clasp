@@ -389,7 +389,7 @@ core::T_sp Pointer_O::PERCENTmem_ref(core::Symbol_sp atype, core::Integer_sp off
     void* ptr = ((char*)(this->_ptr)+clasp_to_int(offset));
     if ( atype == _sym_char )
     {
-	return core::Character_O::create(*(char*)(ptr));
+	return core::clasp_make_character(*(char*)(ptr));
     } else if ( atype == _sym_unsigned_char)
     {
 	return core::make_fixnum(*(unsigned char*)(ptr));
@@ -494,7 +494,7 @@ core::T_sp Pointer_O::PERCENTsetf_mem_ref(core::Symbol_sp atype, core::Cons_sp r
     {
 	if ( af_characterP(value) )
 	{
-	    *(char*)(ptr) = gc::As<core::Character_sp>(value)->asChar();
+	    *(char*)(ptr) = clasp_as_char(gc::As<core::Character_sp>(value));
 	    return value;
 	} else if ( af_integerP(value) )
 	{

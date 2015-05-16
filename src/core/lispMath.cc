@@ -64,7 +64,7 @@ namespace core
 	    float d = sfx->get();
 	    float y = ceilf(d);
 	    v0 = Integer_O::create(y);
-	    v1 = SingleFloat_O::create(d-y);
+	    v1 = clasp_make_single_float(d-y);
 	    break;
 	}
 	case number_DoubleFloat: {
@@ -149,7 +149,7 @@ namespace core
 		float p = fnx->get()/n;
 		float q = ceilf(p);
 		v0 = Integer_O::create(q);
-		v1 = SingleFloat_O::create(p*n - q*n);
+		v1 = clasp_make_single_float(p*n - q*n);
 		break;
 	    }
 	    case number_DoubleFloat: {	/* FIX / DF */
@@ -210,7 +210,7 @@ namespace core
 		float p = bnx->as_float()/n;
 		float q = ceilf(p);
 		v0 = Integer_O::create(q);
-		v1 = SingleFloat_O::create(p*n - q*n);
+		v1 = clasp_make_single_float(p*n - q*n);
 		break;
 	    }
 	    case number_DoubleFloat: {	/* BIG / DF */
@@ -263,7 +263,7 @@ namespace core
 	    float p = sfx->get()/n;
 	    float q = ceilf(p);
 	    v0 = Integer_O::create(q);
-	    v1 = SingleFloat_O::create(p*n - q*n);
+	    v1 = clasp_make_single_float(p*n - q*n);
 	    break;
 	}
 	case number_DoubleFloat: {		/* DF / ANY */
@@ -319,7 +319,7 @@ namespace core
 	    float d = sfx->get();
 	    float y = d > 0? floorf(d) : ceilf(d);
 	    v0 = Integer_O::create(y);
-	    v1 = SingleFloat_O::create(d-y);
+	    v1 = clasp_make_single_float(d-y);
 	    break;
 	}
 	case number_DoubleFloat: {
@@ -378,7 +378,7 @@ T_mv floor1(Real_sp x)
 	float d = sfx->get();
 	float y = floorf(d);
 	v0 = Integer_O::create(y);
-	v1 = SingleFloat_O::create(d-y);
+	v1 = clasp_make_single_float(d-y);
 	break;
     }
     case number_DoubleFloat: {
@@ -463,7 +463,7 @@ T_mv floor1(Real_sp x)
 		float p = fnx->get()/n;
 		float q = floorf(p);
 		v0 = Integer_O::create(q);
-		v1 = SingleFloat_O::create((p-q)*n);
+		v1 = clasp_make_single_float((p-q)*n);
 		break;
 	    }
 	    case number_DoubleFloat: {	/* FIX / DF */
@@ -524,7 +524,7 @@ T_mv floor1(Real_sp x)
 		float p = bnx->as_float()/n;
 		float q = floorf(p);
 		v0 = Integer_O::create(q);
-		v1 = SingleFloat_O::create((p-q)*n);
+		v1 = clasp_make_single_float((p-q)*n);
 		break;
 	    }
 	    case number_DoubleFloat: {	/* BIG / DF */
@@ -577,7 +577,7 @@ T_mv floor1(Real_sp x)
 	    float p = sfx->get()/n;
 	    float q = floorf(p);
 	    v0 = Integer_O::create(q);
-	    v1 = SingleFloat_O::create(p*n - q*n);
+	    v1 = clasp_make_single_float(p*n - q*n);
 	    break;
 	}
 	case number_DoubleFloat: {		/* DF / ANY */

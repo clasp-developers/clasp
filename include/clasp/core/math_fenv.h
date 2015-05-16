@@ -83,28 +83,28 @@ namespace core {
 #endif
 
 #ifdef HAVE_FENV_H
-# define BRCL_WITHOUT_FPE_BEGIN do { fenv_t env; feholdexcept(&env);
-# define BRCL_WITHOUT_FPE_END } while (0)
+# define CLASP_WITHOUT_FPE_BEGIN do { fenv_t env; feholdexcept(&env);
+# define CLASP_WITHOUT_FPE_END } while (0)
 #else
 # define FE_INVALID 1
 # define FE_DIVBYZERO 2
 # define FE_INEXACT 0
 # define FE_OVERFLOW 3
 # define FE_UNDERFLOW 0
-# define BRCL_WITHOUT_FPE_BEGIN
-# define BRCL_WITHOUT_FPE_END
+# define CLASP_WITHOUT_FPE_BEGIN
+# define CLASP_WITHOUT_FPE_END
 # define feclearexcept(x)
 #endif /* !HAVE_FENV_H */
 
-#if defined(HAVE_FENV_H) && !defined(HAVE_FEENABLEEXCEPT) && !defined(BRCL_AVOID_FPE_H)
-# define BRCL_USED_EXCEPTIONS (FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW|FE_UNDERFLOW)
-# define BRCL_MATHERR_CLEAR feclearexcept(FE_ALL_EXCEPT)
-# define BRCL_MATHERR_TEST do {                                  \
-        int bits = fetestexcept(BRCL_USED_EXCEPTIONS);           \
+#if defined(HAVE_FENV_H) && !defined(HAVE_FEENABLEEXCEPT) && !defined(CLASP_AVOID_FPE_H)
+# define CLASP_USED_EXCEPTIONS (FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW|FE_UNDERFLOW)
+# define CLASP_MATHERR_CLEAR feclearexcept(FE_ALL_EXCEPT)
+# define CLASP_MATHERR_TEST do {                                  \
+        int bits = fetestexcept(CLASP_USED_EXCEPTIONS);           \
     unlikely_if (bits) ecl_deliver_fpe(bits); } while(0)
 #else
-# define BRCL_MATHERR_CLEAR
-# define BRCL_MATHERR_TEST
+# define CLASP_MATHERR_CLEAR
+# define CLASP_MATHERR_TEST
 #endif
 
 #if 0   // __APPLE__ doesn't need feclearexcept or fetestexcept

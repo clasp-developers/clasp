@@ -487,7 +487,7 @@ namespace core
 #define DOCS_af_makeStringOutputStream "makeStringOutputStream"
     T_mv af_makeStringOutputStream(T_sp elementType)
     {_G();
-	if ( elementType != cl::_sym_Character_O )
+	if ( elementType != cl::_sym_character )
 	{
 	    SIMPLE_ERROR(BF("Add support for non character string output streams - you asked for %s") % _rep_(elementType) );
 	}
@@ -947,7 +947,7 @@ namespace core
 	    SIMPLE_ERROR(BF("Currently I don't handle recursive-p[true] for read_delimited_list"));
 	}
 #endif
-	T_sp result = read_list(sin,chr->asChar(),true);
+	T_sp result = read_list(sin,clasp_as_char(chr),true);
 	if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
 	{
 	    return(Values(_Nil<T_O>()));
@@ -1615,8 +1615,8 @@ Symbol_mv af_gensym(T_sp x)
 Symbol_mv af_type_to_symbol(T_sp x)
 {_G();
     if ( x.fixnump() ) return(Values(cl::_sym_fixnum));
-    else if ( Character_sp ccx = x.asOrNull<Character_O>() ) return(Values(cl::_sym_Character_O));
-    else if ( SingleFloat_sp sfx = x.asOrNull<SingleFloat_O>() ) return(Values(cl::_sym_SingleFloat_O));
+    else if ( Character_sp ccx = x.asOrNull<Character_O>() ) return(Values(cl::_sym_character));
+    else if ( SingleFloat_sp sfx = x.asOrNull<SingleFloat_O>() ) return(Values(cl::_sym_single_float));
     else if ( x.nilp() ) return(Values(cl::_sym_Symbol_O));  // Return _sym_null??
     else if ( Symbol_sp sx = x.asOrNull<Symbol_O>() ) return(Values(cl::_sym_Symbol_O));
     else if ( x.consp() ) return(Values(cl::_sym_list));
@@ -1669,13 +1669,17 @@ T_sp type_of(T_sp x)
 	return mcc->className();
     } else
 #endif
-	if ( Integer_sp ix = x.asOrNull<Integer_O>() ) {
+	if ( x.fixnump() ) {
+	    ql::list res(_lisp);
+	    res << cl::_sym_integer << x << x;
+	    return res.cons();
+	} else if ( Integer_sp ix = x.asOrNull<Integer_O>() ) {
 	    ql::list res(_lisp);
 	    res << cl::_sym_integer << x << x;
 	    return res.cons();
 	} else if ( af_characterP(x) ) {
 	    if ( af_standard_char_p(gc::As<Character_sp>(x)) ) return cl::_sym_standard_char;
-	    return cl::_sym_Character_O;
+	    return cl::_sym_character;
 	} else if ( Symbol_sp symx = x.asOrNull<Symbol_O>() ) {
 	    if ( x == _lisp->_true() ) return cl::_sym_boolean;
 	    if ( af_keywordP(symx) ) return cl::_sym_keyword;
@@ -1685,7 +1689,7 @@ T_sp type_of(T_sp x)
 	    if ( sx->adjustable_array_p() || sx->array_has_fill_pointer_p() || sx->_displaced_array_p() ) {
 		t = cl::_sym_array;
 	    } else t = cl::_sym_simple_array;
-	    return (ql::list(_lisp) << t << cl::_sym_BaseChar_O << Cons_O::createList(make_fixnum(1),make_fixnum(cl_length(sx)))).cons();
+	    return (ql::list(_lisp) << t << cl::_sym_base_char << Cons_O::createList(make_fixnum(1),make_fixnum(cl_length(sx)))).cons();
 	} else if ( Vector_sp vx = x.asOrNull<Vector_O>() ) {
 	    if ( vx->adjustable_array_p() || vx->_displaced_array_p() ) {
 		return (ql::list(_lisp) << cl::_sym_vector << vx->element_type_as_symbol() << vx->arrayDimensions() ).cons();

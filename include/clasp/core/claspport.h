@@ -63,7 +63,7 @@ Used in:  Brcl_uintptr_t
 
 HAVE_LONG_LONG
 Meaning:  The compiler supports the C type "long long"
-Used in:  BRCL_LONG_LONG
+Used in:  CLASP_LONG_LONG
 
 **************************************************************************/
 
@@ -91,23 +91,23 @@ Used in:  BRCL_LONG_LONG
  */
 
 #ifdef HAVE_LONG_LONG
-#ifndef BRCL_LONG_LONG
-#define BRCL_LONG_LONG long long
+#ifndef CLASP_LONG_LONG
+#define CLASP_LONG_LONG long long
 #if defined(LLONG_MAX)
 /* If LLONG_MAX is defined in limits.h, use that. */
-#define BRCL_LLONG_MIN LLONG_MIN
-#define BRCL_LLONG_MAX LLONG_MAX
-#define BRCL_ULLONG_MAX ULLONG_MAX
+#define CLASP_LLONG_MIN LLONG_MIN
+#define CLASP_LLONG_MAX LLONG_MAX
+#define CLASP_ULLONG_MAX ULLONG_MAX
 #elif defined(__LONG_LONG_MAX__)
 /* Otherwise, if GCC has a builtin define, use that. */
-#define BRCL_LLONG_MAX __LONG_LONG_MAX__
-#define BRCL_LLONG_MIN (-BRCL_LLONG_MAX-1)
-#define BRCL_ULLONG_MAX (__LONG_LONG_MAX__*2ULL + 1ULL)
+#define CLASP_LLONG_MAX __LONG_LONG_MAX__
+#define CLASP_LLONG_MIN (-BRCL_LLONG_MAX-1)
+#define CLASP_ULLONG_MAX (__LONG_LONG_MAX__*2ULL + 1ULL)
 #else
 /* Otherwise, rely on two's complement. */
-#define BRCL_ULLONG_MAX (~0ULL)
-#define BRCL_LLONG_MAX  ((long long)(BRCL_ULLONG_MAX>>1))
-#define BRCL_LLONG_MIN (-BRCL_LLONG_MAX-1)
+#define CLASP_ULLONG_MAX (~0ULL)
+#define CLASP_LLONG_MAX  ((long long)(BRCL_ULLONG_MAX>>1))
+#define CLASP_LLONG_MIN (-BRCL_LLONG_MAX-1)
 #endif /* LLONG_MAX */
 #endif
 #endif /* HAVE_LONG_LONG */
@@ -120,9 +120,9 @@ Used in:  BRCL_LONG_LONG
  * However, it doesn't set HAVE_UINT32_T, so we do that here.
  */
 #if (defined UINT32_MAX || defined uint32_t)
-#ifndef BRCL_UINT32_T
+#ifndef CLASP_UINT32_T
 #define HAVE_UINT32_T 1
-#define BRCL_UINT32_T uint32_t
+#define CLASP_UINT32_T uint32_t
 #endif
 #endif
 
@@ -130,23 +130,23 @@ Used in:  BRCL_LONG_LONG
  * long integer implementation, when 30-bit digits are enabled.
  */
 #if (defined UINT64_MAX || defined uint64_t)
-#ifndef BRCL_UINT64_T
+#ifndef CLASP_UINT64_T
 #define HAVE_UINT64_T 1
-#define BRCL_UINT64_T uint64_t
+#define CLASP_UINT64_T uint64_t
 #endif
 #endif
 
 /* Signed variants of the above */
 #if (defined INT32_MAX || defined int32_t)
-#ifndef BRCL_INT32_T
+#ifndef CLASP_INT32_T
 #define HAVE_INT32_T 1
-#define BRCL_INT32_T int32_t
+#define CLASP_INT32_T int32_t
 #endif
 #endif
 #if (defined INT64_MAX || defined int64_t)
-#ifndef BRCL_INT64_T
+#ifndef CLASP_INT64_T
 #define HAVE_INT64_T 1
-#define BRCL_INT64_T int64_t
+#define CLASP_INT64_T int64_t
 #endif
 #endif
 
@@ -181,8 +181,8 @@ typedef unsigned long   Brcl_uintptr_t;
 typedef long            Brcl_intptr_t;
 
 #elif defined(HAVE_LONG_LONG) && (SIZEOF_VOID_P <= SIZEOF_LONG_LONG)
-typedef unsigned BRCL_LONG_LONG   Brcl_uintptr_t;
-typedef BRCL_LONG_LONG            Brcl_intptr_t;
+typedef unsigned CLASP_LONG_LONG   Brcl_uintptr_t;
+typedef CLASP_LONG_LONG            Brcl_intptr_t;
 
 #else
 #   error "BridgeCommonLisp needs a typedef for Brcl_uintptr_t in pyport.h."
@@ -206,21 +206,21 @@ typedef Brcl_intptr_t     Brcl_ssize_t;
    definition for C89, due to the way signed->unsigned
    conversion is defined. */
 #ifdef SIZE_MAX
-#define BRCL_SIZE_MAX SIZE_MAX
+#define CLASP_SIZE_MAX SIZE_MAX
 #else
-#define BRCL_SIZE_MAX ((size_t)-1)
+#define CLASP_SIZE_MAX ((size_t)-1)
 #endif
 
 /* Largest positive value of type Brcl_ssize_t. */
-#define BRCL_SSIZE_T_MAX ((Brcl_ssize_t)(((size_t)-1)>>1))
+#define CLASP_SSIZE_T_MAX ((Brcl_ssize_t)(((size_t)-1)>>1))
 /* Smallest negative value of type Brcl_ssize_t. */
-#define BRCL_SSIZE_T_MIN (-BRCL_SSIZE_T_MAX-1)
+#define CLASP_SSIZE_T_MIN (-BRCL_SSIZE_T_MAX-1)
 
 #if SIZEOF_PID_T > SIZEOF_LONG
 #   error "BridgeCommonLisp doesn't support sizeof(pid_t) > sizeof(long)"
 #endif
 
-/* BRCL_FORMAT_SIZE_T is a platform-specific modifier for use in a printf
+/* CLASP_FORMAT_SIZE_T is a platform-specific modifier for use in a printf
  * format to convert an argument with the width of a size_t or Brcl_ssize_t.
  * C99 introduced "z" for this purpose, but not all platforms support that;
  * e.g., MS compilers use "I" instead.
@@ -238,35 +238,35 @@ typedef Brcl_intptr_t     Brcl_ssize_t;
  * example,
  *
  *     Brcl_ssize_t index;
- *     fprintf(stderr, "index %" BRCL_FORMAT_SIZE_T "d sucks\n", index);
+ *     fprintf(stderr, "index %" CLASP_FORMAT_SIZE_T "d sucks\n", index);
  *
  * That will expand to %ld, or %Id, or to something else correct for a
  * Brcl_ssize_t on the platform.
  */
-#ifndef BRCL_FORMAT_SIZE_T
+#ifndef CLASP_FORMAT_SIZE_T
 #   if SIZEOF_SIZE_T == SIZEOF_INT && !defined(__APPLE__)
-#       define BRCL_FORMAT_SIZE_T ""
+#       define CLASP_FORMAT_SIZE_T ""
 #   elif SIZEOF_SIZE_T == SIZEOF_LONG
-#       define BRCL_FORMAT_SIZE_T "l"
+#       define CLASP_FORMAT_SIZE_T "l"
 #   elif defined(MS_WINDOWS)
-#       define BRCL_FORMAT_SIZE_T "I"
+#       define CLASP_FORMAT_SIZE_T "I"
 #   else
-#       error "This platform's pyconfig.h needs to define BRCL_FORMAT_SIZE_T"
+#       error "This platform's pyconfig.h needs to define CLASP_FORMAT_SIZE_T"
 #   endif
 #endif
 
-/* BRCL_FORMAT_LONG_LONG is analogous to BRCL_FORMAT_SIZE_T above, but for
+/* CLASP_FORMAT_LONG_LONG is analogous to BRCL_FORMAT_SIZE_T above, but for
  * the long long type instead of the size_t type.  It's only available
  * when HAVE_LONG_LONG is defined. The "high level" BridgeCommonLisp format
  * functions listed above will interpret "lld" or "llu" correctly on
  * all platforms.
  */
 #ifdef HAVE_LONG_LONG
-#   ifndef BRCL_FORMAT_LONG_LONG
+#   ifndef CLASP_FORMAT_LONG_LONG
 #       if defined(MS_WIN64) || defined(MS_WINDOWS)
-#           define BRCL_FORMAT_LONG_LONG "I64"
+#           define CLASP_FORMAT_LONG_LONG "I64"
 #       else
-#           error "This platform's pyconfig.h needs to define BRCL_FORMAT_LONG_LONG"
+#           error "This platform's pyconfig.h needs to define CLASP_FORMAT_LONG_LONG"
 #       endif
 #   endif
 #endif
@@ -277,7 +277,7 @@ typedef Brcl_intptr_t     Brcl_ssize_t;
  * Brcl_LOCAL_INLINE does the same thing, and also explicitly requests inlining,
  * for platforms that support that.
  *
- * If BRCL_LOCAL_AGGRESSIVE is defined before python.h is included, more
+ * If CLASP_LOCAL_AGGRESSIVE is defined before python.h is included, more
  * "aggressive" inlining/optimizaion is enabled for the entire module.  This
  * may lead to code bloat, and may slow things down for those reasons.  It may
  * also lead to errors, if the code relies on pointer aliasing.  Use with
@@ -291,7 +291,7 @@ typedef Brcl_intptr_t     Brcl_ssize_t;
 #undef USE_INLINE /* XXX - set via configure? */
 
 #if defined(_MSC_VER)
-#if defined(BRCL_LOCAL_AGGRESSIVE)
+#if defined(CLASP_LOCAL_AGGRESSIVE)
 /* enable more aggressive optimization for visual studio */
 #pragma optimize("agtw", on)
 #endif
@@ -543,14 +543,14 @@ extern "C" {
  *  If your FPU isn't already set to 53-bit precision/round-half-to-even, and
  *  you want to make use of _Brcl_dg_strtod and _Brcl_dg_dtoa, then you should
  *
- *     #define HAVE_BRCL_SET_53BIT_PRECISION 1
+ *     #define HAVE_CLASP_SET_53BIT_PRECISION 1
  *
  *  and also give appropriate definitions for the following three macros:
  *
- *    _BRCL_SET_53BIT_PRECISION_START : store original FPU settings, and
+ *    _CLASP_SET_53BIT_PRECISION_START : store original FPU settings, and
  *        set FPU to 53-bit precision/round-half-to-even
- *    _BRCL_SET_53BIT_PRECISION_END : restore original FPU settings
- *    _BRCL_SET_53BIT_PRECISION_HEADER : any variable declarations needed to
+ *    _CLASP_SET_53BIT_PRECISION_END : restore original FPU settings
+ *    _CLASP_SET_53BIT_PRECISION_HEADER : any variable declarations needed to
  *        use the two macros above.
  *
  * The macros are designed to be used within a single C function: see
@@ -559,7 +559,7 @@ extern "C" {
 
 /* get and set x87 control word for gcc/x86 */
 #ifdef HAVE_GCC_ASM_FOR_X87
-#define HAVE_BRCL_SET_53BIT_PRECISION 1
+#define HAVE_CLASP_SET_53BIT_PRECISION 1
 /* _Brcl_get/set_387controlword functions are defined in BridgeCommonLisp/pymath.c */
 #define _Brcl_SET_53BIT_PRECISION_HEADER                          \
     unsigned short old_387controlword, new_387controlword
@@ -576,7 +576,7 @@ extern "C" {
 #endif
 
 /* default definitions are empty */
-#ifndef HAVE_BRCL_SET_53BIT_PRECISION
+#ifndef HAVE_CLASP_SET_53BIT_PRECISION
 #define _Brcl_SET_53BIT_PRECISION_HEADER
 #define _Brcl_SET_53BIT_PRECISION_START
 #define _Brcl_SET_53BIT_PRECISION_END
@@ -597,14 +597,14 @@ extern "C" {
 #if !defined(DOUBLE_IS_LITTLE_ENDIAN_IEEE754) && \
     !defined(DOUBLE_IS_BIG_ENDIAN_IEEE754) && \
     !defined(DOUBLE_IS_ARM_MIXED_ENDIAN_IEEE754)
-#define BRCL_NO_SHORT_FLOAT_REPR
+#define CLASP_NO_SHORT_FLOAT_REPR
 #endif
 
 /* double rounding is symptomatic of use of extended precision on x86.  If
    we're seeing double rounding, and we don't have any mechanism available for
    changing the FPU rounding precision, then don't use BridgeCommonLisp/dtoa.c. */
-#if defined(X87_DOUBLE_ROUNDING) && !defined(HAVE_BRCL_SET_53BIT_PRECISION)
-#define BRCL_NO_SHORT_FLOAT_REPR
+#if defined(X87_DOUBLE_ROUNDING) && !defined(HAVE_CLASP_SET_53BIT_PRECISION)
+#define CLASP_NO_SHORT_FLOAT_REPR
 #endif
 
 /* Brcl_DEPRECATED(version)
@@ -692,16 +692,16 @@ extern int fdatasync(int);
 #ifdef __FreeBSD__
 #include <osreldate.h>
 #if __FreeBSD_version > 500039
-# define _BRCL_PORT_CTYPE_UTF8_ISSUE
+# define _CLASP_PORT_CTYPE_UTF8_ISSUE
 #endif
 #endif
 
 
 #if defined(__APPLE__)
-# define _BRCL_PORT_CTYPE_UTF8_ISSUE
+# define _CLASP_PORT_CTYPE_UTF8_ISSUE
 #endif
 
-#ifdef _BRCL_PORT_CTYPE_UTF8_ISSUE
+#ifdef _CLASP_PORT_CTYPE_UTF8_ISSUE
 #include <ctype.h>
 #include <wctype.h>
 #undef isalnum

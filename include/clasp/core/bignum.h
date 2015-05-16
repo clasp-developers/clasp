@@ -197,34 +197,34 @@ namespace core
     }
 
 
-    inline Integer_sp _brcl_big_floor(Bignum_sp a, Bignum_sp b, Real_sp* rP){
+    inline Integer_sp _clasp_big_floor(Bignum_sp a, Bignum_sp b, Real_sp* rP){
 	Integer_mv res_mv = big_floor(a,b);
 	*rP = Real_sp(res_mv.valueGet(1));
 	return res_mv;
     };
 
-    inline Integer_sp _brcl_big_ceiling(Bignum_sp a, Bignum_sp b, Real_sp* rP) {
+    inline Integer_sp _clasp_big_ceiling(Bignum_sp a, Bignum_sp b, Real_sp* rP) {
 	Integer_mv res_mv = big_ceiling(a,b);
 	*rP = Real_sp(res_mv.valueGet(1));
 	return res_mv;
     }
 
-    inline double _brcl_big_to_double(Bignum_sp a) {
+    inline double _clasp_big_to_double(Bignum_sp a) {
 	return a->as_double_();
     }
 
     void clasp_big_register_free(Bignum_sp x);
 
-    Integer_sp _brcl_fix_divided_by_big(const Fixnum& x, const Bignum& y);
-    Integer_sp _brcl_big_divided_by_fix(const Bignum& x, const Fixnum& y);
-    Integer_sp _brcl_big_divided_by_big(const Bignum& x, const Bignum& y);
+    Integer_sp _clasp_fix_divided_by_big(const Fixnum& x, const Bignum& y);
+    Integer_sp _clasp_big_divided_by_fix(const Bignum& x, const Fixnum& y);
+    Integer_sp _clasp_big_divided_by_big(const Bignum& x, const Bignum& y);
 
-    Integer_sp _brcl_big_gcd(Bignum_sp x, Bignum_sp y);
+    Integer_sp _clasp_big_gcd(Bignum_sp x, Bignum_sp y);
 
 
-#define BRCL_BIGNUM_SIZE(x) ((x)->_mp_size)
-#define BRCL_BIGNUM_ABS_SIZE(x) \
-	(BRCL_BIGNUM_SIZE(x)<0? -BRCL_BIGNUM_SIZE(x) : BRCL_BIGNUM_SIZE(x))
+#define CLASP_BIGNUM_SIZE(x) ((x)->_mp_size)
+#define CLASP_BIGNUM_ABS_SIZE(x) \
+	(CLASP_BIGNUM_SIZE(x)<0? -CLASP_BIGNUM_SIZE(x) : CLASP_BIGNUM_SIZE(x))
 
 };
 

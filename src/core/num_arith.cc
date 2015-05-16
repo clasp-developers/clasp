@@ -54,7 +54,7 @@ namespace core {
 
 
     SYMBOL_EXPORT_SC_(CorePkg,integer_divide);
-    Integer_sp brcl_integer_divide(Integer_sp x, Integer_sp y)
+    Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y)
     {
 	NumberType tx, ty;
 	tx = clasp_t_of(x);
@@ -63,18 +63,18 @@ namespace core {
 	    if (ty == number_Fixnum) {
 		if (y.unsafe_fixnum() == 0)
 		    ERROR_DIVISION_BY_ZERO(x,y);
-		return (brcl_make_fixnum(clasp_fixnum(x) / clasp_fixnum(y)));
+		return (clasp_make_fixnum(clasp_fixnum(x) / clasp_fixnum(y)));
 	    } else if (ty == number_Bignum) {
-		return _brcl_fix_divided_by_big(clasp_fixnum(x), gc::As<Bignum_sp>(y)->get());
+		return _clasp_fix_divided_by_big(clasp_fixnum(x), gc::As<Bignum_sp>(y)->get());
 	    } else {
 		ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide,2,y,cl::_sym_Integer_O);
 	    }
 	}
 	if (tx == number_Bignum) {
 	    if (ty == number_Bignum) {
-		return _brcl_big_divided_by_big(gc::As<Bignum_sp>(x)->get(), gc::As<Bignum_sp>(y)->get());
+		return _clasp_big_divided_by_big(gc::As<Bignum_sp>(x)->get(), gc::As<Bignum_sp>(y)->get());
 	    } else if (ty == number_Fixnum) {
-		return _brcl_big_divided_by_fix(gc::As<Bignum_sp>(x)->get(), clasp_fixnum(y));
+		return _clasp_big_divided_by_fix(gc::As<Bignum_sp>(x)->get(), clasp_fixnum(y));
 	    } else {
 		QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Integer_O);
 	    }
@@ -93,21 +93,21 @@ namespace core {
     Integer_sp cl_gcd(List_sp nums)
     {_G();
 	if (nums.nilp())
-	    return brcl_make_fixnum(0);
-	/* INV: brcl_gcd() checks types */
+	    return clasp_make_fixnum(0);
+	/* INV: clasp_gcd() checks types */
 	Integer_sp gcd = gc::As<Integer_sp>(oCar(nums));
 	nums = oCdr(nums);
 	if (nums.nilp()) {
 	    return (clasp_minusp(gcd) ? gc::As<Integer_sp>(clasp_negate(gcd)) : gcd);
 	}
 	while (nums.consp()) {
-	    gcd = brcl_gcd(gcd, gc::As<Integer_sp>(oCar(nums)));
+	    gcd = clasp_gcd(gcd, gc::As<Integer_sp>(oCar(nums)));
 	    nums = oCdr(nums);
 	}
 	return gcd;
     }
 
-    Integer_sp brcl_gcd(Integer_sp x, Integer_sp y, int yidx)
+    Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx)
     {
 	switch (clasp_t_of(x)) {
 	case number_Fixnum: {
@@ -129,7 +129,7 @@ namespace core {
 	default:
 	    QERROR_WRONG_TYPE_NTH_ARG(1+yidx,y,cl::_sym_Integer_O);
         }
-        return _brcl_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y));
+        return _clasp_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y));
     }
 
 
@@ -143,8 +143,8 @@ namespace core {
     Integer_sp cl_lcm(List_sp nums)
     {_G();
 	if (nums.nilp())
-	    return brcl_make_fixnum(1);
-	/* INV: brcl_gcd() checks types. By placing `numi' before `lcm' in
+	    return clasp_make_fixnum(1);
+	/* INV: clasp_gcd() checks types. By placing `numi' before `lcm' in
 	   this call, we make sure that errors point to `numi' */
 	Integer_sp lcm = gc::As<Integer_sp>(oCar(nums));
 	int yidx=1;
@@ -153,10 +153,10 @@ namespace core {
 	    Integer_sp numi = gc::As<Integer_sp>(oCar(nums));
 	    nums = oCdr(nums);
 	    yidx++;
-	    Number_sp t = brcl_times(lcm, numi);
-	    Number_sp g = brcl_gcd(numi, lcm);
+	    Number_sp t = clasp_times(lcm, numi);
+	    Number_sp g = clasp_gcd(numi, lcm);
 	    if (!clasp_zerop(g)) {
-		lcm = gc::As<Integer_sp>(brcl_divide(t, g));
+		lcm = gc::As<Integer_sp>(clasp_divide(t, g));
 	    }
 	}
 	return clasp_minusp(lcm) ? gc::As<Integer_sp>(clasp_negate(lcm)) : gc::As<Integer_sp>(lcm);

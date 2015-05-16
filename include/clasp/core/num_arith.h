@@ -34,8 +34,8 @@ THE SOFTWARE.
 namespace core {
 
 
-    Integer_sp brcl_gcd(Integer_sp x, Integer_sp y, int yidx=1);
-    Integer_sp brcl_integer_divide(Integer_sp x, Integer_sp y);
+    Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx=1);
+    Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y);
 
     void initialize_num_arith();
 

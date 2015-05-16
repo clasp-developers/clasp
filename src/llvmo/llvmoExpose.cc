@@ -3000,7 +3000,7 @@ namespace llvmo
     APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value)
     {_G();
         GC_ALLOCATE(APFloat_O,self );
-	self->_value = llvm::APFloat(value->get());
+	self->_value = llvm::APFloat(unbox_single_float(value));
 	return self;
     };
 

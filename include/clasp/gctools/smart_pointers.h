@@ -111,7 +111,8 @@ namespace gctools {
 	//
 	// Make a tagged fixnum
 	inline static smart_ptr<Type> make_tagged_fixnum(Fixnum val) {return smart_ptr<Type>((Tagged)tag_fixnum<Type*>(val));};
-	inline static smart_ptr<Type> make_tagged_single_float(float val) {THROW_HARD_ERROR(BF("Implement make_tagged_single_float"));};
+	inline static smart_ptr<Type> make_tagged_character(claspCharacter val) {return smart_ptr<Type>((Tagged)tag_character<Type*>(val));};
+	inline static smart_ptr<Type> make_tagged_single_float(float val) {return smart_ptr<Type>((Tagged)tag_single_float<Type*>(val));}
 	inline static smart_ptr<Type> make_tagged_other(Type* p) {return smart_ptr<Type>(p);}
 	inline static smart_ptr<Type> make_tagged_nil() {return smart_ptr<Type>((Tagged)reinterpret_cast<Type*>(global_Symbol_OP_nil));};
 	inline static smart_ptr<Type> make_tagged_unbound() {return smart_ptr<Type>((Tagged)reinterpret_cast<Type*>(global_Symbol_OP_unbound));};
@@ -535,8 +536,9 @@ namespace gctools {
 
  
 namespace core {
-
     typedef gctools::smart_ptr<Fixnum_I> Fixnum_sp;
+    typedef gctools::smart_ptr<SingleFloat_I> SingleFloat_sp;
+    typedef gctools::smart_ptr<Character_I> Character_sp;
 };
 
 
