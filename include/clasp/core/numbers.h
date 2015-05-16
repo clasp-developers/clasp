@@ -1183,7 +1183,7 @@ namespace core {
 	if (num.fixnump()) {
 	    return immediate_fixnum<Number_O>(std::abs(num.unsafe_fixnum()));
 	} else if (num.single_floatp()) {
-	    return immediate_fixnum<Number_O>(std::fabs(num.unsafe_single_float()));
+	    return immediate_single_float<Number_O>(std::fabs(num.unsafe_single_float()));
 	}
 	return num->abs_();
     }

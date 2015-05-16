@@ -417,6 +417,10 @@ extern "C" {
 		printf("NIL\n");
 	    } else if ( obj.fixnump() ) {
 		printf("fixnum_tag: %ld\n", obj.unsafe_fixnum());
+	    } else if ( obj.single_floatp() ) {
+		printf("single-float: %f\n", obj.unsafe_single_float());
+	    } else if ( obj.characterp() ) {
+		printf("character: %d #\\%c\n", obj.unsafe_character(), obj.unsafe_character());
 	    } else if ( obj.otherp() ) {
 		printf("other_tag: %p  typeid: %s\n", &(*obj), typeid(obj).name() );
 		printf("More info:\n");

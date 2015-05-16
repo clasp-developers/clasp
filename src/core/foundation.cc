@@ -814,6 +814,14 @@ namespace core
             stringstream ss;
             ss << obj.unsafe_fixnum();
             return ss.str();
+	} else if ( obj.characterp() ) {
+	    stringstream ss;
+	    ss << "#\\" << (char)obj.unsafe_character();
+	    return ss.str();
+	} else if ( obj.single_floatp() ) {
+	    stringstream ss;
+	    ss << obj.unsafe_single_float();
+	    return ss.str();
         } else if ( obj.framep() ) {
 	    return "StackFrame";
 	} else if ( !obj ) {
