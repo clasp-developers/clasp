@@ -177,7 +177,7 @@ StrWithFillPtr_sp &StringOutputStreamOutputString(T_sp strm) {
   return sout->_Contents;
 }
 
-int &StringFillp(StrWithFillPtr_sp s) {
+Fixnum &StringFillp(StrWithFillPtr_sp s) {
   StrWithFillPtr_sp ss = gc::As<StrWithFillPtr_sp>(s);
   return ss->_FillPointer;
 }
@@ -4680,6 +4680,12 @@ clasp_peek_char(T_sp strm) {
 void writestr_stream(const char *s, T_sp strm) {
   while (*s != '\0')
     clasp_write_char(*s++, strm);
+}
+
+void clasp_write_addr(T_sp x, T_sp strm) {
+  stringstream ss;
+  ss << (void*)x.raw_();
+  writestr_stream(ss.str().c_str(), strm);
 }
 
 static cl_index

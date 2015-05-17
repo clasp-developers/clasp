@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
+#include <clasp/core/character.fwd.h>
 #include <clasp/core/lispString.h>
 
 namespace core {
@@ -88,6 +89,8 @@ public:
     this->_Contents.swap(temp);
   };
   virtual T_sp asetUnsafe(int j, T_sp val);
+  virtual T_sp aref_unsafe(cl_index index) const { return clasp_make_character(this->_Contents[index]);};
+
   gctools::gcstring &contents() { return this->_Contents; };
   string __repr__() const;
   uint countOccurances(const string &chars);

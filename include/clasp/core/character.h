@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <clasp/core/character.fwd.h>
 namespace core {
 claspChar clasp_as_char(Character_sp c);
-Character_sp clasp_make_character(claspCharacter c);
 Character_sp clasp_make_standard_character(claspCharacter c);
 inline claspCharacter unbox_character(Character_sp c) {
   return c.unsafe_character();

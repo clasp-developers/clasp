@@ -49,6 +49,7 @@ local sources =
       load.cc
 	    bignum.cc
       write_object.cc
+      write_array.cc
       print.cc
 	    sourceFileInfo.cc
 		symbolToEnumConverter.cc

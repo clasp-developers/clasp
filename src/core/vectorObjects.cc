@@ -171,13 +171,13 @@ string VectorObjects_O::__repr__() const {
   return ss.str();
 }
 
-void VectorObjects_O::rowMajorAset(int idx, T_sp value) {
+void VectorObjects_O::rowMajorAset(cl_index idx, T_sp value) {
   _G();
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
   this->_Values[idx] = value;
 }
 
-T_sp VectorObjects_O::rowMajorAref(int idx) const {
+T_sp VectorObjects_O::rowMajorAref(cl_index idx) const {
   _G();
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
   return this->_Values[idx];

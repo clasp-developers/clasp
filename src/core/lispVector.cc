@@ -136,6 +136,22 @@ List_sp Vector_O::arrayDimensions() const {
   return Cons_O::create(make_fixnum(this->dimension()), _Nil<T_O>());
 }
 
+T_sp Vector_O::aref(List_sp args) const
+{
+  cl_index idx = this->index(args);
+  return this->rowMajorAref(idx);
+}
+
+T_sp Vector_O::setf_aref(List_sp args_val)
+{
+  List_sp cons_val;
+  cl_index idx = this->index_val(args_val,true,cons_val);
+  this->rowMajorAset(idx,oCar(cons_val));
+  return oCar(cons_val);
+}
+
+
+
 T_sp Vector_O::reverse() {
   _OF();
   int thisLength = this->length();

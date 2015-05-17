@@ -99,7 +99,7 @@ void ArrayDisplaced_O::initialize() {
   this->_ElementType = cl::_sym_T_O;
 }
 
-void ArrayDisplaced_O::rowMajorAset(int idx, T_sp value) {
+void ArrayDisplaced_O::rowMajorAset(cl_index idx, T_sp value) {
   _G();
   this->_Array->rowMajorAset(this->_DisplacedIndexOffset + idx, value);
 }
@@ -110,7 +110,7 @@ T_sp ArrayDisplaced_O::asetUnsafe(int idx, T_sp value) {
   return value;
 }
 
-T_sp ArrayDisplaced_O::rowMajorAref(int idx) const {
+T_sp ArrayDisplaced_O::rowMajorAref(cl_index idx) const {
   _G();
   return ((this->_Array->rowMajorAref(idx + this->_DisplacedIndexOffset)));
 };

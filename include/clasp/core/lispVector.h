@@ -62,6 +62,9 @@ public:  // Functions here
 
   virtual void swapElements(uint idx1, uint idx2) { SUBIMP(); };
 
+  /*! For write_array */
+  virtual std::vector<cl_index> dimensions() const {SUBIMP();};
+
   virtual size_t elementSizeInBytes() const { SUBIMP(); }
   virtual T_sp elementType() const { SUBIMP(); }
   virtual int rank() const { return 1; };
@@ -72,13 +75,18 @@ public:  // Functions here
   virtual T_sp vectorPush(T_sp newElement) { SUBIMP(); };
   virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 1) { SUBIMP(); };
 
-  virtual int fillPointer() const { SUBIMP(); };
+  virtual cl_index fillPointer() const { SUBIMP(); };
   virtual void setFillPointer(size_t idx) { SUBIMP(); };
 
   virtual void *addressOfBuffer() const { SUBIMP(); };
 
-  virtual T_sp rowMajorAref(int idx) const { return this->elt(idx); };
-  virtual void rowMajorAset(int idx, T_sp value) { this->setf_elt(idx, value); };
+  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp setf_aref(List_sp indices_val);
+
+  virtual T_sp rowMajorAref(cl_index idx) const { return this->elt(idx); };
+  virtual void rowMajorAset(cl_index idx, T_sp value) { this->setf_elt(idx, value); };
+
+  virtual void __write__(T_sp strm) const;
 
   INHERIT_SEQUENCE virtual uint length() const { return this->dimension(); };
   INHERIT_SEQUENCE virtual T_sp reverse();

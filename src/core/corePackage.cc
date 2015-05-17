@@ -130,6 +130,7 @@ SYMBOL_EXPORT_SC_(ClPkg, arrayTotalSizeLimit);
 SYMBOL_EXPORT_SC_(ClPkg, lambdaParametersLimit);
 SYMBOL_EXPORT_SC_(ClPkg, schar);
 SYMBOL_EXPORT_SC_(ClPkg, fixnum);
+SYMBOL_EXPORT_SC_(ClPkg, bit);
 SYMBOL_EXPORT_SC_(CorePkg, topLevel);
 SYMBOL_EXPORT_SC_(CorePkg, scharSet);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugInterpretedClosureSTAR);
@@ -960,7 +961,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   SYMBOL_SC_(CorePkg, cl_fixnum_bits);
   _sym_cl_fixnum_bits->defconstant(make_fixnum((int)(sizeof(int) / 8)));
   SYMBOL_EXPORT_SC_(ClPkg, array_rank_limit);
-  cl::_sym_array_rank_limit->defconstant(make_fixnum(8));
+  cl::_sym_array_rank_limit->defconstant(make_fixnum(CLASP_ARRAY_RANK_LIMIT));
   SYMBOL_EXPORT_SC_(ClPkg, char_code_limit);
   cl::_sym_char_code_limit->defconstant(make_fixnum(CHAR_CODE_LIMIT));
   cl::_sym_STARgensym_counterSTAR->defparameter(make_fixnum(0));

@@ -47,6 +47,9 @@ class BitVector_O : public Vector_O {
 public:
   bool bitVectorP() const { return true; };
   virtual int offset() const { return 0; }; // displaced arrays?  used in bits.cc
+  virtual void __write__(T_sp strm) const;
+  virtual uint testBit(uint i) const {SUBIMP();};
+
   explicit BitVector_O() : Vector_O(){};
   virtual ~BitVector_O(){};
 };
@@ -70,6 +73,7 @@ public:
 
   void getOnIndices(vector<uint> &vals);
   void setOnIndices(const vector<uint> &indices);
+
 
   bool equal(T_sp bv) const;
 
@@ -114,9 +118,10 @@ public:
     virtual T_sp setElementObject(uint index, T_sp val);
 #endif
 
-  virtual void rowMajorAset(int idx, T_sp value);
-  virtual T_sp rowMajorAref(int idx) const;
+  virtual void rowMajorAset(cl_index idx, T_sp value);
+  virtual T_sp rowMajorAref(cl_index idx) const;
 
+  virtual T_sp elementType() const { return cl::_sym_bit;};
   explicit SimpleBitVector_O() : BitVector_O(){};
   SimpleBitVector_O(const SimpleBitVector_O &bv);
   virtual ~SimpleBitVector_O(){};

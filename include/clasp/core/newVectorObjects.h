@@ -77,8 +77,8 @@ public: // Functions here
   bool adjustableArrayP() const { return this->_Adjustable; };
 
   uint dimension() const { return this->_Values->size(); };
-  virtual void rowMajorAset(int idx, T_sp value);
-  virtual T_sp rowMajorAref(int idx) const;
+  virtual void rowMajorAset(cl_index idx, T_sp value);
+  virtual T_sp rowMajorAref(cl_index idx) const;
   virtual int arrayRowMajorIndex(List_sp indices) const;
 
   T_sp &operator[](uint index) { return (*this->_Values)[index]; }

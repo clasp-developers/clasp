@@ -43,10 +43,10 @@ public:
   virtual ~VectorObjectsWithFillPtr_O(){};
 
 private: // instance variables here
-  int _FillPtr;
+  cl_index _FillPtr;
 
 public:
-  static VectorObjectsWithFillPtr_sp make(T_sp initial_element, T_sp initial_values, int dimension, int fillPtr, bool adjustable);
+  static VectorObjectsWithFillPtr_sp make(T_sp initial_element, T_sp initial_values, int dimension, cl_index fillPtr, bool adjustable);
 
 public: // Functions here
   uint length() const { return this->_FillPtr; };
@@ -59,8 +59,8 @@ public: // Functions here
 
   string __repr__() const;
 
-  int fillPointer() const { return this->_FillPtr; };
-  void setf_fillPointer(int fp);
+  cl_index fillPointer() const { return this->_FillPtr; };
+  void setf_fillPointer(cl_index fp);
 
   T_sp vectorPush(T_sp newElement);
   Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 16);

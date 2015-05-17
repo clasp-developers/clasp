@@ -46,7 +46,9 @@ EXPOSE_CLASS(core, ArrayObjects_O);
   GC_ALLOCATE(ArrayObjects_O, array);
   array->_ElementType = elementType;
   List_sp dim;
-  if (cl_atom(dim_desig)) {
+  if (dim_desig.nilp()) {
+    dim = dim_desig;
+  } else if (cl_atom(dim_desig)) {
     int idim = clasp_to_int(gc::As<Integer_sp>(dim_desig));
     dim = Cons_O::create(make_fixnum(idim));
   } else {
@@ -93,7 +95,7 @@ void ArrayObjects_O::initialize() {
   this->_ElementType = cl::_sym_T_O;
 }
 
-void ArrayObjects_O::rowMajorAset(int idx, T_sp value) {
+void ArrayObjects_O::rowMajorAset(cl_index idx, T_sp value) {
   _G();
   ASSERTF(idx < this->_Values.size(), BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size());
   this->_Values[idx] = value;
@@ -105,7 +107,7 @@ T_sp ArrayObjects_O::asetUnsafe(int idx, T_sp value) {
   return value;
 }
 
-T_sp ArrayObjects_O::rowMajorAref(int idx) const {
+T_sp ArrayObjects_O::rowMajorAref(cl_index idx) const {
   _G();
   ASSERTF(idx < this->_Values.size(), BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size());
   return ((this->_Values[idx]));
@@ -127,7 +129,6 @@ T_sp ArrayObjects_O::setf_aref(List_sp indices_val) {
 }
 
 T_sp ArrayObjects_O::shallowCopy() const {
-  _OF();
   GC_ALLOCATE(ArrayObjects_O, array);
   array->_Dimensions = this->_Dimensions;
   array->_ElementType = this->_ElementType;
@@ -176,7 +177,11 @@ T_sp ArrayObjects_O::setf_svref(int index, T_sp value) {
 LongLongInt ArrayObjects_O::setDimensions(List_sp dim, T_sp initialElement) {
   _OF();
   LongLongInt elements = 1;
-  this->_Dimensions.resize(cl_length(dim));
+  int newRank = cl_length(dim);
+  if ( newRank >= CLASP_ARRAY_RANK_LIMIT ) {
+    SIMPLE_ERROR(BF("Maximum rank is %d") % CLASP_ARRAY_RANK_LIMIT);
+  }
+  this->_Dimensions.resize(newRank);
   int idx = 0;
   for (; dim.notnilp(); dim = oCdr(dim)) {
     int oneDim = clasp_to_int(gc::As<Rational_sp>(oCar(dim)));

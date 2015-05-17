@@ -72,17 +72,18 @@ SimpleBitVector_O::SimpleBitVector_O(const SimpleBitVector_O &bv) : BitVector_O(
 // Destructor
 //
 
-void SimpleBitVector_O::rowMajorAset(int idx, T_sp value) {
+void SimpleBitVector_O::rowMajorAset(cl_index idx, T_sp value) {
   _G();
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
-  this->setBit(idx, value.isTrue());
+  Fixnum_sp fn = gc::As<Fixnum_sp>(value);
+  this->setBit(idx, fn.unsafe_fixnum());
 }
 
-T_sp SimpleBitVector_O::rowMajorAref(int idx) const {
+T_sp SimpleBitVector_O::rowMajorAref(cl_index idx) const {
   _G();
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
   uint val = this->testBit(idx);
-  return (val != 0) ? _lisp->_true() : _Nil<T_O>();
+  return (val != 0) ? clasp_make_fixnum(1) : clasp_make_fixnum(0);
 }
 
 void SimpleBitVector_O::getOnIndices(vector<uint> &res) {

@@ -49,7 +49,7 @@ EXPOSE_CLASS(core, VectorObjectsWithFillPtr_O);
 #define ARGS_VectorObjectsWithFillPtr_O_make "(initial-element initial-contents dimension fillptr adjustable)"
 #define DECL_VectorObjectsWithFillPtr_O_make ""
 #define DOCS_VectorObjectsWithFillPtr_O_make "make VectorObjectsWithFillPtr args: initial-element initial-contents dimension"
-VectorObjectsWithFillPtr_sp VectorObjectsWithFillPtr_O::make(T_sp initialElement, T_sp initialContents, int dimension, int fillPtr, bool adjustable) {
+VectorObjectsWithFillPtr_sp VectorObjectsWithFillPtr_O::make(T_sp initialElement, T_sp initialContents, int dimension, Fixnum fillPtr, bool adjustable) {
   _G();
   GC_ALLOCATE(VectorObjectsWithFillPtr_O, vo);
   if (fillPtr < 0)
@@ -141,7 +141,7 @@ Fixnum_sp VectorObjectsWithFillPtr_O::vectorPushExtend(T_sp newElement, int exte
   return make_fixnum(idx);
 }
 
-void VectorObjectsWithFillPtr_O::setf_fillPointer(int fp) {
+void VectorObjectsWithFillPtr_O::setf_fillPointer(Fixnum fp) {
   _G();
   if (fp >= this->_Values.size())
     fp = this->_Values.size();

@@ -62,9 +62,11 @@ public: // Functions here
   virtual T_sp asetUnsafe(int j, T_sp val) { SUBIMP(); };
   virtual bool arrayHasFillPointerP() const { return false; };
   virtual int arrayTotalSize() const;
-
-  virtual void rowMajorAset(int idx, T_sp value) { SUBIMP(); };
-  virtual T_sp rowMajorAref(int idx) const { SUBIMP(); };
+  virtual T_sp aref_unsafe(cl_index index) const { SUBIMP(); };
+  /*! For write_array */
+  virtual std::vector<cl_index> dimensions() const {SUBIMP();};
+  virtual void rowMajorAset(cl_index idx, T_sp value) { SUBIMP(); };
+  virtual T_sp rowMajorAref(cl_index idx) const { SUBIMP(); };
   virtual int arrayRowMajorIndex(List_sp indices) const;
 
   //! Don't support adjustable arrays yet
@@ -81,12 +83,12 @@ public: // Functions here
 
   /*! Return the offset into a one-dimensional vector for the multidimensional index
       in the vector<int>s.  This is in rowMajor order.*/
-  int index_vector_int(const vector<int> &indices) const;
+  cl_index index_vector_int(const vector<int> &indices) const;
 
   /*! Return the offset into a one-dimensional vector for a multidimensional index
 	 If last_value_is_val == true then don't use the last value in the indices list
 	*/
-  int index_val(List_sp indices, bool last_value_is_val, List_sp &val_cons) const;
+  cl_index index_val(List_sp indices, bool last_value_is_val, List_sp &val_cons) const;
 
   /*! Return the offset into a one-dimensional vector for a multidimensional index
 	*/
@@ -135,6 +137,8 @@ public: // Functions here
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
+
+  virtual void __write__(T_sp strm) const;
 
   virtual string __repr__() const;
 };

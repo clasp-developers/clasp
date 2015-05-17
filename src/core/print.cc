@@ -41,9 +41,9 @@ THE SOFTWARE.
 
 namespace core {
 
-int clasp_print_base(void) {
+cl_index clasp_print_base(void) {
   T_sp object = cl::_sym_STARprint_baseSTAR->symbolValue();
-  int base;
+  cl_index base;
   if (!af_fixnumP(object) || (base = unbox_fixnum(gc::As<Fixnum_sp>(object))) < 2 || base > 36) {
     SIMPLE_ERROR(BF("The value of *PRINT-BASE*\n %s\n"
                     "is not of the expected type (INTEGER 2 36)") %
@@ -52,7 +52,7 @@ int clasp_print_base(void) {
   return base;
 }
 
-int clasp_print_level(void) {
+cl_index clasp_print_level(void) {
   T_sp object = cl::_sym_STARprint_levelSTAR->symbolValue();
   gctools::Fixnum level;
   if (object.nilp()) {
@@ -74,7 +74,7 @@ int clasp_print_level(void) {
   return level;
 }
 
-int clasp_print_length(void) {
+cl_index clasp_print_length(void) {
   T_sp object = cl::_sym_STARprint_lengthSTAR->symbolValue();
   gctools::Fixnum length;
   if (object.nilp()) {

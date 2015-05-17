@@ -153,8 +153,11 @@ void Array_O::initialize() {
 }
 
 Symbol_sp Array_O::element_type_as_symbol() const {
-  _G();
-  IMPLEMENT_MEF(BF("Mimic ECL array.d>>ecl_elttype_to_symbol"));
+// If this fails we need a different way of doing this
+  if ( this->elementType() == _lisp->_true() ) {
+    return cl::_sym_T;
+  }
+  SIMPLE_ERROR(BF("Handle more array types"));
 }
 
 #define ARGS_Array_O_aref "((self array) &rest indices)"
@@ -165,11 +168,11 @@ T_sp Array_O::aref(List_sp indices) const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
-int Array_O::index_vector_int(const vector<int> &indices) const {
-  int offset = 0;
-  int oneIndex = 0;
+cl_index Array_O::index_vector_int(const vector<int> &indices) const {
+  cl_index offset = 0;
+  cl_index oneIndex = 0;
   Cons_sp cur;
-  int idx = 0;
+  cl_index idx = 0;
   for (idx = 0; idx < this->rank(); ++idx) {
     if (idx > 0)
       offset *= this->arrayDimension(idx);
@@ -179,22 +182,22 @@ int Array_O::index_vector_int(const vector<int> &indices) const {
   return ((offset));
 }
 
-int Array_O::index_val(List_sp indices, bool last_value_is_val, List_sp &val_cons) const {
+cl_index Array_O::index_val(List_sp indices, bool last_value_is_val, List_sp &val_cons) const {
   _OF();
 #ifdef DEBUG_ON
   int indices_passed = cl_length(indices) - (last_value_is_val ? 1 : 0);
   ASSERTF(indices_passed == (int)this->rank(),
           BF("Wrong number of indices[%d] must match rank[%d]") % indices_passed % this->rank());
 #endif
-  int offset = 0;
-  int idx = 0;
+  cl_index offset = 0;
+  cl_index idx = 0;
   for (auto cur : indices) {
     if (oCdr(cur).nilp() && last_value_is_val) {
       val_cons = cur;
       break;
     }
-    int curDimension = this->arrayDimension(idx);
-    int oneIndex = clasp_to_int(gc::As<Rational_sp>(oCar(cur)));
+    cl_index curDimension = this->arrayDimension(idx);
+    cl_index oneIndex = clasp_to_int(gc::As<Rational_sp>(oCar(cur)));
     if (oneIndex >= curDimension) {
       SIMPLE_ERROR(BF("Bad index"));
     }
@@ -270,7 +273,7 @@ bool Array_O::equalp(T_sp other) const {
 
 string Array_O::__repr__() const {
   _G();
-  RecursivePrint rp(this->const_sharedThis<Array_O>());
+  RecursivePrint rp(this->asSmartPtr());
   rp.ss << "#" << this->rank() << "A(";
   rp.recurse(0);
   rp.ss << ")";

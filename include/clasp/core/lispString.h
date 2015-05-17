@@ -52,7 +52,7 @@ public:
 private: // instance variables here
 public:  // Functions here
   virtual int pushCharExtend(claspChar c, int extension = 0) { SUBIMP(); };
-  virtual int fillPointer() const { SUBIMP(); };
+  virtual cl_index fillPointer() const { SUBIMP(); };
 };
 
 }; /* core */

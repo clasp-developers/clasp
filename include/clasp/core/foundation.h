@@ -308,7 +308,6 @@ typedef std::size_t class_id;
 typedef unsigned int uint;
 typedef unsigned char byte;
 typedef size_t _Index; //
-typedef int cl_index;
 
 struct size_t_pair {
   size_t start;
@@ -924,6 +923,8 @@ typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
 #endif
 
 namespace core {
+
+typedef gctools::Fixnum cl_index;
 
 #define _NEW_(x) (new x)
 

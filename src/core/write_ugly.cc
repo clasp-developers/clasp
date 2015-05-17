@@ -418,6 +418,18 @@ void Integer_O::__write__(T_sp stream) const {
 
 #endif // working
 
+void
+_clasp_write_fixnum(gctools::Fixnum i, T_sp stream)
+{
+  StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
+  core_integerToString(buffer, 
+                       clasp_make_fixnum(i)
+                       , clasp_make_fixnum(clasp_print_base())
+                       , cl::_sym_STARprint_radixSTAR->symbolValue().isTrue()
+                       , true);
+  cl_writeSequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
+}
+
 void write_fixnum(T_sp strm, T_sp i) {
   Fixnum_sp fn = gc::As<Fixnum_sp>(i);
   StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);

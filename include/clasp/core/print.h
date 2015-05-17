@@ -35,9 +35,9 @@ THE SOFTWARE.
 
 namespace core {
 
-int clasp_print_base();
-int clasp_print_level();
-int clasp_print_length();
+cl_index clasp_print_base();
+cl_index clasp_print_level();
+cl_index clasp_print_length();
 bool clasp_print_radix();
 Symbol_sp clasp_print_case();
 bool clasp_print_gensym();

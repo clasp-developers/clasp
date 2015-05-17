@@ -46,12 +46,12 @@ class ArrayObjects_O : public Array_O {
 public:
   explicit ArrayObjects_O() : Base(){};
   virtual ~ArrayObjects_O(){};
-
+  friend void write_array_inner(bool, T_sp, T_sp );
 public:
   void initialize();
 
-GCPRIVATE: // instance variables here
-  vector<int> _Dimensions;
+ private: // instance variables here
+  vector<cl_index> _Dimensions;
   T_sp _ElementType;
   gctools::Vec0<T_sp> _Values;
 
@@ -62,12 +62,16 @@ public:
   virtual T_sp asetUnsafe(int j, T_sp val);
   T_sp elementType() const { return this->_ElementType; };
 
-  virtual void rowMajorAset(int idx, T_sp value);
-  virtual T_sp rowMajorAref(int idx) const;
+  virtual void rowMajorAset(cl_index idx, T_sp value);
+  virtual T_sp rowMajorAref(cl_index idx) const;
 
   virtual int rank() const { return this->_Dimensions.size(); };
 
+  /* Copy the dimensions for printing */
+  virtual std::vector<cl_index> dimensions() const { return this->_Dimensions; };
   virtual int arrayDimension(int axisNumber) const;
+  virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index];};
+
 
   LongLongInt setDimensions(List_sp dims, T_sp initialElement);
 

@@ -1,20 +1,38 @@
 (in-package "SYSTEM")
 (defun make-array (dimensions &key (element-type t)
-                                initial-element initial-contents adjustable fill-pointer displaced-to displaced-index-offset)
+                                initial-element 
+                                initial-contents 
+                                adjustable 
+                                fill-pointer 
+                                displaced-to
+                                displaced-index-offset)
   ;;  (when element-type (inform "Add support for element-type in make-array\n"))
   (if (and (consp element-type)
 	   (null initial-element)
 	   (eq (car element-type) 'cl:unsigned-byte))
       (setq initial-element 0))
   (cond
+    ((null dimensions)
+     (make-array-objects dimensions element-type initial-element adjustable))
     ((or (fixnump dimensions) (and (consp dimensions) (eql 1 (length dimensions))))
      (let ((dim (if (fixnump dimensions)
 		    dimensions
 		    (car dimensions))))
-       (make-vector element-type dim adjustable fill-pointer displaced-to displaced-index-offset initial-element initial-contents)))
+       (if displaced-to
+           (progn
+             (and adjustable (error "Displaced arrays don't support adjustable"))
+             (and fill-pointer (error "Displaced arrays don't support fill-pointer yet"))
+             (if (eq (array-element-type displaced-to) element-type)
+                 (make-array-displaced dimensions element-type displaced-to displaced-index-offset)
+                 (error "Cannot displace the array, because the element types don't match")))
+           (make-vector element-type dim adjustable fill-pointer displaced-to displaced-index-offset initial-element initial-contents))))
     ((consp dimensions)
      (and initial-contents (error "You passed initial-contents to make-array"))
-     (make-array-objects dimensions element-type initial-element adjustable))
+     (if displaced-to
+         (if (eq (array-element-type displaced-to) element-type)
+             (make-array-displaced dimensions element-type displaced-to displaced-index-offset)
+             (error "Cannot displace the array, because the element types don't match"))
+         (make-array-objects dimensions element-type initial-element adjustable)))
     (t (error "Illegal dimensions ~a for make-array" dimensions ))))
 
 

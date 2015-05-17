@@ -35,13 +35,13 @@ THE SOFTWARE.
 namespace core {
 
 class StrWithFillPtr_O : public Str_O {
-  friend int &StringFillp(StrWithFillPtr_sp);
+  friend Fixnum &StringFillp(StrWithFillPtr_sp);
   friend T_sp str_out_get_position(T_sp strm);
   LISP_BASE1(Str_O);
   LISP_CLASS(core, CorePkg, StrWithFillPtr_O, "base-string-with-fill-ptr");
 
 protected:
-  int _FillPointer;
+  cl_index _FillPointer;
   bool _Adjustable;
 
 public:
@@ -62,6 +62,9 @@ public:
   };
 
 public:
+  /*! For write_array. Really? Should I use the FillPointer? */
+  std::vector<cl_index> dimensions() { std::vector<cl_index> dims; dims.push_back(this->length()); return dims; };
+public:
   virtual bool adjustableArrayP() const { return this->_Adjustable; }
   virtual void set(const string &v) {
     this->Str_O::set(v);
@@ -73,7 +76,7 @@ public:
   }
   virtual string get() const { return std::string(this->_Contents.data(), this->_FillPointer); };
   virtual uint size() const { return this->_FillPointer; };
-  virtual int fillPointer() const { return this->_FillPointer; };
+  virtual cl_index fillPointer() const { return this->_FillPointer; };
 
   bool hasFillPointerP() const { return true; };
   void incrementFillPointer(int offset);

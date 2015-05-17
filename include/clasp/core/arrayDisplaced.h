@@ -63,8 +63,8 @@ public:
   virtual T_sp asetUnsafe(int j, T_sp val);
   T_sp elementType() const { return this->_Array->elementType(); };
 
-  virtual void rowMajorAset(int idx, T_sp value);
-  virtual T_sp rowMajorAref(int idx) const;
+  virtual void rowMajorAset(cl_index idx, T_sp value);
+  virtual T_sp rowMajorAref(cl_index idx) const;
 
   virtual T_mv arrayDisplacement() const;
   virtual int rank() const { return this->_Dimensions.size(); };

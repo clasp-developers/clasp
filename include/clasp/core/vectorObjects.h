@@ -82,10 +82,12 @@ public: // Functions here
   bool adjustableArrayP() const { return this->_Adjustable; };
 
   virtual T_sp asetUnsafe(int j, T_sp val);
+  virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index];};
 
+  virtual std::vector<cl_index> dimensions() const { std::vector<cl_index> dims; dims.push_back(this->length()); return dims;};
   virtual uint dimension() const { return this->_Values.size(); };
-  virtual void rowMajorAset(int idx, T_sp value);
-  virtual T_sp rowMajorAref(int idx) const;
+  virtual void rowMajorAset(cl_index idx, T_sp value);
+  virtual T_sp rowMajorAref(cl_index idx) const;
   virtual int arrayRowMajorIndex(List_sp indices) const;
 
   T_sp &operator[](uint index) { return this->_Values[index]; }
