@@ -38,10 +38,10 @@ namespace core {
 
 EXPOSE_CLASS(core, ArrayObjects_O);
 
-#define ARGS_ArrayObjects_O_make "(dimensions element-type initial-element)"
+#define ARGS_ArrayObjects_O_make "(dimensions element-type initial-element adjustable)"
 #define DECL_ArrayObjects_O_make ""
 #define DOCS_ArrayObjects_O_make "make ArrayObjects args: dimensions element-type initial-element"
-ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement) {
+    ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp adjustable) {
   _G();
   GC_ALLOCATE(ArrayObjects_O, array);
   array->_ElementType = elementType;

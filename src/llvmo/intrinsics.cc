@@ -1479,7 +1479,7 @@ void ltv_makeArrayObjects(core::T_sp *resultP, core::T_sp *elementTypeP, int ran
     for (int i = rank - 1; i >= 0; i--) {
       dims = core::Cons_O::create(core::make_fixnum(dimensions[i]), dims);
     }
-    *resultP = core::ArrayObjects_O::make(dims, cl::_sym_T_O, *elementTypeP);
+    *resultP = core::ArrayObjects_O::make(dims, cl::_sym_T_O, *elementTypeP,_lisp->_true());
   }
   ASSERTNOTNULL(*resultP);
 }

@@ -56,7 +56,7 @@ GCPRIVATE: // instance variables here
   gctools::Vec0<T_sp> _Values;
 
 public: // Functions here
-  static ArrayObjects_sp make(T_sp dim, T_sp elementType, T_sp initialElement);
+  static ArrayObjects_sp make(T_sp dim, T_sp elementType, T_sp initialElement, T_sp adjustable);
 
 public:
   virtual T_sp asetUnsafe(int j, T_sp val);

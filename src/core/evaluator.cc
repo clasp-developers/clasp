@@ -110,7 +110,6 @@ T_mv af_compileFormAndEvalWithEnv(T_sp form, T_sp env, bool stepping, bool compi
 #define DECL_af_interpreter_lookup_variable ""
 #define DOCS_af_interpreter_lookup_variable "environment_lookup_variable"
 T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
-  _G();
   if (env.notnilp()) {
     int depth, index;
     Environment_O::ValueKind valueKind;
@@ -200,7 +199,6 @@ T_sp core_lookup_symbol_macro(Symbol_sp sym, T_sp env) {
 #define DECL_af_interpreter_lookup_macro ""
 #define DOCS_af_interpreter_lookup_macro "environment_lookup_macro_definition"
 T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env) {
-  _G();
   if (sym.nilp())
     return _Nil<T_O>();
   if (core_lexicalFunction(sym, env).notnilp())

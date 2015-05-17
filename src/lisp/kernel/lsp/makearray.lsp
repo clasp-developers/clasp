@@ -1,8 +1,6 @@
 (in-package "SYSTEM")
 (defun make-array (dimensions &key (element-type t)
                                 initial-element initial-contents adjustable fill-pointer displaced-to displaced-index-offset)
-  (and displaced-to (error "Add support for displaced-to arrays"))
-  (and displaced-index-offset (error "Add support for displaced-index-offset arrays"))
   ;;  (when element-type (inform "Add support for element-type in make-array\n"))
   (if (and (consp element-type)
 	   (null initial-element)
@@ -22,9 +20,7 @@
 
 (defun adjust-array (array dimensions &key element-type initial-element initial-contents fill-pointer displaced-to displaced-index-offset)
   (and fill-pointer (error "Add support for fill-pointers in arrays"))
-  (and displaced-to (error "Add support for displaced-to arrays"))
-  (and displaced-index-offset (error "Add support for displaced-index-offset arrays"))
-;;  (when element-type (inform "Add support for element-type in make-array\n"))
+  ;;  (when element-type (inform "Add support for element-type in make-array\n"))
   (cond
     ((vectorp array)
      (let ((dim (cond

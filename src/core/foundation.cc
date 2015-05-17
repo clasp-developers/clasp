@@ -750,13 +750,7 @@ string _rep_(T_sp obj) {
   write_object(obj, sout);
   return cl_get_output_stream_string(sout).as<Str_O>()->get();
 #else
-  if (obj.nilp()) {
-    return "NIL";
-  } else if (obj.unboundp()) {
-    return "!UNBOUND!";
-  } else if (!obj) {
-    return "!NULL!";
-  } else if (obj.fixnump()) {
+  if (obj.fixnump()) {
     stringstream ss;
     ss << obj.unsafe_fixnum();
     return ss.str();
@@ -768,12 +762,12 @@ string _rep_(T_sp obj) {
     stringstream ss;
     ss << obj.unsafe_single_float();
     return ss.str();
-  } else if (obj.framep()) {
-    return "StackFrame";
-  } else if (!obj) {
-    return "!!!UNDEFINED!!!";
   } else if (obj.objectp()) {
     return obj->__repr__(); // This is the only place where obj->__repr__() is allowed
+  } else if (obj.framep()) {
+    return "StackFrame";
+  } else if (obj.unboundp()) {
+    return "!UNBOUND!";
   }
   return "WTF-object";
 #endif

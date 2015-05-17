@@ -42,10 +42,14 @@ successfully, T is returned, else error."
   #-boehm-gc
   (let* ((real-start (get-internal-real-time))
 	 (run-start (get-internal-run-time))
+	 (llvm-finalization-time-start llvm-sys:*accumulated-llvm-finalization-time*)
+	 (llvm-finalization-number-start llvm-sys:*number-of-llvm-finalizations*)
 	 gc-start
 	 bytes-consed
 	 real-end
 	 run-end
+	 llvm-finalization-time-end
+	 llvm-finalization-number-end
 	 gc-end)
     ;; Garbage collection forces counters to be updated
     #-clasp(si::gc t)
@@ -53,20 +57,33 @@ successfully, T is returned, else error."
     (multiple-value-prog1
 	(funcall closure)
       (setq run-end (get-internal-run-time)
-	    real-end (get-internal-real-time))
+	    real-end (get-internal-real-time)
+	    llvm-finalization-time-end llvm-sys:*accumulated-llvm-finalization-time*
+	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*
+	    )
       #-clasp(setq gc-end (si::gc-time))
       #-clasp(format *trace-output*
-                    "real time : ~,3F secs~%~
-              run time  : ~,3F secs~%~
-              GC time   : ~,3F secs~%"
-                    (/ (- real-end real-start) internal-time-units-per-second)
-                    (/ (- run-end run-start) internal-time-units-per-second)
-                    (/ (- gc-end gc-start) internal-time-units-per-second))
-      #+clasp(progn
-              (format *trace-output*
-                    "real time : ~,3F secs~%run time  : ~,3F secs~%"
-                    (/ (- real-end real-start) internal-time-units-per-second)
-                    (/ (- run-end run-start) internal-time-units-per-second)))
+		     "real time     : ~,3F secs~%~
+              run time      : ~,3F secs~%~
+              GC time       : ~,3F secs~%~
+              LLVM time     : ~,3F secs~%~
+              LLVM compiles : ~A~%"
+		     (/ (- real-end real-start) internal-time-units-per-second)
+		     (/ (- run-end run-start) internal-time-units-per-second)
+		     (/ (- gc-end gc-start) internal-time-units-per-second)
+		     (- llvm-finalization-time-end llvm-finalization-time-start)
+		     (- llvm-finalization-number-end llvm-finalization-number-start)
+		     )
+      #+clasp(format *trace-output*
+		     "real time     : ~,3F secs~%~
+              run time      : ~,3F secs~%~
+              LLVM time     : ~,3F secs~%~
+              LLVM compiles : ~A~%"
+		     (/ (- real-end real-start) internal-time-units-per-second)
+		     (/ (- run-end run-start) internal-time-units-per-second)
+		     (- llvm-finalization-time-end llvm-finalization-time-start)
+		     (- llvm-finalization-number-end llvm-finalization-number-start)
+		     )
       ))
   #+boehm-gc
   (let* ((*do-time-level* (1+ *do-time-level*))
@@ -95,14 +112,14 @@ successfully, T is returned, else error."
       (multiple-value-setq (consed-end gc-no-end) (gc-stats nil))
       (fresh-line *trace-output*)
       (format *trace-output*
-             "real time : ~,3F secs~%~
+	      "real time : ~,3F secs~%~
               run time  : ~,3F secs~%~
               gc count  : ~D times~%~
               consed    : ~D bytes~%"
-	     (/ (- real-end real-start) internal-time-units-per-second)
-	     (/ (- run-end run-start) internal-time-units-per-second)
-	     (- gc-no-end gc-no-start)
-	     (- consed-end consed-start)))))
+	      (/ (- real-end real-start) internal-time-units-per-second)
+	      (/ (- run-end run-start) internal-time-units-per-second)
+	      (- gc-no-end gc-no-start)
+	      (- consed-end consed-start)))))
 
 (defmacro time (form)
   "Syntax: (time form)

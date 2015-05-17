@@ -166,7 +166,6 @@ T_sp Array_O::aref(List_sp indices) const {
 }
 
 int Array_O::index_vector_int(const vector<int> &indices) const {
-  _G();
   int offset = 0;
   int oneIndex = 0;
   Cons_sp cur;
@@ -188,20 +187,19 @@ int Array_O::index_val(List_sp indices, bool last_value_is_val, List_sp &val_con
           BF("Wrong number of indices[%d] must match rank[%d]") % indices_passed % this->rank());
 #endif
   int offset = 0;
-  int idx = -1;
+  int idx = 0;
   for (auto cur : indices) {
-    int curDimension = this->arrayDimension(idx);
-    if (oCdr(cur).nilp() && last_value_is_val)
+    if (oCdr(cur).nilp() && last_value_is_val) {
+      val_cons = cur;
       break;
-    if (idx >= 0)
-      offset *= curDimension;
-    idx++;
+    }
+    int curDimension = this->arrayDimension(idx);
     int oneIndex = clasp_to_int(gc::As<Rational_sp>(oCar(cur)));
     if (oneIndex >= curDimension) {
       SIMPLE_ERROR(BF("Bad index"));
     }
-    offset += oneIndex;
-    val_cons = cur;
+    offset = offset * curDimension + oneIndex;
+    idx++;
   }
   return ((offset));
 }

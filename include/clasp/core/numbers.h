@@ -1067,7 +1067,7 @@ namespace core {
 
 inline bool clasp_plusp(Real_sp num) {
   if (num.fixnump()) {
-    return num.raw_() > 0;
+    return num.unsafe_fixnum() > 0;
   } else if (num.single_floatp()) {
     return num.unsafe_single_float() > 0.0;
   }
@@ -1076,7 +1076,7 @@ inline bool clasp_plusp(Real_sp num) {
 
 inline bool clasp_minusp(Real_sp num) {
   if (num.fixnump()) {
-    return num.raw_() < 0;
+    return num.unsafe_fixnum() < 0;
   } else if (num.single_floatp()) {
     return num.unsafe_single_float() < 0.0;
   }
@@ -1108,9 +1108,10 @@ inline Number_sp clasp_abs(Number_sp num) {
 
 inline Number_sp clasp_signum(Number_sp num) {
   if (num.fixnump()) {
-    if (num.raw_() == 0)
+    Fixnum fn = num.unsafe_fixnum();
+    if (fn == 0)
       return immediate_fixnum<Number_O>(0);
-    if (num.raw_() > 0)
+    if (fn > 0)
       return immediate_fixnum<Number_O>(1);
     return immediate_fixnum<Number_O>(-1);
   } else if (num.single_floatp()) {

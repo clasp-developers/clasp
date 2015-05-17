@@ -452,12 +452,6 @@ void write_character(T_sp strm, T_sp chr) {
 }
 
 T_sp write_ugly_object(T_sp x, T_sp stream) {
-  if (!x) {
-    if (clasp_print_readably())
-      PRINT_NOT_READABLE_ERROR(x);
-    clasp_write_string("#<OBJNULL>", stream);
-    goto DONE;
-  }
   if (x.fixnump()) {
     write_fixnum(stream, x);
   } else if (x.characterp()) {
