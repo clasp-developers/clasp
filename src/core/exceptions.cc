@@ -677,7 +677,7 @@ void FEerror(const string &fmt, int nargs, ...) {
   va_start(args, nargs);
   ql::list l;
   while (nargs) {
-    T_sp arg = gctools::smart_ptr<T_O>(va_arg(args, T_O *));
+    T_sp arg = gctools::smart_ptr<T_O>((gc::Tagged)(va_arg(args, T_O *)));
     l << arg;
     --nargs;
   }

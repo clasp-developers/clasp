@@ -230,7 +230,6 @@ T_sp Instance_O::instanceRef(int idx) const {
 #if DEBUG_CLOS >= 2
   printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Slots[idx]->__repr__().c_str());
 #endif
-  ASSERT(this->_Slots[idx]);
   return ((this->_Slots[idx]));
 }
 T_sp Instance_O::instanceSet(int idx, T_sp val) {

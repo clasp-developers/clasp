@@ -1620,8 +1620,9 @@ const FileOps str_out_ops = {
 T_sp core_make_string_output_stream_from_string(T_sp s) {
   _G();
   T_sp strm = StringOutputStream_O::create();
+  bool stringp = af_stringP(s);
   unlikely_if(!af_stringP(s) || !gc::As<Array_sp>(s)->arrayHasFillPointerP())
-      FEerror("~S is not a -string with a fill-pointer.", 1, s.raw_());
+      FEerror("~S is not a string with a fill-pointer.", 1, s.raw_());
   StreamOps(strm) = str_out_ops; // duplicate_dispatch_table(&str_out_ops);
   StreamMode(strm) = clasp_smm_string_output;
   StringOutputStreamOutputString(strm) = s;

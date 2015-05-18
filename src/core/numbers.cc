@@ -3620,7 +3620,8 @@ Integer_sp clasp_ash(Integer_sp x, int bits) {
 
 unsigned char clasp_toUint8(T_sp n) {
   if (n.notnilp()) {
-    if (Fixnum_sp fn = gc::AsOrNull<Fixnum_sp>(n)) {
+    if (n.fixnump()) {
+      Fixnum_sp fn = gc::As<Fixnum_sp>(n);
       Fixnum fi = unbox_fixnum(fn);
       if (fi >= 0 && fi <= 255) {
         return fi;
