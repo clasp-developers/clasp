@@ -128,12 +128,12 @@
 (defun t1eval-when (rest env)
   (let ((situations (car rest))
 	(body (cdr rest)))
-    (when (or (member 'core:compile situations) (member :compile-toplevel situations))
+    (when (or (member 'cl:compile situations) (member :compile-toplevel situations))
       (cmp-log "Performing eval-when :compile-toplevel side-effects\n")
       (cmp-log "Evaluating: %s\n" body)
-      (si:top-level-eval-with-env `(progn ,@body) env)
+      (si:eval-with-env `(progn ,@body) env)
       (cmp-log "Done eval-when compile-toplevel side-effects\n"))
-    (when (or (member 'core:load situations) (member :load-toplevel situations))
+    (when (or (member 'cl:load situations) (member :load-toplevel situations))
       (cmp-log "Compiling body due to :load-toplevel --> %s\n" body)
       ;; Each subform is a top-level form
       (dolist (subform body)
@@ -338,7 +338,7 @@ and the pathname of the source file - this will also be used as the module initi
 		       (if (eq form eof-value)
 			   (return nil)
 			   (progn
-			     (if cmp:*debug-compile-file* (bformat t "compile-file: %s\n" form))
+			     (if *debug-compile-file* (bformat t "compile-file: %s\n" form))
 			     ;; If the form contains source-pos-info then use that
 			     ;; otherwise fall back to using *current-source-pos-info*
 			     (let ((core:*current-source-pos-info* 
@@ -355,7 +355,7 @@ and the pathname of the source file - this will also be used as the module initi
 	      (multiple-value-bind (found-errors error-message)
 		  (progn
 		    (cmp-log "About to verify module prior to writing bitcode\n")
-		    (llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
+		    (llvm-sys:verify-module *the-module* 'llvm-sys::return-status-action)
 		    )
 		(if found-errors
 		    (progn

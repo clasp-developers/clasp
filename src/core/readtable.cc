@@ -59,7 +59,7 @@ void extra_argument(char macro, T_sp sin, T_sp arg) {
 #define ARGS_cl_setSyntaxFromChar "(tochar fromchar &optional (toreadtable *readtable*) (fromreadtable nil fromreadtablep))"
 #define DECL_cl_setSyntaxFromChar ""
 #define DOCS_cl_setSyntaxFromChar "setSyntaxFromChar"
-T_sp cl_setSyntaxFromChar(Character_sp toChar, Character_sp fromChar, ReadTable_sp toReadTable, ReadTable_sp fromReadTable, T_sp fromReadTableP) {
+T_sp cl_setSyntaxFromChar(Character_sp toChar, Character_sp fromChar, ReadTable_sp toReadTable, gc::Nilable<ReadTable_sp> fromReadTable, T_sp fromReadTableP) {
   if (fromReadTableP.nilp()) {
     if (core::_sym__PLUS_standardReadtable_PLUS_->symbolValue().nilp()) {
       core::_sym__PLUS_standardReadtable_PLUS_->defconstant(ReadTable_O::create_standard_readtable());
@@ -73,7 +73,6 @@ T_sp cl_setSyntaxFromChar(Character_sp toChar, Character_sp fromChar, ReadTable_
     T_sp nonTerminating = macro.second();
     toReadTable->set_macro_character(toChar, macro, nonTerminating);
   }
-  printf("%s:%d Check if Nilable types work!!!!!\n", __FILE__, __LINE__);
   gc::Nilable<HashTable_sp> fromTable = fromReadTable->_DispatchMacroCharacters->gethash(fromChar);
   if (fromTable.notnilp()) {
     HashTableEql_sp toTable = HashTableEql_O::create_default();
@@ -110,7 +109,7 @@ T_mv cl_getMacroCharacter(Character_sp chr, T_sp readtable) {
 #define ARGS_cl_copyReadtable "(&optional (from-readtable cl:*readtable*) to-readtable)"
 #define DECL_cl_copyReadtable ""
 #define DOCS_cl_copyReadtable "clhs: copy-readtable"
-T_sp cl_copyReadtable(ReadTable_sp fromReadTable, ReadTable_sp toReadTable) {
+T_sp cl_copyReadtable(ReadTable_sp fromReadTable, gc::Nilable<ReadTable_sp> toReadTable) {
   return fromReadTable->copyReadTable(toReadTable);
 }
 
@@ -444,7 +443,7 @@ T_sp af_sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
                    Cons_O::create(object),
                    sin);
     }
-    T_sp result = eval::af_topLevelEvalWithEnv(object, _Nil<T_O>());
+    T_sp result = eval::core_evalWithEnv(object, _Nil<T_O>());
     if (cl_consp(result)) {
       lisp_registerSourcePosInfo(result, spi);
     }
@@ -1140,7 +1139,7 @@ Character_sp ReadTable_O::convert_case(Character_sp cc) {
   SIMPLE_ERROR(BF("Bad readtable case[%s]") % _rep_(this->_Case));
 }
 
-ReadTable_sp ReadTable_O::copyReadTable(T_sp tdest) {
+ReadTable_sp ReadTable_O::copyReadTable(gc::Nilable<ReadTable_sp> tdest) {
   //	printf("%s:%d copy-readtable\n", __FILE__, __LINE__ );
   if (tdest.nilp()) {
     //	    printf("%s:%d allocating copy-readtable\n", __FILE__, __LINE__ );

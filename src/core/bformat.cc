@@ -58,11 +58,15 @@ T_sp af_bformat(T_sp destination, const string &control, List_sp args) {
   TRY() {
     for (auto farg : args) {
       T_sp fobj = oCar(farg);
-      if (!fobj) {
-        fmter % "!!!!UNDEFINED-BFORMAT-ARGUMENT!!!!!";
-      } else if (af_fixnumP(fobj)) {
+      if (fobj.fixnump()) {
         Fixnum_sp fint = gc::As<Fixnum_sp>(fobj);
         fmter % unbox_fixnum(fint);
+      } else if (fobj.characterp()) {
+        Character_sp fc = gc::As<Character_sp>(fobj);
+        fmter % (char)unbox_character(fc);
+      } else if (fobj.single_floatp()) {
+        SingleFloat_sp ff = gc::As<SingleFloat_sp>(fobj);
+        fmter % unbox_single_float(ff);
       } else if (af_bignumP(fobj)) {
         Bignum_sp flli = gc::As<Bignum_sp>(fobj);
         stringstream ss;

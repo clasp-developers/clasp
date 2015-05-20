@@ -72,7 +72,7 @@ public: // static functions here
   static HashTable_sp create_standard_syntax_table();
 
 public: // instance member functions here
-  ReadTable_sp copyReadTable(T_sp dest);
+  ReadTable_sp copyReadTable(gc::Nilable<ReadTable_sp> dest);
 
   string __repr__() const;
 

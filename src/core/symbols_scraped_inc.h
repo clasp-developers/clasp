@@ -403,312 +403,312 @@
 // SYMBOL_TABLE_ENTRY        ClPkg  400 writeLine                      WRITE-LINE                     export ; cName=_sym_writeLine lispName=WRITE-LINE
 // SYMBOL_TABLE_ENTRY      CorePkg  401 STARsourceDatabaseSTAR         *SOURCE-DATABASE*              export ; cName=_sym_STARsourceDatabaseSTAR lispName=*SOURCE-DATABASE*
 // SYMBOL_TABLE_ENTRY      CorePkg  402 UnwindProtectEnvironment_O     UNWIND-PROTECT-ENVIRONMENT     export ; cName=_sym_UnwindProtectEnvironment_O lispName=UNWIND-PROTECT-ENVIRONMENT
-// SYMBOL_TABLE_ENTRY      CorePkg  403 LoadTimeValues_O               LOAD-TIME-VALUES               export ; cName=_sym_LoadTimeValues_O lispName=LOAD-TIME-VALUES
-// SYMBOL_TABLE_ENTRY        ClPkg  404 boole_c2                       BOOLE-C2                       export ; cName=_sym_boole_c2 lispName=BOOLE-C2
-// SYMBOL_TABLE_ENTRY        ClPkg  405 boole_c1                       BOOLE-C1                       export ; cName=_sym_boole_c1 lispName=BOOLE-C1
-// SYMBOL_TABLE_ENTRY        ClPkg  406 char_LE_                       CHAR<=                         export ; cName=_sym_char_LE_ lispName=CHAR<=
-// SYMBOL_TABLE_ENTRY   KeywordPkg  407 whitespace_character           WHITESPACE-CHARACTER           export ; cName=_sym_whitespace_character lispName=WHITESPACE-CHARACTER
-// SYMBOL_TABLE_ENTRY      CorePkg  408 mpi_rank                       MPI-RANK                       private ; cName=_sym_mpi_rank lispName=MPI-RANK
-// SYMBOL_TABLE_ENTRY      CorePkg  409 STARcommandLineImageSTAR       *COMMAND-LINE-IMAGE*           export ; cName=_sym_STARcommandLineImageSTAR lispName=*COMMAND-LINE-IMAGE*
-// SYMBOL_TABLE_ENTRY        ClPkg  410 getInternalRealTime            GET-INTERNAL-REAL-TIME         export ; cName=_sym_getInternalRealTime lispName=GET-INTERNAL-REAL-TIME
-// SYMBOL_TABLE_ENTRY        ClPkg  411 and                            AND                            export ; cName=_sym_and lispName=AND
-// SYMBOL_TABLE_ENTRY        ClPkg  412 maphash                        MAPHASH                        export ; cName=_sym_maphash lispName=MAPHASH
-// SYMBOL_TABLE_ENTRY        ClPkg  413 sqrt                           SQRT                           export ; cName=_sym_sqrt lispName=SQRT
-// SYMBOL_TABLE_ENTRY        ClPkg  414 getInternalRunTime             GET-INTERNAL-RUN-TIME          export ; cName=_sym_getInternalRunTime lispName=GET-INTERNAL-RUN-TIME
-// SYMBOL_TABLE_ENTRY        ClPkg  415 MultipleValuesLimit            MULTIPLE-VALUES-LIMIT          export ; cName=_sym_MultipleValuesLimit lispName=MULTIPLE-VALUES-LIMIT
-// SYMBOL_TABLE_ENTRY        ClPkg  416 setDispatchMacroCharacter      SET-DISPATCH-MACRO-CHARACTER   export ; cName=_sym_setDispatchMacroCharacter lispName=SET-DISPATCH-MACRO-CHARACTER
-// SYMBOL_TABLE_ENTRY      CorePkg  417 HashTableEql_O                 HASH-TABLE-EQL                 export ; cName=_sym_HashTableEql_O lispName=HASH-TABLE-EQL
-// SYMBOL_TABLE_ENTRY        ClPkg  418 Real_O                         REAL                           export ; cName=_sym_Real_O lispName=REAL
-// SYMBOL_TABLE_ENTRY      CorePkg  419 setCurrentWorkingDirectory     SET-CURRENT-WORKING-DIRECTORY  private ; cName=_sym_setCurrentWorkingDirectory lispName=SET-CURRENT-WORKING-DIRECTORY
-// SYMBOL_TABLE_ENTRY        ClPkg  420 ceiling                        CEILING                        export ; cName=_sym_ceiling lispName=CEILING
-// SYMBOL_TABLE_ENTRY      CorePkg  421 bdsVal                         BDS-VAL                        private ; cName=_sym_bdsVal lispName=BDS-VAL
-// SYMBOL_TABLE_ENTRY        ClPkg  422 notevery                       NOTEVERY                       export ; cName=_sym_notevery lispName=NOTEVERY
-// SYMBOL_TABLE_ENTRY      CorePkg  423 put_sysprop                    PUT-SYSPROP                    private ; cName=_sym_put_sysprop lispName=PUT-SYSPROP
-// SYMBOL_TABLE_ENTRY        ClPkg  424 char                           CHAR                           export ; cName=_sym_char lispName=CHAR
-// SYMBOL_TABLE_ENTRY   KeywordPkg  425 downcase                       DOWNCASE                       export ; cName=_sym_downcase lispName=DOWNCASE
-// SYMBOL_TABLE_ENTRY      CorePkg  426 all_keys                       ALL-KEYS                       private ; cName=_sym_all_keys lispName=ALL-KEYS
-// SYMBOL_TABLE_ENTRY      GrayPkg  427 open_stream_p                  OPEN-STREAM-P                  export ; cName=_sym_open_stream_p lispName=OPEN-STREAM-P
-// SYMBOL_TABLE_ENTRY      CorePkg  428 ensureSingleDispatchGenericFunction ENSURE-SINGLE-DISPATCH-GENERIC-FUNCTION export ; cName=_sym_ensureSingleDispatchGenericFunction lispName=ENSURE-SINGLE-DISPATCH-GENERIC-FUNCTION
-// SYMBOL_TABLE_ENTRY        ClPkg  429 sleep                          SLEEP                          export ; cName=_sym_sleep lispName=SLEEP
-// SYMBOL_TABLE_ENTRY        ClPkg  430 simple_array                   SIMPLE-ARRAY                   export ; cName=_sym_simple_array lispName=SIMPLE-ARRAY
-// SYMBOL_TABLE_ENTRY      CorePkg  431 STARenvironmentPrintingTabIncrementSTAR *ENVIRONMENT-PRINTING-TAB-INCREMENT* private ; cName=_sym_STARenvironmentPrintingTabIncrementSTAR lispName=*ENVIRONMENT-PRINTING-TAB-INCREMENT*
-// SYMBOL_TABLE_ENTRY        ClPkg  432 equal                          EQUAL                          export ; cName=_sym_equal lispName=EQUAL
-// SYMBOL_TABLE_ENTRY        ClPkg  433 special                        SPECIAL                        export ; cName=_sym_special lispName=SPECIAL
-// SYMBOL_TABLE_ENTRY      CorePkg  434 STARsharpEqContextSTAR         *SHARP-EQ-CONTEXT*             private ; cName=_sym_STARsharpEqContextSTAR lispName=*SHARP-EQ-CONTEXT*
-// SYMBOL_TABLE_ENTRY      CorePkg  435 STARfset                       *FSET                          private ; cName=_sym_STARfset lispName=*FSET
-// SYMBOL_TABLE_ENTRY        ClPkg  436 userHomedirPathname            USER-HOMEDIR-PATHNAME          export ; cName=_sym_userHomedirPathname lispName=USER-HOMEDIR-PATHNAME
-// SYMBOL_TABLE_ENTRY      CorePkg  437 _PLUS_ecl_syntax_progv_list_PLUS_ +ECL-SYNTAX-PROGV-LIST+        export ; cName=_sym__PLUS_ecl_syntax_progv_list_PLUS_ lispName=+ECL-SYNTAX-PROGV-LIST+
-// SYMBOL_TABLE_ENTRY        ClPkg  438 leastPositiveNormalizedShortFloat LEAST-POSITIVE-NORMALIZED-SHORT-FLOAT export ; cName=_sym_leastPositiveNormalizedShortFloat lispName=LEAST-POSITIVE-NORMALIZED-SHORT-FLOAT
-// SYMBOL_TABLE_ENTRY   KeywordPkg  439 direct_super_classes           DIRECT-SUPER-CLASSES           export ; cName=_sym_direct_super_classes lispName=DIRECT-SUPER-CLASSES
-// SYMBOL_TABLE_ENTRY      CorePkg  440 loadCando                      LOAD-CANDO                     private ; cName=_sym_loadCando lispName=LOAD-CANDO
-// SYMBOL_TABLE_ENTRY   KeywordPkg  441 tagbodyFrame                   TAGBODY-FRAME                  export ; cName=_sym_tagbodyFrame lispName=TAGBODY-FRAME
-// SYMBOL_TABLE_ENTRY        ClPkg  442 hash_table_p                   HASH-TABLE-P                   export ; cName=_sym_hash_table_p lispName=HASH-TABLE-P
-// SYMBOL_TABLE_ENTRY      CorePkg  443 invocationHistoryFrame         INVOCATION-HISTORY-FRAME       export ; cName=_sym_invocationHistoryFrame lispName=INVOCATION-HISTORY-FRAME
-// SYMBOL_TABLE_ENTRY      CorePkg  444 structureRef                   STRUCTURE-REF                  export ; cName=_sym_structureRef lispName=STRUCTURE-REF
-// SYMBOL_TABLE_ENTRY      CorePkg  445 file_kind                      FILE-KIND                      export ; cName=_sym_file_kind lispName=FILE-KIND
-// SYMBOL_TABLE_ENTRY      CorePkg  446 IOStreamStream_O               IOSTREAM-STREAM                export ; cName=_sym_IOStreamStream_O lispName=IOSTREAM-STREAM
-// SYMBOL_TABLE_ENTRY      CorePkg  447 dimensions                     DIMENSIONS                     private ; cName=_sym_dimensions lispName=DIMENSIONS
-// SYMBOL_TABLE_ENTRY      CorePkg  448 sharp_minus                    SHARP-MINUS                    private ; cName=_sym_sharp_minus lispName=SHARP-MINUS
-// SYMBOL_TABLE_ENTRY       ExtPkg  449 integer8                       INTEGER8                       private ; cName=_sym_integer8 lispName=INTEGER8
-// SYMBOL_TABLE_ENTRY        ClPkg  450 nextMethodP                    NEXT-METHOD-P                  export ; cName=_sym_nextMethodP lispName=NEXT-METHOD-P
-// SYMBOL_TABLE_ENTRY        ClPkg  451 export                         EXPORT                         export ; cName=_sym_export lispName=EXPORT
-// SYMBOL_TABLE_ENTRY        ClPkg  452 leastPositiveNormalizedDoubleFloat LEAST-POSITIVE-NORMALIZED-DOUBLE-FLOAT export ; cName=_sym_leastPositiveNormalizedDoubleFloat lispName=LEAST-POSITIVE-NORMALIZED-DOUBLE-FLOAT
-// SYMBOL_TABLE_ENTRY      CorePkg  453 ensure_documentation           ENSURE-DOCUMENTATION           private ; cName=_sym_ensure_documentation lispName=ENSURE-DOCUMENTATION
-// SYMBOL_TABLE_ENTRY      CorePkg  454 clock_gettime_nanoseconds      CLOCK-GETTIME-NANOSECONDS      private ; cName=_sym_clock_gettime_nanoseconds lispName=CLOCK-GETTIME-NANOSECONDS
-// SYMBOL_TABLE_ENTRY   KeywordPkg  455 execute                        EXECUTE                        export ; cName=_sym_execute lispName=EXECUTE
-// SYMBOL_TABLE_ENTRY        ClPkg  456 clrhash                        CLRHASH                        export ; cName=_sym_clrhash lispName=CLRHASH
-// SYMBOL_TABLE_ENTRY      CorePkg  457 start                          START                          private ; cName=_sym_start lispName=START
-// SYMBOL_TABLE_ENTRY      CorePkg  458 threadInfo                     THREAD-INFO                    export ; cName=_sym_threadInfo lispName=THREAD-INFO
-// SYMBOL_TABLE_ENTRY      CorePkg  459 backquote_attach_append        BACKQUOTE-ATTACH-APPEND        private ; cName=_sym_backquote_attach_append lispName=BACKQUOTE-ATTACH-APPEND
-// SYMBOL_TABLE_ENTRY        ClPkg  460 Integer_O                      INTEGER                        export ; cName=_sym_Integer_O lispName=INTEGER
-// SYMBOL_TABLE_ENTRY      CorePkg  461 wrongTypeNthArg                WRONG-TYPE-NTH-ARG             export ; cName=_sym_wrongTypeNthArg lispName=WRONG-TYPE-NTH-ARG
-// SYMBOL_TABLE_ENTRY        ClPkg  462 define_modify_macro            DEFINE-MODIFY-MACRO            export ; cName=_sym_define_modify_macro lispName=DEFINE-MODIFY-MACRO
-// SYMBOL_TABLE_ENTRY        ClPkg  463 append                         APPEND                         export ; cName=_sym_append lispName=APPEND
-// SYMBOL_TABLE_ENTRY        ClPkg  464 most_positive_fixnum           MOST-POSITIVE-FIXNUM           export ; cName=_sym_most_positive_fixnum lispName=MOST-POSITIVE-FIXNUM
-// SYMBOL_TABLE_ENTRY      CorePkg  465 IOFileStream_O                 IOFILE-STREAM                  export ; cName=_sym_IOFileStream_O lispName=IOFILE-STREAM
-// SYMBOL_TABLE_ENTRY        ClPkg  466 reverse                        REVERSE                        export ; cName=_sym_reverse lispName=REVERSE
-// SYMBOL_TABLE_ENTRY      GrayPkg  467 stream_file_position           STREAM-FILE-POSITION           export ; cName=_sym_stream_file_position lispName=STREAM-FILE-POSITION
-// SYMBOL_TABLE_ENTRY      CorePkg  468 STARcurrent_working_directorySTAR *CURRENT-WORKING-DIRECTORY*    private ; cName=_sym_STARcurrent_working_directorySTAR lispName=*CURRENT-WORKING-DIRECTORY*
-// SYMBOL_TABLE_ENTRY      CorePkg  469 runtimeEnvironment             RUNTIME-ENVIRONMENT            private ; cName=_sym_runtimeEnvironment lispName=RUNTIME-ENVIRONMENT
-// SYMBOL_TABLE_ENTRY        ClPkg  470 char_GE_                       CHAR>=                         export ; cName=_sym_char_GE_ lispName=CHAR>=
-// SYMBOL_TABLE_ENTRY        ClPkg  471 the                            THE                            export ; cName=_sym_the lispName=THE
-// SYMBOL_TABLE_ENTRY   KeywordPkg  472 use_mps                        USE-MPS                        export ; cName=_sym_use_mps lispName=USE-MPS
-// SYMBOL_TABLE_ENTRY        ClPkg  473 read_preserving_whitespace     READ-PRESERVING-WHITESPACE     export ; cName=_sym_read_preserving_whitespace lispName=READ-PRESERVING-WHITESPACE
-// SYMBOL_TABLE_ENTRY        ClPkg  474 asinh                          ASINH                          export ; cName=_sym_asinh lispName=ASINH
-// SYMBOL_TABLE_ENTRY      CorePkg  475 instanceClassSet               INSTANCE-CLASS-SET             export ; cName=_sym_instanceClassSet lispName=INSTANCE-CLASS-SET
-// SYMBOL_TABLE_ENTRY        ClPkg  476 union                          UNION                          export ; cName=_sym_union lispName=UNION
-// SYMBOL_TABLE_ENTRY        ClPkg  477 fboundp                        FBOUNDP                        export ; cName=_sym_fboundp lispName=FBOUNDP
-// SYMBOL_TABLE_ENTRY        ClPkg  478 character                      CHARACTER                      export ; cName=_sym_character lispName=CHARACTER
-// SYMBOL_TABLE_ENTRY        ClPkg  479 asin                           ASIN                           export ; cName=_sym_asin lispName=ASIN
-// SYMBOL_TABLE_ENTRY        ClPkg  480 Rational_O                     RATIONAL                       export ; cName=_sym_Rational_O lispName=RATIONAL
-// SYMBOL_TABLE_ENTRY        ClPkg  481 digitCharP                     DIGIT-CHAR-P                   export ; cName=_sym_digitCharP lispName=DIGIT-CHAR-P
-// SYMBOL_TABLE_ENTRY        ClPkg  482 no_applicable_method           NO-APPLICABLE-METHOD           export ; cName=_sym_no_applicable_method lispName=NO-APPLICABLE-METHOD
-// SYMBOL_TABLE_ENTRY        ClPkg  483 enoughNamestring               ENOUGH-NAMESTRING              export ; cName=_sym_enoughNamestring lispName=ENOUGH-NAMESTRING
-// SYMBOL_TABLE_ENTRY      CorePkg  484 STARbq_quoteSTAR               *BQ-QUOTE*                     private ; cName=_sym_STARbq_quoteSTAR lispName=*BQ-QUOTE*
-// SYMBOL_TABLE_ENTRY      CorePkg  485 reader_list_allow_consing_dot  READER-LIST-ALLOW-CONSING-DOT  private ; cName=_sym_reader_list_allow_consing_dot lispName=READER-LIST-ALLOW-CONSING-DOT
-// SYMBOL_TABLE_ENTRY      CorePkg  486 libraryPath                    LIBRARY-PATH                   private ; cName=_sym_libraryPath lispName=LIBRARY-PATH
-// SYMBOL_TABLE_ENTRY      CorePkg  487 STARconsing_dot_allowedSTAR    *CONSING-DOT-ALLOWED*          private ; cName=_sym_STARconsing_dot_allowedSTAR lispName=*CONSING-DOT-ALLOWED*
-// SYMBOL_TABLE_ENTRY      CorePkg  488 coerceToFilePathname           COERCE-TO-FILE-PATHNAME        export ; cName=_sym_coerceToFilePathname lispName=COERCE-TO-FILE-PATHNAME
-// SYMBOL_TABLE_ENTRY        ClPkg  489 STARloadTruenameSTAR           *LOAD-TRUENAME*                export ; cName=_sym_STARloadTruenameSTAR lispName=*LOAD-TRUENAME*
-// SYMBOL_TABLE_ENTRY   KeywordPkg  490 calledFunction                 CALLED-FUNCTION                export ; cName=_sym_calledFunction lispName=CALLED-FUNCTION
-// SYMBOL_TABLE_ENTRY   KeywordPkg  491 preserve                       PRESERVE                       export ; cName=_sym_preserve lispName=PRESERVE
-// SYMBOL_TABLE_ENTRY      ClosPkg  492 standardOptimizedWriterMethod  STANDARD-OPTIMIZED-WRITER-METHOD private ; cName=_sym_standardOptimizedWriterMethod lispName=STANDARD-OPTIMIZED-WRITER-METHOD
-// SYMBOL_TABLE_ENTRY        ClPkg  493 two_way_stream_input_stream    TWO-WAY-STREAM-INPUT-STREAM    export ; cName=_sym_two_way_stream_input_stream lispName=TWO-WAY-STREAM-INPUT-STREAM
-// SYMBOL_TABLE_ENTRY      GrayPkg  494 stream_clear_input             STREAM-CLEAR-INPUT             export ; cName=_sym_stream_clear_input lispName=STREAM-CLEAR-INPUT
-// SYMBOL_TABLE_ENTRY      CorePkg  495 LexicalEnvironment_O           LEXICAL-ENVIRONMENT            export ; cName=_sym_LexicalEnvironment_O lispName=LEXICAL-ENVIRONMENT
-// SYMBOL_TABLE_ENTRY      ClosPkg  496 standardOptimizedReaderMethod  STANDARD-OPTIMIZED-READER-METHOD private ; cName=_sym_standardOptimizedReaderMethod lispName=STANDARD-OPTIMIZED-READER-METHOD
-// SYMBOL_TABLE_ENTRY      CorePkg  497 backquote_attach_conses        BACKQUOTE-ATTACH-CONSES        private ; cName=_sym_backquote_attach_conses lispName=BACKQUOTE-ATTACH-CONSES
-// SYMBOL_TABLE_ENTRY      CorePkg  498 bdsVar                         BDS-VAR                        private ; cName=_sym_bdsVar lispName=BDS-VAR
-// SYMBOL_TABLE_ENTRY      CorePkg  499 STARdebugReaderSTAR            *DEBUG-READER*                 export ; cName=_sym_STARdebugReaderSTAR lispName=*DEBUG-READER*
-// SYMBOL_TABLE_ENTRY   KeywordPkg  500 name                           NAME                           export ; cName=_sym_name lispName=NAME
-// SYMBOL_TABLE_ENTRY      CorePkg  501 SexpSaveArchive_O              SEXP-SAVE-ARCHIVE              export ; cName=_sym_SexpSaveArchive_O lispName=SEXP-SAVE-ARCHIVE
-// SYMBOL_TABLE_ENTRY      CorePkg  502 setfElt                        SETF-ELT                       export ; cName=_sym_setfElt lispName=SETF-ELT
-// SYMBOL_TABLE_ENTRY      CorePkg  503 dumpTaggedFixnum               DUMP-TAGGED-FIXNUM             export ; cName=_sym_dumpTaggedFixnum lispName=DUMP-TAGGED-FIXNUM
-// SYMBOL_TABLE_ENTRY      GrayPkg  504 stream_read_byte               STREAM-READ-BYTE               export ; cName=_sym_stream_read_byte lispName=STREAM-READ-BYTE
-// SYMBOL_TABLE_ENTRY        ClPkg  505 copyList                       COPY-LIST                      export ; cName=_sym_copyList lispName=COPY-LIST
-// SYMBOL_TABLE_ENTRY        ClPkg  506 read_line                      READ-LINE                      export ; cName=_sym_read_line lispName=READ-LINE
-// SYMBOL_TABLE_ENTRY        ClPkg  507 T_O                            T                              export ; cName=_sym_T_O lispName=T
-// SYMBOL_TABLE_ENTRY        ClPkg  508 count                          COUNT                          export ; cName=_sym_count lispName=COUNT
-// SYMBOL_TABLE_ENTRY        ClPkg  509 macrolet                       MACROLET                       export ; cName=_sym_macrolet lispName=MACROLET
-// SYMBOL_TABLE_ENTRY        ClPkg  510 readSequence                   READ-SEQUENCE                  export ; cName=_sym_readSequence lispName=READ-SEQUENCE
-// SYMBOL_TABLE_ENTRY      CorePkg  511 evaluateVerbosity              EVALUATE-VERBOSITY             private ; cName=_sym_evaluateVerbosity lispName=EVALUATE-VERBOSITY
-// SYMBOL_TABLE_ENTRY        ClPkg  512 array_rank_limit               ARRAY-RANK-LIMIT               export ; cName=_sym_array_rank_limit lispName=ARRAY-RANK-LIMIT
-// SYMBOL_TABLE_ENTRY   KeywordPkg  513 eval                           EVAL                           export ; cName=_sym_eval lispName=EVAL
-// SYMBOL_TABLE_ENTRY        ClPkg  514 let                            LET                            export ; cName=_sym_let lispName=LET
-// SYMBOL_TABLE_ENTRY        ClPkg  515 pathnameDevice                 PATHNAME-DEVICE                export ; cName=_sym_pathnameDevice lispName=PATHNAME-DEVICE
-// SYMBOL_TABLE_ENTRY      CorePkg  516 tooFewArguments                TOO-FEW-ARGUMENTS              private ; cName=_sym_tooFewArguments lispName=TOO-FEW-ARGUMENTS
-// SYMBOL_TABLE_ENTRY        ClPkg  517 shadow                         SHADOW                         export ; cName=_sym_shadow lispName=SHADOW
-// SYMBOL_TABLE_ENTRY      CorePkg  518 STARdebugMonitorSTAR           *DEBUG-MONITOR*                private ; cName=_sym_STARdebugMonitorSTAR lispName=*DEBUG-MONITOR*
-// SYMBOL_TABLE_ENTRY        ClPkg  519 STARmodulesSTAR                *MODULES*                      export ; cName=_sym_STARmodulesSTAR lispName=*MODULES*
-// SYMBOL_TABLE_ENTRY        ClPkg  520 round                          ROUND                          export ; cName=_sym_round lispName=ROUND
-// SYMBOL_TABLE_ENTRY        ClPkg  521 zerop                          ZEROP                          export ; cName=_sym_zerop lispName=ZEROP
-// SYMBOL_TABLE_ENTRY   KeywordPkg  522 supersede                      SUPERSEDE                      export ; cName=_sym_supersede lispName=SUPERSEDE
-// SYMBOL_TABLE_ENTRY      GrayPkg  523 stream_unread_char             STREAM-UNREAD-CHAR             export ; cName=_sym_stream_unread_char lispName=STREAM-UNREAD-CHAR
-// SYMBOL_TABLE_ENTRY        ClPkg  524 get                            GET                            export ; cName=_sym_get lispName=GET
-// SYMBOL_TABLE_ENTRY        ClPkg  525 leastPositiveSingleFloat       LEAST-POSITIVE-SINGLE-FLOAT    export ; cName=_sym_leastPositiveSingleFloat lispName=LEAST-POSITIVE-SINGLE-FLOAT
-// SYMBOL_TABLE_ENTRY      CorePkg  526 foreach                        FOREACH                        private ; cName=_sym_foreach lispName=FOREACH
-// SYMBOL_TABLE_ENTRY      CorePkg  527 tmv                            TMV                            export ; cName=_sym_tmv lispName=TMV
-// SYMBOL_TABLE_ENTRY        ClPkg  528 Number_O                       NUMBER                         export ; cName=_sym_Number_O lispName=NUMBER
-// SYMBOL_TABLE_ENTRY   KeywordPkg  529 rename                         RENAME                         export ; cName=_sym_rename lispName=RENAME
-// SYMBOL_TABLE_ENTRY        ClPkg  530 compile                        COMPILE                        export ; cName=_sym_compile lispName=COMPILE
-// SYMBOL_TABLE_ENTRY        ClPkg  531 string_upcase                  STRING-UPCASE                  export ; cName=_sym_string_upcase lispName=STRING-UPCASE
-// SYMBOL_TABLE_ENTRY      CorePkg  532 STARargsSTAR                   *ARGS*                         private ; cName=_sym_STARargsSTAR lispName=*ARGS*
-// SYMBOL_TABLE_ENTRY        ClPkg  533 scaleFloat                     SCALE-FLOAT                    export ; cName=_sym_scaleFloat lispName=SCALE-FLOAT
-// SYMBOL_TABLE_ENTRY        ClPkg  534 describe                       DESCRIBE                       export ; cName=_sym_describe lispName=DESCRIBE
-// SYMBOL_TABLE_ENTRY        ClPkg  535 ReadTable_O                    READTABLE                      export ; cName=_sym_ReadTable_O lispName=READTABLE
-// SYMBOL_TABLE_ENTRY   KeywordPkg  536 rtld_next                      RTLD-NEXT                      export ; cName=_sym_rtld_next lispName=RTLD-NEXT
-// SYMBOL_TABLE_ENTRY   KeywordPkg  537 debugStartup                   DEBUG-STARTUP                  export ; cName=_sym_debugStartup lispName=DEBUG-STARTUP
-// SYMBOL_TABLE_ENTRY   KeywordPkg  538 givenNumberOfArguments         GIVEN-NUMBER-OF-ARGUMENTS      export ; cName=_sym_givenNumberOfArguments lispName=GIVEN-NUMBER-OF-ARGUMENTS
-// SYMBOL_TABLE_ENTRY      CorePkg  539 FunctionValueEnvironment_O     FUNCTION-VALUE-ENVIRONMENT     export ; cName=_sym_FunctionValueEnvironment_O lispName=FUNCTION-VALUE-ENVIRONMENT
-// SYMBOL_TABLE_ENTRY      CorePkg  540 acos                           ACOS                           export ; cName=_sym_acos lispName=ACOS
-// SYMBOL_TABLE_ENTRY      CorePkg  541 integer_divide                 INTEGER-DIVIDE                 export ; cName=_sym_integer_divide lispName=INTEGER-DIVIDE
-// SYMBOL_TABLE_ENTRY        ClPkg  542 listSTAR                       LIST*                          export ; cName=_sym_listSTAR lispName=LIST*
-// SYMBOL_TABLE_ENTRY        ClPkg  543 mostPositiveSingleFloat        MOST-POSITIVE-SINGLE-FLOAT     export ; cName=_sym_mostPositiveSingleFloat lispName=MOST-POSITIVE-SINGLE-FLOAT
-// SYMBOL_TABLE_ENTRY        ClPkg  544 compute_restarts               COMPUTE-RESTARTS               export ; cName=_sym_compute_restarts lispName=COMPUTE-RESTARTS
-// SYMBOL_TABLE_ENTRY      CorePkg  545 unquote_splice                 UNQUOTE-SPLICE                 private ; cName=_sym_unquote_splice lispName=UNQUOTE-SPLICE
-// SYMBOL_TABLE_ENTRY        ClPkg  546 standard_char_p                STANDARD-CHAR-P                export ; cName=_sym_standard_char_p lispName=STANDARD-CHAR-P
-// SYMBOL_TABLE_ENTRY        ClPkg  547 boole_eqv                      BOOLE-EQV                      export ; cName=_sym_boole_eqv lispName=BOOLE-EQV
-// SYMBOL_TABLE_ENTRY        ClPkg  548 remove                         REMOVE                         export ; cName=_sym_remove lispName=REMOVE
-// SYMBOL_TABLE_ENTRY   KeywordPkg  549 bigEndian                      BIG-ENDIAN                     export ; cName=_sym_bigEndian lispName=BIG-ENDIAN
-// SYMBOL_TABLE_ENTRY        ClPkg  550 leastNegativeSingleFloat       LEAST-NEGATIVE-SINGLE-FLOAT    export ; cName=_sym_leastNegativeSingleFloat lispName=LEAST-NEGATIVE-SINGLE-FLOAT
-// SYMBOL_TABLE_ENTRY   KeywordPkg  551 address_model_32               ADDRESS-MODEL-32               export ; cName=_sym_address_model_32 lispName=ADDRESS-MODEL-32
-// SYMBOL_TABLE_ENTRY      CorePkg  552 reader_quote                   READER-QUOTE                   private ; cName=_sym_reader_quote lispName=READER-QUOTE
-// SYMBOL_TABLE_ENTRY      CorePkg  553 _SHARP__BANG_                  -SHARP--BANG-                  export ; cName=_sym__SHARP__BANG_ lispName=-SHARP--BANG-
-// SYMBOL_TABLE_ENTRY        ClPkg  554 logical_pathname               LOGICAL-PATHNAME               export ; cName=_sym_logical_pathname lispName=LOGICAL-PATHNAME
-// SYMBOL_TABLE_ENTRY        ClPkg  555 string_EQ_                     STRING=                        export ; cName=_sym_string_EQ_ lispName=STRING=
-// SYMBOL_TABLE_ENTRY        ClPkg  556 floatingPointInexact           FLOATING-POINT-INEXACT         export ; cName=_sym_floatingPointInexact lispName=FLOATING-POINT-INEXACT
-// SYMBOL_TABLE_ENTRY        ClPkg  557 logand                         LOGAND                         export ; cName=_sym_logand lispName=LOGAND
-// SYMBOL_TABLE_ENTRY      CorePkg  558 symbolMacroletLambda           SYMBOL-MACROLET-LAMBDA         export ; cName=_sym_symbolMacroletLambda lispName=SYMBOL-MACROLET-LAMBDA
-// SYMBOL_TABLE_ENTRY      CorePkg  559 WeakKeyMapping_O               WEAK-KEY-MAPPING               export ; cName=_sym_WeakKeyMapping_O lispName=WEAK-KEY-MAPPING
-// SYMBOL_TABLE_ENTRY        ClPkg  560 writeByte                      WRITE-BYTE                     export ; cName=_sym_writeByte lispName=WRITE-BYTE
-// SYMBOL_TABLE_ENTRY      CorePkg  561 StringSet_O                    STRING-SET                     export ; cName=_sym_StringSet_O lispName=STRING-SET
-// SYMBOL_TABLE_ENTRY      CorePkg  562 makeStructure                  MAKE-STRUCTURE                 export ; cName=_sym_makeStructure lispName=MAKE-STRUCTURE
-// SYMBOL_TABLE_ENTRY        ClPkg  563 StandardClass_O                STANDARD-CLASS                 export ; cName=_sym_StandardClass_O lispName=STANDARD-CLASS
-// SYMBOL_TABLE_ENTRY        ClPkg  564 go                             GO                             export ; cName=_sym_go lispName=GO
-// SYMBOL_TABLE_ENTRY   KeywordPkg  565 ecl_min                        ECL-MIN                        export ; cName=_sym_ecl_min lispName=ECL-MIN
-// SYMBOL_TABLE_ENTRY        ClPkg  566 alpha_char_p                   ALPHA-CHAR-P                   export ; cName=_sym_alpha_char_p lispName=ALPHA-CHAR-P
-// SYMBOL_TABLE_ENTRY        ClPkg  567 use_package                    USE-PACKAGE                    export ; cName=_sym_use_package lispName=USE-PACKAGE
-// SYMBOL_TABLE_ENTRY      CorePkg  568 makeRegex                      MAKE-REGEX                     export ; cName=_sym_makeRegex lispName=MAKE-REGEX
-// SYMBOL_TABLE_ENTRY        ClPkg  569 decodeFloat                    DECODE-FLOAT                   export ; cName=_sym_decodeFloat lispName=DECODE-FLOAT
-// SYMBOL_TABLE_ENTRY        ClPkg  570 STARgensym_counterSTAR         *GENSYM-COUNTER*               export ; cName=_sym_STARgensym_counterSTAR lispName=*GENSYM-COUNTER*
-// SYMBOL_TABLE_ENTRY      CorePkg  571 macro                          MACRO                          private ; cName=_sym_macro lispName=MACRO
-// SYMBOL_TABLE_ENTRY        ClPkg  572 TwoWayStream_O                 TWO-WAY-STREAM                 export ; cName=_sym_TwoWayStream_O lispName=TWO-WAY-STREAM
-// SYMBOL_TABLE_ENTRY        ClPkg  573 writeString                    WRITE-STRING                   export ; cName=_sym_writeString lispName=WRITE-STRING
-// SYMBOL_TABLE_ENTRY      CorePkg  574 _PLUS_activationFrameNil_PLUS_ +ACTIVATION-FRAME-NIL+         private ; cName=_sym__PLUS_activationFrameNil_PLUS_ lispName=+ACTIVATION-FRAME-NIL+
-// SYMBOL_TABLE_ENTRY        ClPkg  575 STARprint_arraySTAR            *PRINT-ARRAY*                  export ; cName=_sym_STARprint_arraySTAR lispName=*PRINT-ARRAY*
-// SYMBOL_TABLE_ENTRY        ClPkg  576 extended_char                  EXTENDED-CHAR                  export ; cName=_sym_extended_char lispName=EXTENDED-CHAR
-// SYMBOL_TABLE_ENTRY        ClPkg  577 compiled_function_p            COMPILED-FUNCTION-P            export ; cName=_sym_compiled_function_p lispName=COMPILED-FUNCTION-P
-// SYMBOL_TABLE_ENTRY      CorePkg  578 selectPackage                  SELECT-PACKAGE                 export ; cName=_sym_selectPackage lispName=SELECT-PACKAGE
-// SYMBOL_TABLE_ENTRY      CorePkg  579 STARenablePrintPrettySTAR      *ENABLE-PRINT-PRETTY*          export ; cName=_sym_STARenablePrintPrettySTAR lispName=*ENABLE-PRINT-PRETTY*
-// SYMBOL_TABLE_ENTRY        ClPkg  580 simpleTypeError                SIMPLE-TYPE-ERROR              export ; cName=_sym_simpleTypeError lispName=SIMPLE-TYPE-ERROR
-// SYMBOL_TABLE_ENTRY        ClPkg  581 dotimes                        DOTIMES                        export ; cName=_sym_dotimes lispName=DOTIMES
-// SYMBOL_TABLE_ENTRY      CorePkg  582 DirectoryIterator_O            DIRECTORY-ITERATOR             export ; cName=_sym_DirectoryIterator_O lispName=DIRECTORY-ITERATOR
-// SYMBOL_TABLE_ENTRY        ClPkg  583 package                        PACKAGE                        export ; cName=_sym_package lispName=PACKAGE
-// SYMBOL_TABLE_ENTRY        ClPkg  584 getUniversalTime               GET-UNIVERSAL-TIME             export ; cName=_sym_getUniversalTime lispName=GET-UNIVERSAL-TIME
-// SYMBOL_TABLE_ENTRY      CorePkg  585 LightUserData_O                LIGHT-USER-DATA                export ; cName=_sym_LightUserData_O lispName=LIGHT-USER-DATA
-// SYMBOL_TABLE_ENTRY        ClPkg  586 parseError                     PARSE-ERROR                    export ; cName=_sym_parseError lispName=PARSE-ERROR
-// SYMBOL_TABLE_ENTRY        ClPkg  587 output_stream_p                OUTPUT-STREAM-P                export ; cName=_sym_output_stream_p lispName=OUTPUT-STREAM-P
-// SYMBOL_TABLE_ENTRY        ClPkg  588 method                         METHOD                         export ; cName=_sym_method lispName=METHOD
-// SYMBOL_TABLE_ENTRY        ClPkg  589 denominator                    DENOMINATOR                    export ; cName=_sym_denominator lispName=DENOMINATOR
-// SYMBOL_TABLE_ENTRY      GrayPkg  590 stream_fresh_line              STREAM-FRESH-LINE              export ; cName=_sym_stream_fresh_line lispName=STREAM-FRESH-LINE
-// SYMBOL_TABLE_ENTRY      CorePkg  591 io                             IO                             private ; cName=_sym_io lispName=IO
-// SYMBOL_TABLE_ENTRY   KeywordPkg  592 landingPadFrame                LANDING-PAD-FRAME              export ; cName=_sym_landingPadFrame lispName=LANDING-PAD-FRAME
-// SYMBOL_TABLE_ENTRY        ClPkg  593 apply                          APPLY                          export ; cName=_sym_apply lispName=APPLY
-// SYMBOL_TABLE_ENTRY        ClPkg  594 eval                           EVAL                           export ; cName=_sym_eval lispName=EVAL
-// SYMBOL_TABLE_ENTRY        ClPkg  595 random                         RANDOM                         export ; cName=_sym_random lispName=RANDOM
-// SYMBOL_TABLE_ENTRY      ClosPkg  596 compute_applicable_methods_using_classes COMPUTE-APPLICABLE-METHODS-USING-CLASSES private ; cName=_sym_compute_applicable_methods_using_classes lispName=COMPUTE-APPLICABLE-METHODS-USING-CLASSES
-// SYMBOL_TABLE_ENTRY        ClPkg  597 member                         MEMBER                         export ; cName=_sym_member lispName=MEMBER
-// SYMBOL_TABLE_ENTRY      CorePkg  598 aset                           ASET                           private ; cName=_sym_aset lispName=ASET
-// SYMBOL_TABLE_ENTRY        ClPkg  599 programError                   PROGRAM-ERROR                  export ; cName=_sym_programError lispName=PROGRAM-ERROR
-// SYMBOL_TABLE_ENTRY        ClPkg  600 string_GT_                     STRING>                        export ; cName=_sym_string_GT_ lispName=STRING>
-// SYMBOL_TABLE_ENTRY      CorePkg  601 structure_include              STRUCTURE-INCLUDE              export ; cName=_sym_structure_include lispName=STRUCTURE-INCLUDE
-// SYMBOL_TABLE_ENTRY        ClPkg  602 EchoStream_O                   ECHO-STREAM                    export ; cName=_sym_EchoStream_O lispName=ECHO-STREAM
-// SYMBOL_TABLE_ENTRY      CorePkg  603 environmentList                ENVIRONMENT-LIST               private ; cName=_sym_environmentList lispName=ENVIRONMENT-LIST
-// SYMBOL_TABLE_ENTRY      CorePkg  604 STARsharp_equal_temp_tableSTAR *SHARP-EQUAL-TEMP-TABLE*       private ; cName=_sym_STARsharp_equal_temp_tableSTAR lispName=*SHARP-EQUAL-TEMP-TABLE*
-// SYMBOL_TABLE_ENTRY        ClPkg  605 compute_applicable_methods     COMPUTE-APPLICABLE-METHODS     export ; cName=_sym_compute_applicable_methods lispName=COMPUTE-APPLICABLE-METHODS
-// SYMBOL_TABLE_ENTRY      CorePkg  606 STARcurrentSourceFileInfoSTAR  *CURRENT-SOURCE-FILE-INFO*     export ; cName=_sym_STARcurrentSourceFileInfoSTAR lispName=*CURRENT-SOURCE-FILE-INFO*
-// SYMBOL_TABLE_ENTRY      CorePkg  607 unquote                        UNQUOTE                        private ; cName=_sym_unquote lispName=UNQUOTE
-// SYMBOL_TABLE_ENTRY      ClosPkg  608 aSingleClosSymbol              A-SINGLE-CLOS-SYMBOL           private ; cName=_sym_aSingleClosSymbol lispName=A-SINGLE-CLOS-SYMBOL
-// SYMBOL_TABLE_ENTRY      CorePkg  609 asinh                          ASINH                          export ; cName=_sym_asinh lispName=ASINH
-// SYMBOL_TABLE_ENTRY      CorePkg  610 bq_simplify                    BQ-SIMPLIFY                    private ; cName=_sym_bq_simplify lispName=BQ-SIMPLIFY
-// SYMBOL_TABLE_ENTRY        ClPkg  611 rationalp                      RATIONALP                      export ; cName=_sym_rationalp lispName=RATIONALP
-// SYMBOL_TABLE_ENTRY   KeywordPkg  612 not                            NOT                            export ; cName=_sym_not lispName=NOT
-// SYMBOL_TABLE_ENTRY      CorePkg  613 dynamicGo                      DYNAMIC-GO                     export ; cName=_sym_dynamicGo lispName=DYNAMIC-GO
-// SYMBOL_TABLE_ENTRY      CorePkg  614 loadBundle                     LOAD-BUNDLE                    private ; cName=_sym_loadBundle lispName=LOAD-BUNDLE
-// SYMBOL_TABLE_ENTRY   KeywordPkg  615 FullDebug                      FULL-DEBUG                     export ; cName=_sym_FullDebug lispName=FULL-DEBUG
-// SYMBOL_TABLE_ENTRY      CorePkg  616 MacroletEnvironment_O          MACROLET-ENVIRONMENT           export ; cName=_sym_MacroletEnvironment_O lispName=MACROLET-ENVIRONMENT
-// SYMBOL_TABLE_ENTRY   KeywordPkg  617 error                          ERROR                          export ; cName=_sym_error lispName=ERROR
-// SYMBOL_TABLE_ENTRY      CorePkg  618 alist                          ALIST                          private ; cName=_sym_alist lispName=ALIST
-// SYMBOL_TABLE_ENTRY        ClPkg  619 STARloadPathnameSTAR           *LOAD-PATHNAME*                export ; cName=_sym_STARloadPathnameSTAR lispName=*LOAD-PATHNAME*
-// SYMBOL_TABLE_ENTRY      CorePkg  620 separatePairList               SEPARATE-PAIR-LIST             private ; cName=_sym_separatePairList lispName=SEPARATE-PAIR-LIST
-// SYMBOL_TABLE_ENTRY   KeywordPkg  621 brcl                           BRCL                           export ; cName=_sym_brcl lispName=BRCL
-// SYMBOL_TABLE_ENTRY   KeywordPkg  622 special                        SPECIAL                        export ; cName=_sym_special lispName=SPECIAL
-// SYMBOL_TABLE_ENTRY        ClPkg  623 ConcatenatedStream_O           CONCATENATED-STREAM            export ; cName=_sym_ConcatenatedStream_O lispName=CONCATENATED-STREAM
-// SYMBOL_TABLE_ENTRY        ClPkg  624 freshLine                      FRESH-LINE                     export ; cName=_sym_freshLine lispName=FRESH-LINE
-// SYMBOL_TABLE_ENTRY        ClPkg  625 speed                          SPEED                          export ; cName=_sym_speed lispName=SPEED
-// SYMBOL_TABLE_ENTRY      CorePkg  626 sharedReferenceCountedPointer  SHARED-REFERENCE-COUNTED-POINTER private ; cName=_sym_sharedReferenceCountedPointer lispName=SHARED-REFERENCE-COUNTED-POINTER
-// SYMBOL_TABLE_ENTRY        ClPkg  627 min                            MIN                            export ; cName=_sym_min lispName=MIN
-// SYMBOL_TABLE_ENTRY   KeywordPkg  628 podSymbolMap                   POD-SYMBOL-MAP                 export ; cName=_sym_podSymbolMap lispName=POD-SYMBOL-MAP
-// SYMBOL_TABLE_ENTRY      CorePkg  629 environmentTypeList            ENVIRONMENT-TYPE-LIST          private ; cName=_sym_environmentTypeList lispName=ENVIRONMENT-TYPE-LIST
-// SYMBOL_TABLE_ENTRY        ClPkg  630 cerror                         CERROR                         export ; cName=_sym_cerror lispName=CERROR
-// SYMBOL_TABLE_ENTRY        ClPkg  631 values_list                    VALUES-LIST                    export ; cName=_sym_values_list lispName=VALUES-LIST
-// SYMBOL_TABLE_ENTRY        ClPkg  632 makeArray                      MAKE-ARRAY                     export ; cName=_sym_makeArray lispName=MAKE-ARRAY
-// SYMBOL_TABLE_ENTRY      CorePkg  633 backquote_splicing_frob        BACKQUOTE-SPLICING-FROB        private ; cName=_sym_backquote_splicing_frob lispName=BACKQUOTE-SPLICING-FROB
-// SYMBOL_TABLE_ENTRY   KeywordPkg  634 rehashSize                     REHASH-SIZE                    export ; cName=_sym_rehashSize lispName=REHASH-SIZE
-// SYMBOL_TABLE_ENTRY        ClPkg  635 boundp                         BOUNDP                         export ; cName=_sym_boundp lispName=BOUNDP
-// SYMBOL_TABLE_ENTRY        ClPkg  636 standard_class                 STANDARD-CLASS                 export ; cName=_sym_standard_class lispName=STANDARD-CLASS
-// SYMBOL_TABLE_ENTRY      CorePkg  637 STARdebugLoadTimeValuesSTAR    *DEBUG-LOAD-TIME-VALUES*       export ; cName=_sym_STARdebugLoadTimeValuesSTAR lispName=*DEBUG-LOAD-TIME-VALUES*
-// SYMBOL_TABLE_ENTRY CleavirPrimopsPkg  638 callWithVariableBound          CALL-WITH-VARIABLE-BOUND       export ; cName=_sym_callWithVariableBound lispName=CALL-WITH-VARIABLE-BOUND
-// SYMBOL_TABLE_ENTRY      CorePkg  639 STARsharp_equal_repl_tableSTAR *SHARP-EQUAL-REPL-TABLE*       private ; cName=_sym_STARsharp_equal_repl_tableSTAR lispName=*SHARP-EQUAL-REPL-TABLE*
-// SYMBOL_TABLE_ENTRY      CorePkg  640 acosh                          ACOSH                          export ; cName=_sym_acosh lispName=ACOSH
-// SYMBOL_TABLE_ENTRY       ExtPkg  641 AnsiStream_O                   ANSI-STREAM                    export ; cName=_sym_AnsiStream_O lispName=ANSI-STREAM
-// SYMBOL_TABLE_ENTRY      CorePkg  642 okey                           OKEY                           private ; cName=_sym_okey lispName=OKEY
-// SYMBOL_TABLE_ENTRY   KeywordPkg  643 create                         CREATE                         export ; cName=_sym_create lispName=CREATE
-// SYMBOL_TABLE_ENTRY        ClPkg  644 make_two_way_stream            MAKE-TWO-WAY-STREAM            export ; cName=_sym_make_two_way_stream lispName=MAKE-TWO-WAY-STREAM
-// SYMBOL_TABLE_ENTRY      CorePkg  645 setf_find_single_dispatch_generic_function SETF-FIND-SINGLE-DISPATCH-GENERIC-FUNCTION private ; cName=_sym_setf_find_single_dispatch_generic_function lispName=SETF-FIND-SINGLE-DISPATCH-GENERIC-FUNCTION
-// SYMBOL_TABLE_ENTRY        ClPkg  646 destructuring_bind             DESTRUCTURING-BIND             export ; cName=_sym_destructuring_bind lispName=DESTRUCTURING-BIND
-// SYMBOL_TABLE_ENTRY      CorePkg  647 atanh                          ATANH                          export ; cName=_sym_atanh lispName=ATANH
-// SYMBOL_TABLE_ENTRY      CorePkg  648 render                         RENDER                         private ; cName=_sym_render lispName=RENDER
-// SYMBOL_TABLE_ENTRY        ClPkg  649 name_char                      NAME-CHAR                      export ; cName=_sym_name_char lispName=NAME-CHAR
-// SYMBOL_TABLE_ENTRY        ClPkg  650 char_LT_                       CHAR<                          export ; cName=_sym_char_LT_ lispName=CHAR<
-// SYMBOL_TABLE_ENTRY        ClPkg  651 _NE_                           /=                             export ; cName=_sym__NE_ lispName=/=
-// SYMBOL_TABLE_ENTRY   KeywordPkg  652 invalid_character              INVALID-CHARACTER              export ; cName=_sym_invalid_character lispName=INVALID-CHARACTER
-// SYMBOL_TABLE_ENTRY        ClPkg  653 leastNegativeDoubleFloat       LEAST-NEGATIVE-DOUBLE-FLOAT    export ; cName=_sym_leastNegativeDoubleFloat lispName=LEAST-NEGATIVE-DOUBLE-FLOAT
-// SYMBOL_TABLE_ENTRY   KeywordPkg  654 ucs_4                          UCS-4                          export ; cName=_sym_ucs_4 lispName=UCS-4
-// SYMBOL_TABLE_ENTRY      CorePkg  655 intrusiveReferenceCountedPointer INTRUSIVE-REFERENCE-COUNTED-POINTER private ; cName=_sym_intrusiveReferenceCountedPointer lispName=INTRUSIVE-REFERENCE-COUNTED-POINTER
-// SYMBOL_TABLE_ENTRY        ClPkg  656 interactive_stream_p           INTERACTIVE-STREAM-P           export ; cName=_sym_interactive_stream_p lispName=INTERACTIVE-STREAM-P
-// SYMBOL_TABLE_ENTRY      CorePkg  657 findFileInLispPath             FIND-FILE-IN-LISP-PATH         private ; cName=_sym_findFileInLispPath lispName=FIND-FILE-IN-LISP-PATH
-// SYMBOL_TABLE_ENTRY        ClPkg  658 lambdaParametersLimit          LAMBDA-PARAMETERS-LIMIT        export ; cName=_sym_lambdaParametersLimit lispName=LAMBDA-PARAMETERS-LIMIT
-// SYMBOL_TABLE_ENTRY      CorePkg  659 end                            END                            private ; cName=_sym_end lispName=END
-// SYMBOL_TABLE_ENTRY      CorePkg  660 STARbq_clobberableSTAR         *BQ-CLOBBERABLE*               private ; cName=_sym_STARbq_clobberableSTAR lispName=*BQ-CLOBBERABLE*
-// SYMBOL_TABLE_ENTRY        ClPkg  661 last                           LAST                           export ; cName=_sym_last lispName=LAST
-// SYMBOL_TABLE_ENTRY      CorePkg  662 _PLUS_llvmTargetTriple_PLUS_   +LLVM-TARGET-TRIPLE+           private ; cName=_sym__PLUS_llvmTargetTriple_PLUS_ lispName=+LLVM-TARGET-TRIPLE+
-// SYMBOL_TABLE_ENTRY      CorePkg  663 RecursiveDirectoryIterator_O   RECURSIVE-DIRECTORY-ITERATOR   export ; cName=_sym_RecursiveDirectoryIterator_O lispName=RECURSIVE-DIRECTORY-ITERATOR
-// SYMBOL_TABLE_ENTRY        ClPkg  664 char_EQ_                       CHAR=                          export ; cName=_sym_char_EQ_ lispName=CHAR=
-// SYMBOL_TABLE_ENTRY      CorePkg  665 callWithVariableBound          CALL-WITH-VARIABLE-BOUND       export ; cName=_sym_callWithVariableBound lispName=CALL-WITH-VARIABLE-BOUND
-// SYMBOL_TABLE_ENTRY      GrayPkg  666 stream_terpri                  STREAM-TERPRI                  export ; cName=_sym_stream_terpri lispName=STREAM-TERPRI
-// SYMBOL_TABLE_ENTRY      CorePkg  667 STARbq_appendSTAR              *BQ-APPEND*                    private ; cName=_sym_STARbq_appendSTAR lispName=*BQ-APPEND*
-// SYMBOL_TABLE_ENTRY        ClPkg  668 simple_vector_p                SIMPLE-VECTOR-P                export ; cName=_sym_simple_vector_p lispName=SIMPLE-VECTOR-P
-// SYMBOL_TABLE_ENTRY      CorePkg  669 STARcircle_stackSTAR           *CIRCLE-STACK*                 export ; cName=_sym_STARcircle_stackSTAR lispName=*CIRCLE-STACK*
-// SYMBOL_TABLE_ENTRY   KeywordPkg  670 wild                           WILD                           export ; cName=_sym_wild lispName=WILD
-// SYMBOL_TABLE_ENTRY        ClPkg  671 Cons_O                         CONS                           export ; cName=_sym_Cons_O lispName=CONS
-// SYMBOL_TABLE_ENTRY        ClPkg  672 Stream_O                       STREAM                         export ; cName=_sym_Stream_O lispName=STREAM
-// SYMBOL_TABLE_ENTRY        ClPkg  673 AMPkey                         &KEY                           export ; cName=_sym_AMPkey lispName=&KEY
-// SYMBOL_TABLE_ENTRY      CorePkg  674 size_t                         SIZE-T                         export ; cName=_sym_size_t lispName=SIZE-T
-// SYMBOL_TABLE_ENTRY      CorePkg  675 sharp_asterisk                 SHARP-ASTERISK                 private ; cName=_sym_sharp_asterisk lispName=SHARP-ASTERISK
-// SYMBOL_TABLE_ENTRY   KeywordPkg  676 directory                      DIRECTORY                      export ; cName=_sym_directory lispName=DIRECTORY
-// SYMBOL_TABLE_ENTRY        ClPkg  677 step                           STEP                           export ; cName=_sym_step lispName=STEP
-// SYMBOL_TABLE_ENTRY      CorePkg  678 double_backquote               DOUBLE-BACKQUOTE               private ; cName=_sym_double_backquote lispName=DOUBLE-BACKQUOTE
-// SYMBOL_TABLE_ENTRY   KeywordPkg  679 if_does_not_exist              IF-DOES-NOT-EXIST              export ; cName=_sym_if_does_not_exist lispName=IF-DOES-NOT-EXIST
-// SYMBOL_TABLE_ENTRY      CorePkg  680 _PLUS_io_syntax_progv_list_PLUS_ +IO-SYNTAX-PROGV-LIST+         export ; cName=_sym__PLUS_io_syntax_progv_list_PLUS_ lispName=+IO-SYNTAX-PROGV-LIST+
-// SYMBOL_TABLE_ENTRY      CorePkg  681 STARsharp_equal_alistSTAR      *SHARP-EQUAL-ALIST*            private ; cName=_sym_STARsharp_equal_alistSTAR lispName=*SHARP-EQUAL-ALIST*
-// SYMBOL_TABLE_ENTRY        ClPkg  682 symbolFunction                 SYMBOL-FUNCTION                export ; cName=_sym_symbolFunction lispName=SYMBOL-FUNCTION
-// SYMBOL_TABLE_ENTRY      CorePkg  683 setThrowPosition               SET-THROW-POSITION             private ; cName=_sym_setThrowPosition lispName=SET-THROW-POSITION
-// SYMBOL_TABLE_ENTRY        ClPkg  684 Function_O                     FUNCTION                       export ; cName=_sym_Function_O lispName=FUNCTION
-// SYMBOL_TABLE_ENTRY   KeywordPkg  685 debug                          DEBUG                          export ; cName=_sym_debug lispName=DEBUG
-// SYMBOL_TABLE_ENTRY      CorePkg  686 _PLUS_executableName_PLUS_     +EXECUTABLE-NAME+              private ; cName=_sym__PLUS_executableName_PLUS_ lispName=+EXECUTABLE-NAME+
-// SYMBOL_TABLE_ENTRY        ClPkg  687 STARprint_linesSTAR            *PRINT-LINES*                  export ; cName=_sym_STARprint_linesSTAR lispName=*PRINT-LINES*
-// SYMBOL_TABLE_ENTRY      CorePkg  688 loadSource                     LOAD-SOURCE                    export ; cName=_sym_loadSource lispName=LOAD-SOURCE
-// SYMBOL_TABLE_ENTRY        ClPkg  689 multiple_value_call            MULTIPLE-VALUE-CALL            export ; cName=_sym_multiple_value_call lispName=MULTIPLE-VALUE-CALL
-// SYMBOL_TABLE_ENTRY   KeywordPkg  690 expectedType                   EXPECTED-TYPE                  export ; cName=_sym_expectedType lispName=EXPECTED-TYPE
-// SYMBOL_TABLE_ENTRY      CorePkg  691 repr                           REPR                           private ; cName=_sym_repr lispName=REPR
-// SYMBOL_TABLE_ENTRY      CorePkg  692 key                            KEY                            private ; cName=_sym_key lispName=KEY
-// SYMBOL_TABLE_ENTRY      CorePkg  693 SingleDispatchEffectiveMethodFunction_O SINGLE-DISPATCH-EFFECTIVE-METHOD-FUNCTION export ; cName=_sym_SingleDispatchEffectiveMethodFunction_O lispName=SINGLE-DISPATCH-EFFECTIVE-METHOD-FUNCTION
-// SYMBOL_TABLE_ENTRY      CorePkg  694 setupStackMonitor              SETUP-STACK-MONITOR            private ; cName=_sym_setupStackMonitor lispName=SETUP-STACK-MONITOR
-// SYMBOL_TABLE_ENTRY      CorePkg  695 sharp_equal                    SHARP-EQUAL                    private ; cName=_sym_sharp_equal lispName=SHARP-EQUAL
-// SYMBOL_TABLE_ENTRY        ClPkg  696 bit                            BIT                            export ; cName=_sym_bit lispName=BIT
-// SYMBOL_TABLE_ENTRY      CorePkg  697 quit                           QUIT                           private ; cName=_sym_quit lispName=QUIT
-// SYMBOL_TABLE_ENTRY        ClPkg  698 leastNegativeNormalizedShortFloat LEAST-NEGATIVE-NORMALIZED-SHORT-FLOAT export ; cName=_sym_leastNegativeNormalizedShortFloat lispName=LEAST-NEGATIVE-NORMALIZED-SHORT-FLOAT
-// SYMBOL_TABLE_ENTRY      CorePkg  699 STARllvmFunctionNameHookSTAR   *LLVM-FUNCTION-NAME-HOOK*      export ; cName=_sym_STARllvmFunctionNameHookSTAR lispName=*LLVM-FUNCTION-NAME-HOOK*
-// SYMBOL_TABLE_ENTRY      CorePkg  700 mapappend                      MAPAPPEND                      private ; cName=_sym_mapappend lispName=MAPAPPEND
-// SYMBOL_TABLE_ENTRY        ClPkg  701 error                          ERROR                          export ; cName=_sym_error lispName=ERROR
-// SYMBOL_TABLE_ENTRY      CorePkg  702 inheritDefaultAllocator        INHERIT-DEFAULT-ALLOCATOR      export ; cName=_sym_inheritDefaultAllocator lispName=INHERIT-DEFAULT-ALLOCATOR
-// SYMBOL_TABLE_ENTRY        ClPkg  703 storageCondition               STORAGE-CONDITION              export ; cName=_sym_storageCondition lispName=STORAGE-CONDITION
-// SYMBOL_TABLE_ENTRY        ClPkg  704 letSTAR                        LET*                           export ; cName=_sym_letSTAR lispName=LET*
-// SYMBOL_TABLE_ENTRY   KeywordPkg  705 io                             IO                             export ; cName=_sym_io lispName=IO
-// SYMBOL_TABLE_ENTRY      CorePkg  706 makeStringOutputStreamFromString MAKE-STRING-OUTPUT-STREAM-FROM-STRING export ; cName=_sym_makeStringOutputStreamFromString lispName=MAKE-STRING-OUTPUT-STREAM-FROM-STRING
-// SYMBOL_TABLE_ENTRY        ClPkg  707 simpleWarning                  SIMPLE-WARNING                 export ; cName=_sym_simpleWarning lispName=SIMPLE-WARNING
-// SYMBOL_TABLE_ENTRY      CorePkg  708 topLevelEvalWithEnv            TOP-LEVEL-EVAL-WITH-ENV        export ; cName=_sym_topLevelEvalWithEnv lispName=TOP-LEVEL-EVAL-WITH-ENV
+// SYMBOL_TABLE_ENTRY      GrayPkg  403 stream_read_char               STREAM-READ-CHAR               export ; cName=_sym_stream_read_char lispName=STREAM-READ-CHAR
+// SYMBOL_TABLE_ENTRY      CorePkg  404 LoadTimeValues_O               LOAD-TIME-VALUES               export ; cName=_sym_LoadTimeValues_O lispName=LOAD-TIME-VALUES
+// SYMBOL_TABLE_ENTRY        ClPkg  405 boole_c2                       BOOLE-C2                       export ; cName=_sym_boole_c2 lispName=BOOLE-C2
+// SYMBOL_TABLE_ENTRY        ClPkg  406 boole_c1                       BOOLE-C1                       export ; cName=_sym_boole_c1 lispName=BOOLE-C1
+// SYMBOL_TABLE_ENTRY        ClPkg  407 char_LE_                       CHAR<=                         export ; cName=_sym_char_LE_ lispName=CHAR<=
+// SYMBOL_TABLE_ENTRY   KeywordPkg  408 whitespace_character           WHITESPACE-CHARACTER           export ; cName=_sym_whitespace_character lispName=WHITESPACE-CHARACTER
+// SYMBOL_TABLE_ENTRY      CorePkg  409 mpi_rank                       MPI-RANK                       private ; cName=_sym_mpi_rank lispName=MPI-RANK
+// SYMBOL_TABLE_ENTRY      CorePkg  410 STARcommandLineImageSTAR       *COMMAND-LINE-IMAGE*           export ; cName=_sym_STARcommandLineImageSTAR lispName=*COMMAND-LINE-IMAGE*
+// SYMBOL_TABLE_ENTRY        ClPkg  411 getInternalRealTime            GET-INTERNAL-REAL-TIME         export ; cName=_sym_getInternalRealTime lispName=GET-INTERNAL-REAL-TIME
+// SYMBOL_TABLE_ENTRY        ClPkg  412 and                            AND                            export ; cName=_sym_and lispName=AND
+// SYMBOL_TABLE_ENTRY        ClPkg  413 maphash                        MAPHASH                        export ; cName=_sym_maphash lispName=MAPHASH
+// SYMBOL_TABLE_ENTRY        ClPkg  414 sqrt                           SQRT                           export ; cName=_sym_sqrt lispName=SQRT
+// SYMBOL_TABLE_ENTRY        ClPkg  415 getInternalRunTime             GET-INTERNAL-RUN-TIME          export ; cName=_sym_getInternalRunTime lispName=GET-INTERNAL-RUN-TIME
+// SYMBOL_TABLE_ENTRY        ClPkg  416 MultipleValuesLimit            MULTIPLE-VALUES-LIMIT          export ; cName=_sym_MultipleValuesLimit lispName=MULTIPLE-VALUES-LIMIT
+// SYMBOL_TABLE_ENTRY        ClPkg  417 setDispatchMacroCharacter      SET-DISPATCH-MACRO-CHARACTER   export ; cName=_sym_setDispatchMacroCharacter lispName=SET-DISPATCH-MACRO-CHARACTER
+// SYMBOL_TABLE_ENTRY      CorePkg  418 HashTableEql_O                 HASH-TABLE-EQL                 export ; cName=_sym_HashTableEql_O lispName=HASH-TABLE-EQL
+// SYMBOL_TABLE_ENTRY        ClPkg  419 Real_O                         REAL                           export ; cName=_sym_Real_O lispName=REAL
+// SYMBOL_TABLE_ENTRY      CorePkg  420 setCurrentWorkingDirectory     SET-CURRENT-WORKING-DIRECTORY  private ; cName=_sym_setCurrentWorkingDirectory lispName=SET-CURRENT-WORKING-DIRECTORY
+// SYMBOL_TABLE_ENTRY        ClPkg  421 ceiling                        CEILING                        export ; cName=_sym_ceiling lispName=CEILING
+// SYMBOL_TABLE_ENTRY      CorePkg  422 bdsVal                         BDS-VAL                        private ; cName=_sym_bdsVal lispName=BDS-VAL
+// SYMBOL_TABLE_ENTRY        ClPkg  423 notevery                       NOTEVERY                       export ; cName=_sym_notevery lispName=NOTEVERY
+// SYMBOL_TABLE_ENTRY      CorePkg  424 put_sysprop                    PUT-SYSPROP                    private ; cName=_sym_put_sysprop lispName=PUT-SYSPROP
+// SYMBOL_TABLE_ENTRY        ClPkg  425 char                           CHAR                           export ; cName=_sym_char lispName=CHAR
+// SYMBOL_TABLE_ENTRY   KeywordPkg  426 downcase                       DOWNCASE                       export ; cName=_sym_downcase lispName=DOWNCASE
+// SYMBOL_TABLE_ENTRY      CorePkg  427 all_keys                       ALL-KEYS                       private ; cName=_sym_all_keys lispName=ALL-KEYS
+// SYMBOL_TABLE_ENTRY      GrayPkg  428 open_stream_p                  OPEN-STREAM-P                  export ; cName=_sym_open_stream_p lispName=OPEN-STREAM-P
+// SYMBOL_TABLE_ENTRY      CorePkg  429 ensureSingleDispatchGenericFunction ENSURE-SINGLE-DISPATCH-GENERIC-FUNCTION export ; cName=_sym_ensureSingleDispatchGenericFunction lispName=ENSURE-SINGLE-DISPATCH-GENERIC-FUNCTION
+// SYMBOL_TABLE_ENTRY        ClPkg  430 sleep                          SLEEP                          export ; cName=_sym_sleep lispName=SLEEP
+// SYMBOL_TABLE_ENTRY        ClPkg  431 simple_array                   SIMPLE-ARRAY                   export ; cName=_sym_simple_array lispName=SIMPLE-ARRAY
+// SYMBOL_TABLE_ENTRY      CorePkg  432 STARenvironmentPrintingTabIncrementSTAR *ENVIRONMENT-PRINTING-TAB-INCREMENT* private ; cName=_sym_STARenvironmentPrintingTabIncrementSTAR lispName=*ENVIRONMENT-PRINTING-TAB-INCREMENT*
+// SYMBOL_TABLE_ENTRY        ClPkg  433 equal                          EQUAL                          export ; cName=_sym_equal lispName=EQUAL
+// SYMBOL_TABLE_ENTRY        ClPkg  434 special                        SPECIAL                        export ; cName=_sym_special lispName=SPECIAL
+// SYMBOL_TABLE_ENTRY      CorePkg  435 STARsharpEqContextSTAR         *SHARP-EQ-CONTEXT*             private ; cName=_sym_STARsharpEqContextSTAR lispName=*SHARP-EQ-CONTEXT*
+// SYMBOL_TABLE_ENTRY      CorePkg  436 STARfset                       *FSET                          private ; cName=_sym_STARfset lispName=*FSET
+// SYMBOL_TABLE_ENTRY        ClPkg  437 userHomedirPathname            USER-HOMEDIR-PATHNAME          export ; cName=_sym_userHomedirPathname lispName=USER-HOMEDIR-PATHNAME
+// SYMBOL_TABLE_ENTRY      CorePkg  438 _PLUS_ecl_syntax_progv_list_PLUS_ +ECL-SYNTAX-PROGV-LIST+        export ; cName=_sym__PLUS_ecl_syntax_progv_list_PLUS_ lispName=+ECL-SYNTAX-PROGV-LIST+
+// SYMBOL_TABLE_ENTRY        ClPkg  439 leastPositiveNormalizedShortFloat LEAST-POSITIVE-NORMALIZED-SHORT-FLOAT export ; cName=_sym_leastPositiveNormalizedShortFloat lispName=LEAST-POSITIVE-NORMALIZED-SHORT-FLOAT
+// SYMBOL_TABLE_ENTRY   KeywordPkg  440 direct_super_classes           DIRECT-SUPER-CLASSES           export ; cName=_sym_direct_super_classes lispName=DIRECT-SUPER-CLASSES
+// SYMBOL_TABLE_ENTRY      CorePkg  441 loadCando                      LOAD-CANDO                     private ; cName=_sym_loadCando lispName=LOAD-CANDO
+// SYMBOL_TABLE_ENTRY   KeywordPkg  442 tagbodyFrame                   TAGBODY-FRAME                  export ; cName=_sym_tagbodyFrame lispName=TAGBODY-FRAME
+// SYMBOL_TABLE_ENTRY        ClPkg  443 hash_table_p                   HASH-TABLE-P                   export ; cName=_sym_hash_table_p lispName=HASH-TABLE-P
+// SYMBOL_TABLE_ENTRY      CorePkg  444 invocationHistoryFrame         INVOCATION-HISTORY-FRAME       export ; cName=_sym_invocationHistoryFrame lispName=INVOCATION-HISTORY-FRAME
+// SYMBOL_TABLE_ENTRY      CorePkg  445 structureRef                   STRUCTURE-REF                  export ; cName=_sym_structureRef lispName=STRUCTURE-REF
+// SYMBOL_TABLE_ENTRY      CorePkg  446 file_kind                      FILE-KIND                      export ; cName=_sym_file_kind lispName=FILE-KIND
+// SYMBOL_TABLE_ENTRY      CorePkg  447 IOStreamStream_O               IOSTREAM-STREAM                export ; cName=_sym_IOStreamStream_O lispName=IOSTREAM-STREAM
+// SYMBOL_TABLE_ENTRY      CorePkg  448 dimensions                     DIMENSIONS                     private ; cName=_sym_dimensions lispName=DIMENSIONS
+// SYMBOL_TABLE_ENTRY      CorePkg  449 sharp_minus                    SHARP-MINUS                    private ; cName=_sym_sharp_minus lispName=SHARP-MINUS
+// SYMBOL_TABLE_ENTRY       ExtPkg  450 integer8                       INTEGER8                       private ; cName=_sym_integer8 lispName=INTEGER8
+// SYMBOL_TABLE_ENTRY        ClPkg  451 nextMethodP                    NEXT-METHOD-P                  export ; cName=_sym_nextMethodP lispName=NEXT-METHOD-P
+// SYMBOL_TABLE_ENTRY        ClPkg  452 export                         EXPORT                         export ; cName=_sym_export lispName=EXPORT
+// SYMBOL_TABLE_ENTRY        ClPkg  453 leastPositiveNormalizedDoubleFloat LEAST-POSITIVE-NORMALIZED-DOUBLE-FLOAT export ; cName=_sym_leastPositiveNormalizedDoubleFloat lispName=LEAST-POSITIVE-NORMALIZED-DOUBLE-FLOAT
+// SYMBOL_TABLE_ENTRY      CorePkg  454 ensure_documentation           ENSURE-DOCUMENTATION           private ; cName=_sym_ensure_documentation lispName=ENSURE-DOCUMENTATION
+// SYMBOL_TABLE_ENTRY      CorePkg  455 clock_gettime_nanoseconds      CLOCK-GETTIME-NANOSECONDS      private ; cName=_sym_clock_gettime_nanoseconds lispName=CLOCK-GETTIME-NANOSECONDS
+// SYMBOL_TABLE_ENTRY   KeywordPkg  456 execute                        EXECUTE                        export ; cName=_sym_execute lispName=EXECUTE
+// SYMBOL_TABLE_ENTRY        ClPkg  457 clrhash                        CLRHASH                        export ; cName=_sym_clrhash lispName=CLRHASH
+// SYMBOL_TABLE_ENTRY      CorePkg  458 start                          START                          private ; cName=_sym_start lispName=START
+// SYMBOL_TABLE_ENTRY      CorePkg  459 threadInfo                     THREAD-INFO                    export ; cName=_sym_threadInfo lispName=THREAD-INFO
+// SYMBOL_TABLE_ENTRY      CorePkg  460 backquote_attach_append        BACKQUOTE-ATTACH-APPEND        private ; cName=_sym_backquote_attach_append lispName=BACKQUOTE-ATTACH-APPEND
+// SYMBOL_TABLE_ENTRY        ClPkg  461 Integer_O                      INTEGER                        export ; cName=_sym_Integer_O lispName=INTEGER
+// SYMBOL_TABLE_ENTRY      CorePkg  462 wrongTypeNthArg                WRONG-TYPE-NTH-ARG             export ; cName=_sym_wrongTypeNthArg lispName=WRONG-TYPE-NTH-ARG
+// SYMBOL_TABLE_ENTRY        ClPkg  463 define_modify_macro            DEFINE-MODIFY-MACRO            export ; cName=_sym_define_modify_macro lispName=DEFINE-MODIFY-MACRO
+// SYMBOL_TABLE_ENTRY        ClPkg  464 append                         APPEND                         export ; cName=_sym_append lispName=APPEND
+// SYMBOL_TABLE_ENTRY        ClPkg  465 most_positive_fixnum           MOST-POSITIVE-FIXNUM           export ; cName=_sym_most_positive_fixnum lispName=MOST-POSITIVE-FIXNUM
+// SYMBOL_TABLE_ENTRY      CorePkg  466 IOFileStream_O                 IOFILE-STREAM                  export ; cName=_sym_IOFileStream_O lispName=IOFILE-STREAM
+// SYMBOL_TABLE_ENTRY        ClPkg  467 reverse                        REVERSE                        export ; cName=_sym_reverse lispName=REVERSE
+// SYMBOL_TABLE_ENTRY      GrayPkg  468 stream_file_position           STREAM-FILE-POSITION           export ; cName=_sym_stream_file_position lispName=STREAM-FILE-POSITION
+// SYMBOL_TABLE_ENTRY      CorePkg  469 STARcurrent_working_directorySTAR *CURRENT-WORKING-DIRECTORY*    private ; cName=_sym_STARcurrent_working_directorySTAR lispName=*CURRENT-WORKING-DIRECTORY*
+// SYMBOL_TABLE_ENTRY      CorePkg  470 runtimeEnvironment             RUNTIME-ENVIRONMENT            private ; cName=_sym_runtimeEnvironment lispName=RUNTIME-ENVIRONMENT
+// SYMBOL_TABLE_ENTRY        ClPkg  471 char_GE_                       CHAR>=                         export ; cName=_sym_char_GE_ lispName=CHAR>=
+// SYMBOL_TABLE_ENTRY        ClPkg  472 the                            THE                            export ; cName=_sym_the lispName=THE
+// SYMBOL_TABLE_ENTRY   KeywordPkg  473 use_mps                        USE-MPS                        export ; cName=_sym_use_mps lispName=USE-MPS
+// SYMBOL_TABLE_ENTRY        ClPkg  474 read_preserving_whitespace     READ-PRESERVING-WHITESPACE     export ; cName=_sym_read_preserving_whitespace lispName=READ-PRESERVING-WHITESPACE
+// SYMBOL_TABLE_ENTRY        ClPkg  475 asinh                          ASINH                          export ; cName=_sym_asinh lispName=ASINH
+// SYMBOL_TABLE_ENTRY      CorePkg  476 instanceClassSet               INSTANCE-CLASS-SET             export ; cName=_sym_instanceClassSet lispName=INSTANCE-CLASS-SET
+// SYMBOL_TABLE_ENTRY        ClPkg  477 union                          UNION                          export ; cName=_sym_union lispName=UNION
+// SYMBOL_TABLE_ENTRY        ClPkg  478 fboundp                        FBOUNDP                        export ; cName=_sym_fboundp lispName=FBOUNDP
+// SYMBOL_TABLE_ENTRY        ClPkg  479 character                      CHARACTER                      export ; cName=_sym_character lispName=CHARACTER
+// SYMBOL_TABLE_ENTRY        ClPkg  480 asin                           ASIN                           export ; cName=_sym_asin lispName=ASIN
+// SYMBOL_TABLE_ENTRY        ClPkg  481 Rational_O                     RATIONAL                       export ; cName=_sym_Rational_O lispName=RATIONAL
+// SYMBOL_TABLE_ENTRY        ClPkg  482 digitCharP                     DIGIT-CHAR-P                   export ; cName=_sym_digitCharP lispName=DIGIT-CHAR-P
+// SYMBOL_TABLE_ENTRY        ClPkg  483 no_applicable_method           NO-APPLICABLE-METHOD           export ; cName=_sym_no_applicable_method lispName=NO-APPLICABLE-METHOD
+// SYMBOL_TABLE_ENTRY        ClPkg  484 enoughNamestring               ENOUGH-NAMESTRING              export ; cName=_sym_enoughNamestring lispName=ENOUGH-NAMESTRING
+// SYMBOL_TABLE_ENTRY      CorePkg  485 STARbq_quoteSTAR               *BQ-QUOTE*                     private ; cName=_sym_STARbq_quoteSTAR lispName=*BQ-QUOTE*
+// SYMBOL_TABLE_ENTRY      CorePkg  486 reader_list_allow_consing_dot  READER-LIST-ALLOW-CONSING-DOT  private ; cName=_sym_reader_list_allow_consing_dot lispName=READER-LIST-ALLOW-CONSING-DOT
+// SYMBOL_TABLE_ENTRY      CorePkg  487 libraryPath                    LIBRARY-PATH                   private ; cName=_sym_libraryPath lispName=LIBRARY-PATH
+// SYMBOL_TABLE_ENTRY      CorePkg  488 STARconsing_dot_allowedSTAR    *CONSING-DOT-ALLOWED*          private ; cName=_sym_STARconsing_dot_allowedSTAR lispName=*CONSING-DOT-ALLOWED*
+// SYMBOL_TABLE_ENTRY      CorePkg  489 coerceToFilePathname           COERCE-TO-FILE-PATHNAME        export ; cName=_sym_coerceToFilePathname lispName=COERCE-TO-FILE-PATHNAME
+// SYMBOL_TABLE_ENTRY        ClPkg  490 STARloadTruenameSTAR           *LOAD-TRUENAME*                export ; cName=_sym_STARloadTruenameSTAR lispName=*LOAD-TRUENAME*
+// SYMBOL_TABLE_ENTRY   KeywordPkg  491 calledFunction                 CALLED-FUNCTION                export ; cName=_sym_calledFunction lispName=CALLED-FUNCTION
+// SYMBOL_TABLE_ENTRY   KeywordPkg  492 preserve                       PRESERVE                       export ; cName=_sym_preserve lispName=PRESERVE
+// SYMBOL_TABLE_ENTRY      ClosPkg  493 standardOptimizedWriterMethod  STANDARD-OPTIMIZED-WRITER-METHOD private ; cName=_sym_standardOptimizedWriterMethod lispName=STANDARD-OPTIMIZED-WRITER-METHOD
+// SYMBOL_TABLE_ENTRY        ClPkg  494 two_way_stream_input_stream    TWO-WAY-STREAM-INPUT-STREAM    export ; cName=_sym_two_way_stream_input_stream lispName=TWO-WAY-STREAM-INPUT-STREAM
+// SYMBOL_TABLE_ENTRY      GrayPkg  495 stream_clear_input             STREAM-CLEAR-INPUT             export ; cName=_sym_stream_clear_input lispName=STREAM-CLEAR-INPUT
+// SYMBOL_TABLE_ENTRY      CorePkg  496 LexicalEnvironment_O           LEXICAL-ENVIRONMENT            export ; cName=_sym_LexicalEnvironment_O lispName=LEXICAL-ENVIRONMENT
+// SYMBOL_TABLE_ENTRY      ClosPkg  497 standardOptimizedReaderMethod  STANDARD-OPTIMIZED-READER-METHOD private ; cName=_sym_standardOptimizedReaderMethod lispName=STANDARD-OPTIMIZED-READER-METHOD
+// SYMBOL_TABLE_ENTRY      CorePkg  498 backquote_attach_conses        BACKQUOTE-ATTACH-CONSES        private ; cName=_sym_backquote_attach_conses lispName=BACKQUOTE-ATTACH-CONSES
+// SYMBOL_TABLE_ENTRY      CorePkg  499 bdsVar                         BDS-VAR                        private ; cName=_sym_bdsVar lispName=BDS-VAR
+// SYMBOL_TABLE_ENTRY      CorePkg  500 STARdebugReaderSTAR            *DEBUG-READER*                 export ; cName=_sym_STARdebugReaderSTAR lispName=*DEBUG-READER*
+// SYMBOL_TABLE_ENTRY   KeywordPkg  501 name                           NAME                           export ; cName=_sym_name lispName=NAME
+// SYMBOL_TABLE_ENTRY      CorePkg  502 SexpSaveArchive_O              SEXP-SAVE-ARCHIVE              export ; cName=_sym_SexpSaveArchive_O lispName=SEXP-SAVE-ARCHIVE
+// SYMBOL_TABLE_ENTRY      CorePkg  503 setfElt                        SETF-ELT                       export ; cName=_sym_setfElt lispName=SETF-ELT
+// SYMBOL_TABLE_ENTRY      CorePkg  504 dumpTaggedFixnum               DUMP-TAGGED-FIXNUM             export ; cName=_sym_dumpTaggedFixnum lispName=DUMP-TAGGED-FIXNUM
+// SYMBOL_TABLE_ENTRY      GrayPkg  505 stream_read_byte               STREAM-READ-BYTE               export ; cName=_sym_stream_read_byte lispName=STREAM-READ-BYTE
+// SYMBOL_TABLE_ENTRY        ClPkg  506 copyList                       COPY-LIST                      export ; cName=_sym_copyList lispName=COPY-LIST
+// SYMBOL_TABLE_ENTRY        ClPkg  507 read_line                      READ-LINE                      export ; cName=_sym_read_line lispName=READ-LINE
+// SYMBOL_TABLE_ENTRY        ClPkg  508 T_O                            T                              export ; cName=_sym_T_O lispName=T
+// SYMBOL_TABLE_ENTRY        ClPkg  509 count                          COUNT                          export ; cName=_sym_count lispName=COUNT
+// SYMBOL_TABLE_ENTRY        ClPkg  510 macrolet                       MACROLET                       export ; cName=_sym_macrolet lispName=MACROLET
+// SYMBOL_TABLE_ENTRY        ClPkg  511 readSequence                   READ-SEQUENCE                  export ; cName=_sym_readSequence lispName=READ-SEQUENCE
+// SYMBOL_TABLE_ENTRY      CorePkg  512 evaluateVerbosity              EVALUATE-VERBOSITY             private ; cName=_sym_evaluateVerbosity lispName=EVALUATE-VERBOSITY
+// SYMBOL_TABLE_ENTRY        ClPkg  513 array_rank_limit               ARRAY-RANK-LIMIT               export ; cName=_sym_array_rank_limit lispName=ARRAY-RANK-LIMIT
+// SYMBOL_TABLE_ENTRY   KeywordPkg  514 eval                           EVAL                           export ; cName=_sym_eval lispName=EVAL
+// SYMBOL_TABLE_ENTRY        ClPkg  515 let                            LET                            export ; cName=_sym_let lispName=LET
+// SYMBOL_TABLE_ENTRY        ClPkg  516 pathnameDevice                 PATHNAME-DEVICE                export ; cName=_sym_pathnameDevice lispName=PATHNAME-DEVICE
+// SYMBOL_TABLE_ENTRY      CorePkg  517 tooFewArguments                TOO-FEW-ARGUMENTS              private ; cName=_sym_tooFewArguments lispName=TOO-FEW-ARGUMENTS
+// SYMBOL_TABLE_ENTRY        ClPkg  518 shadow                         SHADOW                         export ; cName=_sym_shadow lispName=SHADOW
+// SYMBOL_TABLE_ENTRY      CorePkg  519 STARdebugMonitorSTAR           *DEBUG-MONITOR*                private ; cName=_sym_STARdebugMonitorSTAR lispName=*DEBUG-MONITOR*
+// SYMBOL_TABLE_ENTRY        ClPkg  520 STARmodulesSTAR                *MODULES*                      export ; cName=_sym_STARmodulesSTAR lispName=*MODULES*
+// SYMBOL_TABLE_ENTRY        ClPkg  521 round                          ROUND                          export ; cName=_sym_round lispName=ROUND
+// SYMBOL_TABLE_ENTRY        ClPkg  522 zerop                          ZEROP                          export ; cName=_sym_zerop lispName=ZEROP
+// SYMBOL_TABLE_ENTRY   KeywordPkg  523 supersede                      SUPERSEDE                      export ; cName=_sym_supersede lispName=SUPERSEDE
+// SYMBOL_TABLE_ENTRY      GrayPkg  524 stream_unread_char             STREAM-UNREAD-CHAR             export ; cName=_sym_stream_unread_char lispName=STREAM-UNREAD-CHAR
+// SYMBOL_TABLE_ENTRY        ClPkg  525 get                            GET                            export ; cName=_sym_get lispName=GET
+// SYMBOL_TABLE_ENTRY        ClPkg  526 leastPositiveSingleFloat       LEAST-POSITIVE-SINGLE-FLOAT    export ; cName=_sym_leastPositiveSingleFloat lispName=LEAST-POSITIVE-SINGLE-FLOAT
+// SYMBOL_TABLE_ENTRY      CorePkg  527 foreach                        FOREACH                        private ; cName=_sym_foreach lispName=FOREACH
+// SYMBOL_TABLE_ENTRY      CorePkg  528 tmv                            TMV                            export ; cName=_sym_tmv lispName=TMV
+// SYMBOL_TABLE_ENTRY        ClPkg  529 Number_O                       NUMBER                         export ; cName=_sym_Number_O lispName=NUMBER
+// SYMBOL_TABLE_ENTRY   KeywordPkg  530 rename                         RENAME                         export ; cName=_sym_rename lispName=RENAME
+// SYMBOL_TABLE_ENTRY        ClPkg  531 compile                        COMPILE                        export ; cName=_sym_compile lispName=COMPILE
+// SYMBOL_TABLE_ENTRY        ClPkg  532 string_upcase                  STRING-UPCASE                  export ; cName=_sym_string_upcase lispName=STRING-UPCASE
+// SYMBOL_TABLE_ENTRY      CorePkg  533 STARargsSTAR                   *ARGS*                         private ; cName=_sym_STARargsSTAR lispName=*ARGS*
+// SYMBOL_TABLE_ENTRY        ClPkg  534 scaleFloat                     SCALE-FLOAT                    export ; cName=_sym_scaleFloat lispName=SCALE-FLOAT
+// SYMBOL_TABLE_ENTRY        ClPkg  535 describe                       DESCRIBE                       export ; cName=_sym_describe lispName=DESCRIBE
+// SYMBOL_TABLE_ENTRY        ClPkg  536 ReadTable_O                    READTABLE                      export ; cName=_sym_ReadTable_O lispName=READTABLE
+// SYMBOL_TABLE_ENTRY   KeywordPkg  537 rtld_next                      RTLD-NEXT                      export ; cName=_sym_rtld_next lispName=RTLD-NEXT
+// SYMBOL_TABLE_ENTRY   KeywordPkg  538 debugStartup                   DEBUG-STARTUP                  export ; cName=_sym_debugStartup lispName=DEBUG-STARTUP
+// SYMBOL_TABLE_ENTRY   KeywordPkg  539 givenNumberOfArguments         GIVEN-NUMBER-OF-ARGUMENTS      export ; cName=_sym_givenNumberOfArguments lispName=GIVEN-NUMBER-OF-ARGUMENTS
+// SYMBOL_TABLE_ENTRY      CorePkg  540 FunctionValueEnvironment_O     FUNCTION-VALUE-ENVIRONMENT     export ; cName=_sym_FunctionValueEnvironment_O lispName=FUNCTION-VALUE-ENVIRONMENT
+// SYMBOL_TABLE_ENTRY      CorePkg  541 acos                           ACOS                           export ; cName=_sym_acos lispName=ACOS
+// SYMBOL_TABLE_ENTRY      CorePkg  542 integer_divide                 INTEGER-DIVIDE                 export ; cName=_sym_integer_divide lispName=INTEGER-DIVIDE
+// SYMBOL_TABLE_ENTRY        ClPkg  543 listSTAR                       LIST*                          export ; cName=_sym_listSTAR lispName=LIST*
+// SYMBOL_TABLE_ENTRY        ClPkg  544 mostPositiveSingleFloat        MOST-POSITIVE-SINGLE-FLOAT     export ; cName=_sym_mostPositiveSingleFloat lispName=MOST-POSITIVE-SINGLE-FLOAT
+// SYMBOL_TABLE_ENTRY        ClPkg  545 compute_restarts               COMPUTE-RESTARTS               export ; cName=_sym_compute_restarts lispName=COMPUTE-RESTARTS
+// SYMBOL_TABLE_ENTRY      CorePkg  546 unquote_splice                 UNQUOTE-SPLICE                 private ; cName=_sym_unquote_splice lispName=UNQUOTE-SPLICE
+// SYMBOL_TABLE_ENTRY        ClPkg  547 standard_char_p                STANDARD-CHAR-P                export ; cName=_sym_standard_char_p lispName=STANDARD-CHAR-P
+// SYMBOL_TABLE_ENTRY        ClPkg  548 boole_eqv                      BOOLE-EQV                      export ; cName=_sym_boole_eqv lispName=BOOLE-EQV
+// SYMBOL_TABLE_ENTRY        ClPkg  549 remove                         REMOVE                         export ; cName=_sym_remove lispName=REMOVE
+// SYMBOL_TABLE_ENTRY   KeywordPkg  550 bigEndian                      BIG-ENDIAN                     export ; cName=_sym_bigEndian lispName=BIG-ENDIAN
+// SYMBOL_TABLE_ENTRY        ClPkg  551 leastNegativeSingleFloat       LEAST-NEGATIVE-SINGLE-FLOAT    export ; cName=_sym_leastNegativeSingleFloat lispName=LEAST-NEGATIVE-SINGLE-FLOAT
+// SYMBOL_TABLE_ENTRY   KeywordPkg  552 address_model_32               ADDRESS-MODEL-32               export ; cName=_sym_address_model_32 lispName=ADDRESS-MODEL-32
+// SYMBOL_TABLE_ENTRY      CorePkg  553 reader_quote                   READER-QUOTE                   private ; cName=_sym_reader_quote lispName=READER-QUOTE
+// SYMBOL_TABLE_ENTRY      CorePkg  554 _SHARP__BANG_                  -SHARP--BANG-                  export ; cName=_sym__SHARP__BANG_ lispName=-SHARP--BANG-
+// SYMBOL_TABLE_ENTRY        ClPkg  555 logical_pathname               LOGICAL-PATHNAME               export ; cName=_sym_logical_pathname lispName=LOGICAL-PATHNAME
+// SYMBOL_TABLE_ENTRY        ClPkg  556 string_EQ_                     STRING=                        export ; cName=_sym_string_EQ_ lispName=STRING=
+// SYMBOL_TABLE_ENTRY        ClPkg  557 floatingPointInexact           FLOATING-POINT-INEXACT         export ; cName=_sym_floatingPointInexact lispName=FLOATING-POINT-INEXACT
+// SYMBOL_TABLE_ENTRY        ClPkg  558 logand                         LOGAND                         export ; cName=_sym_logand lispName=LOGAND
+// SYMBOL_TABLE_ENTRY      CorePkg  559 symbolMacroletLambda           SYMBOL-MACROLET-LAMBDA         export ; cName=_sym_symbolMacroletLambda lispName=SYMBOL-MACROLET-LAMBDA
+// SYMBOL_TABLE_ENTRY      CorePkg  560 WeakKeyMapping_O               WEAK-KEY-MAPPING               export ; cName=_sym_WeakKeyMapping_O lispName=WEAK-KEY-MAPPING
+// SYMBOL_TABLE_ENTRY        ClPkg  561 writeByte                      WRITE-BYTE                     export ; cName=_sym_writeByte lispName=WRITE-BYTE
+// SYMBOL_TABLE_ENTRY      CorePkg  562 StringSet_O                    STRING-SET                     export ; cName=_sym_StringSet_O lispName=STRING-SET
+// SYMBOL_TABLE_ENTRY      CorePkg  563 makeStructure                  MAKE-STRUCTURE                 export ; cName=_sym_makeStructure lispName=MAKE-STRUCTURE
+// SYMBOL_TABLE_ENTRY        ClPkg  564 StandardClass_O                STANDARD-CLASS                 export ; cName=_sym_StandardClass_O lispName=STANDARD-CLASS
+// SYMBOL_TABLE_ENTRY        ClPkg  565 go                             GO                             export ; cName=_sym_go lispName=GO
+// SYMBOL_TABLE_ENTRY   KeywordPkg  566 ecl_min                        ECL-MIN                        export ; cName=_sym_ecl_min lispName=ECL-MIN
+// SYMBOL_TABLE_ENTRY        ClPkg  567 alpha_char_p                   ALPHA-CHAR-P                   export ; cName=_sym_alpha_char_p lispName=ALPHA-CHAR-P
+// SYMBOL_TABLE_ENTRY        ClPkg  568 use_package                    USE-PACKAGE                    export ; cName=_sym_use_package lispName=USE-PACKAGE
+// SYMBOL_TABLE_ENTRY      CorePkg  569 makeRegex                      MAKE-REGEX                     export ; cName=_sym_makeRegex lispName=MAKE-REGEX
+// SYMBOL_TABLE_ENTRY        ClPkg  570 decodeFloat                    DECODE-FLOAT                   export ; cName=_sym_decodeFloat lispName=DECODE-FLOAT
+// SYMBOL_TABLE_ENTRY        ClPkg  571 STARgensym_counterSTAR         *GENSYM-COUNTER*               export ; cName=_sym_STARgensym_counterSTAR lispName=*GENSYM-COUNTER*
+// SYMBOL_TABLE_ENTRY      CorePkg  572 macro                          MACRO                          private ; cName=_sym_macro lispName=MACRO
+// SYMBOL_TABLE_ENTRY        ClPkg  573 TwoWayStream_O                 TWO-WAY-STREAM                 export ; cName=_sym_TwoWayStream_O lispName=TWO-WAY-STREAM
+// SYMBOL_TABLE_ENTRY        ClPkg  574 writeString                    WRITE-STRING                   export ; cName=_sym_writeString lispName=WRITE-STRING
+// SYMBOL_TABLE_ENTRY      CorePkg  575 _PLUS_activationFrameNil_PLUS_ +ACTIVATION-FRAME-NIL+         private ; cName=_sym__PLUS_activationFrameNil_PLUS_ lispName=+ACTIVATION-FRAME-NIL+
+// SYMBOL_TABLE_ENTRY        ClPkg  576 STARprint_arraySTAR            *PRINT-ARRAY*                  export ; cName=_sym_STARprint_arraySTAR lispName=*PRINT-ARRAY*
+// SYMBOL_TABLE_ENTRY        ClPkg  577 extended_char                  EXTENDED-CHAR                  export ; cName=_sym_extended_char lispName=EXTENDED-CHAR
+// SYMBOL_TABLE_ENTRY        ClPkg  578 compiled_function_p            COMPILED-FUNCTION-P            export ; cName=_sym_compiled_function_p lispName=COMPILED-FUNCTION-P
+// SYMBOL_TABLE_ENTRY      CorePkg  579 selectPackage                  SELECT-PACKAGE                 export ; cName=_sym_selectPackage lispName=SELECT-PACKAGE
+// SYMBOL_TABLE_ENTRY      CorePkg  580 STARenablePrintPrettySTAR      *ENABLE-PRINT-PRETTY*          export ; cName=_sym_STARenablePrintPrettySTAR lispName=*ENABLE-PRINT-PRETTY*
+// SYMBOL_TABLE_ENTRY        ClPkg  581 simpleTypeError                SIMPLE-TYPE-ERROR              export ; cName=_sym_simpleTypeError lispName=SIMPLE-TYPE-ERROR
+// SYMBOL_TABLE_ENTRY        ClPkg  582 dotimes                        DOTIMES                        export ; cName=_sym_dotimes lispName=DOTIMES
+// SYMBOL_TABLE_ENTRY      CorePkg  583 DirectoryIterator_O            DIRECTORY-ITERATOR             export ; cName=_sym_DirectoryIterator_O lispName=DIRECTORY-ITERATOR
+// SYMBOL_TABLE_ENTRY        ClPkg  584 package                        PACKAGE                        export ; cName=_sym_package lispName=PACKAGE
+// SYMBOL_TABLE_ENTRY        ClPkg  585 getUniversalTime               GET-UNIVERSAL-TIME             export ; cName=_sym_getUniversalTime lispName=GET-UNIVERSAL-TIME
+// SYMBOL_TABLE_ENTRY      CorePkg  586 LightUserData_O                LIGHT-USER-DATA                export ; cName=_sym_LightUserData_O lispName=LIGHT-USER-DATA
+// SYMBOL_TABLE_ENTRY        ClPkg  587 parseError                     PARSE-ERROR                    export ; cName=_sym_parseError lispName=PARSE-ERROR
+// SYMBOL_TABLE_ENTRY        ClPkg  588 output_stream_p                OUTPUT-STREAM-P                export ; cName=_sym_output_stream_p lispName=OUTPUT-STREAM-P
+// SYMBOL_TABLE_ENTRY        ClPkg  589 method                         METHOD                         export ; cName=_sym_method lispName=METHOD
+// SYMBOL_TABLE_ENTRY        ClPkg  590 denominator                    DENOMINATOR                    export ; cName=_sym_denominator lispName=DENOMINATOR
+// SYMBOL_TABLE_ENTRY      GrayPkg  591 stream_fresh_line              STREAM-FRESH-LINE              export ; cName=_sym_stream_fresh_line lispName=STREAM-FRESH-LINE
+// SYMBOL_TABLE_ENTRY      CorePkg  592 io                             IO                             private ; cName=_sym_io lispName=IO
+// SYMBOL_TABLE_ENTRY   KeywordPkg  593 landingPadFrame                LANDING-PAD-FRAME              export ; cName=_sym_landingPadFrame lispName=LANDING-PAD-FRAME
+// SYMBOL_TABLE_ENTRY        ClPkg  594 apply                          APPLY                          export ; cName=_sym_apply lispName=APPLY
+// SYMBOL_TABLE_ENTRY        ClPkg  595 eval                           EVAL                           export ; cName=_sym_eval lispName=EVAL
+// SYMBOL_TABLE_ENTRY        ClPkg  596 random                         RANDOM                         export ; cName=_sym_random lispName=RANDOM
+// SYMBOL_TABLE_ENTRY      ClosPkg  597 compute_applicable_methods_using_classes COMPUTE-APPLICABLE-METHODS-USING-CLASSES private ; cName=_sym_compute_applicable_methods_using_classes lispName=COMPUTE-APPLICABLE-METHODS-USING-CLASSES
+// SYMBOL_TABLE_ENTRY        ClPkg  598 member                         MEMBER                         export ; cName=_sym_member lispName=MEMBER
+// SYMBOL_TABLE_ENTRY      CorePkg  599 aset                           ASET                           private ; cName=_sym_aset lispName=ASET
+// SYMBOL_TABLE_ENTRY        ClPkg  600 programError                   PROGRAM-ERROR                  export ; cName=_sym_programError lispName=PROGRAM-ERROR
+// SYMBOL_TABLE_ENTRY        ClPkg  601 string_GT_                     STRING>                        export ; cName=_sym_string_GT_ lispName=STRING>
+// SYMBOL_TABLE_ENTRY      CorePkg  602 structure_include              STRUCTURE-INCLUDE              export ; cName=_sym_structure_include lispName=STRUCTURE-INCLUDE
+// SYMBOL_TABLE_ENTRY        ClPkg  603 EchoStream_O                   ECHO-STREAM                    export ; cName=_sym_EchoStream_O lispName=ECHO-STREAM
+// SYMBOL_TABLE_ENTRY      CorePkg  604 environmentList                ENVIRONMENT-LIST               private ; cName=_sym_environmentList lispName=ENVIRONMENT-LIST
+// SYMBOL_TABLE_ENTRY      CorePkg  605 STARsharp_equal_temp_tableSTAR *SHARP-EQUAL-TEMP-TABLE*       private ; cName=_sym_STARsharp_equal_temp_tableSTAR lispName=*SHARP-EQUAL-TEMP-TABLE*
+// SYMBOL_TABLE_ENTRY        ClPkg  606 compute_applicable_methods     COMPUTE-APPLICABLE-METHODS     export ; cName=_sym_compute_applicable_methods lispName=COMPUTE-APPLICABLE-METHODS
+// SYMBOL_TABLE_ENTRY      CorePkg  607 STARcurrentSourceFileInfoSTAR  *CURRENT-SOURCE-FILE-INFO*     export ; cName=_sym_STARcurrentSourceFileInfoSTAR lispName=*CURRENT-SOURCE-FILE-INFO*
+// SYMBOL_TABLE_ENTRY      CorePkg  608 unquote                        UNQUOTE                        private ; cName=_sym_unquote lispName=UNQUOTE
+// SYMBOL_TABLE_ENTRY      ClosPkg  609 aSingleClosSymbol              A-SINGLE-CLOS-SYMBOL           private ; cName=_sym_aSingleClosSymbol lispName=A-SINGLE-CLOS-SYMBOL
+// SYMBOL_TABLE_ENTRY      CorePkg  610 asinh                          ASINH                          export ; cName=_sym_asinh lispName=ASINH
+// SYMBOL_TABLE_ENTRY      CorePkg  611 bq_simplify                    BQ-SIMPLIFY                    private ; cName=_sym_bq_simplify lispName=BQ-SIMPLIFY
+// SYMBOL_TABLE_ENTRY        ClPkg  612 rationalp                      RATIONALP                      export ; cName=_sym_rationalp lispName=RATIONALP
+// SYMBOL_TABLE_ENTRY   KeywordPkg  613 not                            NOT                            export ; cName=_sym_not lispName=NOT
+// SYMBOL_TABLE_ENTRY      CorePkg  614 dynamicGo                      DYNAMIC-GO                     export ; cName=_sym_dynamicGo lispName=DYNAMIC-GO
+// SYMBOL_TABLE_ENTRY      CorePkg  615 loadBundle                     LOAD-BUNDLE                    private ; cName=_sym_loadBundle lispName=LOAD-BUNDLE
+// SYMBOL_TABLE_ENTRY   KeywordPkg  616 FullDebug                      FULL-DEBUG                     export ; cName=_sym_FullDebug lispName=FULL-DEBUG
+// SYMBOL_TABLE_ENTRY      CorePkg  617 MacroletEnvironment_O          MACROLET-ENVIRONMENT           export ; cName=_sym_MacroletEnvironment_O lispName=MACROLET-ENVIRONMENT
+// SYMBOL_TABLE_ENTRY   KeywordPkg  618 error                          ERROR                          export ; cName=_sym_error lispName=ERROR
+// SYMBOL_TABLE_ENTRY      CorePkg  619 alist                          ALIST                          private ; cName=_sym_alist lispName=ALIST
+// SYMBOL_TABLE_ENTRY        ClPkg  620 STARloadPathnameSTAR           *LOAD-PATHNAME*                export ; cName=_sym_STARloadPathnameSTAR lispName=*LOAD-PATHNAME*
+// SYMBOL_TABLE_ENTRY      CorePkg  621 separatePairList               SEPARATE-PAIR-LIST             private ; cName=_sym_separatePairList lispName=SEPARATE-PAIR-LIST
+// SYMBOL_TABLE_ENTRY   KeywordPkg  622 brcl                           BRCL                           export ; cName=_sym_brcl lispName=BRCL
+// SYMBOL_TABLE_ENTRY   KeywordPkg  623 special                        SPECIAL                        export ; cName=_sym_special lispName=SPECIAL
+// SYMBOL_TABLE_ENTRY        ClPkg  624 ConcatenatedStream_O           CONCATENATED-STREAM            export ; cName=_sym_ConcatenatedStream_O lispName=CONCATENATED-STREAM
+// SYMBOL_TABLE_ENTRY        ClPkg  625 freshLine                      FRESH-LINE                     export ; cName=_sym_freshLine lispName=FRESH-LINE
+// SYMBOL_TABLE_ENTRY        ClPkg  626 speed                          SPEED                          export ; cName=_sym_speed lispName=SPEED
+// SYMBOL_TABLE_ENTRY      CorePkg  627 sharedReferenceCountedPointer  SHARED-REFERENCE-COUNTED-POINTER private ; cName=_sym_sharedReferenceCountedPointer lispName=SHARED-REFERENCE-COUNTED-POINTER
+// SYMBOL_TABLE_ENTRY        ClPkg  628 min                            MIN                            export ; cName=_sym_min lispName=MIN
+// SYMBOL_TABLE_ENTRY   KeywordPkg  629 podSymbolMap                   POD-SYMBOL-MAP                 export ; cName=_sym_podSymbolMap lispName=POD-SYMBOL-MAP
+// SYMBOL_TABLE_ENTRY      CorePkg  630 environmentTypeList            ENVIRONMENT-TYPE-LIST          private ; cName=_sym_environmentTypeList lispName=ENVIRONMENT-TYPE-LIST
+// SYMBOL_TABLE_ENTRY        ClPkg  631 cerror                         CERROR                         export ; cName=_sym_cerror lispName=CERROR
+// SYMBOL_TABLE_ENTRY        ClPkg  632 values_list                    VALUES-LIST                    export ; cName=_sym_values_list lispName=VALUES-LIST
+// SYMBOL_TABLE_ENTRY        ClPkg  633 makeArray                      MAKE-ARRAY                     export ; cName=_sym_makeArray lispName=MAKE-ARRAY
+// SYMBOL_TABLE_ENTRY      CorePkg  634 backquote_splicing_frob        BACKQUOTE-SPLICING-FROB        private ; cName=_sym_backquote_splicing_frob lispName=BACKQUOTE-SPLICING-FROB
+// SYMBOL_TABLE_ENTRY   KeywordPkg  635 rehashSize                     REHASH-SIZE                    export ; cName=_sym_rehashSize lispName=REHASH-SIZE
+// SYMBOL_TABLE_ENTRY        ClPkg  636 boundp                         BOUNDP                         export ; cName=_sym_boundp lispName=BOUNDP
+// SYMBOL_TABLE_ENTRY        ClPkg  637 standard_class                 STANDARD-CLASS                 export ; cName=_sym_standard_class lispName=STANDARD-CLASS
+// SYMBOL_TABLE_ENTRY      CorePkg  638 STARdebugLoadTimeValuesSTAR    *DEBUG-LOAD-TIME-VALUES*       export ; cName=_sym_STARdebugLoadTimeValuesSTAR lispName=*DEBUG-LOAD-TIME-VALUES*
+// SYMBOL_TABLE_ENTRY CleavirPrimopsPkg  639 callWithVariableBound          CALL-WITH-VARIABLE-BOUND       export ; cName=_sym_callWithVariableBound lispName=CALL-WITH-VARIABLE-BOUND
+// SYMBOL_TABLE_ENTRY      CorePkg  640 STARsharp_equal_repl_tableSTAR *SHARP-EQUAL-REPL-TABLE*       private ; cName=_sym_STARsharp_equal_repl_tableSTAR lispName=*SHARP-EQUAL-REPL-TABLE*
+// SYMBOL_TABLE_ENTRY      CorePkg  641 acosh                          ACOSH                          export ; cName=_sym_acosh lispName=ACOSH
+// SYMBOL_TABLE_ENTRY       ExtPkg  642 AnsiStream_O                   ANSI-STREAM                    export ; cName=_sym_AnsiStream_O lispName=ANSI-STREAM
+// SYMBOL_TABLE_ENTRY      CorePkg  643 okey                           OKEY                           private ; cName=_sym_okey lispName=OKEY
+// SYMBOL_TABLE_ENTRY   KeywordPkg  644 create                         CREATE                         export ; cName=_sym_create lispName=CREATE
+// SYMBOL_TABLE_ENTRY        ClPkg  645 make_two_way_stream            MAKE-TWO-WAY-STREAM            export ; cName=_sym_make_two_way_stream lispName=MAKE-TWO-WAY-STREAM
+// SYMBOL_TABLE_ENTRY      CorePkg  646 setf_find_single_dispatch_generic_function SETF-FIND-SINGLE-DISPATCH-GENERIC-FUNCTION private ; cName=_sym_setf_find_single_dispatch_generic_function lispName=SETF-FIND-SINGLE-DISPATCH-GENERIC-FUNCTION
+// SYMBOL_TABLE_ENTRY        ClPkg  647 destructuring_bind             DESTRUCTURING-BIND             export ; cName=_sym_destructuring_bind lispName=DESTRUCTURING-BIND
+// SYMBOL_TABLE_ENTRY      CorePkg  648 atanh                          ATANH                          export ; cName=_sym_atanh lispName=ATANH
+// SYMBOL_TABLE_ENTRY      CorePkg  649 render                         RENDER                         private ; cName=_sym_render lispName=RENDER
+// SYMBOL_TABLE_ENTRY        ClPkg  650 name_char                      NAME-CHAR                      export ; cName=_sym_name_char lispName=NAME-CHAR
+// SYMBOL_TABLE_ENTRY        ClPkg  651 char_LT_                       CHAR<                          export ; cName=_sym_char_LT_ lispName=CHAR<
+// SYMBOL_TABLE_ENTRY        ClPkg  652 _NE_                           /=                             export ; cName=_sym__NE_ lispName=/=
+// SYMBOL_TABLE_ENTRY   KeywordPkg  653 invalid_character              INVALID-CHARACTER              export ; cName=_sym_invalid_character lispName=INVALID-CHARACTER
+// SYMBOL_TABLE_ENTRY        ClPkg  654 leastNegativeDoubleFloat       LEAST-NEGATIVE-DOUBLE-FLOAT    export ; cName=_sym_leastNegativeDoubleFloat lispName=LEAST-NEGATIVE-DOUBLE-FLOAT
+// SYMBOL_TABLE_ENTRY   KeywordPkg  655 ucs_4                          UCS-4                          export ; cName=_sym_ucs_4 lispName=UCS-4
+// SYMBOL_TABLE_ENTRY      CorePkg  656 intrusiveReferenceCountedPointer INTRUSIVE-REFERENCE-COUNTED-POINTER private ; cName=_sym_intrusiveReferenceCountedPointer lispName=INTRUSIVE-REFERENCE-COUNTED-POINTER
+// SYMBOL_TABLE_ENTRY        ClPkg  657 interactive_stream_p           INTERACTIVE-STREAM-P           export ; cName=_sym_interactive_stream_p lispName=INTERACTIVE-STREAM-P
+// SYMBOL_TABLE_ENTRY      CorePkg  658 findFileInLispPath             FIND-FILE-IN-LISP-PATH         private ; cName=_sym_findFileInLispPath lispName=FIND-FILE-IN-LISP-PATH
+// SYMBOL_TABLE_ENTRY        ClPkg  659 lambdaParametersLimit          LAMBDA-PARAMETERS-LIMIT        export ; cName=_sym_lambdaParametersLimit lispName=LAMBDA-PARAMETERS-LIMIT
+// SYMBOL_TABLE_ENTRY      CorePkg  660 end                            END                            private ; cName=_sym_end lispName=END
+// SYMBOL_TABLE_ENTRY      CorePkg  661 STARbq_clobberableSTAR         *BQ-CLOBBERABLE*               private ; cName=_sym_STARbq_clobberableSTAR lispName=*BQ-CLOBBERABLE*
+// SYMBOL_TABLE_ENTRY        ClPkg  662 last                           LAST                           export ; cName=_sym_last lispName=LAST
+// SYMBOL_TABLE_ENTRY      CorePkg  663 _PLUS_llvmTargetTriple_PLUS_   +LLVM-TARGET-TRIPLE+           private ; cName=_sym__PLUS_llvmTargetTriple_PLUS_ lispName=+LLVM-TARGET-TRIPLE+
+// SYMBOL_TABLE_ENTRY      CorePkg  664 RecursiveDirectoryIterator_O   RECURSIVE-DIRECTORY-ITERATOR   export ; cName=_sym_RecursiveDirectoryIterator_O lispName=RECURSIVE-DIRECTORY-ITERATOR
+// SYMBOL_TABLE_ENTRY        ClPkg  665 char_EQ_                       CHAR=                          export ; cName=_sym_char_EQ_ lispName=CHAR=
+// SYMBOL_TABLE_ENTRY      CorePkg  666 callWithVariableBound          CALL-WITH-VARIABLE-BOUND       export ; cName=_sym_callWithVariableBound lispName=CALL-WITH-VARIABLE-BOUND
+// SYMBOL_TABLE_ENTRY      GrayPkg  667 stream_terpri                  STREAM-TERPRI                  export ; cName=_sym_stream_terpri lispName=STREAM-TERPRI
+// SYMBOL_TABLE_ENTRY      CorePkg  668 STARbq_appendSTAR              *BQ-APPEND*                    private ; cName=_sym_STARbq_appendSTAR lispName=*BQ-APPEND*
+// SYMBOL_TABLE_ENTRY        ClPkg  669 simple_vector_p                SIMPLE-VECTOR-P                export ; cName=_sym_simple_vector_p lispName=SIMPLE-VECTOR-P
+// SYMBOL_TABLE_ENTRY      CorePkg  670 STARcircle_stackSTAR           *CIRCLE-STACK*                 export ; cName=_sym_STARcircle_stackSTAR lispName=*CIRCLE-STACK*
+// SYMBOL_TABLE_ENTRY   KeywordPkg  671 wild                           WILD                           export ; cName=_sym_wild lispName=WILD
+// SYMBOL_TABLE_ENTRY        ClPkg  672 Cons_O                         CONS                           export ; cName=_sym_Cons_O lispName=CONS
+// SYMBOL_TABLE_ENTRY        ClPkg  673 Stream_O                       STREAM                         export ; cName=_sym_Stream_O lispName=STREAM
+// SYMBOL_TABLE_ENTRY        ClPkg  674 AMPkey                         &KEY                           export ; cName=_sym_AMPkey lispName=&KEY
+// SYMBOL_TABLE_ENTRY      CorePkg  675 size_t                         SIZE-T                         export ; cName=_sym_size_t lispName=SIZE-T
+// SYMBOL_TABLE_ENTRY      CorePkg  676 sharp_asterisk                 SHARP-ASTERISK                 private ; cName=_sym_sharp_asterisk lispName=SHARP-ASTERISK
+// SYMBOL_TABLE_ENTRY   KeywordPkg  677 directory                      DIRECTORY                      export ; cName=_sym_directory lispName=DIRECTORY
+// SYMBOL_TABLE_ENTRY        ClPkg  678 step                           STEP                           export ; cName=_sym_step lispName=STEP
+// SYMBOL_TABLE_ENTRY      CorePkg  679 double_backquote               DOUBLE-BACKQUOTE               private ; cName=_sym_double_backquote lispName=DOUBLE-BACKQUOTE
+// SYMBOL_TABLE_ENTRY   KeywordPkg  680 if_does_not_exist              IF-DOES-NOT-EXIST              export ; cName=_sym_if_does_not_exist lispName=IF-DOES-NOT-EXIST
+// SYMBOL_TABLE_ENTRY      CorePkg  681 _PLUS_io_syntax_progv_list_PLUS_ +IO-SYNTAX-PROGV-LIST+         export ; cName=_sym__PLUS_io_syntax_progv_list_PLUS_ lispName=+IO-SYNTAX-PROGV-LIST+
+// SYMBOL_TABLE_ENTRY      CorePkg  682 STARsharp_equal_alistSTAR      *SHARP-EQUAL-ALIST*            private ; cName=_sym_STARsharp_equal_alistSTAR lispName=*SHARP-EQUAL-ALIST*
+// SYMBOL_TABLE_ENTRY        ClPkg  683 symbolFunction                 SYMBOL-FUNCTION                export ; cName=_sym_symbolFunction lispName=SYMBOL-FUNCTION
+// SYMBOL_TABLE_ENTRY      CorePkg  684 setThrowPosition               SET-THROW-POSITION             private ; cName=_sym_setThrowPosition lispName=SET-THROW-POSITION
+// SYMBOL_TABLE_ENTRY        ClPkg  685 Function_O                     FUNCTION                       export ; cName=_sym_Function_O lispName=FUNCTION
+// SYMBOL_TABLE_ENTRY   KeywordPkg  686 debug                          DEBUG                          export ; cName=_sym_debug lispName=DEBUG
+// SYMBOL_TABLE_ENTRY      CorePkg  687 _PLUS_executableName_PLUS_     +EXECUTABLE-NAME+              private ; cName=_sym__PLUS_executableName_PLUS_ lispName=+EXECUTABLE-NAME+
+// SYMBOL_TABLE_ENTRY        ClPkg  688 STARprint_linesSTAR            *PRINT-LINES*                  export ; cName=_sym_STARprint_linesSTAR lispName=*PRINT-LINES*
+// SYMBOL_TABLE_ENTRY      CorePkg  689 loadSource                     LOAD-SOURCE                    export ; cName=_sym_loadSource lispName=LOAD-SOURCE
+// SYMBOL_TABLE_ENTRY        ClPkg  690 multiple_value_call            MULTIPLE-VALUE-CALL            export ; cName=_sym_multiple_value_call lispName=MULTIPLE-VALUE-CALL
+// SYMBOL_TABLE_ENTRY   KeywordPkg  691 expectedType                   EXPECTED-TYPE                  export ; cName=_sym_expectedType lispName=EXPECTED-TYPE
+// SYMBOL_TABLE_ENTRY      CorePkg  692 repr                           REPR                           private ; cName=_sym_repr lispName=REPR
+// SYMBOL_TABLE_ENTRY      CorePkg  693 key                            KEY                            private ; cName=_sym_key lispName=KEY
+// SYMBOL_TABLE_ENTRY      CorePkg  694 SingleDispatchEffectiveMethodFunction_O SINGLE-DISPATCH-EFFECTIVE-METHOD-FUNCTION export ; cName=_sym_SingleDispatchEffectiveMethodFunction_O lispName=SINGLE-DISPATCH-EFFECTIVE-METHOD-FUNCTION
+// SYMBOL_TABLE_ENTRY      CorePkg  695 setupStackMonitor              SETUP-STACK-MONITOR            private ; cName=_sym_setupStackMonitor lispName=SETUP-STACK-MONITOR
+// SYMBOL_TABLE_ENTRY      CorePkg  696 sharp_equal                    SHARP-EQUAL                    private ; cName=_sym_sharp_equal lispName=SHARP-EQUAL
+// SYMBOL_TABLE_ENTRY        ClPkg  697 bit                            BIT                            export ; cName=_sym_bit lispName=BIT
+// SYMBOL_TABLE_ENTRY      CorePkg  698 quit                           QUIT                           private ; cName=_sym_quit lispName=QUIT
+// SYMBOL_TABLE_ENTRY        ClPkg  699 leastNegativeNormalizedShortFloat LEAST-NEGATIVE-NORMALIZED-SHORT-FLOAT export ; cName=_sym_leastNegativeNormalizedShortFloat lispName=LEAST-NEGATIVE-NORMALIZED-SHORT-FLOAT
+// SYMBOL_TABLE_ENTRY      CorePkg  700 STARllvmFunctionNameHookSTAR   *LLVM-FUNCTION-NAME-HOOK*      export ; cName=_sym_STARllvmFunctionNameHookSTAR lispName=*LLVM-FUNCTION-NAME-HOOK*
+// SYMBOL_TABLE_ENTRY      CorePkg  701 mapappend                      MAPAPPEND                      private ; cName=_sym_mapappend lispName=MAPAPPEND
+// SYMBOL_TABLE_ENTRY        ClPkg  702 error                          ERROR                          export ; cName=_sym_error lispName=ERROR
+// SYMBOL_TABLE_ENTRY      CorePkg  703 inheritDefaultAllocator        INHERIT-DEFAULT-ALLOCATOR      export ; cName=_sym_inheritDefaultAllocator lispName=INHERIT-DEFAULT-ALLOCATOR
+// SYMBOL_TABLE_ENTRY        ClPkg  704 storageCondition               STORAGE-CONDITION              export ; cName=_sym_storageCondition lispName=STORAGE-CONDITION
+// SYMBOL_TABLE_ENTRY        ClPkg  705 letSTAR                        LET*                           export ; cName=_sym_letSTAR lispName=LET*
+// SYMBOL_TABLE_ENTRY   KeywordPkg  706 io                             IO                             export ; cName=_sym_io lispName=IO
+// SYMBOL_TABLE_ENTRY      CorePkg  707 makeStringOutputStreamFromString MAKE-STRING-OUTPUT-STREAM-FROM-STRING export ; cName=_sym_makeStringOutputStreamFromString lispName=MAKE-STRING-OUTPUT-STREAM-FROM-STRING
+// SYMBOL_TABLE_ENTRY        ClPkg  708 simpleWarning                  SIMPLE-WARNING                 export ; cName=_sym_simpleWarning lispName=SIMPLE-WARNING
 // SYMBOL_TABLE_ENTRY       ExtPkg  709 byte8                          BYTE8                          private ; cName=_sym_byte8 lispName=BYTE8
 // SYMBOL_TABLE_ENTRY      CorePkg  710 probe                          PROBE                          private ; cName=_sym_probe lispName=PROBE
 // SYMBOL_TABLE_ENTRY        ClPkg  711 lognor                         LOGNOR                         export ; cName=_sym_lognor lispName=LOGNOR
@@ -731,7 +731,7 @@
 // SYMBOL_TABLE_ENTRY   KeywordPkg  728 fillPointer                    FILL-POINTER                   export ; cName=_sym_fillPointer lispName=FILL-POINTER
 // SYMBOL_TABLE_ENTRY      CorePkg  729 input_stream                   INPUT-STREAM                   private ; cName=_sym_input_stream lispName=INPUT-STREAM
 // SYMBOL_TABLE_ENTRY   KeywordPkg  730 output                         OUTPUT                         export ; cName=_sym_output lispName=OUTPUT
-// SYMBOL_TABLE_ENTRY      GrayPkg  731 stream_read_char               STREAM-READ-CHAR               export ; cName=_sym_stream_read_char lispName=STREAM-READ-CHAR
+// SYMBOL_TABLE_ENTRY      CorePkg  731 evalWithEnv                    EVAL-WITH-ENV                  export ; cName=_sym_evalWithEnv lispName=EVAL-WITH-ENV
 // SYMBOL_TABLE_ENTRY   KeywordPkg  732 object                         OBJECT                         export ; cName=_sym_object lispName=OBJECT
 // SYMBOL_TABLE_ENTRY      CorePkg  733 adjustable                     ADJUSTABLE                     private ; cName=_sym_adjustable lispName=ADJUSTABLE
 // SYMBOL_TABLE_ENTRY        ClPkg  734 mapcan                         MAPCAN                         export ; cName=_sym_mapcan lispName=MAPCAN
@@ -1128,7 +1128,7 @@
 // SYMBOL_TABLE_ENTRY      CorePkg 1125 input_stream_designator        INPUT-STREAM-DESIGNATOR        private ; cName=_sym_input_stream_designator lispName=INPUT-STREAM-DESIGNATOR
 // SYMBOL_TABLE_ENTRY   KeywordPkg 1126 load_toplevel                  LOAD-TOPLEVEL                  export ; cName=_sym_load_toplevel lispName=LOAD-TOPLEVEL
 // SYMBOL_TABLE_ENTRY        ClPkg 1127 synonym_stream_symbol          SYNONYM-STREAM-SYMBOL          export ; cName=_sym_synonym_stream_symbol lispName=SYNONYM-STREAM-SYMBOL
-// SYMBOL_TABLE_ENTRY      CorePkg 1128 STARclassNameHashTableSTAR     *CLASS-NAME-HASH-TABLE*        private ; cName=_sym_STARclassNameHashTableSTAR lispName=*CLASS-NAME-HASH-TABLE*
+// SYMBOL_TABLE_ENTRY      CorePkg 1128 STARclassNameHashTableSTAR     *CLASS-NAME-HASH-TABLE*        export ; cName=_sym_STARclassNameHashTableSTAR lispName=*CLASS-NAME-HASH-TABLE*
 // SYMBOL_TABLE_ENTRY        ClPkg 1129 STARprint_pprint_dispatchSTAR  *PRINT-PPRINT-DISPATCH*        export ; cName=_sym_STARprint_pprint_dispatchSTAR lispName=*PRINT-PPRINT-DISPATCH*
 // SYMBOL_TABLE_ENTRY        ClPkg 1130 funcall                        FUNCALL                        export ; cName=_sym_funcall lispName=FUNCALL
 // SYMBOL_TABLE_ENTRY      CorePkg 1131 ExternalObject_O               EXTERNAL-OBJECT                export ; cName=_sym_ExternalObject_O lispName=EXTERNAL-OBJECT
@@ -1314,1333 +1314,1333 @@
 // SYMBOL_TABLE_ENTRY        ClPkg 1311 divisionByZero                 DIVISION-BY-ZERO               export ; cName=_sym_divisionByZero lispName=DIVISION-BY-ZERO
 // SYMBOL_TABLE_ENTRY      CorePkg 1312 structureSubtypep              STRUCTURE-SUBTYPEP             export ; cName=_sym_structureSubtypep lispName=STRUCTURE-SUBTYPEP
 #ifdef ClPkg_SYMBOLS
-DO_SYMBOL(_sym_wildPathnameP, 0, ClPkg, "WILD-PATHNAME-P", true);
-DO_SYMBOL(_sym_not, 2, ClPkg, "NOT", true);
-DO_SYMBOL(_sym_mostPositiveShortFloat, 3, ClPkg, "MOST-POSITIVE-SHORT-FLOAT", true);
-DO_SYMBOL(_sym_fileError, 5, ClPkg, "FILE-ERROR", true);
-DO_SYMBOL(_sym_acosh, 6, ClPkg, "ACOSH", true);
-DO_SYMBOL(_sym_break, 7, ClPkg, "BREAK", true);
-DO_SYMBOL(_sym_writeChar, 13, ClPkg, "WRITE-CHAR", true);
-DO_SYMBOL(_sym_concatenated_stream_streams, 14, ClPkg, "CONCATENATED-STREAM-STREAMS", true);
-DO_SYMBOL(_sym_setq, 15, ClPkg, "SETQ", true);
-DO_SYMBOL(_sym_boole_set, 16, ClPkg, "BOOLE-SET", true);
-DO_SYMBOL(_sym_atanh, 18, ClPkg, "ATANH", true);
-DO_SYMBOL(_sym_boole_clr, 19, ClPkg, "BOOLE-CLR", true);
-DO_SYMBOL(_sym_imagpart, 20, ClPkg, "IMAGPART", true);
-DO_SYMBOL(_sym_hostNamestring, 21, ClPkg, "HOST-NAMESTRING", true);
-DO_SYMBOL(_sym_file_string_length, 24, ClPkg, "FILE-STRING-LENGTH", true);
-DO_SYMBOL(_sym_float, 27, ClPkg, "FLOAT", true);
-DO_SYMBOL(_sym_gentemp, 28, ClPkg, "GENTEMP", true);
-DO_SYMBOL(_sym_conjugate, 29, ClPkg, "CONJUGATE", true);
-DO_SYMBOL(_sym_streamError, 31, ClPkg, "STREAM-ERROR", true);
-DO_SYMBOL(_sym_boole_xor, 37, ClPkg, "BOOLE-XOR", true);
-DO_SYMBOL(_sym_lognand, 41, ClPkg, "LOGNAND", true);
-DO_SYMBOL(_sym_getf, 43, ClPkg, "GETF", true);
-DO_SYMBOL(_sym_STARprint_prettySTAR, 50, ClPkg, "*PRINT-PRETTY*", true);
-DO_SYMBOL(_sym_char_code, 51, ClPkg, "CHAR-CODE", true);
-DO_SYMBOL(_sym_make_symbol, 52, ClPkg, "MAKE-SYMBOL", true);
-DO_SYMBOL(_sym_T, 53, ClPkg, "T", true);
-DO_SYMBOL(_sym_cadr, 56, ClPkg, "CADR", true);
-DO_SYMBOL(_sym_endOfFile, 57, ClPkg, "END-OF-FILE", true);
-DO_SYMBOL(_sym_notany, 61, ClPkg, "NOTANY", true);
-DO_SYMBOL(_sym_arrayTotalSizeLimit, 62, ClPkg, "ARRAY-TOTAL-SIZE-LIMIT", true);
-DO_SYMBOL(_sym_format, 63, ClPkg, "FORMAT", true);
-DO_SYMBOL(_sym_typep, 66, ClPkg, "TYPEP", true);
-DO_SYMBOL(_sym_Array_O, 69, ClPkg, "ARRAY", true);
-DO_SYMBOL(_sym_directory, 70, ClPkg, "DIRECTORY", true);
-DO_SYMBOL(_sym__LT_, 72, ClPkg, "<", true);
-DO_SYMBOL(_sym_cosh, 73, ClPkg, "COSH", true);
-DO_SYMBOL(_sym_load, 74, ClPkg, "LOAD", true);
-DO_SYMBOL(_sym_charNotGreaterp, 76, ClPkg, "CHAR-NOT-GREATERP", true);
-DO_SYMBOL(_sym_SignedByte, 83, ClPkg, "SIGNED-BYTE", true);
-DO_SYMBOL(_sym_leastPositiveNormalizedSingleFloat, 84, ClPkg, "LEAST-POSITIVE-NORMALIZED-SINGLE-FLOAT", true);
-DO_SYMBOL(_sym_revappend, 87, ClPkg, "REVAPPEND", true);
-DO_SYMBOL(_sym_generic_function, 91, ClPkg, "GENERIC-FUNCTION", true);
-DO_SYMBOL(_sym_debug, 92, ClPkg, "DEBUG", true);
-DO_SYMBOL(_sym_terpri, 95, ClPkg, "TERPRI", true);
-DO_SYMBOL(_sym_cdr, 96, ClPkg, "CDR", true);
-DO_SYMBOL(_sym_vector, 98, ClPkg, "VECTOR", true);
-DO_SYMBOL(_sym_typeError, 102, ClPkg, "TYPE-ERROR", true);
-DO_SYMBOL(_sym_arithmeticError, 103, ClPkg, "ARITHMETIC-ERROR", true);
-DO_SYMBOL(_sym_Symbol_O, 104, ClPkg, "SYMBOL", true);
-DO_SYMBOL(_sym_ShortFloat_O, 106, ClPkg, "SHORT-FLOAT", true);
-DO_SYMBOL(_sym_symbolPackage, 110, ClPkg, "SYMBOL-PACKAGE", true);
-DO_SYMBOL(_sym_satisfies, 114, ClPkg, "SATISFIES", true);
-DO_SYMBOL(_sym_specialOperatorP, 118, ClPkg, "SPECIAL-OPERATOR-P", true);
-DO_SYMBOL(_sym_every, 119, ClPkg, "EVERY", true);
-DO_SYMBOL(_sym_StandardObject_O, 123, ClPkg, "STANDARD-OBJECT", true);
-DO_SYMBOL(_sym_stringLeftTrim, 125, ClPkg, "STRING-LEFT-TRIM", true);
-DO_SYMBOL(_sym_char_GT_, 131, ClPkg, "CHAR>", true);
-DO_SYMBOL(_sym_open_stream_p, 133, ClPkg, "OPEN-STREAM-P", true);
-DO_SYMBOL(_sym_Complex_O, 137, ClPkg, "COMPLEX", true);
-DO_SYMBOL(_sym_lcm, 138, ClPkg, "LCM", true);
-DO_SYMBOL(_sym_simple_bit_vector_p, 139, ClPkg, "SIMPLE-BIT-VECTOR-P", true);
-DO_SYMBOL(_sym_atom, 140, ClPkg, "ATOM", true);
-DO_SYMBOL(_sym_fileStream, 147, ClPkg, "FILE-STREAM", true);
-DO_SYMBOL(_sym_makePackage, 148, ClPkg, "MAKE-PACKAGE", true);
-DO_SYMBOL(_sym_string_not_greaterp, 149, ClPkg, "STRING-NOT-GREATERP", true);
-DO_SYMBOL(_sym_STARprint_baseSTAR, 150, ClPkg, "*PRINT-BASE*", true);
-DO_SYMBOL(_sym_constantp, 151, ClPkg, "CONSTANTP", true);
-DO_SYMBOL(_sym_makePathname, 164, ClPkg, "MAKE-PATHNAME", true);
-DO_SYMBOL(_sym_controlError, 166, ClPkg, "CONTROL-ERROR", true);
-DO_SYMBOL(_sym_subseq, 167, ClPkg, "SUBSEQ", true);
-DO_SYMBOL(_sym_mostPositiveDoubleFloat, 168, ClPkg, "MOST-POSITIVE-DOUBLE-FLOAT", true);
-DO_SYMBOL(_sym_multiple_value_prog1, 172, ClPkg, "MULTIPLE-VALUE-PROG1", true);
-DO_SYMBOL(_sym_AMPenvironment, 173, ClPkg, "&ENVIRONMENT", true);
-DO_SYMBOL(_sym_leastPositiveShortFloat, 177, ClPkg, "LEAST-POSITIVE-SHORT-FLOAT", true);
-DO_SYMBOL(_sym_rename_file, 181, ClPkg, "RENAME-FILE", true);
-DO_SYMBOL(_sym_cond, 183, ClPkg, "COND", true);
-DO_SYMBOL(_sym_Null_O, 185, ClPkg, "NULL", true);
-DO_SYMBOL(_sym_AMPaux, 186, ClPkg, "&AUX", true);
-DO_SYMBOL(_sym_make_sequence, 187, ClPkg, "MAKE-SEQUENCE", true);
-DO_SYMBOL(_sym_streamp, 190, ClPkg, "STREAMP", true);
-DO_SYMBOL(_sym_cons, 193, ClPkg, "CONS", true);
-DO_SYMBOL(_sym_characterp, 195, ClPkg, "CHARACTERP", true);
-DO_SYMBOL(_sym_DoubleFloat_O, 200, ClPkg, "DOUBLE-FLOAT", true);
-DO_SYMBOL(_sym_leastNegativeNormalizedDoubleFloat, 203, ClPkg, "LEAST-NEGATIVE-NORMALIZED-DOUBLE-FLOAT", true);
-DO_SYMBOL(_sym_charGreaterp, 208, ClPkg, "CHAR-GREATERP", true);
-DO_SYMBOL(_sym_getDispatchMacroCharacter, 209, ClPkg, "GET-DISPATCH-MACRO-CHARACTER", true);
-DO_SYMBOL(_sym_nreverse, 212, ClPkg, "NREVERSE", true);
-DO_SYMBOL(_sym_string_not_lessp, 214, ClPkg, "STRING-NOT-LESSP", true);
-DO_SYMBOL(_sym_echo_stream_input_stream, 215, ClPkg, "ECHO-STREAM-INPUT-STREAM", true);
-DO_SYMBOL(_sym_copyStructure, 216, ClPkg, "COPY-STRUCTURE", true);
-DO_SYMBOL(_sym_values, 217, ClPkg, "VALUES", true);
-DO_SYMBOL(_sym_or, 218, ClPkg, "OR", true);
-DO_SYMBOL(_sym_boole_orc2, 219, ClPkg, "BOOLE-ORC2", true);
-DO_SYMBOL(_sym_boole_orc1, 221, ClPkg, "BOOLE-ORC1", true);
-DO_SYMBOL(_sym_file_write_date, 222, ClPkg, "FILE-WRITE-DATE", true);
-DO_SYMBOL(_sym_logeqv, 227, ClPkg, "LOGEQV", true);
-DO_SYMBOL(_sym_max, 228, ClPkg, "MAX", true);
-DO_SYMBOL(_sym_two_way_stream, 232, ClPkg, "TWO-WAY-STREAM", true);
-DO_SYMBOL(_sym__GT_, 235, ClPkg, ">", true);
-DO_SYMBOL(_sym_undefinedFunction, 237, ClPkg, "UNDEFINED-FUNCTION", true);
-DO_SYMBOL(_sym_assoc, 238, ClPkg, "ASSOC", true);
-DO_SYMBOL(_sym_findSymbol, 240, ClPkg, "FIND-SYMBOL", true);
-DO_SYMBOL(_sym_string_GE_, 241, ClPkg, "STRING>=", true);
-DO_SYMBOL(_sym_disassemble, 245, ClPkg, "DISASSEMBLE", true);
-DO_SYMBOL(_sym__MINUS_, 246, ClPkg, "-", true);
-DO_SYMBOL(_sym_integerDecodeFloat, 248, ClPkg, "INTEGER-DECODE-FLOAT", true);
-DO_SYMBOL(_sym_nconc, 251, ClPkg, "NCONC", true);
-DO_SYMBOL(_sym_stringTrim, 252, ClPkg, "STRING-TRIM", true);
-DO_SYMBOL(_sym_write_sequence, 255, ClPkg, "WRITE-SEQUENCE", true);
-DO_SYMBOL(_sym_most_negative_fixnum, 256, ClPkg, "MOST-NEGATIVE-FIXNUM", true);
-DO_SYMBOL(_sym_shadowing_import, 263, ClPkg, "SHADOWING-IMPORT", true);
-DO_SYMBOL(_sym_unintern, 268, ClPkg, "UNINTERN", true);
-DO_SYMBOL(_sym_stringp, 269, ClPkg, "STRINGP", true);
-DO_SYMBOL(_sym_finish_output, 270, ClPkg, "FINISH-OUTPUT", true);
-DO_SYMBOL(_sym_cellError, 271, ClPkg, "CELL-ERROR", true);
-DO_SYMBOL(_sym__TIMES_, 273, ClPkg, "*", true);
-DO_SYMBOL(_sym_simple_string_p, 281, ClPkg, "SIMPLE-STRING-P", true);
-DO_SYMBOL(_sym_setf, 282, ClPkg, "SETF", true);
-DO_SYMBOL(_sym_charEqual, 285, ClPkg, "CHAR-EQUAL", true);
-DO_SYMBOL(_sym_mapcon, 287, ClPkg, "MAPCON", true);
-DO_SYMBOL(_sym_deftype, 289, ClPkg, "DEFTYPE", true);
-DO_SYMBOL(_sym_STARterminal_ioSTAR, 290, ClPkg, "*TERMINAL-IO*", true);
-DO_SYMBOL(_sym_charUpcase, 293, ClPkg, "CHAR-UPCASE", true);
-DO_SYMBOL(_sym_boole_nand, 294, ClPkg, "BOOLE-NAND", true);
-DO_SYMBOL(_sym_Float_O, 296, ClPkg, "FLOAT", true);
-DO_SYMBOL(_sym_leastPositiveDoubleFloat, 299, ClPkg, "LEAST-POSITIVE-DOUBLE-FLOAT", true);
-DO_SYMBOL(_sym_AMPrest, 300, ClPkg, "&REST", true);
-DO_SYMBOL(_sym_condition, 302, ClPkg, "CONDITION", true);
-DO_SYMBOL(_sym_clearOutput, 305, ClPkg, "CLEAR-OUTPUT", true);
-DO_SYMBOL(_sym_nstring_downcase, 306, ClPkg, "NSTRING-DOWNCASE", true);
-DO_SYMBOL(_sym_floatingPointOverflow, 309, ClPkg, "FLOATING-POINT-OVERFLOW", true);
-DO_SYMBOL(_sym_printNotReadable, 313, ClPkg, "PRINT-NOT-READABLE", true);
-DO_SYMBOL(_sym_unread_char, 314, ClPkg, "UNREAD-CHAR", true);
-DO_SYMBOL(_sym_STARfeaturesSTAR, 315, ClPkg, "*FEATURES*", true);
-DO_SYMBOL(_sym_sin, 318, ClPkg, "SIN", true);
-DO_SYMBOL(_sym__EQ_, 319, ClPkg, "=", true);
-DO_SYMBOL(_sym_leastNegativeNormalizedSingleFloat, 320, ClPkg, "LEAST-NEGATIVE-NORMALIZED-SINGLE-FLOAT", true);
-DO_SYMBOL(_sym_STARdefaultPathnameDefaultsSTAR, 321, ClPkg, "*DEFAULT-PATHNAME-DEFAULTS*", true);
-DO_SYMBOL(_sym_position, 322, ClPkg, "POSITION", true);
-DO_SYMBOL(_sym_symbol_macrolet, 323, ClPkg, "SYMBOL-MACROLET", true);
-DO_SYMBOL(_sym_keywordp, 324, ClPkg, "KEYWORDP", true);
-DO_SYMBOL(_sym_maplist, 327, ClPkg, "MAPLIST", true);
-DO_SYMBOL(_sym_Character_dummy_O, 331, ClPkg, "CHARACTER", true);
-DO_SYMBOL(_sym_ash, 332, ClPkg, "ASH", true);
-DO_SYMBOL(_sym_LogicalPathname_O, 333, ClPkg, "LOGICAL-PATHNAME", true);
-DO_SYMBOL(_sym_two_way_stream_output_stream, 337, ClPkg, "TWO-WAY-STREAM-OUTPUT-STREAM", true);
-DO_SYMBOL(_sym_macroexpand, 338, ClPkg, "MACROEXPAND", true);
-DO_SYMBOL(_sym_parseInteger, 339, ClPkg, "PARSE-INTEGER", true);
-DO_SYMBOL(_sym_string, 340, ClPkg, "STRING", true);
-DO_SYMBOL(_sym_Bit, 341, ClPkg, "BIT", true);
-DO_SYMBOL(_sym_compileFile, 345, ClPkg, "COMPILE-FILE", true);
-DO_SYMBOL(_sym_function, 346, ClPkg, "FUNCTION", true);
-DO_SYMBOL(_sym_listAllPackages, 347, ClPkg, "LIST-ALL-PACKAGES", true);
-DO_SYMBOL(_sym_ignore, 349, ClPkg, "IGNORE", true);
-DO_SYMBOL(_sym_mod, 351, ClPkg, "MOD", true);
-DO_SYMBOL(_sym_nthcdr, 355, ClPkg, "NTHCDR", true);
-DO_SYMBOL(_sym_provide, 358, ClPkg, "PROVIDE", true);
-DO_SYMBOL(_sym_callArgumentsLimit, 359, ClPkg, "CALL-ARGUMENTS-LIMIT", true);
-DO_SYMBOL(_sym_String_O, 360, ClPkg, "STRING", true);
-DO_SYMBOL(_sym_boole_1, 361, ClPkg, "BOOLE-1", true);
-DO_SYMBOL(_sym_locally, 362, ClPkg, "LOCALLY", true);
-DO_SYMBOL(_sym_boole_2, 363, ClPkg, "BOOLE-2", true);
-DO_SYMBOL(_sym_define_method_combination, 364, ClPkg, "DEFINE-METHOD-COMBINATION", true);
-DO_SYMBOL(_sym_restartName, 365, ClPkg, "RESTART-NAME", true);
-DO_SYMBOL(_sym_logandc2, 368, ClPkg, "LOGANDC2", true);
-DO_SYMBOL(_sym_numerator, 369, ClPkg, "NUMERATOR", true);
-DO_SYMBOL(_sym_logandc1, 370, ClPkg, "LOGANDC1", true);
-DO_SYMBOL(_sym_STARprint_lengthSTAR, 372, ClPkg, "*PRINT-LENGTH*", true);
-DO_SYMBOL(_sym_BuiltInClass_O, 380, ClPkg, "BUILT-IN-CLASS", true);
-DO_SYMBOL(_sym_styleWarning, 385, ClPkg, "STYLE-WARNING", true);
-DO_SYMBOL(_sym_SynonymStream_O, 387, ClPkg, "SYNONYM-STREAM", true);
-DO_SYMBOL(_sym_flet, 389, ClPkg, "FLET", true);
-DO_SYMBOL(_sym_stream_external_format, 392, ClPkg, "STREAM-EXTERNAL-FORMAT", true);
-DO_SYMBOL(_sym_do, 393, ClPkg, "DO", true);
-DO_SYMBOL(_sym_string_LE_, 396, ClPkg, "STRING<=", true);
-DO_SYMBOL(_sym_import, 397, ClPkg, "IMPORT", true);
-DO_SYMBOL(_sym_package_use_list, 399, ClPkg, "PACKAGE-USE-LIST", true);
-DO_SYMBOL(_sym_writeLine, 400, ClPkg, "WRITE-LINE", true);
-DO_SYMBOL(_sym_boole_c2, 404, ClPkg, "BOOLE-C2", true);
-DO_SYMBOL(_sym_boole_c1, 405, ClPkg, "BOOLE-C1", true);
-DO_SYMBOL(_sym_char_LE_, 406, ClPkg, "CHAR<=", true);
-DO_SYMBOL(_sym_getInternalRealTime, 410, ClPkg, "GET-INTERNAL-REAL-TIME", true);
-DO_SYMBOL(_sym_and, 411, ClPkg, "AND", true);
-DO_SYMBOL(_sym_maphash, 412, ClPkg, "MAPHASH", true);
-DO_SYMBOL(_sym_sqrt, 413, ClPkg, "SQRT", true);
-DO_SYMBOL(_sym_getInternalRunTime, 414, ClPkg, "GET-INTERNAL-RUN-TIME", true);
-DO_SYMBOL(_sym_MultipleValuesLimit, 415, ClPkg, "MULTIPLE-VALUES-LIMIT", true);
-DO_SYMBOL(_sym_setDispatchMacroCharacter, 416, ClPkg, "SET-DISPATCH-MACRO-CHARACTER", true);
-DO_SYMBOL(_sym_Real_O, 418, ClPkg, "REAL", true);
-DO_SYMBOL(_sym_ceiling, 420, ClPkg, "CEILING", true);
-DO_SYMBOL(_sym_notevery, 422, ClPkg, "NOTEVERY", true);
-DO_SYMBOL(_sym_char, 424, ClPkg, "CHAR", true);
-DO_SYMBOL(_sym_sleep, 429, ClPkg, "SLEEP", true);
-DO_SYMBOL(_sym_simple_array, 430, ClPkg, "SIMPLE-ARRAY", true);
-DO_SYMBOL(_sym_equal, 432, ClPkg, "EQUAL", true);
-DO_SYMBOL(_sym_special, 433, ClPkg, "SPECIAL", true);
-DO_SYMBOL(_sym_userHomedirPathname, 436, ClPkg, "USER-HOMEDIR-PATHNAME", true);
-DO_SYMBOL(_sym_leastPositiveNormalizedShortFloat, 438, ClPkg, "LEAST-POSITIVE-NORMALIZED-SHORT-FLOAT", true);
-DO_SYMBOL(_sym_hash_table_p, 442, ClPkg, "HASH-TABLE-P", true);
-DO_SYMBOL(_sym_nextMethodP, 450, ClPkg, "NEXT-METHOD-P", true);
-DO_SYMBOL(_sym_export, 451, ClPkg, "EXPORT", true);
-DO_SYMBOL(_sym_leastPositiveNormalizedDoubleFloat, 452, ClPkg, "LEAST-POSITIVE-NORMALIZED-DOUBLE-FLOAT", true);
-DO_SYMBOL(_sym_clrhash, 456, ClPkg, "CLRHASH", true);
-DO_SYMBOL(_sym_Integer_O, 460, ClPkg, "INTEGER", true);
-DO_SYMBOL(_sym_define_modify_macro, 462, ClPkg, "DEFINE-MODIFY-MACRO", true);
-DO_SYMBOL(_sym_append, 463, ClPkg, "APPEND", true);
-DO_SYMBOL(_sym_most_positive_fixnum, 464, ClPkg, "MOST-POSITIVE-FIXNUM", true);
-DO_SYMBOL(_sym_reverse, 466, ClPkg, "REVERSE", true);
-DO_SYMBOL(_sym_char_GE_, 470, ClPkg, "CHAR>=", true);
-DO_SYMBOL(_sym_the, 471, ClPkg, "THE", true);
-DO_SYMBOL(_sym_read_preserving_whitespace, 473, ClPkg, "READ-PRESERVING-WHITESPACE", true);
-DO_SYMBOL(_sym_asinh, 474, ClPkg, "ASINH", true);
-DO_SYMBOL(_sym_union, 476, ClPkg, "UNION", true);
-DO_SYMBOL(_sym_fboundp, 477, ClPkg, "FBOUNDP", true);
-DO_SYMBOL(_sym_character, 478, ClPkg, "CHARACTER", true);
-DO_SYMBOL(_sym_asin, 479, ClPkg, "ASIN", true);
-DO_SYMBOL(_sym_Rational_O, 480, ClPkg, "RATIONAL", true);
-DO_SYMBOL(_sym_digitCharP, 481, ClPkg, "DIGIT-CHAR-P", true);
-DO_SYMBOL(_sym_no_applicable_method, 482, ClPkg, "NO-APPLICABLE-METHOD", true);
-DO_SYMBOL(_sym_enoughNamestring, 483, ClPkg, "ENOUGH-NAMESTRING", true);
-DO_SYMBOL(_sym_STARloadTruenameSTAR, 489, ClPkg, "*LOAD-TRUENAME*", true);
-DO_SYMBOL(_sym_two_way_stream_input_stream, 493, ClPkg, "TWO-WAY-STREAM-INPUT-STREAM", true);
-DO_SYMBOL(_sym_copyList, 505, ClPkg, "COPY-LIST", true);
-DO_SYMBOL(_sym_read_line, 506, ClPkg, "READ-LINE", true);
-DO_SYMBOL(_sym_T_O, 507, ClPkg, "T", true);
-DO_SYMBOL(_sym_count, 508, ClPkg, "COUNT", true);
-DO_SYMBOL(_sym_macrolet, 509, ClPkg, "MACROLET", true);
-DO_SYMBOL(_sym_readSequence, 510, ClPkg, "READ-SEQUENCE", true);
-DO_SYMBOL(_sym_array_rank_limit, 512, ClPkg, "ARRAY-RANK-LIMIT", true);
-DO_SYMBOL(_sym_let, 514, ClPkg, "LET", true);
-DO_SYMBOL(_sym_pathnameDevice, 515, ClPkg, "PATHNAME-DEVICE", true);
-DO_SYMBOL(_sym_shadow, 517, ClPkg, "SHADOW", true);
-DO_SYMBOL(_sym_STARmodulesSTAR, 519, ClPkg, "*MODULES*", true);
-DO_SYMBOL(_sym_round, 520, ClPkg, "ROUND", true);
-DO_SYMBOL(_sym_zerop, 521, ClPkg, "ZEROP", true);
-DO_SYMBOL(_sym_get, 524, ClPkg, "GET", true);
-DO_SYMBOL(_sym_leastPositiveSingleFloat, 525, ClPkg, "LEAST-POSITIVE-SINGLE-FLOAT", true);
-DO_SYMBOL(_sym_Number_O, 528, ClPkg, "NUMBER", true);
-DO_SYMBOL(_sym_compile, 530, ClPkg, "COMPILE", true);
-DO_SYMBOL(_sym_string_upcase, 531, ClPkg, "STRING-UPCASE", true);
-DO_SYMBOL(_sym_scaleFloat, 533, ClPkg, "SCALE-FLOAT", true);
-DO_SYMBOL(_sym_describe, 534, ClPkg, "DESCRIBE", true);
-DO_SYMBOL(_sym_ReadTable_O, 535, ClPkg, "READTABLE", true);
-DO_SYMBOL(_sym_listSTAR, 542, ClPkg, "LIST*", true);
-DO_SYMBOL(_sym_mostPositiveSingleFloat, 543, ClPkg, "MOST-POSITIVE-SINGLE-FLOAT", true);
-DO_SYMBOL(_sym_compute_restarts, 544, ClPkg, "COMPUTE-RESTARTS", true);
-DO_SYMBOL(_sym_standard_char_p, 546, ClPkg, "STANDARD-CHAR-P", true);
-DO_SYMBOL(_sym_boole_eqv, 547, ClPkg, "BOOLE-EQV", true);
-DO_SYMBOL(_sym_remove, 548, ClPkg, "REMOVE", true);
-DO_SYMBOL(_sym_leastNegativeSingleFloat, 550, ClPkg, "LEAST-NEGATIVE-SINGLE-FLOAT", true);
-DO_SYMBOL(_sym_logical_pathname, 554, ClPkg, "LOGICAL-PATHNAME", true);
-DO_SYMBOL(_sym_string_EQ_, 555, ClPkg, "STRING=", true);
-DO_SYMBOL(_sym_floatingPointInexact, 556, ClPkg, "FLOATING-POINT-INEXACT", true);
-DO_SYMBOL(_sym_logand, 557, ClPkg, "LOGAND", true);
-DO_SYMBOL(_sym_writeByte, 560, ClPkg, "WRITE-BYTE", true);
-DO_SYMBOL(_sym_StandardClass_O, 563, ClPkg, "STANDARD-CLASS", true);
-DO_SYMBOL(_sym_go, 564, ClPkg, "GO", true);
-DO_SYMBOL(_sym_alpha_char_p, 566, ClPkg, "ALPHA-CHAR-P", true);
-DO_SYMBOL(_sym_use_package, 567, ClPkg, "USE-PACKAGE", true);
-DO_SYMBOL(_sym_decodeFloat, 569, ClPkg, "DECODE-FLOAT", true);
-DO_SYMBOL(_sym_STARgensym_counterSTAR, 570, ClPkg, "*GENSYM-COUNTER*", true);
-DO_SYMBOL(_sym_TwoWayStream_O, 572, ClPkg, "TWO-WAY-STREAM", true);
-DO_SYMBOL(_sym_writeString, 573, ClPkg, "WRITE-STRING", true);
-DO_SYMBOL(_sym_STARprint_arraySTAR, 575, ClPkg, "*PRINT-ARRAY*", true);
-DO_SYMBOL(_sym_extended_char, 576, ClPkg, "EXTENDED-CHAR", true);
-DO_SYMBOL(_sym_compiled_function_p, 577, ClPkg, "COMPILED-FUNCTION-P", true);
-DO_SYMBOL(_sym_simpleTypeError, 580, ClPkg, "SIMPLE-TYPE-ERROR", true);
-DO_SYMBOL(_sym_dotimes, 581, ClPkg, "DOTIMES", true);
-DO_SYMBOL(_sym_package, 583, ClPkg, "PACKAGE", true);
-DO_SYMBOL(_sym_getUniversalTime, 584, ClPkg, "GET-UNIVERSAL-TIME", true);
-DO_SYMBOL(_sym_parseError, 586, ClPkg, "PARSE-ERROR", true);
-DO_SYMBOL(_sym_output_stream_p, 587, ClPkg, "OUTPUT-STREAM-P", true);
-DO_SYMBOL(_sym_method, 588, ClPkg, "METHOD", true);
-DO_SYMBOL(_sym_denominator, 589, ClPkg, "DENOMINATOR", true);
-DO_SYMBOL(_sym_apply, 593, ClPkg, "APPLY", true);
-DO_SYMBOL(_sym_eval, 594, ClPkg, "EVAL", true);
-DO_SYMBOL(_sym_random, 595, ClPkg, "RANDOM", true);
-DO_SYMBOL(_sym_member, 597, ClPkg, "MEMBER", true);
-DO_SYMBOL(_sym_programError, 599, ClPkg, "PROGRAM-ERROR", true);
-DO_SYMBOL(_sym_string_GT_, 600, ClPkg, "STRING>", true);
-DO_SYMBOL(_sym_EchoStream_O, 602, ClPkg, "ECHO-STREAM", true);
-DO_SYMBOL(_sym_compute_applicable_methods, 605, ClPkg, "COMPUTE-APPLICABLE-METHODS", true);
-DO_SYMBOL(_sym_rationalp, 611, ClPkg, "RATIONALP", true);
-DO_SYMBOL(_sym_STARloadPathnameSTAR, 619, ClPkg, "*LOAD-PATHNAME*", true);
-DO_SYMBOL(_sym_ConcatenatedStream_O, 623, ClPkg, "CONCATENATED-STREAM", true);
-DO_SYMBOL(_sym_freshLine, 624, ClPkg, "FRESH-LINE", true);
-DO_SYMBOL(_sym_speed, 625, ClPkg, "SPEED", true);
-DO_SYMBOL(_sym_min, 627, ClPkg, "MIN", true);
-DO_SYMBOL(_sym_cerror, 630, ClPkg, "CERROR", true);
-DO_SYMBOL(_sym_values_list, 631, ClPkg, "VALUES-LIST", true);
-DO_SYMBOL(_sym_makeArray, 632, ClPkg, "MAKE-ARRAY", true);
-DO_SYMBOL(_sym_boundp, 635, ClPkg, "BOUNDP", true);
-DO_SYMBOL(_sym_standard_class, 636, ClPkg, "STANDARD-CLASS", true);
-DO_SYMBOL(_sym_make_two_way_stream, 644, ClPkg, "MAKE-TWO-WAY-STREAM", true);
-DO_SYMBOL(_sym_destructuring_bind, 646, ClPkg, "DESTRUCTURING-BIND", true);
-DO_SYMBOL(_sym_name_char, 649, ClPkg, "NAME-CHAR", true);
-DO_SYMBOL(_sym_char_LT_, 650, ClPkg, "CHAR<", true);
-DO_SYMBOL(_sym__NE_, 651, ClPkg, "/=", true);
-DO_SYMBOL(_sym_leastNegativeDoubleFloat, 653, ClPkg, "LEAST-NEGATIVE-DOUBLE-FLOAT", true);
-DO_SYMBOL(_sym_interactive_stream_p, 656, ClPkg, "INTERACTIVE-STREAM-P", true);
-DO_SYMBOL(_sym_lambdaParametersLimit, 658, ClPkg, "LAMBDA-PARAMETERS-LIMIT", true);
-DO_SYMBOL(_sym_last, 661, ClPkg, "LAST", true);
-DO_SYMBOL(_sym_char_EQ_, 664, ClPkg, "CHAR=", true);
-DO_SYMBOL(_sym_simple_vector_p, 668, ClPkg, "SIMPLE-VECTOR-P", true);
-DO_SYMBOL(_sym_Cons_O, 671, ClPkg, "CONS", true);
-DO_SYMBOL(_sym_Stream_O, 672, ClPkg, "STREAM", true);
-DO_SYMBOL(_sym_AMPkey, 673, ClPkg, "&KEY", true);
-DO_SYMBOL(_sym_step, 677, ClPkg, "STEP", true);
-DO_SYMBOL(_sym_symbolFunction, 682, ClPkg, "SYMBOL-FUNCTION", true);
-DO_SYMBOL(_sym_Function_O, 684, ClPkg, "FUNCTION", true);
-DO_SYMBOL(_sym_STARprint_linesSTAR, 687, ClPkg, "*PRINT-LINES*", true);
-DO_SYMBOL(_sym_multiple_value_call, 689, ClPkg, "MULTIPLE-VALUE-CALL", true);
-DO_SYMBOL(_sym_bit, 696, ClPkg, "BIT", true);
-DO_SYMBOL(_sym_leastNegativeNormalizedShortFloat, 698, ClPkg, "LEAST-NEGATIVE-NORMALIZED-SHORT-FLOAT", true);
-DO_SYMBOL(_sym_error, 701, ClPkg, "ERROR", true);
-DO_SYMBOL(_sym_storageCondition, 703, ClPkg, "STORAGE-CONDITION", true);
-DO_SYMBOL(_sym_letSTAR, 704, ClPkg, "LET*", true);
-DO_SYMBOL(_sym_simpleWarning, 707, ClPkg, "SIMPLE-WARNING", true);
-DO_SYMBOL(_sym_lognor, 711, ClPkg, "LOGNOR", true);
-DO_SYMBOL(_sym_code_char, 712, ClPkg, "CODE-CHAR", true);
-DO_SYMBOL(_sym_arrayDimensionLimit, 713, ClPkg, "ARRAY-DIMENSION-LIMIT", true);
-DO_SYMBOL(_sym_integerp, 716, ClPkg, "INTEGERP", true);
-DO_SYMBOL(_sym_boolean, 717, ClPkg, "BOOLEAN", true);
-DO_SYMBOL(_sym_standardGenericFunction, 718, ClPkg, "STANDARD-GENERIC-FUNCTION", true);
-DO_SYMBOL(_sym_STARprint_gensymSTAR, 719, ClPkg, "*PRINT-GENSYM*", true);
-DO_SYMBOL(_sym_internalTimeUnitsPerSecond, 722, ClPkg, "INTERNAL-TIME-UNITS-PER-SECOND", true);
-DO_SYMBOL(_sym_exp, 723, ClPkg, "EXP", true);
-DO_SYMBOL(_sym_package_shadowing_symbols, 724, ClPkg, "PACKAGE-SHADOWING-SYMBOLS", true);
-DO_SYMBOL(_sym_butlast, 726, ClPkg, "BUTLAST", true);
-DO_SYMBOL(_sym_STARprint_escapeSTAR, 727, ClPkg, "*PRINT-ESCAPE*", true);
-DO_SYMBOL(_sym_mapcan, 734, ClPkg, "MAPCAN", true);
-DO_SYMBOL(_sym_mapcar, 736, ClPkg, "MAPCAR", true);
-DO_SYMBOL(_sym_AMPallow_other_keys, 742, ClPkg, "&ALLOW-OTHER-KEYS", true);
-DO_SYMBOL(_sym_translateLogicalPathname, 743, ClPkg, "TRANSLATE-LOGICAL-PATHNAME", true);
-DO_SYMBOL(_sym_log, 745, ClPkg, "LOG", true);
-DO_SYMBOL(_sym_Fixnum_dummy_O, 746, ClPkg, "FIXNUM", true);
-DO_SYMBOL(_sym_lognot, 749, ClPkg, "LOGNOT", true);
-DO_SYMBOL(_sym_make_list, 751, ClPkg, "MAKE-LIST", true);
-DO_SYMBOL(_sym_STARprint_right_marginSTAR, 752, ClPkg, "*PRINT-RIGHT-MARGIN*", true);
-DO_SYMBOL(_sym_packageError, 753, ClPkg, "PACKAGE-ERROR", true);
-DO_SYMBOL(_sym_princ, 754, ClPkg, "PRINC", true);
-DO_SYMBOL(_sym_close, 755, ClPkg, "CLOSE", true);
-DO_SYMBOL(_sym_floatDigits, 756, ClPkg, "FLOAT-DIGITS", true);
-DO_SYMBOL(_sym_echo_stream_output_stream, 757, ClPkg, "ECHO-STREAM-OUTPUT-STREAM", true);
-DO_SYMBOL(_sym_boole_andc2, 760, ClPkg, "BOOLE-ANDC2", true);
-DO_SYMBOL(_sym_boole_andc1, 761, ClPkg, "BOOLE-ANDC1", true);
-DO_SYMBOL(_sym_callNextMethod, 763, ClPkg, "CALL-NEXT-METHOD", true);
-DO_SYMBOL(_sym_makeCondition, 765, ClPkg, "MAKE-CONDITION", true);
-DO_SYMBOL(_sym_declare, 766, ClPkg, "DECLARE", true);
-DO_SYMBOL(_sym_boole_and, 767, ClPkg, "BOOLE-AND", true);
-DO_SYMBOL(_sym_charLessp, 769, ClPkg, "CHAR-LESSP", true);
-DO_SYMBOL(_sym_makeStringOutputStream, 774, ClPkg, "MAKE-STRING-OUTPUT-STREAM", true);
-DO_SYMBOL(_sym_copyTree, 776, ClPkg, "COPY-TREE", true);
-DO_SYMBOL(_sym_read_sequence, 777, ClPkg, "READ-SEQUENCE", true);
-DO_SYMBOL(_sym_AMPwhole, 779, ClPkg, "&WHOLE", true);
-DO_SYMBOL(_sym_Pathname_O, 782, ClPkg, "PATHNAME", true);
-DO_SYMBOL(_sym_rest, 784, ClPkg, "REST", true);
-DO_SYMBOL(_sym_logxor, 785, ClPkg, "LOGXOR", true);
-DO_SYMBOL(_sym_logorc2, 786, ClPkg, "LOGORC2", true);
-DO_SYMBOL(_sym__GE_, 787, ClPkg, ">=", true);
-DO_SYMBOL(_sym_string_lessp, 788, ClPkg, "STRING-LESSP", true);
-DO_SYMBOL(_sym_variable, 791, ClPkg, "VARIABLE", true);
-DO_SYMBOL(_sym_defconstant, 792, ClPkg, "DEFCONSTANT", true);
-DO_SYMBOL(_sym_identity, 794, ClPkg, "IDENTITY", true);
-DO_SYMBOL(_sym_listen, 795, ClPkg, "LISTEN", true);
-DO_SYMBOL(_sym_floatp, 796, ClPkg, "FLOATP", true);
-DO_SYMBOL(_sym_floor, 801, ClPkg, "FLOOR", true);
-DO_SYMBOL(_sym_clearInput, 802, ClPkg, "CLEAR-INPUT", true);
-DO_SYMBOL(_sym_boole, 803, ClPkg, "BOOLE", true);
-DO_SYMBOL(_sym_force_output, 805, ClPkg, "FORCE-OUTPUT", true);
-DO_SYMBOL(_sym_logicalPathnameTranslations, 808, ClPkg, "LOGICAL-PATHNAME-TRANSLATIONS", true);
-DO_SYMBOL(_sym_STARread_baseSTAR, 810, ClPkg, "*READ-BASE*", true);
-DO_SYMBOL(_sym_translatePathname, 811, ClPkg, "TRANSLATE-PATHNAME", true);
-DO_SYMBOL(_sym_defsetf, 812, ClPkg, "DEFSETF", true);
-DO_SYMBOL(_sym_StructureObject_O, 816, ClPkg, "STRUCTURE-OBJECT", true);
-DO_SYMBOL(_sym_directoryNamestring, 818, ClPkg, "DIRECTORY-NAMESTRING", true);
-DO_SYMBOL(_sym_read_from_string, 820, ClPkg, "READ-FROM-STRING", true);
-DO_SYMBOL(_sym_print, 821, ClPkg, "PRINT", true);
-DO_SYMBOL(_sym_STARdebug_ioSTAR, 828, ClPkg, "*DEBUG-IO*", true);
-DO_SYMBOL(_sym_car, 829, ClPkg, "CAR", true);
-DO_SYMBOL(_sym_truename, 837, ClPkg, "TRUENAME", true);
-DO_SYMBOL(_sym_mostNegativeSingleFloat, 840, ClPkg, "MOST-NEGATIVE-SINGLE-FLOAT", true);
-DO_SYMBOL(_sym_restart_bind, 844, ClPkg, "RESTART-BIND", true);
-DO_SYMBOL(_sym_string_LT_, 849, ClPkg, "STRING<", true);
-DO_SYMBOL(_sym_logior, 850, ClPkg, "LOGIOR", true);
-DO_SYMBOL(_sym_prog1, 853, ClPkg, "PROG1", true);
-DO_SYMBOL(_sym_functionp, 854, ClPkg, "FUNCTIONP", true);
-DO_SYMBOL(_sym_base_char, 857, ClPkg, "BASE-CHAR", true);
-DO_SYMBOL(_sym_eval_when, 860, ClPkg, "EVAL-WHEN", true);
-DO_SYMBOL(_sym_fmakunbound, 861, ClPkg, "FMAKUNBOUND", true);
-DO_SYMBOL(_sym_fdefinition, 863, ClPkg, "FDEFINITION", true);
-DO_SYMBOL(_sym_STARprint_readablySTAR, 864, ClPkg, "*PRINT-READABLY*", true);
-DO_SYMBOL(_sym_namestring, 868, ClPkg, "NAMESTRING", true);
-DO_SYMBOL(_sym_Vector_O, 869, ClPkg, "VECTOR", true);
-DO_SYMBOL(_sym_cos, 870, ClPkg, "COS", true);
-DO_SYMBOL(_sym_simpleError, 871, ClPkg, "SIMPLE-ERROR", true);
-DO_SYMBOL(_sym_seriousCondition, 872, ClPkg, "SERIOUS-CONDITION", true);
-DO_SYMBOL(_sym_macroFunction, 874, ClPkg, "MACRO-FUNCTION", true);
-DO_SYMBOL(_sym_vectorPushExtend, 875, ClPkg, "VECTOR-PUSH-EXTEND", true);
-DO_SYMBOL(_sym_progn, 877, ClPkg, "PROGN", true);
-DO_SYMBOL(_sym_vectorp, 878, ClPkg, "VECTORP", true);
-DO_SYMBOL(_sym_fill_pointer, 879, ClPkg, "FILL-POINTER", true);
-DO_SYMBOL(_sym_deleteFile, 880, ClPkg, "DELETE-FILE", true);
-DO_SYMBOL(_sym_stream, 883, ClPkg, "STREAM", true);
-DO_SYMBOL(_sym_unwind_protect, 885, ClPkg, "UNWIND-PROTECT", true);
-DO_SYMBOL(_sym_type_of, 887, ClPkg, "TYPE-OF", true);
-DO_SYMBOL(_sym_macroexpand_1, 891, ClPkg, "MACROEXPAND-1", true);
-DO_SYMBOL(_sym_copySeq, 892, ClPkg, "COPY-SEQ", true);
-DO_SYMBOL(_sym_lambda, 893, ClPkg, "LAMBDA", true);
-DO_SYMBOL(_sym_keyword, 894, ClPkg, "KEYWORD", true);
-DO_SYMBOL(_sym_progv, 895, ClPkg, "PROGV", true);
-DO_SYMBOL(_sym_floatPrecision, 896, ClPkg, "FLOAT-PRECISION", true);
-DO_SYMBOL(_sym_string_not_equal, 898, ClPkg, "STRING-NOT-EQUAL", true);
-DO_SYMBOL(_sym_AMPoptional, 899, ClPkg, "&OPTIONAL", true);
-DO_SYMBOL(_sym_charNotLessp, 901, ClPkg, "CHAR-NOT-LESSP", true);
-DO_SYMBOL(_sym_STARprint_miser_widthSTAR, 903, ClPkg, "*PRINT-MISER-WIDTH*", true);
-DO_SYMBOL(_sym_nth, 904, ClPkg, "NTH", true);
-DO_SYMBOL(_sym_slot_value, 908, ClPkg, "SLOT-VALUE", true);
-DO_SYMBOL(_sym_catch, 909, ClPkg, "CATCH", true);
-DO_SYMBOL(_sym_load_time_value, 911, ClPkg, "LOAD-TIME-VALUE", true);
-DO_SYMBOL(_sym_equalp, 913, ClPkg, "EQUALP", true);
-DO_SYMBOL(_sym_listp, 915, ClPkg, "LISTP", true);
-DO_SYMBOL(_sym_nstring_upcase, 919, ClPkg, "NSTRING-UPCASE", true);
-DO_SYMBOL(_sym_char_NE_, 921, ClPkg, "CHAR/=", true);
-DO_SYMBOL(_sym_realp, 922, ClPkg, "REALP", true);
-DO_SYMBOL(_sym_STARstandard_outputSTAR, 923, ClPkg, "*STANDARD-OUTPUT*", true);
-DO_SYMBOL(_sym_charDowncase, 932, ClPkg, "CHAR-DOWNCASE", true);
-DO_SYMBOL(_sym_labels, 933, ClPkg, "LABELS", true);
-DO_SYMBOL(_sym_make_hash_table, 935, ClPkg, "MAKE-HASH-TABLE", true);
-DO_SYMBOL(_sym_string_downcase, 939, ClPkg, "STRING-DOWNCASE", true);
-DO_SYMBOL(_sym_pathname, 940, ClPkg, "PATHNAME", true);
-DO_SYMBOL(_sym_throw, 941, ClPkg, "THROW", true);
-DO_SYMBOL(_sym_integer, 943, ClPkg, "INTEGER", true);
-DO_SYMBOL(_sym_readCharNoHang, 945, ClPkg, "READ-CHAR-NO-HANG", true);
-DO_SYMBOL(_sym_mismatch, 947, ClPkg, "MISMATCH", true);
-DO_SYMBOL(_sym_Package_O, 953, ClPkg, "PACKAGE", true);
-DO_SYMBOL(_sym_STARread_suppressSTAR, 954, ClPkg, "*READ-SUPPRESS*", true);
-DO_SYMBOL(_sym_sort, 956, ClPkg, "SORT", true);
-DO_SYMBOL(_sym_Str_O, 959, ClPkg, "BASE-STRING", true);
-DO_SYMBOL(_sym_find_package, 961, ClPkg, "FIND-PACKAGE", true);
-DO_SYMBOL(_sym_STARmacroexpand_hookSTAR, 962, ClPkg, "*MACROEXPAND-HOOK*", true);
-DO_SYMBOL(_sym_STARreadDefaultFloatFormatSTAR, 963, ClPkg, "*READ-DEFAULT-FLOAT-FORMAT*", true);
-DO_SYMBOL(_sym_optimize, 964, ClPkg, "OPTIMIZE", true);
-DO_SYMBOL(_sym_dolist, 966, ClPkg, "DOLIST", true);
-DO_SYMBOL(_sym_if, 968, ClPkg, "IF", true);
-DO_SYMBOL(_sym_simple_vector, 969, ClPkg, "SIMPLE-VECTOR", true);
-DO_SYMBOL(_sym_findClass, 970, ClPkg, "FIND-CLASS", true);
-DO_SYMBOL(_sym_read, 972, ClPkg, "READ", true);
-DO_SYMBOL(_sym_defvar, 974, ClPkg, "DEFVAR", true);
-DO_SYMBOL(_sym_single_float, 975, ClPkg, "SINGLE-FLOAT", true);
-DO_SYMBOL(_sym_array, 977, ClPkg, "ARRAY", true);
-DO_SYMBOL(_sym_intern, 978, ClPkg, "INTERN", true);
-DO_SYMBOL(_sym_first, 987, ClPkg, "FIRST", true);
-DO_SYMBOL(_sym_pathnameDirectory, 988, ClPkg, "PATHNAME-DIRECTORY", true);
-DO_SYMBOL(_sym_set, 993, ClPkg, "SET", true);
-DO_SYMBOL(_sym_symbolName, 995, ClPkg, "SYMBOL-NAME", true);
-DO_SYMBOL(_sym_prin1, 1001, ClPkg, "PRIN1", true);
-DO_SYMBOL(_sym_packagep, 1007, ClPkg, "PACKAGEP", true);
-DO_SYMBOL(_sym_pathnameVersion, 1008, ClPkg, "PATHNAME-VERSION", true);
-DO_SYMBOL(_sym_realpart, 1009, ClPkg, "REALPART", true);
-DO_SYMBOL(_sym_defun, 1010, ClPkg, "DEFUN", true);
-DO_SYMBOL(_sym_StructureClass_O, 1012, ClPkg, "STRUCTURE-CLASS", true);
-DO_SYMBOL(_sym_simpleCondition, 1015, ClPkg, "SIMPLE-CONDITION", true);
-DO_SYMBOL(_sym_warning, 1016, ClPkg, "WARNING", true);
-DO_SYMBOL(_sym_gensym, 1019, ClPkg, "GENSYM", true);
-DO_SYMBOL(_sym_STARload_verboseSTAR, 1020, ClPkg, "*LOAD-VERBOSE*", true);
-DO_SYMBOL(_sym_tagbody, 1021, ClPkg, "TAGBODY", true);
-DO_SYMBOL(_sym_Ratio_O, 1024, ClPkg, "RATIO", true);
-DO_SYMBOL(_sym_quote, 1025, ClPkg, "QUOTE", true);
-DO_SYMBOL(_sym_boole_nor, 1030, ClPkg, "BOOLE-NOR", true);
-DO_SYMBOL(_sym_endp, 1031, ClPkg, "ENDP", true);
-DO_SYMBOL(_sym_sinh, 1032, ClPkg, "SINH", true);
-DO_SYMBOL(_sym_symbolp, 1033, ClPkg, "SYMBOLP", true);
-DO_SYMBOL(_sym_aref, 1034, ClPkg, "AREF", true);
-DO_SYMBOL(_sym_schar, 1035, ClPkg, "SCHAR", true);
-DO_SYMBOL(_sym_STARprint_radixSTAR, 1037, ClPkg, "*PRINT-RADIX*", true);
-DO_SYMBOL(_sym_readChar, 1041, ClPkg, "READ-CHAR", true);
-DO_SYMBOL(_sym_pprint_dispatch, 1042, ClPkg, "PPRINT-DISPATCH", true);
-DO_SYMBOL(_sym_floatingPointUnderflow, 1046, ClPkg, "FLOATING-POINT-UNDERFLOW", true);
-DO_SYMBOL(_sym_filePosition, 1048, ClPkg, "FILE-POSITION", true);
-DO_SYMBOL(_sym_eql, 1051, ClPkg, "EQL", true);
-DO_SYMBOL(_sym_broadcast_stream_streams, 1052, ClPkg, "BROADCAST-STREAM-STREAMS", true);
-DO_SYMBOL(_sym_BitVector_O, 1054, ClPkg, "BIT-VECTOR", true);
-DO_SYMBOL(_sym_string_greaterp, 1057, ClPkg, "STRING-GREATERP", true);
-DO_SYMBOL(_sym_mostNegativeShortFloat, 1058, ClPkg, "MOST-NEGATIVE-SHORT-FLOAT", true);
-DO_SYMBOL(_sym_classOf, 1060, ClPkg, "CLASS-OF", true);
-DO_SYMBOL(_sym_StringStream_O, 1063, ClPkg, "STRING-STREAM", true);
-DO_SYMBOL(_sym_mostNegativeDoubleFloat, 1074, ClPkg, "MOST-NEGATIVE-DOUBLE-FLOAT", true);
-DO_SYMBOL(_sym_STARprint_levelSTAR, 1075, ClPkg, "*PRINT-LEVEL*", true);
-DO_SYMBOL(_sym_STARreadtableSTAR, 1076, ClPkg, "*READTABLE*", true);
-DO_SYMBOL(_sym_rem, 1077, ClPkg, "REM", true);
-DO_SYMBOL(_sym_Class_O, 1078, ClPkg, "CLASS", true);
-DO_SYMBOL(_sym_char_int, 1079, ClPkg, "CHAR-INT", true);
-DO_SYMBOL(_sym_leastNegativeShortFloat, 1081, ClPkg, "LEAST-NEGATIVE-SHORT-FLOAT", true);
-DO_SYMBOL(_sym_tan, 1085, ClPkg, "TAN", true);
-DO_SYMBOL(_sym_printNotReadableObject, 1086, ClPkg, "PRINT-NOT-READABLE-OBJECT", true);
-DO_SYMBOL(_sym_SingleFloat_dummy_O, 1093, ClPkg, "SINGLE-FLOAT", true);
-DO_SYMBOL(_sym_arrayp, 1094, ClPkg, "ARRAYP", true);
-DO_SYMBOL(_sym_STARload_printSTAR, 1098, ClPkg, "*LOAD-PRINT*", true);
-DO_SYMBOL(_sym_peekChar, 1101, ClPkg, "PEEK-CHAR", true);
-DO_SYMBOL(_sym__PLUS_, 1102, ClPkg, "+", true);
-DO_SYMBOL(_sym_setMacroCharacter, 1103, ClPkg, "SET-MACRO-CHARACTER", true);
-DO_SYMBOL(_sym_HashTable_O, 1105, ClPkg, "HASH-TABLE", true);
-DO_SYMBOL(_sym_expt, 1109, ClPkg, "EXPT", true);
-DO_SYMBOL(_sym_hash_table, 1112, ClPkg, "HASH-TABLE", true);
-DO_SYMBOL(_sym_unboundSlot, 1113, ClPkg, "UNBOUND-SLOT", true);
-DO_SYMBOL(_sym_gcd, 1114, ClPkg, "GCD", true);
-DO_SYMBOL(_sym_subtypep, 1116, ClPkg, "SUBTYPEP", true);
-DO_SYMBOL(_sym_space, 1117, ClPkg, "SPACE", true);
-DO_SYMBOL(_sym__LE_, 1118, ClPkg, "<=", true);
-DO_SYMBOL(_sym_return_from, 1120, ClPkg, "RETURN-FROM", true);
-DO_SYMBOL(_sym_synonym_stream_symbol, 1127, ClPkg, "SYNONYM-STREAM-SYMBOL", true);
-DO_SYMBOL(_sym_STARprint_pprint_dispatchSTAR, 1129, ClPkg, "*PRINT-PPRINT-DISPATCH*", true);
-DO_SYMBOL(_sym_funcall, 1130, ClPkg, "FUNCALL", true);
-DO_SYMBOL(_sym_readerError, 1133, ClPkg, "READER-ERROR", true);
-DO_SYMBOL(_sym_STARbreakOnSignalsSTAR, 1134, ClPkg, "*BREAK-ON-SIGNALS*", true);
-DO_SYMBOL(_sym_write, 1136, ClPkg, "WRITE", true);
-DO_SYMBOL(_sym_STARerror_outputSTAR, 1137, ClPkg, "*ERROR-OUTPUT*", true);
-DO_SYMBOL(_sym_pathnameMatchP, 1139, ClPkg, "PATHNAME-MATCH-P", true);
-DO_SYMBOL(_sym_symbol, 1141, ClPkg, "SYMBOL", true);
-DO_SYMBOL(_sym_charNotEqual, 1144, ClPkg, "CHAR-NOT-EQUAL", true);
-DO_SYMBOL(_sym_string_equal, 1145, ClPkg, "STRING-EQUAL", true);
-DO_SYMBOL(_sym_otherwise, 1147, ClPkg, "OTHERWISE", true);
-DO_SYMBOL(_sym_case, 1148, ClPkg, "CASE", true);
-DO_SYMBOL(_sym_documentation, 1150, ClPkg, "DOCUMENTATION", true);
-DO_SYMBOL(_sym_input_stream_p, 1151, ClPkg, "INPUT-STREAM-P", true);
-DO_SYMBOL(_sym_unuse_package, 1153, ClPkg, "UNUSE-PACKAGE", true);
-DO_SYMBOL(_sym_floatSign, 1154, ClPkg, "FLOAT-SIGN", true);
-DO_SYMBOL(_sym_AMPbody, 1155, ClPkg, "&BODY", true);
-DO_SYMBOL(_sym_mapc, 1157, ClPkg, "MAPC", true);
-DO_SYMBOL(_sym_mapl, 1158, ClPkg, "MAPL", true);
-DO_SYMBOL(_sym__DIVIDE_, 1159, ClPkg, "/", true);
-DO_SYMBOL(_sym_complexp, 1160, ClPkg, "COMPLEXP", true);
-DO_SYMBOL(_sym_ftype, 1163, ClPkg, "FTYPE", true);
-DO_SYMBOL(_sym_getOutputStreamString, 1165, ClPkg, "GET-OUTPUT-STREAM-STRING", true);
-DO_SYMBOL(_sym_char_code_limit, 1166, ClPkg, "CHAR-CODE-LIMIT", true);
-DO_SYMBOL(_sym_pathnameHost, 1169, ClPkg, "PATHNAME-HOST", true);
-DO_SYMBOL(_sym_gethash, 1170, ClPkg, "GETHASH", true);
-DO_SYMBOL(_sym_some, 1172, ClPkg, "SOME", true);
-DO_SYMBOL(_sym_floatingPointInvalidOperation, 1176, ClPkg, "FLOATING-POINT-INVALID-OPERATION", true);
-DO_SYMBOL(_sym_STARstandard_inputSTAR, 1177, ClPkg, "*STANDARD-INPUT*", true);
-DO_SYMBOL(_sym_unboundVariable, 1180, ClPkg, "UNBOUND-VARIABLE", true);
-DO_SYMBOL(_sym_tanh, 1185, ClPkg, "TANH", true);
-DO_SYMBOL(_sym_STARprint_circleSTAR, 1186, ClPkg, "*PRINT-CIRCLE*", true);
-DO_SYMBOL(_sym_Bignum_O, 1188, ClPkg, "BIGNUM", true);
-DO_SYMBOL(_sym_fileNamestring, 1189, ClPkg, "FILE-NAMESTRING", true);
-DO_SYMBOL(_sym_SimpleBitVector_O, 1190, ClPkg, "SIMPLE-BIT-VECTOR", true);
-DO_SYMBOL(_sym_consp, 1191, ClPkg, "CONSP", true);
-DO_SYMBOL(_sym_acons, 1193, ClPkg, "ACONS", true);
-DO_SYMBOL(_sym_fixnum, 1195, ClPkg, "FIXNUM", true);
-DO_SYMBOL(_sym_safety, 1197, ClPkg, "SAFETY", true);
-DO_SYMBOL(_sym_probe_file, 1198, ClPkg, "PROBE-FILE", true);
-DO_SYMBOL(_sym_pathnameType, 1200, ClPkg, "PATHNAME-TYPE", true);
-DO_SYMBOL(_sym_STARprint_caseSTAR, 1202, ClPkg, "*PRINT-CASE*", true);
-DO_SYMBOL(_sym_char_name, 1205, ClPkg, "CHAR-NAME", true);
-DO_SYMBOL(_sym_stringRightTrim, 1206, ClPkg, "STRING-RIGHT-TRIM", true);
-DO_SYMBOL(_sym_string_NE_, 1207, ClPkg, "STRING/=", true);
-DO_SYMBOL(_sym_pi, 1208, ClPkg, "PI", true);
-DO_SYMBOL(_sym_numberp, 1211, ClPkg, "NUMBERP", true);
-DO_SYMBOL(_sym_bit_vector_p, 1218, ClPkg, "BIT-VECTOR-P", true);
-DO_SYMBOL(_sym_nbutlast, 1219, ClPkg, "NBUTLAST", true);
-DO_SYMBOL(_sym_logorc1, 1221, ClPkg, "LOGORC1", true);
-DO_SYMBOL(_sym_multipleValueSetq, 1222, ClPkg, "MULTIPLE-VALUE-SETQ", true);
-DO_SYMBOL(_sym_nreconc, 1224, ClPkg, "NRECONC", true);
-DO_SYMBOL(_sym_complex, 1226, ClPkg, "COMPLEX", true);
-DO_SYMBOL(_sym_length, 1227, ClPkg, "LENGTH", true);
-DO_SYMBOL(_sym_pathnamep, 1229, ClPkg, "PATHNAMEP", true);
-DO_SYMBOL(_sym_make_synonym_stream, 1232, ClPkg, "MAKE-SYNONYM-STREAM", true);
-DO_SYMBOL(_sym_make_string, 1234, ClPkg, "MAKE-STRING", true);
-DO_SYMBOL(_sym_acos, 1236, ClPkg, "ACOS", true);
-DO_SYMBOL(_sym_UnsignedByte, 1237, ClPkg, "UNSIGNED-BYTE", true);
-DO_SYMBOL(_sym_elt, 1238, ClPkg, "ELT", true);
-DO_SYMBOL(_sym_STARread_evalSTAR, 1242, ClPkg, "*READ-EVAL*", true);
-DO_SYMBOL(_sym_read_delimited_list, 1244, ClPkg, "READ-DELIMITED-LIST", true);
-DO_SYMBOL(_sym_get_output_stream_string, 1246, ClPkg, "GET-OUTPUT-STREAM-STRING", true);
-DO_SYMBOL(_sym_intersection, 1247, ClPkg, "INTERSECTION", true);
-DO_SYMBOL(_sym_type, 1248, ClPkg, "TYPE", true);
-DO_SYMBOL(_sym_vectorPush, 1249, ClPkg, "VECTOR-PUSH", true);
-DO_SYMBOL(_sym_readByte, 1251, ClPkg, "READ-BYTE", true);
-DO_SYMBOL(_sym_remhash, 1253, ClPkg, "REMHASH", true);
-DO_SYMBOL(_sym_printObject, 1254, ClPkg, "PRINT-OBJECT", true);
-DO_SYMBOL(_sym_dynamic_extent, 1257, ClPkg, "DYNAMIC-EXTENT", true);
-DO_SYMBOL(_sym_sequence, 1258, ClPkg, "SEQUENCE", true);
-DO_SYMBOL(_sym_FileStream_O, 1259, ClPkg, "FILE-STREAM", true);
-DO_SYMBOL(_sym_mergePathnames, 1262, ClPkg, "MERGE-PATHNAMES", true);
-DO_SYMBOL(_sym_boole_ior, 1264, ClPkg, "BOOLE-IOR", true);
-DO_SYMBOL(_sym_STARdebuggerHookSTAR, 1265, ClPkg, "*DEBUGGER-HOOK*", true);
-DO_SYMBOL(_sym_apropos, 1267, ClPkg, "APROPOS", true);
-DO_SYMBOL(_sym_restart, 1270, ClPkg, "RESTART", true);
-DO_SYMBOL(_sym_standard_char, 1271, ClPkg, "STANDARD-CHAR", true);
-DO_SYMBOL(_sym_BroadcastStream_O, 1272, ClPkg, "BROADCAST-STREAM", true);
-DO_SYMBOL(_sym_STARpackageSTAR, 1275, ClPkg, "*PACKAGE*", true);
-DO_SYMBOL(_sym_find_restart, 1277, ClPkg, "FIND-RESTART", true);
-DO_SYMBOL(_sym_eq, 1280, ClPkg, "EQ", true);
-DO_SYMBOL(_sym_invoke_restart, 1284, ClPkg, "INVOKE-RESTART", true);
-DO_SYMBOL(_sym_STARtrace_outputSTAR, 1285, ClPkg, "*TRACE-OUTPUT*", true);
-DO_SYMBOL(_sym_truncate, 1286, ClPkg, "TRUNCATE", true);
-DO_SYMBOL(_sym_pathnameName, 1288, ClPkg, "PATHNAME-NAME", true);
-DO_SYMBOL(_sym_symbolValue, 1289, ClPkg, "SYMBOL-VALUE", true);
-DO_SYMBOL(_sym_STARquery_ioSTAR, 1290, ClPkg, "*QUERY-IO*", true);
-DO_SYMBOL(_sym_block, 1294, ClPkg, "BLOCK", true);
-DO_SYMBOL(_sym_defparameter, 1295, ClPkg, "DEFPARAMETER", true);
-DO_SYMBOL(_sym_list, 1298, ClPkg, "LIST", true);
-DO_SYMBOL(_sym_parseNamestring, 1301, ClPkg, "PARSE-NAMESTRING", true);
-DO_SYMBOL(_sym_null, 1302, ClPkg, "NULL", true);
-DO_SYMBOL(_sym_CompiledFunction_O, 1307, ClPkg, "COMPILED-FUNCTION", true);
-DO_SYMBOL(_sym_nil, 1309, ClPkg, "NIL", true);
-DO_SYMBOL(_sym_synonymStreamSymbol, 1310, ClPkg, "SYNONYM-STREAM-SYMBOL", true);
-DO_SYMBOL(_sym_divisionByZero, 1311, ClPkg, "DIVISION-BY-ZERO", true);
+DO_SYMBOL(_sym_wildPathnameP,0,ClPkg,"WILD-PATHNAME-P",true);
+DO_SYMBOL(_sym_not,2,ClPkg,"NOT",true);
+DO_SYMBOL(_sym_mostPositiveShortFloat,3,ClPkg,"MOST-POSITIVE-SHORT-FLOAT",true);
+DO_SYMBOL(_sym_fileError,5,ClPkg,"FILE-ERROR",true);
+DO_SYMBOL(_sym_acosh,6,ClPkg,"ACOSH",true);
+DO_SYMBOL(_sym_break,7,ClPkg,"BREAK",true);
+DO_SYMBOL(_sym_writeChar,13,ClPkg,"WRITE-CHAR",true);
+DO_SYMBOL(_sym_concatenated_stream_streams,14,ClPkg,"CONCATENATED-STREAM-STREAMS",true);
+DO_SYMBOL(_sym_setq,15,ClPkg,"SETQ",true);
+DO_SYMBOL(_sym_boole_set,16,ClPkg,"BOOLE-SET",true);
+DO_SYMBOL(_sym_atanh,18,ClPkg,"ATANH",true);
+DO_SYMBOL(_sym_boole_clr,19,ClPkg,"BOOLE-CLR",true);
+DO_SYMBOL(_sym_imagpart,20,ClPkg,"IMAGPART",true);
+DO_SYMBOL(_sym_hostNamestring,21,ClPkg,"HOST-NAMESTRING",true);
+DO_SYMBOL(_sym_file_string_length,24,ClPkg,"FILE-STRING-LENGTH",true);
+DO_SYMBOL(_sym_float,27,ClPkg,"FLOAT",true);
+DO_SYMBOL(_sym_gentemp,28,ClPkg,"GENTEMP",true);
+DO_SYMBOL(_sym_conjugate,29,ClPkg,"CONJUGATE",true);
+DO_SYMBOL(_sym_streamError,31,ClPkg,"STREAM-ERROR",true);
+DO_SYMBOL(_sym_boole_xor,37,ClPkg,"BOOLE-XOR",true);
+DO_SYMBOL(_sym_lognand,41,ClPkg,"LOGNAND",true);
+DO_SYMBOL(_sym_getf,43,ClPkg,"GETF",true);
+DO_SYMBOL(_sym_STARprint_prettySTAR,50,ClPkg,"*PRINT-PRETTY*",true);
+DO_SYMBOL(_sym_char_code,51,ClPkg,"CHAR-CODE",true);
+DO_SYMBOL(_sym_make_symbol,52,ClPkg,"MAKE-SYMBOL",true);
+DO_SYMBOL(_sym_T,53,ClPkg,"T",true);
+DO_SYMBOL(_sym_cadr,56,ClPkg,"CADR",true);
+DO_SYMBOL(_sym_endOfFile,57,ClPkg,"END-OF-FILE",true);
+DO_SYMBOL(_sym_notany,61,ClPkg,"NOTANY",true);
+DO_SYMBOL(_sym_arrayTotalSizeLimit,62,ClPkg,"ARRAY-TOTAL-SIZE-LIMIT",true);
+DO_SYMBOL(_sym_format,63,ClPkg,"FORMAT",true);
+DO_SYMBOL(_sym_typep,66,ClPkg,"TYPEP",true);
+DO_SYMBOL(_sym_Array_O,69,ClPkg,"ARRAY",true);
+DO_SYMBOL(_sym_directory,70,ClPkg,"DIRECTORY",true);
+DO_SYMBOL(_sym__LT_,72,ClPkg,"<",true);
+DO_SYMBOL(_sym_cosh,73,ClPkg,"COSH",true);
+DO_SYMBOL(_sym_load,74,ClPkg,"LOAD",true);
+DO_SYMBOL(_sym_charNotGreaterp,76,ClPkg,"CHAR-NOT-GREATERP",true);
+DO_SYMBOL(_sym_SignedByte,83,ClPkg,"SIGNED-BYTE",true);
+DO_SYMBOL(_sym_leastPositiveNormalizedSingleFloat,84,ClPkg,"LEAST-POSITIVE-NORMALIZED-SINGLE-FLOAT",true);
+DO_SYMBOL(_sym_revappend,87,ClPkg,"REVAPPEND",true);
+DO_SYMBOL(_sym_generic_function,91,ClPkg,"GENERIC-FUNCTION",true);
+DO_SYMBOL(_sym_debug,92,ClPkg,"DEBUG",true);
+DO_SYMBOL(_sym_terpri,95,ClPkg,"TERPRI",true);
+DO_SYMBOL(_sym_cdr,96,ClPkg,"CDR",true);
+DO_SYMBOL(_sym_vector,98,ClPkg,"VECTOR",true);
+DO_SYMBOL(_sym_typeError,102,ClPkg,"TYPE-ERROR",true);
+DO_SYMBOL(_sym_arithmeticError,103,ClPkg,"ARITHMETIC-ERROR",true);
+DO_SYMBOL(_sym_Symbol_O,104,ClPkg,"SYMBOL",true);
+DO_SYMBOL(_sym_ShortFloat_O,106,ClPkg,"SHORT-FLOAT",true);
+DO_SYMBOL(_sym_symbolPackage,110,ClPkg,"SYMBOL-PACKAGE",true);
+DO_SYMBOL(_sym_satisfies,114,ClPkg,"SATISFIES",true);
+DO_SYMBOL(_sym_specialOperatorP,118,ClPkg,"SPECIAL-OPERATOR-P",true);
+DO_SYMBOL(_sym_every,119,ClPkg,"EVERY",true);
+DO_SYMBOL(_sym_StandardObject_O,123,ClPkg,"STANDARD-OBJECT",true);
+DO_SYMBOL(_sym_stringLeftTrim,125,ClPkg,"STRING-LEFT-TRIM",true);
+DO_SYMBOL(_sym_char_GT_,131,ClPkg,"CHAR>",true);
+DO_SYMBOL(_sym_open_stream_p,133,ClPkg,"OPEN-STREAM-P",true);
+DO_SYMBOL(_sym_Complex_O,137,ClPkg,"COMPLEX",true);
+DO_SYMBOL(_sym_lcm,138,ClPkg,"LCM",true);
+DO_SYMBOL(_sym_simple_bit_vector_p,139,ClPkg,"SIMPLE-BIT-VECTOR-P",true);
+DO_SYMBOL(_sym_atom,140,ClPkg,"ATOM",true);
+DO_SYMBOL(_sym_fileStream,147,ClPkg,"FILE-STREAM",true);
+DO_SYMBOL(_sym_makePackage,148,ClPkg,"MAKE-PACKAGE",true);
+DO_SYMBOL(_sym_string_not_greaterp,149,ClPkg,"STRING-NOT-GREATERP",true);
+DO_SYMBOL(_sym_STARprint_baseSTAR,150,ClPkg,"*PRINT-BASE*",true);
+DO_SYMBOL(_sym_constantp,151,ClPkg,"CONSTANTP",true);
+DO_SYMBOL(_sym_makePathname,164,ClPkg,"MAKE-PATHNAME",true);
+DO_SYMBOL(_sym_controlError,166,ClPkg,"CONTROL-ERROR",true);
+DO_SYMBOL(_sym_subseq,167,ClPkg,"SUBSEQ",true);
+DO_SYMBOL(_sym_mostPositiveDoubleFloat,168,ClPkg,"MOST-POSITIVE-DOUBLE-FLOAT",true);
+DO_SYMBOL(_sym_multiple_value_prog1,172,ClPkg,"MULTIPLE-VALUE-PROG1",true);
+DO_SYMBOL(_sym_AMPenvironment,173,ClPkg,"&ENVIRONMENT",true);
+DO_SYMBOL(_sym_leastPositiveShortFloat,177,ClPkg,"LEAST-POSITIVE-SHORT-FLOAT",true);
+DO_SYMBOL(_sym_rename_file,181,ClPkg,"RENAME-FILE",true);
+DO_SYMBOL(_sym_cond,183,ClPkg,"COND",true);
+DO_SYMBOL(_sym_Null_O,185,ClPkg,"NULL",true);
+DO_SYMBOL(_sym_AMPaux,186,ClPkg,"&AUX",true);
+DO_SYMBOL(_sym_make_sequence,187,ClPkg,"MAKE-SEQUENCE",true);
+DO_SYMBOL(_sym_streamp,190,ClPkg,"STREAMP",true);
+DO_SYMBOL(_sym_cons,193,ClPkg,"CONS",true);
+DO_SYMBOL(_sym_characterp,195,ClPkg,"CHARACTERP",true);
+DO_SYMBOL(_sym_DoubleFloat_O,200,ClPkg,"DOUBLE-FLOAT",true);
+DO_SYMBOL(_sym_leastNegativeNormalizedDoubleFloat,203,ClPkg,"LEAST-NEGATIVE-NORMALIZED-DOUBLE-FLOAT",true);
+DO_SYMBOL(_sym_charGreaterp,208,ClPkg,"CHAR-GREATERP",true);
+DO_SYMBOL(_sym_getDispatchMacroCharacter,209,ClPkg,"GET-DISPATCH-MACRO-CHARACTER",true);
+DO_SYMBOL(_sym_nreverse,212,ClPkg,"NREVERSE",true);
+DO_SYMBOL(_sym_string_not_lessp,214,ClPkg,"STRING-NOT-LESSP",true);
+DO_SYMBOL(_sym_echo_stream_input_stream,215,ClPkg,"ECHO-STREAM-INPUT-STREAM",true);
+DO_SYMBOL(_sym_copyStructure,216,ClPkg,"COPY-STRUCTURE",true);
+DO_SYMBOL(_sym_values,217,ClPkg,"VALUES",true);
+DO_SYMBOL(_sym_or,218,ClPkg,"OR",true);
+DO_SYMBOL(_sym_boole_orc2,219,ClPkg,"BOOLE-ORC2",true);
+DO_SYMBOL(_sym_boole_orc1,221,ClPkg,"BOOLE-ORC1",true);
+DO_SYMBOL(_sym_file_write_date,222,ClPkg,"FILE-WRITE-DATE",true);
+DO_SYMBOL(_sym_logeqv,227,ClPkg,"LOGEQV",true);
+DO_SYMBOL(_sym_max,228,ClPkg,"MAX",true);
+DO_SYMBOL(_sym_two_way_stream,232,ClPkg,"TWO-WAY-STREAM",true);
+DO_SYMBOL(_sym__GT_,235,ClPkg,">",true);
+DO_SYMBOL(_sym_undefinedFunction,237,ClPkg,"UNDEFINED-FUNCTION",true);
+DO_SYMBOL(_sym_assoc,238,ClPkg,"ASSOC",true);
+DO_SYMBOL(_sym_findSymbol,240,ClPkg,"FIND-SYMBOL",true);
+DO_SYMBOL(_sym_string_GE_,241,ClPkg,"STRING>=",true);
+DO_SYMBOL(_sym_disassemble,245,ClPkg,"DISASSEMBLE",true);
+DO_SYMBOL(_sym__MINUS_,246,ClPkg,"-",true);
+DO_SYMBOL(_sym_integerDecodeFloat,248,ClPkg,"INTEGER-DECODE-FLOAT",true);
+DO_SYMBOL(_sym_nconc,251,ClPkg,"NCONC",true);
+DO_SYMBOL(_sym_stringTrim,252,ClPkg,"STRING-TRIM",true);
+DO_SYMBOL(_sym_write_sequence,255,ClPkg,"WRITE-SEQUENCE",true);
+DO_SYMBOL(_sym_most_negative_fixnum,256,ClPkg,"MOST-NEGATIVE-FIXNUM",true);
+DO_SYMBOL(_sym_shadowing_import,263,ClPkg,"SHADOWING-IMPORT",true);
+DO_SYMBOL(_sym_unintern,268,ClPkg,"UNINTERN",true);
+DO_SYMBOL(_sym_stringp,269,ClPkg,"STRINGP",true);
+DO_SYMBOL(_sym_finish_output,270,ClPkg,"FINISH-OUTPUT",true);
+DO_SYMBOL(_sym_cellError,271,ClPkg,"CELL-ERROR",true);
+DO_SYMBOL(_sym__TIMES_,273,ClPkg,"*",true);
+DO_SYMBOL(_sym_simple_string_p,281,ClPkg,"SIMPLE-STRING-P",true);
+DO_SYMBOL(_sym_setf,282,ClPkg,"SETF",true);
+DO_SYMBOL(_sym_charEqual,285,ClPkg,"CHAR-EQUAL",true);
+DO_SYMBOL(_sym_mapcon,287,ClPkg,"MAPCON",true);
+DO_SYMBOL(_sym_deftype,289,ClPkg,"DEFTYPE",true);
+DO_SYMBOL(_sym_STARterminal_ioSTAR,290,ClPkg,"*TERMINAL-IO*",true);
+DO_SYMBOL(_sym_charUpcase,293,ClPkg,"CHAR-UPCASE",true);
+DO_SYMBOL(_sym_boole_nand,294,ClPkg,"BOOLE-NAND",true);
+DO_SYMBOL(_sym_Float_O,296,ClPkg,"FLOAT",true);
+DO_SYMBOL(_sym_leastPositiveDoubleFloat,299,ClPkg,"LEAST-POSITIVE-DOUBLE-FLOAT",true);
+DO_SYMBOL(_sym_AMPrest,300,ClPkg,"&REST",true);
+DO_SYMBOL(_sym_condition,302,ClPkg,"CONDITION",true);
+DO_SYMBOL(_sym_clearOutput,305,ClPkg,"CLEAR-OUTPUT",true);
+DO_SYMBOL(_sym_nstring_downcase,306,ClPkg,"NSTRING-DOWNCASE",true);
+DO_SYMBOL(_sym_floatingPointOverflow,309,ClPkg,"FLOATING-POINT-OVERFLOW",true);
+DO_SYMBOL(_sym_printNotReadable,313,ClPkg,"PRINT-NOT-READABLE",true);
+DO_SYMBOL(_sym_unread_char,314,ClPkg,"UNREAD-CHAR",true);
+DO_SYMBOL(_sym_STARfeaturesSTAR,315,ClPkg,"*FEATURES*",true);
+DO_SYMBOL(_sym_sin,318,ClPkg,"SIN",true);
+DO_SYMBOL(_sym__EQ_,319,ClPkg,"=",true);
+DO_SYMBOL(_sym_leastNegativeNormalizedSingleFloat,320,ClPkg,"LEAST-NEGATIVE-NORMALIZED-SINGLE-FLOAT",true);
+DO_SYMBOL(_sym_STARdefaultPathnameDefaultsSTAR,321,ClPkg,"*DEFAULT-PATHNAME-DEFAULTS*",true);
+DO_SYMBOL(_sym_position,322,ClPkg,"POSITION",true);
+DO_SYMBOL(_sym_symbol_macrolet,323,ClPkg,"SYMBOL-MACROLET",true);
+DO_SYMBOL(_sym_keywordp,324,ClPkg,"KEYWORDP",true);
+DO_SYMBOL(_sym_maplist,327,ClPkg,"MAPLIST",true);
+DO_SYMBOL(_sym_Character_dummy_O,331,ClPkg,"CHARACTER",true);
+DO_SYMBOL(_sym_ash,332,ClPkg,"ASH",true);
+DO_SYMBOL(_sym_LogicalPathname_O,333,ClPkg,"LOGICAL-PATHNAME",true);
+DO_SYMBOL(_sym_two_way_stream_output_stream,337,ClPkg,"TWO-WAY-STREAM-OUTPUT-STREAM",true);
+DO_SYMBOL(_sym_macroexpand,338,ClPkg,"MACROEXPAND",true);
+DO_SYMBOL(_sym_parseInteger,339,ClPkg,"PARSE-INTEGER",true);
+DO_SYMBOL(_sym_string,340,ClPkg,"STRING",true);
+DO_SYMBOL(_sym_Bit,341,ClPkg,"BIT",true);
+DO_SYMBOL(_sym_compileFile,345,ClPkg,"COMPILE-FILE",true);
+DO_SYMBOL(_sym_function,346,ClPkg,"FUNCTION",true);
+DO_SYMBOL(_sym_listAllPackages,347,ClPkg,"LIST-ALL-PACKAGES",true);
+DO_SYMBOL(_sym_ignore,349,ClPkg,"IGNORE",true);
+DO_SYMBOL(_sym_mod,351,ClPkg,"MOD",true);
+DO_SYMBOL(_sym_nthcdr,355,ClPkg,"NTHCDR",true);
+DO_SYMBOL(_sym_provide,358,ClPkg,"PROVIDE",true);
+DO_SYMBOL(_sym_callArgumentsLimit,359,ClPkg,"CALL-ARGUMENTS-LIMIT",true);
+DO_SYMBOL(_sym_String_O,360,ClPkg,"STRING",true);
+DO_SYMBOL(_sym_boole_1,361,ClPkg,"BOOLE-1",true);
+DO_SYMBOL(_sym_locally,362,ClPkg,"LOCALLY",true);
+DO_SYMBOL(_sym_boole_2,363,ClPkg,"BOOLE-2",true);
+DO_SYMBOL(_sym_define_method_combination,364,ClPkg,"DEFINE-METHOD-COMBINATION",true);
+DO_SYMBOL(_sym_restartName,365,ClPkg,"RESTART-NAME",true);
+DO_SYMBOL(_sym_logandc2,368,ClPkg,"LOGANDC2",true);
+DO_SYMBOL(_sym_numerator,369,ClPkg,"NUMERATOR",true);
+DO_SYMBOL(_sym_logandc1,370,ClPkg,"LOGANDC1",true);
+DO_SYMBOL(_sym_STARprint_lengthSTAR,372,ClPkg,"*PRINT-LENGTH*",true);
+DO_SYMBOL(_sym_BuiltInClass_O,380,ClPkg,"BUILT-IN-CLASS",true);
+DO_SYMBOL(_sym_styleWarning,385,ClPkg,"STYLE-WARNING",true);
+DO_SYMBOL(_sym_SynonymStream_O,387,ClPkg,"SYNONYM-STREAM",true);
+DO_SYMBOL(_sym_flet,389,ClPkg,"FLET",true);
+DO_SYMBOL(_sym_stream_external_format,392,ClPkg,"STREAM-EXTERNAL-FORMAT",true);
+DO_SYMBOL(_sym_do,393,ClPkg,"DO",true);
+DO_SYMBOL(_sym_string_LE_,396,ClPkg,"STRING<=",true);
+DO_SYMBOL(_sym_import,397,ClPkg,"IMPORT",true);
+DO_SYMBOL(_sym_package_use_list,399,ClPkg,"PACKAGE-USE-LIST",true);
+DO_SYMBOL(_sym_writeLine,400,ClPkg,"WRITE-LINE",true);
+DO_SYMBOL(_sym_boole_c2,405,ClPkg,"BOOLE-C2",true);
+DO_SYMBOL(_sym_boole_c1,406,ClPkg,"BOOLE-C1",true);
+DO_SYMBOL(_sym_char_LE_,407,ClPkg,"CHAR<=",true);
+DO_SYMBOL(_sym_getInternalRealTime,411,ClPkg,"GET-INTERNAL-REAL-TIME",true);
+DO_SYMBOL(_sym_and,412,ClPkg,"AND",true);
+DO_SYMBOL(_sym_maphash,413,ClPkg,"MAPHASH",true);
+DO_SYMBOL(_sym_sqrt,414,ClPkg,"SQRT",true);
+DO_SYMBOL(_sym_getInternalRunTime,415,ClPkg,"GET-INTERNAL-RUN-TIME",true);
+DO_SYMBOL(_sym_MultipleValuesLimit,416,ClPkg,"MULTIPLE-VALUES-LIMIT",true);
+DO_SYMBOL(_sym_setDispatchMacroCharacter,417,ClPkg,"SET-DISPATCH-MACRO-CHARACTER",true);
+DO_SYMBOL(_sym_Real_O,419,ClPkg,"REAL",true);
+DO_SYMBOL(_sym_ceiling,421,ClPkg,"CEILING",true);
+DO_SYMBOL(_sym_notevery,423,ClPkg,"NOTEVERY",true);
+DO_SYMBOL(_sym_char,425,ClPkg,"CHAR",true);
+DO_SYMBOL(_sym_sleep,430,ClPkg,"SLEEP",true);
+DO_SYMBOL(_sym_simple_array,431,ClPkg,"SIMPLE-ARRAY",true);
+DO_SYMBOL(_sym_equal,433,ClPkg,"EQUAL",true);
+DO_SYMBOL(_sym_special,434,ClPkg,"SPECIAL",true);
+DO_SYMBOL(_sym_userHomedirPathname,437,ClPkg,"USER-HOMEDIR-PATHNAME",true);
+DO_SYMBOL(_sym_leastPositiveNormalizedShortFloat,439,ClPkg,"LEAST-POSITIVE-NORMALIZED-SHORT-FLOAT",true);
+DO_SYMBOL(_sym_hash_table_p,443,ClPkg,"HASH-TABLE-P",true);
+DO_SYMBOL(_sym_nextMethodP,451,ClPkg,"NEXT-METHOD-P",true);
+DO_SYMBOL(_sym_export,452,ClPkg,"EXPORT",true);
+DO_SYMBOL(_sym_leastPositiveNormalizedDoubleFloat,453,ClPkg,"LEAST-POSITIVE-NORMALIZED-DOUBLE-FLOAT",true);
+DO_SYMBOL(_sym_clrhash,457,ClPkg,"CLRHASH",true);
+DO_SYMBOL(_sym_Integer_O,461,ClPkg,"INTEGER",true);
+DO_SYMBOL(_sym_define_modify_macro,463,ClPkg,"DEFINE-MODIFY-MACRO",true);
+DO_SYMBOL(_sym_append,464,ClPkg,"APPEND",true);
+DO_SYMBOL(_sym_most_positive_fixnum,465,ClPkg,"MOST-POSITIVE-FIXNUM",true);
+DO_SYMBOL(_sym_reverse,467,ClPkg,"REVERSE",true);
+DO_SYMBOL(_sym_char_GE_,471,ClPkg,"CHAR>=",true);
+DO_SYMBOL(_sym_the,472,ClPkg,"THE",true);
+DO_SYMBOL(_sym_read_preserving_whitespace,474,ClPkg,"READ-PRESERVING-WHITESPACE",true);
+DO_SYMBOL(_sym_asinh,475,ClPkg,"ASINH",true);
+DO_SYMBOL(_sym_union,477,ClPkg,"UNION",true);
+DO_SYMBOL(_sym_fboundp,478,ClPkg,"FBOUNDP",true);
+DO_SYMBOL(_sym_character,479,ClPkg,"CHARACTER",true);
+DO_SYMBOL(_sym_asin,480,ClPkg,"ASIN",true);
+DO_SYMBOL(_sym_Rational_O,481,ClPkg,"RATIONAL",true);
+DO_SYMBOL(_sym_digitCharP,482,ClPkg,"DIGIT-CHAR-P",true);
+DO_SYMBOL(_sym_no_applicable_method,483,ClPkg,"NO-APPLICABLE-METHOD",true);
+DO_SYMBOL(_sym_enoughNamestring,484,ClPkg,"ENOUGH-NAMESTRING",true);
+DO_SYMBOL(_sym_STARloadTruenameSTAR,490,ClPkg,"*LOAD-TRUENAME*",true);
+DO_SYMBOL(_sym_two_way_stream_input_stream,494,ClPkg,"TWO-WAY-STREAM-INPUT-STREAM",true);
+DO_SYMBOL(_sym_copyList,506,ClPkg,"COPY-LIST",true);
+DO_SYMBOL(_sym_read_line,507,ClPkg,"READ-LINE",true);
+DO_SYMBOL(_sym_T_O,508,ClPkg,"T",true);
+DO_SYMBOL(_sym_count,509,ClPkg,"COUNT",true);
+DO_SYMBOL(_sym_macrolet,510,ClPkg,"MACROLET",true);
+DO_SYMBOL(_sym_readSequence,511,ClPkg,"READ-SEQUENCE",true);
+DO_SYMBOL(_sym_array_rank_limit,513,ClPkg,"ARRAY-RANK-LIMIT",true);
+DO_SYMBOL(_sym_let,515,ClPkg,"LET",true);
+DO_SYMBOL(_sym_pathnameDevice,516,ClPkg,"PATHNAME-DEVICE",true);
+DO_SYMBOL(_sym_shadow,518,ClPkg,"SHADOW",true);
+DO_SYMBOL(_sym_STARmodulesSTAR,520,ClPkg,"*MODULES*",true);
+DO_SYMBOL(_sym_round,521,ClPkg,"ROUND",true);
+DO_SYMBOL(_sym_zerop,522,ClPkg,"ZEROP",true);
+DO_SYMBOL(_sym_get,525,ClPkg,"GET",true);
+DO_SYMBOL(_sym_leastPositiveSingleFloat,526,ClPkg,"LEAST-POSITIVE-SINGLE-FLOAT",true);
+DO_SYMBOL(_sym_Number_O,529,ClPkg,"NUMBER",true);
+DO_SYMBOL(_sym_compile,531,ClPkg,"COMPILE",true);
+DO_SYMBOL(_sym_string_upcase,532,ClPkg,"STRING-UPCASE",true);
+DO_SYMBOL(_sym_scaleFloat,534,ClPkg,"SCALE-FLOAT",true);
+DO_SYMBOL(_sym_describe,535,ClPkg,"DESCRIBE",true);
+DO_SYMBOL(_sym_ReadTable_O,536,ClPkg,"READTABLE",true);
+DO_SYMBOL(_sym_listSTAR,543,ClPkg,"LIST*",true);
+DO_SYMBOL(_sym_mostPositiveSingleFloat,544,ClPkg,"MOST-POSITIVE-SINGLE-FLOAT",true);
+DO_SYMBOL(_sym_compute_restarts,545,ClPkg,"COMPUTE-RESTARTS",true);
+DO_SYMBOL(_sym_standard_char_p,547,ClPkg,"STANDARD-CHAR-P",true);
+DO_SYMBOL(_sym_boole_eqv,548,ClPkg,"BOOLE-EQV",true);
+DO_SYMBOL(_sym_remove,549,ClPkg,"REMOVE",true);
+DO_SYMBOL(_sym_leastNegativeSingleFloat,551,ClPkg,"LEAST-NEGATIVE-SINGLE-FLOAT",true);
+DO_SYMBOL(_sym_logical_pathname,555,ClPkg,"LOGICAL-PATHNAME",true);
+DO_SYMBOL(_sym_string_EQ_,556,ClPkg,"STRING=",true);
+DO_SYMBOL(_sym_floatingPointInexact,557,ClPkg,"FLOATING-POINT-INEXACT",true);
+DO_SYMBOL(_sym_logand,558,ClPkg,"LOGAND",true);
+DO_SYMBOL(_sym_writeByte,561,ClPkg,"WRITE-BYTE",true);
+DO_SYMBOL(_sym_StandardClass_O,564,ClPkg,"STANDARD-CLASS",true);
+DO_SYMBOL(_sym_go,565,ClPkg,"GO",true);
+DO_SYMBOL(_sym_alpha_char_p,567,ClPkg,"ALPHA-CHAR-P",true);
+DO_SYMBOL(_sym_use_package,568,ClPkg,"USE-PACKAGE",true);
+DO_SYMBOL(_sym_decodeFloat,570,ClPkg,"DECODE-FLOAT",true);
+DO_SYMBOL(_sym_STARgensym_counterSTAR,571,ClPkg,"*GENSYM-COUNTER*",true);
+DO_SYMBOL(_sym_TwoWayStream_O,573,ClPkg,"TWO-WAY-STREAM",true);
+DO_SYMBOL(_sym_writeString,574,ClPkg,"WRITE-STRING",true);
+DO_SYMBOL(_sym_STARprint_arraySTAR,576,ClPkg,"*PRINT-ARRAY*",true);
+DO_SYMBOL(_sym_extended_char,577,ClPkg,"EXTENDED-CHAR",true);
+DO_SYMBOL(_sym_compiled_function_p,578,ClPkg,"COMPILED-FUNCTION-P",true);
+DO_SYMBOL(_sym_simpleTypeError,581,ClPkg,"SIMPLE-TYPE-ERROR",true);
+DO_SYMBOL(_sym_dotimes,582,ClPkg,"DOTIMES",true);
+DO_SYMBOL(_sym_package,584,ClPkg,"PACKAGE",true);
+DO_SYMBOL(_sym_getUniversalTime,585,ClPkg,"GET-UNIVERSAL-TIME",true);
+DO_SYMBOL(_sym_parseError,587,ClPkg,"PARSE-ERROR",true);
+DO_SYMBOL(_sym_output_stream_p,588,ClPkg,"OUTPUT-STREAM-P",true);
+DO_SYMBOL(_sym_method,589,ClPkg,"METHOD",true);
+DO_SYMBOL(_sym_denominator,590,ClPkg,"DENOMINATOR",true);
+DO_SYMBOL(_sym_apply,594,ClPkg,"APPLY",true);
+DO_SYMBOL(_sym_eval,595,ClPkg,"EVAL",true);
+DO_SYMBOL(_sym_random,596,ClPkg,"RANDOM",true);
+DO_SYMBOL(_sym_member,598,ClPkg,"MEMBER",true);
+DO_SYMBOL(_sym_programError,600,ClPkg,"PROGRAM-ERROR",true);
+DO_SYMBOL(_sym_string_GT_,601,ClPkg,"STRING>",true);
+DO_SYMBOL(_sym_EchoStream_O,603,ClPkg,"ECHO-STREAM",true);
+DO_SYMBOL(_sym_compute_applicable_methods,606,ClPkg,"COMPUTE-APPLICABLE-METHODS",true);
+DO_SYMBOL(_sym_rationalp,612,ClPkg,"RATIONALP",true);
+DO_SYMBOL(_sym_STARloadPathnameSTAR,620,ClPkg,"*LOAD-PATHNAME*",true);
+DO_SYMBOL(_sym_ConcatenatedStream_O,624,ClPkg,"CONCATENATED-STREAM",true);
+DO_SYMBOL(_sym_freshLine,625,ClPkg,"FRESH-LINE",true);
+DO_SYMBOL(_sym_speed,626,ClPkg,"SPEED",true);
+DO_SYMBOL(_sym_min,628,ClPkg,"MIN",true);
+DO_SYMBOL(_sym_cerror,631,ClPkg,"CERROR",true);
+DO_SYMBOL(_sym_values_list,632,ClPkg,"VALUES-LIST",true);
+DO_SYMBOL(_sym_makeArray,633,ClPkg,"MAKE-ARRAY",true);
+DO_SYMBOL(_sym_boundp,636,ClPkg,"BOUNDP",true);
+DO_SYMBOL(_sym_standard_class,637,ClPkg,"STANDARD-CLASS",true);
+DO_SYMBOL(_sym_make_two_way_stream,645,ClPkg,"MAKE-TWO-WAY-STREAM",true);
+DO_SYMBOL(_sym_destructuring_bind,647,ClPkg,"DESTRUCTURING-BIND",true);
+DO_SYMBOL(_sym_name_char,650,ClPkg,"NAME-CHAR",true);
+DO_SYMBOL(_sym_char_LT_,651,ClPkg,"CHAR<",true);
+DO_SYMBOL(_sym__NE_,652,ClPkg,"/=",true);
+DO_SYMBOL(_sym_leastNegativeDoubleFloat,654,ClPkg,"LEAST-NEGATIVE-DOUBLE-FLOAT",true);
+DO_SYMBOL(_sym_interactive_stream_p,657,ClPkg,"INTERACTIVE-STREAM-P",true);
+DO_SYMBOL(_sym_lambdaParametersLimit,659,ClPkg,"LAMBDA-PARAMETERS-LIMIT",true);
+DO_SYMBOL(_sym_last,662,ClPkg,"LAST",true);
+DO_SYMBOL(_sym_char_EQ_,665,ClPkg,"CHAR=",true);
+DO_SYMBOL(_sym_simple_vector_p,669,ClPkg,"SIMPLE-VECTOR-P",true);
+DO_SYMBOL(_sym_Cons_O,672,ClPkg,"CONS",true);
+DO_SYMBOL(_sym_Stream_O,673,ClPkg,"STREAM",true);
+DO_SYMBOL(_sym_AMPkey,674,ClPkg,"&KEY",true);
+DO_SYMBOL(_sym_step,678,ClPkg,"STEP",true);
+DO_SYMBOL(_sym_symbolFunction,683,ClPkg,"SYMBOL-FUNCTION",true);
+DO_SYMBOL(_sym_Function_O,685,ClPkg,"FUNCTION",true);
+DO_SYMBOL(_sym_STARprint_linesSTAR,688,ClPkg,"*PRINT-LINES*",true);
+DO_SYMBOL(_sym_multiple_value_call,690,ClPkg,"MULTIPLE-VALUE-CALL",true);
+DO_SYMBOL(_sym_bit,697,ClPkg,"BIT",true);
+DO_SYMBOL(_sym_leastNegativeNormalizedShortFloat,699,ClPkg,"LEAST-NEGATIVE-NORMALIZED-SHORT-FLOAT",true);
+DO_SYMBOL(_sym_error,702,ClPkg,"ERROR",true);
+DO_SYMBOL(_sym_storageCondition,704,ClPkg,"STORAGE-CONDITION",true);
+DO_SYMBOL(_sym_letSTAR,705,ClPkg,"LET*",true);
+DO_SYMBOL(_sym_simpleWarning,708,ClPkg,"SIMPLE-WARNING",true);
+DO_SYMBOL(_sym_lognor,711,ClPkg,"LOGNOR",true);
+DO_SYMBOL(_sym_code_char,712,ClPkg,"CODE-CHAR",true);
+DO_SYMBOL(_sym_arrayDimensionLimit,713,ClPkg,"ARRAY-DIMENSION-LIMIT",true);
+DO_SYMBOL(_sym_integerp,716,ClPkg,"INTEGERP",true);
+DO_SYMBOL(_sym_boolean,717,ClPkg,"BOOLEAN",true);
+DO_SYMBOL(_sym_standardGenericFunction,718,ClPkg,"STANDARD-GENERIC-FUNCTION",true);
+DO_SYMBOL(_sym_STARprint_gensymSTAR,719,ClPkg,"*PRINT-GENSYM*",true);
+DO_SYMBOL(_sym_internalTimeUnitsPerSecond,722,ClPkg,"INTERNAL-TIME-UNITS-PER-SECOND",true);
+DO_SYMBOL(_sym_exp,723,ClPkg,"EXP",true);
+DO_SYMBOL(_sym_package_shadowing_symbols,724,ClPkg,"PACKAGE-SHADOWING-SYMBOLS",true);
+DO_SYMBOL(_sym_butlast,726,ClPkg,"BUTLAST",true);
+DO_SYMBOL(_sym_STARprint_escapeSTAR,727,ClPkg,"*PRINT-ESCAPE*",true);
+DO_SYMBOL(_sym_mapcan,734,ClPkg,"MAPCAN",true);
+DO_SYMBOL(_sym_mapcar,736,ClPkg,"MAPCAR",true);
+DO_SYMBOL(_sym_AMPallow_other_keys,742,ClPkg,"&ALLOW-OTHER-KEYS",true);
+DO_SYMBOL(_sym_translateLogicalPathname,743,ClPkg,"TRANSLATE-LOGICAL-PATHNAME",true);
+DO_SYMBOL(_sym_log,745,ClPkg,"LOG",true);
+DO_SYMBOL(_sym_Fixnum_dummy_O,746,ClPkg,"FIXNUM",true);
+DO_SYMBOL(_sym_lognot,749,ClPkg,"LOGNOT",true);
+DO_SYMBOL(_sym_make_list,751,ClPkg,"MAKE-LIST",true);
+DO_SYMBOL(_sym_STARprint_right_marginSTAR,752,ClPkg,"*PRINT-RIGHT-MARGIN*",true);
+DO_SYMBOL(_sym_packageError,753,ClPkg,"PACKAGE-ERROR",true);
+DO_SYMBOL(_sym_princ,754,ClPkg,"PRINC",true);
+DO_SYMBOL(_sym_close,755,ClPkg,"CLOSE",true);
+DO_SYMBOL(_sym_floatDigits,756,ClPkg,"FLOAT-DIGITS",true);
+DO_SYMBOL(_sym_echo_stream_output_stream,757,ClPkg,"ECHO-STREAM-OUTPUT-STREAM",true);
+DO_SYMBOL(_sym_boole_andc2,760,ClPkg,"BOOLE-ANDC2",true);
+DO_SYMBOL(_sym_boole_andc1,761,ClPkg,"BOOLE-ANDC1",true);
+DO_SYMBOL(_sym_callNextMethod,763,ClPkg,"CALL-NEXT-METHOD",true);
+DO_SYMBOL(_sym_makeCondition,765,ClPkg,"MAKE-CONDITION",true);
+DO_SYMBOL(_sym_declare,766,ClPkg,"DECLARE",true);
+DO_SYMBOL(_sym_boole_and,767,ClPkg,"BOOLE-AND",true);
+DO_SYMBOL(_sym_charLessp,769,ClPkg,"CHAR-LESSP",true);
+DO_SYMBOL(_sym_makeStringOutputStream,774,ClPkg,"MAKE-STRING-OUTPUT-STREAM",true);
+DO_SYMBOL(_sym_copyTree,776,ClPkg,"COPY-TREE",true);
+DO_SYMBOL(_sym_read_sequence,777,ClPkg,"READ-SEQUENCE",true);
+DO_SYMBOL(_sym_AMPwhole,779,ClPkg,"&WHOLE",true);
+DO_SYMBOL(_sym_Pathname_O,782,ClPkg,"PATHNAME",true);
+DO_SYMBOL(_sym_rest,784,ClPkg,"REST",true);
+DO_SYMBOL(_sym_logxor,785,ClPkg,"LOGXOR",true);
+DO_SYMBOL(_sym_logorc2,786,ClPkg,"LOGORC2",true);
+DO_SYMBOL(_sym__GE_,787,ClPkg,">=",true);
+DO_SYMBOL(_sym_string_lessp,788,ClPkg,"STRING-LESSP",true);
+DO_SYMBOL(_sym_variable,791,ClPkg,"VARIABLE",true);
+DO_SYMBOL(_sym_defconstant,792,ClPkg,"DEFCONSTANT",true);
+DO_SYMBOL(_sym_identity,794,ClPkg,"IDENTITY",true);
+DO_SYMBOL(_sym_listen,795,ClPkg,"LISTEN",true);
+DO_SYMBOL(_sym_floatp,796,ClPkg,"FLOATP",true);
+DO_SYMBOL(_sym_floor,801,ClPkg,"FLOOR",true);
+DO_SYMBOL(_sym_clearInput,802,ClPkg,"CLEAR-INPUT",true);
+DO_SYMBOL(_sym_boole,803,ClPkg,"BOOLE",true);
+DO_SYMBOL(_sym_force_output,805,ClPkg,"FORCE-OUTPUT",true);
+DO_SYMBOL(_sym_logicalPathnameTranslations,808,ClPkg,"LOGICAL-PATHNAME-TRANSLATIONS",true);
+DO_SYMBOL(_sym_STARread_baseSTAR,810,ClPkg,"*READ-BASE*",true);
+DO_SYMBOL(_sym_translatePathname,811,ClPkg,"TRANSLATE-PATHNAME",true);
+DO_SYMBOL(_sym_defsetf,812,ClPkg,"DEFSETF",true);
+DO_SYMBOL(_sym_StructureObject_O,816,ClPkg,"STRUCTURE-OBJECT",true);
+DO_SYMBOL(_sym_directoryNamestring,818,ClPkg,"DIRECTORY-NAMESTRING",true);
+DO_SYMBOL(_sym_read_from_string,820,ClPkg,"READ-FROM-STRING",true);
+DO_SYMBOL(_sym_print,821,ClPkg,"PRINT",true);
+DO_SYMBOL(_sym_STARdebug_ioSTAR,828,ClPkg,"*DEBUG-IO*",true);
+DO_SYMBOL(_sym_car,829,ClPkg,"CAR",true);
+DO_SYMBOL(_sym_truename,837,ClPkg,"TRUENAME",true);
+DO_SYMBOL(_sym_mostNegativeSingleFloat,840,ClPkg,"MOST-NEGATIVE-SINGLE-FLOAT",true);
+DO_SYMBOL(_sym_restart_bind,844,ClPkg,"RESTART-BIND",true);
+DO_SYMBOL(_sym_string_LT_,849,ClPkg,"STRING<",true);
+DO_SYMBOL(_sym_logior,850,ClPkg,"LOGIOR",true);
+DO_SYMBOL(_sym_prog1,853,ClPkg,"PROG1",true);
+DO_SYMBOL(_sym_functionp,854,ClPkg,"FUNCTIONP",true);
+DO_SYMBOL(_sym_base_char,857,ClPkg,"BASE-CHAR",true);
+DO_SYMBOL(_sym_eval_when,860,ClPkg,"EVAL-WHEN",true);
+DO_SYMBOL(_sym_fmakunbound,861,ClPkg,"FMAKUNBOUND",true);
+DO_SYMBOL(_sym_fdefinition,863,ClPkg,"FDEFINITION",true);
+DO_SYMBOL(_sym_STARprint_readablySTAR,864,ClPkg,"*PRINT-READABLY*",true);
+DO_SYMBOL(_sym_namestring,868,ClPkg,"NAMESTRING",true);
+DO_SYMBOL(_sym_Vector_O,869,ClPkg,"VECTOR",true);
+DO_SYMBOL(_sym_cos,870,ClPkg,"COS",true);
+DO_SYMBOL(_sym_simpleError,871,ClPkg,"SIMPLE-ERROR",true);
+DO_SYMBOL(_sym_seriousCondition,872,ClPkg,"SERIOUS-CONDITION",true);
+DO_SYMBOL(_sym_macroFunction,874,ClPkg,"MACRO-FUNCTION",true);
+DO_SYMBOL(_sym_vectorPushExtend,875,ClPkg,"VECTOR-PUSH-EXTEND",true);
+DO_SYMBOL(_sym_progn,877,ClPkg,"PROGN",true);
+DO_SYMBOL(_sym_vectorp,878,ClPkg,"VECTORP",true);
+DO_SYMBOL(_sym_fill_pointer,879,ClPkg,"FILL-POINTER",true);
+DO_SYMBOL(_sym_deleteFile,880,ClPkg,"DELETE-FILE",true);
+DO_SYMBOL(_sym_stream,883,ClPkg,"STREAM",true);
+DO_SYMBOL(_sym_unwind_protect,885,ClPkg,"UNWIND-PROTECT",true);
+DO_SYMBOL(_sym_type_of,887,ClPkg,"TYPE-OF",true);
+DO_SYMBOL(_sym_macroexpand_1,891,ClPkg,"MACROEXPAND-1",true);
+DO_SYMBOL(_sym_copySeq,892,ClPkg,"COPY-SEQ",true);
+DO_SYMBOL(_sym_lambda,893,ClPkg,"LAMBDA",true);
+DO_SYMBOL(_sym_keyword,894,ClPkg,"KEYWORD",true);
+DO_SYMBOL(_sym_progv,895,ClPkg,"PROGV",true);
+DO_SYMBOL(_sym_floatPrecision,896,ClPkg,"FLOAT-PRECISION",true);
+DO_SYMBOL(_sym_string_not_equal,898,ClPkg,"STRING-NOT-EQUAL",true);
+DO_SYMBOL(_sym_AMPoptional,899,ClPkg,"&OPTIONAL",true);
+DO_SYMBOL(_sym_charNotLessp,901,ClPkg,"CHAR-NOT-LESSP",true);
+DO_SYMBOL(_sym_STARprint_miser_widthSTAR,903,ClPkg,"*PRINT-MISER-WIDTH*",true);
+DO_SYMBOL(_sym_nth,904,ClPkg,"NTH",true);
+DO_SYMBOL(_sym_slot_value,908,ClPkg,"SLOT-VALUE",true);
+DO_SYMBOL(_sym_catch,909,ClPkg,"CATCH",true);
+DO_SYMBOL(_sym_load_time_value,911,ClPkg,"LOAD-TIME-VALUE",true);
+DO_SYMBOL(_sym_equalp,913,ClPkg,"EQUALP",true);
+DO_SYMBOL(_sym_listp,915,ClPkg,"LISTP",true);
+DO_SYMBOL(_sym_nstring_upcase,919,ClPkg,"NSTRING-UPCASE",true);
+DO_SYMBOL(_sym_char_NE_,921,ClPkg,"CHAR/=",true);
+DO_SYMBOL(_sym_realp,922,ClPkg,"REALP",true);
+DO_SYMBOL(_sym_STARstandard_outputSTAR,923,ClPkg,"*STANDARD-OUTPUT*",true);
+DO_SYMBOL(_sym_charDowncase,932,ClPkg,"CHAR-DOWNCASE",true);
+DO_SYMBOL(_sym_labels,933,ClPkg,"LABELS",true);
+DO_SYMBOL(_sym_make_hash_table,935,ClPkg,"MAKE-HASH-TABLE",true);
+DO_SYMBOL(_sym_string_downcase,939,ClPkg,"STRING-DOWNCASE",true);
+DO_SYMBOL(_sym_pathname,940,ClPkg,"PATHNAME",true);
+DO_SYMBOL(_sym_throw,941,ClPkg,"THROW",true);
+DO_SYMBOL(_sym_integer,943,ClPkg,"INTEGER",true);
+DO_SYMBOL(_sym_readCharNoHang,945,ClPkg,"READ-CHAR-NO-HANG",true);
+DO_SYMBOL(_sym_mismatch,947,ClPkg,"MISMATCH",true);
+DO_SYMBOL(_sym_Package_O,953,ClPkg,"PACKAGE",true);
+DO_SYMBOL(_sym_STARread_suppressSTAR,954,ClPkg,"*READ-SUPPRESS*",true);
+DO_SYMBOL(_sym_sort,956,ClPkg,"SORT",true);
+DO_SYMBOL(_sym_Str_O,959,ClPkg,"BASE-STRING",true);
+DO_SYMBOL(_sym_find_package,961,ClPkg,"FIND-PACKAGE",true);
+DO_SYMBOL(_sym_STARmacroexpand_hookSTAR,962,ClPkg,"*MACROEXPAND-HOOK*",true);
+DO_SYMBOL(_sym_STARreadDefaultFloatFormatSTAR,963,ClPkg,"*READ-DEFAULT-FLOAT-FORMAT*",true);
+DO_SYMBOL(_sym_optimize,964,ClPkg,"OPTIMIZE",true);
+DO_SYMBOL(_sym_dolist,966,ClPkg,"DOLIST",true);
+DO_SYMBOL(_sym_if,968,ClPkg,"IF",true);
+DO_SYMBOL(_sym_simple_vector,969,ClPkg,"SIMPLE-VECTOR",true);
+DO_SYMBOL(_sym_findClass,970,ClPkg,"FIND-CLASS",true);
+DO_SYMBOL(_sym_read,972,ClPkg,"READ",true);
+DO_SYMBOL(_sym_defvar,974,ClPkg,"DEFVAR",true);
+DO_SYMBOL(_sym_single_float,975,ClPkg,"SINGLE-FLOAT",true);
+DO_SYMBOL(_sym_array,977,ClPkg,"ARRAY",true);
+DO_SYMBOL(_sym_intern,978,ClPkg,"INTERN",true);
+DO_SYMBOL(_sym_first,987,ClPkg,"FIRST",true);
+DO_SYMBOL(_sym_pathnameDirectory,988,ClPkg,"PATHNAME-DIRECTORY",true);
+DO_SYMBOL(_sym_set,993,ClPkg,"SET",true);
+DO_SYMBOL(_sym_symbolName,995,ClPkg,"SYMBOL-NAME",true);
+DO_SYMBOL(_sym_prin1,1001,ClPkg,"PRIN1",true);
+DO_SYMBOL(_sym_packagep,1007,ClPkg,"PACKAGEP",true);
+DO_SYMBOL(_sym_pathnameVersion,1008,ClPkg,"PATHNAME-VERSION",true);
+DO_SYMBOL(_sym_realpart,1009,ClPkg,"REALPART",true);
+DO_SYMBOL(_sym_defun,1010,ClPkg,"DEFUN",true);
+DO_SYMBOL(_sym_StructureClass_O,1012,ClPkg,"STRUCTURE-CLASS",true);
+DO_SYMBOL(_sym_simpleCondition,1015,ClPkg,"SIMPLE-CONDITION",true);
+DO_SYMBOL(_sym_warning,1016,ClPkg,"WARNING",true);
+DO_SYMBOL(_sym_gensym,1019,ClPkg,"GENSYM",true);
+DO_SYMBOL(_sym_STARload_verboseSTAR,1020,ClPkg,"*LOAD-VERBOSE*",true);
+DO_SYMBOL(_sym_tagbody,1021,ClPkg,"TAGBODY",true);
+DO_SYMBOL(_sym_Ratio_O,1024,ClPkg,"RATIO",true);
+DO_SYMBOL(_sym_quote,1025,ClPkg,"QUOTE",true);
+DO_SYMBOL(_sym_boole_nor,1030,ClPkg,"BOOLE-NOR",true);
+DO_SYMBOL(_sym_endp,1031,ClPkg,"ENDP",true);
+DO_SYMBOL(_sym_sinh,1032,ClPkg,"SINH",true);
+DO_SYMBOL(_sym_symbolp,1033,ClPkg,"SYMBOLP",true);
+DO_SYMBOL(_sym_aref,1034,ClPkg,"AREF",true);
+DO_SYMBOL(_sym_schar,1035,ClPkg,"SCHAR",true);
+DO_SYMBOL(_sym_STARprint_radixSTAR,1037,ClPkg,"*PRINT-RADIX*",true);
+DO_SYMBOL(_sym_readChar,1041,ClPkg,"READ-CHAR",true);
+DO_SYMBOL(_sym_pprint_dispatch,1042,ClPkg,"PPRINT-DISPATCH",true);
+DO_SYMBOL(_sym_floatingPointUnderflow,1046,ClPkg,"FLOATING-POINT-UNDERFLOW",true);
+DO_SYMBOL(_sym_filePosition,1048,ClPkg,"FILE-POSITION",true);
+DO_SYMBOL(_sym_eql,1051,ClPkg,"EQL",true);
+DO_SYMBOL(_sym_broadcast_stream_streams,1052,ClPkg,"BROADCAST-STREAM-STREAMS",true);
+DO_SYMBOL(_sym_BitVector_O,1054,ClPkg,"BIT-VECTOR",true);
+DO_SYMBOL(_sym_string_greaterp,1057,ClPkg,"STRING-GREATERP",true);
+DO_SYMBOL(_sym_mostNegativeShortFloat,1058,ClPkg,"MOST-NEGATIVE-SHORT-FLOAT",true);
+DO_SYMBOL(_sym_classOf,1060,ClPkg,"CLASS-OF",true);
+DO_SYMBOL(_sym_StringStream_O,1063,ClPkg,"STRING-STREAM",true);
+DO_SYMBOL(_sym_mostNegativeDoubleFloat,1074,ClPkg,"MOST-NEGATIVE-DOUBLE-FLOAT",true);
+DO_SYMBOL(_sym_STARprint_levelSTAR,1075,ClPkg,"*PRINT-LEVEL*",true);
+DO_SYMBOL(_sym_STARreadtableSTAR,1076,ClPkg,"*READTABLE*",true);
+DO_SYMBOL(_sym_rem,1077,ClPkg,"REM",true);
+DO_SYMBOL(_sym_Class_O,1078,ClPkg,"CLASS",true);
+DO_SYMBOL(_sym_char_int,1079,ClPkg,"CHAR-INT",true);
+DO_SYMBOL(_sym_leastNegativeShortFloat,1081,ClPkg,"LEAST-NEGATIVE-SHORT-FLOAT",true);
+DO_SYMBOL(_sym_tan,1085,ClPkg,"TAN",true);
+DO_SYMBOL(_sym_printNotReadableObject,1086,ClPkg,"PRINT-NOT-READABLE-OBJECT",true);
+DO_SYMBOL(_sym_SingleFloat_dummy_O,1093,ClPkg,"SINGLE-FLOAT",true);
+DO_SYMBOL(_sym_arrayp,1094,ClPkg,"ARRAYP",true);
+DO_SYMBOL(_sym_STARload_printSTAR,1098,ClPkg,"*LOAD-PRINT*",true);
+DO_SYMBOL(_sym_peekChar,1101,ClPkg,"PEEK-CHAR",true);
+DO_SYMBOL(_sym__PLUS_,1102,ClPkg,"+",true);
+DO_SYMBOL(_sym_setMacroCharacter,1103,ClPkg,"SET-MACRO-CHARACTER",true);
+DO_SYMBOL(_sym_HashTable_O,1105,ClPkg,"HASH-TABLE",true);
+DO_SYMBOL(_sym_expt,1109,ClPkg,"EXPT",true);
+DO_SYMBOL(_sym_hash_table,1112,ClPkg,"HASH-TABLE",true);
+DO_SYMBOL(_sym_unboundSlot,1113,ClPkg,"UNBOUND-SLOT",true);
+DO_SYMBOL(_sym_gcd,1114,ClPkg,"GCD",true);
+DO_SYMBOL(_sym_subtypep,1116,ClPkg,"SUBTYPEP",true);
+DO_SYMBOL(_sym_space,1117,ClPkg,"SPACE",true);
+DO_SYMBOL(_sym__LE_,1118,ClPkg,"<=",true);
+DO_SYMBOL(_sym_return_from,1120,ClPkg,"RETURN-FROM",true);
+DO_SYMBOL(_sym_synonym_stream_symbol,1127,ClPkg,"SYNONYM-STREAM-SYMBOL",true);
+DO_SYMBOL(_sym_STARprint_pprint_dispatchSTAR,1129,ClPkg,"*PRINT-PPRINT-DISPATCH*",true);
+DO_SYMBOL(_sym_funcall,1130,ClPkg,"FUNCALL",true);
+DO_SYMBOL(_sym_readerError,1133,ClPkg,"READER-ERROR",true);
+DO_SYMBOL(_sym_STARbreakOnSignalsSTAR,1134,ClPkg,"*BREAK-ON-SIGNALS*",true);
+DO_SYMBOL(_sym_write,1136,ClPkg,"WRITE",true);
+DO_SYMBOL(_sym_STARerror_outputSTAR,1137,ClPkg,"*ERROR-OUTPUT*",true);
+DO_SYMBOL(_sym_pathnameMatchP,1139,ClPkg,"PATHNAME-MATCH-P",true);
+DO_SYMBOL(_sym_symbol,1141,ClPkg,"SYMBOL",true);
+DO_SYMBOL(_sym_charNotEqual,1144,ClPkg,"CHAR-NOT-EQUAL",true);
+DO_SYMBOL(_sym_string_equal,1145,ClPkg,"STRING-EQUAL",true);
+DO_SYMBOL(_sym_otherwise,1147,ClPkg,"OTHERWISE",true);
+DO_SYMBOL(_sym_case,1148,ClPkg,"CASE",true);
+DO_SYMBOL(_sym_documentation,1150,ClPkg,"DOCUMENTATION",true);
+DO_SYMBOL(_sym_input_stream_p,1151,ClPkg,"INPUT-STREAM-P",true);
+DO_SYMBOL(_sym_unuse_package,1153,ClPkg,"UNUSE-PACKAGE",true);
+DO_SYMBOL(_sym_floatSign,1154,ClPkg,"FLOAT-SIGN",true);
+DO_SYMBOL(_sym_AMPbody,1155,ClPkg,"&BODY",true);
+DO_SYMBOL(_sym_mapc,1157,ClPkg,"MAPC",true);
+DO_SYMBOL(_sym_mapl,1158,ClPkg,"MAPL",true);
+DO_SYMBOL(_sym__DIVIDE_,1159,ClPkg,"/",true);
+DO_SYMBOL(_sym_complexp,1160,ClPkg,"COMPLEXP",true);
+DO_SYMBOL(_sym_ftype,1163,ClPkg,"FTYPE",true);
+DO_SYMBOL(_sym_getOutputStreamString,1165,ClPkg,"GET-OUTPUT-STREAM-STRING",true);
+DO_SYMBOL(_sym_char_code_limit,1166,ClPkg,"CHAR-CODE-LIMIT",true);
+DO_SYMBOL(_sym_pathnameHost,1169,ClPkg,"PATHNAME-HOST",true);
+DO_SYMBOL(_sym_gethash,1170,ClPkg,"GETHASH",true);
+DO_SYMBOL(_sym_some,1172,ClPkg,"SOME",true);
+DO_SYMBOL(_sym_floatingPointInvalidOperation,1176,ClPkg,"FLOATING-POINT-INVALID-OPERATION",true);
+DO_SYMBOL(_sym_STARstandard_inputSTAR,1177,ClPkg,"*STANDARD-INPUT*",true);
+DO_SYMBOL(_sym_unboundVariable,1180,ClPkg,"UNBOUND-VARIABLE",true);
+DO_SYMBOL(_sym_tanh,1185,ClPkg,"TANH",true);
+DO_SYMBOL(_sym_STARprint_circleSTAR,1186,ClPkg,"*PRINT-CIRCLE*",true);
+DO_SYMBOL(_sym_Bignum_O,1188,ClPkg,"BIGNUM",true);
+DO_SYMBOL(_sym_fileNamestring,1189,ClPkg,"FILE-NAMESTRING",true);
+DO_SYMBOL(_sym_SimpleBitVector_O,1190,ClPkg,"SIMPLE-BIT-VECTOR",true);
+DO_SYMBOL(_sym_consp,1191,ClPkg,"CONSP",true);
+DO_SYMBOL(_sym_acons,1193,ClPkg,"ACONS",true);
+DO_SYMBOL(_sym_fixnum,1195,ClPkg,"FIXNUM",true);
+DO_SYMBOL(_sym_safety,1197,ClPkg,"SAFETY",true);
+DO_SYMBOL(_sym_probe_file,1198,ClPkg,"PROBE-FILE",true);
+DO_SYMBOL(_sym_pathnameType,1200,ClPkg,"PATHNAME-TYPE",true);
+DO_SYMBOL(_sym_STARprint_caseSTAR,1202,ClPkg,"*PRINT-CASE*",true);
+DO_SYMBOL(_sym_char_name,1205,ClPkg,"CHAR-NAME",true);
+DO_SYMBOL(_sym_stringRightTrim,1206,ClPkg,"STRING-RIGHT-TRIM",true);
+DO_SYMBOL(_sym_string_NE_,1207,ClPkg,"STRING/=",true);
+DO_SYMBOL(_sym_pi,1208,ClPkg,"PI",true);
+DO_SYMBOL(_sym_numberp,1211,ClPkg,"NUMBERP",true);
+DO_SYMBOL(_sym_bit_vector_p,1218,ClPkg,"BIT-VECTOR-P",true);
+DO_SYMBOL(_sym_nbutlast,1219,ClPkg,"NBUTLAST",true);
+DO_SYMBOL(_sym_logorc1,1221,ClPkg,"LOGORC1",true);
+DO_SYMBOL(_sym_multipleValueSetq,1222,ClPkg,"MULTIPLE-VALUE-SETQ",true);
+DO_SYMBOL(_sym_nreconc,1224,ClPkg,"NRECONC",true);
+DO_SYMBOL(_sym_complex,1226,ClPkg,"COMPLEX",true);
+DO_SYMBOL(_sym_length,1227,ClPkg,"LENGTH",true);
+DO_SYMBOL(_sym_pathnamep,1229,ClPkg,"PATHNAMEP",true);
+DO_SYMBOL(_sym_make_synonym_stream,1232,ClPkg,"MAKE-SYNONYM-STREAM",true);
+DO_SYMBOL(_sym_make_string,1234,ClPkg,"MAKE-STRING",true);
+DO_SYMBOL(_sym_acos,1236,ClPkg,"ACOS",true);
+DO_SYMBOL(_sym_UnsignedByte,1237,ClPkg,"UNSIGNED-BYTE",true);
+DO_SYMBOL(_sym_elt,1238,ClPkg,"ELT",true);
+DO_SYMBOL(_sym_STARread_evalSTAR,1242,ClPkg,"*READ-EVAL*",true);
+DO_SYMBOL(_sym_read_delimited_list,1244,ClPkg,"READ-DELIMITED-LIST",true);
+DO_SYMBOL(_sym_get_output_stream_string,1246,ClPkg,"GET-OUTPUT-STREAM-STRING",true);
+DO_SYMBOL(_sym_intersection,1247,ClPkg,"INTERSECTION",true);
+DO_SYMBOL(_sym_type,1248,ClPkg,"TYPE",true);
+DO_SYMBOL(_sym_vectorPush,1249,ClPkg,"VECTOR-PUSH",true);
+DO_SYMBOL(_sym_readByte,1251,ClPkg,"READ-BYTE",true);
+DO_SYMBOL(_sym_remhash,1253,ClPkg,"REMHASH",true);
+DO_SYMBOL(_sym_printObject,1254,ClPkg,"PRINT-OBJECT",true);
+DO_SYMBOL(_sym_dynamic_extent,1257,ClPkg,"DYNAMIC-EXTENT",true);
+DO_SYMBOL(_sym_sequence,1258,ClPkg,"SEQUENCE",true);
+DO_SYMBOL(_sym_FileStream_O,1259,ClPkg,"FILE-STREAM",true);
+DO_SYMBOL(_sym_mergePathnames,1262,ClPkg,"MERGE-PATHNAMES",true);
+DO_SYMBOL(_sym_boole_ior,1264,ClPkg,"BOOLE-IOR",true);
+DO_SYMBOL(_sym_STARdebuggerHookSTAR,1265,ClPkg,"*DEBUGGER-HOOK*",true);
+DO_SYMBOL(_sym_apropos,1267,ClPkg,"APROPOS",true);
+DO_SYMBOL(_sym_restart,1270,ClPkg,"RESTART",true);
+DO_SYMBOL(_sym_standard_char,1271,ClPkg,"STANDARD-CHAR",true);
+DO_SYMBOL(_sym_BroadcastStream_O,1272,ClPkg,"BROADCAST-STREAM",true);
+DO_SYMBOL(_sym_STARpackageSTAR,1275,ClPkg,"*PACKAGE*",true);
+DO_SYMBOL(_sym_find_restart,1277,ClPkg,"FIND-RESTART",true);
+DO_SYMBOL(_sym_eq,1280,ClPkg,"EQ",true);
+DO_SYMBOL(_sym_invoke_restart,1284,ClPkg,"INVOKE-RESTART",true);
+DO_SYMBOL(_sym_STARtrace_outputSTAR,1285,ClPkg,"*TRACE-OUTPUT*",true);
+DO_SYMBOL(_sym_truncate,1286,ClPkg,"TRUNCATE",true);
+DO_SYMBOL(_sym_pathnameName,1288,ClPkg,"PATHNAME-NAME",true);
+DO_SYMBOL(_sym_symbolValue,1289,ClPkg,"SYMBOL-VALUE",true);
+DO_SYMBOL(_sym_STARquery_ioSTAR,1290,ClPkg,"*QUERY-IO*",true);
+DO_SYMBOL(_sym_block,1294,ClPkg,"BLOCK",true);
+DO_SYMBOL(_sym_defparameter,1295,ClPkg,"DEFPARAMETER",true);
+DO_SYMBOL(_sym_list,1298,ClPkg,"LIST",true);
+DO_SYMBOL(_sym_parseNamestring,1301,ClPkg,"PARSE-NAMESTRING",true);
+DO_SYMBOL(_sym_null,1302,ClPkg,"NULL",true);
+DO_SYMBOL(_sym_CompiledFunction_O,1307,ClPkg,"COMPILED-FUNCTION",true);
+DO_SYMBOL(_sym_nil,1309,ClPkg,"NIL",true);
+DO_SYMBOL(_sym_synonymStreamSymbol,1310,ClPkg,"SYNONYM-STREAM-SYMBOL",true);
+DO_SYMBOL(_sym_divisionByZero,1311,ClPkg,"DIVISION-BY-ZERO",true);
 #endif
 #ifdef CorePkg_SYMBOLS
-DO_SYMBOL(_sym_isSubClassOf, 1, CorePkg, "IS-SUB-CLASS-OF", false);
-DO_SYMBOL(_sym_hash_equal, 8, CorePkg, "HASH-EQUAL", false);
-DO_SYMBOL(_sym_slot, 9, CorePkg, "SLOT", false);
-DO_SYMBOL(_sym_dladdr, 11, CorePkg, "DLADDR", false);
-DO_SYMBOL(_sym_allocateRawClass, 12, CorePkg, "ALLOCATE-RAW-CLASS", false);
-DO_SYMBOL(_sym_calculateMissingCommonLispSymbols, 23, CorePkg, "CALCULATE-MISSING-COMMON-LISP-SYMBOLS", true);
-DO_SYMBOL(_sym_reader_read_double_quote_string, 26, CorePkg, "READER-READ-DOUBLE-QUOTE-STRING", false);
-DO_SYMBOL(_sym_STARdebugInterpretedClosureSTAR, 30, CorePkg, "*DEBUG-INTERPRETED-CLOSURE*", true);
-DO_SYMBOL(_sym_ValueFrame_O, 32, CorePkg, "VALUE-FRAME", true);
-DO_SYMBOL(_sym_record_field, 33, CorePkg, "RECORD-FIELD", false);
-DO_SYMBOL(_sym_STARprintVersionOnStartupSTAR, 34, CorePkg, "*PRINT-VERSION-ON-STARTUP*", true);
-DO_SYMBOL(_sym_deserialize_xml, 35, CorePkg, "DESERIALIZE-XML", false);
-DO_SYMBOL(_sym_macroexpand_default, 40, CorePkg, "MACROEXPAND-DEFAULT", false);
-DO_SYMBOL(_sym_MicroHeap_O, 42, CorePkg, "MICRO-HEAP", true);
-DO_SYMBOL(_sym_topLevel, 44, CorePkg, "TOP-LEVEL", true);
-DO_SYMBOL(_sym_currentVisibleEnvironment, 46, CorePkg, "CURRENT-VISIBLE-ENVIRONMENT", false);
-DO_SYMBOL(_sym_exit, 47, CorePkg, "EXIT", false);
-DO_SYMBOL(_sym_STARsharp_equal_final_tableSTAR, 48, CorePkg, "*SHARP-EQUAL-FINAL-TABLE*", false);
-DO_SYMBOL(_sym_fromTaggedFixnum, 49, CorePkg, "FROM-TAGGED-FIXNUM", true);
-DO_SYMBOL(_sym_streamColumn, 58, CorePkg, "STREAM-COLUMN", true);
-DO_SYMBOL(_sym_Environment_O, 59, CorePkg, "ENVIRONMENT", true);
-DO_SYMBOL(_sym_walkToFindSourceInfo, 67, CorePkg, "WALK-TO-FIND-SOURCE-INFO", true);
-DO_SYMBOL(_sym_sharp_left_parenthesis, 75, CorePkg, "SHARP-LEFT-PARENTHESIS", false);
-DO_SYMBOL(_sym_anonymous, 78, CorePkg, "ANONYMOUS", false);
-DO_SYMBOL(_sym_closedStream, 79, CorePkg, "CLOSED-STREAM", true);
-DO_SYMBOL(_sym_HashTableEqual_O, 80, CorePkg, "HASH-TABLE-EQUAL", true);
-DO_SYMBOL(_sym_Path_O, 82, CorePkg, "PATH", true);
-DO_SYMBOL(_sym_testProfileTimer, 85, CorePkg, "TEST-PROFILE-TIMER", false);
-DO_SYMBOL(_sym_validFunctionNameP, 90, CorePkg, "VALID-FUNCTION-NAME-P", false);
-DO_SYMBOL(_sym_ObjRef_O, 93, CorePkg, "OBJ-REF", true);
-DO_SYMBOL(_sym_ihsPrev, 97, CorePkg, "IHS-PREV", false);
-DO_SYMBOL(_sym_classifyLetVariablesAndDeclares, 100, CorePkg, "CLASSIFY-LET-VARIABLES-AND-DECLARES", false);
-DO_SYMBOL(_sym_asin, 108, CorePkg, "ASIN", true);
-DO_SYMBOL(_sym_slBoundp, 109, CorePkg, "SL-BOUNDP", false);
-DO_SYMBOL(_sym_ihsTop, 112, CorePkg, "IHS-TOP", false);
-DO_SYMBOL(_sym_WeakPointer_O, 113, CorePkg, "WEAK-POINTER", true);
-DO_SYMBOL(_sym_initial_element, 115, CorePkg, "INITIAL-ELEMENT", false);
-DO_SYMBOL(_sym_cl_fixnum_bits, 116, CorePkg, "CL-FIXNUM-BITS", false);
-DO_SYMBOL(_sym_STARsystem_defsetf_update_functionsSTAR, 117, CorePkg, "*SYSTEM-DEFSETF-UPDATE-FUNCTIONS*", false);
-DO_SYMBOL(_sym_printf, 120, CorePkg, "PRINTF", false);
-DO_SYMBOL(_sym_STARdebugStartupSTAR, 121, CorePkg, "*DEBUG-STARTUP*", true);
-DO_SYMBOL(_sym_sharp_colon, 126, CorePkg, "SHARP-COLON", false);
-DO_SYMBOL(_sym_dispatch_macro_character, 127, CorePkg, "DISPATCH-MACRO-CHARACTER", false);
-DO_SYMBOL(_sym_annotate, 128, CorePkg, "ANNOTATE", false);
-DO_SYMBOL(_sym_newVersion, 130, CorePkg, "NEW-VERSION", false);
-DO_SYMBOL(_sym_makeSureClosClassSlotsMatchClass, 132, CorePkg, "MAKE-SURE-CLOS-CLASS-SLOTS-MATCH-CLASS", false);
-DO_SYMBOL(_sym_do_write_sequence, 135, CorePkg, "DO-WRITE-SEQUENCE", true);
-DO_SYMBOL(_sym_STARinput_streamSTAR, 136, CorePkg, "*INPUT-STREAM*", false);
-DO_SYMBOL(_sym_ForeignData_O, 141, CorePkg, "FOREIGN-DATA", true);
-DO_SYMBOL(_sym_float_to_digits, 146, CorePkg, "FLOAT-TO-DIGITS", true);
-DO_SYMBOL(_sym__PLUS_numberOfFixedArguments_PLUS_, 152, CorePkg, "+NUMBER-OF-FIXED-ARGUMENTS+", true);
-DO_SYMBOL(_sym_defaultPathnameDefaults, 153, CorePkg, "DEFAULT-PATHNAME-DEFAULTS", false);
-DO_SYMBOL(_sym_BlockEnvironment_O, 154, CorePkg, "BLOCK-ENVIRONMENT", true);
-DO_SYMBOL(_sym_sorted, 155, CorePkg, "SORTED", false);
-DO_SYMBOL(_sym_WrappedPointer_O, 156, CorePkg, "WRAPPED-POINTER", true);
-DO_SYMBOL(_sym_UserData_O, 157, CorePkg, "USER-DATA", true);
-DO_SYMBOL(_sym_mpsGarbageCollection, 159, CorePkg, "MPS-GARBAGE-COLLECTION", false);
-DO_SYMBOL(_sym_type_to_symbol, 160, CorePkg, "TYPE-TO-SYMBOL", false);
-DO_SYMBOL(_sym_DirectoryEntry_O, 161, CorePkg, "DIRECTORY-ENTRY", true);
-DO_SYMBOL(_sym_tsp, 162, CorePkg, "TSP", true);
-DO_SYMBOL(_sym_smartPointerDetails, 163, CorePkg, "SMART-POINTER-DETAILS", false);
-DO_SYMBOL(_sym_STARbq_nconcSTAR, 165, CorePkg, "*BQ-NCONC*", false);
-DO_SYMBOL(_sym_record_cons, 169, CorePkg, "RECORD-CONS", false);
-DO_SYMBOL(_sym_STARprint_source_code_consSTAR, 171, CorePkg, "*PRINT-SOURCE-CODE-CONS*", false);
-DO_SYMBOL(_sym_backquote_bracket, 174, CorePkg, "BACKQUOTE-BRACKET", false);
-DO_SYMBOL(_sym_ArrayObjects_O, 175, CorePkg, "ARRAY-OBJECTS", true);
-DO_SYMBOL(_sym_instanceSet, 176, CorePkg, "INSTANCE-SET", false);
-DO_SYMBOL(_sym_Pointer_O, 178, CorePkg, "POINTER", true);
-DO_SYMBOL(_sym_supersede, 179, CorePkg, "SUPERSEDE", false);
-DO_SYMBOL(_sym_wrongIndex, 180, CorePkg, "WRONG-INDEX", true);
-DO_SYMBOL(_sym_SaveArchive_O, 184, CorePkg, "SAVE-ARCHIVE", true);
-DO_SYMBOL(_sym_lexical, 188, CorePkg, "LEXICAL", false);
-DO_SYMBOL(_sym_structure_print_function, 189, CorePkg, "STRUCTURE-PRINT-FUNCTION", true);
-DO_SYMBOL(_sym_reader_error_unmatched_close_parenthesis, 191, CorePkg, "READER-ERROR-UNMATCHED-CLOSE-PARENTHESIS", false);
-DO_SYMBOL(_sym_streamLinenumber, 192, CorePkg, "STREAM-LINENUMBER", true);
-DO_SYMBOL(_sym_CatchEnvironment_O, 196, CorePkg, "CATCH-ENVIRONMENT", true);
-DO_SYMBOL(_sym__PLUS_standardReadtable_PLUS_, 198, CorePkg, "+STANDARD-READTABLE+", true);
-DO_SYMBOL(_sym_SymbolList_O, 199, CorePkg, "SYMBOL-LIST", true);
-DO_SYMBOL(_sym_STARexecutable_nameSTAR, 202, CorePkg, "*EXECUTABLE-NAME*", false);
-DO_SYMBOL(_sym_STARprintPackageSTAR, 205, CorePkg, "*PRINT-PACKAGE*", false);
-DO_SYMBOL(_sym_lookupLoadTimeSymbol, 206, CorePkg, "LOOKUP-LOAD-TIME-SYMBOL", false);
-DO_SYMBOL(_sym_exportToPython, 207, CorePkg, "EXPORT-TO-PYTHON", false);
-DO_SYMBOL(_sym_system, 210, CorePkg, "SYSTEM", false);
-DO_SYMBOL(_sym_STARbackquote_levelSTAR, 211, CorePkg, "*BACKQUOTE-LEVEL*", false);
-DO_SYMBOL(_sym_STARallCxxClassesSTAR, 213, CorePkg, "*ALL-CXX-CLASSES*", true);
-DO_SYMBOL(_sym_compileFormAndEvalWithEnv, 220, CorePkg, "COMPILE-FORM-AND-EVAL-WITH-ENV", true);
-DO_SYMBOL(_sym_makeStringOutputStream, 223, CorePkg, "MAKE-STRING-OUTPUT-STREAM", true);
-DO_SYMBOL(_sym_SymbolMacroletEnvironment_O, 224, CorePkg, "SYMBOL-MACROLET-ENVIRONMENT", true);
-DO_SYMBOL(_sym_invalidKeywordArgumentError, 225, CorePkg, "INVALID-KEYWORD-ARGUMENT-ERROR", false);
-DO_SYMBOL(_sym_dot, 226, CorePkg, "DOT", false);
-DO_SYMBOL(_sym_isArray, 229, CorePkg, "IS-ARRAY", true);
-DO_SYMBOL(_sym_SourceFileInfo_O, 231, CorePkg, "SOURCE-FILE-INFO", true);
-DO_SYMBOL(_sym_test_not, 233, CorePkg, "TEST-NOT", false);
-DO_SYMBOL(_sym_STARdocumentation_poolSTAR, 236, CorePkg, "*DOCUMENTATION-POOL*", false);
-DO_SYMBOL(_sym_coerce_to_function, 239, CorePkg, "COERCE-TO-FUNCTION", false);
-DO_SYMBOL(_sym_IntArray_O, 242, CorePkg, "INT-ARRAY", true);
-DO_SYMBOL(_sym_WeakHashTable_O, 244, CorePkg, "WEAK-HASH-TABLE", true);
-DO_SYMBOL(_sym_evaluateDepth, 247, CorePkg, "EVALUATE-DEPTH", false);
-DO_SYMBOL(_sym_bq_remove_tokens, 249, CorePkg, "BQ-REMOVE-TOKENS", false);
-DO_SYMBOL(_sym_STARstartRunTimeSTAR, 250, CorePkg, "*START-RUN-TIME*", true);
-DO_SYMBOL(_sym_tooFewArgumentsError, 254, CorePkg, "TOO-FEW-ARGUMENTS-ERROR", true);
-DO_SYMBOL(_sym_testVal, 258, CorePkg, "TEST-VAL", true);
-DO_SYMBOL(_sym_Specializer_O, 259, CorePkg, "SPECIALIZER", true);
-DO_SYMBOL(_sym_invokeInternalDebugger, 261, CorePkg, "INVOKE-INTERNAL-DEBUGGER", false);
-DO_SYMBOL(_sym_color, 262, CorePkg, "COLOR", false);
-DO_SYMBOL(_sym_forward_referenced_class, 264, CorePkg, "FORWARD-REFERENCED-CLASS", false);
-DO_SYMBOL(_sym_reader_comma_form, 265, CorePkg, "READER-COMMA-FORM", false);
-DO_SYMBOL(_sym_declaredSpecial, 266, CorePkg, "DECLARED-SPECIAL", false);
-DO_SYMBOL(_sym_getline, 267, CorePkg, "GETLINE", false);
-DO_SYMBOL(_sym_lambdaName, 272, CorePkg, "LAMBDA-NAME", true);
-DO_SYMBOL(_sym_path, 274, CorePkg, "PATH", false);
-DO_SYMBOL(_sym_invokeInternalDebuggerFromGdb, 275, CorePkg, "INVOKE-INTERNAL-DEBUGGER-FROM-GDB", false);
-DO_SYMBOL(_sym_symbolMacro, 279, CorePkg, "SYMBOL-MACRO", false);
-DO_SYMBOL(_sym_Instance_O, 283, CorePkg, "INSTANCE", true);
-DO_SYMBOL(_sym_backquote_null_or_quoted, 284, CorePkg, "BACKQUOTE-NULL-OR-QUOTED", false);
-DO_SYMBOL(_sym_script_dir, 286, CorePkg, "SCRIPT-DIR", false);
-DO_SYMBOL(_sym_forget_all_single_dispatch_generic_functions, 288, CorePkg, "FORGET-ALL-SINGLE-DISPATCH-GENERIC-FUNCTIONS", false);
-DO_SYMBOL(_sym_reader_feature_p, 291, CorePkg, "READER-FEATURE-P", false);
-DO_SYMBOL(_sym_whole, 292, CorePkg, "WHOLE", false);
-DO_SYMBOL(_sym_item, 295, CorePkg, "ITEM", false);
-DO_SYMBOL(_sym_generic, 297, CorePkg, "GENERIC", false);
-DO_SYMBOL(_sym_LoadArchive_O, 298, CorePkg, "LOAD-ARCHIVE", true);
-DO_SYMBOL(_sym_processLambdaList, 301, CorePkg, "PROCESS-LAMBDA-LIST", false);
-DO_SYMBOL(_sym_nan, 303, CorePkg, "NAN", false);
-DO_SYMBOL(_sym_instanceSig, 307, CorePkg, "INSTANCE-SIG", false);
-DO_SYMBOL(_sym_Iterator_O, 310, CorePkg, "ITERATOR", true);
-DO_SYMBOL(_sym_setfSubseq, 311, CorePkg, "SETF-SUBSEQ", true);
-DO_SYMBOL(_sym_STARcommandLineLoadSTAR, 316, CorePkg, "*COMMAND-LINE-LOAD*", true);
-DO_SYMBOL(_sym_STARPATHSTAR, 317, CorePkg, "*PATH*", false);
-DO_SYMBOL(_sym_testMemoryError, 325, CorePkg, "TEST-MEMORY-ERROR", false);
-DO_SYMBOL(_sym_backquote_remove_tokens, 328, CorePkg, "BACKQUOTE-REMOVE-TOKENS", false);
-DO_SYMBOL(_sym_ensureSingleDispatchMethod, 330, CorePkg, "ENSURE-SINGLE-DISPATCH-METHOD", true);
-DO_SYMBOL(_sym_PosixTimeDuration_O, 334, CorePkg, "POSIX-TIME-DURATION", true);
-DO_SYMBOL(_sym_sharp_single_quote, 335, CorePkg, "SHARP-SINGLE-QUOTE", false);
-DO_SYMBOL(_sym_HashTableEq_O, 336, CorePkg, "HASH-TABLE-EQ", true);
-DO_SYMBOL(_sym_SmallMap_O, 348, CorePkg, "SMALL-MAP", true);
-DO_SYMBOL(_sym_bitArrayOp, 350, CorePkg, "BIT-ARRAY-OP", true);
-DO_SYMBOL(_sym_sharp_x, 352, CorePkg, "SHARP-X", false);
-DO_SYMBOL(_sym_ForwardReferencedClass_O, 353, CorePkg, "FORWARD-REFERENCED-CLASS", true);
-DO_SYMBOL(_sym_backquote_append, 354, CorePkg, "BACKQUOTE-APPEND", false);
-DO_SYMBOL(_sym_Reader_O, 366, CorePkg, "READER", true);
-DO_SYMBOL(_sym_gdb, 367, CorePkg, "GDB", false);
-DO_SYMBOL(_sym_sharp_dot, 376, CorePkg, "SHARP-DOT", false);
-DO_SYMBOL(_sym_isNil, 377, CorePkg, "IS-NIL", false);
-DO_SYMBOL(_sym_backquote_simplify, 378, CorePkg, "BACKQUOTE-SIMPLIFY", false);
-DO_SYMBOL(_sym_simpleProgramError, 379, CorePkg, "SIMPLE-PROGRAM-ERROR", true);
-DO_SYMBOL(_sym_mpi_size, 382, CorePkg, "MPI-SIZE", false);
-DO_SYMBOL(_sym_adjustVector, 383, CorePkg, "ADJUST-VECTOR", true);
-DO_SYMBOL(_sym_makeLambdaListHandler, 384, CorePkg, "MAKE-LAMBDA-LIST-HANDLER", false);
-DO_SYMBOL(_sym_env, 386, CorePkg, "ENV", false);
-DO_SYMBOL(_sym_putF, 388, CorePkg, "PUT-F", false);
-DO_SYMBOL(_sym_FunctionFrame_O, 390, CorePkg, "FUNCTION-FRAME", true);
-DO_SYMBOL(_sym_toTaggedFixnum, 391, CorePkg, "TO-TAGGED-FIXNUM", true);
-DO_SYMBOL(_sym_environmentId, 394, CorePkg, "ENVIRONMENT-ID", false);
-DO_SYMBOL(_sym_eltSet, 395, CorePkg, "ELT-SET", true);
-DO_SYMBOL(_sym_STARdocumentation_databaseSTAR, 398, CorePkg, "*DOCUMENTATION-DATABASE*", false);
-DO_SYMBOL(_sym_STARsourceDatabaseSTAR, 401, CorePkg, "*SOURCE-DATABASE*", true);
-DO_SYMBOL(_sym_UnwindProtectEnvironment_O, 402, CorePkg, "UNWIND-PROTECT-ENVIRONMENT", true);
-DO_SYMBOL(_sym_LoadTimeValues_O, 403, CorePkg, "LOAD-TIME-VALUES", true);
-DO_SYMBOL(_sym_mpi_rank, 408, CorePkg, "MPI-RANK", false);
-DO_SYMBOL(_sym_STARcommandLineImageSTAR, 409, CorePkg, "*COMMAND-LINE-IMAGE*", true);
-DO_SYMBOL(_sym_HashTableEql_O, 417, CorePkg, "HASH-TABLE-EQL", true);
-DO_SYMBOL(_sym_setCurrentWorkingDirectory, 419, CorePkg, "SET-CURRENT-WORKING-DIRECTORY", false);
-DO_SYMBOL(_sym_bdsVal, 421, CorePkg, "BDS-VAL", false);
-DO_SYMBOL(_sym_put_sysprop, 423, CorePkg, "PUT-SYSPROP", false);
-DO_SYMBOL(_sym_all_keys, 426, CorePkg, "ALL-KEYS", false);
-DO_SYMBOL(_sym_ensureSingleDispatchGenericFunction, 428, CorePkg, "ENSURE-SINGLE-DISPATCH-GENERIC-FUNCTION", true);
-DO_SYMBOL(_sym_STARenvironmentPrintingTabIncrementSTAR, 431, CorePkg, "*ENVIRONMENT-PRINTING-TAB-INCREMENT*", false);
-DO_SYMBOL(_sym_STARsharpEqContextSTAR, 434, CorePkg, "*SHARP-EQ-CONTEXT*", false);
-DO_SYMBOL(_sym_STARfset, 435, CorePkg, "*FSET", false);
-DO_SYMBOL(_sym__PLUS_ecl_syntax_progv_list_PLUS_, 437, CorePkg, "+ECL-SYNTAX-PROGV-LIST+", true);
-DO_SYMBOL(_sym_loadCando, 440, CorePkg, "LOAD-CANDO", false);
-DO_SYMBOL(_sym_invocationHistoryFrame, 443, CorePkg, "INVOCATION-HISTORY-FRAME", true);
-DO_SYMBOL(_sym_structureRef, 444, CorePkg, "STRUCTURE-REF", true);
-DO_SYMBOL(_sym_file_kind, 445, CorePkg, "FILE-KIND", true);
-DO_SYMBOL(_sym_IOStreamStream_O, 446, CorePkg, "IOSTREAM-STREAM", true);
-DO_SYMBOL(_sym_dimensions, 447, CorePkg, "DIMENSIONS", false);
-DO_SYMBOL(_sym_sharp_minus, 448, CorePkg, "SHARP-MINUS", false);
-DO_SYMBOL(_sym_ensure_documentation, 453, CorePkg, "ENSURE-DOCUMENTATION", false);
-DO_SYMBOL(_sym_clock_gettime_nanoseconds, 454, CorePkg, "CLOCK-GETTIME-NANOSECONDS", false);
-DO_SYMBOL(_sym_start, 457, CorePkg, "START", false);
-DO_SYMBOL(_sym_threadInfo, 458, CorePkg, "THREAD-INFO", true);
-DO_SYMBOL(_sym_backquote_attach_append, 459, CorePkg, "BACKQUOTE-ATTACH-APPEND", false);
-DO_SYMBOL(_sym_wrongTypeNthArg, 461, CorePkg, "WRONG-TYPE-NTH-ARG", true);
-DO_SYMBOL(_sym_IOFileStream_O, 465, CorePkg, "IOFILE-STREAM", true);
-DO_SYMBOL(_sym_STARcurrent_working_directorySTAR, 468, CorePkg, "*CURRENT-WORKING-DIRECTORY*", false);
-DO_SYMBOL(_sym_runtimeEnvironment, 469, CorePkg, "RUNTIME-ENVIRONMENT", false);
-DO_SYMBOL(_sym_instanceClassSet, 475, CorePkg, "INSTANCE-CLASS-SET", true);
-DO_SYMBOL(_sym_STARbq_quoteSTAR, 484, CorePkg, "*BQ-QUOTE*", false);
-DO_SYMBOL(_sym_reader_list_allow_consing_dot, 485, CorePkg, "READER-LIST-ALLOW-CONSING-DOT", false);
-DO_SYMBOL(_sym_libraryPath, 486, CorePkg, "LIBRARY-PATH", false);
-DO_SYMBOL(_sym_STARconsing_dot_allowedSTAR, 487, CorePkg, "*CONSING-DOT-ALLOWED*", false);
-DO_SYMBOL(_sym_coerceToFilePathname, 488, CorePkg, "COERCE-TO-FILE-PATHNAME", true);
-DO_SYMBOL(_sym_LexicalEnvironment_O, 495, CorePkg, "LEXICAL-ENVIRONMENT", true);
-DO_SYMBOL(_sym_backquote_attach_conses, 497, CorePkg, "BACKQUOTE-ATTACH-CONSES", false);
-DO_SYMBOL(_sym_bdsVar, 498, CorePkg, "BDS-VAR", false);
-DO_SYMBOL(_sym_STARdebugReaderSTAR, 499, CorePkg, "*DEBUG-READER*", true);
-DO_SYMBOL(_sym_SexpSaveArchive_O, 501, CorePkg, "SEXP-SAVE-ARCHIVE", true);
-DO_SYMBOL(_sym_setfElt, 502, CorePkg, "SETF-ELT", true);
-DO_SYMBOL(_sym_dumpTaggedFixnum, 503, CorePkg, "DUMP-TAGGED-FIXNUM", true);
-DO_SYMBOL(_sym_evaluateVerbosity, 511, CorePkg, "EVALUATE-VERBOSITY", false);
-DO_SYMBOL(_sym_tooFewArguments, 516, CorePkg, "TOO-FEW-ARGUMENTS", false);
-DO_SYMBOL(_sym_STARdebugMonitorSTAR, 518, CorePkg, "*DEBUG-MONITOR*", false);
-DO_SYMBOL(_sym_foreach, 526, CorePkg, "FOREACH", false);
-DO_SYMBOL(_sym_tmv, 527, CorePkg, "TMV", true);
-DO_SYMBOL(_sym_STARargsSTAR, 532, CorePkg, "*ARGS*", false);
-DO_SYMBOL(_sym_FunctionValueEnvironment_O, 539, CorePkg, "FUNCTION-VALUE-ENVIRONMENT", true);
-DO_SYMBOL(_sym_acos, 540, CorePkg, "ACOS", true);
-DO_SYMBOL(_sym_integer_divide, 541, CorePkg, "INTEGER-DIVIDE", true);
-DO_SYMBOL(_sym_unquote_splice, 545, CorePkg, "UNQUOTE-SPLICE", false);
-DO_SYMBOL(_sym_reader_quote, 552, CorePkg, "READER-QUOTE", false);
-DO_SYMBOL(_sym__SHARP__BANG_, 553, CorePkg, "-SHARP--BANG-", true);
-DO_SYMBOL(_sym_symbolMacroletLambda, 558, CorePkg, "SYMBOL-MACROLET-LAMBDA", true);
-DO_SYMBOL(_sym_WeakKeyMapping_O, 559, CorePkg, "WEAK-KEY-MAPPING", true);
-DO_SYMBOL(_sym_StringSet_O, 561, CorePkg, "STRING-SET", true);
-DO_SYMBOL(_sym_makeStructure, 562, CorePkg, "MAKE-STRUCTURE", true);
-DO_SYMBOL(_sym_makeRegex, 568, CorePkg, "MAKE-REGEX", true);
-DO_SYMBOL(_sym_macro, 571, CorePkg, "MACRO", false);
-DO_SYMBOL(_sym__PLUS_activationFrameNil_PLUS_, 574, CorePkg, "+ACTIVATION-FRAME-NIL+", false);
-DO_SYMBOL(_sym_selectPackage, 578, CorePkg, "SELECT-PACKAGE", true);
-DO_SYMBOL(_sym_STARenablePrintPrettySTAR, 579, CorePkg, "*ENABLE-PRINT-PRETTY*", true);
-DO_SYMBOL(_sym_DirectoryIterator_O, 582, CorePkg, "DIRECTORY-ITERATOR", true);
-DO_SYMBOL(_sym_LightUserData_O, 585, CorePkg, "LIGHT-USER-DATA", true);
-DO_SYMBOL(_sym_io, 591, CorePkg, "IO", false);
-DO_SYMBOL(_sym_aset, 598, CorePkg, "ASET", false);
-DO_SYMBOL(_sym_structure_include, 601, CorePkg, "STRUCTURE-INCLUDE", true);
-DO_SYMBOL(_sym_environmentList, 603, CorePkg, "ENVIRONMENT-LIST", false);
-DO_SYMBOL(_sym_STARsharp_equal_temp_tableSTAR, 604, CorePkg, "*SHARP-EQUAL-TEMP-TABLE*", false);
-DO_SYMBOL(_sym_STARcurrentSourceFileInfoSTAR, 606, CorePkg, "*CURRENT-SOURCE-FILE-INFO*", true);
-DO_SYMBOL(_sym_unquote, 607, CorePkg, "UNQUOTE", false);
-DO_SYMBOL(_sym_asinh, 609, CorePkg, "ASINH", true);
-DO_SYMBOL(_sym_bq_simplify, 610, CorePkg, "BQ-SIMPLIFY", false);
-DO_SYMBOL(_sym_dynamicGo, 613, CorePkg, "DYNAMIC-GO", true);
-DO_SYMBOL(_sym_loadBundle, 614, CorePkg, "LOAD-BUNDLE", false);
-DO_SYMBOL(_sym_MacroletEnvironment_O, 616, CorePkg, "MACROLET-ENVIRONMENT", true);
-DO_SYMBOL(_sym_alist, 618, CorePkg, "ALIST", false);
-DO_SYMBOL(_sym_separatePairList, 620, CorePkg, "SEPARATE-PAIR-LIST", false);
-DO_SYMBOL(_sym_sharedReferenceCountedPointer, 626, CorePkg, "SHARED-REFERENCE-COUNTED-POINTER", false);
-DO_SYMBOL(_sym_environmentTypeList, 629, CorePkg, "ENVIRONMENT-TYPE-LIST", false);
-DO_SYMBOL(_sym_backquote_splicing_frob, 633, CorePkg, "BACKQUOTE-SPLICING-FROB", false);
-DO_SYMBOL(_sym_STARdebugLoadTimeValuesSTAR, 637, CorePkg, "*DEBUG-LOAD-TIME-VALUES*", true);
-DO_SYMBOL(_sym_STARsharp_equal_repl_tableSTAR, 639, CorePkg, "*SHARP-EQUAL-REPL-TABLE*", false);
-DO_SYMBOL(_sym_acosh, 640, CorePkg, "ACOSH", true);
-DO_SYMBOL(_sym_okey, 642, CorePkg, "OKEY", false);
-DO_SYMBOL(_sym_setf_find_single_dispatch_generic_function, 645, CorePkg, "SETF-FIND-SINGLE-DISPATCH-GENERIC-FUNCTION", false);
-DO_SYMBOL(_sym_atanh, 647, CorePkg, "ATANH", true);
-DO_SYMBOL(_sym_render, 648, CorePkg, "RENDER", false);
-DO_SYMBOL(_sym_intrusiveReferenceCountedPointer, 655, CorePkg, "INTRUSIVE-REFERENCE-COUNTED-POINTER", false);
-DO_SYMBOL(_sym_findFileInLispPath, 657, CorePkg, "FIND-FILE-IN-LISP-PATH", false);
-DO_SYMBOL(_sym_end, 659, CorePkg, "END", false);
-DO_SYMBOL(_sym_STARbq_clobberableSTAR, 660, CorePkg, "*BQ-CLOBBERABLE*", false);
-DO_SYMBOL(_sym__PLUS_llvmTargetTriple_PLUS_, 662, CorePkg, "+LLVM-TARGET-TRIPLE+", false);
-DO_SYMBOL(_sym_RecursiveDirectoryIterator_O, 663, CorePkg, "RECURSIVE-DIRECTORY-ITERATOR", true);
-DO_SYMBOL(_sym_callWithVariableBound, 665, CorePkg, "CALL-WITH-VARIABLE-BOUND", true);
-DO_SYMBOL(_sym_STARbq_appendSTAR, 667, CorePkg, "*BQ-APPEND*", false);
-DO_SYMBOL(_sym_STARcircle_stackSTAR, 669, CorePkg, "*CIRCLE-STACK*", true);
-DO_SYMBOL(_sym_size_t, 674, CorePkg, "SIZE-T", true);
-DO_SYMBOL(_sym_sharp_asterisk, 675, CorePkg, "SHARP-ASTERISK", false);
-DO_SYMBOL(_sym_double_backquote, 678, CorePkg, "DOUBLE-BACKQUOTE", false);
-DO_SYMBOL(_sym__PLUS_io_syntax_progv_list_PLUS_, 680, CorePkg, "+IO-SYNTAX-PROGV-LIST+", true);
-DO_SYMBOL(_sym_STARsharp_equal_alistSTAR, 681, CorePkg, "*SHARP-EQUAL-ALIST*", false);
-DO_SYMBOL(_sym_setThrowPosition, 683, CorePkg, "SET-THROW-POSITION", false);
-DO_SYMBOL(_sym__PLUS_executableName_PLUS_, 686, CorePkg, "+EXECUTABLE-NAME+", false);
-DO_SYMBOL(_sym_loadSource, 688, CorePkg, "LOAD-SOURCE", true);
-DO_SYMBOL(_sym_repr, 691, CorePkg, "REPR", false);
-DO_SYMBOL(_sym_key, 692, CorePkg, "KEY", false);
-DO_SYMBOL(_sym_SingleDispatchEffectiveMethodFunction_O, 693, CorePkg, "SINGLE-DISPATCH-EFFECTIVE-METHOD-FUNCTION", true);
-DO_SYMBOL(_sym_setupStackMonitor, 694, CorePkg, "SETUP-STACK-MONITOR", false);
-DO_SYMBOL(_sym_sharp_equal, 695, CorePkg, "SHARP-EQUAL", false);
-DO_SYMBOL(_sym_quit, 697, CorePkg, "QUIT", false);
-DO_SYMBOL(_sym_STARllvmFunctionNameHookSTAR, 699, CorePkg, "*LLVM-FUNCTION-NAME-HOOK*", true);
-DO_SYMBOL(_sym_mapappend, 700, CorePkg, "MAPAPPEND", false);
-DO_SYMBOL(_sym_inheritDefaultAllocator, 702, CorePkg, "INHERIT-DEFAULT-ALLOCATOR", true);
-DO_SYMBOL(_sym_makeStringOutputStreamFromString, 706, CorePkg, "MAKE-STRING-OUTPUT-STREAM-FROM-STRING", true);
-DO_SYMBOL(_sym_topLevelEvalWithEnv, 708, CorePkg, "TOP-LEVEL-EVAL-WITH-ENV", true);
-DO_SYMBOL(_sym_probe, 710, CorePkg, "PROBE", false);
-DO_SYMBOL(_sym_globalSetfFunction, 714, CorePkg, "GLOBAL-SETF-FUNCTION", false);
-DO_SYMBOL(_sym_sharp_sharp, 720, CorePkg, "SHARP-SHARP", false);
-DO_SYMBOL(_sym_coerceToFilename, 721, CorePkg, "COERCE-TO-FILENAME", true);
-DO_SYMBOL(_sym_input_stream, 729, CorePkg, "INPUT-STREAM", false);
-DO_SYMBOL(_sym_adjustable, 733, CorePkg, "ADJUSTABLE", false);
-DO_SYMBOL(_sym_lexicalFunction, 735, CorePkg, "LEXICAL-FUNCTION", false);
-DO_SYMBOL(_sym_sharp_backslash, 738, CorePkg, "SHARP-BACKSLASH", false);
-DO_SYMBOL(_sym_RegexMatch_O, 741, CorePkg, "REGEX-MATCH", true);
-DO_SYMBOL(_sym_VectorObjectsWithFillPtr_O, 748, CorePkg, "VECTOR-OBJECTS-WITH-FILL-PTR", true);
-DO_SYMBOL(_sym_instance, 750, CorePkg, "INSTANCE", false);
-DO_SYMBOL(_sym_unrecognizedKeywordArgumentError, 758, CorePkg, "UNRECOGNIZED-KEYWORD-ARGUMENT-ERROR", false);
-DO_SYMBOL(_sym_STARsharp_sharp_alistSTAR, 759, CorePkg, "*SHARP-SHARP-ALIST*", false);
-DO_SYMBOL(_sym_MultiStringBuffer_O, 764, CorePkg, "MULTI-STRING-BUFFER", true);
-DO_SYMBOL(_sym_serialize_xml, 768, CorePkg, "SERIALIZE-XML", false);
-DO_SYMBOL(_sym_conditionMessage, 771, CorePkg, "CONDITION-MESSAGE", false);
-DO_SYMBOL(_sym_STARdebugEvalSTAR, 773, CorePkg, "*DEBUG-EVAL*", true);
-DO_SYMBOL(_sym_quasiquote, 775, CorePkg, "QUASIQUOTE", false);
-DO_SYMBOL(_sym__BANG_unbound_BANG_, 778, CorePkg, "-BANG-UNBOUND-BANG-", true);
-DO_SYMBOL(_sym_instanceClass, 780, CorePkg, "INSTANCE-CLASS", true);
-DO_SYMBOL(_sym_make_vector, 781, CorePkg, "MAKE-VECTOR", false);
-DO_SYMBOL(_sym_sharp_c, 783, CorePkg, "SHARP-C", false);
-DO_SYMBOL(_sym_object, 789, CorePkg, "OBJECT", false);
-DO_SYMBOL(_sym_backquote_maptree, 790, CorePkg, "BACKQUOTE-MAPTREE", false);
-DO_SYMBOL(_sym_mpi_enabled, 798, CorePkg, "MPI-ENABLED", false);
-DO_SYMBOL(_sym_lookupSourceFileInfo, 804, CorePkg, "LOOKUP-SOURCE-FILE-INFO", true);
-DO_SYMBOL(_sym_recursive_p, 806, CorePkg, "RECURSIVE-P", false);
-DO_SYMBOL(_sym_cArgumentsLimit, 809, CorePkg, "C-ARGUMENTS-LIMIT", false);
-DO_SYMBOL(_sym_STARsilentStartupSTAR, 813, CorePkg, "*SILENT-STARTUP*", true);
-DO_SYMBOL(_sym_instancep, 814, CorePkg, "INSTANCEP", false);
-DO_SYMBOL(_sym_StringInputStream_O, 815, CorePkg, "STRING-INPUT-STREAM", true);
-DO_SYMBOL(_sym_set_record_field, 819, CorePkg, "SET-RECORD-FIELD", false);
-DO_SYMBOL(_sym_scharSet, 824, CorePkg, "SCHAR-SET", true);
-DO_SYMBOL(_sym_stackMonitor, 825, CorePkg, "STACK-MONITOR", false);
-DO_SYMBOL(_sym_structurep, 830, CorePkg, "STRUCTUREP", true);
-DO_SYMBOL(_sym_default, 831, CorePkg, "DEFAULT", false);
-DO_SYMBOL(_sym_process_macro_lambda_list, 833, CorePkg, "PROCESS-MACRO-LAMBDA-LIST", false);
-DO_SYMBOL(_sym_lambda_with_handler, 834, CorePkg, "LAMBDA-WITH-HANDLER", false);
-DO_SYMBOL(_sym_TagbodyFrame_O, 836, CorePkg, "TAGBODY-FRAME", true);
-DO_SYMBOL(_sym_hash_equalp, 838, CorePkg, "HASH-EQUALP", false);
-DO_SYMBOL(_sym_reader_skip_semicolon_comment, 841, CorePkg, "READER-SKIP-SEMICOLON-COMMENT", false);
-DO_SYMBOL(_sym_STARbq_listSTAR, 842, CorePkg, "*BQ-LIST*", false);
-DO_SYMBOL(_sym_StringList_O, 843, CorePkg, "STRING-LIST", true);
-DO_SYMBOL(_sym_isTopLevelScript, 845, CorePkg, "IS-TOP-LEVEL-SCRIPT", false);
-DO_SYMBOL(_sym_renameAndDelete, 847, CorePkg, "RENAME-AND-DELETE", false);
-DO_SYMBOL(_sym_CandoException_O, 848, CorePkg, "CANDO-EXCEPTION", true);
-DO_SYMBOL(_sym_environmentActivationFrame, 851, CorePkg, "ENVIRONMENT-ACTIVATION-FRAME", false);
-DO_SYMBOL(_sym_STARprintStructureSTAR, 855, CorePkg, "*PRINT-STRUCTURE*", false);
-DO_SYMBOL(_sym_SingleDispatchMethod_O, 858, CorePkg, "SINGLE-DISPATCH-METHOD", true);
-DO_SYMBOL(_sym_process_single_dispatch_lambda_list, 859, CorePkg, "PROCESS-SINGLE-DISPATCH-LAMBDA-LIST", false);
-DO_SYMBOL(_sym_isString, 866, CorePkg, "IS-STRING", true);
-DO_SYMBOL(_sym_bq_bracket, 876, CorePkg, "BQ-BRACKET", false);
-DO_SYMBOL(_sym_single_dispatch_on, 881, CorePkg, "SINGLE-DISPATCH-ON", false);
-DO_SYMBOL(_sym_STARtopLevelCommandHookSTAR, 882, CorePkg, "*TOP-LEVEL-COMMAND-HOOK*", true);
-DO_SYMBOL(_sym_debugLogOn, 884, CorePkg, "DEBUG-LOG-ON", false);
-DO_SYMBOL(_sym_STARconsing_dotSTAR, 886, CorePkg, "*CONSING-DOT*", false);
-DO_SYMBOL(_sym_tooManyArgumentsError, 888, CorePkg, "TOO-MANY-ARGUMENTS-ERROR", true);
-DO_SYMBOL(_sym_LeafSNode_O, 889, CorePkg, "LEAF-SNODE", true);
-DO_SYMBOL(_sym_create, 890, CorePkg, "CREATE", false);
-DO_SYMBOL(_sym_STARechoReplReadSTAR, 897, CorePkg, "*ECHO-REPL-READ*", false);
-DO_SYMBOL(_sym_FunctionContainerEnvironment_O, 900, CorePkg, "FUNCTION-CONTAINER-ENVIRONMENT", true);
-DO_SYMBOL(_sym_loadTimeValuesIds, 905, CorePkg, "LOAD-TIME-VALUES-IDS", false);
-DO_SYMBOL(_sym_ValueEnvironment_O, 906, CorePkg, "VALUE-ENVIRONMENT", true);
-DO_SYMBOL(_sym_Metaobject_O, 912, CorePkg, "METAOBJECT", true);
-DO_SYMBOL(_sym_instanceRef, 916, CorePkg, "INSTANCE-REF", false);
-DO_SYMBOL(_sym_STARbq_simplifySTAR, 920, CorePkg, "*BQ-SIMPLIFY*", false);
-DO_SYMBOL(_sym_STARloadSearchListSTAR, 925, CorePkg, "*LOAD-SEARCH-LIST*", true);
-DO_SYMBOL(_sym_subclassp, 926, CorePkg, "SUBCLASSP", false);
-DO_SYMBOL(_sym_rem_f, 927, CorePkg, "REM-F", false);
-DO_SYMBOL(_sym_lispCodePath, 928, CorePkg, "LISP-CODE-PATH", false);
-DO_SYMBOL(_sym_SymbolToEnumConverter_O, 929, CorePkg, "SYMBOL-TO-ENUM-CONVERTER", true);
-DO_SYMBOL(_sym_PosixTime_O, 931, CorePkg, "POSIX-TIME", true);
-DO_SYMBOL(_sym_STARbq_listSTARSTAR, 936, CorePkg, "*BQ-LIST**", false);
-DO_SYMBOL(_sym_eof_error_p, 937, CorePkg, "EOF-ERROR-P", false);
-DO_SYMBOL(_sym_setf_findClass, 938, CorePkg, "SETF-FIND-CLASS", false);
-DO_SYMBOL(_sym_SpecialForm_O, 944, CorePkg, "SPECIAL-FORM", true);
-DO_SYMBOL(_sym_ArrayDisplaced_O, 946, CorePkg, "ARRAY-DISPLACED", true);
-DO_SYMBOL(_sym_LambdaListHandler_O, 948, CorePkg, "LAMBDA-LIST-HANDLER", true);
-DO_SYMBOL(_sym_classNameAsString, 949, CorePkg, "CLASS-NAME-AS-STRING", true);
-DO_SYMBOL(_sym_instanceSigSet, 951, CorePkg, "INSTANCE-SIG-SET", false);
-DO_SYMBOL(_sym_GlueEnvironment_O, 955, CorePkg, "GLUE-ENVIRONMENT", true);
-DO_SYMBOL(_sym_StringOutputStream_O, 957, CorePkg, "STRING-OUTPUT-STREAM", true);
-DO_SYMBOL(_sym_bformat, 967, CorePkg, "BFORMAT", false);
-DO_SYMBOL(_sym_STARmonitorRegisterSourceInfoSTAR, 973, CorePkg, "*MONITOR-REGISTER-SOURCE-INFO*", true);
-DO_SYMBOL(_sym_STARihsCurrentSTAR, 976, CorePkg, "*IHS-CURRENT*", true);
-DO_SYMBOL(_sym_sourceLineColumn, 980, CorePkg, "SOURCE-LINE-COLUMN", false);
-DO_SYMBOL(_sym_member1, 981, CorePkg, "MEMBER1", false);
-DO_SYMBOL(_sym_FileStatus_O, 982, CorePkg, "FILE-STATUS", true);
-DO_SYMBOL(_sym_SourcePosInfo_O, 983, CorePkg, "SOURCE-POS-INFO", true);
-DO_SYMBOL(_sym_CompileTimeEnvironment_O, 984, CorePkg, "COMPILE-TIME-ENVIRONMENT", true);
-DO_SYMBOL(_sym_singleDispatchMissingDispatchArgumentError, 985, CorePkg, "SINGLE-DISPATCH-MISSING-DISPATCH-ARGUMENT-ERROR", false);
-DO_SYMBOL(_sym_ihsBacktrace, 986, CorePkg, "IHS-BACKTRACE", false);
-DO_SYMBOL(_sym_singleDispatchWrongNumberArgumentsError, 989, CorePkg, "SINGLE-DISPATCH-WRONG-NUMBER-ARGUMENTS-ERROR", false);
-DO_SYMBOL(_sym_signalSimpleError, 990, CorePkg, "SIGNAL-SIMPLE-ERROR", true);
-DO_SYMBOL(_sym_dlsym, 992, CorePkg, "DLSYM", false);
-DO_SYMBOL(_sym_sharp_p, 994, CorePkg, "SHARP-P", false);
-DO_SYMBOL(_sym_sharp_o, 997, CorePkg, "SHARP-O", false);
-DO_SYMBOL(_sym_dispatchTable, 998, CorePkg, "DISPATCH-TABLE", true);
-DO_SYMBOL(_sym_backquote_completely_process, 999, CorePkg, "BACKQUOTE-COMPLETELY-PROCESS", false);
-DO_SYMBOL(_sym_Binder_O, 1000, CorePkg, "BINDER", true);
-DO_SYMBOL(_sym_hash_eql, 1002, CorePkg, "HASH-EQL", false);
-DO_SYMBOL(_sym_STARcommandLineLoadEvalSequenceSTAR, 1005, CorePkg, "*COMMAND-LINE-LOAD-EVAL-SEQUENCE*", true);
-DO_SYMBOL(_sym_sharp_b, 1006, CorePkg, "SHARP-B", false);
-DO_SYMBOL(_sym_isAssignableTo, 1011, CorePkg, "IS-ASSIGNABLE-TO", false);
-DO_SYMBOL(_sym_structureSet, 1014, CorePkg, "STRUCTURE-SET", true);
-DO_SYMBOL(_sym_stackUsed, 1017, CorePkg, "STACK-USED", false);
-DO_SYMBOL(_sym_ObjectSet_O, 1018, CorePkg, "OBJECT-SET", true);
-DO_SYMBOL(_sym_element_type, 1022, CorePkg, "ELEMENT-TYPE", false);
-DO_SYMBOL(_sym_reader_backquoted_expression, 1023, CorePkg, "READER-BACKQUOTED-EXPRESSION", false);
-DO_SYMBOL(_sym_singleDispatchBadLambdaListError, 1026, CorePkg, "SINGLE-DISPATCH-BAD-LAMBDA-LIST-ERROR", false);
-DO_SYMBOL(_sym_StackValueEnvironment_O, 1027, CorePkg, "STACK-VALUE-ENVIRONMENT", true);
-DO_SYMBOL(_sym_gdbInspect, 1028, CorePkg, "GDB-INSPECT", false);
-DO_SYMBOL(_sym_backquote, 1029, CorePkg, "BACKQUOTE", false);
-DO_SYMBOL(_sym___init__, 1038, CorePkg, "--INIT--", false);
-DO_SYMBOL(_sym_unbound, 1043, CorePkg, "UNBOUND", false);
-DO_SYMBOL(_sym_STARdebugGenericDispatchSTAR, 1044, CorePkg, "*DEBUG-GENERIC-DISPATCH*", true);
-DO_SYMBOL(_sym_STARdebugMacroexpandSTAR, 1045, CorePkg, "*DEBUG-MACROEXPAND*", false);
-DO_SYMBOL(_sym_functionBlockName, 1049, CorePkg, "FUNCTION-BLOCK-NAME", false);
-DO_SYMBOL(_sym_Archive_O, 1050, CorePkg, "ARCHIVE", true);
-DO_SYMBOL(_sym_printUnreadableObjectFunction, 1053, CorePkg, "PRINT-UNREADABLE-OBJECT-FUNCTION", true);
-DO_SYMBOL(_sym_Regex_O, 1055, CorePkg, "REGEX", true);
-DO_SYMBOL(_sym_sharp_vertical_bar, 1059, CorePkg, "SHARP-VERTICAL-BAR", false);
-DO_SYMBOL(_sym_lookupLoadTimeValue, 1061, CorePkg, "LOOKUP-LOAD-TIME-VALUE", false);
-DO_SYMBOL(_sym_implicit_compile_hook_default, 1062, CorePkg, "IMPLICIT-COMPILE-HOOK-DEFAULT", true);
-DO_SYMBOL(_sym_STARcurrentSourcePosInfoSTAR, 1064, CorePkg, "*CURRENT-SOURCE-POS-INFO*", true);
-DO_SYMBOL(_sym_WeakKeyHashTable_O, 1065, CorePkg, "WEAK-KEY-HASH-TABLE", true);
-DO_SYMBOL(_sym_database_dir, 1067, CorePkg, "DATABASE-DIR", false);
-DO_SYMBOL(_sym_RuntimeVisibleEnvironment_O, 1068, CorePkg, "RUNTIME-VISIBLE-ENVIRONMENT", true);
-DO_SYMBOL(_sym_coerceToPhysicalPathname, 1069, CorePkg, "COERCE-TO-PHYSICAL-PATHNAME", true);
-DO_SYMBOL(_sym_sequence_start_end, 1070, CorePkg, "SEQUENCE-START-END", false);
-DO_SYMBOL(_sym_setRunTimeValuesVector, 1071, CorePkg, "SET-RUN-TIME-VALUES-VECTOR", true);
-DO_SYMBOL(_sym_STARstandard_readtableSTAR, 1072, CorePkg, "*STANDARD-READTABLE*", false);
-DO_SYMBOL(_sym_rem_record_field, 1080, CorePkg, "REM-RECORD-FIELD", false);
-DO_SYMBOL(_sym_reader_double_quote_string, 1082, CorePkg, "READER-DOUBLE-QUOTE-STRING", false);
-DO_SYMBOL(_sym_ihsFun, 1084, CorePkg, "IHS-FUN", false);
-DO_SYMBOL(_sym_overwrite, 1087, CorePkg, "OVERWRITE", false);
-DO_SYMBOL(_sym_loadTimeValueArray, 1088, CorePkg, "LOAD-TIME-VALUE-ARRAY", false);
-DO_SYMBOL(_sym_SexpLoadArchive_O, 1089, CorePkg, "SEXP-LOAD-ARCHIVE", true);
-DO_SYMBOL(_sym_eof_value, 1090, CorePkg, "EOF-VALUE", false);
-DO_SYMBOL(_sym_bdsTop, 1091, CorePkg, "BDS-TOP", false);
-DO_SYMBOL(_sym_BranchSNode_O, 1092, CorePkg, "BRANCH-SNODE", true);
-DO_SYMBOL(_sym_VectorObjects_O, 1095, CorePkg, "VECTOR-OBJECTS", true);
-DO_SYMBOL(_sym_printCurrentIhsFrameEnvironment, 1096, CorePkg, "PRINT-CURRENT-IHS-FRAME-ENVIRONMENT", true);
-DO_SYMBOL(_sym_debug_message, 1097, CorePkg, "DEBUG-MESSAGE", true);
-DO_SYMBOL(_sym_find_single_dispatch_generic_function, 1100, CorePkg, "FIND-SINGLE-DISPATCH-GENERIC-FUNCTION", false);
-DO_SYMBOL(_sym_globalFunction, 1106, CorePkg, "GLOBAL-FUNCTION", false);
-DO_SYMBOL(_sym_currentDir, 1107, CorePkg, "CURRENT-DIR", true);
-DO_SYMBOL(_sym_unquote_nsplice, 1110, CorePkg, "UNQUOTE-NSPLICE", false);
-DO_SYMBOL(_sym_StrWithFillPtr_O, 1111, CorePkg, "BASE-STRING-WITH-FILL-PTR", true);
-DO_SYMBOL(_sym_rem_sysprop, 1115, CorePkg, "REM-SYSPROP", false);
-DO_SYMBOL(_sym_read_list_allow_consing_dot, 1121, CorePkg, "READ-LIST-ALLOW-CONSING-DOT", false);
-DO_SYMBOL(_sym_DOT, 1124, CorePkg, ".", false);
-DO_SYMBOL(_sym_input_stream_designator, 1125, CorePkg, "INPUT-STREAM-DESIGNATOR", false);
-DO_SYMBOL(_sym_STARclassNameHashTableSTAR, 1128, CorePkg, "*CLASS-NAME-HASH-TABLE*", false);
-DO_SYMBOL(_sym_ExternalObject_O, 1131, CorePkg, "EXTERNAL-OBJECT", true);
-DO_SYMBOL(_sym_STARcodeWalkerSTAR, 1135, CorePkg, "*CODE-WALKER*", true);
-DO_SYMBOL(_sym_get_sysprop, 1138, CorePkg, "GET-SYSPROP", false);
-DO_SYMBOL(_sym_TagbodyEnvironment_O, 1140, CorePkg, "TAGBODY-ENVIRONMENT", true);
-DO_SYMBOL(_sym_base_string_concatenate, 1142, CorePkg, "BASE-STRING-CONCATENATE", false);
-DO_SYMBOL(_sym_debugLogOff, 1146, CorePkg, "DEBUG-LOG-OFF", false);
-DO_SYMBOL(_sym_pointer, 1156, CorePkg, "POINTER", true);
-DO_SYMBOL(_sym_singleDispatchTooManyArgumentsError, 1162, CorePkg, "SINGLE-DISPATCH-TOO-MANY-ARGUMENTS-ERROR", false);
-DO_SYMBOL(_sym_STARbq_quote_nilSTAR, 1164, CorePkg, "*BQ-QUOTE-NIL*", false);
-DO_SYMBOL(_sym_nread, 1167, CorePkg, "NREAD", false);
-DO_SYMBOL(_sym_make_structure, 1168, CorePkg, "MAKE-STRUCTURE", false);
-DO_SYMBOL(_sym_backquote_process, 1171, CorePkg, "BACKQUOTE-PROCESS", false);
-DO_SYMBOL(_sym_sourceFileName, 1173, CorePkg, "SOURCE-FILE-NAME", false);
-DO_SYMBOL(_sym_STARcircle_counterSTAR, 1174, CorePkg, "*CIRCLE-COUNTER*", true);
-DO_SYMBOL(_sym_implementationClass, 1178, CorePkg, "IMPLEMENTATION-CLASS", true);
-DO_SYMBOL(_sym_SNode_O, 1179, CorePkg, "SNODE", true);
-DO_SYMBOL(_sym_loadBitcode, 1181, CorePkg, "LOAD-BITCODE", true);
-DO_SYMBOL(_sym_log1p, 1182, CorePkg, "LOG1P", true);
-DO_SYMBOL(_sym_integerToString, 1184, CorePkg, "INTEGER-TO-STRING", true);
-DO_SYMBOL(_sym_STARcircleCounterSTAR, 1187, CorePkg, "*CIRCLE-COUNTER*", false);
-DO_SYMBOL(_sym_saveCando, 1192, CorePkg, "SAVE-CANDO", false);
-DO_SYMBOL(_sym_copy_subarray, 1194, CorePkg, "COPY-SUBARRAY", false);
-DO_SYMBOL(_sym_STARprint_structureSTAR, 1196, CorePkg, "*PRINT-STRUCTURE*", true);
-DO_SYMBOL(_sym_SingleDispatchGenericFunction_O, 1199, CorePkg, "SINGLE-DISPATCH-GENERIC-FUNCTION", true);
-DO_SYMBOL(_sym_parse_macro, 1201, CorePkg, "PARSE-MACRO", false);
-DO_SYMBOL(_sym_dlopen, 1203, CorePkg, "DLOPEN", false);
-DO_SYMBOL(_sym_sharp_r, 1209, CorePkg, "SHARP-R", false);
-DO_SYMBOL(_sym_HashTableEqualp_O, 1210, CorePkg, "HASH-TABLE-EQUALP", true);
-DO_SYMBOL(_sym_STARserializerArchiveSTAR, 1212, CorePkg, "*SERIALIZER-ARCHIVE*", true);
-DO_SYMBOL(_sym_ActivationFrame_O, 1213, CorePkg, "ACTIVATION-FRAME", true);
-DO_SYMBOL(_sym_monitorReader, 1214, CorePkg, "MONITOR-READER", false);
-DO_SYMBOL(_sym_preserve_whitespace, 1215, CorePkg, "PRESERVE-WHITESPACE", false);
-DO_SYMBOL(_sym_STARnestedErrorDepthSTAR, 1216, CorePkg, "*NESTED-ERROR-DEPTH*", false);
-DO_SYMBOL(_sym_STARpollTicksPerGcSTAR, 1217, CorePkg, "*POLL-TICKS-PER-GC*", true);
-DO_SYMBOL(_sym_SourceManager_O, 1220, CorePkg, "SOURCE-MANAGER", true);
-DO_SYMBOL(_sym_STARimplicit_compile_hookSTAR, 1223, CorePkg, "*IMPLICIT-COMPILE-HOOK*", true);
-DO_SYMBOL(_sym_sharp_s, 1230, CorePkg, "SHARP-S", false);
-DO_SYMBOL(_sym_dlload, 1231, CorePkg, "DLLOAD", false);
-DO_SYMBOL(_sym_STARwatchDynamicBindingStackSTAR, 1233, CorePkg, "*WATCH-DYNAMIC-BINDING-STACK*", true);
-DO_SYMBOL(_sym_fixnum_number_of_bits, 1235, CorePkg, "FIXNUM-NUMBER-OF-BITS", false);
-DO_SYMBOL(_sym_serialize, 1240, CorePkg, "SERIALIZE", true);
-DO_SYMBOL(_sym_sharp_plus, 1241, CorePkg, "SHARP-PLUS", false);
-DO_SYMBOL(_sym_ihsEnv, 1245, CorePkg, "IHS-ENV", false);
-DO_SYMBOL(_sym_pathnameTranslations, 1250, CorePkg, "PATHNAME-TRANSLATIONS", true);
-DO_SYMBOL(_sym_STARbackquote_expand_hookSTAR, 1252, CorePkg, "*BACKQUOTE-EXPAND-HOOK*", false);
-DO_SYMBOL(_sym_STARdebugInterpretedFunctionsSTAR, 1255, CorePkg, "*DEBUG-INTERPRETED-FUNCTIONS*", true);
-DO_SYMBOL(_sym_fileColumn, 1261, CorePkg, "FILE-COLUMN", true);
-DO_SYMBOL(_sym_universalErrorHandler, 1263, CorePkg, "UNIVERSAL-ERROR-HANDLER", false);
-DO_SYMBOL(_sym_SymbolSet_O, 1266, CorePkg, "SYMBOL-SET", true);
-DO_SYMBOL(_sym_ihsNext, 1268, CorePkg, "IHS-NEXT", false);
-DO_SYMBOL(_sym_STARcommandLineArgumentsSTAR, 1269, CorePkg, "*COMMAND-LINE-ARGUMENTS*", true);
-DO_SYMBOL(_sym_localGo, 1278, CorePkg, "LOCAL-GO", true);
-DO_SYMBOL(_sym_structure_slot_descriptions, 1291, CorePkg, "STRUCTURE-SLOT-DESCRIPTIONS", true);
-DO_SYMBOL(_sym_STARpreserve_whitespace_pSTAR, 1292, CorePkg, "*PRESERVE-WHITESPACE-P*", false);
-DO_SYMBOL(_sym_STARenvironmentPrintingTabSTAR, 1296, CorePkg, "*ENVIRONMENT-PRINTING-TAB*", false);
-DO_SYMBOL(_sym_ifDoesNotExist, 1300, CorePkg, "IF-DOES-NOT-EXIST", false);
-DO_SYMBOL(_sym_sharp_a, 1303, CorePkg, "SHARP-A", false);
-DO_SYMBOL(_sym_backquote_frob, 1305, CorePkg, "BACKQUOTE-FROB", false);
-DO_SYMBOL(_sym_processDeclarations, 1308, CorePkg, "PROCESS-DECLARATIONS", false);
-DO_SYMBOL(_sym_structureSubtypep, 1312, CorePkg, "STRUCTURE-SUBTYPEP", true);
+DO_SYMBOL(_sym_isSubClassOf,1,CorePkg,"IS-SUB-CLASS-OF",false);
+DO_SYMBOL(_sym_hash_equal,8,CorePkg,"HASH-EQUAL",false);
+DO_SYMBOL(_sym_slot,9,CorePkg,"SLOT",false);
+DO_SYMBOL(_sym_dladdr,11,CorePkg,"DLADDR",false);
+DO_SYMBOL(_sym_allocateRawClass,12,CorePkg,"ALLOCATE-RAW-CLASS",false);
+DO_SYMBOL(_sym_calculateMissingCommonLispSymbols,23,CorePkg,"CALCULATE-MISSING-COMMON-LISP-SYMBOLS",true);
+DO_SYMBOL(_sym_reader_read_double_quote_string,26,CorePkg,"READER-READ-DOUBLE-QUOTE-STRING",false);
+DO_SYMBOL(_sym_STARdebugInterpretedClosureSTAR,30,CorePkg,"*DEBUG-INTERPRETED-CLOSURE*",true);
+DO_SYMBOL(_sym_ValueFrame_O,32,CorePkg,"VALUE-FRAME",true);
+DO_SYMBOL(_sym_record_field,33,CorePkg,"RECORD-FIELD",false);
+DO_SYMBOL(_sym_STARprintVersionOnStartupSTAR,34,CorePkg,"*PRINT-VERSION-ON-STARTUP*",true);
+DO_SYMBOL(_sym_deserialize_xml,35,CorePkg,"DESERIALIZE-XML",false);
+DO_SYMBOL(_sym_macroexpand_default,40,CorePkg,"MACROEXPAND-DEFAULT",false);
+DO_SYMBOL(_sym_MicroHeap_O,42,CorePkg,"MICRO-HEAP",true);
+DO_SYMBOL(_sym_topLevel,44,CorePkg,"TOP-LEVEL",true);
+DO_SYMBOL(_sym_currentVisibleEnvironment,46,CorePkg,"CURRENT-VISIBLE-ENVIRONMENT",false);
+DO_SYMBOL(_sym_exit,47,CorePkg,"EXIT",false);
+DO_SYMBOL(_sym_STARsharp_equal_final_tableSTAR,48,CorePkg,"*SHARP-EQUAL-FINAL-TABLE*",false);
+DO_SYMBOL(_sym_fromTaggedFixnum,49,CorePkg,"FROM-TAGGED-FIXNUM",true);
+DO_SYMBOL(_sym_streamColumn,58,CorePkg,"STREAM-COLUMN",true);
+DO_SYMBOL(_sym_Environment_O,59,CorePkg,"ENVIRONMENT",true);
+DO_SYMBOL(_sym_walkToFindSourceInfo,67,CorePkg,"WALK-TO-FIND-SOURCE-INFO",true);
+DO_SYMBOL(_sym_sharp_left_parenthesis,75,CorePkg,"SHARP-LEFT-PARENTHESIS",false);
+DO_SYMBOL(_sym_anonymous,78,CorePkg,"ANONYMOUS",false);
+DO_SYMBOL(_sym_closedStream,79,CorePkg,"CLOSED-STREAM",true);
+DO_SYMBOL(_sym_HashTableEqual_O,80,CorePkg,"HASH-TABLE-EQUAL",true);
+DO_SYMBOL(_sym_Path_O,82,CorePkg,"PATH",true);
+DO_SYMBOL(_sym_testProfileTimer,85,CorePkg,"TEST-PROFILE-TIMER",false);
+DO_SYMBOL(_sym_validFunctionNameP,90,CorePkg,"VALID-FUNCTION-NAME-P",false);
+DO_SYMBOL(_sym_ObjRef_O,93,CorePkg,"OBJ-REF",true);
+DO_SYMBOL(_sym_ihsPrev,97,CorePkg,"IHS-PREV",false);
+DO_SYMBOL(_sym_classifyLetVariablesAndDeclares,100,CorePkg,"CLASSIFY-LET-VARIABLES-AND-DECLARES",false);
+DO_SYMBOL(_sym_asin,108,CorePkg,"ASIN",true);
+DO_SYMBOL(_sym_slBoundp,109,CorePkg,"SL-BOUNDP",false);
+DO_SYMBOL(_sym_ihsTop,112,CorePkg,"IHS-TOP",false);
+DO_SYMBOL(_sym_WeakPointer_O,113,CorePkg,"WEAK-POINTER",true);
+DO_SYMBOL(_sym_initial_element,115,CorePkg,"INITIAL-ELEMENT",false);
+DO_SYMBOL(_sym_cl_fixnum_bits,116,CorePkg,"CL-FIXNUM-BITS",false);
+DO_SYMBOL(_sym_STARsystem_defsetf_update_functionsSTAR,117,CorePkg,"*SYSTEM-DEFSETF-UPDATE-FUNCTIONS*",false);
+DO_SYMBOL(_sym_printf,120,CorePkg,"PRINTF",false);
+DO_SYMBOL(_sym_STARdebugStartupSTAR,121,CorePkg,"*DEBUG-STARTUP*",true);
+DO_SYMBOL(_sym_sharp_colon,126,CorePkg,"SHARP-COLON",false);
+DO_SYMBOL(_sym_dispatch_macro_character,127,CorePkg,"DISPATCH-MACRO-CHARACTER",false);
+DO_SYMBOL(_sym_annotate,128,CorePkg,"ANNOTATE",false);
+DO_SYMBOL(_sym_newVersion,130,CorePkg,"NEW-VERSION",false);
+DO_SYMBOL(_sym_makeSureClosClassSlotsMatchClass,132,CorePkg,"MAKE-SURE-CLOS-CLASS-SLOTS-MATCH-CLASS",false);
+DO_SYMBOL(_sym_do_write_sequence,135,CorePkg,"DO-WRITE-SEQUENCE",true);
+DO_SYMBOL(_sym_STARinput_streamSTAR,136,CorePkg,"*INPUT-STREAM*",false);
+DO_SYMBOL(_sym_ForeignData_O,141,CorePkg,"FOREIGN-DATA",true);
+DO_SYMBOL(_sym_float_to_digits,146,CorePkg,"FLOAT-TO-DIGITS",true);
+DO_SYMBOL(_sym__PLUS_numberOfFixedArguments_PLUS_,152,CorePkg,"+NUMBER-OF-FIXED-ARGUMENTS+",true);
+DO_SYMBOL(_sym_defaultPathnameDefaults,153,CorePkg,"DEFAULT-PATHNAME-DEFAULTS",false);
+DO_SYMBOL(_sym_BlockEnvironment_O,154,CorePkg,"BLOCK-ENVIRONMENT",true);
+DO_SYMBOL(_sym_sorted,155,CorePkg,"SORTED",false);
+DO_SYMBOL(_sym_WrappedPointer_O,156,CorePkg,"WRAPPED-POINTER",true);
+DO_SYMBOL(_sym_UserData_O,157,CorePkg,"USER-DATA",true);
+DO_SYMBOL(_sym_mpsGarbageCollection,159,CorePkg,"MPS-GARBAGE-COLLECTION",false);
+DO_SYMBOL(_sym_type_to_symbol,160,CorePkg,"TYPE-TO-SYMBOL",false);
+DO_SYMBOL(_sym_DirectoryEntry_O,161,CorePkg,"DIRECTORY-ENTRY",true);
+DO_SYMBOL(_sym_tsp,162,CorePkg,"TSP",true);
+DO_SYMBOL(_sym_smartPointerDetails,163,CorePkg,"SMART-POINTER-DETAILS",false);
+DO_SYMBOL(_sym_STARbq_nconcSTAR,165,CorePkg,"*BQ-NCONC*",false);
+DO_SYMBOL(_sym_record_cons,169,CorePkg,"RECORD-CONS",false);
+DO_SYMBOL(_sym_STARprint_source_code_consSTAR,171,CorePkg,"*PRINT-SOURCE-CODE-CONS*",false);
+DO_SYMBOL(_sym_backquote_bracket,174,CorePkg,"BACKQUOTE-BRACKET",false);
+DO_SYMBOL(_sym_ArrayObjects_O,175,CorePkg,"ARRAY-OBJECTS",true);
+DO_SYMBOL(_sym_instanceSet,176,CorePkg,"INSTANCE-SET",false);
+DO_SYMBOL(_sym_Pointer_O,178,CorePkg,"POINTER",true);
+DO_SYMBOL(_sym_supersede,179,CorePkg,"SUPERSEDE",false);
+DO_SYMBOL(_sym_wrongIndex,180,CorePkg,"WRONG-INDEX",true);
+DO_SYMBOL(_sym_SaveArchive_O,184,CorePkg,"SAVE-ARCHIVE",true);
+DO_SYMBOL(_sym_lexical,188,CorePkg,"LEXICAL",false);
+DO_SYMBOL(_sym_structure_print_function,189,CorePkg,"STRUCTURE-PRINT-FUNCTION",true);
+DO_SYMBOL(_sym_reader_error_unmatched_close_parenthesis,191,CorePkg,"READER-ERROR-UNMATCHED-CLOSE-PARENTHESIS",false);
+DO_SYMBOL(_sym_streamLinenumber,192,CorePkg,"STREAM-LINENUMBER",true);
+DO_SYMBOL(_sym_CatchEnvironment_O,196,CorePkg,"CATCH-ENVIRONMENT",true);
+DO_SYMBOL(_sym__PLUS_standardReadtable_PLUS_,198,CorePkg,"+STANDARD-READTABLE+",true);
+DO_SYMBOL(_sym_SymbolList_O,199,CorePkg,"SYMBOL-LIST",true);
+DO_SYMBOL(_sym_STARexecutable_nameSTAR,202,CorePkg,"*EXECUTABLE-NAME*",false);
+DO_SYMBOL(_sym_STARprintPackageSTAR,205,CorePkg,"*PRINT-PACKAGE*",false);
+DO_SYMBOL(_sym_lookupLoadTimeSymbol,206,CorePkg,"LOOKUP-LOAD-TIME-SYMBOL",false);
+DO_SYMBOL(_sym_exportToPython,207,CorePkg,"EXPORT-TO-PYTHON",false);
+DO_SYMBOL(_sym_system,210,CorePkg,"SYSTEM",false);
+DO_SYMBOL(_sym_STARbackquote_levelSTAR,211,CorePkg,"*BACKQUOTE-LEVEL*",false);
+DO_SYMBOL(_sym_STARallCxxClassesSTAR,213,CorePkg,"*ALL-CXX-CLASSES*",true);
+DO_SYMBOL(_sym_compileFormAndEvalWithEnv,220,CorePkg,"COMPILE-FORM-AND-EVAL-WITH-ENV",true);
+DO_SYMBOL(_sym_makeStringOutputStream,223,CorePkg,"MAKE-STRING-OUTPUT-STREAM",true);
+DO_SYMBOL(_sym_SymbolMacroletEnvironment_O,224,CorePkg,"SYMBOL-MACROLET-ENVIRONMENT",true);
+DO_SYMBOL(_sym_invalidKeywordArgumentError,225,CorePkg,"INVALID-KEYWORD-ARGUMENT-ERROR",false);
+DO_SYMBOL(_sym_dot,226,CorePkg,"DOT",false);
+DO_SYMBOL(_sym_isArray,229,CorePkg,"IS-ARRAY",true);
+DO_SYMBOL(_sym_SourceFileInfo_O,231,CorePkg,"SOURCE-FILE-INFO",true);
+DO_SYMBOL(_sym_test_not,233,CorePkg,"TEST-NOT",false);
+DO_SYMBOL(_sym_STARdocumentation_poolSTAR,236,CorePkg,"*DOCUMENTATION-POOL*",false);
+DO_SYMBOL(_sym_coerce_to_function,239,CorePkg,"COERCE-TO-FUNCTION",false);
+DO_SYMBOL(_sym_IntArray_O,242,CorePkg,"INT-ARRAY",true);
+DO_SYMBOL(_sym_WeakHashTable_O,244,CorePkg,"WEAK-HASH-TABLE",true);
+DO_SYMBOL(_sym_evaluateDepth,247,CorePkg,"EVALUATE-DEPTH",false);
+DO_SYMBOL(_sym_bq_remove_tokens,249,CorePkg,"BQ-REMOVE-TOKENS",false);
+DO_SYMBOL(_sym_STARstartRunTimeSTAR,250,CorePkg,"*START-RUN-TIME*",true);
+DO_SYMBOL(_sym_tooFewArgumentsError,254,CorePkg,"TOO-FEW-ARGUMENTS-ERROR",true);
+DO_SYMBOL(_sym_testVal,258,CorePkg,"TEST-VAL",true);
+DO_SYMBOL(_sym_Specializer_O,259,CorePkg,"SPECIALIZER",true);
+DO_SYMBOL(_sym_invokeInternalDebugger,261,CorePkg,"INVOKE-INTERNAL-DEBUGGER",false);
+DO_SYMBOL(_sym_color,262,CorePkg,"COLOR",false);
+DO_SYMBOL(_sym_forward_referenced_class,264,CorePkg,"FORWARD-REFERENCED-CLASS",false);
+DO_SYMBOL(_sym_reader_comma_form,265,CorePkg,"READER-COMMA-FORM",false);
+DO_SYMBOL(_sym_declaredSpecial,266,CorePkg,"DECLARED-SPECIAL",false);
+DO_SYMBOL(_sym_getline,267,CorePkg,"GETLINE",false);
+DO_SYMBOL(_sym_lambdaName,272,CorePkg,"LAMBDA-NAME",true);
+DO_SYMBOL(_sym_path,274,CorePkg,"PATH",false);
+DO_SYMBOL(_sym_invokeInternalDebuggerFromGdb,275,CorePkg,"INVOKE-INTERNAL-DEBUGGER-FROM-GDB",false);
+DO_SYMBOL(_sym_symbolMacro,279,CorePkg,"SYMBOL-MACRO",false);
+DO_SYMBOL(_sym_Instance_O,283,CorePkg,"INSTANCE",true);
+DO_SYMBOL(_sym_backquote_null_or_quoted,284,CorePkg,"BACKQUOTE-NULL-OR-QUOTED",false);
+DO_SYMBOL(_sym_script_dir,286,CorePkg,"SCRIPT-DIR",false);
+DO_SYMBOL(_sym_forget_all_single_dispatch_generic_functions,288,CorePkg,"FORGET-ALL-SINGLE-DISPATCH-GENERIC-FUNCTIONS",false);
+DO_SYMBOL(_sym_reader_feature_p,291,CorePkg,"READER-FEATURE-P",false);
+DO_SYMBOL(_sym_whole,292,CorePkg,"WHOLE",false);
+DO_SYMBOL(_sym_item,295,CorePkg,"ITEM",false);
+DO_SYMBOL(_sym_generic,297,CorePkg,"GENERIC",false);
+DO_SYMBOL(_sym_LoadArchive_O,298,CorePkg,"LOAD-ARCHIVE",true);
+DO_SYMBOL(_sym_processLambdaList,301,CorePkg,"PROCESS-LAMBDA-LIST",false);
+DO_SYMBOL(_sym_nan,303,CorePkg,"NAN",false);
+DO_SYMBOL(_sym_instanceSig,307,CorePkg,"INSTANCE-SIG",false);
+DO_SYMBOL(_sym_Iterator_O,310,CorePkg,"ITERATOR",true);
+DO_SYMBOL(_sym_setfSubseq,311,CorePkg,"SETF-SUBSEQ",true);
+DO_SYMBOL(_sym_STARcommandLineLoadSTAR,316,CorePkg,"*COMMAND-LINE-LOAD*",true);
+DO_SYMBOL(_sym_STARPATHSTAR,317,CorePkg,"*PATH*",false);
+DO_SYMBOL(_sym_testMemoryError,325,CorePkg,"TEST-MEMORY-ERROR",false);
+DO_SYMBOL(_sym_backquote_remove_tokens,328,CorePkg,"BACKQUOTE-REMOVE-TOKENS",false);
+DO_SYMBOL(_sym_ensureSingleDispatchMethod,330,CorePkg,"ENSURE-SINGLE-DISPATCH-METHOD",true);
+DO_SYMBOL(_sym_PosixTimeDuration_O,334,CorePkg,"POSIX-TIME-DURATION",true);
+DO_SYMBOL(_sym_sharp_single_quote,335,CorePkg,"SHARP-SINGLE-QUOTE",false);
+DO_SYMBOL(_sym_HashTableEq_O,336,CorePkg,"HASH-TABLE-EQ",true);
+DO_SYMBOL(_sym_SmallMap_O,348,CorePkg,"SMALL-MAP",true);
+DO_SYMBOL(_sym_bitArrayOp,350,CorePkg,"BIT-ARRAY-OP",true);
+DO_SYMBOL(_sym_sharp_x,352,CorePkg,"SHARP-X",false);
+DO_SYMBOL(_sym_ForwardReferencedClass_O,353,CorePkg,"FORWARD-REFERENCED-CLASS",true);
+DO_SYMBOL(_sym_backquote_append,354,CorePkg,"BACKQUOTE-APPEND",false);
+DO_SYMBOL(_sym_Reader_O,366,CorePkg,"READER",true);
+DO_SYMBOL(_sym_gdb,367,CorePkg,"GDB",false);
+DO_SYMBOL(_sym_sharp_dot,376,CorePkg,"SHARP-DOT",false);
+DO_SYMBOL(_sym_isNil,377,CorePkg,"IS-NIL",false);
+DO_SYMBOL(_sym_backquote_simplify,378,CorePkg,"BACKQUOTE-SIMPLIFY",false);
+DO_SYMBOL(_sym_simpleProgramError,379,CorePkg,"SIMPLE-PROGRAM-ERROR",true);
+DO_SYMBOL(_sym_mpi_size,382,CorePkg,"MPI-SIZE",false);
+DO_SYMBOL(_sym_adjustVector,383,CorePkg,"ADJUST-VECTOR",true);
+DO_SYMBOL(_sym_makeLambdaListHandler,384,CorePkg,"MAKE-LAMBDA-LIST-HANDLER",false);
+DO_SYMBOL(_sym_env,386,CorePkg,"ENV",false);
+DO_SYMBOL(_sym_putF,388,CorePkg,"PUT-F",false);
+DO_SYMBOL(_sym_FunctionFrame_O,390,CorePkg,"FUNCTION-FRAME",true);
+DO_SYMBOL(_sym_toTaggedFixnum,391,CorePkg,"TO-TAGGED-FIXNUM",true);
+DO_SYMBOL(_sym_environmentId,394,CorePkg,"ENVIRONMENT-ID",false);
+DO_SYMBOL(_sym_eltSet,395,CorePkg,"ELT-SET",true);
+DO_SYMBOL(_sym_STARdocumentation_databaseSTAR,398,CorePkg,"*DOCUMENTATION-DATABASE*",false);
+DO_SYMBOL(_sym_STARsourceDatabaseSTAR,401,CorePkg,"*SOURCE-DATABASE*",true);
+DO_SYMBOL(_sym_UnwindProtectEnvironment_O,402,CorePkg,"UNWIND-PROTECT-ENVIRONMENT",true);
+DO_SYMBOL(_sym_LoadTimeValues_O,404,CorePkg,"LOAD-TIME-VALUES",true);
+DO_SYMBOL(_sym_mpi_rank,409,CorePkg,"MPI-RANK",false);
+DO_SYMBOL(_sym_STARcommandLineImageSTAR,410,CorePkg,"*COMMAND-LINE-IMAGE*",true);
+DO_SYMBOL(_sym_HashTableEql_O,418,CorePkg,"HASH-TABLE-EQL",true);
+DO_SYMBOL(_sym_setCurrentWorkingDirectory,420,CorePkg,"SET-CURRENT-WORKING-DIRECTORY",false);
+DO_SYMBOL(_sym_bdsVal,422,CorePkg,"BDS-VAL",false);
+DO_SYMBOL(_sym_put_sysprop,424,CorePkg,"PUT-SYSPROP",false);
+DO_SYMBOL(_sym_all_keys,427,CorePkg,"ALL-KEYS",false);
+DO_SYMBOL(_sym_ensureSingleDispatchGenericFunction,429,CorePkg,"ENSURE-SINGLE-DISPATCH-GENERIC-FUNCTION",true);
+DO_SYMBOL(_sym_STARenvironmentPrintingTabIncrementSTAR,432,CorePkg,"*ENVIRONMENT-PRINTING-TAB-INCREMENT*",false);
+DO_SYMBOL(_sym_STARsharpEqContextSTAR,435,CorePkg,"*SHARP-EQ-CONTEXT*",false);
+DO_SYMBOL(_sym_STARfset,436,CorePkg,"*FSET",false);
+DO_SYMBOL(_sym__PLUS_ecl_syntax_progv_list_PLUS_,438,CorePkg,"+ECL-SYNTAX-PROGV-LIST+",true);
+DO_SYMBOL(_sym_loadCando,441,CorePkg,"LOAD-CANDO",false);
+DO_SYMBOL(_sym_invocationHistoryFrame,444,CorePkg,"INVOCATION-HISTORY-FRAME",true);
+DO_SYMBOL(_sym_structureRef,445,CorePkg,"STRUCTURE-REF",true);
+DO_SYMBOL(_sym_file_kind,446,CorePkg,"FILE-KIND",true);
+DO_SYMBOL(_sym_IOStreamStream_O,447,CorePkg,"IOSTREAM-STREAM",true);
+DO_SYMBOL(_sym_dimensions,448,CorePkg,"DIMENSIONS",false);
+DO_SYMBOL(_sym_sharp_minus,449,CorePkg,"SHARP-MINUS",false);
+DO_SYMBOL(_sym_ensure_documentation,454,CorePkg,"ENSURE-DOCUMENTATION",false);
+DO_SYMBOL(_sym_clock_gettime_nanoseconds,455,CorePkg,"CLOCK-GETTIME-NANOSECONDS",false);
+DO_SYMBOL(_sym_start,458,CorePkg,"START",false);
+DO_SYMBOL(_sym_threadInfo,459,CorePkg,"THREAD-INFO",true);
+DO_SYMBOL(_sym_backquote_attach_append,460,CorePkg,"BACKQUOTE-ATTACH-APPEND",false);
+DO_SYMBOL(_sym_wrongTypeNthArg,462,CorePkg,"WRONG-TYPE-NTH-ARG",true);
+DO_SYMBOL(_sym_IOFileStream_O,466,CorePkg,"IOFILE-STREAM",true);
+DO_SYMBOL(_sym_STARcurrent_working_directorySTAR,469,CorePkg,"*CURRENT-WORKING-DIRECTORY*",false);
+DO_SYMBOL(_sym_runtimeEnvironment,470,CorePkg,"RUNTIME-ENVIRONMENT",false);
+DO_SYMBOL(_sym_instanceClassSet,476,CorePkg,"INSTANCE-CLASS-SET",true);
+DO_SYMBOL(_sym_STARbq_quoteSTAR,485,CorePkg,"*BQ-QUOTE*",false);
+DO_SYMBOL(_sym_reader_list_allow_consing_dot,486,CorePkg,"READER-LIST-ALLOW-CONSING-DOT",false);
+DO_SYMBOL(_sym_libraryPath,487,CorePkg,"LIBRARY-PATH",false);
+DO_SYMBOL(_sym_STARconsing_dot_allowedSTAR,488,CorePkg,"*CONSING-DOT-ALLOWED*",false);
+DO_SYMBOL(_sym_coerceToFilePathname,489,CorePkg,"COERCE-TO-FILE-PATHNAME",true);
+DO_SYMBOL(_sym_LexicalEnvironment_O,496,CorePkg,"LEXICAL-ENVIRONMENT",true);
+DO_SYMBOL(_sym_backquote_attach_conses,498,CorePkg,"BACKQUOTE-ATTACH-CONSES",false);
+DO_SYMBOL(_sym_bdsVar,499,CorePkg,"BDS-VAR",false);
+DO_SYMBOL(_sym_STARdebugReaderSTAR,500,CorePkg,"*DEBUG-READER*",true);
+DO_SYMBOL(_sym_SexpSaveArchive_O,502,CorePkg,"SEXP-SAVE-ARCHIVE",true);
+DO_SYMBOL(_sym_setfElt,503,CorePkg,"SETF-ELT",true);
+DO_SYMBOL(_sym_dumpTaggedFixnum,504,CorePkg,"DUMP-TAGGED-FIXNUM",true);
+DO_SYMBOL(_sym_evaluateVerbosity,512,CorePkg,"EVALUATE-VERBOSITY",false);
+DO_SYMBOL(_sym_tooFewArguments,517,CorePkg,"TOO-FEW-ARGUMENTS",false);
+DO_SYMBOL(_sym_STARdebugMonitorSTAR,519,CorePkg,"*DEBUG-MONITOR*",false);
+DO_SYMBOL(_sym_foreach,527,CorePkg,"FOREACH",false);
+DO_SYMBOL(_sym_tmv,528,CorePkg,"TMV",true);
+DO_SYMBOL(_sym_STARargsSTAR,533,CorePkg,"*ARGS*",false);
+DO_SYMBOL(_sym_FunctionValueEnvironment_O,540,CorePkg,"FUNCTION-VALUE-ENVIRONMENT",true);
+DO_SYMBOL(_sym_acos,541,CorePkg,"ACOS",true);
+DO_SYMBOL(_sym_integer_divide,542,CorePkg,"INTEGER-DIVIDE",true);
+DO_SYMBOL(_sym_unquote_splice,546,CorePkg,"UNQUOTE-SPLICE",false);
+DO_SYMBOL(_sym_reader_quote,553,CorePkg,"READER-QUOTE",false);
+DO_SYMBOL(_sym__SHARP__BANG_,554,CorePkg,"-SHARP--BANG-",true);
+DO_SYMBOL(_sym_symbolMacroletLambda,559,CorePkg,"SYMBOL-MACROLET-LAMBDA",true);
+DO_SYMBOL(_sym_WeakKeyMapping_O,560,CorePkg,"WEAK-KEY-MAPPING",true);
+DO_SYMBOL(_sym_StringSet_O,562,CorePkg,"STRING-SET",true);
+DO_SYMBOL(_sym_makeStructure,563,CorePkg,"MAKE-STRUCTURE",true);
+DO_SYMBOL(_sym_makeRegex,569,CorePkg,"MAKE-REGEX",true);
+DO_SYMBOL(_sym_macro,572,CorePkg,"MACRO",false);
+DO_SYMBOL(_sym__PLUS_activationFrameNil_PLUS_,575,CorePkg,"+ACTIVATION-FRAME-NIL+",false);
+DO_SYMBOL(_sym_selectPackage,579,CorePkg,"SELECT-PACKAGE",true);
+DO_SYMBOL(_sym_STARenablePrintPrettySTAR,580,CorePkg,"*ENABLE-PRINT-PRETTY*",true);
+DO_SYMBOL(_sym_DirectoryIterator_O,583,CorePkg,"DIRECTORY-ITERATOR",true);
+DO_SYMBOL(_sym_LightUserData_O,586,CorePkg,"LIGHT-USER-DATA",true);
+DO_SYMBOL(_sym_io,592,CorePkg,"IO",false);
+DO_SYMBOL(_sym_aset,599,CorePkg,"ASET",false);
+DO_SYMBOL(_sym_structure_include,602,CorePkg,"STRUCTURE-INCLUDE",true);
+DO_SYMBOL(_sym_environmentList,604,CorePkg,"ENVIRONMENT-LIST",false);
+DO_SYMBOL(_sym_STARsharp_equal_temp_tableSTAR,605,CorePkg,"*SHARP-EQUAL-TEMP-TABLE*",false);
+DO_SYMBOL(_sym_STARcurrentSourceFileInfoSTAR,607,CorePkg,"*CURRENT-SOURCE-FILE-INFO*",true);
+DO_SYMBOL(_sym_unquote,608,CorePkg,"UNQUOTE",false);
+DO_SYMBOL(_sym_asinh,610,CorePkg,"ASINH",true);
+DO_SYMBOL(_sym_bq_simplify,611,CorePkg,"BQ-SIMPLIFY",false);
+DO_SYMBOL(_sym_dynamicGo,614,CorePkg,"DYNAMIC-GO",true);
+DO_SYMBOL(_sym_loadBundle,615,CorePkg,"LOAD-BUNDLE",false);
+DO_SYMBOL(_sym_MacroletEnvironment_O,617,CorePkg,"MACROLET-ENVIRONMENT",true);
+DO_SYMBOL(_sym_alist,619,CorePkg,"ALIST",false);
+DO_SYMBOL(_sym_separatePairList,621,CorePkg,"SEPARATE-PAIR-LIST",false);
+DO_SYMBOL(_sym_sharedReferenceCountedPointer,627,CorePkg,"SHARED-REFERENCE-COUNTED-POINTER",false);
+DO_SYMBOL(_sym_environmentTypeList,630,CorePkg,"ENVIRONMENT-TYPE-LIST",false);
+DO_SYMBOL(_sym_backquote_splicing_frob,634,CorePkg,"BACKQUOTE-SPLICING-FROB",false);
+DO_SYMBOL(_sym_STARdebugLoadTimeValuesSTAR,638,CorePkg,"*DEBUG-LOAD-TIME-VALUES*",true);
+DO_SYMBOL(_sym_STARsharp_equal_repl_tableSTAR,640,CorePkg,"*SHARP-EQUAL-REPL-TABLE*",false);
+DO_SYMBOL(_sym_acosh,641,CorePkg,"ACOSH",true);
+DO_SYMBOL(_sym_okey,643,CorePkg,"OKEY",false);
+DO_SYMBOL(_sym_setf_find_single_dispatch_generic_function,646,CorePkg,"SETF-FIND-SINGLE-DISPATCH-GENERIC-FUNCTION",false);
+DO_SYMBOL(_sym_atanh,648,CorePkg,"ATANH",true);
+DO_SYMBOL(_sym_render,649,CorePkg,"RENDER",false);
+DO_SYMBOL(_sym_intrusiveReferenceCountedPointer,656,CorePkg,"INTRUSIVE-REFERENCE-COUNTED-POINTER",false);
+DO_SYMBOL(_sym_findFileInLispPath,658,CorePkg,"FIND-FILE-IN-LISP-PATH",false);
+DO_SYMBOL(_sym_end,660,CorePkg,"END",false);
+DO_SYMBOL(_sym_STARbq_clobberableSTAR,661,CorePkg,"*BQ-CLOBBERABLE*",false);
+DO_SYMBOL(_sym__PLUS_llvmTargetTriple_PLUS_,663,CorePkg,"+LLVM-TARGET-TRIPLE+",false);
+DO_SYMBOL(_sym_RecursiveDirectoryIterator_O,664,CorePkg,"RECURSIVE-DIRECTORY-ITERATOR",true);
+DO_SYMBOL(_sym_callWithVariableBound,666,CorePkg,"CALL-WITH-VARIABLE-BOUND",true);
+DO_SYMBOL(_sym_STARbq_appendSTAR,668,CorePkg,"*BQ-APPEND*",false);
+DO_SYMBOL(_sym_STARcircle_stackSTAR,670,CorePkg,"*CIRCLE-STACK*",true);
+DO_SYMBOL(_sym_size_t,675,CorePkg,"SIZE-T",true);
+DO_SYMBOL(_sym_sharp_asterisk,676,CorePkg,"SHARP-ASTERISK",false);
+DO_SYMBOL(_sym_double_backquote,679,CorePkg,"DOUBLE-BACKQUOTE",false);
+DO_SYMBOL(_sym__PLUS_io_syntax_progv_list_PLUS_,681,CorePkg,"+IO-SYNTAX-PROGV-LIST+",true);
+DO_SYMBOL(_sym_STARsharp_equal_alistSTAR,682,CorePkg,"*SHARP-EQUAL-ALIST*",false);
+DO_SYMBOL(_sym_setThrowPosition,684,CorePkg,"SET-THROW-POSITION",false);
+DO_SYMBOL(_sym__PLUS_executableName_PLUS_,687,CorePkg,"+EXECUTABLE-NAME+",false);
+DO_SYMBOL(_sym_loadSource,689,CorePkg,"LOAD-SOURCE",true);
+DO_SYMBOL(_sym_repr,692,CorePkg,"REPR",false);
+DO_SYMBOL(_sym_key,693,CorePkg,"KEY",false);
+DO_SYMBOL(_sym_SingleDispatchEffectiveMethodFunction_O,694,CorePkg,"SINGLE-DISPATCH-EFFECTIVE-METHOD-FUNCTION",true);
+DO_SYMBOL(_sym_setupStackMonitor,695,CorePkg,"SETUP-STACK-MONITOR",false);
+DO_SYMBOL(_sym_sharp_equal,696,CorePkg,"SHARP-EQUAL",false);
+DO_SYMBOL(_sym_quit,698,CorePkg,"QUIT",false);
+DO_SYMBOL(_sym_STARllvmFunctionNameHookSTAR,700,CorePkg,"*LLVM-FUNCTION-NAME-HOOK*",true);
+DO_SYMBOL(_sym_mapappend,701,CorePkg,"MAPAPPEND",false);
+DO_SYMBOL(_sym_inheritDefaultAllocator,703,CorePkg,"INHERIT-DEFAULT-ALLOCATOR",true);
+DO_SYMBOL(_sym_makeStringOutputStreamFromString,707,CorePkg,"MAKE-STRING-OUTPUT-STREAM-FROM-STRING",true);
+DO_SYMBOL(_sym_probe,710,CorePkg,"PROBE",false);
+DO_SYMBOL(_sym_globalSetfFunction,714,CorePkg,"GLOBAL-SETF-FUNCTION",false);
+DO_SYMBOL(_sym_sharp_sharp,720,CorePkg,"SHARP-SHARP",false);
+DO_SYMBOL(_sym_coerceToFilename,721,CorePkg,"COERCE-TO-FILENAME",true);
+DO_SYMBOL(_sym_input_stream,729,CorePkg,"INPUT-STREAM",false);
+DO_SYMBOL(_sym_evalWithEnv,731,CorePkg,"EVAL-WITH-ENV",true);
+DO_SYMBOL(_sym_adjustable,733,CorePkg,"ADJUSTABLE",false);
+DO_SYMBOL(_sym_lexicalFunction,735,CorePkg,"LEXICAL-FUNCTION",false);
+DO_SYMBOL(_sym_sharp_backslash,738,CorePkg,"SHARP-BACKSLASH",false);
+DO_SYMBOL(_sym_RegexMatch_O,741,CorePkg,"REGEX-MATCH",true);
+DO_SYMBOL(_sym_VectorObjectsWithFillPtr_O,748,CorePkg,"VECTOR-OBJECTS-WITH-FILL-PTR",true);
+DO_SYMBOL(_sym_instance,750,CorePkg,"INSTANCE",false);
+DO_SYMBOL(_sym_unrecognizedKeywordArgumentError,758,CorePkg,"UNRECOGNIZED-KEYWORD-ARGUMENT-ERROR",false);
+DO_SYMBOL(_sym_STARsharp_sharp_alistSTAR,759,CorePkg,"*SHARP-SHARP-ALIST*",false);
+DO_SYMBOL(_sym_MultiStringBuffer_O,764,CorePkg,"MULTI-STRING-BUFFER",true);
+DO_SYMBOL(_sym_serialize_xml,768,CorePkg,"SERIALIZE-XML",false);
+DO_SYMBOL(_sym_conditionMessage,771,CorePkg,"CONDITION-MESSAGE",false);
+DO_SYMBOL(_sym_STARdebugEvalSTAR,773,CorePkg,"*DEBUG-EVAL*",true);
+DO_SYMBOL(_sym_quasiquote,775,CorePkg,"QUASIQUOTE",false);
+DO_SYMBOL(_sym__BANG_unbound_BANG_,778,CorePkg,"-BANG-UNBOUND-BANG-",true);
+DO_SYMBOL(_sym_instanceClass,780,CorePkg,"INSTANCE-CLASS",true);
+DO_SYMBOL(_sym_make_vector,781,CorePkg,"MAKE-VECTOR",false);
+DO_SYMBOL(_sym_sharp_c,783,CorePkg,"SHARP-C",false);
+DO_SYMBOL(_sym_object,789,CorePkg,"OBJECT",false);
+DO_SYMBOL(_sym_backquote_maptree,790,CorePkg,"BACKQUOTE-MAPTREE",false);
+DO_SYMBOL(_sym_mpi_enabled,798,CorePkg,"MPI-ENABLED",false);
+DO_SYMBOL(_sym_lookupSourceFileInfo,804,CorePkg,"LOOKUP-SOURCE-FILE-INFO",true);
+DO_SYMBOL(_sym_recursive_p,806,CorePkg,"RECURSIVE-P",false);
+DO_SYMBOL(_sym_cArgumentsLimit,809,CorePkg,"C-ARGUMENTS-LIMIT",false);
+DO_SYMBOL(_sym_STARsilentStartupSTAR,813,CorePkg,"*SILENT-STARTUP*",true);
+DO_SYMBOL(_sym_instancep,814,CorePkg,"INSTANCEP",false);
+DO_SYMBOL(_sym_StringInputStream_O,815,CorePkg,"STRING-INPUT-STREAM",true);
+DO_SYMBOL(_sym_set_record_field,819,CorePkg,"SET-RECORD-FIELD",false);
+DO_SYMBOL(_sym_scharSet,824,CorePkg,"SCHAR-SET",true);
+DO_SYMBOL(_sym_stackMonitor,825,CorePkg,"STACK-MONITOR",false);
+DO_SYMBOL(_sym_structurep,830,CorePkg,"STRUCTUREP",true);
+DO_SYMBOL(_sym_default,831,CorePkg,"DEFAULT",false);
+DO_SYMBOL(_sym_process_macro_lambda_list,833,CorePkg,"PROCESS-MACRO-LAMBDA-LIST",false);
+DO_SYMBOL(_sym_lambda_with_handler,834,CorePkg,"LAMBDA-WITH-HANDLER",false);
+DO_SYMBOL(_sym_TagbodyFrame_O,836,CorePkg,"TAGBODY-FRAME",true);
+DO_SYMBOL(_sym_hash_equalp,838,CorePkg,"HASH-EQUALP",false);
+DO_SYMBOL(_sym_reader_skip_semicolon_comment,841,CorePkg,"READER-SKIP-SEMICOLON-COMMENT",false);
+DO_SYMBOL(_sym_STARbq_listSTAR,842,CorePkg,"*BQ-LIST*",false);
+DO_SYMBOL(_sym_StringList_O,843,CorePkg,"STRING-LIST",true);
+DO_SYMBOL(_sym_isTopLevelScript,845,CorePkg,"IS-TOP-LEVEL-SCRIPT",false);
+DO_SYMBOL(_sym_renameAndDelete,847,CorePkg,"RENAME-AND-DELETE",false);
+DO_SYMBOL(_sym_CandoException_O,848,CorePkg,"CANDO-EXCEPTION",true);
+DO_SYMBOL(_sym_environmentActivationFrame,851,CorePkg,"ENVIRONMENT-ACTIVATION-FRAME",false);
+DO_SYMBOL(_sym_STARprintStructureSTAR,855,CorePkg,"*PRINT-STRUCTURE*",false);
+DO_SYMBOL(_sym_SingleDispatchMethod_O,858,CorePkg,"SINGLE-DISPATCH-METHOD",true);
+DO_SYMBOL(_sym_process_single_dispatch_lambda_list,859,CorePkg,"PROCESS-SINGLE-DISPATCH-LAMBDA-LIST",false);
+DO_SYMBOL(_sym_isString,866,CorePkg,"IS-STRING",true);
+DO_SYMBOL(_sym_bq_bracket,876,CorePkg,"BQ-BRACKET",false);
+DO_SYMBOL(_sym_single_dispatch_on,881,CorePkg,"SINGLE-DISPATCH-ON",false);
+DO_SYMBOL(_sym_STARtopLevelCommandHookSTAR,882,CorePkg,"*TOP-LEVEL-COMMAND-HOOK*",true);
+DO_SYMBOL(_sym_debugLogOn,884,CorePkg,"DEBUG-LOG-ON",false);
+DO_SYMBOL(_sym_STARconsing_dotSTAR,886,CorePkg,"*CONSING-DOT*",false);
+DO_SYMBOL(_sym_tooManyArgumentsError,888,CorePkg,"TOO-MANY-ARGUMENTS-ERROR",true);
+DO_SYMBOL(_sym_LeafSNode_O,889,CorePkg,"LEAF-SNODE",true);
+DO_SYMBOL(_sym_create,890,CorePkg,"CREATE",false);
+DO_SYMBOL(_sym_STARechoReplReadSTAR,897,CorePkg,"*ECHO-REPL-READ*",false);
+DO_SYMBOL(_sym_FunctionContainerEnvironment_O,900,CorePkg,"FUNCTION-CONTAINER-ENVIRONMENT",true);
+DO_SYMBOL(_sym_loadTimeValuesIds,905,CorePkg,"LOAD-TIME-VALUES-IDS",false);
+DO_SYMBOL(_sym_ValueEnvironment_O,906,CorePkg,"VALUE-ENVIRONMENT",true);
+DO_SYMBOL(_sym_Metaobject_O,912,CorePkg,"METAOBJECT",true);
+DO_SYMBOL(_sym_instanceRef,916,CorePkg,"INSTANCE-REF",false);
+DO_SYMBOL(_sym_STARbq_simplifySTAR,920,CorePkg,"*BQ-SIMPLIFY*",false);
+DO_SYMBOL(_sym_STARloadSearchListSTAR,925,CorePkg,"*LOAD-SEARCH-LIST*",true);
+DO_SYMBOL(_sym_subclassp,926,CorePkg,"SUBCLASSP",false);
+DO_SYMBOL(_sym_rem_f,927,CorePkg,"REM-F",false);
+DO_SYMBOL(_sym_lispCodePath,928,CorePkg,"LISP-CODE-PATH",false);
+DO_SYMBOL(_sym_SymbolToEnumConverter_O,929,CorePkg,"SYMBOL-TO-ENUM-CONVERTER",true);
+DO_SYMBOL(_sym_PosixTime_O,931,CorePkg,"POSIX-TIME",true);
+DO_SYMBOL(_sym_STARbq_listSTARSTAR,936,CorePkg,"*BQ-LIST**",false);
+DO_SYMBOL(_sym_eof_error_p,937,CorePkg,"EOF-ERROR-P",false);
+DO_SYMBOL(_sym_setf_findClass,938,CorePkg,"SETF-FIND-CLASS",false);
+DO_SYMBOL(_sym_SpecialForm_O,944,CorePkg,"SPECIAL-FORM",true);
+DO_SYMBOL(_sym_ArrayDisplaced_O,946,CorePkg,"ARRAY-DISPLACED",true);
+DO_SYMBOL(_sym_LambdaListHandler_O,948,CorePkg,"LAMBDA-LIST-HANDLER",true);
+DO_SYMBOL(_sym_classNameAsString,949,CorePkg,"CLASS-NAME-AS-STRING",true);
+DO_SYMBOL(_sym_instanceSigSet,951,CorePkg,"INSTANCE-SIG-SET",false);
+DO_SYMBOL(_sym_GlueEnvironment_O,955,CorePkg,"GLUE-ENVIRONMENT",true);
+DO_SYMBOL(_sym_StringOutputStream_O,957,CorePkg,"STRING-OUTPUT-STREAM",true);
+DO_SYMBOL(_sym_bformat,967,CorePkg,"BFORMAT",false);
+DO_SYMBOL(_sym_STARmonitorRegisterSourceInfoSTAR,973,CorePkg,"*MONITOR-REGISTER-SOURCE-INFO*",true);
+DO_SYMBOL(_sym_STARihsCurrentSTAR,976,CorePkg,"*IHS-CURRENT*",true);
+DO_SYMBOL(_sym_sourceLineColumn,980,CorePkg,"SOURCE-LINE-COLUMN",false);
+DO_SYMBOL(_sym_member1,981,CorePkg,"MEMBER1",false);
+DO_SYMBOL(_sym_FileStatus_O,982,CorePkg,"FILE-STATUS",true);
+DO_SYMBOL(_sym_SourcePosInfo_O,983,CorePkg,"SOURCE-POS-INFO",true);
+DO_SYMBOL(_sym_CompileTimeEnvironment_O,984,CorePkg,"COMPILE-TIME-ENVIRONMENT",true);
+DO_SYMBOL(_sym_singleDispatchMissingDispatchArgumentError,985,CorePkg,"SINGLE-DISPATCH-MISSING-DISPATCH-ARGUMENT-ERROR",false);
+DO_SYMBOL(_sym_ihsBacktrace,986,CorePkg,"IHS-BACKTRACE",false);
+DO_SYMBOL(_sym_singleDispatchWrongNumberArgumentsError,989,CorePkg,"SINGLE-DISPATCH-WRONG-NUMBER-ARGUMENTS-ERROR",false);
+DO_SYMBOL(_sym_signalSimpleError,990,CorePkg,"SIGNAL-SIMPLE-ERROR",true);
+DO_SYMBOL(_sym_dlsym,992,CorePkg,"DLSYM",false);
+DO_SYMBOL(_sym_sharp_p,994,CorePkg,"SHARP-P",false);
+DO_SYMBOL(_sym_sharp_o,997,CorePkg,"SHARP-O",false);
+DO_SYMBOL(_sym_dispatchTable,998,CorePkg,"DISPATCH-TABLE",true);
+DO_SYMBOL(_sym_backquote_completely_process,999,CorePkg,"BACKQUOTE-COMPLETELY-PROCESS",false);
+DO_SYMBOL(_sym_Binder_O,1000,CorePkg,"BINDER",true);
+DO_SYMBOL(_sym_hash_eql,1002,CorePkg,"HASH-EQL",false);
+DO_SYMBOL(_sym_STARcommandLineLoadEvalSequenceSTAR,1005,CorePkg,"*COMMAND-LINE-LOAD-EVAL-SEQUENCE*",true);
+DO_SYMBOL(_sym_sharp_b,1006,CorePkg,"SHARP-B",false);
+DO_SYMBOL(_sym_isAssignableTo,1011,CorePkg,"IS-ASSIGNABLE-TO",false);
+DO_SYMBOL(_sym_structureSet,1014,CorePkg,"STRUCTURE-SET",true);
+DO_SYMBOL(_sym_stackUsed,1017,CorePkg,"STACK-USED",false);
+DO_SYMBOL(_sym_ObjectSet_O,1018,CorePkg,"OBJECT-SET",true);
+DO_SYMBOL(_sym_element_type,1022,CorePkg,"ELEMENT-TYPE",false);
+DO_SYMBOL(_sym_reader_backquoted_expression,1023,CorePkg,"READER-BACKQUOTED-EXPRESSION",false);
+DO_SYMBOL(_sym_singleDispatchBadLambdaListError,1026,CorePkg,"SINGLE-DISPATCH-BAD-LAMBDA-LIST-ERROR",false);
+DO_SYMBOL(_sym_StackValueEnvironment_O,1027,CorePkg,"STACK-VALUE-ENVIRONMENT",true);
+DO_SYMBOL(_sym_gdbInspect,1028,CorePkg,"GDB-INSPECT",false);
+DO_SYMBOL(_sym_backquote,1029,CorePkg,"BACKQUOTE",false);
+DO_SYMBOL(_sym___init__,1038,CorePkg,"--INIT--",false);
+DO_SYMBOL(_sym_unbound,1043,CorePkg,"UNBOUND",false);
+DO_SYMBOL(_sym_STARdebugGenericDispatchSTAR,1044,CorePkg,"*DEBUG-GENERIC-DISPATCH*",true);
+DO_SYMBOL(_sym_STARdebugMacroexpandSTAR,1045,CorePkg,"*DEBUG-MACROEXPAND*",false);
+DO_SYMBOL(_sym_functionBlockName,1049,CorePkg,"FUNCTION-BLOCK-NAME",false);
+DO_SYMBOL(_sym_Archive_O,1050,CorePkg,"ARCHIVE",true);
+DO_SYMBOL(_sym_printUnreadableObjectFunction,1053,CorePkg,"PRINT-UNREADABLE-OBJECT-FUNCTION",true);
+DO_SYMBOL(_sym_Regex_O,1055,CorePkg,"REGEX",true);
+DO_SYMBOL(_sym_sharp_vertical_bar,1059,CorePkg,"SHARP-VERTICAL-BAR",false);
+DO_SYMBOL(_sym_lookupLoadTimeValue,1061,CorePkg,"LOOKUP-LOAD-TIME-VALUE",false);
+DO_SYMBOL(_sym_implicit_compile_hook_default,1062,CorePkg,"IMPLICIT-COMPILE-HOOK-DEFAULT",true);
+DO_SYMBOL(_sym_STARcurrentSourcePosInfoSTAR,1064,CorePkg,"*CURRENT-SOURCE-POS-INFO*",true);
+DO_SYMBOL(_sym_WeakKeyHashTable_O,1065,CorePkg,"WEAK-KEY-HASH-TABLE",true);
+DO_SYMBOL(_sym_database_dir,1067,CorePkg,"DATABASE-DIR",false);
+DO_SYMBOL(_sym_RuntimeVisibleEnvironment_O,1068,CorePkg,"RUNTIME-VISIBLE-ENVIRONMENT",true);
+DO_SYMBOL(_sym_coerceToPhysicalPathname,1069,CorePkg,"COERCE-TO-PHYSICAL-PATHNAME",true);
+DO_SYMBOL(_sym_sequence_start_end,1070,CorePkg,"SEQUENCE-START-END",false);
+DO_SYMBOL(_sym_setRunTimeValuesVector,1071,CorePkg,"SET-RUN-TIME-VALUES-VECTOR",true);
+DO_SYMBOL(_sym_STARstandard_readtableSTAR,1072,CorePkg,"*STANDARD-READTABLE*",false);
+DO_SYMBOL(_sym_rem_record_field,1080,CorePkg,"REM-RECORD-FIELD",false);
+DO_SYMBOL(_sym_reader_double_quote_string,1082,CorePkg,"READER-DOUBLE-QUOTE-STRING",false);
+DO_SYMBOL(_sym_ihsFun,1084,CorePkg,"IHS-FUN",false);
+DO_SYMBOL(_sym_overwrite,1087,CorePkg,"OVERWRITE",false);
+DO_SYMBOL(_sym_loadTimeValueArray,1088,CorePkg,"LOAD-TIME-VALUE-ARRAY",false);
+DO_SYMBOL(_sym_SexpLoadArchive_O,1089,CorePkg,"SEXP-LOAD-ARCHIVE",true);
+DO_SYMBOL(_sym_eof_value,1090,CorePkg,"EOF-VALUE",false);
+DO_SYMBOL(_sym_bdsTop,1091,CorePkg,"BDS-TOP",false);
+DO_SYMBOL(_sym_BranchSNode_O,1092,CorePkg,"BRANCH-SNODE",true);
+DO_SYMBOL(_sym_VectorObjects_O,1095,CorePkg,"VECTOR-OBJECTS",true);
+DO_SYMBOL(_sym_printCurrentIhsFrameEnvironment,1096,CorePkg,"PRINT-CURRENT-IHS-FRAME-ENVIRONMENT",true);
+DO_SYMBOL(_sym_debug_message,1097,CorePkg,"DEBUG-MESSAGE",true);
+DO_SYMBOL(_sym_find_single_dispatch_generic_function,1100,CorePkg,"FIND-SINGLE-DISPATCH-GENERIC-FUNCTION",false);
+DO_SYMBOL(_sym_globalFunction,1106,CorePkg,"GLOBAL-FUNCTION",false);
+DO_SYMBOL(_sym_currentDir,1107,CorePkg,"CURRENT-DIR",true);
+DO_SYMBOL(_sym_unquote_nsplice,1110,CorePkg,"UNQUOTE-NSPLICE",false);
+DO_SYMBOL(_sym_StrWithFillPtr_O,1111,CorePkg,"BASE-STRING-WITH-FILL-PTR",true);
+DO_SYMBOL(_sym_rem_sysprop,1115,CorePkg,"REM-SYSPROP",false);
+DO_SYMBOL(_sym_read_list_allow_consing_dot,1121,CorePkg,"READ-LIST-ALLOW-CONSING-DOT",false);
+DO_SYMBOL(_sym_DOT,1124,CorePkg,".",false);
+DO_SYMBOL(_sym_input_stream_designator,1125,CorePkg,"INPUT-STREAM-DESIGNATOR",false);
+DO_SYMBOL(_sym_STARclassNameHashTableSTAR,1128,CorePkg,"*CLASS-NAME-HASH-TABLE*",true);
+DO_SYMBOL(_sym_ExternalObject_O,1131,CorePkg,"EXTERNAL-OBJECT",true);
+DO_SYMBOL(_sym_STARcodeWalkerSTAR,1135,CorePkg,"*CODE-WALKER*",true);
+DO_SYMBOL(_sym_get_sysprop,1138,CorePkg,"GET-SYSPROP",false);
+DO_SYMBOL(_sym_TagbodyEnvironment_O,1140,CorePkg,"TAGBODY-ENVIRONMENT",true);
+DO_SYMBOL(_sym_base_string_concatenate,1142,CorePkg,"BASE-STRING-CONCATENATE",false);
+DO_SYMBOL(_sym_debugLogOff,1146,CorePkg,"DEBUG-LOG-OFF",false);
+DO_SYMBOL(_sym_pointer,1156,CorePkg,"POINTER",true);
+DO_SYMBOL(_sym_singleDispatchTooManyArgumentsError,1162,CorePkg,"SINGLE-DISPATCH-TOO-MANY-ARGUMENTS-ERROR",false);
+DO_SYMBOL(_sym_STARbq_quote_nilSTAR,1164,CorePkg,"*BQ-QUOTE-NIL*",false);
+DO_SYMBOL(_sym_nread,1167,CorePkg,"NREAD",false);
+DO_SYMBOL(_sym_make_structure,1168,CorePkg,"MAKE-STRUCTURE",false);
+DO_SYMBOL(_sym_backquote_process,1171,CorePkg,"BACKQUOTE-PROCESS",false);
+DO_SYMBOL(_sym_sourceFileName,1173,CorePkg,"SOURCE-FILE-NAME",false);
+DO_SYMBOL(_sym_STARcircle_counterSTAR,1174,CorePkg,"*CIRCLE-COUNTER*",true);
+DO_SYMBOL(_sym_implementationClass,1178,CorePkg,"IMPLEMENTATION-CLASS",true);
+DO_SYMBOL(_sym_SNode_O,1179,CorePkg,"SNODE",true);
+DO_SYMBOL(_sym_loadBitcode,1181,CorePkg,"LOAD-BITCODE",true);
+DO_SYMBOL(_sym_log1p,1182,CorePkg,"LOG1P",true);
+DO_SYMBOL(_sym_integerToString,1184,CorePkg,"INTEGER-TO-STRING",true);
+DO_SYMBOL(_sym_STARcircleCounterSTAR,1187,CorePkg,"*CIRCLE-COUNTER*",false);
+DO_SYMBOL(_sym_saveCando,1192,CorePkg,"SAVE-CANDO",false);
+DO_SYMBOL(_sym_copy_subarray,1194,CorePkg,"COPY-SUBARRAY",false);
+DO_SYMBOL(_sym_STARprint_structureSTAR,1196,CorePkg,"*PRINT-STRUCTURE*",true);
+DO_SYMBOL(_sym_SingleDispatchGenericFunction_O,1199,CorePkg,"SINGLE-DISPATCH-GENERIC-FUNCTION",true);
+DO_SYMBOL(_sym_parse_macro,1201,CorePkg,"PARSE-MACRO",false);
+DO_SYMBOL(_sym_dlopen,1203,CorePkg,"DLOPEN",false);
+DO_SYMBOL(_sym_sharp_r,1209,CorePkg,"SHARP-R",false);
+DO_SYMBOL(_sym_HashTableEqualp_O,1210,CorePkg,"HASH-TABLE-EQUALP",true);
+DO_SYMBOL(_sym_STARserializerArchiveSTAR,1212,CorePkg,"*SERIALIZER-ARCHIVE*",true);
+DO_SYMBOL(_sym_ActivationFrame_O,1213,CorePkg,"ACTIVATION-FRAME",true);
+DO_SYMBOL(_sym_monitorReader,1214,CorePkg,"MONITOR-READER",false);
+DO_SYMBOL(_sym_preserve_whitespace,1215,CorePkg,"PRESERVE-WHITESPACE",false);
+DO_SYMBOL(_sym_STARnestedErrorDepthSTAR,1216,CorePkg,"*NESTED-ERROR-DEPTH*",false);
+DO_SYMBOL(_sym_STARpollTicksPerGcSTAR,1217,CorePkg,"*POLL-TICKS-PER-GC*",true);
+DO_SYMBOL(_sym_SourceManager_O,1220,CorePkg,"SOURCE-MANAGER",true);
+DO_SYMBOL(_sym_STARimplicit_compile_hookSTAR,1223,CorePkg,"*IMPLICIT-COMPILE-HOOK*",true);
+DO_SYMBOL(_sym_sharp_s,1230,CorePkg,"SHARP-S",false);
+DO_SYMBOL(_sym_dlload,1231,CorePkg,"DLLOAD",false);
+DO_SYMBOL(_sym_STARwatchDynamicBindingStackSTAR,1233,CorePkg,"*WATCH-DYNAMIC-BINDING-STACK*",true);
+DO_SYMBOL(_sym_fixnum_number_of_bits,1235,CorePkg,"FIXNUM-NUMBER-OF-BITS",false);
+DO_SYMBOL(_sym_serialize,1240,CorePkg,"SERIALIZE",true);
+DO_SYMBOL(_sym_sharp_plus,1241,CorePkg,"SHARP-PLUS",false);
+DO_SYMBOL(_sym_ihsEnv,1245,CorePkg,"IHS-ENV",false);
+DO_SYMBOL(_sym_pathnameTranslations,1250,CorePkg,"PATHNAME-TRANSLATIONS",true);
+DO_SYMBOL(_sym_STARbackquote_expand_hookSTAR,1252,CorePkg,"*BACKQUOTE-EXPAND-HOOK*",false);
+DO_SYMBOL(_sym_STARdebugInterpretedFunctionsSTAR,1255,CorePkg,"*DEBUG-INTERPRETED-FUNCTIONS*",true);
+DO_SYMBOL(_sym_fileColumn,1261,CorePkg,"FILE-COLUMN",true);
+DO_SYMBOL(_sym_universalErrorHandler,1263,CorePkg,"UNIVERSAL-ERROR-HANDLER",false);
+DO_SYMBOL(_sym_SymbolSet_O,1266,CorePkg,"SYMBOL-SET",true);
+DO_SYMBOL(_sym_ihsNext,1268,CorePkg,"IHS-NEXT",false);
+DO_SYMBOL(_sym_STARcommandLineArgumentsSTAR,1269,CorePkg,"*COMMAND-LINE-ARGUMENTS*",true);
+DO_SYMBOL(_sym_localGo,1278,CorePkg,"LOCAL-GO",true);
+DO_SYMBOL(_sym_structure_slot_descriptions,1291,CorePkg,"STRUCTURE-SLOT-DESCRIPTIONS",true);
+DO_SYMBOL(_sym_STARpreserve_whitespace_pSTAR,1292,CorePkg,"*PRESERVE-WHITESPACE-P*",false);
+DO_SYMBOL(_sym_STARenvironmentPrintingTabSTAR,1296,CorePkg,"*ENVIRONMENT-PRINTING-TAB*",false);
+DO_SYMBOL(_sym_ifDoesNotExist,1300,CorePkg,"IF-DOES-NOT-EXIST",false);
+DO_SYMBOL(_sym_sharp_a,1303,CorePkg,"SHARP-A",false);
+DO_SYMBOL(_sym_backquote_frob,1305,CorePkg,"BACKQUOTE-FROB",false);
+DO_SYMBOL(_sym_processDeclarations,1308,CorePkg,"PROCESS-DECLARATIONS",false);
+DO_SYMBOL(_sym_structureSubtypep,1312,CorePkg,"STRUCTURE-SUBTYPEP",true);
 #endif
 #ifdef CleavirEnvPkg_SYMBOLS
-DO_SYMBOL(_sym_macroFunction, 800, CleavirEnvPkg, "MACRO-FUNCTION", true);
-DO_SYMBOL(_sym_symbolMacroExpansion, 1283, CleavirEnvPkg, "SYMBOL-MACRO-EXPANSION", true);
+DO_SYMBOL(_sym_macroFunction,800,CleavirEnvPkg,"MACRO-FUNCTION",true);
+DO_SYMBOL(_sym_symbolMacroExpansion,1283,CleavirEnvPkg,"SYMBOL-MACRO-EXPANSION",true);
 #endif
 #ifdef ExtPkg_SYMBOLS
-DO_SYMBOL(_sym_getenv, 65, ExtPkg, "GETENV", true);
-DO_SYMBOL(_sym_setenv, 111, ExtPkg, "SETENV", true);
-DO_SYMBOL(_sym_STARloadHooksSTAR, 329, ExtPkg, "*LOAD-HOOKS*", true);
-DO_SYMBOL(_sym_lambda_block, 343, ExtPkg, "LAMBDA-BLOCK", true);
-DO_SYMBOL(_sym_aSingleExtSymbol, 357, ExtPkg, "A-SINGLE-EXT-SYMBOL", false);
-DO_SYMBOL(_sym__PLUS_processErrorOutput_PLUS_, 373, ExtPkg, "+PROCESS-ERROR-OUTPUT+", true);
-DO_SYMBOL(_sym_integer8, 449, ExtPkg, "INTEGER8", false);
-DO_SYMBOL(_sym_AnsiStream_O, 641, ExtPkg, "ANSI-STREAM", true);
-DO_SYMBOL(_sym_byte8, 709, ExtPkg, "BYTE8", false);
-DO_SYMBOL(_sym__PLUS_processStandardOutput_PLUS_, 725, ExtPkg, "+PROCESS-STANDARD-OUTPUT+", true);
-DO_SYMBOL(_sym_maybeQuote, 793, ExtPkg, "MAYBE-QUOTE", true);
-DO_SYMBOL(_sym_stackVar, 799, ExtPkg, "STACK-VAR", true);
-DO_SYMBOL(_sym_STARinvokeDebuggerHookSTAR, 856, ExtPkg, "*INVOKE-DEBUGGER-HOOK*", true);
-DO_SYMBOL(_sym_specialVar, 918, ExtPkg, "SPECIAL-VAR", true);
-DO_SYMBOL(_sym_getEnv, 1083, ExtPkg, "GET-ENV", true);
-DO_SYMBOL(_sym_compiledFunctionName, 1119, ExtPkg, "COMPILED-FUNCTION-NAME", true);
-DO_SYMBOL(_sym__PLUS_processStandardInput_PLUS_, 1132, ExtPkg, "+PROCESS-STANDARD-INPUT+", true);
-DO_SYMBOL(_sym_STARinspectorHookSTAR, 1149, ExtPkg, "*INSPECTOR-HOOK*", true);
-DO_SYMBOL(_sym_lexicalVar, 1204, ExtPkg, "LEXICAL-VAR", true);
-DO_SYMBOL(_sym_STARdefault_external_formatSTAR, 1273, ExtPkg, "*DEFAULT-EXTERNAL-FORMAT*", true);
-DO_SYMBOL(_sym_truly_the, 1304, ExtPkg, "TRULY-THE", true);
+DO_SYMBOL(_sym_getenv,65,ExtPkg,"GETENV",true);
+DO_SYMBOL(_sym_setenv,111,ExtPkg,"SETENV",true);
+DO_SYMBOL(_sym_STARloadHooksSTAR,329,ExtPkg,"*LOAD-HOOKS*",true);
+DO_SYMBOL(_sym_lambda_block,343,ExtPkg,"LAMBDA-BLOCK",true);
+DO_SYMBOL(_sym_aSingleExtSymbol,357,ExtPkg,"A-SINGLE-EXT-SYMBOL",false);
+DO_SYMBOL(_sym__PLUS_processErrorOutput_PLUS_,373,ExtPkg,"+PROCESS-ERROR-OUTPUT+",true);
+DO_SYMBOL(_sym_integer8,450,ExtPkg,"INTEGER8",false);
+DO_SYMBOL(_sym_AnsiStream_O,642,ExtPkg,"ANSI-STREAM",true);
+DO_SYMBOL(_sym_byte8,709,ExtPkg,"BYTE8",false);
+DO_SYMBOL(_sym__PLUS_processStandardOutput_PLUS_,725,ExtPkg,"+PROCESS-STANDARD-OUTPUT+",true);
+DO_SYMBOL(_sym_maybeQuote,793,ExtPkg,"MAYBE-QUOTE",true);
+DO_SYMBOL(_sym_stackVar,799,ExtPkg,"STACK-VAR",true);
+DO_SYMBOL(_sym_STARinvokeDebuggerHookSTAR,856,ExtPkg,"*INVOKE-DEBUGGER-HOOK*",true);
+DO_SYMBOL(_sym_specialVar,918,ExtPkg,"SPECIAL-VAR",true);
+DO_SYMBOL(_sym_getEnv,1083,ExtPkg,"GET-ENV",true);
+DO_SYMBOL(_sym_compiledFunctionName,1119,ExtPkg,"COMPILED-FUNCTION-NAME",true);
+DO_SYMBOL(_sym__PLUS_processStandardInput_PLUS_,1132,ExtPkg,"+PROCESS-STANDARD-INPUT+",true);
+DO_SYMBOL(_sym_STARinspectorHookSTAR,1149,ExtPkg,"*INSPECTOR-HOOK*",true);
+DO_SYMBOL(_sym_lexicalVar,1204,ExtPkg,"LEXICAL-VAR",true);
+DO_SYMBOL(_sym_STARdefault_external_formatSTAR,1273,ExtPkg,"*DEFAULT-EXTERNAL-FORMAT*",true);
+DO_SYMBOL(_sym_truly_the,1304,ExtPkg,"TRULY-THE",true);
 #endif
 #ifdef CompPkg_SYMBOLS
-DO_SYMBOL(_sym_aSingleCompilerSymbol, 39, CompPkg, "A-SINGLE-COMPILER-SYMBOL", false);
-DO_SYMBOL(_sym_STARlowLevelTraceSTAR, 917, CompPkg, "*LOW-LEVEL-TRACE*", true);
-DO_SYMBOL(_sym_STARlowLevelTracePrintSTAR, 991, CompPkg, "*LOW-LEVEL-TRACE-PRINT*", true);
-DO_SYMBOL(_sym_compileInEnv, 1299, CompPkg, "COMPILE-IN-ENV", true);
+DO_SYMBOL(_sym_aSingleCompilerSymbol,39,CompPkg,"A-SINGLE-COMPILER-SYMBOL",false);
+DO_SYMBOL(_sym_STARlowLevelTraceSTAR,917,CompPkg,"*LOW-LEVEL-TRACE*",true);
+DO_SYMBOL(_sym_STARlowLevelTracePrintSTAR,991,CompPkg,"*LOW-LEVEL-TRACE-PRINT*",true);
+DO_SYMBOL(_sym_compileInEnv,1299,CompPkg,"COMPILE-IN-ENV",true);
 #endif
 #ifdef GrayPkg_SYMBOLS
-DO_SYMBOL(_sym_aSingleGraySymbol, 38, GrayPkg, "A-SINGLE-GRAY-SYMBOL", false);
-DO_SYMBOL(_sym_stream_advance_to_column, 45, GrayPkg, "STREAM-ADVANCE-TO-COLUMN", true);
-DO_SYMBOL(_sym_stream_write_byte, 54, GrayPkg, "STREAM-WRITE-BYTE", true);
-DO_SYMBOL(_sym_stream_listen, 81, GrayPkg, "STREAM-LISTEN", true);
-DO_SYMBOL(_sym_stream_clear_output, 88, GrayPkg, "STREAM-CLEAR-OUTPUT", true);
-DO_SYMBOL(_sym_streamp, 94, GrayPkg, "STREAMP", true);
-DO_SYMBOL(_sym_stream_read_char_no_hang, 260, GrayPkg, "STREAM-READ-CHAR-NO-HANG", true);
-DO_SYMBOL(_sym_close, 277, GrayPkg, "CLOSE", true);
-DO_SYMBOL(_sym_stream_write_sequence, 371, GrayPkg, "STREAM-WRITE-SEQUENCE", true);
-DO_SYMBOL(_sym_open_stream_p, 427, GrayPkg, "OPEN-STREAM-P", true);
-DO_SYMBOL(_sym_stream_file_position, 467, GrayPkg, "STREAM-FILE-POSITION", true);
-DO_SYMBOL(_sym_stream_clear_input, 494, GrayPkg, "STREAM-CLEAR-INPUT", true);
-DO_SYMBOL(_sym_stream_read_byte, 504, GrayPkg, "STREAM-READ-BYTE", true);
-DO_SYMBOL(_sym_stream_unread_char, 523, GrayPkg, "STREAM-UNREAD-CHAR", true);
-DO_SYMBOL(_sym_stream_fresh_line, 590, GrayPkg, "STREAM-FRESH-LINE", true);
-DO_SYMBOL(_sym_stream_terpri, 666, GrayPkg, "STREAM-TERPRI", true);
-DO_SYMBOL(_sym_stream_read_char, 731, GrayPkg, "STREAM-READ-CHAR", true);
-DO_SYMBOL(_sym_stream_write_char, 744, GrayPkg, "STREAM-WRITE-CHAR", true);
-DO_SYMBOL(_sym_stream_element_type, 910, GrayPkg, "STREAM-ELEMENT-TYPE", true);
-DO_SYMBOL(_sym_stream_interactive_p, 914, GrayPkg, "STREAM-INTERACTIVE-P", true);
-DO_SYMBOL(_sym_output_stream_p, 930, GrayPkg, "OUTPUT-STREAM-P", true);
-DO_SYMBOL(_sym_input_stream_p, 942, GrayPkg, "INPUT-STREAM-P", true);
-DO_SYMBOL(_sym_stream_force_output, 1066, GrayPkg, "STREAM-FORCE-OUTPUT", true);
-DO_SYMBOL(_sym_stream_write_string, 1122, GrayPkg, "STREAM-WRITE-STRING", true);
-DO_SYMBOL(_sym_streamClearInput, 1225, GrayPkg, "STREAM-CLEAR-INPUT", true);
-DO_SYMBOL(_sym_stream_read_sequence, 1239, GrayPkg, "STREAM-READ-SEQUENCE", true);
-DO_SYMBOL(_sym_stream_peek_char, 1243, GrayPkg, "STREAM-PEEK-CHAR", true);
-DO_SYMBOL(_sym_stream_finish_output, 1276, GrayPkg, "STREAM-FINISH-OUTPUT", true);
-DO_SYMBOL(_sym_stream_line_column, 1306, GrayPkg, "STREAM-LINE-COLUMN", true);
+DO_SYMBOL(_sym_aSingleGraySymbol,38,GrayPkg,"A-SINGLE-GRAY-SYMBOL",false);
+DO_SYMBOL(_sym_stream_advance_to_column,45,GrayPkg,"STREAM-ADVANCE-TO-COLUMN",true);
+DO_SYMBOL(_sym_stream_write_byte,54,GrayPkg,"STREAM-WRITE-BYTE",true);
+DO_SYMBOL(_sym_stream_listen,81,GrayPkg,"STREAM-LISTEN",true);
+DO_SYMBOL(_sym_stream_clear_output,88,GrayPkg,"STREAM-CLEAR-OUTPUT",true);
+DO_SYMBOL(_sym_streamp,94,GrayPkg,"STREAMP",true);
+DO_SYMBOL(_sym_stream_read_char_no_hang,260,GrayPkg,"STREAM-READ-CHAR-NO-HANG",true);
+DO_SYMBOL(_sym_close,277,GrayPkg,"CLOSE",true);
+DO_SYMBOL(_sym_stream_write_sequence,371,GrayPkg,"STREAM-WRITE-SEQUENCE",true);
+DO_SYMBOL(_sym_stream_read_char,403,GrayPkg,"STREAM-READ-CHAR",true);
+DO_SYMBOL(_sym_open_stream_p,428,GrayPkg,"OPEN-STREAM-P",true);
+DO_SYMBOL(_sym_stream_file_position,468,GrayPkg,"STREAM-FILE-POSITION",true);
+DO_SYMBOL(_sym_stream_clear_input,495,GrayPkg,"STREAM-CLEAR-INPUT",true);
+DO_SYMBOL(_sym_stream_read_byte,505,GrayPkg,"STREAM-READ-BYTE",true);
+DO_SYMBOL(_sym_stream_unread_char,524,GrayPkg,"STREAM-UNREAD-CHAR",true);
+DO_SYMBOL(_sym_stream_fresh_line,591,GrayPkg,"STREAM-FRESH-LINE",true);
+DO_SYMBOL(_sym_stream_terpri,667,GrayPkg,"STREAM-TERPRI",true);
+DO_SYMBOL(_sym_stream_write_char,744,GrayPkg,"STREAM-WRITE-CHAR",true);
+DO_SYMBOL(_sym_stream_element_type,910,GrayPkg,"STREAM-ELEMENT-TYPE",true);
+DO_SYMBOL(_sym_stream_interactive_p,914,GrayPkg,"STREAM-INTERACTIVE-P",true);
+DO_SYMBOL(_sym_output_stream_p,930,GrayPkg,"OUTPUT-STREAM-P",true);
+DO_SYMBOL(_sym_input_stream_p,942,GrayPkg,"INPUT-STREAM-P",true);
+DO_SYMBOL(_sym_stream_force_output,1066,GrayPkg,"STREAM-FORCE-OUTPUT",true);
+DO_SYMBOL(_sym_stream_write_string,1122,GrayPkg,"STREAM-WRITE-STRING",true);
+DO_SYMBOL(_sym_streamClearInput,1225,GrayPkg,"STREAM-CLEAR-INPUT",true);
+DO_SYMBOL(_sym_stream_read_sequence,1239,GrayPkg,"STREAM-READ-SEQUENCE",true);
+DO_SYMBOL(_sym_stream_peek_char,1243,GrayPkg,"STREAM-PEEK-CHAR",true);
+DO_SYMBOL(_sym_stream_finish_output,1276,GrayPkg,"STREAM-FINISH-OUTPUT",true);
+DO_SYMBOL(_sym_stream_line_column,1306,GrayPkg,"STREAM-LINE-COLUMN",true);
 #endif
 #ifdef ClosPkg_SYMBOLS
-DO_SYMBOL(_sym_clearGfunHash, 10, ClosPkg, "CLEAR-GFUN-HASH", false);
-DO_SYMBOL(_sym_compute_effective_method_function, 105, ClosPkg, "COMPUTE-EFFECTIVE-METHOD-FUNCTION", false);
-DO_SYMBOL(_sym_std_compute_effective_method, 129, ClosPkg, "STD-COMPUTE-EFFECTIVE-METHOD", false);
-DO_SYMBOL(_sym_StdClass_O, 134, ClosPkg, "STD-CLASS", true);
-DO_SYMBOL(_sym_standardOptimizedWriterFunction, 194, ClosPkg, "STANDARD-OPTIMIZED-WRITER-FUNCTION", false);
-DO_SYMBOL(_sym_FuncallableStandardClass_O, 276, ClosPkg, "FUNCALLABLE-STANDARD-CLASS", true);
-DO_SYMBOL(_sym_setFuncallableInstanceFunction, 375, ClosPkg, "SET-FUNCALLABLE-INSTANCE-FUNCTION", true);
-DO_SYMBOL(_sym_standardOptimizedWriterMethod, 492, ClosPkg, "STANDARD-OPTIMIZED-WRITER-METHOD", false);
-DO_SYMBOL(_sym_standardOptimizedReaderMethod, 496, ClosPkg, "STANDARD-OPTIMIZED-READER-METHOD", false);
-DO_SYMBOL(_sym_compute_applicable_methods_using_classes, 596, ClosPkg, "COMPUTE-APPLICABLE-METHODS-USING-CLASSES", false);
-DO_SYMBOL(_sym_aSingleClosSymbol, 608, ClosPkg, "A-SINGLE-CLOS-SYMBOL", false);
-DO_SYMBOL(_sym_std_compute_applicable_methods, 960, ClosPkg, "STD-COMPUTE-APPLICABLE-METHODS", false);
-DO_SYMBOL(_sym_standardOptimizedReaderFunction, 1003, ClosPkg, "STANDARD-OPTIMIZED-READER-FUNCTION", false);
-DO_SYMBOL(_sym_classp, 1123, ClosPkg, "CLASSP", true);
+DO_SYMBOL(_sym_clearGfunHash,10,ClosPkg,"CLEAR-GFUN-HASH",false);
+DO_SYMBOL(_sym_compute_effective_method_function,105,ClosPkg,"COMPUTE-EFFECTIVE-METHOD-FUNCTION",false);
+DO_SYMBOL(_sym_std_compute_effective_method,129,ClosPkg,"STD-COMPUTE-EFFECTIVE-METHOD",false);
+DO_SYMBOL(_sym_StdClass_O,134,ClosPkg,"STD-CLASS",true);
+DO_SYMBOL(_sym_standardOptimizedWriterFunction,194,ClosPkg,"STANDARD-OPTIMIZED-WRITER-FUNCTION",false);
+DO_SYMBOL(_sym_FuncallableStandardClass_O,276,ClosPkg,"FUNCALLABLE-STANDARD-CLASS",true);
+DO_SYMBOL(_sym_setFuncallableInstanceFunction,375,ClosPkg,"SET-FUNCALLABLE-INSTANCE-FUNCTION",true);
+DO_SYMBOL(_sym_standardOptimizedWriterMethod,493,ClosPkg,"STANDARD-OPTIMIZED-WRITER-METHOD",false);
+DO_SYMBOL(_sym_standardOptimizedReaderMethod,497,ClosPkg,"STANDARD-OPTIMIZED-READER-METHOD",false);
+DO_SYMBOL(_sym_compute_applicable_methods_using_classes,597,ClosPkg,"COMPUTE-APPLICABLE-METHODS-USING-CLASSES",false);
+DO_SYMBOL(_sym_aSingleClosSymbol,609,ClosPkg,"A-SINGLE-CLOS-SYMBOL",false);
+DO_SYMBOL(_sym_std_compute_applicable_methods,960,ClosPkg,"STD-COMPUTE-APPLICABLE-METHODS",false);
+DO_SYMBOL(_sym_standardOptimizedReaderFunction,1003,ClosPkg,"STANDARD-OPTIMIZED-READER-FUNCTION",false);
+DO_SYMBOL(_sym_classp,1123,ClosPkg,"CLASSP",true);
 #endif
 #ifdef CleavirPrimopsPkg_SYMBOLS
-DO_SYMBOL(_sym_callWithVariableBound, 638, CleavirPrimopsPkg, "CALL-WITH-VARIABLE-BOUND", true);
+DO_SYMBOL(_sym_callWithVariableBound,639,CleavirPrimopsPkg,"CALL-WITH-VARIABLE-BOUND",true);
 #endif
 #ifdef KeywordPkg_SYMBOLS
-DO_SYMBOL(_sym_function, 4, KeywordPkg, "FUNCTION", true);
-DO_SYMBOL(_sym_crlf, 17, KeywordPkg, "CRLF", true);
-DO_SYMBOL(_sym_test, 22, KeywordPkg, "TEST", true);
-DO_SYMBOL(_sym_internal, 25, KeywordPkg, "INTERNAL", true);
-DO_SYMBOL(_sym_body, 36, KeywordPkg, "BODY", true);
-DO_SYMBOL(_sym_junkAllowed, 55, KeywordPkg, "JUNK-ALLOWED", true);
-DO_SYMBOL(_sym_syntax, 60, KeywordPkg, "SYNTAX", true);
-DO_SYMBOL(_sym_requiredNumberOfArguments, 64, KeywordPkg, "REQUIRED-NUMBER-OF-ARGUMENTS", true);
-DO_SYMBOL(_sym_lambda_list_handler, 68, KeywordPkg, "LAMBDA-LIST-HANDLER", true);
-DO_SYMBOL(_sym_and, 71, KeywordPkg, "AND", true);
-DO_SYMBOL(_sym_full, 77, KeywordPkg, "FULL", true);
-DO_SYMBOL(_sym_load, 86, KeywordPkg, "LOAD", true);
-DO_SYMBOL(_sym_if_exists, 89, KeywordPkg, "IF-EXISTS", true);
-DO_SYMBOL(_sym_or, 99, KeywordPkg, "OR", true);
-DO_SYMBOL(_sym_file, 101, KeywordPkg, "FILE", true);
-DO_SYMBOL(_sym_formatArguments, 107, KeywordPkg, "FORMAT-ARGUMENTS", true);
-DO_SYMBOL(_sym_adjustable, 122, KeywordPkg, "ADJUSTABLE", true);
-DO_SYMBOL(_sym_version, 124, KeywordPkg, "VERSION", true);
-DO_SYMBOL(_sym_blockFrame, 142, KeywordPkg, "BLOCK-FRAME", true);
-DO_SYMBOL(_sym_non_terminating_macro_character, 143, KeywordPkg, "NON-TERMINATING-MACRO-CHARACTER", true);
-DO_SYMBOL(_sym_allow_other_keys, 144, KeywordPkg, "ALLOW-OTHER-KEYS", true);
-DO_SYMBOL(_sym_end, 145, KeywordPkg, "END", true);
-DO_SYMBOL(_sym_defaults, 158, KeywordPkg, "DEFAULTS", true);
-DO_SYMBOL(_sym_elementType, 170, KeywordPkg, "ELEMENT-TYPE", true);
-DO_SYMBOL(_sym_case, 182, KeywordPkg, "CASE", true);
-DO_SYMBOL(_sym_wild_inferiors, 197, KeywordPkg, "WILD-INFERIORS", true);
-DO_SYMBOL(_sym_external, 201, KeywordPkg, "EXTERNAL", true);
-DO_SYMBOL(_sym_newest, 204, KeywordPkg, "NEWEST", true);
-DO_SYMBOL(_sym_LineTablesOnly, 230, KeywordPkg, "LINE-TABLES-ONLY", true);
-DO_SYMBOL(_sym_ignoreInitImage, 234, KeywordPkg, "IGNORE-INIT-IMAGE", true);
-DO_SYMBOL(_sym_operands, 243, KeywordPkg, "OPERANDS", true);
-DO_SYMBOL(_sym__uid, 253, KeywordPkg, "-UID", true);
-DO_SYMBOL(_sym_gzip, 257, KeywordPkg, "GZIP", true);
-DO_SYMBOL(_sym_pathname, 278, KeywordPkg, "PATHNAME", true);
-DO_SYMBOL(_sym_single_escape_character, 280, KeywordPkg, "SINGLE-ESCAPE-CHARACTER", true);
-DO_SYMBOL(_sym_passThrough, 304, KeywordPkg, "PASS-THROUGH", true);
-DO_SYMBOL(_sym_absolute, 308, KeywordPkg, "ABSOLUTE", true);
-DO_SYMBOL(_sym_instance, 312, KeywordPkg, "INSTANCE", true);
-DO_SYMBOL(_sym_address_model_64, 326, KeywordPkg, "ADDRESS-MODEL-64", true);
-DO_SYMBOL(_sym_upcase, 342, KeywordPkg, "UPCASE", true);
-DO_SYMBOL(_sym_local, 344, KeywordPkg, "LOCAL", true);
-DO_SYMBOL(_sym_array, 356, KeywordPkg, "ARRAY", true);
-DO_SYMBOL(_sym_deleted, 374, KeywordPkg, "DELETED", true);
-DO_SYMBOL(_sym_message, 381, KeywordPkg, "MESSAGE", true);
-DO_SYMBOL(_sym_whitespace_character, 407, KeywordPkg, "WHITESPACE-CHARACTER", true);
-DO_SYMBOL(_sym_downcase, 425, KeywordPkg, "DOWNCASE", true);
-DO_SYMBOL(_sym_direct_super_classes, 439, KeywordPkg, "DIRECT-SUPER-CLASSES", true);
-DO_SYMBOL(_sym_tagbodyFrame, 441, KeywordPkg, "TAGBODY-FRAME", true);
-DO_SYMBOL(_sym_execute, 455, KeywordPkg, "EXECUTE", true);
-DO_SYMBOL(_sym_use_mps, 472, KeywordPkg, "USE-MPS", true);
-DO_SYMBOL(_sym_calledFunction, 490, KeywordPkg, "CALLED-FUNCTION", true);
-DO_SYMBOL(_sym_preserve, 491, KeywordPkg, "PRESERVE", true);
-DO_SYMBOL(_sym_name, 500, KeywordPkg, "NAME", true);
-DO_SYMBOL(_sym_eval, 513, KeywordPkg, "EVAL", true);
-DO_SYMBOL(_sym_supersede, 522, KeywordPkg, "SUPERSEDE", true);
-DO_SYMBOL(_sym_rename, 529, KeywordPkg, "RENAME", true);
-DO_SYMBOL(_sym_rtld_next, 536, KeywordPkg, "RTLD-NEXT", true);
-DO_SYMBOL(_sym_debugStartup, 537, KeywordPkg, "DEBUG-STARTUP", true);
-DO_SYMBOL(_sym_givenNumberOfArguments, 538, KeywordPkg, "GIVEN-NUMBER-OF-ARGUMENTS", true);
-DO_SYMBOL(_sym_bigEndian, 549, KeywordPkg, "BIG-ENDIAN", true);
-DO_SYMBOL(_sym_address_model_32, 551, KeywordPkg, "ADDRESS-MODEL-32", true);
-DO_SYMBOL(_sym_ecl_min, 565, KeywordPkg, "ECL-MIN", true);
-DO_SYMBOL(_sym_landingPadFrame, 592, KeywordPkg, "LANDING-PAD-FRAME", true);
-DO_SYMBOL(_sym_not, 612, KeywordPkg, "NOT", true);
-DO_SYMBOL(_sym_FullDebug, 615, KeywordPkg, "FULL-DEBUG", true);
-DO_SYMBOL(_sym_error, 617, KeywordPkg, "ERROR", true);
-DO_SYMBOL(_sym_brcl, 621, KeywordPkg, "BRCL", true);
-DO_SYMBOL(_sym_special, 622, KeywordPkg, "SPECIAL", true);
-DO_SYMBOL(_sym_podSymbolMap, 628, KeywordPkg, "POD-SYMBOL-MAP", true);
-DO_SYMBOL(_sym_rehashSize, 634, KeywordPkg, "REHASH-SIZE", true);
-DO_SYMBOL(_sym_create, 643, KeywordPkg, "CREATE", true);
-DO_SYMBOL(_sym_invalid_character, 652, KeywordPkg, "INVALID-CHARACTER", true);
-DO_SYMBOL(_sym_ucs_4, 654, KeywordPkg, "UCS-4", true);
-DO_SYMBOL(_sym_wild, 670, KeywordPkg, "WILD", true);
-DO_SYMBOL(_sym_directory, 676, KeywordPkg, "DIRECTORY", true);
-DO_SYMBOL(_sym_if_does_not_exist, 679, KeywordPkg, "IF-DOES-NOT-EXIST", true);
-DO_SYMBOL(_sym_debug, 685, KeywordPkg, "DEBUG", true);
-DO_SYMBOL(_sym_expectedType, 690, KeywordPkg, "EXPECTED-TYPE", true);
-DO_SYMBOL(_sym_io, 705, KeywordPkg, "IO", true);
-DO_SYMBOL(_sym_relative, 715, KeywordPkg, "RELATIVE", true);
-DO_SYMBOL(_sym_fillPointer, 728, KeywordPkg, "FILL-POINTER", true);
-DO_SYMBOL(_sym_output, 730, KeywordPkg, "OUTPUT", true);
-DO_SYMBOL(_sym_object, 732, KeywordPkg, "OBJECT", true);
-DO_SYMBOL(_sym_docstring, 737, KeywordPkg, "DOCSTRING", true);
-DO_SYMBOL(_sym_line_buffered, 739, KeywordPkg, "LINE-BUFFERED", true);
-DO_SYMBOL(_sym_littleEndian, 740, KeywordPkg, "LITTLE-ENDIAN", true);
-DO_SYMBOL(_sym_changed, 747, KeywordPkg, "CHANGED", true);
-DO_SYMBOL(_sym_line, 762, KeywordPkg, "LINE", true);
-DO_SYMBOL(_sym_host, 770, KeywordPkg, "HOST", true);
-DO_SYMBOL(_sym_link, 772, KeywordPkg, "LINK", true);
-DO_SYMBOL(_sym_print, 797, KeywordPkg, "PRINT", true);
-DO_SYMBOL(_sym_none, 807, KeywordPkg, "NONE", true);
-DO_SYMBOL(_sym_common, 817, KeywordPkg, "COMMON", true);
-DO_SYMBOL(_sym_formatControl, 822, KeywordPkg, "FORMAT-CONTROL", true);
-DO_SYMBOL(_sym_new_version, 823, KeywordPkg, "NEW-VERSION", true);
-DO_SYMBOL(_sym_append, 826, KeywordPkg, "APPEND", true);
-DO_SYMBOL(_sym_back, 827, KeywordPkg, "BACK", true);
-DO_SYMBOL(_sym_target_os_linux, 832, KeywordPkg, "TARGET-OS-LINUX", true);
-DO_SYMBOL(_sym_operation, 835, KeywordPkg, "OPERATION", true);
-DO_SYMBOL(_sym_cleavir, 839, KeywordPkg, "CLEAVIR", true);
-DO_SYMBOL(_sym_package, 846, KeywordPkg, "PACKAGE", true);
-DO_SYMBOL(_sym_rtld_main_only, 852, KeywordPkg, "RTLD-MAIN-ONLY", true);
-DO_SYMBOL(_sym_default, 862, KeywordPkg, "DEFAULT", true);
-DO_SYMBOL(_sym_unspecific, 865, KeywordPkg, "UNSPECIFIC", true);
-DO_SYMBOL(_sym_constituent_character, 867, KeywordPkg, "CONSTITUENT-CHARACTER", true);
-DO_SYMBOL(_sym_up, 873, KeywordPkg, "UP", true);
-DO_SYMBOL(_sym_unrecognizedKeyword, 902, KeywordPkg, "UNRECOGNIZED-KEYWORD", true);
-DO_SYMBOL(_sym_probe, 907, KeywordPkg, "PROBE", true);
-DO_SYMBOL(_sym_fully_buffered, 924, KeywordPkg, "FULLY-BUFFERED", true);
-DO_SYMBOL(_sym_datum, 934, KeywordPkg, "DATUM", true);
-DO_SYMBOL(_sym_type, 950, KeywordPkg, "TYPE", true);
-DO_SYMBOL(_sym_cr, 952, KeywordPkg, "CR", true);
-DO_SYMBOL(_sym_arguments, 958, KeywordPkg, "ARGUMENTS", true);
-DO_SYMBOL(_sym_eof, 965, KeywordPkg, "EOF", true);
-DO_SYMBOL(_sym_rtld_self, 971, KeywordPkg, "RTLD-SELF", true);
-DO_SYMBOL(_sym_start, 979, KeywordPkg, "START", true);
-DO_SYMBOL(_sym_rehashThreshold, 996, KeywordPkg, "REHASH-THRESHOLD", true);
-DO_SYMBOL(_sym_terminating_macro_character, 1004, KeywordPkg, "TERMINATING-MACRO-CHARACTER", true);
-DO_SYMBOL(_sym_macro_function, 1013, KeywordPkg, "MACRO-FUNCTION", true);
-DO_SYMBOL(_sym_escape, 1036, KeywordPkg, "ESCAPE", true);
-DO_SYMBOL(_sym_catchFrame, 1039, KeywordPkg, "CATCH-FRAME", true);
-DO_SYMBOL(_sym_typeError, 1040, KeywordPkg, "TYPE-ERROR", true);
-DO_SYMBOL(_sym_dispatch_table, 1047, KeywordPkg, "DISPATCH-TABLE", true);
-DO_SYMBOL(_sym_overwrite, 1056, KeywordPkg, "OVERWRITE", true);
-DO_SYMBOL(_sym_rtld_default, 1073, KeywordPkg, "RTLD-DEFAULT", true);
-DO_SYMBOL(_sym_UnsignedByte, 1099, KeywordPkg, "UNSIGNED-BYTE", true);
-DO_SYMBOL(_sym_iclass, 1104, KeywordPkg, "ICLASS", true);
-DO_SYMBOL(_sym_capitalize, 1108, KeywordPkg, "CAPITALIZE", true);
-DO_SYMBOL(_sym_load_toplevel, 1126, KeywordPkg, "LOAD-TOPLEVEL", true);
-DO_SYMBOL(_sym_latin_1, 1143, KeywordPkg, "LATIN-1", true);
-DO_SYMBOL(_sym_target_os_darwin, 1152, KeywordPkg, "TARGET-OS-DARWIN", true);
-DO_SYMBOL(_sym_stream, 1161, KeywordPkg, "STREAM", true);
-DO_SYMBOL(_sym_macro, 1175, KeywordPkg, "MACRO", true);
-DO_SYMBOL(_sym_class, 1183, KeywordPkg, "CLASS", true);
-DO_SYMBOL(_sym_multiple_escape_character, 1228, KeywordPkg, "MULTIPLE-ESCAPE-CHARACTER", true);
-DO_SYMBOL(_sym_invert, 1256, KeywordPkg, "INVERT", true);
-DO_SYMBOL(_sym_unbound, 1260, KeywordPkg, "UNBOUND", true);
-DO_SYMBOL(_sym_splatted, 1274, KeywordPkg, "SPLATTED", true);
-DO_SYMBOL(_sym_lf, 1279, KeywordPkg, "LF", true);
-DO_SYMBOL(_sym_device, 1281, KeywordPkg, "DEVICE", true);
-DO_SYMBOL(_sym_rename_and_delete, 1282, KeywordPkg, "RENAME-AND-DELETE", true);
-DO_SYMBOL(_sym_compile_toplevel, 1287, KeywordPkg, "COMPILE-TOPLEVEL", true);
-DO_SYMBOL(_sym_input, 1293, KeywordPkg, "INPUT", true);
-DO_SYMBOL(_sym_inherited, 1297, KeywordPkg, "INHERITED", true);
+DO_SYMBOL(_sym_function,4,KeywordPkg,"FUNCTION",true);
+DO_SYMBOL(_sym_crlf,17,KeywordPkg,"CRLF",true);
+DO_SYMBOL(_sym_test,22,KeywordPkg,"TEST",true);
+DO_SYMBOL(_sym_internal,25,KeywordPkg,"INTERNAL",true);
+DO_SYMBOL(_sym_body,36,KeywordPkg,"BODY",true);
+DO_SYMBOL(_sym_junkAllowed,55,KeywordPkg,"JUNK-ALLOWED",true);
+DO_SYMBOL(_sym_syntax,60,KeywordPkg,"SYNTAX",true);
+DO_SYMBOL(_sym_requiredNumberOfArguments,64,KeywordPkg,"REQUIRED-NUMBER-OF-ARGUMENTS",true);
+DO_SYMBOL(_sym_lambda_list_handler,68,KeywordPkg,"LAMBDA-LIST-HANDLER",true);
+DO_SYMBOL(_sym_and,71,KeywordPkg,"AND",true);
+DO_SYMBOL(_sym_full,77,KeywordPkg,"FULL",true);
+DO_SYMBOL(_sym_load,86,KeywordPkg,"LOAD",true);
+DO_SYMBOL(_sym_if_exists,89,KeywordPkg,"IF-EXISTS",true);
+DO_SYMBOL(_sym_or,99,KeywordPkg,"OR",true);
+DO_SYMBOL(_sym_file,101,KeywordPkg,"FILE",true);
+DO_SYMBOL(_sym_formatArguments,107,KeywordPkg,"FORMAT-ARGUMENTS",true);
+DO_SYMBOL(_sym_adjustable,122,KeywordPkg,"ADJUSTABLE",true);
+DO_SYMBOL(_sym_version,124,KeywordPkg,"VERSION",true);
+DO_SYMBOL(_sym_blockFrame,142,KeywordPkg,"BLOCK-FRAME",true);
+DO_SYMBOL(_sym_non_terminating_macro_character,143,KeywordPkg,"NON-TERMINATING-MACRO-CHARACTER",true);
+DO_SYMBOL(_sym_allow_other_keys,144,KeywordPkg,"ALLOW-OTHER-KEYS",true);
+DO_SYMBOL(_sym_end,145,KeywordPkg,"END",true);
+DO_SYMBOL(_sym_defaults,158,KeywordPkg,"DEFAULTS",true);
+DO_SYMBOL(_sym_elementType,170,KeywordPkg,"ELEMENT-TYPE",true);
+DO_SYMBOL(_sym_case,182,KeywordPkg,"CASE",true);
+DO_SYMBOL(_sym_wild_inferiors,197,KeywordPkg,"WILD-INFERIORS",true);
+DO_SYMBOL(_sym_external,201,KeywordPkg,"EXTERNAL",true);
+DO_SYMBOL(_sym_newest,204,KeywordPkg,"NEWEST",true);
+DO_SYMBOL(_sym_LineTablesOnly,230,KeywordPkg,"LINE-TABLES-ONLY",true);
+DO_SYMBOL(_sym_ignoreInitImage,234,KeywordPkg,"IGNORE-INIT-IMAGE",true);
+DO_SYMBOL(_sym_operands,243,KeywordPkg,"OPERANDS",true);
+DO_SYMBOL(_sym__uid,253,KeywordPkg,"-UID",true);
+DO_SYMBOL(_sym_gzip,257,KeywordPkg,"GZIP",true);
+DO_SYMBOL(_sym_pathname,278,KeywordPkg,"PATHNAME",true);
+DO_SYMBOL(_sym_single_escape_character,280,KeywordPkg,"SINGLE-ESCAPE-CHARACTER",true);
+DO_SYMBOL(_sym_passThrough,304,KeywordPkg,"PASS-THROUGH",true);
+DO_SYMBOL(_sym_absolute,308,KeywordPkg,"ABSOLUTE",true);
+DO_SYMBOL(_sym_instance,312,KeywordPkg,"INSTANCE",true);
+DO_SYMBOL(_sym_address_model_64,326,KeywordPkg,"ADDRESS-MODEL-64",true);
+DO_SYMBOL(_sym_upcase,342,KeywordPkg,"UPCASE",true);
+DO_SYMBOL(_sym_local,344,KeywordPkg,"LOCAL",true);
+DO_SYMBOL(_sym_array,356,KeywordPkg,"ARRAY",true);
+DO_SYMBOL(_sym_deleted,374,KeywordPkg,"DELETED",true);
+DO_SYMBOL(_sym_message,381,KeywordPkg,"MESSAGE",true);
+DO_SYMBOL(_sym_whitespace_character,408,KeywordPkg,"WHITESPACE-CHARACTER",true);
+DO_SYMBOL(_sym_downcase,426,KeywordPkg,"DOWNCASE",true);
+DO_SYMBOL(_sym_direct_super_classes,440,KeywordPkg,"DIRECT-SUPER-CLASSES",true);
+DO_SYMBOL(_sym_tagbodyFrame,442,KeywordPkg,"TAGBODY-FRAME",true);
+DO_SYMBOL(_sym_execute,456,KeywordPkg,"EXECUTE",true);
+DO_SYMBOL(_sym_use_mps,473,KeywordPkg,"USE-MPS",true);
+DO_SYMBOL(_sym_calledFunction,491,KeywordPkg,"CALLED-FUNCTION",true);
+DO_SYMBOL(_sym_preserve,492,KeywordPkg,"PRESERVE",true);
+DO_SYMBOL(_sym_name,501,KeywordPkg,"NAME",true);
+DO_SYMBOL(_sym_eval,514,KeywordPkg,"EVAL",true);
+DO_SYMBOL(_sym_supersede,523,KeywordPkg,"SUPERSEDE",true);
+DO_SYMBOL(_sym_rename,530,KeywordPkg,"RENAME",true);
+DO_SYMBOL(_sym_rtld_next,537,KeywordPkg,"RTLD-NEXT",true);
+DO_SYMBOL(_sym_debugStartup,538,KeywordPkg,"DEBUG-STARTUP",true);
+DO_SYMBOL(_sym_givenNumberOfArguments,539,KeywordPkg,"GIVEN-NUMBER-OF-ARGUMENTS",true);
+DO_SYMBOL(_sym_bigEndian,550,KeywordPkg,"BIG-ENDIAN",true);
+DO_SYMBOL(_sym_address_model_32,552,KeywordPkg,"ADDRESS-MODEL-32",true);
+DO_SYMBOL(_sym_ecl_min,566,KeywordPkg,"ECL-MIN",true);
+DO_SYMBOL(_sym_landingPadFrame,593,KeywordPkg,"LANDING-PAD-FRAME",true);
+DO_SYMBOL(_sym_not,613,KeywordPkg,"NOT",true);
+DO_SYMBOL(_sym_FullDebug,616,KeywordPkg,"FULL-DEBUG",true);
+DO_SYMBOL(_sym_error,618,KeywordPkg,"ERROR",true);
+DO_SYMBOL(_sym_brcl,622,KeywordPkg,"BRCL",true);
+DO_SYMBOL(_sym_special,623,KeywordPkg,"SPECIAL",true);
+DO_SYMBOL(_sym_podSymbolMap,629,KeywordPkg,"POD-SYMBOL-MAP",true);
+DO_SYMBOL(_sym_rehashSize,635,KeywordPkg,"REHASH-SIZE",true);
+DO_SYMBOL(_sym_create,644,KeywordPkg,"CREATE",true);
+DO_SYMBOL(_sym_invalid_character,653,KeywordPkg,"INVALID-CHARACTER",true);
+DO_SYMBOL(_sym_ucs_4,655,KeywordPkg,"UCS-4",true);
+DO_SYMBOL(_sym_wild,671,KeywordPkg,"WILD",true);
+DO_SYMBOL(_sym_directory,677,KeywordPkg,"DIRECTORY",true);
+DO_SYMBOL(_sym_if_does_not_exist,680,KeywordPkg,"IF-DOES-NOT-EXIST",true);
+DO_SYMBOL(_sym_debug,686,KeywordPkg,"DEBUG",true);
+DO_SYMBOL(_sym_expectedType,691,KeywordPkg,"EXPECTED-TYPE",true);
+DO_SYMBOL(_sym_io,706,KeywordPkg,"IO",true);
+DO_SYMBOL(_sym_relative,715,KeywordPkg,"RELATIVE",true);
+DO_SYMBOL(_sym_fillPointer,728,KeywordPkg,"FILL-POINTER",true);
+DO_SYMBOL(_sym_output,730,KeywordPkg,"OUTPUT",true);
+DO_SYMBOL(_sym_object,732,KeywordPkg,"OBJECT",true);
+DO_SYMBOL(_sym_docstring,737,KeywordPkg,"DOCSTRING",true);
+DO_SYMBOL(_sym_line_buffered,739,KeywordPkg,"LINE-BUFFERED",true);
+DO_SYMBOL(_sym_littleEndian,740,KeywordPkg,"LITTLE-ENDIAN",true);
+DO_SYMBOL(_sym_changed,747,KeywordPkg,"CHANGED",true);
+DO_SYMBOL(_sym_line,762,KeywordPkg,"LINE",true);
+DO_SYMBOL(_sym_host,770,KeywordPkg,"HOST",true);
+DO_SYMBOL(_sym_link,772,KeywordPkg,"LINK",true);
+DO_SYMBOL(_sym_print,797,KeywordPkg,"PRINT",true);
+DO_SYMBOL(_sym_none,807,KeywordPkg,"NONE",true);
+DO_SYMBOL(_sym_common,817,KeywordPkg,"COMMON",true);
+DO_SYMBOL(_sym_formatControl,822,KeywordPkg,"FORMAT-CONTROL",true);
+DO_SYMBOL(_sym_new_version,823,KeywordPkg,"NEW-VERSION",true);
+DO_SYMBOL(_sym_append,826,KeywordPkg,"APPEND",true);
+DO_SYMBOL(_sym_back,827,KeywordPkg,"BACK",true);
+DO_SYMBOL(_sym_target_os_linux,832,KeywordPkg,"TARGET-OS-LINUX",true);
+DO_SYMBOL(_sym_operation,835,KeywordPkg,"OPERATION",true);
+DO_SYMBOL(_sym_cleavir,839,KeywordPkg,"CLEAVIR",true);
+DO_SYMBOL(_sym_package,846,KeywordPkg,"PACKAGE",true);
+DO_SYMBOL(_sym_rtld_main_only,852,KeywordPkg,"RTLD-MAIN-ONLY",true);
+DO_SYMBOL(_sym_default,862,KeywordPkg,"DEFAULT",true);
+DO_SYMBOL(_sym_unspecific,865,KeywordPkg,"UNSPECIFIC",true);
+DO_SYMBOL(_sym_constituent_character,867,KeywordPkg,"CONSTITUENT-CHARACTER",true);
+DO_SYMBOL(_sym_up,873,KeywordPkg,"UP",true);
+DO_SYMBOL(_sym_unrecognizedKeyword,902,KeywordPkg,"UNRECOGNIZED-KEYWORD",true);
+DO_SYMBOL(_sym_probe,907,KeywordPkg,"PROBE",true);
+DO_SYMBOL(_sym_fully_buffered,924,KeywordPkg,"FULLY-BUFFERED",true);
+DO_SYMBOL(_sym_datum,934,KeywordPkg,"DATUM",true);
+DO_SYMBOL(_sym_type,950,KeywordPkg,"TYPE",true);
+DO_SYMBOL(_sym_cr,952,KeywordPkg,"CR",true);
+DO_SYMBOL(_sym_arguments,958,KeywordPkg,"ARGUMENTS",true);
+DO_SYMBOL(_sym_eof,965,KeywordPkg,"EOF",true);
+DO_SYMBOL(_sym_rtld_self,971,KeywordPkg,"RTLD-SELF",true);
+DO_SYMBOL(_sym_start,979,KeywordPkg,"START",true);
+DO_SYMBOL(_sym_rehashThreshold,996,KeywordPkg,"REHASH-THRESHOLD",true);
+DO_SYMBOL(_sym_terminating_macro_character,1004,KeywordPkg,"TERMINATING-MACRO-CHARACTER",true);
+DO_SYMBOL(_sym_macro_function,1013,KeywordPkg,"MACRO-FUNCTION",true);
+DO_SYMBOL(_sym_escape,1036,KeywordPkg,"ESCAPE",true);
+DO_SYMBOL(_sym_catchFrame,1039,KeywordPkg,"CATCH-FRAME",true);
+DO_SYMBOL(_sym_typeError,1040,KeywordPkg,"TYPE-ERROR",true);
+DO_SYMBOL(_sym_dispatch_table,1047,KeywordPkg,"DISPATCH-TABLE",true);
+DO_SYMBOL(_sym_overwrite,1056,KeywordPkg,"OVERWRITE",true);
+DO_SYMBOL(_sym_rtld_default,1073,KeywordPkg,"RTLD-DEFAULT",true);
+DO_SYMBOL(_sym_UnsignedByte,1099,KeywordPkg,"UNSIGNED-BYTE",true);
+DO_SYMBOL(_sym_iclass,1104,KeywordPkg,"ICLASS",true);
+DO_SYMBOL(_sym_capitalize,1108,KeywordPkg,"CAPITALIZE",true);
+DO_SYMBOL(_sym_load_toplevel,1126,KeywordPkg,"LOAD-TOPLEVEL",true);
+DO_SYMBOL(_sym_latin_1,1143,KeywordPkg,"LATIN-1",true);
+DO_SYMBOL(_sym_target_os_darwin,1152,KeywordPkg,"TARGET-OS-DARWIN",true);
+DO_SYMBOL(_sym_stream,1161,KeywordPkg,"STREAM",true);
+DO_SYMBOL(_sym_macro,1175,KeywordPkg,"MACRO",true);
+DO_SYMBOL(_sym_class,1183,KeywordPkg,"CLASS",true);
+DO_SYMBOL(_sym_multiple_escape_character,1228,KeywordPkg,"MULTIPLE-ESCAPE-CHARACTER",true);
+DO_SYMBOL(_sym_invert,1256,KeywordPkg,"INVERT",true);
+DO_SYMBOL(_sym_unbound,1260,KeywordPkg,"UNBOUND",true);
+DO_SYMBOL(_sym_splatted,1274,KeywordPkg,"SPLATTED",true);
+DO_SYMBOL(_sym_lf,1279,KeywordPkg,"LF",true);
+DO_SYMBOL(_sym_device,1281,KeywordPkg,"DEVICE",true);
+DO_SYMBOL(_sym_rename_and_delete,1282,KeywordPkg,"RENAME-AND-DELETE",true);
+DO_SYMBOL(_sym_compile_toplevel,1287,KeywordPkg,"COMPILE-TOPLEVEL",true);
+DO_SYMBOL(_sym_input,1293,KeywordPkg,"INPUT",true);
+DO_SYMBOL(_sym_inherited,1297,KeywordPkg,"INHERITED",true);
 #endif

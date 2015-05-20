@@ -5,13 +5,34 @@
   (load "sys:kernel;cleavir;cmpclasp.lisp")
   (print (core:getpid)))
 
-(getpid)22500
-(quit)
 
-(apropos "alpha")
+(symbol-package 'cleavir-primop:typeq)
+(symbol-package 'cleavir-primop:symbol-value)
+(symbol-package 'cleavir-primop:fixnum--)
 
-(clasp-cleavir:cleavir-compile 'foo '(lambda () (catch 'zot (throw 'zot 'baz))))
+(defpackage #:foo2 (:export #:car))
+(find-symbol "CAR" "FOO2")
+(symbol-package 'foo2:car)
 
+(intern "ABC" "FOO2")
+(find-symbol "ABC" "FOO2")
+
+(print 'foo2:abc)
+
+
+
+(package-use-list (find-package 'foo))
+(symbol-package 'foo:car)
+(find-symbol "CAR" "FOO")
+
+(clasp-cleavir::ast-form '(lambda (x) (cleavir-primop:cdr x)) )
+(trace cleavir-generate-ast:convert-special)
+(package-use-list (find-package 'cleavir-primop))
+
+
+(clasp-cleavir:cleavir-compile 'myconsp '(lambda (x) (cleavir-primop:car x)) :debug t)
+
+(print "Done")
 (foo)
 
 (clasp-cleavir:cleavir-compile 'baz '(lambda () (with-simple-restart (geton "geton restart") (error "testing"))))

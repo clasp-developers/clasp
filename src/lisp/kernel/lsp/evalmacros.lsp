@@ -456,9 +456,14 @@ values of the last FORM.  If no FORM is given, returns NIL."
 	  (import 'maybe-quote :ext)
 	  (export 'maybe-quote :ext))
 
-(defmacro ext:truly-the (&rest args)
+(in-package :ext)
+(defmacro truly-the (&rest args)
   `(the ,@args))
 
-(defmacro ext:checked-value (&rest args)
+
+(defmacro checked-value (&rest args)
   `(the ,@args))
 
+(in-package :core)
+(import 'ext:truly-the)
+(export 'truly-the)

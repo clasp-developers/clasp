@@ -1459,7 +1459,6 @@ Str_sp af_enoughNamestring(T_sp tpath, T_sp tdefaults) {
     if (tdir_begin.nilp()) {
       pathdir = _Nil<T_O>();
     } else {
-      ASSERTF(!tdir_begin.fixnump(), BF("Handle tagged fixnum!"));
       Integer_sp dir_begin = gc::As<Integer_sp>(tdir_begin);
       if (clasp_to_int(dir_begin) == cl_length(defaultdir)) {
         pathdir = eval::funcall(cl::_sym_subseq, pathdir, dir_begin);

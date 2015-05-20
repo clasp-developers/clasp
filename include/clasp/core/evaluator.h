@@ -52,7 +52,7 @@ namespace eval {
 
 /*! Evaluate within env.
           See ecl/src/c/compiler.d:eval-with-env */
-T_mv af_topLevelEvalWithEnv(T_sp form, T_sp env, bool stepping = false, bool compiler_env_p = true, bool execute = true);
+T_mv core_evalWithEnv(T_sp form, T_sp env, bool stepping = false, bool compiler_env_p = true, bool execute = true);
 
 extern List_sp evaluateList(List_sp args, T_sp environment);
 extern T_mv evaluateListReturnLast(List_sp args, T_sp environment);

@@ -1,4 +1,3 @@
-
 ;;(in-package :core)
 (eval-when (eval compile load) (core:select-package :core))
 

@@ -387,14 +387,17 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
     ss << "#:";
     ss << this->_Name->get();
   } else {
-    Package_sp myPackage = this->_HomePackage;
-    if (!myPackage) {
+    T_sp tmyPackage = this->_HomePackage;
+    if (!tmyPackage) {
       ss << "<PKG-NULL>:" << this->_Name->get();
-    } else if (myPackage->isKeywordPackage()) {
+      return ss.str();
+    }
+    Package_sp myPackage = gc::As<Package_sp>(tmyPackage);
+    if (myPackage->isKeywordPackage()) {
       ss << ":" << this->_Name->get();
     } else {
       Package_sp currentPackage = _lisp->getCurrentPackage();
-      if ((currentPackage.get() == myPackage.get()) && !prefixAlways) {
+      if ((currentPackage == myPackage) && !prefixAlways) {
         ss << this->_Name->get();
       } else {
         if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {

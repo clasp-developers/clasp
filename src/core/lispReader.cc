@@ -385,11 +385,27 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       packageSin << CHR(*cur);
       ++cur;
     }
+    int separator(0);
+    while (cur != name_marker) {
+      ++separator;
+      ++cur;
+    }
     string symbolName = tokenStr(token, name_marker - token.data());
     LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]") % packageSin.str() % symbolName);
     string packageName = packageSin.str();
     Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
-    Symbol_sp sym = pkg->intern(symbolName);
+    Symbol_sp sym;
+    if ( separator == 1 ) { // Asking for external symbol
+      Symbol_mv sym_mv = pkg->findSymbol(symbolName);
+      sym = sym_mv;
+      T_sp status = sym_mv.second();
+      if (status != kw::_sym_external ) {
+        SIMPLE_ERROR(BF("Cannot find the external symbol %s in %s") % symbolName % _rep_(pkg));
+      }
+    } else {
+      sym = pkg->intern(symbolName);
+    }
+    ASSERT(sym);
     return sym;
   } break;
   case tsymkw: {

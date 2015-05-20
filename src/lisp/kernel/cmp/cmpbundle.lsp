@@ -54,7 +54,7 @@
 (defun safe-system (cmd)
   (if *echo-system*
       (bformat t "%s\n" cmd))
-  (let ((ret (system cmd)))
+  (let ((ret (core:system cmd)))
     (unless (eql ret 0)
       (error "Could not execute command with system: ~s" cmd))))
 
@@ -192,7 +192,7 @@
   "Link a bunch of modules together, return the linked module"
   (with-compiler-env (conditions)
     (multiple-value-bind (module function-pass-manager)
-        (cmp:create-llvm-module-for-compile-file (pathname-name output-pathname))
+        (create-llvm-module-for-compile-file (pathname-name output-pathname))
       (let* ((*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
 	     (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
 	     (bcnum 0))

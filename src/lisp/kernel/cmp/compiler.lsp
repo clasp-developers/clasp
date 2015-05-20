@@ -1010,7 +1010,7 @@ jump to blocks within this tagbody."
 ;;  (break "codegen-eval-when")
   (let ((situations (car rest))
 	(body (cdr rest)))
-    (if (or (member 'core:eval situations) (member :execute situations))
+    (if (or (member 'cl:eval situations) (member :execute situations))
 	(codegen-progn result body env)
 	(codegen-literal result nil env))))
 
@@ -1068,8 +1068,6 @@ jump to blocks within this tagbody."
 	 (irc-intrinsic "copyTmvOrSlice" result temp-mv-result)
 	 ))
       )))
-
-
 
 
 
@@ -1284,7 +1282,12 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
       (codegen-rtv result obj env)))
 
 
-
+(defun treat-as-special-operator-p (sym)
+  (cond
+    ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
+    ((eq sym 'core:debug-message) t)   ;; special operator
+    (t (special-operator-p sym))))
+(export 'treat-as-special-operator-p)
 
 (defun codegen (result form env)
   (declare (optimize (debug 3)))

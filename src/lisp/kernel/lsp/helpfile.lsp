@@ -243,6 +243,9 @@ strings."
       (list* kind name extra))))
 
 ;; (EXT:OPTIONAL-ANNOTATION arguments for EXT:ANNOTATE)
+(export (list (intern "OPTIONAL-ANNOTATION" "EXT")
+              (intern "ANNOTATE" "EXT"))
+              "EXT")
 (si::fset 'ext:optional-annotation
           (function 
 	   #+ecl(ext:lambda-block ext:optional-annotation (whole env)

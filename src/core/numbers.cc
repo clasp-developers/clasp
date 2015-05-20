@@ -3632,8 +3632,8 @@ unsigned char clasp_toUint8(T_sp n) {
 }
 
 signed char clasp_toSignedInt8(T_sp n) {
-  if (Fixnum_sp fn = gc::As<Fixnum_sp>(n)) {
-    Fixnum fi = unbox_fixnum(fn);
+  if (n.fixnump()) {
+    Fixnum fi = unbox_fixnum(gc::As<Fixnum_sp>(n));
     if (fi >= -128 && fi <= 127) {
       return fi;
     }
@@ -3642,7 +3642,8 @@ signed char clasp_toSignedInt8(T_sp n) {
 }
 
 cl_index clasp_toSize(T_sp f) {
-  if (Fixnum_sp fn = gc::As<Fixnum_sp>(f)) {
+  if (f.fixnump()) {
+    Fixnum_sp fn(gc::As<Fixnum_sp>(f));
     Fixnum ff = unbox_fixnum(fn);
     if (ff >= 0) {
       return ff;

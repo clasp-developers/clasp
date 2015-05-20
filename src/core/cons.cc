@@ -969,13 +969,7 @@ string Cons_O::__repr__() const {
     if (cl_consp(cdr)) {
       Cons_sp p = gc::As<Cons_sp>(cdr);
       T_sp po = p->_Car;
-      if (!po) {
-        sout << "!!!!CAR-UNDEFINED!!!! ";
-      } else if (po.nilp()) {
-        sout << "nil ";
-      } else {
-        sout << _rep_(po) << " ";
-      }
+      sout << _rep_(po) << " ";
       cdr = oCdr(p);
     } else {
       if (cdr.notnilp()) {

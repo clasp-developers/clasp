@@ -191,7 +191,7 @@ Lisp_O::GCRoots::GCRoots() : _MultipleValuesCur(NULL), _BignumRegister0(_Unbound
                              ,
                              _SystemProperties(_Nil<T_O>()), _CatchInfo(_Nil<T_O>()), _SpecialForms(_Unbound<HashTableEq_O>()), _SingleDispatchMethodCachePtr(NULL), _MethodCachePtr(NULL), _SlotCachePtr(NULL), _NullStream(_Nil<T_O>()), _PathnameTranslations(_Nil<T_O>()) {}
 
-Lisp_O::Lisp_O() : _StackWarnSize(15 * 1024 * 1024), // 8MB default stack size before warnings
+Lisp_O::Lisp_O() : _StackWarnSize(7 * 1024 * 1024), // 7MB default stack size before warnings
                    _StackSampleCount(0),
                    _StackSampleSize(0),
                    _StackSampleMax(0),
@@ -1329,7 +1329,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
           af_bformat(_lisp->_true(), "Cannot interpret %s - define core::*top-level-command-hook*", Cons_O::createList(tplCmd.cons()));
         }
       } else if (expression.notnilp()) {
-        result = eval::af_topLevelEvalWithEnv(expression, environ);
+        result = eval::core_evalWithEnv(expression, environ);
         gctools::Vec0<core::T_sp /*,gctools::RootedGCHolder*/> vresults;
         vresults.resize(result.number_of_values());
         if (result.number_of_values() > 0) {
@@ -1611,10 +1611,10 @@ T_mv af_getline(Str_sp prompt) {
   __END_DOC
 */
 
-#define ARGS_af_system "(cmd)"
-#define DECL_af_system ""
-#define DOCS_af_system "system"
-T_mv af_system(Str_sp cmd) {
+#define ARGS_core_system "(cmd)"
+#define DECL_core_system ""
+#define DOCS_core_system "system"
+T_mv core_system(Str_sp cmd) {
   _G();
   string command = cmd->get();
   int ret = system(command.c_str());
@@ -1678,7 +1678,7 @@ Class_mv cl_findClass(Symbol_sp symbol, bool errorp, T_sp env) {
   }
   ASSERTF(env.nilp(), BF("Handle non nil environment"));
   // Use the same global variable that ECL uses
-  SYMBOL_SC_(CorePkg, STARclassNameHashTableSTAR);
+  SYMBOL_EXPORT_SC_(CorePkg, STARclassNameHashTableSTAR);
   HashTable_sp classNames = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
   T_mv mc = classNames->gethash(symbol, _Nil<T_O>());
   T_sp cla = mc;
@@ -3054,7 +3054,7 @@ void Lisp_O::exposeCando() {
   Defun(getline);
 
   SYMBOL_SC_(CorePkg, system);
-  Defun(system);
+  CoreDefun(system);
 
   SYMBOL_EXPORT_SC_(ClPkg, apropos);
   Defun(apropos);

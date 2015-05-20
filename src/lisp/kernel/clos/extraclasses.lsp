@@ -23,7 +23,7 @@
 (defun add-extra-classes (additional-classes)
   (dolist (class-symbol additional-classes)
     (let* ((class (find-class class-symbol))
-	   (supers-names (mapcar #'(lambda (x) (class-name x)) (cl:direct-superclasses class))))
+	   (supers-names (mapcar #'(lambda (x) (class-name x)) (core:direct-superclasses class))))
       (clos::make-empty-standard-class class-symbol :metaclass 'builtin-class
 				       :direct-superclasses supers-names)
       (clos::finalize-inheritance class))))

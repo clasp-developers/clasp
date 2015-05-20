@@ -47,7 +47,7 @@ SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, callWithVariableBound);
 
 void initialize_cleavirPrimopsPackage() {
   list<string> lnicknames;
-  list<string> luse = {"COMMON-LISP"};
+  list<string> luse = {};
   _lisp->makePackage(CleavirPrimopsPkg, lnicknames, luse);
   // We don't have to create the CLEAVIR-PRIMOPS symbols here - it's done in bootStrapCoreSymbolMap
 }

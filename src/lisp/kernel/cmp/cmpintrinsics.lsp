@@ -30,13 +30,6 @@
 
 
 
-(defun debug-write-module (module filename)
-  (bformat t "!!!!!!!!!!!\n")
-  (bformat t "!!!!!!!!!!!\n")
-  (bformat t "!!!      WRITING MODULE TO FILE: %s\n" filename)
-  (bformat t "!!!!!!!!!!!\n")
-  (llvm-sys:write-text-bitcode-to-path module (pathname filename)))
-
 
 (defvar *irbuilder* nil
   "This is the IRBuilder that defines where all irc-xxx functions that generate IR code put the code.

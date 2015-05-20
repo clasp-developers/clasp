@@ -15,4 +15,5 @@
 	  +fn-prototype+
 	  +fn-prototype-argument-names+
 	  *implicit-compile-hook*
+          walk-form-for-source-info
 	  ))

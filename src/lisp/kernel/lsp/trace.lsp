@@ -301,7 +301,7 @@ for Stepper mode commands."
 	 (*step-level* 0)
 	 (*step-functions* (make-hash-table :size 128 :test 'eq)))
     (catch *step-tag*
-      (si:eval-with-env form nil t))))
+      (core:eval-with-env form nil t))))
 
 (defun steppable-function (form)
   (let ((*step-action* nil))

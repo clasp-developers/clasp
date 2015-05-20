@@ -42,6 +42,7 @@ Builds a new function which accepts any number of arguments but always outputs N
 (defun create-type-name (name)
   (when (member name *alien-declarations*)
     (error "Symbol ~s is a declaration specifier and cannot be used to name a new type" name)))
+(export 'create-type-name)
 
 (defun do-deftype (name form function)
   (unless (symbolp name)

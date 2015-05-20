@@ -2137,10 +2137,10 @@ T_mv t1Evaluate(T_sp exp, T_sp environment) {
   return eval::funcall(_sym_compileFormAndEvalWithEnv, exp, environment);
 }
 
-#define ARGS_af_topLevelEvalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
-#define DECL_af_topLevelEvalWithEnv ""
-#define DOCS_af_topLevelEvalWithEnv "topLevelEvalWithEnv"
-T_mv af_topLevelEvalWithEnv(T_sp form, T_sp env, bool stepping, bool compiler_env_p, bool execute) {
+#define ARGS_core_evalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
+#define DECL_core_evalWithEnv ""
+#define DOCS_core_evalWithEnv "evalWithEnv"
+T_mv core_evalWithEnv(T_sp form, T_sp env, bool stepping, bool compiler_env_p, bool execute) {
   _G();
   return t1Evaluate(form, env);
 }
@@ -2389,8 +2389,8 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   Defun(evaluateVerbosity);
   SYMBOL_EXPORT_SC_(CorePkg, compileFormAndEvalWithEnv);
   Defun(compileFormAndEvalWithEnv);
-  SYMBOL_EXPORT_SC_(CorePkg, topLevelEvalWithEnv);
-  Defun(topLevelEvalWithEnv);
+  SYMBOL_EXPORT_SC_(CorePkg, evalWithEnv);
+  CoreDefun(evalWithEnv);
   SYMBOL_SC_(CorePkg, evaluateDepth);
   Defun(evaluateDepth);
   SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);

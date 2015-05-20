@@ -2,16 +2,25 @@
 ;; :clos to compile with CLOS
 ;;
 
-(setq *features* (cons :debug-format *features*))
+#+(or)(setq *features* (cons :debug-format *features*))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package "CORE"))
 
-(SYS:*MAKE-SPECIAL 'core:*echo-repl-tpl-read*)
+(SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
+(export '*echo-repl-tpl-read*)
+(export '(*echo-repl-tpl-read* 
+          run-repl 
+          *load-current-source-file-info* 
+          *load-current-linenumber*
+          cons-car
+          cons-cdr
+          ))
+
 :pause-hir
 
-(setq core:*echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
+(setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
 (setq *echo-repl-read* nil)
 (setq *load-print* nil)
 (setq *print-source-code-cons* nil)
@@ -46,26 +55,29 @@
 (setq *features* (cons :clasp-boot *features*)) ;; When bootstrapping in stages
 
 ;; Set up a few things for the CLOS package
-;;(core::select-package :clos)
-;;(use-package :core)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (core::select-package :clos))
+(export '(standard-class
+          ))
 
 ;; Setup a few things for the GRAY streams package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :gray))
-(core:shadow '(STREAM-ELEMENT-TYPE OPEN-STREAM-P OUTPUT-STREAM-P INPUT-STREAM-P STREAMP CLOSE))
-(core:use-package :core)
+(shadow '(STREAM-ELEMENT-TYPE OPEN-STREAM-P OUTPUT-STREAM-P INPUT-STREAM-P STREAMP CLOSE))
 
 ;; Setup a few things for the CORE package
 (eval-when (:execute :compile-toplevel :load-toplevel)
-  (select-package :core))
+  (core::select-package :core))
 (use-package '(:compiler :clos :ext))
 
 ;; Setup a few things for the CMP package
 (eval-when (:execute :compile-toplevel :load-toplevel)
-  (select-package :cmp))
+  (core::select-package :cmp))
+(export '(link-system-lto))
 
 ;;; cmp:*implicit-compilation* is set to T in cmp/cmprepl.lsp
-(SYS:*MAKE-SPECIAL 'cmp:*implicit-compilation*)
+(SYS:*MAKE-SPECIAL 'cmp::*implicit-compilation*)
+(export '*implicit-compilation*)
 (setq cmp:*implicit-compilation* nil)
 (export '(cmp:*implicit-compilation*))
 
@@ -92,6 +104,26 @@
 ;; Setup a few things for the EXT package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
+#+(or)(export '(*module-provider-functions*
+          check-arguments-type
+          array-index
+          byte8
+          integer8
+          byte16
+          integer16
+          byte32
+          integer32
+          byte64
+          integer64
+          cl-fixnum
+          cl-index
+          assume-no-errors
+          sequence-stream
+          all-encodings
+          load-encoding
+          make-encoding
+          assume-right-type
+          ))
 (core:*make-special '*register-with-pde-hook*)
 (core:*make-special '*module-provider-functions*)
 (export '*module-provider-functions*)
@@ -214,7 +246,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defconstant +ecl-optimization-settings+
   '((optimize (safety 2) (speed 1) (debug 1) (space 1))
-    (ext:check-arguments-type nil)))
+    (ext::check-arguments-type nil)))
 (defconstant +ecl-unsafe-declarations+
   '(optimize (safety 0) (speed 3) (debug 0) (space 0)))
 (defconstant +ecl-safe-declarations+
@@ -383,6 +415,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;; This is used extensively in the ecl compiler and once in predlib.lsp
 (defvar *alien-declarations* ())
+(export '*alien-declarations*)
 
 
 
@@ -590,6 +623,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     kernel/cmp/jit-setup
     kernel/clsymbols
     :start
+    kernel/lsp/packages
     kernel/lsp/foundation
     kernel/lsp/export
     kernel/lsp/defmacro
@@ -811,6 +845,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;; Clean out the bitcode files.
 ;; passing :no-prompt t will not prompt the user
+(export 'clean-system)
 (defun clean-system ( &optional after-file &key no-prompt (target-backend *target-backend*)
                                            (system *init-files*))
   (let* ((*target-backend* target-backend)
@@ -842,11 +877,15 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
         (compile-system :init :start :reload nil )
         ))
 
+
 (defconstant +minimal-epilogue-form+ '(progn
                                         (process-command-line-load-eval-sequence)
                                         (bformat t "Starting clasp-min low-level-repl\n")
                                         (core::low-level-repl)))
 
+
+
+(export 'compile-min-system)
 (defun compile-min-system (&key (source-backend (default-target-backend))(target-backend (default-target-backend)))
   (let* ((*target-backend* source-backend)
          (bitcodes1 (compile-system :start :cmp :reload t ))
@@ -854,13 +893,14 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
          (bitcodes2 (compile-system :cmp :min ))
          (all-bitcodes (nconc bitcodes0 bitcodes1 bitcodes2)))
     (let ((*target-backend* target-backend))
-    (cmp:link-system-lto
+    (cmp::link-system-lto
            (target-backend-pathname +image-pathname+ )
            :lisp-bitcode-files all-bitcodes
            :epilogue-form +minimal-epilogue-form+
            ))))
 
 
+(export 'compile-min-recompile)
 (defun compile-min-recompile (&key (target-backend (default-target-backend)))
   (let ((*target-backend* target-backend)
         (bitcode-files0 (compile-system :init :start :recompile t))
@@ -872,12 +912,14 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
+(export 'switch-to-full)
 (defun switch-to-full ()
   (setq *features* (remove :ecl-min *features*))
   (push :clos *features*)
   (bformat t "Removed :ecl-min from and added :clos to *features* --> %s\n" *features*))
 
 
+(export 'compile-full)
 (defun compile-full ()
   (if (member :ecl-min *features*) (switch-to-full))
   (let ((*target-backend* (default-target-backend)))

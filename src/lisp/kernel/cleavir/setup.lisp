@@ -21,6 +21,7 @@
 
 
 (defmethod cleavir-env:variable-info ((environment clasp-global-environment) symbol)
+  (core:stack-monitor)
   (cond (;; We can check whether this symbol names a constant variable
 	 ;; by checking the return value of CONSTANTP. 
 	 (constantp symbol)
@@ -85,7 +86,7 @@
     ( ;; If it is not the name of a macro, it might be the name of
      ;; a special operator.  This can be checked by calling
      ;; special-operator-p.
-     (and (symbolp function-name) (core:treat-as-special-operator-p function-name))
+     (and (symbolp function-name) (cmp:treat-as-special-operator-p function-name))
      (make-instance 'cleavir-env:special-operator-info
 		    :name function-name))
     ( ;; If the function name is the name of a macro, then
@@ -272,14 +273,14 @@
       "Stuff"))))
 
 (defun ast-form (form)
-  (let ((ast (cleavir-generate-ast:generate-ast form *clasp-env*)))
+  (let ((ast (cleavir-generate-ast:generate-ast form *clasp-env* (make-instance 'clasp))))
     (setf *form* form
 	  *ast* ast)
     (draw-ast ast)
     ast))
 
 (defun hoisted-ast-form (form)
-  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
+  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env* (make-instance 'clasp)))
 	 (hoisted (clasp-cleavir-ast:hoist-load-time-value ast)))
     (setf *form* form
 	  *ast* hoisted)

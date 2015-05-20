@@ -537,6 +537,7 @@ T_mv cl_specialOperatorP(T_sp sym) {
   return (Values(_Nil<T_O>()));
 };
 
+#if 0
 #define ARGS_core_treatAsSpecialOperatorP "(symbol)"
 #define DECL_core_treatAsSpecialOperatorP ""
 #define DOCS_core_treatAsSpecialOperatorP "See CLHS: special-operator-p"
@@ -549,6 +550,7 @@ T_sp core_treatAsSpecialOperatorP(T_sp sym) {
     return _lisp->_true();
   return cl_specialOperatorP(sym);
 };
+#endif
 
 #define ARGS_cl_ash "(integer count)"
 #define DECL_cl_ash ""
@@ -1738,7 +1740,7 @@ void initialize_primitives() {
   SYMBOL_SC_(CorePkg, rem_f);
   Defun(rem_f);
 
-  CoreDefun(treatAsSpecialOperatorP);
+//  CoreDefun(treatAsSpecialOperatorP);
 
   SYMBOL_SC_(CorePkg, separatePairList);
   Defun(separatePairList);

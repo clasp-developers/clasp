@@ -613,7 +613,7 @@ Use special code 0 to cancel this operation.")
 		   ;; update *current-source-pos-info* if we can extract it from the source
 		   (setq core:*current-source-pos-info* (core:walk-to-find-source-pos-info - core:*current-source-pos-info*))
 		   (setq values (multiple-value-list
-				 (top-level-eval-with-env - *break-env*))
+				 (core:eval-with-env - *break-env*))
 			 /// // // / / values *** ** ** * * (car /))
 		   (tpl-print values))))))
       (loop
@@ -1555,7 +1555,7 @@ value."
 				 (declare (ignore condition))
                                  (return-from safe-eval err-value))
                              #'invoke-debugger)))
-           (setf output (si::top-level-eval-with-env form env)
+           (setf output (core:eval-with-env form env)
                  ok t))
       (return-from safe-eval (if ok output err-value)))))
 

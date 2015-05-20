@@ -1,0 +1,87 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Export symbols in CORE package
+;;;
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (core:select-package "CORE"))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '( single-dispatch-missing-dispatch-argument-error
+            too-few-arguments-error
+            too-many-arguments-error
+            unrecognized-keyword-argument-error
+            argc
+            argv
+            rmdir
+            external-process-pid
+            ))
+
+  (export '( ;;;;MISSING SYMBOLS!!!!!
+            fill-pointer-set ;;; MISSING!!!! from C++ source code used in vector-pop arraylib.lsp
+            set-symbol-plist
+            structure-name
+            )))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Export symbols in GRAY package
+;;;
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (core:select-package "GRAY"))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '( fundamental-character-output-stream
+          )))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Export symbols in EXT package
+;;;
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (core:select-package :ext))
+
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (export '(check-arguments-type
+            array-index
+            byte8
+            integer8
+            byte16
+            integer16
+            byte32
+            integer32
+            byte64
+            integer64
+            cl-fixnum
+            cl-index
+            assume-no-errors
+            sequence-stream
+            all-encodings
+            load-encoding
+            make-encoding
+            assume-right-type
+            segmentation-violation
+            stack-overflow
+            stack-overflow-size
+            stack-overflow-type
+            storage-exhausted
+            illegal-instruction
+            unix-signal-received
+            unix-signal-received-code
+            interactive-interrupt
+            hash-table-content
+            hash-table-fill
+            compiled-function-file
+            lisp-implementation-vcs-id
+            getcwd
+            chdir
+            +process-standard-input+
+            external-process-wait
+            external-process-status
+            all-encodings
+            compiled-function-name
+            *invoke-debugger-hook*
+            system
+            )))
+
+

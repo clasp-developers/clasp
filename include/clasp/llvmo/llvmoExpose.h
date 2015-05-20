@@ -1250,7 +1250,7 @@ public:
   virtual void *functionAddress() const { return (void *)this->fptr; }
 
 public:
-  CompiledClosure(core::T_sp functionName, core::SourcePosInfo_sp spi, core::Symbol_sp type, fptr_type ptr, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
+ CompiledClosure(core::T_sp functionName, core::T_sp spi, core::Symbol_sp type, fptr_type ptr, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
                   core::T_sp ll)
       : FunctionClosure(functionName, spi, type, renv), fptr(ptr), associatedFunctions(assocFuncs), _lambdaList(ll){};
   void setAssociatedFunctions(core::List_sp assocFuncs) { this->associatedFunctions = assocFuncs; };

@@ -1,4 +1,4 @@
-;;;
+;;
 ;;;    File: cmpir.lsp
 ;;;
 
@@ -1099,6 +1099,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 then create a function invocation that unwinds to the unwindable environments unwind-dest.
 Otherwise just create a function call"
   (let ((func (get-function-or-error *the-module* function-name (car args))))
+    (or func (error "Could not get function ~a" function-name))
     (if (or (llvm-sys:does-not-throw func) (null *current-unwind-landing-pad-dest*))
 	(irc-create-call function-name args label)
 	(irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))))
@@ -1157,6 +1158,7 @@ If the *primitives* hashtable says that the function with (name) requires a firs
 							   (llvm-sys:get-type first-argument)
 							   nil))))
       (let ((f (llvm-sys:get-function module dispatch-name)))
+        (or f (error "Could not llvm-sys:get-function ~a with name: ~a" dispatch-name name))
 	(if (llvm-sys:valid f)
 	    f
 	    (error "Could not find function: ~a" dispatch-name))))))

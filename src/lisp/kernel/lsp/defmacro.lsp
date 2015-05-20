@@ -433,7 +433,7 @@ from the function in which it appears." name))))
 (defun macrolet-functions (definitions old-env)
   (declare (si::c-local))
   (let ((env (cmp-env-for-bytecodes old-env)))
-    (si::eval-with-env
+    (core:eval-with-env
      (cons 'list
 	   (mapcar #'(lambda (x)
 		       (let* ((name (first x))
