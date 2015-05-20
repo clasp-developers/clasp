@@ -24,7 +24,7 @@ project internals/core : requirements
 	<toolset>pgi:<linkflags>"-mp -gopt"
 	<toolset>clang:<variant>release:<linkflags>"-O4"
 	<target-os>darwin:<linkflags>"-dynamiclib"
-	<target-os>darwin:<make-bundle>no
+#	<target-os>darwin:<make-bundle>no
 	;
 
 #
@@ -194,12 +194,12 @@ alias generated-files : wrappers_functoids wrappers_methoids external_wrappers_i
 #h symbol_apply_inc : generate_symbol_apply_inc.lisp ;
 
 
-bundler.bundle $(dir) :
-	     $(sources) :
-	     <link>static
-             <implicit-dependency>mi
-             <implicit-dependency>meta
-	     ;
+#bundler.bundle $(dir) :
+#	     $(sources) :
+#	     <link>static
+#            <implicit-dependency>mi
+#             <implicit-dependency>meta
+#	     ;
 
 alias meta :     wrappers_functoids
                  wrappers_methoids

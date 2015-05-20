@@ -35,12 +35,11 @@ sources =
 	/externals//boostAndExpatLibs
 	/externals//clang_lib ;
 
-bundler.bundle $(dir) :
-	     $(sources) :
-	     <link>static
-	     <implicit-dependency>mi
-	     <implicit-dependency>/internals/core//mi
-             <implicit-dependency>/internals/clbind//mi
-             <implicit-dependency>/internals/llvmo//mi
-	     ;
-#	     <implicit-dependency>/internals/core//symbol_apply_inc  ;
+#bundler.bundle $(dir) :
+#	     $(sources) :
+#	     <link>static
+#	     <implicit-dependency>mi
+#	     <implicit-dependency>/internals/core//mi
+#            <implicit-dependency>/internals/clbind//mi
+#           <implicit-dependency>/internals/llvmo//mi
+#	     ;

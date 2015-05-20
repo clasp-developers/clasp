@@ -75,32 +75,32 @@ rule bundle ( dir : sources * : properties * : opt_props * : dbg_props * )
 	lib $(lib)_boehm_opt :
 	    $(sources) :
 	    $(properties) $(opt_props) <gc>boehm
-        <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
+        <target-os>darwin:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
 
 	lib $(lib)_boehm_dbg :
 	    $(sources) :
 	    $(properties) $(dbg_props) <gc>boehm
-	    <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
+	    <target-os>darwin:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
 
 	lib $(lib)_mps_opt :
 	    $(sources) :
 	    $(properties) $(opt_props) <gc>mps
-        <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
+        <target-os>darwin:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
 
 	lib $(lib)_mps_dbg :
 	    $(sources) :
 	    $(properties) $(dbg_props) <gc>mps
-	    <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
+	    <target-os>darwin:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
 
 	lib $(lib)_mps_prep_opt :
 	    $(sources) :
 	    $(properties) $(opt_props) <gc>mps-prep
-        <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
+        <target-os>darwin:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
 
 	lib $(lib)_mps_prep_dbg :
 	    $(sources) :
 	    $(properties) $(dbg_props) <gc>mps-prep
-	    <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
+	    <target-os>darwin:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
 
 
 

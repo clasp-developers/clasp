@@ -43,11 +43,11 @@ local sources =
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib ;
 
-bundler.bundle $(dir) :
-	     $(sources) :
-	     <link>static
-	     <implicit-dependency>mi
-	     <implicit-dependency>/internals/core//mi
-	     <implicit-dependency>/internals/cffi//mi
-	     <implicit-dependency>/internals/llvmo//mi
-	     ;
+#bundler.bundle $(dir) :
+#	     $(sources) :
+#	     <link>static
+#	     <implicit-dependency>mi
+#	     <implicit-dependency>/internals/core//mi
+#	     <implicit-dependency>/internals/cffi//mi
+#	     <implicit-dependency>/internals/llvmo//mi
+#	     ;

@@ -108,12 +108,12 @@ alias install_intrinsics_bitcode : inst_intrinsics_bitcode_mps_prep :
       <gc>mps-prep
       ;
 
-bundler.bundle $(dir) :
-	     $(sources)
-             :
-	     <link>static
-             <dependency>install_intrinsics_bitcode
-             <implicit-dependency>/internals/clbind//mi
-	     <implicit-dependency>mi 
-	     <implicit-dependency>/internals/core//mi ;
+#bundler.bundle $(dir) :
+#	     $(sources)
+#             :
+#	     <link>static
+#             <dependency>install_intrinsics_bitcode
+#             <implicit-dependency>/internals/clbind//mi
+#	     <implicit-dependency>mi 
+#	     <implicit-dependency>/internals/core//mi ;
 

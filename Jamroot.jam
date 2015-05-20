@@ -8,6 +8,9 @@ CLASP_VERSION = "0.2" ;
 
 using clang : : [ os.environ CLASP_CLANG_PATH ] ; #   $(APPRES-EXTERNALS-RELEASE)/bin/clang++  ; # CLASP_TOOLSET
 
+#using bundler : $(TOP) ;
+
+
 # using gc ;
 import feature ;
 feature.feature gc : boehm mps mps-prep
@@ -213,8 +216,6 @@ path-constant MPS-SRC : ./externals/src/mps-kit-1.111.0/code ;
 path-constant MPS-LIB : $(APPRES-EXTERNALS-COMMON-LIB) ;
 
 
-
-using bundler : $(TOP) ;
 
 use-project externals : ./externals ;
 use-project internals : src ;
