@@ -1,7 +1,9 @@
 Clasp
 ===============
 
-<a href="https://drmeister.wordpress.com/2015/01/25/release-0-2-of-clasp-is-available/">-- Update Jan 25, 2014 --  Please read regarding installing Clasp</a>
+<a href="https://mailman.common-lisp.net/listinfo/clasp-devel">-- Update May 19, 2015 Clasp has a developers mailing list.</a>
+
+<a href="https://drmeister.wordpress.com/2015/01/25/release-0-2-of-clasp-is-available/">-- Update Jan 25, 2015 --  Please read regarding installing Clasp</a>
 
 Note: **EXTERNALS_BUILD_TARGET_DIR** and **CLASP_BUILD_TARGET_DIR** are not required any more in locals.config.  There is a new variable **EXTERNALS_SOURCE_DIR** that you set to the path of the exterals-clang source directory.
 
