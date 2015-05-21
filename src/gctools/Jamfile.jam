@@ -32,7 +32,7 @@ project internals/gctools : requirements
 local sources = 
 	gctoolsPackage.cc
         gcweak.cc
-        memoryRefSearch.c
+#        memoryRefSearch.c
 	memoryManagement.cc
 	/internals/core/
 	/externals//boostAndExpatLibs

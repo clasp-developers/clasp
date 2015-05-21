@@ -21,7 +21,7 @@ project internals/main : requirements
 
 lib rt : : <name>rt ;
 
-alias gclib : /externals//boehm/libgc :
+alias gclib : /externals//lib_boehm :
       <gc>boehm ;
 
 alias gclib : mymps.c :
@@ -30,8 +30,6 @@ alias gclib : mymps.c :
 
 
 sources = 
-        mymps.c
-        gc_interface.cc
     	    	/internals//core        #//bundle/<link>static
 		/internals//cffi        #//bundle/<link>static
 		/internals//llvmo       #//bundle/<link>static
@@ -45,75 +43,91 @@ sources =
 		/externals//boostAndExpatLibs/<link>static
 		;
 
+#        gc_interface.cc
+
 
 exe clasp_boehm_o : main.cc $(sources)
-                    /externals//lib_boehm
-    	   : $(deps) <gc>boehm ;
+          /externals//lib_boehm/<link>static
+          : <gc>boehm <variant>release
+    ;
 
-exe clasp_boehm_d : main.cc $(sources) /externals//lib_boehm/<link>static
-    	   : $(deps) <gc>boehm ;
-
-exe clasp_mps_o : main.cc $(sources)
-    	   : $(deps) <gc>mps ;
-
-exe clasp_mps_d : main.cc $(sources)
-    	   : $(deps) <gc>mps ;
-
-exe clasp_mps_prep_o : main.cc $(sources)
-    	   : $(deps) <gc>mps-prep ;
-
-exe clasp_mps_prep_d : main.cc $(sources)
-    	   : $(deps) <gc>mps-prep ;
+exe clasp_boehm_d : main.cc $(sources)
+          /externals//lib_boehm/<link>static
+          : <gc>boehm <variant>debug
+    ;
 
 
-alias mpi_stuff : /internals//mpip/<link>static
-                  /externals//boost_mpi/<link>static
-                  /externals//mpi
-                  ;
+executables = clasp_boehm_o
+              clasp_boehm_d
+              ;
+              
+install install : $(executables)
+        : <location>$(APPBIN-OSX) <target-os>darwin
+        ;
 
-exe clasp_mpi_o : mainMpi.cc $(sources) mpi_stuff
-        	   : $(deps)
-                   <gc>mps
-		   ;
-
-exe clasp_mpi_d : mainMpi.cc $(sources) mpi_stuff
-        	   : $(deps)
-                   <gc>mps
-		   ;
+install install : $(executables)
+        : <location>$(APPBIN-LINUX) <target-os>linux
+        ;
 
 
-exe clasp_mpi_mps_o : mainMpi.cc $(sources) mpi_stuff 
-        	   : $(deps)
-                   <gc>mps
-		   ;
-
-exe clasp_mpi_mps_d : mainMpi.cc $(sources) mpi_stuff
-        	   : $(deps)
-                   <gc>mps
-		   ;
-
-alias clasp : clasp_boehm_o : <variant>release <gc>boehm ;
-alias clasp : clasp_boehm_d : <variant>debug <gc>boehm ;
-
-alias clasp : clasp_mps_o : <variant>release <gc>mps ;
-alias clasp : clasp_mps_d : <variant>debug <gc>mps ;
-
-alias clasp : clasp_mps_prep_o : <variant>release <gc>mps-prep ;
-alias clasp : clasp_mps_prep_d : <variant>debug <gc>mps-prep ;
-
-alias clasp_mpi : clasp_mpi_mps_o : <variant>release <gc>boehm ;
-alias clasp_mpi : clasp_mpi_mps_d : <variant>debug <gc>boehm ;
-
-install bundle : clasp
-#               clasp_mpi
-               :
-			<target-os>darwin:<location>$(APPBIN_OSX)
-			<target-os>linux:<location>$(APPBIN_LINUX)
-#			<dll-path>$(APPLIB)
-		   	# <variant>debug:<dll-path>$(APPRES-EXTERNALS-DEBUG-LIB) #Uncomment to get the debug version of llvm
-#                         <dll-path>$(APPRES-EXTERNALS-RELEASE-LIB)
-# Add the link path for the externals-clasp libraries to the executable(s)
-                        <dll-path>$(APPRES-EXTERNALS-RELEASE-LIB)
-                        <dll-path>$(APPRES-EXTERNALS-COMMON-LIB)
-                        ;
+#alias gc-sources : mymps.c
+#
+#exe clasp_boehm_o : main.cc $(sources)
+#                    /externals//lib_boehm
+#    	   : $(deps) <gc>boehm ;
+#
+#exe clasp_boehm_d : main.cc $(sources) /externals//lib_boehm/<link>static
+#    	   : $(deps) <gc>boehm ;
+#
+#exe clasp_mps_o : main.cc $(sources) mymps.c
+#    	   : $(deps) <gc>mps ;
+#
+#exe clasp_mps_d : main.cc $(sources) mymps.c
+#    	   : $(deps) <gc>mps ;
+#
+#exe clasp_mps_prep_o : main.cc $(sources) mymps.c
+#    	   : $(deps) <gc>mps-prep ;
+#
+#exe clasp_mps_prep_d : main.cc $(sources) mymps.c
+#    	   : $(deps) <gc>mps-prep ;
+#
+#
+#alias mpi_stuff : /internals//mpip/<link>static
+#                  /externals//boost_mpi/<link>static
+#                  /externals//mpi
+#                  ;
+#
+#exe clasp_mpi_o : mainMpi.cc $(sources) mpi_stuff
+#        	   : $(deps)
+#                   <gc>mps
+#		   ;
+#
+#exe clasp_mpi_d : mainMpi.cc $(sources) mpi_stuff
+#        	   : $(deps)
+#                   <gc>mps
+#		   ;
+#
+#
+#exe clasp_mpi_mps_o : mainMpi.cc $(sources) mpi_stuff 
+#        	   : $(deps)
+#                   <gc>mps
+#		   ;
+#
+#exe clasp_mpi_mps_d : mainMpi.cc $(sources) mpi_stuff
+#        	   : $(deps)
+#                   <gc>mps
+#		   ;
+#
+#alias clasp : clasp_boehm_o : <variant>release <gc>boehm ;
+#alias clasp : clasp_boehm_d : <variant>debug <gc>boehm ;
+#
+#alias clasp : clasp_mps_o : <variant>release <gc>mps ;
+#alias clasp : clasp_mps_d : <variant>debug <gc>mps ;
+#
+#alias clasp : clasp_mps_prep_o : <variant>release <gc>mps-prep ;
+#alias clasp : clasp_mps_prep_d : <variant>debug <gc>mps-prep ;
+#
+#alias clasp_mpi : clasp_mpi_mps_o : <variant>release <gc>boehm ;
+#alias clasp_mpi : clasp_mpi_mps_d : <variant>debug <gc>boehm ;
+#
 

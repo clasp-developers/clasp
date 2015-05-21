@@ -495,7 +495,7 @@ struct from_object<std::unique_ptr<T>> {
       this->_v = std::unique_ptr<T>(static_cast<T *>(NULL));
       return;
     } else if (core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>()) {
-      this->_v = std::unique_ptr<T>(gc::As<core::WrappedPointer_sp>(o)->cast<T>());
+      this->_v = std::unique_ptr<T>(/*gc::As<core::WrappedPointer_sp>(o)*/wp->cast<T>());
       return;
     } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
       this->_v = std::unique_ptr<T>(static_cast<T *>(pp->ptr()));
@@ -531,7 +531,7 @@ struct from_object<T *> {
       this->_v = static_cast<T *>(NULL);
       return;
     } else if (core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>()) {
-      this->_v = gc::As<core::WrappedPointer_sp>(o)->cast<T>();
+      this->_v = /*gc::As<core::WrappedPointer_sp>(o)*/wp->cast<T>();
       return;
     } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
       this->_v = static_cast<T *>(pp->ptr());
@@ -567,7 +567,7 @@ struct from_object<const T *&> {
       this->_v = static_cast<T *>(NULL);
       return;
     } else if (core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>()) {
-      this->_v = gc::As<core::WrappedPointer_sp>(o)->cast<T>();
+      this->_v = /*gc::As<core::WrappedPointer_sp>(o)*/wp->cast<T>();
       return;
     } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
       this->_v = static_cast<T *>(pp->ptr());

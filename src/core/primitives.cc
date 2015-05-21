@@ -470,7 +470,7 @@ T_sp cl_macroFunction(Symbol_sp symbol, T_sp env) {
   if (env.nilp() || env.framep()) {
     func = af_interpreter_lookup_macro(symbol, env);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-    func = af_interpreter_lookup_macro(symbol, env);
+    func = af_interpreter_lookup_macro(symbol, eenv);
   } else {
     if (cleavirEnv::_sym_macroFunction->fboundp()) {
       func = eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);
@@ -1367,6 +1367,7 @@ Symbol_mv af_gensym(T_sp x) {
 #define DOCS_af_type_to_symbol "type_to_symbol"
 Symbol_mv af_type_to_symbol(T_sp x) {
   _G();
+#pragma clang diagnostic ignored "-Wunused-variable"
   if (x.fixnump())
     return (Values(cl::_sym_fixnum));
   else if (Character_sp ccx = x.asOrNull<Character_O>())
@@ -1410,6 +1411,7 @@ Symbol_mv af_type_to_symbol(T_sp x) {
     return (Values(cl::_sym_ReadTable_O));
   return Values(x->__class()->className());
   SIMPLE_ERROR(BF("Add af_type_to_symbol support for type: %s") % x->_instanceClass()->classNameAsString());
+#pragma clang diagnostic pop
 }
 
 T_sp type_of(T_sp x) {

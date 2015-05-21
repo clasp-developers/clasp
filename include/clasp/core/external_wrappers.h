@@ -201,9 +201,9 @@ public:
 
   template <class C, class D>
   externalClass_ &def_readonly(string const &name, D C::*mem_ptr) {
+#if 0
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
     BuiltinClosure *m = gctools::ClassAllocator<GetterMethoid<D, C>>::allocateClass(symbol, mem_ptr);
-#if 0
             lisp_defineSingleDispatchMethod(symbol
                                             ,this->_ClassSymbol
                                             ,m

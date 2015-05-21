@@ -592,7 +592,7 @@ void __attribute__((noreturn)) lisp_errorCast(ObjPtrType objP) {
 }
 
 namespace core {
-class ThreadInfo;
+struct ThreadInfo;
 class MultipleValues;
 void lisp_setThreadLocalInfoPtr(ThreadInfo *address);
 MultipleValues &lisp_multipleValues();

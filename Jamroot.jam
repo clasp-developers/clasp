@@ -11,7 +11,7 @@ using clang : : [ os.environ CLASP_CLANG_PATH ] ; #   $(APPRES-EXTERNALS-RELEASE
 #using bundler : $(TOP) ;
 
 
-# using gc ;
+#using gc ;
 import feature ;
 feature.feature gc : boehm mps mps-prep
                 : symmetric implicit composite propagated link-incompatible ;
@@ -202,8 +202,9 @@ path-constant APPRES-EXTERNALS-COMMON : $(APPRES-EXTERNALS)/common ;
 path-constant APPRES-EXTERNALS-COMMON-LIB : $(APPRES-EXTERNALS-COMMON)/lib ;
 path-constant APPRES-EXTERNALS-COMMON-INCLUDE : $(APPRES-EXTERNALS-COMMON)/include ;
 path-constant APPRES-LISP : $(APPRES)/lisp ;
-path-constant APPBIN_LINUX : $(APPTOP)/bin ;
-path-constant APPBIN_OSX : $(APPTOP)/MacOS ;
+path-constant APPBIN : $(APPTOP)/bin ;
+path-constant APPBIN-OSX : $(APPTOP)/MacOS ;
+path-constant APPBIN-LINUX : $(APPTOP)/bin ;
 path-constant APPINC : $(APPRES)/include ;
 path-constant APPLIB : $(APPRES)/lib ;
 path-constant APP-DEBUG-LIB : $(APPLIB)/debug ;

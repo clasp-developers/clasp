@@ -217,10 +217,11 @@ inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 ar
     SIMPLE_ERROR(BF("Too many arguments %d only %d supported") % nargs % core::MultipleValues::MultipleValuesLimit);
   }
   MultipleValues &mv = lisp_callArgs();
-  T_O **remainingArgumentsInMultipleValues = mv.callingArgsExtraArgStart();
   // Do a placement new of an array of T_sp in the remainingArgumentsInMultipleValues
   // and initialize it using the variadic arguments in the parameter pack ARGS...args
-  T_sp *mvargs = new (remainingArgumentsInMultipleValues) T_sp[vnargs]{std::forward<ARGS>(args)...};
+
+  T_O **remainingArgumentsInMultipleValues = mv.callingArgsExtraArgStart();
+  /*T_sp *mvargs = */new (remainingArgumentsInMultipleValues) T_sp[vnargs]{std::forward<ARGS>(args)...};
   (*ft)(&result, nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), LCC_FROM_SMART_PTR(arg4));
   return result;
 }

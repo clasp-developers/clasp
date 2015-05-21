@@ -88,7 +88,6 @@ struct from_object<llvm::DIBuilder::DebugEmissionKind> {
         return;
       }
     }
-  INVALID:
     SIMPLE_ERROR(BF("You must pass :full-debug or :line-tables-only, only those are valid DebugEmissionKind"));
   }
 };

@@ -391,9 +391,11 @@ public: // bidirectional
   template <typename pType>
   void archiveMapKeyStringValuePOD(Symbol_sp uid, map<string, pType> &v) {
     _G();
+#if 0
     Symbol_sp kw_sip = KW("SIP"); // kind of child node
     Symbol_sp kw_str = KW("STR");
     Symbol_sp kw_int = KW("INT");
+#endif
     ArchiveP listNode;
     if (this->saving()) {
       _BLOCK_TRACE("Saving");
