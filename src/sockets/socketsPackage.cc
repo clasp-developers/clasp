@@ -41,7 +41,7 @@ namespace sockets {
 #define EXPOSE_TO_CANDO
 #define Use_SocketsPkg
 #define EXTERN_REGISTER
-#include <sockets_initClasses_inc.h>
+#include <clasp/sockets/generated/initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_SocketsPkg
 #undef EXPOSE_TO_CANDO
@@ -76,7 +76,7 @@ void SocketsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
 #define ALL_STAGES
 #define Use_SocketsPkg
 #define INVOKE_REGISTER
-#include <sockets_initClasses_inc.h>
+#include <clasp/sockets/generated/initClasses_inc.h>
 #undef INVOKE_REGISTER
 #undef Use_SocketsPkg
 #undef ALL_STAGES
@@ -115,7 +115,7 @@ void SocketsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include <sockets_initClasses_inc.h>
+#include <clasp/sockets/generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

@@ -768,7 +768,7 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
 #define _CLASS_MACRO(_U_) \
   STATIC_CLASS_INFO(_U_); \
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_U_)
-#include <gctools_initClasses_inc.h>
+#include <clasp/gctools/generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

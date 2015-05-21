@@ -1,4 +1,4 @@
-import bundler ;
+
 local dir = $(__file__:D) ;
 
 #
@@ -24,8 +24,10 @@ project internals/sockets : requirements
 sources = 
 	sockets.cc
 	socketsPackage.cc
-	/internals/core//bundle
+	/internals//core
 	/externals//boostAndExpatLibs ;
+
+lib sockets : $(sources) ;
 
 #bundler.bundle $(dir) :
 #	     $(sources) :

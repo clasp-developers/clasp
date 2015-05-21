@@ -8,11 +8,11 @@
 // SYMBOL_TABLE_ENTRY   GcToolsPkg    5 bootstrapKindsP                BOOTSTRAP-KINDS-P              export ; cName=_sym_bootstrapKindsP lispName=BOOTSTRAP-KINDS-P
 // SYMBOL_TABLE_ENTRY   GcToolsPkg    6 garbageCollect                 GARBAGE-COLLECT                export ; cName=_sym_garbageCollect lispName=GARBAGE-COLLECT
 #ifdef GcToolsPkg_SYMBOLS
-DO_SYMBOL(_sym_STARallocPatternStackSTAR, 0, GcToolsPkg, "*ALLOC-PATTERN-STACK*", true);
-DO_SYMBOL(_sym_maxBootstrapKinds, 1, GcToolsPkg, "MAX-BOOTSTRAP-KINDS", true);
-DO_SYMBOL(_sym_ramp, 2, GcToolsPkg, "RAMP", true);
-DO_SYMBOL(_sym_bootstrapKindSymbols, 3, GcToolsPkg, "BOOTSTRAP-KIND-SYMBOLS", true);
-DO_SYMBOL(_sym_rampCollectAll, 4, GcToolsPkg, "RAMP-COLLECT-ALL", true);
-DO_SYMBOL(_sym_bootstrapKindsP, 5, GcToolsPkg, "BOOTSTRAP-KINDS-P", true);
-DO_SYMBOL(_sym_garbageCollect, 6, GcToolsPkg, "GARBAGE-COLLECT", true);
+DO_SYMBOL(_sym_STARallocPatternStackSTAR,0,GcToolsPkg,"*ALLOC-PATTERN-STACK*",true);
+DO_SYMBOL(_sym_maxBootstrapKinds,1,GcToolsPkg,"MAX-BOOTSTRAP-KINDS",true);
+DO_SYMBOL(_sym_ramp,2,GcToolsPkg,"RAMP",true);
+DO_SYMBOL(_sym_bootstrapKindSymbols,3,GcToolsPkg,"BOOTSTRAP-KIND-SYMBOLS",true);
+DO_SYMBOL(_sym_rampCollectAll,4,GcToolsPkg,"RAMP-COLLECT-ALL",true);
+DO_SYMBOL(_sym_bootstrapKindsP,5,GcToolsPkg,"BOOTSTRAP-KINDS-P",true);
+DO_SYMBOL(_sym_garbageCollect,6,GcToolsPkg,"GARBAGE-COLLECT",true);
 #endif

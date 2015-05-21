@@ -44,7 +44,7 @@ namespace asttooling {
 #define EXPOSE_TO_CANDO
 #define Use_AstToolingPkg
 #define EXTERN_REGISTER
-#include <asttooling_initClasses_inc.h>
+#include <clasp/asttooling/generated/initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_AstToolingPkg
 #undef EXPOSE_TO_CANDO
@@ -80,7 +80,7 @@ void AsttoolingExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
 #define Use_AstToolingPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(s, p) DEFAULT_LOOKUP_SYMBOL(s, p)
-#include <asttooling_initClasses_inc.h>
+#include <clasp/asttooling/generated/initClasses_inc.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_AstToolingPkg
@@ -119,7 +119,7 @@ void AsttoolingExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include <asttooling_initClasses_inc.h>
+#include <clasp/asttooling/generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

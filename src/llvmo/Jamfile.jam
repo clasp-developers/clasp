@@ -1,4 +1,4 @@
-import bundler ;
+
 local dir = $(__file__:D) ;
 
 #
@@ -33,45 +33,43 @@ local sources =
 	llvmoExpose.cc
 	llvmoPackage.cc
         clbindLlvmExpose.cc
-	/internals/core//bundle
+	/internals//core
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib ;
 
 
+lib llvmo : $(sources) ;
 
 obj intrinsics_bitcode_boehm : intrinsics.cc
-	/internals/core//bundle
+	/internals//core
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib
 	:
-	<implicit-dependency>/internals/core//mi
-	<implicit-dependency>/internals/clbind//mi
-	<implicit-dependency>mi
+	<implicit-dependency>/internals//core
+	<implicit-dependency>/internals//clbind
 	<link>static
         <gc>boehm
 	<cxxflags>"-flto -emit-llvm" ;
 
 
 obj intrinsics_bitcode_mps : intrinsics.cc
-	/internals/core//bundle
+	/internals//core
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib
 	:
-	<implicit-dependency>/internals/core//mi
-	<implicit-dependency>/internals/clbind//mi
-	<implicit-dependency>mi
+	<implicit-dependency>/internals//core
+	<implicit-dependency>/internals//clbind
 	<link>static
         <gc>mps
 	<cxxflags>"-flto -emit-llvm" ;
 
 obj intrinsics_bitcode_mps_prep : intrinsics.cc
-	/internals/core//bundle
+	/internals//core
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib
 	:
-	<implicit-dependency>/internals/core//mi
-	<implicit-dependency>/internals/clbind//mi
-	<implicit-dependency>mi
+	<implicit-dependency>/internals//core
+	<implicit-dependency>/internals//clbind
 	<link>static
         <gc>mps-prep
 	<cxxflags>"-flto -emit-llvm" ;
@@ -107,13 +105,4 @@ alias install_intrinsics_bitcode : inst_intrinsics_bitcode_mps :
 alias install_intrinsics_bitcode : inst_intrinsics_bitcode_mps_prep :
       <gc>mps-prep
       ;
-
-#bundler.bundle $(dir) :
-#	     $(sources)
-#             :
-#	     <link>static
-#             <dependency>install_intrinsics_bitcode
-#             <implicit-dependency>/internals/clbind//mi
-#	     <implicit-dependency>mi 
-#	     <implicit-dependency>/internals/core//mi ;
 

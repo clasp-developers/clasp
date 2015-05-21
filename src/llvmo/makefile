@@ -1,7 +1,4 @@
-
-
-
-include	$(CANDO_HOME)/makefile.inc
+include	$(CLASP_HOME)/makefile.inc
 
 
 ECL = ecl
@@ -86,7 +83,5 @@ subClean sc:
 totalClean:
 	rm -rf bin install_release
 
-
-
-llvm_config:
-	llvm-config --cppflags --ldflags --libs core
+sub-prebuild:
+	make scrape-all

@@ -647,5 +647,5 @@ else:
     print ("!   No changes to symbols were seen")
     print ("!")
     print ("!--------------------------------------------------")
-    sys.exit(1)
+    sys.exit(0)
 

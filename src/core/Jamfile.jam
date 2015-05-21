@@ -1,4 +1,3 @@
-import bundler ;
 local dir = $(__file__:D) ;
 
 echo "core dir = $(dir)" ;
@@ -182,38 +181,4 @@ local sources =
 	     /externals//boostAndExpatLibs
              		;
 
-#Declares virtual target af_function_templates dependent on the two
-#concrete .lisp files.
-h wrappers_functoids : wrappers_functoids.pmp ;
-h wrappers_methoids : wrappers_methoids.pmp ;
-h external_wrappers_indirect_methoids : external_wrappers_indirect_methoids.pmp ;
-h applyToActivationFrame : applyToActivationFrame.pmp ;
-
-alias generated-files : wrappers_functoids wrappers_methoids external_wrappers_indirect_methoids applyToActivationFrame ;
-
-#h symbol_apply_inc : generate_symbol_apply_inc.lisp ;
-
-
-#bundler.bundle $(dir) :
-#	     $(sources) :
-#	     <link>static
-#            <implicit-dependency>mi
-#             <implicit-dependency>meta
-#	     ;
-
-alias meta :     wrappers_functoids
-                 wrappers_methoids
-                 external_wrappers_indirect_methoids
-                 applyToActivationFrame
-                 ;
-
-
-# preprocessed corePackage : corePackage.cc : <variant>debug <define>SOURCE_DEBUG ;
-
-# Copy all generated header files to the include directory
-install dist-generated-files : generated-files :
-     <variant>release,<gc>mps:<location>$(INCLUDE)/core/generated/release/mps
-     <variant>debug,<gc>mps:<location>$(INCLUDE)/core/generated/debug/mps
-     <variant>release,<gc>boehm:<location>$(INCLUDE)/core/generated/release/boehm
-     <variant>debug,<gc>boehm:<location>$(INCLUDE)/core/generated/debug/boehm
- ;
+lib core : $(sources) ;

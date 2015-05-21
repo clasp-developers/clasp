@@ -1,7 +1,4 @@
-
-
-
-include	$(CANDO_HOME)/makefile.inc
+include	$(CLASP_HOME)/makefile.inc
 
 
 INC_NEEDS = 
@@ -45,5 +42,6 @@ subClean sc:
 totalClean:
 	rm -rf bin install_release
 
-
-
+sub-prebuild:
+	make scrape-symbols
+	make scrape-classes

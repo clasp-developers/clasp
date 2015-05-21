@@ -44,7 +44,7 @@ namespace clbind {
 #define EXPOSE_TO_CANDO
 #define Use_ClbindPkg
 #define EXTERN_REGISTER
-#include <clbind_initClasses_inc.h>
+#include <clasp/clbind/generated/initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_ClbindPkg
 #undef EXPOSE_TO_CANDO
@@ -87,7 +87,7 @@ void ClbindExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what)
 #define Use_ClbindPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(s, p) DEFAULT_LOOKUP_SYMBOL(s, p)
-#include <clbind_initClasses_inc.h>
+#include <clasp/clbind/generated/initClasses_inc.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_ClbindPkg
@@ -127,7 +127,7 @@ void ClbindExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what)
   STATIC_CLASS_INFO(_T_);
 #endif
 
-#include <clbind_initClasses_inc.h>
+#include <clasp/clbind/generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

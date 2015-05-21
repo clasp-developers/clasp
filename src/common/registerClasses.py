@@ -1,6 +1,11 @@
 import sys
 import re
 import os
+import StringIO
+
+
+classesFileName = sys.argv[1]
+fileNames = sys.argv[2:]
 
 # keep track of how classes are defined in C++ and make sure it matches LISP_CLASS definitions
 
@@ -111,13 +116,13 @@ def clearNamespaceStack():
 #
 def pushNamespace(s,fn,ln):
     global CurrentPackage, CurrentNamespaceStack, PackageForNamespace
-    print("Namespace changed to %s - %s:%d" % (s,fn,ln))
+    sys.stderr.write("Namespace changed to %s - %s:%d\n" % (s,fn,ln))
     CurrentNamespaceStack = [s] # only toplevel namespaces are supported without
     if ( s in PackageForNamespace ):
         CurrentPackage = PackageForNamespace[s]
     else:
         CurrentPackage = None
-    print("    CurrentPackage set to %s" % CurrentPackage )
+    sys.stderr.write("    CurrentPackage set to %s\n" % CurrentPackage )
 
 
 class Predicate:
@@ -126,7 +131,7 @@ class Predicate:
         self._Target = target
 ## Only the first requirement is used!!
 ## See  https://github.com/drmeister/clasp/wiki/Clasp-developers
-        print( "Group: %s  target: %s   filename: %s" % ( group, target, fileName))
+        sys.stderr.write( "Group: %s  target: %s   filename: %s\n" % ( group, target, fileName))
         if ( len(requirements) > 0 ):
             self._Requirements = set([ requirements[0] ])  # Only the first item is used!!!!!
         else:
@@ -162,7 +167,7 @@ class Predicate:
 class	OneClass(Predicate):
     def __init__(self,group,aPackage,className,baseNames,fn,ln,ignoreMe=False,classType=ClassType.simple,specializeOn=None):
 	if __debug__:
-	    print "Creating one Initializer(%s) baseInitializer(%s)"%(className,baseNames)
+	    sys.stderr.write("Creating one Initializer(%s) baseInitializer(%s)\n"%(className,baseNames))
         if ( className == "" ):
             raise Exception("Empty className at %s:%d" % (fn,ln))
         Predicate.__init__(self,group,className,baseNames,fn,ln,ignoreMe,classType,specializeOn)
@@ -191,12 +196,12 @@ class	OneClass(Predicate):
         return self.getRequirements()
 
     def getBasesAsArray(self):
-        print("For class[%s] requirements = %s" % (self.getClassName(),repr(self.getRequirements())))
+        sys.stderr.write("For class[%s] requirements = %s\n" % (self.getClassName(),repr(self.getRequirements())))
         bases = []
         for  b in self.getRequirements():
             cn = b
             bases.append(cn)
-        print("Returning bases[%s]"%repr(bases))
+        sys.stderr.write("Returning bases[%s]\n"%repr(bases))
         return bases
 
     def setMetaClassName(self,metaClassName):
@@ -229,7 +234,7 @@ class	OneClass(Predicate):
 
     def beginIfDefPackage(self,fout):
         if (self._Package == None ):
-            print("Package for class[%s] is None - raising exception" % self.getClassName() )
+            sys.stderr.write("Package for class[%s] is None - raising exception\n" % self.getClassName() )
             raise Exception("Package for class[%s] is None" % self.getClassName() )
 	fout.write("#ifdef Use_%s\n"%self._Package)
 	fout.flush()
@@ -246,7 +251,7 @@ class	OneClass(Predicate):
 	
     def register(self,fout):
         if ( self.getClassNameReplaceColons() == "" ):
-            print("Bad classname[%s] - raising exception" % self.getClassNameReplaceColons() )
+            sys.stderr.write("Bad classname[%s] - raising exception\n" % self.getClassNameReplaceColons() )
             raise Exception("Bad classname[%s] " % self.getClassNameReplaceColons() )
         fout.write("#ifdef INVOKE_REGISTER\n")
         fout.write("{_BLOCK_TRACE(\"initializing %s%s\");\n"%(self._Group.getPrefix(),self.getClassNameReplaceColons()));
@@ -281,7 +286,7 @@ class	OneClass(Predicate):
 class	OneInitializer(Predicate):
     def __init__(self,group,functionName,requirements,fn,ln,ignoreMe=False):
 	if __debug__:
-	    print "Creating one Initializer(%s) requirements(%s)"%(functionName,requirements)
+	    sys.stderr.write( "Creating one Initializer(%s) requirements(%s)\n"%(functionName,requirements))
         Predicate.__init__(self,group,functionName,requirements,fn,ln,ignoreMe)
 
     def ignore(self):
@@ -348,11 +353,11 @@ class	ClassGroup:
     def createOneClass(self,aPackage,aClassName,baseNames,fn,ln,ignoreMe=False,classType=ClassType.simple,specializeOn=None):
         if ( not aClassName in self._AllPredicates ):
             one = OneClass(self,aPackage,aClassName,baseNames,fn,ln,ignoreMe,classType,specializeOn)
-            print( "createOnClass@%s:%d --> %s" % (fn, ln, aClassName))
+            sys.stderr.write( "createOnClass@%s:%d --> %s\n" % (fn, ln, aClassName))
             self._AllPredicates[aClassName] = one
             self._LatestClass = one
         else:
-            print( "I already have a class for: %s" % aClassName )
+            sys.stderr.write( "I already have a class for: %s\n" % aClassName )
             self._LatestClass = self._AllPredicates[aClassName]
 
     def errorIfLispBasesDontMatchLatestClassBases(self,basesList,fileName,lineNumber):
@@ -360,7 +365,7 @@ class	ClassGroup:
         cl = self._LatestClass
         if ( len(bases) != len(cl.getBases()) or (not bases.issubset(cl.getBases())) ):
 #            raise Exception("WARNING!!!!!!  In %s:%d for class[%s] mismatch between the specification of LISP_BASES(%s) and the c++ bases[%s]" % (fileName,lineNumber,cl.getClassName(),bases,cl.getBases()))
-            print( "WARNING!!!!!!  In %s:%d for class[%s] mismatch between the specification of LISP_BASES(%s) and the c++ bases[%s]" % (fileName,lineNumber,cl.getClassName(),bases,cl.getBases()))
+            sys.stderr.write( "WARNING!!!!!!  In %s:%d for class[%s] mismatch between the specification of LISP_BASES(%s) and the c++ bases[%s]\n" % (fileName,lineNumber,cl.getClassName(),bases,cl.getBases()))
                             
     def errorIfClassNameDoesntMatchLatestClass(self,className):
         cl = self._LatestClass
@@ -372,7 +377,7 @@ class	ClassGroup:
             raise Exception("Bad updated info for class[%s]" % self._LatestClass.getClassName())
         if ( packageName == None ):
             raise Exception("Illegal packageName of None for class[%s]" % self._LatestClass.getClassName())
-        print( "updateLatestClass info for class[%s] packageName[%s]" % (className,packageName))
+        sys.stderr.write( "updateLatestClass info for class[%s] packageName[%s]\n" % (className,packageName))
         self._LatestClass.setPackage(packageName)
         self._LatestClass.setLispClassName(lispClassName)
 
@@ -422,7 +427,7 @@ class	ClassGroup:
             try:
                 cl = self.getClass(x)
             except:
-                print("Class[%s] was not defined" % x)
+                sys.stderr.write("Class[%s] was not defined\n" % x)
                 continue
             if ( not cl.ignore() ):
                 cl.beginIfDefPackage(fout)
@@ -436,7 +441,7 @@ class	ClassGroup:
             try:
                 cl = self.getClass(x)
             except:
-                print("Class[%s] was not defined" % x)
+                sys.stderr.write("Class[%s] was not defined\n" % x)
                 continue
             if ( not cl.ignore() ):
                 cl.beginIfDefPackage(fout)
@@ -444,13 +449,13 @@ class	ClassGroup:
                 cl.endIfDefPackage(fout)
         fout.write("#endif // EXPOSE_TO_PYTHON\n")
         fout.write("#undef EXPOSE_TO_PYTHON\n")
-        print "Writing macros"
+        sys.stderr.write( "Writing macros\n")
         fout.write("#if defined(EXPAND_CLASS_MACROS)\n")
 	for x in allSorted:
             try:
                 cl = self.getClass(x)
             except:
-                print("Class[%s] was not defined" % x)
+                sys.stderr.write("Class[%s] was not defined\n" % x)
                 continue
             if ( not cl.ignore() ):
                 cl.writeClassMacro(fout)
@@ -469,7 +474,7 @@ class	ClassGroup:
             try:
                 cl = self.getClass(x)
             except:
-                print("Class[%s] was not defined" % x)
+                sys.stderr.write("Class[%s] was not defined\n" % x)
                 continue
             if ( not cl.ignore() ):
                 fn = cl.getFileName()
@@ -488,7 +493,7 @@ class	ClassGroup:
             try:
                 cl = self.getClass(x)
             except:
-                print("Class[%s] was not defined" % x)
+                sys.stderr.write("Class[%s] was not defined\n" % x)
                 continue
             if ( not cl.ignore() ):
                 fout.write("%(OCLASS)s::___set_static_ClassSymbol(LOOKUP_SYMBOL(%(OCLASS)s::static_packageName(),%(OCLASS)s::static_className()));\n" % {"OCLASS":cl.getClassName()})
@@ -499,7 +504,7 @@ class	ClassGroup:
             try:
                 cl = self.getClass(x)
             except:
-                print("Class[%s] was not defined" % x)
+                sys.stderr.write("Class[%s] was not defined\n" % x)
                 continue
             args = make_argument_dict(cl)
             if ( not cl.ignore() ):
@@ -533,7 +538,7 @@ class	ClassGroup:
             try:
                 cl = self.getClass(x)
             except:
-                print("Class[%s] was not defined" % x)
+                sys.stderr.write("Class[%s] was not defined\n" % x)
                 continue
             args = make_argument_dict(cl)
             if ( not cl.ignore() ):
@@ -550,7 +555,7 @@ class	ClassGroup:
             try:
                 cl = self.getClass(x)
             except:
-                print("Class[%s] was not defined" % x)
+                sys.stderr.write("Class[%s] was not defined\n" % x)
                 continue
             bases = cl.getBasesAsArray()
             if (len(bases)>0 and (bases[0] != "core::_RootDummyClass") ):
@@ -575,7 +580,7 @@ class	ClassGroup:
             try:
                 cl = self.getClass(x)
             except:
-                print("Class[%s] was not defined" % x)
+                sys.stderr.write("Class[%s] was not defined\n" % x)
                 continue
             args = make_argument_dict(cl)
             if ( not cl.ignore() ):
@@ -611,7 +616,7 @@ class	InitializerGroup:
 
     def createOneFunction(self,aFunctionName,requirements,fn,ln,ignoreMe=False):
 	one = OneInitializer(self,aFunctionName,requirements,fn,ln,ignoreMe)
-        print( "createOnFunction@%s:%d --> %s" % (fn, ln, aFunctionName))
+        sys.stderr.write( "createOnFunction@%s:%d --> %s\n" % (fn, ln, aFunctionName))
 	self._AllPredicates[aFunctionName] = one
 
 
@@ -690,9 +695,7 @@ initPythonAfter1Def = re.compile('\s*__INITIALIZE_PYTHON_AFTER1\(\s*([\w:]*)\s*,
 initDef = re.compile('\s*__INITIALIZE\(\s*([\w]*)\s*,\s*([\w:]*)\s*\)')
 #initAfterDef = re.compile('\s*__INITIALIZE_AFTER\(\s*([\w:]*)\s*,\s*(\w*)\s*\)')
 
-classesFileName = sys.argv[1]
-scriptingFileName = sys.argv[2]
-fout = open(classesFileName,"w")
+fout = StringIO.StringIO()
 
 fout.write("// start\n" )
 fout.write("// define cpp macros: SET_SYMBOL, CREATE_CLASS, SET_CLASS, DEFINE_BASE_CLASSES, DEFINE_CLASS_NAMES, EXPOSE_TO_CANDO \n")
@@ -700,7 +703,6 @@ fout.write("// define cpp macro: ALL_STAGES to get the effect of defining all of
 fout.write("// define cpp macro: EXPOSE_PYTHON to expose python\n")
 fout.flush()
 
-fileNames = sys.argv[3:]
 
 classInitializers = ClassGroup("Register_")
 pythonInitializers = InitializerGroup("")
@@ -716,10 +718,10 @@ pushNamespace("core","-nofile-",0)
 
 
 for fileName in fileNames:
-    print( "!!!!! Reading fileName(%s)" % fileName )
+    sys.stderr.write( "!!!!! Reading fileName(%s)\n" % fileName )
     clearNamespaceStack()
     if (not (os.path.exists(fileName)) and ("*" in fileName) ) :
-        print("Skipping file[%s] - it doesn't exist" % fileName)
+        sys.stderr.write("Skipping file[%s] - it doesn't exist\n" % fileName)
         continue
     fin = open(fileName,"r")
     ln = 0
@@ -733,7 +735,7 @@ for fileName in fileNames:
 	    gr = match.groups()
 	    namespaceName = gr[0]
 	    packageName = gr[1]
-            print( "!!!!! Associating namespace(%s) with package(%s)" % (namespaceName,packageName))
+            sys.stderr.write( "!!!!! Associating namespace(%s) with package(%s)\n" % (namespaceName,packageName))
             fout.write("// Associating namespace(%s) with package(%s)\n" % (namespaceName,packageName))
             if ( packageName in NamespaceForPackage ):
                 if ( namespaceName != NamespaceForPackage[packageName] ):
@@ -750,14 +752,14 @@ for fileName in fileNames:
         match = namespaceSetInIncFiles.match(l)
         if ( match != None ):
             gr = match.groups()
-            print("Setting namespace[%s] in .inc file[%s:%s]" % (gr[0],fileName,ln))
+            sys.stderr.write("Setting namespace[%s] in .inc file[%s:%s]\n" % (gr[0],fileName,ln))
             pushNamespace(gr[0],fileName,ln)
 
 
         match = cppClassDefinition_2Bases.match(l)
         if ( match!=None):
 	    if __debug__:
-	        print "In fileName: %s parsed cppClassDefinition_2Bases line: %s"%(fileName,line)
+	        sys.stderr.write( "In fileName: %s parsed cppClassDefinition_2Bases line: %s\n"%(fileName,line))
             fout.write(" //%s\n" % line)
             gr = match.groups()
             className = classInitializers.addNamespace(gr[0])
@@ -769,7 +771,7 @@ for fileName in fileNames:
         match = cppClassDefinitionVirtualBase.match(l)
 	if ( match!= None ):
 	    if __debug__:
-	        print "In fileName: %s parsed cppClassDefinitionVirtualBase line: %s"%(fileName,line)
+	        sys.stderr.write( "In fileName: %s parsed cppClassDefinitionVirtualBase line: %s\n"%(fileName,line))
 	    fout.write(" // %s\n"%line)
 	    gr = match.groups()
 	    className = classInitializers.addNamespace(gr[0])
@@ -780,7 +782,7 @@ for fileName in fileNames:
         match = cppTemplateClassDefinition_templateBase.match(l)
 	if ( match!= None ):
 	    if __debug__:
-	        print "In fileName: %s parsed cppTemplateClassDefinition_template_ line: %s"%(fileName,line)
+	        sys.stderr.write( "In fileName: %s parsed cppTemplateClassDefinition_template_ line: %s\n"%(fileName,line))
 	    fout.write(" // %s\n"%line)
 	    gr = match.groups()
 	    className = classInitializers.addNamespace(gr[0])
@@ -796,7 +798,7 @@ for fileName in fileNames:
         match = cppTemplateClassDefinition.match(l)
 	if ( match!= None ):
 	    if __debug__:
-	        print "In fileName: %s parsed cppTemplateClassDefinition_template_ line: %s"%(fileName,line)
+	        sys.stderr.write( "In fileName: %s parsed cppTemplateClassDefinition_template_ line: %s\n"%(fileName,line))
 	    fout.write(" // %s\n"%line)
 	    gr = match.groups()
 	    className = classInitializers.addNamespace(gr[0])
@@ -810,7 +812,7 @@ for fileName in fileNames:
         match = cppClassDefinition_templateBase.match(l)
 	if ( match!= None ):
 	    if __debug__:
-	        print "In fileName: %s parsed cppClassDefinition_templateBase line: %s"%(fileName,line)
+	        sys.stderr.write( "In fileName: %s parsed cppClassDefinition_templateBase line: %s\n"%(fileName,line))
 	    fout.write(" // %s\n"%line)
 	    gr = match.groups()
 	    className = classInitializers.addNamespace(gr[0])
@@ -825,7 +827,7 @@ for fileName in fileNames:
         match = cppClassDefinition.match(l)
 	if ( match!= None ):
 	    if __debug__:
-	        print "In fileName: %s parsed cppClassDefinition line: %s"%(fileName,line)
+	        sys.stderr.write( "In fileName: %s parsed cppClassDefinition line: %s\n"%(fileName,line))
 	    fout.write(" // %s\n"%line)
 	    gr = match.groups()
 	    className = classInitializers.addNamespace(gr[0])
@@ -860,7 +862,7 @@ for fileName in fileNames:
         match = lispTemplateBase1.match(l)
         if ( match != None ):
 	    if __debug__:
-	        print "In fileName: %s parsed lispTemplateBase1 line: %s"%(fileName,line)
+	        sys.stderr.write( "In fileName: %s parsed lispTemplateBase1 line: %s\n"%(fileName,line))
             gr = match.groups()
             base1ClassName = classInitializers.addNamespace(gr[0])
             specializedOn = classInitializers.addNamespace(gr[1])
@@ -872,7 +874,7 @@ for fileName in fileNames:
         match = lispBase1.match(l)
         if ( match != None ):
 	    if __debug__:
-	        print "In fileName: %s parsed lispBase1 line: %s"%(fileName,line)
+	        sys.stderr.write( "In fileName: %s parsed lispBase1 line: %s\n"%(fileName,line))
             gr = match.groups()
             base1ClassName = classInitializers.addNamespace(gr[0])
             classInitializers.errorIfLispBasesDontMatchLatestClassBases([base1ClassName],fileName,ln)
@@ -881,7 +883,7 @@ for fileName in fileNames:
         match = lispBase2.match(l)
         if ( match != None ):
 	    if __debug__:
-	        print "In fileName: %s parsed lispBase2 line: %s"%(fileName,line)
+	        sys.stderr.write( "In fileName: %s parsed lispBase2 line: %s\n"%(fileName,line))
             gr = match.groups()
             base1ClassName = classInitializers.addNamespace(gr[0])
             base2ClassName = classInitializers.addNamespace(gr[1])
@@ -891,7 +893,7 @@ for fileName in fileNames:
         match = lispClass.match(l)
         if ( match != None ):
 	    if __debug__:
-	        print "In fileName: %s parsed lispClass line: %s"%(fileName,line)
+	        sys.stderr.write( "In fileName: %s parsed lispClass line: %s\n"%(fileName,line))
 	    gr = match.groups()
             packageName = gr[0]
             className = classInitializers.addNamespace(gr[1])
@@ -902,7 +904,7 @@ for fileName in fileNames:
         match = lispVirtualClass.match(l)
         if ( match != None ):
 	    if __debug__:
-	        print "In fileName: %s parsed lispVirtualClass line: %s"%(fileName,line)
+	        sys.stderr.write( "In fileName: %s parsed lispVirtualClass line: %s\n"%(fileName,line))
 	    gr = match.groups()
             packageName = gr[0]
             className = classInitializers.addNamespace(gr[1])
@@ -918,11 +920,11 @@ for fileName in fileNames:
         match = lispMetaClass.match(l)
         if ( match!=None):
             if __debug__:
-                print "Got lispMetaClass line: %s" % line
+                sys.stderr.write( "Got lispMetaClass line: %s\n" % line)
 	    gr = match.groups()
-            print("lispMetaClass gr=%s" % repr(gr))
+            sys.stderr.write("lispMetaClass gr=%s\n" % repr(gr))
             metaClassName = gr[0]
-            print("Found metaClassName[%s]" % metaClassName)
+            sys.stderr.write("Found metaClassName[%s]\n" % metaClassName)
             classInitializers.updateLatestClassMetaClass(metaClassName)
             continue
         
@@ -930,19 +932,19 @@ for fileName in fileNames:
 	match = externalClassDef.match(l)
 	if ( match!= None ):
 	    if __debug__:
-	        print "Got line: %s"%line
+	        sys.stderr.write( "Got line: %s\n"%line)
 	    gr = match.groups()
 	    packageName = gr[0]
 	    className = classInitializers.addNamespace(gr[2])
 	    baseClassName = gr[4]
-            print("EXTERNAL: %s - %s - %s" % (packageName,className,baseClassName))
+            sys.stderr.write("EXTERNAL: %s - %s - %s\n" % (packageName,className,baseClassName))
 	    o = classInitializers.createOneClass(packageName,className,[baseClassName],fileName,ln,False)
 	    continue
 
 
         match = initPythonDef.match(l)
         if ( match != None ):
-            print( "Got initPythonDef: %s" % l)
+            sys.stderr.write( "Got initPythonDef: %s\n" % l)
             gr = match.groups()
             functionName = gr[0]
             pythonInitializers.createOneFunction(functionName,[],fileName,ln)
@@ -950,7 +952,7 @@ for fileName in fileNames:
 
         match = initPythonAfter1Def.match(l)
         if ( match != None ):
-            print( "Got initPythonAfter1Def: %s" % l)
+            sys.stderr.write( "Got initPythonAfter1Def: %s\n" % l)
             gr = match.groups()
             functionName = gr[0]
             predecessor1 = gr[1]
@@ -962,7 +964,7 @@ for fileName in fileNames:
     fin.close()
 
 
-print("-------- loaded everything -------- now processing")
+sys.stderr.write("-------- loaded everything -------- now processing\n")
 
 
 #
@@ -972,12 +974,12 @@ print("-------- loaded everything -------- now processing")
 
 
 
-print "============= Writing classInitializers"
+sys.stderr.write( "============= Writing classInitializers\n")
 classInitializers.writeHeaderIncludes(fout)
 classInitializers.writeHandInitializeCode(fout)
 classInitializers.writeCode(fout)
 fout.write("#undef ALL_STAGES\n")
-print "------------- Done classInitializers"
+sys.stderr.write( "------------- Done classInitializers\n")
 
 
 
@@ -985,15 +987,26 @@ print "------------- Done classInitializers"
 fout.close
 
 
-print ( "Writing output now to %s" % scriptingFileName )
-fout = open(scriptingFileName,"w")
-fout.write("// ---------------- python initializers\n")
-fout.write("#ifdef USEBOOSTPYTHON\n")
-pythonInitializers.writeCode(fout)
-fout.write("#endif\n")
-
 
 fout.write("// ---------------- after class initializers\n")
-print "===============  afterInitializers"
+sys.stderr.write( "===============  afterInitializers\n")
 afterInitializers.writeCode(fout)
+newResult = fout.getvalue()
 fout.close()
+
+try:
+    fin = open(classesFileName,"r")
+    previousResult = fin.read()
+    fin.close()
+except IOError:
+    previousResult = ""
+
+if ( previousResult != newResult ):
+    fout = open(classesFileName,"w")
+    fout.write(newResult)
+    fout.close
+    sys.stdout.write( "Wrote new output to: %s\n" % classesFileName)
+else:
+    sys.stdout.write( "Classes haven't changed - no output written\n")
+
+#open(classesFileName,"w")

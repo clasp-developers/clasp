@@ -1,5 +1,6 @@
 include local.config
 
+export CLASP_HOME = $(shell pwd)
 
 export GIT_COMMIT := $(shell cat 'minor-version-id.txt')
 
@@ -7,9 +8,14 @@ export CLASP_INTERNAL_BUILD_TARGET_DIR = $(shell pwd)/build/clasp
 export EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_SOURCE_DIR)/build
 
 
-export BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
-export BOOST_BUILD_V2_INSTALL = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/boost_build_v2
-export BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
+export BOOST_BUILD_SOURCE_DIR = $(HOME)/Development/boost_build
+export BOOST_BUILD_INSTALL = $(BOOST_BUILD_SOURCE_DIR)
+
+#export BOOST_BUILD_SOURCE_DIR = $(CLASP_HOME)/boost_build_v2
+#export BOOST_BUILD_INSTALL = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/boost_build_v2
+
+
+export BJAM = $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
@@ -40,7 +46,7 @@ ifneq ($(EXTERNALS_BUILD_TARGET_DIR),)
 	export PATH
 endif
 
-export PATH := $(BOOST_BUILD_V2_INSTALL)/bin:$(PATH)
+export PATH := $(BOOST_BUILD_INSTALL)/bin:$(PATH)
 export PATH := $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR):$(PATH)
 
 
@@ -61,6 +67,10 @@ all:
 	make boostbuildv2-build
 	make clasp-boehm
 	make clasp-mps
+
+
+sub-prebuild:
+	make -C src/ $@
 
 fix-scraping:
 	for d in src/*/; do cd "$$d"; export PYTHONPATH="$$PWD:$$PYTHONPATH"; python ../../src/common/symbolScraper.py symbols_scraped.inc *.h *.cc *.scrape.inc; cd ../..; done
@@ -175,7 +185,7 @@ cl-full-boehm:
 
 
 boostbuildv2-build:
-	(cd $(BOOST_BUILD_V2_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_V2_INSTALL) --ignore-site-config)
+	(cd $(BOOST_BUILD_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_INSTALL) --ignore-site-config)
 
 compile-commands:
 	(cd src/main; make compile-commands)

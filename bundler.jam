@@ -139,7 +139,7 @@ actions register-classes
 {
 	cd $(>[1]:D)
 	bname=`basename $(>[1]:D)`
-	$(PYTHON2) $(.common)/registerClasses.py $(<) $(<:D)/${bname}_initScripting_inc.h include/*Package.h include/*.h $(<:D)/*.h *.cc $(<:D)/*.cc > registerClasses.log
+	$(PYTHON2) $(.common)/registerClasses.py $(<) include/*Package.h include/*.h $(<:D)/*.h *.cc $(<:D)/*.cc > registerClasses.log
 #	$(PYTHON2) $(.common)/registerClasses.py $(<) $(<:D)/${bname}_initScripting_inc.h *Package.h otherPackageClasses.h *.h $(<:D)/*.h *.cc $(<:D)/*.cc > registerClasses.log
 }
 

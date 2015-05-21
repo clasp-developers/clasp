@@ -1602,23 +1602,7 @@ T_mv applyClosureToActivationFrame(gctools::tagged_functor<Closure> func, Activa
   switch (nargs) {
 #define APPLY_TO_ACTIVATION_FRAME
 
-#ifdef BUILDING_CLASP
-#include <applyToActivationFrame.h>
-#else
-#ifdef USE_CLASP_DEBUG
-#ifdef USE_CLASP_BOEHM
-#include <clasp/core/generated/debug/boehm/applyToActivationFrame.h>
-#else
-#include <clasp/core/generated/debug/mps/applyToActivationFrame.h>
-#endif
-#else
-#ifdef USE_CLASP_BOEHM
-#include <clasp/core/generated/release/boehm/applyToActivationFrame.h>
-#else
-#include <clasp/core/generated/release/mps/applyToActivationFrame.h>
-#endif
-#endif
-#endif
+#include <clasp/core/generated/applyToActivationFrame.h>
 
 #undef APPLY_TO_ACTIVATION_FRAME
   default:
@@ -1639,23 +1623,7 @@ T_mv applyClosureToStackFrame(gctools::tagged_functor<Closure> func, T_sp stackF
   T_O **a = frame::ValuesArray(frameImpl);
   switch (nargs) {
 #define APPLY_TO_TAGGED_FRAME
-#ifdef BUILDING_CLASP
-#include <applyToActivationFrame.h>
-#else
-#ifdef USE_CLASP_DEBUG
-#ifdef USE_CLASP_BOEHM
-#include <clasp/core/generated/debug/boehm/applyToActivationFrame.h>
-#else
-#include <clasp/core/generated/debug/mps/applyToActivationFrame.h>
-#endif
-#else
-#ifdef USE_CLASP_BOEHM
-#include <clasp/core/generated/release/boehm/applyToActivationFrame.h>
-#else
-#include <clasp/core/generated/release/mps/applyToActivationFrame.h>
-#endif
-#endif
-#endif
+#include <clasp/core/generated/applyToActivationFrame.h>
 #undef APPLY_TO_TAGGED_FRAME
   default:
     MultipleValues &mv = lisp_callArgs();

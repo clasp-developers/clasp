@@ -58,23 +58,7 @@ public:
 // What was...
 // #include <clbind_functoids.h>
 // now becomes...
-#ifdef BUILDING_CLASP
-#include <clbind_functoids.h>
-#else
-#ifdef USE_CLASP_DEBUG
-#ifdef USE_CLASP_BOEHM
-#include <clasp/clbind/generated/debug/boehm/clbind_functoids.h>
-#else
-#include <clasp/clbind/generated/debug/mps/clbind_functoids.h>
-#endif
-#else
-#ifdef USE_CLASP_BOEHM
-#include <clasp/clbind/generated/release/boehm/clbind_functoids.h>
-#else
-#include <clasp/clbind/generated/release/mps/clbind_functoids.h>
-#endif
-#endif
-#endif
+#include <clasp/clbind/generated/clbind_functoids.h>
 };
 
 template <typename FunctionPtrType, typename Policies>

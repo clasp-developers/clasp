@@ -240,23 +240,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
 
-#ifdef BUILDING_CLASP
-#include <clbind_constructor_functoids.h>
-#else
-#ifdef USE_CLASP_DEBUG
-#ifdef USE_CLASP_BOEHM
-#include <clasp/clbind/generated/debug/boehm/clbind_constructor_functoids.h>
-#else
-#include <clasp/clbind/generated/debug/mps/clbind_constructor_functoids.h>
-#endif
-#else
-#ifdef USE_CLASP_BOEHM
-#include <clasp/clbind/generated/release/boehm/clbind_constructor_functoids.h>
-#else
-#include <clasp/clbind/generated/release/mps/clbind_constructor_functoids.h>
-#endif
-#endif
-#endif
+#include <clasp/clbind/generated/clbind_constructor_functoids.h>
 };
 
 template <typename Pols, typename Pointer, typename T, typename Sig>

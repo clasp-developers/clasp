@@ -57,7 +57,7 @@ THE SOFTWARE.
 // ------------------- include all headers for corePackage here
 
 #define HEADER_INCLUDES
-#include <core_initClasses_inc.h>
+#include <clasp/core/generated/initClasses_inc.h>
 
 //
 // Load the gctools::GcInfo<core-classes>::Kind specializers
@@ -72,7 +72,7 @@ namespace core {
 #define Use_ClPkg
 #define Use_ExtPkg
 #define EXTERN_REGISTER
-#include <core_initClasses_inc.h>
+#include <clasp/core/generated/initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_ExtPkg
 #undef Use_ClPkg
@@ -710,7 +710,7 @@ void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
 #define Use_ClPkg
 #define Use_ExtPkg
 #define INVOKE_REGISTER
-#include <core_initClasses_inc.h>
+#include <clasp/core/generated/initClasses_inc.h>
 #undef INVOKE_REGISTER
 #undef Use_ExtPkg
 #undef Use_ClPkg
@@ -738,7 +738,7 @@ void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
 #define _DBG(x)
 #define EXPOSE_TO_PYTHON
 #define Use_CorePkg
-#include <core_initClasses_inc.h>
+#include <clasp/core/generated/initClasses_inc.h>
 #undef Use_CorePkg
 #undef EXPOSE_TO_PYTHON
 #undef _DBG
@@ -772,7 +772,7 @@ CoreExposer *CoreExposer::create_core_packages_and_classes() {
       _BLOCK_TRACEF(BF("LOOKUP Symbol"));
 #undef LOOKUP_SYMBOL
 #define LOOKUP_SYMBOL(pkgName, symName) bootStrapSymbolMap.lookupSymbol(pkgName, symName)
-#include <core_initClasses_inc.h>
+#include <clasp/core/generated/initClasses_inc.h>
 #undef LOOKUP_SYMBOL
     }
   } else {
@@ -786,7 +786,7 @@ CoreExposer *CoreExposer::create_core_packages_and_classes() {
 // It will also put the Class instance into the Lisp class table
 
 #define CREATE_CLASS
-#include <core_initClasses_inc.h>
+#include <clasp/core/generated/initClasses_inc.h>
   // Put core::Null_O::___staticClass into a global variable so that every
   // class can access it from the _class() virtual function
   // See object.h definition of Null_O___staticClass
@@ -794,7 +794,7 @@ CoreExposer *CoreExposer::create_core_packages_and_classes() {
   {
     _BLOCK_TRACEF(BF("Dump info on classes"));
 #define DUMP_INFO_CLASS
-#include <core_initClasses_inc.h>
+#include <clasp/core/generated/initClasses_inc.h>
   }
 
   Package_sp commonLispPackage = cl::initialize_commonLispPackage();
@@ -808,7 +808,7 @@ CoreExposer *CoreExposer::create_core_packages_and_classes() {
   {
     _BLOCK_TRACEF(BF("Define base classes"));
 #define DEFINE_BASE_CLASSES
-#include <core_initClasses_inc.h>
+#include <clasp/core/generated/initClasses_inc.h>
   }
   CoreExposer *coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocateClass(_lisp);
   Package_sp corePackage = coreExposerPtr->package();
@@ -832,7 +832,7 @@ CoreExposer *CoreExposer::create_core_packages_and_classes() {
     _BLOCK_TRACEF(BF("Define class names"));
 #define DEFINE_CLASS_NAMES
     string NSPkg = CorePkg;
-#include <core_initClasses_inc.h>
+#include <clasp/core/generated/initClasses_inc.h>
   };
 
 #if 0
@@ -1181,14 +1181,14 @@ void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
 
 #define EXPAND_CLASS_MACROS
 #define _CLASS_MACRO(_T_) STATIC_CLASS_INFO(_T_);
-#include <core_initClasses_inc.h>
+#include <clasp/core/generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 
 #if defined(USE_REFCOUNT)
 #define EXPAND_CLASS_MACROS
 #define _CLASS_MACRO(_T_) INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
-#include <core_initClasses_inc.h>
+#include <clasp/core/generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

@@ -1,4 +1,4 @@
-import bundler ;
+
 local dir = $(__file__:D) ;
 
 #
@@ -9,7 +9,7 @@ project internals/gctools : requirements
 	<cxxflags>-Wno-unused-variable
 	<cxxflags>-Wno-c++11-extensions
 	# copied from clasp - I have to come up with a better way
-	<target-os>darwin:<linkflags>"-lclang -lclangRewriteFrontend -lclangRewriteCore -lclangTooling -lclangParse -lclangDriver -lclangEdit -lclangSema -lclangAnalysis -lclangSerialization -lclangLex -lclangFrontend -lclangAST -lclangASTMatchers -lclangBasic"
+#	<target-os>darwin:<linkflags>"-lclang -lclangRewriteFrontend -lclangRewriteCore -lclangTooling -lclangParse -lclangDriver -lclangEdit -lclangSema -lclangAnalysis -lclangSerialization -lclangLex -lclangFrontend -lclangAST -lclangASTMatchers -lclangBasic"
  	<define>EXPAT
 	<define>_DEBUG
 	<define>_GNU_SOURCE
@@ -34,14 +34,14 @@ local sources =
         gcweak.cc
         memoryRefSearch.c
 	memoryManagement.cc
-#	/externals//lib_mps/<link>static
-#	gctoolsToolingPackage.cc
-#	gctoolsToolingExpose.cc
-#	gctoolsMatchingPackage.cc
-#	gctoolsMatchingExpose.cc
-	/internals/core//bundle
+	/internals/core/
 	/externals//boostAndExpatLibs
-	/externals//llvm_lib ;
+	/externals//llvm_lib
+        ;
+
+
+lib gctools : $(sources) ;
+
 
 #bundler.bundle $(dir) :
 #	     $(sources) :

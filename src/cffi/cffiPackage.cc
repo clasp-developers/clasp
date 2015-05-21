@@ -40,7 +40,7 @@ namespace cffi {
 #define EXPOSE_TO_CANDO
 #define Use_CffiPkg
 #define EXTERN_REGISTER
-#include <cffi_initClasses_inc.h>
+#include <clasp/cffi/generated/initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_CffiPkg
 #undef EXPOSE_TO_CANDO
@@ -76,7 +76,7 @@ void CffiExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) c
 #define Use_CffiPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(s, p) DEFAULT_LOOKUP_SYMBOL(s, p)
-#include <cffi_initClasses_inc.h>
+#include <clasp/cffi/generated/initClasses_inc.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_CffiPkg
@@ -125,7 +125,7 @@ void CffiExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) c
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include <cffi_initClasses_inc.h>
+#include <clasp/cffi/generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

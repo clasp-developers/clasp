@@ -15,14 +15,10 @@
 # External libraries are defined in makefileExternals.inc
 # this file is included below
 
+PUMP = $(CLASP_HOME)/src/common/pump.py
+
 default:
 	make sa
-
-all:
-	make -C $(CANDO_HOME)/src sa
-
-externals:
-	make -C $(CANDO_HOME)/externals/src sa
 
 
 
@@ -31,11 +27,43 @@ cscrape:
 	-rm symbols_scraped.inc
 	touch symbols_scraped.inc
 	make scrape
-scrape:
-	
-	(export PYTHONPATH=`pwd`:$(PYTHONPATH); python $(CANDO_HOME)/src/common/symbolScraper.py symbols_scraped.inc *.h *.cc *.scrape.inc)
+
+prebuild:
+	make -C $(CLASP_HOME) sub-prebuild
 
 
+
+
+######################################################################
+###
+###  Scraping
+###
+scrape-symbols:
+	(export PYTHONPATH=$(CLASP_HOME)/src/common:$(PYTHONPATH); python $(CLASP_HOME)/src/common/symbolScraper.py *.cc include/*.h)
+
+scrape-classes:
+	install -d ./include/generated
+	(export PYTHONPATH=`pwd`:$(PYTHONPATH); python $(CLASP_HOME)/src/common/registerClasses.py include/generated/initClasses_inc.h include/*Package.h include/*.h *.h *.cc 2>registerClasses.log)
+
+scrape-all:
+	make scrape-symbols
+	make scrape-classes
+
+######################################################################
+###
+###  Scraping in subdirectories
+###
+
+
+sub-scrape-symbols:
+	-make scrape-symbols
+
+sub-scrape-classes:
+	make scrape-classes
+
+
+./include/generated/%.h : %.pmp
+	$(PYTHON2) $(PUMP) $< $@
 
 
 
@@ -93,7 +121,7 @@ export	CDEBUG_FULL=1
 #
 #
 #export CANDO_INSTALLDIR=$(INSTALLDIR)/candoEdit
-	# namespace info
+# namespace info
 export mbbCxx_INCLUDE=$(CANDO_HOME)/src/mbb/cxx
 
 #export BUILDTOP = $(CANDO_HOME)/build
@@ -469,7 +497,7 @@ loginScript:
 	@echo '#'
 	@echo '#'
 	@echo '#'
-	
+
 ifndef DEVELOPMENT_ENVIRONMENT
 	echo "You must define DEVELOPMENT_ENVIRONMENT"
 	echo Type:  \"make loginScript\" to see how to set up your login

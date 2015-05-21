@@ -1,4 +1,4 @@
-import bundler ;
+
 local dir = $(__file__:D) ;
 
 #
@@ -24,8 +24,11 @@ project internals/serveEvent : requirements
 sources = 
 	serveEvent.cc
 	serveEventPackage.cc
-	/internals/core//bundle
+	/internals//core
 	/externals//boostAndExpatLibs ;
+
+lib serveEvent : $(sources) ;
+
 
 #bundler.bundle $(dir) :
 #	     $(sources) :

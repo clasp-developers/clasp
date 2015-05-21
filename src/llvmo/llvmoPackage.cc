@@ -74,7 +74,7 @@ namespace llvmo {
 #define EXPOSE_TO_CANDO
 #define Use_LlvmoPkg
 #define EXTERN_REGISTER
-#include <llvmo_initClasses_inc.h>
+#include <clasp/llvmo/generated/initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_LlvmoPkg
 #undef EXPOSE_TO_CANDO
@@ -292,7 +292,7 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
 #define Use_LlvmoPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(pkg, name) _lisp->internUniqueWithPackageName(pkg, name)
-#include <llvmo_initClasses_inc.h>
+#include <clasp/llvmo/generated/initClasses_inc.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_LlvmoPkg
@@ -358,7 +358,7 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
   STATIC_CLASS_INFO(_U_); \
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_U_)
 #endif
-#include <llvmo_initClasses_inc.h>
+#include <clasp/llvmo/generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

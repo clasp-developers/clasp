@@ -1,7 +1,4 @@
-
-
-
-include	$(CANDO_HOME)/makefile.inc
+include	$(CLASP_HOME)/makefile.inc
 
 
 INC_NEEDS = 
@@ -47,3 +44,11 @@ totalClean:
 
 
 
+PUMP_OUTPUTS :=  include/generated/clbind_constructor_functoids.h \
+	include/generated/clbind_functoids.h \
+	include/generated/clbind_methoids.h \
+	include/generated/clbind_static_members.h
+
+sub-prebuild: $(PUMP_OUTPUTS)
+	make scrape-symbols
+	make scrape-classes

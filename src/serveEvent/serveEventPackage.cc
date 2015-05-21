@@ -40,7 +40,7 @@ namespace serveEvent {
 #define EXPOSE_TO_CANDO
 #define Use_ServeEventPkg
 #define EXTERN_REGISTER
-#include <serveEvent_initClasses_inc.h>
+#include <clasp/serveEvent/generated/initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_ServeEventPkg
 #undef EXPOSE_TO_CANDO
@@ -75,7 +75,7 @@ void ServeEventExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
 #define ALL_STAGES
 #define Use_ServeEventPkg
 #define INVOKE_REGISTER
-#include <serveEvent_initClasses_inc.h>
+#include <clasp/serveEvent/generated/initClasses_inc.h>
 #undef INVOKE_REGISTER
 #undef Use_ServeEventPkg
 #undef ALL_STAGES
@@ -111,7 +111,7 @@ void ServeEventExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include <serveEvent_initClasses_inc.h>
+#include <clasp/serveEvent/generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif
