@@ -1,0 +1,14 @@
+SBCL macros involved in optimization of generated code.
+declare-vop  - virtual instruction set for sbcl
+defknown
+defoptimizer
+deftransform
+
+Read:    arm-port-log-2.txt?
+This is nyef's log on porting sbcl to arm
+
+Read:   SYS:SRC;COMPILER;ALIENCOMP.LISP
+There may be some ideas about merging the Clasp C++ function prototype type information with Common Lisp type inference.
+"Oh, you're doing an %ALIEN-FUNCALL. First, blow up if the type information is not available and constant. Second, here's the return type!"
+
+http://www.pvk.ca/Blog/2014/08/16/how-to-define-new-intrinsics-in-sbcl/
