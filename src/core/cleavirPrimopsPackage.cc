@@ -38,7 +38,7 @@ namespace cleavirPrimops {
 #pragma GCC visibility push(default)
 #define CleavirPrimopsPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CleavirPrimopsPkg_SYMBOLS
 #pragma GCC visibility pop

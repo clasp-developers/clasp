@@ -693,7 +693,7 @@ core::T_sp af_bootstrapKindP(const string &name) {
 #pragma GCC visibility push(default)
 #define GcToolsPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/gctools/symbols_scraped_inc.h>
+#include <clasp/gctools/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GcToolsPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -709,7 +709,7 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
     gctools::cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
     gctools::cname->exportYourself(exportp);                            \
   }
-#include <clasp/gctools/symbols_scraped_inc.h>
+#include <clasp/gctools/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GcToolsPkg_SYMBOLS
 

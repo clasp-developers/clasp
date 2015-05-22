@@ -102,6 +102,105 @@
  // class ArrayType_O : public SequentialType_O {
  // class VectorType_O : public SequentialType_O {
 // Associating namespace(llvmo) with package(LlvmoPkg)
+ // class DebugInfo_O : public core::T_O {
+ //class DIDescriptor_O : public DebugInfo_O, public llvm::DIDescriptor {
+ //class DIScope_O : public DebugInfo_O, public llvm::DIScope {
+ //class DIArray_O : public DebugInfo_O, public llvm::DIArray {
+ //class DITypeArray_O : public DebugInfo_O, public llvm::DITypeArray {
+ //class DIFile_O : public DebugInfo_O, public llvm::DIFile {
+ //class DISubprogram_O : public DebugInfo_O, public llvm::DISubprogram {
+ //class DIType_O : public DebugInfo_O, public llvm::DIType {
+ //class DIDerivedType_O : public DebugInfo_O, public llvm::DIDerivedType {
+ //class DIBasicType_O : public DebugInfo_O, public llvm::DIBasicType {
+ //class DICompositeType_O : public DebugInfo_O, public llvm::DICompositeType {
+ //class DISubroutineType_O : public DebugInfo_O, public llvm::DISubroutineType {
+ //class DILexicalBlock_O : public DebugInfo_O, public llvm::DILexicalBlock {
+ //class DICompileUnit_O : public DebugInfo_O, public llvm::DICompileUnit {
+ // class DIBuilder_O : public core::ExternalObject_O {
+ // class DebugLoc_O : public core::T_O {
+ // class InsertPoint_O : public core::T_O {
+ // class LLVMContext_O : public core::ExternalObject_O {
+ // class Linker_O : public core::ExternalObject_O {
+ // class Pass_O : public core::ExternalObject_O {
+ // class AttributeSet_O : public core::T_O {
+ // class Triple_O : public core::ExternalObject_O {
+ // class TargetOptions_O : public core::ExternalObject_O {
+ // class Target_O : public core::ExternalObject_O {
+ // class MCSubtargetInfo_O : public core::ExternalObject_O {
+ // class TargetSubtargetInfo_O : public MCSubtargetInfo_O {
+ // class TargetMachine_O : public core::ExternalObject_O {
+ // class LLVMTargetMachine_O : public TargetMachine_O {
+ // class FunctionPass_O : public Pass_O {
+ // class ModulePass_O : public Pass_O {
+ // class ImmutablePass_O : public ModulePass_O {
+ // class PassManagerBase_O : public core::ExternalObject_O {
+ // class Value_O : public core::ExternalObject_O {
+ // class Metadata_O : public core::ExternalObject_O {
+ // class User_O : public Value_O {
+ // class Attribute_O : public core::T_O {
+ // class DataLayout_O : public core::ExternalObject_O {
+ // class Constant_O : public User_O {
+ // class ConstantArray_O : public Constant_O {
+ // class BlockAddress_O : public Constant_O {
+ // class ConstantDataSequential_O : public Constant_O {
+ // class ConstantDataArray_O : public ConstantDataSequential_O {
+ // class ConstantExpr_O : public Constant_O {
+ // class GlobalValue_O : public Constant_O {
+ // class GlobalVariable_O : public GlobalValue_O {
+ // class ExecutionEngine_O : public core::ExternalObject_O {
+ // class Module_O : public core::ExternalObject_O {
+ // class DataLayoutPass_O : public ImmutablePass_O {
+ // class TargetLibraryInfo_O : public ImmutablePass_O {
+ // class FunctionPassManager_O : public PassManagerBase_O {
+ // class PassManager_O : public PassManagerBase_O {
+ // class EngineBuilder_O : public core::ExternalObject_O {
+ // class PassManagerBuilder_O : public core::ExternalObject_O {
+ // class APFloat_O : public core::ExternalObject_O {
+ // class APInt_O : public core::ExternalObject_O {
+ // class IRBuilderBase_O : public core::ExternalObject_O {
+ // class IRBuilder_O : public IRBuilderBase_O {
+ // class Instruction_O : public User_O {
+ // class StoreInst_O : public Instruction_O {
+ // class FenceInst_O : public Instruction_O {
+ // class AtomicCmpXchgInst_O : public Instruction_O {
+ // class AtomicRMWInst_O : public Instruction_O {
+ // class PHINode_O : public Instruction_O {
+ // class CallInst_O : public Instruction_O {
+ // class LandingPadInst_O : public Instruction_O {
+ // class UnaryInstruction_O : public Instruction_O {
+ // class AllocaInst_O : public UnaryInstruction_O {
+ // class VAArgInst_O : public UnaryInstruction_O {
+ // class LoadInst_O : public UnaryInstruction_O {
+ // class TerminatorInst_O : public Instruction_O {
+ // class BranchInst_O : public TerminatorInst_O {
+ // class SwitchInst_O : public TerminatorInst_O {
+ // class IndirectBrInst_O : public TerminatorInst_O {
+ // class InvokeInst_O : public TerminatorInst_O {
+ // class ResumeInst_O : public TerminatorInst_O {
+ // class UnreachableInst_O : public TerminatorInst_O {
+ // class ReturnInst_O : public TerminatorInst_O {
+ // class ConstantFP_O : public Constant_O {
+ // class ConstantInt_O : public Constant_O {
+ // class ConstantStruct_O : public Constant_O {
+ // class UndefValue_O : public Constant_O {
+ // class ConstantPointerNull_O : public Constant_O {
+ // class MDNode_O : public Metadata_O {
+ // class MDString_O : public Metadata_O {
+ // class ValueAsMetadata_O : public Metadata_O {
+ // class NamedMDNode_O : public core::ExternalObject_O {
+ // class Function_O : public GlobalValue_O {
+ // class BasicBlock_O : public Value_O {
+ // class Argument_O : public Value_O {
+ // class Type_O : public core::ExternalObject_O {
+ // class FunctionType_O : public Type_O {
+ // class IntegerType_O : public Type_O {
+ // class CompositeType_O : public Type_O {
+ // class StructType_O : public CompositeType_O {
+ // class SequentialType_O : public CompositeType_O {
+ // class PointerType_O : public SequentialType_O {
+ // class ArrayType_O : public SequentialType_O {
+ // class VectorType_O : public SequentialType_O {
+// Associating namespace(llvmo) with package(LlvmoPkg)
 #ifdef HEADER_INCLUDES
 #include "include/llvmoExpose.h"
 #include "include/debugInfoExpose.h"

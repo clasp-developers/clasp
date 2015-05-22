@@ -53,7 +53,7 @@ namespace serveEvent {
 #pragma GCC visibility push(default)
 #define ServeEventPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/serveEvent/symbols_scraped_inc.h>
+#include <clasp/serveEvent/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef ServeEventPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -68,7 +68,7 @@ void ServeEventExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
     cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
     cname->exportYourself(exportp);                            \
   }
-#include <clasp/serveEvent/symbols_scraped_inc.h>
+#include <clasp/serveEvent/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef ServeEventPkg_SYMBOLS
 

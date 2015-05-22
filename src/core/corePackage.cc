@@ -611,7 +611,7 @@ SYMBOL_SC_(KeywordPkg, changed);
 #pragma GCC visibility push(default)
 #define CorePkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) Symbol_sp cname; // = UNDEFINED_SYMBOL;
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CorePkg_SYMBOLS
 #pragma GCC visibility pop
@@ -894,7 +894,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
     _BLOCK_TRACEF(BF("Exporting symbols in lisp"));
 #define CorePkg_EXPORT
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) cname->exportYourself(export);
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CorePkg_EXPORT
   };

@@ -122,7 +122,7 @@
                                     (merge-pathnames include-path source-dir)
                                     (calculate-absolute-pathname include-path base-paths))))
     (if (probe-file absolute-include-path)
-	(shortest-enough absolute-include-path relative-to-list)
+	(shortest-enough-namestring absolute-include-path relative-to-list)
 	(namestring include-path))))
 (trace shortest-enough-namestring)
 (trace probe-file)
@@ -132,11 +132,6 @@
              +base-paths+
              '(#P"/Users/meister/Development/"
                #P"/Users/meister/Development/clasp/projects/"))
-
-
-
-
-
 
 (defun generate-rewrites (includes-table)
   (let ((includes-rewrites (make-hash-table :test #'equalp)))

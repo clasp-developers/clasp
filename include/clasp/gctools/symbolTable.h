@@ -33,7 +33,7 @@ namespace gctools {
 
 #define GcToolsPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/gctools/symbols_scraped_inc.h>
+#include <clasp/gctools/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GcToolsPkg_SYMBOLS
 
@@ -43,7 +43,7 @@ namespace gctoolsTooling {
 
 #define GcToolsToolingPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/gctools/symbols_scraped_inc.h>
+#include <clasp/gctools/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GcToolsToolingPkg_SYMBOLS
 
@@ -53,7 +53,7 @@ namespace gctoolsMatching {
 
 #define GcToolsMatchingPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/gctools/symbols_scraped_inc.h>
+#include <clasp/gctools/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GcToolsMatchingPkg_SYMBOLS
 

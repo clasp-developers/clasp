@@ -53,7 +53,7 @@ namespace cffi {
 #pragma GCC visibility push(default)
 #define CffiPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/cffi/symbols_scraped_inc.h>
+#include <clasp/cffi/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CffiPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -68,7 +68,7 @@ void CffiExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) c
     cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
     cname->exportYourself(exportp);                            \
   }
-#include <clasp/cffi/symbols_scraped_inc.h>
+#include <clasp/cffi/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CffiPkg_SYMBOLS
 

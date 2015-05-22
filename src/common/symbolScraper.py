@@ -377,8 +377,8 @@ bad_macros_re = re.compile('^\s*(#define\s*ARGS_|SYMBOL_EXPORT_SC_|SYMBOL_SC_|AR
 
 packageName = configure_symbol_scrape.packageName
 
-symbolsFileName = configure_symbol_scrape.symbolsOutput
-fileNames = sys.argv[1:]
+symbolsFileName = sys.argv[1]
+fileNames = sys.argv[2:]
 print("packageName = %s" % packageName )
 print("symbols file name = %s" % symbolsFileName)
 
@@ -586,7 +586,7 @@ for fileName in fileNames:
 
 
 (addedSymbols, removedSymbols) = buildSymbolTable()
-dump_symbolTable("_symbolTableAfterBuild.txt")
+dump_symbolTable("include/generated/_symbolTableAfterBuild.txt")
 
 # Figure out if the exported symbols have changed
 # existingExportedSymbols is a set of symbol names that were
@@ -627,7 +627,7 @@ if ( len(addedSymbols)>0 or len(removedSymbols)>0 or (not saw_symbol_table) or (
     fout.write("// Symbol table\n" )
     fout.flush()
     scrapeFlagPrefix = os.path.basename(getcwd())
-    fout.write("#include \"%s_scrape_flag.h\"\n"%scrapeFlagPrefix)
+#    fout.write("#include \"%s_scrape_flag.h\"\n"%scrapeFlagPrefix)
     for s in symbolTable:
         if ( s != None ):
             fout.write("%s\n" % s.symbol_table_repr())

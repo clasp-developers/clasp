@@ -57,7 +57,7 @@ namespace asttooling {
 #pragma GCC visibility push(default)
 #define AstToolingPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/asttooling/symbols_scraped_inc.h>
+#include <clasp/asttooling/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef AstToolingPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -72,7 +72,7 @@ void AsttoolingExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
     cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
     cname->exportYourself(exportp);                            \
   }
-#include <clasp/asttooling/symbols_scraped_inc.h>
+#include <clasp/asttooling/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef AstToolingPkg_SYMBOLS
 

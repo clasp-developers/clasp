@@ -32,7 +32,7 @@ THE SOFTWARE.
 namespace kw {
 #define KeywordPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/clbind/symbols_scraped_inc.h>
+#include <clasp/clbind/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
 }; /* kw package */
@@ -40,7 +40,7 @@ namespace kw {
 namespace clbind {
 #define ClbindPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/clbind/symbols_scraped_inc.h>
+#include <clasp/clbind/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef ClbindPkg_SYMBOLS
 }; /* clbind package */

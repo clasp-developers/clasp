@@ -50,7 +50,7 @@ namespace mpip {
 #pragma GCC visibility push(default)
 #define MpiPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/mpip/symbols_scraped_inc.h>
+#include <clasp/mpip/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef MpiPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -74,7 +74,7 @@ void MpiExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
     cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
     cname->exportYourself(exportp);                            \
   }
-#include <clasp/mpip/symbols_scraped_inc.h>
+#include <clasp/mpip/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef MpiPkg_SYMBOLS
 

@@ -38,7 +38,7 @@ namespace gray {
 #pragma GCC visibility push(default)
 #define GrayPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GrayPkg_SYMBOLS
 #pragma GCC visibility pop

@@ -54,7 +54,7 @@ namespace sockets {
 #pragma GCC visibility push(default)
 #define SocketsPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/sockets/symbols_scraped_inc.h>
+#include <clasp/sockets/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef SocketsPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -69,7 +69,7 @@ void SocketsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
     cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
     cname->exportYourself(exportp);                            \
   }
-#include <clasp/sockets/symbols_scraped_inc.h>
+#include <clasp/sockets/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef SocketsPkg_SYMBOLS
 

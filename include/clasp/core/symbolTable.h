@@ -32,7 +32,7 @@ THE SOFTWARE.
 namespace cl {
 #define ClPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef ClPkg_SYMBOLS
 };
@@ -40,7 +40,7 @@ namespace cl {
 namespace kw {
 #define KeywordPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
 }; /* kw package */
@@ -48,7 +48,7 @@ namespace kw {
 namespace core {
 #define CorePkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CorePkg_SYMBOLS
 }; /* core package */
@@ -56,7 +56,7 @@ namespace core {
 namespace ext {
 #define ExtPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef ExtPkg_SYMBOLS
 }; /* ext package */
@@ -64,7 +64,7 @@ namespace ext {
 namespace comp {
 #define CompPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CompPkg_SYMBOLS
 }; /* comp package */
@@ -72,7 +72,7 @@ namespace comp {
 namespace clos {
 #define ClosPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef ClosPkg_SYMBOLS
 }; /* clos package */
@@ -80,7 +80,7 @@ namespace clos {
 namespace cleavirPrimops {
 #define CleavirPrimopsPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CleavirPrimopsPkg_SYMBOLS
 }; /* cleavirPrimops package */
@@ -88,7 +88,7 @@ namespace cleavirPrimops {
 namespace cleavirEnv {
 #define CleavirEnvPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CleavirEnvPkg_SYMBOLS
 }; /* cleavirEnv package */
@@ -96,7 +96,7 @@ namespace cleavirEnv {
 namespace gray {
 #define GrayPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/core/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GrayPkg_SYMBOLS
 }; /* gray package */

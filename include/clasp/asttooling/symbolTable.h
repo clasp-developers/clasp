@@ -32,7 +32,7 @@ THE SOFTWARE.
 namespace kw {
 #define KeywordPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/asttooling/symbols_scraped_inc.h>
+#include <clasp/asttooling/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
 }; /* kw package */
@@ -40,7 +40,7 @@ namespace kw {
 namespace asttooling {
 #define AstToolingPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/asttooling/symbols_scraped_inc.h>
+#include <clasp/asttooling/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef AstToolingPkg_SYMBOLS
 }; /* asttooling package */

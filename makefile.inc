@@ -39,9 +39,11 @@ prebuild:
 ###  Scraping
 ###
 scrape-symbols:
-	(export PYTHONPATH=$(CLASP_HOME)/src/common:$(PYTHONPATH); python $(CLASP_HOME)/src/common/symbolScraper.py *.cc include/*.h)
+	echo Scraping symbols in `pwd`
+	(export PYTHONPATH=$(CLASP_HOME)/src/common:$(PYTHONPATH); python $(CLASP_HOME)/src/common/symbolScraper.py include/generated/symbols_scraped_inc.h include/generated/symbols_scraped_inc.h *.cc include/*.h)
 
 scrape-classes:
+	echo Scraping classes in `pwd`
 	install -d ./include/generated
 	(export PYTHONPATH=`pwd`:$(PYTHONPATH); python $(CLASP_HOME)/src/common/registerClasses.py include/generated/initClasses_inc.h include/*Package.h include/*.h *.h *.cc 2>registerClasses.log)
 

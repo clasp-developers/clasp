@@ -32,7 +32,7 @@ THE SOFTWARE.
 namespace kw {
 #define KeywordPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/sockets/symbols_scraped_inc.h>
+#include <clasp/sockets/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
 }; /* kw package */
@@ -40,7 +40,7 @@ namespace kw {
 namespace sockets {
 #define SocketsPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/sockets/symbols_scraped_inc.h>
+#include <clasp/sockets/generated/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef SocketsPkg_SYMBOLS
 }; /* sockets package */
