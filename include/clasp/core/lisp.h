@@ -670,10 +670,10 @@ public:
   gctools::smart_ptr<Cons_O> cons(gctools::smart_ptr<oclass> obj, gctools::smart_ptr<Cons_O> tail) {
     return this->create<Cons_O>(obj, tail);
   }
+  /*! Zero argument creator */
   template <class oclass>
   gctools::smart_ptr<oclass> create() {
-    GC_ALLOCATE(oclass, res);
-    return res;
+    return oclass::create();
   }
   /*! One argument creator */
   template <class oclass, typename targ1>
@@ -966,6 +966,7 @@ public:
 
   explicit Lisp_O();
   virtual ~Lisp_O();
+
 };
 
 /*! Scoped change of lisp mode */
@@ -1020,6 +1021,7 @@ Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env)
 void af_stackMonitor();
 
 void cl_error(T_sp err, List_sp initializers);
+
 };
 
 //TRANSLATE(core::Lisp_O);

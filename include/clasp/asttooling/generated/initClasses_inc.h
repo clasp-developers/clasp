@@ -50,7 +50,6 @@ classasttooling__AstVisitor_Oval->addInstanceBaseClassDoNotCalculateClassPrecede
 #endif // } DEFINE_BASE_CLASSES
 #undef DEFINE_BASE_CLASSES
 #if defined(DEFINE_CLASS_NAMES) || defined(ALL_STAGES) // {
- core::T_sp _curPkg = _lisp->findPackage(CurrentPkg,true);
 // Depends on nothing
 
     classasttooling__AstVisitor_Oval->__setupStage3NameAndCalculateClassPrecedenceList(asttooling::AstVisitor_O::static_classSymbol());

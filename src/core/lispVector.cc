@@ -51,18 +51,18 @@ Vector_sp cl_vector(List_sp args) {
   return vec;
 };
 
-#define DOCS_af_make_vector "make_vector See si_make_vector in ecl>>array.d"
-#define ARGS_af_make_vector "(element-type dimension adjustable fill-pointer displaced-to displaced-index-offset &optional initial-element initial-contents)"
-#define DECL_af_make_vector ""
+#define DOCS_core_make_vector "make_vector See si_make_vector in ecl>>array.d"
+#define ARGS_core_make_vector "(element-type dimension adjustable fill-pointer displaced-to displaced-index-offset &optional initial-element initial-contents)"
+#define DECL_core_make_vector ""
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
-Vector_sp af_make_vector(T_sp element_type,
-                         int dimension,
-                         bool adjustable,
-                         T_sp fill_pointer,
-                         T_sp displaced_to,
-                         T_sp displaced_index_offset,
-                         T_sp initial_element,
-                         T_sp initialContents) {
+Vector_sp core_make_vector(T_sp element_type,
+                           int dimension,
+                           bool adjustable,
+                           T_sp fill_pointer,
+                           T_sp displaced_to,
+                           T_sp displaced_index_offset,
+                           T_sp initial_element,
+                           T_sp initialContents) {
   _G();
   ASSERTF(displaced_to.nilp(), BF("Add support for make-vector :displaced-to"));
   ASSERTF(displaced_index_offset.nilp() || unbox_fixnum(gc::As<Fixnum_sp>(displaced_index_offset)) == 0, BF("Add support for make-vector non-zero :displaced-index-offset "));
@@ -77,7 +77,7 @@ Vector_sp af_make_vector(T_sp element_type,
     }
     if (fill_pointer.notnilp()) {
       int ifp = 0;
-      if (fill_pointer == _lisp->_true())
+      if (fill_pointer == cl::_sym_T_O)
         ifp = dimension;
       else
         ifp = MIN(dimension, abs(unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer))));
@@ -210,7 +210,7 @@ void Vector_O::exposeCando(::core::Lisp_sp lisp) {
       //	.initArgs("(self)")
       ;
   SYMBOL_SC_(CorePkg, make_vector);
-  Defun(make_vector);
+  CoreDefun(make_vector);
   SYMBOL_EXPORT_SC_(CorePkg, adjustVector);
   CoreDefun(adjustVector);
   SYMBOL_EXPORT_SC_(ClPkg, vectorPush);

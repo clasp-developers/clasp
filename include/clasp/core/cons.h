@@ -295,7 +295,7 @@ public:
   template <class o_class>
   gctools::smart_ptr<o_class> car() {
     ASSERTNOTNULL(this->_Car);
-    return gc::As<o_class>(this->_Car);
+    return gc::As<gc::smart_ptr<o_class>>(this->_Car);
   };
 
   virtual bool equal(T_sp obj) const;
@@ -577,19 +577,26 @@ void fillVec0FromCons(gctools::Vec0<T> &vec, List_sp list) {
 }; // core namespace
 
 namespace core {
-
 /* Erase the entry with _key_ from the list. Return the new list. 
      In cases where the key was in the first entry the first entry is unhooked and the CDR is returned.
     In other cases the entry is unhooked from the inside of the alist*/
-List_sp alist_erase(List_sp alist, T_sp key);
+  List_sp alist_erase(List_sp alist, T_sp key);
 
 /*! Push the key/val onto the alist.  This will shadow other entries with the same val */
-List_sp alist_push(List_sp alist, T_sp key, T_sp val);
+  List_sp alist_push(List_sp alist, T_sp key, T_sp val);
 
 /*! Lookup the key and return the Cons containing the key/val pair - or return NIL if not found */
-List_sp alist_get(List_sp alist, T_sp key);
+  List_sp alist_get(List_sp alist, T_sp key);
 
-string alist_asString(List_sp alist);
+  string alist_asString(List_sp alist);
+};
+
+
+
+namespace core {
+  List_sp plistErase(List_sp& plist, T_sp key);
+  List_sp plistSetf(List_sp& plist, T_sp key, T_sp val);
+  T_sp plistGetf(List_sp plist, T_sp key, T_sp defaultValue);
 };
 
 namespace core {

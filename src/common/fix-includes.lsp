@@ -57,6 +57,9 @@
     #P"/Users/meister/Development/clasp/src/serveEvent/"
     #P"/Users/meister/Development/clasp/src/sockets/"
     #P"/Users/meister/Development/clasp/projects/cando/src/candoBase/"
+    #P"/Users/meister/Development/clasp/projects/cando/src/chem/"
+    #P"/Users/meister/Development/clasp/projects/cando/src/kinematics/"
+    #P"/Users/meister/Development/clasp/projects/cando/src/openmmPackage/"
     #P"/Users/meister/Development/clasp/projects/cando/src/units/"
     ))
 
@@ -124,8 +127,6 @@
     (if (probe-file absolute-include-path)
 	(shortest-enough-namestring absolute-include-path relative-to-list)
 	(namestring include-path))))
-(trace shortest-enough-namestring)
-(trace probe-file)
 
 (fix-include (make-include-file :source-dir #P"/Users/meister/Development/clasp/projects/src/claspBase"
                                 :include-path #P"core/foundation.h")
@@ -165,18 +166,17 @@
 (defparameter *source-files* nil)
 (defparameter *rewrites* nil)
 
-(defun do-all (&key testing)
+(defun do-all (&key (testing t))
   (multiple-value-setq (*source-files* *rewrites*)
     (search-and-generate-rewrites))
-  (rewrite-all *source-files* *rewrites* :testing t))
+  (rewrite-all *source-files* *rewrites* :testing testing))
 
 (multiple-value-setq (*source-files* *rewrites*)
   (search-and-generate-rewrites))
 
-(print "Hello")
+(print "Done")
 
-(do-all)
+(do-all :testing nil)
 
 
 *rewrites*
-(trace fix-include)

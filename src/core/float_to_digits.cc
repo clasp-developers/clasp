@@ -240,7 +240,7 @@ T_mv core_float_to_digits(T_sp tdigits, Float_sp number, Real_sp position,
   k = scale(approx);
   StrWithFillPtr_sp digits;
   if (tdigits.nilp()) {
-    digits = gc::As<StrWithFillPtr_sp>(af_make_vector(cl::_sym_base_char,
+    digits = gc::As<StrWithFillPtr_sp>(core_make_vector(cl::_sym_base_char,
                                                       10,
                                                       true /* adjustable */,
                                                       clasp_make_fixnum(0) /* fill pointer */,

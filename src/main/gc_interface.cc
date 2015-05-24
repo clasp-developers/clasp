@@ -384,7 +384,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 #ifndef RUNNING_GC_BUILDER
 #if USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
 #define GC_GLOBAL_SYMBOLS
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_GLOBAL_SYMBOLS
 #else
 

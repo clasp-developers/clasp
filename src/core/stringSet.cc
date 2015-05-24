@@ -286,11 +286,10 @@ List_sp StringSet_O::asCons() const {
 }
 
 Vector_sp StringSet_O::asVector() const {
-  _G();
-  Vector_sp vec = af_make_vector(cl::_sym_Str_O,
-                                 this->strs.size() /* dim */,
-                                 true /* adjustable */,
-                                 clasp_make_fixnum(0) /* fill pointer */);
+  Vector_sp vec = core_make_vector(cl::_sym_Str_O,
+                                   this->strs.size() /* dim */,
+                                   true /* adjustable */,
+                                   clasp_make_fixnum(0) /* fill pointer */);
   int i = 0;
   set<string>::iterator si;
   for (si = this->strs.begin(); si != this->strs.end(); si++) {

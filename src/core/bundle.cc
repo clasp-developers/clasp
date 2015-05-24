@@ -73,7 +73,7 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
   pid_t pid = getpid();
 #ifdef _TARGET_OS_DARWIN
   char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
-  int ret = proc_pidpath(pid, pathbuf, sizeof(pathbuf));
+  /*int ret = */ proc_pidpath(pid, pathbuf, sizeof(pathbuf));
   //        printf("%s:%d pid path = %s\n", __FILE__, __LINE__, pathbuf );
   string argv0 = string(pathbuf);
 #endif

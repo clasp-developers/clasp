@@ -77,7 +77,6 @@ classclbind__ClassRep_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceLis
 #endif // } DEFINE_BASE_CLASSES
 #undef DEFINE_BASE_CLASSES
 #if defined(DEFINE_CLASS_NAMES) || defined(ALL_STAGES) // {
- core::T_sp _curPkg = _lisp->findPackage(CurrentPkg,true);
 // Depends on nothing
 
     classclbind__ClassRegistry_Oval->__setupStage3NameAndCalculateClassPrecedenceList(clbind::ClassRegistry_O::static_classSymbol());

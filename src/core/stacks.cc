@@ -54,7 +54,7 @@ Vector_sp ExceptionStack::backtrace() {
     return _Nil<Vector_O>();
   }
   printf("%s:%d ExceptionStack::backtrace stack size = %lu\n", __FILE__, __LINE__, this->_Stack.size());
-  Vector_sp result = af_make_vector(_Nil<T_O>(), this->_Stack.size(), false, make_fixnum((int)(this->_Stack.size())));
+  Vector_sp result = core_make_vector(_Nil<T_O>(), this->_Stack.size(), false, make_fixnum((int)(this->_Stack.size())));
   for (int i(0), iEnd(this->_Stack.size()); i < iEnd; ++i) {
     Symbol_sp kind;
     SYMBOL_EXPORT_SC_(KeywordPkg, catchFrame);

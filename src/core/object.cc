@@ -182,6 +182,21 @@ bool af_isNil(T_sp arg) {
   return arg.nilp();
 };
 
+#define ARGS_core_encode "(arg)"
+#define DECL_core_encode ""
+#define DOCS_core_encode "encode object as an a-list"
+core::Cons_sp core_encode(T_sp arg) {
+  return arg->encode();
+};
+
+#define ARGS_core_decode "(obj arg)"
+#define DECL_core_decode ""
+#define DOCS_core_decode "decode object from a-list"
+T_sp core_decode(T_sp obj, core::Cons_sp arg) {
+  obj->decode(arg);
+  return obj;
+};
+
 void T_O::initialize() {
   // do nothing
 }
@@ -444,6 +459,8 @@ void T_O::exposeCando(core::Lisp_sp lisp) {
   Defun(classNameAsString);
   SYMBOL_EXPORT_SC_(ClPkg, copyTree);
   Defun(copyTree);
+  CoreDefun(encode);
+  CoreDefun(decode);
 };
 
 void T_O::exposePython(Lisp_sp lisp) { // lisp will be undefined - don't use it

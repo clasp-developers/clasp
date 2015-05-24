@@ -104,13 +104,13 @@ namespace core {
 // Like ecl_vector_start_end
 T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp end);
 
-Vector_sp af_make_vector(T_sp element_type,
-                         int dimension,
-                         bool adjustable,
-                         T_sp fill_pointer = make_fixnum(0),
-                         T_sp displaced_to = _Nil<T_O>(),
-                         T_sp displaced_index_offset = _Nil<T_O>(),
-                         T_sp initial_element = _Nil<T_O>(),
-                         T_sp initial_contents = _Nil<T_O>());
+ Vector_sp core_make_vector(T_sp element_type,
+                            int dimension,
+                            bool adjustable = false,
+                            T_sp fill_pointer = cl::_sym_T_O,
+                            T_sp displaced_to = _Nil<T_O>(),
+                            T_sp displaced_index_offset = _Nil<T_O>(),
+                            T_sp initial_element = _Nil<T_O>(),
+                            T_sp initial_contents = _Nil<T_O>());
 };
 #endif /* _core_Vector_H */

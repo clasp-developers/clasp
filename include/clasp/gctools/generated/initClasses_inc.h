@@ -4,7 +4,6 @@
 // define cpp macro: EXPOSE_PYTHON to expose python
 // Associating namespace(gctools) with package(GcToolsPkg)
 // Associating namespace(gctools) with package(GcToolsPkg)
-// Associating namespace(gctools) with package(GcToolsPkg)
 #ifdef HEADER_INCLUDES
 #endif // HEADER_INCLUDES
 #undef HEADER_INCLUDES
@@ -24,7 +23,6 @@
 #endif // } DEFINE_BASE_CLASSES
 #undef DEFINE_BASE_CLASSES
 #if defined(DEFINE_CLASS_NAMES) || defined(ALL_STAGES) // {
- core::T_sp _curPkg = _lisp->findPackage(CurrentPkg,true);
 // Depends on nothing
 #endif // } DEFINE_CLASS_NAMES
 #undef DEFINE_CLASS_NAMES

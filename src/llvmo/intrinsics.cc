@@ -2007,7 +2007,7 @@ void cc_popLandingPadFrame(T_O *frameFixnum) {
 
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *frame) {
   ASSERT(gctools::tagged_fixnump(frame));
-  size_t frameIndex = gctools::untag_fixnum(frame);
+//  size_t frameIndex = gctools::untag_fixnum(frame);
   //	printf("%s:%d landingpadUnwindMatchFrameElseRethrow  frame: %lu\n", __FILE__, __LINE__, frameIndex);
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
   if (unwindP->getFrame() == frame) {

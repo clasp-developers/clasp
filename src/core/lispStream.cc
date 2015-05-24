@@ -4766,7 +4766,7 @@ T_sp core_do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
   }
   if (e == _Nil<T_O>()) {
     end = limit;
-  } else if (!af_fixnumP(e)) {
+  } else if (!e.fixnump()) {//!af_fixnumP(e)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_end, e,
                              Integer_O::makeIntegerType(0, limit));
   } else

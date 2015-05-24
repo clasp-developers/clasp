@@ -44,30 +44,30 @@ THE SOFTWARE.
 if (this->isStretchEnergyEnabled()) {
   for (vector<EnergyStretch>::iterator si = this->_StretchTerms.begin();
        si != this->_StretchTerms.end(); si++) {
-#include "_stretchTerm.cc"
+#include <_stretchTerm.cc>
   }
 }
 if (this->isAngleEnergyEnabled()) {
   for (vector<EnergyAngle>::iterator ai = this->_AngleTerms.begin();
        ai != this->_AngleTerms.end(); ai++) {
-#include "_angleTerm.cc"
+#include <_angleTerm.cc>
   }
 }
 if (this->isDihedralEnergyEnabled()) {
   for (vector<EnergyDihedral>::iterator di = this->_DihedralTerms.begin();
        di != this->_DihedralTerms.end(); di++) {
-#include "_dihedralTerm.cc"
+#include <_dihedralTerm.cc>
   }
 }
 if (this->isImproperRestraintEnergyEnabled()) {
   for (vector<AmberImproperRestraint>::iterator iri = this->_ImproperRestraintTerms.begin();
        iri != this->_ImproperRestraintTerms.end(); iri++) {
-#include "_improperRestraintTerm.cc"
+#include <_improperRestraintTerm.cc>
   }
 }
 if (this->isChiralRestraintEnergyEnabled()) {
   for (vector<AmberChiralRestraint>::iterator cri = this->_ChiralRestraintTerms.begin();
        cri != this->_ChiralRestraintTerms.end(); cri++) {
-#include "_chiralRestraintTerm.cc"
+#include <_chiralRestraintTerm.cc>
   }
 }

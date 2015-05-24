@@ -47,36 +47,36 @@ THE SOFTWARE.
 if (this->_CalculateStretchEnergy) {
   for (vector<EnergyStretch>::iterator si = this->_StretchTerms.begin();
        si != this->_StretchTerms.end(); si++) {
-#include "_stretchTerm.cc"
+#include <_stretchTerm.cc>
   }
 }
 if (this->_CalculateAngleEnergy) {
   for (vector<EnergyAngle>::iterator ai = this->_AngleTerms.begin();
        ai != this->_AngleTerms.end(); ai++) {
-#include "_angleTerm.cc"
+#include <_angleTerm.cc>
   }
 }
 if (this->_CalculateDihedralEnergy) {
   for (vector<EnergyDihedral>::iterator di = this->_DihedralTerms.begin();
        di != this->_DihedralTerms.end(); di++) {
-#include "_dihedralTerm.cc"
+#include <_dihedralTerm.cc>
   }
 }
 if (this->_CalculateImproperRestraintEnergy) {
   for (vector<AmberImproperRestraint>::iterator iri = this->_ImproperRestraintTerms.begin();
        iri != this->_ImproperRestraintTerms.end(); iri++) {
-#include "_improperRestraintTerm.cc"
+#include <_improperRestraintTerm.cc>
   }
 }
 if (this->_CalculateNonbondEnergy) {
   for (vector<AmberNonbond>::iterator iri = this->_NonbondTerms.begin();
        iri != this->_NonbondTerms.end(); iri++) {
-#include "_nonbondTerm.cc"
+#include <_nonbondTerm.cc>
   }
 }
 if (this->_CalculateChiralRestraintEnergy) {
   for (vector<AmberChiralRestraint>::iterator iri = this->_ChiralRestraintTerms.begin();
        iri != this->_ChiralRestraintTerms.end(); iri++) {
-#include "_chiralRestraintTerm.cc"
+#include <_chiralRestraintTerm.cc>
   }
 }

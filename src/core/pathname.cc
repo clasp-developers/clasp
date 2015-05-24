@@ -347,18 +347,18 @@ Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
   } else if (String_sp sd = directory.asOrNull<String_O>()) {
     directory = lisp_createList(kw::_sym_absolute, directory);
 #endif
-  } else if (Str_sp ss = directory.asOrNull<Str_O>()) {
-    directory = Cons_O::createList(kw::_sym_absolute, directory);
-  } else if (Symbol_sp sym = directory.asOrNull<Symbol_O>()) {
-    if (directory == kw::_sym_wild) {
+  } else if (Str_sp strdirectory = directory.asOrNull<Str_O>()) {
+    directory = Cons_O::createList(kw::_sym_absolute, strdirectory);
+  } else if (Symbol_sp sdirectory = directory.asOrNull<Symbol_O>()) {
+    if (sdirectory == kw::_sym_wild) {
       directory = lisp_createList(kw::_sym_absolute, kw::_sym_wild_inferiors);
     } else {
-      x = directory;
+      x = sdirectory;
       component = kw::_sym_directory;
       goto ERROR;
     }
-  } else if (Cons_sp tl = directory.asOrNull<Cons_O>()) {
-    directory = cl_copyList(directory);
+  } else if (Cons_sp cdirectory = directory.asOrNull<Cons_O>()) {
+    directory = cl_copyList(cdirectory);
   } else {
     x = directory;
     component = kw::_sym_directory;
@@ -830,7 +830,7 @@ Pathname_sp cl_pathname(T_sp x) {
   }
 L:
   if (Str_sp strx = x.asOrNull<Str_O>()) {
-    x = af_parseNamestring(x);
+    x = af_parseNamestring(strx);
   } else if (gc::IsA<Pathname_sp>(x)) {
     // do nothing
   } else if (gc::IsA<Stream_sp>(x)) {
@@ -1638,11 +1638,11 @@ coerce_to_from_pathname(T_sp x, T_sp host) {
   } else
 #endif
       if (Str_sp strx = x.asOrNull<Str_O>()) {
-    x = af_parseNamestring(x, host);
+    x = af_parseNamestring(strx, host);
   }
   if (Pathname_sp pnx = x.asOrNull<Pathname_O>()) {
-    if (af_logicalPathnameP(x)) {
-      return x;
+    if (af_logicalPathnameP(pnx)) {
+      return pnx;
     }
   }
   SIMPLE_ERROR(BF("%s is not a valid from-pathname translation") % _rep_(x));
@@ -1948,10 +1948,11 @@ begin:
     return pathname;
   }
   List_sp l = eval::funcall(core::_sym_pathnameTranslations, pathname->_Host);
+//  TESTING();
   for (auto cur : l) { // ; !cl_endp(l); l = CDR(l)) {
-    T_sp pair = oCar(l);
+    T_sp pair = oCar(cur); // I just noticed that I had oCar(l) in here!!!!!
     if (af_pathnameMatchP(pathname, CAR(pair))) {
-      //printf("%s:%d Trying to translate pathname: %s   pair: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str(), _rep_(pair).c_str() );
+//      printf("%s:%d Trying to translate pathname: %s   pair: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str(), _rep_(pair).c_str() );
       pathname = af_translatePathname(pathname,
                                       CAR(pair),
                                       oCadr(pair),

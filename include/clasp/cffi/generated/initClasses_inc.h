@@ -50,7 +50,6 @@ classcffi__Pointer_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(c
 #endif // } DEFINE_BASE_CLASSES
 #undef DEFINE_BASE_CLASSES
 #if defined(DEFINE_CLASS_NAMES) || defined(ALL_STAGES) // {
- core::T_sp _curPkg = _lisp->findPackage(CurrentPkg,true);
 // Depends on nothing
 
     classcffi__Pointer_Oval->__setupStage3NameAndCalculateClassPrecedenceList(cffi::Pointer_O::static_classSymbol());

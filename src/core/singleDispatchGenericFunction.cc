@@ -88,6 +88,7 @@ void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, La
   if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments()) {
     SIMPLE_ERROR(BF("There is a mismatch between the number of required arguments\n"
                     " between the single-dispatch-generic-function %s which expects %d arguments\n"
+                    " for methods: %s\n"
                     " and another method with the same name in %s which expects %d arguments\n"
                     " - this is probably due to the way you can overload method names with\n"
                     " different argument signatures in C++ which does not translate well\n"
@@ -95,7 +96,7 @@ void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, La
                     " --> The solution is to give the most recent Common Lisp method you defined\n"
                     " a new name by prefixing it with the class name\n"
                     " eg: getFilename -> PresumedLoc-getFilename") %
-                 _rep_(gfname) % gf_llh->numberOfRequiredArguments() % _rep_(receiver_class) % lambda_list_handler->numberOfRequiredArguments());
+                 _rep_(gfname)  % gf_llh->numberOfRequiredArguments() % _rep_(gf->methods()) % _rep_(receiver_class) % lambda_list_handler->numberOfRequiredArguments());
   }
   gfc->addMethod(method);
 };

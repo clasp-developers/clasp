@@ -617,6 +617,11 @@ public: // Description stuff
   virtual void describe();
   virtual void dump() { this->describe(); };
 
+ public:
+  //! Encode this object as an a-list
+  virtual core::Cons_sp encode() const { SUBIMP(); };
+  //! Decode this object from an a-list
+  virtual void decode(core::Cons_sp) {SUBIMP();};
 public:
   string descriptionNonConst();
 
@@ -847,11 +852,8 @@ T_sp new_LispObject() {
 
 template <class o_class>
 inline gctools::smart_ptr<o_class> downcast(core::T_sp c) {
-  if (c.nilp())
-    return _Nil<o_class>();
-  return gctools::dynamic_pointer_cast<o_class>(c);
+  return c.as<o_class>();
 }
-
 // ------------------------------------------------------------
 //
 // New way of declaring and registering classes
