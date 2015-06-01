@@ -2384,6 +2384,7 @@ string LongFloat_O::__repr__() const {
   ss << this->_Value;
   return ss.str();
 }
+#endif
 
 EXPOSE_CLASS(core, LongFloat_O);
 
@@ -2399,7 +2400,6 @@ void LongFloat_O::exposePython(Lisp_sp lisp) {
 #endif
 }
 
-#endif
 
 // --------------------------------------------------------------------------------
 

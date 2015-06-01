@@ -205,6 +205,8 @@ typedef std::size_t class_id;
 // the source code
 #define SYMBOL_EXPORT_SC_(p, x)
 #define SYMBOL_SC_(p, x)
+#define INTERN_(_p_,_x_) (_p_::_sym_##_x_)
+
 
 /*! Use this here in the header to declare an extern function if you want */
 //#define	EXTERN_FN(x) extern T_sp fn_##x(Function_sp exec, List_sp args, Environment_sp env, Lisp_sp lisp);
@@ -215,7 +217,7 @@ typedef std::size_t class_id;
 #define Defun(x) core::af_def(CurrentPkg, #x, &af_##x, ARGS_af_##x, DECL_af_##x, DOCS_af_##x, __FILE__, __LINE__);
 #define Defun_maker(pkg, x) core::af_def(pkg, "make-" #x, &(x##_O::make), ARGS_##x##_O_make, DECL_##x##_O_make, DOCS_##x##_O_make);
 
-#define ClDefun(x) core::af_def(ClPkg, #x, &cl_##x, ARGS_cl_##x, DECL_cl_##x, DOCS_cl_##x, __FILE__, __LINE__);
+#define ClDefun(x) core::af_def(CorePkg, "COMMON-LISP:"#x, &cl_##x, ARGS_cl_##x, DECL_cl_##x, DOCS_cl_##x, __FILE__, __LINE__);
 #define CompDefun(x) core::af_def(CompPkg, #x, &comp_##x, ARGS_comp_##x, DECL_comp_##x, DOCS_comp_##x, __FILE__, __LINE__);
 #define ExtDefun(x) core::af_def(ExtPkg, #x, &ext_##x, ARGS_ext_##x, DECL_ext_##x, DOCS_ext_##x, __FILE__, __LINE__);
 #define ClosDefun(x) core::af_def(ClosPkg, #x, &clos_##x, ARGS_clos_##x, DECL_clos_##x, DOCS_clos_##x, __FILE__, __LINE__);

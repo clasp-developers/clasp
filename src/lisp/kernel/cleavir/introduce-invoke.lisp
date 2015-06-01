@@ -66,7 +66,7 @@
 				     :key #'cleavir-ir:invocation
 				     :test-not #'eq))
      until (null remaining)
-     collect (let ((frame-holder (cleavir-ast-to-hir:make-temp)))
+     collect (let ((frame-holder (cleavir-ast-to-hir::make-temp)))
 	       (list enter (make-instance 'landing-pad) frame-holder))
      do (setf remaining
 	      (set-difference remaining current-unwinds))))
@@ -83,14 +83,14 @@
 (defclass invoke-instruction (cleavir-ir:funcall-instruction)
   ((%landing-pad :initarg :landing-pad :reader landing-pad)))
 
-(defmethod cleavir-ir-graphviz:label ((instr clasp-cleavir:invoke-instruction))
+(defmethod cleavir-ir-graphviz::label ((instr clasp-cleavir:invoke-instruction))
   "invoke")
 
 
 (defclass invoke-multiple-value-call-instruction (cleavir-ir:multiple-value-call-instruction)
   ((%landing-pad :initarg :landing-pad :reader landing-pad)))
 
-(defmethod cleavir-ir-graphviz:label ((instr clasp-cleavir:invoke-multiple-value-call-instruction))
+(defmethod cleavir-ir-graphviz::label ((instr clasp-cleavir:invoke-multiple-value-call-instruction))
   "invoke-MVC")
 
 

@@ -26,6 +26,8 @@
 
 (defpackage "LISP-EXECUTABLE.CREATION"
   (:use :common-lisp)
+  (:export #:determine-complete-set-of-asdf-source-files
+           )
   )
 
 
@@ -94,13 +96,18 @@ START-NEW-LISP-MACHINE and SAVE-EXECUTABLE-USING-FUNCTION-AND-DIE."
     (map nil #'(lambda (system)
 		 (asdf:oos 'sticky-beak-op system :force t))
 	 systems)
-    (let ((source (mapcar (lambda (x)
-			    (let* ((part-name (enough-namestring (asdf/component:component-pathname x)
-								 (translate-logical-pathname #P"SYS:")))
-				   (no-type (make-pathname :directory (pathname-directory part-name)
-							   :name (pathname-name part-name))))
-			      (intern (namestring no-type) "CLASP-CLEAVIR")))
-			  *all-source-files*)))
+    (let ((source
+           (mapcar
+            (lambda (x)
+              (let* ((part-name
+                      (enough-namestring
+                       (asdf/component:component-pathname x)
+                       (translate-logical-pathname #P"SYS:")))
+                     (no-type
+                      (make-pathname :directory (pathname-directory part-name)
+                                     :name (pathname-name part-name))))
+                (intern (namestring no-type) "CLASP-CLEAVIR")))
+                   *all-source-files*)))
       (nreverse source))))
 
 

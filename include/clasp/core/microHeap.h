@@ -74,7 +74,7 @@ private:
   vector<MicroHeapBlock *> _Blocks;
 
 public:
-  static MicroHeap_sp create(Lisp_sp e, uint maxEntriesPerBlock, uint entrySize);
+  static MicroHeap_sp create(uint maxEntriesPerBlock, uint entrySize);
 
 public:
   void setMaxEntries(uint m) { this->_MaxEntriesPerBlock = m; };

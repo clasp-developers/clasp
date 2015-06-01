@@ -87,7 +87,6 @@ public:
 
 namespace core {
 
-#define DEF(ClassName, FunctionName) def(#FunctionName, &ClassName::FunctionName, ARGS_##ClassName##_##FunctionName, DECL_##ClassName##_##FunctionName, DOCS_##ClassName##_##FunctionName, true)
 };
 
 namespace core {

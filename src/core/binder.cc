@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include <string.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
-#include <clasp/core/stringSet.h>
+#include <clasp/core/hashTableEqual.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/binder.h>
@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/evaluator.h>
 //#i n c l u d e "render.h"
+#include <clasp/core/hashTableEq.h>
 #include <clasp/core/wrappers.h>
 
 #define MAX_CONS_CHARS 1024

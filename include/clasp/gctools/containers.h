@@ -37,6 +37,7 @@ private:
 
 #include <clasp/gctools/gcvector.h>
 #include <clasp/gctools/gcSmallMap.h>
+#include <clasp/gctools/gcSmallMultimap.h>
 #include <clasp/gctools/gcSmallSet.h>
 #include <clasp/gctools/gcarray.h>
 
@@ -175,6 +176,19 @@ class SmallMap : public GCSmallMap<K, V, GCContainerAllocator<GCVector_moveable<
 public:
   typedef GCSmallMap<K, V, GCContainerAllocator<GCVector_moveable<pair<K, V>>>> Base;
   SmallMap() : Base(){};
+};
+
+ template <class K, class V, class Compare>
+   class SmallMultimap : public GCSmallMultimap<K, V, Compare, GCContainerAllocator<GCVector_moveable<pair<K, V>>>> {
+public:
+   typedef GCSmallMultimap<K, V, Compare, GCContainerAllocator<GCVector_moveable<pair<K, V>>>> Base;
+ public:
+   void insert2(K key, V value) {
+     pair<K,V> key_value(key,value);
+    this->insert(key_value);
+  }
+
+  SmallMultimap() : Base(){};
 };
 
 template <class K>

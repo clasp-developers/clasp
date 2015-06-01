@@ -83,7 +83,7 @@ T_sp core_putprop(Symbol_sp sym, T_sp val, T_sp indicator) {
   if (sym.nilp()) {
     SIMPLE_ERROR(BF("You cannot set the plist of nil"));
   };
-  sym->_PropertyList = af_putF(sym->_PropertyList, val, indicator);
+  sym->_PropertyList = core_put_f(sym->_PropertyList, val, indicator);
   return val;
 }
 
@@ -441,7 +441,7 @@ Symbol_sp Symbol_O::exportYourself(bool doit) {
         SIMPLE_ERROR(BF("Cannot export - no package"));
       Package_sp pkg = gc::As<Package_sp>(this->getPackage());
       if (!pkg->isKeywordPackage()) {
-        pkg->_export(Cons_O::create(this->asSmartPtr()));
+        pkg->_export2(this->asSmartPtr());
       }
     }
   }
@@ -493,14 +493,17 @@ void Symbol_O::exposeCando(Lisp_sp lisp) {
   _G();
   // TODO: By default these symbols like SPECIALP are being dumped into the COMMON-LISP package - don't do that.
   class_<Symbol_O>()
-      .def("core:specialp", &Symbol_O::specialP)
-      .def("core:STARmakeSpecial", &Symbol_O::makeSpecial)
-      .def("core:STARmakeConstant", &Symbol_O::makeConstant)
-      .def("core:fullName", &Symbol_O::fullName)
-      .def("core:asKeywordSymbol", &Symbol_O::asKeywordSymbol)
-      .def("core:setf_symbolFunction", &Symbol_O::setf_symbolFunction)
-      .def("makunbound", &Symbol_O::makunbound)
-      .DEF(Symbol_O, copy_symbol);
+    .def("core:specialp", &Symbol_O::specialP)
+    .def("core:STARmakeSpecial", &Symbol_O::makeSpecial)
+    .def("core:STARmakeConstant", &Symbol_O::makeConstant)
+    .def("core:fullName", &Symbol_O::fullName)
+    .def("core:asKeywordSymbol", &Symbol_O::asKeywordSymbol)
+    .def("core:setf_symbolFunction", &Symbol_O::setf_symbolFunction)
+    .def("makunbound", &Symbol_O::makunbound)
+    .def("cl:copy_symbol", &Symbol_O::copy_symbol,
+         ARGS_Symbol_O_copy_symbol,
+         DECL_Symbol_O_copy_symbol,
+         DOCS_Symbol_O_copy_symbol )
   SYMBOL_EXPORT_SC_(ClPkg, make_symbol);
   Defun(make_symbol);
   SYMBOL_EXPORT_SC_(ClPkg, symbolName);

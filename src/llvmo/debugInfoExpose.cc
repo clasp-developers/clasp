@@ -55,7 +55,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/package.h>
-#include <clasp/core/stringList.h>
+#include <clasp/core/hashTableEqual.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/lambdaListHandler.h>

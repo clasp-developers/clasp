@@ -5,6 +5,8 @@
   (load "sys:kernel;cleavir;cmpclasp.lisp")
   (print (core:getpid)))
 
+(find-symbol "LABEL" :cleavir-ir-graphviz)
+
 
 (symbol-package 'cleavir-primop:typeq)
 (symbol-package 'cleavir-primop:symbol-value)
@@ -1239,7 +1241,7 @@ cmp::*run-time-literals-external-name*
 (core:load-time-values-dump "globalRunTime")
 
 
-(trace cleavir-ast-graphviz:label)
+(trace cleavir-ast-graphviz::label)
 
 (print "Hello")
 

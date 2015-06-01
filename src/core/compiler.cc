@@ -92,6 +92,7 @@ T_mv core_mangleName(Symbol_sp sym, bool is_function) {
   Function_sp fsym = coerce::functionDesignator(sym);
   gctools::tagged_functor<Closure> closure = fsym->closure;
   if (gctools::tagged_functor<BuiltinClosure> bcc = closure.asOrNull<BuiltinClosure>()) {
+    (void)bcc; // suppress warning
     return Values(_lisp->_true(), Str_O::create("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
   return Values(_Nil<T_O>(), Str_O::create("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
@@ -364,7 +365,6 @@ T_sp core_applysPerSecond(T_sp fn, List_sp args) {
     int times = 1 << pow * 2;
     timer.reset();
     timer.start();
-    T_sp cur = args;
     // Fill frame here
     for (int i(0); i < times; ++i) {
       eval::applyLastArgsPLUSFirst(fn, args);
@@ -508,7 +508,6 @@ T_sp core_partialApplysPerSecond(int stage, T_sp fn, List_sp args) {
     int times = 1 << pow * 2; // the number of times to run the inner loop
     timer.reset();
     timer.start(); // Wrap a timer around the repeated inner loop
-    T_sp cur = args;
     // Fill frame here
     for (int i(0); i < times; ++i) {
       // Compare to call by value
@@ -578,10 +577,12 @@ T_sp allocFixnum() {
 
 void dynamicCastArg(T_sp a) {
   Cons_sp c = gc::As<Cons_sp>(a);
+  (void)c; // suppress warning
 }
 
 void allocateValueFrame5() {
   ValueFrame_sp v = ValueFrame_O::create(5, _Nil<ActivationFrame_O>());
+  (void)v;
 }
 
 void allocateStackFrame5() {
@@ -835,7 +836,6 @@ T_sp core_callsByPointerPerSecond() {
 #define DECL_core_callWithVariableBound ""
 #define DOCS_core_callWithVariableBound "callWithVariableBound"
 T_mv core_callWithVariableBound(Symbol_sp sym, T_sp val, T_sp thunk) {
-  T_sp oldVal = sym->symbolValueUnsafe();
   DynamicScopeManager scope(sym, val);
   return eval::funcall(thunk);
   // Don't put anything in here - don't mess up the MV return

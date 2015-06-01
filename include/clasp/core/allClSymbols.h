@@ -31,7 +31,7 @@ THE SOFTWARE.
 namespace core {
 
 void throwIfNotValidClSymbol(const string &name);
-void initializeAllClSymbols();
+void initializeAllClSymbols(Package_sp clPkg);
 void initializeAllClSymbolsFunctions();
 };
 #endif

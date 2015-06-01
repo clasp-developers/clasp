@@ -34,6 +34,7 @@ typedef enum { cloLoad,
 
 struct CommandLineOptions {
   CommandLineOptions(int argc, char *argv[]);
+  std::string _TrapIntern;
   bool _DontLoadImage;
   bool _DontLoadInitLsp;
   std::vector<std::string> _Features;

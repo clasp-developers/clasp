@@ -125,7 +125,7 @@ struct _TRACE {
 //#define UNRECOGNIZED_KEYWORD_ARGUMENTS_ERROR(obj) ERROR(core::_sym_unrecognizedKeywordArgumentsError,obj)
 #define INVALID_KEYWORD_ARGUMENT_ERROR(obj) ERROR(core::_sym_invalidKeywordArgumentError, obj)
 #define STREAM_ERROR(st) ERROR(cl::_sym_streamError, core::lisp_createList(kw::_sym_stream, st))
-#define PACKAGE_ERROR(p) ERROR(cl::_sym_packageError, core::lisp_createList(kw::_sym_package, p))
+#define PACKAGE_ERROR(p) ERROR(cl::_sym_package_error, core::lisp_createList(kw::_sym_package, p))
 #define ERROR_END_OF_FILE(st) ERROR(cl::_sym_endOfFile, core::lisp_createList(kw::_sym_stream, st))
 #define CLOSED_STREAM_ERROR(st) ERROR(core::_sym_closedStream, core::lisp_createList(kw::_sym_stream, st))
 
@@ -710,6 +710,9 @@ void FEtype_error_list(T_sp thing);
 void FElibc_error(const char *fmt, int nargs, ...);
 void FEcannot_open(T_sp fn);
 T_sp CEerror(T_sp c, const char *fmt, int numArgs, ...);
+
+ void FEpackage_error(const char *fmt, T_sp package, int nargs, ...);
+ void CEpackage_error(const char *fmt, const char* continue_message, T_sp package, int nargs, ...);
 
 void clasp_internal_error(const char *error);
 

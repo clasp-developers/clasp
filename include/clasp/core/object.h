@@ -44,7 +44,7 @@ THE SOFTWARE.
 #include <clasp/core/compPackage.fwd.h>
 #include <clasp/core/closPackage.fwd.h>
 #include <clasp/core/grayPackage.fwd.h>
-#include <clasp/core/objRef.fwd.h>
+//#include <clasp/core/objRef.fwd.h>
 #include <clasp/core/lisp.fwd.h>
 #include <clasp/core/lispStream.fwd.h>
 
@@ -136,6 +136,7 @@ bool clasp_charEqual2(T_sp, T_sp);
 //
 namespace core {
 SMART(Class);
+ SMART(Record);
 SMART(BuiltInClass);
 SMART(StandardClass);
 SMART(Model);
@@ -619,9 +620,10 @@ public: // Description stuff
 
  public:
   //! Encode this object as an a-list
-  virtual core::Cons_sp encode() const { SUBIMP(); };
+  virtual core::List_sp encode();
   //! Decode this object from an a-list
-  virtual void decode(core::Cons_sp) {SUBIMP();};
+  virtual void decode(core::List_sp);
+  virtual void fields(Record_sp record) {SUBIMP();};
 public:
   string descriptionNonConst();
 
@@ -728,7 +730,7 @@ public: // Instance protocol
 public:
   /*! Some objects can return contained objects references by class and name
 	 */
-  virtual T_sp oGetReference(core::ObjRef_sp ref) { return _Nil<T_O>(); };
+//  virtual T_sp oGetReference(core::ObjRef_sp ref) { return _Nil<T_O>(); };
 };
 
 inline void clasp_sxhash(T_sp obj, HashGenerator &hg) {
@@ -1092,5 +1094,11 @@ TRANSLATE(core::T_O);
 
 #include <clasp/core/metaClass.h>
 #include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/lispVector.h>
+#include <clasp/core/record.h>
 
+namespace core {
+  void initialize_object();
+
+};
 #endif //]

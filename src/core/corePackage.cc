@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <clasp/core/str.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/corePackage.h>
+#include <clasp/core/allClSymbols.h>
 #include <clasp/core/commonLispPackage.h>
 #include <clasp/core/keywordPackage.h>
 #include <clasp/core/extensionPackage.h>
@@ -94,7 +95,7 @@ SYMBOL_EXPORT_SC_(ClPkg, cellError);
 SYMBOL_EXPORT_SC_(ClPkg, unboundVariable);
 SYMBOL_EXPORT_SC_(ClPkg, unboundSlot);
 SYMBOL_EXPORT_SC_(ClPkg, undefinedFunction);
-SYMBOL_EXPORT_SC_(ClPkg, packageError);
+SYMBOL_EXPORT_SC_(ClPkg, package_error);
 SYMBOL_EXPORT_SC_(ClPkg, arithmeticError);
 SYMBOL_EXPORT_SC_(ClPkg, floatingPointOverflow);
 SYMBOL_EXPORT_SC_(ClPkg, floatingPointInexact);
@@ -798,6 +799,7 @@ CoreExposer *CoreExposer::create_core_packages_and_classes() {
   }
 
   Package_sp commonLispPackage = cl::initialize_commonLispPackage();
+  initializeAllClSymbols(commonLispPackage);
   Package_sp keywordPackage = kw::initialize_keywordPackage();
 
   //	ASSERT_lt(classesHandInitialized, get_nextGlobalClassSymbol())
@@ -816,7 +818,7 @@ CoreExposer *CoreExposer::create_core_packages_and_classes() {
   _lisp->_Roots._KeywordPackage = keywordPackage;
   //	_lisp->_PackageNameIndexMap[KeywordPkg] = _lisp->_Roots._Packages.size();
   _lisp->_Roots._CommonLispPackage = commonLispPackage;
-  commonLispPackage->usePackage(corePackage);
+//  commonLispPackage->usePackage(corePackage);
   ext::initialize_extensionPackage();
   comp::initialize_compPackage();
   clos::initialize_closPackage();

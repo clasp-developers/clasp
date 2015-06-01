@@ -598,7 +598,7 @@ void initialize_clangTooling() {
 
   Defun(testDerivable);
 
-  package("CLANG-COMMENTS", {}, {"CL", "CORE", "AST-TOOLING"})[
+  package("CLANG-COMMENTS", {}, {})[
     class_<clang::comments::Comment>("Comment", no_default_constructor)
         .def("getSourceRange", &clang::comments::Comment::getSourceRange),
     class_<clang::comments::FullComment, clang::comments::Comment>("FullComment", no_default_constructor)

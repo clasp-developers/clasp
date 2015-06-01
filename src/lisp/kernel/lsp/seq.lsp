@@ -49,7 +49,7 @@
   (let (elt-type length name args)
     (cond ((consp type)
 	   (setq name (first type) args (cdr type)))
-	  (#-clasp(si::instancep type) #+clasp(classp type)
+	  (#-clasp(si::instancep type) #+clasp(clos::classp type)
 	   (setf name (class-name (truly-the class type)) args nil))
 	  (t
 	   (setq name type args nil)))

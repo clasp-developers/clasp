@@ -4749,7 +4749,7 @@ BEGIN:
 #define DECL_core_do_write_sequence ""
 #define DOCS_core_do_write_sequence "do_write_sequence"
 T_sp core_do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
-  gctools::Fixnum start, limit, end;
+  gctools::Fixnum start, limit, end(0);
 
   /* Since we have called clasp_length(), we know that SEQ is a valid
 	   sequence. Therefore, we only need to check the type of the
@@ -4764,13 +4764,12 @@ T_sp core_do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_start, s,
                              Integer_O::makeIntegerType(0, limit - 1));
   }
-  if (e == _Nil<T_O>()) {
+  if (e.nilp()) {
     end = limit;
   } else if (!e.fixnump()) {//!af_fixnumP(e)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_end, e,
                              Integer_O::makeIntegerType(0, limit));
-  } else
-    end = clasp_fixnum(e);
+  } else end = clasp_fixnum(e);
   if ((end < 0) || (end > limit)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_end, e,
                              Integer_O::makeIntegerType(0, limit));
@@ -4805,8 +4804,7 @@ T_sp core_do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
 }
 
 T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
-  gctools::Fixnum start, limit, end;
-
+  gctools::Fixnum start, limit, end(0);
   /* Since we have called clasp_length(), we know that SEQ is a valid
 	   sequence. Therefore, we only need to check the type of the
 	   object, and seq == _Nil<T_O>() i.f.f. t = t_symbol */
@@ -5160,7 +5158,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
   return output;
 }
 
-#define ARGS_cl_open "(filename &key (direction :input) (element-type 'character) (if-exists nil iesp) (if-does-not-exist nil idnesp) (external-format :default) (cstream T))"
+#define ARGS_cl_open "(filename &key (direction :input) (element-type 'base-char) (if-exists nil iesp) (if-does-not-exist nil idnesp) (external-format :default) (cstream T))"
 #define DECL_cl_open ""
 #define DOCS_cl_open "open"
 T_sp cl_open(T_sp filename,

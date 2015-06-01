@@ -102,11 +102,11 @@ T_sp af_rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
   return record;
 }
 
-#define DOCS_af_annotate "annotate - see ecl>>helpfile.lsp>>annotate; key is either 'documentation or 'setf-documentation and I currently think (object) must be a symbol so I'll trigger an exception if it isn't"
-#define LOCK_af_annotate 1
-#define ARGS_af_annotate "(object key sub-key value)"
-#define DECL_af_annotate ""
-T_mv af_annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value) {
+#define DOCS_ext_annotate "annotate - see ecl>>helpfile.lsp>>annotate; key is either 'documentation or 'setf-documentation and I currently think (object) must be a symbol so I'll trigger an exception if it isn't"
+#define LOCK_ext_annotate 1
+#define ARGS_ext_annotate "(object key sub-key value)"
+#define DECL_ext_annotate ""
+T_mv ext_annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value) {
   _G();
   HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
   List_sp record = coerce_to_list(dict->gethash(object, _Nil<T_O>()));
@@ -122,7 +122,7 @@ T_mv af_annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value) {
 SYMBOL_EXPORT_SC_(ClPkg, documentation);
 void af_ensure_documentation(T_sp sub_key, Symbol_sp symbol, Str_sp value) {
   _G();
-  af_annotate(symbol, cl::_sym_documentation, sub_key, value);
+  ext_annotate(symbol, cl::_sym_documentation, sub_key, value);
 };
 
 void initialize_documentation_primitives(Lisp_sp lisp) {
@@ -135,8 +135,8 @@ void initialize_documentation_primitives(Lisp_sp lisp) {
   Defun(set_record_field);
   SYMBOL_SC_(CorePkg, rem_record_field);
   Defun(rem_record_field);
-  SYMBOL_SC_(CorePkg, annotate);
-  Defun(annotate);
+  SYMBOL_EXPORT_SC_(ExtPkg, annotate);
+  ExtDefun(annotate);
   SYMBOL_SC_(CorePkg, ensure_documentation);
   Defun(ensure_documentation);
   // TODO move help_file.dat definition somewhere better

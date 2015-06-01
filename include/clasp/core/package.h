@@ -56,7 +56,7 @@ GCPRIVATE: // instance variables
   gctools::gcstring _Name;
   HashTableEql_sp _InternalSymbols;
   HashTableEql_sp _ExternalSymbols;
-  HashTableEqual_sp _ShadowingSymbols;
+  HashTableEq_sp _Shadowing;
   gctools::Vec0<Package_sp> _UsingPackages;
   gctools::Vec0<Package_sp> _PackagesUsedBy;
   bool _KeywordPackage;
@@ -70,6 +70,11 @@ public:
   /*! Very low level - add to internal symbols unless keyword
 	  package, in that case add to external symbols */
   void add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp = false);
+
+ private:
+  // This returns a NULL smart_ptr if it doesn't find a conflict
+  // so that it can be used within the expression of an if statement
+  Package_sp export_conflict_or_NULL(Bignum_sp nameKey, Symbol_sp sym);
 
 public:
   string packageName() const { return this->_Name.asStdString(); };
@@ -93,7 +98,7 @@ public:
 #endif
 
   void setKeywordPackage(bool b) { this->_KeywordPackage = b; };
-  bool isKeywordPackage() { return this->_KeywordPackage; };
+  bool isKeywordPackage() const { return this->_KeywordPackage; };
 
   string allSymbols();
 
@@ -110,13 +115,14 @@ public:
 
   bool isExported(Symbol_sp sym);
 
+  
   /*! See CLHS:export function */
-  void _export(List_sp listOfSymbols);
+  void _export2(Symbol_sp sym);
 
   /*! Return the symbol if we contain it directly */
   Symbol_mv findSymbolDirectlyContained(Bignum_sp nameKey) const;
 
-  Symbol_mv findSymbol(Bignum_sp nameKey) const;
+  Symbol_mv _findSymbol(Bignum_sp nameKey) const;
 
   /*! Return the (values symbol [:inherited,:external,:internal])
 	 */
@@ -186,14 +192,9 @@ public:
     Bignum_sp nameKey = gc::As<Bignum_sp>(key);
     Symbol_sp svalue = gc::As<Symbol_sp>(value);
 
-    Symbol_sp mine;
-    T_sp foundp;
-    {
-      MULTIPLE_VALUES_CONTEXT();
-      T_mv values = this->_me->findSymbol(nameKey);
-      mine = gc::As<Symbol_sp>(values);
-      foundp = gc::As<T_sp>(values.valueGet(1));
-    }
+    T_mv values = this->_me->_findSymbol(nameKey);
+    Symbol_sp mine = gc::As<Symbol_sp>(values);
+    T_sp foundp = values.second();
     if (foundp.notnilp() && mine != svalue) {
       LOG(BF("usePackage conflict - my symbol[%s] : usePackage symbol[%s]") % _rep_(mine) % _rep_(svalue));
       this->_conflicts.insert(svalue->symbolNameAsString());

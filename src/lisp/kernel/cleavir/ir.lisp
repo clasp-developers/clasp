@@ -49,7 +49,7 @@
 
 (defun %store (val target &optional label)
   (let* ((instr (cmp:irc-store val target)))
-    (when (typep target 'llvm-sys:instruction)
+    (when (typep target 'llvm-sys::instruction)
       (let ((store-fn (llvm-sys:get-name (instruction-llvm-function instr)))
 	    (target-fn (llvm-sys:get-name (instruction-llvm-function target))))
 	(unless (string= store-fn target-fn)

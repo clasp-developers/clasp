@@ -187,10 +187,10 @@ T_sp af_getppid() {
   return pid;
 };
 
-#define ARGS_af_chdir "(pathname)"
-#define DECL_af_chdir ""
-#define DOCS_af_chdir "chdir"
-T_sp af_chdir(Pathname_sp dir) {
+#define ARGS_ext_chdir "(pathname)"
+#define DECL_ext_chdir ""
+#define DOCS_ext_chdir "chdir"
+T_sp ext_chdir(Pathname_sp dir) {
   _G();
   Str_sp sdir = clasp_namestring(dir, true);
   return Integer_O::create(safe_chdir(sdir->get().c_str(), _Nil<T_O>()));
@@ -1452,7 +1452,7 @@ T_sp core_mkdir(T_sp directory, T_sp mode) {
 }
 
 void initialize_unixfsys() {
-  Defun(chdir);
+  ExtDefun(chdir);
   Defun(unixGetLocalTimeZone);
   Defun(unixDaylightSavingTime);
   SYMBOL_EXPORT_SC_(CorePkg, currentDir);

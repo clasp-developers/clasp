@@ -86,7 +86,7 @@ project clasp : requirements
 #         <define>CONFIG_THREAD_SINGLE #  Single threaded
           <define>USE_CLASP_DYNAMIC_CAST
 #---------
-#       <define>DEBUG_CL_SYMBOLS          # Lets you calculate which CL symbols are still missing from Clasp
+       <define>DEBUG_CL_SYMBOLS          # Lets you calculate which CL symbols are still missing from Clasp
 #       <define>DEBUG_LOAD_TIME_VALUES   # generate lots of debugging information when accessing ltvs
 #	<cxxflags>-v        # this will generate a lot more output during compilation but help with tooling
 #	<target-os>darwin:<linkflags>-stdlib=libc++

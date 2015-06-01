@@ -35,7 +35,7 @@
 (cleavir-io:define-save-info named-function-ast
     (:lambda-name lambda-name))
 
-(defmethod cleavir-ast-graphviz:label ((ast named-function-ast))
+(defmethod cleavir-ast-graphviz::label ((ast named-function-ast))
   (with-output-to-string (s)
     (format s "named-function (~a)" (lambda-name ast))))
 
@@ -76,7 +76,7 @@
 (cleavir-io:define-save-info debug-message-ast
     (:debug-message debug-message))
 
-(defmethod cleavir-ast-graphviz:label ((ast debug-message-ast))
+(defmethod cleavir-ast-graphviz::label ((ast debug-message-ast))
   (with-output-to-string (s)
     (format s "debug-message (~a)" (debug-message ast))))
 
@@ -115,7 +115,7 @@
     (:precalc-asts precalc-asts))
 
 
-#||(defmethod clavir-ast-graphviz:label ((ast precalc-vector-function-ast))
+#||(defmethod clavir-ast-graphviz::label ((ast precalc-vector-function-ast))
   (with-output-to-string (s)
     (format s "precalc-vec-fn (~a ~a)" 
 ||#
@@ -144,7 +144,7 @@
 (defun escaped-string (str)
   (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
 
-(defmethod cleavir-ast-graphviz:label ((ast precalc-symbol-reference-ast))
+(defmethod cleavir-ast-graphviz::label ((ast precalc-symbol-reference-ast))
   (with-output-to-string (s)
     (format s "precalc-sym-ref(~a) ; " (precalc-symbol-reference-index ast))
     (let ((original-object (escaped-string (format nil "~s" (precalc-symbol-reference-ast-original-object ast)))))
@@ -178,7 +178,7 @@
 (defun escaped-string (str)
   (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
 
-(defmethod cleavir-ast-graphviz:label ((ast precalc-value-reference-ast))
+(defmethod cleavir-ast-graphviz::label ((ast precalc-value-reference-ast))
   (with-output-to-string (s)
     (format s "precalc-val-ref(~a) ; " (precalc-value-reference-index ast))
     (let ((original-object (escaped-string (format nil "~s" (precalc-value-reference-ast-original-object ast)))))

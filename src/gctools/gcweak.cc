@@ -189,9 +189,7 @@ int WeakHashTable::rehash(size_t newLength, const value_type &key, size_t &key_b
 			(*newHashTable._Keys).setUsed((*newHashTable._Keys).used()+1); // TAG_COUNT(UNTAG_COUNT(new_keys->used) + 1);
 		    }
 		}
-		int used = (*newHashTable._Keys).used();
-		int theTableSize = newHashTable.tableSize();
-		GCTOOLS_ASSERT( used == theTableSize );
+		GCTOOLS_ASSERT( (*newHashTable._Keys).used() == (newHashTable.tableSize()) );
 		// assert(UNTAG_COUNT(new_keys->used) == table_size(tbl));
 		this->swap(newHashTable);
   });

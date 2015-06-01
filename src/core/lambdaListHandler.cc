@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <clasp/core/vectorObjects.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/hashTableEq.h>
 #include <clasp/core/wrappers.h>
 namespace core {
 
@@ -66,12 +67,12 @@ T_sp evaluate_lambda_list_form(T_sp form, T_sp env) {
 TargetClassifier::TargetClassifier(const std::set<int> &skip) : lexicalIndex(-1), skipLexicalIndices(skip) {
   _G();
   this->_SpecialSymbols = _Nil<T_O>();
-  this->_LambdaListSpecials = SymbolSet_O::create();
+  this->_LambdaListSpecials = HashTableEq_O::create_default();
   this->advanceLexicalIndex();
 };
-TargetClassifier::TargetClassifier(SymbolSet_sp specialSymbols, const std::set<int> &skip)
+TargetClassifier::TargetClassifier(HashTableEq_sp specialSymbols, const std::set<int> &skip)
     : _SpecialSymbols(specialSymbols), lexicalIndex(-1), skipLexicalIndices(skip) {
-  this->_LambdaListSpecials = SymbolSet_O::create();
+  this->_LambdaListSpecials = HashTableEq_O::create_default();
   this->advanceLexicalIndex();
 };
 
@@ -87,9 +88,8 @@ void TargetClassifier::advanceLexicalIndex() {
       AccumulatedClassifiedSymbols */
 List_sp TargetClassifier::finalClassifiedSymbols() {
   if (this->_SpecialSymbols.notnilp()) {
-    gc::As<SymbolSet_sp>(this->_SpecialSymbols)->map([this](Symbol_sp s) {
-                    if ( !this->_LambdaListSpecials->contains(s) )
-                    {
+    gc::As<HashTableEq_sp>(this->_SpecialSymbols)->maphash([this](T_sp s, T_sp val) {
+                    if ( !this->_LambdaListSpecials->contains(s) ) {
                         this->_AccumulatedClassifiedSymbols
                             << Cons_O::create(ext::_sym_specialVar,s);
                     } });
@@ -164,9 +164,9 @@ T_sp LambdaListHandler_O::lambdaList() {
   return ll.cons();
 }
 
-SymbolSet_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecifierList) {
+HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecifierList) {
   _G();
-  SymbolSet_sp specials(SymbolSet_O::create());
+  HashTableEq_sp specials(HashTableEq_O::create_default());
   LOG(BF("Processing declareSpecifierList: %s") % declareSpecifierList->__repr__());
   if (declareSpecifierList.notnilp()) {
     ASSERTF(oCar(declareSpecifierList) != cl::_sym_declare, BF("The declareSpecifierList were not processed properly coming into this function - only declare specifiers should be passed - I got: %s") % _rep_(declareSpecifierList));
@@ -333,7 +333,7 @@ void TargetClassifier::targetIsSubLambdaList(Argument &target, LambdaListHandler
 
 void TargetClassifier::classifyTarget(Argument &target) {
   Symbol_sp sym = gc::As<Symbol_sp>(target._ArgTarget);
-  if (sym->specialP() || (this->_SpecialSymbols.notnilp() && gc::As<SymbolSet_sp>(this->_SpecialSymbols)->contains(sym))) {
+  if (sym->specialP() || (this->_SpecialSymbols.notnilp() && gc::As<HashTable_sp>(this->_SpecialSymbols)->contains(sym))) {
     target._ArgTargetFrameIndex = SPECIAL_TARGET;
     this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_specialVar, target._ArgTarget);
     this->_LambdaListSpecials->insert(sym);
@@ -983,7 +983,7 @@ LambdaListHandler_sp LambdaListHandler_O::createRecursive(List_sp lambda_list, L
 LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp declares, T_sp context, const std::set<int> &skipFrameIndices) {
   _G();
   ql::list all_arguments_list;
-  SymbolSet_sp specialSymbols(LambdaListHandler_O::identifySpecialSymbols(declares));
+  HashTableEq_sp specialSymbols(LambdaListHandler_O::identifySpecialSymbols(declares));
   TargetClassifier classifier(specialSymbols, skipFrameIndices);
   LambdaListHandler_sp ollh = LambdaListHandler_O::createRecursive(lambda_list, declares, context, classifier);
   ollh->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
@@ -1207,7 +1207,7 @@ VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
 //
 
 EXPOSE_CLASS(core, LambdaListHandler_O);
-LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<SymbolSet_O>()), _LexicalVariableNamesForDebugging(_Nil<VectorObjects_O>()){};
+LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _LexicalVariableNamesForDebugging(_Nil<VectorObjects_O>()){};
 LambdaListHandler_O::~LambdaListHandler_O(){};
 
 void LambdaListHandler_O::exposeCando(Lisp_sp lisp) {

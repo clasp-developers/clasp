@@ -154,7 +154,7 @@ inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
     // While booting, cl::_sym_findClass will apply'd before
     // it is bound to a symbol
     if (fn == cl::_sym_findClass) {
-      return (cl_findClass(gc::As<Symbol_sp>(arg0), true, _Nil<T_O>()));
+      return (cl_findClass(gc::As<Symbol_sp>(arg0), false, _Nil<T_O>()));
     }
     ERROR_UNDEFINED_FUNCTION(fn);
   }

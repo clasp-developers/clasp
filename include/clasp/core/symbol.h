@@ -200,6 +200,20 @@ public: // ctor/dtor for classes with shared virtual base
   /*! Used to finish setting up symbol when created with the above constructor */
   void finish_setup(Package_sp pkg, bool exportp);
 
+  /*! Return -1, 0, 1 if this is <, ==, > other by name */
+  inline int order(core::Symbol_O other) {
+    if ( this->symbolNameAsString() <= other.symbolNameAsString() ) {
+      if ( this->symbolNameAsString() == other.symbolNameAsString() ) {
+        return 0;
+      }
+      return -1;
+    }
+    return 1;
+  }
+
+   bool operator<(core::Symbol_O other) {
+    return this->symbolNameAsString() < other.symbolNameAsString();
+  }
 public:
   explicit Symbol_O();
   virtual ~Symbol_O();
@@ -211,6 +225,24 @@ T_sp af_symbolPackage(Symbol_sp sym);
 Function_sp af_symbolFunction(Symbol_sp sym);
 bool af_boundp(Symbol_sp sym);
 };
+
+
+namespace core {
+  /*! This is used for SmallMultiMap<core::Symbol_sp,XXXX> */
+    struct SymbolComparer {
+    static int order(Symbol_sp a, Symbol_sp b) {
+      if ( a->symbolNameAsString() <= b->symbolNameAsString() ) {
+        if ( a->symbolNameAsString() == b->symbolNameAsString() ) return 0;
+        return -1;
+      }
+      return 1;
+    }
+  };
+};
+
+
+
+
 TRANSLATE(core::Symbol_O);
 template <>
 struct gctools::GCInfo<core::Symbol_O> {
@@ -218,17 +250,6 @@ struct gctools::GCInfo<core::Symbol_O> {
   static bool constexpr NeedsFinalization = false;
   static bool constexpr Moveable = true; // old=false
   static bool constexpr Atomic = false;
-};
-
-namespace core {
-template <class OT>
-class SymbolMap : public gctools::SmallMap<Symbol_sp, gctools::smart_ptr<OT>> {
-  typedef gctools::SmallMap<Symbol_sp, gctools::smart_ptr<OT>> BaseType;
-
-public:
-  typedef typename BaseType::iterator iterator;
-  typedef typename BaseType::const_iterator const_iterator;
-};
 };
 
 #endif //]

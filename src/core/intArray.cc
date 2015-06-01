@@ -50,7 +50,7 @@ void IntArray_O::archive(core::ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-IntArray_sp IntArray_O::create(uint sz, Lisp_sp env) {
+IntArray_sp IntArray_O::create(uint sz) {
   IntArray_sp ir = IntArray_O::create();
   ir->resize(sz);
   return ir;

@@ -61,7 +61,7 @@ public:
   static FuncallableStandardClass_sp create(Class_sp mc);
 
 #if 0 // for now comment out all functions
-	static FuncallableStandardClass_sp create(Lisp_sp e,Symbol_sp name /* , Symbol_sp instanceClassSymbol */ );
+	static FuncallableStandardClass_sp create(Symbol_sp name /* , Symbol_sp instanceClassSymbol */ );
 
 	/*! ensure-class-using-class - see AOMOP-183 */
 	static T_sp create_ensureClassUsingClass( Function_sp exec,

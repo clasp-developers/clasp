@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <set>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/symbolSet.h>
 #include <clasp/core/vectorObjects.fwd.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/arguments.h>
@@ -80,12 +79,12 @@ namespace core {
 struct TargetClassifier {
   T_sp _SpecialSymbols;
   /*! symbols that are seen in the lambda-list and are special are accumulated here */
-  SymbolSet_sp _LambdaListSpecials;
+  HashTableEq_sp _LambdaListSpecials;
   int lexicalIndex;
   ql::list _AccumulatedClassifiedSymbols;
   std::set<int> skipLexicalIndices;
   explicit TargetClassifier(const std::set<int> &skipLexicalIndices);
-  explicit TargetClassifier(SymbolSet_sp specialSymbols, const std::set<int> &skipLexicalIndices);
+  explicit TargetClassifier(HashTableEq_sp specialSymbols, const std::set<int> &skipLexicalIndices);
   void classifyTarget(Argument &target);
   List_sp finalClassifiedSymbols();
   void targetIsSubLambdaList(Argument &target, LambdaListHandler_sp subHandler);
@@ -108,7 +107,7 @@ GCPROTECTED: // instance variables
 	  LambdaListHandler */
   bool _CreatesBindings;
   List_sp _ClassifiedSymbolList;
-  SymbolSet_sp _SpecialSymbolSet;
+  gc::Nilable<HashTableEq_sp> _SpecialSymbolSet;
   List_sp _DeclareSpecifierList;
   gctools::Vec0<RequiredArgument> _RequiredArguments;
   gctools::Vec0<OptionalArgument> _OptionalArguments;
@@ -168,8 +167,8 @@ public:
   static List_sp classifySymbols(List_sp symbols);
 
 protected:
-  static SymbolSet_sp identifySpecialSymbols(List_sp declares);
-  void classifyTarget(Argument &target, int &lexicalIndex, const SymbolSet_sp &specialSymbols);
+  static HashTableEq_sp identifySpecialSymbols(List_sp declares);
+  void classifyTarget(Argument &target, int &lexicalIndex, const HashTableEq_sp &specialSymbols);
   void recursively_build_handlers_count_arguments(List_sp declares, T_sp context, TargetClassifier &classifier);
 
 public:

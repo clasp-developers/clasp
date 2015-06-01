@@ -81,7 +81,7 @@ void *MicroHeapBlock::rawNewEntry(uint &idx) {
   return (void *)(p);
 }
 
-MicroHeap_sp MicroHeap_O::create(Lisp_sp e, uint maxEntries, uint entrySize) {
+MicroHeap_sp MicroHeap_O::create(uint maxEntries, uint entrySize) {
   _G();
   GC_ALLOCATE(MicroHeap_O, h);
   h->setEntrySize(entrySize);

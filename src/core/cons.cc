@@ -55,10 +55,10 @@ List_sp coerce_to_list(T_sp o) {
   TYPE_ERROR(o, cl::_sym_list);
 }
 
-#define ARGS_af_putF "(plist value indicator)"
-#define DECL_af_putF ""
-#define DOCS_af_putF "putF"
-List_sp af_putF(List_sp place, T_sp value, T_sp indicator) {
+#define ARGS_core_put_f "(plist value indicator)"
+#define DECL_core_put_f ""
+#define DOCS_core_put_f "putF"
+List_sp core_put_f(List_sp place, T_sp value, T_sp indicator) {
   _G();
   auto it = place.begin();
   auto end = place.end();
@@ -89,6 +89,29 @@ T_sp cl_getf(List_sp plist, T_sp indicator, T_sp default_value) {
   if (plist.nilp())
     return (default_value);
   return plist.asCons()->getf(indicator, default_value);
+};
+
+
+#define ARGS_core_rem_f "(plist indicator)"
+#define DECL_core_rem_f ""
+#define DOCS_core_rem_f "Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found"
+T_mv core_rem_f(List_sp plist, Symbol_sp indicator) {
+  if (oCar(plist) == indicator) {
+    plist = oCddr(plist);
+    T_sp tplist = plist;
+    return (Values(tplist, _lisp->_true()));
+  }
+  for (List_sp cur = plist; oCddr(cur).notnilp(); cur = oCddr(cur)) {
+    T_sp k = oCaddr(cur);
+    if (k == indicator) {
+      List_sp curcdr = oCdr(cur);
+      curcdr.asCons()->setCdr(oCddr(oCddr(cur)));
+      T_sp tplist = plist;
+      return (Values(tplist, _lisp->_true()));
+    }
+  }
+  T_sp tplist = plist;
+  return (Values(tplist, _lisp->_false()));
 };
 
 #define DOCS_af_cons "cons"
@@ -838,8 +861,10 @@ List_sp Cons_O::copyTreeCar() const {
 uint Cons_O::length() const {
   _G();
   int sz = 1;
-  for (auto p : coerce_to_list(this->_Cdr))
-    ++sz;
+#pragma GCC diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
+  for (auto p : coerce_to_list(this->_Cdr)) ++sz;
+#pragma GCC diagnostic pop
   return ((sz));
 };
 
@@ -1329,8 +1354,10 @@ void Cons_O::exposeCando(Lisp_sp lisp) {
   Defun(cons);
   SYMBOL_EXPORT_SC_(ClPkg, getf);
   ClDefun(getf);
-  SYMBOL_SC_(CorePkg, putF);
-  Defun(putF);
+  SYMBOL_EXPORT_SC_(CorePkg, rem_f);
+  CoreDefun(rem_f);
+  SYMBOL_SC_(CorePkg, put_f);
+  CoreDefun(put_f);
   af_def(ClPkg, "rest", &oCdr);
   af_def(ClPkg, "car", &oCar);
   af_def(ClPkg, "cdr", &oCdr);

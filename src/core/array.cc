@@ -40,19 +40,20 @@ namespace core {
 //
 EXPOSE_CLASS(core, Array_O);
 
-#define ARGS_cl_arrayDisplacement "(array)"
+#define ARGS_cl_arrayDisplacement "(core::array)"
 #define DECL_cl_arrayDisplacement ""
 #define DOCS_cl_arrayDisplacement "arrayDisplacement"
 T_mv cl_arrayDisplacement(T_sp array) {
   if (array.notnilp()) {
     if (Array_sp arr = array.asOrNull<Array_O>()) {
+      (void)arr;
       return Values(_Nil<T_O>(), make_fixnum(0));
     }
   }
   TYPE_ERROR(array, cl::_sym_array);
 }
 
-#define ARGS_af_upgradedArrayElementType "(type &optional env)"
+#define ARGS_af_upgradedArrayElementType "(core::type &optional core::env)"
 #define DECL_af_upgradedArrayElementType ""
 #define DOCS_af_upgradedArrayElementType "upgradedArrayElementType"
 T_mv af_upgradedArrayElementType(T_sp type) {
@@ -160,7 +161,7 @@ Symbol_sp Array_O::element_type_as_symbol() const {
   SIMPLE_ERROR(BF("Handle more array types"));
 }
 
-#define ARGS_Array_O_aref "((self array) &rest indices)"
+#define ARGS_Array_O_aref "((core::self core::array) &rest core::indices)"
 #define DECL_Array_O_aref ""
 #define DOCS_Array_O_aref "See CLHS aref"
 T_sp Array_O::aref(List_sp indices) const {
@@ -225,7 +226,7 @@ List_sp Array_O::arrayDimensions() const {
   return ((indices));
 }
 
-#define ARGS_Array_O_setf_aref "((self array) &rest indices-val)"
+#define ARGS_Array_O_setf_aref "((core::self array) &rest core::indices-val)"
 #define DECL_Array_O_setf_aref ""
 #define DOCS_Array_O_setf_aref "CLHS: setter for aref"
 T_sp Array_O::setf_aref(List_sp indices_val) {
@@ -283,7 +284,10 @@ string Array_O::__repr__() const {
 void Array_O::exposeCando(::core::Lisp_sp lisp) {
   _G();
   ::core::class_<Array_O>()
-      .DEF(Array_O, aref)
+      .def("cl:aref",&Array_O::aref,
+           ARGS_Array_O_aref,
+           DECL_Array_O_aref,
+           DOCS_Array_O_aref)
       .def("core:array-setf-aref", &Array_O::setf_aref, ARGS_Array_O_setf_aref, DECL_Array_O_setf_aref, DOCS_Array_O_setf_aref)
       .def("core:index", &Array_O::index)
       .def("cl:arrayTotalSize", &Array_O::arrayTotalSize)

@@ -62,7 +62,6 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lispCallingConvention.h>
 #include <clasp/core/package.h>
-#include <clasp/core/stringList.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/builtInClass.h>
@@ -110,6 +109,7 @@ bool af_llvm_value_p(core::T_sp o) {
   if (o.nilp())
     return false;
   if (Value_sp v = o.asOrNull<Value_O>()) {
+    (void)v;
     return true;
   }
   return false;
@@ -288,6 +288,7 @@ void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passMa
   std::string stringOutput;
   bool stringOutputStream = false;
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
+    (void)sos;
     ostreamP = new llvm::raw_string_ostream(stringOutput);
     stringOutputStream = true;
   } else if (core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>()) {
@@ -2761,42 +2762,41 @@ string IRBuilder_O::__repr__() const {
 EXPOSE_CLASS(llvmo, IRBuilder_O);
 
 void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   //	void (llvm::IRBuilder::*SetInsertPoint_1)(llvm::BasicBlock*)  = &llvm::IRBuilder::SetInsertPoint;
   //	void (llvm::IRBuilder::*SetInsertPoint_2)(llvm::Instruction*)  = &llvm::IRBuilder::SetInsertPoint;
   //	void (llvm::IRBuilder::*SetInsertPoint_3)(llvm::Use&)  = &llvm::IRBuilder::SetInsertPoint;
 
   core::externalClass_<IRBuilder_O> irbuilder;
   irbuilder
-      .def("CreateRet", &IRBuilder_O::ExternalType::CreateRet)
-      .def("CreateRetVoid", &IRBuilder_O::ExternalType::CreateRetVoid)
-      .def("CreateBr", &IRBuilder_O::ExternalType::CreateBr)
-      .def("CreateCondBr", &IRBuilder_O::ExternalType::CreateCondBr)
-      .def("CreateSwitch", &IRBuilder_O::ExternalType::CreateSwitch)
-      .def("CreateIndirectBr", &IRBuilder_O::ExternalType::CreateIndirectBr)
-      .def("CreateInvoke", &IRBuilder_O::CreateInvoke)
-      .def("CreateResume", &IRBuilder_O::ExternalType::CreateResume)
-      .def("CreateUnreachable", &IRBuilder_O::ExternalType::CreateUnreachable)
-      .def("CreateAdd", &IRBuilder_O::ExternalType::CreateAdd)
-      .def("CreateNSWAdd", &IRBuilder_O::ExternalType::CreateNSWAdd)
-      .def("CreateNUWAdd", &IRBuilder_O::ExternalType::CreateNUWAdd)
-      .def("CreateFAdd", &IRBuilder_O::ExternalType::CreateFAdd)
-      .def("CreateSub", &IRBuilder_O::ExternalType::CreateSub)
-      .def("CreateNSWSub", &IRBuilder_O::ExternalType::CreateNSWSub)
-      .def("CreateNUWSub", &IRBuilder_O::ExternalType::CreateNUWSub)
-      .def("CreateFSub", &IRBuilder_O::ExternalType::CreateFSub)
-      .def("CreateMul", &IRBuilder_O::ExternalType::CreateMul)
-      .def("CreateNSWMul", &IRBuilder_O::ExternalType::CreateNSWMul)
-      .def("CreateNUWMul", &IRBuilder_O::ExternalType::CreateNUWMul)
-      .def("CreateFMul", &IRBuilder_O::ExternalType::CreateFMul)
-      .def("CreateUDiv", &IRBuilder_O::ExternalType::CreateUDiv)
-      .def("CreateExactUDiv", &IRBuilder_O::ExternalType::CreateExactUDiv)
-      .def("CreateSDiv", &IRBuilder_O::ExternalType::CreateSDiv)
-      .def("CreateExactSDiv", &IRBuilder_O::ExternalType::CreateExactSDiv)
-      .def("CreateFDiv", &IRBuilder_O::ExternalType::CreateFDiv)
-      .def("CreateURem", &IRBuilder_O::ExternalType::CreateURem)
-      .def("CreateSRem", &IRBuilder_O::ExternalType::CreateSRem)
-      .def("CreateFRem", &IRBuilder_O::ExternalType::CreateFRem);
+    .def("CreateRet", &IRBuilder_O::ExternalType::CreateRet)
+    .def("CreateRetVoid", &IRBuilder_O::ExternalType::CreateRetVoid)
+    .def("CreateBr", &IRBuilder_O::ExternalType::CreateBr)
+    .def("CreateCondBr", &IRBuilder_O::ExternalType::CreateCondBr,"(irbuilder cond true-branch false-branch &optional branch-weights)")
+    .def("CreateSwitch", &IRBuilder_O::ExternalType::CreateSwitch)
+    .def("CreateIndirectBr", &IRBuilder_O::ExternalType::CreateIndirectBr)
+    .def("CreateInvoke", &IRBuilder_O::CreateInvoke)
+    .def("CreateResume", &IRBuilder_O::ExternalType::CreateResume)
+    .def("CreateUnreachable", &IRBuilder_O::ExternalType::CreateUnreachable)
+    .def("CreateAdd", &IRBuilder_O::ExternalType::CreateAdd,"(irbuilder lhs rhs &optional (name \"\") has-nuw has-nsw)")
+    .def("CreateNSWAdd", &IRBuilder_O::ExternalType::CreateNSWAdd)
+    .def("CreateNUWAdd", &IRBuilder_O::ExternalType::CreateNUWAdd)
+    .def("CreateFAdd", &IRBuilder_O::ExternalType::CreateFAdd)
+    .def("CreateSub", &IRBuilder_O::ExternalType::CreateSub)
+    .def("CreateNSWSub", &IRBuilder_O::ExternalType::CreateNSWSub)
+    .def("CreateNUWSub", &IRBuilder_O::ExternalType::CreateNUWSub)
+    .def("CreateFSub", &IRBuilder_O::ExternalType::CreateFSub)
+    .def("CreateMul", &IRBuilder_O::ExternalType::CreateMul)
+    .def("CreateNSWMul", &IRBuilder_O::ExternalType::CreateNSWMul)
+    .def("CreateNUWMul", &IRBuilder_O::ExternalType::CreateNUWMul)
+    .def("CreateFMul", &IRBuilder_O::ExternalType::CreateFMul)
+    .def("CreateUDiv", &IRBuilder_O::ExternalType::CreateUDiv)
+    .def("CreateExactUDiv", &IRBuilder_O::ExternalType::CreateExactUDiv)
+    .def("CreateSDiv", &IRBuilder_O::ExternalType::CreateSDiv)
+    .def("CreateExactSDiv", &IRBuilder_O::ExternalType::CreateExactSDiv)
+    .def("CreateFDiv", &IRBuilder_O::ExternalType::CreateFDiv)
+    .def("CreateURem", &IRBuilder_O::ExternalType::CreateURem)
+    .def("CreateSRem", &IRBuilder_O::ExternalType::CreateSRem)
+    .def("CreateFRem", &IRBuilder_O::ExternalType::CreateFRem);
 
 #define AVOID_OVERLOAD(irb, ret, fn, suffix, args)                             \
   {                                                                            \
@@ -2832,12 +2832,12 @@ void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
   AVOID_OVERLOAD(irbuilder, llvm::Value *, CreateXor, _value_apint, (llvm::Value *, llvm::APInt const &, const llvm::Twine &));
   AVOID_OVERLOAD(irbuilder, llvm::Value *, CreateXor, _value_uint64, (llvm::Value *, uint64_t, const llvm::Twine &));
   irbuilder
-      .def("CreateNeg", &IRBuilder_O::ExternalType::CreateNeg)
-      .def("CreateNSWNeg", &IRBuilder_O::ExternalType::CreateNSWNeg)
-      .def("CreateNUWNeg", &IRBuilder_O::ExternalType::CreateNUWNeg)
-      .def("CreateFNeg", &IRBuilder_O::ExternalType::CreateFNeg)
-      .def("CreateNot", &IRBuilder_O::ExternalType::CreateNot)
-      .def("CreateAlloca", &IRBuilder_O::ExternalType::CreateAlloca);
+    .def("CreateNeg", &IRBuilder_O::ExternalType::CreateNeg)
+    .def("CreateNSWNeg", &IRBuilder_O::ExternalType::CreateNSWNeg)
+    .def("CreateNUWNeg", &IRBuilder_O::ExternalType::CreateNUWNeg)
+    .def("CreateFNeg", &IRBuilder_O::ExternalType::CreateFNeg)
+    .def("CreateNot", &IRBuilder_O::ExternalType::CreateNot)
+    .def("CreateAlloca", &IRBuilder_O::ExternalType::CreateAlloca);
 
   //	AVOID_OVERLOAD(irbuilder,llvm::LoadInst*,CreateLoad,_value_string,(llvm::Value*,const char*));
   AVOID_OVERLOAD(irbuilder, llvm::LoadInst *, CreateLoad, _value_twine, (llvm::Value *, const llvm::Twine &));
@@ -2846,72 +2846,72 @@ void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
   //	    .def("CreateLoad",&IRBuilder_O::ExternalType::CreateLoad)
   //	    .def("CreateLoad",&IRBuilder_O::ExternalType::CreateLoad)
   irbuilder
-      .def("CreateStore", &IRBuilder_O::ExternalType::CreateStore)
-      .def("CreateFence", &IRBuilder_O::ExternalType::CreateFence)
-      .def("CreateAtomicCmpXchg", &IRBuilder_O::ExternalType::CreateAtomicCmpXchg)
-      .def("CreateAtomicRMW", &IRBuilder_O::ExternalType::CreateAtomicRMW)
-      .def("CreateConstGEP1-32", &IRBuilder_O::ExternalType::CreateConstGEP1_32)
-      .def("CreateConstInBoundsGEP1-32", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_32)
-      .def("CreateConstGEP2-32", &IRBuilder_O::ExternalType::CreateConstGEP2_32)
-      .def("CreateConstInBoundsGEP2-32", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_32)
-      .def("CreateConstGEP1-64", &IRBuilder_O::ExternalType::CreateConstGEP1_64)
-      .def("CreateConstInBoundsGEP1-64", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_64)
-      .def("CreateConstGEP2-64", &IRBuilder_O::ExternalType::CreateConstGEP2_64)
-      .def("CreateConstInBoundsGEP2-64", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_64)
-      .def("CreateStructGEP", &IRBuilder_O::ExternalType::CreateStructGEP)
-      .def("CreateGlobalStringPtr", &IRBuilder_O::ExternalType::CreateGlobalStringPtr)
-      .def("CreateTrunc", &IRBuilder_O::ExternalType::CreateTrunc)
-      .def("CreateZExt", &IRBuilder_O::ExternalType::CreateZExt)
-      .def("CreateSExt", &IRBuilder_O::ExternalType::CreateSExt)
-      .def("CreateFPToUI", &IRBuilder_O::ExternalType::CreateFPToUI)
-      .def("CreateFPToSI", &IRBuilder_O::ExternalType::CreateFPToSI)
-      .def("CreateUIToFP", &IRBuilder_O::ExternalType::CreateUIToFP)
-      .def("CreateSIToFP", &IRBuilder_O::ExternalType::CreateSIToFP)
-      .def("CreateFPTrunc", &IRBuilder_O::ExternalType::CreateFPTrunc)
-      .def("CreateFPExt", &IRBuilder_O::ExternalType::CreateFPExt)
-      .def("CreatePtrToInt", &IRBuilder_O::ExternalType::CreatePtrToInt)
-      .def("CreateIntToPtr", &IRBuilder_O::ExternalType::CreateIntToPtr)
-      .def("CreateBitCast", &IRBuilder_O::ExternalType::CreateBitCast)
-      .def("CreateZExtOrBitCast", &IRBuilder_O::ExternalType::CreateZExtOrBitCast)
-      .def("CreateSExtOrBitCast", &IRBuilder_O::ExternalType::CreateSExtOrBitCast)
-      .def("CreateTruncOrBitCast", &IRBuilder_O::ExternalType::CreateTruncOrBitCast)
-      .def("CreateCast", &IRBuilder_O::ExternalType::CreateCast)
-      .def("CreatePointerCast", &IRBuilder_O::ExternalType::CreatePointerCast);
+    .def("CreateStore", &IRBuilder_O::ExternalType::CreateStore)
+    .def("CreateFence", &IRBuilder_O::ExternalType::CreateFence)
+    .def("CreateAtomicCmpXchg", &IRBuilder_O::ExternalType::CreateAtomicCmpXchg)
+    .def("CreateAtomicRMW", &IRBuilder_O::ExternalType::CreateAtomicRMW)
+    .def("CreateConstGEP1-32", &IRBuilder_O::ExternalType::CreateConstGEP1_32)
+    .def("CreateConstInBoundsGEP1-32", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_32)
+    .def("CreateConstGEP2-32", &IRBuilder_O::ExternalType::CreateConstGEP2_32)
+    .def("CreateConstInBoundsGEP2-32", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_32)
+    .def("CreateConstGEP1-64", &IRBuilder_O::ExternalType::CreateConstGEP1_64)
+    .def("CreateConstInBoundsGEP1-64", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_64)
+    .def("CreateConstGEP2-64", &IRBuilder_O::ExternalType::CreateConstGEP2_64)
+    .def("CreateConstInBoundsGEP2-64", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_64)
+    .def("CreateStructGEP", &IRBuilder_O::ExternalType::CreateStructGEP)
+    .def("CreateGlobalStringPtr", &IRBuilder_O::ExternalType::CreateGlobalStringPtr)
+    .def("CreateTrunc", &IRBuilder_O::ExternalType::CreateTrunc)
+    .def("CreateZExt", &IRBuilder_O::ExternalType::CreateZExt)
+    .def("CreateSExt", &IRBuilder_O::ExternalType::CreateSExt)
+    .def("CreateFPToUI", &IRBuilder_O::ExternalType::CreateFPToUI)
+    .def("CreateFPToSI", &IRBuilder_O::ExternalType::CreateFPToSI)
+    .def("CreateUIToFP", &IRBuilder_O::ExternalType::CreateUIToFP)
+    .def("CreateSIToFP", &IRBuilder_O::ExternalType::CreateSIToFP)
+    .def("CreateFPTrunc", &IRBuilder_O::ExternalType::CreateFPTrunc)
+    .def("CreateFPExt", &IRBuilder_O::ExternalType::CreateFPExt)
+    .def("CreatePtrToInt", &IRBuilder_O::ExternalType::CreatePtrToInt)
+    .def("CreateIntToPtr", &IRBuilder_O::ExternalType::CreateIntToPtr)
+    .def("CreateBitCast", &IRBuilder_O::ExternalType::CreateBitCast)
+    .def("CreateZExtOrBitCast", &IRBuilder_O::ExternalType::CreateZExtOrBitCast)
+    .def("CreateSExtOrBitCast", &IRBuilder_O::ExternalType::CreateSExtOrBitCast)
+    .def("CreateTruncOrBitCast", &IRBuilder_O::ExternalType::CreateTruncOrBitCast)
+    .def("CreateCast", &IRBuilder_O::ExternalType::CreateCast)
+    .def("CreatePointerCast", &IRBuilder_O::ExternalType::CreatePointerCast);
 
 #if 0
-	irbuilder
-	    .def("CreateIntCast",&IRBuilder_O::ExternalType::CreateIntCast)
-	    ;
+  irbuilder
+    .def("CreateIntCast",&IRBuilder_O::ExternalType::CreateIntCast)
+    ;
 #endif
   irbuilder
-      .def("CreateFPCast", &IRBuilder_O::ExternalType::CreateFPCast)
-      .def("CreateICmpEQ", &IRBuilder_O::ExternalType::CreateICmpEQ)
-      .def("CreateICmpNE", &IRBuilder_O::ExternalType::CreateICmpNE)
-      .def("CreateICmpUGT", &IRBuilder_O::ExternalType::CreateICmpUGT)
-      .def("CreateICmpUGE", &IRBuilder_O::ExternalType::CreateICmpUGE)
-      .def("CreateICmpULT", &IRBuilder_O::ExternalType::CreateICmpULT)
-      .def("CreateICmpULE", &IRBuilder_O::ExternalType::CreateICmpULE)
-      .def("CreateICmpSGT", &IRBuilder_O::ExternalType::CreateICmpSGT)
-      .def("CreateICmpSGE", &IRBuilder_O::ExternalType::CreateICmpSGE)
-      .def("CreateICmpSLT", &IRBuilder_O::ExternalType::CreateICmpSLT)
-      .def("CreateICmpSLE", &IRBuilder_O::ExternalType::CreateICmpSLE)
-      .def("CreateFCmpOEQ", &IRBuilder_O::ExternalType::CreateFCmpOEQ)
-      .def("CreateFCmpOGT", &IRBuilder_O::ExternalType::CreateFCmpOGT)
-      .def("CreateFCmpOGE", &IRBuilder_O::ExternalType::CreateFCmpOGE)
-      .def("CreateFCmpOLT", &IRBuilder_O::ExternalType::CreateFCmpOLT)
-      .def("CreateFCmpOLE", &IRBuilder_O::ExternalType::CreateFCmpOLE)
-      .def("CreateFCmpONE", &IRBuilder_O::ExternalType::CreateFCmpONE)
-      .def("CreateFCmpORD", &IRBuilder_O::ExternalType::CreateFCmpORD)
-      .def("CreateFCmpUNO", &IRBuilder_O::ExternalType::CreateFCmpUNO)
-      .def("CreateFCmpUEQ", &IRBuilder_O::ExternalType::CreateFCmpUEQ)
-      .def("CreateFCmpUGT", &IRBuilder_O::ExternalType::CreateFCmpUGT)
-      .def("CreateFCmpUGE", &IRBuilder_O::ExternalType::CreateFCmpUGE)
-      .def("CreateFCmpULT", &IRBuilder_O::ExternalType::CreateFCmpULT)
-      .def("CreateFCmpULE", &IRBuilder_O::ExternalType::CreateFCmpULE)
-      .def("CreateFCmpUNE", &IRBuilder_O::ExternalType::CreateFCmpUNE)
-      .def("CreateICmp", &IRBuilder_O::ExternalType::CreateICmp)
-      .def("CreateFCmp", &IRBuilder_O::ExternalType::CreateFCmp)
-      .def("CreatePHI", &IRBuilder_O::ExternalType::CreatePHI);
+    .def("CreateFPCast", &IRBuilder_O::ExternalType::CreateFPCast)
+    .def("CreateICmpEQ", &IRBuilder_O::ExternalType::CreateICmpEQ)
+    .def("CreateICmpNE", &IRBuilder_O::ExternalType::CreateICmpNE)
+    .def("CreateICmpUGT", &IRBuilder_O::ExternalType::CreateICmpUGT)
+    .def("CreateICmpUGE", &IRBuilder_O::ExternalType::CreateICmpUGE)
+    .def("CreateICmpULT", &IRBuilder_O::ExternalType::CreateICmpULT)
+    .def("CreateICmpULE", &IRBuilder_O::ExternalType::CreateICmpULE)
+    .def("CreateICmpSGT", &IRBuilder_O::ExternalType::CreateICmpSGT)
+    .def("CreateICmpSGE", &IRBuilder_O::ExternalType::CreateICmpSGE)
+    .def("CreateICmpSLT", &IRBuilder_O::ExternalType::CreateICmpSLT)
+    .def("CreateICmpSLE", &IRBuilder_O::ExternalType::CreateICmpSLE)
+    .def("CreateFCmpOEQ", &IRBuilder_O::ExternalType::CreateFCmpOEQ)
+    .def("CreateFCmpOGT", &IRBuilder_O::ExternalType::CreateFCmpOGT)
+    .def("CreateFCmpOGE", &IRBuilder_O::ExternalType::CreateFCmpOGE)
+    .def("CreateFCmpOLT", &IRBuilder_O::ExternalType::CreateFCmpOLT)
+    .def("CreateFCmpOLE", &IRBuilder_O::ExternalType::CreateFCmpOLE)
+    .def("CreateFCmpONE", &IRBuilder_O::ExternalType::CreateFCmpONE)
+    .def("CreateFCmpORD", &IRBuilder_O::ExternalType::CreateFCmpORD)
+    .def("CreateFCmpUNO", &IRBuilder_O::ExternalType::CreateFCmpUNO)
+    .def("CreateFCmpUEQ", &IRBuilder_O::ExternalType::CreateFCmpUEQ)
+    .def("CreateFCmpUGT", &IRBuilder_O::ExternalType::CreateFCmpUGT)
+    .def("CreateFCmpUGE", &IRBuilder_O::ExternalType::CreateFCmpUGE)
+    .def("CreateFCmpULT", &IRBuilder_O::ExternalType::CreateFCmpULT)
+    .def("CreateFCmpULE", &IRBuilder_O::ExternalType::CreateFCmpULE)
+    .def("CreateFCmpUNE", &IRBuilder_O::ExternalType::CreateFCmpUNE)
+    .def("CreateICmp", &IRBuilder_O::ExternalType::CreateICmp)
+    .def("CreateFCmp", &IRBuilder_O::ExternalType::CreateFCmp)
+    .def("CreatePHI", &IRBuilder_O::ExternalType::CreatePHI);
 
   llvm::CallInst *(IRBuilder_O::ExternalType::*CreateCallArrayRef)(llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name) = &IRBuilder_O::ExternalType::CreateCall;
   irbuilder.def("CreateCallArrayRef", CreateCallArrayRef);
@@ -2921,38 +2921,38 @@ void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
   // Add the one for variable numbers of arguments
 
   irbuilder
-      .def("CreateCall2", &IRBuilder_O::ExternalType::CreateCall2)
-      .def("CreateCall3", &IRBuilder_O::ExternalType::CreateCall3)
-      .def("CreateCall4", &IRBuilder_O::ExternalType::CreateCall4)
-      .def("CreateCall5", &IRBuilder_O::ExternalType::CreateCall5);
+    .def("CreateCall2", &IRBuilder_O::ExternalType::CreateCall2)
+    .def("CreateCall3", &IRBuilder_O::ExternalType::CreateCall3)
+    .def("CreateCall4", &IRBuilder_O::ExternalType::CreateCall4)
+    .def("CreateCall5", &IRBuilder_O::ExternalType::CreateCall5);
 
   irbuilder
-      .def("CreateSelect", &IRBuilder_O::ExternalType::CreateSelect)
-      .def("CreateVAArg", &IRBuilder_O::ExternalType::CreateVAArg)
-      .def("CreateExtractElement", &IRBuilder_O::ExternalType::CreateExtractElement)
-      .def("CreateInsertElement", &IRBuilder_O::ExternalType::CreateInsertElement)
-      .def("CreateShuffleVector", &IRBuilder_O::ExternalType::CreateShuffleVector)
-      .def("CreateLandingPad", &IRBuilder_O::ExternalType::CreateLandingPad)
-      .def("CreateIsNull", &IRBuilder_O::ExternalType::CreateIsNull)
-      .def("CreateIsNotNull", &IRBuilder_O::ExternalType::CreateIsNotNull)
-      .def("CreatePtrDiff", &IRBuilder_O::ExternalType::CreatePtrDiff);
+    .def("CreateSelect", &IRBuilder_O::ExternalType::CreateSelect)
+    .def("CreateVAArg", &IRBuilder_O::ExternalType::CreateVAArg)
+    .def("CreateExtractElement", &IRBuilder_O::ExternalType::CreateExtractElement)
+    .def("CreateInsertElement", &IRBuilder_O::ExternalType::CreateInsertElement)
+    .def("CreateShuffleVector", &IRBuilder_O::ExternalType::CreateShuffleVector)
+    .def("CreateLandingPad", &IRBuilder_O::ExternalType::CreateLandingPad)
+    .def("CreateIsNull", &IRBuilder_O::ExternalType::CreateIsNull)
+    .def("CreateIsNotNull", &IRBuilder_O::ExternalType::CreateIsNotNull)
+    .def("CreatePtrDiff", &IRBuilder_O::ExternalType::CreatePtrDiff);
 
   irbuilder
-      .def("CreateBinOp", &IRBuilder_O::ExternalType::CreateBinOp)
-      .def("CreateInBoundsGEP", &IRBuilder_O::CreateInBoundsGEP)
-      .def("CreateExtractValue", &IRBuilder_O::CreateExtractValue)
-      .def("CreateInsertValue", &IRBuilder_O::CreateInsertValue)
+    .def("CreateBinOp", &IRBuilder_O::ExternalType::CreateBinOp)
+    .def("CreateInBoundsGEP", &IRBuilder_O::CreateInBoundsGEP)
+    .def("CreateExtractValue", &IRBuilder_O::CreateExtractValue)
+    .def("CreateInsertValue", &IRBuilder_O::CreateInsertValue)
       //	    .def("CreateCall",&IRBuilder_O::ExternalType::CreateCall)
-      ;
+    ;
 
   AVOID_OVERLOAD(irbuilder, llvm::Value *, CreateGEP, 0, (llvm::Value *, llvm::Value *, const llvm::Twine &));
   AVOID_OVERLOAD(irbuilder, llvm::Value *, CreateGEP, Array, (llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &));
 
 // Problem instructions that will have to be handled with IRBuilder_O methods
 #if 0
-	irbuilder
-	    .def("CreateAggregateRet",&IRBuilder_O::ExternalType::CreateAggregateRet)
-	    ;
+  irbuilder
+    .def("CreateAggregateRet",&IRBuilder_O::ExternalType::CreateAggregateRet)
+    ;
 
 #endif
 

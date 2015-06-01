@@ -49,7 +49,7 @@ SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTracePrintSTAR);
 
 void initialize_compPackage() {
   list<string> lnicknames = {"CMP"};
-  list<string> luse = {"COMMON-LISP", "EXT"};
+  list<string> luse = {"COMMON-LISP"};
   _lisp->makePackage("COMPILER", lnicknames, luse);
   // We don't have to create the COMPILER symbols here - it's done in bootStrapCoreSymbolMap
 }

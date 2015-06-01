@@ -64,14 +64,24 @@ Path_sp pathDesignator(T_sp obj) {
 }
 
 Package_sp packageDesignator(T_sp obj) {
-  _G();
-  if (obj.nilp()) {
-    SIMPLE_ERROR(BF("NIL is not a valid package designator"));
-    //		return _lisp->getCurrentPackage();
-  } else if (Package_sp apkg = obj.asOrNull<Package_O>()) {
+  // TODO: Add support for Unicode package names
+  Str_sp packageName;
+  if (Package_sp apkg = obj.asOrNull<Package_O>()) {
     return apkg;
+  } else if (Str_sp str = obj.asOrNull<Str_O>()) {
+    packageName = str;
+    goto PACKAGE_NAME;
+  } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
+    packageName = af_symbolName(sym);
+    goto PACKAGE_NAME;
+  } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
+    stringstream ss;
+    ss << clasp_as_char(chr);
+    packageName = Str_O::create(ss.str());
+    goto PACKAGE_NAME;
   }
-  Str_sp packageName = stringDesignator(obj);
+  TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or,cl::_sym_String_O,cl::_sym_Symbol_O,cl::_sym_character));
+ PACKAGE_NAME:
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName->get(), true));
   return pkg;
 }
@@ -98,7 +108,8 @@ List_sp listOfPackageDesignators(T_sp obj) {
     }
     return res.cons();
   }
-  return Cons_O::create(packageDesignator(obj));
+  Package_sp onePackage = packageDesignator(obj);
+  return Cons_O::create(onePackage);
 }
 
 List_sp listOfSymbols(T_sp syms) {
@@ -115,10 +126,7 @@ List_sp listOfSymbols(T_sp syms) {
 }
 
 Str_sp stringDesignator(T_sp obj) {
-  _G();
-  if (obj.nilp()) {
-    return af_symbolName(_Nil<Symbol_O>());
-  } else if (Str_sp str = obj.asOrNull<Str_O>()) {
+  if (Str_sp str = obj.asOrNull<Str_O>()) {
     return str;
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     return af_symbolName(sym);
@@ -127,7 +135,7 @@ Str_sp stringDesignator(T_sp obj) {
     ss << clasp_as_char(chr);
     return Str_O::create(ss.str());
   }
-  SIMPLE_ERROR(BF("Illegal string designator[%s] of class[%s]") % _rep_(obj) % _rep_(lisp_instance_class(obj)));
+  TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or,cl::_sym_String_O,cl::_sym_Symbol_O,cl::_sym_character));
 }
 
 List_sp listOfStringDesignators(T_sp obj) {

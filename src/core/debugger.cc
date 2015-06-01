@@ -242,7 +242,7 @@ void af_clibBacktrace() {
   _G();
 // Play with Unix backtrace(3)
 #define BACKTRACE_SIZE 1024
-  printf("Entered af_clibBacktrace()\n");
+  printf("Entered af_clibBacktrace - symbol: %s\n", _rep_(INTERN_(core,theClibBacktraceFunctionSymbol)).c_str());
   void *buffer[BACKTRACE_SIZE];
   int nptrs;
   nptrs = backtrace(buffer, BACKTRACE_SIZE);
@@ -263,16 +263,8 @@ void af_clibBacktrace() {
 #define DECL_af_framePointers ""
 #define DOCS_af_framePointers "framePointers"
 void af_framePointers() {
-  _G();
-  int i = 0;
-  while (1) {
-    void *fp = __builtin_frame_address(0);
-    break;
-    if (fp == NULL)
-      break;
-    printf("Frame pointer %d --> %p\n", i, fp);
-    ++i;
-  }
+  void *fp = __builtin_frame_address(0); // Constant integer only
+  if (fp != NULL) printf("Frame pointer --> %p\n", fp);
 };
 };
 
@@ -354,9 +346,7 @@ void af_evalPrint(const string &expr) {
 };
 
 void dbg_lowLevelDescribe(T_sp obj) {
-  if (obj.nilp()) {
-    printf("NIL\n");
-  } else if (obj.fixnump()) {
+  if (obj.fixnump()) {
     printf("fixnum_tag: %ld\n", obj.unsafe_fixnum());
   } else if (obj.single_floatp()) {
     printf("single-float: %f\n", obj.unsafe_single_float());
@@ -375,6 +365,16 @@ void dbg_lowLevelDescribe(T_sp obj) {
     return;
   } else {
     printf("lowLevelDescribe handle: %p\n", obj.raw_());
+  }
+  fflush(stdout);
+}
+
+void dbg_mv_lowLevelDescribe(T_mv mv_obj) {
+  gc::Vec0<core::T_sp> values;
+  mv_obj.saveToVec0(values);
+  for ( int i(0),iEnd(values.size()); i<iEnd; ++i ) {
+    printf("Multiple value#%d\n", i);
+    dbg_lowLevelDescribe(values[i]);
   }
   fflush(stdout);
 }

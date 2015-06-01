@@ -54,7 +54,7 @@
 (defun safe-system (cmd)
   (if *echo-system*
       (bformat t "%s\n" cmd))
-  (let ((ret (core:system cmd)))
+  (let ((ret (ext:system cmd)))
     (unless (eql ret 0)
       (error "Could not execute command with system: ~s" cmd))))
 

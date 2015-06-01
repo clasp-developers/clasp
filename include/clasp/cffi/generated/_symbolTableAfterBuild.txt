@@ -14,7 +14,7 @@
 // SYMBOL_TABLE_ENTRY      CffiPkg   12 PERCENTload_foreign_library    %LOAD-FOREIGN-LIBRARY          export ; cName=_sym_PERCENTload_foreign_library lispName=%LOAD-FOREIGN-LIBRARY
 // SYMBOL_TABLE_ENTRY      CffiPkg   13 char                           CHAR                           private ; cName=_sym_char lispName=CHAR
 // SYMBOL_TABLE_ENTRY      CffiPkg   14 pointer                        POINTER                        private ; cName=_sym_pointer lispName=POINTER
-// SYMBOL_TABLE_ENTRY      CffiPkg   15 Pointer_O                      POINTER                        export ; cName=_sym_Pointer_O lispName=POINTER
+// SYMBOL_TABLE_ENTRY      CffiPkg   15 long                           LONG                           private ; cName=_sym_long lispName=LONG
 // SYMBOL_TABLE_ENTRY      CffiPkg   16 time                           TIME                           private ; cName=_sym_time lispName=TIME
 // SYMBOL_TABLE_ENTRY      CffiPkg   17 size                           SIZE                           private ; cName=_sym_size lispName=SIZE
 // SYMBOL_TABLE_ENTRY      CffiPkg   18 foreign_alloc                  FOREIGN-ALLOC                  export ; cName=_sym_foreign_alloc lispName=FOREIGN-ALLOC
@@ -29,7 +29,7 @@
 // SYMBOL_TABLE_ENTRY      CffiPkg   27 unsigned_short                 UNSIGNED-SHORT                 private ; cName=_sym_unsigned_short lispName=UNSIGNED-SHORT
 // SYMBOL_TABLE_ENTRY      CffiPkg   28 int                            INT                            private ; cName=_sym_int lispName=INT
 // SYMBOL_TABLE_ENTRY      CffiPkg   29 int64                          INT64                          private ; cName=_sym_int64 lispName=INT64
-// SYMBOL_TABLE_ENTRY      CffiPkg   30 long                           LONG                           private ; cName=_sym_long lispName=LONG
+// SYMBOL_TABLE_ENTRY      CffiPkg   30 Pointer_O                      POINTER                        export ; cName=_sym_Pointer_O lispName=POINTER
 // SYMBOL_TABLE_ENTRY      CffiPkg   31 PERCENTforeign_type_size       %FOREIGN-TYPE-SIZE             export ; cName=_sym_PERCENTforeign_type_size lispName=%FOREIGN-TYPE-SIZE
 // SYMBOL_TABLE_ENTRY      CffiPkg   32 unsigned_char                  UNSIGNED-CHAR                  private ; cName=_sym_unsigned_char lispName=UNSIGNED-CHAR
 // SYMBOL_TABLE_ENTRY      CffiPkg   33 PERCENTsetf_mem_ref            %SETF-MEM-REF                  private ; cName=_sym_PERCENTsetf_mem_ref lispName=%SETF-MEM-REF

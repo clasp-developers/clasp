@@ -37,7 +37,7 @@ namespace core {
 
 extern bool DebugHashTable;
 
-HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold);
+ T_mv cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>());
 
 FORWARD(HashTable);
 class HashTable_O : public T_O {
@@ -47,7 +47,7 @@ class HashTable_O : public T_O {
   LISP_VIRTUAL_CLASS(core, ClPkg, HashTable_O, "HashTable");
   void archiveBase(SNode_sp node);
 
-  HashTable_O() : _InitialSize(4), _RehashSize(_Nil<Number_O>()), _RehashThreshold(1.2), _HashTable(_Nil<VectorObjects_O>()), _HashTableCount(0){};
+ HashTable_O() : _InitialSize(4), _RehashSize(_Nil<Number_O>()), _RehashThreshold(1.2), _HashTable(_Nil<VectorObjects_O>()), _HashTableCount(0){};
   virtual ~HashTable_O(){};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
   friend class HashTableEq_O;
@@ -57,7 +57,7 @@ class HashTable_O : public T_O {
   friend T_mv af_maphash(T_sp function_desig, HashTable_sp hash_table);
   friend T_mv af_clrhash(HashTable_sp hash_table);
 
-GCPRIVATE: // instance variables here
+ GCPRIVATE: // instance variables here
   uint _InitialSize;
   Number_sp _RehashSize;
   double _RehashThreshold;
@@ -68,23 +68,23 @@ GCPRIVATE: // instance variables here
   mps_ld_s _LocationDependencyTracker;
 #endif
 
-public:
+ public:
   static HashTable_sp create(T_sp test); // set everything up with defaults
 
-public:
+ public:
   static void sxhash_eq(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
   static void sxhash_eql(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
   static void sxhash_equal(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
   static void sxhash_equalp(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
 
-private:
+ private:
   void setup(uint sz, Number_sp rehashSize, double rehashThreshold);
   uint resizeEmptyTable(uint sz);
   uint calculateHashTableCount() const;
   /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
   List_sp rehash(bool expandTable, T_sp findKey);
 
-public: // Functions here
+ public: // Functions here
   virtual bool equalp(T_sp other) const;
 
   /*! See CLHS */
@@ -135,7 +135,7 @@ public: // Functions here
   void maphash(std::function<void(T_sp, T_sp)> const &fn) { this->mapHash(fn); };
 
   /*! maps function across a hash table until the function returns false */
-  void terminatingMapHash(std::function<bool(T_sp, T_sp)> const &fn);
+  void /*terminatingMapHash*/map_while_true(std::function<bool(T_sp, T_sp)> const &fn);
 
   /*! Return the number of entries in the HashTable Vector0 */
   int hashTableNumberOfHashes() const;
@@ -143,9 +143,14 @@ public: // Functions here
   List_sp hashTableAlistAtHash(int hash) const;
 
   string keysAsString();
+
+  /*! Look like a set */
+  void insert(T_sp obj) { this->setf_gethash(obj,_Nil<T_O>()); };
+  /*! Return a Cons of all keys */
+  List_sp keysAsCons();
 };
 
-HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold);
+//HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold);
 
 }; /* core */
 

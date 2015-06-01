@@ -581,6 +581,7 @@ T_mv af_sharp_r(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> nradix) {
   _G();
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     T_sp object = read_lisp_object(sin, true, _Nil<T_O>(), true);
+    (void)object; // suppress warning
     return (Values(_Nil<T_O>()));
   } else if (nradix.nilp()) {
     SIMPLE_ERROR(BF("Radix missing in #R reader macro"));
@@ -636,7 +637,6 @@ T_mv af_sharp_x(T_sp sin, Character_sp ch, T_sp num) {
 #define DECL_af_sharp_c ""
 T_mv af_sharp_c(T_sp sin, Character_sp ch, T_sp num) {
   _G();
-  Character_sp right_paren = clasp_make_character(')');
   T_sp olist = read_lisp_object(sin, true, _Nil<T_O>(), true);
   List_sp list = olist;
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
@@ -854,6 +854,7 @@ T_mv af_sharp_vertical_bar(T_sp sin, Character_sp ch, T_sp num) {
       char nextc = clasp_peek_char(sin);
       if (nextc == '#') {
         Character_sp nextsubc = gc::As<Character_sp>(cl_readChar(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+        (void)nextsubc;
         goto DONE;
       }
     }

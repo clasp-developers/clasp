@@ -399,7 +399,7 @@ void clasp_dealloc(char *buffer) {
 List_sp clasp_grab_rest_args(va_list args, int nargs) {
   ql::list l;
   while (nargs) {
-    T_sp arg = gctools::smart_ptr<T_O>(va_arg(args, T_O *));
+    T_sp arg = gctools::smart_ptr<T_O>((gc::Tagged)va_arg(args, T_O *));
     l << arg;
     --nargs;
   }
@@ -877,7 +877,7 @@ void lisp_exposeClass(const string &className, ExposeCandoFunction exposeCandoFu
 
 T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol) {
   _G();
-  Class_sp mc = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, _lisp->_true()));
+  Class_sp mc = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
   return mc;
 }
 
@@ -912,7 +912,6 @@ void lisp_addClassAndInitialize(Symbol_sp classSymbol,
 }
 
 List_sp lisp_parse_arguments(const string &packageName, const string &args) {
-  _G();
   if (args == "")
     return _Nil<T_O>();
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
@@ -1009,7 +1008,8 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
     sym->exportYourself();
   LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]") % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport);
   Str_sp docStr = Str_O::create(docstring);
-  T_sp gfn = af_ensureSingleDispatchGenericFunction(sym, llhandler);
+  T_sp gfn = af_ensureSingleDispatchGenericFunction(sym, llhandler); // Ensure the single dispatch generic function exists
+  (void)gfn; // silence compiler warning
   LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  methoid@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(methoid)));
   methoid->finishSetup(llhandler, kw::_sym_function);
   Function_sp fn = Function_O::make(methoid);
@@ -1068,7 +1068,8 @@ void lisp_defun(Symbol_sp sym,
     printf("%s:%d - The symbol[%s] has already been assigned a function and will not be redefined\n", __FILE__, __LINE__, _rep_(sym).c_str());
     return;
   }
-  List_sp ldeclares = lisp_parse_declares(packageName, declarestring);
+  List_sp ldeclares = lisp_parse_declares(packageName, declarestring); // get the declares but ignore them for now
+  (void)ldeclares; // suppress warning
   LambdaListHandler_sp llh;
   if ((arguments == "" || arguments == "()") && number_of_required_arguments >= 0) {
     llh = LambdaListHandler_O::create(number_of_required_arguments, skipIndices);
@@ -1561,9 +1562,10 @@ void lisp_error_condition(const char *functionName, const char *fileName, int li
     dbg.invoke();
     //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
   }
-  eval::applyLastArgsPLUSFirst(_sym_signalSimpleError, initializers // This is what is usually the LAST argument to APPLY
-                               ,
-                               baseCondition, _Nil<T_O>(), Str_O::create(ss.str()), _Nil<T_O>());
+  eval::applyLastArgsPLUSFirst(_sym_signalSimpleError
+                               , initializers // initializers is a LIST and the last argument to APPLY!!!!!
+                               // this allows us to include a variable number of arguments next
+                               , baseCondition, _Nil<T_O>(), Str_O::create(ss.str()), _Nil<T_O>());
 }
 
 void lisp_error(T_sp datum, T_sp arguments) {

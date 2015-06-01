@@ -260,6 +260,7 @@ string Instance_O::__repr__() const {
           sslot << "CONS...";
           ss << sslot.str() << std::endl;
         } else if (Instance_sp inst = obj.asOrNull<Instance_O>()) {
+          (void)inst; // turn off warning
           sslot << "INSTANCE...";
           ss << sslot.str() << std::endl;
         } else {

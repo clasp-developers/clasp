@@ -155,6 +155,7 @@ bool af_structurep(T_sp arg) {
   }
 #endif
   if (StructureObject_sp so = arg.asOrNull<StructureObject_O>()) {
+    (void)so;
     return true;
   }
   return false;

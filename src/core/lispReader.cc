@@ -517,8 +517,6 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
 List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
   _G();
   af_stackMonitor();
-  uint start_lineNumber = 0;
-  uint start_column = 0;
   bool got_dotted = false;
   T_sp dotted_object = _Nil<T_O>();
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
@@ -655,7 +653,7 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
   _G();
 #if 1
   static int monitorReaderStep = 0;
-  if ((monitorReaderStep % 1000) == 0 && af_member(_sym_monitorReader, _sym_STARdebugMonitorSTAR->symbolValue(), _Nil<T_O>()).notnilp()) {
+  if ((monitorReaderStep % 1000) == 0 && cl_member(_sym_monitorReader, _sym_STARdebugMonitorSTAR->symbolValue(), _Nil<T_O>()).notnilp()) {
     printf("%s:%d:%s stream %s -> pos = %ld\n", __FILE__, __LINE__, __FUNCTION__, _rep_(clasp_filename(sin, false)).c_str(), unbox_fixnum(gc::As<Fixnum_sp>(clasp_file_position(sin))));
   }
   ++monitorReaderStep;

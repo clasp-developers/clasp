@@ -62,8 +62,11 @@ T_sp af_calculateMissingCommonLispSymbols() {
   return missing;
 }
 
-void initializeAllClSymbols() {
-#define AddClSymbol(name) globalAllClSymbols[name] = 0;
+void initializeAllClSymbols(Package_sp commonLispPkg) {
+#define AddClSymbol(name) { \
+    Symbol_sp sym = commonLispPkg->intern(name); \
+    commonLispPkg->_export2(sym); \
+  }
   AddClSymbol("&ALLOW-OTHER-KEYS");
   AddClSymbol("&AUX");
   AddClSymbol("&BODY");

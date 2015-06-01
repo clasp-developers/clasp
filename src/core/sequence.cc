@@ -302,7 +302,7 @@ size_t_pair sequenceStartEnd(const char *file, uint line, const char *functionNa
     }
     p.end = unbox_fixnum(gc::As<Fixnum_sp>(end));
     unlikely_if(p.end > l) {
-      T_sp fillp = make_fixnum(static_cast<uint>(l));
+      //      T_sp fillp = make_fixnum(static_cast<uint>(l));
       af_wrongTypeKeyArg(file, line, _lisp->internWithPackageName(functionName, packageName.c_str()),
                          kw::_sym_end, end,
                          Integer_O::makeIntegerType(unbox_fixnum(start), static_cast<int>(l)));

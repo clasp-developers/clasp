@@ -48,7 +48,7 @@ THE SOFTWARE.
 //#i n c l u d e "f u n c t ionptr.h"
 #include <clasp/core/cache.h>
 #include <clasp/core/translators.h>
-#include <clasp/core/stringSet.fwd.h>
+//#include <clasp/core/stringSet.fwd.h>
 //#i n c l u d e "setfExpander.fwd.h"
 //#i n c l u d e "environment.h"
 #include <clasp/core/executables.h>
@@ -81,7 +81,7 @@ SMART(SpecialForm);
 SMART(Hierarchy);
 SMART(Environment);
 
-List_sp af_member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
+List_sp cl_member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
 void af_invokeInternalDebugger(T_sp condition);
 
 class SymbolClassPair {
@@ -323,6 +323,10 @@ public:
 public:
 public:
   GCRoots _Roots;
+  // Trap INTERN of a specific symbol to help resolve symbol conflicts
+  bool _TrapIntern;
+  std::string _TrapInternPackage;
+  std::string _TrapInternName;
   map<string, void *> _OpenDynamicLibraryHandles;
   char *_StackTop;
   uint _StackWarnSize;
@@ -846,8 +850,6 @@ public:
 
   Symbol_sp getClassSymbolForClassName(const string &symbolName);
 
-  /*! Return all class names */
-  StringSet_sp allClassNames();
 
   //	void setGlobal(Symbol_sp sym, T_sp obj);
   //	void setGlobalIfNotDefined(Symbol_sp sym, T_sp obj);

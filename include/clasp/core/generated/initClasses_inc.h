@@ -94,11 +94,10 @@
  // class ShortFloat_O : public Float_O {
  // class SingleFloat_dummy_O : public Float_O {
  // class DoubleFloat_O : public Float_O {
+ // class LongFloat_O : public Float_O {
  // class Complex_O : public Number_O {
  // class Ratio_O : public Rational_O {
- // class ObjRef_O : public T_O {
  // class T_O : public _RootDummyClass {
- // class ObjectSet_O : public T_O {
  // class Package_O : public T_O {
  // class Pathname_O : public T_O {
  // class LogicalPathname_O : public Pathname_O {
@@ -107,6 +106,7 @@
  // class PosixTimeDuration_O : public T_O {
  // class Reader_O : public T_O {
  // class ReadTable_O : public T_O {
+ // class Record_O : public T_O {
  // class RegexMatch_O : public core::T_O {
  // class Regex_O : public core::T_O {
  // class SNode_O : public T_O {
@@ -121,6 +121,7 @@
  // class SingleDispatchGenericFunction_O : public Function_O {
  // class SingleDispatchMethod_O : public T_O {
  // class SmallMap_O : public T_O {
+ // class SmallMultimap_O : public T_O {
  // class SourceFileInfo_O : public T_O {
  // class SourcePosInfo_O : public T_O {
  // class SourceManager_O : public T_O {
@@ -131,13 +132,9 @@
  // class StdClass_O : public Class_O {
  // class Str_O : public String_O {
  // class StrWithFillPtr_O : public Str_O {
- // class StringList_O : public T_O {
- // class StringSet_O : public T_O {
  // class StructureClass_O : public Class_O {
  // class StructureObject_O : public T_O {
  // class Symbol_O : public T_O {
- // class SymbolList_O : public T_O {
- // class SymbolSet_O : public T_O {
  // class SymbolToEnumConverter_O : public T_O {
  // class LightUserData_O : public core::T_O // StandardObject_O
  // class UserData_O : public core::LightUserData_O // StandardObject_O
@@ -169,25 +166,21 @@
 #include "include/microHeap.h"
 #include "include/multiStringBuffer.h"
 #include "include/numbers.h"
-#include "include/objRef.h"
-#include "include/objectSet.h"
 #include "include/package.h"
 #include "include/pathname.h"
 #include "include/pointer.h"
 #include "include/posixTime.h"
 #include "include/readtable.h"
 #include "include/reader.h"
+#include "include/record.h"
 #include "include/regex.h"
 #include "include/singleDispatchMethod.h"
 #include "include/smallMap.h"
+#include "include/smallMultimap.h"
 #include "include/sourceFileInfo.h"
 #include "include/standardObject.h"
 #include "include/lispStream.h"
-#include "include/stringList.h"
-#include "include/stringSet.h"
 #include "include/structureObject.h"
-#include "include/symbolList.h"
-#include "include/symbolSet.h"
 #include "include/symbolToEnumConverter.h"
 #include "include/symbol.h"
 #include "include/weakHashTable.h"
@@ -250,8 +243,6 @@ core::LoadTimeValues_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::LoadTimeVa
 core::MicroHeap_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::MicroHeap_O::static_packageName(),core::MicroHeap_O::static_className()));
 core::MultiStringBuffer_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::MultiStringBuffer_O::static_packageName(),core::MultiStringBuffer_O::static_className()));
 core::Number_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Number_O::static_packageName(),core::Number_O::static_className()));
-core::ObjRef_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::ObjRef_O::static_packageName(),core::ObjRef_O::static_className()));
-core::ObjectSet_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::ObjectSet_O::static_packageName(),core::ObjectSet_O::static_className()));
 core::Package_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Package_O::static_packageName(),core::Package_O::static_className()));
 core::Path_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Path_O::static_packageName(),core::Path_O::static_className()));
 core::Pathname_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Pathname_O::static_packageName(),core::Pathname_O::static_className()));
@@ -260,21 +251,19 @@ core::PosixTimeDuration_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::PosixTi
 core::PosixTime_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::PosixTime_O::static_packageName(),core::PosixTime_O::static_className()));
 core::ReadTable_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::ReadTable_O::static_packageName(),core::ReadTable_O::static_className()));
 core::Reader_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Reader_O::static_packageName(),core::Reader_O::static_className()));
+core::Record_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Record_O::static_packageName(),core::Record_O::static_className()));
 core::RegexMatch_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::RegexMatch_O::static_packageName(),core::RegexMatch_O::static_className()));
 core::Regex_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Regex_O::static_packageName(),core::Regex_O::static_className()));
 core::SNode_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::SNode_O::static_packageName(),core::SNode_O::static_className()));
 core::SingleDispatchMethod_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::SingleDispatchMethod_O::static_packageName(),core::SingleDispatchMethod_O::static_className()));
 core::SmallMap_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::SmallMap_O::static_packageName(),core::SmallMap_O::static_className()));
+core::SmallMultimap_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::SmallMultimap_O::static_packageName(),core::SmallMultimap_O::static_className()));
 core::SourceFileInfo_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::SourceFileInfo_O::static_packageName(),core::SourceFileInfo_O::static_className()));
 core::SourceManager_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::SourceManager_O::static_packageName(),core::SourceManager_O::static_className()));
 core::SourcePosInfo_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::SourcePosInfo_O::static_packageName(),core::SourcePosInfo_O::static_className()));
 core::StandardObject_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StandardObject_O::static_packageName(),core::StandardObject_O::static_className()));
 core::Stream_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Stream_O::static_packageName(),core::Stream_O::static_className()));
-core::StringList_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StringList_O::static_packageName(),core::StringList_O::static_className()));
-core::StringSet_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StringSet_O::static_packageName(),core::StringSet_O::static_className()));
 core::StructureObject_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StructureObject_O::static_packageName(),core::StructureObject_O::static_className()));
-core::SymbolList_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::SymbolList_O::static_packageName(),core::SymbolList_O::static_className()));
-core::SymbolSet_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::SymbolSet_O::static_packageName(),core::SymbolSet_O::static_className()));
 core::SymbolToEnumConverter_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::SymbolToEnumConverter_O::static_packageName(),core::SymbolToEnumConverter_O::static_className()));
 core::Symbol_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Symbol_O::static_packageName(),core::Symbol_O::static_className()));
 core::WeakHashTable_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::WeakHashTable_O::static_packageName(),core::WeakHashTable_O::static_className()));
@@ -340,6 +329,7 @@ core::FunctionValueEnvironment_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::
 core::IOFileStream_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::IOFileStream_O::static_packageName(),core::IOFileStream_O::static_className()));
 core::IOStreamStream_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::IOStreamStream_O::static_packageName(),core::IOStreamStream_O::static_className()));
 core::Integer_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Integer_O::static_packageName(),core::Integer_O::static_className()));
+core::LongFloat_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::LongFloat_O::static_packageName(),core::LongFloat_O::static_className()));
 core::MacroletEnvironment_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::MacroletEnvironment_O::static_packageName(),core::MacroletEnvironment_O::static_className()));
 core::Ratio_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Ratio_O::static_packageName(),core::Ratio_O::static_className()));
 core::ShortFloat_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::ShortFloat_O::static_packageName(),core::ShortFloat_O::static_className()));
@@ -787,46 +777,6 @@ core::StandardClass_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StandardCla
     }
     /* ----- the class and its nil are now defined and so is classcore__Number_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
 
-    LOG(BF("Creating class[classcore__ObjRef_Oval]"));
-    core::BuiltInClass_sp classcore__ObjRef_Oval = core::BuiltInClass_O::createUncollectable();
-    classcore__ObjRef_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__ObjRef_Oval,_lisp,core::ObjRef_O::static_classSymbol());
-    reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<core::ObjRef_O>::id,core::ObjRef_O::static_classSymbol());
-    core::ObjRef_O::___staticClass = classcore__ObjRef_Oval;
-#ifdef USE_MPS
-    core::ObjRef_O::static_Kind = gctools::GCKind<core::ObjRef_O>::Kind;
-#endif
-    core::af_setf_findClass(classcore__ObjRef_Oval,core::ObjRef_O::static_classSymbol(),true,_Nil<core::Environment_O>());
-    {
-        core::LispObjectCreator<core::ObjRef_O>* cb = gctools::ClassAllocator<core::LispObjectCreator<core::ObjRef_O>>::allocateClass();
-        core::ObjRef_O::___set_static_creator(cb);
-    }
-    LOG(BF("Set static_allocator for class(%s) to %X")% core::ObjRef_O::static_className() % (void*)(core::ObjRef_O::static_allocator) );
-    classcore__ObjRef_Oval->setCreator(core::ObjRef_O::static_creator);
-    {
-        LOG(BF("Created nil for class[%s]") % core::ObjRef_O::static_className() );
-    }
-    /* ----- the class and its nil are now defined and so is classcore__ObjRef_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
-
-    LOG(BF("Creating class[classcore__ObjectSet_Oval]"));
-    core::BuiltInClass_sp classcore__ObjectSet_Oval = core::BuiltInClass_O::createUncollectable();
-    classcore__ObjectSet_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__ObjectSet_Oval,_lisp,core::ObjectSet_O::static_classSymbol());
-    reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<core::ObjectSet_O>::id,core::ObjectSet_O::static_classSymbol());
-    core::ObjectSet_O::___staticClass = classcore__ObjectSet_Oval;
-#ifdef USE_MPS
-    core::ObjectSet_O::static_Kind = gctools::GCKind<core::ObjectSet_O>::Kind;
-#endif
-    core::af_setf_findClass(classcore__ObjectSet_Oval,core::ObjectSet_O::static_classSymbol(),true,_Nil<core::Environment_O>());
-    {
-        core::LispObjectCreator<core::ObjectSet_O>* cb = gctools::ClassAllocator<core::LispObjectCreator<core::ObjectSet_O>>::allocateClass();
-        core::ObjectSet_O::___set_static_creator(cb);
-    }
-    LOG(BF("Set static_allocator for class(%s) to %X")% core::ObjectSet_O::static_className() % (void*)(core::ObjectSet_O::static_allocator) );
-    classcore__ObjectSet_Oval->setCreator(core::ObjectSet_O::static_creator);
-    {
-        LOG(BF("Created nil for class[%s]") % core::ObjectSet_O::static_className() );
-    }
-    /* ----- the class and its nil are now defined and so is classcore__ObjectSet_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
-
     LOG(BF("Creating class[classcore__Package_Oval]"));
     core::BuiltInClass_sp classcore__Package_Oval = core::BuiltInClass_O::createUncollectable();
     classcore__Package_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__Package_Oval,_lisp,core::Package_O::static_classSymbol());
@@ -987,6 +937,26 @@ core::StandardClass_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StandardCla
     }
     /* ----- the class and its nil are now defined and so is classcore__Reader_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
 
+    LOG(BF("Creating class[classcore__Record_Oval]"));
+    core::BuiltInClass_sp classcore__Record_Oval = core::BuiltInClass_O::createUncollectable();
+    classcore__Record_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__Record_Oval,_lisp,core::Record_O::static_classSymbol());
+    reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<core::Record_O>::id,core::Record_O::static_classSymbol());
+    core::Record_O::___staticClass = classcore__Record_Oval;
+#ifdef USE_MPS
+    core::Record_O::static_Kind = gctools::GCKind<core::Record_O>::Kind;
+#endif
+    core::af_setf_findClass(classcore__Record_Oval,core::Record_O::static_classSymbol(),true,_Nil<core::Environment_O>());
+    {
+        core::LispObjectCreator<core::Record_O>* cb = gctools::ClassAllocator<core::LispObjectCreator<core::Record_O>>::allocateClass();
+        core::Record_O::___set_static_creator(cb);
+    }
+    LOG(BF("Set static_allocator for class(%s) to %X")% core::Record_O::static_className() % (void*)(core::Record_O::static_allocator) );
+    classcore__Record_Oval->setCreator(core::Record_O::static_creator);
+    {
+        LOG(BF("Created nil for class[%s]") % core::Record_O::static_className() );
+    }
+    /* ----- the class and its nil are now defined and so is classcore__Record_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
+
     LOG(BF("Creating class[classcore__RegexMatch_Oval]"));
     core::BuiltInClass_sp classcore__RegexMatch_Oval = core::BuiltInClass_O::createUncollectable();
     classcore__RegexMatch_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__RegexMatch_Oval,_lisp,core::RegexMatch_O::static_classSymbol());
@@ -1086,6 +1056,26 @@ core::StandardClass_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StandardCla
         LOG(BF("Created nil for class[%s]") % core::SmallMap_O::static_className() );
     }
     /* ----- the class and its nil are now defined and so is classcore__SmallMap_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
+
+    LOG(BF("Creating class[classcore__SmallMultimap_Oval]"));
+    core::BuiltInClass_sp classcore__SmallMultimap_Oval = core::BuiltInClass_O::createUncollectable();
+    classcore__SmallMultimap_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__SmallMultimap_Oval,_lisp,core::SmallMultimap_O::static_classSymbol());
+    reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<core::SmallMultimap_O>::id,core::SmallMultimap_O::static_classSymbol());
+    core::SmallMultimap_O::___staticClass = classcore__SmallMultimap_Oval;
+#ifdef USE_MPS
+    core::SmallMultimap_O::static_Kind = gctools::GCKind<core::SmallMultimap_O>::Kind;
+#endif
+    core::af_setf_findClass(classcore__SmallMultimap_Oval,core::SmallMultimap_O::static_classSymbol(),true,_Nil<core::Environment_O>());
+    {
+        core::LispObjectCreator<core::SmallMultimap_O>* cb = gctools::ClassAllocator<core::LispObjectCreator<core::SmallMultimap_O>>::allocateClass();
+        core::SmallMultimap_O::___set_static_creator(cb);
+    }
+    LOG(BF("Set static_allocator for class(%s) to %X")% core::SmallMultimap_O::static_className() % (void*)(core::SmallMultimap_O::static_allocator) );
+    classcore__SmallMultimap_Oval->setCreator(core::SmallMultimap_O::static_creator);
+    {
+        LOG(BF("Created nil for class[%s]") % core::SmallMultimap_O::static_className() );
+    }
+    /* ----- the class and its nil are now defined and so is classcore__SmallMultimap_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
 
     LOG(BF("Creating class[classcore__SourceFileInfo_Oval]"));
     core::BuiltInClass_sp classcore__SourceFileInfo_Oval = core::BuiltInClass_O::createUncollectable();
@@ -1187,46 +1177,6 @@ core::StandardClass_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StandardCla
     }
     /* ----- the class and its nil are now defined and so is classcore__Stream_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
 
-    LOG(BF("Creating class[classcore__StringList_Oval]"));
-    core::BuiltInClass_sp classcore__StringList_Oval = core::BuiltInClass_O::createUncollectable();
-    classcore__StringList_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__StringList_Oval,_lisp,core::StringList_O::static_classSymbol());
-    reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<core::StringList_O>::id,core::StringList_O::static_classSymbol());
-    core::StringList_O::___staticClass = classcore__StringList_Oval;
-#ifdef USE_MPS
-    core::StringList_O::static_Kind = gctools::GCKind<core::StringList_O>::Kind;
-#endif
-    core::af_setf_findClass(classcore__StringList_Oval,core::StringList_O::static_classSymbol(),true,_Nil<core::Environment_O>());
-    {
-        core::LispObjectCreator<core::StringList_O>* cb = gctools::ClassAllocator<core::LispObjectCreator<core::StringList_O>>::allocateClass();
-        core::StringList_O::___set_static_creator(cb);
-    }
-    LOG(BF("Set static_allocator for class(%s) to %X")% core::StringList_O::static_className() % (void*)(core::StringList_O::static_allocator) );
-    classcore__StringList_Oval->setCreator(core::StringList_O::static_creator);
-    {
-        LOG(BF("Created nil for class[%s]") % core::StringList_O::static_className() );
-    }
-    /* ----- the class and its nil are now defined and so is classcore__StringList_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
-
-    LOG(BF("Creating class[classcore__StringSet_Oval]"));
-    core::BuiltInClass_sp classcore__StringSet_Oval = core::BuiltInClass_O::createUncollectable();
-    classcore__StringSet_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__StringSet_Oval,_lisp,core::StringSet_O::static_classSymbol());
-    reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<core::StringSet_O>::id,core::StringSet_O::static_classSymbol());
-    core::StringSet_O::___staticClass = classcore__StringSet_Oval;
-#ifdef USE_MPS
-    core::StringSet_O::static_Kind = gctools::GCKind<core::StringSet_O>::Kind;
-#endif
-    core::af_setf_findClass(classcore__StringSet_Oval,core::StringSet_O::static_classSymbol(),true,_Nil<core::Environment_O>());
-    {
-        core::LispObjectCreator<core::StringSet_O>* cb = gctools::ClassAllocator<core::LispObjectCreator<core::StringSet_O>>::allocateClass();
-        core::StringSet_O::___set_static_creator(cb);
-    }
-    LOG(BF("Set static_allocator for class(%s) to %X")% core::StringSet_O::static_className() % (void*)(core::StringSet_O::static_allocator) );
-    classcore__StringSet_Oval->setCreator(core::StringSet_O::static_creator);
-    {
-        LOG(BF("Created nil for class[%s]") % core::StringSet_O::static_className() );
-    }
-    /* ----- the class and its nil are now defined and so is classcore__StringSet_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
-
     LOG(BF("Creating class[classcore__StructureObject_Oval]"));
     StructureClass_sp classcore__StructureObject_Oval = StructureClass_O::createUncollectable();
     classcore__StructureObject_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__StructureObject_Oval,_lisp,core::StructureObject_O::static_classSymbol());
@@ -1246,46 +1196,6 @@ core::StandardClass_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StandardCla
         LOG(BF("Created nil for class[%s]") % core::StructureObject_O::static_className() );
     }
     /* ----- the class and its nil are now defined and so is classcore__StructureObject_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
-
-    LOG(BF("Creating class[classcore__SymbolList_Oval]"));
-    core::BuiltInClass_sp classcore__SymbolList_Oval = core::BuiltInClass_O::createUncollectable();
-    classcore__SymbolList_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__SymbolList_Oval,_lisp,core::SymbolList_O::static_classSymbol());
-    reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<core::SymbolList_O>::id,core::SymbolList_O::static_classSymbol());
-    core::SymbolList_O::___staticClass = classcore__SymbolList_Oval;
-#ifdef USE_MPS
-    core::SymbolList_O::static_Kind = gctools::GCKind<core::SymbolList_O>::Kind;
-#endif
-    core::af_setf_findClass(classcore__SymbolList_Oval,core::SymbolList_O::static_classSymbol(),true,_Nil<core::Environment_O>());
-    {
-        core::LispObjectCreator<core::SymbolList_O>* cb = gctools::ClassAllocator<core::LispObjectCreator<core::SymbolList_O>>::allocateClass();
-        core::SymbolList_O::___set_static_creator(cb);
-    }
-    LOG(BF("Set static_allocator for class(%s) to %X")% core::SymbolList_O::static_className() % (void*)(core::SymbolList_O::static_allocator) );
-    classcore__SymbolList_Oval->setCreator(core::SymbolList_O::static_creator);
-    {
-        LOG(BF("Created nil for class[%s]") % core::SymbolList_O::static_className() );
-    }
-    /* ----- the class and its nil are now defined and so is classcore__SymbolList_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
-
-    LOG(BF("Creating class[classcore__SymbolSet_Oval]"));
-    core::BuiltInClass_sp classcore__SymbolSet_Oval = core::BuiltInClass_O::createUncollectable();
-    classcore__SymbolSet_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__SymbolSet_Oval,_lisp,core::SymbolSet_O::static_classSymbol());
-    reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<core::SymbolSet_O>::id,core::SymbolSet_O::static_classSymbol());
-    core::SymbolSet_O::___staticClass = classcore__SymbolSet_Oval;
-#ifdef USE_MPS
-    core::SymbolSet_O::static_Kind = gctools::GCKind<core::SymbolSet_O>::Kind;
-#endif
-    core::af_setf_findClass(classcore__SymbolSet_Oval,core::SymbolSet_O::static_classSymbol(),true,_Nil<core::Environment_O>());
-    {
-        core::LispObjectCreator<core::SymbolSet_O>* cb = gctools::ClassAllocator<core::LispObjectCreator<core::SymbolSet_O>>::allocateClass();
-        core::SymbolSet_O::___set_static_creator(cb);
-    }
-    LOG(BF("Set static_allocator for class(%s) to %X")% core::SymbolSet_O::static_className() % (void*)(core::SymbolSet_O::static_allocator) );
-    classcore__SymbolSet_Oval->setCreator(core::SymbolSet_O::static_creator);
-    {
-        LOG(BF("Created nil for class[%s]") % core::SymbolSet_O::static_className() );
-    }
-    /* ----- the class and its nil are now defined and so is classcore__SymbolSet_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
 
     LOG(BF("Creating class[classcore__SymbolToEnumConverter_Oval]"));
     core::BuiltInClass_sp classcore__SymbolToEnumConverter_Oval = core::BuiltInClass_O::createUncollectable();
@@ -2587,6 +2497,26 @@ core::StandardClass_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StandardCla
     }
     /* ----- the class and its nil are now defined and so is classcore__Integer_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
 
+    LOG(BF("Creating class[classcore__LongFloat_Oval]"));
+    core::BuiltInClass_sp classcore__LongFloat_Oval = core::BuiltInClass_O::createUncollectable();
+    classcore__LongFloat_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__LongFloat_Oval,_lisp,core::LongFloat_O::static_classSymbol());
+    reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<core::LongFloat_O>::id,core::LongFloat_O::static_classSymbol());
+    core::LongFloat_O::___staticClass = classcore__LongFloat_Oval;
+#ifdef USE_MPS
+    core::LongFloat_O::static_Kind = gctools::GCKind<core::LongFloat_O>::Kind;
+#endif
+    core::af_setf_findClass(classcore__LongFloat_Oval,core::LongFloat_O::static_classSymbol(),true,_Nil<core::Environment_O>());
+    {
+        core::LispObjectCreator<core::LongFloat_O>* cb = gctools::ClassAllocator<core::LispObjectCreator<core::LongFloat_O>>::allocateClass();
+        core::LongFloat_O::___set_static_creator(cb);
+    }
+    LOG(BF("Set static_allocator for class(%s) to %X")% core::LongFloat_O::static_className() % (void*)(core::LongFloat_O::static_allocator) );
+    classcore__LongFloat_Oval->setCreator(core::LongFloat_O::static_creator);
+    {
+        LOG(BF("Created nil for class[%s]") % core::LongFloat_O::static_className() );
+    }
+    /* ----- the class and its nil are now defined and so is classcore__LongFloat_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
+
     LOG(BF("Creating class[classcore__MacroletEnvironment_Oval]"));
     core::BuiltInClass_sp classcore__MacroletEnvironment_Oval = core::BuiltInClass_O::createUncollectable();
     classcore__MacroletEnvironment_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__MacroletEnvironment_Oval,_lisp,core::MacroletEnvironment_O::static_classSymbol());
@@ -3114,12 +3044,6 @@ core::StandardClass_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StandardCla
     LOG(BF("---    dump_info   --- className: core::Number_O @ %X") % classcore__Number_Oval.get());
     LOG(BF("%s::static_classSymbol() = %d") % core::Number_O::static_className() % core::Number_O::static_classSymbol() );
 
-    LOG(BF("---    dump_info   --- className: core::ObjRef_O @ %X") % classcore__ObjRef_Oval.get());
-    LOG(BF("%s::static_classSymbol() = %d") % core::ObjRef_O::static_className() % core::ObjRef_O::static_classSymbol() );
-
-    LOG(BF("---    dump_info   --- className: core::ObjectSet_O @ %X") % classcore__ObjectSet_Oval.get());
-    LOG(BF("%s::static_classSymbol() = %d") % core::ObjectSet_O::static_className() % core::ObjectSet_O::static_classSymbol() );
-
     LOG(BF("---    dump_info   --- className: core::Package_O @ %X") % classcore__Package_Oval.get());
     LOG(BF("%s::static_classSymbol() = %d") % core::Package_O::static_className() % core::Package_O::static_classSymbol() );
 
@@ -3144,6 +3068,9 @@ core::StandardClass_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StandardCla
     LOG(BF("---    dump_info   --- className: core::Reader_O @ %X") % classcore__Reader_Oval.get());
     LOG(BF("%s::static_classSymbol() = %d") % core::Reader_O::static_className() % core::Reader_O::static_classSymbol() );
 
+    LOG(BF("---    dump_info   --- className: core::Record_O @ %X") % classcore__Record_Oval.get());
+    LOG(BF("%s::static_classSymbol() = %d") % core::Record_O::static_className() % core::Record_O::static_classSymbol() );
+
     LOG(BF("---    dump_info   --- className: core::RegexMatch_O @ %X") % classcore__RegexMatch_Oval.get());
     LOG(BF("%s::static_classSymbol() = %d") % core::RegexMatch_O::static_className() % core::RegexMatch_O::static_classSymbol() );
 
@@ -3158,6 +3085,9 @@ core::StandardClass_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StandardCla
 
     LOG(BF("---    dump_info   --- className: core::SmallMap_O @ %X") % classcore__SmallMap_Oval.get());
     LOG(BF("%s::static_classSymbol() = %d") % core::SmallMap_O::static_className() % core::SmallMap_O::static_classSymbol() );
+
+    LOG(BF("---    dump_info   --- className: core::SmallMultimap_O @ %X") % classcore__SmallMultimap_Oval.get());
+    LOG(BF("%s::static_classSymbol() = %d") % core::SmallMultimap_O::static_className() % core::SmallMultimap_O::static_classSymbol() );
 
     LOG(BF("---    dump_info   --- className: core::SourceFileInfo_O @ %X") % classcore__SourceFileInfo_Oval.get());
     LOG(BF("%s::static_classSymbol() = %d") % core::SourceFileInfo_O::static_className() % core::SourceFileInfo_O::static_classSymbol() );
@@ -3174,20 +3104,8 @@ core::StandardClass_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StandardCla
     LOG(BF("---    dump_info   --- className: core::Stream_O @ %X") % classcore__Stream_Oval.get());
     LOG(BF("%s::static_classSymbol() = %d") % core::Stream_O::static_className() % core::Stream_O::static_classSymbol() );
 
-    LOG(BF("---    dump_info   --- className: core::StringList_O @ %X") % classcore__StringList_Oval.get());
-    LOG(BF("%s::static_classSymbol() = %d") % core::StringList_O::static_className() % core::StringList_O::static_classSymbol() );
-
-    LOG(BF("---    dump_info   --- className: core::StringSet_O @ %X") % classcore__StringSet_Oval.get());
-    LOG(BF("%s::static_classSymbol() = %d") % core::StringSet_O::static_className() % core::StringSet_O::static_classSymbol() );
-
     LOG(BF("---    dump_info   --- className: core::StructureObject_O @ %X") % classcore__StructureObject_Oval.get());
     LOG(BF("%s::static_classSymbol() = %d") % core::StructureObject_O::static_className() % core::StructureObject_O::static_classSymbol() );
-
-    LOG(BF("---    dump_info   --- className: core::SymbolList_O @ %X") % classcore__SymbolList_Oval.get());
-    LOG(BF("%s::static_classSymbol() = %d") % core::SymbolList_O::static_className() % core::SymbolList_O::static_classSymbol() );
-
-    LOG(BF("---    dump_info   --- className: core::SymbolSet_O @ %X") % classcore__SymbolSet_Oval.get());
-    LOG(BF("%s::static_classSymbol() = %d") % core::SymbolSet_O::static_className() % core::SymbolSet_O::static_classSymbol() );
 
     LOG(BF("---    dump_info   --- className: core::SymbolToEnumConverter_O @ %X") % classcore__SymbolToEnumConverter_Oval.get());
     LOG(BF("%s::static_classSymbol() = %d") % core::SymbolToEnumConverter_O::static_className() % core::SymbolToEnumConverter_O::static_classSymbol() );
@@ -3384,6 +3302,9 @@ core::StandardClass_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::StandardCla
     LOG(BF("---    dump_info   --- className: core::Integer_O @ %X") % classcore__Integer_Oval.get());
     LOG(BF("%s::static_classSymbol() = %d") % core::Integer_O::static_className() % core::Integer_O::static_classSymbol() );
 
+    LOG(BF("---    dump_info   --- className: core::LongFloat_O @ %X") % classcore__LongFloat_Oval.get());
+    LOG(BF("%s::static_classSymbol() = %d") % core::LongFloat_O::static_className() % core::LongFloat_O::static_classSymbol() );
+
     LOG(BF("---    dump_info   --- className: core::MacroletEnvironment_O @ %X") % classcore__MacroletEnvironment_Oval.get());
     LOG(BF("%s::static_classSymbol() = %d") % core::MacroletEnvironment_O::static_className() % core::MacroletEnvironment_O::static_classSymbol() );
 
@@ -3476,8 +3397,6 @@ classcore__LoadTimeValues_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenc
 classcore__MicroHeap_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__MultiStringBuffer_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__Number_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
-classcore__ObjRef_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
-classcore__ObjectSet_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__Package_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__Path_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__Pathname_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
@@ -3486,21 +3405,19 @@ classcore__PosixTimeDuration_Oval->addInstanceBaseClassDoNotCalculateClassPreced
 classcore__PosixTime_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__ReadTable_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__Reader_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
+classcore__Record_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__RegexMatch_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__Regex_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__SNode_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__SingleDispatchMethod_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__SmallMap_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
+classcore__SmallMultimap_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__SourceFileInfo_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__SourceManager_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__SourcePosInfo_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__StandardObject_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__Stream_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
-classcore__StringList_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
-classcore__StringSet_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__StructureObject_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
-classcore__SymbolList_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
-classcore__SymbolSet_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__SymbolToEnumConverter_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__Symbol_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
 classcore__WeakHashTable_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::T_O::static_classSymbol());
@@ -3566,6 +3483,7 @@ classcore__FunctionValueEnvironment_Oval->addInstanceBaseClassDoNotCalculateClas
 classcore__IOFileStream_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::FileStream_O::static_classSymbol());
 classcore__IOStreamStream_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::FileStream_O::static_classSymbol());
 classcore__Integer_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::Rational_O::static_classSymbol());
+classcore__LongFloat_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::Float_O::static_classSymbol());
 classcore__MacroletEnvironment_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::CompileTimeEnvironment_O::static_classSymbol());
 classcore__Ratio_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::Rational_O::static_classSymbol());
 classcore__ShortFloat_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::Float_O::static_classSymbol());
@@ -3636,10 +3554,6 @@ classcore__StandardClass_Oval->addInstanceBaseClassDoNotCalculateClassPrecedence
 
     classcore__Number_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::Number_O::static_classSymbol());
 
-    classcore__ObjRef_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::ObjRef_O::static_classSymbol());
-
-    classcore__ObjectSet_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::ObjectSet_O::static_classSymbol());
-
     classcore__Package_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::Package_O::static_classSymbol());
 
     classcore__Path_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::Path_O::static_classSymbol());
@@ -3656,6 +3570,8 @@ classcore__StandardClass_Oval->addInstanceBaseClassDoNotCalculateClassPrecedence
 
     classcore__Reader_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::Reader_O::static_classSymbol());
 
+    classcore__Record_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::Record_O::static_classSymbol());
+
     classcore__RegexMatch_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::RegexMatch_O::static_classSymbol());
 
     classcore__Regex_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::Regex_O::static_classSymbol());
@@ -3665,6 +3581,8 @@ classcore__StandardClass_Oval->addInstanceBaseClassDoNotCalculateClassPrecedence
     classcore__SingleDispatchMethod_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::SingleDispatchMethod_O::static_classSymbol());
 
     classcore__SmallMap_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::SmallMap_O::static_classSymbol());
+
+    classcore__SmallMultimap_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::SmallMultimap_O::static_classSymbol());
 
     classcore__SourceFileInfo_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::SourceFileInfo_O::static_classSymbol());
 
@@ -3676,15 +3594,7 @@ classcore__StandardClass_Oval->addInstanceBaseClassDoNotCalculateClassPrecedence
 
     classcore__Stream_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::Stream_O::static_classSymbol());
 
-    classcore__StringList_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::StringList_O::static_classSymbol());
-
-    classcore__StringSet_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::StringSet_O::static_classSymbol());
-
     classcore__StructureObject_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::StructureObject_O::static_classSymbol());
-
-    classcore__SymbolList_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::SymbolList_O::static_classSymbol());
-
-    classcore__SymbolSet_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::SymbolSet_O::static_classSymbol());
 
     classcore__SymbolToEnumConverter_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::SymbolToEnumConverter_O::static_classSymbol());
 
@@ -3815,6 +3725,8 @@ classcore__StandardClass_Oval->addInstanceBaseClassDoNotCalculateClassPrecedence
     classcore__IOStreamStream_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::IOStreamStream_O::static_classSymbol());
 
     classcore__Integer_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::Integer_O::static_classSymbol());
+
+    classcore__LongFloat_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::LongFloat_O::static_classSymbol());
 
     classcore__MacroletEnvironment_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::MacroletEnvironment_O::static_classSymbol());
 
@@ -4074,26 +3986,6 @@ extern void Register_core__Number_O(core::Lisp_sp); // base(s): set(['core::T_O'
 }
 #endif // INVOKE_REGISTER
 #endif // ifdef Use_ClPkg
-#ifdef Use_CorePkg
-#ifdef EXTERN_REGISTER
-extern void Register_core__ObjRef_O(core::Lisp_sp); // base(s): set(['core::T_O'])
-#endif // EXTERN_REGISTER
-#ifdef INVOKE_REGISTER
-{_BLOCK_TRACE("initializing Register_core__ObjRef_O");
-    core::Register_core__ObjRef_O(_lisp); // base(s): set(['core::T_O'])
-}
-#endif // INVOKE_REGISTER
-#endif // ifdef Use_CorePkg
-#ifdef Use_CorePkg
-#ifdef EXTERN_REGISTER
-extern void Register_core__ObjectSet_O(core::Lisp_sp); // base(s): set(['core::T_O'])
-#endif // EXTERN_REGISTER
-#ifdef INVOKE_REGISTER
-{_BLOCK_TRACE("initializing Register_core__ObjectSet_O");
-    core::Register_core__ObjectSet_O(_lisp); // base(s): set(['core::T_O'])
-}
-#endif // INVOKE_REGISTER
-#endif // ifdef Use_CorePkg
 #ifdef Use_ClPkg
 #ifdef EXTERN_REGISTER
 extern void Register_core__Package_O(core::Lisp_sp); // base(s): set(['core::T_O'])
@@ -4176,6 +4068,16 @@ extern void Register_core__Reader_O(core::Lisp_sp); // base(s): set(['core::T_O'
 #endif // ifdef Use_CorePkg
 #ifdef Use_CorePkg
 #ifdef EXTERN_REGISTER
+extern void Register_core__Record_O(core::Lisp_sp); // base(s): set(['core::T_O'])
+#endif // EXTERN_REGISTER
+#ifdef INVOKE_REGISTER
+{_BLOCK_TRACE("initializing Register_core__Record_O");
+    core::Register_core__Record_O(_lisp); // base(s): set(['core::T_O'])
+}
+#endif // INVOKE_REGISTER
+#endif // ifdef Use_CorePkg
+#ifdef Use_CorePkg
+#ifdef EXTERN_REGISTER
 extern void Register_core__RegexMatch_O(core::Lisp_sp); // base(s): set(['core::T_O'])
 #endif // EXTERN_REGISTER
 #ifdef INVOKE_REGISTER
@@ -4221,6 +4123,16 @@ extern void Register_core__SmallMap_O(core::Lisp_sp); // base(s): set(['core::T_
 #ifdef INVOKE_REGISTER
 {_BLOCK_TRACE("initializing Register_core__SmallMap_O");
     core::Register_core__SmallMap_O(_lisp); // base(s): set(['core::T_O'])
+}
+#endif // INVOKE_REGISTER
+#endif // ifdef Use_CorePkg
+#ifdef Use_CorePkg
+#ifdef EXTERN_REGISTER
+extern void Register_core__SmallMultimap_O(core::Lisp_sp); // base(s): set(['core::T_O'])
+#endif // EXTERN_REGISTER
+#ifdef INVOKE_REGISTER
+{_BLOCK_TRACE("initializing Register_core__SmallMultimap_O");
+    core::Register_core__SmallMultimap_O(_lisp); // base(s): set(['core::T_O'])
 }
 #endif // INVOKE_REGISTER
 #endif // ifdef Use_CorePkg
@@ -4274,26 +4186,6 @@ extern void Register_core__Stream_O(core::Lisp_sp); // base(s): set(['core::T_O'
 }
 #endif // INVOKE_REGISTER
 #endif // ifdef Use_ClPkg
-#ifdef Use_CorePkg
-#ifdef EXTERN_REGISTER
-extern void Register_core__StringList_O(core::Lisp_sp); // base(s): set(['core::T_O'])
-#endif // EXTERN_REGISTER
-#ifdef INVOKE_REGISTER
-{_BLOCK_TRACE("initializing Register_core__StringList_O");
-    core::Register_core__StringList_O(_lisp); // base(s): set(['core::T_O'])
-}
-#endif // INVOKE_REGISTER
-#endif // ifdef Use_CorePkg
-#ifdef Use_CorePkg
-#ifdef EXTERN_REGISTER
-extern void Register_core__StringSet_O(core::Lisp_sp); // base(s): set(['core::T_O'])
-#endif // EXTERN_REGISTER
-#ifdef INVOKE_REGISTER
-{_BLOCK_TRACE("initializing Register_core__StringSet_O");
-    core::Register_core__StringSet_O(_lisp); // base(s): set(['core::T_O'])
-}
-#endif // INVOKE_REGISTER
-#endif // ifdef Use_CorePkg
 #ifdef Use_ClPkg
 #ifdef EXTERN_REGISTER
 extern void Register_core__StructureObject_O(core::Lisp_sp); // base(s): set(['core::T_O'])
@@ -4304,26 +4196,6 @@ extern void Register_core__StructureObject_O(core::Lisp_sp); // base(s): set(['c
 }
 #endif // INVOKE_REGISTER
 #endif // ifdef Use_ClPkg
-#ifdef Use_CorePkg
-#ifdef EXTERN_REGISTER
-extern void Register_core__SymbolList_O(core::Lisp_sp); // base(s): set(['core::T_O'])
-#endif // EXTERN_REGISTER
-#ifdef INVOKE_REGISTER
-{_BLOCK_TRACE("initializing Register_core__SymbolList_O");
-    core::Register_core__SymbolList_O(_lisp); // base(s): set(['core::T_O'])
-}
-#endif // INVOKE_REGISTER
-#endif // ifdef Use_CorePkg
-#ifdef Use_CorePkg
-#ifdef EXTERN_REGISTER
-extern void Register_core__SymbolSet_O(core::Lisp_sp); // base(s): set(['core::T_O'])
-#endif // EXTERN_REGISTER
-#ifdef INVOKE_REGISTER
-{_BLOCK_TRACE("initializing Register_core__SymbolSet_O");
-    core::Register_core__SymbolSet_O(_lisp); // base(s): set(['core::T_O'])
-}
-#endif // INVOKE_REGISTER
-#endif // ifdef Use_CorePkg
 #ifdef Use_CorePkg
 #ifdef EXTERN_REGISTER
 extern void Register_core__SymbolToEnumConverter_O(core::Lisp_sp); // base(s): set(['core::T_O'])
@@ -4974,6 +4846,16 @@ extern void Register_core__Integer_O(core::Lisp_sp); // base(s): set(['core::Rat
 }
 #endif // INVOKE_REGISTER
 #endif // ifdef Use_ClPkg
+#ifdef Use_ClPkg
+#ifdef EXTERN_REGISTER
+extern void Register_core__LongFloat_O(core::Lisp_sp); // base(s): set(['core::Float_O'])
+#endif // EXTERN_REGISTER
+#ifdef INVOKE_REGISTER
+{_BLOCK_TRACE("initializing Register_core__LongFloat_O");
+    core::Register_core__LongFloat_O(_lisp); // base(s): set(['core::Float_O'])
+}
+#endif // INVOKE_REGISTER
+#endif // ifdef Use_ClPkg
 #ifdef Use_CorePkg
 #ifdef EXTERN_REGISTER
 extern void Register_core__MacroletEnvironment_O(core::Lisp_sp); // base(s): set(['core::CompileTimeEnvironment_O'])
@@ -5333,18 +5215,6 @@ extern void Call_exposePython_core__Number_O(::core::Lisp_sp lisp);
 	Call_exposePython_core__Number_O(_lisp); // base(s): set(['core::T_O'])
 }
 #endif // ifdef Use_ClPkg
-#ifdef Use_CorePkg
-extern void Call_exposePython_core__ObjRef_O(::core::Lisp_sp lisp);
-{_DBG("exposing to python: core__ObjRef_O");
-	Call_exposePython_core__ObjRef_O(_lisp); // base(s): set(['core::T_O'])
-}
-#endif // ifdef Use_CorePkg
-#ifdef Use_CorePkg
-extern void Call_exposePython_core__ObjectSet_O(::core::Lisp_sp lisp);
-{_DBG("exposing to python: core__ObjectSet_O");
-	Call_exposePython_core__ObjectSet_O(_lisp); // base(s): set(['core::T_O'])
-}
-#endif // ifdef Use_CorePkg
 #ifdef Use_ClPkg
 extern void Call_exposePython_core__Package_O(::core::Lisp_sp lisp);
 {_DBG("exposing to python: core__Package_O");
@@ -5394,6 +5264,12 @@ extern void Call_exposePython_core__Reader_O(::core::Lisp_sp lisp);
 }
 #endif // ifdef Use_CorePkg
 #ifdef Use_CorePkg
+extern void Call_exposePython_core__Record_O(::core::Lisp_sp lisp);
+{_DBG("exposing to python: core__Record_O");
+	Call_exposePython_core__Record_O(_lisp); // base(s): set(['core::T_O'])
+}
+#endif // ifdef Use_CorePkg
+#ifdef Use_CorePkg
 extern void Call_exposePython_core__RegexMatch_O(::core::Lisp_sp lisp);
 {_DBG("exposing to python: core__RegexMatch_O");
 	Call_exposePython_core__RegexMatch_O(_lisp); // base(s): set(['core::T_O'])
@@ -5421,6 +5297,12 @@ extern void Call_exposePython_core__SingleDispatchMethod_O(::core::Lisp_sp lisp)
 extern void Call_exposePython_core__SmallMap_O(::core::Lisp_sp lisp);
 {_DBG("exposing to python: core__SmallMap_O");
 	Call_exposePython_core__SmallMap_O(_lisp); // base(s): set(['core::T_O'])
+}
+#endif // ifdef Use_CorePkg
+#ifdef Use_CorePkg
+extern void Call_exposePython_core__SmallMultimap_O(::core::Lisp_sp lisp);
+{_DBG("exposing to python: core__SmallMultimap_O");
+	Call_exposePython_core__SmallMultimap_O(_lisp); // base(s): set(['core::T_O'])
 }
 #endif // ifdef Use_CorePkg
 #ifdef Use_CorePkg
@@ -5453,36 +5335,12 @@ extern void Call_exposePython_core__Stream_O(::core::Lisp_sp lisp);
 	Call_exposePython_core__Stream_O(_lisp); // base(s): set(['core::T_O'])
 }
 #endif // ifdef Use_ClPkg
-#ifdef Use_CorePkg
-extern void Call_exposePython_core__StringList_O(::core::Lisp_sp lisp);
-{_DBG("exposing to python: core__StringList_O");
-	Call_exposePython_core__StringList_O(_lisp); // base(s): set(['core::T_O'])
-}
-#endif // ifdef Use_CorePkg
-#ifdef Use_CorePkg
-extern void Call_exposePython_core__StringSet_O(::core::Lisp_sp lisp);
-{_DBG("exposing to python: core__StringSet_O");
-	Call_exposePython_core__StringSet_O(_lisp); // base(s): set(['core::T_O'])
-}
-#endif // ifdef Use_CorePkg
 #ifdef Use_ClPkg
 extern void Call_exposePython_core__StructureObject_O(::core::Lisp_sp lisp);
 {_DBG("exposing to python: core__StructureObject_O");
 	Call_exposePython_core__StructureObject_O(_lisp); // base(s): set(['core::T_O'])
 }
 #endif // ifdef Use_ClPkg
-#ifdef Use_CorePkg
-extern void Call_exposePython_core__SymbolList_O(::core::Lisp_sp lisp);
-{_DBG("exposing to python: core__SymbolList_O");
-	Call_exposePython_core__SymbolList_O(_lisp); // base(s): set(['core::T_O'])
-}
-#endif // ifdef Use_CorePkg
-#ifdef Use_CorePkg
-extern void Call_exposePython_core__SymbolSet_O(::core::Lisp_sp lisp);
-{_DBG("exposing to python: core__SymbolSet_O");
-	Call_exposePython_core__SymbolSet_O(_lisp); // base(s): set(['core::T_O'])
-}
-#endif // ifdef Use_CorePkg
 #ifdef Use_CorePkg
 extern void Call_exposePython_core__SymbolToEnumConverter_O(::core::Lisp_sp lisp);
 {_DBG("exposing to python: core__SymbolToEnumConverter_O");
@@ -5873,6 +5731,12 @@ extern void Call_exposePython_core__Integer_O(::core::Lisp_sp lisp);
 	Call_exposePython_core__Integer_O(_lisp); // base(s): set(['core::Rational_O'])
 }
 #endif // ifdef Use_ClPkg
+#ifdef Use_ClPkg
+extern void Call_exposePython_core__LongFloat_O(::core::Lisp_sp lisp);
+{_DBG("exposing to python: core__LongFloat_O");
+	Call_exposePython_core__LongFloat_O(_lisp); // base(s): set(['core::Float_O'])
+}
+#endif // ifdef Use_ClPkg
 #ifdef Use_CorePkg
 extern void Call_exposePython_core__MacroletEnvironment_O(::core::Lisp_sp lisp);
 {_DBG("exposing to python: core__MacroletEnvironment_O");
@@ -6035,8 +5899,6 @@ _CLASS_MACRO(core::LoadTimeValues_O)
 _CLASS_MACRO(core::MicroHeap_O)
 _CLASS_MACRO(core::MultiStringBuffer_O)
 _CLASS_MACRO(core::Number_O)
-_CLASS_MACRO(core::ObjRef_O)
-_CLASS_MACRO(core::ObjectSet_O)
 _CLASS_MACRO(core::Package_O)
 _CLASS_MACRO(core::Path_O)
 _CLASS_MACRO(core::Pathname_O)
@@ -6045,21 +5907,19 @@ _CLASS_MACRO(core::PosixTimeDuration_O)
 _CLASS_MACRO(core::PosixTime_O)
 _CLASS_MACRO(core::ReadTable_O)
 _CLASS_MACRO(core::Reader_O)
+_CLASS_MACRO(core::Record_O)
 _CLASS_MACRO(core::RegexMatch_O)
 _CLASS_MACRO(core::Regex_O)
 _CLASS_MACRO(core::SNode_O)
 _CLASS_MACRO(core::SingleDispatchMethod_O)
 _CLASS_MACRO(core::SmallMap_O)
+_CLASS_MACRO(core::SmallMultimap_O)
 _CLASS_MACRO(core::SourceFileInfo_O)
 _CLASS_MACRO(core::SourceManager_O)
 _CLASS_MACRO(core::SourcePosInfo_O)
 _CLASS_MACRO(core::StandardObject_O)
 _CLASS_MACRO(core::Stream_O)
-_CLASS_MACRO(core::StringList_O)
-_CLASS_MACRO(core::StringSet_O)
 _CLASS_MACRO(core::StructureObject_O)
-_CLASS_MACRO(core::SymbolList_O)
-_CLASS_MACRO(core::SymbolSet_O)
 _CLASS_MACRO(core::SymbolToEnumConverter_O)
 _CLASS_MACRO(core::Symbol_O)
 _CLASS_MACRO(core::WeakHashTable_O)
@@ -6125,6 +5985,7 @@ _CLASS_MACRO(core::FunctionValueEnvironment_O)
 _CLASS_MACRO(core::IOFileStream_O)
 _CLASS_MACRO(core::IOStreamStream_O)
 _CLASS_MACRO(core::Integer_O)
+_CLASS_MACRO(core::LongFloat_O)
 _CLASS_MACRO(core::MacroletEnvironment_O)
 _CLASS_MACRO(core::Ratio_O)
 _CLASS_MACRO(core::ShortFloat_O)

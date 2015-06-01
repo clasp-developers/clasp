@@ -142,10 +142,10 @@ void seedRandomNumberGeneratorsUsingTime() {
   seedRandomNumberGenerators(tt);
 }
 
-#define ARGS_af_random "(olimit &optional random-state)"
-#define DECL_af_random ""
-#define DOCS_af_random "random"
-T_sp af_random(T_sp olimit, T_sp random_state) {
+#define ARGS_cl_random "(olimit &optional the-random-state)"
+#define DECL_cl_random ""
+#define DOCS_cl_random "random"
+T_sp cl_random(T_sp olimit, T_sp random_state) {
   _G();
   if (random_state.notnilp()) {
     SIMPLE_ERROR(BF("Support random-state in random"));
@@ -1316,7 +1316,7 @@ void exposeCando_Numerics() {
   LOG(BF("Initializing numerics random"));
   af_def(CorePkg, "seedRandomNumberGenerators", &seedRandomNumberGenerators);
   af_def(CorePkg, "seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
-  Defun(random);
+  ClDefun(random);
   af_def(CorePkg, "randomNumber01", &randomNumber01);
   af_def(CorePkg, "randomNumberNormal01", &randomNumberNormal01);
   SYMBOL_EXPORT_SC_(ClPkg, getUniversalTime);
@@ -1354,23 +1354,32 @@ void exposeCando_Numerics() {
   cl::_sym_leastPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
   cl::_sym_leastNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
 
+  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveLongFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeLongFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, mostPositiveLongFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, mostNegativeLongFloat);
+  cl::_sym_mostPositiveLongFloat->defconstant(DoubleFloat_O::create(DBL_MAX));
+  cl::_sym_mostNegativeLongFloat->defconstant(DoubleFloat_O::create(-DBL_MAX));
+  cl::_sym_leastPositiveLongFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
+  cl::_sym_leastNegativeLongFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
+
   SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedSingleFloat);
   SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedShortFloat);
   SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedDoubleFloat);
-  // SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedLongFloat);
+  SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedLongFloat);
   cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastNegativeNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
-  // cl::_sym_leastNegativeNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
+  cl::_sym_leastNegativeNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
 
   SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedSingleFloat);
   SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedShortFloat);
   SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedDoubleFloat);
-  // SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedLongFloat);
+  SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedLongFloat);
   cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastPositiveNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
-  // cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
+  cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
 
   SYMBOL_EXPORT_SC_(ClPkg, pi);
   cl::_sym_pi->defconstant(DoubleFloat_O::create(3.14159265358979323846264338));

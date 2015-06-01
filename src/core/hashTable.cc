@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include <clasp/core/serialize.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/designators.h>
+#include <clasp/core/weakHashTable.h>
 #include <clasp/core/wrappers.h>
 namespace core {
 
@@ -86,12 +87,18 @@ struct HashTableLocker {
 
 EXPOSE_CLASS(core, HashTable_O);
 
-#define LOCK_af_make_hash_table 1
-#define DOCS_af_make_hash_table "see CLHS"
-#define ARGS_af_make_hash_table "(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0))"
-#define DECL_af_make_hash_table ""
-HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold) {
-  _G();
+#define LOCK_cl_make_hash_table 1
+#define DOCS_cl_make_hash_table "see CLHS"
+#define ARGS_cl_make_hash_table "(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0) weakness)"
+#define DECL_cl_make_hash_table ""
+T_mv cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold, Symbol_sp weakness) {
+  SYMBOL_EXPORT_SC_(KeywordPkg,key);
+  if ( weakness.notnilp() ) {
+    if ( weakness == INTERN_(kw,key) ) {
+      return Values(core_makeWeakKeyHashTable(clasp_make_fixnum(size)));
+    }
+    SIMPLE_ERROR(BF("Only :weakness :key (weak-key hash tables) are currently supported"));
+  }
 #ifdef DEBUG_HASH_TABLE
   printf("%s:%d make_hash_table WARNING DEBUG_HASH_TABLE is on\n", __FILE__, __LINE__);
 #endif
@@ -113,12 +120,24 @@ HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size
   return (Values(table));
 }
 
+#define ARGS_core_hash_table_weakness "(ht)"
+#define DECL_core_hash_table_weakness ""
+#define DOCS_core_hash_table_weakness "hash_table_weakness"
+Symbol_sp core_hash_table_weakness(T_sp ht)
+{
+  if ( WeakKeyHashTable_sp wkht = ht.asOrNull<WeakKeyHashTable_O>() ) {
+    (void)wkht;
+    return kw::_sym_key;
+  }
+  return _Nil<Symbol_O>();
+}
+
 HashTable_sp HashTable_O::create(T_sp test) {
   _G();
   Fixnum_sp size = make_fixnum(16);
   DoubleFloat_sp rehashSize = DoubleFloat_O::create(2.0);
   DoubleFloat_sp rehashThreshold = DoubleFloat_O::create(0.9);
-  HashTable_sp ht = af_make_hash_table(test, size, rehashSize, rehashThreshold);
+  HashTable_sp ht = cl_make_hash_table(test, size, rehashSize, rehashThreshold);
   return ht;
 }
 
@@ -356,8 +375,10 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
       }
       return;
     } else if (Array_sp aobj = obj.asOrNull<Array_O>()) {
+      (void)aobj; // silence warning
       IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for Arrays"));
     } else if (HashTable_sp hobj = obj.asOrNull<HashTable_O>()) {
+      (void)hobj; // silence warning
       IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for HashTables"));
     }
   } else {
@@ -373,6 +394,16 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
 bool HashTable_O::equalp(T_sp other) const {
   IMPLEMENT_MEF(BF("Implement HashTable_O::equalp"));
 }
+
+
+List_sp HashTable_O::keysAsCons() {
+  List_sp res = _Nil<T_O>();
+  this->mapHash([&res](T_sp key, T_sp val) {
+      res = Cons_O::create(key,res);
+    });
+  return res;
+}
+
 
 #if 0
     void HashTable_O::serialize(::serialize::SNodeP node)
@@ -756,7 +787,7 @@ void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const &fn) {
   }
 }
 
-void HashTable_O::terminatingMapHash(std::function<bool(T_sp, T_sp)> const &fn) {
+void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) {
   //        HASH_TABLE_LOCK();
   VectorObjects_sp table = this->_HashTable;
   for (size_t it(0), itEnd(cl_length(table)); it < itEnd; ++it) {
@@ -812,11 +843,15 @@ List_sp HashTable_O::hashTableAlistAtHash(int hash) const {
 
 string HashTable_O::keysAsString() {
   stringstream ss;
-  this->maphash([&ss, this](T_sp key, T_sp val) {
+  this->mapHash([&ss, this](T_sp key, T_sp val) {
                 ss << _rep_(key) << " ";
   });
   return ss.str();
 }
+
+
+  
+
 
 void HashTable_O::exposeCando(::core::Lisp_sp lisp) {
   _G();
@@ -835,7 +870,7 @@ void HashTable_O::exposeCando(::core::Lisp_sp lisp) {
       .def("core:hashTableSetfGethash", &HashTable_O::hash_table_setf_gethash)
       .def("core:hashTableDump", &HashTable_O::hash_table_dump);
   SYMBOL_EXPORT_SC_(ClPkg, make_hash_table);
-  Defun(make_hash_table);
+  ClDefun(make_hash_table);
   SYMBOL_EXPORT_SC_(ClPkg, maphash);
   Defun(maphash);
   SYMBOL_EXPORT_SC_(ClPkg, clrhash);

@@ -141,7 +141,7 @@ GCPRIVATE:
   boost_filesystem::directory_iterator _EndIterator;
 
 public:
-  DirectoryIterator_sp create(Path_sp path, Lisp_sp lisp);
+  DirectoryIterator_sp create(Path_sp path);
 
 private:
   void setupCurrentIterator();
@@ -174,7 +174,7 @@ GCPRIVATE:
   boost_filesystem::recursive_directory_iterator _EndIterator;
 
 public:
-  RecursiveDirectoryIterator_sp create(Path_sp path, Lisp_sp lisp);
+  RecursiveDirectoryIterator_sp create(Path_sp path);
 
 private:
   void setupCurrentIterator();

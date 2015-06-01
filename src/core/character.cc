@@ -90,6 +90,18 @@ T_sp monotonic(int s, int t, List_sp args, bool preserve_case = true) {
   return _lisp->_true();
 };
 
+#define ARGS_cl_alphanumericp "(char)"
+#define DECL_cl_alphanumericp ""
+#define DOCS_cl_alphanumericp "alphanumericp"
+bool cl_alphanumericp(Character_sp ch) {
+  claspCharacter x = clasp_char_code(ch);
+  if ( x < 128 ) {
+    return isalpha(x) || isdigit(x);
+  }
+  return false;
+};
+
+
 #define ARGS_af_charUpcase "(char)"
 #define DECL_af_charUpcase ""
 #define DOCS_af_charUpcase "charUpcase"
@@ -598,6 +610,7 @@ EXPOSE_CLASS(core, Character_dummy_O);
 void Character_dummy_O::exposeCando(::core::Lisp_sp lisp) {
   _G();
   ::core::class_<Character_dummy_O>();
+  ClDefun(alphanumericp);
   SYMBOL_EXPORT_SC_(ClPkg, char_code);
   ClDefun(char_code);
   SYMBOL_EXPORT_SC_(ClPkg, code_char);

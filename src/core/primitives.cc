@@ -1528,28 +1528,6 @@ T_sp af_type_of(T_sp x) {
   return type_of(x);
 }
 
-#define ARGS_af_rem_f "(plist indicator)"
-#define DECL_af_rem_f ""
-#define DOCS_af_rem_f "Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found"
-T_mv af_rem_f(List_sp plist, Symbol_sp indicator) {
-  _G();
-  if (oCar(plist) == indicator) {
-    plist = oCddr(plist);
-    T_sp tplist = plist;
-    return (Values(tplist, _lisp->_true()));
-  }
-  for (List_sp cur = plist; oCddr(cur).notnilp(); cur = oCddr(cur)) {
-    T_sp k = oCaddr(cur);
-    if (k == indicator) {
-      List_sp curcdr = oCdr(cur);
-      curcdr.asCons()->setCdr(oCddr(oCddr(cur)));
-      T_sp tplist = plist;
-      return (Values(tplist, _lisp->_true()));
-    }
-  }
-  T_sp tplist = plist;
-  return (Values(tplist, _lisp->_false()));
-};
 
 #define ARGS_cl_sxhash "(obj)"
 #define DECL_cl_sxhash ""
@@ -1701,9 +1679,6 @@ void initialize_primitives() {
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
   Defun(type_of);
 
-  SYMBOL_SC_(CorePkg, rem_f);
-  Defun(rem_f);
-
   SYMBOL_EXPORT_SC_(ClPkg, specialOperatorP);
   ClDefun(specialOperatorP);
 
@@ -1724,9 +1699,6 @@ void initialize_primitives() {
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
   Defun(type_of);
 
-  SYMBOL_SC_(CorePkg, rem_f);
-  Defun(rem_f);
-
   SYMBOL_SC_(CorePkg, separatePairList);
   Defun(separatePairList);
 
@@ -1738,9 +1710,6 @@ void initialize_primitives() {
 
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
   Defun(type_of);
-
-  SYMBOL_SC_(CorePkg, rem_f);
-  Defun(rem_f);
 
 //  CoreDefun(treatAsSpecialOperatorP);
 

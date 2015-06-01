@@ -37,6 +37,10 @@ inline bool cl_symbolp(T_sp obj) {
 }
 
 bool cl_endp(T_sp obj);
+
+#define ARGS_cl_atom "(arg)"
+#define DECL_cl_atom ""
+#define DOCS_cl_atom "atom"
 inline bool cl_atom(T_sp obj) {
   return !obj.consp();
 }

@@ -644,33 +644,24 @@ struct gctools::GCInfo<core::DoubleFloat_O> {
   static bool constexpr Atomic = true;
 };
 
-#ifdef CLASP_LONG_FLOAT
 namespace core {
 SMART(LongFloat);
-c l a ss LongFloat_O : public Float_O {
-  L I S P_BASE1(Float_O);
-  L I S P_CLASS(core, ClPkg, LongFloat_O, "LongFloat");
+class LongFloat_O : public Float_O {
+  LISP_BASE1(Float_O);
+  LISP_CLASS(core, ClPkg, LongFloat_O, "LongFloat");
 
 public:
-#if defined(OLD_SERIALIZE)
-  void serialize(serialize::SNode node);
-#endif
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
 private:
   LongFloat _Value;
-
 public:
-  static LongFloat_sp create(double nm) {
-    _G();
+  static LongFloat_sp create(LongFloat nm) {
     GC_ALLOCATE(LongFloat_O, v);
     v->_Value = nm;
     return v;
   };
-
 public:
   NumberType number_type_() const { return number_LongFloat; };
+#if 0
   void sxhash_(HashGenerator & hg) const;
   double get() const { return this->_Value; };
   LongFloat &ref() { return this->_Value; };
@@ -718,11 +709,10 @@ public:
   virtual Number_sp cosh_() const;
   virtual Number_sp tanh_() const;
 #endif
-
+#endif
   DEFAULT_CTOR_DTOR(LongFloat_O);
 };
 };
-#endif
 
 namespace core {
 SMART(Complex);

@@ -367,7 +367,7 @@ void Path_O::exposePython(Lisp_sp lisp) {
   // 	defNoWrapPackageWithArguments(CorePkg,"ensure-directories-exist",&ensureDirectoriesExist, "(path)", _LISP);
 }
 
-DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path, Lisp_sp lisp) {
+DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
   _G();
   GC_ALLOCATE(DirectoryIterator_O, di);
   di->setPath(path);
@@ -477,7 +477,7 @@ DirectoryIterator_O::~DirectoryIterator_O() {
   }
 }
 
-RecursiveDirectoryIterator_sp RecursiveDirectoryIterator_O::create(Path_sp path, Lisp_sp lisp) {
+RecursiveDirectoryIterator_sp RecursiveDirectoryIterator_O::create(Path_sp path) {
   _G();
   GC_ALLOCATE(RecursiveDirectoryIterator_O, di);
   di->setPath(path);

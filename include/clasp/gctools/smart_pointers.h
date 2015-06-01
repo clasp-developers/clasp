@@ -1560,6 +1560,32 @@ public:
     lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(this->theObject));
   };
 
+  /*! Construct from a smart_ptr of a compatible type */
+  template <typename U>
+    Nilable(smart_ptr<U> other) {
+    if (other.nilp()) {
+      this->theObject = reinterpret_cast<Type *>(global_Symbol_OP_nil);
+      return;
+    }
+    this->theObject = TaggedCast<U*,Type*>::castOrNULL(other.theObject);
+    if ( !this->theObject ) {
+      lisp_errorCast<U*,Type*>(other.theObject);
+    }
+  }
+
+  template <typename U>
+    Nilable(Nilable<smart_ptr<U>> other) {
+    if (other.nilp()) {
+      this->theObject = reinterpret_cast<Type *>(global_Symbol_OP_nil);
+      return;
+    }
+    this->theObject = TaggedCast<U*,Type*>::castOrNULL(other.theObject);
+    if ( !this->theObject ) {
+      lisp_errorCast<U*,Type*>(other.theObject);
+    }
+    return;
+  }
+  
   // Construct from the Base type
   Nilable(Base const &b) : Base(b){};
   inline Nilable(Base &&b) : Base(std::move(b)){};

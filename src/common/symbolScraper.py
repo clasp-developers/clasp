@@ -9,6 +9,8 @@ import StringIO
 import re
 from string import maketrans
 
+NamespaceForPackage = { None: "::", }
+PackageForNamespace = { "": None }
 
 
 
@@ -51,6 +53,7 @@ def accumulate_symbols(symbols,lambda_list):
         else:
             continue
 
+        
 def dump_symbol_list(symbols):
     sys.stdout.write("    symbols----> ")
     for x in symbols:
@@ -123,7 +126,7 @@ def resize_symbolTable( newsize, filling=None):
 def addExistingSymbol(s):
     global existingSymbols
     if (s.fullName() in existingSymbols):
-        raise Exception, "duplicate symbol in symbol table: %s"%s.fullName()
+        s.mergeSymbol(existingSymbols[s.fullName()])
     existingSymbols[s.fullName()] = s
 
 
@@ -192,6 +195,7 @@ def pkg(nonKwPkgName,sym):
     else:
         return nonKwPkgName
 
+    
 class SymbolBase:
     def __init__(self,pkgName,bareName,cName,lispName,fn,ln,export=False,rsid=None):
         self._packageName = pkgName
@@ -204,6 +208,18 @@ class SymbolBase:
         self._lineNumber = ln
         self._isExported = export
         self._rsid = rsid
+
+    def mergeSymbol(self,other):
+        if ( self.packageName != other.packageName ):
+            raise Exception("Merging symbol %s mismatch in packageName")
+        if ( self._bareName != other._bareName ):
+            raise Exception("Merging symbol %s mismatch in bareName")
+        if ( self._cName != other._cName ):
+            raise Exception("Merging symbol %s mismatch in cName")
+        if ( self._lispName != other._lispName ):
+            raise Exception("Merging symbol %s mismatch in lispName")
+        if ( self._isExported or other._isExported ):
+            self._isExported = true
 
     def fullName(self):
         return "%s::%s"%(self._packageName,self._bareName)
@@ -349,6 +365,7 @@ def toCKeywordName(s):
     return '_kw_'+s
     
 
+namespacePackageAssociation_re = re.compile('^NAMESPACE_PACKAGE_ASSOCIATION\(\s*([\w]*)\s*,\s*([\w]*)\s*,\s*("[\w\-]*")\s*\)')
 symbol_table_re = re.compile('\s*//\s*SYMBOL_TABLE_ENTRY\s*([\w_]*)\s*([\d]*)\s*([\w_]*)\s*([<=>%/&\w_\*-.]*)\s*(export|private)')
 bad_existing_symbol_table_entry_re = re.compile('\s*//\s*SYMBOL_TABLE_ENTRY')
 # recognize: 	LISP_CLASS(CorePkg,GraphicsObject_O,"GraphicsObject");
@@ -359,6 +376,7 @@ bad_lisp_class_re = re.compile("\s*(LISP_CLASS|LISP_VIRTUAL_CLASS)")
 # arguments: (pkgname, externalWrappedPtrClass, classo-name, lisp-name, base-classo-name)
 lisp_external_class_re = re.compile('\s*LISP_EXTERNAL_CLASS\s*\(\s*[\w]*\s*,\s*([\w]*)\s*,\s*([\w:_<>]*)\s*,\s*([\w_]*)\s*,\s*"([\w-]*)"\s*,\s*([\w:_]*)\s*\);')
 bad_lisp_external_class_re = re.compile("\s*LISP_EXTERNAL_CLASS")
+intern_re = re.compile('.*INTERN_\(\s*([\w_]*)\s*,\s*([\w_]*)\s*\).*')
 symbol_re = re.compile('\s*SYMBOL_SC_\(\s*([\w_]*)\s*,\s*([\w_]*)\s*\);')
 symbol_export_re = re.compile('\s*SYMBOL_EXPORT_SC_\(\s*([\w_]*)\s*,\s*([\w_]*)\s*\);')
 symbol_expose_re = re.compile('\s*SYMBOL_EXPOSE_SC_\(')
@@ -410,6 +428,19 @@ for fileName in fileNames:
                 existingExportedSymbols.add(s.lispName())
             continue
 
+        match = namespacePackageAssociation_re.match(l)
+        if ( match != None ):
+	    gr = match.groups()
+	    namespaceName = gr[0]
+	    packageName = gr[1]
+            sys.stderr.write( "!!!!! Associating namespace(%s) with package(%s)\n" % (namespaceName,packageName))
+            if ( packageName in NamespaceForPackage ):
+                if ( namespaceName != NamespaceForPackage[packageName] ):
+                    raise Exception("At %s:%d you are redefining a namespace/package association with a different association - this should never happen")
+            NamespaceForPackage[packageName] = namespaceName
+            PackageForNamespace[namespaceName] = packageName
+	    continue
+
         match = bad_existing_symbol_table_entry_re.match(l)
         if ( match != None):
             print("BAD existing symbol table match: %s" % l),
@@ -440,7 +471,7 @@ for fileName in fileNames:
         match = lisp_external_class_re.match(l)
         if ( match != None ):
             gr = match.groups()
-            s = Symbol(fileName,ln,gr[0],name=gr[2],lispName=toLispName(gr[3]))
+            s = Symbol(fileName,ln,gr[0],name=gr[2],lispName=toLispName(gr[3]),export=True)
             addScrapedSymbol(s)
             continue
 
@@ -482,6 +513,18 @@ for fileName in fileNames:
         if ( match != None ):
             gr = match.groups()
             s = Symbol(fileName,ln,"CurrentPkg",name=gr[0],export=True)
+            addScrapedSymbol(s)
+            continue
+
+        match = intern_re.match(l)
+        if ( (match != None) and (l[0:7] != "#define") ):
+            gr = match.groups()
+            namespace = gr[0]
+            if ( namespace in PackageForNamespace ):
+                pkgName = PackageForNamespace[namespace]
+            else:
+                raise Exception("Error!!!! Unknown namespace - make sure the NAMESPACE_PACKAGE_ASSOCIATION macro for this namespace (%s) is defined" % namespace)
+            s = Symbol(fileName,ln,pkgName,name=gr[1],export=False)
             addScrapedSymbol(s)
             continue
 

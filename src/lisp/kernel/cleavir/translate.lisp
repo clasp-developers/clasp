@@ -114,7 +114,7 @@
 	  (list (translate-branch-instruction
 		 last input-vars output-vars successor-tags abi)))
       (cc-dbg-when *debug-log*
-		   (format *debug-log* "- - - -  END layout-basic-block  owner: ~a:~a   -->  ~a~%" (cleavir-ir-gml:label owner) (clasp-cleavir:instruction-gid owner) basic-block))
+		   (format *debug-log* "- - - -  END layout-basic-block  owner: ~a:~a   -->  ~a~%" (cleavir-ir-gml::label owner) (clasp-cleavir:instruction-gid owner) basic-block))
       )))
 
 (defun get-or-create-lambda-name (instr)
@@ -159,7 +159,7 @@
 		   (format *debug-log* "   basic-blocks for procedure~%")
 		   (dolist (bb basic-blocks)
 		     (destructuring-bind (first last owner) bb
-		       (format *debug-log* "basic-block owner: ~a:~a~%" (cleavir-ir-gml:label owner) (clasp-cleavir:instruction-gid owner))
+		       (format *debug-log* "basic-block owner: ~a:~a~%" (cleavir-ir-gml::label owner) (clasp-cleavir:instruction-gid owner))
 		       (loop for instruction = first
 			  then (first (cleavir-ir:successors instruction))
 			  until (eq instruction last)
@@ -236,12 +236,12 @@
 	     (cleavir-ir-gml:draw-flowchart initial-instruction (namestring mir-pathname))
 	   #+(or)(dolist (bb *basic-blocks*)
 		   (destructuring-bind (first last owner) bb
-		     (format *debug-log* "basic-block owner: ~a:~a   -->  ~a~%" (cleavir-ir-gml:label owner) (gethash owner instruction-ids) bb)
+		     (format *debug-log* "basic-block owner: ~a:~a   -->  ~a~%" (cleavir-ir-gml::label owner) (gethash owner instruction-ids) bb)
 		     (loop for instruction = first
 			then (first (cleavir-ir:successors instruction))
 			until (eq instruction last)
-			do (format *debug-log* "     ~a:~a~%" (cleavir-ir-gml:label instruction) (gethash instruction instruction-ids)))
-		     (format *debug-log* "     ~a:~a~%" (cleavir-ir-gml:label last) (gethash last instruction-ids)))))
+			do (format *debug-log* "     ~a:~a~%" (cleavir-ir-gml::label instruction) (gethash instruction instruction-ids)))
+		     (format *debug-log* "     ~a:~a~%" (cleavir-ir-gml::label last) (gethash last instruction-ids)))))
 	 (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname)))
        (let ((mir-pathname (make-pathname :name (format nil "mir~a" *debug-log-index*) :type "dot" :defaults (pathname *debug-log*))))
 	 (cleavir-ir-graphviz:draw-flowchart initial-instruction (namestring mir-pathname))
@@ -380,7 +380,7 @@
 	  (format t "--------------- translate-simple-instruction funcall-instruction~%")
 	  (format t "    inputs: ~a~%" inputs)
 	  (format t "    outputs: ~a~%" outputs))
-  (let* ((lpad (clasp-cleavir:landing-pad instruction)))
+  (let* ((lpad (clasp-cleavir::landing-pad instruction)))
     (or (basic-block lpad) (error "There must be a basic-block defined for the landing-pad"))
     (cmp:irc-low-level-trace :flow)
     (let ((call (closure-call :invoke "cc_call" (first inputs) (cdr inputs) abi :landing-pad (basic-block lpad))))
@@ -511,7 +511,7 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir:invoke-multiple-value-call-instruction) inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
-  (let* ((lpad (clasp-cleavir:landing-pad instruction)))
+  (let* ((lpad (clasp-cleavir::landing-pad instruction)))
     (with-return-values (return-vals abi)
       (let ((call (cmp:irc-create-invoke "cc_call_multipleValueOneFormCall" 
 					 (list (sret-arg return-vals) (cmp:irc-load (first inputs)))
@@ -863,12 +863,12 @@ nil)
 	(lambda (condition)
 ;;;	  (declare (ignore condition))
 	  (warn "Condition: ~a" condition)
-	  (invoke-restart 'cleavir-generate-ast:consider-special)))
+	  (invoke-restart 'cleavir-generate-ast::consider-special)))
        (cleavir-env:no-function-info
 	(lambda (condition)
 ;;;	  (declare (ignore condition))
 	  (warn "Condition: ~a" condition)
-	  (invoke-restart 'cleavir-generate-ast:consider-global))))
+	  (invoke-restart 'cleavir-generate-ast::consider-global))))
     (when *compile-print* (describe-form form))
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "cleavir-generate-ast:*compiler* --> ~a~%" cleavir-generate-ast:*compiler*)

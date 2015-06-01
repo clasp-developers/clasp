@@ -127,7 +127,7 @@ T_sp write_object(T_sp x, T_sp stream) {
     Fixnum code;
     T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
     if (circle_counter.nilp()) {
-      HashTable_sp hash = af_make_hash_table(cl::_sym_eq,
+      HashTable_sp hash = cl_make_hash_table(cl::_sym_eq,
                                              make_fixnum(1024),
                                              _lisp->rehashSize(),
                                              _lisp->rehashThreshold());

@@ -57,7 +57,7 @@ public:
   typedef vector<int>::iterator iterator;
 
 public:
-  static IntArray_sp create(uint sz, Lisp_sp);
+  static IntArray_sp create(uint sz);
 
 public:
   iterator begin() { return this->_Ints.begin(); };

@@ -130,7 +130,6 @@ CxxFunctionInvocationLogger::~CxxFunctionInvocationLogger() {
 #define DECL_af_signalSimpleError ""
 #define DOCS_af_signalSimpleError "signalSimpleError"
 T_sp af_signalSimpleError(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args) {
-  _G();
   printf("%s:%d af_signalSimpleError  caught because signal-simple-error is not installed yet\n", __FILE__, __LINE__);
   printf("%s\n", _rep_(baseCondition).c_str());
   af_format(_lisp->_true(), formatControl, formatArgs);
@@ -681,9 +680,9 @@ void FEerror(const string &fmt, int nargs, ...) {
     l << arg;
     --nargs;
   }
-  eval::funcall(core::_sym_universalErrorHandler, _Nil<T_O>() // not correctable
-                ,
-                sfmt, l.cons());
+  eval::funcall(core::_sym_universalErrorHandler
+                , _Nil<T_O>() // not correctable
+                , sfmt, l.cons());
   UNREACHABLE();
 }
 
@@ -693,6 +692,7 @@ void FElibc_error(const char *msg, int nargs, ...) {
   va_list args;
   va_start(args, nargs);
   List_sp l = clasp_grab_rest_args(args, nargs);
+  clasp_va_end(args);
   FEerror("~?~%C library explanation: ~A.", 3,
           smsg.raw_(), l.raw_(),
           error.raw_());
@@ -713,6 +713,47 @@ T_sp CEerror(T_sp c, const char *err, int narg, ...) {
   return result;
 }
 
+
+void CEpackage_error(const char* fmt,
+                     const char* continue_message,
+                     T_sp package,
+                     int nargs, ... )
+{
+  clasp_va_list args;
+  clasp_va_start(args, nargs);
+  List_sp fmtargs = clasp_grab_rest_args(args, nargs);
+  clasp_va_end(args);
+  if ( fmtargs.nilp() ) fmtargs = Cons_O::create(package);
+  eval::funcall(core::_sym_signalSimpleError,
+                cl::_sym_package_error,
+                Str_O::create(continue_message),
+                Str_O::create(std::string(fmt)),
+                fmtargs,
+                kw::_sym_package,
+                package);
+}
+
+void FEpackage_error(const char* fmt,
+                     T_sp package,
+                     int nargs, ... )
+{
+  clasp_va_list args;
+  clasp_va_start(args, nargs);
+  List_sp fmtargs = clasp_grab_rest_args(args, nargs);
+  clasp_va_end(args);
+  if ( fmtargs.nilp() ) fmtargs = Cons_O::create(package);
+  eval::funcall(core::_sym_signalSimpleError,
+                cl::_sym_package_error,
+                _Nil<T_O>(),
+                Str_O::create(std::string(fmt)),
+                fmtargs,
+                kw::_sym_package,
+                package);
+}
+
+
+
+                     
 void clasp_internal_error(const char *msg) {
   printf("%s:%d %s\n", __FILE__, __LINE__, msg);
   SIMPLE_ERROR(BF("Internal error: %s\n") % msg);

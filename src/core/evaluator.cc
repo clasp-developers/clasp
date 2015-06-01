@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/backquote.h>
 #include <clasp/core/sysprop.h>
+#include <clasp/core/hashTableEq.h>
 #include <clasp/core/conditions.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
@@ -460,7 +461,7 @@ T_mv sp_evalWhen(List_sp args, T_sp environment) {
   List_sp situations = oCar(args);
   List_sp body = oCdr(args);
   bool execute = false;
-  if (af_member(kw::_sym_execute, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue()) {
+  if (cl_member(kw::_sym_execute, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue()) {
     execute = true;
   }
   if (execute) {
@@ -671,9 +672,10 @@ T_mv sp_go(List_sp args, T_sp env) {
 
 T_mv af_classifyLetVariablesAndDeclares(List_sp variables, List_sp declaredSpecials) {
   _G();
-  SymbolSet_sp specialsSet = SymbolSet_O::make(declaredSpecials);
-  SymbolSet_sp specialInVariables(SymbolSet_O::create());
-  HashTable_sp indices = af_make_hash_table(cl::_sym_eq, make_fixnum(8),
+  HashTableEq_sp specialsSet = HashTableEq_O::create_default();
+  for ( auto cur : declaredSpecials ) specialsSet->insert(oCar(cur)); //make(declaredSpecials);
+  HashTableEq_sp specialInVariables(HashTableEq_O::create_default());
+  HashTable_sp indices = cl_make_hash_table(cl::_sym_eq, make_fixnum(8),
                                             DoubleFloat_O::create(1.5),
                                             DoubleFloat_O::create(1.0));
   ql::list classified(_lisp);
@@ -700,7 +702,7 @@ T_mv af_classifyLetVariablesAndDeclares(List_sp variables, List_sp declaredSpeci
                                    Cons_O::create(sym, make_fixnum(idx)));
     }
   }
-  specialsSet->map([&classified, &specialInVariables](Symbol_sp s) {
+  specialsSet->maphash([&classified, &specialInVariables](T_sp s,T_sp val) {
                     if ( !specialInVariables->contains(s) ) {
                         classified << Cons_O::create(core::_sym_declaredSpecial,s);
                     }
@@ -1069,9 +1071,7 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
   _G();
   Function_sp func;
   func = gc::As<Function_sp>(eval::evaluate(oCar(args), env));
-  List_sp forms = oCdr(args);
   ql::list resultList(_lisp);
-  List_sp results = _Nil<T_O>();
   for (auto forms : (List_sp)oCdr(args)) {
     T_sp oneForm = oCar(forms);
     T_mv retval = eval::evaluate(oneForm, env);
@@ -1340,7 +1340,6 @@ T_mv sp_flet(List_sp args, T_sp environment) {
   List_sp body = oCdr(args);
   List_sp cur = functions;
   LOG(BF("functions part=%s") % functions->__repr__());
-  gc::Nilable<Str_sp> docString = _Nil<T_O>();
   while (cur.notnilp()) {
     List_sp oneDef = oCar(cur);
     functionName = oCar(oneDef);
@@ -1371,7 +1370,6 @@ T_mv sp_labels(List_sp args, T_sp environment) {
   List_sp body = oCdr(args);
   List_sp cur = functions;
   LOG(BF("functions part=%s") % functions->__repr__());
-  gc::Nilable<Str_sp> docString = _Nil<T_O>();
   FunctionValueEnvironment_sp newEnvironment = FunctionValueEnvironment_O::createForEntries(cl_length(functions), environment);
   while (cur.notnilp()) {
     List_sp oneDef = oCar(cur);
@@ -1398,7 +1396,6 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
   List_sp body = oCdr(args);
   List_sp cur = macros;
   LOG(BF("macros part=%s") % macros->__repr__());
-  gc::Nilable<Str_sp> docString = _Nil<T_O>();
   while (cur.notnilp()) {
     List_sp oneDef = oCar(cur);
     //		printf( "%s:%d  oneDef = %s\n", __FILE__, __LINE__, _rep_(oneDef).c_str());
@@ -1474,7 +1471,6 @@ T_mv do_symbolMacrolet(List_sp args, T_sp env, bool topLevelForm) {
   List_sp body = oCdr(args);
   List_sp cur = macros;
   LOG(BF("macros part=%s") % macros->__repr__());
-  gc::Nilable<Str_sp> docString = _Nil<T_O>();
   SYMBOL_SC_(CorePkg, whole);
   SYMBOL_SC_(CorePkg, env);
   List_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
@@ -1930,8 +1926,8 @@ T_mv t1EvalWhen(T_sp args, T_sp environment) {
   }
   List_sp situations = oCar(args);
   List_sp body = oCdr(args);
-  bool execute = af_member(kw::_sym_execute, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue();
-  execute |= af_member(cl::_sym_eval, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue();
+  bool execute = cl_member(kw::_sym_execute, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue();
+  execute |= cl_member(cl::_sym_eval, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue();
   if (execute)
     return t1Progn(body, environment);
   return (Values(_Nil<T_O>()));

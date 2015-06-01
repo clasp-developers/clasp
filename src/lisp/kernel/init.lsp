@@ -68,7 +68,7 @@
 ;; Setup a few things for the CORE package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
-(use-package '(:compiler :clos :ext))
+(use-package '(:compiler :ext))
 
 ;; Setup a few things for the CMP package
 (eval-when (:execute :compile-toplevel :load-toplevel)
@@ -428,7 +428,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (or (probe-file (get-pathname-with-type module "lsp"))
       (probe-file (get-pathname-with-type module "lisp"))
       (error "Could not find source file for ~a" module)))
-
+(export 'lisp-source-pathname)
 
 
 
@@ -758,7 +758,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        )
     (nreverse files)
     ))
-
+(export 'select-source-files)
 
 
 

@@ -35,7 +35,25 @@
 ;;;
 ;;; Don't install the bootstrapping compiler as the implicit compiler when compiling cleavir
 ;;;
+
+(defparameter *print-implicit-compile-form* nil)
+
+(defun implicit-compile-form (form &optional environment)
+  (declare (core:lambda-name cmp-repl-implicit-compile))
+  (when *print-implicit-compile-form* 
+    (bformat t "Compiling form: %s\n" form))
+  (multiple-value-bind (compiled-function warn fail)
+      (compile-in-env nil `(lambda () 
+                             (declare (core:lambda-name implicit-repl))
+                             ,form) environment)
+    ;;                         (compile-in-env nil form environment)
+    (values compiled-function warn fail)))
+
 #-cleavir  
+(setq *implicit-compile-hook* #'implicit-compile-form)
+
+
+#+(or)
 (setq *implicit-compile-hook*
       (compile nil '(lambda (form &optional environment) 
 		     (declare (core:lambda-name cmp-repl-implicit-compile))

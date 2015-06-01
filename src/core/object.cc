@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/lispDefinitions.h>
+#include <clasp/core/record.h>
 #include <clasp/core/wrappers.h>
 
 /*
@@ -185,14 +186,14 @@ bool af_isNil(T_sp arg) {
 #define ARGS_core_encode "(arg)"
 #define DECL_core_encode ""
 #define DOCS_core_encode "encode object as an a-list"
-core::Cons_sp core_encode(T_sp arg) {
+core::List_sp core_encode(T_sp arg) {
   return arg->encode();
 };
 
 #define ARGS_core_decode "(obj arg)"
 #define DECL_core_decode ""
 #define DOCS_core_decode "decode object from a-list"
-T_sp core_decode(T_sp obj, core::Cons_sp arg) {
+T_sp core_decode(T_sp obj, core::List_sp arg) {
   obj->decode(arg);
   return obj;
 };
@@ -200,6 +201,19 @@ T_sp core_decode(T_sp obj, core::Cons_sp arg) {
 void T_O::initialize() {
   // do nothing
 }
+
+
+List_sp T_O::encode() {
+  Record_sp record = Record_O::create_encoder();
+  this->fields(record);
+  return record->data();
+}
+
+void T_O::decode(core::List_sp alist) {
+  Record_sp record = Record_O::create_decoder(alist);
+  this->fields(record);
+}
+
 
 string T_O::className() const {
   // TODO: refactor this as ->__class()->classNameAsString
@@ -443,14 +457,6 @@ void T_O::exposeCando(core::Lisp_sp lisp) {
   Defun(instanceSigSet);
   SYMBOL_SC_(CorePkg, instanceSig);
   Defun(instanceSig);
-  SYMBOL_EXPORT_SC_(ClPkg, eq);
-  ClDefun(eq);
-  SYMBOL_EXPORT_SC_(ClPkg, eql);
-  ClDefun(eql);
-  SYMBOL_EXPORT_SC_(ClPkg, equal);
-  ClDefun(equal);
-  SYMBOL_EXPORT_SC_(ClPkg, equalp);
-  ClDefun(equalp);
   SYMBOL_EXPORT_SC_(CorePkg, instanceClass);
   Defun(instanceClass);
   SYMBOL_EXPORT_SC_(CorePkg, implementationClass);
@@ -551,4 +557,17 @@ namespace core {
 EXPOSE_CLASS(core, T_O);
 
 #include <clasp/core/multipleValues.h>
+
+
+
+void initialize_object() {
+  SYMBOL_EXPORT_SC_(ClPkg, eq);
+  ClDefun(eq);
+  SYMBOL_EXPORT_SC_(ClPkg, eql);
+  ClDefun(eql);
+  SYMBOL_EXPORT_SC_(ClPkg, equal);
+  ClDefun(equal);
+  SYMBOL_EXPORT_SC_(ClPkg, equalp);
+  ClDefun(equalp);
+};
 };

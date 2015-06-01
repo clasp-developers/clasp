@@ -142,18 +142,18 @@
 
 
 (defmethod cleavir-environment:macro-function (symbol (environment clasp-global-environment))
-  (core:macro-function symbol))
+  (cl:macro-function symbol))
 
 (defmethod cleavir-environment:macro-function (symbol (environment null))
-  (core:macro-function symbol))
+  (cl:macro-function symbol))
 
 #+(or)(defmethod cleavir-environment:macro-function (symbol (environment core:environment))
-	(core:macro-function symbol environment))
+	(cl:macro-function symbol environment))
 
 #+(or)(defun cl:macro-function (symbol &optional (environment nil environment-p))
 	(cond
 	  ((typep environment 'core:environment)
-	   (core:macro-function symbol environment))
+	   (cl:macro-function symbol environment))
 	  (environment
 	   (cleavir-environment:macro-function symbol environment))
 	  (t (cleavir-environment:macro-function symbol *clasp-env*))))
@@ -187,7 +187,7 @@
   (warn "cleavir-environment:eval called with NIL as the dispatching environment")
   (cclasp-eval form))
 
-(defmethod cleavir-hir-transformations:introduce-immediate (constant (implementation clasp) processor os)
+(defmethod cleavir-hir-transformations::introduce-immediate (constant (implementation clasp) processor os)
   constant)
 
 #+(or)
@@ -210,38 +210,38 @@
 (defun draw-hir (&optional (hir *hir*) (filename "/tmp/hir.dot"))
   (with-open-file (stream filename :direction :output)
     (cleavir-ir-graphviz:draw-flowchart hir stream))
-  (core:system (format nil "dot -Tpng -o/tmp/hir.png ~a" filename))
-  (core:system "open -n /tmp/hir.png"))
+  (ext:system (format nil "dot -Tpng -o/tmp/hir.png ~a" filename))
+  (ext:system "open -n /tmp/hir.png"))
 
 (defun draw-mir (&optional (mir *mir*) (filename "/tmp/mir.dot"))
   (with-open-file (stream filename :direction :output)
     (cleavir-ir-graphviz:draw-flowchart mir stream))
-  (core:system (format nil "dot -Tpng -o/tmp/mir.png ~a" filename))
-  (core:system "open -n /tmp/mir.png"))
+  (ext:system (format nil "dot -Tpng -o/tmp/mir.png ~a" filename))
+  (ext:system "open -n /tmp/mir.png"))
 
 (defun draw-ast (&optional (ast *ast*) (filename "/tmp/ast.dot"))
   (let* ((dot-pathname (pathname filename))
 	 (png-pathname (make-pathname :type "png" :defaults dot-pathname)))
     (with-open-file (stream filename :direction :output)
       (cleavir-ast-graphviz:draw-ast ast filename))
-    (core:system (format nil "dot -Tpng -o~a ~a" (namestring png-pathname) (namestring dot-pathname)))
-    (core:system (format nil "open -n ~a" (namestring png-pathname)))))
+    (ext:system (format nil "dot -Tpng -o~a ~a" (namestring png-pathname) (namestring dot-pathname)))
+    (ext:system (format nil "open -n ~a" (namestring png-pathname)))))
 
 (defparameter *code1* '(let ((x 1) (y 2)) (+ x y)))
 (defparameter *code2* '(let ((x 10)) (if (> x 5) 1 2)))
-(defparameter *code3* 
-  '(defun cl:macro-function (symbol &optional (environment nil environment-p))
-    (cond
-      ((typep environment 'core:environment)
-       (core:macro-function symbol environment))
-      (environment
-       (cleavir-environment:macro-function symbol environment))
-      (t (cleavir-environment:macro-function symbol *clasp-env*)))))
+#+(or)(defparameter *code3* 
+        '(defun cl:macro-function (symbol &optional (environment nil environment-p))
+          (cond
+            ((typep environment 'core:environment)
+             (core:macro-function symbol environment))
+            (environment
+             (cleavir-environment:macro-function symbol environment))
+            (t (cleavir-environment:macro-function symbol *clasp-env*)))))
 
 
 (defun generate-asts-for-clasp-source (start end)
-  (let* ((parts (core:select-source-files end :first-file start :system core:*init-files*))
-	 (pathnames (mapcar (lambda (part) (core:lisp-source-pathname part)) parts))
+  (let* ((parts (core::select-source-files end :first-file start :system core:*init-files*))
+	 (pathnames (mapcar (lambda (part) (core::lisp-source-pathname part)) parts))
 	 (eof (gensym)))
     (loop for file in pathnames
 	 do (with-open-file (stream file :direction :input)
@@ -332,11 +332,6 @@
     (draw-hir hir)
     hir))
 
-(defun hir-tpl ()
-  (format t "Starting tpl~%")
-  (handler-case (core:tpl :commands *hir-commands*)
-    (continue-hir (x) nil))
-  (format t "Done tpl~%"))
 
 (defvar *form* nil)
 (defvar *ast* nil)
@@ -345,8 +340,8 @@
 (defun generate-hir-for-clasp-source (&optional (start :init) (end :all) skip-errors)
   (declare (special cleavir-generate-ast:*compiler*))
   (let* ((cleavir-generate-ast:*compiler* 'cl:compile-file)
-	 (parts (core:select-source-files end :first-file start :system core:*init-files*))
-	 (pathnames (mapcar (lambda (part) (core:lisp-source-pathname part)) parts))
+	 (parts (core::select-source-files end :first-file start :system core:*init-files*))
+	 (pathnames (mapcar (lambda (part) (core::lisp-source-pathname part)) parts))
 	 (eof (gensym)))
     (loop for file in pathnames
        do (with-open-file (stream file :direction :input)

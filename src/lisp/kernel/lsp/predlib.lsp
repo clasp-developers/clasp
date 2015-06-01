@@ -463,7 +463,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 	((consp type)
 	 (setq tp (car type) i (cdr type)))
 	#+clos
-	(#-clasp(sys:instancep type) #+clasp(classp type)
+	(#-clasp(sys:instancep type) #+clasp(clos::classp type)
 	 (return-from typep (si::subclassp (class-of object) type)))
 	(t
 	 (error-type-specifier type)))
@@ -587,7 +587,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 #+clos
 (defun of-class-p (object class)
   (declare (optimize (speed 3) (safety 0)))
-  (macrolet ((class-precedence-list (x)
+  (macrolet ((clos::class-precedence-list (x)
 	       `(si::instance-ref ,x clos::+class-precedence-list-ndx+))
 	     (class-name (x)
 	       `(si::instance-ref ,x clos::+class-name-ndx+)))
@@ -595,8 +595,8 @@ Returns T if X belongs to TYPE; NIL otherwise."
       (declare (class x-class))
       (if (eq x-class class)
 	  t
-	  (let ((x-cpl (class-precedence-list x-class)))
-	    (if #-clasp(instancep class) #+clasp(classp class)
+	  (let ((x-cpl (clos::class-precedence-list x-class)))
+	    (if #-clasp(instancep class) #+clasp(clos::classp class)
 		(member class x-cpl :test #'eq)
 		(dolist (c x-cpl)
 		  (declare (class c))
@@ -922,7 +922,7 @@ if not possible."
       (and (not (clos::class-finalized-p class))
            (throw '+canonical-type-failure+ nil))
       (register-type class
-		     #'(lambda (c) (or #-clasp(si::instancep c) #+clasp(classp c) (symbolp c)))
+		     #'(lambda (c) (or #-clasp(si::instancep c) #+clasp(clos::classp c) (symbolp c)))
 		     #'(lambda (c1 c2)
 			 (when (symbolp c1)
 			   (setq c1 (find-class c1 nil)))
@@ -1437,7 +1437,7 @@ if not possible."
   ;; Another easy case: types are classes.
   (when #-clasp(and (instancep t1) (instancep t2)
 		    (clos::classp t1) (clos::classp t2))
-	#+clasp(and (classp t1) (classp t2))
+	#+clasp(and (clos::classp t1) (clos::classp t2))
     (return-from subtypep (values (subclassp t1 t2) t)))
   ;; Finally, cached results.
   (let* ((cache *subtypep-cache*)

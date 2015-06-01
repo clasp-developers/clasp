@@ -43,9 +43,7 @@ THE SOFTWARE.
 //#i n c l u d e	"boost/fstream.hpp"
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#ifdef DEBUG_CL_SYMBOLS
 #include <clasp/core/allClSymbols.h>
-#endif
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/exceptions.h>
 #include <clasp/core/commandLineOptions.h>
@@ -57,7 +55,6 @@ THE SOFTWARE.
 #include <clasp/core/profiler.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/bformat.h>
-#include <clasp/core/stringSet.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/pointer.h>
@@ -191,7 +188,7 @@ Lisp_O::GCRoots::GCRoots() : _MultipleValuesCur(NULL), _BignumRegister0(_Unbound
                              ,
                              _SystemProperties(_Nil<T_O>()), _CatchInfo(_Nil<T_O>()), _SpecialForms(_Unbound<HashTableEq_O>()), _SingleDispatchMethodCachePtr(NULL), _MethodCachePtr(NULL), _SlotCachePtr(NULL), _NullStream(_Nil<T_O>()), _PathnameTranslations(_Nil<T_O>()) {}
 
-Lisp_O::Lisp_O() : _StackWarnSize(7 * 1024 * 1024), // 7MB default stack size before warnings
+Lisp_O::Lisp_O() : _StackWarnSize(14 * 1024 * 1024), // 6MB default stack size before warnings
                    _StackSampleCount(0),
                    _StackSampleSize(0),
                    _StackSampleMax(0),
@@ -208,6 +205,9 @@ Lisp_O::Lisp_O() : _StackWarnSize(7 * 1024 * 1024), // 7MB default stack size be
                    _BootClassTableIsValid(true),
                    _PathMax(CLASP_MAXPATHLEN) {
   this->_Roots._Bindings.reserve(1024);
+  this->_TrapIntern = false;
+  this->_TrapInternPackage = "";
+  this->_TrapInternName = "";
   this->_GlobalInitializationCallbacks.clear();
   this->_MakePackageCallback = NULL;
   this->_ExportSymbolCallback = NULL;
@@ -390,16 +390,9 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   this->_EnvironmentInitialized = false;
   this->_EnvironmentId = 0;
   this->_Roots._CommandLineArguments.reset_();
-
   this->_Bundle = bundle;
-
   CoreExposer *coreExposerPtr = NULL;
   BuiltInClass_sp classDummy;
-
-#ifdef DEBUG_CL_SYMBOLS
-  initializeAllClSymbols();
-#endif
-
   {
     _BLOCK_TRACE("Initialize core classes");
     coreExposerPtr = CoreExposer::create_core_packages_and_classes();
@@ -451,7 +444,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 #undef Use_CorePkg
 
     //            testStrings();
-
+    initialize_object();
     initialize_foundation();
     initialize_primitives();
     initialize_stacks();
@@ -949,11 +942,6 @@ void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, Creator *allocat
     }
 #endif
 
-StringSet_sp Lisp_O::allClassNames() {
-  _G();
-  DEPRECIATED();
-}
-
 StandardClass_sp Lisp_O::defineStandardClass(Symbol_sp name, T_sp baseClassesDesignator, List_sp slotSpecifiers) {
   _OF();
   IMPLEMENT_MEF(BF("Implement defineStandardClass"));
@@ -1284,6 +1272,22 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   } else {
     _sym_STARcommandLineImageSTAR->defparameter(core_startupImagePathname());
   }
+  {
+    this->_TrapIntern = false;
+    if ( options._TrapIntern != "" ) {
+      this->_TrapIntern = true;
+      size_t sep = options._TrapIntern.find(':');
+      if ( sep == string::npos ) {
+        printf("You must provide a symbol name of the form PKG:NAME or PKG::NAME\n");
+        exit(1);
+      }
+      size_t nameStart = sep+1;
+      if ( options._TrapIntern[nameStart] == ':' ) ++nameStart;
+      this->_TrapInternPackage = options._TrapIntern.substr(0,sep);
+      this->_TrapInternName = options._TrapIntern.substr(nameStart,9999999);
+      printf("%s:%d Trapping INTERN of symbol %s in package %s\n", __FILE__, __LINE__, this->_TrapInternPackage.c_str(), this->_TrapInternName.c_str());
+    }
+  }
   LOG(BF("lisp->_ScriptInFile(%d)  lisp->_FileNameOrCode(%s)") % this->_ScriptInFile % this->_FileNameOrCode);
 }
 
@@ -1508,10 +1512,10 @@ List_sp cl_assoc(T_sp item, List_sp alist, T_sp key, T_sp test, T_sp test_not) {
   return alist.asCons()->assoc(item, key, test, test_not);
 }
 
-#define ARGS_af_member "(item list &key key test test-not)"
-#define DECL_af_member ""
-#define DOCS_af_member "See CLHS member"
-List_sp af_member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not) {
+#define ARGS_cl_member "(item list &key key test test-not)"
+#define DECL_cl_member ""
+#define DOCS_cl_member "See CLHS member"
+List_sp cl_member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not) {
   _G();
   if (tlist.nilp())
     return _Nil<T_O>();
@@ -1611,10 +1615,10 @@ T_mv af_getline(Str_sp prompt) {
   __END_DOC
 */
 
-#define ARGS_core_system "(cmd)"
-#define DECL_core_system ""
-#define DOCS_core_system "system"
-T_mv core_system(Str_sp cmd) {
+#define ARGS_ext_system "(cmd)"
+#define DECL_ext_system ""
+#define DOCS_ext_system "system"
+T_mv ext_system(Str_sp cmd) {
   _G();
   string command = cmd->get();
   int ret = system(command.c_str());
@@ -1672,7 +1676,6 @@ T_mv af_loadCando(T_sp pathDesignator) {
 #define DECL_cl_findClass ""
 #define DOCS_cl_findClass "findClass"
 Class_mv cl_findClass(Symbol_sp symbol, bool errorp, T_sp env) {
-  _G();
   if (_lisp->bootClassTableIsValid()) {
     return Values(_lisp->boot_findClass(symbol, errorp));
   }
@@ -2212,14 +2215,17 @@ void af_debugLogOff() {
 
   __END_DOC
 */
-#define ARGS_af_export "(symDes &optional (packageDes *package*))"
-#define DECL_af_export ""
-#define DOCS_af_export "CLHS: export"
-void af_export(T_sp symDes, T_sp packageDes) {
+#define ARGS_cl_export "(symDes &optional (packageDes *package*))"
+#define DECL_cl_export ""
+#define DOCS_cl_export "CLHS: export"
+T_sp cl_export(T_sp symDes, T_sp packageDes) {
   _G();
   List_sp symbols = coerce::listOfSymbols(symDes);
   Package_sp package = coerce::packageDesignator(packageDes);
-  package->_export(symbols);
+  for ( auto sym : symbols ) {
+    package->_export2(gc::As<Symbol_sp>(oCar(sym)));
+  }
+  return _lisp->_true();
 }
 
 #define ARGS_af_exportToPython "(symbolsDesig)"
@@ -2235,10 +2241,10 @@ void af_exportToPython(T_sp symbolsDesig) {
   }
 }
 
-#define ARGS_af_intern "(symbol_name &optional (package-desig *package*))"
-#define DECL_af_intern ""
-#define DOCS_af_intern "See CLHS: intern"
-T_mv af_intern(Str_sp symbol_name, T_sp package_desig) {
+#define ARGS_cl_intern "(symbol_name &optional (package-desig *package*))"
+#define DECL_cl_intern ""
+#define DOCS_cl_intern "See CLHS: intern"
+T_mv cl_intern(Str_sp symbol_name, T_sp package_desig) {
   _G();
   Package_sp package = coerce::packageDesignator(package_desig);
   return (package->intern(symbol_name->get()));
@@ -2884,9 +2890,12 @@ void Lisp_O::run() {
   // then set core::*debug-startup* to true
   // This will print timings of top-level forms as they load at startup
   // See llvmo::intrinsics.cc
-  if (af_member(kw::_sym_debugStartup, cl::_sym_STARfeaturesSTAR->symbolValue()).notnilp()) {
-    printf("%s:%d Setting core:*debug-startup* to T\n", __FILE__, __LINE__);
-    core::_sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
+  // cl_member isn't available yet so check for the feature by hand.
+  for ( auto cur : (List_sp)cl::_sym_STARfeaturesSTAR->symbolValue() ) {
+    if ( oCar(cur) == kw::_sym_debugStartup ) {
+      printf("%s:%d Setting core:*debug-startup* to T\n", __FILE__, __LINE__);
+      core::_sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
+    }
   }
   //	printf("%s:%d core:*debug-startup* is: %s\n", __FILE__, __LINE__, _rep_(core::_sym_STARdebugStartupSTAR->symbolValue()).c_str());
   if (!this->_IgnoreInitImage) {
@@ -3053,8 +3062,8 @@ void Lisp_O::exposeCando() {
   SYMBOL_SC_(CorePkg, getline);
   Defun(getline);
 
-  SYMBOL_SC_(CorePkg, system);
-  CoreDefun(system);
+  SYMBOL_SC_(ExtPkg, system);
+  ExtDefun(system);
 
   SYMBOL_EXPORT_SC_(ClPkg, apropos);
   Defun(apropos);
@@ -3062,9 +3071,9 @@ void Lisp_O::exposeCando() {
   af_def(CorePkg, "brcl-apropos", &af_apropos, ARGS_af_apropos, DECL_af_apropos, DOCS_af_apropos);
 
   SYMBOL_EXPORT_SC_(ClPkg, export);
-  Defun(export);
+  ClDefun(export);
   SYMBOL_EXPORT_SC_(ClPkg, intern);
-  Defun(intern);
+  ClDefun(intern);
   //	defNoWrapPackage(CorePkg,"apply", &prim_apply,_LISP);
   SYMBOL_SC_(CorePkg, isTopLevelScript);
   Defun(isTopLevelScript);
@@ -3166,8 +3175,8 @@ void Lisp_O::exposeCando() {
   Defun(acons);
   SYMBOL_EXPORT_SC_(ClPkg, assoc);
   ClDefun(assoc);
-  SYMBOL_EXPORT_SC_(ClPkg, member);
-  Defun(member);
+  SYMBOL_EXPORT_SC_(ClPkg,member);
+  ClDefun(member);
   Defun(memberTest);
 
   SYMBOL_SC_(CorePkg, member1);
@@ -3244,20 +3253,6 @@ void Lisp_O::exposePython() {
 //    boost::python::def_raw(CorePkg,"cons", &prim_cons ,ARGS_empty,DOCS_empty,_LISP);
 //	boost::python::def_raw(CorePkg,"className", &prim_className ,ARGS_empty,DOCS_empty,_LISP);
 	boost::python::def_raw(CorePkg,"repr", &prim_repr ,ARGS_empty,DOCS_empty,_LISP);
-#if 0 //These are now Object methods
-	boost::python::def_raw(CorePkg,"eq", &prim_eq,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"==", &prim_eq,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"ne", &prim_ne,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"!=", &prim_ne,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"lt", &prim_lt,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"<", &prim_lt,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"gt", &prim_gt,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,">", &prim_gt,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"le", &prim_le,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"<=", &prim_le,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"ge", &prim_ge,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,">=", &prim_ge,ARGS_empty,DOCS_empty,_LISP);
-#endif
 //	boost::python::def_raw(CorePkg,"not", &prim_not,ARGS_empty,DOCS_empty,_LISP);
 	boost::python::def_raw(CorePkg,"debugLogOn",&prim_debugLogOn,ARGS_empty,DOCS_empty,_LISP);
 	boost::python::def_raw(CorePkg,"debugLogOff",&prim_debugLogOff,ARGS_empty,DOCS_empty,_LISP);

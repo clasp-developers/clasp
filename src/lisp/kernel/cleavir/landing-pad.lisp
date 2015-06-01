@@ -25,7 +25,7 @@
 	    (cmp:with-landing-pad terminate-block
 	      (let* ((go-index (cmp:irc-create-call "cc_landingpadUnwindMatchFrameElseRethrow" 
 						    (list exception-ptr 
-							  (cmp:irc-load (clasp-cleavir:translate-datum (car (last (cleavir-ir:outputs enter-instruction))))))))
+							  (cmp:irc-load (clasp-cleavir::translate-datum (car (last (cleavir-ir:outputs enter-instruction))))))))
 		     (default-block (cmp:irc-basic-block-create "switch-default"))
 		     (unwinds (unwinds landing-pad-object)))
 		(with-return-values (return-vals abi)

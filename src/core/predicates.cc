@@ -58,10 +58,8 @@ namespace core {
 #define DECL_core_baseCharP ""
 #define DOCS_core_baseCharP "baseCharP"
 bool core_baseCharP(T_sp arg) {
-  _G();
-  if (arg.nilp())
-    return false;
   if (Character_sp c = arg.asOrNull<Character_O>()) {
+    (void)c;
     return true;
   }
   return false;
@@ -71,7 +69,6 @@ bool core_baseCharP(T_sp arg) {
 #define DECL_cl_endp ""
 #define DOCS_cl_endp "endp"
 bool cl_endp(T_sp arg) {
-  _G();
   return arg.nilp();
 };
 
@@ -79,7 +76,6 @@ bool cl_endp(T_sp arg) {
 #define DECL_af_bignumP ""
 #define DOCS_af_bignumP "bignumP"
 bool af_bignumP(T_sp obj) {
-  _G();
   return gc::IsA<Bignum_sp>(obj);
 };
 
@@ -87,7 +83,6 @@ bool af_bignumP(T_sp obj) {
 #define DECL_af_fixnumP ""
 #define DOCS_af_fixnumP "fixnumP"
 bool af_fixnumP(T_sp obj) {
-  _G();
   return obj.fixnump();
 }
 
@@ -95,7 +90,6 @@ bool af_fixnumP(T_sp obj) {
 #define DECL_af_stringP ""
 #define DOCS_af_stringP "stringP"
 bool af_stringP(T_sp obj) {
-  _G();
   return gc::IsA<String_sp>(obj);
 };
 
@@ -103,7 +97,6 @@ bool af_stringP(T_sp obj) {
 #define DECL_af_strP ""
 #define DOCS_af_strP "strP"
 bool af_strP(T_sp obj) {
-  _G();
   return gc::IsA<Str_sp>(obj);
 };
 
@@ -111,7 +104,6 @@ bool af_strP(T_sp obj) {
 #define DECL_af_doubleFloatP ""
 #define DOCS_af_doubleFloatP "doubleFloatP"
 bool af_doubleFloatP(T_sp obj) {
-  _G();
   return gc::IsA<DoubleFloat_sp>(obj);
 };
 
@@ -119,7 +111,6 @@ bool af_doubleFloatP(T_sp obj) {
 #define DECL_af_functionP ""
 #define DOCS_af_functionP "functionP"
 bool af_functionP(T_sp obj) {
-  _G();
   return gc::IsA<Function_sp>(obj);
 };
 
@@ -127,9 +118,9 @@ bool af_functionP(T_sp obj) {
 #define DECL_af_interpretedFunctionP ""
 #define DOCS_af_interpretedFunctionP "interpretedFunctionP"
 bool af_interpretedFunctionP(T_sp arg) {
-  _G();
   if (gc::IsA<Function_sp>(arg)) {
     if (auto intfunc = gc::As<Function_sp>(arg)->closure.asOrNull<InterpretedClosure>()) {
+      (void)intfunc;
       return true;
     }
   }
@@ -140,7 +131,6 @@ bool af_interpretedFunctionP(T_sp arg) {
 #define DECL_cl_consp ""
 #define DOCS_cl_consp "consp"
 bool cl_consp(T_sp obj) {
-  _G();
   return gc::IsA<Cons_sp>(obj);
 };
 
@@ -148,7 +138,6 @@ bool cl_consp(T_sp obj) {
 #define DECL_cl_packagep ""
 #define DOCS_cl_packagep "See CLHS packagep"
 bool cl_packagep(T_sp obj) {
-  _G();
   return gc::IsA<Package_sp>(obj);
 };
 
@@ -156,7 +145,6 @@ bool cl_packagep(T_sp obj) {
 #define DECL_af_classp ""
 #define DOCS_af_classp "classp"
 bool af_classp(T_sp obj) {
-  _G();
   return gc::IsA<Class_sp>(obj);
 };
 
@@ -164,7 +152,6 @@ bool af_classp(T_sp obj) {
 #define DECL_core_builtInClassP ""
 #define DOCS_core_builtInClassP "classp"
 bool core_builtInClassP(T_sp obj) {
-  _G();
   if (!af_classp(obj))
     return false;
   Class_sp c = gc::As<Class_sp>(obj);
@@ -175,12 +162,8 @@ bool core_builtInClassP(T_sp obj) {
 #define DECL_core_cxxInstanceP ""
 #define DOCS_core_cxxInstanceP "classp"
 bool core_cxxInstanceP(T_sp obj) {
-  _G();
-  if (obj.nilp())
-    return false;
-  if (!obj.objectp())
-    return false;
   if (Instance_sp ip = obj.asOrNull<Instance_O>()) {
+    (void)ip;
     return true;
   }
   return false;
@@ -190,7 +173,6 @@ bool core_cxxInstanceP(T_sp obj) {
 #define DECL_af_lambda_list_handler_p ""
 #define DOCS_af_lambda_list_handler_p "lambda_list_handler_p"
 bool af_lambda_list_handler_p(T_sp obj) {
-  _G();
   return gc::IsA<LambdaListHandler_sp>(obj);
 };
 
@@ -226,15 +208,12 @@ bool af_rationalP(T_sp obj) {
   return gc::IsA<Rational_sp>(obj);
 };
 
-#ifdef CLASP_LONG_FLOAT
 #define ARGS_af_longFloatP "(arg)"
 #define DECL_af_longFloatP ""
 #define DOCS_af_longFloatP "longFloatP"
 bool af_longFloatP(T_sp obj) {
-  _G();
   return gc::IsA<LongFloat_sp>(obj);
 };
-#endif
 
 #define ARGS_af_shortFloatP "(arg)"
 #define DECL_af_shortFloatP ""
@@ -264,7 +243,6 @@ bool af_realP(T_sp obj) {
 #define DECL_af_floatP ""
 #define DOCS_af_floatP "floatP"
 bool af_floatP(T_sp obj) {
-  _G();
   return gc::IsA<Float_sp>(obj);
 };
 
@@ -272,15 +250,13 @@ bool af_floatP(T_sp obj) {
 #define DECL_af_characterP ""
 #define DOCS_af_characterP "characterP"
 bool af_characterP(T_sp obj) {
-  _G();
-  return gc::IsA<Character_sp>(obj);
+  return obj.characterp();
 };
 
 #define ARGS_af_vectorP "(arg)"
 #define DECL_af_vectorP ""
 #define DOCS_af_vectorP "vectorP"
 bool af_vectorP(T_sp obj) {
-  _G();
   return gc::IsA<Vector_sp>(obj);
 };
 
@@ -288,7 +264,6 @@ bool af_vectorP(T_sp obj) {
 #define DECL_af_integerP ""
 #define DOCS_af_integerP "integerP"
 bool af_integerP(T_sp obj) {
-  _G();
   return gc::IsA<Integer_sp>(obj);
 };
 
@@ -296,9 +271,6 @@ bool af_integerP(T_sp obj) {
 #define DECL_af_keywordP ""
 #define DOCS_af_keywordP "keywordP"
 bool af_keywordP(T_sp obj) {
-  _G();
-  if (obj.nilp())
-    return false;
   if (Symbol_sp s = obj.asOrNull<Symbol_O>()) {
     return s->isKeywordSymbol();
   }
@@ -309,7 +281,6 @@ bool af_keywordP(T_sp obj) {
 #define DECL_af_pathP ""
 #define DOCS_af_pathP "pathP"
 bool af_pathP(T_sp obj) {
-  _G();
   return gc::IsA<Path_sp>(obj);
 };
 
@@ -317,7 +288,6 @@ bool af_pathP(T_sp obj) {
 #define DECL_af_bitVectorP ""
 #define DOCS_af_bitVectorP "bitVectorP"
 bool af_bitVectorP(T_sp obj) {
-  _G();
   return gc::IsA<BitVector_sp>(obj);
 };
 
@@ -325,10 +295,8 @@ bool af_bitVectorP(T_sp obj) {
 #define DECL_af_hashTableP ""
 #define DOCS_af_hashTableP "hashTableP"
 bool af_hashTableP(T_sp obj) {
-  _G();
-  if (obj.nilp())
-    return false;
   if (HashTable_sp ht = obj.asOrNull<HashTable_O>()) {
+    (void)ht;
     return true;
   }
   return false;
@@ -338,7 +306,6 @@ bool af_hashTableP(T_sp obj) {
 #define DECL_cl_readtablep ""
 #define DOCS_cl_readtablep "readtablep"
 bool cl_readtablep(T_sp obj) {
-  _G();
   return gc::IsA<ReadTable_sp>(obj);
 };
 
@@ -346,7 +313,6 @@ bool cl_readtablep(T_sp obj) {
 #define DECL_af_structureObjectP ""
 #define DOCS_af_structureObjectP "structureObjectP"
 bool af_structureObjectP(T_sp obj) {
-  _G();
   if (gc::IsA<StructureObject_sp>(obj))
     return true;
   return gc::IsA<Instance_sp>(obj);
@@ -356,7 +322,6 @@ bool af_structureObjectP(T_sp obj) {
 #define DECL_af_arrayP ""
 #define DOCS_af_arrayP "arrayP"
 bool af_arrayP(T_sp obj) {
-  _G();
   return gc::IsA<Array_sp>(obj);
 };
 
@@ -364,7 +329,6 @@ bool af_arrayP(T_sp obj) {
 #define DECL_af_singleDispatchGenericFunctionP ""
 #define DOCS_af_singleDispatchGenericFunctionP "singleDispatchGenericFunctionP"
 bool af_singleDispatchGenericFunctionP(T_sp obj) {
-  _G();
   return gc::IsA<SingleDispatchGenericFunction_sp>(obj);
 };
 
@@ -372,7 +336,6 @@ bool af_singleDispatchGenericFunctionP(T_sp obj) {
 #define DECL_af_activation_frame_p ""
 #define DOCS_af_activation_frame_p "activation_frame_p"
 bool af_activation_frame_p(T_sp obj) {
-  _G();
   return gc::IsA<ActivationFrame_sp>(obj);
 };
 
@@ -388,10 +351,8 @@ bool af_externalObjectP(T_sp obj) {
 #define DECL_af_simple_bit_vector_p ""
 #define DOCS_af_simple_bit_vector_p "simple_bit_vector_p"
 bool af_simple_bit_vector_p(T_sp o) {
-  _G();
-  if (o.nilp())
-    return false;
   if (SimpleBitVector_sp sbv = o.asOrNull<SimpleBitVector_O>()) {
+    (void)sbv;
     return true;
   }
   return false;
@@ -401,10 +362,8 @@ bool af_simple_bit_vector_p(T_sp o) {
 #define DECL_af_simple_vector_p ""
 #define DOCS_af_simple_vector_p "simple_vector_p"
 bool af_simple_vector_p(T_sp o) {
-  _G();
-  if (o.nilp())
-    return false;
   if (VectorObjects_sp vo = o.asOrNull<VectorObjects_O>()) {
+    (void)vo;
     return true;
   }
   return false;
@@ -414,10 +373,8 @@ bool af_simple_vector_p(T_sp o) {
 #define DECL_af_compiled_function_p ""
 #define DOCS_af_compiled_function_p "compiled_function_p"
 bool af_compiled_function_p(T_sp o) {
-  _G();
-  if (o.nilp())
-    return false;
   if (Function_sp fn = o.asOrNull<Function_O>()) {
+    (void)fn;
     return fn->closure->compiledP();
   }
   return false;
@@ -427,10 +384,8 @@ bool af_compiled_function_p(T_sp o) {
 #define DECL_af_genericFunctionP ""
 #define DOCS_af_genericFunctionP "genericFunctionP"
 bool af_genericFunctionP(T_sp o) {
-  _G();
-  if (o.nilp())
-    return false;
   if (Function_sp cf = o.asOrNull<Function_O>()) {
+    (void)cf;
     IMPLEMENT_MEF(BF("I should have a more sophisticated test here"));
     return true;
   }
@@ -441,7 +396,6 @@ bool af_genericFunctionP(T_sp o) {
 #define DECL_af_properListP ""
 #define DOCS_af_properListP "Return true if arg is a proper list"
 bool af_properListP(T_sp arg) {
-  _G();
   T_sp fast, slow;
   bool test = true;
   fast = slow = arg;
@@ -478,45 +432,42 @@ bool af_logicalPathnameP(T_sp obj) {
 
 void initialize_predicates() {
   af_def(ClPkg, "endp", &cl_endp);
-#define newNameDefun(pkg, myname, lispname) af_def(pkg, #lispname, &af_##myname, ARGS_af_##myname, DECL_af_##myname, DOCS_af_##myname)
+#define newNameDefun(pkg, myname, lispname) af_def(CorePkg, #lispname, &myname, ARGS_##myname, DECL_##myname, DOCS_##myname)
   af_def(ClPkg, "symbolp", &cl_symbolp);
   ClDefun(consp);
   af_def(ClPkg, "listp", &cl_listp);
   ClDefun(numberp);
-  newNameDefun(ClPkg, integerP, integerp);
-  newNameDefun(ClPkg, rationalP, rationalp);
-  newNameDefun(ClPkg, floatP, floatp);
-  newNameDefun(ClPkg, realP, realp);
-  newNameDefun(ClPkg, complexP, complexp);
-  newNameDefun(ClPkg, characterP, characterp);
-  newNameDefun(ClPkg, stringP, stringp);
-  newNameDefun(ClPkg, bitVectorP, bit_vector_p);
-  newNameDefun(ClPkg, vectorP, vectorp);
-  newNameDefun(ClPkg, simple_vector_p, simple_vector_p);
-  newNameDefun(ClPkg, strP, simple_string_p);
-  newNameDefun(ClPkg, simple_bit_vector_p, simple_bit_vector_p);
-  newNameDefun(ClPkg, arrayP, arrayp);
-  ClDefun(packagep);
-  newNameDefun(ClPkg, functionP, functionp);
-  newNameDefun(ClPkg, compiled_function_p, compiled_function_p);
-  newNameDefun(CorePkg, genericFunctionP, genericFunctionP);
-  newNameDefun(ClPkg, keywordP, keywordp);
-  SYMBOL_EXPORT_SC_(ClPkg, atom);
-  af_def(ClPkg, "atom", &cl_atom);
+  newNameDefun(CorePkg, af_integerP, cl:integerp);
+  newNameDefun(CorePkg, af_rationalP, cl:rationalp);
+  newNameDefun(CorePkg, af_floatP, cl:floatp);
+  newNameDefun(CorePkg, af_realP, cl:realp);
+  newNameDefun(CorePkg, af_complexP, cl:complexp);
+  newNameDefun(CorePkg, af_characterP, cl:characterp);
+  newNameDefun(CorePkg, af_stringP, cl:stringp);
+  newNameDefun(CorePkg, af_bitVectorP, cl:bit_vector_p);
+  newNameDefun(CorePkg, af_vectorP, cl:vectorp);
+  newNameDefun(CorePkg, af_simple_vector_p, cl:simple_vector_p);
+  newNameDefun(CorePkg, af_strP, cl:simple_string_p);
+  newNameDefun(CorePkg, af_simple_bit_vector_p, cl:simple_bit_vector_p);
+  newNameDefun(CorePkg, af_arrayP, cl:arrayp);
+  newNameDefun(CorePkg, cl_packagep, cl:packagep);
+  newNameDefun(CorePkg, af_functionP, cl:functionp);
+  newNameDefun(CorePkg, af_compiled_function_p, cl:compiled_function_p);
+  newNameDefun(CorePkg, af_genericFunctionP, core:genericFunctionP);
+  newNameDefun(CorePkg, af_keywordP, cl:keywordp);
+  newNameDefun(CorePkg, cl_atom, cl:atom);
   CoreDefun(baseCharP);
-  newNameDefun(CorePkg, fixnumP, fixnump);
-  newNameDefun(CorePkg, bignumP, bignump);
-  Defun(strP);
-  Defun(doubleFloatP);
+  newNameDefun(CorePkg, af_fixnumP, core:fixnump);
+  newNameDefun(CorePkg, af_bignumP, core:bignump);
+  newNameDefun(CorePkg, af_strP, core:strP);
+  newNameDefun(CorePkg, af_doubleFloatP, core:doubleFloatP);
   SYMBOL_EXPORT_SC_(ClosPkg, classp);
   af_def(ClosPkg, "classp", &af_classp, ARGS_af_classp, DECL_af_classp, DOCS_af_classp);
   af_def(CorePkg, "builtInClassP", &core_builtInClassP, ARGS_core_builtInClassP, DECL_core_builtInClassP, DOCS_core_builtInClassP);
   CoreDefun(cxxInstanceP);
   Defun(lambda_list_handler_p);
   Defun(ratioP);
-#ifdef CLASP_LONG_FLOAT
   Defun(longFloatP);
-#endif
   Defun(shortFloatP);
   Defun(singleFloatP);
   Defun(pathP);

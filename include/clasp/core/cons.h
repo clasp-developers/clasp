@@ -167,14 +167,6 @@ public:
     return res;
   }
 
-  template <class T>
-  void fillVec0(gctools::Vec0<T> &vec) {
-    TESTING();
-    vec.clear();
-    for (auto me : (List_sp)(this->asSmartPtr())) { //Cons_sp me=this->asSmartPtr(); me.consp(); me=cCdr(me) ) {
-      vec.emplace_back(gc::As<typename T::Type>(me->_Car));
-    }
-  }
 
   static Cons_sp createFrom_va_list(va_list &va_args);
   static Cons_sp createList(T_sp o1);
@@ -256,6 +248,7 @@ public:
 	   Remove the following member functions and replace them
 	   with the real functions  oCar, oCdr, cCdr etc */
 
+  inline T_sp cdr() const { return this->_Cdr; };
   inline T_sp ocar() const { return this->_Car; };
   inline T_sp ocadr() const {
     TESTING();
@@ -603,6 +596,19 @@ namespace core {
 List_sp coerce_to_list(T_sp o);
 
 T_sp cl_getf(List_sp plist, T_sp indicator, T_sp default_value);
-List_sp af_putF(List_sp plist, T_sp value, T_sp indicator);
+List_sp core_put_f(List_sp plist, T_sp value, T_sp indicator);
+ T_mv core_rem_f(List_sp plist, Symbol_sp indicator);
+};
+
+namespace core {
+  template <class T>
+    void fillVec0(core::List_sp c, gctools::Vec0<T> &vec) {
+    vec.clear();
+    for (auto me : (List_sp)(c)) {
+      vec.emplace_back(gc::As<T>(me->_Car));
+    }
+  }
+
+
 };
 #endif //]

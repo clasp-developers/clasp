@@ -64,7 +64,7 @@ public:
 #endif
 
 #if 0 // for now comment out all functions
-	static StructureClass_sp create(Lisp_sp e,Symbol_sp name /* , uint instanceClassSymbol */ );
+	static StructureClass_sp create(Symbol_sp name /* , uint instanceClassSymbol */ );
 
 	/*! ensure-class-using-class - see AOMOP-183 */
 	static T_sp create_ensureClassUsingClass( Function_sp exec,

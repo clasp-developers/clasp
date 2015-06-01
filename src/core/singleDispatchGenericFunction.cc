@@ -59,6 +59,7 @@ T_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_
       T_sp symFunc = gfname->symbolFunction();
       // printf("%s:%d   gfname->symbolFunction() --> %p\n", __FILE__, __LINE__, gfname->symbolFunction().raw_());
       if (SingleDispatchGenericFunction_sp existingGf = symFunc.asOrNull<SingleDispatchGenericFunction_O>()) {
+        (void)existingGf;
         SIMPLE_ERROR(BF("The symbol %s has a SingleDispatchGenericFunction bound to its function slot but no SingleDispatchGenericFunction with that name was found") % _rep_(gfname));
       } else {
         SIMPLE_ERROR(BF("The symbol %s already has a function bound to it and it is not a SingleDispatchGenericFunction - it cannot become a SingleDispatchGenericFunction") % _rep_(gfname));

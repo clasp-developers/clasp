@@ -7,7 +7,7 @@
 	(cleavir-code-utilities:separate-function-body body)
       (let* ((dspecs (reduce #'append (mapcar #'cdr declarations)))
 	     (lambda-name (cadr (find 'core:lambda-name dspecs :key #'car))))
-	(unless lambda-name (setq lambda-name 'core:unnamed-lambda))
+	(unless lambda-name (setq lambda-name 'core::unnamed-lambda))
     ;; Make the change here to a named-function-ast with lambda-name
 	(change-class function-ast 'clasp-cleavir-ast:named-function-ast
 		      :lambda-name lambda-name)))))
