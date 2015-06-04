@@ -6335,10 +6335,10 @@ T_sp core_fileColumn(T_sp strm) {
 };
 
 /*! Translated from ecl::si_do_write_sequence */
-#define ARGS_cl_writeSequence "(seq stream &key (start 0) end)"
-#define DECL_cl_writeSequence ""
-#define DOCS_cl_writeSequence "writeSequence"
-T_sp cl_writeSequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp tend) {
+#define ARGS_cl_write_sequence "(seq stream &key (start 0) end)"
+#define DECL_cl_write_sequence ""
+#define DOCS_cl_write_sequence "writeSequence"
+T_sp cl_write_sequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp tend) {
   _G();
   stream = coerce::outputStreamDesignator(stream);
   if (!AnsiStreamP(stream)) {
@@ -6462,7 +6462,7 @@ void initialize_lispStream() {
   ClDefun(makeStringOutputStream);
   SYMBOL_EXPORT_SC_(CorePkg, do_write_sequence);
   CoreDefun(do_write_sequence);
-  ClDefun(writeSequence);
+  ClDefun(write_sequence);
   SYMBOL_EXPORT_SC_(ClPkg, writeByte);
   ClDefun(writeByte);
   SYMBOL_EXPORT_SC_(ClPkg, input_stream_p);

@@ -213,6 +213,8 @@ class Lisp_O {
   friend T_mv core_sourceFileInfo(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);
   struct GCRoots //: public gctools::HeapRoot
       {
+        //! A pool of strings for string manipulation - must be per thread
+        List_sp _BufferStringPool;
     /*! The invocation history stack this should be per thread */
     InvocationHistoryStack _InvocationHistoryStack;
     ExceptionStack _ExceptionStack;
@@ -444,7 +446,9 @@ public:
   bool mpiEnabled() { return this->_MpiEnabled; }
   int mpiRank() { return this->_MpiRank; }
   int mpiSize() { return this->_MpiSize; }
-
+ public:
+  StrWithFillPtr_sp get_buffer_string();
+  void put_buffer_string(StrWithFillPtr_sp str);
 public:
   IntegerOrdering const &integer_ordering() const { return this->_IntegerOrdering; };
 

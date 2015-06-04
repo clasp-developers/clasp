@@ -40,6 +40,7 @@ local unity_sources =
       all.cc ;
 
 local sources =
+      float_to_string.cc
       record.cc
       debugger.cc
       smallMap.cc

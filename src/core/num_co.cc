@@ -1086,10 +1086,10 @@ Integer_sp cl_floatPrecision(Float_sp x) {
   return clasp_make_fixnum(precision);
 }
 
-#define ARGS_cl_integerDecodeFloat "(x)"
-#define DECL_cl_integerDecodeFloat ""
-#define DOCS_cl_integerDecodeFloat "integerDecodeFloat"
-Real_mv cl_integerDecodeFloat(Float_sp x) {
+#define ARGS_cl_integer_decode_float "(x)"
+#define DECL_cl_integer_decode_float ""
+#define DOCS_cl_integer_decode_float "integer_decode_float"
+Real_mv cl_integer_decode_float(Float_sp x) {
   _G();
   int e = 0, s = 1;
   Real_sp rx(_Nil<Real_O>());
@@ -1253,8 +1253,8 @@ void initialize_num_co() {
   ClDefun(floatDigits);
   SYMBOL_EXPORT_SC_(ClPkg, floatPrecision);
   ClDefun(floatPrecision);
-  SYMBOL_EXPORT_SC_(ClPkg, integerDecodeFloat);
-  ClDefun(integerDecodeFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, integer_decode_float);
+  ClDefun(integer_decode_float);
   SYMBOL_EXPORT_SC_(ClPkg, complex);
   ClDefun(complex);
   SYMBOL_EXPORT_SC_(ClPkg, realpart);

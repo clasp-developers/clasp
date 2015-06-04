@@ -89,7 +89,7 @@ T_sp core_environmentDebugNames(T_sp frame) {
 #define ARGS_core_environmentDebugValues "(frame)"
 #define DECL_core_environmentDebugValues ""
 #define DOCS_core_environmentDebugValues "environmentDebugValues - number of entries in this environment"
-Vector_sp core_environmentDebugValues(T_sp frame) {
+T_sp core_environmentDebugValues(T_sp frame) {
   if (frame.nilp())
     return _Nil<T_O>();
   else if (frame.framep()) {
@@ -116,7 +116,7 @@ Vector_sp core_environmentDebugValues(T_sp frame) {
     }
     return vo;
   } else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {
-    return _Nil<Vector_O>();
+    return _Nil<T_O>();
   }
   SIMPLE_ERROR(BF("Trying to get environment-debug-values of something not an activation-frame: %s") % _rep_(frame));
 }

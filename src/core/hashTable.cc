@@ -409,35 +409,48 @@ List_sp HashTable_O::keysAsCons() {
     void HashTable_O::serialize(::serialize::SNodeP node)
     {
         this->Bases::serialize(node);
-	// Archive other instance variables here
+	// Archie other instance variables here
 	node->attribute("test",this->_Test);
 	node->archiveObject("rehashSize",this->_RehashSize);
 	node->attribute("rehashThreshold",this->_RehashThreshold);
     }
 #endif
 
-void HashTable_O::archiveBase(::core::ArchiveP node) {
-  SYMBOL_EXPORT_SC_(KeywordPkg, rehashSize);
-  SYMBOL_EXPORT_SC_(KeywordPkg, rehashThreshold);
-  node->attribute(kw::_sym_rehashSize, this->_RehashSize);
-  node->attribute(kw::_sym_rehashThreshold, this->_RehashThreshold);
-  if (node->loading()) {
+
+void HashTable_O::fields(Record_sp node) {
+  // this->Base::fields(node);
+  node->field(INTERN_(core,rehash_size), this->_RehashSize);
+  node->pod_field(INTERN_(core,rehash_threshold), this->_RehashThreshold);
+  switch (node->stage()) {
+  case Record_O::loading: {
+    Vector_sp keyValueVec;
+    node->field(INTERN_(core,data), keyValueVec );
     this->clrhash();
-    node->mapVector([this](T_sp keyValue) {
-		    T_sp key = oCar(keyValue);
-		    T_sp val = oCdr(keyValue);
-		    this->hash_table_setf_gethash(key,val);
-    });
-  } else {
-    this->mapHash([&node](T_sp key, T_sp val) {
-		    Cons_sp keyValue = Cons_O::create(key,val);
-		    node->pushVector(keyValue);
-    });
+    for ( size_t i(0), iEnd(cl_length(keyValueVec)); i<iEnd; ++ ++ i ) {
+      T_sp key = (*keyValueVec)[i+0];
+      T_sp val = (*keyValueVec)[i+1];
+      this->hash_table_setf_gethash(key,val);
+    };
+  }
+      break;
+  case Record_O::saving: {
+    Vector_sp keyValueVec = core_make_vector(cl::_sym_T_O, 2*this->hashTableCount() );
+    size_t idx = 0;
+    this->mapHash([&idx,&keyValueVec](T_sp key, T_sp val) {
+        (*keyValueVec)[idx++] = key;
+        (*keyValueVec)[idx++] = val;
+      });
+    node->field(INTERN_(core,data), keyValueVec);
+  }
+      break;
+  case Record_O::patching: {
+    IMPLEMENT_MEF(BF("Add support to patch hash tables"));
+  }
+      break;
   }
 }
 
 uint HashTable_O::resizeEmptyTable(uint sz) {
-  _OF();
   if (sz < 4)
     sz = 4;
   this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), sz, false);
@@ -448,12 +461,10 @@ uint HashTable_O::resizeEmptyTable(uint sz) {
 }
 
 uint HashTable_O::hashTableCount() const {
-  _OF();
   return this->_HashTableCount;
 }
 
 uint HashTable_O::calculateHashTableCount() const {
-  _OF();
   uint cnt = 0;
   for (size_t it(0), itEnd(cl_length(this->_HashTable)); it < itEnd; ++it) {
     cnt += cl_length((this->_HashTable->operator[](it)));
@@ -462,12 +473,10 @@ uint HashTable_O::calculateHashTableCount() const {
 }
 
 uint HashTable_O::hashTableSize() const {
-  _OF();
   return cl_length(this->_HashTable);
 }
 
 bool HashTable_O::keyTest(T_sp entryKey, T_sp searchKey) const {
-  _OF();
   SUBCLASS_MUST_IMPLEMENT();
 }
 

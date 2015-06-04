@@ -1137,68 +1137,6 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 	ecl_return1(the_env, make_fixnum(precision));
     }
 
-    cl_object
-    cl_integer_decode_float(cl_object x)
-    {
-	const cl_env_ptr the_env = ecl_process_env();
-	int e, s = 1;
-
-	switch (clasp_t_of(x)) {
-#ifdef CLASP_LONG_FLOAT
-	case number_LongFloat: {
-            LongFloat d = ecl_long_float(x);
-            if (signbit(d)) {
-                s = -1;
-                d = -d;
-            }
-            if (d == 0.0) {
-                e = 0;
-                x = make_fixnum(0);
-            } else {
-                d = frexpl(d, &e);
-                x = _ecl_long_double_to_integer(ldexpl(d, LDBL_MANT_DIG));
-                e -= LDBL_MANT_DIG;
-            }
-            break;
-	}
-#endif
-	case number_DoubleFloat: {
-            double d = ecl_double_float(x);
-            if (signbit(d)) {
-                s = -1;
-                d = -d;
-            }
-            if (d == 0.0) {
-                e = 0;
-                x = make_fixnum(0);
-            } else {
-                d = frexp(d, &e);
-                x = _ecl_double_to_integer(ldexp(d, DBL_MANT_DIG));
-                e -= DBL_MANT_DIG;
-            }
-            break;
-	}
-	case number_SingleFloat: {
-            float d = ecl_single_float(x);
-            if (signbit(d)) {
-                s = -1;
-                d = -d;
-            }
-            if (d == 0.0) {
-                e = 0;
-                x = make_fixnum(0);
-            } else {
-                d = frexpf(d, &e);
-                x = _ecl_double_to_integer(ldexp(d, FLT_MANT_DIG));
-                e -= FLT_MANT_DIG;
-            }
-            break;
-	}
-	default:
-            FEwrong_type_nth_arg(@[integer-decode-float],1,x,@[float]);
-	}
-	ecl_return3(the_env, x, make_fixnum(e), make_fixnum(s));
-    }
 
 
     @(defun complex (r &optional (i make_fixnum(0)))
@@ -1268,6 +1206,73 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 
 #endif
 
+
+#if 0
+T_sp
+cl_integer_decode_float(T_sp x)
+{
+  const cl_env_ptr the_env = ecl_process_env();
+  int e, s = 1;
+
+  switch (clasp_t_of(x)) {
+#ifdef CLASP_LONG_FLOAT
+  case number_LongFloat: {
+    LongFloat d = ecl_long_float(x);
+    if (signbit(d)) {
+      s = -1;
+      d = -d;
+    }
+    if (d == 0.0) {
+      e = 0;
+      x = make_fixnum(0);
+    } else {
+      d = frexpl(d, &e);
+      x = _ecl_long_double_to_integer(ldexpl(d, LDBL_MANT_DIG));
+      e -= LDBL_MANT_DIG;
+    }
+    break;
+  }
+#endif
+  case number_DoubleFloat: {
+    double d = clasp_to_double_float(x);
+    if (signbit(d)) {
+      s = -1;
+      d = -d;
+    }
+    if (d == 0.0) {
+      e = 0;
+      x = make_fixnum(0);
+    } else {
+      d = frexp(d, &e);
+      x = _clasp_double_to_integer(ldexp(d, DBL_MANT_DIG));
+      e -= DBL_MANT_DIG;
+    }
+    break;
+  }
+  case number_SingleFloat: {
+    float d = clasp_to_single_float(x);
+    if (signbit(d)) {
+      s = -1;
+      d = -d;
+    }
+    if (d == 0.0) {
+      e = 0;
+      x = make_fixnum(0);
+    } else {
+      d = frexpf(d, &e);
+      x = _ecl_double_to_integer(ldexp(d, FLT_MANT_DIG));
+      e -= FLT_MANT_DIG;
+    }
+    break;
+  }
+  default:
+      ERROR_WRONG_TYPE_NTH_ARG(FEwrong_type_nth_arg(@[integer-decode-float],1,x,@[float]);
+  }
+  ecl_return3(the_env, x, make_fixnum(e), make_fixnum(s));
+}
+#endif
+
+  
 #define ARGS_core_asin "(arg)"
 #define DECL_core_asin ""
 #define DOCS_core_asin "asinh"

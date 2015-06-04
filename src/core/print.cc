@@ -140,7 +140,7 @@ bool clasp_print_circle(void) {
 T_sp cl_write(T_sp x, T_sp strm, T_sp array, T_sp base,
               T_sp cas, T_sp escape, T_sp gensym, T_sp length,
               T_sp level, T_sp lines, T_sp miser_width, T_sp pprint_dispatch,
-              T_sp pretty, T_sp radix, T_sp readability, T_sp right_margin) {
+              T_sp pretty, T_sp radix, T_sp readably, T_sp right_margin) {
   _G();
   DynamicScopeManager scope(cl::_sym_STARprint_arraySTAR, array);
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_baseSTAR, base);
@@ -154,7 +154,7 @@ T_sp cl_write(T_sp x, T_sp strm, T_sp array, T_sp base,
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_pprint_dispatchSTAR, pprint_dispatch);
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_prettySTAR, pretty);
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_radixSTAR, radix);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR, readability);
+  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR, readably);
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_right_marginSTAR, right_margin);
   T_sp ostrm = coerce::outputStreamDesignator(strm);
   write_object(x, ostrm);
@@ -184,7 +184,6 @@ T_sp cl_write(T_sp x, T_sp strm, T_sp array, T_sp base,
 #define DOCS_af_printUnreadableObjectFunction "printUnreadableObjectFunction - see ecl::print_unreadable.d"
 void af_printUnreadableObjectFunction(T_sp o, T_sp ostream, T_sp type, T_sp id, T_sp function) {
   _G();
-  T_sp stream = coerce::outputStreamDesignator(ostream);
   if (clasp_print_readably()) {
     PRINT_NOT_READABLE_ERROR(o);
   } else if (o.unboundp()) {
@@ -243,7 +242,7 @@ T_sp cl_princ(T_sp obj, T_sp output_stream_desig) {
 T_sp cl_prin1(T_sp obj, T_sp output_stream_desig) {
   _G();
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
-  T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
+//  T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
   eval::funcall(cl::_sym_write, obj, kw::_sym_stream, output_stream_desig);
   return obj;
 }

@@ -563,6 +563,7 @@ void Class_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp classNa
   T_sp tmc = this->_instanceClass();
   ASSERTNOTNULL(tmc);
   Class_sp mc = gc::As<Class_sp>(tmc);
+  (void)mc;
   this->lowLevel_calculateClassPrecedenceList();
 }
 
@@ -577,6 +578,7 @@ bool af_subclassp(T_sp low, T_sp high) {
     List_sp lowClassPrecedenceList = lowmc->instanceRef(Class_O::REF_CLASS_PRECEDENCE_LIST); // classPrecedenceList();
     return lowClassPrecedenceList.asCons()->memberEq(high).notnilp();
   } else if (Instance_sp inst = low.asOrNull<Instance_O>()) {
+    (void)inst;
     IMPLEMENT_MEF(BF("Run some other tests to make sure that instance is a Class: %s") % _rep_(low));
   }
   SIMPLE_ERROR(BF("Illegal argument for subclassp: %s") % _rep_(low));

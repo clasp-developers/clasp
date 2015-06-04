@@ -67,7 +67,7 @@ public:
 
   void readFromMultipleValue0() {
     core::MultipleValues &mv = core::lisp_multipleValues();
-    this->setRaw_(mv[0]);
+    this->setRaw_(reinterpret_cast<gc::Tagged>(mv[0]));
     this->_number_of_values = mv.getSize();
   };
 
@@ -84,7 +84,7 @@ public:
       this->valueSet(i, values[i]);
     }
     this->_number_of_values = values.size();
-    this->setRaw_(values[0].raw_());
+    this->setRaw_(reinterpret_cast<gc::Tagged>(values[0].raw_()));
     //	    GCTOOLS_ASSERT(this->valid());
   }
 

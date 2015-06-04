@@ -1,5 +1,5 @@
 /*
-    File: float_to_digits.h
+    File: record.cc
 */
 
 /*
@@ -24,18 +24,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_float_to_digits_H //[
-#define _core_float_to_digits_H
+#define DEBUG_LEVEL_FULL
 
-#include <clasp/core/clasp_gmpxx.h>
-#include <math.h>
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/str.h>
+#include <clasp/core/arguments.h>
+#include <clasp/core/hashTableEq.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/record.h>
+
+#include <clasp/core/wrappers.h>
 
 namespace core {
 
-  T_mv core_float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
-                            T_sp relativep);
+EXPOSE_CLASS(core, Record_O);
 
-  void initialize_float_to_digits();
+T_sp record_circle_subst( T_sp replacement_table, T_sp tree )
+{
+  return eval::funcall(_sym_circle_subst,replacement_table, tree);
+}
+
+
+void Record_O::exposeCando(Lisp_sp lisp) {
+  _G();
+  class_<Record_O>()
+    ;
+}
+void Record_O::exposePython(Lisp_sp lisp) {
+  _G();
+}
 };
-
-#endif

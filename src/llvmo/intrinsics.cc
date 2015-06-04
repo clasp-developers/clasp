@@ -1528,7 +1528,7 @@ void saveToMultipleValue0(core::T_mv *mvP) {
 
 void sp_restoreFromMultipleValue0(core::T_sp *resultP) {
   MultipleValues &mv = lisp_multipleValues();
-  (*resultP).setRaw_(mv[0]);
+  (*resultP).setRaw_(reinterpret_cast<gc::Tagged>(mv[0]));
 }
 
 void mv_restoreFromMultipleValue0(core::T_mv *resultP) {

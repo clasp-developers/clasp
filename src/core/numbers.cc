@@ -2253,7 +2253,7 @@ EXPOSE_CLASS(core, DoubleFloat_O);
 void DoubleFloat_O::exposeCando(Lisp_sp lisp) {
   class_<DoubleFloat_O>()
       //	    .def("exp",&DoubleFloat_O::exp)
-      .def("core:isnan", &DoubleFloat_O::isnan);
+    //.def("core:isnan", &DoubleFloat_O::isnan);
   SYMBOL_SC_(CorePkg, nan);
   Defun(nan);
   ;

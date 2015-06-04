@@ -1,5 +1,5 @@
 /*
-    File: float_to_digits.h
+    File: smallMap.h
 */
 
 /*
@@ -24,18 +24,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_float_to_digits_H //[
-#define _core_float_to_digits_H
 
-#include <clasp/core/clasp_gmpxx.h>
-#include <math.h>
+//
+// (C) 2004 Christian E. Schafmeister
+//
+
+#ifndef SmallMultimap_H
+#define SmallMultimap_H
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include <set>
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lispVector.h>
+#include <clasp/core/hashTableEq.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/corePackage.fwd.h>
 
 namespace core {
+  using namespace core;
 
-  T_mv core_float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
-                            T_sp relativep);
 
-  void initialize_float_to_digits();
+  
+SMART(SmallMultimap);
+class SmallMultimap_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_CLASS(core, CorePkg, SmallMultimap_O, "SmallMultimap");
+GCPRIVATE:
+  typedef gctools::SmallMultimap<Symbol_sp, T_sp, SymbolComparer > map_type;
+  map_type map;
+
+public:
+  void insert(T_sp key, T_sp val);
+  int size() const { return this->map.size(); };
+  void erase(T_sp key);
+  void describe();
+  void describeRange(T_sp key);
+
+  DEFAULT_CTOR_DTOR(SmallMultimap_O);
+};
 };
 
+
+
+TRANSLATE(core::SmallMultimap_O);
 #endif

@@ -787,6 +787,8 @@ class Function_O;
 typedef gctools::smart_ptr<Function_O> Function_sp;
 class Str_O;
 typedef gctools::smart_ptr<Str_O> Str_sp;
+class StrWithFillPtr_O;
+typedef gctools::smart_ptr<StrWithFillPtr_O> StrWithFillPtr_sp;
 #ifdef USE_HEAP_FIXNUM
 class Fixnum_O;
 typedef gctools::smart_ptr<Fixnum_O> Fixnum_sp;
@@ -970,6 +972,7 @@ gctools::Fixnum lisp_asFixnum(core::T_sp obj);
 /*! Create a SourcePosInfo object for a C++ function */
 SourcePosInfo_sp lisp_createSourcePosInfo(const string &sourceFile, size_t filePos, int lineno);
 
+ T_sp lisp_lookup_reader_patch(T_sp patches, T_sp key, bool& found);
 bool lisp_characterP(core::T_sp obj);
 bool lisp_BuiltInClassesInitialized();
 void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol);

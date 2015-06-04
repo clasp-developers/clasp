@@ -634,7 +634,7 @@ T_sp cl_readChar(T_sp ostrm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
 
 Str_sp cl_writeString(Str_sp str, T_sp stream, int start, T_sp end);
 
-T_sp cl_writeSequence(T_sp seq, T_sp stream, Fixnum_sp start, T_sp end);
+T_sp cl_write_sequence(T_sp seq, T_sp stream, Fixnum_sp start, T_sp end);
 
 bool cl_streamp(T_sp strm);
 

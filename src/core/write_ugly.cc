@@ -64,6 +64,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/print.h>
+#include <clasp/core/float_to_string.h>
 #include <clasp/core/write_symbol.h>
 #include <clasp/core/write_ugly.h>
 
@@ -156,7 +157,7 @@ void Integer_O::__write__(T_sp stream) const {
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        true);
-  cl_writeSequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
+  cl_write_sequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
 }
 
 #if 0 // working
@@ -198,14 +199,6 @@ void Integer_O::__write__(T_sp stream) const {
         ecl_write_char(')', stream);
     }
 
-    static void
-    write_float(T_sp f, T_sp stream)
-    {
-        T_sp s = si_get_buffer_string();
-        s = si_float_to_string_free(s, f, ecl_make_fixnum(-3), ecl_make_fixnum(8));
-        si_do_write_sequence(s, stream, ecl_make_fixnum(0), ECL_NIL);
-        si_put_buffer_string(s);
-    }
 
     static void
     write_character(T_sp x, T_sp stream)
@@ -427,7 +420,7 @@ _clasp_write_fixnum(gctools::Fixnum i, T_sp stream)
                        , clasp_make_fixnum(clasp_print_base())
                        , cl::_sym_STARprint_radixSTAR->symbolValue().isTrue()
                        , true);
-  cl_writeSequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
+  cl_write_sequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
 }
 
 void write_fixnum(T_sp strm, T_sp i) {
@@ -438,7 +431,7 @@ void write_fixnum(T_sp strm, T_sp i) {
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        true);
-  cl_writeSequence(buffer, strm, make_fixnum(0), _Nil<T_O>());
+  cl_write_sequence(buffer, strm, make_fixnum(0), _Nil<T_O>());
 }
 
 void write_single_float(T_sp strm, SingleFloat_sp i) {
@@ -446,6 +439,15 @@ void write_single_float(T_sp strm, SingleFloat_sp i) {
   ss << unbox_single_float(i);
   clasp_write_string(ss.str(), strm);
 }
+
+ void
+ write_float(T_sp f, T_sp stream)
+ {
+   StrWithFillPtr_sp s = _lisp->get_buffer_string();
+   s = core_float_to_string_free(s, f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
+   cl_write_sequence(s, stream, clasp_make_fixnum(0), _Nil<T_O>());
+   _lisp->put_buffer_string(s);
+ }
 
 void write_character(T_sp strm, T_sp chr) {
   ASSERT(chr.characterp());
@@ -469,9 +471,13 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
   } else if (x.characterp()) {
     write_character(stream, x);
   } else if (x.single_floatp()) {
-    write_single_float(stream, gc::As<SingleFloat_sp>(x));
+    write_float(gc::As<SingleFloat_sp>(x), stream);
   } else if (x.otherp() || x.consp()) {
-    x->__write__(stream);
+    if (Float_sp fx = x.asOrNull<Float_O>() ) {
+      write_float(fx,stream);
+    } else {
+      x->__write__(stream);
+    }
   } else if (x.framep()) {
     clasp_write_string("#<stack-based-frame>", stream);
   } else {

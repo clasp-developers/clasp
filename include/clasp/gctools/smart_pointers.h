@@ -187,18 +187,17 @@ namespace gctools {
   /*! Return the raw smart_ptr value interpreted as a T_O* */
     core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
 
-    void setRaw_(core::T_O *p) { this->theObject = reinterpret_cast<core::T_O *>(p); }
+    void setRaw_(Tagged p) { this->theObject = reinterpret_cast<core::T_O *>(p); }
 
   /*! This should almost NEVER be used!!!!!!   
-	  The only reason to ever use this is when theObject will be set to NULL
-	  and you are sure that it will not be interpreted as a Fixnum!!!
 
-	  List actual uses here:
+	  List all uses of rawRef_ here:
 	  gcweak.h>>WeakPointerManager
 	  gcweak.h>>~WeakPointerManager
 	  gcweak.h>>Mapping(const Type& val)
 	  gcweak.h>>Buckets::set
 	  intrinsics.cc>>cc_loadTimeValueReference
+          record.h>>field specialized on gc::smart_ptr<OT>&
 	*/
     Type *&rawRef_() { return this->theObject; };
 
@@ -415,7 +414,7 @@ public:
   /*! Return the raw smart_ptr value interpreted as a T_O* */
   core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
 
-  void setRaw_(Type *p) { this->theObject = reinterpret_cast<Type *>(p); }
+  void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
 
   /*! This should almost NEVER be used!!!!!!   
 	  The only reason to ever use this is when theObject will be set to NULL
@@ -943,7 +942,7 @@ public:
   /*! Return the raw smart_ptr value interpreted as a T_O* */
   core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
 
-  void setRaw_(Type *p) { this->theObject = reinterpret_cast<Type *>(p); }
+  void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
 
   /*! This should almost NEVER be used!!!!!!   
 	  The only reason to ever use this is when theObject will be set to NULL
@@ -1098,7 +1097,9 @@ public:
   typedef core::T_O
       Type; // The best common type for both Cons_O and Symbol_O is T_O
   Type *theObject;
-
+ public:
+  void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
+  Type *&rawRef_() { return this->theObject; };
 public:
   //! The default constructor returns an invalid smart_ptr
   smart_ptr() : theObject(NULL){};

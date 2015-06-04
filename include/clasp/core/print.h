@@ -52,6 +52,7 @@ T_mv af_write(T_sp x, T_sp strm, T_sp array, T_sp base,
               T_sp pretty, T_sp radix, T_sp readability, T_sp right_margin);
 
 T_sp cl_print(T_sp obj, T_sp stream);
+T_sp cl_prin1(T_sp obj, T_sp stream);
 
 void initialize_print();
 };

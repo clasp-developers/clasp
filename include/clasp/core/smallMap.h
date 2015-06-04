@@ -1,5 +1,5 @@
 /*
-    File: float_to_digits.h
+    File: smallMap.h
 */
 
 /*
@@ -24,18 +24,44 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_float_to_digits_H //[
-#define _core_float_to_digits_H
 
-#include <clasp/core/clasp_gmpxx.h>
-#include <math.h>
+//
+// (C) 2004 Christian E. Schafmeister
+//
+
+#ifndef SmallMap_H
+#define SmallMap_H
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include <set>
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lispVector.h>
+#include <clasp/core/hashTableEq.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/corePackage.fwd.h>
 
 namespace core {
+  using namespace core;
+SMART(SmallMap);
+class SmallMap_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_CLASS(core, CorePkg, SmallMap_O, "SmallMap");
+GCPRIVATE:
+  typedef gctools::SmallMap<T_sp, T_sp> map_type;
+  map_type map;
 
-  T_mv core_float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
-                            T_sp relativep);
+public:
+  T_sp find(T_sp key, T_sp defval);
+  void setf(T_sp key, T_sp val);
+  int size() const { return this->map.size(); };
+  int capacity() const { return this->map.capacity(); };
 
-  void initialize_float_to_digits();
+  DEFAULT_CTOR_DTOR(SmallMap_O);
+};
 };
 
+
+TRANSLATE(core::SmallMap_O);
 #endif

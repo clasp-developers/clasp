@@ -197,6 +197,8 @@ SYMBOL_EXPORT_SC_(ClPkg, nextMethodP);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinspectorHookSTAR);
 SYMBOL_SC_(ExtPkg, integer8);
 SYMBOL_SC_(ExtPkg, byte8);
+SYMBOL_EXPORT_SC_(ExtPkg, float_nan_string);
+SYMBOL_EXPORT_SC_(ExtPkg, float_infinity_string);
 SYMBOL_EXPORT_SC_(ExtPkg, STARdefault_external_formatSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, truly_the);
 SYMBOL_EXPORT_SC_(ExtPkg, specialVar);
@@ -218,6 +220,7 @@ SYMBOL_EXPORT_SC_(CorePkg, invocationHistoryFrame);
 SYMBOL_EXPORT_SC_(CorePkg, size_t);
 SYMBOL_EXPORT_SC_(CorePkg, threadInfo);
 
+SYMBOL_EXPORT_SC_(CorePkg, circle_subst);
 SYMBOL_EXPORT_SC_(CorePkg, STARsourceDatabaseSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourcePosInfoSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARstartRunTimeSTAR);

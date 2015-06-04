@@ -1367,6 +1367,7 @@ Symbol_mv af_gensym(T_sp x) {
 #define DOCS_af_type_to_symbol "type_to_symbol"
 Symbol_mv af_type_to_symbol(T_sp x) {
   _G();
+#pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
   if (x.fixnump())
     return (Values(cl::_sym_fixnum));
@@ -1425,6 +1426,7 @@ T_sp type_of(T_sp x) {
     if (Class_sp mcl = cl.asOrNull<Class_O>()) {
       t = mcl->className();
     } else if (Instance_sp icl = cl.asOrNull<Instance_O>()) {
+      (void)icl;
       DEPRECIATEDP("Classes of instances should always be of Class_O type, not Instance_O");
       //	    t = icl->_CLASS_NAME();
     } else {
@@ -1446,7 +1448,7 @@ T_sp type_of(T_sp x) {
     return res.cons();
   } else if (Integer_sp ix = x.asOrNull<Integer_O>()) {
     ql::list res(_lisp);
-    res << cl::_sym_integer << x << x;
+    res << cl::_sym_integer << ix << ix;
     return res.cons();
   } else if (af_characterP(x)) {
     if (af_standard_char_p(gc::As<Character_sp>(x)))
@@ -1511,7 +1513,7 @@ T_sp type_of(T_sp x) {
   } else if (x.consp()) {
     return cl::_sym_cons;
   } else if (Pathname_sp px = x.asOrNull<Pathname_O>()) {
-    if (af_logicalPathnameP(x)) {
+    if (af_logicalPathnameP(px)) {
       return cl::_sym_logical_pathname;
     } else {
       return cl::_sym_pathname;

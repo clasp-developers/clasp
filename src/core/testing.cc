@@ -102,6 +102,7 @@ T_sp af_testVal(T_sp v) {
   if (v.fixnump()) { // Fixnum_sp fn = v.asOrNull<Fixnum_O>() ) {
     return Str_O::create("val is fixnum");
   } else if (Symbol_sp sym = v.asOrNull<Symbol_O>()) {
+    (void)sym;
     return Str_O::create("arg is symbol");
   }
   return Str_O::create("arg didn't match");

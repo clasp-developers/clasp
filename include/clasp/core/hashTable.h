@@ -45,7 +45,7 @@ class HashTable_O : public T_O {
 
   LISP_BASE1(T_O);
   LISP_VIRTUAL_CLASS(core, ClPkg, HashTable_O, "HashTable");
-  void archiveBase(SNode_sp node);
+  void fields(Record_sp node);
 
  HashTable_O() : _InitialSize(4), _RehashSize(_Nil<Number_O>()), _RehashThreshold(1.2), _HashTable(_Nil<VectorObjects_O>()), _HashTableCount(0){};
   virtual ~HashTable_O(){};

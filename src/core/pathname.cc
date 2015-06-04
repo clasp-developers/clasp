@@ -1103,12 +1103,12 @@ T_sp clasp_namestring(T_sp tx, int flags) {
         truncate_if_unreadable)
       return _Nil<T_O>();
     if (host.notnilp()) {
-      cl_writeSequence(gc::As<Str_sp>(host), buffer, make_fixnum(0), _Nil<T_O>());
+      cl_write_sequence(gc::As<Str_sp>(host), buffer, make_fixnum(0), _Nil<T_O>());
       clasp_write_string(":", buffer);
     }
   } else {
     if ((y = x->_Device).notnilp()) {
-      cl_writeSequence(gc::As<Str_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
+      cl_write_sequence(gc::As<Str_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
       clasp_write_string(":", buffer);
     }
     if (host.notnilp()) {
@@ -1118,7 +1118,7 @@ T_sp clasp_namestring(T_sp tx, int flags) {
       }
 #endif
       clasp_write_string("//", buffer);
-      cl_writeSequence(gc::As<Str_sp>(host), buffer, make_fixnum(0), _Nil<T_O>());
+      cl_write_sequence(gc::As<Str_sp>(host), buffer, make_fixnum(0), _Nil<T_O>());
     }
   }
   l = x->_Directory;
@@ -1142,7 +1142,7 @@ T_sp clasp_namestring(T_sp tx, int flags) {
     } else if (y == kw::_sym_wild_inferiors) {
       clasp_write_string("**", buffer);
     } else if (y != kw::_sym_back) {
-      cl_writeSequence(gc::As<Str_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
+      cl_write_sequence(gc::As<Str_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
     } else {
       /* Directory :back has no namestring representation */
       return _Nil<T_O>();
@@ -1162,7 +1162,7 @@ NO_DIRECTORY:
     if (y == kw::_sym_wild) {
       clasp_write_string("*", buffer);
     } else {
-      cl_writeSequence(gc::As<Str_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
+      cl_write_sequence(gc::As<Str_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
     }
   } else if (!logical && !x->_Type.nilp()) {
     /* #P".txt" is :NAME = ".txt" :TYPE = NIL and
@@ -1178,7 +1178,7 @@ NO_DIRECTORY:
       clasp_write_string(".*", buffer);
     } else {
       clasp_write_string(".", buffer);
-      cl_writeSequence(gc::As<Str_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
+      cl_write_sequence(gc::As<Str_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
     }
   }
   y = x->_Version;
@@ -1188,7 +1188,7 @@ NO_DIRECTORY:
       if (y == kw::_sym_wild) {
         clasp_write_string("*", buffer);
       } else if (y == kw::_sym_newest) {
-        cl_writeSequence(af_symbolName(gc::As<Symbol_sp>(y)), buffer,
+        cl_write_sequence(af_symbolName(gc::As<Symbol_sp>(y)), buffer,
                          make_fixnum(0), _Nil<T_O>());
       } else {
         /* Since the printer is not reentrant,

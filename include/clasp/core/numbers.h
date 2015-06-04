@@ -119,6 +119,8 @@ Number_sp clasp_signum(Number_sp num);
 Number_sp clasp_one_plus(Number_sp num);
 Number_sp clasp_one_minus(Number_sp num);
 Number_sp clasp_negate(Number_sp num);
+bool clasp_float_nan_p(Float_sp num);
+bool clasp_float_infinity_p(Float_sp num);
 NumberType clasp_t_of(Number_sp num);
 Integer_sp clasp_shift(Integer_sp num, int bits);
 int clasp_integer_length(Integer_sp x);
@@ -424,6 +426,9 @@ class Float_O : public Real_O {
 public:
   virtual Integer_sp castToInteger() const { SUBIMP(); };
 
+  virtual bool isnan_() const { SUBIMP(); };
+  virtual bool isinf_() const { SUBIMP(); };
+
   DEFAULT_CTOR_DTOR(Float_O);
 };
 
@@ -458,7 +463,8 @@ public:
   Number_sp signum_() const;
   string __repr__() const;
   Number_sp abs_() const;
-  bool isnan() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!!!!
+  bool isnan_() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!
+  bool isinf_() const { return isinf(this->_Value); };
 public:
   //	virtual	string	valueAsString_() const;
   //	virtual	void	setFromString( const string& strVal );
@@ -516,7 +522,7 @@ public:
 	//	virtual Number_sp copy() const;
 	Number_sp signum_() const;
 	Number_sp abs_() const;
-	bool isnan() const {return this->_Value != this->_Value;}; // NaN is supposed to be the only value that != itself!!!!
+	bool isnan_() const {return this->_Value != this->_Value;}; // NaN is supposed to be the only value that != itself!!!!
     public:
 	//	virtual	string	valueAsString_() const;
 	//	virtual	void	setFromString( const string& strVal );
@@ -595,7 +601,8 @@ public:
   double get() const { return this->_Value; };
   Number_sp signum_() const;
   Number_sp abs_() const { return DoubleFloat_O::create(fabs(this->_Value)); };
-  bool isnan() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!!!!
+  bool isnan_() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!!!!
+  bool isinf_() const { return isinf(this->_Value); };
 public:
   //	virtual	string	valueAsString_() const;
   //	virtual	void	setFromString( const string& strVal );
@@ -669,7 +676,8 @@ public:
   //	virtual Number_sp copy() const;
   Number_sp signum_() const;
   Number_sp abs_() const;
-  bool isnan() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!!!!
+  bool isnan_() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!!!!
+  bool isinf_() const { return isinf(this->_Value); };
 public:
   //	virtual	string	valueAsString_() const;
   //	virtual	void	setFromString( const string& strVal );
@@ -758,8 +766,7 @@ public:
   string __repr__() const;
   Number_sp signum_() const;
   Number_sp abs_() const;
-  bool isnan() const;
-
+  bool isnan_() const;
 public:
   //	virtual	string	valueAsString_() const;
   //	virtual	void	setFromString( const string& str);
@@ -854,7 +861,7 @@ public:
   string __repr__() const;
   Number_sp signum_() const;
   Number_sp abs_() const;
-  bool isnan() const;
+  bool isnan_() const;
 
 public:
   //	virtual	string	valueAsString_() const;
@@ -1358,6 +1365,27 @@ inline Number_sp clasp_conjugate(Number_sp x) {
     return x;
   return x->conjugate_();
 }
+
+
+inline bool clasp_float_nan_p(Float_sp num)
+ {
+   if ( num.single_floatp() ) {
+     float f = num.unsafe_single_float();
+     return f!=f;
+   }
+   return num->isnan_();
+ }
+ 
+inline bool clasp_float_infinity_p(Float_sp num)
+ {
+   if ( num.single_floatp() ) {
+     float f = num.unsafe_single_float();
+     return isinf(f);
+   }
+   return num->isnan_();
+ }
+   
+
 };
 
 #endif //]

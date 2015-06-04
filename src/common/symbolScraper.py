@@ -523,7 +523,7 @@ for fileName in fileNames:
             if ( namespace in PackageForNamespace ):
                 pkgName = PackageForNamespace[namespace]
             else:
-                raise Exception("Error!!!! Unknown namespace - make sure the NAMESPACE_PACKAGE_ASSOCIATION macro for this namespace (%s) is defined" % namespace)
+                raise Exception("Error!!!! Reading %s - unknown namespace - make sure the NAMESPACE_PACKAGE_ASSOCIATION macro for this namespace (%s) is defined" % (fileName, namespace))
             s = Symbol(fileName,ln,pkgName,name=gr[1],export=False)
             addScrapedSymbol(s)
             continue

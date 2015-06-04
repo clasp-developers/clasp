@@ -167,7 +167,7 @@ public:
     this->_symbols = HashTableEq_O::create_default();
   };
   virtual bool mapKeyValue(T_sp key, T_sp value) {
-    Bignum_sp skey = gc::As<Bignum_sp>(key);
+//    Bignum_sp skey = gc::As<Bignum_sp>(key);
     Symbol_sp svalue = gc::As<Symbol_sp>(value);
     string symbolName = lisp_symbolNameAsString(svalue);
     string::size_type pos = symbolName.find(this->_substr);
@@ -183,7 +183,11 @@ public:
 //
 // Constructor
 //
-Lisp_O::GCRoots::GCRoots() : _MultipleValuesCur(NULL), _BignumRegister0(_Unbound<Bignum_O>()), _BignumRegister1(_Unbound<Bignum_O>()), _BignumRegister2(_Unbound<Bignum_O>())
+Lisp_O::GCRoots::GCRoots() : _BufferStringPool(_Nil<T_O>())
+                           , _MultipleValuesCur(NULL)
+                           , _BignumRegister0(_Unbound<Bignum_O>())
+                           , _BignumRegister1(_Unbound<Bignum_O>())
+                           , _BignumRegister2(_Unbound<Bignum_O>())
                              //                               , _TraceFunctions(_Unbound<HashTable_O>())
                              ,
                              _SystemProperties(_Nil<T_O>()), _CatchInfo(_Nil<T_O>()), _SpecialForms(_Unbound<HashTableEq_O>()), _SingleDispatchMethodCachePtr(NULL), _MethodCachePtr(NULL), _SlotCachePtr(NULL), _NullStream(_Nil<T_O>()), _PathnameTranslations(_Nil<T_O>()) {}
@@ -625,6 +629,28 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_PrintSymbolsProperly = true;
   }
 }
+
+/*! Get a buffer string from the BufferStringPool */
+StrWithFillPtr_sp Lisp_O::get_buffer_string()
+{
+  /* BufferStringPool must be thread local */
+  if ( this->_Roots._BufferStringPool.nilp() ) {
+    StrWithFillPtr_sp one = StrWithFillPtr_O::create(' ', 256, 0, true );
+    this->_Roots._BufferStringPool = Cons_O::create(one,_Nil<T_O>());
+  }
+  StrWithFillPtr_sp ret = gc::As<StrWithFillPtr_sp>(oCar(this->_Roots._BufferStringPool));
+  this->_Roots._BufferStringPool = oCdr(this->_Roots._BufferStringPool);
+  ret->setFillPointer(0);
+  return ret;
+}
+
+/*! Return a buffer string to the BufferStringPool
+*/
+void Lisp_O::put_buffer_string(StrWithFillPtr_sp str)
+{
+  this->_Roots._BufferStringPool = Cons_O::create(str,this->_Roots._BufferStringPool);
+}
+
 
 void Lisp_O::setCurrentWorkingDirectory(Path_sp dir) {
   _sym_STARcurrent_working_directorySTAR->setf_symbolValueReadOnlyOverRide(dir);

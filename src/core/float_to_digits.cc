@@ -66,7 +66,7 @@ Real_sp times2(Real_sp x) {
 }
 
 static float_approx *setup(Float_sp number, float_approx *approx) {
-  Real_mv mv_f = cl_integerDecodeFloat(number);
+  Real_mv mv_f = cl_integer_decode_float(number);
   Integer_sp f = gc::As<Integer_sp>(mv_f);
   Fixnum_sp fne = gc::As<Fixnum_sp>(mv_f.valueGet(1));
   Fixnum e = clasp_fixnum(fne), min_e;
@@ -231,7 +231,7 @@ change_precision(float_approx *approx, T_sp tposition, T_sp relativep) {
 #define ARGS_core_float_to_digits "(digits number position relativep)"
 #define DECL_core_float_to_digits ""
 #define DOCS_core_float_to_digits "float_to_digits"
-T_mv core_float_to_digits(T_sp tdigits, Float_sp number, Real_sp position,
+T_mv core_float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
                           T_sp relativep) {
   gctools::Fixnum k;
   float_approx approx[1];

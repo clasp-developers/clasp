@@ -156,7 +156,7 @@ public:
     vf->allocate(mv.getSize());
     // TODO: This is used for all generic function calls - is there a better way than copying the ValueFrame??????
     for (int i(0); i < mv.getSize(); ++i) {
-      vf->_Objects[i].setRaw_(mv[i]);
+      vf->_Objects[i].setRaw_(reinterpret_cast<gc::Tagged>(mv[i]));
     }
     vf->_ParentFrame = parent;
 #if 0
@@ -536,7 +536,7 @@ inline bool findValue(core::T_sp f, core::T_sp sym, int &depth, int &index, core
   }
   core::T_sp debugInfo = gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxDebugInfo]);
   if (lisp_search(debugInfo, sym, index)) {
-    value.setRaw_(frameImpl[index + IdxValuesArray]);
+    value.setRaw_(reinterpret_cast<gc::Tagged>(reinterpret_cast<gc::Tagged>(frameImpl[index + IdxValuesArray])));
     return true;
   }
   ++depth;

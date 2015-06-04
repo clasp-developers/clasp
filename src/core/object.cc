@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/lispDefinitions.h>
 #include <clasp/core/record.h>
+#include <clasp/core/print.h>
 #include <clasp/core/wrappers.h>
 
 /*
@@ -84,6 +85,79 @@ std::ostream &operator<<(std::ostream &out, T_sp obj) {
 _RootDummyClass::_RootDummyClass() : GCObject(){};
 
 namespace core {
+
+T_sp core_decode(T_sp obj, core::List_sp arg);
+
+
+T_sp alist_from_plist(List_sp plist) {
+  T_sp alist(_Nil<T_O>());
+  while (plist.notnilp() ) {
+    T_sp key = oCar(plist);
+    plist = oCdr(plist);
+    T_sp val = oCar(plist);
+    plist = oCdr(plist);
+    alist = Cons_O::create(Cons_O::create(key,val),alist);
+  }
+  return alist; // should I reverse this?
+}
+
+#define ARGS_core_make_builtin "(class-name &rest args)"
+#define DECL_core_make_builtin ""
+#define DOCS_core_make_builtin "make_builtin"
+T_sp core_make_builtin(T_sp class_or_name, T_sp args)
+{
+  Class_sp theClass;;
+  if ( Class_sp argClass = class_or_name.asOrNull<Class_O>() ) {
+    theClass = argClass;
+  } else if ( class_or_name.nilp() ) {
+    goto BAD_ARG0;
+  } else if ( Symbol_sp name = class_or_name.asOrNull<Symbol_O>() ) {
+    theClass = cl_findClass(name,true,_Nil<T_O>());
+  } else {
+    goto BAD_ARG0;
+  }
+  {
+    T_sp instance = theClass->make_instance();
+    if ( args.notnilp() ) {
+      args = alist_from_plist(args);
+      core_decode(instance,args);
+    }
+    return instance;
+  }
+ BAD_ARG0:
+  TYPE_ERROR(class_or_name,Cons_O::createList(cl::_sym_Class_O,cl::_sym_Symbol_O));
+  UNREACHABLE();
+}
+
+#define ARGS_core_printBuiltinObject "(obj stream)"
+#define DECL_core_printBuiltinObject ""
+#define DOCS_core_printBuiltinObject "printBuiltinObject"
+T_sp core_printBuiltinObject(T_sp obj, T_sp stream)
+{
+  clasp_write_char('#',stream);
+  clasp_write_char('I',stream);
+  clasp_write_char('(',stream);
+  Class_sp myclass = lisp_instance_class(obj);
+  ASSERTF(myclass,BF("Could not get _instanceClass for object of type: %s\n") % typeid(*obj).name());
+  Symbol_sp className = myclass->name();
+  cl_prin1(className,stream);
+  core::List_sp alist = obj->encode();
+  for ( auto cur : alist ) {
+    Cons_sp entry = gc::As<Cons_sp>(oCar(cur));
+    Symbol_sp key = gc::As<Symbol_sp>(oCar(entry));
+    T_sp val = oCdr(entry);
+    clasp_write_char(' ',stream);
+    cl_prin1(key,stream);
+    clasp_finish_output(stream);
+    clasp_write_char(' ',stream);
+    cl_prin1(val,stream);
+  }
+  clasp_write_char(' ',stream);
+  clasp_write_char(')',stream);
+  clasp_finish_output(stream);
+  return obj;
+}
+
 
 #define ARGS_af_lowLevelDescribe "(arg)"
 #define DECL_af_lowLevelDescribe ""
@@ -335,7 +409,11 @@ void T_O::describe() {
 }
 
 void T_O::__write__(T_sp strm) const {
-  clasp_write_string(this->__repr__(), strm);
+  if ( clasp_print_readably() ) {
+    core_printBuiltinObject(this->asSmartPtr(),strm);
+  } else {
+    clasp_write_string(this->__repr__(), strm);
+  }
 }
 
 void T_O::setTrackName(const string &msg) {
@@ -439,6 +517,8 @@ T_sp T_O::instanceSigSet() {
   _G();
   SIMPLE_ERROR(BF("T_O::instanceSigSet() invoked on object class[%s] val-->%s") % this->_instanceClass()->classNameAsString() % _rep_(this->asSmartPtr()));
 }
+
+
 
 void T_O::exposeCando(core::Lisp_sp lisp) {
   class_<T_O> ot;
@@ -569,5 +649,7 @@ void initialize_object() {
   ClDefun(equal);
   SYMBOL_EXPORT_SC_(ClPkg, equalp);
   ClDefun(equalp);
+  CoreDefun(printBuiltinObject);
+  CoreDefun(make_builtin);
 };
 };
