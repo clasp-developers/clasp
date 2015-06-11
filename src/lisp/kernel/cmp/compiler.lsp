@@ -498,6 +498,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 
 
+
 (defun codegen-fill-let-environment (new-env lambda-list-handler
 				     exps parent-env evaluate-env)
   "Evaluate each of the exps in the evaluate-env environment
@@ -638,9 +639,17 @@ env is the parent environment of the (result-af) value frame"
 
 
 
-
-
-
+#||
+#+(or)(defun codegen-primop-consp (result rest env)
+  (let* ((value (car rest))
+         (tag (llvm-sys:create-and *irbuilder* (llvm-sys:create-bit-cast value +uintptr_t+) (jit-constant-uintptr_t +tag-mask+) "tag-only"))
+         (consp-tag-match (llvm-sys:create-icmp-eq tag (jit-constant-uintptr_t +cons-tag+))))
+    (
+         
+         (consp-true-block (irc-basic-block-create "consp-true"))
+         (consp-false-block
+    (
+||#
 
 
 

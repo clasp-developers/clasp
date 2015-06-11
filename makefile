@@ -65,8 +65,9 @@ all:
 	make submodules
 	make asdf
 	make boostbuildv2-build
+	make -C src/main prebuild
 	make clasp-boehm
-	make clasp-mps
+#	make clasp-mps
 
 
 sub-prebuild:
@@ -165,7 +166,7 @@ cl-full-mps:
 
 
 clasp-boehm-cpp:
-	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release boehm)
+	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) program=cando release boehm)
 
 clasp-boehm:
 	make clasp-boehm-cpp

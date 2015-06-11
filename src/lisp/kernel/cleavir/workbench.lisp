@@ -5,7 +5,7 @@
   (load "sys:kernel;cleavir;cmpclasp.lisp")
   (print (core:getpid)))
 
-(compile-full-cleavir :recompile nil)
+(compile-full-cleavir :recompile t)
 
 
 (print "Hello")
@@ -22,7 +22,7 @@
 (mir-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
 
 (trace cleavir-env:variable-info)
-(clasp-cleavir::cleavir-compile 'consp '(lambda (x) (if (cleavir-primop:consp x) t nil)) :debug t)
+(clasp-cleavir::cleavir-compile 'consp '(lambda (x) (if (cleavir-primop:consp x) 1 0)) :debug t)s
 (constantp 't)
 (constantp 'nil)
 
