@@ -25,8 +25,6 @@ irc-load
 irc-br
 irc-begin-block
 irc-low-level-trace
-irc-nil
-irc-nil
 irc-br
 irc-begin-block
 irc-low-level-trace
@@ -39,7 +37,6 @@ calling-convention-nargs
 *gv-current-function-name*
 irc-basic-block-create
 irc-branch-to-and-begin-block
-irc-nil
 irc-basic-block-create
 irc-basic-block-create
 irc-basic-block-create

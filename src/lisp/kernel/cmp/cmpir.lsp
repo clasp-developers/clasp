@@ -65,10 +65,6 @@
 (defun irc-t ()
   (compile-reference-to-literal t nil))
 
-(defun irc-nil ()
-  "A nil in a T*"
-  (llvm-sys:create-int-to-ptr *irbuilder* (jit-constant-size_t +nil-value+) +t*+ "nil"))
-
 
 (defun irc-personality-function ()
   (get-function-or-error *the-module* "__gxx_personality_v0"))

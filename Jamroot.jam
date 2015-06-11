@@ -19,6 +19,14 @@ feature.compose <gc>boehm : <define>USE_BOEHM ;
 feature.compose <gc>mps : <define>USE_MPS ;
 feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # used for testing MPS
 
+###
+### Build clasp or cando
+###
+feature.feature program : clasp cando
+                : symmetric implicit composite propagated link-incompatible ;
+feature.compose <program>clasp : <define>TASK_CLASP ;
+feature.compose <program>cando : <define>TASK_CANDO ;
+
 
 GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
 

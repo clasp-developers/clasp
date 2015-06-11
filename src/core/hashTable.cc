@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/str.h>
 #include <clasp/core/lispString.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/bitVector.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/evaluator.h>
@@ -89,9 +90,9 @@ EXPOSE_CLASS(core, HashTable_O);
 
 #define LOCK_cl_make_hash_table 1
 #define DOCS_cl_make_hash_table "see CLHS"
-#define ARGS_cl_make_hash_table "(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0) weakness)"
+#define ARGS_cl_make_hash_table "(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0) weakness debug)"
 #define DECL_cl_make_hash_table ""
-T_mv cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold, Symbol_sp weakness) {
+T_mv cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold, Symbol_sp weakness, T_sp debug) {
   SYMBOL_EXPORT_SC_(KeywordPkg,key);
   if ( weakness.notnilp() ) {
     if ( weakness == INTERN_(kw,key) ) {
@@ -100,7 +101,7 @@ T_mv cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Double
     SIMPLE_ERROR(BF("Only :weakness :key (weak-key hash tables) are currently supported"));
   }
 #ifdef DEBUG_HASH_TABLE
-  printf("%s:%d make_hash_table WARNING DEBUG_HASH_TABLE is on\n", __FILE__, __LINE__);
+//  printf("%s:%d make_hash_table WARNING DEBUG_HASH_TABLE is on\n", __FILE__, __LINE__);
 #endif
   int isize = clasp_to_int(size);
   double rehash_threshold = orehash_threshold->get();
@@ -117,6 +118,11 @@ T_mv cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Double
   } else {
     SIMPLE_ERROR(BF("Illegal test[%s] for make-hash-table") % _rep_(test));
   }
+#ifdef DEBUG_HASH_TABLE
+  if ( table.notnilp() ) {
+    table->_DebugHashTable = debug.isTrue();
+  }
+#endif
   return (Values(table));
 }
 
@@ -141,12 +147,12 @@ HashTable_sp HashTable_O::create(T_sp test) {
   return ht;
 }
 
-#define ARGS_af_maphash "(function_desig hash_table)"
-#define DECL_af_maphash ""
-#define DOCS_af_maphash "see CLHS"
-#define FILE_af_maphash __FILE__
-#define LINE_af_maphash __LINE__
-T_mv af_maphash(T_sp function_desig, T_sp thash_table) {
+#define ARGS_cl_maphash "(function_desig hash_table)"
+#define DECL_cl_maphash ""
+#define DOCS_cl_maphash "see CLHS"
+#define FILE_cl_maphash __FILE__
+#define LINE_cl_maphash __LINE__
+T_mv cl_maphash(T_sp function_desig, T_sp thash_table) {
   _G();
   //        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
   Function_sp func = coerce::functionDesignator(function_desig);
@@ -171,10 +177,10 @@ T_mv af_maphash(T_sp function_desig, T_sp thash_table) {
   return (Values(_Nil<T_O>()));
 }
 
-#define ARGS_af_clrhash "(hash_table)"
-#define DECL_af_clrhash ""
-#define DOCS_af_clrhash "See CLHS"
-T_mv af_clrhash(HashTable_sp hash_table) {
+#define ARGS_cl_clrhash "(hash_table)"
+#define DECL_cl_clrhash ""
+#define DOCS_cl_clrhash "See CLHS"
+T_mv cl_clrhash(HashTable_sp hash_table) {
   _G();
   hash_table->clrhash();
   return (Values(_Nil<T_O>()));
@@ -256,124 +262,141 @@ void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
 }
 
 void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
-  _G();
+  if (obj.fixnump()) {
+    if (hg.isFilling()) hg.addPart(obj.unsafe_fixnum());
+    return;
+  } else if (obj.single_floatp()) {
+    if (hg.isFilling()) hg.addPart(std::abs(::floor(obj.unsafe_single_float())));
+    return;
+  } else if (obj.characterp()) {
+    if (hg.isFilling()) hg.addPart(obj.unsafe_character());
+    return;
+  }
+  if ( obj.objectp() ) {
 #ifdef USE_MPS
   if (ld)
     mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
-  clasp_sxhash(obj, hg); // obj->T_O::sxhash_(hg);
+    obj->T_O::sxhash_(hg);
+    return;
+  }
+  SIMPLE_ERROR(BF("sxhash_eq cannot hash object"));
 }
 
 void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
-  _G();
-  if (obj.fixnump() || obj.characterp() || obj.single_floatp()) {
-    if (hg.isFilling())
-      clasp_sxhash(obj, hg);
+  if (obj.fixnump()) {
+    if (hg.isFilling()) hg.addPart(obj.unsafe_fixnum());
+    return;
+  } else if (obj.single_floatp()) {
+    if (hg.isFilling()) hg.addPart(std::abs(::floor(obj.unsafe_single_float())));
+    return;
+  } else if (obj.characterp()) {
+    if (hg.isFilling()) hg.addPart(obj.unsafe_character());
     return;
   }
   if (obj.objectp()) {
-    if (cl_numberp(obj) || af_characterP(obj)) {
+    if (cl_numberp(obj)) {
       hg.hashObject(obj);
       return;
     }
-  } else {
-    SIMPLE_ERROR(BF("Add support to hash %s") % _rep_(obj));
   }
 #ifdef USE_MPS
   if (ld)
     mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
-  clasp_sxhash(obj, hg); // obj->T_O::sxhash_(hg);
+  obj->T_O::sxhash_(hg);
 }
 
 void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
-  _G();
-  if (obj.fixnump() || obj.characterp() || obj.single_floatp()) {
-    if (hg.isFilling())
-      clasp_sxhash(obj, hg);
+  if (obj.fixnump()) {
+    if (hg.isFilling()) hg.addPart(obj.unsafe_fixnum());
+    return;
+  } else if (obj.single_floatp()) {
+    if (hg.isFilling()) hg.addPart(std::abs(::floor(obj.unsafe_single_float())));
+    return;
+  } else if (obj.characterp()) {
+    if (hg.isFilling()) hg.addPart(obj.unsafe_character());
     return;
   }
   if (obj.objectp()) {
-    if (af_characterP(obj) || cl_symbolp(obj) || cl_numberp(obj) || af_stringP(obj)) {
-      if (hg.isFilling())
-        clasp_sxhash(obj, hg);
+    if (cl_numberp(obj)) {
+      hg.hashObject(obj);
       return;
+    } else if ( String_sp str_obj = obj.asOrNull<String_O>() ) {
+      if (hg.isFilling())
+        str_obj->sxhash_(hg);
+      return;
+    } else if ( BitVector_sp bv_obj = obj.asOrNull<BitVector_O>() ) {
+      (void)bv_obj;
+      IMPLEMENT_MEF(BF("Hash bit-vectors"));
     } else if (Pathname_sp pobj = obj.asOrNull<Pathname_O>()) {
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Host, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Device, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Directory, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Name, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Type, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, pobj->_Version, ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equal(hg, pobj->_Host, ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equal(hg, pobj->_Device, ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equal(hg, pobj->_Directory, ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equal(hg, pobj->_Name, ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equal(hg, pobj->_Type, ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equal(hg, pobj->_Version, ld);
       return;
     } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, oCar(cobj), ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equal(hg, oCdr(cobj), ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equal(hg, oCar(cobj), ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equal(hg, oCdr(cobj), ld);
       return;
     }
-  } else {
-    SIMPLE_ERROR(BF("Add support to hash %s") % _rep_(obj));
   }
 #ifdef USE_MPS
   if (ld)
     mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
-  clasp_sxhash(obj, hg);
+  obj->T_O::sxhash_(hg);
 }
 
 void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
-  _G();
-  if (obj.fixnump() || obj.characterp() || obj.single_floatp()) {
-    if (hg.isFilling())
-      clasp_sxhash(obj, hg);
+  if (obj.fixnump()) {
+    if (hg.isFilling()) hg.addPart(obj.unsafe_fixnum());
+    return;
+  } else if (obj.single_floatp()) {
+    if (hg.isFilling()) hg.addPart(std::abs(::floor(obj.unsafe_single_float())));
+    return;
+  } else if (obj.characterp()) {
+    if (hg.isFilling()) hg.addPart(obj.unsafe_character());
     return;
   }
   if (obj.objectp()) {
+    if (cl_numberp(obj)) {
+      hg.hashObject(obj);
+      return;
+    }
     if (Str_sp str = obj.asOrNull<Str_O>()) {
       Str_sp upstr = cl_string_upcase(str);
       hg.hashObject(upstr);
       return;
-    } else if (af_fixnumP(obj) || af_characterP(obj) || cl_symbolp(obj) || cl_numberp(obj)) {
+    } else if (cl_numberp(obj)) {
       if (hg.isFilling())
         clasp_sxhash(obj, hg);
       return;
     } else if (Pathname_sp pobj = obj.asOrNull<Pathname_O>()) {
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Host, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Device, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Directory, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Name, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Type, ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, pobj->_Version, ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equalp(hg, pobj->_Host, ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equalp(hg, pobj->_Device, ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equalp(hg, pobj->_Directory, ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equalp(hg, pobj->_Name, ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equalp(hg, pobj->_Type, ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equalp(hg, pobj->_Version, ld);
       return;
     } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, oCar(cobj), ld);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, oCdr(cobj), ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equalp(hg, oCar(cobj), ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equalp(hg, oCdr(cobj), ld);
       return;
     } else if (obj->instancep()) {
       Instance_sp iobj = gc::As<Instance_sp>(obj);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, iobj->_Class->className(), ld);
+      if (hg.isFilling()) HashTable_O::sxhash_equalp(hg, iobj->_Class->className(), ld);
       for (int i(0), iEnd(iobj->_Slots.size()); i < iEnd; ++i) {
         if (!iobj->_Slots[i].unboundp() && hg.isFilling())
           HashTable_O::sxhash_equalp(hg, iobj->_Slots[i], ld);
       }
       return;
+    } else if (BitVector_sp bv_obj = obj.asOrNull<Array_O>()) {
+      (void)bv_obj; // silence warning
+      IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for BitVector"));
     } else if (Array_sp aobj = obj.asOrNull<Array_O>()) {
       (void)aobj; // silence warning
       IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for Arrays"));
@@ -381,14 +404,12 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
       (void)hobj; // silence warning
       IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for HashTables"));
     }
-  } else {
-    SIMPLE_ERROR(BF("Add support to sxhash_equalp for %s") % _rep_(obj));
   }
 #ifdef USE_MPS
   if (ld)
     mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
-  clasp_sxhash(obj, hg); // obj->T_O::sxhash(hg);
+  obj->T_O::sxhash_(hg);
 }
 
 bool HashTable_O::equalp(T_sp other) const {
@@ -420,7 +441,7 @@ List_sp HashTable_O::keysAsCons() {
 void HashTable_O::fields(Record_sp node) {
   // this->Base::fields(node);
   node->field(INTERN_(core,rehash_size), this->_RehashSize);
-  node->pod_field(INTERN_(core,rehash_threshold), this->_RehashThreshold);
+  node->/*pod_*/field(INTERN_(core,rehash_threshold), this->_RehashThreshold);
   switch (node->stage()) {
   case Record_O::loading: {
     Vector_sp keyValueVec;
@@ -504,7 +525,7 @@ List_sp HashTable_O::findAssoc(uint index, T_sp key) const {
 T_mv cl_gethash(T_sp key, T_sp hashTable, T_sp default_value) {
   _G();
 #ifdef DEBUG_HASH_TABLE
-  if (DebugHashTable) {
+  if (gc::As<HashTable_sp>(hashTable)->_DebugHashTable) {
     string className = "NULL";
     if (key.objectp()) {
       className = key->_instanceClass()->classNameAsString();
@@ -518,9 +539,14 @@ T_mv cl_gethash(T_sp key, T_sp hashTable, T_sp default_value) {
 
 List_sp HashTable_O::bucketsFind(T_sp key) const {
   ASSERT(this->_HashTable);
+#ifdef DEBUG_HASH_TABLE
+  if (this->_DebugHashTable) {
+    printf("%s:%d  About to sxhashKey: %s hash table length: %d\n", __FILE__, __LINE__, _rep_(key).c_str(), cl_length(this->_HashTable) );
+  }
+#endif
   uint index = this->sxhashKey(key, cl_length(this->_HashTable), false);
 #ifdef DEBUG_HASH_TABLE
-  if (DebugHashTable) {
+  if (this->_DebugHashTable) {
     printf("%s:%d  bucketsFind index = %d\n", __FILE__, __LINE__, index);
   }
 #endif
@@ -544,16 +570,23 @@ List_sp HashTable_O::tableRef(T_sp key) {
   return keyValueCons;
 }
 
+#define ARGS_core_hashTableForceRehash "(ht)"
+#define DECL_core_hashTableForceRehash ""
+#define DOCS_core_hashTableForceRehash "hashTableForceRehash"
+void core_hashTableForceRehash(HashTable_sp ht)
+{
+  ht->rehash(false,_Unbound<T_O>());
+}
+
 #define ARGS_HashTable_O_gethash "(key (self hash-table) &optional default_value)"
 #define DECL_HashTable_O_gethash ""
 #define DOCS_HashTable_O_gethash "See CLHS"
 T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
-  _OF();
   LOG(BF("gethash looking for key[%s]") % _rep_(key));
   List_sp keyValuePair = this->tableRef(key);
   LOG(BF("Found keyValueCons")); // % keyValueCons->__repr__() ); INFINITE-LOOP
 #ifdef DEBUG_HASH_TABLE
-  if (DebugHashTable) {
+  if (this->_DebugHashTable) {
     DebugHashTable = false; // Turn it off to print
     printf("%s:%d DebugHashTable after tableRef() keyValuePair=%s\n", __FILE__, __LINE__, _rep_(keyValuePair).c_str());
     DebugHashTable = true;
@@ -612,24 +645,41 @@ bool HashTable_O::remhash(T_sp key) {
 T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   _OF();
 //        printf("%s:%d key@%p value@%p\n", __FILE__, __LINE__, key.raw_(), value.raw_() );
+  List_sp keyValuePair = this->tableRef(key);
 #ifdef DEBUG_HASH_TABLE
-  if (DebugHashTable) {
-    printf("%s:%d hash_table_setf_gethash hashTable=%s  key=%s\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str(), _rep_(key).c_str());
+  if (this->_DebugHashTable) {
+    printf("%s:%d hash_table_setf_gethash hashTable=%s\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str());
+    printf("%s:%d hash_table_setf_gethash key=%s\n", __FILE__, __LINE__, _rep_(key).c_str());
+    printf("%s:%d hash_table_setf_gethash keyValuePair = %s\n", __FILE__, __LINE__, _rep_(keyValuePair).c_str() );
   }
 #endif
-  List_sp keyValuePair = this->tableRef(key);
   if (keyValuePair.nilp()) {
     uint index = this->sxhashKey(key, cl_length(this->_HashTable), true /*Will add key*/);
     Cons_sp newKeyValue = Cons_O::create(key, value);
     //            printf("%s:%d  Inserted newKeyValue@%p\n", __FILE__, __LINE__, newKeyValue.raw_());
     Cons_sp newEntry = Cons_O::create(newKeyValue, this->_HashTable->operator[](index));
     this->_HashTable->operator[](index) = newEntry;
+#ifdef DEBUG_HASH_TABLE
+  if (this->_DebugHashTable) {
+    printf("%s:%d hash_table_setf_gethash insert at index: %d\n", __FILE__, __LINE__, index);
+  }
+#endif
     //            this->_HashTableEntryCount++;
     ++(this->_HashTableCount);
   } else if (oCdr(keyValuePair).unboundp()) {
+#ifdef DEBUG_HASH_TABLE
+  if (this->_DebugHashTable) {
+    printf("%s:%d hash_table_setf_gethash overwriting Unbound\n", __FILE__, __LINE__ );
+  }
+#endif
     keyValuePair.asCons()->setCdr(value);
     ++(this->_HashTableCount);
   } else {
+#ifdef DEBUG_HASH_TABLE
+  if (this->_DebugHashTable) {
+    printf("%s:%d hash_table_setf_gethash changing value\n", __FILE__, __LINE__ );
+  }
+#endif
     keyValuePair.asCons()->setCdr(value);
   }
   if (this->_HashTableCount > this->_RehashThreshold * cl_length(this->_HashTable)) {
@@ -660,7 +710,8 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
   VectorObjects_sp oldTable = this->_HashTable;
   newSize = this->resizeEmptyTable(newSize);
   LOG(BF("Resizing table to size: %d") % newSize);
-  for (size_t it(0), itEnd(cl_length(oldTable)); it < itEnd; ++it) {
+  size_t oldSize = cl_length(oldTable);
+  for (size_t it(0), itEnd(oldSize); it < itEnd; ++it) {
     {
       _BLOCK_TRACEF(BF("Re-indexing hash table row index[%d]") % it);
 #ifdef DEBUG_ALL
@@ -689,22 +740,22 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
               foundKeyValuePair = pair;
             }
           }
-          uint index = this->sxhashKey(key, cl_length(this->_HashTable), true /* Will add key */);
+          uint index = this->sxhashKey(key, newSize, true /* Will add key */);
           LOG(BF("Re-indexing key[%s] to index[%d]") % _rep_(key) % index);
           Cons_sp newCur = Cons_O::create(pair, this->_HashTable->operator[](index));
           this->_HashTable->operator[](index) = newCur;
         }
       }
 #if 0
-		List_sp next;
-		for ( List_sp cur = oldTable->operator[](it); cur.notnilp(); cur = next )
-		{
-		    T_sp tnext = oCdr(cur);
-		    next = coerce_to_list(tnext);//;cCdr(cur);
-                    Cons_sp pair = cCar(cur);
-		    T_sp key = oCar(pair);
-                    T_sp value = oCdr(pair);
-                    if ( !value.unboundp() ) {
+      List_sp next;
+      for ( List_sp cur = oldTable->operator[](it); cur.notnilp(); cur = next )
+      {
+        T_sp tnext = oCdr(cur);
+        next = coerce_to_list(tnext);//;cCdr(cur);
+        Cons_sp pair = cCar(cur);
+        T_sp key = oCar(pair);
+        T_sp value = oCdr(pair);
+        if ( !value.unboundp() ) {
                         // key/value represent a valid entry in the hash table
                         //
                         // If findKey is not unbound and we haven't already found
@@ -714,17 +765,17 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
                         // Check if the current key matches findKey and if it does
                         // set foundKeyValuePair so that it will be returned when
                         // the rehash is complete.
-                        if ( foundKeyValuePair.nilp() && !findKey.unboundp() ) {
-                            if ( this->keyTest(key,findKey) ) {
-                                foundKeyValuePair = pair;
-                            }
-                        }
-                        uint index = this->sxhashKey(key,cl_length(this->_HashTable),true /* Will add key */);
-                        LOG(BF("Re-indexing key[%s] to index[%d]") % _rep_(key) % index );
-                        Cons_sp newCur = Cons_O::create(pair,this->_HashTable->operator[](index));
-                        this->_HashTable->operator[](index) = newCur;
-                    }
-		}
+          if ( foundKeyValuePair.nilp() && !findKey.unboundp() ) {
+            if ( this->keyTest(key,findKey) ) {
+              foundKeyValuePair = pair;
+            }
+          }
+          uint index = this->sxhashKey(key,cl_length(this->_HashTable),true /* Will add key */);
+          LOG(BF("Re-indexing key[%s] to index[%d]") % _rep_(key) % index );
+          Cons_sp newCur = Cons_O::create(pair,this->_HashTable->operator[](index));
+          this->_HashTable->operator[](index) = newCur;
+        }
+      }
 #endif
     }
   }
@@ -762,7 +813,10 @@ string HashTable_O::hash_table_dump() const {
       T_sp key = oCar(pair);
       T_sp value = oCdr(pair);
 #ifdef DUMP_LOW_LEVEL
-      ss << "     ( idx=" << this->hashIndex(key) << " ";
+      ss << "     ( ";
+      size_t hi = this->hashIndex(key);
+      if ( hi != it ) ss << "!!!ERROR-wrong bucket!!! hi=" << hi;
+      ss << "hashIndex(key)=" << this->hashIndex(key) << " ";
       if (cl_consp(key)) {
         List_sp ckey = key;
         ss << "(cons " << oCar(ckey).raw_() << " . " << oCdr(ckey).raw_() << ")";
@@ -881,9 +935,9 @@ void HashTable_O::exposeCando(::core::Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(ClPkg, make_hash_table);
   ClDefun(make_hash_table);
   SYMBOL_EXPORT_SC_(ClPkg, maphash);
-  Defun(maphash);
+  ClDefun(maphash);
   SYMBOL_EXPORT_SC_(ClPkg, clrhash);
-  Defun(clrhash);
+  ClDefun(clrhash);
   SYMBOL_SC_(CorePkg, hash_eql);
   Defun(hash_eql);
   SYMBOL_SC_(CorePkg, hash_equal);
@@ -895,6 +949,7 @@ void HashTable_O::exposeCando(::core::Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(ClPkg, gethash);
   ClDefun(gethash);
   CoreDefun(DebugHashTable);
+  CoreDefun(hashTableForceRehash);
 
   Defun(hashTableEntryDeletedP);
 }

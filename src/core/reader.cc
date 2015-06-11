@@ -257,9 +257,11 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
     }
     case singleQuote: {
       SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+#if 0
       size_t filepos = clasp_input_filePos(this->_Input);
       uint lineno = clasp_input_lineno(this->_Input);
       uint column = clasp_input_column(this->_Input);
+#endif
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
       if (this->suppressRead()) {
         result = _Nil<T_O>();
@@ -373,6 +375,7 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
       SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
       T_sp templateObject = this->primitive_read(true, _Nil<T_O>(), true);
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
+      (void)quotedObject;
       if (this->suppressRead()) {
         result = _Nil<T_O>();
         goto RETURN;
@@ -643,8 +646,8 @@ List_sp Reader_O::readDelimitedList(char endChar, bool recursiveP) {
       this->nextChar();
       break;
     }
-    uint lineNumber = clasp_input_lineno(this->_Input);
-    uint column = clasp_input_column(this->_Input);
+//    uint lineNumber = clasp_input_lineno(this->_Input);
+//    uint column = clasp_input_column(this->_Input);
     //	    uint filePos = this->_Input->tell();
     T_sp element = this->primitive_read(true, _Unbound<T_O>(), true);
     ASSERTNOTNULL(element);

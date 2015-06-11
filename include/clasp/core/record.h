@@ -41,7 +41,7 @@ namespace core {
     RecordStage stage() const { return this->_stage; };
 
     template <typename ST>
-      void pod_field(Symbol_sp name, ST& value ) {
+      void field(Symbol_sp name, ST& value ) {
       switch (this->stage()) {
       case saving: {
           this->_alist = core::Cons_O::create(core::Cons_O::create(name,translate::to_object<ST>::convert(value)),this->_alist);
@@ -171,7 +171,7 @@ namespace core {
 
 
     template <typename T>
-      void pod_field_if_not_default(Symbol_sp name, T& value, const T& default_value ) {
+      void field_if_not_default(Symbol_sp name, T& value, const T& default_value ) {
       switch (this->stage()) {
       case saving: {
           if ( !(value == default_value) ) {

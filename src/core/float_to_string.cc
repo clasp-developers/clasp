@@ -70,35 +70,37 @@ namespace core {
      */
 
     static void
-    print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp)
-    {
-	T_sp r = cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue();
-	gc::Fixnum e;
-	switch (clasp_t_of(number)) {
-	case number_ShortFloat:
-	    e = (r == cl::_sym_single_float || r == cl::_sym_ShortFloat_O)? 'e' : 'f';
-	    break;
+    print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
+      T_sp r = cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue();
+      gc::Fixnum e;
+      switch (clasp_t_of(number)) {
+      case number_SingleFloat:
+        e = (r == cl::_sym_single_float || r == cl::_sym_ShortFloat_O) ? 'e' : 'f';
+        break;
+      case number_ShortFloat:
+        e = (r == cl::_sym_single_float || r == cl::_sym_ShortFloat_O) ? 'e' : 'f';
+        break;
 #ifdef ECL_LONG_FLOAT
-	case number_LongFloat:
-	    e = (r == @'long-float') ? 'e' : 'l';
-	    break;
-	case number_DoubleFloat:
-	    e = (r == @'double-float')? 'e' : 'd';
-	    break;
+      case number_LongFloat:
+        e = (r == @'long-float') ? 'e' : 'l';
+        break;
+      case number_DoubleFloat:
+        e = (r == @'double-float') ? 'e' : 'd';
+        break;
 #else
-	case number_DoubleFloat:
-	    e = (r == cl::_sym_DoubleFloat_O || r == cl::_sym_LongFloat_O)? 'e' : 'd';
-	    break;
+      case number_DoubleFloat:
+        e = (r == cl::_sym_DoubleFloat_O || r == cl::_sym_LongFloat_O) ? 'e' : 'd';
+        break;
 #endif
-	default:
-	    SIMPLE_ERROR(BF("Handle additional enumeration values"));
-	}
-	if (e != 'e' || exp != 0) {
-	    StrWithFillPtr_sp sbuffer = gc::As<StrWithFillPtr_sp>(buffer);
-	    sbuffer->pushCharExtend(e);
-	    core_integerToString(sbuffer, clasp_make_fixnum(exp), clasp_make_fixnum(10),
-				 false, false );
-	}
+      default:
+        SIMPLE_ERROR(BF("Handle additional enumeration values value=%s t_of=%d") % _rep_(number).c_str() % clasp_t_of(number));
+      }
+      if (e != 'e' || exp != 0) {
+        StrWithFillPtr_sp sbuffer = gc::As<StrWithFillPtr_sp>(buffer);
+        sbuffer->pushCharExtend(e);
+        core_integerToString(sbuffer, clasp_make_fixnum(exp), clasp_make_fixnum(10),
+                             false, false);
+      }
     }
 
     T_sp

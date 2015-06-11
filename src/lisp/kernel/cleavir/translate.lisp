@@ -1,8 +1,5 @@
 (cl:in-package #:clasp-cleavir)
 
-(eval-when (:execute :compile-toplevel :load-toplevel)
-  (push :passed-env *features*))
-
 
 (defvar *debug-cleavir* nil)
 
@@ -388,12 +385,9 @@
 		   (format *debug-log* "    translate-simple-instruction invoke-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		   (format *debug-log* "     instruction --> ~a~%" call)))))
 
-
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:nop-instruction) inputs outputs abi)
-  (llvm-sys:create-int-to-ptr cmp:*irbuilder* (cmp:jit-constant-size_t cmp:+nil-value+) cmp:+t*+ "nil"))
-
-
+  (%nil))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:indexed-unwind-instruction) inputs outputs abi)
@@ -903,43 +897,33 @@ nil)
 	(clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
 	(translate hir abi)))))
 
-(defvar *use-bclasp-to-compile-form* nil)
-
 (defun cleavir-compile-t1expr (name form env pathname)
-  #+(or)(and env (error "I don't support anything but top level environment compiles using cleavir env: ~a" env ))
-  #+(or)(format t "Compiling: ~a~%" form)
+;;  (format *trace-output* "Compiling: ~s~%" form)
+;;  (format *trace-output* "   in environment: ~s~%" env )
   (let ((cleavir-generate-ast:*compiler* 'cl:compile))
     (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
 	;; The following test and true form should be removed`
-	(if *use-bclasp-to-compile-form*
-	    (cmp:with-debug-info-generator (:module cmp:*the-module* 
-						    :pathname pathname)
-	      (multiple-value-bind (llvm-function-from-lambda lambda-name)
-		  (cmp:compile-lambda-function form env)
-		(or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
-		;;(bformat t "Got function from compile-lambda-function: %s\n" llvm-function-from-lambda)
-		(values llvm-function-from-lambda :function env lambda-name)))
-	    (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-	      (let* ((clasp-system (make-instance 'clasp))
-		     (ast (cleavir-generate-ast:generate-ast form #+passed-env env #-passed-env *clasp-env* clasp-system))
-		     (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-		     (hir (progn
-			    (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
-			    (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
-		(clasp-cleavir:convert-funcalls hir)
-		(when *debug-cleavir* (draw-hir hir)) ;; comment out
-		(cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
-		#+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
-		(cleavir-ir:hir-to-mir hir clasp-system nil nil)
-		(cc-mir:assign-mir-instruction-datum-ids hir)
-		#|| Moved up ||# #+(or) (clasp-cleavir:convert-funcalls hir)
-		(setf *ast* hoisted-ast
-		      *hir* hir)
-		(let ((*form* form)
-		      (abi (make-instance 'abi-x86-64)))
-		  (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
-		  (when *debug-cleavir* (draw-mir hir)) ;; comment out
-		  (translate hir abi)))))
+        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+          (let* ((clasp-system (make-instance 'clasp))
+                 (ast (cleavir-generate-ast:generate-ast form env clasp-system))
+                 (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
+                 (hir (progn
+                        (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
+                        (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
+            (clasp-cleavir:convert-funcalls hir)
+            (when *debug-cleavir* (draw-hir hir)) ;; comment out
+            (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
+            #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
+            (cleavir-ir:hir-to-mir hir clasp-system nil nil)
+            (cc-mir:assign-mir-instruction-datum-ids hir)
+            #|| Moved up ||# #+(or) (clasp-cleavir:convert-funcalls hir)
+            (setf *ast* hoisted-ast
+                  *hir* hir)
+            (let ((*form* form)
+                  (abi (make-instance 'abi-x86-64)))
+              (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
+              (when *debug-cleavir* (draw-mir hir)) ;; comment out
+              (translate hir abi))))
       (cmp:cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
       (or fn (error "There was no function returned by compile-lambda-function"))
       (cmp:cmp-log "fn --> %s\n" fn)
@@ -974,15 +958,9 @@ nil)
 	(unless (compiled-function-p setup-function)
 	  (format t "Whoah cleavir-clasp compiled code eval --> ~s~%" compiled-function)
 	  (return-from cleavir-compile-t1expr (values nil t)))
-	(if *use-bclasp-to-compile-form*
-	    (values setup-function warnp failp)
-	    (let ((enclosed-function (funcall setup-function cmp:*run-time-literal-holder*)))
-	      (cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)
-	      (values enclosed-function warnp failp)))))))
-
-
-
-
+        (let ((enclosed-function (funcall setup-function cmp:*run-time-literal-holder*)))
+          (cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)
+          (values enclosed-function warnp failp))))))
 
 (defun cleavir-compile-file-form (form)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile-file))
@@ -998,21 +976,19 @@ nil)
 			   (cmp:irc-i64-*current-source-pos-info*-filepos)
 			   (cmp:irc-i32-*current-source-pos-info*-lineno)
 			   (cmp:irc-i32-*current-source-pos-info*-column)
-			   cmp:*load-time-value-holder-global-var*
-			   )))))
+			   cmp:*load-time-value-holder-global-var*)))))
 
-
-(defun cleavir-compile (name form &key debug)
+(defun cclasp-compile-in-env (name form &optional env)
   (let ((cmp:*cleavir-compile-hook* #'cleavir-compile-t1expr)
-	(cmp:*dump-module-on-completion* t)
 	(cleavir-generate-ast:*compiler* 'cl:compile)
-	(*debug-cleavir* debug)
 	(cmp:*all-functions-for-one-compile* nil))
-    (compile name form)))
-
-
-
-
+    (cmp:compile-in-env name form env)))
+        
+	
+(defun cleavir-compile (name form &key debug)
+  (let ((cmp:*dump-module-on-completion* t)
+	(*debug-cleavir* debug))
+    (cclasp-compile-in-env name form nil)))
 
 (defun cleavir-compile-file (given-input-pathname &rest args)
   (let ((*debug-log-index* 0)
@@ -1020,22 +996,10 @@ nil)
     (let ((cmp:*cleavir-compile-file-hook* #'cleavir-compile-file-form))
       (apply #'compile-file given-input-pathname args))))
 
-
-
-
-#||
-#+(or)(defun interpret-hir (initial-instruction)
-(funcall (compile nil `(lambda () ,(translate initial-instruction)))))
-(core:load-time-values-dump cmp::*run-time-literal-holder*)
-(core:load-time-values-dump "globalRunTimeValues")
-(print "Hello")
-
-(apropos "load-time-values-dump")
-||#
-
-
 (defmacro with-debug-compile-file ((log-file &key debug-log-on) &rest body)
   `(with-open-file (clasp-cleavir::*debug-log* ,log-file :direction :output)
      (let ((clasp-cleavir::*debug-log-on* ,debug-log-on))
        ,@body)))
 (export 'with-debug-compile-file)
+
+  

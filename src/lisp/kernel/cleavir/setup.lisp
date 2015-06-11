@@ -5,12 +5,20 @@
 (defvar *clasp-env* (make-instance 'clasp-global-environment))
 
 (defvar *cclasp-eval-depth* 0)
-(defun cclasp-eval (form &optional env)
+(defun cclasp-eval-in-env (form &optional env)
   (let ((*cclasp-eval-depth* (1+ *cclasp-eval-depth*)))
     (when (> *cclasp-eval-depth* 20)
       (warn "*cclasp-eval-depth is ~a on form: ~a" *cclasp-eval-depth* form))
-    (or (null env) (error "Handle non-toplevel environments"))
-    (funcall (compile nil `(lambda () ,form)))))
+    (cond
+      ((atom form)
+       (cond
+         ((and env (not (eq env *clasp-env*)))
+          (warn "Is it ok to use bclasp to eval atom: ~s~%in non-toplevel env: ~s~%" form env)
+          (funcall (cmp:bclasp-compile nil `(lambda () ,form))))
+         (t ;; either the env is nil or *clasp-env* (top level)
+          (funcall (cmp:bclasp-compile nil `(lambda () ,form))))))
+      (t
+       (funcall (cclasp-compile-in-env nil `(lambda () ,form) env))))))
 
 ;;
 ;; Define the ABI for x86-64
@@ -44,34 +52,42 @@
 	 ;; In that case, it is definitely special.
 	 (make-instance 'cleavir-env:special-variable-info
 	   :name symbol))
-	(;; If it is not bound, it could still be special.  If so, it
-	 ;; might have a restricted type on it.  It will then likely
-	 ;; fail to bind it to an object of some type that we
-	 ;; introduced, say our bogus environment.  It is not fool
-	 ;; proof because it could have the type STANDARD-OBJECT.  But
-	 ;; in the worst case, we will just fail to recognize it as a
-	 ;; special variable.
-	 (null (ignore-errors
-		 (eval `(let ((,symbol (make-instance 'clasp-global-environment)))
-			  t))))
+        (;; If it is not bound, it could still be special.
+         ;; Use Clasp's core:specialp test to determine if it is special.
+         ;; If so, assume that it is of type T
+         (core:specialp symbol)
 	 ;; It is a special variable.  However, we don't know its
 	 ;; type, so we assume it is T, which is the default.
 	 (make-instance 'cleavir-env:special-variable-info
 	   :name symbol))
-	(;; If the previous test fails, it could still be special
-	 ;; without any type restriction on it.  We can try to
-	 ;; determine whether this is the case by checking whether the
-	 ;; ordinary binding (using LET) of it is the same as the
-	 ;; dynamic binding of it.  This method might fail because the
-	 ;; type of the variable may be restricted to something we
-	 ;; don't know and that we didn't catch before, 
-	 (ignore-errors
-	  (eval `(let ((,symbol 'a))
-		   (progv '(,symbol) '(b) (eq ,symbol (symbol-value ',symbol))))))
+        #+(or)(;; If it is not bound, it could still be special.  If so, it
+         ;; might have a restricted type on it.  It will then likely
+         ;; fail to bind it to an object of some type that we
+         ;; introduced, say our bogus environment.  It is not fool
+         ;; proof because it could have the type STANDARD-OBJECT.  But
+         ;; in the worst case, we will just fail to recognize it as a
+         ;; special variable.
+         (null (ignore-errors
+                 (eval `(let ((,symbol (make-instance 'clasp-global-environment)))
+                          t))))
 	 ;; It is a special variable.  However, we don't know its
 	 ;; type, so we assume it is T, which is the default.
 	 (make-instance 'cleavir-env:special-variable-info
 	   :name symbol))
+	#+(or)( ;; If the previous test fails, it could still be special
+               ;; without any type restriction on it.  We can try to
+               ;; determine whether this is the case by checking whether the
+               ;; ordinary binding (using LET) of it is the same as the
+               ;; dynamic binding of it.  This method might fail because the
+               ;; type of the variable may be restricted to something we
+               ;; don't know and that we didn't catch before, 
+               (ignore-errors
+                 (eval `(let ((,symbol 'a))
+                          (progv '(,symbol) '(b) (eq ,symbol (symbol-value ',symbol))))))
+               ;; It is a special variable.  However, we don't know its
+               ;; type, so we assume it is T, which is the default.
+               (make-instance 'cleavir-env:special-variable-info
+                              :name symbol))
 	(;; Otherwise, this symbol does not have any variable
 	 ;; information associated with it.
 	 t
@@ -81,12 +97,20 @@
 (defmethod cleavir-env:variable-info ((environment null) symbol)
   (cleavir-env:variable-info *clasp-env* symbol))
 
+(defun treat-as-special-operator-p (name)
+  (cond
+    ((cmp:treat-as-special-operator-p name) t)
+    ((eq name 'cleavir-primop:consp) t)
+    (t nil)))
+
+
+
 (defmethod cleavir-env:function-info ((environment clasp-global-environment) function-name)
   (cond
     ( ;; If it is not the name of a macro, it might be the name of
      ;; a special operator.  This can be checked by calling
      ;; special-operator-p.
-     (and (symbolp function-name) (cmp:treat-as-special-operator-p function-name))
+     (and (symbolp function-name) (treat-as-special-operator-p function-name))
      (make-instance 'cleavir-env:special-operator-info
 		    :name function-name))
     ( ;; If the function name is the name of a macro, then
@@ -179,16 +203,11 @@
 
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  "Evaluate the form in Clasp's top level environment"
-  (cclasp-eval form))
+  (cclasp-eval-in-env form env))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"
-  (warn "cleavir-environment:eval called with NIL as the dispatching environment")
-  (cclasp-eval form))
-
-(defmethod cleavir-hir-transformations::introduce-immediate (constant (implementation clasp) processor os)
-  constant)
+  (cleavir-environment:eval form env *clasp-env*))
 
 #+(or)
 (defmacro ext::lambda-block (name (&rest lambda-list) &body body &environment env)
@@ -286,34 +305,24 @@
 	  *ast* hoisted)
     (draw-ast hoisted "/tmp/hoisted.dot")))
 
-(defun hir-form (form)
-  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
-	 (hir (cleavir-ast-to-hir:compile-toplevel ast))
-	 (clasp-inst (make-instance 'clasp)))
-    (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
-;;    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
-    (setf *form* form
-	  *ast* ast
-	  *hir* hir)
-    (draw-hir hir)
-    hir))
 
-(defun hoisted-hir-form (form)
-  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
-	 (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
-	 (clasp-inst (make-instance 'clasp)))
-    (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
-;;    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
+(defun hir-form (form)
+  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env* (make-instance 'clasp)))
+         (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
+         (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
+         (clasp-inst (make-instance 'clasp)))
+;;    (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
+    ;;    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
     (setf *form* form
-	  *ast* hoisted-ast
-	  *hir* hir)
+          *ast* hoisted-ast
+          *hir* hir)
     (draw-hir hir)
     hir))
 
 (defun mir-form (form)
   (let ((hir (hir-form form))
 	(clasp-inst (make-instance 'clasp)))
+    (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
     (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
     (draw-mir hir)
     (setq *mir* hir)))

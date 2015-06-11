@@ -10,13 +10,14 @@
 (defun %size_t (num)
   (cmp:jit-constant-size_t num))
 
-(defun %nil ()
-  "A nil in a T*"
-  (llvm-sys:create-int-to-ptr cmp:*irbuilder* (cmp:jit-constant-size_t cmp:+nil-value+) cmp:+t*+ "nil"))
 
 
 (defun %literal (lit &optional (label "literal"))
   (llvm-sys:create-extract-value cmp:*irbuilder* (cmp:irc-load (cmp:compile-reference-to-literal lit nil)) (list 0) label))
+
+(defun %nil ()
+  "A nil in a T*"
+  (%literal nil))
 
 (defun alloca-size_t (&optional (label "var"))
   (llvm-sys:create-alloca *entry-irbuilder* cmp:+size_t+ (%i32 1) label))

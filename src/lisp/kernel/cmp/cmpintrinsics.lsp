@@ -79,8 +79,6 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +size_t*+ (llvm-sys:type-get-pointer-to +size_t+))
 (defvar +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
 
-(defvar +nil-value+ (cdr (assoc :nil-value (llvm-sys:cxx-data-structures-info))))
-
 (defvar +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
 (defvar +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
 (defvar +shared-count+ (llvm-sys:struct-type-get *llvm-context* (list +sp-counted-base-ptr+) nil)) ;; "shared_count"

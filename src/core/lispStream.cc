@@ -115,6 +115,7 @@ int &StreamClosed(T_sp strm) {
 
 bool AnsiStreamP(T_sp strm) {
   if (Stream_sp s = strm.asOrNull<Stream_O>()) {
+    (void)s;
     return true;
   }
   return false;
@@ -1534,7 +1535,7 @@ const FileOps clos_stream_ops = {
 
 static claspCharacter
 str_out_write_char(T_sp strm, claspCharacter c) {
-  StringOutputStream_sp sout = gc::As<StringOutputStream_sp>(strm);
+//  StringOutputStream_sp sout = gc::As<StringOutputStream_sp>(strm);
   int column = StreamOutputColumn(strm);
   if (c == '\n')
     StreamOutputColumn(strm) = 0;
@@ -1621,7 +1622,7 @@ T_sp core_make_string_output_stream_from_string(T_sp s) {
   _G();
   T_sp strm = StringOutputStream_O::create();
   bool stringp = af_stringP(s);
-  unlikely_if(!af_stringP(s) || !gc::As<Array_sp>(s)->arrayHasFillPointerP())
+  unlikely_if(!stringp || !gc::As<Array_sp>(s)->arrayHasFillPointerP())
       FEerror("~S is not a string with a fill-pointer.", 1, s.raw_());
   StreamOps(strm) = str_out_ops; // duplicate_dispatch_table(&str_out_ops);
   StreamMode(strm) = clasp_smm_string_output;
@@ -3307,6 +3308,7 @@ set_stream_elt_type(T_sp stream, gctools::Fixnum byte_size, int flags,
 
 void si_stream_external_format_set(T_sp stream, T_sp format) {
   if (Instance_sp instance = stream.asOrNull<Instance_O>()) {
+    (void)instance;
     FEerror("Cannot change external format of stream ~A", 1, stream.raw_());
   }
   switch (StreamMode(stream)) {
@@ -4560,6 +4562,7 @@ SYMBOL_EXPORT_SC_(CorePkg, dispatchTable);
 const FileOps &
 stream_dispatch_table(T_sp strm) {
   if (Instance_sp instance = strm.asOrNull<Instance_O>()) {
+    (void)instance;
     return clos_stream_ops;
   }
   if (!AnsiStreamP(strm))
@@ -4717,6 +4720,7 @@ T_sp cl_file_string_length(T_sp stream, T_sp string) {
 	 */
 BEGIN:
   if (Instance_sp instance = stream.asOrNull<Instance_O>()) {
+    (void)instance;
     return _Nil<T_O>();
   }
   unlikely_if(!AnsiStreamP(stream)) {
@@ -4941,7 +4945,7 @@ T_sp cl_open_stream_p(T_sp strm) {
 	   on closed streams, and that a stream is only closed
 	   when #'close has been applied on it */
   if (Instance_sp instance = strm.asOrNull<Instance_O>()) {
-    return eval::funcall(gray::_sym_open_stream_p, strm);
+    return eval::funcall(gray::_sym_open_stream_p, instance);
   }
   unlikely_if(!AnsiStreamP(strm))
       ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_open_stream_p, strm, cl::_sym_Stream_O);
@@ -4956,6 +4960,7 @@ T_sp cl_stream_external_format(T_sp strm) {
   T_sp output;
 AGAIN:
   if (Instance_sp instance = strm.asOrNull<Instance_O>()) {
+    (void)instance;
     output = kw::_sym_default;
     return output;
   } else if (Stream_sp s = strm.asOrNull<Stream_O>()) {
@@ -4975,7 +4980,7 @@ AGAIN:
 #define DOCS_cl_streamp "streamp"
 bool cl_streamp(T_sp strm) {
   if (Instance_sp instance = strm.asOrNull<Instance_O>()) {
-    return eval::funcall(gray::_sym_streamp, strm).isTrue();
+    return eval::funcall(gray::_sym_streamp, instance).isTrue();
   }
   return AnsiStreamP(strm);
 }

@@ -319,19 +319,33 @@ public:
   virtual bool mapKeyValue(T_sp key, T_sp value) = 0;
 };
 
+//#define DEBUG_HASH_GENERATOR
 class HashGenerator {
   static const int MaxParts = 32;
 
 private:
   int _NextPartIndex;
   Fixnum _Parts[MaxParts];
-
+#ifdef DEBUG_HASH_GENERATOR
+  bool _debug;
+#endif
 public:
-  HashGenerator() : _NextPartIndex(0){};
+ HashGenerator(bool debug=false) :  _NextPartIndex(0)
+#ifdef DEBUG_HASH_GENERATOR
+    , _debug(debug)
+#endif
+    {};
+
+
   bool addPart(Fixnum part) {
     if (this->_NextPartIndex >= MaxParts)
       return false;
     this->_Parts[this->_NextPartIndex] = part;
+#ifdef DEBUG_HASH_GENERATOR
+    if (this->_debug) {
+      printf("%s:%d Added part[%d] --> %ld\n", __FILE__, __LINE__, this->_NextPartIndex, part );
+    }
+#endif
     ++this->_NextPartIndex;
     return true;
   }
@@ -353,10 +367,20 @@ public:
     unsigned long hash = 5381;
     for (int i = 0; i < this->_NextPartIndex; i++) {
       hash = hash_word(hash, this->_Parts[i]);
+#ifdef DEBUG_HASH_GENERATOR
+      if (this->_debug) {
+        printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[i]);
+      }
+#endif
       //		hash = ((hash << 5) + hash) + this->_Parts[i];
     }
     if (bound)
       return hash % bound;
+#ifdef DEBUG_HASH_GENERATOR
+      if (this->_debug) {
+        printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash );
+      }
+#endif
     return hash;
   }
 
@@ -623,6 +647,7 @@ public: // Description stuff
   virtual core::List_sp encode();
   //! Decode this object from an a-list
   virtual void decode(core::List_sp);
+  virtual bool fieldsp() const { return false; };
   virtual void fields(Record_sp record) {SUBIMP();};
 public:
   string descriptionNonConst();

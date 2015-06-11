@@ -11,7 +11,8 @@
 		 :cleavir-ast-transformations
 		 :cleavir-hir-transformations
 		 :cleavir-hir-to-mir
-		 :cleavir-basic-blocks)
+		 :cleavir-basic-blocks
+                 :sicl-additional-conditions)
     :serial t
     :components ((:file "packages")
 		 (:file "system")

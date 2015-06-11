@@ -1,3 +1,13 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Christian Schafmeister June 1 2015
+;;;
+;;; This file figures out which Cleavir source files are required to
+;;; construct the ASDF system that one gets with (require :clasp-cleavir)
+;;;
+;;; This code is derived from code written by Mark Cox - see below
+
+
 ;; Copyright (c) 2011, Mark Cox
 ;; All rights reserved.
 
@@ -24,41 +34,13 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(defpackage "LISP-EXECUTABLE.CREATION"
-  (:use :common-lisp)
-  (:export #:determine-complete-set-of-asdf-source-files
-           )
-  )
+
+(defpackage #:asdf-system-groveler
+  (:use #:common-lisp)
+  (:export #:determine-complete-set-of-asdf-source-files))
 
 
-(in-package "LISP-EXECUTABLE.CREATION")
-
-(defvar *lisp-machine-output-stream* *standard-output*)
-
-(defun remove-from-plist-unless-keys-are (plist valid-keys &key (test #'eql))
-  "Utility function that helps with implementing
-START-NEW-LISP-MACHINE and SAVE-EXECUTABLE-USING-FUNCTION-AND-DIE."
-  (loop
-     :for (key value) :on plist :by #'cddr
-     :append
-     (if (member key valid-keys :test test)
-	 (list key value)
-	 nil)))
-
-(defgeneric start-new-lisp-machine (&rest args &key &allow-other-keys))
-(defgeneric lisp-machine-input (lisp-machine))
-(defgeneric wait-for-lisp-machine (lisp-machine))
-(defgeneric kill-lisp-machine (lisp-machine))
-(defgeneric lisp-machine-exit (exit-status))
-(defgeneric save-executable-using-code-and-die (code output-file &rest args &key &allow-other-keys))
-(defgeneric command-line-arguments ())
-(defgeneric executable-files (output-file))
-(defgeneric do-with-control-c-handled (function))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defmacro with-control-c-handled (&body body)
-    `(do-with-control-c-handled #'(lambda ()
-				    ,@body))))
+(in-package :asdf-system-groveler)
 
 (defvar *all-systems* nil)
 (defvar *all-source-files* nil)

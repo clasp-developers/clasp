@@ -91,7 +91,6 @@ T_sp af_backquote_append(List_sp lists) {
   _G();
   ql::list list; // (lists);
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
-  List_sp savedArgs = lists;
   List_sp appendArg = lists;
   for (; oCdr(appendArg).notnilp(); appendArg = oCdr(appendArg)) {
     T_sp head = oCar(appendArg);
@@ -116,6 +115,7 @@ T_mv af_backquote_completely_process(T_sp x) {
   if (_sym_STARbq_simplifySTAR->symbolValue().isTrue()) {
     T_sp process_result = af_backquote_simplify(raw_result);
     T_sp result = af_backquote_remove_tokens(process_result);
+    (void)result;
   }
   T_sp result = af_backquote_remove_tokens(raw_result);
   return Values(result);

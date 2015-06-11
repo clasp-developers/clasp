@@ -196,10 +196,10 @@
       (let* ((*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
 	     (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
 	     (bcnum 0))
-	(with-module (nil :module module
-			  :function-pass-manager function-pass-manager
-			  :source-pathname (namestring output-pathname)
-			  )
+	(with-module ( :module module
+                               :function-pass-manager function-pass-manager
+                               :source-pathname (namestring output-pathname)
+                               )
 	  (let* (
 ;;;(*gv-source-pathname* (jit-make-global-string-ptr (namestring output-pathname) "source-pathname")
 		 (linker (llvm-sys:make-linker *the-module*)))

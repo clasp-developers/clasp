@@ -32,7 +32,6 @@
           +mv-struct+
           +size_t+
           +t*+
-          +nil-value+
           calling-convention-args
           calling-convention-args.gep
           calling-convention-nargs
@@ -73,7 +72,6 @@
           irc-intrinsic-args
           irc-load
           irc-low-level-trace
-          irc-nil
           irc-phi
           irc-phi-add-incoming
           irc-preserve-exception-info
@@ -104,4 +102,6 @@
           with-landing-pad
           with-ltv-function-codegen
           compile-reference-to-literal
+          bclasp-compile
+          bclasp-compile-file
           ))

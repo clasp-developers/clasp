@@ -15,6 +15,9 @@
    #:translate-datum
    #:convert-funcalls
    #:finalize-unwind-and-landing-pad-instructions
+   #:cleavir-compile
+   #:cleavir-compile-file
+   #:cclasp-compile-in-env
 ))
 
 (defpackage #:clasp-cleavir-generate-ast
@@ -105,3 +108,4 @@
 
 (defpackage #:lisp-executable.creation
   (:use #:common-lisp))
+

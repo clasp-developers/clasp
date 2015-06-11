@@ -129,11 +129,20 @@ T_sp core_make_builtin(T_sp class_or_name, T_sp args)
   UNREACHABLE();
 }
 
+#define ARGS_core_fieldsp "(obj)"
+#define DECL_core_fieldsp ""
+#define DOCS_core_fieldsp "fieldsp returns true if obj has a fields function"
+bool core_fieldsp(T_sp obj)
+{
+  return obj->fieldsp();
+}
+
 #define ARGS_core_printBuiltinObject "(obj stream)"
 #define DECL_core_printBuiltinObject ""
 #define DOCS_core_printBuiltinObject "printBuiltinObject"
 T_sp core_printBuiltinObject(T_sp obj, T_sp stream)
 {
+  if ( core_fieldsp(obj) ) {
   clasp_write_char('#',stream);
   clasp_write_char('I',stream);
   clasp_write_char('(',stream);
@@ -155,6 +164,9 @@ T_sp core_printBuiltinObject(T_sp obj, T_sp stream)
   clasp_write_char(' ',stream);
   clasp_write_char(')',stream);
   clasp_finish_output(stream);
+  } else {
+    SIMPLE_ERROR(BF("Object does not provide fields"));
+  }
   return obj;
 }
 
@@ -296,7 +308,6 @@ string T_O::className() const {
 }
 
 void T_O::sxhash_(HashGenerator &hg) const {
-  _G();
   int res = (int)((reinterpret_cast<unsigned long long int>(GC_BASE_ADDRESS_FROM_PTR(this)) >> 4) & INT_MAX);
   hg.addPart(res);
 }
@@ -344,6 +355,11 @@ static BignumExportBuffer static_HashGenerator_addPart_buffer;
 bool HashGenerator::addPart(const mpz_class &bignum) {
   unsigned int *buffer = static_HashGenerator_addPart_buffer.getOrAllocate(bignum, 0);
   size_t count(0);
+#ifdef DEBUG_HASH_GENERATOR
+    if (this->_debug) {
+      printf("%s:%d Adding hash bignum\n", __FILE__, __LINE__ );
+    }
+#endif
   buffer = (unsigned int *)::mpz_export(buffer, &count,
                                         _lisp->integer_ordering()._mpz_import_word_order,
                                         _lisp->integer_ordering()._mpz_import_size,
@@ -409,7 +425,7 @@ void T_O::describe() {
 }
 
 void T_O::__write__(T_sp strm) const {
-  if ( clasp_print_readably() ) {
+  if ( clasp_print_readably() && this->fieldsp() ) {
     core_printBuiltinObject(this->asSmartPtr(),strm);
   } else {
     clasp_write_string(this->__repr__(), strm);

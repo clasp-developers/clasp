@@ -218,7 +218,7 @@ to compile prologue and epilogue code when linking modules"
 	 (*compile-print* nil)
 	 (*compile-verbose* nil)	 )
     (with-compiler-env (conditions)
-      (with-module (nil :module module
+      (with-module ( :module module
 			:function-pass-manager (if *use-function-pass-manager-for-compile-file* 
 						   (create-function-pass-manager-for-compile-file module))
 			:source-pathname (namestring name)
@@ -319,7 +319,7 @@ and the pathname of the source file - this will also be used as the module initi
 	  (cmp-log "About to start with-compilation-unit\n")
 	(let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
 	       (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
-	  (with-module (nil :module module
+	  (with-module ( :module module
 			    :function-pass-manager (if *use-function-pass-manager-for-compile-file* 
 						       (create-function-pass-manager-for-compile-file module))
 			    :source-pathname (namestring *compile-file-pathname*)
@@ -420,5 +420,10 @@ and the pathname of the source file - this will also be used as the module initi
 	(dolist (c conditions)
 	  (bformat t "conditions: %s\n" c))
 	(compile-file-results output-path conditions)))))
+
+
+(defun bclasp-compile-file (input-file &rest args &key &allow-other-keys)
+  (let ((cmp:*cleavir-compile-file-hook* nil))
+    (apply #'compile-file input-file args)))
 
 (export 'compile-file)

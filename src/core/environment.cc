@@ -81,6 +81,7 @@ T_sp core_environmentDebugNames(T_sp frame) {
   } else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
     return vf->debuggingInfo();
   } else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {
+    (void)af;
     return _Nil<T_O>();
   }
   SIMPLE_ERROR(BF("Trying to get environment-debug-names of something not an activation-frame: %s") % _rep_(frame));
@@ -116,6 +117,7 @@ T_sp core_environmentDebugValues(T_sp frame) {
     }
     return vo;
   } else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {
+    (void)af;
     return _Nil<T_O>();
   }
   SIMPLE_ERROR(BF("Trying to get environment-debug-values of something not an activation-frame: %s") % _rep_(frame));
@@ -277,7 +279,8 @@ ActivationFrame_sp Environment_O::clasp_getActivationFrame(T_sp tenv) {
   } else if (Environment_sp env = tenv.asOrNull<Environment_O>()) {
     return (env->getActivationFrame());
   }
-  NOT_ENVIRONMENT_ERROR(tenv);
+  return _Nil<T_O>();
+//  NOT_ENVIRONMENT_ERROR(tenv);
 };
 
 ActivationFrame_sp Environment_O::getActivationFrame() const {
@@ -347,7 +350,7 @@ T_sp Environment_O::clasp_currentVisibleEnvironment(T_sp env) {
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return (eenv->currentVisibleEnvironment());
   }
-  NOT_ENVIRONMENT_ERROR(env);
+  return env;
 };
 
 T_sp Environment_O::currentVisibleEnvironment() const {
@@ -1328,14 +1331,14 @@ bool FunctionValueEnvironment_O::_findFunction(T_sp functionName, int &depth, in
 // Constructor
 //
 
-FunctionValueEnvironment_sp FunctionValueEnvironment_O::createEmpty(gc::Nilable<Environment_sp> parent) {
+FunctionValueEnvironment_sp FunctionValueEnvironment_O::createEmpty(T_sp parent) {
   _G();
   GC_ALLOCATE(FunctionValueEnvironment_O, environ);
   environ->setupParent(parent);
   return environ;
 }
 
-FunctionValueEnvironment_sp FunctionValueEnvironment_O::createForEntries(int numEntries, gc::Nilable<Environment_sp> parent) {
+FunctionValueEnvironment_sp FunctionValueEnvironment_O::createForEntries(int numEntries, T_sp parent) {
   _G();
   FunctionValueEnvironment_sp environ(FunctionValueEnvironment_O::createEmpty(parent));
   environ->_FunctionFrame = FunctionFrame_O::create(numEntries, clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
@@ -1433,7 +1436,7 @@ bool CompileTimeEnvironment_O::_findValue(T_sp sym, int &depth, int &index, Valu
   return clasp_findValue(parent, sym, depth, index, valueKind, value);
 }
 
-UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(List_sp cleanupForm, gc::Nilable<Environment_sp> parent) {
+UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(List_sp cleanupForm, T_sp parent) {
   _G();
   UnwindProtectEnvironment_sp environ = UnwindProtectEnvironment_O::create();
   environ->_CleanupForm = cleanupForm;
@@ -1553,7 +1556,7 @@ T_mv BlockEnvironment_O::recognizesBlockSymbol(Symbol_sp sym, bool &interFunctio
 
 #endif
 
-CatchEnvironment_sp CatchEnvironment_O::make(gc::Nilable<Environment_sp> parent) {
+CatchEnvironment_sp CatchEnvironment_O::make(T_sp parent) {
   _G();
   CatchEnvironment_sp environ = CatchEnvironment_O::create();
   environ->setupParent(parent);
@@ -1592,14 +1595,14 @@ void CatchEnvironment_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::create(gc::Nilable<Environment_sp> parent) {
+FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::create(T_sp parent) {
   _G();
   FunctionContainerEnvironment_sp environ = FunctionContainerEnvironment_O::create();
   environ->setupParent(parent);
   return environ;
 }
 
-FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::make(gc::Nilable<Environment_sp> parent) {
+FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::make(T_sp parent) {
   _G();
   FunctionContainerEnvironment_sp environ = FunctionContainerEnvironment_O::create(parent);
   return environ;
@@ -1665,7 +1668,7 @@ T_mv FunctionContainerEnvironment_O::recognizesBlockSymbol(Symbol_sp sym, bool &
 // Destructor
 //
 
-TagbodyEnvironment_sp TagbodyEnvironment_O::make(gc::Nilable<Environment_sp> parent) {
+TagbodyEnvironment_sp TagbodyEnvironment_O::make(T_sp parent) {
   _G();
   TagbodyEnvironment_sp environ = TagbodyEnvironment_O::create();
   environ->setupParent(parent);
@@ -1786,7 +1789,7 @@ GlueEnvironment_sp GlueEnvironment_O::create(List_sp parts) {
 // Destructor
 //
 
-MacroletEnvironment_sp MacroletEnvironment_O::make(gc::Nilable<Environment_sp> parent) {
+MacroletEnvironment_sp MacroletEnvironment_O::make(T_sp parent) {
   _G();
   MacroletEnvironment_sp environ = MacroletEnvironment_O::create();
   environ->setupParent(parent);
@@ -1843,7 +1846,7 @@ void MacroletEnvironment_O::addMacro(Symbol_sp sym, Function_sp macro) {
   this->_Macros->hash_table_setf_gethash(sym, macro);
 }
 
-SymbolMacroletEnvironment_sp SymbolMacroletEnvironment_O::make(gc::Nilable<Environment_sp> parent) {
+SymbolMacroletEnvironment_sp SymbolMacroletEnvironment_O::make(T_sp parent) {
   _G();
   SymbolMacroletEnvironment_sp environ = SymbolMacroletEnvironment_O::create();
   environ->setupParent(parent);
@@ -1903,7 +1906,7 @@ string SymbolMacroletEnvironment_O::summaryOfContents() const {
   return ss.str();
 }
 
-StackValueEnvironment_sp StackValueEnvironment_O::make(gc::Nilable<Environment_sp> parent) {
+StackValueEnvironment_sp StackValueEnvironment_O::make(T_sp parent) {
   _G();
   StackValueEnvironment_sp environ = StackValueEnvironment_O::create();
   environ->setupParent(parent);

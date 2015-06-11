@@ -419,19 +419,19 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-
 (defun get-pathname-with-type (module &optional (type "lsp"))
-  (merge-pathnames (pathname (string module))
-		   (make-pathname :host "sys" :directory '(:absolute) :type type)))
+  (cond ((pathnamep module)
+         (make-pathname :host "sys" :type type :defaults module))
+        ((symbolp module)
+         (merge-pathnames (pathname (string module))
+                          (make-pathname :host "sys" :directory '(:absolute) :type type)))
+        (t (error "Illegal module specifier - only pathnames and symbols are supported"))))
 
 (defun lisp-source-pathname (module)
   (or (probe-file (get-pathname-with-type module "lsp"))
       (probe-file (get-pathname-with-type module "lisp"))
       (error "Could not find source file for ~a" module)))
 (export 'lisp-source-pathname)
-
-
-
 
 (si::*fset 'interpreter-iload
            #'(lambda (module)
@@ -611,6 +611,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	    )))
     bitcode-path
     ))
+(export 'compile-kernel-file)
 
 
 
@@ -619,115 +620,114 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defvar *init-files*
   '(
     :init
-    kernel/init
-    kernel/cmp/jit-setup
-    kernel/clsymbols
+    #P"/kernel/init"
+    #P"/kernel/cmp/jit-setup"
+    #P"/kernel/clsymbols"
     :start
-    kernel/lsp/packages
-    kernel/lsp/foundation
-    kernel/lsp/export
-    kernel/lsp/defmacro
+    #P"/kernel/lsp/packages"
+    #P"/kernel/lsp/foundation"
+    #P"/kernel/lsp/export"
+    #P"/kernel/lsp/defmacro"
     :defmacro
-    kernel/lsp/helpfile
-    kernel/lsp/evalmacros
-    kernel/lsp/claspmacros
+    #P"/kernel/lsp/helpfile"
+    #P"/kernel/lsp/evalmacros"
+    #P"/kernel/lsp/claspmacros"
     :macros
-    kernel/lsp/testing
-    kernel/lsp/makearray
-    kernel/lsp/arraylib
-    kernel/lsp/setf
-    kernel/lsp/listlib
-    kernel/lsp/mislib
-    kernel/lsp/defstruct
-    kernel/lsp/predlib
-    kernel/lsp/seq
-    kernel/lsp/cmuutil
-    kernel/lsp/seqmacros
-    kernel/lsp/iolib
-    kernel/lsp/profiling    ;; Do micro-profiling of the GC
+    #P"/kernel/lsp/testing"
+    #P"/kernel/lsp/makearray"
+    #P"/kernel/lsp/arraylib"
+    #P"/kernel/lsp/setf"
+    #P"/kernel/lsp/listlib"
+    #P"/kernel/lsp/mislib"
+    #P"/kernel/lsp/defstruct"
+    #P"/kernel/lsp/predlib"
+    #P"/kernel/lsp/seq"
+    #P"/kernel/lsp/cmuutil"
+    #P"/kernel/lsp/seqmacros"
+    #P"/kernel/lsp/iolib"
+    #P"/kernel/lsp/profiling"    ;; Do micro-profiling of the GC
     :tiny
     :pre-cmp
     ;; Compiler code
-    kernel/cmp/packages
-    kernel/cmp/cmpsetup
-    kernel/cmp/cmpenv-fun
-    kernel/cmp/cmpenv-proclaim
-    kernel/cmp/cmpglobals
-    kernel/cmp/cmptables
-    kernel/cmp/cmpvar
-    kernel/cmp/cmputil
-    kernel/cmp/cmpintrinsics
-    kernel/cmp/cmpir
-    kernel/cmp/cmpeh
-    kernel/cmp/debuginfo
-    kernel/cmp/lambdalistva
-    kernel/cmp/cmpvars
-    kernel/cmp/cmpquote
-    kernel/cmp/cmpobj
-    kernel/cmp/compiler
-    kernel/cmp/compilefile
-    kernel/cmp/cmpbundle
-    kernel/cmp/cmpwalk
+    #P"/kernel/cmp/packages"
+    #P"/kernel/cmp/cmpsetup"
+    #P"/kernel/cmp/cmpenv-fun"
+    #P"/kernel/cmp/cmpenv-proclaim"
+    #P"/kernel/cmp/cmpglobals"
+    #P"/kernel/cmp/cmptables"
+    #P"/kernel/cmp/cmpvar"
+    #P"/kernel/cmp/cmputil"
+    #P"/kernel/cmp/cmpintrinsics"
+    #P"/kernel/cmp/cmpir"
+    #P"/kernel/cmp/cmpeh"
+    #P"/kernel/cmp/debuginfo"
+    #P"/kernel/cmp/lambdalistva"
+    #P"/kernel/cmp/cmpvars"
+    #P"/kernel/cmp/cmpquote"
+    #P"/kernel/cmp/cmpobj"
+    #P"/kernel/cmp/compiler"
+    #P"/kernel/cmp/compilefile"
+    #P"/kernel/cmp/cmpbundle"
+    #P"/kernel/cmp/cmpwalk"
     :cmp
     :stage1
-    kernel/cmp/cmprepl
+    #P"/kernel/cmp/cmprepl"
     :cmprepl
-    kernel/lsp/logging
-    kernel/lsp/seqlib
-    kernel/lsp/trace
+    #P"/kernel/lsp/logging"
+    #P"/kernel/lsp/seqlib"
+    #P"/kernel/lsp/trace"
     :was-pre-cmp
-    kernel/lsp/sharpmacros
-    kernel/lsp/assert
-    kernel/lsp/numlib
-    kernel/lsp/describe
-    kernel/lsp/module
-    kernel/lsp/loop2
-    kernel/lsp/shiftf-rotatef
-    kernel/lsp/assorted
-    kernel/lsp/packlib
+    #P"/kernel/lsp/sharpmacros"
+    #P"/kernel/lsp/assert"
+    #P"/kernel/lsp/numlib"
+    #P"/kernel/lsp/describe"
+    #P"/kernel/lsp/module"
+    #P"/kernel/lsp/loop2"
+    #P"/kernel/lsp/shiftf-rotatef"
+    #P"/kernel/lsp/assorted"
+    #P"/kernel/lsp/packlib"
 ;;    cmp/cmpinterpreted
-    kernel/lsp/defpackage
-    kernel/lsp/format
+    #P"/kernel/lsp/defpackage"
+    #P"/kernel/lsp/format"
     #|
-		 arraylib
-		 numlib
-		 |#
+    arraylib
+    numlib
+    |#
     :min
-    kernel/clos/package
-    kernel/clos/hierarchy
-    kernel/clos/cpl
-    kernel/clos/std-slot-value
-    kernel/clos/slot
-    kernel/clos/boot
-    kernel/clos/kernel
-    kernel/clos/method
-    kernel/clos/combin
-    kernel/clos/std-accessors
-    kernel/clos/defclass
-    kernel/clos/slotvalue
-    kernel/clos/standard
-    kernel/clos/builtin
-    kernel/clos/change
-    kernel/clos/stdmethod
-    kernel/clos/generic
+    #P"/kernel/clos/package"
+    #P"/kernel/clos/hierarchy"
+    #P"/kernel/clos/cpl"
+    #P"/kernel/clos/std-slot-value"
+    #P"/kernel/clos/slot"
+    #P"/kernel/clos/boot"
+    #P"/kernel/clos/kernel"
+    #P"/kernel/clos/method"
+    #P"/kernel/clos/combin"
+    #P"/kernel/clos/std-accessors"
+    #P"/kernel/clos/defclass"
+    #P"/kernel/clos/slotvalue"
+    #P"/kernel/clos/standard"
+    #P"/kernel/clos/builtin"
+    #P"/kernel/clos/change"
+    #P"/kernel/clos/stdmethod"
+    #P"/kernel/clos/generic"
     :generic
-    kernel/clos/fixup
-    kernel/clos/extraclasses
-    kernel/lsp/defvirtual
+    #P"/kernel/clos/fixup"
+    #P"/kernel/clos/extraclasses"
+    #P"/kernel/lsp/defvirtual"
     :stage3
-    kernel/clos/conditions
-    kernel/clos/print
-    kernel/clos/streams
-    kernel/lsp/pprint
-    kernel/clos/inspect
+    #P"/kernel/clos/conditions"
+    #P"/kernel/clos/print"
+    #P"/kernel/clos/streams"
+    #P"/kernel/lsp/pprint"
+    #P"/kernel/clos/inspect"
     :clos
-    kernel/lsp/ffi
-    sockets/sockets
+    #P"/kernel/lsp/ffi"
+    #P"/sockets/sockets"
 ;;    asdf/build/asdf
     :front
-    kernel/lsp/top
+    #P"/kernel/lsp/top"
     :all
-
 ;;    lsp/pprint
     ))
 (export '*init-files*)
@@ -745,7 +745,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        (setq file (car cur))
        (if (endp cur) (go done))
        (if last-file
-	   (if (eq last-file file)
+	   (if (equal last-file file)
 	       (progn
 		 (if (not (keywordp file))
 		     (setq files (cons file files)))
@@ -754,10 +754,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	   (setq files (cons file files)))
        (setq cur (cdr cur))
        (go top)
-     done
-       )
-    (nreverse files)
-    ))
+     done)
+    (nreverse files)))
+
 (export 'select-source-files)
 
 
@@ -820,7 +819,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
      done
        )
     (reverse bitcode-files)))
-
+(export 'compile-system)
 
 (defun copy-system (first-file last-file &key (from-target-backend nil) (to-target-backend nil) (system *init-files*))
   ;;  (if *target-backend* nil (error "*target-backend* is undefined"))

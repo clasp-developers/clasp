@@ -113,7 +113,7 @@ static const uintptr_t fixnum_mask = BOOST_BINARY(1);
 // Together they are objects
 
 static const uintptr_t ptr_mask = ~BOOST_BINARY(111);
-static const uintptr_t other_tag = BOOST_BINARY(001); // means ptr
+static const uintptr_t general_tag = BOOST_BINARY(001); // means ptr
 static const uintptr_t cons_tag = BOOST_BINARY(011);  // means a cons
 static const uintptr_t frame_tag = BOOST_BINARY(101); // means a frame on the stack
 /*! Character */
@@ -145,14 +145,14 @@ inline T untag_cons(T ptr) {
 }
 
 template <class T>
-inline T tag_other(T p) {
+inline T tag_general(T p) {
   GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & tag_mask) == 0);
-  return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + other_tag);
+  return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + general_tag);
 }
 
 template <class T>
 inline T tag_object(T ptr) {
-  return tag_other<T>(ptr);
+  return tag_general<T>(ptr);
 }
 template <>
 inline core::Cons_O *tag_object<core::Cons_O *>(core::Cons_O *ptr) {
@@ -203,9 +203,9 @@ inline T tag_frame(core::T_O **p) {
 }
 
 template <class T>
-inline T untag_other(T ptr) {
-  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == other_tag);
-  return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) - other_tag);
+inline T untag_general(T ptr) {
+  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == general_tag);
+  return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) - general_tag);
 }
 template <class T>
 inline core::T_O **untag_frame(T ptr) {
@@ -268,8 +268,8 @@ inline bool tagged_single_floatp(T ptr) {
 };
 
 template <class T>
-inline bool tagged_otherp(T ptr) {
-  return ((uintptr_t)(ptr)&tag_mask) == other_tag;
+inline bool tagged_generalp(T ptr) {
+  return ((uintptr_t)(ptr)&tag_mask) == general_tag;
 }
 template <class T>
 inline bool tagged_framep(T ptr) {
@@ -278,8 +278,8 @@ inline bool tagged_framep(T ptr) {
 
 template <class Type>
 inline Type untag_object(Type tagged_obj) {
-  if (gctools::tagged_otherp<Type>(tagged_obj)) {
-    return gctools::untag_other<Type>(tagged_obj);
+  if (gctools::tagged_generalp<Type>(tagged_obj)) {
+    return gctools::untag_general<Type>(tagged_obj);
   } else if (gctools::tagged_consp<Type>(tagged_obj)) {
     return gctools::untag_cons<Type>(tagged_obj);
   } else {

@@ -45,6 +45,7 @@
 
 (defvar *run-time-value-nil-index* (data-vector-push-extend *run-time-literal-holder* nil 16))
 (defvar *run-time-value-t-index* (data-vector-push-extend *run-time-literal-holder* t 16))
+
 (defvar *run-time-literals-external-name* "globalRunTimeValues")
 
 
@@ -540,7 +541,7 @@ and walk the car and cdr"
     :maker (irc-intrinsic "makeNil" ltv-ref)))
 
 (defvar *t-coalesce* nil)
-(defun codegen-ltv-t (result env)
+(defun codegen-ltv/t (result env)
   (with-coalesce-load-time-value (ltv-ref result nil env)
     :coalesce-hash-table *t-coalesce*
     :maker (irc-intrinsic "makeT" ltv-ref)))
@@ -731,15 +732,6 @@ evaluate POSTSCRIPT with their final values in ltv-value-counter and ltv-symbol-
 	   ,ltv-symbol-counter *next-load-time-symbol-index*)
      ,postscript))
 
-
-
-(defun initialize-special-load-time-values (env)
-  "Initialize special load-time-values like nil and t"
-  (codegen-ltv/nil nil env)
-  (codegen-ltv-t   nil env))
-
-
-
 (defmacro with-compile-file-dynamic-variables-and-load-time-value-unit ((ltv-init-fn) &rest body)
   "Wraps generation of load-time-values. This is only invoked from COMPILE-FILE and it creates
 the 'runAll' function and sets up everything for the coalescence and
@@ -813,8 +805,11 @@ marshaling of compiled quoted data"
 					     (jit-constant-i64 *source-debug-offset*)
 					     (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
 					     *gv-source-file-info-handle*)))
-	     (initialize-special-load-time-values ,fn-env-gs)
-	     ,@body)
+             (progn
+               ;; special values that will always be needed
+               (codegen-ltv/nil nil ,fn-env-gs)
+               (codegen-ltv/t nil ,fn-env-gs)
+               ,@body))
 	   (with-irbuilder (*irbuilder-ltv-function-body*)
 	     (let ((*gv-current-function-name* (jit-make-global-string-ptr
 						(llvm-sys:get-name ,ltv-init-fn) "fn-name")))
@@ -891,7 +886,7 @@ marshaling of compiled quoted data"
 ;; 4) You will need to expose the makeXXX function in cmpintrinsics.lsp
 ;;
 (defun codegen-literal (result obj &optional (env *load-time-initializer-environment*))
-  "Generate a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively"
+  "Generate a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively.  Write the value into the first argument and if the first argument is nil then return the index of the value in the load/run-time-value array"
   (if *generate-compile-file-load-time-values*
       (cond
 	((null obj) (codegen-ltv/nil result env))

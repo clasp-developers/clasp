@@ -1711,7 +1711,6 @@ T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx) {
   printf("%s:%d precalcValue idx[%zu] value = %p\n", __FILE__, __LINE__, idx, (*array).data_element(idx).px);
 #endif
   T_O *res = (*array).data_element(idx).raw_();
-  ASSERT(res != NULL);
   return res;
 }
 
@@ -1757,7 +1756,7 @@ T_O *cc_fdefinition(core::T_O *sym) {
   if (!s->fboundp())
     SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
   core::Function_sp fn = core::af_symbolFunction(s);
-  return &(*fn);
+  return fn.raw_();// &(*fn);
 }
 
 T_O *cc_getSetfFdefinition(core::T_O *sym) {
@@ -1766,14 +1765,14 @@ T_O *cc_getSetfFdefinition(core::T_O *sym) {
   if (!s->setf_fboundp())
     SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
   core::Function_sp fn = s->getSetfFdefinition(); //_lisp->get_setfDefinition(s);
-  return &(*fn);
+  return fn.raw_(); //&(*fn);
 }
 
 T_O *cc_symbolValue(core::T_O *sym) {
   //	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
   core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
   core::T_sp v = core::af_symbolValue(s);
-  return &(*v);
+  return v.raw_(); // &(*v);
 }
 
 #define PROTO_cc_setSymbolValue "void (t* t*)"
@@ -1781,14 +1780,14 @@ T_O *cc_symbolValue(core::T_O *sym) {
 void cc_setSymbolValue(core::T_O *sym, core::T_O *val) {
   //	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
   core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
-  s->setf_symbolValue(gctools::smart_ptr<core::T_O>(val));
+  s->setf_symbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
 }
 
 void cc_call(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_BASE) {
   //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
-  auto closure = gc::untag_other<core::Function_O *>(tagged_func)->closure.as<core::Closure>();
+  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure.as<core::Closure>();
   closure->invoke(result, LCC_PASS_ARGS);
 }
 
@@ -1796,7 +1795,7 @@ void cc_invoke(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_BASE) {
   //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
-  auto closure = gc::untag_other<core::Function_O *>(tagged_func)->closure;
+  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
   closure->invoke(result, LCC_PASS_ARGS);
 }
 
@@ -1815,7 +1814,7 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func, 
 #ifdef DEBUG_CC
     printf("%s:%d enclose environment@%p[%d] p[%p]\n", __FILE__, __LINE__, vo.raw_(), idx, p);
 #endif
-    (*vo)[idx] = gctools::smart_ptr<core::T_O>(p);
+    (*vo)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
     ++idx;
   }
   va_end(argp);
@@ -1852,7 +1851,7 @@ void cc_call_multipleValueOneFormCall(core::T_mv *result, core::T_O *tfunc) {
   core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
   core::Function_O *tagged_func = gctools::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
-  auto closure = gc::untag_other<core::Function_O *>(tagged_func)->closure;
+  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
   closure->invoke(result, result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
 }
 
@@ -1863,7 +1862,7 @@ void cc_invoke_multipleValueOneFormCall(core::T_mv *result, core::T_O *tfunc) {
   core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
   core::Function_O *tagged_func = gctools::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
-  auto closure = gc::untag_other<core::Function_O *>(tagged_func)->closure;
+  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
   closure->invoke(result, result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
 }
 
@@ -1898,9 +1897,9 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(std::si
   int inargs = nargs;
   int istartRest = startRest;
   for (int i = inargs - 1; i >= istartRest; i--) {
-    result = core::Cons_O::create(core::T_sp(argArray[i]), result);
+    result = core::Cons_O::create(core::T_sp((gc::Tagged)argArray[i]), result);
   }
-  return (core::T_O *)(&(*result));
+  return (core::T_O *)result.raw_(); //(&(*result));
 }
 
 std::size_t cc_allowOtherKeywords(std::size_t saw_aok, std::size_t nargs, core::T_O **argArray, std::size_t argIdx) {
@@ -1927,9 +1926,8 @@ size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlread
 }
 
 void cc_ifNotKeywordException(core::T_O *obj) {
-  ASSERT(obj != NULL);
-  if (!af_keywordP((core::T_sp(obj)))) {
-    T_sp vobj(obj);
+  T_sp vobj((gc::Tagged)obj);
+  if (!af_keywordP(vobj) ) {
     SIMPLE_ERROR(BF("Not keyword %s") % _rep_(vobj));
   }
 }
@@ -1962,7 +1960,7 @@ void cc_throw(T_O *tag) {
 #ifdef DEBUG_FLOW_CONTROL
   printf("%s:%d In cc_tag tag@%p\n\n", __FILE__, __LINE__, tag);
 #endif
-  core::T_sp ttag(tag);
+  core::T_sp ttag((gc::Tagged)tag);
   int frame = _lisp->exceptionStack().findKey(CatchFrame, ttag);
   if (frame < 0) {
     CONTROL_ERROR();

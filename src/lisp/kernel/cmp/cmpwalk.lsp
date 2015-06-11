@@ -33,7 +33,7 @@
 	 (*code-walker* code-walker-function))
     (define-primitives-in-module module)
     (with-compilation-unit ()
-      (with-module (nil :module module :function-pass-manager fpm
+      (with-module ( :module module :function-pass-manager fpm
 			:source-pathname "code-walk-using-compiler")
         (let (
 ;;	      (*gv-source-pathname* (jit-make-global-string-ptr "code-walk-using-compiler" "source-path-name"))

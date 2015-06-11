@@ -686,6 +686,7 @@ Class_sp lisp_instance_class(T_sp o) {
     return exobj->_instanceClass();
     //#ifndef CLOS
   } else if (StructureObject_sp sobj = o.asOrNull<StructureObject_O>()) {
+    (void)sobj;
     IMPLEMENT_MEF(BF("structureType returns a T_sp but I need a Class_sp - What do I return here????"));
     //	    return sobj->structureType();
     //#endif
@@ -1110,6 +1111,7 @@ void lisp_defmacro(Symbol_sp sym,
   }
   List_sp ll = lisp_parse_arguments(packageName, arguments);
   List_sp ldeclares = lisp_parse_declares(packageName, declarestring);
+  (void)ldeclares;
   LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>());
   f->finishSetup(llh, kw::_sym_macro);
   Function_sp func = Function_O::make(f);

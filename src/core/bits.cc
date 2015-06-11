@@ -288,7 +288,7 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
       (bignum_operations[op])(x_copy, bnx, bny);
       clasp_big_register_free(bny);
     } else if (Bignum_sp bny = y.asOrNull<Bignum_O>()) {
-      (bignum_operations[op])(x_copy, x, y);
+      (bignum_operations[op])(x_copy, x, bny);
     } else {
       ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 2, y, cl::_sym_integer);
     }

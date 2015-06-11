@@ -148,7 +148,7 @@ public:
   typedef T_O CdrType_O;
   typedef T_sp CarType_sp;
   typedef T_sp CdrType_sp;
-GCPRIVATE:
+public:
   CarType_sp _Car;
   CdrType_sp _Cdr;
   /*! Keep track of the length of the cons along the cdr chain
@@ -187,36 +187,16 @@ public:
     Cons_sp ret = gctools::GCObjectAllocator<Cons_O>::allocate(obj, _Nil<T_O>());
     return ret;
   }
-
-#if 0 // removed for tagged ptr
-	template <typename iter>
-	    static Cons_sp createFromRange(iter begin, iter end)
-	{
-	    Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
-	    Cons_sp cur = first;
-	    for ( iter it=begin; it!=end; it++ )
-	    {
-		Cons_sp one = Cons_O::create(*it,_Nil<T_O>());
-		cur->setCdr(one);
-		cur = one;
-	    }
-	    return cCdr(first);
-	}
-	template <typename iter,typename baseType>
-	    static Cons_sp createFromRangeObjectify(iter begin, iter end)
-	{_G();
-	    Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
-	    Cons_sp cur = first;
-	    for ( iter it=begin; it!=end; it++ )
-	    {
-		Cons_sp one = Cons_O::create(translate::to_object<baseType>::convert(*it),_Nil<T_O>());
-		cur->setCdr(one);
-		cur = one;
-	    }
-	    return cCdr(first);
-	}
-#endif
-public:
+ public:
+  inline static int car_offset() {
+    Cons_O x;
+    return (int)(reinterpret_cast<char*>(&x._Car)-reinterpret_cast<char*>(&x));
+  }
+  inline static int cdr_offset() {
+    Cons_O x;
+    return (int)(reinterpret_cast<char*>(&x._Cdr)-reinterpret_cast<char*>(&x));
+  }
+ public:
   static void appendInto(T_sp head, T_sp *&tailP, T_sp l);
   static T_sp append(List_sp x, List_sp y);
 

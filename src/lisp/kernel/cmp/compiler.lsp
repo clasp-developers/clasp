@@ -1367,7 +1367,7 @@ be wrapped with to make a closure"
 ||#
 
 
-(defmacro with-module ((env &key module 
+(defmacro with-module (( &key module 
 				 function-pass-manager 
 				 source-pathname
 				 source-file-info-handle
@@ -1447,7 +1447,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
       (clasp-compile* name definition env pathname)))
 
 
-(defun compile-in-env* (bind-to-name &optional definition env &aux conditions)
+(defun compile-in-env (bind-to-name &optional definition env &aux conditions)
   "Compile in the given environment"
   (with-compiler-env (conditions)
     (let ((*the-module* (create-run-time-module-for-compile)))
@@ -1465,18 +1465,14 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	     (handle (multiple-value-bind (the-source-file-info the-handle)
 			 (core:source-file-info pathname)
 		       the-handle)))
-	(with-module (env :module *the-module*
-			  :function-pass-manager (create-function-pass-manager-for-compile *the-module*)
-			  :source-pathname pathname
-			  :source-file-info-handle handle)
+	(with-module ( :module *the-module*
+                               :function-pass-manager (create-function-pass-manager-for-compile *the-module*)
+                               :source-pathname pathname
+                               :source-file-info-handle handle)
 	  (multiple-value-bind (compiled-function warnp failp)
 	      (compile* bind-to-name definition env pathname)
 	    (when bind-to-name (setf-symbol-function bind-to-name compiled-function))
 	    (values compiled-function warnp failp)))))))
-
-(defun compile-in-env (name &optional definition env)
-  (compile-in-env* name definition env)
-)
 
 
 (defun compile (name &optional definition)
@@ -1500,6 +1496,11 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
     (t (error "Illegal combination of arguments for compile: ~a ~a"
 	      name definition))))
 
+
+
+(defun bclasp-compile (name form)
+  (let ((cmp::*cleavir-compile-hook* nil))
+    (compile name form)))
 
 
 (defun test-debug ()

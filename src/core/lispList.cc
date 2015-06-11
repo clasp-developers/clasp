@@ -166,7 +166,6 @@ T_sp cl_rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_sp key) {
   if (key.notnilp())
     key = coerce::functionDesignator(key);
   setup_test(&t, item, test, test_not, key);
-  List_sp calist = a_list;
   for (auto calist : a_list) {
     T_sp pair = oCar(calist);
     if (pair.notnilp()) {
@@ -321,7 +320,7 @@ T_sp cl_nconc(List_sp lists) {
     if (other.nilp()) {
       new_tail = tail;
     } else if (Cons_sp cother = other.asOrNull<Cons_O>()) {
-      new_tail = cl_last(other, 1);
+      new_tail = cl_last(cother, 1);
     } else {
       if (oCdr(cur).notnilp()) {
         TYPE_ERROR_LIST(other);

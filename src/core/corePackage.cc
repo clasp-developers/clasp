@@ -922,6 +922,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 #endif
   _lisp->_Roots._TrueObject = cl::_sym_T_O;
   cl::_sym_T_O->exportYourself()->defparameter(_lisp->_Roots._TrueObject);
+  cl::_sym_T_O->setReadOnly(true);
   cl::_sym_STARload_printSTAR->exportYourself()->defparameter(_lisp->_false());
   cl::_sym_STARload_verboseSTAR->exportYourself()->defparameter(_lisp->_false());
   cl::_sym_STARread_suppressSTAR->exportYourself()->defparameter(_lisp->_false());
@@ -1009,14 +1010,9 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARterminal_ioSTAR->defparameter(terminal);
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARmacroexpand_hookSTAR->defparameter(_sym_macroexpand_default);
-#ifndef USE_SHARP_EQUAL_HASH_TABLES
-  _sym_STARsharp_equal_alistSTAR->defparameter(_Nil<T_O>());
-  _sym_STARsharp_sharp_alistSTAR->defparameter(_Nil<T_O>());
-#else
   _sym_STARsharp_equal_final_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
   _sym_STARsharp_equal_temp_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
   _sym_STARsharp_equal_repl_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
-#endif
   _sym__PLUS_activationFrameNil_PLUS_->defconstant(_Nil<T_O>());
   _sym__PLUS_executableName_PLUS_->defconstant(Str_O::create(EXECUTABLE_NAME));
   SYMBOL_SC_(CorePkg, cArgumentsLimit);

@@ -14,6 +14,17 @@
             argv
             rmdir
             external-process-pid
+            select-source-files
+            compile-kernel-file
+            *target-backend*
+            target-backend-pathname
+            default-target-backend
+            load-system
+            compile-system
+            load-clasprc
+            process-command-line-load-eval-sequence
+            top-level
+            run-repl
             ))
 
   (export '( ;;;;MISSING SYMBOLS!!!!!

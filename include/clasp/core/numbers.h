@@ -659,13 +659,20 @@ class LongFloat_O : public Float_O {
 
 public:
 private:
-  LongFloat _Value;
+//  LongFloat _Value;
 public:
-  static LongFloat_sp create(LongFloat nm) {
+  static DoubleFloat_sp create(LongFloat nm) {
+    return DoubleFloat_O::create(nm);
+  };
+#if 0
+    static LongFloat_sp create(LongFloat nm) {
+    return DoubleFloat_O::create(nm);
+    DEPRECIATED();
     GC_ALLOCATE(LongFloat_O, v);
     v->_Value = nm;
     return v;
   };
+#endif
 public:
   NumberType number_type_() const { return number_LongFloat; };
 #if 0

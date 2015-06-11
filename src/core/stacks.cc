@@ -104,7 +104,7 @@ InvocationHistoryFrame::~InvocationHistoryFrame() {
 }
 
 void InvocationHistoryStack::setExpressionForTop(T_sp expression) {
-  uint ifilepos(0), ilineno(0), icolumn(0);
+//  uint ifilepos(0), ilineno(0), icolumn(0);
   if (_lisp->sourceDatabase().notnilp()) {
     T_sp info = gc::As<SourceManager_sp>(_lisp->sourceDatabase())->lookupSourcePosInfo(expression);
     if (info.notnilp()) {
@@ -207,7 +207,6 @@ void DynamicBindingStack::push(Symbol_sp var) {
 	    //printf("%s:%d  *watch-dynamic-binding-stack* caught push[%zu]\n", __FILE__, __LINE__, this->_Bindings.size() );
 	};
 #endif
-  T_sp val = var->symbolValueUnsafe();
   DynamicBinding bind(var, var->symbolValueUnsafe());
   this->_Bindings.push_back(bind);
 }

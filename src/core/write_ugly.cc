@@ -483,7 +483,6 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
   } else {
     SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());
   }
-DONE:
   return x;
 }
 

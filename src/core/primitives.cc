@@ -880,7 +880,6 @@ void ListOfSequenceSteppers::fillValueFrameUsingCurrentSteppers(ActivationFrame_
   _G();
   if (this->_AtEnd)
     SIMPLE_ERROR(BF("Tried to make list of ended stepper"));
-  List_sp res = _Nil<T_O>();
   int idx = 0;
   for (auto rit = this->_Steppers.begin(); rit != this->_Steppers.end(); rit++) {
     frame->set_entry(idx, (*rit)->element());
@@ -1177,19 +1176,22 @@ List_sp af_append(List_sp lists) {
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
   auto it = lists.begin();
   auto end = lists.end();
-  auto curit = it;
+  T_sp curit = *it;
   while (it != end) {
-    curit = it;
+    curit = *it;
     it++;
     if (it == end)
       break;
-    for (auto inner : (List_sp)oCar(*curit)) {
+    for (auto inner : (List_sp)oCar(curit)) {
       list << oCar(inner);
     }
   }
   /* Now append the last argument by setting the new lists last element cdr
        to the last argument of append */
-  return (list.dot(oCar(*curit)).cons());
+  T_sp last = oCar(curit);
+  list.dot(last);
+  T_sp res = list.cons();
+  return res;
 }
 
 #define ARGS_af_coerce_to_function "(arg)"
@@ -1559,7 +1561,6 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   eval::funcall(cleanup_fn);
   result.loadFromVec0(savemv);
 //	printf("%s:%d Restored multiple-values result = %p, %d\n", __FILE__, __LINE__, result.px, result.number_of_values());
-DONE:
   return result;
 }
 

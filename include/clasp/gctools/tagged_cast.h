@@ -4,18 +4,18 @@ struct TaggedCast {
   typedef TOPTR ToType;
   typedef FROMPTR FromType;
   static bool isA(FromType client) {
-    if (tagged_otherp(client)) {
-      return (dynamic_cast<ToType>(untag_other(client)) != NULL);
+    if (tagged_generalp(client)) {
+      return (dynamic_cast<ToType>(untag_general(client)) != NULL);
     } else if (tagged_consp(client)) {
       return (dynamic_cast<ToType>(untag_cons(client)) != NULL);
     }
     return false; //THROW_HARD_ERROR(BF("An immediate should never be isA tested by this function - it should have a specialized version")); // Must be specialized
   }
   static ToType castOrNULL(FromType client) {
-    if (tagged_otherp(client)) {
-      ToType ptr = dynamic_cast<ToType>(untag_other(client));
+    if (tagged_generalp(client)) {
+      ToType ptr = dynamic_cast<ToType>(untag_general(client));
       if (ptr)
-        return tag_other<ToType>(ptr);
+        return tag_general<ToType>(ptr);
       return NULL;
     } else if (tagged_consp(client)) {
       ToType ptr = dynamic_cast<ToType>(untag_cons(client));
@@ -101,7 +101,7 @@ struct TaggedCast<core::Integer_O *, FROM> {
   typedef core::Integer_O *ToType;
   typedef FROM FromType;
   static bool isA(FromType ptr) {
-    return tagged_fixnump(ptr) || (tagged_otherp(ptr) && (dynamic_cast<ToType>(untag_other(ptr)) != NULL));
+    return tagged_fixnump(ptr) || (tagged_generalp(ptr) && (dynamic_cast<ToType>(untag_general(ptr)) != NULL));
   }
   static ToType castOrNULL(FromType client) {
     if (TaggedCast<ToType, FromType>::isA(client))
@@ -122,7 +122,7 @@ struct TaggedCast<core::Rational_O *, FROM> {
   typedef core::Rational_O *ToType;
   typedef FROM FromType;
   static bool isA(FromType ptr) {
-    return tagged_fixnump(ptr) || (tagged_otherp(ptr) && (dynamic_cast<ToType>(untag_other(ptr)) != NULL));
+    return tagged_fixnump(ptr) || (tagged_generalp(ptr) && (dynamic_cast<ToType>(untag_general(ptr)) != NULL));
   }
   static ToType castOrNULL(FromType client) {
     if (TaggedCast<ToType, FromType>::isA(client))
@@ -169,7 +169,7 @@ struct TaggedCast<core::Real_O *, FROM> {
   typedef core::Real_O *ToType;
   typedef FROM FromType;
   static bool isA(FromType ptr) {
-    return tagged_fixnump(ptr) || tagged_single_floatp(ptr) || (tagged_otherp(ptr) && (dynamic_cast<ToType>(untag_other(ptr)) != NULL));
+    return tagged_fixnump(ptr) || tagged_single_floatp(ptr) || (tagged_generalp(ptr) && (dynamic_cast<ToType>(untag_general(ptr)) != NULL));
   }
   static ToType castOrNULL(FromType client) {
     if (TaggedCast<ToType, FromType>::isA(client))
@@ -216,7 +216,7 @@ struct TaggedCast<core::Number_O *, FROM> {
   typedef core::Number_O *ToType;
   typedef FROM FromType;
   static bool isA(FromType ptr) {
-    return tagged_fixnump(ptr) || tagged_single_floatp(ptr) || (tagged_otherp(ptr) && (dynamic_cast<ToType>(untag_other(ptr)) != NULL));
+    return tagged_fixnump(ptr) || tagged_single_floatp(ptr) || (tagged_generalp(ptr) && (dynamic_cast<ToType>(untag_general(ptr)) != NULL));
   }
   static ToType castOrNULL(FromType client) {
     if (TaggedCast<ToType, FromType>::isA(client))
@@ -324,7 +324,7 @@ struct TaggedCast<core::Float_O *, FROM> {
   typedef core::Float_O *ToType;
   typedef FROM FromType;
   static bool isA(FromType ptr) {
-    return tagged_single_floatp(ptr) || (tagged_otherp(ptr) && (dynamic_cast<ToType>(untag_other(ptr)) != NULL));
+    return tagged_single_floatp(ptr) || (tagged_generalp(ptr) && (dynamic_cast<ToType>(untag_general(ptr)) != NULL));
   }
   static ToType castOrNULL(FromType client) {
     if (TaggedCast<core::Float_O *, FromType>::isA(client)) {

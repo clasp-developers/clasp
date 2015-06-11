@@ -183,6 +183,7 @@ uint af_column(T_sp obj) {
   if (obj.nilp()) {
     return 0;
   } else if (Cons_sp co = obj.asOrNull<Cons_O>()) {
+    (void)co;
     IMPLEMENT_MEF(BF("Handle cons for af_column"));
   } else if (cl_streamp(obj)) {
     return clasp_input_column(obj);

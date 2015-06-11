@@ -5,34 +5,43 @@
   (load "sys:kernel;cleavir;cmpclasp.lisp")
   (print (core:getpid)))
 
-(find-symbol "LABEL" :cleavir-ir-graphviz)
+(compile-full-cleavir :recompile nil)
 
 
-(symbol-package 'cleavir-primop:typeq)
-(symbol-package 'cleavir-primop:symbol-value)
-(symbol-package 'cleavir-primop:fixnum--)
+(print "Hello")
 
-(defpackage #:foo2 (:export #:car))
-(find-symbol "CAR" "FOO2")
-(symbol-package 'foo2:car)
-
-(intern "ABC" "FOO2")
-(find-symbol "ABC" "FOO2")
-
-(print 'foo2:abc)
+(in-package :clasp-cleavir)
 
 
+(trace cleavir-generate-ast:convert-code
+       cleavir-generate-ast::convert-special
+       cleavir-env:function-info)
+(ast-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
+(hoisted-ast-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
+(hir-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
+(mir-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
 
-(package-use-list (find-package 'foo))
-(symbol-package 'foo:car)
-(find-symbol "CAR" "FOO")
+(trace cleavir-env:variable-info)
+(clasp-cleavir::cleavir-compile 'consp '(lambda (x) (if (cleavir-primop:consp x) t nil)) :debug t)
+(constantp 't)
+(constantp 'nil)
 
-(clasp-cleavir::ast-form '(lambda (x) (cleavir-primop:cdr x)) )
-(trace cleavir-generate-ast:convert-special)
-(package-use-list (find-package 'cleavir-primop))
+(cleavir-compile-file #P"sys:tests;tadd.lsp")
 
+(setq cmp:*low-level-trace-print* t)
+(apropos "low-level-trace")
 
-(clasp-cleavir:cleavir-compile 'myconsp '(lambda (x) (cleavir-primop:car x)) :debug t)
+(load #P"sys:tests;tadd.bc")
+
+(print "Hello")
+
+(probe-file #P"sys:..;tests;lisp;tadd.bc")
+(fdefinition 'add)
+
+(add 1 2)
+
+(find-symbol (string '#:+fn-prototype-argument-names+) :cmp)
+
 
 (print "Done")
 (foo)
@@ -40,8 +49,8 @@
 (clasp-cleavir:cleavir-compile 'baz '(lambda () (with-simple-restart (geton "geton restart") (error "testing"))))
 (baz)
 
-(core:bclasp-compile 'bcatcher '(lambda (f) (declare (core:lambda-name bcatcherl))(catch 'zot (funcall f))))
-(core:bclasp-compile 'bthrower '(lambda () (throw 'zot 'baz)))
+(cmp:bclasp-compile 'bcatcher '(lambda (f) (declare (core:lambda-name bcatcherl))(catch 'zot (funcall f))))
+(cmp:bclasp-compile 'bthrower '(lambda () (throw 'zot 'baz)))
 (compile 'cthrower '(lambda () (throw 'zot 'baz)))
 (compile 'ccatcher '(lambda (f) (declare (core:lambda-name ccatcher-lambda)) (catch 'zot (funcall f))))
 ;;                     Using throw-ast    using throwFunction
@@ -86,10 +95,6 @@
   'foo
   'bbar
   'cbar)
-
-(let ((clasp-cleavir:*use-bclasp-to-compile-form* nil))
-  (clasp-cleavir:cleavir-compile 'cthrow '(lambda () (throw 'foo 'cbar))))
-
 
 
 (let ((cmp:*dump-module-on-completion* t)
@@ -178,49 +183,6 @@
 		(values enclosed-function warnp failp))
 	      setup-function
 	      ))))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(let ((clasp-cleavir:*use-bclasp-to-compile-form* t))
-  (clasp-cleavir:cleavir-compile 'bfoo '(lambda ()
-					(declare (core:lambda-name catcher)) 
-					(catch 'foo 
-					  (print "In") 
-					  (throw 'foo (progn (print (core:exception-stack)) 'bar)) 
-					  (print "skip")))))
-
-(let ((clasp-cleavir:*use-bclasp-to-compile-form* nil))
-  (clasp-cleavir:cleavir-compile 'cfoo '(lambda ()
-					 (declare (core:lambda-name catcher)) 
-					 (catch 'foo 
-					   (print "In") 
-					   (throw 'foo (progn (print (core:exception-stack)) 'bar)) 
-					   (print "skip")))))
-
-(foo)
-
-
-
 
 
 (lambda () (tagbody (funcall #'(lambda () (go b))) (print "skip") b (print "Done"))) :debug t)

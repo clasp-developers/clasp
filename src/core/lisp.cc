@@ -192,7 +192,7 @@ Lisp_O::GCRoots::GCRoots() : _BufferStringPool(_Nil<T_O>())
                              ,
                              _SystemProperties(_Nil<T_O>()), _CatchInfo(_Nil<T_O>()), _SpecialForms(_Unbound<HashTableEq_O>()), _SingleDispatchMethodCachePtr(NULL), _MethodCachePtr(NULL), _SlotCachePtr(NULL), _NullStream(_Nil<T_O>()), _PathnameTranslations(_Nil<T_O>()) {}
 
-Lisp_O::Lisp_O() : _StackWarnSize(14 * 1024 * 1024), // 6MB default stack size before warnings
+Lisp_O::Lisp_O() : _StackWarnSize(7 * 1024 * 1024), // 6MB default stack size before warnings
                    _StackSampleCount(0),
                    _StackSampleSize(0),
                    _StackSampleMax(0),
@@ -370,7 +370,7 @@ void testContainers() {
 #endif
 
 void testStrings() {
-  Str_sp str = Str_O::create("This is a test");
+//  Str_sp str = Str_O::create("This is a test");
   //        printf("%s:%d  Str_sp = %s\n", __FILE__, __LINE__, str->c_str() );
 }
 
@@ -1223,9 +1223,6 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   features = Cons_O::create(_lisp->internKeyword("DEBUG-BUILD"), features);
 #else // _RELEASE_BUILD
   features = Cons_O::create(_lisp->internKeyword("RELEASE-BUILD"), features);
-#endif
-#ifdef USE_SHARP_EQUAL_HASH_TABLES
-  features = Cons_O::create(_lisp->internKeyword("USE-SHARP-EQUAL-HASH-TABLES"), features);
 #endif
 #ifdef USE_REFCOUNT
   features = Cons_O::create(_lisp->internKeyword("USE-REFCOUNT"), features);
@@ -2756,7 +2753,7 @@ Symbol_sp Lisp_O::internUniqueWithPackageName(string const &packageName, string 
   _G();
   T_sp package = this->findPackage(packageName);
   Symbol_mv symStatus = this->intern(symbolName, package);
-  T_sp status = symStatus.second();
+//  T_sp status = symStatus.second();
   return symStatus;
 }
 
@@ -2941,7 +2938,7 @@ void Lisp_O::run() {
       T_mv result = eval::funcall(cl::_sym_load, initPathname);
       if (result.nilp()) {
         T_sp err = result.second();
-        printf("Could not load %s\n", _rep_(initPathname).c_str());
+        printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
       }
     }
   } else {

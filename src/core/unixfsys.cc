@@ -934,7 +934,7 @@ OUTPUT:
 #define DECL_core_mkstemp ""
 #define DOCS_core_mkstemp "mkstemp"
 T_sp core_mkstemp(Str_sp thetemplate) {
-  cl_index l;
+//  cl_index l;
   int fd;
 
 #if defined(ECL_MS_WINDOWS_HOST)

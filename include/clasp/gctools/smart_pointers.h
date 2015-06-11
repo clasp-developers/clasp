@@ -70,7 +70,7 @@ namespace gctools {
   /*! Create a smart pointer from an existing tagged pointer */
     explicit inline tagged_ptr(Tagged ptr) : theObject(reinterpret_cast<Type *>(ptr)){};
 
-    explicit inline tagged_ptr(Type *ptr) : theObject(ptr ? tag_other<Type *>(ptr) : NULL) {
+    explicit inline tagged_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
       GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
     };
 
@@ -130,7 +130,7 @@ namespace gctools {
     inline Type *untag_object() const {
       GCTOOLS_ASSERT(this->otherp() || this->consp());
       if (this->otherp()) {
-        return untag_other<Type *>(this->theObject);
+        return untag_general<Type *>(this->theObject);
       } else if (this->consp()) {
         return untag_cons<Type *>(this->theObject);
       }
@@ -163,7 +163,7 @@ namespace gctools {
     float unsafe_single_float() const { return untag_single_float<Type *>(this->theObject); };
   // This replaces pointerp()
     bool objectp() const { return this->otherp() || this->consp(); };
-    bool otherp() const { return tagged_otherp<Type *>(this->theObject); };
+    bool otherp() const { return tagged_generalp<Type *>(this->theObject); };
     bool consp() const { return tagged_consp<Type *>(this->theObject); };
     core::Cons_O *unsafe_cons() const {
       GCTOOLS_ASSERT(this->consp());
@@ -239,7 +239,7 @@ public:
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline smart_ptr(Tagged ptr) : theObject(reinterpret_cast<Type *>(ptr)){};
 
-  explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_other<Type *>(ptr) : NULL) {
+  explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
   };
 
@@ -340,12 +340,12 @@ public:
   /*! Dereferencing operator - remove the other tag */
   Type *operator->() {
     GCTOOLS_ASSERT(this->otherp());
-    return untag_other(this->theObject);
+    return untag_general(this->theObject);
   };
 
   Type *operator->() const {
     GCTOOLS_ASSERT(this->otherp());
-    return untag_other(this->theObject);
+    return untag_general(this->theObject);
   };
 
   Type &operator*() const {
@@ -356,7 +356,7 @@ public:
   Type *untag_object() const {
     GCTOOLS_ASSERT(this->otherp() || this->consp());
     if (this->otherp()) {
-      return untag_other<Type *>(this->theObject);
+      return untag_general<Type *>(this->theObject);
     } else if (this->consp()) {
       return untag_cons<Type *>(this->theObject);
     }
@@ -384,7 +384,7 @@ public:
   bool isTrue() const { return true; };
 #endif
   bool objectp() const { return this->otherp() || this->consp(); };
-  bool otherp() const { return tagged_otherp<Type *>(this->theObject); };
+  bool otherp() const { return tagged_generalp<Type *>(this->theObject); };
   bool consp() const { return tagged_consp<Type *>(this->theObject); };
   bool unboundp() const { return tagged_unboundp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
@@ -469,10 +469,10 @@ inline bool IsA(From_SP const &rhs) {
 template <typename To_SP, typename From_SP>
 inline To_SP AsOrNull(From_SP const &rhs) {
   if (LIKELY(rhs.otherp())) {
-    typename To_SP::Type *cast = TaggedCast<typename To_SP::Type *, typename From_SP::Type *>::castOrNULL(untag_other<typename From_SP::Type *>(reinterpret_cast<typename From_SP::Type *>(rhs.raw_())));
+    typename To_SP::Type *cast = TaggedCast<typename To_SP::Type *, typename From_SP::Type *>::castOrNULL(untag_general<typename From_SP::Type *>(reinterpret_cast<typename From_SP::Type *>(rhs.raw_())));
     if (cast == NULL)
       return To_SP();
-    To_SP ret((Tagged)tag_other<typename To_SP::Type *>(cast));
+    To_SP ret((Tagged)tag_general<typename To_SP::Type *>(cast));
     return ret;
   } else if (LIKELY(rhs.consp())) {
     typename To_SP::Type *cast = TaggedCast<typename To_SP::Type *, typename From_SP::Type *>::castOrNULL(untag_cons<typename From_SP::Type *>(reinterpret_cast<typename From_SP::Type *>(rhs.raw_())));
@@ -572,7 +572,7 @@ class smart_ptr<core::T_O> : public tagged_ptr<core::T_O> {
   /*! Create a smart pointer from an existing tagged pointer */
     explicit inline smart_ptr(Tagged ptr) : theObject(reinterpret_cast<Type *>(ptr)){};
 
-    explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_other<Type *>(ptr) : NULL) {
+    explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
       GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
     };
 
@@ -632,7 +632,7 @@ class smart_ptr<core::T_O> : public tagged_ptr<core::T_O> {
     inline Type *untag_object() const {
       GCTOOLS_ASSERT(this->otherp() || this->consp());
       if (this->otherp()) {
-        return untag_other<Type *>(this->theObject);
+        return untag_general<Type *>(this->theObject);
       } else if (this->consp()) {
         return untag_cons<Type *>(this->theObject);
       }
@@ -665,7 +665,7 @@ class smart_ptr<core::T_O> : public tagged_ptr<core::T_O> {
     float unsafe_single_float() const { return untag_single_float<Type *>(this->theObject); };
   // This replaces pointerp()
     bool objectp() const { return this->otherp() || this->consp(); };
-    bool otherp() const { return tagged_otherp<Type *>(this->theObject); };
+    bool otherp() const { return tagged_generalp<Type *>(this->theObject); };
     bool consp() const { return tagged_consp<Type *>(this->theObject); };
     core::Cons_O *unsafe_cons() const {
       GCTOOLS_ASSERT(this->consp());
@@ -766,7 +766,7 @@ public:
   inline bool nilp() const { return tagged_nilp(this->theObject); }
   inline bool notnilp() const { return (!this->nilp()); };
   inline bool fixnump() const { return tagged_fixnump(this->theObject); };
-  inline bool otherp() const { return tagged_otherp(this->theObject); };
+  inline bool otherp() const { return tagged_generalp(this->theObject); };
   inline bool consp() const { return tagged_consp(this->theObject); };
   inline bool objectp() const { return this->otherp() || this->consp(); };
   inline Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
@@ -801,7 +801,7 @@ public:
     GCTOOLS_ASSERT(!ptr || (reinterpret_cast<uintptr_t>(ptr) & tag_mask) != 0);
   };
 
-  explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_other<Type *>(ptr) : NULL) {
+  explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
   };
 
@@ -873,13 +873,13 @@ public:
   Type *operator->() {
     GCTOOLS_ASSERT(this->otherp());
     GCTOOLS_ASSERT(!this->unboundp());
-    return untag_other(this->theObject);
+    return untag_general(this->theObject);
   };
 
   Type *operator->() const {
     GCTOOLS_ASSERT(this->otherp());
     GCTOOLS_ASSERT(!this->unboundp());
-    return untag_other(this->theObject);
+    return untag_general(this->theObject);
   };
 
   Type &operator*() const {
@@ -891,7 +891,7 @@ public:
   Type *untag_object() const {
     GCTOOLS_ASSERT(this->otherp() || this->consp());
     if (this->otherp()) {
-      return untag_other<Type *>(this->theObject);
+      return untag_general<Type *>(this->theObject);
     } else if (this->consp()) {
       return untag_cons<Type *>(this->theObject);
     }
@@ -918,7 +918,7 @@ public:
   float unsafe_single_float() const { return untag_single_float<Type *>(this->theObject); };
   // This replaces pointerp()
   bool objectp() const { return this->otherp() || this->consp(); };
-  bool otherp() const { return tagged_otherp<Type *>(this->theObject); };
+  bool otherp() const { return tagged_generalp<Type *>(this->theObject); };
   bool consp() const { return tagged_consp<Type *>(this->theObject); };
   core::Cons_O *unsafe_cons() const {
     GCTOOLS_ASSERT(this->consp());
@@ -1022,7 +1022,7 @@ public:
 
 public:
   void reset_() { this->theObject = NULL; };
-  inline bool otherp() const { return tagged_otherp<core::Cons_O *>(this->theObject); };
+  inline bool otherp() const { return tagged_generalp<core::Cons_O *>(this->theObject); };
   inline bool objectp() const { return this->otherp() || this->consp(); };
 #ifdef ALLOW_CONS_NIL // DISABLE THESE AND USE List_sp
   inline bool consp() const { return tagged_consp(this->theObject); };
@@ -1122,7 +1122,7 @@ public:
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
   };
   explicit inline smart_ptr(core::Symbol_O *ptr)
-      : theObject(tag_other<Type *>(reinterpret_cast<core::T_O *>(ptr))) {
+      : theObject(tag_general<Type *>(reinterpret_cast<core::T_O *>(ptr))) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
   };
   /*! Constructor that takes Tagged assumes that the pointer is tagged.
@@ -1139,7 +1139,7 @@ public:
 
 public:
   void reset_() { this->theObject = NULL; };
-  inline bool otherp() const { return tagged_otherp<Type *>(this->theObject); };
+  inline bool otherp() const { return tagged_generalp<Type *>(this->theObject); };
   inline bool consp() const { return tagged_consp(this->theObject); };
   inline core::Cons_O *unsafe_cons() const {
     GCTOOLS_ASSERT(this->consp());
@@ -1415,9 +1415,9 @@ public:
   template <typename From>
   inline tagged_functor(tagged_functor<From> const &rhs) {
     if (LIKELY(rhs.otherp())) {
-      Type *px = dynamic_cast<Type *>(untag_other<From *>(rhs.thePointer));
+      Type *px = dynamic_cast<Type *>(untag_general<From *>(rhs.thePointer));
       if (px) {
-        this->thePointer = tag_other<Type *>(px);
+        this->thePointer = tag_general<Type *>(px);
         return;
       }
       THROW_HARD_ERROR(BF("Cannot cast tagged_functor in constructor"));
@@ -1425,21 +1425,21 @@ public:
     THROW_HARD_ERROR(BF("Bad tag on tagged_functor in constructor"));
   };
 
-  tagged_functor(Type *f) : thePointer(reinterpret_cast<Type *>(reinterpret_cast<char *>(f) + other_tag)){};
+  tagged_functor(Type *f) : thePointer(reinterpret_cast<Type *>(reinterpret_cast<char *>(f) + general_tag)){};
   Type *operator->() {
     GCTOOLS_ASSERT(this->otherp());
-    return untag_other(this->thePointer);
+    return untag_general(this->thePointer);
   };
   Type *operator->() const {
     GCTOOLS_ASSERT(this->otherp());
-    return untag_other(this->thePointer);
+    return untag_general(this->thePointer);
   };
   Type &operator*() const {
     GCTOOLS_ASSERT(this->otherp());
-    return *untag_other(this->thePointer);
+    return *untag_general(this->thePointer);
   };
   bool otherp() const {
-    return tagged_otherp(this->thePointer);
+    return tagged_generalp(this->thePointer);
   }
   void reset_() {
     this->thePointer = NULL;
@@ -1451,7 +1451,7 @@ public:
   template <class o_class>
   inline tagged_functor<o_class> asOrNull() {
     if (this->otherp()) {
-      o_class *cast = dynamic_cast<o_class *>(untag_other<T *>(this->thePointer));
+      o_class *cast = dynamic_cast<o_class *>(untag_general<T *>(this->thePointer));
       if (cast == NULL)
         return tagged_functor<o_class>();
       tagged_functor<o_class> ret(cast);
@@ -1466,7 +1466,7 @@ public:
   template <class o_class>
   inline tagged_functor<o_class> asOrNull() const {
     if (this->otherp()) {
-      o_class *cast = dynamic_cast<o_class *>(untag_other<T *>(this->thePointer));
+      o_class *cast = dynamic_cast<o_class *>(untag_general<T *>(this->thePointer));
       if (cast == NULL)
         return tagged_functor<o_class>();
       tagged_functor<o_class> ret(cast);
@@ -1617,12 +1617,12 @@ public:
 
   Type *operator->() {
     GCTOOLS_ASSERT(this->notnilp());
-    return untag_other(this->theObject);
+    return untag_general(this->theObject);
   };
 
   const Type *operator->() const {
     GCTOOLS_ASSERT(this->notnilp());
-    return untag_other(this->theObject);
+    return untag_general(this->theObject);
   };
 
   const Type &operator*() const {
@@ -1705,13 +1705,13 @@ public:
 
   Type *operator->() {
     GCTOOLS_ASSERT(this->notnilp());
-    return untag_other(this->theObject);
+    return untag_general(this->theObject);
   };
 
 #if 0
         const Type* operator->() const {
             GCTOOLS_ASSERT(this->notnilp());
-            return untag_other(this->theObject);
+            return untag_general(this->theObject);
         };
 
         const Type& operator*() const {

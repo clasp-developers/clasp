@@ -54,5 +54,4 @@
 	  compile-error-if-not-enough-arguments
 	  dbg-set-current-debug-location-here
 	  irc-t
-	  irc-nil
 	  ))

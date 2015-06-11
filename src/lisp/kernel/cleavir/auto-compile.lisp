@@ -46,18 +46,6 @@
   (setq cmp:*cleavir-compile-file-hook* #'cleavir-compile-file-form))
 
 
-(in-package :core)
-;;; Provide access to the BClasp compiler for testing
-(defun core:bclasp-compile (name form)
-  (let ((cmp::*cleavir-compile-hook* nil))
-    (compile name form)))
-
-(defun core::bclasp-compile-file (input-file &rest args &key &allow-other-keys)
-  (let ((cmp:*cleavir-compile-file-hook* nil))
-    (apply #'compile-file input-file args)))
-
-(export '(core::bclasp-compile core::bclasp-compile-file) "CORE")
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

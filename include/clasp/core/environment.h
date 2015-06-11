@@ -433,8 +433,8 @@ GCPROTECTED:
 public:
   /*! Create an environment that extends a parent environment
 	 */
-  static FunctionValueEnvironment_sp createEmpty(gc::Nilable<Environment_sp> parent);
-  static FunctionValueEnvironment_sp createForEntries(int numEntries, gc::Nilable<Environment_sp> parent);
+  static FunctionValueEnvironment_sp createEmpty(T_sp parent);
+  static FunctionValueEnvironment_sp createForEntries(int numEntries, T_sp parent);
   ActivationFrame_sp getActivationFrame() const;
 
 public:
@@ -514,7 +514,7 @@ private:
   void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 public:
-  static UnwindProtectEnvironment_sp make(List_sp cleanupForm, gc::Nilable<Environment_sp> parent);
+  static UnwindProtectEnvironment_sp make(List_sp cleanupForm, T_sp parent);
 
 public:
   virtual string summaryOfContents() const;
@@ -597,7 +597,7 @@ public:
   void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 public:
-  static CatchEnvironment_sp make(gc::Nilable<Environment_sp> parent);
+  static CatchEnvironment_sp make(T_sp parent);
 
 public:
   virtual string summaryOfContents() const;
@@ -626,8 +626,8 @@ public:
   void initialize();
 
 public:
-  static FunctionContainerEnvironment_sp create(gc::Nilable<Environment_sp> parent);
-  static FunctionContainerEnvironment_sp make(gc::Nilable<Environment_sp> parent);
+  static FunctionContainerEnvironment_sp create(T_sp parent);
+  static FunctionContainerEnvironment_sp make(T_sp parent);
 
 public:
   virtual string summaryOfContents() const;
@@ -676,7 +676,7 @@ GCPRIVATE: // instance variables here
   ActivationFrame_sp _ActivationFrame;
 
 public: // Codes here
-  static TagbodyEnvironment_sp make(gc::Nilable<Environment_sp> env);
+  static TagbodyEnvironment_sp make(T_sp env);
 
 public:
   virtual ActivationFrame_sp getActivationFrame() const;
@@ -734,7 +734,7 @@ GCPRIVATE: // instance variables here
   HashTableEq_sp _Macros;
 
 public: // Codes here
-  static MacroletEnvironment_sp make(gc::Nilable<Environment_sp> env);
+  static MacroletEnvironment_sp make(T_sp env);
 
 public:
   void addMacro(Symbol_sp name, Function_sp macro);
@@ -775,7 +775,7 @@ GCPRIVATE: // instance variables here
   HashTableEq_sp _Macros;
 
 public: // Codes here
-  static SymbolMacroletEnvironment_sp make(gc::Nilable<Environment_sp> env);
+  static SymbolMacroletEnvironment_sp make(T_sp env);
 
 public:
   void addSymbolMacro(Symbol_sp sym, Function_sp expansion);
@@ -819,7 +819,7 @@ GCPRIVATE: // instance variables here
   HashTableEq_sp _Values;
 
 public: // Codes here
-  static StackValueEnvironment_sp make(gc::Nilable<Environment_sp> env);
+  static StackValueEnvironment_sp make(T_sp env);
 
 public:
   void addValue(T_sp sym, T_sp value);

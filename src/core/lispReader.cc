@@ -579,9 +579,6 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
   }
 }
 
-/*! Used when USE_SHARP_EQUAL_HASH_TABLES is not defined */
-SYMBOL_SC_(CorePkg, STARsharp_equal_alistSTAR);
-SYMBOL_SC_(CorePkg, STARsharp_sharp_alistSTAR);
 /*! Used when USE_SHARP_EQUAL_HASH_TABLES is on */
 SYMBOL_SC_(CorePkg, STARsharp_equal_final_tableSTAR);
 SYMBOL_SC_(CorePkg, STARsharp_equal_temp_tableSTAR);
@@ -630,13 +627,12 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
   } else {
     increment_read_lisp_object_recursion_depth::reset();
 
-#ifndef USE_SHARP_EQUAL_HASH_TABLES
-    DynamicScopeManager scope(_sym_STARsharp_equal_alistSTAR, _Nil<T_O>());
-#else
-    DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR, HashTableEql_O::create(40, make_fixnum(4000), 0.8));
-    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_temp_tableSTAR, HashTableEql_O::create(40, make_fixnum(4000), 0.8));
-    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_repl_tableSTAR, HashTableEq_O::create(40, make_fixnum(4000), 0.8));
-#endif
+    DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR,
+                              HashTableEql_O::create(40, make_fixnum(4000), 0.8));
+    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_temp_tableSTAR,
+                                    HashTableEql_O::create(40, make_fixnum(4000), 0.8));
+    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_repl_tableSTAR,
+                                    HashTableEq_O::create(40, make_fixnum(4000), 0.8));
 
     result = read_lisp_object(sin, eofErrorP, eofValue, true);
   }

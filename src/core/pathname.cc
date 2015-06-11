@@ -227,24 +227,32 @@ destructively_check_directory(List_sp directory, bool logical, bool delete_back)
 	 * 3) Redundant :back are removed.
 	 */
   /* INV: directory is always a list */
-  if (!cl_listp(directory))
+  if (!cl_listp(directory)) {
+//    printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
     return kw::_sym_error;
+  }
   if (directory.nilp())
     return directory;
   if (oCar(directory) != kw::_sym_absolute &&
-      oCar(directory) != kw::_sym_relative)
+      oCar(directory) != kw::_sym_relative) {
+//    printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
     return kw::_sym_error;
+  }
 BEGIN:
   T_sp ptr;
   int i;
   for (i = 0, ptr = directory; ptr.consp(); ptr = oCdr(ptr), ++i) {
     T_sp item = oCar(ptr);
     if (item == kw::_sym_back) {
-      if (i == 0)
+      if (i == 0) {
+//        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
         return kw::_sym_error;
+      }
       item = cl_nth(i - 1, directory);
-      if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors)
+      if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors) {
+//        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
         return kw::_sym_error;
+      }
       if (delete_back && i >= 2) {
         T_sp next = oCdr(ptr);
         ptr = cl_nthcdr(i - 2, directory);
@@ -252,14 +260,20 @@ BEGIN:
         i = i - 2; // Was i--;
       }
     } else if (item == kw::_sym_up) {
-      if (i == 0)
+      if (i == 0) {
+//        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
         return kw::_sym_error;
+      }
       item = cl_nth(i - 1, directory);
-      if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors)
+      if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors) {
+//        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
         return kw::_sym_error;
+      }
     } else if (item == kw::_sym_relative || item == kw::_sym_absolute) {
-      if (i > 0)
+      if (i > 0) {
+//        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
         return kw::_sym_error;
+      }
     } else if (af_stringP(item)) {
       size_t l = cl_length(item);
 #ifdef CLASP_UNICODE
@@ -275,8 +289,10 @@ BEGIN:
       if (l && af_char(item, 0) == '.') {
         if (l == 1) {
           /* Single dot */
-          if (i == 0)
+          if (i == 0) {
+//            printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
             return kw::_sym_error;
+          }
           gc::As<Cons_sp>(cl_nthcdr(--i, directory))->rplacd(oCdr(ptr));
         } else if (l == 2 && af_char(item, 1) == '.') {
           gc::As<Cons_sp>(ptr)->rplaca(kw::_sym_up);
@@ -284,6 +300,7 @@ BEGIN:
         }
       }
     } else if (item != kw::_sym_wild && item != kw::_sym_wild_inferiors) {
+//      printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
       return kw::_sym_error;
     }
   }
@@ -384,6 +401,7 @@ Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
         translate_component_case(type, fromcase, tocase);
     p->_Version = version;
   }
+//  List_sp directory_copy = cl_copyList(directory);
   directory = destructively_check_directory(directory, af_logicalPathnameP(p), 0);
   unlikely_if(directory == kw::_sym_error) {
     eval::funcall(cl::_sym_error, cl::_sym_fileError, kw::_sym_pathname, p);

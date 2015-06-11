@@ -88,8 +88,11 @@ bool HashTableEqual_O::keyTest(T_sp entryKey, T_sp searchKey) const {
 }
 
 int HashTableEqual_O::sxhashKey(T_sp obj, int bound, bool willAddKey) const {
-  _OF();
+#if defined(DEBUG_HASH_TABLE) && defined(DEBUG_HASH_GENERATOR)
+  HashGenerator hg(this->_DebugHashTable);
+#else
   HashGenerator hg;
+#endif
 #ifdef USE_MPS
   HashTable_O::sxhash_equal(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)) : NULL);
 #else

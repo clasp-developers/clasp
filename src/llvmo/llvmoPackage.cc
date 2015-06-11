@@ -117,18 +117,26 @@ Str_sp af_mangleSymbolName(Str_sp name) {
   return Str_O::create(sout.str());
 };
 
+SYMBOL_EXPORT_SC_(LlvmoPkg,general_tag_offset);
+SYMBOL_EXPORT_SC_(LlvmoPkg,cons_tag_offset);
+SYMBOL_EXPORT_SC_(LlvmoPkg,cons_car_offset);
+SYMBOL_EXPORT_SC_(LlvmoPkg,cons_cdr_offset);
 #define ARGS_af_cxxDataStructuresInfo "()"
 #define DECL_af_cxxDataStructuresInfo ""
 #define DOCS_af_cxxDataStructuresInfo "cxxDataStructuresInfo: Return an alist of C++ data structure sizes ((name . size-of-in-bytes))"
 T_sp af_cxxDataStructuresInfo() {
-  Cons_sp list = Cons_O::create(Cons_O::create(_sym_tsp, make_fixnum((int)sizeof(T_sp))), _Nil<T_O>());
+  List_sp list = _Nil<T_O>();
+  list = Cons_O::create(Cons_O::create(_sym_tsp, make_fixnum((int)sizeof(T_sp))), _Nil<T_O>());
   list = Cons_O::create(Cons_O::create(_sym_tmv, make_fixnum((int)sizeof(T_mv))), list);
   list = Cons_O::create(Cons_O::create(_sym_invocationHistoryFrame, make_fixnum((int)sizeof(InvocationHistoryFrame))), list);
   list = Cons_O::create(Cons_O::create(_sym_size_t, make_fixnum((int)sizeof(size_t))), list);
   list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadInfo))), list);
+  list = Cons_O::create(Cons_O::create(_sym_general_tag_offset, make_fixnum((int)gctools::general_tag)),list);
+  list = Cons_O::create(Cons_O::create(_sym_cons_tag_offset, make_fixnum((int)gctools::cons_tag)),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-LIMIT"), make_fixnum((int)MultipleValues::MultipleValuesLimit)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-SIZEOF"), make_fixnum((int)sizeof(MultipleValues))), list);
-  //	list = Cons_O::create(Cons_O::create(lisp_internKeyword("NIL-VALUE"),make_fixnum((int)gctools::tagged_ptr<core::T_O>::tagged_nil)),list); // don't use this
+  list = Cons_O::create(Cons_O::create(_sym_cons_car_offset, make_fixnum(core::Cons_O::car_offset())), list);
+  list = Cons_O::create(Cons_O::create(_sym_cons_cdr_offset, make_fixnum(core::Cons_O::cdr_offset())), list);
   return list;
 }
 

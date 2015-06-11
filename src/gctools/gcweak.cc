@@ -317,9 +317,11 @@ int WeakHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     (*this->_Keys).setDeleted((*this->_Keys).deleted() - 1);
 #ifdef DEBUG_GCWEAK
     printf("%s:%d key was deletedp at %zu  deleted = %d\n", __FILE__, __LINE__, b, (*this->_Keys).deleted());
-#endif
+#endif // DEBUG_GCWEAK
   }
+#if USE_MPS
 DO_SET:
+#endif
   GCWEAK_LOG(BF("Setting value at b = %d") % b);
   (*this->_Values).set(b, value_type(value));
 #ifdef DEBUG_TRYSET
