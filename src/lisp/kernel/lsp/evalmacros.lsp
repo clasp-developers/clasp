@@ -110,8 +110,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
     ',var))
 
 
-(defparameter *defun-inline-hook* nil)
-
 #+ecl
 (defmacro defun (&whole whole name vl &body body &environment env &aux doc-string)
   ;; Documentation in help.lsp
@@ -150,8 +148,8 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 		       ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
 		       ,@(si::expand-set-documentation name 'function doc-string)
 		       ,(eval-when (:compile-toplevel :load-toplevel :execute)
-                                   (let ((hook *defun-inline-hook*))
-                                     (and hook (funcall hook name decls global-function env))))
+                                   (and *defun-inline-hook*
+                                        (funcall *defun-inline-hook* name global-function env)))
 		       ',name)))))
 	  t)
 

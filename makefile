@@ -8,7 +8,7 @@ export CLASP_INTERNAL_BUILD_TARGET_DIR = $(shell pwd)/build/clasp
 export EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_SOURCE_DIR)/build
 
 
-export BOOST_BUILD_SOURCE_DIR = $(HOME)/Development/boost_build
+export BOOST_BUILD_SOURCE_DIR = $(CLASP_HOME)/boost_build_v2
 export BOOST_BUILD_INSTALL = $(BOOST_BUILD_SOURCE_DIR)
 
 #export BOOST_BUILD_SOURCE_DIR = $(CLASP_HOME)/boost_build_v2
@@ -65,7 +65,7 @@ all:
 	make submodules
 	make asdf
 	make boostbuildv2-build
-	make -C src/main prebuild
+	make -C src/main scrape-all
 	make clasp-boehm
 #	make clasp-mps
 

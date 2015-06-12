@@ -104,4 +104,10 @@
           compile-reference-to-literal
           bclasp-compile
           bclasp-compile-file
+          make-uintptr_t
+          +tag-mask+
+          +cons-tag+
+          +general-tag+
+          +cons-car-offset+
+          +cons-cdr-offset+
           ))

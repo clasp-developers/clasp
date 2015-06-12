@@ -667,6 +667,13 @@
     (cmp:irc-cond-br ceq (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
+          ((instruction cleavir-ir:consp-instruction) inputs outputs successors abi)
+        (let* ((x (%load (first inputs)))
+               (tag (%and (%bit-cast x cmp:+uintptr_t+) (%uintptr_t cmp:+tag-mask+)))
+               (cmp (%cmp-eq tag (%uintptr_t cmp:+cons-tag+))))
+          (%cond-br cmp (first successors) (second successors))) :likely t)
+
+(defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) inputs outputs successors abi)
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
@@ -847,6 +854,11 @@ nil)
       (t ()))))
 
 
+(defun my-hir-transformations (initial-instruction implementation processor os)
+  (cleavir-hir-transformations:type-inference initial-instruction)
+  (cleavir-hir-transformations:eliminate-typeq initial-instruction)
+  (cleavir-hir-transformations:eliminate-superfluous-temporaries initial-instruction)
+  (cleavir-hir-transformations:process-captured-variables initial-instruction))
 
 
 (defun do-compile (form)
@@ -886,7 +898,8 @@ nil)
 		     (cleavir-ast-graphviz:draw-ast hoisted-ast (namestring ast-pathname))
 		     (format *debug-log* "Wrote ast to: ~a~%" (namestring ast-pathname))))
       (clasp-cleavir:convert-funcalls hir)
-      (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
+      ;; eliminate superfluous temporaries
+      (my-hir-transformations hir clasp-system nil nil)
       (cleavir-ir:hir-to-mir hir clasp-system nil nil)
       (when *debug-cleavir* (draw-mir hir)) ;; comment out
       (cc-mir:assign-mir-instruction-datum-ids hir)
@@ -912,7 +925,7 @@ nil)
                         (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
             (clasp-cleavir:convert-funcalls hir)
             (when *debug-cleavir* (draw-hir hir)) ;; comment out
-            (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
+            (my-hir-transformations hir clasp-system nil nil)
             #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
             (cleavir-ir:hir-to-mir hir clasp-system nil nil)
             (cc-mir:assign-mir-instruction-datum-ids hir)

@@ -25,6 +25,8 @@
             process-command-line-load-eval-sequence
             top-level
             run-repl
+            *defun-inline-hook*
+            *proclaim-hook*
             ))
 
   (export '( ;;;;MISSING SYMBOLS!!!!!

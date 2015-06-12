@@ -24,8 +24,8 @@ feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # u
 ###
 feature.feature program : clasp cando
                 : symmetric implicit composite propagated link-incompatible ;
-feature.compose <program>clasp : <define>TASK_CLASP ;
-feature.compose <program>cando : <define>TASK_CANDO ;
+feature.compose <program>clasp : <define>PROGRAM_CLASP ;
+feature.compose <program>cando : <define>PROGRAM_CANDO ;
 
 
 GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
@@ -41,6 +41,7 @@ project clasp : requirements
         <cxxflags>"-ferror-limit=999"
         <define>CLASP_GIT_COMMIT="\\\"$(GIT_COMMIT)\\\""
         <define>CLASP_VERSION="\\\"$(CLASP_VERSION)\\\""
+        <program>cando:<include>projects/cando/include
         <cxxflags>"-Wno-attributes"
         <target-os>linux:<cxxflags>"-fPIC"
         <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"

@@ -76,8 +76,33 @@ Set this to other IRBuilders to make code go where you want")
       ((= 8 sizeof-size_t) +i64+)
       ((= 4 sizeof-size_t) +i32+)
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
+
 (defvar +size_t*+ (llvm-sys:type-get-pointer-to +size_t+))
 (defvar +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
+
+(defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
+
+(defvar +tag-mask+ (cdr (assoc :tag-mask +cxx-data-structures-info+)))
+(defvar +cons-tag+ (cdr (assoc :cons-tag-offset +cxx-data-structures-info+)))
+(defvar +general-tag+ (cdr (assoc :general-tag-offset +cxx-data-structures-info+)))
+(defvar +cons-car-offset+ (cdr (assoc :cons-car-offset +cxx-data-structures-info+)))
+(defvar +cons-cdr-offset+ (cdr (assoc :cons-cdr-offset +cxx-data-structures-info+)))
+
+(defvar +uintptr_t-size+ (cdr (assoc :uintptr_t-size (llvm-sys:cxx-data-structures-info))))
+(defvar +uintptr_t+
+  (cond
+    ((= 8 +uintptr_t-size+) +i64+)
+    ((= 4 +uintptr_t-size+) +i32+)
+    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
+(defun make-uintptr_t (x)
+  (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a +i64+" x))
+  (cond
+    ((= 8 +uintptr_t-size+) (jit-constant-i64 x))
+    ((= 4 +uintptr_t-size+) (jit-constant-i32 x))
+    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
+  
+
+
 
 (defvar +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
 (defvar +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
@@ -165,6 +190,7 @@ Boehm and MPS use a single pointer"
 (defvar +mv-struct+ (llvm-sys:struct-type-get cmp:*llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
 (defvar +mv-struct*+ (llvm-sys:type-get-pointer-to +mv-struct+))
 (defvar +thread-info-struct+ (llvm-sys:struct-type-get cmp:*llvm-context* (list +mv-struct+) nil))
+
 
 
 #+(or)(progn

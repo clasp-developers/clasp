@@ -40,7 +40,7 @@ prebuild:
 ###
 scrape-symbols:
 	echo Scraping symbols in `pwd`
-	(export PYTHONPATH=$(CLASP_HOME)/src/common:$(PYTHONPATH); python $(CLASP_HOME)/src/common/symbolScraper.py include/generated/symbols_scraped_inc.h include/generated/symbols_scraped_inc.h include/*.h *.cc)
+	(export PYTHONPATH=$(CLASP_HOME)/src/common:$(PYTHONPATH); python $(CLASP_HOME)/src/common/symbolScraper.py include/generated/symbols_scraped_inc.h include/generated/symbols_scraped_inc.h configure_symbol_scrape.py include/*.h *.cc)
 
 scrape-classes:
 	echo Scraping classes in `pwd`

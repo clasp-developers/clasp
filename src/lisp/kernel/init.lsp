@@ -199,7 +199,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-
 ;; TODO: Really - find a better way to do this than hard-coding paths
 (defconstant +intrinsics-bitcode-pathname+
   #+use-refcount "app-resources:lib;release;intrinsics_bitcode_refcount.o"
@@ -381,7 +380,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
 
-
+;;; A temporary definition of defun - the real one is in evalmacros
 (si::*fset 'defun
 	   #'(lambda (def env)
 	       (let ((name (second def))	;cadr
@@ -411,6 +410,17 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;; Discard documentation until helpfile.lsp is loaded
 (defun set-documentation (o d s) nil)
+
+
+;;; Define these here so that Cleavir can inject its code right after init.lsp
+(defvar *defun-inline-hook* nil)
+(defvar *proclaim-hook* nil)
+
+(defun proclaim (d)
+  "Args: (decl-spec)
+Gives a global declaration.  See DECLARE for possible DECL-SPECs."
+  (when (eq (car d) 'SPECIAL) (mapc #'sys::*make-special (cdr d)))
+  (and *proclaim-hook* (funcall *proclaim-hook* d)))
 
 
 ;; This is used extensively in the ecl compiler and once in predlib.lsp
@@ -621,6 +631,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   '(
     :init
     #P"/kernel/init"
+    :cleavir-injection
     #P"/kernel/cmp/jit-setup"
     #P"/kernel/clsymbols"
     :start
@@ -651,8 +662,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     ;; Compiler code
     #P"/kernel/cmp/packages"
     #P"/kernel/cmp/cmpsetup"
-    #P"/kernel/cmp/cmpenv-fun"
-    #P"/kernel/cmp/cmpenv-proclaim"
+;;    #P"/kernel/cmp/cmpenv-fun"
+;;    #P"/kernel/cmp/cmpenv-proclaim"
     #P"/kernel/cmp/cmpglobals"
     #P"/kernel/cmp/cmptables"
     #P"/kernel/cmp/cmpvar"

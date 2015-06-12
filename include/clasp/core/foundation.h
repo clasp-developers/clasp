@@ -39,10 +39,14 @@ THE SOFTWARE.
 #endif
 
 // clang-format off
-#ifdef CANDO_COMPILE
+#ifdef PROGRAM_CANDO
+#define INIT_CLASSES_INC_H <cando/main/generated/initClasses_inc.h>
+#define SYMBOLS_SCRAPED_INC_H <cando/main/generated/symbols_scraped_inc.h>
 #define GARBAGE_COLLECTION_INCLUDE <cando/main/clasp_gc.cc>
-#define GC_INTERFACE_HEADER <cando/main/gc_interface.h>
+#define GC_INTERFACE_HEADER <clasp/main/gc_interface.h>
 #else
+#define INIT_CLASSES_INC_H <clasp/main/generated/initClasses_inc.h>
+#define SYMBOLS_SCRAPED_INC_H <clasp/main/generated/symbols_scraped_inc.h>
 #define GARBAGE_COLLECTION_INCLUDE <clasp/main/clasp_gc.cc>
 #define GC_INTERFACE_HEADER <clasp/main/gc_interface.h>
 #endif

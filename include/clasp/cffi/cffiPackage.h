@@ -36,7 +36,7 @@ namespace cffi {
 
 #define CffiPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/cffi/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef CffiPkg_SYMBOLS
 

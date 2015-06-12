@@ -1,9 +1,7 @@
+import glob
 import sys
 import os.path
 from os import getcwd
-
-print("sys.path = %s" % sys.path )
-import configure_symbol_scrape
 
 import StringIO
 import re
@@ -364,7 +362,7 @@ def toCSymbolName(s):
 def toCKeywordName(s):
     return '_kw_'+s
     
-
+configure_symbol_scrape_re = re.compile('^packageName\s*=\s*"([\w]*)"')
 namespacePackageAssociation_re = re.compile('^NAMESPACE_PACKAGE_ASSOCIATION\(\s*([\w]*)\s*,\s*([\w]*)\s*,\s*("[\w\-]*")\s*\)')
 symbol_table_re = re.compile('\s*//\s*SYMBOL_TABLE_ENTRY\s*([\w_]*)\s*([\d]*)\s*([\w_]*)\s*([<=>%/&\w_\*-.]*)\s*(export|private)')
 bad_existing_symbol_table_entry_re = re.compile('\s*//\s*SYMBOL_TABLE_ENTRY')
@@ -392,12 +390,8 @@ defun_defgeneric_name_export_re = re.compile('\s*(DEFGENERIC_NAME_EXPORT|DEFUN_N
 define_args_re = re.compile('^\s*#define\s*ARGS_([\w_]*)\s*"(.*)"$')
 bad_macros_re = re.compile('^\s*(#define\s*ARGS_|SYMBOL_EXPORT_SC_|SYMBOL_SC_|ARGUMENT_EXPORT_SC_|ARGUMENT_SC_|DEFGENERIC|DEFUN|DEFGENERIC_EXPORT|DEFUN_EXPORT|DEFACCESSORS|DEFACCESSORS_EXPORT)\s*')
 
-
-packageName = configure_symbol_scrape.packageName
-
 symbolsFileName = sys.argv[1]
 fileNames = sys.argv[2:]
-print("packageName = %s" % packageName )
 print("symbols file name = %s" % symbolsFileName)
 
 print("First scrape fileName = %s" % fileNames[0])
@@ -412,6 +406,12 @@ for fileName in fileNames:
 	ln += 1
 	line = l.strip().rstrip()
 #        print( "READ: %s" % line)
+
+        match = configure_symbol_scrape_re.match(l)
+        if ( match != None ):
+            packageName = gr[0]
+            sys.stderr.write( "!!!!! Switched packageName = %s\n" % packageName)
+
         match = symbol_table_re.match(l)
         if ( match != None ):
             saw_symbol_table = True

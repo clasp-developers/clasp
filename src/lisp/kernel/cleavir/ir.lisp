@@ -10,6 +10,8 @@
 (defun %size_t (num)
   (cmp:jit-constant-size_t num))
 
+(defun %uintptr_t (num)
+  (cmp:make-uintptr_t num))
 
 
 (defun %literal (lit &optional (label "literal"))
@@ -48,6 +50,9 @@
 (defun instruction-llvm-function (instr)
   (llvm-sys:get-parent (llvm-sys:get-parent instr)))
 
+(defun %load (place &optional (label ""))
+  (cmp:irc-load place label))
+
 (defun %store (val target &optional label)
   (let* ((instr (cmp:irc-store val target)))
     (when (typep target 'llvm-sys::instruction)
@@ -56,6 +61,25 @@
 	(unless (string= store-fn target-fn)
 	  (error "Mismatch in store function vs target function - you are attempting to store a value in a target where the store instruction is in a different LLVM function(~a) from the target value(~a)" store-fn target-fn))))))
 
+
+(defun %bit-cast (val type &optional (label ""))
+  (llvm-sys:create-bit-cast cmp:*irbuilder* val type label))
+
+(defun %and (x y &optional (label ""))
+  (llvm-sys:create-and cmp:*irbuilder* x y label))
+
+(defun %cmp-eq (x y &optional (label ""))
+  (llvm-sys:create-cmp-eq cmp:*irbuilder* x y label))
+
+(defun %cond-br (test true-branch false-branch &key likely-true likely-false)
+  (llvm-sys:create-cond-br cmp:*irbuilder* test true-branch false-branch nil))
+
+
+                      
+
+
+
+   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; with-entry-basic-block

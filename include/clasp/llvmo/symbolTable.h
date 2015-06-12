@@ -33,7 +33,7 @@ namespace kw {
 
 #define KeywordPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/llvmo/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
 
@@ -43,7 +43,7 @@ namespace llvmo {
 
 #define LlvmoPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
-#include <clasp/llvmo/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef LlvmoPkg_SYMBOLS
 

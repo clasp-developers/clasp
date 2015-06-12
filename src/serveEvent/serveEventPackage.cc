@@ -40,7 +40,7 @@ namespace serveEvent {
 #define EXPOSE_TO_CANDO
 #define Use_ServeEventPkg
 #define EXTERN_REGISTER
-#include <clasp/serveEvent/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef EXTERN_REGISTER
 #undef Use_ServeEventPkg
 #undef EXPOSE_TO_CANDO
@@ -53,7 +53,7 @@ namespace serveEvent {
 #pragma GCC visibility push(default)
 #define ServeEventPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/serveEvent/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef ServeEventPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -68,14 +68,14 @@ void ServeEventExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
     cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
     cname->exportYourself(exportp);                            \
   }
-#include <clasp/serveEvent/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef ServeEventPkg_SYMBOLS
 
 #define ALL_STAGES
 #define Use_ServeEventPkg
 #define INVOKE_REGISTER
-#include <clasp/serveEvent/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef INVOKE_REGISTER
 #undef Use_ServeEventPkg
 #undef ALL_STAGES
@@ -111,7 +111,7 @@ void ServeEventExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include <clasp/serveEvent/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

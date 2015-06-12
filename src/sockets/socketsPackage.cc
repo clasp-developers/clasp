@@ -41,7 +41,7 @@ namespace sockets {
 #define EXPOSE_TO_CANDO
 #define Use_SocketsPkg
 #define EXTERN_REGISTER
-#include <clasp/sockets/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef EXTERN_REGISTER
 #undef Use_SocketsPkg
 #undef EXPOSE_TO_CANDO
@@ -54,7 +54,7 @@ namespace sockets {
 #pragma GCC visibility push(default)
 #define SocketsPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/sockets/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef SocketsPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -69,14 +69,14 @@ void SocketsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
     cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
     cname->exportYourself(exportp);                            \
   }
-#include <clasp/sockets/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef SocketsPkg_SYMBOLS
 
 #define ALL_STAGES
 #define Use_SocketsPkg
 #define INVOKE_REGISTER
-#include <clasp/sockets/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef INVOKE_REGISTER
 #undef Use_SocketsPkg
 #undef ALL_STAGES
@@ -115,7 +115,7 @@ void SocketsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include <clasp/sockets/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

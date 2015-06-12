@@ -17,15 +17,24 @@
 
 ;;;
 ;;; Create a list of source files for clasp+cleavir
+;;;   - Inject the kernel/cleavir/inlining.lisp file at :inlining
 ;;;   - Remove the cmprepl source file because it's not used by cleavir
 ;;;   - #P"/kernel/cleavir/auto-compile" sets up automatic compilation of top-level forms
-(defparameter *clasp-cleavir-files* 
-  (append (remove-if (lambda (p) (and (pathnamep p) (string-equal "cmprepl" (pathname-name p)))) core:*init-files* )
+(defun setup-clasp-cleavir-files (&optional (init-files core:*init-files*) (cleavir-files *cleavir-clasp-only*))
+  ;; Inject the cleavir-injection.lisp source file at the :cleavir-injection point
+  (let ((injection-point (member :cleavir-injection init-files)))
+    (rplacd injection-point (cons #P"/kernel/cleavir/cleavir-injection" (cdr injection-point))))
+  ;; Remove the cmprepl file and append the rest of the cleavir files
+  (append (remove-if (lambda (p) (and (pathnamep p) (string-equal "cmprepl" (pathname-name p)))) init-files )
           (list :bclasp)
           *cleavir-clasp-only*
           (list :cleavir-clasp)
           (list #P"/kernel/cleavir/auto-compile")
           (list :auto-compile :cclasp)))
+
+;;; Setup the files to build for cclasp
+(defparameter *clasp-cleavir-files*
+  (setup-clasp-cleavir-files core:*init-files* *cleavir-clasp-only*))
 
 (defun save-all-files ()
   "Save the list of files in *clasp-cleavir-files* to #P\"sys:kernel;cleavir-system.lsp\""

@@ -40,7 +40,7 @@ core::Package_sp globalCommonLispUserPkg;
 #pragma GCC visibility push(default)
 #define CommonLispUserPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/core/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef CommonLispUserPkg_SYMBOLS
 #pragma GCC visibility pop

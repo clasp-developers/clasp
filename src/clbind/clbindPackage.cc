@@ -44,7 +44,7 @@ namespace clbind {
 #define EXPOSE_TO_CANDO
 #define Use_ClbindPkg
 #define EXTERN_REGISTER
-#include <clasp/clbind/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef EXTERN_REGISTER
 #undef Use_ClbindPkg
 #undef EXPOSE_TO_CANDO
@@ -64,7 +64,7 @@ namespace clbind {
 #pragma GCC visibility push(default)
 #define ClbindPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/clbind/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef ClbindPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -79,7 +79,7 @@ void ClbindExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what)
     cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
     cname->exportYourself(exportp);                            \
   }
-#include <clasp/clbind/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef ClbindPkg_SYMBOLS
 
@@ -87,7 +87,7 @@ void ClbindExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what)
 #define Use_ClbindPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(s, p) DEFAULT_LOOKUP_SYMBOL(s, p)
-#include <clasp/clbind/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_ClbindPkg
@@ -127,7 +127,7 @@ void ClbindExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what)
   STATIC_CLASS_INFO(_T_);
 #endif
 
-#include <clasp/clbind/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

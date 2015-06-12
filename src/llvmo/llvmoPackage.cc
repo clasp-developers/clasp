@@ -48,23 +48,23 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 
 using namespace core;
-
+#if 0
 namespace kw {
 #pragma GCC visibility push(default)
 #define KeywordPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/llvmo/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
 #pragma GCC visibility pop
 };
-
+#endif
 namespace llvmo {
 
 #pragma GCC visibility push(default)
 #define LlvmoPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/llvmo/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef LlvmoPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -74,7 +74,7 @@ namespace llvmo {
 #define EXPOSE_TO_CANDO
 #define Use_LlvmoPkg
 #define EXTERN_REGISTER
-#include <clasp/llvmo/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef EXTERN_REGISTER
 #undef Use_LlvmoPkg
 #undef EXPOSE_TO_CANDO
@@ -117,10 +117,6 @@ Str_sp af_mangleSymbolName(Str_sp name) {
   return Str_O::create(sout.str());
 };
 
-SYMBOL_EXPORT_SC_(LlvmoPkg,general_tag_offset);
-SYMBOL_EXPORT_SC_(LlvmoPkg,cons_tag_offset);
-SYMBOL_EXPORT_SC_(LlvmoPkg,cons_car_offset);
-SYMBOL_EXPORT_SC_(LlvmoPkg,cons_cdr_offset);
 #define ARGS_af_cxxDataStructuresInfo "()"
 #define DECL_af_cxxDataStructuresInfo ""
 #define DOCS_af_cxxDataStructuresInfo "cxxDataStructuresInfo: Return an alist of C++ data structure sizes ((name . size-of-in-bytes))"
@@ -131,12 +127,16 @@ T_sp af_cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(_sym_invocationHistoryFrame, make_fixnum((int)sizeof(InvocationHistoryFrame))), list);
   list = Cons_O::create(Cons_O::create(_sym_size_t, make_fixnum((int)sizeof(size_t))), list);
   list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadInfo))), list);
-  list = Cons_O::create(Cons_O::create(_sym_general_tag_offset, make_fixnum((int)gctools::general_tag)),list);
-  list = Cons_O::create(Cons_O::create(_sym_cons_tag_offset, make_fixnum((int)gctools::cons_tag)),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-MASK"), make_fixnum((int)gctools::tag_mask)),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-TAG"), make_fixnum((int)gctools::cons_tag)),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-LIMIT"), make_fixnum((int)MultipleValues::MultipleValuesLimit)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-SIZEOF"), make_fixnum((int)sizeof(MultipleValues))), list);
-  list = Cons_O::create(Cons_O::create(_sym_cons_car_offset, make_fixnum(core::Cons_O::car_offset())), list);
-  list = Cons_O::create(Cons_O::create(_sym_cons_cdr_offset, make_fixnum(core::Cons_O::cdr_offset())), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CAR-OFFSET"), make_fixnum(core::Cons_O::car_offset())), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CDR-OFFSET"), make_fixnum(core::Cons_O::cdr_offset())), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"),make_fixnum(sizeof(uintptr_t))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"),make_fixnum(sizeof(uintptr_t))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"),make_fixnum(sizeof(uintptr_t))), list);
   return list;
 }
 
@@ -292,7 +292,7 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
     cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
     cname->exportYourself(exportp);                            \
   }
-#include <clasp/llvmo/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef LlvmoPkg_SYMBOLS
 
@@ -300,7 +300,7 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
 #define Use_LlvmoPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(pkg, name) _lisp->internUniqueWithPackageName(pkg, name)
-#include <clasp/llvmo/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_LlvmoPkg
@@ -366,7 +366,7 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
   STATIC_CLASS_INFO(_U_); \
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_U_)
 #endif
-#include <clasp/llvmo/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

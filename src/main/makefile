@@ -1,6 +1,9 @@
 include $(CLASP_HOME)/makefile.inc
 
 
+project-directories = ../gctools ../core ../clbind ../cffi ../asttooling ../llvmo ../serveEvent ../sockets
+
+
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
   CLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_boehm_o
   CLASP_MPS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_mps_o
@@ -87,6 +90,14 @@ compile-commands:
 	-bjam bundle release mps-prep -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
 	python ../common/buildJSON.py clang bjam.out `$(CLASP_BOEHM) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
+
+
+
+
+scrape-all:
+	(export PYTHONPATH=$(CLASP_HOME)/src/common:$(PYTHONPATH); $(PYTHON2) $(CLASP_HOME)/src/common/symbolGroveler.py include/generated/symbols_scraped_inc.h $(project-directories))
+	(export PYTHONPATH=$(CLASP_HOME)/src/common:$(PYTHONPATH); $(PYTHON2) $(CLASP_HOME)/src/common/classGroveler.py include/generated/initClasses_inc.h $(project-directories) 2>registerClasses.log)
+
 
 
 run-clang-check:

@@ -33,9 +33,6 @@ THE SOFTWARE.
 
 namespace core {
 
-//#define SYMBOLS_EXTERN
-//#i n c l u d e "symbols_scraped_inc.h"
-
 extern const char *CorePkg_nicknames[];
 
 class CoreExposer : public core::Exposer {

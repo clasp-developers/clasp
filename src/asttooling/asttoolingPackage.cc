@@ -44,7 +44,7 @@ namespace asttooling {
 #define EXPOSE_TO_CANDO
 #define Use_AstToolingPkg
 #define EXTERN_REGISTER
-#include <clasp/asttooling/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef EXTERN_REGISTER
 #undef Use_AstToolingPkg
 #undef EXPOSE_TO_CANDO
@@ -57,7 +57,7 @@ namespace asttooling {
 #pragma GCC visibility push(default)
 #define AstToolingPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include <clasp/asttooling/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef AstToolingPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -72,7 +72,7 @@ void AsttoolingExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
     cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
     cname->exportYourself(exportp);                            \
   }
-#include <clasp/asttooling/generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef AstToolingPkg_SYMBOLS
 
@@ -80,7 +80,7 @@ void AsttoolingExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
 #define Use_AstToolingPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(s, p) DEFAULT_LOOKUP_SYMBOL(s, p)
-#include <clasp/asttooling/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_AstToolingPkg
@@ -119,7 +119,7 @@ void AsttoolingExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include <clasp/asttooling/generated/initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

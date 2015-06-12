@@ -2,11 +2,16 @@
   (print "Loading ASDF and :clasp-cleavir systems")
   (time (require :asdf))
   (time (require :clasp-cleavir))
+  (load "sys:kernel;cleavir;cleavir-inject.lisp")
   (load "sys:kernel;cleavir;cmpclasp.lisp")
   (print (core:getpid)))
 
-(compile-full-cleavir :recompile t)
+(time (require :asdf))
+(time (require :clasp-cleavir))
 
+(declaim (inline foo))
+
+(compile-full-cleavir :recompile t)
 
 (print "Hello")
 
@@ -22,7 +27,7 @@
 (mir-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
 
 (trace cleavir-env:variable-info)
-(clasp-cleavir::cleavir-compile 'consp '(lambda (x) (if (cleavir-primop:consp x) 1 0)) :debug t)s
+(clasp-cleavir::cleavir-compile 'consp '(lambda (x) (if (and t (cleavir-primop:consp x)) t nil)) :debug t)
 (constantp 't)
 (constantp 'nil)
 

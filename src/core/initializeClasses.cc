@@ -38,6 +38,6 @@ void initializePackagesAndClasses(Lisp_sp lisp) {
 #define Use_CorePkg
 #define Use_MbbPackage
 // #define Use_WxPackage
-#include <core_initClasses_inc.h>
+#include INIT_CLASSES_INC_H
 };
 };

@@ -323,13 +323,6 @@ the corresponding VAR.  Returns NIL."
 
 
 
-(if (not (fboundp 'compile))
-    (defun proclaim (d)
-      "Args: (decl-spec)
-Gives a global declaration.  See DECLARE for possible DECL-SPECs."
-      (when (eq (car d) 'SPECIAL) (mapc #'sys::*make-special (cdr d))))
-)
-
 
 
 (in-package :cl)
