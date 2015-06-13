@@ -10,6 +10,34 @@
 (cleavir-ast-transformations::clone-ast (cleavir-env:ast *fi*))
 (cleavir-io::save-info (cleavir-env:ast *fi*))
 
+(fdefinition 'cleavir-io::save-info)
+
+
+
+(defclass a ()
+  ((%x :initarg :x :accessor x)))
+
+(defclass b (a)
+  ((%y :initarg :y :accessor y)))
+
+(defgeneric save-info (object)
+  (:method-combination append :most-specific-last))
+
+
+(defmethod save-info append ((x a))
+  '(:x x))
+
+(defmethod save-info append ((x b))
+  '(:y y))
+
+(defparameter *a* (make-instance 'a :x 1))
+(defparameter *b* (make-instance 'b :x 10 :y 20))
+
+(save-info *a*)
+(save-info *b*)
+
+
+
 
 (print "Hello")
 

@@ -1256,18 +1256,18 @@ inline mpz_class clasp_to_mpz(Integer_sp x) {
   }
   return x->as_mpz_();
 }
-
 inline unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
   if (i.fixnump()) {
     gc::Fixnum f = i.unsafe_fixnum();
     if (f >= 0 && f <= gc::most_positive_unsigned_long_long) {
       return f;
     }
-    TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(gc::most_positive_unsigned_long_long)));
+    TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0),
+                                     Integer_O::create(gc::most_positive_unsigned_long_long)));
   }
   return i->as_unsigned_long_long_();
 };
-
+ 
 inline Fixnum clasp_to_fixnum(Fixnum_sp i) {
   if (i.fixnump()) {
     gc::Fixnum f = i.unsafe_fixnum();
