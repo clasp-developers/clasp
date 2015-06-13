@@ -288,10 +288,7 @@ public:
   };
 //	static Integer_sp create(size_t v); // unsigned
 //	static Integer_sp create(uint v);
-#ifndef _TARGET_OS_LINUX
   static Integer_sp create(uint64_t v);
-
-#endif
   static Integer_sp create(float f);
   static Integer_sp create(double f);
   static Integer_sp createLongFloat(LongFloat f);
