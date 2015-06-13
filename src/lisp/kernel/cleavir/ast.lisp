@@ -13,8 +13,7 @@
 (defun make-setf-fdefinition-ast (name-ast info)
   (make-instance 'setf-fdefinition-ast :name-ast name-ast :info info))
 
-(cleavir-io:define-save-info setf-fdefinition-ast
-  (:name-ast name-ast))
+(cleavir-io:define-save-info setf-fdefinition-ast)
 
 (defmethod cleavir-ast:children ((ast setf-fdefinition-ast))
   (list (cleavir-ast:name-ast ast)))
@@ -167,7 +166,7 @@
    (%original-object :initarg :original-object :accessor precalc-value-reference-ast-original-object)))
 
 
-(cleavir-io:define-save-info precalc-symbol-reference-ast
+(cleavir-io:define-save-info precalc-value-reference-ast
   (:index precalc-value-reference-index)
   (:original-object precalc-value-reference-ast-original-object))
 

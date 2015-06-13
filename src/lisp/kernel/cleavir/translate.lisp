@@ -669,8 +669,13 @@
 (defmethod translate-branch-instruction
           ((instruction cleavir-ir:consp-instruction) inputs outputs successors abi)
         (let* ((x (%load (first inputs)))
-               (tag (%and (%bit-cast x cmp:+uintptr_t+) (%uintptr_t cmp:+tag-mask+)))
-               (cmp (%cmp-eq tag (%uintptr_t cmp:+cons-tag+))))
+               (tag (progn
+                      (format t "x = ~%")
+                      (llvm-sys:dump x)
+                      (format t "cmp::+uintptr_t+ -> ~%")
+                      (llvm-sys:dump cmp::+uintptr_t+)
+                      (%and (%ptrtoint x cmp::+uintptr_t+) (%uintptr_t cmp:+tag-mask+))))
+               (cmp (%icmp-eq tag (%uintptr_t cmp:+cons-tag+))))
           (%cond-br cmp (first successors) (second successors))) :likely t)
 
 (defmethod translate-branch-instruction
@@ -884,7 +889,7 @@ nil)
 			     "UNBOUND" ))
 		 (format *debug-log* "cleavir-generate-ast::*subforms-are-top-level-p* --> ~a~%" 
 			 cleavir-generate-ast::*subforms-are-top-level-p*))
-    (let* ((clasp-system (make-instance 'clasp))
+    (let* ((clasp-system *clasp-system*)
 	   (ast (let ((a (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system)))
 		  (when *debug-cleavir* (draw-ast a))
 		  a))
@@ -917,7 +922,7 @@ nil)
     (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
 	;; The following test and true form should be removed`
         (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-          (let* ((clasp-system (make-instance 'clasp))
+          (let* ((clasp-system *clasp-system*)
                  (ast (cleavir-generate-ast:generate-ast form env clasp-system))
                  (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
                  (hir (progn

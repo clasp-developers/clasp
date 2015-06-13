@@ -132,9 +132,14 @@
      ;; those cases.
      (fboundp function-name)
      ;; In that case, we return the relevant info
+     ;; Check if we should inline the function
+     (format t "About to generate a cleavir-env:global-function-info for ~s:~s" (symbol-package function-name) function-name)
+     (format t "    (global-inline-status function-name) --> ~s~%" (global-inline-status function-name))
      (make-instance 'cleavir-env:global-function-info
 		    :name function-name
-		    :compiler-macro (compiler-macro-function function-name)))
+		    :compiler-macro (compiler-macro-function function-name)
+                    :inline (global-inline-status function-name)
+                    :ast (global-function-inline-ast function-name)))
     ( ;; If it is neither of the cases above, then this name does
      ;; not have any function-info associated with it.
      t
@@ -292,14 +297,14 @@
       "Stuff"))))
 
 (defun ast-form (form)
-  (let ((ast (cleavir-generate-ast:generate-ast form *clasp-env* (make-instance 'clasp))))
+  (let ((ast (cleavir-generate-ast:generate-ast form *clasp-env* *clasp-system*)))
     (setf *form* form
 	  *ast* ast)
     (draw-ast ast)
     ast))
 
 (defun hoisted-ast-form (form)
-  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env* (make-instance 'clasp)))
+  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env* *clasp-system*))
 	 (hoisted (clasp-cleavir-ast:hoist-load-time-value ast)))
     (setf *form* form
 	  *ast* hoisted)
@@ -307,10 +312,10 @@
 
 
 (defun hir-form (form)
-  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env* (make-instance 'clasp)))
+  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env* *clasp-system*))
          (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
          (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
-         (clasp-inst (make-instance 'clasp)))
+         (clasp-inst *clasp-system*))
 ;;    (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
     ;;    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
     (setf *form* form
@@ -321,7 +326,7 @@
 
 (defun mir-form (form)
   (let ((hir (hir-form form))
-	(clasp-inst (make-instance 'clasp)))
+	(clasp-inst *clasp-system*))
     (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
     (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
     (draw-mir hir)
@@ -332,7 +337,7 @@
   (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
 	 (hoisted-ast (cleavir-ast-transformations:hoist-load-time-value ast))
 	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
-	 (clasp-inst (make-instance 'clasp)))
+	 (clasp-inst *clasp-system*))
     (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
     (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
     (setf *form* form

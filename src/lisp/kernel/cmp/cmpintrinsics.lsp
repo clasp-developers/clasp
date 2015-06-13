@@ -82,13 +82,16 @@ Set this to other IRBuilders to make code go where you want")
 
 (defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
 
-(defvar +tag-mask+ (cdr (assoc :tag-mask +cxx-data-structures-info+)))
-(defvar +cons-tag+ (cdr (assoc :cons-tag-offset +cxx-data-structures-info+)))
-(defvar +general-tag+ (cdr (assoc :general-tag-offset +cxx-data-structures-info+)))
-(defvar +cons-car-offset+ (cdr (assoc :cons-car-offset +cxx-data-structures-info+)))
-(defvar +cons-cdr-offset+ (cdr (assoc :cons-cdr-offset +cxx-data-structures-info+)))
-
-(defvar +uintptr_t-size+ (cdr (assoc :uintptr_t-size (llvm-sys:cxx-data-structures-info))))
+(defun get-cxx-data-structure-info (name &optional (info +cxx-data-structures-info+))
+  (let ((find (assoc name info)))
+    (or find (error "Could not find ~a in cxx-data-structures-info --> ~s~%" name info))
+    (cdr find)))
+(defvar +tag-mask+ (get-cxx-data-structure-info :tag-mask))
+(defvar +cons-tag+ (get-cxx-data-structure-info :cons-tag))
+(defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
+(defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
+(defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
+(defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
 (defvar +uintptr_t+
   (cond
     ((= 8 +uintptr_t-size+) +i64+)

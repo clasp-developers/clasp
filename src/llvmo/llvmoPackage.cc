@@ -135,8 +135,6 @@ T_sp af_cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CAR-OFFSET"), make_fixnum(core::Cons_O::car_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CDR-OFFSET"), make_fixnum(core::Cons_O::cdr_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"),make_fixnum(sizeof(uintptr_t))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"),make_fixnum(sizeof(uintptr_t))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"),make_fixnum(sizeof(uintptr_t))), list);
   return list;
 }
 

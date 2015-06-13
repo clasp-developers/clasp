@@ -65,11 +65,14 @@
 (defun %bit-cast (val type &optional (label ""))
   (llvm-sys:create-bit-cast cmp:*irbuilder* val type label))
 
-(defun %and (x y &optional (label ""))
-  (llvm-sys:create-and cmp:*irbuilder* x y label))
+(defun %ptrtoint (val type &optional (label ""))
+  (llvm-sys:create-ptr-to-int cmp:*irbuilder* val type label))
 
-(defun %cmp-eq (x y &optional (label ""))
-  (llvm-sys:create-cmp-eq cmp:*irbuilder* x y label))
+(defun %and (x y &optional (label ""))
+  (llvm-sys:create-and-value-value cmp:*irbuilder* x y label))
+
+(defun %icmp-eq (x y &optional (label ""))
+  (llvm-sys:create-icmp-eq cmp:*irbuilder* x y label))
 
 (defun %cond-br (test true-branch false-branch &key likely-true likely-false)
   (llvm-sys:create-cond-br cmp:*irbuilder* test true-branch false-branch nil))

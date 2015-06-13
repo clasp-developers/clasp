@@ -6,17 +6,28 @@
   (load "sys:kernel;cleavir;cmpclasp.lisp")
   (print (core:getpid)))
 
-(time (require :asdf))
-(time (require :clasp-cleavir))
+(defparameter *fi* (cleavir-env:function-info *clasp-env* 'my-consp))
+(cleavir-ast-transformations::clone-ast (cleavir-env:ast *fi*))
+(cleavir-io::save-info (cleavir-env:ast *fi*))
 
-(declaim (inline foo))
-
-(compile-full-cleavir :recompile t)
 
 (print "Hello")
 
 (in-package :clasp-cleavir)
 
+lambda-list-keywords
+(trace cleavir-env:function-info
+       cleavir-generate-ast::function-info
+       cleavir-environment::make-info
+       cleavir-environment::defining-function-info)
+
+(setf *print-escape* t)
+
+(clasp-cleavir::cleavir-compile 'test-consp '(lambda (x) (if (clasp-cleavir::my-consp x) t nil)) :debug t)
+
+
+
+(cleavir-env:function-info *clasp-env* 'my-consp)
 
 (trace cleavir-generate-ast:convert-code
        cleavir-generate-ast::convert-special
@@ -27,8 +38,11 @@
 (mir-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
 
 (trace cleavir-env:variable-info)
-(clasp-cleavir::cleavir-compile 'consp '(lambda (x) (if (and t (cleavir-primop:consp x)) t nil)) :debug t)
-(constantp 't)
+(clasp-cleavir::cleavir-compile 'my-consp '(lambda (x) (if (cleavir-primop:consp x) t nil)) :debug t)
+
+(my-consp 'foo)
+
+(
 (constantp 'nil)
 
 (cleavir-compile-file #P"sys:tests;tadd.lsp")

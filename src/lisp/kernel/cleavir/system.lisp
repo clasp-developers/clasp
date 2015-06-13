@@ -3,6 +3,8 @@
 ;;; Define the CLASP system
 (defclass clasp () ())
 
+(defvar *clasp-system* (make-instance 'clasp))
+
 
 #+(or)(defmacro cc-dbg-when (cond &rest body) nil)
 (defmacro cc-dbg-when (cond &rest body)
