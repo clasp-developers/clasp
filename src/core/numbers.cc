@@ -1554,7 +1554,7 @@ Integer_sp Integer_O::create(gctools::Fixnum v) {
     }
 #endif
 
-//#ifndef _TARGET_OS_LINUX
+#ifndef _TARGET_OS_LINUX
 Integer_sp Integer_O::create(uint64_t v) {
   if (v <= gc::most_positive_fixnum ) {
     return Integer_O::create((Fixnum)v);
@@ -1565,7 +1565,7 @@ Integer_sp Integer_O::create(uint64_t v) {
              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
   return Bignum_O::create(z);
 }
-//#endif
+#endif
 #if 0
     Integer_sp Integer_O::create(LongLongInt v)
     {_G();

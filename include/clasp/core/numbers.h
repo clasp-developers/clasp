@@ -288,7 +288,9 @@ public:
   };
 //	static Integer_sp create(size_t v); // unsigned
 //	static Integer_sp create(uint v);
+#ifndef _TARGET_OS_LINUX
   static Integer_sp create(uint64_t v);
+#endif
   static Integer_sp create(float f);
   static Integer_sp create(double f);
   static Integer_sp createLongFloat(LongFloat f);
@@ -1260,7 +1262,7 @@ inline unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
       return f;
     }
     TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0),
-                                     Integer_O::create(gc::most_positive_unsigned_long_long)));
+                                     Integer_O::create((uint64_t)gc::most_positive_unsigned_long_long)));
   }
   return i->as_unsigned_long_long_();
 };
