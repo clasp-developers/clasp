@@ -26,7 +26,7 @@ application:
 
 boehm-cleavir:
 	make boehm
-	make cleavir
+	make cclasp
 
 cclasp:
 	clasp_boehm_o  -l "buildCleavirClasp.lsp"

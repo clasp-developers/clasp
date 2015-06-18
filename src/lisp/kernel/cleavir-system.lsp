@@ -1,41 +1,39 @@
 
 (DEFPARAMETER *CLEAVIR-SYSTEM*
-  '(:INIT CORE::KERNEL/INIT CORE::KERNEL/CMP/JIT-SETUP CORE::KERNEL/CLSYMBOLS
-    :START CORE::KERNEL/LSP/FOUNDATION CORE::KERNEL/LSP/EXPORT
-    CORE::KERNEL/LSP/DEFMACRO :DEFMACRO CORE::KERNEL/LSP/HELPFILE
-    CORE::KERNEL/LSP/EVALMACROS CORE::KERNEL/LSP/CLASPMACROS :MACROS
-    CORE::KERNEL/LSP/TESTING CORE::KERNEL/LSP/MAKEARRAY
-    CORE::KERNEL/LSP/ARRAYLIB CORE::KERNEL/LSP/SETF CORE::KERNEL/LSP/LISTLIB
-    CORE::KERNEL/LSP/MISLIB CORE::KERNEL/LSP/DEFSTRUCT CORE::KERNEL/LSP/PREDLIB
-    CORE::KERNEL/LSP/SEQ CORE::KERNEL/LSP/CMUUTIL CORE::KERNEL/LSP/SEQMACROS
-    CORE::KERNEL/LSP/IOLIB CORE::KERNEL/LSP/PROFILING :TINY :PRE-CMP
-    CORE::KERNEL/CMP/PACKAGES CORE::KERNEL/CMP/CMPSETUP
-    CORE::KERNEL/CMP/CMPENV-FUN CORE::KERNEL/CMP/CMPENV-PROCLAIM
-    CORE::KERNEL/CMP/CMPGLOBALS CORE::KERNEL/CMP/CMPTABLES
-    CORE::KERNEL/CMP/CMPVAR CORE::KERNEL/CMP/CMPUTIL
-    CORE::KERNEL/CMP/CMPINTRINSICS CORE::KERNEL/CMP/CMPIR
-    CORE::KERNEL/CMP/CMPEH CORE::KERNEL/CMP/DEBUGINFO
-    CORE::KERNEL/CMP/LAMBDALISTVA CORE::KERNEL/CMP/CMPVARS
-    CORE::KERNEL/CMP/CMPQUOTE CORE::KERNEL/CMP/CMPOBJ CORE::KERNEL/CMP/COMPILER
-    CORE::KERNEL/CMP/COMPILEFILE CORE::KERNEL/CMP/CMPBUNDLE
-    CORE::KERNEL/CMP/CMPWALK :CMP :STAGE1 :CMPREPL CORE::KERNEL/LSP/LOGGING
-    CORE::KERNEL/LSP/SEQLIB CORE::KERNEL/LSP/TRACE :WAS-PRE-CMP
-    CORE::KERNEL/LSP/SHARPMACROS CORE::KERNEL/LSP/ASSERT
-    CORE::KERNEL/LSP/NUMLIB CORE::KERNEL/LSP/DESCRIBE CORE::KERNEL/LSP/MODULE
-    CORE::KERNEL/LSP/LOOP2 CORE::KERNEL/LSP/ASSORTED CORE::KERNEL/LSP/PACKLIB
-    CORE::KERNEL/LSP/DEFPACKAGE CORE::KERNEL/LSP/FORMAT :MIN
-    CORE::KERNEL/CLOS/PACKAGE CORE::KERNEL/CLOS/HIERARCHY CORE::KERNEL/CLOS/CPL
-    CORE::KERNEL/CLOS/STD-SLOT-VALUE CORE::KERNEL/CLOS/SLOT
-    CORE::KERNEL/CLOS/BOOT CORE::KERNEL/CLOS/KERNEL CORE::KERNEL/CLOS/METHOD
-    CORE::KERNEL/CLOS/COMBIN CORE::KERNEL/CLOS/STD-ACCESSORS
-    CORE::KERNEL/CLOS/DEFCLASS CORE::KERNEL/CLOS/SLOTVALUE
-    CORE::KERNEL/CLOS/STANDARD CORE::KERNEL/CLOS/BUILTIN
-    CORE::KERNEL/CLOS/CHANGE CORE::KERNEL/CLOS/STDMETHOD
-    CORE::KERNEL/CLOS/GENERIC :GENERIC CORE::KERNEL/CLOS/FIXUP
-    CORE::KERNEL/CLOS/EXTRACLASSES CORE::KERNEL/LSP/DEFVIRTUAL :STAGE3
-    CORE::KERNEL/CLOS/CONDITIONS CORE::KERNEL/CLOS/PRINT
-    CORE::KERNEL/CLOS/STREAMS CORE::KERNEL/LSP/PPRINT CORE::KERNEL/CLOS/INSPECT
-    :CLOS CORE::KERNEL/LSP/FFI :FRONT CORE::KERNEL/LSP/TOP :ALL
+  '(:INIT #P"/kernel/init" :CLEAVIR-INJECTION #P"/kernel/cmp/jit-setup"
+    #P"/kernel/clsymbols" :START #P"/kernel/lsp/packages"
+    #P"/kernel/lsp/foundation" #P"/kernel/lsp/export" #P"/kernel/lsp/defmacro"
+    :DEFMACRO #P"/kernel/lsp/helpfile" #P"/kernel/lsp/evalmacros"
+    #P"/kernel/lsp/claspmacros" :MACROS #P"/kernel/lsp/testing"
+    #P"/kernel/lsp/makearray" #P"/kernel/lsp/arraylib" #P"/kernel/lsp/setf"
+    #P"/kernel/lsp/listlib" #P"/kernel/lsp/mislib" #P"/kernel/lsp/defstruct"
+    #P"/kernel/lsp/predlib" #P"/kernel/lsp/seq" #P"/kernel/lsp/cmuutil"
+    #P"/kernel/lsp/seqmacros" #P"/kernel/lsp/iolib" #P"/kernel/lsp/profiling"
+    :TINY :PRE-CMP #P"/kernel/cmp/packages" #P"/kernel/cmp/cmpsetup"
+    #P"/kernel/cmp/cmpglobals" #P"/kernel/cmp/cmptables" #P"/kernel/cmp/cmpvar"
+    #P"/kernel/cmp/cmputil" #P"/kernel/cmp/cmpintrinsics" #P"/kernel/cmp/cmpir"
+    #P"/kernel/cmp/cmpeh" #P"/kernel/cmp/debuginfo"
+    #P"/kernel/cmp/lambdalistva" #P"/kernel/cmp/cmpvars"
+    #P"/kernel/cmp/cmpquote" #P"/kernel/cmp/cmpobj" #P"/kernel/cmp/compiler"
+    #P"/kernel/cmp/compilefile" #P"/kernel/cmp/cmpbundle"
+    #P"/kernel/cmp/cmpwalk" :CMP :STAGE1 :CMPREPL #P"/kernel/lsp/logging"
+    #P"/kernel/lsp/seqlib" #P"/kernel/lsp/trace" :WAS-PRE-CMP
+    #P"/kernel/lsp/sharpmacros" #P"/kernel/lsp/assert" #P"/kernel/lsp/numlib"
+    #P"/kernel/lsp/describe" #P"/kernel/lsp/module" #P"/kernel/lsp/loop2"
+    #P"/kernel/lsp/shiftf-rotatef" #P"/kernel/lsp/assorted"
+    #P"/kernel/lsp/packlib" #P"/kernel/lsp/defpackage" #P"/kernel/lsp/format"
+    :MIN #P"/kernel/clos/package" #P"/kernel/clos/hierarchy"
+    #P"/kernel/clos/cpl" #P"/kernel/clos/std-slot-value" #P"/kernel/clos/slot"
+    #P"/kernel/clos/boot" #P"/kernel/clos/kernel" #P"/kernel/clos/method"
+    #P"/kernel/clos/combin" #P"/kernel/clos/std-accessors"
+    #P"/kernel/clos/defclass" #P"/kernel/clos/slotvalue"
+    #P"/kernel/clos/standard" #P"/kernel/clos/builtin" #P"/kernel/clos/change"
+    #P"/kernel/clos/stdmethod" #P"/kernel/clos/generic" :GENERIC
+    #P"/kernel/clos/fixup" #P"/kernel/clos/extraclasses"
+    #P"/kernel/lsp/defvirtual" :STAGE3 #P"/kernel/clos/conditions"
+    #P"/kernel/clos/print" #P"/kernel/clos/streams" #P"/kernel/lsp/pprint"
+    #P"/kernel/clos/inspect" :CLOS #P"/kernel/lsp/ffi" #P"/sockets/sockets"
+    :FRONT #P"/kernel/lsp/top" :ALL :BCLASP
     |kernel/contrib/sicl/Code/Cleavir/Input-output/packages|
     |kernel/contrib/sicl/Code/Cleavir/Input-output/io|
     |kernel/contrib/sicl/Code/Cleavir/Meter/packages|
@@ -82,6 +80,7 @@
     |kernel/contrib/sicl/Code/Cleavir/Generate-AST/packages|
     |kernel/contrib/sicl/Code/Cleavir/Generate-AST/conditions|
     |kernel/contrib/sicl/Code/Cleavir/Generate-AST/condition-reporters-english|
+    |kernel/contrib/sicl/Code/Cleavir/Generate-AST/source-tracking|
     |kernel/contrib/sicl/Code/Cleavir/Generate-AST/check-special-form-syntax|
     |kernel/contrib/sicl/Code/Cleavir/Generate-AST/environment-query|
     |kernel/contrib/sicl/Code/Cleavir/Generate-AST/utilities|
@@ -129,6 +128,7 @@
     |kernel/contrib/sicl/Code/Cleavir/HIR-transformations/eliminate-typeq|
     |kernel/contrib/sicl/Code/Cleavir/HIR-transformations/simplify-box-unbox|
     |kernel/contrib/sicl/Code/Cleavir/HIR-transformations/segregate-lexicals|
+    |kernel/contrib/sicl/Code/Cleavir/HIR-transformations/eliminate-superfluous-temporaries|
     |kernel/contrib/sicl/Code/Cleavir/HIR-transformations/hir-transformations|
     |kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/MIR/general|
     |kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/MIR/graphviz-drawing|
@@ -137,14 +137,17 @@
     |kernel/contrib/sicl/Code/Cleavir/Utilities/utilities|
     |kernel/contrib/sicl/Code/Cleavir/Basic-blocks/packages|
     |kernel/contrib/sicl/Code/Cleavir/Basic-blocks/basic-blocks|
-    :temp
+    |kernel/contrib/sicl/Code/Types/Additional/packages|
+    |kernel/contrib/sicl/Code/Types/Additional/types|
+    |kernel/contrib/sicl/Code/Conditions/Additional/packages|
+    |kernel/contrib/sicl/Code/Conditions/Additional/conditions|
+    |kernel/contrib/sicl/Code/Conditions/Additional/condition-reporters-en|
     |kernel/cleavir/packages| |kernel/cleavir/system| |kernel/cleavir/ast|
     |kernel/cleavir/convert-form| |kernel/cleavir/convert-special|
     |kernel/cleavir/hir| |kernel/cleavir/introduce-invoke|
     |kernel/cleavir/setup| |kernel/cleavir/ast-to-hir| |kernel/cleavir/mir|
-    |kernel/cleavir/hir-to-mir| |kernel/cleavir/landing-pad|
-    |kernel/cleavir/ir| |kernel/cleavir/arguments| |kernel/cleavir/gml-drawing|
-    |kernel/cleavir/translate|
-    :pre-auto-compile
-    CORE::KERNEL/CLEAVIR/AUTO-COMPILE
-    :CLEAVIR-CLASP)) 
+    |kernel/cleavir/hir-to-mir| |kernel/cleavir/ir|
+    |kernel/cleavir/gml-drawing| |kernel/cleavir/landing-pad|
+    |kernel/cleavir/arguments| |kernel/cleavir/translate| :CLEAVIR-CLASP
+    #P"/kernel/cleavir/inline" #P"/kernel/cleavir/auto-compile" :AUTO-COMPILE
+    :CCLASP)) 

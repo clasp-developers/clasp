@@ -1,5 +1,7 @@
 (in-package :clasp-cleavir)
 
+(defun %i8 (num)
+  (cmp:jit-constant-i8 num))
 
 (defun %i32 (num)
   (cmp:jit-constant-i32 num))
@@ -68,8 +70,18 @@
 (defun %ptrtoint (val type &optional (label ""))
   (llvm-sys:create-ptr-to-int cmp:*irbuilder* val type label))
 
+(defun %inttoptr (val type &optional (label ""))
+  (llvm-sys:create-int-to-ptr cmp:*irbuilder* val type label))
+
 (defun %and (x y &optional (label ""))
   (llvm-sys:create-and-value-value cmp:*irbuilder* x y label))
+
+(defun %add (x y &optional (label ""))
+  (llvm-sys:create-add cmp:*irbuilder* x y label))
+(defun %add-nsw (x y &optional (label ""))
+  (llvm-sys:create-nswadd cmp:*irbuilder* x y label))
+(defun %add-nuw (x y &optional (label ""))
+  (llvm-sys:create-nuwadd cmp:*irbuilder* x y label))
 
 (defun %icmp-eq (x y &optional (label ""))
   (llvm-sys:create-icmp-eq cmp:*irbuilder* x y label))

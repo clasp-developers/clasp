@@ -42,7 +42,6 @@ namespace core {
 namespace coerce {
 
 Function_sp functionDesignator(T_sp obj) {
-  _G();
   if (Function_sp fnobj = obj.asOrNull<Function_O>()) {
     return fnobj;
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {

@@ -116,7 +116,7 @@ T_sp af_bformat(T_sp destination, const string &control, List_sp args) {
 T_sp af_format(T_sp destination, T_sp control, List_sp args) {
   _G();
   stringstream tf;
-  if (af_functionP(control)) {
+  if (cl_functionp(control)) {
     SIMPLE_ERROR(BF("Add support for functions as FORMAT controls"));
   }
   if (!af_stringP(control)) {

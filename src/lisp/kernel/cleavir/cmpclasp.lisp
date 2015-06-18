@@ -4,10 +4,15 @@
 ;;; in which Cleavir is the default compiler
 ;;;
 
+;;(require :asdf)
+;;(require :clasp-cleavir)
 
 (in-package :clasp-cleavir)
 
+(export '(load-system link))
+(load "sys:kernel;cleavir;inline.lisp")
 (load "sys:kernel;cleavir;asdf-system-groveler.lisp")
+
 
 ;;; Determine the source files required by the :clasp-cleavir
 ;;; ASDF system
@@ -21,14 +26,12 @@
 ;;;   - Remove the cmprepl source file because it's not used by cleavir
 ;;;   - #P"/kernel/cleavir/auto-compile" sets up automatic compilation of top-level forms
 (defun setup-clasp-cleavir-files (&optional (init-files core:*init-files*) (cleavir-files *cleavir-clasp-only*))
-  ;; Inject the cleavir-injection.lisp source file at the :cleavir-injection point
-  (let ((injection-point (member :cleavir-injection init-files)))
-    (rplacd injection-point (cons #P"/kernel/cleavir/cleavir-injection" (cdr injection-point))))
   ;; Remove the cmprepl file and append the rest of the cleavir files
   (append (remove-if (lambda (p) (and (pathnamep p) (string-equal "cmprepl" (pathname-name p)))) init-files )
           (list :bclasp)
           *cleavir-clasp-only*
           (list :cleavir-clasp)
+          (list #P"/kernel/cleavir/inline")
           (list #P"/kernel/cleavir/auto-compile")
           (list :auto-compile :cclasp)))
 
@@ -36,11 +39,15 @@
 (defparameter *clasp-cleavir-files*
   (setup-clasp-cleavir-files core:*init-files* *cleavir-clasp-only*))
 
-(defun save-all-files ()
+(defun save-all-files (filename)
   "Save the list of files in *clasp-cleavir-files* to #P\"sys:kernel;cleavir-system.lsp\""
-  (with-open-file (fout "sys:kernel;cleavir-system.lsp" :direction :output)
+  (with-open-file (fout filename :direction :output)
     (print `(defparameter *cleavir-system* ',*clasp-cleavir-files*) fout)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Save the current list of Cleavir files
+(save-all-files #P"sys:kernel;cleavir-system.lsp")
 
 (defun compile-system (first-file last-file &key recompile reload (system *clasp-cleavir-files*))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
@@ -103,13 +110,14 @@
     (compile-clasp :init :auto-cleavir :recompile recompile :reload nil
 				:system system)))
 
+(export 'compile-full-cleavir)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Link files together
 ;;;
 
 (defun bitcode-pathname (module &key (target-backend (core::default-target-backend)))
-  (merge-pathnames (pathname (string module)) 
+  (merge-pathnames (pathname (if (pathnamep module) module (string module)))
 		   (make-pathname :host target-backend :directory '(:absolute) :type "bc")))
 
 

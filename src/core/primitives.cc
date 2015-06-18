@@ -1194,14 +1194,6 @@ List_sp af_append(List_sp lists) {
   return res;
 }
 
-#define ARGS_af_coerce_to_function "(arg)"
-#define DECL_af_coerce_to_function ""
-#define DOCS_af_coerce_to_function "coerce_to_function"
-Function_mv af_coerce_to_function(T_sp arg) {
-  _G();
-  return (Values(coerce::functionDesignator(arg)));
-};
-
 #define ARGS_af_sequence_start_end "(func sequence start end)"
 #define DECL_af_sequence_start_end ""
 #define DOCS_af_sequence_start_end "Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence." \
@@ -1646,9 +1638,6 @@ void initialize_primitives() {
 
   SYMBOL_EXPORT_SC_(ClPkg, classOf);
   Defun(classOf);
-
-  SYMBOL_SC_(CorePkg, coerce_to_function);
-  Defun(coerce_to_function);
 
   SYMBOL_EXPORT_SC_(ClPkg, identity);
   Defun(identity);

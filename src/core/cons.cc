@@ -55,6 +55,8 @@ List_sp coerce_to_list(T_sp o) {
   TYPE_ERROR(o, cl::_sym_list);
 }
 
+
+
 #define ARGS_core_put_f "(plist value indicator)"
 #define DECL_core_put_f ""
 #define DOCS_core_put_f "putF"
@@ -124,6 +126,28 @@ Cons_sp af_cons(T_sp obj1, T_sp obj2) {
   ASSERTNOTNULL(obj2);
   return Cons_O::create(obj1, obj2);
 };
+
+#define ARGS_cl_rplaca "(c o)"
+#define DECL_cl_rplaca ""
+#define DOCS_cl_rplaca ""
+Cons_sp cl_rplaca(Cons_sp c, T_sp o) {
+  return c->rplaca(o);
+};
+
+#define ARGS_cl_rplacd "(c o)"
+#define DECL_cl_rplacd ""
+#define DOCS_cl_rplacd ""
+Cons_sp cl_rplacd(Cons_sp c, T_sp o) {
+  return c->rplacd(o);
+};
+
+
+
+
+
+
+
+
 
 #define DOCS_af_make_list "make_list"
 #define LOCK_af_make_list 1
@@ -1333,8 +1357,6 @@ void Cons_O::exposeCando(Lisp_sp lisp) {
   _G();
   class_<Cons_O>()
       .def("core:exactlyMatches", &Cons_O::exactlyMatches)
-      .def("rplaca", &Cons_O::rplaca)
-      .def("rplacd", &Cons_O::rplacd)
       .def("core:lookup", &Cons_O::olookupKeyObject)
       .def("core:lookupDefault", &Cons_O::olookupKeyObjectDefault)
       .def("core:filterOutNil", &Cons_O::filterOutNil)
@@ -1358,6 +1380,8 @@ void Cons_O::exposeCando(Lisp_sp lisp) {
   CoreDefun(rem_f);
   SYMBOL_SC_(CorePkg, put_f);
   CoreDefun(put_f);
+  af_def(ClPkg, "rplaca", &cl_rplaca);
+  af_def(ClPkg, "rplacd", &cl_rplacd);
   af_def(ClPkg, "rest", &oCdr);
   af_def(ClPkg, "car", &oCar);
   af_def(ClPkg, "cdr", &oCdr);

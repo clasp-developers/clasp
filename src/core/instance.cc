@@ -350,7 +350,7 @@ T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
     // TODO: Switch to using slotWriterDispatch like ECL for improved performace
     //	    this->_Entry = &slotWriterDispatch;
     Instance_O::ensureClosure(&generic_function_dispatch);
-  } else if (!af_functionP(functionOrT)) {
+  } else if (!cl_functionp(functionOrT)) {
     TYPE_ERROR(functionOrT, cl::_sym_function);
     //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
   } else {

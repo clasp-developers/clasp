@@ -492,7 +492,7 @@ class	ClassGroup:
             if ( not cl.ignore() ):
                 fn = cl.getFileName()
                 if ( fn not in uniqueHeaders ):
-                    fout.write("""#include "%s"\n""" % cl.getFileName())
+                    fout.write("""#include "%s"\n""" % os.path.abspath(cl.getFileName()))
                     uniqueHeaders.add(fn)
         fout.write("#endif // HEADER_INCLUDES\n")
         fout.write("#undef HEADER_INCLUDES\n")

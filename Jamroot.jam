@@ -211,6 +211,7 @@ path-constant APPRES-EXTERNALS-COMMON : $(APPRES-EXTERNALS)/common ;
 path-constant APPRES-EXTERNALS-COMMON-LIB : $(APPRES-EXTERNALS-COMMON)/lib ;
 path-constant APPRES-EXTERNALS-COMMON-INCLUDE : $(APPRES-EXTERNALS-COMMON)/include ;
 path-constant APPRES-LISP : $(APPRES)/lisp ;
+path-constant APPRES-CANDO-LISP : $(APPRES)/cando/lisp ;
 path-constant APPBIN : $(APPTOP)/bin ;
 path-constant APPBIN-OSX : $(APPTOP)/MacOS ;
 path-constant APPBIN-LINUX : $(APPTOP)/bin ;

@@ -292,7 +292,6 @@ public:
   static Integer_sp create(float f);
   static Integer_sp create(double f);
   static Integer_sp createLongFloat(LongFloat f);
-
 public:
   virtual bool evenp_() const { SUBIMP(); };
   virtual bool oddp_() const { SUBIMP(); };

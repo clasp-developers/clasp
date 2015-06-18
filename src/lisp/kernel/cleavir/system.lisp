@@ -2,8 +2,14 @@
 
 ;;; Define the CLASP system
 (defclass clasp () ())
-
 (defvar *clasp-system* (make-instance 'clasp))
+
+(defclass clasp-global-environment () () )
+(defvar *clasp-env* (make-instance 'clasp-global-environment))
+(export '(clasp-global-environment
+          *clasp-env*
+          clasp
+          *clasp-system*))
 
 
 #+(or)(defmacro cc-dbg-when (cond &rest body) nil)

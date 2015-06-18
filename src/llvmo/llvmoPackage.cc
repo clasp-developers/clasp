@@ -218,16 +218,13 @@ llvmo::GlobalVariable_sp af_getOrCreateExternalGlobal(llvmo::Module_sp module, c
 }
 
 void dump_funcs(core::Function_sp compiledFunction) {
-  STDOUT_BFORMAT(BF("Dumping disassembly"));
   auto cb = compiledFunction->closure;
   if (!cb->compiledP()) {
     SIMPLE_ERROR(BF("You can only disassemble compiled functions"));
   }
   auto cc = cb.as<llvmo::CompiledClosure>();
   core::T_sp funcs = cc->associatedFunctions;
-  if (funcs.nilp()) {
-    STDOUT_BFORMAT(BF("There is no list of associated functions\n"));
-  } else if (cl_consp(funcs)) {
+  if (cl_consp(funcs)) {
     core::List_sp cfuncs = funcs;
     for (auto cur : cfuncs) {
       core::T_sp func = oCar(cur);
@@ -239,7 +236,7 @@ void dump_funcs(core::Function_sp compiledFunction) {
     }
     return;
   }
-  SIMPLE_ERROR(BF("Illegal value for associatedFunctions: %s") % _rep_(funcs));
+  STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
 }
 
 #define ARGS_af_disassembleSTAR "(fn)"

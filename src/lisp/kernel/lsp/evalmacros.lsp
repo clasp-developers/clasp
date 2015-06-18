@@ -131,27 +131,27 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 
 ;;; DEFUN that generates interpreted functions
 (si::fset 'defun
-	  #'(lambda (def env)
-	      (let ((whole def)
-		    (name (cadr def))
-		    (vl (caddr def))
-		    (body (cdddr def)))
-		;; Documentation in help.lsp
-		(multiple-value-bind (decls body doc-string) 
-		    (process-declarations body t)
-		  (let* ((doclist (when doc-string (list doc-string)))
-			 (global-function `#'(lambda ,vl 
-					       (declare (core:lambda-name ,name) ,@decls) 
-					       ,@doclist (block ,(si::function-block-name name) ,@body))))
-		    ;;(bformat t "DEFUN global-function --> %s\n" global-function )
-		    `(progn
-		       ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
-		       ,@(si::expand-set-documentation name 'function doc-string)
-		       ,(eval-when (:compile-toplevel :load-toplevel :execute)
-                                   (and *defun-inline-hook*
-                                        (funcall *defun-inline-hook* name global-function env)))
-		       ',name)))))
-	  t)
+          #'(lambda (def env)
+              (declare (ignore env))
+              (let ((whole def)
+                    (name (cadr def))
+                    (vl (caddr def))
+                    (body (cdddr def)))
+                ;; Documentation in help.lsp
+                (multiple-value-bind (decls body doc-string) 
+                    (process-declarations body t)
+                  (let* ((doclist (when doc-string (list doc-string)))
+                         (global-function `#'(lambda ,vl 
+                                               (declare (core:lambda-name ,name) ,@decls) 
+                                               ,@doclist (block ,(si::function-block-name name) ,@body))))
+                    ;;(bformat t "DEFUN global-function --> %s\n" global-function )
+                    `(progn
+                       ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
+                       ,@(si::expand-set-documentation name 'function doc-string)
+                       ,(and *defun-inline-hook*
+                             (funcall *defun-inline-hook* name global-function))
+                       ',name)))))
+          t)
 
 
 ;;;

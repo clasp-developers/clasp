@@ -46,6 +46,15 @@
   (clasp-cleavir:datum-gid datum))
 ;;  (gethash datum *datum-table*))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Drawing datum of unknown type
+
+(defmethod draw-datum (datum stream)
+  (break "problem with datum")
+  (render-node stream "UNKNOWN-ID" "UNKNOWN-VAL" :color :red))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Drawing datum CONSTANT-INPUT.

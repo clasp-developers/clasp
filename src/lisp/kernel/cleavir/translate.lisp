@@ -315,10 +315,11 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:precalc-symbol-instruction) inputs outputs abi)
   (let ((idx (first inputs)))
-;;    (format t "translate-simple-instruction (first inputs) --> ~a~%" (first inputs))
-      (cmp:irc-low-level-trace :flow)
-      (let ((result (cmp:irc-intrinsic-args "cc_precalcSymbol" (list (ltv-global) idx))))
-	(llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
+    ;;    (format t "translate-simple-instruction (first inputs) --> ~a~%" (first inputs))
+    (cmp:irc-low-level-trace :flow)
+    (let ((label (format nil "~s" (clasp-cleavir-hir:precalc-symbol-instruction-original-object instruction))))
+      (let ((result (cmp:irc-intrinsic-args "cc_precalcSymbol" (list (ltv-global) idx) :label label)))
+	(llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil)))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:precalc-value-instruction) inputs outputs abi)
@@ -396,8 +397,6 @@
     ;; Save whatever is in return-vals in the multiple-value array
     (cmp:irc-intrinsic "cc_saveMultipleValue0" (sret-arg return-vals))
     (cmp:irc-intrinsic "cc_unwind" (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction)))))
-
-
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) inputs outputs abi)
@@ -517,6 +516,28 @@
 	 (format *debug-log* "     instruction --> ~a~%" call))
 	))))
 
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:memref2-instruction) inputs outputs abi)
+  (let* ((tptr (%load (first inputs)))
+         (offset (second inputs))
+         (ui-tptr (%ptrtoint tptr cmp:+uintptr_t+))
+         (ui-offset (%bit-cast offset cmp:+uintptr_t+)))
+    (let* ((uiptr (%add ui-tptr ui-offset))
+           (ptr (%inttoptr uiptr cmp::+t**+))
+           (read-val (%load ptr)))
+      (%store read-val (first outputs)))))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:memset2-instruction) inputs outputs abi)
+  (let* ((tptr (%load (first inputs)))
+         (offset (second inputs))
+         (ui-tptr (%ptrtoint tptr cmp:+uintptr_t+))
+         (ui-offset (%bit-cast offset cmp:+uintptr_t+)))
+    (let* ((uiptr (%add ui-tptr ui-offset))
+           (dest (%inttoptr uiptr cmp::+t**+ "memset2-dest"))
+           (val (%load (third inputs) "memset2-val")))
+      (%store val dest))))
 
 
 (defmethod translate-simple-instruction
@@ -669,14 +690,10 @@
 (defmethod translate-branch-instruction
           ((instruction cleavir-ir:consp-instruction) inputs outputs successors abi)
         (let* ((x (%load (first inputs)))
-               (tag (progn
-                      (format t "x = ~%")
-                      (llvm-sys:dump x)
-                      (format t "cmp::+uintptr_t+ -> ~%")
-                      (llvm-sys:dump cmp::+uintptr_t+)
-                      (%and (%ptrtoint x cmp::+uintptr_t+) (%uintptr_t cmp:+tag-mask+))))
-               (cmp (%icmp-eq tag (%uintptr_t cmp:+cons-tag+))))
+               (tag (%and (%ptrtoint x cmp::+i32+) (%i32 cmp:+tag-mask+) "tag-only"))
+               (cmp (%icmp-eq tag (%i32 cmp:+cons-tag+) "consp-test")))
           (%cond-br cmp (first successors) (second successors))) :likely t)
+
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) inputs outputs successors abi)
@@ -859,11 +876,14 @@ nil)
       (t ()))))
 
 
-(defun my-hir-transformations (initial-instruction implementation processor os)
-  (cleavir-hir-transformations:type-inference initial-instruction)
-  (cleavir-hir-transformations:eliminate-typeq initial-instruction)
-  (cleavir-hir-transformations:eliminate-superfluous-temporaries initial-instruction)
-  (cleavir-hir-transformations:process-captured-variables initial-instruction))
+(defun my-hir-transformations (init-instr implementation processor os)
+  (cleavir-hir-transformations:type-inference init-instr)
+  (cleavir-hir-transformations:eliminate-typeq init-instr)
+  ;; The following breaks code when inlining takes place
+  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-before.dot")) ;; comment out
+;;  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
+  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after.dot")) ;; comment out
+  (cleavir-hir-transformations:process-captured-variables init-instr))
 
 
 (defun do-compile (form)
@@ -905,6 +925,7 @@ nil)
       (clasp-cleavir:convert-funcalls hir)
       ;; eliminate superfluous temporaries
       (my-hir-transformations hir clasp-system nil nil)
+      (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out
       (cleavir-ir:hir-to-mir hir clasp-system nil nil)
       (when *debug-cleavir* (draw-mir hir)) ;; comment out
       (cc-mir:assign-mir-instruction-datum-ids hir)
@@ -915,9 +936,13 @@ nil)
 	(clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
 	(translate hir abi)))))
 
+;; Set this to T to watch cleavir-compile-t1expr run
+(defvar *cleavir-compile-verbose* nil)
+(export '*cleavir-compile-verbose*)
 (defun cleavir-compile-t1expr (name form env pathname)
-;;  (format *trace-output* "Compiling: ~s~%" form)
-;;  (format *trace-output* "   in environment: ~s~%" env )
+  (when *cleavir-compile-verbose*
+    (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
+    (format *trace-output* "          in environment: ~s~%" env ))
   (let ((cleavir-generate-ast:*compiler* 'cl:compile))
     (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
 	;; The following test and true form should be removed`
@@ -929,7 +954,7 @@ nil)
                         (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
                         (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
             (clasp-cleavir:convert-funcalls hir)
-            (when *debug-cleavir* (draw-hir hir)) ;; comment out
+            (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out
             (my-hir-transformations hir clasp-system nil nil)
             #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
             (cleavir-ir:hir-to-mir hir clasp-system nil nil)
@@ -977,7 +1002,8 @@ nil)
 	  (format t "Whoah cleavir-clasp compiled code eval --> ~s~%" compiled-function)
 	  (return-from cleavir-compile-t1expr (values nil t)))
         (let ((enclosed-function (funcall setup-function cmp:*run-time-literal-holder*)))
-          (cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)
+          ;;(format t "*all-functions-for-one-compile* -> ~s~%" cmp:*all-functions-for-one-compile*)
+          ;;(cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)
           (values enclosed-function warnp failp))))))
 
 (defun cleavir-compile-file-form (form)
@@ -1004,7 +1030,7 @@ nil)
         
 	
 (defun cleavir-compile (name form &key debug)
-  (let ((cmp:*dump-module-on-completion* t)
+  (let ((cmp:*dump-module-on-completion* debug)
 	(*debug-cleavir* debug))
     (cclasp-compile-in-env name form nil)))
 

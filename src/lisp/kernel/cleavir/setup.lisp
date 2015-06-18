@@ -1,8 +1,5 @@
 (in-package :clasp-cleavir)
 
-(defclass clasp-global-environment () () )
-
-(defvar *clasp-env* (make-instance 'clasp-global-environment))
 
 (defvar *cclasp-eval-depth* 0)
 (defun cclasp-eval-in-env (form &optional env)
@@ -101,6 +98,10 @@
   (cond
     ((cmp:treat-as-special-operator-p name) t)
     ((eq name 'cleavir-primop:consp) t)
+    ((eq name 'cleavir-primop:car) t)
+    ((eq name 'cleavir-primop:cdr) t)
+    ((eq name 'cleavir-primop:rplaca) t)
+    ((eq name 'cleavir-primop:rplacd) t)
     (t nil)))
 
 
@@ -133,8 +134,6 @@
      (fboundp function-name)
      ;; In that case, we return the relevant info
      ;; Check if we should inline the function
-     (format t "About to generate a cleavir-env:global-function-info for ~s:~s" (symbol-package function-name) function-name)
-     (format t "    (global-inline-status function-name) --> ~s~%" (global-inline-status function-name))
      (make-instance 'cleavir-env:global-function-info
 		    :name function-name
 		    :compiler-macro (compiler-macro-function function-name)
@@ -231,11 +230,13 @@
       (cleavir-ir-graphviz:draw-flowchart hir stream))))
 
 
-(defun draw-hir (&optional (hir *hir*) (filename "/tmp/hir.dot"))
+(defun draw-hir (&optional (hir *hir*) (filename #P"/tmp/hir.dot"))
+  (setq filename (pathname filename))
   (with-open-file (stream filename :direction :output)
     (cleavir-ir-graphviz:draw-flowchart hir stream))
-  (ext:system (format nil "dot -Tpng -o/tmp/hir.png ~a" filename))
-  (ext:system "open -n /tmp/hir.png"))
+  (let* ((png-pn (make-pathname :type "png" :defaults filename)))
+    (ext:system (format nil "dot -Tpng -o~a ~a" (namestring png-pn) (namestring filename)))
+    (ext:system (format nil "open -n ~a" (namestring png-pn)))))
 
 (defun draw-mir (&optional (mir *mir*) (filename "/tmp/mir.dot"))
   (with-open-file (stream filename :direction :output)
@@ -324,10 +325,16 @@
     (draw-hir hir)
     hir))
 
+(defun my-hir-transformations (initial-instruction implementation processor os)
+  (cleavir-hir-transformations:type-inference initial-instruction)
+  (cleavir-hir-transformations:eliminate-typeq initial-instruction)
+  (cleavir-hir-transformations:eliminate-superfluous-temporaries initial-instruction)
+  (cleavir-hir-transformations:process-captured-variables initial-instruction))
+
 (defun mir-form (form)
   (let ((hir (hir-form form))
 	(clasp-inst *clasp-system*))
-    (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
+    (my-hir-transformations hir clasp-inst nil nil)
     (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
     (draw-mir hir)
     (setq *mir* hir)))

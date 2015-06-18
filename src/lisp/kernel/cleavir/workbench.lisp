@@ -1,43 +1,98 @@
-(progn
-  (print "Loading ASDF and :clasp-cleavir systems")
+(progn  ;; Set up everything for building cclasp from bclasp
+  (format t "Loading ASDF system~%")
   (time (require :asdf))
+  (pushnew :cleavir *features*)
+  (format t "Loading :clasp-cleavir system~%")
   (time (require :clasp-cleavir))
-  (load "sys:kernel;cleavir;cleavir-inject.lisp")
+  (format t "Loading inline.lisp~%")
+  (load "sys:kernel;cleavir;inline.lisp")
+  (format t "Loading cmpclasp.lisp~%")
   (load "sys:kernel;cleavir;cmpclasp.lisp")
   (print (core:getpid)))
 
-(defparameter *fi* (cleavir-env:function-info *clasp-env* 'my-consp))
-(cleavir-ast-transformations::clone-ast (cleavir-env:ast *fi*))
-(cleavir-io::save-info (cleavir-env:ast *fi*))
+(in-package :clasp-cleavir)
 
-(fdefinition 'cleavir-io::save-info)
+(apropos "set-associated-funcs")
+(load "sys:kernel;cleavir;inline.lisp")
 
+(print "Hello")
+(pushnew :cleavir *features*)
+(cc::compile-clasp :init :cclasp :recompile nil)
+(cc::link :init :cclasp :system clasp-cleavir::*clasp-cleavir-files*)
 
+*clasp-cleavir-files*
 
-(defclass a ()
-  ((%x :initarg :x :accessor x)))
-
-(defclass b (a)
-  ((%y :initarg :y :accessor y)))
-
-(defgeneric save-info (object)
-  (:method-combination append :most-specific-last))
-
-
-(defmethod save-info append ((x a))
-  '(:x x))
-
-(defmethod save-info append ((x b))
-  '(:y y))
-
-(defparameter *a* (make-instance 'a :x 1))
-(defparameter *b* (make-instance 'b :x 10 :y 20))
-
-(save-info *a*)
-(save-info *b*)
+(load "sys:kernel;cleavir;cmpclasp.lisp")
 
 
 
+(progn
+  (format t "Loading clasp-cleavir~%")
+  (require :clasp-cleavir))
+
+
+(progn
+  (setq *echo-repl-tpl-read* t)
+  (setq *echo-repl-read* t)
+  (setq *load-print* t)
+  (setq *print-source-code-cons* t))
+
+
+
+(disassemble 'cleavir-primop:rplaca)
+(clasp-cleavir:cleavir-compile 'test-consp '(lambda () (consp (cons 1 2))))
+(clasp-cleavir:cleavir-compile 'test-car '(lambda () (car (cons 1 2))))
+(clasp-cleavir:cleavir-compile 'test-cdr '(lambda () (cdr (cons 1 2))))
+
+(clasp-cleavir:cleavir-compile 'test-rplaca '(lambda (x y) (rplaca x y)))
+(clasp-cleavir:cleavir-compile 'test-rplacd '(lambda (x y) (rplacd x y)))
+(test-consp)
+(test-cdr)
+(defparameter *a* (cons 1 2))
+(test-rplaca *a* 99)
+(test-rplacd *a* 100)
+(setq *load-print* t)
+(setq *load-verbose* t)
+
+(load "sys:kernel;cleavir;cmpclasp.lisp")
+
+
+(print "Hello")
+(disassemble 'test-car)
+
+
+(ast-form '(lambda (x) (cleavir-primop:car x)))
+(hir-form '(lambda (x) (cleavir-primop:car x)))
+
+(ast-form '(lambda (x y) (cleavir-primop:rplaca x y)))
+(hir-form '(lambda (x y) (cleavir-primop:rplaca x y)))
+(mir-form '(lambda (x y) (cleavir-primop:rplaca x y)))
+(mir-form '(lambda (x y) (cleavir-primop:rplacd x y)))
+
+(clasp-cleavir::cleavir-compile 'unsafe-car '(lambda (x) (cleavir-primop:car x)))
+(clasp-cleavir::cleavir-compile 'unsafe-cdr '(lambda (x) (cleavir-primop:cdr x)))
+(clasp-cleavir::cleavir-compile 'do-rplaca '(lambda (x y) (clasp-cleavir::my-rplaca x y)))
+(clasp-cleavir::cleavir-compile 'unsafe-cdr '(lambda (x) (cleavir-primop:cdr x)))
+
+(clasp-cleavir:cleavir-compile 'do-rplaca '(lambda (x y) (clasp-cleavir::my-rplaca x y)))
+(disassemble 'my-rplaca)
+
+
+(clasp-cleavir:cleavir-compile 'do-car '(lambda (x) (car x)))
+
+(do-car (cons 2 2))
+(disassemble 'do-car)
+
+
+
+(defparameter *a* (cons 1 2))
+
+(do-rplaca *a* 10)
+(print *a*)
+(disassemble 'do-rplaca)
+
+
+(clasp-cleavir::cleavir-compile-file #P"sys:tests;tinline.lsp")
 
 (print "Hello")
 
@@ -50,8 +105,27 @@ lambda-list-keywords
        cleavir-environment::defining-function-info)
 
 (setf *print-escape* t)
+(trace cleavir-environment::make-info cleavir-environment::function-inline)
+(clasp-cleavir::cleavir-compile 'test-consp '(lambda (x) (if (my-consp x) t nil)) :debug nil)
 
-(clasp-cleavir::cleavir-compile 'test-consp '(lambda (x) (if (clasp-cleavir::my-consp x) t nil)) :debug t)
+(draw-ast (cleavir-generate-ast:generate-ast '(lambda (x) (cleavir-primop:car x)) *clasp-env* *clasp-system*))
+
+(clasp-cleavir:cleavir-compile-file #P"sys:tests;tinline.lsp")
+
+(load #P"sys:tests;tinline.fasl")
+
+(foo-consp 1)
+
+(getpid)98985
+
+
+
+(defparameter *m* (mir-form '(lambda (x) (declare (core:lambda-name inline-me)) (if (my-consp x) t nil))))
+(cc-mir::assign-mir-instruction-datum-ids *m*)
+(clasp-cleavir:finalize-unwind-and-landing-pad-instructions *m*)
+
+
+(draw-ast (global-function-inline-ast 'my-consp) "/tmp/tconsp.png")
 
 
 
@@ -1497,3 +1571,125 @@ cmp::*dbg-generate-dwarf*
 
 
 (room)
+
+
+(llvm-sys:cxx-data-structures-info)
+
+
+
+
+(defclass a () ((x :initarg :x :accessor x)))
+(defclass b (a) ((y :initarg :y :accessor y)))
+(defgeneric save-info (x) (:method-combination append :most-specific-last))
+(defmethod save-info append ((o a)) '(:x x))
+(defmethod save-info append ((o b)) '(:y y))
+
+(defparameter *a* (make-instance 'a :x 1))
+(defparameter *b* (make-instance 'b :x 2 :y 3))
+(trace clos::effective-method-function)
+(trace si:coerce-to-function)
+(trace clos::combine-method-functions)
+(trace cl:coerce)
+(save-info *a*)
+(save-info *b*)
+
+(trace sb-pcl::make-effective-method-function)
+(apropos "effective-method-function")
+
+
+
+(load "sys:kernel;cleavir;cmpclasp.lisp")
+(clasp-cleavir:cleavir-compile 'tdb '(lambda () (destructuring-bind (x &optional y) '(1) (print (list x y)))) :debug t)
+(setq cmp:*low-level-trace-print* t)
+(tdb)
+
+(clasp-cleavir:cleavir-compile 'top '(lambda (x &optional y) (print (list x y))))
+(top 1)
+
+
+(clasp-cleavir:cleavir-compile 'tconsp '(lambda (x) (consp x)) :debug t)
+(clasp-cleavir:cleavir-compile 'tcar '(lambda (x) (car x)) :debug t)
+(clasp-cleavir:cleavir-compile 'tcdr '(lambda (x) (cdr x)) :debug t)
+
+
+
+
+
+(clasp-cleavir:cleavir-compile
+ 'ttest
+ '(lambda ()
+   (LET* ((input-list '(1))
+          (temp-list input-list)
+          (X
+           (PROGN
+             (IF (NULL temp-list) (CORE::DM-TOO-FEW-ARGUMENTS input-list))
+             (PROG1 (CAR (TRULY-THE CONS temp-list))
+               (SETQ temp-list (CDR (TRULY-THE CONS temp-list))))))
+          (Y
+           (progn
+             (print (list "temp-list" temp-list))
+             (IF temp-list
+                 (PROG1 (CAR (TRULY-THE CONS temp-list))
+                   (print "Evaluated car the second time")
+                   (SETQ temp-list (CDR (TRULY-THE CONS temp-list))))
+                 (progn
+                   (print "returning nil")
+                   NIL)))))
+     (DECLARE (IGNORABLE temp-list input-list))
+;;     (print (list "y = " y))
+     (IF temp-list (CORE::DM-TOO-MANY-ARGUMENTS input-list))
+     (LIST X Y))) :debug t)
+
+
+
+
+(clasp-cleavir:cleavir-compile
+ 'ttest2
+ '(lambda ()
+   (LET* ((temp-list '())
+          (Y
+           (IF temp-list
+               (PROG1 (CAR (TRULY-THE CONS temp-list)g)
+                 (SETQ temp-list (CDR (TRULY-THE CONS temp-list))))
+               NIL)))
+     (DECLARE (IGNORABLE temp-list ))
+     ;;     (print (list "y = " y))
+     (IF temp-list (CORE::DM-TOO-MANY-ARGUMENTS temp-list))
+     (LIST Y))) :debug nil)
+
+(clasp-cleavir:with-debug-compile-file ("/tmp/tdl.log" :debug-log-on t)
+                          (clasp-cleavir:cleavir-compile-file "sys:tests;tdl.lsp"))
+
+(clasp-cleavir:cleavir-compile
+ 'ttest3
+ '(lambda ()
+   (LET* ((temp-list '())
+          (Y
+           (IF temp-list
+               (PROG1 (CAR (TRULY-THE CONS temp-list))
+                 (SETQ temp-list (CDR temp-list)))
+               NIL)))
+     (DECLARE (IGNORABLE temp-list ))
+     ;;     (print (list "y = " y))
+     (LIST Y))) :debug t)
+
+(clasp-cleavir:cleavir-compile
+ 'tctt
+ '(lambda ()
+   (car (truly-the cons (cdr '(1))))))
+                               
+
+(load "sys:kernel;cleavir;cmpclasp.lisp")
+(clasp-cleavir:with-debug-compile-file ("/tmp/tdl/dl.log" :debug-log-on t)
+  (clasp-cleavir:cleavir-compile-file "sys:tests;tdl3.lsp"))
+
+
+(clasp-cleavir:cleavir-compile
+ 'foo
+ '(lambda ()
+   (LET* ((temp-list '())
+          (Y (IF temp-list
+                 (LET ((p1val (CAR TEMP-LIST))) p1val)
+                 99)))
+     (print Y))
+   ) :debug t)

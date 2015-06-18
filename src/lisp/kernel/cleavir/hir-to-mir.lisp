@@ -13,12 +13,46 @@
 
 
 
-#+(or)(defmethod cleavir-ir:specialize ((instr cleavir-ir:fdefinition-instruction)
-				  (impl clasp-cleavir:clasp) proc os)
-  (let ((output (first (cleavir-ir:outputs instr))))
-    (change-class output 'cc-mir:closure-pointer-dynamic-lexical-location)
-    ;;(format t "specializing the fdefinition-instruction new output: ~a~%" output)
-    ;; By default just return the current instruction
-    instr))
+(defmethod cleavir-ir:specialize ((instr cleavir-ir:car-instruction)
+                                  (impl clasp-cleavir:clasp) proc os)
+  (change-class instr 'cleavir-ir:memref2-instruction
+                :inputs (list (first (cleavir-ir:inputs instr))
+                              (cleavir-ir:make-immediate-input (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
+                :outputs (cleavir-ir:outputs instr)))
+
+(defmethod cleavir-ir:specialize ((instr cleavir-ir:cdr-instruction)
+                                  (impl clasp-cleavir:clasp) proc os)
+  (change-class instr 'cleavir-ir:memref2-instruction
+                :inputs (list (first (cleavir-ir:inputs instr))
+                              (cleavir-ir:make-immediate-input (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))
+                :outputs (cleavir-ir:outputs instr)))
+
+
+(defmethod cleavir-ir:specialize ((instr cleavir-ir:rplaca-instruction)
+                                  (impl clasp-cleavir:clasp) proc os)
+  #+(or)(cleavir-ir:insert-instruction-after
+         (cleavir-ir:make-assignment-instruction
+          (first (cleavir-ir:inputs instr))
+          (first (cleavir-ir:outputs instr)))
+         instr)
+  (change-class instr 'cleavir-ir:memset2-instruction
+                :inputs (list (first (cleavir-ir:inputs instr))
+                              (cleavir-ir:make-immediate-input (- cmp:+cons-car-offset+ cmp:+cons-tag+))
+                              (second (cleavir-ir:inputs instr)))
+                :outputs nil))
+
+
+(defmethod cleavir-ir:specialize ((instr cleavir-ir:rplacd-instruction)
+                                  (impl clasp-cleavir:clasp) proc os)
+  #+(or)(cleavir-ir:insert-instruction-after
+         (cleavir-ir:make-assignment-instruction
+          (first (cleavir-ir:inputs instr))
+          (first (cleavir-ir:outputs instr)))
+         instr)
+  (change-class instr 'cleavir-ir:memset2-instruction
+                :inputs (list (first (cleavir-ir:inputs instr))
+                              (cleavir-ir:make-immediate-input (- cmp:+cons-cdr-offset+ cmp:+cons-tag+))
+                              (second (cleavir-ir:inputs instr)))
+                :outputs nil))
 
 

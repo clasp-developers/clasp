@@ -45,10 +45,14 @@ inline bool cl_atom(T_sp obj) {
   return !obj.consp();
 }
 
-inline bool cl_listp(T_sp obj) {
-  if (obj.nilp())
-    return true;
+
+inline bool cl_consp(T_sp obj) {
   return obj.consp();
+};
+
+inline bool cl_listp(T_sp obj) {
+  if (obj.consp()) return true;
+  return obj.nilp();
 }
 
 bool af_llvm_sys_value_p(T_sp obj);
@@ -66,7 +70,7 @@ bool af_keywordP(T_sp obj);
 bool af_standardObjectP(T_sp obj);
 //    bool af_structureObjectP(T_sp obj);
 bool af_executableP(T_sp obj);
-bool af_functionP(T_sp obj);
+bool cl_functionp(T_sp obj);
 bool af_compiledFunctionP(T_sp obj);
 bool af_arrayP(T_sp obj);
 bool af_arrayObjectsP(T_sp obj);

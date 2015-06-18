@@ -65,6 +65,8 @@ T_mv t1Evaluate(T_sp exp, T_sp environment);
 
 namespace core {
 
+//void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<Str_sp> &docstring, List_sp &code);
+
 List_sp separateTopLevelForms(List_sp accumulated, T_sp possibleForms) {
   if (Cons_sp cpf = possibleForms.asOrNull<Cons_O>()) {
     if (gc::As<Symbol_sp>(oCar(cpf)) == cl::_sym_progn) {
@@ -77,6 +79,14 @@ List_sp separateTopLevelForms(List_sp accumulated, T_sp possibleForms) {
   accumulated = Cons_O::create(possibleForms, accumulated);
   return accumulated;
 }
+
+
+
+
+
+
+
+
 
 #define ARGS_af_compileFormAndEvalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
 #define DECL_af_compileFormAndEvalWithEnv ""
@@ -409,11 +419,57 @@ void extract_declares_code(List_sp args, List_sp &declares, List_sp &code) {
 }
 
 void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<Str_sp> &docstring, List_sp &code) {
-  _G();
   LOG(BF("Parsing lambda body: %s") % body->__repr__());
   List_sp specials;
   extract_declares_docstring_code_specials(body, declares, true, docstring, code, specials);
 }
+
+#define ARGS_core_coerce_to_function "(arg)"
+#define DECL_core_coerce_to_function ""
+#define DOCS_core_coerce_to_function "coerce_to_function"
+Function_sp core_coerce_to_function(T_sp arg) {
+  if (Function_sp fnobj = arg.asOrNull<Function_O>()) {
+    return fnobj;
+  } else if (Symbol_sp sym = arg.asOrNull<Symbol_O>()) {
+    if (!sym->fboundp())
+      SIMPLE_ERROR(BF("Function value for %s is unbound") % _rep_(sym));
+    return sym->symbolFunction();
+  } else if ( Cons_sp carg = arg.asOrNull<Cons_O>() ) {
+    T_sp head = oCar(carg);
+    if ( head == cl::_sym_setf ) {
+      Symbol_sp sym = oCadr(carg).as<Symbol_O>();
+      if ( !sym->setf_fboundp() ) {
+        SIMPLE_ERROR(BF("SETF function value for %s is unbound") % _rep_(sym));
+      }
+      return sym->getSetfFdefinition();
+    } else if ( head == cl::_sym_lambda ) {
+      T_sp olambdaList = oCadr(arg);
+      List_sp body = oCdr(oCdr(arg));
+      List_sp declares;
+      gc::Nilable<Str_sp> docstring;
+      List_sp code;
+      parse_lambda_body(body, declares, docstring, code);
+      LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
+      InterpretedClosure *ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass
+        ( cl::_sym_lambda, _Nil<T_O>(), kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code);
+      Function_sp proc = Function_O::make(ic);
+      return proc;
+#if 0
+      T_sp fn;
+      if ( comp::_sym_compileInEnv->fboundp() ) {
+        fn = eval::funcall(comp::_sym_compileInEnv
+                           , _Nil<T_O>()
+                           , carg
+                           , _Nil<T_O>() ).as<Function_O>();
+      } else {
+        SIMPLE_ERROR(BF("You cannot coerce-to-function a lambda until the compiler is in place"));
+      }
+#endif
+    }
+  }
+  SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(arg));
+};
+
 
 /*
   __BEGIN_DOC(candoScript.specialForm.block,block)
@@ -1652,9 +1708,12 @@ T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp args) {
     }
     SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
   }
-  gctools::tagged_functor<Closure> closureP = gc::As<Function_sp>(tfn)->closure;
-  ASSERTF(closureP, BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(tfn));
-  return applyClosureToActivationFrame(closureP, args);
+  Function_sp ffn = gc::As<Function_sp>(tfn);
+  gctools::tagged_functor<Closure> closureP = ffn->closure;
+  if ( closureP ) {
+    return applyClosureToActivationFrame(closureP, args);
+  }
+  SIMPLE_ERROR(BF("In applyToActivationFrame the closure for %s is NULL and is being applied to arguments: %s") % _rep_(ffn) % _rep_(args));
 }
 
 #define ARGS_cl_apply "(head &rest args)"
@@ -2366,6 +2425,9 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   CoreDefun(extractLambdaNameFromDeclares);
   CoreDefun(extractLambdaName);
   CoreDefun(lookup_symbol_macro);
+  CoreDefun(coerce_to_function);
+
+
 };
 };
 };

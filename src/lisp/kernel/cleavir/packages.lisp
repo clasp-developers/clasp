@@ -76,6 +76,8 @@
    #:debug-message
    #:setf-fdefinition-instruction
    #:throw-instruction
+   #:precalc-symbol-instruction-original-object
+   #:precalc-value-instruction-original-object
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir

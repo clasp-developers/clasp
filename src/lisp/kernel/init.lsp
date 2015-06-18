@@ -408,13 +408,16 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export '(defun))
 
 
+;;; Define these here so that Cleavir can do inlining
+(defvar *defun-inline-hook* nil)
+(defvar *do-inline-hook* nil)
+(defvar *proclaim-hook* nil)
+(export '(*defun-inline-hook*
+          *do-inline-hook*
+          *proclaim-hook*))
+
 ;; Discard documentation until helpfile.lsp is loaded
 (defun set-documentation (o d s) nil)
-
-
-;;; Define these here so that Cleavir can inject its code right after init.lsp
-(defvar *defun-inline-hook* nil)
-(defvar *proclaim-hook* nil)
 
 (defun proclaim (d)
   "Args: (decl-spec)

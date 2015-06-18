@@ -32,6 +32,7 @@
           +mv-struct+
           +size_t+
           +t*+
+          +t**+
           calling-convention-args
           calling-convention-args.gep
           calling-convention-nargs
@@ -81,6 +82,8 @@
           irc-switch
           irc-unreachable
           irc-trunc
+          jit-constant-i1
+          jit-constant-i8
           jit-constant-i32
           jit-constant-i64
           jit-constant-size_t

@@ -58,25 +58,15 @@
   (declare (core:lambda-name cmp-repl-implicit-compile))
   #+(or)(bformat t "*implicit-compile-hook* *load-truename* = %s   compiling form: %s\n" *load-truename* form)
   (multiple-value-bind (compiled-function warn fail)
-      (cmp:compile-in-env nil `(lambda () 
-				 (declare (core:lambda-name implicit-repl))
-				 ,form) environment)
+      (cmp:compile-in-env 
+       nil
+       `(lambda () 
+          (declare (core:lambda-name implicit-repl))
+          ,form) environment)
     ;;                         (compile-in-env nil form environment)
     (values compiled-function warn fail)))
 
-;;;
-;;; Don't install the bootstrapping compiler as the implicit compiler when compiling cleavir
-;;;
 (eval-when (:execute :load-toplevel)
-  (setq cmp:*implicit-compile-hook*
-	(compile nil '(lambda (form &optional environment) 
-		       (declare (core:lambda-name cmp-repl-implicit-compile))
-;		       (bformat t "*implicit-compile-hook* *load-truename* = %s   compiling form: %s\n" *load-truename* form)
-		       (multiple-value-bind (compiled-function warn fail)
-			   (cmp:compile-in-env nil `(lambda () 
-						      (declare (core:lambda-name implicit-repl))
-						      ,form) environment)
-			 ;;                         (compile-in-env nil form environment)
-			 (values compiled-function warn fail))))))
+  (setq cmp:*implicit-compile-hook* #'cleavir-implicit-compile-hook))
 
 
