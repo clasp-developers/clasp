@@ -15,6 +15,8 @@
 (apropos "set-associated-funcs")
 (load "sys:kernel;cleavir;inline.lisp")
 
+(disassemble '(lambda () 1))
+
 (print "Hello")
 (pushnew :cleavir *features*)
 (cc::compile-clasp :init :cclasp :recompile nil)
