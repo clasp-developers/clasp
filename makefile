@@ -166,7 +166,7 @@ cl-full-mps:
 
 
 clasp-boehm-cpp:
-	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) program=cando release boehm)
+	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) program=clasp release boehm)
 
 clasp-boehm:
 	make clasp-boehm-cpp
