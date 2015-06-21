@@ -16,24 +16,24 @@
     #P"/kernel/cmp/lambdalistva" #P"/kernel/cmp/cmpvars"
     #P"/kernel/cmp/cmpquote" #P"/kernel/cmp/cmpobj" #P"/kernel/cmp/compiler"
     #P"/kernel/cmp/compilefile" #P"/kernel/cmp/cmpbundle"
-    #P"/kernel/cmp/cmpwalk" :CMP :STAGE1 :CMPREPL #P"/kernel/lsp/logging"
-    #P"/kernel/lsp/seqlib" #P"/kernel/lsp/trace" :WAS-PRE-CMP
-    #P"/kernel/lsp/sharpmacros" #P"/kernel/lsp/assert" #P"/kernel/lsp/numlib"
-    #P"/kernel/lsp/describe" #P"/kernel/lsp/module" #P"/kernel/lsp/loop2"
-    #P"/kernel/lsp/shiftf-rotatef" #P"/kernel/lsp/assorted"
-    #P"/kernel/lsp/packlib" #P"/kernel/lsp/defpackage" #P"/kernel/lsp/format"
-    :MIN #P"/kernel/clos/package" #P"/kernel/clos/hierarchy"
-    #P"/kernel/clos/cpl" #P"/kernel/clos/std-slot-value" #P"/kernel/clos/slot"
-    #P"/kernel/clos/boot" #P"/kernel/clos/kernel" #P"/kernel/clos/method"
-    #P"/kernel/clos/combin" #P"/kernel/clos/std-accessors"
-    #P"/kernel/clos/defclass" #P"/kernel/clos/slotvalue"
-    #P"/kernel/clos/standard" #P"/kernel/clos/builtin" #P"/kernel/clos/change"
-    #P"/kernel/clos/stdmethod" #P"/kernel/clos/generic" :GENERIC
-    #P"/kernel/clos/fixup" #P"/kernel/clos/extraclasses"
-    #P"/kernel/lsp/defvirtual" :STAGE3 #P"/kernel/clos/conditions"
-    #P"/kernel/clos/print" #P"/kernel/clos/streams" #P"/kernel/lsp/pprint"
-    #P"/kernel/clos/inspect" :CLOS #P"/kernel/lsp/ffi" #P"/sockets/sockets"
-    :FRONT #P"/kernel/lsp/top" :ALL :BCLASP
+    #P"/kernel/cmp/cmpwalk" :CMP :STAGE1 #P"/kernel/cmp/cmprepl" :CMPREPL
+    #P"/kernel/lsp/logging" #P"/kernel/lsp/seqlib" #P"/kernel/lsp/trace"
+    :WAS-PRE-CMP #P"/kernel/lsp/sharpmacros" #P"/kernel/lsp/assert"
+    #P"/kernel/lsp/numlib" #P"/kernel/lsp/describe" #P"/kernel/lsp/module"
+    #P"/kernel/lsp/loop2" #P"/kernel/lsp/shiftf-rotatef"
+    #P"/kernel/lsp/assorted" #P"/kernel/lsp/packlib" #P"/kernel/lsp/defpackage"
+    #P"/kernel/lsp/format" :MIN #P"/kernel/clos/package"
+    #P"/kernel/clos/hierarchy" #P"/kernel/clos/cpl"
+    #P"/kernel/clos/std-slot-value" #P"/kernel/clos/slot" #P"/kernel/clos/boot"
+    #P"/kernel/clos/kernel" #P"/kernel/clos/method" #P"/kernel/clos/combin"
+    #P"/kernel/clos/std-accessors" #P"/kernel/clos/defclass"
+    #P"/kernel/clos/slotvalue" #P"/kernel/clos/standard"
+    #P"/kernel/clos/builtin" #P"/kernel/clos/change" #P"/kernel/clos/stdmethod"
+    #P"/kernel/clos/generic" :GENERIC #P"/kernel/clos/fixup"
+    #P"/kernel/clos/extraclasses" #P"/kernel/lsp/defvirtual" :STAGE3
+    #P"/kernel/clos/conditions" #P"/kernel/clos/print" #P"/kernel/clos/streams"
+    #P"/kernel/lsp/pprint" #P"/kernel/clos/inspect" :CLOS #P"/kernel/lsp/ffi"
+    #P"/sockets/sockets" :FRONT #P"/kernel/lsp/top" :ALL :BCLASP
     |kernel/contrib/sicl/Code/Cleavir/Input-output/packages|
     |kernel/contrib/sicl/Code/Cleavir/Input-output/io|
     |kernel/contrib/sicl/Code/Cleavir/Meter/packages|

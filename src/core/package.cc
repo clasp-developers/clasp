@@ -174,10 +174,10 @@ T_sp af_use_package(T_sp packages_to_use_desig, T_sp package_desig) {
   return _lisp->_true();
 }
 
-#define ARGS_af_unuse_package "(packages-to-unuse-desig &optional (package-desig *package*))"
-#define DECL_af_unuse_package ""
-#define DOCS_af_unuse_package "SeeCLHS unuse-package"
-T_sp af_unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig) {
+#define ARGS_cl_unuse_package "(packages-to-unuse-desig &optional (package-desig *package*))"
+#define DECL_cl_unuse_package ""
+#define DOCS_cl_unuse_package "SeeCLHS unuse-package"
+T_sp cl_unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig) {
   _G();
   List_sp packages_to_unuse = coerce::listOfPackageDesignators(packages_to_unuse_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
@@ -187,6 +187,63 @@ T_sp af_unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig) {
   }
   return _lisp->_true();
 }
+
+
+
+#define ARGS_cl_delete_package "(packages-to-unuse-desig &optional (package-desig *package*))"
+#define DECL_cl_delete_package ""
+#define DOCS_cl_delete_package "SeeCLHS unuse-package"
+T_sp cl_delete_package(T_sp pobj)
+{
+  T_sp hash, l;
+  cl_index i;
+  Package_sp pkg = coerce::packageDesignator(pobj);
+  if ( pkg == _lisp->commonLispPackage() || pkg == _lisp->keywordPackage() ) {
+    FEpackage_error("Cannot delete the package ~S", pkg, 0 );
+  }
+
+	/* 2) Now remove the package from the other packages that use it
+	 *    and empty the package.
+	 */
+  if ( pkg->packageName() == "" ) {
+    return _Nil<T_O>();
+  }
+  for ( auto pi : pkg->_UsingPackages ) {
+    if (pi.notnilp()) cl_unuse_package(pi,pkg);
+  }
+  for ( auto pi : pkg->_PackagesUsedBy ) {
+    if (pi.notnilp()) cl_unuse_package(pkg,pi);
+  }
+  
+  IMPLEMENT_MEF(BF("Finish implementing delete-package"));
+#if 0
+
+  ECL_WITH_GLOBAL_ENV_WRLOCK_BEGIN(ecl_process_env()) {
+    for (hash = p->pack.internal, i = 0; i < hash->hash.size; i++)
+      if (hash->hash.data[i].key != OBJNULL) {
+        T_sp s = hash->hash.data[i].value;
+        symbol_remove_package(s, p);
+      }
+    cl_clrhash(p->pack.internal);
+    for (hash = p->pack.external, i = 0; i < hash->hash.size; i++)
+      if (hash->hash.data[i].key != OBJNULL) {
+        T_sp s = hash->hash.data[i].value;
+        symbol_remove_package(s, p);
+      }
+    cl_clrhash(p->pack.external);
+    p->pack.shadowings = ECL_NIL;
+    p->pack.name = ECL_NIL;
+                /* 2) Only at the end, remove the package from the list of packages. */
+    cl_core.packages = ecl_remove_eq(p, cl_core.packages);
+  } ECL_WITH_GLOBAL_ENV_WRLOCK_END;
+  @(return ECL_T);
+#endif
+}
+
+
+
+
+
 
 #define ARGS_af_package_shadowing_symbols "(package_desig)"
 #define DECL_af_package_shadowing_symbols ""
@@ -304,10 +361,11 @@ void Package_O::exposeCando(Lisp_sp lisp) {
   Defun(makePackage);
   SYMBOL_EXPORT_SC_(ClPkg, listAllPackages);
   ClDefun(listAllPackages);
+  ClDefun(delete_package);
   SYMBOL_EXPORT_SC_(ClPkg, use_package);
   Defun(use_package);
   SYMBOL_EXPORT_SC_(ClPkg, unuse_package);
-  Defun(unuse_package);
+  ClDefun(unuse_package);
   SYMBOL_EXPORT_SC_(ClPkg, package_shadowing_symbols);
   Defun(package_shadowing_symbols);
   SYMBOL_EXPORT_SC_(ClPkg, import);

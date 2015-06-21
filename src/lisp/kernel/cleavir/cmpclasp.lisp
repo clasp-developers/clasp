@@ -23,11 +23,10 @@
 ;;;
 ;;; Create a list of source files for clasp+cleavir
 ;;;   - Inject the kernel/cleavir/inlining.lisp file at :inlining
-;;;   - Remove the cmprepl source file because it's not used by cleavir
 ;;;   - #P"/kernel/cleavir/auto-compile" sets up automatic compilation of top-level forms
 (defun setup-clasp-cleavir-files (&optional (init-files core:*init-files*) (cleavir-files *cleavir-clasp-only*))
   ;; Remove the cmprepl file and append the rest of the cleavir files
-  (append (remove-if (lambda (p) (and (pathnamep p) (string-equal "cmprepl" (pathname-name p)))) init-files )
+  (append init-files
           (list :bclasp)
           *cleavir-clasp-only*
           (list :cleavir-clasp)
@@ -105,10 +104,12 @@
 				:system *clasp-cleavir-files*)))
 
 
-(defun compile-full-cleavir (&key (recompile t) (system *clasp-cleavir-files*))
+(defun compile-full-cleavir (&key (recompile t) (reload nil) (system *clasp-cleavir-files*))
   (let ((cmp:*compile-print* t))
-    (compile-clasp :init :auto-cleavir :recompile recompile :reload nil
-				:system system)))
+    (compile-clasp :init :auto-cleavir
+                   :recompile recompile 
+                   :reload reload
+                   :system system)))
 
 (export 'compile-full-cleavir)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

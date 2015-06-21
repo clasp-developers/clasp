@@ -1167,6 +1167,7 @@ public:
   virtual ~Closure(){};
 
 public:
+  virtual void setAssociatedFunctions(core::List_sp assocFuncs) {};
   virtual const char *describe() const { return "Closure"; };
   virtual void LISP_CALLING_CONVENTION() {
     printf("Subclass of Closure must implement 'activate'\n");

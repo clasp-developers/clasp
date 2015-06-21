@@ -443,6 +443,7 @@ void HashTable_O::fields(Record_sp node) {
   node->field(INTERN_(core,rehash_size), this->_RehashSize);
   node->/*pod_*/field(INTERN_(core,rehash_threshold), this->_RehashThreshold);
   switch (node->stage()) {
+  case Record_O::initializing:
   case Record_O::loading: {
     Vector_sp keyValueVec;
     node->field(INTERN_(core,data), keyValueVec );

@@ -350,7 +350,7 @@ T_mv af_implicit_compile_hook_default(T_sp form, T_sp env) {
       gctools::tagged_functor<InterpretedClosure>(gctools::ClassAllocator<InterpretedClosure>::allocateClass(
           name, sourcePosInfo, kw::_sym_function, llh, _Nil<T_O>(), _Nil<T_O>(), env, code));
   Function_sp thunk = Function_O::make(ic);
-  return (Values(thunk, _Nil<T_O>(), _Nil<T_O>()));
+  return eval::funcall(thunk);
 };
 
 #define ARGS_core_applysPerSecond "(fn &rest args)"
@@ -950,6 +950,7 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   //	Defun(processDeclarations);
   SYMBOL_EXPORT_SC_(CorePkg, STARimplicit_compile_hookSTAR);
   SYMBOL_EXPORT_SC_(CorePkg, implicit_compile_hook_default);
+  SYMBOL_EXPORT_SC_(CompPkg, STARall_functions_for_one_compileSTAR );
   Defun(implicit_compile_hook_default);
   _sym_STARimplicit_compile_hookSTAR->defparameter(_sym_implicit_compile_hook_default->symbolFunction());
 

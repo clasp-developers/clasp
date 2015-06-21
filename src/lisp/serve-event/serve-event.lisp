@@ -42,7 +42,7 @@
 
 #+clasp
 (defmacro c-inline (fn-name (&rest values) (&rest c-types) return-type C-code &key one-liner side-effects)
-	`(,fn-name ,@values))
+  `(,fn-name ,@values))
 
 
 #-clasp
@@ -52,21 +52,21 @@
 
 (eval-when (:compile-toplevel :execute)
   #-clasp(defmacro c-constant (c-name)
-	  `(c-inline () () :int ,c-name :one-liner t))
+           `(c-inline () () :int ,c-name :one-liner t))
   #+clasp(defmacro c-constant (c-name) `,c-name)
   #-clasp(defmacro define-c-constants (&rest args)
-	  `(let ()
-	     ,@(loop
-		  for (lisp-name c-name) on args by #'cddr
-		  collect `(defconstant ,lisp-name (c-constant ,c-name))))))
+           `(let ()
+              ,@(loop
+                   for (lisp-name c-name) on args by #'cddr
+                   collect `(defconstant ,lisp-name (c-constant ,c-name))))))
 
 #-clasp
 (define-c-constants
     +eintr+ "EINTR")
 
 (defstruct (handler
-            (:constructor make-handler (descriptor direction function))
-            (:copier nil))
+             (:constructor make-handler (descriptor direction function))
+             (:copier nil))
   ;; Reading or writing...
   (direction nil :type (member :input :output))
   ;; File descriptor this handler is tied to.
@@ -77,7 +77,7 @@
 
 
 (defvar *descriptor-handlers* nil
-;;  #!+sb-doc
+  ;;  #!+sb-doc
   "List of all the currently active handlers for file descriptors")
 
 (defun coerce-to-descriptor (stream-or-fd direction)
@@ -91,7 +91,6 @@
         (:output (two-way-stream-output-stream stream-or-fd)))
       direction))
     #+clos-streams
-
     (stream (gray::stream-file-descriptor stream-or-fd direction))))
 
 ;;; Add a new handler to *descriptor-handlers*.
@@ -114,7 +113,7 @@
 
 ;;; Remove an old handler from *descriptor-handlers*.
 (defun remove-fd-handler (handler)
-;;  #!+sb-doc
+  ;;  #!+sb-doc
   "Removes HANDLER from the list of active handlers."
   (setf *descriptor-handlers*
         (delete handler *descriptor-handlers*)))
@@ -127,9 +126,9 @@
   (let ((handler (gensym)))
     `(let (,handler)
        (unwind-protect
-           (progn
-             (setf ,handler (add-fd-handler ,fd ,direction ,function))
-             ,@body)
+            (progn
+              (setf ,handler (add-fd-handler ,fd ,direction ,function))
+              ,@body)
          (when ,handler
            (remove-fd-handler ,handler))))))
 
@@ -184,7 +183,7 @@
               (:input (fd-set fd rfd))
               (:output (fd-set fd wfd)))
             (when (> fd maxfd)
-          (setf maxfd fd))))
+              (setf maxfd fd))))
 
         (multiple-value-bind (retval errno)
 	    (if (null seconds)

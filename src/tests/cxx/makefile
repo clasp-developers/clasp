@@ -97,7 +97,7 @@ testTemplate0: testTemplate0.cc
 
 
 testVarArgs: testVarArgs.cc
-	clang++  -Os -o testVarArgs testVarArgs.cc
+	clang++  -g -O3 -o testVarArgs testVarArgs.cc
 
 testmpi: testmpi.cc
 	mpicxx -g -v -o testmpi testmpi.cc -I$(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_INCLUDE_DIR) -std=c++11 -stdlib=libc++ -lboost_mpi -L$(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_LIB_DIR)

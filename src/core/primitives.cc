@@ -82,15 +82,23 @@ namespace core {
 #define ARGS_cl_sleep "(seconds)"
 #define DECL_cl_sleep ""
 #define DOCS_cl_sleep "sleep"
-void cl_sleep(T_sp seconds) {
+void cl_sleep(T_sp oseconds) {
   _G();
   SYMBOL_EXPORT_SC_(ClPkg, sleep);
-  if (seconds.nilp()) {
-    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_sleep, seconds, cl::_sym_Number_O);
+  if (oseconds.nilp()) {
+    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_sleep, oseconds, cl::_sym_Number_O);
   }
-  double dsec = clasp_to_double(gc::As<Real_sp>(seconds));
-  int usec = dsec * 1000.0;
-  usleep(usec);
+  double dsec = clasp_to_double(gc::As<Real_sp>(oseconds));
+  if ( dsec < 0.0 ) {
+    SIMPLE_ERROR(BF("You cannot sleep for < 0 seconds"));
+  }
+  double seconds = floor(dsec);
+  double frac_seconds = dsec - seconds;
+  double nanoseconds = (frac_seconds * 1000000000.0);
+  timespec ts;
+  ts.tv_sec = seconds;
+  ts.tv_nsec = nanoseconds;
+  nanosleep(&ts,NULL);
 }
 
 #define ARGS_cl_lispImplementationType "()"
@@ -689,12 +697,14 @@ Class_sp af_classOf(T_sp obj) {
 #define ARGS_af_STARfset "(function-name fn &optional macro)"
 #define DECL_af_STARfset ""
 T_sp af_STARfset(T_sp functionName, Function_sp functionObject, T_sp macro) {
-  _G();
   ASSERTF(functionObject, BF("function is undefined\n"));
   if (macro.isTrue()) {
     functionObject->setKind(kw::_sym_macro);
   } else {
     functionObject->setKind(kw::_sym_function);
+  }
+  if ( comp::_sym_STARall_functions_for_one_compileSTAR->boundP() ) {
+    functionObject->closure->setAssociatedFunctions(comp::_sym_STARall_functions_for_one_compileSTAR->symbolValue());
   }
   if (cl_symbolp(functionName)) {
     Symbol_sp symbol = gc::As<Symbol_sp>(functionName);

@@ -38,32 +38,19 @@
 
 (defparameter *print-implicit-compile-form* nil)
 
-(defun implicit-compile-form (form &optional environment)
+(defun bclasp-implicit-compile-form (form &optional environment)
   (declare (core:lambda-name cmp-repl-implicit-compile))
   (when *print-implicit-compile-form* 
     (bformat t "Compiling form: %s\n" form))
-  (multiple-value-bind (compiled-function warn fail)
-      (compile-in-env nil `(lambda () 
-                             (declare (core:lambda-name implicit-repl))
-                             ,form) environment)
-    ;;                         (compile-in-env nil form environment)
-    (values compiled-function warn fail)))
+  (with-compilation-unit ()
+    (multiple-value-bind (compiled-function warn fail)
+        (compile-in-env nil `(lambda () 
+                               (declare (core:lambda-name implicit-repl))
+                               ,form) environment)
+      ;;                         (compile-in-env nil form environment)
+      (funcall compiled-function))))
+;;    (values compiled-function warn fail)))
 
 #-cleavir  
-(setq *implicit-compile-hook* #'implicit-compile-form)
+(setq *implicit-compile-hook* #'bclasp-implicit-compile-form)
 
-
-#+(or)
-(setq *implicit-compile-hook*
-      (compile nil '(lambda (form &optional environment) 
-		     (declare (core:lambda-name cmp-repl-implicit-compile))
-;;		     (bformat t "*implicit-compile-hook* *load-truename* = %s   compiling form: %s\n" *load-truename* form)
-                     (multiple-value-bind (compiled-function warn fail)
-                         (compile-in-env nil `(lambda () 
-						(declare (core:lambda-name implicit-repl))
-						,form) environment)
-;;                         (compile-in-env nil form environment)
-                       (values compiled-function warn fail)))))
-
-;; From now on every S-exp is compiled before evaluation
-;;;(setq *implicit-compilation* t)

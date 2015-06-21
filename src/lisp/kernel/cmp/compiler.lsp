@@ -260,33 +260,32 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   "codegen a closure.  If result is defined then put the compiled function into result
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
-  (let ((*all-functions-for-one-compile* nil))
-    (multiple-value-bind (compiled-fn lambda-name lambda-list)
-	(compile-lambda-function lambda-or-lambda-block env)
-      (if (null lambda-name) (error "The lambda doesn't have a name"))
-      (if result
-	  (let ((funcs (compile-reference-to-literal (if *generate-compile-file-load-time-values*
-							 nil
-							 *all-functions-for-one-compile*) env))
-		(lambda-list (compile-reference-to-literal lambda-list env)))
-	    ;; TODO:   Here walk the source code in lambda-or-lambda-block and
-	    ;; get the line-number/column for makeCompiledFunction
-	    (multiple-value-bind (source-dir source-filename file-pos lineno column)
-		(cmp:walk-form-for-source-info lambda-or-lambda-block)
-	      (unless lineno (setq lineno 0))
-	      (unless column (setq column 0))
-	      (irc-intrinsic "makeCompiledFunction" 
-			     result 
-			     compiled-fn 
-			     *gv-source-pathname* 
-			     (jit-constant-i64 file-pos)
-			     (jit-constant-i32 lineno)
-			     (jit-constant-i32 column)
-			     (compile-reference-to-literal lambda-name env)
-			     funcs 
-			     (irc-renv env)
-			     lambda-list))
-	    *all-functions-for-one-compile*)))))
+  (multiple-value-bind (compiled-fn lambda-name lambda-list)
+      (compile-lambda-function lambda-or-lambda-block env)
+    (if (null lambda-name) (error "The lambda doesn't have a name"))
+    (if result
+        (let ((funcs (compile-reference-to-literal (if *generate-compile-file-load-time-values*
+                                                       nil
+                                                       *all-functions-for-one-compile*) env))
+              (lambda-list (compile-reference-to-literal lambda-list env)))
+          ;; TODO:   Here walk the source code in lambda-or-lambda-block and
+          ;; get the line-number/column for makeCompiledFunction
+          (multiple-value-bind (source-dir source-filename file-pos lineno column)
+              (cmp:walk-form-for-source-info lambda-or-lambda-block)
+            (unless lineno (setq lineno 0))
+            (unless column (setq column 0))
+            (irc-intrinsic "makeCompiledFunction" 
+                           result 
+                           compiled-fn 
+                           *gv-source-pathname* 
+                           (jit-constant-i64 file-pos)
+                           (jit-constant-i32 lineno)
+                           (jit-constant-i32 column)
+                           (compile-reference-to-literal lambda-name env)
+                           funcs 
+                           (irc-renv env)
+                           lambda-list))
+          *all-functions-for-one-compile*))))
 
 
 
@@ -1385,7 +1384,6 @@ be wrapped with to make a closure"
 				 (source-debug-use-lineno t)) &rest body)
   `(let* ((*the-module* ,module)
 	  (*the-function-pass-manager* ,function-pass-manager)
-	  (*all-functions-for-one-compile* nil)
 	  #+(or)(*generate-load-time-values* t)
 	  (*gv-source-pathname* (jit-make-global-string-ptr ,source-pathname "source-pathname"))
 	  (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
@@ -1445,7 +1443,6 @@ be wrapped with to make a closure"
 	     (core:source-pos-info-lineno *current-source-pos-info*)
 	     nil ; lambda-list, NIL for now - but this should be extracted from definition
 	     )))
-      (set-associated-funcs compiled-function *all-functions-for-one-compile*)
       (values compiled-function warnp failp))))
 
 (defun compile* (name &optional definition env pathname)

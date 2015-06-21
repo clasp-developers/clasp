@@ -647,6 +647,7 @@ public: // Description stuff
   virtual core::List_sp encode();
   //! Decode this object from an a-list
   virtual void decode(core::List_sp);
+  virtual void initialize(core::List_sp alist);
   virtual bool fieldsp() const { return false; };
   virtual void fields(Record_sp record) {SUBIMP();};
 public:

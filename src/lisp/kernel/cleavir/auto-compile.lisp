@@ -57,14 +57,14 @@
 (defun cleavir-implicit-compile-hook (form &optional environment)
   (declare (core:lambda-name cmp-repl-implicit-compile))
   #+(or)(bformat t "*implicit-compile-hook* *load-truename* = %s   compiling form: %s\n" *load-truename* form)
-  (multiple-value-bind (compiled-function warn fail)
-      (cmp:compile-in-env 
-       nil
-       `(lambda () 
-          (declare (core:lambda-name implicit-repl))
-          ,form) environment)
-    ;;                         (compile-in-env nil form environment)
-    (values compiled-function warn fail)))
+  (with-compilation-unit (:override t)
+    (multiple-value-bind (compiled-function warn fail)
+        (cmp:compile-in-env 
+         nil
+         `(lambda () 
+            (declare (core:lambda-name implicit-repl))
+            ,form) environment)
+    (funcall compiled-function))))
 
 (eval-when (:execute :load-toplevel)
   (setq cmp:*implicit-compile-hook* #'cleavir-implicit-compile-hook))

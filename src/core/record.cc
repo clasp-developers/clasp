@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/arguments.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/symbolTable.h>
+#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/record.h>
 
@@ -45,6 +46,41 @@ EXPOSE_CLASS(core, Record_O);
 T_sp record_circle_subst( T_sp replacement_table, T_sp tree )
 {
   return eval::funcall(_sym_circle_subst,replacement_table, tree);
+}
+
+
+Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage), _alist(data), _Seen(_Nil<T_O>())
+{
+  if ( stage == initializing ) {
+    this->_Seen = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<T_O>(),16,0,true);
+  }
+}
+
+void Record_O::flagSeen(T_sp arg)
+{
+  VectorObjectsWithFillPtr_sp vvec = gc::As<VectorObjectsWithFillPtr_sp>(this->_Seen);
+  vvec->vectorPushExtend(arg);
+}
+
+void Record_O::errorIfInvalidArguments()
+{
+  VectorObjectsWithFillPtr_sp vvec = gc::As<VectorObjectsWithFillPtr_sp>(this->_Seen);
+  List_sp badArgs(_Nil<T_O>());
+  for ( auto cur : this->_alist ) {
+    bool found = false;
+    for ( int i(0), iEnd(cl_length(vvec)); i<iEnd; ++i ) {
+      if ( oCar((*vvec)[i]) == cur ) {
+        found = true;
+        break;
+      }
+    }
+    if ( !found ) {
+      badArgs = Cons_O::create(cur,badArgs);
+    }
+  }
+  if (badArgs.notnilp() ) {
+    SIMPLE_ERROR(BF("Illegal arguments: %s") % _rep_(badArgs));
+  }
 }
 
 

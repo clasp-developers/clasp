@@ -944,67 +944,78 @@ nil)
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
     (format *trace-output* "          in environment: ~s~%" env ))
   (let ((cleavir-generate-ast:*compiler* 'cl:compile))
-    (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
-	;; The following test and true form should be removed`
-        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-          (let* ((clasp-system *clasp-system*)
-                 (ast (cleavir-generate-ast:generate-ast form env clasp-system))
-                 (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-                 (hir (progn
-                        (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
-                        (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
-            (clasp-cleavir:convert-funcalls hir)
-            (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out
-            (my-hir-transformations hir clasp-system nil nil)
-            #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
-            (cleavir-ir:hir-to-mir hir clasp-system nil nil)
-            (cc-mir:assign-mir-instruction-datum-ids hir)
-            #|| Moved up ||# #+(or) (clasp-cleavir:convert-funcalls hir)
-            (setf *ast* hoisted-ast
-                  *hir* hir)
-            (let ((*form* form)
-                  (abi (make-instance 'abi-x86-64)))
-              (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
-              (when *debug-cleavir* (draw-mir hir)) ;; comment out
-              (translate hir abi))))
-      (cmp:cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
-      (or fn (error "There was no function returned by compile-lambda-function"))
-      (cmp:cmp-log "fn --> %s\n" fn)
-      (cmp:cmp-log-dump cmp:*the-module*)
-      (when cmp:*dump-module-on-completion*
-	(llvm-sys:dump cmp:*the-module*))
-      (cmp:cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
-      (if (not cmp:*run-time-execution-engine*)
-	  ;; SETUP THE *run-time-execution-engine* here for the first time
-	  ;; using the current module in *the-module*
-	  ;; At this point the *the-module* will become invalid because
-	  ;; the execution-engine will take ownership of it
-	  (setq cmp:*run-time-execution-engine* (cmp:create-run-time-execution-engine cmp:*the-module*))
-	  (llvm-sys:add-module cmp:*run-time-execution-engine* cmp:*the-module*))
-      ;; At this point the Module in *the-module* is invalid because the
-      ;; execution-engine owns it
-      (cmp:cmp-log "The execution-engine now owns the module\n")
-      (setq cmp:*the-module* nil)
-      (cmp:cmp-log "About to finalize-engine with fn %s\n" fn)
-      (let* ((fn-name (llvm-sys:get-name fn)) ;; this is the name of the function - a string
-	     (setup-function
-	      (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-	       cmp:*run-time-execution-engine*
-	       'REPL			; main fn name
-	       fn			; llvm-fn
-	       nil			; environment
-	       cmp:*run-time-literals-external-name*
-	       "repl-fn.txt"
-	       0
-	       0
-	       nil)))
-	(unless (compiled-function-p setup-function)
-	  (format t "Whoah cleavir-clasp compiled code eval --> ~s~%" compiled-function)
-	  (return-from cleavir-compile-t1expr (values nil t)))
-        (let ((enclosed-function (funcall setup-function cmp:*run-time-literal-holder*)))
-          ;;(format t "*all-functions-for-one-compile* -> ~s~%" cmp:*all-functions-for-one-compile*)
-          ;;(cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)
-          (values enclosed-function warnp failp))))))
+    (handler-bind
+        ((cleavir-env:no-variable-info
+          (lambda (condition)
+;;;	  (declare (ignore condition))
+            (warn "Condition: ~a" condition)
+            (invoke-restart 'cleavir-generate-ast::consider-special)))
+         (cleavir-env:no-function-info
+          (lambda (condition)
+;;;	  (declare (ignore condition))
+            (warn "Condition: ~a" condition)
+            (invoke-restart 'cleavir-generate-ast::consider-global))))
+      (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
+          ;; The following test and true form should be removed`
+          (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+            (let* ((clasp-system *clasp-system*)
+                   (ast (cleavir-generate-ast:generate-ast form env clasp-system))
+                   (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
+                   (hir (progn
+                          (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
+                          (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
+              (clasp-cleavir:convert-funcalls hir)
+              (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out
+              (my-hir-transformations hir clasp-system nil nil)
+              #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
+              (cleavir-ir:hir-to-mir hir clasp-system nil nil)
+              (cc-mir:assign-mir-instruction-datum-ids hir)
+              #|| Moved up ||# #+(or) (clasp-cleavir:convert-funcalls hir)
+              (setf *ast* hoisted-ast
+                    *hir* hir)
+              (let ((*form* form)
+                    (abi (make-instance 'abi-x86-64)))
+                (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
+                (when *debug-cleavir* (draw-mir hir)) ;; comment out
+                (translate hir abi))))
+        (cmp:cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
+        (or fn (error "There was no function returned by compile-lambda-function"))
+        (cmp:cmp-log "fn --> %s\n" fn)
+        (cmp:cmp-log-dump cmp:*the-module*)
+        (when cmp:*dump-module-on-completion*
+          (llvm-sys:dump cmp:*the-module*))
+        (cmp:cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
+        (if (not cmp:*run-time-execution-engine*)
+            ;; SETUP THE *run-time-execution-engine* here for the first time
+            ;; using the current module in *the-module*
+            ;; At this point the *the-module* will become invalid because
+            ;; the execution-engine will take ownership of it
+            (setq cmp:*run-time-execution-engine* (cmp:create-run-time-execution-engine cmp:*the-module*))
+            (llvm-sys:add-module cmp:*run-time-execution-engine* cmp:*the-module*))
+        ;; At this point the Module in *the-module* is invalid because the
+        ;; execution-engine owns it
+        (cmp:cmp-log "The execution-engine now owns the module\n")
+        (setq cmp:*the-module* nil)
+        (cmp:cmp-log "About to finalize-engine with fn %s\n" fn)
+        (let* ((fn-name (llvm-sys:get-name fn)) ;; this is the name of the function - a string
+               (setup-function
+                (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+                 cmp:*run-time-execution-engine*
+                 'REPL			; main fn name
+                 fn			; llvm-fn
+                 nil			; environment
+                 cmp:*run-time-literals-external-name*
+                 "repl-fn.txt"
+                 0
+                 0
+                 nil)))
+          (unless (compiled-function-p setup-function)
+            (format t "Whoah cleavir-clasp compiled code eval --> ~s~%" compiled-function)
+            (return-from cleavir-compile-t1expr (values nil t)))
+          (let ((enclosed-function (funcall setup-function cmp:*run-time-literal-holder*)))
+            ;;(format t "*all-functions-for-one-compile* -> ~s~%" cmp:*all-functions-for-one-compile*)
+            ;;(cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)
+            (values enclosed-function warnp failp)))))))
 
 (defun cleavir-compile-file-form (form)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile-file))

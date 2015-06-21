@@ -66,6 +66,7 @@ THE SOFTWARE.
 //#i n c l u d e "setfExpander.h"
 #include <clasp/core/environment.h>
 #include <clasp/core/primitives.h>
+#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/conditions.h>
 
 #ifdef darwin
@@ -97,6 +98,7 @@ class_id allocate_class_id(type_id const &cls) {
 
   return inserted.first->second;
 }
+
 
 void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym) {
   ASSERT(_lisp);
@@ -302,6 +304,11 @@ void dbg_hook(const char *error) {
 }
 
 namespace core {
+
+void lisp_vectorPushExtend(T_sp vec, T_sp obj) {
+  VectorObjectsWithFillPtr_sp vvec = gc::As<VectorObjectsWithFillPtr_sp>(vec);
+  vvec->vectorPushExtend(obj);
+}
 
 Functoid::Functoid(T_sp n) : name(n) {
   if (n.nilp()) {

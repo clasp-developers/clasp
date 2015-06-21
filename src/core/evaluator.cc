@@ -88,32 +88,11 @@ List_sp separateTopLevelForms(List_sp accumulated, T_sp possibleForms) {
 
 
 
-#define ARGS_af_compileFormAndEvalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
-#define DECL_af_compileFormAndEvalWithEnv ""
-#define DOCS_af_compileFormAndEvalWithEnv "compileFormAndEvalWithEnv"
-T_mv af_compileFormAndEvalWithEnv(T_sp form, T_sp env, bool stepping, bool compiler_env_p, bool execute) {
-  _G();
-  //	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
-  T_mv result;
-  // If we want to compile the form then do this
-  //	stackFrame.setActivationFrame(Environment_O::clasp_getActivationFrame(env));
-
-  T_sp thunk = eval::funcall(_sym_STARimplicit_compile_hookSTAR->symbolValue(), form, env);
-  LOG(BF("After compile thunk[%s]") % _rep_(thunk));
-  try {
-    _BLOCK_TRACEF(BF("-eval/print stage-"));
-    ValueFrame_sp vf = ValueFrame_O::create(0, _Nil<ActivationFrame_O>());
-    result = eval::applyToActivationFrame(thunk, vf);
-    LOG(BF("---result[%s]") % _rep_(result));
-  } catch (Condition &err) {
-    _lisp->print(BF("%s:%d - A Condition was caught in readEvalPrint - _lisp shouldn't happen - exiting") % __FILE__ % __LINE__);
-    exit(1);
-  } catch (HardError &err) {
-    _lisp->print(BF("HardError - should never happen! Catch and convert to Condition below"));
-    IMPLEMENT_ME();
-    //		    _lisp->enterDebugger();
-  }
-  ASSERTNOTNULL(result);
+#define ARGS_core_compileFormAndEvalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
+#define DECL_core_compileFormAndEvalWithEnv ""
+#define DOCS_core_compileFormAndEvalWithEnv "compileFormAndEvalWithEnv"
+T_mv core_compileFormAndEvalWithEnv(T_sp form, T_sp env, T_sp stepping, T_sp compiler_env_p, T_sp execute) {
+  T_mv result = eval::funcall(_sym_STARimplicit_compile_hookSTAR->symbolValue(), form, env);
   return result;
 };
 
@@ -2157,7 +2136,7 @@ T_mv t1Evaluate(T_sp exp, T_sp environment) {
   if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
     printf("%s:%d About to compileFormAndEvalWithEnv: %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
   }
-  return eval::funcall(_sym_compileFormAndEvalWithEnv, exp, environment);
+  return eval::funcall(_sym_STARimplicit_compile_hookSTAR->symbolValue(), exp, environment);
 }
 
 #define ARGS_core_evalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
@@ -2410,8 +2389,8 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   //	    Defun(extractDeclaresDocstringCode);
   SYMBOL_SC_(CorePkg, evaluateVerbosity);
   Defun(evaluateVerbosity);
-  SYMBOL_EXPORT_SC_(CorePkg, compileFormAndEvalWithEnv);
-  Defun(compileFormAndEvalWithEnv);
+  SYMBOL_EXPORT_SC_(CompPkg, compileFormAndEvalWithEnv); 
+  CoreDefun(compileFormAndEvalWithEnv);
   SYMBOL_EXPORT_SC_(CorePkg, evalWithEnv);
   CoreDefun(evalWithEnv);
   SYMBOL_SC_(CorePkg, evaluateDepth);

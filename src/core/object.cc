@@ -86,7 +86,7 @@ _RootDummyClass::_RootDummyClass() : GCObject(){};
 
 namespace core {
 
-T_sp core_decode(T_sp obj, core::List_sp arg);
+T_sp core_initialize(T_sp obj, core::List_sp arg);
 
 
 T_sp alist_from_plist(List_sp plist) {
@@ -120,7 +120,7 @@ T_sp core_make_builtin(T_sp class_or_name, T_sp args)
     T_sp instance = theClass->make_instance();
     if ( args.notnilp() ) {
       args = alist_from_plist(args);
-      core_decode(instance,args);
+      instance->initialize(args);
     }
     return instance;
   }
@@ -284,9 +284,17 @@ T_sp core_decode(T_sp obj, core::List_sp arg) {
   return obj;
 };
 
+
 void T_O::initialize() {
   // do nothing
 }
+
+void T_O::initialize(core::List_sp alist) {
+  Record_sp record = Record_O::create_initializer(alist);
+  this->fields(record);
+}
+
+
 
 
 List_sp T_O::encode() {

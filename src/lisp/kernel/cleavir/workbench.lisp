@@ -17,7 +17,18 @@
 
 (disassemble '(lambda () 1))
 
-(print "Hello")
+(defun my-consp (x) (consp x))
+(disassemble 'my-consp)
+(length cmp:*all-functions-for-one-compile*)
+(print cmp::*active-protection*)
+(core:backtrace)
+
+(print *features*)
+(list-all-packages)
+
+
+
+(sdfasdf)
 (pushnew :cleavir *features*)
 (cc::compile-clasp :init :cclasp :recompile nil)
 (cc::link :init :cclasp :system clasp-cleavir::*clasp-cleavir-files*)

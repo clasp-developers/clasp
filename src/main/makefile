@@ -31,6 +31,9 @@ boehm-cleavir:
 cclasp:
 	clasp_boehm_o  -l "buildCleavirClasp.lsp"
 
+cclasp-reload:
+	clasp_boehm_o  -l "buildCleavirClaspReload.lsp"
+
 bclasp-to-cclasp:
 	clasp_boehm_o  -l "buildBclaspToCclasp.lsp"
 

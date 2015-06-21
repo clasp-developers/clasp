@@ -1,6 +1,9 @@
 #ifndef core_record_H
 #define core_record_H
 
+#include <clasp/core/vectorObjectsWithFillPtr.fwd.h>
+
+
 namespace core {
 
   T_sp record_circle_subst(T_sp repl_table, T_sp tree );
@@ -11,28 +14,32 @@ namespace core {
     LISP_BASE1(T_O);
     LISP_VIRTUAL_CLASS(core, CorePkg, Record_O, "Record");
   public:
-    typedef enum {loading, saving, patching } RecordStage;
+    typedef enum {initializing, loading, saving, patching } RecordStage;
   public:
     RecordStage _stage;
     List_sp _alist;
     T_sp _replacement_table;
+    List_sp _Seen;
   public: // Simple default ctor/dtor
-  Record_O() : _stage(saving), _alist(_Nil<T_O>()) {};
-  Record_O(RecordStage stage, List_sp data) : _stage(stage), _alist(data) {};
-  Record_O(RecordStage stage, T_sp replacement_table, bool dummy) : _stage(stage), _replacement_table(replacement_table) {};
+  Record_O() : _stage(saving), _alist(_Nil<T_O>()), _Seen(_Nil<T_O>()) {};
+    Record_O(RecordStage stage, bool dummy, List_sp data);
+  Record_O(RecordStage stage, T_sp replacement_table) : _stage(stage), _replacement_table(replacement_table), _Seen(_Nil<T_O>()) {};
     virtual ~Record_O() {};
   public:
     static Record_sp create_encoder() {
       Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(saving,_Nil<T_O>());
       return record;
     }
-    static Record_sp create_decoder(List_sp data) {
-      Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(loading,data);
+    static Record_sp create_initializer(List_sp data) {
+      Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(initializing,false,data);
       return record;
     }
-    static Record_sp create_patcher(HashTable_sp replacement_table)
-    {
-      Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(patching,replacement_table,true);
+    static Record_sp create_decoder(List_sp data) {
+      Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(loading,false,data);
+      return record;
+    }
+    static Record_sp create_patcher(HashTable_sp replacement_table) {
+      Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(patching,replacement_table);
       return record;
     }
    
@@ -40,6 +47,10 @@ namespace core {
     List_sp data() const { return this->_alist; };
     RecordStage stage() const { return this->_stage; };
 
+    void flagSeen(T_sp node);
+
+    void errorIfInvalidArguments();
+    
     template <typename ST>
       void field(Symbol_sp name, ST& value ) {
       switch (this->stage()) {
@@ -47,12 +58,14 @@ namespace core {
           this->_alist = core::Cons_O::create(core::Cons_O::create(name,translate::to_object<ST>::convert(value)),this->_alist);
       }
           break;
+      case initializing:
       case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
           List_sp find = alist_get(this->_alist,name);
           if ( find.nilp() ) SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
           value = translate::from_object<ST>(oCdr(oCar(find)))._v;
+          if ( this->stage() == initializing ) this->flagSeen(find);
         }
         break;
       case patching:
@@ -67,11 +80,13 @@ namespace core {
       case saving:
           this->_alist = core::Cons_O::create(core::Cons_O::create(name,value),this->_alist);
           break;
+      case initializing: 
       case loading: {
           List_sp find = alist_get(this->_alist,name);
           if ( find.nilp() ) SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
           // Set the value and ignore its type!!!!!! This is to allow placeholders
           value.setRaw_(reinterpret_cast<gc::Tagged>(oCdr(oCar(find)).raw_()));
+          if ( this->stage() == initializing ) this->flagSeen(find);
         }
         break;
       case patching:
@@ -92,6 +107,7 @@ namespace core {
           this->_alist = core::Cons_O::create(core::Cons_O::create(name,vec_value),this->_alist);
         }
         break;
+      case initializing:
       case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
@@ -102,6 +118,7 @@ namespace core {
           for ( size_t i(0), iEnd(cl_length(vec_value)); i<iEnd; ++i ) {
             value[i] = (*vec_value)[i];
           }
+          if ( this->stage() == initializing ) this->flagSeen(find);
         }
         break;
       case patching: {
@@ -116,6 +133,35 @@ namespace core {
     };
 
     template <typename OT>
+      void field_if_not_empty(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) {
+      switch (this->stage()) {
+      case saving: {
+        if ( value.size() != 0 ) this->field(name,value);
+      }
+          break;
+      case initializing:
+      case loading: {
+      // I could speed this up if I cache the entry after this find
+      // and search from there and reverse the alist once it's done
+        List_sp find = alist_get(this->_alist,name);
+        if ( find.notnilp() ) {
+          this->field(name,value);
+          if ( this->stage() == initializing ) this->flagSeen(find);
+        } else {
+          value.clear();
+        }
+      }
+          break;
+      case patching: {
+        if ( value.size() != 0 ) {
+          this->field(name,value);
+        }
+      }
+          break;
+      }
+    };
+    
+    template <typename OT>
       void field_if_not_nil(Symbol_sp name, gc::smart_ptr<OT>& value ) {
       switch ( this->stage() ) {
       case saving: {
@@ -123,12 +169,16 @@ namespace core {
             this->_alist = Cons_O::create(Cons_O::create(name,value),this->_alist);
         }
         break;
+      case initializing:
       case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
           List_sp find = alist_get(this->_alist,name);
           if ( find.nilp() ) value = _Nil<core::T_O>();
-          else value = gc::As<gc::smart_ptr<OT>>(oCdr(oCar(find)));
+          else {
+            value = gc::As<gc::smart_ptr<OT>>(oCdr(oCar(find)));
+            if ( this->stage() == initializing ) this->flagSeen(find);
+          }            
         }
         break;
       case patching: {
@@ -150,12 +200,16 @@ namespace core {
             this->_alist = Cons_O::create(Cons_O::create(name,value),this->_alist);
         }
         break;
+      case initializing:
       case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
           List_sp find = alist_get(this->_alist,name);
           if ( find.nilp() ) value = _Nil<core::T_O>();
-          else value = gc::As<gc::smart_ptr<OT>>(oCdr(oCar(find)));
+          else {
+            value = gc::As<gc::smart_ptr<OT>>(oCdr(oCar(find)));
+            if ( this->stage() == initializing ) this->flagSeen(find);
+          }            
         }
         break;
       case patching: {
@@ -180,6 +234,7 @@ namespace core {
           }
         }
         break;
+      case initializing:
       case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
@@ -188,6 +243,7 @@ namespace core {
             value = default_value;
           } else {
             value = translate::from_object<T>(oCdr(oCar(find)))._v;
+            if ( this->stage() == initializing ) this->flagSeen(find);
           }
         }
         break;

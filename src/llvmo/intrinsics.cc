@@ -24,6 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#define DEBUG_LANDING_PAD 1
+
+
 #define DEBUG_LEVEL_FULL
 #ifdef USE_MPS
 extern "C" {
@@ -1991,7 +1994,9 @@ T_O *cc_pushLandingPadFrame() {
   ptr = core::Pointer_O::create((void *)&typeid(core::Unwind));
 #endif
   size_t index = _lisp->exceptionStack().push(LandingPadFrame, ptr);
-  //	printf("%s:%d pushLandingPadFrame frame: %lu  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void*)&typeid(core::Unwind));
+#ifdef DEBUG_LANDING_PAD
+  printf("%s:%d pushLandingPadFrame frame: %lu  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void*)&typeid(core::Unwind));
+#endif
   return gctools::tag_fixnum<core::T_O *>(index);
 }
 
@@ -1999,20 +2004,28 @@ void cc_popLandingPadFrame(T_O *frameFixnum) {
   _G();
   ASSERT(gctools::tagged_fixnump(frameFixnum));
   size_t frameIndex = gctools::untag_fixnum(frameFixnum);
-  //	printf("%s:%d  Unwinding exceptionStack to: %lu\n", __FILE__, __LINE__, frameIndex );
+#ifdef DEBUG_LANDING_PAD
+  printf("%s:%d  Unwinding exceptionStack to: %lu\n", __FILE__, __LINE__, frameIndex );
+#endif
   _lisp->exceptionStack().unwind(frameIndex);
 }
 
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *frame) {
   ASSERT(gctools::tagged_fixnump(frame));
-//  size_t frameIndex = gctools::untag_fixnum(frame);
-  //	printf("%s:%d landingpadUnwindMatchFrameElseRethrow  frame: %lu\n", __FILE__, __LINE__, frameIndex);
+#ifdef DEBUG_LANDING_PAD
+  size_t frameIndex = gctools::untag_fixnum(frame);
+  printf("%s:%d landingpadUnwindMatchFrameElseRethrow  frame: %lu\n", __FILE__, __LINE__, frameIndex);
+#endif
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
   if (unwindP->getFrame() == frame) {
-    //	    printf("%s:%d Matched Unwind  frame: %lu  index: %lu\n", __FILE__, __LINE__, gctools::tagged_ptr<core::T_O>::untagged_fixnum(unwindP->getFrame()), unwindP->index());
+#ifdef DEBUG_LANDING_PAD
+    printf("%s:%d Matched Unwind  frame: %lu  index: %lu\n", __FILE__, __LINE__, gc::untag_fixnum(unwindP->getFrame()), unwindP->index());
+#endif
     return unwindP->index();
   }
-  //	printf("%s:%d Rethrowing core::Unwind frame[%lu] index[%zu] (current frame is: %lu)\n", __FILE__, __LINE__, gctools::tagged_ptr<core::T_O>::untagged_fixnum(unwindP->getFrame()), unwindP->index(), frameIndex);
+#ifdef DEBUG_LANDING_PAD
+  printf("%s:%d Rethrowing core::Unwind frame[%lu] index[%zu] (current frame is: %lu)\n", __FILE__, __LINE__, gc::untag_fixnum(unwindP->getFrame()), unwindP->index(), frameIndex);
+#endif
   throw * unwindP;
 }
 

@@ -23,7 +23,7 @@
          (remhash name *functions-to-inline*)))
       ((eq head 'cl:ftype)
        (format t "*** Do something with proclaim ftype ~s~%" decl))
-      (t (error "Add support for proclaim ~s~%" decl)))))
+      (t (warn "Add support for proclaim ~s~%" decl)))))
 
 (defun declared-global-inline-p (name)
   (gethash name *functions-to-inline*))

@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lispStream.fwd.h>
+#include <clasp/core/designators.h>
 #include <clasp/llvmo/llvmoPackage.h>
 //#include "llvmoExpose.generated.h"
 #include <clasp/llvmo/llvmoExpose.h>
@@ -250,8 +251,8 @@ void af_disassembleSTAR(core::Function_sp cf) {
 #define ARGS_af_viewCFG "(fn &optional only)"
 #define DECL_af_viewCFG ""
 #define DOCS_af_viewCFG "viewCFG (view-cfg fn &optional only)"
-void af_viewCFG(core::Function_sp compiledFunction, core::T_sp only) {
-  _G();
+void af_viewCFG(core::T_sp funcDes, core::T_sp only) {
+  core::Function_sp compiledFunction = core::coerce::functionDesignator(funcDes);
   if (auto cl = compiledFunction->closure.as<CompiledClosure>()) {
     core::T_sp funcs = cl->associatedFunctions;
     if (cl_consp(funcs)) {
