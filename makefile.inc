@@ -47,9 +47,6 @@ scrape-classes:
 	install -d ./include/generated
 	(export PYTHONPATH=`pwd`:$(PYTHONPATH); python $(CLASP_HOME)/src/common/registerClasses.py include/generated/initClasses_inc.h include/*Package.h include/*.h *.h *.cc 2>registerClasses.log)
 
-scrape-all:
-	make scrape-symbols
-	make scrape-classes
 
 ######################################################################
 ###

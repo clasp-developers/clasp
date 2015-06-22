@@ -10,8 +10,8 @@ using clang : : [ os.environ CLASP_CLANG_PATH ] ; #   $(APPRES-EXTERNALS-RELEASE
 import feature ;
 feature.feature gc : boehm mps mps-prep
                 : symmetric implicit composite propagated link-incompatible ;
-feature.compose <gc>boehm : <define>USE_BOEHM ;
 feature.compose <gc>mps : <define>USE_MPS ;
+feature.compose <gc>boehm : <define>USE_BOEHM ;
 feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # used for testing MPS
 
 ###
@@ -232,6 +232,7 @@ use-project internals/sockets : src/sockets ;
 use-project internals/clbind : src/clbind ;
 use-project internals/serveEvent : src/serveEvent ;
 use-project internals/lisp : src/lisp ;
+use-project internals/main : src/main ;
 
 
 
@@ -244,3 +245,7 @@ use-project internals/lisp : src/lisp ;
 #use-project cando/src/kinematics : cando/src/kinematics ;
 #use-project cando/src/packageManager : cando/src/packageManager ;
 #use-project cando/main-cando : cando/main-cando ;
+
+alias everything : /internals/llvmo//install_intrinsics_bitcode
+                   /internals/lisp//bundle
+                 ;

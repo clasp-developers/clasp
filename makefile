@@ -66,6 +66,7 @@ all:
 	make asdf
 	make boostbuildv2-build
 	make -C src/main scrape-all
+	$(BJAM) /internals/lisp//bundle
 	make clasp-boehm
 #	make clasp-mps
 
@@ -146,7 +147,7 @@ testing:
 	which clang++
 
 clasp-mps-cpp:
-	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release mps)
+	$(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release mps
 
 clasp-mps:
 	make clasp-mps-cpp
@@ -166,10 +167,11 @@ cl-full-mps:
 
 
 clasp-boehm-cpp:
-	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) program=clasp release boehm)
+	$(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) gc=boehm link=$(LINK) program=clasp release /internals/main//install_clasp
 
 clasp-boehm:
 	make clasp-boehm-cpp
+	$(BJAM) everything gc=boehm link=static program=clasp release
 	(cd src/main; make boehm)
 
 # Compile the CL sources for min-boehm: and full-boehm

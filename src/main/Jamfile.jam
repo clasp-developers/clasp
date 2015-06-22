@@ -60,16 +60,20 @@ exe clasp_boehm_d : main.cc $(sources)
 
 explicit clasp_boehm_d ;
 
-executables = clasp_boehm_o
-              clasp_boehm_d
-              ;
+alias clasp : clasp_boehm_d
+      : <variant>debug
+      ;
 
+alias clasp : clasp_boehm_o
+      : <variant>release
+      ;
+      
 
-install install : $(executables)
+install install_clasp : clasp
         : <location>$(APPBIN-OSX) <target-os>darwin
         ;
 
-install install : $(executables)
+install install_clasp : clasp
         : <location>$(APPBIN-LINUX) <target-os>linux
         ;
 
@@ -134,4 +138,3 @@ install install : $(executables)
 #alias clasp_mpi : clasp_mpi_mps_o : <variant>release <gc>boehm ;
 #alias clasp_mpi : clasp_mpi_mps_d : <variant>debug <gc>boehm ;
 #
-

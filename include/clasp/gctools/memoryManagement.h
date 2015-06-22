@@ -40,7 +40,6 @@ typedef void *LocationDependencyPtrT;
 #endif // USE_BOEHM
 
 #ifdef USE_MPS
-
 extern "C" {
 #include <clasp/mps/code/mps.h>
 #include <clasp/mps/code/mpsavm.h>
