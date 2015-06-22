@@ -27,8 +27,13 @@
 (list-all-packages)
 
 
-
+(getpid)
 (sdfasdf)
+(setq core:*debug-flow-control* t)
+(apropos "exception-stack")
+(core:exception-stack-dump)
+(lisp-implementation-version)
+
 (pushnew :cleavir *features*)
 (cc::compile-clasp :init :cclasp :recompile nil)
 (cc::link :init :cclasp :system clasp-cleavir::*clasp-cleavir-files*)

@@ -61,7 +61,7 @@ extern "C" {
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
 
-//#define	DEBUG_FLOW_CONTROL	1
+#define	DEBUG_FLOW_CONTROL	1
 
 using namespace core;
 
@@ -1184,9 +1184,11 @@ void throwCatchThrow(core::T_sp *tagP) {
     CONTROL_ERROR();
   } else {
     core::CatchThrow catchThrow(frame);
-    //#ifdef DEBUG_FLOW_CONTROL
-    //	    printf("%s:%d Throwing core::CatchThrow exception tag[%s] frame: %d\n", __FILE__, __LINE__, (*tagP)->__repr__().c_str(), frame);
-    //#endif
+#ifdef DEBUG_FLOW_CONTROL
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+      printf("%s:%d Throwing core::CatchThrow exception tag[%s] frame: %d\n", __FILE__, __LINE__, (*tagP)->__repr__().c_str(), frame);
+    }
+#endif
     throw catchThrow;
   }
   SIMPLE_ERROR(BF("This should never happen"));
@@ -1200,7 +1202,9 @@ void throwReturnFrom(core::Symbol_sp *blockSymbolP) {
     CONTROL_ERROR();
   }
 #ifdef DEBUG_FLOW_CONTROL
-  printf("Throwing core::ReturnFrom exception frame[%d]\n", frame);
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("Throwing core::ReturnFrom exception frame[%d]\n", frame);
+  }
 #endif
   core::ReturnFrom returnFrom(frame);
   throw returnFrom;
@@ -1213,7 +1217,9 @@ core::T_mv proto_blockHandleReturnFrom(unsigned char *exceptionP, size_t frame) 
     return gctools::multiple_values<T_O>::createFromValues();
   }
 #ifdef DEBUG_FLOW_CONTROL
-  printf("Re-throwing core::ReturnFrom exception frame[%d]\n", returnFrom.getFrame());
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("Re-throwing core::ReturnFrom exception frame[%d]\n", returnFrom.getFrame());
+  }
 #endif
   throw returnFrom;
 }
@@ -1264,8 +1270,10 @@ core::T_mv proto_ifCatchFrameMatchesStoreResultElseRethrow(size_t catchFrame, un
     return gctools::multiple_values<core::T_O>::createFromValues(); // ctExceptionP->getReturnedObject();
   }
 // rethrow the exception
-#if 0 // def	DEBUG_FLOW_CONTROL
-    printf("Re-throwing CatchThrow tag[%s]\n", ctExceptionP->getThrownTag()->__repr__().c_str() );
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("Re-throwing CatchThrow frame[%d]\n", ctExceptionP->getFrame() );
+  }
 #endif
   throw * ctExceptionP;
 }
@@ -1296,7 +1304,9 @@ void throw_LexicalGo(int depth, int index) {
   _G();
   core::LexicalGo lgo(depth, index);
 #ifdef DEBUG_FLOW_CONTROL
-  printf("Throwing core::Go depth[%d] index[%d]\n", depth, index);
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("Throwing core::Go depth[%d] index[%d]\n", depth, index);
+  }
 #endif
   throw lgo;
 }
@@ -1310,7 +1320,10 @@ void throwDynamicGo(size_t depth, size_t index, core::ActivationFrame_sp *afP) {
   }
   core::DynamicGo dgo((size_t)frame, index);
 #ifdef DEBUG_FLOW_CONTROL
-  printf("Throwing core::DynamicGo tagbodyIdP[%zu] index[%zu]\n", dgo.getFrame(), dgo.index());
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+
+    printf("Throwing core::DynamicGo tagbodyIdP[%zu] index[%zu]\n", dgo.getFrame(), dgo.index());
+  }
 #endif
   throw dgo;
 }
@@ -1333,17 +1346,23 @@ int tagbodyLexicalGoIndexElseRethrow(char *exceptionP) {
 
 size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
-  printf("%s:%d tagbodyDynamicGoIndexElseRethrow  frame: %lu\n", __FILE__, __LINE__, frame);
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d tagbodyDynamicGoIndexElseRethrow  frame: %lu\n", __FILE__, __LINE__, frame);
+  }
 #endif
   core::DynamicGo *goExceptionP = reinterpret_cast<core::DynamicGo *>(exceptionP);
   if (goExceptionP->getFrame() == frame) {
 #ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d Matched DynamicGo  frame: %lu  index: %lu\n", __FILE__, __LINE__, goExceptionP->getFrame(), goExceptionP->index());
+  }
 #endif
     return goExceptionP->index();
   }
 #ifdef DEBUG_FLOW_CONTROL
-  printf("Re-throwing core::DynamicGo frame[%zu] index[%zu]\n", goExceptionP->getFrame(), goExceptionP->index());
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("Re-throwing core::DynamicGo frame[%zu] index[%zu]\n", goExceptionP->getFrame(), goExceptionP->index());
+  }
 #endif
   throw * goExceptionP;
 }
@@ -1750,6 +1769,7 @@ core::T_O *cc_fetch(core::T_O *array, std::size_t idx) {
 #ifdef DEBUG_CC
   printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*a)[idx].raw_());
 #endif
+  ASSERT(a.notnilp());
   return (*a)[idx].raw_();
 }
 
@@ -1939,13 +1959,18 @@ T_O **cc_multipleValuesArrayAddress() {
   return &lisp_multipleValues().callingArgsStart()[0];
 }
 
-void cc_unwind(T_O *frame, size_t index) {
-  _G();
+void cc_unwind(T_O *dest_frame, size_t index) {
 #ifdef DEBUG_FLOW_CONTROL
-  printf("%s:%d In cc_unwind frame: %p  index: %lu\n", __FILE__, __LINE__, frame, index);
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d In cc_unwind dest_frame: %ld  index: %lu\n", __FILE__, __LINE__, gc::untag_fixnum(dest_frame), index);
+  }
 #endif
-  core::Unwind unwind(frame, index);
-  //	printf("%s:%d in cc_saveMultipleValue0AndUnwind throwing unwind to reach frame: %d   core::Unwind typeinfo@%p\n", __FILE__, __LINE__, gctools::tagged_ptr<T_O>::untagged_fixnum(frame), &typeid(core::Unwind));
+  core::Unwind unwind(dest_frame, index);
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d in cc_unwind throwing unwind to reach dest_frame: %ld   core::Unwind typeinfo@%p\n", __FILE__, __LINE__, gc::untag_fixnum(dest_frame), &typeid(core::Unwind));
+  }
+#endif
   throw unwind;
 }
 
@@ -1961,7 +1986,9 @@ void cc_unwind(T_O *frame, size_t index) {
 void cc_throw(T_O *tag) {
   _G();
 #ifdef DEBUG_FLOW_CONTROL
-  printf("%s:%d In cc_tag tag@%p\n\n", __FILE__, __LINE__, tag);
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d In cc_tag tag@%p\n\n", __FILE__, __LINE__, tag);
+  }
 #endif
   core::T_sp ttag((gc::Tagged)tag);
   int frame = _lisp->exceptionStack().findKey(CatchFrame, ttag);
@@ -1969,7 +1996,11 @@ void cc_throw(T_O *tag) {
     CONTROL_ERROR();
   }
   core::CatchThrow catchThrow(frame);
-  //	printf("%s:%d in cc_throw throwing CatchThrow to reach frame: %d   core::CatchThrow typeinfo@%p\n", __FILE__, __LINE__, frame, &typeid(core::CatchThrow));
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d in cc_throw throwing CatchThrow to reach frame: %d   core::CatchThrow typeinfo@%p\n", __FILE__, __LINE__, frame, &typeid(core::CatchThrow));
+  }
+#endif
   throw catchThrow;
 }
 
@@ -1982,7 +2013,9 @@ void cc_restoreMultipleValue0(core::T_mv *result) {
   _G();
   (*result).readFromMultipleValue0();
 #ifdef DEBUG_FLOW_CONTROL
-  printf("%s:%d In cc_restoreMultipleValue0\n", __FILE__, __LINE__);
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d In cc_restoreMultipleValue0\n", __FILE__, __LINE__);
+  }
 #endif
 }
 
@@ -1994,8 +2027,10 @@ T_O *cc_pushLandingPadFrame() {
   ptr = core::Pointer_O::create((void *)&typeid(core::Unwind));
 #endif
   size_t index = _lisp->exceptionStack().push(LandingPadFrame, ptr);
-#ifdef DEBUG_LANDING_PAD
-  printf("%s:%d pushLandingPadFrame frame: %lu  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void*)&typeid(core::Unwind));
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d pushLandingPadFrame frame: %lu  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void*)&typeid(core::Unwind));
+  }
 #endif
   return gctools::tag_fixnum<core::T_O *>(index);
 }
@@ -2004,27 +2039,36 @@ void cc_popLandingPadFrame(T_O *frameFixnum) {
   _G();
   ASSERT(gctools::tagged_fixnump(frameFixnum));
   size_t frameIndex = gctools::untag_fixnum(frameFixnum);
-#ifdef DEBUG_LANDING_PAD
-  printf("%s:%d  Unwinding exceptionStack to: %lu\n", __FILE__, __LINE__, frameIndex );
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d  Unwinding exceptionStack to: %lu\n", __FILE__, __LINE__, frameIndex );
+  }
 #endif
   _lisp->exceptionStack().unwind(frameIndex);
 }
 
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *frame) {
   ASSERT(gctools::tagged_fixnump(frame));
-#ifdef DEBUG_LANDING_PAD
+#ifdef DEBUG_FLOW_CONTROL
   size_t frameIndex = gctools::untag_fixnum(frame);
-  printf("%s:%d landingpadUnwindMatchFrameElseRethrow  frame: %lu\n", __FILE__, __LINE__, frameIndex);
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d landingpadUnwindMatchFrameElseRethrow  frame: %lu\n",
+           __FILE__, __LINE__, frameIndex);
+  }
 #endif
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
   if (unwindP->getFrame() == frame) {
-#ifdef DEBUG_LANDING_PAD
-    printf("%s:%d Matched Unwind  frame: %lu  index: %lu\n", __FILE__, __LINE__, gc::untag_fixnum(unwindP->getFrame()), unwindP->index());
+#ifdef DEBUG_FLOW_CONTROL
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+      printf("%s:%d Matched Unwind  frame: %lu  index: %lu\n", __FILE__, __LINE__, gc::untag_fixnum(unwindP->getFrame()), unwindP->index());
+    }
 #endif
     return unwindP->index();
   }
-#ifdef DEBUG_LANDING_PAD
-  printf("%s:%d Rethrowing core::Unwind frame[%lu] index[%zu] (current frame is: %lu)\n", __FILE__, __LINE__, gc::untag_fixnum(unwindP->getFrame()), unwindP->index(), frameIndex);
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d Rethrowing core::Unwind frame[%lu] index[%zu] (current frame is: %lu)\n", __FILE__, __LINE__, gc::untag_fixnum(unwindP->getFrame()), unwindP->index(), frameIndex);
+  }
 #endif
   throw * unwindP;
 }

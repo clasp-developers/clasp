@@ -135,6 +135,7 @@ SYMBOL_EXPORT_SC_(ClPkg, bit);
 SYMBOL_EXPORT_SC_(CorePkg, topLevel);
 SYMBOL_EXPORT_SC_(CorePkg, scharSet);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugInterpretedClosureSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARdebugFlowControlSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugStartupSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _BANG_unbound_BANG_);
 SYMBOL_EXPORT_SC_(CorePkg, bitArrayOp);
@@ -1087,6 +1088,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   ext::_sym_STARinspectorHookSTAR->defparameter(_Nil<T_O>());
   _sym_STARloadSearchListSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedClosureSTAR->defparameter(_Nil<T_O>());
+  _sym_STARdebugFlowControlSTAR->defparameter(_Nil<T_O>());
 #if 0
 
 	_sym_STARbq_simplifySTAR->defparameter(_lisp->_true());

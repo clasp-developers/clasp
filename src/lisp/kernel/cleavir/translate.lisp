@@ -888,53 +888,58 @@ nil)
 
 (defun do-compile (form)
   (cc-dbg-when *debug-log*
-	       (format *debug-log* "==== Form: ~a~%" form))
-  (handler-bind
-      ((cleavir-env:no-variable-info
-	(lambda (condition)
+               (incf *debug-log-index*)
+               (format *debug-log* "====== STARTING TO LOG A NEW FORM - INDEX: ~d~%" *debug-log-index*)
+	       (format *debug-log* "==== STARTING!!!!!   Form: ~a~%" form))
+  (prog1
+      (handler-bind
+          ((cleavir-env:no-variable-info
+            (lambda (condition)
 ;;;	  (declare (ignore condition))
-	  (warn "Condition: ~a" condition)
-	  (invoke-restart 'cleavir-generate-ast::consider-special)))
-       (cleavir-env:no-function-info
-	(lambda (condition)
+              (warn "Condition: ~a" condition)
+              (invoke-restart 'cleavir-generate-ast::consider-special)))
+           (cleavir-env:no-function-info
+            (lambda (condition)
 ;;;	  (declare (ignore condition))
-	  (warn "Condition: ~a" condition)
-	  (invoke-restart 'cleavir-generate-ast::consider-global))))
-    (when *compile-print* (describe-form form))
+              (warn "Condition: ~a" condition)
+              (invoke-restart 'cleavir-generate-ast::consider-global))))
+        (when *compile-print* (describe-form form))
+        (cc-dbg-when *debug-log*
+                     (format *debug-log* "cleavir-generate-ast:*compiler* --> ~a~%" cleavir-generate-ast:*compiler*)
+                     (format *debug-log* "cleavir-generate-ast::*current-form-is-top-level-p* --> ~a~%" 
+                             (if (boundp 'cleavir-generate-ast::*current-form-is-top-level-p*) 
+                                 cleavir-generate-ast::*current-form-is-top-level-p* 
+                                 "UNBOUND" ))
+                     (format *debug-log* "cleavir-generate-ast::*subforms-are-top-level-p* --> ~a~%" 
+                             cleavir-generate-ast::*subforms-are-top-level-p*))
+        (let* ((clasp-system *clasp-system*)
+               (ast (let ((a (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system)))
+                      (when *debug-cleavir* (draw-ast a))
+                      a))
+               (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
+               (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
+          (cc-dbg-when *debug-log*
+                       (let ((ast-pathname (make-pathname :name (format nil "ast~a" *debug-log-index*) 
+                                                          :type "dot" 
+                                                          :defaults (pathname *debug-log*))))
+                         (cleavir-ast-graphviz:draw-ast hoisted-ast (namestring ast-pathname))
+                         (format *debug-log* "Wrote ast to: ~a~%" (namestring ast-pathname))))
+          (clasp-cleavir:convert-funcalls hir)
+          ;; eliminate superfluous temporaries
+          (my-hir-transformations hir clasp-system nil nil)
+          (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out
+          (cleavir-ir:hir-to-mir hir clasp-system nil nil)
+          (when *debug-cleavir* (draw-mir hir)) ;; comment out
+          (cc-mir:assign-mir-instruction-datum-ids hir)
+          (setf *ast* hoisted-ast
+                *hir* hir)
+          (let ((*form* form)
+                (abi (make-instance 'abi-x86-64)))
+            (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
+            (translate hir abi))))
     (cc-dbg-when *debug-log*
-		 (format *debug-log* "cleavir-generate-ast:*compiler* --> ~a~%" cleavir-generate-ast:*compiler*)
-		 (format *debug-log* "cleavir-generate-ast::*current-form-is-top-level-p* --> ~a~%" 
-			 (if (boundp 'cleavir-generate-ast::*current-form-is-top-level-p*) 
-			     cleavir-generate-ast::*current-form-is-top-level-p* 
-			     "UNBOUND" ))
-		 (format *debug-log* "cleavir-generate-ast::*subforms-are-top-level-p* --> ~a~%" 
-			 cleavir-generate-ast::*subforms-are-top-level-p*))
-    (let* ((clasp-system *clasp-system*)
-	   (ast (let ((a (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system)))
-		  (when *debug-cleavir* (draw-ast a))
-		  a))
-	   (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-	   (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
-      (cc-dbg-when *debug-log*
-		   (incf *debug-log-index*)
-		   (let ((ast-pathname (make-pathname :name (format nil "ast~a" *debug-log-index*) 
-						      :type "dot" 
-						      :defaults (pathname *debug-log*))))
-		     (cleavir-ast-graphviz:draw-ast hoisted-ast (namestring ast-pathname))
-		     (format *debug-log* "Wrote ast to: ~a~%" (namestring ast-pathname))))
-      (clasp-cleavir:convert-funcalls hir)
-      ;; eliminate superfluous temporaries
-      (my-hir-transformations hir clasp-system nil nil)
-      (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out
-      (cleavir-ir:hir-to-mir hir clasp-system nil nil)
-      (when *debug-cleavir* (draw-mir hir)) ;; comment out
-      (cc-mir:assign-mir-instruction-datum-ids hir)
-      (setf *ast* hoisted-ast
-	    *hir* hir)
-      (let ((*form* form)
-	    (abi (make-instance 'abi-x86-64)))
-	(clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
-	(translate hir abi)))))
+                 (format *debug-log* "==== ENDING!!!!!   Form: ~a~%" form))
+    ))
 
 ;; Set this to T to watch cleavir-compile-t1expr run
 (defvar *cleavir-compile-verbose* nil)
@@ -1057,4 +1062,16 @@ nil)
        ,@body)))
 (export 'with-debug-compile-file)
 
+
+(defmacro open-debug-log (log-file)
+  `(eval-when (:compile-toplevel)
+     (setq *debug-log* ,log-file :direction :output)
+     (setq *debug-log-on* t)))
+
+(defmacro close-debug-log ()
+  `(eval-when (:compile-toplevel)
+     (setq *debug-log-on* nil)
+     (close *debug-log*)
+     (setq *debug-log* nil)))
+(export '(open-debug-log close-debug-log))
   
