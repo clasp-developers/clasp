@@ -174,6 +174,9 @@ clasp-boehm:
 	$(BJAM) everything gc=boehm link=static program=clasp release
 	(cd src/main; make boehm)
 
+cclasp-boehm:
+	(cd src/main; make cclasp)
+
 # Compile the CL sources for min-boehm: and full-boehm
 cl-boehm:
 	(cd src/main; make boehm)
