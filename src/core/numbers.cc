@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
+#define FAST_FIXNUM_ARITH
 //#include "clasp_gmpxx.h"
 #include <boost/format.hpp>
 #include <clasp/core/common.h>
@@ -308,66 +309,79 @@ T_mv af_lognor(Integer_sp a, Integer_sp b) {
 };
 
 Number_sp contagen_add(Number_sp na, Number_sp nb) {
-  _G();
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
-    mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
-    mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
-    mpz_class zc = za + zb;
-    return Integer_O::create(zc);
-  }
+#ifdef FAST_FIXNUM_ARITH
+      Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
+      Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
+      Fixnum fc = fa+fb;
+      if ( fc >= gc::most_negative_fixnum && fc <= gc::most_positive_fixnum ) {
+        return make_fixnum(fc);
+      }
+      // Overflow case
+      mpz_class za((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(na)));
+      mpz_class zb((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(nb)));
+      mpz_class zc = za + zb;
+      return Integer_O::create(zc);
+#else
+      mpz_class za((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(na)));
+      mpz_class zb((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(nb)));
+      mpz_class zc = za + zb;
+      return Integer_O::create(zc);
+#endif
+    }
   case_Fixnum_v_Bignum : {
-    mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
-    mpz_class zc = za + gc::As<Bignum_sp>(nb)->ref();
-    return Integer_O::create(zc);
-  }
+      mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
+      mpz_class zc = za + gc::As<Bignum_sp>(nb)->ref();
+      return Integer_O::create(zc);
+    }
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio : {
-    mpz_class za(clasp_to_mpz(na));
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    mpz_class zb_den = rb->denominator_as_mpz();
-    mpz_class za_scaled = za * zb_den;
-    mpz_class zr = za_scaled + rb->numerator_as_mpz();
-    return Ratio_O::create(zr, zb_den);
-  }
+      mpz_class za(clasp_to_mpz(na));
+      Ratio_sp rb = gc::As<Ratio_sp>(nb);
+      mpz_class zb_den = rb->denominator_as_mpz();
+      mpz_class za_scaled = za * zb_den;
+      mpz_class zr = za_scaled + rb->numerator_as_mpz();
+      return Ratio_O::create(zr, zb_den);
+    }
   case_Fixnum_v_SingleFloat : {
-    return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
-  }
+      return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
+    }
   case_Fixnum_v_DoubleFloat : {
-    return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
-  }
+      return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
+    }
   case_Bignum_v_Fixnum : {
-    mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
-    mpz_class zc = gc::As<Bignum_sp>(na)->ref() + zb;
-    return Integer_O::create(zc);
-  }
+      mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
+      mpz_class zc = gc::As<Bignum_sp>(na)->ref() + zb;
+      return Integer_O::create(zc);
+    }
   case_Bignum_v_Bignum : {
-    return Integer_O::create(gc::As<Bignum_sp>(na)->ref() + gc::As<Bignum_sp>(nb)->ref());
-  }
+      return Integer_O::create(gc::As<Bignum_sp>(na)->ref() + gc::As<Bignum_sp>(nb)->ref());
+    }
   case_Bignum_v_SingleFloat:
   case_Ratio_v_SingleFloat : {
-    return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
-  }
+      return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
+    }
   case_Bignum_v_DoubleFloat:
   case_Ratio_v_DoubleFloat : {
-    return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
-  }
+      return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
+    }
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum : {
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
-    mpz_class res = ra->numerator_as_mpz() + z;
-    return Ratio_O::create(res, ra->denominator_as_mpz());
-  }
+      Ratio_sp ra = gc::As<Ratio_sp>(na);
+      mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
+      mpz_class res = ra->numerator_as_mpz() + z;
+      return Ratio_O::create(res, ra->denominator_as_mpz());
+    }
   case_Ratio_v_Ratio : {
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    mpz_class z1 = ra->numerator_as_mpz() * rb->denominator_as_mpz();
-    mpz_class z = ra->denominator_as_mpz() * rb->numerator_as_mpz();
-    z = z1 + z;
-    z1 = ra->denominator_as_mpz() * rb->denominator_as_mpz();
-    return Ratio_O::create(z, z1);
-  }
+      Ratio_sp ra = gc::As<Ratio_sp>(na);
+      Ratio_sp rb = gc::As<Ratio_sp>(nb);
+      mpz_class z1 = ra->numerator_as_mpz() * rb->denominator_as_mpz();
+      mpz_class z = ra->denominator_as_mpz() * rb->numerator_as_mpz();
+      z = z1 + z;
+      z1 = ra->denominator_as_mpz() * rb->denominator_as_mpz();
+      return Ratio_O::create(z, z1);
+    }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
   case_SingleFloat_v_Ratio:
@@ -401,11 +415,11 @@ Number_sp contagen_add(Number_sp na, Number_sp nb) {
   case_Complex_v_Ratio:
   case_Complex_v_SingleFloat:
   case_Complex_v_DoubleFloat : {
-    Number_sp aux = na;
-    na = nb;
-    nb = aux;
-    goto Complex_v_Y;
-  }
+      Number_sp aux = na;
+      na = nb;
+      nb = aux;
+      goto Complex_v_Y;
+    }
   case_Fixnum_v_Complex:
   case_Bignum_v_Complex:
   case_Ratio_v_Complex:
@@ -418,24 +432,37 @@ Number_sp contagen_add(Number_sp na, Number_sp nb) {
     return Complex_O::create(gc::As<Real_sp>(contagen_add(na, gc::As<Complex_sp>(nb)->real())),
                              gc::As<Complex_sp>(nb)->imaginary());
   case_Complex_v_Complex : {
-    Real_sp r = gc::As<Real_sp>(contagen_add(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()));
-    Real_sp i = gc::As<Real_sp>(contagen_add(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
-    return Complex_O::create(r, i);
-  } break;
+      Real_sp r = gc::As<Real_sp>(contagen_add(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()));
+      Real_sp i = gc::As<Real_sp>(contagen_add(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
+      return Complex_O::create(r, i);
+    } break;
   default:
-    SIMPLE_ERROR(BF("Cannot contagen_add two numbers of class %s and %s") % na->_instanceClass()->classNameAsString() % nb->_instanceClass()->classNameAsString());
+      SIMPLE_ERROR(BF("Cannot contagen_add two numbers of class %s and %s") % na->_instanceClass()->classNameAsString() % nb->_instanceClass()->classNameAsString());
   };
   MATH_DISPATCH_END();
 };
 
 Number_sp contagen_sub(Number_sp na, Number_sp nb) {
-  _G();
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
+#ifdef FAST_FIXNUM_ARITH
+      Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
+      Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
+      Fixnum fc = fa-fb;
+      if ( fc >= gc::most_negative_fixnum && fc <= gc::most_positive_fixnum ) {
+        return make_fixnum(fc);
+      }
+      // Overflow case
+      mpz_class za((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(na)));
+      mpz_class zb((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(nb)));
+      mpz_class zc = za - zb;
+      return Integer_O::create(zc);
+#else
     mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
     mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
     mpz_class zc = za - zb;
     return Integer_O::create(zc);
+#endif
   }
   case_Fixnum_v_Bignum : {
     mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
@@ -1510,17 +1537,16 @@ Integer_sp Integer_O::createLongFloat(LongFloat v) {
 }
 
 Integer_sp Integer_O::create(const mpz_class &v) {
-  _G();
-  if (v.fits_sint_p()) {
-    int i = v.get_si();
-    return make_fixnum(i);
+  if ( v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum ) {
+    Fixnum fv = mpz_get_si(v.get_mpz_t());
+    return make_fixnum(fv);
   }
   return Bignum_O::create(v);
 }
 
 Integer_sp Integer_O::create(gctools::Fixnum v) {
   _G();
-  if (v >= MOST_NEGATIVE_FIXNUM && v <= MOST_POSITIVE_FIXNUM) {
+  if (v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum) {
     return make_fixnum(v);
   }
   Bignum z(v);
