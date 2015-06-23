@@ -30,14 +30,14 @@ alias gclib : mymps.c :
 
 
 sources = 
-    	    	/internals//core        #//bundle/<link>static
-		/internals//cffi        #//bundle/<link>static
-		/internals//llvmo       #//bundle/<link>static
-                /internals//clbind      #//bundle/<link>static
-		/internals//gctools     #//bundle/<link>static
-		/internals//sockets     #//bundle/<link>static
-		/internals//serveEvent  #//bundle/<link>static
-		/internals//asttooling  #//bundle/<link>static
+    	    	/internals/core//core        #//bundle/<link>static
+		/internals/cffi//cffi        #//bundle/<link>static
+		/internals/llvmo//llvmo       #//bundle/<link>static
+                /internals/clbind//clbind      #//bundle/<link>static
+		/internals/gctools//gctools     #//bundle/<link>static
+		/internals/sockets//sockets     #//bundle/<link>static
+		/internals/serveEvent//serveEvent  #//bundle/<link>static
+		/internals/asttooling//asttooling  #//bundle/<link>static
 		/externals//llvm_lib/<link>static
 		/externals//clang_lib/<link>static
 		/externals//boostAndExpatLibs/<link>static

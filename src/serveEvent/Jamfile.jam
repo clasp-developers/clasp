@@ -24,7 +24,7 @@ project internals/serveEvent : requirements
 sources = 
 	serveEvent.cc
 	serveEventPackage.cc
-	/internals//core
+	/internals/core//core
 	/externals//boostAndExpatLibs ;
 
 lib serveEvent : $(sources) ;

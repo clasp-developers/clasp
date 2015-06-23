@@ -24,7 +24,7 @@ project internals/sockets : requirements
 sources = 
 	sockets.cc
 	socketsPackage.cc
-	/internals//core
+	/internals/core//core
 	/externals//boostAndExpatLibs ;
 
 lib sockets : $(sources) ;

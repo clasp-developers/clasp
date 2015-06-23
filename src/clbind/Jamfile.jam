@@ -35,7 +35,7 @@ sources =
         clbindPackage.cc
         class.cc
         derivable_class.cc
-	/internals//core/
+	/internals/core//core/
 	/externals//boostAndExpatLibs ;
 
 

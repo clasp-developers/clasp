@@ -33,7 +33,7 @@ local sources =
 	llvmoExpose.cc
 	llvmoPackage.cc
         clbindLlvmExpose.cc
-	/internals//core
+	/internals/core//core
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib ;
 
@@ -41,12 +41,12 @@ local sources =
 lib llvmo : $(sources) ;
 
 obj intrinsics_bitcode_boehm : intrinsics.cc
-	/internals//core
+	/internals/core//core
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib
 	:
-	<implicit-dependency>/internals//core
-	<implicit-dependency>/internals//clbind
+	<implicit-dependency>/internals/core//core
+	<implicit-dependency>/internals/clbind//clbind
 	<link>static
         <gc>boehm
 	<cxxflags>"-flto -emit-llvm" ;
@@ -54,12 +54,12 @@ obj intrinsics_bitcode_boehm : intrinsics.cc
 explicit intrinsics_bitcode_boehm ;
 
 obj intrinsics_bitcode_mps : intrinsics.cc
-	/internals//core
+	/internals/core//core
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib
 	:
-	<implicit-dependency>/internals//core
-	<implicit-dependency>/internals//clbind
+	<implicit-dependency>/internals/core//core
+	<implicit-dependency>/internals/clbind//clbind
 	<link>static
         <gc>mps
 	<cxxflags>"-flto -emit-llvm" ;
@@ -67,12 +67,12 @@ obj intrinsics_bitcode_mps : intrinsics.cc
 explicit intrinsics_bitcode_mps ;
 
 obj intrinsics_bitcode_mps_prep : intrinsics.cc
-	/internals//core
+	/internals/core//core
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib
 	:
-	<implicit-dependency>/internals//core
-	<implicit-dependency>/internals//clbind
+	<implicit-dependency>/internals/core//core
+	<implicit-dependency>/internals/clbind//clbind
 	<link>static
         <gc>mps-prep
 	<cxxflags>"-flto -emit-llvm" ;

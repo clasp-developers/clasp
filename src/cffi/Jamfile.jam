@@ -23,7 +23,7 @@ project internals/cffi : requirements
 sources = 
 	cffi.cc
 	cffiPackage.cc
-	/internals//core
+	/internals/core//core
 	/externals//boostAndExpatLibs ;
 
 lib cffi : $(sources) ;
