@@ -41,7 +41,7 @@ project clasp : requirements
         <define>CLBIND_DYNAMIC_LINK
         <define>NDEBUG     # turns off some weird tests in clbind (will I eat these words?)
         <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
-	<target-os>linux:<linkflags>"-lpthread -ldl"
+	<target-os>linux:<linkflags>"-lpthread -ldl -lrt"
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
 	<toolset>clang:<cxxflags>-std=c++11
 	<target-os>darwin:<cxxflags>"-stdlib=libc++"

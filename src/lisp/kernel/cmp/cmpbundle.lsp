@@ -68,7 +68,7 @@
     #+(and :target-os-linux :address-model-64)
     (return-from generate-compile-command (values (bformat nil "llc -filetype=obj -relocation-model=pic -o %s %s" output-file file) output-file))
     #+(and target-os-darwin use-clang)
-    (let* ((clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
+    (let* ((clasp-clang-path (ext:getenv "CLASP_CLANG_PATH"))
            (clang-executable (if clasp-clang-path
                                  clasp-clang-path
                                  "clang")))
@@ -99,7 +99,7 @@
     (return-from generate-link-command
       (bformat nil "ld %s %s -macosx_version_min 10.7 -flat_namespace -undefined warning -bundle -o %s" options all-names bundle-file))
     #+target-os-linux
-    (let* ((clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
+    (let* ((clasp-clang-path (ext:getenv "CLASP_CLANG_PATH"))
 	   (clang-executable (if clasp-clang-path
 				 clasp-clang-path
 				 "clang")))
