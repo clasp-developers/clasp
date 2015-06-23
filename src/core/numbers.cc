@@ -942,7 +942,6 @@ long_double_fix_compare(Fixnum n, LongFloat d) {
       +1 if a > b
     */
 int basic_compare(Number_sp na, Number_sp nb) {
-  _G();
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
     gctools::Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
