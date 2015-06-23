@@ -35,6 +35,8 @@ This version of the llvm/clang3.6 is included in externals-clasp.  Incidentally,
 |  Debian Stable (Wheezy) - [see issue #21](https://github.com/drmeister/clasp/issues/21)   |
 |  Ubuntu 14.04 - [see issue #26](https://github.com/drmeister/clasp/issues/26)             |
 
+If you get lots of errors showing missing header files then you can uncomment and set CLASP_CLANG_PATH in clasp/locals.config to use the system clang (version>3.6.1).  On Linux there may be the additional problem that libstd++ may need to be brought up to date.
+
 If you experience problems with the systems above please submit an issue here or come see us on **#clasp on irc.freenode.net**
 
 ## Building Clasp
