@@ -311,7 +311,6 @@ T_mv af_lognor(Integer_sp a, Integer_sp b) {
 Number_sp contagen_add(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
-#ifdef FAST_FIXNUM_ARITH
       Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
       Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
       Fixnum fc = fa+fb;
@@ -323,12 +322,6 @@ Number_sp contagen_add(Number_sp na, Number_sp nb) {
       mpz_class zb((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(nb)));
       mpz_class zc = za + zb;
       return Integer_O::create(zc);
-#else
-      mpz_class za((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(na)));
-      mpz_class zb((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(nb)));
-      mpz_class zc = za + zb;
-      return Integer_O::create(zc);
-#endif
     }
   case_Fixnum_v_Bignum : {
       mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
@@ -445,7 +438,6 @@ Number_sp contagen_add(Number_sp na, Number_sp nb) {
 Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
-#ifdef FAST_FIXNUM_ARITH
       Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
       Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
       Fixnum fc = fa-fb;
@@ -457,12 +449,6 @@ Number_sp contagen_sub(Number_sp na, Number_sp nb) {
       mpz_class zb((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(nb)));
       mpz_class zc = za - zb;
       return Integer_O::create(zc);
-#else
-    mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
-    mpz_class zb(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
-    mpz_class zc = za - zb;
-    return Integer_O::create(zc);
-#endif
   }
   case_Fixnum_v_Bignum : {
     mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
@@ -572,7 +558,6 @@ Number_sp contagen_sub(Number_sp na, Number_sp nb) {
 }
 
 Number_sp contagen_mul(Number_sp na, Number_sp nb) {
-  _G();
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
     mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
@@ -701,7 +686,6 @@ Complex_sp complex_divide(double ar, double ai,
 }
 
 Number_sp contagen_div(Number_sp na, Number_sp nb) {
-  _G();
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum:
   case_Bignum_v_Fixnum:
