@@ -205,7 +205,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   #+use-boehm "app-resources:lib;release;intrinsics_bitcode_boehm.o"
   #+use-mps "app-resources:lib;release;intrinsics_bitcode_mps.o"
 )
-(defconstant +image-pathname+ (make-pathname :directory '(:absolute) :name "image" :type "fasl"))
+(defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
 (export '(+image-pathname+ +intrinsics-bitcode-pathname+))
 ;; +min-image-pathname+ +intrinsics-bitcode-pathname+ +imagelto-pathname+))
 
