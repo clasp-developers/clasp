@@ -430,15 +430,18 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defvar *alien-declarations* ())
 (export '*alien-declarations*)
 
-
-
 (defun get-pathname-with-type (module &optional (type "lsp"))
-  (cond ((pathnamep module)
-         (make-pathname :host "sys" :type type :defaults module))
-        ((symbolp module)
-         (merge-pathnames (pathname (string module))
-                          (make-pathname :host "sys" :directory '(:absolute) :type type)))
-        (t (error "Illegal module specifier - only pathnames and symbols are supported"))))
+  (cond
+    ((pathnamep module)
+     (merge-pathnames module
+                      (make-pathname
+                       :type type
+                       :defaults (translate-logical-pathname
+                                  (make-pathname :host "sys")))))
+    ((symbolp module)
+     (merge-pathnames (pathname (string module))
+                      (make-pathname :host "sys" :directory '(:absolute) :type type)))
+    (t (error "bad module name: ~s" module))))
 
 (defun lisp-source-pathname (module)
   (or (probe-file (get-pathname-with-type module "lsp"))
@@ -585,10 +588,34 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defvar *target-backend* (default-target-backend))
 (export '*target-backend*)
 
+(defun strip-root (l orig-sys)
+  (let ((cur l)
+        (root orig-sys))
+    (tagbody
+     top
+       (if (eql (car cur) (car root))
+           (progn
+             (setq cur (cdr cur))
+             (setq root (cdr root))
+             (go top))))
+    (if root
+        (error "Roots don't match - could not strip all of root ~s from ~s" orig-sys l))
+    cur))
+
+
+(defun maybe-relative-pathname-to-sys (x &optional (sys-pn (translate-logical-pathname "SYS:")))
+  (let ((dir-x (pathname-directory x)))
+    (if (eq (car dir-x) :absolute)
+	(make-pathname :directory
+		       (cons :relative 
+			     (strip-root (cdr dir-x) (cdr (pathname-directory sys-pn))))
+		       :defaults x)
+	x)))
 
 (defun target-backend-pathname (pathname &key (target-backend *target-backend*) &allow-other-keys)
-;;  (if target-backend nil (error "target-backend is nil"))
-  (merge-pathnames (make-pathname :host target-backend) pathname))
+  ;;  (if target-backend nil (error "target-backend is nil"))
+  (let ((relative (maybe-relative-pathname-to-sys pathname)))
+    (merge-pathnames relative (translate-logical-pathname (make-pathname :host target-backend)))))
 
 (export '(default-target-backend target-backend-pathname))
 
@@ -633,114 +660,114 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defvar *init-files*
   '(
     :init
-    #P"/kernel/init"
+    #P"kernel/init"
     :cleavir-injection
-    #P"/kernel/cmp/jit-setup"
-    #P"/kernel/clsymbols"
+    #P"kernel/cmp/jit-setup"
+    #P"kernel/clsymbols"
     :start
-    #P"/kernel/lsp/packages"
-    #P"/kernel/lsp/foundation"
-    #P"/kernel/lsp/export"
-    #P"/kernel/lsp/defmacro"
+    #P"kernel/lsp/packages"
+    #P"kernel/lsp/foundation"
+    #P"kernel/lsp/export"
+    #P"kernel/lsp/defmacro"
     :defmacro
-    #P"/kernel/lsp/helpfile"
-    #P"/kernel/lsp/evalmacros"
-    #P"/kernel/lsp/claspmacros"
+    #P"kernel/lsp/helpfile"
+    #P"kernel/lsp/evalmacros"
+    #P"kernel/lsp/claspmacros"
     :macros
-    #P"/kernel/lsp/testing"
-    #P"/kernel/lsp/makearray"
-    #P"/kernel/lsp/arraylib"
-    #P"/kernel/lsp/setf"
-    #P"/kernel/lsp/listlib"
-    #P"/kernel/lsp/mislib"
-    #P"/kernel/lsp/defstruct"
-    #P"/kernel/lsp/predlib"
-    #P"/kernel/lsp/seq"
-    #P"/kernel/lsp/cmuutil"
-    #P"/kernel/lsp/seqmacros"
-    #P"/kernel/lsp/iolib"
-    #P"/kernel/lsp/profiling"    ;; Do micro-profiling of the GC
+    #P"kernel/lsp/testing"
+    #P"kernel/lsp/makearray"
+    #P"kernel/lsp/arraylib"
+    #P"kernel/lsp/setf"
+    #P"kernel/lsp/listlib"
+    #P"kernel/lsp/mislib"
+    #P"kernel/lsp/defstruct"
+    #P"kernel/lsp/predlib"
+    #P"kernel/lsp/seq"
+    #P"kernel/lsp/cmuutil"
+    #P"kernel/lsp/seqmacros"
+    #P"kernel/lsp/iolib"
+    #P"kernel/lsp/profiling"    ;; Do micro-profiling of the GC
     :tiny
     :pre-cmp
     ;; Compiler code
-    #P"/kernel/cmp/packages"
-    #P"/kernel/cmp/cmpsetup"
-;;    #P"/kernel/cmp/cmpenv-fun"
-;;    #P"/kernel/cmp/cmpenv-proclaim"
-    #P"/kernel/cmp/cmpglobals"
-    #P"/kernel/cmp/cmptables"
-    #P"/kernel/cmp/cmpvar"
-    #P"/kernel/cmp/cmputil"
-    #P"/kernel/cmp/cmpintrinsics"
-    #P"/kernel/cmp/cmpir"
-    #P"/kernel/cmp/cmpeh"
-    #P"/kernel/cmp/debuginfo"
-    #P"/kernel/cmp/lambdalistva"
-    #P"/kernel/cmp/cmpvars"
-    #P"/kernel/cmp/cmpquote"
-    #P"/kernel/cmp/cmpobj"
-    #P"/kernel/cmp/compiler"
-    #P"/kernel/cmp/compilefile"
-    #P"/kernel/cmp/cmpbundle"
-    #P"/kernel/cmp/cmpwalk"
+    #P"kernel/cmp/packages"
+    #P"kernel/cmp/cmpsetup"
+;;    #P"kernel/cmp/cmpenv-fun"
+;;    #P"kernel/cmp/cmpenv-proclaim"
+    #P"kernel/cmp/cmpglobals"
+    #P"kernel/cmp/cmptables"
+    #P"kernel/cmp/cmpvar"
+    #P"kernel/cmp/cmputil"
+    #P"kernel/cmp/cmpintrinsics"
+    #P"kernel/cmp/cmpir"
+    #P"kernel/cmp/cmpeh"
+    #P"kernel/cmp/debuginfo"
+    #P"kernel/cmp/lambdalistva"
+    #P"kernel/cmp/cmpvars"
+    #P"kernel/cmp/cmpquote"
+    #P"kernel/cmp/cmpobj"
+    #P"kernel/cmp/compiler"
+    #P"kernel/cmp/compilefile"
+    #P"kernel/cmp/cmpbundle"
+    #P"kernel/cmp/cmpwalk"
     :cmp
     :stage1
-    #P"/kernel/cmp/cmprepl"
+    #P"kernel/cmp/cmprepl"
     :cmprepl
-    #P"/kernel/lsp/logging"
-    #P"/kernel/lsp/seqlib"
-    #P"/kernel/lsp/trace"
+    #P"kernel/lsp/logging"
+    #P"kernel/lsp/seqlib"
+    #P"kernel/lsp/trace"
     :was-pre-cmp
-    #P"/kernel/lsp/sharpmacros"
-    #P"/kernel/lsp/assert"
-    #P"/kernel/lsp/numlib"
-    #P"/kernel/lsp/describe"
-    #P"/kernel/lsp/module"
-    #P"/kernel/lsp/loop2"
-    #P"/kernel/lsp/shiftf-rotatef"
-    #P"/kernel/lsp/assorted"
-    #P"/kernel/lsp/packlib"
+    #P"kernel/lsp/sharpmacros"
+    #P"kernel/lsp/assert"
+    #P"kernel/lsp/numlib"
+    #P"kernel/lsp/describe"
+    #P"kernel/lsp/module"
+    #P"kernel/lsp/loop2"
+    #P"kernel/lsp/shiftf-rotatef"
+    #P"kernel/lsp/assorted"
+    #P"kernel/lsp/packlib"
 ;;    cmp/cmpinterpreted
-    #P"/kernel/lsp/defpackage"
-    #P"/kernel/lsp/format"
+    #P"kernel/lsp/defpackage"
+    #P"kernel/lsp/format"
     #|
     arraylib
     numlib
     |#
     :min
-    #P"/kernel/clos/package"
-    #P"/kernel/clos/hierarchy"
-    #P"/kernel/clos/cpl"
-    #P"/kernel/clos/std-slot-value"
-    #P"/kernel/clos/slot"
-    #P"/kernel/clos/boot"
-    #P"/kernel/clos/kernel"
-    #P"/kernel/clos/method"
-    #P"/kernel/clos/combin"
-    #P"/kernel/clos/std-accessors"
-    #P"/kernel/clos/defclass"
-    #P"/kernel/clos/slotvalue"
-    #P"/kernel/clos/standard"
-    #P"/kernel/clos/builtin"
-    #P"/kernel/clos/change"
-    #P"/kernel/clos/stdmethod"
-    #P"/kernel/clos/generic"
+    #P"kernel/clos/package"
+    #P"kernel/clos/hierarchy"
+    #P"kernel/clos/cpl"
+    #P"kernel/clos/std-slot-value"
+    #P"kernel/clos/slot"
+    #P"kernel/clos/boot"
+    #P"kernel/clos/kernel"
+    #P"kernel/clos/method"
+    #P"kernel/clos/combin"
+    #P"kernel/clos/std-accessors"
+    #P"kernel/clos/defclass"
+    #P"kernel/clos/slotvalue"
+    #P"kernel/clos/standard"
+    #P"kernel/clos/builtin"
+    #P"kernel/clos/change"
+    #P"kernel/clos/stdmethod"
+    #P"kernel/clos/generic"
     :generic
-    #P"/kernel/clos/fixup"
-    #P"/kernel/clos/extraclasses"
-    #P"/kernel/lsp/defvirtual"
+    #P"kernel/clos/fixup"
+    #P"kernel/clos/extraclasses"
+    #P"kernel/lsp/defvirtual"
     :stage3
-    #P"/kernel/clos/conditions"
-    #P"/kernel/clos/print"
-    #P"/kernel/clos/streams"
-    #P"/kernel/lsp/pprint"
-    #P"/kernel/clos/inspect"
+    #P"kernel/clos/conditions"
+    #P"kernel/clos/print"
+    #P"kernel/clos/streams"
+    #P"kernel/lsp/pprint"
+    #P"kernel/clos/inspect"
     :clos
-    #P"/kernel/lsp/ffi"
-    #P"/sockets/sockets"
+    #P"kernel/lsp/ffi"
+    #P"sockets/sockets"
 ;;    asdf/build/asdf
     :front
-    #P"/kernel/lsp/top"
+    #P"kernel/lsp/top"
     :all
 ;;    lsp/pprint
     ))

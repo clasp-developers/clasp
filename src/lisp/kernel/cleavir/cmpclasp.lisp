@@ -20,6 +20,9 @@
   (asdf-system-groveler:determine-complete-set-of-asdf-source-files 
    (list :clasp-cleavir)))
 
+(defun probe-all-files-in-system (system)
+  (error "Do something"))
+
 ;;;
 ;;; Create a list of source files for clasp+cleavir
 ;;;   - Inject the kernel/cleavir/inlining.lisp file at :inlining
@@ -30,8 +33,8 @@
           (list :bclasp)
           *cleavir-clasp-only*
           (list :cleavir-clasp)
-          (list #P"/kernel/cleavir/inline")
-          (list #P"/kernel/cleavir/auto-compile")
+          (list #P"kernel/cleavir/inline")
+          (list #P"kernel/cleavir/auto-compile")
           (list :auto-compile :cclasp)))
 
 ;;; Setup the files to build for cclasp

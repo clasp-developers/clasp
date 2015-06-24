@@ -88,7 +88,7 @@
                      (no-type
                       (make-pathname :directory (pathname-directory part-name)
                                      :name (pathname-name part-name))))
-                (intern (namestring no-type) "CLASP-CLEAVIR")))
+                (pathname (namestring no-type))))
                    *all-source-files*)))
       (nreverse source))))
 

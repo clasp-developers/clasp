@@ -10,6 +10,21 @@
   (load "sys:kernel;cleavir;cmpclasp.lisp")
   (print (core:getpid)))
 
+(defun get-pathname-with-type (module &optional (type "lsp"))
+  (etypecase module
+    (pathname
+     (merge-pathnames module
+                      (make-pathname
+                       :type type
+                       :defaults (translate-logical-pathname
+                                  (make-pathname :host "sys")))))
+    (symbol
+     (merge-pathnames (pathname (string module))
+                      (make-pathname :host "sys" :directory '(:absolute) :type type)))))
+
+(get-pathname-with-type #P"kernel/contrib/sicl/Code/Cleavir/Generate-AST/ast-from-file" "lisp")
+
+
 (in-package :clasp-cleavir)
 
 (apropos "set-associated-funcs")
