@@ -88,8 +88,8 @@
                      (no-type
                       (make-pathname :directory (pathname-directory part-name)
                                      :name (pathname-name part-name))))
-                (pathname (namestring no-type))))
-                   *all-source-files*)))
+                (core::maybe-relative-pathname-to-sys (pathname (namestring no-type)))))
+            *all-source-files*)))
       (nreverse source))))
 
 

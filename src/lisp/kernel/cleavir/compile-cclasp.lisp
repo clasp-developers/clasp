@@ -3,55 +3,14 @@
 ;;; This file contains code to compile cleavir and generate a new Clasp image
 ;;; in which Cleavir is the default compiler
 ;;;
-
-;;(require :asdf)
-;;(require :clasp-cleavir)
-
-(in-package :clasp-cleavir)
-
-(export '(load-system link))
-(load "sys:kernel;cleavir;inline.lisp")
-(load "sys:kernel;cleavir;asdf-system-groveler.lisp")
+(format t "Starting compile-cclasp.lisp~%")
 
 
-;;; Determine the source files required by the :clasp-cleavir
-;;; ASDF system
-(defvar *cleavir-clasp-only* 
-  (asdf-system-groveler:determine-complete-set-of-asdf-source-files 
-   (list :clasp-cleavir)))
+(defpackage #:cclasp-build
+  (:use #:common-lisp #:core))
+(in-package :cclasp-build)
 
-(defun probe-all-files-in-system (system)
-  (error "Do something"))
-
-;;;
-;;; Create a list of source files for clasp+cleavir
-;;;   - Inject the kernel/cleavir/inlining.lisp file at :inlining
-;;;   - #P"/kernel/cleavir/auto-compile" sets up automatic compilation of top-level forms
-(defun setup-clasp-cleavir-files (&optional (init-files core:*init-files*) (cleavir-files *cleavir-clasp-only*))
-  ;; Remove the cmprepl file and append the rest of the cleavir files
-  (append init-files
-          (list :bclasp)
-          *cleavir-clasp-only*
-          (list :cleavir-clasp)
-          (list #P"kernel/cleavir/inline")
-          (list #P"kernel/cleavir/auto-compile")
-          (list :auto-compile :cclasp)))
-
-;;; Setup the files to build for cclasp
-(defparameter *clasp-cleavir-files*
-  (setup-clasp-cleavir-files core:*init-files* *cleavir-clasp-only*))
-
-(defun save-all-files (filename)
-  "Save the list of files in *clasp-cleavir-files* to #P\"sys:kernel;cleavir-system.lsp\""
-  (with-open-file (fout filename :direction :output)
-    (print `(defparameter *cleavir-system* ',*clasp-cleavir-files*) fout)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Save the current list of Cleavir files
-(save-all-files #P"sys:kernel;cleavir-system.lsp")
-
-(defun compile-system (first-file last-file &key recompile reload (system *clasp-cleavir-files*))
+(defun compile-system (first-file last-file &key recompile reload (system *cleavir-system*))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (format t "compile-system  from: ~a  to: ~a\n" first-file last-file)
   (let* ((files (core:select-source-files last-file :first-file first-file :system system))
@@ -64,17 +23,10 @@
          (setq bitcode-files (cons one-bitcode bitcode-files)))
        (setq cur (cdr cur))
        (go top)
-     done
-       )
+     done)
     (reverse bitcode-files)))
 
-
-
-
-
-
-
-(defun compile-clasp (from-mod to-mod &key (recompile t) reload (system *clasp-cleavir-files*) dry-run dont-link)
+(defun compile-clasp (from-mod to-mod &key (recompile t) reload (system *cleavir-system*) dry-run dont-link)
   (pushnew :clos *features*)
   (pushnew :cleavir *features*)
   (core:pathname-translations "cleavir-boehm" '(("**;*.*" #P"SYS:build;system;cleavir-boehm;**;*.*")))
@@ -101,20 +53,20 @@
 						  (core:process-command-line-load-eval-sequence)
 						  (when (member :interactive *features*) (core:top-level)))))))))
 
-(defun compile-min-cleavir (&key (recompile t))
+(defun compile-min-cclasp (&key (recompile t))
   (let ((cmp:*compile-print* t))
     (compile-clasp :start :min :recompile recompile :reload nil
-				:system *clasp-cleavir-files*)))
+				:system *cleavir-system*)))
 
 
-(defun compile-full-cleavir (&key (recompile t) (reload nil) (system *clasp-cleavir-files*))
+(defun compile-full-cclasp (&key (recompile t) (reload nil) (system *cleavir-system*))
   (let ((cmp:*compile-print* t))
     (compile-clasp :init :auto-cleavir
                    :recompile recompile 
                    :reload reload
                    :system system)))
 
-(export 'compile-full-cleavir)
+(export 'compile-full-cclasp)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Link files together
@@ -126,7 +78,7 @@
 
 
 (defun select-bitcode-files (start end &key (target-backend (core::default-target-backend))
-					 (system *clasp-cleavir-files*))
+					 (system *cleavir-system*))
   (let ((rest (member start system)))
     (loop for mod in (member start system)
        until (eq mod end)
@@ -134,7 +86,7 @@
        collect (bitcode-pathname mod :target-backend target-backend))))
 
 
-(defun link (start end &key (target-backend "CLEAVIR-BOEHM") (system *clasp-cleavir-files*))
+(defun link (start end &key (target-backend "CLEAVIR-BOEHM") (system *cleavir-system*))
   (let ((bitcode-files (select-bitcode-files start end :target-backend target-backend
 					     :system system)))
     (cmp:link-system-lto (core::target-backend-pathname core::+image-pathname+ 
@@ -151,3 +103,7 @@
 			 :target-backend target-backend)
     ))
 
+(format t "Loading cleavir-system.lsp~%")
+(load "sys:kernel;cleavir-system.lsp")
+
+(core:load-system :bclasp :cclasp :system cclasp-build::*cleavir-system*)

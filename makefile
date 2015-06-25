@@ -136,6 +136,12 @@ devemacs:
 	@echo EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_BUILD_TARGET_DIR)
 	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR) $(DEVEMACS))
 
+devemacs_no_clasp_lisp_source_dir:
+	@echo This shell sets up environment variables like BJAM
+	@echo as they are defined when commands execute within the makefile
+	@echo EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_BUILD_TARGET_DIR)
+	$(DEVEMACS)
+
 devshell:
 	@echo This shell sets up environment variables like BJAM
 	@echo as they are defined when commands execute within the makefile

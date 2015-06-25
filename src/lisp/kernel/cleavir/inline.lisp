@@ -1,3 +1,5 @@
+
+
 (in-package :clasp-cleavir)
 (export '(declared-global-inline-p
           declared-global-notinline-p))
@@ -148,6 +150,3 @@
             (cleavir-primop:rplacd p v)
             p)
           (error "Cannot rplacd non-cons ~s" p)))))
-
-
-
