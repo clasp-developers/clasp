@@ -28,7 +28,7 @@ boehm-cleavir:
 	make boehm
 	make cclasp
 
-cclasp:
+cclasp-boehm:
 	clasp_boehm_o  -l "buildCleavirClasp.lsp"
 
 cclasp-reload:

@@ -3,8 +3,6 @@
 ;;; This file contains code to compile cleavir and generate a new Clasp image
 ;;; in which Cleavir is the default compiler
 ;;;
-(format t "Starting compile-cclasp.lisp~%")
-
 
 (defpackage #:cclasp-build
   (:use #:common-lisp #:core))
@@ -102,8 +100,3 @@
 					  (when (member :interactive *features*) (core:run-repl)))
 			 :target-backend target-backend)
     ))
-
-(format t "Loading cleavir-system.lsp~%")
-(load "sys:kernel;cleavir-system.lsp")
-
-(core:load-system :bclasp :cclasp :system cclasp-build::*cleavir-system*)

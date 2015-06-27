@@ -970,7 +970,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 			   :prologue-form '(progn
 					    (push :clos *features*)
 					    (if (member :interactive *features*) 
-						(bformat t "Starting %s Clasp %s ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
+						(bformat t "Starting Clasp %s ... loading image... it takes a few seconds\n"  (lisp-implementation-version))))
 			   :epilogue-form '(progn
 					    (cl:in-package :cl-user)
 					    (process-command-line-load-eval-sequence)

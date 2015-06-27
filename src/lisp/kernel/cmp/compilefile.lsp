@@ -182,22 +182,20 @@
       ((eq head 'cl:locally) (t1locally (cdr form) env))
       ((eq head 'cl:macrolet) (t1macrolet (cdr form) env))
       ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet (cdr form) env))
-      ((compiler-macro-function head env)
-       (warn "Handle compiler macro functions in env for ~a" head))
-#||      ((and (not (core:lexical-macro-function head env))
-            (compiler-macro-function head env))
-       (multiple-value-bind (expansion expanded-p)
-           (compiler-macro-function head env)
-         (cmp-log "COMPILE-MACROEXPANDed form[%s] expanded to [%s]\n" form expansion)
-         (irc-low-level-trace)
-         (t1expr expansion env)))
-||#
-      ((macro-function head env)
-       (let ((expanded (macroexpand form env)))
-	 (t1expr expanded env)))
-      (t (compile-top-level form)))
-    ))
-
+      ((and (listp form)
+            (symbolp (car form))
+            (not (core:lexical-function (car form) env))
+            (not (core:lexical-macro-function (car form) env))
+            (let ((expansion (core:compiler-macroexpand form env)))
+              (if (eq expansion form)
+                  nil
+                  (progn
+                    (t1expr expansion env)
+                    t)))))
+    ((macro-function head env)
+     (let ((expanded (macroexpand form env)))
+       (t1expr expanded env)))
+    (t (compile-top-level form)))))
 
 (defun compile-file-t1expr (form)
   ;; If the Cleavir compiler hook is set up then use that
@@ -205,9 +203,6 @@
   (if *cleavir-compile-file-hook*
       (funcall *cleavir-compile-file-hook* form)
       (t1expr form)))
-
-
-
 
 (defun compile-form-into-module (form name)
   "This is used to generate a module from a single form - specifically

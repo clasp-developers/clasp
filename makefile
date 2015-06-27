@@ -181,7 +181,7 @@ clasp-boehm:
 	(cd src/main; make boehm)
 
 cclasp-boehm:
-	(cd src/main; make cclasp)
+	(cd src/main; make cclasp-boehm)
 
 # Compile the CL sources for min-boehm: and full-boehm
 cl-boehm:

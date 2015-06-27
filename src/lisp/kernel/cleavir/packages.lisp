@@ -1,5 +1,11 @@
 (cl:in-package #:common-lisp-user)
 
+(defpackage #:cclasp-build
+  (:use #:common-lisp #:core)
+  (:export
+   #:compile-full-cclasp
+   #:link))
+
 (defpackage #:clasp-cleavir
   (:use #:common-lisp #:core)
   (:nicknames #:cc)

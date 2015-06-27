@@ -1,21 +1,26 @@
-(defun check-compiler-macro-function (f env)
-  (format t "ccmf = ~s~%" f)
-  t)
+(defun compiler-macro-function (name &optional env)
+;;  (declare (ignorable env))
+  (get-sysprop name 'sys::compiler-macro))
 
-(defun mexpansion (e f env)
-  (format t "expand = ~s~%" f)
-  #'(lambda (x) 'expand-me))
 
-(let ((form '(funcall #'foo 1))
-      (env nil))
+(defun maybe-compiler-macro-expand (form &optional env)
   (or (and (eq (car form) 'cl:funcall)
 	   (eq (car (cadr form)) 'cl:function)
-	   (let ((expansion (check-compiler-macro-function (cadr (cadr form)) env)))
-	     (if expansion
-		 (mexpansion expansion (cons (cadr (cadr form)) (cddr form)) env)
+	   (let ((expander (compiler-macro-function (cadr (cadr form)) env)))
+	     (if expander
+		 (funcall *macroexpand-hook* expander (cons (cadr (cadr form)) (cddr form)) env)
 		 form)))
-      (let ((expansion (check-compiler-macro-function (car form) env)))
-	(if expansion
-	    (mexpansion expansion form env)
+      (let ((expander (compiler-macro-function (car form) env)))
+	(if expander
+	    (funcall *macroexpand-hook* expander form env)
 	    form))))
+
+
+(define-compiler-macro foo (x) `(print ,x))
+
+(compiler-macro-function 'foo)
+(untrace)
+(trace compiler-macro-function)
+(maybe-compiler-macro-expand '(bar 1))
+
 

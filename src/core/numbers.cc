@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/conditions.h>
+#include <clasp/core/cleavirPrimopsPackage.fwd.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/mathDispatch.h>
 #include <clasp/core/num_arith.h>
@@ -1115,13 +1116,38 @@ T_sp numbers_monotonic(int s, int t, List_sp args) {
   return _lisp->_true();
 };
 
+bool binary__LT_(Number_sp x, Number_sp y)
+{
+  return basic_compare(x,y) == -1;
+}
+
+bool binary__LE_(Number_sp x, Number_sp y)
+{
+  return basic_compare(x,y) != 1;
+}
+
+bool binary__GT_(Number_sp x, Number_sp y)
+{
+  return basic_compare(x,y) == 1;
+}
+
+bool binary__GE_(Number_sp x, Number_sp y)
+{
+  return basic_compare(x,y) != -1;
+}
+
+bool binary__EQ_(Number_sp x, Number_sp y)
+{
+  return basic_compare(x,y) == 0;
+}
+
 #define DOCS_af__LT_ "LT less than function"
 #define LOCK_af__LT_ 1
 #define ARGS_af__LT_ "(&rest args)"
 #define DECL_af__LT_ ""
-T_mv af__LT_(List_sp args) {
+T_sp af__LT_(List_sp args) {
   _G();
-  return (Values(numbers_monotonic(-1, 1, args)));
+  return numbers_monotonic(-1, 1, args);
 };
 
 #define DOCS_af__GT_ "GT less than function"
@@ -3687,6 +3713,7 @@ int cl_integerLength(Integer_sp i) {
 };
 
 void initialize_numbers() {
+  af_def(CorePkg,"negate",&clasp_negate);
   SYMBOL_EXPORT_SC_(ClPkg, sqrt);
   ClDefun(sqrt);
   SYMBOL_EXPORT_SC_(ClPkg, sin);
@@ -3712,5 +3739,13 @@ void initialize_numbers() {
   SYMBOL_EXPORT_SC_(ClPkg, exp);
   ClDefun(exp);
   ClDefun(integerLength);
+
+  af_def(CorePkg,"binary-_PLUS_",&contagen_add);
+  af_def(CorePkg,"binary-_MINUS_",&contagen_sub);
+  af_def(CorePkg,"binary-_LT_",&binary__LT_);
+  af_def(CorePkg,"binary-_LE_",&binary__LE_);
+  af_def(CorePkg,"binary-_GT_",&binary__GT_);
+  af_def(CorePkg,"binary-_GE_",&binary__GE_);
+  af_def(CorePkg,"binary-_EQ_",&binary__EQ_);
 }
 };

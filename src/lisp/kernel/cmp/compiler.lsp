@@ -81,8 +81,7 @@ Return the new environment."
 			  function-env
 			  closed-over-renv
 			  argument-holder
-			  new-env
-			  )
+			  new-env)
   (cmp-log "compile-arguments closed-over-renv: %s\n" closed-over-renv)
   ;; This is where we make the value frame for the passed arguments
   ;;
@@ -107,11 +106,7 @@ Return the new environment."
   ;; The setParentOfActivationFrame should be set before we compile the lambda-list-code
   ;; otherwise it won't be able to access the closed over environment
   ;;  (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) closed-over-renv)
-  (irc-attach-debugging-info-to-value-frame (irc-renv new-env) lambda-list-handler new-env)
-  )
-
-
-
+  (irc-attach-debugging-info-to-value-frame (irc-renv new-env) lambda-list-handler new-env))
 
 (defparameter *lambda-args-num* 0)
 
@@ -1221,35 +1216,22 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   )
 
 
-
-(defun compile-macroexpand (form env)
-  (cmp-log "Entered compile-macroexpand with: %s\n" form)
-  (let ((result (macroexpand form env)))
-    (cmp-log "Leaving compile-macroexpand with result ===> %s\n" result)
-    result))
-
 (defun codegen-application (result form env)
-  "A macro function or a regular function"
-  ;;  (break "codegen-application")
+  "A compiler macro function, macro function or a regular function"
   (assert-result-isa-llvm-value result)
   (dbg-set-current-source-pos form)
   (cond
+    ;; A compiler macro
     ((and (symbolp (car form))
           (not (core:lexical-function (car form) env))
           (not (core:lexical-macro-function (car form) env))
-          (compiler-macro-function (car form) env))
-     (warn "Handle compiler-macro expansion here for ~a" (car form)))
-#||    ((and (symbolp (car form))
-          (not (core:lexical-function (car form) env))
-          (not (core:lexical-macro-function (car form) env))
-          (compiler-macro-function (car form) env))
-     (let ((expander (compiler-macro-function (car form) env)
-     (multiple-value-bind (expansion expanded-p)
-         (compiler-macro-function (car form) env)
-       (cmp-log "COMPILE-MACROEXPANDed form[%s] expanded to [%s]\n" form expansion)
-       (irc-low-level-trace)
-       (codegen result expansion env)))
-||#
+          (let ((expansion (core:compiler-macroexpand form env)))
+            (if (eq expansion form)
+                nil
+                (progn
+                  (codegen result expansion env)
+                  t)))))
+    ;; A regular macro
     ((and (symbolp (car form))
           (not (core:lexical-function (car form) env))
           (macro-function (car form) env))
@@ -1258,9 +1240,8 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
        (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
        (irc-low-level-trace)
        (codegen result expansion env)))
-    (t
      ;; It's a regular function call
-     (codegen-call result form env))))
+    (t (codegen-call result form env))))
 
 
 
