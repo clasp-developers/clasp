@@ -948,11 +948,16 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   _G();
   //	SYMBOL_SC_(CorePkg,processDeclarations);
   //	Defun(processDeclarations);
-  SYMBOL_EXPORT_SC_(CorePkg, STARimplicit_compile_hookSTAR);
-  SYMBOL_EXPORT_SC_(CorePkg, implicit_compile_hook_default);
+  SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
+  SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);
   SYMBOL_EXPORT_SC_(CompPkg, STARall_functions_for_one_compileSTAR );
-  Defun(implicit_compile_hook_default);
-  _sym_STARimplicit_compile_hookSTAR->defparameter(_sym_implicit_compile_hook_default->symbolFunction());
+  af_def(CompPkg,"implicit_compile_hook_default",&af_implicit_compile_hook_default,
+         ARGS_af_implicit_compile_hook_default,
+         DECL_af_implicit_compile_hook_default,
+         DOCS_af_implicit_compile_hook_default);
+  ASSERT(comp::_sym_implicit_compile_hook_default->symbolFunction().notnilp()
+         && !comp::_sym_implicit_compile_hook_default->symbolFunction().unboundp());
+  comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default->symbolFunction());
 
 #ifdef EXPOSE_DLLOAD
   SYMBOL_SC_(CorePkg, dlload);

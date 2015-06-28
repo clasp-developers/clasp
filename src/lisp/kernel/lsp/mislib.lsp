@@ -39,13 +39,13 @@ successfully, T is returned, else error."
 (defparameter *do-time-level* -1)
 
 (defun do-time (closure)
-  #-boehm-gc
   (let* ((real-start (get-internal-real-time))
 	 (run-start (get-internal-run-time))
 	 (llvm-finalization-time-start llvm-sys:*accumulated-llvm-finalization-time*)
 	 (llvm-finalization-number-start llvm-sys:*number-of-llvm-finalizations*)
 	 gc-start
-	 bytes-consed
+         gc-bytes-start gc-bytes-end
+         clasp-bytes-start clasp-bytes-end
 	 real-end
 	 run-end
 	 llvm-finalization-time-end
@@ -54,14 +54,17 @@ successfully, T is returned, else error."
     ;; Garbage collection forces counters to be updated
     #-clasp(si::gc t)
     #-clasp(setf gc-start (si::gc-time))
+    (setf bytes-start (gctools:bytes-allocated))
+    (multiple-value-setq (gc-bytes-start clasp-bytes-start)
+      (gctools:bytes-allocated))
     (multiple-value-prog1
 	(funcall closure)
+      (multiple-value-setq (gc-bytes-end clasp-bytes-end)
+        (gctools:bytes-allocated))
       (setq run-end (get-internal-run-time)
 	    real-end (get-internal-real-time)
 	    llvm-finalization-time-end llvm-sys:*accumulated-llvm-finalization-time*
-	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*
-	    )
-      #-clasp(setq gc-end (si::gc-time))
+	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*)
       #-clasp(format *trace-output*
 		     "real time     : ~,3F secs~%~
               run time      : ~,3F secs~%~
@@ -75,12 +78,16 @@ successfully, T is returned, else error."
 		     (- llvm-finalization-number-end llvm-finalization-number-start)
 		     )
       #+clasp(format *trace-output*
-		     "real time     : ~,3F secs~%~
-              run time      : ~,3F secs~%~
-              LLVM time     : ~,3F secs~%~
-              LLVM compiles : ~A~%"
+	     "real time          : ~,3F secs~%~
+              run time           : ~,3F secs~%~
+              GC bytes consed    : ~a bytes~%~
+              Clasp bytes consed : ~a bytes~%~
+              LLVM time          : ~,3F secs~%~
+              LLVM compiles      : ~A~%"
 		     (/ (- real-end real-start) internal-time-units-per-second)
 		     (/ (- run-end run-start) internal-time-units-per-second)
+                     (- gc-bytes-end gc-bytes-start)
+                     (- clasp-bytes-end clasp-bytes-start)
 		     (- llvm-finalization-time-end llvm-finalization-time-start)
 		     (- llvm-finalization-number-end llvm-finalization-number-start)
 		     )

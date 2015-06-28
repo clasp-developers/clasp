@@ -69,28 +69,52 @@ typedef enum { BoehmClassKind,
                BoehmContainerKind,
                BoehmStringKind } BoehmKind;
 
+//#define BIG_BOEHM_HEADER
 #ifdef USE_BOEHM_MEMORY_MARKER
 extern int globalBoehmMarker;
 #endif
 class Header_s {
 public:
-  Header_s(const char *name, BoehmKind k) : ValidStamp(0xDEADBEEF), TypeidName(name), Kind(k)
-#ifdef USE_BOEHM_MEMORY_MARKER
-                                            ,
-                                            Marker(globalBoehmMarker)
+  Header_s(const char *name, BoehmKind k) :
+  Kind(k)
+#ifdef BIG_BOEHM_HEADER
+    , ValidStamp(0xDEADBEEF)
+    , TypeidName(name)
 #endif
-                                                {};
+#ifdef USE_BOEHM_MEMORY_MARKER
+    , Marker(globalBoehmMarker)
+#endif
+  {};
 private:
+#ifdef _ADDRESS_MODEL_64
+  uint64_t Kind;
+#endif
+#ifdef _ADDRESS_MODEL_32
+  uint32_t Kind;
+#endif
+#ifdef BIG_BOEHM_HEADER
   uintptr_t ValidStamp;
   const char *TypeidName;
-  BoehmKind Kind;
-#ifdef USE_BOEHM_MEMORY_MARKER
+#endif
+#ifdef USE_BOEHM_MEMORY_MARKER // defined in foundation.h
   int Marker;
 #endif
 public:
-  bool isValid() const { return this->ValidStamp == 0xDEADBEEF; };
-  const char *name() const { return this->TypeidName; };
-  BoehmKind kind() const { return this->Kind; };
+  bool isValid() const {
+#ifdef BIG_BOEHM_HEADER
+    return this->ValidStamp == 0xDEADBEEF;
+#else
+    return true;
+#endif
+  };
+  const char *name() const {
+#ifdef BIG_BOEHM_HEADER
+    return this->TypeidName;
+#else
+    return "TypeIdUnavailable";
+#endif
+  };
+  BoehmKind kind() const { return (BoehmKind)this->Kind; };
   bool markerMatches(int m) const {
 #ifdef USE_BOEHM_MEMORY_MARKER
     if (m) {

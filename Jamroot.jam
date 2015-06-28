@@ -74,7 +74,7 @@ project clasp : requirements
 ##        Turn on USE_GCVECTOR_MALLOC_ALLOCATOR to use the malloc/free one
 
 #        <define>RUN_SAFE   # Turn on safety checks in smart_ptr - this slows things down
-
+         <define>TRACK_ALLOCATIONS   # this may slow down allocation
 #	 <define>DEBUG_GCWEAK    # Debug the Weak pointer code
 #        <define>DEBUG_TRYSET    #    Define this if you are using DEBUG_GCWEAK but can be defined alone & with DEBUG_FIND
 #        <define>DEBUG_FIND      #    Define this when using DEBUG_GCWEAK but can be defined along & with DEBUG_TRYSET

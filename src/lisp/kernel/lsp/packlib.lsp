@@ -156,7 +156,20 @@ PACKAGE is non-NIL, then only the specified PACKAGE is searched."
   (mapc #'print-symbol-apropos (apropos-list string package))
   (values))
 
+;; apropos-list function from stassats June 28, 2015
 (defun apropos-list (string &optional package)
+  "Args: (string &optional (package nil))
+Returns a list of all symbols whose print-names contain STRING as substring.
+If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
+  ;; Remove duplicates, since it's sorted, this is faster than delete-duplicates
+  (loop with previous = 0
+        for x in (sort (apropos-list-inner string package)
+                       #'string-lessp)
+        if (not (eq previous x))
+        collect (setf previous x)))
+
+;; Original apropos-list from ECL
+#+(or)(defun apropos-list (string &optional package)
   "Args: (string &optional (package nil))
 Returns a list of all symbols whose print-names contain STRING as substring.
 If PACKAGE is non-NIL, then only the specified PACKAGE is searched."

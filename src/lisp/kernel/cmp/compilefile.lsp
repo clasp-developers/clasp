@@ -183,19 +183,20 @@
       ((eq head 'cl:macrolet) (t1macrolet (cdr form) env))
       ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet (cdr form) env))
       ((and (listp form)
-            (symbolp (car form))
+            ;;(symbolp (car form))
             (not (core:lexical-function (car form) env))
             (not (core:lexical-macro-function (car form) env))
+            (not (core:declared-global-notinline-p (car form)))
             (let ((expansion (core:compiler-macroexpand form env)))
               (if (eq expansion form)
                   nil
                   (progn
                     (t1expr expansion env)
                     t)))))
-    ((macro-function head env)
-     (let ((expanded (macroexpand form env)))
-       (t1expr expanded env)))
-    (t (compile-top-level form)))))
+      ((macro-function head env)
+       (let ((expanded (macroexpand form env)))
+         (t1expr expanded env)))
+      (t (compile-top-level form)))))
 
 (defun compile-file-t1expr (form)
   ;; If the Cleavir compiler hook is set up then use that

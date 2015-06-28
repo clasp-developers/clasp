@@ -135,9 +135,9 @@
      ;; In that case, we return the relevant info
      ;; Check if we should inline the function
      (make-instance 'cleavir-env:global-function-info
-		    :name function-name
-		    :compiler-macro (compiler-macro-function function-name)
-                    :inline (global-inline-status function-name)
+                    :name function-name
+                    :compiler-macro (compiler-macro-function function-name)
+                    :inline (core:global-inline-status function-name)
                     :ast (global-function-inline-ast function-name)))
     ( ;; If it is neither of the cases above, then this name does
      ;; not have any function-info associated with it.

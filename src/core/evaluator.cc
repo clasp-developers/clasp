@@ -92,7 +92,7 @@ List_sp separateTopLevelForms(List_sp accumulated, T_sp possibleForms) {
 #define DECL_core_compileFormAndEvalWithEnv ""
 #define DOCS_core_compileFormAndEvalWithEnv "compileFormAndEvalWithEnv"
 T_mv core_compileFormAndEvalWithEnv(T_sp form, T_sp env, T_sp stepping, T_sp compiler_env_p, T_sp execute) {
-  T_mv result = eval::funcall(_sym_STARimplicit_compile_hookSTAR->symbolValue(), form, env);
+  T_mv result = eval::funcall(comp::_sym_STARimplicit_compile_hookSTAR->symbolValue(), form, env);
   return result;
 };
 
@@ -2136,7 +2136,7 @@ T_mv t1Evaluate(T_sp exp, T_sp environment) {
   if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
     printf("%s:%d About to compileFormAndEvalWithEnv: %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
   }
-  return eval::funcall(_sym_STARimplicit_compile_hookSTAR->symbolValue(), exp, environment);
+  return eval::funcall(comp::_sym_STARimplicit_compile_hookSTAR->symbolValue(), exp, environment);
 }
 
 #define ARGS_core_evalWithEnv "(form &optional env stepping compiler-env-p (execute t))"

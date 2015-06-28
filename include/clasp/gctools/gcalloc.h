@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <limits>
 
 namespace gctools {
+  extern uint64_t globalBytesAllocated;
 };
 
 namespace gctools {
@@ -84,8 +85,11 @@ template <class T>
 struct RootClassAllocator {
   template <class... ARGS>
   static T *allocate(ARGS &&... args) {
-#ifdef USE_BOEHM
     size_t sz = sizeof_with_header<T>();
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += sz;
+#endif
+#ifdef USE_BOEHM
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
     new (base) Header_s(const_cast<char *>(typeid(T).name()), BoehmClassKind);
     T *obj = BasePtrToMostDerivedPtr<T>(base);
@@ -95,7 +99,6 @@ struct RootClassAllocator {
 #endif
 #ifdef USE_MPS
     // Different classes can have different Headers
-    size_t sz = sizeof_with_header<T>();
     typedef typename GCHeader<T>::HeaderType HeadT;
     T *obj;
     mps_ap_t obj_ap = global_non_moving_ap;
@@ -123,8 +126,11 @@ struct ClassAllocator {
   /*! Allocate regular C++ classes that will be garbage collected as soon as nothing points to them */
   template <class... ARGS>
   static T *allocateClass(ARGS &&... args) {
-#ifdef USE_BOEHM
     size_t sz = sizeof_with_header<T>();
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += sz;
+#endif
+#ifdef USE_BOEHM
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
     new (base) Header_s(typeid(T).name(), BoehmClassKind);
     T *obj = BasePtrToMostDerivedPtr<T>(base);
@@ -134,7 +140,6 @@ struct ClassAllocator {
 #endif
 #ifdef USE_MPS
     // Different classes can have different Headers
-    size_t sz = sizeof_with_header<T>();
     typedef typename GCHeader<T>::HeaderType HeadT;
     T *obj;
     mps_ap_t obj_ap = GCAllocationPoint<T>::get();
@@ -172,11 +177,14 @@ struct GCObjectAppropriatePoolAllocator {
   typedef smart_ptr<OT> smart_pointer_type;
   template <typename... ARGS>
   static smart_pointer_type allocateInAppropriatePool(ARGS &&... args) {
+    size_t size = sizeof_with_header<OT>();
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += size;
+#endif
 #ifdef USE_BOEHM
     // By default allocate in the normal pool for objects that contain pointers
     // to other objects.
-    size_t sz = sizeof_with_header<OT>();
-    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
+    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
     new (base) Header_s(typeid(OT).name(), BoehmLispKind);
     pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
     new (ptr) OT(std::forward<ARGS>(args)...);
@@ -188,7 +196,6 @@ struct GCObjectAppropriatePoolAllocator {
     OT *obj;
     mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
     mps_addr_t addr;
-    size_t size = sizeof_with_header<OT>();
     do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -214,10 +221,13 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/true, /*Moveable=*/true> 
   typedef smart_ptr<OT> smart_pointer_type;
   template <typename... ARGS>
   static smart_pointer_type allocateInAppropriatePool(ARGS &&... args) {
+    size_t size = sizeof_with_header<OT>();
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += size;
+#endif
 #ifdef USE_BOEHM
     // Atomic objects (do not contain pointers) are allocated in separate pool
-    size_t sz = sizeof_with_header<OT>();
-    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(sz));
+    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(size));
     new (base) Header_s(typeid(OT).name(), BoehmLispKind);
     pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
     new (ptr) OT(std::forward<ARGS>(args)...);
@@ -229,7 +239,6 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/true, /*Moveable=*/true> 
     OT *obj;
     mps_ap_t obj_ap = _global_automatic_mostly_copying_zero_rank_allocation_point;
     mps_addr_t addr;
-    size_t size = sizeof_with_header<OT>();
     do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -255,11 +264,14 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/false, /*Moveable=*/false
   typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
   template <typename... ARGS>
   static smart_pointer_type allocateInAppropriatePool(ARGS &&... args) {
+    size_t size = sizeof_with_header<OT>();
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += size;
+#endif
 #ifdef USE_BOEHM
     // By default allocate in the normal pool for objects that contain pointers
     // to other objects.
-    size_t sz = sizeof_with_header<OT>();
-    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
+    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
     new (base) Header_s(typeid(OT).name(), BoehmLispKind);
     pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
     new (ptr) OT(std::forward<ARGS>(args)...);
@@ -271,7 +283,6 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/false, /*Moveable=*/false
     OT *obj;
     mps_ap_t obj_ap = global_non_moving_ap;
     mps_addr_t addr;
-    size_t size = sizeof_with_header<OT>();
     do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -348,6 +359,9 @@ public:
   static smart_pointer_type rootAllocate(ARGS &&... args) {
 #ifdef USE_BOEHM
     size_t sz = sizeof_with_header<OT>(); // USE HEADER FOR BOEHM ROOTS BUT NOT MPS
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += sz;
+#endif
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
     new (base) Header_s(typeid(OT).name(), BoehmLispKind);
     pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
@@ -439,10 +453,13 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   container_pointer allocate(size_type num, const void * = 0) {
+    size_t size = sizeof_container_with_header<TY>(num);
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += size;
+#endif
 #ifdef USE_BOEHM
-    size_t sz = sizeof_container_with_header<TY>(num);
     // prepend a one pointer header with a pointer to the typeinfo.name
-    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
+    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
     if (!base)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
     new (base) Header_s(typeid(TY).name(), BoehmContainerKind);
@@ -454,7 +471,6 @@ public:
     typedef typename GCHeader<TY>::HeaderType HeadT;
     mps_addr_t addr;
     container_pointer myAddress(NULL);
-    size_t size = sizeof_container_with_header<TY>(num);
     mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
     do {
       mps_res_t res = mps_reserve(&addr, obj_ap, size);
@@ -466,7 +482,7 @@ public:
       new (myAddress) TY(num);
     } while (!mps_commit(obj_ap, addr, size));
     globalMpsMetrics.movingAllocation(size);
-    GC_LOG(("malloc@%p %zu bytes\n", myAddress, newBytes));
+    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     POLL_SIGNALS();
     DEBUG_MPS_ALLOCATION("containerAMC", addr, myAddress, size, /*gctools::*/ GCKind<TY>::Kind);
     return myAddress;
@@ -527,10 +543,13 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   container_pointer allocate(size_type num, const void * = 0) {
+    size_t size = sizeof_container_with_header<TY>(num);
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += size;
+#endif
 #ifdef USE_BOEHM
-    size_t sz = sizeof_container_with_header<TY>(num);
     // prepend a one pointer header with a pointer to the typeinfo.name
-    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
+    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
     if (!base)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
     new (base) Header_s(typeid(TY).name(), BoehmContainerKind);
@@ -542,7 +561,6 @@ public:
     typedef typename GCHeader<TY>::HeaderType HeadT;
     mps_addr_t addr;
     container_pointer myAddress(NULL);
-    size_t size = sizeof_container_with_header<TY>(num);
     mps_ap_t obj_ap = global_non_moving_ap;
     do {
       mps_res_t res = mps_reserve(&addr, obj_ap, size);
@@ -554,7 +572,7 @@ public:
       new (myAddress) TY(num);
     } while (!mps_commit(obj_ap, addr, size));
     globalMpsMetrics.nonMovingAllocation(size);
-    GC_LOG(("malloc@%p %zu bytes\n", myAddress, newBytes));
+    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     POLL_SIGNALS();
     DEBUG_MPS_ALLOCATION("container_MVFF", addr, myAddress, size, /*gctools::*/ GCKind<TY>::Kind);
     return myAddress;
@@ -611,8 +629,11 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   container_pointer allocate(size_type num, const void * = 0) {
-#if defined(USE_BOEHM)
     size_t sz = sizeof_container_with_header<container_type>(num);
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += sz;
+#endif
+#if defined(USE_BOEHM)
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(sz));
     if (!base)
@@ -624,7 +645,6 @@ public:
     return myAddress;
 #endif
 #if defined(USE_MPS)
-    size_t sz = sizeof_container_with_header<container_type>(num);
     typedef typename GCHeader<TY>::HeaderType HeadT;
     mps_ap_t obj_ap = _global_automatic_mostly_copying_zero_rank_allocation_point;
     mps_addr_t base;
@@ -697,12 +717,15 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   static container_pointer allocate(size_type num, const void * = 0) {
+    size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += size;
+#endif
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating Bucket with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
 #endif
-    size_t newBytes = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
-    container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(newBytes);
+    container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(size);
     if (!myAddress)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
     new (myAddress) container_type(num);
@@ -714,12 +737,11 @@ public:
 #ifdef USE_MPS
     mps_addr_t addr;
     container_pointer myAddress(NULL);
-    size_t size = sizeof_container<container_type>(num);
     do {
       mps_res_t res = mps_reserve(&addr, _global_weak_link_allocation_point, size);
       if (res != MPS_RES_OK)
         THROW_HARD_ERROR(BF("Out of memory in GCBucketsAllocator_mps"));
-      GC_LOG(("allocated @%p %zu bytes\n", addr, newBytes));
+      GC_LOG(("allocated @%p %zu bytes\n", addr, size));
       myAddress = reinterpret_cast<container_pointer>(addr);
       if (!myAddress)
         THROW_HARD_ERROR(BF("NULL address in allocate!"));
@@ -727,7 +749,7 @@ public:
     } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
     if (!myAddress)
       THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>"));
-    GC_LOG(("malloc@%p %zu bytes\n", myAddress, newBytes));
+    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     return myAddress;
 #endif
   }
@@ -782,12 +804,15 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   static container_pointer allocate(size_type num, const void * = 0) {
+    size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += size;
+#endif
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__);
 #endif
-    size_t newBytes = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
-    container_pointer myAddress = (container_pointer)GC_MALLOC(newBytes);
+    container_pointer myAddress = (container_pointer)GC_MALLOC(size);
     if (!myAddress)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
     new (myAddress) container_type(num);
@@ -796,12 +821,11 @@ public:
 #ifdef USE_MPS
     mps_addr_t addr;
     container_pointer myAddress(NULL);
-    size_t size = sizeof_container<container_type>(num);
     do {
       mps_res_t res = mps_reserve(&addr, _global_strong_link_allocation_point, size);
       if (res != MPS_RES_OK)
         THROW_HARD_ERROR(BF("Out of memory in GCBucketsAllocator_mps"));
-      GC_LOG(("allocated @%p %zu bytes\n", addr, newBytes));
+      GC_LOG(("allocated @%p %zu bytes\n", addr, size));
       myAddress = reinterpret_cast<container_pointer>(addr);
       if (!myAddress)
         THROW_HARD_ERROR(BF("NULL address in allocate!"));
@@ -809,7 +833,7 @@ public:
     } while (!mps_commit(_global_strong_link_allocation_point, addr, size));
     if (!myAddress)
       THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,StrongLinks>>"));
-    GC_LOG(("malloc@%p %zu bytes\n", myAddress, newBytes));
+    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     return myAddress;
 #endif
   }
@@ -859,10 +883,13 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   static container_pointer allocate(const VT &val) {
+    size_t size = sizeof(container_type);
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += size;
+#endif
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
-    size_t newBytes = sizeof(container_type);
-    container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(newBytes);
+    container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(size);
     if (!myAddress)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
     new (myAddress) container_type(val);
@@ -873,7 +900,6 @@ public:
     typedef typename GCHeader<TY>::HeaderType HeadT;
     mps_addr_t addr;
     container_pointer myAddress(NULL);
-    size_t size = sizeof(container_type);
     do {
       mps_res_t res = mps_reserve(&addr, _global_weak_link_allocation_point, size);
       if (res != MPS_RES_OK)
@@ -881,7 +907,7 @@ public:
       myAddress = reinterpret_cast<container_pointer>(addr);
       new (myAddress) container_type(val);
     } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
-    GC_LOG(("malloc@%p %zu bytes\n", myAddress, newBytes));
+    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     return myAddress;
 #endif
   }
@@ -902,10 +928,13 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   static container_pointer allocate(const VT &val) {
+    size_t size = sizeof(container_type);
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += size;
+#endif
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__);
-    size_t newBytes = sizeof(container_type);
-    container_pointer myAddress = (container_pointer)GC_MALLOC(newBytes);
+    container_pointer myAddress = (container_pointer)GC_MALLOC(size);
     if (!myAddress)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
     new (myAddress) container_type(val);
@@ -916,7 +945,6 @@ public:
     typedef typename GCHeader<TY>::HeaderType HeadT;
     mps_addr_t addr;
     container_pointer myAddress(NULL);
-    size_t size = sizeof(container_type);
     do {
       mps_res_t res = mps_reserve(&addr, _global_strong_link_allocation_point, size);
       if (res != MPS_RES_OK)
@@ -924,7 +952,7 @@ public:
       myAddress = reinterpret_cast<container_pointer>(addr);
       new (myAddress) container_type(val);
     } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
-    GC_LOG(("malloc@%p %zu bytes\n", myAddress, newBytes));
+    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     return myAddress;
 #endif
   }
@@ -944,10 +972,13 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   static value_pointer allocate(const contained_type &val) {
+    size_t size = sizeof(VT);
+#ifdef TRACK_ALLOCATIONS
+    globalBytesAllocated += size;
+#endif
 #ifdef USE_BOEHM
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
-    size_t newBytes = sizeof(VT);
-    value_pointer myAddress = (value_pointer)GC_MALLOC_ATOMIC(newBytes);
+    value_pointer myAddress = (value_pointer)GC_MALLOC_ATOMIC(size);
     if (!myAddress)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
     new (myAddress) VT(val);
@@ -955,7 +986,6 @@ public:
 #endif
 #ifdef USE_MPS
     mps_addr_t addr;
-    size_t size = sizeof(VT);
     value_pointer myAddress;
     do {
       mps_res_t res = mps_reserve(&addr, _global_weak_link_allocation_point, size);

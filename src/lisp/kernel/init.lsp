@@ -75,11 +75,6 @@
   (core::select-package :cmp))
 (export '(link-system-lto))
 
-;;; cmp:*implicit-compilation* is set to T in cmp/cmprepl.lsp
-(SYS:*MAKE-SPECIAL 'cmp::*implicit-compilation*)
-(export '*implicit-compilation*)
-(setq cmp:*implicit-compilation* nil)
-(export '(cmp:*implicit-compilation*))
 
 (export '(link-system))
 (use-package :core)
@@ -419,12 +414,42 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;; Discard documentation until helpfile.lsp is loaded
 (defun set-documentation (o d s) nil)
 
-(defun proclaim (d)
+(defvar *functions-to-inline* (make-hash-table :test #'equal))
+(defvar *functions-to-notinline* (make-hash-table :test #'equal))
+
+(defun proclaim (decl)
   "Args: (decl-spec)
 Gives a global declaration.  See DECLARE for possible DECL-SPECs."
-  (when (eq (car d) 'SPECIAL) (mapc #'sys::*make-special (cdr d)))
-  (and *proclaim-hook* (funcall *proclaim-hook* d)))
+  (cond
+    ((eq (car decl) 'SPECIAL)
+     (mapc #'sys::*make-special (cdr decl)))
+    ((eq (car decl) 'cl:inline)
+     (let ((name (cadr decl)))
+       (core:hash-table-setf-gethash *functions-to-inline* name t)
+       (remhash name *functions-to-notinline*)))
+    ((eq (car decl) 'cl:notinline)
+     (let ((name (cadr decl)))
+       (core:hash-table-setf-gethash *functions-to-notinline* name t)
+       (remhash name *functions-to-inline*)))
+    (*proclaim-hook*
+     (funcall *proclaim-hook* decl))))
 
+(defun declared-global-inline-p (name)
+  (gethash name *functions-to-inline*))
+
+(defun declared-global-notinline-p (name)
+  (gethash name *functions-to-notinline*))
+
+(defun global-inline-status (name)
+  "Return 'cl:inline 'cl:notinline or nil"
+  (cond
+    ((declared-global-inline-p name) 'cl:inline)
+    ((declared-global-notinline-p name) 'cl:notinline)
+    (t nil)))
+
+(export '(global-inline-status
+          declared-global-notinline-p
+          declared-global-inline-p))
 
 ;; This is used extensively in the ecl compiler and once in predlib.lsp
 (defvar *alien-declarations* ())
@@ -453,7 +478,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
            #'(lambda (module)
                (let* ((pathname (lisp-source-pathname module))
 		      (name (namestring pathname)))
-                 (if cmp:*implicit-compilation*
+                 (if cmp:*implicit-compile-hook*
                      (bformat t "Loading/compiling source: %s\n" (namestring name))
                      (bformat t "Loading/interpreting source: %s\n" (namestring name)))
 		 (load pathname)))
@@ -552,7 +577,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	  (load-bitcode bc-path))
 	(if (probe-file lsp-path)
 	    (progn
-              (if cmp:*implicit-compilation*
+              (if cmp:*implicit-compile-hook*
                   (bformat t "Loading/compiling source: %s\n" (truename lsp-path))
                   (bformat t "Loading/interpreting source: %s\n" (truename lsp-path)))
 	      (load lsp-path))
@@ -673,6 +698,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/lsp/helpfile"
     #P"kernel/lsp/evalmacros"
     #P"kernel/lsp/claspmacros"
+    #P"kernel/lsp/source-transformations"
     :macros
     #P"kernel/lsp/testing"
     #P"kernel/lsp/makearray"

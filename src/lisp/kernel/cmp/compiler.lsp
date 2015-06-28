@@ -1222,9 +1222,10 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   (dbg-set-current-source-pos form)
   (cond
     ;; A compiler macro
-    ((and (symbolp (car form))
+    ((and ;;(symbolp (car form))
           (not (core:lexical-function (car form) env))
           (not (core:lexical-macro-function (car form) env))
+          (not (core:declared-global-notinline-p (car form)))
           (let ((expansion (core:compiler-macroexpand form env)))
             (if (eq expansion form)
                 nil

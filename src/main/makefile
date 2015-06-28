@@ -37,6 +37,8 @@ cclasp-reload:
 bclasp-to-cclasp:
 	clasp_boehm_o  -l "buildBclaspToCclasp.lsp"
 
+cclasp-asdf-boehm:
+	clasp_boehm_o -l "buildCclaspAsdf.lsp"
 
 #	make clasp-gc-interface
 

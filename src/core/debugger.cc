@@ -221,7 +221,7 @@ T_sp LispDebugger::invoke() {
       T_sp env = af_ihsEnv(af_ihsCurrentFrame());
       //		DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
       try {
-        DynamicScopeManager scope(_sym_STARimplicit_compile_hookSTAR, _sym_implicit_compile_hook_default->symbolFunction());
+        DynamicScopeManager scope(comp::_sym_STARimplicit_compile_hookSTAR, comp::_sym_implicit_compile_hook_default->symbolFunction());
         _lisp->readEvalPrintString(sexp, env, true);
       } catch (DebuggerSaysAbortToRepl &err) {
         // nothing

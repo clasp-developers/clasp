@@ -63,7 +63,28 @@ core::Symbol_O *global_Symbol_OP_sameAsKey;
 
 namespace gctools {
 
+uint64_t globalBytesAllocated = 0;
 bool _GlobalDebugAllocations = false;
+
+
+#define ARGS_gc_bytes_allocated "()"
+#define DECL_gc_bytes_allocated ""
+#define DOCS_gc_bytes_allocated "Return the number of bytes allocated since Clasp started. Two values are returned the number reported by the GC and the number calculated by Clasp"
+T_mv gc_bytes_allocated()
+{
+  size_t gc_bytes = 0;
+#ifdef USE_BOEHM
+  gc_bytes = GC_get_total_bytes();
+#endif
+#ifdef USE_MPS
+  IMPLEMENT_MEF(BF("Figure out how to get the total bytes allocated using MPS"));
+#endif
+  size_t my_bytes = globalBytesAllocated;
+  ASSERT(gc_bytes < gc::most_positive_fixnum && my_bytes < gc::most_positive_fixnum);
+  return Values(clasp_make_fixnum(gc_bytes),clasp_make_fixnum(my_bytes));
+}
+
+
 
 #if 0
 #define ARGS_af_testVec0 "()"
@@ -733,6 +754,8 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
     core::af_def(GcToolsPkg, "bootstrapKindSymbols", &af_bootstrapKindSymbols);
     core::af_def(GcToolsPkg, "allocPatternBegin", &af_allocPatternBegin);
     core::af_def(GcToolsPkg, "allocPatternEnd", &af_allocPatternEnd);
+    core::af_def(GcToolsPkg, "bytes_allocated", &gc_bytes_allocated);
+
     _sym_STARallocPatternStackSTAR->defparameter(_Nil<core::T_O>());
 #ifdef USE_MPS
     core::af_def(GcToolsPkg, "mpsTelemetrySet", &af_mpsTelemetrySet);

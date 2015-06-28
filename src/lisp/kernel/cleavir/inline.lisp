@@ -1,51 +1,23 @@
 
 
 (in-package :clasp-cleavir)
-(export '(declared-global-inline-p
-          declared-global-notinline-p))
-(export '(*functions-to-inline*
-          *functions-to-notinline*
-          *function-inline-asts*))
+(export '(*function-inline-asts*))
 
-(defvar *functions-to-inline* (make-hash-table :test #'equal))
-(defvar *functions-to-notinline* (make-hash-table :test #'equal))
 (defvar *function-inline-asts* (make-hash-table :test #'equal))
-
 
 (defun proclaim-hook (decl)
   (let ((head (car decl)))
     (cond
-      ((eq head 'cl:inline)
-       (let ((name (cadr decl)))
-         (core:hash-table-setf-gethash *functions-to-inline* name t)
-         (remhash name *functions-to-notinline*)))
-      ((eq head 'cl:notinline)
-       (let ((name (cadr decl)))
-         (core:hash-table-setf-gethash *functions-to-notinline* name t)
-         (remhash name *functions-to-inline*)))
       ((eq head 'cl:ftype)
        (format t "*** Do something with proclaim ftype ~s~%" decl))
+      ;; Add other clauses here
       (t (warn "Add support for proclaim ~s~%" decl)))))
-
-(defun declared-global-inline-p (name)
-  (gethash name *functions-to-inline*))
-
-(defun declared-global-notinline-p (name)
-  (gethash name *functions-to-notinline*))
-
-(defun global-inline-status (name)
-  "Return 'cl:inline 'cl:notinline or nil"
-  (cond
-    ((declared-global-inline-p name) 'cl:inline)
-    ((declared-global-notinline-p name) 'cl:notinline)
-    (t nil)))
 
 (defun global-function-inline-ast (name)
   (gethash name *function-inline-asts*))
 
-
 (defun do-inline-hook (name function)
-  (when (clasp-cleavir:declared-global-inline-p name)
+  (when (core:declared-global-inline-p name)
     (let ((ast (cleavir-generate-ast:generate-ast 
                 function
                 clasp-cleavir:*clasp-env* 
@@ -56,7 +28,7 @@
 ;; function is proclaimed as inline
 (defun defun-inline-hook (name function)
   (let ((ast-gs (gensym "AST")))
-    (when (declared-global-inline-p name)
+    (when (core:declared-global-inline-p name)
       `(eval-when (:compile-toplevel :load-toplevel :execute)
          (when core:*do-inline-hook*
            (funcall core:*do-inline-hook* (QUOTE ,name) (QUOTE ,function)))))))

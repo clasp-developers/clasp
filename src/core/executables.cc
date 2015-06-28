@@ -228,7 +228,7 @@ void handleArgumentHandlingExceptions(gctools::tagged_functor<FunctionClosure> c
 T_mv cl_functionLambdaExpression(Function_sp fn) {
   _G();
   List_sp code = _Nil<List_V>();
-  if (gctools::tagged_functor<InterpretedClosure> ic = fn->closure.as<InterpretedClosure>()) {
+  if (gctools::tagged_functor<InterpretedClosure> ic = fn->closure.asOrNull<InterpretedClosure>()) {
     code = ic->_code;
   }
   bool closedp = true; // fn->closedEnvironment().notnilp();

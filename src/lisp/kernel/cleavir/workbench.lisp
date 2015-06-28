@@ -10,6 +10,10 @@
 
 
 (load "sys:kernel;cleavir;setup-cclasp-build.lisp")
+(load "sys:kernel;cleavir-system.lsp")
+(cclasp-build::compile-clasp :init :auto-cleavir :recompile nil :system *cleavir-system*)
+(apropos "cleavir-system")
+
 
 (in-package :clasp-cleavir)
 
