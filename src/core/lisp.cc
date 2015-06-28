@@ -1172,7 +1172,6 @@ uint Lisp_O::nextEnvironmentId() {
 #define DLINE() printf("%s:%d debug\n", __FILE__, __LINE__);
 
 void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInputFile) {
-  _G();
   int endArg = argc;
   for (int i = 0; i < argc; ++i) {
     if (strcmp(argv[i], "--") == 0) {

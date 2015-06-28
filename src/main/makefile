@@ -5,10 +5,10 @@ project-directories = ../gctools ../core ../clbind ../cffi ../asttooling ../llvm
 
 
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
-  CLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_boehm_o
+  CLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_boehm_o -f bclasp
   CLASP_MPS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_mps_o
 else
-  CLASP_BOEHM = clasp_boehm_o
+  CLASP_BOEHM = clasp_boehm_o -f bclasp
   CLASP_MPS = clasp_mps_o
 endif
 
@@ -29,16 +29,16 @@ boehm-cleavir:
 	make cclasp
 
 cclasp-boehm:
-	clasp_boehm_o  -l "buildCleavirClasp.lsp"
+	$(CLASP_BOEHM) -l "buildCleavirClasp.lsp"
 
 cclasp-reload:
-	clasp_boehm_o  -l "buildCleavirClaspReload.lsp"
+	$(CLASP_BOEHM) -l "buildCleavirClaspReload.lsp"
 
 bclasp-to-cclasp:
-	clasp_boehm_o  -l "buildBclaspToCclasp.lsp"
+	$(CLASP_BOEHM) -l "buildBclaspToCclasp.lsp"
 
 cclasp-asdf-boehm:
-	clasp_boehm_o -l "buildCclaspAsdf.lsp"
+	$(CLASP_BOEHM) -l "buildCclaspAsdf.lsp"
 
 #	make clasp-gc-interface
 
@@ -118,7 +118,7 @@ mps-interface:
 	make boehm
 	make compile-commands
 	@echo Running parallel search and generating code when done
-	clasp_boehm_o -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
+	$(CLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
 
 
 

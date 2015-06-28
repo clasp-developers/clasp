@@ -100,20 +100,28 @@ T_mv core_mangleName(Symbol_sp sym, bool is_function) {
 
 #define ARGS_core_startupImagePathname "()"
 #define DECL_core_startupImagePathname ""
-#define DOCS_core_startupImagePathname "startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cleavir-boehm, cleavir-mps based on *features* :ECL-MIN, :USE-MPS, :CLEAVIR"
+#define DOCS_core_startupImagePathname "startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cleavir-boehm, cleavir-mps based on *features* :ECL-MIN, :USE-MPS, :BCLASP"
 T_sp core_startupImagePathname() {
   _G();
   Cons_sp features = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue());
   List_sp min = features->memberEq(kw::_sym_ecl_min);
   List_sp mps = features->memberEq(kw::_sym_use_mps);
-  List_sp cleavir = features->memberEq(kw::_sym_cleavir);
+  List_sp bclasp = features->memberEq(kw::_sym_bclasp);
   string strStage = "min";
   if (min.nilp()) {
-    if (cleavir.nilp()) {
+    if (bclasp.notnilp()) {
       strStage = "full";
     } else {
       strStage = "cleavir";
     }
+  }
+  // Now check if the executable name contains bclasp or cclasp
+  // if it does then these will change the value of strStage
+  string executable = _lisp->_Argv[0];
+  if ( executable.find("bclasp") != string::npos ) {
+    strStage = "full";
+  } else if ( executable.find("cclasp") != string::npos ) {
+    strStage = "cleavir";
   }
   string strGc = "boehm";
   if (mps.notnilp())

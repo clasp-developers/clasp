@@ -179,6 +179,7 @@ clasp-boehm:
 	make clasp-boehm-cpp
 	$(BJAM) everything gc=boehm link=static program=clasp release
 	(cd src/main; make boehm)
+	make cclasp-boehm
 
 cclasp-boehm:
 	(cd src/main; make cclasp-boehm)
@@ -218,7 +219,12 @@ ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
 	-(find $(CLASP_INTERNAL_BUILD_TARGET_DIR) -type f -print0 | xargs -0 rm -f)
 endif
 
+setup-cleavir:
+	clasp_boehm_o -f bclasp -l src/lisp/kernel/cleavir/setup-cclasp-build.lisp -e "(core:quit)"
 
+pull-sicl-master:
+	(cd src/lisp/kernel/contrib/sicl; git pull origin master)
+	make setup-cleavir
 
 mps-submodule:
 	git submodule add -b dev/2014-08-18/non-incremental  https://github.com/Ravenbrook/mps-temporary ./src/mps

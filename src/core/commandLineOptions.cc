@@ -185,6 +185,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     }
 #else
 {
+  this->_ExecutableName = argv[0];
   int iarg = 1;
   while (iarg < argc) {
     string arg = argv[iarg];

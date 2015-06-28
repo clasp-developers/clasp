@@ -8,6 +8,20 @@
   (:use #:common-lisp #:core))
 (in-package :cclasp-build)
 
+
+;;;
+;;; Create a list of source files for clasp+cleavir
+;;;   - Inject the kernel/cleavir/inlining.lisp file at :inlining
+;;;   - #P"/kernel/cleavir/auto-compile" sets up automatic compilation of top-level forms
+(defun setup-cclasp-system (init-files cleavir-files)
+  ;; Remove the cmprepl file and append the rest of the cleavir files
+  (append init-files
+          (list :bclasp)
+          cleavir-files
+          (list #P"kernel/cleavir/inline")
+          (list #P"kernel/cleavir/auto-compile")
+          (list :auto-compile :cclasp)))
+
 (defun compile-system (first-file last-file &key recompile reload (system *cleavir-system*))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (format t "compile-system  from: ~a  to: ~a\n" first-file last-file)
@@ -57,7 +71,7 @@
 				:system *cleavir-system*)))
 
 
-(defun compile-full-cclasp (&key (recompile t) (reload nil) (system *cleavir-system*))
+(defun compile-full-cclasp (system &key (recompile t) (reload nil))
   (let ((cmp:*compile-print* t))
     (compile-clasp :init :auto-cleavir
                    :recompile recompile 

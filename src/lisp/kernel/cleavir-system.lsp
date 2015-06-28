@@ -1,38 +1,6 @@
 
-(DEFPARAMETER *CLEAVIR-SYSTEM*
-  '(:INIT #P"kernel/init" :CLEAVIR-INJECTION #P"kernel/cmp/jit-setup"
-    #P"kernel/clsymbols" :START #P"kernel/lsp/packages"
-    #P"kernel/lsp/foundation" #P"kernel/lsp/export" #P"kernel/lsp/defmacro"
-    :DEFMACRO #P"kernel/lsp/helpfile" #P"kernel/lsp/evalmacros"
-    #P"kernel/lsp/claspmacros" :MACROS #P"kernel/lsp/testing"
-    #P"kernel/lsp/makearray" #P"kernel/lsp/arraylib" #P"kernel/lsp/setf"
-    #P"kernel/lsp/listlib" #P"kernel/lsp/mislib" #P"kernel/lsp/defstruct"
-    #P"kernel/lsp/predlib" #P"kernel/lsp/seq" #P"kernel/lsp/cmuutil"
-    #P"kernel/lsp/seqmacros" #P"kernel/lsp/iolib" #P"kernel/lsp/profiling"
-    :TINY :PRE-CMP #P"kernel/cmp/packages" #P"kernel/cmp/cmpsetup"
-    #P"kernel/cmp/cmpglobals" #P"kernel/cmp/cmptables" #P"kernel/cmp/cmpvar"
-    #P"kernel/cmp/cmputil" #P"kernel/cmp/cmpintrinsics" #P"kernel/cmp/cmpir"
-    #P"kernel/cmp/cmpeh" #P"kernel/cmp/debuginfo" #P"kernel/cmp/lambdalistva"
-    #P"kernel/cmp/cmpvars" #P"kernel/cmp/cmpquote" #P"kernel/cmp/cmpobj"
-    #P"kernel/cmp/compiler" #P"kernel/cmp/compilefile" #P"kernel/cmp/cmpbundle"
-    #P"kernel/cmp/cmpwalk" :CMP :STAGE1 #P"kernel/cmp/cmprepl" :CMPREPL
-    #P"kernel/lsp/logging" #P"kernel/lsp/seqlib" #P"kernel/lsp/trace"
-    :WAS-PRE-CMP #P"kernel/lsp/sharpmacros" #P"kernel/lsp/assert"
-    #P"kernel/lsp/numlib" #P"kernel/lsp/describe" #P"kernel/lsp/module"
-    #P"kernel/lsp/loop2" #P"kernel/lsp/shiftf-rotatef" #P"kernel/lsp/assorted"
-    #P"kernel/lsp/packlib" #P"kernel/lsp/defpackage" #P"kernel/lsp/format" :MIN
-    #P"kernel/clos/package" #P"kernel/clos/hierarchy" #P"kernel/clos/cpl"
-    #P"kernel/clos/std-slot-value" #P"kernel/clos/slot" #P"kernel/clos/boot"
-    #P"kernel/clos/kernel" #P"kernel/clos/method" #P"kernel/clos/combin"
-    #P"kernel/clos/std-accessors" #P"kernel/clos/defclass"
-    #P"kernel/clos/slotvalue" #P"kernel/clos/standard" #P"kernel/clos/builtin"
-    #P"kernel/clos/change" #P"kernel/clos/stdmethod" #P"kernel/clos/generic"
-    :GENERIC #P"kernel/clos/fixup" #P"kernel/clos/extraclasses"
-    #P"kernel/lsp/defvirtual" :STAGE3 #P"kernel/clos/conditions"
-    #P"kernel/clos/print" #P"kernel/clos/streams" #P"kernel/lsp/pprint"
-    #P"kernel/clos/inspect" :CLOS #P"kernel/lsp/ffi" #P"sockets/sockets" :FRONT
-    #P"kernel/lsp/top" :ALL :BCLASP
-    #P"kernel/contrib/sicl/Code/Cleavir/Input-output/packages"
+(DEFPARAMETER *CLEAVIR-PARTIAL-SYSTEM*
+  '(#P"kernel/contrib/sicl/Code/Cleavir/Input-output/packages"
     #P"kernel/contrib/sicl/Code/Cleavir/Input-output/io"
     #P"kernel/contrib/sicl/Code/Cleavir/Meter/packages"
     #P"kernel/contrib/sicl/Code/Cleavir/Meter/meter"
@@ -140,13 +108,11 @@
     #P"kernel/contrib/sicl/Code/Conditions/Additional/packages"
     #P"kernel/contrib/sicl/Code/Conditions/Additional/conditions"
     #P"kernel/contrib/sicl/Code/Conditions/Additional/condition-reporters-en"
-    #P"kernel/cleavir/packages" #P"kernel/cleavir/system"
-    #P"kernel/cleavir/ast" #P"kernel/cleavir/convert-form"
-    #P"kernel/cleavir/convert-special" #P"kernel/cleavir/hir"
-    #P"kernel/cleavir/introduce-invoke" #P"kernel/cleavir/setup"
-    #P"kernel/cleavir/ast-to-hir" #P"kernel/cleavir/mir"
-    #P"kernel/cleavir/hir-to-mir" #P"kernel/cleavir/ir"
+    #P"kernel/cleavir/packages" #P"kernel/cleavir/compile-cclasp"
+    #P"kernel/cleavir/system" #P"kernel/cleavir/ast"
+    #P"kernel/cleavir/convert-form" #P"kernel/cleavir/convert-special"
+    #P"kernel/cleavir/hir" #P"kernel/cleavir/introduce-invoke"
+    #P"kernel/cleavir/setup" #P"kernel/cleavir/ast-to-hir"
+    #P"kernel/cleavir/mir" #P"kernel/cleavir/hir-to-mir" #P"kernel/cleavir/ir"
     #P"kernel/cleavir/gml-drawing" #P"kernel/cleavir/landing-pad"
-    #P"kernel/cleavir/arguments" #P"kernel/cleavir/translate"
-    #P"kernel/cleavir/inline" #P"kernel/cleavir/auto-compile" :AUTO-COMPILE
-    :CCLASP)) 
+    #P"kernel/cleavir/arguments" #P"kernel/cleavir/translate")) 
