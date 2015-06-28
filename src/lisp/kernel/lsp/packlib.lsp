@@ -142,9 +142,8 @@ to NIL) and returns all values."
                 (princ "  Function"))))
   (when (boundp symbol)
         (if (constantp symbol)
-            (princ "  Constant: ")
-            (princ "  has value: "))
-        (prin1 (symbol-value symbol)))
+            (princ "  Constant")
+            (princ "  has value")))
   (terpri))
 
 
