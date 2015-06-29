@@ -124,7 +124,8 @@ uint64_t Bignum_O::as_uint64_() const {
       return ((ret));
     }
   }
-  TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(gc::most_positive_uint64)));
+  mpz_class z = (unsigned long)gc::most_positive_uint64;
+  TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(z)));
 }
 
 /*! This helps us debug the as_uint64 function by returning a string representation of the uint64 */

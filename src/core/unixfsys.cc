@@ -715,7 +715,7 @@ Number_sp af_file_write_date(T_sp pathspec) {
   if (safe_stat((char *)filename->c_str(), &filestatus) >= 0) {
     Number_sp accJan1st1970UT(Integer_O::create((gc::Fixnum)(24 * 60 * 60)));
     accJan1st1970UT = contagen_mul(accJan1st1970UT, Integer_O::create((gc::Fixnum)(17 + 365 * 70)));
-    time = Integer_O::create(static_cast<uint64_t>(filestatus.st_mtime));
+    time = Integer_O::create((gc::Fixnum)filestatus.st_mtime);
     time = contagen_add(time, accJan1st1970UT);
   }
   return time;

@@ -43,6 +43,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
+#include <clasp/core/bignum.fwd.h>
 #include <clasp/core/numbers.fwd.h>
 #include <clasp/core/numerics.h>
 
@@ -1236,7 +1237,8 @@ inline uint64_t clasp_to_uint64(Integer_sp x) {
     if (fn >= 0 & fn <= gc::most_positive_uint64) {
       return (uint64_t)fn;
     }
-    TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(gc::most_positive_uint64)));
+    mpz_class z = clasp_create_mpz_class(gc::most_positive_uint64);
+    TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(z)));
   }
   return x->as_uint64_();
 }
@@ -1255,8 +1257,10 @@ inline unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
     if (f >= 0 && f <= gc::most_positive_unsigned_long_long) {
       return (unsigned long long)f;
     }
+    // unsigned long int must == unsigned long long int
+    mpz_class z = clasp_create_mpz_class(gc::most_positive_unsigned_long_long);
     TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0),
-                                     Integer_O::create((uint64_t)gc::most_positive_unsigned_long_long)));
+                                     Integer_O::create(z)));
   }
   return i->as_unsigned_long_long_();
 };

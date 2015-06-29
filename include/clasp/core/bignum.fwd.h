@@ -29,6 +29,27 @@ THE SOFTWARE.
 
 namespace core {
 
+    mpz_class clasp_create_mpz_class(uint64_t x)
+    {
+        ASSERT(sizeof(x) == sizeof(unsigned long int));
+        return mpz_class((unsigned long int)x);
+    }
+
+
+    mpz_class clasp_create_mpz_class(unsigned long long int x)
+    {
+        ASSERT(sizeof(x) == sizeof(unsigned long int));
+        return mpz_class((unsigned long int)x);
+    }
+
+    mpz_class clasp_create_mpz_class(long long int x)
+    {
+        ASSERT(sizeof(x) == sizeof(long int));
+        return mpz_class((long int)x);
+    }
+
+
+
 FORWARD(Bignum);
 };
 #endif

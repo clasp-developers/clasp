@@ -247,7 +247,8 @@ struct to_object<unsigned long long> {
   typedef unsigned long long GivenType;
   static core::T_sp convert(GivenType v) {
     _G();
-    core::Integer_sp oi = core::Integer_O::create((uint64_t)v);
+    mpz_class z = (unsigned long int)v;
+    core::Integer_sp oi = core::Integer_O::create(z);
     return oi;
   }
 };

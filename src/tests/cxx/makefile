@@ -1,5 +1,5 @@
 testints.bc: testints.cc
-	/usr/bin/clang++ -O3 testints.cc -o testints
+	clang++ -O3 testints.cc -o testints
 
 testalign.bc: testalign.cc
 	/usr/bin/clang++ -O3 testalign.cc -o testalign

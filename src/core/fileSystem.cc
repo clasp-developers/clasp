@@ -205,7 +205,7 @@ void Path_O::sxhash_(HashGenerator &hg) const {
 Integer_sp Path_O::last_write_time() const {
   _G();
   std::time_t ttime = boost_filesystem::last_write_time(this->_Path);
-  uint64_t ui64 = ttime;
+  gc::Fixnum ui64 = ttime;
   return Integer_O::create(ui64);
 }
 

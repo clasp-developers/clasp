@@ -3218,7 +3218,7 @@ PointerType_sp Type_O::getPointerTo(int addressSpace) {
 }
 
 core::Integer_sp Type_O::getArrayNumElements() const {
-  uint64_t v64 = this->wrappedPtr()->getArrayNumElements();
+    gc::Fixnum v64 = this->wrappedPtr()->getArrayNumElements();
   core::Integer_sp ival = core::Integer_O::create(v64);
   return ival;
 }
