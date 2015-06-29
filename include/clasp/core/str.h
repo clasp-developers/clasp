@@ -70,9 +70,9 @@ public:
 
 public:
   //! dimension() ignores the fill pointer
-  virtual uint dimension() const { return this->_Contents.size(); };
+  virtual gc::Fixnum dimension() const { return this->_Contents.size(); };
   //! size is subclassed by StrWithFillPtr_O and uses the fill-pointer
-  virtual uint size() const { return this->_Contents.size(); };
+  virtual gc::Fixnum size() const { return this->_Contents.size(); };
   const char *c_str() const { return this->_Contents.c_str(); };
   string __str__() { return this->_Contents.asStdString(); };
   virtual string get() const { return this->_Contents.asStdString(); };
@@ -103,9 +103,9 @@ public:
   DoubleFloat_sp asReal() const;
   Symbol_sp asSymbol() const;
   Symbol_sp asKeywordSymbol() const;
-  string left(int num) const;
-  string right(int num) const;
-  string substr(int start, int num) const;
+  string left(gc::Fixnum num) const;
+  string right(gc::Fixnum num) const;
+  string substr(gc::Fixnum start, gc::Fixnum num) const;
   void sxhash_(HashGenerator &hg) const;
 
   Str_O &operator+=(const string &s) {
@@ -124,17 +124,17 @@ public:
   const_iterator begin() const { return this->_Contents.data(); }
   const_iterator end() const { return this->_Contents.data() + this->size(); };
 
-  claspChar schar(int index) const;
-  claspChar scharSet(int index, claspChar c);
+  claspChar schar(gc::Fixnum index) const;
+  claspChar scharSet(gc::Fixnum index, claspChar c);
 
   /*! Return the index of where substring is found 
 	  or nil
 	*/
-  T_sp find(const string &substring, int start);
+  T_sp find(const string &substring, gc::Fixnum start);
 
 public:
   //! dim ignore fill pointers - don't overload
-  uint length() const { return this->size(); };
+  gc::Fixnum length() const { return this->size(); };
   //	T_sp prim_format(Function_sp e, List_sp args, Environment_sp environ, Lisp_sp lisp );
   //	T_sp prim_formatCons(Function_sp e, List_sp args, Environment_sp environ, Lisp_sp lisp );
   virtual T_sp elementType() const;

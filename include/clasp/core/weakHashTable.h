@@ -103,7 +103,7 @@ public:
   virtual T_sp hashTableTest() const { return cl::_sym_eq; };
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-  int sxhashKey(T_sp key, int bound, bool willAddKey) const;
+  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
 
   void maphash(std::function<void(T_sp, T_sp)> const &fn);
 

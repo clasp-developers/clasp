@@ -75,8 +75,8 @@ int af_ll_fdset_size() {
 #define DOCS_af_ll_serveEventNoTimeout "ll_serveEventNoTimeout"
 core::Integer_mv af_ll_serveEventNoTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1) {
   _G();
-  int selectRet = select(maxfdp1, rfd->data<fd_set *>(), wfd->data<fd_set *>(), NULL, NULL);
-  return Values(Integer_O::create(selectRet), Integer_O::create(errno));
+  gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set *>(), wfd->data<fd_set *>(), NULL, NULL);
+  return Values(Integer_O::create(selectRet), Integer_O::create((gc::Fixnum)errno));
 }
 
 #define ARGS_af_ll_serveEventWithTimeout "(rfd wfd maxfdp1 seconds)"
@@ -90,13 +90,13 @@ Integer_mv af_ll_serveEventWithTimeout(core::ForeignData_sp rfd, core::ForeignDa
   struct timeval tv;
   tv.tv_sec = seconds;
   tv.tv_usec = ((seconds - floor(seconds)) * 1e6);
-  int selectRet = select(maxfdp1, rfd->data<fd_set *>(), wfd->data<fd_set *>(), NULL, &tv);
-  return Values(Integer_O::create(selectRet), Integer_O::create(errno));
+  gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set *>(), wfd->data<fd_set *>(), NULL, &tv);
+  return Values(Integer_O::create(selectRet), Integer_O::create((gc::Fixnum)errno));
 }
 
 void initialize_serveEvent_globals() {
   SYMBOL_EXPORT_SC_(ServeEventPkg, _PLUS_EINTR_PLUS_);
-  _sym__PLUS_EINTR_PLUS_->defconstant(Integer_O::create(EINTR));
+  _sym__PLUS_EINTR_PLUS_->defconstant(Integer_O::create((gc::Fixnum)EINTR));
 };
 
 void initialize_serveEvent_functions() {

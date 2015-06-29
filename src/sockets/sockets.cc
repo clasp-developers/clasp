@@ -169,7 +169,7 @@ T_sp af_ll_getHostByName(const string &hostName,                 // #0
     T_sp addr_list = _Nil<core::T_O>();
     int length = hostent->h_length;
     eval::funcall(setf_host_ent_name, Str_O::create(hostent->h_name), tHostEnt);
-    eval::funcall(/*#4*/ setf_host_ent_address_type, Integer_O::create(hostent->h_addrtype), tHostEnt);
+    eval::funcall(/*#4*/ setf_host_ent_address_type, Integer_O::create((gc::Fixnum)hostent->h_addrtype), tHostEnt);
 
     for (aliases = hostent->h_aliases; *aliases != NULL; aliases++) {
       aliases_list = Cons_O::create(Str_O::create(*aliases), aliases_list);
@@ -220,7 +220,7 @@ T_sp af_ll_getHostByAddress(Vector_sp address,               //#0
     int length = hostent->h_length;
 
     eval::funcall(/*#2*/ setf_host_ent_name, Str_O::create(hostent->h_name), tHostEnt);
-    eval::funcall(/*#4*/ setf_host_ent_address_type, Integer_O::create(hostent->h_addrtype), tHostEnt);
+    eval::funcall(/*#4*/ setf_host_ent_address_type, Integer_O::create((gc::Fixnum)hostent->h_addrtype), tHostEnt);
 
     for (aliases = hostent->h_aliases; *aliases != NULL; aliases++) {
       aliases_list = Cons_O::create(Str_O::create(*aliases), aliases_list);
@@ -268,7 +268,7 @@ T_mv af_ll_socketReceive(int fd,       // #0
       SIMPLE_ERROR(BF("Vector must have fill pointer to be socket buffer: %s") % _rep_(vec));
     }
   }
-  return Values(Integer_O::create(static_cast<uint>(len)), make_fixnum(errno));
+  return Values(make_fixnum(len), make_fixnum(errno));
 }
 
 #define ARGS_af_ll_getProtocolByName "(name)"
@@ -319,7 +319,7 @@ T_mv af_ll_socketAccept_inetSocket(int sfd) {
     return1 = vector;
     return2 = port;
   }
-  return Values(Integer_O::create(return0), return1, Integer_O::create(return2));
+  return Values(Integer_O::create((gc::Fixnum)return0), return1, Integer_O::create((gc::Fixnum)return2));
 }
 
 #define ARGS_af_ll_socketConnect_inetSocket "(port ip0 ip1 ip2 ip3 socket-file-descriptor)"
@@ -449,7 +449,7 @@ Integer_sp af_ll_socketSendAddress(int fd,            //#0
                length, flags, (struct sockaddr *)&sockaddr,
                sizeof(struct sockaddr_in));
   clasp_enable_interrupts();
-  return Integer_O::create(static_cast<uint>(len));
+  return Integer_O::create((gc::Fixnum)(len));
 }
 
 #define ARGS_af_socketSendNoAddress "(fb buffer length oob eor dontroute dontwait nosignal confirm)"
@@ -486,7 +486,7 @@ Integer_sp af_socketSendNoAddress(int fb,            //#0
 #endif
   len = send(sock, REINTERPRET_CAST(char *, buffer), length, flags);
   clasp_enable_interrupts();
-  return Integer_O::create(static_cast<uint>(len));
+  return Integer_O::create((gc::Fixnum)(len));
 }
 
 #define ARGS_af_ll_socketBind_localSocket "(fd name family)"
@@ -521,7 +521,7 @@ T_mv af_ll_socketAccept_localSocket(int socketFileDescriptor) {
   clasp_disable_interrupts();
   new_fd = accept(socketFileDescriptor, (struct sockaddr *)&sockaddr, &addr_len);
   clasp_enable_interrupts();
-  return Values(Integer_O::create(new_fd), (new_fd == -1) ? _Nil<core::Str_O>() : Str_O::create(sockaddr.sun_path));
+  return Values(Integer_O::create((gc::Fixnum)new_fd), (new_fd == -1) ? _Nil<core::Str_O>() : Str_O::create(sockaddr.sun_path));
 }
 
 #define ARGS_af_ll_socketConnect_localSocket "(fd family path)"
@@ -664,7 +664,7 @@ Integer_sp af_ll_getSockoptInt(int fd, int level, int constant) {
   ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char *, &sockopt), &socklen);
   clasp_enable_interrupts();
 
-  return (ret == 0) ? Integer_O::create(sockopt) : _Nil<core::Integer_O>();
+  return (ret == 0) ? Integer_O::create((gc::Fixnum)sockopt) : _Nil<core::Integer_O>();
 }
 
 #define ARGS_af_ll_getSockoptBool "(fd level constant)"
@@ -707,7 +707,7 @@ Integer_sp af_ll_getSockoptLinger(int fd, int level, int constant) {
   ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char *, &sockopt), &socklen);
   clasp_enable_interrupts();
 
-  return (ret == 0) ? Integer_O::create((sockopt.l_onoff != 0) ? sockopt.l_linger : 0) : _Nil<core::Integer_O>();
+  return (ret == 0) ? Integer_O::create((gc::Fixnum)((sockopt.l_onoff != 0) ? sockopt.l_linger : 0)) : _Nil<core::Integer_O>();
 }
 
 #define ARGS_af_ll_setSockoptInt "(fd level constant value)"
@@ -780,94 +780,94 @@ bool af_ll_setSockoptLinger(int fd, int level, int constant, int value) {
 
 void initialize_sockets_globals() {
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_af_inet_PLUS_);
-  _sym__PLUS_af_inet_PLUS_->defconstant(Integer_O::create(AF_INET));
+  _sym__PLUS_af_inet_PLUS_->defconstant(Integer_O::create((gc::Fixnum)AF_INET));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_af_local_PLUS_);
-  _sym__PLUS_af_local_PLUS_->defconstant(Integer_O::create(AF_UNIX));
+  _sym__PLUS_af_local_PLUS_->defconstant(Integer_O::create((gc::Fixnum)AF_UNIX));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_sock_dgram_PLUS_);
-  _sym__PLUS_sock_dgram_PLUS_->defconstant(Integer_O::create(SOCK_DGRAM));
+  _sym__PLUS_sock_dgram_PLUS_->defconstant(Integer_O::create((gc::Fixnum)SOCK_DGRAM));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_sock_stream_PLUS_);
-  _sym__PLUS_sock_stream_PLUS_->defconstant(Integer_O::create(SOCK_STREAM));
+  _sym__PLUS_sock_stream_PLUS_->defconstant(Integer_O::create((gc::Fixnum)SOCK_STREAM));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_input_PLUS_);
-  _sym__PLUS_clasp_stream_mode_input_PLUS_->defconstant(Integer_O::create(static_cast<int>(core::clasp_stream_mode_input)));
+  _sym__PLUS_clasp_stream_mode_input_PLUS_->defconstant(Integer_O::create((gc::Fixnum)(core::clasp_stream_mode_input)));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_output_PLUS_);
-  _sym__PLUS_clasp_stream_mode_output_PLUS_->defconstant(Integer_O::create(core::clasp_stream_mode_output));
+  _sym__PLUS_clasp_stream_mode_output_PLUS_->defconstant(Integer_O::create((gc::Fixnum)core::clasp_stream_mode_output));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_io_PLUS_);
-  _sym__PLUS_clasp_stream_mode_io_PLUS_->defconstant(Integer_O::create(clasp_stream_mode_io));
+  _sym__PLUS_clasp_stream_mode_io_PLUS_->defconstant(Integer_O::create((gc::Fixnum)clasp_stream_mode_io));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_EADDRINUSE_PLUS_);
-  _sym__PLUS_EADDRINUSE_PLUS_->defconstant(Integer_O::create(EADDRINUSE));
+  _sym__PLUS_EADDRINUSE_PLUS_->defconstant(Integer_O::create((gc::Fixnum)EADDRINUSE));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_EAGAIN_PLUS_);
-  _sym__PLUS_EAGAIN_PLUS_->defconstant(Integer_O::create(EAGAIN));
+  _sym__PLUS_EAGAIN_PLUS_->defconstant(Integer_O::create((gc::Fixnum)EAGAIN));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_EBADF_PLUS_);
-  _sym__PLUS_EBADF_PLUS_->defconstant(Integer_O::create(EBADF));
+  _sym__PLUS_EBADF_PLUS_->defconstant(Integer_O::create((gc::Fixnum)EBADF));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_ECONNREFUSED_PLUS_);
-  _sym__PLUS_ECONNREFUSED_PLUS_->defconstant(Integer_O::create(ECONNREFUSED));
+  _sym__PLUS_ECONNREFUSED_PLUS_->defconstant(Integer_O::create((gc::Fixnum)ECONNREFUSED));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_ETIMEDOUT_PLUS_);
-  _sym__PLUS_ETIMEDOUT_PLUS_->defconstant(Integer_O::create(ETIMEDOUT));
+  _sym__PLUS_ETIMEDOUT_PLUS_->defconstant(Integer_O::create((gc::Fixnum)ETIMEDOUT));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_EINTR_PLUS_);
-  _sym__PLUS_EINTR_PLUS_->defconstant(Integer_O::create(EINTR));
+  _sym__PLUS_EINTR_PLUS_->defconstant(Integer_O::create((gc::Fixnum)EINTR));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_EINVAL_PLUS_);
-  _sym__PLUS_EINVAL_PLUS_->defconstant(Integer_O::create(EINVAL));
+  _sym__PLUS_EINVAL_PLUS_->defconstant(Integer_O::create((gc::Fixnum)EINVAL));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_ENOBUFS_PLUS_);
-  _sym__PLUS_ENOBUFS_PLUS_->defconstant(Integer_O::create(ENOBUFS));
+  _sym__PLUS_ENOBUFS_PLUS_->defconstant(Integer_O::create((gc::Fixnum)ENOBUFS));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_ENOMEM_PLUS_);
-  _sym__PLUS_ENOMEM_PLUS_->defconstant(Integer_O::create(ENOMEM));
+  _sym__PLUS_ENOMEM_PLUS_->defconstant(Integer_O::create((gc::Fixnum)ENOMEM));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_EOPNOTSUPP_PLUS_);
-  _sym__PLUS_EOPNOTSUPP_PLUS_->defconstant(Integer_O::create(EOPNOTSUPP));
+  _sym__PLUS_EOPNOTSUPP_PLUS_->defconstant(Integer_O::create((gc::Fixnum)EOPNOTSUPP));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_EPERM_PLUS_);
-  _sym__PLUS_EPERM_PLUS_->defconstant(Integer_O::create(EPERM));
+  _sym__PLUS_EPERM_PLUS_->defconstant(Integer_O::create((gc::Fixnum)EPERM));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_EPROTONOSUPPORT_PLUS_);
-  _sym__PLUS_EPROTONOSUPPORT_PLUS_->defconstant(Integer_O::create(EPROTONOSUPPORT));
+  _sym__PLUS_EPROTONOSUPPORT_PLUS_->defconstant(Integer_O::create((gc::Fixnum)EPROTONOSUPPORT));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_ESOCKTNOSUPPORT_PLUS_);
-  _sym__PLUS_ESOCKTNOSUPPORT_PLUS_->defconstant(Integer_O::create(ESOCKTNOSUPPORT));
+  _sym__PLUS_ESOCKTNOSUPPORT_PLUS_->defconstant(Integer_O::create((gc::Fixnum)ESOCKTNOSUPPORT));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_ENETUNREACH_PLUS_);
-  _sym__PLUS_ENETUNREACH_PLUS_->defconstant(Integer_O::create(ENETUNREACH));
+  _sym__PLUS_ENETUNREACH_PLUS_->defconstant(Integer_O::create((gc::Fixnum)ENETUNREACH));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_NETDB_INTERNAL_PLUS_);
-  _sym__PLUS_NETDB_INTERNAL_PLUS_->defconstant(Integer_O::create(NETDB_INTERNAL));
+  _sym__PLUS_NETDB_INTERNAL_PLUS_->defconstant(Integer_O::create((gc::Fixnum)NETDB_INTERNAL));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_NETDB_SUCCESS_PLUS_);
-  _sym__PLUS_NETDB_SUCCESS_PLUS_->defconstant(Integer_O::create(NETDB_SUCCESS));
+  _sym__PLUS_NETDB_SUCCESS_PLUS_->defconstant(Integer_O::create((gc::Fixnum)NETDB_SUCCESS));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_HOST_NOT_FOUND_PLUS_);
-  _sym__PLUS_HOST_NOT_FOUND_PLUS_->defconstant(Integer_O::create(HOST_NOT_FOUND));
+  _sym__PLUS_HOST_NOT_FOUND_PLUS_->defconstant(Integer_O::create((gc::Fixnum)HOST_NOT_FOUND));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_TRY_AGAIN_PLUS_);
-  _sym__PLUS_TRY_AGAIN_PLUS_->defconstant(Integer_O::create(TRY_AGAIN));
+  _sym__PLUS_TRY_AGAIN_PLUS_->defconstant(Integer_O::create((gc::Fixnum)TRY_AGAIN));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_NO_RECOVERY_PLUS_);
-  _sym__PLUS_NO_RECOVERY_PLUS_->defconstant(Integer_O::create(NO_RECOVERY));
+  _sym__PLUS_NO_RECOVERY_PLUS_->defconstant(Integer_O::create((gc::Fixnum)NO_RECOVERY));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_NO_ADDRESS_PLUS_);
-  _sym__PLUS_NO_ADDRESS_PLUS_->defconstant(Integer_O::create(NO_ADDRESS));
+  _sym__PLUS_NO_ADDRESS_PLUS_->defconstant(Integer_O::create((gc::Fixnum)NO_ADDRESS));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_SOL_SOCKET_PLUS_);
-  _sym__PLUS_SOL_SOCKET_PLUS_->defconstant(Integer_O::create(SOL_SOCKET));
+  _sym__PLUS_SOL_SOCKET_PLUS_->defconstant(Integer_O::create((gc::Fixnum)SOL_SOCKET));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_IPPROTO_TCP_PLUS_);
-  _sym__PLUS_IPPROTO_TCP_PLUS_->defconstant(Integer_O::create(IPPROTO_TCP));
+  _sym__PLUS_IPPROTO_TCP_PLUS_->defconstant(Integer_O::create((gc::Fixnum)IPPROTO_TCP));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_SO_TYPE_PLUS_);
-  _sym__PLUS_SO_TYPE_PLUS_->defconstant(Integer_O::create(SO_TYPE));
+  _sym__PLUS_SO_TYPE_PLUS_->defconstant(Integer_O::create((gc::Fixnum)SO_TYPE));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_SO_RCVBUF_PLUS_);
-  _sym__PLUS_SO_RCVBUF_PLUS_->defconstant(Integer_O::create(SO_RCVBUF));
+  _sym__PLUS_SO_RCVBUF_PLUS_->defconstant(Integer_O::create((gc::Fixnum)SO_RCVBUF));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_SO_RCVTIMEO_PLUS_);
-  _sym__PLUS_SO_RCVTIMEO_PLUS_->defconstant(Integer_O::create(SO_RCVTIMEO));
+  _sym__PLUS_SO_RCVTIMEO_PLUS_->defconstant(Integer_O::create((gc::Fixnum)SO_RCVTIMEO));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_SO_SNDTIMEO_PLUS_);
-  _sym__PLUS_SO_SNDTIMEO_PLUS_->defconstant(Integer_O::create(SO_SNDTIMEO));
+  _sym__PLUS_SO_SNDTIMEO_PLUS_->defconstant(Integer_O::create((gc::Fixnum)SO_SNDTIMEO));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_SO_REUSEADDR_PLUS_);
-  _sym__PLUS_SO_REUSEADDR_PLUS_->defconstant(Integer_O::create(SO_REUSEADDR));
+  _sym__PLUS_SO_REUSEADDR_PLUS_->defconstant(Integer_O::create((gc::Fixnum)SO_REUSEADDR));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_SO_KEEPALIVE_PLUS_);
-  _sym__PLUS_SO_KEEPALIVE_PLUS_->defconstant(Integer_O::create(SO_KEEPALIVE));
+  _sym__PLUS_SO_KEEPALIVE_PLUS_->defconstant(Integer_O::create((gc::Fixnum)SO_KEEPALIVE));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_SO_DONTROUTE_PLUS_);
-  _sym__PLUS_SO_DONTROUTE_PLUS_->defconstant(Integer_O::create(SO_DONTROUTE));
+  _sym__PLUS_SO_DONTROUTE_PLUS_->defconstant(Integer_O::create((gc::Fixnum)SO_DONTROUTE));
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_SO_LINGER_PLUS_);
-  _sym__PLUS_SO_LINGER_PLUS_->defconstant(Integer_O::create(SO_LINGER));
+  _sym__PLUS_SO_LINGER_PLUS_->defconstant(Integer_O::create((gc::Fixnum)SO_LINGER));
 #ifndef _TARGET_OS_LINUX
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_SO_REUSEPORT_PLUS_);
-  _sym__PLUS_SO_REUSEPORT_PLUS_->defconstant(Integer_O::create(SO_REUSEPORT));
+  _sym__PLUS_SO_REUSEPORT_PLUS_->defconstant(Integer_O::create((gc::Fixnum)SO_REUSEPORT));
 #endif
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_TCP_NODELAY_PLUS_);
-  _sym__PLUS_TCP_NODELAY_PLUS_->defconstant(Integer_O::create(TCP_NODELAY));
+  _sym__PLUS_TCP_NODELAY_PLUS_->defconstant(Integer_O::create((gc::Fixnum)TCP_NODELAY));
 };
 
 void initialize_sockets() {

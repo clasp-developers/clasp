@@ -64,14 +64,12 @@ private: // instance variables here
 
 public: // Functions here
   static Bignum_sp make(const string &value_in_string);
-  static Bignum_sp create(int i) {
-    _G();
+  static Bignum_sp create(gc::Fixnum i) {
     GC_ALLOCATE(Bignum_O, b);
     b->_value = i;
     return b;
   };
   static Bignum_sp create(mpz_class v) {
-    _G();
     GC_ALLOCATE(Bignum_O, b);
     b->_value = v;
     return b;
@@ -95,12 +93,12 @@ public:
     ss << this->_value;
     return ss.str();
   };
-  void set(int val) { this->_value = val; };
+  void set(gc::Fixnum val) { this->_value = val; };
   void setFixnum(gctools::Fixnum val) { this->_value = val; };
   Bignum get() const;
   Bignum get_or_if_nil_default(Bignum default_value) const;
   Number_sp abs_() const;
-  void increment(int i) { this->_value += i; };
+  void increment(gc::Fixnum i) { this->_value += i; };
   int sign() const { return this->_value > 0 ? 1 : (this->_value < 0 ? -1 : 0); };
 
   virtual bool zerop_() const { return ((this->_value == 0)); }
@@ -114,16 +112,14 @@ public:
     return Integer_O::create(this->_value + 1);
   }
 
-  virtual int bit_length_() const;
+  virtual gc::Fixnum bit_length_() const;
 
   /*! Return the value shifted by BITS bits.
 	  If BITS < 0 shift right, if BITS >0 shift left. */
-  Integer_sp shift_(int bits) const;
+  Integer_sp shift_(gc::Fixnum bits) const;
 
   //	virtual	bool	eqn(T_sp obj) const;
   virtual bool eql_(T_sp obj) const;
-
-  //	Fixnum_sp	asInt() { return this->sharedThis<Fixnum_O>();};
 public:
   virtual string valueAsString() const {
     stringstream ss;

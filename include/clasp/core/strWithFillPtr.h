@@ -75,7 +75,7 @@ public:
     this->_FillPointer = this->_Contents.size();
   }
   virtual string get() const { return std::string(this->_Contents.data(), this->_FillPointer); };
-  virtual uint size() const { return this->_FillPointer; };
+  virtual gc::Fixnum size() const { return this->_FillPointer; };
   virtual cl_index fillPointer() const { return this->_FillPointer; };
 
   bool hasFillPointerP() const { return true; };

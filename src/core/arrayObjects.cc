@@ -193,10 +193,9 @@ LongLongInt ArrayObjects_O::setDimensions(List_sp dim, T_sp initialElement) {
   return ((elements));
 }
 
-int ArrayObjects_O::arrayDimension(int axisNumber) const {
-  _OF();
+gc::Fixnum ArrayObjects_O::arrayDimension(gc::Fixnum axisNumber) const {
   ASSERTF(axisNumber >= 0, BF("Axis number must be >= 0"));
-  ASSERTF(axisNumber < (int)this->_Dimensions.size(), BF("There is no axis with number %d - must be less than %d") % axisNumber % this->_Dimensions.size());
+  ASSERTF(axisNumber < this->_Dimensions.size(), BF("There is no axis with number %d - must be less than %d") % axisNumber % this->_Dimensions.size());
   return ((this->_Dimensions[axisNumber]));
 }
 

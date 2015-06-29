@@ -61,13 +61,13 @@ public: // Functions here
   virtual bool equalp(T_sp other) const;
   virtual T_sp asetUnsafe(int j, T_sp val) { SUBIMP(); };
   virtual bool arrayHasFillPointerP() const { return false; };
-  virtual int arrayTotalSize() const;
+  virtual gc::Fixnum arrayTotalSize() const;
   virtual T_sp aref_unsafe(cl_index index) const { SUBIMP(); };
   /*! For write_array */
   virtual std::vector<cl_index> dimensions() const {SUBIMP();};
   virtual void rowMajorAset(cl_index idx, T_sp value) { SUBIMP(); };
   virtual T_sp rowMajorAref(cl_index idx) const { SUBIMP(); };
-  virtual int arrayRowMajorIndex(List_sp indices) const;
+  virtual gc::Fixnum arrayRowMajorIndex(List_sp indices) const;
 
   //! Don't support adjustable arrays yet
   bool adjustable_array_p() const { return false; };
@@ -79,7 +79,7 @@ public: // Functions here
   virtual LongLongInt setDimensions(List_sp dimensions, T_sp initialElement) { SUBIMP(); };
 
   /*! Return the rank of the array */
-  virtual int rank() const { SUBIMP(); };
+  virtual gc::Fixnum rank() const { SUBIMP(); };
 
   /*! Return the offset into a one-dimensional vector for the multidimensional index
       in the vector<int>s.  This is in rowMajor order.*/
@@ -92,7 +92,7 @@ public: // Functions here
 
   /*! Return the offset into a one-dimensional vector for a multidimensional index
 	*/
-  int index(List_sp indices) const;
+  gc::Fixnum index(List_sp indices) const;
 
   /*! Return the type returned by this array */
   virtual T_sp elementType() const {
@@ -105,7 +105,7 @@ public: // Functions here
   Symbol_sp element_type_as_symbol() const;
 
   /*! Return the array dimension along the axis-number */
-  virtual int arrayDimension(int axisNumber) const { SUBIMP(); };
+  virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const { SUBIMP(); };
 
   /*! Return the array dimensions as a list of integers */
   virtual List_sp arrayDimensions() const;

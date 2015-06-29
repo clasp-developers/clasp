@@ -1556,7 +1556,7 @@ str_out_element_type(T_sp strm) {
 }
 
 T_sp str_out_get_position(T_sp strm) {
-  return Integer_O::create((size_t)(StringFillp(StringOutputStreamOutputString(strm))));
+  return Integer_O::create((gc::Fixnum)(StringFillp(StringOutputStreamOutputString(strm))));
 }
 
 static T_sp
@@ -1747,7 +1747,7 @@ str_in_element_type(T_sp strm) {
 
 static T_sp
 str_in_get_position(T_sp strm) {
-  return Integer_O::create((size_t)(StringInputStreamInputPosition(strm)));
+  return Integer_O::create((gc::Fixnum)(StringInputStreamInputPosition(strm)));
 }
 
 static T_sp
@@ -4175,7 +4175,7 @@ T_sp clasp_make_stream_from_fd(T_sp fname, int fd, enum StreamMode smm,
 #endif
   if (fp == NULL) {
     FElibc_error("Unable to create stream for file descriptor ~D",
-                 1, Integer_O::create(fd).raw_());
+                 1, Integer_O::create((gc::Fixnum)fd).raw_());
   }
   return clasp_make_stream_from_FILE(fname, fp, smm, byte_size, flags,
                                      external_format);

@@ -54,7 +54,7 @@ public: // Functions here
 
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-  int sxhashKey(T_sp key, int bound, bool willAddKey) const;
+  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
 };
 
 }; /* core */

@@ -628,7 +628,7 @@ void af_wrongIndex(const string &sourceFile, int lineno, Symbol_sp function, T_s
       "In ~:[an anonymous function~;~:*function ~A~], "
       "the ~:R index into the object~% ~A~%"
       "takes a value ~D out of the range ~A.";
-  T_sp limit = Integer_O::create(nonincl_limit - 1);
+  T_sp limit = Integer_O::create((gc::Fixnum)(nonincl_limit - 1));
   T_sp type = Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), limit);
   const char *msg = (which < 0) ? message1 : message2;
   Str_sp message = Str_O::create(msg);

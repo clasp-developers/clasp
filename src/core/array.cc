@@ -139,17 +139,15 @@ int Array_O::checkedIndex(const string &filename, int lineno, const string &func
   UNREACHABLE();
 }
 
-int Array_O::arrayTotalSize() const {
-  _G();
-  int sz = 1;
+gc::Fixnum Array_O::arrayTotalSize() const {
+  gc::Fixnum sz = 1;
   for (int i = 0; i < this->rank(); i++) {
     sz *= this->arrayDimension(i);
   }
-  return ((sz));
+  return sz;
 }
 
 void Array_O::initialize() {
-  _OF();
   this->Base::initialize();
 }
 
@@ -208,12 +206,12 @@ cl_index Array_O::index_val(List_sp indices, bool last_value_is_val, List_sp &va
   return ((offset));
 }
 
-int Array_O::index(List_sp indices) const {
+gc::Fixnum Array_O::index(List_sp indices) const {
   List_sp dummy;
   return ((this->index_val(indices, false, dummy)));
 }
 
-int Array_O::arrayRowMajorIndex(List_sp indices) const {
+gc::Fixnum Array_O::arrayRowMajorIndex(List_sp indices) const {
   return ((this->index(indices)));
 }
 

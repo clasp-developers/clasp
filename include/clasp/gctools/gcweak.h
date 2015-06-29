@@ -121,15 +121,16 @@ typedef enum { WeakBucketKind,
                WeakFwdKind,
                WeakFwd2Kind,
                WeakPadKind,
-               WeakPad1Kind
-               /*Other MPS kinds here */ } WeakKinds;
+               WeakPad1Kind,
+               // Other MPS kinds here
+               MaxWeakKind } WeakKinds;
 
 struct WeakObject {
   struct metadata_always_fix_pointers_to_derived_classes;
   typedef gctools::smart_ptr<core::Fixnum_I> KindType;
   WeakObject(WeakKinds k) : Kind(gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(k)){};
   KindType Kind;
-  int kind() const { return this->Kind.unsafe_fixnum(); };
+  int kind() const { GCTOOLS_ASSERT(this->Kind.unsafe_fixnum()<MaxWeakKind); return (int)this->Kind.unsafe_fixnum(); };
   void setKind(WeakKinds k) { this->Kind = gc::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(k); };
   virtual void *dependentPtr() const { return NULL; };
 };

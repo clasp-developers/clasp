@@ -172,17 +172,23 @@ cl-full-mps:
 	(cd src/main; make full-mps)
 
 
-clasp-boehm-cpp:
-	$(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) gc=boehm link=$(LINK) program=clasp release /internals/main//install_clasp
-
 clasp-boehm:
 	make clasp-boehm-cpp
 	$(BJAM) everything gc=boehm link=static program=clasp release
 	(cd src/main; make boehm)
 	make cclasp-boehm
+	make cclasp-boehm-asdf
 
 cclasp-boehm:
 	(cd src/main; make cclasp-boehm)
+
+clasp-boehm-cpp:
+	$(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) gc=boehm link=$(LINK) program=clasp release /internals/main//install_clasp
+
+
+cclasp-boehm-addons:
+	(cd src/main; make cclasp-boehm-addons)
+
 
 # Compile the CL sources for min-boehm: and full-boehm
 cl-boehm:

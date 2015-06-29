@@ -80,8 +80,7 @@ bool HashTableEqualp_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   return equalp;
 }
 
-int HashTableEqualp_O::sxhashKey(T_sp obj, int bound, bool willAddKey) const {
-  _OF();
+gc::Fixnum HashTableEqualp_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
   HashGenerator hg;
   HashTable_O::sxhash_equalp(hg, obj, NULL);
   return hg.hash(bound);

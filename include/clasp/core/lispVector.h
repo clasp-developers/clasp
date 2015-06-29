@@ -55,8 +55,8 @@ public:
 private: // instance variables here
 public:  // Functions here
   bool adjustableArrayP() const { return false; };
-  uint vector_length() const { return this->dimension(); };
-  virtual uint dimension() const { SUBIMP(); };
+  gc::Fixnum vector_length() const { return this->dimension(); };
+  virtual gc::Fixnum dimension() const { SUBIMP(); };
 
   virtual T_sp &operator[](uint index) { SUBIMP(); }
 
@@ -67,10 +67,10 @@ public:  // Functions here
 
   virtual size_t elementSizeInBytes() const { SUBIMP(); }
   virtual T_sp elementType() const { SUBIMP(); }
-  virtual int rank() const { return 1; };
-  virtual int arrayDimension(int axisNumber) const;
+  virtual gc::Fixnum rank() const { return 1; };
+  virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const;
   virtual List_sp arrayDimensions() const;
-  virtual int arrayTotalSize() const { return this->length(); };
+  virtual gc::Fixnum arrayTotalSize() const { return this->length(); };
 
   virtual T_sp vectorPush(T_sp newElement) { SUBIMP(); };
   virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 1) { SUBIMP(); };
@@ -88,7 +88,7 @@ public:  // Functions here
 
   virtual void __write__(T_sp strm) const;
 
-  INHERIT_SEQUENCE virtual uint length() const { return this->dimension(); };
+  INHERIT_SEQUENCE virtual gc::Fixnum length() const { return this->dimension(); };
   INHERIT_SEQUENCE virtual T_sp reverse();
   INHERIT_SEQUENCE virtual T_sp nreverse();
   INHERIT_SEQUENCE virtual T_sp elt(int index) const { SUBIMP(); };

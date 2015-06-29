@@ -108,14 +108,14 @@ class HashTable_O : public T_O {
 
   uint hashTableSize() const;
 
-  virtual int sxhashKey(T_sp key, int bound, bool willAddKey) const;
+  virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
   virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   /*! I'm not sure I need this and tableRef */
   List_sp bucketsFind(T_sp key) const;
   /*! I'm not sure I need this and bucketsFind */
   List_sp tableRef(T_sp key);
-  List_sp findAssoc(uint index, T_sp searchKey) const;
+  List_sp findAssoc(gc::Fixnum index, T_sp searchKey) const;
 
   /*! Return true if the key is within the hash table */
   bool contains(T_sp key);
@@ -124,7 +124,7 @@ class HashTable_O : public T_O {
   List_sp find(T_sp key);
 
   T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>());
-  int hashIndex(T_sp key) const;
+  gc::Fixnum hashIndex(T_sp key) const;
 
   T_sp hash_table_setf_gethash(T_sp key, T_sp value);
   void setf_gethash(T_sp key, T_sp val) { this->hash_table_setf_gethash(key, val); };

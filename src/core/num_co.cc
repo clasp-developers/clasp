@@ -239,8 +239,9 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
       }
       break;
     }
-    case number_Bignum: { /* FIX / BIG */
-                          /* We must perform the division because there is the
+    case number_Bignum: {
+/* FIX / BIG */
+/* We must perform the division because there is the
  * pathological case
  *	x = MOST_NEGATIVE_FIXNUM
  *    y = - MOST_NEGATIVE_FIXNUM
@@ -296,11 +297,14 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
   case number_Bignum:
     switch (ty) {
     case number_Fixnum: { /* BIG / FIX */
-                          //		INCOMPLETE(BF("Ensure that this produces the intended result"));
+// INCOMPLETE(BF("Ensure that this produces the intended result"));
+      Bignum_sp bx(gc::As<Bignum_sp>(x));
       Bignum_sp by(Bignum_O::create(clasp_fixnum(y)));
+      //printf("%s:%d x = %s\n", __FILE__, __LINE__, _rep_(x).c_str());
+      //printf("%s:%d by = %s\n", __FILE__, __LINE__, _rep_(by).c_str());
       //		CLASP_WITH_TEMP_BIGNUM(by,4);
       //		_clasp_big_set_fixnum(by, clasp_fixnum(y));
-      v0 = _clasp_big_floor(gc::As<Bignum_sp>(x), by, &v1);
+      v0 = _clasp_big_floor(bx, by, &v1);
       break;
     }
     case number_Bignum: { /* BIG / BIG */

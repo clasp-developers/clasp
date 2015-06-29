@@ -85,10 +85,10 @@ public: // Functions here
   virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index];};
 
   virtual std::vector<cl_index> dimensions() const { std::vector<cl_index> dims; dims.push_back(this->length()); return dims;};
-  virtual uint dimension() const { return this->_Values.size(); };
+  virtual gc::Fixnum dimension() const { return this->_Values.size(); };
   virtual void rowMajorAset(cl_index idx, T_sp value);
   virtual T_sp rowMajorAref(cl_index idx) const;
-  virtual int arrayRowMajorIndex(List_sp indices) const;
+  virtual gc::Fixnum arrayRowMajorIndex(List_sp indices) const;
 
   T_sp &operator[](uint index) { return this->_Values[index]; }
 
@@ -111,7 +111,7 @@ public: // Functions here
   virtual T_sp setf_svref(int index, T_sp value) { return this->setf_elt(index, value); };
 
   virtual void fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end);
-  virtual uint length() const { return this->_Values.size(); };
+  virtual gc::Fixnum length() const { return this->_Values.size(); };
   string __repr__() const;
 
   virtual T_sp subseq(int start, T_sp end) const;

@@ -128,7 +128,7 @@ size_t clasp_sourcePosInfo_filepos(SourcePosInfo_sp info) {
 #define DECL_core_sourcePosInfoFilepos ""
 #define DOCS_core_sourcePosInfoFilepos "sourcePosInfoFilepos"
 Integer_sp core_sourcePosInfoFilepos(SourcePosInfo_sp info) {
-  return Integer_O::create((size_t)clasp_sourcePosInfo_filepos(info));
+  return Integer_O::create((gc::Fixnum)clasp_sourcePosInfo_filepos(info));
 }
 
 uint clasp_sourcePosInfo_lineno(SourcePosInfo_sp info) {
@@ -207,7 +207,7 @@ T_mv core_walkToFindSourceInfo(T_sp obj) {
         SourceFileInfo_sp sfi = core_sourceFileInfo(make_fixnum(spi->fileHandle()));
         Fixnum_sp fnlineno = make_fixnum(spi->_Lineno);
         Fixnum_sp fncolumn = make_fixnum(spi->_Column);
-        Integer_sp fnfilepos = Integer_O::create((size_t)spi->_Filepos);
+        Integer_sp fnfilepos = Integer_O::create((gc::Fixnum)spi->_Filepos);
         return Values(sfi, fnfilepos, fnlineno, fncolumn);
       }
       T_sp cur = obj;

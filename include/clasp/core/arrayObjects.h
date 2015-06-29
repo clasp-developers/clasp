@@ -65,11 +65,11 @@ public:
   virtual void rowMajorAset(cl_index idx, T_sp value);
   virtual T_sp rowMajorAref(cl_index idx) const;
 
-  virtual int rank() const { return this->_Dimensions.size(); };
+  virtual gc::Fixnum rank() const { return this->_Dimensions.size(); };
 
   /* Copy the dimensions for printing */
   virtual std::vector<cl_index> dimensions() const { return this->_Dimensions; };
-  virtual int arrayDimension(int axisNumber) const;
+  virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const;
   virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index];};
 
 

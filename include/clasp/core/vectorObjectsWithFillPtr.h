@@ -49,7 +49,7 @@ public:
   static VectorObjectsWithFillPtr_sp make(T_sp initial_element, T_sp initial_values, int dimension, cl_index fillPtr, bool adjustable);
 
 public: // Functions here
-  uint length() const { return this->_FillPtr; };
+  gc::Fixnum length() const { return this->_FillPtr; };
 
   virtual bool arrayHasFillPointerP() const { return true; };
   virtual T_sp &operator[](uint index);

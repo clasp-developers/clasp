@@ -68,7 +68,7 @@ public:
   static SimpleBitVector_sp create(int size);
 
 public:
-  uint dimension() const { return this->_Length; };
+  gc::Fixnum dimension() const { return this->_Length; };
   unsigned char *bytes() const { return const_cast<unsigned char *>(this->bits.data()); };
 
   void getOnIndices(vector<uint> &vals);

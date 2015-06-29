@@ -87,7 +87,7 @@ bool HashTableEqual_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   return cl_equal(entryKey, searchKey);
 }
 
-int HashTableEqual_O::sxhashKey(T_sp obj, int bound, bool willAddKey) const {
+gc::Fixnum HashTableEqual_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
 #if defined(DEBUG_HASH_TABLE) && defined(DEBUG_HASH_GENERATOR)
   HashGenerator hg(this->_DebugHashTable);
 #else

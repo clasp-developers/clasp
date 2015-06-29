@@ -446,7 +446,7 @@ inline ElementType *ValuesArray(FrameType f) {
   return ValuesArray(frameImpl);
 }
 
-inline size_t ValuesArraySize(core::T_O **frameImpl) {
+ inline gc::Fixnum ValuesArraySize(core::T_O **frameImpl) {
   ASSERT(gctools::tagged_fixnump(frameImpl[IdxNumElements]));
   return gctools::untag_fixnum(frameImpl[IdxNumElements]);
 };
@@ -465,7 +465,7 @@ inline void InitializeStackValueFrameBase(core::T_O **frameImpl, size_t sz, core
 #ifdef DEBUG_FRAME
   printf("%s:%d InitializeStackValueFrame @%p sz=%zu\n", __FILE__, __LINE__, frameImpl, sz);
 #endif
-  frameImpl[IdxNumElements] = gctools::tag_fixnum<core::T_O *>(sz);
+  frameImpl[IdxNumElements] = gctools::tag_fixnum<core::T_O *>((gc::Fixnum)sz);
   frameImpl[IdxParent] = parent.raw_();
   frameImpl[IdxDebugInfo] = gctools::tag_nil<core::T_O *>();
   for (size_t i(IdxValuesArray), iEnd(IdxValuesArray + sz); i < iEnd; ++i) {

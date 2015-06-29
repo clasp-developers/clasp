@@ -502,12 +502,12 @@ bool HashTable_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
-int HashTable_O::sxhashKey(T_sp obj, int bound, bool willAddKey) const {
+gc::Fixnum HashTable_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
   _OF();
   SUBCLASS_MUST_IMPLEMENT();
 }
 
-List_sp HashTable_O::findAssoc(uint index, T_sp key) const {
+List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   _OF();
   List_sp rib = coerce_to_list((*this->_HashTable)[index]);
   for (auto cur : rib) {
@@ -545,10 +545,10 @@ List_sp HashTable_O::bucketsFind(T_sp key) const {
     printf("%s:%d  About to sxhashKey: %s hash table length: %d\n", __FILE__, __LINE__, _rep_(key).c_str(), cl_length(this->_HashTable) );
   }
 #endif
-  uint index = this->sxhashKey(key, cl_length(this->_HashTable), false);
+  gc::Fixnum index = this->sxhashKey(key, cl_length(this->_HashTable), false);
 #ifdef DEBUG_HASH_TABLE
   if (this->_DebugHashTable) {
-    printf("%s:%d  bucketsFind index = %d\n", __FILE__, __LINE__, index);
+    printf("%s:%d  bucketsFind index = %ld\n", __FILE__, __LINE__, index);
   }
 #endif
   List_sp keyValueCons = this->findAssoc(index, key);
@@ -607,8 +607,8 @@ T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   return (Values(value, _lisp->_true()));
 }
 
-int HashTable_O::hashIndex(T_sp key) const {
-  int idx = this->sxhashKey(key, cl_length(this->_HashTable), false);
+gc::Fixnum HashTable_O::hashIndex(T_sp key) const {
+  gc::Fixnum idx = this->sxhashKey(key, cl_length(this->_HashTable), false);
   return idx;
 }
 
@@ -655,7 +655,7 @@ T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   }
 #endif
   if (keyValuePair.nilp()) {
-    uint index = this->sxhashKey(key, cl_length(this->_HashTable), true /*Will add key*/);
+    gc::Fixnum index = this->sxhashKey(key, cl_length(this->_HashTable), true /*Will add key*/);
     Cons_sp newKeyValue = Cons_O::create(key, value);
     //            printf("%s:%d  Inserted newKeyValue@%p\n", __FILE__, __LINE__, newKeyValue.raw_());
     Cons_sp newEntry = Cons_O::create(newKeyValue, this->_HashTable->operator[](index));
@@ -698,7 +698,7 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
   List_sp foundKeyValuePair(_Nil<T_O>());
   uint startCount = this->hashTableCount();
   LOG(BF("At start of expandHashTable current hash table size: %d") % startSize);
-  uint newSize = 0;
+  gc::Fixnum newSize = 0;
   if (expandTable) {
     if (af_integerP(this->_RehashSize)) {
       newSize = cl_length(this->_HashTable) + clasp_to_int(gc::As<Integer_sp>(this->_RehashSize));
@@ -741,7 +741,7 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
               foundKeyValuePair = pair;
             }
           }
-          uint index = this->sxhashKey(key, newSize, true /* Will add key */);
+          gc::Fixnum index = this->sxhashKey(key, newSize, true /* Will add key */);
           LOG(BF("Re-indexing key[%s] to index[%d]") % _rep_(key) % index);
           Cons_sp newCur = Cons_O::create(pair, this->_HashTable->operator[](index));
           this->_HashTable->operator[](index) = newCur;

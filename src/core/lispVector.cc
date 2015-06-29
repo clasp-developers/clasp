@@ -127,7 +127,7 @@ void Vector_O::archiveBase(::core::ArchiveP node) {
   // Do nothing
 }
 
-int Vector_O::arrayDimension(int axisNumber) const {
+gc::Fixnum Vector_O::arrayDimension(gc::Fixnum axisNumber) const {
   ASSERTF(axisNumber == 0, BF("Illegal axis number %d for Vector") % axisNumber);
   return this->dimension();
 }

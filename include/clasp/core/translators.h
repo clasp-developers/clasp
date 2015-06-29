@@ -122,14 +122,8 @@ struct from_object<unsigned long, std::true_type> {
   typedef unsigned long DeclareType;
   DeclareType _v;
   inline void set(core::T_sp o) {
-    _G();
-    if (o.fixnump()) // core::Fixnum_sp fn = o.asOrNull<core::Fixnum_O>() )
-    {
-#ifdef USE_HEAP_FIXNUM
-      this->_v = unbox_fixnum(o);
-#else
-      this->_v = o.unsafe_fixnum();
-#endif
+    if (o.fixnump()) {
+      this->_v = (unsigned long)o.unsafe_fixnum();
       return;
     }
     SIMPLE_ERROR(BF("Add support to convert other types to unsigned long long"));
@@ -222,8 +216,7 @@ template <>
 struct to_object<uint> {
   typedef uint GivenType;
   static core::T_sp convert(uint v) {
-    _G();
-    core::Integer_sp oi = core::Integer_O::create(v);
+    core::Integer_sp oi = core::Integer_O::create((gc::Fixnum)v);
     return oi;
   }
 };
@@ -233,7 +226,7 @@ struct to_object<const unsigned int> {
   typedef const unsigned int GivenType;
   static core::T_sp convert(GivenType v) {
     _G();
-    core::Integer_sp oi = core::Integer_O::create((uint)v);
+    core::Integer_sp oi = core::Integer_O::create((gc::Fixnum)v);
     return oi;
   }
 };

@@ -67,9 +67,9 @@ public:
   virtual T_sp rowMajorAref(cl_index idx) const;
 
   virtual T_mv arrayDisplacement() const;
-  virtual int rank() const { return this->_Dimensions.size(); };
+  virtual gc::Fixnum rank() const { return this->_Dimensions.size(); };
 
-  virtual int arrayDimension(int axisNumber) const;
+  virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const;
 
   LongLongInt setDimensions(List_sp dims, T_sp initialElement);
 

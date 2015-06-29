@@ -140,7 +140,7 @@ Real_sp cl_max(Real_sp max, List_sp nums) {
 Integer_sp cl_logand(List_sp integers) {
   _G();
   if (integers.nilp())
-    return Integer_O::create(-1);
+    return Integer_O::create((gc::Fixnum)-1);
   mpz_class acc = clasp_to_mpz(gc::As<Integer_sp>(oCar(integers)));
   for (auto cur : (List_sp)oCdr(integers)) {
     Integer_sp icur = gc::As<Integer_sp>(oCar(cur));
@@ -157,7 +157,7 @@ Integer_sp cl_logand(List_sp integers) {
 Integer_sp cl_logior(List_sp integers) {
   _G();
   if (integers.nilp())
-    return Integer_O::create(0);
+    return Integer_O::create((gc::Fixnum)0);
   Integer_sp ifirst = gc::As<Integer_sp>(oCar(integers));
   mpz_class acc = clasp_to_mpz(ifirst);
   List_sp rints = oCdr(integers);
@@ -176,7 +176,7 @@ Integer_sp cl_logior(List_sp integers) {
 Integer_sp af_logxor(List_sp integers) {
   _G();
   if (integers.nilp())
-    return Integer_O::create(0);
+    return Integer_O::create((gc::Fixnum)0);
   Integer_sp ifirst = gc::As<Integer_sp>(oCar(integers));
   mpz_class acc = clasp_to_mpz(ifirst);
   for (auto cur : (List_sp)oCdr(integers)) {
@@ -194,7 +194,7 @@ Integer_sp af_logxor(List_sp integers) {
 Integer_mv af_logeqv(List_sp integers) {
   _G();
   if (integers.nilp())
-    return Integer_O::create(-1);
+    return Integer_O::create((gc::Fixnum)-1);
   Integer_sp ifirst = gc::As<Integer_sp>(oCar(integers));
   mpz_class x = clasp_to_mpz(ifirst);
   for (auto cur : (List_sp)oCdr(integers)) {
@@ -1384,13 +1384,6 @@ Number_sp Number_O::create(double val) {
   return DoubleFloat_O::create(val);
 }
 
-Number_sp Number_O::create(int val) {
-  return make_fixnum(val);
-}
-
-Number_sp Number_O::create(uint val) {
-  return Integer_O::create(val);
-}
 
 bool Number_O::operator<(T_sp obj) const {
   if (cl_numberp(obj)) {
@@ -1510,7 +1503,7 @@ DoubleFloat_mv af_nan() {
 
 // --------------------------------------------------------------------------------
 
-T_sp Integer_O::makeIntegerType(int low, int hi) {
+T_sp Integer_O::makeIntegerType(gc::Fixnum low, gc::Fixnum hi) {
   _G();
   return Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(low), Integer_O::create(hi));
 }
@@ -1899,10 +1892,10 @@ Integer_sp ShortFloat_O::castToInteger() const {
   if (this->_Value < 0) {
     float f = -this->_Value;
     int cf = *(int *)&f;
-    return gc::As<Integer_sp>(clasp_negate(Integer_O::create(cf)));
+    return gc::As<Integer_sp>(clasp_negate(Integer_O::create((gc::Fixnum)cf)));
   }
   int cf = *(int *)&this->_Value;
-  return Integer_O::create(cf);
+  return Integer_O::create((gc::Fixnum)cf);
 }
 
 #if 0

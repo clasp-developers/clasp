@@ -363,10 +363,10 @@ public:
     return this->_NextPartIndex < MaxParts;
   }
 
-  uint hash(int bound = 0) const {
-    unsigned long hash = 5381;
+  gc::Fixnum hash(gc::Fixnum bound = 0) const {
+    gc::Fixnum hash = 5381;
     for (int i = 0; i < this->_NextPartIndex; i++) {
-      hash = hash_word(hash, this->_Parts[i]);
+      hash = (gc::Fixnum)hash_word((cl_intptr_t)hash, (cl_intptr_t)this->_Parts[i]);
 #ifdef DEBUG_HASH_GENERATOR
       if (this->_debug) {
         printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[i]);
@@ -375,7 +375,7 @@ public:
       //		hash = ((hash << 5) + hash) + this->_Parts[i];
     }
     if (bound)
-      return hash % bound;
+      return ((cl_intptr_t)hash) % bound;
 #ifdef DEBUG_HASH_GENERATOR
       if (this->_debug) {
         printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash );
@@ -764,7 +764,7 @@ inline void clasp_sxhash(T_sp obj, HashGenerator &hg) {
     hg.addPart(obj.unsafe_fixnum());
     return;
   } else if (obj.single_floatp()) {
-    hg.addPart(std::abs(::floor(obj.unsafe_single_float())));
+    hg.addPart((gc::Fixnum)std::abs(::floor(obj.unsafe_single_float())));
     return;
   } else if (obj.characterp()) {
     hg.addPart(obj.unsafe_character());

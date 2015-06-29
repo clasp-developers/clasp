@@ -59,7 +59,7 @@ struct from_object<int &, std::true_type> {
 template <>
 struct to_object<int &> {
   static core::T_sp convert(const int &val) {
-    return (core::Integer_O::create(val));
+    return (core::Integer_O::create((gc::Fixnum)val));
   }
 };
 

@@ -328,7 +328,7 @@ struct size_t_pair {
 namespace core {
 extern bool _ClassesAreInitialized;
 typedef uint handleType;
-const uint handleNumberFlag = 1 << 31;
+ const uint handleNumberFlag = (uint)(1 << 31);
 const uint handleNumberMask = handleNumberFlag - 1;
 const uint MaxHandle = handleNumberFlag - 1;
 const uint IllegalHandle = MaxHandle;

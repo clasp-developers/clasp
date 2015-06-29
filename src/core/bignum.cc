@@ -158,7 +158,7 @@ void Bignum_O::setFromString(const string &strVal) {
   this->_value = strVal;
 }
 
-int Bignum_O::bit_length_() const {
+gc::Fixnum Bignum_O::bit_length_() const {
   Bignum x = this->_value;
   if (this->sign() < 0) {
     x = -x;
@@ -168,7 +168,7 @@ int Bignum_O::bit_length_() const {
 
 /*! Return the value shifted by BITS bits.
       If BITS < 0 shift right, if BITS >0 shift left. */
-Integer_sp Bignum_O::shift_(int bits) const {
+Integer_sp Bignum_O::shift_(gc::Fixnum bits) const {
   if (bits == 0)
     return this->asSmartPtr();
   Bignum res;

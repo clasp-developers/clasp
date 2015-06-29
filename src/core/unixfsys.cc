@@ -193,7 +193,7 @@ T_sp af_getppid() {
 T_sp ext_chdir(Pathname_sp dir) {
   _G();
   Str_sp sdir = clasp_namestring(dir, true);
-  return Integer_O::create(safe_chdir(sdir->get().c_str(), _Nil<T_O>()));
+  return Integer_O::create((gc::Fixnum)safe_chdir(sdir->get().c_str(), _Nil<T_O>()));
 };
 
 static int
@@ -537,7 +537,7 @@ clasp_file_len(int f) {
   clasp_disable_interrupts();
   fstat(f, &filestatus);
   clasp_enable_interrupts();
-  return Integer_O::create(static_cast<uint>(filestatus.st_size));
+  return Integer_O::create((gc::Fixnum)(filestatus.st_size));
 }
 
 #define ARGS_cl_renameFile "(oldn newn &key (if-exists :error))"
@@ -713,8 +713,8 @@ Number_sp af_file_write_date(T_sp pathspec) {
   struct stat filestatus;
   time = _Nil<Number_O>();
   if (safe_stat((char *)filename->c_str(), &filestatus) >= 0) {
-    Number_sp accJan1st1970UT(Integer_O::create(24 * 60 * 60));
-    accJan1st1970UT = contagen_mul(accJan1st1970UT, Integer_O::create(17 + 365 * 70));
+    Number_sp accJan1st1970UT(Integer_O::create((gc::Fixnum)(24 * 60 * 60)));
+    accJan1st1970UT = contagen_mul(accJan1st1970UT, Integer_O::create((gc::Fixnum)(17 + 365 * 70)));
     time = Integer_O::create(static_cast<uint64_t>(filestatus.st_mtime));
     time = contagen_add(time, accJan1st1970UT);
   }

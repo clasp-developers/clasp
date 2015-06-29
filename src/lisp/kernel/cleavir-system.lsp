@@ -47,6 +47,7 @@
     #P"kernel/contrib/sicl/Code/Cleavir/Generate-AST/conditions"
     #P"kernel/contrib/sicl/Code/Cleavir/Generate-AST/condition-reporters-english"
     #P"kernel/contrib/sicl/Code/Cleavir/Generate-AST/source-tracking"
+    #P"kernel/contrib/sicl/Code/Cleavir/Generate-AST/destructuring"
     #P"kernel/contrib/sicl/Code/Cleavir/Generate-AST/check-special-form-syntax"
     #P"kernel/contrib/sicl/Code/Cleavir/Generate-AST/environment-query"
     #P"kernel/contrib/sicl/Code/Cleavir/Generate-AST/utilities"

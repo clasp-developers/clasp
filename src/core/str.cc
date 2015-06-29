@@ -658,24 +658,24 @@ uint Str_O::countOccurances(const string &chars) {
   return c;
 }
 
-string Str_O::left(int num) const {
+string Str_O::left(gc::Fixnum num) const {
   string res = this->get().substr(0, num);
   return res;
 }
 
-string Str_O::right(int num) const {
+string Str_O::right(gc::Fixnum num) const {
   string res = this->get().substr(this->size() - num, num);
   return res;
 }
 
-T_sp Str_O::find(const string &substring, int start) {
+T_sp Str_O::find(const string &substring, gc::Fixnum start) {
   size_t res = this->get().find(substring, start);
   if (res != string::npos)
-    return Integer_O::create((uint)res);
+    return Integer_O::create((gc::Fixnum)res);
   return _Nil<T_O>();
 }
 
-string Str_O::substr(int start, int num) const {
+string Str_O::substr(gc::Fixnum start, gc::Fixnum num) const {
   string res = this->get().substr(start, num);
   return res;
 }
@@ -1206,14 +1206,14 @@ T_sp Str_O::setf_subseq(int start, T_sp end, T_sp new_subseq) {
   IMPLEMENT_ME();
 }
 
-claspChar Str_O::schar(int index) const {
+claspChar Str_O::schar(gc::Fixnum index) const {
   if (index >= 0 && index < this->size()) {
     return this->_Contents[index];
   }
   SIMPLE_ERROR(BF("Illegal index for schar %d must be in (integer 0 %d)") % index % this->size());
 }
 
-claspChar Str_O::scharSet(int index, claspChar c) {
+claspChar Str_O::scharSet(gc::Fixnum index, claspChar c) {
   if (index >= 0 && index < this->size()) {
     this->_Contents[index] = c;
     return c;

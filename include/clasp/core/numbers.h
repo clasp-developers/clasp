@@ -123,7 +123,7 @@ bool clasp_float_nan_p(Float_sp num);
 bool clasp_float_infinity_p(Float_sp num);
 NumberType clasp_t_of(Number_sp num);
 Integer_sp clasp_shift(Integer_sp num, int bits);
-int clasp_integer_length(Integer_sp x);
+ gc::Fixnum clasp_integer_length(Integer_sp x);
 mpz_class clasp_to_mpz(Integer_sp x);
 Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
 SingleFloat_sp clasp_make_single_float(float d);
@@ -148,8 +148,7 @@ class Number_O : public T_O {
 
 public:
   static Number_sp create(double val);
-  static Number_sp create(int val);
-  static Number_sp create(uint val);
+  static Number_sp create(gc::Fixnum val);
   //	static Number_sp create(size_t val);
 public:
   virtual NumberType number_type_() const { SUBIMP(); };
@@ -271,13 +270,9 @@ class Integer_O : public Rational_O {
 
 public:
   /*! Return a Cons (integer low high) */
-  static T_sp makeIntegerType(int low, int high);
+  static T_sp makeIntegerType(gc::Fixnum low, gc::Fixnum high);
   static Integer_sp create(const mpz_class &v);
   static Integer_sp create(gctools::Fixnum v);
-  static inline Integer_sp create(size_t v) { return Integer_O::create((gctools::Fixnum)v); };
-  static inline Integer_sp create(int v) { return Integer_O::create((gctools::Fixnum)v); };
-  static inline Integer_sp create(uint v) { return Integer_O::create((gctools::Fixnum)v); };
-  //	static Integer_sp create(int v);
   static Integer_sp create(const string &v) {
     mpz_class zv(v);
     return create(zv);
@@ -298,11 +293,11 @@ public:
   virtual bool evenp_() const { SUBIMP(); };
   virtual bool oddp_() const { SUBIMP(); };
 
-  virtual int bit_length_() const { SUBIMP(); };
+  virtual gc::Fixnum bit_length_() const { SUBIMP(); };
 
   /*! Return the value shifted by BITS bits.
 	  If BITS < 0 shift right, if BITS >0 shift left. */
-  virtual Integer_sp shift_(int bits) const { SUBIMP(); };
+  virtual Integer_sp shift_(gc::Fixnum bits) const { SUBIMP(); };
 
   virtual uint64_t as_uint64_() const;
   virtual unsigned long long as_unsigned_long_long_() const { SUBIMP(); };
@@ -392,7 +387,7 @@ class Fixnum_dummy_O : public Integer_O {
 	int bit_length_() const;
 	/*! Return the value shifted by BITS bits.
 	  If BITS < 0 shift right, if BITS >0 shift left. */
-	Integer_sp shift_(int bits) const;
+	Integer_sp shift_(gc::Fixnum bits) const;
 
 	string asChar_() const;
 	virtual gc::Fixnum as_int_() const;
@@ -1200,13 +1195,13 @@ inline Integer_sp clasp_shift(Integer_sp n, int bits) {
   return n->shift_(bits);
 }
 
-inline int clasp_integer_length(Integer_sp x) {
+ inline gc::Fixnum clasp_integer_length(Integer_sp x) {
   if (x.fixnump()) {
     Fixnum i(x.unsafe_fixnum());
-    int count;
+    Fixnum count = 0;
     if (i < 0)
       i = ~i;
-    for (count = 0; i && (count < FIXNUM_BITS); i >>= 1, count++)
+    for (; i && (count < FIXNUM_BITS); i >>= 1, count++)
       ;
     return count;
   }
@@ -1241,7 +1236,7 @@ inline uint64_t clasp_to_uint64(Integer_sp x) {
     if (fn >= 0 & fn <= gc::most_positive_uint64) {
       return (uint64_t)fn;
     }
-    TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint64)));
+    TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(gc::most_positive_uint64)));
   }
   return x->as_uint64_();
 }
@@ -1258,7 +1253,7 @@ inline unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
   if (i.fixnump()) {
     gc::Fixnum f = i.unsafe_fixnum();
     if (f >= 0 && f <= gc::most_positive_unsigned_long_long) {
-      return f;
+      return (unsigned long long)f;
     }
     TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0),
                                      Integer_O::create((uint64_t)gc::most_positive_unsigned_long_long)));

@@ -197,9 +197,9 @@ T_mv Function_O::functionSourcePos() const {
   T_sp spi = this->closure->sourcePosInfo();
   T_sp sfi = core_sourceFileInfo(spi);
   if (sfi.nilp() || spi.nilp()) {
-    return Values(sfi, Integer_O::create(0), make_fixnum(0));
+    return Values(sfi, make_fixnum(0), make_fixnum(0));
   }
-  return Values(sfi, Integer_O::create((size_t)gc::As<SourcePosInfo_sp>(spi)->filepos()), make_fixnum(gc::As<SourcePosInfo_sp>(spi)->lineno()));
+  return Values(sfi, make_fixnum(gc::As<SourcePosInfo_sp>(spi)->filepos()), make_fixnum(gc::As<SourcePosInfo_sp>(spi)->lineno()));
 }
 
 EXPOSE_CLASS(core, Function_O);

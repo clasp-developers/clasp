@@ -183,7 +183,7 @@ T_sp VectorObjects_O::rowMajorAref(cl_index idx) const {
   return this->_Values[idx];
 }
 
-int VectorObjects_O::arrayRowMajorIndex(List_sp indices) const {
+gc::Fixnum VectorObjects_O::arrayRowMajorIndex(List_sp indices) const {
   ASSERTF(cl_length(indices) == 1, BF("Vectors have only one dimension - you passed indices %s") % _rep_(indices));
   return unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices)));
 }
