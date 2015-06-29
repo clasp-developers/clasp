@@ -42,12 +42,13 @@ inline mpz_class clasp_create_mpz_class(unsigned long long int x)
         return mpz_class((unsigned long int)x);
     }
 #endif
+#if 0
  inline mpz_class clasp_create_mpz_class(long long int x)
     {
         ASSERT(sizeof(x) == sizeof(long int));
         return mpz_class((long int)x);
     }
-
+#endif
 
 
 FORWARD(Bignum);
