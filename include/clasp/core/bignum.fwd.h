@@ -35,13 +35,13 @@ namespace core {
         return mpz_class((unsigned long int)x);
     }
 
-
+#ifndef _TARGET_OS_DARWIN
     mpz_class clasp_create_mpz_class(unsigned long long int x)
     {
         ASSERT(sizeof(x) == sizeof(unsigned long int));
         return mpz_class((unsigned long int)x);
     }
-
+#endif
     mpz_class clasp_create_mpz_class(long long int x)
     {
         ASSERT(sizeof(x) == sizeof(long int));
