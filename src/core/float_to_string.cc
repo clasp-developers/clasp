@@ -52,7 +52,7 @@ namespace core {
     {
 	gc::Fixnum end = buffer->fillPointer();
 	buffer->pushCharExtend('.');
-	memcpy(&(*buffer)[where+1],&(*buffer)[where],end-where);
+	memmove(&(*buffer)[where+1],&(*buffer)[where],end-where);
 	//clasp_copy_subarray(buffer, where+1, buffer, where, end - where);
 	(*buffer)[where] = c; // clasp_char_set(buffer, where, c);
     }
