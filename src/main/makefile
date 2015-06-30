@@ -6,6 +6,7 @@ project-directories = ../gctools ../core ../clbind ../cffi ../asttooling ../llvm
 
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
   CLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_boehm_o -f bclasp
+  CCLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_boehm_o
   CLASP_MPS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_mps_o
 else
   CLASP_BOEHM = clasp_boehm_o -f bclasp
@@ -38,7 +39,7 @@ bclasp-to-cclasp:
 	$(CLASP_BOEHM) -l "buildBclaspToCclasp.lsp"
 
 cclasp-boehm-addons:
-	$(CLASP_BOEHM) -l "build_cclasp_addons.lsp"
+	$(CCLASP_BOEHM) -l "build_cclasp_addons.lsp"
 
 #	make clasp-gc-interface
 

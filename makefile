@@ -177,7 +177,7 @@ clasp-boehm:
 	$(BJAM) everything gc=boehm link=static program=clasp release
 	(cd src/main; make boehm)
 	make cclasp-boehm
-	make cclasp-boehm-asdf
+	make cclasp-boehm-addons
 
 cclasp-boehm:
 	(cd src/main; make cclasp-boehm)
