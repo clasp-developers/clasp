@@ -130,6 +130,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
        ',name)))
 
 ;;; DEFUN that generates interpreted functions
+#+clasp
 (si::fset 'defun
           #'(lambda (def env)
               (declare (ignore env))

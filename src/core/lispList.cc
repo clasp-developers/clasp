@@ -219,44 +219,53 @@ T_sp cl_copyList(T_sp arg) {
   }
   TYPE_ERROR(arg, cl::_sym_list);
 };
-
+/*! Code translated from ecl_butlast */
 #define ARGS_af_butlast "(list &optional (n 1))"
 #define DECL_af_butlast ""
 #define DOCS_af_butlast "butlast"
-List_sp af_butlast(List_sp list, Integer_sp n) {
-  _G();
-  int ni = clasp_to_int(n);
-  int keepi = cl_length(list) - ni;
-  if (keepi <= 0)
-    return (Values(_Nil<T_O>()));
-  ql::list res;
-  List_sp cur = list;
-  for (int i = 0; i < keepi; i++) {
-    res << oCar(cur);
-    cur = oCdr(cur);
+List_sp af_butlast(List_sp ll, Integer_sp in) {
+  gc::Fixnum n = clasp_to_int(in);
+  T_sp r;
+  T_sp l = ll;
+  for ( r = l; n && cl_consp(r); --n, r = oCdr(r));
+  if ( r.nilp() ) return _Nil<T_O>();
+  else if (!cl_listp(r)) {
+    if ( r == l ) {
+      TYPE_ERROR_LIST(r);
+    }
+    return _Nil<T_O>();
+  } else {
+    Cons_sp head;
+    Cons_sp tail;
+    head = tail = Cons_O::create(oCar(l));
+    while ( l = oCdr(l), r = oCdr(r), cl_consp(r) ) {
+      Cons_sp cons = Cons_O::create(oCar(l));
+      tail->rplacd(cons);
+      tail = cons;
+    }
+    return head;
   }
-  return (res.cons());
-};
-
+}
 #define ARGS_cl_nbutlast "(list &optional (n 1))"
 #define DECL_cl_nbutlast ""
 #define DOCS_cl_nbutlast "butlast"
-List_sp cl_nbutlast(List_sp list, Integer_sp n) {
-  _G();
-  int ni = clasp_to_int(n);
-  int keepi = cl_length(list) - ni;
-  if (keepi <= 0)
-    return (_Nil<T_O>());
-  List_sp cur = list;
-  List_sp prev = _Nil<T_O>();
-  ;
-  for (int i = 0; i < keepi; i++) {
-    prev = cur;
-    cur = oCdr(cur);
+List_sp cl_nbutlast(List_sp l, Integer_sp in) {
+  T_sp r;
+  gc::Fixnum n = clasp_to_fixnum(in);
+  if (clasp_unlikely(!cl_listp(l)))
+    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_nbutlast, l, cl::_sym_list);
+  for (n++, r = l; n && cl_consp(r); n--, r = oCdr(r)) ;
+  if (n == 0) {
+    Cons_sp tail = gc::As<Cons_sp>(l);
+    while (cl_consp(r)) {
+      tail = gc::As<Cons_sp>(oCdr(tail));
+      r = oCdr(r);
+    }
+    tail->rplacd(_Nil<T_O>());
+    return l;
   }
-  prev.asCons()->setCdr(_Nil<T_O>());
-  return list;
-};
+  return _Nil<T_O>();
+}
 
 #define ARGS_af_list "(&rest objects)"
 #define DECL_af_list ""
@@ -293,12 +302,8 @@ T_sp af_listSTAR(T_sp tobjects) {
 #define ARGS_cl_last "(list &optional (on 1))"
 #define DECL_cl_last ""
 T_sp cl_last(T_sp list, int n) {
-  _G();
-  if (list.nilp())
-    return list;
-  if (n < 0) {
-    CELL_ERROR(make_fixnum(n));
-  }
+  if (list.nilp()) return list;
+  if (n < 0) CELL_ERROR(make_fixnum(n));
   if (Cons_sp clist = list.asOrNull<Cons_O>()) {
     return clist->last(n);
   }

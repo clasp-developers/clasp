@@ -36,14 +36,14 @@
 ;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE uses Cleavir
 ;;
 (eval-when (:execute :load-toplevel)
-  (setq cmp:*cleavir-compile-hook* #'cleavir-compile-t1expr))
+  (setq cmp:*cleavir-compile-hook* 'cleavir-compile-t1expr))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE uses Cleavir
+;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE-FILE uses Cleavir
 ;;
 (eval-when (:execute :load-toplevel)
-  (setq cmp:*cleavir-compile-file-hook* #'cleavir-compile-file-form))
+  (setq cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form))
 
 
 

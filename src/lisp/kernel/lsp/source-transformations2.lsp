@@ -223,4 +223,27 @@
 (define-source-transform lcm (&rest args)
   (source-transform-transitive 'lcm args 1 'integer '(abs)))
 
-(compiler-macroexpand '(gcd  x 2 10 4 8))
+(let ((clasp-cleavir:*cleavir-compile-verbose* t))
+  (compile 'foo '(lambda (x y) (+ 1 2 3 4 5 x y))))
+
+(let ((clasp-cleavir:*cleavir-compile-verbose* t))
+  (defun foo (x y) (+ 1 2 3 4 5 x y)))
+
+clasp-cleavir:*cleavir-compile-verbose*
+(format *trace-output* "Foo~%")
+
+(apropos "cleavir-compile-t1expr")
+
+
+(trace cmp::compile*)
+(trace cmp::clasp-compile*)
+(trace clasp-cleavir::cleavir-compile-t1expr)
+(untrace)
+
+(compiler-macroexpand '(+ 1 2 3 4 5 x y))(TWO-ARG-+ (TWO-ARG-+ 15 X) Y)
+
+
+
+(apropos "debug-cleavir")
+
+cmp:*implicit-compile-hook*

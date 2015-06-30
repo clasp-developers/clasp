@@ -2,6 +2,7 @@
 
 
 (defvar *debug-cleavir* nil)
+(export '*debug-cleavir*)
 
 ;;; The first argument to this function is an instruction that has a
 ;;; single successor.  Whether a GO is required at the end of this
@@ -944,6 +945,7 @@ nil)
 ;; Set this to T to watch cleavir-compile-t1expr run
 (defvar *cleavir-compile-verbose* nil)
 (export '*cleavir-compile-verbose*)
+(in-package :clasp-cleavir)
 (defun cleavir-compile-t1expr (name form env pathname)
   (when *cleavir-compile-verbose*
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)

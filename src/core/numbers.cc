@@ -1116,27 +1116,27 @@ T_sp numbers_monotonic(int s, int t, List_sp args) {
   return _lisp->_true();
 };
 
-bool binary__LT_(Number_sp x, Number_sp y)
+bool two_arg__LT_(Number_sp x, Number_sp y)
 {
   return basic_compare(x,y) == -1;
 }
 
-bool binary__LE_(Number_sp x, Number_sp y)
+bool two_arg__LE_(Number_sp x, Number_sp y)
 {
   return basic_compare(x,y) != 1;
 }
 
-bool binary__GT_(Number_sp x, Number_sp y)
+bool two_arg__GT_(Number_sp x, Number_sp y)
 {
   return basic_compare(x,y) == 1;
 }
 
-bool binary__GE_(Number_sp x, Number_sp y)
+bool two_arg__GE_(Number_sp x, Number_sp y)
 {
   return basic_compare(x,y) != -1;
 }
 
-bool binary__EQ_(Number_sp x, Number_sp y)
+bool two_arg__EQ_(Number_sp x, Number_sp y)
 {
   return basic_compare(x,y) == 0;
 }
@@ -3735,10 +3735,18 @@ void initialize_numbers() {
 
   af_def(CorePkg,"binary-_PLUS_",&contagen_add);
   af_def(CorePkg,"binary-_MINUS_",&contagen_sub);
-  af_def(CorePkg,"binary-_LT_",&binary__LT_);
-  af_def(CorePkg,"binary-_LE_",&binary__LE_);
-  af_def(CorePkg,"binary-_GT_",&binary__GT_);
-  af_def(CorePkg,"binary-_GE_",&binary__GE_);
-  af_def(CorePkg,"binary-_EQ_",&binary__EQ_);
+  af_def(CorePkg,"binary-_LT_",&two_arg__LT_);
+  af_def(CorePkg,"binary-_LE_",&two_arg__LE_);
+  af_def(CorePkg,"binary-_GT_",&two_arg__GT_);
+  af_def(CorePkg,"binary-_GE_",&two_arg__GE_);
+  af_def(CorePkg,"binary-_EQ_",&two_arg__EQ_);
+
+  af_def(CorePkg,"two-arg-_PLUS_",&contagen_add);
+  af_def(CorePkg,"two-arg-_MINUS_",&contagen_sub);
+  af_def(CorePkg,"two-arg-_LT_",&two_arg__LT_);
+  af_def(CorePkg,"two-arg-_LE_",&two_arg__LE_);
+  af_def(CorePkg,"two-arg-_GT_",&two_arg__GT_);
+  af_def(CorePkg,"two-arg-_GE_",&two_arg__GE_);
+  af_def(CorePkg,"two-arg-_EQ_",&two_arg__EQ_);
 }
 };

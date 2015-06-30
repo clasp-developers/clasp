@@ -1431,9 +1431,9 @@ be wrapped with to make a closure"
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
 We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
   (if *cleavir-compile-hook*
-      (funcall *cleavir-compile-hook* name definition env pathname)
+      (progn
+        (funcall *cleavir-compile-hook* name definition env pathname))
       (clasp-compile* name definition env pathname)))
-
 
 (defun compile-in-env (bind-to-name &optional definition env &aux conditions)
   "Compile in the given environment"

@@ -786,15 +786,14 @@ List_sp Cons_O::onthcdr(int idx) const {
   return ((cur));
 }
 
+/*! This algorithm works by first stepping through (n) CONS elements with (r)
+and then stepping to the end with (l) and (r).  Once (r) hits the end
+(l) will point to the (n)th from the end CONS cell */
 List_sp Cons_O::last(int n) const {
-  _OF();
-  if (n < 0) {
-    SIMPLE_ERROR(BF("Illegal last index"));
-  }
+  ASSERT(n>=0);
   List_sp l = this->asSmartPtr();
-  List_sp r = l;
-  for (r = l; n && cl_consp(r); --n, r = oCdr(r))
-    ;
+  T_sp r = l;
+  for (r = l; n && cl_consp(r); --n, r = oCdr(r)) ;
   if (r == l) {
     if (!cl_listp(r)) {
       SIMPLE_ERROR(BF("Type not list"));

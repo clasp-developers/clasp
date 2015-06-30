@@ -5,8 +5,7 @@
 ;;
 ;;
 
-(in-package #:sys)
-
+(in-package :sys)
 
 (declaim (ftype (function (list) (or (integer 0) null)) list-length))
 (defun list-length (list)
@@ -69,20 +68,20 @@
 		tree-equal))
 (defun tree-equal-TEST (tree-1 tree-2 test)
   (cond ((consp tree-1)
-	 (and (consp y)
+	 (and (consp tree-2)
 	      (tree-equal-TEST (car tree-1) (car tree-2) test)
 	      (tree-equal-TEST (cdr tree-1) (cdr tree-2) test)))
-	((consp y) nil)
-	((funcall test x y) t)
+	((consp tree-2) nil)
+	((funcall test tree-1 tree-2) t)
 	(t nil)))
 
 (defun tree-equal-TEST-NOT (tree-1 tree-2 test-not)
   (cond ((consp tree-1)
-	 (and (consp y)
+	 (and (consp tree-2)
 	      (tree-equal-TEST-NOT (car tree-1) (car tree-2) test-not)
 	      (tree-equal-TEST-NOT (cdr tree-1) (cdr tree-2) test-not)))
-	((consp y) nil)
-	((not (funcall test-not x y) t))
+	((consp tree-2) nil)
+	((not (funcall test-not tree-1 tree-2) t))
 	(t nil)))
 
 (defun tree-equal (tree-1 tree-2 &key (test #'eql testp) (test-not nil notp))
