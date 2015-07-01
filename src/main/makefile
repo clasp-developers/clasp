@@ -39,7 +39,10 @@ bclasp-to-cclasp:
 	$(CLASP_BOEHM) -l "buildBclaspToCclasp.lsp"
 
 cclasp-boehm-addons:
-	$(CCLASP_BOEHM) -l "build_cclasp_addons.lsp"
+	$(CCLASP_BOEHM) -l "build_addons.lsp"
+
+bclasp-boehm-addons:
+	$(CLASP_BOEHM) -l "build_addons.lsp"
 
 #	make clasp-gc-interface
 

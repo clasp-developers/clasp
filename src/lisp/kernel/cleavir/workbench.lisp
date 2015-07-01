@@ -9,34 +9,10 @@
   (print (core:getpid)))
 
 
-(load "sys:kernel;cleavir;setup-cclasp-build.lisp")
-(load "sys:kernel;cleavir-system.lsp")
-(cclasp-build::compile-clasp :init :auto-cleavir :recompile nil :system *cleavir-system*)
-(apropos "cleavir-system")
+(clasp-cleavir::cleavir-compile 'foo '(lambda (a &aux x (p1 1) (p2 1)) (dotimes (i a) (setq x (+ p1 p2)) (setq p2 p1) (setq p1 x)) x) :debug t)
 
+(time (foo 1000))
 
-(in-package :clasp-cleavir)
-
-(load "sys:kernel;cleavir;inline.lisp")
-
-(disassemble '(lambda () 1))
-
-(defun my-consp (x) (consp x))
-(disassemble 'my-consp)
-(length cmp:*all-functions-for-one-compile*)
-(print cmp::*active-protection*)
-(core:backtrace)
-
-(print *features*)
-(list-all-packages)
-
-
-(getpid)
-(sdfasdf)
-(setq core:*debug-flow-control* t)
-(apropos "exception-stack")
-(core:exception-stack-dump)
-(lisp-implementation-version)
 
 (pushnew :cleavir *features*)
 (cc::compile-clasp :init :cclasp :recompile nil)

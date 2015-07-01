@@ -82,43 +82,54 @@
 
 
 (progn
-  (progn
-    (declaim (inline cl:consp))
-    (defun cl:consp (x)
-      (if (cleavir-primop:consp x) t nil)))
+  (declaim (inline cl:consp))
+  (defun cl:consp (x)
+    (if (cleavir-primop:consp x) t nil)))
 
-  (progn
-    (declaim (inline cl:car))
-    (defun cl:car (x)
-      (if (consp x)
-          (cleavir-primop:car x)
-          (if (null x)
-              nil
-              (error "Cannot get car of non-list ~s" x)))))
+(progn
+  (declaim (inline cl:car))
+  (defun cl:car (x)
+    (if (consp x)
+        (cleavir-primop:car x)
+        (if (null x)
+            nil
+            (error "Cannot get car of non-list ~s" x)))))
 
-  (progn
-    (declaim (inline cl:cdr))
-    (defun cl:cdr (x)
-      (if (consp x)
-          (cleavir-primop:cdr x)
-          (if (null x)
-              nil
-              (error "Cannot get cdr of non-list ~s" x)))))
+(progn
+  (declaim (inline cl:cdr))
+  (defun cl:cdr (x)
+    (if (consp x)
+        (cleavir-primop:cdr x)
+        (if (null x)
+            nil
+            (error "Cannot get cdr of non-list ~s" x)))))
 
-  (progn
-    (declaim (inline cl:rplaca))
-    (defun cl:rplaca (p v)
-      (if (consp p)
-          (progn
-            (cleavir-primop:rplaca p v)
-            p)
-          (error "Cannot rplaca non-cons ~s" p))))
+(progn
+  (declaim (inline cl:rplaca))
+  (defun cl:rplaca (p v)
+    (if (consp p)
+        (progn
+          (cleavir-primop:rplaca p v)
+          p)
+        (error "Cannot rplaca non-cons ~s" p))))
 
-  (progn
-    (declaim (inline cl:rplacd))
-    (defun cl:rplacd (p v)
-      (if (consp p)
-          (progn
-            (cleavir-primop:rplacd p v)
-            p)
-          (error "Cannot rplacd non-cons ~s" p)))))
+(progn
+  (declaim (inline cl:rplacd))
+  (defun cl:rplacd (p v)
+    (if (consp p)
+        (progn
+          (cleavir-primop:rplacd p v)
+          p)
+        (error "Cannot rplacd non-cons ~s" p))))
+
+#||
+(declaim (inline cl:two-arg-+))
+(defun core:two-arg-+ (x y)
+  (cond
+    ((and (typeq x fixnum-ast) (typeq y fixnum-ast))
+     (cleavir-primop:let-uninitialized (z)
+      (if (cleavir-primop:fixnum-+ x y z)
+          x
+          (convert-to-bignum z))))
+    (t (SOME-KIND-OF-GENERIC-TWO-ARG-+ x y))))
+||#  

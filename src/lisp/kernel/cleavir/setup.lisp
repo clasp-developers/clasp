@@ -24,6 +24,11 @@
 
 (defvar *current-function-entry-basic-block*)
 
+(defmethod cleavir-generate-ast:convert-constant-to-immediate
+    ((n integer) environment clasp)
+  (if (fixnump n)
+      (* 2 n)
+      nil))
 
 (defmethod cleavir-env:variable-info ((environment clasp-global-environment) symbol)
   (core:stack-monitor)

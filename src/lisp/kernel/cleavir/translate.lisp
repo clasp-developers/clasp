@@ -303,9 +303,15 @@
 	  (format t "    inputs: ~a~%" inputs)
 	  (format t "    outputs: ~a~%" outputs))
   (cmp:irc-low-level-trace :flow)
-  (let ((load (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "tmp")))
-    (llvm-sys:create-store cmp:*irbuilder* load (first outputs) nil)))
-
+  (let ((input (first inputs))
+        (output (first outputs)))
+    (cond
+      ((typep input 'llvm-sys:constant-int)
+       (let ((val (%inttoptr input cmp:+t*+)))
+         (%store val output)))
+      (t
+       (let ((load (%load input)))
+         (%store load output))))))
 
 (defun ltv-global ()
   (if cmp:*generate-compile-file-load-time-values*
@@ -882,7 +888,7 @@ nil)
   (cleavir-hir-transformations:eliminate-typeq init-instr)
   ;; The following breaks code when inlining takes place
   (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-before.dot")) ;; comment out
-;;  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
+  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
   (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after.dot")) ;; comment out
   (cleavir-hir-transformations:process-captured-variables init-instr))
 

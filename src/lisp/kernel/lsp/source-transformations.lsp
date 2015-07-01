@@ -23,123 +23,68 @@
                  (setq slow (cdr slow))
                  (go again))))))
 
-(defun do+ (numbers)
-  (if (consp numbers)
-      (if (= (length numbers) 1)
-          (car numbers)
-          `(core:binary-+ ,(car numbers) ,(do+ (cdr numbers))))
-      (if (null numbers)
-          0
-          (error "The + operator can not be part of a form that is a dotted list."))))
+(defun simple-associate-args (fun first-arg more-args)
+  (or more-args (error "more-args cannot be nil"))
+  (let ((next (rest more-args))
+        (arg (first more-args)))
+    (if (null next)
+        `(,fun ,first-arg ,arg)
+        (simple-associate-args fun `(,fun ,first-arg ,arg) next))))
+
+(defun expand-associative (fun two-arg-fun args identity &optional (one-arg-result-type 'number))
+  (case (length args)
+    (0 identity)
+    (1 `(values (the ,one-arg-result-type ,(first args))))
+    (2 (values `(,two-arg-fun ,@args) t))
+    (t (simple-associate-args two-arg-fun (first args) (rest args)))))
 
 (define-compiler-macro + (&rest numbers)
-  (if (null numbers)
-      0
-      (if (proper-list-p numbers)
-          (do+ numbers)
-          (error "The + operator requires a proper list not ~s" numbers))))
+  (expand-associative '+ 'two-arg-+ numbers 0))
 
-(defun do- (minuend subtrahends)
-  (if (consp subtrahends)
-      `(core:binary-- ,minuend ,(do+ subtrahends))
-      (if (null subtrahends)
-          `(core:negate ,minuend)
-          (error "The - operator can not be part of a form that is a dotted list."))))
+(define-compiler-macro * (&rest numbers)
+  (expand-associative '* 'two-arg-* numbers 0))
+
+
+
+
+
+
 
 (define-compiler-macro - (minuend &rest subtrahends)
   (if (proper-list-p subtrahends)
-      (do- minuend subtrahends)
-      (error "The - operator requires a proper list")))
+      (if subtrahends
+          `(core:two-arg-- ,minuend ,(expand-associative '+ 'two-arg-+ subtrahends 0))
+          `(core:negate ,minuend))
+      (error "The - operator can not be part of a form that is a dotted list.")))
 
-(defun do-< (numbers)
-  (if (consp numbers)
-      (if (= (length numbers) 1)
-          t
-          (if (= (length numbers) 2)
-              `(core:binary-< ,(car numbers) ,(cadr numbers))
-              `(if (core:binary-< ,(car numbers) ,(cadr numbers))
-                   ,(do-< (cdr numbers))
-                   nil)))))
 
-(defun do-<= (numbers)
-  (if (consp numbers)
-      (if (= (length numbers) 1)
+(defun expand-compare (fun args)
+  (if (consp args)
+      (if (= (length args) 1)
           t
-          (if (= (length numbers) 2)
-              `(core:binary-<= ,(car numbers) ,(cadr numbers))
-              `(if (core:binary-<= ,(car numbers) ,(cadr numbers))
-                   ,(do-<= (cdr numbers))
-                   nil)))))
-
-(defun do-> (numbers)
-  (if (consp numbers)
-      (if (= (length numbers) 1)
-          t
-          (if (= (length numbers) 2)
-              `(core:binary-> ,(car numbers) ,(cadr numbers))
-              `(if (core:binary-> ,(car numbers) ,(cadr numbers))
-                   ,(do-> (cdr numbers))
-                   nil)))))
-
-(defun do->= (numbers)
-  (if (consp numbers)
-      (if (= (length numbers) 1)
-          t
-          (if (= (length numbers) 2)
-              `(core:binary->= ,(car numbers) ,(cadr numbers))
-              `(if (core:binary->= ,(car numbers) ,(cadr numbers))
-                   ,(do->= (cdr numbers))
-                   nil)))))
-
-(defun do-= (numbers)
-  (if (consp numbers)
-      (if (= (length numbers) 1)
-          t
-          (if (= (length numbers) 2)
-              `(core:binary-= ,(car numbers) ,(cadr numbers))
-              `(if (core:binary-= ,(car numbers) ,(cadr numbers))
-                   ,(do-= (cdr numbers))
+          (if (= (length args) 2)
+              `(,fun ,(car args) ,(cadr args))
+              `(if (,fun ,(car args) ,(cadr args))
+                   ,(expand-compare fun (cdr args))
                    nil)))))
 
 (define-compiler-macro < (&rest numbers)
-  (if (null numbers)
-      (error "The < operator requires a list")
-      (if (proper-list-p numbers)
-          (do-< numbers)
-          (error "The < operator requires a proper list not ~s" numbers))))
+  (expand-compare 'two-arg-< numbers))
 
 (define-compiler-macro <= (&rest numbers)
-  (if (null numbers)
-      (error "The <= operator requires a list")
-      (if (proper-list-p numbers)
-          (do-<= numbers)
-          (error "The <= operator requires a proper list not ~s" numbers))))
+  (expand-compare 'two-arg-<= numbers))
 
 (define-compiler-macro > (&rest numbers)
-  (if (null numbers)
-      (error "The > operator requires a list")
-      (if (proper-list-p numbers)
-          (do-> numbers)
-          (error "The > operator requires a proper list not ~s" numbers))))
+  (expand-compare 'two-arg-> numbers))
 
 (define-compiler-macro >= (&rest numbers)
-  (if (null numbers)
-      (error "The >= operator requires a list")
-      (if (proper-list-p numbers)
-          (do->= numbers)
-          (error "The >= operator requires a proper list not ~s" numbers))))
+  (expand-compare 'two-arg->= numbers))
 
 (define-compiler-macro = (&rest numbers)
-  (if (null numbers)
-      (error "The = operator requires a list")
-      (if (proper-list-p numbers)
-          (do-= numbers)
-          (error "The = operator requires a proper list not ~s" numbers))))
+  (expand-compare 'two-arg-= numbers))
 
 (define-compiler-macro 1+ (x)
-  `(core:binary-+ ,x 1))
+  `(core:two-arg-+ ,x 1))
 
 (define-compiler-macro 1- (x)
-  `(core:binary-- ,x 1))
-
-
+  `(core:two-arg-- ,x 1))

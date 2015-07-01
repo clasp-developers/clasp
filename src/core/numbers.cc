@@ -3733,16 +3733,11 @@ void initialize_numbers() {
   ClDefun(exp);
   ClDefun(integerLength);
 
-  af_def(CorePkg,"binary-_PLUS_",&contagen_add);
-  af_def(CorePkg,"binary-_MINUS_",&contagen_sub);
-  af_def(CorePkg,"binary-_LT_",&two_arg__LT_);
-  af_def(CorePkg,"binary-_LE_",&two_arg__LE_);
-  af_def(CorePkg,"binary-_GT_",&two_arg__GT_);
-  af_def(CorePkg,"binary-_GE_",&two_arg__GE_);
-  af_def(CorePkg,"binary-_EQ_",&two_arg__EQ_);
 
   af_def(CorePkg,"two-arg-_PLUS_",&contagen_add);
   af_def(CorePkg,"two-arg-_MINUS_",&contagen_sub);
+  af_def(CorePkg,"two-arg-_TIMES_",&contagen_mul);
+  af_def(CorePkg,"two-arg-_DIVIDE_",&contagen_div);
   af_def(CorePkg,"two-arg-_LT_",&two_arg__LT_);
   af_def(CorePkg,"two-arg-_LE_",&two_arg__LE_);
   af_def(CorePkg,"two-arg-_GT_",&two_arg__GT_);

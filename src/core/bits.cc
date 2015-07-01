@@ -415,6 +415,36 @@ ERROR:
   SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
 }
 
+/*! Copied from ECL */
+T_sp
+cl_logbitp(Integer_sp p, Integer_sp x)
+{
+  bool i;
+  if (p.fixnump()) {
+    cl_index n = clasp_to_size(p);
+    if (x.fixnump()) {
+      gctools::Fixnum y = clasp_fixnum(x);
+      if (n >= FIXNUM_BITS) {
+        i = (y < 0);
+      } else {
+        i = ((y >> n) & 1);
+      }
+    } else {
+      i = mpz_tstbit(gc::As<Bignum_sp>(x)->as_mpz_().get_mpz_t(), n);
+    }
+  } else {
+    IMPLEMENT_MEF(BF("Convert the code below to something Clasp can use"));
+#if 0
+    assert_type_non_negative_integer(p);
+    if (CLASP_FIXNUMP(x))
+      i = (clasp_fixnum(x) < 0);
+    else
+      i = (_clasp_big_sign(x) < 0);
+#endif
+  }
+  return i ? _lisp->_true() : _Nil<T_O>();
+}
+
 #if 0
     T_sp
     cl_lognot(T_sp x)
@@ -587,33 +617,6 @@ ERROR:
 	@(return clasp_boole(coerce_to_logical_operator(o), x, y))
             }
 
-    T_sp
-    cl_logbitp(T_sp p, T_sp x)
-    {
-	bool i;
-
-	assert_type_integer(x);
-	if (CLASP_FIXNUMP(p)) {
-            cl_index n = clasp_to_size(p);
-            if (CLASP_FIXNUMP(x)) {
-		gctools::Fixnum y = clasp_fixnum(x);
-                if (n >= FIXNUM_BITS) {
-                    i = (y < 0);
-                } else {
-                    i = ((y >> n) & 1);
-                }
-            } else {
-                i = mpz_tstbit(x->get().get_mpz_t(), n);
-            }
-	} else {
-            assert_type_non_negative_integer(p);
-            if (CLASP_FIXNUMP(x))
-                i = (clasp_fixnum(x) < 0);
-            else
-                i = (_clasp_big_sign(x) < 0);
-	}
-	@(return (i ? CLASP_T : CLASP_NIL))
-            }
 
     T_sp
     cl_ash(T_sp x, T_sp y)
@@ -737,5 +740,6 @@ void initialize_bits() {
   cl::_sym_boole_xor->defconstant(make_fixnum(boole_xor));
 
   ClDefun(boole);
+  af_def(ClPkg,"logbitp",&cl_logbitp);
 };
 };

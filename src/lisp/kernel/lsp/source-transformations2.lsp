@@ -1,30 +1,51 @@
+;; See the middle of the file
+
+
+
+
 ;;;; This file contains macro-like source transformations which
 ;;;; convert uses of certain functions into the canonical form desired
 ;;;; within the compiler. FIXME: and other IR1 transforms and stuff.
 
 (in-package :core)
 
-;; proper-list-p code from Robert Strandh's Cleavir code
-(defun proper-list-p (object)
-  (cond  ((null object) t)
-         ((atom object) nil)
-         (t (let ((slow object)
-                  (fast (cdr object)))
-              (declare (type cons slow))
-              (tagbody
-               again
-                 (unless (consp fast)
-                   (return-from proper-list-p
-                     (if (null fast) t nil)))
-                 (when (eq fast slow)
-                   (return-from proper-list-p nil))
-                 (setq fast (cdr fast))
-                 (unless (consp fast)
-                   (return-from proper-list-p
-                     (if (null fast) t nil)))
-                 (setq fast (cdr fast))
-                 (setq slow (cdr slow))
-                 (go again))))))
+;;; These will be useful once inlining of the
+;;; two-arg-XXX functions is possible
+
+(define-source-transform logior (&rest args)
+  (source-transform-transitive 'logior args 0 'integer))
+(define-source-transform logxor (&rest args)
+  (source-transform-transitive 'logxor args 0 'integer))
+(define-source-transform logand (&rest args)
+  (source-transform-transitive 'logand args -1 'integer))
+(define-source-transform logeqv (&rest args)
+  (source-transform-transitive 'logeqv args -1 'integer))
+(define-source-transform gcd (&rest args)
+  (source-transform-transitive 'gcd args 0 'integer '(abs)))
+(define-source-transform lcm (&rest args)
+  (source-transform-transitive 'lcm args 1 'integer '(abs)))
+
+
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; The code below is the same as that above but it has some newer features
+;;; Replace the stuff above with the equivalents from below
+;;;
+
+
+(defun find-two-arg-function (name)
+  (let ((full-name (bformat nil "TWO-ARG-%s" (string name))))
+    (multiple-value-bind (sym foundp)
+        (find-symbol full-name :core)
+      (if foundp
+          sym
+          (error "Could not find symbol with name ~a" full-name)))))
+
 
 (declaim (inline singleton-p))
 (defun singleton-p (list)
@@ -34,83 +55,20 @@
 (defmacro define-source-transform (name lambda-list &body body)
   (multiple-value-bind (func pprint doc-string)
       (sys::expand-defmacro name lambda-list body 'cl:define-compiler-macro)
-    `(setf (compiler-macro-function ',name)
-           (lambda (whole env)
-             (declare (core:lambda-name
-                       ,(intern (format nil "SOURCE-TRANSFORM-~a" name) :core)))
-             (or (proper-list-p whole)
-               (error "Arguments for ~a must be a proper list" name))
-             (multiple-value-bind (expansion done)
-                 (funcall ,func whole env)
-               (if (or expansion (not done))
-                   expansion
-                   whole))))))
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
+       (setf (compiler-macro-function ',name)
+             (lambda (whole env)
+               (declare (core:lambda-name
+                         ,(intern (format nil "SOURCE-TRANSFORM-~a" name) :core)))
+               (or (proper-list-p whole)
+                   (error "Arguments for ~a must be a proper list" name))
+               (multiple-value-bind (expansion done)
+                   (funcall ,func whole env)
+                 (if (or expansion (not done))
+                     expansion
+                     whole)))))))
 
 (defmacro /show0 (&rest args) nil)
-
-;;;; list hackery
-
-;;; Translate CxR into CAR/CDR combos.
-(defun source-transform-cxr (form env)
-  (declare (ignore env))
-  (if (not (singleton-p (cdr form)))
-      (values nil t)
-      (let* ((name (car form))
-             (string (symbol-name
-                      (etypecase name
-                        (symbol name)
-                        (leaf (leaf-source-name name))))))
-        (do ((i (- (length string) 2) (1- i))
-             (res (cadr form)
-                  `(,(ecase (char string i)
-                       (#\A 'car)
-                       (#\D 'cdr))
-                    ,res)))
-            ((zerop i) res)))))
-
-;;; Make source transforms to turn CxR forms into combinations of CAR
-;;; and CDR. ANSI specifies that everything up to 4 A/D operations is
-;;; defined.
-;;; Don't transform CAD*R, they are treated specially for &more args
-;;; optimizations
-
-(/show0 "about to set CxR source transforms")
-(loop for i of-type index from 2 upto 4 do
-   ;; Iterate over BUF = all names CxR where x = an I-element
-   ;; string of #\A or #\D characters.
-     (let ((buf (make-string (+ 2 i))))
-       (setf (aref buf 0) #\C
-             (aref buf (1+ i)) #\R)
-       (dotimes (j (ash 2 i))
-         (declare (type index j))
-         (dotimes (k i)
-           (declare (type index k))
-           (setf (aref buf (1+ k))
-                 (if (logbitp k j) #\A #\D)))
-         (unless (member buf '("CADR" "CADDR" "CADDDR")
-                         :test #'equal)
-           (setf (compiler-macro-function (intern buf)) #'source-transform-cxr)
-           #+(or)(setf (info :function :source-transform (intern buf))
-                       #'source-transform-cxr)
-           ))))
-(/show0 "done setting CxR source transforms")
-
-
-;;; Turn FIRST..FOURTH and REST into the obvious synonym, assuming
-;;; whatever is right for them is right for us. FIFTH..TENTH turn into
-;;; Nth, which can be expanded into a CAR/CDR later on if policy
-;;; favors it.
-(define-source-transform rest (x) `(cdr ,x))
-(define-source-transform first (x) `(car ,x))
-(define-source-transform second (x) `(cadr ,x))
-(define-source-transform third (x) `(caddr ,x))
-(define-source-transform fourth (x) `(cadddr ,x))
-(define-source-transform fifth (x) `(nth 4 ,x))
-(define-source-transform sixth (x) `(nth 5 ,x))
-(define-source-transform seventh (x) `(nth 6 ,x))
-(define-source-transform eighth (x) `(nth 7 ,x))
-(define-source-transform ninth (x) `(nth 8 ,x))
-(define-source-transform tenth (x) `(nth 9 ,x))
 
 ;;; LIST with one arg is an extremely common operation (at least inside
 ;;; SBCL itself); translate it to CONS to take advantage of common
@@ -134,11 +92,6 @@
     (t (values nil t))))
 
 
-
-
-
-
-
 ;;;; converting N-arg arithmetic functions
 ;;;;
 ;;;; N-arg arithmetic and logic functions are associated into two-arg
@@ -157,9 +110,11 @@
 ;;; Reduce constants in ARGS list.
 (declaim (ftype (sfunction (symbol list symbol) list) reduce-constants))
 (defun reduce-constants (fun args one-arg-result-type)
-  (let ((one-arg-constant-p (ecase one-arg-result-type
-                              (number #'numberp)
-                              (integer #'integerp)))
+  (let ((one-arg-constant-p
+         (cond
+           ((eq one-arg-result-type 'number) #'numberp)
+           ((eq one-arg-result-type 'integer) #'integerp)
+           (t (error "illegal one-arg-result-type ~a" one-arg-result-type))))
         (reduced-value)
         (reduced-p nil))
     (core::collect ((not-constants))
@@ -192,7 +147,7 @@
 (defun source-transform-transitive (fun args identity
                                     &optional (one-arg-result-type 'number)
                                       (one-arg-prefixes '(values)))
-  (let ((two-arg-fun (intern (format nil "TWO-ARG-~a" fun) :core)))
+  (let ((two-arg-fun (find-two-arg-function fun)))
     (case (length args)
       (0 identity)
       (1 `(,@one-arg-prefixes (the ,one-arg-result-type ,(first args))))
@@ -210,40 +165,59 @@
   (source-transform-transitive '+ args 0))
 (define-source-transform * (&rest args)
   (source-transform-transitive '* args 1))
-(define-source-transform logior (&rest args)
-  (source-transform-transitive 'logior args 0 'integer))
-(define-source-transform logxor (&rest args)
-  (source-transform-transitive 'logxor args 0 'integer))
-(define-source-transform logand (&rest args)
-  (source-transform-transitive 'logand args -1 'integer))
-(define-source-transform logeqv (&rest args)
-  (source-transform-transitive 'logeqv args -1 'integer))
-(define-source-transform gcd (&rest args)
-  (source-transform-transitive 'gcd args 0 'integer '(abs)))
-(define-source-transform lcm (&rest args)
-  (source-transform-transitive 'lcm args 1 'integer '(abs)))
-
-(let ((clasp-cleavir:*cleavir-compile-verbose* t))
-  (compile 'foo '(lambda (x y) (+ 1 2 3 4 5 x y))))
-
-(let ((clasp-cleavir:*cleavir-compile-verbose* t))
-  (defun foo (x y) (+ 1 2 3 4 5 x y)))
-
-clasp-cleavir:*cleavir-compile-verbose*
-(format *trace-output* "Foo~%")
-
-(apropos "cleavir-compile-t1expr")
-
-
-(trace cmp::compile*)
-(trace cmp::clasp-compile*)
-(trace clasp-cleavir::cleavir-compile-t1expr)
-(untrace)
-
-(compiler-macroexpand '(+ 1 2 3 4 5 x y))(TWO-ARG-+ (TWO-ARG-+ 15 X) Y)
 
 
 
-(apropos "debug-cleavir")
 
-cmp:*implicit-compile-hook*
+;;;; converting N-arg comparisons
+;;;;
+;;;; We convert calls to N-arg comparison functions such as < into
+;;;; two-arg calls. This transformation is enabled for all such
+;;;; comparisons in this file. If any of these predicates are not
+;;;; open-coded, then the transformation should be removed at some
+;;;; point to avoid pessimization.
+
+;;; This function is used for source transformation of N-arg
+;;; comparison functions other than inequality. We deal both with
+;;; converting to two-arg calls and inverting the sense of the test,
+;;; if necessary. If the call has two args, then we pass or return a
+;;; negated test as appropriate. If it is a degenerate one-arg call,
+;;; then we transform to code that returns true. Otherwise, we bind
+;;; all the arguments and expand into a bunch of IFs.
+(defun multi-compare (orig-predicate args not-p type &optional force-two-arg-p)
+  (let ((nargs (length args))
+        (predicate (find-two-arg-function orig-predicate)))
+    (cond ((< nargs 1) (values nil t))
+          ((= nargs 1) `(progn (the ,type ,@args) t))
+          ((= nargs 2)
+           (if not-p
+               `(if (,predicate ,(first args) ,(second args)) nil t)
+               (if force-two-arg-p
+                   `(,predicate ,(first args) ,(second args))
+                   (values nil t))))
+          (t
+           (do* ((i (1- nargs) (1- i))
+                 (last nil current)
+                 (current (gensym) (gensym))
+                 (vars (list current) (cons current vars))
+                 (result t (if not-p
+                               `(if (,predicate ,current ,last)
+                                    nil ,result)
+                               `(if (,predicate ,current ,last)
+                                    ,result nil))))
+                ((zerop i)
+                 `(let ,(mapcar #'list vars args) (declare (type ,type ,@vars)) ,result)))))))
+
+(define-source-transform = (&rest args) (multi-compare '= args nil 'number))
+(define-source-transform < (&rest args) (multi-compare '< args nil 'real))
+(define-source-transform > (&rest args) (multi-compare '> args nil 'real))
+;;; We cannot do the inversion for >= and <= here, since both
+;;;   (< NaN X) and (> NaN X)
+;;; are false, and we don't have type-information available yet. The
+;;; deftransforms for two-argument versions of >= and <= takes care of
+;;; the inversion to > and < when possible.
+(define-source-transform <= (&rest args) (multi-compare '<= args nil 'real))
+(define-source-transform >= (&rest args) (multi-compare '>= args nil 'real))
+
+
+
