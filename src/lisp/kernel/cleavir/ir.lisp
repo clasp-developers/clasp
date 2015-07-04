@@ -1,5 +1,8 @@
 (in-package :clasp-cleavir)
 
+(defun %i1 (num)
+  (cmp:jit-constant-i1 num))
+
 (defun %i8 (num)
   (cmp:jit-constant-i8 num))
 
@@ -15,9 +18,15 @@
 (defun %uintptr_t (num)
   (cmp:make-uintptr_t num))
 
+(defgeneric %default-int-type (abi))
+(defmethod %default-int-type ((abi abi-x86-64)) cmp:+i64+)
+(defmethod %default-int-type ((abi abi-x86-32)) cmp:+i32+)
 
 (defun %literal (lit &optional (label "literal"))
   (llvm-sys:create-extract-value cmp:*irbuilder* (cmp:irc-load (cmp:compile-reference-to-literal lit nil)) (list 0) label))
+
+(defun %extract (val index &optional (label "extract"))
+  (llvm-sys:create-extract-value cmp:*irbuilder* val (list index) label))
 
 (defun %nil ()
   "A nil in a T*"
@@ -63,7 +72,6 @@
 	(unless (string= store-fn target-fn)
 	  (error "Mismatch in store function vs target function - you are attempting to store a value in a target where the store instruction is in a different LLVM function(~a) from the target value(~a)" store-fn target-fn))))))
 
-
 (defun %bit-cast (val type &optional (label ""))
   (llvm-sys:create-bit-cast cmp:*irbuilder* val type label))
 
@@ -85,12 +93,31 @@
 
 (defun %icmp-eq (x y &optional (label ""))
   (llvm-sys:create-icmp-eq cmp:*irbuilder* x y label))
+(defun %icmp-slt (x y &optional (label ""))
+  (llvm-sys:create-icmp-slt cmp:*irbuilder* x y label))
+(defun %icmp-slt (x y &optional (label ""))
+  (llvm-sys:create-icmp-slt cmp:*irbuilder* x y label))
+(defun %icmp-sle (x y &optional (label ""))
+  (llvm-sys:create-icmp-sle cmp:*irbuilder* x y label))
+(defun %icmp-sgt (x y &optional (label ""))
+  (llvm-sys:create-icmp-sgt cmp:*irbuilder* x y label))
+(defun %icmp-sge (x y &optional (label ""))
+  (llvm-sys:create-icmp-sge cmp:*irbuilder* x y label))
 
 (defun %cond-br (test true-branch false-branch &key likely-true likely-false)
   (llvm-sys:create-cond-br cmp:*irbuilder* test true-branch false-branch nil))
 
+(defgeneric %sadd.with-overflow (x y abi))
+(defmethod %sadd.with-overflow (x y (abi abi-x86-64))
+  (cmp:irc-intrinsic "llvm.sadd.with.overflow.i64" x y))
+(defmethod %sadd.with-overflow (x y (abi abi-x86-32))
+  (cmp:irc-intrinsic "llvm.sadd.with.overflow.i32" x y))
 
-                      
+(defgeneric %ssub.with-overflow (x y abi))
+(defmethod %ssub.with-overflow (x y (abi abi-x86-64))
+  (cmp:irc-intrinsic "llvm.ssub.with.overflow.i64" x y))
+(defmethod %ssub.with-overflow (x y (abi abi-x86-32))
+  (cmp:irc-intrinsic "llvm.ssub.with.overflow.i32" x y))
 
 
 

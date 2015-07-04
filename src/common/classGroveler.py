@@ -758,8 +758,8 @@ for fileName in fileNames:
 	    gr = match.groups()
 	    namespaceName = gr[0]
 	    packageName = gr[1]
-            sys.stderr.write( "!!!!! Associating namespace(%s) with package(%s)\n" % (namespaceName,packageName))
-            fout.write("// Associating namespace(%s) with package(%s)\n" % (namespaceName,packageName))
+#            sys.stderr.write( "!!!!! Associating namespace(%s) with package(%s)\n" % (namespaceName,packageName))
+#            fout.write("// Associating namespace(%s) with package(%s)\n" % (namespaceName,packageName))
             if ( packageName in NamespaceForPackage ):
                 if ( namespaceName != NamespaceForPackage[packageName] ):
                     raise Exception("At %s:%d you are redefining a namespace/package association with a different association - this should never happen")
@@ -771,7 +771,7 @@ for fileName in fileNames:
         if ( match != None ):
             gr = match.groups()
             directoryPackageName = gr[0]
-            sys.stderr.write( "!!!!! Switched directoryPackageName = %s\n" % directoryPackageName)
+#            sys.stderr.write( "!!!!! Switched directoryPackageName = %s\n" % directoryPackageName)
 
         match = namespaceDeclaration.match(l)
         if ( match != None ):

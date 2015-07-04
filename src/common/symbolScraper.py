@@ -410,7 +410,7 @@ for fileName in fileNames:
         match = configure_symbol_scrape_re.match(l)
         if ( match != None ):
             packageName = gr[0]
-            sys.stderr.write( "!!!!! Switched packageName = %s\n" % packageName)
+#            sys.stderr.write( "!!!!! Switched packageName = %s\n" % packageName)
 
         match = symbol_table_re.match(l)
         if ( match != None ):
@@ -433,7 +433,7 @@ for fileName in fileNames:
 	    gr = match.groups()
 	    namespaceName = gr[0]
 	    packageName = gr[1]
-            sys.stderr.write( "!!!!! Associating namespace(%s) with package(%s)\n" % (namespaceName,packageName))
+#            sys.stderr.write( "!!!!! Associating namespace(%s) with package(%s)\n" % (namespaceName,packageName))
             if ( packageName in NamespaceForPackage ):
                 if ( namespaceName != NamespaceForPackage[packageName] ):
                     raise Exception("At %s:%d you are redefining a namespace/package association with a different association - this should never happen")

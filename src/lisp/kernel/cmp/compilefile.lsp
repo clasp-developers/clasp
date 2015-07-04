@@ -101,7 +101,7 @@
 			"defmacro"
 			"defun")))
        (bformat t ";    %s %s\n" header name)))
-    ((consp form)
+    #+(or)((consp form)
      (let* ((second-part (bformat nil "%s" (cadr form)))
             (trimmed-second-part (if (> (length second-part) 32)
                                      (bformat nil "%s..." (subseq second-part 0 32))

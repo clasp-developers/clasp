@@ -2,14 +2,25 @@
 
 ;;; Define the CLASP system
 (defclass clasp () ())
-(defvar *clasp-system* (make-instance 'clasp))
+(defclass clasp-64bit (clasp) ())
+
+(defvar *clasp-system* (make-instance 'clasp-64bit))
 
 (defclass clasp-global-environment () () )
 (defvar *clasp-env* (make-instance 'clasp-global-environment))
+
+;;
+;; Define the ABI for x86-64
+(defclass abi-x86-64 () ())
+(defclass abi-x86-32 () ())
+
+(defvar *abi-x86-64* (make-instance 'abi-x86-64))
+
 (export '(clasp-global-environment
           *clasp-env*
           clasp
-          *clasp-system*))
+          *clasp-system*
+          *abi-x86-64*))
 
 
 #+(or)(defmacro cc-dbg-when (cond &rest body) nil)

@@ -17,18 +17,20 @@
       (t
        (funcall (cclasp-compile-in-env nil `(lambda () ,form) env))))))
 
-;;
-;; Define the ABI for x86-64
-(defclass abi-x86-64 () ())
-
 
 (defvar *current-function-entry-basic-block*)
 
-(defmethod cleavir-generate-ast:convert-constant-to-immediate
-    ((n integer) environment clasp)
-  (if (fixnump n)
-      (* 2 n)
-      nil))
+(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment clasp)
+  ;; convert fixnum into immediate but bignums return nil
+  (core:create-tagged-immediate-value-or-nil n))
+
+(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n character) environment clasp)
+  ;; convert character to an immediate
+  (core:create-tagged-immediate-value-or-nil n))
+
+(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n float) environment clasp)
+  ;; single-float's can be converted to immediates, anything else will return nil
+  (core:create-tagged-immediate-value-or-nil n))
 
 (defmethod cleavir-env:variable-info ((environment clasp-global-environment) symbol)
   (core:stack-monitor)
@@ -102,11 +104,7 @@
 (defun treat-as-special-operator-p (name)
   (cond
     ((cmp:treat-as-special-operator-p name) t)
-    ((eq name 'cleavir-primop:consp) t)
-    ((eq name 'cleavir-primop:car) t)
-    ((eq name 'cleavir-primop:cdr) t)
-    ((eq name 'cleavir-primop:rplaca) t)
-    ((eq name 'cleavir-primop:rplacd) t)
+    ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))
 
 
@@ -246,8 +244,8 @@
 (defun draw-mir (&optional (mir *mir*) (filename "/tmp/mir.dot"))
   (with-open-file (stream filename :direction :output)
     (cleavir-ir-graphviz:draw-flowchart mir stream))
-  (ext:system (format nil "dot -Tpng -o/tmp/mir.png ~a" filename))
-  (ext:system "open -n /tmp/mir.png"))
+  (ext:system (format nil "dot -Teps -o/tmp/mir.eps ~a" filename))
+  (ext:system "open -n /tmp/mir.eps"))
 
 (defun draw-ast (&optional (ast *ast*) (filename "/tmp/ast.dot"))
   (let* ((dot-pathname (pathname filename))

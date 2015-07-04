@@ -46,7 +46,7 @@ ifneq ($(EXTERNALS_BUILD_TARGET_DIR),)
 	export PATH
 endif
 
-export PATH := $(BOOST_BUILD_INSTALL)/bin:$(PATH)
+export PATH := $(CLASP_HOME)/src/common:$(BOOST_BUILD_INSTALL)/bin:$(PATH)
 export PATH := $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR):$(PATH)
 
 

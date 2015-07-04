@@ -69,6 +69,8 @@ Set this to other IRBuilders to make code go where you want")
 	#-address-model-64(error "Add support for non 64-bit"))
 ;;(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
 (defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
+(defvar +{i32.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i1+) nil))
+(defvar +{i64.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i64+ +i1+) nil))
 
 (defvar +size_t+
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
@@ -86,9 +88,17 @@ Set this to other IRBuilders to make code go where you want")
   (let ((find (assoc name info)))
     (or find (error "Could not find ~a in cxx-data-structures-info --> ~s~%" name info))
     (cdr find)))
+(defvar +fixnum-mask+ (get-cxx-data-structure-info :fixnum-mask))
 (defvar +tag-mask+ (get-cxx-data-structure-info :tag-mask))
+(defvar +immediate-mask+ (get-cxx-data-structure-info :immediate-mask))
 (defvar +cons-tag+ (get-cxx-data-structure-info :cons-tag))
+(defvar +fixnum-tag+ (get-cxx-data-structure-info :fixnum-tag))
+(defvar +character-tag+ (get-cxx-data-structure-info :character-tag))
+(defvar +single-float-tag+ (get-cxx-data-structure-info :single-float-tag))
 (defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
+(export '(+fixnum-mask+ +tag-mask+ +immediate-mask+
+          +cons-tag+ +fixnum-tag+ +character-tag+ +single-float-tag+
+          +general-tag+))
 (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
 (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
 (defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
@@ -663,6 +673,11 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "llvm.eh.typeid.for" +i32+ (list +i8*+))
   ;;  (primitive-nounwind module "_Unwind_Resume" +void+ (list +i8*+))
 
+  (primitive-nounwind module "llvm.sadd.with.overflow.i32" +{i32.i1}+ (list +i32+ +i32+))
+  (primitive-nounwind module "llvm.sadd.with.overflow.i64" +{i64.i1}+ (list +i64+ +i64+))
+  (primitive-nounwind module "llvm.ssub.with.overflow.i32" +{i32.i1}+ (list +i32+ +i32+))
+  (primitive-nounwind module "llvm.ssub.with.overflow.i64" +{i64.i1}+ (list +i64+ +i64+))
+  
   (primitive-nounwind module "getOrCreateLoadTimeValueArray" +void+ (list +ltv**+ +i8*+ +i32+ +i32+))
 
   (primitive-nounwind module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))

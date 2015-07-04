@@ -701,6 +701,13 @@
                (cmp (%icmp-eq tag (%i32 cmp:+cons-tag+) "consp-test")))
           (%cond-br cmp (first successors) (second successors))) :likely t)
 
+(defmethod translate-branch-instruction
+          ((instruction cleavir-ir:fixnump-instruction) inputs outputs successors abi)
+        (let* ((x (%load (first inputs)))
+               (tag (%and (%ptrtoint x cmp::+i32+) (%i32 cmp:+fixnum-mask+) "fixnum-tag-only"))
+               (cmp (%icmp-eq tag (%i32 cmp:+fixnum-tag+) "fixnump-test")))
+          (%cond-br cmp (first successors) (second successors))) :likely t)
+
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) inputs outputs successors abi)
@@ -718,15 +725,51 @@
     (cmp:irc-intrinsic "cc_throw" (cmp:irc-load (first inputs))))
   (cmp:irc-unreachable))
 
-
 (defmethod translate-branch-instruction
     ((instruction clasp-cleavir-hir:landing-pad-return-instruction) inputs outputs successors abi)
   (cmp:irc-intrinsic "cc_popLandingPadFrame" (cmp:irc-load (car (last inputs))))
   (call-next-method))
 
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:fixnum-add-instruction) inputs outputs successors abi)
+  (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
+         (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
+         (result-with-overflow (%sadd.with-overflow x y abi)))
+    (let ((val (%extract result-with-overflow 0 "result"))
+          (overflow (%extract result-with-overflow 1 "overflow")))
+      (%store (%inttoptr val cmp:+t*+) (first outputs))
+      (%cond-br overflow (second successors) (first successors)))))
 
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:fixnum-sub-instruction) inputs outputs successors abi)
+  (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
+         (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
+         (result-with-overflow (%ssub.with-overflow x y abi)))
+    (let ((val (%extract result-with-overflow 0 "result"))
+          (overflow (%extract result-with-overflow 1 "overflow")))
+      (%store (%inttoptr val cmp:+t*+) (first outputs))
+      (%cond-br overflow (second successors) (first successors)))))
 
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:fixnum-less-instruction) inputs outputs successors abi)
+  (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
+         (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
+         (cmp-lt (%icmp-slt x y)))
+      (%cond-br cmp-lt (first successors) (second successors))))
 
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:fixnum-not-greater-instruction) inputs outputs successors abi)
+  (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
+         (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
+         (cmp-lt (%icmp-sle x y)))
+      (%cond-br cmp-lt (first successors) (second successors))))
+
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:fixnum-equal-instruction) inputs outputs successors abi)
+  (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
+         (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
+         (cmp-lt (%icmp-eq x y)))
+      (%cond-br cmp-lt (first successors) (second successors))))
 
 #+(or)(progn
 	(defmethod translate-branch-instruction
@@ -734,59 +777,6 @@
 	  `(if (typep ,(first inputs) ',(cleavir-ir:value-type instruction))
 	       (go ,(second successors))
 	       (go ,(first successors))))
-
-	(defmethod translate-branch-instruction
-	    ((instruction cleavir-ir:fixnum-add-instruction) inputs outputs successors)
-	  (let ((result (gensym)))
-	    `(let ((,result (+ ,(first inputs) ,(second inputs))))
-	       (cond ((typep result 'fixnum)
-		      (setq ,(first outputs) ,result)
-		      (go ,(first successors)))
-		     ((plusp ,result)
-		      (setq ,(first outputs)
-			    (+ ,result (* 2 most-negative-fixnum)))
-		      (go ,(second successors)))
-		     (t
-		      (setq ,(first outputs)
-			    (- ,result (* 2 most-negative-fixnum)))
-		      (go ,(second successors)))))))
-
-	(defmethod translate-branch-instruction
-	    ((instruction cleavir-ir:fixnum-sub-instruction) inputs outputs successors)
-	  (let ((result (gensym)))
-	    `(let ((,result (- ,(first inputs) ,(second inputs))))
-	       (cond ((typep result 'fixnum)
-		      (setq ,(first outputs) ,result)
-		      (go ,(first successors)))
-		     ((plusp ,result)
-		      (setq ,(first outputs)
-			    (+ ,result (* 2 most-negative-fixnum)))
-		      (go ,(second successors)))
-		     (t
-		      (setq ,(first outputs)
-			    (- ,result (* 2 most-negative-fixnum)))
-		      (go ,(second successors)))))))
-
-	(defmethod translate-branch-instruction
-	    ((instruction cleavir-ir:fixnum-less-instruction) inputs outputs successors)
-	  (declare (ignore outputs))
-	  `(if (< ,(first inputs) ,(second inputs))
-	       (go ,(first successors))
-	       (go ,(second successors))))
-
-	(defmethod translate-branch-instruction
-	    ((instruction cleavir-ir:fixnum-not-greater-instruction) inputs outputs successors)
-	  (declare (ignore outputs))
-	  `(if (<= ,(first inputs) ,(second inputs))
-	       (go ,(first successors))
-	       (go ,(second successors))))
-
-	(defmethod translate-branch-instruction
-	    ((instruction cleavir-ir:fixnum-equal-instruction) inputs outputs successors)
-	  (declare (ignore outputs))
-	  `(if (= ,(first inputs) ,(second inputs))
-	       (go ,(first successors))
-	       (go ,(second successors))))
 	)
 
 ;;; When the FUNCALL-INSTRUCTION is the last instruction of a basic
@@ -941,7 +931,7 @@ nil)
           (setf *ast* hoisted-ast
                 *hir* hir)
           (let ((*form* form)
-                (abi (make-instance 'abi-x86-64)))
+                (abi *abi-x86-64*))
             (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
             (translate hir abi))))
     (cc-dbg-when *debug-log*
@@ -987,7 +977,7 @@ nil)
               (setf *ast* hoisted-ast
                     *hir* hir)
               (let ((*form* form)
-                    (abi (make-instance 'abi-x86-64)))
+                    (abi *abi-x86-64*))
                 (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
                 (when *debug-cleavir* (draw-mir hir)) ;; comment out
                 (translate hir abi))))

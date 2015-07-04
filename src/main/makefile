@@ -5,7 +5,7 @@ project-directories = ../gctools ../core ../clbind ../cffi ../asttooling ../llvm
 
 
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
-  CLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_boehm_o -f bclasp
+  BCLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_boehm_o -f bclasp
   CCLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_boehm_o
   CLASP_MPS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_mps_o
 else
@@ -30,19 +30,19 @@ boehm-cleavir:
 	make cclasp
 
 cclasp-boehm:
-	$(CLASP_BOEHM) -l "buildCleavirClasp.lsp"
+	$(BCLASP_BOEHM) -l "buildCleavirClasp.lsp"
 
 cclasp-reload:
-	$(CLASP_BOEHM) -l "buildCleavirClaspReload.lsp"
+	$(BCLASP_BOEHM) -l "buildCleavirClaspReload.lsp"
 
 bclasp-to-cclasp:
-	$(CLASP_BOEHM) -l "buildBclaspToCclasp.lsp"
+	$(BCLASP_BOEHM) -l "buildBclaspToCclasp.lsp"
 
 cclasp-boehm-addons:
 	$(CCLASP_BOEHM) -l "build_addons.lsp"
 
 bclasp-boehm-addons:
-	$(CLASP_BOEHM) -l "build_addons.lsp"
+	$(BCLASP_BOEHM) -l "build_addons.lsp"
 
 #	make clasp-gc-interface
 
@@ -57,13 +57,13 @@ boehm-recompile:
 	make full-boehm
 
 min-boehm:
-	$(CLASP_BOEHM) -I -f ecl-min -l "buildClaspMinBoot.lsp"
+	$(BCLASP_BOEHM) -I -f ecl-min -l "buildClaspMinBoot.lsp"
 
 min-boehm-recompile:
-	$(CLASP_BOEHM) -f ecl-min -l "buildClaspMinRecompile.lsp"
+	$(BCLASP_BOEHM) -f ecl-min -l "buildClaspMinRecompile.lsp"
 
 full-boehm:
-	$(CLASP_BOEHM) -f ecl-min -l "buildClasp.lsp"
+	$(BCLASP_BOEHM) -f ecl-min -l "buildClasp.lsp"
 
 
 mps:
@@ -85,20 +85,20 @@ full-mps:
 
 
 short-compile-mps:
-	time $(CLASP_MPS) -f ecl-min -l "shortCompile.lsp"
+	time $(BCLASP_MPS) -f ecl-min -l "shortCompile.lsp"
 
 short-compile-boehm:
-	time $(CLASP_BOEHM) -f ecl-min -l "shortCompile.lsp"
+	time $(BCLASP_BOEHM) -f ecl-min -l "shortCompile.lsp"
 
 
 
 clasp-gc-interface:
-	$(CLASP_BOEHM) -l "buildClaspGC.lsp"
+	$(BCLASP_BOEHM) -l "buildClaspGC.lsp"
 
 compile-commands:
 	-bjam bundle release mps-prep -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	python ../common/buildJSON.py clang bjam.out `$(CLASP_BOEHM) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
+	python ../common/buildJSON.py clang bjam.out `$(BCLASP_BOEHM) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
 
 
 
@@ -118,11 +118,11 @@ run-clasp:
 
 mps-interface:
 	@echo Building mps-prep
-	bjam -j$(PJOBS) bundle release mps-prep
+	bjam -j$(PJOBS) link=static gc=mps-prep program=clasp release
 	make boehm
 	make compile-commands
 	@echo Running parallel search and generating code when done
-	$(CLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
+	$(BCLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
 
 
 

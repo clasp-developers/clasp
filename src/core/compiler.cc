@@ -55,6 +55,26 @@ THE SOFTWARE.
 
 namespace core {
 
+#define ARGS_core_cxxFibn "(reps num)"
+#define DECL_core_cxxFibn ""
+#define DOCS_core_cxxFibn "Calculate the num Fibonacci number reps times"
+Integer_sp core_cxxFibn(Fixnum_sp reps, Fixnum_sp num) {
+  Fixnum freps = clasp_to_fixnum(reps);
+  Fixnum fnum = clasp_to_fixnum(num);
+  Fixnum p1, p2, z;
+  for ( Fixnum r = 0; r<freps; ++r ) {
+    p1 = 1;
+    p2 = 1;
+    Fixnum rnum = fnum - 2;
+    for ( Fixnum i=0; i<rnum; ++i ) {
+      z = p1 + p2;
+      p2 = p1;
+      p1 = z;
+    }
+  }
+  return Integer_O::create(z);
+}
+
 typedef void (*InitFnPtr)(LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS_BASE);
 
 T_sp varArgsList(int n_args, ...) {
@@ -994,6 +1014,7 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   CoreDefun(callsByPointerPerSecond);
   CoreDefun(startupImagePathname);
   CoreDefun(mangleName);
+  CoreDefun(cxxFibn);
   SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
   CoreDefun(callWithVariableBound);
   cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());

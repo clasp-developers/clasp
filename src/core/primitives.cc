@@ -129,6 +129,8 @@ T_sp cl_lispImplementationVersion() {
   return Str_O::create(ss.str());
 };
 
+
+
 #define ARGS_core_lispImplementationId "()"
 #define DECL_core_lispImplementationId ""
 #define DOCS_core_lispImplementationId "lispImplementationId - the git commit sha1 code"
@@ -145,11 +147,21 @@ T_sp core_lispImplementationId() {
   return Str_O::create(rightChars);
 };
 
+
+#define ARGS_core_create_tagged_immediate_value_or_nil "(obj)"
+#define DECL_core_create_tagged_immediate_value_or_nil ""
+#define DOCS_core_create_tagged_immediate_value_or_nil "Convert an object, either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL"
+T_sp core_create_tagged_immediate_value_or_nil(T_sp object) {
+  if ( object.fixnump() || object.characterp() || object.single_floatp() ) {
+    return Integer_O::create((gc::Fixnum)object.raw_());
+  }
+  return _Nil<T_O>();
+};
+
 #define ARGS_cl_softwareType "()"
 #define DECL_cl_softwareType ""
 #define DOCS_cl_softwareType "softwareType"
 T_sp cl_softwareType() {
-  _G();
   return _Nil<T_O>();
 };
 
@@ -1782,6 +1794,7 @@ void initialize_primitives() {
   ClDefun(machineInstance);
   ClDefun(sxhash);
   ClDefun(sleep);
+  CoreDefun(create_tagged_immediate_value_or_nil);
 }
 
 void initializePythonPrimitives(Lisp_sp lisp) {

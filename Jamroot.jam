@@ -24,6 +24,26 @@ feature.compose <program>cando : <define>PROGRAM_CANDO ;
 
 GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
 
+# I'm leaving this rule in because it illustrates how to start something at init
+rule init ( top ? : : properties * ) {
+     ECHO "STARTING init rule in Jamroot.jam --> $(top)"  ;
+#     echo [ SHELL "ls" ] ;
+     if $(top) {
+          .top = $(top) ;
+     }
+     else {
+     	  errors.error "Please set the project root in your Jamroot file" ;
+     }
+     .common = $(top)/src/common ;
+     .applib = $(APPLIB) ;
+#     local ecl = [ common.get-invocation-command-nodefault clasp : ecl ] ;
+#     if ! $(ecl) {
+#     	  ECHO "WARNING: Command ecl not found." ;
+#     }
+}
+
+init clasp ;
+
 project clasp : requirements
 	<include>include
 	<define>BUILDING_CLASP
@@ -75,6 +95,10 @@ project clasp : requirements
 ##        Turn on USE_GCVECTOR_MALLOC_ALLOCATOR to use the malloc/free one
 
 #        <define>RUN_SAFE   # Turn on safety checks in smart_ptr - this slows things down
+### Tracking allocations with TRACK_ALLOCATIONS keeps a count of
+### exactly how many bytes are CONSed by Clasp
+### Compiling min-boehm-recompile with it defined 4:54 min and off 4.56 min
+### so it has no significant impact at this stage
          <define>TRACK_ALLOCATIONS   # this may slow down allocation
 #	 <define>DEBUG_GCWEAK    # Debug the Weak pointer code
 #        <define>DEBUG_TRYSET    #    Define this if you are using DEBUG_GCWEAK but can be defined alone & with DEBUG_FIND

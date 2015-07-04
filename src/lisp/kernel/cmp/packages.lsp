@@ -28,6 +28,7 @@
           +fn-prototype+
           +fn-prototype-argument-names+
           +i32+
+          +i64+
           +i8*+
           +mv-struct+
           +size_t+
@@ -108,9 +109,6 @@
           bclasp-compile
           bclasp-compile-file
           make-uintptr_t
-          +tag-mask+
-          +cons-tag+
-          +general-tag+
           +cons-car-offset+
           +cons-cdr-offset+
           +uintptr_t+

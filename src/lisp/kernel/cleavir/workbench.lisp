@@ -8,8 +8,106 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (print (core:getpid)))
 
+(clasp-cleavir::cleavir-compile 'nil
+                                '(defun fibn (reps num &aux rnum p1 p2 z)
+                                  (dotimes (r reps)
+                                    (setq p1 1
+                                          p2 1
+                                          rnum (- num 2))
+                                    (dotimes (i rnum)
+                                      (setq z (+ p1 p2)
+                                            p2 p1
+                                            p1 z)))
+                                  z) :debug nil)
+(defparameter *reps* 100000000)
+(defparameter *num* 78)
+(time (fibn *reps* *num*))
+(time (core:cxx-fibn *reps* *num*))
 
-(clasp-cleavir::cleavir-compile 'foo '(lambda (a &aux x (p1 1) (p2 1)) (dotimes (i a) (setq x (+ p1 p2)) (setq p2 p1) (setq p1 x)) x) :debug t)
+(defun fibn (reps num &aux rnum p1 p2 z)
+  (dotimes (r reps)
+    (setq p1 1
+          p2 1
+          rnum (- num 2))
+    (dotimes (i rnum)
+      (setq z (+ p1 p2)
+            p2 p1
+            p1 z)))
+  z)
+
+
+(time (fibn 10000000 78))
+
+(/ (* (/ 10000000 100000) 16) 13.46)
+
+
+
+
+
+
+(clasp-cleavir::cleavir-compile-file "sys:tests;tadd.lsp")
+(getpid)3290
+
+(load "sys:tests;tadd.fasl")
+
+(clasp-cleavir::cleavir-compile 't+ '(lambda (x y) (test-two-arg-+ x y)))
+(clasp-cleavir::cleavir-compile 't< '(lambda (x y) (test-two-arg-< x y)))
+(clasp-cleavir::cleavir-compile 'foo< '(lambda (x y) (t< x y)))
+(disassemble 'foo<)
+
+(tadd 1 2)
+(+ most-positive-fixnum)4611686018427387903
+(+ most-negative-fixnum)-4611686018427387904
+
+(tadd most-positive-fixnum 1) --> Convert this value: -4611686018427387904 to a bignum
+NIL
+
+(+ -4611686018427387904 (expt 2 63) )4611686018427387904
+(+ most-positive-fixnum 0)4611686018427387903
+
+
+
+(tadd most-negative-fixnum -1)Convert this value: 4611686018427387903 to a bignum
+
+(- 4611686018427387903 (expt 2 63)) --> -4611686018427387905
+(+ -4611686018427387904 (expt 2 63) )4611686018427387904
+(+ most-negative-fixnum 0)-4611686018427387904
+
+(expt 2 4)
+
+
+
+
+
+
+
+
+*features*
+
+
+(clasp-cleavir:cleavir-compile nil '(progn (defmacro #1=#.(gensym)()) (#1#)) :debug t)
+
+(macroexpand '(and form1)) -> (LET ((#:G1665 FORM1)) (IF #:G1665 #:G1665 NIL))
+
+(apropos "backtrace")
+(trace (cleavir-environment:eval :print ((core:ihs-backtrace))))
+(trace cleavir-environment:eval)
+(trace clasp-cleavir::cleavir-compile-file-form)
+(trace cleavir-generate-ast:generate-ast)
+(trace cleavir-generate-ast:convert)
+(untrace)
+
+(clasp-cleavir::cleavir-compile-file "sys:tests;tmacro-6times.lsp")
+
+(clasp-cleavir::cleavir-compile 'foo-+ '(lambda (x y) (core:test-two-arg-+ x y)) :debug t)
+
+(apropos "test-two-arg-+")
+
+
+
+(untrace)
+(trace cleavir-generate-ast:convert-special)
+(trace cleavir-generate-ast::convert-form)
 
 (time (foo 1000))
 
