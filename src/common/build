@@ -1,0 +1,3 @@
+#! /bin/bash -f
+make scrape-all
+bjam $*
