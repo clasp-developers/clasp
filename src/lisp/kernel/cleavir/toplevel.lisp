@@ -82,7 +82,6 @@
                         (fdefinition name)
                         (eval-compile form))))
                  (progn
-                   (format t "About to call eval-progn from progn env: ~s~%" env)
                    (eval-progn body))
                  (eval-when
                      (assert (listp (car body)))
