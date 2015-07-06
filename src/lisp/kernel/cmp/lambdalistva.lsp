@@ -267,6 +267,24 @@ Use cases:
      (define-binding-in-value-environment* ,env ,target)
      ))
 
+(defmacro with-target-reference-no-bind-do ((target-ref target env) &rest body)
+  "This function generates code to write val into target
+\(special-->Symbol value slot or lexical-->ActivationFrame) at run-time.
+Use cases:
+- generate code to copy a value into the target-ref
+\(with-target-reference-do (target-ref target env)
+  (irc-intrinsic \"copyTsp\" target-ref val))
+- compile arbitrary code that writes result into the target-ref
+\(with-target-reference-do (target-ref target env)
+  (codegen target-ref form env))"
+  `(progn
+     (let ((,target-ref (compile-target-reference* ,env ,target)))
+       ,@body)
+     ;; Add the target to the ValueEnvironment AFTER storing it in the target reference
+     ;; otherwise the target may shadow a variable in the lexical environment
+;;     (define-binding-in-value-environment* ,env ,target)
+     ))
+
 
 
 (defmacro with-target-reference-if-runtime-unbound-do ((target-ref target env) &rest body)
@@ -343,7 +361,6 @@ will put a value into target-ref."
 				   args ;; nargs va-list
 				   new-env
 				   entry-arg-idx )
-  (format t "START compile-optional-arguments    new-env: ~%~s~%" (environment-stack-as-string new-env))
   (irc-branch-to-and-begin-block (irc-basic-block-create "process-optional-arguments"))
   (cmp-log "About to compile-optional-arguments: %s\n" optargs)
   ;; First save any special values
@@ -370,23 +387,25 @@ will put a value into target-ref."
       (irc-cond-br cmp arg-block init-block)
       (irc-begin-block arg-block)
       (let ((val-ref (calling-convention-args.gep args arg-idx)))
-	(with-target-reference-do (target-ref target new-env) ; run-time af binding
+	(with-target-reference-no-bind-do (target-ref target new-env) ; run-time af binding
 	  (irc-intrinsic "copyTspTptr" target-ref val-ref))
 	(when flag
-	  (with-target-reference-do (flag-ref flag new-env) ; run-time AF binding
+	  (with-target-reference-no-bind-do (flag-ref flag new-env) ; run-time AF binding
 	    (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
 	(irc-br cont-block)
 	(irc-begin-block init-block)
-	(with-target-reference-do (target-ref target new-env) ; codegen init-form into target-ref
+	(with-target-reference-no-bind-do (target-ref target new-env) ; codegen init-form into target-ref
 	  ;; Use new-env so that symbols already defined in this lambda can be accessed
-          (format t "compile-optional-arguments  init-form: ~s~%" init-form)
-          (format t "compile-optional-arguments    new-env: ~%~s~%" (environment-stack-as-string new-env))
 	  (codegen target-ref init-form new-env))
 	(when flag
-	  (with-target-reference-do (flag-ref flag new-env) ; copy nil into flag-ref
+	  (with-target-reference-no-bind-do (flag-ref flag new-env) ; copy nil into flag-ref
 	    (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal nil new-env))))
 	(irc-br cont-block)
-	(irc-begin-block cont-block)))))
+	(irc-begin-block cont-block)))
+    (define-binding-in-value-environment* new-env target)
+    (when flag
+      (define-binding-in-value-environment* new-env flag))
+    ))
 
 
 
@@ -474,12 +493,12 @@ will put a value into target-ref."
                     (irc-cond-br kw-seen-already good-kw-block not-seen-before-kw-block)
                     (irc-begin-block not-seen-before-kw-block)
                     (let ((kw-arg-ref (calling-convention-args.gep args arg-idx+1)))
-                      (with-target-reference-do (target-ref target new-env) ; run-time binding
+                      (with-target-reference-no-bind-do (target-ref target new-env) ; run-time binding
                                                 (irc-intrinsic "copyTspTptr" target-ref kw-arg-ref))
                       ;; Set the boolean flag to indicate that we saw this key
                       (irc-store (jit-constant-i8 1) (elt sawkeys idx))
                       (when flag
-                        (with-target-reference-do (flag-ref flag new-env)
+                        (with-target-reference-no-bind-do (flag-ref flag new-env)
                                                   (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
                       #|| ;; The old way was to write a value only if the target was UNBOUND - that was wrong
                       (with-target-reference-if-runtime-unbound-do (flag-ref flag new-env) ; run-time binding ; ; ;
@@ -487,7 +506,9 @@ will put a value into target-ref."
 		  ||#
 		  (irc-br good-kw-block)
 		  (irc-begin-block next-kw-test-block)
-		  ))))
+		  )))
+                
+                )
 	      ;; We fell through all the keyword tests - this might be a unparameterized keyword
 	    (irc-branch-to-and-begin-block bad-kw-block) ; fall through to here if no kw recognized
 	    (let ((loop-bad-kw-idx (irc-intrinsic "kw_trackFirstUnexpectedKeyword"
@@ -543,16 +564,20 @@ will put a value into target-ref."
       (irc-cond-br i1-missing-key init-default-kw-block next-kw-block)
       (irc-begin-block init-default-kw-block)
       (irc-low-level-trace)
-      (with-target-reference-do (target-ref target new-env) ; run-time binding
+      (with-target-reference-no-bind-do (target-ref target new-env) ; run-time binding
 	(irc-low-level-trace)
 	(codegen target-ref init-form new-env))
       (irc-low-level-trace)
       (when flag
 	(irc-low-level-trace)
-	(with-target-reference-do (flag-ref flag new-env) ; run-time binding
+	(with-target-reference-no-bind-do (flag-ref flag new-env) ; run-time binding
 	  (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal nil new-env))))
       (irc-low-level-trace)
-      (irc-branch-to-and-begin-block next-kw-block))))
+      (irc-branch-to-and-begin-block next-kw-block))
+    (define-binding-in-value-environment* new-env target)
+    (when flag
+      (define-binding-in-value-environment* new-env flag))
+    ))
 
 
 

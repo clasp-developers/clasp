@@ -8,7 +8,7 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (print (core:getpid)))
 
-(compile 'foo '(lambda (x y) (flet ((bar (&optional (x x) (y y)) (format t "bar>>x: ~s  y: ~s~%" x y))) (format t "foo>>x: ~s  y: ~s~%" x y) (bar))))
+(compile 'foo '(lambda (x y) (flet ((bar (&optional (x y) (y y)) (format t "bar>>x: ~s  y: ~s~%" x y))) (format t "foo>>x: ~s  y: ~s~%" x y) (bar))))
 
 
 (defun foo (y)
