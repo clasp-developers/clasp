@@ -27,24 +27,15 @@
 ;;
 (in-package :cmp)
 
-
-
-
-
-
 (defun augment-environment-with-declares (env declares)
-  ;; Do nothing for now
-  nil
-  )
-
-
-;;
-;; codegen for atoms
-;;
-
-
-
-
+  (let (specials)
+    (mapc (lambda (decl)
+            (when (eq (car decl) 'cl:special)
+              (dolist (s (cdr decl))
+                (setq specials (cons s specials))))) declares)
+    (if specials
+        (make-value-environment-for-locally-special-entries (nreverse specials) env)
+        env)))
 
 (defparameter *active-compilation-source-database* nil)
 (defun do-one-source-database (closure)
@@ -56,12 +47,6 @@
 (defmacro with-one-source-database (&rest body)
   `(do-one-source-database #'(lambda () ,@body)))
 
-
-
-
-
-
-
 #+(or)
 (defun compile-only-required-arguments (lambda-list-handler old-env activation-frame)
   "Create a new environment that expands env with the required arguments in lambda-list-handler.
@@ -72,9 +57,6 @@ Return the new environment."
    :number-of-arguments (number-of-lexical-variables lambda-list-handler)
    :label "copy-req-args"
    :fill-runtime-form (lambda (new-env) (irc-intrinsic "copyAFsp" (irc-renv new-env) activation-frame))))
-
-
-
 
 (defun compile-arguments (fn-name	; passed for logging only
 			  lambda-list-handler ; llh for function
@@ -180,10 +162,7 @@ Could return more functions that provide lambda-list for swank for example"
     (push fn *all-functions-for-one-compile*)
     ;; Return the llvm Function and the symbol/setf name
     (if (null name) (error "The lambda name is nil"))
-    (values fn name (core:lambda-list-handler-lambda-list lambda-list-handler))
-    ))
-
-
+    (values fn name (core:lambda-list-handler-lambda-list lambda-list-handler))))
 
 (defun generate-llvm-function-from-interpreted-function (fn)
   "Extract everything necessary to compile an interpreted function and
@@ -194,7 +173,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	(code (function-source-code fn))
 	(env (closed-environment fn)))
     (generate-llvm-function-from-code nil lambda-list-handler declares docstring code env)))
-
 
 (defun generate-lambda-expression-from-interpreted-function (fn)
   (let* ((lambda-list-handler (function-lambda-list-handler fn))
@@ -212,15 +190,11 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	    (bformat t "env         = %s\n" env))
     (values `(lambda ,lambda-list ,@docstring (declare ,@declares) ,@code) env)))
 
-
 (defun function-name-from-lambda (name)
     (cond
       ((symbolp name) (symbol-name name))
       ((consp name) (bformat nil "%s" name))
       (t (error "Add support for function-name-from-lambda with ~a as arg" name))))
-
-
-
 
 (defun compile-lambda-function (lambda-or-lambda-block env )
   "Return the same things that generate-llvm-function-from-code returns"
@@ -246,10 +220,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 					  code
 					  env
 					  :wrap-block wrap-block
-					  :block-name block-name
-					  )))))
-
-
+					  :block-name block-name)))))
 
 (defun codegen-closure (result lambda-or-lambda-block env #|&key (func-name-str "lambda")|#)
   "codegen a closure.  If result is defined then put the compiled function into result
@@ -282,17 +253,12 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                            lambda-list))
           *all-functions-for-one-compile*))))
 
-
-
-
 (defun codegen-global-function-lookup (result sym env)
   (irc-intrinsic "symbolFunctionRead" result (irc-global-symbol sym env)))
 
-
 (defun codegen-global-setf-function-lookup (result setf-function-name env)
   (let ((setf-symbol (cadr setf-function-name)))
-    (irc-intrinsic "setfSymbolFunctionRead" result (irc-global-setf-symbol setf-symbol env))
-  ))
+    (irc-intrinsic "setfSymbolFunctionRead" result (irc-global-setf-symbol setf-symbol env))))
 
 
 (defun codegen-lexical-function-lookup (result depth index env)
@@ -303,19 +269,14 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   (let* ((classified (classify-function-lookup env func)))
     (if (eq (car classified) 'core::global-function)
 	(codegen-global-function-lookup result func env)
-	(codegen-lexical-function-lookup result (caddr classified) (cadddr classified) env)))
-)
-
+	(codegen-lexical-function-lookup result (caddr classified) (cadddr classified) env))))
 
 (defun codegen-function-setf-symbol-lookup (result setf-func env)
   "Classify the (setf XXXX) function and put it in the result"
   (let* ((classified (classify-function-lookup env setf-func)))
     (if (eq (car classified) 'core::global-function)
 	(codegen-global-setf-function-lookup result setf-func env)
-	(codegen-lexical-function-lookup result (caddr classified) (cadddr classified) env)))
-)
-
-
+	(codegen-lexical-function-lookup result (caddr classified) (cadddr classified) env))))
 
 (defun codegen-function (result rest env)
   "Return IR code for a function or closure"
@@ -336,14 +297,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
      (codegen-closure result name-or-lambda env))
     (t (error "FUNCTION special operator only supports symbol names or lambda expression - you gave: ~a" name-or-lambda)))))
 
-
-
-
-
-
-
-
-
 (defun codegen-progn (result forms env)
   "Evaluate forms discarding results but keep last one"
   (cmp-log "About to codegen-progn with forms: %s\n" forms)
@@ -356,8 +309,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	      (codegen temp-val form env)
 	      (codegen result form env))))
       (codegen-literal result nil env)))
-
-
 
 (defun codegen-progv (result args env)
   (cmp-log "Started codegen-progv\n")
@@ -381,8 +332,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((cleanup)
        (irc-intrinsic "progvRestoreSpecials" save-specials)))))
 
-
-
 (defun codegen-multiple-value-call (result rest env)
   (with-dbg-lexical-block (rest)
     (let ((accumulate-results (irc-alloca-tsp env :label "acc-multiple-value-results"))
@@ -400,11 +349,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       (irc-intrinsic "setParentOfActivationFrame" accumulated-af (irc-renv env))
       (codegen funcDesignator (car rest) env)
       (let ((closure (irc-intrinsic "va_coerceToClosure" funcDesignator)))
-        (irc-intrinsic "FUNCALL_activationFrame" result closure accumulated-af) ; used to use temp-mv-result  as result
-        ;;      (irc-intrinsic "copyTmvOrSlice" result temp-mv-result)
-        ))
-    ))
-
+        (irc-intrinsic "FUNCALL_activationFrame" result closure accumulated-af)))))
 
 (defun codegen-multiple-value-prog1 (result rest env)
   (with-dbg-lexical-block (rest)
@@ -420,20 +365,10 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	(codegen temp-val form env)
 	)
       (irc-intrinsic "loadValues" temp-mv-result saved-values)
-      (irc-intrinsic "copyTmvOrSlice" result temp-mv-result)
-      )))
-
-
-
-
-
-
-
-
+      (irc-intrinsic "copyTmvOrSlice" result temp-mv-result))))
 
 (defun codegen-special-var-reference (var &optional env)
   (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
-
 
 (defun codegen-lexical-var-reference (depth-index env)
   (let ((renv (irc-renv env))
@@ -447,8 +382,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
     (if setq-pairs
 	(do* ((cur setq-pairs (cddr cur))
 	      (cur-var (car cur) (car cur))
-	      (cur-expr (cadr cur) (cadr cur))
-	      )
+	      (cur-expr (cadr cur) (cadr cur)))
 	     ((endp cur) nil)
 	  (cmp-log "Compiling setq for target[%s]\n" cur-var)
 	  (let ((expanded (macroexpand cur-var env)))
@@ -461,22 +395,15 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 					 (codegen-special-var-reference cur-var env)
 					 (codegen-lexical-var-reference (cddr classified) env))))
 		    (codegen temp-res cur-expr env)
-		    (irc-intrinsic "copyTsp" target-ref temp-res)
-		    )
-		  )
+		    (irc-intrinsic "copyTsp" target-ref temp-res)))
 		;; symbol was macroexpanded use SETF
 		(progn
 		  (cmp-log "The symbol[%s] was macroexpanded to result[%s] setting with SETF\n" cur-var expanded)
-		  (codegen temp-res `(setf ,expanded ,cur-expr) env)
-		  )
-		))
+		  (codegen temp-res `(setf ,expanded ,cur-expr) env))))
 	  (unless (cddr cur)
-	    (irc-intrinsic "copyTsp" result temp-res))
-
-	  )
+	    (irc-intrinsic "copyTsp" result temp-res)))
 	;; There were no pairs, return nil
-	(codegen-literal result nil env)))
-  )
+	(codegen-literal result nil env))))
 
 
 

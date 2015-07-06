@@ -225,6 +225,7 @@ class Lisp_O {
     Bignum_sp _BignumRegister0;
     Bignum_sp _BignumRegister1;
     Bignum_sp _BignumRegister2;
+        Integer_sp _IntegerOverflowAdjust;
     CharacterInfo charInfo;
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolder;
     T_sp _SystemProperties;
@@ -573,7 +574,7 @@ public:
   Bignum_sp bigRegister0() { return this->_Roots._BignumRegister0; };
   Bignum_sp bigRegister1() { return this->_Roots._BignumRegister1; };
   Bignum_sp bigRegister2() { return this->_Roots._BignumRegister2; };
-
+  Integer_sp integerOverflowAdjust() { return this->_Roots._IntegerOverflowAdjust; };
 public:
   bool isEnvironmentInitialized() { return this->_EnvironmentInitialized; };
   uint nextEnvironmentId();

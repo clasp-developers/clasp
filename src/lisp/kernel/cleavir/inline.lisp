@@ -155,7 +155,7 @@
                         (cleavir-primop:let-uninitialized (,z)
                                                           (if (,cleavir-primop ,x ,y ,z)
                                                               (return ,z)
-                                                              (return (convert-to-bignum ,z))))
+                                                              (return (core:convert-overflow-result-to-bignum ,z))))
                         (go generic))
                     (go generic))
                 ;; ... Other tests

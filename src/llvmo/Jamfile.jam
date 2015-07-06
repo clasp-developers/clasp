@@ -99,3 +99,4 @@ install install_intrinsics_bitcode : intrinsics_bitcode_mps_prep :
         <gc>mps-prep
         ;
 
+alias bundle : install_intrinsics_bitcode ;

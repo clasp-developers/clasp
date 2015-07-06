@@ -372,7 +372,7 @@ T_sp Symbol_O::symbolValueUnsafe() const {
   return this->_Value;
 }
 
-void Symbol_O::setf_symbolFunction(Function_sp exec) {
+void Symbol_O::setf_symbolFunction(T_sp exec) {
   _OF();
   this->_Function = exec;
 }

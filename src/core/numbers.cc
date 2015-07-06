@@ -82,6 +82,18 @@ bool cl_zerop(T_sp num) {
   return clasp_zerop(gc::As<Number_sp>(num));
 }
 
+
+#define ARGS_core_convert_overflow_result_to_bignum "()"
+#define DECL_core_convert_overflow_result_to_bignum ""
+#define DOCS_core_convert_overflow_result_to_bignum "convert_overflow_result_to_bignum"
+Integer_sp core_convert_overflow_result_to_bignum(Fixnum_sp z) {
+  if ( (Fixnum)z.raw_() > 0 ) {
+    return contagen_sub(z,_lisp->_Roots._IntegerOverflowAdjust);
+  } else {
+    return contagen_add(z,_lisp->_Roots._IntegerOverflowAdjust);
+  }
+}
+
 #define ARGS_core_fixnum_number_of_bits "()"
 #define DECL_core_fixnum_number_of_bits ""
 #define DOCS_core_fixnum_number_of_bits "fixnum_number_of_bits"
@@ -1346,6 +1358,8 @@ void Number_O::exposeCando(Lisp_sp lisp) {
 
   SYMBOL_SC_(CorePkg, fixnum_number_of_bits);
   CoreDefun(fixnum_number_of_bits);
+  CoreDefun(convert_overflow_result_to_bignum);
+
 
   Defun(_LT_);
   Defun(_GT_);

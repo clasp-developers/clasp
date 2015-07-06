@@ -631,6 +631,12 @@ memory limits before executing the program again."))
 
 (define-condition floating-point-invalid-operation (arithmetic-error) ())
 
+#+clasp (define-condition core:do-not-funcall-special-operator (error)
+          ((operator :initarg :operator :reader operator))
+          (:report (lambda (condition stream)
+                     (format stream "You should never funcall special operator: ~s"
+                             (operator condition)))))
+
 #+clasp (define-condition core:too-few-arguments-error (error)
          ((called-function :initarg :called-function :reader called-function)
           (given-number-of-arguments :initarg :given-number-of-arguments :reader given-number-of-arguments)

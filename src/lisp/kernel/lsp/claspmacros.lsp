@@ -84,3 +84,19 @@
 (defmacro debug-message (msg) nil)
 (export 'debug-message)
 
+
+
+(in-package :core)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Set the fdefinition for all special operators to something more reasonable than T
+;;;
+(dolist (so (core:list-of-all-special-operators))
+  (when (eq (fdefinition so) T)
+    (core:*fset so
+                (let ((so so))
+                  (lambda (&rest args)
+                    (declare (ignore args))
+                    (error 'do-not-funcall-special-operator :operator so))))))
+
+(export 'do-not-funcall-special-operator)

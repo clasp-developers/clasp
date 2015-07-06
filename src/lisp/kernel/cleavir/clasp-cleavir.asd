@@ -22,6 +22,7 @@
 		 (:file "convert-special")
 		 (:file "hir")
 		 (:file "introduce-invoke")
+                 (:file "toplevel")
 		 (:file "setup")
 		 (:file "ast-to-hir")
 		 (:file "mir")

@@ -80,7 +80,7 @@ Vector_sp core_make_vector(T_sp element_type,
       if (fill_pointer == cl::_sym_T_O)
         ifp = dimension;
       else
-        ifp = MIN(dimension, abs(unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer))));
+        ifp = MIN(dimension, std::abs(unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer))));
       return StrWithFillPtr_O::create(c, dimension, ifp, adjustable, initialContents);
     }
     return (Str_O::create(' ', dimension, initialContents));

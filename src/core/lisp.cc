@@ -610,6 +610,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_Roots._BignumRegister0 = Bignum_O::create(0);
     this->_Roots._BignumRegister1 = Bignum_O::create(0);
     this->_Roots._BignumRegister2 = Bignum_O::create(0);
+    this->_Roots._IntegerOverflowAdjust = cl_expt(clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
     getcwd(true); // set *default-pathname-defaults*
   };
   {
@@ -828,7 +829,7 @@ Symbol_sp Lisp_O::defineSpecialOperator(const string &packageName, const string 
   string formName = lispify_symbol_name(rawFormName);
   Symbol_sp sym = _lisp->internWithPackageName(packageName, formName);
   sym->exportYourself();
-  sym->setf_symbolFunction(_Unbound<Function_O>());
+  sym->setf_symbolFunction(_lisp->_true());
   SpecialForm_sp special = SpecialForm_O::create(sym, cb);
   if (this->_Roots._SpecialForms.unboundp()) {
     this->_Roots._SpecialForms = HashTableEq_O::create_default();
@@ -843,6 +844,22 @@ T_sp Lisp_O::specialFormOrNil(Symbol_sp sym) {
     return _Nil<SpecialForm_O>();
   return this->_Roots._SpecialForms->gethash(sym);
 }
+
+#define ARGS_core_listOfAllSpecialOperators "()"
+#define DECL_core_listOfAllSpecialOperators ""
+#define DOCS_core_listOfAllSpecialOperators "listOfAllSpecialOperators"
+T_sp core_listOfAllSpecialOperators()
+{
+  List_sp sos(_Nil<T_O>());
+  _lisp->_Roots._SpecialForms->maphash( [&sos] (T_sp key, T_sp val) {
+      sos = Cons_O::create(key,sos);
+    });
+  return sos;
+}
+  
+
+
+
 
 void Lisp_O::installPackage(const Exposer *pkg) {
   _OF();
@@ -3049,6 +3066,7 @@ void Lisp_O::exposeCando() {
          DECL_Lisp_O_forget_all_single_dispatch_generic_functions,
          DOCS_Lisp_O_forget_all_single_dispatch_generic_functions);
 
+  CoreDefun(listOfAllSpecialOperators);
   CoreDefun(singleDispatchGenericFunctionTable);
   SYMBOL_SC_(CorePkg, stackMonitor);
   Defun(stackMonitor);

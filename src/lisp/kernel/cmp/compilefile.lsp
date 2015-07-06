@@ -150,34 +150,63 @@
     ))
 
 
-(defun t1locally (rest env)
+#+(or)(defun t1locally (rest env)
   (multiple-value-bind (declares code docstring specials)
       (process-declarations rest nil)
     ;; TODO: Do something with the declares!!!!!  They should be put into the environment
     (let ((new-env (core:make-value-environment-for-locally-special-entries specials env)))
       (t1progn code new-env))))
 
-(defun t1macrolet (rest env)
-  (let* ((macros (car rest))
-	 (body (cdr rest))
-	 (macro-env (irc-new-macrolet-environment env)))
-    (mapc #'(lambda (macro-def &aux (name (car macro-def))
-				 (vl (cadr macro-def))
-				 (macro-body (cddr macro-def)))
-	      (let* ((lambdablock (core:parse-macro name vl macro-body))
-		     (macro-fn (eval (list 'function lambdablock))))
-		(set-kind macro-fn :macro)
-		(add-macro macro-env name macro-fn)))
-	  macros )
-    (multiple-value-bind (declares code docstring specials )
-	(process-declarations body t)
-      (augment-environment-with-declares macro-env declares)
-      (t1progn code macro-env))))
+(defun t1locally (rest env)
+  (multiple-value-bind (declares code docstring specials)
+      (process-declarations rest nil)
+    (declare (ignore specials docstring))
+    ;; TODO: Do something with the declares!!!!!  They should be put into the environment
+    (t1progn code (augment-environment-with-declares env declares))))
 
+
+
+(defun parse-macrolet (body)
+  (let ((macros (mapcar (lambda (macro-def)
+                        (let ((macro-fn (eval (core:parse-macro (car macro-def)
+                                                                (cadr macro-def)
+                                                                (cddr macro-def)))))
+                          (set-kind macro-fn :macro)
+                          (cons (car macro-def) macro-fn)))
+                      (car body))))
+    (multiple-value-bind (decls macrolet-body)
+        (core:process-declarations (cdr body) nil)
+      (values macros decls macrolet-body))))
+
+(defun parse-symbol-macrolet (body)
+  (let ((macros (mapcar (lambda (macro-def)
+                          (cons (car macro-def)
+                                (constantly (cadr macro-def))))
+                             (car body))))
+    (multiple-value-bind (decls symbol-macrolet-body)
+        (core:process-declarations (cdr body) nil)
+      (values macros decls symbol-macrolet-body))))
+
+(export '(parse-macrolet parse-symbol-macrolet))
+
+
+(defun t1macrolet (rest env)
+  (multiple-value-bind (macros declares body)
+      (parse-macrolet rest)
+    (let ((macro-env (irc-new-macrolet-environment env)))
+      (mapc (lambda (macro)
+              (core:add-macro macro-env (car macro) (cdr macro)))
+            macros)
+      (t1progn body (augment-environment-with-declares macro-env declares)))))
 
 (defun t1symbol-macrolet (rest env)
-  (error "Add support for cmp:t1symbol-macrolet"))
-
+  (multiple-value-bind (macros declares body)
+      (parse-symbol-macrolet rest)
+    (let ((macro-env (irc-new-symbol-macrolet-environment env)))
+      (mapc (lambda (macro)
+              (core:add-symbol-macro macro-env (car macro) (cdr macro)))
+            macros)
+      (t1progn body (augment-environment-with-declares macro-env declares)))))
 
 (defun t1expr (form &optional env)
   (cmp-log "t1expr-> %s\n" form)

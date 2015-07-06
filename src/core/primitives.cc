@@ -741,17 +741,16 @@ T_sp af_STARfset(T_sp functionName, Function_sp functionObject, T_sp macro) {
 #define ARGS_af_fdefinition "(function-name)"
 #define DECL_af_fdefinition ""
 #define DOCS_af_fdefinition "fdefinition"
-Function_mv af_fdefinition(T_sp functionName) {
-  _G();
+T_sp af_fdefinition(T_sp functionName) {
   if (cl_symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
-    return (Values(sym->symbolFunction()));
+    return sym->symbolFunction();
   } else if (cl_consp(functionName)) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp()) {
-        return (Values(name->getSetfFdefinition()));
+        return name->getSetfFdefinition();
       }
     }
   }

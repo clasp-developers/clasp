@@ -1,22 +1,6 @@
 (in-package :clasp-cleavir)
 
 
-(defvar *cclasp-eval-depth* 0)
-(defun cclasp-eval-in-env (form &optional env)
-  (let ((*cclasp-eval-depth* (1+ *cclasp-eval-depth*)))
-    (when (> *cclasp-eval-depth* 20)
-      (warn "*cclasp-eval-depth is ~a on form: ~a" *cclasp-eval-depth* form))
-    (cond
-      ((atom form)
-       (cond
-         ((and env (not (eq env *clasp-env*)))
-          (warn "Is it ok to use bclasp to eval atom: ~s~%in non-toplevel env: ~s~%" form env)
-          (funcall (cmp:bclasp-compile nil `(lambda () ,form))))
-         (t ;; either the env is nil or *clasp-env* (top level)
-          (funcall (cmp:bclasp-compile nil `(lambda () ,form))))))
-      (t
-       (funcall (cclasp-compile-in-env nil `(lambda () ,form) env))))))
-
 
 (defvar *current-function-entry-basic-block*)
 
@@ -205,12 +189,11 @@
 				((or (null environment) (typep environment 'clasp-global-environment))
 				 (core:macroexpand-default macro-function macro-form nil))
 				(t
-;;				 (warn "What do I do when a Cleavir environment is passed to *macroexpand-hook*? environment: ~a  macro-form: ~a" environment macro-form)
 				 (core:macroexpand-default macro-function macro-form environment)))))
 
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (cclasp-eval-in-env form env))
+  (cclasp-eval form env))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"

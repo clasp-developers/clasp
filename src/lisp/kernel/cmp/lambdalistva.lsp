@@ -343,14 +343,14 @@ will put a value into target-ref."
 				   args ;; nargs va-list
 				   new-env
 				   entry-arg-idx )
+  (format t "START compile-optional-arguments    new-env: ~%~s~%" (environment-stack-as-string new-env))
   (irc-branch-to-and-begin-block (irc-basic-block-create "process-optional-arguments"))
   (cmp-log "About to compile-optional-arguments: %s\n" optargs)
   ;; First save any special values
   (do* ((cur-opt (cdr optargs) (cdddr cur-opt))
 	(target (car cur-opt) (car cur-opt))
 	(init-form (cadr cur-opt) (cadr cur-opt))
-	(flag (caddr cur-opt) (caddr cur-opt))
-	)
+	(flag (caddr cur-opt) (caddr cur-opt)))
        ((endp cur-opt) ())
     (compile-save-if-special new-env target)
     (when flag
@@ -379,6 +379,8 @@ will put a value into target-ref."
 	(irc-begin-block init-block)
 	(with-target-reference-do (target-ref target new-env) ; codegen init-form into target-ref
 	  ;; Use new-env so that symbols already defined in this lambda can be accessed
+          (format t "compile-optional-arguments  init-form: ~s~%" init-form)
+          (format t "compile-optional-arguments    new-env: ~%~s~%" (environment-stack-as-string new-env))
 	  (codegen target-ref init-form new-env))
 	(when flag
 	  (with-target-reference-do (flag-ref flag new-env) ; copy nil into flag-ref

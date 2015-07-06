@@ -200,9 +200,9 @@ T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env) {
   if (found)
     return macro;
   if (sym->fboundp()) {
-    T_sp fn = sym->symbolFunction();
-    if (gc::As<Function_sp>(fn)->macroP())
-      return fn;
+    if ( Function_sp fn = sym->symbolFunction().asOrNull<Function_O>() ) {
+      if (fn->macroP()) return fn;
+    }
   }
   return _Nil<T_O>();
 };

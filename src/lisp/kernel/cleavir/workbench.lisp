@@ -8,6 +8,32 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (print (core:getpid)))
 
+(compile 'foo '(lambda (x y) (flet ((bar (&optional (x x) (y y)) (format t "bar>>x: ~s  y: ~s~%" x y))) (format t "foo>>x: ~s  y: ~s~%" x y) (bar))))
+
+
+(defun foo (y)
+  (flet ((bar (&optional (x y) (y y))
+           (format t "bar>>  x: ~s  y: ~s~%" x y)))
+    (format t "foo>> y: ~s~%" y)
+    (bar)))
+
+
+(foo 1)
+
+(trace cleavir-environment:eval)
+(clasp-cleavir::cleavir-compile-file "sys:tests;tevalwhen.lsp")
+(apropos "function-name-p")
+
+
+;;; Stassats has a problem with this code:
+(defun foo () (loop for i below 10 collect i))
+;;;   No applicable method for CLEAVIR-ENVIRONMENT:MACRO-FUNCTION with arguments of types SYMBOL VALUE-FRAME 
+
+
+
+
+(cleavir-env:eval '(progn (defmacro zfoo()) (zfoo)) nil nil)
+
 (clasp-cleavir::cleavir-compile 'nil
                                 '(defun fibn (reps num &aux rnum p1 p2 z)
                                   (dotimes (r reps)
@@ -19,6 +45,8 @@
                                             p2 p1
                                             p1 z)))
                                   z) :debug nil)
+
+(time (fibn 10000000 78))
 (defparameter *reps* 100000000)
 (defparameter *num* 78)
 (time (fibn *reps* *num*))
@@ -35,8 +63,36 @@
             p1 z)))
   z)
 
+(time (core:cxx-fibn 10000000 78))
 
+
+COMPILE
 (time (fibn 10000000 78))
+real time          : 13.295 secs
+run time           : 13.280 secs
+GC bytes consed    : 0 bytes
+Clasp bytes consed : 520 bytes
+LLVM time          : 0.000 secs
+LLVM compiles      : 0
+
+COMPILE-FILE
+(clasp-cleavir::cleavir-compile-file "sys:tests;tfib.lsp")
+(load "sys:tests;tfib.fasl")
+(time (fibn 10000000 78))
+real time          : 10.694 secs
+run time           : 10.681 secs
+GC bytes consed    : 0 bytes
+Clasp bytes consed : 520 bytes
+LLVM time          : 0.000 secs
+LLVM compiles      : 0
+
+
+
+
+
+
+
+
 
 (/ (* (/ 10000000 100000) 16) 13.46)
 

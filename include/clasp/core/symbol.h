@@ -154,10 +154,10 @@ public:
   bool isConstant() const { return this->_IsConstant; };
 
   /*! Set the global fnction value of this symbol */
-  void setf_symbolFunction(Function_sp exec);
+  void setf_symbolFunction(T_sp exec);
 
   /*! Return the global bound function */
-  inline Function_sp symbolFunction() { return this->_Function; };
+  inline T_sp symbolFunction() { return this->_Function; };
 
   /*! Return true if the symbol has a function bound*/
   bool fboundp() const { return !this->_Function.unboundp(); };
