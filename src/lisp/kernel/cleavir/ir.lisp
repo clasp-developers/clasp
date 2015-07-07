@@ -120,6 +120,10 @@
   (cmp:irc-intrinsic "llvm.ssub.with.overflow.i32" x y))
 
 
+(defun %precalc-value (ltv-global** index)
+  (let* ((ltva (%load ltv-global**))
+         (
+
 
    
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

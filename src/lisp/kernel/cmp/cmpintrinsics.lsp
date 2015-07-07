@@ -63,6 +63,7 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +i32**+ (llvm-sys:type-get-pointer-to +i32*+))
 (defvar +i8+ (llvm-sys:type-get-int8-ty *llvm-context*))
 (defvar +i8*+ (llvm-sys:type-get-pointer-to +i8+))
+(defvar +vtable*+ +i8*+)
 (defvar +i8**+ (llvm-sys:type-get-pointer-to +i8*+))
 (defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*))
 (defvar +fixnum+ #+address-model-64 +i64+
@@ -188,14 +189,18 @@ Boehm and MPS use a single pointer"
 (defvar +tmv*+ (llvm-sys:type-get-pointer-to +tmv+))
 (defvar +tmv**+ (llvm-sys:type-get-pointer-to +tmv*+))
 
+(defvar +gcvector-tsp+ (llvm-sys:struct-type-get (list size_t size_t +tsp+) nil))
+(defvar +gcvector-symsp+ (llvm-sys:struct-type-get (list size_t size_t +symsp+) nil))
+(defvar +vec0-tsp+ (llvm-sys:struct-type-get (list +gcvector-tsp+) nil))
+(defvar +vec0-symsp+ (llvm-sys:struct-type-get (list +gcvector-symsp+) nil))
 
 ;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
-(defvar +ltv+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "LoadTimeValue_O"
+(defvar +ltv+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +vec0-tsp+ +vec0-symsp+)  nil)) ;; "LoadTimeValue_O"
 (defvar +ltv*+ (llvm-sys:type-get-pointer-to +ltv+))
 (defvar +ltv**+ (llvm-sys:type-get-pointer-to +ltv*+))
 (defvar +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp"
-(defvar +ltvsp*+ (llvm-sys:type-get-pointer-to +ltvsp+))
-(defvar +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
+#+(or)(defvar +ltvsp*+ (llvm-sys:type-get-pointer-to +ltvsp+))
+#+(or)(defvar +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
 
 
 (defvar +mv-limit+ (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))

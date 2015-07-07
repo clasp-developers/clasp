@@ -1,3 +1,7 @@
+;; cc_precalcValue
+;; loadTimeValueReference
+;; cc_precalcSymbol
+
 (defun fibn (reps num &aux rnum p1 p2 z)
   (dotimes (r reps)
     (setq p1 1

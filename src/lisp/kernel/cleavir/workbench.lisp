@@ -8,8 +8,17 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (print (core:getpid)))
 
-(compile 'foo '(lambda (x y) (flet ((bar (&optional (x y) (y y)) (format t "bar>>x: ~s  y: ~s~%" x y))) (format t "foo>>x: ~s  y: ~s~%" x y) (bar))))
 
+(clasp-cleavir::cleavir-compile-file "sys:kernel;asdf;build;asdf.lisp" 
+              :output-file (compile-file-pathname "sys:modules;asdf;asdf.lisp" 
+                                                  :target-backend (default-target-backend)
+                                                  )
+              :print t)
+(default-target-backend)
+
+
+(compile 'foo '(lambda (x y) (flet ((bar (&optional (x y) (y y)) (format t "bar>>x: ~s  y: ~s~%" x y))) (format t "foo>>x: ~s  y: ~s~%" x y) (bar))))
+(boundp '*a*)
 
 (defun foo (y)
   (flet ((bar (&optional (x y) (y y))
