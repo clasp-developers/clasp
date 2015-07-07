@@ -189,10 +189,10 @@ Boehm and MPS use a single pointer"
 (defvar +tmv*+ (llvm-sys:type-get-pointer-to +tmv+))
 (defvar +tmv**+ (llvm-sys:type-get-pointer-to +tmv*+))
 
-(defvar +gcvector-tsp+ (llvm-sys:struct-type-get (list size_t size_t +tsp+) nil))
-(defvar +gcvector-symsp+ (llvm-sys:struct-type-get (list size_t size_t +symsp+) nil))
-(defvar +vec0-tsp+ (llvm-sys:struct-type-get (list +gcvector-tsp+) nil))
-(defvar +vec0-symsp+ (llvm-sys:struct-type-get (list +gcvector-symsp+) nil))
+(defvar +gcvector-tsp+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +size_t+ +tsp+) nil))
+(defvar +gcvector-symsp+ (llvm-sys:struct-type-get *llvm-context*(list +size_t+ +size_t+ +symsp+) nil))
+(defvar +vec0-tsp+ (llvm-sys:struct-type-get *llvm-context*(list +gcvector-tsp+) nil))
+(defvar +vec0-symsp+ (llvm-sys:struct-type-get *llvm-context* (list +gcvector-symsp+) nil))
 
 ;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
 (defvar +ltv+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +vec0-tsp+ +vec0-symsp+)  nil)) ;; "LoadTimeValue_O"

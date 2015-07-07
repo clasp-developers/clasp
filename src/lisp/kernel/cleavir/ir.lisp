@@ -119,11 +119,11 @@
 (defmethod %ssub.with-overflow (x y (abi abi-x86-32))
   (cmp:irc-intrinsic "llvm.ssub.with.overflow.i32" x y))
 
-
+#||
 (defun %precalc-value (ltv-global** index)
   (let* ((ltva (%load ltv-global**))
          (
-
+||#
 
    
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
