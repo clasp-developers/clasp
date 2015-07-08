@@ -68,8 +68,20 @@ all:
 	make -C src/main scrape-all
 	$(BJAM) /internals/lisp//bundle
 	make clasp-boehm
+	make cclasp-boehm
+	make cclasp-boehm-addons
 #	make clasp-mps
 
+
+bclasp-only:
+	@echo Dumping local.config
+	cat local.config
+	make submodules
+	make asdf
+	make boostbuildv2-build
+	make -C src/main scrape-all
+	$(BJAM) /internals/lisp//bundle
+	make clasp-boehm
 
 sub-prebuild:
 	make -C src/ $@
@@ -176,8 +188,6 @@ clasp-boehm:
 	make clasp-boehm-cpp
 	$(BJAM) everything gc=boehm link=static program=clasp release
 	(cd src/main; make boehm)
-	make cclasp-boehm
-	make cclasp-boehm-addons
 
 cclasp-boehm:
 	(cd src/main; make cclasp-boehm)
