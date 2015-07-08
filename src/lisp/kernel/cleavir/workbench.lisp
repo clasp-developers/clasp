@@ -11,6 +11,8 @@
 
 (clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (block in (let (*) (return-from in nil)) (return-from nil nil)))) form))) :debug t)
 
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (block in (unwind-protect (return-from in)) (return)))) form))) :debug t)
+
 (block nil
   (let ((form (block in
                 (let (*)
