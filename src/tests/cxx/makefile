@@ -1,3 +1,9 @@
+testReturnMultipleValues.bc: testReturnMultipleValues.cc
+	/usr/bin/clang++ -O0 -S -emit-llvm testReturnMultipleValues.cc
+
+testReturnMultipleValues: testReturnMultipleValues.cc
+	/usr/bin/clang++ -O3 -o testReturnMultipleValues testReturnMultipleValues.cc
+
 testints.bc: testints.cc
 	clang++ -O3 testints.cc -o testints
 
@@ -7,11 +13,6 @@ testalign.bc: testalign.cc
 testfixnum.bc: testfixnum.cc
 	/usr/bin/clang++ -O0 testfixnum.cc -o testfixnum
 
-testReturnMultipleValues.bc: testReturnMultipleValues.cc
-	/usr/bin/clang++ -O0 -S -emit-llvm testReturnMultipleValues.cc
-
-testReturnMultipleValues: testReturnMultipleValues.cc
-	/usr/bin/clang++ -o testReturnMultipleValues testReturnMultipleValues.cc
 
 computedGoto: computedGoto.cc
 	/usr/bin/clang++ -o computedGoto computedGoto.cc

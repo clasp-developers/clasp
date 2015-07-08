@@ -1817,6 +1817,7 @@ void cc_invoke(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_BASE) {
   closure->invoke(result, LCC_PASS_ARGS);
 }
 
+
 core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func, std::size_t numCells, ...) {
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   core::ValueFrame_sp vo = core::ValueFrame_O::create(numCells, _Nil<core::T_O>());
@@ -2073,6 +2074,17 @@ void clasp_terminate(const char *file, int line, int column, const char *func) {
   exit(1);
 }
 };
+
+
+#if 0
+core::T_mv ccmv_invoke(core::T_O *tfunc, LCC_ARGS_BASE) {
+  //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+  core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
+  ASSERT(tagged_func != NULL);
+  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
+  closure->invoke(result, LCC_PASS_ARGS);
+}
+#endif
 
 #pragma GCC visibility pop
 
