@@ -82,6 +82,7 @@ bclasp-only:
 	make -C src/main scrape-all
 	$(BJAM) /internals/lisp//bundle
 	make clasp-boehm
+	make -c src/main bclasp-boehm-addons
 
 sub-prebuild:
 	make -C src/ $@
