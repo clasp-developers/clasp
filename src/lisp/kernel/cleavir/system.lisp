@@ -96,7 +96,7 @@
 ;;; Add labels to graphviz drawings
 ;;;
 
-(defmethod cleavir-ir-graphviz::label :around (instr)
+(defmethod cleavir-ir-graphviz:label :around (instr)
   (with-output-to-string (s)
     (format s "~a:~a" (call-next-method) (instruction-gid instr))))
 

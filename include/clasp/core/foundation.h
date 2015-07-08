@@ -56,6 +56,8 @@ THE SOFTWARE.
   Switch to hash-tables to speed things up */
 #define USE_SHARP_EQUAL_HASH_TABLES 1
 
+#define ALWAYS_INLINE __attribute__((always_inline))
+
 namespace std {
 class type_info;
 };

@@ -84,6 +84,7 @@
    #:throw-instruction
    #:precalc-symbol-instruction-original-object
    #:precalc-value-instruction-original-object
+   #:instruction-id
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir

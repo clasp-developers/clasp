@@ -83,14 +83,14 @@
 (defclass invoke-instruction (cleavir-ir:funcall-instruction)
   ((%landing-pad :initarg :landing-pad :reader landing-pad)))
 
-(defmethod cleavir-ir-graphviz::label ((instr clasp-cleavir:invoke-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr clasp-cleavir:invoke-instruction))
   "invoke")
 
 
 (defclass invoke-multiple-value-call-instruction (cleavir-ir:multiple-value-call-instruction)
   ((%landing-pad :initarg :landing-pad :reader landing-pad)))
 
-(defmethod cleavir-ir-graphviz::label ((instr clasp-cleavir:invoke-multiple-value-call-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr clasp-cleavir:invoke-multiple-value-call-instruction))
   "invoke-MVC")
 
 

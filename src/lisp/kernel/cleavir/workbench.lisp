@@ -9,6 +9,48 @@
   (print (core:getpid)))
 
 
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (block in (let (*) (return-from in nil)) (return-from nil nil)))) form))) :debug t)
+
+(block nil
+  (let ((form (block in
+                (let (*)
+                  (return-from in))
+                (return-from nil nil))))
+    form))
+
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (funcall #'(lambda () (return-from nil nil))) (print "Returned"))) :debug t)
+
+
+
+(clasp-cleavir::cleavir-compile
+ 'foo '(lambda () (block nil (return-from nil 'foo))) :debug t)
+
+
+(clasp-cleavir::cleavir-compile
+ 'foo '(lambda ()
+        (block nil
+          (let ((form
+                 (BLOCK main
+                   (LET ((CORE::*HANDLER-CLUSTERS* nil))
+                     (RETURN-FROM main (FOO))
+                     )
+                   (RETURN-FROM main
+                         (return-from nil nil)
+                     )
+                   )))
+            form))) :debug t)
+
+(macroexpand '(return))
+
+
+
+
+(block nil (let ((form (BLOCK main (LET ((CORE::*HANDLER-CLUSTERS* nil)) (RETURN-FROM main (FOO))) (RETURN-FROM main (return-from nil nil))))) form))
+
+
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (handler-case (foo) (error () (return))))) form))) :debug t)
+(foo)
+
 (clasp-cleavir::cleavir-compile-file "sys:kernel;asdf;build;asdf.lisp" 
               :output-file (compile-file-pathname "sys:modules;asdf;asdf.lisp" 
                                                   :target-backend (default-target-backend)
@@ -87,6 +129,9 @@ LLVM compiles      : 0
 COMPILE-FILE
 (clasp-cleavir::cleavir-compile-file "sys:tests;tfib.lsp")
 (load "sys:tests;tfib.fasl")
+(load-bundle "/Users/meister/Development/clasp/src/lisp/tests/tfib.inlined.bc")
+
+(translate-logical-pathname #P"sys:tests;tfib.inlined.bc")
 (time (fibn 10000000 78))
 real time          : 10.694 secs
 run time           : 10.681 secs
@@ -1485,7 +1530,6 @@ cmp::*run-time-literals-external-name*
 (core:load-time-values-dump "globalRunTime")
 
 
-(trace cleavir-ast-graphviz::label)
 
 (print "Hello")
 

@@ -32,7 +32,7 @@
 	(defclass check-min-arguments (llvm-instruction cleavir-ir:one-successor-mixin)
 	  ((%fixed-arg-num :initarg :fixed-arg-num :accessor fixed-arg-num)))
 
-	(defmethod cleavir-ir-graphviz::label ((instruction check-min-arguments))
+	(defmethod cleavir-ir-graphviz:label ((instruction check-min-arguments))
 	  (with-output-to-string (stream)
 	    (format stream "CHECK-MIN-ARGUMENTS ~a" (fixed-arg-num instruction))))
 
@@ -40,7 +40,7 @@
 	(defclass bind-fixed-arg (llvm-instruction cleavir-ir:one-successor-mixin) 
 	  ((%arg-index :initarg :arg-index :accessor arg-index)))
 
-	(defmethod cleavir-ir-graphviz::label ((instruction bind-fixed-arg))
+	(defmethod cleavir-ir-graphviz:label ((instruction bind-fixed-arg))
 	  (with-output-to-string (stream)
 	    (format stream "BIND-FIXED-ARG ~a" (arg-index instruction))))
 
@@ -148,7 +148,7 @@
 
 (defun describe-mir (instr )
   (with-output-to-string (stream)
-    (format stream "~a " (cleavir-ir-graphviz::label instr))
+    (format stream "~a " (cleavir-ir-graphviz:label instr))
     (when (cleavir-ir:inputs instr)
       (format stream "(")
       (loop for datum in (cleavir-ir:inputs instr)

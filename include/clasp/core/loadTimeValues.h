@@ -61,13 +61,13 @@ public: // Functions here
 
   // -------- Regular data storage
 
-  inline T_sp &data_element(uint i) { return this->_Objects[i]; };
+  ALWAYS_INLINE T_sp &data_element(uint i) { return this->_Objects[i]; };
   int data_vectorPushExtend(T_sp val, int extension);
 
   // -------- Symbols storage
 
   void symbols_setFillPointer(uint i);
-  inline Symbol_sp &symbols_element(uint i) { return this->_Symbols[i]; };
+  ALWAYS_INLINE Symbol_sp &symbols_element(uint i) { return this->_Symbols[i]; };
   int symbols_vectorPushExtend(Symbol_sp val, int extension);
 
 }; // LoadTimeValues class

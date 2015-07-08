@@ -111,7 +111,6 @@ const std::type_info &typeidCoreDynamicGo = typeid(core::DynamicGo);
 const std::type_info &typeidCoreReturnFrom = typeid(core::ReturnFrom);
 const std::type_info &typeidCoreUnwind = typeid(core::Unwind);
 
-#define ALWAYS_INLINE __attribute__((always_inline))
 
 #define LOW_LEVEL_TRACE_QUEUE_SIZE 1024
 uint _LLVMLowLevelTraceQueueIn = 0;
@@ -1435,17 +1434,13 @@ void mv_copyLoadTimeValue(core::T_mv *resultP, core::LoadTimeValues_O **ltvPP, i
 
 extern "C" {
 
-core::T_sp *loadTimeValueReference(core::LoadTimeValues_O **ltvPP, int index) {
-  ASSERT(ltvPP != NULL);
-  ASSERT(*ltvPP != NULL);
+ALWAYS_INLINE core::T_sp *loadTimeValueReference(core::LoadTimeValues_O **ltvPP, int index) {
   core::LoadTimeValues_O &ltv = **ltvPP;
   core::T_sp &result = ltv.data_element(index);
   return &result;
 }
 
-core::Symbol_sp *loadTimeSymbolReference(core::LoadTimeValues_O **ltvPP, int index) {
-  ASSERT(ltvPP != NULL);
-  ASSERT(*ltvPP != NULL);
+ALWAYS_INLINE core::Symbol_sp *loadTimeSymbolReference(core::LoadTimeValues_O **ltvPP, int index) {
   core::Symbol_sp &result = (*ltvPP)->symbols_element(index);
 #ifdef DEBUG_LOAD_TIME_VALUES
 //        printf("%s:%d loadTimeSymbolReference@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, (*ltvPP), index, result.pbase(), _rep_(result).c_str());
@@ -1717,7 +1712,7 @@ void cc_setTmvToNil(core::T_mv *sharedP) {
   *sharedP = Values(_Nil<core::T_O>());
 }
 
-T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx) {
+ALWAYS_INLINE T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx) {
   LoadTimeValues_O *array = *tarray;
 #ifdef DEBUG_CC
   printf("%s:%d precalcSymbol idx[%zu] symbol = %p\n", __FILE__, __LINE__, idx, (*array).symbols_element(idx).px);
@@ -1727,7 +1722,7 @@ T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx) {
   return res;
 }
 
-T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx) {
+ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx) {
   LoadTimeValues_O *array = *tarray;
 #ifdef DEBUG_CC
   printf("%s:%d precalcValue idx[%zu] value = %p\n", __FILE__, __LINE__, idx, (*array).data_element(idx).px);

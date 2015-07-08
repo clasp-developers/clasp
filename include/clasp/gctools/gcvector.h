@@ -52,7 +52,7 @@ public:
   value_type *data() { return &this->_Data[0]; };
   size_t size() { return this->_End; };
   size_t capacity() const { return this->_Capacity; };
-  value_type &operator[](size_t i) { return this->_Data[i]; };
+  inline value_type &operator[](size_t i) { return this->_Data[i]; };
   const value_type &operator[](size_t i) const { return this->_Data[i]; };
   iterator begin() { return &this->_Data[0]; };
   iterator end() { return &this->_Data[this->_End]; };

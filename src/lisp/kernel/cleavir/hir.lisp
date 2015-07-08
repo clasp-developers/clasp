@@ -12,7 +12,7 @@
   ((%debug-message :initarg :debug-message :accessor debug-message)))
 
 
-(defmethod cleavir-ir-graphviz::label ((instr debug-message-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr debug-message-instruction))
   (with-output-to-string (s)
     (format s "debug-message(~a)" (debug-message instr))))
 
@@ -37,7 +37,7 @@
     (change-class oe 'named-enter-instruction :lambda-name lambda-name)))
 
 
-(defmethod cleavir-ir-graphviz::label ((instr named-enter-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr named-enter-instruction))
   (with-output-to-string (s)
     (format s "named-enter(~a)" (lambda-name instr))))
 
@@ -62,7 +62,7 @@
 		  :landing-pad landing-pad)))
 
 
-(defmethod cleavir-ir-graphviz::label ((instr landing-pad-named-enter-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr landing-pad-named-enter-instruction))
   (with-output-to-string (s)
     (format s "landing-pad-named-enter(~a)" (lambda-name instr))))
 
@@ -90,7 +90,7 @@
   ((%landing-pad :initarg :landing-pad :accessor landing-pad)))
 
 
-(defmethod cleavir-ir-graphviz::label ((instr landing-pad-return-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr landing-pad-return-instruction))
   (with-output-to-string (s)
     (format s "landing-pad-return")))
 
@@ -126,7 +126,7 @@
 (defun escaped-string (str)
   (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
 
-(defmethod cleavir-ir-graphviz::label ((instr precalc-symbol-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr precalc-symbol-instruction))
   (with-output-to-string (s)
     (format s "precalc-symbol-ref ; ")
     (let ((original-object (escaped-string
@@ -168,7 +168,7 @@
 (defun escaped-string (str)
   (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
 
-(defmethod cleavir-ir-graphviz::label ((instr precalc-value-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr precalc-value-instruction))
   (with-output-to-string (s)
     (format s "precalc-value-ref ; ")
     (let ((original-object (escaped-string
@@ -218,7 +218,7 @@
     :successors (if successor-p (list successor) '())))
 
 
-(defmethod cleavir-ir-graphviz::label ((instruction setf-fdefinition-instruction)) "setf-fdefinition")
+(defmethod cleavir-ir-graphviz:label ((instruction setf-fdefinition-instruction)) "setf-fdefinition")
 
 
 
@@ -242,7 +242,7 @@
     :unwinds unwinds))
 
 
-(defmethod cleavir-ir-graphviz::label ((instr landing-pad-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr landing-pad-instruction))
   (with-output-to-string (str)
     (format str "landing-pad[")
     (dolist (unwind (unwinds instr))
@@ -264,9 +264,17 @@
   ((%jump-id :initform nil :initarg :jump-id :accessor jump-id)))
 
 
-(defmethod cleavir-ir-graphviz::label ((instr indexed-unwind-instruction))
+#+(or)(defmethod cleavir-ir-graphviz:label ((instr indexed-unwind-instruction))
+  (format t "Label for indexed-unwind-instruction~%")
   (with-output-to-string (stream)
     (format stream "indexed-unwind[~a]" (jump-id instr))))
+
+(defmethod cleavir-ir-graphviz:draw-instruction ((instruction indexed-unwind-instruction) stream)
+  (format stream "   ~a [label = \"indexed-unwind[~a]\"];~%"
+	  (cleavir-ir-graphviz::instruction-id instruction) (jump-id instruction))
+  (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
+	  (cleavir-ir-graphviz::instruction-id instruction)
+	  (gethash (cleavir-ir:invocation instruction) cleavir-ir-graphviz::*instruction-table*)))
 
 
 (defmethod cl:print-object ((instr indexed-unwind-instruction) stream)
@@ -290,7 +298,7 @@
     :outputs ()
     :successors (if (null successor) nil (list successor))))
 
-(defmethod cleavir-ir-graphviz::label ((instr throw-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr throw-instruction))
   (with-output-to-string (stream)
     (format stream "throw")))
 

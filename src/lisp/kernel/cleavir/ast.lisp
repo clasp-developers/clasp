@@ -114,7 +114,7 @@
     (:precalc-asts precalc-asts))
 
 
-#||(defmethod clavir-ast-graphviz::label ((ast precalc-vector-function-ast))
+#||(defmethod clavir-ast-graphviz:label ((ast precalc-vector-function-ast))
   (with-output-to-string (s)
     (format s "precalc-vec-fn (~a ~a)" 
 ||#

@@ -33,6 +33,7 @@ sources =
     	    	/internals/core//core        #//bundle/<link>static
 		/internals/cffi//cffi        #//bundle/<link>static
 		/internals/llvmo//llvmo       #//bundle/<link>static
+                /internals/llvmo//bundle
                 /internals/clbind//clbind      #//bundle/<link>static
 		/internals/gctools//gctools     #//bundle/<link>static
 		/internals/sockets//sockets     #//bundle/<link>static

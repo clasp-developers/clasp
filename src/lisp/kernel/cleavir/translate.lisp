@@ -874,13 +874,17 @@ nil)
 
 
 (defun my-hir-transformations (init-instr implementation processor os)
-  (cleavir-hir-transformations:type-inference init-instr)
-  (cleavir-hir-transformations:eliminate-typeq init-instr)
-  ;; The following breaks code when inlining takes place
   (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-before.dot")) ;; comment out
-  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
-  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after.dot")) ;; comment out
-  (cleavir-hir-transformations:process-captured-variables init-instr))
+  (cleavir-hir-transformations:type-inference init-instr)
+  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-ti.dot")) ;; comment out
+  (cleavir-hir-transformations:eliminate-typeq init-instr)
+  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-et.dot")) ;; comment out
+  ;; The following breaks code when inlining takes place
+  ;;  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
+  ;;  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-est.dot")) ;; comment out
+  (cleavir-hir-transformations:process-captured-variables init-instr)
+  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-pcv.dot")) ;; comment out
+  )
 
 
 (defun do-compile (form)
@@ -967,8 +971,8 @@ nil)
                    (hir (progn
                           (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
                           (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
+              (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-first.dot")) ;; comment out
               (clasp-cleavir:convert-funcalls hir)
-              (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out
               (my-hir-transformations hir clasp-system nil nil)
               #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
               (cleavir-ir:hir-to-mir hir clasp-system nil nil)

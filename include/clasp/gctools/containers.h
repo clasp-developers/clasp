@@ -72,8 +72,8 @@ public:
   size_t size() const { return this->_Vector.size(); };
   size_t capacity() const { return this->_Vector.capacity(); };
   pointer_type data() const { return this->_Vector.data(); };
-  reference operator[](size_t i) { return this->_Vector[i]; };
-  const_reference operator[](size_t i) const { return this->_Vector[i]; };
+  ALWAYS_INLINE reference operator[](size_t i) { return this->_Vector[i]; };
+  ALWAYS_INLINE const_reference operator[](size_t i) const { return this->_Vector[i]; };
   void resize(size_t n, const value_type &initialElement = value_type()) {
     this->_Vector.resize(n, initialElement);
   };
@@ -129,8 +129,8 @@ public:
   const_iterator end() const { return this->_Array.end(); };
   size_t capacity() const { return this->_Array.capacity(); };
   pointer_type data() const { return this->_Array.data(); };
-  reference operator[](size_t i) { return this->_Array[i]; };
-  const_reference operator[](size_t i) const { return this->_Array[i]; };
+  ALWAYS_INLINE reference operator[](size_t i) { return this->_Array[i]; };
+  ALWAYS_INLINE const_reference operator[](size_t i) const { return this->_Array[i]; };
   void clear() { this->_Array.clear(); };
 };
 
