@@ -24,7 +24,7 @@ This version of the llvm/clang3.6 is included in externals-clasp.  Incidentally,
 
 |  Systems that Clasp is known to build on  |
 | ----------------------------------------- |
-|  OS X 10.9.5 using Xcode 6.0.1            |
+| OS X 10.10 using Xcode 6.4  [IMPORTANT - see (https://github.com/drmeister/clasp/wiki/Building-Clasp-on-OS-X-requires-using-the-open-source-version-of-Clang)          |
 |  Debian Testing(Jessie) - [see issue #22](https://github.com/drmeister/clasp/issues/22)   |
 |  Debian Unstable(Sid)                     |
 |  Gentoo Linux - [see issue #20](https://github.com/drmeister/clasp/issues/20)             |
