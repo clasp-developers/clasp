@@ -24,17 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	gctoolsPackage_fwd_H
+#ifndef gctoolsPackage_fwd_H
 #define gctoolsPackage_fwd_H
 
-
-
-
-namespace gctools
-{
-
-
+namespace gctools {
 };
-
 
 #endif

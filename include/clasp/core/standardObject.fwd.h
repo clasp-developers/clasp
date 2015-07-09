@@ -26,8 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #ifndef standardObject_fwd_H
 #define standardObject_fwd_H
-namespace core
-{
+namespace core {
 FORWARD(StandardObject);
 }
 #endif

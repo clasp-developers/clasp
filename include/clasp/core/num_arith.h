@@ -24,22 +24,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_num_arith_H //[
-#define	_core_num_arith_H
+#ifndef _core_num_arith_H //[
+#define _core_num_arith_H
 
 #include <clasp/core/clasp_gmpxx.h>
 #include <math.h>
 
-
 namespace core {
 
+Integer_sp brcl_gcd(Integer_sp x, Integer_sp y, int yidx = 1);
+Integer_sp brcl_integer_divide(Integer_sp x, Integer_sp y);
 
-    Integer_sp brcl_gcd(Integer_sp x, Integer_sp y, int yidx=1);
-    Integer_sp brcl_integer_divide(Integer_sp x, Integer_sp y);
-
-    void initialize_num_arith();
-
-
+void initialize_num_arith();
 };
 
 #endif

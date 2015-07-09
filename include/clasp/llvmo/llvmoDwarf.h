@@ -29,11 +29,9 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 
-namespace llvmo
-{
+namespace llvmo {
 
-    void initialize_dwarf_constants();
-
+void initialize_dwarf_constants();
 };
 
 #endif

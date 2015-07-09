@@ -24,8 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include	<stdio.h>
-main()
-{
-    printf("Hello world\n" );
+#include <stdio.h>
+main() {
+  printf("Hello world\n");
 }

@@ -26,8 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #ifndef fileSystem_fwd_H
 #define fileSystem_fwd_H
-namespace core
-{
+namespace core {
 FORWARD(Path);
 FORWARD(DirectoryIterator);
 FORWARD(RecursiveDirectoryIterator);

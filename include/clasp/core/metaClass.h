@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	Class_H
+#ifndef Class_H
 #define Class_H
 
 #include <list>
@@ -45,17 +45,13 @@ THE SOFTWARE.
 #include <clasp/core/specializer.h>
 #include <clasp/core/holder.h>
 
-
-
-namespace core 
-{
-
+namespace core {
 
 //
 //  Class access functions for when we only have a forward
 //  definition for the Class_O class
 //
-    SMART(Class);
+SMART(Class);
 
 /*! Class spoofs ECL>>Instance_O classes by doing the following.
 
@@ -69,255 +65,235 @@ namespace core
 
   
 */
-  class Class_O : public Specializer_O
-    {
-        struct metadata_bootstrap_class {};
-        struct metadata_gc_do_not_move {};
+class Class_O : public Specializer_O {
+  struct metadata_bootstrap_class {};
+  struct metadata_gc_do_not_move {};
 
-	LISP_META_CLASS(StandardClass);
-	LISP_BASE1(Specializer_O);
-	LISP_CLASS(core,ClPkg,Class_O,"class");
-	//
-	// Friend functions for bootup
-	//
-	friend class CoreExposer;
-	template <typename u> friend void dump_info(Class_sp co, Lisp_sp prog);
-	template <typename u> friend void define_base_class(Class_sp co, Class_sp cob, uint& i);
-	template <typename u> friend BuiltInClass_sp hand_initialize_class(uint& classesHandInitialized, Lisp_sp prog,BuiltInClass_sp c);
-	template <typename u> friend BuiltInClass_sp hand_initialize_allocatable_class(uint& classesHandInitialized, Lisp_sp prog,BuiltInClass_sp c);
-    public:
+  LISP_META_CLASS(StandardClass);
+  LISP_BASE1(Specializer_O);
+  LISP_CLASS(core, ClPkg, Class_O, "class");
+  //
+  // Friend functions for bootup
+  //
+  friend class CoreExposer;
+  template <typename u>
+  friend void dump_info(Class_sp co, Lisp_sp prog);
+  template <typename u>
+  friend void define_base_class(Class_sp co, Class_sp cob, uint &i);
+  template <typename u>
+  friend BuiltInClass_sp hand_initialize_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
+  template <typename u>
+  friend BuiltInClass_sp hand_initialize_allocatable_class(uint &classesHandInitialized, Lisp_sp prog, BuiltInClass_sp c);
+
+public:
 #if defined(XML_ARCHIVE)
-	void	archive(ArchiveP node);
+  void archive(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-	void	initialize();
+  void initialize();
 
-    public: // The hard-coded indexes above are defined below to be used by Class
-	// These must match the +class-slots+ defined in hierarchy.lsp
-	static const int REF_EQL_SPECIALIZER_FLAG 	= 0;
-	static const int REF_SPECIALIZER_DIRECT_METHODS = 1;
-	static const int REF_SPECIALIZER_DIRECT_GENERIC_FUNCTIONS 	= 2;
-	static const int REF_CLASS_NAME 		= 3;
-	static const int REF_DIRECT_SUPERCLASSES	= 4;
-	static const int REF_DIRECT_SUBCLASSES		= 5;
-	static const int REF_SLOTS      		= 6;
-	static const int REF_CLASS_PRECEDENCE_LIST	= 7;
-	static const int REF_DIRECT_SLOTS 		= 8;
-	static const int REF_DIRECT_DEFAULT_INITARGS 	= 9;
-	static const int REF_DEFAULT_INITARGS 		= 10;
-	static const int REF_FINALIZED 			= 11;
-	static const int REF_DOCSTRING 			= 12;
-	static const int REF_SIZE 			= 13;
-	static const int REF_SEALEDP 			= 14;
-	static const int REF_PROTOTYPE 			= 15;
-	static const int REF_DEPENDENTS 		= 16;
-	static const int REF_VALID_INITARGS		= 17;
-	static const int REF_SLOT_TABLE 		= 18;
-	static const int REF_LOCATION_TABLE 		= 19;
-	static const int REF_OPTIMIZE_SLOT_ACCESS       = 20;
-	static const int REF_FORWARD		        = 21;
-	static const int REF_NUMBER_OF_SLOTS_IN_CLASSES = 22;
+public: // The hard-coded indexes above are defined below to be used by Class
+  // These must match the +class-slots+ defined in hierarchy.lsp
+  static const int REF_EQL_SPECIALIZER_FLAG = 0;
+  static const int REF_SPECIALIZER_DIRECT_METHODS = 1;
+  static const int REF_SPECIALIZER_DIRECT_GENERIC_FUNCTIONS = 2;
+  static const int REF_CLASS_NAME = 3;
+  static const int REF_DIRECT_SUPERCLASSES = 4;
+  static const int REF_DIRECT_SUBCLASSES = 5;
+  static const int REF_SLOTS = 6;
+  static const int REF_CLASS_PRECEDENCE_LIST = 7;
+  static const int REF_DIRECT_SLOTS = 8;
+  static const int REF_DIRECT_DEFAULT_INITARGS = 9;
+  static const int REF_DEFAULT_INITARGS = 10;
+  static const int REF_FINALIZED = 11;
+  static const int REF_DOCSTRING = 12;
+  static const int REF_SIZE = 13;
+  static const int REF_SEALEDP = 14;
+  static const int REF_PROTOTYPE = 15;
+  static const int REF_DEPENDENTS = 16;
+  static const int REF_VALID_INITARGS = 17;
+  static const int REF_SLOT_TABLE = 18;
+  static const int REF_LOCATION_TABLE = 19;
+  static const int REF_OPTIMIZE_SLOT_ACCESS = 20;
+  static const int REF_FORWARD = 21;
+  static const int REF_NUMBER_OF_SLOTS_IN_CLASSES = 22;
 
+private:
+  void accumulateSuperClasses(HashTableEq_sp supers, VectorObjectsWithFillPtr_sp arrayedSupers, Class_sp mc);
 
-
-
-
-    private:
-	void accumulateSuperClasses(HashTableEq_sp supers,VectorObjectsWithFillPtr_sp arrayedSupers ,Class_sp mc);
-    public:
-	/*! NumberOfClassSlots has to match the number of entries in
+public:
+  /*! NumberOfClassSlots has to match the number of entries in
 	  ECL clos::+class-slots+.  This is checked by a call to the function MAKE-SURE-CLOS-CLASS-SLOTS-MATCH-META-CLASS
 	  These slots are accessed with instanceRef and instanceSet methods and
 	  some slot accesses are redirected to C++ instance variables like _DirectSubClasses.
 	*/
-	static const int NumberOfClassSlots = 20; // Corresponds to the number of entries in
+  static const int NumberOfClassSlots = 20; // Corresponds to the number of entries in
 
-    public:
-	/*! Mimic ECL Instance::sig */
-	T_sp 				_Signature_ClassSlots;
-	/*! Callback function to allocate instances */
-	Creator*         		_creator;
-        gctools::Vec0<T_sp> 		_MetaClassSlots;
-    public:
-	/*! This is a factory function that returns either a BuiltInClass or a StandardClass depending on the
+public:
+  /*! Mimic ECL Instance::sig */
+  T_sp _Signature_ClassSlots;
+  /*! Callback function to allocate instances */
+  Creator *_creator;
+  gctools::Vec0<T_sp> _MetaClassSlots;
+
+public:
+  /*! This is a factory function that returns either a BuiltInClass or a StandardClass depending on the
 	  type of metaClass */
-	static Class_sp allocateRawClass(Class_sp orig, Class_sp metaClass, int slots);
-    public:
-	void __setup_stage1_with_sharedPtr_lisp_sid(T_sp theThis, Lisp_sp lisp, Symbol_sp instanceClassSymbol)
-	{
-	    this->instanceSet(REF_CLASS_NAME,instanceClassSymbol);
-	}
+  static Class_sp allocateRawClass(Class_sp orig, Class_sp metaClass, int slots);
 
-	void __setup_stage2_with_classSymbol(Symbol_sp csid)
-	{_OF();
-	}
+public:
+  void __setup_stage1_with_sharedPtr_lisp_sid(T_sp theThis, Lisp_sp lisp, Symbol_sp instanceClassSymbol) {
+    this->instanceSet(REF_CLASS_NAME, instanceClassSymbol);
+  }
 
-	void __setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp isid);
+  void __setup_stage2_with_classSymbol(Symbol_sp csid) {
+    _OF();
+  }
 
+  void __setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp isid);
 
+  /*! Setup the instance nil value */
+  //	void setupInstanceNil();
+public:
+private:
+  void lowLevel_calculateClassPrecedenceList();
 
-	/*! Setup the instance nil value */
-//	void setupInstanceNil();
-    public:
-    private:
-	void lowLevel_calculateClassPrecedenceList();
-    public: // Mimic CLOS classes that are represented by Instance_O
+public: // Mimic CLOS classes that are represented by Instance_O
+  void initializeSlots(int slots);
 
+  /*! Return this classes metaclass */
+  virtual Class_sp _instanceClass() const;
+  /*! Set this classes metaclass */
+  T_sp instanceClassSet(Class_sp mc);
 
-	void initializeSlots(int slots);
+  /*! ECL slot handling, slots are indexed with integers */
+  virtual T_sp instanceRef(int idx) const;
+  /*! ECL slot handling, slots are indexed with integers */
+  virtual T_sp instanceSet(int idx, T_sp val);
 
+  /*! I don't know what this does, I'm mimicking ECL ecl>>instance.d>>instance_sig_set */
+  virtual T_sp instanceSigSet();
+  /*! I think this should just return the __staticClass->slots() I'm mimicking ECL ecl>>instance.d>>instance_sig */
+  virtual T_sp instanceSig() const;
 
-	/*! Return this classes metaclass */
-	virtual Class_sp _instanceClass() const;
-	/*! Set this classes metaclass */
-	T_sp instanceClassSet(Class_sp mc);
+  T_sp slots() const { return this->instanceRef(REF_SLOTS); };
 
-	/*! ECL slot handling, slots are indexed with integers */
-	virtual T_sp instanceRef(int idx) const;
-	/*! ECL slot handling, slots are indexed with integers */
-	virtual T_sp instanceSet(int idx, T_sp val);
+public:
+  void inheritDefaultAllocator(Cons_sp directSuperclasses);
+  void setCreator(Creator *cb) { this->_creator = cb; };
+  Creator *getCreator() const { return this->_creator; };
+  bool hasCreator() const { return this->_creator != NULL; };
 
-
-	/*! I don't know what this does, I'm mimicking ECL ecl>>instance.d>>instance_sig_set */
-	virtual T_sp instanceSigSet();
-	/*! I think this should just return the __staticClass->slots() I'm mimicking ECL ecl>>instance.d>>instance_sig */
-	virtual T_sp instanceSig() const;
-
-	T_sp slots() const { return this->instanceRef(REF_SLOTS);};
-    public:
-
-
-        void inheritDefaultAllocator(Cons_sp directSuperclasses);
-	void setCreator(Creator* cb) { this->_creator = cb;};
-	Creator* getCreator() const { return this->_creator;};
-        bool hasCreator() const { return this->_creator!=NULL;};
-
-	/*! I have GOT to clean up all this class-name stuff
+  /*! I have GOT to clean up all this class-name stuff
 	  Reduce the clutter to one function to get the name and one to set the name */
 
-	void setName(Symbol_sp id) { this->instanceSet(REF_CLASS_NAME,id);};
-	Symbol_sp name() const { return this->instanceRef(REF_CLASS_NAME).as<Symbol_O>();};
+  void setName(Symbol_sp id) { this->instanceSet(REF_CLASS_NAME, id); };
+  Symbol_sp name() const { return this->instanceRef(REF_CLASS_NAME).as<Symbol_O>(); };
 
-	Symbol_sp className() const;
-	string classNameAsString() const;
+  Symbol_sp className() const;
+  string classNameAsString() const;
 #if 0
 	virtual Symbol_sp classNameSymbol() const {return this->name();};
 	virtual Symbol_sp classSymbol() const;
 	virtual Symbol_sp instanceClassSymbol() const { return this->name(); };
 #endif
-	string instanceClassName() { return this->getPackagedName();};
-	string instanceClassName() const { return this->getPackagedName();};
+  string instanceClassName() { return this->getPackagedName(); };
+  string instanceClassName() const { return this->getPackagedName(); };
 
-	/*! Return the name of the class with its Package name prefixed
+  /*! Return the name of the class with its Package name prefixed
 	 */
-	string getPackagedName() const;
+  string getPackagedName() const;
 
+  virtual string dumpInfo();
 
+  /*! Return the name of the package that this class belongs to */
+  string getPackageName() const;
 
+  //	virtual Function_sp getMethodOrNil(Symbol_sp methodSymbol, T_sp receiver );
+  //	virtual void addMethod(Symbol_sp methodSymbol, Function_sp exec );
 
+  template <typename oclass>
+  bool isSubClassOf() const {
+    return this->isSubClassOf(lisp_classFromClassSymbol(oclass::static_classSymbol()));
+  }
 
-	virtual string dumpInfo();
+  virtual bool isSubClassOf(Class_sp mc) const;
 
-	/*! Return the name of the package that this class belongs to */
-	string getPackageName() const;
+  //	virtual bool isOfClass(Class_sp mc) const;
 
-//	virtual Function_sp getMethodOrNil(Symbol_sp methodSymbol, T_sp receiver );
-//	virtual void addMethod(Symbol_sp methodSymbol, Function_sp exec );
+  void setInstanceBaseClasses(Cons_sp classes);
+  void addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp cl);
+  void addInstanceBaseClass(Symbol_sp cl);
+  string __repr__() const;
 
-	template <typename oclass>
-	bool isSubClassOf() const
-	{
-	    return this->isSubClassOf(lisp_classFromClassSymbol(oclass::static_classSymbol()));
-	}
-
-	virtual bool isSubClassOf(Class_sp mc) const;
-
-//	virtual bool isOfClass(Class_sp mc) const;
-
-	void	setInstanceBaseClasses(Cons_sp classes);
-	void	addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp cl);
-	void	addInstanceBaseClass(Symbol_sp cl);
-	string __repr__() const;
-
-	/*! Allocate an object of this class
+  /*! Allocate an object of this class
 	  But don't call initialize!!!!!
 	*/
-	virtual T_sp allocate_newNil();
+  virtual T_sp allocate_newNil();
 
-	T_sp make_instance();
+  T_sp make_instance();
 
+  /*! Return the direct superclasses */
+  Cons_sp directSuperclasses() const;
 
-	/*! Return the direct superclasses */
-	Cons_sp directSuperclasses() const;
+  void appendDirectSuperclassAndResetClassPrecedenceList(Class_sp superClass);
 
-	void appendDirectSuperclassAndResetClassPrecedenceList(Class_sp superClass);
-
-
-	/*! Return the unboundValue for this class - use lazy initialization to define the unboundValue
+  /*! Return the unboundValue for this class - use lazy initialization to define the unboundValue
 	  if it hasn't been defined yet */
-//	T_sp unboundValue();
+  //	T_sp unboundValue();
 
-//    virtual T_sp new_Instance(Function_sp e, Cons_sp args,  Environment_sp environ, Lisp_sp lisp);
-	virtual void describe();
+  //    virtual T_sp new_Instance(Function_sp e, Cons_sp args,  Environment_sp environ, Lisp_sp lisp);
+  virtual void describe();
 
-
-        /*! predicate if this is a raw C++ class that is wrapped with clbind
+  /*! predicate if this is a raw C++ class that is wrapped with clbind
           - it can only be used to derive other classes if cxxDerivableClassP is true */
-        virtual bool cxxClassP() const {return false;};
+  virtual bool cxxClassP() const { return false; };
 
-        /*! cxxDerivableClass is a class that inherits from a raw C++ class and
+  /*! cxxDerivableClass is a class that inherits from a raw C++ class and
           the clbind::Adapter class - this allows it to be derived from */
-        virtual bool cxxDerivableClassP() const { return false;};
+  virtual bool cxxDerivableClassP() const { return false; };
 
-        /*! primaryCxxDerivableClassP is a predicate that returns true if
+  /*! primaryCxxDerivableClassP is a predicate that returns true if
           this class is the primary derivable C++ class */
-        virtual bool primaryCxxDerivableClassP() const {return false;};
+  virtual bool primaryCxxDerivableClassP() const { return false; };
 
-
-	explicit Class_O();
-	virtual ~Class_O();
-    };
-
+  explicit Class_O();
+  virtual ~Class_O();
 };
-template<> struct gctools::GCInfo<core::Class_O> {
-    static bool constexpr NeedsInitialization = true;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true; // old=false
-    static bool constexpr Atomic = false;
 };
-
-
+template <>
+struct gctools::GCInfo<core::Class_O> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = false;
+  static bool constexpr Moveable = true; // old=false
+  static bool constexpr Atomic = false;
+};
 
 namespace core {
 
-    /*!Return true if low is a subclass of high */
-    bool af_subclassp(T_sp low, T_sp high);
+/*!Return true if low is a subclass of high */
+bool af_subclassp(T_sp low, T_sp high);
 
-    /*! Return true if the object is of the class _class */
-    bool af_ofClassP(T_sp object, T_sp _class);
+/*! Return true if the object is of the class _class */
+bool af_ofClassP(T_sp object, T_sp _class);
 
+class InstanceCreator : public Creator {
+  FRIEND_GC_SCANNER();
 
+public:
+  Symbol_sp _className;
 
-    class InstanceCreator : public Creator
-    {
-        FRIEND_GC_SCANNER();
-    public:
-        Symbol_sp       _className;
-    public:
-        DECLARE_onHeapScanGCRoots();
-    public:
-        DISABLE_NEW();
-        InstanceCreator(Symbol_sp className) : _className(className) {};
-        void describe() const {
-            printf("InstanceAllocatorFunctor for class %s\n", _rep_(this->_className).c_str());
-        };
-        T_sp allocate();
-        virtual size_t templatedSizeof() const { return sizeof(InstanceCreator);};
-    };
+public:
+  DECLARE_onHeapScanGCRoots();
 
-
-
-
-
+public:
+  DISABLE_NEW();
+  InstanceCreator(Symbol_sp className) : _className(className){};
+  void describe() const {
+    printf("InstanceAllocatorFunctor for class %s\n", _rep_(this->_className).c_str());
+  };
+  T_sp allocate();
+  virtual size_t templatedSizeof() const { return sizeof(InstanceCreator); };
+};
 };
 TRANSLATE(core::Class_O);
 #endif

@@ -25,6 +25,5 @@ THE SOFTWARE.
 */
 /* -^- */
 
-
-#undef	USE_MPI
+#undef USE_MPI
 #include <candoMpi.cc>

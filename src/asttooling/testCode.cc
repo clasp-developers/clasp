@@ -29,26 +29,21 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/holder.h>
 
-
 namespace asttooling {
 
+void tinyFunc() {
 
-    void tinyFunc()
-    {
+  vector<std::string> dummyStrings;
 
-        vector<std::string> dummyStrings;
+  dummyStrings.push_back("This");
+  dummyStrings.push_back("is");
+  dummyStrings.push_back("a");
+  dummyStrings.push_back("test");
 
-        dummyStrings.push_back("This");
-        dummyStrings.push_back("is");
-        dummyStrings.push_back("a");
-        dummyStrings.push_back("test");
-
-        //! mytest
-        for ( vector<std::string>::const_iterator it=dummyStrings.begin(); it!=dummyStrings.end(); ++it )
-        {
-            std::cout << *it << " ";
-        }
-        std::cout << std::endl;
-    }
-
+  //! mytest
+  for (vector<std::string>::const_iterator it = dummyStrings.begin(); it != dummyStrings.end(); ++it) {
+    std::cout << *it << " ";
+  }
+  std::cout << std::endl;
+}
 };

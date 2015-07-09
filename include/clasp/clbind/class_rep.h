@@ -46,7 +46,6 @@ THE SOFTWARE.
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 #ifndef CLBIND_CLASS_REP_HPP_INCLUDED
 #define CLBIND_CLASS_REP_HPP_INCLUDED
 
@@ -74,51 +73,45 @@ THE SOFTWARE.
 //#include <clasp/clbind/detail/ref.hpp>
 
 namespace clbind {
-    namespace detail {
-        class cast_graph;
-        class class_id_map;
-    };
+namespace detail {
+class cast_graph;
+class class_id_map;
+};
 };
 
-namespace clbind { 
+namespace clbind {
 
+CLBIND_API std::string stack_content_by_name(core::Lisp_sp L, int start_index);
 
-	CLBIND_API std::string stack_content_by_name(core::Lisp_sp L, int start_index);
+struct class_registration;
 
-    struct class_registration;
+struct conversion_storage;
 
-    struct conversion_storage;
+class ClassRep_O : public core::BuiltInClass_O {
+  LISP_META_CLASS(StandardClass);
+  LISP_BASE1(core::BuiltInClass_O);
+  LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep");
 
+  friend struct class_registration;
 
-    class ClassRep_O : public core::BuiltInClass_O
-    {
-        LISP_META_CLASS(StandardClass);
-        LISP_BASE1(core::BuiltInClass_O);
-        LISP_CLASS(clbind,ClbindPkg,ClassRep_O,"ClassRep");
+public:
+  bool cxxClassP() const { return true; };
+  bool cxxDerivableClassP() const { return this->m_derivable; };
+  bool primaryCxxDerivableClassP() const { return this->getCreator()->duplicationLevel() == 0; };
 
-	friend struct class_registration;
-    public:
+  ClassRep_O() : m_derivable(false){};
 
-        bool cxxClassP() const { return true;};
-        bool cxxDerivableClassP() const { return this->m_derivable; };
-        bool primaryCxxDerivableClassP() const { return this->getCreator()->duplicationLevel() == 0;};
+  ClassRep_O(type_id const &type, const char *name, bool derivable);
 
-            ClassRep_O() : m_derivable(false) {};
+  ClassRep_O(const char *name, bool derivable);
 
-            ClassRep_O(type_id const& type
-                       , const char* name
-                       , bool derivable
-                );
+  virtual ~ClassRep_O();
 
-            ClassRep_O(const char* name, bool derivable);
-
-        virtual ~ClassRep_O();
-
-    public:
-        static ClassRep_sp create(type_id const& mtype, const char* name, bool derivable) {
-            GC_ALLOCATE_VARIADIC(ClassRep_O,val,mtype,name,derivable);
-            return val;
-        }
+public:
+  static ClassRep_sp create(type_id const &mtype, const char *name, bool derivable) {
+    GC_ALLOCATE_VARIADIC(ClassRep_O, val, mtype, name, derivable);
+    return val;
+  }
 
 #if 0
         std::pair<void*,void*> allocate() const;
@@ -132,14 +125,14 @@ namespace clbind {
         };
 
 #endif
-        void add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base);
+  void add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base);
 
-        const gctools::Vec0<core::Cons_sp>& bases() const throw() { return m_bases; }
+  const gctools::Vec0<core::Cons_sp> &bases() const throw() { return m_bases; }
 
-        void set_type(type_id const& t) { m_type = t; }
-        type_id const& type() const throw() { return m_type; }
+  void set_type(type_id const &t) { m_type = t; }
+  type_id const &type() const throw() { return m_type; }
 
-        const char* name() const throw() { return m_name; }
+  const char *name() const throw() { return m_name; }
 
 #if 0 // begin_meister_disabled
         // the lua reference to the metatable for this class' instances
@@ -163,50 +156,48 @@ namespace clbind {
         bool has_operator_in_lua(core::Lisp_sp, int id);
 #endif
 
-        detail::cast_graph const& casts() const
-        {
-            return *m_casts;
-        }
+  detail::cast_graph const &casts() const {
+    return *m_casts;
+  }
 
-        detail::class_id_map const& classes() const
-        {
-            return *m_classes;
-        }
+  detail::class_id_map const &classes() const {
+    return *m_classes;
+  }
 
-    GCPRIVATE:
+GCPRIVATE:
 
 #if 0
         void cache_operators(core::Lisp_sp);
 #endif
-        // this is a pointer to the type_info structure for
-        // this type
-        // warning: this may be a problem when using dll:s, since
-        // typeid() may actually return different pointers for the same
-        // type.
-        type_id m_type;
+  // this is a pointer to the type_info structure for
+  // this type
+  // warning: this may be a problem when using dll:s, since
+  // typeid() may actually return different pointers for the same
+  // type.
+  type_id m_type;
 
-        // a list of info for every class this class derives from
-        // the information stored here is sufficient to do
-        // type casts to the base classes
-        gctools::Vec0<core::Cons_sp> m_bases;
+  // a list of info for every class this class derives from
+  // the information stored here is sufficient to do
+  // type casts to the base classes
+  gctools::Vec0<core::Cons_sp> m_bases;
 
-        // the class' name (as given when registered to lua with class_)
-        const char* m_name;
+  // the class' name (as given when registered to lua with class_)
+  const char *m_name;
 
-        detail::cast_graph* m_casts;
-        /* What does this store???? */
-        detail::class_id_map* m_classes;
-        bool m_derivable;
-    };
+  detail::cast_graph *m_casts;
+  /* What does this store???? */
+  detail::class_id_map *m_classes;
+  bool m_derivable;
+};
 
-	bool is_class_rep(core::Lisp_sp L, int index);
-
+bool is_class_rep(core::Lisp_sp L, int index);
 }
-template<> struct gctools::GCInfo<clbind::ClassRep_O> {
-    static bool constexpr NeedsInitialization = true;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true; // old=false
-    static bool constexpr Atomic = false;
+template <>
+struct gctools::GCInfo<clbind::ClassRep_O> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = false;
+  static bool constexpr Moveable = true; // old=false
+  static bool constexpr Atomic = false;
 };
 
 //#include <clasp/clbind/detail/overload_rep_impl.hpp>

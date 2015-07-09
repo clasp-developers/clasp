@@ -26,31 +26,25 @@ THE SOFTWARE.
 /* -^- */
 #include <stdio.h>
 
-class TestClass
-{
+class TestClass {
 public:
-    virtual ~TestClass() {};
+  virtual ~TestClass(){};
 };
 
-class MyException
-{
+class MyException {
 public:
-    virtual ~MyException() {};
+  virtual ~MyException(){};
 };
 
-
-int main(int argc, char* argv[])
-{
-    TestClass a;
-    try
+int main(int argc, char *argv[]) {
+  TestClass a;
+  try {
     {
-	{
-	    TestClass b;
-	}
-	throw MyException();
-    } catch (MyException& exp)
-    {
-	printf("Caught MyException\n");
+      TestClass b;
     }
-    printf("Done\n");
+    throw MyException();
+  } catch (MyException &exp) {
+    printf("Caught MyException\n");
+  }
+  printf("Done\n");
 }

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	clbind_H
+#ifndef clbind_H
 #define clbind_H
 
 #include <clasp/core/foundation.h>
@@ -37,14 +37,9 @@ THE SOFTWARE.
 #include <clasp/clbind/derivable_class.h>
 #include <clasp/clbind/clbind_wrappers.h>
 
-
 namespace clbind {
 
 //    extern map<const type_info*,core::Symbol_sp> 	globalRttiToClassSymbol;
-
-
-
 };
-
 
 #endif // clbind_h

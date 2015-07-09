@@ -31,13 +31,9 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/grayPackage.fwd.h>
 
-namespace gray
-{
+namespace gray {
 
-    void initialize_grayPackage();
-
-
+void initialize_grayPackage();
 };
-
 
 #endif

@@ -27,19 +27,9 @@ THE SOFTWARE.
 #ifndef _clasp_boehmGarbageCollection_H
 #define _clasp_boehmGarbageCollection_H
 
-
-
-
-
-
-
-
-
-
 /*! Return the most derived pointer of the object pointed to by the smart_ptr */
-#define GC_BASE_ADDRESS_FROM_SMART_PTR(_smartptr_) (dynamic_cast<void*>(_smartptr_.px_ref()))
-#define GC_BASE_ADDRESS_FROM_PTR(_ptr_) (const_cast<void*>(dynamic_cast<const void*>(_ptr_)))
-
+#define GC_BASE_ADDRESS_FROM_SMART_PTR(_smartptr_) (dynamic_cast<void *>(_smartptr_.px_ref()))
+#define GC_BASE_ADDRESS_FROM_PTR(_ptr_) (const_cast<void *>(dynamic_cast<const void *>(_ptr_)))
 
 #define IGNORE(_ptr_)
 #define SMART_PTR_FIX(_ptr_)
@@ -63,79 +53,72 @@ THE SOFTWARE.
 #define STL_VECTOR_KEYWORD_ARGUMENT_FIX(_vec_)
 #define STL_VECTOR_AUX_ARGUMENT_FIX(_vec_)
 
+namespace gctools {
+class GCObject;
+class GCLinkedList;
 
+class GCObject {
+public:
+  GCObject &operator=(const GCObject &) { return *this; };
+};
 
+typedef enum { KIND_null } GCKindEnum; // minimally define this GCKind
 
-
-namespace gctools
-{
-    class GCObject;
-    class GCLinkedList;
-
-
-    class GCObject {
-    public:
-	GCObject& operator=(const GCObject&) { return *this; };
-    };
-
-
-    typedef enum { KIND_null } GCKindEnum; // minimally define this GCKind
-
-
-
-    typedef enum {  BoehmClassKind, BoehmLispKind, BoehmContainerKind, BoehmStringKind } BoehmKind;
+typedef enum { BoehmClassKind,
+               BoehmLispKind,
+               BoehmContainerKind,
+               BoehmStringKind } BoehmKind;
 
 #ifdef USE_BOEHM_MEMORY_MARKER
-    extern int globalBoehmMarker;
+extern int globalBoehmMarker;
 #endif
-    class Header_s {
-    public:
-        Header_s(const char* name, BoehmKind k) : ValidStamp(0xDEADBEEF)
-                              , TypeidName(name), Kind(k)
+class Header_s {
+public:
+  Header_s(const char *name, BoehmKind k) : ValidStamp(0xDEADBEEF), TypeidName(name), Kind(k)
 #ifdef USE_BOEHM_MEMORY_MARKER
-                              , Marker(globalBoehmMarker)
+                                            ,
+                                            Marker(globalBoehmMarker)
 #endif
-        {};
-    private:
-        uintptr_t       ValidStamp;
-        const char*     TypeidName;
-        BoehmKind       Kind;
+                                                {};
+private:
+  uintptr_t ValidStamp;
+  const char *TypeidName;
+  BoehmKind Kind;
 #ifdef USE_BOEHM_MEMORY_MARKER
-        int             Marker;
+  int Marker;
 #endif
-    public:
-        bool isValid() const { return this->ValidStamp == 0xDEADBEEF; };
-        const char* name() const { return this->TypeidName; };
-        BoehmKind kind() const { return this->Kind; };
-        bool markerMatches(int m) const {
+public:
+  bool isValid() const { return this->ValidStamp == 0xDEADBEEF; };
+  const char *name() const { return this->TypeidName; };
+  BoehmKind kind() const { return this->Kind; };
+  bool markerMatches(int m) const {
 #ifdef USE_BOEHM_MEMORY_MARKER
-            if ( m ) { return this->Marker==m;} else return true;
+    if (m) {
+      return this->Marker == m;
+    } else
+      return true;
 #else
-            return true;
+    return true;
 #endif
-        }
-        static size_t HeaderSize() { return sizeof(Header_s);};
-    };
+  }
+  static size_t HeaderSize() { return sizeof(Header_s); };
+};
 
-    class TemplatedHeader_s : public Header_s
-    {
-    public:
-        TemplatedHeader_s(const char* name, BoehmKind k) : Header_s(name,k) {};
-    };
+class TemplatedHeader_s : public Header_s {
+public:
+  TemplatedHeader_s(const char *name, BoehmKind k) : Header_s(name, k){};
+};
 
-        constexpr size_t Alignment() {
-//            return sizeof(Header_s);
-            return alignof(Header_s);
-        };
-        constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1);};
+constexpr size_t Alignment() {
+  //            return sizeof(Header_s);
+  return alignof(Header_s);
+};
+constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
 
-
-
-
-    template <class T> inline size_t sizeof_with_header() { return AlignUp(sizeof(T))+AlignUp(sizeof(Header_s));};
-    template <class T> inline size_t sizeof_with_templated_header() { return AlignUp(sizeof(T))+AlignUp(sizeof(TemplatedHeader_s));};
-
-
+template <class T>
+inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + AlignUp(sizeof(Header_s)); };
+template <class T>
+inline size_t sizeof_with_templated_header() { return AlignUp(sizeof(T)) + AlignUp(sizeof(TemplatedHeader_s)); };
 
 #if 0
     template <typename T>
@@ -158,46 +141,28 @@ namespace gctools
         return "UNKNOWN-object";
     }
 #endif
-
-
-
-
 };
-
-
-
 
 namespace gctools {
 
-    inline void* ClientPtrToBasePtr(void* mostDerived)
-    {
-        void* ptr = reinterpret_cast<char*>(mostDerived) - AlignUp(sizeof(Header_s));
-        return ptr;
-    }
+inline void *ClientPtrToBasePtr(void *mostDerived) {
+  void *ptr = reinterpret_cast<char *>(mostDerived) - AlignUp(sizeof(Header_s));
+  return ptr;
+}
 
-    template <typename T>
-    inline T* BasePtrToMostDerivedPtr(void* base)
-    {
-        T* ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(base) + AlignUp(sizeof(Header_s)));
-        return ptr;
-    }
-
+template <typename T>
+inline T *BasePtrToMostDerivedPtr(void *base) {
+  T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + AlignUp(sizeof(Header_s)));
+  return ptr;
+}
 };
 
-
-
-namespace gctools
-{
-    /*! Initialize the memory pool system and call the startup function which
+namespace gctools {
+/*! Initialize the memory pool system and call the startup function which
       has the type: int startup(int argc, char* argv[]) just like main.
       Also pass an optional object-format for MPS
     */
-    int initializeMemoryManagement( MainFunctionType startup, int argc, char* argv[], void* dummy );
-
+int initializeMemoryManagement(MainFunctionType startup, int argc, char *argv[], void *dummy);
 };
-
-
-
-
 
 #endif // _clasp_boehmGarbageCollection_H

@@ -37,7 +37,6 @@ THE SOFTWARE.
 #include <clasp/clbind/clbind_wrappers.h>
 #include <clasp/clbind/clbindPackage.h>
 
-
 #if 0
 namespace clbind { 
 
@@ -141,7 +140,5 @@ namespace clbind {
 //#include <clbind/detail/overload_rep_impl.hpp>
 
 #endif //if 0
-
-
 
 #endif // CLBIND_CLASS_REP_HPP_INCLUDED

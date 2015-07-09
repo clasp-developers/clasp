@@ -51,15 +51,13 @@ THE SOFTWARE.
 
 #include <clasp/clbind/config.h>
 
-namespace clbind
-{
-   namespace detail
-   {
-      struct nil_type {};
-   }
+namespace clbind {
+namespace detail {
+struct nil_type {};
+}
 
-   // defined in class.cpp
-   extern CLBIND_API detail::nil_type nil;
+// defined in class.cpp
+extern CLBIND_API detail::nil_type nil;
 }
 
 #endif

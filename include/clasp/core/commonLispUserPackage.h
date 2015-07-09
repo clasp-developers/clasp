@@ -31,14 +31,9 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/commonLispUserPackage.fwd.h>
 
-namespace cluser
-{
+namespace cluser {
 
-
-    void initialize_commonLispUserPackage();
-
-
+void initialize_commonLispUserPackage();
 };
-
 
 #endif

@@ -51,8 +51,8 @@ THE SOFTWARE.
 
 #include <clasp/clbind/config.h>
 
-namespace clbind { namespace detail
-{
+namespace clbind {
+namespace detail {
 #if 0
 #ifdef CLBIND_NOT_THREADSAFE
 	CLBIND_API void not_threadsafe_defined_conflict();
@@ -69,19 +69,20 @@ namespace clbind { namespace detail
 #if 0
 	inline void check_link_compatibility()
 	{
-	#ifdef CLBIND_NOT_THREADSAFE
+#ifdef CLBIND_NOT_THREADSAFE
 		not_threadsafe_defined_conflict();
-	#else
+#else
 		not_threadsafe_not_defined_conflict();
-	#endif
+#endif
 
-	#ifdef CLBIND_NO_ERROR_CHECKING
+#ifdef CLBIND_NO_ERROR_CHECKING
 		no_error_checking_defined_conflict();
-	#else
+#else
 		no_error_checking_not_defined_conflict();
-	#endif
+#endif
 	}
 #endif
-}}
+}
+}
 
 #endif

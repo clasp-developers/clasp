@@ -28,7 +28,7 @@ THE SOFTWARE.
 #define core_pathname_fwd_H
 
 namespace core {
-    FORWARD(Pathname);
-    FORWARD(LogicalPathname);
+FORWARD(Pathname);
+FORWARD(LogicalPathname);
 };
 #endif

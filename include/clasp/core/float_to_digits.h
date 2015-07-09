@@ -24,20 +24,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_float_to_digits_H //[
-#define	_core_float_to_digits_H
+#ifndef _core_float_to_digits_H //[
+#define _core_float_to_digits_H
 
 #include <clasp/core/clasp_gmpxx.h>
 #include <math.h>
 
-
 namespace core {
 
-
-
-    void initialize_float_to_digits();
-
-
+void initialize_float_to_digits();
 };
 
 #endif

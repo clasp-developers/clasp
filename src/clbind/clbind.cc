@@ -31,11 +31,7 @@ THE SOFTWARE.
 #include <clasp/clbind/clbind.h>
 #include <clasp/core/wrappers.h>
 
-
 namespace clbind {
 
 //    map<const type_info*,core::Symbol_sp> 	globalRttiToClassSymbol;
-
-
-
 };

@@ -24,12 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-       
-       
+
 //
 // (C) 2004 Christian E. Schafmeister
 //
-
 
 #ifndef SymbolSet_H
 #define SymbolSet_H
@@ -43,111 +41,101 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/cons.h>
 
+namespace core {
 
-namespace core
-{
-
-
-class SymbolSetCartesianProductWrapper
-{
+class SymbolSetCartesianProductWrapper {
 public:
-    virtual T_sp operator()(Symbol_sp obj1, Symbol_sp obj2) const = 0;
+  virtual T_sp operator()(Symbol_sp obj1, Symbol_sp obj2) const = 0;
 };
 
-
-    SMART(Residue);
-    SMART(SymbolSet);
-    SMART(ObjectSet);
-    SMART(SymbolList);
+SMART(Residue);
+SMART(SymbolSet);
+SMART(ObjectSet);
+SMART(SymbolList);
 /*!
   A class that stores a set of strings
 */
-    SMART(SymbolSet);
-    class SymbolSet_O : public T_O
-    {
-	LISP_BASE1(T_O);
-	LISP_CLASS(core,CorePkg,SymbolSet_O,"SymbolSet");
-    public:
-	void initialize();
+SMART(SymbolSet);
+class SymbolSet_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_CLASS(core, CorePkg, SymbolSet_O, "SymbolSet");
+
+public:
+  void initialize();
 #if defined(XML_ARCHIVE)
-	void	archiveBase(ArchiveP node);
+  void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 
-    GCPRIVATE:
-	HashTableEq_sp          _Symbols;
-    public:
-	static SymbolSet_sp make(Cons_sp vals);
-        template <class T>
-        static SymbolSet_sp createFromKeysOfSymbolMap(const core::SymbolMap<T>& m)
-        {
-            SymbolSet_sp ss = SymbolSet_O::create();
-            for (typename SymbolMap<T>::const_iterator it=m.begin(); it!=m.end(); ++it ) {
-                ss->insert(it->first);
-            }
-            return ss;
-        }
-                
-    public:
+GCPRIVATE:
+  HashTableEq_sp _Symbols;
 
-	SymbolSet_sp	copy();
+public:
+  static SymbolSet_sp make(Cons_sp vals);
+  template <class T>
+  static SymbolSet_sp createFromKeysOfSymbolMap(const core::SymbolMap<T> &m) {
+    SymbolSet_sp ss = SymbolSet_O::create();
+    for (typename SymbolMap<T>::const_iterator it = m.begin(); it != m.end(); ++it) {
+      ss->insert(it->first);
+    }
+    return ss;
+  }
 
-	uint	size() const { return this->_Symbols->hashTableSize();};
-	void	remove(Symbol_sp  s);
-	bool	contains(Symbol_sp s);
-	bool	containsSubset(SymbolSet_sp sub);
-	void	insert(Symbol_sp s) { this->_Symbols->setf_gethash(s,s);};
-	void	insertSymbolSet(SymbolSet_sp ss);
-	void	insertSymbolList(SymbolList_sp ss);
-	SymbolSet_sp insertConsSymbols(Cons_sp list);
-	void	insertVectorStrings(const VectorStrings& symbolsAsStrings);
-	void	insertVector(Vector_sp objs);
-	void	clear();
+public:
+  SymbolSet_sp copy();
 
-	Cons_sp	asCons();
+  uint size() const { return this->_Symbols->hashTableSize(); };
+  void remove(Symbol_sp s);
+  bool contains(Symbol_sp s);
+  bool containsSubset(SymbolSet_sp sub);
+  void insert(Symbol_sp s) { this->_Symbols->setf_gethash(s, s); };
+  void insertSymbolSet(SymbolSet_sp ss);
+  void insertSymbolList(SymbolList_sp ss);
+  SymbolSet_sp insertConsSymbols(Cons_sp list);
+  void insertVectorStrings(const VectorStrings &symbolsAsStrings);
+  void insertVector(Vector_sp objs);
+  void clear();
 
-	bool	equal(T_sp ss) const;
+  Cons_sp asCons();
 
-	// Set theory operations
+  bool equal(T_sp ss) const;
 
-	//! A setUnion B = (x:x E A || x E B)
-	SymbolSet_sp	setUnion(SymbolSet_sp b);
+  // Set theory operations
 
-	//! A intersection B = (x:x E A && x E B)
-	SymbolSet_sp	intersection(SymbolSet_sp b);
+  //! A setUnion B = (x:x E A || x E B)
+  SymbolSet_sp setUnion(SymbolSet_sp b);
 
-	//! A-B = (x: x E A && not x E B )
-	SymbolSet_sp	relativeComplement(SymbolSet_sp b);
+  //! A intersection B = (x:x E A && x E B)
+  SymbolSet_sp intersection(SymbolSet_sp b);
 
-	SymbolSet_sp	removeAll(SymbolSet_sp b) { return this->relativeComplement(b); };
+  //! A-B = (x: x E A && not x E B )
+  SymbolSet_sp relativeComplement(SymbolSet_sp b);
 
-	//! AxB = ("x,y": x E A ; y E B )
-	ObjectSet_sp	cartesianProduct(SymbolSet_sp b);
+  SymbolSet_sp removeAll(SymbolSet_sp b) { return this->relativeComplement(b); };
 
+  //! AxB = ("x,y": x E A ; y E B )
+  ObjectSet_sp cartesianProduct(SymbolSet_sp b);
 
-	/*! AxB = ("x,y": x E A ; y E B )
+  /*! AxB = ("x,y": x E A ; y E B )
 	 * Return AxB as defined by a wrapper
 	 */
-	ObjectSet_sp cartesianProductWrapped(SymbolSet_sp b, const SymbolSetCartesianProductWrapper& wrapper);
+  ObjectSet_sp cartesianProductWrapped(SymbolSet_sp b, const SymbolSetCartesianProductWrapper &wrapper);
 
-        /*! Return the first element that you find, return second ==true if an element was found */
-        Symbol_mv first();
+  /*! Return the first element that you find, return second ==true if an element was found */
+  Symbol_mv first();
 
-	string	asString();
-        std::ostream&	dumpToStream( std::ostream& o );
+  string asString();
+  std::ostream &dumpToStream(std::ostream &o);
 
-	string __repr__() const;
+  string __repr__() const;
 
-	SymbolSet_O( const SymbolSet_O& ss ); //!< Copy constructor
+  SymbolSet_O(const SymbolSet_O &ss); //!< Copy constructor
 
-        void map(std::function<void(Symbol_sp)> const& fn);
-        void map(std::function<void(Symbol_sp)> const& fn) const;
+  void map(std::function<void(Symbol_sp)> const &fn);
+  void map(std::function<void(Symbol_sp)> const &fn) const;
 
-	DEFAULT_CTOR_DTOR(SymbolSet_O);
-    };
-
-
+  DEFAULT_CTOR_DTOR(SymbolSet_O);
 };
-
+};
 
 TRANSLATE(core::SymbolSet_O);
 #endif

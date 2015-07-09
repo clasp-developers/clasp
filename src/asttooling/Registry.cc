@@ -52,46 +52,37 @@ THE SOFTWARE.
 #include <llvm/ADT/StringRef.h>
 
 namespace asttooling {
-    namespace RegMap {
+namespace RegMap {
 
-        using asttooling::internal::MatcherDescriptor;
+using asttooling::internal::MatcherDescriptor;
 
-
-
-        void RegistryMaps::_registerMatcher(core::Symbol_sp MatcherName,
-                                           MatcherDescriptor *Callback) const {
+void RegistryMaps::_registerMatcher(core::Symbol_sp MatcherName,
+                                    MatcherDescriptor *Callback) const {
 #ifdef DEBUG_ON
-            ConstructorMap::iterator pos = this->find(MatcherName);
-            ASSERTF(pos==Constructors.end(),BF("The MatcherName %s has already had a constructor defined for it") % _rep_(MatcherName));
+  ConstructorMap::iterator pos = this->find(MatcherName);
+  ASSERTF(pos == Constructors.end(), BF("The MatcherName %s has already had a constructor defined for it") % _rep_(MatcherName));
 #endif
-            Constructors.emplace_back(SymbolMatcherDescriptorPair(MatcherName,Callback));
-            //Constructors[MatcherName] = Callback;
-        }
+  Constructors.emplace_back(SymbolMatcherDescriptorPair(MatcherName, Callback));
+  //Constructors[MatcherName] = Callback;
+}
 
-#define REGISTER_MATCHER(name)                                          \
-        _registerMatcher(core::lispify_intern_keyword(#name), internal::makeMatcherAutoMarshall( \
-                            ::clang::ast_matchers::name, core::lispify_intern_keyword(#name)));
-#define SPECIFIC_MATCHER_OVERLOAD(name, Id)                     \
-        static_cast< ::clang::ast_matchers::name##_Type##Id>(   \
-            ::clang::ast_matchers::name)
-#define REGISTER_OVERLOADED_2(name)                                     \
-        do {                                                            \
-            MatcherDescriptor *Callbacks[] = {                          \
-                internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 0), \
-                                                  core::lispify_intern_keyword(#name)), \
-                internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), \
-                                                  core::lispify_intern_keyword(#name)) \
-            };                                                          \
-            _registerMatcher(core::lispify_intern_keyword(#name),        \
-                            gctools::ClassAllocator<internal::OverloadedMatcherDescriptor>::allocateClass(Callbacks) \
-            /*new internal::OverloadedMatcherDescriptor(Callbacks)*/   \
-            );                                                       \
-    } while (0)
+#define REGISTER_MATCHER(name)                                                             \
+  _registerMatcher(core::lispify_intern_keyword(#name), internal::makeMatcherAutoMarshall( \
+                                                            ::clang::ast_matchers::name, core::lispify_intern_keyword(#name)));
+#define SPECIFIC_MATCHER_OVERLOAD(name, Id)            \
+  static_cast<::clang::ast_matchers::name##_Type##Id>( \
+      ::clang::ast_matchers::name)
+#define REGISTER_OVERLOADED_2(name)                                                                                                                                                                                                                            \
+  do {                                                                                                                                                                                                                                                         \
+    MatcherDescriptor *Callbacks[] = {internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 0), core::lispify_intern_keyword(#name)), internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), core::lispify_intern_keyword(#name))}; \
+    _registerMatcher(core::lispify_intern_keyword(#name), gctools::ClassAllocator<internal::OverloadedMatcherDescriptor>::allocateClass(Callbacks) /*new internal::OverloadedMatcherDescriptor(Callbacks)*/);                                                  \
+  } while (0)
 
 /// \brief Generate a registry map with all the known matchers.
-        RegistryMaps::RegistryMaps() : Initialized(false) {};
-        void RegistryMaps::lazyInitialize() const {
-            if ( this->Initialized ) return;
+RegistryMaps::RegistryMaps() : Initialized(false){};
+void RegistryMaps::lazyInitialize() const {
+  if (this->Initialized)
+    return;
   // TODO: Here is the list of the missing matchers, grouped by reason.
   //
   // Need Variant/Parser fixes:
@@ -330,72 +321,68 @@ namespace asttooling {
   REGISTER_MATCHER(withInitializer);
 }
 
-        RegistryMaps::~RegistryMaps() {
-            for (ConstructorMap::iterator it = Constructors.begin(),
-                     end = Constructors.end();
-                 it != end; ++it) {
-//                delete it->second;
-            }
-        }
+RegistryMaps::~RegistryMaps() {
+  for (ConstructorMap::iterator it = Constructors.begin(),
+                                end = Constructors.end();
+       it != end; ++it) {
+    //                delete it->second;
+  }
+}
 
 //        static gctools::ManagedStatic<RegistryMaps> RegistryData;
-        RegistryMaps* RegistryData = NULL;
+RegistryMaps *RegistryData = NULL;
 
-    } // RegMap namespace - was anonymous namespace
-    using namespace RegMap;
+} // RegMap namespace - was anonymous namespace
+using namespace RegMap;
 
-
-    void convertArgs(gctools::Vec0<ParserValue>& args, core::Vector_sp lispArgs)
-    {
-        args.resize(lispArgs->length());
-        for ( int i(0),iEnd(lispArgs->length()); i<iEnd; i++ ) {
-            args[i] = *(lispArgs->elt(i).as<core::WrappedPointer_O>()->cast<ParserValue>());
-        }
-    }
-                
-// static
-    clang::ast_matchers::dynamic::VariantMatcher Registry::constructMatcher(core::Symbol_sp MatcherName,
-                                                                            core::Cons_sp NameRange,
-                                                                            core::Vector_sp Args,
-                                                                            Diagnostics* Error) {
-        RegistryMaps::const_iterator it = RegistryData->find(MatcherName);
-        if (it == RegistryData->end()) {
-            core::Symbol_sp sym = MatcherName;
-            core::Str_sp strName = sym->symbolName();
-            string symbolName = strName->get();
-            core::Cons_sp NameRangeDup = NameRange;
-            Error->addError(NameRangeDup, /*Error->*/ET_RegistryNotFound) << symbolName;
-            return clang::ast_matchers::dynamic::VariantMatcher();
-        }
-        gctools::Vec0<ParserValue>      VArgs;
-//       gctools::StackRootedStlContainer<vector<ParserValue> > VArgs;
-        convertArgs(VArgs,Args);
-        return it->matcher->create(NameRange, ArrayRef<ParserValue>(VArgs.data(),VArgs.size()), Error);
-    }
+void convertArgs(gctools::Vec0<ParserValue> &args, core::Vector_sp lispArgs) {
+  args.resize(lispArgs->length());
+  for (int i(0), iEnd(lispArgs->length()); i < iEnd; i++) {
+    args[i] = *(lispArgs->elt(i).as<core::WrappedPointer_O>()->cast<ParserValue>());
+  }
+}
 
 // static
-    clang::ast_matchers::dynamic::VariantMatcher Registry::constructBoundMatcher(core::Symbol_sp MatcherName,
-                                                                                 core::Cons_sp NameRange,
-                                                                                 StringRef BindID,
-                                                                                 core::Vector_sp Args,
-                                                                                 Diagnostics* Error) {
-        clang::ast_matchers::dynamic::VariantMatcher Out = constructMatcher(MatcherName, NameRange, Args, Error);
-        if (Out.isNull()) return Out;
-        llvm::Optional<internal::DynTypedMatcher> Result = Out.getSingleMatcher();
-        if (Result.hasValue()) {
-            llvm::Optional<internal::DynTypedMatcher> Bound = Result->tryBind(BindID);
-            if (Bound.hasValue()) {
-                return clang::ast_matchers::dynamic::VariantMatcher::SingleMatcher(*Bound);
-            }
-        }
-        Error->addError(NameRange, /*Error->*/ET_RegistryNotBindable);
-        return clang::ast_matchers::dynamic::VariantMatcher();
+clang::ast_matchers::dynamic::VariantMatcher Registry::constructMatcher(core::Symbol_sp MatcherName,
+                                                                        core::Cons_sp NameRange,
+                                                                        core::Vector_sp Args,
+                                                                        Diagnostics *Error) {
+  RegistryMaps::const_iterator it = RegistryData->find(MatcherName);
+  if (it == RegistryData->end()) {
+    core::Symbol_sp sym = MatcherName;
+    core::Str_sp strName = sym->symbolName();
+    string symbolName = strName->get();
+    core::Cons_sp NameRangeDup = NameRange;
+    Error->addError(NameRangeDup, /*Error->*/ ET_RegistryNotFound) << symbolName;
+    return clang::ast_matchers::dynamic::VariantMatcher();
+  }
+  gctools::Vec0<ParserValue> VArgs;
+  //       gctools::StackRootedStlContainer<vector<ParserValue> > VArgs;
+  convertArgs(VArgs, Args);
+  return it->matcher->create(NameRange, ArrayRef<ParserValue>(VArgs.data(), VArgs.size()), Error);
+}
+
+// static
+clang::ast_matchers::dynamic::VariantMatcher Registry::constructBoundMatcher(core::Symbol_sp MatcherName,
+                                                                             core::Cons_sp NameRange,
+                                                                             StringRef BindID,
+                                                                             core::Vector_sp Args,
+                                                                             Diagnostics *Error) {
+  clang::ast_matchers::dynamic::VariantMatcher Out = constructMatcher(MatcherName, NameRange, Args, Error);
+  if (Out.isNull())
+    return Out;
+  llvm::Optional<internal::DynTypedMatcher> Result = Out.getSingleMatcher();
+  if (Result.hasValue()) {
+    llvm::Optional<internal::DynTypedMatcher> Bound = Result->tryBind(BindID);
+    if (Bound.hasValue()) {
+      return clang::ast_matchers::dynamic::VariantMatcher::SingleMatcher(*Bound);
     }
+  }
+  Error->addError(NameRange, /*Error->*/ ET_RegistryNotBindable);
+  return clang::ast_matchers::dynamic::VariantMatcher();
+}
 
-
-
-    void initialize_Registry()
-    {
-        RegistryData = gctools::RootClassAllocator<RegistryMaps>::allocate();
-    }
+void initialize_Registry() {
+  RegistryData = gctools::RootClassAllocator<RegistryMaps>::allocate();
+}
 };

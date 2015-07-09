@@ -26,71 +26,60 @@ THE SOFTWARE.
 /* -^- */
 
 #ifndef PYTHON_WRAPPERS_H
-# define PYTHON_WRAPPERS_H
-
+#define PYTHON_WRAPPERS_H
 
 #ifdef USEBOOSTPYTHON
 #include <boost/python.hpp>
-# include <boost/python/detail/prefix.hpp>
-# include <boost/python/tuple.hpp>
-# include <boost/python/dict.hpp>
-# include <boost/python/object/py_function.hpp>
-# include <boost/mpl/vector/vector10.hpp>
+#include <boost/python/detail/prefix.hpp>
+#include <boost/python/tuple.hpp>
+#include <boost/python/dict.hpp>
+#include <boost/python/object/py_function.hpp>
+#include <boost/mpl/vector/vector10.hpp>
 
-# include <boost/limits.hpp>
-# include <cstddef>
+#include <boost/limits.hpp>
+#include <cstddef>
 #include <clasp/core/str.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/evaluator.h>
 
+namespace core {
 
-
-
-namespace core
-{
-
-    extern Cons_sp python_convertArgumentsToCons(PyObject* args, PyObject* keywords, Lisp_sp lisp);
-    extern PyObject* python_convertObject(core::T_sp obj,Lisp_sp lisp);
+extern Cons_sp python_convertArgumentsToCons(PyObject *args, PyObject *keywords, Lisp_sp lisp);
+extern PyObject *python_convertObject(core::T_sp obj, Lisp_sp lisp);
 };
 
-namespace kw
-{
-    extern core::Symbol_sp _sym_function;
+namespace kw {
+extern core::Symbol_sp _sym_function;
 };
 
+namespace boost {
+namespace python {
+namespace detail {
+template <class F>
+struct wrapped_dispatcher {
+  wrapped_dispatcher(F f, core::Lisp_sp l) : f(f), lisp(l) {}
 
-namespace boost
-{
-    namespace python
-    { 
-	namespace detail
-	{
-	    template <class F>
-		struct wrapped_dispatcher
-		{
-		wrapped_dispatcher(F f,core::Lisp_sp l) : f(f), lisp(l) {}
-      
-		    PyObject* operator()(PyObject* args, PyObject* keywords)
-		    {
-			{_G();
-			    core::Cons_sp cargs = core::python_convertArgumentsToCons(args,keywords,_lisp);
-			    IMPLEMENT_MEF(BF("Handle new ActivationFrame/Environment stuff"));
+  PyObject *operator()(PyObject *args, PyObject *keywords) {
+    {
+      _G();
+      core::Cons_sp cargs = core::python_convertArgumentsToCons(args, keywords, _lisp);
+      IMPLEMENT_MEF(BF("Handle new ActivationFrame/Environment stuff"));
 #if 0
 			    LOG(BF("dispatching function with arguments: %s") % cargs->__repr__() );
 			    core::ValueFrame_sp frame(core::ValueFrame_O::create(cargs));
 			    core::T_sp result = core::eval::apply_function(this->f,frame);
 			    return core::python_convertObject(result,lisp);
 #endif
-			}
-		    }
+    }
+  }
 
-		private:
-		    F f;
-		    core::Lisp_sp lisp;
-		};
+private:
+  F f;
+  core::Lisp_sp lisp;
+};
 
-	    object BOOST_PYTHON_DECL make_raw_function(objects::py_function);
-	}
+object BOOST_PYTHON_DECL make_raw_function(objects::py_function);
+}
 
 #if 0
 	template <class F>
@@ -130,26 +119,20 @@ namespace boost
 	    return ofn;
 	}
 #endif
-	//
-	// This is used to wrap a Function_sp object as a python function
-	//
-	template <class F>
-	    object def_executable(string const& packageName, string const& functionName, F fp, const string& args, const string& docs,core::Lisp_sp lisp)
-	{
-	    core::Symbol_sp funcSymbol = lisp->internWithPackageName(packageName,functionName);
-	    object ofn = detail::make_raw_function(
-		objects::py_function(
-		    detail::wrapped_dispatcher<core::Function_sp>(fp,lisp)
-		    , mpl::vector1<PyObject*>()
-		    , 0
-		    , (std::numeric_limits<unsigned>::max)()
-		    )
-		);
-	    boost::python::def(functionName.c_str(),ofn);
-	    return ofn;
-	}
+//
+// This is used to wrap a Function_sp object as a python function
+//
+template <class F>
+object def_executable(string const &packageName, string const &functionName, F fp, const string &args, const string &docs, core::Lisp_sp lisp) {
+  core::Symbol_sp funcSymbol = lisp->internWithPackageName(packageName, functionName);
+  object ofn = detail::make_raw_function(
+      objects::py_function(
+          detail::wrapped_dispatcher<core::Function_sp>(fp, lisp), mpl::vector1<PyObject *>(), 0, (std::numeric_limits<unsigned>::max)()));
+  boost::python::def(functionName.c_str(), ofn);
+  return ofn;
+}
 
-	/*! This is used to wrap raw methods written in C++ with
+/*! This is used to wrap raw methods written in C++ with
 	  translation of python function calls of arbitrary arity 
 	  to lisp raw functions.
 	  It's a bit tedious because you have
@@ -167,8 +150,7 @@ namespace boost
 					    "docstring"      / * Optional default="" * /
 					    ))
 	*/
-
-    }
+}
 } // namespace boost::python
 
 #endif // USEBOOSTPYTHON

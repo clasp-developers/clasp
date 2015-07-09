@@ -24,10 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	lispDefinitions_H
-#define	lispDefinitions_H
+#ifndef lispDefinitions_H
+#define lispDefinitions_H
 
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -37,18 +37,12 @@ THE SOFTWARE.
 
 namespace core {
 
-
 SMART(Cons);
 
-
 // ----------------------------------------
 // ----------------------------------------
 // ----------------------------------------
 // ----------------------------------------
-
-
 };
-
-
 
 #endif

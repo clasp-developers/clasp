@@ -26,8 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #ifndef glue_fwd_H
 #define glue_fwd_H
-namespace core
-{
+namespace core {
 FORWARD();
 }
 #endif

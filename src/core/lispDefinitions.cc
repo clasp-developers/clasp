@@ -27,8 +27,5 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/wrappers.h>
 
-
 namespace core {
-
-
 };

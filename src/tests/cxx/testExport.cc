@@ -30,43 +30,34 @@ THE SOFTWARE.
 #include <sstream>
 #include <functional>
 
-
 class __attribute__((weak)) MyException {
-    virtual void test() __attribute__((weak));
+  virtual void test() __attribute__((weak));
+
 public:
-    __attribute__((weak)) MyException(int i) : _val(i) {};
-    int _val;
-    __attribute__((weak)) virtual ~MyException() {};
+  __attribute__((weak)) MyException(int i) : _val(i){};
+  int _val;
+  __attribute__((weak)) virtual ~MyException(){};
 };
 
+void MyException::test(){};
 
-void MyException::test() {};
-
-extern void foo()
-{
-    printf("Hi - I'm foo\n");
+extern void foo() {
+  printf("Hi - I'm foo\n");
 }
 
+int main(int argc, char *argv[]) {
+  try {
+    throw MyException(1);
+  } catch (MyException &e) {
+    printf("Caught MyException\n");
+  }
 
+  // Here I would load a plugin that expects __ZTI11MyException to be external
+  // but __ZTI11MyException is non-external so the exception handling will terminate
+  //
 
-
-int main(int argc, char* argv[])
-{
-    try {
-        throw MyException(1);
-    } catch (MyException& e)
-    {
-        printf("Caught MyException\n");
-    }
-
-    // Here I would load a plugin that expects __ZTI11MyException to be external
-    // but __ZTI11MyException is non-external so the exception handling will terminate
-    //
-
-    // Load_plugin_that_would_catch_MyException
-
+  // Load_plugin_that_would_catch_MyException
 }
-
 
 #if 0
 

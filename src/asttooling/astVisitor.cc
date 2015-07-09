@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include <clang/Tooling/Tooling.h>
 #include <clang/Tooling/Refactoring.h>
 
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/evaluator.h>
@@ -40,51 +39,37 @@ THE SOFTWARE.
 #include <clasp/asttooling/translators.h>
 #include <clasp/asttooling/astVisitor.h>
 
-
 namespace asttooling {
 
-
-
-    
-    
 #define ARGS_af_makeAstVisitor "(target)"
 #define DECL_af_makeAstVisitor ""
 #define DOCS_af_makeAstVisitor "makeAstVisitor"
-    AstVisitor_sp af_makeAstVisitor(core::T_sp target)
-    {_G();
-        return AstVisitor_O::create(target);
-    };
+AstVisitor_sp af_makeAstVisitor(core::T_sp target) {
+  _G();
+  return AstVisitor_O::create(target);
+};
 
+EXPOSE_CLASS(asttooling, AstVisitor_O);
 
+void AstVisitor_O::exposeCando(core::Lisp_sp lisp) {
+  core::class_<AstVisitor_O>();
+}
 
-    EXPOSE_CLASS(asttooling,AstVisitor_O);
-
-
-    void AstVisitor_O::exposeCando(core::Lisp_sp lisp)
-    {
-        core::class_<AstVisitor_O>()
-	    ;
-    }
-
-
-    void AstVisitor_O::exposePython(core::Lisp_sp lisp)
-    {_G();
+void AstVisitor_O::exposePython(core::Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,AstVisitor,"","",_lisp)
-	    ;
+  PYTHON_CLASS(CorePkg, AstVisitor, "", "", _lisp);
 #endif
-    };
+};
 
+SYMBOL_EXPORT_SC_(AstToolingPkg, VisitStmt);
 
-    SYMBOL_EXPORT_SC_(AstToolingPkg,VisitStmt);
+template <typename T>
+gctools::smart_ptr<clbind::Wrapper<T, T *>> Wrap(T *p) { return clbind::Wrapper<T, T *>::create(p, reg::registered_class<T>::id); };
 
-    template <typename T>
-    gctools::smart_ptr<clbind::Wrapper<T,T*> > Wrap(T* p) { return clbind::Wrapper<T,T*>::create(p,reg::registered_class<T>::id);};
-
-    bool AstVisitor_O::VisitStmt(clang::Stmt *node) {
-        return core::eval::funcall(_sym_VisitStmt,this->_Target,Wrap(node)).isTrue();
-    }
-
+bool AstVisitor_O::VisitStmt(clang::Stmt *node) {
+  return core::eval::funcall(_sym_VisitStmt, this->_Target, Wrap(node)).isTrue();
+}
 
 #if 0
     bool VisitAsmStmt(clang::AsmStmt *node) {
@@ -1464,26 +1449,17 @@ namespace asttooling {
     }
 #endif
 
+void initialize_astVisitor() {
+  Defun(makeAstVisitor);
 
-
-
-
-    
-
-
-    void initialize_astVisitor()
-    {
-        Defun(makeAstVisitor);
-
-        {
-            using namespace clbind;
+  {
+    using namespace clbind;
 #if 0
             package(AstToolingPkg) [
                 class_<clang::tooling::ClangTool>("ClangTool",no_default_constructor)
                 .def_constructor("make-ClangTool",constructor<const clang::tooling::CompilationDatabase&,llvm::ArrayRef<std::string> >())
                 ];
 #endif
-        }
-    };
-
+  }
+};
 }

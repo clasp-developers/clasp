@@ -26,7 +26,6 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/object.h>
@@ -35,8 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/wrappers.h>
-namespace core
-{
+namespace core {
 
 #if 0
 
@@ -604,14 +602,6 @@ T_mv floor1(Real_sp x)
 	return Values(v0,v1);
     }
 
-
-
-
-
-
-
-    
-    
 #define ARGS_af_truncate "(x &optional y)"
 #define DECL_af_truncate ""
 #define DOCS_af_truncate "truncate"
@@ -622,13 +612,6 @@ T_mv floor1(Real_sp x)
 	return truncate2(x,y);
     };
 
-
-
-
-
-
-    
-    
 #define ARGS_af_ceiling "(x &optional y)"
 #define DECL_af_ceiling ""
 #define DOCS_af_ceiling "ceiling"
@@ -642,12 +625,6 @@ T_mv floor1(Real_sp x)
 	    return ceiling2(x, y);
 	}
     }
-
-
-
-
-
-
 
 #define ARGS_af_floor "(numb &optional divisor )"
 #define DECL_af_floor ""
@@ -663,11 +640,6 @@ T_mv af_floor(Real_sp number, Real_sp divisor )
     }
 };
 
-
-
-
-
-
 #define ARGS_af_mod "(num div)"
 #define DECL_af_mod ""
 #define DOCS_af_mod "mod"
@@ -678,12 +650,6 @@ T_mv af_floor(Real_sp number, Real_sp divisor )
     return(Values(res));
 };
 
-
-
-
-
-    
-    
 #define ARGS_af_rem "(numb divisor)"
 #define DECL_af_rem ""
 #define DOCS_af_rem "rem"
@@ -694,8 +660,8 @@ T_sp af_rem(Real_sp x, Real_sp y)
     };
 
 #endif
-    void initialize_math()
-    {_G();
+void initialize_math() {
+  _G();
 #if 0
 	SYMBOL_EXPORT_SC_(ClPkg,floor);
 	Defun(floor);
@@ -708,6 +674,5 @@ T_sp af_rem(Real_sp x, Real_sp y)
 	SYMBOL_EXPORT_SC_(ClPkg,rem);
 	Defun(rem);
 #endif
-    }
-
+}
 };

@@ -56,68 +56,64 @@ THE SOFTWARE.
 
 namespace clbind {
 
-    struct scope;
+struct scope;
 
 } // namespace clbind
 
-namespace clbind { namespace detail {
+namespace clbind {
+namespace detail {
 
-    struct CLBIND_API registration
-    {
-        registration();
-        virtual ~registration();
+struct CLBIND_API registration {
+  registration();
+  virtual ~registration();
 
-    public:
-        virtual core::Creator* registerDefaultConstructor_() const {HARD_SUBCLASS_MUST_IMPLEMENT();};
-    protected:
-        virtual void register_() const = 0;
+public:
+  virtual core::Creator *registerDefaultConstructor_() const { HARD_SUBCLASS_MUST_IMPLEMENT(); };
 
-    private:
-        friend struct ::clbind::scope;
-        registration* m_next;
-    };
+protected:
+  virtual void register_() const = 0;
 
-}} // namespace clbind::detail
+private:
+  friend struct ::clbind::scope;
+  registration *m_next;
+};
+}
+} // namespace clbind::detail
 
 namespace clbind {
 
-    struct CLBIND_API scope
-    {
-        scope();
-        explicit scope(std::auto_ptr<detail::registration> reg);
-        scope(scope const& other_);
-        ~scope();
+struct CLBIND_API scope {
+  scope();
+  explicit scope(std::auto_ptr<detail::registration> reg);
+  scope(scope const &other_);
+  ~scope();
 
-        scope& operator=(scope const& other_);
+  scope &operator=(scope const &other_);
 
-        scope& operator,(scope s);
+  scope &operator, (scope s);
 
-        void register_() const;
+  void register_() const;
 
-    private:
-        detail::registration* m_chain;
-    };
+private:
+  detail::registration *m_chain;
+};
 
-
-    /*! Declare a package - provide the package name (which will be lispified) and a list
+/*! Declare a package - provide the package name (which will be lispified) and a list
       of nicknames and a list of usePackageNames */
-    class CLBIND_API package_
-    {
-    public:
-        package_(string const& name, std::list<std::string> nicknames={}, std::list<string> usePackageNames={});
-        void operator[](scope s);
+class CLBIND_API package_ {
+public:
+  package_(string const &name, std::list<std::string> nicknames = {}, std::list<string> usePackageNames = {});
+  void operator[](scope s);
 
-    private:
-        string             m_name;
-        list<std::string>       m_nicknames;
-        list<std::string>       m_usePackageNames;
-    };
+private:
+  string m_name;
+  list<std::string> m_nicknames;
+  list<std::string> m_usePackageNames;
+};
 
-    inline package_ package(string const& name, std::list<std::string> nicknames={}, std::list<std::string> usePackageNames={})
-    {
-        return package_(name,nicknames,usePackageNames);
-    }
-
+inline package_ package(string const &name, std::list<std::string> nicknames = {}, std::list<std::string> usePackageNames = {}) {
+  return package_(name, nicknames, usePackageNames);
+}
 
 } // namespace clbind
 

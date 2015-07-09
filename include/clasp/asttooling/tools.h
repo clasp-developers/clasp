@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	gctools_tools_H //[
+#ifndef gctools_tools_H //[
 #define gctools_tools_H
 
 #include <clang/Frontend/CompilerInstance.h>
@@ -33,18 +33,13 @@ THE SOFTWARE.
 #include <clang/AST/ASTConsumer.h>
 #include <clang/AST/RecursiveASTVisitor.h>
 
-
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/metaClass.fwd.h>
 
+namespace asttooling {
 
-namespace asttooling
-{
-
-    void initialize_tools();
+void initialize_tools();
 }
-
 
 #endif //]

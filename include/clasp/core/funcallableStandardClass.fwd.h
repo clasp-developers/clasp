@@ -26,8 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #ifndef funcallableStandardClass_fwd_H
 #define funcallableStandardClass_fwd_H
-namespace core
-{
+namespace core {
 FORWARD(FuncallableStandardClass);
 }
 #endif

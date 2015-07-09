@@ -24,10 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	Bundle_H //[
+#ifndef Bundle_H //[
 #define Bundle_H
-
-
 
 #include <stdio.h>
 #include <string>
@@ -41,62 +39,55 @@ THE SOFTWARE.
 
 namespace core {
 
-
 /*! Maintains the file paths to the different directories of the Cando bundle
  */
-class	Bundle
-{
+class Bundle {
 #if defined(USE_MPS)
-    friend mps_res_t globals_scan(mps_ss_t ss, void *p, size_t s);
+  friend mps_res_t globals_scan(mps_ss_t ss, void *p, size_t s);
 #endif
 
 private:
-    bool		_Initialized;
-    boost_filesystem::path _RootDir;
-    boost_filesystem::path _AppDir;
-    boost_filesystem::path _ResourcesDir;
-    boost_filesystem::path _DatabasesDir;
-    boost_filesystem::path _ScriptsDir;
-    boost_filesystem::path _LispDir;
-    boost_filesystem::path _LibDir;
-    boost_filesystem::path _StartupWorkingDir;
-public:
+  bool _Initialized;
+  boost_filesystem::path _RootDir;
+  boost_filesystem::path _AppDir;
+  boost_filesystem::path _ResourcesDir;
+  boost_filesystem::path _DatabasesDir;
+  boost_filesystem::path _ScriptsDir;
+  boost_filesystem::path _LispDir;
+  boost_filesystem::path _LibDir;
+  boost_filesystem::path _StartupWorkingDir;
 
-    /*! Initialize the bundle and set up all the paths
+public:
+  /*! Initialize the bundle and set up all the paths
      */
 private:
-    boost_filesystem::path findAppDir(const string& argv0, const string& cwd, const string& env);
-    void findSubDirectories(boost_filesystem::path p);
+  boost_filesystem::path findAppDir(const string &argv0, const string &cwd, const string &env);
+  void findSubDirectories(boost_filesystem::path p);
+
 public:
-    void initializeStartupWorkingDirectory();
-    void initialize(const string& argv0, const string& appPathEnvironmentVariable);
+  void initializeStartupWorkingDirectory();
+  void initialize(const string &argv0, const string &appPathEnvironmentVariable);
 
-    boost_filesystem::path getRootDir();
-    boost_filesystem::path getAppDir();
-    boost_filesystem::path getResourcesDir();
-    boost_filesystem::path getDatabasesDir();
-    boost_filesystem::path getScriptsDir();
-    boost_filesystem::path getLispDir();
-    boost_filesystem::path getLibDir();
-    boost_filesystem::path getStartupWorkingDir();
+  boost_filesystem::path getRootDir();
+  boost_filesystem::path getAppDir();
+  boost_filesystem::path getResourcesDir();
+  boost_filesystem::path getDatabasesDir();
+  boost_filesystem::path getScriptsDir();
+  boost_filesystem::path getLispDir();
+  boost_filesystem::path getLibDir();
+  boost_filesystem::path getStartupWorkingDir();
 
+  Pathname_sp getRootPathname();
+  Pathname_sp getSysPathname();
+  Pathname_sp getAppContentsResourcesPathname();
 
-    Pathname_sp getRootPathname();
-    Pathname_sp getSysPathname();
-    Pathname_sp getAppContentsResourcesPathname();
+  string describe();
+  Bundle();
 
-
-    string describe();
-    Bundle();
-
-
-    virtual ~Bundle() {};
+  virtual ~Bundle(){};
 };
 
-
-	/*! Get the system bundle */
+/*! Get the system bundle */
 //extern	Bundle&	bundle();
-
-
 };
 #endif //]
