@@ -1,7 +1,7 @@
 import path ;
 import os ;
 
-CLASP_VERSION = "0.3" ;
+CLASP_VERSION = [ os.environ CLASP_VERSION ] ;
 
 using clang : : [ os.environ CLASP_CLANG_PATH ] ; #   $(APPRES-EXTERNALS-RELEASE)/bin/clang++  ; # CLASP_TOOLSET
 

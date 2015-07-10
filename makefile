@@ -3,6 +3,7 @@ include local.config
 export CLASP_HOME = $(shell pwd)
 
 export GIT_COMMIT := $(shell git describe --match='' --always)
+export CLASP_VERSION := $(shell git describe --always --abbrev=0)
 
 export CLASP_INTERNAL_BUILD_TARGET_DIR = $(shell pwd)/build/clasp
 export EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_SOURCE_DIR)/build
