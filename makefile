@@ -23,7 +23,7 @@ export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
 ifeq ($(TARGET_OS),linux)
   export DEVEMACS = emacs -nw ./
 else
-  export DEVEMACS = open -a emacs ./
+  export DEVEMACS = open -n -a emacs ./
 endif
 
 
