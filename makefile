@@ -2,7 +2,8 @@ include local.config
 
 export CLASP_HOME = $(shell pwd)
 
-export GIT_COMMIT := $(shell cat 'minor-version-id.txt')
+export GIT_COMMIT := $(shell git describe --match='' --always || echo "unknown-commit")
+export CLASP_VERSION := $(shell git describe --always --abbrev=0 || echo "unknown-version")
 
 export CLASP_INTERNAL_BUILD_TARGET_DIR = $(shell pwd)/build/clasp
 export EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_SOURCE_DIR)/build
@@ -249,9 +250,3 @@ mps-submodule:
 
 asdf-submodule:
 	git submodule add --name updatedAsdf https://github.com/drmeister/asdf.git ./src/lisp/kernel/asdf
-
-
-git-push-master:
-	git rev-parse HEAD > minor-version-id.txt
-	git commit -am "updated minor-version-id.txt"
-	git push origin master
