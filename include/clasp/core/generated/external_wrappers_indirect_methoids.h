@@ -33,7 +33,7 @@ enum { NumParams = 16 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -41,16 +41,15 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) ,
-    frame::Value(frameImpl,15)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) , frame::Value(frameImpl,15)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
+    core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -121,7 +120,7 @@ typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<15> >::type,
 typename Contains_<Pols,    outValue_<15> >::type >::type(),a15._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -153,7 +152,7 @@ enum { NumParams = 15 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -161,15 +160,15 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
+    core::T_sp arg13, core::T_sp arg14 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -236,7 +235,7 @@ typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<14> >::type,
 typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -267,7 +266,7 @@ enum { NumParams = 14 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -275,15 +274,15 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
+    core::T_sp arg13 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -346,7 +345,7 @@ typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<13> >::type,
 typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -377,7 +376,7 @@ enum { NumParams = 13 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -385,15 +384,14 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -451,7 +449,7 @@ typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<12> >::type,
 typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -482,7 +480,7 @@ enum { NumParams = 12 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -490,14 +488,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -551,7 +548,7 @@ typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<11> >::type,
 typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -582,7 +579,7 @@ enum { NumParams = 11 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -590,13 +587,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -646,7 +643,7 @@ typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<10> >::type,
 typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -677,7 +674,7 @@ enum { NumParams = 10 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -685,13 +682,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -737,7 +734,7 @@ typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<9> >::type,
 typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -768,7 +765,7 @@ enum { NumParams = 9 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -776,13 +773,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -824,7 +821,7 @@ typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<8> >::type,
 typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -855,7 +852,7 @@ enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -863,13 +860,12 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -907,7 +903,7 @@ typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<7> >::type,
 typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -938,7 +934,7 @@ enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -946,12 +942,12 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -985,7 +981,7 @@ typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<6> >::type,
 typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -1015,7 +1011,7 @@ enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -1023,12 +1019,11 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -1058,7 +1053,7 @@ typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<5> >::type,
 typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -1088,7 +1083,7 @@ enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -1096,11 +1091,11 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -1126,7 +1121,7 @@ typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<4> >::type,
 typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -1156,7 +1151,7 @@ enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -1164,11 +1159,11 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -1190,7 +1185,7 @@ typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<3> >::type,
 typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -1220,7 +1215,7 @@ enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -1228,10 +1223,10 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -1249,7 +1244,7 @@ typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<2> >::type,
 typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -1279,7 +1274,7 @@ enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -1287,10 +1282,10 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1 )
 {
 translate::from_object<ARG1> a1(arg1);
 gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(arg0));
@@ -1304,7 +1299,7 @@ typename Contains_<Pols,    outValue_<0> >::type >::type(),arg0);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -1334,7 +1329,7 @@ enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -1342,10 +1337,10 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0)  );
+return this->invoke( frame::Value(frameImpl,0)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0   )
+LCC_RETURN invoke( core::T_sp arg0   )
 {
 gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(arg0));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))();
@@ -1355,7 +1350,7 @@ int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
 typename Contains_<Pols,    outValue_<0> >::type >::type(),arg0);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -1390,7 +1385,7 @@ enum { NumParams = 16 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -1398,16 +1393,15 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) ,
-    frame::Value(frameImpl,15)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) , frame::Value(frameImpl,15)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
+    core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -1478,7 +1472,7 @@ typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<15> >::type,
 typename Contains_<Pols,    outValue_<15> >::type >::type(),a15._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -1509,7 +1503,7 @@ enum { NumParams = 15 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -1517,15 +1511,15 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
+    core::T_sp arg13, core::T_sp arg14 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -1591,7 +1585,7 @@ typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<14> >::type,
 typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -1622,7 +1616,7 @@ enum { NumParams = 14 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -1630,15 +1624,15 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
+    core::T_sp arg13 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -1700,7 +1694,7 @@ typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<13> >::type,
 typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -1731,7 +1725,7 @@ enum { NumParams = 13 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -1739,15 +1733,14 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -1805,7 +1798,7 @@ typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<12> >::type,
 typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -1836,7 +1829,7 @@ enum { NumParams = 12 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -1844,14 +1837,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -1905,7 +1897,7 @@ typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<11> >::type,
 typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -1936,7 +1928,7 @@ enum { NumParams = 11 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -1944,13 +1936,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -2000,7 +1992,7 @@ typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<10> >::type,
 typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -2031,7 +2023,7 @@ enum { NumParams = 10 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2039,13 +2031,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -2091,7 +2083,7 @@ typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<9> >::type,
 typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -2122,7 +2114,7 @@ enum { NumParams = 9 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2130,13 +2122,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -2178,7 +2170,7 @@ typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<8> >::type,
 typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -2209,7 +2201,7 @@ enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2217,13 +2209,12 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -2261,7 +2252,7 @@ typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<7> >::type,
 typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -2291,7 +2282,7 @@ enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2299,12 +2290,12 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -2338,7 +2329,7 @@ typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<6> >::type,
 typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -2368,7 +2359,7 @@ enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2376,12 +2367,11 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -2411,7 +2401,7 @@ typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<5> >::type,
 typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -2441,7 +2431,7 @@ enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2449,11 +2439,11 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -2479,7 +2469,7 @@ typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<4> >::type,
 typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -2509,7 +2499,7 @@ enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2517,11 +2507,11 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -2543,7 +2533,7 @@ typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<3> >::type,
 typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -2573,7 +2563,7 @@ enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2581,10 +2571,10 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -2602,7 +2592,7 @@ typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<2> >::type,
 typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -2632,7 +2622,7 @@ enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2640,10 +2630,10 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1 )
 {
 translate::from_object<ARG1> a1(arg1);
 gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(arg0));
@@ -2657,7 +2647,7 @@ typename Contains_<Pols,    outValue_<0> >::type >::type(),arg0);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -2687,7 +2677,7 @@ enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2695,10 +2685,10 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0)  );
+return this->invoke( frame::Value(frameImpl,0)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0   )
+LCC_RETURN invoke( core::T_sp arg0   )
 {
 gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(arg0));
 ((*(ot->wrappedPtr())).*(this->mptr))();
@@ -2708,7 +2698,7 @@ int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
 typename Contains_<Pols,    outValue_<0> >::type >::type(),arg0);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -2743,7 +2733,7 @@ enum { NumParams = 16 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2751,16 +2741,15 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) ,
-    frame::Value(frameImpl,15)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) , frame::Value(frameImpl,15)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
+    core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -2831,7 +2820,7 @@ typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<15> >::type,
 typename Contains_<Pols,    outValue_<15> >::type >::type(),a15._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -2865,7 +2854,7 @@ enum { NumParams = 15 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2873,15 +2862,15 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
+    core::T_sp arg13, core::T_sp arg14 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -2948,7 +2937,7 @@ typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<14> >::type,
 typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -2979,7 +2968,7 @@ enum { NumParams = 14 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -2987,15 +2976,15 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
+    core::T_sp arg13 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -3058,7 +3047,7 @@ typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<13> >::type,
 typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -3089,7 +3078,7 @@ enum { NumParams = 13 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -3097,15 +3086,14 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -3163,7 +3151,7 @@ typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<12> >::type,
 typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -3194,7 +3182,7 @@ enum { NumParams = 12 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -3202,14 +3190,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -3263,7 +3250,7 @@ typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<11> >::type,
 typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -3294,7 +3281,7 @@ enum { NumParams = 11 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -3302,13 +3289,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -3358,7 +3345,7 @@ typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<10> >::type,
 typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -3389,7 +3376,7 @@ enum { NumParams = 10 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -3397,13 +3384,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -3449,7 +3436,7 @@ typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<9> >::type,
 typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -3480,7 +3467,7 @@ enum { NumParams = 9 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -3488,13 +3475,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -3536,7 +3523,7 @@ typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<8> >::type,
 typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -3567,7 +3554,7 @@ enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -3575,13 +3562,12 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -3619,7 +3605,7 @@ typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<7> >::type,
 typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -3650,7 +3636,7 @@ enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -3658,12 +3644,12 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -3697,7 +3683,7 @@ typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<6> >::type,
 typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -3727,7 +3713,7 @@ enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -3735,12 +3721,11 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -3770,7 +3755,7 @@ typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<5> >::type,
 typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -3800,7 +3785,7 @@ enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -3808,11 +3793,11 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -3838,7 +3823,7 @@ typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<4> >::type,
 typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -3868,7 +3853,7 @@ enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -3876,11 +3861,11 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -3902,7 +3887,7 @@ typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<3> >::type,
 typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -3932,7 +3917,7 @@ enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -3940,10 +3925,10 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -3961,7 +3946,7 @@ typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<2> >::type,
 typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -3991,7 +3976,7 @@ enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -3999,10 +3984,10 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1 )
 {
 translate::from_object<ARG1> a1(arg1);
 gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(arg0));
@@ -4016,7 +4001,7 @@ typename Contains_<Pols,    outValue_<0> >::type >::type(),arg0);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -4046,7 +4031,7 @@ enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -4054,10 +4039,10 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0)  );
+return this->invoke( frame::Value(frameImpl,0)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0   )
+LCC_RETURN invoke( core::T_sp arg0   )
 {
 gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(arg0));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))();
@@ -4067,7 +4052,7 @@ int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
 typename Contains_<Pols,    outValue_<0> >::type >::type(),arg0);
-*lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
 }
 
 };
@@ -4102,7 +4087,7 @@ enum { NumParams = 16 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -4110,16 +4095,15 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) ,
-    frame::Value(frameImpl,15)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) , frame::Value(frameImpl,15)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
+    core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -4190,7 +4174,7 @@ typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<15> >::type,
 typename Contains_<Pols,    outValue_<15> >::type >::type(),a15._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -4223,7 +4207,7 @@ enum { NumParams = 15 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -4231,15 +4215,15 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
+    core::T_sp arg13, core::T_sp arg14 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -4305,7 +4289,7 @@ typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<14> >::type,
 typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -4336,7 +4320,7 @@ enum { NumParams = 14 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -4344,15 +4328,15 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
+    core::T_sp arg13 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -4414,7 +4398,7 @@ typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<13> >::type,
 typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -4445,7 +4429,7 @@ enum { NumParams = 13 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -4453,15 +4437,14 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -4519,7 +4502,7 @@ typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<12> >::type,
 typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -4550,7 +4533,7 @@ enum { NumParams = 12 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -4558,14 +4541,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -4619,7 +4601,7 @@ typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<11> >::type,
 typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -4650,7 +4632,7 @@ enum { NumParams = 11 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -4658,13 +4640,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -4714,7 +4696,7 @@ typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<10> >::type,
 typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -4745,7 +4727,7 @@ enum { NumParams = 10 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -4753,13 +4735,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -4805,7 +4787,7 @@ typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<9> >::type,
 typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -4836,7 +4818,7 @@ enum { NumParams = 9 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -4844,13 +4826,13 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -4892,7 +4874,7 @@ typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<8> >::type,
 typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -4923,7 +4905,7 @@ enum { NumParams = 8 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -4931,13 +4913,12 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6, core::T_sp arg7 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -4975,7 +4956,7 @@ typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<7> >::type,
 typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -5005,7 +4986,7 @@ enum { NumParams = 7 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -5013,12 +4994,12 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
+    core::T_sp arg6 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -5052,7 +5033,7 @@ typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<6> >::type,
 typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -5082,7 +5063,7 @@ enum { NumParams = 6 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -5090,12 +5071,11 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -5125,7 +5105,7 @@ typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<5> >::type,
 typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -5155,7 +5135,7 @@ enum { NumParams = 5 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -5163,11 +5143,11 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3) , frame::Value(frameImpl,4)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -5193,7 +5173,7 @@ typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<4> >::type,
 typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -5223,7 +5203,7 @@ enum { NumParams = 4 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -5231,11 +5211,11 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
+    3)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -5257,7 +5237,7 @@ typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<3> >::type,
 typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -5287,7 +5267,7 @@ enum { NumParams = 3 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -5295,10 +5275,10 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
 {
 translate::from_object<ARG1> a1(arg1);
 translate::from_object<ARG2> a2(arg2);
@@ -5316,7 +5296,7 @@ typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<2> >::type,
 typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -5346,7 +5326,7 @@ enum { NumParams = 2 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -5354,10 +5334,10 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
+return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  , core::T_sp arg1 )
+LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1 )
 {
 translate::from_object<ARG1> a1(arg1);
 gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(arg0));
@@ -5371,7 +5351,7 @@ typename Contains_<Pols,    outValue_<0> >::type >::type(),arg0);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };
@@ -5401,7 +5381,7 @@ enum { NumParams = 1 };
 IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -5409,10 +5389,10 @@ INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP, frame::Value(frameImpl,0)  );
+return this->invoke( frame::Value(frameImpl,0)  );
 }
 
-void invoke(core::T_mv* lcc_resultP, core::T_sp arg0   )
+LCC_RETURN invoke( core::T_sp arg0   )
 {
 gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(arg0));
 ((*(ot->wrappedPtr())).*(this->mptr))();
@@ -5422,7 +5402,7 @@ int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
 typename Contains_<Pols,    outValue_<0> >::type >::type(),arg0);
-*lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 
 };

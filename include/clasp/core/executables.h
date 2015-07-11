@@ -65,7 +65,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
   virtual const char *describe() const { return "SingleDispatchGenericFunctoid"; };
-  virtual void LISP_CALLING_CONVENTION() = 0;
+  virtual LCC_RETURN LISP_CALLING_CONVENTION() = 0;
   void setKind(Symbol_sp k) { this->kind = k; };
   Symbol_sp getKind() const { return this->kind; };
   bool macroP() const;
@@ -144,7 +144,7 @@ public:
   InterpretedClosure(T_sp fn, T_sp sp, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c);
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "InterpretedClosure"; };
-  virtual void LISP_CALLING_CONVENTION();
+  virtual LCC_RETURN LISP_CALLING_CONVENTION();
   bool interpretedP() const { return true; };
   T_sp docstring() const { return this->_docstring; };
   List_sp declares() const { return this->_declares; };
@@ -170,7 +170,7 @@ public:
   virtual T_sp lambdaList() const;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "BuiltinClosure"; };
-  virtual void LISP_CALLING_CONVENTION();
+  virtual LCC_RETURN LISP_CALLING_CONVENTION();
   bool builtinP() const { return true; };
   LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
 };

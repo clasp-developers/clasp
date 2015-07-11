@@ -75,7 +75,7 @@ Integer_sp core_cxxFibn(Fixnum_sp reps, Fixnum_sp num) {
   return Integer_O::create(z);
 }
 
-typedef void (*InitFnPtr)(LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS_BASE);
+typedef LCC_RETURN (*InitFnPtr)( LCC_CLOSED_ENVIRONMENT, LCC_ARGS_ELIPSIS);
 
 T_sp varArgsList(int n_args, ...) {
   va_list ap;
@@ -219,8 +219,7 @@ LOAD:
     SIMPLE_ERROR(BF("Could not find initialization function %s") % mainName);
   }
   //	printf("%s:%d Found initialization function %s at address %p\n", __FILE__, __LINE__, mainName.c_str(), mainFunctionPointer);
-  T_mv result;
-  (*mainFunctionPointer)(&result, NULL, LCC_PASS_ARGS0());
+  (*mainFunctionPointer)( NULL, LCC_PASS_ARGS0());
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 
@@ -338,8 +337,7 @@ T_sp af_dlsym(T_sp ohandle, Str_sp name) {
 #define DOCS_core_callDlMainFunction "(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)"
 void core_callDlMainFunction(Pointer_sp addr) {
   InitFnPtr mainFunctionPointer = (InitFnPtr)addr->ptr();
-  T_mv result;
-  (*mainFunctionPointer)(&result, NULL, LCC_PASS_ARGS0());
+  (*mainFunctionPointer)( NULL, LCC_PASS_ARGS0());
 }
 
 #define ARGS_af_dladdr "(addr)"
@@ -889,13 +887,20 @@ T_mv core_multipleValueFuncall(T_sp funcDesignator, List_sp functions) {
   ASSERT(idx < MultipleValues::MultipleValuesLimit);
   mvAccumulate._Size = idx;
   Function_sp fmv = coerce::functionDesignator(funcDesignator);
+#if 0 // This was from when I passed arguments in the mvThreadLocal array
   MultipleValues &mvThreadLocal = lisp_multipleValues();
   for (size_t i = LCC_FIXED_ARGS, iEnd(mvAccumulate._Size); i < iEnd; ++i) {
     mvThreadLocal[i] = mvAccumulate[i];
   }
-  T_mv result;
-  fmv->closure->invoke(&result, mvAccumulate._Size, mvAccumulate[0], mvAccumulate[1], mvAccumulate[2], mvAccumulate[3], mvAccumulate[4]);
-  return result;
+#endif
+  T_O **a = mvAccumulate.callingArgsStart();
+  gctools::tagged_functor<Closure> func = fmv->closure;
+  switch (mvAccumulate.getSize() ) {
+#define APPLY_TO_TAGGED_FRAME
+#include <clasp/core/generated/applyToActivationFrame.h>
+#undef APPLY_TO_TAGGED_FRAME
+  };
+  UNREACHABLE();
 }
 
 #define ARGS_core_multipleValueProg1_Function "(func1 func2)"

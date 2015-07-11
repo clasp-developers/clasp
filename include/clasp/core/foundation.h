@@ -1130,13 +1130,14 @@ class Functoid {
 
 public:
   virtual const char *describe() const { return "Functoid - subclass must implement describe()"; };
-  void operator()(LCC_RETURN, LCC_ARGS) {
-    this->invoke(lcc_resultP, LCC_PASS_ARGS);
+  LCC_RETURN operator()(LCC_ARGS_ELIPSIS) {
+    LCC_VA_LIST();
+    return this->invoke(LCC_PASS_ARGS);
   }
 
   //#define LISP_INVOKE() invoke( core::T_mv* lcc_resultP, int lcc_nargs, core::T_sp lcc_fixed_arg0, core::T_sp lcc_fixed_arg1, core::T_sp lcc_fixed_arg2, va_list lcc_arglist )
 
-  virtual void LISP_CALLING_CONVENTION() {
+  virtual LCC_RETURN LISP_CALLING_CONVENTION() {
     printf("Subclass of Functoid must implement 'activate'\n");
     exit(1);
   };
@@ -1171,7 +1172,7 @@ public:
 public:
   virtual void setAssociatedFunctions(core::List_sp assocFuncs) {};
   virtual const char *describe() const { return "Closure"; };
-  virtual void LISP_CALLING_CONVENTION() {
+  virtual LCC_RETURN LISP_CALLING_CONVENTION() {
     printf("Subclass of Closure must implement 'activate'\n");
     exit(1);
   };

@@ -35,7 +35,7 @@
 
 (defun compile-main-function (name ltv-manager-fn  )
   (cmp-log "In compile-main-function\n")
-  (let ((main-fn (with-new-function (main-fn fn-env
+  (let ((main-fn (with-new-function (main-fn fn-env fn-result
 					     :function-name name
 					     :parent-env nil
 					     :linkage 'llvm-sys:internal-linkage ;; 'llvm-sys:external-linkage
@@ -46,14 +46,11 @@
 		     (irc-low-level-trace)
 		     (cmp-log "About to add invokeLlvmFunctionVoid for ltv-manager-fn\n")
 		     (irc-intrinsic "invokeLlvmFunctionVoid" ltv-manager-fn)
-		     (let ((fn-result (car (llvm-sys:get-argument-list main-fn))))
-		       (irc-intrinsic "cc_setTmvToNil" fn-result))
+                     (irc-intrinsic "cc_setTmvToNil" fn-result)
 		     ))))
     ;;    (cmp-log-dump main-fn)
     (cmp-log "Done compile-main-function")
-    main-fn
-    )
-  )
+    main-fn))
 
 
 

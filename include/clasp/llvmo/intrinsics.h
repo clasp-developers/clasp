@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 extern "C" {
 
-typedef void (*fnLispCallingConvention)(LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS);
+typedef LCC_RETURN (*fnLispCallingConvention)( LCC_CLOSED_ENVIRONMENT, LCC_ARGS_ELIPSIS);
 };
 
 namespace llvmo {

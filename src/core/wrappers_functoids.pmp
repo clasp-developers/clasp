@@ -39,7 +39,7 @@ $for template_ [[
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 	virtual void* functionAddress() const { return (void*)this->fptr; };
-        void LISP_CALLING_CONVENTION()
+        LCC_RETURN LISP_CALLING_CONVENTION()
         {
             INVOCATION_HISTORY_FRAME();
             $if numArgs>0 [[
@@ -47,10 +47,10 @@ $for template_ [[
 	      core::StackFrameDynamicScopeManager scope(frame);
               lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
             ]]
-            this->invoke(lcc_resultP $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
+            return this->invoke( $for Args_ , [[ frame::Value(frameImpl,$Args_) ]] );
         }
 
-        void invoke(core::T_mv* lcc_resultP $for Args_  [[, core::T_sp arg$Args_]] )
+        LCC_RETURN invoke($for Args_ , [[ core::T_sp arg$Args_]] )
         {
             $if numArgs>0 [[
               $for Args_ [[translate::from_object<ARG$Args_> a$Args_(arg$Args_);
@@ -59,11 +59,11 @@ $for template_ [[
             $$ Do the call ------
             $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] fptr($for Args_ ,[[a$Args_._v]]);
             $if ret==RetVoid [[
-              *lcc_resultP = Values0<core::T_O>();
+              return Values0<core::T_O>();
             ]] $elif ret==RetMV [[
-              *lcc_resultP = retval;
+              return retval;
             ]] $else [[
-              *lcc_resultP = Values(translate::to_object<RT>::convert(retval));
+              return Values(translate::to_object<RT>::convert(retval));
             ]]
         }
 

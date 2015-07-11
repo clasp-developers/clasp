@@ -42,9 +42,11 @@ public:
 
   multiple_values(const smart_ptr<T> &v) : smart_ptr<T>(v), _number_of_values(1){};
 
+#ifdef USE_SMART_PTR_COPY_CONSTRUCTORS
   template <class Y>
   multiple_values(const multiple_values<Y> &yy) : smart_ptr<T>(yy), _number_of_values(yy.number_of_values()){};
-
+#endif
+  
   static multiple_values<T> createFromValues() {
     core::MultipleValues &mv = core::lisp_multipleValues();
     multiple_values<T> result(mv.getSize() == 0 ? _Nil<core::T_O>() : mv.valueGet(0, mv.getSize()), mv.getSize());

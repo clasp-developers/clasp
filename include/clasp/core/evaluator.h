@@ -130,9 +130,7 @@ inline T_mv funcall(T_sp fn) {
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
   gctools::tagged_functor<Closure> ft = func->closure;
-  T_mv result;
-  (*ft)(&result, 0, LCC_UNUSED_rest0());
-  return result;
+  return (*ft)(0, LCC_UNUSED_rest0());
 }
 
 template <class ARG0>
@@ -142,9 +140,7 @@ inline T_mv funcall(T_sp fn, ARG0 arg0) {
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
   gctools::tagged_functor<Closure> ft = func->closure;
-  T_mv result;
-  (*ft)(&result, 1, LCC_FROM_SMART_PTR(arg0), LCC_UNUSED_rest1());
-  return result;
+  return (*ft)(1, LCC_FROM_SMART_PTR(arg0), LCC_UNUSED_rest1());
 }
 
 template <class ARG0, class ARG1>
@@ -161,9 +157,7 @@ inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
   Function_sp func = tfunc.asOrNull<Function_O>();
   ASSERT(func);
   gctools::tagged_functor<Closure> ft = func->closure;
-  T_mv result;
-  (*ft)(&result, 2, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_UNUSED_rest2());
-  return result;
+  return (*ft)(2, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_UNUSED_rest2());
 }
 
 template <class ARG0, class ARG1, class ARG2>
@@ -173,9 +167,7 @@ inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
   gctools::tagged_functor<Closure> ft = func->closure;
-  T_mv result;
-  (*ft)(&result, 3, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_UNUSED_rest3());
-  return result;
+  return (*ft)(3, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_UNUSED_rest3());
 }
 
 template <class ARG0, class ARG1, class ARG2, class ARG3>
@@ -185,46 +177,40 @@ inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
   gctools::tagged_functor<Closure> ft = func->closure;
-  T_mv result;
-  (*ft)(&result, 4, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), LCC_UNUSED_rest4());
-  return result;
+  return (*ft)(4, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3));
 }
 
-template <class ARG0, class ARG1, class ARG2, class ARG3, class ARG4>
-inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) {
-  T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
-  if (tfunc.nilp())
-    ERROR_UNDEFINED_FUNCTION(fn);
-  Function_sp func = gc::As<Function_sp>(tfunc);
-  gctools::tagged_functor<Closure> ft = func->closure;
-  T_mv result;
-  (*ft)(&result, 5, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), LCC_FROM_SMART_PTR(arg4));
-  return result;
-}
 
 // Do I need a variadic funcall???
-template <class ARG0, class ARG1, class ARG2, class ARG3, class ARG4, class... ARGS>
-inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARGS &&... args) {
+template <class ARG0, class ARG1, class ARG2, class ARG3, class... ARGS>
+inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARGS &&... args) {
   T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
   gctools::tagged_functor<Closure> ft = func->closure;
-  T_mv result;
   size_t vnargs = sizeof...(ARGS);
   size_t nargs = vnargs + LCC_FIXED_NUM;
   if (nargs > core::MultipleValues::MultipleValuesLimit) {
     SIMPLE_ERROR(BF("Too many arguments %d only %d supported") % nargs % core::MultipleValues::MultipleValuesLimit);
   }
+
+#if 0
   MultipleValues &mv = lisp_callArgs();
   // Do a placement new of an array of T_sp in the remainingArgumentsInMultipleValues
   // and initialize it using the variadic arguments in the parameter pack ARGS...args
-
   T_O **remainingArgumentsInMultipleValues = mv.callingArgsExtraArgStart();
   /*T_sp *mvargs = */new (remainingArgumentsInMultipleValues) T_sp[vnargs]{std::forward<ARGS>(args)...};
-  (*ft)(&result, nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), LCC_FROM_SMART_PTR(arg4));
-  return result;
+#endif
+  return (*ft)(nargs
+               , LCC_FROM_SMART_PTR(arg0)
+               , LCC_FROM_SMART_PTR(arg1)
+               , LCC_FROM_SMART_PTR(arg2)
+               , LCC_FROM_SMART_PTR(arg3)
+               , std::forward<ARGS>(args).raw_()... );
 }
+
+ 
 };
 };
 

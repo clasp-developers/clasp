@@ -148,11 +148,15 @@ boost::normal_distribution<double> globalNormal01Distribution(0, 1);
 boost::variate_generator<boost::mt11213b &, boost::normal_distribution<double>>
     globalRandomRealNormal01Generator(globalRealRandomNormal01Producer, globalNormal01Distribution);
 
+
 void seedRandomNumberGenerators(uint i, Lisp_sp lisp) {
   _G();
   globalRealRandom01Producer.seed(static_cast<uint>(i));
   globalRealRandomNormal01Producer.seed(static_cast<uint>(i));
 }
+
+
+
 
 void seedRandomNumberGeneratorsUsingTime(Lisp_sp lisp) {
   _G();
@@ -218,6 +222,8 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 };
 
 namespace core {
+
+
 
 void exposeCando_Numerics() {
   _G();

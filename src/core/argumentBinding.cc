@@ -41,7 +41,6 @@ int PASS_FUNCTION_REQUIRED(gctools::Vec0<RequiredArgument> const &reqs,
                            PASS_ARGS,
                            int arg_idx,
                            DynamicScopeManager &scope) {
-  _G();
   // Fill required arguments
   LOG(BF("There are %d required arguments") % reqs.size());
   size_t length_args(PASS_ARGS_NUM);
@@ -72,7 +71,6 @@ int PASS_FUNCTION_OPTIONAL(gctools::Vec0<OptionalArgument> const &optionals,
                            PASS_ARGS,
                            int arg_idx,
                            DynamicScopeManager &scope) {
-  _G();
   int num_args(PASS_ARGS_NUM);
   // Fill required arguments
   LOG(BF("There are %d optional arguments") % optionals.size());
@@ -114,7 +112,6 @@ void PASS_FUNCTION_REST(RestArgument const &restarg,
                         PASS_ARGS,
                         int arg_idx,
                         DynamicScopeManager &scope) {
-  _G();
   if (restarg.isDefined()) {
     Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
     Cons_O::CdrType_sp *curP = &rest;

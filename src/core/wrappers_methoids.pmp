@@ -38,7 +38,7 @@ $for isConst [[
         VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this);};
-        void LISP_CALLING_CONVENTION()
+        LCC_RETURN LISP_CALLING_CONVENTION()
         {   
           INVOCATION_HISTORY_FRAME();
           $if numArgs>0 [[
@@ -46,21 +46,21 @@ $for isConst [[
             core::StackFrameDynamicScopeManager scope(frame);
             lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
           ]]
-          this->invoke(lcc_resultP, frame::Value(frameImpl,0) $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
+          return this->invoke(frame::Value(frameImpl,0) $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
         }
 
-        void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  $for Args_ [[, core::T_sp arg$Args_]] )
+        LCC_RETURN invoke( core::T_sp arg0  $for Args_ [[, core::T_sp arg$Args_]] )
         {
           gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
           $for Args_ [[translate::from_object<ARG$Args_> a$Args_(arg$Args_);
           ]]
           $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] ((*ot.untag_object()).*mptr)($for Args_ ,[[a$Args_._v]]);
           $if ret==RetVoid [[
-            *lcc_resultP = Values0<core::T_O>();
+            return Values0<core::T_O>();
           ]] $elif ret==RetMV [[
-            *lcc_resultP = retval;
+            return retval;
           ]] $else [[
-            *lcc_resultP = Values(translate::to_object<RT>::convert(retval));
+            return Values(translate::to_object<RT>::convert(retval));
           ]]
         }
       };

@@ -26,9 +26,9 @@ THE SOFTWARE.
 /* -^- */
 
 #define LCC_UNUSED NULL
-#define LCC_FIXED_ARGS 5
+#define LCC_FIXED_ARGS LCC_ARGS_IN_REGISTERS
 #define LCC_FROM_SMART_PTR(x) (x.raw_())
-// Pass ActivationFrames as T_O*
+#define LCC_TYPE T_O*
 #define LCC_FROM_ACTIVATION_FRAME_SMART_PTR(x) (x.raw_())
 #define LCC_TO_SMART_PTR(x) (gctools::smart_ptr<core::T_O>((gc::Tagged)x))
 
@@ -36,32 +36,32 @@ THE SOFTWARE.
 #define LCC_UNUSED_2() LCC_UNUSED, LCC_UNUSED
 #define LCC_UNUSED_3() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
 #define LCC_UNUSED_4() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
-#define LCC_UNUSED_5() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
-#define LCC_UNUSED_rest4() LCC_UNUSED
-#define LCC_UNUSED_rest3() LCC_UNUSED, LCC_UNUSED
-#define LCC_UNUSED_rest2() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
-#define LCC_UNUSED_rest1() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
-#define LCC_UNUSED_rest0() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
+#define LCC_UNUSED_rest3() LCC_UNUSED
+#define LCC_UNUSED_rest2() LCC_UNUSED, LCC_UNUSED
+#define LCC_UNUSED_rest1() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
+#define LCC_UNUSED_rest0() LCC_UNUSED, LCC_UNUSED, LCC_UNUSED, LCC_UNUSED
 
 #define LCC_PASS_ARGS0() 0, LCC_UNUSED_rest0()
 #define LCC_PASS_ARGS1(a0) 1, a0, LCC_UNUSED_rest1()
 #define LCC_PASS_ARGS2(a0, a1) 2, a0, a1, LCC_UNUSED_rest2()
 #define LCC_PASS_ARGS3(a0, a1, a2) 3, a0, a1, a2, LCC_UNUSED_rest3()
 
-//#define LCC_ARGS_INTRINSICS size_t lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, core::T_O* lcc_fixed_arg3, core::T_O* lcc_fixed_arg4
-
-#define LCC_ARGS_BASE std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, core::T_O *lcc_fixed_arg3, core::T_O *lcc_fixed_arg4
-#define LCC_ARGS_ELIPSIS LCC_ARGS_BASE
-#define LCC_ARGS LCC_ARGS_BASE
+#define LCC_ARGS_ELIPSIS std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, core::T_O *lcc_fixed_arg3, ...
+#define LCC_ARGS_VA_LIST std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, core::T_O *lcc_fixed_arg3, va_list lcc_arglist
+//#define LCC_ARGS_ELIPSIS LCC_ARGS_BASE_
+//#define LCC_ARGS LCC_ARGS_BASE_
 // When you pass args to another function use LCC_PASS_ARGS
-#define LCC_PASS_ARGS lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_fixed_arg3, lcc_fixed_arg4
+#define LCC_PASS_ARGS lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_fixed_arg3, lcc_arglist
+#define LCC_LAST_FIXED_ARG lcc_fixed_arg3
+
+#define LCC_VA_LIST() va_list lcc_arglist; va_start(lcc_arglist,LCC_LAST_FIXED_ARG);
 
 #define LCC_CLOSED_ENVIRONMENT core::T_O *lcc_closedEnvironment
-#define LCC_RETURN core::T_mv *lcc_resultP
+#define LCC_RETURN core::T_mv // *lcc_resultP
 //#define LCC_RETURN_ARGS core::T_mv* lcc_resultP, LCC_ARGS
 
 /*! This is a void function */
-#define LISP_CALLING_CONVENTION() invoke(LCC_RETURN, LCC_ARGS)
+#define LISP_CALLING_CONVENTION() invoke(LCC_ARGS_VA_LIST)
 
 #define MULTIPLE_VALUES_ARRAY core::lisp_multipleValues()
 
@@ -69,10 +69,10 @@ THE SOFTWARE.
 #define LCC_ARG1() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg1)
 #define LCC_ARG2() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg2)
 #define LCC_ARG3() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg3)
-#define LCC_ARG4() gctools::smart_ptr<core::T_O>((gc::Tagged)lcc_fixed_arg4)
-/*! LCC_ARGS_IN_REGISTERS is defined in src/core/config.h and is currently 5 (five)*/
+/*! LCC_ARGS_IN_REGISTERS is defined in src/core/config.h and is currently 4 (four)*/
 #define LCC_FIXED_NUM LCC_ARGS_IN_REGISTERS
 //#define MULTIPLE_VALUES_SETUP() core::T_sp* __multipleValuesPtr = core::lisp_multipleValues().start_address()
+#define LCC_ARG4() (MULTIPLE_VALUES_ARRAY[4])
 #define LCC_ARG5() (MULTIPLE_VALUES_ARRAY[5])
 #define LCC_ARG6() (MULTIPLE_VALUES_ARRAY[6])
 #define LCC_ARG7() (MULTIPLE_VALUES_ARRAY[7])
@@ -96,12 +96,14 @@ THE SOFTWARE.
   _mv.setSize(lcc_nargs);                                              \
   switch (lcc_nargs) {                                                 \
   default:                                                             \
-  case 5:                                                              \
-    _mv[4] = lcc_fixed_arg4;                                           \
+      for ( int _zii = LCC_FIXED_ARGS; _zii < lcc_nargs; ++_zii) {     \
+        _mv[_zii] = va_arg(lcc_arglist,LCC_TYPE);                     \
+      }                                                                \
+      va_end(lcc_arglist);                                             \
   case 4:                                                              \
-    _mv[3] = lcc_fixed_arg3;                                           \
+      _mv[3] = lcc_fixed_arg3;                                         \
   case 3:                                                              \
-    _mv[2] = lcc_fixed_arg2;                                           \
+      _mv[2] = lcc_fixed_arg2;                                         \
   case 2:                                                              \
     _mv[1] = lcc_fixed_arg1;                                           \
   case 1:                                                              \

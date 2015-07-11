@@ -42,7 +42,7 @@ $for isConst [[
         IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
-        void LISP_CALLING_CONVENTION()
+        LCC_RETURN LISP_CALLING_CONVENTION()
         {
           INVOCATION_HISTORY_FRAME();
           //int countPureOutValues = CountPureOutValues<Pols>::value;
@@ -52,10 +52,10 @@ $for isConst [[
             core::StackFrameDynamicScopeManager scope(frame);
             lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
           ]]
-          this->invoke(lcc_resultP, frame::Value(frameImpl,0) $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
+          return this->invoke( frame::Value(frameImpl,0) $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
         }
 
-        void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  $for Args_ [[, core::T_sp arg$Args_]] )
+        LCC_RETURN invoke( core::T_sp arg0  $for Args_ [[, core::T_sp arg$Args_]] )
         {
           $for Args_ [[translate::from_object<ARG$Args_> a$Args_(arg$Args_);
           ]]
@@ -90,12 +90,12 @@ $$ BEGIN(ArgsToRet) -- Convert arguments to multiple values according to outValu
           ]]
           $if ret==RetVoid [[
             $if numArgs==0 [[
-              *lcc_resultP = Values0<core::T_O>();
+              return Values0<core::T_O>();
             ]] $else [[
-              *lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+              return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
             ]]
           ]] $else [[
-            *lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+            return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
           ]]
 $$ END(ArgsToRet)
         }

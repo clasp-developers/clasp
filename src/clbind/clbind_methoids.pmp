@@ -44,7 +44,7 @@ $for isConst [[
               DISABLE_NEW();
               virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-              void LISP_CALLING_CONVENTION()
+              LCC_RETURN LISP_CALLING_CONVENTION()
               {
                 INVOCATION_HISTORY_FRAME();
                 $if numArgs>0 [[
@@ -52,11 +52,11 @@ $for isConst [[
                   core::StackFrameDynamicScopeManager scope(frame);
                   lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                 ]]
-                this->invoke(lcc_resultP, frame::Value(frameImpl,0) $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
+                return this->invoke( frame::Value(frameImpl,0) $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
               };
               // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
               // I can't iterate through the required arguments because I don't use varargs
-              void invoke(core::T_mv* lcc_resultP, core::T_sp arg0 $for Args_ [[, core::T_sp arg$Args_]] )      
+              LCC_RETURN invoke( core::T_sp arg0 $for Args_ [[, core::T_sp arg$Args_]] )      
               {
                 translate::from_object<OT*> objPtr(arg0);
                 $for Args_ [[
@@ -81,14 +81,14 @@ $for isConst [[
                 ]]
                 $if ret==RetVoid [[
                   $if numArgs==0 [[
-                    *lcc_resultP = Values0<core::T_O>();
+                    return Values0<core::T_O>();
                   ]] $else [[
-                    *lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+                    return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
                   ]]
                 ]] $elif ret==Ret_unique_ptr [[
-                  *lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPointer<Pols,result>::type>::convert(std::move(retval)),oidx);
+                  return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPointer<Pols,result>::type>::convert(std::move(retval)),oidx);
                 ]] $else [[
-                  *lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),oidx);
+                  return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),oidx);
                 ]]
               }
             };

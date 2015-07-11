@@ -227,10 +227,52 @@ Boehm and MPS use a single pointer"
 (defvar +va-list+ +i8*+)
 (defvar +closure*+ +i8*+)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Set up the calling convention using core:+number-of-fixed-arguments+ to define the types
 ;; and names of the arguments passed in registers
 ;;
+;; The last passed-arg is va-list
+(defstruct (calling-convention-impl (:type vector))
+  nargs
+  passed-args ;; the last passed-arg is a va-list
+  args ;; This is the mv-array where the args are copied into
+  )
+
+(defun calling-convention-nargs (cc)
+  (calling-convention-impl-nargs cc))
+
+(defun calling-convention-register-args (cc)
+  (butlast (calling-convention-impl-passed-args cc)))
+
+;; If there is no va-list return nil - Why would this ever be so?
+(defun calling-convention-va-list (cc)
+  (car (last (calling-convention-impl-passed-args cc))))
+
+(defun calling-convention-write-passed-arguments-to-multiple-values (cc)
+  (let ((mv-start (irc-store-multiple-values 0 (calling-convention-register-args cc))))
+    (cmp:irc-intrinsic "cc_copy_va_list" (calling-convention-nargs cc) mv-start (calling-convention-va-list cc))
+    (setf (calling-convention-impl-args cc) mv-start)))
+
+(defun calling-convention-args (cc)
+  (calling-convention-impl-args cc))
+
+(defun calling-convention-args.gep (cc idx &optional target-idx)
+  (let ((label (if (and target-idx core::*enable-print-pretty*)
+                   (bformat nil "arg-%d" target-idx)
+                   "rawarg")))
+    (llvm-sys:create-geparray *irbuilder* (calling-convention-impl-args cc) (list (jit-constant-size_t 0) idx) label)))
+
+;; Parse the function arguments into a (values closed-env calling-convention)
+(defun parse-function-arguments (arguments)
+  (values (first arguments)
+          (make-calling-convention-impl
+           :nargs (second arguments)
+           :passed-args (nthcdr 2 arguments))))
+
 
 (defvar *register-arg-types* nil)
 (defvar *register-arg-names* nil)
@@ -238,10 +280,13 @@ Boehm and MPS use a single pointer"
   (dotimes (i core:+number-of-fixed-arguments+)
     (push +t*+ arg-types)
     (push (bformat nil "farg%d" i) arg-names))
+  ;; va-list arg
+  (push +va-list+ arg-types)
+  (push "va-list" arg-names)
   (setf *register-arg-types* (nreverse arg-types)
 	*register-arg-names* (nreverse arg-names)))
-(defvar +fn-registers-prototype-argument-names+ (list* "result-ptr" "closed-af-ptr" "nargs" *register-arg-names*))
-(defvar +fn-registers-prototype+ (llvm-sys:function-type-get +void+ (list* +tmv*+ +t*+ +size_t+ *register-arg-types*))
+(defvar +fn-registers-prototype-argument-names+ (list* "closed-af-ptr" "nargs" *register-arg-names*))
+(defvar +fn-registers-prototype+ (llvm-sys:function-type-get +tmv+ (list* +t*+ +size_t+ *register-arg-types*))
   "The general function prototypes pass the following pass:
 1) An sret pointer for where to put the result
 2) A closed over runtime environment (linked list of activation frames)
@@ -266,17 +311,6 @@ Boehm and MPS use a single pointer"
 
 (defvar +fn-prototype*[1]+ (llvm-sys:array-type-get +fn-prototype*+ 1)
   "An array of pointers to the function prototype")
-
-#+(or)(progn
-	(defvar +fn-void+ (llvm-sys:function-type-get +void+ nil))
-	(defvar +fn-void-ptr+ (llvm-sys:type-get-pointer-to +fn-void+))
-	(defvar +fn-void-ptr-array0+ (llvm-sys:array-type-get +fn-void-ptr+ 0))
-	(defvar +fn-void-ptr-array0*+ (llvm-sys:type-get-pointer-to +fn-void-ptr-array0+))
-	(defvar +fn-void-ptr-array1+ (llvm-sys:array-type-get +fn-void-ptr+ 1))
-	(defvar +fn-void-ptr-array1*+ (llvm-sys:type-get-pointer-to +fn-void-ptr-array1+))
-	(defvar +fn-void-ptr-pointer+ (llvm-sys:pointer-type-get +fn-void-ptr+ 0))
-	(defvar +fn-void-ptr-pointer*+ (llvm-sys:type-get-pointer-to +fn-void-ptr-pointer+))
-	)
 
 ;;
 ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
@@ -344,7 +378,7 @@ Boehm and MPS use a single pointer"
   (let ((*the-module* module))
     (remove-main-function-if-exists module)
     (let ((fn (with-new-function
-                  (main-func func-env
+                  (main-func func-env result
                              :function-name llvm-sys:+clasp-main-function-name+
                              :parent-env nil
                              :linkage 'llvm-sys:external-linkage
@@ -354,8 +388,7 @@ Boehm and MPS use a single pointer"
                        (boot-functions-size (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t))
                        (bc-bf (llvm-sys:create-bit-cast *irbuilder* boot-functions +fn-prototype**+ "fnptr-pointer"))
                        )
-		  (let* ((fn-result (car (llvm-sys:get-argument-list *current-function*))))
-		    (irc-intrinsic "invokeMainFunctions" fn-result bc-bf boot-functions-size))))))
+                  (irc-intrinsic "invokeMainFunctions" result bc-bf boot-functions-size)))))
       fn)))
 
 
@@ -732,6 +765,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_readCell" +t*+ (list +t*+))
   (primitive-nounwind module "cc_loadTimeValueReference" +t**+ (list +ltv**+ +size_t+))
   (primitive-nounwind module "cc_fetch" +t*+ (list +t*+ +size_t+))
+  (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +va-list+))
   (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +size_t+ ) :varargs t)
   (primitive #|-nounwind|#              module "cc_call_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
 ;  (primitive              module "cc_invoke_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))

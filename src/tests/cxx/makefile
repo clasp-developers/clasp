@@ -1,8 +1,12 @@
+CLANG=/Users/meister/Development/externals-clasp/build/release/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk
+
+
+
 testReturnMultipleValues.bc: testReturnMultipleValues.cc
-	/usr/bin/clang++ -O0 -S -emit-llvm testReturnMultipleValues.cc
+	$(CLANG) -O0 -S -emit-llvm testReturnMultipleValues.cc
 
 testReturnMultipleValues: testReturnMultipleValues.cc
-	/usr/bin/clang++ -O3 -o testReturnMultipleValues testReturnMultipleValues.cc
+	$(CLANG) -O3 -o testReturnMultipleValues testReturnMultipleValues.cc
 
 testints.bc: testints.cc
 	clang++ -O3 testints.cc -o testints

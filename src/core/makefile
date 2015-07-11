@@ -85,8 +85,9 @@ PUMP_OUTPUTS :=  include/generated/applyToActivationFrame.h \
 	include/generated/wrappers_methoids.h \
 	include/generated/external_wrappers_indirect_methoids.h
 
-sub-prebuild: $(PUMP_OUTPUTS)
-	make scrape-symbols
-	make scrape-classes
+#
+# When the pump files change - make this target
+#
+pump: $(PUMP_OUTPUTS)
 
 

@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/Transforms/Instrumentation.h>
+#include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/Support/TargetRegistry.h>
@@ -1708,6 +1709,14 @@ PassManagerBuilder_sp PassManagerBuilder_O::make() {
   return self;
 };
 
+#define ARGS_passManagerBuilderSetfInliner "()"
+#define DECL_passManagerBuilderSetfInliner ""
+#define DOCS_passManagerBuilderSetfInliner ""
+void PassManagerBuilderSetfInliner(PassManagerBuilder_sp pmb, llvm::Pass* inliner) {
+  printf("%s:%d Setting inliner for PassManagerBuilder to %p\n", __FILE__, __LINE__, inliner );
+  pmb->wrappedPtr()->Inliner = inliner;
+};
+
 EXPOSE_CLASS(llvmo, PassManagerBuilder_O);
 
 void PassManagerBuilder_O::exposeCando(core::Lisp_sp lisp) {
@@ -1717,6 +1726,7 @@ void PassManagerBuilder_O::exposeCando(core::Lisp_sp lisp) {
       .def("populateModulePassManager", &llvm::PassManagerBuilder::populateModulePassManager)
       .def("populateLTOPassManager", &llvm::PassManagerBuilder::populateLTOPassManager);
   core::af_def(LlvmoPkg, "make-PassManagerBuilder", &PassManagerBuilder_O::make, ARGS_PassManagerBuilder_O_make, DECL_PassManagerBuilder_O_make, DOCS_PassManagerBuilder_O_make);
+  core::af_def(LlvmoPkg, "pass-manager-builder-setf-inliner", &PassManagerBuilderSetfInliner);
 };
 
 void PassManagerBuilder_O::exposePython(core::Lisp_sp lisp) {
@@ -3643,6 +3653,8 @@ void initialize_llvmo_expose() {
   //
   //    core::af_def(LlvmoPkg,"createDebugIRPass",&llvmo::af_createDebugIRPass);
   core::af_def(LlvmoPkg, "createAliasAnalysisCounterPass", &llvm::createAliasAnalysisCounterPass);
+  core::af_def(LlvmoPkg, "createFunctionInliningPass", (llvm::Pass* (*)(unsigned,unsigned))&llvm::createFunctionInliningPass);
+  core::af_def(LlvmoPkg, "createAlwaysInlinerPass", (llvm::Pass* (*)())&llvm::createAlwaysInlinerPass);
   core::af_def(LlvmoPkg, "createAAEvalPass", &llvm::createAAEvalPass);
   core::af_def(LlvmoPkg, "createScalarEvolutionAliasAnalysisPass", &llvm::createScalarEvolutionAliasAnalysisPass);
   //    core::af_def(LlvmoPkg,"createProfileLoaderPass",&llvm::createProfileLoaderPass);

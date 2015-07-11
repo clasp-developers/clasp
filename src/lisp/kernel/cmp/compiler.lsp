@@ -97,65 +97,59 @@ Return the new environment."
 COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name lambda-list)")
 
 
-(defun generate-llvm-function-from-code (;; Symbol xxx or (setf xxx) name of the function that is assigned to this code by
+(defun generate-llvm-function-from-code ( ;; Symbol xxx or (setf xxx) name of the function that is assigned to this code by
 					 ;; lambda-block or COMPILE
 					 given-name
-					 ; generated from lambda-list
+                                        ; generated from lambda-list
 					 lambda-list-handler
-					 ; lambda declares as a list of conses 
+                                        ; lambda declares as a list of conses 
 					 declares
-					 ; lambda docstring
+                                        ; lambda docstring
 					 docstring
-					 ; lambda code
+                                        ; lambda code
 					 code
-					 ; environment of the lambda
+                                        ; environment of the lambda
 					 env-around-lambda
-					 ; key argument: T if code should be wrapped in a block with block-name
+                                        ; key argument: T if code should be wrapped in a block with block-name
 					 &key wrap-block ; wrap code in a block
-					   ; Name of the block to wrap in
-					   block-name )
+                                        ; Name of the block to wrap in
+                                         block-name )
   "This is where llvm::Function are generated from code, declares, 
 lambda-list-handler, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
 Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
   (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
-	 (fn (with-new-function (fn fn-env
+	 (fn (with-new-function (fn fn-env result
 				    :function-name (bformat nil "%s" name)
 				    :parent-env env-around-lambda
 				    :function-form code)
 	       (cmp-log "Starting new function name: %s\n" name)
-	       (let* ((arguments (llvm-sys:get-argument-list fn))
-		      (result (first arguments))
-		      (closed-over-renv (second arguments))
-		      (argument-holder (make-calling-convention
-					:nargs (third arguments)
-					:register-args (cdddr arguments)))
-		      traceid
-		      (new-env (progn
-				 (cmp-log "Creating new-value-environment for arguments\n")
-				 (irc-new-value-environment
-				  fn-env
-				  :lambda-list-handler lambda-list-handler
-				  :label (bformat nil "lambda-args-%s-" *lambda-args-num*)
-				  :fill-runtime-form (lambda (lambda-args-env)
-						       (compile-arguments name
-									  lambda-list-handler
-									  fn-env
-									  closed-over-renv
-									  argument-holder
-									  lambda-args-env
-									  ))))))
-		 (dbg-set-current-debug-location-here)
-;;;		(irc-attach-debugging-info-to-value-frame (irc-renv new-env) lambda-list-handler new-env)
-		 (with-try new-env
-		   (if wrap-block
-		       (codegen-block result (list* block-name code) new-env)
-		       (codegen-progn result code new-env))
-		   ((cleanup)
-		    (irc-unwind-environment new-env)))
-		 )
-	       )))
+	       (let ((arguments (llvm-sys:get-argument-list fn))
+                     traceid)
+                 (multiple-value-bind (closed-over-renv argument-holder)
+                     (parse-function-arguments arguments)
+                   (let ((new-env (progn
+                                    (cmp-log "Creating new-value-environment for arguments\n")
+                                    (irc-new-value-environment
+                                     fn-env
+                                     :lambda-list-handler lambda-list-handler
+                                     :label (bformat nil "lambda-args-%s-" *lambda-args-num*)
+                                     :fill-runtime-form (lambda (lambda-args-env)
+                                                          (compile-arguments name
+                                                                             lambda-list-handler
+                                                                             fn-env
+                                                                             closed-over-renv
+                                                                             argument-holder
+                                                                             lambda-args-env
+                                                                             ))))))
+                     (dbg-set-current-debug-location-here)
+                     (with-try new-env
+                       (if wrap-block
+                           (codegen-block result (list* block-name code) new-env)
+                           (codegen-progn result code new-env))
+                       ((cleanup)
+                        (irc-unwind-environment new-env)))))))))
     (cmp-log "About to dump the function constructed by generate-llvm-function-from-code\n")
     (cmp-log-dump fn)
     (irc-verify-function fn)
@@ -1252,18 +1246,18 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   (or (stringp name) (error "Name must be a string"))
   (let ((fn (with-new-function (fn
                                 fn-env
+                                result
                                 :function-name name
                                 :parent-env env
                                 :function-form form)
 	      (let* ((given-name (llvm-sys:get-name fn)))
 		;; Map the function argument names
 		(cmp-log "Creating repl function with name: %s\n" given-name)
-		(let ((result (car (llvm-sys:get-argument-list fn))))
-		  ;;	(break "codegen repl form")
-		  (dbg-set-current-debug-location-here)
-		  (codegen result form fn-env)
-		  (dbg-set-current-debug-location-here)
-		  )))))
+                ;;	(break "codegen repl form")
+                (dbg-set-current-debug-location-here)
+                (codegen result form fn-env)
+                (dbg-set-current-debug-location-here)
+                ))))
     (cmp-log "Dumping the repl function\n")
     (cmp-log-dump fn)
     (irc-verify-function fn t)

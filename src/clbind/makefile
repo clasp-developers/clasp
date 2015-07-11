@@ -50,5 +50,4 @@ PUMP_OUTPUTS :=  include/generated/clbind_constructor_functoids.h \
 	include/generated/clbind_static_members.h 
 #        include/generated/constructors.h
 
-sub-prebuild: $(PUMP_OUTPUTS)
-	make scrape-all
+pump: $(PUMP_OUTPUTS)

@@ -624,6 +624,8 @@
 			      fn
 			      ;; FN-ENV is bound to the function environment
 			      fn-env
+                              ;; RESULT is bound to the +tmv+ result
+                              result
 			      &key
 			      ;; The function name can be a symbol or a string.
 			      ;; if its a string it is used unchanged
@@ -652,7 +654,7 @@
 	(traceid-gs (gensym "traceid"))
 	(irbuilder-alloca (gensym))
 	(irbuilder-body (gensym)))
-    `(multiple-value-bind (,fn ,fn-env ,cleanup-block-gs #| ,traceid-gs |# ,irbuilder-alloca ,irbuilder-body)
+    `(multiple-value-bind (,fn ,fn-env ,cleanup-block-gs #| ,traceid-gs |# ,irbuilder-alloca ,irbuilder-body ,result)
 	 (irc-function-create ,function-name ',function-form ,parent-env
 			      :function-type ,function-type
 			      :argument-names ,argument-names
@@ -674,20 +676,15 @@
 		      (*exception-clause-types-to-handle* nil))
                  (cmp-log "with-landing-pad around body\n")
 		 (with-landing-pad (irc-get-cleanup-landing-pad-block ,fn-env)
-		   ,@body
-		   )
+		   ,@body)
                  (cmp-log "with-landing-pad around irc-function-cleanup-and-return\n")
 		 (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env)
-		   (irc-function-cleanup-and-return ,fn-env #||,*current-invocation-history-frame*||#))
-		 ,fn)))))
-       )))
-
-
+		   (irc-function-cleanup-and-return ,fn-env ,result))
+		 ,fn))))))))
 
 (defun irc-function-create (lisp-function-name body env
 			    &key (function-type +fn-prototype+ function-type-p)
 			      ;; If the first argument is NOT meant to be a returned structure then set this to nil
-			      (first-argument-struct-ret t)
 			      (argument-names '("result-ptr" "activation-frame-ptr") argument-names-p)
 			      (linkage 'llvm-sys:internal-linkage))
   "Returns the new function, the lexical environment for the function 
@@ -706,15 +703,10 @@ and then the irbuilder-alloca, irbuilder-body."
 	 cleanup-block traceid
 	 (irbuilder-cur (llvm-sys:make-irbuilder *llvm-context*))
 	 (irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
-	 (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
-	 )
+	 (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*)))
     (let ((args (llvm-sys:get-argument-list fn)))
       (mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
-	      (llvm-sys:get-argument-list fn) argument-names)
-      ;; Set the first argument attribute to be sret
-      (if (and args first-argument-struct-ret)
-	  (let ((attribute-set (llvm-sys:attribute-set-get *llvm-context* 1 (list 'llvm-sys:attribute-struct-ret))))
-	    (llvm-sys:add-attr (first args) attribute-set))))
+	      (llvm-sys:get-argument-list fn) argument-names))
     (let ((bb (irc-basic-block-create "entry" fn)))
       (llvm-sys:set-insert-point-basic-block irbuilder-cur bb))
     ;; Setup exception handling and cleanup landing pad
@@ -734,17 +726,15 @@ and then the irbuilder-alloca, irbuilder-body."
 	  (exn.slot (irc-alloca-i8* func-env :irbuilder irbuilder-alloca :label "exn.slot"))
 	  (ehselector.slot (irc-alloca-i32 func-env 0
 					   :irbuilder irbuilder-alloca
-					   :label "ehselector.slot")))
+					   :label "ehselector.slot"))
+          (result (irc-alloca-tmv func-env
+                                  :irbuilder irbuilder-alloca
+                                  :label "result")))
       (setf-metadata func-env :exn.slot exn.slot)
       (setf-metadata func-env :ehselector.slot ehselector.slot)
-      (values fn func-env cleanup-block irbuilder-alloca irbuilder-body))))
+      (values fn func-env cleanup-block irbuilder-alloca irbuilder-body result))))
 
-
-
-
-
-
-(defun irc-function-cleanup-and-return (env)
+(defun irc-function-cleanup-and-return (env result)
   (when env
     (let ((return-block (irc-basic-block-create "return-block")))
       (irc-br return-block)
@@ -772,7 +762,7 @@ and then the irbuilder-alloca, irbuilder-body."
 	  (irc-begin-block return-block)
 	  (irc-cleanup-function-environment env #| invocation-history-frame |# ) ;; Why the hell was this commented out?
 #|	  (irc-cleanup-function-environment env invocation-history-frame )  |#
-	  (llvm-sys:create-ret-void *irbuilder*))
+	  (llvm-sys:create-ret *irbuilder* (irc-load result)))
 	(cmp-log "About to verify the function in irc-function-cleanup-and-return\n")
 	(irc-verify-function *current-function*)
 	(when *the-function-pass-manager*
@@ -989,7 +979,7 @@ Within the _irbuilder_ dynamic environment...
 
 ;----------------------------------------------------------------------
 
-(defun irc-store-multiple-values (offset values)
+(defun irc-store-multiple-values (offset values &optional va-list)
   "When passing more arguments than can be passed in registers the extra arguments
 are written into the current multiple-valles array offset by the number of arguments
 that are passed in registers.
@@ -1001,6 +991,8 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 	 ((null values) nil)
       (let ((ptr (llvm-sys:create-geparray *irbuilder* multiple-values-array (list (cmp:jit-constant-i32 0) (cmp:jit-constant-i32 idx) #||(cmp:jit-constant-i32 0)||# ) "idx")))
 	(irc-store value ptr)))
+;;;    (XXXXXXX)
+    (irc-low-level-trace)
     multiple-values-array))
 	
 	

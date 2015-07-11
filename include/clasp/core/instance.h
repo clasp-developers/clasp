@@ -80,7 +80,7 @@ public:
       : FunctionClosure(name), entryPoint(ep), instance(inst){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "InstanceClosure"; };
-  virtual void LISP_CALLING_CONVENTION();
+  virtual LCC_RETURN LISP_CALLING_CONVENTION();
   LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
   T_sp lambdaList() const;
 };

@@ -27,7 +27,7 @@ $var NumArgs = 8
                     VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
                     DISABLE_NEW();
                     virtual size_t templatedSizeof() const { return sizeof(*this);};
-                    void LISP_CALLING_CONVENTION()
+                    LCC_RETURN LISP_CALLING_CONVENTION()
                     {
                         INVOCATION_HISTORY_FRAME();
                         $if numArgs>0 [[
@@ -35,9 +35,9 @@ $var NumArgs = 8
                           core::StackFrameDynamicScopeManager scope(frame);
                           lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                         ]]
-                        this->invoke(lcc_resultP $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
+                        return this->invoke($for Args_ , [[ frame::Value(frameImpl,$Args_) ]] );
                     }
-                    void invoke(core::T_mv* lcc_resultP $for Args_ [[, core::T_sp arg$Args_]] )
+                    LCC_RETURN invoke( $for Args_ , [[ core::T_sp arg$Args_]] )
                     {
                       $for Args_ [[
                         translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(arg$Args_);
@@ -55,7 +55,7 @@ $var NumArgs = 8
                                         , typename AdoptPointer<Pols,$Args_>::type()
                                         , a$Args_._v);
                       ]]
-                      *lcc_resultP = gctools::multiple_values<core::T_O>(retval,oidx);
+                      return gctools::multiple_values<core::T_O>(retval,oidx);
                     }
                 };
                 ]]

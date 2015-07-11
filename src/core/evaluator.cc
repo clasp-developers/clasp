@@ -1627,7 +1627,6 @@ T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
 }
 
 T_mv applyClosureToActivationFrame(gctools::tagged_functor<Closure> func, ActivationFrame_sp args) {
-  T_mv result;
   size_t nargs = args->length();
   T_sp *a = args->argArray();
   switch (nargs) {
@@ -1637,12 +1636,7 @@ T_mv applyClosureToActivationFrame(gctools::tagged_functor<Closure> func, Activa
 
 #undef APPLY_TO_ACTIVATION_FRAME
   default:
-    MultipleValues &mv = lisp_callArgs();
-    for (size_t i(LCC_FIXED_ARGS); i < nargs; ++i) {
-      mv[i] = a[i].raw_();
-    }
-    (*func)(&result, nargs, LCC_FROM_SMART_PTR(a[0]), LCC_FROM_SMART_PTR(a[1]), LCC_FROM_SMART_PTR(a[2]), LCC_FROM_SMART_PTR(a[3]), LCC_FROM_SMART_PTR(a[4]));
-    return result;
+      SIMPLE_ERROR(BF("Illegal number of arguments in call: %s") % nargs);
   };
 }
 
@@ -1657,12 +1651,7 @@ T_mv applyClosureToStackFrame(gctools::tagged_functor<Closure> func, T_sp stackF
 #include <clasp/core/generated/applyToActivationFrame.h>
 #undef APPLY_TO_TAGGED_FRAME
   default:
-    MultipleValues &mv = lisp_callArgs();
-    for (size_t i(LCC_FIXED_ARGS); i < nargs; ++i) {
-      mv[i] = a[i];
-    }
-    (*func)(&result, nargs, a[0], a[1], a[2], a[3], a[4]);
-    return result;
+      SIMPLE_ERROR(BF("Illegal number of arguments: %d") % nargs);
   };
 }
 
@@ -2227,11 +2216,19 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     //
     //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
     Function_sp headFunc = gc::As<Function_sp>(theadFunc);
-    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(cl_length(oCdr(form)),
-                                                     _Nil<T_O>()));
-    evaluateIntoActivationFrame(evaluatedArgs, oCdr(form), environment);
-    result = eval::applyToActivationFrame(headFunc, evaluatedArgs);
-    return (result);
+    auto func = headFunc->closure;
+    ALLOC_STACK_VALUE_FRAME(frameImpl,oframe,cl_length(oCdr(form)));
+    T_O** a = frame::ValuesArray(frameImpl);
+    size_t argIdx = 0;
+    for ( auto cur : (List_sp)oCdr(form) ) {
+      a[argIdx] = eval::evaluate(oCar(cur),environment).raw_();
+      ++argIdx;
+    }
+    switch (argIdx) {
+#define APPLY_TO_TAGGED_FRAME
+#include <clasp/core/generated/applyToActivationFrame.h>
+#undef APPLY_TO_TAGGED_FRAME
+    };
   }
   {
     List_sp headCons = head;

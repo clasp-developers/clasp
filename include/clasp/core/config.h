@@ -84,8 +84,8 @@ typedef unsigned int claspCharacter;
 #define CLASP_ARRAY_DIMENSION_LIMIT (1024 * 1024)
 #define CLASP_ARRAY_RANK_LIMIT 8
 
-/*! Pass five arguments in registers, the rest in memory */
-#define LCC_ARGS_IN_REGISTERS 5
+/*! Pass four arguments in registers, the rest in memory */
+#define LCC_ARGS_IN_REGISTERS 4
 
 /*! Maximum number of arguments that can be passed */
 #define CALL_ARGUMENTS_LIMIT 64

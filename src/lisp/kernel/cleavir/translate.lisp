@@ -253,24 +253,22 @@
 
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:enter-instruction) inputs outputs (abi abi-x86-64))
-  (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
-	 (closed-env-arg (second fn-args))
-	 (closed-env-dest (first outputs))
-	 (calling-convention (cmp:make-calling-convention
-			      :nargs (third fn-args)
-			      :register-args (nthcdr 3 fn-args))))
-    (llvm-sys:create-store cmp:*irbuilder* closed-env-arg closed-env-dest nil)
-    #+(or)(progn
-	    (format t "translate-simple-instruction for enter-instruction~%")
-	    (format t " fn-args: ~a~%" fn-args))
-    (let* ((lambda-list (cleavir-ir:lambda-list instr))
-	   (static-environment-output (first (cleavir-ir:outputs instr)))
-	   (args (cdr (cleavir-ir:outputs instr))))
+  (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*)))
+    (error "We need to alloca +tmv+ for closed-env-dest and return it. We used to use the first argument")
+    (multiple-value-bind (closed-env-arg calling-convention)
+        (cmp:parse-function-arguments fn-args)
+      (llvm-sys:create-store cmp:*irbuilder* closed-env-arg closed-env-dest nil)
       #+(or)(progn
-	      (format t "    outputs: ~s~%" args)
-	      (format t "translated outputs: ~s~%" (mapcar (lambda (x) (translate-datum x)) args))
-	      (format t "lambda-list: ~a~%" lambda-list))
-      (compile-lambda-list-code lambda-list args calling-convention))))
+              (format t "translate-simple-instruction for enter-instruction~%")
+              (format t " fn-args: ~a~%" fn-args))
+      (let* ((lambda-list (cleavir-ir:lambda-list instr))
+             (static-environment-output (first (cleavir-ir:outputs instr)))
+             (args (cdr (cleavir-ir:outputs instr))))
+        #+(or)(progn
+                (format t "    outputs: ~s~%" args)
+                (format t "translated outputs: ~s~%" (mapcar (lambda (x) (translate-datum x)) args))
+                (format t "lambda-list: ~a~%" lambda-list))
+        (compile-lambda-list-code lambda-list args calling-convention)))))
 
 
 (defmethod translate-simple-instruction

@@ -136,7 +136,7 @@ void SingleDispatchGenericFunctionClosure::addMethod(SingleDispatchMethod_sp met
 /*! I think this fills the role of the lambda returned by
       std-compute-discriminating-function (gf) AMOP-303 top
     */
-void SingleDispatchGenericFunctionClosure::LISP_CALLING_CONVENTION() {
+LCC_RETURN SingleDispatchGenericFunctionClosure::LISP_CALLING_CONVENTION() {
   Function_sp func;
   Cache *cache(_lisp->singleDispatchMethodCachePtr());
   gctools::Vec0<T_sp> &vektor = cache->keys();
@@ -160,7 +160,7 @@ void SingleDispatchGenericFunctionClosure::LISP_CALLING_CONVENTION() {
   }
   // WARNING: DO NOT alter contents of _lisp->callArgs() or _lisp->multipleValues() above.
   // LISP_PASS ARGS relys on the extra arguments being passed transparently
-  func->closure->invoke(lcc_resultP, LCC_PASS_ARGS);
+  return func->closure->invoke(LCC_PASS_ARGS);
 }
 
 class SingleDispatch_OrderByClassPrecedence {

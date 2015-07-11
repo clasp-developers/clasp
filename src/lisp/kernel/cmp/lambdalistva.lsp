@@ -27,25 +27,8 @@
 
 (in-package :compiler)
 
-(defstruct (calling-convention (:type vector))
-  nargs
-  register-args
-  args ;; This is where the args are copied into
-  )
-(defun calling-convention-write-registers-to-multiple-values (cc)
-  (let ((mv-start (irc-store-multiple-values 0 (calling-convention-register-args cc))))
-    (setf (calling-convention-args cc) mv-start)))
-#|| Was this code
-  (irc-store-multiple-values 0 (calling-convention-register-args args))
-  (setf (calling-convention-args args) (irc-intrinsic "getMultipleValues" (jit-constant-i32 0)))
-||#
 
-(defun calling-convention-args.gep (cc idx &optional target-idx)
-  (let ((label (if (and target-idx core::*enable-print-pretty*)
-                   (bformat nil "arg-%d" target-idx)
-                   "rawarg")))
-    (llvm-sys:create-geparray *irbuilder* (calling-convention-args cc) (list (jit-constant-size_t 0) idx) label)))
-
+  
 
 
 ;;--------------------------------------------------
@@ -665,7 +648,7 @@ will put a value into target-ref."
 ;;;				 &aux (nargs (first argument-holder)) (va-list (second argument-holder)))
   "Fill the dest-activation-frame with values using the
 lambda-list-handler/env/argument-activation-frame"
-  (calling-convention-write-registers-to-multiple-values args)
+  (calling-convention-write-passed-arguments-to-multiple-values args)
   ;; Declare the arg-idx i32 that stores the current index in the argument-activation-frame
   (dbg-set-current-debug-location-here)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
@@ -705,7 +688,7 @@ lambda-list-handler/env/argument-activation-frame"
     ))
 
 
-(defun compile-<=3-required-arguments (reqargs
+(defun compile-<=4-required-arguments (reqargs
                                        old-env
                                        args
                                        new-env)
@@ -748,8 +731,8 @@ lambda-list-handler/env/argument-activation-frame"
           (num-opt (car optargs)))
       (cond
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-        ((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
-         (compile-<=3-required-arguments reqargs old-env args new-env))
+        ((and req-opt-only (<= num-req 4) (eql 0 num-opt) )
+         (compile-<=4-required-arguments reqargs old-env args new-env))
         ;; Test for
         ;; (x &optional y)
         ;; (x y &optional z)

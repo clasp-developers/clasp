@@ -1236,7 +1236,7 @@ class CompiledClosure : public core::FunctionClosure {
   friend void dump_funcs(core::CompiledFunction_sp compiledFunction);
 
 public:
-  typedef void (*fptr_type)(LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS);
+  typedef LCC_RETURN (*fptr_type)(LCC_CLOSED_ENVIRONMENT, LCC_ARGS_ELIPSIS);
 
 public:
   core::T_sp llvmFunction;
@@ -1258,10 +1258,11 @@ public:
   core::T_sp lambdaList() const;
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
   DISABLE_NEW();
-  void LISP_CALLING_CONVENTION() {
-    _G();
+  LCC_RETURN LISP_CALLING_CONVENTION() {
     core::InvocationHistoryFrame _frame(this, this->closedEnvironment);
-    (*(this->fptr))(lcc_resultP, LCC_FROM_ACTIVATION_FRAME_SMART_PTR(this->closedEnvironment), LCC_PASS_ARGS);
+    core::T_O* closedEnv = LCC_FROM_ACTIVATION_FRAME_SMART_PTR(this->closedEnvironment);
+    core::T_mv result = (*(this->fptr))( closedEnv, LCC_PASS_ARGS);
+    return result;
   };
 };
 };

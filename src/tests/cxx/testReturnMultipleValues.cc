@@ -1,11 +1,18 @@
 #include <stdio.h>
 
-struct SV {
+class SV {
+public:
   SV(void *ptr) : p(ptr){};
   void *p;
+#if 0
+  SV(SV const & other) {
+    p = other.p;
+  }
+#endif
 };
 
-struct MV : public SV {
+class MV : public SV {
+public:
   MV(void *ptr1, int nv) : SV(ptr1), n(nv){};
   int n;
 };

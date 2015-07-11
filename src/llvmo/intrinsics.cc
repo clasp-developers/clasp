@@ -226,16 +226,16 @@ core::Closure *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFram
   return &(*func->closure);
 }
 
-void mv_FUNCALL(core::T_mv *resultP, core::Closure *closure, LCC_ARGS) {
+void mv_FUNCALL(core::T_mv *resultP, core::Closure *closure, LCC_ARGS_ELIPSIS) {
   ASSERTF(resultP, BF("mv_FUNCALL resultP is NULL!!!"));
-  closure->invoke(resultP, LCC_PASS_ARGS);
+  LCC_VA_LIST();
+  *resultP = closure->invoke(LCC_PASS_ARGS);
 }
 
-void sp_FUNCALL(core::T_sp *resultP, core::Closure *closure, LCC_ARGS_BASE, ...) {
+void sp_FUNCALL(core::T_sp *resultP, core::Closure *closure, LCC_ARGS_ELIPSIS) {
   ASSERTF(resultP, BF("sp_FUNCALL resultP is NULL!!!"));
-  core::T_mv result_mv;
-  closure->invoke(&result_mv, LCC_PASS_ARGS);
-  (*resultP) = result_mv;
+  LCC_VA_LIST();
+  *resultP = closure->invoke(LCC_PASS_ARGS);
 }
 
 void mv_FUNCALL_activationFrame(core::T_mv *resultP, core::Closure *closure, core::ActivationFrame_sp af) {
@@ -690,7 +690,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   }
 #endif
   // Evaluate the function
-  fptr(resultP, LCC_FROM_SMART_PTR(closedEnv), LCC_PASS_ARGS1(ltvP));
+  *resultP = fptr( LCC_FROM_SMART_PTR(closedEnv), LCC_PASS_ARGS1(ltvP));
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     core::Number_sp endTime = gc::As<core::Number_sp>(core::cl_getInternalRealTime());
@@ -710,14 +710,13 @@ void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], int *numf
   for (int i = 0; i < numfun; ++i) {
     //            printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
 
-    (fptr[i])(result, _Nil<core::T_O>().raw_(), LCC_PASS_ARGS0());
+    *result = (fptr[i])( _Nil<core::T_O>().raw_(), LCC_PASS_ARGS0());
   }
 }
 
 void invokeLlvmFunctionVoid(fnLispCallingConvention fptr) {
-  core::T_mv result;
   core::T_sp env = _Nil<core::T_O>();
-  fptr(&result, env.raw_(), LCC_PASS_ARGS0());
+  fptr(env.raw_(), LCC_PASS_ARGS0());
 };
 
 extern void sp_symbolValueReadOrUnbound(core::T_sp *resultP, const core::Symbol_sp *symP) {
@@ -1801,23 +1800,35 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val) {
   s->setf_symbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
 }
 
-void cc_call(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_BASE) {
+void cc_call(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_ELIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure.as<core::Closure>();
-  closure->invoke(result, LCC_PASS_ARGS);
+  LCC_VA_LIST();
+  *result = closure->invoke( LCC_PASS_ARGS);
 }
 
-void cc_invoke(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_BASE) {
+void cc_invoke(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_ELIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
-  closure->invoke(result, LCC_PASS_ARGS);
+  LCC_VA_LIST();
+  *result = closure->invoke( LCC_PASS_ARGS);
 }
 
 
+ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O**mvPtr, va_list va_args )
+{
+  for ( int i = LCC_FIXED_ARGS; i<nargs; ++i ) {
+    mvPtr[i] = va_arg(va_args, core::T_O *);
+  }
+  va_end(va_args);
+}
+
+
+  
 core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func, std::size_t numCells, ...) {
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   core::ValueFrame_sp vo = core::ValueFrame_O::create(numCells, _Nil<core::T_O>());
@@ -1870,8 +1881,9 @@ void cc_call_multipleValueOneFormCall(core::T_mv *result, core::T_O *tfunc) {
   core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
   core::Function_O *tagged_func = gctools::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
-  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
-  closure->invoke(result, result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
+  auto func = gc::untag_general<core::Function_O *>(tagged_func)->closure;
+  IMPLEMENT_MEF(BF("Handle multiple arguments for this function"));
+//  *result = closure->invoke( result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
 }
 
 /*! Take the multiple-value inputs from the thread local MultipleValues and invoke tfunc with them
@@ -1882,7 +1894,8 @@ void cc_invoke_multipleValueOneFormCall(core::T_mv *result, core::T_O *tfunc) {
   core::Function_O *tagged_func = gctools::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
-  closure->invoke(result, result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
+  IMPLEMENT_MEF(BF("Handle multiple arguments for this function"));
+//  *result = closure->invoke( result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
 }
 
 void cc_saveThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv) {

@@ -93,7 +93,7 @@
           jit-make-global-string-ptr
           link-system-lto
           load-bitcode
-          make-calling-convention
+          parse-function-arguments
           set-associated-funcs
           treat-as-special-operator-p
           typeid-core-unwind

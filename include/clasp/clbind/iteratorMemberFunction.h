@@ -60,7 +60,7 @@ public:
 
 public:
   DISABLE_NEW();
-  void LISP_CALLING_CONVENTION() {
+  LCC_RETURN LISP_CALLING_CONVENTION() {
     if (lcc_nargs != 1)
       core::wrongNumberOfArguments(lcc_nargs, 1);
     OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
@@ -68,7 +68,7 @@ public:
     IteratorType itEnd = ((*objPtr).*(this->_end))();
     GC_ALLOCATE_VARIADIC(WrappedIteratorType, smart_itBegin, itBegin);
     GC_ALLOCATE_VARIADIC(WrappedIteratorType, smart_itEnd, itEnd);
-    *lcc_resultP = Values(smart_itBegin, smart_itEnd);
+    return Values(smart_itBegin, smart_itEnd);
   }
 };
 };

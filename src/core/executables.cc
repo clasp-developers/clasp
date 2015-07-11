@@ -112,7 +112,7 @@ T_sp BuiltinClosure::lambdaList() const {
   return this->_lambdaListHandler->lambdaList();
 }
 
-void BuiltinClosure::LISP_CALLING_CONVENTION() {
+LCC_RETURN BuiltinClosure::LISP_CALLING_CONVENTION() {
   IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
 };
 
@@ -132,7 +132,7 @@ T_sp InterpretedClosure::lambdaList() const {
   return this->lambdaListHandler()->lambdaList();
 }
 
-void InterpretedClosure::LISP_CALLING_CONVENTION() {
+LCC_RETURN InterpretedClosure::LISP_CALLING_CONVENTION() {
   ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->closedEnvironment);
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
   InvocationHistoryFrame _frame(this);
@@ -143,11 +143,11 @@ void InterpretedClosure::LISP_CALLING_CONVENTION() {
   //        InvocationHistoryFrame _frame(this,newActivationFrame);
   _frame.setActivationFrame(newActivationFrame);
 #if 0
-	if (_sym_STARdebugInterpretedClosureSTAR->symbolValue().notnilp()) {
-	    printf("%s:%d Entering InterpretedClosure   source file = %s  lineno=%d\n", __FILE__, __LINE__, _frame.sourcePathName().c_str(), _frame.lineno());
-	}
+  if (_sym_STARdebugInterpretedClosureSTAR->symbolValue().notnilp()) {
+    printf("%s:%d Entering InterpretedClosure   source file = %s  lineno=%d\n", __FILE__, __LINE__, _frame.sourcePathName().c_str(), _frame.lineno());
+  }
 #endif
-  *lcc_resultP = eval::sp_progn(this->_code, newValueEnvironment);
+  return eval::sp_progn(this->_code, newValueEnvironment);
 };
 
 T_mv Function_O::lambdaList() {

@@ -740,9 +740,10 @@ marshaling of compiled quoted data"
 	(irbuilder-alloca (gensym "ltv-irbuilder-alloca"))
 	(irbuilder-body (gensym "ltv-irbuilder-body"))
 	(traceid-gs (gensym "traceid"))
-	(fn-env-gs (gensym "ltv-fn-env")))
+	(fn-env-gs (gensym "ltv-fn-env"))
+        (result (gensym "result")))
     `(multiple-value-bind (,ltv-init-fn ,fn-env-gs ,cleanup-block-gs
-					,irbuilder-alloca ,irbuilder-body )
+					,irbuilder-alloca ,irbuilder-body ,result )
 	 (irc-function-create "runAll" nil nil
 			      :function-type +fn-prototype+
 			      :argument-names +fn-prototype-argument-names+)
@@ -814,7 +815,7 @@ marshaling of compiled quoted data"
 	     (let ((*gv-current-function-name* (jit-make-global-string-ptr
 						(llvm-sys:get-name ,ltv-init-fn) "fn-name")))
 	       (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env-gs)
-		 (irc-function-cleanup-and-return ,fn-env-gs ))
+		 (irc-function-cleanup-and-return ,fn-env-gs ,result))
 	       )))))))
 
 
@@ -841,18 +842,17 @@ marshaling of compiled quoted data"
   (dbg-set-current-debug-location-here)
   (or (stringp name) (error "name must be a string"))
   (let* ((ltv-index (get-next-available-ltv-entry))
-	 (fn (with-new-function (fn fn-env
+	 (fn (with-new-function (fn fn-env fn-result
 				    :function-name name
 				    :parent-env env
 				    :function-form form)
-	       (let* ((fn-result (car (llvm-sys:get-argument-list fn)))
-		      (given-name (llvm-sys:get-name fn)))
+	       (let* ((given-name (llvm-sys:get-name fn)))
 		 ;; Map the function argument names
 		 (cmp-log "Creating ltv thunk with name: %s\n" given-name)
 		 (let ((ltv-result (irc-intrinsic "loadTimeValueReference"
-					     *load-time-value-holder-global-var*
-					     (jit-constant-i32 ltv-index))))
-;;		   (break "codegen ltv thunk form")
+                                                  *load-time-value-holder-global-var*
+                                                  (jit-constant-i32 ltv-index))))
+                   ;;		   (break "codegen ltv thunk form")
 		   (dbg-set-current-debug-location-here)
 		   (codegen ltv-result form fn-env)
 		   (irc-intrinsic "copyTsp" fn-result ltv-result)

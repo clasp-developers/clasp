@@ -31,6 +31,6 @@ namespace core {
 
 FORWARD(LambdaListHandler);
 
-extern void lambdaListHandler_createBindings(core::FunctionClosure *closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS);
+extern void lambdaListHandler_createBindings(core::FunctionClosure *closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST);
 };
 #endif

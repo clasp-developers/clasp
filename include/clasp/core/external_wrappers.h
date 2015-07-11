@@ -63,7 +63,7 @@ public:
   DISABLE_NEW();
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 #if 0
-	void LISP_CALLING_CONVENTION()
+	void LCC_RETURN LISP_CALLING_CONVENTION()
 	{
 	    INVOCATION_HISTORY_FRAME();
 	    //int countPureOutValues = CountPureOutValues<Pols>::value;

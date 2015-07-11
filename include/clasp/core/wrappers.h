@@ -111,12 +111,11 @@ public:
   DISABLE_NEW();
   size_t templatedSizeof() const { return sizeof(MacroClosure); };
   virtual Symbol_sp getKind() const { return kw::_sym_macro; };
-  void LISP_CALLING_CONVENTION() {
-    _G();
+  LCC_RETURN LISP_CALLING_CONVENTION() {
     List_sp form = gc::As<Cons_sp>(LCC_ARG0());
     T_sp env = gc::As<T_sp>(LCC_ARG1());
     InvocationHistoryFrame _frame(this); // The environment could be a Non-Clasp Environment (Cleavir)
-    *lcc_resultP = (this->mptr)(form, env);
+    return (this->mptr)(form, env);
   };
 };
 

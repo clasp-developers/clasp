@@ -24,24 +24,22 @@ enum { NumParams = 16 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) ,
-    frame::Value(frameImpl,15)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14) ,  frame::Value(frameImpl,15)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
+    core::T_sp arg13,  core::T_sp arg14,  core::T_sp arg15 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -143,8 +141,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,15>::type()
 , typename AdoptPointer<Pols,15>::type()
 , a15._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -169,23 +167,22 @@ enum { NumParams = 15 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
+    core::T_sp arg13,  core::T_sp arg14 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -281,8 +278,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,14>::type()
 , typename AdoptPointer<Pols,14>::type()
 , a14._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -306,23 +303,22 @@ enum { NumParams = 14 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
+    core::T_sp arg13 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -412,8 +408,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,13>::type()
 , typename AdoptPointer<Pols,13>::type()
 , a13._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -437,22 +433,21 @@ enum { NumParams = 13 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,
     core::T_sp arg12 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
@@ -537,8 +532,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,12>::type()
 , typename AdoptPointer<Pols,12>::type()
 , a12._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -562,22 +557,20 @@ enum { NumParams = 12 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -655,8 +648,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,11>::type()
 , typename AdoptPointer<Pols,11>::type()
 , a11._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -680,21 +673,20 @@ enum { NumParams = 11 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -766,8 +758,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,10>::type()
 , typename AdoptPointer<Pols,10>::type()
 , a10._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -791,21 +783,20 @@ enum { NumParams = 10 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -871,8 +862,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,9>::type()
 , typename AdoptPointer<Pols,9>::type()
 , a9._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -896,21 +887,20 @@ enum { NumParams = 9 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -970,8 +960,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,8>::type()
 , typename AdoptPointer<Pols,8>::type()
 , a8._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -995,21 +985,19 @@ enum { NumParams = 8 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -1063,8 +1051,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,7>::type()
 , typename AdoptPointer<Pols,7>::type()
 , a7._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -1088,20 +1076,19 @@ enum { NumParams = 7 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -1149,8 +1136,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,6>::type()
 , typename AdoptPointer<Pols,6>::type()
 , a6._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -1173,20 +1160,18 @@ enum { NumParams = 6 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -1228,8 +1213,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,5>::type()
 , typename AdoptPointer<Pols,5>::type()
 , a5._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -1252,19 +1237,18 @@ enum { NumParams = 5 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -1300,8 +1284,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,4>::type()
 , typename AdoptPointer<Pols,4>::type()
 , a4._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -1324,19 +1308,18 @@ enum { NumParams = 4 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -1366,8 +1349,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,3>::type()
 , typename AdoptPointer<Pols,3>::type()
 , a3._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -1390,18 +1373,17 @@ enum { NumParams = 3 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -1425,8 +1407,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,2>::type()
 , typename AdoptPointer<Pols,2>::type()
 , a2._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -1449,18 +1431,17 @@ enum { NumParams = 2 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -1478,8 +1459,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,1>::type()
 , typename AdoptPointer<Pols,1>::type()
 , a1._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -1502,18 +1483,17 @@ enum { NumParams = 1 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0)  );
+return this->invoke( frame::Value(frameImpl,0)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0 )
+LCC_RETURN invoke(  core::T_sp arg0 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -1525,8 +1505,8 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,0>::type()
 , typename AdoptPointer<Pols,0>::type()
 , a0._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 0
@@ -1549,20 +1529,19 @@ enum { NumParams = 0 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-this->invoke(lcc_resultP  );
+return this->invoke( );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP  )
+LCC_RETURN invoke(  )
 {
 RT retval =  fptr();
 int oidx = 1;
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,
-    result>::type >::convert(retval),oidx);
+return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
+    oidx);
 }
 };
 // ret = 1
@@ -1587,24 +1566,22 @@ enum { NumParams = 16 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) ,
-    frame::Value(frameImpl,15)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14) ,  frame::Value(frameImpl,15)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
+    core::T_sp arg13,  core::T_sp arg14,  core::T_sp arg15 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -1705,7 +1682,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,15>::type()
 , typename AdoptPointer<Pols,15>::type()
 , a15._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -1729,23 +1706,22 @@ enum { NumParams = 15 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
+    core::T_sp arg13,  core::T_sp arg14 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -1840,7 +1816,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,14>::type()
 , typename AdoptPointer<Pols,14>::type()
 , a14._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -1864,23 +1840,22 @@ enum { NumParams = 14 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
+    core::T_sp arg13 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -1969,7 +1944,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,13>::type()
 , typename AdoptPointer<Pols,13>::type()
 , a13._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -1993,22 +1968,21 @@ enum { NumParams = 13 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,
     core::T_sp arg12 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
@@ -2092,7 +2066,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,12>::type()
 , typename AdoptPointer<Pols,12>::type()
 , a12._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -2116,22 +2090,20 @@ enum { NumParams = 12 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -2208,7 +2180,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,11>::type()
 , typename AdoptPointer<Pols,11>::type()
 , a11._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -2232,21 +2204,20 @@ enum { NumParams = 11 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -2317,7 +2288,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,10>::type()
 , typename AdoptPointer<Pols,10>::type()
 , a10._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -2341,21 +2312,20 @@ enum { NumParams = 10 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -2420,7 +2390,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,9>::type()
 , typename AdoptPointer<Pols,9>::type()
 , a9._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -2444,21 +2414,20 @@ enum { NumParams = 9 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -2517,7 +2486,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,8>::type()
 , typename AdoptPointer<Pols,8>::type()
 , a8._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -2541,21 +2510,19 @@ enum { NumParams = 8 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -2608,7 +2575,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,7>::type()
 , typename AdoptPointer<Pols,7>::type()
 , a7._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -2631,20 +2598,19 @@ enum { NumParams = 7 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -2691,7 +2657,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,6>::type()
 , typename AdoptPointer<Pols,6>::type()
 , a6._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -2714,20 +2680,18 @@ enum { NumParams = 6 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -2768,7 +2732,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,5>::type()
 , typename AdoptPointer<Pols,5>::type()
 , a5._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -2791,19 +2755,18 @@ enum { NumParams = 5 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -2838,7 +2801,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,4>::type()
 , typename AdoptPointer<Pols,4>::type()
 , a4._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -2861,19 +2824,18 @@ enum { NumParams = 4 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -2902,7 +2864,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,3>::type()
 , typename AdoptPointer<Pols,3>::type()
 , a3._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -2925,18 +2887,17 @@ enum { NumParams = 3 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -2959,7 +2920,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,2>::type()
 , typename AdoptPointer<Pols,2>::type()
 , a2._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -2982,18 +2943,17 @@ enum { NumParams = 2 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -3010,7 +2970,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,1>::type()
 , typename AdoptPointer<Pols,1>::type()
 , a1._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -3033,18 +2993,17 @@ enum { NumParams = 1 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0)  );
+return this->invoke( frame::Value(frameImpl,0)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0 )
+LCC_RETURN invoke(  core::T_sp arg0 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -3055,7 +3014,7 @@ int oidx = 0;                                                                   
 , typename is_outValue<Pols,0>::type()
 , typename AdoptPointer<Pols,0>::type()
 , a0._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
 }
 };
 // ret = 1
@@ -3078,18 +3037,17 @@ enum { NumParams = 0 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-this->invoke(lcc_resultP  );
+return this->invoke( );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP  )
+LCC_RETURN invoke(  )
 {
 fptr();
-*lcc_resultP = Values0<core::T_O>();
+return Values0<core::T_O>();
 }
 };
 // ret = 2
@@ -3116,24 +3074,22 @@ enum { NumParams = 16 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) ,
-    frame::Value(frameImpl,15)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14) ,  frame::Value(frameImpl,15)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
+    core::T_sp arg13,  core::T_sp arg14,  core::T_sp arg15 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -3236,7 +3192,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,15>::type()
 , typename AdoptPointer<Pols,15>::type()
 , a15._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -3263,23 +3219,22 @@ enum { NumParams = 15 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13, core::T_sp arg14 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
+    core::T_sp arg13,  core::T_sp arg14 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -3376,7 +3331,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,14>::type()
 , typename AdoptPointer<Pols,14>::type()
 , a14._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -3401,23 +3356,22 @@ enum { NumParams = 14 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
-    core::T_sp arg12, core::T_sp arg13 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
+    core::T_sp arg13 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -3507,7 +3461,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,13>::type()
 , typename AdoptPointer<Pols,13>::type()
 , a13._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -3532,22 +3486,21 @@ enum { NumParams = 13 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) , frame::Value(frameImpl,12)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
+    frame::Value(frameImpl,12)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11,
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,
     core::T_sp arg12 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
@@ -3632,7 +3585,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,12>::type()
 , typename AdoptPointer<Pols,12>::type()
 , a12._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -3657,22 +3610,20 @@ enum { NumParams = 12 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -3750,7 +3701,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,11>::type()
 , typename AdoptPointer<Pols,11>::type()
 , a11._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -3775,21 +3726,20 @@ enum { NumParams = 11 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -3861,7 +3811,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,10>::type()
 , typename AdoptPointer<Pols,10>::type()
 , a10._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -3886,21 +3836,20 @@ enum { NumParams = 10 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -3966,7 +3915,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,9>::type()
 , typename AdoptPointer<Pols,9>::type()
 , a9._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -3991,21 +3940,20 @@ enum { NumParams = 9 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) , frame::Value(frameImpl,8)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
+    frame::Value(frameImpl,8)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -4065,7 +4013,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,8>::type()
 , typename AdoptPointer<Pols,8>::type()
 , a8._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -4090,21 +4038,19 @@ enum { NumParams = 8 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6, core::T_sp arg7 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6,  core::T_sp arg7 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -4158,7 +4104,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,7>::type()
 , typename AdoptPointer<Pols,7>::type()
 , a7._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -4183,20 +4129,19 @@ enum { NumParams = 7 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5, core::T_sp arg6 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
+    core::T_sp arg6 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -4244,7 +4189,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,6>::type()
 , typename AdoptPointer<Pols,6>::type()
 , a6._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -4268,20 +4213,18 @@ enum { NumParams = 6 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4,
-    core::T_sp arg5 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -4323,7 +4266,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,5>::type()
 , typename AdoptPointer<Pols,5>::type()
 , a5._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -4347,19 +4290,18 @@ enum { NumParams = 5 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) , frame::Value(frameImpl,4)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3) ,  frame::Value(frameImpl,4)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -4395,7 +4337,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,4>::type()
 , typename AdoptPointer<Pols,4>::type()
 , a4._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -4419,19 +4361,18 @@ enum { NumParams = 4 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
+    3)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -4461,7 +4402,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,3>::type()
 , typename AdoptPointer<Pols,3>::type()
 , a3._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -4485,18 +4426,17 @@ enum { NumParams = 3 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1, core::T_sp arg2 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -4520,7 +4460,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,2>::type()
 , typename AdoptPointer<Pols,2>::type()
 , a2._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -4544,18 +4484,17 @@ enum { NumParams = 2 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
+return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0, core::T_sp arg1 )
+LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -4573,7 +4512,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,1>::type()
 , typename AdoptPointer<Pols,1>::type()
 , a1._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -4597,18 +4536,17 @@ enum { NumParams = 1 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
 ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-this->invoke(lcc_resultP , frame::Value(frameImpl,0)  );
+return this->invoke( frame::Value(frameImpl,0)  );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP , core::T_sp arg0 )
+LCC_RETURN invoke(  core::T_sp arg0 )
 {
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
@@ -4620,7 +4558,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,0>::type()
 , typename AdoptPointer<Pols,0>::type()
 , a0._v);
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };
@@ -4644,19 +4582,18 @@ enum { NumParams = 0 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-void LISP_CALLING_CONVENTION()
+LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-this->invoke(lcc_resultP  );
+return this->invoke( );
 };
 // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
 // I can't iterate through the required arguments because I don't use varargs
-void invoke(core::T_mv* lcc_resultP  )
+LCC_RETURN invoke(  )
 {
 std::unique_ptr<UPRT> retval =  fptr();
 int oidx = 1;
-*lcc_resultP = gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
+return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,
     result>::type>::convert(std::move(retval)),oidx);
 }
 };

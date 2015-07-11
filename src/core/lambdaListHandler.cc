@@ -42,7 +42,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-void lambdaListHandler_createBindings(core::FunctionClosure *closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS) {
+void lambdaListHandler_createBindings(core::FunctionClosure *closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
   // TODO: I should allocate this on the stack - but clang doesn't behave consistently
   // when I use variable stack arrays
   //        printf("%s:%d About to alloca with lcc_nargs = %zu\n", __FILE__, __LINE__, lcc_nargs);

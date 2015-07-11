@@ -220,7 +220,7 @@
 					 allow-other-keys
 					 outputs
 					 calling-conv )
-  (cmp:calling-convention-write-registers-to-multiple-values calling-conv)
+  (cmp:calling-convention-write-passed-arguments-to-multiple-values calling-conv ENVIRONMENT)
   (let* ((arg-idx-alloca (alloca-size_t "arg-idx-alloca")))
     (%store (%size_t 0) arg-idx-alloca)
     (let* ((reqs (gather-required-arguments reqargs calling-conv arg-idx-alloca))
@@ -255,7 +255,7 @@
 					 allow-other-keys
 					 outputs
 					 calling-conv )
-  (cmp:calling-convention-write-registers-to-multiple-values calling-conv)
+  (cmp:calling-convention-write-passed-arguments-to-multiple-values calling-conv INSERT-ENVIRONMENT!!!!)
   (let* ((arg-idx-alloca (alloca-size_t "arg-idx-alloca"))
 	 true-val)
     (%store (%size_t 0) arg-idx-alloca)
