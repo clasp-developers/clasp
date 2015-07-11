@@ -1,6 +1,14 @@
+(compile-file "sys:kernel;asdf;build;asdf.lisp" 
+              :output-file (compile-file-pathname
+                            "sys:modules;asdf;asdf.lisp" 
+                            :target-backend (default-target-backend))
+              :print t)
+
+
 (progn  ;; Set up everything for building cclasp from bclasp
   (format t "Loading ASDF system~%")
   (time (require :asdf))
+  (load "sys:local-asdf-config.lisp")
   (pushnew :cleavir *features*)
   (format t "Loading :clasp-cleavir system~%")
   (time (require :clasp-cleavir))
@@ -8,8 +16,12 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (print (core:getpid)))
 
+(print "Hello")
+(clasp-cleavir::cleavir-compile-file "sys:tests;tmacro.lsp")
+
 
 (clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (block in (let (*) (return-from in nil)) (return-from nil nil)))) form))) :debug t)
+(foo)
 
 (clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (block in (unwind-protect (return-from in)) (return)))) form))) :debug t)
 

@@ -49,6 +49,7 @@
   env)
 
 (defun cclasp-eval (form &optional env)
+  (format t "cclasp-eval eval: ~a~%" form)
   (flet ((eval-progn (body &optional (penv env))
            (loop for (form . next) on body
               if next

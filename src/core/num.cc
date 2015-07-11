@@ -172,26 +172,6 @@ void seedRandomNumberGeneratorsUsingTime(Lisp_sp lisp) {
   //    }
 }
 
-#define ARGS_af_random "(olimit &optional random-state)"
-#define DECL_af_random ""
-#define DOCS_af_random "random"
-T_mv af_random(T_sp olimit, T_sp random_state) {
-  _G();
-  if (random_state.notnilp()) {
-    SIMPLE_ERROR(BF("Support random-state in random") _);
-  }
-
-  if (gc::IsA<Fixnum_sp>(olimit)) {
-    int limit = gc::As<Fixnum_sp>(olimit)->get();
-    return make_fixnum((int)(globalRandomReal01Generator() * limit));
-  } else if (gc::IsA<Bignum_sp>(olimit)) {
-    IMPLEMENT_MEF(BF("Implement generating Bignum random numbers"));
-  } else if (gc::IsA<DoubleFloat_sp>(olimit)) {
-    double limit = olimit.as<DoubleFloat_O>()->get();
-    return DoubleFloat_O::create(globalRandomReal01Generator() * limit);
-  }
-  SIMPLE_ERROR(BF("Illegal limit for random"));
-}
 
 double randomNumber01(Lisp_sp lisp) {
   return globalRandomReal01Generator();
@@ -224,7 +204,6 @@ void exposeCando_Numerics() {
   LOG(BF("Initializing numerics random"));
   af_def(CorePkg, "seedRandomNumberGenerators", &seedRandomNumberGenerators);
   af_def(CorePkg, "seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
-  af_def(CorePkg, "random", &random, ARGS_af_random, DECL_af_random, DOCS_af_random);
   af_def(CorePkg, "randomNumber01", &randomNumber01);
   af_def(CorePkg, "randomNumberNormal01", &randomNumberNormal01);
   SYMBOL_EXPORT_SC_(ClPkg, getUniversalTime);

@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/cleavirEnvPackage.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/posixTime.h>
+#include <clasp/core/random.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/commonLispUserPackage.h>
@@ -108,6 +109,7 @@ SYMBOL_EXPORT_SC_(ClPkg, streamError);
 SYMBOL_EXPORT_SC_(ClPkg, endOfFile);
 SYMBOL_EXPORT_SC_(ClPkg, parseError);
 SYMBOL_EXPORT_SC_(ClPkg, readerError);
+SYMBOL_EXPORT_SC_(ClPkg, STARrandom_stateSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, controlError);
 SYMBOL_EXPORT_SC_(ClPkg, typeError);
 SYMBOL_EXPORT_SC_(ClPkg, simpleTypeError);
@@ -1071,7 +1073,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugStartupSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
-
+  cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
   List_sp hooks = _Nil<T_O>();
   hooks = Cons_O::create(Cons_O::create(Str_O::create("fasl"), _sym_loadBundle), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("bundle"), _sym_loadBundle), hooks);
@@ -1133,7 +1135,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   Symbol_sp target_os = kw::_sym_target_os_linux;
 
 #else
-#error Currently only MacOSX and linux are supported for x86_64
+gggg#error Currently only MacOSX and linux are supported for x86_64
 #endif
 
 #elif defined(__i386__)

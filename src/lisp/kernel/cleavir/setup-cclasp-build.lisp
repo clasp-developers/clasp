@@ -7,8 +7,11 @@
 ;;(require :asdf)
 ;;(require :clasp-cleavir)
 
+
 (export '(load-system link))
 (require :asdf)
+(load "sys:local-asdf-config.lisp")
+
 (load "sys:kernel;cleavir;asdf-system-groveler.lisp")
 
 (defun save-partial-system (filename system)
@@ -25,5 +28,3 @@
                      (asdf-system-groveler:determine-complete-set-of-asdf-source-files
                       (list :clasp-cleavir)))
 (format t "Done~%")
-
-
