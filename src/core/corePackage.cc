@@ -1135,7 +1135,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   Symbol_sp target_os = kw::_sym_target_os_linux;
 
 #else
-gggg#error Currently only MacOSX and linux are supported for x86_64
+#error Currently only MacOSX and linux are supported for x86_64
 #endif
 
 #elif defined(__i386__)
