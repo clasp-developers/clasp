@@ -16,7 +16,9 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (print (core:getpid)))
 
-(clasp-cleavir::cleavir-compile-file "sys:tests;tmacrolet.lsp")
+(clasp-cleavir::build-and-draw-ast "/tmp/test.png" '(lambda () (load-time-value (print 10))))
+
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (load-time-value (print 10))) :debug t)
 
 
 (print "Hello")

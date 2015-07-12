@@ -205,7 +205,7 @@
 
 
 (defun build-and-draw-ast (filename code)
-  (let ((ast (cleavir-generate-ast:generate-ast code *clasp-env*)))
+  (let ((ast (cleavir-generate-ast:generate-ast code *clasp-env* *clasp-system*)))
     (cleavir-ast-graphviz:draw-ast ast filename)
     ast))
 

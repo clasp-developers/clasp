@@ -605,7 +605,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 ;; I need to search the list rather than using features because *features* may change at runtime
 (defun default-target-backend (&optional given-stage)
-  (let* ((stage (if given-stage given-stage (if (recursive-find :ecl-min *features*) "min" (if (recursive-find :cleavir *features*) "cleavir" "full"))))
+  (let* ((stage (if given-stage given-stage (if (recursive-find :ecl-min *features*) "min" (if (recursive-find :cclasp *features*) "cclasp" "full"))))
          (garbage-collector (if (recursive-find :use-mps *features*) "mps" "boehm"))
          (target-backend (bformat nil "%s-%s" stage garbage-collector)))
     target-backend))

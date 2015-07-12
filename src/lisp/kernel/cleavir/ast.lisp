@@ -216,21 +216,28 @@ If this form has already been precalculated then just return the precalculated-v
       ((constantp form)
        (cmp:codegen-literal nil form))
       (t
-       (multiple-value-bind (index fn)
-	   (cmp:compile-ltv-thunk "ltv-literal" form nil)
-	 (cmp:with-ltv-function-codegen (result ltv-env)
-	   (cmp:irc-intrinsic "invokeTopLevelFunction" 
-			      result 
-			      fn 
-			      (cmp:irc-renv ltv-env)
-			      (cmp:jit-constant-unique-string-ptr "top-level")
-			      cmp:*gv-source-file-info-handle*
-			      (cmp:irc-i64-*current-source-pos-info*-filepos)
-			      (cmp:irc-i32-*current-source-pos-info*-lineno)
-			      (cmp:irc-i32-*current-source-pos-info*-column)
-			      cmp:*load-time-value-holder-global-var*
-			      ))
-	 index))
+       (if (eq cleavir-generate-ast:*compiler* 'cl:compile-file)
+           ;; COMPLE-FILE will generate a function for the form in the Module
+           ;; and arrange for it's evaluation at load time
+           (multiple-value-bind (index fn)
+               (cmp:compile-ltv-thunk "ltv-literal" form nil)
+             (cmp:with-ltv-function-codegen (result ltv-env)
+               (cmp:irc-intrinsic "invokeTopLevelFunction" 
+                                  result 
+                                  fn 
+                                  (cmp:irc-renv ltv-env)
+                                  (cmp:jit-constant-unique-string-ptr "top-level")
+                                  cmp:*gv-source-file-info-handle*
+                                  (cmp:irc-i64-*current-source-pos-info*-filepos)
+                                  (cmp:irc-i32-*current-source-pos-info*-lineno)
+                                  (cmp:irc-i32-*current-source-pos-info*-column)
+                                  cmp:*load-time-value-holder-global-var*
+                                  ))
+             index)
+           ;; COMPILE on the other hand evaluates the form and puts its
+           ;; value in the run-time environment
+           (let ((value (eval form)))
+             (cmp:codegen-rtv nil value nil))))
       )))
 
 

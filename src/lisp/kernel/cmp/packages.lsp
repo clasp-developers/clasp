@@ -42,6 +42,7 @@
           cmp-log
           cmp-log-dump
           codegen-literal
+          codegen-rtv
           codegen-symbol
           compile-error-if-not-enough-arguments
           compile-in-env
