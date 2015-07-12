@@ -40,9 +40,9 @@
 
 (defun compile-clasp (from-mod to-mod &key (recompile t) reload (system *cleavir-system*) dry-run dont-link)
   (pushnew :clos *features*)
-  (pushnew :cleavir *features*)
-  (core:pathname-translations "cleavir-boehm" '(("**;*.*" #P"SYS:build;system;cleavir-boehm;**;*.*")))
-  (core:pathname-translations "cleavir-mps" '(("**;*.*" #P"SYS:build;system;cleavir-mps;**;*.*")))
+  (pushnew :cclasp *features*)
+  (core:pathname-translations "cclasp-boehm" '(("**;*.*" #P"SYS:build;system;cclasp-boehm;**;*.*")))
+  (core:pathname-translations "cclasp-mps" '(("**;*.*" #P"SYS:build;system;cclasp-mps;**;*.*")))
   (let* ((core:*target-backend* (core:default-target-backend))
 	 (compiler-symbol (find-symbol "*COMPILER*" "CLEAVIR-GENERATE-AST")))
     (setf (symbol-value compiler-symbol) 'cl:compile-file)
@@ -55,6 +55,8 @@
 	    (cmp:link-system-lto (core:target-backend-pathname core:+image-pathname+)
 				 :lisp-bitcode-files bitcode-files
 				 :prologue-form '(progn
+                                                  (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
+                                                  (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
 						  (if (member :interactive *features*) 
 						      (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n"
 								    (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))

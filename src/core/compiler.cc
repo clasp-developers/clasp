@@ -120,7 +120,7 @@ T_mv core_mangleName(Symbol_sp sym, bool is_function) {
 
 #define ARGS_core_startupImagePathname "()"
 #define DECL_core_startupImagePathname ""
-#define DOCS_core_startupImagePathname "startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cleavir-boehm, cleavir-mps based on *features* :ECL-MIN, :USE-MPS, :BCLASP"
+#define DOCS_core_startupImagePathname "startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cclasp-boehm, cclasp-mps based on *features* :ECL-MIN, :USE-MPS, :BCLASP"
 T_sp core_startupImagePathname() {
   _G();
   Cons_sp features = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue());
@@ -132,7 +132,7 @@ T_sp core_startupImagePathname() {
     if (bclasp.notnilp()) {
       strStage = "full";
     } else {
-      strStage = "cleavir";
+      strStage = "cclasp";
     }
   }
   // Now check if the executable name contains bclasp or cclasp
@@ -141,7 +141,7 @@ T_sp core_startupImagePathname() {
   if ( executable.find("bclasp") != string::npos ) {
     strStage = "full";
   } else if ( executable.find("cclasp") != string::npos ) {
-    strStage = "cleavir";
+    strStage = "cclasp";
   }
   string strGc = "boehm";
   if (mps.notnilp())

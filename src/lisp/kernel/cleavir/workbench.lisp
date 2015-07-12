@@ -16,6 +16,9 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (print (core:getpid)))
 
+(clasp-cleavir::cleavir-compile-file "sys:tests;tmacrolet.lsp")
+
+
 (print "Hello")
 (clasp-cleavir::cleavir-compile-file "sys:tests;tmacro.lsp")
 

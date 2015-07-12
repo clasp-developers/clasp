@@ -115,7 +115,7 @@ T_sp cl_lispImplementationType() {
 T_sp cl_lispImplementationVersion() {
   _G();
   stringstream ss;
-  List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cleavir);
+  List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cclasp);
   if ( cleavir.notnilp() ) {
     ss << "cclasp-";
   }
