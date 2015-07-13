@@ -173,7 +173,8 @@
 (defun create-module-pass-manager-for-lto (&key output-pathname debug-ir)
   (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
          (pass-manager (llvm-sys:make-pass-manager)))
-;;    (llvm-sys:populate-module-pass-manager pass-manager-builder pass-manager)
+    ;;    (llvm-sys:populate-module-pass-manager pass-manager-builder pass-manager)
+;;    (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-pass))
     (llvm-sys:populate-ltopass-manager pass-manager-builder pass-manager nil)
 ;;    (llvm-sys:add-global-boot-functions-size-pass pass-manager)   ;; I do this outside of a module pass
 #|    (when debug-ir

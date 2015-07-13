@@ -29,6 +29,10 @@ boehm-cleavir:
 	make boehm
 	make cclasp
 
+cclasp-boehm-with-addons:
+	make cclasp-boehm
+	make cclasp-boehm-addons
+
 cclasp-boehm:
 	$(BCLASP_BOEHM) -l "buildCleavirClasp.lsp"
 

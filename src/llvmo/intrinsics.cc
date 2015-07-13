@@ -65,6 +65,8 @@ extern "C" {
 
 using namespace core;
 
+
+
 #pragma GCC visibility push(default)
 
 extern "C" {
@@ -74,35 +76,31 @@ LispCallingConventionPtr lccGlobalFunction(core::Symbol_sp sym) {
   return NULL;
 }
 
-struct twoVals {
-  twoVals(){};
-  twoVals(void *o, size_t t) : px(o), num(t){};
-  void *px;
-  size_t num;
+typedef enum { noFunctionBoundToSymbol
+               , badKeywordArgument
+               , couldNotCoerceToClosure
+               , destinationMustBeActivationFrame
+               , invalidIndexForFunctionFrame
+               } ErrorCode;
+
+void errorMessage(ErrorCode err, core::T_sp arg0=_Nil<core::T_O>(), core::T_sp arg1=_Nil<core::T_O>(), core::T_sp arg2=_Nil<core::T_O>() ) {
+  switch (err) {
+  case noFunctionBoundToSymbol:
+      SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % _rep_(arg0) );
+  case badKeywordArgument:
+      SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(arg0));
+  case couldNotCoerceToClosure:
+      SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg0));
+  case destinationMustBeActivationFrame:
+      SIMPLE_ERROR(BF("Destination must be ActivationFrame"));
+  case invalidIndexForFunctionFrame:
+      SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
+
+  };
+};
 };
 
-#if 0
-    T_mv testTwoReturns()
-    {
-	T_mv foo((void*)&testTwoReturns,1);
-	return foo;
-    }
-#endif
 
-int testVarargs(int numargs, ...) {
-  //        printf("%s:%d Entered testVarargs with numargs=%d: ", __FILE__, __LINE__, numargs );
-  int i(0);
-  va_list argp;
-  va_start(argp, numargs);
-  for (; numargs; --numargs) {
-    i = va_arg(argp, int);
-    //            printf("%d ", i );
-  }
-  va_end(argp);
-  //        printf("\n");
-  return i;
-}
-};
 extern "C" {
 
 const std::type_info &typeidCoreCatchThrow = typeid(core::CatchThrow);
@@ -117,7 +115,7 @@ uint _LLVMLowLevelTraceQueueIn = 0;
 uint _LLVMLowLevelTraceQueueWrapped = false;
 uint _LLVMLowLevelTraceQueue[LOW_LEVEL_TRACE_QUEUE_SIZE];
 
-void lowLevelTrace(uint traceid) {
+NOINLINE void lowLevelTrace(uint traceid) {
   if (comp::_sym_STARlowLevelTracePrintSTAR->symbolValue().isTrue()) {
     printf("+++ lowLevelTrace[%d]\n", traceid);
   }
@@ -152,32 +150,17 @@ void dumpLowLevelTrace(int numLowLevels) {
 };
 
 extern "C" {
-#if 0
-    TAGGED_PTR va_vararg(va_list ap)
-    {
-	return va_arg(ap,TAGGED_PTR);
-    }
 
-    void generateTspFromTAGGED_PTR(core::T_sp* resultP, TAGGED_PTR x)
-    {
-	(*resultP) = gctools::smart_ptr<T_O>(x);
-    }
-#endif
-
-void va_tooManyArgumentsException(const char *funcName, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments) {
-  _G();
+NOINLINE void va_tooManyArgumentsException(const char *funcName, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments) {
   SIMPLE_ERROR(BF("Too many arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
 }
 
-void va_notEnoughArgumentsException(const char *funcName, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments) {
-  _G();
+NOINLINE void va_notEnoughArgumentsException(const char *funcName, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments) {
   SIMPLE_ERROR(BF("Too few arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
 }
 
-extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, core::T_O **argArray, size_t argIdx) {
-  _G();
-  if (argIdx >= nargs)
-    return;
+NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, core::T_O **argArray, size_t argIdx) {
+  if (argIdx >= nargs) return;
   stringstream ss;
   for (int i(0); i < nargs; ++i) {
     ss << _rep_(core::T_sp(argArray[i])) << " ";
@@ -186,63 +169,54 @@ extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs
   //        core::throwUnrecognizedKeywordArgumentError(argArray[argIdx]);
 }
 
+#if 0
 void va_fillActivationFrameWithRequiredVarargs(core::ActivationFrame_sp *afP, int nargs, core::T_sp *ap) {
   for (int i = 0; i < nargs; ++i) {
-    //	    core::T_sp p = ap[i];
     (*afP)->operator[](i) = ap[i];
   }
 }
+#endif
+
 
 Closure *va_coerceToClosure(core::T_sp *argP) {
-  _G();
   if (!(*argP).objectp()) {
-    SIMPLE_ERROR(BF(" symbol %s") % _rep_((*argP)));
+    errorMessage(couldNotCoerceToClosure,*argP);
   }
   core::Function_sp func = core::coerce::functionDesignator((*argP));
   return &(*func->closure);
 }
 
-core::Closure *va_symbolFunction(core::Symbol_sp *symP) {
-  _G();
-#ifdef RUN_SAFE
-  if (!(*symP)) {
-    SIMPLE_ERROR(BF("The head of the form %s is not a function designator") % _rep_((*symP)));
-  }
-#endif
-  if (!(*symP)->fboundp()) {
-    SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % _rep_((*symP)));
-  }
-  core::Function_sp func = gc::As<Function_sp>((*symP)->_Function);
+
+ALWAYS_INLINE core::Closure *va_symbolFunction(core::Symbol_sp *symP) {
+  if (!(*symP)->fboundp()) errorMessage(noFunctionBoundToSymbol,*symP);
+  core::Function_sp func((gc::Tagged)(*symP)->_Function.theObject);
   core::Closure *funcPtr = &(*func->closure);
-  ASSERTF(funcPtr, BF("Tried to look up symbol-function for %s - got NULL") % _rep_(*symP).c_str());
   return funcPtr;
 }
 
-core::Closure *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP) {
-  _G();
-  LOG(BF("About to invoke lexicalFunction depth[%d] index[%d]") % depth % index);
+ALWAYS_INLINE core::Closure *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP) {
   core::Function_sp func = core::Environment_O::clasp_lookupFunction(*evaluateFrameP, depth, index);
   ASSERTF(func.objectp(), BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s") % depth % index % _rep_(*evaluateFrameP));
   return &(*func->closure);
 }
 
-void mv_FUNCALL(core::T_mv *resultP, core::Closure *closure, LCC_ARGS) {
+ALWAYS_INLINE void mv_FUNCALL(core::T_mv *resultP, core::Closure *closure, LCC_ARGS) {
   ASSERTF(resultP, BF("mv_FUNCALL resultP is NULL!!!"));
   closure->invoke(resultP, LCC_PASS_ARGS);
 }
 
-void sp_FUNCALL(core::T_sp *resultP, core::Closure *closure, LCC_ARGS_BASE, ...) {
+ALWAYS_INLINE void sp_FUNCALL(core::T_sp *resultP, core::Closure *closure, LCC_ARGS_BASE, ...) {
   ASSERTF(resultP, BF("sp_FUNCALL resultP is NULL!!!"));
-  core::T_mv result_mv;
-  closure->invoke(&result_mv, LCC_PASS_ARGS);
-  (*resultP) = result_mv;
+  T_mv result;
+  closure->invoke(&result, LCC_PASS_ARGS);
+  *resultP = result;
 }
 
-void mv_FUNCALL_activationFrame(core::T_mv *resultP, core::Closure *closure, core::ActivationFrame_sp af) {
+ALWAYS_INLINE void mv_FUNCALL_activationFrame(core::T_mv *resultP, core::Closure *closure, core::ActivationFrame_sp af) {
   (*resultP) = core::eval::applyClosureToActivationFrame(closure, af);
 }
 
-void sp_FUNCALL_activationFrame(core::T_sp *resultP, core::Closure *closure, core::ActivationFrame_sp af) {
+ALWAYS_INLINE void sp_FUNCALL_activationFrame(core::T_sp *resultP, core::Closure *closure, core::ActivationFrame_sp af) {
   (*resultP) = core::eval::applyClosureToActivationFrame(closure, af);
 }
 
@@ -266,23 +240,17 @@ extern int va_allowOtherKeywords(int saw_aok, std::size_t nargs, core::T_O **arg
 }
 
 void va_ifBadKeywordArgumentException(int allowOtherKeys, std::size_t badKwIdx, std::size_t nargs, core::T_O **argArray) {
-  if (allowOtherKeys == 2)
-    return;
-  if (badKwIdx != 65536) {
-    SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(core::T_sp(argArray[badKwIdx])));
-  }
+  if (allowOtherKeys == 2) return;
+  if (badKwIdx != 65536) errorMessage(badKeywordArgument,core::T_sp(argArray[badKwIdx]));
 }
-};
-
-extern "C" {
 
 void newFunction_sp(core::Function_sp *sharedP) {
-  _G();
   ASSERT(sharedP != NULL);
   new (sharedP) core::Function_sp();
 }
 #pragma clang diagnostic push
 //#pragma clang diagnostic ignored "-Wunused-local-typedef"
+#if 0
 void destructFunction_sp(core::Function_sp *sharedP) {
   _G();
   ASSERT(sharedP != NULL);
@@ -319,13 +287,15 @@ void destructAFsp(core::ActivationFrame_sp *frameP) {
     (*frameP).~dummy();
   }
 }
+#endif
 #pragma clang diagnostic pop
 
-void newTsp(core::T_sp *sharedP) {
-  _G();
+ALWAYS_INLINE void newTsp(core::T_sp *sharedP) {
   ASSERT(sharedP != NULL);
   new (sharedP) core::T_sp();
 }
+
+#if 0
 
 void resetTsp(core::T_sp *sharedP) {
   _G();
@@ -334,25 +304,21 @@ void resetTsp(core::T_sp *sharedP) {
 }
 
 void makeUnboundTsp(core::T_sp *sharedP) {
-  _G();
-  ASSERT(sharedP != NULL);
   (*sharedP) = _Unbound<T_O>();
 }
-
-extern int compareTsp(core::T_sp *xP, core::T_sp *yP) {
+#endif
+#if 0
+ALWAYS_INLINE extern int compareTsp(core::T_sp *xP, core::T_sp *yP) {
   //	ASSERT(xP!=NULL);
   //	ASSERT(yP!=NULL);
   return ((*xP) == (*yP)) ? 1 : 0;
 }
-
-extern int compareTspTptr(core::T_sp *xP, core::T_O **yP) {
-  //	ASSERT(xP!=NULL);
-  //	ASSERT(yP!=NULL);
-  //	return ((*xP).px==(*yP)) ? 1 : 0;
+#endif
+ALWAYS_INLINE extern int compareTspTptr(core::T_sp *xP, core::T_O **yP) {
   return ((*xP).raw_() == (*yP)) ? 1 : 0;
 }
 
-extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, core::T_O *arg1, core::T_O *arg2, va_list args) {
+NOINLINE extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, core::T_O *arg1, core::T_O *arg2, va_list args) {
   _G();
   //        printf("%s:%d copyArgs destP=%p  nargs=%d\n", __FILE__, __LINE__, destP, nargs);
   switch (nargs) {
@@ -383,46 +349,38 @@ extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, core::T_O *a
   }
 }
 
-extern void sp_copyTsp(core::T_sp *destP, core::T_sp *sourceP) {
-  _G();
+ALWAYS_INLINE extern void sp_copyTsp(core::T_sp *destP, core::T_sp *sourceP) {
   //	ASSERT(sourceP!=NULL);
   //	ASSERT(destP!=NULL);
   *destP = *sourceP;
 }
 
-extern void mv_copyTsp(core::T_mv *destP, core::T_sp *sourceP) {
-  _G();
+ALWAYS_INLINE extern void mv_copyTsp(core::T_mv *destP, core::T_sp *sourceP) {
   ASSERT(sourceP != NULL);
   ASSERT(destP != NULL);
   *destP = Values(*sourceP);
 }
 
-extern void sp_copyTspTptr(core::T_sp *destP, core::T_O **sourceP) {
-  _G();
+ALWAYS_INLINE extern void sp_copyTspTptr(core::T_sp *destP, core::T_O **sourceP) {
   *destP = gc::smart_ptr<core::T_O>((gc::Tagged) * sourceP);
 }
 
-extern void mv_copyTspTptr(core::T_mv *destP, core::T_O **sourceP) {
-  _G();
+ALWAYS_INLINE extern void mv_copyTspTptr(core::T_mv *destP, core::T_O **sourceP) {
   ASSERT(sourceP != NULL);
   ASSERT(destP != NULL);
   *destP = Values(gc::smart_ptr<core::T_O>((gc::Tagged) * sourceP));
 }
-
-void newTmv(core::T_mv *sharedP) {
-  _G();
-  ASSERT(sharedP != NULL);
+ALWAYS_INLINE void newTmv(core::T_mv *sharedP) {
   new (sharedP) core::T_mv();
 }
 
 void resetTmv(core::T_mv *sharedP) {
-  _G();
-  ASSERT(sharedP != NULL);
-  (*sharedP).reset_();
+MAY_BE_DEPRECIATED();
+ASSERT(sharedP != NULL);
+(*sharedP).reset_();
 }
 
 extern void mv_copyTmv(core::T_mv *destP, core::T_mv *sourceP) {
-  _G();
   ASSERT(sourceP != NULL);
   ASSERT(destP != NULL);
   *destP = *sourceP;
@@ -440,15 +398,14 @@ extern void sp_copyTmv(core::T_sp *destP, core::T_mv *sourceP) {
 extern "C" {
 
 /*! This copies a T_mv from source to dest */
-void mv_copyTmvOrSlice(core::T_mv *destP, core::T_mv *sourceP) {
+ALWAYS_INLINE void mv_copyTmvOrSlice(core::T_mv *destP, core::T_mv *sourceP) {
   //	printf("intrinsics.cc mv_copyTmvOrSlice copying %d values\n", (*sourceP).number_of_values());
   (*destP) = (*sourceP);
 }
 
 /*! This slices a T_mv in source down to a T_sp in dest */
-void sp_copyTmvOrSlice(core::T_sp *destP, core::T_mv *sourceP) {
+ALWAYS_INLINE void sp_copyTmvOrSlice(core::T_sp *destP, core::T_mv *sourceP) {
   if ((*sourceP).number_of_values() == 0) {
-    //	    printf("intrinsics.cc sp_copyTmvOrSlice slicing number_of_values=0\n");
     (*destP) = _Nil<T_O>();
   } else
     (*destP) = (*sourceP);
@@ -456,56 +413,23 @@ void sp_copyTmvOrSlice(core::T_sp *destP, core::T_mv *sourceP) {
 };
 
 extern "C" {
-
-void newAFsp(core::ActivationFrame_sp *frameP) {
-  _G();
-  ASSERT(frameP != NULL);
-  new (frameP) core::ActivationFrame_sp();
-}
-
-void newAFsp_ValueFrameOfSize(core::ActivationFrame_sp *frameP, int size) {
-  _G();
-  ASSERT(frameP != NULL);
-  new (frameP) core::ActivationFrame_sp();
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(size, _Nil<core::T_O>()));
-  (*frameP) = valueFrame;
-}
-
-void resetAFsp(core::ActivationFrame_sp *frameP) {
-  _G();
-  ASSERT(frameP != NULL);
-  (*frameP).reset_();
-}
-
-extern void copyAFsp(core::ActivationFrame_sp *destP, core::ActivationFrame_sp *sourceP) {
-  _G();
-  ASSERT(sourceP != NULL);
-  ASSERT(destP != NULL);
-  *destP = *sourceP;
-}
-
-void sp_makeNil(core::T_sp *result) {
-  _G();
+ALWAYS_INLINE void sp_makeNil(core::T_sp *result) {
   (*result) = _Nil<core::T_O>();
-  //	printf("%s:%d sp_makeNil nil@%p    cl::_sym_nil@%p\n", __FILE__, __LINE__, (*result).raw_(), cl::_sym_nil.raw_());
 }
 
-void mv_makeNil(core::T_mv *result) {
-  _G();
+ALWAYS_INLINE void mv_makeNil(core::T_mv *result) {
   (*result) = Values(_Nil<core::T_O>());
 }
 
-void makeT(core::T_sp *result) {
-  _G();
+ALWAYS_INLINE void makeT(core::T_sp *result) {
   (*result) = _lisp->_true();
 }
 
-void makeCons(core::T_sp *resultConsP, core::T_sp *carP, core::T_sp *cdrP) {
-  _G();
+ALWAYS_INLINE void makeCons(core::T_sp *resultConsP, core::T_sp *carP, core::T_sp *cdrP) {
   (*resultConsP) = core::Cons_O::create(*carP, *cdrP);
 }
 
-core::T_O **getMultipleValues(int offset) {
+NOINLINE core::T_O **getMultipleValues(int offset) {
   return &lisp_multipleValues().callingArgsStart()[offset];
 }
 
@@ -532,7 +456,6 @@ int isNilTsp(core::T_sp *valP) {
 }
 
 void internSymbol_tsp(core::T_sp *resultP, const char *symbolNameP, const char *packageNameP) {
-  _G();
   core::Symbol_sp newSym = _lisp->internWithPackageName(packageNameP, symbolNameP);
 #ifdef DEBUG_LOAD_TIME_VALUES
 //        printf("%s:%d  internSymbol_tsp(%s::%s)  newSym.px_ref() = %p   cl::destructuring-bind.px_ref()=%p\n", __FILE__, __LINE__, packageNameP, symbolNameP, newSym.px_ref(), cl::_sym_destructuring_bind.px_ref());
@@ -549,27 +472,23 @@ void makeSymbol_tsp(core::T_sp *resultP, const char *symbolNameP) {
 }
 
 void internSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP, const char *packageNameP) {
-  _G();
   core::Symbol_sp newSym = _lisp->internWithPackageName(packageNameP, symbolNameP);
   ASSERTNOTNULL(newSym);
   (*resultP) = newSym;
 }
 
 void makeSymbol_symsp(core::Symbol_sp *resultP, const char *symbolNameP) {
-  _G();
   core::Symbol_sp newSym = core::Symbol_O::create(symbolNameP);
   ASSERTNOTNULL(newSym);
   (*resultP) = newSym;
 }
 
 void makeFixnum(core::T_sp *fnP, gc::Fixnum s) {
-  _G();
   ASSERT(fnP != NULL);
   (*fnP) = core::Fixnum_sp(core::make_fixnum(s));
 }
 
 void makeCharacter(core::T_sp *fnP, int s) {
-  _G();
   ASSERT(fnP != NULL);
   (*fnP) = core::clasp_make_character((char)s);
 }
@@ -821,7 +740,7 @@ extern void setParentOfActivationFrameTPtr(core::T_sp *resultP, core::T_O *paren
     af->setParentFrame(parentP);
     return;
   }
-  SIMPLE_ERROR(BF("Destination was not ActivationFrame"));
+  errorMessage(destinationMustBeActivationFrame);
 }
 
 extern void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp) {
@@ -833,12 +752,11 @@ extern void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp
     af->setParentFrame(parentP);
     return;
   }
-  SIMPLE_ERROR(BF("Destination was not ActivationFrame"));
+  errorMessage(destinationMustBeActivationFrame);
 }
 
 extern void attachDebuggingInfoToValueFrame(core::ActivationFrame_sp *resultP,
                                             core::T_sp *debuggingInfoP) {
-  _G();
   ASSERT(resultP != NULL);
   ASSERT(debuggingInfoP != NULL);
   ASSERT((*resultP));
@@ -859,7 +777,6 @@ ALWAYS_INLINE extern core::T_sp *valueFrameReference(core::ActivationFrame_sp *f
 }
 
 ALWAYS_INLINE extern core::T_sp *valueFrameReferenceWithOffset(core::ActivationFrame_sp *frameP, int idx, int offset) {
-  _G();
   int ridx = idx + offset;
   ASSERT(frameP != NULL);
   ASSERT(*frameP);
@@ -880,12 +797,13 @@ extern void makeFunctionFrame(core::ActivationFrame_sp *resultP, int numargs, co
 }
 
 extern core::T_sp *functionFrameReference(core::ActivationFrame_sp *frameP, int idx) {
-  _G();
   ASSERT(frameP != NULL);
   ASSERT(frameP->objectp());
   core::FunctionFrame_sp frame = gc::As<core::FunctionFrame_sp>((*frameP));
   if (idx < 0 || idx >= frame->length()) {
-    SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % idx % frame->length());
+    errorMessage(invalidIndexForFunctionFrame
+                 ,clasp_make_fixnum(idx)
+                 ,clasp_make_fixnum(frame->length()));
   }
   core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(idx));
   return pos_gc_safe;
@@ -1902,7 +1820,7 @@ void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *
   }
 }
 
-core::T_O **cc_loadTimeValueReference(core::LoadTimeValues_O **ltvPP, size_t index) {
+ALWAYS_INLINE core::T_O **cc_loadTimeValueReference(core::LoadTimeValues_O **ltvPP, size_t index) {
   ASSERT(ltvPP != NULL);
   ASSERT(*ltvPP != NULL);
   core::LoadTimeValues_O &ltv = **ltvPP;
@@ -2032,7 +1950,6 @@ T_O *cc_pushLandingPadFrame() {
 }
 
 void cc_popLandingPadFrame(T_O *frameFixnum) {
-  _G();
   ASSERT(gctools::tagged_fixnump(frameFixnum));
   size_t frameIndex = gctools::untag_fixnum(frameFixnum);
 #ifdef DEBUG_FLOW_CONTROL

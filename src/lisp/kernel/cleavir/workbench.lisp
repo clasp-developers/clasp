@@ -4,7 +4,6 @@
                             :target-backend (default-target-backend))
               :print t)
 
-
 (progn  ;; Set up everything for building cclasp from bclasp
   (format t "Loading ASDF system~%")
   (time (require :asdf))
@@ -16,10 +15,51 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (print (core:getpid)))
 
+(progn
+  (clasp-cleavir::cleavir-compile
+   'xx
+   '(lambda ()
+     (format t "Inside returning (should be EXIT-LAMBDA)--> ~s~%"
+      (block nil
+	(let ((nle (lambda ()
+		     (format t "In exit lambda~%")
+		     (return-from nil 'exit-lambda))))
+	  (unwind-protect
+	       (funcall nle)
+	    (format t "In protected form~%")))))))
+  (xx)
+  (clasp-cleavir::cleavir-compile
+   'yy
+   '(lambda ()
+     (block nil
+       (let ((nle (lambda ()
+		    (format t "In exit lambda~%")
+		    (return-from nil 'exit-lambda))))
+	 (unwind-protect
+	      (funcall nle)
+	   (format t "In protected form~%"))))) :debug t)
+  (format t "Outside returning (should be EXIT-LAMBDA)--> ~s~%" (yy)))
+
+
+(setq cmp:*low-level-trace-print* t)
+(clasp-cleavir::cleavir-compile-file "sys:tests;tnle.lsp")
+(load "sys:tests;tnle.fasl")
+(load "sys:tests;tnle.bc")
+(let ((x (xx))) (format t "In let returning (should be EXIT-VALUE): ~s~%" x))
+
+(clasp-cleavir::cleavir-compile-file "sys:tests;tnle2.lsp")
+(load "sys:tests;tnle2.fasl")
+(let ((x (xx))) (format t "In let returning: ~a~%" x))
+
+
+(clasp-cleavir::cleavir-compile-file "sys:tests;tunwind.lsp")
+(load "sys:tests;tunwind.fasl")
+(xx)
+(print "Hello")
+
 (clasp-cleavir::build-and-draw-ast "/tmp/test.png" '(lambda () (load-time-value (print 10))))
 
 (clasp-cleavir::cleavir-compile 'foo '(lambda () (load-time-value (print 10))) :debug t)
-
 
 (print "Hello")
 (clasp-cleavir::cleavir-compile-file "sys:tests;tmacro.lsp")

@@ -114,29 +114,6 @@
 ;;--------------------------------------------------
 
 
-#+(or)(defun compile-copy-only-required-arguments (new-env ; The environment that will be enriched by the copied arguments
-                                                   lambda-list-handler ; Names of the copied arguments
-                                                   dest-activation-frame ; where the arguments will be copied to
-                                                   argument-holder) ; (contains narg and va-list )
-        (let ((number-of-required-arguments (number-of-required-arguments lambda-list-handler))
-              (nargs (first argument-holder))
-              (va-list (second argument-holder))
-              )
-          (compile-error-if-wrong-number-of-arguments nargs number-of-required-arguments )
-          ;; enrich the new-env with the local variables
-          (dolist (classified-local (classified-symbols lambda-list-handler))
-            (cond
-              ((eq (car classified-local) 'ext:lexical-var)
-               (let ((local-sym (cadr classified-local))
-                     (local-idx (cddr classified-local)))
-                 (value-environment-define-lexical-binding new-env local-sym local-idx)))
-              ((eq (car classified-local) 'ext:special-var)
-               (value-environment-define-special-binding new-env (cdr classified-local)))
-              (t (error "Illegal variable classification: ~a" classified-local))))
-          (irc-intrinsic "va_fillActivationFrameWithRequiredVarargs" dest-activation-frame nargs va-list)
-          ))
-
-
 
 (defun compile-error-if-not-enough-arguments (nargs lv-required-number-of-arguments)
   "If nargs < lv-required-number-of-arguments then throw an exception - no cleanup needed because no new environment was created yet"

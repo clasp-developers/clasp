@@ -1570,7 +1570,14 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   try {
     result = eval::funcall(protected_fn);
   } catch (...) {
+    // Save any return value that may be in the multiple value return array
+    gctools::Vec0<T_sp> savemv;
+    T_mv result;
+    result.readFromMultipleValue0();
+    result.saveToVec0(savemv);
     eval::funcall(cleanup_fn);
+    result.loadFromVec0(savemv);
+    result.saveToMultipleValue0();
     throw;
   }
   gctools::Vec0<T_sp> savemv;

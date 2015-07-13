@@ -47,6 +47,7 @@ obj intrinsics_bitcode_boehm : intrinsics.cc
 	:
 	<implicit-dependency>/internals/core//core
 	<implicit-dependency>/internals/clbind//clbind
+        <optimization>speed
 	<link>static
         <gc>boehm
 	<cxxflags>"-flto -emit-llvm" ;
