@@ -1127,7 +1127,6 @@ Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context) {
 #define DECL_af_module_get_function_list ""
 #define DOCS_af_module_get_function_list "module_get_function_list"
 core::List_sp af_module_get_function_list(Module_sp module) {
-  _G();
   ql::list fl(_lisp);
   llvm::Module::FunctionListType &functionList = module->wrappedPtr()->getFunctionList();
   for (llvm::Module::FunctionListType::const_iterator it = functionList.begin();
@@ -1565,12 +1564,11 @@ FunctionPassManager_sp FunctionPassManager_O::make(llvm::Module *module) {
 EXPOSE_CLASS(llvmo, FunctionPassManager_O);
 
 void FunctionPassManager_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<FunctionPassManager_O>()
-      .def("function-pass-manager-add", &llvm::FunctionPassManager::add)
-      .def("doInitialization", &llvm::FunctionPassManager::doInitialization)
+    .def("function-pass-manager-add", &llvm::FunctionPassManager::add)
+    .def("doInitialization", &llvm::FunctionPassManager::doInitialization)
     .def("doFinalization",&llvm::FunctionPassManager::doFinalization)
-      .def("function-pass-manager-run", &llvm::FunctionPassManager::run);
+    .def("function-pass-manager-run", &llvm::FunctionPassManager::run);
   core::af_def(LlvmoPkg, "makeFunctionPassManager", &FunctionPassManager_O::make, ARGS_FunctionPassManager_O_make, DECL_FunctionPassManager_O_make, DOCS_FunctionPassManager_O_make);
 };
 
