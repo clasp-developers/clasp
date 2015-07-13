@@ -2008,6 +2008,12 @@ struct from_object<llvm::FunctionPassManager *, std::true_type> {
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::FunctionPassManager_sp>(object)->wrappedPtr(); };
 };
+template <>
+struct from_object<llvm::FunctionPassManager &, std::true_type> {
+  typedef llvm::FunctionPassManager &DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(*gc::As<llvmo::FunctionPassManager_sp>(object)->wrappedPtr()){};
+};
 };
     ;
 /* to_object translators */
@@ -2016,7 +2022,6 @@ namespace translate {
 template <>
 struct to_object<llvm::FunctionPassManager *> {
   static core::T_sp convert(llvm::FunctionPassManager *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::FunctionPassManager_O, llvm::FunctionPassManager *>(ptr)));
   }
 };

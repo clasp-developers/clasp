@@ -1380,10 +1380,11 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	     (handle (multiple-value-bind (the-source-file-info the-handle)
 			 (core:source-file-info pathname)
 		       the-handle)))
-	(with-module ( :module *the-module*
-                               :function-pass-manager (create-function-pass-manager-for-compile *the-module*)
-                               :source-pathname pathname
-                               :source-file-info-handle handle)
+	(with-module (:module
+                      *the-module*
+                      :function-pass-manager (create-function-pass-manager-for-compile *the-module*)
+                      :source-pathname pathname
+                      :source-file-info-handle handle)
 	  (multiple-value-bind (compiled-function warnp failp)
 	      (compile* bind-to-name definition env pathname)
 	    (when bind-to-name (setf-symbol-function bind-to-name compiled-function))

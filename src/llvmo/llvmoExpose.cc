@@ -1569,6 +1569,7 @@ void FunctionPassManager_O::exposeCando(core::Lisp_sp lisp) {
   core::externalClass_<FunctionPassManager_O>()
       .def("function-pass-manager-add", &llvm::FunctionPassManager::add)
       .def("doInitialization", &llvm::FunctionPassManager::doInitialization)
+    .def("doFinalization",&llvm::FunctionPassManager::doFinalization)
       .def("function-pass-manager-run", &llvm::FunctionPassManager::run);
   core::af_def(LlvmoPkg, "makeFunctionPassManager", &FunctionPassManager_O::make, ARGS_FunctionPassManager_O_make, DECL_FunctionPassManager_O_make, DOCS_FunctionPassManager_O_make);
 };
@@ -1717,16 +1718,32 @@ void PassManagerBuilderSetfInliner(PassManagerBuilder_sp pmb, llvm::Pass* inline
   pmb->wrappedPtr()->Inliner = inliner;
 };
 
+#define ARGS_passManagerBuilderSetfOptLevel "()"
+#define DECL_passManagerBuilderSetfOptLevel ""
+#define DOCS_passManagerBuilderSetfOptLevel ""
+void PassManagerBuilderSetfOptLevel(PassManagerBuilder_sp pmb, int optLevel) {
+  pmb->wrappedPtr()->OptLevel = optLevel;
+};
+
+#define ARGS_passManagerBuilderSetfSizeLevel "()"
+#define DECL_passManagerBuilderSetfSizeLevel ""
+#define DOCS_passManagerBuilderSetfSizeLevel ""
+void PassManagerBuilderSetfSizeLevel(PassManagerBuilder_sp pmb, int level) {
+  pmb->wrappedPtr()->SizeLevel = level;
+};
+
 EXPOSE_CLASS(llvmo, PassManagerBuilder_O);
 
 void PassManagerBuilder_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
-
   core::externalClass_<PassManagerBuilder_O>()
-      .def("populateModulePassManager", &llvm::PassManagerBuilder::populateModulePassManager)
-      .def("populateLTOPassManager", &llvm::PassManagerBuilder::populateLTOPassManager);
+    .def("populateModulePassManager", &llvm::PassManagerBuilder::populateModulePassManager)
+    .def("populateFunctionPassManager", &llvm::PassManagerBuilder::populateFunctionPassManager)
+    .def("populateLTOPassManager", &llvm::PassManagerBuilder::populateLTOPassManager)
+     ;
   core::af_def(LlvmoPkg, "make-PassManagerBuilder", &PassManagerBuilder_O::make, ARGS_PassManagerBuilder_O_make, DECL_PassManagerBuilder_O_make, DOCS_PassManagerBuilder_O_make);
   core::af_def(LlvmoPkg, "pass-manager-builder-setf-inliner", &PassManagerBuilderSetfInliner);
+  core::af_def(LlvmoPkg, "pass-manager-builder-setf-OptLevel", &PassManagerBuilderSetfOptLevel);
+  core::af_def(LlvmoPkg, "pass-manager-builder-setf-SizeLevel", &PassManagerBuilderSetfSizeLevel);
 };
 
 void PassManagerBuilder_O::exposePython(core::Lisp_sp lisp) {
