@@ -102,6 +102,7 @@
           with-catch
           with-dbg-function
           with-dbg-lexical-block
+          dbg-set-current-source-pos
           with-debug-info-generator
           with-irbuilder
           with-landing-pad

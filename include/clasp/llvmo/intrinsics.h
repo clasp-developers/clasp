@@ -37,6 +37,7 @@ namespace llvmo {
 void redirect_llvm_interface_addSymbol();
 
 void initialize_intrinsics();
+void initialize_link_intrinsics();
 }
 
 #endif

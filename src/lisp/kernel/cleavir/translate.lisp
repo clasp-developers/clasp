@@ -182,13 +182,14 @@
       ;; instruction (passed arguments)  I think I should use passed arguments
       ;; to create allocas for them.
       (cmp:with-irbuilder (*entry-irbuilder*)
-	(cmp:irc-low-level-trace :arguments)
 	(cmp:with-dbg-function ("repl-FIX"
 				:linkage-name "repl-FIX-LINKAGE-NAME"
 				:function fn
 				:function-type cmp:+fn-prototype+
 				:form *form*)
 	  (cmp:with-dbg-lexical-block (*form*)
+            (cmp:dbg-set-current-source-pos *form*)
+            (cmp:irc-low-level-trace :arguments)
 	    #+use-ownerships(loop for var being each hash-key of *ownerships*
 			       using (hash-value owner)
 			       when (and (typep var '(or
@@ -198,23 +199,31 @@
 					 #+(or)(not (member var (cleavir-ir:outputs
 								 initial-instruction))))
 			       collect (translate-datum var)))))
-      (llvm-sys:set-insert-point-basic-block body-irbuilder body-block)
-      (cmp:with-irbuilder (body-irbuilder)
-	(cmp:irc-begin-block body-block)
-	(layout-basic-block first abi)
-	(loop for block in rest
-	   for instruction = (first block)
-	   do (progn
-		#+(or)(format t "Laying out basic block: ~a~%" block)
-		#+(or)(format t "Inserting basic block for instruction: ~a~%" instruction)
-		(cmp:irc-begin-block (gethash instruction *tags*))
-		(layout-basic-block block abi))))
-      ;; Finish up by jumping from the entry block to the body block
-      (cmp:with-irbuilder (*entry-irbuilder*)
-	(cmp:irc-br body-block))
-      (cc-dbg-when *debug-log*
-		   (format *debug-log* "----------END layout-procedure ~a~%" (llvm-sys:get-name fn)))
-      (values fn :function-kind nil lambda-name))))
+
+      (cmp:with-dbg-function ("unused-with-dbg-function-name"
+                              :linkage-name (llvm-sys:get-name fn)
+                              :function fn
+                              :function-type cmp:+fn-prototype+
+                              :form *form*)
+        (cmp:with-dbg-lexical-block (*form*)
+          (cmp:dbg-set-current-source-pos *form*)
+          (llvm-sys:set-insert-point-basic-block body-irbuilder body-block)
+          (cmp:with-irbuilder (body-irbuilder)
+            (cmp:irc-begin-block body-block)
+            (layout-basic-block first abi)
+            (loop for block in rest
+               for instruction = (first block)
+               do (progn
+                    #+(or)(format t "Laying out basic block: ~a~%" block)
+                    #+(or)(format t "Inserting basic block for instruction: ~a~%" instruction)
+                    (cmp:irc-begin-block (gethash instruction *tags*))
+                    (layout-basic-block block abi))))
+          ;; Finish up by jumping from the entry block to the body block
+          (cmp:with-irbuilder (*entry-irbuilder*)
+            (cmp:irc-br body-block))
+          (cc-dbg-when *debug-log*
+                       (format *debug-log* "----------END layout-procedure ~a~%" (llvm-sys:get-name fn)))
+          (values fn :function-kind nil lambda-name))))))
 
 (defun translate (initial-instruction abi)
   (let* (#+use-ownerships(ownerships

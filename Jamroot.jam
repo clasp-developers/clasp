@@ -1,5 +1,7 @@
 import path ;
 import os ;
+import bitcode ;
+
 
 CLASP_VERSION = [ os.environ CLASP_VERSION ] ;
 

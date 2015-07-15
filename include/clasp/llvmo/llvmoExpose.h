@@ -2294,6 +2294,7 @@ class IRBuilderBase_O : public core::ExternalObject_O {
 
 protected:
   PointerToExternalType _ptr;
+  bool  _CurrentDebugLocationSet;
 
 public:
   virtual void *externalObject() const {
@@ -2311,7 +2312,7 @@ public:
   }
   static IRBuilderBase_sp create(llvm::IRBuilderBase *ptr);
   ;
-  IRBuilderBase_O() : Base(), _ptr(NULL){};
+ IRBuilderBase_O() : Base(), _ptr(NULL), _CurrentDebugLocationSet(false){};
   ~IRBuilderBase_O() {
     if (_ptr != NULL) { /* delete _ptr;*/
       _ptr = NULL;
@@ -2326,7 +2327,7 @@ public:
   void SetCurrentDebugLocation(DebugLoc_sp loc);
   /*! Set the current debug location by building a DebugLoc on the fly */
   void SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope);
-
+  core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
 }; // IRBuilderBase_O
 }; // llvmo
 TRANSLATE(llvmo::IRBuilderBase_O);

@@ -1128,10 +1128,8 @@ Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context) {
 #define DOCS_af_module_get_function_list "module_get_function_list"
 core::List_sp af_module_get_function_list(Module_sp module) {
   ql::list fl(_lisp);
-  llvm::Module::FunctionListType &functionList = module->wrappedPtr()->getFunctionList();
-  for (llvm::Module::FunctionListType::const_iterator it = functionList.begin();
-       it != functionList.end(); it++) {
-    Function_sp wrapped_func = gc::As<Function_sp>(translate::to_object<const llvm::Function &>::convert(*it));
+  for ( llvm::Function& f : *module->wrappedPtr() ) {
+    Function_sp wrapped_func = gc::As<Function_sp>(translate::to_object<const llvm::Function &>::convert(f));
     fl << wrapped_func;
   }
   return fl.cons();
@@ -2671,7 +2669,10 @@ void IRBuilderBase_O::exposeCando(core::Lisp_sp lisp) {
       .def("restoreIP", &IRBuilderBase_O::restoreIP)
       .def("saveIP", &IRBuilderBase_O::saveIP)
       .def("SetCurrentDebugLocation", &IRBuilderBase_O::SetCurrentDebugLocation)
-      .def("SetCurrentDebugLocationToLineColumnScope", &IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope);
+    .def("SetCurrentDebugLocationToLineColumnScope", &IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope)
+    .def("CurrentDebugLocation",&IRBuilderBase_O::CurrentDebugLocation)
+    ;
+  
 };
 
 void IRBuilderBase_O::exposePython(core::Lisp_sp lisp) {
@@ -2692,9 +2693,9 @@ InsertPoint_sp IRBuilderBase_O::saveIP() {
 }
 
 void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
-  _G();
   //	llvm::DebugLoc dlold = this->wrappedPtr()->getCurrentDebugLocation();
   //	printf("                       old DebugLocation: %d\n", dlold.getLine() );
+  this->_CurrentDebugLocationSet = true;
   llvm::DebugLoc &dl = loc->debugLoc();
   //	printf("%s:%d IRBuilderBase_O::SetCurrentDebugLoc changing to line %d\n", __FILE__, __LINE__, dl.getLine() );
   this->wrappedPtr()->SetCurrentDebugLocation(dl);
@@ -2703,7 +2704,7 @@ void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
 }
 
 void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope) {
-  _G();
+  this->_CurrentDebugLocationSet = true;
   llvm::DIDescriptor *didescriptor = scope->operator llvm::DIDescriptor *();
   llvm::MDNode *mdnode = didescriptor->operator llvm::MDNode *();
   llvm::DebugLoc dl = llvm::DebugLoc::get(line, col, mdnode);

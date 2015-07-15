@@ -128,5 +128,9 @@ mps-interface:
 	@echo Running parallel search and generating code when done
 	$(BCLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
 
-
+export IDIR=$(CLASP_HOME)/build/clasp/Contents/Resources/lib/release
+fix-intrinsics:
+	cp $(IDIR)/intrinsics_bitcode_boehm.o $(IDIR)/intrinsics_bitcode_boehm.bc
+	opt -strip-debug $(IDIR)/intrinsics_bitcode_boehm.bc -o=$(IDIR)/intrinsics_bitcode_boehm_stripped.bc
+	cp $(IDIR)/intrinsics_bitcode_boehm_stripped.bc $(IDIR)/intrinsics_bitcode_boehm.o
 
