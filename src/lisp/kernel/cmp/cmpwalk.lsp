@@ -31,11 +31,12 @@
   (let* ((module (llvm-create-module "code-walk-for-defmethod"))
 	 (*code-walker* code-walker-function))
     (define-primitives-in-module module)
-    (with-debug-info-generator (:module module
-                                        :pathname #P"/dev/null")
-      (with-compilation-unit ()
-        (with-module ( :module module 
-                               :source-pathname "code-walk-using-compiler")
+    (with-compilation-unit ()
+      (with-module ( :module module
+                             :optimize nil
+                             :source-pathname "code-walk-using-compiler")
+        (with-debug-info-generator (:module module
+                                            :pathname #P"/dev/null")
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
             (compile-in-env nil form env)))
         (llvm-sys::module-delete module)))))
