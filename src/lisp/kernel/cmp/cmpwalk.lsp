@@ -31,16 +31,13 @@
   (let* ((module (llvm-create-module "code-walk-for-defmethod"))
 	 (*code-walker* code-walker-function))
     (define-primitives-in-module module)
-    (with-compilation-unit ()
-      (with-module ( :module module 
-			:source-pathname "code-walk-using-compiler")
-        (let (
-;;	      (*gv-source-pathname* (jit-make-global-string-ptr "code-walk-using-compiler" "source-path-name"))
-	      )
+    (with-debug-info-generator (:module module
+                                        :pathname #P"/dev/null")
+      (with-compilation-unit ()
+        (with-module ( :module module 
+                               :source-pathname "code-walk-using-compiler")
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
             (compile-in-env nil form env)))
-        (llvm-sys::module-delete module)
-        ))))
-
+        (llvm-sys::module-delete module)))))
 
 (export 'code-walk-using-compiler)
