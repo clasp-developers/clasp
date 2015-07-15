@@ -231,11 +231,6 @@
   (with-irbuilder (irbuilder)
     (dbg-set-current-source-pos form)))
 
-(defun check-debug-info-setup (irbuilder)
-  "Signal an error if debug-info for the irbuilder is not setup properly for inlining"
-  (unless (llvm-sys:current-debug-location irbuilder)
-    (error "The debug-info is not set for the current irbuilder")))
-
 (defparameter *llvm-metadata* (make-hash-table))
 (defun dbg-set-current-debug-location (filename pathname lineno column)
   (let* ((scope-name (bformat nil "%s>>%s" pathname filename))

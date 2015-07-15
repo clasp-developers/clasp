@@ -671,10 +671,8 @@
 ;;             (format t "cmpir.lsp 670   Setting current-source-pos~%")
              (dbg-set-current-source-pos-for-irbuilder ,function-form ,irbuilder-alloca)
 ;;             (format t "cmpir.lsp 673   Done setting alloca current-source-pos~%")
-;;             (check-debug-info-setup ,irbuilder-alloca)
              (dbg-set-current-source-pos-for-irbuilder ,function-form ,irbuilder-body)
 ;;             (format t "cmpir.lsp 676   Done setting body current-source-pos~%")
-;;             (check-debug-info-setup ,irbuilder-body)
 ;;             (format t "cmpir.lsp 678   Done setting current-source-pos~%")
              (with-irbuilder (*irbuilder-function-body*)
 	       (or *the-module* (error "with-new-function *the-module* is NIL"))
@@ -1043,7 +1041,6 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 (defun irc-create-invoke (function-name args unwind-dest &optional (label ""))
-  (check-debug-info-setup *irbuilder*)
   (unless unwind-dest (error "unwind-dest should not be nil"))
   (let ((func (get-function-or-error *the-module* function-name (car args)))
 	(normal-dest (irc-basic-block-create "normal-dest")))
@@ -1069,7 +1066,6 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 (defun irc-create-call (function-name args &optional (label ""))
-  (check-debug-info-setup *irbuilder*)
   (let* ((func (get-function-or-error *the-module* function-name (car args)))
 	 (ra args)
          (code (case (length args)
