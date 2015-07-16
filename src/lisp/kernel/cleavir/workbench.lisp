@@ -16,14 +16,17 @@
   (print (core:getpid)))
 
 
-(clasp-cleavir::cleavir-compile-file "sys:tests;tfib.lsp")
+(compile-file "sys:tests;tfib.lsp")
 
-(load "sys:tests;tfib.fasl")
+(load "sys:tests;tfib.lsp")
 (time     (fibn 10000000 78))
 (time    (cfibn 10000000 78))
 (time (cxx-fibn 10000000 78))
 (float (/ 3.17 0.74))
 
+(error "foo")
+(setq core::*debug-flow-control* t)
+(disassemble 'cfibn)
 
 (clasp-cleavir::cleavir-compile
  'cfibn
@@ -40,7 +43,9 @@
 	     p1 z)))
    z))
 
+(float (/ 19.3 3.24))
 
+(
 
 
 (progn
