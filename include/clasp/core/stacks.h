@@ -267,7 +267,7 @@ public:
       }
       ss << frameChar << idx;
       if ( this->_Stack[idx]._Key.notnilp() ) {
-        ss << "{" << _rep_(this->_Stack[idx]._Key) << "}";
+        ss << "{@" << (void*)this->_Stack[idx]._Key.raw_() << "}";
       }
       ss << " ";
     };

@@ -24,6 +24,8 @@
 (time (cxx-fibn 10000000 78))
 (float (/ 3.17 0.74))
 
+(defun foo (x y) (+ x y))
+(disassemble 'foo)
 (error "foo")
 (setq core::*debug-flow-control* t)
 (disassemble 'cfibn)
