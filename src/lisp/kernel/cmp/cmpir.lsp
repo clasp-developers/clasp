@@ -1041,6 +1041,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 (defun irc-create-invoke (function-name args unwind-dest &optional (label ""))
+  (check-debug-info-setup *irbuilder*)
   (unless unwind-dest (error "unwind-dest should not be nil"))
   (let ((func (get-function-or-error *the-module* function-name (car args)))
 	(normal-dest (irc-basic-block-create "normal-dest")))
@@ -1066,6 +1067,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 (defun irc-create-call (function-name args &optional (label ""))
+  (check-debug-info-setup *irbuilder*)
   (let* ((func (get-function-or-error *the-module* function-name (car args)))
 	 (ra args)
          (code (case (length args)

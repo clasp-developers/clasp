@@ -305,10 +305,6 @@ ALWAYS_INLINE extern int compareTsp(core::T_sp *xP, core::T_sp *yP) {
   return ((*xP) == (*yP)) ? 1 : 0;
 }
 #endif
-ALWAYS_INLINE extern int compareTspTptr(core::T_sp *xP, core::T_O **yP) {
-  return ((*xP).raw_() == (*yP)) ? 1 : 0;
-}
-
 NOINLINE extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, core::T_O *arg1, core::T_O *arg2, va_list args) {
   _G();
   //        printf("%s:%d copyArgs destP=%p  nargs=%d\n", __FILE__, __LINE__, destP, nargs);
@@ -340,27 +336,6 @@ NOINLINE extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, cor
   }
 }
 
-ALWAYS_INLINE extern void sp_copyTsp(core::T_sp *destP, core::T_sp *sourceP) {
-  //	ASSERT(sourceP!=NULL);
-  //	ASSERT(destP!=NULL);
-  *destP = *sourceP;
-}
-
-ALWAYS_INLINE extern void mv_copyTsp(core::T_mv *destP, core::T_sp *sourceP) {
-  ASSERT(sourceP != NULL);
-  ASSERT(destP != NULL);
-  *destP = Values(*sourceP);
-}
-
-ALWAYS_INLINE extern void sp_copyTspTptr(core::T_sp *destP, core::T_O **sourceP) {
-  *destP = gc::smart_ptr<core::T_O>((gc::Tagged) * sourceP);
-}
-
-ALWAYS_INLINE extern void mv_copyTspTptr(core::T_mv *destP, core::T_O **sourceP) {
-  ASSERT(sourceP != NULL);
-  ASSERT(destP != NULL);
-  *destP = Values(gc::smart_ptr<core::T_O>((gc::Tagged) * sourceP));
-}
 
 void resetTmv(core::T_mv *sharedP) {
 MAY_BE_DEPRECIATED();
@@ -385,37 +360,9 @@ extern void sp_copyTmv(core::T_sp *destP, core::T_mv *sourceP) {
 
 extern "C" {
 
-/*! This copies a T_mv from source to dest */
-ALWAYS_INLINE void mv_copyTmvOrSlice(core::T_mv *destP, core::T_mv *sourceP) {
-  //	printf("intrinsics.cc mv_copyTmvOrSlice copying %d values\n", (*sourceP).number_of_values());
-  (*destP) = (*sourceP);
-}
-
-/*! This slices a T_mv in source down to a T_sp in dest */
-ALWAYS_INLINE void sp_copyTmvOrSlice(core::T_sp *destP, core::T_mv *sourceP) {
-  if ((*sourceP).number_of_values() == 0) {
-    (*destP) = _Nil<T_O>();
-  } else
-    (*destP) = (*sourceP);
-}
 };
 
 extern "C" {
-ALWAYS_INLINE void sp_makeNil(core::T_sp *result) {
-  (*result) = _Nil<core::T_O>();
-}
-
-ALWAYS_INLINE void mv_makeNil(core::T_mv *result) {
-  (*result) = Values(_Nil<core::T_O>());
-}
-
-ALWAYS_INLINE void makeT(core::T_sp *result) {
-  (*result) = _lisp->_true();
-}
-
-ALWAYS_INLINE void makeCons(core::T_sp *resultConsP, core::T_sp *carP, core::T_sp *cdrP) {
-  (*resultConsP) = core::Cons_O::create(*carP, *cdrP);
-}
 
 NOINLINE core::T_O **getMultipleValues(int offset) {
   return &lisp_multipleValues().callingArgsStart()[offset];
@@ -628,7 +575,6 @@ void invokeLlvmFunctionVoid(fnLispCallingConvention fptr) {
 };
 
 extern void sp_symbolValueReadOrUnbound(core::T_sp *resultP, const core::Symbol_sp *symP) {
-  _G();
   ASSERTF(symP != NULL, BF("passed symbol is NULL"));
   *resultP = (*symP)->symbolValueUnsafe();
   ASSERTNOTNULL(*resultP);
@@ -660,20 +606,14 @@ core::T_sp *symbolValueReference(core::Symbol_sp *symbolP) {
 }
 
 extern core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_sp *frameP) {
-  _G();
   ASSERT(frameP != NULL);
   return const_cast<core::T_sp *>(&((*frameP)->lookupValueReference(depth, index)));
 }
 };
 
 core::T_sp proto_lexicalValueRead(int depth, int index, core::ActivationFrame_sp *renvP) {
-  _G();
-  ASSERT(renvP != NULL);
-  LOG(BF("About to lookupValue depth[%d] index[%d]") % depth % index);
-  LOG(BF("(*renvP) --> %s") % (*renvP)->__repr__());
   ActivationFrame_sp renv = *renvP;
-  ASSERTF(renv, BF("lexicalValueRead is NULL depth[%d] index[%d] activationFrame: %s") % depth % index % _rep_((*renvP)));
-  core::T_sp res = core::Environment_O::clasp_lookupValue(renv, depth, index); //renv->lookupValue(depth,index);
+  core::T_sp res = core::Environment_O::clasp_lookupValue(renv, depth, index);
   return res;
 }
 
@@ -1601,24 +1541,6 @@ void cc_setTmvToNil(core::T_mv *sharedP) {
   *sharedP = Values(_Nil<core::T_O>());
 }
 
-ALWAYS_INLINE T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx) {
-  LoadTimeValues_O *array = *tarray;
-#ifdef DEBUG_CC
-  printf("%s:%d precalcSymbol idx[%zu] symbol = %p\n", __FILE__, __LINE__, idx, (*array).symbols_element(idx).px);
-#endif
-  T_O *res = (*array).symbols_element(idx).raw_();
-  ASSERT(res != NULL);
-  return res;
-}
-
-ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx) {
-  LoadTimeValues_O *array = *tarray;
-#ifdef DEBUG_CC
-  printf("%s:%d precalcValue idx[%zu] value = %p\n", __FILE__, __LINE__, idx, (*array).data_element(idx).px);
-#endif
-  T_O *res = (*array).data_element(idx).raw_();
-  return res;
-}
 
 core::T_O *cc_makeCell() {
   _G();
@@ -1791,13 +1713,6 @@ void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *
   }
 }
 
-ALWAYS_INLINE core::T_O **cc_loadTimeValueReference(core::LoadTimeValues_O **ltvPP, size_t index) {
-  ASSERT(ltvPP != NULL);
-  ASSERT(*ltvPP != NULL);
-  core::LoadTimeValues_O &ltv = **ltvPP;
-  core::T_sp &result = ltv.data_element(index);
-  return &result.rawRef_();
-}
 
 __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(std::size_t nargs, core::T_O **argArray, std::size_t startRest, char *fnName) {
   _G();

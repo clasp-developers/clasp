@@ -188,7 +188,8 @@
 				:function-type cmp:+fn-prototype+
 				:form *form*)
 	  (cmp:with-dbg-lexical-block (*form*)
-            (cmp:dbg-set-current-source-pos *form*)
+            (cmp:dbg-set-current-source-pos-for-irbuilder *form* *entry-irbuilder*)
+            (cmp:dbg-set-current-source-pos-for-irbuilder *form* body-irbuilder)
             (cmp:irc-low-level-trace :arguments)
 	    #+use-ownerships(loop for var being each hash-key of *ownerships*
 			       using (hash-value owner)
@@ -206,7 +207,7 @@
                               :function-type cmp:+fn-prototype+
                               :form *form*)
         (cmp:with-dbg-lexical-block (*form*)
-          (cmp:dbg-set-current-source-pos *form*)
+;;          (cmp:dbg-set-current-source-pos *form*)
           (llvm-sys:set-insert-point-basic-block body-irbuilder body-block)
           (cmp:with-irbuilder (body-irbuilder)
             (cmp:irc-begin-block body-block)
