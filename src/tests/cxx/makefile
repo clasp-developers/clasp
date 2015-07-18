@@ -1,5 +1,8 @@
+testEH.bc: testEH.cc
+	/usr/bin/clang++ -c -O0 -emit-llvm testEH.cc
+
 testReturnMultipleValues.bc: testReturnMultipleValues.cc
-	/usr/bin/clang++ -O0 -S -emit-llvm testReturnMultipleValues.cc
+	/usr/bin/clang++ -O0 -emit-llvm testReturnMultipleValues.cc
 
 testReturnMultipleValues: testReturnMultipleValues.cc
 	/usr/bin/clang++ -O3 -o testReturnMultipleValues testReturnMultipleValues.cc

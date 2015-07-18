@@ -20,28 +20,32 @@
 	       (matches-type (cmp:irc-icmp-eq exception-selector typeid)))
 	  (cmp:irc-cond-br matches-type unwind-exception-bb not-unwind-exception-bb)
 	  (cmp:irc-begin-block unwind-exception-bb)
-	  (cmp:with-catch (exn.slot-alloca exception-ptr nil)
-	    ;; Check if frame is correct against tagbody and jump to jumpid
-	    (cmp:with-landing-pad terminate-block
-              (cmp:irc-low-level-trace :cclasp-eh)
-	      (let* ((go-index (cmp:irc-create-call "cc_landingpadUnwindMatchFrameElseRethrow" 
-						    (list exception-ptr 
-							  (cmp:irc-load (clasp-cleavir::translate-datum (clasp-cleavir-hir:frame-holder enter-instruction))))))
-		     (default-block (cmp:irc-basic-block-create "switch-default"))
-		     (unwinds (unwinds landing-pad-object)))
-		(with-return-values (return-vals abi)
-		  (cmp:irc-intrinsic "cc_restoreMultipleValue0" (sret-arg return-vals)))
-		(let* ((sw (cmp:irc-switch go-index default-block (length unwinds)))
-		       (jump-id 0))
-		  (mapc #'(lambda (one-unwind)
-			    (let* ((target (first (cleavir-ir:successors one-unwind)))
-				   (tag-block (gethash target tags)))
-			      (llvm-sys:add-case sw (%size_t jump-id) tag-block))
-			    (incf jump-id))
-			unwinds)
-		  (cmp:irc-begin-block default-block)
-		  (cmp:irc-intrinsic "throwIllegalSwitchValue"
-				     go-index (%size_t (length unwinds)))))))
+          (let (go-index)
+            (cmp:with-catch (exn.slot-alloca exception-ptr nil)
+              ;; Check if frame is correct against tagbody and jump to jumpid
+              (cmp:with-landing-pad terminate-block
+                (cmp:irc-low-level-trace :cclasp-eh)
+                (setq go-index
+                      (cmp:irc-create-call
+                       "cc_landingpadUnwindMatchFrameElseRethrow" 
+                       (list exception-ptr 
+                             (cmp:irc-load (clasp-cleavir::translate-datum
+                                            (clasp-cleavir-hir:frame-holder enter-instruction))))))
+                (with-return-values (return-vals abi)
+                  (cmp:irc-intrinsic "cc_restoreMultipleValue0" (sret-arg return-vals)))))
+            (let* ((default-block (cmp:irc-basic-block-create "switch-default"))
+                   (unwinds (unwinds landing-pad-object))
+                   (sw (cmp:irc-switch go-index default-block (length unwinds)))
+                   (jump-id 0))
+              (mapc #'(lambda (one-unwind)
+                        (let* ((target (first (cleavir-ir:successors one-unwind)))
+                               (tag-block (gethash target tags)))
+                          (llvm-sys:add-case sw (%size_t jump-id) tag-block))
+                        (incf jump-id))
+                    unwinds)
+              (cmp:irc-begin-block default-block)
+              (cmp:irc-intrinsic "throwIllegalSwitchValue"
+                                 go-index (%size_t (length unwinds)))))
 	  (cmp:irc-unreachable)
 	  (cmp:irc-begin-block not-unwind-exception-bb)
 	  (let* ((exn7 (llvm-sys:create-load-value-twine cmp:*irbuilder* exn.slot-alloca "exn7"))

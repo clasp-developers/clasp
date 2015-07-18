@@ -1822,11 +1822,23 @@ void cc_unwind(T_O *targetFrame, size_t index) {
 void cc_funwind_protect(core::T_mv* resultP, T_O* protected_fn, T_O* cleanup_fn)
 {
   try {
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d In funwind_protect try\n", __FILE__, __LINE__ );
+    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+  }
+#endif
     core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(protected_fn);
     ASSERT(func!=NULL);
     auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
     closure->invoke(resultP,LCC_PASS_ARGS0());
   } catch (...) {
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d In funwind_protect catch(...) just caught\n", __FILE__, __LINE__ );
+    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+  }
+#endif
     // Save any return value that may be in the multiple value return array
     gctools::Vec0<T_sp> savemv;
     T_mv tresult;
@@ -1840,8 +1852,20 @@ void cc_funwind_protect(core::T_mv* resultP, T_O* protected_fn, T_O* cleanup_fn)
     }
     tresult.loadFromVec0(savemv);
     tresult.saveToMultipleValue0();
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d In funwind_protect catch(...)    about to rethrow\n", __FILE__, __LINE__ );
+    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+  }
+#endif
     throw;
   }
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d In funwind_protect  normal exit\n", __FILE__, __LINE__ );
+    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+  }
+#endif
   gctools::Vec0<T_sp> savemv;
   resultP->saveToVec0(savemv);
   {
