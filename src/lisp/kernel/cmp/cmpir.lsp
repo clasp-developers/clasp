@@ -506,18 +506,18 @@
 ;;
 ;;
 ;;  You can do things like:
-;; Put (push :flow cmp::*low-level-trace*) / (pop cmp::*low-level-trace*)
+;; Put (push :flow *features*) / (pop *features*)
 ;;   around a function and it will get low-level-trace commands inserted before
 ;;   every function call and within every landing pad.
 
 (defparameter *next-low-level-trace-index* 1000000001)
-(defmacro irc-low-level-trace (&optional where)
-  `(if (or (member :all ',cmp:*low-level-trace*) (member ,where cmp:*low-level-trace*))
-       (progn
-	 (let ((llt (get-function-or-error *the-module* "lowLevelTrace")))
-	   (llvm-sys:create-call1 *irbuilder* llt (jit-constant-i32 *next-low-level-trace-index*) ""))
-	 (setq *next-low-level-trace-index* (+ 1 *next-low-level-trace-index*)))
-       nil))
+(defun irc-low-level-trace (&optional where)
+  (if (member where *features*)
+      (progn
+        (let ((llt (get-function-or-error *the-module* "lowLevelTrace")))
+          (llvm-sys:create-call1 *irbuilder* llt (jit-constant-i32 *next-low-level-trace-index*) ""))
+        (setq *next-low-level-trace-index* (+ 1 *next-low-level-trace-index*)))
+      nil))
 
 
 (defun irc-begin-landing-pad-block (theblock &optional (function *current-function*))

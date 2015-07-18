@@ -1562,31 +1562,6 @@ Integer_sp cl_sxhash(T_sp obj) {
   return Integer_O::create(hg.hash());
 }
 
-#define ARGS_core_funwind_protect "(protected-fn cleanup-fn)"
-#define DECL_core_funwind_protect ""
-#define DOCS_core_funwind_protect "funwind_protect"
-T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
-  T_mv result;
-  try {
-    result = eval::funcall(protected_fn);
-  } catch (...) {
-    // Save any return value that may be in the multiple value return array
-    gctools::Vec0<T_sp> savemv;
-    T_mv result;
-    result.readFromMultipleValue0();
-    result.saveToVec0(savemv);
-    eval::funcall(cleanup_fn);
-    result.loadFromVec0(savemv);
-    result.saveToMultipleValue0();
-    throw;
-  }
-  gctools::Vec0<T_sp> savemv;
-  result.saveToVec0(savemv);
-  eval::funcall(cleanup_fn);
-  result.loadFromVec0(savemv);
-//	printf("%s:%d Restored multiple-values result = %p, %d\n", __FILE__, __LINE__, result.px, result.number_of_values());
-  return result;
-}
 
 // --------------------------------------------------
 // --------------------------------------------------
@@ -1792,7 +1767,6 @@ void initialize_primitives() {
   ClDefun(lispImplementationVersion);
   ClDefun(lispImplementationType);
   CoreDefun(lispImplementationId);
-  CoreDefun(funwind_protect);
   ClDefun(softwareVersion);
   ClDefun(softwareType);
   ClDefun(machineVersion);

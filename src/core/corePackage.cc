@@ -978,8 +978,8 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   // cl::_sym_most_positive_single_float->defconstant(DoubleFloat_O::create(DBL_MAX));
 
   cl::_sym_STARread_baseSTAR->defparameter(make_fixnum(10));
-  SYMBOL_SC_(CorePkg, cl_fixnum_bits);
-  _sym_cl_fixnum_bits->defconstant(make_fixnum((int)(sizeof(int) / 8)));
+  SYMBOL_EXPORT_SC_(CorePkg, cl_fixnum_bits);
+  _sym_cl_fixnum_bits->defconstant(make_fixnum(gc::fixnum_bits));
   SYMBOL_EXPORT_SC_(ClPkg, array_rank_limit);
   cl::_sym_array_rank_limit->defconstant(make_fixnum(CLASP_ARRAY_RANK_LIMIT));
   SYMBOL_EXPORT_SC_(ClPkg, char_code_limit);

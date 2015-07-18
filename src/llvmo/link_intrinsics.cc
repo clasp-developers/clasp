@@ -115,6 +115,9 @@ uint _LLVMLowLevelTraceQueue[LOW_LEVEL_TRACE_QUEUE_SIZE];
 NOINLINE void lowLevelTrace(uint traceid) {
   if (comp::_sym_STARlowLevelTracePrintSTAR->symbolValue().isTrue()) {
     printf("+++ lowLevelTrace[%d]\n", traceid);
+    if ( traceid == 1000115396 ) {
+      printf("%s:%d Set a breakpoint here\n", __FILE__, __LINE__);
+    }
   }
   _LLVMLowLevelTraceQueue[_LLVMLowLevelTraceQueueIn] = traceid;
   ++_LLVMLowLevelTraceQueueIn;
@@ -312,7 +315,7 @@ NOINLINE extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, cor
   case 0:
     return;
   case 1:
-    destP[0] = gctools::smart_ptr<core::T_O>(arg0);
+      destP[0] = gctools::smart_ptr<core::T_O>(arg0); // Should these all be (gc::Tagged)???
     return;
   case 2:
     destP[0] = gctools::smart_ptr<core::T_O>(arg0);
@@ -662,7 +665,7 @@ extern void makeValueFrameFromReversedCons(core::ActivationFrame_sp *afP, core::
 
 extern void setParentOfActivationFrameTPtr(core::T_sp *resultP, core::T_O *parentP) {
   if (resultP->framep()) {
-    frame::SetParentFrame(*resultP, gctools::smart_ptr<core::T_O>(parentP));
+    frame::SetParentFrame(*resultP, gctools::smart_ptr<core::T_O>((gc::Tagged)parentP));
     return;
   } else if (ActivationFrame_sp af = gc::As<ActivationFrame_sp>((*resultP))) {
     af->setParentFrame(parentP);
@@ -674,7 +677,7 @@ extern void setParentOfActivationFrameTPtr(core::T_sp *resultP, core::T_O *paren
 extern void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp) {
   T_O *parentP = parentsp->raw_();
   if (resultP->framep()) {
-    frame::SetParentFrame(*resultP, gctools::smart_ptr<core::T_O>(parentP));
+    frame::SetParentFrame(*resultP, gctools::smart_ptr<core::T_O>((gc::Tagged)parentP));
     return;
   } else if (ActivationFrame_sp af = gc::As<ActivationFrame_sp>((*resultP))) {
     af->setParentFrame(parentP);
@@ -962,7 +965,7 @@ void debugInspectT_sp(core::T_sp *objP) {
 }
 
 void debugInspectTPtr(core::T_O *tP) {
-  core::T_sp obj = gctools::smart_ptr<core::T_O>(tP);
+  core::T_sp obj = gctools::smart_ptr<core::T_O>((gc::Tagged)tP);
   printf("debugInspectTPtr@%p  obj.px_ref()=%p: %s\n", (void *)tP, obj.raw_(), _rep_(obj).c_str());
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
 }
@@ -1738,7 +1741,7 @@ void cc_saveThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *
 
 void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv) {
   core::MultipleValues &mvThread = core::lisp_multipleValues();
-  *result = gctools::multiple_values<core::T_O>(gctools::smart_ptr<core::T_O>((*mv)[0]), (*mv)._Size);
+  *result = gctools::multiple_values<core::T_O>(gctools::smart_ptr<core::T_O>((gc::Tagged)(*mv)[0]), (*mv)._Size);
   for (size_t i = 1; i < (*mv)._Size; ++i) {
     mvThread[i] = (*mv)[i];
   }
@@ -1790,42 +1793,151 @@ T_O **cc_multipleValuesArrayAddress() {
   return &lisp_multipleValues().callingArgsStart()[0];
 }
 
-void cc_unwind(T_O *dest_frame, size_t index) {
+void cc_unwind(T_O *targetFrame, size_t index) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d In cc_unwind dest_frame: %ld  index: %lu\n", __FILE__, __LINE__, gc::untag_fixnum(dest_frame), index);
+    printf("%s:%d In cc_unwind targetFrame: %ld  index: %lu\n", __FILE__, __LINE__, gc::untag_fixnum(targetFrame), index);
     printf("   %s\n", _lisp->exceptionStack().summary().c_str());
   }
 #endif
-  core::Unwind unwind(dest_frame, index);
+  core::Unwind unwind(targetFrame, index);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d in cc_unwind throwing unwind to reach dest_frame: %ld   core::Unwind typeinfo@%p\n", __FILE__, __LINE__, gc::untag_fixnum(dest_frame), &typeid(core::Unwind));
-    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+    printf("- - - - in cc_unwind throwing unwind to reach targetFrame: %ld   unwind=@%p\n", gc::untag_fixnum(targetFrame), &unwind);
   }
 #endif
-  throw unwind;
+  try {
+    throw unwind;
+  } catch (core::Unwind& uw) {
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("- - - -  unwind event = %p\n", &uw);
+  }
+#endif
+    throw;
+  }
 }
 
-/*! Use "call" to invoke this version of "throw"
-      I'm using this to figure out why when I JIT code with LLVM
-      I have to "invoke" functions that throw exceptions rather than "call" them.
-    */
+
+void cc_funwind_protect(core::T_mv* resultP, T_O* protected_fn, T_O* cleanup_fn)
+{
+  try {
+    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(protected_fn);
+    ASSERT(func!=NULL);
+    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    closure->invoke(resultP,LCC_PASS_ARGS0());
+  } catch (...) {
+    // Save any return value that may be in the multiple value return array
+    gctools::Vec0<T_sp> savemv;
+    T_mv tresult;
+    tresult.readFromMultipleValue0();
+    tresult.saveToVec0(savemv);
+    {
+      core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(cleanup_fn);
+      ASSERT(func!=NULL);
+      auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+      closure->invoke(&tresult,LCC_PASS_ARGS0());
+    }
+    tresult.loadFromVec0(savemv);
+    tresult.saveToMultipleValue0();
+    throw;
+  }
+  gctools::Vec0<T_sp> savemv;
+  resultP->saveToVec0(savemv);
+  {
+    T_mv tresult;
+    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(cleanup_fn);
+    ASSERT(func!=NULL);
+    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    closure->invoke(&tresult,LCC_PASS_ARGS0());
+  }
+  resultP->loadFromVec0(savemv);
+};
+
+
+
+void cc_catch(core::T_mv* resultP, T_O* tag, T_O* thunk)
+{
+  int frame = _lisp->exceptionStack().push(CatchFrame, LCC_TO_SMART_PTR(tag));
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d In cc_catch tag@%p thisFrame: %d\n", __FILE__, __LINE__, tag, frame);
+    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+  }
+#endif
+  try {
+    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(thunk);
+    ASSERT(func!=NULL);
+    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    closure->invoke(resultP,LCC_PASS_ARGS0());
+  } catch (CatchThrow &catchThrow) {
+    if (catchThrow.getFrame() != frame) {
+#ifdef DEBUG_FLOW_CONTROL
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+        printf("- - - - - Rethrowing CatchThrow targetFrame[%d] (thisFrame is: %d)\n", catchThrow.getFrame(), frame);
+      }
+#endif
+      throw catchThrow;
+    }
+    *resultP = gctools::multiple_values<T_O>::createFromValues();
+  }
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("- - - - - Matched CatchThrow (thisFrame is: %d)\n", frame);
+    printf("- - - - - Unwinding to thisFrame: %d\n", frame );
+  }
+#endif
+  _lisp->exceptionStack().unwind(frame);
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d  After cc_catch unwind\n", __FILE__, __LINE__ );
+    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+  }
+#endif
+}
+
+
+void cc_throw(T_O* tag, T_O* result_func)
+{
+  int frame = _lisp->exceptionStack().findKey(CatchFrame, LCC_TO_SMART_PTR(tag));
+  if (frame < 0) {
+    CONTROL_ERROR();
+  }
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d In cc_throw     throwing CatchThrow to reach targetFrame[%d]\n", __FILE__, __LINE__, frame);
+    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+  }
+#endif
+  T_mv result;
+  core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(result_func);
+  ASSERT(func!=NULL);
+  auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+  closure->invoke(&result,LCC_PASS_ARGS0());
+  result.saveToMultipleValue0();
+  throw CatchThrow(frame);
+}
+
+
+
+
+
 
 /*! Use "invoke" to invoke this version of "throw"
       I'm using this to figure out why when I JIT code with LLVM
       I have to "invoke" functions that throw exceptions rather than "call" them.
     */
+#if 0
 void cc_throw(T_O *tag) {
   _G();
+  MAY_BE_DEPRECIATED();
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d In cc_tag tag@%p\n\n", __FILE__, __LINE__, tag);
     printf("   %s\n", _lisp->exceptionStack().summary().c_str());
   }
 #endif
-  core::T_sp ttag((gc::Tagged)tag);
-  int frame = _lisp->exceptionStack().findKey(CatchFrame, ttag);
+  int frame = _lisp->exceptionStack().findKey(CatchFrame, LCC_TO_SMART_PTR(tag));
   if (frame < 0) {
     CONTROL_ERROR();
   }
@@ -1838,6 +1950,7 @@ void cc_throw(T_O *tag) {
 #endif
   throw catchThrow;
 }
+#endif
 
 void cc_saveMultipleValue0(core::T_mv *result) {
   _G();
@@ -1850,7 +1963,6 @@ void cc_restoreMultipleValue0(core::T_mv *result) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d In cc_restoreMultipleValue0\n", __FILE__, __LINE__);
-    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
   }
 #endif
 }
@@ -1865,7 +1977,7 @@ T_O *cc_pushLandingPadFrame() {
   size_t index = _lisp->exceptionStack().push(LandingPadFrame, ptr);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d pushLandingPadFrame frame: %lu  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void*)&typeid(core::Unwind));
+    printf("%s:%d pushLandingPadFrame pushed frame: %lu  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void*)&typeid(core::Unwind));
     printf("   %s\n", _lisp->exceptionStack().summary().c_str());
   }
 #endif
@@ -1877,37 +1989,38 @@ void cc_popLandingPadFrame(T_O *frameFixnum) {
   size_t frameIndex = gctools::untag_fixnum(frameFixnum);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d  Unwinding exceptionStack to: %lu\n", __FILE__, __LINE__, frameIndex );
+    printf("%s:%d  popLandingPadFrame   About to unwind exceptionStack to frame: %lu\n", __FILE__, __LINE__, frameIndex );
     printf("   %s\n", _lisp->exceptionStack().summary().c_str());
   }
 #endif
   _lisp->exceptionStack().unwind(frameIndex);
 }
 
-size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *frame) {
-  ASSERT(gctools::tagged_fixnump(frame));
+size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
+  ASSERT(gctools::tagged_fixnump(thisFrame));
+  core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
 #ifdef DEBUG_FLOW_CONTROL
-  size_t frameIndex = gctools::untag_fixnum(frame);
+  size_t frameIndex = gctools::untag_fixnum(thisFrame);
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d landingpadUnwindMatchFrameElseRethrow  frame: %lu\n",
-           __FILE__, __LINE__, frameIndex);
+    printf("%s:%d landingpadUnwindMatchFrameElseRethrow targetFrame: %lu thisFrame: %lu  unwindP=%p\n",
+           __FILE__, __LINE__, gctools::untag_fixnum(unwindP->getFrame()), frameIndex, unwindP);
+    if ( unwindP->getFrame() > thisFrame ) {
+      printf("- - - - - THERE IS A SERIOUS PROBLEM - THE TARGET FRAME HAS BEEN BYPASSED\n");
+    }
     printf("   %s\n", _lisp->exceptionStack().summary().c_str());
   }
 #endif
-  core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
-  if (unwindP->getFrame() == frame) {
+  if (unwindP->getFrame() == thisFrame) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-      printf("%s:%d Matched Unwind  frame: %lu  index: %lu\n", __FILE__, __LINE__, gc::untag_fixnum(unwindP->getFrame()), unwindP->index());
-      printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+      printf("- - - - - Matched Unwind to targetFrame: %lu  index: %lu\n", gc::untag_fixnum(unwindP->getFrame()), unwindP->index());
     }
 #endif
     return unwindP->index();
   }
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d Rethrowing core::Unwind frame[%lu] index[%zu] (current frame is: %lu)\n", __FILE__, __LINE__, gc::untag_fixnum(unwindP->getFrame()), unwindP->index(), frameIndex);
-    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+    printf("- - - - - Rethrowing core::Unwind targetFrame[%lu] index[%zu] (thisFrame is: %lu)\n", gc::untag_fixnum(unwindP->getFrame()), unwindP->index(), frameIndex);
   }
 #endif
   throw * unwindP;

@@ -242,7 +242,7 @@ public:
   string summary() {
     stringstream ss;
     ss << "ExceptionStackSummary: depth[" << this->size() << "] ";
-    for ( int idx=0; idx<this->size(); ++idx) {
+    for ( int idx=this->size()-1; idx>=0; --idx) {
       FrameKind fk = this->_Stack[idx]._FrameKind;
       char frameChar;
       switch (fk) {

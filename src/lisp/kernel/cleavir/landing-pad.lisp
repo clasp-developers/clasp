@@ -23,9 +23,10 @@
 	  (cmp:with-catch (exn.slot-alloca exception-ptr nil)
 	    ;; Check if frame is correct against tagbody and jump to jumpid
 	    (cmp:with-landing-pad terminate-block
+              (cmp:irc-low-level-trace :cclasp-eh)
 	      (let* ((go-index (cmp:irc-create-call "cc_landingpadUnwindMatchFrameElseRethrow" 
 						    (list exception-ptr 
-							  (cmp:irc-load (clasp-cleavir::translate-datum (car (last (cleavir-ir:outputs enter-instruction))))))))
+							  (cmp:irc-load (clasp-cleavir::translate-datum (clasp-cleavir-hir:frame-holder enter-instruction))))))
 		     (default-block (cmp:irc-basic-block-create "switch-default"))
 		     (unwinds (unwinds landing-pad-object)))
 		(with-return-values (return-vals abi)

@@ -1002,6 +1002,7 @@ jump to blocks within this tagbody."
 
 
 
+#+(or)
 (defun codegen-catch (result rest env)
   (with-dbg-lexical-block (rest)
     (let* ((catch-env (irc-new-catch-environment env))
@@ -1032,6 +1033,7 @@ jump to blocks within this tagbody."
         ))))
 
 
+#+(or)
 (defun codegen-throw (result rest env)
   (let ((tag (car rest))
 	(result-form (cadr rest)))
@@ -1202,6 +1204,8 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
 (defun treat-as-special-operator-p (sym)
   (cond
     ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
+    ((eq sym 'cl:catch) nil)  ;; handled with macro
+    ((eq sym 'cl:throw) nil)  ;; handled with macro
     ((eq sym 'core:debug-message) t)   ;; special operator
     (t (special-operator-p sym))))
 (export 'treat-as-special-operator-p)

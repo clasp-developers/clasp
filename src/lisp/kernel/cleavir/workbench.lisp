@@ -14,7 +14,13 @@
   (format t "Loading inline.lisp~%")
   (load "sys:kernel;cleavir;inline.lisp")
   (print (core:getpid)))
+(load "sys:kernel;cleavir;auto-compile.lisp")
 
+(load "/Users/meister/Development/slime/start-swank.lisp")
+
+
+
+(print "Hello")
 
 (compile-file "sys:tests;tfib.lsp")
 
@@ -26,8 +32,39 @@
 
 (defun foo (x y) (+ x y))
 (disassemble 'foo)
+
+(getpid)
 (error "foo")
 (setq core::*debug-flow-control* t)
+(print "Hello")
+
+
+(clasp-cleavir::cleavir-compile
+ 'foo
+ '(lambda (depth target-depth &optional targets)
+   (unless targets (bformat t "---------------------- depth: %s   target-depth: %s\n" depth target-depth))
+   (block here
+     (if (= depth 0 )
+         (throw 'top nil)
+         (foo (1- depth) target-depth (push #'(lambda (x) (return-from here x)) targets))))
+   (bformat t "Returning from depth: %s\n" depth)))
+
+(clasp-cleavir::cleavir-compile
+ 'do-foo
+ '(lambda (depth)
+   (catch 'top
+     (foo depth 0))
+   (bformat t "Done do-foo\n")))
+
+(do-foo 5)
+
+
+(setq core::*debug-flow-control* nil)
+(foo 6 3)
+
+
+(elt '(1 2 3 4 5) 2)
+
 (disassemble 'cfibn)
 
 (clasp-cleavir::cleavir-compile
