@@ -29,18 +29,19 @@ struct TaggedCast {
 };
 
 namespace core {
-class Fixnum_I {};
-class SingleFloat_I {};
-class Character_I {};
-class Integer_O;
-class Rational_O;
-class Real_O;
-class Number_O;
-class T_O;
-class Float_O;
-typedef Fixnum_I Fixnum_O;
-typedef SingleFloat_I SingleFloat_O;
-typedef Character_I Character_O;
+  class Fixnum_I {};
+  class SingleFloat_I {};
+  class Character_I {};
+  class Integer_O;
+  class Environment_O;
+  class Rational_O;
+  class Real_O;
+  class Number_O;
+  class T_O;
+  class Float_O;
+  typedef Fixnum_I Fixnum_O;
+  typedef SingleFloat_I SingleFloat_O;
+  typedef Character_I Character_O;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -357,4 +358,23 @@ struct TaggedCast<core::Character_I *, FROM> {
     return NULL;
   }
 };
+};
+
+
+namespace gctools {
+#if 1
+template <>
+struct TaggedCast<core::Environment_O*, core::T_O*> {
+  typedef core::Environment_O *ToType;
+  typedef core::T_O *FromType;
+  inline static bool isA(FromType ptr) {
+    return gc::untag_object<T_O*>(ptr)->environmentp();
+  }
+  inline static ToType castOrNULL(FromType client) {
+    if (isA(client)) return client;
+    return NULL;
+  }
+ };
+#endif
+
 };

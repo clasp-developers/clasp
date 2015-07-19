@@ -775,6 +775,7 @@ typedef vector<AtomHandle> VectorAtomHandle;
 #endif
 
 class ActivationFrame_O;
+ class Environment_O;
 typedef gctools::smart_ptr<ActivationFrame_O> ActivationFrame_sp;
 };
 

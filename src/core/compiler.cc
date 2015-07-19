@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/sequence.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/unixfsys.h>
+#include <clasp/core/environment.h>
 #include <clasp/core/cleavirPrimopsPackage.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
@@ -55,6 +56,31 @@ THE SOFTWARE.
 #endif
 
 namespace core {
+
+int f(Environment_sp& e)
+{
+  (void)e;
+  return 1;
+}
+#define ARGS_core_testTypedCast "(pow2)"
+#define DECL_core_testTypedCast ""
+#define DOCS_core_testTypedCast "Evaluate a TypedCast 2^pow2 times"
+__attribute__((optnone)) Fixnum_sp core_testTypedCast(Fixnum_sp pow2) {
+  Fixnum fpow2 = clasp_to_fixnum(pow2);
+  Fixnum times = 1;
+  times = times << fpow2;
+  printf("%s:%d  fpow2 = %ld  times = %ld\n", __FILE__, __LINE__, fpow2, times );
+  Environment_sp env = ValueEnvironment_O::createForNumberOfEntries(5,_Nil<T_O>());
+  Fixnum i;
+  Fixnum v = 0;
+  for ( i=0; i<times; ++i ) {
+    f(env);
+    Environment_sp e = env.asOrNull<Environment_O>();
+    v += f(e);
+  }
+  return Integer_O::create(v);
+}
+
 
 #define ARGS_core_cxxFibn "(reps num)"
 #define DECL_core_cxxFibn ""
@@ -989,6 +1015,8 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
 
   SYMBOL_SC_(CorePkg, dlsym);
   Defun(dlsym);
+
+  CoreDefun(testTypedCast);
 
   SYMBOL_SC_(CorePkg, dladdr);
   Defun(dladdr);

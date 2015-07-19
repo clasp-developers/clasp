@@ -747,7 +747,7 @@ public: // Instance protocol
   /*! Return number of slots if instance of Instance_O otherwise return nil */
   virtual T_sp oinstancep() const { return _Nil<T_O>(); }; //
   bool instancep() const { return oinstancep().isTrue(); };
-
+  bool environmentp() const { return false;};
   bool genericFunctionP() const { return false; };
   /*! Return number of slots if instance of Instance_O otherwise return nil */
   virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
