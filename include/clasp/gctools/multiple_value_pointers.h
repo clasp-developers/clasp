@@ -29,6 +29,11 @@ THE SOFTWARE.
 
 namespace gctools {
 
+  struct return_type {
+    core::T_O* ret0;
+    size_t nvals;
+  };
+
 template <class T>
 class multiple_values : public smart_ptr<T> {
 private:
@@ -41,6 +46,8 @@ public:
   multiple_values(const smart_ptr<T> &v, int num) : smart_ptr<T>(v), _number_of_values(num){};
 
   multiple_values(const smart_ptr<T> &v) : smart_ptr<T>(v), _number_of_values(1){};
+
+ multiple_values(const return_type& v) : smart_ptr<T>(v.ret0), _number_of_values(v.nvals) {};
 
 #ifdef USE_SMART_PTR_COPY_CONSTRUCTORS
   template <class Y>
