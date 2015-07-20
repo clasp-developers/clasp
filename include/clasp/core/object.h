@@ -1122,6 +1122,8 @@ TRANSLATE(core::T_O);
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/lispVector.h>
 #include <clasp/core/record.h>
+#include <clasp/core/tagged_cast_specializations.h>
+
 
 namespace core {
   void initialize_object();
