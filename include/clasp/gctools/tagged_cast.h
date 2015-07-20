@@ -14,13 +14,11 @@ struct TaggedCast {
   static ToType castOrNULL(FromType client) {
     if (tagged_generalp(client)) {
       ToType ptr = dynamic_cast<ToType>(untag_general(client));
-      if (ptr)
-        return tag_general<ToType>(ptr);
+      if (ptr) return reinterpret_cast<ToType>(client);
       return NULL;
     } else if (tagged_consp(client)) {
       ToType ptr = dynamic_cast<ToType>(untag_cons(client));
-      if (ptr)
-        return tag_cons<ToType>(ptr);
+      if (ptr) return reinterpret_cast<ToType>(client);
       return NULL;
     }
     return NULL; // handle with specializations
@@ -361,20 +359,5 @@ struct TaggedCast<core::Character_I *, FROM> {
 };
 
 
-namespace gctools {
-#if 1
-template <>
-struct TaggedCast<core::Environment_O*, core::T_O*> {
-  typedef core::Environment_O *ToType;
-  typedef core::T_O *FromType;
-  inline static bool isA(FromType ptr) {
-    return untag_object<core::T_O*>(ptr)->environmentp();
-  }
-  inline static ToType castOrNULL(FromType client) {
-    if (isA(client)) return reinterpret_cast<ToType>(client);
-    return NULL;
-  }
- };
-#endif
+// more specializations in clasp/include/clasp/core/tagged_cast_specializations.h
 
-};

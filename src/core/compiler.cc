@@ -62,10 +62,10 @@ int f(Environment_sp& e)
   (void)e;
   return 1;
 }
-#define ARGS_core_testTypedCast "(pow2)"
-#define DECL_core_testTypedCast ""
-#define DOCS_core_testTypedCast "Evaluate a TypedCast 2^pow2 times"
-__attribute__((optnone)) Fixnum_sp core_testTypedCast(Fixnum_sp pow2) {
+#define ARGS_core_testTaggedCast "(pow2)"
+#define DECL_core_testTaggedCast ""
+#define DOCS_core_testTaggedCast "Evaluate a TaggedCast 2^pow2 times"
+__attribute__((optnone)) Fixnum_sp core_testTaggedCast(Fixnum_sp pow2) {
   Fixnum fpow2 = clasp_to_fixnum(pow2);
   Fixnum times = 1;
   times = times << fpow2;
@@ -1016,7 +1016,7 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   SYMBOL_SC_(CorePkg, dlsym);
   Defun(dlsym);
 
-  CoreDefun(testTypedCast);
+  CoreDefun(testTaggedCast);
 
   SYMBOL_SC_(CorePkg, dladdr);
   Defun(dladdr);
