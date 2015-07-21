@@ -38,7 +38,6 @@
   (setq core:*do-inline-hook* #'do-inline-hook)
   (setq core:*proclaim-hook* #'proclaim-hook))
 
-
 ;;; Stubs to keep the already compiled code working
 (clasp-cleavir:cleavir-compile
  'cleavir-primop:consp

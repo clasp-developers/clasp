@@ -196,9 +196,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;; TODO: Really - find a better way to do this than hard-coding paths
 (defconstant +intrinsics-bitcode-pathname+
-  #+use-refcount "app-resources:lib;release;intrinsics_bitcode_refcount.o"
-  #+use-boehm "app-resources:lib;release;intrinsics_bitcode_boehm.o"
-  #+use-mps "app-resources:lib;release;intrinsics_bitcode_mps.o"
+  #+use-boehm "app-resources:lib;release;intrinsics_bitcode_boehm.sbc"
+  #+use-mps "app-resources:lib;release;intrinsics_bitcode_mps.sbc"
 )
 (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
 (export '(+image-pathname+ +intrinsics-bitcode-pathname+))
@@ -605,7 +604,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 ;; I need to search the list rather than using features because *features* may change at runtime
 (defun default-target-backend (&optional given-stage)
-  (let* ((stage (if given-stage given-stage (if (recursive-find :ecl-min *features*) "min" (if (recursive-find :cleavir *features*) "cleavir" "full"))))
+  (let* ((stage (if given-stage given-stage (if (recursive-find :ecl-min *features*) "min" (if (recursive-find :cclasp *features*) "cclasp" "full"))))
          (garbage-collector (if (recursive-find :use-mps *features*) "mps" "boehm"))
          (target-backend (bformat nil "%s-%s" stage garbage-collector)))
     target-backend))

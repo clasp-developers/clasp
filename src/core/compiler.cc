@@ -41,12 +41,14 @@ THE SOFTWARE.
 #include <clasp/core/sequence.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/unixfsys.h>
+#include <clasp/core/environment.h>
 #include <clasp/core/cleavirPrimopsPackage.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/environment.h>
+#include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
 
 #ifdef _TARGET_OS_DARWIN
@@ -54,6 +56,31 @@ THE SOFTWARE.
 #endif
 
 namespace core {
+
+int f(Environment_sp& e)
+{
+  (void)e;
+  return 1;
+}
+#define ARGS_core_testTaggedCast "(pow2)"
+#define DECL_core_testTaggedCast ""
+#define DOCS_core_testTaggedCast "Evaluate a TaggedCast 2^pow2 times"
+__attribute__((optnone)) Fixnum_sp core_testTaggedCast(Fixnum_sp pow2) {
+  Fixnum fpow2 = clasp_to_fixnum(pow2);
+  Fixnum times = 1;
+  times = times << fpow2;
+  printf("%s:%d  fpow2 = %ld  times = %ld\n", __FILE__, __LINE__, fpow2, times );
+  Environment_sp env = ValueEnvironment_O::createForNumberOfEntries(5,_Nil<T_O>());
+  Fixnum i;
+  Fixnum v = 0;
+  for ( i=0; i<times; ++i ) {
+    f(env);
+    Environment_sp e = env.asOrNull<Environment_O>();
+    v += f(e);
+  }
+  return Integer_O::create(v);
+}
+
 
 #define ARGS_core_cxxFibn "(reps num)"
 #define DECL_core_cxxFibn ""
@@ -120,7 +147,7 @@ T_mv core_mangleName(Symbol_sp sym, bool is_function) {
 
 #define ARGS_core_startupImagePathname "()"
 #define DECL_core_startupImagePathname ""
-#define DOCS_core_startupImagePathname "startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cleavir-boehm, cleavir-mps based on *features* :ECL-MIN, :USE-MPS, :BCLASP"
+#define DOCS_core_startupImagePathname "startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cclasp-boehm, cclasp-mps based on *features* :ECL-MIN, :USE-MPS, :BCLASP"
 T_sp core_startupImagePathname() {
   _G();
   Cons_sp features = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue());
@@ -132,7 +159,7 @@ T_sp core_startupImagePathname() {
     if (bclasp.notnilp()) {
       strStage = "full";
     } else {
-      strStage = "cleavir";
+      strStage = "cclasp";
     }
   }
   // Now check if the executable name contains bclasp or cclasp
@@ -141,7 +168,7 @@ T_sp core_startupImagePathname() {
   if ( executable.find("bclasp") != string::npos ) {
     strStage = "full";
   } else if ( executable.find("cclasp") != string::npos ) {
-    strStage = "cleavir";
+    strStage = "cclasp";
   }
   string strGc = "boehm";
   if (mps.notnilp())
@@ -864,11 +891,22 @@ T_sp core_callsByPointerPerSecond() {
 #define DECL_core_callWithVariableBound ""
 #define DOCS_core_callWithVariableBound "callWithVariableBound"
 T_mv core_callWithVariableBound(Symbol_sp sym, T_sp val, T_sp thunk) {
-  DynamicScopeManager scope(sym, val);
-  return eval::funcall(thunk);
-  // Don't put anything in here - don't mess up the MV return
+  T_mv result;
+  cc_call_with_variable_bound(&result,sym.raw_(),val.raw_(),thunk.raw_());
+  return result;
 }
 
+#define ARGS_core_funwind_protect "(protected-fn cleanup-fn)"
+#define DECL_core_funwind_protect ""
+#define DOCS_core_funwind_protect "funwind_protect"
+T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
+  T_mv result;
+  cc_funwind_protect(&result,protected_fn.raw_(),cleanup_fn.raw_());
+  return result;
+}
+
+
+ 
 #define ARGS_core_multipleValueFuncall "(function-designator &rest functions)"
 #define DECL_core_multipleValueFuncall ""
 #define DOCS_core_multipleValueFuncall "multipleValueFuncall"
@@ -924,39 +962,19 @@ T_mv core_multipleValueProg1_Function(Function_sp func1, Function_sp func2) {
 #define DECL_core_catchFunction ""
 #define DOCS_core_catchFunction "catchFunction"
 T_mv core_catchFunction(T_sp tag, Function_sp func) {
-  int frame = _lisp->exceptionStack().push(CatchFrame, tag);
-  //	printf("%s:%d Entered catchFunction my-frame: %d CatchThrow type_info@%p\n", __FILE__, __LINE__, frame, (void*)&typeid(core::CatchThrow) );
   T_mv result;
-  try {
-    //		printf("%s:%d In catchFunction - evaluating function\n", __FILE__, __LINE__ );
-    result = eval::funcall(func);
-    //		printf("%s:%d In catchFunction - returned from function\n", __FILE__, __LINE__ );
-  } catch (CatchThrow &catchThrow) {
-    //		printf("%s:%d Caught CatchThrow exception frame: %d  my frame: %d\n", __FILE__, __LINE__, catchThrow.getFrame(), frame );
-    if (catchThrow.getFrame() != frame) {
-      throw catchThrow;
-    }
-    result = gctools::multiple_values<T_O>::createFromValues();
-  }
-  _lisp->exceptionStack().unwind(frame);
-  //	printf("%s:%d Leaving catchFunction my-frame: %d CatchThrow type_info@%p\n", __FILE__, __LINE__, frame, (void*)&typeid(core::CatchThrow) );
+  cc_catch(&result,tag.raw_(),func.raw_());
   return result;
 }
 
 #define ARGS_core_throwFunction "(tag result)"
 #define DECL_core_throwFunction ""
 #define DOCS_core_throwFunction "throwFunction TODO: The semantics are not followed here - only the first return value is returned!!!!!!!!"
-void core_throwFunction(T_sp tag, T_sp res) {
-  int frame = _lisp->exceptionStack().findKey(CatchFrame, tag);
-  if (frame < 0) {
-    CONTROL_ERROR();
-  }
-  //	printf("%s:%d throwFunction throwing to frame: %d  core::CatchThrow type_info@%p\n", __FILE__, __LINE__, frame, (void*)&typeid(core::CatchThrow));
-  T_mv result(res, 1); // THIS IS WRONG!!!! WE MUST HANDLE MULTIPLE VALUES!!!
-  result.saveToMultipleValue0();
-  throw CatchThrow(frame);
+void core_throwFunction(T_sp tag, T_sp result_form) {
+  cc_throw(tag.raw_(),result_form.raw_());
 }
 
+ 
 #define ARGS_core_progvFunction "(symbols values func)"
 #define DECL_core_progvFunction ""
 #define DOCS_core_progvFunction "progvFunction"
@@ -998,9 +1016,12 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   SYMBOL_SC_(CorePkg, dlsym);
   Defun(dlsym);
 
+  CoreDefun(testTaggedCast);
+
   SYMBOL_SC_(CorePkg, dladdr);
   Defun(dladdr);
   CoreDefun(callDlMainFunction);
+  CoreDefun(funwind_protect);
 
   SYMBOL_SC_(CorePkg, loadBundle);
   CoreDefun(loadBundle);

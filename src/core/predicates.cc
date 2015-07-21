@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/bitVector.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/hashTable.h>
+#include <clasp/core/random.h>
 #include <clasp/core/vectorObjects.h>
 //#ifndef CLOS
 #include <clasp/core/structureObject.h>
@@ -195,6 +196,13 @@ bool af_complexP(T_sp obj) {
 bool af_ratioP(T_sp obj) {
   _G();
   return gc::IsA<Ratio_sp>(obj);
+};
+
+#define ARGS_cl_random_state_p "(arg)"
+#define DECL_cl_random_state_p ""
+#define DOCS_cl_random_state_p "ratioP"
+bool cl_random_state_p(T_sp obj) {
+  return gc::IsA<RandomState_sp>(obj);
 };
 
 #define ARGS_af_rationalP "(arg)"
@@ -470,6 +478,7 @@ void initialize_predicates() {
   Defun(pathP);
   Defun(hashTableP);
   ClDefun(readtablep);
+  ClDefun(random_state_p);
   Defun(structureObjectP);
   Defun(singleDispatchGenericFunctionP);
   Defun(activation_frame_p);

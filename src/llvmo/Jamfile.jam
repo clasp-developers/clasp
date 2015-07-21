@@ -27,6 +27,7 @@ local sources =
 	debugInfoExpose.cc
 	debugLoc.cc
 	llvmoDwarf.cc
+	link_intrinsics.cc
 	intrinsics.cc
 	insertPoint.cc
 	irtests.cc
@@ -40,7 +41,7 @@ local sources =
 
 lib llvmo : $(sources) ;
 
-obj intrinsics_bitcode_boehm : intrinsics.cc
+stripped-bitcode intrinsics_bitcode_boehm : intrinsics.cc
 	/internals/core//core
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib

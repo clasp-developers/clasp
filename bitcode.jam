@@ -1,0 +1,11 @@
+
+import type ;
+type.register STRIPPED_BITCODE : sbc ;
+
+import generators ;
+generators.register-standard bitcode.strip-debug : OBJ : STRIPPED_BITCODE ;
+
+actions strip-debug
+{
+    "opt" -strip $(>) -o=$(<)
+}

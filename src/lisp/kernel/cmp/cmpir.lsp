@@ -506,18 +506,18 @@
 ;;
 ;;
 ;;  You can do things like:
-;; Put (push :flow cmp::*low-level-trace*) / (pop cmp::*low-level-trace*)
+;; Put (push :flow *features*) / (pop *features*)
 ;;   around a function and it will get low-level-trace commands inserted before
 ;;   every function call and within every landing pad.
 
 (defparameter *next-low-level-trace-index* 1000000001)
-(defmacro irc-low-level-trace (&optional where)
-  `(if (or (member :all ',cmp:*low-level-trace*) (member ,where cmp:*low-level-trace*))
-       (progn
-	 (let ((llt (get-function-or-error *the-module* "lowLevelTrace")))
-	   (llvm-sys:create-call1 *irbuilder* llt (jit-constant-i32 *next-low-level-trace-index*) ""))
-	 (setq *next-low-level-trace-index* (+ 1 *next-low-level-trace-index*)))
-       nil))
+(defun irc-low-level-trace (&optional where)
+  (if (member where *features*)
+      (progn
+        (let ((llt (get-function-or-error *the-module* "lowLevelTrace")))
+          (llvm-sys:create-call1 *irbuilder* llt (jit-constant-i32 *next-low-level-trace-index*) ""))
+        (setq *next-low-level-trace-index* (+ 1 *next-low-level-trace-index*)))
+      nil))
 
 
 (defun irc-begin-landing-pad-block (theblock &optional (function *current-function*))
@@ -657,17 +657,24 @@
 			      :function-type ,function-type
 			      :argument-names ,argument-names
 			      :linkage ,linkage)
+;;       (format t "cmpir.lsp:660 entering with-new-function~%")
        (let* ((*current-function* ,fn)
 	      (*current-function-name* (llvm-sys:get-name ,fn))
 	      (*irbuilder-function-alloca* ,irbuilder-alloca)
 	      (*irbuilder-function-body* ,irbuilder-body))
-	 (with-irbuilder (*irbuilder-function-body*)
-	   (with-dbg-function (,function-name
-			       :linkage-name *current-function-name*
-			       :function ,fn
-			       :function-type ,function-type
-			       :form ,function-form )
-	     (with-dbg-lexical-block (,function-form)
+         (with-dbg-function (,function-name
+                             :linkage-name *current-function-name*
+                             :function ,fn
+                             :function-type ,function-type
+                             :form ,function-form )
+           (with-dbg-lexical-block (,function-form)
+;;             (format t "cmpir.lsp 670   Setting current-source-pos~%")
+             (dbg-set-current-source-pos-for-irbuilder ,function-form ,irbuilder-alloca)
+;;             (format t "cmpir.lsp 673   Done setting alloca current-source-pos~%")
+             (dbg-set-current-source-pos-for-irbuilder ,function-form ,irbuilder-body)
+;;             (format t "cmpir.lsp 676   Done setting body current-source-pos~%")
+;;             (format t "cmpir.lsp 678   Done setting current-source-pos~%")
+             (with-irbuilder (*irbuilder-function-body*)
 	       (or *the-module* (error "with-new-function *the-module* is NIL"))
 	       (let* ((*gv-current-function-name* (jit-make-global-string-ptr *current-function-name* "fn-name"))
 		      (*exception-handler-cleanup-block* (irc-get-exception-handler-cleanup-block ,fn-env))
@@ -677,6 +684,7 @@
 		   ,@body
 		   )
                  (cmp-log "with-landing-pad around irc-function-cleanup-and-return\n")
+;;                 (format t "cmpir.lsp:660 leaving with-new-function~%")
 		 (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env)
 		   (irc-function-cleanup-and-return ,fn-env #||,*current-invocation-history-frame*||#))
 		 ,fn)))))
@@ -754,7 +762,6 @@ and then the irbuilder-alloca, irbuilder-body."
 	     (landpad (llvm-sys:create-landing-pad *irbuilder*
 						   +exception-struct+
 						   personality-function 0 "")))
-	(declare (special *the-function-pass-manager*))
 	(llvm-sys:set-cleanup landpad t)
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
@@ -771,13 +778,10 @@ and then the irbuilder-alloca, irbuilder-body."
 	(progn
 	  (irc-begin-block return-block)
 	  (irc-cleanup-function-environment env #| invocation-history-frame |# ) ;; Why the hell was this commented out?
-#|	  (irc-cleanup-function-environment env invocation-history-frame )  |#
+          #|	  (irc-cleanup-function-environment env invocation-history-frame )  |#
 	  (llvm-sys:create-ret-void *irbuilder*))
 	(cmp-log "About to verify the function in irc-function-cleanup-and-return\n")
-	(irc-verify-function *current-function*)
-	(when *the-function-pass-manager*
-	  (llvm-sys:function-pass-manager-run *the-function-pass-manager* *current-function*)
-	  )))))
+	(irc-verify-function *current-function*)))))
 
 
 (defun irc-cleanup-function-environment (env #||invocation-history-frame||#)
@@ -853,13 +857,11 @@ Within the _irbuilder_ dynamic environment...
 (defmacro with-irbuilder ((irbuilder) &rest code)
   "Set *irbuilder* to the given IRBuilder"
   (let ((irbuilder-desc (gensym)))
-  `(let ((*irbuilder* ,irbuilder)
-	 (,irbuilder-desc (bformat nil "%s" ,irbuilder)))
-     (cmp-log "Switching to irbuilder --> %s\n" ,irbuilder-desc)
-     (prog1 (progn
-	      ,@code)
-       (cmp-log "Leaving irbuilder --> %s\n" ,irbuilder-desc))
-     )))
+    `(let ((*irbuilder* ,irbuilder))
+       (cmp-log "Switching to irbuilder --> %s\n" (bformat nil "%s" ,irbuilder))
+       (prog1 (progn
+                ,@code)
+         (cmp-log "Leaving irbuilder --> %s\n" (bformat nil "%s" ,irbuilder))))))
 
 
 (defun irc-alloca-tmv (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
@@ -1039,6 +1041,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 (defun irc-create-invoke (function-name args unwind-dest &optional (label ""))
+  (check-debug-info-setup *irbuilder*)
   (unless unwind-dest (error "unwind-dest should not be nil"))
   (let ((func (get-function-or-error *the-module* function-name (car args)))
 	(normal-dest (irc-basic-block-create "normal-dest")))
@@ -1064,6 +1067,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 (defun irc-create-call (function-name args &optional (label ""))
+  (check-debug-info-setup *irbuilder*)
   (let* ((func (get-function-or-error *the-module* function-name (car args)))
 	 (ra args)
          (code (case (length args)

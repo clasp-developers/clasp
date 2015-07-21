@@ -44,21 +44,24 @@ class RandomState_O : public T_O {
   //	DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
-  boost::variate_generator<boost::mt11213b &, boost::uniform_real<>>* _Generator;
+  boost::mt11213b _Producer;
 
 public: // ctor/dtor for classes with shared virtual base
   explicit RandomState_O() {
-    boost::mt11213b realRandom01Producer;
-    boost::uniform_real<> realRandom01Distribution(0, 1);
-    this->_Generator = new boost::variate_generator<boost::mt11213b&,boost::uniform_real<>>(realRandom01Producer,realRandom01Distribution);
+    clock_t currentTime;
+    int tt;
+#ifdef darwin
+    currentTime = mach_absolute_time();
+#else
+    currentTime = clock();
+#endif
+    tt = currentTime % 32768;
+    this->_Producer.seed(static_cast<uint>(tt));
   };
   explicit RandomState_O( const RandomState_O& state) {
-    delete this->_Generator;
-    this->_Generator = new boost::variate_generator<boost::mt11213b&,boost::uniform_real<>>(*state._Generator);
+    this->_Producer = state._Producer;
   };
-  virtual ~RandomState_O() {
-    delete this->_Generator;
-  }
+  virtual ~RandomState_O() {}
 public: // Functions here
   static RandomState_sp make(T_sp state);
   static RandomState_sp create(RandomState_sp other) {

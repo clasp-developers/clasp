@@ -444,9 +444,7 @@ T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index) {
 }
 
 T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) {
-  if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could not lookup value in top level environment"));
-  } else if (env.framep()) {
+  if (env.framep()) {
     if (depth == 0) {
       IMPLEMENT_MEF(BF("We have a problem here - stack based frames store T_O* tagged pointers and this function is supposed to return a reference to a T_sp"));
       //return frame::LookupReference(env,index);
@@ -455,6 +453,8 @@ T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) 
     return clasp_lookupValueReference(frame::ParentFrame(env), depth, index);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->lookupValueReference(depth, index);
+  } else if (env.nilp()) {
+    SIMPLE_ERROR(BF("Could not lookup value in top level environment"));
   }
   NOT_ENVIRONMENT_ERROR(env);
 }

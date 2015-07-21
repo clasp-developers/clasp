@@ -2008,6 +2008,12 @@ struct from_object<llvm::FunctionPassManager *, std::true_type> {
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::FunctionPassManager_sp>(object)->wrappedPtr(); };
 };
+template <>
+struct from_object<llvm::FunctionPassManager &, std::true_type> {
+  typedef llvm::FunctionPassManager &DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(*gc::As<llvmo::FunctionPassManager_sp>(object)->wrappedPtr()){};
+};
 };
     ;
 /* to_object translators */
@@ -2016,7 +2022,6 @@ namespace translate {
 template <>
 struct to_object<llvm::FunctionPassManager *> {
   static core::T_sp convert(llvm::FunctionPassManager *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::FunctionPassManager_O, llvm::FunctionPassManager *>(ptr)));
   }
 };
@@ -2289,6 +2294,7 @@ class IRBuilderBase_O : public core::ExternalObject_O {
 
 protected:
   PointerToExternalType _ptr;
+  bool  _CurrentDebugLocationSet;
 
 public:
   virtual void *externalObject() const {
@@ -2306,7 +2312,7 @@ public:
   }
   static IRBuilderBase_sp create(llvm::IRBuilderBase *ptr);
   ;
-  IRBuilderBase_O() : Base(), _ptr(NULL){};
+ IRBuilderBase_O() : Base(), _ptr(NULL), _CurrentDebugLocationSet(false){};
   ~IRBuilderBase_O() {
     if (_ptr != NULL) { /* delete _ptr;*/
       _ptr = NULL;
@@ -2321,7 +2327,7 @@ public:
   void SetCurrentDebugLocation(DebugLoc_sp loc);
   /*! Set the current debug location by building a DebugLoc on the fly */
   void SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope);
-
+  core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
 }; // IRBuilderBase_O
 }; // llvmo
 TRANSLATE(llvmo::IRBuilderBase_O);

@@ -239,7 +239,41 @@ public:
 public:
   ExceptionEntry &operator[](int i) { return this->_Stack[i]; };
   size_t size() const { return this->_Stack.size(); };
-
+  string summary() {
+    stringstream ss;
+    ss << "ExceptionStackSummary: depth[" << this->size() << "] ";
+    for ( int idx=this->size()-1; idx>=0; --idx) {
+      FrameKind fk = this->_Stack[idx]._FrameKind;
+      char frameChar;
+      switch (fk) {
+      case NullFrame:
+          frameChar = 'N';
+          break;
+      case CatchFrame:
+          frameChar = 'C';
+          break;
+      case BlockFrame:
+          frameChar = 'B';
+          break;
+      case TagbodyFrame:
+          frameChar = 'T';
+          break;
+      case LandingPadFrame:
+          frameChar = 'L';
+          break;
+      default:
+          frameChar = 'u';
+          break;
+      }
+      ss << frameChar << idx;
+      if ( this->_Stack[idx]._Key.notnilp() ) {
+        ss << "{@" << (void*)this->_Stack[idx]._Key.raw_() << "}";
+      }
+      ss << " ";
+    };
+    return ss.str();
+  };
+  
   size_t push(FrameKind kind, T_sp key) {
     size_t frame = this->_Stack.size();
     this->_Stack.emplace_back(kind, key);

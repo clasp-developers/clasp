@@ -42,6 +42,7 @@
           cmp-log
           cmp-log-dump
           codegen-literal
+          codegen-rtv
           codegen-symbol
           compile-error-if-not-enough-arguments
           compile-in-env
@@ -101,6 +102,8 @@
           with-catch
           with-dbg-function
           with-dbg-lexical-block
+          dbg-set-current-source-pos
+          dbg-set-current-source-pos-for-irbuilder
           with-debug-info-generator
           with-irbuilder
           with-landing-pad

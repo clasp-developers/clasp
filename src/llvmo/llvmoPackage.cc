@@ -332,7 +332,8 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
   };
       break;
   case candoGlobals: {
-    initialize_intrinsics();
+    initialize_intrinsics(); //<< comment this out - symbols disappear
+    initialize_link_intrinsics();
     initialize_llvmo_expose();
     initialize_clbind_llvm_expose();
     initialize_dwarf_constants();

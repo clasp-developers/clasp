@@ -69,14 +69,17 @@ alias clasp : clasp_boehm_o
       ;
       
 
-install install_clasp : clasp
+install install_clasp :
+        clasp
         : <location>$(APPBIN-OSX) <target-os>darwin
         ;
 
 install install_clasp : clasp
         : <location>$(APPBIN-LINUX) <target-os>linux
+        <implicit-dependency>/internals/llvmo//bundle
         ;
 
+alias bundle : install_clasp /internals/llvmo//bundle ;
 
 #alias gc-sources : mymps.c
 #

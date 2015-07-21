@@ -57,6 +57,7 @@ THE SOFTWARE.
 #define USE_SHARP_EQUAL_HASH_TABLES 1
 
 #define ALWAYS_INLINE __attribute__((always_inline))
+#define NOINLINE __attribute__((noinline))
 
 namespace std {
 class type_info;
@@ -774,6 +775,7 @@ typedef vector<AtomHandle> VectorAtomHandle;
 #endif
 
 class ActivationFrame_O;
+ class Environment_O;
 typedef gctools::smart_ptr<ActivationFrame_O> ActivationFrame_sp;
 };
 

@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/Transforms/Instrumentation.h>
+#include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/Support/TargetRegistry.h>
@@ -1126,12 +1127,9 @@ Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context) {
 #define DECL_af_module_get_function_list ""
 #define DOCS_af_module_get_function_list "module_get_function_list"
 core::List_sp af_module_get_function_list(Module_sp module) {
-  _G();
   ql::list fl(_lisp);
-  llvm::Module::FunctionListType &functionList = module->wrappedPtr()->getFunctionList();
-  for (llvm::Module::FunctionListType::const_iterator it = functionList.begin();
-       it != functionList.end(); it++) {
-    Function_sp wrapped_func = gc::As<Function_sp>(translate::to_object<const llvm::Function &>::convert(*it));
+  for ( llvm::Function& f : *module->wrappedPtr() ) {
+    Function_sp wrapped_func = gc::As<Function_sp>(translate::to_object<const llvm::Function &>::convert(f));
     fl << wrapped_func;
   }
   return fl.cons();
@@ -1564,11 +1562,11 @@ FunctionPassManager_sp FunctionPassManager_O::make(llvm::Module *module) {
 EXPOSE_CLASS(llvmo, FunctionPassManager_O);
 
 void FunctionPassManager_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<FunctionPassManager_O>()
-      .def("function-pass-manager-add", &llvm::FunctionPassManager::add)
-      .def("doInitialization", &llvm::FunctionPassManager::doInitialization)
-      .def("function-pass-manager-run", &llvm::FunctionPassManager::run);
+    .def("function-pass-manager-add", &llvm::FunctionPassManager::add)
+    .def("doInitialization", &llvm::FunctionPassManager::doInitialization)
+    .def("doFinalization",&llvm::FunctionPassManager::doFinalization)
+    .def("function-pass-manager-run", &llvm::FunctionPassManager::run);
   core::af_def(LlvmoPkg, "makeFunctionPassManager", &FunctionPassManager_O::make, ARGS_FunctionPassManager_O_make, DECL_FunctionPassManager_O_make, DOCS_FunctionPassManager_O_make);
 };
 
@@ -1708,15 +1706,40 @@ PassManagerBuilder_sp PassManagerBuilder_O::make() {
   return self;
 };
 
+#define ARGS_passManagerBuilderSetfInliner "()"
+#define DECL_passManagerBuilderSetfInliner ""
+#define DOCS_passManagerBuilderSetfInliner ""
+void PassManagerBuilderSetfInliner(PassManagerBuilder_sp pmb, llvm::Pass* inliner) {
+  printf("%s:%d Setting inliner for PassManagerBuilder to %p\n", __FILE__, __LINE__, inliner );
+  pmb->wrappedPtr()->Inliner = inliner;
+};
+
+#define ARGS_passManagerBuilderSetfOptLevel "()"
+#define DECL_passManagerBuilderSetfOptLevel ""
+#define DOCS_passManagerBuilderSetfOptLevel ""
+void PassManagerBuilderSetfOptLevel(PassManagerBuilder_sp pmb, int optLevel) {
+  pmb->wrappedPtr()->OptLevel = optLevel;
+};
+
+#define ARGS_passManagerBuilderSetfSizeLevel "()"
+#define DECL_passManagerBuilderSetfSizeLevel ""
+#define DOCS_passManagerBuilderSetfSizeLevel ""
+void PassManagerBuilderSetfSizeLevel(PassManagerBuilder_sp pmb, int level) {
+  pmb->wrappedPtr()->SizeLevel = level;
+};
+
 EXPOSE_CLASS(llvmo, PassManagerBuilder_O);
 
 void PassManagerBuilder_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
-
   core::externalClass_<PassManagerBuilder_O>()
-      .def("populateModulePassManager", &llvm::PassManagerBuilder::populateModulePassManager)
-      .def("populateLTOPassManager", &llvm::PassManagerBuilder::populateLTOPassManager);
+    .def("populateModulePassManager", &llvm::PassManagerBuilder::populateModulePassManager)
+    .def("populateFunctionPassManager", &llvm::PassManagerBuilder::populateFunctionPassManager)
+    .def("populateLTOPassManager", &llvm::PassManagerBuilder::populateLTOPassManager)
+     ;
   core::af_def(LlvmoPkg, "make-PassManagerBuilder", &PassManagerBuilder_O::make, ARGS_PassManagerBuilder_O_make, DECL_PassManagerBuilder_O_make, DOCS_PassManagerBuilder_O_make);
+  core::af_def(LlvmoPkg, "pass-manager-builder-setf-inliner", &PassManagerBuilderSetfInliner);
+  core::af_def(LlvmoPkg, "pass-manager-builder-setf-OptLevel", &PassManagerBuilderSetfOptLevel);
+  core::af_def(LlvmoPkg, "pass-manager-builder-setf-SizeLevel", &PassManagerBuilderSetfSizeLevel);
 };
 
 void PassManagerBuilder_O::exposePython(core::Lisp_sp lisp) {
@@ -2646,7 +2669,10 @@ void IRBuilderBase_O::exposeCando(core::Lisp_sp lisp) {
       .def("restoreIP", &IRBuilderBase_O::restoreIP)
       .def("saveIP", &IRBuilderBase_O::saveIP)
       .def("SetCurrentDebugLocation", &IRBuilderBase_O::SetCurrentDebugLocation)
-      .def("SetCurrentDebugLocationToLineColumnScope", &IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope);
+    .def("SetCurrentDebugLocationToLineColumnScope", &IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope)
+    .def("CurrentDebugLocation",&IRBuilderBase_O::CurrentDebugLocation)
+    ;
+  
 };
 
 void IRBuilderBase_O::exposePython(core::Lisp_sp lisp) {
@@ -2667,9 +2693,9 @@ InsertPoint_sp IRBuilderBase_O::saveIP() {
 }
 
 void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
-  _G();
   //	llvm::DebugLoc dlold = this->wrappedPtr()->getCurrentDebugLocation();
   //	printf("                       old DebugLocation: %d\n", dlold.getLine() );
+  this->_CurrentDebugLocationSet = true;
   llvm::DebugLoc &dl = loc->debugLoc();
   //	printf("%s:%d IRBuilderBase_O::SetCurrentDebugLoc changing to line %d\n", __FILE__, __LINE__, dl.getLine() );
   this->wrappedPtr()->SetCurrentDebugLocation(dl);
@@ -2678,7 +2704,7 @@ void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
 }
 
 void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope) {
-  _G();
+  this->_CurrentDebugLocationSet = true;
   llvm::DIDescriptor *didescriptor = scope->operator llvm::DIDescriptor *();
   llvm::MDNode *mdnode = didescriptor->operator llvm::MDNode *();
   llvm::DebugLoc dl = llvm::DebugLoc::get(line, col, mdnode);
@@ -3643,6 +3669,8 @@ void initialize_llvmo_expose() {
   //
   //    core::af_def(LlvmoPkg,"createDebugIRPass",&llvmo::af_createDebugIRPass);
   core::af_def(LlvmoPkg, "createAliasAnalysisCounterPass", &llvm::createAliasAnalysisCounterPass);
+  core::af_def(LlvmoPkg, "createFunctionInliningPass", (llvm::Pass* (*)(unsigned,unsigned))&llvm::createFunctionInliningPass);
+  core::af_def(LlvmoPkg, "createAlwaysInlinerPass", (llvm::Pass* (*)())&llvm::createAlwaysInlinerPass);
   core::af_def(LlvmoPkg, "createAAEvalPass", &llvm::createAAEvalPass);
   core::af_def(LlvmoPkg, "createScalarEvolutionAliasAnalysisPass", &llvm::createScalarEvolutionAliasAnalysisPass);
   //    core::af_def(LlvmoPkg,"createProfileLoaderPass",&llvm::createProfileLoaderPass);

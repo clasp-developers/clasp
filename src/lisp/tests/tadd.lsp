@@ -1,3 +1,5 @@
 
-(defun foo-add (x y)
-  (test-two-arg-+ x y))
+(*FSET 'FOO-ADD #'(LAMBDA (X Y) (DECLARE (LAMBDA-NAME FOO-ADD)) (BLOCK FOO-ADD (+ X Y))) nil)
+NIL
+'FOO-ADD
+
