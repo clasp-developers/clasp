@@ -1764,6 +1764,17 @@ inline core::List_sp As(core::T_sp const &rhs) {
 };
 
 
+namespace gctools {
+template <typename ToType, typename FromType>
+  smart_ptr<ToType> reinterpret_cast_smart_ptr(smart_ptr<FromType> x) {
+  return smart_ptr<ToType>((Tagged)x.raw_());
+}
+
+};
+
+
+
+
 namespace core {
   string _rep_(T_sp obj);
 };
@@ -1773,5 +1784,9 @@ std::ostream& operator<< (std::ostream& os, const gctools::smart_ptr<T>& obj) {
   os << core::_rep_(obj);
   return os;
 }
+
+
+
+
 
 #endif

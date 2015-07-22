@@ -4,19 +4,51 @@
                             :target-backend (default-target-backend))
               :print t)
 
-(progn  ;; Set up everything for building cclasp from bclasp
-  (format t "Loading ASDF system~%")
-  (time (require :asdf))
-  (load "sys:local-asdf-config.lisp")
-  (pushnew :cleavir *features*)
-  (format t "Loading :clasp-cleavir system~%")
-  (time (require :clasp-cleavir))
-  (format t "Loading inline.lisp~%")
-  (load "sys:kernel;cleavir;inline.lisp")
-  (print (core:getpid)))
-(load "sys:kernel;cleavir;auto-compile.lisp")
 
-(load "/Users/meister/Development/slime/start-swank.lisp")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun rev (l)
+  (let ((result '()))
+    (loop until (null l)
+       do (push (pop l) result))
+    result))
+
+(defun bla ()
+  (loop with l = (make-list 10000) repeat 1000 do (rev l)))
+
+(time (bla))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; Running slime from bclasp+cleavir
+
+
+;;; Wipe out .cache/common-lisp/*
+;;; wipe out .slime/fasl/2015-06-27/*
+;;; clasp_boehm_o -f bclasp -f flow -f cclasp-eh
+
+(progn
+  (progn ;; Set up everything for building cclasp from bclasp
+    (format t "Loading ASDF system~%")
+    (time (require :asdf))
+    (load "sys:local-asdf-config.lisp")
+    (pushnew :cleavir *features*)
+    (format t "Loading :clasp-cleavir system~%")
+    (time (require :clasp-cleavir))
+    (format t "Loading inline.lisp~%")
+    (load "sys:kernel;cleavir;inline.lisp")
+    (print (core:getpid)))
+  (load "sys:kernel;cleavir;auto-compile.lisp")
+  (load "/Users/meister/Development/slime/start-swank.lisp"))
+
+(clasp-cleavir::cleavir-compile-file "sys:tests;teh.lsp")
+(load "sys:tests;teh.fasl")
+(foo)
 
 
 
@@ -24,18 +56,11 @@
 
 (compile-file "sys:tests;tfib.lsp")
 
-(load "sys:tests;tfib.lsp")
-(time     (fibn 10000000 78))
-(time    (cfibn 10000000 78))
-(time (cxx-fibn 10000000 78))
-(float (/ 3.17 0.74))
-
-(defun foo (x y) (+ x y))
-(disassemble 'foo)
-
 (getpid)
 (error "foo")
+(quit)
 (setq core::*debug-flow-control* t)
+(setq cmp::*low-level-trace-print* t)
 (print "Hello")
 
 
