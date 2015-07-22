@@ -93,6 +93,7 @@
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/inline-calls"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/static-few-assignments"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/type-inference"
+    #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/eliminate-load-time-value-inputs"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/eliminate-typeq"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/simplify-box-unbox"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/function-tree"
