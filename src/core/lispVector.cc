@@ -52,7 +52,7 @@ Vector_sp cl_vector(List_sp args) {
 };
 
 #define DOCS_core_make_vector "make_vector See si_make_vector in ecl>>array.d"
-#define ARGS_core_make_vector "(element-type dimension adjustable fill-pointer displaced-to displaced-index-offset &optional initial-element initial-contents)"
+#define ARGS_core_make_vector "(element-type dimension &optional adjustable (fill-pointer t) displaced-to displaced-index-offset initial-element initial-contents)"
 #define DECL_core_make_vector ""
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 Vector_sp core_make_vector(T_sp element_type,

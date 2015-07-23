@@ -90,6 +90,30 @@ T_sp monotonic(int s, int t, List_sp args, bool preserve_case = true) {
   return _lisp->_true();
 };
 
+#define ARGS_cl_lower_case_p "(arg)"
+#define DECL_cl_lower_case_p ""
+#define DOCS_cl_lower_case_p "lower_case_p"
+bool cl_lower_case_p(Character_sp c) {
+  claspCharacter x = clasp_char_code(c);
+  return islower(x);
+};
+
+#define ARGS_cl_upper_case_p "(arg)"
+#define DECL_cl_upper_case_p ""
+#define DOCS_cl_upper_case_p "upper_case_p"
+bool cl_upper_case_p(Character_sp c) {
+  claspCharacter x = clasp_char_code(c);
+  return isupper(x);
+};
+
+#define ARGS_cl_both_case_p "(arg)"
+#define DECL_cl_both_case_p ""
+#define DOCS_cl_both_case_p "both_case_p"
+bool cl_both_case_p(Character_sp c) {
+  claspCharacter x = clasp_char_code(c);
+  return isupper(x)||islower(x);
+};
+
 #define ARGS_cl_alphanumericp "(char)"
 #define DECL_cl_alphanumericp ""
 #define DOCS_cl_alphanumericp "alphanumericp"
@@ -657,6 +681,9 @@ void Character_dummy_O::exposeCando(::core::Lisp_sp lisp) {
   Defun(charEqual);
   SYMBOL_EXPORT_SC_(ClPkg, digitCharP);
   ClDefun(digitCharP);
+  ClDefun(lower_case_p);
+  ClDefun(upper_case_p);
+  ClDefun(both_case_p);
 }
 
 void Character_dummy_O::exposePython(::core::Lisp_sp lisp) {

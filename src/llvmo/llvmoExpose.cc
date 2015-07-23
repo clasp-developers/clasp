@@ -1710,7 +1710,7 @@ PassManagerBuilder_sp PassManagerBuilder_O::make() {
 #define DECL_passManagerBuilderSetfInliner ""
 #define DOCS_passManagerBuilderSetfInliner ""
 void PassManagerBuilderSetfInliner(PassManagerBuilder_sp pmb, llvm::Pass* inliner) {
-  printf("%s:%d Setting inliner for PassManagerBuilder to %p\n", __FILE__, __LINE__, inliner );
+//  printf("%s:%d Setting inliner for PassManagerBuilder to %p\n", __FILE__, __LINE__, inliner );
   pmb->wrappedPtr()->Inliner = inliner;
 };
 

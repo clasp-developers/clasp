@@ -2050,6 +2050,65 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
   throw * unwindP;
 }
 
+
+#if 0 // Bring this back online when we convert to new calling convention
+T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::size_t numFuns, ...) {
+  MultipleValues mvAccumulate;
+  mvAccumulate._Size = 0;
+  size_t idx = 0;
+  va_list argp;
+  va_start(argp,numFuns);
+  for (; numFuns; --numFuns) {
+    core::T_O* tfunc = va_arg(argp,core::T_O*);
+    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+    ASSERT(func!=NULL);
+    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    T_mv result;
+    closure->invoke(&result,LCC_PASS_ARGS0());
+    mvAccumulate[idx] = result.raw_();
+    ++idx;
+    for (size_t i = 1, iEnd(result.number_of_values()); i < iEnd; ++i) {
+      mvAccumulate[idx] = result.valueGet(i).raw_();
+      ++idx;
+    }
+  }
+  va_end(argp);
+  ASSERT(idx < MultipleValues::MultipleValuesLimit);
+  mvAccumulate._Size = idx;
+  core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(funcDesignator);
+  ASSERT(func!=NULL);
+  auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+  core::T_O** a = &mvAccumulate[0];
+  MultipleValues &mvThreadLocal = lisp_multipleValues();
+  for (size_t i = LCC_FIXED_ARGS, iEnd(mvAccumulate._Size); i < iEnd; ++i) {
+    mvThreadLocal[i] = mvAccumulate[i];
+  }
+  closure->invoke(result, mvAccumulate._Size, mvAccumulate[0], mvAccumulate[1], mvAccumulate[2], mvAccumulate[3], mvAccumulate[4]);
+}
+
+T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, core::T_O* tfunc2) {
+  MultipleValues mvFunc1;
+  core::Function_O* func1 = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc1);
+  ASSERT(func1!=NULL);
+  auto closure1 = gc::untag_general<core::Function_O *>(func1)->closure.as<core::Closure>();
+  closure1->invoke(result,LCC_PASS_ARGS0());
+  mvFunc1._Size = result->number_of_values();
+  mvFunc1[0] = result->raw_();
+  MultipleValues &mvThreadLocal = lisp_multipleValues();
+  for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvFunc1[i] = mvThreadLocal[i];
+  T_mv resultTemp;
+  core::Function_O* func2 = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc2);
+  ASSERT(func2!=NULL);
+  auto closure2 = gc::untag_general<core::Function_O *>(func2)->closure.as<core::Closure>();
+  closure2->invoke(&resultTemp,LCC_PASS_ARGS0());
+  for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvThreadLocal[i] = mvFunc1[i];
+}
+#endif
+
+
+
+
+
 void clasp_terminate(const char *file, int line, int column, const char *func) {
   printf("Terminating file: %s  func: %s\n", file, func);
   exit(1);

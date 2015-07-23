@@ -887,8 +887,8 @@ nil)
        (format t ";    defvar ~a~%" (cadr form)))
       ((eq 'cl:defparameter (car form))
        (format t ";    defparameter ~a~%" (cadr form)))
-      ((eq 'cl:eval-when (car form))
-       (format t ";    eval-when ~a ~a~%" (cadr form) (caddr form)))
+      #+(or)((eq 'cl:eval-when (car form))
+             (format t ";    eval-when ~a ~a~%" (cadr form) (caddr form)))
       (t ()))))
 
 

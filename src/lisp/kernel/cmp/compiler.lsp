@@ -1305,7 +1305,6 @@ be wrapped with to make a closure"
           (llvm-sys:function-pass-manager-run fpm func)))
       (llvm-sys:do-finalization fpm)
       (llvm-sys:pass-manager-run mpm module)
-      (format t "do-optimization did its magic~%")
       )))
 
 (defmacro with-module (( &key module

@@ -143,27 +143,27 @@ bool core_fieldsp(T_sp obj)
 T_sp core_printBuiltinObject(T_sp obj, T_sp stream)
 {
   if ( core_fieldsp(obj) ) {
-  clasp_write_char('#',stream);
-  clasp_write_char('I',stream);
-  clasp_write_char('(',stream);
-  Class_sp myclass = lisp_instance_class(obj);
-  ASSERTF(myclass,BF("Could not get _instanceClass for object of type: %s\n") % typeid(*obj).name());
-  Symbol_sp className = myclass->name();
-  cl_prin1(className,stream);
-  core::List_sp alist = obj->encode();
-  for ( auto cur : alist ) {
-    Cons_sp entry = gc::As<Cons_sp>(oCar(cur));
-    Symbol_sp key = gc::As<Symbol_sp>(oCar(entry));
-    T_sp val = oCdr(entry);
+    clasp_write_char('#',stream);
+    clasp_write_char('I',stream);
+    clasp_write_char('(',stream);
+    Class_sp myclass = lisp_instance_class(obj);
+    ASSERTF(myclass,BF("Could not get _instanceClass for object of type: %s\n") % typeid(*obj).name());
+    Symbol_sp className = myclass->name();
+    cl_prin1(className,stream);
+    core::List_sp alist = obj->encode();
+    for ( auto cur : alist ) {
+      Cons_sp entry = gc::As<Cons_sp>(oCar(cur));
+      Symbol_sp key = gc::As<Symbol_sp>(oCar(entry));
+      T_sp val = oCdr(entry);
+      clasp_write_char(' ',stream);
+      cl_prin1(key,stream);
+      clasp_finish_output(stream);
+      clasp_write_char(' ',stream);
+      cl_prin1(val,stream);
+    }
     clasp_write_char(' ',stream);
-    cl_prin1(key,stream);
+    clasp_write_char(')',stream);
     clasp_finish_output(stream);
-    clasp_write_char(' ',stream);
-    cl_prin1(val,stream);
-  }
-  clasp_write_char(' ',stream);
-  clasp_write_char(')',stream);
-  clasp_finish_output(stream);
   } else {
     SIMPLE_ERROR(BF("Object does not provide fields"));
   }
@@ -675,5 +675,6 @@ void initialize_object() {
   ClDefun(equalp);
   CoreDefun(printBuiltinObject);
   CoreDefun(make_builtin);
+  CoreDefun(fieldsp);
 };
 };
