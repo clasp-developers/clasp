@@ -102,8 +102,8 @@ public:
   uint countOccurances(const string &chars);
   List_sp splitAtWhiteSpace();
   List_sp split(const string &splitChars);
-  char &operator[](int i) { return this->_Contents[i]; };
-  const char &operator[](int i) const { return this->_Contents[i]; };
+  inline char &operator[](int i) { return this->_Contents[i]; };
+  inline const char &operator[](int i) const { return this->_Contents[i]; };
   Fixnum_sp asInt() const;
   Rational_sp parseInteger();
   DoubleFloat_sp asReal() const;
