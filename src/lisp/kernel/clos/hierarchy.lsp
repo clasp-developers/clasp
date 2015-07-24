@@ -325,7 +325,7 @@
        :direct-slots #.+method-combination-slots+)
       (specializer
        :direct-superclasses (metaobject)
-       :drect-slots #.+specializer-slots+)
+       :direct-slots #.+specializer-slots+)
       (eql-specializer
        :direct-superclasses (specializer)
        :direct-slots #.+eql-specializer-slots+)
