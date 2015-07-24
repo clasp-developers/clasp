@@ -55,14 +55,16 @@
   result)
 
 
-(defun codegen-var-lookup (result sym old-env)
+(defun codegen-variable-lookup (result node)
   "Return IR code thsym returns the value of a symbol that is either lexical or special"
-  (let ((classified (irc-classify-variable old-env sym)))
-    (cmp-log "About to codegen-var-lookup for %s - classified as: %s\n" sym classified)
-    (if (eq (car classified) 'ext:special-var)
-	(codegen-special-var-lookup result sym old-env)
-	(let ((depth-index (cddr classified)))
-	  (codegen-lexical-var-lookup result depth-index old-env)))))
+  (let ((sym (variable-ast-symbol node))
+        (env (variable-ast-env node)))
+    (let ((classified (irc-classify-variable env sym)))
+      (cmp-log "About to codegen-var-lookup for %s - classified as: %s\n" sym classified)
+      (if (eq (car classified) 'ext:special-var)
+          (codegen-special-var-lookup result sym env)
+          (let ((depth-index (cddr classified)))
+            (codegen-lexical-var-lookup result depth-index env))))))
 
 
 (defun codegen-symbol-value (result symbol env)

@@ -73,33 +73,35 @@
 
 
 
-(defun codegen-call (result form evaluate-env)
+(defun codegen-call (result node)
   "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
-  (assert-result-isa-llvm-value result)
-  (let* ((head (car form)))
+  (let ((head (call-ast-function node))
+        (arguments (call-ast-arguments node))
+        (evaluate-env (call-ast-env node)))
+    (assert-result-isa-llvm-value result)
     (cond
       ((and (atom head) (symbolp head))
-       (let ((nargs (length (cdr form)))
+       (let ((nargs (length arguments))
              args
              (temp-result (irc-alloca-tsp evaluate-env)))
-         (dbg-set-invocation-history-stack-top-source-pos form)
+         (dbg-set-invocation-history-stack-top-source-pos (ast-form node))
          ;; evaluate the arguments into the array
          ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
-         (do* ((cur-exp (cdr form) (cdr cur-exp))
+         (do* ((cur-exp arguments (cdr cur-exp))
                (exp (car cur-exp) (car cur-exp))
                (i 0 (+ 1 i)))
               ((endp cur-exp) nil)
-           (codegen temp-result exp evaluate-env)
+           (codegen temp-result exp)
            (push (irc-smart-ptr-extract (irc-load temp-result)) args))
          (let ((closure (cmp-lookup-function head evaluate-env)))
-	   (irc-low-level-trace :flow)
+           (irc-low-level-trace :flow)
            (irc-funcall result closure (reverse args))
-	   (irc-low-level-trace :flow))
+           (irc-low-level-trace :flow))
          ))
       ((and (consp head) (eq head 'lambda))
        (error "Handle lambda applications"))
-      (t (compiler-error form "Illegal head for form %s" head)))))
+      (t (compiler-error (ast-form node) "Illegal head for form %s" head)))))
 
 
 

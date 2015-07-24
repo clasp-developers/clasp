@@ -30,17 +30,18 @@
 (defconstant +special-operator-dispatch+
   '(
     (progn codegen-progn mincomp-progn)
-    (setq codegen-setq)
-    (let codegen-let)
-    (let* codegen-let*)
+    (tagbody codegen-tagbody mincomp-tagbody)
+    (go codegen-go mincomp-go)
     (if codegen-if mincomp-if)
-    (function  codegen-function)
-    (block  codegen-block)
-    (return-from  codegen-return-from)
-    (tagbody codegen-tagbody)
-    (go codegen-go)
-    (multiple-value-call  codegen-multiple-value-call)
-    (multiple-value-prog1  codegen-multiple-value-prog1)
+    (let codegen-let mincomp-let)
+    (let* codegen-let* mincomp-let*)
+
+    (setq codegen-setq)
+    (function codegen-function)
+    (block codegen-block)
+    (return-from codegen-return-from)
+    (multiple-value-call codegen-multiple-value-call)
+    (multiple-value-prog1 codegen-multiple-value-prog1)
     (flet  codegen-flet)
     (labels  codegen-labels)
     (eval-when  codegen-eval-when)
@@ -72,7 +73,7 @@
 	(core::hash-table-setf-gethash hash name (list mincomp-function codegen-function))))
     hash))
 
-(defvar *special-operator-dispatch* (make-dispatch-table +special-operator-dispatch+))
+(defparameter *special-operator-dispatch* (make-dispatch-table +special-operator-dispatch+))
 
 #+debug-mps
 (progn
