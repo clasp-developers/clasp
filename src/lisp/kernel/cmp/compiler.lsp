@@ -1138,7 +1138,8 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   (cmp-log "About to set source pos\n")
   (dbg-set-current-source-pos rest)
   (cmp-log "About to do case on head: %s\n" head)
-  (let ((function (gethash head *special-operator-dispatch* 'nil)))
+  (let* ((functions (gethash head *special-operator-dispatch* 'nil))
+         (function (cadr functions)))
     (if function
 	(funcall function result rest env)
 	(error "Unknown special operator : ~a" head)))

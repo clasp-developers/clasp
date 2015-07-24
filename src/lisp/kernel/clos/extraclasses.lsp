@@ -19,14 +19,17 @@
 	  (push class-symbol classes)))
     (nreverse classes)))
 
+(defun add-cxx-class (class-symbol)
+    (let* ((class (find-class class-symbol))
+	   (supers-names (mapcar #'(lambda (x) (class-name x))
+                                 (core:direct-superclasses class))))
+      (clos::make-empty-standard-class class-symbol :metaclass 'core:cxx-class ;; was 'builtin-class
+				       :direct-superclasses supers-names)
+      (clos::finalize-inheritance class)))
 
 (defun add-extra-classes (additional-classes)
   (dolist (class-symbol additional-classes)
-    (let* ((class (find-class class-symbol))
-	   (supers-names (mapcar #'(lambda (x) (class-name x)) (core:direct-superclasses class))))
-      (clos::make-empty-standard-class class-symbol :metaclass 'builtin-class
-				       :direct-superclasses supers-names)
-      (clos::finalize-inheritance class))))
+    (add-cxx-class class-symbol)))
 
 
 
@@ -35,4 +38,10 @@
 ;; Initialize all extra classes
 ;;
 (add-extra-classes (gather-cxx-classes))
-(add-extra-classes '(core:environment core:activation-frame core:value-frame core:lexical-environment core:runtime-visible-environment core:value-environment))
+(add-extra-classes '(core:environment
+                     core:activation-frame
+                     core:value-frame
+                     core:lexical-environment
+                     core:runtime-visible-environment
+                     core:value-environment
+                     core:single-dispatch-effective-method-function))

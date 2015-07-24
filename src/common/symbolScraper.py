@@ -367,7 +367,7 @@ namespacePackageAssociation_re = re.compile('^NAMESPACE_PACKAGE_ASSOCIATION\(\s*
 symbol_table_re = re.compile('\s*//\s*SYMBOL_TABLE_ENTRY\s*([\w_]*)\s*([\d]*)\s*([\w_]*)\s*([<=>%/&\w_\*-.]*)\s*(export|private)')
 bad_existing_symbol_table_entry_re = re.compile('\s*//\s*SYMBOL_TABLE_ENTRY')
 # recognize: 	LISP_CLASS(CorePkg,GraphicsObject_O,"GraphicsObject");
-lisp_class_re = re.compile('\s*LISP_CLASS\s*\(\s*[\w]*\s*,\s*([\w]*)\s*,\s*([\w_]*)\s*,\s*"([\w_-]*)"\s*\);')
+lisp_class_re = re.compile('\s*LISP_CLASS\s*\(\s*[\w]*\s*,\s*([\w]*)\s*,\s*([\w_]*)\s*,\s*"([\w_+-]*)"\s*\);')
 lisp_virtual_class_re = re.compile('\s*LISP_VIRTUAL_CLASS\s*\(\s*[\w]*\s*,\s*([\w]*)\s*,\s*([\w_]*)\s*,\s*"([\w_-]*)"\s*\);')
 bad_lisp_class_re = re.compile("\s*(LISP_CLASS|LISP_VIRTUAL_CLASS)")
 # recognize:  LISP_EXTERNAL_CLASS(LlvmoPkg,llvm::LLVMContext,LLVMContext_O,"llvm-context",core::ExternalObject_O);
