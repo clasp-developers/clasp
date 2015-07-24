@@ -97,23 +97,31 @@ Return the new environment."
 COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name lambda-list)")
 
 
-(defun generate-llvm-function-from-code (;; Symbol xxx or (setf xxx) name of the function that is assigned to this code by
+
+(defun codegen-with-mincomp (result form env)
+  (cmp-log "codegen-with-mincomp form: %s\n" form)
+  (let ((ast (mincomp form env)))
+    (analyze-variables ast)
+    (cmp-log "About to codegen: %s\n" ast)
+    (codegen result ast)))
+
+(defun generate-llvm-function-from-code ( ;; Symbol xxx or (setf xxx) name of the function that is assigned to this code by
 					 ;; lambda-block or COMPILE
 					 given-name
-					 ; generated from lambda-list
+                                        ; generated from lambda-list
 					 lambda-list-handler
-					 ; lambda declares as a list of conses 
+                                        ; lambda declares as a list of conses 
 					 declares
-					 ; lambda docstring
+                                        ; lambda docstring
 					 docstring
-					 ; lambda code
+                                        ; lambda code
 					 code
-					 ; environment of the lambda
+                                        ; environment of the lambda
 					 env-around-lambda
-					 ; key argument: T if code should be wrapped in a block with block-name
+                                        ; key argument: T if code should be wrapped in a block with block-name
 					 &key wrap-block ; wrap code in a block
-					   ; Name of the block to wrap in
-					   block-name )
+                                        ; Name of the block to wrap in
+                                         block-name )
   "This is where llvm::Function are generated from code, declares, 
 lambda-list-handler, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
@@ -150,12 +158,10 @@ Could return more functions that provide lambda-list for swank for example"
 ;;;		(irc-attach-debugging-info-to-value-frame (irc-renv new-env) lambda-list-handler new-env)
 		 (with-try new-env
 		   (if wrap-block
-		       (codegen-block result (list* block-name code) new-env)
-		       (codegen-progn result code new-env))
+		       (codegen-with-mincomp result (list* 'block block-name code) new-env)
+		       (codegen-with-mincomp result (list* 'progn code) new-env))
 		   ((cleanup)
-		    (irc-unwind-environment new-env)))
-		 )
-	       )))
+		    (irc-unwind-environment new-env)))))))
     (cmp-log "About to dump the function constructed by generate-llvm-function-from-code\n")
     (cmp-log-dump fn)
     (irc-verify-function fn)
@@ -297,18 +303,20 @@ then compile it and return (values compiled-llvm-function lambda-name)"
      (codegen-closure result name-or-lambda env))
     (t (error "FUNCTION special operator only supports symbol names or lambda expression - you gave: ~a" name-or-lambda)))))
 
-(defun codegen-progn (result forms env)
-  "Evaluate forms discarding results but keep last one"
-  (cmp-log "About to codegen-progn with forms: %s\n" forms)
-  (if forms
-      (let ((temp-val (irc-alloca-tsp env :label "temp")))
-	(do* ((cur forms (cdr cur))
-	      (form (car cur) (car cur)))
-	     ((endp cur) nil)
-	  (if (not (null (cdr cur)))
-	      (codegen temp-val form env)
-	      (codegen result form env))))
-      (codegen-literal result nil env)))
+(defun codegen-progn (result node)
+  "Evaluate nodes discarding results but keep last one"
+  (let ((nodes (progn-ast-forms node))
+        (env (progn-ast-env node)))
+    (cmp-log "About to codegen-progn with nodes: %s\n" nodes)
+    (if nodes
+        (let ((temp-val (irc-alloca-tsp env :label "temp")))
+          (do* ((cur nodes (cdr cur))
+                (sub-node (car cur) (car cur)))
+               ((endp cur) nil)
+            (if (not (null (cdr cur)))
+                (codegen temp-val sub-node)
+                (codegen result sub-node))))
+        (codegen-literal result nil env))))
 
 (defun codegen-progv (result args env)
   (cmp-log "Started codegen-progv\n")
@@ -416,6 +424,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	  classified-symbols)
     (let ((rev-res (nreverse result)))
       (make-array (length rev-res) :initial-contents rev-res))))
+
 
 
 
@@ -579,28 +588,26 @@ env is the parent environment of the (result-af) value frame"
   "Generate code for cond that writes into result and then calls isTrue function that returns a boolean"
   (let (test-result)
     (let ((test-temp-store (irc-alloca-tsp env :label "if-cond-tsp")))
-      (codegen test-temp-store cond env)
+      (codegen test-temp-store cond)
       (setq test-result (llvm-sys:create-icmp-eq *irbuilder* (irc-intrinsic "isTrue" test-temp-store) (jit-constant-i32 1) "ifcond")))
     test-result))
 
 
 
 
-(defun codegen-if (result rest env)
+(defun codegen-if (result node)
   "See Kaleidoscope example for if/then/else"
-  (let ((icond (car rest))
-	(ithen (cadr rest))
-	(ielse (caddr rest)))
-    (when (cdddr rest)
-      (format t "codegen-if (cdddr rest) = ~a ~%" (cdddr rest))
-      (compiler-error (cdddr rest) "too many arguments for if"))
+  (let ((icond (if-ast-cond node))
+	(ithen (if-ast-then node))
+	(ielse (if-ast-else node))
+        (env (if-ast-env node)))
     ;; codegen-if-cond generates code that returns true if cond evaluates to something other than nil
     (let ((condv (compile-if-cond icond env)))
-;;      (unless condv (break "condv is nil") (return-from codegen-if nil)) ;; REALLY? return?????
+      ;;      (unless condv (break "condv is nil") (return-from codegen-if nil)) ;; REALLY? return?????
       ;;Here we diverge a bit from the Kaleidoscope demo
       ;; condv should already return a bool so we don't have to convert it to one
       ;; example had: CondV = Builder.CreateFCmpONE(CondV,ConstantFP::get(getGlobalContext(),APFloat(0.0)),"ifcond")
-;;      (break "make sure that divergence with kaleidoscope demo works")
+      ;;      (break "make sure that divergence with kaleidoscope demo works")
       ;;      (setq condv (llvm-sys:create-fcmp-one))
       ;; Create blocks for the then and else cases. Insert the 'then' block at
       ;; the end of the function
@@ -613,7 +620,7 @@ env is the parent environment of the (result-af) value frame"
 	(irc-low-level-trace)
 	(let ((thenv (progn
                        (dbg-set-current-source-pos ithen)
-                       (codegen result #|REALLY? put result in result?|# ithen env))))
+                       (codegen result ithen))))
 	  ;;	  (unless thenv (break "thenv is nil") (return-from codegen-if nil))  ;; REALLY? return?????
 	  (irc-branch-if-no-terminator-inst mergebb)
 	  ;; Codegen of 'Then' can change the current block, update thenbb for the PHI.
@@ -624,7 +631,7 @@ env is the parent environment of the (result-af) value frame"
 	  ;; REALLY? Again- do I use result here?
 	  (let ((elsev (progn
                          (dbg-set-current-source-pos ielse)
-                         (codegen result ielse env))))
+                         (codegen result ielse))))
 	    ;;	    (unless elsev (break "elsev is nil") (return-from codegen-if nil)) ;; REALLY? return???
 	    (irc-branch-if-no-terminator-inst mergebb)
 	    ;;Codegen of 'else' can change the current block, update elsebb for the phi
@@ -639,23 +646,15 @@ env is the parent environment of the (result-af) value frame"
     ;;  PN->addIncoming(ThenV, ThenBB);
     ;;  PN->addIncoming(ElseV, ElseBB);
     ;;  return PN;
-))
+    ))
 
 
 
 
 
 
-(defun extract-section (begin end)
-  "Extract a section of a list from begin up to but not including end"
-  (do* ((cur begin (cdr cur))
-	(result nil))
-       ((eq cur end) (cdr (nreverse result)))
-    (setq result (cons (car cur) result))))
 
-
-
-(defun tagbody.enumerate-tag-blocks (code tagbody-env)
+#+(or)(defun tagbody.enumerate-tag-blocks (code tagbody-env)
   (let (result (index 0))
     (mapl #'(lambda (x)
 	      (if (and (car x) (symbolp (car x)))
@@ -663,99 +662,87 @@ env is the parent environment of the (result-af) value frame"
 		      (setq result (cons (list index (irc-basic-block-create (bformat nil "tagbody-%s-%s" (car x) index)) x) result))
 		      (add-tag tagbody-env (car x) result)
 		      (setq index (+ 1 index))))) code)
+    (print (reverse result))
     (nreverse result)))
 
-
-
-
-(defun codegen-tagbody (result rest env)
+(defun codegen-tagbody (result node)
   "Extract tags and code from (rest) and create an alist that maps
 tag symbols to code and llvm-ir basic-blocks. Store the alist in the symbol-to-block-alist
 metadata of the tagbody-env. These can be accessed by (go XXXX) special operators to
 jump to blocks within this tagbody."
-  (assert-result-isa-llvm-value result)
-  (dbg-set-current-debug-location-here)
-  (unless (and (car rest) (symbolp (car rest))) (push (gensym) rest)) ;; stick a dummy tag at the head if there isn't one
-  (let* ((tagbody-env (irc-new-tagbody-environment env))
-	 (enumerated-tag-blocks (tagbody.enumerate-tag-blocks rest tagbody-env)))
+  (let ((env (tagbody-ast-env node))
+        (enumerated-tags (tagbody-ast-tags node)))
+    (cmp-log "codegen-tagbody tagbody environment: %s\n" env)
+    (let ((go-blocks nil))
+      (mapl #'(lambda (cur)
+                (let* ((tag-begin (car cur))
+                       (tag-name (tag-ast-name tag-begin))
+                       (index (tag-ast-index tag-begin))
+                       (section-block (irc-basic-block-create (bformat nil "tagbody-%s-%s" (string tag-name) index))))
+                  (push section-block go-blocks)
+                  (setf (tag-ast-block tag-begin) section-block)))
+            enumerated-tags)
+      (let ((go-vec (make-array (length go-blocks) :initial-contents (nreverse go-blocks))))
+        (setf-metadata env 'tagbody-blocks go-vec)))
+    (assert-result-isa-llvm-value result)
+    (dbg-set-current-debug-location-here)
     ;; If the GO spec.ops. are in the same function we could use simple cleanup and branches for TAGBODY/GO
     ;; so save the function
-    (irc-make-tagbody-frame env (irc-renv tagbody-env))
-    (irc-intrinsic "setParentOfActivationFrame" (irc-renv tagbody-env) (irc-renv env))
+    (irc-make-tagbody-frame env (irc-renv env))
+    (irc-intrinsic "setParentOfActivationFrame" (irc-renv env) (irc-renv (get-parent-environment env)))
     (irc-low-level-trace :tagbody)
-    (setf-metadata tagbody-env 'tagbody-function *current-function*)
-    (cmp-log "codegen-tagbody tagbody environment: %s\n" tagbody-env)
-    (let ((frame (irc-intrinsic "pushTagbodyFrame" (irc-renv tagbody-env))))
-      (with-try tagbody-env
+    (cmp-log "codegen-tagbody tagbody environment: %s\n" env)
+    (let ((frame (irc-intrinsic "pushTagbodyFrame" (irc-renv env))))
+      (with-try env
 	(progn
-	  (let ((go-blocks nil))
-	    (mapl #'(lambda (cur)
-		      (let* ((tag-begin (car cur))
-			     (tag-end (cadr cur))
-			     (section-block (cadr tag-begin)))
-			(push section-block go-blocks)))
-		  enumerated-tag-blocks)
-	    (let ((go-vec (make-array (length go-blocks) :initial-contents (nreverse go-blocks))))
-	      (setf-metadata tagbody-env 'tagbody-blocks go-vec)))
 	  (mapl #'(lambda (cur)
 		    (let* ((tag-begin (car cur))
 			   (tag-end (cadr cur))
-			   (section-block (cadr tag-begin))
-			   (section-next-block (cadr tag-end))
-			   (section (extract-section (caddr tag-begin) (caddr tag-end))))
+			   (section-block (tag-ast-block tag-begin))
+			   (section-next-block (when tag-end (tag-ast-block tag-end)))
+			   (section (tag-ast-code tag-begin)))
 		      (irc-branch-if-no-terminator-inst section-block)
 		      (irc-begin-block section-block)
-		      (codegen-progn result section tagbody-env)
+		      (codegen-progn result section)
 		      (when section-next-block (irc-branch-if-no-terminator-inst section-next-block))
 		      ))
-		enumerated-tag-blocks))
+		enumerated-tags))
         ;;        ((cleanup) (codegen-literal result nil env))
-	((cleanup) (irc-unwind-environment tagbody-env))
+	((cleanup) (irc-unwind-environment env))
         ((typeid-core-dynamic-go exception-ptr)
          (let* ((go-index (irc-intrinsic "tagbodyDynamicGoIndexElseRethrow" exception-ptr frame))
                 (default-block (irc-basic-block-create "switch-default"))
-                (sw (irc-switch go-index default-block (length enumerated-tag-blocks))))
-           (mapc #'(lambda (one) (llvm-sys:add-case sw (jit-constant-size_t (car one))
-                                                    (cadr one))) enumerated-tag-blocks)
+                (sw (irc-switch go-index default-block (length enumerated-tags))))
+           (mapc #'(lambda (one) (llvm-sys:add-case sw (jit-constant-size_t (tag-ast-index one))
+                                                    (tag-ast-block one))) enumerated-tags)
            (irc-begin-block default-block)
            (irc-intrinsic "throwIllegalSwitchValue"
-                          go-index (jit-constant-size_t (length enumerated-tag-blocks))))))
+                          go-index (jit-constant-size_t (length enumerated-tags))))))
       (irc-intrinsic "exceptionStackUnwind" frame)
-      (codegen-literal result nil env)
-      )))
+      (codegen-literal result nil nil))))
 
-
-
-(defun codegen-go (result rest env)
+(defun codegen-dynamic-go (result node)
   (dbg-set-current-debug-location-here)
-  (let* ((tag (car rest))
-	 (classified-tag (classify-tag env tag)))
-    (cond
-      ((and classified-tag (eq (car classified-tag) 'dynamic-go))
-       (let ((depth (cadr classified-tag))
-	     (index (caddr classified-tag)))
-	 (irc-low-level-trace :go)
-	 (irc-intrinsic "throwDynamicGo" (jit-constant-size_t depth) (jit-constant-size_t index) (irc-renv env))))
-      ((and classified-tag (eq (car classified-tag) 'local-go))
-       (let ((depth (cadr classified-tag))
-	     (index (caddr classified-tag))
-	     (tagbody-env (cadddr classified-tag)))
-	 (cmp-log "Target tagbody environment: %s  tag: %s\n" tagbody-env tag)
-	 (let* ((go-vec (lookup-metadata tagbody-env 'tagbody-blocks))
-		(go-block (elt go-vec index)))
-	   (irc-unwind-into-environment env tagbody-env)
-	   (irc-br go-block)
-	   (irc-begin-block (irc-basic-block-create "after-go"))
-	   )
-	 ))
-      (error "go to unknown classified tag ~a ~a" tag classified-tag))))
+  (let* ((tag (dynamic-go-ast-tag node))
+         (index (dynamic-go-ast-index node))
+         (depth (dynamic-go-ast-depth node))
+         (target-env (dynamic-go-ast-target-env node))
+         (env (dynamic-go-ast-env node)))
+    (irc-low-level-trace :go)
+    (irc-intrinsic "throwDynamicGo" (jit-constant-size_t depth) (jit-constant-size_t index) (irc-renv env))))
 
-
-
-
-
-
-
+(defun codegen-local-go (result node)
+  (dbg-set-current-debug-location-here)
+  (let* ((tag (local-go-ast-tag node))
+         (index (local-go-ast-index node))
+         (target-env (local-go-ast-target-env node))
+         (env (local-go-ast-env node)))
+    (cmp-log "Target tagbody environment: %s  tag: %s\n" target-env tag)
+    (let* ((go-vec (lookup-metadata target-env 'tagbody-blocks))
+           (go-block (elt go-vec index)))
+      (irc-unwind-into-environment env target-env)
+      (irc-br go-block)
+      (irc-begin-block (irc-basic-block-create "after-go")))))
 
 (defun codegen-block (result rest env)
   "codegen-block using the try macro"
@@ -1138,7 +1125,8 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   (cmp-log "About to set source pos\n")
   (dbg-set-current-source-pos rest)
   (cmp-log "About to do case on head: %s\n" head)
-  (let ((function (gethash head *special-operator-dispatch* 'nil)))
+  (let* ((functions (gethash head *special-operator-dispatch* 'nil))
+         (function (cadr functions)))
     (if function
 	(funcall function result rest env)
 	(error "Unknown special operator : ~a" head)))
@@ -1178,27 +1166,29 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
 
 ;;
 ;; Why does this duplicate so much functionality from codegen-literal
-(defun codegen-atom (result obj env)
+(defun codegen-constant (result node)
   "Generate code to generate the load-time-value of the atom "
-  (if *generate-compile-file-load-time-values*
-      (cond
-	((null obj) (codegen-ltv/nil result env))
-	((integerp obj) (codegen-ltv/integer result obj env))
-	((stringp obj) (codegen-ltv/string result obj env))
-	((pathnamep obj) (codegen-ltv/pathname result obj env))
-	((packagep obj) (codegen-ltv/package result obj env))
-	((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
-	((floatp obj) (codegen-ltv/float result obj env))
-	((complexp obj) (codegen-ltv/complex result obj env))
-	;; symbol would be here
-	((characterp obj) (codegen-ltv/character result obj env))
-	((arrayp obj) (codegen-ltv/array result obj env))
-	;; cons would be here
-	((hash-table-p obj) (codegen-ltv/container result obj env))
-	(t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name (class-of obj)) obj )))
-      ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
-      ;; default module without coalescence.
-      (codegen-rtv result obj env)))
+  (let ((obj (constant-ast-constant node))
+        (env (constant-ast-env node)))
+    (if *generate-compile-file-load-time-values*
+        (cond
+          ((null obj) (codegen-ltv/nil result env))
+          ((integerp obj) (codegen-ltv/integer result obj env))
+          ((stringp obj) (codegen-ltv/string result obj env))
+          ((pathnamep obj) (codegen-ltv/pathname result obj env))
+          ((packagep obj) (codegen-ltv/package result obj env))
+          ((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
+          ((floatp obj) (codegen-ltv/float result obj env))
+          ((complexp obj) (codegen-ltv/complex result obj env))
+          ;; symbol would be here
+          ((characterp obj) (codegen-ltv/character result obj env))
+          ((arrayp obj) (codegen-ltv/array result obj env))
+          ;; cons would be here
+          ((hash-table-p obj) (codegen-ltv/container result obj env))
+          (t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name (class-of obj)) obj )))
+        ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
+        ;; default module without coalescence.
+        (codegen-rtv result obj env))))
 
 
 (defun treat-as-special-operator-p (sym)
@@ -1210,36 +1200,45 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
     (t (special-operator-p sym))))
 (export 'treat-as-special-operator-p)
 
-(defun codegen (result form env)
+(defun codegen (result node)
   (declare (optimize (debug 3)))
   (assert-result-isa-llvm-value result)
   (multiple-value-bind (source-directory source-filename lineno column)
-      (dbg-set-current-source-pos form)
-    (let* ((*current-form* form)
-           (*current-env* env))
-      (cmp-log "codegen stack-used[%d bytes]\n" (stack-used))
-      (cmp-log "codegen evaluate-depth[%d]  %s\n" (evaluate-depth) form)
-      ;;
-      ;; If a *code-walker* is defined then invoke the code-walker
-      ;; with the current form and environment
-      (when *code-walker*
-        (setq form (funcall *code-walker* form env)))
-      (if (atom form)
-	  (if (symbolp form)
-	      (codegen-symbol-value result form env)
-	      (codegen-atom result form env))
-	  (let ((head (car form))
-		(rest (cdr form)))
-	    (cmp-log "About to codegen special-operator or application for: %s\n" form)
-	    ;;	(trace-linenumber-column (walk-to-find-parse-pos form) env)
-	    (cond
-	      ((treat-as-special-operator-p head)
-	       (codegen-special-operator result head rest env))
-	      ((and head (symbolp head))
-	       (codegen-application result form env))
-	      (t
-	       (error "Handle codegen of cons: ~a" form))))))))
-
+      (dbg-set-current-source-pos node)
+    (cond
+      ((constant-ast-p node)
+       (codegen-constant result node))
+      ((progn-ast-p node)
+       (codegen-progn result node))
+      ((if-ast-p node)
+       (codegen-if result node))
+      ((variable-ast-p node)
+       (codegen-variable-lookup result node))
+      ((tagbody-ast-p node)
+       (codegen-tagbody result node))
+      ((dynamic-go-ast-p node)
+       (codegen-dynamic-go result node))
+      ((local-go-ast-p node)
+       (codegen-local-go result node))
+      ((call-ast-p node)
+       (codegen-call result node))
+      (t (error "Handle more node types node: ~a" node)))))
+#||    (if (atom form)
+        (if (symbolp form)
+            (codegen-symbol-value result form env)
+            (codegen-atom result form env))
+        (let ((head (car form))
+              (rest (cdr form)))
+          (cmp-log "About to codegen special-operator or application for: %s\n" form)
+          ;;	(trace-linenumber-column (walk-to-find-parse-pos form) env)
+          (cond
+            ((treat-as-special-operator-p head)
+             (codegen-special-operator result head rest env))
+            ((and head (symbolp head))
+             (codegen-application result form env))
+            (t
+             (error "Handle codegen of cons: ~a" form)))))))
+||#
 
 
 ;;------------------------------------------------------------

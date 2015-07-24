@@ -27,7 +27,7 @@
 (in-package :cmp)
 
 ;;
-;; The code-walker-function must return form or an altered form to continue
+;; The code-walker-function must return a form or an altered form to continue
 ;; compilation
 (defun code-walk-using-compiler (form env &key code-walker-function)
   "This is used in clos/method.lsp to code walk defmethod bodies"

@@ -1,5 +1,5 @@
 /*
-    File: common.h
+    File: cxxObject.cc
 */
 
 /*
@@ -24,11 +24,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_Common_H
-#define _core_Common_H
+
+#define DEBUG_LEVEL_FULL
+
 #include <clasp/core/foundation.h>
-#include <clasp/core/object.h>
-#include <clasp/core/cons.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/externalObject.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/cxxObject.h>
-#endif
+// last include is wrappers.h
+#include <clasp/core/wrappers.h>
+
+namespace core {
+EXPOSE_CLASS(core, CxxObject_O);
+
+void CxxObject_O::exposeCando(Lisp_sp e) {
+  class_<CxxObject_O>()
+    ;
+}
+
+void CxxObject_O::exposePython(Lisp_sp lisp) {
+#ifdef USEBOOSTPYTHON //[
+  PYTHON_CLASS(CorePkg, CxxObject, "", "", _lisp);
+#endif //]
+}
+
+
+};
