@@ -298,6 +298,8 @@
        :index 0)
       (standard-object
        :direct-superclasses (t))
+      #+clasp(core:cxx-object
+              :direct-superclasses (t))
       (metaobject
        :direct-superclasses (standard-object))
       (slot-definition
@@ -323,7 +325,7 @@
        :direct-slots #.+method-combination-slots+)
       (specializer
        :direct-superclasses (metaobject)
-       :direct-slots #.+specializer-slots+)
+       :drect-slots #.+specializer-slots+)
       (eql-specializer
        :direct-superclasses (specializer)
        :direct-slots #.+eql-specializer-slots+)
@@ -336,6 +338,9 @@
       (built-in-class
        :direct-superclasses (class)
        :direct-slots #1=#.+standard-class-slots+)
+#+clasp(core:cxx-class
+        :direct-superclasses (class)
+        :direct-slots #1#)
       (std-class
        :direct-superclasses (class)
        :direct-slots #1#)

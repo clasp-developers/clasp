@@ -1770,7 +1770,7 @@ void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwId
   if (allowOtherKeys == 2)
     return;
   if (badKwIdx != 65536) {
-    SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(core::T_sp(argArray[badKwIdx])));
+    SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(core::T_sp((gc::Tagged)argArray[badKwIdx])));
   }
 }
 

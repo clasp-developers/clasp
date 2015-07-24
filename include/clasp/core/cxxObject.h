@@ -1,5 +1,5 @@
 /*
-    File: common.h
+    File: cxxObject.h
 */
 
 /*
@@ -24,11 +24,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_Common_H
-#define _core_Common_H
+#ifndef CxxObject_H
+#define CxxObject_H
+
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/cons.h>
-#include <clasp/core/lisp.h>
-#include <clasp/core/cxxObject.h>
+
+
+namespace core {
+
+// set this class up by hand
+SMART(CxxObject);
+class CxxObject_O : public T_O // StandardObject_O
+                         {
+  LISP_BASE1(T_O); // LISP_BASE1(StandardObject_O);
+  LISP_CLASS(core, CorePkg, CxxObject_O, "CxxObject");
+public:
+public:
+  explicit CxxObject_O() : Base() {};
+  virtual ~CxxObject_O(){};
+};
+};
+TRANSLATE(core::CxxObject_O);
+
 #endif

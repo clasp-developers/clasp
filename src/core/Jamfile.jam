@@ -41,6 +41,8 @@ local unity_sources =
 
 local sources =
       random.cc
+      cxxObject.cc
+      cxxClass.cc
       float_to_string.cc
       record.cc
       debugger.cc
