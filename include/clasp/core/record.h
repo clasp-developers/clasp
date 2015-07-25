@@ -27,7 +27,7 @@ namespace core {
     virtual ~Record_O() {};
   public:
     static Record_sp create_encoder() {
-      Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(saving,_Nil<T_O>());
+      Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(saving,false,_Nil<T_O>());
       return record;
     }
     static Record_sp create_initializer(List_sp data) {

@@ -667,11 +667,19 @@ extern void setParentOfActivationFrameTPtr(core::T_sp *resultP, core::T_O *paren
   if (resultP->framep()) {
     frame::SetParentFrame(*resultP, gctools::smart_ptr<core::T_O>((gc::Tagged)parentP));
     return;
-  } else if (ActivationFrame_sp af = gc::As<ActivationFrame_sp>((*resultP))) {
+  }
+#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+  ASSERT((*resultP).isA<ActivationFrame_O>());
+  ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O,T_O>((*resultP));
+  af->setParentFrame(parentP);
+  return;
+#else
+  if (ActivationFrame_sp af = gc::As<ActivationFrame_sp>((*resultP))) {
     af->setParentFrame(parentP);
     return;
   }
   errorMessage(destinationMustBeActivationFrame);
+#endif
 }
 
 extern void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp) {
@@ -679,11 +687,19 @@ extern void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp
   if (resultP->framep()) {
     frame::SetParentFrame(*resultP, gctools::smart_ptr<core::T_O>((gc::Tagged)parentP));
     return;
-  } else if (ActivationFrame_sp af = gc::As<ActivationFrame_sp>((*resultP))) {
+  }
+#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+  ASSERT((*resultP).isA<ActivationFrame_O>());
+  ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O,T_O>((*resultP));
+  af->setParentFrame(parentP);
+  return;
+#else
+  if (ActivationFrame_sp af = gc::As<ActivationFrame_sp>((*resultP))) {
     af->setParentFrame(parentP);
     return;
   }
   errorMessage(destinationMustBeActivationFrame);
+#endif
 }
 
 extern void attachDebuggingInfoToValueFrame(core::ActivationFrame_sp *resultP,
@@ -691,14 +707,21 @@ extern void attachDebuggingInfoToValueFrame(core::ActivationFrame_sp *resultP,
   ASSERT(resultP != NULL);
   ASSERT(debuggingInfoP != NULL);
   ASSERT((*resultP));
+#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+  ASSERT((*resultP).isA<ValueFrame_O>());
+  ASSERT((*debuggingInfoP).isA<VectorObjects_O>());
+  core::ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O,T_O>((*resultP));
+  core::VectorObjects_sp vo = gc::reinterpret_cast_smart_ptr<core::VectorObjects_O,T_O>((*debuggingInfoP));
+  vf->attachDebuggingInfo(vo);
+#else
   core::ValueFrame_sp vf = gc::As<core::ValueFrame_sp>((*resultP));
   core::VectorObjects_sp vo = gc::As<core::VectorObjects_sp>((*debuggingInfoP));
   ASSERTF(vf->length() == vo->length(), BF("There is a mismatch between the size of the ValueFrame[%d] and the number of Symbols[%d] attaching to it") % vf->length() % vo->length());
   vf->attachDebuggingInfo(vo);
+#endif
 }
 
 ALWAYS_INLINE extern core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, int idx) {
-  _G();
   ASSERT(frameP != NULL);
   ASSERT((*frameP));
   ASSERTF(idx >= 0 && idx < ((*frameP)->length()), BF("Illegal value of idx[%d] must be in range [0<=idx<%d]") % idx % (*frameP)->length());
