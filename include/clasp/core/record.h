@@ -19,7 +19,7 @@ namespace core {
     RecordStage _stage;
     List_sp _alist;
     T_sp _replacement_table;
-    List_sp _Seen;
+    T_sp _Seen; // Was List_sp
   public: // Simple default ctor/dtor
   Record_O() : _stage(saving), _alist(_Nil<T_O>()), _Seen(_Nil<T_O>()) {};
     Record_O(RecordStage stage, bool dummy, List_sp data);
