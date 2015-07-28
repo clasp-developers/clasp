@@ -76,7 +76,6 @@ local sources =
 	    environment.cc
       genericFunction.cc
 	    instance.cc
-		microHeap.cc
 	    binder.cc
 		multiStringBuffer.cc
 		candoOpenMp.cc

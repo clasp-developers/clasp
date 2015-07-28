@@ -141,10 +141,18 @@ private:
 
 public:
   explicit ForeignData_O();
-  virtual ~ForeignData_O();
+  virtual ~ForeignData_O(); // non-trivial
 };
 };
 
 TRANSLATE(core::ForeignData_O);
+
+template <>
+struct gctools::GCInfo<core::ForeignData_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static bool constexpr Moveable = true;
+  static bool constexpr Atomic = false;
+};
 
 #endif

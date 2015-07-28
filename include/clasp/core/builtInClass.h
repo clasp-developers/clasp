@@ -66,8 +66,8 @@ public:
   /*! Allocate and initialize an instance of this class
          */
   T_sp allocateAndInitialize();
-  explicit BuiltInClass_O();
-  virtual ~BuiltInClass_O();
+  explicit BuiltInClass_O() {};
+  virtual ~BuiltInClass_O() {};
 };
 };
 TRANSLATE(core::BuiltInClass_O);

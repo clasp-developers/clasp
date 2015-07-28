@@ -270,10 +270,6 @@ void print_startup_info() {
 #endif
 };
 
-Lisp_O::~Lisp_O() {
-  // nothing is left to be done here
-}
-
 void Lisp_O::lisp_initSymbols(Lisp_sp lisp) {
   Package_sp corePackage = lisp->_Roots._CorePackage;
 }

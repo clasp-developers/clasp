@@ -6394,8 +6394,8 @@ OUTPUT:
   return seq;
 }
 
-T_sp clasp_openRead(const string &name) {
-  Str_sp filename = Str_O::create(name);
+T_sp clasp_openRead(T_sp sin) {
+  Str_sp filename = gc::As<Str_sp>(cl_namestring(sin));
   enum StreamMode smm = clasp_smm_input;
   T_sp if_exists = _Nil<T_O>();
   T_sp if_does_not_exist = _Nil<T_O>();
@@ -6407,15 +6407,14 @@ T_sp clasp_openRead(const string &name) {
   return strm;
 }
 
-T_sp clasp_openWrite(const string &name) {
-  Str_sp filename = Str_O::create(name);
+T_sp clasp_openWrite(T_sp path) {
   enum StreamMode smm = clasp_smm_output;
   T_sp if_exists = _Nil<T_O>();
   T_sp if_does_not_exist = _Nil<T_O>();
   gctools::Fixnum byte_size = 8;
   int flags = CLASP_STREAM_DEFAULT_FORMAT;
   T_sp external_format = _Nil<T_O>();
-  T_sp strm = clasp_open_stream(filename, smm, if_exists, if_does_not_exist,
+  T_sp strm = clasp_open_stream(path, smm, if_exists, if_does_not_exist,
                                 byte_size, flags, external_format);
   return strm;
 }

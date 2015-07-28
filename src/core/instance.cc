@@ -174,10 +174,6 @@ void Instance_O::archiveBase(ArchiveP node) {
   }
 }
 
-Instance_O::Instance_O() : Function_O(), _isgf(ECL_NOT_FUNCALLABLE), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
-
-Instance_O::~Instance_O() {
-}
 
 T_sp Instance_O::instanceSigSet() {
   T_sp classSlots(_Nil<T_O>());

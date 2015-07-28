@@ -441,8 +441,7 @@ T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index) {
     if (depth == 0) {
       return frame::Lookup(env, index);
     }
-    --depth;
-    return clasp_lookupValue(frame::ParentFrame(env), depth, index);
+    return clasp_lookupValue(frame::ParentFrame(env), depth-1, index);
   }
 #if USE_STATIC_CAST_FOR_ENVIRONMENT==1
   ASSERT(env.isA<Environment_O>());
@@ -465,8 +464,7 @@ T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) 
       IMPLEMENT_MEF(BF("We have a problem here - stack based frames store T_O* tagged pointers and this function is supposed to return a reference to a T_sp"));
       //return frame::LookupReference(env,index);
     }
-    --depth;
-    return clasp_lookupValueReference(frame::ParentFrame(env), depth, index);
+    return clasp_lookupValueReference(frame::ParentFrame(env), depth-1, index);
   }
   // set this to 1 to use dynamic_cast and 0 to use what is essentially a static cast
 #if USE_STATIC_CAST_FOR_ENVIRONMENT==1
@@ -489,8 +487,7 @@ Function_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index) 
       SIMPLE_ERROR(BF("Currently I don't support functions in stack frames"));
       //              return frame::Lookup(env,index);
     }
-    --depth;
-    return clasp_lookupFunction(frame::ParentFrame(env), depth, index);
+    return clasp_lookupFunction(frame::ParentFrame(env), depth-1, index);
   }
 #if USE_STATIC_CAST_FOR_ENVIRONMENT==1
   ASSERT(env.isA<Environment_O>());
@@ -512,8 +509,7 @@ T_sp Environment_O::clasp_lookupTagbodyId(T_sp env, int depth, int index) {
     if (depth == 0) {
       return frame::LookupTagbodyId(env, index);
     }
-    --depth;
-    return clasp_lookupTagbodyId(frame::ParentFrame(env), depth, index);
+    return clasp_lookupTagbodyId(frame::ParentFrame(env), depth-1, index);
   }
 #if USE_STATIC_CAST_FOR_ENVIRONMENT==1
   ASSERT(env.isA<Environment_O>());
@@ -1127,14 +1123,7 @@ T_sp ValueEnvironment_O::_lookupValue(int depth, int index) {
   if (parent.nilp()) {
     SIMPLE_ERROR(BF("Ran out of parent environments - could not find value"));
   }
-  --depth;
-  return Environment_O::clasp_lookupValue(parent, depth, index);
-}
-
-ValueEnvironment_O::ValueEnvironment_O() : Base(){};
-
-ValueEnvironment_O::~ValueEnvironment_O() {
-  _G();
+  return Environment_O::clasp_lookupValue(parent, depth-1, index);
 }
 
 void ValueEnvironment_O::defineLexicalBinding(Symbol_sp sym, int idx) {

@@ -400,8 +400,8 @@ public:
 
 #endif
 
-  ValueEnvironment_O();
-  virtual ~ValueEnvironment_O();
+ ValueEnvironment_O() : Base() {};
+  virtual ~ValueEnvironment_O() {};
 };
 };
 template <>

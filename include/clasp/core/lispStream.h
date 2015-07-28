@@ -293,7 +293,7 @@ public:
 
 public:
   Stream_O() : _Closed(0), _Buffer(NULL), _Format(_Nil<Symbol_O>()), _ByteSize(8), _Flags(0), _ByteStack(_Nil<T_O>()), _Encoder(NULL), _Decoder(NULL), _LastCode{EOF, EOF}, _EofChar(EOF), _ExternalFormat(_Nil<T_O>()), _OutputColumn(0){};
-  virtual ~Stream_O();
+  virtual ~Stream_O(); // nontrivial
 
 public:
   virtual T_sp filename() const;
@@ -662,8 +662,8 @@ T_sp cl_open(T_sp filename,
              T_sp cstream);
  T_mv cl_read_line(T_sp sin, T_sp eof_error_p = cl::_sym_T_O, T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
 
-T_sp clasp_openRead(const string &name);
-T_sp clasp_openWrite(const string &name);
+T_sp clasp_openRead(T_sp pathDesig);
+T_sp clasp_openWrite(T_sp pathDesig);
 };
 
 #endif //]

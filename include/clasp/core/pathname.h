@@ -170,7 +170,7 @@ T_sp clasp_namestring(T_sp x, int flags);
 Pathname_sp clasp_mergePathnames(T_sp path, T_sp def, T_sp defaultVersion);
 
 bool af_pathnameMatchP(T_sp path, T_sp mask);
-T_sp af_namestring(T_sp x);
+T_sp cl_namestring(T_sp x);
 Str_sp af_fileNamestring(T_sp tpname);
 Str_sp af_directoryNamestring(T_sp tpname);
 Str_sp af_hostNamestring(T_sp tpname);

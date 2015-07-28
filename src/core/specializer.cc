@@ -35,9 +35,6 @@ THE SOFTWARE.
 
 namespace core {
 
-Specializer_O::Specializer_O() : Base(){};
-Specializer_O::~Specializer_O(){};
-
 void Specializer_O::exposeCando(Lisp_sp lisp) {
   class_<Specializer_O>();
 }

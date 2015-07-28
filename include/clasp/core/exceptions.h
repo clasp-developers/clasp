@@ -714,6 +714,7 @@ T_sp CEerror(T_sp c, const char *fmt, int numArgs, ...);
 
  void FEpackage_error(const char *fmt, T_sp package, int nargs, ...);
  void CEpackage_error(const char *fmt, const char* continue_message, T_sp package, int nargs, ...);
+ void Warn(T_sp datum, List_sp arguments);
 
 void clasp_internal_error(const char *error);
 

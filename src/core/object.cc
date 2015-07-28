@@ -120,6 +120,7 @@ T_sp core_makeCxxObject(T_sp class_or_name, T_sp args)
     T_sp instance = theClass->make_instance();
     if ( args.notnilp() ) {
       args = alist_from_plist(args);
+//      printf("%s:%d initializer alist = %s\n", __FILE__, __LINE__, _rep_(args).c_str());
       instance->initialize(args);
     }
     return instance;
@@ -292,6 +293,7 @@ void T_O::initialize() {
 void T_O::initialize(core::List_sp alist) {
   Record_sp record = Record_O::create_initializer(alist);
   this->fields(record);
+  record->errorIfInvalidArguments();
 }
 
 

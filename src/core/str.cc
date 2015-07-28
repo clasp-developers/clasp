@@ -1183,9 +1183,6 @@ RETURN_TRUE:
   return make_fixnum((int)(cp1 - this->_Contents.c_str()));
 }
 
-Str_O::~Str_O() {
-}
-
 T_sp Str_O::subseq(int start, T_sp end) const {
   _G();
   if (start < 0) {

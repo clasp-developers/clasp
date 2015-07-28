@@ -260,7 +260,7 @@ public:
   virtual bool primaryCxxDerivableClassP() const { return false; };
 
   explicit Class_O();
-  virtual ~Class_O();
+  virtual ~Class_O() {};
 };
 };
 template <>

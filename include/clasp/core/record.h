@@ -1,14 +1,21 @@
 #ifndef core_record_H
 #define core_record_H
 
+#include <clasp/core/foundation.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lispVector.h>
 #include <clasp/core/vectorObjectsWithFillPtr.fwd.h>
 
 
 namespace core {
-
-  T_sp record_circle_subst(T_sp repl_table, T_sp tree );
-
+#if 0
+#define RECORD_LOG(abf) printf("%s:%d %s\n", __FILE__, __LINE__, (abf).str().c_str());
+#else
+#define RECORD_LOG(abf)
+#endif
   
+  T_sp record_circle_subst(T_sp repl_table, T_sp tree );
+ 
   SMART(Record);
   class Record_O : public T_O {
     LISP_BASE1(T_O);
@@ -47,27 +54,32 @@ namespace core {
     List_sp data() const { return this->_alist; };
     RecordStage stage() const { return this->_stage; };
 
-    void flagSeen(T_sp node);
+    void flagSeen(Cons_sp apair);
 
     void errorIfInvalidArguments();
     
     template <typename ST>
       void field(Symbol_sp name, ST& value ) {
+      RECORD_LOG(BF("field(Symbol_sp name, ST& value ) name: %s") % _rep_(name));
       switch (this->stage()) {
       case saving: {
-          this->_alist = core::Cons_O::create(core::Cons_O::create(name,translate::to_object<ST>::convert(value)),this->_alist);
+        core::Cons_sp entry = core::Cons_O::create(name,translate::to_object<ST>::convert(value));
+        RECORD_LOG(BF("saving entry: %s") % _rep_(entry));
+        this->_alist = core::Cons_O::create(entry,this->_alist);
       }
           break;
       case initializing:
       case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-          List_sp find = alist_get(this->_alist,name);
-          if ( find.nilp() ) SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
-          value = translate::from_object<ST>(oCdr(oCar(find)))._v;
-          if ( this->stage() == initializing ) this->flagSeen(find);
-        }
-        break;
+        List_sp find = alist_get(this->_alist,name);
+        if ( find.nilp() ) SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
+        Cons_sp apair = gc::As<Cons_sp>(oCar(find));
+        RECORD_LOG(BF("find apair %s\n") % _rep_(apair));
+        value = translate::from_object<ST>(oCdr(apair))._v;
+        if ( this->stage() == initializing ) this->flagSeen(apair);
+      }
+          break;
       case patching:
           // Do nothing for POD values
           break;
@@ -76,59 +88,82 @@ namespace core {
 
     template <typename OT>
       void field(Symbol_sp name, gc::smart_ptr<OT>& value ) {
+      RECORD_LOG(BF("field(Symbol_sp name, gc::smart_ptr<OT>& value ) name: %s") % _rep_(name));
       switch (this->stage()) {
-      case saving:
-          this->_alist = core::Cons_O::create(core::Cons_O::create(name,value),this->_alist);
+      case saving: {
+        core::Cons_sp apair = core::Cons_O::create(name,value);
+        RECORD_LOG(BF("saving apair: %s") % _rep_(apair));
+        this->_alist = core::Cons_O::create(apair,this->_alist);
+      }
           break;
       case initializing: 
       case loading: {
-          List_sp find = alist_get(this->_alist,name);
-          if ( find.nilp() ) SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
+        List_sp find = alist_get(this->_alist,name);
+        if ( find.nilp() ) SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
+        Cons_sp apair = gc::As<Cons_sp>(oCar(find));
+        RECORD_LOG(BF("init/load find apair %s\n") % _rep_(apair));
           // Set the value and ignore its type!!!!!! This is to allow placeholders
-          value.setRaw_(reinterpret_cast<gc::Tagged>(oCdr(oCar(find)).raw_()));
-          if ( this->stage() == initializing ) this->flagSeen(find);
-        }
-        break;
+        T_sp v = oCdr(apair);
+        RECORD_LOG(BF("init/load v: %s\n") % _rep_(v));
+        value.setRaw_(reinterpret_cast<gc::Tagged>(v.raw_()));
+        if ( this->stage() == initializing ) this->flagSeen(apair);
+      }
+          break;
       case patching:
           gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
           T_sp patch = record_circle_subst(this->_replacement_table,orig);
-          if ( patch != orig ) value.setRaw_(reinterpret_cast<gc::Tagged>(patch.raw_()));
+          if ( patch != orig ) {
+            RECORD_LOG(BF("Patching orig@%p: %s --> new@%p: %s\n") % _rep_(orig) % (void*)(orig.raw_()) % _rep_(patch) % (void*)(patch.raw_()));
+            value.setRaw_(reinterpret_cast<gc::Tagged>(patch.raw_()));
+          }
           break;
       };
     }
 
     template <typename OT>
       void field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) {
+      RECORD_LOG(BF("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s")%_rep_(name));
       switch (this->stage()) {
       case saving: {
-          Vector_sp vec_value = core_make_vector(cl::_sym_T_O,value.size());
-          size_t idx(0);
-          for ( auto it : value ) vec_value->operator[](idx++) = it;
-          this->_alist = core::Cons_O::create(core::Cons_O::create(name,vec_value),this->_alist);
-        }
-        break;
+        Vector_sp vec_value = core_make_vector(cl::_sym_T_O,value.size());
+        size_t idx(0);
+        for ( auto it : value ) vec_value->operator[](idx++) = it;
+        RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
+        Cons_sp apair = core::Cons_O::create(name,vec_value);
+        this->_alist = core::Cons_O::create(apair,this->_alist);
+      }
+          break;
       case initializing:
       case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-          List_sp find = alist_get(this->_alist,name);
-          if ( find.nilp() ) SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
-          Vector_sp vec_value = gc::As<Vector_sp>(oCdr(oCar(find)));
-          value.resize(cl_length(vec_value));
-          for ( size_t i(0), iEnd(cl_length(vec_value)); i<iEnd; ++i ) {
-            value[i] = (*vec_value)[i];
-          }
-          if ( this->stage() == initializing ) this->flagSeen(find);
+        List_sp find = alist_get(this->_alist,name);
+        if ( find.nilp() ) SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
+        Cons_sp apair = gc::As<Cons_sp>(oCar(find));
+        RECORD_LOG(BF("loading find: %s")%_rep_(apair));
+        Vector_sp vec_value = gc::As<Vector_sp>(oCdr(apair));
+        RECORD_LOG(BF("vec_value: %s")%_rep_(vec_value));
+        value.resize(cl_length(vec_value));
+        for ( size_t i(0), iEnd(cl_length(vec_value)); i<iEnd; ++i ) {
+          T_sp val = (*vec_value)[i];
+          RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void*)(val.raw_()) % _rep_(val));
+          value[i] = val;
         }
-        break;
+        if ( this->stage() == initializing ) this->flagSeen(apair);
+      }
+          break;
       case patching: {
-          for ( size_t i(0), iEnd(value.size()); i<iEnd; ++i ) {
-            gc::smart_ptr<T_O> orig((gc::Tagged)value[i].raw_());
-            T_sp patch = record_circle_subst(this->_replacement_table,orig);
-            if ( patch != orig ) value[i].rawRef_() = reinterpret_cast<OT*>(patch.raw_());
+        RECORD_LOG(BF("Patching"));
+        for ( size_t i(0), iEnd(value.size()); i<iEnd; ++i ) {
+          gc::smart_ptr<T_O> orig((gc::Tagged)value[i].raw_());
+          T_sp patch = record_circle_subst(this->_replacement_table,orig);
+          if ( patch != orig ) {
+            RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % _rep_(orig) % (void*)(orig.raw_()) % _rep_(patch) % (void*)(patch.raw_()));
+            value[i].rawRef_() = reinterpret_cast<OT*>(patch.raw_());
           }
         }
-        break;
+      }
+          break;
       }
     };
 
@@ -146,7 +181,8 @@ namespace core {
         List_sp find = alist_get(this->_alist,name);
         if ( find.notnilp() ) {
           this->field(name,value);
-          if ( this->stage() == initializing ) this->flagSeen(find);
+          Cons_sp apair = gc::As<Cons_sp>(oCar(find));
+          if ( this->stage() == initializing ) this->flagSeen(apair);
         } else {
           value.clear();
         }
@@ -160,35 +196,39 @@ namespace core {
           break;
       }
     };
-    
+
+
     template <typename OT>
       void field_if_not_nil(Symbol_sp name, gc::smart_ptr<OT>& value ) {
       switch ( this->stage() ) {
       case saving: {
-          if ( value.notnilp() ) 
-            this->_alist = Cons_O::create(Cons_O::create(name,value),this->_alist);
+        if ( value.notnilp() ) {
+          Cons_sp apair = Cons_O::create(name,value);
+          this->_alist = Cons_O::create(apair,this->_alist);
         }
-        break;
+      }
+          break;
       case initializing:
       case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-          List_sp find = alist_get(this->_alist,name);
-          if ( find.nilp() ) value = _Nil<core::T_O>();
-          else {
-            value = gc::As<gc::smart_ptr<OT>>(oCdr(oCar(find)));
-            if ( this->stage() == initializing ) this->flagSeen(find);
-          }            
-        }
-        break;
+        List_sp find = alist_get(this->_alist,name);
+        if ( find.nilp() ) value = _Nil<core::T_O>();
+        else {
+          Cons_sp apair = gc::As<Cons_sp>(oCar(find));
+          value = gc::As<gc::smart_ptr<OT>>(oCdr(apair));
+          if ( this->stage() == initializing ) this->flagSeen(apair);
+        }            
+      }
+          break;
       case patching: {
-          if ( value.notnilp() ) {
-            gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
-            T_sp patch = record_circle_subst(this->_replacement_table,orig);
-            if ( patch != orig ) value.setRaw_(reinterpret_cast<gc::Tagged>(patch.raw_()));
-          }
+        if ( value.notnilp() ) {
+          gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
+          T_sp patch = record_circle_subst(this->_replacement_table,orig);
+          if ( patch != orig ) value.setRaw_(reinterpret_cast<gc::Tagged>(patch.raw_()));
         }
-        break;
+      }
+          break;
       }
     }
 
@@ -196,30 +236,33 @@ namespace core {
       void field_if_not_nil(Symbol_sp name, gc::Nilable<gc::smart_ptr<OT>>& value ) {
       switch ( this->stage() ) {
       case saving: {
-          if ( value.notnilp() ) 
-            this->_alist = Cons_O::create(Cons_O::create(name,value),this->_alist);
+        if ( value.notnilp() ) {
+          Cons_sp apair = Cons_O::create(name,value);
+          this->_alist = Cons_O::create(apair,this->_alist);
         }
-        break;
+      }
+          break;
       case initializing:
       case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-          List_sp find = alist_get(this->_alist,name);
-          if ( find.nilp() ) value = _Nil<core::T_O>();
-          else {
-            value = gc::As<gc::smart_ptr<OT>>(oCdr(oCar(find)));
-            if ( this->stage() == initializing ) this->flagSeen(find);
-          }            
-        }
-        break;
+        List_sp find = alist_get(this->_alist,name);
+        if ( find.nilp() ) value = _Nil<core::T_O>();
+        else {
+          Cons_sp apair = gc::As<Cons_sp>(oCar(find));
+          value = gc::As<gc::smart_ptr<OT>>(oCdr(apair));
+          if ( this->stage() == initializing ) this->flagSeen(apair);
+        }            
+      }
+          break;
       case patching: {
-          if ( value.notnilp() ) {
-            gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
-            T_sp patch = record_circle_subst(this->_replacement_table,orig);
-            if ( patch != orig ) value.rawRef_() = reinterpret_cast<OT*>(patch.raw_());
-          }
+        if ( value.notnilp() ) {
+          gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
+          T_sp patch = record_circle_subst(this->_replacement_table,orig);
+          if ( patch != orig ) value.rawRef_() = reinterpret_cast<OT*>(patch.raw_());
         }
-        break;
+      }
+          break;
       }
     }
 
@@ -228,30 +271,66 @@ namespace core {
       void field_if_not_default(Symbol_sp name, T& value, const T& default_value ) {
       switch (this->stage()) {
       case saving: {
-          if ( !(value == default_value) ) {
-            core::T_sp obj_value = translate::to_object<T>::convert(value);
-            this->_alist = Cons_O::create(Cons_O::create(name,obj_value),this->_alist);
-          }
+        if ( !(value == default_value) ) {
+          core::T_sp obj_value = translate::to_object<T>::convert(value);
+          Cons_sp apair = Cons_O::create(name,obj_value);
+          this->_alist = Cons_O::create(apair,this->_alist);
         }
-        break;
+      }
+          break;
       case initializing:
       case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-          List_sp find = alist_get(this->_alist,name);
-          if ( find.nilp() ) {
-            value = default_value;
-          } else {
-            value = translate::from_object<T>(oCdr(oCar(find)))._v;
-            if ( this->stage() == initializing ) this->flagSeen(find);
-          }
+        List_sp find = alist_get(this->_alist,name);
+        if ( find.nilp() ) {
+          value = default_value;
+        } else {
+          Cons_sp apair = gc::As<Cons_sp>(oCar(find));
+          value = translate::from_object<T>(oCdr(apair))._v;
+          if ( this->stage() == initializing ) this->flagSeen(apair);
         }
-        break;
+      }
+          break;
       case patching:
           // Do nothing for POD values
           break;
       }
     }
+
+
+    template <typename T>
+      void field_if_defined(Symbol_sp name, bool& defined, T& value ) {
+      switch (this->stage()) {
+      case saving: {
+        if ( defined ) {
+          core::T_sp obj_value = translate::to_object<T>::convert(value);
+          Cons_sp apair = Cons_O::create(name,obj_value);
+          this->_alist = Cons_O::create(apair,this->_alist);
+        }
+      }
+          break;
+      case initializing:
+      case loading: {
+      // I could speed this up if I cache the entry after this find
+      // and search from there and reverse the alist once it's done
+        List_sp find = alist_get(this->_alist,name);
+        if ( find.nilp() ) {
+          defined = false;
+        } else {
+          defined = true;
+          Cons_sp apair = gc::As<Cons_sp>(oCar(find));
+          value = translate::from_object<T>(oCdr(apair))._v;
+          if ( this->stage() == initializing ) this->flagSeen(apair);
+        }
+      }
+          break;
+      case patching:
+          // Do nothing for POD values
+          break;
+      }
+    }
+
   };
 
 };

@@ -36,7 +36,6 @@ THE SOFTWARE.
 namespace core {
 
 Metaobject_O::Metaobject_O() : Metaobject_O::Base(){};
-Metaobject_O::~Metaobject_O(){};
 
 void Metaobject_O::exposeCando(Lisp_sp lisp) {
   class_<Metaobject_O>();

@@ -752,8 +752,12 @@ void FEpackage_error(const char* fmt,
 }
 
 
+void Warn(T_sp datum, List_sp arguments)
+{
+  eval::applyLastArgsPLUSFirst(cl::_sym_warn,arguments,datum);
+}
 
-                     
+                    
 void clasp_internal_error(const char *msg) {
   printf("%s:%d %s\n", __FILE__, __LINE__, msg);
   SIMPLE_ERROR(BF("Internal error: %s\n") % msg);

@@ -51,12 +51,6 @@ CxxClass_sp CxxClass_O::createUncollectable() {
   return ((oclass));
 }
 
-CxxClass_O::CxxClass_O() {
-}
-
-CxxClass_O::~CxxClass_O() {
-}
-
 #if defined(XML_ARCHIVE)
 void CxxClass_O::archive(ArchiveP node) {
   IMPLEMENT_ME();

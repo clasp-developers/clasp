@@ -191,7 +191,7 @@ public:
 
 public:
   explicit Str_O() : Base(){};
-  virtual ~Str_O();
+  virtual ~Str_O() {};
 };
 };
 template <>

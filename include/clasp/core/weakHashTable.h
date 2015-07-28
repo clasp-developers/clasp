@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/gctools/gcweak.h>
-#include <clasp/core/hashTable.h>
+//#include <clasp/core/hashTable.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/corePackage.fwd.h>
 

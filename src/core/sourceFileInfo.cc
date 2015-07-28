@@ -88,7 +88,7 @@ T_mv core_sourceFileInfo(T_sp sourceFile, T_sp sourceDebugNamestring, size_t sou
   } else if (Str_sp strSourceFile = sourceFile.asOrNull<Str_O>()) {
     return _lisp->getOrRegisterSourceFileInfo(strSourceFile->get(), sourceDebugNamestring, sourceDebugOffset, useLineno);
   } else if (Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>()) {
-    T_sp ns = af_namestring(pnSourceFile);
+    T_sp ns = cl_namestring(pnSourceFile);
     if (ns.nilp()) {
       SIMPLE_ERROR(BF("No namestring could be generated for %s") % _rep_(pnSourceFile));
     }
@@ -346,7 +346,7 @@ string SourceFileInfo_O::fileName() const {
 }
 
 string SourceFileInfo_O::namestring() const {
-  Str_sp s = af_namestring(this->_pathname);
+  Str_sp s = cl_namestring(this->_pathname);
   return s->get();
 }
 

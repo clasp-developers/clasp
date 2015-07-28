@@ -91,6 +91,7 @@ SYMBOL_EXPORT_SC_(ClPkg, provide);
 SYMBOL_EXPORT_SC_(ClPkg, condition);
 SYMBOL_EXPORT_SC_(ClPkg, seriousCondition);
 SYMBOL_EXPORT_SC_(ClPkg, error);
+SYMBOL_EXPORT_SC_(ClPkg, warn);
 SYMBOL_EXPORT_SC_(ClPkg, programError);
 SYMBOL_EXPORT_SC_(ClPkg, cellError);
 SYMBOL_EXPORT_SC_(ClPkg, unboundVariable);

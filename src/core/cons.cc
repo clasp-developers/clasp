@@ -545,12 +545,6 @@ Cons_O::Cons_O() : T_O(), _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0
   ASSERTNOTNULL(this->_Cdr);
 }
 
-//
-// Destructor
-//
-Cons_O::~Cons_O() {
-}
-
 /*! Write out all of the elements of this list as a list to
  * avoid excessive nesting
  */

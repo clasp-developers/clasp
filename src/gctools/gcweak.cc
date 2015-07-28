@@ -201,7 +201,7 @@ int WeakHashTable::trySet(core::T_sp tkey, core::T_sp value) {
   GCWEAK_LOG(BF("Entered trySet with key %p") % tkey.raw_());
   size_t b;
   if (tkey == value) {
-    value = gctools::smart_ptr<core::T_O>::make_tagged_sameAsKey();
+    value = gctools::make_tagged_sameAsKey<core::T_O>();
   }
   value_type key(tkey);
 #ifdef DEBUG_TRYSET

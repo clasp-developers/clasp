@@ -55,26 +55,25 @@
                   (unless (eq d (cdr tree))
                     (rplacd tree d))))
                ((arrayp tree)
-                  (do ((i 0 (1+ i)))
-                      ((>= i (array-total-size tree)))
-                    (let* ((old (row-major-aref tree i))
-                           (new (circle-subst repl-table old)))
-                      (unless (eq old new)
-                        (setf (row-major-aref tree i) new))))
+                (do ((i 0 (1+ i)))
+                    ((>= i (array-total-size tree)))
+                  (let* ((old (row-major-aref tree i))
+                         (new (circle-subst repl-table old)))
+                    (unless (eq old new)
+                      (setf (row-major-aref tree i) new))))
 		)
                #| TODO: MUST PROVIDE FIXUP FOR HASH-TABLES!!!! |#
                ((hash-table-p tree)
                 (error "Handle hash-tables in circle-subst"))
-               #| ;; Do something for builtin objects
-               ((typep tree 'cxx-builtin)
-               (let ((record (make-record-patcher repl-table)))
-                   (patch-object tree record))
-|#
-#|	       #+clos ((typep tree 'instance)
+               ;; Do something for builtin objects
+               ((typep tree 'cxx-object)
+                (let ((record (make-record-patcher repl-table)))
+                  (patch-object tree record)))
+               #|	       #+clos ((typep tree 'instance)
                (let* ((n-untagged (layout-n-untagged-slots (%instance-layout tree)))
                (n-tagged (- (%instance-length tree) n-untagged)))
-			 ;; N-TAGGED includes the layout as well (at index 0), which ;
-			 ;; we don't grovel. ;
+			 ;; N-TAGGED includes the layout as well (at index 0), which ; ;
+			 ;; we don't grovel. ; ;
                (do ((i 1 (1+ i)))
                ((= i n-tagged))
                (let* ((old (%instance-ref tree i))
@@ -96,6 +95,7 @@
                (unless (eq old new)
                (setf (%funcallable-instance-info tree i) new)))))
                |#
+               (t (warn "In sharp-sharp reader macro - unpatched object: ~a" tree))
 	       )
          tree)
         (t tree)))
@@ -123,7 +123,6 @@
       (let ((*sharp-equal-circle-table* (make-hash-table :test 'eq :size 20)))
         (circle-subst *sharp-equal-repl-table* obj))
       (setf (gethash label *sharp-equal-final-table*) obj))))
-
 
 (defun sharp-sharp (stream ignore label)
   (declare (ignore ignore))

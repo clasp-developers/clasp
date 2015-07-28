@@ -1274,7 +1274,7 @@ Stream_mv af_open(T_sp filespec_desig, Symbol_sp direction, T_sp element_type, T
 	LOG(BF("direction was :output"));
 	if ( af_probe_file(filespec).notnilp() )
 	{
-	    Str_sp truename = af_namestring(af_truename(filespec));
+	    Str_sp truename = cl_namestring(af_truename(filespec));
 	    LOG(BF("The file[%s] already exists")% truename->get() );
 	    SYMBOL_SC_(KeywordPkg,supersede);
 	    if ( if_exists.nilp() || if_exists == kw::_sym_supersede)

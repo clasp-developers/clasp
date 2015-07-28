@@ -210,7 +210,7 @@ T_mv core_loadBundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_for
     goto LOAD;
   SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
 LOAD:
-  Str_sp nameStr = af_namestring(af_probe_file(path));
+  Str_sp nameStr = cl_namestring(af_probe_file(path));
   string name = nameStr->get();
 
   /* Look up the initialization function. */
@@ -798,10 +798,10 @@ T_mv core_operationsPerSecond(int op, T_sp arg) {
 T_sp core_callsByValuePerSecond() {
   _G();
   LightTimer timer;
-  T_sp v1 = T_sp::make_tagged_fixnum(1);
-  T_sp v2 = T_sp::make_tagged_fixnum(2);
-  T_sp v3 = T_sp::make_tagged_fixnum(3);
-  T_sp v4 = T_sp::make_tagged_fixnum(4);
+  T_sp v1 = gc::make_tagged_fixnum<core::T_O>(1);
+  T_sp v2 = gc::make_tagged_fixnum<core::T_O>(2);
+  T_sp v3 = gc::make_tagged_fixnum<core::T_O>(3);
+  T_sp v4 = gc::make_tagged_fixnum<core::T_O>(4);
   printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
   int pow;
   int res;
@@ -811,7 +811,7 @@ T_sp core_callsByValuePerSecond() {
     timer.start();
     res = 0;
     for (size_t i = 0; i < times; ++i) {
-      v1 = T_sp::make_tagged_fixnum(i);
+      v1 = gc::make_tagged_fixnum<core::T_O>(i);
       res += callByValue(v1, v2, v3, v4);
     }
     timer.stop();
@@ -830,10 +830,10 @@ T_sp core_callsByValuePerSecond() {
 T_sp core_callsByConstantReferencePerSecond() {
   _G();
   LightTimer timer;
-  T_sp v1 = T_sp::make_tagged_fixnum(1);
-  T_sp v2 = T_sp::make_tagged_fixnum(2);
-  T_sp v3 = T_sp::make_tagged_fixnum(3);
-  T_sp v4 = T_sp::make_tagged_fixnum(4);
+  T_sp v1 = gc::make_tagged_fixnum<core::T_O>(1);
+  T_sp v2 = gc::make_tagged_fixnum<core::T_O>(2);
+  T_sp v3 = gc::make_tagged_fixnum<core::T_O>(3);
+  T_sp v4 = gc::make_tagged_fixnum<core::T_O>(4);
   printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
   int pow;
   int res;
@@ -843,7 +843,7 @@ T_sp core_callsByConstantReferencePerSecond() {
     timer.start();
     res = 0;
     for (size_t i = 0; i < times; ++i) {
-      v1 = T_sp::make_tagged_fixnum(i);
+      v1 = gc::make_tagged_fixnum<core::T_O>(i);
       res += callByConstRef(v1, v2, v3, v4);
     }
     timer.stop();
@@ -862,10 +862,10 @@ T_sp core_callsByConstantReferencePerSecond() {
 T_sp core_callsByPointerPerSecond() {
   _G();
   LightTimer timer;
-  T_sp v1 = T_sp::make_tagged_fixnum(1);
-  T_sp v2 = T_sp::make_tagged_fixnum(2);
-  T_sp v3 = T_sp::make_tagged_fixnum(3);
-  T_sp v4 = T_sp::make_tagged_fixnum(4);
+  T_sp v1 = gc::make_tagged_fixnum<core::T_O>(1);
+  T_sp v2 = gc::make_tagged_fixnum<core::T_O>(2);
+  T_sp v3 = gc::make_tagged_fixnum<core::T_O>(3);
+  T_sp v4 = gc::make_tagged_fixnum<core::T_O>(4);
   printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
   int pow, res;
   for (pow = 0; pow < 32; ++pow) {
@@ -874,7 +874,7 @@ T_sp core_callsByPointerPerSecond() {
     timer.start();
     res = 0;
     for (size_t i = 0; i < times; ++i) {
-      v1 = T_sp::make_tagged_fixnum(i);
+      v1 = gc::make_tagged_fixnum<core::T_O>(i);
       res += callByPointer(v1.raw_(), v2.raw_(), v3.raw_(), v4.raw_());
     }
     timer.stop();

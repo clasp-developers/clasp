@@ -425,7 +425,7 @@ public:
 
   explicit Cons_O();
   explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr){};
-  virtual ~Cons_O();
+  virtual ~Cons_O() {};
 };
 
 //

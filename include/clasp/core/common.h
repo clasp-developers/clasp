@@ -31,4 +31,5 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/cxxObject.h>
+#include <clasp/core/record.h>
 #endif

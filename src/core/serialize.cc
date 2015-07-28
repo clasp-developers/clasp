@@ -311,7 +311,6 @@ string LeafSNode_O::__repr__() const {
 }
 
 Archive_O::Archive_O() : _Version(0), _TopNode(_Unbound<BranchSNode_O>()), _NextUniqueId(0){};
-Archive_O::~Archive_O(){};
 
 EXPOSE_CLASS(core, Archive_O);
 
