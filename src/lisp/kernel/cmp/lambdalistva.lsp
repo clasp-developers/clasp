@@ -85,7 +85,7 @@
        (let ((nargs (length arguments))
              args
              (temp-result (irc-alloca-tsp evaluate-env)))
-         (dbg-set-invocation-history-stack-top-source-pos (ast-form node))
+         (dbg-set-invocation-history-stack-top-source-pos (call-ast-form node))
          ;; evaluate the arguments into the array
          ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
          (do* ((cur-exp arguments (cdr cur-exp))

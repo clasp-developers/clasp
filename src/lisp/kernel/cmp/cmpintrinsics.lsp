@@ -181,6 +181,8 @@ Boehm and MPS use a single pointer"
 (defvar +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+) nil))  ;; "T_sp"
 (defvar +tsp[0]+ (llvm-sys:array-type-get +tsp+ 0))
 (defvar +tsp[0]*+ (llvm-sys:type-get-pointer-to +tsp[0]+))
+(defvar +tsp[MV]+ (llvm-sys:array-type-get +tsp+ multiple-values-limit))
+(defvar +tsp[MV]*+ (llvm-sys:type-get-pointer-to +tsp[MV]+))
 (defvar +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
 (defvar +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
 
@@ -578,7 +580,7 @@ Boehm and MPS use a single pointer"
 
   (primitive-nounwind module "makeTagbodyFrame" +void+ (list +afsp*+))
   (primitive-nounwind module "makeValueFrame" +void+ (list +afsp*+ +i32+ +i32+))
-  (primitive-nounwind module "makeValueFrameFromReversedCons" +void+ (list +afsp*+ +tsp*+ +i32+ ))
+  (primitive-nounwind module "makeValueFrameFromTspMV" +void+ (list +afsp*+ +tsp[MV]*+ +size_t+ +i32+ ))
   (primitive-nounwind module "setParentOfActivationFrameTPtr" +void+ (list +tsp*+ +t*+))
   (primitive-nounwind module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))
 
@@ -589,7 +591,7 @@ Boehm and MPS use a single pointer"
   (primitive module "makeFunctionFrame" +void+ (list +afsp*+ +i32+ +afsp*+))
   (primitive module "functionFrameReference" +tsp*+ (list +afsp*+ +i32+))
 
-  (primitive module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
+  (primitive module "appendMultipleValues" +size_t+ (list +tsp[MV]*+ +size_t+ +tmv*+))
 
   (primitive module "invokeMainFunctions" +void+ (list +tmv*+ +fn-prototype**+ +i32*+))
   (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +i64+ +i32+ +i32+ +ltv**+))

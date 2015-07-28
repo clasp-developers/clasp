@@ -41,9 +41,6 @@
 	(cmp-log "About to invoke create-call2 - global-symbol-ptr --> %s\n" global-symbol-ptr)
 	(irc-intrinsic "symbolValueRead" result global-symbol-ptr))))
 
-
-
-
 (defun codegen-lexical-var-lookup (result depth-index env)
   "Generate IR for lookup of lexical value in runtime-env using depth and index"
   (let* ((depth (car depth-index))
@@ -55,16 +52,16 @@
   result)
 
 
-(defun codegen-variable-lookup (result node)
-  "Return IR code thsym returns the value of a symbol that is either lexical or special"
-  (let ((sym (variable-ast-symbol node))
-        (env (variable-ast-env node)))
-    (let ((classified (irc-classify-variable env sym)))
-      (cmp-log "About to codegen-var-lookup for %s - classified as: %s\n" sym classified)
-      (if (eq (car classified) 'ext:special-var)
-          (codegen-special-var-lookup result sym env)
-          (let ((depth-index (cddr classified)))
-            (codegen-lexical-var-lookup result depth-index env))))))
+(defun codegen-variable-get (result node)
+  (let* ((symbol (variable-get-ast-symbol node))
+         (env (variable-get-ast-env node))
+         (classified (irc-classify-variable env symbol)))
+    (cmp-log "About to codegen-var-lookup for %s - classified as: %s\n" symbol classified)
+    (bformat t "classified = %s\n" classified)
+    (if (eq (car classified) 'ext:special-var)
+        (codegen-special-var-lookup result symbol env)
+        (let ((depth-index (cddr classified)))
+          (codegen-lexical-var-lookup result depth-index env)))))
 
 
 (defun codegen-symbol-value (result symbol env)

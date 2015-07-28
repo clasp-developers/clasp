@@ -654,10 +654,11 @@ extern void makeTagbodyFrame(core::ActivationFrame_sp *resultP)
   ASSERTNOTNULL(*resultP);
 }
 
-extern void makeValueFrameFromReversedCons(core::ActivationFrame_sp *afP, core::T_sp *consP, uint id) {
-  _G();
-  core::List_sp cons = (*consP);
-  core::ValueFrame_sp vf = core::ValueFrame_O::createFromReversedCons(cons, _Nil<core::T_O>());
+extern void makeValueFrameFromTspMV(core::ActivationFrame_sp *afP, core::T_sp *values, size_t num, uint id) {
+  core::ValueFrame_sp vf = core::ValueFrame_O::create(num,_Nil<core::T_O>());
+  for ( size_t i(0); i<num; ++i ) {
+    (*vf)[i] = values[i];
+  }
   vf->setEnvironmentId(id);
   (*afP) = vf;
   ASSERTNOTNULL(*afP);
@@ -741,19 +742,19 @@ extern core::T_sp *functionFrameReference(core::ActivationFrame_sp *frameP, int 
 }
 
 #if 0
-    extern void fillRestTarget( core::T_sp* restP, core::ActivationFrame_sp* frameP, int startRest, char* fnName)
-    {_G();
-	ASSERT(frameP!=NULL);
-	ASSERT(frameP->objectp());
-	core::ValueFrame_sp frame = (*frameP).as<core::ValueFrame_O>();
-	core::List_sp result = _Nil<core::T_O>();
-	for ( int i=frame->length()-1; i>=startRest; i-- )
-	{
-	    result = core::Cons_O::create(frame->entry(i),result);
-	}
-	(*restP) = result;
-	ASSERTNOTNULL(*restP);
-    }
+extern void fillRestTarget( core::T_sp* restP, core::ActivationFrame_sp* frameP, int startRest, char* fnName)
+{_G();
+ ASSERT(frameP!=NULL);
+ ASSERT(frameP->objectp());
+ core::ValueFrame_sp frame = (*frameP).as<core::ValueFrame_O>();
+ core::List_sp result = _Nil<core::T_O>();
+ for ( int i=frame->length()-1; i>=startRest; i-- )
+ {
+   result = core::Cons_O::create(frame->entry(i),result);
+ }
+ (*restP) = result;
+ ASSERTNOTNULL(*restP);
+}
 #endif
 
 /*! Look for the :allow-other-keywords XX keyword argument and
@@ -806,16 +807,16 @@ extern void throwIfExcessKeywordArguments(char *fnName, core::ActivationFrame_sp
   SIMPLE_ERROR(BF("Excess keyword arguments fnName: %s argIdx: %d  args: %s") % fnName % argIdx % ss.str());
 //      core::throwUnrecognizedKeywordArgumentError((*frameP)->argArray()[argIdx]);
 #if 0
-	core::ActivationFrame_sp frame = (*frameP).as<core::ActivationFrame_O>();
-	if ( argIdx >= frame->length() ) return;
-	stringstream ss;
-	for ( int ii = argIdx; ii < frame->length(); ii+=2 )
-	{
-	    core::T_sp& keyRef = frame->entryReference(ii);
-	    if ( keyRef == kw::_sym_allow_other_keys ) continue;
-	    ss << _rep_(keyRef) << " ";
-	}
-	SIMPLE_ERROR(BF("In %s extraneous keyword arguments: %s") % fnName % ss.str() );
+  core::ActivationFrame_sp frame = (*frameP).as<core::ActivationFrame_O>();
+  if ( argIdx >= frame->length() ) return;
+  stringstream ss;
+  for ( int ii = argIdx; ii < frame->length(); ii+=2 )
+  {
+    core::T_sp& keyRef = frame->entryReference(ii);
+    if ( keyRef == kw::_sym_allow_other_keys ) continue;
+    ss << _rep_(keyRef) << " ";
+  }
+  SIMPLE_ERROR(BF("In %s extraneous keyword arguments: %s") % fnName % ss.str() );
 #endif
 }
 
@@ -833,32 +834,20 @@ extern void throwIfExcessArguments(core::T_sp *frameP, int argIdx) {
     SIMPLE_ERROR(BF("extraneous arguments: %s") % serr.str());
   }
 }
-};
 
-inline core::T_sp prependMultipleValues(core::T_mv *multipleValuesP) {
-  _G();
+size_t appendMultipleValues(core::T_sp* values, size_t idx, core::T_mv *multipleValuesP) {
+
   core::List_sp result = _Nil<core::T_O>();
   core::T_mv &mv = (*multipleValuesP);
   if (mv.number_of_values() > 0) {
-    result = core::Cons_O::create(mv, result);
+    values[idx++] = mv;
     for (int i = 1; i < mv.number_of_values(); i++) {
-      result = core::Cons_O::create(mv.valueGet(i), result);
+      values[idx++] = mv.valueGet(i);
     }
   }
-  return result;
-}
-
-extern "C" {
-void sp_prependMultipleValues(core::T_sp *resultP, core::T_mv *multipleValuesP) {
-  (*resultP) = prependMultipleValues(multipleValuesP);
-  ASSERTNOTNULL(*resultP);
-}
-void mv_prependMultipleValues(core::T_mv *resultP, core::T_mv *multipleValuesP) {
-  (*resultP) = Values(prependMultipleValues(multipleValuesP));
-  ASSERTNOTNULL(*resultP);
+  return idx;
 }
 };
-
 extern "C" {
 
 /*! Invoke a symbol function with the given arguments and put the result in (*resultP) */

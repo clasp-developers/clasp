@@ -223,38 +223,30 @@
 
 
 
-(defun irc-new-unbound-function-value-environment (old-env &key number-of-functions (label "function-frame"))
+(defun irc-new-unbound-function-value-environment (new-env &key number-of-functions (label "function-frame"))
   "Create a new function environment and a new runtime environment"
-  (let* ((new-env (make-function-value-environment number-of-functions old-env))
-	 (new-renv (irc-alloca-afsp new-env :label label)))
+  (let* ((new-renv (irc-alloca-afsp new-env :label label)))
     (or new-renv (error "The new-renv is nil - it shouldn't be"))
     (irc-set-renv new-env new-renv)
     new-env))
 
 
-(defun irc-new-function-value-environment (old-env &key functions (label "function-frame"))
+(defun irc-new-function-value-environment (new-env &key functions (label "function-frame"))
   "Create a new function environment and a new runtime environment"
+  (dolist (fn functions)
+    (bind-function new-env (car fn) #'(lambda () (print "Dummy func"))))
+  new-env)
+
+#||
   (let ((new-env (irc-new-unbound-function-value-environment old-env :number-of-functions (length functions))))
-    (dolist (fn functions)
-      (bind-function new-env (car fn) #'(lambda () (print "Dummy func"))))
-    new-env))
+||#
 
-
-
-(defun irc-new-unbound-tagbody-environment (old-env &key (label "tagbody-frame"))
+(defun irc-new-tagbody-environment (new-env &key (label "tagbody-frame"))
   "Create a new tagbody environment and a new runtime environment"
-  (let* ((new-env (make-tagbody-environment old-env))
-	 (new-renv (irc-alloca-afsp new-env :label label)))
+  (let* ((new-renv (irc-alloca-afsp new-env :label label)))
     (or new-renv (error "The new-renv is nil - it shouldn't be"))
     (irc-set-renv new-env new-renv)
     new-env))
-
-
-(defun irc-new-tagbody-environment (old-env &key (label "function-frame"))
-  "Create a new tagbody environment and a new runtime environment"
-  (let ((new-env (irc-new-unbound-tagbody-environment old-env )))
-    new-env))
-
 
 (defun irc-new-macrolet-environment (old-env)
   "Create a new function environment and a new runtime environment"
@@ -305,40 +297,23 @@
 
 
 
-(defun irc-new-unbound-value-environment-of-size (old-env &key number-of-arguments (label "value-frame"))
+(defun irc-new-unbound-value-environment-of-size (new-env size &key (label "value-frame"))
   "Create a new environment and a new runtime environment"
-  (or number-of-arguments
-      (error "Only pass one of :lambda-list-handler or :number-of-arguments"))
-  (let* ((new-env (make-value-environment-for-number-of-entries number-of-arguments old-env))
-	 (new-renv (irc-alloca-afsp-value-frame-of-size new-env number-of-arguments :label label)))
+  (let* ((new-renv (irc-alloca-afsp-value-frame-of-size
+                    new-env
+                    size
+                    :label label)))
     (or new-renv (error "The new-renv is nil - it shouldn't be"))
     (irc-set-renv new-env new-renv)
     new-env))
 
-
-
-(defun irc-new-value-environment-of-size (old-env &key number-of-arguments fill-runtime-form (label "env") )
+(defun irc-new-value-environment-of-size (new-env &key fill-runtime-form (label "env") )
   "Create a new environment and a new runtime environment"
   (or fill-runtime-form (error "You must provide a fill-runtime-form - if you want to fill later then use irc-new-unbound-value-environment"))
-  (let ((new-env (irc-new-unbound-value-environment-of-size old-env
-							    :number-of-arguments number-of-arguments
-							    :label label )))
-    (when fill-runtime-form
-      (funcall fill-runtime-form new-env))
-    new-env))
-
-
-
-
-
-
-
-
-
-(defun irc-new-block-environment (old-env &key name)
-  (let ((new-env (make-block-environment name old-env)))
-    new-env))
-
+  (irc-new-unbound-value-environment-of-size new-env :label label )
+  (when fill-runtime-form
+    (funcall fill-runtime-form new-env))
+  new-env)
 
 (defun irc-new-catch-environment (old-env)
   (make-catch-environment old-env))
@@ -863,6 +838,11 @@ Within the _irbuilder_ dynamic environment...
                 ,@code)
          (cmp-log "Leaving irbuilder --> %s\n" (bformat nil "%s" ,irbuilder))))))
 
+(defun irc-alloca-tsp[MV] (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
+  (with-alloca-insert-point env irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* +tsp[MV]+ (jit-constant-i32 1) label)
+    :init nil
+    :cleanup nil))
 
 (defun irc-alloca-tmv (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (with-alloca-insert-point env irbuilder

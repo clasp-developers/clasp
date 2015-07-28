@@ -101,6 +101,7 @@ COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name l
 (defun codegen-with-mincomp (result form env)
   (cmp-log "codegen-with-mincomp form: %s\n" form)
   (let ((ast (mincomp form env)))
+    (bformat t "codegen-with-mincomp:: About to analyze-variables\n")
     (analyze-variables ast)
     (cmp-log "About to codegen: %s\n" ast)
     (codegen result ast)))
@@ -284,9 +285,11 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	(codegen-global-setf-function-lookup result setf-func env)
 	(codegen-lexical-function-lookup result (caddr classified) (cadddr classified) env))))
 
-(defun codegen-function (result rest env)
+(defun codegen-function (result node)
   "Return IR code for a function or closure"
-  (let ((name-or-lambda (car rest)))
+  (let ((name-or-lambda (function-ast-name-or-lambda node))
+        (env (function-ast-env node))
+        (form (function-ast-form node)))
   (assert-result-isa-llvm-value result)
   (dbg-set-current-debug-location-here)
   (cmp-log "About to codegen-function for: %s\n" name-or-lambda)
@@ -340,40 +343,49 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((cleanup)
        (irc-intrinsic "progvRestoreSpecials" save-specials)))))
 
-(defun codegen-multiple-value-call (result rest env)
-  (with-dbg-lexical-block (rest)
-    (let ((accumulate-results (irc-alloca-tsp env :label "acc-multiple-value-results"))
-	  (temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
-	  (funcDesignator (irc-alloca-tsp env :label "funcDesignator"))
-	  (func (irc-alloca-Function_sp env :label "func"))
-	  (accumulated-af (irc-alloca-afsp env :label "accumulated-activation-frame")))
-      (codegen-literal accumulate-results nil env)
-      (do* ((cur (cdr rest) (cdr cur))
-	    (form (car cur) (car cur)))
-	   ((endp cur) nil)
-	(codegen temp-mv-result form env)
-	(irc-intrinsic "prependMultipleValues" accumulate-results temp-mv-result))
-      (irc-intrinsic "makeValueFrameFromReversedCons" accumulated-af accumulate-results (jit-constant-i32 (irc-next-environment-id)))
-      (irc-intrinsic "setParentOfActivationFrame" accumulated-af (irc-renv env))
-      (codegen funcDesignator (car rest) env)
-      (let ((closure (irc-intrinsic "va_coerceToClosure" funcDesignator)))
-        (irc-intrinsic "FUNCALL_activationFrame" result closure accumulated-af)))))
+(defun codegen-multiple-value-call (result node)
+  (let ((function (multiple-value-call-ast-function node))
+        (forms (multiple-value-call-ast-forms node))
+        (env (multiple-value-call-ast-env node))
+        (form (multiple-value-call-ast-form node)))
+    (with-dbg-lexical-block (form)
+      (let ((accumulate-results (irc-alloca-tsp[MV]
+                                 env
+                                 :label "acc-multiple-value-results"))
+            (accumulate-idx (irc-alloca-size_t env 0 :label "acc-multiple-value-idx"))
+            (temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
+            (funcDesignator (irc-alloca-tsp env :label "funcDesignator"))
+            (func (irc-alloca-Function_sp env :label "func"))
+            (accumulated-af (irc-alloca-afsp env :label "accumulated-activation-frame")))
+        (do* ((cur forms (cdr cur))
+              (mv-form (car cur) (car cur)))
+             ((endp cur) nil)
+          (codegen temp-mv-result mv-form)
+          (irc-store (irc-intrinsic "appendMultipleValues" accumulate-results (irc-load accumulate-idx) temp-mv-result) accumulate-idx))
+        (irc-intrinsic "makeValueFrameFromTspMV" accumulated-af accumulate-results (irc-load accumulate-idx) (jit-constant-i32 (irc-next-environment-id)))
+        (irc-intrinsic "setParentOfActivationFrame" accumulated-af (irc-renv env))
+        (codegen funcDesignator function)
+        (let ((closure (irc-intrinsic "va_coerceToClosure" funcDesignator)))
+          (irc-intrinsic "FUNCALL_activationFrame" result closure accumulated-af))))))
 
-(defun codegen-multiple-value-prog1 (result rest env)
-  (with-dbg-lexical-block (rest)
-    (let ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
-	  (saved-values (irc-alloca-tsp env :label "multiple-value-prog1-saved-values"))
-	  (temp-val (irc-alloca-tsp env :label "temp-val")))
-      ;; See the interpreter sp_multipleValueCall
-      (codegen temp-mv-result (car rest) env)
-      (irc-intrinsic "saveValues" saved-values temp-mv-result)
-      (do* ((cur (cdr rest) (cdr cur))
-	    (form (car cur) (car cur)))
-	   ((endp cur) nil)
-	(codegen temp-val form env)
-	)
-      (irc-intrinsic "loadValues" temp-mv-result saved-values)
-      (irc-intrinsic "copyTmvOrSlice" result temp-mv-result))))
+(defun codegen-multiple-value-prog1 (result node)
+  (let ((form1 (multiple-value-prog1-ast-form1 node))
+        (rest-forms (multiple-value-prog1-ast-rest-forms node))
+        (env (multiple-value-prog1-ast-env node))
+        (form (multiple-value-prog1-ast-form node)))
+    (with-dbg-lexical-block (form)
+      (let ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
+            (saved-values (irc-alloca-tsp env :label "multiple-value-prog1-saved-values"))
+            (temp-val (irc-alloca-tsp env :label "temp-val")))
+        ;; See the interpreter sp_multipleValueCall
+        (codegen temp-mv-result form1)
+        (irc-intrinsic "saveValues" saved-values temp-mv-result)
+        (do* ((cur rest-forms (cdr cur))
+              (one-form (car cur) (car cur)))
+             ((endp cur) nil)
+          (codegen temp-val one-form))
+        (irc-intrinsic "loadValues" temp-mv-result saved-values)
+        (irc-intrinsic "copyTmvOrSlice" result temp-mv-result)))))
 
 (defun codegen-special-var-reference (var &optional env)
   (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
@@ -384,37 +396,23 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	(index (cadr depth-index)))
     (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) renv)))
 
-(defun codegen-setq (result setq-pairs env)
+(defun compile-variable-set (node)
+  (let ((classified (variable-set-ast-classified node))
+        (env (variable-set-ast-classified node)))
+    (bformat t "compile-variable-set classified: %s\n" classified)
+    (if (eq (car classified) 'ext:special-var)
+        (codegen-special-var-reference (cdr classified) env)
+        (codegen-lexical-var-reference (cddr classified) env))))
+
+(defun codegen-setq (result node)
   "Carry out setq for a collection of pairs"
-  (let ((temp-res (irc-alloca-tsp env :label "tsetq")))
-    (if setq-pairs
-	(do* ((cur setq-pairs (cddr cur))
-	      (cur-var (car cur) (car cur))
-	      (cur-expr (cadr cur) (cadr cur)))
-	     ((endp cur) nil)
-	  (cmp-log "Compiling setq for target[%s]\n" cur-var)
-	  (let ((expanded (macroexpand cur-var env)))
-	    (if (eq expanded cur-var)
-		;; symbol was not macroexpanded use SETQ
-		(progn
-		  (cmp-log "The symbol[%s] was not macroexpanded - using SETQ to set it\n" cur-var)
-		  (let* ((classified (irc-classify-variable env cur-var))
-			 (target-ref (if (eq (car classified) 'ext:special-var)
-					 (codegen-special-var-reference cur-var env)
-					 (codegen-lexical-var-reference (cddr classified) env))))
-		    (codegen temp-res cur-expr env)
-		    (irc-intrinsic "copyTsp" target-ref temp-res)))
-		;; symbol was macroexpanded use SETF
-		(progn
-		  (cmp-log "The symbol[%s] was macroexpanded to result[%s] setting with SETF\n" cur-var expanded)
-		  (codegen temp-res `(setf ,expanded ,cur-expr) env))))
-	  (unless (cddr cur)
-	    (irc-intrinsic "copyTsp" result temp-res)))
-	;; There were no pairs, return nil
-	(codegen-literal result nil env))))
-
-
-
+  (let ((variable (setq-ast-variable node))
+        (expression (setq-ast-expression node))
+        (env (setq-ast-env node))
+        (form (setq-ast-form node)))
+    (let ((target-ref (compile-variable-set (setq-ast-variable node))))
+      (codegen target-ref expression)
+      (irc-intrinsic "copyTsp" result target-ref))))
 
 (defun gather-lexical-variable-names (classified-symbols)
   (error "This may now be redundant given LambdaListHandler_O::namesOfAllLexicalVariables")
@@ -463,7 +461,7 @@ env is the parent environment of the (result-af) value frame"
 	     ((endp cur-req) nil)
 	  (vector-push-extend temp temps)
 	  (dbg-set-current-source-pos exp)
-	  (codegen temp exp evaluate-env))
+	  (codegen temp exp))
 	;; Now generate code for let
 	(cmp-log "About to generate code for exps: %s\n" exps)
 	(do* ((cur-req (cdr reqvars) (cdr cur-req))
@@ -510,64 +508,49 @@ env is the parent environment of the (result-af) value frame"
 	       (target-idx (cdr classified-target)))
 	  (with-target-reference-do (target-ref classified-target new-env)
 	    (dbg-set-current-source-pos exp)
-	    (codegen target-ref exp evaluate-env)))))))
+	    (codegen target-ref exp)))))))
 
-
-
-
-
-(defun codegen-let/let* (operator-symbol result parts env)
-  (with-dbg-lexical-block (parts)
-    (let ((assignments (car parts))
-	  (body (cdr parts)))
-      (multiple-value-bind (variables expressions)
-	  (separate-pair-list assignments)
-	(multiple-value-bind (declares code docstring specials )
-	    (process-declarations body t)
-	  (cmp-log "About to create lambda-list-handler\n")
-	  (dbg-set-current-debug-location-here)
-	  (let* ((lambda-list-handler (make-lambda-list-handler variables declares 'core::function))
-		 (new-env (irc-new-unbound-value-environment-of-size
-			   env
-			   :number-of-arguments (number-of-lexical-variables lambda-list-handler) ;; lambda-list-handler lambda-list-handler
-			   :label (symbol-name operator-symbol)))
-		 ;; There is a huge problem with setting evaluate-env for 'let
-		 ;; in that the let evaluate-environment is not the same environment
-		 ;; used by with-try and codegen-fill-let/let*-environment
-		 ;; The problem is that the code generated within codegen-fill-let/let*-environment
-		 ;; connects to the env dispatcher rather than the new-env dispatcher
-		 (evaluate-env (cond
-				 ((eq operator-symbol 'let) env) ;;; This is a problem right here
-				 ((eq operator-symbol 'let*) new-env)
-				 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol))))
-		 traceid)
-	    (with-try new-env
-	      (progn
-		(irc-branch-to-and-begin-block (irc-basic-block-create
-						(bformat nil "%s-start" (symbol-name operator-symbol))))
-		(if (eq operator-symbol 'let)
-		    (codegen-fill-let-environment new-env lambda-list-handler expressions env evaluate-env)
-		    (codegen-fill-let*-environment new-env lambda-list-handler expressions env evaluate-env))
-		(cmp-log "About to evaluate codegen-progn\n")
-		(codegen-progn result code new-env))
-	      ((cleanup)
-               (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-parent-renv new-env))
-	       (irc-unwind-environment new-env)
-	       ))
-	    )
-	  ))))
-  (cmp-log "Done codegen-let/let*\n")
-  )
-
-(defun codegen-let (result rest env)
-  (codegen-let/let* 'let result rest env))
-
-(defun codegen-let* (result rest env)
-  (codegen-let/let* 'let* result rest env))
-
-
-
-
+(defun codegen-let/let* (result node)
+  (let ((operator-symbol (let/let*-ast-operator node))
+        (new-env (let/let*-ast-new-env node))
+        (lambda-list-handler (let/let*-ast-lambda-list-handler node))
+        (variables (let/let*-ast-variables node))
+        (expressions (let/let*-ast-expressions node))
+        (code (let/let*-ast-code node))
+        (env (let/let*-ast-env node))
+        (form (let/let*-ast-form node)))
+    (with-dbg-lexical-block (form)
+      (cmp-log "About to create lambda-list-handler\n")
+      (dbg-set-current-debug-location-here)
+      (irc-new-unbound-value-environment-of-size
+       new-env
+       (number-of-lexical-variables lambda-list-handler)
+       :label (symbol-name operator-symbol))
+      ;; There is a huge problem with setting evaluate-env for 'let
+      ;; in that the let evaluate-environment is not the same environment
+      ;; used by with-try and codegen-fill-let/let*-environment
+      ;; The problem is that the code generated within codegen-fill-let/let*-environment
+      ;; connects to the env dispatcher rather than the new-env dispatcher
+      (let ((evaluate-env
+             (cond
+               ((eq operator-symbol 'let) env) ;;; This is a problem right here
+               ((eq operator-symbol 'let*) new-env)
+               (t (error "let/let* doesn't understand operator symbol[~a]"
+                         operator-symbol))))
+            traceid)
+        (with-try new-env
+          (progn
+            (irc-branch-to-and-begin-block (irc-basic-block-create
+                                            (bformat nil "%s-start" (symbol-name operator-symbol))))
+            (if (eq operator-symbol 'let)
+                (codegen-fill-let-environment new-env lambda-list-handler expressions env evaluate-env)
+                (codegen-fill-let*-environment new-env lambda-list-handler expressions env evaluate-env))
+            (cmp-log "About to evaluate codegen-progn\n")
+            (codegen-progn result code))
+          ((cleanup)
+           (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-parent-renv new-env))
+           (irc-unwind-environment new-env))))))
+  (cmp-log "Done codegen-let/let*\n"))
 
 #||
 #+(or)(defun codegen-primop-consp (result rest env)
@@ -673,6 +656,7 @@ jump to blocks within this tagbody."
   (let ((env (tagbody-ast-env node))
         (enumerated-tags (tagbody-ast-tags node)))
     (cmp-log "codegen-tagbody tagbody environment: %s\n" env)
+    (irc-new-tagbody-environment env)
     (let ((go-blocks nil))
       (mapl #'(lambda (cur)
                 (let* ((tag-begin (car cur))
@@ -744,13 +728,14 @@ jump to blocks within this tagbody."
       (irc-br go-block)
       (irc-begin-block (irc-basic-block-create "after-go")))))
 
-(defun codegen-block (result rest env)
+(defun codegen-block (result node)
   "codegen-block using the try macro"
-  (let* ((block-symbol (car rest))
-         (body (cdr rest)))
+  (let* ((block-symbol (block-ast-symbol node))
+         (body (block-ast-forms node))
+         (block-env (block-ast-env node))
+         (form (block-ast-form node)))
     (with-dbg-lexical-block (body)
-      (let* ((block-env (irc-new-block-environment env :name block-symbol))
-             traceid)
+      (let* (traceid)
 	(let ((block-start (irc-basic-block-create
 			    (bformat nil "block-%s-start" (symbol-name block-symbol))))
 	      (local-return-block (irc-basic-block-create (bformat nil "local-return-%s-block" (symbol-name block-symbol))))
@@ -761,7 +746,7 @@ jump to blocks within this tagbody."
 	  (irc-begin-block block-start)
           (let* ((frame (irc-intrinsic "pushBlockFrame" (irc-global-symbol block-symbol block-env))))
             (with-try block-env
-	      (codegen-progn result body block-env)
+	      (codegen-progn result body)
               ((cleanup)
                (irc-unwind-environment block-env))
               ((typeid-core-return-from exception-ptr)
@@ -771,38 +756,35 @@ jump to blocks within this tagbody."
 	    (irc-intrinsic "restoreFromMultipleValue0" result)
 	    (irc-br after-return-block)
 	    (irc-begin-block after-return-block)
-            (irc-intrinsic "exceptionStackUnwind" frame)
-	    ))))))
+            (irc-intrinsic "exceptionStackUnwind" frame))))))) 
 
 
 
 
-
-(defun codegen-return-from (result rest env)
-  (dbg-set-current-debug-location-here)
-  (let* ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
-	 (block-symbol (car rest))
-	 (return-form (cadr rest)))
-    (multiple-value-bind (recognizes-block-symbol inter-function block-env)
-	(classify-return-from-symbol env block-symbol)
-      (if recognizes-block-symbol
-	  (if inter-function
-	      (progn
-		(codegen temp-mv-result return-form env)
-		(irc-intrinsic "saveToMultipleValue0" temp-mv-result)
-		(irc-low-level-trace)
-		(irc-intrinsic "throwReturnFrom" (irc-global-symbol block-symbol env)))
-	      (let* ((local-return-block (lookup-metadata block-env :local-return-block))
-		     (saved-values (irc-alloca-tsp env :label "return-from-unwind-saved-values")))
-		(codegen temp-mv-result return-form env)
-		(irc-intrinsic "saveValues" saved-values temp-mv-result) ;; moved saveValues here
-		(irc-unwind-into-environment env block-env)
-		(irc-intrinsic "loadValues" temp-mv-result saved-values)
-		(irc-intrinsic "saveToMultipleValue0" temp-mv-result)
-		(irc-br local-return-block)
-		(irc-begin-block (irc-basic-block-create "after-return-from"))
-		))
-	  (error "Unrecognized block symbol ~a" block-symbol)))))
+(defun codegen-return-from (result node)
+  (let ((block-symbol (return-from-ast-symbol node))
+        (inter-function (return-from-ast-inter-function node))
+        (block-env (return-from-ast-block-env node))
+        (return-form (return-from-ast-return-form node))
+        (env (return-from-ast-env node))
+        (form (return-from-ast-form node)))
+    (dbg-set-current-debug-location-here)
+    (let* ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result")))
+      (if inter-function
+          (progn
+            (codegen temp-mv-result return-form)
+            (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
+            (irc-low-level-trace)
+            (irc-intrinsic "throwReturnFrom" (irc-global-symbol block-symbol env)))
+          (let* ((local-return-block (lookup-metadata block-env :local-return-block))
+                 (saved-values (irc-alloca-tsp env :label "return-from-unwind-saved-values")))
+            (codegen temp-mv-result return-form)
+            (irc-intrinsic "saveValues" saved-values temp-mv-result) ;; moved saveValues here
+            (irc-unwind-into-environment env block-env)
+            (irc-intrinsic "loadValues" temp-mv-result saved-values)
+            (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
+            (irc-br local-return-block)
+            (irc-begin-block (irc-basic-block-create "after-return-from")))))))
 
 
 (defun generate-lambda-block (name lambda-list raw-body)
@@ -839,39 +821,36 @@ jump to blocks within this tagbody."
 			       (bformat nil "%s-ref-%d" (llvm-sys:get-name result-af) fn-index) )))
 	(codegen-closure target fn-lambda closure-env)))))
 
-
-
-
-
-(defun codegen-flet/labels (operator-symbol result rest env)
-  (with-dbg-lexical-block (rest)
-    (let* ((functions (car rest))
-	   (body (cdr rest))
-	   (function-env (irc-new-function-value-environment env :functions functions)))
-      (multiple-value-bind (declares code docstring specials)
-	  (process-declarations body nil) ;; don't expect docstring
-	(let ((evaluate-env (cond
-			      ((eq operator-symbol 'flet) env)
-			      ((eq operator-symbol 'labels) function-env)
-			      (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol))))
-	      traceid)
-	  (with-try evaluate-env
-	    (progn
-	      (irc-branch-to-and-begin-block (irc-basic-block-create
-					      (bformat nil "%s-start"
-						       (symbol-name operator-symbol))))
-	      (setq traceid (if (eq operator-symbol 'flet)
-				(trace-enter-flet-scope function-env code)
-				(trace-enter-labels-scope function-env code)))
-	      (codegen-fill-function-frame operator-symbol function-env functions env evaluate-env)
-	      (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-renv function-env))
-	      (codegen-progn result code function-env))
-	    ((cleanup)
-	     (if (eq operator-symbol 'flet)
-		 (trace-exit-flet-scope function-env traceid)
-		 (trace-exit-labels-scope function-env traceid))
-	     (irc-unwind-environment function-env)))
-	  )))))
+(defun codegen-flet/labels (result node)
+  (let ((operator-symbol (flet/labels-ast-operator node))
+        (function-values-env (flet/labels-ast-function-values-env node))
+        (functions (flet/labels-ast-functions node))
+        (code (flet/labels-ast-code node))
+        (env (flet/labels-ast-env node))
+        (form (flet/labels-ast-form node)))
+    (with-dbg-lexical-block (form)
+      (irc-new-function-value-environment function-values-env functions)
+      (let ((evaluate-env (cond
+                            ((eq operator-symbol 'flet) env)
+                            ((eq operator-symbol 'labels) function-values-env)
+                            (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol))))
+            traceid)
+        (with-try evaluate-env
+          (progn
+            (irc-branch-to-and-begin-block (irc-basic-block-create
+                                            (bformat nil "%s-start"
+                                                     (symbol-name operator-symbol))))
+            (setq traceid (if (eq operator-symbol 'flet)
+                              (trace-enter-flet-scope function-env code)
+                              (trace-enter-labels-scope function-env code)))
+            (codegen-fill-function-frame operator-symbol function-env functions env evaluate-env)
+            (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-renv function-env))
+            (codegen-progn result code function-env))
+          ((cleanup)
+           (if (eq operator-symbol 'flet)
+               (trace-exit-flet-scope function-env traceid)
+               (trace-exit-labels-scope function-env traceid))
+           (irc-unwind-environment function-env)))))))
 
 (defun codegen-flet (result rest env)
   (codegen-flet/labels 'flet result rest env))
@@ -1205,24 +1184,12 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   (assert-result-isa-llvm-value result)
   (multiple-value-bind (source-directory source-filename lineno column)
       (dbg-set-current-source-pos node)
-    (cond
-      ((constant-ast-p node)
-       (codegen-constant result node))
-      ((progn-ast-p node)
-       (codegen-progn result node))
-      ((if-ast-p node)
-       (codegen-if result node))
-      ((variable-ast-p node)
-       (codegen-variable-lookup result node))
-      ((tagbody-ast-p node)
-       (codegen-tagbody result node))
-      ((dynamic-go-ast-p node)
-       (codegen-dynamic-go result node))
-      ((local-go-ast-p node)
-       (codegen-local-go result node))
-      ((call-ast-p node)
-       (codegen-call result node))
-      (t (error "Handle more node types node: ~a" node)))))
+    (dolist (dispatcher *ast-node-dispatchers*)
+      (let ((predicate (car dispatcher))
+            (codegenerator (cadr dispatcher)))
+        (when (funcall predicate node)
+          (return-from codegen (funcall codegenerator result node)))))
+    (error "compiler.lsp::codegen - handle more node types node: ~a" node)))
 #||    (if (atom form)
         (if (symbolp form)
             (codegen-symbol-value result form env)
