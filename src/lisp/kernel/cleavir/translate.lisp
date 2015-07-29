@@ -491,6 +491,10 @@
     ((instruction cleavir-ir:enclose-instruction) inputs outputs abi)
   (declare (ignore inputs))
   (cmp:irc-low-level-trace :flow)
+  #||
+  (format t "translate-simple-instruction::enclose-instruction~%")
+  (format t "         *current-source-pos-info*: ~a~%" core:*current-source-pos-info*)
+||#
   (let* ((enter-instruction (cleavir-ir:code instruction)))
     (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
 	(layout-procedure enter-instruction abi)
@@ -504,7 +508,17 @@
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
 	     (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
 	     (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
-	     (result (cmp:irc-intrinsic-args "cc_enclose" (list* ltv-lambda-name enclosed-function (%size_t (length inputs)) loaded-inputs) :label (format nil "closure->~a" lambda-name))))
+	     (result (cmp:irc-intrinsic-args
+                      "cc_enclose"
+                      (list* ltv-lambda-name
+                             enclosed-function
+                             cmp:*gv-source-pathname*
+                             (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                             (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                             (cmp:irc-size_t-*current-source-pos-info*-column)
+                             (%size_t (length inputs))
+                             loaded-inputs)
+                      :label (format nil "closure->~a" lambda-name))))
 	(cc-dbg-when *debug-log*
 		     (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
 		     (format *debug-log* "    inputs: ~a~%" inputs))
@@ -1032,8 +1046,8 @@ nil)
                  nil			; environment
                  cmp:*run-time-literals-external-name*
                  "repl-fn.txt"
-                 0
-                 0
+                 4321
+                 5678
                  nil)))
           (unless (compiled-function-p setup-function)
             (format t "Whoah cleavir-clasp compiled code eval --> ~s~%" compiled-function)

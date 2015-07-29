@@ -32,6 +32,16 @@
 ;;; wipe out .slime/fasl/2015-06-27/*
 ;;; clasp_boehm_o -f bclasp -f flow -f cclasp-eh
 
+(progn ;; Set up everything for building cclasp from bclasp
+  (format t "Loading ASDF system~%")
+  (time (require :asdf))
+  (load "sys:local-asdf-config.lisp")
+  (pushnew :cleavir *features*)
+  (format t "Loading :clasp-cleavir system~%")
+  (time (require :clasp-cleavir))
+  (load "sys:kernel;cleavir;inline.lisp")
+  )
+
 (progn
   (progn ;; Set up everything for building cclasp from bclasp
     (format t "Loading ASDF system~%")
@@ -42,13 +52,14 @@
     (time (require :clasp-cleavir))
     (format t "Loading inline.lisp~%")
     (load "sys:kernel;cleavir;inline.lisp")
-    (print (core:getpid)))
-  (load "sys:kernel;cleavir;auto-compile.lisp")
-  (load "/Users/meister/Development/slime/start-swank.lisp"))
+    (print (core:getpid))))
+  (load "sys:kernel;cleavir;auto-compile.lisp"))
 
-(clasp-cleavir::cleavir-compile-file "sys:tests;teh.lsp")
-(load "sys:tests;teh.fasl")
-(foo)
+
+(clasp-cleavir::cleavir-compile-file "sys:tests;tsmall.lsp")
+(load "sys:tests;tsmall.fasl")
+(foob)
+(ext:compiled-function-file #'foob)
 
 
 

@@ -732,7 +732,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_readCell" +t*+ (list +t*+))
   (primitive-nounwind module "cc_loadTimeValueReference" +t**+ (list +ltv**+ +size_t+))
   (primitive-nounwind module "cc_fetch" +t*+ (list +t*+ +size_t+))
-  (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +size_t+ ) :varargs t)
+  (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i8*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
   (primitive #|-nounwind|#              module "cc_call_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
 ;  (primitive              module "cc_invoke_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
   (primitive-nounwind module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))

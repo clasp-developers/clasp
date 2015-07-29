@@ -370,12 +370,17 @@
 
 (defun irc-i64-*current-source-pos-info*-filepos ()
   (jit-constant-i64 (core:source-pos-info-filepos *current-source-pos-info*)))
-
 (defun irc-i32-*current-source-pos-info*-lineno ()
   (jit-constant-i32 (core:source-pos-info-lineno *current-source-pos-info*)))
-
 (defun irc-i32-*current-source-pos-info*-column ()
   (jit-constant-i32 (core:source-pos-info-column *current-source-pos-info*)))
+
+(defun irc-size_t-*current-source-pos-info*-filepos ()
+  (jit-constant-size_t (core:source-pos-info-filepos *current-source-pos-info*)))
+(defun irc-size_t-*current-source-pos-info*-lineno ()
+  (jit-constant-size_t (core:source-pos-info-lineno *current-source-pos-info*)))
+(defun irc-size_t-*current-source-pos-info*-column ()
+  (jit-constant-size_t (core:source-pos-info-column *current-source-pos-info*)))
 
 
 

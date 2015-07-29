@@ -1686,9 +1686,15 @@ void cc_invoke(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_BASE) {
 }
 
 
-core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func, std::size_t numCells, ...) {
+core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
+                      char* sourceName, size_t filePos, size_t lineno, size_t column,
+                      std::size_t numCells, ...) {
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   core::ValueFrame_sp vo = core::ValueFrame_O::create(numCells, _Nil<core::T_O>());
+#if 0
+  printf("%s:%d:%s  cc_enclose fileName: %s  filePos: %lu lineno: %d column: %d\n",
+         __FILE__, __LINE__, __FUNCTION__, fileName, filePos, lineno, column);
+#endif
   core::T_O *p;
   va_list argp;
   va_start(argp, numCells);
@@ -1709,9 +1715,13 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func, 
   // Holy hell - I have to spoof stuff to allocate a CompiledClosure - I need to make all this info
   // available to the enclose instruction
   //
+  core::Str_sp sourceStr = core::Str_O::create(sourceName);
+  core::SourceFileInfo_mv sfi = core::core_sourceFileInfo(sourceStr);
+  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1))); // sfindex could be written into the Module global for debugging
+  core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,lineno,column);
   llvmo::CompiledClosure *functoid = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(tlambdaName // functionName - make this something useful!
                                                                                                     ,
-                                                                                                    _Nil<core::T_O>() // SourcePosInfo
+                                                                                                    spi // _Nil<core::T_O>() // SourcePosInfo
                                                                                                     ,
                                                                                                     kw::_sym_function // fn-type
                                                                                                     ,
