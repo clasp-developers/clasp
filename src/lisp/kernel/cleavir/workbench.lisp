@@ -56,6 +56,10 @@
   (load "sys:kernel;cleavir;auto-compile.lisp"))
 
 
+
+
+
+
 (clasp-cleavir::cleavir-compile-file "sys:tests;tsmall.lsp")
 (load "sys:tests;tsmall.fasl")
 (foob)

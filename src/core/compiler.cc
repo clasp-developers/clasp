@@ -86,14 +86,14 @@ __attribute__((optnone)) Fixnum_sp core_testTaggedCast(Fixnum_sp pow2) {
 #define DECL_core_cxxFibn ""
 #define DOCS_core_cxxFibn "Calculate the num Fibonacci number reps times"
 Integer_sp core_cxxFibn(Fixnum_sp reps, Fixnum_sp num) {
-  Fixnum freps = clasp_to_fixnum(reps);
-  Fixnum fnum = clasp_to_fixnum(num);
-  Fixnum p1, p2, z;
-  for ( Fixnum r = 0; r<freps; ++r ) {
+  long int freps = clasp_to_fixnum(reps);
+  long int fnum = clasp_to_fixnum(num);
+  long int p1, p2, z;
+  for ( long int r = 0; r<freps; ++r ) {
     p1 = 1;
     p2 = 1;
-    Fixnum rnum = fnum - 2;
-    for ( Fixnum i=0; i<rnum; ++i ) {
+    long int rnum = fnum - 2;
+    for ( long int i=0; i<rnum; ++i ) {
       z = p1 + p2;
       p2 = p1;
       p1 = z;

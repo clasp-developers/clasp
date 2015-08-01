@@ -12,7 +12,7 @@ def fibn(reps,num):
     return z
 
 start = time.time()
-res = fibn(1000000, 78)
+res = fibn(10000000, 78)
 end = time.time()
 print( "Result = %f\n", res)
 print( "elapsed time: %f seconds\n" % (end-start))

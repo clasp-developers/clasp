@@ -2,8 +2,10 @@ import path ;
 import os ;
 import bitcode ;
 
+CLASP_VERSION = [ SHELL "(cd $CLASP_HOME;git describe --always | tr -d '\n') || echo unknown-version" ] ;
 
-CLASP_VERSION = [ os.environ CLASP_VERSION ] ;
+echo "CLASP_VERSION " $(CLASP_VERSION) ;
+
 
 using clang : : [ os.environ CLASP_CLANG_PATH ] ; #   $(APPRES-EXTERNALS-RELEASE)/bin/clang++  ; # CLASP_TOOLSET
 
