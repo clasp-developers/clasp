@@ -193,10 +193,6 @@ bool af_structureSubtypep(T_sp x, Symbol_sp y) {
   return false;
 }
 
-StructureObject_O::StructureObject_O() : StructureObject_O::Base(){};
-
-StructureObject_O::~StructureObject_O(){};
-
 StructureObject_sp StructureObject_O::create(T_sp type, List_sp slot_values) {
   _G();
   StructureObject_sp co = StructureObject_O::create();

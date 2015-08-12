@@ -35,9 +35,6 @@ THE SOFTWARE.
 
 namespace core {
 
-StdClass_O::StdClass_O() : StdClass_O::Base(){};
-StdClass_O::~StdClass_O(){};
-
 void StdClass_O::exposeCando(Lisp_sp lisp) {
   class_<StdClass_O>();
 }

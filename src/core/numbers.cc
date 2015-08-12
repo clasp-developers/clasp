@@ -1629,8 +1629,6 @@ uint64_t Integer_O::as_uint64_() const {
   SUBIMP();
 };
 
-Integer_O::~Integer_O(){};
-
 EXPOSE_CLASS(core, Integer_O);
 
 void Integer_O::exposeCando(Lisp_sp lisp) {

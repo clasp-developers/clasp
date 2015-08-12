@@ -355,6 +355,7 @@ struct CxxFunctionInvocationLogger {
 #define IMPLEMENT_ME() SIMPLE_ERROR(BF("Implement me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__);
 #define IMPLEMENT_MEF(bfmsg) SIMPLE_ERROR(BF("Implement me!!! %s\nfunction(%s) file(%s) lineNumber(%s)") % (bfmsg).str() % __FUNCTION__ % __FILE__ % __LINE__);
 #define DEPRECIATED() SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__);
+#define MAY_BE_DEPRECIATED() printf("%s\n", (BF("May be depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__).str().c_str());
 #define DEPRECIATEDP(s) SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d) %s") % __FUNCTION__ % __FILE__ % __LINE__ % (s));
 
 FORWARD(Cons);
@@ -713,6 +714,7 @@ T_sp CEerror(T_sp c, const char *fmt, int numArgs, ...);
 
  void FEpackage_error(const char *fmt, T_sp package, int nargs, ...);
  void CEpackage_error(const char *fmt, const char* continue_message, T_sp package, int nargs, ...);
+ void Warn(T_sp datum, List_sp arguments);
 
 void clasp_internal_error(const char *error);
 

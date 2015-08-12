@@ -115,7 +115,7 @@ T_sp cl_lispImplementationType() {
 T_sp cl_lispImplementationVersion() {
   _G();
   stringstream ss;
-  List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cleavir);
+  List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cclasp);
   if ( cleavir.notnilp() ) {
     ss << "cclasp-";
   }
@@ -1274,7 +1274,7 @@ Stream_mv af_open(T_sp filespec_desig, Symbol_sp direction, T_sp element_type, T
 	LOG(BF("direction was :output"));
 	if ( af_probe_file(filespec).notnilp() )
 	{
-	    Str_sp truename = af_namestring(af_truename(filespec));
+	    Str_sp truename = cl_namestring(af_truename(filespec));
 	    LOG(BF("The file[%s] already exists")% truename->get() );
 	    SYMBOL_SC_(KeywordPkg,supersede);
 	    if ( if_exists.nilp() || if_exists == kw::_sym_supersede)
@@ -1562,24 +1562,6 @@ Integer_sp cl_sxhash(T_sp obj) {
   return Integer_O::create(hg.hash());
 }
 
-#define ARGS_core_funwind_protect "(protected-fn cleanup-fn)"
-#define DECL_core_funwind_protect ""
-#define DOCS_core_funwind_protect "funwind_protect"
-T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
-  T_mv result;
-  try {
-    result = eval::funcall(protected_fn);
-  } catch (...) {
-    eval::funcall(cleanup_fn);
-    throw;
-  }
-  gctools::Vec0<T_sp> savemv;
-  result.saveToVec0(savemv);
-  eval::funcall(cleanup_fn);
-  result.loadFromVec0(savemv);
-//	printf("%s:%d Restored multiple-values result = %p, %d\n", __FILE__, __LINE__, result.px, result.number_of_values());
-  return result;
-}
 
 // --------------------------------------------------
 // --------------------------------------------------
@@ -1785,7 +1767,6 @@ void initialize_primitives() {
   ClDefun(lispImplementationVersion);
   ClDefun(lispImplementationType);
   CoreDefun(lispImplementationId);
-  CoreDefun(funwind_protect);
   ClDefun(softwareVersion);
   ClDefun(softwareType);
   ClDefun(machineVersion);

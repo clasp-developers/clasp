@@ -107,19 +107,13 @@ T_sp af_allocateRawClass(T_sp orig, Class_sp metaClass, int slots, T_sp classNam
 
 Class_O::Class_O() : Class_O::Base(), _Signature_ClassSlots(_Unbound<T_O>()), _creator(NULL){};
 
-Class_O::~Class_O() {
-#if ENABLE_PROFILING
-  printf("+PROFILE-FIND-CLASS+ %s %d\n", this->_Name->__repr__().c_str(), this->_FindClassCount);
-#endif
-}
-
 void Class_O::initializeSlots(int slots) {
-  _G();
   if (slots < Class_O::NumberOfClassSlots) {
     SIMPLE_ERROR(BF("Classes need at least %d slots - you asked for %d") % Class_O::NumberOfClassSlots % slots);
   }
   this->_MetaClassSlots.resize(slots, _Unbound<T_O>());
   this->instanceSet(REF_DIRECT_SUPERCLASSES, _Nil<T_O>());
+  this->instanceSet(REF_FINALIZED, cl::_sym_T_O);
 }
 
 T_sp InstanceCreator::allocate() {

@@ -39,6 +39,8 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/write_ugly.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {
@@ -431,6 +433,18 @@ void dbg_describeTPtr(uintptr_t raw) {
   ss << _rep_(obj);
   printf("dbg_describe: %s\n", ss.str().c_str());
   fflush(stdout);
+}
+
+void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
+  core::T_sp sout = cl::_sym_STARstandard_outputSTAR->symbolValue();
+  T_sp obj = gctools::smart_ptr<T_O>((gc::Tagged)raw);
+  clasp_write_string((BF("dbg_printTPtr Raw pointer value: %p\n") % (void*)obj.raw_()).str(),sout);
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR,_lisp->_boolean(print_pretty));
+  clasp_write_string((BF("dbg_printTPtr object class --> %s\n")% _rep_(obj->__class()->className())).str(),sout);
+  fflush(stdout);
+  write_ugly_object(obj,sout);
+  clasp_force_output(sout);
 }
 };
 

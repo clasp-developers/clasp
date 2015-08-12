@@ -1,17 +1,181 @@
-(progn  ;; Set up everything for building cclasp from bclasp
+
+;;;
+;;; Compile ASDF for bclasp
+;;;
+(compile-file "sys:kernel;asdf;build;asdf.lisp" 
+              :output-file (compile-file-pathname
+                            "sys:modules;asdf;asdf.lisp" 
+                            :target-backend (default-target-backend))
+              :print t)
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; Running slime from bclasp+cleavir
+
+
+;;; Wipe out .cache/common-lisp/*
+;;; wipe out .slime/fasl/2015-06-27/*
+;;; clasp_boehm_o -f bclasp -f flow -f cclasp-eh
+
+(progn
+  (progn ;; Set up everything for building cclasp from bclasp with auto-compile
+    (format t "Loading ASDF system~%")
+    (time (require :asdf))
+    (load "sys:local-asdf-config.lisp")
+    (pushnew :cleavir *features*)
+    (format t "Loading :clasp-cleavir system~%")
+    (time (require :clasp-cleavir))
+    (format t "Loading inline.lisp~%")
+    (load "sys:kernel;cleavir;inline.lisp")
+    (print (core:getpid))))
+  (load "sys:kernel;cleavir;auto-compile.lisp"))
+
+(progn ;; Set up everything for building cclasp from bclasp
   (format t "Loading ASDF system~%")
   (time (require :asdf))
+  (load "sys:local-asdf-config.lisp")
   (pushnew :cleavir *features*)
   (format t "Loading :clasp-cleavir system~%")
   (time (require :clasp-cleavir))
-  (format t "Loading inline.lisp~%")
-  (load "sys:kernel;cleavir;inline.lisp")
-  (print (core:getpid)))
+  (load "sys:kernel;cleavir;inline.lisp"))
 
 
-(clasp-cleavir::cleavir-compile 'foo '(lambda () (let () (block nil (let ((form (block in (let (*) (return-from in nil)) (return-from nil nil)))) form)))) :debug t)
+(defparameter *a* 1)
+(clasp-cleavir::ast-form '(lambda () (let ((a 'foo)) (declare (special a)) (print a))))
+(clasp-cleavir::hir-form '(lambda () (setq *a* 'foo)))
+(clasp-cleavir::hir-form '(lambda () (let ((a 'foo)) (declare (special a)) (print a))))
 
-(clasp-cleavir::cleavir-compile 'foo '(lambda () (let () (block nil (let ((form (block in (unwind-protect (return-from in)) (return)))) form)))) :debug t)
+(clasp-cleavir::hir-form '(lambda () (block bar (let ((a 'foo)) (declare (special a)) (print a) (return-from bar nil)))))
+
+
+(clasp-cleavir::cleavir-compile-file "sys:tests;tsmall.lsp")
+(load "sys:tests;tsmall.fasl")
+(foob)
+(ext:compiled-function-file #'foob)
+
+
+
+(print "Hello")
+
+(compile-file "sys:tests;tfib.lsp")
+
+(getpid)
+(error "foo")
+(quit)
+(setq core::*debug-flow-control* t)
+(setq cmp::*low-level-trace-print* t)
+(print "Hello")
+
+
+(clasp-cleavir::cleavir-compile
+ 'foo
+ '(lambda (depth target-depth &optional targets)
+   (unless targets (bformat t "---------------------- depth: %s   target-depth: %s\n" depth target-depth))
+   (block here
+     (if (= depth 0 )
+         (throw 'top nil)
+         (foo (1- depth) target-depth (push #'(lambda (x) (return-from here x)) targets))))
+   (bformat t "Returning from depth: %s\n" depth)))
+
+(clasp-cleavir::cleavir-compile
+ 'do-foo
+ '(lambda (depth)
+   (catch 'top
+     (foo depth 0))
+   (bformat t "Done do-foo\n")))
+
+(do-foo 5)
+
+
+(setq core::*debug-flow-control* nil)
+(foo 6 3)
+
+
+(elt '(1 2 3 4 5) 2)
+
+(disassemble 'cfibn)
+
+(clasp-cleavir::cleavir-compile
+ 'cfibn
+ '(lambda (reps num &aux (rnum 0) (p1 0) (p2 0) (z 0))
+   (declare (optimize (speed 3) (safety 0) (debug 0)))
+   (declare (type fixnum reps num rnum p1 p2 z))
+   (dotimes (r reps)
+     (setq p1 1
+	   p2 1
+	   rnum (- num 2))
+     (dotimes (i rnum)
+       (setq z (+ p1 p2)
+	     p2 p1
+	     p1 z)))
+   z))
+
+(float (/ 19.3 3.24))
+
+(
+
+
+(progn
+  (clasp-cleavir::cleavir-compile
+   'xx
+   '(lambda ()
+     (format t "Inside returning (should be EXIT-LAMBDA)--> ~s~%"
+      (block nil
+	(let ((nle (lambda ()
+		     (format t "In exit lambda~%")
+		     (return-from nil 'exit-lambda))))
+	  (unwind-protect
+	       (funcall nle)
+	    (format t "In protected form~%")))))))
+  (xx)
+  (clasp-cleavir::cleavir-compile
+   'yy
+   '(lambda ()
+     (block nil
+       (let ((nle (lambda ()
+		    (format t "In exit lambda~%")
+		    (return-from nil 'exit-lambda))))
+	 (unwind-protect
+	      (funcall nle)
+	   (format t "In protected form~%"))))) :debug t)
+  (format t "Outside returning (should be EXIT-LAMBDA)--> ~s~%" (yy)))
+
+
+(setq cmp:*low-level-trace-print* t)
+(clasp-cleavir::cleavir-compile-file "sys:tests;tnle.lsp")
+(load "sys:tests;tnle.fasl")
+(load "sys:tests;tnle.bc")
+(let ((x (xx))) (format t "In let returning (should be EXIT-VALUE): ~s~%" x))
+
+(clasp-cleavir::cleavir-compile-file "sys:tests;tnle2.lsp")
+(load "sys:tests;tnle2.fasl")
+(let ((x (xx))) (format t "In let returning: ~a~%" x))
+
+
+(clasp-cleavir::cleavir-compile-file "sys:tests;tunwind.lsp")
+(load "sys:tests;tunwind.fasl")
+(xx)
+(print "Hello")
+
+(clasp-cleavir::build-and-draw-ast "/tmp/test.png" '(lambda () (load-time-value (print 10))))
+
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (load-time-value (print 10))) :debug t)
+
+(print "Hello")
+(clasp-cleavir::cleavir-compile-file "sys:tests;tmacro.lsp")
+
+
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (block in (let (*) (return-from in nil)) (return-from nil nil)))) form))) :debug t)
+(foo)
+
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (block in (unwind-protect (return-from in)) (return)))) form))) :debug t)
 
 (block nil
   (let ((form (block in

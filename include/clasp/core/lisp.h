@@ -972,7 +972,7 @@ public:
   void exposePython();
 
   explicit Lisp_O();
-  virtual ~Lisp_O();
+  virtual ~Lisp_O() {};
 
 };
 

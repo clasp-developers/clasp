@@ -12,6 +12,7 @@
           *generate-compile-file-load-time-values*
           *gv-current-function-name*
           *gv-source-file-info-handle*
+          *gv-source-pathname*
           *implicit-compile-hook*
           *irbuilder*
           *llvm-context*
@@ -42,6 +43,7 @@
           cmp-log
           cmp-log-dump
           codegen-literal
+          codegen-rtv
           codegen-symbol
           compile-error-if-not-enough-arguments
           compile-in-env
@@ -65,9 +67,12 @@
           irc-create-landing-pad
           irc-exception-typeid*
           irc-generate-terminate-code
+          irc-i64-*current-source-pos-info*-filepos
           irc-i32-*current-source-pos-info*-column
           irc-i32-*current-source-pos-info*-lineno
-          irc-i64-*current-source-pos-info*-filepos
+          irc-size_t-*current-source-pos-info*-filepos
+          irc-size_t-*current-source-pos-info*-column
+          irc-size_t-*current-source-pos-info*-lineno
           irc-icmp-eq
           irc-icmp-slt
           irc-intrinsic
@@ -101,6 +106,8 @@
           with-catch
           with-dbg-function
           with-dbg-lexical-block
+          dbg-set-current-source-pos
+          dbg-set-current-source-pos-for-irbuilder
           with-debug-info-generator
           with-irbuilder
           with-landing-pad

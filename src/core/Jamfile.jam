@@ -40,9 +40,9 @@ local unity_sources =
       all.cc ;
 
 local sources =
-	    evaluator.cc
-	    instance.cc
-            random.cc
+      random.cc
+      cxxObject.cc
+      cxxClass.cc
       float_to_string.cc
       record.cc
       debugger.cc
@@ -75,7 +75,7 @@ local sources =
     activationFrame.cc
 	    environment.cc
       genericFunction.cc
-		microHeap.cc
+	    instance.cc
 	    binder.cc
 		multiStringBuffer.cc
 		candoOpenMp.cc
@@ -140,6 +140,7 @@ local sources =
 	    bootStrapCoreSymbolMap.cc
       cons.cc
 	    symbol.cc
+	    evaluator.cc
 	    builtInClass.cc
 	    standardClass.cc
 	    compiler.cc

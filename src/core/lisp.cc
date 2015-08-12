@@ -270,10 +270,6 @@ void print_startup_info() {
 #endif
 };
 
-Lisp_O::~Lisp_O() {
-  // nothing is left to be done here
-}
-
 void Lisp_O::lisp_initSymbols(Lisp_sp lisp) {
   Package_sp corePackage = lisp->_Roots._CorePackage;
 }
@@ -542,13 +538,13 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;cleavir-boehm;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("cleavir-boehm"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;cclasp-boehm;**;*.*"))));
+      af_pathnameTranslations(Str_O::create("cclasp-boehm"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;cleavir-mps;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("cleavir-mps"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;cclasp-mps;**;*.*"))));
+      af_pathnameTranslations(Str_O::create("cclasp-mps"), _lisp->_true(), p);
     }
   }
 #if 0 // I shouldn't be using PATH - I should be using PATHNAMEs

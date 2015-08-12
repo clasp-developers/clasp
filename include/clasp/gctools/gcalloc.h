@@ -119,6 +119,15 @@ struct RootClassAllocator {
     return obj;
 #endif
   }
+
+  static void deallocate(void* memory) {
+#ifdef USE_BOEHM
+    GC_FREE(memory);
+#endif
+#ifdef USE_MPS
+    GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
+#endif
+  };
 };
 
 template <class T>

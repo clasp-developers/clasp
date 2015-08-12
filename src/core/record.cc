@@ -56,30 +56,34 @@ Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage),
   }
 }
 
-void Record_O::flagSeen(T_sp arg)
+void Record_O::flagSeen(Cons_sp pair)
 {
   VectorObjectsWithFillPtr_sp vvec = gc::As<VectorObjectsWithFillPtr_sp>(this->_Seen);
-  vvec->vectorPushExtend(arg);
+  vvec->vectorPushExtend(pair);
 }
 
 void Record_O::errorIfInvalidArguments()
 {
-  VectorObjectsWithFillPtr_sp vvec = gc::As<VectorObjectsWithFillPtr_sp>(this->_Seen);
+  VectorObjectsWithFillPtr_sp seenvec = gc::As<VectorObjectsWithFillPtr_sp>(this->_Seen);
+//  printf("%s:%d arguments seen: %s\n", __FILE__, __LINE__, _rep_(seenvec).c_str());
+//  printf("       arguments passed: %s\n", _rep_(this->_alist).c_str());
   List_sp badArgs(_Nil<T_O>());
   for ( auto cur : this->_alist ) {
+    Cons_sp apair = gc::As<Cons_sp>(oCar(cur));
+    T_sp argName = oCar(apair);
     bool found = false;
-    for ( int i(0), iEnd(cl_length(vvec)); i<iEnd; ++i ) {
-      if ( oCar((*vvec)[i]) == cur ) {
+    for ( int i(0), iEnd(cl_length(seenvec)); i<iEnd; ++i ) {
+      if ( oCar((*seenvec)[i]) == argName ) {
         found = true;
         break;
       }
     }
     if ( !found ) {
-      badArgs = Cons_O::create(cur,badArgs);
+      badArgs = Cons_O::create(argName,badArgs);
     }
   }
   if (badArgs.notnilp() ) {
-    SIMPLE_ERROR(BF("Illegal arguments: %s") % _rep_(badArgs));
+    SIMPLE_ERROR(BF("Initialization of CXX-OBJECT had illegal arguments: %s") % _rep_(badArgs));
   }
 }
 

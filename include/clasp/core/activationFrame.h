@@ -89,7 +89,7 @@ public:
   inline void setParentFrame(T_O *parent) {
     this->parentFrameRef().rawRef_() = parent;
   }
-  void setParentFrame(T_sp parent) { this->parentFrameRef() = parent; };
+  inline void setParentFrame(T_sp parent) { this->parentFrameRef() = parent; };
   /*! Return the number of arguments */
   virtual uint length() const { SUBIMP(); };
 
@@ -231,8 +231,7 @@ public:
   virtual T_sp &parentFrameRef() { return this->_ParentFrame; };
   virtual T_sp parentFrame() const { return this->_ParentFrame; };
 
-  void attachDebuggingInfo(core::T_sp debuggingInfo) {
-    _G();
+  inline void attachDebuggingInfo(core::T_sp debuggingInfo) {
     this->_DebuggingInfo = debuggingInfo;
   }
 

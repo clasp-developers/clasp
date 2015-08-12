@@ -99,7 +99,7 @@ Fixnum search_print_circle(T_sp x) {
       /* This object is referenced twice, but has no code yet */
       ASSERT(circle_counter.fixnump());
       Fixnum new_code = circle_counter.unsafe_fixnum() + 1;
-      circle_counter = gc::smart_ptr<core::T_O>::make_tagged_fixnum(new_code);
+      circle_counter = gc::make_tagged_fixnum<T_O>(new_code);
       circle_stack->hash_table_setf_gethash(x, circle_counter);
       _sym_STARcircle_counterSTAR->setf_symbolValue(circle_counter);
       return -new_code;
@@ -135,7 +135,7 @@ T_sp write_object(T_sp x, T_sp stream) {
       scope.pushSpecialVariableAndSet(_sym_STARcircle_counterSTAR, _lisp->_true());
       scope.pushSpecialVariableAndSet(_sym_STARcircle_stackSTAR, hash);
       write_object(x, _lisp->nullStream());
-      _sym_STARcircle_counterSTAR->setf_symbolValue(gc::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(0));
+      _sym_STARcircle_counterSTAR->setf_symbolValue(gc::make_tagged_fixnum<core::Fixnum_I>(0));
       write_object(x, stream);
       hash->clrhash();
       goto OUTPUT;

@@ -24,7 +24,7 @@
 (defvar *entry-irbuilder*)
 
 (setf (fdefinition 'cleavir-primop:call-with-variable-bound) 
-      (fdefinition 'core:call-with-variable-bound))
+            (fdefinition 'core:call-with-variable-bound))
 
 (defun translate-datum (datum)
   (if (typep datum 'cleavir-ir:constant-input)
@@ -108,7 +108,9 @@
 		 last input-vars output-vars abi)
 		(if (typep (second basic-block) 'cleavir-ir:unwind-instruction)
 		    (cmp:irc-unreachable)
-		    (cmp:irc-br (gethash (first successors) *tags*))))
+                    (progn
+                      (cmp:irc-low-level-trace :flow)
+                      (cmp:irc-br (gethash (first successors) *tags*)))))
 	  (list (translate-branch-instruction
 		 last input-vars output-vars successor-tags abi)))
       (cc-dbg-when *debug-log*
@@ -182,13 +184,15 @@
       ;; instruction (passed arguments)  I think I should use passed arguments
       ;; to create allocas for them.
       (cmp:with-irbuilder (*entry-irbuilder*)
-	(cmp:irc-low-level-trace :arguments)
 	(cmp:with-dbg-function ("repl-FIX"
-				:linkage-name "repl-FIX-LINKAGE-NAME"
+				:linkage-name (llvm-sys:get-name fn)
 				:function fn
 				:function-type cmp:+fn-prototype+
 				:form *form*)
 	  (cmp:with-dbg-lexical-block (*form*)
+            (cmp:dbg-set-current-source-pos-for-irbuilder *form* *entry-irbuilder*)
+            (cmp:dbg-set-current-source-pos-for-irbuilder *form* body-irbuilder)
+            (cmp:irc-low-level-trace :arguments)
 	    #+use-ownerships(loop for var being each hash-key of *ownerships*
 			       using (hash-value owner)
 			       when (and (typep var '(or
@@ -198,23 +202,32 @@
 					 #+(or)(not (member var (cleavir-ir:outputs
 								 initial-instruction))))
 			       collect (translate-datum var)))))
-      (llvm-sys:set-insert-point-basic-block body-irbuilder body-block)
-      (cmp:with-irbuilder (body-irbuilder)
-	(cmp:irc-begin-block body-block)
-	(layout-basic-block first abi)
-	(loop for block in rest
-	   for instruction = (first block)
-	   do (progn
-		#+(or)(format t "Laying out basic block: ~a~%" block)
-		#+(or)(format t "Inserting basic block for instruction: ~a~%" instruction)
-		(cmp:irc-begin-block (gethash instruction *tags*))
-		(layout-basic-block block abi))))
-      ;; Finish up by jumping from the entry block to the body block
-      (cmp:with-irbuilder (*entry-irbuilder*)
-	(cmp:irc-br body-block))
-      (cc-dbg-when *debug-log*
-		   (format *debug-log* "----------END layout-procedure ~a~%" (llvm-sys:get-name fn)))
-      (values fn :function-kind nil lambda-name))))
+
+      (cmp:with-dbg-function ("unused-with-dbg-function-name"
+                              :linkage-name (llvm-sys:get-name fn)
+                              :function fn
+                              :function-type cmp:+fn-prototype+
+                              :form *form*)
+        (cmp:with-dbg-lexical-block (*form*)
+;;          (cmp:dbg-set-current-source-pos *form*)
+          (llvm-sys:set-insert-point-basic-block body-irbuilder body-block)
+          (cmp:with-irbuilder (body-irbuilder)
+            (cmp:irc-begin-block body-block)
+            (layout-basic-block first abi)
+            (loop for block in rest
+               for instruction = (first block)
+               do (progn
+                    #+(or)(format t "Laying out basic block: ~a~%" block)
+                    #+(or)(format t "Inserting basic block for instruction: ~a~%" instruction)
+                    (cmp:irc-begin-block (gethash instruction *tags*))
+                    (layout-basic-block block abi))))
+          ;; Finish up by jumping from the entry block to the body block
+          (cmp:with-irbuilder (*entry-irbuilder*)
+            (cmp:irc-low-level-trace :flow)
+            (cmp:irc-br body-block))
+          (cc-dbg-when *debug-log*
+                       (format *debug-log* "----------END layout-procedure ~a~%" (llvm-sys:get-name fn)))
+          (values fn :function-kind nil lambda-name))))))
 
 (defun translate (initial-instruction abi)
   (let* (#+use-ownerships(ownerships
@@ -280,6 +293,7 @@
 	(setf (basic-block landing-pad)
 	      (clasp-cleavir:create-landing-pad exn.slot ehselector.slot instr landing-pad *tags* abi)))
       (cmp:with-irbuilder (*entry-irbuilder*)
+        (cmp:irc-low-level-trace :cclasp-eh)
 	(let ((result (cmp:irc-intrinsic "cc_pushLandingPadFrame")))
 	  (cmp:irc-store result (translate-datum (clasp-cleavir-hir:frame-holder instr)))))))
   (call-next-method))
@@ -360,6 +374,7 @@
 	    (if (< i n)
 		(%store (cmp:irc-load (return-value-elt return-vals i)) (elt outputs i))
 		(%store (%nil) (elt outputs i))))
+          (cmp:irc-low-level-trace :flow)
 	  (cmp:irc-br final-block)))
       (cmp:irc-begin-block final-block))))
 
@@ -401,6 +416,7 @@
   (with-return-values (return-vals abi)
     ;; Save whatever is in return-vals in the multiple-value array
     (cmp:irc-intrinsic "cc_saveMultipleValue0" (sret-arg return-vals))
+    (cmp:irc-low-level-trace :cclasp-eh)
     (cmp:irc-intrinsic "cc_unwind" (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction)))))
 
 (defmethod translate-simple-instruction
@@ -473,6 +489,10 @@
     ((instruction cleavir-ir:enclose-instruction) inputs outputs abi)
   (declare (ignore inputs))
   (cmp:irc-low-level-trace :flow)
+  #||
+  (format t "translate-simple-instruction::enclose-instruction~%")
+  (format t "         *current-source-pos-info*: ~a~%" core:*current-source-pos-info*)
+||#
   (let* ((enter-instruction (cleavir-ir:code instruction)))
     (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
 	(layout-procedure enter-instruction abi)
@@ -486,7 +506,17 @@
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
 	     (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
 	     (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
-	     (result (cmp:irc-intrinsic-args "cc_enclose" (list* ltv-lambda-name enclosed-function (%size_t (length inputs)) loaded-inputs) :label (format nil "closure->~a" lambda-name))))
+	     (result (cmp:irc-intrinsic-args
+                      "cc_enclose"
+                      (list* ltv-lambda-name
+                             enclosed-function
+                             cmp:*gv-source-pathname*
+                             (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                             (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                             (cmp:irc-size_t-*current-source-pos-info*-column)
+                             (%size_t (length inputs))
+                             loaded-inputs)
+                      :label (format nil "closure->~a" lambda-name))))
 	(cc-dbg-when *debug-log*
 		     (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
 		     (format *debug-log* "    inputs: ~a~%" inputs))
@@ -690,6 +720,7 @@
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:eq-instruction) inputs outputs successors abi)
   (let ((ceq (cmp:irc-icmp-eq (cmp:irc-load (first inputs)) (cmp:irc-load (second inputs)))))
+    (cmp:irc-low-level-trace :flow)
     (cmp:irc-cond-br ceq (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
@@ -718,13 +749,15 @@
     ((instruction clasp-cleavir-hir:throw-instruction) inputs outputs successors abi)
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
-  (with-return-values (return-vals abi)
-    (cmp:irc-intrinsic "cc_saveMultipleValue0" (sret-arg return-vals))
-    (cmp:irc-intrinsic "cc_throw" (cmp:irc-load (first inputs))))
+  #+(or)(with-return-values (return-vals abi)
+          (cmp:irc-intrinsic "cc_saveMultipleValue0" (sret-arg return-vals))
+          (cmp:irc-intrinsic "cc_throw" (cmp:irc-load (first inputs))))
+  (cmp:irc-intrinsic "cc_throw" (%load (first inputs)) (%load (second inputs)))
   (cmp:irc-unreachable))
 
 (defmethod translate-branch-instruction
     ((instruction clasp-cleavir-hir:landing-pad-return-instruction) inputs outputs successors abi)
+  (cmp:irc-low-level-trace :cclasp-eh)
   (cmp:irc-intrinsic "cc_popLandingPadFrame" (cmp:irc-load (car (last inputs))))
   (call-next-method))
 
@@ -866,8 +899,8 @@ nil)
        (format t ";    defvar ~a~%" (cadr form)))
       ((eq 'cl:defparameter (car form))
        (format t ";    defparameter ~a~%" (cadr form)))
-      ((eq 'cl:eval-when (car form))
-       (format t ";    eval-when ~a ~a~%" (cadr form) (caddr form)))
+      #+(or)((eq 'cl:eval-when (car form))
+             (format t ";    eval-when ~a ~a~%" (cadr form) (caddr form)))
       (t ()))))
 
 
@@ -1011,8 +1044,8 @@ nil)
                  nil			; environment
                  cmp:*run-time-literals-external-name*
                  "repl-fn.txt"
-                 0
-                 0
+                 4321
+                 5678
                  nil)))
           (unless (compiled-function-p setup-function)
             (format t "Whoah cleavir-clasp compiled code eval --> ~s~%" compiled-function)

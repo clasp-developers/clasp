@@ -101,10 +101,10 @@ T_sp alist_from_plist(List_sp plist) {
   return alist; // should I reverse this?
 }
 
-#define ARGS_core_make_builtin "(class-name &rest args)"
-#define DECL_core_make_builtin ""
-#define DOCS_core_make_builtin "make_builtin"
-T_sp core_make_builtin(T_sp class_or_name, T_sp args)
+#define ARGS_core_makeCxxObject "(class-name &rest args)"
+#define DECL_core_makeCxxObject ""
+#define DOCS_core_makeCxxObject "makeCxxObject"
+T_sp core_makeCxxObject(T_sp class_or_name, T_sp args)
 {
   Class_sp theClass;;
   if ( Class_sp argClass = class_or_name.asOrNull<Class_O>() ) {
@@ -120,6 +120,7 @@ T_sp core_make_builtin(T_sp class_or_name, T_sp args)
     T_sp instance = theClass->make_instance();
     if ( args.notnilp() ) {
       args = alist_from_plist(args);
+//      printf("%s:%d initializer alist = %s\n", __FILE__, __LINE__, _rep_(args).c_str());
       instance->initialize(args);
     }
     return instance;
@@ -137,33 +138,33 @@ bool core_fieldsp(T_sp obj)
   return obj->fieldsp();
 }
 
-#define ARGS_core_printBuiltinObject "(obj stream)"
-#define DECL_core_printBuiltinObject ""
-#define DOCS_core_printBuiltinObject "printBuiltinObject"
-T_sp core_printBuiltinObject(T_sp obj, T_sp stream)
+#define ARGS_core_printCxxObject "(obj stream)"
+#define DECL_core_printCxxObject ""
+#define DOCS_core_printCxxObject "printCxxObject"
+T_sp core_printCxxObject(T_sp obj, T_sp stream)
 {
   if ( core_fieldsp(obj) ) {
-  clasp_write_char('#',stream);
-  clasp_write_char('I',stream);
-  clasp_write_char('(',stream);
-  Class_sp myclass = lisp_instance_class(obj);
-  ASSERTF(myclass,BF("Could not get _instanceClass for object of type: %s\n") % typeid(*obj).name());
-  Symbol_sp className = myclass->name();
-  cl_prin1(className,stream);
-  core::List_sp alist = obj->encode();
-  for ( auto cur : alist ) {
-    Cons_sp entry = gc::As<Cons_sp>(oCar(cur));
-    Symbol_sp key = gc::As<Symbol_sp>(oCar(entry));
-    T_sp val = oCdr(entry);
+    clasp_write_char('#',stream);
+    clasp_write_char('I',stream);
+    clasp_write_char('(',stream);
+    Class_sp myclass = lisp_instance_class(obj);
+    ASSERT(myclass);
+    Symbol_sp className = myclass->name();
+    cl_prin1(className,stream);
+    core::List_sp alist = obj->encode();
+    for ( auto cur : alist ) {
+      Cons_sp entry = gc::As<Cons_sp>(oCar(cur));
+      Symbol_sp key = gc::As<Symbol_sp>(oCar(entry));
+      T_sp val = oCdr(entry);
+      clasp_write_char(' ',stream);
+      cl_prin1(key,stream);
+      clasp_finish_output(stream);
+      clasp_write_char(' ',stream);
+      cl_prin1(val,stream);
+    }
     clasp_write_char(' ',stream);
-    cl_prin1(key,stream);
+    clasp_write_char(')',stream);
     clasp_finish_output(stream);
-    clasp_write_char(' ',stream);
-    cl_prin1(val,stream);
-  }
-  clasp_write_char(' ',stream);
-  clasp_write_char(')',stream);
-  clasp_finish_output(stream);
   } else {
     SIMPLE_ERROR(BF("Object does not provide fields"));
   }
@@ -292,6 +293,7 @@ void T_O::initialize() {
 void T_O::initialize(core::List_sp alist) {
   Record_sp record = Record_O::create_initializer(alist);
   this->fields(record);
+  record->errorIfInvalidArguments();
 }
 
 
@@ -434,7 +436,7 @@ void T_O::describe() {
 
 void T_O::__write__(T_sp strm) const {
   if ( clasp_print_readably() && this->fieldsp() ) {
-    core_printBuiltinObject(this->asSmartPtr(),strm);
+    core_printCxxObject(this->asSmartPtr(),strm);
   } else {
     clasp_write_string(this->__repr__(), strm);
   }
@@ -673,7 +675,8 @@ void initialize_object() {
   ClDefun(equal);
   SYMBOL_EXPORT_SC_(ClPkg, equalp);
   ClDefun(equalp);
-  CoreDefun(printBuiltinObject);
-  CoreDefun(make_builtin);
+  CoreDefun(printCxxObject);
+  CoreDefun(makeCxxObject);
+  CoreDefun(fieldsp);
 };
 };

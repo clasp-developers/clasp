@@ -69,11 +69,11 @@ typedef enum { number_Fixnum = 0,
 
 template <typename T>
 gc::smart_ptr<T> immediate_fixnum(Fixnum f) {
-  return gc::smart_ptr<T>::make_tagged_fixnum(f);
+  return gc::make_tagged_fixnum<core::Fixnum_I>(f);
 };
 template <typename T>
 gc::smart_ptr<T> immediate_single_float(float f) {
-  return gc::smart_ptr<T>::make_tagged_single_float(f);
+  return gc::make_tagged_single_float<core::SingleFloat_I>(f);
 };
 
 template <typename FLOAT>
@@ -305,7 +305,7 @@ public:
   virtual unsigned long long as_unsigned_long_long_() const { SUBIMP(); };
   virtual void __write__(T_sp strm) const;
   Integer_O(){};
-  virtual ~Integer_O();
+  virtual ~Integer_O() {};
 };
 };
 
@@ -407,7 +407,7 @@ class Fixnum_dummy_O : public Integer_O {
     Fixnum_dummy_O() : _Value(0) {};
 #endif
 };
-inline Fixnum_sp make_fixnum(gc::Fixnum x) { return Fixnum_sp::make_tagged_fixnum(x); };
+ inline Fixnum_sp make_fixnum(gc::Fixnum x) { return gc::make_tagged_fixnum<core::Fixnum_I>(x); };
 inline gc::Fixnum unbox_fixnum(Fixnum_sp x) { return x.unsafe_fixnum(); };
 };
 
@@ -559,7 +559,7 @@ public:
 #endif
 };
 
-inline SingleFloat_sp make_single_float(float x) { return SingleFloat_sp::make_tagged_single_float(x); };
+ inline SingleFloat_sp make_single_float(float x) { return gc::make_tagged_single_float<core::SingleFloat_I>(x); };
 inline float unbox_single_float(SingleFloat_sp x) { return x.unsafe_single_float(); };
 };
 
@@ -990,7 +990,7 @@ inline Integer_sp _clasp_long_double_to_integer(LongFloat d) {
 }
 
 inline SingleFloat_sp clasp_make_single_float(float d) {
-  return SingleFloat_sp::make_tagged_single_float(d);
+  return gc::make_tagged_single_float<core::SingleFloat_I>(d);
 }
 
 inline DoubleFloat_sp clasp_make_double_float(double d) {

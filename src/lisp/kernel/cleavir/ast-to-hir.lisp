@@ -1,6 +1,41 @@
 (in-package :clasp-cleavir-ast-to-hir)
 
 
+;;; This implementation of bind-ast works if there are no non-local exits
+;;; out of the scope of the bind-ast but fails if there are.
+;;; There doesn't seem to be a way to unwind special variable bindings
+;;; unless I doesn't work when there are non-local exits out of the scope
+;;; of the bind-ast
+#+(or)(defmethod cleavir-ast-to-hir::compile-ast ((ast cleavir-ast:bind-ast) context)
+        (let* ((symbol-ast (cleavir-ast::symbol-ast ast))
+               (value-ast (cleavir-ast:value-ast ast))
+               (body-ast (cleavir-ast:body-ast ast))
+               (invocation (cleavir-ast-to-hir:invocation context))
+               (symbol-temp (cleavir-ast-to-hir:make-temp))
+               (location-temp (cleavir-ast-to-hir:make-temp))
+               (pop-instruction (clasp-cleavir-hir:make-pop-special-binding-instruction
+                                 symbol-temp
+                                 :successor (first (cleavir-ast-to-hir::successors context))))
+               (body-instruction (cleavir-ast-to-hir:compile-ast body-ast (cleavir-ast-to-hir:context
+                                                                           (cleavir-ast-to-hir::results context)
+                                                                           (list pop-instruction)
+                                                                           invocation)))
+               (push-instruction (clasp-cleavir-hir:make-push-special-binding-instruction
+                                  symbol-temp location-temp
+                                  :successor body-instruction))
+               (value-instruction (cleavir-ast-to-hir:compile-ast value-ast (cleavir-ast-to-hir:context
+                                                                             (list location-temp)
+                                                                             (list push-instruction)
+                                                                             invocation)))
+               (symbol-instruction (cleavir-ast-to-hir:compile-ast
+                                    symbol-ast
+                                    (cleavir-ast-to-hir:context
+                                     (list symbol-temp)
+                                     (list value-instruction)
+                                     invocation))))
+          symbol-instruction))
+
+
 ;;; The logic of this method is a bit twisted.  The reason is that we
 ;;; must create the ENTER-INSTRUCTION before we compile the body of
 ;;; the FUNCTION-AST.  The reason for that is that the
@@ -37,7 +72,10 @@
 		 :successors (cleavir-ast-to-hir::successors context)))
 
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Compile precalculated value AST nodes to HIR
+;;;
 (defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:precalc-symbol-reference-ast) context)
   (cleavir-ast-to-hir::check-context-for-one-value-ast context)
   (clasp-cleavir-hir:make-precalc-symbol-instruction
@@ -77,10 +115,11 @@
     ;;  (cleavir-ast-to-hir::check-context-for-one-value-ast context)
     (let* ((save-temp (cleavir-ast-to-hir::make-temp))
 	   (restore-mv (clasp-cleavir-hir:make-restore-multiple-values-return-instruction save-temp results (first successors)))
-	   (cleanup-form (cleavir-ast-to-hir::compile-ast (clasp-cleavir-ast:cleanup-ast ast) 
-							 (cleavir-ast-to-hir::context nil
-										     (list restore-mv)
-										     (cleavir-ast-to-hir::invocation context))))
+	   (cleanup-form (cleavir-ast-to-hir::compile-ast
+                          (clasp-cleavir-ast:cleanup-ast ast) 
+                          (cleavir-ast-to-hir::context nil
+                                                       (list restore-mv)
+                                                       (cleavir-ast-to-hir::invocation context))))
 	   (values-temp (make-instance 'cleavir-ir:values-location))
 	   (save-mv (clasp-cleavir-hir:make-save-multiple-values-return-instruction values-temp save-temp cleanup-form))
 	   (cleanup-instr (clasp-cleavir-hir:make-cleanup-instruction save-mv))

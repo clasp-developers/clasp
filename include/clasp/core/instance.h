@@ -92,8 +92,8 @@ class Instance_O : public Function_O {
   void archiveBase(ArchiveP node);
 
 public: // ctor/dtor for classes with shared virtual base
-  explicit Instance_O();
-  virtual ~Instance_O();
+  explicit Instance_O() : Function_O(), _isgf(ECL_NOT_FUNCALLABLE), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
+  virtual ~Instance_O() {};
 GCPROTECTED: // instance variables here
   int _isgf;
   Class_sp _Class;

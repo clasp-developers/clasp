@@ -49,7 +49,8 @@
     instr))
 
 (defun alloca-mv-struct (&optional (label "V"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:+mv-struct+ (%i32 1) label))
+  (cmp:with-irbuilder (*entry-irbuilder*)
+    (llvm-sys:create-alloca cmp:*irbuilder* cmp:+mv-struct+ (%i32 1) label)))
 
 
 (defun %load-or-null (obj)

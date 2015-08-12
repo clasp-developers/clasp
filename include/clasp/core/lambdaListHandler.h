@@ -274,7 +274,7 @@ public:
   string partsAsString() const;
 
   LambdaListHandler_O();
-  virtual ~LambdaListHandler_O();
+  virtual ~LambdaListHandler_O() {};
 };
 };
 TRANSLATE(core::LambdaListHandler_O);

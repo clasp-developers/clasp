@@ -1251,10 +1251,10 @@ NO_DIRECTORY:
   return sbuffer;
 }
 
-#define ARGS_af_namestring "(pathname)"
-#define DECL_af_namestring ""
-#define DOCS_af_namestring "namestring"
-T_sp af_namestring(T_sp x) {
+#define ARGS_cl_namestring "(pathname)"
+#define DECL_cl_namestring ""
+#define DOCS_cl_namestring "namestring"
+T_sp cl_namestring(T_sp x) {
   _G();
   return clasp_namestring(x, CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
 }
@@ -1996,7 +1996,7 @@ void Pathname_O::exposePython(Lisp_sp lisp) {
 
 string Pathname_O::__repr__() const {
   stringstream ss;
-  gc::Nilable<Str_sp> str = af_namestring(this->asSmartPtr());
+  gc::Nilable<Str_sp> str = cl_namestring(this->asSmartPtr());
   if (str.nilp()) {
     ss << "#P" << '"' << '"';
   } else {
@@ -2056,7 +2056,7 @@ void initialize_pathname() {
   Defun(translateLogicalPathname);
 
   SYMBOL_EXPORT_SC_(ClPkg, namestring);
-  Defun(namestring);
+  ClDefun(namestring);
   SYMBOL_EXPORT_SC_(ClPkg, parseNamestring);
   Defun(parseNamestring);
   SYMBOL_EXPORT_SC_(ClPkg, fileNamestring);

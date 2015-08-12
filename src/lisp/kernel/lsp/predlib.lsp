@@ -126,8 +126,8 @@ bignums."
 (deftype ext::integer32 () '(INTEGER #x-80000000 #x7FFFFFFF))
 (deftype ext::byte64 () '(INTEGER 0 #xFFFFFFFFFFFFFFFF))
 (deftype ext::integer64 () '(INTEGER #x-8000000000000000 #x7FFFFFFFFFFFFFFF))
-(deftype ext::cl-fixnum () '(SIGNED-BYTE #.core::CL-FIXNUM-BITS))
-(deftype ext::cl-index () '(UNSIGNED-BYTE #.core::CL-FIXNUM-BITS))
+(deftype ext::cl-fixnum () '(SIGNED-BYTE #.sys:CL-FIXNUM-BITS))  ;; Clasp change
+(deftype ext::cl-index () '(UNSIGNED-BYTE #.sys:CL-FIXNUM-BITS)) ;; Clasp change
 
 (deftype real (&optional (start '* start-p) (end '*))
   (if start-p
@@ -365,9 +365,9 @@ and is not adjustable."
   '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT EXT:BYTE8 EXT:INTEGER8)
              #+:uint16-t '(EXT:BYTE16 EXT:INTEGER16)
              #+:uint32-t '(EXT:BYTE32 EXT:INTEGER32)
-             (when (< 32 cl-fixnum-bits 64) '(EXT::CL-INDEX FIXNUM))
+             (when (< 32 #+ecl cl-fixnum-bits #+clasp core:cl-fixnum-bits 64) '(EXT::CL-INDEX FIXNUM))
              #+:uint64-t '(EXT:BYTE64 EXT:INTEGER64)
-             (when (< 64 cl-fixnum-bits) '(EXT::CL-INDEX FIXNUM))
+             (when (< 64 #+ecl cl-fixnum-bits #+clasp core:cl-fixnum-bits) '(EXT::CL-INDEX FIXNUM))
              '(SINGLE-FLOAT DOUBLE-FLOAT T)))
 
 #-clasp
@@ -1274,7 +1274,7 @@ if not possible."
 (defconstant +built-in-types+
   (hash-table-fill
      (make-hash-table :test 'eq :size 128)
-     '#.+built-in-type-list+))
+     '#.sys::+built-in-type-list+)) ;; Clasp change
 
 (defun find-built-in-tag (name)
 ;;  (declare (si::c-local))

@@ -296,11 +296,11 @@ inline claspCharacter clasp_as_character(Character_sp c) {
 }
 
 inline Character_sp clasp_make_character(claspCharacter c) {
-  return Character_sp::make_tagged_character(c);
+  return gc::make_tagged_character(c);
 }
 
 inline Character_sp clasp_make_standard_character(claspCharacter c) {
-  return Character_sp::make_tagged_character(c);
+  return gc::make_tagged_character(c);
 }
 
 inline claspCharacter clasp_char_code(Character_sp c) {

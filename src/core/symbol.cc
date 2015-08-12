@@ -183,8 +183,6 @@ Symbol_O::Symbol_O() : Base(),
                         // nothing
                        };
 
-Symbol_O::~Symbol_O(){};
-
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
   //	printf("%s:%d finish_setup of symbol: %s:%s\n", __FILE__, __LINE__, pkg->getName().c_str(), this->_Name->get().c_str());

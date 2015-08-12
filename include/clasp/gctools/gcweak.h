@@ -128,10 +128,10 @@ typedef enum { WeakBucketKind,
 struct WeakObject {
   struct metadata_always_fix_pointers_to_derived_classes;
   typedef gctools::smart_ptr<core::Fixnum_I> KindType;
-  WeakObject(WeakKinds k) : Kind(gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(k)){};
+WeakObject(WeakKinds k) : Kind(gctools::make_tagged_fixnum<core::Fixnum_I>(k)){};
   KindType Kind;
   int kind() const { GCTOOLS_ASSERT(this->Kind.unsafe_fixnum()<MaxWeakKind); return (int)this->Kind.unsafe_fixnum(); };
-  void setKind(WeakKinds k) { this->Kind = gc::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(k); };
+  void setKind(WeakKinds k) { this->Kind = gc::make_tagged_fixnum<core::Fixnum_I>(k); };
   virtual void *dependentPtr() const { return NULL; };
 };
 
@@ -154,7 +154,7 @@ struct weak_pad1_s : public WeakObject {
 
 template <class T, class U>
 struct BucketsBase : public WeakObject {
-  BucketsBase(WeakKinds k, int l) : WeakObject(k), dependent(NULL), _length(gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(l)), _used(gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(0)), _deleted(gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(0)) {
+ BucketsBase(WeakKinds k, int l) : WeakObject(k), dependent(NULL), _length(gctools::make_tagged_fixnum<core::Fixnum_I>(l)), _used(gctools::make_tagged_fixnum<core::Fixnum_I>(0)), _deleted(gctools::make_tagged_fixnum<core::Fixnum_I>(0)) {
     GCWEAK_LOG(BF("Created BucketsBase with length: %d") % this->length());
     for (size_t i(0); i < l; ++i) {
       this->bucket[i] = T((gctools::Tagged)gctools::tag_unbound<typename T::Type *>());
@@ -177,17 +177,17 @@ struct BucketsBase : public WeakObject {
     GCTOOLS_ASSERT(this->_length.fixnump());
     return this->_length.unsafe_fixnum();
   };
-  void setLength(int l) { this->_length = gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(l); };
+  void setLength(int l) { this->_length = gctools::make_tagged_fixnum<core::Fixnum_I>(l); };
   int used() const {
     GCTOOLS_ASSERT(this->_used.fixnump());
     return this->_used.unsafe_fixnum();
   };
-  void setUsed(int val) { this->_used = gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(val); };
+  void setUsed(int val) { this->_used = gctools::make_tagged_fixnum<core::Fixnum_I>(val); };
   int deleted() const {
     GCTOOLS_ASSERT(this->_deleted.fixnump());
     return this->_deleted.unsafe_fixnum();
   };
-  void setDeleted(int val) { this->_deleted = gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(val); };
+  void setDeleted(int val) { this->_deleted = gctools::make_tagged_fixnum<core::Fixnum_I>(val); };
 };
 
 template <class T, class U, class Link>

@@ -996,6 +996,7 @@ jump to blocks within this tagbody."
 
 
 
+#+(or)
 (defun codegen-catch (result rest env)
   (with-dbg-lexical-block (rest)
     (let* ((catch-env (irc-new-catch-environment env))
@@ -1026,6 +1027,7 @@ jump to blocks within this tagbody."
         ))))
 
 
+#+(or)
 (defun codegen-throw (result rest env)
   (let ((tag (car rest))
 	(result-form (cadr rest)))
@@ -1130,7 +1132,8 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   (cmp-log "About to set source pos\n")
   (dbg-set-current-source-pos rest)
   (cmp-log "About to do case on head: %s\n" head)
-  (let ((function (gethash head *special-operator-dispatch* 'nil)))
+  (let* ((functions (gethash head *special-operator-dispatch* 'nil))
+         (function (cadr functions)))
     (if function
 	(funcall function result rest env)
 	(error "Unknown special operator : ~a" head)))
@@ -1196,6 +1199,8 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
 (defun treat-as-special-operator-p (sym)
   (cond
     ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
+    ((eq sym 'cl:catch) nil)  ;; handled with macro
+    ((eq sym 'cl:throw) nil)  ;; handled with macro
     ((eq sym 'core:debug-message) t)   ;; special operator
     (t (special-operator-p sym))))
 (export 'treat-as-special-operator-p)
@@ -1277,17 +1282,35 @@ be wrapped with to make a closure"
       (values fn fn-kind env))))
 ||#
 
+(defvar *optimizations-on* t)
+(defun do-optimization (module)
+  (when (and module *optimizations-on*)
+    (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
+           (mpm (llvm-sys:make-pass-manager))
+           (fpm (llvm-sys:make-function-pass-manager module)))
+      (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder 3)
+      (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder 1)
+      (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-pass))
+      (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
+;;      (llvm-sys:populate-module-pass-manager pass-manager-builder mpm)
+      (llvm-sys:populate-ltopass-manager pass-manager-builder mpm nil)
+      (llvm-sys:do-initialization fpm)
+      (let ((funcs (llvm-sys:module-get-function-list module)))
+        (dolist (func funcs)
+          (llvm-sys:function-pass-manager-run fpm func)))
+      (llvm-sys:do-finalization fpm)
+      (llvm-sys:pass-manager-run mpm module)
+      )))
 
-(defmacro with-module (( &key module 
-				 function-pass-manager 
-				 source-pathname
-				 source-file-info-handle
-				 source-debug-namestring
-				 (source-debug-offset 0)
-				 (source-debug-use-lineno t)) &rest body)
+(defmacro with-module (( &key module
+                              (optimize t)
+                              source-pathname
+                              source-file-info-handle
+                              source-debug-namestring
+                              (source-debug-offset 0)
+                              (source-debug-use-lineno t)) &rest body)
   `(let* ((*the-module* ,module)
-	  (*the-function-pass-manager* ,function-pass-manager)
-	  #+(or)(*generate-load-time-values* t)
+ 	  #+(or)(*generate-load-time-values* t)
 	  (*gv-source-pathname* (jit-make-global-string-ptr ,source-pathname "source-pathname"))
 	  (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
 									,source-debug-namestring
@@ -1295,10 +1318,11 @@ be wrapped with to make a closure"
 	  (*source-debug-offset* ,source-debug-offset)
 	  (*source-debug-use-lineno* ,source-debug-use-lineno)
 	  (*gv-source-file-info-handle* (make-gv-source-file-info-handle ,module ,source-file-info-handle)))
-     (declare (special *the-function-pass-manager*))
      (or *the-module* (error "with-module *the-module* is NIL"))
-     (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
-       ,@body)))
+     (prog1
+         (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
+           ,@body)
+       (when ,optimize (do-optimization ,module)))))
 
 
 
@@ -1374,10 +1398,9 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	     (handle (multiple-value-bind (the-source-file-info the-handle)
 			 (core:source-file-info pathname)
 		       the-handle)))
-	(with-module ( :module *the-module*
-                               :function-pass-manager (create-function-pass-manager-for-compile *the-module*)
-                               :source-pathname pathname
-                               :source-file-info-handle handle)
+	(with-module (:module *the-module*
+                      :source-pathname pathname
+                      :source-file-info-handle handle)
 	  (multiple-value-bind (compiled-function warnp failp)
 	      (compile* bind-to-name definition env pathname)
 	    (when bind-to-name (setf-symbol-function bind-to-name compiled-function))

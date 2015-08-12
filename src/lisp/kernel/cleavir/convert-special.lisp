@@ -43,8 +43,11 @@
 	(cleavir-ast:make-multiple-value-call-ast
 	 (cleavir-generate-ast::convert function-form environment system)
 	 (cleavir-generate-ast::convert-sequence forms environment system))
-	(cleavir-generate-ast::convert `(core:multiple-value-funcall ,function-form ,@(mapcar (lambda (x) #'x) ,forms))
-				      environment system))))
+	(cleavir-generate-ast::convert `(core:multiple-value-funcall
+                                         ,function-form
+                                         ,@(mapcar (lambda (x) `#'(lambda () (progn ,x)))
+                                                   forms))
+                                       environment system))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -59,8 +62,22 @@
     ((symbol (eql 'cl:multiple-value-prog1)) form environment (system clasp-cleavir:clasp))
   (destructuring-bind (first-form . forms) 
       (rest form)
-    (cleavir-generate-ast::convert `(core:multiple-value-prog1-function #'(lambda () ,first-form) (lambda () ,@forms)) environment system)))
+    (cleavir-generate-ast::convert `(core:multiple-value-prog1-function #'(lambda () (progn ,first-form)) (lambda () (progn ,@forms))) environment system)))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; convert-special-binding
+;;;
+;;; Convert a special binding to a BIND-AST
+;;;
+;;; Use the primop
+#+(or)(defmethod cleavir-generate-ast::convert-special-binding
+    (variable value-ast next-ast global-env (system clasp-cleavir:clasp))
+  (cleavir-ast:make-bind-ast
+   (cleavir-ast:make-load-time-value-ast `',variable t)
+   value-ast
+   next-ast))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -87,7 +104,7 @@
     ((symbol (eql 'cl:catch)) form environment (system clasp-cleavir:clasp))
   (destructuring-bind (tag . forms) 
       (rest form)
-    (cleavir-generate-ast::convert `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) ,@forms)) environment system)))
+    (cleavir-generate-ast::convert `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@forms))) environment system)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -117,11 +134,7 @@
     ((symbol (eql 'cl:progv)) form environment (system clasp-cleavir:clasp))
   (destructuring-bind (symbols values . forms) 
       (rest form)
-    (cleavir-generate-ast::convert `(core:progv-function ,symbols ,values #'(lambda () ,@forms)) environment system)))
-
-
-
-
+    (cleavir-generate-ast::convert `(core:progv-function ,symbols ,values #'(lambda () (progn ,@forms))) environment system)))
 
 (defmethod cleavir-generate-ast:convert-global-function (info global-env (system clasp-cleavir:clasp))
   (declare (ignore global-env))

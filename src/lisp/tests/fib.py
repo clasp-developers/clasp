@@ -19,4 +19,4 @@ print( "elapsed time: %f seconds\n" % (end-start))
 
 #python fib.py
 #('Result = %f\n', 8944394323791464)
-#elapsed time: 73.910903 seconds
+#elapsed time: 8.034955 seconds

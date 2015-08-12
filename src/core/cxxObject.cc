@@ -1,5 +1,5 @@
 /*
-    File: microHeap.fwd.h
+    File: cxxObject.cc
 */
 
 /*
@@ -24,9 +24,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef microHeap_fwd_H
-#define microHeap_fwd_H
+
+#define DEBUG_LEVEL_FULL
+
+#include <clasp/core/foundation.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/externalObject.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/cxxObject.h>
+// last include is wrappers.h
+#include <clasp/core/wrappers.h>
+
 namespace core {
-FORWARD(MicroHeap);
+EXPOSE_CLASS(core, CxxObject_O);
+
+void CxxObject_O::exposeCando(Lisp_sp e) {
+  class_<CxxObject_O>()
+    ;
 }
-#endif
+
+void CxxObject_O::exposePython(Lisp_sp lisp) {
+#ifdef USEBOOSTPYTHON //[
+  PYTHON_CLASS(CorePkg, CxxObject, "", "", _lisp);
+#endif //]
+}
+
+
+};

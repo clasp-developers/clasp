@@ -88,6 +88,12 @@ public:
     str_type temp(v, num);
     this->_Contents.swap(temp);
   };
+    virtual void swapElements(uint i1, uint i2) {
+      char t = this->_Contents[i2];
+      this->_Contents[i2] = this->_Contents[i1];
+      this->_Contents[i1] = t;
+  }
+
   virtual T_sp asetUnsafe(int j, T_sp val);
   virtual T_sp aref_unsafe(cl_index index) const { return clasp_make_character(this->_Contents[index]);};
 
@@ -96,8 +102,8 @@ public:
   uint countOccurances(const string &chars);
   List_sp splitAtWhiteSpace();
   List_sp split(const string &splitChars);
-  char &operator[](int i) { return this->_Contents[i]; };
-  const char &operator[](int i) const { return this->_Contents[i]; };
+  inline char &operator[](int i) { return this->_Contents[i]; };
+  inline const char &operator[](int i) const { return this->_Contents[i]; };
   Fixnum_sp asInt() const;
   Rational_sp parseInteger();
   DoubleFloat_sp asReal() const;
@@ -185,7 +191,7 @@ public:
 
 public:
   explicit Str_O() : Base(){};
-  virtual ~Str_O();
+  virtual ~Str_O() {};
 };
 };
 template <>

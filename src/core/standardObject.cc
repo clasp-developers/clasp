@@ -36,19 +36,7 @@ THE SOFTWARE.
 
 namespace core {
 
-StandardObject_O::StandardObject_O() : StandardObject_O::Base(){/*this->_InstanceClass.reset();*/};
-StandardObject_O::~StandardObject_O(){};
-#if 0
-    StandardObject_sp StandardObject_O::create(StandardClass_sp instanceClass, Lisp_sp lisp)
-    {_G();
-	StandardObject_sp co = lisp->create<StandardObject_O>();
-	co->_InstanceClass = instanceClass;
-	return co;
-    }
-#endif
-
 void StandardObject_O::initialize() {
-  _G();
   LOG(BF("Initializing StandardObject"));
   this->Base::initialize();
   //	Class_mv sc = cl_findClass(cl::_sym_StandardClass_O,true,_Nil<Environment_O>());

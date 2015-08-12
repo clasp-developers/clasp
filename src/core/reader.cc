@@ -70,9 +70,6 @@ void Reader_O::initialize() {
   this->_Input = _Nil<T_O>();
 }
 
-Reader_O::~Reader_O() {
-}
-
 string Reader_O::fileName() {
   return gc::As<SourceFileInfo_sp>(core_sourceFileInfo(this->_Input))->fileName();
 }

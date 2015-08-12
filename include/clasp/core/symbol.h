@@ -191,7 +191,7 @@ public:
   void __write__(T_sp stream) const; // in write_symbol.cc
 
   string __repr__() const;
-  string __str__() { return _rep_(gctools::smart_ptr<Symbol_O>::make_tagged_other(this)); };
+  string __str__() { return _rep_(gctools::make_tagged_other<Symbol_O>(this)); };
   //	string description() const { return "Symbol("+this->_Value+")";};
 
 public: // ctor/dtor for classes with shared virtual base
@@ -216,7 +216,7 @@ public: // ctor/dtor for classes with shared virtual base
   }
 public:
   explicit Symbol_O();
-  virtual ~Symbol_O();
+  virtual ~Symbol_O() {};
 };
 
 T_sp af_symbolValue(const Symbol_sp sym);

@@ -1,7 +1,11 @@
 import path ;
 import os ;
+import bitcode ;
 
-CLASP_VERSION = "0.3" ;
+CLASP_VERSION = [ SHELL "(cd $CLASP_HOME;git describe --always | tr -d '\n') || echo unknown-version" ] ;
+
+echo "CLASP_VERSION " $(CLASP_VERSION) ;
+
 
 using clang : : [ os.environ CLASP_CLANG_PATH ] ; #   $(APPRES-EXTERNALS-RELEASE)/bin/clang++  ; # CLASP_TOOLSET
 
@@ -71,8 +75,8 @@ project clasp : requirements
 	<target-os>darwin:<linkflags>-stdlib=libc++
 	<cxxflags>"-fvisibility=default"
         <variant>debug:<cxxflags>"-O0 -fstandalone-debug -gdwarf-4"
-        <variant>release:<cxxflags>"-O3 -gdwarf-4"
-        <variant>release:<cflags>"-O3 -gdwarf-4"
+        <variant>release:<cxxflags>"-O3 -gdwarf-4 -g"
+        <variant>release:<cflags>"-O3 -gdwarf-4 -g"
         <linkflags>"-fvisibility=default"
         <target-os>darwin:<linkflags>"-lc++"
 	<define>INCLUDED_FROM_CLASP
@@ -102,6 +106,7 @@ project clasp : requirements
 ### Compiling min-boehm-recompile with it defined 4:54 min and off 4.56 min
 ### so it has no significant impact at this stage
          <define>TRACK_ALLOCATIONS   # this may slow down allocation
+         <define>DEBUG_FLOW_CONTROL  # use with core::*debug-flow-control* to print flow control debugging
 #	 <define>DEBUG_GCWEAK    # Debug the Weak pointer code
 #        <define>DEBUG_TRYSET    #    Define this if you are using DEBUG_GCWEAK but can be defined alone & with DEBUG_FIND
 #        <define>DEBUG_FIND      #    Define this when using DEBUG_GCWEAK but can be defined along & with DEBUG_TRYSET

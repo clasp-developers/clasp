@@ -24,12 +24,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef llvmo_primitives_H
-#define llvmo_primitives_H
+#ifndef llvmo_intrinsics_H
+#define llvmo_intrinsics_H
 
 extern "C" {
 
-typedef LCC_RETURN (*fnLispCallingConvention)( LCC_CLOSED_ENVIRONMENT, LCC_ARGS_ELIPSIS);
+typedef void (*fnLispCallingConvention)(LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS);
+
+void cc_call_with_variable_bound(core::T_mv* result, core::T_O* symbol, core::T_O* value, core::T_O* thunk);
+void cc_funwind_protect(core::T_mv* result, core::T_O* protected_fn, core::T_O* cleanup_fn);
+void cc_catch(core::T_mv* result, core::T_O* tag, core::T_O* func);
+void cc_throw(core::T_O* tag, core::T_O* resultP);
+
+
+
 };
 
 namespace llvmo {
@@ -37,6 +45,7 @@ namespace llvmo {
 void redirect_llvm_interface_addSymbol();
 
 void initialize_intrinsics();
+void initialize_link_intrinsics();
 }
 
 #endif

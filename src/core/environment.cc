@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#define USE_STATIC_CAST_FOR_ENVIRONMENT 1
+
 #define DEBUG_LEVEL_FULL
 
 #include <string.h>
@@ -157,14 +159,22 @@ T_mv core_lexicalMacroFunction(T_sp name, T_sp env) {
 #define DECL_af_updateValue ""
 #define DOCS_af_updateValue "updateValue"
 bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val) {
-  if (env.nilp()) {
-    SIMPLE_ERROR(BF("Cannot update value of %s in nil lexical environment") % _rep_(sym));
-  } else if (env.framep()) {
+  if (env.framep()) {
     return frame::UpdateValue(env, sym, val);
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+  }
+#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+  ASSERT(env.isA<Environment_O>());
+  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O,T_O>(env);
+  return eenv->_updateValue(sym, val);
+#else
+  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->_updateValue(sym, val);
   }
+  if (env.nilp()) {
+    SIMPLE_ERROR(BF("Cannot update value of %s in nil lexical environment") % _rep_(sym));
+  }
   NOT_ENVIRONMENT_ERROR(env);
+#endif
 };
 
 #define ARGS_af_countFunctionContainerEnvironments "(arg)"
@@ -212,7 +222,6 @@ T_sp af_environmentTypeList(T_sp env) {
 };
 
 int Environment_O::clasp_countFunctionContainerEnvironments(T_sp env) {
-  _G();
   if (env.nilp())
     return 0;
   if (env.framep()) {
@@ -416,7 +425,6 @@ List_sp Environment_O::gather_metadata(Symbol_sp key) const {
 }
 
 T_mv Environment_O::lookupMetadata(Symbol_sp key) const {
-  _G();
   if (this->getParentEnvironment().nilp()) {
     return (Values(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()));
   }
@@ -429,65 +437,93 @@ T_mv Environment_O::localMetadata(Symbol_sp key) const {
 }
 
 T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index) {
-  if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could not lookup value in top level environment"));
-  } else if (env.framep()) {
+  if (env.framep()) {
     if (depth == 0) {
       return frame::Lookup(env, index);
     }
-    --depth;
-    return clasp_lookupValue(frame::ParentFrame(env), depth, index);
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+    return clasp_lookupValue(frame::ParentFrame(env), depth-1, index);
+  }
+#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+  ASSERT(env.isA<Environment_O>());
+  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O>(env);
+  return eenv->_lookupValue(depth, index);
+#else
+  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->_lookupValue(depth, index);
   }
+  if (env.nilp()) {
+    SIMPLE_ERROR(BF("Could not lookup value in top level environment"));
+  }
   NOT_ENVIRONMENT_ERROR(env);
+#endif
 }
 
 T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) {
-  if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could not lookup value in top level environment"));
-  } else if (env.framep()) {
+  if (env.framep()) {
     if (depth == 0) {
       IMPLEMENT_MEF(BF("We have a problem here - stack based frames store T_O* tagged pointers and this function is supposed to return a reference to a T_sp"));
       //return frame::LookupReference(env,index);
     }
-    --depth;
-    return clasp_lookupValueReference(frame::ParentFrame(env), depth, index);
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+    return clasp_lookupValueReference(frame::ParentFrame(env), depth-1, index);
+  }
+  // set this to 1 to use dynamic_cast and 0 to use what is essentially a static cast
+#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+  ASSERT(env.isA<Environment_O>());
+  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O,T_O>(env);
+  return eenv->lookupValueReference(depth,index);
+#else
+  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->lookupValueReference(depth, index);
+  } else if (env.nilp()) {
+    SIMPLE_ERROR(BF("Could not lookup value in top level environment"));
   }
   NOT_ENVIRONMENT_ERROR(env);
+#endif
 }
 
 Function_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index) {
-  if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could not lookup Function in top level environment"));
-  } else if (env.framep()) {
+  if (env.framep()) {
     if (depth == 0) {
       SIMPLE_ERROR(BF("Currently I don't support functions in stack frames"));
       //              return frame::Lookup(env,index);
     }
-    --depth;
-    return clasp_lookupFunction(frame::ParentFrame(env), depth, index);
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+    return clasp_lookupFunction(frame::ParentFrame(env), depth-1, index);
+  }
+#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+  ASSERT(env.isA<Environment_O>());
+  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O,T_O>(env);
+  return eenv->_lookupFunction(depth,index);
+#else
+  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->_lookupFunction(depth, index);
   }
+  if (env.nilp()) {
+    SIMPLE_ERROR(BF("Could not lookup Function in top level environment"));
+  }
   NOT_ENVIRONMENT_ERROR(env);
+#endif
 }
 
 T_sp Environment_O::clasp_lookupTagbodyId(T_sp env, int depth, int index) {
-  if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could find lookupTagbodyId after encountering top level environment"));
-  } else if (env.framep()) {
+  if (env.framep()) {
     if (depth == 0) {
       return frame::LookupTagbodyId(env, index);
     }
-    --depth;
-    return clasp_lookupTagbodyId(frame::ParentFrame(env), depth, index);
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+    return clasp_lookupTagbodyId(frame::ParentFrame(env), depth-1, index);
+  }
+#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+  ASSERT(env.isA<Environment_O>());
+  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O,T_O>(env);
+  return eenv->_lookupTagbodyId(depth, index);
+#else
+  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->_lookupTagbodyId(depth, index);
   }
+  if (env.nilp()) {
+    SIMPLE_ERROR(BF("Could find lookupTagbodyId after encountering top level environment"));
+  }
   NOT_ENVIRONMENT_ERROR(env);
+#endif
 }
 
 T_sp Environment_O::_lookupValue(int depth, int index) {
@@ -501,12 +537,10 @@ T_sp &Environment_O::lookupValueReference(int depth, int index) {
 }
 
 Function_sp Environment_O::_lookupFunction(int depth, int index) const {
-  _G();
   SUBIMP();
 }
 
 string Environment_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << "#<" << lisp_classNameAsString(af_classOf(this->asSmartPtr())) << ">";
 #if 0
@@ -529,7 +563,6 @@ string Environment_O::__repr__() const {
 }
 
 bool Environment_O::_updateValue(Symbol_sp sym, T_sp obj) {
-  _G();
   if (this->getParentEnvironment().nilp()) {
     SIMPLE_ERROR(BF("Could not update local symbol(%s) because it was not defined") % _rep_(sym));
   }
@@ -1083,7 +1116,6 @@ ActivationFrame_sp ValueEnvironment_O::getActivationFrame() const {
 }
 
 T_sp ValueEnvironment_O::_lookupValue(int depth, int index) {
-  _G();
   if (depth == 0) {
     return this->_ActivationFrame->entry(index);
   }
@@ -1091,33 +1123,23 @@ T_sp ValueEnvironment_O::_lookupValue(int depth, int index) {
   if (parent.nilp()) {
     SIMPLE_ERROR(BF("Ran out of parent environments - could not find value"));
   }
-  --depth;
-  return Environment_O::clasp_lookupValue(parent, depth, index);
-}
-
-ValueEnvironment_O::ValueEnvironment_O() : Base(){};
-
-ValueEnvironment_O::~ValueEnvironment_O() {
-  _G();
+  return Environment_O::clasp_lookupValue(parent, depth-1, index);
 }
 
 void ValueEnvironment_O::defineLexicalBinding(Symbol_sp sym, int idx) {
-  _G();
   List_sp it = this->_SymbolIndex->find(sym);
   if (it.notnilp()) {
 #if 0
-	    if ( idx != gc::As<Fixnum_sp>(oCdr(it))->get() )
-	    {
-		SIMPLE_ERROR(BF("The lexical variable[%s] is already defined with index[%d] - we tried to set it to[%d]") % _rep_(sym) % _rep_(oCdr(it)) % idx );
-	    }
-	    return;
+    if ( idx != gc::As<Fixnum_sp>(oCdr(it))->get() ) {
+      SIMPLE_ERROR(BF("The lexical variable[%s] is already defined with index[%d] - we tried to set it to[%d]") % _rep_(sym) % _rep_(oCdr(it)) % idx );
+    }
+    return;
 #endif
   }
   this->_SymbolIndex->hash_table_setf_gethash(sym, make_fixnum(idx));
 }
 
 void ValueEnvironment_O::defineSpecialBinding(Symbol_sp sym) {
-  _G();
   List_sp it = this->_SymbolIndex->find(sym);
   if (it.notnilp()) {
     if (SPECIAL_TARGET != unbox_fixnum(gc::As<Fixnum_sp>(oCdr(it)))) {

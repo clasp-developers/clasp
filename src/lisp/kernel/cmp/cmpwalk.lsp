@@ -26,22 +26,22 @@
 
 (in-package :cmp)
 
+;;
+;; The code-walker-function must return a form or an altered form to continue
+;; compilation
 (defun code-walk-using-compiler (form env &key code-walker-function)
   "This is used in clos/method.lsp to code walk defmethod bodies"
   (let* ((module (llvm-create-module "code-walk-for-defmethod"))
-	 (fpm #+(or)(create-function-pass-manager-for-compile-file module))
 	 (*code-walker* code-walker-function))
     (define-primitives-in-module module)
     (with-compilation-unit ()
-      (with-module ( :module module :function-pass-manager fpm
-			:source-pathname "code-walk-using-compiler")
-        (let (
-;;	      (*gv-source-pathname* (jit-make-global-string-ptr "code-walk-using-compiler" "source-path-name"))
-	      )
+      (with-module ( :module module
+                             :optimize nil
+                             :source-pathname "code-walk-using-compiler")
+        (with-debug-info-generator (:module module
+                                            :pathname #P"/dev/null")
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
             (compile-in-env nil form env)))
-        (llvm-sys::module-delete module)
-        ))))
-
+        (llvm-sys::module-delete module)))))
 
 (export 'code-walk-using-compiler)

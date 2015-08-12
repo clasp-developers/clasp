@@ -1208,7 +1208,6 @@ VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
 
 EXPOSE_CLASS(core, LambdaListHandler_O);
 LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _LexicalVariableNamesForDebugging(_Nil<VectorObjects_O>()){};
-LambdaListHandler_O::~LambdaListHandler_O(){};
 
 void LambdaListHandler_O::exposeCando(Lisp_sp lisp) {
   _G();

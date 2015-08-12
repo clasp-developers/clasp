@@ -747,8 +747,8 @@ public: // Instance protocol
   /*! Return number of slots if instance of Instance_O otherwise return nil */
   virtual T_sp oinstancep() const { return _Nil<T_O>(); }; //
   bool instancep() const { return oinstancep().isTrue(); };
-
-  bool genericFunctionP() const { return false; };
+  virtual bool environmentp() const { return false;};
+  virtual bool genericFunctionP() const { return false; };
   /*! Return number of slots if instance of Instance_O otherwise return nil */
   virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
   bool funcallableInstanceP() const { return ofuncallableInstanceP().isTrue(); };
@@ -1121,7 +1121,8 @@ TRANSLATE(core::T_O);
 #include <clasp/core/metaClass.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/lispVector.h>
-#include <clasp/core/record.h>
+#include <clasp/core/tagged_cast_specializations.h>
+#include <clasp/core/cxxObject.h>
 
 namespace core {
   void initialize_object();

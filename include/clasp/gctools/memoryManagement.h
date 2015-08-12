@@ -149,8 +149,8 @@ namespace gctools {
 template <class OT>
 struct GCInfo {
   static constexpr bool Atomic = false;
-  static bool const NeedsInitialization = true; // Currently everything needs initialization
-  static bool const NeedsFinalization = true;   // Currently everything needs finalization
+  static bool const NeedsInitialization = true; // Currently, by default,  everything needs initialization
+  static bool const NeedsFinalization = false;   // By default, nothing needs finalization
   static constexpr bool Moveable = true;
 };
 };

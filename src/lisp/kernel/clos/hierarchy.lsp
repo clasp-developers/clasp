@@ -298,6 +298,8 @@
        :index 0)
       (standard-object
        :direct-superclasses (t))
+      #+clasp(core:cxx-object
+              :direct-superclasses (t))
       (metaobject
        :direct-superclasses (standard-object))
       (slot-definition
@@ -336,6 +338,9 @@
       (built-in-class
        :direct-superclasses (class)
        :direct-slots #1=#.+standard-class-slots+)
+#+clasp(core:cxx-class
+        :direct-superclasses (class)
+        :direct-slots #1#)
       (std-class
        :direct-superclasses (class)
        :direct-slots #1#)

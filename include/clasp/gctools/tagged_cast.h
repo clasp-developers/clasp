@@ -14,13 +14,11 @@ struct TaggedCast {
   static ToType castOrNULL(FromType client) {
     if (tagged_generalp(client)) {
       ToType ptr = dynamic_cast<ToType>(untag_general(client));
-      if (ptr)
-        return tag_general<ToType>(ptr);
+      if (ptr) return reinterpret_cast<ToType>(client);
       return NULL;
     } else if (tagged_consp(client)) {
       ToType ptr = dynamic_cast<ToType>(untag_cons(client));
-      if (ptr)
-        return tag_cons<ToType>(ptr);
+      if (ptr) return reinterpret_cast<ToType>(client);
       return NULL;
     }
     return NULL; // handle with specializations
@@ -29,18 +27,19 @@ struct TaggedCast {
 };
 
 namespace core {
-class Fixnum_I {};
-class SingleFloat_I {};
-class Character_I {};
-class Integer_O;
-class Rational_O;
-class Real_O;
-class Number_O;
-class T_O;
-class Float_O;
-typedef Fixnum_I Fixnum_O;
-typedef SingleFloat_I SingleFloat_O;
-typedef Character_I Character_O;
+  class Fixnum_I {};
+  class SingleFloat_I {};
+  class Character_I {};
+  class Integer_O;
+  class Environment_O;
+  class Rational_O;
+  class Real_O;
+  class Number_O;
+  class T_O;
+  class Float_O;
+  typedef Fixnum_I Fixnum_O;
+  typedef SingleFloat_I SingleFloat_O;
+  typedef Character_I Character_O;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -358,3 +357,7 @@ struct TaggedCast<core::Character_I *, FROM> {
   }
 };
 };
+
+
+// more specializations in clasp/include/clasp/core/tagged_cast_specializations.h
+

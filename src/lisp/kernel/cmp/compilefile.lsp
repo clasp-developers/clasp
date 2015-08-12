@@ -248,19 +248,15 @@ to compile prologue and epilogue code when linking modules"
 	 (*compile-verbose* nil)	 )
     (with-compiler-env (conditions)
       (with-module ( :module module
-			:function-pass-manager (if *use-function-pass-manager-for-compile-file* 
-						   (create-function-pass-manager-for-compile-file module))
-			:source-pathname (namestring name)
-			)
-        (let* ()
-	  (with-debug-info-generator (:module *the-module*
-					      :pathname *compile-file-truename*)
-	    (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
-	      (compile-top-level form)
-	      (let ((main-fn (compile-main-function name ltv-init-fn )))
-		(make-boot-function-global-variable *the-module* main-fn)
-		(add-main-function *the-module*)))
-	    ))))
+                             :source-pathname (namestring name))
+        (with-debug-info-generator (:module *the-module*
+                                            :pathname *compile-file-truename*)
+          (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
+            (compile-top-level form)
+            (let ((main-fn (compile-main-function name ltv-init-fn )))
+              (make-boot-function-global-variable *the-module* main-fn)
+              (add-main-function *the-module*)))
+          )))
     module))
 
 
@@ -349,12 +345,9 @@ and the pathname of the source file - this will also be used as the module initi
 	(let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
 	       (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
 	  (with-module ( :module module
-			    :function-pass-manager (if *use-function-pass-manager-for-compile-file* 
-						       (create-function-pass-manager-for-compile-file module))
 			    :source-pathname (namestring *compile-file-pathname*)
 			    :source-debug-namestring source-debug-namestring
-			    :source-debug-offset source-debug-offset
-			    )
+			    :source-debug-offset source-debug-offset)
 	    (let* ()
 	      (with-debug-info-generator (:module *the-module*
 						  :pathname *compile-file-truename*)

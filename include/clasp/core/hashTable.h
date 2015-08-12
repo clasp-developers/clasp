@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
+#include <clasp/core/record.h>
 #include <clasp/core/vectorObjects.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
 

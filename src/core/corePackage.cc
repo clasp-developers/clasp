@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/cleavirEnvPackage.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/posixTime.h>
+#include <clasp/core/random.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/commonLispUserPackage.h>
@@ -90,6 +91,7 @@ SYMBOL_EXPORT_SC_(ClPkg, provide);
 SYMBOL_EXPORT_SC_(ClPkg, condition);
 SYMBOL_EXPORT_SC_(ClPkg, seriousCondition);
 SYMBOL_EXPORT_SC_(ClPkg, error);
+SYMBOL_EXPORT_SC_(ClPkg, warn);
 SYMBOL_EXPORT_SC_(ClPkg, programError);
 SYMBOL_EXPORT_SC_(ClPkg, cellError);
 SYMBOL_EXPORT_SC_(ClPkg, unboundVariable);
@@ -108,6 +110,7 @@ SYMBOL_EXPORT_SC_(ClPkg, streamError);
 SYMBOL_EXPORT_SC_(ClPkg, endOfFile);
 SYMBOL_EXPORT_SC_(ClPkg, parseError);
 SYMBOL_EXPORT_SC_(ClPkg, readerError);
+SYMBOL_EXPORT_SC_(ClPkg, STARrandom_stateSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, controlError);
 SYMBOL_EXPORT_SC_(ClPkg, typeError);
 SYMBOL_EXPORT_SC_(ClPkg, simpleTypeError);
@@ -152,7 +155,7 @@ SYMBOL_EXPORT_SC_(ClPkg, nil);
 SYMBOL_EXPORT_SC_(CorePkg, STARpollTicksPerGcSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_standardReadtable_PLUS_);
 SYMBOL_EXPORT_SC_(KeywordPkg, debugStartup);
-SYMBOL_EXPORT_SC_(KeywordPkg, cleavir);
+SYMBOL_EXPORT_SC_(KeywordPkg, cclasp);
 SYMBOL_EXPORT_SC_(KeywordPkg, bclasp);
 SYMBOL_EXPORT_SC_(KeywordPkg, load);
 SYMBOL_EXPORT_SC_(KeywordPkg, eval);
@@ -976,8 +979,8 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   // cl::_sym_most_positive_single_float->defconstant(DoubleFloat_O::create(DBL_MAX));
 
   cl::_sym_STARread_baseSTAR->defparameter(make_fixnum(10));
-  SYMBOL_SC_(CorePkg, cl_fixnum_bits);
-  _sym_cl_fixnum_bits->defconstant(make_fixnum((int)(sizeof(int) / 8)));
+  SYMBOL_EXPORT_SC_(CorePkg, cl_fixnum_bits);
+  _sym_cl_fixnum_bits->defconstant(make_fixnum(gc::fixnum_bits));
   SYMBOL_EXPORT_SC_(ClPkg, array_rank_limit);
   cl::_sym_array_rank_limit->defconstant(make_fixnum(CLASP_ARRAY_RANK_LIMIT));
   SYMBOL_EXPORT_SC_(ClPkg, char_code_limit);
@@ -1071,7 +1074,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugStartupSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
-
+  cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
   List_sp hooks = _Nil<T_O>();
   hooks = Cons_O::create(Cons_O::create(Str_O::create("fasl"), _sym_loadBundle), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("bundle"), _sym_loadBundle), hooks);

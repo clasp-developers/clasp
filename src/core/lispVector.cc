@@ -52,7 +52,7 @@ Vector_sp cl_vector(List_sp args) {
 };
 
 #define DOCS_core_make_vector "make_vector See si_make_vector in ecl>>array.d"
-#define ARGS_core_make_vector "(element-type dimension adjustable fill-pointer displaced-to displaced-index-offset &optional initial-element initial-contents)"
+#define ARGS_core_make_vector "(element-type dimension &optional adjustable (fill-pointer t) displaced-to displaced-index-offset initial-element initial-contents)"
 #define DECL_core_make_vector ""
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 Vector_sp core_make_vector(T_sp element_type,
@@ -155,10 +155,12 @@ T_sp Vector_O::setf_aref(List_sp args_val)
 T_sp Vector_O::reverse() {
   _OF();
   int thisLength = this->length();
-  Vector_sp newVec = gc::As<Vector_sp>(eval::funcall(_sym_make_vector, this->_instanceClass()->className(), make_fixnum(thisLength)));
+  int lastElement = thisLength-1;
+  Vector_sp newVec = gc::As<Vector_sp>(eval::funcall(_sym_make_vector, this->elementType(), make_fixnum(thisLength)));
   for (int i = 0; i < thisLength; i++) {
-    int ri = thisLength - i;
-    newVec->setf_elt(ri, this->elt(i));
+    int ri = lastElement - i;
+//    newVec->setf_elt(ri, this->elt(i));
+    newVec->asetUnsafe(ri,this->elt(i));
   }
   return newVec;
 }
@@ -177,9 +179,9 @@ T_sp Vector_O::nreverse() {
   _OF();
   int thisLength = this->length();
   int halfLength = thisLength / 2; // 5/2 = 2  0
-  T_sp temp;
+  int lasti = thisLength-1;
   for (int i = 0; i < halfLength; i++) {
-    int ri = thisLength - i;
+    int ri = lasti - i;
     this->swapElements(i, ri);
   }
   return this->sharedThis<T_O>();

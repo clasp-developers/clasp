@@ -28,6 +28,7 @@
 (defun make-empty-standard-class (name &key (metaclass 'standard-class)
 					 direct-superclasses direct-slots index)
   (declare (optimize speed (safety 0)))
+;;  (format t "make-empty-standard-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%" name metaclass direct-superclasses direct-slots index)
   (let* ((the-metaclass (and metaclass (gethash metaclass si::*class-name-hash-table*)))
 	 (class (or (let ((existing-class (gethash name si::*class-name-hash-table*)))
 		      (if existing-class

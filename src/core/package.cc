@@ -710,7 +710,7 @@ void Package_O::add_symbol_to_package(const char *symName, Symbol_sp sym, bool e
   }
 #endif
   Bignum_sp nameKey = nameToKey(symName);
-  if (this->isKeywordPackage() || exportp) {
+  if (this->isKeywordPackage() || this->actsLikeKeywordPackage() || exportp) {
 #if 0
     if (sym.notnilp() && this == &(*(_lisp->commonLispPackage()))) {
       throwIfNotValidClSymbol(sym->symbolName()->get());
@@ -738,7 +738,7 @@ T_mv Package_O::intern(const string &name) {
     LOG(BF("Created symbol<%s>") % _rep_(sym));
     this->add_symbol_to_package(sym->symbolName()->get().c_str(), sym);
   }
-  if (this->isKeywordPackage()) {
+  if (this->actsLikeKeywordPackage()) {
     sym->setf_symbolValue(sym);
   }
 

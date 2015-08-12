@@ -95,6 +95,49 @@
     (format s "landing-pad-return")))
 
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction PUSH-SPECIAL-BINDING-INSTRUCTION
+;;;
+;;; This instruction is used to push the value of a special
+;;; variable and then bind it to a new value
+
+(defclass push-special-binding-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defun make-push-special-binding-instruction
+    (symbol value &key successor)
+  (make-instance 'push-special-binding-instruction
+    :inputs (list symbol value)
+    :outputs nil
+    :successors (if (null successor) nil (list successor))))
+
+(defmethod cleavir-ir-graphviz:label ((instr push-special-binding-instruction))
+  "push-special-binding")
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction POP-SPECIAL-BINDING-INSTRUCTION
+;;;
+;;; This instruction is used to pop the value of a special variable
+
+(defclass pop-special-binding-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defun make-pop-special-binding-instruction
+    (symbol &key successor)
+  (make-instance 'pop-special-binding-instruction
+    :inputs (list symbol)
+    :outputs nil
+    :successors (if (null successor) nil (list successor))))
+
+(defmethod cleavir-ir-graphviz:label ((instr pop-special-binding-instruction))
+  "pop-special-binding")
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Instruction PRECALC-SYMBOL-INSTRUCTION.
@@ -186,7 +229,7 @@
 ;;;
 ;;; The first input of this instruction is an ordinary lexical
 ;;; location.  The remaining inputs are of type VALUES-LOCATION, and
-;;; each represents multiple values returned form the evaluation of
+;;; each represents multiple values returned from the evaluation of
 ;;; some form.  This instruction has a single output, also of the type
 ;;; VALUES-LOCATION.
 
@@ -199,8 +242,6 @@
     :inputs inputs
     :outputs (list output)
     :successors (if successor-p (list successor) '())))
-
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

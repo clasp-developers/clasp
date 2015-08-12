@@ -58,11 +58,11 @@ SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string &whatDoesE
   return c;
 }
 
-SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string &whatDoesEnumRepresent, string const &packageName, NullTerminatedEnumAssociation assoc[]) {
-  _G();
+SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string &whatDoesEnumRepresent, string const &packageName, NullTerminatedEnumAssociation assoc[], bool exportSymbols) {
   SymbolToEnumConverter_sp c = SymbolToEnumConverter_O::create(whatDoesEnumRepresent);
   for (int i = 0; assoc[i]._Key != ""; ++i) {
     Symbol_sp sym = _lisp->internWithPackageName(packageName, assoc[i]._Key);
+    if (exportSymbols) sym->exportYourself();
     c->addSymbolEnumPair(sym, sym, assoc[i]._Enum);
   }
   return c;

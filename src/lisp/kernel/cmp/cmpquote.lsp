@@ -751,72 +751,82 @@ marshaling of compiled quoted data"
 	     (*current-function* ,ltv-init-fn)
 	     (*generate-compile-file-load-time-values* t)
 	     (*load-time-initializer-environment* ,fn-env-gs)
-	     (*irbuilder-ltv-function-alloca* ,irbuilder-alloca))
-	 (let ((*irbuilder-ltv-function-body* ,irbuilder-body)
-	       (*ltv-function-landing-pad-block* nil)
-	       (*load-time-value-holder-global-var*
-		#|| spacer ||#(llvm-sys:make-global-variable 
-			       *the-module*
-			       +run-and-load-time-value-holder-global-var-type+
-			       nil
-			       'llvm-sys:internal-linkage
-			       (llvm-sys:constant-pointer-null-get 
-				+run-and-load-time-value-holder-global-var-type+)
-			       *load-time-value-holder-name*))
-	       (*next-load-time-value-index* 0)
-	       (*next-load-time-symbol-index* 0)
-	       (*fixnum-coalesce* (make-hash-table :test #'eql))
-	       (*bignum-coalesce* (make-hash-table :test #'eql))
-	       (*symbol-coalesce* (make-hash-table :test #'eq))
-	       (*load-time-value-coalesce* (make-hash-table :test #'eq))
-	       (*symbol-type-symbol-coalesce* (make-hash-table :test #'eq))
-	       #+short-float(*short-float-coalesce* (make-hash-table :test #'eql))
-	       (*single-float-coalesce* (make-hash-table :test #'eql))
-	       (*double-float-coalesce* (make-hash-table :test #'eql))
-	       (*complex-coalesce* (make-hash-table :test #'eql))
-	       #+long-float(*long-float-coalesce* (make-hash-table :test #'eql))
-	       (*string-coalesce* (make-hash-table :test #'equal))
-	       (*pathname-coalesce* (make-hash-table :test #'equal))
-	       (*package-coalesce* (make-hash-table :test #'eq))
-	       (*built-in-class-coalesce* (make-hash-table :test #'eq))
-	       (*character-coalesce* (make-hash-table :test #'eql))
-	       (*nil-coalesce* (make-hash-table :test #'eq))
-	       (*t-coalesce* (make-hash-table :test #'eq))
-	       (*load-time-value-result* (irc-alloca-tmv *load-time-initializer-environment*
-							 :irbuilder *irbuilder-ltv-function-alloca*))
-	       )
-	   ;; Evaluate the body into here - this will generate code in new functions
-	   ;; and generate code to invoke those new functions within the *irbuilder-ltv-function-body* irbuilder
-	   ;; it will also setup all of the literals, load-time-values and symbols
-	   ;;
+	     (*irbuilder-ltv-function-alloca* ,irbuilder-alloca)
+             (*irbuilder-ltv-function-body* ,irbuilder-body))
+         (cmp:with-dbg-function ("runAll-dummy-name"
+                                 :linkage-name (llvm-sys:get-name ,ltv-init-fn)
+                                 :function ,ltv-init-fn
+                                 :function-type +fn-prototype+
+                                 :form nil) ;; No form for runAll
+           ;; Set up dummy debug info for these irbuilders
+           (cmp:with-irbuilder (*irbuilder-ltv-function-alloca*)
+             (cmp:dbg-set-current-source-pos nil))
+           (cmp:with-irbuilder (*irbuilder-ltv-function-body*)
+             (cmp:dbg-set-current-source-pos nil))
+           (let ((*ltv-function-landing-pad-block* nil)
+                 (*load-time-value-holder-global-var*
+                  #|| spacer ||#(llvm-sys:make-global-variable 
+                                 *the-module*
+                                 +run-and-load-time-value-holder-global-var-type+
+                                 nil
+                                 'llvm-sys:internal-linkage
+                                 (llvm-sys:constant-pointer-null-get 
+                                  +run-and-load-time-value-holder-global-var-type+)
+                                 *load-time-value-holder-name*))
+                 (*next-load-time-value-index* 0)
+                 (*next-load-time-symbol-index* 0)
+                 (*fixnum-coalesce* (make-hash-table :test #'eql))
+                 (*bignum-coalesce* (make-hash-table :test #'eql))
+                 (*symbol-coalesce* (make-hash-table :test #'eq))
+                 (*load-time-value-coalesce* (make-hash-table :test #'eq))
+                 (*symbol-type-symbol-coalesce* (make-hash-table :test #'eq))
+                 #+short-float(*short-float-coalesce* (make-hash-table :test #'eql))
+                 (*single-float-coalesce* (make-hash-table :test #'eql))
+                 (*double-float-coalesce* (make-hash-table :test #'eql))
+                 (*complex-coalesce* (make-hash-table :test #'eql))
+                 #+long-float(*long-float-coalesce* (make-hash-table :test #'eql))
+                 (*string-coalesce* (make-hash-table :test #'equal))
+                 (*pathname-coalesce* (make-hash-table :test #'equal))
+                 (*package-coalesce* (make-hash-table :test #'eq))
+                 (*built-in-class-coalesce* (make-hash-table :test #'eq))
+                 (*character-coalesce* (make-hash-table :test #'eql))
+                 (*nil-coalesce* (make-hash-table :test #'eq))
+                 (*t-coalesce* (make-hash-table :test #'eq))
+                 (*load-time-value-result* (irc-alloca-tmv *load-time-initializer-environment*
+                                                           :irbuilder *irbuilder-ltv-function-alloca*))
+                 )
+             ;; Evaluate the body into here - this will generate code in new functions
+             ;; and generate code to invoke those new functions within the *irbuilder-ltv-function-body* irbuilder
+             ;; it will also setup all of the literals, load-time-values and symbols
+             ;;
 
-	   (with-load-time-value-counters 
-	       (ltv-value-counter
-		ltv-symbol-counter
-		:postscript (with-irbuilder (*irbuilder-ltv-function-alloca*)
-			      (cmp-log "Setting up getOrCreateLoadTimeValueArray\n")
-			      (irc-intrinsic "getOrCreateLoadTimeValueArray"
-					     *load-time-value-holder-global-var*
-					     *gv-source-pathname*
-					     (jit-constant-i32 ltv-value-counter)
-					     (jit-constant-i32 ltv-symbol-counter))
-			      (irc-intrinsic "assignSourceFileInfoHandle"
-					     *gv-source-pathname*
-					     *gv-source-debug-namestring*
-					     (jit-constant-i64 *source-debug-offset*)
-					     (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
-					     *gv-source-file-info-handle*)))
-             (progn
-               ;; special values that will always be needed
-               (codegen-ltv/nil nil ,fn-env-gs)
-               (codegen-ltv/t nil ,fn-env-gs)
-               ,@body))
-	   (with-irbuilder (*irbuilder-ltv-function-body*)
-	     (let ((*gv-current-function-name* (jit-make-global-string-ptr
-						(llvm-sys:get-name ,ltv-init-fn) "fn-name")))
-	       (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env-gs)
-		 (irc-function-cleanup-and-return ,fn-env-gs ,result))
-	       )))))))
+             (with-load-time-value-counters 
+                 (ltv-value-counter
+                  ltv-symbol-counter
+                  :postscript (with-irbuilder (*irbuilder-ltv-function-alloca*)
+                                (cmp-log "Setting up getOrCreateLoadTimeValueArray\n")
+                                (irc-intrinsic "getOrCreateLoadTimeValueArray"
+                                               *load-time-value-holder-global-var*
+                                               *gv-source-pathname*
+                                               (jit-constant-i32 ltv-value-counter)
+                                               (jit-constant-i32 ltv-symbol-counter))
+                                (irc-intrinsic "assignSourceFileInfoHandle"
+                                               *gv-source-pathname*
+                                               *gv-source-debug-namestring*
+                                               (jit-constant-i64 *source-debug-offset*)
+                                               (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
+                                               *gv-source-file-info-handle*)))
+               (progn
+                 ;; special values that will always be needed
+                 (codegen-ltv/nil nil ,fn-env-gs)
+                 (codegen-ltv/t nil ,fn-env-gs)
+                 ,@body))
+             (with-irbuilder (*irbuilder-ltv-function-body*)
+               (let ((*gv-current-function-name* (jit-make-global-string-ptr
+                                                  (llvm-sys:get-name ,ltv-init-fn) "fn-name")))
+                 (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env-gs)
+                   (irc-function-cleanup-and-return ,fn-env-gs ,result ))
+                 ))))))))
 
 
 

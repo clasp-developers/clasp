@@ -51,11 +51,6 @@ BuiltInClass_sp BuiltInClass_O::createUncollectable() {
   return ((oclass));
 }
 
-BuiltInClass_O::BuiltInClass_O() {
-}
-
-BuiltInClass_O::~BuiltInClass_O() {
-}
 
 #if defined(XML_ARCHIVE)
 void BuiltInClass_O::archive(ArchiveP node) {

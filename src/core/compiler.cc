@@ -41,12 +41,14 @@ THE SOFTWARE.
 #include <clasp/core/sequence.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/unixfsys.h>
+#include <clasp/core/environment.h>
 #include <clasp/core/cleavirPrimopsPackage.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/environment.h>
+#include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
 
 #ifdef _TARGET_OS_DARWIN
@@ -55,18 +57,43 @@ THE SOFTWARE.
 
 namespace core {
 
+int f(Environment_sp& e)
+{
+  (void)e;
+  return 1;
+}
+#define ARGS_core_testTaggedCast "(pow2)"
+#define DECL_core_testTaggedCast ""
+#define DOCS_core_testTaggedCast "Evaluate a TaggedCast 2^pow2 times"
+__attribute__((optnone)) Fixnum_sp core_testTaggedCast(Fixnum_sp pow2) {
+  Fixnum fpow2 = clasp_to_fixnum(pow2);
+  Fixnum times = 1;
+  times = times << fpow2;
+  printf("%s:%d  fpow2 = %ld  times = %ld\n", __FILE__, __LINE__, fpow2, times );
+  Environment_sp env = ValueEnvironment_O::createForNumberOfEntries(5,_Nil<T_O>());
+  Fixnum i;
+  Fixnum v = 0;
+  for ( i=0; i<times; ++i ) {
+    f(env);
+    Environment_sp e = env.asOrNull<Environment_O>();
+    v += f(e);
+  }
+  return Integer_O::create(v);
+}
+
+
 #define ARGS_core_cxxFibn "(reps num)"
 #define DECL_core_cxxFibn ""
 #define DOCS_core_cxxFibn "Calculate the num Fibonacci number reps times"
 Integer_sp core_cxxFibn(Fixnum_sp reps, Fixnum_sp num) {
-  Fixnum freps = clasp_to_fixnum(reps);
-  Fixnum fnum = clasp_to_fixnum(num);
-  Fixnum p1, p2, z;
-  for ( Fixnum r = 0; r<freps; ++r ) {
+  long int freps = clasp_to_fixnum(reps);
+  long int fnum = clasp_to_fixnum(num);
+  long int p1, p2, z;
+  for ( long int r = 0; r<freps; ++r ) {
     p1 = 1;
     p2 = 1;
-    Fixnum rnum = fnum - 2;
-    for ( Fixnum i=0; i<rnum; ++i ) {
+    long int rnum = fnum - 2;
+    for ( long int i=0; i<rnum; ++i ) {
       z = p1 + p2;
       p2 = p1;
       p1 = z;
@@ -120,7 +147,7 @@ T_mv core_mangleName(Symbol_sp sym, bool is_function) {
 
 #define ARGS_core_startupImagePathname "()"
 #define DECL_core_startupImagePathname ""
-#define DOCS_core_startupImagePathname "startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cleavir-boehm, cleavir-mps based on *features* :ECL-MIN, :USE-MPS, :BCLASP"
+#define DOCS_core_startupImagePathname "startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cclasp-boehm, cclasp-mps based on *features* :ECL-MIN, :USE-MPS, :BCLASP"
 T_sp core_startupImagePathname() {
   _G();
   Cons_sp features = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue());
@@ -132,7 +159,7 @@ T_sp core_startupImagePathname() {
     if (bclasp.notnilp()) {
       strStage = "full";
     } else {
-      strStage = "cleavir";
+      strStage = "cclasp";
     }
   }
   // Now check if the executable name contains bclasp or cclasp
@@ -141,7 +168,7 @@ T_sp core_startupImagePathname() {
   if ( executable.find("bclasp") != string::npos ) {
     strStage = "full";
   } else if ( executable.find("cclasp") != string::npos ) {
-    strStage = "cleavir";
+    strStage = "cclasp";
   }
   string strGc = "boehm";
   if (mps.notnilp())
@@ -183,7 +210,7 @@ T_mv core_loadBundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_for
     goto LOAD;
   SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
 LOAD:
-  Str_sp nameStr = af_namestring(af_probe_file(path));
+  Str_sp nameStr = cl_namestring(af_probe_file(path));
   string name = nameStr->get();
 
   /* Look up the initialization function. */
@@ -769,10 +796,10 @@ T_mv core_operationsPerSecond(int op, T_sp arg) {
 T_sp core_callsByValuePerSecond() {
   _G();
   LightTimer timer;
-  T_sp v1 = T_sp::make_tagged_fixnum(1);
-  T_sp v2 = T_sp::make_tagged_fixnum(2);
-  T_sp v3 = T_sp::make_tagged_fixnum(3);
-  T_sp v4 = T_sp::make_tagged_fixnum(4);
+  T_sp v1 = gc::make_tagged_fixnum<core::T_O>(1);
+  T_sp v2 = gc::make_tagged_fixnum<core::T_O>(2);
+  T_sp v3 = gc::make_tagged_fixnum<core::T_O>(3);
+  T_sp v4 = gc::make_tagged_fixnum<core::T_O>(4);
   printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
   int pow;
   int res;
@@ -782,7 +809,7 @@ T_sp core_callsByValuePerSecond() {
     timer.start();
     res = 0;
     for (size_t i = 0; i < times; ++i) {
-      v1 = T_sp::make_tagged_fixnum(i);
+      v1 = gc::make_tagged_fixnum<core::T_O>(i);
       res += callByValue(v1, v2, v3, v4);
     }
     timer.stop();
@@ -801,10 +828,10 @@ T_sp core_callsByValuePerSecond() {
 T_sp core_callsByConstantReferencePerSecond() {
   _G();
   LightTimer timer;
-  T_sp v1 = T_sp::make_tagged_fixnum(1);
-  T_sp v2 = T_sp::make_tagged_fixnum(2);
-  T_sp v3 = T_sp::make_tagged_fixnum(3);
-  T_sp v4 = T_sp::make_tagged_fixnum(4);
+  T_sp v1 = gc::make_tagged_fixnum<core::T_O>(1);
+  T_sp v2 = gc::make_tagged_fixnum<core::T_O>(2);
+  T_sp v3 = gc::make_tagged_fixnum<core::T_O>(3);
+  T_sp v4 = gc::make_tagged_fixnum<core::T_O>(4);
   printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
   int pow;
   int res;
@@ -814,7 +841,7 @@ T_sp core_callsByConstantReferencePerSecond() {
     timer.start();
     res = 0;
     for (size_t i = 0; i < times; ++i) {
-      v1 = T_sp::make_tagged_fixnum(i);
+      v1 = gc::make_tagged_fixnum<core::T_O>(i);
       res += callByConstRef(v1, v2, v3, v4);
     }
     timer.stop();
@@ -833,10 +860,10 @@ T_sp core_callsByConstantReferencePerSecond() {
 T_sp core_callsByPointerPerSecond() {
   _G();
   LightTimer timer;
-  T_sp v1 = T_sp::make_tagged_fixnum(1);
-  T_sp v2 = T_sp::make_tagged_fixnum(2);
-  T_sp v3 = T_sp::make_tagged_fixnum(3);
-  T_sp v4 = T_sp::make_tagged_fixnum(4);
+  T_sp v1 = gc::make_tagged_fixnum<core::T_O>(1);
+  T_sp v2 = gc::make_tagged_fixnum<core::T_O>(2);
+  T_sp v3 = gc::make_tagged_fixnum<core::T_O>(3);
+  T_sp v4 = gc::make_tagged_fixnum<core::T_O>(4);
   printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
   int pow, res;
   for (pow = 0; pow < 32; ++pow) {
@@ -845,7 +872,7 @@ T_sp core_callsByPointerPerSecond() {
     timer.start();
     res = 0;
     for (size_t i = 0; i < times; ++i) {
-      v1 = T_sp::make_tagged_fixnum(i);
+      v1 = gc::make_tagged_fixnum<core::T_O>(i);
       res += callByPointer(v1.raw_(), v2.raw_(), v3.raw_(), v4.raw_());
     }
     timer.stop();
@@ -862,11 +889,22 @@ T_sp core_callsByPointerPerSecond() {
 #define DECL_core_callWithVariableBound ""
 #define DOCS_core_callWithVariableBound "callWithVariableBound"
 T_mv core_callWithVariableBound(Symbol_sp sym, T_sp val, T_sp thunk) {
-  DynamicScopeManager scope(sym, val);
-  return eval::funcall(thunk);
-  // Don't put anything in here - don't mess up the MV return
+  T_mv result;
+  cc_call_with_variable_bound(&result,sym.raw_(),val.raw_(),thunk.raw_());
+  return result;
 }
 
+#define ARGS_core_funwind_protect "(protected-fn cleanup-fn)"
+#define DECL_core_funwind_protect ""
+#define DOCS_core_funwind_protect "funwind_protect"
+T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
+  T_mv result;
+  cc_funwind_protect(&result,protected_fn.raw_(),cleanup_fn.raw_());
+  return result;
+}
+
+
+ 
 #define ARGS_core_multipleValueFuncall "(function-designator &rest functions)"
 #define DECL_core_multipleValueFuncall ""
 #define DOCS_core_multipleValueFuncall "multipleValueFuncall"
@@ -929,39 +967,19 @@ T_mv core_multipleValueProg1_Function(Function_sp func1, Function_sp func2) {
 #define DECL_core_catchFunction ""
 #define DOCS_core_catchFunction "catchFunction"
 T_mv core_catchFunction(T_sp tag, Function_sp func) {
-  int frame = _lisp->exceptionStack().push(CatchFrame, tag);
-  //	printf("%s:%d Entered catchFunction my-frame: %d CatchThrow type_info@%p\n", __FILE__, __LINE__, frame, (void*)&typeid(core::CatchThrow) );
   T_mv result;
-  try {
-    //		printf("%s:%d In catchFunction - evaluating function\n", __FILE__, __LINE__ );
-    result = eval::funcall(func);
-    //		printf("%s:%d In catchFunction - returned from function\n", __FILE__, __LINE__ );
-  } catch (CatchThrow &catchThrow) {
-    //		printf("%s:%d Caught CatchThrow exception frame: %d  my frame: %d\n", __FILE__, __LINE__, catchThrow.getFrame(), frame );
-    if (catchThrow.getFrame() != frame) {
-      throw catchThrow;
-    }
-    result = gctools::multiple_values<T_O>::createFromValues();
-  }
-  _lisp->exceptionStack().unwind(frame);
-  //	printf("%s:%d Leaving catchFunction my-frame: %d CatchThrow type_info@%p\n", __FILE__, __LINE__, frame, (void*)&typeid(core::CatchThrow) );
+  cc_catch(&result,tag.raw_(),func.raw_());
   return result;
 }
 
 #define ARGS_core_throwFunction "(tag result)"
 #define DECL_core_throwFunction ""
 #define DOCS_core_throwFunction "throwFunction TODO: The semantics are not followed here - only the first return value is returned!!!!!!!!"
-void core_throwFunction(T_sp tag, T_sp res) {
-  int frame = _lisp->exceptionStack().findKey(CatchFrame, tag);
-  if (frame < 0) {
-    CONTROL_ERROR();
-  }
-  //	printf("%s:%d throwFunction throwing to frame: %d  core::CatchThrow type_info@%p\n", __FILE__, __LINE__, frame, (void*)&typeid(core::CatchThrow));
-  T_mv result(res, 1); // THIS IS WRONG!!!! WE MUST HANDLE MULTIPLE VALUES!!!
-  result.saveToMultipleValue0();
-  throw CatchThrow(frame);
+void core_throwFunction(T_sp tag, T_sp result_form) {
+  cc_throw(tag.raw_(),result_form.raw_());
 }
 
+ 
 #define ARGS_core_progvFunction "(symbols values func)"
 #define DECL_core_progvFunction ""
 #define DOCS_core_progvFunction "progvFunction"
@@ -1003,9 +1021,12 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   SYMBOL_SC_(CorePkg, dlsym);
   Defun(dlsym);
 
+  CoreDefun(testTaggedCast);
+
   SYMBOL_SC_(CorePkg, dladdr);
   Defun(dladdr);
   CoreDefun(callDlMainFunction);
+  CoreDefun(funwind_protect);
 
   SYMBOL_SC_(CorePkg, loadBundle);
   CoreDefun(loadBundle);

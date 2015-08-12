@@ -561,7 +561,7 @@ public:
   string __repr__() const;
 
   explicit Archive_O();
-  virtual ~Archive_O();
+  virtual ~Archive_O() {};
 };
 
 SMART(LoadArchive);
