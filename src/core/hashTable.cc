@@ -259,6 +259,7 @@ void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
   this->_RehashSize = rehashSize;
   ASSERT(!clasp_zerop(this->_RehashSize));
   this->_RehashThreshold = rehashThreshold;
+  this->_HashTableCount = 0;
 }
 
 void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
@@ -637,6 +638,7 @@ bool HashTable_O::remhash(T_sp key) {
   if (keyValuePair.nilp() || oCdr(keyValuePair).unboundp())
     return false;
   keyValuePair.asCons()->setCdr(_Unbound<T_O>());
+  this->_HashTableCount--;
   return true;
 }
 

@@ -1,3 +1,7 @@
+
+;;;
+;;; Compile ASDF for bclasp
+;;;
 (compile-file "sys:kernel;asdf;build;asdf.lisp" 
               :output-file (compile-file-pathname
                             "sys:modules;asdf;asdf.lisp" 
@@ -5,18 +9,6 @@
               :print t)
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun rev (l)
-  (let ((result '()))
-    (loop until (null l)
-       do (push (pop l) result))
-    result))
-
-(defun bla ()
-  (loop with l = (make-list 10000) repeat 1000 do (rev l)))
-
-(time (bla))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -32,18 +24,8 @@
 ;;; wipe out .slime/fasl/2015-06-27/*
 ;;; clasp_boehm_o -f bclasp -f flow -f cclasp-eh
 
-(progn ;; Set up everything for building cclasp from bclasp
-  (format t "Loading ASDF system~%")
-  (time (require :asdf))
-  (load "sys:local-asdf-config.lisp")
-  (pushnew :cleavir *features*)
-  (format t "Loading :clasp-cleavir system~%")
-  (time (require :clasp-cleavir))
-  (load "sys:kernel;cleavir;inline.lisp")
-  )
-
 (progn
-  (progn ;; Set up everything for building cclasp from bclasp
+  (progn ;; Set up everything for building cclasp from bclasp with auto-compile
     (format t "Loading ASDF system~%")
     (time (require :asdf))
     (load "sys:local-asdf-config.lisp")
@@ -55,9 +37,22 @@
     (print (core:getpid))))
   (load "sys:kernel;cleavir;auto-compile.lisp"))
 
+(progn ;; Set up everything for building cclasp from bclasp
+  (format t "Loading ASDF system~%")
+  (time (require :asdf))
+  (load "sys:local-asdf-config.lisp")
+  (pushnew :cleavir *features*)
+  (format t "Loading :clasp-cleavir system~%")
+  (time (require :clasp-cleavir))
+  (load "sys:kernel;cleavir;inline.lisp"))
 
 
+(defparameter *a* 1)
+(clasp-cleavir::ast-form '(lambda () (let ((a 'foo)) (declare (special a)) (print a))))
+(clasp-cleavir::hir-form '(lambda () (setq *a* 'foo)))
+(clasp-cleavir::hir-form '(lambda () (let ((a 'foo)) (declare (special a)) (print a))))
 
+(clasp-cleavir::hir-form '(lambda () (block bar (let ((a 'foo)) (declare (special a)) (print a) (return-from bar nil)))))
 
 
 (clasp-cleavir::cleavir-compile-file "sys:tests;tsmall.lsp")

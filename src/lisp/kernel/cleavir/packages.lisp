@@ -85,6 +85,10 @@
    #:precalc-symbol-instruction-original-object
    #:precalc-value-instruction-original-object
    #:instruction-id
+   #:push-special-binding-instruction
+   #:make-push-special-binding-instruction
+   #:pop-special-binding-instruction
+   #:make-pop-special-binding-instruction
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir

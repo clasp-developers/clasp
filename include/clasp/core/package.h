@@ -61,6 +61,7 @@ GCPRIVATE: // instance variables
   gctools::Vec0<Package_sp> _PackagesUsedBy;
   bool _KeywordPackage;
   bool _AmpPackage;
+  bool _ActsLikeKeywordPackage;
   List_sp _Nicknames;
 
 public: // Creation class functions
@@ -99,6 +100,9 @@ public:
 
   void setKeywordPackage(bool b) { this->_KeywordPackage = b; };
   bool isKeywordPackage() const { return this->_KeywordPackage; };
+  // Cando makes a package that acts like the keyword package (symbol values are symbols and all symbols extern)
+  void setActsLikeKeywordPackage(bool b) { this->_ActsLikeKeywordPackage = b; };
+  bool actsLikeKeywordPackage() const { return this->_KeywordPackage||this->_ActsLikeKeywordPackage; };
 
   string allSymbols();
 
@@ -176,7 +180,7 @@ public:
   void mapInternals(KeyValueMapper *mapper);
 
 public:
-  Package_O() : _Nicknames(_Nil<T_O>()){};
+ Package_O() : _Nicknames(_Nil<T_O>()), _ActsLikeKeywordPackage(false) {};
   virtual ~Package_O(){};
 };
 

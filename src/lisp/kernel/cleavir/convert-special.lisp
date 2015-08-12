@@ -67,6 +67,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; convert-special-binding
+;;;
+;;; Convert a special binding to a BIND-AST
+;;;
+;;; Use the primop
+#+(or)(defmethod cleavir-generate-ast::convert-special-binding
+    (variable value-ast next-ast global-env (system clasp-cleavir:clasp))
+  (cleavir-ast:make-bind-ast
+   (cleavir-ast:make-load-time-value-ast `',variable t)
+   value-ast
+   next-ast))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Converting CORE:DEBUG-MESSAGE
 ;;;
 ;;; This is converted into a call to print a message
