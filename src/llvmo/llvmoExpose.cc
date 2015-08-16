@@ -3526,7 +3526,7 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
   if (!p) {
     SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % _rep_(functionName));
   }
-  CompiledClosure::fptr_type lisp_funcPtr = (CompiledClosure::fptr_type)(p);
+  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
   core::Cons_sp associatedFunctions = core::Cons_O::create(fn, _Nil<core::T_O>());
   core::SourceFileInfo_mv sfi = core_sourceFileInfo(fileName);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1)));
@@ -3543,7 +3543,7 @@ void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
   auto closure = func->closure.as<llvmo::CompiledClosure>();
   llvmo::Function_sp llvm_func = closure->llvmFunction;
   void *p = engine->getPointerToFunction(llvm_func->wrappedPtr());
-  CompiledClosure::fptr_type lisp_funcPtr = (CompiledClosure::fptr_type)(p);
+  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
   closure->fptr = lisp_funcPtr;
 }
 

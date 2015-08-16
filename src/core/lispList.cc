@@ -63,14 +63,14 @@ static bool
 test_compare(struct cl_test *t, T_sp x) {
   x = KEY(t, x);
   //t->env->function = t->test_function;
-  return (*t->test_fn->closure)(LCC_PASS_ARGS2(t->item_compared.raw_(), x.raw_())).notnilp();
+  return (*t->test_fn->closure)(LCC_PASS_ARGS2_ELLIPSIS(t->item_compared.raw_(), x.raw_())).notnilp();
 }
 
 static bool
 test_compare_not(struct cl_test *t, T_sp x) {
   x = KEY(t, x);
   //t->env->function = t->test_function;
-  return (*t->test_fn->closure)( LCC_PASS_ARGS2(t->item_compared.raw_(), x.raw_())).nilp();
+  return (*t->test_fn->closure)( LCC_PASS_ARGS2_ELLIPSIS(t->item_compared.raw_(), x.raw_())).nilp();
 }
 
 static bool
@@ -97,7 +97,7 @@ static T_sp
 key_function(struct cl_test *t, T_sp x) {
   //t->env->function = t->key_function;
   T_mv result;
-  return (*t->key_fn->closure)(LCC_PASS_ARGS1(x.raw_()));
+  return (*t->key_fn->closure)(LCC_PASS_ARGS1_ELLIPSIS(x.raw_()));
 }
 
 static T_sp

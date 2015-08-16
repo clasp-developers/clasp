@@ -61,9 +61,10 @@ public:
   size_t runningFilePos;
   int runningLineNumber;
   int runningColumn;
-
+  void* _RegisterArguments;
+  void* _StackArguments; 
 public:
-  InvocationHistoryFrame(Closure *fc, T_sp env = _Nil<T_O>());
+  InvocationHistoryFrame(Closure *fc, va_list args, T_sp env = _Nil<T_O>());
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
   ATTR_WEAK virtual ~InvocationHistoryFrame();
   InvocationHistoryFrame *next() { return this->_Next; };
@@ -72,6 +73,8 @@ public:
   virtual size_t filepos() const { return this->runningFilePos; };
   virtual int lineno() const { return this->runningLineNumber; };
   virtual int column() const { return this->runningColumn; };
+  VectorObjects_sp arguments() const;
+  string argumentsAsString(int maxWidth) const;
   virtual void setSourcePos(int fileHandle, size_t filePos, uint lineNumber, uint column) {
     this->runningSourceFileInfoHandle = fileHandle;
     this->runningFilePos = filePos;
@@ -291,7 +294,7 @@ public:
 };
 };
 
-#define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(this);
+#define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(this,lcc_arglist);
 
 namespace core {
 void core_lowLevelBacktrace();
@@ -300,5 +303,8 @@ void core_dynamicBindingStackDump(std::ostream &out);
 
 void initialize_stacks();
 };
+
+
+
 
 #endif /* _core_stacks_H_ */

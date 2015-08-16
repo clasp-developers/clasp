@@ -196,8 +196,8 @@ public:
     Bignum_sp nameKey = gc::As<Bignum_sp>(key);
     Symbol_sp svalue = gc::As<Symbol_sp>(value);
 
-    T_mv values = this->_me->_findSymbol(nameKey);
-    Symbol_sp mine = gc::As<Symbol_sp>(values);
+    Symbol_mv values = this->_me->_findSymbol(nameKey);
+    Symbol_sp mine = values;
     T_sp foundp = values.second();
     if (foundp.notnilp() && mine != svalue) {
       LOG(BF("usePackage conflict - my symbol[%s] : usePackage symbol[%s]") % _rep_(mine) % _rep_(svalue));

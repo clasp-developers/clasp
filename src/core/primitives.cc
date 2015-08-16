@@ -1789,3 +1789,99 @@ void initializePythonPrimitives(Lisp_sp lisp) {
 }
 
 }; /* core */
+
+
+namespace core {
+
+EXPOSE_CLASS(core,InvocationHistoryFrameIterator_O);
+
+bool satisfiesTest(InvocationHistoryFrameIterator_sp iterator, T_sp test) {
+  if ( !iterator->isValid() ) {
+    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+  }
+  if ( test.nilp()) return true;
+  return eval::funcall(test,iterator).isTrue();
+}
+
+void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationHistoryFrameIterator_sp iterator, T_sp test) {
+  do {
+    if ( !iterator->isValid() ) return;
+    if ( satisfiesTest(iterator,test) ) {
+      if ( num == 0 ) return;
+      --num;
+    }
+    iterator->setCurrent(iterator->getCurrent()->_Next);
+  } while (num>=0);
+}
+
+#define ARGS_core_makeInvocationHistoryFrameIterator ""
+#define DECL_core_makeInvocationHistoryFrameIterator ""
+#define DOCS_core_makeInvocationHistoryFrameIterator "Return the InvocationHistoryFrameIterator for the frame that is the (first) that satisfies (test)"
+InvocationHistoryFrameIterator_sp core_makeInvocationHistoryFrameIterator(Fixnum first, T_sp test ) {
+  InvocationHistoryFrame *cur = _lisp->invocationHistoryStack().top();
+  InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create();
+  iterator->setCurrent(cur);
+  nextInvocationHistoryFrameIteratorThatSatisfiesTest(first,iterator,test);
+  return iterator;
+}
+
+
+InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::nextFrame(T_sp test)
+{
+  nextInvocationHistoryFrameIteratorThatSatisfiesTest(1,this->asSmartPtr(),test);
+  return this->asSmartPtr();
+}
+
+T_sp InvocationHistoryFrameIterator_O::functionName() {
+  if ( !this->isValid() ) {
+    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+  }
+  Closure* closure = this->_Current->closure;
+  if ( closure==NULL ) {
+    SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
+  }
+  return closure->name;
+}
+
+
+T_sp InvocationHistoryFrameIterator_O::environment() {
+  if ( !this->isValid() ) {
+    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+  }
+  Closure* closure = this->_Current->closure;
+  if ( closure==NULL ) {
+    SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
+  }
+  return closure->closedEnvironment;
+}
+
+Vector_sp InvocationHistoryFrameIterator_O::arguments() {
+  if ( !this->isValid() ) {
+    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+  }
+  InvocationHistoryFrame* frame = this->_Current;
+  return frame->arguments();
+}
+
+
+void InvocationHistoryFrameIterator_O::exposeCando(::core::Lisp_sp lisp) {
+  ::core::class_<InvocationHistoryFrameIterator_O>()
+    .def("frameIteratorFunctionName",&InvocationHistoryFrameIterator_O::functionName)
+    .def("frameIteratorArguments",&InvocationHistoryFrameIterator_O::arguments)
+    .def("frameIteratorEnvironment",&InvocationHistoryFrameIterator_O::environment)
+    .def("frameIteratorIsValid",&InvocationHistoryFrameIterator_O::isValid)
+    .def("frameIteratorNextFrame",&InvocationHistoryFrameIterator_O::nextFrame)
+      //	.initArgs("(self)")
+    ;
+  SYMBOL_SC_(CorePkg, makeInvocationHistoryFrameIterator);
+  CoreDefun(makeInvocationHistoryFrameIterator);
+};
+
+void InvocationHistoryFrameIterator_O::exposePython(::core::Lisp_sp lisp) {
+//	PYTHON_CLASS_2BASES(Pkg(),Vector,"","",_LISP)
+#ifdef USEBOOSTPYTHON
+#endif
+}
+
+};
+

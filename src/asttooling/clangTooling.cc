@@ -146,13 +146,13 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
     } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
       gctools::tagged_functor<core::Closure> closure = func->closure;
       if (auto compiledClosure = closure.asOrNull<llvmo::CompiledClosure>()) {
-        llvmo::CompiledClosure::fptr_type fptr = compiledClosure->fptr;
+        core::CompiledClosure_fptr_type fptr = compiledClosure->fptr;
         this->_v = [fptr](const clang::tooling::CommandLineArguments &args) -> clang::tooling::CommandLineArguments {
 			// Should resolve to vector<string>
 			core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
 			core::T_mv result;
 			// Call the fptr
-			result = fptr(_Nil<core::T_O>().raw_(),1,targs.raw_(),NULL,NULL,NULL,NULL);
+			result = fptr(_Nil<core::T_O>().raw_(),LCC_PASS_ARGS1_VA_LIST(targs.raw_()));
 			// Should resolve to const vector<string>& 
 			translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
 			return cresult._v;

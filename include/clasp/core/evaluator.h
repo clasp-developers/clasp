@@ -150,14 +150,16 @@ inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
     // While booting, cl::_sym_findClass will apply'd before
     // it is bound to a symbol
     if (fn == cl::_sym_findClass) {
-      return (cl_findClass(gc::As<Symbol_sp>(arg0), false, _Nil<T_O>()));
+      Class_mv cl = cl_findClass(gc::As<Symbol_sp>(arg0),false,_Nil<T_O>());
+      T_sp res = cl;
+      return res;
     }
     ERROR_UNDEFINED_FUNCTION(fn);
   }
   Function_sp func = tfunc.asOrNull<Function_O>();
   ASSERT(func);
   gctools::tagged_functor<Closure> ft = func->closure;
-  return (*ft)(2, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_UNUSED_rest2());
+  return (*ft)(LCC_PASS_ARGS2_ELLIPSIS(LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1)));
 }
 
 template <class ARG0, class ARG1, class ARG2>
@@ -167,7 +169,7 @@ inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
   gctools::tagged_functor<Closure> ft = func->closure;
-  return (*ft)(3, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_UNUSED_rest3());
+  return (*ft)(LCC_PASS_ARGS3_ELLIPSIS(LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
 }
 
 template <class ARG0, class ARG1, class ARG2, class ARG3>

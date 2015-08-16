@@ -114,7 +114,7 @@ public:
   LCC_RETURN LISP_CALLING_CONVENTION() {
     List_sp form = gc::As<Cons_sp>(LCC_ARG0());
     T_sp env = gc::As<T_sp>(LCC_ARG1());
-    InvocationHistoryFrame _frame(this); // The environment could be a Non-Clasp Environment (Cleavir)
+    InvocationHistoryFrame _frame(this, lcc_arglist); // The environment could be a Non-Clasp Environment (Cleavir)
     return (this->mptr)(form, env);
   };
 };

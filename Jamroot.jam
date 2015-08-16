@@ -50,6 +50,7 @@ init clasp ;
 
 project clasp : requirements
 	<include>include
+        <define>X86
 	<define>BUILDING_CLASP
 	<define>INHERITED_FROM_SRC
         <warnings>on

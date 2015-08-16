@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 extern "C" {
 
-typedef void (*fnLispCallingConvention)(LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS);
 
 void cc_call_with_variable_bound(core::T_mv* result, core::T_O* symbol, core::T_O* value, core::T_O* thunk);
 void cc_funwind_protect(core::T_mv* result, core::T_O* protected_fn, core::T_O* cleanup_fn);

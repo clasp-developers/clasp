@@ -207,46 +207,6 @@
 			(cmp:irc-low-level-trace :arguments)
 			phi-arg-idx-final))))))))))))
 
-
-
-
-
-#+(or)
-(defun compile-general-lambda-list-code (reqargs 
-					 optargs 
-					 rest-var 
-					 key-flag 
-					 keyargs 
-					 allow-other-keys
-					 outputs
-					 calling-conv )
-  (cmp:calling-convention-write-passed-arguments-to-multiple-values calling-conv ENVIRONMENT)
-  (let* ((arg-idx-alloca (alloca-size_t "arg-idx-alloca")))
-    (%store (%size_t 0) arg-idx-alloca)
-    (let* ((reqs (gather-required-arguments reqargs calling-conv arg-idx-alloca))
- 	   (true-val (%literal t "T"))
-	   (opts (gather-optional-arguments optargs calling-conv arg-idx-alloca true-val))
-	   (rest (compile-rest-argument rest-var calling-conv arg-idx-alloca))
-	   (keys (compile-key-arguments keyargs allow-other-keys calling-conv arg-idx-alloca true-val)))
-      (dolist (req reqs)
-	(let ((out (translate-datum (pop outputs))))
-	  (%store (cmp:irc-load req) out)))
-      (dolist (opt opts)
-	(let ((out (translate-datum (pop outputs))))
-	  (%store (cmp:irc-load opt) out)))
-      (when rest-var
-	(%store (cmp:irc-load (translate-datum rest-var)) (translate-datum (pop outputs))))
-      (do* ((cur-key (cdr keyargs) (cddddr cur-key))
-	    (target (caddr cur-key) (caddr cur-key))
-	    (supplied (cadddr cur-key) (cadddr cur-key)))
-	   ((null cur-key))
-	(let ((target-output-ref (translate-datum (pop outputs)))
-	      (supplied-output-ref (translate-datum (pop outputs))))
-	  (%store (cmp:irc-load (translate-datum target)) target-output-ref)
-	  (%store (cmp:irc-load (translate-datum supplied)) supplied-output-ref)))
-      )))
-
-
 (defun compile-general-lambda-list-code (reqargs 
 					 optargs 
 					 rest-var 
@@ -308,12 +268,6 @@
 	#+(or)(format t "compile-<=3-required-arguments store: ~a to ~a  target: ~a~%" arg dest target)
 	(llvm-sys:create-store cmp:*irbuilder* arg dest nil)))))
 
-
-
-
-
-
-
 (defun compile-lambda-list-code (lambda-list outputs calling-conv)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys)
       (core:process-lambda-list lambda-list 'core::function)
@@ -347,3 +301,48 @@
 					   allow-other-keys
 					   outputs
 					   calling-conv ))))))
+
+
+;;; Process arguments for bclasp
+(defun bclasp-compile-lambda-list-code (lambda-list-handler
+                                        old-env
+                                        args
+                                        new-env)
+  (break "What do the inputs look like?")
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
+      (process-lambda-list-handler lambda-list-handler)
+    (let (outputs)
+      (dolist (req reqargs)
+        (push (irc-alloca-tsp new-env) outputs))
+      (dolist (opt optargs)
+        (push (irc-alloca-tsp new-env) outputs)   ;; opt target
+        (push (irc-alloca-tsp new-env) outputs)   ;; opt-p target
+        )
+      (if rest-var
+          (push (irc-alloca-tsp new-env) outputs) ;; rest target
+          )
+      (dolist (key keyargs)
+        (push (irc-alloca-tsp new-env) outputs)   ;; key target
+        (push (irc-alloca-tsp new-env) outputs)   ;; key-p target
+        )
+      (setq outputs (nreverse outputs))
+      (let ((req-opt-only (and (not rest-var)
+                               (not key-flag)
+                               (eql 0 (car keyargs))
+                               (eql 0 (car auxargs))
+                               (not allow-other-keys)))
+            (num-req (car reqargs))
+            (num-opt (car optargs)))
+        (cond
+          ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
+          ((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
+           (compile-<=3-required-arguments reqargs old-env args new-env))
+          ;; Test for
+          ;; (x &optional y)
+          ;; (x y &optional z)
+          (t
+           (compile-general-lambda-list-code lambda-list-handler old-env args new-env))))
+      ;; Now copy outputs into the targets and generate code for initializers if opt-p or key-p is not defined
+      )))
+
+        

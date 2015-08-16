@@ -40,6 +40,8 @@ local unity_sources =
       all.cc ;
 
 local sources =
+	    primitives.cc
+      stacks.cc
       random.cc
       cxxObject.cc
       cxxClass.cc
@@ -115,12 +117,10 @@ local sources =
       commonLispUserPackage.cc
 	    metaClass.cc
 	    multipleValues.cc
-      stacks.cc
       testing.cc
       predicates.cc
       write_list.cc
 	    str.cc
-	    primitives.cc
 #	    symbolList.cc
 	    package.cc
       commonLispPackage.cc

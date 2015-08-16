@@ -152,4 +152,40 @@ void initialize_primitives();
 /*! Expose the primitives to python */
 void initializePythonPrimitives(Lisp_sp lisp);
 };
+
+
+namespace core {
+  FORWARD(InvocationHistoryFrameIterator);
+  class InvocationHistoryFrameIterator_O : public T_O {
+    LISP_BASE1(T_O);
+    LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator");
+  private: // instance variables here
+    InvocationHistoryFrame*  _Current;
+  public:
+  InvocationHistoryFrameIterator_O() : _Current(NULL) {};
+    virtual ~InvocationHistoryFrameIterator_O() {};
+    
+  public:  // Functions here
+    static InvocationHistoryFrameIterator_sp make(Fixnum first, T_sp test = _Nil<T_O>());
+  public:
+    InvocationHistoryFrameIterator_sp nextFrame(T_sp test);
+    void setCurrent(InvocationHistoryFrame* cur) { this->_Current = cur;};
+    InvocationHistoryFrame* getCurrent() { return this->_Current;};
+    T_sp functionName();
+    Vector_sp arguments();
+    T_sp environment();
+    InvocationHistoryFrameIterator_sp copy() {
+      InvocationHistoryFrameIterator_sp cp = InvocationHistoryFrameIterator_O::create();
+      cp->_Current = this->_Current;
+      return cp;
+    };
+    /*! Return true if this points to a real InvocationHistoryFrame */
+    bool isValid() { return this->_Current!=NULL;};
+  }; /* core */
+};
+TRANSLATE(core::InvocationHistoryFrameIterator_O);
+
+
+
+
 #endif /* _core_primitives_H */

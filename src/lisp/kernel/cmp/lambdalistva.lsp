@@ -65,7 +65,7 @@
       ((and (atom head) (symbolp head))
        (let ((nargs (length (cdr form)))
              args
-             (temp-result (irc-alloca-tsp evaluate-env)))
+             (temp-result (irc-alloca-tsp)))
          (dbg-set-invocation-history-stack-top-source-pos form)
          ;; evaluate the arguments into the array
          ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
@@ -134,7 +134,7 @@
   (when (eq (car target) 'ext:special-var)
     (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it\n" target)
     (let* ((target-symbol (cdr target))
-	   (saved-special-val (irc-alloca-tsp env :label (bformat nil "saved->%s" (symbol-name target-symbol)))))
+	   (saved-special-val (irc-alloca-tsp :label (bformat nil "saved->%s" (symbol-name target-symbol)))))
       (irc-intrinsic "symbolValueReadOrUnbound" saved-special-val (irc-global-symbol target-symbol env))
       (when make-unbound
 	(irc-intrinsic "makeUnboundTsp" (irc-intrinsic "symbolValueReference" (irc-global-symbol target-symbol env))))
@@ -284,7 +284,7 @@ will put a value into target-ref."
     (do* ((cur-req (cdr reqargs) (cdr cur-req))
 	  (arg-idx entry-arg-idx (irc-add arg-idx (jit-constant-i32 1) "arg-idx")))
 	 ((endp cur-req) (values arg-idx (nreverse registers)))
-      (let* ((register (irc-alloca-tsp new-env)))
+      (let* ((register (irc-alloca-tsp)))
 	(calling-convention-args.store args arg-idx register)
 	(push register registers)))))
   
@@ -293,7 +293,7 @@ will put a value into target-ref."
 
 
 (defun compile-required-arguments (reqargs env
-                                   args ;;  nargs va-list
+                                   args
 				   new-env
 				   entry-arg-idx ;; this is now in a register
 				   )
@@ -337,7 +337,7 @@ will put a value into target-ref."
 	(target (car cur-opt) (car cur-opt))
 	(init-form (cadr cur-opt) (cadr cur-opt))
 	(flag (caddr cur-opt) (caddr cur-opt))
-	(temp-result (irc-alloca-tsp new-env :label "temp-result"))
+	(temp-result (irc-alloca-tsp :label "temp-result"))
 	(arg-idx entry-arg-idx (irc-add arg-idx (jit-constant-size_t 1) "arg-idx")))
        ((endp cur-opt) arg-idx)
     (let ((arg-block (irc-basic-block-create "opt-arg"))
@@ -599,7 +599,7 @@ will put a value into target-ref."
   (do* ((cur-aux (cdr auxargs) (cddr cur-aux))
 	(target (car cur-aux) (car cur-aux))
 	(init-form (cadr cur-aux) (cadr cur-aux))
-	(temp-result (irc-alloca-tsp new-env :label "temp-result")))
+	(temp-result (irc-alloca-tsp :label "temp-result")))
        ;; TODO: setup one temp-result and use it for all types of args
        ((endp cur-aux) ())
     (compile-save-if-special new-env target))
@@ -607,7 +607,7 @@ will put a value into target-ref."
   (do* ((cur-aux (cdr auxargs) (cddr cur-aux))
 	(target (car cur-aux) (car cur-aux))
 	(init-form (cadr cur-aux) (cadr cur-aux))
-	(temp-result (irc-alloca-tsp new-env :label "temp-result")))
+	(temp-result (irc-alloca-tsp :label "temp-result")))
        ((endp cur-aux) ())
     ;; Copy the argument into _temp-result_
     (cmp-log "Compiling aux init-form %s\n" init-form)
@@ -625,7 +625,6 @@ will put a value into target-ref."
 ;;;				 &aux (nargs (first argument-holder)) (va-list (second argument-holder)))
   "Fill the dest-activation-frame with values using the
 lambda-list-handler/env/argument-activation-frame"
-  (calling-convention-write-passed-arguments-to-multiple-values args)
   ;; Declare the arg-idx i32 that stores the current index in the argument-activation-frame
   (dbg-set-current-debug-location-here)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
@@ -665,7 +664,7 @@ lambda-list-handler/env/argument-activation-frame"
     ))
 
 
-(defun compile-<=4-required-arguments (reqargs
+(defun compile-<=3-required-arguments (reqargs
                                        old-env
                                        args
                                        new-env)
@@ -708,8 +707,8 @@ lambda-list-handler/env/argument-activation-frame"
           (num-opt (car optargs)))
       (cond
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-        ((and req-opt-only (<= num-req 4) (eql 0 num-opt) )
-         (compile-<=4-required-arguments reqargs old-env args new-env))
+        ((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
+         (compile-<=3-required-arguments reqargs old-env args new-env))
         ;; Test for
         ;; (x &optional y)
         ;; (x y &optional z)

@@ -102,7 +102,7 @@ Return the ltv index of the value."
 
 
 
-(defmacro with-coalesce-load-time-value ((ltv-ref result obj env)
+(defmacro with-coalesce-load-time-value ((ltv-ref result obj)
 					 &key coalesce-hash-table maker
 					   (push-and-get-reference-fn-name "loadTimeValueReference")
 					   (copy-value-fn-name "copyLoadTimeValue")
@@ -127,7 +127,7 @@ Return the ltv index of the value."
 	     (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
 	     (irc-low-level-trace)
 	     (let ((,ltv-ref (irc-intrinsic ,push-and-get-reference-fn-name  *load-time-value-holder-global-var* (jit-constant-i32 ,index-gs))))
-	       (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*) ;(irc-get-cleanup-landing-pad-block ,env)
+	       (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
 		 (cmp-log "About to generate code for load-time-value maker: %s\n" ',maker)
 ;;		 (break "Where will codegeneration go?")
 		 ,maker))
@@ -151,7 +151,7 @@ Return the ltv index of the value."
      ))
 
 
-(defmacro with-walk-structure ((obj env) &key maker walker)
+(defmacro with-walk-structure ((obj) &key maker walker)
   (let ((idx-gs (gensym "idx"))
 	(foundp-gs (gensym "foundp")))
     `(multiple-value-bind (,idx-gs ,foundp-gs)
@@ -174,7 +174,7 @@ Return the ltv index of the value."
 
 
 (defun walk-structure-simple (cur env)
-  (with-walk-structure (cur env)
+  (with-walk-structure (cur)
     :maker (codegen-literal nil cur env)))
 
 
@@ -183,7 +183,7 @@ Return the ltv index of the value."
   "If the CONS cur is not in the *node-table* then create
 an ltv for it, put it in the *node-table*
 and walk the car and cdr"
-  (with-walk-structure (cur env)
+  (with-walk-structure (cur)
     :maker (make-ltv-cons cur env)
     :walker (progn
 	      (walk-structure (car cur) env)
@@ -227,7 +227,7 @@ and walk the car and cdr"
 
 
 (defun walk-structure-array-objects (obj env)
-  (with-walk-structure (obj env)
+  (with-walk-structure (obj)
     :maker (make-ltv-array-objects obj env)
     :walker (let ((total-size (if (array-has-fill-pointer-p obj)
 				  (length obj)
@@ -236,8 +236,7 @@ and walk the car and cdr"
 		(walk-structure (row-major-aref obj idx) env)))))
 
 (defun make-ltv-array-objects (val env)
-  (let ((array-element-type (irc-alloca-tsp *load-time-initializer-environment*
-					    :irbuilder *irbuilder-ltv-function-alloca*
+  (let ((array-element-type (irc-alloca-tsp :irbuilder *irbuilder-ltv-function-alloca*
 					    :label "array-element-type")))
     (with-irbuilder (*irbuilder-ltv-function-body*)
       (codegen-literal array-element-type (array-element-type val) *load-time-initializer-environment*))
@@ -265,7 +264,7 @@ and walk the car and cdr"
 
 
 (defun walk-structure-hash-table (obj env)
-  (with-walk-structure (obj env)
+  (with-walk-structure (obj)
     :maker (make-ltv-hash-table obj env)
     :walker (maphash #'(lambda (key val)
 			 (walk-structure key env)
@@ -273,8 +272,7 @@ and walk the car and cdr"
 		     obj)))
 
 (defun make-ltv-hash-table (val env)
-  (let ((ht-test (irc-alloca-tsp *load-time-initializer-environment*
-				 :irbuilder *irbuilder-ltv-function-alloca*
+  (let ((ht-test (irc-alloca-tsp :irbuilder *irbuilder-ltv-function-alloca*
 				 :label "hash-table-test")))
     (with-irbuilder (*irbuilder-ltv-function-body*)
       (codegen-literal ht-test (hash-table-test val) *load-time-initializer-environment*))
@@ -348,8 +346,8 @@ and walk the car and cdr"
 (defvar *fixnum-coalesce* nil
   "Store a hash-table-eql of fixnums to indices")
 
-(defun codegen-ltv-fixnum (result obj env)
-  (with-coalesce-load-time-value (ltv-ref result obj env)
+(defun codegen-ltv-fixnum (result obj)
+  (with-coalesce-load-time-value (ltv-ref result obj)
     :coalesce-hash-table *fixnum-coalesce*
     :maker (irc-intrinsic "makeFixnum" ltv-ref #+address-model-64(jit-constant-i64 obj) #-address-model-64(error "Fix for non-64bit address model"))))
 
@@ -357,17 +355,17 @@ and walk the car and cdr"
 
 
 (defvar *bignum-coalesce* nil)
-(defun codegen-ltv-bignum (result obj env)
-  (with-coalesce-load-time-value (ltv-temp result obj env)
+(defun codegen-ltv-bignum (result obj)
+  (with-coalesce-load-time-value (ltv-temp result obj)
     :coalesce-hash-table *bignum-coalesce*
     :maker (let ((string-arg (jit-make-global-string-ptr (bformat nil "%d" obj))))
 	     (irc-intrinsic "makeBignum" ltv-temp string-arg))))
 
 
 (defvar *symbol-coalesce* nil)
-(defun codegen-ltv/symbol (result symbol env)
+(defun codegen-ltv/symbol (result symbol)
   (or *the-module* (error "codegen-ltv/symbol *the-module* is NIL"))
-  (with-coalesce-load-time-value (ltv-temp result symbol env)
+  (with-coalesce-load-time-value (ltv-temp result symbol)
     :coalesce-hash-table *symbol-coalesce*
     :maker (let* ((sn (symbol-name symbol))
 		  (sym-pkg (symbol-package symbol))
@@ -404,30 +402,25 @@ and walk the car and cdr"
 
 
 (defvar *character-coalesce* nil)
-(defun codegen-ltv/character (result obj env)
+(defun codegen-ltv/character (result obj)
   "Return IR code that generates a Character_sp object"
-  (with-coalesce-load-time-value (ltv-ref result obj env)
+  (with-coalesce-load-time-value (ltv-ref result obj)
     :coalesce-hash-table *character-coalesce*
     :maker (let ((constant-ap-arg (jit-constant-i32 (char-code obj))))
 	     (irc-intrinsic "makeCharacter" ltv-ref constant-ap-arg))))
 
-
-
-
-
-
-(defun codegen-ltv/integer (result obj env)
+(defun codegen-ltv/integer (result obj)
   (cond
-    ((fixnump obj) (codegen-ltv-fixnum result obj env))
-    ((bignump obj) (codegen-ltv-bignum result obj env))
+    ((fixnump obj) (codegen-ltv-fixnum result obj))
+    ((bignump obj) (codegen-ltv-bignum result obj))
     (t (error "Illegal argument ~a for codegen-ltv/integer" obj))))
 
 
 
 (defvar *string-coalesce* nil)
-(defun codegen-ltv/string (result str env)
+(defun codegen-ltv/string (result str)
   "Return IR code that generates a string"
-  (with-coalesce-load-time-value (ltv-ref result str env)
+  (with-coalesce-load-time-value (ltv-ref result str)
     :coalesce-hash-table *string-coalesce*
     :maker (let* ((constant (llvm-sys:make-string-global *the-module* str))
 		  (ptr (llvm-sys:create-in-bounds-gep *irbuilder* constant
@@ -435,9 +428,9 @@ and walk the car and cdr"
 	     (irc-intrinsic "makeString" ltv-ref ptr))))
 
 (defvar *pathname-coalesce* nil)
-(defun codegen-ltv/pathname (result pathname env)
+(defun codegen-ltv/pathname (result pathname)
   "Return IR code that generates a pathname"
-  (with-coalesce-load-time-value (ltv-ref result pathname env)
+  (with-coalesce-load-time-value (ltv-ref result pathname)
     :coalesce-hash-table *pathname-coalesce*
     :maker (let* ((constant (llvm-sys:make-string-global *the-module* (namestring pathname)))
 		  (ptr (llvm-sys:create-in-bounds-gep *irbuilder* constant
@@ -446,9 +439,9 @@ and walk the car and cdr"
 
 
 (defvar *package-coalesce* nil)
-(defun codegen-ltv/package (result package env)
+(defun codegen-ltv/package (result package)
   "Return IR code that generates a package"
-  (with-coalesce-load-time-value (ltv-ref result package env)
+  (with-coalesce-load-time-value (ltv-ref result package)
     :coalesce-hash-table *package-coalesce*
     :maker (let* ((constant (llvm-sys:make-string-global *the-module* (package-name package)))
 		  (ptr (llvm-sys:create-in-bounds-gep *irbuilder* constant
@@ -459,10 +452,9 @@ and walk the car and cdr"
 (defvar *built-in-class-coalesce* nil)
 (defun codegen-ltv/built-in-class (result built-in-class env)
   "Return IR code that generates a built-in-class for bootstrapping CLOS"
-  (with-coalesce-load-time-value (ltv-ref result (class-name built-in-class) env)
+  (with-coalesce-load-time-value (ltv-ref result (class-name built-in-class))
     :coalesce-hash-table *built-in-class-coalesce*
-    :maker (let ((class-name (irc-alloca-tsp *load-time-initializer-environment*
-					     :irbuilder *irbuilder-ltv-function-alloca*
+    :maker (let ((class-name (irc-alloca-tsp :irbuilder *irbuilder-ltv-function-alloca*
 					     :label "class-name")))
 	     (with-irbuilder (*irbuilder-ltv-function-body*)
 	       (codegen-literal class-name (class-name built-in-class) *load-time-initializer-environment*))
@@ -474,34 +466,34 @@ and walk the car and cdr"
 
 
 #+short-float(defvar *short-float-coalesce* nil)
-#+short-float(defun codegen-ltv-short-float (result dbl env)
-  (with-coalesce-load-time-value (ltv-ref result dbl env)
+#+short-float(defun codegen-ltv-short-float (result dbl)
+  (with-coalesce-load-time-value (ltv-ref result dbl)
     :coalesce-hash-table *short-float-coalesce*
     :maker (let* ((constant (llvm-sys:make-apfloat dbl))
 		  (constant-ap-arg (llvm-sys:constant-fp-get *llvm-context* constant)))
 	     (irc-intrinsic "makeShortFloat" ltv-ref constant-ap-arg))))
 
 (defvar *single-float-coalesce* nil)
-(defun codegen-ltv-single-float (result flt env)
-  (with-coalesce-load-time-value (ltv-ref result flt env)
+(defun codegen-ltv-single-float (result flt)
+  (with-coalesce-load-time-value (ltv-ref result flt)
     :coalesce-hash-table *single-float-coalesce*
     :maker (let* ((constant (llvm-sys:make-apfloat-float flt))
 		  (constant-ap-arg (llvm-sys:constant-fp-get *llvm-context* constant)))
 	     (irc-intrinsic "makeSingleFloat" ltv-ref constant-ap-arg))))
 
 (defvar *double-float-coalesce* nil)
-(defun codegen-ltv-double-float (result dbl env)
+(defun codegen-ltv-double-float (result dbl)
   "Return IR code that generates a double float"
-  (with-coalesce-load-time-value (ltv-ref result dbl env)
+  (with-coalesce-load-time-value (ltv-ref result dbl)
     :coalesce-hash-table *double-float-coalesce*
     :maker (let* ((constant (llvm-sys:make-apfloat-double dbl))
 		  (constant-ap-arg (llvm-sys:constant-fp-get *llvm-context* constant)))
 	     (irc-create-call "makeDoubleFloat" (list ltv-ref constant-ap-arg)))))
 
 (defvar *complex-coalesce* nil)
-(defun codegen-ltv-complex (result complex env)
+(defun codegen-ltv-complex (result complex)
   "Return IR code that generates a complex number"
-  (with-coalesce-load-time-value (ltv-ref result complex env)
+  (with-coalesce-load-time-value (ltv-ref result complex)
     :coalesce-hash-table *complex-coalesce*
     :maker (let* ((constant-r (llvm-sys:make-apfloat-double (realpart complex)))
                   (constant-i (llvm-sys:make-apfloat-double (imagpart complex)))
@@ -513,36 +505,36 @@ and walk the car and cdr"
 #+long-float(defvar *long-float-coalesce* nil)
 #+long-float(defun codegen-ltv-long-float (result val env)
   "Return IR code that generates a long float"
-  (with-coalesce-load-time-value (ltv-ref result val env)
+  (with-coalesce-load-time-value (ltv-ref result val)
     :coalesce-hash-table *long-float-coalesce*
     :maker (let* ((constant (llvm-sys:make-apfloat-long-float val))
 		  (constant-ap-arg (llvm-sys:constant-fp-get *llvm-context* constant)))
 	     (irc-intrinsic "makeLongFloat" ltv-ref constant-ap-arg))))
 
 
-(defun codegen-ltv/float (result arg env)
+(defun codegen-ltv/float (result arg)
   (cond
-    #+short-float((short-float-p arg)  (codegen-ltv-short-float result arg env))
-    ((single-float-p arg) (codegen-ltv-single-float result arg env))
-    ((double-float-p arg) (codegen-ltv-double-float result arg env))
-    #+long-float((long-float-p arg)   (codegen-ltv-long-float result arg env))
+    #+short-float((short-float-p arg)  (codegen-ltv-short-float result arg))
+    ((single-float-p arg) (codegen-ltv-single-float result arg))
+    ((double-float-p arg) (codegen-ltv-double-float result arg))
+    #+long-float((long-float-p arg)   (codegen-ltv-long-float result arg))
     (t (error "Illegal argument ~a for codegen-float" arg))))
 
-(defun codegen-ltv/complex (result arg env)
-  (codegen-ltv-complex result arg env))
+(defun codegen-ltv/complex (result arg)
+  (codegen-ltv-complex result arg))
 
 
 
 
 (defvar *nil-coalesce* nil)
-(defun codegen-ltv/nil (result env)
-  (with-coalesce-load-time-value (ltv-ref result nil env)
+(defun codegen-ltv/nil (result)
+  (with-coalesce-load-time-value (ltv-ref result nil)
     :coalesce-hash-table *nil-coalesce*
     :maker (irc-intrinsic "makeNil" ltv-ref)))
 
 (defvar *t-coalesce* nil)
 (defun codegen-ltv/t (result env)
-  (with-coalesce-load-time-value (ltv-ref result nil env)
+  (with-coalesce-load-time-value (ltv-ref result nil)
     :coalesce-hash-table *t-coalesce*
     :maker (irc-intrinsic "makeT" ltv-ref)))
 
@@ -672,7 +664,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defvar *symbol-type-symbol-coalesce* nil)
 (defun codegen-lts/symbol (result symbol env)
   (or *the-module* (error "codegen-lts/symbol *the-module* is NIL"))
-  (with-coalesce-load-time-value (lts-temp result symbol env)
+  (with-coalesce-load-time-value (lts-temp result symbol)
     :coalesce-hash-table *symbol-type-symbol-coalesce*
     :maker (let* ((sn (symbol-name symbol))
 		  (sym-pkg (symbol-package symbol))
@@ -818,7 +810,7 @@ marshaling of compiled quoted data"
                                                *gv-source-file-info-handle*)))
                (progn
                  ;; special values that will always be needed
-                 (codegen-ltv/nil nil ,fn-env-gs)
+                 (codegen-ltv/nil nil)
                  (codegen-ltv/t nil ,fn-env-gs)
                  ,@body))
              (with-irbuilder (*irbuilder-ltv-function-body*)
@@ -899,19 +891,19 @@ marshaling of compiled quoted data"
   "Generate a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively.  Write the value into the first argument and if the first argument is nil then return the index of the value in the load/run-time-value array"
   (if *generate-compile-file-load-time-values*
       (cond
-	((null obj) (codegen-ltv/nil result env))
-	((integerp obj) (codegen-ltv/integer result obj env))
-	((stringp obj) (codegen-ltv/string result obj env))
-	((pathnamep obj) (codegen-ltv/pathname result obj env))
-	((packagep obj) (codegen-ltv/package result obj env))
-	((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
-	((floatp obj) (codegen-ltv/float result obj env))
-	((complexp obj) (codegen-ltv/complex result obj env))
-	((symbolp obj) (codegen-ltv/symbol result obj env))
-	((characterp obj) (codegen-ltv/character result obj env))
-	((arrayp obj) (codegen-ltv/array result obj env))
-	((consp obj) (codegen-ltv/container result obj env))
-	((hash-table-p obj) (codegen-ltv/container result obj env))
+	((null obj) (codegen-ltv/nil result))
+	((integerp obj) (codegen-ltv/integer result obj))
+	((stringp obj) (codegen-ltv/string result obj))
+	((pathnamep obj) (codegen-ltv/pathname result obj))
+	((packagep obj) (codegen-ltv/package result obj))
+	((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env #|necessary|#))
+	((floatp obj) (codegen-ltv/float result obj))
+	((complexp obj) (codegen-ltv/complex result obj))
+	((symbolp obj) (codegen-ltv/symbol result obj))
+	((characterp obj) (codegen-ltv/character result obj))
+	((arrayp obj) (codegen-ltv/array result obj env #|necessary|#))
+	((consp obj) (codegen-ltv/container result obj env #|necessary|#))
+	((hash-table-p obj) (codegen-ltv/container result obj env #|necessary|#))
 	((typep obj '(or standard-object structure-object condition class))
 	 (error "Finish dealing with make-load-form")
 	 #||	 ;; Deal with coallescence of obj

@@ -102,7 +102,6 @@ Integer_sp core_cxxFibn(Fixnum_sp reps, Fixnum_sp num) {
   return Integer_O::create(z);
 }
 
-typedef LCC_RETURN (*InitFnPtr)( LCC_CLOSED_ENVIRONMENT, LCC_ARGS_ELIPSIS);
 
 T_sp varArgsList(int n_args, ...) {
   va_list ap;
@@ -246,7 +245,7 @@ LOAD:
     SIMPLE_ERROR(BF("Could not find initialization function %s") % mainName);
   }
   //	printf("%s:%d Found initialization function %s at address %p\n", __FILE__, __LINE__, mainName.c_str(), mainFunctionPointer);
-  (*mainFunctionPointer)( NULL, LCC_PASS_ARGS0());
+  (*mainFunctionPointer)(LCC_PASS_ARGS0_VA_LIST_INITFNPTR());
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 
@@ -364,7 +363,7 @@ T_sp af_dlsym(T_sp ohandle, Str_sp name) {
 #define DOCS_core_callDlMainFunction "(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)"
 void core_callDlMainFunction(Pointer_sp addr) {
   InitFnPtr mainFunctionPointer = (InitFnPtr)addr->ptr();
-  (*mainFunctionPointer)( NULL, LCC_PASS_ARGS0());
+  (*mainFunctionPointer)(LCC_PASS_ARGS0_VA_LIST_INITFNPTR());
 }
 
 #define ARGS_af_dladdr "(addr)"
@@ -889,9 +888,9 @@ T_sp core_callsByPointerPerSecond() {
 #define DECL_core_callWithVariableBound ""
 #define DOCS_core_callWithVariableBound "callWithVariableBound"
 T_mv core_callWithVariableBound(Symbol_sp sym, T_sp val, T_sp thunk) {
-  T_mv result;
-  cc_call_with_variable_bound(&result,sym.raw_(),val.raw_(),thunk.raw_());
-  return result;
+  DynamicScopeManager scope(sym, val);
+  return eval::funcall(thunk);
+  // Don't put anything in here - don't mess up the MV return
 }
 
 #define ARGS_core_funwind_protect "(protected-fn cleanup-fn)"
@@ -899,7 +898,61 @@ T_mv core_callWithVariableBound(Symbol_sp sym, T_sp val, T_sp thunk) {
 #define DOCS_core_funwind_protect "funwind_protect"
 T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   T_mv result;
-  cc_funwind_protect(&result,protected_fn.raw_(),cleanup_fn.raw_());
+  try {
+#ifdef DEBUG_FLOW_CONTROL
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+      printf("%s:%d In funwind_protect try\n", __FILE__, __LINE__ );
+      printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+    }
+#endif
+    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(protected_fn.raw_());
+    ASSERT(func!=NULL);
+    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
+  } catch (...) {
+#ifdef DEBUG_FLOW_CONTROL
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+      printf("%s:%d In funwind_protect catch(...) just caught\n", __FILE__, __LINE__ );
+      printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+    }
+#endif
+    // Save any return value that may be in the multiple value return array
+    gctools::Vec0<T_sp> savemv;
+    T_mv tresult;
+    tresult.readFromMultipleValue0();
+    tresult.saveToVec0(savemv);
+    {
+      core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(cleanup_fn.raw_());
+      ASSERT(func!=NULL);
+      auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+      tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
+    }
+    tresult.loadFromVec0(savemv);
+    tresult.saveToMultipleValue0();
+#ifdef DEBUG_FLOW_CONTROL
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+      printf("%s:%d In funwind_protect catch(...)    about to rethrow\n", __FILE__, __LINE__ );
+      printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+    }
+#endif
+    throw;
+  }
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d In funwind_protect  normal exit\n", __FILE__, __LINE__ );
+    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+  }
+#endif
+  gctools::Vec0<T_sp> savemv;
+  result.saveToVec0(savemv);
+  {
+    T_mv tresult;
+    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(cleanup_fn.raw_());
+    ASSERT(func!=NULL);
+    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
+  }
+  result.loadFromVec0(savemv);
   return result;
 }
 
@@ -966,9 +1019,44 @@ T_mv core_multipleValueProg1_Function(Function_sp func1, Function_sp func2) {
 #define ARGS_core_catchFunction "(tag func)"
 #define DECL_core_catchFunction ""
 #define DOCS_core_catchFunction "catchFunction"
-T_mv core_catchFunction(T_sp tag, Function_sp func) {
+T_mv core_catchFunction(T_sp tag, Function_sp thunk) {
   T_mv result;
-  cc_catch(&result,tag.raw_(),func.raw_());
+  int frame = _lisp->exceptionStack().push(CatchFrame, tag);
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d In cc_catch tag@%p thisFrame: %d\n", __FILE__, __LINE__, tag.raw_(), frame);
+    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+  }
+#endif
+  try {
+    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(thunk.raw_());
+    ASSERT(func!=NULL);
+    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
+  } catch (CatchThrow &catchThrow) {
+    if (catchThrow.getFrame() != frame) {
+#ifdef DEBUG_FLOW_CONTROL
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+        printf("- - - - - Rethrowing CatchThrow targetFrame[%d] (thisFrame is: %d)\n", catchThrow.getFrame(), frame);
+      }
+#endif
+      throw catchThrow;
+    }
+    result = gctools::multiple_values<T_O>::createFromValues();
+  }
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("- - - - - Matched CatchThrow (thisFrame is: %d)\n", frame);
+    printf("- - - - - Unwinding to thisFrame: %d\n", frame );
+  }
+#endif
+  _lisp->exceptionStack().unwind(frame);
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d  After cc_catch unwind\n", __FILE__, __LINE__ );
+    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+  }
+#endif
   return result;
 }
 
@@ -976,7 +1064,23 @@ T_mv core_catchFunction(T_sp tag, Function_sp func) {
 #define DECL_core_throwFunction ""
 #define DOCS_core_throwFunction "throwFunction TODO: The semantics are not followed here - only the first return value is returned!!!!!!!!"
 void core_throwFunction(T_sp tag, T_sp result_form) {
-  cc_throw(tag.raw_(),result_form.raw_());
+  int frame = _lisp->exceptionStack().findKey(CatchFrame, tag);
+  if (frame < 0) {
+    CONTROL_ERROR();
+  }
+#ifdef DEBUG_FLOW_CONTROL
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+    printf("%s:%d In cc_throw     throwing CatchThrow to reach targetFrame[%d]\n", __FILE__, __LINE__, frame);
+    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+  }
+#endif
+  T_mv result;
+  core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(result_form.raw_());
+  ASSERT(func!=NULL);
+  auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+  result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
+  result.saveToMultipleValue0();
+  throw CatchThrow(frame);
 }
 
  

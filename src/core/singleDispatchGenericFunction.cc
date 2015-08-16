@@ -160,7 +160,7 @@ LCC_RETURN SingleDispatchGenericFunctionClosure::LISP_CALLING_CONVENTION() {
   }
   // WARNING: DO NOT alter contents of _lisp->callArgs() or _lisp->multipleValues() above.
   // LISP_PASS ARGS relys on the extra arguments being passed transparently
-  return func->closure->invoke(LCC_PASS_ARGS);
+  return func->closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
 class SingleDispatch_OrderByClassPrecedence {

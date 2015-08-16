@@ -1236,11 +1236,8 @@ class CompiledClosure : public core::FunctionClosure {
   friend void dump_funcs(core::CompiledFunction_sp compiledFunction);
 
 public:
-  typedef LCC_RETURN (*fptr_type)(LCC_CLOSED_ENVIRONMENT, LCC_ARGS_ELIPSIS);
-
-public:
   core::T_sp llvmFunction;
-  fptr_type fptr;
+  core::CompiledClosure_fptr_type fptr;
   core::T_sp associatedFunctions;
   core::T_sp _lambdaList;
   // constructor
@@ -1250,7 +1247,7 @@ public:
   virtual void *functionAddress() const { return (void *)this->fptr; }
 
 public:
- CompiledClosure(core::T_sp functionName, core::T_sp spi, core::Symbol_sp type, fptr_type ptr, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
+ CompiledClosure(core::T_sp functionName, core::T_sp spi, core::Symbol_sp type, core::CompiledClosure_fptr_type ptr, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
                   core::T_sp ll)
       : FunctionClosure(functionName, spi, type, renv), fptr(ptr), associatedFunctions(assocFuncs), _lambdaList(ll){};
   void setAssociatedFunctions(core::List_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
@@ -1259,7 +1256,7 @@ public:
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
   DISABLE_NEW();
   LCC_RETURN LISP_CALLING_CONVENTION() {
-    core::InvocationHistoryFrame _frame(this, this->closedEnvironment);
+    core::InvocationHistoryFrame _frame(this, lcc_arglist, this->closedEnvironment);
     core::T_O* closedEnv = LCC_FROM_ACTIVATION_FRAME_SMART_PTR(this->closedEnvironment);
     core::T_mv result = (*(this->fptr))( closedEnv, LCC_PASS_ARGS);
     return result;

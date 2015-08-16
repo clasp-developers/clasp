@@ -47,16 +47,6 @@
 (defmacro with-one-source-database (&rest body)
   `(do-one-source-database #'(lambda () ,@body)))
 
-#+(or)
-(defun compile-only-required-arguments (lambda-list-handler old-env activation-frame)
-  "Create a new environment that expands env with the required arguments in lambda-list-handler.
-Also allocate a new runtime-env and copy the activation-frame into it because it only contains required arguments.
-Return the new environment."
-  (irc-new-value-environment
-   old-env
-   :number-of-arguments (number-of-lexical-variables lambda-list-handler)
-   :label "copy-req-args"
-   :fill-runtime-form (lambda (new-env) (irc-intrinsic "copyAFsp" (irc-renv new-env) activation-frame))))
 
 (defun compile-arguments (fn-name	; passed for logging only
 			  lambda-list-handler ; llh for function
@@ -76,10 +66,10 @@ Return the new environment."
   (irc-intrinsic "setParentOfActivationFrameTPtr" (irc-renv new-env) closed-over-renv)
   (cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
   (cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name (names-of-lexical-variables lambda-list-handler))
-  (compile-lambda-list-code lambda-list-handler
-                            function-env
-                            argument-holder
-                            new-env)
+  (bclasp-compile-lambda-list-code lambda-list-handler
+                                   function-env
+                                   argument-holder
+                                   new-env)
   (dbg-set-current-debug-location-here)
   ;;  (irc-intrinsic "debugInspectActivationFrame" closed-over-renv)
   ;;  (irc-intrinsic "debugInspectActivationFrame" (irc-renv new-env))
@@ -95,6 +85,7 @@ Return the new environment."
 (defvar *all-functions-for-one-compile* nil
   "All functions for one COMPILE are accumulated in this dynamic variable.
 COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name lambda-list)")
+
 
 
 (defun generate-llvm-function-from-code ( ;; Symbol xxx or (setf xxx) name of the function that is assigned to this code by
@@ -295,13 +286,13 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   "Evaluate forms discarding results but keep last one"
   (cmp-log "About to codegen-progn with forms: %s\n" forms)
   (if forms
-      (let ((temp-val (irc-alloca-tsp env :label "temp")))
-	(do* ((cur forms (cdr cur))
-	      (form (car cur) (car cur)))
-	     ((endp cur) nil)
-	  (if (not (null (cdr cur)))
-	      (codegen temp-val form env)
-	      (codegen result form env))))
+      (let ((temp-val (irc-alloca-tsp :label "temp")))
+        (do* ((cur forms (cdr cur))
+              (form (car cur) (car cur)))
+             ((endp cur) nil)
+          (if (not (null (cdr cur)))
+              (codegen temp-val form env)
+              (codegen result form env))))
       (codegen-literal result nil env)))
 
 (defun codegen-progv (result args env)
@@ -309,8 +300,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   (let ((symbols (car args))
 	(values (cadr args))
 	(forms (cddr args))
-	(evaluated-symbols (irc-alloca-tsp env :label "symbols"))
-	(evaluated-values (irc-alloca-tsp env :label "values"))
+	(evaluated-symbols (irc-alloca-tsp :label "symbols"))
+	(evaluated-values (irc-alloca-tsp :label "values"))
 	(save-specials (irc-alloca-i8* env :label "specials")))
     (cmp-log "Evaluating symbols: %s\n" symbols)
     (codegen evaluated-symbols symbols env)
@@ -328,9 +319,9 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun codegen-multiple-value-call (result rest env)
   (with-dbg-lexical-block (rest)
-    (let ((accumulate-results (irc-alloca-tsp env :label "acc-multiple-value-results"))
+    (let ((accumulate-results (irc-alloca-tsp :label "acc-multiple-value-results"))
 	  (temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
-	  (funcDesignator (irc-alloca-tsp env :label "funcDesignator"))
+	  (funcDesignator (irc-alloca-tsp :label "funcDesignator"))
 	  (func (irc-alloca-Function_sp env :label "func"))
 	  (accumulated-af (irc-alloca-afsp env :label "accumulated-activation-frame")))
       (codegen-literal accumulate-results nil env)
@@ -348,8 +339,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun codegen-multiple-value-prog1 (result rest env)
   (with-dbg-lexical-block (rest)
     (let ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
-	  (saved-values (irc-alloca-tsp env :label "multiple-value-prog1-saved-values"))
-	  (temp-val (irc-alloca-tsp env :label "temp-val")))
+	  (saved-values (irc-alloca-tsp :label "multiple-value-prog1-saved-values"))
+	  (temp-val (irc-alloca-tsp :label "temp-val")))
       ;; See the interpreter sp_multipleValueCall
       (codegen temp-mv-result (car rest) env)
       (irc-intrinsic "saveValues" saved-values temp-mv-result)
@@ -372,7 +363,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun codegen-setq (result setq-pairs env)
   "Carry out setq for a collection of pairs"
-  (let ((temp-res (irc-alloca-tsp env :label "tsetq")))
+  (let ((temp-res (irc-alloca-tsp :label "tsetq")))
     (if setq-pairs
 	(do* ((cur setq-pairs (cddr cur))
 	      (cur-var (car cur) (car cur))
@@ -443,8 +434,8 @@ env is the parent environment of the (result-af) value frame"
 	(do* ((cur-req (cdr reqvars) (cdr cur-req))
 	      (cur-exp exps (cdr cur-exp))
 	      (exp (car cur-exp) (car cur-exp))
-	      (temp (irc-alloca-tsp evaluate-env :label "let") 
-		    (irc-alloca-tsp evaluate-env :label "let")))
+	      (temp (irc-alloca-tsp :label "let") 
+		    (irc-alloca-tsp :label "let")))
 	     ((endp cur-req) nil)
 	  (vector-push-extend temp temps)
 	  (dbg-set-current-source-pos exp)
@@ -572,7 +563,7 @@ env is the parent environment of the (result-af) value frame"
 (defun compile-if-cond (cond env)
   "Generate code for cond that writes into result and then calls isTrue function that returns a boolean"
   (let (test-result)
-    (let ((test-temp-store (irc-alloca-tsp env :label "if-cond-tsp")))
+    (let ((test-temp-store (irc-alloca-tsp :label "if-cond-tsp")))
       (codegen test-temp-store cond env)
       (setq test-result (llvm-sys:create-icmp-eq *irbuilder* (irc-intrinsic "isTrue" test-temp-store) (jit-constant-i32 1) "ifcond")))
     test-result))
@@ -800,7 +791,7 @@ jump to blocks within this tagbody."
 		(irc-low-level-trace)
 		(irc-intrinsic "throwReturnFrom" (irc-global-symbol block-symbol env)))
 	      (let* ((local-return-block (lookup-metadata block-env :local-return-block))
-		     (saved-values (irc-alloca-tsp env :label "return-from-unwind-saved-values")))
+		     (saved-values (irc-alloca-tsp :label "return-from-unwind-saved-values")))
 		(codegen temp-mv-result return-form env)
 		(irc-intrinsic "saveValues" saved-values temp-mv-result) ;; moved saveValues here
 		(irc-unwind-into-environment env block-env)
@@ -975,7 +966,7 @@ jump to blocks within this tagbody."
 	   (unwind-form `(progn ,@(cdr rest)))
 	   (up-env (irc-make-unwind-protect-environment unwind-form env))
 	   (temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
-	   (saved-values (irc-alloca-tsp env :label "unwind-protect-saved-values"))
+	   (saved-values (irc-alloca-tsp :label "unwind-protect-saved-values"))
 	   )
       ;;Codegen the protected-form unwind to the unwind-landing-pad-block
       (with-try up-env
@@ -1002,7 +993,7 @@ jump to blocks within this tagbody."
     (let* ((catch-env (irc-new-catch-environment env))
 	   (tag (car rest))
 	   (body (cdr rest))
-	   (tag-store (irc-alloca-tsp catch-env :label "tag-store"))
+	   (tag-store (irc-alloca-tsp :label "tag-store"))
 	   (catch-frame-index (irc-alloca-i32-no-init catch-env :label "catch-frame-index"))
 	   traceid)
       (codegen tag-store tag catch-env)
@@ -1031,7 +1022,7 @@ jump to blocks within this tagbody."
 (defun codegen-throw (result rest env)
   (let ((tag (car rest))
 	(result-form (cadr rest)))
-    (let ((tag-store (irc-alloca-tsp env :label "tag-store"))
+    (let ((tag-store (irc-alloca-tsp :label "tag-store"))
 	  (result-mv-form-store (irc-alloca-tmv env :label "result-mv-form-store")))
       (codegen tag-store tag env)
       (codegen result-mv-form-store result-form env)
@@ -1173,28 +1164,27 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
 
 ;;
 ;; Why does this duplicate so much functionality from codegen-literal
-(defun codegen-atom (result obj env)
+(defun codegen-atom (result node env)
   "Generate code to generate the load-time-value of the atom "
   (if *generate-compile-file-load-time-values*
       (cond
-	((null obj) (codegen-ltv/nil result env))
-	((integerp obj) (codegen-ltv/integer result obj env))
-	((stringp obj) (codegen-ltv/string result obj env))
-	((pathnamep obj) (codegen-ltv/pathname result obj env))
-	((packagep obj) (codegen-ltv/package result obj env))
-	((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
-	((floatp obj) (codegen-ltv/float result obj env))
-	((complexp obj) (codegen-ltv/complex result obj env))
-	;; symbol would be here
-	((characterp obj) (codegen-ltv/character result obj env))
-	((arrayp obj) (codegen-ltv/array result obj env))
-	;; cons would be here
-	((hash-table-p obj) (codegen-ltv/container result obj env))
-	(t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name (class-of obj)) obj )))
+        ((null obj) (codegen-ltv/nil result))
+        ((integerp obj) (codegen-ltv/integer result obj))
+        ((stringp obj) (codegen-ltv/string result obj))
+        ((pathnamep obj) (codegen-ltv/pathname result obj))
+        ((packagep obj) (codegen-ltv/package result obj))
+        ((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
+        ((floatp obj) (codegen-ltv/float result obj))
+        ((complexp obj) (codegen-ltv/complex result obj))
+        ;; symbol would be here
+        ((characterp obj) (codegen-ltv/character result obj))
+        ((arrayp obj) (codegen-ltv/array result obj env))
+        ;; cons would be here
+        ((hash-table-p obj) (codegen-ltv/container result obj env))
+        (t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name (class-of obj)) obj )))
       ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
       ;; default module without coalescence.
       (codegen-rtv result obj env)))
-
 
 (defun treat-as-special-operator-p (sym)
   (cond
@@ -1220,22 +1210,20 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
       (when *code-walker*
         (setq form (funcall *code-walker* form env)))
       (if (atom form)
-	  (if (symbolp form)
-	      (codegen-symbol-value result form env)
-	      (codegen-atom result form env))
-	  (let ((head (car form))
-		(rest (cdr form)))
-	    (cmp-log "About to codegen special-operator or application for: %s\n" form)
-	    ;;	(trace-linenumber-column (walk-to-find-parse-pos form) env)
-	    (cond
-	      ((treat-as-special-operator-p head)
-	       (codegen-special-operator result head rest env))
-	      ((and head (symbolp head))
-	       (codegen-application result form env))
-	      (t
-	       (error "Handle codegen of cons: ~a" form))))))))
-
-
+          (if (symbolp form)
+              (codegen-symbol-value result form env)
+              (codegen-atom result form env))
+          (let ((head (car form))
+                (rest (cdr form)))
+            (cmp-log "About to codegen special-operator or application for: %s\n" form)
+            ;;  (trace-linenumber-column (walk-to-find-parse-pos form) env)
+            (cond
+              ((treat-as-special-operator-p head)
+               (codegen-special-operator result head rest env))
+              ((and head (symbolp head))
+               (codegen-application result form env))
+              (t
+               (error "Handle codegen of cons: ~a" form))))))))
 
 ;;------------------------------------------------------------
 ;;

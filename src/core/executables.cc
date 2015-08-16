@@ -135,7 +135,7 @@ T_sp InterpretedClosure::lambdaList() const {
 LCC_RETURN InterpretedClosure::LISP_CALLING_CONVENTION() {
   ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->closedEnvironment);
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
-  InvocationHistoryFrame _frame(this);
+  InvocationHistoryFrame _frame(this,lcc_arglist);
   lambdaListHandler_createBindings(this, this->_lambdaListHandler, scope, LCC_PASS_ARGS);
   ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
   VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();

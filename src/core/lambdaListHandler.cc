@@ -42,6 +42,8 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
+
+#if 0
 void lambdaListHandler_createBindings(core::FunctionClosure *closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
   // TODO: I should allocate this on the stack - but clang doesn't behave consistently
   // when I use variable stack arrays
@@ -57,6 +59,24 @@ void lambdaListHandler_createBindings(core::FunctionClosure *closure, core::Lamb
   //        printf("%s:%d returning from lambdaListHandler_createBindings\n", __FILE__, __LINE__);
   return;
 }
+#else
+
+void lambdaListHandler_createBindings(core::FunctionClosure *closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
+  // TODO: I should allocate this on the stack - but clang doesn't behave consistently
+  // when I use variable stack arrays
+  //        printf("%s:%d About to alloca with lcc_nargs = %zu\n", __FILE__, __LINE__, lcc_nargs);
+  //        T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
+  try {
+    llh->createBindingsInScope_va_list(lcc_nargs, lcc_arglist, scope);
+  } catch (...) {
+    printf("%s:%d Caught an exception while in createBindingsInScope_argArray_TPtr\n", __FILE__, __LINE__);
+    handleArgumentHandlingExceptions(closure);
+  }
+  //        printf("%s:%d returning from lambdaListHandler_createBindings\n", __FILE__, __LINE__);
+  return;
+}
+#endif
+
 
 T_sp evaluate_lambda_list_form(T_sp form, T_sp env) {
   // TODO:: The code should be compiled and not interpreted
@@ -410,7 +430,7 @@ SYMBOL_SC_(CorePkg, tooFewArguments);
 #define PASS_FUNCTION_KEYWORD bind_keyword_af
 #define PASS_ARGS ActivationFrame_sp args
 #define PASS_ARGS_NUM cl_length(args)
-#define PASS_NEXT_ARG() args->entry(arg_idx)
+#define PASS_NEXT_ARG(arg_idx) args->entry(arg_idx)
 #include "argumentBinding.cc"
 #undef PASS_FUNCTION_REQUIRED
 #undef PASS_FUNCTION_OPTIONAL
@@ -426,7 +446,23 @@ SYMBOL_SC_(CorePkg, tooFewArguments);
 #define PASS_FUNCTION_KEYWORD bind_keyword_argArray
 #define PASS_ARGS int n_args, ArgArray ap
 #define PASS_ARGS_NUM n_args
-#define PASS_NEXT_ARG() gctools::smart_ptr<core::T_O>((gctools::Tagged)ap[arg_idx])
+#define PASS_NEXT_ARG(arg_idx) gctools::smart_ptr<core::T_O>((gctools::Tagged)ap[arg_idx])
+#include "argumentBinding.cc"
+#undef PASS_FUNCTION_REQUIRED
+#undef PASS_FUNCTION_OPTIONAL
+#undef PASS_FUNCTION_REST
+#undef PASS_FUNCTION_KEYWORD
+#undef PASS_ARGS
+#undef PASS_ARGS_NUM
+#undef PASS_NEXT_ARG
+
+#define PASS_FUNCTION_REQUIRED bind_required_va_list
+#define PASS_FUNCTION_OPTIONAL bind_optional_va_list
+#define PASS_FUNCTION_REST bind_rest_va_list
+#define PASS_FUNCTION_KEYWORD bind_keyword_va_list
+#define PASS_ARGS size_t n_args, va_list arglist
+#define PASS_ARGS_NUM n_args
+#define PASS_NEXT_ARG(_ai) LCC_INDEXED_ARG(arglist,_ai)
 #include "argumentBinding.cc"
 #undef PASS_FUNCTION_REQUIRED
 #undef PASS_FUNCTION_OPTIONAL
@@ -442,7 +478,7 @@ SYMBOL_SC_(CorePkg, tooFewArguments);
 #define PASS_FUNCTION_KEYWORD bind_keyword_argArray_TPtr
 #define PASS_ARGS int n_args, T_O *ap[]
 #define PASS_ARGS_NUM n_args
-#define PASS_NEXT_ARG() gctools::smart_ptr<T_O>((gctools::Tagged)ap[arg_idx])
+#define PASS_NEXT_ARG(arg_idx) gctools::smart_ptr<T_O>((gctools::Tagged)ap[arg_idx])
 #include "argumentBinding.cc"
 #undef PASS_FUNCTION_REQUIRED
 #undef PASS_FUNCTION_OPTIONAL
@@ -522,6 +558,23 @@ void LambdaListHandler_O::createBindingsInScope_argArray_TPtr(int n_args, T_O *a
   }
   bind_rest_argArray_TPtr(this->_RestArgument, n_args, argArray, arg_idx, scope);
   bind_keyword_argArray_TPtr(this->_KeywordArguments, this->_AllowOtherKeys, n_args, argArray, arg_idx, scope);
+  bind_aux(this->_AuxArguments, scope);
+}
+
+void LambdaListHandler_O::createBindingsInScope_va_list(size_t nargs, va_list arglist,
+                                                         DynamicScopeManager &scope) {
+  _G();
+  if (UNLIKELY(!this->_CreatesBindings))
+    return;
+  int arg_idx = 0;
+  arg_idx = bind_required_va_list(this->_RequiredArguments, nargs, arglist, arg_idx, scope);
+  arg_idx = bind_optional_va_list(this->_OptionalArguments, nargs, arglist, arg_idx, scope);
+  if (UNLIKELY(arg_idx < nargs && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
+    throwTooManyArgumentsError(nargs, this->numberOfLexicalVariables());
+    //	    TOO_MANY_ARGUMENTS_ERROR();
+  }
+  bind_rest_va_list(this->_RestArgument, nargs, arglist, arg_idx, scope);
+  bind_keyword_va_list(this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
   bind_aux(this->_AuxArguments, scope);
 }
 

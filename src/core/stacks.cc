@@ -33,7 +33,9 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/str.h>
+#include <clasp/core/vectorObjects.h>
 #include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/write_ugly.h>
 #include <clasp/core/symbol.h>
 #include <clasp/core/wrappers.h>
 
@@ -83,8 +85,8 @@ Vector_sp ExceptionStack::backtrace() {
   return result;
 }
 
-InvocationHistoryFrame::InvocationHistoryFrame(Closure *c, T_sp env)
-    : closure(c), environment(env), runningSourceFileInfoHandle(c->sourceFileInfoHandle()), runningFilePos(c->filePos()), runningLineNumber(c->lineNumber()), runningColumn(c->column()) {
+InvocationHistoryFrame::InvocationHistoryFrame(Closure *c, va_list args, T_sp env)
+  : closure(c), environment(env), runningSourceFileInfoHandle(c->sourceFileInfoHandle()), runningFilePos(c->filePos()), runningLineNumber(c->lineNumber()), runningColumn(c->column()), _RegisterArguments((void*)(args->reg_save_area)), _StackArguments((void*)(args->overflow_arg_area)) {
   if (c->name.nilp()) {
     SIMPLE_ERROR(BF("The InvocationHistoryFrame closure has nil name"));
   }
@@ -115,6 +117,47 @@ void InvocationHistoryStack::setExpressionForTop(T_sp expression) {
   }
 }
 
+VectorObjects_sp InvocationHistoryFrame::arguments() const
+{
+#if defined(X86) && defined(_ADDRESS_MODEL_64)
+  size_t numberOfArguments = ((size_t*)(this->_RegisterArguments))[0];
+  VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(),numberOfArguments,cl::_sym_T_O->symbolValue());
+  switch (numberOfArguments) {
+  default:
+      for ( size_t i(LCC_FIXED_ARGS); i<numberOfArguments; ++i ) {
+        vargs->setf_elt(i,gc::smart_ptr<T_O>(((gc::Tagged*)(this->_StackArguments))[i-LCC_FIXED_ARGS]));
+      }
+  case 3:
+      vargs->setf_elt(2,gc::smart_ptr<T_O>(((gc::Tagged*)this->_RegisterArguments)[1+2]));
+  case 2:
+      vargs->setf_elt(1,gc::smart_ptr<T_O>(((gc::Tagged*)this->_RegisterArguments)[1+1]));
+  case 1:
+      vargs->setf_elt(0,gc::smart_ptr<T_O>(((gc::Tagged*)this->_RegisterArguments)[1+0]));
+      break;
+  }
+#else
+#error "Add support extract arguments for other processors"
+#endif
+  return vargs;
+}
+
+string InvocationHistoryFrame::argumentsAsString(int maxWidth) const
+{
+  VectorObjects_sp vargs = this->arguments();
+  T_sp sout = clasp_make_string_output_stream();
+  for ( int i(0); i<cl_length(vargs); ++i ) {
+    T_sp obj = vargs->elt(i);
+    write_ugly_object(obj,sout);
+    clasp_write_char(' ',sout);
+  }
+  Str_sp strres = gc::As<Str_sp>(cl_get_output_stream_string(sout));
+  if (cl_length(strres)>maxWidth) {
+    return strres->get().substr(0,maxWidth)+"...";
+  }
+  return strres->get();
+}
+      
+
 string InvocationHistoryFrame::asStringLowLevel(Closure *closure,
                                                 uint lineNumber,
                                                 uint column) const {
@@ -136,9 +179,9 @@ string InvocationHistoryFrame::asStringLowLevel(Closure *closure,
     } else if (closure->builtinP()) {
       closureType = "/b";
     }
-  } else
-    closureType = "toplevel";
-  ss << (BF("#%3d%2s@%p %20s %5d/%-3d %s") % this->_Index % closureType % (void *)closure % sourceFileName % lineNumber % column % funcName).str();
+  } else closureType = "toplevel";
+  string sargs = this->argumentsAsString(80);
+  ss << (BF("#%3d%2s@%p %20s %5d/%-3d (%s %s)") % this->_Index % closureType % (void *)closure % sourceFileName % lineNumber % column % funcName % sargs).str();
   //	ss << std::endl;
   //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
   return ss.str();
@@ -548,6 +591,10 @@ void core_dynamicBindingStackDump(std::ostream &out) {
   };
 }
 };
+
+
+
+
 
 namespace core {
 

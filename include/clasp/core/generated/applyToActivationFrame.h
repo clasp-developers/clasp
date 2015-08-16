@@ -4,68 +4,69 @@
 
 #ifdef APPLY_TO_ACTIVATION_FRAME    // Reg = -1
 case 0:
-return (*func)(0  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED    );
+return (*func)(0  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED    );
 // Reg = 0
 case 1:
-return (*func)(1 , LCC_FROM_SMART_PTR(a[0])  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED    );
+return (*func)(1 , LCC_FROM_SMART_PTR(a[0])  , LCC_UNUSED , LCC_UNUSED    );
 // Reg = 1
 case 2:
-return (*func)(2 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1])  , LCC_UNUSED , LCC_UNUSED    );
+return (*func)(2 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1])  , LCC_UNUSED    );
 // Reg = 2
 case 3:
-return (*func)(3 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])  , LCC_UNUSED    );
-// Reg = 3
+return (*func)(3 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])     );
+// Reg = 2
 case 4:
-return (*func)(4 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) , LCC_FROM_SMART_PTR(a[3])     );
-// Reg = 3
-case 5:
-return (*func)(5 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(4 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
 );
-// Reg = 3
+// Reg = 2
+case 5:
+return (*func)(5 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
+);
+// Reg = 2
 case 6:
-return (*func)(6 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(6 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 );
-// Reg = 3
+// Reg = 2
 case 7:
-return (*func)(7 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(7 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 );
-// Reg = 3
+// Reg = 2
 case 8:
-return (*func)(8 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(8 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
 );
-// Reg = 3
+// Reg = 2
 case 9:
-return (*func)(9 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(9 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
 , LCC_FROM_SMART_PTR(a[8])
 );
-// Reg = 3
+// Reg = 2
 case 10:
-return (*func)(10 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(10 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
 , LCC_FROM_SMART_PTR(a[8])
 , LCC_FROM_SMART_PTR(a[9])
 );
-// Reg = 3
+// Reg = 2
 case 11:
-return (*func)(11 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(11 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -73,10 +74,10 @@ return (*func)(11 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[9])
 , LCC_FROM_SMART_PTR(a[10])
 );
-// Reg = 3
+// Reg = 2
 case 12:
-return (*func)(12 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(12 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -85,10 +86,10 @@ return (*func)(12 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[10])
 , LCC_FROM_SMART_PTR(a[11])
 );
-// Reg = 3
+// Reg = 2
 case 13:
-return (*func)(13 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(13 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -98,10 +99,10 @@ return (*func)(13 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[11])
 , LCC_FROM_SMART_PTR(a[12])
 );
-// Reg = 3
+// Reg = 2
 case 14:
-return (*func)(14 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(14 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -112,10 +113,10 @@ return (*func)(14 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[12])
 , LCC_FROM_SMART_PTR(a[13])
 );
-// Reg = 3
+// Reg = 2
 case 15:
-return (*func)(15 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(15 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -127,10 +128,10 @@ return (*func)(15 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[13])
 , LCC_FROM_SMART_PTR(a[14])
 );
-// Reg = 3
+// Reg = 2
 case 16:
-return (*func)(16 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(16 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -143,10 +144,10 @@ return (*func)(16 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[14])
 , LCC_FROM_SMART_PTR(a[15])
 );
-// Reg = 3
+// Reg = 2
 case 17:
-return (*func)(17 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(17 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -160,10 +161,10 @@ return (*func)(17 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[15])
 , LCC_FROM_SMART_PTR(a[16])
 );
-// Reg = 3
+// Reg = 2
 case 18:
-return (*func)(18 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(18 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -178,10 +179,10 @@ return (*func)(18 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[16])
 , LCC_FROM_SMART_PTR(a[17])
 );
-// Reg = 3
+// Reg = 2
 case 19:
-return (*func)(19 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(19 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -197,10 +198,10 @@ return (*func)(19 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[17])
 , LCC_FROM_SMART_PTR(a[18])
 );
-// Reg = 3
+// Reg = 2
 case 20:
-return (*func)(20 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(20 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -217,10 +218,10 @@ return (*func)(20 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[18])
 , LCC_FROM_SMART_PTR(a[19])
 );
-// Reg = 3
+// Reg = 2
 case 21:
-return (*func)(21 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(21 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -238,10 +239,10 @@ return (*func)(21 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[19])
 , LCC_FROM_SMART_PTR(a[20])
 );
-// Reg = 3
+// Reg = 2
 case 22:
-return (*func)(22 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(22 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -260,10 +261,10 @@ return (*func)(22 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[20])
 , LCC_FROM_SMART_PTR(a[21])
 );
-// Reg = 3
+// Reg = 2
 case 23:
-return (*func)(23 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(23 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -283,10 +284,10 @@ return (*func)(23 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[21])
 , LCC_FROM_SMART_PTR(a[22])
 );
-// Reg = 3
+// Reg = 2
 case 24:
-return (*func)(24 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(24 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -307,10 +308,10 @@ return (*func)(24 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[22])
 , LCC_FROM_SMART_PTR(a[23])
 );
-// Reg = 3
+// Reg = 2
 case 25:
-return (*func)(25 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(25 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -332,10 +333,10 @@ return (*func)(25 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[23])
 , LCC_FROM_SMART_PTR(a[24])
 );
-// Reg = 3
+// Reg = 2
 case 26:
-return (*func)(26 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(26 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -358,10 +359,10 @@ return (*func)(26 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[24])
 , LCC_FROM_SMART_PTR(a[25])
 );
-// Reg = 3
+// Reg = 2
 case 27:
-return (*func)(27 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(27 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -385,10 +386,10 @@ return (*func)(27 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[25])
 , LCC_FROM_SMART_PTR(a[26])
 );
-// Reg = 3
+// Reg = 2
 case 28:
-return (*func)(28 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(28 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -413,10 +414,10 @@ return (*func)(28 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[26])
 , LCC_FROM_SMART_PTR(a[27])
 );
-// Reg = 3
+// Reg = 2
 case 29:
-return (*func)(29 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(29 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -442,10 +443,10 @@ return (*func)(29 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[27])
 , LCC_FROM_SMART_PTR(a[28])
 );
-// Reg = 3
+// Reg = 2
 case 30:
-return (*func)(30 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(30 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -472,10 +473,10 @@ return (*func)(30 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[28])
 , LCC_FROM_SMART_PTR(a[29])
 );
-// Reg = 3
+// Reg = 2
 case 31:
-return (*func)(31 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(31 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -503,10 +504,10 @@ return (*func)(31 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[29])
 , LCC_FROM_SMART_PTR(a[30])
 );
-// Reg = 3
+// Reg = 2
 case 32:
-return (*func)(32 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(32 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -535,10 +536,10 @@ return (*func)(32 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[30])
 , LCC_FROM_SMART_PTR(a[31])
 );
-// Reg = 3
+// Reg = 2
 case 33:
-return (*func)(33 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(33 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -568,10 +569,10 @@ return (*func)(33 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[31])
 , LCC_FROM_SMART_PTR(a[32])
 );
-// Reg = 3
+// Reg = 2
 case 34:
-return (*func)(34 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(34 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -602,10 +603,10 @@ return (*func)(34 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[32])
 , LCC_FROM_SMART_PTR(a[33])
 );
-// Reg = 3
+// Reg = 2
 case 35:
-return (*func)(35 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(35 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -637,10 +638,10 @@ return (*func)(35 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[33])
 , LCC_FROM_SMART_PTR(a[34])
 );
-// Reg = 3
+// Reg = 2
 case 36:
-return (*func)(36 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(36 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -673,10 +674,10 @@ return (*func)(36 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[34])
 , LCC_FROM_SMART_PTR(a[35])
 );
-// Reg = 3
+// Reg = 2
 case 37:
-return (*func)(37 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(37 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -710,10 +711,10 @@ return (*func)(37 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[35])
 , LCC_FROM_SMART_PTR(a[36])
 );
-// Reg = 3
+// Reg = 2
 case 38:
-return (*func)(38 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(38 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -748,10 +749,10 @@ return (*func)(38 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[36])
 , LCC_FROM_SMART_PTR(a[37])
 );
-// Reg = 3
+// Reg = 2
 case 39:
-return (*func)(39 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(39 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -787,10 +788,10 @@ return (*func)(39 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[37])
 , LCC_FROM_SMART_PTR(a[38])
 );
-// Reg = 3
+// Reg = 2
 case 40:
-return (*func)(40 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(40 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -827,10 +828,10 @@ return (*func)(40 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[38])
 , LCC_FROM_SMART_PTR(a[39])
 );
-// Reg = 3
+// Reg = 2
 case 41:
-return (*func)(41 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(41 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -868,10 +869,10 @@ return (*func)(41 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[39])
 , LCC_FROM_SMART_PTR(a[40])
 );
-// Reg = 3
+// Reg = 2
 case 42:
-return (*func)(42 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(42 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -910,10 +911,10 @@ return (*func)(42 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[40])
 , LCC_FROM_SMART_PTR(a[41])
 );
-// Reg = 3
+// Reg = 2
 case 43:
-return (*func)(43 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(43 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -953,10 +954,10 @@ return (*func)(43 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[41])
 , LCC_FROM_SMART_PTR(a[42])
 );
-// Reg = 3
+// Reg = 2
 case 44:
-return (*func)(44 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(44 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -997,10 +998,10 @@ return (*func)(44 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[42])
 , LCC_FROM_SMART_PTR(a[43])
 );
-// Reg = 3
+// Reg = 2
 case 45:
-return (*func)(45 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(45 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1042,10 +1043,10 @@ return (*func)(45 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[43])
 , LCC_FROM_SMART_PTR(a[44])
 );
-// Reg = 3
+// Reg = 2
 case 46:
-return (*func)(46 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(46 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1088,10 +1089,10 @@ return (*func)(46 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[44])
 , LCC_FROM_SMART_PTR(a[45])
 );
-// Reg = 3
+// Reg = 2
 case 47:
-return (*func)(47 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(47 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1135,10 +1136,10 @@ return (*func)(47 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[45])
 , LCC_FROM_SMART_PTR(a[46])
 );
-// Reg = 3
+// Reg = 2
 case 48:
-return (*func)(48 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(48 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1183,10 +1184,10 @@ return (*func)(48 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[46])
 , LCC_FROM_SMART_PTR(a[47])
 );
-// Reg = 3
+// Reg = 2
 case 49:
-return (*func)(49 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(49 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1232,10 +1233,10 @@ return (*func)(49 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[47])
 , LCC_FROM_SMART_PTR(a[48])
 );
-// Reg = 3
+// Reg = 2
 case 50:
-return (*func)(50 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(50 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1282,10 +1283,10 @@ return (*func)(50 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[48])
 , LCC_FROM_SMART_PTR(a[49])
 );
-// Reg = 3
+// Reg = 2
 case 51:
-return (*func)(51 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(51 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1333,10 +1334,10 @@ return (*func)(51 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[49])
 , LCC_FROM_SMART_PTR(a[50])
 );
-// Reg = 3
+// Reg = 2
 case 52:
-return (*func)(52 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(52 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1385,10 +1386,10 @@ return (*func)(52 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[50])
 , LCC_FROM_SMART_PTR(a[51])
 );
-// Reg = 3
+// Reg = 2
 case 53:
-return (*func)(53 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(53 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1438,10 +1439,10 @@ return (*func)(53 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[51])
 , LCC_FROM_SMART_PTR(a[52])
 );
-// Reg = 3
+// Reg = 2
 case 54:
-return (*func)(54 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(54 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1492,10 +1493,10 @@ return (*func)(54 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[52])
 , LCC_FROM_SMART_PTR(a[53])
 );
-// Reg = 3
+// Reg = 2
 case 55:
-return (*func)(55 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(55 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1547,10 +1548,10 @@ return (*func)(55 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[53])
 , LCC_FROM_SMART_PTR(a[54])
 );
-// Reg = 3
+// Reg = 2
 case 56:
-return (*func)(56 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(56 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1603,10 +1604,10 @@ return (*func)(56 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[54])
 , LCC_FROM_SMART_PTR(a[55])
 );
-// Reg = 3
+// Reg = 2
 case 57:
-return (*func)(57 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(57 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1660,10 +1661,10 @@ return (*func)(57 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[55])
 , LCC_FROM_SMART_PTR(a[56])
 );
-// Reg = 3
+// Reg = 2
 case 58:
-return (*func)(58 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(58 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1718,10 +1719,10 @@ return (*func)(58 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[56])
 , LCC_FROM_SMART_PTR(a[57])
 );
-// Reg = 3
+// Reg = 2
 case 59:
-return (*func)(59 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(59 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1777,10 +1778,10 @@ return (*func)(59 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[57])
 , LCC_FROM_SMART_PTR(a[58])
 );
-// Reg = 3
+// Reg = 2
 case 60:
-return (*func)(60 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(60 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1837,10 +1838,10 @@ return (*func)(60 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[58])
 , LCC_FROM_SMART_PTR(a[59])
 );
-// Reg = 3
+// Reg = 2
 case 61:
-return (*func)(61 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(61 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1898,10 +1899,10 @@ return (*func)(61 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[59])
 , LCC_FROM_SMART_PTR(a[60])
 );
-// Reg = 3
+// Reg = 2
 case 62:
-return (*func)(62 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(62 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -1960,10 +1961,10 @@ return (*func)(62 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[60])
 , LCC_FROM_SMART_PTR(a[61])
 );
-// Reg = 3
+// Reg = 2
 case 63:
-return (*func)(63 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(63 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -2023,10 +2024,10 @@ return (*func)(63 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 , LCC_FROM_SMART_PTR(a[61])
 , LCC_FROM_SMART_PTR(a[62])
 );
-// Reg = 3
+// Reg = 2
 case 64:
-return (*func)(64 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) ,
-    LCC_FROM_SMART_PTR(a[3])       , LCC_FROM_SMART_PTR(a[4])
+return (*func)(64 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2])       , LCC_FROM_SMART_PTR(a[3])
+, LCC_FROM_SMART_PTR(a[4])
 , LCC_FROM_SMART_PTR(a[5])
 , LCC_FROM_SMART_PTR(a[6])
 , LCC_FROM_SMART_PTR(a[7])
@@ -2090,61 +2091,69 @@ return (*func)(64 , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FR
 #endif
 #ifdef APPLY_TO_TAGGED_FRAME    // Reg = -1
 case 0:
-return (*func)(0  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED     );
+return (*func)(0  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED     );
 // Reg = 0
 case 1:
-return (*func)(1 , a[0]  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED     );
+return (*func)(1 , a[0]  , LCC_UNUSED , LCC_UNUSED     );
 // Reg = 1
 case 2:
-return (*func)(2 , a[0] , a[1]  , LCC_UNUSED , LCC_UNUSED     );
+return (*func)(2 , a[0] , a[1]  , LCC_UNUSED     );
 // Reg = 2
 case 3:
-return (*func)(3 , a[0] , a[1] , a[2]  , LCC_UNUSED     );
-// Reg = 3
+return (*func)(3 , a[0] , a[1] , a[2]      );
+// Reg = 2
 case 4:
-return (*func)(4 , a[0] , a[1] , a[2] , a[3]      );
-// Reg = 3
-case 5:
-return (*func)(5 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(4 , a[0] , a[1] , a[2]        , a[3]
 );
-// Reg = 3
+// Reg = 2
+case 5:
+return (*func)(5 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
+);
+// Reg = 2
 case 6:
-return (*func)(6 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(6 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 );
-// Reg = 3
+// Reg = 2
 case 7:
-return (*func)(7 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(7 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 );
-// Reg = 3
+// Reg = 2
 case 8:
-return (*func)(8 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(8 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
 );
-// Reg = 3
+// Reg = 2
 case 9:
-return (*func)(9 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(9 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
 , a[8]
 );
-// Reg = 3
+// Reg = 2
 case 10:
-return (*func)(10 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(10 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
 , a[8]
 , a[9]
 );
-// Reg = 3
+// Reg = 2
 case 11:
-return (*func)(11 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(11 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2152,9 +2161,10 @@ return (*func)(11 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[9]
 , a[10]
 );
-// Reg = 3
+// Reg = 2
 case 12:
-return (*func)(12 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(12 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2163,9 +2173,10 @@ return (*func)(12 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[10]
 , a[11]
 );
-// Reg = 3
+// Reg = 2
 case 13:
-return (*func)(13 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(13 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2175,9 +2186,10 @@ return (*func)(13 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[11]
 , a[12]
 );
-// Reg = 3
+// Reg = 2
 case 14:
-return (*func)(14 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(14 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2188,9 +2200,10 @@ return (*func)(14 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[12]
 , a[13]
 );
-// Reg = 3
+// Reg = 2
 case 15:
-return (*func)(15 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(15 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2202,9 +2215,10 @@ return (*func)(15 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[13]
 , a[14]
 );
-// Reg = 3
+// Reg = 2
 case 16:
-return (*func)(16 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(16 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2217,9 +2231,10 @@ return (*func)(16 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[14]
 , a[15]
 );
-// Reg = 3
+// Reg = 2
 case 17:
-return (*func)(17 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(17 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2233,9 +2248,10 @@ return (*func)(17 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[15]
 , a[16]
 );
-// Reg = 3
+// Reg = 2
 case 18:
-return (*func)(18 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(18 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2250,9 +2266,10 @@ return (*func)(18 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[16]
 , a[17]
 );
-// Reg = 3
+// Reg = 2
 case 19:
-return (*func)(19 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(19 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2268,9 +2285,10 @@ return (*func)(19 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[17]
 , a[18]
 );
-// Reg = 3
+// Reg = 2
 case 20:
-return (*func)(20 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(20 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2287,9 +2305,10 @@ return (*func)(20 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[18]
 , a[19]
 );
-// Reg = 3
+// Reg = 2
 case 21:
-return (*func)(21 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(21 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2307,9 +2326,10 @@ return (*func)(21 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[19]
 , a[20]
 );
-// Reg = 3
+// Reg = 2
 case 22:
-return (*func)(22 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(22 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2328,9 +2348,10 @@ return (*func)(22 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[20]
 , a[21]
 );
-// Reg = 3
+// Reg = 2
 case 23:
-return (*func)(23 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(23 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2350,9 +2371,10 @@ return (*func)(23 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[21]
 , a[22]
 );
-// Reg = 3
+// Reg = 2
 case 24:
-return (*func)(24 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(24 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2373,9 +2395,10 @@ return (*func)(24 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[22]
 , a[23]
 );
-// Reg = 3
+// Reg = 2
 case 25:
-return (*func)(25 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(25 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2397,9 +2420,10 @@ return (*func)(25 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[23]
 , a[24]
 );
-// Reg = 3
+// Reg = 2
 case 26:
-return (*func)(26 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(26 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2422,9 +2446,10 @@ return (*func)(26 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[24]
 , a[25]
 );
-// Reg = 3
+// Reg = 2
 case 27:
-return (*func)(27 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(27 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2448,9 +2473,10 @@ return (*func)(27 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[25]
 , a[26]
 );
-// Reg = 3
+// Reg = 2
 case 28:
-return (*func)(28 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(28 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2475,9 +2501,10 @@ return (*func)(28 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[26]
 , a[27]
 );
-// Reg = 3
+// Reg = 2
 case 29:
-return (*func)(29 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(29 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2503,9 +2530,10 @@ return (*func)(29 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[27]
 , a[28]
 );
-// Reg = 3
+// Reg = 2
 case 30:
-return (*func)(30 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(30 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2532,9 +2560,10 @@ return (*func)(30 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[28]
 , a[29]
 );
-// Reg = 3
+// Reg = 2
 case 31:
-return (*func)(31 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(31 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2562,9 +2591,10 @@ return (*func)(31 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[29]
 , a[30]
 );
-// Reg = 3
+// Reg = 2
 case 32:
-return (*func)(32 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(32 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2593,9 +2623,10 @@ return (*func)(32 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[30]
 , a[31]
 );
-// Reg = 3
+// Reg = 2
 case 33:
-return (*func)(33 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(33 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2625,9 +2656,10 @@ return (*func)(33 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[31]
 , a[32]
 );
-// Reg = 3
+// Reg = 2
 case 34:
-return (*func)(34 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(34 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2658,9 +2690,10 @@ return (*func)(34 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[32]
 , a[33]
 );
-// Reg = 3
+// Reg = 2
 case 35:
-return (*func)(35 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(35 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2692,9 +2725,10 @@ return (*func)(35 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[33]
 , a[34]
 );
-// Reg = 3
+// Reg = 2
 case 36:
-return (*func)(36 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(36 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2727,9 +2761,10 @@ return (*func)(36 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[34]
 , a[35]
 );
-// Reg = 3
+// Reg = 2
 case 37:
-return (*func)(37 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(37 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2763,9 +2798,10 @@ return (*func)(37 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[35]
 , a[36]
 );
-// Reg = 3
+// Reg = 2
 case 38:
-return (*func)(38 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(38 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2800,9 +2836,10 @@ return (*func)(38 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[36]
 , a[37]
 );
-// Reg = 3
+// Reg = 2
 case 39:
-return (*func)(39 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(39 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2838,9 +2875,10 @@ return (*func)(39 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[37]
 , a[38]
 );
-// Reg = 3
+// Reg = 2
 case 40:
-return (*func)(40 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(40 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2877,9 +2915,10 @@ return (*func)(40 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[38]
 , a[39]
 );
-// Reg = 3
+// Reg = 2
 case 41:
-return (*func)(41 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(41 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2917,9 +2956,10 @@ return (*func)(41 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[39]
 , a[40]
 );
-// Reg = 3
+// Reg = 2
 case 42:
-return (*func)(42 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(42 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -2958,9 +2998,10 @@ return (*func)(42 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[40]
 , a[41]
 );
-// Reg = 3
+// Reg = 2
 case 43:
-return (*func)(43 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(43 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3000,9 +3041,10 @@ return (*func)(43 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[41]
 , a[42]
 );
-// Reg = 3
+// Reg = 2
 case 44:
-return (*func)(44 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(44 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3043,9 +3085,10 @@ return (*func)(44 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[42]
 , a[43]
 );
-// Reg = 3
+// Reg = 2
 case 45:
-return (*func)(45 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(45 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3087,9 +3130,10 @@ return (*func)(45 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[43]
 , a[44]
 );
-// Reg = 3
+// Reg = 2
 case 46:
-return (*func)(46 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(46 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3132,9 +3176,10 @@ return (*func)(46 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[44]
 , a[45]
 );
-// Reg = 3
+// Reg = 2
 case 47:
-return (*func)(47 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(47 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3178,9 +3223,10 @@ return (*func)(47 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[45]
 , a[46]
 );
-// Reg = 3
+// Reg = 2
 case 48:
-return (*func)(48 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(48 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3225,9 +3271,10 @@ return (*func)(48 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[46]
 , a[47]
 );
-// Reg = 3
+// Reg = 2
 case 49:
-return (*func)(49 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(49 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3273,9 +3320,10 @@ return (*func)(49 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[47]
 , a[48]
 );
-// Reg = 3
+// Reg = 2
 case 50:
-return (*func)(50 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(50 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3322,9 +3370,10 @@ return (*func)(50 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[48]
 , a[49]
 );
-// Reg = 3
+// Reg = 2
 case 51:
-return (*func)(51 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(51 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3372,9 +3421,10 @@ return (*func)(51 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[49]
 , a[50]
 );
-// Reg = 3
+// Reg = 2
 case 52:
-return (*func)(52 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(52 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3423,9 +3473,10 @@ return (*func)(52 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[50]
 , a[51]
 );
-// Reg = 3
+// Reg = 2
 case 53:
-return (*func)(53 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(53 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3475,9 +3526,10 @@ return (*func)(53 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[51]
 , a[52]
 );
-// Reg = 3
+// Reg = 2
 case 54:
-return (*func)(54 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(54 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3528,9 +3580,10 @@ return (*func)(54 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[52]
 , a[53]
 );
-// Reg = 3
+// Reg = 2
 case 55:
-return (*func)(55 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(55 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3582,9 +3635,10 @@ return (*func)(55 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[53]
 , a[54]
 );
-// Reg = 3
+// Reg = 2
 case 56:
-return (*func)(56 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(56 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3637,9 +3691,10 @@ return (*func)(56 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[54]
 , a[55]
 );
-// Reg = 3
+// Reg = 2
 case 57:
-return (*func)(57 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(57 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3693,9 +3748,10 @@ return (*func)(57 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[55]
 , a[56]
 );
-// Reg = 3
+// Reg = 2
 case 58:
-return (*func)(58 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(58 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3750,9 +3806,10 @@ return (*func)(58 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[56]
 , a[57]
 );
-// Reg = 3
+// Reg = 2
 case 59:
-return (*func)(59 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(59 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3808,9 +3865,10 @@ return (*func)(59 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[57]
 , a[58]
 );
-// Reg = 3
+// Reg = 2
 case 60:
-return (*func)(60 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(60 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3867,9 +3925,10 @@ return (*func)(60 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[58]
 , a[59]
 );
-// Reg = 3
+// Reg = 2
 case 61:
-return (*func)(61 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(61 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3927,9 +3986,10 @@ return (*func)(61 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[59]
 , a[60]
 );
-// Reg = 3
+// Reg = 2
 case 62:
-return (*func)(62 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(62 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -3988,9 +4048,10 @@ return (*func)(62 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[60]
 , a[61]
 );
-// Reg = 3
+// Reg = 2
 case 63:
-return (*func)(63 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(63 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]
@@ -4050,9 +4111,10 @@ return (*func)(63 , a[0] , a[1] , a[2] , a[3]        , a[4]
 , a[61]
 , a[62]
 );
-// Reg = 3
+// Reg = 2
 case 64:
-return (*func)(64 , a[0] , a[1] , a[2] , a[3]        , a[4]
+return (*func)(64 , a[0] , a[1] , a[2]        , a[3]
+, a[4]
 , a[5]
 , a[6]
 , a[7]

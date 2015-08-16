@@ -428,7 +428,7 @@
 
 (defun irc-unwind-unwind-protect-environment (env)
   (let ((unwind-form (unwind-protect-environment-cleanup-form env))
-	(unwind-result (irc-alloca-tsp env :label "unwind-result")))
+	(unwind-result (irc-alloca-tsp)))
     ;; Generate the unwind-form code in the parent environment of the unwind-protect form
     (codegen unwind-result unwind-form (get-parent-environment env))
     ))
@@ -824,6 +824,21 @@ and then the irbuilder-alloca, irbuilder-body."
   (push-metadata env :unwind unwind-code))
 
 
+(defmacro with-alloca-insert-point-no-cleanup (irbuilder &key alloca init)
+  "Switch to the alloca-insert-point and generate code to alloca a local variable.
+Within the _irbuilder_ dynamic environment...
+- insert the given alloca instruction using the provided irbuilder 
+- insert the initialization code right after the alloca
+- setup the :cleanup code for this alloca
+- finally restore the insert-point to the end of the basic block that we entered this macro with."
+  (let ((alloca-sym (gensym))
+	(found-gs (gensym))
+	(metadata-env-gs (gensym)))
+    `(with-irbuilder (,irbuilder)
+       (let ((,alloca-sym ,alloca))
+	 (when ,init (funcall ,init ,alloca-sym))
+	 ,alloca-sym))))
+
 
 (defmacro with-alloca-insert-point (env irbuilder
 				    &key alloca init cleanup)
@@ -859,36 +874,9 @@ Within the _irbuilder_ dynamic environment...
 
 
 (defun irc-alloca-tmv (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
-  (with-alloca-insert-point env irbuilder
+  (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* +tmv+ (jit-constant-i32 1) label)
-    :init (lambda (a) (irc-intrinsic "newTmv" a))
-    :cleanup (lambda (a) (irc-dtor "destructTmv" a))))
-
-(defun irc-alloca-tsp-array (env &key (num 1) (irbuilder *irbuilder-function-alloca*) (label ""))
-  (cmp-log "irc-alloca-tsp label: %s for %s\n" label irbuilder)
-  (with-alloca-insert-point
-      env irbuilder
-      :alloca (llvm-sys::create-alloca *irbuilder* +tsp+ (jit-constant-i32 num) label)
-      :init (lambda (a)
-	      (dotimes (i num)
-		(irc-intrinsic "newTsp" (irc-gep a (list (jit-constant-i32 i))))))
-      :cleanup (lambda (a)
-		 (dotimes (i num)
-		   (irc-dtor "destructTsp" (irc-gep a (list (jit-constant-i32 i))))))))
-
-(defun irc-alloca-tsp-variable-array (env &key num (irbuilder *irbuilder-function-alloca*) (label ""))
-  (or num (error ":num keyword argument must be passed"))
-  (cmp-log "irc-alloca-tsp label: %s for %s\n" label irbuilder)
-  (with-alloca-insert-point
-      env irbuilder
-      :alloca (llvm-sys::create-alloca *irbuilder* +tsp+ num label)
-      :init (lambda (a)
-	      (dotimes (i num)
-		(irc-intrinsic "newTsp" (irc-gep a (list (jit-constant-i32 i))))))
-      :cleanup (lambda (a)
-		 (dotimes (i num)
-		   (irc-dtor "destructTsp" (irc-gep a (list (jit-constant-i32 i))))))))
-
+    :init (lambda (a) (irc-intrinsic "newTmv" a))))
 
 (defun irc-alloca-t* (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
   "Allocate a T_O* on the stack"
@@ -898,14 +886,11 @@ Within the _irbuilder_ dynamic environment...
       :init (lambda (a))
       :cleanup (lambda (a))))
 
-
-(defun irc-alloca-tsp (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
+(defun irc-alloca-tsp (&key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-tsp label: %s for %s\n" label irbuilder)
-  (with-alloca-insert-point
-      env irbuilder
-      :alloca (llvm-sys::create-alloca *irbuilder* +tsp+ (jit-constant-i32 1) label)
-      :init (lambda (a)) ;; (irc-intrinsic "newTsp" a))
-      :cleanup (lambda (a) )))  ;;irc-dtor "destructTsp" a))))
+  (with-alloca-insert-point-no-cleanup
+      irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* +tsp+ (jit-constant-i32 1) label)))
 
 (defun irc-alloca-Function_sp (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-Function_sp label: %s for %s\n" label irbuilder)
@@ -1037,7 +1022,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 (defun irc-create-invoke (function-name args unwind-dest &optional (label ""))
-  (check-debug-info-setup *irbuilder*)
+;;  (check-debug-info-setup *irbuilder*)
   (unless unwind-dest (error "unwind-dest should not be nil"))
   (let ((func (get-function-or-error *the-module* function-name (car args)))
 	(normal-dest (irc-basic-block-create "normal-dest")))
@@ -1063,7 +1048,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 (defun irc-create-call (function-name args &optional (label ""))
-  (check-debug-info-setup *irbuilder*)
+;;  (check-debug-info-setup *irbuilder*)
   (let* ((func (get-function-or-error *the-module* function-name (car args)))
 	 (ra args)
          (code (case (length args)

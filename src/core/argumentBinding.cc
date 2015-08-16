@@ -34,7 +34,7 @@ THE SOFTWARE.
   PASS_FUNCTION_KEYWORD 	bind_keyword_var_args			bind_keyword_af
   PASS_ARGS  			'int n_args, va_list ap'		'ActivationFrame_sp args'
   PASS_ARGS_NUM 		'n_args'				'cl_length(args)'
-  PASS_NEXT_ARG() 		'gctools::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
+  PASS_NEXT_ARG(arg_idx) 		'gctools::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
 */
 
 int PASS_FUNCTION_REQUIRED(gctools::Vec0<RequiredArgument> const &reqs,
@@ -53,7 +53,7 @@ int PASS_FUNCTION_REQUIRED(gctools::Vec0<RequiredArgument> const &reqs,
     _BLOCK_TRACE("Assigning required arguments");
     LOG(BF("There are %d required arguments") % reqs.size());
     for (gctools::Vec0<RequiredArgument>::const_iterator it = reqs.begin(); it != reqs.end(); ++it) {
-      T_sp value = PASS_NEXT_ARG();
+      T_sp value = PASS_NEXT_ARG(arg_idx);
       LOG(BF("Binding value[%s] to target[%s]") % value->__repr__() % it->asString());
       scope.new_binding(*it, value);
       ++arg_idx;
@@ -83,7 +83,7 @@ int PASS_FUNCTION_OPTIONAL(gctools::Vec0<OptionalArgument> const &optionals,
         LOG(BF("We ran out of optional arguments - switching to filling with defaults"));
         break;
       }
-      T_sp value = PASS_NEXT_ARG();
+      T_sp value = PASS_NEXT_ARG(arg_idx);
       LOG(BF("Binding value[%s] to target[%s]") % _rep_(value) % it->asString());
       scope.new_binding(*it, value);
       if (it->_Sensor.isDefined()) {
@@ -117,7 +117,7 @@ void PASS_FUNCTION_REST(RestArgument const &restarg,
     Cons_O::CdrType_sp *curP = &rest;
     //        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&rest);
     for (int i(arg_idx), iEnd(PASS_ARGS_NUM); i < iEnd; ++i) {
-      T_sp obj = PASS_NEXT_ARG();
+      T_sp obj = PASS_NEXT_ARG(arg_idx);
       Cons_sp one = Cons_O::create(obj);
       *curP = one;          // cur.setPointee(one);
       curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr());
@@ -138,16 +138,17 @@ int PASS_FUNCTION_KEYWORD(gctools::Vec0<KeywordArgument> const &keyed_args,
   if (num_keyed_arguments == 0)
     return arg_idx;
   bool passed_allow_other_keys = false;
-  bool sawkeys[CALL_ARGUMENTS_LIMIT];
+  bool* sawkeys = (bool*)(__builtin_alloca(sizeof(bool)*num_keyed_arguments));
+//  bool sawkeys[num_keyed_arguments];// CALL_ARGUMENTS_LIMIT];
   memset(sawkeys, 0, num_keyed_arguments);
   LOG(BF(":allow-other-keywords --> %d") % passed_allow_other_keys);
   T_sp first_illegal_keyword(_Nil<T_O>());
   {
     _BLOCK_TRACEF(BF("Copy passed keyword values to environment"));
     for (int i(arg_idx), iEnd(num_args); i < iEnd; i += 2) {
-      Symbol_sp keyword = gc::As<Symbol_sp>(T_sp(PASS_NEXT_ARG()));
+      Symbol_sp keyword = gc::As<Symbol_sp>(T_sp(PASS_NEXT_ARG(arg_idx)));
       arg_idx++;
-      T_sp value = PASS_NEXT_ARG();
+      T_sp value = PASS_NEXT_ARG(arg_idx);
       arg_idx++;
       if (keyword != kw::_sym_allow_other_keys) {
         LOG(BF("Binding passed keyword[%s] value[%s]") % _rep_(keyword) % _rep_(value));

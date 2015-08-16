@@ -200,16 +200,18 @@ ALWAYS_INLINE core::Closure *va_lexicalFunction(int depth, int index, core::T_sp
   return &(*func->closure);
 }
 
-ALWAYS_INLINE void mv_FUNCALL(core::T_mv *resultP, core::Closure *closure, LCC_ARGS) {
+ALWAYS_INLINE void mv_FUNCALL(core::T_mv *resultP, core::Closure *closure, LCC_ARGS_ELLIPSIS) {
   ASSERTF(resultP, BF("mv_FUNCALL resultP is NULL!!!"));
-  closure->invoke(resultP, LCC_PASS_ARGS);
+  LCC_DECLARE_VA_LIST();
+  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST();
+  *resultP = closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
-ALWAYS_INLINE void sp_FUNCALL(core::T_sp *resultP, core::Closure *closure, LCC_ARGS_BASE, ...) {
+ALWAYS_INLINE void sp_FUNCALL(core::T_sp *resultP, core::Closure *closure, LCC_ARGS_ELLIPSIS) {
   ASSERTF(resultP, BF("sp_FUNCALL resultP is NULL!!!"));
-  T_mv result;
-  closure->invoke(&result, LCC_PASS_ARGS);
-  *resultP = result;
+  LCC_DECLARE_VA_LIST();
+  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST();
+  *resultP = closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
 ALWAYS_INLINE void mv_FUNCALL_activationFrame(core::T_mv *resultP, core::Closure *closure, core::ActivationFrame_sp af) {
@@ -534,7 +536,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   SourcePosInfo_sp tempSourcePosInfo = SourcePosInfo_O::create(*sourceFileInfoHandleP, filePos, lineno, column);
   core::Str_sp name = core::Str_O::create(cpname);
   BuiltinClosure tempClosure(name, tempSourcePosInfo, kw::_sym_function);
-  core::InvocationHistoryFrame invFrame(&tempClosure, *frameP);
+  core::InvocationHistoryFrame invFrame(&tempClosure, NULL, *frameP);
   core::T_sp closedEnv = _Nil<T_O>();
   ASSERT(ltvPP != NULL);
   core::LoadTimeValues_O *ltvP = *ltvPP;
@@ -547,7 +549,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   }
 #endif
   // Evaluate the function
-  fptr(resultP, LCC_FROM_SMART_PTR(closedEnv), LCC_PASS_ARGS1(ltvP));
+  *resultP = fptr(LCC_FROM_SMART_PTR(closedEnv), LCC_PASS_ARGS1_VA_LIST(ltvP));
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     core::Number_sp endTime = gc::As<core::Number_sp>(core::cl_getInternalRealTime());
@@ -566,15 +568,13 @@ void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], int *numf
   //        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
   for (int i = 0; i < numfun; ++i) {
     //            printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
-
-    (fptr[i])(result, _Nil<core::T_O>().raw_(), LCC_PASS_ARGS0());
+    *result = (fptr[i])( _Nil<core::T_O>().raw_(), LCC_PASS_ARGS0_VA_LIST());
   }
 }
 
 void invokeLlvmFunctionVoid(fnLispCallingConvention fptr) {
   core::T_mv result;
-  core::T_sp env = _Nil<core::T_O>();
-  fptr(&result, env.raw_(), LCC_PASS_ARGS0());
+  result = fptr( _Nil<core::T_O>().raw_(), LCC_PASS_ARGS0_VA_LIST());
 };
 
 extern void sp_symbolValueReadOrUnbound(core::T_sp *resultP, const core::Symbol_sp *symP) {
@@ -1669,20 +1669,24 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val) {
   s->setf_symbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
 }
 
-void cc_call(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_BASE) {
+void cc_call(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure.as<core::Closure>();
-  closure->invoke(result, LCC_PASS_ARGS);
+    LCC_DECLARE_VA_LIST();
+    LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST();
+  *result = closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
-void cc_invoke(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_BASE) {
+void cc_invoke(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
-  closure->invoke(result, LCC_PASS_ARGS);
+    LCC_DECLARE_VA_LIST();
+    LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST();
+  *result = closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
 
@@ -1749,7 +1753,8 @@ void cc_call_multipleValueOneFormCall(core::T_mv *result, core::T_O *tfunc) {
   core::Function_O *tagged_func = gctools::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
-  closure->invoke(result, result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
+  IMPLEMENT_MEF(BF("Handle multiple argument calls"));
+//  closure->invoke(result, result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
 }
 
 /*! Take the multiple-value inputs from the thread local MultipleValues and invoke tfunc with them
@@ -1760,7 +1765,8 @@ void cc_invoke_multipleValueOneFormCall(core::T_mv *result, core::T_O *tfunc) {
   core::Function_O *tagged_func = gctools::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
-  closure->invoke(result, result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
+  IMPLEMENT_MEF(BF("Handle multiple argument calls"));
+//  closure->invoke(result, result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
 }
 
 void cc_saveThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv) {
@@ -1852,67 +1858,7 @@ void cc_unwind(T_O *targetFrame, size_t index) {
 }
 
 
-void cc_funwind_protect(core::T_mv* resultP, T_O* protected_fn, T_O* cleanup_fn)
-{
-  try {
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d In funwind_protect try\n", __FILE__, __LINE__ );
-    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
-  }
-#endif
-    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(protected_fn);
-    ASSERT(func!=NULL);
-    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
-    closure->invoke(resultP,LCC_PASS_ARGS0());
-  } catch (...) {
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d In funwind_protect catch(...) just caught\n", __FILE__, __LINE__ );
-    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
-  }
-#endif
-    // Save any return value that may be in the multiple value return array
-    gctools::Vec0<T_sp> savemv;
-    T_mv tresult;
-    tresult.readFromMultipleValue0();
-    tresult.saveToVec0(savemv);
-    {
-      core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(cleanup_fn);
-      ASSERT(func!=NULL);
-      auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
-      closure->invoke(&tresult,LCC_PASS_ARGS0());
-    }
-    tresult.loadFromVec0(savemv);
-    tresult.saveToMultipleValue0();
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d In funwind_protect catch(...)    about to rethrow\n", __FILE__, __LINE__ );
-    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
-  }
-#endif
-    throw;
-  }
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d In funwind_protect  normal exit\n", __FILE__, __LINE__ );
-    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
-  }
-#endif
-  gctools::Vec0<T_sp> savemv;
-  resultP->saveToVec0(savemv);
-  {
-    T_mv tresult;
-    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(cleanup_fn);
-    ASSERT(func!=NULL);
-    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
-    closure->invoke(&tresult,LCC_PASS_ARGS0());
-  }
-  resultP->loadFromVec0(savemv);
-};
-
-
-
+#if 0
 void cc_catch(core::T_mv* resultP, T_O* tag, T_O* thunk)
 {
   int frame = _lisp->exceptionStack().push(CatchFrame, LCC_TO_SMART_PTR(tag));
@@ -1926,7 +1872,7 @@ void cc_catch(core::T_mv* resultP, T_O* tag, T_O* thunk)
     core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(thunk);
     ASSERT(func!=NULL);
     auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
-    closure->invoke(resultP,LCC_PASS_ARGS0());
+    *resultP = closure->invoke(LCC_PASS_ARGS0());
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
 #ifdef DEBUG_FLOW_CONTROL
@@ -1974,7 +1920,7 @@ void cc_throw(T_O* tag, T_O* result_func)
   result.saveToMultipleValue0();
   throw CatchThrow(frame);
 }
-
+#endif
 
 
 

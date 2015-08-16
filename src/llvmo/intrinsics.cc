@@ -153,16 +153,6 @@ ALWAYS_INLINE void makeCons(core::T_sp *resultConsP, core::T_sp *carP, core::T_s
 }
 
 
-ALWAYS_INLINE void cc_call_with_variable_bound(core::T_mv* result, core::T_O* symbol, core::T_O* value, core::T_O* thunk) {
-  T_sp tsymbol((gc::Tagged)symbol);
-  T_sp tvalue((gc::Tagged)value);
-  core::DynamicScopeManager scope(tsymbol,tvalue);
-  Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(thunk);
-  ASSERT(func!=NULL);
-  auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
-  closure->invoke(result,LCC_PASS_ARGS0());
-};
-
 };
 
 extern "C" {

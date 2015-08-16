@@ -92,11 +92,11 @@ EXPOSE_CLASS(core, HashTable_O);
 #define DOCS_cl_make_hash_table "see CLHS"
 #define ARGS_cl_make_hash_table "(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0) weakness debug)"
 #define DECL_cl_make_hash_table ""
-T_mv cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold, Symbol_sp weakness, T_sp debug) {
+T_sp cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold, Symbol_sp weakness, T_sp debug) {
   SYMBOL_EXPORT_SC_(KeywordPkg,key);
   if ( weakness.notnilp() ) {
     if ( weakness == INTERN_(kw,key) ) {
-      return Values(core_makeWeakKeyHashTable(clasp_make_fixnum(size)));
+      return core_makeWeakKeyHashTable(clasp_make_fixnum(size));
     }
     SIMPLE_ERROR(BF("Only :weakness :key (weak-key hash tables) are currently supported"));
   }
@@ -123,7 +123,7 @@ T_mv cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Double
     table->_DebugHashTable = debug.isTrue();
   }
 #endif
-  return (Values(table));
+  return table;
 }
 
 #define ARGS_core_hash_table_weakness "(ht)"

@@ -227,6 +227,8 @@ Boehm and MPS use a single pointer"
 (defvar +va-list+ +i8*+)
 (defvar +closure*+ +i8*+)
 
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -242,6 +244,13 @@ Boehm and MPS use a single pointer"
   args ;; This is the mv-array where the args are copied into
   )
 
+;; Parse the function arguments into a (values closed-env calling-convention)
+(defun parse-function-arguments (arguments)
+  (values (first arguments) ;; The closed over environment
+          (make-calling-convention-impl
+           :nargs (second arguments) ;; The number of arguments
+           :passed-args (nthcdr 2 arguments))))  ;; The remaining arguments
+
 (defun calling-convention-nargs (cc)
   (calling-convention-impl-nargs cc))
 
@@ -252,11 +261,6 @@ Boehm and MPS use a single pointer"
 (defun calling-convention-va-list (cc)
   (car (last (calling-convention-impl-passed-args cc))))
 
-(defun calling-convention-write-passed-arguments-to-multiple-values (cc)
-  (let ((mv-start (irc-store-multiple-values 0 (calling-convention-register-args cc))))
-    (cmp:irc-intrinsic "cc_copy_va_list" (calling-convention-nargs cc) mv-start (calling-convention-va-list cc))
-    (setf (calling-convention-impl-args cc) mv-start)))
-
 (defun calling-convention-args (cc)
   (calling-convention-impl-args cc))
 
@@ -266,12 +270,6 @@ Boehm and MPS use a single pointer"
                    "rawarg")))
     (llvm-sys:create-geparray *irbuilder* (calling-convention-impl-args cc) (list (jit-constant-size_t 0) idx) label)))
 
-;; Parse the function arguments into a (values closed-env calling-convention)
-(defun parse-function-arguments (arguments)
-  (values (first arguments)
-          (make-calling-convention-impl
-           :nargs (second arguments)
-           :passed-args (nthcdr 2 arguments))))
 
 
 (defvar *register-arg-types* nil)
