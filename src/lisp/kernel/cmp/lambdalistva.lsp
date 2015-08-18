@@ -273,7 +273,7 @@ will put a value into target-ref."
 
 
 
-(defun required-arguments-to-registers (reqargs env
+#+(or)(defun required-arguments-to-registers (reqargs env
 					args
 					new-env
 					entry-arg-idx)
@@ -312,7 +312,7 @@ will put a value into target-ref."
 	(arg-idx entry-arg-idx (irc-add arg-idx (jit-constant-size_t 1) "arg-idx")))
        ((endp cur-req) arg-idx)
     (let* ((target-idx (cdr target))
-	   (val-ref (calling-convention-args.gep args arg-idx target-idx)))
+	   (val-ref (calling-convention-args.va-arg args arg-idx target-idx)))
       (with-target-reference-do (tref target new-env) ; run-time binding
 	(irc-intrinsic "copyTspTptr" tref val-ref)))))
 
@@ -346,7 +346,7 @@ will put a value into target-ref."
 	  (cmp (irc-icmp-slt arg-idx (calling-convention-nargs args) "enough-given-args")))
       (irc-cond-br cmp arg-block init-block)
       (irc-begin-block arg-block)
-      (let ((val-ref (calling-convention-args.gep args arg-idx)))
+      (let ((val-ref (calling-convention-args.va-arg args arg-idx)))
 	(with-target-reference-no-bind-do (target-ref target new-env) ; run-time af binding
 	  (irc-intrinsic "copyTspTptr" target-ref val-ref))
 	(when flag
@@ -375,7 +375,7 @@ will put a value into target-ref."
 			       new-env entry-arg-idx)
   (irc-branch-to-and-begin-block (irc-basic-block-create "process-rest-arguments"))
   (with-target-reference-do (rest-ref rest-var new-env)
-    (irc-intrinsic "va_fillRestTarget" rest-ref (calling-convention-nargs args) (calling-convention-args args)
+    (irc-intrinsic "va_fillRestTarget" rest-ref (calling-convention-nargs args) (calling-convention-va-list args)
                    entry-arg-idx *gv-current-function-name* )))
 
 
@@ -409,8 +409,10 @@ will put a value into target-ref."
 	(irc-phi-add-incoming phi-arg-idx entry-arg-idx kw-start-block)
 	(irc-phi-add-incoming phi-bad-kw-idx entry-bad-kw-idx kw-start-block)
 	(irc-low-level-trace)
-	(let* ((arg-ref (calling-convention-args.gep args phi-arg-idx))) ;; (irc-gep va-list (list phi-arg-idx))))
-	  (irc-intrinsic "kw_ifNotKeywordException" arg-ref)
+	(let* ((arg-ref (calling-convention-args.va-arg args phi-arg-idx))
+               (arg-idx+1 (irc-add phi-arg-idx (jit-constant-size_t 1)))
+               (kw-arg-ref (calling-convention-args.va-arg args arg-idx+1)))
+	  (irc-intrinsic "cc_ifNotKeywordException" arg-ref phi-arg-idx (calling-convention-va-list args))
 	  (let* ((eq-aok-ref-and-arg-ref (irc-trunc (irc-intrinsic "compareTspTptr" aok-ref arg-ref) +i1+)) ; compare arg-ref to a-o-k
 		 (aok-block (irc-basic-block-create "aok-block"))
 		 (possible-kw-block (irc-basic-block-create "possible-kw-block"))
@@ -423,9 +425,7 @@ will put a value into target-ref."
 	    (irc-begin-block aok-block)
 	    (let* ((loop-saw-aok (irc-intrinsic "va_allowOtherKeywords"
 					   phi-saw-aok
-					   (calling-convention-nargs args)
-					   (calling-convention-args args)
-					   phi-arg-idx)) )
+                                           kw-arg-ref)))
 	      (irc-br advance-arg-idx-block)
 	      (irc-begin-block possible-kw-block)
 	      ;; Generate a test for each keyword
@@ -448,27 +448,18 @@ will put a value into target-ref."
                        )
 		  (irc-cond-br no-kw-match next-kw-test-block matched-kw-block)
 		  (irc-begin-block matched-kw-block)
-		  (let ((arg-idx+1 (irc-add phi-arg-idx (jit-constant-size_t 1)))
-                        (kw-seen-already (irc-icmp-eq test-kw-and-arg (jit-constant-i32 2))))
+		  (let ((kw-seen-already (irc-icmp-eq test-kw-and-arg (jit-constant-i32 2))))
                     (irc-cond-br kw-seen-already good-kw-block not-seen-before-kw-block)
                     (irc-begin-block not-seen-before-kw-block)
-                    (let ((kw-arg-ref (calling-convention-args.gep args arg-idx+1)))
-                      (with-target-reference-no-bind-do (target-ref target new-env) ; run-time binding
-                                                (irc-intrinsic "copyTspTptr" target-ref kw-arg-ref))
-                      ;; Set the boolean flag to indicate that we saw this key
-                      (irc-store (jit-constant-i8 1) (elt sawkeys idx))
-                      (when flag
-                        (with-target-reference-no-bind-do (flag-ref flag new-env)
-                                                  (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
-                      #|| ;; The old way was to write a value only if the target was UNBOUND - that was wrong
-                      (with-target-reference-if-runtime-unbound-do (flag-ref flag new-env) ; run-time binding ; ; ;
-                      (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
-		  ||#
-		  (irc-br good-kw-block)
-		  (irc-begin-block next-kw-test-block)
-		  )))
-                
-                )
+                    (with-target-reference-no-bind-do (target-ref target new-env) ; run-time binding
+                      (irc-intrinsic "copyTspTptr" target-ref kw-arg-ref))
+                    ;; Set the boolean flag to indicate that we saw this key
+                    (irc-store (jit-constant-i8 1) (elt sawkeys idx))
+                    (when flag
+                      (with-target-reference-no-bind-do (flag-ref flag new-env)
+                        (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
+                    (irc-br good-kw-block)
+                    (irc-begin-block next-kw-test-block))))
 	      ;; We fell through all the keyword tests - this might be a unparameterized keyword
 	    (irc-branch-to-and-begin-block bad-kw-block) ; fall through to here if no kw recognized
 	    (let ((loop-bad-kw-idx (irc-intrinsic "kw_trackFirstUnexpectedKeyword"
@@ -497,7 +488,7 @@ will put a value into target-ref."
 		  (irc-phi-add-incoming phi-arg-idx loop-arg-idx advance-arg-idx-block)
 		  (irc-cond-br loop-arg-idx_lt_nargs loop-kw-args-block loop-cont-block)
 		  (irc-begin-block loop-cont-block)
-		  (irc-intrinsic "va_ifBadKeywordArgumentException" phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx (calling-convention-nargs args) (calling-convention-args args))
+		  (irc-intrinsic "va_ifBadKeywordArgumentException" phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx arg-ref)
 		  (let ((kw-done-block (irc-basic-block-create "kw-done-block")))
 		    (irc-branch-to-and-begin-block kw-done-block)
 		    (irc-branch-to-and-begin-block kw-exit-block)
@@ -585,7 +576,7 @@ will put a value into target-ref."
 (defun compile-throw-if-excess-keyword-arguments (env
                                                   args ;; nargs va-list
                                                   arg-idx)
-  (irc-intrinsic "va_ifExcessKeywordArgumentsException" *gv-current-function-name* (calling-convention-nargs args) (calling-convention-args args) arg-idx))
+  (irc-intrinsic "va_ifExcessKeywordArgumentsException" *gv-current-function-name* (calling-convention-nargs args) (calling-convention-va-list args) arg-idx))
 
 
 
@@ -707,8 +698,8 @@ lambda-list-handler/env/argument-activation-frame"
           (num-opt (car optargs)))
       (cond
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-        ((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
-         (compile-<=3-required-arguments reqargs old-env args new-env))
+        #+(or)((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
+               (compile-<=3-required-arguments reqargs old-env args new-env))
         ;; Test for
         ;; (x &optional y)
         ;; (x y &optional z)

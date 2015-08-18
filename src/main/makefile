@@ -16,10 +16,19 @@ endif
 export CLASP_APP_RESOURCES_DIR=$(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 
 
+clasp:
+	make clasp-release
+	make clasp-debug
+
+clasp-debug:
+	build -j$(PJOBS) gc=boehm link=static program=clasp release debug
+
+clasp-release:
+	build -j$(PJOBS) gc=boehm link=static program=clasp release release
 
 all:
 	make boehm
-	make mps
+#	make mps
 
 application:
 	cp -R $(CLASP_LISP_SOURCE_DIR)/build $(CLASP_APP_RESOURCES_DIR)/lisp/

@@ -1005,16 +1005,11 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 (defun irc-funcall (result closure args &optional (label ""))
   (let* ((nargs (length args))
-         (real-args (make-array core:+number-of-fixed-arguments+ :initial-element (null-t-ptr))))
-    (let ((extra-args (do* ((idx 0 (1+ idx))
-			    (arg-list args (cdr arg-list))
-			    (arg (car arg-list) (car arg-list)))
-			   ((or (null arg-list) (>= idx core:+number-of-fixed-arguments+)) arg-list)
-			(setf (aref real-args idx) arg))))
-      (when extra-args
-	(irc-store-multiple-values core:+number-of-fixed-arguments+ extra-args))
-      (let ((real-args-list (map 'list (lambda (x) x) real-args)))
-	(irc-intrinsic-args "FUNCALL" (list* result closure (jit-constant-i32 nargs) real-args-list) :label label)))))
+	 ;;; If there are < core:+number-of-fixed-arguments+ pad the list up to that
+	 (real-args (if (< nargs core:+number-of-fixed-arguments+)
+			(append args (make-list (- core:+number-of-fixed-arguments+ nargs) :initial-element (null-t-ptr)))
+		      args)))
+    (irc-intrinsic-args "FUNCALL" (list* result closure (jit-constant-size_t nargs) real-args) :label label)))
   
 ;----------------------------------------------------------------------
 

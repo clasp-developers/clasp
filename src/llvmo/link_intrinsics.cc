@@ -51,6 +51,7 @@ extern "C" {
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/stacks.h>
+#include <clasp/core/primitives.h>
 #include <clasp/core/posixTime.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/activationFrame.h>
@@ -159,11 +160,14 @@ NOINLINE void va_notEnoughArgumentsException(const char *funcName, std::size_t g
   SIMPLE_ERROR(BF("Too few arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
 }
 
-NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, core::T_O **argArray, size_t argIdx) {
+NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, va_list arglist, size_t argIdx) {
   if (argIdx >= nargs) return;
+  va_list vrest;
+  va_copy(vrest,arglist);
   stringstream ss;
-  for (int i(0); i < nargs; ++i) {
-    ss << _rep_(core::T_sp(argArray[i])) << " ";
+  for (int i(argIdx); i < nargs; ++i) {
+    T_sp obj(va_arg(vrest,T_O*));
+    ss << _rep_(obj) << " ";
   }
   SIMPLE_ERROR(BF("va_ifExcessKeywordArgumentsException>> Excess keyword arguments fnName: %s argIdx: %d  args: %s") % fnName % argIdx % ss.str());
   //        core::throwUnrecognizedKeywordArgumentError(argArray[argIdx]);
@@ -222,28 +226,33 @@ ALWAYS_INLINE void sp_FUNCALL_activationFrame(core::T_sp *resultP, core::Closure
   (*resultP) = core::eval::applyClosureToActivationFrame(closure, af);
 }
 
-__attribute__((visibility("default"))) void va_fillRestTarget(core::T_sp *restP, std::size_t nargs, core::T_O **argArray, std::size_t startRest, char *fnName) {
-  _G();
+__attribute__((visibility("default"))) void va_fillRestTarget(core::T_sp *restP, std::size_t nargs, va_list args, std::size_t startRest, char *fnName) {
+  va_list rargs;
+  va_copy(rargs,args);
   core::List_sp result = _Nil<core::T_O>();
   int inargs = nargs;
   int istartRest = startRest;
+  core::Cons_sp* cur = reinterpret_cast<Cons_sp*>(&result);
   for (int i = inargs - 1; i >= istartRest; i--) {
-    result = core::Cons_O::create(gc::smart_ptr<core::T_O>((gc::Tagged)argArray[i]), result);
+    *cur = core::Cons_O::create(gc::smart_ptr<core::T_O>((gc::Tagged)va_arg(rargs,core::T_O*)), _Nil<core::T_O>());
+    cur = reinterpret_cast<Cons_sp*>(&(*cur)->_Cdr);
   }
   (*restP) = result;
   ASSERTNOTNULL(*restP);
 }
 
-extern int va_allowOtherKeywords(int saw_aok, std::size_t nargs, core::T_O **argArray, std::size_t argIdx) {
+extern int va_allowOtherKeywords(int saw_aok, core::T_O* kw_arg) {
   if (saw_aok)
     return saw_aok;
-  bool aokTrue = !(gctools::tagged_nilp(argArray[argIdx + 1]));
+  bool aokTrue = !(gctools::tagged_nilp(kw_arg));
   return aokTrue ? 2 : 1;
 }
 
-void va_ifBadKeywordArgumentException(int allowOtherKeys, std::size_t badKwIdx, std::size_t nargs, core::T_O **argArray) {
-  if (allowOtherKeys == 2) return;
-  if (badKwIdx != 65536) errorMessage(badKeywordArgument,core::T_sp(argArray[badKwIdx]));
+void va_ifBadKeywordArgumentException(int allowOtherKeys, std::size_t badKwIdx, core::T_O* kw ) {
+  if (allowOtherKeys == 2) {
+    return;
+  }
+  if (badKwIdx != 65536) errorMessage(badKeywordArgument,core::T_sp((gc::Tagged)kw));
 }
 
 void newFunction_sp(core::Function_sp *sharedP) {
@@ -1010,6 +1019,15 @@ void debugPointer(const unsigned char *ptr) {
   printf("++++++ debugPointer: %p \n", ptr);
 }
 
+void debug_va_list(va_list args) {
+  printf("++++++ debug_va_list: %p \n", (void*)args);
+  printf("++++++ debug_va_list: reg_save_area @%p \n", args->reg_save_area);
+  printf("++++++ debug_va_list: gp_offset %d \n", args->gp_offset);
+  printf("++++++      next reg arg: %p\n", (void*)(((uintptr_t*)((char*)args->reg_save_area+args->gp_offset))[0]));
+  printf("++++++ debug_va_list: overflow_arg_area @%p \n", args->overflow_arg_area);
+  printf("++++++      next overflow arg: %p\n", (void*)(((uintptr_t*)((char*)args->overflow_arg_area))[0]));
+}
+
 void debugSymbolPointer(core::Symbol_sp *ptr) {
   _G();
   printf("++++++ debugSymbolPointer: %s\n", _rep_(*ptr).c_str());
@@ -1494,13 +1512,6 @@ int kw_allowOtherKeywords(int saw_aok, core::ActivationFrame_sp *afP, int argIdx
   return aokTrue ? 2 : 1;
 }
 
-void kw_ifNotKeywordException(core::T_O **objP) {
-  ASSERT(objP != NULL);
-  if (!af_keywordP((gc::smart_ptr<core::T_O>((gc::Tagged) * objP)))) {
-    SIMPLE_ERROR(BF("Not keyword %s") % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged) * objP)));
-    //            core::throwUnrecognizedKeywordArgumentError(*objP);
-  }
-}
 
 size_t kw_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx) {
   // 65536 is the magic number for badKwIdx has not been assigned yet
@@ -1549,7 +1560,7 @@ void popDynamicBinding(core::Symbol_sp *symbolP) {
     ss << " popDynamicBinding of " << _rep_(*symbolP) << std::endl;
     ss << "  mismatch with top of dynamic binding stack: " << _rep_(top) << std::endl;
     ss << "  dumping stack: " << std::endl;
-    core::core_dynamicBindingStackDump(ss);
+    core_dynamicBindingStackDump(ss);
     SIMPLE_ERROR(BF("Mismatch in popDynamicBinding:\n%s") % ss.str());
   }
   _lisp->bindings().pop();
@@ -1573,8 +1584,8 @@ void trace_setActivationFrameForIHSTop(core::T_sp *afP) {
   _lisp->invocationHistoryStack().setActivationFrameForTop(*afP);
 }
 
-extern int matchKeywordOnce(core::T_sp *xP, core::T_O **yP, unsigned char *sawKeyAlreadyP) {
-  if ((*xP).raw_() != (*yP))
+extern int matchKeywordOnce(core::T_sp *xP, core::T_O *yP, unsigned char *sawKeyAlreadyP) {
+  if ((*xP).raw_() != (yP))
     return 0;
   if (*sawKeyAlreadyP)
     return 2;
@@ -1820,11 +1831,11 @@ size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlread
     return 2;
   return 1;
 }
-
-void cc_ifNotKeywordException(core::T_O *obj) {
+void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list vargs) {
   T_sp vobj((gc::Tagged)obj);
   if (!af_keywordP(vobj) ) {
-    SIMPLE_ERROR(BF("Not keyword %s") % _rep_(vobj));
+    size_t numArgs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
+    SIMPLE_ERROR(BF("Expected keyword argument at argument %d of %d got %s") % argIdx % numArgs % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
   }
 }
 

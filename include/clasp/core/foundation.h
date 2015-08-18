@@ -787,7 +787,6 @@ class Instance_O;
 typedef gctools::smart_ptr<Instance_O> Instance_sp;
 
 //    typedef T_mv (*ActivationFrameFunctionPtr)(ActivationFrame_sp);
-typedef T_mv (*ArgArrayGenericFunctionPtr)(Instance_sp gf); // , int nargs, ArgArray argArray);
 
 class Lisp_O;
 typedef Lisp_O *Lisp_sp;
@@ -975,6 +974,7 @@ string lisp_classNameAsString(Class_sp c);
 void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId);
 core::T_sp lisp_false();
 T_sp lisp_ArgArrayToCons(int nargs, ArgArray args);
+ T_sp lisp_va_list_toCons(va_list vargs);
 bool lisp_fixnumP(core::T_sp obj);
 gctools::Fixnum lisp_asFixnum(core::T_sp obj);
 /*! Create a SourcePosInfo object for a C++ function */

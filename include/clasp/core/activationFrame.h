@@ -492,6 +492,16 @@ inline void InitializeStackValueFrameWithValues(core::T_O **frameImpl, size_t sz
   }
 };
 
+ inline void InitializeStackValueFrameWith_va_list(core::T_O **frameImpl, core::T_sp parent, va_list vargs ) {
+   va_list cargs;
+   va_copy(cargs,vargs);
+   size_t sz = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(cargs);
+   InitializeStackValueFrameBase(frameImpl, sz, parent);
+   for (size_t i(IdxValuesArray), j(0), iEnd(IdxValuesArray + sz); i < iEnd; ++i, ++j) {
+     frameImpl[i] = LCC_NEXT_ARG_RAW(cargs,i);
+  }
+};
+
 inline void SetParentFrame(core::T_sp f, core::T_sp parent) {
   core::T_O **frameImpl(f.safe_frame());
   frameImpl[IdxParent] = parent.raw_();
@@ -635,5 +645,11 @@ inline bool UpdateValue(core::T_sp f, core::Symbol_sp sym, core::T_sp obj) {
   frame::ElementType *frameImpl = DO_ALLOCA(numValues);                                                              \
   gctools::smart_ptr<core::STACK_FRAME> oframe((gctools::Tagged)gctools::tag_frame<core::STACK_FRAME *>(frameImpl)); \
   frame::InitializeStackValueFrameWithValues(frameImpl, numValues, _Nil<T_O>(), values)
+
+#define ALLOC_STACK_VALUE_FRAME_WITH_va_list(_frameImpl, _oframe, _vargs)     \
+  size_t __numValues = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_vargs); \
+  frame::ElementType *_frameImpl = DO_ALLOCA(__numValues);                             \
+  gctools::smart_ptr<core::STACK_FRAME> _oframe((gctools::Tagged)gctools::tag_frame<core::STACK_FRAME *>(_frameImpl)); \
+  frame::InitializeStackValueFrameWith_va_list(_frameImpl, _Nil<T_O>(), _vargs )
 
 #endif

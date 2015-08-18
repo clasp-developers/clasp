@@ -62,32 +62,6 @@ public:
   GetterMethoid(core::T_sp name, MemPtr ptr) : BuiltinClosure(name), mptr(ptr){};
   DISABLE_NEW();
   virtual size_t templatedSizeof() const { return sizeof(*this); };
-#if 0
-	void LCC_RETURN LISP_CALLING_CONVENTION()
-	{
-	    INVOCATION_HISTORY_FRAME();
-	    //int countPureOutValues = CountPureOutValues<Pols>::value;
-	    //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-	    ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
-	    core::StackFrameDynamicScopeManager scope(frame);
-	    lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,
-					     lcc_arglist);
-	    this->invoke(lcc_resultP, frame::Value(frameImpl,0)  );
-	}
-
-	void invoke(core::T_mv* lcc_resultP, core::T_sp arg0   )
-	{
-	    gctools::smart_ptr<OT> ot((arg0).template as<OT>());
-	    ((*(ot->wrappedPtr())).*(this->mptr))();
-	    core::MultipleValues& returnValues = _lisp->multipleValues();
-	    returnValues.setSize(0);
-	    int oidx = 0;
-	    ReturnValueWhen(returnValues,oidx,
-			    typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-			    typename Contains_<Pols,    outValue_<0> >::type >::type(),arg0);
-	    *lcc_resultP = gctools::multiple_values<T_O>(T_sp(returnValues.valueGet(0,oidx)),oidx);
-	}
-#endif
 };
 };
 

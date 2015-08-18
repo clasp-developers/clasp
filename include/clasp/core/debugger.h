@@ -42,6 +42,8 @@ namespace core {
   the single step state to what it was.
 */
 
+  FORWARD(InvocationHistoryFrameIterator);
+  
 class LispDebugger {
 private:
   bool _CanContinue;
@@ -63,7 +65,7 @@ public:
 	*/
   T_sp invoke();
 
-  InvocationHistoryFrame &currentFrame() const;
+  InvocationHistoryFrameIterator_sp currentFrame() const;
 
   LispDebugger(T_sp condition);
   LispDebugger();

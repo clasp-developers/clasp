@@ -96,8 +96,8 @@ ALWAYS_INLINE void newTmv(core::T_mv *sharedP) {
 }
 
 
-ALWAYS_INLINE extern int compareTspTptr(core::T_sp *xP, core::T_O **yP) {
-  return ((*xP).raw_() == (*yP)) ? 1 : 0;
+ALWAYS_INLINE extern int compareTspTptr(core::T_sp *xP, core::T_O *yP) {
+  return ((*xP).raw_() == (yP)) ? 1 : 0;
 }
 
 ALWAYS_INLINE extern void sp_copyTsp(core::T_sp *destP, core::T_sp *sourceP) {
@@ -112,14 +112,13 @@ ALWAYS_INLINE extern void mv_copyTsp(core::T_mv *destP, core::T_sp *sourceP) {
   *destP = Values(*sourceP);
 }
 
-ALWAYS_INLINE extern void sp_copyTspTptr(core::T_sp *destP, core::T_O **sourceP) {
-  *destP = gc::smart_ptr<core::T_O>((gc::Tagged) * sourceP);
+ALWAYS_INLINE extern void sp_copyTspTptr(core::T_sp* destP, core::T_O* source) {
+  *destP = gc::smart_ptr<core::T_O>((gc::Tagged)source);
 }
 
-ALWAYS_INLINE extern void mv_copyTspTptr(core::T_mv *destP, core::T_O **sourceP) {
-  ASSERT(sourceP != NULL);
+ALWAYS_INLINE extern void mv_copyTspTptr(core::T_mv* destP, core::T_O* source) {
   ASSERT(destP != NULL);
-  *destP = Values(gc::smart_ptr<core::T_O>((gc::Tagged) * sourceP));
+  *destP = Values(gc::smart_ptr<core::T_O>((gc::Tagged)source));
 }
 
 /*! This copies a T_mv from source to dest */

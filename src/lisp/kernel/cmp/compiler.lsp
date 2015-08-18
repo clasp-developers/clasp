@@ -66,10 +66,10 @@
   (irc-intrinsic "setParentOfActivationFrameTPtr" (irc-renv new-env) closed-over-renv)
   (cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
   (cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name (names-of-lexical-variables lambda-list-handler))
-  (bclasp-compile-lambda-list-code lambda-list-handler
-                                   function-env
-                                   argument-holder
-                                   new-env)
+  (compile-lambda-list-code lambda-list-handler
+                            function-env
+                            argument-holder
+                            new-env)
   (dbg-set-current-debug-location-here)
   ;;  (irc-intrinsic "debugInspectActivationFrame" closed-over-renv)
   ;;  (irc-intrinsic "debugInspectActivationFrame" (irc-renv new-env))
@@ -1164,7 +1164,7 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
 
 ;;
 ;; Why does this duplicate so much functionality from codegen-literal
-(defun codegen-atom (result node env)
+(defun codegen-atom (result obj env)
   "Generate code to generate the load-time-value of the atom "
   (if *generate-compile-file-load-time-values*
       (cond

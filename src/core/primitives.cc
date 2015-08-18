@@ -1577,6 +1577,435 @@ Integer_sp cl_sxhash(T_sp obj) {
 // --------------------------------------------------
 // --------------------------------------------------
 
+
+}; /* core */
+
+
+namespace core {
+
+EXPOSE_CLASS(core,InvocationHistoryFrameIterator_O);
+
+bool satisfiesTest(InvocationHistoryFrameIterator_sp iterator, T_sp test) {
+  if ( !iterator->isValid() ) {
+    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+  }
+  if ( test.nilp()) return true;
+  return eval::funcall(test,iterator).isTrue();
+}
+
+void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationHistoryFrameIterator_sp iterator, T_sp test) {
+  do {
+    if ( !iterator->isValid() ) return;
+    if ( satisfiesTest(iterator,test) ) {
+      if ( num == 0 ) return;
+      --num;
+    }
+    iterator->setFrame(iterator->frame()->previous());
+  } while (num>=0);
+}
+
+#define ARGS_InvocationHistoryFrameIterator_O_make ""
+#define DECL_InvocationHistoryFrameIterator_O_make ""
+#define DOCS_InvocationHistoryFrameIterator_O_make "Return the InvocationHistoryFrameIterator for the frame that is the (first) that satisfies (test)"
+InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test ) {
+  InvocationHistoryFrame *cur = _lisp->invocationHistoryStack().top();
+  InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create();
+  iterator->setFrame(cur);
+  nextInvocationHistoryFrameIteratorThatSatisfiesTest(first,iterator,test);
+  return iterator;
+}
+
+
+InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::prev(T_sp test)
+{
+  nextInvocationHistoryFrameIteratorThatSatisfiesTest(1,this->asSmartPtr(),test);
+  return this->asSmartPtr();
+}
+
+T_sp InvocationHistoryFrameIterator_O::functionName() {
+  if ( !this->isValid() ) {
+    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+  }
+  Closure* closure = this->_Frame->closure;
+  if ( closure==NULL ) {
+    SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
+  }
+  return closure->name;
+}
+
+
+T_sp InvocationHistoryFrameIterator_O::environment() {
+  if ( !this->isValid() ) {
+    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+  }
+  Closure* closure = this->_Frame->closure;
+  if ( closure==NULL ) {
+    SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
+  }
+  return closure->closedEnvironment;
+}
+
+int InvocationHistoryFrameIterator_O::index() {
+  if ( !this->isValid() ) {
+    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+  }
+  return this->_Frame->index();
+}
+
+Function_sp InvocationHistoryFrameIterator_O::function() {
+  if ( !this->isValid() ) {
+    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+  }
+  Closure* closure = this->_Frame->closure;
+  if ( closure==NULL ) {
+    SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
+  }
+  return Function_O::make(closure); // Should I really be creating a new Function object every time???
+}
+
+Vector_sp InvocationHistoryFrameIterator_O::arguments() {
+  if ( !this->isValid() ) {
+    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
+  }
+  InvocationHistoryFrame* frame = this->_Frame;
+  return frame->arguments();
+}
+
+
+void InvocationHistoryFrameIterator_O::exposeCando(::core::Lisp_sp lisp) {
+  ::core::class_<InvocationHistoryFrameIterator_O>()
+    .def("frameIteratorFunctionName",&InvocationHistoryFrameIterator_O::functionName)
+    .def("frameIteratorArguments",&InvocationHistoryFrameIterator_O::arguments)
+    .def("frameIteratorEnvironment",&InvocationHistoryFrameIterator_O::environment)
+    .def("frameIteratorIsValid",&InvocationHistoryFrameIterator_O::isValid)
+    .def("frameIteratorPreviousFrame",&InvocationHistoryFrameIterator_O::prev)
+      //	.initArgs("(self)")
+    ;
+  SYMBOL_SC_(CorePkg, makeInvocationHistoryFrameIterator);
+  Defun_maker(CorePkg,InvocationHistoryFrameIterator);
+};
+
+void InvocationHistoryFrameIterator_O::exposePython(::core::Lisp_sp lisp) {
+//	PYTHON_CLASS_2BASES(Pkg(),Vector,"","",_LISP)
+#ifdef USEBOOSTPYTHON
+#endif
+}
+
+
+
+#define ARGS_core_getInvocationHistoryFrameSearch "(idx direction)"
+#define DECL_core_getInvocationHistoryFrameSearch ""
+#define DOCS_core_getInvocationHistoryFrameSearch "getInvocationHistoryFrameSearch - Return an InvocationHistoryFrame as an iterator." \
+  "If idx == NIL return the top frame. "\
+  "If idx>=0 return the frame that satisfies *backtrace-frame-selector-hook* that has the index idx if direction==NIL, "\
+  "or if direction==:PREV return the frame previous to it (away from the top) or if direction==:NEXT the next frame (towards the top). "\
+  "*backtrace-frame-selector-hook* is a function that takes an invocation-history-frame-iterator and returns true if it should be in the backtrace."\
+  "Test the result to make sure it is valid."
+InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameSearch(T_sp idx, Symbol_sp direction)
+{
+  SYMBOL_EXPORT_SC_(CorePkg,STARbacktraceFrameSelectorHookSTAR);
+  SYMBOL_EXPORT_SC_(KeywordPkg,next);
+  SYMBOL_EXPORT_SC_(KeywordPkg,prev);
+  T_sp backtraceFrameSelectorHook = core::_sym_STARbacktraceFrameSelectorHookSTAR->symbolValue();
+  InvocationHistoryFrameIterator_sp top = InvocationHistoryFrameIterator_O::make(0,backtraceFrameSelectorHook);
+  if (idx.nilp()) return top;
+  if ( !idx.fixnump() ) {
+    SIMPLE_ERROR(BF("The first argument must be nil (for top) or a fixnum >= 0 - was given: %s") % _rep_(idx));
+  }
+  Fixnum fidx = idx.unsafe_fixnum();
+  InvocationHistoryFrameIterator_sp lastSelectedFrame = top;
+  InvocationHistoryFrameIterator_sp cur = top;
+  while (cur->isValid() && fidx != cur->index() ) {
+    lastSelectedFrame = cur;
+    cur = cur->prev(backtraceFrameSelectorHook);
+  }
+  if ( direction.nilp() ) return cur;
+  if ( direction == kw::_sym_next ) return lastSelectedFrame;
+  if ( direction == kw::_sym_prev ) return cur->prev(backtraceFrameSelectorHook);
+  SIMPLE_ERROR(BF("Direction argument must be one of NIL, :NEXT, :PREV - received %s") % _rep_(direction));
+}
+
+#define ARGS_core_getInvocationHistoryFrameTop ""
+#define DECL_core_getInvocationHistoryFrameTop ""
+#define DOCS_core_getInvocationHistoryFrameTop "getInvocationHistoryFrameSearch - Return an top InvocationHistoryFrame as an iterator."
+InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameTop()
+{
+  return core_getInvocationHistoryFrameSearch(_Nil<T_O>(),_Nil<T_O>());
+}
+
+#define ARGS_core_getInvocationHistoryFrame ""
+#define DECL_core_getInvocationHistoryFrame ""
+#define DOCS_core_getInvocationHistoryFrame "getInvocationHistoryFrame - Return an indexed InvocationHistoryFrame as an iterator."
+InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrame(int idx)
+{
+  Fixnum_sp fnidx = clasp_make_fixnum(idx);
+  return core_getInvocationHistoryFrameSearch(fnidx,_Nil<T_O>());
+}
+
+#define ARGS_core_getInvocationHistoryFramePrev ""
+#define DECL_core_getInvocationHistoryFramePrev ""
+#define DOCS_core_getInvocationHistoryFramePrev "getInvocationHistoryFramePrev - Return the prev InvocationHistoryFrame before index as an iterator."
+InvocationHistoryFrameIterator_sp core_getInvocationHistoryFramePrev(int idx)
+{
+  Fixnum_sp fnidx = clasp_make_fixnum(idx);
+  return core_getInvocationHistoryFrameSearch(fnidx,kw::_sym_prev);
+}
+
+#define ARGS_core_getInvocationHistoryFrameNext ""
+#define DECL_core_getInvocationHistoryFrameNext ""
+#define DOCS_core_getInvocationHistoryFrameNext "getInvocationHistoryFrameNext - Return the next InvocationHistoryFrame after index as an iterator."
+InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameNext(int idx)
+{
+  Fixnum_sp fnidx = clasp_make_fixnum(idx);
+  return core_getInvocationHistoryFrameSearch(fnidx,kw::_sym_next);
+}
+
+
+
+
+};
+
+extern "C" {
+using namespace core;
+#define ARGS_af_ihsBacktraceNoArgs "()"
+#define DECL_af_ihsBacktraceNoArgs ""
+#define DOCS_af_ihsBacktraceNoArgs "ihsBacktraceNoArgs"
+void af_ihsBacktraceNoArgs() {
+  _G();
+  af_ihsBacktrace(_lisp->_true(), _Nil<core::T_O>());
+};
+
+#define ARGS_af_ihsTop "()"
+#define DECL_af_ihsTop ""
+#define DOCS_af_ihsTop "ihsTop"
+int af_ihsTop() {
+  InvocationHistoryFrameIterator_sp top = core_getInvocationHistoryFrameTop();
+  if (!top->isValid()) return 0;
+  return top->index();
+};
+
+#define ARGS_af_ihsPrev "(cur)"
+#define DECL_af_ihsPrev ""
+#define DOCS_af_ihsPrev "ihsPrev"
+int af_ihsPrev(int idx) {
+  InvocationHistoryFrameIterator_sp prev = core_getInvocationHistoryFramePrev(idx);
+  if ( !prev->isValid() ) return 0;
+  return prev->index();
+};
+
+#define ARGS_af_ihsNext "(cur)"
+#define DECL_af_ihsNext ""
+#define DOCS_af_ihsNext "ihsNext"
+int af_ihsNext(int idx) {
+  InvocationHistoryFrameIterator_sp next = core_getInvocationHistoryFrameNext(idx);
+  if ( !next->isValid() ) return 0;
+  return next->index();
+}
+
+#define ARGS_af_ihsFun "(arg)"
+#define DECL_af_ihsFun ""
+#define DOCS_af_ihsFun "ihsFun: return the function in the invocation history stack at i"
+T_sp af_ihsFun(int idx) {
+  InvocationHistoryFrameIterator_sp cur = core_getInvocationHistoryFrame(idx);
+  if ( !cur->isValid() ) return _Nil<T_O>();
+  return cur->function();
+};
+
+#define ARGS_af_ihsArguments "(arg)"
+#define DECL_af_ihsArguments ""
+#define DOCS_af_ihsArguments "ihsArguments: return the arguments to the function in the invocation history stack at i"
+T_sp af_ihsArguments(int idx) {
+  InvocationHistoryFrameIterator_sp cur = core_getInvocationHistoryFrame(idx);
+  if ( !cur->isValid() ) return _Nil<T_O>();
+  return cur->arguments();
+};
+
+#define ARGS_af_ihsEnv "(cur)"
+#define DECL_af_ihsEnv ""
+#define DOCS_af_ihsEnv "ihsEnv"
+T_sp af_ihsEnv(int idx) {
+  InvocationHistoryFrameIterator_sp cur = core_getInvocationHistoryFrame(idx);
+  if ( !cur->isValid() ) return _Nil<T_O>();
+  return cur->environment();
+};
+
+
+#define ARGS_af_ihsBds "(cur)"
+#define DECL_af_ihsBds ""
+#define DOCS_af_ihsBds "ihsBds"
+int af_ihsBds(int idx) {
+  InvocationHistoryFrameIterator_sp cur = core_getInvocationHistoryFrame(idx);
+  if ( !cur->isValid() ) return 0;
+  return cur->frame()->bds();
+};
+
+#define ARGS_af_ihsCurrentFrame "()"
+#define DECL_af_ihsCurrentFrame ""
+#define DOCS_af_ihsCurrentFrame "ihsCurrentFrame"
+int af_ihsCurrentFrame() {
+  _G();
+  T_sp cf = _sym_STARihsCurrentSTAR->symbolValue();
+  if (cf.nilp()) {
+    int icf = af_ihsTop();
+    return af_setIhsCurrentFrame(icf);
+  }
+  int icf = unbox_fixnum(gc::As<Fixnum_sp>(cf));
+  if (icf < 0) {
+    _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(icf));
+    return 0;
+  }
+  if (icf >= af_ihsTop()) {
+    _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(af_ihsTop()));
+    return af_ihsTop();
+  }
+  return icf;
+}
+
+#define ARGS_af_setIhsCurrentFrame "()"
+#define DECL_af_setIhsCurrentFrame ""
+#define DOCS_af_setIhsCurrentFrame "setIhsCurrentFrame"
+int af_setIhsCurrentFrame(int icf) {
+  _G();
+  if (icf < 0)
+    icf = 0;
+  else if (icf >= af_ihsTop())
+    icf = af_ihsTop();
+  _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(icf));
+  return icf;
+}
+
+#define ARGS_af_bdsTop "()"
+#define DECL_af_bdsTop ""
+#define DOCS_af_bdsTop "bdsTop"
+int af_bdsTop() {
+  return _lisp->bindings().top();
+};
+
+#define ARGS_af_bdsVar "(idx)"
+#define DECL_af_bdsVar ""
+#define DOCS_af_bdsVar "bdsVar"
+Symbol_sp af_bdsVar(int idx) {
+  return _lisp->bindings().var(idx);
+};
+
+#define ARGS_af_bdsVal "(idx)"
+#define DECL_af_bdsVal ""
+#define DOCS_af_bdsVal "bdsVal"
+T_sp af_bdsVal(int idx) {
+  return _lisp->bindings().val(idx);
+};
+
+#define ARGS_core_exceptionStack "()"
+#define DECL_core_exceptionStack ""
+#define DOCS_core_exceptionStack "exceptionStack"
+Vector_sp core_exceptionStack() {
+  return _lisp->exceptionStack().backtrace();
+}
+
+#define ARGS_core_exceptionStackDump "()"
+#define DECL_core_exceptionStackDump ""
+#define DOCS_core_exceptionStackDump "exceptionStackDump"
+void core_exceptionStackDump() {
+  _G();
+  ExceptionStack &stack = _lisp->exceptionStack();
+  printf("Exception stack size: %zu members\n", stack.size());
+  for (int i(0); i < stack.size(); ++i) {
+    string kind;
+    switch (stack[i]._FrameKind) {
+    case CatchFrame:
+        kind = "catch";
+        break;
+    case BlockFrame:
+        kind = "block";
+        break;
+    case TagbodyFrame:
+        kind = "tagbody";
+        break;
+    default:
+        kind = "unknown";
+        break;
+    };
+    printf("Exception exceptionstack[%2d] = %8s %s@%p\n", i, kind.c_str(), _rep_(stack[i]._Key).c_str(), stack[i]._Key.raw_());
+  }
+  printf("----Done----\n");
+};
+
+#define ARGS_core_dynamicBindingStackDump "()"
+#define DECL_core_dynamicBindingStackDump ""
+#define DOCS_core_dynamicBindingStackDump "dynamicBindingStackDump"
+void core_dynamicBindingStackDump(std::ostream &out) {
+  DynamicBindingStack &bd = _lisp->bindings();
+  for (int i(0), iEnd(bd.size()); i < iEnd; ++i) {
+    out << "  dbstack[" << i << " --> " << _rep_(bd.var(i)) << std::endl;
+  };
+}
+
+
+#define ARGS_core_lowLevelBacktrace "()"
+#define DECL_core_lowLevelBacktrace ""
+#define DOCS_core_lowLevelBacktrace "lowLevelBacktrace"
+void core_lowLevelBacktrace() {
+  InvocationHistoryStack &ihs = _lisp->invocationHistoryStack();
+  InvocationHistoryFrame *top = ihs.top();
+  if (top == NULL) {
+    printf("Empty InvocationHistoryStack\n");
+    return;
+  }
+  printf("From bottom to top invocation-history-stack frames = %d\n", top->_Index + 1);
+  for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
+    string name = "-no-name-";
+    Closure *closure = cur->closure;
+    if (closure == NULL) {
+      name = "-NO-CLOSURE-";
+    } else {
+      if (closure->name.notnilp()) {
+        try {
+          name = _rep_(closure->name);
+        } catch (...) {
+          name = "-BAD-NAME-";
+        }
+      }
+    }
+    /*Nilable?*/ T_sp sfi = core_sourceFileInfo(make_fixnum(closure->sourceFileInfoHandle()));
+    string sourceName = "cannot-determine";
+    if (sfi.notnilp()) {
+      sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
+    }
+    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", cur->_Index, cur, cur->_Previous, closure, name.c_str(), closure->lineNumber(), sourceName.c_str());
+  }
+  printf("----Done\n");
+}
+
+#define ARGS_af_ihsBacktrace "(&optional (out t) msg)"
+#define DECL_af_ihsBacktrace ""
+#define DOCS_af_ihsBacktrace "ihsBacktrace"
+T_sp af_ihsBacktrace(T_sp outputDesignator, T_sp msg) {
+  _G();
+  T_sp ss;
+  if (outputDesignator.nilp()) {
+    ss = clasp_make_string_output_stream();
+  } else {
+    ss = coerce::outputStreamDesignator(outputDesignator);
+  }
+  if (!msg.nilp()) {
+    clasp_writeln_string(((BF("\n%s") % _rep_(msg)).str()), ss);
+  }
+  clasp_writeln_string(((BF("%s") % _lisp->invocationHistoryStack().asString()).str()), ss);
+  if (outputDesignator.nilp()) {
+    return cl_get_output_stream_string(ss);
+  }
+  return _Nil<T_O>();
+};
+
+};
+
+
+
+
+
+
+
+namespace core {
 void initialize_primitives() {
   _G();
   //
@@ -1775,6 +2204,30 @@ void initialize_primitives() {
   ClDefun(sxhash);
   ClDefun(sleep);
   CoreDefun(create_tagged_immediate_value_or_nil);
+
+    SYMBOL_SC_(CorePkg, ihsBacktrace);
+  Defun(ihsBacktrace);
+  SYMBOL_SC_(CorePkg, ihsTop);
+  Defun(ihsTop);
+  SYMBOL_SC_(CorePkg, ihsPrev);
+  Defun(ihsPrev);
+  SYMBOL_SC_(CorePkg, ihsNext);
+  Defun(ihsNext);
+  SYMBOL_SC_(CorePkg, ihsFun);
+  Defun(ihsFun);
+  Defun(ihsArguments);
+  SYMBOL_SC_(CorePkg, ihsEnv);
+  Defun(ihsEnv);
+  SYMBOL_SC_(CorePkg, bdsTop);
+  Defun(bdsTop);
+  SYMBOL_SC_(CorePkg, bdsVar);
+  Defun(bdsVar);
+  SYMBOL_SC_(CorePkg, bdsVal);
+  Defun(bdsVal);
+  CoreDefun(lowLevelBacktrace);
+  CoreDefun(exceptionStack);
+  CoreDefun(exceptionStackDump);
+
 }
 
 void initializePythonPrimitives(Lisp_sp lisp) {
@@ -1788,100 +2241,4 @@ void initializePythonPrimitives(Lisp_sp lisp) {
 #endif
 }
 
-}; /* core */
-
-
-namespace core {
-
-EXPOSE_CLASS(core,InvocationHistoryFrameIterator_O);
-
-bool satisfiesTest(InvocationHistoryFrameIterator_sp iterator, T_sp test) {
-  if ( !iterator->isValid() ) {
-    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
-  }
-  if ( test.nilp()) return true;
-  return eval::funcall(test,iterator).isTrue();
-}
-
-void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationHistoryFrameIterator_sp iterator, T_sp test) {
-  do {
-    if ( !iterator->isValid() ) return;
-    if ( satisfiesTest(iterator,test) ) {
-      if ( num == 0 ) return;
-      --num;
-    }
-    iterator->setCurrent(iterator->getCurrent()->_Next);
-  } while (num>=0);
-}
-
-#define ARGS_core_makeInvocationHistoryFrameIterator ""
-#define DECL_core_makeInvocationHistoryFrameIterator ""
-#define DOCS_core_makeInvocationHistoryFrameIterator "Return the InvocationHistoryFrameIterator for the frame that is the (first) that satisfies (test)"
-InvocationHistoryFrameIterator_sp core_makeInvocationHistoryFrameIterator(Fixnum first, T_sp test ) {
-  InvocationHistoryFrame *cur = _lisp->invocationHistoryStack().top();
-  InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create();
-  iterator->setCurrent(cur);
-  nextInvocationHistoryFrameIteratorThatSatisfiesTest(first,iterator,test);
-  return iterator;
-}
-
-
-InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::nextFrame(T_sp test)
-{
-  nextInvocationHistoryFrameIteratorThatSatisfiesTest(1,this->asSmartPtr(),test);
-  return this->asSmartPtr();
-}
-
-T_sp InvocationHistoryFrameIterator_O::functionName() {
-  if ( !this->isValid() ) {
-    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
-  }
-  Closure* closure = this->_Current->closure;
-  if ( closure==NULL ) {
-    SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
-  }
-  return closure->name;
-}
-
-
-T_sp InvocationHistoryFrameIterator_O::environment() {
-  if ( !this->isValid() ) {
-    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
-  }
-  Closure* closure = this->_Current->closure;
-  if ( closure==NULL ) {
-    SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
-  }
-  return closure->closedEnvironment;
-}
-
-Vector_sp InvocationHistoryFrameIterator_O::arguments() {
-  if ( !this->isValid() ) {
-    SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
-  }
-  InvocationHistoryFrame* frame = this->_Current;
-  return frame->arguments();
-}
-
-
-void InvocationHistoryFrameIterator_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<InvocationHistoryFrameIterator_O>()
-    .def("frameIteratorFunctionName",&InvocationHistoryFrameIterator_O::functionName)
-    .def("frameIteratorArguments",&InvocationHistoryFrameIterator_O::arguments)
-    .def("frameIteratorEnvironment",&InvocationHistoryFrameIterator_O::environment)
-    .def("frameIteratorIsValid",&InvocationHistoryFrameIterator_O::isValid)
-    .def("frameIteratorNextFrame",&InvocationHistoryFrameIterator_O::nextFrame)
-      //	.initArgs("(self)")
-    ;
-  SYMBOL_SC_(CorePkg, makeInvocationHistoryFrameIterator);
-  CoreDefun(makeInvocationHistoryFrameIterator);
 };
-
-void InvocationHistoryFrameIterator_O::exposePython(::core::Lisp_sp lisp) {
-//	PYTHON_CLASS_2BASES(Pkg(),Vector,"","",_LISP)
-#ifdef USEBOOSTPYTHON
-#endif
-}
-
-};
-

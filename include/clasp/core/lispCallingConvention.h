@@ -56,6 +56,7 @@ THE SOFTWARE.
 #define LCC_ARGS_VA_LIST std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, va_list lcc_arglist
 // When you pass args to another function use LCC_PASS_ARGS
 #define LCC_PASS_ARGS lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_arglist
+#define LCC_VA_START_ARG lcc_fixed_arg2
 #define LCC_LAST_FIXED_ARG lcc_fixed_arg2
 
 
@@ -73,6 +74,7 @@ THE SOFTWARE.
 typedef LCC_RETURN_RAW (*fnLispCallingConvention)(LCC_CLOSED_ENVIRONMENT, LCC_ARGS_VA_LIST);
 typedef LCC_RETURN_RAW (*CompiledClosure_fptr_type)(LCC_CLOSED_ENVIRONMENT,LCC_ARGS_VA_LIST);
 typedef LCC_RETURN (*InitFnPtr)(LCC_CLOSED_ENVIRONMENT, LCC_ARGS_VA_LIST);
+typedef LCC_RETURN (*ArgArrayGenericFunctionPtr)(core::Instance_sp gf, va_list args);
 
 // To invoke functions of type InitFnPtr use these
 #define LCC_PASS_ARGS0_VA_LIST_INITFNPTR() NULL, 0, LCC_UNUSED_rest0(), NULL
@@ -134,16 +136,21 @@ typedef LCC_RETURN (*InitFnPtr)(LCC_CLOSED_ENVIRONMENT, LCC_ARGS_VA_LIST);
 
 #define LCC_DECLARE_VA_LIST() \
   va_list lcc_arglist; \
-  va_start(lcc_arglist,LCC_LAST_FIXED_ARG); 
+  va_start(lcc_arglist,LCC_VA_START_ARG); 
 
 /*! This is X86_64 dependent code */
 #if defined(X86) && defined(_ADDRESS_MODEL_64)
 
+// This is VERY HACKISH
+// it's based on the System V Application Binary Interface for X86_64
+// I'm writing the register arguments into the reg_save_area and then
+// resetting the gp_offset to point to the first register argument lcc_fixed_arg0
 #define LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST() { \
     ((uintptr_t*)lcc_arglist->reg_save_area)[0] = (uintptr_t)lcc_nargs; \
-    ((uintptr_t*)lcc_arglist->reg_save_area)[1] = (uintptr_t)lcc_fixed_arg0; \
-    ((uintptr_t*)lcc_arglist->reg_save_area)[2] = (uintptr_t)lcc_fixed_arg1; \
-    ((uintptr_t*)lcc_arglist->reg_save_area)[3] = (uintptr_t)lcc_fixed_arg2; \
+    ((uintptr_t*)lcc_arglist->reg_save_area)[3] = (uintptr_t)lcc_fixed_arg0; \
+    ((uintptr_t*)lcc_arglist->reg_save_area)[4] = (uintptr_t)lcc_fixed_arg1; \
+    ((uintptr_t*)lcc_arglist->reg_save_area)[5] = (uintptr_t)lcc_fixed_arg2; \
+    lcc_arglist->gp_offset = sizeof(uintptr_t)*3; \
   }
 
 
@@ -151,9 +158,14 @@ typedef LCC_RETURN (*InitFnPtr)(LCC_CLOSED_ENVIRONMENT, LCC_ARGS_VA_LIST);
   LCC_DECLARE_VA_LIST(); \
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_arglist);
 
-#define LCC_VA_LIST_NUMBER_OF_ARGUMENTS(arglist) ((size_t)(arglist->reg_save_area))[0])
+#define LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_t*)(_args[0].reg_save_area))[0])
+#define LCC_VA_LIST_REGISTER_ARG0(_args)   (((core::T_O**)(_args[0].reg_save_area))[3])
+#define LCC_VA_LIST_REGISTER_ARG1(_args) (((core::T_O**)(_args[0].reg_save_area))[4])
+#define LCC_VA_LIST_REGISTER_ARG2(_args) (((core::T_O**)(_args[0].reg_save_area))[5])
 
-#define LCC_INDEXED_ARG(arglist,arg_idx) gc::smart_ptr<core::T_O>((gctools::Tagged)((arg_idx<LCC_FIXED_ARGS) ? (((uintptr_t*)(arglist->reg_save_area))[1+arg_idx]) : (((uintptr_t*)(arglist->overflow_arg_area))[arg_idx-LCC_FIXED_ARGS])))
+#define LCC_NEXT_ARG_RAW(arglist,arg_idx) va_arg(arglist,core::T_O*)
+#define LCC_NEXT_ARG(arglist,arg_idx) gc::smart_ptr<core::T_O>((gctools::Tagged)va_arg(arglist,core::T_O*))
+//gc::smart_ptr<core::T_O>((gctools::Tagged)((arg_idx<LCC_FIXED_ARGS) ? (((uintptr_t*)(arglist->reg_save_area))[1+arg_idx]) : (((uintptr_t*)(arglist->overflow_arg_area))[arg_idx-LCC_FIXED_ARGS])))
 
 #else
 #error "Add support for accessing LCC_INDEXED_ARG"

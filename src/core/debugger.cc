@@ -39,6 +39,8 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/vectorObjects.h>
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/wrappers.h>
@@ -66,17 +68,15 @@ LispDebugger::LispDebugger() : _CanContinue(true) {
 
 void LispDebugger::printExpression() {
   _G();
-  InvocationHistoryFrame &frame = this->currentFrame();
+  InvocationHistoryFrameIterator_sp frame = this->currentFrame();
   stringstream ss;
-  ss << frame.asString();
+  ss << frame->frame()->asString();
   _lisp->print(BF("%s\n") % ss.str());
 }
 
-InvocationHistoryFrame &LispDebugger::currentFrame() const {
-  _G();
-  InvocationHistoryFrame *ptr = get_ihs_ptr(af_ihsCurrentFrame());
-  if (ptr != NULL)
-    return *ptr;
+InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
+  InvocationHistoryFrameIterator_sp frame = core_getInvocationHistoryFrame(af_ihsCurrentFrame());
+  if (frame->isValid()) return frame;
   THROW_HARD_ERROR(BF("%s:%d Could not get frame") % __FILE__ % __LINE__);
 }
 
@@ -92,7 +92,7 @@ T_sp LispDebugger::invoke() {
   while (1) {
     string line;
     stringstream sprompt;
-    sprompt << "Frame-" << this->currentFrame().index() << "-";
+    sprompt << "Frame-" << this->currentFrame()->index() << "-";
     sprompt << "Dbg";
     if (af_ihsEnv(af_ihsCurrentFrame()).notnilp()) {
       sprompt << "(+ENV)";
@@ -172,6 +172,7 @@ T_sp LispDebugger::invoke() {
       break;
     }
     case 'v': {
+      this->printExpression();
       T_sp env = af_ihsEnv(af_ihsCurrentFrame());
       _lisp->print(BF("activationFrame->%p    .nilp()->%d  .nilp()->%d") % env.raw_() % env.nilp() % env.nilp());
       if (env.notnilp()) {
@@ -326,7 +327,15 @@ void af_printCurrentIhsFrame() {
 #define DECL_af_printCurrentIhsFrameEnvironment ""
 #define DOCS_af_printCurrentIhsFrameEnvironment "printCurrentIhsFrameEnvironment"
 void af_printCurrentIhsFrameEnvironment() {
-  _G();
+  T_sp args = af_ihsArguments(af_ihsCurrentFrame());
+  if ( args.notnilp() ) {
+    VectorObjects_sp vargs = gc::As<VectorObjects_sp>(args);
+    for ( int i=0; i<cl_length(vargs); ++i ) {
+      _lisp->print(BF("arg%s --> %s") % i % _rep_(vargs->elt(i)));
+    }
+  } else {
+    _lisp->print(BF("Args not available"));
+  }
   T_sp env = af_ihsEnv(af_ihsCurrentFrame());
   if (env.notnilp()) {
     printf("%s\n", gc::As<Environment_sp>(env)->environmentStackAsString().c_str());

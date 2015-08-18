@@ -45,21 +45,9 @@ T_sp InstanceClosure::lambdaList() const {
 }
 
 LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
-// TODO: I should allocate this on the stack - but clang doesn't behave consistently
-// when I use variable stack arrays
-  IMPLEMENT_MEF(BF("I may need to put the arguments into an array before invoking entryPoint"));
-#if 0
-  gctools::Frame0<T_sp> fargs;
-  fargs.allocate(lcc_nargs,_Nil<T_O>());
-  T_sp* args = &fargs[0];
-#else
-//        core::T_O* args = (T_O*)alloca(sizeof(T_O)*lcc_nargs);
-//        core::T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
-#endif
   // Copy the arguments passed in registers into the multiple_values array and those
   // will be processed by the generic function
-  LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(mv);
-  return (this->entryPoint)(this->instance);
+  return (this->entryPoint)(this->instance,lcc_arglist);
 }
 
 #define ARGS_clos_setFuncallableInstanceFunction "(instance func)"

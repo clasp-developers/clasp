@@ -63,6 +63,7 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +i32**+ (llvm-sys:type-get-pointer-to +i32*+))
 (defvar +i8+ (llvm-sys:type-get-int8-ty *llvm-context*))
 (defvar +i8*+ (llvm-sys:type-get-pointer-to +i8+))
+(defvar +va_list+ +i8*+)
 (defvar +vtable*+ +i8*+)
 (defvar +i8**+ (llvm-sys:type-get-pointer-to +i8*+))
 (defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*))
@@ -224,7 +225,6 @@ Boehm and MPS use a single pointer"
 
 
 
-(defvar +va-list+ +i8*+)
 (defvar +closure*+ +i8*+)
 
 
@@ -261,16 +261,21 @@ Boehm and MPS use a single pointer"
 (defun calling-convention-va-list (cc)
   (car (last (calling-convention-impl-passed-args cc))))
 
-(defun calling-convention-args (cc)
-  (calling-convention-impl-args cc))
 
-(defun calling-convention-args.gep (cc idx &optional target-idx)
+(defun calling-convention-args.va-end (cc)
+  (irc-intrinsic "llvm.va_end" (calling-convention-va-list cc)))
+
+;;;
+;;; Read the next argument from the va_list
+;;; Everytime the arg-idx is incremented, this function must be called.
+;;; The arg-idx is not used but it is passed because I used to index into an array
+(defun calling-convention-args.va-arg (cc arg-idx &optional target-idx)
+  (declare (ignore arg-idx))
   (let ((label (if (and target-idx core::*enable-print-pretty*)
                    (bformat nil "arg-%d" target-idx)
                    "rawarg")))
-    (llvm-sys:create-geparray *irbuilder* (calling-convention-impl-args cc) (list (jit-constant-size_t 0) idx) label)))
-
-
+    (llvm-sys:create-vaarg *irbuilder* (calling-convention-va-list cc) +t*+ label)))
+;;;    (llvm-sys:create-geparray *irbuilder* (calling-convention-impl-args cc) (list (jit-constant-size_t 0) idx) label)))
 
 (defvar *register-arg-types* nil)
 (defvar *register-arg-names* nil)
@@ -279,7 +284,7 @@ Boehm and MPS use a single pointer"
     (push +t*+ arg-types)
     (push (bformat nil "farg%d" i) arg-names))
   ;; va-list arg
-  (push +va-list+ arg-types)
+  (push +va_list+ arg-types)
   (push "va-list" arg-names)
   (setf *register-arg-types* (nreverse arg-types)
 	*register-arg-names* (nreverse arg-names)))
@@ -549,10 +554,10 @@ Boehm and MPS use a single pointer"
 ;;  (primitive-nounwind module "resetTsp" +void+ (list +tsp*+))
 ;;  (primitive-nounwind module "makeUnboundTsp" +void+ (list +tsp*+))
   (primitive-nounwind module "copyTsp" +void+ (list +tsp*-or-tmv*+ +tsp*+))
-  (primitive-nounwind module "copyTspTptr" +void+ (list +tsp*-or-tmv*+ +t**+))
+  (primitive-nounwind module "copyTspTptr" +void+ (list +tsp*-or-tmv*+ +t*+))
 ;;  (primitive-nounwind module "destructTsp" +void+ (list +tsp*+))
 ;;  (primitive-nounwind module "compareTsp" +i32+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "compareTspTptr" +i32+ (list +tsp*+ +t**+))
+  (primitive-nounwind module "compareTspTptr" +i32+ (list +tsp*+ +t*+))
 
   (primitive-nounwind module "newTmv" +void+ (list +tmv*+))
   (primitive-nounwind module "resetTmv" +void+ (list +tmv*+))
@@ -634,8 +639,6 @@ Boehm and MPS use a single pointer"
   (primitive          module "throwIfExcessKeywordArguments" +void+ (list +i8*+ +afsp*+ +i32+))
   (primitive-nounwind module "kw_allowOtherKeywords" +i32+ (list +i32+ +afsp*+ +i32+))
   (primitive-nounwind module "kw_trackFirstUnexpectedKeyword" +size_t+ (list +size_t+ +size_t+))
-  (primitive        module "kw_ifNotKeywordException" +void+ (list +t**+))
-
   (primitive        module "gdb" +void+ nil)
   (primitive        module "debugInvoke" +void+ nil)
   (primitive        module "debugInspectActivationFrame" +void+ (list +afsp*+))
@@ -644,6 +647,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "debugInspectT_mv" +void+ (list +tmv*+))
 
   (primitive-nounwind module "debugPointer" +void+ (list +i8*+))
+  (primitive-nounwind module "debug_va_list" +void+ (list +i8*+))
   (primitive-nounwind module "debugPrintObject" +void+ (list +i8*+ +tsp*+))
   (primitive-nounwind module "debugMessage" +void+ (list +i8*+))
   (primitive-nounwind module "debugPrintI32" +void+ (list +i32+))
@@ -656,19 +660,18 @@ Boehm and MPS use a single pointer"
 
   (primitive module "va_tooManyArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
   (primitive module "va_notEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
-  (primitive module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +t*[0]*+ +size_t+))
+  (primitive module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +i8*+ +size_t+))
 ;;  (primitive module "va_fillActivationFrameWithRequiredVarargs" +void+ (list +afsp*+ +i32+ +tsp*+))
   (primitive module "va_coerceToClosure" +closure*+ (list +tsp*+))
   (primitive module "va_symbolFunction" +closure*+ (list +symsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
   (primitive module "va_lexicalFunction" +closure*+ (list +i32+ +i32+ +afsp*+))
-  (primitive module "FUNCALL" +void+ (list* +tsp*-or-tmv*+ +closure*+ +i32+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
+  (primitive module "FUNCALL" +void+ (list* +tsp*-or-tmv*+ +closure*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
   (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +closure*+ +afsp*+))
 
 
-  (primitive module "va_fillRestTarget" +void+ (list +tsp*+ +size_t+ +t*[0]*+ +size_t+ +i8*+))
-  (primitive-nounwind module "va_allowOtherKeywords" +i32+ (list +i32+ +size_t+ +t*[0]*+ +size_t+))
-  (primitive module "va_ifBadKeywordArgumentException" +void+ (list +i32+ +size_t+ +size_t+ +t*[0]*+))
-
+  (primitive module "va_fillRestTarget" +void+ (list +tsp*+ +size_t+ +va_list+ +size_t+ +i8*+))
+  (primitive-nounwind module "va_allowOtherKeywords" +i32+ (list +i32+ +t*+))
+  (primitive module "va_ifBadKeywordArgumentException" +void+ (list +i32+ +size_t+ +t*+))
 
   (primitive-nounwind module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
   (primitive-nounwind module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i64+ +i32+ +i32+))
@@ -751,7 +754,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "pushDynamicBinding" +void+ (list +symsp*+))
   (primitive-nounwind module "popDynamicBinding" +void+ (list +symsp*+))
 
-  (primitive-nounwind module "matchKeywordOnce" +i32+ (list +tsp*+ +t**+ +i8*+))
+  (primitive-nounwind module "matchKeywordOnce" +i32+ (list +tsp*+ +t*+ +i8*+))
 
   ;; Primitives for Cleavir code
 
@@ -763,7 +766,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_readCell" +t*+ (list +t*+))
   (primitive-nounwind module "cc_loadTimeValueReference" +t**+ (list +ltv**+ +size_t+))
   (primitive-nounwind module "cc_fetch" +t*+ (list +t*+ +size_t+))
-  (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +va-list+))
+  (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +va_list+))
   (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i8*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
   (primitive #|-nounwind|#              module "cc_call_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
 ;  (primitive              module "cc_invoke_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
@@ -779,7 +782,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_allowOtherKeywords" +size_t+ (list +size_t+ +size_t+ +t*[0]*+ +size_t+))
   (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +size_t+ +t*[0]*+))
   (primitive-nounwind module "cc_matchKeywordOnce" +size_t+ (list +t*+ +t*+ +t*+))
-  (primitive          module "cc_ifNotKeywordException" +void+ (list +t*+))
+  (primitive          module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +va_list+))
   (primitive-nounwind module "cc_multipleValuesArrayAddress" +t*[0]*+ nil)
   (primitive          module "cc_unwind" +void+ (list +t*+ +size_t+))
   (primitive          module "cc_throw" +void+ (list +t*+) :does-not-return t)

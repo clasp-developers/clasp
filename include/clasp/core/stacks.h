@@ -53,7 +53,7 @@ public:
 public:
   uint _Index;
   InvocationHistoryStack *_Stack;
-  InvocationHistoryFrame *_Next;
+  InvocationHistoryFrame *_Previous;
   int _Bds;
   Closure *closure;
   T_sp environment;
@@ -67,7 +67,7 @@ public:
   InvocationHistoryFrame(Closure *fc, va_list args, T_sp env = _Nil<T_O>());
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
   ATTR_WEAK virtual ~InvocationHistoryFrame();
-  InvocationHistoryFrame *next() { return this->_Next; };
+  InvocationHistoryFrame *previous() { return this->_Previous; };
   uint index() { return this->_Index; };
   virtual string sourcePathName() const;
   virtual size_t filepos() const { return this->runningFilePos; };
@@ -119,7 +119,7 @@ public:
 
   void pop() {
     if (this->_Top != NULL) {
-      this->_Top = this->_Top->next();
+      this->_Top = this->_Top->previous();
     }
   }
 
@@ -128,7 +128,7 @@ public:
     InvocationHistoryFrame *cur = this->_Top;
     while (cur) {
       ++count;
-      cur = cur->next();
+      cur = cur->previous();
     }
     return count;
   }
@@ -197,20 +197,6 @@ public:
 };
 #pragma GCC visibility pop
 
-InvocationHistoryFrame *get_ihs_ptr(int idx);
-T_sp af_ihsBacktrace(T_sp outDesignator, T_sp msg);
-int af_ihsTop();
-void af_ihsTopSetLineColumn(int lineno, int column);
-int af_ihsPrev(int idx);
-int af_ihsNext(int idx);
-T_sp af_ihsFun(int idx);
-T_sp af_ihsEnv(int idx);
-/*! Return the current frame index stored in core:*ihs-current*
-      Update core:*ihs-current* to a valid value */
-int af_ihsCurrentFrame();
-/*! Set the current core:*ihs-current* value.
-      If the idx is out of bounds then return a valid value */
-int af_setIhsCurrentFrame(int idx);
 }
 
 namespace core {
@@ -297,10 +283,6 @@ public:
 #define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(this,lcc_arglist);
 
 namespace core {
-void core_lowLevelBacktrace();
-void core_exceptionStackDump();
-void core_dynamicBindingStackDump(std::ostream &out);
-
 void initialize_stacks();
 };
 

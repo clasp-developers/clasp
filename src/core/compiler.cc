@@ -592,16 +592,6 @@ T_sp core_partialApplysPerSecond(int stage, T_sp fn, List_sp args) {
                 frame->operator[](i) = oCar(cur);
                 cur = oCdr(cur);
               }
-#else
-// ALLOC_STACK_VALUE_FRAME(frameImpl,frob,nargs);   // I cant do this in a loop!!!
-// frame::SetParentFrame(frob,_Nil<T_O>());
-// if ( stage>=4 ) {
-//     Cons_sp cur = args;
-//     T_O** values = frame::ValuesArray(frob);
-//     for ( int i=0; i<nargs; ++i ) {
-//         values[i] = oCar(cur).raw_();
-//         cur = cCdr(cur);
-//     }
 #endif
               if (stage >= 5) {
                 gctools::tagged_functor<Closure> closureP = func->closure;

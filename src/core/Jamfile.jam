@@ -40,12 +40,15 @@ local unity_sources =
       all.cc ;
 
 local sources =
+      genericFunction.cc
+	    instance.cc
+      cache.cc
+      float_to_string.cc
 	    primitives.cc
       stacks.cc
       random.cc
       cxxObject.cc
       cxxClass.cc
-      float_to_string.cc
       record.cc
       debugger.cc
       smallMap.cc
@@ -76,8 +79,6 @@ local sources =
 	    lispList.cc
     activationFrame.cc
 	    environment.cc
-      genericFunction.cc
-	    instance.cc
 	    binder.cc
 		multiStringBuffer.cc
 		candoOpenMp.cc
@@ -145,7 +146,6 @@ local sources =
 	    standardClass.cc
 	    compiler.cc
 	conditions.cc
-      cache.cc
       arrayDisplaced.cc
 		object.cc
       stdClass.cc

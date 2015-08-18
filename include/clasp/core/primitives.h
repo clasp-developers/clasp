@@ -160,32 +160,61 @@ namespace core {
     LISP_BASE1(T_O);
     LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator");
   private: // instance variables here
-    InvocationHistoryFrame*  _Current;
+    InvocationHistoryFrame*  _Frame;
   public:
-  InvocationHistoryFrameIterator_O() : _Current(NULL) {};
+  InvocationHistoryFrameIterator_O() : _Frame(NULL) {};
     virtual ~InvocationHistoryFrameIterator_O() {};
     
   public:  // Functions here
     static InvocationHistoryFrameIterator_sp make(Fixnum first, T_sp test = _Nil<T_O>());
   public:
-    InvocationHistoryFrameIterator_sp nextFrame(T_sp test);
-    void setCurrent(InvocationHistoryFrame* cur) { this->_Current = cur;};
-    InvocationHistoryFrame* getCurrent() { return this->_Current;};
+    InvocationHistoryFrameIterator_sp prev(T_sp test);
+    void setFrame(InvocationHistoryFrame* cur) { this->_Frame = cur;};
+    InvocationHistoryFrame* frame() { return this->_Frame;};
+    int index();
     T_sp functionName();
+    Function_sp function();
     Vector_sp arguments();
     T_sp environment();
     InvocationHistoryFrameIterator_sp copy() {
       InvocationHistoryFrameIterator_sp cp = InvocationHistoryFrameIterator_O::create();
-      cp->_Current = this->_Current;
+      cp->_Frame = this->_Frame;
       return cp;
     };
     /*! Return true if this points to a real InvocationHistoryFrame */
-    bool isValid() { return this->_Current!=NULL;};
+    bool isValid() { return this->_Frame!=NULL;};
   }; /* core */
 };
 TRANSLATE(core::InvocationHistoryFrameIterator_O);
 
+namespace core {
+  InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameTop();
+  InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrame(int idx);
+  InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameNext(int idx);
+  InvocationHistoryFrameIterator_sp core_getInvocationHistoryFramePrev(int idx);
+};
 
 
+extern "C" {
+core::T_sp af_ihsBacktrace(core::T_sp outDesignator, core::T_sp msg);
+int af_ihsTop();
+void af_ihsTopSetLineColumn(int lineno, int column);
+int af_ihsPrev(int idx);
+int af_ihsNext(int idx);
+core::T_sp af_ihsFun(int idx);
+core::T_sp af_ihsArguments(int idx);
+core::T_sp af_ihsEnv(int idx);
+/*! Return the current frame index stored in core:*ihs-current*
+      Update core:*ihs-current* to a valid value */
+int af_ihsCurrentFrame();
+/*! Set the current core:*ihs-current* value.
+      If the idx is out of bounds then return a valid value */
+int af_setIhsCurrentFrame(int idx);
+void core_lowLevelBacktrace();
+void core_exceptionStackDump();
+void core_dynamicBindingStackDump(std::ostream &out);
+
+
+};
 
 #endif /* _core_primitives_H */

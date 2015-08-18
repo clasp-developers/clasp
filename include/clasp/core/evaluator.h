@@ -101,28 +101,41 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args... args) {
 }
 
 #if 0
-	inline T_mv apply( T_sp fn, T_sp arg1, List_sp argsPLUS )
-	{
-	    Function_sp func = lookupFunction(fn,_Nil<T_O>());
-            if ( func.nilp() ) {
-                ERROR_UNDEFINED_FUNCTION(fn);
-            }
-	    int numArgsPassed = 1;
-	    int numArgsPlus = cl_length(argsPLUS);
-	    int nargs = numArgsPassed + numArgsPlus;
-	    ValueFrame_sp frob(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),arg1));
-	    List_sp cur = argsPLUS;
-	    for ( int i=numArgsPassed; i<nargs; ++i ) {
-		frob->operator[](i) = oCar(cur);
-		cur=cCdr(cur);
-	    }
-            Closure* closureP = func->closure;
-            ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
-	    return applyClosureToActivationFrame(closureP,frob);
-	}
+ inline T_mv apply( T_sp fn, T_sp arg1, List_sp argsPLUS )
+ {
+   Function_sp func = lookupFunction(fn,_Nil<T_O>());
+   if ( func.nilp() ) {
+     ERROR_UNDEFINED_FUNCTION(fn);
+   }
+   int numArgsPassed = 1;
+   int numArgsPlus = cl_length(argsPLUS);
+   int nargs = numArgsPassed + numArgsPlus;
+   ValueFrame_sp frob(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),arg1));
+   List_sp cur = argsPLUS;
+   for ( int i=numArgsPassed; i<nargs; ++i ) {
+     frob->operator[](i) = oCar(cur);
+     cur=cCdr(cur);
+   }
+   Closure* closureP = func->closure;
+   ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+   return applyClosureToActivationFrame(closureP,frob);
+ }
 #endif
 
 #define USE_ARRAY0
+
+ inline T_mv funcall(T_sp fn, va_list args ) {
+  T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
+  if (tfunc.nilp())
+    ERROR_UNDEFINED_FUNCTION(fn);
+  Function_sp func = gc::As<Function_sp>(tfunc);
+  gctools::tagged_functor<Closure> ft = func->closure;
+  return (*ft).invoke_va_list( LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),
+                               LCC_VA_LIST_REGISTER_ARG0(args),
+                               LCC_VA_LIST_REGISTER_ARG1(args),
+                               LCC_VA_LIST_REGISTER_ARG2(args),
+                               args);
+}
 
 inline T_mv funcall(T_sp fn) {
   T_sp tfunc = lookupFunction(fn, _Nil<T_O>());

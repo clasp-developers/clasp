@@ -1706,6 +1706,7 @@ T_mv cl_apply(T_sp head, T_sp args) {
     Function_sp func = coerce::functionDesignator(head);
     return eval::applyToActivationFrame(func, frame);
   } else if (last.framep()) {
+    // TODO: MAKE THIS WORK 2015
     // Frame as last argument
     ASSERT(last.framep());
     core::T_O **frameImpl(last.unsafe_frame());

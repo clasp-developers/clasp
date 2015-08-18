@@ -1093,6 +1093,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   _sym_STARloadSearchListSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedClosureSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugFlowControlSTAR->defparameter(_Nil<T_O>());
+  _sym_STARbacktraceFrameSelectorHookSTAR->defparameter(_Nil<T_O>());
 #if 0
 
 	_sym_STARbq_simplifySTAR->defparameter(_lisp->_true());

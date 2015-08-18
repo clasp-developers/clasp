@@ -84,57 +84,64 @@ In ecl/src/c/interpreter.d  is the following code
 			break;
     */
 
-List_sp frame_to_classes(int nargs, ArgArray args) {
-  List_sp arglist = _Nil<T_O>();
-  for (int p = nargs - 1; p >= 0; --p) {
-    T_sp co = af_classOf(gctools::smart_ptr<T_O>((gc::Tagged)args[p]));
-#if DEBUG_CLOS >= 2
-    printf("MLOG frame_to_classes class[%d] --> %lX  --> %s\n",
-           p, co.intptr(), co->__repr__().c_str());
-#endif
-    arglist = Cons_O::create(co, arglist);
-  }
-  return arglist;
-}
-
-#if 0
-    Cons_sp frame_to_list(int nargs, ArgArray args )
-    {
-	Cons_sp arglist = _Nil<T_O>();
-	for ( int p=nargs-1; p>=0; --p)
-	{
-	    T_sp co = args[p];
-#if DEBUG_CLOS >= 2
-	    printf("MLOG frame_to_list p[%d] --> %lX  --> %s\n",
-		   p, co.intptr(), co->__repr__().c_str() );
-#endif
-	    arglist = Cons_O::create(co,arglist);
-	}
-	return arglist;
-    }
-#endif
-
 SYMBOL_EXPORT_SC_(ClPkg, compute_applicable_methods);
 SYMBOL_SC_(ClosPkg, compute_applicable_methods_using_classes);
 SYMBOL_SC_(ClosPkg, compute_effective_method_function);
 
+List_sp listOfObjects(va_list vargs)
+{
+  core::List_sp list = _Nil<core::T_O>(); 
+  va_list cargs; 
+  va_copy(cargs,vargs); 
+  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(cargs); 
+  core::Cons_sp* cur = reinterpret_cast<core::Cons_sp*>(&list); 
+  for( int p=0; p<nargs; ++p ) { 
+    core::T_sp obj = LCC_NEXT_ARG(cargs,p); 
+    *cur = core::Cons_O::create(obj, _Nil<core::T_O>()); 
+    cur = reinterpret_cast<core::Cons_sp*>(&(*cur)->_Cdr); 
+  } 
+//  va_end(cargs);
+  return list;
+}
+
+List_sp listOfClasses(va_list vargs)
+{
+  core::List_sp list = _Nil<core::T_O>(); 
+  va_list cargs; 
+  va_copy(cargs,vargs); 
+  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(cargs); 
+  core::Cons_sp* cur = reinterpret_cast<core::Cons_sp*>(&list); 
+  for( int p=0; p<nargs; ++p ) { 
+    core::T_sp obj = LCC_NEXT_ARG(cargs,p);
+    core::Class_sp cobj = af_classOf(obj);
+    *cur = core::Cons_O::create(cobj, _Nil<core::T_O>()); 
+    cur = reinterpret_cast<core::Cons_sp*>(&(*cur)->_Cdr); 
+  } 
+//  va_end(cargs);
+  return list;
+}
+
 /*! This function copies ECL>>gfun.d generic_compute_applicable_method */
-T_mv generic_compute_applicable_method(Instance_sp gf, int nargs, ArgArray args) {
+T_mv generic_compute_applicable_method(Instance_sp gf, va_list vargs ) {
   /* method not cached */
   //cl_object memoize;
   T_sp memoize;
   T_mv methods = eval::funcall(clos::_sym_compute_applicable_methods_using_classes,
-                               gf, frame_to_classes(nargs, args));
+                               gf, listOfClasses(vargs));
   memoize = methods.valueGet(1); // unlikely_if (Null(memoize = env->values[1])) {
   if (memoize.nilp()) {
-    T_sp arglist = lisp_ArgArrayToCons(nargs, args); // used to be frame_to_list
+    List_sp arglist = listOfObjects(vargs);
+//    T_sp arglist = lisp_va_list_toCons(vargs); // used to be frame_to_list
     methods = eval::funcall(cl::_sym_compute_applicable_methods,
                             gf, arglist);
     if (methods.nilp()) {
       SYMBOL_EXPORT_SC_(ClPkg, no_applicable_method);
       T_sp func = eval::funcall(cl::_sym_no_applicable_method,
                                 gf, arglist);
-      args[0] = (T_O *)(gctools::tag_nil<T_O *>());
+          // Why was I setting the first argument to NIL???
+    // I could use LCC_VA_LIST_REGISTER_ARG0(vargs) = gctools::tag_nil<T_O*>();
+//    args[0] = (T_O *)(gctools::tag_nil<T_O *>());
+
       return (Values(func, _Nil<T_O>()));
     }
   }
@@ -147,15 +154,19 @@ SYMBOL_SC_(ClosPkg, std_compute_applicable_methods);
 SYMBOL_SC_(ClosPkg, std_compute_effective_method);
 
 /*! This function copies ECL>>gfun.d restricted_compute_applicable_method */
-T_mv restricted_compute_applicable_method(Instance_sp gf, int nargs, ArgArray args) {
+T_mv restricted_compute_applicable_method(Instance_sp gf, va_list vargs ) {
   Instance_sp igf = gf;
   /* method not cached */
-  T_sp arglist = lisp_ArgArrayToCons(nargs, args); // used to be frame_to_list
+  List_sp arglist = listOfObjects(vargs);
+//  T_sp arglist = lisp_ArgArrayToCons(nargs, args); // used to be frame_to_list
+//  printf("%s:%d  restricted_compute_applicable_method gf: %s  args: %s\n", __FILE__, __LINE__, _rep_(gf).c_str(), _rep_(arglist).c_str());
   T_sp methods = eval::funcall(clos::_sym_std_compute_applicable_methods, igf, arglist);
   if (methods.nilp()) {
     Function_sp func = gc::As<Function_sp>(eval::funcall(cl::_sym_no_applicable_method,
                                                          igf, arglist));
-    args[0] = (T_O *)(gctools::tag_nil<T_O *>());
+    // Why was I setting the first argument to NIL???
+    // I could use LCC_VA_LIST_REGISTER_ARG0(vargs) = gctools::tag_nil<T_O*>();
+//    args[0] = (T_O *)(gctools::tag_nil<T_O *>());
     return (Values(func, _Nil<T_O>()));
   }
   methods = eval::funcall(clos::_sym_std_compute_effective_method, igf, gf->GFUN_COMB(), methods);
@@ -186,21 +197,23 @@ T_sp core_maybeExpandGenericFunctionArguments(T_sp args) {
   return args;
 }
 
-T_mv compute_applicable_method(Instance_sp gf, int nargs, ArgArray args) {
+T_mv compute_applicable_method(Instance_sp gf, va_list vargs) {
   if (gc::As<Instance_sp>(gf)->isgf() == ECL_RESTRICTED_DISPATCH) {
-    return restricted_compute_applicable_method(gf, nargs, args);
+    return restricted_compute_applicable_method(gf, vargs );
   } else {
-    return generic_compute_applicable_method(gf, nargs, args);
+    return generic_compute_applicable_method(gf, vargs );
   }
 }
 
 /*! Mimic ECL>>gfun.d fill_spec_vector */
 gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vektor,
-                                      int nargs, ArgArray args) {
+                                      va_list vargs) {
+  va_list cargs;
+  va_copy(cargs,vargs);
 #if DEBUG_CLOS >= 2
   printf("MLOG fill_spec_vector - entered with gf  %s\n", gf->GFUN_NAME()->__repr__().c_str());
 #endif
-  int narg = nargs;
+  int narg = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
   T_sp spec_how_list = gf->GFUN_SPECIALIZERS();
   // cl_object *argtype = vector->vector.self.t; // ??
   gctools::Vec0<T_sp> &argtype = vektor;
@@ -220,10 +233,11 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
     } else if (spec_no >= vektor.capacity()) {
       SIMPLE_ERROR(BF("Too many arguments to fill_spec_vector()"));
     }
+    T_sp spec_position_arg = LCC_NEXT_ARG(cargs,spec_position);
     if (!cl_listp(spec_type) ||
-        gc::As<Cons_sp>(spec_type)->memberEql(gctools::smart_ptr<T_O>((gctools::Tagged)(args[spec_position]))).nilp()) // Was as_or_nil
+        gc::As<Cons_sp>(spec_type)->memberEql(spec_position_arg).nilp()) // Was as_or_nil
     {
-      Class_sp mc = lisp_instance_class(gctools::smart_ptr<T_O>((gctools::Tagged)(args[spec_position])));
+      Class_sp mc = lisp_instance_class(spec_position_arg);
 #if DEBUG_CLOS >= 2
       printf("MLOG fill_spec_vector argtype[%d] using class_of(args[%d]): %s\n", spec_no, spec_position, mc->__repr__().c_str());
 #endif
@@ -233,12 +247,12 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
       printf("MLOG fill_spec_vector argtype[%d] using args[%d]\n", spec_no, spec_position);
 #endif
       // For immediate types we need to make sure that EQL will be true
-      argtype[spec_no] = gctools::smart_ptr<T_O>((gctools::Tagged)(args[spec_position]));
+      argtype[spec_no] = spec_position_arg;
     }
 #if DEBUG_CLOS >= 2
     printf("MLOG fill_spec_vector - from arg[%d] val=%lX writing to argtype[%d] at %p wrote: %lX --> argtype/%s",
-           spec_position, args[spec_position].intptr(), spec_no, argtype->operator[](spec_no).px_address(), argtype->operator[](spec_no).intptr(), argtype->operator[](spec_no)->__repr__().c_str());
-    if (args[spec_position]->consP()) {
+           spec_position, ERROR/*args[spec_position].intptr()*/, spec_no, argtype->operator[](spec_no).px_address(), argtype->operator[](spec_no).intptr(), argtype->operator[](spec_no)->__repr__().c_str());
+    if (spec_position_arg.consp()) {
       printf(" arg/CONS...\n");
     } else {
       printf(" arg/%s\n", args[spec_position]->__repr__().c_str());
@@ -251,32 +265,17 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
 }
 
 // Arguments are passed in the multiple_values array
-T_mv standard_dispatch(T_sp gf) {
-// Save the arguments in the ArgumentsReturnValues for completing the call
-#if 0
-	/* Allocate a ValueFrame on the heap and copy the generic function arguments into the
-	   top MultipleValues object on the stack.
-	   This saves them so that later they can have a function applied to them by cl_apply.
-	   This is slow because it requires allocation/garbage collection on the heap.
-	*/
-	ValueFrame_sp frame(ValueFrame_O::createForMultipleValues(_Nil<ActivationFrame_O>()));
-#else
-  /* Copy the arguments from the MultipleValues structure into the stack based tagged frame allocated below.
-	   See gctools/tagged_ptr.h frame_tag
-	   This saves them so that later they can have a function applied to them by cl_apply.
-	*/
-  MultipleValues &mv = lisp_callArgs();
-  ALLOC_STACK_VALUE_FRAME_WITH_VALUES(frameImpl, frame, mv.getSize(), mv.callingArgsStart());
-#endif
-
+T_mv standard_dispatch(T_sp gf,va_list arglist) {
   /* Lookup the generic-function/arguments invocation in a cache and if an effective-method
 	   exists then use that.   If an effective-method does not exist then calculate it and put it in the cache.
 
 	   Then call the effective method with the saved arguments.
 	*/
+  ALLOC_STACK_VALUE_FRAME_WITH_va_list(frameImpl, frame, arglist);
+
+  
   Cache *cache(_lisp->methodCachePtr());
-  MultipleValues &callArgs = lisp_callArgs();
-  gctools::Vec0<T_sp> &vektor = fill_spec_vector(gf, cache->keys(), callArgs.getSize(), callArgs.callingArgsStart());
+  gctools::Vec0<T_sp> &vektor = fill_spec_vector(gf, cache->keys(), arglist );
   CacheRecord *e; //gctools::StackRootedPointer<CacheRecord> e;
   try {
     cache->search_cache(e); // e = ecl_search_cache(cache);
@@ -295,7 +294,7 @@ T_mv standard_dispatch(T_sp gf) {
 	     * compute the applicable methods. We must save
 	     * the keys and recompute the cache location if
 	     * it was filled. */
-    T_mv mv = compute_applicable_method(gf, callArgs.getSize(), callArgs.callingArgsStart());
+    T_mv mv = compute_applicable_method(gf, arglist);
     func = gc::As<Function_sp>(mv);
     if (mv.valueGet(1).notnilp()) {
       T_sp keys = VectorObjects_O::create(vektor);
@@ -318,10 +317,10 @@ T_mv standard_dispatch(T_sp gf) {
         }
 #endif
   /* The call below depends on the modified cl_apply function defined in lisp.cc
-	   it is set up to accept either a ValueFrame as the second (and last) argument
-	   or a StackFrame and treat it like a list of arguments.
-	*/
-  return eval::funcall(func, frame, _Nil<T_O>());
+    it is set up to accept either a ValueFrame as the second (and last) argument
+    or a StackFrame and treat it like a list of arguments.
+*/
+        return eval::funcall(func, frame, _Nil<T_O>()); 
 #if 0	
         if ( _sym_STARdebugGenericDispatchSTAR->symbolValue().notnilp() ) {
 	    Function_sp gff = eval::lookupFunction(gf,frame);
@@ -343,27 +342,27 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
         return output;
 }
  */
-T_mv generic_function_dispatch(Instance_sp gf) {
-  return standard_dispatch(gf);
+T_mv generic_function_dispatch(Instance_sp gf, va_list vargs) {
+  return standard_dispatch(gf,vargs);
 }
 
 /*! Reproduces functionality in ecl_slot_reader_dispatch */
-T_mv slotReaderDispatch(Instance_sp gf, int nargs, ArgArray args) {
+T_mv slotReaderDispatch(Instance_sp gf, va_list vargs) {
   IMPLEMENT_MEF(BF("Implement slotReaderDispatch"));
 }
 
 /*! Reproduces functionality in ecl_slot_writer_dispatch */
-T_mv slotWriterDispatch(Instance_sp gf, int nargs, ArgArray args) {
+T_mv slotWriterDispatch(Instance_sp gf, va_list vargs ) {
   IMPLEMENT_MEF(BF("Implement slotWriterDispatch"));
 }
 
 /*! Reproduces functionality in user_function_dispatch */
-T_mv userFunctionDispatch(Instance_sp gf, int nargs, ArgArray args) {
+T_mv userFunctionDispatch(Instance_sp gf, va_list vargs ) {
   IMPLEMENT_MEF(BF("Implement userFunctionDispatch"));
 }
 
 /*! Reproduces functionality in FEnot_funcallable_vararg */
-T_mv notFuncallableDispatch(Instance_sp gf) {
+T_mv notFuncallableDispatch(Instance_sp gf, va_list vargs) {
   IMPLEMENT_MEF(BF("Implement notFuncallableDispatch"));
 }
 

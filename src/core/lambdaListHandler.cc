@@ -462,7 +462,7 @@ SYMBOL_SC_(CorePkg, tooFewArguments);
 #define PASS_FUNCTION_KEYWORD bind_keyword_va_list
 #define PASS_ARGS size_t n_args, va_list arglist
 #define PASS_ARGS_NUM n_args
-#define PASS_NEXT_ARG(_ai) LCC_INDEXED_ARG(arglist,_ai)
+#define PASS_NEXT_ARG(_ai) LCC_NEXT_ARG(arglist,_ai)
 #include "argumentBinding.cc"
 #undef PASS_FUNCTION_REQUIRED
 #undef PASS_FUNCTION_OPTIONAL
