@@ -226,7 +226,7 @@ ALWAYS_INLINE void sp_FUNCALL_activationFrame(core::T_sp *resultP, core::Closure
   (*resultP) = core::eval::applyClosureToActivationFrame(closure, af);
 }
 
-__attribute__((visibility("default"))) void va_fillRestTarget(core::T_sp *restP, std::size_t nargs, va_list args, std::size_t startRest, char *fnName) {
+__attribute__((visibility("default"))) core::T_O* cc_gatherRestArguments(std::size_t nargs, va_list args, std::size_t startRest, char *fnName) {
   va_list rargs;
   va_copy(rargs,args);
   core::List_sp result = _Nil<core::T_O>();
@@ -237,18 +237,17 @@ __attribute__((visibility("default"))) void va_fillRestTarget(core::T_sp *restP,
     *cur = core::Cons_O::create(gc::smart_ptr<core::T_O>((gc::Tagged)va_arg(rargs,core::T_O*)), _Nil<core::T_O>());
     cur = reinterpret_cast<Cons_sp*>(&(*cur)->_Cdr);
   }
-  (*restP) = result;
-  ASSERTNOTNULL(*restP);
+  return result.raw_();
 }
 
-extern int va_allowOtherKeywords(int saw_aok, core::T_O* kw_arg) {
+extern int cc_allowOtherKeywords(int saw_aok, core::T_O* kw_arg) {
   if (saw_aok)
     return saw_aok;
   bool aokTrue = !(gctools::tagged_nilp(kw_arg));
   return aokTrue ? 2 : 1;
 }
 
-void va_ifBadKeywordArgumentException(int allowOtherKeys, std::size_t badKwIdx, core::T_O* kw ) {
+void cc_ifBadKeywordArgumentException(int allowOtherKeys, std::size_t badKwIdx, core::T_O* kw ) {
   if (allowOtherKeys == 2) {
     return;
   }
@@ -771,22 +770,6 @@ extern core::T_sp *functionFrameReference(core::ActivationFrame_sp *frameP, int 
   core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(idx));
   return pos_gc_safe;
 }
-
-#if 0
-    extern void fillRestTarget( core::T_sp* restP, core::ActivationFrame_sp* frameP, int startRest, char* fnName)
-    {_G();
-	ASSERT(frameP!=NULL);
-	ASSERT(frameP->objectp());
-	core::ValueFrame_sp frame = (*frameP).as<core::ValueFrame_O>();
-	core::List_sp result = _Nil<core::T_O>();
-	for ( int i=frame->length()-1; i>=startRest; i-- )
-	{
-	    result = core::Cons_O::create(frame->entry(i),result);
-	}
-	(*restP) = result;
-	ASSERTNOTNULL(*restP);
-    }
-#endif
 
 /*! Look for the :allow-other-keywords XX keyword argument and
       calculate (or (*ampAllowOtherKeywordsP) XX) return 1 if result is true otherwise 0 */
@@ -1503,6 +1486,7 @@ extern void loadValues(core::T_mv *resultP, core::T_sp *vectorObjectsP) {
       Otherwise check the following argument - if true then return 2 --> :a-o-k t
       Otherwise return 1 --> :a-o-k nil
     */
+#if 0
 int kw_allowOtherKeywords(int saw_aok, core::ActivationFrame_sp *afP, int argIdx) {
   if (saw_aok)
     return saw_aok;
@@ -1511,9 +1495,9 @@ int kw_allowOtherKeywords(int saw_aok, core::ActivationFrame_sp *afP, int argIdx
   bool aokTrue = valueFrame->entryReference(argIdx + 1).isTrue();
   return aokTrue ? 2 : 1;
 }
+#endif
 
-
-size_t kw_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx) {
+size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx) {
   // 65536 is the magic number for badKwIdx has not been assigned yet
   if (badKwIdx != 65536)
     return badKwIdx;
@@ -1797,25 +1781,15 @@ void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *
   }
 }
 
-
-__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(std::size_t nargs, core::T_O **argArray, std::size_t startRest, char *fnName) {
-  _G();
-  core::List_sp result = _Nil<core::T_O>();
-  int inargs = nargs;
-  int istartRest = startRest;
-  for (int i = inargs - 1; i >= istartRest; i--) {
-    result = core::Cons_O::create(core::T_sp((gc::Tagged)argArray[i]), result);
-  }
-  return (core::T_O *)result.raw_(); //(&(*result));
-}
-
+#if 0
 std::size_t cc_allowOtherKeywords(std::size_t saw_aok, std::size_t nargs, core::T_O **argArray, std::size_t argIdx) {
   if (saw_aok)
     return saw_aok;
   bool aokTrue = !gctools::tagged_nilp(argArray[argIdx + 1]);
   return aokTrue ? 2 : 1;
 }
-
+#endif
+#if 0
 void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, std::size_t nargs, core::T_O **argArray) {
   if (allowOtherKeys == 2)
     return;
@@ -1823,7 +1797,7 @@ void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwId
     SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(core::T_sp((gc::Tagged)argArray[badKwIdx])));
   }
 }
-
+#endif
 size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlreadyP) {
   if (xP != yP)
     return 0;

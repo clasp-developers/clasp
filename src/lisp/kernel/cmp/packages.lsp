@@ -36,7 +36,8 @@
           +t*+
           +t**+
           calling-convention-args
-          calling-convention-args.gep
+          calling-convention-args.va-arg
+          calling-convention-args-va-list
           calling-convention-nargs
           calling-convention-register-args
           calling-convention-write-registers-to-multiple-values

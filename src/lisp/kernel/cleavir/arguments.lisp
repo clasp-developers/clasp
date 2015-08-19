@@ -18,8 +18,8 @@
 		   (cmp:irc-add arg-idx (%size_t 1) "arg-idx")))
 	 ((endp cur-req) (%store arg-idx arg-idx-alloca))
       (let* ((target-alloca (translate-datum target))
-	     (val-ref (cmp:calling-convention-args.gep args arg-idx)))
-	(%store (cmp:irc-load val-ref) target-alloca)
+	     (val (cmp:calling-convention-args.va-arg args arg-idx)))
+	(%store val target-alloca)
 	(push target-alloca reqs)))
     (nreverse reqs)))
 
@@ -45,9 +45,9 @@
 	(cmp:irc-begin-block arg-block)
 	(let ((target-alloca (translate-datum target))
 	      (flag-alloca (translate-datum flag))
-	      (val-ref (cmp:calling-convention-args.gep args arg-idx)))
+	      (val (cmp:calling-convention-args.va-arg args arg-idx)))
 	  (cmp:irc-low-level-trace :arguments)
-	  (%store (cmp:irc-load val-ref) target-alloca)
+	  (%store val target-alloca)
 	  (%store true-val flag-alloca)
 	  (cmp:irc-br cont-block)
 	  (cmp:irc-begin-block init-block)
@@ -70,19 +70,13 @@
   (when rest-var
   ;; Copy argument values or evaluate init forms
     (let* ((arg-idx (cmp:irc-load arg-idx-alloca))
-	   (ptr (llvm-sys:create-geparray cmp:*irbuilder* 
-					  (cmp:calling-convention-args args)
-					  (list (%i32 0) (%i32 0)) "multiple-values"))
 	   (rest (cmp:irc-intrinsic "cc_gatherRestArguments" 
 				    (cmp:calling-convention-nargs args)
-				    ptr
+				    (cmp:calling-convention-va-list args)
 				    arg-idx cmp:*gv-current-function-name*))
 	   (rest-alloca (translate-datum rest-var)))
       (%store rest rest-alloca)
       rest-alloca)))
-
-
-
 
 (defun compile-key-arguments (keyargs
 			      lambda-list-allow-other-keys
@@ -120,7 +114,9 @@
 	(cmp:irc-phi-add-incoming phi-arg-idx entry-arg-idx kw-start-block)
 	(cmp:irc-phi-add-incoming phi-bad-kw-idx entry-bad-kw-idx kw-start-block)
 	(cmp:irc-low-level-trace :arguments)
-	(let* ((arg-val (cmp:irc-load (cmp:calling-convention-args.gep args phi-arg-idx)))) ;; (irc-gep va-list (list phi-arg-idx))))
+	(let* ((arg-val (cmp:irc-load (cmp:calling-convention-args.gep args phi-arg-idx)))
+               (arg-idx+1 (irc-add phi-arg-idx (jit-constant-size_t 1)))
+               (kw-arg-val (calling-convention-args.va-arg args arg-idx+1)))
 	  (cmp:irc-intrinsic "cc_ifNotKeywordException" arg-val phi-arg-idx (calling-convention-va-list args))
 	  (let* ((eq-aok-val-and-arg-val (cmp:irc-trunc (cmp:irc-icmp-eq aok-val arg-val) cmp:+i1+)) ; compare arg-val to a-o-k
 		 (aok-block (cmp:irc-basic-block-create "aok-block"))
@@ -133,9 +129,7 @@
 	    (cmp:irc-begin-block aok-block)
 	    (let* ((loop-saw-aok (cmp:irc-intrinsic "cc_allowOtherKeywords"
 						    phi-saw-aok
-						    (cmp:calling-convention-nargs args)
-						    (cmp:calling-convention-args args)
-						    phi-arg-idx)) )
+                                                    kw-arg-val)))
 	      (cmp:irc-br advance-arg-idx-block)
 	      (cmp:irc-begin-block possible-kw-block)
 	      ;; Generate a test for each keyword
@@ -158,20 +152,17 @@
 		       (not-seen-before-kw-block (cmp:irc-basic-block-create "not-seen-before-kw-block")))
 		  (cmp:irc-cond-br no-kw-match next-kw-test-block matched-kw-block)
 		  (cmp:irc-begin-block matched-kw-block)
-		  (let ((arg-idx+1 (cmp:irc-add phi-arg-idx (%size_t 1)))
-			(kw-seen-already (cmp:irc-icmp-eq test-kw-and-arg (%size_t 2))))
+		  (let ((kw-seen-already (cmp:irc-icmp-eq test-kw-and-arg (%size_t 2))))
 		    (cmp:irc-cond-br kw-seen-already good-kw-block not-seen-before-kw-block)
 		    (cmp:irc-begin-block not-seen-before-kw-block)
-		    (let ((kw-arg-val (cmp:irc-load (cmp:calling-convention-args.gep args arg-idx+1))))
-		      (%store kw-arg-val target-ref)
-		      ;; Set the boolean flag to indicate that we saw this key
-		      (%store true-val supplied-ref)
-		      (cmp:irc-br good-kw-block)
-		      (cmp:irc-begin-block next-kw-test-block)
-		      ))))
+                    (%store kw-arg-val target-ref)
+                    ;; Set the boolean flag to indicate that we saw this key
+                    (%store true-val supplied-ref)
+                    (cmp:irc-br good-kw-block)
+                    (cmp:irc-begin-block next-kw-test-block))))
 	      ;; We fell through all the keyword tests - this might be a unparameterized keyword
 	      (cmp:irc-branch-to-and-begin-block bad-kw-block) ; fall through to here if no kw recognized
-	      (let ((loop-bad-kw-idx (cmp:irc-intrinsic "kw_trackFirstUnexpectedKeyword"
+	      (let ((loop-bad-kw-idx (cmp:irc-intrinsic "cc_trackFirstUnexpectedKeyword"
 							phi-bad-kw-idx phi-arg-idx)))
 		(cmp:irc-low-level-trace :arguments)
 		(cmp:irc-br advance-arg-idx-block)

@@ -427,15 +427,19 @@ namespace frame {
 typedef core::T_O *ElementType;
 typedef gctools::smart_ptr<core::STACK_FRAME> FrameType;
 
-static const size_t IdxNumElements = 0;
-static const size_t IdxParent = 1;
-static const size_t IdxDebugInfo = 2;
-static const size_t IdxValuesArray = 3;
+ static const size_t IdxParent = 0;
+ static const size_t IdxDebugInfo = 1;
+ static const size_t IdxRegisterSaveArea = 2;    // Where the number of arguments is written
+ static const size_t IdxNumElements = 2;
+ static const size_t IdxOverflowArgs = 8; // IdxOverflowArgs-IdxRegisterSaveArea == Number of arguments passed in registers
+ static const size_t IdxRegisterArgumentsStart = IdxOverflowArgs-LCC_ARGS_IN_REGISTERS; // Where the register arguments start
+ static const size_t IdxValuesArray = IdxRegisterArgumentsStart;            // where the stack based arguments start
+
 
 /*! Calculate the number of elements required to represent the frame.
      It's IdxValuesArray+#elements */
 inline size_t FrameSize(size_t elements) {
-  return elements + IdxValuesArray;
+  return (elements+IdxOverflowArgs) - LCC_ARGS_IN_REGISTERS;
 }
 
 /*! Return the start of the values array */
@@ -630,10 +634,11 @@ inline bool UpdateValue(core::T_sp f, core::Symbol_sp sym, core::T_sp obj) {
 // Allocate memory on the stack on a 16 byte boundary for tagged pointers
 // We can't specify the alignment of __builtin_alloca so allocate an additional 15 bytes
 // add 15 bytes and then align down to 16 byte boundary
+#define ALLOCA_SIZE(_numValues) sizeof(frame::ElementType)*frame::FrameSize(_numValues)
 #if ALIGNMENT == 16
-#define DO_ALLOCA(numValues) (frame::ElementType *)(((uintptr_t)(__builtin_alloca(sizeof(frame::ElementType) * frame::FrameSize(numValues) + 15)) + 15) & (~0xf));
+#define DO_ALLOCA(numValues) (frame::ElementType *)(((uintptr_t)(__builtin_alloca(ALLOCA_SIZE(numValues) + 15)) + 15) & (~0xf));
 #else
-#define DO_ALLOCA(numValues) (frame::ElementType *)((uintptr_t)(__builtin_alloca(sizeof(frame::ElementType) * frame::FrameSize(numValues))));
+#define DO_ALLOCA(numValues) (frame::ElementType *)((uintptr_t)(__builtin_alloca(ALLOCA_SIZE(numValues))));
 #endif
 
 #define ALLOC_STACK_VALUE_FRAME(frameImpl, oframe, numValues)                                                        \

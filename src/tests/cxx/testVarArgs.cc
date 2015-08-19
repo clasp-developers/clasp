@@ -3,18 +3,23 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+struct my_va_list {
+  va_list args;
+};
+
 uintptr_t dummy;
 uintptr_t barComplex(uintptr_t n_args, uintptr_t a1, uintptr_t a2, uintptr_t a3, ...)
 {
   ++dummy;
-  va_list ap;
-  va_start(ap, a3);
-  ((uintptr_t*)(ap->reg_save_area))[0] = n_args;
-  ((uintptr_t*)(ap->reg_save_area))[1] = a1;
-  ((uintptr_t*)(ap->reg_save_area))[2] = a2;
-  ((uintptr_t*)(ap->reg_save_area))[3] = a3;
-  ap->gp_offset = sizeof(uintptr_t);
-  va_end(ap);
+
+  my_va_list myap;
+  va_start(myap.args, a3);
+  ((uintptr_t*)(myap.args->reg_save_area))[0] = n_args;
+  ((uintptr_t*)(myap.args->reg_save_area))[1] = a1;
+  ((uintptr_t*)(myap.args->reg_save_area))[2] = a2;
+  ((uintptr_t*)(myap.args->reg_save_area))[3] = a3;
+  myap.args->gp_offset = sizeof(uintptr_t);
+  va_end(myap.args);
   return a1 + a2 + a3;
 }
 

@@ -599,9 +599,6 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "makePathname" +void+ (list +tsp*+ +i8*+))
   (primitive-nounwind module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +i64+ +i32+ +i32+ +tsp*+ +tsp*+ +afsp*+ +tsp*+))
 
-
-  (primitive-nounwind module "fillRestTarget" +void+ (list +tsp*+ +afsp*+ +i32+ +i8*+))
-
   (primitive module "symbolValueRead" +void+ (list +tsp*-or-tmv*+ +symsp*+))
   (primitive module "symbolValueReadOrUnbound" +void+ (list +tsp*-or-tmv*+ +symsp*+))
   (primitive-nounwind module "symbolValueReference" +tsp*+ (list +symsp*+))
@@ -637,8 +634,8 @@ Boehm and MPS use a single pointer"
   (primitive          module "throwTooManyArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
   (primitive          module "throwNotEnoughArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
   (primitive          module "throwIfExcessKeywordArguments" +void+ (list +i8*+ +afsp*+ +i32+))
-  (primitive-nounwind module "kw_allowOtherKeywords" +i32+ (list +i32+ +afsp*+ +i32+))
-  (primitive-nounwind module "kw_trackFirstUnexpectedKeyword" +size_t+ (list +size_t+ +size_t+))
+;;  (primitive-nounwind module "kw_allowOtherKeywords" +i32+ (list +i32+ +afsp*+ +i32+))
+  (primitive-nounwind module "cc_trackFirstUnexpectedKeyword" +size_t+ (list +size_t+ +size_t+))
   (primitive        module "gdb" +void+ nil)
   (primitive        module "debugInvoke" +void+ nil)
   (primitive        module "debugInspectActivationFrame" +void+ (list +afsp*+))
@@ -669,9 +666,9 @@ Boehm and MPS use a single pointer"
   (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +closure*+ +afsp*+))
 
 
-  (primitive module "va_fillRestTarget" +void+ (list +tsp*+ +size_t+ +va_list+ +size_t+ +i8*+))
-  (primitive-nounwind module "va_allowOtherKeywords" +i32+ (list +i32+ +t*+))
-  (primitive module "va_ifBadKeywordArgumentException" +void+ (list +i32+ +size_t+ +t*+))
+  (primitive module "cc_gatherRestArguments" +t*+ (list +size_t+ +va_list+ +size_t+ +i8*+))
+;;  (primitive-nounwind module "va_allowOtherKeywords" +i32+ (list +i32+ +t*+))
+  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +i32+ +size_t+ +t*+))
 
   (primitive-nounwind module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
   (primitive-nounwind module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i64+ +i32+ +i32+))
@@ -778,9 +775,8 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_setSymbolValue" +void+ (list +t*+ +t*+))
   (primitive #|-nounwind|#    module "cc_call" +void+ (list* +tmv*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
 ;  (primitive module "cc_invoke" +void+ (list* +tmv*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
-  (primitive-nounwind module "cc_gatherRestArguments" +t*+ (list +size_t+ +t**+ +size_t+ +i8*+))
-  (primitive-nounwind module "cc_allowOtherKeywords" +size_t+ (list +size_t+ +size_t+ +t*[0]*+ +size_t+))
-  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +size_t+ +t*[0]*+))
+  (primitive-nounwind module "cc_allowOtherKeywords" +i32+ (list +i32+ +t*+))
+;;  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +size_t+ +t*[0]*+))
   (primitive-nounwind module "cc_matchKeywordOnce" +size_t+ (list +t*+ +t*+ +t*+))
   (primitive          module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +va_list+))
   (primitive-nounwind module "cc_multipleValuesArrayAddress" +t*[0]*+ nil)

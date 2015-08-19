@@ -1132,7 +1132,7 @@ class Functoid {
 
 public:
   virtual const char *describe() const { return "Functoid - subclass must implement describe()"; };
-  LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {
+  inline LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {
     LCC_DECLARE_VA_LIST();
     LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST();
     return this->invoke_va_list(LCC_PASS_ARGS);
