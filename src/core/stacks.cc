@@ -87,14 +87,16 @@ Vector_sp ExceptionStack::backtrace() {
   return result;
 }
 
-InvocationHistoryFrame::InvocationHistoryFrame(Closure *c, va_list args, T_sp env)
-  : closure(c), environment(env), runningSourceFileInfoHandle(c->sourceFileInfoHandle()), runningFilePos(c->filePos()), runningLineNumber(c->lineNumber()), runningColumn(c->column()), _RegisterArguments(NULL), _StackArguments(NULL) {
-  if ( args ) {
-    this->_RegisterArguments = args->reg_save_area;
-    this->_StackArguments = args->overflow_arg_area;
-  }
+InvocationHistoryFrame::InvocationHistoryFrame(Closure *c, core::T_O* valist_sptr, T_sp env)
+  : closure(c), environment(env), runningSourceFileInfoHandle(c->sourceFileInfoHandle()), runningFilePos(c->filePos()), runningLineNumber(c->lineNumber()), runningColumn(c->column()), _NumberOfArguments(0), _RegisterArguments(NULL), _StackArguments(NULL)  {
   if (c->name.nilp()) {
     SIMPLE_ERROR(BF("The InvocationHistoryFrame closure has nil name"));
+  }
+  if ( valist_sptr != NULL ) {
+    VaList_sp arguments(reinterpret_cast<core::VaList_S*>(gc::untag_valist(valist_sptr)));
+    this->_NumberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(arguments);
+    this->_RegisterArguments = LCC_VA_LIST_REGISTER_SAVE_AREA(arguments);
+    this->_StackArguments = LCC_VA_LIST_OVERFLOW_ARG_AREA(arguments);
   }
   this->_Stack = &_lisp->invocationHistoryStack();
   this->_Previous = this->_Stack->top();
@@ -125,39 +127,21 @@ void InvocationHistoryStack::setExpressionForTop(T_sp expression) {
 
 VectorObjects_sp InvocationHistoryFrame::arguments() const
 {
-#if defined(X86) && defined(_ADDRESS_MODEL_64)
-  if ( this->_RegisterArguments == NULL ) {
-    ASSERT(this->_StackArguments==NULL);
+  if ( this->_NumberOfArguments==0 ) {
     VectorObjects_sp vnone = VectorObjects_O::create(_Nil<T_O>(),0,cl::_sym_T_O->symbolValue());
     return vnone;
   }
-  size_t numberOfArguments = ((size_t*)(this->_RegisterArguments))[0];
+  size_t numberOfArguments = this->_NumberOfArguments;
   VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(),numberOfArguments,cl::_sym_T_O->symbolValue());
-  switch (numberOfArguments) {
-  default:
-      for ( size_t i(LCC_FIXED_ARGS); i<numberOfArguments; ++i ) {
-        vargs->setf_elt(i,gc::smart_ptr<T_O>(((gc::Tagged*)(this->_StackArguments))[i-LCC_FIXED_ARGS]));
-      }
-  case 3:
-    {
-      T_sp obj3 = gc::smart_ptr<T_O>(((gc::Tagged*)this->_RegisterArguments)[3+2]);
-      vargs->setf_elt(2,obj3);
+  for ( size_t i(0); i<numberOfArguments; ++i ) {
+    T_sp obj;
+    if ( i < LCC_ARGS_IN_REGISTERS ) {
+      obj = core::T_sp((gc::Tagged)(this->_RegisterArguments[LCC_ABI_ARGS_IN_REGISTERS-LCC_ARGS_IN_REGISTERS+i]));
+    } else {
+      obj = core::T_sp((gc::Tagged)(this->_StackArguments[i-LCC_ARGS_IN_REGISTERS]));
     }
-  case 2:
-    {
-      T_sp obj2 = gc::smart_ptr<T_O>(((gc::Tagged*)this->_RegisterArguments)[3+1]);
-      vargs->setf_elt(1,obj2);
-    }
-  case 1:
-    {
-      T_sp obj1 = gc::smart_ptr<T_O>(((gc::Tagged*)this->_RegisterArguments)[3+0]);
-      vargs->setf_elt(0,obj1);
-    }
-    break;
+    vargs->setf_elt(i,obj);
   }
-#else
-#error "Add support extract arguments for other processors"
-#endif
   return vargs;
 }
 

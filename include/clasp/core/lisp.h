@@ -212,9 +212,9 @@ extern __thread ThreadInfo *threadLocalInfoPtr;
 class Lisp_O {
   friend T_mv core_sourceFileInfo(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);
   struct GCRoots //: public gctools::HeapRoot
-      {
+  {
         //! A pool of strings for string manipulation - must be per thread
-        List_sp _BufferStringPool;
+    List_sp _BufferStringPool;
     /*! The invocation history stack this should be per thread */
     InvocationHistoryStack _InvocationHistoryStack;
     ExceptionStack _ExceptionStack;
@@ -225,7 +225,7 @@ class Lisp_O {
     Bignum_sp _BignumRegister0;
     Bignum_sp _BignumRegister1;
     Bignum_sp _BignumRegister2;
-        Integer_sp _IntegerOverflowAdjust;
+    Integer_sp _IntegerOverflowAdjust;
     CharacterInfo charInfo;
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolder;
     T_sp _SystemProperties;

@@ -40,6 +40,8 @@ THE SOFTWARE.
 
 namespace gctools {
 
+GCStack _ThreadLocalStack;
+
 void *_global_stack_marker;
 
 #if 0
@@ -96,6 +98,15 @@ void setupSignals() {
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }
 
+
+gc::GCStack* threadLocalStack()
+{
+  return &_ThreadLocalStack;
+}
+
+
+
+
 int handleFatalCondition() {
   int exitCode = 0;
   try {
@@ -129,6 +140,7 @@ int handleFatalCondition() {
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
   void *stackMarker = NULL;
+  _ThreadLocalStack.allocateBuffer(gc::thread_local_cl_stack_size);
   gctools::_global_stack_marker = &stackMarker;
 
   setupSignals();

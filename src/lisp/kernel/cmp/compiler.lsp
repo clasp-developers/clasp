@@ -1109,14 +1109,6 @@ jump to blocks within this tagbody."
              ,@body))))
 
 
-(defun codegen-gc-profiling (result result-env-body compiler-env)
-  "This is not a code generating operation, it invokes the garbage-collector
-profiling tools to see how the GC operates while compilation is happening.
-To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-profiling))))
-"
-  (micro-profiling:micro-profile-ops))
-
-
 (defun codegen-special-operator (result head rest env)
   (cmp-log "entered codegen-special-operator head: %s rest: %s\n" head rest)
   (assert-result-isa-llvm-value result)
@@ -1360,15 +1352,15 @@ be wrapped with to make a closure"
 	     )))
       (values compiled-function warnp failp))))
 
-(defun compile* (name &optional definition env pathname)
+(defun compile-with-hook (compile-hook name &optional definition env pathname)
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
 We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
-  (if *cleavir-compile-hook*
+  (if compile-hook
       (progn
-        (funcall *cleavir-compile-hook* name definition env pathname))
+        (funcall compile-hook name definition env pathname))
       (clasp-compile* name definition env pathname)))
 
-(defun compile-in-env (bind-to-name &optional definition env &aux conditions)
+(defun compile-in-env (compile-hook bind-to-name &optional definition env &aux conditions)
   "Compile in the given environment"
   (with-compiler-env (conditions)
     (let ((*the-module* (create-run-time-module-for-compile)))
@@ -1390,18 +1382,18 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
                       :source-pathname pathname
                       :source-file-info-handle handle)
 	  (multiple-value-bind (compiled-function warnp failp)
-	      (compile* bind-to-name definition env pathname)
+	      (compile-with-hook compile-hook bind-to-name definition env pathname)
 	    (when bind-to-name (setf-symbol-function bind-to-name compiled-function))
 	    (values compiled-function warnp failp)))))))
 
 
-(defun compile (name &optional definition)
+(defun compile* (compile-hook name &optional definition)
   (cond
     ((functionp definition)
      (error "Handle compile with definition = function"))
     ((consp definition)
-     (cmp-log "compile* form: %s\n" definition)
-     (compile-in-env name definition nil))
+     (cmp-log "compile form: %s\n" definition)
+     (compile-in-env *cleavir-compile-hook* name definition nil))
     ((null definition)
      (let ((func (symbol-function name)))
        (cond
@@ -1411,15 +1403,20 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	  (multiple-value-bind (lambda-expression wrapped-env)
 	      (generate-lambda-expression-from-interpreted-function func)
 	    (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
-	    (compile-in-env name lambda-expression wrapped-env)))
+	    (compile-in-env *cleavir-compile-hook* name lambda-expression wrapped-env)))
 	 (t (error "Could not compile func")))))
     (t (error "Illegal combination of arguments for compile: ~a ~a"
 	      name definition))))
 
+(defun compile (&rest args)
+  ;; Use the *cleavir-compile-hook* to determine which compiler to use
+  ;; if nil == bclasp
+  ;; if #'clasp-cleavir:cleavir-compile-t1expr == cclasp
+  (apply #'compile* *cleavir-compile-hook* args))
 
 
 (defun bclasp-compile (name form)
-  (let ((cmp::*cleavir-compile-hook* nil))
+  (let ((*cleavir-compile-hook* nil))
     (compile name form)))
 
 

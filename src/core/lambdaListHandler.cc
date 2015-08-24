@@ -67,7 +67,7 @@ void lambdaListHandler_createBindings(core::FunctionClosure *closure, core::Lamb
   //        printf("%s:%d About to alloca with lcc_nargs = %zu\n", __FILE__, __LINE__, lcc_nargs);
   //        T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
   try {
-    llh->createBindingsInScope_va_list(lcc_nargs, lcc_arglist, scope);
+    llh->createBindingsInScopeVaList(lcc_nargs, VaList_sp((gc::Tagged)lcc_arglist), scope);
   } catch (...) {
     printf("%s:%d Caught an exception while in createBindingsInScope_argArray_TPtr\n", __FILE__, __LINE__);
     handleArgumentHandlingExceptions(closure);
@@ -460,7 +460,7 @@ SYMBOL_SC_(CorePkg, tooFewArguments);
 #define PASS_FUNCTION_OPTIONAL bind_optional_va_list
 #define PASS_FUNCTION_REST bind_rest_va_list
 #define PASS_FUNCTION_KEYWORD bind_keyword_va_list
-#define PASS_ARGS size_t n_args, va_list arglist
+#define PASS_ARGS size_t n_args, VaList_sp arglist
 #define PASS_ARGS_NUM n_args
 #define PASS_NEXT_ARG(_ai) LCC_NEXT_ARG(arglist,_ai)
 #include "argumentBinding.cc"
@@ -561,11 +561,12 @@ void LambdaListHandler_O::createBindingsInScope_argArray_TPtr(int n_args, T_O *a
   bind_aux(this->_AuxArguments, scope);
 }
 
-void LambdaListHandler_O::createBindingsInScope_va_list(size_t nargs, va_list arglist,
+void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va,
                                                          DynamicScopeManager &scope) {
-  _G();
   if (UNLIKELY(!this->_CreatesBindings))
     return;
+  VaList_S arglist_struct(*va);
+  VaList_sp arglist(&arglist_struct);
   int arg_idx = 0;
   arg_idx = bind_required_va_list(this->_RequiredArguments, nargs, arglist, arg_idx, scope);
   arg_idx = bind_optional_va_list(this->_OptionalArguments, nargs, arglist, arg_idx, scope);

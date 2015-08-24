@@ -24,54 +24,43 @@ enum { NumParams = 16 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
+gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14) ,  frame::Value(frameImpl,15)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13,  core::T_sp arg14,  core::T_sp arg15 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(arg12);
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(arg13);
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
-translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(arg14);
+translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame.arg(14));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<15> >::type >::go(args);
-translate::from_object<ARG15,typename DoesNotContain_<Pols,pureOutValue<16> >::type > a15(arg15);
+translate::from_object<ARG15,typename DoesNotContain_<Pols,pureOutValue<16> >::type > a15(frame.arg(15));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<16> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -167,52 +156,41 @@ enum { NumParams = 15 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
+gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13,  core::T_sp arg14 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(arg12);
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(arg13);
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
-translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(arg14);
+translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame.arg(14));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<15> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -303,50 +281,39 @@ enum { NumParams = 14 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
+gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(arg12);
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(arg13);
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -433,48 +400,37 @@ enum { NumParams = 13 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
+gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,
-    core::T_sp arg12 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(arg12);
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -557,44 +513,35 @@ enum { NumParams = 12 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
+gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -673,42 +620,33 @@ enum { NumParams = 11 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
+gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -783,40 +721,31 @@ enum { NumParams = 10 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
+gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -887,38 +816,29 @@ enum { NumParams = 9 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
+gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -985,35 +905,27 @@ enum { NumParams = 8 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1076,33 +988,25 @@ enum { NumParams = 7 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1160,30 +1064,23 @@ enum { NumParams = 6 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1237,28 +1134,21 @@ enum { NumParams = 5 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1308,26 +1198,19 @@ enum { NumParams = 4 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1373,23 +1256,17 @@ enum { NumParams = 3 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1431,21 +1308,15 @@ enum { NumParams = 2 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1483,19 +1354,13 @@ enum { NumParams = 1 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 RT retval =  fptr(a0._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1529,15 +1394,9 @@ enum { NumParams = 0 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-return this->invoke( );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  )
-{
 RT retval =  fptr();
 int oidx = 1;
 return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
@@ -1566,54 +1425,43 @@ enum { NumParams = 16 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
+gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14) ,  frame::Value(frameImpl,15)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13,  core::T_sp arg14,  core::T_sp arg15 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(arg12);
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(arg13);
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
-translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(arg14);
+translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame.arg(14));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<15> >::type >::go(args);
-translate::from_object<ARG15,typename DoesNotContain_<Pols,pureOutValue<16> >::type > a15(arg15);
+translate::from_object<ARG15,typename DoesNotContain_<Pols,pureOutValue<16> >::type > a15(frame.arg(15));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<16> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1706,52 +1554,41 @@ enum { NumParams = 15 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
+gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13,  core::T_sp arg14 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(arg12);
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(arg13);
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
-translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(arg14);
+translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame.arg(14));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<15> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1840,50 +1677,39 @@ enum { NumParams = 14 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
+gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(arg12);
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(arg13);
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1968,48 +1794,37 @@ enum { NumParams = 13 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
+gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,
-    core::T_sp arg12 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(arg12);
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2090,44 +1905,35 @@ enum { NumParams = 12 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
+gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2204,42 +2010,33 @@ enum { NumParams = 11 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
+gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2312,40 +2109,31 @@ enum { NumParams = 10 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
+gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2414,38 +2202,29 @@ enum { NumParams = 9 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
+gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2510,35 +2289,27 @@ enum { NumParams = 8 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2598,33 +2369,25 @@ enum { NumParams = 7 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2680,30 +2443,23 @@ enum { NumParams = 6 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2755,28 +2511,21 @@ enum { NumParams = 5 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2824,26 +2573,19 @@ enum { NumParams = 4 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2887,23 +2629,17 @@ enum { NumParams = 3 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2943,21 +2679,15 @@ enum { NumParams = 2 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
 fptr(a0._v,a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2993,19 +2723,13 @@ enum { NumParams = 1 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 fptr(a0._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3037,15 +2761,9 @@ enum { NumParams = 0 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-return this->invoke( );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  )
-{
 fptr();
 return Values0<core::T_O>();
 }
@@ -3074,54 +2792,43 @@ enum { NumParams = 16 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
+gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14) ,  frame::Value(frameImpl,15)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13,  core::T_sp arg14,  core::T_sp arg15 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(arg12);
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(arg13);
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
-translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(arg14);
+translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame.arg(14));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<15> >::type >::go(args);
-translate::from_object<ARG15,typename DoesNotContain_<Pols,pureOutValue<16> >::type > a15(arg15);
+translate::from_object<ARG15,typename DoesNotContain_<Pols,pureOutValue<16> >::type > a15(frame.arg(15));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<16> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,
     a14._v,a15._v);
@@ -3219,52 +2926,41 @@ enum { NumParams = 15 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
+gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13,  core::T_sp arg14 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(arg12);
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(arg13);
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
-translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(arg14);
+translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame.arg(14));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<15> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,
     a14._v);
@@ -3356,50 +3052,39 @@ enum { NumParams = 14 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
+gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(arg12);
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(arg13);
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3486,48 +3171,37 @@ enum { NumParams = 13 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
+gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,
-    core::T_sp arg12 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(arg12);
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3610,44 +3284,35 @@ enum { NumParams = 12 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
+gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,  frame::Value(frameImpl,11)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(arg11);
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3726,42 +3391,33 @@ enum { NumParams = 11 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
+gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(arg10);
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3836,40 +3492,31 @@ enum { NumParams = 10 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
+gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(arg9);
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3940,38 +3587,29 @@ enum { NumParams = 9 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
+gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(arg8);
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -4038,35 +3676,27 @@ enum { NumParams = 8 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,  frame::Value(frameImpl,7)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(arg7);
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -4129,33 +3759,25 @@ enum { NumParams = 7 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(arg6);
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -4213,30 +3835,23 @@ enum { NumParams = 6 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(arg5);
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -4290,28 +3905,21 @@ enum { NumParams = 5 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3) ,  frame::Value(frameImpl,4)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(arg4);
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -4361,26 +3969,19 @@ enum { NumParams = 4 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,  frame::Value(frameImpl,
-    3)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(arg3);
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -4426,23 +4027,17 @@ enum { NumParams = 3 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(arg2);
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -4484,21 +4079,15 @@ enum { NumParams = 2 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0,  core::T_sp arg1 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(arg1);
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -4536,19 +4125,13 @@ enum { NumParams = 1 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  core::T_sp arg0 )
-{
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(arg0);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -4582,15 +4165,9 @@ enum { NumParams = 0 };
 VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-return this->invoke( );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke(  )
-{
 std::unique_ptr<UPRT> retval =  fptr();
 int oidx = 1;
 return gctools::multiple_values<core::T_O>(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPointer<Pols,

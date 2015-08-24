@@ -63,7 +63,6 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +i32**+ (llvm-sys:type-get-pointer-to +i32*+))
 (defvar +i8+ (llvm-sys:type-get-int8-ty *llvm-context*))
 (defvar +i8*+ (llvm-sys:type-get-pointer-to +i8+))
-(defvar +va_list+ +i8*+)
 (defvar +vtable*+ +i8*+)
 (defvar +i8**+ (llvm-sys:type-get-pointer-to +i8*+))
 (defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*))
@@ -74,6 +73,7 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +{i32.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i1+) nil))
 (defvar +{i64.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i64+ +i1+) nil))
 
+
 (defvar +size_t+
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
     (cond
@@ -83,6 +83,11 @@ Set this to other IRBuilders to make code go where you want")
 
 (defvar +size_t*+ (llvm-sys:type-get-pointer-to +size_t+))
 (defvar +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
+
+;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH VaList_S
+(defvar +va_list+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +size_t+ +i8*+ +i8*+) nil))
+(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +va_list+) nil)) ;; +size_t+ +t*+ +bool+) nil))
+(defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
 
 (defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
 
@@ -186,7 +191,9 @@ Boehm and MPS use a single pointer"
 (defvar +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
 
 
+;; The definition of +tmv+ doesn't quite match T_mv because T_mv inherits from T_sp
 (defvar +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+ +size_t+) nil))  ;; "T_mv"
+(defvar +return_type+ +tmv+)
 (defvar +tmv*+ (llvm-sys:type-get-pointer-to +tmv+))
 (defvar +tmv**+ (llvm-sys:type-get-pointer-to +tmv*+))
 
@@ -274,7 +281,8 @@ Boehm and MPS use a single pointer"
   (let ((label (if (and target-idx core::*enable-print-pretty*)
                    (bformat nil "arg-%d" target-idx)
                    "rawarg")))
-    (llvm-sys:create-vaarg *irbuilder* (calling-convention-va-list cc) +t*+ label)))
+    (irc-intrinsic "cc_va_arg" (calling-convention-va-list cc))))
+;;    (llvm-sys:create-vaarg *irbuilder* (calling-convention-va-list cc) +t*+ label)))
 ;;;    (llvm-sys:create-geparray *irbuilder* (calling-convention-impl-args cc) (list (jit-constant-size_t 0) idx) label)))
 
 (defvar *register-arg-types* nil)
@@ -284,8 +292,8 @@ Boehm and MPS use a single pointer"
     (push +t*+ arg-types)
     (push (bformat nil "farg%d" i) arg-names))
   ;; va-list arg
-  (push +va_list+ arg-types)
-  (push "va-list" arg-names)
+  (push +VaList_S*+ arg-types)
+  (push "VaList_S*" arg-names)
   (setf *register-arg-types* (nreverse arg-types)
 	*register-arg-names* (nreverse arg-names)))
 (defvar +fn-registers-prototype-argument-names+ (list* "closed-af-ptr" "nargs" *register-arg-names*))
@@ -644,7 +652,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "debugInspectT_mv" +void+ (list +tmv*+))
 
   (primitive-nounwind module "debugPointer" +void+ (list +i8*+))
-  (primitive-nounwind module "debug_va_list" +void+ (list +i8*+))
+  (primitive-nounwind module "debug_VaList_SPtr" +void+ (list +VaList_S*+))
   (primitive-nounwind module "debugPrintObject" +void+ (list +i8*+ +tsp*+))
   (primitive-nounwind module "debugMessage" +void+ (list +i8*+))
   (primitive-nounwind module "debugPrintI32" +void+ (list +i32+))
@@ -657,7 +665,7 @@ Boehm and MPS use a single pointer"
 
   (primitive module "va_tooManyArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
   (primitive module "va_notEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
-  (primitive module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +i8*+ +size_t+))
+  (primitive module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +VaList_S*+ +size_t+))
 ;;  (primitive module "va_fillActivationFrameWithRequiredVarargs" +void+ (list +afsp*+ +i32+ +tsp*+))
   (primitive module "va_coerceToClosure" +closure*+ (list +tsp*+))
   (primitive module "va_symbolFunction" +closure*+ (list +symsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
@@ -666,7 +674,7 @@ Boehm and MPS use a single pointer"
   (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +closure*+ +afsp*+))
 
 
-  (primitive module "cc_gatherRestArguments" +t*+ (list +size_t+ +va_list+ +size_t+ +i8*+))
+  (primitive module "cc_gatherRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +i8*+))
 ;;  (primitive-nounwind module "va_allowOtherKeywords" +i32+ (list +i32+ +t*+))
   (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +i32+ +size_t+ +t*+))
 
@@ -763,7 +771,8 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_readCell" +t*+ (list +t*+))
   (primitive-nounwind module "cc_loadTimeValueReference" +t**+ (list +ltv**+ +size_t+))
   (primitive-nounwind module "cc_fetch" +t*+ (list +t*+ +size_t+))
-  (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +va_list+))
+  (primitive-nounwind module "cc_va_arg" +t*+ (list +VaList_S*+))
+  (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +VaList_S*+))
   (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i8*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
   (primitive #|-nounwind|#              module "cc_call_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
 ;  (primitive              module "cc_invoke_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
@@ -778,7 +787,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_allowOtherKeywords" +i32+ (list +i32+ +t*+))
 ;;  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +size_t+ +t*[0]*+))
   (primitive-nounwind module "cc_matchKeywordOnce" +size_t+ (list +t*+ +t*+ +t*+))
-  (primitive          module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +va_list+))
+  (primitive          module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +VaList_S*+))
   (primitive-nounwind module "cc_multipleValuesArrayAddress" +t*[0]*+ nil)
   (primitive          module "cc_unwind" +void+ (list +t*+ +size_t+))
   (primitive          module "cc_throw" +void+ (list +t*+) :does-not-return t)

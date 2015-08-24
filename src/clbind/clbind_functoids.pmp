@@ -31,22 +31,16 @@ $var NumArgs = 16
                     VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
                     DISABLE_NEW();
                     virtual size_t templatedSizeof() const { return sizeof(*this);};
-                    LCC_RETURN LISP_CALLING_CONVENTION()
+                    inline LCC_RETURN LISP_CALLING_CONVENTION()
                     {
                         INVOCATION_HISTORY_FRAME();
                         $if numArgs>0 [[
-                          ALLOC_STACK_VALUE_FRAME(frameImpl,frame,$numArgs);
+                          gc::frame::Frame frame($numArgs);
                           core::StackFrameDynamicScopeManager scope(frame);
                           lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                         ]]
-                        return this->invoke($for Args_ , [[ frame::Value(frameImpl,$Args_) ]] );
-                    };
-                    // I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-                    // I can't iterate through the required arguments because I don't use varargs
-                    LCC_RETURN invoke( $for Args_ , [[ core::T_sp arg$Args_]] )      
-                    {
                       $for Args_ [[
-                        translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(arg$Args_);
+                        translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(frame.arg($Args_));
                         //IncWhen<typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type >::go(args);
                       ]]
                       $if ret==RetVoid [[]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> retval = ]] $else [[ RT retval = ]] fptr($for Args_ ,[[a$Args_._v]]);

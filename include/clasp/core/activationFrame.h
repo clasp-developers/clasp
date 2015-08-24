@@ -423,238 +423,59 @@ struct gctools::GCInfo<core::TagbodyFrame_O> {
   static bool constexpr Atomic = false;
 };
 
-namespace frame {
-typedef core::T_O *ElementType;
-typedef gctools::smart_ptr<core::STACK_FRAME> FrameType;
-
- static const size_t IdxParent = 0;
- static const size_t IdxDebugInfo = 1;
- static const size_t IdxRegisterSaveArea = 2;    // Where the number of arguments is written
- static const size_t IdxNumElements = 2;
- static const size_t IdxOverflowArgs = 8; // IdxOverflowArgs-IdxRegisterSaveArea == Number of arguments passed in registers
- static const size_t IdxRegisterArgumentsStart = IdxOverflowArgs-LCC_ARGS_IN_REGISTERS; // Where the register arguments start
- static const size_t IdxValuesArray = IdxRegisterArgumentsStart;            // where the stack based arguments start
-
-
-/*! Calculate the number of elements required to represent the frame.
-     It's IdxValuesArray+#elements */
-inline size_t FrameSize(size_t elements) {
-  return (elements+IdxOverflowArgs) - LCC_ARGS_IN_REGISTERS;
-}
-
-/*! Return the start of the values array */
-inline ElementType *ValuesArray(core::T_O **frameImpl) { return &frameImpl[IdxValuesArray]; };
-inline ElementType *ValuesArray(FrameType f) {
-  core::T_O **frameImpl(f.safe_frame());
-  return ValuesArray(frameImpl);
-}
-
- inline gc::Fixnum ValuesArraySize(core::T_O **frameImpl) {
-  ASSERT(gctools::tagged_fixnump(frameImpl[IdxNumElements]));
-  return gctools::untag_fixnum(frameImpl[IdxNumElements]);
-};
-
-inline core::T_sp DebugInfo(FrameType f) {
-  core::T_O **frameImpl(f.safe_frame());
-  return gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxDebugInfo]);
-}
-
-inline void SetDebugInfo(FrameType f, core::T_sp debugInfo) {
-  core::T_O **frameImpl(f.safe_frame());
-  frameImpl[IdxDebugInfo] = gc::As<core::T_sp>(debugInfo).raw_();
-};
-
-inline void InitializeStackValueFrameBase(core::T_O **frameImpl, size_t sz, core::T_sp parent = _Nil<core::T_O>()) {
-#ifdef DEBUG_FRAME
-  printf("%s:%d InitializeStackValueFrame @%p sz=%zu\n", __FILE__, __LINE__, frameImpl, sz);
-#endif
-  frameImpl[IdxNumElements] = gctools::tag_fixnum<core::T_O *>((gc::Fixnum)sz);
-  frameImpl[IdxParent] = parent.raw_();
-  frameImpl[IdxDebugInfo] = gctools::tag_nil<core::T_O *>();
-  for (size_t i(IdxValuesArray), iEnd(IdxValuesArray + sz); i < iEnd; ++i) {
-    frameImpl[i] = gctools::tag_unbound<core::T_O *>();
-  }
-};
-
-inline void InitializeStackValueFrame(core::T_O **frameImpl, size_t sz, core::T_sp parent = _Nil<core::T_O>()) {
-#ifdef DEBUG_FRAME
-  printf("%s:%d InitializeStackValueFrame @%p sz=%zu\n", __FILE__, __LINE__, frameImpl, sz);
-#endif
-  InitializeStackValueFrameBase(frameImpl, sz, parent);
-  for (size_t i(IdxValuesArray), iEnd(IdxValuesArray + sz); i < iEnd; ++i) {
-    frameImpl[i] = gctools::tag_unbound<core::T_O *>();
-  }
-};
-
-inline void InitializeStackValueFrameWithValues(core::T_O **frameImpl, size_t sz, core::T_sp parent, core::T_O **initialContents) {
-#ifdef DEBUG_FRAME
-  printf("%s:%d InitializeStackValueFrame @%p sz=%zu\n", __FILE__, __LINE__, frameImpl, sz);
-#endif
-  InitializeStackValueFrameBase(frameImpl, sz, parent);
-  for (size_t i(IdxValuesArray), j(0), iEnd(IdxValuesArray + sz); i < iEnd; ++i, ++j) {
-    frameImpl[i] = initialContents[j];
-  }
-};
-
- inline void InitializeStackValueFrameWith_va_list(core::T_O **frameImpl, core::T_sp parent, va_list vargs ) {
-   va_list cargs;
-   va_copy(cargs,vargs);
-   size_t sz = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(cargs);
-   InitializeStackValueFrameBase(frameImpl, sz, parent);
-   for (size_t i(IdxValuesArray), j(0), iEnd(IdxValuesArray + sz); i < iEnd; ++i, ++j) {
-     frameImpl[i] = LCC_NEXT_ARG_RAW(cargs,i);
-  }
-};
-
-inline void SetParentFrame(core::T_sp f, core::T_sp parent) {
-  core::T_O **frameImpl(f.safe_frame());
-  frameImpl[IdxParent] = parent.raw_();
-}
-
-inline gctools::smart_ptr<core::T_O> ParentFrame(core::T_O **frameImpl) {
-  return gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxParent]);
-}
-inline gctools::smart_ptr<core::T_O> ParentFrame(core::T_sp f) {
-  core::T_O **frameImpl(f.safe_frame());
-  return ParentFrame(frameImpl);
-}
-
-inline gctools::smart_ptr<core::T_O> Lookup(core::T_sp f, int idx) {
-  core::T_O **frameImpl(f.safe_frame());
-  return gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[idx + IdxValuesArray]);
-}
-
-inline core::T_sp LookupTagbodyId(core::T_sp f, int idx) {
-  IMPLEMENT_MEF(BF("I don't currently support LookupTagbodyId for tagged_frame"));
-#if 0 // If I supported this it might look like this
-        core::T_O** frameImpl(f.safe_frame());
-        return gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[idx+IdxValuesArray]);
-#endif
-}
-
-inline gctools::smart_ptr<core::T_O> Value(core::T_O **frameImpl, int idx) {
-  return gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[idx + IdxValuesArray]);
-}
-
-inline int countFunctionContainerEnvironments(core::T_sp f) {
-  core::T_O **frameImpl(f.safe_frame());
-  return core::Environment_O::clasp_countFunctionContainerEnvironments(gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxParent]));
-}
-
-inline bool findValue(core::T_sp f, core::T_sp sym, int &depth, int &index, core::Environment_O::ValueKind &valueKind, core::T_sp &value) {
-  core::T_O **frameImpl(f.safe_frame());
-  if (gctools::tagged_nilp<core::T_O *>(frameImpl[IdxDebugInfo])) {
-    ++depth;
-    return core::Environment_O::clasp_findValue(gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxParent]), sym, depth, index, valueKind, value);
-  }
-  core::T_sp debugInfo = gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxDebugInfo]);
-  if (lisp_search(debugInfo, sym, index)) {
-    value.setRaw_(reinterpret_cast<gc::Tagged>(reinterpret_cast<gc::Tagged>(frameImpl[index + IdxValuesArray])));
-    return true;
-  }
-  ++depth;
-  return core::Environment_O::clasp_findValue(ParentFrame(frameImpl), sym, depth, index, valueKind, value);
-}
-
-inline bool findFunction(core::T_sp f, core::T_sp functionName, int &depth, int &index, core::Function_sp &func) {
-  core::T_O **frameImpl(f.safe_frame());
-  core::T_sp parent = core::Environment_O::clasp_currentVisibleEnvironment(ParentFrame(frameImpl));
-  ++depth;
-  return core::Environment_O::clasp_findFunction(parent, functionName, depth, index, func);
-}
-
-inline bool findTag(core::T_sp f, core::Symbol_sp sym, int &depth, int &index, bool &interFunction, core::T_sp &tagbodyEnv) {
-  _G();
-  core::T_O **frameImpl(f.safe_frame());
-  core::T_sp parent = core::Environment_O::clasp_currentVisibleEnvironment(ParentFrame(frameImpl));
-  ++depth;
-  return core::Environment_O::clasp_findTag(parent, sym, depth, index, interFunction, tagbodyEnv);
-}
-
-inline string SummaryOfContents(core::T_sp env) {
-  return "tagged_frame contents here";
-}
 #if 0
-    string ValueFrame_O::summaryOfContents() const
-    {
-	stringstream ss;
-	ss << "---" << this->_instanceClass()->classNameAsString() << "#" << this->environmentId() << " :len " << this->length() << std::endl;
-	Vector_sp debuggingInfo = _Nil<Vector_O>();
-	if ( this->_DebuggingInfo.notnilp() )
-	{
-	    debuggingInfo = this->_DebuggingInfo.as<Vector_O>();
-	}
-	for ( int i=0; i<this->_Objects.capacity(); ++i )
-	{
-	    if ( debuggingInfo.notnilp() && (i < cl_length(debuggingInfo)) )
-	    {
-		ss << _rep_(debuggingInfo->elt(i)) << " ";
-	    } else
-	    {
-		ss << ":arg"<<i<<"@" << (void*)(&(this->operator[](i))) << " ";
-	    }
-	    if ( !this->operator[](i) )
-	    {
-		ss << "UNDEFINED";
-	    } else if ( !this->boundp_entry(i) )
-	    {
-		ss << "!!UNBOUND!! ";
-	    } else
-	    {
-		if ( af_activation_frame_p(this->operator[](i)) )
-		{
-		    ss << "ActivationFrame@"<< (void*)(&(this->operator[](i)));
-		} else
-		{
-		    ss << _rep_(this->operator[](i)) << "  ";
-		}
-	    }
-	    ss << std::endl;
-	}
-	return((ss.str()));
+namespace frame {
+  typedef core::T_O *ElementType;
+  typedef gctools::smart_ptr<core::STACK_FRAME> FrameType_sp;
+
+  static const size_t IdxRegisterSaveArea = 0;
+  static const size_t IdxNumElements = IdxRegisterSaveArea; // Where the num arguments (RAW - do not fix!!!)
+  static const size_t IdxOverflowArgs = 6; // IdxOverflowArgs-IdxRegisterSaveArea == Number of arguments passed in registers
+  static const size_t IdxRegisterArgumentsStart = IdxOverflowArgs-LCC_ARGS_IN_REGISTERS; // Where the register arguments start
+  static const size_t IdxValuesArray = IdxRegisterArgumentsStart;            // where the stack based arguments start
+
+  struct Frame {
+    ElementType* _frameImpl;
+    
+    static
+    /*! Calculate the number of elements required to represent the frame.
+     It's IdxValuesArray+#elements */
+    static inline size_t FrameSize(size_t elements) {
+      return (elements+IdxOverflowArgs) - LCC_ARGS_IN_REGISTERS;
     }
 
-#endif
+    Frame(size_t numArguments,core::T_sp parent = _Nil<core::T_O>()) {
+      size_t sz = FrameSize(numArguments)*sizeof(ElementType);
+      this->_frameImpl = reinterpret_cast<ElementType*>(core::lisp_threadLocalStack().pushFrame(sz));
+      this->_frameImpl[IdxNumElements] = reinterpret_cast<core::T_O*>(numArguments);
+      for (size_t i(IdxValuesArray), iEnd(IdxValuesArray + numArguments); i < iEnd; ++i) {
+        this->_frameImpl[i] = gctools::tag_unbound<core::T_O *>();
+      }
+    }
 
-inline bool UpdateValue(core::T_sp f, core::Symbol_sp sym, core::T_sp obj) {
-  core::T_O **frameImpl(f.safe_frame());
-  if (gctools::tagged_nilp<core::T_O *>(frameImpl[IdxDebugInfo])) {
-    return core::af_updateValue(ParentFrame(frameImpl), sym, obj);
-  }
-  core::T_sp debugInfo = gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxDebugInfo]);
-  int index;
-  if (lisp_search(debugInfo, sym, index)) {
-    frameImpl[IdxValuesArray + index] = obj.raw_();
-    return true;
-  }
-  return core::af_updateValue(ParentFrame(frameImpl), sym, obj);
-}
+    ~Frame() {
+      core::lisp_threadLocalStack().popFrame(reinterpret_cast<void*>(this->_frameImpl));
+    }
+
+    ElementType& operator[](size_t idx) {
+      return this->_frameImpl[IdxValuesArray+idx];
+    }
+
+    core::T_sp arg(size_t idx) { return core::T_sp((gc::Tagged)this->operator[](idx));}
+    
+    inline core::VaList_sp setupVaList(core::VaList_S& args) {
+      args._Args[0].gp_offset = (frame::IdxRegisterArgumentsStart-frame::IdxRegisterSaveArea)*sizeof(frame::ElementType);
+      args._Args[0].fp_offset = 304;
+      args._Args[0].reg_save_area = &this->_frameImpl[frame::IdxRegisterSaveArea];
+      args._Args[0].overflow_arg_area = &this->_frameImpl[frame::IdxOverflowArgs];
+      return core::VaList_sp(&args);
+    }
+    
+  };
 };
-
-// Allocate memory on the stack on a 16 byte boundary for tagged pointers
-// We can't specify the alignment of __builtin_alloca so allocate an additional 15 bytes
-// add 15 bytes and then align down to 16 byte boundary
-#define ALLOCA_SIZE(_numValues) sizeof(frame::ElementType)*frame::FrameSize(_numValues)
-#if ALIGNMENT == 16
-#define DO_ALLOCA(numValues) (frame::ElementType *)(((uintptr_t)(__builtin_alloca(ALLOCA_SIZE(numValues) + 15)) + 15) & (~0xf));
-#else
-#define DO_ALLOCA(numValues) (frame::ElementType *)((uintptr_t)(__builtin_alloca(ALLOCA_SIZE(numValues))));
 #endif
 
-#define ALLOC_STACK_VALUE_FRAME(frameImpl, oframe, numValues)                                                        \
-  frame::ElementType *frameImpl = DO_ALLOCA(numValues);                                                              \
-  gctools::smart_ptr<core::STACK_FRAME> oframe((gctools::Tagged)gctools::tag_frame<core::STACK_FRAME *>(frameImpl)); \
-  frame::InitializeStackValueFrame(frameImpl, numValues)
-
-#define ALLOC_STACK_VALUE_FRAME_WITH_VALUES(frameImpl, oframe, numValues, values)                                    \
-  frame::ElementType *frameImpl = DO_ALLOCA(numValues);                                                              \
-  gctools::smart_ptr<core::STACK_FRAME> oframe((gctools::Tagged)gctools::tag_frame<core::STACK_FRAME *>(frameImpl)); \
-  frame::InitializeStackValueFrameWithValues(frameImpl, numValues, _Nil<T_O>(), values)
-
-#define ALLOC_STACK_VALUE_FRAME_WITH_va_list(_frameImpl, _oframe, _vargs)     \
-  size_t __numValues = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_vargs); \
-  frame::ElementType *_frameImpl = DO_ALLOCA(__numValues);                             \
-  gctools::smart_ptr<core::STACK_FRAME> _oframe((gctools::Tagged)gctools::tag_frame<core::STACK_FRAME *>(_frameImpl)); \
-  frame::InitializeStackValueFrameWith_va_list(_frameImpl, _Nil<T_O>(), _vargs )
-
+// Return the next argument of the frame
+//#define FRAME_ARG(frame) va_arg(frame.unsafe_frame()->args,ElementType)
+//#define FRAME_END(frame) 0 // use va_end!!!
 #endif

@@ -57,6 +57,10 @@ namespace gctools {
 class GCObject;
 class GCLinkedList;
 
+
+
+
+ 
 class GCObject {
 public:
   GCObject &operator=(const GCObject &) { return *this; };

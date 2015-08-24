@@ -41,7 +41,7 @@
         (with-debug-info-generator (:module module
                                             :pathname #P"/dev/null")
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
-            (compile-in-env nil form env)))
+            (compile-in-env nil nil form env)))
         (llvm-sys::module-delete module)))))
 
 (export 'code-walk-using-compiler)

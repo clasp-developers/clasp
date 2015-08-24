@@ -491,7 +491,7 @@ Pointer_mv af_c_function(Symbol_sp sym) {
 T_sp cl_macroFunction(Symbol_sp symbol, T_sp env) {
   _G();
   T_sp func = _Nil<T_O>();
-  if (env.nilp() || env.framep()) {
+  if (env.nilp()) {
     func = af_interpreter_lookup_macro(symbol, env);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     func = af_interpreter_lookup_macro(symbol, eenv);

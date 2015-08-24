@@ -40,6 +40,8 @@ local unity_sources =
       all.cc ;
 
 local sources =
+	    evaluator.cc
+	    compiler.cc
       genericFunction.cc
 	    instance.cc
       cache.cc
@@ -141,10 +143,8 @@ local sources =
 	    bootStrapCoreSymbolMap.cc
       cons.cc
 	    symbol.cc
-	    evaluator.cc
 	    builtInClass.cc
 	    standardClass.cc
-	    compiler.cc
 	conditions.cc
       arrayDisplaced.cc
 		object.cc

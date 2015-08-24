@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/stdClass.h>
+#include <clasp/core/lispList.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/structureClass.h>
 #include <clasp/core/corePackage.h>
@@ -98,6 +99,7 @@ class_id allocate_class_id(type_id const &cls) {
 
   return inserted.first->second;
 }
+
 
 
 void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym) {
@@ -304,6 +306,7 @@ void dbg_hook(const char *error) {
 }
 
 namespace core {
+
 
 void lisp_vectorPushExtend(T_sp vec, T_sp obj) {
   VectorObjectsWithFillPtr_sp vvec = gc::As<VectorObjectsWithFillPtr_sp>(vec);
@@ -680,9 +683,9 @@ Class_sp lisp_instance_class(T_sp o) {
     return core::Character_dummy_O::___staticClass;
   } else if (o.single_floatp()) {
     return core::SingleFloat_dummy_O::___staticClass;
-  } else if (o.framep()) {
+  } else if (o.valistp()) {
     // What do I return for this?
-    return core::T_O::___staticClass;
+    return core::VaList_dummy_O::___staticClass;
   } else if (!o) {
     SIMPLE_ERROR(BF("There is no class of NULL"));
   } else if (o.unboundp()) {
@@ -772,8 +775,8 @@ string _rep_(T_sp obj) {
     return ss.str();
   } else if (obj.objectp()) {
     return obj->__repr__(); // This is the only place where obj->__repr__() is allowed
-  } else if (obj.framep()) {
-    return "StackFrame";
+  } else if (obj.valistp()) {
+    return "VaList";
   } else if (obj.unboundp()) {
     return "!UNBOUND!";
   }

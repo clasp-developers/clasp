@@ -26,39 +26,28 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(16);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) ,  frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14) ,
-    frame::Value(frameImpl,15)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13,  core::T_sp arg14,  core::T_sp arg15 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
-translate::from_object<ARG15> a15(arg15);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)args[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)args[15]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -86,37 +75,27 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(15);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) ,  frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13,  core::T_sp arg14 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)args[14]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -144,36 +123,26 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(14);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) ,  frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -201,35 +170,25 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(13);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) ,  frame::Value(frameImpl,12)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,
-    core::T_sp arg12 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -257,33 +216,24 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(12);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -311,31 +261,23 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(11);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -363,30 +305,22 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(10);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -414,29 +348,21 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(9);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -464,28 +390,20 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(8);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -512,26 +430,19 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(7);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -558,24 +469,18 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(6);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -602,23 +507,17 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(5);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -645,22 +544,16 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(4);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -687,20 +580,15 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(3);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
 RT retval =  fptr(a0._v,a1._v,a2._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -727,19 +615,14 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(2);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
 RT retval =  fptr(a0._v,a1._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -766,18 +649,13 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(1);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0 )
-{
-translate::from_object<ARG0> a0(arg0);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
 RT retval =  fptr(a0._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -804,14 +682,9 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-return this->invoke(  );
-}
-
-LCC_RETURN invoke( )
-{
 RT retval =  fptr();
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -839,39 +712,28 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(16);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) ,  frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14) ,
-    frame::Value(frameImpl,15)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13,  core::T_sp arg14,  core::T_sp arg15 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
-translate::from_object<ARG15> a15(arg15);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)args[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)args[15]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 return Values0<core::T_O>();
 }
@@ -899,37 +761,27 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(15);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) ,  frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13,  core::T_sp arg14 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)args[14]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values0<core::T_O>();
 }
@@ -957,36 +809,26 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(14);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) ,  frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values0<core::T_O>();
 }
@@ -1014,35 +856,25 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(13);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) ,  frame::Value(frameImpl,12)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,
-    core::T_sp arg12 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values0<core::T_O>();
 }
@@ -1070,33 +902,24 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(12);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values0<core::T_O>();
 }
@@ -1124,31 +947,23 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(11);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values0<core::T_O>();
 }
@@ -1176,30 +991,22 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(10);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values0<core::T_O>();
 }
@@ -1227,29 +1034,21 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(9);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values0<core::T_O>();
 }
@@ -1276,28 +1075,20 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(8);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values0<core::T_O>();
 }
@@ -1324,26 +1115,19 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(7);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values0<core::T_O>();
 }
@@ -1370,24 +1154,18 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(6);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values0<core::T_O>();
 }
@@ -1414,23 +1192,17 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(5);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v);
 return Values0<core::T_O>();
 }
@@ -1457,22 +1229,16 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(4);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
 fptr(a0._v,a1._v,a2._v,a3._v);
 return Values0<core::T_O>();
 }
@@ -1499,20 +1265,15 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(3);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
 fptr(a0._v,a1._v,a2._v);
 return Values0<core::T_O>();
 }
@@ -1539,19 +1300,14 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(2);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
 fptr(a0._v,a1._v);
 return Values0<core::T_O>();
 }
@@ -1578,18 +1334,13 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(1);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0 )
-{
-translate::from_object<ARG0> a0(arg0);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
 fptr(a0._v);
 return Values0<core::T_O>();
 }
@@ -1616,14 +1367,9 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-return this->invoke(  );
-}
-
-LCC_RETURN invoke( )
-{
 fptr();
 return Values0<core::T_O>();
 }
@@ -1654,39 +1400,28 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(16);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) ,  frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14) ,
-    frame::Value(frameImpl,15)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13,  core::T_sp arg14,  core::T_sp arg15 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
-translate::from_object<ARG15> a15(arg15);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)args[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)args[15]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v,a15._v);
 return retval;
@@ -1716,37 +1451,27 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(15);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) ,  frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13) ,  frame::Value(frameImpl,14)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13,  core::T_sp arg14 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)args[14]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v);
 return retval;
@@ -1776,36 +1501,26 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(14);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) ,  frame::Value(frameImpl,12) ,  frame::Value(frameImpl,13)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,  core::T_sp arg12,
-    core::T_sp arg13 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v);
 return retval;
@@ -1834,35 +1549,25 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(13);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11) ,  frame::Value(frameImpl,12)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11,
-    core::T_sp arg12 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return retval;
 }
@@ -1890,33 +1595,24 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(12);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10) ,
-    frame::Value(frameImpl,11)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10,  core::T_sp arg11 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return retval;
 }
@@ -1944,31 +1640,23 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(11);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9) ,  frame::Value(frameImpl,10)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9,  core::T_sp arg10 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return retval;
 }
@@ -1996,30 +1684,22 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(10);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8) ,  frame::Value(frameImpl,9)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8,  core::T_sp arg9 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return retval;
 }
@@ -2047,29 +1727,21 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(9);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7) ,  frame::Value(frameImpl,8)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7,  core::T_sp arg8 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return retval;
 }
@@ -2097,28 +1769,20 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(8);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6) ,
-    frame::Value(frameImpl,7)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6,  core::T_sp arg7 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return retval;
 }
@@ -2145,26 +1809,19 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(7);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5) ,  frame::Value(frameImpl,6)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5,
-    core::T_sp arg6 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return retval;
 }
@@ -2191,24 +1848,18 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(6);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4) ,  frame::Value(frameImpl,5)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4,  core::T_sp arg5 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v);
 return retval;
 }
@@ -2235,23 +1886,17 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(5);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3) ,  frame::Value(frameImpl,4)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3,  core::T_sp arg4 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v);
 return retval;
 }
@@ -2278,22 +1923,16 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(4);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2) ,
-    frame::Value(frameImpl,3)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2,  core::T_sp arg3 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v);
 return retval;
 }
@@ -2320,20 +1959,15 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(3);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1) ,  frame::Value(frameImpl,2)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1,  core::T_sp arg2 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v);
 return retval;
 }
@@ -2360,19 +1994,14 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(2);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0) ,  frame::Value(frameImpl,1)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0,  core::T_sp arg1 )
-{
-translate::from_object<ARG0> a0(arg0);
-translate::from_object<ARG1> a1(arg1);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v);
 return retval;
 }
@@ -2399,18 +2028,13 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
-core::StackFrameDynamicScopeManager scope(frame);
+gc::frame::Frame args(1);
+core::StackFrameDynamicScopeManager scope(args);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(  frame::Value(frameImpl,0)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0 )
-{
-translate::from_object<ARG0> a0(arg0);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
 gctools::multiple_values<RT> retval =  fptr(a0._v);
 return retval;
 }
@@ -2437,14 +2061,9 @@ VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClo
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-return this->invoke(  );
-}
-
-LCC_RETURN invoke( )
-{
 gctools::multiple_values<RT> retval =  fptr();
 return retval;
 }

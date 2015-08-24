@@ -99,7 +99,7 @@ public:
     return reinterpret_cast<T *>((reinterpret_cast<uintptr_t>(p) & ptr_mask) | frame_tag);
   }
 
-  static core::T_O **untagged_frame(T *ptr) {
+  static T* untagged_frame(T *ptr) {
     return reinterpret_cast<core::T_O **>(reinterpret_cast<uintptr_t>(ptr) & ptr_mask);
   }
 

@@ -29,44 +29,48 @@ THE SOFTWARE.
 
 #include <limits>
 
+#define STACK_ALIGNMENT alignof(char *)
+#define STACK_ALIGN_UP(size) \
+  (((size) + STACK_ALIGNMENT - 1) & ~(STACK_ALIGNMENT - 1))
+
 namespace gctools {
   extern uint64_t globalBytesAllocated;
 };
 
 namespace gctools {
-template <class OT, bool Needed = true>
-struct GCObjectInitializer {};
+  template <class OT, bool Needed = true>
+    struct GCObjectInitializer {};
 
-template <class OT>
-struct GCObjectInitializer<OT, true> {
-  typedef smart_ptr<OT> smart_pointer_type;
-  static void initializeIfNeeded(smart_pointer_type sp) {
-    sp->initialize();
+  template <class OT>
+    struct GCObjectInitializer<OT, true> {
+    typedef smart_ptr<OT> smart_pointer_type;
+    static void initializeIfNeeded(smart_pointer_type sp) {
+      sp->initialize();
+    };
   };
-};
 
-template <class OT>
-struct GCObjectInitializer<OT, false> {
-  typedef smart_ptr<OT> smart_pointer_type;
-  static void initializeIfNeeded(smart_pointer_type sp){
+  template <class OT>
+    struct GCObjectInitializer<OT, false> {
+    typedef smart_ptr<OT> smart_pointer_type;
+    static void initializeIfNeeded(smart_pointer_type sp){
       // initialize not needed
+    };
   };
-};
 
-template <class OT>
-struct GCObjectInitializer<tagged_functor<OT>, true> {
-  typedef tagged_functor<OT> functor_pointer_type;
-  static void initializeIfNeeded(functor_pointer_type sp) {
-    THROW_HARD_ERROR(BF("Figure out why this is being invoked, you should never need to initialize a functor!"));
+  template <class OT>
+    struct GCObjectInitializer<tagged_functor<OT>, true> {
+    typedef tagged_functor<OT> functor_pointer_type;
+    static void initializeIfNeeded(functor_pointer_type sp) {
+      THROW_HARD_ERROR(BF("Figure out why this is being invoked, you should never need to initialize a functor!"));
+    };
   };
-};
-template <class OT>
-struct GCObjectInitializer<tagged_functor<OT>, false> {
-  typedef tagged_functor<OT> functor_pointer_type;
-  static void initializeIfNeeded(functor_pointer_type sp){
+  template <class OT>
+    struct GCObjectInitializer<tagged_functor<OT>, false> {
+    typedef tagged_functor<OT> functor_pointer_type;
+    static void initializeIfNeeded(functor_pointer_type sp){
       // initialize not needed
+    };
   };
-};
 }
 
 #if defined(USE_BOEHM) || defined(USE_MPS)
@@ -77,6 +81,101 @@ template <class T>
 class root_allocator : public traceable_allocator<T> {};
 };
 #endif
+
+
+namespace gctools {
+
+
+/*! Maintain a stack containing pointers that are garbage collected
+*/
+  class GCStack {
+    size_t _TrackMaxSize;
+#ifdef USE_BOEHM
+    size_t _TotalSize;
+#endif
+#ifdef USE_MPS
+    #error "Add MPS support - use SNC class"
+#endif
+   //! Return true if this Stack object is active and can receive pushFrame/popFrame messages
+  public:
+    bool isActive() {
+#ifdef USE_BOEHM
+      return true;
+#endif
+#ifdef USE_MPS
+    #error "Add MPS support - use SNC class"
+#endif
+    };
+   //*! Allocate a buffer for this 
+    bool allocateBuffer(size_t bufferSize) {
+      bufferSize = STACK_ALIGN_UP(bufferSize);
+#ifdef USE_BOEHM
+      // Do nothing, MALLOC and FREE each frame
+#endif
+#ifdef USE_MPS
+    #error "Add MPS support - use SNC class"
+#endif
+      return true;
+    }
+    void freeBuffer() {
+#ifdef USE_BOEHM
+      // Do nothing
+#endif
+#ifdef USE_MPS
+    #error "Add MPS support - use SNC class"
+#endif
+    };
+
+    size_t totalSize() const {
+      return this->_TotalSize;
+    }
+    void* pushFrame(size_t frameSize) {
+      frameSize = STACK_ALIGN_UP(frameSize);
+#ifdef USE_BOEHM
+      uintptr_t headerAndFrameSize = sizeof(uintptr_t) + frameSize;
+      uintptr_t* headerAndFrame = (uintptr_t*)GC_MALLOC(headerAndFrameSize);
+      *headerAndFrame = headerAndFrameSize;
+      void* frameStart = headerAndFrame + 1; // skip uintptr_t header
+      this->_TotalSize += headerAndFrameSize;
+      return frameStart;
+#endif
+#ifdef USE_MPS
+#error "Add support for MPS"
+#endif
+    }
+    void popFrame(void* frame) {
+#ifdef USE_BOEHM
+      uintptr_t* headerAndFrame = reinterpret_cast<uintptr_t*>(frame)-1; // backup to uintptr_t header
+      this->_TotalSize -= *headerAndFrame;
+      GC_FREE(headerAndFrame);
+#endif
+#ifdef USE_MPS
+#error "Add support for MPS"
+#endif
+    }
+
+  GCStack() :
+#ifdef USE_BOEHM
+    _TotalSize(0)
+#endif
+#ifdef USE_MPS
+#error "Support MPS"
+#endif
+    {};
+    virtual ~GCStack() {
+#ifdef USE_BOEHM
+      // Nothing to do
+#endif
+#ifdef USE_MPS
+#error "Support MPS"
+#endif
+    };
+   
+  };
+
+};
+
+
 
 namespace gctools {
 

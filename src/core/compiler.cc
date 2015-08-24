@@ -104,6 +104,7 @@ Integer_sp core_cxxFibn(Fixnum_sp reps, Fixnum_sp num) {
 
 
 T_sp varArgsList(int n_args, ...) {
+  DEPRECIATED();
   va_list ap;
   va_start(ap, n_args);
   Cons_O::CdrType_sp first = _Nil<Cons_O::CdrType_O>();
@@ -405,6 +406,7 @@ T_mv af_implicit_compile_hook_default(T_sp form, T_sp env) {
   return eval::funcall(thunk);
 };
 
+#if 0
 #define ARGS_core_applysPerSecond "(fn &rest args)"
 #define DECL_core_applysPerSecond ""
 #define DOCS_core_applysPerSecond "applysPerSecond"
@@ -429,6 +431,7 @@ T_sp core_applysPerSecond(T_sp fn, List_sp args) {
   printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
   return _Nil<T_O>();
 }
+#endif
 };
 
 extern "C" {
@@ -547,6 +550,7 @@ namespace core {
     }
 #endif
 
+#if 0
 #define ARGS_core_partialApplysPerSecond "(stage fn args)"
 #define DECL_core_partialApplysPerSecond ""
 #define DOCS_core_partialApplysPerSecond "partialApplysPerSecond"
@@ -611,7 +615,11 @@ T_sp core_partialApplysPerSecond(int stage, T_sp fn, List_sp args) {
   printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
   return _Nil<T_O>();
 }
+#endif
 
+
+
+ 
 T_sp allocFixnum() {
   Fixnum_sp fn = make_fixnum(3);
   return fn;
@@ -628,7 +636,7 @@ void allocateValueFrame5() {
 }
 
 void allocateStackFrame5() {
-  ALLOC_STACK_VALUE_FRAME(frameImpl, frame, 5);
+  gc::frame::Frame frame(5);
 }
 
 Cons_sp consList5() {
@@ -655,17 +663,17 @@ T_sp lexicalFrameLookup(T_sp fr, int depth, int index) {
   return val;
 }
 
+ #if 0
 #define ARGS_core_operationsPerSecond "(op &optional arg)"
 #define DECL_core_operationsPerSecond ""
 #define DOCS_core_operationsPerSecond "operationsPerSecond"
 T_mv core_operationsPerSecond(int op, T_sp arg) {
   _G();
-  ALLOC_STACK_VALUE_FRAME(frameImpl1, frame1, 5);
-  frame::SetParentFrame(frame1, _Nil<T_O>());
-  T_O **values1 = frame::ValuesArray(frame1);
+  gc::frame::Frame frame1(5);
   int val = 0;
   for (int i = 0; i < 5; ++i)
-    values1[i] = make_fixnum(++val).raw_();
+    frame1[i] = make_fixnum(++val).raw_();
+  
   ALLOC_STACK_VALUE_FRAME(frameImpl2, frame2, 5);
   frame::SetParentFrame(frame2, frame1);
   T_O **values2 = frame::ValuesArray(frame1);
@@ -778,7 +786,8 @@ T_mv core_operationsPerSecond(int op, T_sp arg) {
   }
   return Values(DoubleFloat_O::create(((double)times) / timer.getAccumulatedTime()), Str_O::create(name));
 }
-
+#endif
+ #if 0
 #define ARGS_core_callsByValuePerSecond "()"
 #define DECL_core_callsByValuePerSecond ""
 #define DOCS_core_callsByValuePerSecond "callsByValuePerSecond"
@@ -810,7 +819,8 @@ T_sp core_callsByValuePerSecond() {
   printf("%s:%d Fell through %s pow = %d res= %d \n", __FILE__, __LINE__, __FUNCTION__, pow, res);
   return _Nil<T_O>();
 }
-
+#endif
+ #if 0
 #define ARGS_core_callsByConstantReferencePerSecond "()"
 #define DECL_core_callsByConstantReferencePerSecond ""
 #define DOCS_core_callsByConstantReferencePerSecond "callsByConstantReferencePerSecond"
@@ -842,7 +852,8 @@ T_sp core_callsByConstantReferencePerSecond() {
   printf("%s:%d Fell through %s pow = %d res = %d\n", __FILE__, __LINE__, __FUNCTION__, pow, res);
   return _Nil<T_O>();
 }
-
+#endif
+ #if 0
 #define ARGS_core_callsByPointerPerSecond "()"
 #define DECL_core_callsByPointerPerSecond ""
 #define DOCS_core_callsByPointerPerSecond "callsByPointerPerSecond"
@@ -873,7 +884,10 @@ T_sp core_callsByPointerPerSecond() {
   printf("%s:%d Fell through %s pow = %d res=%d \n", __FILE__, __LINE__, __FUNCTION__, pow, res);
   return _Nil<T_O>();
 }
+#endif
 
+
+ 
 #define ARGS_core_callWithVariableBound "(sym val thunk)"
 #define DECL_core_callWithVariableBound ""
 #define DOCS_core_callWithVariableBound "callWithVariableBound"
@@ -974,7 +988,7 @@ T_mv core_multipleValueFuncall(T_sp funcDesignator, List_sp functions) {
     mvThreadLocal[i] = mvAccumulate[i];
   }
 #endif
-  T_O **a = mvAccumulate.callingArgsStart();
+  T_O **frame = mvAccumulate.callingArgsStart();
   gctools::tagged_functor<Closure> func = fmv->closure;
   switch (mvAccumulate.getSize() ) {
 #define APPLY_TO_TAGGED_FRAME
@@ -1124,7 +1138,7 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
 
   SYMBOL_SC_(CorePkg, loadBundle);
   CoreDefun(loadBundle);
-
+#if 0
   CoreDefun(applysPerSecond);
   //        CoreDefun(globalFuncallCyclesPerSecond);
   CoreDefun(partialApplysPerSecond);
@@ -1132,6 +1146,7 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   CoreDefun(callsByValuePerSecond);
   CoreDefun(callsByConstantReferencePerSecond);
   CoreDefun(callsByPointerPerSecond);
+#endif
   CoreDefun(startupImagePathname);
   CoreDefun(mangleName);
   CoreDefun(cxxFibn);

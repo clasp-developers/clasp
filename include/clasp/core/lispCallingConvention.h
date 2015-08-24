@@ -53,9 +53,11 @@ THE SOFTWARE.
 
 
 #define LCC_ARGS_ELLIPSIS std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
-#define LCC_ARGS_VA_LIST std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, va_list lcc_arglist
+#define LCC_ARGS_VA_LIST std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, core::T_O* lcc_arglist
 // When you pass args to another function use LCC_PASS_ARGS
 #define LCC_PASS_ARGS lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_arglist
+// Compiled functions get the raw va_list
+#define LCC_VA_LIST(_valist) (*_valist)._Args
 #define LCC_VA_START_ARG lcc_fixed_arg2
 #define LCC_LAST_FIXED_ARG lcc_fixed_arg2
 
@@ -71,10 +73,6 @@ THE SOFTWARE.
 /*! This is a void function */
 #define LISP_CALLING_CONVENTION() invoke_va_list(LCC_ARGS_VA_LIST)
 
-typedef LCC_RETURN_RAW (*fnLispCallingConvention)(LCC_CLOSED_ENVIRONMENT, LCC_ARGS_VA_LIST);
-typedef LCC_RETURN_RAW (*CompiledClosure_fptr_type)(LCC_CLOSED_ENVIRONMENT,LCC_ARGS_VA_LIST);
-typedef LCC_RETURN (*InitFnPtr)(LCC_CLOSED_ENVIRONMENT, LCC_ARGS_VA_LIST);
-typedef LCC_RETURN (*ArgArrayGenericFunctionPtr)(core::Instance_sp gf, va_list args);
 
 // To invoke functions of type InitFnPtr use these
 #define LCC_PASS_ARGS0_VA_LIST_INITFNPTR() NULL, 0, LCC_UNUSED_rest0(), NULL
@@ -134,9 +132,7 @@ typedef LCC_RETURN (*ArgArrayGenericFunctionPtr)(core::Instance_sp gf, va_list a
   }
 
 
-#define LCC_DECLARE_VA_LIST() \
-  va_list lcc_arglist; \
-  va_start(lcc_arglist,LCC_VA_START_ARG); 
+  
 
 /*! This is X86_64 dependent code */
 #if defined(X86) && defined(_ADDRESS_MODEL_64)
@@ -145,12 +141,21 @@ typedef LCC_RETURN (*ArgArrayGenericFunctionPtr)(core::Instance_sp gf, va_list a
 // it's based on the System V Application Binary Interface for X86_64
 // I'm writing the register arguments into the reg_save_area and then
 // resetting the gp_offset to point to the first register argument lcc_fixed_arg0
-#define LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST() { \
-    ((uintptr_t*)lcc_arglist->reg_save_area)[0] = (uintptr_t)lcc_nargs; \
-    ((uintptr_t*)lcc_arglist->reg_save_area)[3] = (uintptr_t)lcc_fixed_arg0; \
-    ((uintptr_t*)lcc_arglist->reg_save_area)[4] = (uintptr_t)lcc_fixed_arg1; \
-    ((uintptr_t*)lcc_arglist->reg_save_area)[5] = (uintptr_t)lcc_fixed_arg2; \
-    lcc_arglist->gp_offset = sizeof(uintptr_t)*3; \
+#define LCC_ABI_ARGS_IN_REGISTERS 6
+#define LCC_SPILL_NUMBER_ARGUMENTS_TO_VA_LIST(_valist_s_,_num_) { \
+  ((uintptr_t*)(_valist_s_)._Args->reg_save_area)[0] = (uintptr_t)(_num_); \
+  }
+
+#define ASSERT_LCC_VA_LIST_AT_START(_valist_s_) \
+  ASSERT((((uintptr_t*)(_valist_s_)._Args->reg_save_area)[1] == (uintptr_t)((_valist_s_)._Args->overflow_arg_area)) && ((_valist_s_)._Args->gp_offset = sizeof(uintptr_t)*(LCC_ABI_ARGS_IN_REGISTERS-LCC_ARGS_IN_REGISTERS)));
+
+#define LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(_valist_s_) { \
+    ((uintptr_t*)(_valist_s_)._Args->reg_save_area)[0] = (uintptr_t)lcc_nargs; \
+    ((uintptr_t*)(_valist_s_)._Args->reg_save_area)[1] = (uintptr_t)((_valist_s_)._Args->overflow_arg_area); \
+    ((uintptr_t*)(_valist_s_)._Args->reg_save_area)[3] = (uintptr_t)lcc_fixed_arg0; \
+    ((uintptr_t*)(_valist_s_)._Args->reg_save_area)[4] = (uintptr_t)lcc_fixed_arg1; \
+    ((uintptr_t*)(_valist_s_)._Args->reg_save_area)[5] = (uintptr_t)lcc_fixed_arg2; \
+    (_valist_s_)._Args->gp_offset = sizeof(uintptr_t)*(LCC_ABI_ARGS_IN_REGISTERS-LCC_ARGS_IN_REGISTERS); \
   }
 
 
@@ -158,13 +163,17 @@ typedef LCC_RETURN (*ArgArrayGenericFunctionPtr)(core::Instance_sp gf, va_list a
   LCC_DECLARE_VA_LIST(); \
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_arglist);
 
-#define LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_t*)(_args[0].reg_save_area))[0])
-#define LCC_VA_LIST_REGISTER_ARG0(_args)   (((core::T_O**)(_args[0].reg_save_area))[3])
-#define LCC_VA_LIST_REGISTER_ARG1(_args) (((core::T_O**)(_args[0].reg_save_area))[4])
-#define LCC_VA_LIST_REGISTER_ARG2(_args) (((core::T_O**)(_args[0].reg_save_area))[5])
+#define LCC_raw_VA_LIST_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_t*)(_args[0].reg_save_area))[0])
 
-#define LCC_NEXT_ARG_RAW(arglist,arg_idx) va_arg(arglist,core::T_O*)
-#define LCC_NEXT_ARG(arglist,arg_idx) gc::smart_ptr<core::T_O>((gctools::Tagged)va_arg(arglist,core::T_O*))
+#define LCC_VA_LIST_REGISTER_SAVE_AREA(_args) (core::T_O**)(((*_args)._Args)[0].reg_save_area)
+#define LCC_VA_LIST_OVERFLOW_ARG_AREA(_args) (core::T_O**)(((*_args)._Args)[0].overflow_arg_area)
+#define LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_args) LCC_raw_VA_LIST_NUMBER_OF_ARGUMENTS((*_args)._Args)
+#define LCC_VA_LIST_REGISTER_ARG0(_args) (((core::T_O**)(((*_args)._Args)[0].reg_save_area))[3])
+#define LCC_VA_LIST_REGISTER_ARG1(_args) (((core::T_O**)(((*_args)._Args)[0].reg_save_area))[4])
+#define LCC_VA_LIST_REGISTER_ARG2(_args) (((core::T_O**)(((*_args)._Args)[0].reg_save_area))[5])
+
+#define LCC_NEXT_ARG_RAW(arglist,arg_idx) va_arg((*arglist)._Args,core::T_O*)
+#define LCC_NEXT_ARG(arglist,arg_idx) core::T_sp((gc::Tagged)LCC_NEXT_ARG_RAW(arglist,arg_idx))
 //gc::smart_ptr<core::T_O>((gctools::Tagged)((arg_idx<LCC_FIXED_ARGS) ? (((uintptr_t*)(arglist->reg_save_area))[1+arg_idx]) : (((uintptr_t*)(arglist->overflow_arg_area))[arg_idx-LCC_FIXED_ARGS])))
 
 #else
@@ -188,3 +197,15 @@ typedef LCC_RETURN (*ArgArrayGenericFunctionPtr)(core::Instance_sp gf, va_list a
   case 0:                                                              \
     break;                                                             \
   }
+
+
+
+#define LCC_DECLARE_VA_LIST() \
+  VaList_S lcc_arglist_struct(lcc_nargs); \
+  va_start(lcc_arglist_struct._Args,LCC_VA_START_ARG);  \
+  VaList_sp lcc_arglist(&lcc_arglist_struct);
+
+typedef LCC_RETURN_RAW (*fnLispCallingConvention)(LCC_CLOSED_ENVIRONMENT, LCC_ARGS_VA_LIST);
+typedef LCC_RETURN_RAW (*CompiledClosure_fptr_type)(LCC_CLOSED_ENVIRONMENT,LCC_ARGS_VA_LIST);
+typedef LCC_RETURN (*InitFnPtr)(LCC_CLOSED_ENVIRONMENT, LCC_ARGS_VA_LIST);
+typedef LCC_RETURN (*ArgArrayGenericFunctionPtr)(core::Instance_sp gf, core::VaList_sp valist_sptr);

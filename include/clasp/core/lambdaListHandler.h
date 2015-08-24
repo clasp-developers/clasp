@@ -193,7 +193,7 @@ public:
   void createBindingsInScope_argArray(int n_args, ArgArray argArray,
                                       DynamicScopeManager &scope);
 
-  void createBindingsInScope_va_list(size_t n_args, va_list argArray,
+  void createBindingsInScopeVaList(size_t n_args, VaList_sp argArray,
                                       DynamicScopeManager &scope);
 
   void createBindingsInScope_argArray_TPtr(int n_args, T_O *argArray[],

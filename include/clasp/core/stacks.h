@@ -61,10 +61,11 @@ public:
   size_t runningFilePos;
   int runningLineNumber;
   int runningColumn;
-  void* _RegisterArguments;
-  void* _StackArguments; 
+  size_t _NumberOfArguments;
+  core::T_O** _RegisterArguments;
+  core::T_O** _StackArguments;
 public:
-  InvocationHistoryFrame(Closure *fc, va_list args, T_sp env = _Nil<T_O>());
+  InvocationHistoryFrame(Closure *fc, core::T_O* valist_args, T_sp env = _Nil<T_O>());
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
   ATTR_WEAK virtual ~InvocationHistoryFrame();
   InvocationHistoryFrame *previous() { return this->_Previous; };

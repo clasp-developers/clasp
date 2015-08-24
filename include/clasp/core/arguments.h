@@ -178,15 +178,15 @@ public:
 
 class StackFrameDynamicScopeManager : public DynamicScopeManager {
 private:
-  gctools::smart_ptr<STACK_FRAME> frame;
+  gc::frame::Frame& frame;
 
 public:
-  StackFrameDynamicScopeManager(gctools::smart_ptr<STACK_FRAME> f) : frame(f){};
+ StackFrameDynamicScopeManager(gc::frame::Frame& f) : frame(f){};
 
 public:
   virtual void new_binding(const Argument &argument, T_sp val);
   virtual bool lexicalElementBoundP(const Argument &argument);
-  T_sp activationFrame() const;
+//  T_sp activationFrame() const;
   virtual T_sp lexenv() const;
 };
 };

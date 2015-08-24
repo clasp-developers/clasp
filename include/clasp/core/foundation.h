@@ -967,7 +967,8 @@ Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageNam
 
 /*! Write characters to the stream */
 void lisp_write(const boost::format &fmt, T_sp stream);
-
+ gc::GCStack& lisp_threadLocalStack();
+ 
 Lisp_sp lisp_fromObject(T_sp obj);
 string lisp_currentPackageName();
 string lisp_classNameAsString(Class_sp c);
@@ -1133,8 +1134,15 @@ class Functoid {
 public:
   virtual const char *describe() const { return "Functoid - subclass must implement describe()"; };
   inline LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {
+#if 1
+    VaList_S lcc_arglist_s;
+    va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
+    LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+    core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
+#else
     LCC_DECLARE_VA_LIST();
     LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST();
+#endif
     return this->invoke_va_list(LCC_PASS_ARGS);
   }
 

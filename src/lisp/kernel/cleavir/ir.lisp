@@ -41,6 +41,10 @@
 (defun alloca-i8* (&optional (label "var"))
   (llvm-sys:create-alloca *entry-irbuilder* cmp:+i8*+ (%i32 1) label))
 
+(defun alloca-return_type (&optional (label "return-value"))
+  (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:+return_type+ (%i32 1) label)))
+    instr))
+
 (defun alloca-t* (&optional (label "var"))
   (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:+t*+ (%i32 1) label)))
     #+(or)(cc-dbg-when *debug-log*
@@ -203,13 +207,9 @@
 
 
 
-(defmacro with-return-values ((return-vals abi) &body body)
-  (let ((args (gensym "args"))
-	(return-sret-arg (gensym "retstruct")))
-    `(let* ((,args (llvm-sys:get-argument-list cmp:*current-function*))
-	    (,return-sret-arg (first ,args))
-	    (,return-vals (make-return-values ,return-sret-arg ,abi)))
-       ,@body)))
+(defmacro with-return-values ((return-vals return-value abi) &body body)
+  `(let* ((,return-vals (make-return-values ,return-value ,abi)))
+     ,@body))
 
 
 
@@ -221,7 +221,7 @@
 ;;; Arguments are passed in registers and in the multiple-value-array
 ;;;
 
-(defun closure-call (call-or-invoke intrinsic-name closure arguments abi &key (label "") landing-pad)
+(defun closure-call (call-or-invoke intrinsic-name closure return-value arguments abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
   (unless (<= (length arguments) 5)
     (let ((mv-args (nthcdr 5 arguments)))
@@ -232,7 +232,7 @@
 	(let* ((mvarray (multiple-value-array-address))
 	       (mv-elt-ref (llvm-sys:create-geparray cmp:*irbuilder* mvarray (list (%size_t 0) (%size_t idx)) "element")))
 	  (%store (cmp:irc-load arg) mv-elt-ref)))))
-  (with-return-values (return-vals abi)
+  (with-return-values (return-vals return-value abi)
     (let ((args (list 
 		 (sret-arg return-vals)
 		 (cmp:irc-load closure)

@@ -44,7 +44,20 @@
   (pushnew :cleavir *features*)
   (format t "Loading :clasp-cleavir system~%")
   (time (require :clasp-cleavir))
+  (format t "Loading inline-prep.lisp~%")
+  (load "sys:kernel;cleavir;inline-prep.lisp")
+  (format t "Loading inline.lisp")
   (load "sys:kernel;cleavir;inline.lisp"))
+
+
+(progn ;; Set up everything for building cclasp from bclasp
+  (format t "Loading ASDF system~%")
+  (time (require :asdf))
+  (load "sys:local-asdf-config.lisp")
+  (pushnew :cleavir *features*)
+  (format t "Loading :clasp-cleavir system~%")
+  (time (require :clasp-cleavir))
+  (format t "Done.~%"))
 
 
 (defparameter *a* 1)
@@ -52,8 +65,10 @@
 (clasp-cleavir::hir-form '(lambda () (setq *a* 'foo)))
 (clasp-cleavir::hir-form '(lambda () (let ((a 'foo)) (declare (special a)) (print a))))
 
-(clasp-cleavir::hir-form '(lambda () (block bar (let ((a 'foo)) (declare (special a)) (print a) (return-from bar nil)))))
+(clasp-cleavir::hir-form '(lambda () 1))
+(clasp-cleavir::hir-form '(lambda ()(block bar (let ((a 'foo)) (declare (special a)) (print a) (return-from bar nil)))))
 
+(clasp-cleavir::cleavir-compile 'foo '(lambda () 1))
 
 (clasp-cleavir::cleavir-compile-file "sys:tests;tsmall.lsp")
 (load "sys:tests;tsmall.fasl")

@@ -32,4 +32,5 @@
 		 (:file "landing-pad")
 		 (:file "arguments")
 		 (:file "translate")
+                 (:file "inline-prep")
 		 ))

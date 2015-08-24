@@ -50,4 +50,11 @@ List_sp cl_nbutlast(List_sp list, Integer_sp n);
 void initialize_list();
 };
 
+
+namespace core {
+  class VaList_dummy_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_VIRTUAL_CLASS(core, CorePkg, VaList_dummy_O, "VA-LIST");
+};
+};
 #endif /* _core_List_H */

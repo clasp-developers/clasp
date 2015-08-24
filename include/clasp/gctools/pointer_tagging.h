@@ -71,6 +71,10 @@ extern void lisp_errorBadCastFromT_OToCons_O(core::T_O *objP);
 extern void lisp_errorBadCastFromSymbol_O(type_info const &toType, core::Symbol_O *objP);
 extern void lisp_errorDereferencedNonPointer(core::T_O *objP);
 
+namespace core {
+  class VaList_S;
+};
+
 namespace gctools {
 
 //    typedef core::T_O Fixnum_ty;
@@ -91,6 +95,7 @@ typedef Fixnum cl_fixnum;
 typedef uintptr_t Tagged;
 static const int fixnum_bits = 63;
 static const int fixnum_shift = 1;
+ static const size_t thread_local_cl_stack_size = THREAD_LOCAL_CL_STACK_SIZE;
 static const int most_positive_int = std::numeric_limits<int>::max();
 static const int most_negative_int = std::numeric_limits<int>::min();
 static const uint most_positive_uint = std::numeric_limits<unsigned int>::max();
@@ -115,7 +120,7 @@ static const uintptr_t fixnum_mask = BOOST_BINARY(1);
 static const uintptr_t ptr_mask = ~BOOST_BINARY(111);
 static const uintptr_t general_tag = BOOST_BINARY(001); // means ptr
 static const uintptr_t cons_tag = BOOST_BINARY(011);  // means a cons
-static const uintptr_t frame_tag = BOOST_BINARY(101); // means a frame on the stack
+static const uintptr_t valist_tag = BOOST_BINARY(101); // means a valist
 /*! Character */
 static const uintptr_t immediate_mask = BOOST_BINARY(11111);
 static const uintptr_t character_tag = BOOST_BINARY(00111); // Character
@@ -124,6 +129,7 @@ static const uintptr_t single_float_tag = BOOST_BINARY(01111); // single-float
 static const uintptr_t single_float_shift = 5;
 static const uintptr_t single_float_mask = 0x1FFFFFFFFF; // single-floats are in these 32+5bits
 
+ 
 template <class T>
 T tag(T ptr) { return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) & tag_mask); };
 
@@ -197,9 +203,9 @@ inline T tag_sameAsKey() {
   return reinterpret_cast<T>(global_Symbol_OP_sameAsKey);
 }
 template <class T>
-inline T tag_frame(core::T_O **p) {
+  inline T tag_valist(core::VaList_S* p) {
   GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & tag_mask) == 0);
-  return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + frame_tag);
+  return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + valist_tag);
 }
 
 template <class T>
@@ -208,9 +214,9 @@ inline T untag_general(T ptr) {
   return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) - general_tag);
 }
 template <class T>
-inline core::T_O **untag_frame(T ptr) {
-  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == frame_tag);
-  return reinterpret_cast<core::T_O **>(reinterpret_cast<uintptr_t>(ptr) - frame_tag);
+inline void* untag_valist(T ptr) {
+  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == valist_tag);
+  return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(ptr) - valist_tag);
 }
 
 template <class T>
@@ -272,8 +278,8 @@ inline bool tagged_generalp(T ptr) {
   return ((uintptr_t)(ptr)&tag_mask) == general_tag;
 }
 template <class T>
-inline bool tagged_framep(T ptr) {
-  return ((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == frame_tag);
+inline bool tagged_valistp(T ptr) {
+  return ((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == valist_tag);
 };
 
 template <class Type>

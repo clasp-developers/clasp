@@ -711,7 +711,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/lsp/cmuutil"
     #P"kernel/lsp/seqmacros"
     #P"kernel/lsp/iolib"
-    #P"kernel/lsp/profiling"    ;; Do micro-profiling of the GC
+;;    #P"kernel/lsp/profiling"    ;; Do micro-profiling of the GC
     :tiny
     :pre-cmp
     ;; Compiler code
@@ -984,6 +984,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (setq *features* (remove :ecl-min *features*))
   (push :clos *features*)
   (bformat t "Removed :ecl-min from and added :clos to *features* --> %s\n" *features*))
+
+(defun partial-compile-full (end)
+  (if (member :ecl-min *features*) (switch-to-full))
+  (let ((*target-backend* (default-target-backend)))
+    (load-system :start end :interp t )))
 
 
 (export 'compile-full)

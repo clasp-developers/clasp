@@ -24,6 +24,9 @@
    #:cleavir-compile
    #:cleavir-compile-file
    #:cclasp-compile-in-env
+   #:*function-inline-asts*
+   #:*clasp-env*
+   #:*clasp-system*
 ))
 
 (defpackage #:clasp-cleavir-generate-ast

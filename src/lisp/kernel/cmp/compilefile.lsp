@@ -386,25 +386,26 @@ and the pathname of the source file - this will also be used as the module initi
       module)))
 
 
-(defun compile-file (given-input-pathname
-		     &key
-		       (output-file nil output-file-p)
-		       (verbose *compile-verbose*)
-		       (print *compile-print*)
-                       (system-p nil system-p-p)
-		       (external-format :default)
-		       ;; If we are spoofing the source-file system to treat given-input-name
-		       ;; as a part of another file then use source-truename to provide the
-		       ;; truename of the file we want to mimic
-		       source-debug-namestring
-		       ;; This is the offset we want to spoof
-		       (source-debug-offset 0)
-		       ;; output-type can be (or :fasl :bitcode :object)
-		       (output-type :fasl)
+(defun compile-file* (compile-file-hook
+                      given-input-pathname
+                      &key
+                        (output-file nil output-file-p)
+                        (verbose *compile-verbose*)
+                        (print *compile-print*)
+                        (system-p nil system-p-p)
+                        (external-format :default)
+                        ;; If we are spoofing the source-file system to treat given-input-name
+                        ;; as a part of another file then use source-truename to provide the
+                        ;; truename of the file we want to mimic
+                        source-debug-namestring
+                        ;; This is the offset we want to spoof
+                        (source-debug-offset 0)
+                        ;; output-type can be (or :fasl :bitcode :object)
+                        (output-type :fasl)
 ;;; type can be either :kernel or :user
-		       (type :user)
-                     &aux conditions
-		       )
+                        (type :user)
+                      &aux conditions
+                        )
   "See CLHS compile-file"
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
   (if (not output-file-p) (setq output-file (cfp-output-file-default given-input-pathname output-type)))
@@ -442,6 +443,12 @@ and the pathname of the source file - this will also be used as the module initi
 	(dolist (c conditions)
 	  (bformat t "conditions: %s\n" c))
 	(compile-file-results output-path conditions)))))
+
+(defun compile-file (&rest args)
+  ;; Use the *cleavir-compile-file-hook* to determine which compiler to use
+  ;; if nil == bclasp
+  ;; if #'clasp-cleavir:cleavir-compile-file-form  == cclasp
+  (apply #'compile-file* *cleavir-compile-file-hook* args))
 
 
 (defun bclasp-compile-file (input-file &rest args &key &allow-other-keys)

@@ -193,6 +193,12 @@ inline size_t sizeof_container_with_header(size_t num) {
 };
 };
 
+namespace gctools {
+  class GCStack;
+  GCStack* threadLocalStack();
+};
+
+#include <clasp/gctools/gcStack.h>
 #include <clasp/gctools/gcalloc.h>
 
 #define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate()

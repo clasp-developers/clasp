@@ -29,38 +29,28 @@ enum { NumParams = 16 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
+gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) , frame::Value(frameImpl,15)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
-translate::from_object<ARG15> a15(arg15);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
+translate::from_object<ARG14> a14(frame.arg(14));
+translate::from_object<ARG15> a15(frame.arg(15));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,
     a15._v);
 return Values(translate::to_object<RT>::convert(retval));
@@ -90,37 +80,27 @@ enum { NumParams = 15 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
+gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13, core::T_sp arg14 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
+translate::from_object<ARG14> a14(frame.arg(14));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -148,36 +128,26 @@ enum { NumParams = 14 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
+gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -205,34 +175,25 @@ enum { NumParams = 13 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
+gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -260,32 +221,24 @@ enum { NumParams = 12 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
+gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -313,31 +266,23 @@ enum { NumParams = 11 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
+gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -365,30 +310,22 @@ enum { NumParams = 10 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
+gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -416,29 +353,21 @@ enum { NumParams = 9 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
+gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -466,27 +395,20 @@ enum { NumParams = 8 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -514,26 +436,19 @@ enum { NumParams = 7 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -560,24 +475,18 @@ enum { NumParams = 6 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -604,23 +513,17 @@ enum { NumParams = 5 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -647,22 +550,16 @@ enum { NumParams = 4 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -689,20 +586,15 @@ enum { NumParams = 3 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -729,19 +621,14 @@ enum { NumParams = 2 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -768,18 +655,13 @@ enum { NumParams = 1 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0   )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 RT retval =  ((*ot.untag_object()).*mptr)();
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -808,38 +690,28 @@ enum { NumParams = 16 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
+gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) , frame::Value(frameImpl,15)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
-translate::from_object<ARG15> a15(arg15);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
+translate::from_object<ARG14> a14(frame.arg(14));
+translate::from_object<ARG15> a15(frame.arg(15));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 return Values0<core::T_O>();
 }
@@ -867,37 +739,27 @@ enum { NumParams = 15 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
+gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13, core::T_sp arg14 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
+translate::from_object<ARG14> a14(frame.arg(14));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values0<core::T_O>();
 }
@@ -925,36 +787,26 @@ enum { NumParams = 14 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
+gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values0<core::T_O>();
 }
@@ -982,34 +834,25 @@ enum { NumParams = 13 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
+gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values0<core::T_O>();
 }
@@ -1037,32 +880,24 @@ enum { NumParams = 12 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
+gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values0<core::T_O>();
 }
@@ -1090,31 +925,23 @@ enum { NumParams = 11 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
+gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values0<core::T_O>();
 }
@@ -1142,30 +969,22 @@ enum { NumParams = 10 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
+gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values0<core::T_O>();
 }
@@ -1193,29 +1012,21 @@ enum { NumParams = 9 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
+gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values0<core::T_O>();
 }
@@ -1243,27 +1054,20 @@ enum { NumParams = 8 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values0<core::T_O>();
 }
@@ -1290,26 +1094,19 @@ enum { NumParams = 7 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values0<core::T_O>();
 }
@@ -1336,24 +1133,18 @@ enum { NumParams = 6 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values0<core::T_O>();
 }
@@ -1380,23 +1171,17 @@ enum { NumParams = 5 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
 return Values0<core::T_O>();
 }
@@ -1423,22 +1208,16 @@ enum { NumParams = 4 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
 return Values0<core::T_O>();
 }
@@ -1465,20 +1244,15 @@ enum { NumParams = 3 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v);
 return Values0<core::T_O>();
 }
@@ -1505,19 +1279,14 @@ enum { NumParams = 2 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
 ((*ot.untag_object()).*mptr)(a1._v);
 return Values0<core::T_O>();
 }
@@ -1544,18 +1313,13 @@ enum { NumParams = 1 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0   )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 ((*ot.untag_object()).*mptr)();
 return Values0<core::T_O>();
 }
@@ -1586,38 +1350,28 @@ enum { NumParams = 16 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
+gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) , frame::Value(frameImpl,15)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
-translate::from_object<ARG15> a15(arg15);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
+translate::from_object<ARG14> a14(frame.arg(14));
+translate::from_object<ARG15> a15(frame.arg(15));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v,a14._v,a15._v);
 return retval;
@@ -1649,37 +1403,27 @@ enum { NumParams = 15 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
+gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13, core::T_sp arg14 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
+translate::from_object<ARG14> a14(frame.arg(14));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v,a14._v);
 return retval;
@@ -1709,36 +1453,26 @@ enum { NumParams = 14 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
+gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v);
 return retval;
@@ -1767,34 +1501,25 @@ enum { NumParams = 13 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
+gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v);
 return retval;
@@ -1823,32 +1548,24 @@ enum { NumParams = 12 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
+gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v);
 return retval;
@@ -1877,31 +1594,23 @@ enum { NumParams = 11 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
+gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return retval;
 }
@@ -1929,30 +1638,22 @@ enum { NumParams = 10 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
+gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return retval;
 }
@@ -1980,29 +1681,21 @@ enum { NumParams = 9 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
+gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return retval;
 }
@@ -2030,27 +1723,20 @@ enum { NumParams = 8 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return retval;
 }
@@ -2078,26 +1764,19 @@ enum { NumParams = 7 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return retval;
 }
@@ -2124,24 +1803,18 @@ enum { NumParams = 6 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
 return retval;
 }
@@ -2168,23 +1841,17 @@ enum { NumParams = 5 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
 return retval;
 }
@@ -2211,22 +1878,16 @@ enum { NumParams = 4 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
 return retval;
 }
@@ -2253,20 +1914,15 @@ enum { NumParams = 3 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
 return retval;
 }
@@ -2293,19 +1949,14 @@ enum { NumParams = 2 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v);
 return retval;
 }
@@ -2332,18 +1983,13 @@ enum { NumParams = 1 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0   )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)();
 return retval;
 }
@@ -2372,38 +2018,28 @@ enum { NumParams = 16 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
+gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) , frame::Value(frameImpl,15)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
-translate::from_object<ARG15> a15(arg15);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
+translate::from_object<ARG14> a14(frame.arg(14));
+translate::from_object<ARG15> a15(frame.arg(15));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,
     a15._v);
 return Values(translate::to_object<RT>::convert(retval));
@@ -2433,37 +2069,27 @@ enum { NumParams = 15 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
+gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13, core::T_sp arg14 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
+translate::from_object<ARG14> a14(frame.arg(14));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2491,36 +2117,26 @@ enum { NumParams = 14 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
+gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2548,34 +2164,25 @@ enum { NumParams = 13 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
+gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2603,32 +2210,24 @@ enum { NumParams = 12 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
+gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2656,31 +2255,23 @@ enum { NumParams = 11 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
+gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2708,30 +2299,22 @@ enum { NumParams = 10 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
+gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2759,29 +2342,21 @@ enum { NumParams = 9 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
+gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2809,27 +2384,20 @@ enum { NumParams = 8 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2857,26 +2425,19 @@ enum { NumParams = 7 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2903,24 +2464,18 @@ enum { NumParams = 6 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2947,23 +2502,17 @@ enum { NumParams = 5 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2990,22 +2539,16 @@ enum { NumParams = 4 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -3032,20 +2575,15 @@ enum { NumParams = 3 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -3072,19 +2610,14 @@ enum { NumParams = 2 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -3111,18 +2644,13 @@ enum { NumParams = 1 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0   )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 RT retval =  ((*ot.untag_object()).*mptr)();
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -3151,38 +2679,28 @@ enum { NumParams = 16 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
+gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) , frame::Value(frameImpl,15)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
-translate::from_object<ARG15> a15(arg15);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
+translate::from_object<ARG14> a14(frame.arg(14));
+translate::from_object<ARG15> a15(frame.arg(15));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 return Values0<core::T_O>();
 }
@@ -3210,37 +2728,27 @@ enum { NumParams = 15 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
+gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13, core::T_sp arg14 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
+translate::from_object<ARG14> a14(frame.arg(14));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values0<core::T_O>();
 }
@@ -3268,36 +2776,26 @@ enum { NumParams = 14 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
+gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values0<core::T_O>();
 }
@@ -3325,34 +2823,25 @@ enum { NumParams = 13 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
+gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values0<core::T_O>();
 }
@@ -3380,32 +2869,24 @@ enum { NumParams = 12 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
+gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values0<core::T_O>();
 }
@@ -3433,31 +2914,23 @@ enum { NumParams = 11 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
+gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values0<core::T_O>();
 }
@@ -3485,30 +2958,22 @@ enum { NumParams = 10 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
+gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values0<core::T_O>();
 }
@@ -3536,29 +3001,21 @@ enum { NumParams = 9 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
+gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values0<core::T_O>();
 }
@@ -3586,27 +3043,20 @@ enum { NumParams = 8 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values0<core::T_O>();
 }
@@ -3633,26 +3083,19 @@ enum { NumParams = 7 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values0<core::T_O>();
 }
@@ -3679,24 +3122,18 @@ enum { NumParams = 6 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values0<core::T_O>();
 }
@@ -3723,23 +3160,17 @@ enum { NumParams = 5 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
 return Values0<core::T_O>();
 }
@@ -3766,22 +3197,16 @@ enum { NumParams = 4 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
 return Values0<core::T_O>();
 }
@@ -3808,20 +3233,15 @@ enum { NumParams = 3 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v);
 return Values0<core::T_O>();
 }
@@ -3848,19 +3268,14 @@ enum { NumParams = 2 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
 ((*ot.untag_object()).*mptr)(a1._v);
 return Values0<core::T_O>();
 }
@@ -3887,18 +3302,13 @@ enum { NumParams = 1 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0   )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 ((*ot.untag_object()).*mptr)();
 return Values0<core::T_O>();
 }
@@ -3929,38 +3339,28 @@ enum { NumParams = 16 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,16);
+gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14) , frame::Value(frameImpl,15)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13, core::T_sp arg14, core::T_sp arg15 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
-translate::from_object<ARG15> a15(arg15);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
+translate::from_object<ARG14> a14(frame.arg(14));
+translate::from_object<ARG15> a15(frame.arg(15));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v,a14._v,a15._v);
 return retval;
@@ -3992,37 +3392,27 @@ enum { NumParams = 15 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,15);
+gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13) , frame::Value(frameImpl,14)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13, core::T_sp arg14 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
-translate::from_object<ARG14> a14(arg14);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
+translate::from_object<ARG14> a14(frame.arg(14));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v,a14._v);
 return retval;
@@ -4053,36 +3443,26 @@ enum { NumParams = 14 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,14);
+gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12) , frame::Value(frameImpl,13)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12,
-    core::T_sp arg13 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
-translate::from_object<ARG13> a13(arg13);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
+translate::from_object<ARG13> a13(frame.arg(13));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v);
 return retval;
@@ -4111,34 +3491,25 @@ enum { NumParams = 13 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,13);
+gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11) ,
-    frame::Value(frameImpl,12)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11, core::T_sp arg12 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
-translate::from_object<ARG12> a12(arg12);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
+translate::from_object<ARG12> a12(frame.arg(12));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v);
 return retval;
@@ -4167,32 +3538,24 @@ enum { NumParams = 12 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,12);
+gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10) , frame::Value(frameImpl,11)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10, core::T_sp arg11 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
-translate::from_object<ARG11> a11(arg11);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
+translate::from_object<ARG11> a11(frame.arg(11));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v);
 return retval;
@@ -4221,31 +3584,23 @@ enum { NumParams = 11 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,11);
+gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9) , frame::Value(frameImpl,10)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9, core::T_sp arg10 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
-translate::from_object<ARG10> a10(arg10);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
+translate::from_object<ARG10> a10(frame.arg(10));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return retval;
 }
@@ -4273,30 +3628,22 @@ enum { NumParams = 10 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,10);
+gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8) , frame::Value(frameImpl,9)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8, core::T_sp arg9 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
-translate::from_object<ARG9> a9(arg9);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
+translate::from_object<ARG9> a9(frame.arg(9));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return retval;
 }
@@ -4324,29 +3671,21 @@ enum { NumParams = 9 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,9);
+gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7) ,
-    frame::Value(frameImpl,8)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7, core::T_sp arg8 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
-translate::from_object<ARG8> a8(arg8);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
+translate::from_object<ARG8> a8(frame.arg(8));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return retval;
 }
@@ -4374,27 +3713,20 @@ enum { NumParams = 8 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
-translate::from_object<ARG7> a7(arg7);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
+translate::from_object<ARG7> a7(frame.arg(7));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return retval;
 }
@@ -4422,26 +3754,19 @@ enum { NumParams = 7 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
-translate::from_object<ARG6> a6(arg6);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
+translate::from_object<ARG6> a6(frame.arg(6));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return retval;
 }
@@ -4468,24 +3793,18 @@ enum { NumParams = 6 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
-translate::from_object<ARG5> a5(arg5);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
+translate::from_object<ARG5> a5(frame.arg(5));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
 return retval;
 }
@@ -4512,23 +3831,17 @@ enum { NumParams = 5 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,3) ,
-    frame::Value(frameImpl,4)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
-translate::from_object<ARG4> a4(arg4);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
+translate::from_object<ARG4> a4(frame.arg(4));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
 return retval;
 }
@@ -4555,22 +3868,16 @@ enum { NumParams = 4 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
-translate::from_object<ARG3> a3(arg3);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
+translate::from_object<ARG3> a3(frame.arg(3));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
 return retval;
 }
@@ -4597,20 +3904,15 @@ enum { NumParams = 3 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1, core::T_sp arg2 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
-translate::from_object<ARG2> a2(arg2);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
+translate::from_object<ARG2> a2(frame.arg(2));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
 return retval;
 }
@@ -4637,19 +3939,14 @@ enum { NumParams = 2 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0  , core::T_sp arg1 )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
-translate::from_object<ARG1> a1(arg1);
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame.arg(1));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v);
 return retval;
 }
@@ -4676,18 +3973,13 @@ enum { NumParams = 1 };
 VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke(frame::Value(frameImpl,0)  );
-}
-
-LCC_RETURN invoke( core::T_sp arg0   )
-{
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(arg0));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)();
 return retval;
 }

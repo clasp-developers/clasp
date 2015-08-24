@@ -160,10 +160,11 @@ NOINLINE void va_notEnoughArgumentsException(const char *funcName, std::size_t g
   SIMPLE_ERROR(BF("Too few arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
 }
 
-NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, va_list arglist, size_t argIdx) {
-  if (argIdx >= nargs) return;
+NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, VaList_S* varglist, size_t argIdx) {
+  if ( argIdx >= nargs ) return;
+  VaList_S* vl = reinterpret_cast<VaList_S*>(gc::untag_valist((void*)varglist));
   va_list vrest;
-  va_copy(vrest,arglist);
+  va_copy(vrest,vl->_Args);
   stringstream ss;
   for (int i(argIdx); i < nargs; ++i) {
     T_sp obj(va_arg(vrest,T_O*));
@@ -206,15 +207,19 @@ ALWAYS_INLINE core::Closure *va_lexicalFunction(int depth, int index, core::T_sp
 
 ALWAYS_INLINE void mv_FUNCALL(core::T_mv *resultP, core::Closure *closure, LCC_ARGS_ELLIPSIS) {
   ASSERTF(resultP, BF("mv_FUNCALL resultP is NULL!!!"));
-  LCC_DECLARE_VA_LIST();
-  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST();
+  VaList_S lcc_arglist_s;
+  va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
+  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+  core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
   *resultP = closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
 ALWAYS_INLINE void sp_FUNCALL(core::T_sp *resultP, core::Closure *closure, LCC_ARGS_ELLIPSIS) {
   ASSERTF(resultP, BF("sp_FUNCALL resultP is NULL!!!"));
-  LCC_DECLARE_VA_LIST();
-  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST();
+  VaList_S lcc_arglist_s;
+  va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
+  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+  core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
   *resultP = closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
@@ -226,9 +231,10 @@ ALWAYS_INLINE void sp_FUNCALL_activationFrame(core::T_sp *resultP, core::Closure
   (*resultP) = core::eval::applyClosureToActivationFrame(closure, af);
 }
 
-__attribute__((visibility("default"))) core::T_O* cc_gatherRestArguments(std::size_t nargs, va_list args, std::size_t startRest, char *fnName) {
+__attribute__((visibility("default"))) core::T_O* cc_gatherRestArguments(std::size_t nargs, VaList_S* vargs, std::size_t startRest, char *fnName) {
+  VaList_S* args = reinterpret_cast<VaList_S*>(gc::untag_valist((void*)vargs));
   va_list rargs;
-  va_copy(rargs,args);
+  va_copy(rargs,args->_Args);
   core::List_sp result = _Nil<core::T_O>();
   int inargs = nargs;
   int istartRest = startRest;
@@ -319,7 +325,7 @@ ALWAYS_INLINE extern int compareTsp(core::T_sp *xP, core::T_sp *yP) {
 }
 #endif
 NOINLINE extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, core::T_O *arg1, core::T_O *arg2, va_list args) {
-  _G();
+  DEPRECIATED();
   //        printf("%s:%d copyArgs destP=%p  nargs=%d\n", __FILE__, __LINE__, destP, nargs);
   switch (nargs) {
   case 0:
@@ -544,7 +550,10 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   SourcePosInfo_sp tempSourcePosInfo = SourcePosInfo_O::create(*sourceFileInfoHandleP, filePos, lineno, column);
   core::Str_sp name = core::Str_O::create(cpname);
   BuiltinClosure tempClosure(name, tempSourcePosInfo, kw::_sym_function);
-  core::InvocationHistoryFrame invFrame(&tempClosure, NULL, *frameP);
+  gc::frame::Frame no_args(0);
+  VaList_S empty_valist(no_args);
+  core::T_O* empty_valist_ptr = empty_valist.asTaggedPtr();
+  core::InvocationHistoryFrame invFrame(&tempClosure, empty_valist_ptr, *frameP);
   core::T_sp closedEnv = _Nil<T_O>();
   ASSERT(ltvPP != NULL);
   core::LoadTimeValues_O *ltvP = *ltvPP;
@@ -672,9 +681,12 @@ extern void makeValueFrameFromReversedCons(core::ActivationFrame_sp *afP, core::
 }
 
 extern void setParentOfActivationFrameTPtr(core::T_sp *resultP, core::T_O *parentP) {
-  if (resultP->framep()) {
+  if (resultP->valistp()) {
+    SIMPLE_ERROR(BF("I don't support frames anymore"));
+#if 0
     frame::SetParentFrame(*resultP, gctools::smart_ptr<core::T_O>((gc::Tagged)parentP));
     return;
+#endif
   }
 #if USE_STATIC_CAST_FOR_ENVIRONMENT==1
   ASSERT((*resultP).isA<ActivationFrame_O>());
@@ -692,8 +704,9 @@ extern void setParentOfActivationFrameTPtr(core::T_sp *resultP, core::T_O *paren
 
 extern void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp) {
   T_O *parentP = parentsp->raw_();
-  if (resultP->framep()) {
-    frame::SetParentFrame(*resultP, gctools::smart_ptr<core::T_O>((gc::Tagged)parentP));
+  if (resultP->valistp()) {
+    DEPRECIATED();
+//    frame::SetParentFrame(*resultP, gctools::smart_ptr<core::T_O>((gc::Tagged)parentP));
     return;
   }
 #if USE_STATIC_CAST_FOR_ENVIRONMENT==1
@@ -1002,13 +1015,13 @@ void debugPointer(const unsigned char *ptr) {
   printf("++++++ debugPointer: %p \n", ptr);
 }
 
-void debug_va_list(va_list args) {
-  printf("++++++ debug_va_list: %p \n", (void*)args);
-  printf("++++++ debug_va_list: reg_save_area @%p \n", args->reg_save_area);
-  printf("++++++ debug_va_list: gp_offset %d \n", args->gp_offset);
-  printf("++++++      next reg arg: %p\n", (void*)(((uintptr_t*)((char*)args->reg_save_area+args->gp_offset))[0]));
-  printf("++++++ debug_va_list: overflow_arg_area @%p \n", args->overflow_arg_area);
-  printf("++++++      next overflow arg: %p\n", (void*)(((uintptr_t*)((char*)args->overflow_arg_area))[0]));
+void debug_VaList_SPtr(VaList_S* vargs) {
+  VaList_S* args = reinterpret_cast<VaList_S*>(gc::untag_valist((void*)vargs));
+  printf("++++++ debug_va_list: reg_save_area @%p \n", args->_Args[0].reg_save_area);
+  printf("++++++ debug_va_list: gp_offset %d \n", args->_Args[0].gp_offset);
+  printf("++++++      next reg arg: %p\n", (void*)(((uintptr_t*)((char*)args->_Args[0].reg_save_area+args->_Args[0].gp_offset))[0]));
+  printf("++++++ debug_va_list: overflow_arg_area @%p \n", args->_Args[0].overflow_arg_area);
+  printf("++++++      next overflow arg: %p\n", (void*)(((uintptr_t*)((char*)args->_Args[0].overflow_arg_area))[0]));
 }
 
 void debugSymbolPointer(core::Symbol_sp *ptr) {
@@ -1669,8 +1682,10 @@ void cc_call(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_ELLIPSIS) {
   core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure.as<core::Closure>();
-    LCC_DECLARE_VA_LIST();
-    LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST();
+  VaList_S lcc_arglist_s;
+  va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
+  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+  core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
   *result = closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
@@ -1679,8 +1694,10 @@ void cc_invoke(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_ELLIPSIS) {
   core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
-    LCC_DECLARE_VA_LIST();
-    LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST();
+  VaList_S lcc_arglist_s;
+  va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
+  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+  core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
   *result = closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
@@ -1805,10 +1822,11 @@ size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlread
     return 2;
   return 1;
 }
-void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list vargs) {
+void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, VaList_S* valist) {
+  VaList_S* vargs = reinterpret_cast<VaList_S*>(gc::untag_valist((void*)valist));
   T_sp vobj((gc::Tagged)obj);
   if (!af_keywordP(vobj) ) {
-    size_t numArgs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
+    size_t numArgs = LCC_raw_VA_LIST_NUMBER_OF_ARGUMENTS(vargs->_Args);
     SIMPLE_ERROR(BF("Expected keyword argument at argument %d of %d got %s") % argIdx % numArgs % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
   }
 }

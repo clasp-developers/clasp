@@ -183,12 +183,19 @@ ALWAYS_INLINE core::T_O **cc_loadTimeValueReference(core::LoadTimeValues_O **ltv
   return &result.rawRef_();
 }
 
-ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O**mvPtr, va_list va_args )
+ALWAYS_INLINE core::T_O* cc_va_arg(VaList_S* valist)
 {
+  VaList_S* vl = reinterpret_cast<VaList_S*>(gc::untag_valist((void*)valist));
+  return va_arg(vl->_Args,core::T_O*);
+}
+  
+ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O**mvPtr, VaList_S* va_args )
+{
+  VaList_S* vl = reinterpret_cast<VaList_S*>(gc::untag_valist((void*)va_args));
   for ( int i = LCC_FIXED_ARGS; i<nargs; ++i ) {
-    mvPtr[i] = va_arg(va_args, core::T_O *);
+    mvPtr[i] = va_arg(vl->_Args, core::T_O *);
   }
-  va_end(va_args);
+  va_end(vl->_Args);
 }
 
 };

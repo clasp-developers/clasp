@@ -478,8 +478,8 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
     } else {
       x->__write__(stream);
     }
-  } else if (x.framep()) {
-    clasp_write_string("#<stack-based-frame>", stream);
+  } else if (x.valistp()) {
+    clasp_write_string("#<VA-LIST>", stream);
   } else {
     SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());
   }

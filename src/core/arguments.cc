@@ -263,20 +263,21 @@ void StackFrameDynamicScopeManager::new_binding(const Argument &argument, T_sp v
     return;
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
-  core::T_O **array(frame::ValuesArray(this->frame));
-  array[argument._ArgTargetFrameIndex] = val.raw_();
+  this->frame[argument._ArgTargetFrameIndex] = val.raw_();
 }
 
 bool StackFrameDynamicScopeManager::lexicalElementBoundP(const Argument &argument) {
-  core::T_O **array(frame::ValuesArray(this->frame));
-  return !gctools::tagged_unboundp(array[argument._ArgTargetFrameIndex]);
+  //  core::T_O **array(frame::ValuesArray(this->frame));
+  return !gctools::tagged_unboundp(this->frame[argument._ArgTargetFrameIndex]);
 }
 
 T_sp StackFrameDynamicScopeManager::lexenv() const {
-  return this->frame;
+//  printf("%s:%d Returning nil as the lexical environment for a StackFrameDynamicScopeManager\n", __FILE__, __LINE__);
+  return _Nil<core::T_O>();
 }
-
+#if 0 // Oh oh - do I need these?
 T_sp StackFrameDynamicScopeManager::activationFrame() const {
   return this->frame;
 }
+#endif
 };

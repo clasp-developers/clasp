@@ -47,7 +47,10 @@ T_sp InstanceClosure::lambdaList() const {
 LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
   // Copy the arguments passed in registers into the multiple_values array and those
   // will be processed by the generic function
-  return (this->entryPoint)(this->instance,lcc_arglist);
+#ifdef _DEBUG_BUILD
+  VaList_S saved_args(*reinterpret_cast<VaList_S*>(untag_valist(lcc_arglist)));
+#endif
+  return (this->entryPoint)(this->instance,VaList_sp((gc::Tagged)lcc_arglist));
 }
 
 #define ARGS_clos_setFuncallableInstanceFunction "(instance func)"

@@ -88,15 +88,15 @@ SYMBOL_EXPORT_SC_(ClPkg, compute_applicable_methods);
 SYMBOL_SC_(ClosPkg, compute_applicable_methods_using_classes);
 SYMBOL_SC_(ClosPkg, compute_effective_method_function);
 
-List_sp listOfObjects(va_list vargs)
+List_sp listOfObjects(VaList_sp vargs)
 {
   core::List_sp list = _Nil<core::T_O>(); 
   va_list cargs; 
-  va_copy(cargs,vargs); 
-  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(cargs); 
+  va_copy(cargs,LCC_VA_LIST(vargs)); 
+  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs); 
   core::Cons_sp* cur = reinterpret_cast<core::Cons_sp*>(&list); 
   for( int p=0; p<nargs; ++p ) { 
-    core::T_sp obj = LCC_NEXT_ARG(cargs,p); 
+    core::T_sp obj = T_sp((gc::Tagged)va_arg(cargs,T_O*)); 
     *cur = core::Cons_O::create(obj, _Nil<core::T_O>()); 
     cur = reinterpret_cast<core::Cons_sp*>(&(*cur)->_Cdr); 
   } 
@@ -104,15 +104,15 @@ List_sp listOfObjects(va_list vargs)
   return list;
 }
 
-List_sp listOfClasses(va_list vargs)
+List_sp listOfClasses(VaList_sp vargs)
 {
   core::List_sp list = _Nil<core::T_O>(); 
   va_list cargs; 
-  va_copy(cargs,vargs); 
-  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(cargs); 
+  va_copy(cargs,LCC_VA_LIST(vargs)); 
+  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs); 
   core::Cons_sp* cur = reinterpret_cast<core::Cons_sp*>(&list); 
   for( int p=0; p<nargs; ++p ) { 
-    core::T_sp obj = LCC_NEXT_ARG(cargs,p);
+    core::T_sp obj = T_sp((gc::Tagged)va_arg(cargs,T_O*));
     core::Class_sp cobj = af_classOf(obj);
     *cur = core::Cons_O::create(cobj, _Nil<core::T_O>()); 
     cur = reinterpret_cast<core::Cons_sp*>(&(*cur)->_Cdr); 
@@ -122,7 +122,7 @@ List_sp listOfClasses(va_list vargs)
 }
 
 /*! This function copies ECL>>gfun.d generic_compute_applicable_method */
-T_mv generic_compute_applicable_method(Instance_sp gf, va_list vargs ) {
+T_mv generic_compute_applicable_method(Instance_sp gf, VaList_sp vargs ) {
   /* method not cached */
   //cl_object memoize;
   T_sp memoize;
@@ -154,7 +154,7 @@ SYMBOL_SC_(ClosPkg, std_compute_applicable_methods);
 SYMBOL_SC_(ClosPkg, std_compute_effective_method);
 
 /*! This function copies ECL>>gfun.d restricted_compute_applicable_method */
-T_mv restricted_compute_applicable_method(Instance_sp gf, va_list vargs ) {
+T_mv restricted_compute_applicable_method(Instance_sp gf, VaList_sp vargs ) {
   Instance_sp igf = gf;
   /* method not cached */
   List_sp arglist = listOfObjects(vargs);
@@ -177,13 +177,14 @@ T_mv restricted_compute_applicable_method(Instance_sp gf, va_list vargs ) {
 #define DECL_core_maybeExpandGenericFunctionArguments ""
 #define DOCS_core_maybeExpandGenericFunctionArguments "maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame"
 T_sp core_maybeExpandGenericFunctionArguments(T_sp args) {
+  IMPLEMENT_MEF(BF("Handle new valists"));
+#if 0
   if (cl_consp(args)) {
     T_sp first = oCar(args);
     if (first.nilp()) {
       return args;
-    } else if (first.framep()) {
+    } else if (first.valistp()) {
       List_sp expanded = _Nil<T_O>();
-      ASSERT(first.framep());
       core::T_O **frameImpl(first.unsafe_frame());
       frame::ElementType *values(frame::ValuesArray(frameImpl));
       for (int i(0), iEnd(frame::ValuesArraySize(frameImpl)); i < iEnd; ++i) {
@@ -195,9 +196,10 @@ T_sp core_maybeExpandGenericFunctionArguments(T_sp args) {
     }
   }
   return args;
+#endif
 }
 
-T_mv compute_applicable_method(Instance_sp gf, va_list vargs) {
+T_mv compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
   if (gc::As<Instance_sp>(gf)->isgf() == ECL_RESTRICTED_DISPATCH) {
     return restricted_compute_applicable_method(gf, vargs );
   } else {
@@ -207,9 +209,9 @@ T_mv compute_applicable_method(Instance_sp gf, va_list vargs) {
 
 /*! Mimic ECL>>gfun.d fill_spec_vector */
 gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vektor,
-                                      va_list vargs) {
+                                      VaList_sp vargs) {
   va_list cargs;
-  va_copy(cargs,vargs);
+  va_copy(cargs,LCC_VA_LIST(vargs));
 #if DEBUG_CLOS >= 2
   printf("MLOG fill_spec_vector - entered with gf  %s\n", gf->GFUN_NAME()->__repr__().c_str());
 #endif
@@ -233,7 +235,7 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
     } else if (spec_no >= vektor.capacity()) {
       SIMPLE_ERROR(BF("Too many arguments to fill_spec_vector()"));
     }
-    T_sp spec_position_arg = LCC_NEXT_ARG(cargs,spec_position);
+    T_sp spec_position_arg = T_sp((gc::Tagged)va_arg(cargs,T_O*));
     if (!cl_listp(spec_type) ||
         gc::As<Cons_sp>(spec_type)->memberEql(spec_position_arg).nilp()) // Was as_or_nil
     {
@@ -265,15 +267,12 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
 }
 
 // Arguments are passed in the multiple_values array
-T_mv standard_dispatch(T_sp gf,va_list arglist) {
+T_mv standard_dispatch(T_sp gf,VaList_sp arglist) {
   /* Lookup the generic-function/arguments invocation in a cache and if an effective-method
 	   exists then use that.   If an effective-method does not exist then calculate it and put it in the cache.
 
 	   Then call the effective method with the saved arguments.
 	*/
-  ALLOC_STACK_VALUE_FRAME_WITH_va_list(frameImpl, frame, arglist);
-
-  
   Cache *cache(_lisp->methodCachePtr());
   gctools::Vec0<T_sp> &vektor = fill_spec_vector(gf, cache->keys(), arglist );
   CacheRecord *e; //gctools::StackRootedPointer<CacheRecord> e;
@@ -320,7 +319,10 @@ T_mv standard_dispatch(T_sp gf,va_list arglist) {
     it is set up to accept either a ValueFrame as the second (and last) argument
     or a StackFrame and treat it like a list of arguments.
 */
-        return eval::funcall(func, frame, _Nil<T_O>()); 
+        ASSERT_LCC_VA_LIST_AT_START(*arglist);
+        return eval::funcall(func, arglist, _Nil<T_O>());
+        // Was this using ALLOC_STACK_VALUE_FRAME... above
+//        return eval::funcall(func, frame, _Nil<T_O>()); 
 #if 0	
         if ( _sym_STARdebugGenericDispatchSTAR->symbolValue().notnilp() ) {
 	    Function_sp gff = eval::lookupFunction(gf,frame);
@@ -342,27 +344,27 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
         return output;
 }
  */
-T_mv generic_function_dispatch(Instance_sp gf, va_list vargs) {
+T_mv generic_function_dispatch(Instance_sp gf, VaList_sp vargs) {
   return standard_dispatch(gf,vargs);
 }
 
 /*! Reproduces functionality in ecl_slot_reader_dispatch */
-T_mv slotReaderDispatch(Instance_sp gf, va_list vargs) {
+T_mv slotReaderDispatch(Instance_sp gf, VaList_sp vargs) {
   IMPLEMENT_MEF(BF("Implement slotReaderDispatch"));
 }
 
 /*! Reproduces functionality in ecl_slot_writer_dispatch */
-T_mv slotWriterDispatch(Instance_sp gf, va_list vargs ) {
+T_mv slotWriterDispatch(Instance_sp gf, VaList_sp vargs ) {
   IMPLEMENT_MEF(BF("Implement slotWriterDispatch"));
 }
 
 /*! Reproduces functionality in user_function_dispatch */
-T_mv userFunctionDispatch(Instance_sp gf, va_list vargs ) {
+T_mv userFunctionDispatch(Instance_sp gf, VaList_sp vargs ) {
   IMPLEMENT_MEF(BF("Implement userFunctionDispatch"));
 }
 
 /*! Reproduces functionality in FEnot_funcallable_vararg */
-T_mv notFuncallableDispatch(Instance_sp gf, va_list vargs) {
+T_mv notFuncallableDispatch(Instance_sp gf, VaList_sp vargs) {
   IMPLEMENT_MEF(BF("Implement notFuncallableDispatch"));
 }
 

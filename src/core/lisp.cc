@@ -331,6 +331,56 @@ void Lisp_O::finalizeSpecialSymbols() {
   //    	Symbol_sp symbol_sameAsKey = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_sameAsKey);
 }
 
+
+/*! Run some quick tests to determine if eval::funcall is working properly.
+Changes to the calling convention in lispCallingConvention.h must synchronize with code in evaluator.h
+Sometimes they get out of sync and this code is designed to trap that.
+*/
+void run_quick_tests() {
+#define TEST_ASSERT_ALWAYS(_x) if (!(_x)) SIMPLE_ERROR(BF("Test failed"));
+  List_sp val1 = eval::funcall(cl::_sym_list
+                               ,cl::_sym_nil);
+  TEST_ASSERT_ALWAYS(cl_length(val1) == 1);
+  List_sp val2 = eval::funcall(cl::_sym_list
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil);
+  TEST_ASSERT_ALWAYS(cl_length(val2) == 2);
+  List_sp val3 = eval::funcall(cl::_sym_list
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil);
+  TEST_ASSERT_ALWAYS(cl_length(val3) == 3);
+  List_sp val4 = eval::funcall(cl::_sym_list
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil);
+  TEST_ASSERT_ALWAYS(cl_length(val4) == 4);
+  List_sp val5 = eval::funcall(cl::_sym_list
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil);
+  TEST_ASSERT_ALWAYS(cl_length(val5) == 5);
+  List_sp val6 = eval::funcall(cl::_sym_list
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil);
+  TEST_ASSERT_ALWAYS(cl_length(val6) == 6);
+  List_sp val7 = eval::funcall(cl::_sym_list
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil
+                               ,cl::_sym_nil);
+  TEST_ASSERT_ALWAYS(cl_length(val7) == 7);
+}
 Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
   Lisp_O::setupSpecialSymbols();
   ::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
@@ -371,11 +421,6 @@ void testStrings() {
 }
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
-  /*! There was a problem iterating over maps and sets when garbage collection
-	  they were going into infinite loops - so I was testing them here within
-	  the context of the entire package */
-  //	testIterators();
-
   this->_Mode = FLAG_EXECUTE;
 
   ::_lisp = this; // this->sharedThis<Lisp_O>();
@@ -492,7 +537,9 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     //	    initializeCandoClos(_lisp);
   }
   {
-
+    // Run some tests to make sure that lisp calling convention is ok.
+    run_quick_tests();
+    
     // setup the SYS logical-pathname-translations
     Cons_sp pts = Cons_O::createList(
         Cons_O::createList(Str_O::create("sys:**;*.*"), bundle->getSysPathname())
@@ -1870,7 +1917,7 @@ T_mv cl_macroexpand_1(T_sp form, T_sp env) {
     }
     return (Values(form, _Nil<T_O>()));
   } else if (Symbol_sp sform = form.asOrNull<Symbol_O>()) {
-    if (env.nilp() || env.framep()) {
+    if (env.nilp()) {
       expansionFunction = core_lookup_symbol_macro(sform, env);
     } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
       expansionFunction = core_lookup_symbol_macro(sform, eenv);
@@ -2921,6 +2968,8 @@ void Lisp_O::dump_backtrace(int numcol) {
 
 void Lisp_O::run() {
   _G();
+
+  
   // If the user adds "-f debug-startup" to the command line
   // then set core::*debug-startup* to true
   // This will print timings of top-level forms as they load at startup

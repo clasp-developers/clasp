@@ -10,9 +10,9 @@
 ;;; 
 ;;; The inputs are forms to be evaluated.  The outputs are symbols
 ;;; that are names of variables.
-(defgeneric translate-simple-instruction (instruction inputs outputs abi))
+(defgeneric translate-simple-instruction (instruction return-value inputs outputs abi))
 
-(defgeneric translate-branch-instruction (instruction inputs outputs successors abi))
+(defgeneric translate-branch-instruction (instruction return-value inputs outputs successors abi))
 
 
 
@@ -73,7 +73,7 @@
 (defun translate-lambda-list (lambda-list)
   (mapcar #'translate-lambda-list-item lambda-list))
 
-(defun layout-basic-block (basic-block abi)
+(defun layout-basic-block (basic-block return-value abi)
   (destructuring-bind (first last owner) basic-block
     (declare (ignore owner))
     (cc-dbg-when *debug-log*
@@ -93,7 +93,7 @@
 		       (format *debug-log* "     ~a~%" (cc-mir:describe-mir instruction)))
 ||#
        collect (translate-simple-instruction
-		instruction input-vars output-vars abi))
+		instruction return-value input-vars output-vars abi))
     (let* ((inputs (cleavir-ir:inputs last))
 	   (input-vars (mapcar #'translate-datum inputs))
 	   (outputs (cleavir-ir:outputs last))
@@ -105,14 +105,14 @@
 		   (format *debug-log* "     ~a~%" (cc-mir:describe-mir last)))
       (if (= (length successors) 1)
 	  (list (translate-simple-instruction
-		 last input-vars output-vars abi)
+		 last return-value input-vars output-vars abi)
 		(if (typep (second basic-block) 'cleavir-ir:unwind-instruction)
 		    (cmp:irc-unreachable)
                     (progn
                       (cmp:irc-low-level-trace :flow)
                       (cmp:irc-br (gethash (first successors) *tags*)))))
 	  (list (translate-branch-instruction
-		 last input-vars output-vars successor-tags abi)))
+		 last return-value input-vars output-vars successor-tags abi)))
       (cc-dbg-when *debug-log*
 		   (format *debug-log* "- - - -  END layout-basic-block  owner: ~a:~a   -->  ~a~%" (cleavir-ir-gml::label owner) (clasp-cleavir:instruction-gid owner) basic-block))
       )))
@@ -126,6 +126,7 @@
   ;; I think this removes every basic-block that
   ;; isn't owned by this initial-instruction
   (let* ((clasp-cleavir-ast-to-hir:*landing-pad* nil)
+         return-value
 	 (basic-blocks (remove initial-instruction
 			       *basic-blocks*
 			       :test-not #'eq :key #'third))
@@ -184,50 +185,50 @@
       ;; instruction (passed arguments)  I think I should use passed arguments
       ;; to create allocas for them.
       (cmp:with-irbuilder (*entry-irbuilder*)
-	(cmp:with-dbg-function ("repl-FIX"
-				:linkage-name (llvm-sys:get-name fn)
-				:function fn
-				:function-type cmp:+fn-prototype+
-				:form *form*)
-	  (cmp:with-dbg-lexical-block (*form*)
+        (setq return-value (alloca-return_type))
+        (cmp:with-dbg-function ("repl-FIX"
+                                :linkage-name (llvm-sys:get-name fn)
+                                :function fn
+                                :function-type cmp:+fn-prototype+
+                                :form *form*)
+          (cmp:with-dbg-lexical-block (*form*)
             (cmp:dbg-set-current-source-pos-for-irbuilder *form* *entry-irbuilder*)
             (cmp:dbg-set-current-source-pos-for-irbuilder *form* body-irbuilder)
             (cmp:irc-low-level-trace :arguments)
-	    #+use-ownerships(loop for var being each hash-key of *ownerships*
-			       using (hash-value owner)
-			       when (and (typep var '(or
-						      cleavir-ir:lexical-location
-						      cleavir-ir:values-location))
-					 (eq owner initial-instruction)
-					 #+(or)(not (member var (cleavir-ir:outputs
-								 initial-instruction))))
-			       collect (translate-datum var)))))
-
-      (cmp:with-dbg-function ("unused-with-dbg-function-name"
-                              :linkage-name (llvm-sys:get-name fn)
-                              :function fn
-                              :function-type cmp:+fn-prototype+
-                              :form *form*)
-        (cmp:with-dbg-lexical-block (*form*)
-;;          (cmp:dbg-set-current-source-pos *form*)
-          (llvm-sys:set-insert-point-basic-block body-irbuilder body-block)
-          (cmp:with-irbuilder (body-irbuilder)
-            (cmp:irc-begin-block body-block)
-            (layout-basic-block first abi)
-            (loop for block in rest
-               for instruction = (first block)
-               do (progn
-                    #+(or)(format t "Laying out basic block: ~a~%" block)
-                    #+(or)(format t "Inserting basic block for instruction: ~a~%" instruction)
-                    (cmp:irc-begin-block (gethash instruction *tags*))
-                    (layout-basic-block block abi))))
-          ;; Finish up by jumping from the entry block to the body block
-          (cmp:with-irbuilder (*entry-irbuilder*)
-            (cmp:irc-low-level-trace :flow)
-            (cmp:irc-br body-block))
-          (cc-dbg-when *debug-log*
-                       (format *debug-log* "----------END layout-procedure ~a~%" (llvm-sys:get-name fn)))
-          (values fn :function-kind nil lambda-name))))))
+            #+use-ownerships(loop for var being each hash-key of *ownerships*
+                               using (hash-value owner)
+                               when (and (typep var '(or
+                                                      cleavir-ir:lexical-location
+                                                      cleavir-ir:values-location))
+                                         (eq owner initial-instruction)
+                                         #+(or)(not (member var (cleavir-ir:outputs
+                                                                 initial-instruction))))
+                               collect (translate-datum var))))))
+    (cmp:with-dbg-function ("unused-with-dbg-function-name"
+                            :linkage-name (llvm-sys:get-name fn)
+                            :function fn
+                            :function-type cmp:+fn-prototype+
+                            :form *form*)
+      (cmp:with-dbg-lexical-block (*form*)
+        ;;          (cmp:dbg-set-current-source-pos *form*)
+        (llvm-sys:set-insert-point-basic-block body-irbuilder body-block)
+        (cmp:with-irbuilder (body-irbuilder)
+          (cmp:irc-begin-block body-block)
+          (layout-basic-block first return-value abi)
+          (loop for block in rest
+             for instruction = (first block)
+             do (progn
+                  #+(or)(format t "Laying out basic block: ~a~%" block)
+                  #+(or)(format t "Inserting basic block for instruction: ~a~%" instruction)
+                  (cmp:irc-begin-block (gethash instruction *tags*))
+                  (layout-basic-block block return-value abi))))
+        ;; Finish up by jumping from the entry block to the body block
+        (cmp:with-irbuilder (*entry-irbuilder*)
+          (cmp:irc-low-level-trace :flow)
+          (cmp:irc-br body-block))
+        (cc-dbg-when *debug-log*
+                     (format *debug-log* "----------END layout-procedure ~a~%" (llvm-sys:get-name fn)))
+        (values fn :function-kind nil lambda-name)))))
 
 (defun translate (initial-instruction abi)
   (let* (#+use-ownerships(ownerships
@@ -265,9 +266,9 @@
 ;;; Methods on TRANSLATE-SIMPLE-INSTRUCTION.
 
 (defmethod translate-simple-instruction
-    ((instr cleavir-ir:enter-instruction) inputs outputs (abi abi-x86-64))
+    ((instr cleavir-ir:enter-instruction) return-value inputs outputs (abi abi-x86-64))
   (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*)))
-    (error "We need to alloca +tmv+ for closed-env-dest and return it. We used to use the first argument")
+    (warn "Do we need to alloca +tmv+ for the return value and then return-instruction must access and return it.")
     (multiple-value-bind (closed-env-arg calling-convention)
         (cmp:parse-function-arguments fn-args)
       (llvm-sys:create-store cmp:*irbuilder* closed-env-arg closed-env-dest nil)
@@ -285,13 +286,13 @@
 
 
 (defmethod translate-simple-instruction
-    ((instr clasp-cleavir-hir:landing-pad-named-enter-instruction) inputs outputs (abi abi-x86-64))
+    ((instr clasp-cleavir-hir:landing-pad-named-enter-instruction) return-value inputs outputs (abi abi-x86-64))
   (let ((landing-pad (clasp-cleavir-hir:landing-pad instr)))
     (when landing-pad
       (let ((exn.slot (alloca-i8* "exn.slot"))
 	    (ehselector.slot (alloca-i32 "ehselector.slot")))
 	(setf (basic-block landing-pad)
-	      (clasp-cleavir:create-landing-pad exn.slot ehselector.slot instr landing-pad *tags* abi)))
+	      (clasp-cleavir:create-landing-pad exn.slot ehselector.slot instr return-value landing-pad *tags* abi)))
       (cmp:with-irbuilder (*entry-irbuilder*)
         (cmp:irc-low-level-trace :cclasp-eh)
 	(let ((result (cmp:irc-intrinsic "cc_pushLandingPadFrame")))
@@ -302,14 +303,14 @@
 
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:instruction) inputs outputs abi)
+    ((instruction cleavir-ir:instruction) return-value inputs outputs abi)
   (error "Implement instruction: ~a for abi: ~a~%" instruction abi)
   (format t "--------------- translate-simple-instruction ~a~%" instruction)
   (format t "    inputs: ~a~%" inputs)
   (format t "    outputs: ~a~%" outputs))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:assignment-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:assignment-instruction) return-value inputs outputs abi)
   #+(or)(progn
 	  (format t "--------------- translate-simple-instruction assignment-instruction~%")
 	  (format t "    inputs: ~a~%" inputs)
@@ -332,7 +333,7 @@
 
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:precalc-symbol-instruction) inputs outputs abi)
+    ((instruction clasp-cleavir-hir:precalc-symbol-instruction) return-value inputs outputs abi)
   (let ((idx (first inputs)))
     ;;    (format t "translate-simple-instruction (first inputs) --> ~a~%" (first inputs))
     (cmp:irc-low-level-trace :flow)
@@ -341,16 +342,16 @@
 	(llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil)))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:precalc-value-instruction) inputs outputs abi)
+    ((instruction clasp-cleavir-hir:precalc-value-instruction) return-value inputs outputs abi)
   (let ((idx (first inputs)))
     (cmp:irc-low-level-trace :flow)
     (let ((result (cmp:irc-intrinsic "cc_precalcValue" (ltv-global) idx)))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:fixed-to-multiple-instruction) inputs outputs (abi abi-x86-64))
+    ((instruction cleavir-ir:fixed-to-multiple-instruction) return-value inputs outputs (abi abi-x86-64))
   ;; Write the first return value into the result
-  (with-return-values (return-values abi)
+  (with-return-values (return-values return-value abi)
     (%store (%size_t (length inputs)) (number-of-return-values return-values))
     (dotimes (i (length inputs))
       (%store (cmp:irc-load (elt inputs i)) (return-value-elt return-values i)))
@@ -358,10 +359,10 @@
     ))
 
 (defmethod translate-simple-instruction
-    ((instr cleavir-ir:multiple-to-fixed-instruction) inputs outputs (abi abi-x86-64))
+    ((instr cleavir-ir:multiple-to-fixed-instruction) return-value inputs outputs (abi abi-x86-64))
   ;; Create a basic block for each output
   (cmp:irc-low-level-trace :flow)
-  (with-return-values (return-vals abi)
+  (with-return-values (return-vals return-value abi)
     #+(or)(cmp:irc-intrinsic "cc_loadThreadLocalMultipleValues" (sret-arg return-vals) (first inputs))
     (let* ((blocks (let (b) (dotimes (i (1+ (length outputs))) (push (cmp:irc-basic-block-create (format nil "mvn~a-" i) nil) b)) (nreverse b)))
 	   (final-block (cmp:irc-basic-block-create "mvn-final" nil))
@@ -380,20 +381,20 @@
 
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:funcall-instruction) inputs outputs (abi abi-x86-64))
+    ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs (abi abi-x86-64))
   #+(or)(progn
 	  (format t "--------------- translate-simple-instruction funcall-instruction~%")
 	  (format t "    inputs: ~a~%" inputs)
 	  (format t "    outputs: ~a~%" outputs))
   (cmp:irc-low-level-trace :flow)
-  (let ((call (closure-call :call "cc_call" (first inputs) (cdr inputs) abi)))
+  (let ((call (closure-call :call "cc_call" (first inputs) return-value (cdr inputs) abi)))
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "    translate-simple-instruction funcall-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir:invoke-instruction) inputs outputs (abi abi-x86-64))
+    ((instruction clasp-cleavir:invoke-instruction) return-value inputs outputs (abi abi-x86-64))
   #+(or)(progn
 	  (format t "--------------- translate-simple-instruction funcall-instruction~%")
 	  (format t "    inputs: ~a~%" inputs)
@@ -401,32 +402,32 @@
   (let* ((lpad (clasp-cleavir::landing-pad instruction)))
     (or (basic-block lpad) (error "There must be a basic-block defined for the landing-pad"))
     (cmp:irc-low-level-trace :flow)
-    (let ((call (closure-call :invoke "cc_call" (first inputs) (cdr inputs) abi :landing-pad (basic-block lpad))))
+    (let ((call (closure-call :invoke "cc_call" (first inputs) return-value (cdr inputs) abi :landing-pad (basic-block lpad))))
       (cc-dbg-when *debug-log*
 		   (format *debug-log* "    translate-simple-instruction invoke-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		   (format *debug-log* "     instruction --> ~a~%" call)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:nop-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:nop-instruction) return-value inputs outputs abi)
   (%nil))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:indexed-unwind-instruction) inputs outputs abi)
+    ((instruction clasp-cleavir-hir:indexed-unwind-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
-  (with-return-values (return-vals abi)
+  (with-return-values (return-vals return-value abi)
     ;; Save whatever is in return-vals in the multiple-value array
     (cmp:irc-intrinsic "cc_saveMultipleValue0" (sret-arg return-vals))
     (cmp:irc-low-level-trace :cclasp-eh)
     (cmp:irc-intrinsic "cc_unwind" (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:create-cell-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:create-cell-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let ((result (cmp:irc-intrinsic "cc_makeCell")))
     (%store result (first outputs))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:write-cell-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:write-cell-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell"))
 	(val (llvm-sys:create-load-value-twine cmp:*irbuilder* (second inputs) "val")))
@@ -434,14 +435,14 @@
 
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:read-cell-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:read-cell-instruction) return-value inputs outputs abi)
   (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell")))
   (cmp:irc-low-level-trace :flow)
     (let ((result (cmp:irc-intrinsic "cc_readCell" cell)))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:fetch-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:fetch-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let ((env (cmp:irc-load (first inputs) "env"))
 	(idx (second inputs)))
@@ -449,7 +450,7 @@
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:fdefinition-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:fdefinition-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let ((cell (cmp:irc-load (first inputs) "func-name")))
 ;;    (format t "translate-simple-instruction (first inputs) = ~a ~%" (first inputs))
@@ -457,27 +458,27 @@
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:debug-message-instruction) inputs outputs abi)
+    ((instruction clasp-cleavir-hir:debug-message-instruction) return-value inputs outputs abi)
   (let ((msg (cmp:jit-constant-unique-string-ptr (clasp-cleavir-hir:debug-message instruction))))
     (cmp:irc-intrinsic "debugMessage" msg)))
 	
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) inputs outputs abi)
+    ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let ((cell (cmp:irc-load (first inputs) "setf-func-name")))
     (let ((result (cmp:irc-intrinsic "cc_getSetfFdefinition" cell)))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:symbol-value-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:symbol-value-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let ((sym (cmp:irc-load (first inputs) "sym-name")))
     (let ((result (cmp:irc-create-call "cc_symbolValue" (list sym))))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:set-symbol-value-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:set-symbol-value-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let ((sym (cmp:irc-load (first inputs) "sym-name"))
 	(val (cmp:irc-load (second inputs) "value")))
@@ -486,7 +487,7 @@
 
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:enclose-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:enclose-instruction) return-value inputs outputs abi)
   (declare (ignore inputs))
   (cmp:irc-low-level-trace :flow)
   #||
@@ -524,9 +525,9 @@
 
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:multiple-value-call-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:multiple-value-call-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
-  (with-return-values (return-vals abi)
+  (with-return-values (return-vals return-value abi)
     (let ((call (cmp:irc-create-call "cc_call_multipleValueOneFormCall" 
 				     (list (sret-arg return-vals) (cmp:irc-load (first inputs))))))
       (cc-dbg-when 
@@ -537,10 +538,10 @@
       )))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir:invoke-multiple-value-call-instruction) inputs outputs abi)
+    ((instruction clasp-cleavir:invoke-multiple-value-call-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let* ((lpad (clasp-cleavir::landing-pad instruction)))
-    (with-return-values (return-vals abi)
+    (with-return-values (return-vals return-value abi)
       (let ((call (cmp:irc-create-invoke "cc_call_multipleValueOneFormCall" 
 					 (list (sret-arg return-vals) (cmp:irc-load (first inputs)))
 					 (basic-block lpad))))
@@ -553,7 +554,7 @@
 
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:memref2-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:memref2-instruction) return-value inputs outputs abi)
   (let* ((tptr (%load (first inputs)))
          (offset (second inputs))
          (ui-tptr (%ptrtoint tptr cmp:+uintptr_t+))
@@ -564,7 +565,7 @@
       (%store read-val (first outputs)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:memset2-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:memset2-instruction) return-value inputs outputs abi)
   (let* ((tptr (%load (first inputs)))
          (offset (second inputs))
          (ui-tptr (%ptrtoint tptr cmp:+uintptr_t+))
@@ -576,7 +577,7 @@
 
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:the-instruction) inputs outputs abi)
+    ((instruction cleavir-ir:the-instruction) return-value inputs outputs abi)
   (declare (ignore outputs))
   #+(or) (warn "What should I do with the-instruction")
   )
@@ -592,12 +593,12 @@
 #+(or)
 (progn
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:tailcall-instruction) inputs outputs)
+      ((instruction cleavir-ir:tailcall-instruction) return-value inputs outputs)
     (declare (ignore outputs))
     `(return (funcall ,(first inputs) ,@(rest inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:the-instruction) inputs outputs)
+      ((instruction cleavir-ir:the-instruction) return-value inputs outputs)
     (declare (ignore outputs))
     `(unless (typep ,(first inputs) ',(cleavir-ir:value-type instruction))
        (error 'type-error
@@ -606,104 +607,104 @@
 
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:car-instruction) inputs outputs)
+      ((instruction cleavir-ir:car-instruction) return-value inputs outputs)
     `(setq ,(first outputs)
 	   (car ,(first inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:cdr-instruction) inputs outputs)
+      ((instruction cleavir-ir:cdr-instruction) return-value inputs outputs)
     `(setq ,(first outputs)
 	   (cdr ,(first inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:rplaca-instruction) inputs outputs)
+      ((instruction cleavir-ir:rplaca-instruction) return-value inputs outputs)
     (declare (ignore outputs))
     `(rplaca ,(first inputs) ,(second inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:rplacd-instruction) inputs outputs)
+      ((instruction cleavir-ir:rplacd-instruction) return-value inputs outputs)
     (declare (ignore outputs))
     `(rplacd ,(first inputs) ,(second inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:t-aref-instruction) inputs outputs)
+      ((instruction cleavir-ir:t-aref-instruction) return-value inputs outputs)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:bit-aref-instruction) inputs outputs)
+      ((instruction cleavir-ir:bit-aref-instruction) return-value inputs outputs)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:unsigned-byte-8-aref-instruction) inputs outputs)
+      ((instruction cleavir-ir:unsigned-byte-8-aref-instruction) return-value inputs outputs)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:short-float-aref-instruction) inputs outputs)
+      ((instruction cleavir-ir:short-float-aref-instruction) return-value inputs outputs)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:single-float-aref-instruction) inputs outputs)
+      ((instruction cleavir-ir:single-float-aref-instruction) return-value inputs outputs)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:double-float-aref-instruction) inputs outputs)
+      ((instruction cleavir-ir:double-float-aref-instruction) return-value inputs outputs)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:long-float-aref-instruction) inputs outputs)
+      ((instruction cleavir-ir:long-float-aref-instruction) return-value inputs outputs)
     `(setq ,(first outputs)
 	   (row-major-aref ,(first inputs) ,(second inputs))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:t-aset-instruction) inputs outputs)
+      ((instruction cleavir-ir:t-aset-instruction) return-value inputs outputs)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:bit-aset-instruction) inputs outputs)
+      ((instruction cleavir-ir:bit-aset-instruction) return-value inputs outputs)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:unsigned-byte-8-aset-instruction) inputs outputs)
+      ((instruction cleavir-ir:unsigned-byte-8-aset-instruction) return-value inputs outputs)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:short-float-aset-instruction) inputs outputs)
+      ((instruction cleavir-ir:short-float-aset-instruction) return-value inputs outputs)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:single-float-aset-instruction) inputs outputs)
+      ((instruction cleavir-ir:single-float-aset-instruction) return-value inputs outputs)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:double-float-aset-instruction) inputs outputs)
+      ((instruction cleavir-ir:double-float-aset-instruction) return-value inputs outputs)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:long-float-aset-instruction) inputs outputs)
+      ((instruction cleavir-ir:long-float-aset-instruction) return-value inputs outputs)
     (declare (ignore outputs))
     `(setf (row-major-aref ,(first inputs) ,(second inputs))
 	   ,(third inputs)))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:multiple-to-fixed-instruction) inputs outputs)
+      ((instruction cleavir-ir:multiple-to-fixed-instruction) return-value inputs outputs)
     (let ((temp (gensym)))
       `(let ((,temp ,(first inputs)))
 	 (declare (ignorable ,temp))
@@ -711,27 +712,27 @@
 	      collect `(setf ,output (pop ,temp))))))
 
   (defmethod translate-simple-instruction
-      ((instruction cleavir-ir:unwind-instruction) inputs outputs)
+      ((instruction cleavir-ir:unwind-instruction) return-value inputs outputs)
     (gensym))
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Methods on TRANSLATE-BRANCH-INSTRUCTION.
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:eq-instruction) inputs outputs successors abi)
+    ((instruction cleavir-ir:eq-instruction) return-value inputs outputs successors abi)
   (let ((ceq (cmp:irc-icmp-eq (cmp:irc-load (first inputs)) (cmp:irc-load (second inputs)))))
     (cmp:irc-low-level-trace :flow)
     (cmp:irc-cond-br ceq (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
-          ((instruction cleavir-ir:consp-instruction) inputs outputs successors abi)
+          ((instruction cleavir-ir:consp-instruction) return-value inputs outputs successors abi)
         (let* ((x (%load (first inputs)))
                (tag (%and (%ptrtoint x cmp::+i32+) (%i32 cmp:+tag-mask+) "tag-only"))
                (cmp (%icmp-eq tag (%i32 cmp:+cons-tag+) "consp-test")))
           (%cond-br cmp (first successors) (second successors))) :likely t)
 
 (defmethod translate-branch-instruction
-          ((instruction cleavir-ir:fixnump-instruction) inputs outputs successors abi)
+          ((instruction cleavir-ir:fixnump-instruction) return-value inputs outputs successors abi)
         (let* ((x (%load (first inputs)))
                (tag (%and (%ptrtoint x cmp::+i32+) (%i32 cmp:+fixnum-mask+) "fixnum-tag-only"))
                (cmp (%icmp-eq tag (%i32 cmp:+fixnum-tag+) "fixnump-test")))
@@ -739,30 +740,31 @@
 
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:return-instruction) inputs outputs successors abi)
+    ((instruction cleavir-ir:return-instruction) return-value inputs outputs successors abi)
   (declare (ignore successors))
+  (break "Check the inputs for where we get the return value")
   (cmp:irc-low-level-trace :flow)
-  (cmp:irc-ret-void))
+  (llvm-sys:create-ret cmp:*irbuilder* return-value "return-value"))
 
 
 (defmethod translate-branch-instruction
-    ((instruction clasp-cleavir-hir:throw-instruction) inputs outputs successors abi)
+    ((instruction clasp-cleavir-hir:throw-instruction) return-value inputs outputs successors abi)
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
-  #+(or)(with-return-values (return-vals abi)
+  #+(or)(with-return-values (return-vals return-value abi)
           (cmp:irc-intrinsic "cc_saveMultipleValue0" (sret-arg return-vals))
           (cmp:irc-intrinsic "cc_throw" (cmp:irc-load (first inputs))))
   (cmp:irc-intrinsic "cc_throw" (%load (first inputs)) (%load (second inputs)))
   (cmp:irc-unreachable))
 
 (defmethod translate-branch-instruction
-    ((instruction clasp-cleavir-hir:landing-pad-return-instruction) inputs outputs successors abi)
+    ((instruction clasp-cleavir-hir:landing-pad-return-instruction) return-value inputs outputs successors abi)
   (cmp:irc-low-level-trace :cclasp-eh)
   (cmp:irc-intrinsic "cc_popLandingPadFrame" (cmp:irc-load (car (last inputs))))
   (call-next-method))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:fixnum-add-instruction) inputs outputs successors abi)
+    ((instruction cleavir-ir:fixnum-add-instruction) return-value inputs outputs successors abi)
   (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
          (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
          (result-with-overflow (%sadd.with-overflow x y abi)))
@@ -772,7 +774,7 @@
       (%cond-br overflow (second successors) (first successors)))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:fixnum-sub-instruction) inputs outputs successors abi)
+    ((instruction cleavir-ir:fixnum-sub-instruction) return-value inputs outputs successors abi)
   (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
          (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
          (result-with-overflow (%ssub.with-overflow x y abi)))
@@ -782,21 +784,21 @@
       (%cond-br overflow (second successors) (first successors)))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:fixnum-less-instruction) inputs outputs successors abi)
+    ((instruction cleavir-ir:fixnum-less-instruction) return-value inputs outputs successors abi)
   (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
          (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
          (cmp-lt (%icmp-slt x y)))
       (%cond-br cmp-lt (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:fixnum-not-greater-instruction) inputs outputs successors abi)
+    ((instruction cleavir-ir:fixnum-not-greater-instruction) return-value inputs outputs successors abi)
   (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
          (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
          (cmp-lt (%icmp-sle x y)))
       (%cond-br cmp-lt (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:fixnum-equal-instruction) inputs outputs successors abi)
+    ((instruction cleavir-ir:fixnum-equal-instruction) return-value inputs outputs successors abi)
   (let* ((x (%ptrtoint (%load (first inputs)) (%default-int-type abi)))
          (y (%ptrtoint (%load (second inputs)) (%default-int-type abi)))
          (cmp-lt (%icmp-eq x y)))
@@ -804,7 +806,7 @@
 
 #+(or)(progn
 	(defmethod translate-branch-instruction
-	    ((instruction cleavir-ir:typeq-instruction) inputs outputs successors abi)
+	    ((instruction cleavir-ir:typeq-instruction) return-value inputs outputs successors abi)
 	  `(if (typep ,(first inputs) ',(cleavir-ir:value-type instruction))
 	       (go ,(second successors))
 	       (go ,(first successors))))
@@ -819,7 +821,7 @@
 ;;; (in addition to the method on TRANSLATE-SIMPLE-INSTRUCTION)
 ;;; specialized to FUNCALL-INSTRUCTION.
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:funcall-instruction) inputs outputs successors abi)
+    ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs successors abi)
   (declare (ignore outputs successors))
   `(funcall ,(first inputs) ,@(rest inputs)))
 
@@ -1072,10 +1074,9 @@ nil)
 			   cmp:*load-time-value-holder-global-var*)))))
 
 (defun cclasp-compile-in-env (name form &optional env)
-  (let ((cmp:*cleavir-compile-hook* #'cleavir-compile-t1expr)
-	(cleavir-generate-ast:*compiler* 'cl:compile)
+  (let ((cleavir-generate-ast:*compiler* 'cl:compile)
 	(cmp:*all-functions-for-one-compile* nil))
-    (cmp:compile-in-env name form env)))
+    (cmp:compile-in-env #'cleavir-compile-t1expr name form env)))
         
 	
 (defun cleavir-compile (name form &key debug)
@@ -1086,8 +1087,7 @@ nil)
 (defun cleavir-compile-file (given-input-pathname &rest args)
   (let ((*debug-log-index* 0)
 	(cleavir-generate-ast:*compiler* 'cl:compile-file))
-    (let ((cmp:*cleavir-compile-file-hook* #'cleavir-compile-file-form))
-      (apply #'compile-file given-input-pathname args))))
+    (apply #'compile-file* #'cleavir-compile-file-form given-input-pathname args)))
 
 (defmacro with-debug-compile-file ((log-file &key debug-log-on) &rest body)
   `(with-open-file (clasp-cleavir::*debug-log* ,log-file :direction :output)

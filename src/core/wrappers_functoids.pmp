@@ -39,21 +39,16 @@ $for template_ [[
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 	virtual void* functionAddress() const { return (void*)this->fptr; };
-        LCC_RETURN LISP_CALLING_CONVENTION()
+        inline LCC_RETURN LISP_CALLING_CONVENTION()
         {
             INVOCATION_HISTORY_FRAME();
             $if numArgs>0 [[
-              ALLOC_STACK_VALUE_FRAME(frameImpl,frame,$numArgs);
-	      core::StackFrameDynamicScopeManager scope(frame);
+              gc::frame::Frame args($numArgs);
+	      core::StackFrameDynamicScopeManager scope(args);
               lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
             ]]
-            return this->invoke( $for Args_ , [[ frame::Value(frameImpl,$Args_) ]] );
-        }
-
-        LCC_RETURN invoke($for Args_ , [[ core::T_sp arg$Args_]] )
-        {
             $if numArgs>0 [[
-              $for Args_ [[translate::from_object<ARG$Args_> a$Args_(arg$Args_);
+              $for Args_ [[translate::from_object<ARG$Args_> a$Args_(core::T_sp((gc::Tagged)args[$Args_]));
               ]]
             ]]
             $$ Do the call ------

@@ -1,7 +1,7 @@
 (in-package :clasp-cleavir)
 
 
-(defun create-landing-pad (exn.slot-alloca ehselector.slot-alloca enter-instruction landing-pad-object tags abi)
+(defun create-landing-pad (exn.slot-alloca ehselector.slot-alloca enter-instruction return-value landing-pad-object tags abi)
   (let ((entry-cont-block (cmp:irc-basic-block-create "entry-cont"))
 	(landing-pad-block (cmp:irc-basic-block-create "landing-pad"))
 	(terminate-block (cmp:irc-basic-block-create "terminate")))
@@ -31,7 +31,7 @@
                        (list exception-ptr 
                              (cmp:irc-load (clasp-cleavir::translate-datum
                                             (clasp-cleavir-hir:frame-holder enter-instruction))))))
-                (with-return-values (return-vals abi)
+                (with-return-values (return-vals return-value abi)
                   (cmp:irc-intrinsic "cc_restoreMultipleValue0" (sret-arg return-vals)))))
             (let* ((default-block (cmp:irc-basic-block-create "switch-default"))
                    (unwinds (unwinds landing-pad-object))

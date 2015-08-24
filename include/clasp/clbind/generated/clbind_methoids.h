@@ -29,28 +29,20 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(arg6);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(arg7);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame.arg(6));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(frame.arg(7));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -121,27 +113,19 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(arg6);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame.arg(6));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -206,25 +190,18 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -284,24 +261,17 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -356,23 +326,16 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -422,21 +385,15 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -481,20 +438,14 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -534,19 +485,13 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0  )
-{
-translate::from_object<OT*> objPtr(arg0);
+translate::from_object<OT*> objPtr(frame.arg(0));
 RT retval =  ((*objPtr._v).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -582,28 +527,20 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(arg6);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(arg7);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame.arg(6));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(frame.arg(7));
 ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -671,27 +608,19 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(arg6);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame.arg(6));
 ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -754,25 +683,18 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
 ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -830,24 +752,17 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
 ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -900,23 +815,16 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
 ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -964,21 +872,15 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
 ((*objPtr._v).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1021,20 +923,14 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 ((*objPtr._v).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1072,19 +968,13 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0  )
-{
-translate::from_object<OT*> objPtr(arg0);
+translate::from_object<OT*> objPtr(frame.arg(0));
 ((*objPtr._v).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1119,28 +1009,20 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(arg6);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(arg7);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame.arg(6));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(frame.arg(7));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1211,27 +1093,19 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(arg6);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame.arg(6));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1296,25 +1170,18 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1374,24 +1241,17 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1446,23 +1306,16 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1512,21 +1365,15 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1571,20 +1418,14 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1624,19 +1465,13 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0  )
-{
-translate::from_object<OT*> objPtr(arg0);
+translate::from_object<OT*> objPtr(frame.arg(0));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1672,28 +1507,20 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(arg6);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(arg7);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame.arg(6));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(frame.arg(7));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1764,27 +1591,19 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(arg6);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame.arg(6));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1849,25 +1668,18 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1927,24 +1739,17 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -1999,23 +1804,16 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2065,21 +1863,15 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2124,20 +1916,14 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2177,19 +1963,13 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0  )
-{
-translate::from_object<OT*> objPtr(arg0);
+translate::from_object<OT*> objPtr(frame.arg(0));
 RT retval =  ((*objPtr._v).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2225,28 +2005,20 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(arg6);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(arg7);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame.arg(6));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(frame.arg(7));
 ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2314,27 +2086,19 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(arg6);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame.arg(6));
 ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2397,25 +2161,18 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
 ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2473,24 +2230,17 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
 ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2543,23 +2293,16 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
 ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2607,21 +2350,15 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
 ((*objPtr._v).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2664,20 +2401,14 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 ((*objPtr._v).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2715,19 +2446,13 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0  )
-{
-translate::from_object<OT*> objPtr(arg0);
+translate::from_object<OT*> objPtr(frame.arg(0));
 ((*objPtr._v).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2762,28 +2487,20 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,8);
+gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6) , frame::Value(frameImpl,7)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6, core::T_sp arg7 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(arg6);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(arg7);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame.arg(6));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a7(frame.arg(7));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2854,27 +2571,19 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,7);
+gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5) , frame::Value(frameImpl,6)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5,
-    core::T_sp arg6 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(arg6);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a6(frame.arg(6));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -2939,25 +2648,18 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,6);
+gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4) , frame::Value(frameImpl,5)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4, core::T_sp arg5 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(arg5);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a5(frame.arg(5));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -3017,24 +2719,17 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3) , frame::Value(frameImpl,4)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3, core::T_sp arg4 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(arg4);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a4(frame.arg(4));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -3089,23 +2784,16 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,4);
+gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2) , frame::Value(frameImpl,
-    3)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2, core::T_sp arg3 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(arg3);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a3(frame.arg(3));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -3155,21 +2843,15 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,3);
+gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1) , frame::Value(frameImpl,2)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1, core::T_sp arg2 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(arg2);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -3214,20 +2896,14 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,2);
+gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0) , frame::Value(frameImpl,1)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0 , core::T_sp arg1 )
-{
-translate::from_object<OT*> objPtr(arg0);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(arg1);
+translate::from_object<OT*> objPtr(frame.arg(0));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
@@ -3267,19 +2943,13 @@ IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name),
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-LCC_RETURN LISP_CALLING_CONVENTION()
+inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-return this->invoke( frame::Value(frameImpl,0)  );
-};
-// I need a 1:1 match between the arguments passed to invoke and those passed to the wrapped function because
-// I can't iterate through the required arguments because I don't use varargs
-LCC_RETURN invoke( core::T_sp arg0  )
-{
-translate::from_object<OT*> objPtr(arg0);
+translate::from_object<OT*> objPtr(frame.arg(0));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);

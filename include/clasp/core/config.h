@@ -58,6 +58,9 @@ typedef unsigned int claspCharacter;
 
 #define HAVE_PWD_H 1
 
+// 2 MB for thread local stack size
+#define THREAD_LOCAL_CL_STACK_SIZE (size_t)(2*1024*1024)
+
 // OS X 10.6   LINUX 4096???
 #define CLASP_MAXPATHLEN 1024
 

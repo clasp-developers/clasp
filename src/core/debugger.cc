@@ -357,7 +357,18 @@ void af_evalPrint(const string &expr) {
 };
 
 void dbg_lowLevelDescribe(T_sp obj) {
-  if (obj.fixnump()) {
+  if (obj.valistp()) {
+    // Convert the T_sp object into a VaList_sp object
+    VaList_sp vl = VaList_sp((gc::Tagged)obj.raw_());
+    printf("Original va_list at: %p\n", &((VaList_S*)gc::untag_valist(reinterpret_cast<VaList_S*>(obj.raw_())))->_Args);
+    // Create a copy of the VaList_S with a va_copy of the va_list
+    VaList_S vlcopy_s(*vl);
+    VaList_sp vlcopy(&vlcopy_s);
+    printf("VaList_sp\n");
+    for ( size_t i(0); i<LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vlcopy); ++i ) {
+      printf("entry %3d --> %s\n", i, _rep_(LCC_NEXT_ARG(vlcopy,i)).c_str() );
+    }
+  } else if (obj.fixnump()) {
     printf("fixnum_tag: %ld\n", obj.unsafe_fixnum());
   } else if (obj.single_floatp()) {
     printf("single-float: %f\n", obj.unsafe_single_float());

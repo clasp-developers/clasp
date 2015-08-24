@@ -63,10 +63,7 @@ T_mv core_classifyReturnFromSymbol(T_sp env, Symbol_sp sym) {
 int core_environmentLength(T_sp frame) {
   if (frame.nilp())
     return 0;
-  else if (frame.framep()) {
-    core::T_O **frameImpl = frame.unsafe_frame();
-    return frame::ValuesArraySize(frameImpl);
-  } else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {
+  else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {
     return af->length();
   }
   SIMPLE_ERROR(BF("Trying to get environment-length of something not an activation-frame"));
@@ -78,9 +75,7 @@ int core_environmentLength(T_sp frame) {
 T_sp core_environmentDebugNames(T_sp frame) {
   if (frame.nilp())
     return _Nil<T_O>();
-  else if (frame.framep()) {
-    return frame::DebugInfo(frame);
-  } else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
+  else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
     return vf->debuggingInfo();
   } else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {
     (void)af;
@@ -95,19 +90,7 @@ T_sp core_environmentDebugNames(T_sp frame) {
 T_sp core_environmentDebugValues(T_sp frame) {
   if (frame.nilp())
     return _Nil<T_O>();
-  else if (frame.framep()) {
-    core::T_O **frameImpl = frame.unsafe_frame();
-    int iEnd = frame::ValuesArraySize(frameImpl);
-    VectorObjects_sp vo = VectorObjects_O::create(_Nil<T_O>(), iEnd, _Nil<T_O>());
-    for (int i(0); i < iEnd; ++i) {
-      T_sp val = frame::Value(frameImpl, i);
-      if (val.unboundp()) {
-        val = _sym__BANG_unbound_BANG_;
-      }
-      vo->setf_elt(i, val);
-    }
-    return vo;
-  } else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
+  else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
     int iEnd = vf->length();
     VectorObjects_sp vo = VectorObjects_O::create(_Nil<T_O>(), iEnd, _Nil<T_O>());
     for (int i(0); i < iEnd; ++i) {
@@ -159,9 +142,6 @@ T_mv core_lexicalMacroFunction(T_sp name, T_sp env) {
 #define DECL_af_updateValue ""
 #define DOCS_af_updateValue "updateValue"
 bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val) {
-  if (env.framep()) {
-    return frame::UpdateValue(env, sym, val);
-  }
 #if USE_STATIC_CAST_FOR_ENVIRONMENT==1
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O,T_O>(env);
@@ -191,8 +171,6 @@ T_mv af_countFunctionContainerEnvironments() {
 T_sp af_environmentActivationFrame(T_sp env) {
   _G();
   if (env.nilp())
-    return env;
-  if (env.framep())
     return env;
   return gc::As<Environment_sp>(env)->getActivationFrame();
 };
@@ -224,9 +202,7 @@ T_sp af_environmentTypeList(T_sp env) {
 int Environment_O::clasp_countFunctionContainerEnvironments(T_sp env) {
   if (env.nilp())
     return 0;
-  if (env.framep()) {
-    frame::countFunctionContainerEnvironments(env);
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->countFunctionContainerEnvironments();
   }
   NOT_ENVIRONMENT_ERROR(env);
@@ -239,8 +215,6 @@ T_sp af_runtimeEnvironment(T_sp tenv) {
   _G();
   if (tenv.nilp())
     return _Nil<T_O>();
-  if (tenv.framep())
-    return tenv;
   if (Environment_sp env = tenv.asOrNull<Environment_O>()) {
     return env->runtimeEnvironment();
   }
@@ -283,9 +257,7 @@ ActivationFrame_sp Environment_O::clasp_getActivationFrame(T_sp tenv) {
   _G();
   if (tenv.nilp())
     return (_Nil<ActivationFrame_O>());
-  if (tenv.framep()) {
-    return tenv;
-  } else if (Environment_sp env = tenv.asOrNull<Environment_O>()) {
+  if (Environment_sp env = tenv.asOrNull<Environment_O>()) {
     return (env->getActivationFrame());
   }
   return _Nil<T_O>();
@@ -354,9 +326,7 @@ T_sp Environment_O::clasp_currentVisibleEnvironment(T_sp env) {
   _G();
   if (env.nilp())
     return (_Nil<T_O>());
-  if (env.framep()) {
-    return env;
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return (eenv->currentVisibleEnvironment());
   }
   return env;
@@ -373,10 +343,6 @@ void Environment_O::setupParent(T_sp environ) {
 void Environment_O::clasp_environmentStackFill(T_sp env, int level, stringstream &sout) {
   if (env.nilp()) {
     sout << "NIL";
-    return;
-  }
-  if (env.framep()) {
-    sout << "clasp_environmentStackFill of tagged_env" << std::endl;
     return;
   }
   if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
@@ -409,9 +375,7 @@ void Environment_O::dump() {
 List_sp Environment_O::clasp_gather_metadata(T_sp env, Symbol_sp key) {
   if (env.nilp())
     return _Nil<T_O>();
-  else if (env.framep()) {
-    SIMPLE_ERROR(BF("Illegal to call clasp_gather_metadata on tagged_frame"));
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+  else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->gather_metadata(key);
   }
   NOT_ENVIRONMENT_ERROR(env);
@@ -437,12 +401,6 @@ T_mv Environment_O::localMetadata(Symbol_sp key) const {
 }
 
 T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index) {
-  if (env.framep()) {
-    if (depth == 0) {
-      return frame::Lookup(env, index);
-    }
-    return clasp_lookupValue(frame::ParentFrame(env), depth-1, index);
-  }
 #if USE_STATIC_CAST_FOR_ENVIRONMENT==1
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O>(env);
@@ -459,13 +417,6 @@ T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index) {
 }
 
 T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) {
-  if (env.framep()) {
-    if (depth == 0) {
-      IMPLEMENT_MEF(BF("We have a problem here - stack based frames store T_O* tagged pointers and this function is supposed to return a reference to a T_sp"));
-      //return frame::LookupReference(env,index);
-    }
-    return clasp_lookupValueReference(frame::ParentFrame(env), depth-1, index);
-  }
   // set this to 1 to use dynamic_cast and 0 to use what is essentially a static cast
 #if USE_STATIC_CAST_FOR_ENVIRONMENT==1
   ASSERT(env.isA<Environment_O>());
@@ -482,13 +433,6 @@ T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) 
 }
 
 Function_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index) {
-  if (env.framep()) {
-    if (depth == 0) {
-      SIMPLE_ERROR(BF("Currently I don't support functions in stack frames"));
-      //              return frame::Lookup(env,index);
-    }
-    return clasp_lookupFunction(frame::ParentFrame(env), depth-1, index);
-  }
 #if USE_STATIC_CAST_FOR_ENVIRONMENT==1
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O,T_O>(env);
@@ -505,12 +449,6 @@ Function_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index) 
 }
 
 T_sp Environment_O::clasp_lookupTagbodyId(T_sp env, int depth, int index) {
-  if (env.framep()) {
-    if (depth == 0) {
-      return frame::LookupTagbodyId(env, index);
-    }
-    return clasp_lookupTagbodyId(frame::ParentFrame(env), depth-1, index);
-  }
 #if USE_STATIC_CAST_FOR_ENVIRONMENT==1
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O,T_O>(env);
@@ -585,20 +523,15 @@ bool Environment_O::clasp_findValue(T_sp env, T_sp sym, int &depth, int &index, 
     valueKind = undeterminedValue;
     return false;
   }
-  if (env.framep()) {
-    return frame::findValue(env, sym, depth, index, valueKind, value);
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->_findValue(sym, depth, index, valueKind, value);
   }
   NOT_ENVIRONMENT_ERROR(env);
 }
 
 bool Environment_O::clasp_lexicalSpecialP(T_sp env, Symbol_sp sym) {
-  _G();
   if (env.nilp()) {
     return false;
-  } else if (env.framep()) {
-    return clasp_lexicalSpecialP(frame::ParentFrame(env), sym);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->lexicalSpecialP(sym);
   }
@@ -616,8 +549,6 @@ bool Environment_O::clasp_findFunction(T_sp env, T_sp functionName, int &depth, 
     depth = -1;
     index = -1;
     return false;
-  } else if (env.framep()) {
-    return frame::findFunction(env, functionName, depth, index, func);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->_findFunction(functionName, depth, index, func);
   }
@@ -643,10 +574,7 @@ bool Environment_O::clasp_findMacro(T_sp env, Symbol_sp sym, int &depth, int &in
     index = -1;
     //	    func = sym->symbolFunction();
     return false;
-  } else if (env.framep()) {
-    return clasp_findMacro(frame::ParentFrame(env), sym, depth, index, func);
-  }
-  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->_findMacro(sym, depth, index, func);
   }
   NOT_ENVIRONMENT_ERROR(env);
@@ -671,8 +599,6 @@ T_sp Environment_O::clasp_find_current_code_environment(T_sp env) {
 T_mv Environment_O::clasp_recognizesBlockSymbol(T_sp env, Symbol_sp sym, bool &interFunction) {
   if (env.nilp()) {
     return Values(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
-  } else if (env.framep()) {
-    return clasp_recognizesBlockSymbol(frame::ParentFrame(env), sym, interFunction);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->recognizesBlockSymbol(sym, interFunction);
   }
@@ -682,8 +608,6 @@ T_mv Environment_O::clasp_recognizesBlockSymbol(T_sp env, Symbol_sp sym, bool &i
 int Environment_O::clasp_getBlockSymbolFrame(T_sp env, Symbol_sp sym) {
   if (env.nilp()) {
     SIMPLE_ERROR(BF("Could not find block symbol frame for %s") % _rep_(sym));
-  } else if (env.framep()) {
-    return clasp_getBlockSymbolFrame(frame::ParentFrame(env), sym);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->getBlockSymbolFrame(sym);
   }
@@ -693,8 +617,6 @@ int Environment_O::clasp_getBlockSymbolFrame(T_sp env, Symbol_sp sym) {
 T_sp Environment_O::clasp_find_unwindable_environment(T_sp env) {
   if (env.nilp()) {
     SIMPLE_ERROR(BF("Could not find unwindable environment"));
-  } else if (env.framep()) {
-    return clasp_find_unwindable_environment(frame::ParentFrame(env));
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->find_unwindable_environment();
   }
@@ -704,8 +626,6 @@ T_sp Environment_O::clasp_find_unwindable_environment(T_sp env) {
 T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag) {
   if (env.nilp()) {
     SIMPLE_ERROR(BF("Could not find environment with tag[%s]") % _rep_(tag));
-  } else if (env.framep()) {
-    return clasp_find_tagbody_tag_environment(frame::ParentFrame(env), tag);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->find_tagbody_tag_environment(tag);
   }
@@ -715,8 +635,6 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag) 
 T_sp Environment_O::clasp_find_block_named_environment(T_sp env, Symbol_sp blockName) {
   if (env.nilp()) {
     SIMPLE_ERROR(BF("Could not find block named environment with name[%s]") % _rep_(blockName));
-  } else if (env.framep()) {
-    return clasp_find_block_named_environment(frame::ParentFrame(env), blockName);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->find_block_named_environment(blockName);
   }
@@ -730,8 +648,6 @@ bool Environment_O::clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int &depth, i
     index = -1;
     shadowed = false;
     return false;
-  } else if (env.framep()) {
-    return clasp_findSymbolMacro(frame::ParentFrame(env), sym, depth, index, shadowed, func);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->_findSymbolMacro(sym, depth, index, shadowed, func);
   }
@@ -832,9 +748,7 @@ int Environment_O::getBlockSymbolFrame(Symbol_sp sym) const {
 bool Environment_O::clasp_findTag(T_sp env, Symbol_sp sym, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) {
   if (env.nilp())
     return false;
-  if (env.framep()) {
-    return frame::findTag(env, sym, depth, index, interFunction, tagbodyEnv);
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->_findTag(sym, depth, index, interFunction, tagbodyEnv);
   }
   NOT_ENVIRONMENT_ERROR(env);
@@ -884,9 +798,7 @@ string Environment_O::clasp_summaryOfContents(T_sp env) {
     ss << string(tab, ' ') << "#<Environment nil>" << std::endl;
     return ss.str();
   }
-  if (env.framep()) {
-    return frame::SummaryOfContents(env);
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->summaryOfContents();
   }
   NOT_ENVIRONMENT_ERROR(env);

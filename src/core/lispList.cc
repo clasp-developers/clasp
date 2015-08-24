@@ -438,4 +438,18 @@ void initialize_list() {
     }
 #endif
 
+
+
+
+EXPOSE_CLASS(core, VaList_dummy_O);
+
+void VaList_dummy_O::exposeCando(::core::Lisp_sp lisp) {
+  ::core::class_<VaList_dummy_O>();
+};
+
+void VaList_dummy_O::exposePython(::core::Lisp_sp lisp) {
+};
+
+
+
 }; /* core */

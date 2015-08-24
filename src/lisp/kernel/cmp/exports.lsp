@@ -159,7 +159,6 @@ irc-i32-*current-source-pos-info*-column
 *cleavir-compile-file-hook*
 :*cleavir-compile-hook*
 *cleavir-compile-file-hook*
-compile-in-env
 *implicit-compile-hook*
 compile-in-env
 link-system-lto
