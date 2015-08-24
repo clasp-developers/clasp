@@ -203,32 +203,32 @@
                                          (eq owner initial-instruction)
                                          #+(or)(not (member var (cleavir-ir:outputs
                                                                  initial-instruction))))
-                               collect (translate-datum var))))))
-    (cmp:with-dbg-function ("unused-with-dbg-function-name"
-                            :linkage-name (llvm-sys:get-name fn)
-                            :function fn
-                            :function-type cmp:+fn-prototype+
-                            :form *form*)
-      (cmp:with-dbg-lexical-block (*form*)
-        ;;          (cmp:dbg-set-current-source-pos *form*)
-        (llvm-sys:set-insert-point-basic-block body-irbuilder body-block)
-        (cmp:with-irbuilder (body-irbuilder)
-          (cmp:irc-begin-block body-block)
-          (layout-basic-block first return-value abi)
-          (loop for block in rest
-             for instruction = (first block)
-             do (progn
-                  #+(or)(format t "Laying out basic block: ~a~%" block)
-                  #+(or)(format t "Inserting basic block for instruction: ~a~%" instruction)
-                  (cmp:irc-begin-block (gethash instruction *tags*))
-                  (layout-basic-block block return-value abi))))
-        ;; Finish up by jumping from the entry block to the body block
-        (cmp:with-irbuilder (*entry-irbuilder*)
-          (cmp:irc-low-level-trace :flow)
-          (cmp:irc-br body-block))
-        (cc-dbg-when *debug-log*
-                     (format *debug-log* "----------END layout-procedure ~a~%" (llvm-sys:get-name fn)))
-        (values fn :function-kind nil lambda-name)))))
+                               collect (translate-datum var)))))
+      (cmp:with-dbg-function ("unused-with-dbg-function-name"
+                              :linkage-name (llvm-sys:get-name fn)
+                              :function fn
+                              :function-type cmp:+fn-prototype+
+                              :form *form*)
+        (cmp:with-dbg-lexical-block (*form*)
+          ;;          (cmp:dbg-set-current-source-pos *form*)
+          (llvm-sys:set-insert-point-basic-block body-irbuilder body-block)
+          (cmp:with-irbuilder (body-irbuilder)
+            (cmp:irc-begin-block body-block)
+            (layout-basic-block first return-value abi)
+            (loop for block in rest
+               for instruction = (first block)
+               do (progn
+                    #+(or)(format t "Laying out basic block: ~a~%" block)
+                    #+(or)(format t "Inserting basic block for instruction: ~a~%" instruction)
+                    (cmp:irc-begin-block (gethash instruction *tags*))
+                    (layout-basic-block block return-value abi))))
+          ;; Finish up by jumping from the entry block to the body block
+          (cmp:with-irbuilder (*entry-irbuilder*)
+            (cmp:irc-low-level-trace :flow)
+            (cmp:irc-br body-block))
+          (cc-dbg-when *debug-log*
+                       (format *debug-log* "----------END layout-procedure ~a~%" (llvm-sys:get-name fn)))
+          (values fn :function-kind nil lambda-name))))))
 
 (defun translate (initial-instruction abi)
   (let* (#+use-ownerships(ownerships
