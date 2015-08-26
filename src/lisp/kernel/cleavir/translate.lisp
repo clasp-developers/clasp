@@ -528,13 +528,14 @@
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (with-return-values (return-vals return-value abi)
-    (let ((call (cmp:irc-create-call "cc_call_multipleValueOneFormCall" 
-				     (list #|(sret-arg return-vals)|# return-value (cmp:irc-load (first inputs))))))
+    (let ((call-result (cmp:irc-create-call "cc_call_multipleValueOneFormCall" 
+				     (list (cmp:irc-load (first inputs))))))
+      (%store call-result return-value)
       (cc-dbg-when 
        *debug-log*
        (format *debug-log* "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
 	       (cc-mir:describe-mir instruction))
-       (format *debug-log* "     instruction --> ~a~%" call))
+       (format *debug-log* "     instruction --> ~a~%" call-result))
       )))
 
 (defmethod translate-simple-instruction
@@ -542,14 +543,15 @@
   (cmp:irc-low-level-trace :flow)
   (let* ((lpad (clasp-cleavir::landing-pad instruction)))
     (with-return-values (return-vals return-value abi)
-      (let ((call (cmp:irc-create-invoke "cc_call_multipleValueOneFormCall" 
-					 (list return-value #|(sret-arg return-vals)|# (cmp:irc-load (first inputs)))
+      (let ((call-result (cmp:irc-create-invoke "cc_call_multipleValueOneFormCall" 
+					 (list (cmp:irc-load (first inputs)))
 					 (basic-block lpad))))
+        (%store call-result return-value)
 	(cc-dbg-when 
 	 *debug-log*
 	 (format *debug-log* "    translate-simple-instruction invoke-multiple-value-call-instruction: ~a~%" 
 		 (cc-mir:describe-mir instruction))
-	 (format *debug-log* "     instruction --> ~a~%" call))
+	 (format *debug-log* "     instruction --> ~a~%" call-result))
 	))))
 
 

@@ -43,11 +43,24 @@ THE SOFTWARE.
 #define LCC_PASS_ARGS2_ELLIPSIS(a0, a1)     NULL, NULL, 2,   a0,   a1, NULL
 #define LCC_PASS_ARGS3_ELLIPSIS(a0, a1, a2) NULL, NULL, 3,   a0,   a1,   a2
 
-// To invoke "invoke" methods use these
+// Don't need lcc_arglist because no arguments are passed
 #define LCC_PASS_ARGS0_VA_LIST()           NULL, NULL, 0, NULL, NULL, NULL
-#define LCC_PASS_ARGS1_VA_LIST(a0)         NULL, NULL, 1,   a0, NULL, NULL
-#define LCC_PASS_ARGS2_VA_LIST(a0, a1)     NULL, NULL, 2,   a0,   a1, NULL
-#define LCC_PASS_ARGS3_VA_LIST(a0, a1, a2) NULL, NULL, 3,   a0,   a1,   a2
+#define LCC_PASS_ARGS1_VA_LIST(a0)         NULL, lcc_arglist, 1,   a0, NULL, NULL
+#if 0
+// To invoke "invoke" methods use these
+#define LCC_PASS_ARGS2_VA_LIST(a0, a1)     NULL, lcc_arglist, 2,   a0,   a1, NULL
+#define LCC_PASS_ARGS3_VA_LIST(a0, a1, a2) NULL, lcc_arglist, 3,   a0,   a1,   a2
+#endif
+
+#define LCC_PASS_ARGS0_ARGLIST()           NULL, lcc_arglist, 0, NULL, NULL, NULL
+#define LCC_PASS_ARGS1_ARGLIST(a0)         NULL, lcc_arglist, 1,   a0, NULL, NULL
+#define LCC_PASS_ARGS2_ARGLIST(a0, a1)     NULL, lcc_arglist, 2,   a0,   a1, NULL
+#define LCC_PASS_ARGS3_ARGLIST(a0, a1, a2) NULL, lcc_arglist, 3,   a0,   a1,   a2
+#define LCC_PASS_ARGS3_ARGLIST_GENERAL(arglist,nargs,a0, a1, a2) NULL, arglist, nargs,   a0,   a1,   a2
+
+// To invoke "invoke" methods use these
+
+
 
 #define LCC_ARGS_FUNCALL_ELLIPSIS core::Closure* lcc_closure, core::T_O* dumArgList,  std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
 #define LCC_ARGS_CC_CALL_ELLIPSIS core::T_O* lcc_func, core::T_O* dummyArgList,  std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...

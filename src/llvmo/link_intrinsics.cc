@@ -556,6 +556,10 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   }
 #endif
   // Evaluate the function
+  gc::frame::Frame onearg(1);
+  onearg[0] = ltvP;
+  core::VaList_S onearg_valist_s(onearg);
+  core::T_O* lcc_arglist = onearg_valist_s.asTaggedPtr();
   *resultP = fptr(LCC_PASS_ARGS1_VA_LIST(ltvP));
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
@@ -1680,6 +1684,7 @@ gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   return closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
+#if 0
 gc::return_type cc_invoke(LCC_ARGS_CC_CALL_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(lcc_func);
@@ -1692,7 +1697,7 @@ gc::return_type cc_invoke(LCC_ARGS_CC_CALL_ELLIPSIS) {
   //*result = closure->invoke_va_list(LCC_PASS_ARGS);
   return closure->invoke_va_list(LCC_PASS_ARGS);
 }
-
+#endif
 
 core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
                       char* sourceName, size_t filePos, size_t lineno, size_t column,
@@ -1752,15 +1757,36 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
      This function looks exactly like the cc_invoke_multipleValueOneFormCall intrinsic but
     in cmpintrinsics.lsp it is set not to require a landing pad */
 //    void cc_call_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
-void cc_call_multipleValueOneFormCall(core::T_mv *result, core::T_O *tfunc) {
+LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
   core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
+  size_t lcc_nargs = mvThreadLocal.getSize();
+  gc::frame::Frame mvargs(lcc_nargs);
+  for ( size_t i(0); i<lcc_nargs; ++i ) {
+    mvargs[i] = mvThreadLocal[i];
+  }
+  VaList_S mvargs_valist_struct(mvargs);
+  core::T_O* lcc_arglist = mvargs_valist_struct.asTaggedPtr();
   core::Function_O *tagged_func = gctools::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
-  IMPLEMENT_MEF(BF("Handle multiple argument calls"));
-//  closure->invoke(result, result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
+  core::T_O* lcc_fixed_arg0 = mvargs[0];
+  core::T_O* lcc_fixed_arg1 = mvargs[1];
+  core::T_O* lcc_fixed_arg2 = mvargs[2];
+  /*! TODO: Move the logic into lispCallingConvention */
+  switch (lcc_nargs) {
+  default :
+      return closure->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(lcc_arglist,lcc_nargs,mvargs[0],mvargs[1],mvargs[2]));
+  case 2:
+      return closure->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(mvargs[0],mvargs[1]));
+  case 1:
+      return closure->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(mvargs[0]));
+  case 0:
+      return closure->invoke_va_list(LCC_PASS_ARGS0_ARGLIST());
+  };
+  //return closure->invoke_va_list(LCC_PASS_ARGS3_ARGLIST(lcc_arglist,lcc_nargs,mvargs[0],mvargs[1],mvargs[2]);
 }
 
+#if 0
 /*! Take the multiple-value inputs from the thread local MultipleValues and invoke tfunc with them
 	  This function looks exactly like the cc_call_multipleValueOneFormCall intrinsic but
 	  in cmpintrinsics.lsp it is set to require a landing pad */
@@ -1772,6 +1798,9 @@ void cc_invoke_multipleValueOneFormCall(core::T_mv *result, core::T_O *tfunc) {
   IMPLEMENT_MEF(BF("Handle multiple argument calls"));
 //  closure->invoke(result, result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
 }
+#endif
+
+
 
 void cc_saveThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv) {
   core::MultipleValues &mvThread = core::lisp_multipleValues();

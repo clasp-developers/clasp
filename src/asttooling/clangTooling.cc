@@ -152,6 +152,10 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
 			core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
 			core::T_mv result;
 			// Call the fptr
+                        gc::frame::Frame onearg(1);
+                        onearg[0] = targs.raw_();
+                        core::VaList_S onearg_valist_s(onearg);
+                        core::T_O* lcc_arglist = onearg_valist_s.asTaggedPtr();
 			result = fptr(LCC_PASS_ARGS1_VA_LIST(targs.raw_()));
 			// Should resolve to const vector<string>& 
 			translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
