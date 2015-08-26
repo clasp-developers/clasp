@@ -114,10 +114,10 @@
 	(cmp:irc-phi-add-incoming phi-arg-idx entry-arg-idx kw-start-block)
 	(cmp:irc-phi-add-incoming phi-bad-kw-idx entry-bad-kw-idx kw-start-block)
 	(cmp:irc-low-level-trace :arguments)
-	(let* ((arg-val (cmp:irc-load (cmp:calling-convention-args.va-arg args phi-arg-idx)))
+	(let* ((arg-val (cmp:calling-convention-args.va-arg args phi-arg-idx))
                (arg-idx+1 (cmp:irc-add phi-arg-idx (cmp:jit-constant-size_t 1)))
-               (kw-arg-val (calling-convention-args.va-arg args arg-idx+1)))
-	  (cmp:irc-intrinsic "cc_ifNotKeywordException" arg-val phi-arg-idx (calling-convention-va-list args))
+               (kw-arg-val (cmp:calling-convention-args.va-arg args arg-idx+1)))
+	  (cmp:irc-intrinsic "cc_ifNotKeywordException" arg-val phi-arg-idx (cmp:calling-convention-va-list args))
 	  (let* ((eq-aok-val-and-arg-val (cmp:irc-trunc (cmp:irc-icmp-eq aok-val arg-val) cmp:+i1+)) ; compare arg-val to a-o-k
 		 (aok-block (cmp:irc-basic-block-create "aok-block"))
 		 (possible-kw-block (cmp:irc-basic-block-create "possible-kw-block"))

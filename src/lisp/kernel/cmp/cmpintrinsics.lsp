@@ -783,7 +783,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_setSymbolValue" +void+ (list +t*+ +t*+))
   (primitive module "cc_call"   +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
   (primitive module "cc_invoke" +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
-  (primitive-nounwind module "cc_allowOtherKeywords" +i32+ (list +i32+ +t*+))
+  (primitive-nounwind module "cc_allowOtherKeywords" +i64+ (list +i64+ +t*+))
 ;;  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +size_t+ +t*[0]*+))
   (primitive-nounwind module "cc_matchKeywordOnce" +size_t+ (list +t*+ +t*+ +t*+))
   (primitive          module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +VaList_S*+))
