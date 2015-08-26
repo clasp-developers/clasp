@@ -61,11 +61,10 @@
     (with-compilation-unit (:override t)
       (multiple-value-bind (compiled-function warn fail)
           (cmp:compile-in-env
-           cmp:*cleavir-compile-hook*
            nil
            `(lambda () 
               (declare (core:lambda-name implicit-repl))
-              ,form) environment)
+              ,form) environment cmp:*cleavir-compile-hook*)
         (funcall compiled-function)))))
 
 (eval-when (:execute :load-toplevel)
