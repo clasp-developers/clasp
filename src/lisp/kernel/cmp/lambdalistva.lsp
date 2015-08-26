@@ -372,7 +372,7 @@ will put a value into target-ref."
    saw-aok can have the values (2[&a-o-k or :a-o-k t], 1[:a-o-k nil] or 0 [no &a-o-k or :a-o-k]) "
   (let ((process-kw-args-block (irc-basic-block-create "process-kw-args")))
     (irc-branch-to-and-begin-block process-kw-args-block)
-    (let* ((entry-saw-aok (jit-constant-i32 (if lambda-list-allow-other-keys 2 0)))
+    (let* ((entry-saw-aok (jit-constant-size_t (if lambda-list-allow-other-keys 2 0)))
 	   (entry-bad-kw-idx (jit-constant-size_t 65536))
 	   (aok-ref (compile-reference-to-literal :allow-other-keys old-env))
 	   (loop-kw-args-block (irc-basic-block-create "loop-kw-args"))
@@ -383,7 +383,7 @@ will put a value into target-ref."
       (let ((entry-arg-idx_lt_nargs (irc-icmp-slt entry-arg-idx (calling-convention-nargs args))) )
 	(irc-cond-br entry-arg-idx_lt_nargs loop-kw-args-block kw-exit-block))
       (irc-begin-block loop-kw-args-block)
-      (let* ((phi-saw-aok (irc-phi +i32+ 2 "phi-saw-aok"))
+      (let* ((phi-saw-aok (irc-phi +size_t+ 2 "phi-saw-aok"))
 	     (phi-arg-idx (irc-phi +size_t+ 2 "phi-reg-arg-idx"))
 	     (phi-bad-kw-idx (irc-phi +size_t+ 2 "phi-bad-kw-idx")) )
 	(irc-phi-add-incoming phi-saw-aok entry-saw-aok kw-start-block)
@@ -423,13 +423,13 @@ will put a value into target-ref."
 		(irc-low-level-trace)
 		(let* ((kw-ref (compile-reference-to-literal key old-env))
 		       (test-kw-and-arg (irc-intrinsic "matchKeywordOnce" kw-ref arg-ref (elt sawkeys idx)))
-                       (no-kw-match (irc-icmp-eq test-kw-and-arg (jit-constant-i32 0)))
+                       (no-kw-match (irc-icmp-eq test-kw-and-arg (jit-constant-size_t 0)))
 		       (matched-kw-block (irc-basic-block-create "matched-kw-block"))
 		       (not-seen-before-kw-block (irc-basic-block-create "not-seen-before-kw-block"))
                        )
 		  (irc-cond-br no-kw-match next-kw-test-block matched-kw-block)
 		  (irc-begin-block matched-kw-block)
-		  (let ((kw-seen-already (irc-icmp-eq test-kw-and-arg (jit-constant-i32 2))))
+		  (let ((kw-seen-already (irc-icmp-eq test-kw-and-arg (jit-constant-size_t 2))))
                     (irc-cond-br kw-seen-already good-kw-block not-seen-before-kw-block)
                     (irc-begin-block not-seen-before-kw-block)
                     (with-target-reference-no-bind-do (target-ref target new-env) ; run-time binding
@@ -453,7 +453,7 @@ will put a value into target-ref."
 	      ;; Now advance the arg-idx, finish up the phi-nodes
 	      ;; and if we ran out of arguments branch out of the loop else branch to the top of the loop
 	      (irc-begin-block advance-arg-idx-block)
-	      (let* ((phi-arg-bad-good-aok (irc-phi +i32+ 3 "phi-this-was-aok"))
+	      (let* ((phi-arg-bad-good-aok (irc-phi +size_t+ 3 "phi-this-was-aok"))
 		     (phi.aok-bad-good.bad-kw-idx (irc-phi +size_t+ 3 "phi.aok-bad-good.bad-kw-idx")))
 		(irc-phi-add-incoming phi-arg-bad-good-aok loop-saw-aok aok-block)
 		(irc-phi-add-incoming phi-arg-bad-good-aok phi-saw-aok bad-kw-block)

@@ -44,8 +44,8 @@
   (pushnew :cleavir *features*)
   (format t "Loading :clasp-cleavir system~%")
   (time (require :clasp-cleavir))
-  (format t "Loading inline-prep.lisp~%")
-  (load "sys:kernel;cleavir;inline-prep.lisp")
+;;  (format t "Loading inline-prep.lisp~%")
+;;  (load "sys:kernel;cleavir;inline-prep.lisp")
   (format t "Loading inline.lisp")
   (load "sys:kernel;cleavir;inline.lisp"))
 

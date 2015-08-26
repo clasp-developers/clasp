@@ -676,7 +676,7 @@ Boehm and MPS use a single pointer"
 
   (primitive module "cc_gatherRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +i8*+))
 ;;  (primitive-nounwind module "va_allowOtherKeywords" +i32+ (list +i32+ +t*+))
-  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +i32+ +size_t+ +t*+))
+  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
 
   (primitive-nounwind module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
   (primitive-nounwind module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i64+ +i32+ +i32+))
@@ -759,7 +759,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "pushDynamicBinding" +void+ (list +symsp*+))
   (primitive-nounwind module "popDynamicBinding" +void+ (list +symsp*+))
 
-  (primitive-nounwind module "matchKeywordOnce" +i32+ (list +tsp*+ +t*+ +i8*+))
+  (primitive-nounwind module "matchKeywordOnce" +size_t+ (list +tsp*+ +t*+ +i8*+))
 
   ;; Primitives for Cleavir code
 

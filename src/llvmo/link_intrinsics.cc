@@ -236,14 +236,14 @@ __attribute__((visibility("default"))) core::T_O* cc_gatherRestArguments(std::si
   return result.raw_();
 }
 
-extern int cc_allowOtherKeywords(int saw_aok, core::T_O* kw_arg) {
+extern size_t cc_allowOtherKeywords(size_t saw_aok, core::T_O* kw_arg) {
   if (saw_aok)
     return saw_aok;
   bool aokTrue = !(gctools::tagged_nilp(kw_arg));
   return aokTrue ? 2 : 1;
 }
 
-void cc_ifBadKeywordArgumentException(int allowOtherKeys, std::size_t badKwIdx, core::T_O* kw ) {
+void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, core::T_O* kw ) {
   if (allowOtherKeys == 2) {
     return;
   }
@@ -1571,7 +1571,7 @@ void trace_setActivationFrameForIHSTop(core::T_sp *afP) {
   _lisp->invocationHistoryStack().setActivationFrameForTop(*afP);
 }
 
-extern int matchKeywordOnce(core::T_sp *xP, core::T_O *yP, unsigned char *sawKeyAlreadyP) {
+extern size_t matchKeywordOnce(core::T_sp *xP, core::T_O *yP, unsigned char *sawKeyAlreadyP) {
   if ((*xP).raw_() != (yP))
     return 0;
   if (*sawKeyAlreadyP)
