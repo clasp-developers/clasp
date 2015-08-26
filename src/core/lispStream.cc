@@ -1427,7 +1427,7 @@ clos_stream_peek_char(T_sp strm) {
 
 static int
 clos_stream_listen(T_sp strm) {
-  return !(eval::funcall(gray::_sym_stream_listen, strm)).nilp();
+  return !(T_sp(eval::funcall(gray::_sym_stream_listen, strm))).nilp();
 }
 
 static void
@@ -1453,17 +1453,17 @@ clos_stream_finish_output(T_sp strm) {
 
 static int
 clos_stream_input_p(T_sp strm) {
-  return !(eval::funcall(gray::_sym_input_stream_p, strm)).nilp();
+  return !T_sp(eval::funcall(gray::_sym_input_stream_p, strm)).nilp();
 }
 
 static int
 clos_stream_output_p(T_sp strm) {
-  return !(eval::funcall(gray::_sym_output_stream_p, strm)).nilp();
+  return !T_sp(eval::funcall(gray::_sym_output_stream_p, strm)).nilp();
 }
 
 static int
 clos_stream_interactive_p(T_sp strm) {
-  return !(eval::funcall(gray::_sym_stream_interactive_p, strm)).nilp();
+  return !T_sp(eval::funcall(gray::_sym_stream_interactive_p, strm)).nilp();
 }
 
 static T_sp
@@ -1666,9 +1666,9 @@ T_sp cl_makeStringOutputStream(Symbol_sp elementType) {
 #ifdef ECL_UNICODE
     extended = 1;
 #endif
-  } else if (!(eval::funcall(cl::_sym_subtypep, elementType, cl::_sym_base_char)).nilp()) {
+  } else if (!T_sp(eval::funcall(cl::_sym_subtypep, elementType, cl::_sym_base_char)).nilp()) {
     (void)0;
-  } else if (!(eval::funcall(cl::_sym_subtypep, elementType, cl::_sym_character)).nilp()) {
+  } else if (!T_sp(eval::funcall(cl::_sym_subtypep, elementType, cl::_sym_character)).nilp()) {
 #ifdef ECL_UNICODE
     extended = 1;
 #endif
@@ -4980,7 +4980,7 @@ AGAIN:
 #define DOCS_cl_streamp "streamp"
 bool cl_streamp(T_sp strm) {
   if (Instance_sp instance = strm.asOrNull<Instance_O>()) {
-    return eval::funcall(gray::_sym_streamp, instance).isTrue();
+    return T_sp(eval::funcall(gray::_sym_streamp, instance)).isTrue();
   }
   return AnsiStreamP(strm);
 }
@@ -5014,11 +5014,11 @@ clasp_normalize_stream_element_type(T_sp element_type) {
     return 0;
   } else if (element_type == cl::_sym_base_char || element_type == cl::_sym_character) {
     return 0;
-  } else if (eval::funcall(cl::_sym_subtypep, element_type, cl::_sym_character) != _Nil<T_O>()) {
+  } else if (T_sp(eval::funcall(cl::_sym_subtypep, element_type, cl::_sym_character)).notnilp()) {
     return 0;
-  } else if (eval::funcall(cl::_sym_subtypep, element_type, cl::_sym_UnsignedByte) != _Nil<T_O>()) {
+  } else if (T_sp(eval::funcall(cl::_sym_subtypep, element_type, cl::_sym_UnsignedByte)).notnilp()) {
     sign = +1;
-  } else if (eval::funcall(cl::_sym_subtypep, element_type, cl::_sym_SignedByte) != _Nil<T_O>()) {
+  } else if (T_sp(eval::funcall(cl::_sym_subtypep, element_type, cl::_sym_SignedByte)).notnilp()) {
     sign = -1;
   } else {
     FEerror("Not a valid stream element type: ~A", 1, element_type.raw_());
@@ -5033,7 +5033,7 @@ clasp_normalize_stream_element_type(T_sp element_type) {
     T_sp type;
     type = Cons_O::createList(sign > 0 ? cl::_sym_UnsignedByte : cl::_sym_SignedByte,
                               make_fixnum(size));
-    if (eval::funcall(cl::_sym_subtypep, element_type, type) != _Nil<T_O>()) {
+    if (T_sp(eval::funcall(cl::_sym_subtypep, element_type, type)).notnilp()) {
       return size * sign;
     }
   }
@@ -6202,7 +6202,7 @@ void cl_terpri(T_sp outputStreamDesig) {
 bool clasp_freshLine(T_sp s) {
   s = coerce::outputStreamDesignator(s);
   if (!AnsiStreamP(s)) {
-    return eval::funcall(gray::_sym_stream_fresh_line, s).isTrue();
+    return T_sp(eval::funcall(gray::_sym_stream_fresh_line, s)).isTrue();
   }
   if (clasp_file_column(s) != 0) {
     clasp_write_char('\n', s);

@@ -73,7 +73,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,7>::type()
 , typename AdoptPointer<Pols,7>::type()
 , a7._v);
-return gctools::multiple_values<core::T_O>(retval,oidx);
+return LCC_RETURN(retval.raw_(),oidx);
 }
 };
 // ret = 0
@@ -142,7 +142,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,6>::type()
 , typename AdoptPointer<Pols,6>::type()
 , a6._v);
-return gctools::multiple_values<core::T_O>(retval,oidx);
+return LCC_RETURN(retval.raw_(),oidx);
 }
 };
 // ret = 0
@@ -206,7 +206,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,5>::type()
 , typename AdoptPointer<Pols,5>::type()
 , a5._v);
-return gctools::multiple_values<core::T_O>(retval,oidx);
+return LCC_RETURN(retval.raw_(),oidx);
 }
 };
 // ret = 0
@@ -264,7 +264,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,4>::type()
 , typename AdoptPointer<Pols,4>::type()
 , a4._v);
-return gctools::multiple_values<core::T_O>(retval,oidx);
+return LCC_RETURN(retval.raw_(),oidx);
 }
 };
 // ret = 0
@@ -317,7 +317,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,3>::type()
 , typename AdoptPointer<Pols,3>::type()
 , a3._v);
-return gctools::multiple_values<core::T_O>(retval,oidx);
+return LCC_RETURN(retval.raw_(),oidx);
 }
 };
 // ret = 0
@@ -365,7 +365,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,2>::type()
 , typename AdoptPointer<Pols,2>::type()
 , a2._v);
-return gctools::multiple_values<core::T_O>(retval,oidx);
+return LCC_RETURN(retval.raw_(),oidx);
 }
 };
 // ret = 0
@@ -408,7 +408,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,1>::type()
 , typename AdoptPointer<Pols,1>::type()
 , a1._v);
-return gctools::multiple_values<core::T_O>(retval,oidx);
+return LCC_RETURN(retval.raw_(),oidx);
 }
 };
 // ret = 0
@@ -446,7 +446,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,0>::type()
 , typename AdoptPointer<Pols,0>::type()
 , a0._v);
-return gctools::multiple_values<core::T_O>(retval,oidx);
+return LCC_RETURN(retval.raw_(),oidx);
 }
 };
 // ret = 0
@@ -474,7 +474,7 @@ INVOCATION_HISTORY_FRAME();
 T* naked_ptr(new T());
 gctools::smart_ptr<WrapperType> retval = WrapperType::create(naked_ptr,reg::registered_class<T>::id);
 int oidx = 1;
-return gctools::multiple_values<core::T_O>(retval,oidx);
+return LCC_RETURN(retval.raw_(),oidx);
 }
 };
 

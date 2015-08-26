@@ -624,7 +624,7 @@ bool clasp_logical_hostname_p(T_sp host) {
   if (!af_stringP(host))
     return false;
   if (cl::_sym_assoc->fboundp()) {
-    return eval::funcall(cl::_sym_assoc, host, _lisp->pathnameTranslations(), kw::_sym_test, cl::_sym_string_equal).notnilp();
+    return T_sp(eval::funcall(cl::_sym_assoc, host, _lisp->pathnameTranslations(), kw::_sym_test, cl::_sym_string_equal)).notnilp();
   } else {
     if (_lisp->pathnameTranslations().notnilp()) {
       return _lisp->pathnameTranslations().asCons()->assoc(host, _Nil<T_O>(), cl::_sym_string_equal, _Nil<T_O>()).notnilp();

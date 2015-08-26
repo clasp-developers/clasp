@@ -202,7 +202,7 @@ void Mpi_O::Init(int &argc, char **&argv, bool &mpiEnabled, int &rank, int &msiz
     msize = world.size();
   } else {
     printf("%s %d Could not initialize mpi - exiting\n", __FILE__, __LINE__);
-    exit(1);
+    abort();
   }
 #else
   _MpiInitialized = false;

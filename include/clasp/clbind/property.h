@@ -63,7 +63,7 @@ public:
   LCC_RETURN LISP_CALLING_CONVENTION() {
     OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
     MemberType &orig = (*objPtr).*(this->_MemberPtr);
-    return translate::to_object<MemberType, translate::adopt_pointer>::convert(orig);
+    return Values(translate::to_object<MemberType, translate::adopt_pointer>::convert(orig));
   }
 };
 };

@@ -44,10 +44,9 @@
     (bformat t "Compiling form: %s\n" form))
   (with-compilation-unit (:override t)
     (multiple-value-bind (compiled-function warn fail)
-        (compile-in-env nil nil `(lambda () 
+        (compile-in-env nil `(lambda () 
                                (declare (core:lambda-name implicit-repl))
-                               ,form) environment)
-      ;;                         (compile-in-env nil form environment)
+                               ,form) environment nil)
       (funcall compiled-function))))
 ;;    (values compiled-function warn fail)))
 

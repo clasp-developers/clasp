@@ -110,7 +110,7 @@ typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<15> >::type,
 typename Contains_<Pols,    outValue_<15> >::type >::type(),a15._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -215,7 +215,7 @@ typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<14> >::type,
 typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -315,7 +315,7 @@ typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<13> >::type,
 typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -410,7 +410,7 @@ typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<12> >::type,
 typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -501,7 +501,7 @@ typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<11> >::type,
 typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -588,7 +588,7 @@ typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<10> >::type,
 typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -671,7 +671,7 @@ typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<9> >::type,
 typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -750,7 +750,7 @@ typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<8> >::type,
 typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -825,7 +825,7 @@ typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<7> >::type,
 typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -896,7 +896,7 @@ typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<6> >::type,
 typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -962,7 +962,7 @@ typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<5> >::type,
 typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -1024,7 +1024,7 @@ typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<4> >::type,
 typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -1082,7 +1082,7 @@ typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<3> >::type,
 typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -1136,7 +1136,7 @@ typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<2> >::type,
 typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -1186,7 +1186,7 @@ typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -1232,7 +1232,7 @@ int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
 typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -1344,7 +1344,7 @@ typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<15> >::type,
 typename Contains_<Pols,    outValue_<15> >::type >::type(),a15._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -1447,7 +1447,7 @@ typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<14> >::type,
 typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -1546,7 +1546,7 @@ typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<13> >::type,
 typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -1641,7 +1641,7 @@ typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<12> >::type,
 typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -1732,7 +1732,7 @@ typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<11> >::type,
 typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -1819,7 +1819,7 @@ typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<10> >::type,
 typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -1902,7 +1902,7 @@ typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<9> >::type,
 typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -1981,7 +1981,7 @@ typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<8> >::type,
 typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -2056,7 +2056,7 @@ typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<7> >::type,
 typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -2126,7 +2126,7 @@ typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<6> >::type,
 typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -2192,7 +2192,7 @@ typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<5> >::type,
 typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -2254,7 +2254,7 @@ typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<4> >::type,
 typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -2312,7 +2312,7 @@ typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<3> >::type,
 typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -2366,7 +2366,7 @@ typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<2> >::type,
 typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -2416,7 +2416,7 @@ typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -2462,7 +2462,7 @@ int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
 typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -2574,7 +2574,7 @@ typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<15> >::type,
 typename Contains_<Pols,    outValue_<15> >::type >::type(),a15._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -2681,7 +2681,7 @@ typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<14> >::type,
 typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -2781,7 +2781,7 @@ typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<13> >::type,
 typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -2876,7 +2876,7 @@ typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<12> >::type,
 typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -2967,7 +2967,7 @@ typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<11> >::type,
 typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -3054,7 +3054,7 @@ typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<10> >::type,
 typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -3137,7 +3137,7 @@ typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<9> >::type,
 typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -3216,7 +3216,7 @@ typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<8> >::type,
 typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -3291,7 +3291,7 @@ typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<7> >::type,
 typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -3362,7 +3362,7 @@ typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<6> >::type,
 typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -3428,7 +3428,7 @@ typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<5> >::type,
 typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -3490,7 +3490,7 @@ typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<4> >::type,
 typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -3548,7 +3548,7 @@ typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<3> >::type,
 typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -3602,7 +3602,7 @@ typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<2> >::type,
 typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -3652,7 +3652,7 @@ typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -3698,7 +3698,7 @@ int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
 typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
-return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
 };
@@ -3810,7 +3810,7 @@ typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<15> >::type,
 typename Contains_<Pols,    outValue_<15> >::type >::type(),a15._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -3915,7 +3915,7 @@ typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<14> >::type,
 typename Contains_<Pols,    outValue_<14> >::type >::type(),a14._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4014,7 +4014,7 @@ typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<13> >::type,
 typename Contains_<Pols,    outValue_<13> >::type >::type(),a13._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4109,7 +4109,7 @@ typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<12> >::type,
 typename Contains_<Pols,    outValue_<12> >::type >::type(),a12._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4200,7 +4200,7 @@ typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<11> >::type,
 typename Contains_<Pols,    outValue_<11> >::type >::type(),a11._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4287,7 +4287,7 @@ typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<10> >::type,
 typename Contains_<Pols,    outValue_<10> >::type >::type(),a10._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4370,7 +4370,7 @@ typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<9> >::type,
 typename Contains_<Pols,    outValue_<9> >::type >::type(),a9._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4449,7 +4449,7 @@ typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<8> >::type,
 typename Contains_<Pols,    outValue_<8> >::type >::type(),a8._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4524,7 +4524,7 @@ typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<7> >::type,
 typename Contains_<Pols,    outValue_<7> >::type >::type(),a7._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4594,7 +4594,7 @@ typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<6> >::type,
 typename Contains_<Pols,    outValue_<6> >::type >::type(),a6._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4660,7 +4660,7 @@ typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<5> >::type,
 typename Contains_<Pols,    outValue_<5> >::type >::type(),a5._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4722,7 +4722,7 @@ typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<4> >::type,
 typename Contains_<Pols,    outValue_<4> >::type >::type(),a4._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4780,7 +4780,7 @@ typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<3> >::type,
 typename Contains_<Pols,    outValue_<3> >::type >::type(),a3._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4834,7 +4834,7 @@ typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<2> >::type,
 typename Contains_<Pols,    outValue_<2> >::type >::type(),a2._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4884,7 +4884,7 @@ typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };
@@ -4930,7 +4930,7 @@ int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
 typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
-return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
 };

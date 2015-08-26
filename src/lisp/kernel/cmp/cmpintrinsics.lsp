@@ -85,7 +85,7 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
 
 ;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH VaList_S
-(defvar +va_list+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +size_t+ +i8*+ +i8*+) nil))
+(defvar +va_list+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+ +i8*+ +i8*+) nil))
 (defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +va_list+) nil)) ;; +size_t+ +t*+ +bool+) nil))
 (defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
 
@@ -782,8 +782,8 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_getSetfFdefinition" +t*+ (list +t*+))
   (primitive module "cc_symbolValue" +t*+ (list +t*+))
   (primitive-nounwind module "cc_setSymbolValue" +void+ (list +t*+ +t*+))
-  (primitive #|-nounwind|#    module "cc_call" +void+ (list* +tmv*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
-;  (primitive module "cc_invoke" +void+ (list* +tmv*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
+  (primitive module "cc_call"   +return_type+ (list* +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
+  (primitive module "cc_invoke" +return_type+ (list* +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
   (primitive-nounwind module "cc_allowOtherKeywords" +i32+ (list +i32+ +t*+))
 ;;  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +size_t+ +t*[0]*+))
   (primitive-nounwind module "cc_matchKeywordOnce" +size_t+ (list +t*+ +t*+ +t*+))

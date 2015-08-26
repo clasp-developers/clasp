@@ -87,10 +87,10 @@ $$ BEGIN(ArgsToRet) -- Convert arguments to multiple values according to outValu
             $if numArgs==0 [[
               return Values0<core::T_O>();
             ]] $else [[
-              return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+              return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
             ]]
           ]] $else [[
-            return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(std::move(retval)),oidx);
+            return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
           ]]
 $$ END(ArgsToRet)
         }

@@ -80,8 +80,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,7>::type()
 , typename AdoptPointer<Pols,7>::type()
 , a7._v);
-return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
-    oidx);
+return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -156,8 +155,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,6>::type()
 , typename AdoptPointer<Pols,6>::type()
 , a6._v);
-return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
-    oidx);
+return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -225,8 +223,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,5>::type()
 , typename AdoptPointer<Pols,5>::type()
 , a5._v);
-return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
-    oidx);
+return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -288,8 +285,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,4>::type()
 , typename AdoptPointer<Pols,4>::type()
 , a4._v);
-return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
-    oidx);
+return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -345,8 +341,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,3>::type()
 , typename AdoptPointer<Pols,3>::type()
 , a3._v);
-return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
-    oidx);
+return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -396,8 +391,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,2>::type()
 , typename AdoptPointer<Pols,2>::type()
 , a2._v);
-return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
-    oidx);
+return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -441,8 +435,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,1>::type()
 , typename AdoptPointer<Pols,1>::type()
 , a1._v);
-return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
-    oidx);
+return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -480,8 +473,7 @@ RT retval =  ((*objPtr).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
-return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),
-    oidx);
+return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -561,7 +553,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,7>::type()
 , typename AdoptPointer<Pols,7>::type()
 , a7._v);
-return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -634,7 +626,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,6>::type()
 , typename AdoptPointer<Pols,6>::type()
 , a6._v);
-return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -701,7 +693,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,5>::type()
 , typename AdoptPointer<Pols,5>::type()
 , a5._v);
-return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -762,7 +754,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,4>::type()
 , typename AdoptPointer<Pols,4>::type()
 , a4._v);
-return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -817,7 +809,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,3>::type()
 , typename AdoptPointer<Pols,3>::type()
 , a3._v);
-return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -866,7 +858,7 @@ ReturnValueWhen(returnValues,oidx
 , typename is_outValue<Pols,2>::type()
 , typename AdoptPointer<Pols,2>::type()
 , a2._v);
-return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -909,7 +901,7 @@ int oidx = 0;                                                                   
 , typename is_outValue<Pols,1>::type()
 , typename AdoptPointer<Pols,1>::type()
 , a1._v);
-return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 };
 // TEMPLATE_TOP
@@ -947,7 +939,7 @@ OT* objPtr = gc::As<core::WrappedPointer_sp>(frame.arg(0))->cast<OT>();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
-    return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+    return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 };
 

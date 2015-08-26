@@ -1767,7 +1767,7 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
     lisp->print(BF("search throwIfClassesNotInitialized"));
     lisp->print(BF("--> set a breakpoint in the if block"));
     lisp->print(BF("Then backtrace to find the offending initialization routine."));
-    exit(1);
+    abort();
   }
 }
 

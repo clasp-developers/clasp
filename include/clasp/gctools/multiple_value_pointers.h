@@ -29,11 +29,6 @@ THE SOFTWARE.
 
 namespace gctools {
 
-  struct return_type {
-    core::T_O* ret0;
-    size_t nvals;
-  };
-
 template <class T>
 class multiple_values : public smart_ptr<T> {
 private:
@@ -72,6 +67,10 @@ public:
     mv.setSize(this->number_of_values());
   };
 
+  return_type as_return_type() const {
+    return return_type(this->raw_(),this->_number_of_values);
+  }
+  
   void readFromMultipleValue0() {
     core::MultipleValues &mv = core::lisp_multipleValues();
     this->setRaw_(reinterpret_cast<gc::Tagged>(mv[0]));

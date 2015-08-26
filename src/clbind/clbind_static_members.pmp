@@ -74,10 +74,10 @@ $var ConstTypeCount = 1
                         $if numArgs==0 [[
                           return Values0<core::T_O>();
                         ]] $else [[
-                          return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+                          return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
                         ]]
                       ]] $else [[
-                        return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),oidx);
+                        return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval).raw_(),oidx);
                       ]]
                     }
                   };

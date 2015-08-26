@@ -104,13 +104,14 @@ namespace core {
     inline T_mv apply_consume_VaList(Function_sp func, VaList_sp args ) {
       gctools::tagged_functor<Closure> ft = func->closure;
       ASSERT_LCC_VA_LIST_AT_START(*args);
-      return (*ft).invoke_va_list( LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),
+      return (*ft).invoke_va_list( NULL,
+                                   args.raw_(),
+                                   LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),
                                    LCC_VA_LIST_REGISTER_ARG0(args),
                                    LCC_VA_LIST_REGISTER_ARG1(args),
-                                   LCC_VA_LIST_REGISTER_ARG2(args),
-                                   args.raw_());
+                                   LCC_VA_LIST_REGISTER_ARG2(args) );
     }
-    inline T_mv funcall(T_sp fn) {
+    inline LCC_RETURN funcall(T_sp fn) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
       ASSERT(3 == LCC_ARGS_IN_REGISTERS);
@@ -119,11 +120,11 @@ namespace core {
         ERROR_UNDEFINED_FUNCTION(fn);
       Function_sp func = gc::As<Function_sp>(tfunc);
       gctools::tagged_functor<Closure> ft = func->closure;
-      return (*ft)(0, LCC_UNUSED_rest0());
+      return (*ft)(LCC_PASS_ARGS0_ELLIPSIS());
     }
 
     template <class ARG0>
-      inline T_mv funcall(T_sp fn, ARG0 arg0) {
+      inline LCC_RETURN funcall(T_sp fn, ARG0 arg0) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
       ASSERT(3 == LCC_ARGS_IN_REGISTERS);
@@ -132,11 +133,11 @@ namespace core {
         ERROR_UNDEFINED_FUNCTION(fn);
       Function_sp func = gc::As<Function_sp>(tfunc);
       gctools::tagged_functor<Closure> ft = func->closure;
-      return (*ft)(1, LCC_FROM_SMART_PTR(arg0), LCC_UNUSED_rest1());
+      return (*ft)(LCC_PASS_ARGS1_ELLIPSIS(arg0.raw_()));
     }
 
     template <class ARG0, class ARG1>
-      inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
+      inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
       ASSERT(3 == LCC_ARGS_IN_REGISTERS);
@@ -147,18 +148,18 @@ namespace core {
         if (fn == cl::_sym_findClass) {
           Class_mv cl = cl_findClass(gc::As<Symbol_sp>(arg0),false,_Nil<T_O>());
           T_sp res = cl;
-          return res;
+          return Values(res);
         }
         ERROR_UNDEFINED_FUNCTION(fn);
       }
       Function_sp func = tfunc.asOrNull<Function_O>();
       ASSERT(func);
       gctools::tagged_functor<Closure> ft = func->closure;
-      return (*ft)(LCC_PASS_ARGS2_ELLIPSIS(LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1)));
+      return (*ft)(LCC_PASS_ARGS2_ELLIPSIS(arg0.raw_(), arg1.raw_()));
     }
 
     template <class ARG0, class ARG1, class ARG2>
-      inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
+      inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
       ASSERT(3 == LCC_ARGS_IN_REGISTERS);
@@ -173,7 +174,7 @@ namespace core {
 
 // Do I need a variadic funcall???
     template <class ARG0, class ARG1, class ARG2, class... ARGS>
-      inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS &&... args) {
+      inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS &&... args) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
       ASSERT(3 == LCC_ARGS_IN_REGISTERS);
@@ -184,7 +185,9 @@ namespace core {
       gctools::tagged_functor<Closure> ft = func->closure;
       size_t vnargs = sizeof...(ARGS);
       size_t nargs = vnargs + LCC_FIXED_NUM;
-      return (*ft)(nargs
+      return (*ft)(NULL
+                   , NULL
+                   , nargs
                    , LCC_FROM_SMART_PTR(arg0)
                    , LCC_FROM_SMART_PTR(arg1)
                    , LCC_FROM_SMART_PTR(arg2)

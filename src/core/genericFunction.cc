@@ -267,7 +267,7 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
 }
 
 // Arguments are passed in the multiple_values array
-T_mv standard_dispatch(T_sp gf,VaList_sp arglist) {
+LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist) {
   /* Lookup the generic-function/arguments invocation in a cache and if an effective-method
 	   exists then use that.   If an effective-method does not exist then calculate it and put it in the cache.
 
@@ -344,27 +344,27 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
         return output;
 }
  */
-T_mv generic_function_dispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN generic_function_dispatch(Instance_sp gf, VaList_sp vargs) {
   return standard_dispatch(gf,vargs);
 }
 
 /*! Reproduces functionality in ecl_slot_reader_dispatch */
-T_mv slotReaderDispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN slotReaderDispatch(Instance_sp gf, VaList_sp vargs) {
   IMPLEMENT_MEF(BF("Implement slotReaderDispatch"));
 }
 
 /*! Reproduces functionality in ecl_slot_writer_dispatch */
-T_mv slotWriterDispatch(Instance_sp gf, VaList_sp vargs ) {
+LCC_RETURN slotWriterDispatch(Instance_sp gf, VaList_sp vargs ) {
   IMPLEMENT_MEF(BF("Implement slotWriterDispatch"));
 }
 
 /*! Reproduces functionality in user_function_dispatch */
-T_mv userFunctionDispatch(Instance_sp gf, VaList_sp vargs ) {
+LCC_RETURN userFunctionDispatch(Instance_sp gf, VaList_sp vargs ) {
   IMPLEMENT_MEF(BF("Implement userFunctionDispatch"));
 }
 
 /*! Reproduces functionality in FEnot_funcallable_vararg */
-T_mv notFuncallableDispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN notFuncallableDispatch(Instance_sp gf, VaList_sp vargs) {
   IMPLEMENT_MEF(BF("Implement notFuncallableDispatch"));
 }
 

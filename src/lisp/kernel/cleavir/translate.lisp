@@ -170,9 +170,9 @@
 	(mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
 		(llvm-sys:get-argument-list fn) cmp:+fn-prototype-argument-names+)
 	;; Set the first argument attribute to be sret
-	(if args
-	    (let ((attribute-set (llvm-sys:attribute-set-get cmp:*llvm-context* 1 (list 'llvm-sys:attribute-struct-ret))))
-	      (llvm-sys:add-attr (first args) attribute-set))))
+	#+(or)(if args
+                  (let ((attribute-set (llvm-sys:attribute-set-get cmp:*llvm-context* 1 (list 'llvm-sys:attribute-struct-ret))))
+                    (llvm-sys:add-attr (first args) attribute-set))))
       ;; Create a basic-block for every remaining tag
       (loop for block in rest
 	 for instruction = (first block)
@@ -267,8 +267,8 @@
 
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:enter-instruction) return-value inputs outputs (abi abi-x86-64))
-  (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*)))
-    (warn "Do we need to alloca +tmv+ for the return value and then return-instruction must access and return it.")
+  (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
+         (closed-env-dest (first outputs)))
     (multiple-value-bind (closed-env-arg calling-convention)
         (cmp:parse-function-arguments fn-args)
       (llvm-sys:create-store cmp:*irbuilder* closed-env-arg closed-env-dest nil)
@@ -416,7 +416,7 @@
   (cmp:irc-low-level-trace :flow)
   (with-return-values (return-vals return-value abi)
     ;; Save whatever is in return-vals in the multiple-value array
-    (cmp:irc-intrinsic "cc_saveMultipleValue0" (sret-arg return-vals))
+    (cmp:irc-intrinsic "cc_saveMultipleValue0" return-value) ;; (sret-arg return-vals))
     (cmp:irc-low-level-trace :cclasp-eh)
     (cmp:irc-intrinsic "cc_unwind" (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction)))))
 
@@ -529,7 +529,7 @@
   (cmp:irc-low-level-trace :flow)
   (with-return-values (return-vals return-value abi)
     (let ((call (cmp:irc-create-call "cc_call_multipleValueOneFormCall" 
-				     (list (sret-arg return-vals) (cmp:irc-load (first inputs))))))
+				     (list #|(sret-arg return-vals)|# return-value (cmp:irc-load (first inputs))))))
       (cc-dbg-when 
        *debug-log*
        (format *debug-log* "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
@@ -543,7 +543,7 @@
   (let* ((lpad (clasp-cleavir::landing-pad instruction)))
     (with-return-values (return-vals return-value abi)
       (let ((call (cmp:irc-create-invoke "cc_call_multipleValueOneFormCall" 
-					 (list (sret-arg return-vals) (cmp:irc-load (first inputs)))
+					 (list return-value #|(sret-arg return-vals)|# (cmp:irc-load (first inputs)))
 					 (basic-block lpad))))
 	(cc-dbg-when 
 	 *debug-log*
@@ -742,9 +742,9 @@
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) return-value inputs outputs successors abi)
   (declare (ignore successors))
-  (break "Check the inputs for where we get the return value")
   (cmp:irc-low-level-trace :flow)
-  (llvm-sys:create-ret cmp:*irbuilder* return-value "return-value"))
+  (format t "translate-branch-instruction  cleavir-ir:return-instruction --> ~a~%" return-value )
+  (llvm-sys:create-ret cmp:*irbuilder* (%load return-value)))
 
 
 (defmethod translate-branch-instruction
@@ -752,7 +752,7 @@
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
   #+(or)(with-return-values (return-vals return-value abi)
-          (cmp:irc-intrinsic "cc_saveMultipleValue0" (sret-arg return-vals))
+          (cmp:irc-intrinsic "cc_saveMultipleValue0" return-value #|(sret-arg return-vals)|#)
           (cmp:irc-intrinsic "cc_throw" (cmp:irc-load (first inputs))))
   (cmp:irc-intrinsic "cc_throw" (%load (first inputs)) (%load (second inputs)))
   (cmp:irc-unreachable))
@@ -1076,7 +1076,7 @@ nil)
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
 	(cmp:*all-functions-for-one-compile* nil))
-    (cmp:compile-in-env #'cleavir-compile-t1expr name form env)))
+    (cmp:compile-in-env name form env #'cleavir-compile-t1expr)))
         
 	
 (defun cleavir-compile (name form &key debug)

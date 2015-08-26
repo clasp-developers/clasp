@@ -121,4 +121,5 @@
           +cons-cdr-offset+
           +uintptr_t+
           +return_type+
+          null-t-ptr
           ))

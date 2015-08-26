@@ -88,12 +88,16 @@
     #P"kernel/contrib/sicl/Code/Cleavir/AST-to-HIR/compile-standard-object-related-asts"
     #P"kernel/contrib/sicl/Code/Cleavir/AST-to-HIR/compile-array-related-asts"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/packages"
+    #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/constant-load-time-value"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/traverse"
+    #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/convert-constant-to-immediate"
+    #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/hoist-load-time-values"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/compute-ownership"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/inline-calls"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/static-few-assignments"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/type-inference"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/eliminate-load-time-value-inputs"
+    #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/coalesce-load-time-values"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/eliminate-typeq"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/simplify-box-unbox"
     #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/function-tree"
@@ -120,4 +124,5 @@
     #P"kernel/cleavir/ast-to-hir" #P"kernel/cleavir/mir"
     #P"kernel/cleavir/hir-to-mir" #P"kernel/cleavir/ir"
     #P"kernel/cleavir/gml-drawing" #P"kernel/cleavir/landing-pad"
-    #P"kernel/cleavir/arguments" #P"kernel/cleavir/translate")) 
+    #P"kernel/cleavir/arguments" #P"kernel/cleavir/translate"
+    #P"kernel/cleavir/inline-prep")) 

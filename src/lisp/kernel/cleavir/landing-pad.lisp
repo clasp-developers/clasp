@@ -32,7 +32,7 @@
                              (cmp:irc-load (clasp-cleavir::translate-datum
                                             (clasp-cleavir-hir:frame-holder enter-instruction))))))
                 (with-return-values (return-vals return-value abi)
-                  (cmp:irc-intrinsic "cc_restoreMultipleValue0" (sret-arg return-vals)))))
+                  (cmp:irc-intrinsic "cc_restoreMultipleValue0" return-value #|(sret-arg return-vals)|#))))
             (let* ((default-block (cmp:irc-basic-block-create "switch-default"))
                    (unwinds (unwinds landing-pad-object))
                    (sw (cmp:irc-switch go-index default-block (length unwinds)))

@@ -1635,6 +1635,7 @@ T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
   return exec;
 }
 
+#if 0
 T_mv applyClosureToActivationFrame(gctools::tagged_functor<Closure> func, ActivationFrame_sp args) {
   size_t nargs = args->length();
   T_sp *frame = args->argArray();
@@ -1646,7 +1647,9 @@ T_mv applyClosureToActivationFrame(gctools::tagged_functor<Closure> func, Activa
       SIMPLE_ERROR(BF("Illegal number of arguments in call: %s") % nargs);
   };
 }
+#endif
 
+#if 0
 T_mv applyClosureToStackFrame(gctools::tagged_functor<Closure> func, T_sp stackFrame) {
 IMPLEMENT_MEF(BF("Handle new valist"));
 #if 0
@@ -1664,7 +1667,9 @@ T_mv result;
   };
 #endif
 }
+#endif
 
+#if 0
 T_mv applyToStackFrame(T_sp head, T_sp stackFrame) {
   _G();
   ASSERT(stackFrame.valistp());
@@ -1674,7 +1679,9 @@ T_mv applyToStackFrame(T_sp head, T_sp stackFrame) {
   ASSERTF((closureP), BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
   return applyClosureToStackFrame(closureP, stackFrame);
 }
+#endif
 
+#if 0
 T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp args) {
   _G();
   T_sp tfn = lookupFunction(head, args);
@@ -1693,8 +1700,10 @@ T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp args) {
   }
   SIMPLE_ERROR(BF("In applyToActivationFrame the closure for %s is NULL and is being applied to arguments: %s") % _rep_(ffn) % _rep_(args));
 }
+#endif
 
 
+#if 0
 void apply_fill_frame_from_list(core::T_O** frameImpl, int offset, int nargs, List_sp elements)
 {
 IMPLEMENT_MEF(BF("Handle new valist"));
@@ -1705,6 +1714,10 @@ IMPLEMENT_MEF(BF("Handle new valist"));
   }
 #endif
 }
+#endif
+
+
+
 
 #define ARGS_cl_apply "(head &rest args)"
 #define DECL_cl_apply ""

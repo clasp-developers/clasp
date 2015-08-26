@@ -48,7 +48,7 @@ T_sp ActivationFrame_O::currentVisibleEnvironment() const {
   return this->const_sharedThis<ActivationFrame_O>();
 }
 
-ActivationFrame_sp ActivationFrame_O::getActivationFrame() const {
+T_sp ActivationFrame_O::getActivationFrame() const {
   return this->const_sharedThis<ActivationFrame_O>();
 }
 

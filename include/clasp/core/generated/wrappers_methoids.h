@@ -1374,7 +1374,7 @@ translate::from_object<ARG14> a14(frame.arg(14));
 translate::from_object<ARG15> a15(frame.arg(15));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v,a14._v,a15._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1426,7 +1426,7 @@ translate::from_object<ARG13> a13(frame.arg(13));
 translate::from_object<ARG14> a14(frame.arg(14));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v,a14._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1475,7 +1475,7 @@ translate::from_object<ARG12> a12(frame.arg(12));
 translate::from_object<ARG13> a13(frame.arg(13));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1522,7 +1522,7 @@ translate::from_object<ARG11> a11(frame.arg(11));
 translate::from_object<ARG12> a12(frame.arg(12));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1568,7 +1568,7 @@ translate::from_object<ARG10> a10(frame.arg(10));
 translate::from_object<ARG11> a11(frame.arg(11));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1612,7 +1612,7 @@ translate::from_object<ARG8> a8(frame.arg(8));
 translate::from_object<ARG9> a9(frame.arg(9));
 translate::from_object<ARG10> a10(frame.arg(10));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1655,7 +1655,7 @@ translate::from_object<ARG7> a7(frame.arg(7));
 translate::from_object<ARG8> a8(frame.arg(8));
 translate::from_object<ARG9> a9(frame.arg(9));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1697,7 +1697,7 @@ translate::from_object<ARG6> a6(frame.arg(6));
 translate::from_object<ARG7> a7(frame.arg(7));
 translate::from_object<ARG8> a8(frame.arg(8));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1738,7 +1738,7 @@ translate::from_object<ARG5> a5(frame.arg(5));
 translate::from_object<ARG6> a6(frame.arg(6));
 translate::from_object<ARG7> a7(frame.arg(7));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1778,7 +1778,7 @@ translate::from_object<ARG4> a4(frame.arg(4));
 translate::from_object<ARG5> a5(frame.arg(5));
 translate::from_object<ARG6> a6(frame.arg(6));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1816,7 +1816,7 @@ translate::from_object<ARG3> a3(frame.arg(3));
 translate::from_object<ARG4> a4(frame.arg(4));
 translate::from_object<ARG5> a5(frame.arg(5));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1853,7 +1853,7 @@ translate::from_object<ARG2> a2(frame.arg(2));
 translate::from_object<ARG3> a3(frame.arg(3));
 translate::from_object<ARG4> a4(frame.arg(4));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1889,7 +1889,7 @@ translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
 translate::from_object<ARG3> a3(frame.arg(3));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1924,7 +1924,7 @@ gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1958,7 +1958,7 @@ lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_AR
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -1991,7 +1991,7 @@ core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)();
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3363,7 +3363,7 @@ translate::from_object<ARG14> a14(frame.arg(14));
 translate::from_object<ARG15> a15(frame.arg(15));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v,a14._v,a15._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3415,7 +3415,7 @@ translate::from_object<ARG13> a13(frame.arg(13));
 translate::from_object<ARG14> a14(frame.arg(14));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v,a14._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3465,7 +3465,7 @@ translate::from_object<ARG12> a12(frame.arg(12));
 translate::from_object<ARG13> a13(frame.arg(13));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3512,7 +3512,7 @@ translate::from_object<ARG11> a11(frame.arg(11));
 translate::from_object<ARG12> a12(frame.arg(12));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3558,7 +3558,7 @@ translate::from_object<ARG10> a10(frame.arg(10));
 translate::from_object<ARG11> a11(frame.arg(11));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3602,7 +3602,7 @@ translate::from_object<ARG8> a8(frame.arg(8));
 translate::from_object<ARG9> a9(frame.arg(9));
 translate::from_object<ARG10> a10(frame.arg(10));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3645,7 +3645,7 @@ translate::from_object<ARG7> a7(frame.arg(7));
 translate::from_object<ARG8> a8(frame.arg(8));
 translate::from_object<ARG9> a9(frame.arg(9));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3687,7 +3687,7 @@ translate::from_object<ARG6> a6(frame.arg(6));
 translate::from_object<ARG7> a7(frame.arg(7));
 translate::from_object<ARG8> a8(frame.arg(8));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3728,7 +3728,7 @@ translate::from_object<ARG5> a5(frame.arg(5));
 translate::from_object<ARG6> a6(frame.arg(6));
 translate::from_object<ARG7> a7(frame.arg(7));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3768,7 +3768,7 @@ translate::from_object<ARG4> a4(frame.arg(4));
 translate::from_object<ARG5> a5(frame.arg(5));
 translate::from_object<ARG6> a6(frame.arg(6));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3806,7 +3806,7 @@ translate::from_object<ARG3> a3(frame.arg(3));
 translate::from_object<ARG4> a4(frame.arg(4));
 translate::from_object<ARG5> a5(frame.arg(5));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3843,7 +3843,7 @@ translate::from_object<ARG2> a2(frame.arg(2));
 translate::from_object<ARG3> a3(frame.arg(3));
 translate::from_object<ARG4> a4(frame.arg(4));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3879,7 +3879,7 @@ translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
 translate::from_object<ARG3> a3(frame.arg(3));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3914,7 +3914,7 @@ gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3948,7 +3948,7 @@ lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_AR
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v);
-return retval;
+return retval.as_return_type();
 }
 };
 //
@@ -3981,7 +3981,7 @@ core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)();
-return retval;
+return retval.as_return_type();
 }
 };
 

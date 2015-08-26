@@ -55,7 +55,7 @@ public:
   T_sp lambdaList() const;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "SingleDispatchGenericFunctionClosure"; };
-  virtual LCC_RETURN LISP_CALLING_CONVENTION();
+  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
   bool singleDispatchGenericP() const { return true; };
 
   /*! Define a method to this SingleDispatchGenericFunction
@@ -105,7 +105,7 @@ private:
 public:
   DISABLE_NEW();
   virtual const char *describe() const { return "SingleDispatchGenericFunctoid"; };
-  virtual LCC_RETURN LISP_CALLING_CONVENTION() {
+  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
     IMPLEMENT_MEF(BF("Handle single dispatch"));
 #if 0            
 	    *lcc_resultP = this->_sdgf->INVOKE(lcc_nargs, nargs,args);
@@ -132,7 +132,7 @@ public:
              SingleDispatchMethod_sp cur_method);
   DISABLE_NEW();
 
-  virtual LCC_RETURN LISP_CALLING_CONVENTION() {
+  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
     IMPLEMENT_ME();
 #if 0
             // The closedEnv 

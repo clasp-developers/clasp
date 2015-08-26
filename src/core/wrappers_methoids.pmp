@@ -53,7 +53,7 @@ $for isConst [[
           $if ret==RetVoid [[
             return Values0<core::T_O>();
           ]] $elif ret==RetMV [[
-            return retval;
+            return retval.as_return_type();
           ]] $else [[
             return Values(translate::to_object<RT>::convert(retval));
           ]]

@@ -31,8 +31,8 @@ namespace gctools {
   namespace frame {
     typedef core::T_O *ElementType;
     static const size_t IdxRegisterSaveArea = 0;
-    static const size_t IdxNumElements = IdxRegisterSaveArea; // Where the num arguments (RAW - do not fix!!!)
-    static const size_t IdxOverflowArgs = 6; // IdxOverflowArgs-IdxRegisterSaveArea == Number of arguments passed in registers
+    static const size_t IdxNumElements = LCC_NARGS_REGISTER; // Where the num arguments (RAW - do not fix!!!)
+    static const size_t IdxOverflowArgs = LCC_TOTAL_REGISTERS; // IdxOverflowArgs-IdxRegisterSaveArea == Number of arguments passed in registers
     static const size_t IdxRegisterArgumentsStart = IdxOverflowArgs-LCC_ARGS_IN_REGISTERS; // Where the register arguments start
     static const size_t IdxValuesArray = IdxRegisterArgumentsStart;            // where the stack based arguments start
     /*! Frame: A class that maintains an array of T_O* pointers on a thread-local stack for setting up calls.
@@ -40,7 +40,8 @@ This class always needs to be allocated on the stack.
 It uses RAII to pop its array of pointers from the stack when the Frame goes out of scope.
 */
     struct Frame {
-      size_t _NumArguments;
+      size_t _Length;
+      size_t _Capacity; // May be larger than length
       ElementType* _frameImpl;
     /*! Calculate the number of elements required to represent the frame.
      It's IdxValuesArray+#elements */
@@ -48,6 +49,7 @@ It uses RAII to pop its array of pointers from the stack when the Frame goes out
         return (elements+IdxOverflowArgs) - LCC_ARGS_IN_REGISTERS;
       }
       Frame(size_t numArguments,core::T_sp parent = _Nil<core::T_O>());
+      void setLength(size_t l) { this->_Length = l; };
       ~Frame();
       inline ElementType& operator[](size_t idx) {
         return this->_frameImpl[IdxValuesArray+idx];
@@ -109,13 +111,13 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 #endif
     {
       // This must match (and should be in) lispCallingConvention.h
-      this->_Args[0].gp_offset = (gc::frame::IdxRegisterArgumentsStart-gc::frame::IdxRegisterSaveArea)*sizeof(gc::frame::ElementType);
-      this->_Args[0].fp_offset = 304;
       this->_Args[0].reg_save_area = &frame._frameImpl[gc::frame::IdxRegisterSaveArea];
       this->_Args[0].overflow_arg_area = &frame._frameImpl[gc::frame::IdxOverflowArgs];
       // This is where the number of arguments remaining should be stored
-      ((uintptr_t*)(this->_Args[0].reg_save_area))[0] = frame._NumArguments;
-      ((uintptr_t*)(this->_Args[0].reg_save_area))[1] = (uintptr_t)(this->_Args[0].overflow_arg_area);
+      ((uintptr_t*)(this->_Args[0].reg_save_area))[LCC_NARGS_REGISTER] = frame._Length;
+      ((uintptr_t*)(this->_Args[0].reg_save_area))[LCC_OVERFLOW_SAVE_REGISTER] = (uintptr_t)(this->_Args[0].overflow_arg_area);
+      this->_Args[0].gp_offset = (gc::frame::IdxRegisterArgumentsStart-gc::frame::IdxRegisterSaveArea)*sizeof(gc::frame::ElementType);
+      this->_Args[0].fp_offset = 304;
     };
     
   VaList_S(int nargs, va_list vargs)

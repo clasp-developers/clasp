@@ -51,7 +51,7 @@ $var NumArgs = 8
                                         , typename AdoptPointer<Pols,$Args_>::type()
                                         , a$Args_._v);
                       ]]
-                      return gctools::multiple_values<core::T_O>(retval,oidx);
+                      return LCC_RETURN(retval.raw_(),oidx);
                     }
                 };
                 ]]

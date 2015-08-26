@@ -213,7 +213,6 @@ namespace gctools {
   public:
     typedef T Type;
     Type *theObject;
-
   public:
   //Default constructor, set theObject to NULL
   inline smart_ptr() : theObject(NULL){};
@@ -229,6 +228,8 @@ namespace gctools {
     explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
       GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
     };
+
+    inline smart_ptr(const return_type &rt) : theObject((Type*)rt.ret0) {};
 
     inline smart_ptr(const smart_ptr<Type> &obj) : theObject(obj.theObject){};
 
@@ -377,7 +378,7 @@ namespace gctools {
     bool sameAsKeyP() const { return tagged_sameAsKeyp(this->theObject); }
 
   /*! Return the raw smart_ptr value interpreted as a T_O* */
-    core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+    inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
 
     void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
 
@@ -520,6 +521,10 @@ namespace gctools {
 //
 // Declare AsOrNull and As converters
 //
+template <typename To_SP>
+inline bool IsA(return_type const &rhs) {
+  return TaggedCast<typename To_SP::Type *, typename core::T_O*>::isA(rhs.ret0);
+};
 template <typename To_SP, typename From_SP>
 inline bool IsA(From_SP const &rhs) {
   return TaggedCast<typename To_SP::Type *, typename From_SP::Type *>::isA(reinterpret_cast<typename From_SP::Type *>(rhs.raw_()));
@@ -556,6 +561,19 @@ inline To_SP As(From_SP const &rhs) {
   lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.raw_()));
   HARD_UNREACHABLE();
 }
+template <typename To_SP>
+inline To_SP As(const return_type &rhs) {
+  GCTOOLS_ASSERT(rhs.nvals==1);
+  if (IsA<To_SP>(rhs)) {
+    To_SP ret((Tagged)rhs.ret0);
+    return ret;
+  }
+  class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
+  class_id this_typ = reg::registered_class<core::T_O*>::id;
+  lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.ret0));
+  HARD_UNREACHABLE();
+}
+
 };
 
 namespace gctools {
@@ -570,6 +588,7 @@ class smart_ptr<core::T_O> : public tagged_ptr<core::T_O> {
   /*! Create a smart pointer from an existing tagged pointer */
     explicit inline smart_ptr(Tagged ptr) : tagged_ptr<Type>((Tagged)ptr){};
     inline smart_ptr(const smart_ptr<Type> &obj) : tagged_ptr<Type>((Tagged)obj.theObject){};
+    inline smart_ptr(const return_type &rt) : tagged_ptr<Type>((Tagged)rt.ret0) {};
     template <class From>
       inline smart_ptr(smart_ptr<From> const &rhs) : tagged_ptr<Type>((Tagged)rhs.theObject){};
 
@@ -960,7 +979,8 @@ public:
   Type *&rawRef_() { return this->theObject; };
 public:
   //! The default constructor returns an invalid smart_ptr
-  smart_ptr() : theObject(NULL){};
+ inline smart_ptr() : theObject(NULL){};
+  inline smart_ptr(const return_type &rt) : theObject((Type*)rt.ret0) {};
   inline smart_ptr(const smart_ptr<core::T_O> &other) {
     if (other.consp()) {
       this->theObject = other.theObject;

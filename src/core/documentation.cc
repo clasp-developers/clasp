@@ -48,7 +48,7 @@ T_sp af_record_cons(List_sp record, T_sp key, T_sp sub_key) {
   for (auto cur : coerce_to_list(record)) {
     List_sp i = oCar(cur);
     T_sp obj = oCar(i);
-    if (eval::funcall(cl::_sym_equalp, obj, cons).isTrue())
+    if (T_sp(eval::funcall(cl::_sym_equalp, obj, cons)).isTrue())
       return (i);
   }
   return (_Nil<T_O>());

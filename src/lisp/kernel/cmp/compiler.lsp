@@ -1360,7 +1360,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
         (funcall compile-hook name definition env pathname))
       (clasp-compile* name definition env pathname)))
 
-(defun compile-in-env (compile-hook bind-to-name &optional definition env &aux conditions)
+(defun compile-in-env (bind-to-name &optional definition env compile-hook &aux conditions)
   "Compile in the given environment"
   (with-compiler-env (conditions)
     (let ((*the-module* (create-run-time-module-for-compile)))
@@ -1393,7 +1393,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
      (error "Handle compile with definition = function"))
     ((consp definition)
      (cmp-log "compile form: %s\n" definition)
-     (compile-in-env *cleavir-compile-hook* name definition nil))
+     (compile-in-env name definition nil *cleavir-compile-hook*))
     ((null definition)
      (let ((func (symbol-function name)))
        (cond
@@ -1403,7 +1403,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	  (multiple-value-bind (lambda-expression wrapped-env)
 	      (generate-lambda-expression-from-interpreted-function func)
 	    (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
-	    (compile-in-env *cleavir-compile-hook* name lambda-expression wrapped-env)))
+	    (compile-in-env name lambda-expression wrapped-env *cleavir-compile-hook*)))
 	 (t (error "Could not compile func")))))
     (t (error "Illegal combination of arguments for compile: ~a ~a"
 	      name definition))))

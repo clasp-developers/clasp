@@ -796,7 +796,7 @@ T_mv af_sharp_plus(T_sp sin, Character_sp ch, T_sp num) {
   _G();
   T_sp feat = read_feature_test(sin);
   LOG(BF("feature[%s]") % _rep_(feat));
-  if (eval::funcall(_sym_reader_feature_p, feat).isTrue()) {
+  if (T_sp(eval::funcall(_sym_reader_feature_p, feat)).isTrue()) {
     LOG(BF("The feature test passed - reading lisp object"));
     T_sp obj = read_lisp_object(sin, true, _Nil<T_O>(), true);
     LOG(BF("Read the object[%s]") % _rep_(obj));
@@ -820,7 +820,7 @@ T_mv af_sharp_minus(T_sp sin, Character_sp ch, T_sp num) {
   _G();
   T_sp feat = read_feature_test(sin);
   LOG(BF("feature[%s]") % _rep_(feat));
-  if (!eval::funcall(_sym_reader_feature_p, feat).isTrue()) {
+  if (!T_sp(eval::funcall(_sym_reader_feature_p, feat)).isTrue()) {
     LOG(BF("The feature test passed - reading lisp object"));
     T_sp obj = read_lisp_object(sin, true, _Nil<T_O>(), true);
     LOG(BF("Read the object[%s]") % _rep_(obj));

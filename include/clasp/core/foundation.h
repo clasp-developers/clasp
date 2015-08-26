@@ -615,6 +615,20 @@ extern void clasp_mps_debug_fix_after(void *pbase, void *px);
 extern void clasp_mps_debug_container(const char *ctype, const char *name, int size);
 //extern void clasp_mps_debug_scan_object(gctools::GCObject*  obj);
 
+namespace gctools {
+  struct return_type {
+    core::T_O* ret0;
+    size_t nvals;
+  return_type(core::T_O* r0, size_t nv) : ret0(r0), nvals(nv) {};
+  };
+};
+
+namespace core {
+#define LCC_MACROS
+  #include <clasp/core/lispCallingConvention.h>
+#undef LCC_MACROS
+};
+
 #include <clasp/gctools/memoryManagement.h>
 
 namespace core {
@@ -631,6 +645,15 @@ typedef gctools::smart_ptr<SourceFileInfo_O> SourceFileInfo_sp;
 #include <clasp/gctools/containers.h>
 
 #include <clasp/core/multipleValues.h>
+
+namespace core {
+  class Instance_O;
+  typedef gc::smart_ptr<Instance_O> Instance_sp;
+  
+#define LCC_PROTOTYPES
+#include <clasp/core/lispCallingConvention.h>
+#undef LCC_PROTOTYPES
+};
 
 namespace core {
 core::T_sp lisp_true();
@@ -832,7 +855,6 @@ string searchAndReplaceString(const string &str, const string &search, const str
    and a varargs list */
 typedef void (*LispCallingConventionPtr)(T_mv *result, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, va_list rest);
 
-#include <clasp/core/lispCallingConvention.h>
 }
 
 namespace kw {
@@ -1134,19 +1156,14 @@ class Functoid {
 public:
   virtual const char *describe() const { return "Functoid - subclass must implement describe()"; };
   inline LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {
-#if 1
     VaList_S lcc_arglist_s;
     va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
     LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
     core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
-#else
-    LCC_DECLARE_VA_LIST();
-    LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST();
-#endif
     return this->invoke_va_list(LCC_PASS_ARGS);
   }
 
-  virtual LCC_RETURN LISP_CALLING_CONVENTION() {
+  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
     printf("Subclass of Functoid must implement 'activate'\n");
     exit(1);
   };
@@ -1154,13 +1171,6 @@ public:
   void dump() const {
     printf("Functoid - %s\n", _rep_(this->name).c_str());
   }
-
-#if 0
-	T_mv funcall(int n_args, va_list vl) {
-	    //IMPLEMENT_ME();
-	    return Values0<T_O>();
-	}
-#endif
 public:
   T_sp name;
 
@@ -1181,7 +1191,7 @@ public:
 public:
   virtual void setAssociatedFunctions(core::List_sp assocFuncs) {};
   virtual const char *describe() const { return "Closure"; };
-  virtual LCC_RETURN LISP_CALLING_CONVENTION() {
+  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
     printf("Subclass of Closure must implement 'activate'\n");
     exit(1);
   };

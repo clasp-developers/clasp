@@ -966,36 +966,27 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #define DECL_core_multipleValueFuncall ""
 #define DOCS_core_multipleValueFuncall "multipleValueFuncall"
 T_mv core_multipleValueFuncall(T_sp funcDesignator, List_sp functions) {
-  MultipleValues mvAccumulate;
-  mvAccumulate._Size = 0;
+  gc::frame::Frame accArgs(MultipleValues::MultipleValuesLimit);
+  size_t numArgs = 0;
   size_t idx = 0;
   for (auto cur : functions) {
     Function_sp func = gc::As<Function_sp>(oCar(cur));
     T_mv result = eval::funcall(func);
-    mvAccumulate[idx] = result.raw_();
+    ASSERT(idx < MultipleValues::MultipleValuesLimit);
+    accArgs[idx] = result.raw_();
     ++idx;
     for (size_t i = 1, iEnd(result.number_of_values()); i < iEnd; ++i) {
-      mvAccumulate[idx] = result.valueGet(i).raw_();
+      ASSERT(idx < MultipleValues::MultipleValuesLimit);
+      accArgs[idx] = result.valueGet(i).raw_();
       ++idx;
     }
   }
-  ASSERT(idx < MultipleValues::MultipleValuesLimit);
-  mvAccumulate._Size = idx;
+  accArgs.setLength(idx);
   Function_sp fmv = coerce::functionDesignator(funcDesignator);
-#if 0 // This was from when I passed arguments in the mvThreadLocal array
-  MultipleValues &mvThreadLocal = lisp_multipleValues();
-  for (size_t i = LCC_FIXED_ARGS, iEnd(mvAccumulate._Size); i < iEnd; ++i) {
-    mvThreadLocal[i] = mvAccumulate[i];
-  }
-#endif
-  T_O **frame = mvAccumulate.callingArgsStart();
   gctools::tagged_functor<Closure> func = fmv->closure;
-  switch (mvAccumulate.getSize() ) {
-#define APPLY_TO_TAGGED_FRAME
-#include <clasp/core/generated/applyToActivationFrame.h>
-#undef APPLY_TO_TAGGED_FRAME
-  };
-  UNREACHABLE();
+  VaList_S arg_list_struct(accArgs);
+  VaList_sp arg_list(&arg_list_struct);
+  return T_mv((*func)(NULL,arg_list.raw_(),idx, accArgs[0], accArgs[1], accArgs[2]));
 }
 
 #define ARGS_core_multipleValueProg1_Function "(func1 func2)"

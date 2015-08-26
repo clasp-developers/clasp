@@ -62,7 +62,7 @@ protected:
 
 public:
   static T_sp clasp_currentVisibleEnvironment(T_sp env);
-  static ActivationFrame_sp clasp_getActivationFrame(T_sp env);
+  static T_sp clasp_getActivationFrame(T_sp env);
   static int clasp_countFunctionContainerEnvironments(T_sp env);
   static bool clasp_findValue(T_sp env, T_sp name, int &depth, int &index, ValueKind &valueKind, T_sp &value);
   static bool clasp_findFunction(T_sp env, T_sp functionName, int &depth, int &index, Function_sp &func);
@@ -134,7 +134,7 @@ private:
   virtual void _environmentStackFill(int level, stringstream &sout);
 
 public:
-  virtual ActivationFrame_sp getActivationFrame() const;
+  virtual T_sp getActivationFrame() const;
 
 public:
   // Indexed lookup of values
@@ -383,7 +383,7 @@ public:
   /*! Extend the binder with the symbol/value pair and return the value */
   T_sp new_binding(Symbol_sp sym, int idx, T_sp value);
 
-  ActivationFrame_sp getActivationFrame() const;
+  T_sp getActivationFrame() const;
 
   bool activationFrameElementBoundP(int idx) const;
 #if 0
@@ -436,7 +436,7 @@ public:
 	 */
   static FunctionValueEnvironment_sp createEmpty(T_sp parent);
   static FunctionValueEnvironment_sp createForEntries(int numEntries, T_sp parent);
-  ActivationFrame_sp getActivationFrame() const;
+  T_sp getActivationFrame() const;
 
 public:
   virtual string summaryOfContents() const;
@@ -488,7 +488,7 @@ class CompileTimeEnvironment_O : public LexicalEnvironment_O {
   LISP_CLASS(core, CorePkg, CompileTimeEnvironment_O, "CompileTimeEnvironment");
 
 public:
-  virtual ActivationFrame_sp getActivationFrame() const;
+  virtual T_sp getActivationFrame() const;
 
   virtual T_sp currentVisibleEnvironment() const;
 
@@ -680,7 +680,7 @@ public: // Codes here
   static TagbodyEnvironment_sp make(T_sp env);
 
 public:
-  virtual ActivationFrame_sp getActivationFrame() const;
+  virtual T_sp getActivationFrame() const;
 
   /*! Return the code that corresponds to the tag index */
   List_sp codePos(int index) const;

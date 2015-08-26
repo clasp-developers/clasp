@@ -376,7 +376,7 @@ struct Tester {
     if (this->_use_key_func) {
       obj = eval::funcall(this->_key_func, obj);
     }
-    bool result = eval::funcall(this->_test_func, this->_item, obj).isTrue();
+    bool result = T_sp(eval::funcall(this->_test_func, this->_item, obj)).isTrue();
     return ((result == this->_test_pass));
   }
 };

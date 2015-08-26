@@ -1144,8 +1144,10 @@ T_mv af_mapappend(Function_sp fun, List_sp cargs) {
   T_sp testNull = eval::funcall(cl::_sym_some, cl::_sym_null->symbolFunction(), cargs);
   if (testNull.nilp())
     return (Values(_Nil<T_O>()));
-  T_sp appendHead = eval::funcall(fun, eval::funcall(cl::_sym_mapcar, cl::_sym_car->symbolFunction(), cargs));
-  T_sp appendTail = eval::funcall(_sym_mapappend, fun, eval::funcall(cl::_sym_mapcar, cl::_sym_cdr->symbolFunction(), cargs));
+  T_sp arg0 = eval::funcall(cl::_sym_mapcar, cl::_sym_car->symbolFunction(), cargs);
+  T_sp appendHead = eval::funcall(fun, arg0 );
+  T_sp arg2 = eval::funcall(cl::_sym_mapcar, cl::_sym_cdr->symbolFunction(), cargs);
+  T_sp appendTail = eval::funcall(_sym_mapappend, fun, arg2);
   return eval::funcall(cl::_sym_append, appendHead, appendTail);
 };
 
@@ -1452,7 +1454,7 @@ T_sp type_of(T_sp x) {
       SIMPLE_ERROR(BF("Illegal class %s for instance class of %s") % _rep_(cl) % _rep_(instance));
     }
     Symbol_sp st = gc::As<Symbol_sp>(t);
-    if (t.nilp() || cl != eval::funcall(cl::_sym_findClass, st, _Nil<T_O>())) {
+    if (t.nilp() || cl != T_sp(eval::funcall(cl::_sym_findClass, st, _Nil<T_O>()))) {
       t = cl;
     }
     return t;
@@ -1590,7 +1592,8 @@ bool satisfiesTest(InvocationHistoryFrameIterator_sp iterator, T_sp test) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
   if ( test.nilp()) return true;
-  return eval::funcall(test,iterator).isTrue();
+  T_sp res = eval::funcall(test,iterator);
+  return res.isTrue();
 }
 
 void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationHistoryFrameIterator_sp iterator, T_sp test) {

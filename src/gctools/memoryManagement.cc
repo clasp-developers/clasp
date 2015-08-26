@@ -74,8 +74,8 @@ void handle_signals(int signo) {
 
 void fatal_error_handler(void *user_data, const std::string &reason, bool gen_crash_diag) {
   printf("Hit a fatal error in llvm/clang: %s\n", reason.c_str());
-  printf("Terminating via exit(0)\n");
-  exit(0);
+  printf("Clasp is terminating via abort(0)\n");
+  abort();
 }
 
 #ifdef USE_BOEHM

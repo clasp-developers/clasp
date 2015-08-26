@@ -204,7 +204,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "-S/--seed #          - Seed the random number generator\n"
              "-t/--trap {symbol}   - Trap when a specific symbol is INTERN'd\n"
              "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n");
-      exit(1);
+      exit(0);
     } else if (arg == "-I" || arg == "--ignore-image") {
       this->_DontLoadImage = true;
     } else if (arg == "-N" || arg == "--non-interactive") {

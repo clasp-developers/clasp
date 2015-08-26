@@ -566,7 +566,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   }
 #endif
   // Evaluate the function
-  *resultP = fptr(LCC_FROM_SMART_PTR(closedEnv), LCC_PASS_ARGS1_VA_LIST(ltvP));
+  *resultP = fptr(LCC_PASS_ARGS1_VA_LIST(ltvP));
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     core::Number_sp endTime = gc::As<core::Number_sp>(core::cl_getInternalRealTime());
@@ -585,13 +585,13 @@ void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], int *numf
   //        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
   for (int i = 0; i < numfun; ++i) {
     //            printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
-    *result = (fptr[i])( _Nil<core::T_O>().raw_(), LCC_PASS_ARGS0_VA_LIST());
+    *result = (fptr[i])(LCC_PASS_ARGS0_VA_LIST());
   }
 }
 
 void invokeLlvmFunctionVoid(fnLispCallingConvention fptr) {
   core::T_mv result;
-  result = fptr( _Nil<core::T_O>().raw_(), LCC_PASS_ARGS0_VA_LIST());
+  result = fptr( LCC_PASS_ARGS0_VA_LIST());
 };
 
 extern void sp_symbolValueReadOrUnbound(core::T_sp *resultP, const core::Symbol_sp *symP) {
@@ -1677,7 +1677,7 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val) {
   s->setf_symbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
 }
 
-void cc_call(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_ELLIPSIS) {
+gc::return_type cc_call(/*core::T_mv *result,*/ core::T_O *tfunc, LCC_ARGS_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
@@ -1686,10 +1686,11 @@ void cc_call(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_ELLIPSIS) {
   va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
   core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  *result = closure->invoke_va_list(LCC_PASS_ARGS);
+  //*result = closure->invoke_va_list(LCC_PASS_ARGS);
+  return closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
-void cc_invoke(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_ELLIPSIS) {
+gc::return_type cc_invoke(/*core::T_mv *result,*/ core::T_O *tfunc, LCC_ARGS_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
   ASSERT(tagged_func != NULL);
@@ -1698,7 +1699,8 @@ void cc_invoke(core::T_mv *result, core::T_O *tfunc, LCC_ARGS_ELLIPSIS) {
   va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
   core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  *result = closure->invoke_va_list(LCC_PASS_ARGS);
+  //*result = closure->invoke_va_list(LCC_PASS_ARGS);
+  return closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
 
@@ -2093,7 +2095,7 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
 
 void clasp_terminate(const char *file, int line, int column, const char *func) {
   printf("Terminating file: %s  func: %s\n", file, func);
-  exit(1);
+  abort();
 }
 };
 

@@ -152,7 +152,7 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
 			core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
 			core::T_mv result;
 			// Call the fptr
-			result = fptr(_Nil<core::T_O>().raw_(),LCC_PASS_ARGS1_VA_LIST(targs.raw_()));
+			result = fptr(LCC_PASS_ARGS1_VA_LIST(targs.raw_()));
 			// Should resolve to const vector<string>& 
 			translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
 			return cresult._v;

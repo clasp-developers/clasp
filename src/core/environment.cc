@@ -253,10 +253,10 @@ T_mv Environment_O::clasp_lookupMetadata(T_sp env, Symbol_sp key) {
   IMPLEMENT_MEF(BF("Checkout Environment_O::lookupMetadata - it doesn't look like we do much yet"));
 }
 
-ActivationFrame_sp Environment_O::clasp_getActivationFrame(T_sp tenv) {
+T_sp Environment_O::clasp_getActivationFrame(T_sp tenv) {
   _G();
   if (tenv.nilp())
-    return (_Nil<ActivationFrame_O>());
+    return (_Nil<T_O>());
   if (Environment_sp env = tenv.asOrNull<Environment_O>()) {
     return (env->getActivationFrame());
   }
@@ -264,7 +264,7 @@ ActivationFrame_sp Environment_O::clasp_getActivationFrame(T_sp tenv) {
 //  NOT_ENVIRONMENT_ERROR(tenv);
 };
 
-ActivationFrame_sp Environment_O::getActivationFrame() const {
+T_sp Environment_O::getActivationFrame() const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
@@ -1022,7 +1022,7 @@ bool ValueEnvironment_O::lexicalSpecialP(Symbol_sp sym) const {
   return (unbox_fixnum(gc::As<Fixnum_sp>(oCdr(fi))) == SPECIAL_TARGET);
 }
 
-ActivationFrame_sp ValueEnvironment_O::getActivationFrame() const {
+T_sp ValueEnvironment_O::getActivationFrame() const {
   //	if ( this -> isNil()) return _Nil<ActivationFrame_O>();
   return this->_ActivationFrame;
 }
@@ -1239,7 +1239,7 @@ void FunctionValueEnvironment_O::exposePython(core::Lisp_sp lisp) {
 #endif
 }
 
-ActivationFrame_sp FunctionValueEnvironment_O::getActivationFrame() const {
+T_sp FunctionValueEnvironment_O::getActivationFrame() const {
   //	if (this -> isNil() ) return _Nil<ActivationFrame_O>();
   return this->_FunctionFrame;
 };
@@ -1351,7 +1351,7 @@ void CompileTimeEnvironment_O::exposePython(core::Lisp_sp lisp) {
 
 CompileTimeEnvironment_O::CompileTimeEnvironment_O() : Base(){};
 
-ActivationFrame_sp CompileTimeEnvironment_O::getActivationFrame() const {
+T_sp CompileTimeEnvironment_O::getActivationFrame() const {
   _G();
   return clasp_getActivationFrame(this->currentVisibleEnvironment());
 };
@@ -1666,7 +1666,7 @@ string TagbodyEnvironment_O::tagsAsString() const {
   return ss.str();
 }
 
-ActivationFrame_sp TagbodyEnvironment_O::getActivationFrame() const {
+T_sp TagbodyEnvironment_O::getActivationFrame() const {
   return this->_ActivationFrame;
 }
 

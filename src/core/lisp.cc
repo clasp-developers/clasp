@@ -351,10 +351,10 @@ void run_quick_tests() {
                                ,cl::_sym_nil);
   TEST_ASSERT_ALWAYS(cl_length(val3) == 3);
   List_sp val4 = eval::funcall(cl::_sym_list
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil);
+                               ,clasp_make_fixnum(1)
+                               ,clasp_make_fixnum(2)
+                               ,clasp_make_fixnum(3)
+                               ,clasp_make_fixnum(4));
   TEST_ASSERT_ALWAYS(cl_length(val4) == 4);
   List_sp val5 = eval::funcall(cl::_sym_list
                                ,cl::_sym_nil
@@ -1361,7 +1361,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
       size_t sep = options._TrapIntern.find(':');
       if ( sep == string::npos ) {
         printf("You must provide a symbol name of the form PKG:NAME or PKG::NAME\n");
-        exit(1);
+        abort();
       }
       size_t nameStart = sep+1;
       if ( options._TrapIntern[nameStart] == ':' ) ++nameStart;
@@ -1439,7 +1439,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
       // Catch condition from reader means just ask for another s-exp if
       // interactive and terminate if batch
       this->print(BF("%s:%d Caught Condition from reader\n") % __FILE__ % __LINE__);
-      exit(1);
+      abort();
       //		this->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
     }
     catch (DebuggerSaysAbortToRepl &abort) {
@@ -2095,7 +2095,7 @@ public:
     this->_args = Cons_O::createList(_Nil<T_O>(), _Nil<T_O>());
   }
   bool operator()(T_sp x, T_sp y) {
-    return eval::funcall(this->_SortFunction, x, y);
+    return T_sp(eval::funcall(this->_SortFunction, x, y)).isTrue();
   }
 };
 
@@ -2346,7 +2346,7 @@ T_mv af_universalErrorHandler(T_sp continueString, T_sp datum, List_sp initializ
   }
   dbg_hook("universalErrorHandler");
   af_invokeInternalDebugger(_Nil<T_O>());
-  exit(1);
+  abort();
 };
 
 #define ARGS_af_invokeInternalDebugger "(&optional condition)"

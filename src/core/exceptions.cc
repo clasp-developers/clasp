@@ -452,7 +452,7 @@ void DebugStream::open() {
 	this->_OutStream.open(this->_LogFileName.c_str(),std::ios_base::app);
 	if ( this->_OutStream.fail() ) {
 	    printf( "DEBUG LOG(())@%lX COULD NOT OPEN FILE(%s) FAILED!!!\n", (unsigned long)(this), this->_LogFileName.c_str());
-	    exit(1);
+	    abort();
 	}
 	this->_OutStreamOpen = true;
     }

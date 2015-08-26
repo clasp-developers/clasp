@@ -67,7 +67,7 @@ public:
   virtual const T_sp &operator[](int idx) const { SUBIMP(); };
 
   virtual T_sp currentVisibleEnvironment() const;
-  virtual ActivationFrame_sp getActivationFrame() const;
+  virtual T_sp getActivationFrame() const;
 
   virtual T_sp _lookupValue(int depth, int index);
   virtual T_sp &lookupValueReference(int depth, int index);
@@ -166,7 +166,7 @@ public:
 #endif
     return vf;
   }
-  static ValueFrame_sp create(const T_sp &parent) {
+  static ValueFrame_sp create(T_sp parent) {
     _G();
     GC_ALLOCATE(ValueFrame_O, vf);
     vf->_ParentFrame = parent;

@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) { // Do not touch debug log until after MPI ini
     Mpi_O::Init(argc, argv, mpiEnabled, rank, msize);
   } catch (HardError &err) {
     printf("Could not start MPI\n");
-    exit(1);
+    abort();
   }
 #endif
   printf("CANDO mpi rank/size = (%d/%d)\n", rank, msize);

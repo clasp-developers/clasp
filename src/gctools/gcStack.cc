@@ -27,7 +27,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 namespace gctools {
 namespace frame {
-Frame::Frame(size_t numArguments,core::T_sp parent) : _NumArguments(numArguments) {
+Frame::Frame(size_t numArguments,core::T_sp parent) : _Capacity(numArguments), _Length(numArguments) {
   size_t sz = FrameSize(numArguments)*sizeof(ElementType);
   this->_frameImpl = reinterpret_cast<ElementType*>(threadLocalStack()->pushFrame(sz));
   this->_frameImpl[IdxNumElements] = reinterpret_cast<core::T_O*>(numArguments);
