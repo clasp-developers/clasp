@@ -147,7 +147,7 @@ LCC_RETURN InterpretedClosure::LISP_CALLING_CONVENTION() {
     printf("%s:%d Entering InterpretedClosure   source file = %s  lineno=%d\n", __FILE__, __LINE__, _frame.sourcePathName().c_str(), _frame.lineno());
   }
 #endif
-  return Values(eval::sp_progn(this->_code, newValueEnvironment));
+  return eval::sp_progn(this->_code, newValueEnvironment).as_return_type();
 };
 
 T_mv Function_O::lambdaList() {

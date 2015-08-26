@@ -743,7 +743,6 @@
     ((instruction cleavir-ir:return-instruction) return-value inputs outputs successors abi)
   (declare (ignore successors))
   (cmp:irc-low-level-trace :flow)
-  (format t "translate-branch-instruction  cleavir-ir:return-instruction --> ~a~%" return-value )
   (llvm-sys:create-ret cmp:*irbuilder* (%load return-value)))
 
 

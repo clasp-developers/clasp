@@ -205,22 +205,12 @@ ALWAYS_INLINE core::Closure *va_lexicalFunction(int depth, int index, core::T_sp
   return &(*func->closure);
 }
 
-ALWAYS_INLINE void mv_FUNCALL(core::T_mv *resultP, core::Closure *closure, LCC_ARGS_ELLIPSIS) {
-  ASSERTF(resultP, BF("mv_FUNCALL resultP is NULL!!!"));
+ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
   core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  *resultP = closure->invoke_va_list(LCC_PASS_ARGS);
-}
-
-ALWAYS_INLINE void sp_FUNCALL(core::T_sp *resultP, core::Closure *closure, LCC_ARGS_ELLIPSIS) {
-  ASSERTF(resultP, BF("sp_FUNCALL resultP is NULL!!!"));
-  VaList_S lcc_arglist_s;
-  va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
-  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
-  core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  *resultP = closure->invoke_va_list(LCC_PASS_ARGS);
+  return lcc_closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
 ALWAYS_INLINE void mv_FUNCALL_activationFrame(core::T_mv *resultP, core::Closure *closure, core::ActivationFrame_sp af) {
@@ -1677,9 +1667,9 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val) {
   s->setf_symbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
 }
 
-gc::return_type cc_call(/*core::T_mv *result,*/ core::T_O *tfunc, LCC_ARGS_ELLIPSIS) {
+gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
-  core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
+  core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(lcc_func);
   ASSERT(tagged_func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure.as<core::Closure>();
   VaList_S lcc_arglist_s;
@@ -1690,9 +1680,9 @@ gc::return_type cc_call(/*core::T_mv *result,*/ core::T_O *tfunc, LCC_ARGS_ELLIP
   return closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
-gc::return_type cc_invoke(/*core::T_mv *result,*/ core::T_O *tfunc, LCC_ARGS_ELLIPSIS) {
+gc::return_type cc_invoke(LCC_ARGS_CC_CALL_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
-  core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
+  core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(lcc_func);
   ASSERT(tagged_func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
   VaList_S lcc_arglist_s;
@@ -2098,17 +2088,6 @@ void clasp_terminate(const char *file, int line, int column, const char *func) {
   abort();
 }
 };
-
-
-#if 0
-core::T_mv ccmv_invoke(core::T_O *tfunc, LCC_ARGS_BASE) {
-  //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
-  core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
-  ASSERT(tagged_func != NULL);
-  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
-  closure->invoke(result, LCC_PASS_ARGS);
-}
-#endif
 
 #pragma GCC visibility pop
 

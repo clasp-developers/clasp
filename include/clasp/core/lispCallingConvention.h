@@ -49,12 +49,13 @@ THE SOFTWARE.
 #define LCC_PASS_ARGS2_VA_LIST(a0, a1)     NULL, NULL, 2,   a0,   a1, NULL
 #define LCC_PASS_ARGS3_VA_LIST(a0, a1, a2) NULL, NULL, 3,   a0,   a1,   a2
 
-
-#define LCC_ARGS_ELLIPSIS core::T_O* dummyEnv,  core::T_O* dummyArgList,     std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
-#define LCC_ARGS_VA_LIST  core::T_O* lcc_closedEnv, core::T_O* lcc_arglist, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2 
+#define LCC_ARGS_FUNCALL_ELLIPSIS core::Closure* lcc_closure, core::T_O* dumArgList,  std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
+#define LCC_ARGS_CC_CALL_ELLIPSIS core::T_O* lcc_func, core::T_O* dummyArgList,  std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
+#define LCC_ARGS_ELLIPSIS core::T_O* dummyEnv,  core::T_O* dummyArgList,         std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
+#define LCC_ARGS_VA_LIST  core::T_O* lcc_closedEnv, core::T_O* lcc_arglist,      std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2 
 // When you pass args to another function use LCC_PASS_ARGS
-#define LCC_PASS_ARGS NULL, lcc_arglist, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2
-#define LCC_PASS_ARGS_ENV(e) e, lcc_arglist, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2
+#define LCC_PASS_ARGS           NULL, lcc_arglist, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2
+#define LCC_PASS_ARGS_ENV(_env) _env, lcc_arglist, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2
 
 // Compiled functions get the raw va_list
 #define LCC_VA_LIST(_valist) (*_valist)._Args

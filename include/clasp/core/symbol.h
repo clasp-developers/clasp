@@ -89,8 +89,8 @@ public:
   string formattedName(bool prefixAlways) const;
 
 public:
-  T_sp apply();
-  T_sp funcall();
+//  T_sp apply();
+//  T_sp funcall();
 
   // Include the apply function for symbols up to some high arity
   //#include "symbol_apply_inc.h"

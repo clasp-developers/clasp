@@ -1635,7 +1635,6 @@ T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
   return exec;
 }
 
-#if 0
 T_mv applyClosureToActivationFrame(gctools::tagged_functor<Closure> func, ActivationFrame_sp args) {
   size_t nargs = args->length();
   T_sp *frame = args->argArray();
@@ -1647,7 +1646,6 @@ T_mv applyClosureToActivationFrame(gctools::tagged_functor<Closure> func, Activa
       SIMPLE_ERROR(BF("Illegal number of arguments in call: %s") % nargs);
   };
 }
-#endif
 
 #if 0
 T_mv applyClosureToStackFrame(gctools::tagged_functor<Closure> func, T_sp stackFrame) {
@@ -1681,7 +1679,6 @@ T_mv applyToStackFrame(T_sp head, T_sp stackFrame) {
 }
 #endif
 
-#if 0
 T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp args) {
   _G();
   T_sp tfn = lookupFunction(head, args);
@@ -1700,7 +1697,6 @@ T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp args) {
   }
   SIMPLE_ERROR(BF("In applyToActivationFrame the closure for %s is NULL and is being applied to arguments: %s") % _rep_(ffn) % _rep_(args));
 }
-#endif
 
 
 #if 0
@@ -1825,7 +1821,8 @@ T_mv cl_apply(T_sp head, T_sp args) {
     }
     VaList_S vargs_struct(passArgs);
     VaList_sp vargs(&vargs_struct);
-    return eval::apply_consume_VaList(func,vargs);
+    T_mv res = eval::apply_consume_VaList(func,vargs);
+    return res;
 #if 0
     List_sp passArgs = args;
     ValueFrame_sp frame(ValueFrame_O::create(passArgs, _Nil<ActivationFrame_O>()));

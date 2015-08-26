@@ -330,12 +330,13 @@ the corresponding VAR.  Returns NIL."
 ;; We do not use this macroexpanso, and thus we do not care whether
 ;; it is efficiently compiled by ECL or not.
 (core:fset 'multiple-value-bind
-      #'(lambda (whole env)
-	  (let ((vars (cadr whole))
-		(form (caddr whole))
-		(body (cdddr whole)))
-	  `(core::multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
-      t)
+           #'(lambda (whole env)
+               (declare (core:lambda-name multiple-value-bind-macro))
+               (let ((vars (cadr whole))
+                     (form (caddr whole))
+                     (body (cdddr whole)))
+                 `(core::multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
+           t)
 
 (defun warn (x &rest args)
   (bformat t "WARN: %s %s\n" x args))

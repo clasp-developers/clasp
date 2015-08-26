@@ -737,10 +737,13 @@ bool lisp_characterP(T_sp o) {
   return af_characterP(o);
 }
 
+#if 0
 T_sp lisp_apply(T_sp funcDesig, ActivationFrame_sp frame) {
   _G();
   return eval::applyToActivationFrame(funcDesig, frame);
 }
+#endif
+
 
 #if 0
     string lisp_convertCNameToLispName(string const& cname, bool convertUnderscoreToDash)

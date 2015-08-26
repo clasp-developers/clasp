@@ -221,17 +221,21 @@
 ;;; Arguments are passed in registers and in the multiple-value-array
 ;;;
 
-(defun closure-call (call-or-invoke intrinsic-name closure return-value arguments abi &key (label "") landing-pad)
+(defun closure-call (call-or-invoke intrinsic-name closure return-value arg-allocas abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
-  (let ((real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
-                       (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
-                       arguments)))
+  (let* ((arguments (mapcar (lambda (x) (%load x)) arg-allocas))
+         (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
+                        (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
+                        arguments)))
     (with-return-values (return-vals return-value abi)
       (let ((args (list*
-                   return-value
                    (cmp:irc-load closure)
+                   (cmp:null-t-ptr)
                    (%size_t (length arguments))
                    real-args)))
-        (if (eq call-or-invoke :call)
-            (cmp:irc-create-call intrinsic-name args label)
-            (cmp:irc-create-invoke intrinsic-name args landing-pad label))))))
+        (let* ((result-in-registers
+               (if (eq call-or-invoke :call)
+                   (cmp:irc-create-call intrinsic-name args label)
+                   (cmp:irc-create-invoke intrinsic-name args landing-pad label))))
+          (%store result-in-registers return-value))))))
+               

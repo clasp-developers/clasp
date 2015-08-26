@@ -246,27 +246,29 @@ Boehm and MPS use a single pointer"
 ;;
 ;; The last passed-arg is va-list
 (defstruct (calling-convention-impl (:type vector))
+  valist
   nargs
-  passed-args ;; the last passed-arg is a va-list
-  args ;; This is the mv-array where the args are copied into
+  register-args ;; the last passed-arg is a va-list
   )
 
 ;; Parse the function arguments into a (values closed-env calling-convention)
 (defun parse-function-arguments (arguments)
-  (values (first arguments) ;; The closed over environment
-          (make-calling-convention-impl
-           :nargs (second arguments) ;; The number of arguments
-           :passed-args (nthcdr 2 arguments))))  ;; The remaining arguments
+  (let ((closed-env (first arguments))
+        (cc (make-calling-convention-impl
+           :valist (second arguments)
+           :nargs (third arguments) ;; The number of arguments
+           :register-args (nthcdr 3 arguments))))
+    (values closed-env cc)))
 
 (defun calling-convention-nargs (cc)
   (calling-convention-impl-nargs cc))
 
 (defun calling-convention-register-args (cc)
-  (butlast (calling-convention-impl-passed-args cc)))
+  (calling-convention-impl-register-args cc))
 
 ;; If there is no va-list return nil - Why would this ever be so?
 (defun calling-convention-va-list (cc)
-  (car (last (calling-convention-impl-passed-args cc))))
+  (calling-convention-impl-valist cc))
 
 
 (defun calling-convention-args.va-end (cc)
@@ -292,12 +294,10 @@ Boehm and MPS use a single pointer"
     (push +t*+ arg-types)
     (push (bformat nil "farg%d" i) arg-names))
   ;; va-list arg
-  (push +VaList_S*+ arg-types)
-  (push "VaList_S*" arg-names)
   (setf *register-arg-types* (nreverse arg-types)
 	*register-arg-names* (nreverse arg-names)))
-(defvar +fn-registers-prototype-argument-names+ (list* "closed-af-ptr" "nargs" *register-arg-names*))
-(defvar +fn-registers-prototype+ (llvm-sys:function-type-get +tmv+ (list* +t*+ +size_t+ *register-arg-types*))
+(defvar +fn-registers-prototype-argument-names+                    (list* "closed-af-ptr" "va-list"    "nargs" *register-arg-names*))
+(defvar +fn-registers-prototype+ (llvm-sys:function-type-get +tmv+ (list* +t*+            +VaList_S*+ +size_t+ *register-arg-types*))
   "The general function prototypes pass the following pass:
 1) An sret pointer for where to put the result
 2) A closed over runtime environment (linked list of activation frames)
@@ -670,7 +670,7 @@ Boehm and MPS use a single pointer"
   (primitive module "va_coerceToClosure" +closure*+ (list +tsp*+))
   (primitive module "va_symbolFunction" +closure*+ (list +symsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
   (primitive module "va_lexicalFunction" +closure*+ (list +i32+ +i32+ +afsp*+))
-  (primitive module "FUNCALL" +void+ (list* +tsp*-or-tmv*+ +closure*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
+  (primitive module "FUNCALL" +return_type+ (list* +i8*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
   (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +closure*+ +afsp*+))
 
 
@@ -774,16 +774,15 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_va_arg" +t*+ (list +VaList_S*+))
   (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +VaList_S*+))
   (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i8*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
-  (primitive #|-nounwind|#              module "cc_call_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
-;  (primitive              module "cc_invoke_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
+  (primitive          module "cc_call_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
   (primitive-nounwind module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
   (primitive-nounwind module "cc_loadThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
   (primitive-nounwind module "cc_fdefinition" +t*+ (list +t*+))
   (primitive-nounwind module "cc_getSetfFdefinition" +t*+ (list +t*+))
   (primitive module "cc_symbolValue" +t*+ (list +t*+))
   (primitive-nounwind module "cc_setSymbolValue" +void+ (list +t*+ +t*+))
-  (primitive module "cc_call"   +return_type+ (list* +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
-  (primitive module "cc_invoke" +return_type+ (list* +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
+  (primitive module "cc_call"   +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
+  (primitive module "cc_invoke" +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
   (primitive-nounwind module "cc_allowOtherKeywords" +i32+ (list +i32+ +t*+))
 ;;  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +size_t+ +t*[0]*+))
   (primitive-nounwind module "cc_matchKeywordOnce" +size_t+ (list +t*+ +t*+ +t*+))

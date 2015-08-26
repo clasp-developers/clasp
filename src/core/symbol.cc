@@ -446,6 +446,7 @@ Symbol_sp Symbol_O::exportYourself(bool doit) {
   return this->asSmartPtr();
 }
 
+#if 0
 T_sp Symbol_O::apply() {
   _G();
   ValueFrame_sp frame = ValueFrame_O::create(0, _Nil<ActivationFrame_O>());
@@ -458,6 +459,8 @@ T_sp Symbol_O::funcall() {
   T_sp result = lisp_apply(this->sharedThis<Symbol_O>(), frame);
   return result;
 }
+#endif
+
 
 string Symbol_O::__repr__() const {
   return this->formattedName(false);
