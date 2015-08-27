@@ -48,6 +48,13 @@
 ;;  (load "sys:kernel;cleavir;inline-prep.lisp")
   (format t "Loading inline.lisp")
   (load "sys:kernel;cleavir;inline.lisp"))
+(load "sys:kernel;cleavir;auto-compile.lisp")
+
+(defun foo (x) (consp x))
+(untrace)
+
+(trace cleavir-generate-ast::convert-form)
+
 
 
 (progn ;; Set up everything for building cclasp from bclasp
@@ -68,7 +75,13 @@
 (clasp-cleavir::hir-form '(lambda () 1))
 (clasp-cleavir::hir-form '(lambda ()(block bar (let ((a 'foo)) (declare (special a)) (print a) (return-from bar nil)))))
 
-(clasp-cleavir::cleavir-compile 'foo '(lambda () 1))
+
+
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (multiple-value-bind (x y) (values 1 2) (list x y))))
+
+(foo)
+
+
 
 (clasp-cleavir::cleavir-compile-file "sys:tests;tsmall.lsp")
 (load "sys:tests;tsmall.fasl")
@@ -2079,3 +2092,16 @@ cmp::*dbg-generate-dwarf*
                  99)))
      (print Y))
    ) :debug t)
+
+
+
+
+(defgeneric foo (x y))
+
+(defmethod foo (x y) (+ x y))
+
+(defun bar (x y) (+ x y))
+
+(time (dotimes (i 1000000) (foo 1 2)))
+(time (dotimes (i 1000000) (bar 1 2)))
+(time (dotimes (i 1000000) ))

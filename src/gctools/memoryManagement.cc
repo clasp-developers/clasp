@@ -140,7 +140,7 @@ int handleFatalCondition() {
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
   void *stackMarker = NULL;
-  _ThreadLocalStack.allocateBuffer(gc::thread_local_cl_stack_size);
+  _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_size);
   gctools::_global_stack_marker = &stackMarker;
 
   setupSignals();

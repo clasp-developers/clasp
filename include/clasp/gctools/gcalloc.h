@@ -89,12 +89,14 @@ namespace gctools {
 /*! Maintain a stack containing pointers that are garbage collected
 */
   class GCStack {
+    enum { frame, pad1, pad2 };
     size_t _TrackMaxSize;
 #ifdef USE_BOEHM
     size_t _TotalSize;
 #endif
 #ifdef USE_MPS
-    #error "Add MPS support - use SNC class"
+    mps_pool_t _Pool;
+    mps_ap_t _AllocationPoint;
 #endif
    //! Return true if this Stack object is active and can receive pushFrame/popFrame messages
   public:
@@ -107,7 +109,7 @@ namespace gctools {
 #endif
     };
    //*! Allocate a buffer for this 
-    bool allocateBuffer(size_t bufferSize) {
+    bool allocateStack(size_t bufferSize) {
       bufferSize = STACK_ALIGN_UP(bufferSize);
 #ifdef USE_BOEHM
       // Do nothing, MALLOC and FREE each frame
@@ -117,7 +119,7 @@ namespace gctools {
 #endif
       return true;
     }
-    void freeBuffer() {
+    void freeStack() {
 #ifdef USE_BOEHM
       // Do nothing
 #endif
@@ -129,18 +131,44 @@ namespace gctools {
     size_t totalSize() const {
       return this->_TotalSize;
     }
+#define FRAME_HEADER_SIZE (sizeof(int)*2)
+#define FRAME_HEADER_TYPE_FIELD(hptr) *(((int*)hptr))
+#define FRAME_HEADER_SIZE_FIELD(hptr) *(((int*)hptr)+1)
+#define FRAME_START(hptr) (uintptr_t*)(((char*)hptr)+FRAME_HEADER_SIZE)
+#define FRAME_HEADER(fptr) (uintptr_t*)(((char*)fptr)-FRAME_HEADER_SIZE)
     void* pushFrame(size_t frameSize) {
       frameSize = STACK_ALIGN_UP(frameSize);
+      uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE + frameSize;
 #ifdef USE_BOEHM
-      uintptr_t headerAndFrameSize = sizeof(uintptr_t) + frameSize;
       uintptr_t* headerAndFrame = (uintptr_t*)GC_MALLOC(headerAndFrameSize);
-      *headerAndFrame = headerAndFrameSize;
+      FRAME_HEADER_TYPE_FIELD(headerAndFrame) = frame;
+      FRAME_HEADER_SIZE_FIELD(headerAndFrame) = headerAndFrameSize;
       void* frameStart = headerAndFrame + 1; // skip uintptr_t header
       this->_TotalSize += headerAndFrameSize;
       return frameStart;
 #endif
 #ifdef USE_MPS
-#error "Add support for MPS"
+      mps_frame_t frame_o;
+      mp_res_t mps_ap_frame_push(&frame_o,this->_AllocationPoint);
+      mps_addr_t p;
+      size_t aligned_size = frameSize; /* see note 1 */
+      do {
+        mps_res_t res = mps_reserve(&p, this->_AllocationPoint, aligned_size);
+        if (res != MPS_RES_OK) {
+          /* handle the error */
+        }
+            /* initialize obj */
+        printf("%s:%d Initialize the frame\n", __FILE__, __LINE__);
+      } while (!mps_commit(this->_AllocationPoint, p, aligned_size)); /* see note 2 */
+      printf("%s:%d Done allocating the frame: %p  p@%p\n", __FILE__, __LINE__, frame_o, p);
+/* obj is now valid and managed by the MPS */
+#if 0
+      FRAME_HEADER_TYPE_FIELD(frame_o) = stackFrame;
+      FRAME_HEADER_SIZE_FIELD(frame_o) = headerAndFrameSize;
+      void* frameStart = FRAME_START(frame_o); // skip uintptr_t header
+      this->_TotalSize += headerAndFrameSize;
+#endif
+      return frameStart;
 #endif
     }
     void popFrame(void* frame) {

@@ -3136,7 +3136,7 @@ string Function_O::__repr__() const {
   _G();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << ">";
-  this->wrappedPtr()->dump();
+  //this->wrappedPtr()->dump();
   return ss.str();
 }
 
