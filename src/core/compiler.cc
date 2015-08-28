@@ -984,9 +984,8 @@ T_mv core_multipleValueFuncall(T_sp funcDesignator, List_sp functions) {
   accArgs.setLength(idx);
   Function_sp fmv = coerce::functionDesignator(funcDesignator);
   gctools::tagged_functor<Closure> func = fmv->closure;
-  VaList_S arg_list_struct(accArgs);
-  VaList_sp arg_list(&arg_list_struct);
-  return T_mv((*func)(NULL,arg_list.raw_(),idx, accArgs[0], accArgs[1], accArgs[2]));
+  LCC_CALL_WITH_ARGS_IN_FRAME(result,func,accArgs);
+  return T_mv(result);
 }
 
 #define ARGS_core_multipleValueProg1_Function "(func1 func2)"

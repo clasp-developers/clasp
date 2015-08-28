@@ -63,6 +63,7 @@ public:
 
   void saveToMultipleValue0() const {
     core::MultipleValues &mv = core::lisp_multipleValues();
+    mv.setSize(0);
     mv.valueSet(0, *this);
     mv.setSize(this->number_of_values());
   };

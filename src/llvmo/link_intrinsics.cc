@@ -213,12 +213,24 @@ ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
   return lcc_closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
-ALWAYS_INLINE void mv_FUNCALL_activationFrame(core::T_mv *resultP, core::Closure *closure, core::ActivationFrame_sp af) {
-  (*resultP) = core::eval::applyClosureToActivationFrame(closure, af);
+ALWAYS_INLINE LCC_RETURN FUNCALL_argsInReversedList(core::Closure *closure, core::T_sp* argsP) {
+  List_sp args(*argsP);
+  size_t nargs = core::cl_length(args);
+  gc::frame::Frame fargs(nargs);
+  for ( int i(nargs-1); i>= 0; --i ) {
+    fargs[i] = oCar(args).raw_();
+    args = oCdr(args);
+  }
+  LCC_CALL_WITH_ARGS_IN_FRAME(result,closure,fargs);
+  return result;
 }
 
-ALWAYS_INLINE void sp_FUNCALL_activationFrame(core::T_sp *resultP, core::Closure *closure, core::ActivationFrame_sp af) {
-  (*resultP) = core::eval::applyClosureToActivationFrame(closure, af);
+ALWAYS_INLINE void mv_FUNCALL_argsInReversedList(core::T_mv *resultP, core::Closure *closure, core::T_sp* argsP) {
+  (*resultP) = FUNCALL_argsInReversedList(closure,argsP);
+}
+
+ALWAYS_INLINE void sp_FUNCALL_argsInReversedList(core::T_sp *resultP, core::Closure *closure, core::T_sp* argsP) {
+  (*resultP) = FUNCALL_argsInReversedList(closure,argsP);
 }
 
 __attribute__((visibility("default"))) core::T_O* cc_gatherRestArguments(std::size_t nargs, VaList_S* vargs, std::size_t startRest, char *fnName) {
@@ -373,9 +385,12 @@ extern "C" {
 
 extern "C" {
 
+
+#if 0
 NOINLINE core::T_O **getMultipleValues(int offset) {
   return &lisp_multipleValues().callingArgsStart()[offset];
 }
+#endif
 
 /*! Return i32 1 if (valP) is != unbound 0 if it is */
 int isBound(core::T_sp *valP) {
@@ -665,6 +680,7 @@ extern void makeTagbodyFrame(core::ActivationFrame_sp *resultP)
   ASSERTNOTNULL(*resultP);
 }
 
+#if 0
 extern void makeValueFrameFromReversedCons(core::ActivationFrame_sp *afP, core::T_sp *consP, uint id) {
   _G();
   core::List_sp cons = (*consP);
@@ -673,7 +689,7 @@ extern void makeValueFrameFromReversedCons(core::ActivationFrame_sp *afP, core::
   (*afP) = vf;
   ASSERTNOTNULL(*afP);
 }
-
+#endif
 extern void setParentOfActivationFrameTPtr(core::T_sp *resultP, core::T_O *parentP) {
   if (resultP->valistp()) {
     SIMPLE_ERROR(BF("I don't support frames anymore"));
@@ -993,11 +1009,35 @@ void debugInspectTPtr(core::T_O *tP) {
 }
 
 void debugInspectT_mv(core::T_mv *objP) {
+  MultipleValues &mv = lisp_multipleValues();
+  size_t size = mv.getSize();
+  printf("debugInspect_return_type T_mv.val0@%p  T_mv.nvals=%d mvarray.size=%u\n", (*objP).raw_(), (*objP).number_of_values(), size);
+  size = std::max(size,(size_t)(*objP).number_of_values());
+  for (size_t i(0); i<size; ++i ) {
+    printf("[%d]->%p ", i, mv.valueGet(i,size).raw_());
+  }
+  printf("\n");
+  printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
   _G();
   printf("debugInspectT_mv@%p  #val=%d\n", (void *)objP, objP->number_of_values());
   printf("   debugInspectT_mv  obj= %s\n", _rep_(*objP).c_str());
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
 }
+
+void debugInspect_return_type(gctools::return_type rt) {
+  MultipleValues &mv = lisp_multipleValues();
+  size_t size = mv.getSize();
+  printf("debugInspect_return_type rt.ret0@%p  rt.nvals=%d mvarray.size=%u\n", rt.ret0, rt.nvals, size);
+  size = std::max(size,rt.nvals);
+  for (size_t i(0); i<size; ++i ) {
+    printf("[%d]->%p ", i, mv.valueGet(i,size).raw_());
+  }
+  printf("\n");
+  printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
+}
+
+
+
 
 void debugMessage(const char *msg) {
   _G();
@@ -1433,18 +1473,16 @@ void ltv_initializeHashTable(core::T_sp *hashTableP, int numEntries, core::LoadT
 }
 
 void saveToMultipleValue0(core::T_mv *mvP) {
-  MultipleValues &mv = lisp_multipleValues();
-  mv.valueSet(0, *mvP);
+  mvP->saveToMultipleValue0();
 }
 
 void sp_restoreFromMultipleValue0(core::T_sp *resultP) {
-  MultipleValues &mv = lisp_multipleValues();
-  (*resultP).setRaw_(reinterpret_cast<gc::Tagged>(mv[0]));
+  T_mv mvResult = gc::multiple_values<core::T_O>::createFromValues();
+  (*resultP).setRaw_((gc::Tagged)mvResult.raw_());
 }
 
 void mv_restoreFromMultipleValue0(core::T_mv *resultP) {
-  MultipleValues &mv = lisp_multipleValues();
-  (*resultP) = core::T_mv(mv[0], mv.getSize());
+  resultP->readFromMultipleValue0();
 }
 
 /*! Copy the current MultipleValues in _lisp->values() into a VectorObjects */
@@ -1773,16 +1811,22 @@ LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
   core::T_O* lcc_fixed_arg1 = mvargs[1];
   core::T_O* lcc_fixed_arg2 = mvargs[2];
   /*! TODO: Move the logic into lispCallingConvention */
+  LCC_RETURN retval(NULL,0);
   switch (lcc_nargs) {
   default :
-      return closure->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(lcc_arglist,lcc_nargs,mvargs[0],mvargs[1],mvargs[2]));
+      retval = closure->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(lcc_arglist,lcc_nargs,mvargs[0],mvargs[1],mvargs[2]));
+      break;
   case 2:
-      return closure->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(mvargs[0],mvargs[1]));
+      retval = closure->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(mvargs[0],mvargs[1]));
+      break;
   case 1:
-      return closure->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(mvargs[0]));
+      retval = closure->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(mvargs[0]));
+      break;
   case 0:
-      return closure->invoke_va_list(LCC_PASS_ARGS0_ARGLIST());
+      retval = closure->invoke_va_list(LCC_PASS_ARGS0_ARGLIST());
+      break;
   };
+  return retval;
   //return closure->invoke_va_list(LCC_PASS_ARGS3_ARGLIST(lcc_arglist,lcc_nargs,mvargs[0],mvargs[1],mvargs[2]);
 }
 

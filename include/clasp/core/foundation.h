@@ -619,6 +619,7 @@ namespace gctools {
   struct return_type {
     core::T_O* ret0;
     size_t nvals;
+  return_type() : ret0(NULL), nvals(0) {};
   return_type(core::T_O* r0, size_t nv) : ret0(r0), nvals(nv) {};
   };
 };

@@ -57,12 +57,7 @@ public: // Functions here
 	callingArgs returns a pointer to the first value for when the values passed in registers
 	need to be written into the array for easier parsing*/
   T_O **callingArgsStart() { return &this->_Values[0]; }
-  /*! Return the address of the first array entry where extra arguments beyond the 
-	  number that can be passed in registers would be written */
-  T_O **callingArgsExtraArgStart() { return &this->_Values[LCC_ARGS_IN_REGISTERS]; }
-
-  T_sp setFromConsSkipFirst(List_sp values);
-
+  
   //        void setMaxSize() { this->_Size = MultipleValuesLimit;};
   void setSize(size_t sz) { this->_Size = sz; };
   size_t getSize() const { return this->_Size; };
@@ -79,39 +74,8 @@ public: // Functions here
   }
 
   /*! Return a Cons of elements 1 up to but not including iend */
-  List_sp asCons(int iend) const;
+//  List_sp asCons(int iend) const;
 
-#if 0
-	void saveToVec0(T_mv& result, gctools::Vec0<core::T_sp>& vec)
-        {
-            vec.resize(result.this->getSize());
-            for ( int i(0), iEnd(this->getSize()); i<iEnd; ++i ) {
-                vec[i] = T_sp(this->_Values[i]);
-            }
-        }
-        void loadFromVec0(const gctools::Vec0<core::T_sp>& vec)
-        {
-            this->setSize(vec.size());
-            for ( int i(0), iEnd(vec.size()); i<iEnd; ++i ) {
-                this->_Values[i] = vec[i].px;
-            };
-        };
-
-        void saveToVec0(gctools::Vec0<core::T_sp>& vec)
-        {
-            vec.resize(this->getSize());
-            for ( int i(0), iEnd(this->getSize()); i<iEnd; ++i ) {
-                vec[i] = T_sp(this->_Values[i]);
-            }
-        }
-        void loadFromVec0(const gctools::Vec0<core::T_sp>& vec)
-        {
-            this->setSize(vec.size());
-            for ( int i(0), iEnd(vec.size()); i<iEnd; ++i ) {
-                this->_Values[i] = vec[i].px;
-            };
-        };
-#endif
 };
 #pragma GCC visibility pop
 };

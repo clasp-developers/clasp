@@ -317,24 +317,17 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((cleanup)
        (irc-intrinsic "progvRestoreSpecials" save-specials)))))
 
-(defun codegen-multiple-value-call (result rest env)
+(defun codegen-multiple-value-one-form-call (result rest env)
   (with-dbg-lexical-block (rest)
-    (let ((accumulate-results (irc-alloca-tsp :label "acc-multiple-value-results"))
-	  (temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
-	  (funcDesignator (irc-alloca-tsp :label "funcDesignator"))
-	  (func (irc-alloca-Function_sp env :label "func"))
-	  (accumulated-af (irc-alloca-afsp env :label "accumulated-activation-frame")))
-      (codegen-literal accumulate-results nil env)
-      (do* ((cur (cdr rest) (cdr cur))
-	    (form (car cur) (car cur)))
-	   ((endp cur) nil)
-	(codegen temp-mv-result form env)
-	(irc-intrinsic "prependMultipleValues" accumulate-results temp-mv-result))
-      (irc-intrinsic "makeValueFrameFromReversedCons" accumulated-af accumulate-results (jit-constant-i32 (irc-next-environment-id)))
-      (irc-intrinsic "setParentOfActivationFrame" accumulated-af (irc-renv env))
-      (codegen funcDesignator (car rest) env)
-      (let ((closure (irc-intrinsic "va_coerceToClosure" funcDesignator)))
-        (irc-intrinsic "FUNCALL_activationFrame" result closure accumulated-af)))))
+    (let ((function-form (car rest))
+          (form (cadr rest))
+          (temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
+      	  (funcDesignator (irc-alloca-tsp :label "funcDesignator")))
+      (codegen funcDesignator function-form env)
+      (codegen temp-mv-result form env)
+      (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
+      (let ((register-ret (irc-intrinsic "cc_call_multipleValueOneFormCall" (irc-extract-value (irc-load funcDesignator) (list 0)))))
+        (irc-store-result result register-ret)))))
 
 (defun codegen-multiple-value-prog1 (result rest env)
   (with-dbg-lexical-block (rest)
@@ -1178,9 +1171,13 @@ jump to blocks within this tagbody."
       ;; default module without coalescence.
       (codegen-rtv result obj env)))
 
+;;; Return true if the symbol should be treated as a special operator
+;;; Special operators that are handled as macros are exempt
 (defun treat-as-special-operator-p (sym)
   (cond
     ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
+    ((eq sym 'cl:multiple-value-call) nil) ;; handled with macro
+    ((eq sym 'core:multiple-value-one-form-call) t)
     ((eq sym 'cl:catch) nil)  ;; handled with macro
     ((eq sym 'cl:throw) nil)  ;; handled with macro
     ((eq sym 'core:debug-message) t)   ;; special operator
@@ -1312,12 +1309,13 @@ be wrapped with to make a closure"
   (cmp-log "--- Entered clasp-compile*")
   (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
       (with-debug-info-generator (:module *the-module* 
-					  :pathname pathname)
-	(multiple-value-bind (llvm-function-from-lambda lambda-name)
-	    (compile-lambda-function definition env)
-	  (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
-	  ;;(bformat t "Got function from compile-lambda-function: %s\n" llvm-function-from-lambda)
-	  (values llvm-function-from-lambda :function env lambda-name)))
+                                          :pathname pathname)
+        (multiple-value-bind (llvm-function-from-lambda lambda-name)
+            (compile-lambda-function definition env)
+          (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
+          (or lambda-name (error "Inner lambda-name is nil - this shouldn't happen"))
+          (values llvm-function-from-lambda :function env lambda-name)))
+    (or lambda-name (error "lambda-name is nil - this shouldn't happen"))
     (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
     (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
     (cmp-log "fn --> %s\n" fn)

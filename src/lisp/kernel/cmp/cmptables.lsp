@@ -39,7 +39,7 @@
     (return-from  codegen-return-from)
     (tagbody codegen-tagbody)
     (go codegen-go)
-    (multiple-value-call  codegen-multiple-value-call)
+    (core:multiple-value-one-form-call  codegen-multiple-value-one-form-call)
     (multiple-value-prog1  codegen-multiple-value-prog1)
     (flet  codegen-flet)
     (labels  codegen-labels)

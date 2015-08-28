@@ -108,7 +108,7 @@ project clasp : requirements
 ### Compiling min-boehm-recompile with it defined 4:54 min and off 4.56 min
 ### so it has no significant impact at this stage
          <define>TRACK_ALLOCATIONS   # this may slow down allocation
-         <define>DEBUG_FLOW_CONTROL  # use with core::*debug-flow-control* to print flow control debugging
+#         <define>DEBUG_FLOW_CONTROL  # use with core::*debug-flow-control* to print flow control debugging
 #	 <define>DEBUG_GCWEAK    # Debug the Weak pointer code
 #        <define>DEBUG_TRYSET    #    Define this if you are using DEBUG_GCWEAK but can be defined alone & with DEBUG_FIND
 #        <define>DEBUG_FIND      #    Define this when using DEBUG_GCWEAK but can be defined along & with DEBUG_TRYSET

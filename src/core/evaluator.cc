@@ -982,63 +982,30 @@ T_mv sp_returnFrom(List_sp args, T_sp environment) {
   throw returnFrom;
 }
 
-#if 0 // new way using RAII
-	T_mv sp_unwindProtect( List_sp args, T_sp environment)
-	{_G();
-            MultipleValues& mv = lisp_multipleValues();
-            gctools::Vec0<T_sp>  save;
-            struct UnwindProtectDone {};
-	    try {
-                // Evaluate the protected form
-		T_mv result = eval::evaluate(oCar(args),environment);
-                result.saveToMultipleValue0();
-                throw(UnwindProtectDone());
-            } catch (UnwindProtectDone& dummy) {
-                // Save the return values
-                mv.saveToVec0(save);
-                // Evaluate the unwind forms -- This is wrong - it shouldn't be protected here
-		eval::sp_progn(cCdr(args),environment);
-            } catch (...) {
-                mv.saveToVec0(save);
-                eval::sp_progn(cCdr(args),environment);
-                mv.loadFromVec0(save);
-                throw;
-            }
-	    return gctools::multiple_values<T_O>::createFromVec0(save);
-	}
-
-#else // old
-#if 0
-        // use gctools::Vec0
-	T_mv sp_unwindProtect( List_sp args, T_sp environment)
-	{_G();
-            T_mv result = Values(_Nil<T_O>());
-            MultipleValues* mv = lisp_multipleValues();
-            gctools::Vec0<T_sp> save;
-            TRY()
-	    {
-                // Evaluate the protected form
-		result = eval::evaluate(oCar(args),environment);
-                // Save the return values
-                mv->saveToVec0(save);
-                // Evaluate the unwind forms --
-                // THIS IS REALLY, REALLY WRONG - it shouldn't be protected here
-		eval::sp_progn(cCdr(args),environment);
-	    } catch (...)
-	      {
-                  mv->saveToVec0(save);
-		  eval::sp_progn(cCdr(args),environment);
-		  throw;
-	      }
-	    return gctools::multiple_values<T_O>::createFromVec0(save);
-	}
-#else
-// original
+#if 1
 T_mv sp_unwindProtect(List_sp args, T_sp environment) {
-  _G();
+  T_mv result = Values(_Nil<T_O>());
+  gc::Vec0<core::T_sp> save;
+  try {
+    // Evaluate the protected form
+    result = eval::evaluate(oCar(args), environment);
+    // Save the return values
+    result.saveToVec0(save);
+    // Evaluate the unwind forms --
+    // THIS IS REALLY, REALLY WRONG - it shouldn't be protected here
+    eval::sp_progn(oCdr(args), environment);
+  } catch (...) {
+    eval::sp_progn(oCdr(args), environment);
+    throw;
+  }
+  result.loadFromVec0(save);
+  return result;
+}
+#else
+T_mv sp_unwindProtect(List_sp args, T_sp environment) {
   T_mv result = Values(_Nil<T_O>());
   VectorObjects_sp save(VectorObjects_O::create());
-  TRY() {
+  try {
     // Evaluate the protected form
     result = eval::evaluate(oCar(args), environment);
     // Save the return values
@@ -1046,14 +1013,12 @@ T_mv sp_unwindProtect(List_sp args, T_sp environment) {
     // Evaluate the unwind forms --
     // THIS IS REALLY, REALLY WRONG - it shouldn't be protected here
     eval::sp_progn(oCdr(args), environment);
-  }
-  catch (...) {
+  } catch (...) {
     eval::sp_progn(oCdr(args), environment);
     throw;
   }
   return multipleValuesLoadFromVector(save);
 }
-#endif
 #endif
 
 T_mv sp_catch(List_sp args, T_sp environment) {
@@ -1102,13 +1067,14 @@ T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {
   return multipleValuesLoadFromVector(save);
 }
 
-T_mv sp_multipleValueCall(List_sp args, T_sp env) {
+T_mv sp_multipleValueOneFormCall(List_sp args, T_sp env) {
   Function_sp func;
   func = gc::As<Function_sp>(eval::evaluate(oCar(args), env));
   List_sp resultList = _Nil<T_O>();
   Cons_sp* cur = reinterpret_cast<Cons_sp*>(&resultList);
-  for (auto forms : (List_sp)oCdr(args)) {
-    T_sp oneForm = oCar(forms);
+#if 1
+  if (cl_length(args) == 2 ) {
+    T_sp oneForm = oCar(oCdr(args));
     T_mv retval = eval::evaluate(oneForm, env);
     *cur = Cons_O::create(retval,_Nil<T_O>());
     cur = reinterpret_cast<Cons_sp*>(&(*cur)->_Cdr);
@@ -1116,18 +1082,32 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
       *cur = Cons_O::create(retval.valueGet(i),_Nil<T_O>());
       cur = reinterpret_cast<Cons_sp*>(&(*cur)->_Cdr);
     }
+  } else {
+    SIMPLE_ERROR(BF("Illegal number of arguments for special operator multiple-value-one-form-call"));
   }
-  size_t sz = cl_length(resultList);
-  gc::frame::Frame fargs(sz);
-  size_t i(0);
-  for ( auto c : resultList ) {
-    fargs[i] = oCar(c).raw_();
-    ++i;
+#else
+    for (auto forms : (List_sp)oCdr(args)) {
+      T_sp oneForm = oCar(forms);
+      T_mv retval = eval::evaluate(oneForm, env);
+      *cur = Cons_O::create(retval,_Nil<T_O>());
+      cur = reinterpret_cast<Cons_sp*>(&(*cur)->_Cdr);
+      for (int i(1); i < retval.number_of_values(); i++) {
+        *cur = Cons_O::create(retval.valueGet(i),_Nil<T_O>());
+        cur = reinterpret_cast<Cons_sp*>(&(*cur)->_Cdr);
+      }
+    }
+#endif
+    size_t sz = cl_length(resultList);
+    gc::frame::Frame fargs(sz);
+    size_t i(0);
+    for ( auto c : resultList ) {
+      fargs[i] = oCar(c).raw_();
+      ++i;
+    }
+    VaList_S valist_struct(fargs);
+    VaList_sp valist(&valist_struct);// = valist_struct.fargs.setupVaList(valist_struct);
+    return eval::apply_consume_VaList(func,valist);
   }
-  VaList_S valist_struct(fargs);
-  VaList_sp valist(&valist_struct);// = valist_struct.fargs.setupVaList(valist_struct);
-  return eval::apply_consume_VaList(func,valist);
-}
 
 #define ARGS_af_processDeclarations "(body expectDocString)"
 #define DECL_af_processDeclarations ""
@@ -2399,7 +2379,7 @@ T_mv cl_apply(T_sp head, T_sp args) {
     _lisp->defineSpecialOperator(ClPkg, "locally", &sp_locally);
     _lisp->defineSpecialOperator(ClPkg, "macrolet", &sp_macrolet);
     _lisp->defineSpecialOperator(ClPkg, "multipleValueProg1", &sp_multipleValueProg1);
-    _lisp->defineSpecialOperator(CorePkg, "multipleValueCall", &sp_multipleValueCall);
+    _lisp->defineSpecialOperator(CorePkg, "multipleValueOneFormCall", &sp_multipleValueOneFormCall);
     _lisp->defineSpecialOperator(ClPkg, "progn", &sp_progn);
     _lisp->defineSpecialOperator(ClPkg, "progv", &sp_progv);
     _lisp->defineSpecialOperator(ClPkg, "quote", &sp_quote);

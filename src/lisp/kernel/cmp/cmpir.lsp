@@ -970,6 +970,7 @@ Within the _irbuilder_ dynamic environment...
 
 ;----------------------------------------------------------------------
 
+#+(or)
 (defun irc-store-multiple-values (offset values &optional va-list)
   "When passing more arguments than can be passed in registers the extra arguments
 are written into the current multiple-valles array offset by the number of arguments
@@ -1003,24 +1004,29 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
   "Extract the t-ptr from the smart-ptr"
   (irc-extract-value smart-ptr (list 0)))
 
+;;; Store the result in a +result_type+ value (result-in-registers)
+;;; in a T_mv or T_sp value
+(defun irc-store-result (result result-in-registers)
+  (let ((ret0 (irc-extract-value result-in-registers (list 0)))
+        (return-type (llvm-sys:get-type result)))
+    (if (equal return-type +tsp*+)
+        (let* ((undef (llvm-sys:undef-value-get +tsp+))
+               (ret-tsp (llvm-sys:create-insert-value *irbuilder* undef ret0 '(0) "ret0")))
+          (irc-store ret-tsp result))
+        (let* ((undef (llvm-sys:undef-value-get +tmv+))
+               (ret-tmv0 (llvm-sys:create-insert-value *irbuilder* undef ret0 '(0) "ret0"))
+               (nret (irc-extract-value result-in-registers (list 1)))
+               (ret-tmv1 (llvm-sys:create-insert-value *irbuilder* ret-tmv0 nret '(1) "nret")))
+          (irc-store ret-tmv1 result)))))
+
 (defun irc-funcall (result closure args &optional (label ""))
   (let* ((nargs (length args))
 ;;; If there are < core:+number-of-fixed-arguments+ pad the list up to that
 	 (real-args (if (< nargs core:+number-of-fixed-arguments+)
 			(append args (make-list (- core:+number-of-fixed-arguments+ nargs) :initial-element (null-t-ptr)))
                         args)))
-    (let* ((result-in-registers (irc-intrinsic-args "FUNCALL" (list* closure (null-t-ptr) (jit-constant-size_t nargs) real-args) :label label))
-           (ret0 (irc-extract-value result-in-registers (list 0)))
-           (return-type (llvm-sys:get-type result)))
-      (if (equal return-type +tsp*+)
-          (let* ((undef (llvm-sys:undef-value-get +tsp+))
-                 (ret-tsp (llvm-sys:create-insert-value *irbuilder* undef ret0 '(0) "ret0")))
-            (irc-store ret-tsp result))
-          (let* ((undef (llvm-sys:undef-value-get +tmv+))
-                 (ret-tmv0 (llvm-sys:create-insert-value *irbuilder* undef ret0 '(0) "ret0"))
-                 (nret (irc-extract-value result-in-registers (list 1)))
-                 (ret-tmv1 (llvm-sys:create-insert-value *irbuilder* ret-tmv0 nret '(1) "nret")))
-            (irc-store ret-tmv1 result))))))
+    (let* ((result-in-registers (irc-intrinsic-args "FUNCALL" (list* closure (null-t-ptr) (jit-constant-size_t nargs) real-args) :label label)))
+      (irc-store-result result result-in-registers))))
   
 ;----------------------------------------------------------------------
 

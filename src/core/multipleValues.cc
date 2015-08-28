@@ -48,52 +48,6 @@ T_sp MultipleValues::valueGet(int idx, int number_of_values) const {
   return _Nil<T_O>();
 }
 
-T_sp MultipleValues::setFromConsSkipFirst(List_sp args) {
-  _G();
-  // Skip the first value - that is in multiple_values<XXX>
-  int i = 1;
-  SUPPRESS_GC();
-  this->setSize(MultipleValuesLimit);
-  for (auto cur : (List_sp)oCdr(args)) {
-    if (i >= MultipleValues::MultipleValuesLimit) {
-      SIMPLE_ERROR(BF("Overflow when returning multiple values - only %d are supported and you tried to return %d values") % MultipleValuesLimit % cl_length(args));
-    }
-    T_sp obj = oCar(cur);
-    this->valueSet(i, obj);
-    ++i;
-  }
-  this->setSize(i);
-  ENABLE_GC();
-  return oCar(args);
-}
-
-#if 0
-    List_sp MultipleValues::asCons(int iend) const
-    {_OF();
-	List_sp cur = _Nil<T_O>();
-	for ( int i=iend-1; i>0; --i )
-	{
-	    Cons_sp one = _lisp->create<Cons_O>(this->_Values[i]);
-	    cur->setCdr(one);
-	    cur = one;
-	}
-	return cur;
-    }
-#endif
-
-#if 0
-    GC_RESULT MultipleValues::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-    {
-	GC_SCANNER_BEGIN() {
-	    for ( size_t i=0; i<this->_Size; ++i )
-	    {
-		SMART_PTR_FIX(this->_Values[i]);
-	    }
-	} GC_SCANNER_END();
-	return GC_RES_OK;
-    }
-#endif
-
 void multipleValuesSaveToVector(T_mv values, VectorObjects_sp save) {
   core::MultipleValues &mv = core::lisp_multipleValues();
   save->adjust(_Nil<T_O>(), _Nil<T_O>(), values.number_of_values());
@@ -131,8 +85,19 @@ core::T_mv ValuesFromCons(core::List_sp vals) {
     return core::T_mv(_Nil<core::T_O>(), 0);
   }
   core::MultipleValues &me = (core::lisp_multipleValues());
-  core::T_sp first = me.setFromConsSkipFirst(vals);
-  core::T_mv mv;
-  mv = gctools::multiple_values<core::T_O>(first, len);
+  int i = 1;
+  SUPPRESS_GC();
+  me.setSize(0);
+  for (auto cur : (core::List_sp)oCdr(vals)) {
+    if (i >= core::MultipleValues::MultipleValuesLimit) {
+      SIMPLE_ERROR(BF("Overflow when returning multiple values - only %d are supported and you tried to return %d values") % core::MultipleValues::MultipleValuesLimit % cl_length(vals));
+    }
+    core::T_sp obj = oCar(cur);
+    me.valueSet(i, obj);
+    ++i;
+  }
+  me.setSize(i);
+  ENABLE_GC();
+  core::T_mv mv = gctools::multiple_values<core::T_O>(oCar(vals), i);
   return mv;
 }

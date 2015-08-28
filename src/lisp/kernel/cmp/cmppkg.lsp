@@ -2,7 +2,6 @@
 
 (export '(+fn-prototype+
 	  *load-time-value-holder-global-var*
-	  irc-store-multiple-values
 	  irc-intrinsic
 	  irc-branch-to-and-begin-block
 	  with-ltv-function-codegen

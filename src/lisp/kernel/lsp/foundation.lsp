@@ -335,11 +335,13 @@ the corresponding VAR.  Returns NIL."
                (let ((vars (cadr whole))
                      (form (caddr whole))
                      (body (cdddr whole)))
-                 `(core::multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
+                 `(core:multiple-value-one-form-call
+                      #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body)
+                    ,form)))
            t)
 
 (defun warn (x &rest args)
-  (bformat t "WARN: %s %s\n" x args))
+  (core:bformat t "WARN: %s %s\n" x args))
 
 
 (defun class-name (x)

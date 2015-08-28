@@ -380,7 +380,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	       (let ((name (second def))	;cadr
 		     (lambda-list (third def))	; caddr
 		     (lambda-body (cdddr def))) ; cdddr
-		 (core::multiple-value-call
+		 (core::multiple-value-one-form-call
 		     (function (lambda (&optional (decl) (body) (doc) &rest rest)
 		       (declare (ignore rest))
 		       (if decl (setq decl (list (cons 'declare decl))))
@@ -389,13 +389,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 			 (ext::register-with-pde def `(si::*fset ',name ,func)))))
 		   (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#)) 
 
-		 #|		 
-		 (multiple-value-bind (decl body doc)
-		 (si::process-declarations lambda-body)
-		 (when decl (setq decl (list (cons 'declare decl))))
-		 (let ((func `(function (lambda ,lambda-list ,@doc ,@decl (block ,@body)))))
-		 (ext:register-with-pde def `(si::*fset ',name ,func))))
-		 |#
 		 ))
 	   t)
 
@@ -485,16 +478,17 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (si::*fset 'ibundle
 	   #'(lambda (path)
-	       (core::multiple-value-call #'(lambda (loaded &optional error-msg)
-					(if loaded
-					    loaded
-					    (bformat t "Could not load bundle %s - error: %s\n" (truename path) error-msg)))
-                 (let* ((tb (default-target-backend))
-                        (image-path (target-backend-pathname path :target-backend tb))
-                        (image-file (probe-file image-path)))
-                   (if image-file nil (error "Could not find ~a" image-path))
-                   (bformat t "Loading image %s\n" image-path)
-                   (load-bundle image-path llvm-sys:+clasp-main-function-name+)))))
+	       (core:multiple-value-one-form-call
+                #'(lambda (loaded &optional error-msg)
+                    (if loaded
+                        loaded
+                        (bformat t "Could not load bundle %s - error: %s\n" (truename path) error-msg)))
+                (let* ((tb (default-target-backend))
+                       (image-path (target-backend-pathname path :target-backend tb))
+                       (image-file (probe-file image-path)))
+                  (if image-file nil (error "Could not find ~a" image-path))
+                  (bformat t "Loading image %s\n" image-path)
+                  (load-bundle image-path llvm-sys:+clasp-main-function-name+)))))
 
 (si::*fset 'fset
 		 #'(lambda (whole env)

@@ -34,8 +34,65 @@
     (time (require :clasp-cleavir))
     (format t "Loading inline.lisp~%")
     (load "sys:kernel;cleavir;inline.lisp")
-    (print (core:getpid))))
+    (print (core:getpid)))
   (load "sys:kernel;cleavir;auto-compile.lisp"))
+
+(deftype boolean () '(member nil t))
+
+(trace process-declarations)
+
+(defun remove-documentation (body)
+  (multiple-value-bind (decls body doc)
+      (process-declarations body t)
+    (when decls (push `(declare ,@decls) body))
+    (values body doc)))
+
+(multiple-value-bind (body doc) (remove-documentation '("Hello there" '(member nil t))) (list :body body :doc doc))
+
+(multiple-value-call #'list (values 1 2 3))
+
+(trace remove-documentation)
+
+
+(defmacro deftype2 (name lambda-list &rest body &environment env)
+  (format t "body: ~s~%" body)
+  (multiple-value-bind (body doc)
+      (remove-documentation body)
+    (format t "removed docs body: ~s~%" body)
+    (setq lambda-list (copy-list lambda-list))
+    (dolist (x '(&optional &key))
+      (do ((l (rest (member x lambda-list)) (rest l)))
+	  ((null l))
+	(let ((variable (first l)))
+	  (when (and (symbolp variable)
+		     (not (member variable lambda-list-keywords)))
+	    (cons-setf-car l `(,variable '*))))))
+    (multiple-value-bind (decls lambda-body doc)
+	(process-declarations body t)
+      (if doc (setq doc (list doc)))
+      (let ((function `(function 
+			#+ecl(LAMBDA-BLOCK ,name ,lambda-list ,@body)
+			#+clasp(lambda ,lambda-list 
+			 (declare (core:lambda-name ,name) ,@decls) 
+			 ,@doc 
+			 (block ,name ,@lambda-body))
+			)))
+	(when (and (null lambda-list) (consp body) (null (rest body)))
+	  (let ((form (first body)))
+	    (when (constantp form env)
+	      (setq function form))))
+	`(eval-when (:compile-toplevel :load-toplevel :execute)
+	   ,@(si::expand-set-documentation name 'type doc)
+	   (do-deftype ',name '(DEFTYPE ,name ,lambda-list ,@body)
+		       ,function))))))
+
+(deftype2 boolean ()
+  "A BOOLEAN is an object which is either NIL or T."
+  '(member nil t))
+
+
+(apropos "defun-inline-hook")
+
 
 (progn ;; Set up everything for building cclasp from bclasp
   (format t "Loading ASDF system~%")
@@ -2105,3 +2162,10 @@ cmp::*dbg-generate-dwarf*
 (time (dotimes (i 1000000) (foo 1 2)))
 (time (dotimes (i 1000000) (bar 1 2)))
 (time (dotimes (i 1000000) ))
+(core:tpl-backtrace)
+
+
+
+(deftype boolean ()
+  "A BOOLEAN is an object which is either NIL or T."
+  '(member nil t))

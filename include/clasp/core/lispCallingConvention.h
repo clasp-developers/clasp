@@ -200,6 +200,27 @@ THE SOFTWARE.
 #endif
 
 
+#define LCC_CALL_WITH_ARGS_IN_FRAME(_result,_closure,_frame) \
+  LCC_RETURN _result; \
+  core::VaList_S valist_s(_frame); \
+  size_t lcc_nargs = _frame._Length; \
+  core::T_O* lcc_arglist = valist_s.asTaggedPtr(); \
+  switch (lcc_nargs) { \
+  default : \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(lcc_arglist,lcc_nargs,_frame[0],_frame[1],_frame[2])); \
+      break; \
+  case 2: \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(_frame[0],_frame[1])); \
+      break; \
+  case 1: \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(_frame[0])); \
+      break; \
+  case 0: \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS0_ARGLIST()); \
+      break; \
+  }; 
+  
+
 #define LCC_VA_LIST_TO_VECTOR_OBJECTS(_valist,_vec) \
   core::VectorObjects_sp _vec = core::VectorObjects_O::create(_Nil<core::T_O>(),LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_valist)); \
   switch (_vec->vector_length()) {                                       \

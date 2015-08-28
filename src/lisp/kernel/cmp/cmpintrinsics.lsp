@@ -579,7 +579,7 @@ Boehm and MPS use a single pointer"
 ;;  (primitive-nounwind module "copyAFsp" +void+ (list +afsp*+ +afsp*+))
 ;;  (primitive-nounwind module "destructAFsp" +void+ (list +afsp*+))
 
-  (primitive-nounwind module "getMultipleValues" +t*[0]*+ (list +i32+))
+;;  (primitive-nounwind module "getMultipleValues" +t*[0]*+ (list +i32+))
 
   (primitive-nounwind module "isNilTsp" +i32+ (list +tsp*+))
   (primitive-nounwind module "isTrue" +i32+ (list +tsp*+))
@@ -619,7 +619,7 @@ Boehm and MPS use a single pointer"
 
   (primitive-nounwind module "makeTagbodyFrame" +void+ (list +afsp*+))
   (primitive-nounwind module "makeValueFrame" +void+ (list +afsp*+ +i32+ +i32+))
-  (primitive-nounwind module "makeValueFrameFromReversedCons" +void+ (list +afsp*+ +tsp*+ +i32+ ))
+;;  (primitive-nounwind module "makeValueFrameFromReversedCons" +void+ (list +afsp*+ +tsp*+ +i32+ ))
   (primitive-nounwind module "setParentOfActivationFrameTPtr" +void+ (list +tsp*+ +t*+))
   (primitive-nounwind module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))
 
@@ -650,6 +650,8 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "debugInspectT_sp" +void+ (list +tsp*+))
   (primitive-nounwind module "debugInspectTPtr" +void+ (list +t*+))
   (primitive-nounwind module "debugInspectT_mv" +void+ (list +tmv*+))
+  (primitive-nounwind module "debugInspect_return_type" +void+ (list +return_type+))
+  (primitive-nounwind module "debugInspect_mvarray" +void+ nil)
 
   (primitive-nounwind module "debugPointer" +void+ (list +i8*+))
   (primitive-nounwind module "debug_VaList_SPtr" +void+ (list +VaList_S*+))
@@ -671,7 +673,8 @@ Boehm and MPS use a single pointer"
   (primitive module "va_symbolFunction" +closure*+ (list +symsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
   (primitive module "va_lexicalFunction" +closure*+ (list +i32+ +i32+ +afsp*+))
   (primitive module "FUNCALL" +return_type+ (list* +i8*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
-  (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +closure*+ +afsp*+))
+  (primitive module "FUNCALL_argsInReversedList" +void+ (list +tsp*-or-tmv*+ +closure*+ +tsp*+))
+  (primitive module "FUNCALL_argsMultipleValueReturn" +void+ (list +tsp*-or-tmv*+ +closure*+))
 
 
   (primitive module "cc_gatherRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +i8*+))
