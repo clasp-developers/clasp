@@ -101,6 +101,7 @@ namespace gctools {
 #endif
    //! Return true if this Stack object is active and can receive pushFrame/popFrame messages
   public:
+    size_t maxSize() const { return this->_MaxSize; };
     bool isActive() {
 #ifdef USE_BOEHM
       return true;
@@ -116,6 +117,7 @@ namespace gctools {
       // Do nothing, MALLOC and FREE each frame
 #endif
 #ifdef USE_MPS
+      
     #error "Add MPS support - use SNC class"
 #endif
       return true;

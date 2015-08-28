@@ -474,7 +474,7 @@ T_mv af_room(T_sp x, Fixnum_sp marker, T_sp tmsg) {
   delete static_ReachableStringKinds;
 #endif
   gc::GCStack* stack = threadLocalStack();
-  size_t totalMaxSize = stack->_TotalMaxSize;
+  size_t totalMaxSize = stack->maxSize();
   printf("High water mark (max used) side-stack size: %u\n", totalMaxSize);
     return Values(_Nil<core::T_O>());
 };
