@@ -528,6 +528,7 @@
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (with-return-values (return-vals return-value abi)
+    (cmp:irc-intrinsic "cc_saveMultipleValue0" return-value) ;; (sret-arg return-vals))
     (let ((call-result (cmp:irc-create-call "cc_call_multipleValueOneFormCall" 
 				     (list (cmp:irc-load (first inputs))))))
       (%store call-result return-value)
@@ -543,6 +544,7 @@
   (cmp:irc-low-level-trace :flow)
   (let* ((lpad (clasp-cleavir::landing-pad instruction)))
     (with-return-values (return-vals return-value abi)
+      (cmp:irc-intrinsic "cc_saveMultipleValue0" return-value) ;; (sret-arg return-vals))
       (let ((call-result (cmp:irc-create-invoke "cc_call_multipleValueOneFormCall" 
 					 (list (cmp:irc-load (first inputs)))
 					 (basic-block lpad))))
@@ -1088,7 +1090,7 @@ nil)
 (defun cleavir-compile-file (given-input-pathname &rest args)
   (let ((*debug-log-index* 0)
 	(cleavir-generate-ast:*compiler* 'cl:compile-file))
-    (apply #'compile-file* #'cleavir-compile-file-form given-input-pathname args)))
+    (apply #'cmp::compile-file* #'cleavir-compile-file-form given-input-pathname args)))
 
 (defmacro with-debug-compile-file ((log-file &key debug-log-on) &rest body)
   `(with-open-file (clasp-cleavir::*debug-log* ,log-file :direction :output)

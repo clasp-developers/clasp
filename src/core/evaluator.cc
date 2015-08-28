@@ -1067,14 +1067,13 @@ T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {
   return multipleValuesLoadFromVector(save);
 }
 
-T_mv sp_multipleValueOneFormCall(List_sp args, T_sp env) {
+T_mv sp_multipleValueCall(List_sp args, T_sp env) {
   Function_sp func;
   func = gc::As<Function_sp>(eval::evaluate(oCar(args), env));
   List_sp resultList = _Nil<T_O>();
   Cons_sp* cur = reinterpret_cast<Cons_sp*>(&resultList);
-#if 1
-  if (cl_length(args) == 2 ) {
-    T_sp oneForm = oCar(oCdr(args));
+  for (auto forms : (List_sp)oCdr(args)) {
+    T_sp oneForm = oCar(forms);
     T_mv retval = eval::evaluate(oneForm, env);
     *cur = Cons_O::create(retval,_Nil<T_O>());
     cur = reinterpret_cast<Cons_sp*>(&(*cur)->_Cdr);
@@ -1082,32 +1081,18 @@ T_mv sp_multipleValueOneFormCall(List_sp args, T_sp env) {
       *cur = Cons_O::create(retval.valueGet(i),_Nil<T_O>());
       cur = reinterpret_cast<Cons_sp*>(&(*cur)->_Cdr);
     }
-  } else {
-    SIMPLE_ERROR(BF("Illegal number of arguments for special operator multiple-value-one-form-call"));
   }
-#else
-    for (auto forms : (List_sp)oCdr(args)) {
-      T_sp oneForm = oCar(forms);
-      T_mv retval = eval::evaluate(oneForm, env);
-      *cur = Cons_O::create(retval,_Nil<T_O>());
-      cur = reinterpret_cast<Cons_sp*>(&(*cur)->_Cdr);
-      for (int i(1); i < retval.number_of_values(); i++) {
-        *cur = Cons_O::create(retval.valueGet(i),_Nil<T_O>());
-        cur = reinterpret_cast<Cons_sp*>(&(*cur)->_Cdr);
-      }
-    }
-#endif
-    size_t sz = cl_length(resultList);
-    gc::frame::Frame fargs(sz);
-    size_t i(0);
-    for ( auto c : resultList ) {
-      fargs[i] = oCar(c).raw_();
-      ++i;
-    }
-    VaList_S valist_struct(fargs);
-    VaList_sp valist(&valist_struct);// = valist_struct.fargs.setupVaList(valist_struct);
-    return eval::apply_consume_VaList(func,valist);
+  size_t sz = cl_length(resultList);
+  gc::frame::Frame fargs(sz);
+  size_t i(0);
+  for ( auto c : resultList ) {
+    fargs[i] = oCar(c).raw_();
+    ++i;
   }
+  VaList_S valist_struct(fargs);
+  VaList_sp valist(&valist_struct);// = valist_struct.fargs.setupVaList(valist_struct);
+  return eval::apply_consume_VaList(func,valist);
+}
 
 #define ARGS_af_processDeclarations "(body expectDocString)"
 #define DECL_af_processDeclarations ""
@@ -2379,7 +2364,7 @@ T_mv cl_apply(T_sp head, T_sp args) {
     _lisp->defineSpecialOperator(ClPkg, "locally", &sp_locally);
     _lisp->defineSpecialOperator(ClPkg, "macrolet", &sp_macrolet);
     _lisp->defineSpecialOperator(ClPkg, "multipleValueProg1", &sp_multipleValueProg1);
-    _lisp->defineSpecialOperator(CorePkg, "multipleValueOneFormCall", &sp_multipleValueOneFormCall);
+    _lisp->defineSpecialOperator(ClPkg, "multipleValueCall", &sp_multipleValueCall);
     _lisp->defineSpecialOperator(ClPkg, "progn", &sp_progn);
     _lisp->defineSpecialOperator(ClPkg, "progv", &sp_progv);
     _lisp->defineSpecialOperator(ClPkg, "quote", &sp_quote);

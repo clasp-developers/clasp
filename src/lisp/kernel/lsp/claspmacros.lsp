@@ -57,6 +57,7 @@
 (defmacro throw (tag result-form)
   `(core:throw-function ,tag (lambda () (declare (core::lambda-name throw-result-lambda)) ,result-form)))
 
+#+(or)
 (defmacro multiple-value-call (function &rest forms)
   (if (= (length forms) 1)
       `(core:multiple-value-one-form-call ,function ,(car forms))

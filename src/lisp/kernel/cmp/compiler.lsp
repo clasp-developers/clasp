@@ -317,17 +317,24 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((cleanup)
        (irc-intrinsic "progvRestoreSpecials" save-specials)))))
 
-(defun codegen-multiple-value-one-form-call (result rest env)
+(defun codegen-multiple-value-call (result rest env)
   (with-dbg-lexical-block (rest)
-    (let ((function-form (car rest))
-          (form (cadr rest))
-          (temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
-      	  (funcDesignator (irc-alloca-tsp :label "funcDesignator")))
-      (codegen funcDesignator function-form env)
-      (codegen temp-mv-result form env)
-      (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
-      (let ((register-ret (irc-intrinsic "cc_call_multipleValueOneFormCall" (irc-extract-value (irc-load funcDesignator) (list 0)))))
-        (irc-store-result result register-ret)))))
+    (let* ((function-form (car rest))
+           (forms (cdr rest)))
+      (if (= (length forms) 1)
+          (let ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
+                (funcDesignator (irc-alloca-tsp :label "funcDesignator"))
+                (form (car forms)))
+            (codegen funcDesignator function-form env)
+            (codegen temp-mv-result form env)
+            (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
+            (let ((register-ret (irc-intrinsic "cc_call_multipleValueOneFormCall" (irc-extract-value (irc-load funcDesignator) (list 0)))))
+              (irc-store-result result register-ret)))
+          (codegen result `(core:multiple-value-funcall
+                            ,function-form
+                            ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))
+                   env)))))
+          
 
 (defun codegen-multiple-value-prog1 (result rest env)
   (with-dbg-lexical-block (rest)
@@ -1176,8 +1183,6 @@ jump to blocks within this tagbody."
 (defun treat-as-special-operator-p (sym)
   (cond
     ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
-    ((eq sym 'cl:multiple-value-call) nil) ;; handled with macro
-    ((eq sym 'core:multiple-value-one-form-call) t)
     ((eq sym 'cl:catch) nil)  ;; handled with macro
     ((eq sym 'cl:throw) nil)  ;; handled with macro
     ((eq sym 'core:debug-message) t)   ;; special operator

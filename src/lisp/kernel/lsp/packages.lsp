@@ -27,7 +27,6 @@
             run-repl
             *defun-inline-hook*
             *proclaim-hook*
-            multiple-value-one-form-call
             ))
 
   (export '( ;;;;MISSING SYMBOLS!!!!!

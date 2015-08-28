@@ -380,7 +380,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	       (let ((name (second def))	;cadr
 		     (lambda-list (third def))	; caddr
 		     (lambda-body (cdddr def))) ; cdddr
-		 (core::multiple-value-one-form-call
+		 (multiple-value-call
 		     (function (lambda (&optional (decl) (body) (doc) &rest rest)
 		       (declare (ignore rest))
 		       (if decl (setq decl (list (cons 'declare decl))))
@@ -478,7 +478,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (si::*fset 'ibundle
 	   #'(lambda (path)
-	       (core:multiple-value-one-form-call
+	       (multiple-value-call
                 #'(lambda (loaded &optional error-msg)
                     (if loaded
                         loaded
