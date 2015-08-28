@@ -90,13 +90,14 @@ namespace gctools {
 */
   class GCStack {
     enum { frame, pad1, pad2 };
-    size_t _TrackMaxSize;
+    size_t _MaxSize;
 #ifdef USE_BOEHM
     size_t _TotalSize;
 #endif
 #ifdef USE_MPS
     mps_pool_t _Pool;
     mps_ap_t _AllocationPoint;
+    bool _IsActive;
 #endif
    //! Return true if this Stack object is active and can receive pushFrame/popFrame messages
   public:
@@ -105,7 +106,7 @@ namespace gctools {
       return true;
 #endif
 #ifdef USE_MPS
-    #error "Add MPS support - use SNC class"
+      return _IsActive;
 #endif
     };
    //*! Allocate a buffer for this 
@@ -145,49 +146,62 @@ namespace gctools {
       FRAME_HEADER_SIZE_FIELD(headerAndFrame) = headerAndFrameSize;
       void* frameStart = headerAndFrame + 1; // skip uintptr_t header
       this->_TotalSize += headerAndFrameSize;
-      return frameStart;
+      goto DONE;
 #endif
 #ifdef USE_MPS
       mps_frame_t frame_o;
       mp_res_t mps_ap_frame_push(&frame_o,this->_AllocationPoint);
       mps_addr_t p;
       size_t aligned_size = frameSize; /* see note 1 */
+      uintptr_t allocP;
       do {
         mps_res_t res = mps_reserve(&p, this->_AllocationPoint, aligned_size);
         if (res != MPS_RES_OK) {
-          /* handle the error */
+          THROW_HARD_ERROR(BF("Out of memory in GCStack::allocateFrame"));
         }
-            /* initialize obj */
-        printf("%s:%d Initialize the frame\n", __FILE__, __LINE__);
+        allocP = reinterpret_cast<uintptr_t*>(p);
+        memset(allocP,0,aligned_size);
       } while (!mps_commit(this->_AllocationPoint, p, aligned_size)); /* see note 2 */
-      printf("%s:%d Done allocating the frame: %p  p@%p\n", __FILE__, __LINE__, frame_o, p);
-/* obj is now valid and managed by the MPS */
-#if 0
+      if ( (void*)allocP != (void*)frame_o ) {
+        printf("%s:%d The frame did not match the start of the allocated space: frame_o@%p allocP@%p\n", __FILE__, __LINE__, (void*)frame_o, (void*)allocP);
+      }
       FRAME_HEADER_TYPE_FIELD(frame_o) = stackFrame;
       FRAME_HEADER_SIZE_FIELD(frame_o) = headerAndFrameSize;
       void* frameStart = FRAME_START(frame_o); // skip uintptr_t header
       this->_TotalSize += headerAndFrameSize;
+      goto DONE;
 #endif
+    DONE:
+      if ( this->_TotalSize > this->_MaxSize ) {
+        this->_MaxSize = this->_TotalSize;
+      }
       return frameStart;
-#endif
     }
     void popFrame(void* frame) {
 #ifdef USE_BOEHM
-      uintptr_t* headerAndFrame = reinterpret_cast<uintptr_t*>(frame)-1; // backup to uintptr_t header
-      this->_TotalSize -= *headerAndFrame;
-      GC_FREE(headerAndFrame);
-#endif
+      uintptr_t* frameHeaderP = reinterpret_cast<uintptr_t*>(frame)-1; // backup to uintptr_t header
+      uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
+      this->_TotalSize -= headerAndFrameSize;
+      GC_FREE(frameHeaderP);
+#endif // USE_BOEHM
 #ifdef USE_MPS
-#error "Add support for MPS"
-#endif
+      uintptr_t* frameHeaderP = FRAME_HEADER(frame);
+      uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
+      this->_TotalSize -= headerAndFrameSize;
+      mps_frame_t frame_o = reinterpret_cast<mps_frame_t>(frameHeaderP);
+      mps_res_t res = mps_ap_frame_pop(&frame_o,this->_AllocationPoint);
+      if ( res != MPS_RES_OK ) {
+        THROW_HARD_ERROR(BF("There was a problem with mps_app_frame_pop"));
+      }
+#endif // USE_MPS
     }
 
-  GCStack() :
+  GCStack() : _TotalSize(0)
+      , _MaxSize(0)
 #ifdef USE_BOEHM
-    _TotalSize(0)
 #endif
 #ifdef USE_MPS
-#error "Support MPS"
+// What do I do here?
 #endif
     {};
     virtual ~GCStack() {
@@ -195,7 +209,7 @@ namespace gctools {
       // Nothing to do
 #endif
 #ifdef USE_MPS
-#error "Support MPS"
+// What do I do here?
 #endif
     };
    

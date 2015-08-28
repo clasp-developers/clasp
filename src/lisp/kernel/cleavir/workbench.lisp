@@ -47,11 +47,13 @@
 (defun remove-documentation (body)
   (multiple-value-bind (decls body doc)
       (process-declarations body t)
-    (when decls (push `(declare ,@decls) body))
     (values body doc)))
 
-(ihs-arguments 1)
-(setq *print-array* t)
+(clasp-cleavir::cleavir-compile-file #p"sys:tests;tmv.lsp")
+(load "sys:tests;tmv.fasl")
+
+
+(foo)
 
 (multiple-value-bind (body doc) (remove-documentation '("Hello there" '(member nil t))) (list :body body :doc doc))
 

@@ -416,7 +416,6 @@ Symbol_sp af_allocPatternEnd() {
 #define DECL_af_room ""
 #define DOCS_af_room "room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)"
 T_mv af_room(T_sp x, Fixnum_sp marker, T_sp tmsg) {
-  _G();
   string smsg = "Total";
   if (Str_sp msg = tmsg.asOrNull<Str_O>()) {
     smsg = msg->get();
@@ -442,7 +441,6 @@ T_mv af_room(T_sp x, Fixnum_sp marker, T_sp tmsg) {
   }
   mps_amc_apply(_global_amc_pool, amc_apply_stepper, &reachables, 0);
   dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
-  return Values(_Nil<T_O>());
 #endif
 #ifdef USE_BOEHM
   globalSearchMarker = core::unbox_fixnum(marker);
@@ -474,8 +472,11 @@ T_mv af_room(T_sp x, Fixnum_sp marker, T_sp tmsg) {
   delete static_ReachableLispKinds;
   delete static_ReachableContainerKinds;
   delete static_ReachableStringKinds;
-  return Values(_Nil<core::T_O>());
 #endif
+  gc::GCStack* stack = threadLocalStack();
+  size_t totalMaxSize = stack->_TotalMaxSize;
+  printf("High water mark (max used) side-stack size: %u\n", totalMaxSize);
+    return Values(_Nil<core::T_O>());
 };
 };
 
