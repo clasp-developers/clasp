@@ -517,6 +517,12 @@ int initializeMemoryPoolSystem(MainFunctionType startup, int argc, char *argv[],
 void searchHeapAndStackForAddress(mps_addr_t addr);
 };
 
+namespace gctools {
+  class GCStack;
+  void mpsAllocateStack(GCStack* stack);
+  void mpsDeallocateStack(GCStack* stack);
+};
+
 extern "C" {
 
 /*! Return the number of messages processed */

@@ -89,10 +89,12 @@ namespace gctools {
 /*! Maintain a stack containing pointers that are garbage collected
 */
   class GCStack {
-    enum { frame, pad1, pad2 };
+  public:
+    typedef enum { frame, pad } frameType;
     size_t _MaxSize;
-#ifdef USE_BOEHM
     size_t _TotalSize;
+#ifdef USE_BOEHM
+    // Nothing
 #endif
 #ifdef USE_MPS
     mps_pool_t _Pool;
@@ -111,23 +113,20 @@ namespace gctools {
 #endif
     };
    //*! Allocate a buffer for this 
-    bool allocateStack(size_t bufferSize) {
+    bool allocateStack(size_t bufferSize)
+    {
       bufferSize = STACK_ALIGN_UP(bufferSize);
-#ifdef USE_BOEHM
-      // Do nothing, MALLOC and FREE each frame
-#endif
 #ifdef USE_MPS
-      
-    #error "Add MPS support - use SNC class"
+      mpsAllocateStack(this);
 #endif
       return true;
-    }
-    void freeStack() {
+    };
+    void deallocateStack() {
 #ifdef USE_BOEHM
       // Do nothing
 #endif
 #ifdef USE_MPS
-    #error "Add MPS support - use SNC class"
+      mpsDeallocateStack(this);
 #endif
     };
 
@@ -152,10 +151,13 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
       mps_frame_t frame_o;
-      mp_res_t mps_ap_frame_push(&frame_o,this->_AllocationPoint);
+      mps_res_t respush = mps_ap_frame_push(&frame_o,this->_AllocationPoint);
+      if (respush != MPS_RES_OK) {
+        THROW_HARD_ERROR(BF("Could not mps_ap_frame_push"));
+      }
       mps_addr_t p;
       size_t aligned_size = frameSize; /* see note 1 */
-      uintptr_t allocP;
+      uintptr_t* allocP;
       do {
         mps_res_t res = mps_reserve(&p, this->_AllocationPoint, aligned_size);
         if (res != MPS_RES_OK) {
@@ -167,7 +169,7 @@ namespace gctools {
       if ( (void*)allocP != (void*)frame_o ) {
         printf("%s:%d The frame did not match the start of the allocated space: frame_o@%p allocP@%p\n", __FILE__, __LINE__, (void*)frame_o, (void*)allocP);
       }
-      FRAME_HEADER_TYPE_FIELD(frame_o) = stackFrame;
+      FRAME_HEADER_TYPE_FIELD(frame_o) = frame;
       FRAME_HEADER_SIZE_FIELD(frame_o) = headerAndFrameSize;
       void* frameStart = FRAME_START(frame_o); // skip uintptr_t header
       this->_TotalSize += headerAndFrameSize;
@@ -191,7 +193,7 @@ namespace gctools {
       uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
       this->_TotalSize -= headerAndFrameSize;
       mps_frame_t frame_o = reinterpret_cast<mps_frame_t>(frameHeaderP);
-      mps_res_t res = mps_ap_frame_pop(&frame_o,this->_AllocationPoint);
+      mps_res_t res = mps_ap_frame_pop(this->_AllocationPoint,frame_o);
       if ( res != MPS_RES_OK ) {
         THROW_HARD_ERROR(BF("There was a problem with mps_app_frame_pop"));
       }

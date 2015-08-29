@@ -503,17 +503,17 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         for (int i(0), iEnd(obj->length()); i < iEnd; ++i) {
           core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket[i].raw_());
           if (MPS_FIX1(ss, p)) {
-            core::T_O *pobj = gctools::untag_object<core::T_O>(p);
-            core::T_O *tag = gctools::tag<core::T_O>(p);
+            core::T_O *pobj = gctools::untag_object<core::T_O*>(p);
+            core::T_O *tag = gctools::tag<core::T_O*>(p);
             mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
             if (res != MPS_RES_OK)
               return res;
             if (pobj == NULL && obj->dependent) {
-              obj->dependent->bucket[i] = WeakBucketsObjectType::value_type(gctools::smart_ptr<core::T_O>::make_tagged_deleted());
-              obj->bucket[i] = WeakBucketsObjectType::value_type(gctools::smart_ptr<core::T_O>::make_tagged_deleted());
+              obj->dependent->bucket[i] = WeakBucketsObjectType::value_type(gctools::make_tagged_deleted<core::T_O*>());
+              obj->bucket[i] = WeakBucketsObjectType::value_type(gctools::make_tagged_deleted<core::T_O*>());
             } else {
               p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_t>(pobj) | reinterpret_cast<uintptr_t>(tag));
-              obj->bucket[i].setRaw_(reinterpret_cast<core::T_O *>(p)); //reinterpret_cast<gctools::Header_s*>(p);
+              obj->bucket[i].setRaw_(reinterpret_cast<gc::Tagged>(p)); //reinterpret_cast<gctools::Header_s*>(p);
             }
           }
         }
@@ -526,13 +526,13 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
           // MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&(obj->bucket[i].raw_())));
           core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket[i].raw_());
           if (MPS_FIX1(ss, p)) {
-            core::T_O *pobj = gctools::untag_object<core::T_O>(p);
-            core::T_O *tag = gctools::tag<core::T_O>(p);
+            core::T_O *pobj = gctools::untag_object<core::T_O*>(p);
+            core::T_O *tag = gctools::tag<core::T_O*>(p);
             mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
             if (res != MPS_RES_OK)
               return res;
             p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_t>(pobj) | reinterpret_cast<uintptr_t>(tag));
-            obj->bucket[i].setRaw_(reinterpret_cast<core::T_O *>(p)); //reinterpret_cast<gctools::Header_s*>(p);
+            obj->bucket[i].setRaw_((gc::Tagged)(p)); //reinterpret_cast<gctools::Header_s*>(p);
           }
         }
         base = (char *)base + sizeof(StrongBucketsObjectType) + sizeof(typename StrongBucketsObjectType::value_type) * obj->length();
@@ -542,17 +542,17 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         MPS_FIX12(ss, reinterpret_cast<mps_addr_t *>(&obj->dependent));
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket.raw_());
         if (MPS_FIX1(ss, p)) {
-          core::T_O *pobj = gctools::untag_object<core::T_O>(p);
-          core::T_O *tag = gctools::tag<core::T_O>(p);
+          core::T_O *pobj = gctools::untag_object<core::T_O*>(p);
+          core::T_O *tag = gctools::tag<core::T_O*>(p);
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
           if (res != MPS_RES_OK)
             return res;
           if (p == NULL && obj->dependent) {
-            obj->dependent->bucket = WeakBucketsObjectType::value_type(gctools::smart_ptr<core::T_O>::make_tagged_deleted());
-            obj->bucket = WeakBucketsObjectType::value_type(gctools::smart_ptr<core::T_O>::make_tagged_deleted());
+            obj->dependent->bucket = WeakBucketsObjectType::value_type(gctools::make_tagged_deleted<core::T_O*>());
+            obj->bucket = WeakBucketsObjectType::value_type(gctools::make_tagged_deleted<core::T_O*>());
           } else {
             p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_t>(pobj) | reinterpret_cast<uintptr_t>(tag));
-            obj->bucket.setRaw_(reinterpret_cast<core::T_O *>(p)); // raw_() = reinterpret_cast<core::T_O*>(p);
+            obj->bucket.setRaw_((gc::Tagged)(p)); // raw_() = reinterpret_cast<core::T_O*>(p);
           }
         }
         base = (char *)base + sizeof(WeakMappingObjectType);
@@ -563,13 +563,13 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         //                    MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&(obj->bucket.raw_())));
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket.raw_());
         if (MPS_FIX1(ss, p)) {
-          core::T_O *pobj = gctools::untag_object<core::T_O>(p);
-          core::T_O *tag = gctools::tag<core::T_O>(p);
+          core::T_O *pobj = gctools::untag_object<core::T_O*>(p);
+          core::T_O *tag = gctools::tag<core::T_O*>(p);
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
           if (res != MPS_RES_OK)
             return res;
           p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_t>(pobj) | reinterpret_cast<uintptr_t>(tag));
-          obj->bucket.setRaw_(reinterpret_cast<core::T_O *>(p)); //reinterpret_cast<gctools::Header_s*>(p);
+          obj->bucket.setRaw_((gc::Tagged)(p)); //reinterpret_cast<gctools::Header_s*>(p);
         }
         base = (char *)base + sizeof(StrongMappingObjectType);
       } break;
@@ -578,13 +578,13 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         // MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&(obj->value.raw_())));
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->value.raw_());
         if (MPS_FIX1(ss, p)) {
-          core::T_O *pobj = gctools::untag_object<core::T_O>(p);
-          core::T_O *tag = gctools::tag<core::T_O>(p);
+          core::T_O *pobj = gctools::untag_object<core::T_O*>(p);
+          core::T_O *tag = gctools::tag<core::T_O*>(p);
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
           if (res != MPS_RES_OK)
             return res;
           p = reinterpret_cast<core::T_O *>(reinterpret_cast<uintptr_t>(pobj) | reinterpret_cast<uintptr_t>(tag));
-          obj->value.setRaw_(reinterpret_cast<core::T_O *>(p)); //reinterpret_cast<gctools::Header_s*>(p);
+          obj->value.setRaw_((gc::Tagged)(p)); //reinterpret_cast<gctools::Header_s*>(p);
         }
         base = (char *)base + sizeof(WeakPointer);
       } break;
@@ -661,7 +661,7 @@ void weak_obj_fwd(mps_addr_t old, mps_addr_t newv) {
     weak_fwd_s *weak_fwd_obj = reinterpret_cast<weak_fwd_s *>(weakObj);
     weak_fwd_obj->setKind(WeakFwdKind);
     weak_fwd_obj->fwd = reinterpret_cast<WeakObject *>(newv);
-    weak_fwd_obj->size = gc::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(size);
+    weak_fwd_obj->size = gc::make_tagged_fixnum<core::Fixnum_I*>(size);
   }
 }
 
@@ -688,7 +688,7 @@ void weak_obj_pad(mps_addr_t addr, size_t size) {
   } else {
     weakObj->setKind(WeakPadKind);
     weak_pad_s *weak_pad_obj = reinterpret_cast<weak_pad_s *>(addr);
-    weak_pad_obj->size = gctools::smart_ptr<core::Fixnum_I>::make_tagged_fixnum(size);
+    weak_pad_obj->size = gctools::make_tagged_fixnum<core::Fixnum_I*>(size);
   }
 }
 };

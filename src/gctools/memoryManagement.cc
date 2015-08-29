@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #include <llvm/Support/ErrorHandling.h>
 #include <clasp/core/foundation.h>
+#include <clasp/gctools/gcalloc.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/debugger.h>
@@ -140,7 +141,6 @@ int handleFatalCondition() {
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
   void *stackMarker = NULL;
-  _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_size);
   gctools::_global_stack_marker = &stackMarker;
 
   setupSignals();
@@ -155,6 +155,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   GC_set_warn_proc(clasp_warn_proc);
 //  GC_enable_incremental();
   GC_init();
+  _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_size);
   int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
   return exitCode;

@@ -41,6 +41,7 @@ THE SOFTWARE.
 extern "C" {
 #include "mps/code/mpscawl.h" // MVFF pool
 #include "mps/code/mpscamc.h" // AMC pool
+#include "mps/code/mpscsnc.h" // SNC pool
 };
 
 #include <clasp/gctools/gctoolsPackage.h>
@@ -186,8 +187,101 @@ static void obj_pad(mps_addr_t base, size_t size) {
   }
 }
 
+
+
 // -----------------------------------------------------------
 // -----------------------------------------------------------
+//
+// Code to deal with the thread local side-stacks
+//
+//
+
+static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit ) {
+  MPS_SCAN_BEGIN(ss) {
+    while (base<limit) {
+      uintptr_t* headerAndFrame = (uintptr_t*)base;
+      GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
+      size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
+      printf("%s:%d Finish writing stack_frame_scan\n", __FILE__, __LINE__ );
+    }
+  } MPS_SCAN_END(ss);
+  return MPS_RES_OK;
+};
+
+
+static mps_addr_t stack_frame_skip(mps_addr_t base)
+{
+  printf("%s:%d in stack_frame_skip\n", __FILE__, __LINE__);
+  uintptr_t* headerAndFrame = (uintptr_t*)base;
+  size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
+  base = (char*)base + sz;
+  GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
+#if 0
+  switch (TYPE(obj)) {
+  case TYPE_PAIR:
+      base = (char *)base + ALIGN_OBJ(sizeof(pair_s));
+      break;
+  case TYPE_INTEGER:
+      base = (char *)base + ALIGN_OBJ(sizeof(integer_s));
+      break;
+    /* ... and so on for the other types ... */
+  default:
+      assert(0);
+      fprintf(stderr, "Unexpected object on the heap\n");
+      abort();
+  }
+#endif
+  return base;
+}
+
+static void stack_frame_pad(mps_addr_t addr, size_t size)
+{
+  uintptr_t* obj = reinterpret_cast<uintptr_t*>(addr);
+  GCTOOLS_ASSERT(size>=STACK_ALIGN_UP(sizeof(uintptr_t)));
+  FRAME_HEADER_TYPE_FIELD(obj) = (int)GCStack::frameType::pad;
+  FRAME_HEADER_SIZE_FIELD(obj) = size;
+}
+
+void mpsAllocateStack(gctools::GCStack* stack)
+{
+  mps_res_t res;
+  mps_fmt_t obj_fmt;
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, STACK_ALIGNMENT);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, stack_frame_scan);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, stack_frame_skip);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, stack_frame_pad);
+    res = mps_fmt_create_k(&obj_fmt, _global_arena, args);
+    if (res != MPS_RES_OK) THROW_HARD_ERROR(BF("Couldn't create stack frame format"));
+  } MPS_ARGS_END(args);
+ 
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+    res = mps_pool_create_k(&stack->_Pool, _global_arena, mps_class_snc(), args);
+    if (res != MPS_RES_OK) THROW_HARD_ERROR(BF("Couldn't create stack frame pool"));
+  } MPS_ARGS_END(args);
+
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+    res = mps_ap_create_k(&stack->_AllocationPoint, stack->_Pool, args);
+    if (res != MPS_RES_OK) THROW_HARD_ERROR(BF("Couldn't create stack frame allocation point"));
+  } MPS_ARGS_END(args);
+  stack->_IsActive = true;
+};
+
+void mpsDeallocateStack(gctools::GCStack* stack)
+{
+  if ( stack->_TotalSize != 0 ) {
+    THROW_HARD_ERROR(BF("mpsDeallocateStack called on a stack that is not completely empty - it contains %u bytes") % stack->_TotalSize);
+  }
+  stack->_IsActive = false;
+  mps_arena_park(_global_arena);
+  mps_ap_destroy(stack->_AllocationPoint);
+  mps_pool_destroy(stack->_Pool);
+  mps_arena_release(_global_arena);
+  printf("%s:%d deallocateStack\n", __FILE__, __LINE__ );
+};
+
 // -----------------------------------------------------------
 // -----------------------------------------------------------
 // -----------------------------------------------------------
@@ -328,6 +422,7 @@ bool parseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nu
 }
 
 #define LENGTH(array) (sizeof(array) / sizeof(array[0]))
+
 
 int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
   if (Alignment() == 16) {
@@ -531,10 +626,20 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   registerLoadTimeValuesRoot(&globalRunTimeValues);
 
-  exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
+  _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_size);
 
+#ifdef RUNNING_GC_BUILDER
+  printf("%s:%d mps-prep version of clasp started up\n", __FILE__, __LINE__);
+  printf("%s:%d   You could run some tests here\n", __FILE__, __LINE__);
+  printf("%s:%d   ... shutting down now\n", __FILE__, __LINE__);
+  exit_code = 0;
+#else
+  exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
+#endif
   processMpsMessages();
 
+  _ThreadLocalStack.deallocateStack();
+  
   mps_root_destroy(global_scan_root);
   mps_root_destroy(global_stack_root);
   mps_thread_dereg(global_thread);
