@@ -195,21 +195,22 @@
   )
 
 (defun make-method-lambda (gf method method-lambda env)
-;;  (print "REMOVEME----------------- method.lsp:184")
-;;  (print (list "REMOVEME  --- make-method-lambda gf: " gf ))
-;;  (print (list "REMOVEME              method-lambda: " method-lambda))
-  (multiple-value-bind (call-next-method-p next-method-p-p in-closure-p)
-      (walk-method-lambda method-lambda env)
-;;    (print (list "REMOVEME       call-next-method-p: " call-next-method-p))
-;;    (print (list "REMOVEME          next-method-p-p: " next-method-p-p))
-;;    (print (list "REMOVEME             in-closure-p: " in-closure-p))
-    (values `(lambda (.combined-method-args. *next-methods*)
-	       (declare (special .combined-method-args. *next-methods*))
-	       (apply ,(if in-closure-p
-			   (add-call-next-method-closure method-lambda)
-			   method-lambda)
-		      .combined-method-args.))
-	    nil)))
+  #+ecl(multiple-value-bind (call-next-method-p next-method-p-p in-closure-p)
+           (walk-method-lambda method-lambda env)
+         (values `(lambda (.combined-method-args. *next-methods*)
+                    (declare (special .combined-method-args. *next-methods*))
+                    (apply ,(if in-closure-p
+                                (add-call-next-method-closure method-lambda)
+                                method-lambda)
+                           .combined-method-args.))
+                 nil))
+  ;; Clasp always generates call-next-method and next-method-p
+  #+clasp
+  (values `(lambda (.combined-method-args. *next-methods*)
+             (declare (special .combined-method-args. *next-methods*))
+             (apply ,(add-call-next-method-closure method-lambda)
+                    .combined-method-args.))
+          nil))
 
 (defun add-call-next-method-closure (method-lambda)
   (multiple-value-bind (declarations real-body documentation)
@@ -254,10 +255,9 @@
       (return-from environment-contains-closure t)))
   )
 
+#+ecl
 (defun walk-method-lambda (method-lambda env)
   (declare (si::c-local))
-  #+compare(print (list "MLOG About to WALK-METHOD-LAMBDA over: " ))
-  #+compare(princ method-lambda)
   (let ((call-next-method-p nil)
 	(next-method-p-p nil)
 	(in-closure-p nil))
@@ -281,21 +281,19 @@
 		      (setf next-method-p-p 'FUNCTION
 			    in-closure-p t))))))
 	     form))
-      #-clasp
+      #+ecl
       (let ((si::*code-walker* #'code-walker))
 	;; Instead of (coerce method-lambda 'function) we use
 	;; explicitely the bytecodes compiler with an environment, no
 	;; stepping, compiler-env-p = t and execute = nil, so that the
 	;; form does not get executed.
 	(si::eval-with-env method-lambda env nil t t ))
+      ;;; This will not be called by clasp - I'm leaving this in
+      ;;; for now in case I need it later
       #+clasp
       (progn
 	(cmp:code-walk-using-compiler method-lambda env
-				      :code-walker-function #'code-walker))
-      )
-    #+compare(print (list "MLOG call-next-method-p" call-next-method-p ))
-    #+compare(print (list "MLOG next-method-p-p" next-method-p-p ))
-    #+compare(print (list "MLOG in-closure-p" in-closure-p ))
+				      :code-walker-function #'code-walker)))
     (values call-next-method-p
 	    next-method-p-p
 	    in-closure-p)))
