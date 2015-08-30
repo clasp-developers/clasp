@@ -148,7 +148,7 @@ Return nil if no matcher could be compiled."
         (throw 'match-counter-reached-limit *match-counter*))))
 
 (defparameter *match-dump-tag* nil)
-(defclass good-dump-match-callback (match-callback) () )
+(defclass good-dump-match-callback (ast-tooling:match-callback) () )
 (core:defvirtual run ((self good-dump-match-callback) match)
   (let* ((nodes (nodes match))
          (id-to-node-map (idto-node-map nodes))
@@ -575,9 +575,9 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 (defun multitool-activate-tools (mtool list-of-tool-names)
   (let (selected-tools)
-    (dolist (t (multitool-all-tools mtool))
-      (when (position (single-tool-name t) list-of-tool-names)
-        (push t selected-tools)))
+    (dolist (ot (multitool-all-tools mtool))
+      (when (position (single-tool-name ot) list-of-tool-names)
+        (push ot selected-tools)))
     (unless selected-tools
       (format t "No tools were selected - all tools being used~%"))
     (setf (multitool-selected-tools mtool) selected-tools)
@@ -589,7 +589,7 @@ This can only be run in the context set up by the code-match-callback::run metho
         (multitool-all-tools mtool)))
 
 (defun multitool-active-tool-names (mtool)
-  (mapcar (lambda (t) (single-tool-name t)) (multitool-active-tools mtool)))
+  (mapcar (lambda (ot) (single-tool-name ot)) (multitool-active-tools mtool)))
 
 
 (defun batch-run-multitool (mtool &key (filenames $*) arguments-adjuster-code run-and-save)
@@ -646,7 +646,7 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 (defun make-sub-match-finder (match-sexp code)
   (let ((matcher (compile-matcher match-sexp))
-        (callback (make-instance 'code-match-callback :code code))
+        (callback (make-instance 'code-match-callback :match-code code))
         (match-finder (new-match-finder)))
     (add-dynamic-matcher match-finder matcher callback)
     match-finder))

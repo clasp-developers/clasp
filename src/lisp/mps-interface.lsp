@@ -1,10 +1,10 @@
-
+;;(require :serialize)
 ;;(push :use-breaks *features*)
 ;;(push :gc-warnings *features*)
 
 (defconstant +resource-dir+ 
   #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
-  #+target-os-linux "/home/meister/Development/externals-clasp/build/release/bin/../lib/clang/3.6.0"
+  #+target-os-linux "/home/meister/Development/externals-clasp/build/release/bin/../lib/clang/3.6.2"
   "Define the -resource-dir command line option for Clang compiler runs"
 )
 (defconstant +additional-arguments+
@@ -585,12 +585,28 @@ can be saved and reloaded within the project for later analysis"
 (defun project-pathname (project-name project-type)
   (make-pathname :name project-name :type project-type :defaults (main-directory-pathname)))
 
+(defun save-data (run pathname)
+  (let ((*print-readably* t)
+        (*print-array* t)
+        (*print-circle* t)
+        (*print-pretty* nil))
+    (with-open-file (fout pathname :direction :output)
+      (prin1 run fout))))
+  
+(defun load-data (pathname)
+  (with-open-file (fin pathname :direction :input)
+    (read fin)))
 
 (defun save-project ()
-  (serialize:save-archive *project* (project-pathname "project" "dat")))
+  #+(or)(serialize:save-archive *project* (project-pathname "project" "dat"))
+  (let ((*print-readably* t)
+        (*print-array* t)
+        (*print-circle* t))
+    (with-open-file (fout (project-pathname "project" "dat") :direction :output)
+      (princ *project* fout))))
 
 (defun load-project ()
-  (setq *project* (serialize:load-archive (project-pathname "project" "dat")))
+  (setq *project* (load-data (project-pathname "project" "dat")))
   *project*
   )
         
@@ -741,7 +757,7 @@ can be saved and reloaded within the project for later analysis"
                              :name :cclasses
                              :matcher (compile-matcher *class-matcher*)
                              :initializer (lambda () (setf results (make-hash-table :test #'equal)))
-                             :callback (make-instance 'code-match-callback :code (function %%class-callback)))
+                             :callback (make-instance 'code-match-callback :match-code (function %%class-callback)))
       )))
 
 
@@ -793,7 +809,7 @@ and the inheritance hierarchy that the garbage collector will need"
                              :name :lispallocs
                              :matcher (compile-matcher `(:bind :whole ,*lispalloc-matcher*))
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'code-match-callback :code (function %%lispalloc-matcher-callback))))))
+                             :callback (make-instance 'code-match-callback :match-code (function %%lispalloc-matcher-callback))))))
 
 
 
@@ -843,7 +859,7 @@ and the inheritance hierarchy that the garbage collector will need"
                              :name :classallocs
                              :matcher (compile-matcher `(:bind :whole ,*classalloc-matcher*))
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'code-match-callback :code (function %%classalloc-matcher-callback))))))
+                             :callback (make-instance 'code-match-callback :match-code (function %%classalloc-matcher-callback))))))
 
 
 
@@ -894,7 +910,7 @@ and the inheritance hierarchy that the garbage collector will need"
                              :name :rootclassallocs
                              :matcher (compile-matcher `(:bind :whole ,*rootclassalloc-matcher*))
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'code-match-callback :code (function %%rootclassalloc-matcher-callback))))))
+                             :callback (make-instance 'code-match-callback :match-code (function %%rootclassalloc-matcher-callback))))))
 
 
 
@@ -943,7 +959,7 @@ and the inheritance hierarchy that the garbage collector will need"
                              :name :containerallocs
                              :matcher (compile-matcher `(:bind :whole ,*containeralloc-matcher*))
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'code-match-callback :code (function %%containeralloc-matcher-callback))))))
+                             :callback (make-instance 'code-match-callback :match-code (function %%containeralloc-matcher-callback))))))
 
 
 ;; ----------------------------------------------------------------------
@@ -1008,7 +1024,7 @@ and the inheritance hierarchy that the garbage collector will need"
                              :name :global-variables
                              :matcher (compile-matcher *global-variable-matcher*)
                              :initializer (lambda () (setf global-variables (make-hash-table :test #'equal)))
-                             :callback (make-instance 'code-match-callback :code (function %%global-variable-callback)))
+                             :callback (make-instance 'code-match-callback :match-code (function %%global-variable-callback)))
       )))
 
 
@@ -1084,7 +1100,7 @@ and the inheritance hierarchy that the garbage collector will need"
                              :initializer (lambda ()
                                             (setf static-local-variables (make-hash-table :test #'equal))
                                             (setf local-variables (make-hash-table :test #'equal)))
-                             :callback (make-instance 'code-match-callback :code (function %%variable-callback)))
+                             :callback (make-instance 'code-match-callback :match-code (function %%variable-callback)))
       )))
 
 
@@ -1141,7 +1157,7 @@ and the inheritance hierarchy that the garbage collector will need"
                              :name :gcinfos
                              :matcher (compile-matcher `(:bind :whole ,*gcinfo-matcher*))
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'code-match-callback :code (function %%gcinfo-matcher-callback))))))
+                             :callback (make-instance 'code-match-callback :match-code (function %%gcinfo-matcher-callback))))))
 
 
 
@@ -1951,8 +1967,8 @@ so that they don't have to be constantly recalculated"
             (return-from inherits-metadata t)))
         (dolist (parent (cclass-vbases cclass))
           (when (inherits-metadata parent metadata project)
-            (return-from inherits-metadata t))))
-      nil))
+            (return-from inherits-metadata t)))
+        nil)))
 
 
 
@@ -2622,7 +2638,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 
 
-(defparameter *max-parallel-searches* (parse-integer (core:getenv "PJOBS")))
+(defparameter *max-parallel-searches* (parse-integer (ext:getenv "PJOBS")))
 
 (defun split-jobs (job-list num-parallel)
   (let ((jobvec (make-array num-parallel)))
@@ -2638,7 +2654,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (format t "====== Running jobs in fork #~a: ~a~%" proc job-list)
   (batch-run-multitool *tools* :filenames job-list)
   (format t "------------ About to save-archive --------------~%")
-  (serialize:save-archive (multitool-results *tools*) (project-pathname (format nil "project~a" proc) "dat"))
+  (save-data (multitool-results *tools*) (project-pathname (format nil "project~a" proc) "dat"))
   (core:exit))
 
 (defvar *parallel-search-pids* nil)
@@ -2651,11 +2667,11 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                               *max-parallel-searches*
                               ))
         (spare-processes (if one-at-a-time 1 *max-parallel-searches*)))
-    (serialize:save-archive all-jobs (project-pathname "project-all" "dat"))
+    (save-data all-jobs (project-pathname "project-all" "dat"))
     (format t "all-jobs: ~a~%" all-jobs)
     (dotimes (proc (length all-jobs))
       (setq spare-processes (1- spare-processes))
-      (core:system "sleep 1")
+      (ext:system "sleep 1")
       (let* ((job-list (elt all-jobs proc))
              (pid (core:fork)))
         (if (eql 0 pid)
@@ -2682,7 +2698,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 (defun parallel-merge (&key end (start 0) restart)
   "Merge the analyses generated from the parallel search"
-  (let* ((all-jobs (serialize:load-archive (project-pathname "project-all" "dat")))
+  (let* ((all-jobs (load-data (project-pathname "project-all" "dat")))
          (merged (if restart
                      (progn
                        (format t "Loading existing project and restarting from ~a~%" start)
@@ -2702,7 +2718,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
       (format t "Loading project for job ~a~%" proc)
       (let* ((project-dat-name (probe-file (project-pathname (format nil "project~a" proc) "dat")))
              (one (if project-dat-name
-                      (serialize:load-archive (project-pathname (format nil "project~a" proc) "dat"))
+                      (load-data (project-pathname (format nil "project~a" proc) "dat"))
                       nil)))
         (if one
             (progn
@@ -2750,7 +2766,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                :limit 100
                ;;              :tag :point
                :match-comments '( ".*mytest.*" )
-               :code #'(lambda ()
+               :match-code #'(lambda ()
                          (let* ((decl (mtag-node :whole))
                                 (args (cast:get-template-args decl))
                                 (arg (cast:template-argument-list-get args 0))
