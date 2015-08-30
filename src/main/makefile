@@ -5,12 +5,11 @@ project-directories = ../gctools ../core ../clbind ../cffi ../asttooling ../llvm
 
 
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
-  BCLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/bclasp
-  CCLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_boehm_o
-  CLASP_MPS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_mps_o
+  BCLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/release/boehm/clasp -f bclasp
+  CCLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/release/boehm/clasp
+  CLASP_MPS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/release/mps/clasp
 else
-  CLASP_BOEHM = clasp_boehm_o -f bclasp
-  CLASP_MPS = clasp_mps_o
+  echo "ERROR CLASP_INTERNAL_BUILD_TARGET_DIR is not defined - what should I do now?"
 endif
 
 export CLASP_APP_RESOURCES_DIR=$(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
