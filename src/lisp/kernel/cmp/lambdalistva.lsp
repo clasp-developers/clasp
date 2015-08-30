@@ -655,12 +655,10 @@ lambda-list-handler/env/argument-activation-frame"
     (do* ((cur-target (cdr reqargs) (cdr cur-target))
           (cur-fixed-args fixed-args (cdr cur-fixed-args))
           (target (car cur-target) (car cur-target))
-          (arg (car cur-fixed-args) (car cur-fixed-args))
-          )
+          (arg (car cur-fixed-args) (car cur-fixed-args)))
          ((null cur-target))
       (let ((tsp-arg (irc-insert-value (llvm-sys:undef-value-get +tsp+) arg (list 0) "arg")))
-        (with-target-reference-do (tref target new-env) (irc-store tsp-arg tref))))
-    ))
+        (with-target-reference-do (tref target new-env) (irc-store tsp-arg tref))))))
 
 
 
@@ -679,8 +677,8 @@ lambda-list-handler/env/argument-activation-frame"
           (num-opt (car optargs)))
       (cond
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-        #+(or)((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
-               (compile-<=3-required-arguments reqargs old-env args new-env))
+        ((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
+         (compile-<=3-required-arguments reqargs old-env args new-env))
         ;; Test for
         ;; (x &optional y)
         ;; (x y &optional z)
