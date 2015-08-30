@@ -13,7 +13,7 @@ using clang : : [ os.environ CLASP_CLANG_PATH ] ; #   $(APPRES-EXTERNALS-RELEASE
 #using gc ;
 import feature ;
 feature.feature gc : mps-prep mps boehm
-                : symmetric implicit composite propagated link-incompatible ;
+                : symmetric composite propagated link-incompatible ;
 feature.compose <gc>mps : <define>USE_MPS ;
 feature.compose <gc>boehm : <define>USE_BOEHM ;
 feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # used for testing MPS
@@ -55,6 +55,7 @@ project clasp : requirements
 	<define>INHERITED_FROM_SRC
         <warnings>off
         <cxxflags>"-ferror-limit=999"
+        <define>_GLIBCXX_USE_CXX11_ABI=0
         <define>CLASP_GIT_COMMIT="\\\"$(GIT_COMMIT)\\\""
         <define>CLASP_VERSION="\\\"$(CLASP_VERSION)\\\""
         <program>cando:<include>projects/cando/include
@@ -238,7 +239,7 @@ path-constant APPRES-EXTERNALS-COMMON-INCLUDE : $(APPRES-EXTERNALS-COMMON)/inclu
 path-constant APPRES-LISP : $(APPRES)/lisp ;
 path-constant APPRES-CANDO-LISP : $(APPRES)/cando/lisp ;
 path-constant APPBIN : $(APPTOP)/bin ;
-path-constant APPBIN-OSX : $(APPTOP)/MacOS ;
+path-constant APPBIN-DARWIN : $(APPTOP)/MacOS ;
 path-constant APPBIN-LINUX : $(APPTOP)/bin ;
 path-constant APPINC : $(APPRES)/include ;
 path-constant APPLIB : $(APPRES)/lib ;

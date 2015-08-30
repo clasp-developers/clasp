@@ -47,184 +47,37 @@ sources =
 		/externals//boostAndExpatLibs/<link>static
 		;
 
-
-exe clasp_boehm_o : main.cc $(sources)
-          /externals//lib_boehm/<link>static
-          : <gc>boehm <variant>release
+exe clasp : main.cc $(sources)
+    /externals//lib_boehm/<link>static
+    : <gc>boehm
     ;
 
-explicit clasp_boehm_o ;
-
-install install_clasp_boehm_o : clasp_boehm_o
-        : <location>$(APPBIN-LINUX) <target-os>linux
-        <implicit-dependency>/internals/llvmo//bundle
-        ;
-
-install install_clasp_boehm_o : clasp_boehm_o
-        : <location>$(APPBIN-OSX) <target-os>darwin
-        <implicit-dependency>/internals/llvmo//bundle
-        ;
-
-install install_clasp_boehm_d : clasp_boehm_d
-        : <location>$(APPBIN-LINUX) <target-os>linux
-        <implicit-dependency>/internals/llvmo//bundle
-        ;
-
-install install_clasp_boehm_d : clasp_boehm_d
-        : <location>$(APPBIN-OSX) <target-os>darwin
-        <implicit-dependency>/internals/llvmo//bundle
-        ;
-
-exe clasp_boehm_d : main.cc $(sources)
-          /externals//lib_boehm/<link>static
-          : <gc>boehm <variant>debug
+exe clasp : main.cc $(sources)
+    gc_interface.cc
+    gclib
+    : <gc>mps
     ;
 
-explicit clasp_boehm_d ;
-
-
-
-exe clasp_mps_o : main.cc $(sources)
-                gc_interface.cc
-          : <gc>mps <variant>release
+exe clasp : main.cc $(sources)
+    gc_interface.cc
+    gclib
+    : <gc>mps-prep
     ;
 
-explicit clasp_mps_o ;
 
-exe clasp_mps_d : main.cc $(sources)
-                gc_interface.cc
-          : <gc>mps <variant>debug
-    ;
-
-explicit clasp_mps_d ;
-
-exe clasp_mps-prep_o : main.cc $(sources)
-                gc_interface.cc
-                     gclib
-          : <gc>mps-prep <variant>release
-    ;
-
-explicit clasp_mps-prep_o ;
-
-exe clasp_mps-prep_d : main.cc $(sources)
-                gc_interface.cc
-                     gclib
-          : <gc>mps-prep <variant>debug
-    ;
-
-explicit clasp_mps-prep_d ;
-
-install install_clasp_mps-prep_d : clasp_mps-prep_d
-        : <location>$(APPBIN-OSX) <target-os>darwin
+install dist : clasp
+        :
+        <program>clasp,<target-os>linux,<variant>release,<gc>boehm:<location>$(APPBIN-LINUX)/release/boehm
+        <program>clasp,<target-os>linux,<variant>release,<gc>mps-prep:<location>$(APPBIN-LINUX)/release/mps-prep
+        <program>clasp,<target-os>linux,<variant>release,<gc>mps:<location>$(APPBIN-LINUX)/release/mps
+        <program>clasp,<target-os>linux,<variant>debug,<gc>boehm:<location>$(APPBIN-LINUX)/debug/boehm
+        <program>clasp,<target-os>linux,<variant>debug,<gc>mps-prep:<location>$(APPBIN-LINUX)/debug/mps-prep
+        <program>clasp,<target-os>linux,<variant>debug,<gc>mps:<location>$(APPBIN-LINUX)/debug/mps
+        <program>clasp,<target-os>darwin,<variant>release,<gc>boehm:<location>$(APPBIN-DARWIN)/release/boehm
+        <program>clasp,<target-os>darwin,<variant>release,<gc>mps-prep:<location>$(APPBIN-DARWIN)/release/mps-prep
+        <program>clasp,<target-os>darwin,<variant>release,<gc>mps:<location>$(APPBIN-DARWIN)/release/mps
+        <program>clasp,<target-os>darwin,<variant>debug,<gc>boehm:<location>$(APPBIN-DARWIN)/debug/boehm
+        <program>clasp,<target-os>darwin,<variant>debug,<gc>mps-prep:<location>$(APPBIN-DARWIN)/debug/mps-prep
+        <program>clasp,<target-os>darwin,<variant>debug,<gc>mps:<location>$(APPBIN-DARWIN)/debug/mps
         <implicit-dependency>/internals/llvmo//bundle
         ;
-explicit install_clasp_mps-prep_d ;
-
-install install_clasp_mps-prep_o : clasp_mps-prep_o
-        : <location>$(APPBIN-LINUX) <target-os>linux
-        <implicit-dependency>/internals/llvmo//bundle
-        ;
-explicit install_clasp_mps-prep_d ;
-
-
-alias clasp : clasp_boehm_d clasp_mps_d clasp_mps-prep_d
-      : <variant>debug
-      ;
-
-alias clasp : clasp_boehm_o clasp_mps_o clasp_mps-prep_o
-      : <variant>release
-      ;
-
-explicit clasp ;
-
-install install_clasp : clasp
-        : <location>$(APPBIN-OSX) <target-os>darwin
-        <implicit-dependency>/internals/llvmo//bundle
-        ;
-
-install install_clasp : clasp
-        : <location>$(APPBIN-LINUX) <target-os>linux
-        <implicit-dependency>/internals/llvmo//bundle
-        ;
-
-explicit install_clasp ;
-
-alias bundle : install_clasp /internals/llvmo//bundle ;
-
-explicit bundle ;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Old (pre 2015) commented out stuff
-#alias gc-sources : mymps.c
-#
-#exe clasp_boehm_o : main.cc $(sources)
-#                    /externals//lib_boehm
-#    	   : $(deps) <gc>boehm ;
-#
-#exe clasp_boehm_d : main.cc $(sources) /externals//lib_boehm/<link>static
-#    	   : $(deps) <gc>boehm ;
-#
-#exe clasp_mps_o : main.cc $(sources) mymps.c
-#    	   : $(deps) <gc>mps ;
-#
-#exe clasp_mps_d : main.cc $(sources) mymps.c
-#    	   : $(deps) <gc>mps ;
-#
-#exe clasp_mps_prep_o : main.cc $(sources) mymps.c
-#    	   : $(deps) <gc>mps-prep ;
-#
-#exe clasp_mps_prep_d : main.cc $(sources) mymps.c
-#    	   : $(deps) <gc>mps-prep ;
-#
-#
-#alias mpi_stuff : /internals//mpip/<link>static
-#                  /externals//boost_mpi/<link>static
-#                  /externals//mpi
-#                  ;
-#
-#exe clasp_mpi_o : mainMpi.cc $(sources) mpi_stuff
-#        	   : $(deps)
-#                   <gc>mps
-#		   ;
-#
-#exe clasp_mpi_d : mainMpi.cc $(sources) mpi_stuff
-#        	   : $(deps)
-#                   <gc>mps
-#		   ;
-#
-#
-#exe clasp_mpi_mps_o : mainMpi.cc $(sources) mpi_stuff 
-#        	   : $(deps)
-#                   <gc>mps
-#		   ;
-#
-#exe clasp_mpi_mps_d : mainMpi.cc $(sources) mpi_stuff
-#        	   : $(deps)
-#                   <gc>mps
-#		   ;
-#
-#alias clasp : clasp_boehm_o : <variant>release <gc>boehm ;
-#alias clasp : clasp_boehm_d : <variant>debug <gc>boehm ;
-#
-#alias clasp : clasp_mps_o : <variant>release <gc>mps ;
-#alias clasp : clasp_mps_d : <variant>debug <gc>mps ;
-#
-#alias clasp : clasp_mps_prep_o : <variant>release <gc>mps-prep ;
-#alias clasp : clasp_mps_prep_d : <variant>debug <gc>mps-prep ;
-#
-#alias clasp_mpi : clasp_mpi_mps_o : <variant>release <gc>boehm ;
-#alias clasp_mpi : clasp_mpi_mps_d : <variant>debug <gc>boehm ;
-#

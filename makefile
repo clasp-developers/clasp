@@ -17,6 +17,7 @@ export BOOST_BUILD_INSTALL = $(BOOST_BUILD_SOURCE_DIR)
 
 
 export BJAM = $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
+export BUILD = build
 export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
@@ -195,7 +196,7 @@ cclasp-boehm:
 	(cd src/main; make cclasp-boehm)
 
 clasp-boehm-cpp:
-	$(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) gc=boehm link=$(LINK) program=clasp release /internals/main//install_clasp
+	(cd src/main; $(BUILD) -j$(PJOBS) $(USE_CXXFLAGS) gc=boehm link=$(LINK) program=clasp variant=release dist)
 
 
 cclasp-boehm-addons:
