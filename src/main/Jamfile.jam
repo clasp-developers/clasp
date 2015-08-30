@@ -55,6 +55,26 @@ exe clasp_boehm_o : main.cc $(sources)
 
 explicit clasp_boehm_o ;
 
+install install_clasp_boehm_o : clasp_boehm_o
+        : <location>$(APPBIN-LINUX) <target-os>linux
+        <implicit-dependency>/internals/llvmo//bundle
+        ;
+
+install install_clasp_boehm_o : clasp_boehm_o
+        : <location>$(APPBIN-OSX) <target-os>darwin
+        <implicit-dependency>/internals/llvmo//bundle
+        ;
+
+install install_clasp_boehm_d : clasp_boehm_d
+        : <location>$(APPBIN-LINUX) <target-os>linux
+        <implicit-dependency>/internals/llvmo//bundle
+        ;
+
+install install_clasp_boehm_d : clasp_boehm_d
+        : <location>$(APPBIN-OSX) <target-os>darwin
+        <implicit-dependency>/internals/llvmo//bundle
+        ;
+
 exe clasp_boehm_d : main.cc $(sources)
           /externals//lib_boehm/<link>static
           : <gc>boehm <variant>debug
@@ -98,7 +118,12 @@ install install_clasp_mps-prep_d : clasp_mps-prep_d
         : <location>$(APPBIN-OSX) <target-os>darwin
         <implicit-dependency>/internals/llvmo//bundle
         ;
+explicit install_clasp_mps-prep_d ;
 
+install install_clasp_mps-prep_o : clasp_mps-prep_o
+        : <location>$(APPBIN-LINUX) <target-os>linux
+        <implicit-dependency>/internals/llvmo//bundle
+        ;
 explicit install_clasp_mps-prep_d ;
 
 

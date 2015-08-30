@@ -485,10 +485,10 @@ GCPRIVATE:
   /*! PLIST of keyword symbols to SNode_sp */
   List_sp _SNodePList;
   /*! Vector of SNode_sp(s) */
-  Vector_sp _VectorSNodes;
+    gc::Nilable<Vector_sp> _VectorSNodes;
 
 public: // Simple default ctor/dtor
-  BranchSNode_O() : _Kind(_Nil<Symbol_O>()), _SNodePList(_Nil<T_O>()), _VectorSNodes(_Unbound<Vector_O>()){};
+  BranchSNode_O() : _Kind(_Nil<Symbol_O>()), _SNodePList(_Nil<T_O>()), _VectorSNodes(_Nil<T_O>()){};
   virtual ~BranchSNode_O(){};
 
 public:
@@ -502,7 +502,7 @@ public: // ctor/dtor for classes with shared virtual base
   SNode_sp getAttributeSNode(Symbol_sp name, SNode_sp defValue) const;
   virtual T_sp getAttribute(Symbol_sp name, T_sp defaultValue) const;
   virtual void addAttribute(Symbol_sp name, T_sp val);
-  virtual void setVectorSNodesUnsafe(Vector_sp vec) { this->_VectorSNodes = vec; };
+    virtual void setVectorSNodesUnsafe(Vector_sp vec) { this->_VectorSNodes = gc::As<Vector_sp>(vec); };
   virtual Vector_sp getVectorSNodes() const {
     ASSERT(!this->_VectorSNodes.unboundp());
     return this->_VectorSNodes;
@@ -541,7 +541,7 @@ class Archive_O : public T_O {
   LISP_CLASS(core, CorePkg, Archive_O, "Archive");
 GCPROTECTED:
   int _Version;
-  BranchSNode_sp _TopNode;
+    gc::Nilable<BranchSNode_sp> _TopNode;
   int _NextUniqueId;
 
 public:

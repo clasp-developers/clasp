@@ -109,7 +109,7 @@ clasp-gc-interface:
 	$(BCLASP_BOEHM) -l "buildClaspGC.lsp"
 
 compile-commands:
-	-bjam bundle release mps-prep -n -a >bjam.out
+	-bjam link=static gc=mps-prep program=clasp install_clasp_mps-prep_o -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
 	python ../common/buildJSON.py clang bjam.out `$(BCLASP_BOEHM) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
 
@@ -131,11 +131,11 @@ run-clasp:
 
 mps-interface:
 	@echo Building mps-prep
-	bjam -j$(PJOBS) link=static gc=mps-prep program=clasp release
+	build -j$(PJOBS) link=static gc=mps-prep program=clasp install_clasp_mps-prep_o
 	make boehm
 	make compile-commands
 	@echo Running parallel search and generating code when done
-	$(BCLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
+	$(CCLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
 
 export IDIR=$(CLASP_HOME)/build/clasp/Contents/Resources/lib/release
 fix-intrinsics:
