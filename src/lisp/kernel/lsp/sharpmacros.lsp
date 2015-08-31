@@ -8,6 +8,10 @@
 ;;(declaim (type hash-table *sharp-equal-circle-table*))
 
 
+(defun %reader-error (stream msg &rest arguments)
+  (apply #'simple-reader-error stream msg arguments))
+
+
 
 ;;;  Modified from http://marc.info/?l=sbcl-devel&m=118219422006130
 ;;;
@@ -132,8 +136,7 @@
   ;; Don't read ANSI "2.4.8.15 Sharpsign Equal-Sign" and worry that it requires
   ;; you to implement forward references, because forward references are
   ;; disallowed in "2.4.8.16 Sharpsign Sharpsign".
-  (multiple-value-bind
-	(finalized-object successp)
+  (multiple-value-bind (finalized-object successp)
       (gethash label *sharp-equal-final-table*)
     (if successp
 	finalized-object
