@@ -27,6 +27,9 @@ THE SOFTWARE.
 #ifndef gc_gcalloc_H
 #define gc_gcalloc_H
 
+#define BOEHM_ONE_BIG_STACK 1
+//#define DEBUG_BOEHM_STACK 1
+
 #include <limits>
 
 #define STACK_ALIGNMENT alignof(char *)
@@ -94,7 +97,13 @@ namespace gctools {
     size_t _MaxSize;
     size_t _TotalSize;
 #ifdef USE_BOEHM
+  #ifdef BOEHM_ONE_BIG_STACK
+    uintptr_t* _StackBottom;
+    uintptr_t* _StackTop;
+    uintptr_t* _StackLimit;
+  #else
     // Nothing
+  #endif
 #endif
 #ifdef USE_MPS
     mps_pool_t _Pool;
@@ -116,6 +125,16 @@ namespace gctools {
     bool allocateStack(size_t bufferSize)
     {
       bufferSize = STACK_ALIGN_UP(bufferSize);
+#ifdef USE_BOEHM
+  #ifdef BOEHM_ONE_BIG_STACK
+      this->_StackBottom  = (uintptr_t*)GC_MALLOC(bufferSize);
+      this->_StackTop = this->_StackBottom;
+      this->_StackLimit = (uintptr_t*)((char*)this->_StackBottom + bufferSize);
+      memset(this->_StackBottom,0,bufferSize);
+  #else
+      // Do nothing
+  #endif
+#endif
 #ifdef USE_MPS
       mpsAllocateStack(this);
 #endif
@@ -123,7 +142,14 @@ namespace gctools {
     };
     void deallocateStack() {
 #ifdef USE_BOEHM
+  #ifdef BOEHM_ONE_BIG_STACK
+      if ( this->_StackTop != this->_StackBottom ) {
+        THROW_HARD_ERROR(BF("The stack is not empty"));
+      }
+      GC_FREE(this->_StackBottom);
+  #else
       // Do nothing
+  #endif
 #endif
 #ifdef USE_MPS
       mpsDeallocateStack(this);
@@ -142,7 +168,12 @@ namespace gctools {
       frameSize = STACK_ALIGN_UP(frameSize);
       uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE + frameSize;
 #ifdef USE_BOEHM
+  #ifdef BOEHM_ONE_BIG_STACK
+      uintptr_t* headerAndFrame = (uintptr_t*)this->_StackTop;
+      this->_StackTop = (uintptr_t*)((char*)this->_StackTop+headerAndFrameSize);
+  #else
       uintptr_t* headerAndFrame = (uintptr_t*)GC_MALLOC(headerAndFrameSize);
+  #endif
       FRAME_HEADER_TYPE_FIELD(headerAndFrame) = frame;
       FRAME_HEADER_SIZE_FIELD(headerAndFrame) = headerAndFrameSize;
       void* frameStart = headerAndFrame + 1; // skip uintptr_t header
@@ -176,6 +207,12 @@ namespace gctools {
       goto DONE;
 #endif
     DONE:
+#if defined(BEOHM_ONE_BIG_STACK) && defined(USE_BOEHM) && defined(DEBUG_BOEHM_STACK)
+      size_t calcSize = (char*)this->_StackTop - (char*)this->_StackBottom;
+      if ( calcSize != this->_TotalSize ) {
+        THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize );
+      }
+#endif
       if ( this->_TotalSize > this->_MaxSize ) {
         this->_MaxSize = this->_TotalSize;
       }
@@ -183,10 +220,26 @@ namespace gctools {
     }
     void popFrame(void* frame) {
 #ifdef USE_BOEHM
-      uintptr_t* frameHeaderP = reinterpret_cast<uintptr_t*>(frame)-1; // backup to uintptr_t header
+      uintptr_t* frameHeaderP = reinterpret_cast<uintptr_t*>(frame)-1;
       uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
-      this->_TotalSize -= headerAndFrameSize;
+      this->_TotalSize = this->_TotalSize - headerAndFrameSize;
+  #ifdef BOEHM_ONE_BIG_STACK
+      memset(frameHeaderP,0,headerAndFrameSize);
+      this->_StackTop = frameHeaderP;
+#ifdef DEBUG_BOEHM_STACK
+      size_t calcSize = (char*)this->_StackTop - (char*)this->_StackBottom;
+      if ( calcSize != this->_TotalSize ) {
+        THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize );
+      }
+      for ( char* i=(char*)this->_StackTop; i<(char*)this->_StackLimit; ++i ) {
+        if ( *i ) {
+          THROW_HARD_ERROR(BF("The side-stack has garbage in it!"));
+        }
+      }
+#endif
+  #else
       GC_FREE(frameHeaderP);
+  #endif
 #endif // USE_BOEHM
 #ifdef USE_MPS
       uintptr_t* frameHeaderP = FRAME_HEADER(frame);
