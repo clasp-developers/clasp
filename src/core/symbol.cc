@@ -157,7 +157,7 @@ Symbol_mv af_make_symbol(Str_sp name) {
 namespace core {
 
 /*! Construct a symbol that is incomplete, it has no Class or Package */
-Symbol_O::Symbol_O(string const &name) : T_O(),
+Symbol_O::Symbol_O(bool dummy) : T_O(),
                                          _HomePackage(_Nil<T_O>()),
                                          _Value(_Unbound<T_O>()),
                                          _Function(_Unbound<T_O>()),
@@ -166,7 +166,7 @@ Symbol_O::Symbol_O(string const &name) : T_O(),
                                          _IsConstant(false),
                                          _ReadOnlyFunction(false),
                                          _PropertyList(_Nil<List_V>()) { //no guard
-  this->_Name = Str_O::create(name);
+//  this->_Name = Str_O::create(name);
 }
 
 Symbol_O::Symbol_O() : Base(),

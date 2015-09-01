@@ -472,7 +472,7 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
     write_character(stream, x);
   } else if (x.single_floatp()) {
     write_float(gc::As<SingleFloat_sp>(x), stream);
-  } else if (x.otherp() || x.consp()) {
+  } else if (x.generalp() || x.consp()) {
     if (Float_sp fx = x.asOrNull<Float_O>() ) {
       write_float(fx,stream);
     } else {

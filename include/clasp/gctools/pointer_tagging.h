@@ -282,6 +282,11 @@ inline bool tagged_valistp(T ptr) {
   return ((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == valist_tag);
 };
 
+ template <class T>
+   inline bool tagged_objectp(T ptr) {
+   return tagged_generalp(ptr) || tagged_consp(ptr);
+ }
+
 template <class Type>
 inline Type untag_object(Type tagged_obj) {
   if (gctools::tagged_generalp<Type>(tagged_obj)) {

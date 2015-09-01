@@ -196,7 +196,7 @@ public:
 
 public: // ctor/dtor for classes with shared virtual base
   /*! Special constructor used when starting up the Lisp environment */
-  explicit Symbol_O(string const &name);
+  explicit Symbol_O(bool dummy); // string const &name);
   /*! Used to finish setting up symbol when created with the above constructor */
   void finish_setup(Package_sp pkg, bool exportp);
 

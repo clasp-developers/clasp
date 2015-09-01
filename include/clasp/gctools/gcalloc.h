@@ -27,7 +27,7 @@ THE SOFTWARE.
 #ifndef gc_gcalloc_H
 #define gc_gcalloc_H
 
-#define BOEHM_ONE_BIG_STACK 1
+//#define BOEHM_ONE_BIG_STACK 1
 //#define DEBUG_BOEHM_STACK 1
 
 #include <limits>
@@ -93,7 +93,7 @@ namespace gctools {
 */
   class GCStack {
   public:
-    typedef enum { frame, pad } frameType;
+    typedef enum { undefined, frame, pad } frameType;
     size_t _MaxSize;
     size_t _TotalSize;
 #ifdef USE_BOEHM

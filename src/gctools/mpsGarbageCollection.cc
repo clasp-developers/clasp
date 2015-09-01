@@ -202,7 +202,29 @@ static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit
       uintptr_t* headerAndFrame = (uintptr_t*)base;
       GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
       size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
-      printf("%s:%d Finish writing stack_frame_scan\n", __FILE__, __LINE__ );
+      switch (ftype) {
+      case GCStack::frame: {
+          uintptr_t* frameStart = FRAME_START(headerAndFrame);
+          size_t elements = frameStart[gc::frame::IdxNumElements];
+          uintptr_t* taggedPtr = &frameStart[gc::frame::IdxValuesArray];
+          for ( size_t i=0; i<elements; ++i ) {
+            taggedPtrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,reinterpret_cast<gctools::Tagged*>(taggedPtr)
+#ifdef DEBUG_MPS
+                         , "FRAME-ELEMENT"
+#endif
+                         );
+            ++taggedPtr;
+          }
+          base = (char*)base + sz;
+      }
+          break;
+      case GCStack::pad:
+          base = (char*)base + sz;
+          break;
+      default:
+          THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
+          break;
+      }
     }
   } MPS_SCAN_END(ss);
   return MPS_RES_OK;
@@ -211,28 +233,23 @@ static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit
 
 static mps_addr_t stack_frame_skip(mps_addr_t base)
 {
-  printf("%s:%d in stack_frame_skip\n", __FILE__, __LINE__);
   uintptr_t* headerAndFrame = (uintptr_t*)base;
-  size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
-  base = (char*)base + sz;
   GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
-#if 0
-  switch (TYPE(obj)) {
-  case TYPE_PAIR:
-      base = (char *)base + ALIGN_OBJ(sizeof(pair_s));
+  size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
+  switch (ftype) {
+  case GCStack::frame:
+      base = (char*)base + sz;
       break;
-  case TYPE_INTEGER:
-      base = (char *)base + ALIGN_OBJ(sizeof(integer_s));
+  case GCStack::pad:
+      base = (char*)base + sz;
       break;
-    /* ... and so on for the other types ... */
   default:
-      assert(0);
-      fprintf(stderr, "Unexpected object on the heap\n");
-      abort();
+      THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
+      break;
   }
-#endif
   return base;
 }
+
 
 static void stack_frame_pad(mps_addr_t addr, size_t size)
 {
