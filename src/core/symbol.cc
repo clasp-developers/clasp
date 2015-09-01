@@ -213,7 +213,9 @@ Symbol_sp Symbol_O::create(const string &nm) {
   _G();
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-  Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::rootAllocate(nm);
+  Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::rootAllocate(true);
+  Str_sp snm = Str_O::create(nm);
+  n->setf_name(snm);
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS
   if (nm.find("/dyn") != string::npos) {
