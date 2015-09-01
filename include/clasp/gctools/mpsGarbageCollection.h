@@ -417,27 +417,27 @@ class smart_ptr;
 
 #if 1
 template <typename Type>
-inline mps_res_t smartPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, const gctools::smart_ptr<Type> *sptrP
+inline mps_res_t smartPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::smart_ptr<Type> *sptrP
 #ifdef DEBUG_MPS
                              ,
                              const char *sptr_name
 #endif
                              ) {
-  DEBUG_MPS_MESSAGE(boost::format("SMART_PTR_FIX of %s@%p px: %p") % sptr_name % (sptrP) % (sptrP)->px_ref());
-  if (sptrP->objectp()) {
-    Type *tagged_obj = (sptrP)->raw_();
-    if (MPS_FIX1(_ss, tagged_obj)) {
-      //	    Type* obj(NULL);
-      Type *obj = gctools::untag_object<Type>(tagged_obj);
-      Type *tag = gctools::tag<Type>(tagged_obj);
-      mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-      if (res != MPS_RES_OK)
-        return res;
-      obj |= tag;
-      sptrP->setRaw_(obj);
-    }
-  };
-  return MPS_RES_OK;
+    DEBUG_MPS_MESSAGE(boost::format("SMART_PTR_FIX of %s@%p px: %p") % sptr_name % (sptrP) % (sptrP)->px_ref());
+    if (sptrP->objectp()) {
+        Type *tagged_obj = reinterpret_cast<Type*>((sptrP)->raw_());
+        if (MPS_FIX1(_ss, tagged_obj)) {
+            //	    Type* obj(NULL);
+            Type *obj = reinterpret_cast<Type*>(gctools::untag_object<Type*>(tagged_obj));
+            Type *tag = gctools::tag<Type*>(tagged_obj);
+            mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
+            if (res != MPS_RES_OK)
+                return res;
+            obj = reinterpret_cast<Type*>(reinterpret_cast<uintptr_t>(obj) | reinterpret_cast<uintptr_t>(tag));
+            sptrP->setRaw_((gctools::Tagged)obj);
+        }
+    };
+    return MPS_RES_OK;
 };
 #else
 #error "I thought I wasn't using the sheild remove code anymore - if I am then replicate the structure above into the code below"

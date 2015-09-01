@@ -92,7 +92,7 @@
   cclass
   species
   children
-  in-hierarchy ;; only generate DynamicCast entry for those in hierarchy
+  in-hierarchy ;; only generate TaggedCast entry for those in hierarchy
   )
 
 (defstruct (simple-enum (:include enum))
@@ -245,7 +245,7 @@
 (defun generate-dynamic-cast-code (fout analysis)
   (maphash (lambda (key enum) 
              (when (enum-in-hierarchy enum)
-               (format fout "template <typename FP> struct DynamicCast<~a*,FP> {~%" key )
+               (format fout "template <typename FP> struct TaggedCast<~a*,FP> {~%" key )
                (format fout "  static bool isA(FP client) {~%" key)
                (format fout "    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));~%")
                (format fout "    int kindVal = header->kind();~%")
@@ -258,7 +258,7 @@
                      ))
                (format fout "  };~%")
                (format fout "  static ~a* castOrNULL(FP client) {~%" key)
-               (format fout "    if (DynamicCast<~a*,FP>::isA(client)) {~%" key)
+               (format fout "    if (TaggedCast<~a*,FP>::isA(client)) {~%" key)
                (format fout "      return reinterpret_cast<~a*>(client);~%" key)
                (format fout "    }~%")
                (format fout "    return NULL;~%")
@@ -598,12 +598,9 @@ can be saved and reloaded within the project for later analysis"
     (read fin)))
 
 (defun save-project ()
-  #+(or)(serialize:save-archive *project* (project-pathname "project" "dat"))
-  (let ((*print-readably* t)
-        (*print-array* t)
-        (*print-circle* t))
-    (with-open-file (fout (project-pathname "project" "dat") :direction :output)
-      (princ *project* fout))))
+  (core::with-print-readably
+      (with-open-file (fout (project-pathname "project" "dat") :direction :output)
+        (prin1 *project* fout))))
 
 (defun load-project ()
   (setq *project* (load-data (project-pathname "project" "dat")))

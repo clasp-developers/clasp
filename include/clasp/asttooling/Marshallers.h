@@ -153,7 +153,7 @@ public:
 GCPRIVATE:
   const MarshallerType Marshaller;
   void (*const Func)();
-  const core::Symbol_sp MatcherName;
+  core::Symbol_sp MatcherName;
 };
 
 /// \brief Simple callback implementation. Free function is wrapped.
@@ -183,7 +183,7 @@ public:
 
 GCPRIVATE:
   const RunFunc Func;
-  const core::Symbol_sp MatcherName;
+    core::Symbol_sp MatcherName;
 };
 
 /// \brief Helper macros to check the arguments on all marshaller functions.
@@ -447,7 +447,7 @@ GCPRIVATE:
   const unsigned MinCount;
   const unsigned MaxCount;
   const VarOp Op;
-  const core::Symbol_sp MatcherName;
+    core::Symbol_sp MatcherName;
 };
 
 /// Helper functions to select the appropriate marshaller functions.

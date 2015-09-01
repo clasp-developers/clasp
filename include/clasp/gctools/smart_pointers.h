@@ -172,9 +172,9 @@ namespace gctools {
     bool sameAsKeyP() const { return tagged_sameAsKeyp(this->theObject); }
 
   /*! Return the raw smart_ptr value interpreted as a T_O* */
-    core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+      inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
 
-    void setRaw_(Tagged p) { this->theObject = reinterpret_cast<core::T_O *>(p); }
+      inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<core::T_O *>(p); }
 
   /*! This should almost NEVER be used!!!!!!   
 
@@ -380,7 +380,7 @@ namespace gctools {
   /*! Return the raw smart_ptr value interpreted as a T_O* */
     inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
 
-    void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
+      inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
 
   /*! This should almost NEVER be used!!!!!!   
 	  The only reason to ever use this is when theObject will be set to NULL
@@ -825,9 +825,9 @@ public:
   };
   bool sameAsKeyP() const { return tagged_sameAsKeyp(this->theObject); }
   /*! Return the raw smart_ptr value interpreted as a T_O* */
-  core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+    inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
 
-  void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
+    inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
 
   /*! This should almost NEVER be used!!!!!!   
 	  The only reason to ever use this is when theObject will be set to NULL
@@ -915,6 +915,8 @@ public:
   inline bool unboundp() const { return tagged_unboundp(this->theObject); };
   inline Type *&rawRef_() { return this->theObject; };
 
+    inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type*>(p); }
+
   operator smart_ptr<core::T_O>() const { return smart_ptr<core::T_O>((Tagged) const_cast<core::T_O *const>(reinterpret_cast<core::T_O *>(this->theObject))); };
 
   //	operator smart_ptr<core::List_V>() const { return smart_ptr<core::List_V>((Tagged)const_cast<core::T_O* const>(reinterpret_cast<core::T_O*>(this->theObject)));};
@@ -975,8 +977,8 @@ public:
       Type; // The best common type for both Cons_O and Symbol_O is T_O
   Type *theObject;
  public:
-  void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
-  Type *&rawRef_() { return this->theObject; };
+    inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
+    inline Type *&rawRef_() { return this->theObject; };
 public:
   //! The default constructor returns an invalid smart_ptr
  inline smart_ptr() : theObject(NULL){};

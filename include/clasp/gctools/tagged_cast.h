@@ -95,6 +95,8 @@ struct TaggedCast<core::Integer_O *, core::Fixnum_I *> {
     return NULL;
   }
 };
+
+#ifndef USE_MPS
 template <typename FROM>
 struct TaggedCast<core::Integer_O *, FROM> {
   typedef core::Integer_O *ToType;
@@ -108,6 +110,7 @@ struct TaggedCast<core::Integer_O *, FROM> {
     return NULL;
   }
 };
+#endif
 
 template <>
 struct TaggedCast<core::Rational_O *, core::Rational_O *> {
@@ -116,6 +119,8 @@ struct TaggedCast<core::Rational_O *, core::Rational_O *> {
   static bool isA(FromType ptr) { return true; }
   static ToType castOrNULL(FromType client) { return client; }
 };
+
+#ifndef USE_MPS
 template <typename FROM>
 struct TaggedCast<core::Rational_O *, FROM> {
   typedef core::Rational_O *ToType;
@@ -129,7 +134,7 @@ struct TaggedCast<core::Rational_O *, FROM> {
     return NULL;
   }
 };
-
+#endif
 template <>
 struct TaggedCast<core::Real_O *, core::Real_O *> {
   typedef core::Real_O *ToType;
@@ -163,6 +168,7 @@ struct TaggedCast<core::Real_O *, core::SingleFloat_I *> {
     return NULL;
   }
 };
+#ifndef USE_MPS
 template <typename FROM>
 struct TaggedCast<core::Real_O *, FROM> {
   typedef core::Real_O *ToType;
@@ -176,7 +182,7 @@ struct TaggedCast<core::Real_O *, FROM> {
     return NULL;
   }
 };
-
+#endif
 template <>
 struct TaggedCast<core::Number_O *, core::Number_O *> {
   typedef core::Number_O *ToType;
@@ -210,6 +216,8 @@ struct TaggedCast<core::Number_O *, core::SingleFloat_I *> {
     return NULL;
   }
 };
+
+#ifndef USE_MPS
 template <typename FROM>
 struct TaggedCast<core::Number_O *, FROM> {
   typedef core::Number_O *ToType;
@@ -223,6 +231,8 @@ struct TaggedCast<core::Number_O *, FROM> {
     return NULL;
   }
 };
+#endif
+
 
 template <>
 struct TaggedCast<core::T_O *, core::T_O *> {
@@ -264,6 +274,8 @@ struct TaggedCast<core::T_O *, core::Character_I *> {
     return NULL;
   }
 };
+
+#ifndef USE_MPS
 template <typename FROM>
 struct TaggedCast<core::T_O *, FROM> {
   typedef core::T_O *ToType;
@@ -275,6 +287,7 @@ struct TaggedCast<core::T_O *, FROM> {
     return NULL;
   }
 };
+#endif
 
 // Trivial cast from SingleFloat_I* to SingleFloat_I*
 template <>
@@ -318,6 +331,8 @@ struct TaggedCast<core::Float_O *, core::SingleFloat_I *> {
     return NULL;
   }
 };
+
+#ifndef USE_MPS
 template <typename FROM>
 struct TaggedCast<core::Float_O *, FROM> {
   typedef core::Float_O *ToType;
@@ -332,6 +347,7 @@ struct TaggedCast<core::Float_O *, FROM> {
     return NULL;
   }
 };
+#endif
 
 // Trivial cast from Character_I* to Character_I*
 template <>

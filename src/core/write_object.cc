@@ -127,8 +127,8 @@ T_sp write_object(T_sp x, T_sp stream) {
       && !x.fixnump() 
       && !x.valistp() 
       && !x.characterp() 
-      && !x.single_floatp() 
       && !cl_symbolp(x)
+      && !cl_numberp(x) // && !x.single_floatp() 
       && (cl_listp(x) || !cl_symbolp(x) || !gc::As<Symbol_sp>(x)->homePackage().nilp())) {
     Fixnum code;
     T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
