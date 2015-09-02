@@ -196,6 +196,7 @@ using namespace gctools;
 
 /*! I'm using a format_header so MPS gives me the object-pointer */
 mps_addr_t obj_skip(mps_addr_t client) {
+    mps_addr_t oldClient = client;
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SKIP_TABLE
 #include <clasp/main/clasp_gc.cc>
@@ -222,7 +223,8 @@ mps_addr_t obj_skip(mps_addr_t client) {
   } else {
     THROW_HARD_ERROR(BF("Illegal header at %p") % header);
   }
-  DEBUG_MPS_MESSAGE(BF("Leaving obj_skip with client@%p") % client);
+DONE:
+  DEBUG_MPS_MESSAGE(BF("Leaving obj_skip with client@%p") % client % ((char*)client - (char*)oldClient));
   return client;
 }
 };

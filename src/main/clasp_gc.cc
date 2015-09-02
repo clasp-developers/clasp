@@ -7389,1827 +7389,1889 @@ obj_skip_KIND_ROOTCLASSALLOC_core__Lisp_O:
 {
     typedef core::Lisp_O type_KIND_ROOTCLASSALLOC_core__Lisp_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_ROOTCLASSALLOC_core__Lisp_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_TEMPLATED_CLASSALLOC_core__Creator:
 {
     core::Creator* obj_gc_safe = reinterpret_cast<core::Creator*>(client);
     client = (char*)client + AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_TEMPLATED_CLASSALLOC_clbind__ConstructorCreator:
 {
     clbind::ConstructorCreator* obj_gc_safe = reinterpret_cast<clbind::ConstructorCreator*>(client);
     client = (char*)client + AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_core__InstanceCreator:
 {
     typedef core::InstanceCreator type_KIND_CLASSALLOC_core__InstanceCreator;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__InstanceCreator)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_clbind__DummyCreator:
 {
     typedef clbind::DummyCreator type_KIND_CLASSALLOC_clbind__DummyCreator;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_clbind__DummyCreator)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_core__Cache:
 {
     typedef core::Cache type_KIND_CLASSALLOC_core__Cache;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__Cache)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps:
 {
     typedef asttooling::RegMap::RegistryMaps type_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps;
     client = (char*)client + AlignUp(sizeof(type_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_BOOTSTRAP_core__T_O:
 {
     typedef core::T_O type_KIND_BOOTSTRAP_core__T_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__T_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__FileStatus_O:
 {
     typedef core::FileStatus_O type_KIND_LISPALLOC_core__FileStatus_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FileStatus_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_cffi__Pointer_O:
 {
     typedef cffi::Pointer_O type_KIND_LISPALLOC_cffi__Pointer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_cffi__Pointer_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__VaList_dummy_O:
 {
     typedef core::VaList_dummy_O type_KIND_LISPALLOC_core__VaList_dummy_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__VaList_dummy_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O:
 {
     core::WrappedPointer_O* obj_gc_safe = reinterpret_cast<core::WrappedPointer_O*>(client);
     client = (char*)client + AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__CandoException_O:
 {
     typedef core::CandoException_O type_KIND_LISPALLOC_core__CandoException_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__CandoException_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_BOOTSTRAP_core__Symbol_O:
 {
     typedef core::Symbol_O type_KIND_BOOTSTRAP_core__Symbol_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Symbol_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Null_O:
 {
     typedef core::Null_O type_KIND_LISPALLOC_core__Null_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Null_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SourceManager_O:
 {
     typedef core::SourceManager_O type_KIND_LISPALLOC_core__SourceManager_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SourceManager_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SingleDispatchMethod_O:
 {
     typedef core::SingleDispatchMethod_O type_KIND_LISPALLOC_core__SingleDispatchMethod_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleDispatchMethod_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__HashTable_O:
 {
     typedef core::HashTable_O type_KIND_LISPALLOC_core__HashTable_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTable_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__HashTableEql_O:
 {
     typedef core::HashTableEql_O type_KIND_LISPALLOC_core__HashTableEql_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTableEql_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__HashTableEq_O:
 {
     typedef core::HashTableEq_O type_KIND_LISPALLOC_core__HashTableEq_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTableEq_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__HashTableEqual_O:
 {
     typedef core::HashTableEqual_O type_KIND_LISPALLOC_core__HashTableEqual_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTableEqual_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__HashTableEqualp_O:
 {
     typedef core::HashTableEqualp_O type_KIND_LISPALLOC_core__HashTableEqualp_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTableEqualp_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__CxxObject_O:
 {
     typedef core::CxxObject_O type_KIND_LISPALLOC_core__CxxObject_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__CxxObject_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Array_O:
 {
     typedef core::Array_O type_KIND_LISPALLOC_core__Array_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Array_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Vector_O:
 {
     typedef core::Vector_O type_KIND_LISPALLOC_core__Vector_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Vector_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__BitVector_O:
 {
     typedef core::BitVector_O type_KIND_LISPALLOC_core__BitVector_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__BitVector_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SimpleBitVector_O:
 {
     typedef core::SimpleBitVector_O type_KIND_LISPALLOC_core__SimpleBitVector_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SimpleBitVector_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__VectorObjects_O:
 {
     typedef core::VectorObjects_O type_KIND_LISPALLOC_core__VectorObjects_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__VectorObjects_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O:
 {
     typedef core::VectorObjectsWithFillPtr_O type_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__String_O:
 {
     typedef core::String_O type_KIND_LISPALLOC_core__String_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__String_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_BOOTSTRAP_core__Str_O:
 {
     typedef core::Str_O type_KIND_BOOTSTRAP_core__Str_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Str_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__StrWithFillPtr_O:
 {
     typedef core::StrWithFillPtr_O type_KIND_LISPALLOC_core__StrWithFillPtr_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StrWithFillPtr_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__ArrayObjects_O:
 {
     typedef core::ArrayObjects_O type_KIND_LISPALLOC_core__ArrayObjects_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ArrayObjects_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__ArrayDisplaced_O:
 {
     typedef core::ArrayDisplaced_O type_KIND_LISPALLOC_core__ArrayDisplaced_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ArrayDisplaced_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SNode_O:
 {
     typedef core::SNode_O type_KIND_LISPALLOC_core__SNode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SNode_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__LeafSNode_O:
 {
     typedef core::LeafSNode_O type_KIND_LISPALLOC_core__LeafSNode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LeafSNode_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__BranchSNode_O:
 {
     typedef core::BranchSNode_O type_KIND_LISPALLOC_core__BranchSNode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__BranchSNode_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__PosixTimeDuration_O:
 {
     typedef core::PosixTimeDuration_O type_KIND_LISPALLOC_core__PosixTimeDuration_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__PosixTimeDuration_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Environment_O:
 {
     typedef core::Environment_O type_KIND_LISPALLOC_core__Environment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Environment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__ActivationFrame_O:
 {
     typedef core::ActivationFrame_O type_KIND_LISPALLOC_core__ActivationFrame_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ActivationFrame_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__ValueFrame_O:
 {
     typedef core::ValueFrame_O type_KIND_LISPALLOC_core__ValueFrame_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ValueFrame_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__TagbodyFrame_O:
 {
     typedef core::TagbodyFrame_O type_KIND_LISPALLOC_core__TagbodyFrame_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__TagbodyFrame_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__FunctionFrame_O:
 {
     typedef core::FunctionFrame_O type_KIND_LISPALLOC_core__FunctionFrame_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FunctionFrame_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__LexicalEnvironment_O:
 {
     typedef core::LexicalEnvironment_O type_KIND_LISPALLOC_core__LexicalEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LexicalEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O:
 {
     typedef core::RuntimeVisibleEnvironment_O type_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__TagbodyEnvironment_O:
 {
     typedef core::TagbodyEnvironment_O type_KIND_LISPALLOC_core__TagbodyEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__TagbodyEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__ValueEnvironment_O:
 {
     typedef core::ValueEnvironment_O type_KIND_LISPALLOC_core__ValueEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ValueEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__FunctionValueEnvironment_O:
 {
     typedef core::FunctionValueEnvironment_O type_KIND_LISPALLOC_core__FunctionValueEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FunctionValueEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__CompileTimeEnvironment_O:
 {
     typedef core::CompileTimeEnvironment_O type_KIND_LISPALLOC_core__CompileTimeEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__CompileTimeEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__StackValueEnvironment_O:
 {
     typedef core::StackValueEnvironment_O type_KIND_LISPALLOC_core__StackValueEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StackValueEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O:
 {
     typedef core::SymbolMacroletEnvironment_O type_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__MacroletEnvironment_O:
 {
     typedef core::MacroletEnvironment_O type_KIND_LISPALLOC_core__MacroletEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__MacroletEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__FunctionContainerEnvironment_O:
 {
     typedef core::FunctionContainerEnvironment_O type_KIND_LISPALLOC_core__FunctionContainerEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FunctionContainerEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__UnwindProtectEnvironment_O:
 {
     typedef core::UnwindProtectEnvironment_O type_KIND_LISPALLOC_core__UnwindProtectEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__UnwindProtectEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__BlockEnvironment_O:
 {
     typedef core::BlockEnvironment_O type_KIND_LISPALLOC_core__BlockEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__BlockEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__CatchEnvironment_O:
 {
     typedef core::CatchEnvironment_O type_KIND_LISPALLOC_core__CatchEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__CatchEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__GlueEnvironment_O:
 {
     typedef core::GlueEnvironment_O type_KIND_LISPALLOC_core__GlueEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__GlueEnvironment_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SmallMultimap_O:
 {
     typedef core::SmallMultimap_O type_KIND_LISPALLOC_core__SmallMultimap_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SmallMultimap_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Cons_O:
 {
     typedef core::Cons_O type_KIND_LISPALLOC_core__Cons_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Cons_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_BOOTSTRAP_core__StandardObject_O:
 {
     typedef core::StandardObject_O type_KIND_BOOTSTRAP_core__StandardObject_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StandardObject_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_BOOTSTRAP_core__Metaobject_O:
 {
     typedef core::Metaobject_O type_KIND_BOOTSTRAP_core__Metaobject_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Metaobject_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_BOOTSTRAP_core__Specializer_O:
 {
     typedef core::Specializer_O type_KIND_BOOTSTRAP_core__Specializer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Specializer_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_BOOTSTRAP_core__Class_O:
 {
     typedef core::Class_O type_KIND_BOOTSTRAP_core__Class_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Class_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__CxxClass_O:
 {
     typedef core::CxxClass_O type_KIND_LISPALLOC_core__CxxClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__CxxClass_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_BOOTSTRAP_core__StdClass_O:
 {
     typedef core::StdClass_O type_KIND_BOOTSTRAP_core__StdClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StdClass_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__FuncallableStandardClass_O:
 {
     typedef core::FuncallableStandardClass_O type_KIND_LISPALLOC_core__FuncallableStandardClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FuncallableStandardClass_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_BOOTSTRAP_core__StandardClass_O:
 {
     typedef core::StandardClass_O type_KIND_BOOTSTRAP_core__StandardClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StandardClass_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__ForwardReferencedClass_O:
 {
     typedef core::ForwardReferencedClass_O type_KIND_LISPALLOC_core__ForwardReferencedClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ForwardReferencedClass_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_BOOTSTRAP_core__StructureClass_O:
 {
     typedef core::StructureClass_O type_KIND_BOOTSTRAP_core__StructureClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StructureClass_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_BOOTSTRAP_core__BuiltInClass_O:
 {
     typedef core::BuiltInClass_O type_KIND_BOOTSTRAP_core__BuiltInClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__BuiltInClass_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_clbind__ClassRep_O:
 {
     typedef clbind::ClassRep_O type_KIND_LISPALLOC_clbind__ClassRep_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_clbind__ClassRep_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Path_O:
 {
     typedef core::Path_O type_KIND_LISPALLOC_core__Path_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Path_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__StructureObject_O:
 {
     typedef core::StructureObject_O type_KIND_LISPALLOC_core__StructureObject_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StructureObject_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SourcePosInfo_O:
 {
     typedef core::SourcePosInfo_O type_KIND_LISPALLOC_core__SourcePosInfo_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SourcePosInfo_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DebugLoc_O:
 {
     typedef llvmo::DebugLoc_O type_KIND_LISPALLOC_llvmo__DebugLoc_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DebugLoc_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Character_dummy_O:
 {
     typedef core::Character_dummy_O type_KIND_LISPALLOC_core__Character_dummy_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Character_dummy_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Attribute_O:
 {
     typedef llvmo::Attribute_O type_KIND_LISPALLOC_llvmo__Attribute_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Attribute_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__RandomState_O:
 {
     typedef core::RandomState_O type_KIND_LISPALLOC_core__RandomState_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__RandomState_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SourceFileInfo_O:
 {
     typedef core::SourceFileInfo_O type_KIND_LISPALLOC_core__SourceFileInfo_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SourceFileInfo_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SmallMap_O:
 {
     typedef core::SmallMap_O type_KIND_LISPALLOC_core__SmallMap_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SmallMap_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Binder_O:
 {
     typedef core::Binder_O type_KIND_LISPALLOC_core__Binder_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Binder_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__WeakHashTable_O:
 {
     typedef core::WeakHashTable_O type_KIND_LISPALLOC_core__WeakHashTable_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakHashTable_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__WeakKeyHashTable_O:
 {
     typedef core::WeakKeyHashTable_O type_KIND_LISPALLOC_core__WeakKeyHashTable_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakKeyHashTable_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Regex_O:
 {
     typedef core::Regex_O type_KIND_LISPALLOC_core__Regex_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Regex_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__DirectoryEntry_O:
 {
     typedef core::DirectoryEntry_O type_KIND_LISPALLOC_core__DirectoryEntry_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__DirectoryEntry_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__AttributeSet_O:
 {
     typedef llvmo::AttributeSet_O type_KIND_LISPALLOC_llvmo__AttributeSet_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__AttributeSet_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__InsertPoint_O:
 {
     typedef llvmo::InsertPoint_O type_KIND_LISPALLOC_llvmo__InsertPoint_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__InsertPoint_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__ExternalObject_O:
 {
     typedef core::ExternalObject_O type_KIND_LISPALLOC_core__ExternalObject_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ExternalObject_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__PassManagerBuilder_O:
 {
     typedef llvmo::PassManagerBuilder_O type_KIND_LISPALLOC_llvmo__PassManagerBuilder_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PassManagerBuilder_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__TargetOptions_O:
 {
     typedef llvmo::TargetOptions_O type_KIND_LISPALLOC_llvmo__TargetOptions_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__TargetOptions_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__NamedMDNode_O:
 {
     typedef llvmo::NamedMDNode_O type_KIND_LISPALLOC_llvmo__NamedMDNode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__NamedMDNode_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Type_O:
 {
     typedef llvmo::Type_O type_KIND_LISPALLOC_llvmo__Type_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Type_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__IntegerType_O:
 {
     typedef llvmo::IntegerType_O type_KIND_LISPALLOC_llvmo__IntegerType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__IntegerType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__CompositeType_O:
 {
     typedef llvmo::CompositeType_O type_KIND_LISPALLOC_llvmo__CompositeType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__CompositeType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__SequentialType_O:
 {
     typedef llvmo::SequentialType_O type_KIND_LISPALLOC_llvmo__SequentialType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__SequentialType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ArrayType_O:
 {
     typedef llvmo::ArrayType_O type_KIND_LISPALLOC_llvmo__ArrayType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ArrayType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__PointerType_O:
 {
     typedef llvmo::PointerType_O type_KIND_LISPALLOC_llvmo__PointerType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PointerType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__VectorType_O:
 {
     typedef llvmo::VectorType_O type_KIND_LISPALLOC_llvmo__VectorType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__VectorType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__StructType_O:
 {
     typedef llvmo::StructType_O type_KIND_LISPALLOC_llvmo__StructType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__StructType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__FunctionType_O:
 {
     typedef llvmo::FunctionType_O type_KIND_LISPALLOC_llvmo__FunctionType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__FunctionType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Metadata_O:
 {
     typedef llvmo::Metadata_O type_KIND_LISPALLOC_llvmo__Metadata_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Metadata_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ValueAsMetadata_O:
 {
     typedef llvmo::ValueAsMetadata_O type_KIND_LISPALLOC_llvmo__ValueAsMetadata_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ValueAsMetadata_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__MDNode_O:
 {
     typedef llvmo::MDNode_O type_KIND_LISPALLOC_llvmo__MDNode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__MDNode_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__MDString_O:
 {
     typedef llvmo::MDString_O type_KIND_LISPALLOC_llvmo__MDString_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__MDString_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__LLVMContext_O:
 {
     typedef llvmo::LLVMContext_O type_KIND_LISPALLOC_llvmo__LLVMContext_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__LLVMContext_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Module_O:
 {
     typedef llvmo::Module_O type_KIND_LISPALLOC_llvmo__Module_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Module_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Triple_O:
 {
     typedef llvmo::Triple_O type_KIND_LISPALLOC_llvmo__Triple_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Triple_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__APFloat_O:
 {
     typedef llvmo::APFloat_O type_KIND_LISPALLOC_llvmo__APFloat_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__APFloat_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__EngineBuilder_O:
 {
     typedef llvmo::EngineBuilder_O type_KIND_LISPALLOC_llvmo__EngineBuilder_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__EngineBuilder_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__ForeignData_O:
 {
     typedef core::ForeignData_O type_KIND_LISPALLOC_core__ForeignData_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ForeignData_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Value_O:
 {
     typedef llvmo::Value_O type_KIND_LISPALLOC_llvmo__Value_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Value_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__User_O:
 {
     typedef llvmo::User_O type_KIND_LISPALLOC_llvmo__User_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__User_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Instruction_O:
 {
     typedef llvmo::Instruction_O type_KIND_LISPALLOC_llvmo__Instruction_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Instruction_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__AtomicRMWInst_O:
 {
     typedef llvmo::AtomicRMWInst_O type_KIND_LISPALLOC_llvmo__AtomicRMWInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__AtomicRMWInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__LandingPadInst_O:
 {
     typedef llvmo::LandingPadInst_O type_KIND_LISPALLOC_llvmo__LandingPadInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__LandingPadInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__TerminatorInst_O:
 {
     typedef llvmo::TerminatorInst_O type_KIND_LISPALLOC_llvmo__TerminatorInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__TerminatorInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__UnreachableInst_O:
 {
     typedef llvmo::UnreachableInst_O type_KIND_LISPALLOC_llvmo__UnreachableInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__UnreachableInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ReturnInst_O:
 {
     typedef llvmo::ReturnInst_O type_KIND_LISPALLOC_llvmo__ReturnInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ReturnInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__InvokeInst_O:
 {
     typedef llvmo::InvokeInst_O type_KIND_LISPALLOC_llvmo__InvokeInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__InvokeInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__SwitchInst_O:
 {
     typedef llvmo::SwitchInst_O type_KIND_LISPALLOC_llvmo__SwitchInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__SwitchInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__BranchInst_O:
 {
     typedef llvmo::BranchInst_O type_KIND_LISPALLOC_llvmo__BranchInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__BranchInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__IndirectBrInst_O:
 {
     typedef llvmo::IndirectBrInst_O type_KIND_LISPALLOC_llvmo__IndirectBrInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__IndirectBrInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ResumeInst_O:
 {
     typedef llvmo::ResumeInst_O type_KIND_LISPALLOC_llvmo__ResumeInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ResumeInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__CallInst_O:
 {
     typedef llvmo::CallInst_O type_KIND_LISPALLOC_llvmo__CallInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__CallInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O:
 {
     typedef llvmo::AtomicCmpXchgInst_O type_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__UnaryInstruction_O:
 {
     typedef llvmo::UnaryInstruction_O type_KIND_LISPALLOC_llvmo__UnaryInstruction_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__UnaryInstruction_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__AllocaInst_O:
 {
     typedef llvmo::AllocaInst_O type_KIND_LISPALLOC_llvmo__AllocaInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__AllocaInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__VAArgInst_O:
 {
     typedef llvmo::VAArgInst_O type_KIND_LISPALLOC_llvmo__VAArgInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__VAArgInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__LoadInst_O:
 {
     typedef llvmo::LoadInst_O type_KIND_LISPALLOC_llvmo__LoadInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__LoadInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__FenceInst_O:
 {
     typedef llvmo::FenceInst_O type_KIND_LISPALLOC_llvmo__FenceInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__FenceInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__PHINode_O:
 {
     typedef llvmo::PHINode_O type_KIND_LISPALLOC_llvmo__PHINode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PHINode_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__StoreInst_O:
 {
     typedef llvmo::StoreInst_O type_KIND_LISPALLOC_llvmo__StoreInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__StoreInst_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Constant_O:
 {
     typedef llvmo::Constant_O type_KIND_LISPALLOC_llvmo__Constant_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Constant_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ConstantStruct_O:
 {
     typedef llvmo::ConstantStruct_O type_KIND_LISPALLOC_llvmo__ConstantStruct_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantStruct_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ConstantArray_O:
 {
     typedef llvmo::ConstantArray_O type_KIND_LISPALLOC_llvmo__ConstantArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantArray_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ConstantDataSequential_O:
 {
     typedef llvmo::ConstantDataSequential_O type_KIND_LISPALLOC_llvmo__ConstantDataSequential_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantDataSequential_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ConstantDataArray_O:
 {
     typedef llvmo::ConstantDataArray_O type_KIND_LISPALLOC_llvmo__ConstantDataArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantDataArray_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__BlockAddress_O:
 {
     typedef llvmo::BlockAddress_O type_KIND_LISPALLOC_llvmo__BlockAddress_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__BlockAddress_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ConstantPointerNull_O:
 {
     typedef llvmo::ConstantPointerNull_O type_KIND_LISPALLOC_llvmo__ConstantPointerNull_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantPointerNull_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ConstantInt_O:
 {
     typedef llvmo::ConstantInt_O type_KIND_LISPALLOC_llvmo__ConstantInt_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantInt_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__GlobalValue_O:
 {
     typedef llvmo::GlobalValue_O type_KIND_LISPALLOC_llvmo__GlobalValue_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__GlobalValue_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__GlobalVariable_O:
 {
     typedef llvmo::GlobalVariable_O type_KIND_LISPALLOC_llvmo__GlobalVariable_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__GlobalVariable_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Function_O:
 {
     typedef llvmo::Function_O type_KIND_LISPALLOC_llvmo__Function_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Function_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ConstantExpr_O:
 {
     typedef llvmo::ConstantExpr_O type_KIND_LISPALLOC_llvmo__ConstantExpr_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantExpr_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ConstantFP_O:
 {
     typedef llvmo::ConstantFP_O type_KIND_LISPALLOC_llvmo__ConstantFP_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantFP_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__UndefValue_O:
 {
     typedef llvmo::UndefValue_O type_KIND_LISPALLOC_llvmo__UndefValue_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__UndefValue_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__BasicBlock_O:
 {
     typedef llvmo::BasicBlock_O type_KIND_LISPALLOC_llvmo__BasicBlock_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__BasicBlock_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Argument_O:
 {
     typedef llvmo::Argument_O type_KIND_LISPALLOC_llvmo__Argument_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Argument_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__IRBuilderBase_O:
 {
     typedef llvmo::IRBuilderBase_O type_KIND_LISPALLOC_llvmo__IRBuilderBase_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__IRBuilderBase_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__IRBuilder_O:
 {
     typedef llvmo::IRBuilder_O type_KIND_LISPALLOC_llvmo__IRBuilder_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__IRBuilder_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O:
 {
     typedef llvmo::MCSubtargetInfo_O type_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O:
 {
     typedef llvmo::TargetSubtargetInfo_O type_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Target_O:
 {
     typedef llvmo::Target_O type_KIND_LISPALLOC_llvmo__Target_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Target_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Linker_O:
 {
     typedef llvmo::Linker_O type_KIND_LISPALLOC_llvmo__Linker_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Linker_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__PassManagerBase_O:
 {
     typedef llvmo::PassManagerBase_O type_KIND_LISPALLOC_llvmo__PassManagerBase_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PassManagerBase_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__FunctionPassManager_O:
 {
     typedef llvmo::FunctionPassManager_O type_KIND_LISPALLOC_llvmo__FunctionPassManager_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__FunctionPassManager_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__PassManager_O:
 {
     typedef llvmo::PassManager_O type_KIND_LISPALLOC_llvmo__PassManager_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PassManager_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__Pass_O:
 {
     typedef llvmo::Pass_O type_KIND_LISPALLOC_llvmo__Pass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Pass_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ModulePass_O:
 {
     typedef llvmo::ModulePass_O type_KIND_LISPALLOC_llvmo__ModulePass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ModulePass_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ImmutablePass_O:
 {
     typedef llvmo::ImmutablePass_O type_KIND_LISPALLOC_llvmo__ImmutablePass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ImmutablePass_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__TargetLibraryInfo_O:
 {
     typedef llvmo::TargetLibraryInfo_O type_KIND_LISPALLOC_llvmo__TargetLibraryInfo_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__TargetLibraryInfo_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DataLayoutPass_O:
 {
     typedef llvmo::DataLayoutPass_O type_KIND_LISPALLOC_llvmo__DataLayoutPass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DataLayoutPass_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__FunctionPass_O:
 {
     typedef llvmo::FunctionPass_O type_KIND_LISPALLOC_llvmo__FunctionPass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__FunctionPass_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__ExecutionEngine_O:
 {
     typedef llvmo::ExecutionEngine_O type_KIND_LISPALLOC_llvmo__ExecutionEngine_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ExecutionEngine_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DIBuilder_O:
 {
     typedef llvmo::DIBuilder_O type_KIND_LISPALLOC_llvmo__DIBuilder_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIBuilder_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__TargetMachine_O:
 {
     typedef llvmo::TargetMachine_O type_KIND_LISPALLOC_llvmo__TargetMachine_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__TargetMachine_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O:
 {
     typedef llvmo::LLVMTargetMachine_O type_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__APInt_O:
 {
     typedef llvmo::APInt_O type_KIND_LISPALLOC_llvmo__APInt_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__APInt_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DataLayout_O:
 {
     typedef llvmo::DataLayout_O type_KIND_LISPALLOC_llvmo__DataLayout_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DataLayout_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_asttooling__AstVisitor_O:
 {
     typedef asttooling::AstVisitor_O type_KIND_LISPALLOC_asttooling__AstVisitor_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__AstVisitor_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Pathname_O:
 {
     typedef core::Pathname_O type_KIND_LISPALLOC_core__Pathname_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Pathname_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__LogicalPathname_O:
 {
     typedef core::LogicalPathname_O type_KIND_LISPALLOC_core__LogicalPathname_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LogicalPathname_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__LoadTimeValues_O:
 {
     typedef core::LoadTimeValues_O type_KIND_LISPALLOC_core__LoadTimeValues_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LoadTimeValues_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Stream_O:
 {
     typedef core::Stream_O type_KIND_LISPALLOC_core__Stream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Stream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__AnsiStream_O:
 {
     typedef core::AnsiStream_O type_KIND_LISPALLOC_core__AnsiStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__AnsiStream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__FileStream_O:
 {
     typedef core::FileStream_O type_KIND_LISPALLOC_core__FileStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FileStream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__IOStreamStream_O:
 {
     typedef core::IOStreamStream_O type_KIND_LISPALLOC_core__IOStreamStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__IOStreamStream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__IOFileStream_O:
 {
     typedef core::IOFileStream_O type_KIND_LISPALLOC_core__IOFileStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__IOFileStream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__StringStream_O:
 {
     typedef core::StringStream_O type_KIND_LISPALLOC_core__StringStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StringStream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__StringOutputStream_O:
 {
     typedef core::StringOutputStream_O type_KIND_LISPALLOC_core__StringOutputStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StringOutputStream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__StringInputStream_O:
 {
     typedef core::StringInputStream_O type_KIND_LISPALLOC_core__StringInputStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StringInputStream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__TwoWayStream_O:
 {
     typedef core::TwoWayStream_O type_KIND_LISPALLOC_core__TwoWayStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__TwoWayStream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__EchoStream_O:
 {
     typedef core::EchoStream_O type_KIND_LISPALLOC_core__EchoStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__EchoStream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__ConcatenatedStream_O:
 {
     typedef core::ConcatenatedStream_O type_KIND_LISPALLOC_core__ConcatenatedStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ConcatenatedStream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__BroadcastStream_O:
 {
     typedef core::BroadcastStream_O type_KIND_LISPALLOC_core__BroadcastStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__BroadcastStream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SynonymStream_O:
 {
     typedef core::SynonymStream_O type_KIND_LISPALLOC_core__SynonymStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SynonymStream_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_TEMPLATED_LISPALLOC_core__Iterator_O:
 {
     core::Iterator_O* obj_gc_safe = reinterpret_cast<core::Iterator_O*>(client);
     client = (char*)client + AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__DirectoryIterator_O:
 {
     typedef core::DirectoryIterator_O type_KIND_LISPALLOC_core__DirectoryIterator_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__DirectoryIterator_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O:
 {
     typedef core::RecursiveDirectoryIterator_O type_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SymbolToEnumConverter_O:
 {
     typedef core::SymbolToEnumConverter_O type_KIND_LISPALLOC_core__SymbolToEnumConverter_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SymbolToEnumConverter_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__LightUserData_O:
 {
     typedef core::LightUserData_O type_KIND_LISPALLOC_core__LightUserData_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LightUserData_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__UserData_O:
 {
     typedef core::UserData_O type_KIND_LISPALLOC_core__UserData_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__UserData_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__MultiStringBuffer_O:
 {
     typedef core::MultiStringBuffer_O type_KIND_LISPALLOC_core__MultiStringBuffer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__MultiStringBuffer_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O:
 {
     typedef core::InvocationHistoryFrameIterator_O type_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__ReadTable_O:
 {
     typedef core::ReadTable_O type_KIND_LISPALLOC_core__ReadTable_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ReadTable_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__LambdaListHandler_O:
 {
     typedef core::LambdaListHandler_O type_KIND_LISPALLOC_core__LambdaListHandler_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LambdaListHandler_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Pointer_O:
 {
     typedef core::Pointer_O type_KIND_LISPALLOC_core__Pointer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Pointer_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__IntArray_O:
 {
     typedef core::IntArray_O type_KIND_LISPALLOC_core__IntArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__IntArray_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Record_O:
 {
     typedef core::Record_O type_KIND_LISPALLOC_core__Record_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Record_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Package_O:
 {
     typedef core::Package_O type_KIND_LISPALLOC_core__Package_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Package_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Archive_O:
 {
     typedef core::Archive_O type_KIND_LISPALLOC_core__Archive_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Archive_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__LoadArchive_O:
 {
     typedef core::LoadArchive_O type_KIND_LISPALLOC_core__LoadArchive_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LoadArchive_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SexpLoadArchive_O:
 {
     typedef core::SexpLoadArchive_O type_KIND_LISPALLOC_core__SexpLoadArchive_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SexpLoadArchive_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SaveArchive_O:
 {
     typedef core::SaveArchive_O type_KIND_LISPALLOC_core__SaveArchive_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SaveArchive_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SexpSaveArchive_O:
 {
     typedef core::SexpSaveArchive_O type_KIND_LISPALLOC_core__SexpSaveArchive_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SexpSaveArchive_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__WeakPointer_O:
 {
     typedef core::WeakPointer_O type_KIND_LISPALLOC_core__WeakPointer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakPointer_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Reader_O:
 {
     typedef core::Reader_O type_KIND_LISPALLOC_core__Reader_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Reader_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__PosixTime_O:
 {
     typedef core::PosixTime_O type_KIND_LISPALLOC_core__PosixTime_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__PosixTime_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DebugInfo_O:
 {
     typedef llvmo::DebugInfo_O type_KIND_LISPALLOC_llvmo__DebugInfo_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DebugInfo_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DIType_O:
 {
     typedef llvmo::DIType_O type_KIND_LISPALLOC_llvmo__DIType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DICompileUnit_O:
 {
     typedef llvmo::DICompileUnit_O type_KIND_LISPALLOC_llvmo__DICompileUnit_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DICompileUnit_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DISubroutineType_O:
 {
     typedef llvmo::DISubroutineType_O type_KIND_LISPALLOC_llvmo__DISubroutineType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DISubroutineType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DILexicalBlock_O:
 {
     typedef llvmo::DILexicalBlock_O type_KIND_LISPALLOC_llvmo__DILexicalBlock_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DILexicalBlock_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DIDescriptor_O:
 {
     typedef llvmo::DIDescriptor_O type_KIND_LISPALLOC_llvmo__DIDescriptor_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIDescriptor_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DICompositeType_O:
 {
     typedef llvmo::DICompositeType_O type_KIND_LISPALLOC_llvmo__DICompositeType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DICompositeType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DIFile_O:
 {
     typedef llvmo::DIFile_O type_KIND_LISPALLOC_llvmo__DIFile_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIFile_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DITypeArray_O:
 {
     typedef llvmo::DITypeArray_O type_KIND_LISPALLOC_llvmo__DITypeArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DITypeArray_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DIDerivedType_O:
 {
     typedef llvmo::DIDerivedType_O type_KIND_LISPALLOC_llvmo__DIDerivedType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIDerivedType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DIArray_O:
 {
     typedef llvmo::DIArray_O type_KIND_LISPALLOC_llvmo__DIArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIArray_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DISubprogram_O:
 {
     typedef llvmo::DISubprogram_O type_KIND_LISPALLOC_llvmo__DISubprogram_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DISubprogram_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DIBasicType_O:
 {
     typedef llvmo::DIBasicType_O type_KIND_LISPALLOC_llvmo__DIBasicType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIBasicType_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_llvmo__DIScope_O:
 {
     typedef llvmo::DIScope_O type_KIND_LISPALLOC_llvmo__DIScope_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIScope_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__WeakKeyMapping_O:
 {
     typedef core::WeakKeyMapping_O type_KIND_LISPALLOC_core__WeakKeyMapping_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakKeyMapping_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Function_O:
 {
     typedef core::Function_O type_KIND_LISPALLOC_core__Function_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Function_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O:
 {
     typedef core::SingleDispatchGenericFunction_O type_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SpecialForm_O:
 {
     typedef core::SpecialForm_O type_KIND_LISPALLOC_core__SpecialForm_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SpecialForm_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Instance_O:
 {
     typedef core::Instance_O type_KIND_LISPALLOC_core__Instance_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Instance_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O:
 {
     typedef core::SingleDispatchEffectiveMethodFunction_O type_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__CompiledFunction_O:
 {
     typedef core::CompiledFunction_O type_KIND_LISPALLOC_core__CompiledFunction_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__CompiledFunction_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_clbind__ClassRegistry_O:
 {
     typedef clbind::ClassRegistry_O type_KIND_LISPALLOC_clbind__ClassRegistry_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_clbind__ClassRegistry_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__RegexMatch_O:
 {
     typedef core::RegexMatch_O type_KIND_LISPALLOC_core__RegexMatch_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__RegexMatch_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Number_O:
 {
     typedef core::Number_O type_KIND_LISPALLOC_core__Number_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Number_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Real_O:
 {
     typedef core::Real_O type_KIND_LISPALLOC_core__Real_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Real_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Float_O:
 {
     typedef core::Float_O type_KIND_LISPALLOC_core__Float_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Float_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__ShortFloat_O:
 {
     typedef core::ShortFloat_O type_KIND_LISPALLOC_core__ShortFloat_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ShortFloat_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__SingleFloat_dummy_O:
 {
     typedef core::SingleFloat_dummy_O type_KIND_LISPALLOC_core__SingleFloat_dummy_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleFloat_dummy_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__LongFloat_O:
 {
     typedef core::LongFloat_O type_KIND_LISPALLOC_core__LongFloat_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LongFloat_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__DoubleFloat_O:
 {
     typedef core::DoubleFloat_O type_KIND_LISPALLOC_core__DoubleFloat_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__DoubleFloat_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Rational_O:
 {
     typedef core::Rational_O type_KIND_LISPALLOC_core__Rational_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Rational_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Integer_O:
 {
     typedef core::Integer_O type_KIND_LISPALLOC_core__Integer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Integer_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Bignum_O:
 {
     typedef core::Bignum_O type_KIND_LISPALLOC_core__Bignum_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Bignum_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Fixnum_dummy_O:
 {
     typedef core::Fixnum_dummy_O type_KIND_LISPALLOC_core__Fixnum_dummy_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Fixnum_dummy_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Ratio_O:
 {
     typedef core::Ratio_O type_KIND_LISPALLOC_core__Ratio_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Ratio_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_core__Complex_O:
 {
     typedef core::Complex_O type_KIND_LISPALLOC_core__Complex_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Complex_O)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_ROOTCLASSALLOC_clbind__detail__class_map:
 {
     typedef clbind::detail::class_map type_KIND_ROOTCLASSALLOC_clbind__detail__class_map;
     client = (char*)client + AlignUp(sizeof(type_KIND_ROOTCLASSALLOC_clbind__detail__class_map)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_core__SequenceStepper:
 {
     typedef core::SequenceStepper type_KIND_CLASSALLOC_core__SequenceStepper;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__SequenceStepper)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_core__ConsStepper:
 {
     typedef core::ConsStepper type_KIND_CLASSALLOC_core__ConsStepper;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__ConsStepper)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_core__VectorStepper:
 {
     typedef core::VectorStepper type_KIND_CLASSALLOC_core__VectorStepper;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__VectorStepper)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_:
 {
+  {
     gctools::GCVector_moveable<core::DynamicBinding>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::DynamicBinding>*>(client);
     typedef typename gctools::GCVector_moveable<core::DynamicBinding> type_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor:
 {
     typedef asttooling::internal::FreeFuncMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_core__CoreExposer:
 {
     typedef core::CoreExposer type_KIND_CLASSALLOC_core__CoreExposer;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__CoreExposer)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherDescriptor_P_:
 {
+  {
     gctools::GCVector_moveable<asttooling::internal::MatcherDescriptor *>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::internal::MatcherDescriptor *>*>(client);
     typedef typename gctools::GCVector_moveable<asttooling::internal::MatcherDescriptor *> type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherDescriptor_P_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherDescriptor_P_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_core__InstanceClosure:
 {
     typedef core::InstanceClosure type_KIND_CLASSALLOC_core__InstanceClosure;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__InstanceClosure)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_:
 {
+  {
     gctools::GCVector_moveable<core::CacheRecord>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::CacheRecord>*>(client);
     typedef typename gctools::GCVector_moveable<core::CacheRecord> type_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_:
 {
+  {
     gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>* obj_gc_safe = reinterpret_cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>*>(client);
     typedef typename gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0> type_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor:
 {
     typedef asttooling::internal::OverloadedMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
 {
+  {
     gctools::GCVector_moveable<core::AuxArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::AuxArgument>*>(client);
     typedef typename gctools::GCVector_moveable<core::AuxArgument> type_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__:
 {
+  {
     gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>*>(client);
     typedef typename gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>> type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
 {
+  {
     gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>*>(client);
     typedef typename gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>> type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
 {
+  {
     gctools::GCVector_moveable<core::T_O *>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::T_O *>*>(client);
     typedef typename gctools::GCVector_moveable<core::T_O *> type_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_:
 {
+  {
     gctools::GCVector_moveable<asttooling::ParserValue>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ParserValue>*>(client);
     typedef typename gctools::GCVector_moveable<asttooling::ParserValue> type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
+  {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>*>(client);
     typedef typename gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>> type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory:
 {
     typedef asttooling::DerivableFrontendActionFactory type_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCSTRING_gctools__GCString_moveable_char_:
 {
+  {
     gctools::GCString_moveable<char>* obj_gc_safe = reinterpret_cast<gctools::GCString_moveable<char>*>(client);
     typedef typename gctools::GCString_moveable<char> type_KIND_GCSTRING_gctools__GCString_moveable_char_;
     size_t header_and_gcstring_size = AlignUp(sizeof_container<type_KIND_GCSTRING_gctools__GCString_moveable_char_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + Align(header_and_gcstring_size);
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__:
 {
+  {
     gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>*>(client);
     typedef typename gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>> type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor:
 {
     typedef asttooling::internal::FixedArgCountMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_:
 {
+  {
     gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,1>* obj_gc_safe = reinterpret_cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,1>*>(client);
     typedef typename gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,1> type_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_:
 {
+  {
     gctools::GCVector_moveable<core::SequenceStepper *>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SequenceStepper *>*>(client);
     typedef typename gctools::GCVector_moveable<core::SequenceStepper *> type_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_:
 {
+  {
     gctools::GCVector_moveable<asttooling::Message>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::Message>*>(client);
     typedef typename gctools::GCVector_moveable<asttooling::Message> type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
 {
+  {
     gctools::GCVector_moveable<core::RequiredArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::RequiredArgument>*>(client);
     typedef typename gctools::GCVector_moveable<core::RequiredArgument> type_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure:
 {
     core::BuiltinClosure* obj_gc_safe = reinterpret_cast<core::BuiltinClosure*>(client);
     client = (char*)client + AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_llvmo__CompiledClosure:
 {
     typedef llvmo::CompiledClosure type_KIND_CLASSALLOC_llvmo__CompiledClosure;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_llvmo__CompiledClosure)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_asttooling__DerivableMatchCallback:
 {
     typedef asttooling::DerivableMatchCallback type_KIND_LISPALLOC_asttooling__DerivableMatchCallback;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableMatchCallback)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_:
 {
+  {
     gctools::GCVector_moveable<core::OptionalArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::OptionalArgument>*>(client);
     typedef typename gctools::GCVector_moveable<core::OptionalArgument> type_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
+  {
     gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>*>(client);
     typedef typename gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>> type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_:
 {
+  {
     gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>*>(client);
     typedef typename gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair> type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_core__MacroClosure:
 {
     typedef core::MacroClosure type_KIND_CLASSALLOC_core__MacroClosure;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__MacroClosure)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction:
 {
     typedef asttooling::DerivableASTFrontendAction type_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
 {
+  {
     gctools::GCVector_moveable<core::SymbolStorage>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SymbolStorage>*>(client);
     typedef typename gctools::GCVector_moveable<core::SymbolStorage> type_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
+  {
     gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>*>(client);
     typedef typename gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
+  {
     gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>*>(client);
     typedef typename gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>> type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_core__InterpretedClosure:
 {
     typedef core::InterpretedClosure type_KIND_CLASSALLOC_core__InterpretedClosure;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__InterpretedClosure)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_:
 {
+  {
     gctools::GCVector_moveable<asttooling::ContextFrame>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ContextFrame>*>(client);
     typedef typename gctools::GCVector_moveable<asttooling::ContextFrame> type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_:
 {
+  {
     gctools::GCVector_moveable<core::ExceptionEntry>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::ExceptionEntry>*>(client);
     typedef typename gctools::GCVector_moveable<core::ExceptionEntry> type_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_:
 {
+  {
     gctools::GCVector_moveable<asttooling::ErrorContent>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ErrorContent>*>(client);
     typedef typename gctools::GCVector_moveable<asttooling::ErrorContent> type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
+  {
     gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*>(client);
     typedef typename gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_:
 {
+  {
     gctools::GCVector_moveable<core::KeywordArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::KeywordArgument>*>(client);
     typedef typename gctools::GCVector_moveable<core::KeywordArgument> type_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
+  {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>*>(client);
     typedef typename gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>> type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
 {
+  {
     gctools::GCVector_moveable<core::SymbolClassPair>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SymbolClassPair>*>(client);
     typedef typename gctools::GCVector_moveable<core::SymbolClassPair> type_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction:
 {
     typedef asttooling::DerivableSyntaxOnlyAction type_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
+  {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>*>(client);
     typedef typename gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>> type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure:
 {
     typedef core::SingleDispatchGenericFunctionClosure type_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor:
 {
     typedef asttooling::internal::VariadicOperatorMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor)) + global_alignup_sizeof_header;
-    return client;
+    goto DONE; //return client;
 }
 obj_skip_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__4_:
 {
+  {
     gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,4>* obj_gc_safe = reinterpret_cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,4>*>(client);
     typedef typename gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,4> type_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__4_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__4_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
-    return client;
+  }
+    goto DONE; //return client;
 }
 #endif // defined(GC_OBJ_SKIP)
 #if defined(GC_OBJ_SKIP_TABLE)
