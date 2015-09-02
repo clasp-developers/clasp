@@ -221,6 +221,8 @@ public:
     ;
   }
 };
+
+ void headerDescribe(core::T_O* taggedClient);
 };
 
 #if 0

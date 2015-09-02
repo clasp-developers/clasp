@@ -96,6 +96,49 @@ size_t global_alignup_sizeof_header;
 #define MPS_LOG(fm)
 #endif
 
+void headerDescribe(core::T_O* taggedClient)
+{
+  if ( tagged_generalp(taggedClient) || tagged_consp(taggedClient) ) {
+    printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
+    // Currently this assumes that Conses and General objects share the same header
+    // this may not be true in the future
+    // conses may be moved into a separate pool and dealt with in a different way
+    uintptr_t* headerP;
+    if ( tagged_generalp(taggedClient) ) {
+      headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(untag_general(taggedClient)));
+    } else {
+      headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(untag_cons(taggedClient)));
+    }
+    printf( "  0x%16l0X : 0x%16l0X 0x%16l0X\n <--- Valid objects have 0xDEADBEEF01234567 ", headerP, *headerP, *(headerP+1));
+    uintptr_t headerTag = (*headerP)&Header_s::tag_mask;
+    switch (headerTag) {
+    case 0:
+        printf(" Not an object header!\n");
+        break;
+    case Header_s::kind_tag:
+      {
+        gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP)>>2);
+        printf(" Kind tag - kind: %d", kind );
+        fflush(stdout);
+        printf("     %s\n", obj_name(kind));
+      }
+        break;
+    case Header_s::fwd_tag:
+        printf(" fwd_tag - fwd address: 0x%16l0X\n", (*headerP)&Header_s::fwd_ptr_mask);
+        break;
+    case Header_s::pad_tag:
+        if ( ((*headerP)&Header_s::pad1_tag) == Header_s::pad1_tag ) {
+          printf("   pad1_tag\n");
+        } else {
+          printf("   pad_tag\n");
+        }
+        break;
+    }
+  } else {
+    printf("%s:%d No header - immediate value\n", __FILE__, __LINE__ );
+  }
+};
+
 string gcResultToString(GC_RESULT res) {
   switch (res) {
   case MPS_RES_OK:

@@ -380,6 +380,9 @@ void run_quick_tests() {
                                ,cl::_sym_nil
                                ,cl::_sym_nil);
   TEST_ASSERT_ALWAYS(cl_length(val7) == 7);
+
+  T_sp num = clasp_make_fixnum(63);
+  Real_sp r = gc::As<Real_sp>(num);
 }
 Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
   Lisp_O::setupSpecialSymbols();
@@ -653,7 +656,9 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_Roots._BignumRegister0 = Bignum_O::create(0);
     this->_Roots._BignumRegister1 = Bignum_O::create(0);
     this->_Roots._BignumRegister2 = Bignum_O::create(0);
-    this->_Roots._IntegerOverflowAdjust = cl_expt(clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
+    Real_sp bits = gc::As<Real_sp>(clasp_make_fixnum(gc::fixnum_bits));
+    Real_sp two = gc::As<Real_sp>(clasp_make_fixnum(2));
+    this->_Roots._IntegerOverflowAdjust = cl_expt(two,bits); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
     getcwd(true); // set *default-pathname-defaults*
   };
   {

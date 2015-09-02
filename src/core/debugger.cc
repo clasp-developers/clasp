@@ -402,8 +402,13 @@ void dbg_mv_lowLevelDescribe(T_mv mv_obj) {
 }
 
 void dbg_describe_tagged_T_Optr(T_O *p) {
+  gctools::headerDescribe(p);
   T_sp obj((gctools::Tagged) reinterpret_cast<T_O *>(p));
   dbg_lowLevelDescribe(obj);
+}
+
+void dbg_describe_tagged_T_Optr_header(T_O *p) {
+  gctools::headerDescribe(p);
 }
 
 extern void dbg_describe(T_sp obj);
