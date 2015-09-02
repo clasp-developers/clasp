@@ -226,7 +226,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
     THROW_HARD_ERROR(BF("Illegal header at %p") % header);
   }
 DONE:
-  DEBUG_MPS_MESSAGE(BF("Leaving obj_skip with client@%p size=%d/%x") % client % ((char*)client - (char*)oldClient) %  ((char*)client - (char*)oldClient));
+  DEBUG_MPS_MESSAGE(BF("Leaving obj_skip with client@%p size=%d/0x%x") % client % ((char*)client - (char*)oldClient) %  ((char*)client - (char*)oldClient));
   return client;
 }
 };

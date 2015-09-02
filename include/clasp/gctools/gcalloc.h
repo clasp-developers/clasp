@@ -199,6 +199,7 @@ namespace gctools {
               allocP = reinterpret_cast<uintptr_t*>(p);
               memset(allocP,0,aligned_size);
           } while (!mps_commit(this->_AllocationPoint, p, aligned_size)); /* see note 2 */
+          DEBUG_MPS_UNDERSCANNING_TESTS();
           FRAME_HEADER_TYPE_FIELD(allocP) = frame;
           FRAME_HEADER_SIZE_FIELD(allocP) = headerAndFrameSize;
           void* frameStart = FRAME_START(allocP); // skip uintptr_t header
@@ -311,6 +312,7 @@ struct RootClassAllocator {
       obj = BasePtrToMostDerivedPtr<T>(addr);
       new (obj) T(std::forward<ARGS>(args)...);
     } while (!mps_commit(obj_ap, addr, sz));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.nonMovingAllocation(sz);
     DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, gctools::GCKind<T>::Kind);
     POLL_SIGNALS();
@@ -361,6 +363,7 @@ struct ClassAllocator {
       obj = BasePtrToMostDerivedPtr<T>(addr);
       new (obj) T(std::forward<ARGS>(args)...);
     } while (!mps_commit(obj_ap, addr, sz));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.unknownAllocation(sz);
     DEBUG_MPS_ALLOCATION("AP", addr, obj, sz, gctools::GCKind<T>::Kind);
     POLL_SIGNALS();
@@ -413,6 +416,7 @@ struct GCObjectAppropriatePoolAllocator {
       obj = BasePtrToMostDerivedPtr<OT>(addr);
       new (obj) OT(std::forward<ARGS>(args)...);
     } while (!mps_commit(obj_ap, addr, size));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.movingAllocation(size);
     DEBUG_MPS_ALLOCATION("AMC", addr, obj, size, gctools::GCKind<OT>::Kind);
     smart_pointer_type sp = gctools::smart_ptr<value_type>(obj);
@@ -456,6 +460,7 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/true, /*Moveable=*/true> 
       obj = BasePtrToMostDerivedPtr<OT>(addr);
       new (obj) OT(std::forward<ARGS>(args)...);
     } while (!mps_commit(obj_ap, addr, size));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.movingZeroRankAllocation(size);
     DEBUG_MPS_ALLOCATION("AMCZ", addr, obj, size, /*gctools::*/ GCKind<OT>::Kind);
     smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(obj);
@@ -500,6 +505,7 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/false, /*Moveable=*/false
       obj = BasePtrToMostDerivedPtr<OT>(addr);
       new (obj) OT(std::forward<ARGS>(args)...);
     } while (!mps_commit(obj_ap, addr, size));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.nonMovingAllocation(size);
     DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, size, /*gctools::*/ GCKind<OT>::Kind);
     smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(obj);
@@ -688,6 +694,7 @@ public:
       myAddress = (BasePtrToMostDerivedPtr<TY>(addr));
       new (myAddress) TY(num);
     } while (!mps_commit(obj_ap, addr, size));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.movingAllocation(size);
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     POLL_SIGNALS();
@@ -778,6 +785,7 @@ public:
       myAddress = (BasePtrToMostDerivedPtr<TY>(addr));
       new (myAddress) TY(num);
     } while (!mps_commit(obj_ap, addr, size));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.nonMovingAllocation(size);
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     POLL_SIGNALS();
@@ -864,6 +872,7 @@ public:
       new (header) HeadT(GCKind<TY>::Kind);
       //                header->kind._Kind = /*gctools::*/GCKind<container_type>::Kind;
     } while (!mps_commit(obj_ap, base, sz));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.movingZeroRankAllocation(sz);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
     new (myAddress) TY(num);
@@ -954,6 +963,7 @@ public:
         THROW_HARD_ERROR(BF("NULL address in allocate!"));
       new (myAddress) container_type(num);
     } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     if (!myAddress)
       THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>"));
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
@@ -1038,6 +1048,7 @@ public:
         THROW_HARD_ERROR(BF("NULL address in allocate!"));
       new (myAddress) container_type(num);
     } while (!mps_commit(_global_strong_link_allocation_point, addr, size));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     if (!myAddress)
       THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,StrongLinks>>"));
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
@@ -1114,6 +1125,7 @@ public:
       myAddress = reinterpret_cast<container_pointer>(addr);
       new (myAddress) container_type(val);
     } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     return myAddress;
 #endif
@@ -1159,6 +1171,7 @@ public:
       myAddress = reinterpret_cast<container_pointer>(addr);
       new (myAddress) container_type(val);
     } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     return myAddress;
 #endif
@@ -1201,6 +1214,7 @@ public:
       myAddress = reinterpret_cast<value_pointer>(addr);
       new (myAddress) VT(val);
     } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     return myAddress;
 #endif
   }

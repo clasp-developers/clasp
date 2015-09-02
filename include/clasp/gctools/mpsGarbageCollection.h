@@ -44,6 +44,11 @@ extern void ShieldCover(Arena arena, Seg seg);
 
 namespace gctools {
 
+#ifdef DEBUG_MPS_UNDERSCANNING
+#define DEBUG_MPS_UNDERSCANNING_TESTS() mps_arena_collect(_global_arena); mps_arena_release(_global_arena);
+#else
+#define DEBUG_MPS_UNDERSCANNING_TESTS()
+#endif
 #ifdef DEBUG_MPS
   #define DEBUG_MPS_THROW_IF_INVALID_CLIENT(c) throwIfInvalidClient(reinterpret_cast<core::T_O*>(c))
 #else
