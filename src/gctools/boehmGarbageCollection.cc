@@ -38,4 +38,8 @@ int globalBoehmMarker = 0;
 #endif
 
 
+    void headerDescribe(core::T_O* taggedClient) {
+        printf("%s:%d Describe the Boehm header here\n", __FILE__, __LINE__);
+    };
+
 };

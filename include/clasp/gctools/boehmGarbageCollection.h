@@ -169,6 +169,9 @@ inline size_t sizeof_with_templated_header() { return AlignUp(sizeof(T)) + Align
         return "UNKNOWN-object";
     }
 #endif
+
+ void headerDescribe(core::T_O* taggedClient);
+
 };
 
 namespace gctools {
