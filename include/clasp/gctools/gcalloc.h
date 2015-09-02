@@ -93,182 +93,182 @@ namespace gctools {
 */
   class GCStack {
   public:
-    typedef enum { undefined, frame, pad } frameType;
-    size_t _MaxSize;
-    size_t _TotalSize;
+      typedef enum { undefined, frame, pad } frameType;
+      size_t _MaxSize;
+      size_t _TotalSize;
 #ifdef USE_BOEHM
-  #ifdef BOEHM_ONE_BIG_STACK
-    uintptr_t* _StackBottom;
-    uintptr_t* _StackTop;
-    uintptr_t* _StackLimit;
-  #else
-    // Nothing
-  #endif
+#ifdef BOEHM_ONE_BIG_STACK
+      uintptr_t* _StackBottom;
+      uintptr_t* _StackTop;
+      uintptr_t* _StackLimit;
+#else
+      // Nothing
+#endif
 #endif
 #ifdef USE_MPS
-    mps_pool_t _Pool;
-    mps_ap_t _AllocationPoint;
-    bool _IsActive;
+      mps_pool_t _Pool;
+      mps_ap_t _AllocationPoint;
+      bool _IsActive;
+      vector<mps_frame_t> frames;
 #endif
-   //! Return true if this Stack object is active and can receive pushFrame/popFrame messages
+      //! Return true if this Stack object is active and can receive pushFrame/popFrame messages
   public:
-    size_t maxSize() const { return this->_MaxSize; };
-    bool isActive() {
+      size_t maxSize() const { return this->_MaxSize; };
+      bool isActive() {
 #ifdef USE_BOEHM
-      return true;
+          return true;
 #endif
 #ifdef USE_MPS
-      return _IsActive;
+          return _IsActive;
 #endif
-    };
-   //*! Allocate a buffer for this 
-    bool allocateStack(size_t bufferSize)
-    {
-      bufferSize = STACK_ALIGN_UP(bufferSize);
+      };
+      //*! Allocate a buffer for this 
+      bool allocateStack(size_t bufferSize)
+      {
+          bufferSize = STACK_ALIGN_UP(bufferSize);
 #ifdef USE_BOEHM
-  #ifdef BOEHM_ONE_BIG_STACK
-      this->_StackBottom  = (uintptr_t*)GC_MALLOC(bufferSize);
-      this->_StackTop = this->_StackBottom;
-      this->_StackLimit = (uintptr_t*)((char*)this->_StackBottom + bufferSize);
-      memset(this->_StackBottom,0,bufferSize);
-  #else
-      // Do nothing
-  #endif
+#ifdef BOEHM_ONE_BIG_STACK
+          this->_StackBottom  = (uintptr_t*)GC_MALLOC(bufferSize);
+          this->_StackTop = this->_StackBottom;
+          this->_StackLimit = (uintptr_t*)((char*)this->_StackBottom + bufferSize);
+          memset(this->_StackBottom,0,bufferSize);
+#else
+          // Do nothing
+#endif
 #endif
 #ifdef USE_MPS
-      mpsAllocateStack(this);
+          mpsAllocateStack(this);
 #endif
-      return true;
-    };
-    void deallocateStack() {
+          return true;
+      };
+      void deallocateStack() {
 #ifdef USE_BOEHM
-  #ifdef BOEHM_ONE_BIG_STACK
-      if ( this->_StackTop != this->_StackBottom ) {
-        THROW_HARD_ERROR(BF("The stack is not empty"));
-      }
-      GC_FREE(this->_StackBottom);
-  #else
-      // Do nothing
-  #endif
+#ifdef BOEHM_ONE_BIG_STACK
+          if ( this->_StackTop != this->_StackBottom ) {
+              THROW_HARD_ERROR(BF("The stack is not empty"));
+          }
+          GC_FREE(this->_StackBottom);
+#else
+          // Do nothing
+#endif
 #endif
 #ifdef USE_MPS
-      mpsDeallocateStack(this);
+          mpsDeallocateStack(this);
 #endif
-    };
+      };
 
-    size_t totalSize() const {
-      return this->_TotalSize;
-    }
+      size_t totalSize() const {
+          return this->_TotalSize;
+      }
 #define FRAME_HEADER_SIZE (sizeof(int)*2)
 #define FRAME_HEADER_TYPE_FIELD(hptr) *(((int*)hptr))
 #define FRAME_HEADER_SIZE_FIELD(hptr) *(((int*)hptr)+1)
 #define FRAME_START(hptr) (uintptr_t*)(((char*)hptr)+FRAME_HEADER_SIZE)
 #define FRAME_HEADER(fptr) (uintptr_t*)(((char*)fptr)-FRAME_HEADER_SIZE)
-    void* pushFrame(size_t frameSize) {
-      frameSize = STACK_ALIGN_UP(frameSize);
-      uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE + frameSize;
+      void* pushFrame(size_t frameSize) {
+          frameSize = STACK_ALIGN_UP(frameSize);
+          uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE + frameSize;
 #ifdef USE_BOEHM
-  #ifdef BOEHM_ONE_BIG_STACK
-      uintptr_t* headerAndFrame = (uintptr_t*)this->_StackTop;
-      this->_StackTop = (uintptr_t*)((char*)this->_StackTop+headerAndFrameSize);
-  #else
-      uintptr_t* headerAndFrame = (uintptr_t*)GC_MALLOC(headerAndFrameSize);
-  #endif
-      FRAME_HEADER_TYPE_FIELD(headerAndFrame) = frame;
-      FRAME_HEADER_SIZE_FIELD(headerAndFrame) = headerAndFrameSize;
-      void* frameStart = headerAndFrame + 1; // skip uintptr_t header
-      this->_TotalSize += headerAndFrameSize;
-      goto DONE;
+#ifdef BOEHM_ONE_BIG_STACK
+          uintptr_t* headerAndFrame = (uintptr_t*)this->_StackTop;
+          this->_StackTop = (uintptr_t*)((char*)this->_StackTop+headerAndFrameSize);
+#else
+          uintptr_t* headerAndFrame = (uintptr_t*)GC_MALLOC(headerAndFrameSize);
+#endif
+          FRAME_HEADER_TYPE_FIELD(headerAndFrame) = frame;
+          FRAME_HEADER_SIZE_FIELD(headerAndFrame) = headerAndFrameSize;
+          void* frameStart = headerAndFrame + 1; // skip uintptr_t header
+          this->_TotalSize += headerAndFrameSize;
+          goto DONE;
 #endif
 #ifdef USE_MPS
-      mps_frame_t frame_o;
-      mps_res_t respush = mps_ap_frame_push(&frame_o,this->_AllocationPoint);
-      if (respush != MPS_RES_OK) {
-        THROW_HARD_ERROR(BF("Could not mps_ap_frame_push"));
-      }
-      mps_addr_t p;
-      size_t aligned_size = frameSize; /* see note 1 */
-      uintptr_t* allocP;
-      do {
-        mps_res_t res = mps_reserve(&p, this->_AllocationPoint, aligned_size);
-        if (res != MPS_RES_OK) {
-          THROW_HARD_ERROR(BF("Out of memory in GCStack::allocateFrame"));
-        }
-        allocP = reinterpret_cast<uintptr_t*>(p);
-        memset(allocP,0,aligned_size);
-      } while (!mps_commit(this->_AllocationPoint, p, aligned_size)); /* see note 2 */
-      if ( (void*)allocP != (void*)frame_o ) {
-        printf("%s:%d The frame did not match the start of the allocated space: frame_o@%p allocP@%p\n", __FILE__, __LINE__, (void*)frame_o, (void*)allocP);
-      }
-      FRAME_HEADER_TYPE_FIELD(frame_o) = frame;
-      FRAME_HEADER_SIZE_FIELD(frame_o) = headerAndFrameSize;
-      void* frameStart = FRAME_START(frame_o); // skip uintptr_t header
-      this->_TotalSize += headerAndFrameSize;
-      goto DONE;
+          mps_frame_t frame_o;
+          mps_res_t respush = mps_ap_frame_push(&frame_o,this->_AllocationPoint);
+          this->frames.push_back(frame_o);
+          if (respush != MPS_RES_OK) {
+              THROW_HARD_ERROR(BF("Could not mps_ap_frame_push"));
+          }
+          mps_addr_t p;
+          size_t aligned_size = frameSize; /* see note 1 */
+          uintptr_t* allocP;
+          do {
+              mps_res_t res = mps_reserve(&p, this->_AllocationPoint, aligned_size);
+              if (res != MPS_RES_OK) {
+                  THROW_HARD_ERROR(BF("Out of memory in GCStack::allocateFrame"));
+              }
+              allocP = reinterpret_cast<uintptr_t*>(p);
+              memset(allocP,0,aligned_size);
+          } while (!mps_commit(this->_AllocationPoint, p, aligned_size)); /* see note 2 */
+          FRAME_HEADER_TYPE_FIELD(allocP) = frame;
+          FRAME_HEADER_SIZE_FIELD(allocP) = headerAndFrameSize;
+          void* frameStart = FRAME_START(allocP); // skip uintptr_t header
+          this->_TotalSize += headerAndFrameSize;
+          goto DONE;
 #endif
-    DONE:
+      DONE:
 #if defined(BEOHM_ONE_BIG_STACK) && defined(USE_BOEHM) && defined(DEBUG_BOEHM_STACK)
-      size_t calcSize = (char*)this->_StackTop - (char*)this->_StackBottom;
-      if ( calcSize != this->_TotalSize ) {
-        THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize );
-      }
+          size_t calcSize = (char*)this->_StackTop - (char*)this->_StackBottom;
+          if ( calcSize != this->_TotalSize ) {
+              THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize );
+          }
 #endif
-      if ( this->_TotalSize > this->_MaxSize ) {
-        this->_MaxSize = this->_TotalSize;
+          if ( this->_TotalSize > this->_MaxSize ) {
+              this->_MaxSize = this->_TotalSize;
+          }
+          return frameStart;
       }
-      return frameStart;
-    }
-    void popFrame(void* frame) {
+      void popFrame(void* frame) {
 #ifdef USE_BOEHM
-      uintptr_t* frameHeaderP = reinterpret_cast<uintptr_t*>(frame)-1;
-      uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
-      this->_TotalSize = this->_TotalSize - headerAndFrameSize;
-  #ifdef BOEHM_ONE_BIG_STACK
-      memset(frameHeaderP,0,headerAndFrameSize);
-      this->_StackTop = frameHeaderP;
+          uintptr_t* frameHeaderP = reinterpret_cast<uintptr_t*>(frame)-1;
+          uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
+          this->_TotalSize = this->_TotalSize - headerAndFrameSize;
+#ifdef BOEHM_ONE_BIG_STACK
+          memset(frameHeaderP,0,headerAndFrameSize);
+          this->_StackTop = frameHeaderP;
 #ifdef DEBUG_BOEHM_STACK
-      size_t calcSize = (char*)this->_StackTop - (char*)this->_StackBottom;
-      if ( calcSize != this->_TotalSize ) {
-        THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize );
-      }
-      for ( char* i=(char*)this->_StackTop; i<(char*)this->_StackLimit; ++i ) {
-        if ( *i ) {
-          THROW_HARD_ERROR(BF("The side-stack has garbage in it!"));
-        }
-      }
+          size_t calcSize = (char*)this->_StackTop - (char*)this->_StackBottom;
+          if ( calcSize != this->_TotalSize ) {
+              THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize );
+          }
+          for ( char* i=(char*)this->_StackTop; i<(char*)this->_StackLimit; ++i ) {
+              if ( *i ) {
+                  THROW_HARD_ERROR(BF("The side-stack has garbage in it!"));
+              }
+          }
 #endif
-  #else
-      GC_FREE(frameHeaderP);
-  #endif
+#else
+          GC_FREE(frameHeaderP);
+#endif
 #endif // USE_BOEHM
 #ifdef USE_MPS
-      uintptr_t* frameHeaderP = FRAME_HEADER(frame);
-      uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
-      this->_TotalSize -= headerAndFrameSize;
-      mps_frame_t frame_o = reinterpret_cast<mps_frame_t>(frameHeaderP);
-      mps_res_t res = mps_ap_frame_pop(this->_AllocationPoint,frame_o);
-      if ( res != MPS_RES_OK ) {
-        THROW_HARD_ERROR(BF("There was a problem with mps_app_frame_pop"));
-      }
+          uintptr_t* frameHeaderP = FRAME_HEADER(frame);
+          uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
+          this->_TotalSize -= headerAndFrameSize;
+          mps_frame_t frame_o = this->frames.back();
+          this->frames.pop_back();
+          mps_res_t res = mps_ap_frame_pop(this->_AllocationPoint,frame_o);
+          if ( res != MPS_RES_OK ) {
+              THROW_HARD_ERROR(BF("There was a problem with mps_app_frame_pop"));
+          }
 #endif // USE_MPS
-    }
+      }
 
-  GCStack() : _TotalSize(0)
-      , _MaxSize(0)
+      GCStack() : _TotalSize(0)
+                , _MaxSize(0)
 #ifdef USE_BOEHM
 #endif
 #ifdef USE_MPS
 // What do I do here?
 #endif
-    {};
-    virtual ~GCStack() {
+      {};
+      virtual ~GCStack() {
 #ifdef USE_BOEHM
-      // Nothing to do
+          // Nothing to do
 #endif
 #ifdef USE_MPS
 // What do I do here?
 #endif
-    };
+      };
    
   };
 
