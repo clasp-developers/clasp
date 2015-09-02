@@ -155,12 +155,12 @@ inline size_t sizeof_with_header();
 
 class Header_s {
 public:
-  static const uintptr_t tag_mask = BOOST_BINARY(011);
-  static const uintptr_t kind_tag = BOOST_BINARY(001);
-  static const uintptr_t fwd_tag = BOOST_BINARY(010);
+  static const uintptr_t tag_mask = BOOST_BINARY( 11);
+  static const uintptr_t kind_tag = BOOST_BINARY( 01); // KIND = tagged_value>>2
+  static const uintptr_t fwd_tag =  BOOST_BINARY( 10);
   static const uintptr_t pad_mask = BOOST_BINARY(111);
   static const uintptr_t pad_test = BOOST_BINARY(011);
-  static const uintptr_t pad_tag = BOOST_BINARY(011);
+  static const uintptr_t pad_tag =  BOOST_BINARY(011);
   static const uintptr_t pad1_tag = BOOST_BINARY(111);
   static const uintptr_t fwd_ptr_mask = ~tag_mask;
   //        static const uintptr_t  fwd2_tag        = BOOST_BINARY(001);
