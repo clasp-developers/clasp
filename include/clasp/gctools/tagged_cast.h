@@ -372,7 +372,20 @@ struct TaggedCast<core::Character_I *, FROM> {
     return NULL;
   }
 };
+
+template <typename FP>
+struct TaggedCast<core::Cons_O *, FP> {
+  typedef core::Cons_O *ToType;
+  typedef FP FromType;
+    static bool isA(FromType ptr) { return gctools::tagged_consp<FP>(ptr); }
+  static ToType castOrNULL(FromType client) {
+    if (TaggedCast<ToType, FromType>::isA(client))
+      return reinterpret_cast<ToType>(client);
+    return NULL;
+  }
 };
+
+}; // namespace gctools
 
 
 // more specializations in clasp/include/clasp/core/tagged_cast_specializations.h
