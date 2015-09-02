@@ -196,13 +196,16 @@ using namespace gctools;
 
 /*! I'm using a format_header so MPS gives me the object-pointer */
 mps_addr_t obj_skip(mps_addr_t client) {
+  mps_addr_t oldClient = client;
+  // The client must have a valid header
+  DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SKIP_TABLE
 #include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_SKIP_TABLE
 #endif
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
-  MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
+  MPS_LOG(BF(" client = %p   header=%p  header-desc: %s") % client % header % header->description());
   if (header->kindP()) {
     gctools::GCKindEnum kind = header->kind();
 #ifndef RUNNING_GC_BUILDER
@@ -223,6 +226,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
     THROW_HARD_ERROR(BF("Illegal header at %p") % header);
   }
   DEBUG_MPS_MESSAGE(BF("Leaving obj_skip with client@%p") % client);
+ done:
   return client;
 }
 };
@@ -288,6 +292,7 @@ int trap_obj_scan = 0;
 #endif
 
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
+  
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_TABLE
 #include <clasp/main/clasp_gc.cc>
@@ -297,8 +302,10 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
   DEBUG_MPS_MESSAGE(BF("obj_scan started - Incoming client %p   limit: %p") % client % limit);
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
     while (client < limit) {
+        // The client must have a valid header
+      DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
       gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
-      MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
+      MPS_LOG(BF(" client = %p   header=%p  header-desc: %s") % client % header % header->description());
       if (header->kindP()) {
         GCKindEnum kind = header->kind();
 #ifndef RUNNING_GC_BUILDER
@@ -327,6 +334,8 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 /*! I'm using a format_header so MPS gives me the object-pointer */
 #define GC_FINALIZE_METHOD
 void obj_finalize(mps_addr_t client) {
+  // The client must have a valid header
+  DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_FINALIZE_TABLE
 #include <clasp/main/clasp_gc.cc>

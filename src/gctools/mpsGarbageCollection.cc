@@ -96,6 +96,42 @@ size_t global_alignup_sizeof_header;
 #define MPS_LOG(fm)
 #endif
 
+void rawHeaderDescribe(uintptr_t* headerP)
+{
+  uintptr_t headerTag = (*headerP)&Header_s::tag_mask;
+  switch (headerTag) {
+  case 0:
+      printf( "  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP+1));
+      printf(" Not an object header!\n");
+      break;
+  case Header_s::kind_tag:
+    {
+      printf( "  0x%16l0X : 0x%16l0X 0x%16l0X <--- Valid objects have 0xDEADBEEF01234567 \n", headerP, *headerP, *(headerP+1));
+      gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP)>>2);
+      printf(" Kind tag - kind: %d", kind );
+      fflush(stdout);
+      printf("     %s\n", obj_name(kind));
+    }
+    break;
+  case Header_s::fwd_tag:
+    {
+      Header_s* hdr = (Header_s*)headerP;
+      printf( "  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP+1));
+      printf(" fwd_tag - fwd address: 0x%16l0X\n", (*headerP)&Header_s::fwd_ptr_mask);
+      printf("     fwdSize = %d/0x%16l0X\n", hdr->fwdSize());
+    }
+      break;
+  case Header_s::pad_tag:
+      printf( "  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP+1));
+      if ( ((*headerP)&Header_s::pad1_tag) == Header_s::pad1_tag ) {
+        printf("   pad1_tag\n");
+      } else {
+        printf("   pad_tag\n");
+      }
+      break;
+  }
+};
+
 void headerDescribe(core::T_O* taggedClient)
 {
   if ( tagged_generalp(taggedClient) || tagged_consp(taggedClient) ) {
@@ -109,33 +145,13 @@ void headerDescribe(core::T_O* taggedClient)
     } else {
       headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(untag_cons(taggedClient)));
     }
-    printf( "  0x%16l0X : 0x%16l0X 0x%16l0X\n <--- Valid objects have 0xDEADBEEF01234567 ", headerP, *headerP, *(headerP+1));
-    uintptr_t headerTag = (*headerP)&Header_s::tag_mask;
-    switch (headerTag) {
-    case 0:
-        printf(" Not an object header!\n");
-        break;
-    case Header_s::kind_tag:
-      {
-        gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP)>>2);
-        printf(" Kind tag - kind: %d", kind );
-        fflush(stdout);
-        printf("     %s\n", obj_name(kind));
-      }
-        break;
-    case Header_s::fwd_tag:
-        printf(" fwd_tag - fwd address: 0x%16l0X\n", (*headerP)&Header_s::fwd_ptr_mask);
-        break;
-    case Header_s::pad_tag:
-        if ( ((*headerP)&Header_s::pad1_tag) == Header_s::pad1_tag ) {
-          printf("   pad1_tag\n");
-        } else {
-          printf("   pad_tag\n");
-        }
-        break;
-    }
+    rawHeaderDescribe(headerP);
   } else {
-    printf("%s:%d No header - immediate value\n", __FILE__, __LINE__ );
+    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__ );
+    printf("    Trying to interpret as client pointer\n");
+    uintptr_t* headerP;
+    headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(taggedClient));
+    rawHeaderDescribe(headerP);
   }
 };
 
@@ -194,6 +210,9 @@ void searchMemoryForAddress(mps_addr_t addr) {
   }
 
 static void obj_fwd(mps_addr_t old_client, mps_addr_t new_client) {
+  // I'm assuming both old and new client pointers have valid headers at this point
+  DEBUG_MPS_THROW_IF_INVALID_CLIENT(old_client);
+  DEBUG_MPS_THROW_IF_INVALID_CLIENT(new_client);
   DEBUG_MPS_MESSAGE(BF("obj_fwd old_client = %p   new_client = %p") % old_client % new_client);
   mps_addr_t limit = obj_skip(old_client);
   size_t size = (char *)limit - (char *)old_client;
@@ -206,6 +225,7 @@ static void obj_fwd(mps_addr_t old_client, mps_addr_t new_client) {
 }
 
 static mps_addr_t obj_isfwd(mps_addr_t client) {
+  DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
   Header_s *header = reinterpret_cast<Header_s *>(ClientPtrToBasePtr(client));
   MPS_LOG(BF(" client = %p base=%p") % client % header);
   MPS_LOG(BF("    kind = %s") % header->description());

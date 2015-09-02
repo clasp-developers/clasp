@@ -44,6 +44,12 @@ extern void ShieldCover(Arena arena, Seg seg);
 
 namespace gctools {
 
+#ifdef DEBUG_MPS
+  #define DEBUG_MPS_THROW_IF_INVALID_CLIENT(c) throwIfInvalidClient(reinterpret_cast<core::T_O*>(c))
+#else
+  #define DEBUG_MPS_THROW_IF_INVALID_CLIENT(c)
+#endif
+  
 struct MpsMetrics {
   size_t finalizationRequests = 0;
   size_t movingAllocations = 0;
@@ -171,6 +177,7 @@ private:
 public:
   Header_s(GCKindEnum k) : header((k << 2) | kind_tag), data{0xDEADBEEF01234567} {};
 
+  bool invalidP() const { return (this->header & tag_mask) == 0; };
   bool kindP() const { return (this->header & tag_mask) == kind_tag; };
   bool fwdP() const { return (this->header & tag_mask) == fwd_tag; };
   bool anyPadP() const { return (this->header & pad_test) == pad_tag; };
@@ -380,6 +387,13 @@ inline void *ClientPtrToBasePtr(void *mostDerived) {
   return ptr;
 }
 
+  inline void throwIfInvalidClient(core::T_O* client) {
+    Header_s* header = (Header_s*)ClientPtrToBasePtr(client);
+    if ( header->invalidP() ) {
+      THROW_HARD_ERROR(BF("The client pointer at %p is invalid!\n") % (void*)client);
+    }
+  }
+
 template <typename T>
 inline T *BasePtrToMostDerivedPtr(void *base) {
   T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + sizeof(Header_s));
@@ -487,17 +501,25 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
                         const char *client_name
 #endif
                         ) {
-  DEBUG_MPS_MESSAGE(boost::format("POINTER_FIX of %s@%p px: %p") % client_name % taggedP % *taggedP);
   if ( gctools::tagged_objectp(*taggedP)) {
-      gctools::Tagged tagged_obj = *taggedP;
-      if (MPS_FIX1(_ss, tagged_obj)) {
-          gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);
-          gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);
-          mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-          if (res != MPS_RES_OK) return res;
-          obj = obj | tag;
-          *taggedP = obj;
-      };
+    DEBUG_MPS_MESSAGE(boost::format("TAGGED!! POINTER_FIX of %s@%p px: %p") % client_name % taggedP % *taggedP);
+    gctools::Tagged tagged_obj = *taggedP;
+    if (MPS_FIX1(_ss, tagged_obj)) {
+      gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);
+      gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);
+      mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
+      if (res != MPS_RES_OK) return res;
+      obj = obj | tag;
+      *taggedP = obj;
+    };
+  } else {
+    DEBUG_MPS_MESSAGE(boost::format("Untagged POINTER_FIX of %s@%p px: %p") % client_name % taggedP % *taggedP);
+    gctools::Tagged obj = *taggedP;
+    if (MPS_FIX1(_ss, obj)) {
+      mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
+      if (res != MPS_RES_OK) return res;
+      *taggedP = obj;
+    };
   };
   return MPS_RES_OK;
 };
