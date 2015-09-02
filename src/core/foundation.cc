@@ -141,19 +141,19 @@ void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O
     SIMPLE_ERROR(BF("NULL pointer error in lisp_errorUnexpectedType"));
   }
   if (expectedTyp >= _lisp->classSymbolsHolder().size()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %lu out of range max[%zu]") % expectedTyp % _lisp->classSymbolsHolder().size());
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %d out of range max[%d]") % expectedTyp % _lisp->classSymbolsHolder().size());
   }
   core::Symbol_sp expectedSym = _lisp->classSymbolsHolder()[expectedTyp];
   if (expectedSym.nilp()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %lu symbol was not defined") % expectedTyp);
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %d symbol was not defined") % expectedTyp);
   }
 
   if (givenTyp >= _lisp->classSymbolsHolder().size()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("given class_id %lu out of range max[%lu]") % givenTyp % _lisp->classSymbolsHolder().size());
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("given class_id %d out of range max[%d]") % givenTyp % _lisp->classSymbolsHolder().size());
   }
   core::Symbol_sp givenSym = _lisp->classSymbolsHolder()[givenTyp];
   if (givenSym.nilp()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("given class_id %lu symbol was not defined") % givenTyp);
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("given class_id %d symbol was not defined") % givenTyp);
   }
 
   gctools::smart_ptr<core::T_O> obj((gc::Tagged)objP);
