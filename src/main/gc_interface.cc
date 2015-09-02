@@ -351,6 +351,7 @@ void obj_finalize(mps_addr_t client) {
 vector<core::LoadTimeValues_O **> globalLoadTimeValuesRoots;
 
 void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr) {
+    DEBUG_MPS_MESSAGE(BF("registerLoadTimeValuesRoot address **ptr@%p  *ptr@%p\n") % (void*)ptr % (void*)(*ptr));
   globalLoadTimeValuesRoots.push_back(ptr);
 }
 

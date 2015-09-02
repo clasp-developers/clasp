@@ -242,17 +242,12 @@
     (values (enum-value enum) (hierarchy-end-range class-name analysis))))
 
 
-(defun generate-dynamic-cast-code (fout analysis suppress-tagged-cast)
+(defun generate-dynamic-cast-code (fout analysis)
   (maphash (lambda (key enum) 
              (when (enum-in-hierarchy enum)
-               (when (member key suppress-tagged-cast)
-                 (format fout "#ifdef SUPPRESS_TAGGED_CAST~%")
-                 (format fout "// Skipping key: ~a  suppress-tagged-cast: ~s~%" key suppress-tagged-cast)
-                 (format fout "//  This class is not a general tagged pointer, its isA and castOrNULL is handled by special case code in gctools~%"))
-               (format fout "template <typename FP> struct TaggedCast<~a*,FP> {~%" key )
-               (format fout "  static bool isA(FP client) {~%" key)
-               (format fout "    if ( gctools::tagged_generalp(client) ) {~%" )
-               (format fout "      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));~%")
+               (format fout "template <typename FP> struct Cast<~a*,FP> {~%" key )
+               (format fout "  inline static bool isA(FP client) {~%" key)
+               (format fout "      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));~%")
                (format fout "      int kindVal = header->kind();~%")
                (multiple-value-bind (low high)
                    (hierarchy-class-range key analysis)
@@ -261,18 +256,14 @@
                      (format fout "      return (kindVal == ~a);~%" low)
                      (format fout "      return ((~a <= kindVal) && (kindVal <= ~a));~%" low high)
                      ))
-               (format fout "    }~%")
-               (format fout "    return false;~%")
                (format fout "  };~%")
-               (format fout "  static ~a* castOrNULL(FP client) {~%" key)
-               (format fout "    if (TaggedCast<~a*,FP>::isA(client)) {~%" key)
-               (format fout "      return gctools::tag_general<~a*>(reinterpret_cast<~a*>(gctools::untag_general<FP>(client)));~%" key key)
-               (format fout "    }~%")
-               (format fout "    return NULL;~%")
-               (format fout "  };~%")
-               (format fout "};~%")
-               (when (member key suppress-tagged-cast)
-                 (format fout "#endif  // SUPPRESS_TAGGED_CAST~%"))))
+;;;               (format fout "  static ~a* castOrNULL(FP client) {~%" key)
+;;;               (format fout "    if (TaggedCast<~a*,FP>::isA(client)) {~%" key)
+;;;               (format fout "      return gctools::tag_general<~a*>(reinterpret_cast<~a*>(gctools::untag_general<FP>(client)));~%" key key)
+;;;               (format fout "    }~%")
+;;;               (format fout "    return NULL;~%")
+;;;               (format fout "  };~%")
+               (format fout "};~%")))
            (analysis-enums analysis)))
 
 
@@ -2484,9 +2475,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 
 
-;;; By default suppress dynamic cast code for the classes in suppress-tagged-cast
-;;; core::Cons_O is is not part of the hierarchy because it has a special tag.
-(defun generate-code (&key (analysis *analysis*) test (suppress-tagged-cast (list "core::Cons_O")))
+(defun generate-code (&key (analysis *analysis*) test )
   (let ((filename (if test
                       "test_clasp_gc"
                     "clasp_gc")))
@@ -2498,7 +2487,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                     (generate-alloc-enum stream analysis)
                     (format stream "#endif // defined(GC_ENUM)~%")
                     (format stream "#if defined(GC_DYNAMIC_CAST)~%")
-                    (generate-dynamic-cast-code stream analysis suppress-tagged-cast)
+                    (generate-dynamic-cast-code stream analysis )
                     (format stream "#endif // defined(GC_DYNAMIC_CAST)~%")
                     (format stream "#if defined(GC_KIND_SELECTORS)~%")
                     (generate-gckind-for-enums stream analysis)
@@ -2698,7 +2687,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defun parallel-search-all-then-generate-code-and-quit ()
   (parallel-search-all)
   (analyze-project)
-  (generate-code :suppress-tagged-cast '( "core::Cons_O" ))
+  (generate-code)
   (quit))
 
 
@@ -2807,7 +2796,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (load-project)
 (print "Done load project")
 (analyze-project)
-(generate-code :suppress-tagged-cast (list "core::Cons_O"))
+(generate-code)
 (print "Done generate code")
 
 ||#

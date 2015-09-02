@@ -430,8 +430,7 @@ inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_
       gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);
       gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);
       mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-      if (res != MPS_RES_OK)
-        return res;
+      if (res != MPS_RES_OK) return res;
       obj = obj | tag;
       *taggedP = obj;
     }
@@ -480,26 +479,30 @@ inline mps_res_t smartPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w
 #define SMART_PTR_FIX(_smartptr_) taggedPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged*>(&((_smartptr_).rawRef_())))
 #endif
 
-template <typename T>
-inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, T *clientP
+inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged* taggedP
 #ifdef DEBUG_MPS
                         ,
                         const char *client_name
 #endif
                         ) {
-  DEBUG_MPS_MESSAGE(boost::format("POINTER_FIX of %s@%p px: %p") % client_name % clientP % *clientP);
-  if (MPS_FIX1(GC_SCAN_STATE, *clientP)) {
-    mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(clientP));
-    if (res != MPS_RES_OK)
-      return res;
+  DEBUG_MPS_MESSAGE(boost::format("POINTER_FIX of %s@%p px: %p") % client_name % taggedP % *taggedP);
+  if ( gctools::tagged_objectp(*taggedP)) {
+      gctools::Tagged tagged_obj = *taggedP;
+      if (MPS_FIX1(_ss, tagged_obj)) {
+          gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);
+          gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);
+          mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
+          if (res != MPS_RES_OK) return res;
+          obj = obj | tag;
+          *taggedP = obj;
+      };
   };
   return MPS_RES_OK;
 };
-
 #ifdef DEBUG_MPS
-#define POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, &_ptr_, #_ptr_)
+#define POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged*>(&_ptr_), #_ptr_)
 #else
-#define POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, &_ptr_)
+#define POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged*>(&_ptr_))
 #endif
 
 namespace gctools {

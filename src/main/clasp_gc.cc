@@ -589,4224 +589,1988 @@ KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__4_ = 294,
 }
 #endif // defined(GC_ENUM)
 #if defined(GC_DYNAMIC_CAST)
-template <typename FP> struct TaggedCast<core::SexpSaveArchive_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SexpSaveArchive_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 205 205 
       return (kindVal == 205);
-    }
-    return false;
-  };
-  static core::SexpSaveArchive_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SexpSaveArchive_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SexpSaveArchive_O*>(reinterpret_cast<core::SexpSaveArchive_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DIScope_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DIScope_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 222 222 
       return (kindVal == 222);
-    }
-    return false;
-  };
-  static llvmo::DIScope_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DIScope_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DIScope_O*>(reinterpret_cast<llvmo::DIScope_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::VectorType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::VectorType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 98 98 
       return (kindVal == 98);
-    }
-    return false;
-  };
-  static llvmo::VectorType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::VectorType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::VectorType_O*>(reinterpret_cast<llvmo::VectorType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DIBasicType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DIBasicType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 221 221 
       return (kindVal == 221);
-    }
-    return false;
-  };
-  static llvmo::DIBasicType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DIBasicType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DIBasicType_O*>(reinterpret_cast<llvmo::DIBasicType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SynonymStream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SynonymStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 186 186 
       return (kindVal == 186);
-    }
-    return false;
-  };
-  static core::SynonymStream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SynonymStream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SynonymStream_O*>(reinterpret_cast<core::SynonymStream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::UndefValue_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::UndefValue_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 146 146 
       return (kindVal == 146);
-    }
-    return false;
-  };
-  static llvmo::UndefValue_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::UndefValue_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::UndefValue_O*>(reinterpret_cast<llvmo::UndefValue_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Number_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Number_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 232 244 
       return ((232 <= kindVal) && (kindVal <= 244));
-    }
-    return false;
-  };
-  static core::Number_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Number_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Number_O*>(reinterpret_cast<core::Number_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DISubprogram_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DISubprogram_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 220 220 
       return (kindVal == 220);
-    }
-    return false;
-  };
-  static llvmo::DISubprogram_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DISubprogram_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DISubprogram_O*>(reinterpret_cast<llvmo::DISubprogram_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Constant_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Constant_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 133 146 
       return ((133 <= kindVal) && (kindVal <= 146));
-    }
-    return false;
-  };
-  static llvmo::Constant_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Constant_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Constant_O*>(reinterpret_cast<llvmo::Constant_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::StoreInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::StoreInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 132 132 
       return (kindVal == 132);
-    }
-    return false;
-  };
-  static llvmo::StoreInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::StoreInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::StoreInst_O*>(reinterpret_cast<llvmo::StoreInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ConstantFP_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ConstantFP_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 145 145 
       return (kindVal == 145);
-    }
-    return false;
-  };
-  static llvmo::ConstantFP_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ConstantFP_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ConstantFP_O*>(reinterpret_cast<llvmo::ConstantFP_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DataLayout_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DataLayout_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 169 169 
       return (kindVal == 169);
-    }
-    return false;
-  };
-  static llvmo::DataLayout_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DataLayout_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DataLayout_O*>(reinterpret_cast<llvmo::DataLayout_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::MDString_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::MDString_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 104 104 
       return (kindVal == 104);
-    }
-    return false;
-  };
-  static llvmo::MDString_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::MDString_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::MDString_O*>(reinterpret_cast<llvmo::MDString_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::PHINode_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 131 131 
       return (kindVal == 131);
-    }
-    return false;
-  };
-  static llvmo::PHINode_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::PHINode_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::PHINode_O*>(reinterpret_cast<llvmo::PHINode_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Null_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Null_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 15 15 
       return (kindVal == 15);
-    }
-    return false;
-  };
-  static core::Null_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Null_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Null_O*>(reinterpret_cast<core::Null_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ResumeInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ResumeInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 123 123 
       return (kindVal == 123);
-    }
-    return false;
-  };
-  static llvmo::ResumeInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ResumeInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ResumeInst_O*>(reinterpret_cast<llvmo::ResumeInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::FunctionType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::FunctionType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 100 100 
       return (kindVal == 100);
-    }
-    return false;
-  };
-  static llvmo::FunctionType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::FunctionType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::FunctionType_O*>(reinterpret_cast<llvmo::FunctionType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DIArray_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DIArray_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 219 219 
       return (kindVal == 219);
-    }
-    return false;
-  };
-  static llvmo::DIArray_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DIArray_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DIArray_O*>(reinterpret_cast<llvmo::DIArray_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::RegexMatch_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::RegexMatch_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 231 231 
       return (kindVal == 231);
-    }
-    return false;
-  };
-  static core::RegexMatch_O* castOrNULL(FP client) {
-    if (TaggedCast<core::RegexMatch_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::RegexMatch_O*>(reinterpret_cast<core::RegexMatch_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::LoadInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::LoadInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 129 129 
       return (kindVal == 129);
-    }
-    return false;
-  };
-  static llvmo::LoadInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::LoadInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::LoadInst_O*>(reinterpret_cast<llvmo::LoadInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Complex_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Complex_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 244 244 
       return (kindVal == 244);
-    }
-    return false;
-  };
-  static core::Complex_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Complex_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Complex_O*>(reinterpret_cast<core::Complex_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<clbind::ClassRegistry_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 230 230 
       return (kindVal == 230);
-    }
-    return false;
-  };
-  static clbind::ClassRegistry_O* castOrNULL(FP client) {
-    if (TaggedCast<clbind::ClassRegistry_O*,FP>::isA(client)) {
-      return gctools::tag_general<clbind::ClassRegistry_O*>(reinterpret_cast<clbind::ClassRegistry_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::CatchEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::CatchEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 56 56 
       return (kindVal == 56);
-    }
-    return false;
-  };
-  static core::CatchEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::CatchEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::CatchEnvironment_O*>(reinterpret_cast<core::CatchEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Function_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Function_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 143 143 
       return (kindVal == 143);
-    }
-    return false;
-  };
-  static llvmo::Function_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Function_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Function_O*>(reinterpret_cast<llvmo::Function_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::RecursiveDirectoryIterator_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::RecursiveDirectoryIterator_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 189 189 
       return (kindVal == 189);
-    }
-    return false;
-  };
-  static core::RecursiveDirectoryIterator_O* castOrNULL(FP client) {
-    if (TaggedCast<core::RecursiveDirectoryIterator_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::RecursiveDirectoryIterator_O*>(reinterpret_cast<core::RecursiveDirectoryIterator_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Function_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Function_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 224 229 
       return ((224 <= kindVal) && (kindVal <= 229));
-    }
-    return false;
-  };
-  static core::Function_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Function_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Function_O*>(reinterpret_cast<core::Function_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::BroadcastStream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::BroadcastStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 185 185 
       return (kindVal == 185);
-    }
-    return false;
-  };
-  static core::BroadcastStream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::BroadcastStream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::BroadcastStream_O*>(reinterpret_cast<core::BroadcastStream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DIDerivedType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DIDerivedType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 218 218 
       return (kindVal == 218);
-    }
-    return false;
-  };
-  static llvmo::DIDerivedType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DIDerivedType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DIDerivedType_O*>(reinterpret_cast<llvmo::DIDerivedType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DITypeArray_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DITypeArray_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 217 217 
       return (kindVal == 217);
-    }
-    return false;
-  };
-  static llvmo::DITypeArray_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DITypeArray_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DITypeArray_O*>(reinterpret_cast<llvmo::DITypeArray_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::FunctionValueEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::FunctionValueEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 48 48 
       return (kindVal == 48);
-    }
-    return false;
-  };
-  static core::FunctionValueEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::FunctionValueEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::FunctionValueEnvironment_O*>(reinterpret_cast<core::FunctionValueEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::VAArgInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::VAArgInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 128 128 
       return (kindVal == 128);
-    }
-    return false;
-  };
-  static llvmo::VAArgInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::VAArgInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::VAArgInst_O*>(reinterpret_cast<llvmo::VAArgInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::APInt_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::APInt_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 168 168 
       return (kindVal == 168);
-    }
-    return false;
-  };
-  static llvmo::APInt_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::APInt_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::APInt_O*>(reinterpret_cast<llvmo::APInt_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::PassManager_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::PassManager_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 157 157 
       return (kindVal == 157);
-    }
-    return false;
-  };
-  static llvmo::PassManager_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::PassManager_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::PassManager_O*>(reinterpret_cast<llvmo::PassManager_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::FenceInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::FenceInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 130 130 
       return (kindVal == 130);
-    }
-    return false;
-  };
-  static llvmo::FenceInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::FenceInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::FenceInst_O*>(reinterpret_cast<llvmo::FenceInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ConstantExpr_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ConstantExpr_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 144 144 
       return (kindVal == 144);
-    }
-    return false;
-  };
-  static llvmo::ConstantExpr_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ConstantExpr_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ConstantExpr_O*>(reinterpret_cast<llvmo::ConstantExpr_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::WeakKeyMapping_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::WeakKeyMapping_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 223 223 
       return (kindVal == 223);
-    }
-    return false;
-  };
-  static core::WeakKeyMapping_O* castOrNULL(FP client) {
-    if (TaggedCast<core::WeakKeyMapping_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::WeakKeyMapping_O*>(reinterpret_cast<core::WeakKeyMapping_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::IndirectBrInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::IndirectBrInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 122 122 
       return (kindVal == 122);
-    }
-    return false;
-  };
-  static llvmo::IndirectBrInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::IndirectBrInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::IndirectBrInst_O*>(reinterpret_cast<llvmo::IndirectBrInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SequenceStepper*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SequenceStepper*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 246 248 
       return ((246 <= kindVal) && (kindVal <= 248));
-    }
-    return false;
-  };
-  static core::SequenceStepper* castOrNULL(FP client) {
-    if (TaggedCast<core::SequenceStepper*,FP>::isA(client)) {
-      return gctools::tag_general<core::SequenceStepper*>(reinterpret_cast<core::SequenceStepper*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DebugInfo_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DebugInfo_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 209 222 
       return ((209 <= kindVal) && (kindVal <= 222));
-    }
-    return false;
-  };
-  static llvmo::DebugInfo_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DebugInfo_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DebugInfo_O*>(reinterpret_cast<llvmo::DebugInfo_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::PosixTime_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::PosixTime_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 208 208 
       return (kindVal == 208);
-    }
-    return false;
-  };
-  static core::PosixTime_O* castOrNULL(FP client) {
-    if (TaggedCast<core::PosixTime_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::PosixTime_O*>(reinterpret_cast<core::PosixTime_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Reader_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Reader_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 207 207 
       return (kindVal == 207);
-    }
-    return false;
-  };
-  static core::Reader_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Reader_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Reader_O*>(reinterpret_cast<core::Reader_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::WeakPointer_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::WeakPointer_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 206 206 
       return (kindVal == 206);
-    }
-    return false;
-  };
-  static core::WeakPointer_O* castOrNULL(FP client) {
-    if (TaggedCast<core::WeakPointer_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::WeakPointer_O*>(reinterpret_cast<core::WeakPointer_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Archive_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Archive_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 201 205 
       return ((201 <= kindVal) && (kindVal <= 205));
-    }
-    return false;
-  };
-  static core::Archive_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Archive_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Archive_O*>(reinterpret_cast<core::Archive_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::ArrayDisplaced_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::ArrayDisplaced_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 34 34 
       return (kindVal == 34);
-    }
-    return false;
-  };
-  static core::ArrayDisplaced_O* castOrNULL(FP client) {
-    if (TaggedCast<core::ArrayDisplaced_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::ArrayDisplaced_O*>(reinterpret_cast<core::ArrayDisplaced_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Package_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Package_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 200 200 
       return (kindVal == 200);
-    }
-    return false;
-  };
-  static core::Package_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Package_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Package_O*>(reinterpret_cast<core::Package_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Record_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Record_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 199 199 
       return (kindVal == 199);
-    }
-    return false;
-  };
-  static core::Record_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Record_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Record_O*>(reinterpret_cast<core::Record_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::TargetMachine_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::TargetMachine_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 166 167 
       return ((166 <= kindVal) && (kindVal <= 167));
-    }
-    return false;
-  };
-  static llvmo::TargetMachine_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::TargetMachine_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::TargetMachine_O*>(reinterpret_cast<llvmo::TargetMachine_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::StructType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::StructType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 99 99 
       return (kindVal == 99);
-    }
-    return false;
-  };
-  static llvmo::StructType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::StructType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::StructType_O*>(reinterpret_cast<llvmo::StructType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DIFile_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DIFile_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 216 216 
       return (kindVal == 216);
-    }
-    return false;
-  };
-  static llvmo::DIFile_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DIFile_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DIFile_O*>(reinterpret_cast<llvmo::DIFile_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DIBuilder_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DIBuilder_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 165 165 
       return (kindVal == 165);
-    }
-    return false;
-  };
-  static llvmo::DIBuilder_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DIBuilder_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DIBuilder_O*>(reinterpret_cast<llvmo::DIBuilder_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::FunctionFrame_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::FunctionFrame_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 43 43 
       return (kindVal == 43);
-    }
-    return false;
-  };
-  static core::FunctionFrame_O* castOrNULL(FP client) {
-    if (TaggedCast<core::FunctionFrame_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::FunctionFrame_O*>(reinterpret_cast<core::FunctionFrame_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::WeakKeyHashTable_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::WeakKeyHashTable_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 83 83 
       return (kindVal == 83);
-    }
-    return false;
-  };
-  static core::WeakKeyHashTable_O* castOrNULL(FP client) {
-    if (TaggedCast<core::WeakKeyHashTable_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::WeakKeyHashTable_O*>(reinterpret_cast<core::WeakKeyHashTable_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::IntArray_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::IntArray_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 198 198 
       return (kindVal == 198);
-    }
-    return false;
-  };
-  static core::IntArray_O* castOrNULL(FP client) {
-    if (TaggedCast<core::IntArray_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::IntArray_O*>(reinterpret_cast<core::IntArray_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::StringInputStream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::StringInputStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 181 181 
       return (kindVal == 181);
-    }
-    return false;
-  };
-  static core::StringInputStream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::StringInputStream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::StringInputStream_O*>(reinterpret_cast<core::StringInputStream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Pointer_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Pointer_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 197 197 
       return (kindVal == 197);
-    }
-    return false;
-  };
-  static core::Pointer_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Pointer_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Pointer_O*>(reinterpret_cast<core::Pointer_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::UnaryInstruction_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::UnaryInstruction_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 126 129 
       return ((126 <= kindVal) && (kindVal <= 129));
-    }
-    return false;
-  };
-  static llvmo::UnaryInstruction_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::UnaryInstruction_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::UnaryInstruction_O*>(reinterpret_cast<llvmo::UnaryInstruction_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::LambdaListHandler_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::LambdaListHandler_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 196 196 
       return (kindVal == 196);
-    }
-    return false;
-  };
-  static core::LambdaListHandler_O* castOrNULL(FP client) {
-    if (TaggedCast<core::LambdaListHandler_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::LambdaListHandler_O*>(reinterpret_cast<core::LambdaListHandler_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::ReadTable_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::ReadTable_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 195 195 
       return (kindVal == 195);
-    }
-    return false;
-  };
-  static core::ReadTable_O* castOrNULL(FP client) {
-    if (TaggedCast<core::ReadTable_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::ReadTable_O*>(reinterpret_cast<core::ReadTable_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::ConcatenatedStream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::ConcatenatedStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 184 184 
       return (kindVal == 184);
-    }
-    return false;
-  };
-  static core::ConcatenatedStream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::ConcatenatedStream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::ConcatenatedStream_O*>(reinterpret_cast<core::ConcatenatedStream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Argument_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Argument_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 148 148 
       return (kindVal == 148);
-    }
-    return false;
-  };
-  static llvmo::Argument_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Argument_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Argument_O*>(reinterpret_cast<llvmo::Argument_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::StandardClass_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::StandardClass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 67 67 
       return (kindVal == 67);
-    }
-    return false;
-  };
-  static core::StandardClass_O* castOrNULL(FP client) {
-    if (TaggedCast<core::StandardClass_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::StandardClass_O*>(reinterpret_cast<core::StandardClass_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::AtomicCmpXchgInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::AtomicCmpXchgInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 125 125 
       return (kindVal == 125);
-    }
-    return false;
-  };
-  static llvmo::AtomicCmpXchgInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::AtomicCmpXchgInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::AtomicCmpXchgInst_O*>(reinterpret_cast<llvmo::AtomicCmpXchgInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::InvocationHistoryFrameIterator_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::InvocationHistoryFrameIterator_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 194 194 
       return (kindVal == 194);
-    }
-    return false;
-  };
-  static core::InvocationHistoryFrameIterator_O* castOrNULL(FP client) {
-    if (TaggedCast<core::InvocationHistoryFrameIterator_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::InvocationHistoryFrameIterator_O*>(reinterpret_cast<core::InvocationHistoryFrameIterator_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Ratio_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Ratio_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 243 243 
       return (kindVal == 243);
-    }
-    return false;
-  };
-  static core::Ratio_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Ratio_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Ratio_O*>(reinterpret_cast<core::Ratio_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::MultiStringBuffer_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::MultiStringBuffer_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 193 193 
       return (kindVal == 193);
-    }
-    return false;
-  };
-  static core::MultiStringBuffer_O* castOrNULL(FP client) {
-    if (TaggedCast<core::MultiStringBuffer_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::MultiStringBuffer_O*>(reinterpret_cast<core::MultiStringBuffer_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::GlobalValue_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::GlobalValue_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 141 143 
       return ((141 <= kindVal) && (kindVal <= 143));
-    }
-    return false;
-  };
-  static llvmo::GlobalValue_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::GlobalValue_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::GlobalValue_O*>(reinterpret_cast<llvmo::GlobalValue_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::LightUserData_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::LightUserData_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 191 192 
       return ((191 <= kindVal) && (kindVal <= 192));
-    }
-    return false;
-  };
-  static core::LightUserData_O* castOrNULL(FP client) {
-    if (TaggedCast<core::LightUserData_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::LightUserData_O*>(reinterpret_cast<core::LightUserData_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::DoubleFloat_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::DoubleFloat_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 238 238 
       return (kindVal == 238);
-    }
-    return false;
-  };
-  static core::DoubleFloat_O* castOrNULL(FP client) {
-    if (TaggedCast<core::DoubleFloat_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::DoubleFloat_O*>(reinterpret_cast<core::DoubleFloat_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::BuiltInClass_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::BuiltInClass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 70 71 
       return ((70 <= kindVal) && (kindVal <= 71));
-    }
-    return false;
-  };
-  static core::BuiltInClass_O* castOrNULL(FP client) {
-    if (TaggedCast<core::BuiltInClass_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::BuiltInClass_O*>(reinterpret_cast<core::BuiltInClass_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SymbolToEnumConverter_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SymbolToEnumConverter_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 190 190 
       return (kindVal == 190);
-    }
-    return false;
-  };
-  static core::SymbolToEnumConverter_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SymbolToEnumConverter_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SymbolToEnumConverter_O*>(reinterpret_cast<core::SymbolToEnumConverter_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::BlockEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::BlockEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 55 55 
       return (kindVal == 55);
-    }
-    return false;
-  };
-  static core::BlockEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::BlockEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::BlockEnvironment_O*>(reinterpret_cast<core::BlockEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DICompositeType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DICompositeType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 215 215 
       return (kindVal == 215);
-    }
-    return false;
-  };
-  static llvmo::DICompositeType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DICompositeType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DICompositeType_O*>(reinterpret_cast<llvmo::DICompositeType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ExecutionEngine_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ExecutionEngine_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 164 164 
       return (kindVal == 164);
-    }
-    return false;
-  };
-  static llvmo::ExecutionEngine_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ExecutionEngine_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ExecutionEngine_O*>(reinterpret_cast<llvmo::ExecutionEngine_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Iterator_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Iterator_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 187 189 
       return ((187 <= kindVal) && (kindVal <= 189));
-    }
-    return false;
-  };
-  static core::Iterator_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Iterator_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Iterator_O*>(reinterpret_cast<core::Iterator_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::ArrayObjects_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::ArrayObjects_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 33 33 
       return (kindVal == 33);
-    }
-    return false;
-  };
-  static core::ArrayObjects_O* castOrNULL(FP client) {
-    if (TaggedCast<core::ArrayObjects_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::ArrayObjects_O*>(reinterpret_cast<core::ArrayObjects_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::ValueEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::ValueEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 47 47 
       return (kindVal == 47);
-    }
-    return false;
-  };
-  static core::ValueEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::ValueEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::ValueEnvironment_O*>(reinterpret_cast<core::ValueEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Pass_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Pass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 158 163 
       return ((158 <= kindVal) && (kindVal <= 163));
-    }
-    return false;
-  };
-  static llvmo::Pass_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Pass_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Pass_O*>(reinterpret_cast<llvmo::Pass_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::BranchSNode_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::BranchSNode_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 37 37 
       return (kindVal == 37);
-    }
-    return false;
-  };
-  static core::BranchSNode_O* castOrNULL(FP client) {
-    if (TaggedCast<core::BranchSNode_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::BranchSNode_O*>(reinterpret_cast<core::BranchSNode_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Instruction_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Instruction_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 113 132 
       return ((113 <= kindVal) && (kindVal <= 132));
-    }
-    return false;
-  };
-  static llvmo::Instruction_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Instruction_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Instruction_O*>(reinterpret_cast<llvmo::Instruction_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::BranchInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::BranchInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 121 121 
       return (kindVal == 121);
-    }
-    return false;
-  };
-  static llvmo::BranchInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::BranchInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::BranchInst_O*>(reinterpret_cast<llvmo::BranchInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Real_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Real_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 233 243 
       return ((233 <= kindVal) && (kindVal <= 243));
-    }
-    return false;
-  };
-  static core::Real_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Real_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Real_O*>(reinterpret_cast<core::Real_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::HashTableEqualp_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::HashTableEqualp_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 22 22 
       return (kindVal == 22);
-    }
-    return false;
-  };
-  static core::HashTableEqualp_O* castOrNULL(FP client) {
-    if (TaggedCast<core::HashTableEqualp_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::HashTableEqualp_O*>(reinterpret_cast<core::HashTableEqualp_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Stream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Stream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 174 186 
       return ((174 <= kindVal) && (kindVal <= 186));
-    }
-    return false;
-  };
-  static core::Stream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Stream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Stream_O*>(reinterpret_cast<core::Stream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::LoadTimeValues_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::LoadTimeValues_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 173 173 
       return (kindVal == 173);
-    }
-    return false;
-  };
-  static core::LoadTimeValues_O* castOrNULL(FP client) {
-    if (TaggedCast<core::LoadTimeValues_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::LoadTimeValues_O*>(reinterpret_cast<core::LoadTimeValues_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Integer_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Integer_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 240 242 
       return ((240 <= kindVal) && (kindVal <= 242));
-    }
-    return false;
-  };
-  static core::Integer_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Integer_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Integer_O*>(reinterpret_cast<core::Integer_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::TargetSubtargetInfo_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::TargetSubtargetInfo_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 152 152 
       return (kindVal == 152);
-    }
-    return false;
-  };
-  static llvmo::TargetSubtargetInfo_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::TargetSubtargetInfo_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::TargetSubtargetInfo_O*>(reinterpret_cast<llvmo::TargetSubtargetInfo_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::PassManagerBase_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::PassManagerBase_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 155 157 
       return ((155 <= kindVal) && (kindVal <= 157));
-    }
-    return false;
-  };
-  static llvmo::PassManagerBase_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::PassManagerBase_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::PassManagerBase_O*>(reinterpret_cast<llvmo::PassManagerBase_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Pathname_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Pathname_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 171 172 
       return ((171 <= kindVal) && (kindVal <= 172));
-    }
-    return false;
-  };
-  static core::Pathname_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Pathname_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Pathname_O*>(reinterpret_cast<core::Pathname_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<asttooling::AstVisitor_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<asttooling::AstVisitor_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 170 170 
       return (kindVal == 170);
-    }
-    return false;
-  };
-  static asttooling::AstVisitor_O* castOrNULL(FP client) {
-    if (TaggedCast<asttooling::AstVisitor_O*,FP>::isA(client)) {
-      return gctools::tag_general<asttooling::AstVisitor_O*>(reinterpret_cast<asttooling::AstVisitor_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::SwitchInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::SwitchInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 120 120 
       return (kindVal == 120);
-    }
-    return false;
-  };
-  static llvmo::SwitchInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::SwitchInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::SwitchInst_O*>(reinterpret_cast<llvmo::SwitchInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ConstantInt_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ConstantInt_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 140 140 
       return (kindVal == 140);
-    }
-    return false;
-  };
-  static llvmo::ConstantInt_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ConstantInt_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ConstantInt_O*>(reinterpret_cast<llvmo::ConstantInt_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Fixnum_dummy_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Fixnum_dummy_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 242 242 
       return (kindVal == 242);
-    }
-    return false;
-  };
-  static core::Fixnum_dummy_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Fixnum_dummy_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Fixnum_dummy_O*>(reinterpret_cast<core::Fixnum_dummy_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ConstantPointerNull_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ConstantPointerNull_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 139 139 
       return (kindVal == 139);
-    }
-    return false;
-  };
-  static llvmo::ConstantPointerNull_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ConstantPointerNull_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ConstantPointerNull_O*>(reinterpret_cast<llvmo::ConstantPointerNull_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::ExternalObject_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::ExternalObject_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 88 169 
       return ((88 <= kindVal) && (kindVal <= 169));
-    }
-    return false;
-  };
-  static core::ExternalObject_O* castOrNULL(FP client) {
-    if (TaggedCast<core::ExternalObject_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::ExternalObject_O*>(reinterpret_cast<core::ExternalObject_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<clbind::detail::class_map*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<clbind::detail::class_map*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 245 245 
       return (kindVal == 245);
-    }
-    return false;
-  };
-  static clbind::detail::class_map* castOrNULL(FP client) {
-    if (TaggedCast<clbind::detail::class_map*,FP>::isA(client)) {
-      return gctools::tag_general<clbind::detail::class_map*>(reinterpret_cast<clbind::detail::class_map*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DIDescriptor_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DIDescriptor_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 214 214 
       return (kindVal == 214);
-    }
-    return false;
-  };
-  static llvmo::DIDescriptor_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DIDescriptor_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DIDescriptor_O*>(reinterpret_cast<llvmo::DIDescriptor_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::CompileTimeEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::CompileTimeEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 49 56 
       return ((49 <= kindVal) && (kindVal <= 56));
-    }
-    return false;
-  };
-  static core::CompileTimeEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::CompileTimeEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::CompileTimeEnvironment_O*>(reinterpret_cast<core::CompileTimeEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::InsertPoint_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::InsertPoint_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 87 87 
       return (kindVal == 87);
-    }
-    return false;
-  };
-  static llvmo::InsertPoint_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::InsertPoint_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::InsertPoint_O*>(reinterpret_cast<llvmo::InsertPoint_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::AttributeSet_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::AttributeSet_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 86 86 
       return (kindVal == 86);
-    }
-    return false;
-  };
-  static llvmo::AttributeSet_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::AttributeSet_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::AttributeSet_O*>(reinterpret_cast<llvmo::AttributeSet_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::TagbodyEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::TagbodyEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 46 46 
       return (kindVal == 46);
-    }
-    return false;
-  };
-  static core::TagbodyEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::TagbodyEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::TagbodyEnvironment_O*>(reinterpret_cast<core::TagbodyEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::StructureClass_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::StructureClass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 69 69 
       return (kindVal == 69);
-    }
-    return false;
-  };
-  static core::StructureClass_O* castOrNULL(FP client) {
-    if (TaggedCast<core::StructureClass_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::StructureClass_O*>(reinterpret_cast<core::StructureClass_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::DirectoryEntry_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::DirectoryEntry_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 85 85 
       return (kindVal == 85);
-    }
-    return false;
-  };
-  static core::DirectoryEntry_O* castOrNULL(FP client) {
-    if (TaggedCast<core::DirectoryEntry_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::DirectoryEntry_O*>(reinterpret_cast<core::DirectoryEntry_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Regex_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Regex_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 84 84 
       return (kindVal == 84);
-    }
-    return false;
-  };
-  static core::Regex_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Regex_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Regex_O*>(reinterpret_cast<core::Regex_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::FuncallableStandardClass_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::FuncallableStandardClass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 66 66 
       return (kindVal == 66);
-    }
-    return false;
-  };
-  static core::FuncallableStandardClass_O* castOrNULL(FP client) {
-    if (TaggedCast<core::FuncallableStandardClass_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::FuncallableStandardClass_O*>(reinterpret_cast<core::FuncallableStandardClass_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::WeakHashTable_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::WeakHashTable_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 82 83 
       return ((82 <= kindVal) && (kindVal <= 83));
-    }
-    return false;
-  };
-  static core::WeakHashTable_O* castOrNULL(FP client) {
-    if (TaggedCast<core::WeakHashTable_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::WeakHashTable_O*>(reinterpret_cast<core::WeakHashTable_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::BlockAddress_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::BlockAddress_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 138 138 
       return (kindVal == 138);
-    }
-    return false;
-  };
-  static llvmo::BlockAddress_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::BlockAddress_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::BlockAddress_O*>(reinterpret_cast<llvmo::BlockAddress_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Str_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Str_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 31 32 
       return ((31 <= kindVal) && (kindVal <= 32));
-    }
-    return false;
-  };
-  static core::Str_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Str_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Str_O*>(reinterpret_cast<core::Str_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<clbind::DummyCreator*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<clbind::DummyCreator*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 5 5 
       return (kindVal == 5);
-    }
-    return false;
-  };
-  static clbind::DummyCreator* castOrNULL(FP client) {
-    if (TaggedCast<clbind::DummyCreator*,FP>::isA(client)) {
-      return gctools::tag_general<clbind::DummyCreator*>(reinterpret_cast<clbind::DummyCreator*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Binder_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Binder_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 81 81 
       return (kindVal == 81);
-    }
-    return false;
-  };
-  static core::Binder_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Binder_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Binder_O*>(reinterpret_cast<core::Binder_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Rational_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Rational_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 239 243 
       return ((239 <= kindVal) && (kindVal <= 243));
-    }
-    return false;
-  };
-  static core::Rational_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Rational_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Rational_O*>(reinterpret_cast<core::Rational_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::CompositeType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::CompositeType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 94 99 
       return ((94 <= kindVal) && (kindVal <= 99));
-    }
-    return false;
-  };
-  static llvmo::CompositeType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::CompositeType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::CompositeType_O*>(reinterpret_cast<llvmo::CompositeType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DILexicalBlock_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DILexicalBlock_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 213 213 
       return (kindVal == 213);
-    }
-    return false;
-  };
-  static llvmo::DILexicalBlock_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DILexicalBlock_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DILexicalBlock_O*>(reinterpret_cast<llvmo::DILexicalBlock_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SmallMap_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SmallMap_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 80 80 
       return (kindVal == 80);
-    }
-    return false;
-  };
-  static core::SmallMap_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SmallMap_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SmallMap_O*>(reinterpret_cast<core::SmallMap_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::InstanceCreator*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::InstanceCreator*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 4 4 
       return (kindVal == 4);
-    }
-    return false;
-  };
-  static core::InstanceCreator* castOrNULL(FP client) {
-    if (TaggedCast<core::InstanceCreator*,FP>::isA(client)) {
-      return gctools::tag_general<core::InstanceCreator*>(reinterpret_cast<core::InstanceCreator*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DISubroutineType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DISubroutineType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 212 212 
       return (kindVal == 212);
-    }
-    return false;
-  };
-  static llvmo::DISubroutineType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DISubroutineType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DISubroutineType_O*>(reinterpret_cast<llvmo::DISubroutineType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SourceFileInfo_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SourceFileInfo_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 79 79 
       return (kindVal == 79);
-    }
-    return false;
-  };
-  static core::SourceFileInfo_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SourceFileInfo_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SourceFileInfo_O*>(reinterpret_cast<core::SourceFileInfo_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::CompiledFunction_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::CompiledFunction_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 229 229 
       return (kindVal == 229);
-    }
-    return false;
-  };
-  static core::CompiledFunction_O* castOrNULL(FP client) {
-    if (TaggedCast<core::CompiledFunction_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::CompiledFunction_O*>(reinterpret_cast<core::CompiledFunction_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Linker_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Linker_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 154 154 
       return (kindVal == 154);
-    }
-    return false;
-  };
-  static llvmo::Linker_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Linker_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Linker_O*>(reinterpret_cast<llvmo::Linker_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::RuntimeVisibleEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::RuntimeVisibleEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 45 48 
       return ((45 <= kindVal) && (kindVal <= 48));
-    }
-    return false;
-  };
-  static core::RuntimeVisibleEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::RuntimeVisibleEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::RuntimeVisibleEnvironment_O*>(reinterpret_cast<core::RuntimeVisibleEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::CallInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::CallInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 124 124 
       return (kindVal == 124);
-    }
-    return false;
-  };
-  static llvmo::CallInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::CallInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::CallInst_O*>(reinterpret_cast<llvmo::CallInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::UnwindProtectEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::UnwindProtectEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 54 54 
       return (kindVal == 54);
-    }
-    return false;
-  };
-  static core::UnwindProtectEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::UnwindProtectEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::UnwindProtectEnvironment_O*>(reinterpret_cast<core::UnwindProtectEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Target_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Target_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 153 153 
       return (kindVal == 153);
-    }
-    return false;
-  };
-  static llvmo::Target_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Target_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Target_O*>(reinterpret_cast<llvmo::Target_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::LongFloat_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::LongFloat_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 237 237 
       return (kindVal == 237);
-    }
-    return false;
-  };
-  static core::LongFloat_O* castOrNULL(FP client) {
-    if (TaggedCast<core::LongFloat_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::LongFloat_O*>(reinterpret_cast<core::LongFloat_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::PointerType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::PointerType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 97 97 
       return (kindVal == 97);
-    }
-    return false;
-  };
-  static llvmo::PointerType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::PointerType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::PointerType_O*>(reinterpret_cast<llvmo::PointerType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SingleDispatchEffectiveMethodFunction_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SingleDispatchEffectiveMethodFunction_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 228 228 
       return (kindVal == 228);
-    }
-    return false;
-  };
-  static core::SingleDispatchEffectiveMethodFunction_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SingleDispatchEffectiveMethodFunction_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SingleDispatchEffectiveMethodFunction_O*>(reinterpret_cast<core::SingleDispatchEffectiveMethodFunction_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::RandomState_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::RandomState_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 78 78 
       return (kindVal == 78);
-    }
-    return false;
-  };
-  static core::RandomState_O* castOrNULL(FP client) {
-    if (TaggedCast<core::RandomState_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::RandomState_O*>(reinterpret_cast<core::RandomState_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Attribute_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Attribute_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 77 77 
       return (kindVal == 77);
-    }
-    return false;
-  };
-  static llvmo::Attribute_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Attribute_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Attribute_O*>(reinterpret_cast<llvmo::Attribute_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::BasicBlock_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::BasicBlock_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 147 147 
       return (kindVal == 147);
-    }
-    return false;
-  };
-  static llvmo::BasicBlock_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::BasicBlock_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::BasicBlock_O*>(reinterpret_cast<llvmo::BasicBlock_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::T_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::T_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 8 244 
       return ((8 <= kindVal) && (kindVal <= 244));
-    }
-    return false;
-  };
-  static core::T_O* castOrNULL(FP client) {
-    if (TaggedCast<core::T_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::T_O*>(reinterpret_cast<core::T_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Character_dummy_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Character_dummy_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 76 76 
       return (kindVal == 76);
-    }
-    return false;
-  };
-  static core::Character_dummy_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Character_dummy_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Character_dummy_O*>(reinterpret_cast<core::Character_dummy_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::EchoStream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::EchoStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 183 183 
       return (kindVal == 183);
-    }
-    return false;
-  };
-  static core::EchoStream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::EchoStream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::EchoStream_O*>(reinterpret_cast<core::EchoStream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::String_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::String_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 30 32 
       return ((30 <= kindVal) && (kindVal <= 32));
-    }
-    return false;
-  };
-  static core::String_O* castOrNULL(FP client) {
-    if (TaggedCast<core::String_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::String_O*>(reinterpret_cast<core::String_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::IOFileStream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::IOFileStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 178 178 
       return (kindVal == 178);
-    }
-    return false;
-  };
-  static core::IOFileStream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::IOFileStream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::IOFileStream_O*>(reinterpret_cast<core::IOFileStream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::IntegerType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::IntegerType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 93 93 
       return (kindVal == 93);
-    }
-    return false;
-  };
-  static llvmo::IntegerType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::IntegerType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::IntegerType_O*>(reinterpret_cast<llvmo::IntegerType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::GlueEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::GlueEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 57 57 
       return (kindVal == 57);
-    }
-    return false;
-  };
-  static core::GlueEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::GlueEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::GlueEnvironment_O*>(reinterpret_cast<core::GlueEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::DirectoryIterator_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::DirectoryIterator_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 188 188 
       return (kindVal == 188);
-    }
-    return false;
-  };
-  static core::DirectoryIterator_O* castOrNULL(FP client) {
-    if (TaggedCast<core::DirectoryIterator_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::DirectoryIterator_O*>(reinterpret_cast<core::DirectoryIterator_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Instance_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Instance_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 227 227 
       return (kindVal == 227);
-    }
-    return false;
-  };
-  static core::Instance_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Instance_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Instance_O*>(reinterpret_cast<core::Instance_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::MCSubtargetInfo_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::MCSubtargetInfo_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 151 152 
       return ((151 <= kindVal) && (kindVal <= 152));
-    }
-    return false;
-  };
-  static llvmo::MCSubtargetInfo_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::MCSubtargetInfo_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::MCSubtargetInfo_O*>(reinterpret_cast<llvmo::MCSubtargetInfo_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DebugLoc_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DebugLoc_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 75 75 
       return (kindVal == 75);
-    }
-    return false;
-  };
-  static llvmo::DebugLoc_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DebugLoc_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DebugLoc_O*>(reinterpret_cast<llvmo::DebugLoc_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SourcePosInfo_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SourcePosInfo_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 74 74 
       return (kindVal == 74);
-    }
-    return false;
-  };
-  static core::SourcePosInfo_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SourcePosInfo_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SourcePosInfo_O*>(reinterpret_cast<core::SourcePosInfo_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::MDNode_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::MDNode_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 103 103 
       return (kindVal == 103);
-    }
-    return false;
-  };
-  static llvmo::MDNode_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::MDNode_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::MDNode_O*>(reinterpret_cast<llvmo::MDNode_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Bignum_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Bignum_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 241 241 
       return (kindVal == 241);
-    }
-    return false;
-  };
-  static core::Bignum_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Bignum_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Bignum_O*>(reinterpret_cast<core::Bignum_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::StructureObject_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::StructureObject_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 73 73 
       return (kindVal == 73);
-    }
-    return false;
-  };
-  static core::StructureObject_O* castOrNULL(FP client) {
-    if (TaggedCast<core::StructureObject_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::StructureObject_O*>(reinterpret_cast<core::StructureObject_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::SequentialType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::SequentialType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 95 98 
       return ((95 <= kindVal) && (kindVal <= 98));
-    }
-    return false;
-  };
-  static llvmo::SequentialType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::SequentialType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::SequentialType_O*>(reinterpret_cast<llvmo::SequentialType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::IRBuilderBase_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::IRBuilderBase_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 149 150 
       return ((149 <= kindVal) && (kindVal <= 150));
-    }
-    return false;
-  };
-  static llvmo::IRBuilderBase_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::IRBuilderBase_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::IRBuilderBase_O*>(reinterpret_cast<llvmo::IRBuilderBase_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::TagbodyFrame_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::TagbodyFrame_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 42 42 
       return (kindVal == 42);
-    }
-    return false;
-  };
-  static core::TagbodyFrame_O* castOrNULL(FP client) {
-    if (TaggedCast<core::TagbodyFrame_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::TagbodyFrame_O*>(reinterpret_cast<core::TagbodyFrame_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::FunctionContainerEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::FunctionContainerEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 53 53 
       return (kindVal == 53);
-    }
-    return false;
-  };
-  static core::FunctionContainerEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::FunctionContainerEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::FunctionContainerEnvironment_O*>(reinterpret_cast<core::FunctionContainerEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Value_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Value_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 111 148 
       return ((111 <= kindVal) && (kindVal <= 148));
-    }
-    return false;
-  };
-  static llvmo::Value_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Value_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Value_O*>(reinterpret_cast<llvmo::Value_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<asttooling::RegMap::RegistryMaps*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<asttooling::RegMap::RegistryMaps*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 7 7 
       return (kindVal == 7);
-    }
-    return false;
-  };
-  static asttooling::RegMap::RegistryMaps* castOrNULL(FP client) {
-    if (TaggedCast<asttooling::RegMap::RegistryMaps*,FP>::isA(client)) {
-      return gctools::tag_general<asttooling::RegMap::RegistryMaps*>(reinterpret_cast<asttooling::RegMap::RegistryMaps*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<clbind::ClassRep_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<clbind::ClassRep_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 71 71 
       return (kindVal == 71);
-    }
-    return false;
-  };
-  static clbind::ClassRep_O* castOrNULL(FP client) {
-    if (TaggedCast<clbind::ClassRep_O*,FP>::isA(client)) {
-      return gctools::tag_general<clbind::ClassRep_O*>(reinterpret_cast<clbind::ClassRep_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Vector_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Vector_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 25 32 
       return ((25 <= kindVal) && (kindVal <= 32));
-    }
-    return false;
-  };
-  static core::Vector_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Vector_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Vector_O*>(reinterpret_cast<core::Vector_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Path_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Path_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 72 72 
       return (kindVal == 72);
-    }
-    return false;
-  };
-  static core::Path_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Path_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Path_O*>(reinterpret_cast<core::Path_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::ForwardReferencedClass_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::ForwardReferencedClass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 68 68 
       return (kindVal == 68);
-    }
-    return false;
-  };
-  static core::ForwardReferencedClass_O* castOrNULL(FP client) {
-    if (TaggedCast<core::ForwardReferencedClass_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::ForwardReferencedClass_O*>(reinterpret_cast<core::ForwardReferencedClass_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::FunctionPass_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::FunctionPass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 163 163 
       return (kindVal == 163);
-    }
-    return false;
-  };
-  static llvmo::FunctionPass_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::FunctionPass_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::FunctionPass_O*>(reinterpret_cast<llvmo::FunctionPass_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<clbind::ConstructorCreator*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<clbind::ConstructorCreator*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 3 3 
       return (kindVal == 3);
-    }
-    return false;
-  };
-  static clbind::ConstructorCreator* castOrNULL(FP client) {
-    if (TaggedCast<clbind::ConstructorCreator*,FP>::isA(client)) {
-      return gctools::tag_general<clbind::ConstructorCreator*>(reinterpret_cast<clbind::ConstructorCreator*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::StdClass_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::StdClass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 65 67 
       return ((65 <= kindVal) && (kindVal <= 67));
-    }
-    return false;
-  };
-  static core::StdClass_O* castOrNULL(FP client) {
-    if (TaggedCast<core::StdClass_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::StdClass_O*>(reinterpret_cast<core::StdClass_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::InvokeInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::InvokeInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 119 119 
       return (kindVal == 119);
-    }
-    return false;
-  };
-  static llvmo::InvokeInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::InvokeInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::InvokeInst_O*>(reinterpret_cast<llvmo::InvokeInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::StandardObject_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::StandardObject_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 60 71 
       return ((60 <= kindVal) && (kindVal <= 71));
-    }
-    return false;
-  };
-  static core::StandardObject_O* castOrNULL(FP client) {
-    if (TaggedCast<core::StandardObject_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::StandardObject_O*>(reinterpret_cast<core::StandardObject_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::ForeignData_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::ForeignData_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 110 110 
       return (kindVal == 110);
-    }
-    return false;
-  };
-  static core::ForeignData_O* castOrNULL(FP client) {
-    if (TaggedCast<core::ForeignData_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::ForeignData_O*>(reinterpret_cast<core::ForeignData_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::LexicalEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::LexicalEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 44 56 
       return ((44 <= kindVal) && (kindVal <= 56));
-    }
-    return false;
-  };
-  static core::LexicalEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::LexicalEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::LexicalEnvironment_O*>(reinterpret_cast<core::LexicalEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-#ifdef SUPPRESS_TAGGED_CAST
-// Skipping key: core::Cons_O  suppress-tagged-cast: ("core::Cons_O")
-//  This class is not a general tagged pointer, its isA and castOrNULL is handled by special case code in gctools
-template <typename FP> struct TaggedCast<core::Cons_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Cons_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 59 59 
       return (kindVal == 59);
-    }
-    return false;
-  };
-  static core::Cons_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Cons_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Cons_O*>(reinterpret_cast<core::Cons_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-#endif  // SUPPRESS_TAGGED_CAST
-template <typename FP> struct TaggedCast<llvmo::ModulePass_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ModulePass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 159 162 
       return ((159 <= kindVal) && (kindVal <= 162));
-    }
-    return false;
-  };
-  static llvmo::ModulePass_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ModulePass_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ModulePass_O*>(reinterpret_cast<llvmo::ModulePass_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::EngineBuilder_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::EngineBuilder_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 109 109 
       return (kindVal == 109);
-    }
-    return false;
-  };
-  static llvmo::EngineBuilder_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::EngineBuilder_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::EngineBuilder_O*>(reinterpret_cast<llvmo::EngineBuilder_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SaveArchive_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SaveArchive_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 204 205 
       return ((204 <= kindVal) && (kindVal <= 205));
-    }
-    return false;
-  };
-  static core::SaveArchive_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SaveArchive_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SaveArchive_O*>(reinterpret_cast<core::SaveArchive_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::User_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::User_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 112 146 
       return ((112 <= kindVal) && (kindVal <= 146));
-    }
-    return false;
-  };
-  static llvmo::User_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::User_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::User_O*>(reinterpret_cast<llvmo::User_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::ValueFrame_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::ValueFrame_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 41 41 
       return (kindVal == 41);
-    }
-    return false;
-  };
-  static core::ValueFrame_O* castOrNULL(FP client) {
-    if (TaggedCast<core::ValueFrame_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::ValueFrame_O*>(reinterpret_cast<core::ValueFrame_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Float_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Float_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 234 238 
       return ((234 <= kindVal) && (kindVal <= 238));
-    }
-    return false;
-  };
-  static core::Float_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Float_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Float_O*>(reinterpret_cast<core::Float_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SingleFloat_dummy_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SingleFloat_dummy_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 236 236 
       return (kindVal == 236);
-    }
-    return false;
-  };
-  static core::SingleFloat_dummy_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SingleFloat_dummy_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SingleFloat_dummy_O*>(reinterpret_cast<core::SingleFloat_dummy_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::MacroletEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::MacroletEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 52 52 
       return (kindVal == 52);
-    }
-    return false;
-  };
-  static core::MacroletEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::MacroletEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::MacroletEnvironment_O*>(reinterpret_cast<core::MacroletEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::APFloat_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::APFloat_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 108 108 
       return (kindVal == 108);
-    }
-    return false;
-  };
-  static llvmo::APFloat_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::APFloat_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::APFloat_O*>(reinterpret_cast<llvmo::APFloat_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Triple_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Triple_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 107 107 
       return (kindVal == 107);
-    }
-    return false;
-  };
-  static llvmo::Triple_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Triple_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Triple_O*>(reinterpret_cast<llvmo::Triple_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::TwoWayStream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 182 182 
       return (kindVal == 182);
-    }
-    return false;
-  };
-  static core::TwoWayStream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::TwoWayStream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::TwoWayStream_O*>(reinterpret_cast<core::TwoWayStream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Cache*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Cache*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 6 6 
       return (kindVal == 6);
-    }
-    return false;
-  };
-  static core::Cache* castOrNULL(FP client) {
-    if (TaggedCast<core::Cache*,FP>::isA(client)) {
-      return gctools::tag_general<core::Cache*>(reinterpret_cast<core::Cache*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ReturnInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ReturnInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 118 118 
       return (kindVal == 118);
-    }
-    return false;
-  };
-  static llvmo::ReturnInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ReturnInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ReturnInst_O*>(reinterpret_cast<llvmo::ReturnInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::HashTableEqual_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::HashTableEqual_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 21 21 
       return (kindVal == 21);
-    }
-    return false;
-  };
-  static core::HashTableEqual_O* castOrNULL(FP client) {
-    if (TaggedCast<core::HashTableEqual_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::HashTableEqual_O*>(reinterpret_cast<core::HashTableEqual_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SymbolMacroletEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SymbolMacroletEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 51 51 
       return (kindVal == 51);
-    }
-    return false;
-  };
-  static core::SymbolMacroletEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SymbolMacroletEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SymbolMacroletEnvironment_O*>(reinterpret_cast<core::SymbolMacroletEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::VectorStepper*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::VectorStepper*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 248 248 
       return (kindVal == 248);
-    }
-    return false;
-  };
-  static core::VectorStepper* castOrNULL(FP client) {
-    if (TaggedCast<core::VectorStepper*,FP>::isA(client)) {
-      return gctools::tag_general<core::VectorStepper*>(reinterpret_cast<core::VectorStepper*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::StringStream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::StringStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 179 181 
       return ((179 <= kindVal) && (kindVal <= 181));
-    }
-    return false;
-  };
-  static core::StringStream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::StringStream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::StringStream_O*>(reinterpret_cast<core::StringStream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ValueAsMetadata_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ValueAsMetadata_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 102 102 
       return (kindVal == 102);
-    }
-    return false;
-  };
-  static llvmo::ValueAsMetadata_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ValueAsMetadata_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ValueAsMetadata_O*>(reinterpret_cast<llvmo::ValueAsMetadata_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SmallMultimap_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SmallMultimap_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 58 58 
       return (kindVal == 58);
-    }
-    return false;
-  };
-  static core::SmallMultimap_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SmallMultimap_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SmallMultimap_O*>(reinterpret_cast<core::SmallMultimap_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Class_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Class_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 63 71 
       return ((63 <= kindVal) && (kindVal <= 71));
-    }
-    return false;
-  };
-  static core::Class_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Class_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Class_O*>(reinterpret_cast<core::Class_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::HashTableEq_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::HashTableEq_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 20 20 
       return (kindVal == 20);
-    }
-    return false;
-  };
-  static core::HashTableEq_O* castOrNULL(FP client) {
-    if (TaggedCast<core::HashTableEq_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::HashTableEq_O*>(reinterpret_cast<core::HashTableEq_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ConstantDataSequential_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ConstantDataSequential_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 136 137 
       return ((136 <= kindVal) && (kindVal <= 137));
-    }
-    return false;
-  };
-  static llvmo::ConstantDataSequential_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ConstantDataSequential_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ConstantDataSequential_O*>(reinterpret_cast<llvmo::ConstantDataSequential_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::UnreachableInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::UnreachableInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 117 117 
       return (kindVal == 117);
-    }
-    return false;
-  };
-  static llvmo::UnreachableInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::UnreachableInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::UnreachableInst_O*>(reinterpret_cast<llvmo::UnreachableInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SexpLoadArchive_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SexpLoadArchive_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 203 203 
       return (kindVal == 203);
-    }
-    return false;
-  };
-  static core::SexpLoadArchive_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SexpLoadArchive_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SexpLoadArchive_O*>(reinterpret_cast<core::SexpLoadArchive_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Environment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Environment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 39 57 
       return ((39 <= kindVal) && (kindVal <= 57));
-    }
-    return false;
-  };
-  static core::Environment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Environment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Environment_O*>(reinterpret_cast<core::Environment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Creator*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Creator*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 2 5 
       return ((2 <= kindVal) && (kindVal <= 5));
-    }
-    return false;
-  };
-  static core::Creator* castOrNULL(FP client) {
-    if (TaggedCast<core::Creator*,FP>::isA(client)) {
-      return gctools::tag_general<core::Creator*>(reinterpret_cast<core::Creator*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Lisp_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Lisp_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 1 1 
       return (kindVal == 1);
-    }
-    return false;
-  };
-  static core::Lisp_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Lisp_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Lisp_O*>(reinterpret_cast<core::Lisp_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::PosixTimeDuration_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::PosixTimeDuration_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 38 38 
       return (kindVal == 38);
-    }
-    return false;
-  };
-  static core::PosixTimeDuration_O* castOrNULL(FP client) {
-    if (TaggedCast<core::PosixTimeDuration_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::PosixTimeDuration_O*>(reinterpret_cast<core::PosixTimeDuration_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ConstantArray_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ConstantArray_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 135 135 
       return (kindVal == 135);
-    }
-    return false;
-  };
-  static llvmo::ConstantArray_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ConstantArray_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ConstantArray_O*>(reinterpret_cast<llvmo::ConstantArray_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Module_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Module_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 106 106 
       return (kindVal == 106);
-    }
-    return false;
-  };
-  static llvmo::Module_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Module_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Module_O*>(reinterpret_cast<llvmo::Module_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ConstantStruct_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ConstantStruct_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 134 134 
       return (kindVal == 134);
-    }
-    return false;
-  };
-  static llvmo::ConstantStruct_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ConstantStruct_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ConstantStruct_O*>(reinterpret_cast<llvmo::ConstantStruct_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SNode_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SNode_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 35 37 
       return ((35 <= kindVal) && (kindVal <= 37));
-    }
-    return false;
-  };
-  static core::SNode_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SNode_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SNode_O*>(reinterpret_cast<core::SNode_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::TerminatorInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::TerminatorInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 116 123 
       return ((116 <= kindVal) && (kindVal <= 123));
-    }
-    return false;
-  };
-  static llvmo::TerminatorInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::TerminatorInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::TerminatorInst_O*>(reinterpret_cast<llvmo::TerminatorInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::LLVMTargetMachine_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::LLVMTargetMachine_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 167 167 
       return (kindVal == 167);
-    }
-    return false;
-  };
-  static llvmo::LLVMTargetMachine_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::LLVMTargetMachine_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::LLVMTargetMachine_O*>(reinterpret_cast<llvmo::LLVMTargetMachine_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::LLVMContext_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::LLVMContext_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 105 105 
       return (kindVal == 105);
-    }
-    return false;
-  };
-  static llvmo::LLVMContext_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::LLVMContext_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::LLVMContext_O*>(reinterpret_cast<llvmo::LLVMContext_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DataLayoutPass_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DataLayoutPass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 162 162 
       return (kindVal == 162);
-    }
-    return false;
-  };
-  static llvmo::DataLayoutPass_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DataLayoutPass_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DataLayoutPass_O*>(reinterpret_cast<llvmo::DataLayoutPass_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::GlobalVariable_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::GlobalVariable_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 142 142 
       return (kindVal == 142);
-    }
-    return false;
-  };
-  static llvmo::GlobalVariable_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::GlobalVariable_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::GlobalVariable_O*>(reinterpret_cast<llvmo::GlobalVariable_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Array_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Array_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 24 34 
       return ((24 <= kindVal) && (kindVal <= 34));
-    }
-    return false;
-  };
-  static core::Array_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Array_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Array_O*>(reinterpret_cast<core::Array_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::AllocaInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::AllocaInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 127 127 
       return (kindVal == 127);
-    }
-    return false;
-  };
-  static llvmo::AllocaInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::AllocaInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::AllocaInst_O*>(reinterpret_cast<llvmo::AllocaInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::LandingPadInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::LandingPadInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 115 115 
       return (kindVal == 115);
-    }
-    return false;
-  };
-  static llvmo::LandingPadInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::LandingPadInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::LandingPadInst_O*>(reinterpret_cast<llvmo::LandingPadInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::TargetLibraryInfo_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::TargetLibraryInfo_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 161 161 
       return (kindVal == 161);
-    }
-    return false;
-  };
-  static llvmo::TargetLibraryInfo_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::TargetLibraryInfo_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::TargetLibraryInfo_O*>(reinterpret_cast<llvmo::TargetLibraryInfo_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Metadata_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Metadata_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 101 104 
       return ((101 <= kindVal) && (kindVal <= 104));
-    }
-    return false;
-  };
-  static llvmo::Metadata_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Metadata_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Metadata_O*>(reinterpret_cast<llvmo::Metadata_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::CxxObject_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::CxxObject_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 23 23 
       return (kindVal == 23);
-    }
-    return false;
-  };
-  static core::CxxObject_O* castOrNULL(FP client) {
-    if (TaggedCast<core::CxxObject_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::CxxObject_O*>(reinterpret_cast<core::CxxObject_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::HashTable_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::HashTable_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 18 22 
       return ((18 <= kindVal) && (kindVal <= 22));
-    }
-    return false;
-  };
-  static core::HashTable_O* castOrNULL(FP client) {
-    if (TaggedCast<core::HashTable_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::HashTable_O*>(reinterpret_cast<core::HashTable_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::StackValueEnvironment_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::StackValueEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 50 50 
       return (kindVal == 50);
-    }
-    return false;
-  };
-  static core::StackValueEnvironment_O* castOrNULL(FP client) {
-    if (TaggedCast<core::StackValueEnvironment_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::StackValueEnvironment_O*>(reinterpret_cast<core::StackValueEnvironment_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::LogicalPathname_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::LogicalPathname_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 172 172 
       return (kindVal == 172);
-    }
-    return false;
-  };
-  static core::LogicalPathname_O* castOrNULL(FP client) {
-    if (TaggedCast<core::LogicalPathname_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::LogicalPathname_O*>(reinterpret_cast<core::LogicalPathname_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SingleDispatchMethod_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SingleDispatchMethod_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 17 17 
       return (kindVal == 17);
-    }
-    return false;
-  };
-  static core::SingleDispatchMethod_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SingleDispatchMethod_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SingleDispatchMethod_O*>(reinterpret_cast<core::SingleDispatchMethod_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::AtomicRMWInst_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::AtomicRMWInst_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 114 114 
       return (kindVal == 114);
-    }
-    return false;
-  };
-  static llvmo::AtomicRMWInst_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::AtomicRMWInst_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::AtomicRMWInst_O*>(reinterpret_cast<llvmo::AtomicRMWInst_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SpecialForm_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SpecialForm_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 226 226 
       return (kindVal == 226);
-    }
-    return false;
-  };
-  static core::SpecialForm_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SpecialForm_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SpecialForm_O*>(reinterpret_cast<core::SpecialForm_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::VectorObjectsWithFillPtr_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::VectorObjectsWithFillPtr_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 29 29 
       return (kindVal == 29);
-    }
-    return false;
-  };
-  static core::VectorObjectsWithFillPtr_O* castOrNULL(FP client) {
-    if (TaggedCast<core::VectorObjectsWithFillPtr_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::VectorObjectsWithFillPtr_O*>(reinterpret_cast<core::VectorObjectsWithFillPtr_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DICompileUnit_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DICompileUnit_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 211 211 
       return (kindVal == 211);
-    }
-    return false;
-  };
-  static llvmo::DICompileUnit_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DICompileUnit_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DICompileUnit_O*>(reinterpret_cast<llvmo::DICompileUnit_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::ActivationFrame_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::ActivationFrame_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 40 43 
       return ((40 <= kindVal) && (kindVal <= 43));
-    }
-    return false;
-  };
-  static core::ActivationFrame_O* castOrNULL(FP client) {
-    if (TaggedCast<core::ActivationFrame_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::ActivationFrame_O*>(reinterpret_cast<core::ActivationFrame_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ImmutablePass_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ImmutablePass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 160 162 
       return ((160 <= kindVal) && (kindVal <= 162));
-    }
-    return false;
-  };
-  static llvmo::ImmutablePass_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ImmutablePass_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ImmutablePass_O*>(reinterpret_cast<llvmo::ImmutablePass_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ArrayType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ArrayType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 96 96 
       return (kindVal == 96);
-    }
-    return false;
-  };
-  static llvmo::ArrayType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ArrayType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ArrayType_O*>(reinterpret_cast<llvmo::ArrayType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::ConsStepper*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::ConsStepper*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 247 247 
       return (kindVal == 247);
-    }
-    return false;
-  };
-  static core::ConsStepper* castOrNULL(FP client) {
-    if (TaggedCast<core::ConsStepper*,FP>::isA(client)) {
-      return gctools::tag_general<core::ConsStepper*>(reinterpret_cast<core::ConsStepper*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::LeafSNode_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::LeafSNode_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 36 36 
       return (kindVal == 36);
-    }
-    return false;
-  };
-  static core::LeafSNode_O* castOrNULL(FP client) {
-    if (TaggedCast<core::LeafSNode_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::LeafSNode_O*>(reinterpret_cast<core::LeafSNode_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::Type_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::Type_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 92 100 
       return ((92 <= kindVal) && (kindVal <= 100));
-    }
-    return false;
-  };
-  static llvmo::Type_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::Type_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::Type_O*>(reinterpret_cast<llvmo::Type_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Specializer_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Specializer_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 62 71 
       return ((62 <= kindVal) && (kindVal <= 71));
-    }
-    return false;
-  };
-  static core::Specializer_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Specializer_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Specializer_O*>(reinterpret_cast<core::Specializer_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SourceManager_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SourceManager_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 16 16 
       return (kindVal == 16);
-    }
-    return false;
-  };
-  static core::SourceManager_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SourceManager_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SourceManager_O*>(reinterpret_cast<core::SourceManager_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::VectorObjects_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::VectorObjects_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 28 29 
       return ((28 <= kindVal) && (kindVal <= 29));
-    }
-    return false;
-  };
-  static core::VectorObjects_O* castOrNULL(FP client) {
-    if (TaggedCast<core::VectorObjects_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::VectorObjects_O*>(reinterpret_cast<core::VectorObjects_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::ShortFloat_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::ShortFloat_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 235 235 
       return (kindVal == 235);
-    }
-    return false;
-  };
-  static core::ShortFloat_O* castOrNULL(FP client) {
-    if (TaggedCast<core::ShortFloat_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::ShortFloat_O*>(reinterpret_cast<core::ShortFloat_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Symbol_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Symbol_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 14 15 
       return ((14 <= kindVal) && (kindVal <= 15));
-    }
-    return false;
-  };
-  static core::Symbol_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Symbol_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Symbol_O*>(reinterpret_cast<core::Symbol_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::NamedMDNode_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::NamedMDNode_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 91 91 
       return (kindVal == 91);
-    }
-    return false;
-  };
-  static llvmo::NamedMDNode_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::NamedMDNode_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::NamedMDNode_O*>(reinterpret_cast<llvmo::NamedMDNode_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::UserData_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::UserData_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 192 192 
       return (kindVal == 192);
-    }
-    return false;
-  };
-  static core::UserData_O* castOrNULL(FP client) {
-    if (TaggedCast<core::UserData_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::UserData_O*>(reinterpret_cast<core::UserData_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::IRBuilder_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::IRBuilder_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 150 150 
       return (kindVal == 150);
-    }
-    return false;
-  };
-  static llvmo::IRBuilder_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::IRBuilder_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::IRBuilder_O*>(reinterpret_cast<llvmo::IRBuilder_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::FunctionPassManager_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::FunctionPassManager_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 156 156 
       return (kindVal == 156);
-    }
-    return false;
-  };
-  static llvmo::FunctionPassManager_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::FunctionPassManager_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::FunctionPassManager_O*>(reinterpret_cast<llvmo::FunctionPassManager_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::HashTableEql_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::HashTableEql_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 19 19 
       return (kindVal == 19);
-    }
-    return false;
-  };
-  static core::HashTableEql_O* castOrNULL(FP client) {
-    if (TaggedCast<core::HashTableEql_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::HashTableEql_O*>(reinterpret_cast<core::HashTableEql_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::ConstantDataArray_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::ConstantDataArray_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 137 137 
       return (kindVal == 137);
-    }
-    return false;
-  };
-  static llvmo::ConstantDataArray_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::ConstantDataArray_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::ConstantDataArray_O*>(reinterpret_cast<llvmo::ConstantDataArray_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::StringOutputStream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::StringOutputStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 180 180 
       return (kindVal == 180);
-    }
-    return false;
-  };
-  static core::StringOutputStream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::StringOutputStream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::StringOutputStream_O*>(reinterpret_cast<core::StringOutputStream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::BitVector_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::BitVector_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 26 27 
       return ((26 <= kindVal) && (kindVal <= 27));
-    }
-    return false;
-  };
-  static core::BitVector_O* castOrNULL(FP client) {
-    if (TaggedCast<core::BitVector_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::BitVector_O*>(reinterpret_cast<core::BitVector_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::IOStreamStream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::IOStreamStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 177 177 
       return (kindVal == 177);
-    }
-    return false;
-  };
-  static core::IOStreamStream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::IOStreamStream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::IOStreamStream_O*>(reinterpret_cast<core::IOStreamStream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::LoadArchive_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::LoadArchive_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 202 203 
       return ((202 <= kindVal) && (kindVal <= 203));
-    }
-    return false;
-  };
-  static core::LoadArchive_O* castOrNULL(FP client) {
-    if (TaggedCast<core::LoadArchive_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::LoadArchive_O*>(reinterpret_cast<core::LoadArchive_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::TargetOptions_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::TargetOptions_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 90 90 
       return (kindVal == 90);
-    }
-    return false;
-  };
-  static llvmo::TargetOptions_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::TargetOptions_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::TargetOptions_O*>(reinterpret_cast<llvmo::TargetOptions_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::FileStream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::FileStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 176 178 
       return ((176 <= kindVal) && (kindVal <= 178));
-    }
-    return false;
-  };
-  static core::FileStream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::FileStream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::FileStream_O*>(reinterpret_cast<core::FileStream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::StrWithFillPtr_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::StrWithFillPtr_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 32 32 
       return (kindVal == 32);
-    }
-    return false;
-  };
-  static core::StrWithFillPtr_O* castOrNULL(FP client) {
-    if (TaggedCast<core::StrWithFillPtr_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::StrWithFillPtr_O*>(reinterpret_cast<core::StrWithFillPtr_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::CandoException_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::CandoException_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 13 13 
       return (kindVal == 13);
-    }
-    return false;
-  };
-  static core::CandoException_O* castOrNULL(FP client) {
-    if (TaggedCast<core::CandoException_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::CandoException_O*>(reinterpret_cast<core::CandoException_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::WrappedPointer_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::WrappedPointer_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 12 12 
       return (kindVal == 12);
-    }
-    return false;
-  };
-  static core::WrappedPointer_O* castOrNULL(FP client) {
-    if (TaggedCast<core::WrappedPointer_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::WrappedPointer_O*>(reinterpret_cast<core::WrappedPointer_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::DIType_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::DIType_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 210 210 
       return (kindVal == 210);
-    }
-    return false;
-  };
-  static llvmo::DIType_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::DIType_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::DIType_O*>(reinterpret_cast<llvmo::DIType_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SingleDispatchGenericFunction_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SingleDispatchGenericFunction_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 225 225 
       return (kindVal == 225);
-    }
-    return false;
-  };
-  static core::SingleDispatchGenericFunction_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SingleDispatchGenericFunction_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SingleDispatchGenericFunction_O*>(reinterpret_cast<core::SingleDispatchGenericFunction_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::CxxClass_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::CxxClass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 64 64 
       return (kindVal == 64);
-    }
-    return false;
-  };
-  static core::CxxClass_O* castOrNULL(FP client) {
-    if (TaggedCast<core::CxxClass_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::CxxClass_O*>(reinterpret_cast<core::CxxClass_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::AnsiStream_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::AnsiStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 175 186 
       return ((175 <= kindVal) && (kindVal <= 186));
-    }
-    return false;
-  };
-  static core::AnsiStream_O* castOrNULL(FP client) {
-    if (TaggedCast<core::AnsiStream_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::AnsiStream_O*>(reinterpret_cast<core::AnsiStream_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::SimpleBitVector_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::SimpleBitVector_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 27 27 
       return (kindVal == 27);
-    }
-    return false;
-  };
-  static core::SimpleBitVector_O* castOrNULL(FP client) {
-    if (TaggedCast<core::SimpleBitVector_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::SimpleBitVector_O*>(reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::VaList_dummy_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::VaList_dummy_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 11 11 
       return (kindVal == 11);
-    }
-    return false;
-  };
-  static core::VaList_dummy_O* castOrNULL(FP client) {
-    if (TaggedCast<core::VaList_dummy_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::VaList_dummy_O*>(reinterpret_cast<core::VaList_dummy_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<llvmo::PassManagerBuilder_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<llvmo::PassManagerBuilder_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 89 89 
       return (kindVal == 89);
-    }
-    return false;
-  };
-  static llvmo::PassManagerBuilder_O* castOrNULL(FP client) {
-    if (TaggedCast<llvmo::PassManagerBuilder_O*,FP>::isA(client)) {
-      return gctools::tag_general<llvmo::PassManagerBuilder_O*>(reinterpret_cast<llvmo::PassManagerBuilder_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<cffi::Pointer_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<cffi::Pointer_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 10 10 
       return (kindVal == 10);
-    }
-    return false;
-  };
-  static cffi::Pointer_O* castOrNULL(FP client) {
-    if (TaggedCast<cffi::Pointer_O*,FP>::isA(client)) {
-      return gctools::tag_general<cffi::Pointer_O*>(reinterpret_cast<cffi::Pointer_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::FileStatus_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::FileStatus_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 9 9 
       return (kindVal == 9);
-    }
-    return false;
-  };
-  static core::FileStatus_O* castOrNULL(FP client) {
-    if (TaggedCast<core::FileStatus_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::FileStatus_O*>(reinterpret_cast<core::FileStatus_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
-template <typename FP> struct TaggedCast<core::Metaobject_O*,FP> {
-  static bool isA(FP client) {
-    if ( gctools::tagged_generalp(client) ) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(gctools::untag_general<FP>(client)));
+template <typename FP> struct Cast<core::Metaobject_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
       // low high --> 61 71 
       return ((61 <= kindVal) && (kindVal <= 71));
-    }
-    return false;
-  };
-  static core::Metaobject_O* castOrNULL(FP client) {
-    if (TaggedCast<core::Metaobject_O*,FP>::isA(client)) {
-      return gctools::tag_general<core::Metaobject_O*>(reinterpret_cast<core::Metaobject_O*>(gctools::untag_general<FP>(client)));
-    }
-    return NULL;
   };
 };
 #endif // defined(GC_DYNAMIC_CAST)
