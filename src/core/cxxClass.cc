@@ -72,10 +72,10 @@ void CxxClass_O::describe() {
     _lisp->print(BF("Base class: %s") % _rep_((gc::As<Class_sp>(oCar(cur)))->className()));
   }
   _lisp->print(BF("%s") % this->dumpInfo());
-  if (this->_creator == NULL) {
+  if (!this->_theCreator) {
     printf("this->_allocator -> NULL\n");
   } else {
-    this->_creator->describe();
+    this->_theCreator->describe();
   }
   _lisp->print(BF("cxxDerivableClassP() -> %d") % this->cxxDerivableClassP());
   _lisp->print(BF("primaryCxxDerivableClassP() -> %d") % this->primaryCxxDerivableClassP());

@@ -60,9 +60,9 @@ namespace asttooling {
 namespace RegMap {
 class SymbolMatcherDescriptorPair {
 public:
-  SymbolMatcherDescriptorPair(core::Symbol_sp k, /*const*/ internal::MatcherDescriptor *v) : Name(k), matcher(v){};
+ SymbolMatcherDescriptorPair(core::Symbol_sp k, /*const*/ gctools::tagged_pointer<internal::MatcherDescriptor> v) : Name(k), matcher(v){};
   core::Symbol_sp Name;
-  internal::MatcherDescriptor *matcher;
+  gctools::tagged_pointer<internal::MatcherDescriptor> matcher;
 };
 
 class RegistryMaps {
@@ -113,7 +113,7 @@ public:
   }
 
 private:
-  void _registerMatcher(core::Symbol_sp MatcherName, internal::MatcherDescriptor *Callback) const;
+  void _registerMatcher(core::Symbol_sp MatcherName, gctools::tagged_pointer<internal::MatcherDescriptor> Callback) const;
 /*! This is used to replace the map<Symbol_sp,const MatcherDescriptor*> that used to be a ConstructorMap */
 GCPRIVATE:
   bool Initialized;

@@ -25,6 +25,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
+//#define MPS_LOVEMORE 1
+
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
@@ -39,9 +41,9 @@ THE SOFTWARE.
 #include <clasp/main/gc_interface.fwd.h>
 
 extern "C" {
-#include "mps/code/mpscawl.h" // MVFF pool
-#include "mps/code/mpscamc.h" // AMC pool
-#include "mps/code/mpscsnc.h" // SNC pool
+#include "clasp/mps/code/mpscawl.h" // MVFF pool
+#include "clasp/mps/code/mpscamc.h" // AMC pool
+#include "clasp/mps/code/mpscsnc.h" // SNC pool
 };
 
 #include <clasp/gctools/gctoolsPackage.h>
@@ -118,7 +120,7 @@ void rawHeaderDescribe(uintptr_t* headerP)
       Header_s* hdr = (Header_s*)headerP;
       printf( "  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP+1));
       printf(" fwd_tag - fwd address: 0x%16l0X\n", (*headerP)&Header_s::fwd_ptr_mask);
-      printf("     fwdSize = %d/0x%16l0X\n", hdr->fwdSize());
+      printf("     fwdSize = %d/0x%16l0X\n", hdr->fwdSize(), hdr->fwdSize());
     }
       break;
   case Header_s::pad_tag:
@@ -148,10 +150,12 @@ void headerDescribe(core::T_O* taggedClient)
     rawHeaderDescribe(headerP);
   } else {
     printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__ );
+#if 0
     printf("    Trying to interpret as client pointer\n");
     uintptr_t* headerP;
     headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(taggedClient));
     rawHeaderDescribe(headerP);
+#endif
   }
 };
 
@@ -233,7 +237,7 @@ static mps_addr_t obj_isfwd(mps_addr_t client) {
     MPS_LOG(BF("   isfwd=TRUE returning %p") % header->fwdPointer());
     return header->fwdPointer();
   }
-  MPS_LOG(BF("   isfwd=FALSE returning NULL  kind = %s") % obj_name((gctools::GCKindEnum)(header->kind())));
+  MPS_LOG(BF("   isfwd=FALSE returning NULL"));
   return NULL;
 }
 
@@ -266,7 +270,7 @@ static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit
       GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
       size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
       switch (ftype) {
-      case GCStack::frame: {
+      case GCStack::frame_t: {
           uintptr_t* frameStart = FRAME_START(headerAndFrame);
           size_t elements = frameStart[gc::frame::IdxNumElements];
           uintptr_t* taggedPtr = &frameStart[gc::frame::IdxValuesArray];
@@ -281,7 +285,7 @@ static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit
           base = (char*)base + sz;
       }
           break;
-      case GCStack::pad:
+      case GCStack::pad_t:
           base = (char*)base + sz;
           break;
       default:
@@ -300,10 +304,10 @@ static mps_addr_t stack_frame_skip(mps_addr_t base)
   GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
   size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
   switch (ftype) {
-  case GCStack::frame:
+  case GCStack::frame_t:
       base = (char*)base + sz;
       break;
-  case GCStack::pad:
+  case GCStack::pad_t:
       base = (char*)base + sz;
       break;
   default:
@@ -318,7 +322,7 @@ static void stack_frame_pad(mps_addr_t addr, size_t size)
 {
   uintptr_t* obj = reinterpret_cast<uintptr_t*>(addr);
   GCTOOLS_ASSERT(size>=STACK_ALIGN_UP(sizeof(uintptr_t)));
-  FRAME_HEADER_TYPE_FIELD(obj) = (int)GCStack::frameType::pad;
+  FRAME_HEADER_TYPE_FIELD(obj) = (int)GCStack::frameType::pad_t;
   FRAME_HEADER_SIZE_FIELD(obj) = size;
 }
 
@@ -536,7 +540,9 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   mps_res_t res;
   MPS_ARGS_BEGIN(args) {
+#ifdef MPS_LOVEMORE
     MPS_ARGS_ADD(args, MPS_KEY_ARENA_INCREMENTAL, 0);
+#endif
     MPS_ARGS_ADD(args, MPS_KEY_ARENA_SIZE, arenaSizeMb * 1024 * 1024);
     res = mps_arena_create_k(&_global_arena, mps_arena_class_vm(), args);
   }
@@ -671,14 +677,27 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   // register the main thread stack scanner
   mps_root_t global_stack_root;
+#ifdef MPS_LOVEMORE
   res = mps_root_create_reg(&global_stack_root,
-                            _global_arena,
-                            mps_rank_ambig(),
-                            0,
-                            global_thread,
-                            mps_stack_scan_ambig,
-                            _global_stack_marker,
-                            0);
+                                   _global_arena,
+                                   mps_rank_ambig(),
+                                   0,
+                                   global_thread,
+                                   mps_stack_scan_ambig,
+                                   _global_stack_marker,
+                                   0);
+#else
+  // use mask
+  res = mps_root_create_reg_masked(&global_stack_root,
+                                   _global_arena,
+                                   mps_rank_ambig(),
+                                   0,
+                                   global_thread,
+                                   gctools::pointer_tag_mask,
+                                   gctools::pointer_tag_eq,
+                                   _global_stack_marker
+                                   );
+#endif
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create stack root");
 

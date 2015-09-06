@@ -52,13 +52,13 @@ using namespace core;
 
 namespace gctools {
 /*! Point to the global nil */
-core::Symbol_O *global_Symbol_OP_nil;
+core::Symbol_O *global_Symbol_OP_nil = NULL;
 /*! Point to the global UNBOUND */
-core::Symbol_O *global_Symbol_OP_unbound;
+core::Symbol_O *global_Symbol_OP_unbound = NULL;
 /*! Point to the global DELETED - used in weak hash tables */
-core::Symbol_O *global_Symbol_OP_deleted;
+core::Symbol_O *global_Symbol_OP_deleted = NULL;
 /*! Point to the global SAME-AS-KEY - used in weak hash tables */
-core::Symbol_O *global_Symbol_OP_sameAsKey;
+core::Symbol_O *global_Symbol_OP_sameAsKey = NULL;
 };
 
 namespace gctools {

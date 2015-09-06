@@ -232,7 +232,7 @@ class _RootDummyClass : public gctools::GCObject {
 private:
 public:
   static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
-  static void ___set_static_creator(core::Creator *cb){};
+  static void ___set_static_creator(gc::tagged_pointer<core::Creator> cb){};
 
 public:
   explicit _RootDummyClass();
@@ -429,7 +429,7 @@ public:                                                                         
 public:                                                                                                                \
   static core::Symbol_sp ___staticClassSymbol;                                                                         \
   static core::Class_sp ___staticClass;                                                                                \
-  static core::Creator *static_creator;                                                                                \
+  static gctools::tagged_pointer<core::Creator> static_creator;                                                                                \
   static int static_Kind;                                                                                              \
   /* static gctools::smart_ptr<oClass> _nil; depreciate this in favor of _Nil<oClass>()? */                            \
   /* static gctools::smart_ptr<oClass> _unbound; depreciate this in favor of _Unbound<oClass>()? */                    \
@@ -437,7 +437,7 @@ public:                                                                         
   /*    static oClass* ___staticDereferencedUnboundInstance; */                                                        \
 public:                                                                                                                \
   static void ___set_static_ClassSymbol(core::Symbol_sp i) { oClass::___staticClassSymbol = i; };                      \
-  static void ___set_static_creator(core::Creator *al) { oClass::static_creator = al; };                               \
+  static void ___set_static_creator(gctools::tagged_pointer<core::Creator> al) { oClass::static_creator = al; };                               \
   static string static_packageName() { return oPackage; };                                                             \
   static string static_className() { return core::lispify_symbol_name(oclassName); };                                  \
   static core::Symbol_sp static_classSymbol() { return oClass::___staticClassSymbol; };                                \
@@ -968,8 +968,8 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
     core::Symbol_sp classSymbol = core::lisp_intern(oClass::static_className(), oClass::static_packageName());
     LOG(BF("Setting staticClassSymbol for class to: %d") % classSymbol);
     oClass::___set_static_ClassSymbol(classSymbol);
-    if (oClass::static_creator == NULL) {
-      core::LispObjectCreator<oClass> *lispObjectCreator = gctools::ClassAllocator<core::LispObjectCreator<oClass>>::allocateClass();
+    if (!oClass::static_creator) {
+      gctools::tagged_pointer<core::LispObjectCreator<oClass>> lispObjectCreator = gctools::ClassAllocator<core::LispObjectCreator<oClass>>::allocateClass();
       oClass::___set_static_creator(lispObjectCreator);
     }
   }
@@ -996,7 +996,7 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
   core::Symbol_sp oClass::___staticClassSymbol; \
   core::Class_sp oClass::___staticClass;        \
   int oClass::static_Kind;                      \
-  core::Creator *oClass::static_creator = NULL;
+  gctools::tagged_pointer<core::Creator> oClass::static_creator;
 
 #define STATIC_CLASS_INFO(oClass)                            \
 /*	oClass* oClass::___staticDereferencedNilInstance;	*/      \

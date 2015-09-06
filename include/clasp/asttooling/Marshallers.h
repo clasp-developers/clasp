@@ -324,7 +324,7 @@ template <template <typename ToArg, typename FromArg> class ArgumentAdapterT,
 class AdaptativeOverloadCollector {
 public:
   AdaptativeOverloadCollector(core::Symbol_sp Name,
-                              gctools::Vec0<MatcherDescriptor *> &Out)
+                              gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> &Out)
       : Name(Name), Out(Out) {
     collect(FromTypes());
   }
@@ -342,7 +342,7 @@ private:
   inline void collect(FromTypeList);
 
   const core::Symbol_sp Name;
-  gctools::Vec0<MatcherDescriptor *> &Out;
+  gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> &Out;
 };
 
 /// \brief MatcherDescriptor that wraps multiple "overloads" of the same
@@ -353,30 +353,24 @@ private:
 class OverloadedMatcherDescriptor : public MatcherDescriptor {
   FRIEND_GC_SCANNER();
 
-public:
-// OverloadedMatcherDescriptor(ArrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
+ public:
+// gctools::tagged_pointer<OverloadedMatcherDescriptor>rrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
 
-//    OverloadedMatcherDescriptor(ArrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
-#if 0
-            OverloadedMatcherDescriptor(const gctools::Vec0<MatcherDescriptor*> Callbacks) {
-                for ( auto it=Callbacks.begin(); it!=Callbacks.end(); ++it ) {
-                    Overloads.push_back(*it);
-                }
-            }
-#endif
-  OverloadedMatcherDescriptor(const gctools::Vec0<MatcherDescriptor *> Callbacks) {
+//    gctools::tagged_pointer<OverloadedMatcherDescriptor>rrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
+  OverloadedMatcherDescriptor( const gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> Callbacks) {
     for (auto it = Callbacks.begin(); it != Callbacks.end(); ++it) {
       Overloads.push_back(*it);
     }
   }
-  OverloadedMatcherDescriptor(ArrayRef<MatcherDescriptor *> Callbacks) {
+  OverloadedMatcherDescriptor( ArrayRef<gctools::tagged_pointer<MatcherDescriptor>> Callbacks) {
     for (auto it = Callbacks.begin(); it != Callbacks.end(); ++it) {
       Overloads.push_back(*it);
     }
   }
 
   virtual ~OverloadedMatcherDescriptor() {
-    llvm::DeleteContainerPointers(Overloads);
+    printf("%s:%d In ~OverloadedMatcherDescriptor  - I think I need to dereference the MatcherDescriptors and pass them back to LLVM to delete them - This isn't compatible with the garbage collector and tagged pointers - I am going to have to make some big changes here to make this compatible with LLVM/Clang\n", __FILE__, __LINE__);
+    //llvm::DeleteContainerPointers(Overloads);
   }
 
   virtual VariantMatcher create(core::Cons_sp NameRange,
@@ -404,7 +398,7 @@ public:
   }
 
 GCPRIVATE:
-  gctools::Vec0<MatcherDescriptor *> Overloads;
+  gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> Overloads;
 };
 
 /// \brief Variadic operator marshaller function.
@@ -455,7 +449,7 @@ GCPRIVATE:
 
 /// \brief 0-arg overload
 template <typename ReturnType>
-MatcherDescriptor *makeMatcherAutoMarshall(ReturnType (*Func)(),
+  gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(),
                                            core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
   return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocateClass(matcherMarshall0<ReturnType>, reinterpret_cast<void (*)()>(Func), MatcherName);
@@ -468,7 +462,7 @@ MatcherDescriptor *makeMatcherAutoMarshall(ReturnType (*Func)(),
 
 /// \brief 1-arg overload
 template <typename ReturnType, typename ArgType1>
-MatcherDescriptor *makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1),
+  gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1),
                                            core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
   return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocateClass(
@@ -483,7 +477,7 @@ MatcherDescriptor *makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1),
 
 /// \brief 2-arg overload
 template <typename ReturnType, typename ArgType1, typename ArgType2>
-MatcherDescriptor *makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1,
+  gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1,
                                                               ArgType2),
                                            core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
@@ -500,7 +494,7 @@ MatcherDescriptor *makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1,
 /// \brief Variadic overload.
 template <typename ResultT, typename ArgT,
           ResultT (*Func)(ArrayRef<const ArgT *>)>
-MatcherDescriptor *
+  gc::tagged_pointer<MatcherDescriptor>
 makeMatcherAutoMarshall(llvm::VariadicFunction<ResultT, ArgT, Func> VarFunc,
                         core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
@@ -515,11 +509,11 @@ makeMatcherAutoMarshall(llvm::VariadicFunction<ResultT, ArgT, Func> VarFunc,
 /// \brief Argument adaptative overload.
 template <template <typename ToArg, typename FromArg> class ArgumentAdapterT,
           typename FromTypes, typename ToTypes>
-MatcherDescriptor *
+  gc::tagged_pointer<MatcherDescriptor>
 makeMatcherAutoMarshall(clang::ast_matchers::internal::ArgumentAdaptingMatcherFunc<
                             ArgumentAdapterT, FromTypes, ToTypes>,
                         core::Symbol_sp MatcherName) {
-  gctools::Vec0<MatcherDescriptor *> Overloads;
+  gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> Overloads;
   AdaptativeOverloadCollector<ArgumentAdapterT, FromTypes, ToTypes>(MatcherName,
                                                                     Overloads);
 #ifndef USE_NEW
@@ -541,7 +535,7 @@ inline void AdaptativeOverloadCollector<ArgumentAdapterT, FromTypes,
 
 /// \brief Variadic operator overload.
 template <unsigned MinCount, unsigned MaxCount>
-MatcherDescriptor *
+  gc::tagged_pointer<MatcherDescriptor>
 makeMatcherAutoMarshall(clang::ast_matchers::internal::VariadicOperatorMatcherFunc<MinCount, MaxCount> Func,
                         core::Symbol_sp MatcherName) {
 #ifndef USE_NEW

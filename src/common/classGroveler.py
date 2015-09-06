@@ -534,7 +534,7 @@ class	ClassGroup:
 #endif
     core::af_setf_findClass(%(CLASSNAME)s,%(OCLASS)s::static_classSymbol(),true,_Nil<core::Environment_O>());
     {
-        core::LispObjectCreator<%(OCLASS)s>* cb = gctools::ClassAllocator<core::LispObjectCreator<%(OCLASS)s>>::allocateClass();
+        gctools::tagged_pointer<core::LispObjectCreator<%(OCLASS)s>> cb = gctools::ClassAllocator<core::LispObjectCreator<%(OCLASS)s>>::allocateClass();
         %(OCLASS)s::___set_static_creator(cb);
     }
     LOG(BF("Set static_allocator for class(%%s) to %%X")%% %(OCLASS)s::static_className() %% (void*)(%(OCLASS)s::static_allocator) );

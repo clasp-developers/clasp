@@ -132,7 +132,7 @@ public:
   /*! Mimic ECL Instance::sig */
   T_sp _Signature_ClassSlots;
   /*! Callback function to allocate instances */
-  Creator *_creator;
+  gc::tagged_pointer<Creator> _theCreator;
   gctools::Vec0<T_sp> _MetaClassSlots;
 
 public:
@@ -179,9 +179,9 @@ public: // Mimic CLOS classes that are represented by Instance_O
 
 public:
   void inheritDefaultAllocator(List_sp directSuperclasses);
-  void setCreator(Creator *cb) { this->_creator = cb; };
-  Creator *getCreator() const { return this->_creator; };
-  bool hasCreator() const { return this->_creator != NULL; };
+  void setCreator(gc::tagged_pointer<Creator> cb) { this->_theCreator = cb; };
+  gc::tagged_pointer<Creator> getCreator() const { return this->_theCreator; };
+  bool hasCreator() const { return (bool)(this->_theCreator); };
 
   /*! I have GOT to clean up all this class-name stuff
 	  Reduce the clutter to one function to get the name and one to set the name */

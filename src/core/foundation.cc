@@ -215,17 +215,12 @@ bool debug_mps = true;
 void clasp_mps_debug_allocation(const char *poolName, void *base, void *client, int size, int kind) {
   if (!debug_mps)
     return;
-  if (kind == 0) {
-    printf("%s:%d clasp_mps_debug_allocation kind == 0  ----------------- !!!!\n", __FILE__, __LINE__);
-    __builtin_debugtrap();
-  };
-
 #if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
   const char *kindName = obj_name((gctools::GCKindEnum)(kind));
-  printf("%s:%d clasp_mps_allocation poolName: %s  base: %p  client: %p  size: %3d  kind[%d/%s]  \n",
+  printf("%s:%d clasp_mps_allocation poolName: %s  client: %p  base: %p  size: %3d  kind[%d/%s]  \n",
          __FILE__, __LINE__,
          poolName,
-         base, client, size,
+         client, base, size,
          kind, kindName);
 #endif
 }
@@ -902,7 +897,7 @@ T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol) {
 // }
 
 void lisp_addClass(Symbol_sp classSymbol,
-                   Creator *cb,
+                   gctools::tagged_pointer<Creator> cb,
                    Symbol_sp base1ClassSymbol,
                    Symbol_sp base2ClassSymbol,
                    Symbol_sp base3ClassSymbol) {
@@ -910,12 +905,14 @@ void lisp_addClass(Symbol_sp classSymbol,
   _lisp->addClass(classSymbol, cb, base1ClassSymbol, base2ClassSymbol);
 }
 
+
 void lisp_addClass(Symbol_sp classSymbol) {
   _G();
   DEPRECIATED();
   //	_lisp->addClass(classSymbol);
 }
 
+#if 0
 void lisp_addClassAndInitialize(Symbol_sp classSymbol,
                                 Creator *cb,
                                 Symbol_sp base1ClassSymbol,
@@ -925,6 +922,7 @@ void lisp_addClassAndInitialize(Symbol_sp classSymbol,
   _lisp->addClass(classSymbol, cb, base1ClassSymbol, base2ClassSymbol);
 }
 
+#endif
 List_sp lisp_parse_arguments(const string &packageName, const string &args) {
   if (args == "")
     return _Nil<T_O>();
@@ -962,7 +960,7 @@ SYMBOL_SC_(KeywordPkg, lambda_list_handler);
 SYMBOL_SC_(KeywordPkg, docstring);
 void lisp_defineSingleDispatchMethod(Symbol_sp sym,
                                      Symbol_sp classSymbol,
-                                     BuiltinClosure *methoid,
+                                     gctools::tagged_pointer<BuiltinClosure> methoid,
                                      int TemplateDispatchOn,
                                      const string &arguments,
                                      const string &declares,
@@ -1068,7 +1066,7 @@ Symbol_sp lispify_intern(const string &name, const string &defaultPackageName, b
 
 void lisp_defun(Symbol_sp sym,
                 const string &packageName,
-                BuiltinClosure *fc,
+                gctools::tagged_pointer<BuiltinClosure> fc,
                 const string &arguments,
                 const string &declarestring,
                 const string &docstring,
@@ -1111,7 +1109,7 @@ void lisp_defun(Symbol_sp sym,
 
 void lisp_defmacro(Symbol_sp sym,
                    const string &packageName,
-                   BuiltinClosure *f,
+                   gctools::tagged_pointer<BuiltinClosure> f,
                    const string &arguments,
                    const string &declarestring,
                    const string &docstring,

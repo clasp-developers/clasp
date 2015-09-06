@@ -273,7 +273,7 @@ LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist) {
 
 	   Then call the effective method with the saved arguments.
 	*/
-  Cache *cache(_lisp->methodCachePtr());
+  gc::tagged_pointer<Cache> cache(_lisp->methodCachePtr());
   gctools::Vec0<T_sp> &vektor = fill_spec_vector(gf, cache->keys(), arglist );
   CacheRecord *e; //gctools::StackRootedPointer<CacheRecord> e;
   try {

@@ -72,7 +72,7 @@ namespace core {
   (functionDesignator) can be a Symbol or an Function
 */
 
-    extern T_mv applyClosureToActivationFrame(gctools::tagged_functor<Closure> closureP, ActivationFrame_sp af);
+    extern T_mv applyClosureToActivationFrame(gctools::tagged_pointer<Closure> closureP, ActivationFrame_sp af);
 
     extern T_mv applyToActivationFrame(T_sp functionDesignator, ActivationFrame_sp af);
 
@@ -95,14 +95,14 @@ namespace core {
         frob->operator[](i) = oCar(cur);
         cur = oCdr(cur);
       }
-      gctools::tagged_functor<Closure> closureP = func->closure;
+      gctools::tagged_pointer<Closure> closureP = func->closure;
       ASSERTF(closureP, BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
       return applyClosureToActivationFrame(closureP, frob);
     }
 
 
     inline T_mv apply_consume_VaList(Function_sp func, VaList_sp args ) {
-      gctools::tagged_functor<Closure> ft = func->closure;
+      gctools::tagged_pointer<Closure> ft = func->closure;
       ASSERT_LCC_VA_LIST_AT_START(*args);
       gc::return_type res = (*ft).invoke_va_list( NULL,
                                                   args.raw_(),
@@ -120,7 +120,7 @@ namespace core {
       if (tfunc.nilp())
         ERROR_UNDEFINED_FUNCTION(fn);
       Function_sp func = gc::As<Function_sp>(tfunc);
-      gctools::tagged_functor<Closure> ft = func->closure;
+      gctools::tagged_pointer<Closure> ft = func->closure;
       return (*ft)(LCC_PASS_ARGS0_ELLIPSIS());
     }
 
@@ -133,7 +133,7 @@ namespace core {
       if (tfunc.nilp())
         ERROR_UNDEFINED_FUNCTION(fn);
       Function_sp func = gc::As<Function_sp>(tfunc);
-      gctools::tagged_functor<Closure> ft = func->closure;
+      gctools::tagged_pointer<Closure> ft = func->closure;
       return (*ft)(LCC_PASS_ARGS1_ELLIPSIS(arg0.raw_()));
     }
 
@@ -155,7 +155,7 @@ namespace core {
       }
       Function_sp func = tfunc.asOrNull<Function_O>();
       ASSERT(func);
-      gctools::tagged_functor<Closure> ft = func->closure;
+      gctools::tagged_pointer<Closure> ft = func->closure;
       return (*ft)(LCC_PASS_ARGS2_ELLIPSIS(arg0.raw_(), arg1.raw_()));
     }
 
@@ -168,7 +168,7 @@ namespace core {
       if (tfunc.nilp())
         ERROR_UNDEFINED_FUNCTION(fn);
       Function_sp func = gc::As<Function_sp>(tfunc);
-      gctools::tagged_functor<Closure> ft = func->closure;
+      gctools::tagged_pointer<Closure> ft = func->closure;
       return (*ft)(LCC_PASS_ARGS3_ELLIPSIS(LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
     }
 
@@ -183,7 +183,7 @@ namespace core {
       if (tfunc.nilp())
         ERROR_UNDEFINED_FUNCTION(fn);
       Function_sp func = gc::As<Function_sp>(tfunc);
-      gctools::tagged_functor<Closure> ft = func->closure;
+      gctools::tagged_pointer<Closure> ft = func->closure;
       size_t vnargs = sizeof...(ARGS);
       size_t nargs = vnargs + LCC_FIXED_NUM;
       return (*ft)(NULL

@@ -84,7 +84,7 @@ void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, La
   SingleDispatchGenericFunction_sp gf = gc::As<SingleDispatchGenericFunction_sp>(gfname->symbolFunction());
   SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(gfname, receiver_class, lambda_list_handler, declares, docstring, body);
   ASSERT(lambda_list_handler.notnilp());
-  gctools::tagged_functor<SingleDispatchGenericFunctionClosure> gfc = gf->closure.as<SingleDispatchGenericFunctionClosure>();
+  gctools::tagged_pointer<SingleDispatchGenericFunctionClosure> gfc = gf->closure.as<SingleDispatchGenericFunctionClosure>();
   LambdaListHandler_sp gf_llh = gfc->_lambdaListHandler;
   if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments()) {
     SIMPLE_ERROR(BF("There is a mismatch between the number of required arguments\n"
@@ -138,7 +138,7 @@ void SingleDispatchGenericFunctionClosure::addMethod(SingleDispatchMethod_sp met
     */
 LCC_RETURN SingleDispatchGenericFunctionClosure::LISP_CALLING_CONVENTION() {
   Function_sp func;
-  Cache *cache(_lisp->singleDispatchMethodCachePtr());
+  gc::tagged_pointer<Cache> cache(_lisp->singleDispatchMethodCachePtr());
   gctools::Vec0<T_sp> &vektor = cache->keys();
   vektor[0] = this->name;
   Class_sp dispatchArgClass = vektor[1] = lisp_instance_class(LCC_ARG0());
@@ -251,7 +251,7 @@ void SingleDispatchGenericFunction_O::exposePython(::core::Lisp_sp lisp) {
 SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp name, LambdaListHandler_sp llh) {
   _G();
   GC_ALLOCATE(SingleDispatchGenericFunction_O, gf);
-  SingleDispatchGenericFunctionClosure *gfc = gctools::ClassAllocator<SingleDispatchGenericFunctionClosure>::allocateClass(name);
+  gctools::tagged_pointer<SingleDispatchGenericFunctionClosure> gfc = gctools::ClassAllocator<SingleDispatchGenericFunctionClosure>::allocateClass(name);
   gfc->finishSetup(llh, kw::_sym_function);
   gf->closure = gfc;
   return gf;

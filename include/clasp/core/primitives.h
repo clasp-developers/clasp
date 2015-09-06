@@ -121,13 +121,13 @@ class ListOfSequenceSteppers //: public gctools::StackRoot
   friend class ListOfListSteppers;
 
 private:
-  gctools::Vec0<SequenceStepper *> _Steppers;
+  gctools::Vec0<gctools::tagged_pointer<SequenceStepper>> _Steppers;
   bool _AtEnd;
 
 public:
   ListOfSequenceSteppers(){};
   ListOfSequenceSteppers(List_sp sequences);
-  virtual ~ListOfSequenceSteppers();
+  virtual ~ListOfSequenceSteppers() {};
   bool atEnd() const { return this->_AtEnd; };
   //	List_sp makeListFromCurrentSteppers() const;
   void fillValueFrameUsingCurrentSteppers(ActivationFrame_sp frame) const;

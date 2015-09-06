@@ -670,7 +670,7 @@ T_mv af_macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_en
       err << "lambda_list: " << _rep_(llh) << std::endl;
       err << "Passing argument 1: " << _rep_(form) << std::endl;
       err << "Passing argument 2: " << _rep_(macro_env) << std::endl;
-      gctools::tagged_functor<Closure> closure = macro_function->closure;
+      gctools::tagged_pointer<Closure> closure = macro_function->closure;
       err << "macro_function[" << _rep_(macro_function->functionName()) << std::endl;
       if (auto ic = closure.as<InterpretedClosure>()) {
         err << "code: " << _rep_(ic->code());
@@ -877,10 +877,10 @@ ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
     if (Vector_sp vobj = obj.asOrNull<Vector_O>()) {
       if (cl_length(vobj) == 0)
         goto EMPTY;
-      VectorStepper *vP(gctools::ClassAllocator<VectorStepper>::allocateClass(vobj));
+      gctools::tagged_pointer<VectorStepper> vP(gctools::ClassAllocator<VectorStepper>::allocateClass(vobj));
       this->_Steppers.push_back(vP);
     } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      ConsStepper *cP(gctools::ClassAllocator<ConsStepper>::allocateClass(cobj));
+      gctools::tagged_pointer<ConsStepper> cP(gctools::ClassAllocator<ConsStepper>::allocateClass(cobj));
       this->_Steppers.push_back(cP);
     } else if (obj.nilp()) {
       goto EMPTY;
@@ -894,12 +894,6 @@ EMPTY:
   this->_AtEnd = true;
 }
 
-ListOfSequenceSteppers::~ListOfSequenceSteppers() {
-  for (auto rit = this->_Steppers.begin();
-       rit != this->_Steppers.end(); rit++) {
-    gctools::ClassAllocator<SequenceStepper>::deallocateClass(*rit);
-  }
-}
 
 void ListOfSequenceSteppers::fillValueFrameUsingCurrentSteppers(ActivationFrame_sp frame) const {
   _G();
@@ -933,7 +927,7 @@ ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
   for (auto cur : sequences) {
     T_sp obj = oCar(cur);
     if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      ConsStepper *cP(gctools::ClassAllocator<ConsStepper>::allocateClass(cobj));
+      gctools::tagged_pointer<ConsStepper> cP(gctools::ClassAllocator<ConsStepper>::allocateClass(cobj));
       this->_Steppers.push_back(cP);
     } else {
       goto EMPTY;

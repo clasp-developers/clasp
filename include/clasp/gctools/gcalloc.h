@@ -61,15 +61,15 @@ namespace gctools {
   };
 
   template <class OT>
-    struct GCObjectInitializer<tagged_functor<OT>, true> {
-    typedef tagged_functor<OT> functor_pointer_type;
+    struct GCObjectInitializer<tagged_pointer<OT>, true> {
+    typedef tagged_pointer<OT> functor_pointer_type;
     static void initializeIfNeeded(functor_pointer_type sp) {
       THROW_HARD_ERROR(BF("Figure out why this is being invoked, you should never need to initialize a functor!"));
     };
   };
   template <class OT>
-    struct GCObjectInitializer<tagged_functor<OT>, false> {
-    typedef tagged_functor<OT> functor_pointer_type;
+    struct GCObjectInitializer<tagged_pointer<OT>, false> {
+    typedef tagged_pointer<OT> functor_pointer_type;
     static void initializeIfNeeded(functor_pointer_type sp){
       // initialize not needed
     };
@@ -93,7 +93,7 @@ namespace gctools {
 */
   class GCStack {
   public:
-      typedef enum { undefined, frame, pad } frameType;
+      typedef enum { undefined_t, frame_t, pad_t } frameType;
       size_t _MaxSize;
       size_t _TotalSize;
 #ifdef USE_BOEHM
@@ -165,7 +165,24 @@ namespace gctools {
 #define FRAME_HEADER_SIZE_FIELD(hptr) *(((int*)hptr)+1)
 #define FRAME_START(hptr) (uintptr_t*)(((char*)hptr)+FRAME_HEADER_SIZE)
 #define FRAME_HEADER(fptr) (uintptr_t*)(((char*)fptr)-FRAME_HEADER_SIZE)
-      void* pushFrame(size_t frameSize) {
+      void* frameImplHeaderAddress(void* frameImpl) {
+        return (void*)((char*)frameImpl - FRAME_HEADER_SIZE);
+      }
+      GCStack::frameType frameImplHeaderType(void* frameImpl) {
+        void* frameImplHeader = (void*)((char*)frameImpl - FRAME_HEADER_SIZE);
+        return (GCStack::frameType)(FRAME_HEADER_TYPE_FIELD(frameImplHeader));
+      }
+      int frameImplHeaderSize(void* frameImpl) {
+        void* frameImplHeader = (void*)((char*)frameImpl - FRAME_HEADER_SIZE);
+        return (int)(FRAME_HEADER_SIZE_FIELD(frameImplHeader));
+      }
+
+      int frameImplBodySize(void* frameImpl) {
+        void* frameImplHeader = (void*)((char*)frameImpl - FRAME_HEADER_SIZE);
+        return (int)(FRAME_HEADER_SIZE_FIELD(frameImplHeader)-FRAME_HEADER_SIZE);
+      }
+
+      void* pushFrameImpl(size_t frameSize) {
           frameSize = STACK_ALIGN_UP(frameSize);
           uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE + frameSize;
 #ifdef USE_BOEHM
@@ -175,7 +192,7 @@ namespace gctools {
 #else
           uintptr_t* headerAndFrame = (uintptr_t*)GC_MALLOC(headerAndFrameSize);
 #endif
-          FRAME_HEADER_TYPE_FIELD(headerAndFrame) = frame;
+          FRAME_HEADER_TYPE_FIELD(headerAndFrame) = frame_t;
           FRAME_HEADER_SIZE_FIELD(headerAndFrame) = headerAndFrameSize;
           void* frameStart = headerAndFrame + 1; // skip uintptr_t header
           this->_TotalSize += headerAndFrameSize;
@@ -189,18 +206,17 @@ namespace gctools {
               THROW_HARD_ERROR(BF("Could not mps_ap_frame_push"));
           }
           mps_addr_t p;
-          size_t aligned_size = frameSize; /* see note 1 */
           uintptr_t* allocP;
           do {
-              mps_res_t res = mps_reserve(&p, this->_AllocationPoint, aligned_size);
+              mps_res_t res = mps_reserve(&p, this->_AllocationPoint, headerAndFrameSize);
               if (res != MPS_RES_OK) {
                   THROW_HARD_ERROR(BF("Out of memory in GCStack::allocateFrame"));
               }
               allocP = reinterpret_cast<uintptr_t*>(p);
-              memset(allocP,0,aligned_size);
-          } while (!mps_commit(this->_AllocationPoint, p, aligned_size)); /* see note 2 */
+              memset(allocP,0,headerAndFrameSize);
+          } while (!mps_commit(this->_AllocationPoint, p, headerAndFrameSize)); /* see note 2 */
           DEBUG_MPS_UNDERSCANNING_TESTS();
-          FRAME_HEADER_TYPE_FIELD(allocP) = frame;
+          FRAME_HEADER_TYPE_FIELD(allocP) = frame_t;
           FRAME_HEADER_SIZE_FIELD(allocP) = headerAndFrameSize;
           void* frameStart = FRAME_START(allocP); // skip uintptr_t header
           this->_TotalSize += headerAndFrameSize;
@@ -218,9 +234,9 @@ namespace gctools {
           }
           return frameStart;
       }
-      void popFrame(void* frame) {
+      void popFrameImpl(void* frameImpl) {
 #ifdef USE_BOEHM
-          uintptr_t* frameHeaderP = reinterpret_cast<uintptr_t*>(frame)-1;
+          uintptr_t* frameHeaderP = reinterpret_cast<uintptr_t*>(frameImpl)-1;
           uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
           this->_TotalSize = this->_TotalSize - headerAndFrameSize;
 #ifdef BOEHM_ONE_BIG_STACK
@@ -242,7 +258,7 @@ namespace gctools {
 #endif
 #endif // USE_BOEHM
 #ifdef USE_MPS
-          uintptr_t* frameHeaderP = FRAME_HEADER(frame);
+          uintptr_t* frameHeaderP = FRAME_HEADER(frameImpl);
           uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
           this->_TotalSize -= headerAndFrameSize;
           mps_frame_t frame_o = this->frames.back();
@@ -312,9 +328,9 @@ struct RootClassAllocator {
       obj = BasePtrToMostDerivedPtr<T>(addr);
       new (obj) T(std::forward<ARGS>(args)...);
     } while (!mps_commit(obj_ap, addr, sz));
-    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.nonMovingAllocation(sz);
     DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, gctools::GCKind<T>::Kind);
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     POLL_SIGNALS();
     return obj;
 #endif
@@ -334,7 +350,7 @@ template <class T>
 struct ClassAllocator {
   /*! Allocate regular C++ classes that will be garbage collected as soon as nothing points to them */
   template <class... ARGS>
-  static T *allocateClass(ARGS &&... args) {
+  static tagged_pointer<T> allocateClass(ARGS &&... args) {
     size_t sz = sizeof_with_header<T>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
@@ -345,12 +361,13 @@ struct ClassAllocator {
     T *obj = BasePtrToMostDerivedPtr<T>(base);
     new (obj) T(std::forward<ARGS>(args)...);
     POLL_SIGNALS();
-    return obj;
+    return tagged_pointer<T>(obj);
 #endif
 #ifdef USE_MPS
     // Different classes can have different Headers
     typedef typename GCHeader<T>::HeaderType HeadT;
     T *obj;
+    tagged_pointer<T> tagged_obj;
     mps_ap_t obj_ap = GCAllocationPoint<T>::get();
     mps_addr_t addr;
     do {
@@ -362,19 +379,16 @@ struct ClassAllocator {
       new (header) HeadT(GCKind<T>::Kind);
       obj = BasePtrToMostDerivedPtr<T>(addr);
       new (obj) T(std::forward<ARGS>(args)...);
+      tagged_obj = tagged_pointer<T>(obj);
     } while (!mps_commit(obj_ap, addr, sz));
-    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.unknownAllocation(sz);
     DEBUG_MPS_ALLOCATION("AP", addr, obj, sz, gctools::GCKind<T>::Kind);
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     POLL_SIGNALS();
-    return obj;
+    return tagged_obj;
 #endif
   }
 
-  /*! Allocate regular C++ classes that will be garbage collected as soon as nothing points to them */
-  static void deallocateClass(T *ptr) {
-    // BOEHM and MPS do nothing
-  }
 };
 };
 
@@ -416,9 +430,9 @@ struct GCObjectAppropriatePoolAllocator {
       obj = BasePtrToMostDerivedPtr<OT>(addr);
       new (obj) OT(std::forward<ARGS>(args)...);
     } while (!mps_commit(obj_ap, addr, size));
-    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.movingAllocation(size);
     DEBUG_MPS_ALLOCATION("AMC", addr, obj, size, gctools::GCKind<OT>::Kind);
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     smart_pointer_type sp = gctools::smart_ptr<value_type>(obj);
     return sp;
 #endif
@@ -460,9 +474,9 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/true, /*Moveable=*/true> 
       obj = BasePtrToMostDerivedPtr<OT>(addr);
       new (obj) OT(std::forward<ARGS>(args)...);
     } while (!mps_commit(obj_ap, addr, size));
-    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.movingZeroRankAllocation(size);
     DEBUG_MPS_ALLOCATION("AMCZ", addr, obj, size, /*gctools::*/ GCKind<OT>::Kind);
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(obj);
     return sp;
 #endif
@@ -505,9 +519,9 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/false, /*Moveable=*/false
       obj = BasePtrToMostDerivedPtr<OT>(addr);
       new (obj) OT(std::forward<ARGS>(args)...);
     } while (!mps_commit(obj_ap, addr, size));
-    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.nonMovingAllocation(size);
     DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, size, /*gctools::*/ GCKind<OT>::Kind);
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(obj);
     return sp;
 #endif
@@ -694,11 +708,11 @@ public:
       myAddress = (BasePtrToMostDerivedPtr<TY>(addr));
       new (myAddress) TY(num);
     } while (!mps_commit(obj_ap, addr, size));
-    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.movingAllocation(size);
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
-    POLL_SIGNALS();
     DEBUG_MPS_ALLOCATION("containerAMC", addr, myAddress, size, /*gctools::*/ GCKind<TY>::Kind);
+    DEBUG_MPS_UNDERSCANNING_TESTS();
+    POLL_SIGNALS();
     return myAddress;
 #endif
   }
@@ -785,11 +799,11 @@ public:
       myAddress = (BasePtrToMostDerivedPtr<TY>(addr));
       new (myAddress) TY(num);
     } while (!mps_commit(obj_ap, addr, size));
-    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.nonMovingAllocation(size);
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     POLL_SIGNALS();
     DEBUG_MPS_ALLOCATION("container_MVFF", addr, myAddress, size, /*gctools::*/ GCKind<TY>::Kind);
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     return myAddress;
 #endif
   }
@@ -872,12 +886,12 @@ public:
       new (header) HeadT(GCKind<TY>::Kind);
       //                header->kind._Kind = /*gctools::*/GCKind<container_type>::Kind;
     } while (!mps_commit(obj_ap, base, sz));
-    DEBUG_MPS_UNDERSCANNING_TESTS();
     globalMpsMetrics.movingZeroRankAllocation(sz);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
     new (myAddress) TY(num);
     POLL_SIGNALS();
     DEBUG_MPS_ALLOCATION("string_AMCZ", base, myAddress, sz, /*gctools::*/ GCKind<TY>::Kind);
+    DEBUG_MPS_UNDERSCANNING_TESTS();
     return myAddress;
 #endif
   }
@@ -963,6 +977,7 @@ public:
         THROW_HARD_ERROR(BF("NULL address in allocate!"));
       new (myAddress) container_type(num);
     } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
+    DEBUG_MPS_ALLOCATION("weak_link_Bucket", addr, myAddress, size, /*gctools::*/ KIND_null);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     if (!myAddress)
       THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>"));
@@ -1048,6 +1063,7 @@ public:
         THROW_HARD_ERROR(BF("NULL address in allocate!"));
       new (myAddress) container_type(num);
     } while (!mps_commit(_global_strong_link_allocation_point, addr, size));
+    DEBUG_MPS_ALLOCATION("strong_link_Bucket", addr, myAddress, size, /*gctools::*/ KIND_null);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     if (!myAddress)
       THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,StrongLinks>>"));
@@ -1125,6 +1141,7 @@ public:
       myAddress = reinterpret_cast<container_pointer>(addr);
       new (myAddress) container_type(val);
     } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
+    DEBUG_MPS_ALLOCATION("weak_link_Allocator", addr, myAddress, size, /*gctools::*/ KIND_null);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     return myAddress;
@@ -1171,6 +1188,7 @@ public:
       myAddress = reinterpret_cast<container_pointer>(addr);
       new (myAddress) container_type(val);
     } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
+    DEBUG_MPS_ALLOCATION("weak_link2_Allocator", addr, myAddress, size, /*gctools::*/ KIND_null);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     return myAddress;
@@ -1214,6 +1232,7 @@ public:
       myAddress = reinterpret_cast<value_pointer>(addr);
       new (myAddress) VT(val);
     } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
+    DEBUG_MPS_ALLOCATION("weak_link3_Allocator", addr, myAddress, size, /*gctools::*/ KIND_null);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     return myAddress;
 #endif

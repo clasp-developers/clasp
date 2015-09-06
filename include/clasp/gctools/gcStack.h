@@ -46,10 +46,12 @@ It uses RAII to pop its array of pointers from the stack when the Frame goes out
     /*! Calculate the number of elements required to represent the frame.
      It's IdxValuesArray+#elements */
       static inline size_t FrameSize(size_t elements) {
-        return (elements+IdxOverflowArgs) - LCC_ARGS_IN_REGISTERS;
+        return ((elements+IdxOverflowArgs) - LCC_ARGS_IN_REGISTERS)*sizeof(ElementType);
       }
       Frame(size_t numArguments,core::T_sp parent = _Nil<core::T_O>());
       void setLength(size_t l) { this->_Length = l; };
+      //! Describe the Frame
+      void dump() const;
       ~Frame();
       inline ElementType& operator[](size_t idx) {
         return this->_frameImpl[IdxValuesArray+idx];

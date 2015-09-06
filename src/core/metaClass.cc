@@ -105,7 +105,7 @@ T_sp af_allocateRawClass(T_sp orig, Class_sp metaClass, int slots, T_sp classNam
   return newClass;
 };
 
-Class_O::Class_O() : Class_O::Base(), _Signature_ClassSlots(_Unbound<T_O>()), _creator(NULL){};
+Class_O::Class_O() : Class_O::Base(), _Signature_ClassSlots(_Unbound<T_O>()), _theCreator() {};
 
 void Class_O::initializeSlots(int slots) {
   if (slots < Class_O::NumberOfClassSlots) {
@@ -161,13 +161,13 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
   }
   if (aCxxDerivableAncestorClass_unsafe) {
     // Here aCxxDerivableAncestorClass_unsafe has a value - so it's ok to dereference it
-    Creator *aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
+    gc::tagged_pointer<Creator> aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
     // gctools::StackRootedPointer<Creator> aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
-    Creator *dup(aCxxAllocator->duplicateForClassName(this->name()));
+    gc::tagged_pointer<Creator> dup(aCxxAllocator->duplicateForClassName(this->name()));
     //gctools::StackRootedPointer<Creator> dup(aCxxAllocator->duplicateForClassName(this->name()));
     this->setCreator(dup); // this->setCreator(dup.get());
   } else {
-    InstanceCreator *instanceAllocator = gctools::ClassAllocator<InstanceCreator>::allocateClass(this->name());
+    gc::tagged_pointer<InstanceCreator> instanceAllocator = gctools::ClassAllocator<InstanceCreator>::allocateClass(this->name());
     //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
     this->setCreator(instanceAllocator); // this->setCreator(instanceAllocator.get());
   }
@@ -185,7 +185,7 @@ string Class_O::classNameAsString() const {
 
 T_sp Class_O::allocate_newNil() {
   _G();
-  if (this->_creator == NULL) {
+  if (!this->_theCreator) {
     IMPLEMENT_MEF(BF("All allocation should be done through _creator"));
     // if the newNil_callback is NULL then allocate an instance
     int slots = unbox_fixnum(gc::As<Fixnum_sp>(this->_MetaClassSlots[REF_SIZE]));
@@ -193,7 +193,7 @@ T_sp Class_O::allocate_newNil() {
     return Instance_O::allocateInstance(this->asSmartPtr(), slots);
     //	    SIMPLE_ERROR(BF("_creator for %s is NULL!!") % _rep_(this->asSmartPtr()) );
   }
-  T_sp newObject = this->_creator->allocate();
+  T_sp newObject = this->_theCreator->allocate();
   return newObject;
 }
 
@@ -256,7 +256,7 @@ string Class_O::dumpInfo() {
   for (auto cc : this->directSuperclasses()) {
     ss << "Base class: " << gc::As<Class_sp>(oCar(cc))->instanceClassName() << std::endl;
   }
-  ss << boost::format("this.instanceCreator* = %p") % (void *)(this->getCreator()) << std::endl;
+  ss << boost::format("this.instanceCreator* = %p") % (void *)(&*this->getCreator()) << std::endl;
   return ss.str();
 }
 
@@ -480,7 +480,7 @@ void Class_O::describe() {
       printf("directSuperclasses: %s\n", gc::As<Class_sp>(oCar(cc))->instanceClassName().c_str());
     }
   }
-  printf(" this.instanceCreator* = %p\n", (void *)(this->getCreator()));
+  printf(" this.instanceCreator* = %p\n", (void *)(this->getCreator().raw_()));
   if (!this->hasCreator()) {
     printf("_creator = NULL\n");
   } else {
@@ -583,7 +583,7 @@ void Class_O::exposeCando(Lisp_sp lisp) {
       .def("core:nameOfClass", &Class_O::className)
       .def("core:direct-superclasses", &Class_O::directSuperclasses)
       .def("core:hasCreator", &Class_O::hasCreator)
-      .def("core:getCreator", &Class_O::getCreator);
+//      .def("core:getCreator", &Class_O::getCreator);
   //	SYMBOL_SC_(CorePkg,makeSureClosClassSlotsMatchClass);
   //	Defun(makeSureClosClassSlotsMatchClass);
   SYMBOL_SC_(CorePkg, subclassp);

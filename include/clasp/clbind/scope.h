@@ -68,7 +68,7 @@ struct CLBIND_API registration {
   virtual ~registration();
 
 public:
-  virtual core::Creator *registerDefaultConstructor_() const { HARD_SUBCLASS_MUST_IMPLEMENT(); };
+  virtual gc::tagged_pointer<core::Creator> registerDefaultConstructor_() const { HARD_SUBCLASS_MUST_IMPLEMENT(); };
 
 protected:
   virtual void register_() const = 0;

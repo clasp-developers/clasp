@@ -137,8 +137,8 @@ T_mv core_mangleName(Symbol_sp sym, bool is_function) {
     return Values(_Nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
   Function_sp fsym = coerce::functionDesignator(sym);
-  gctools::tagged_functor<Closure> closure = fsym->closure;
-  if (gctools::tagged_functor<BuiltinClosure> bcc = closure.asOrNull<BuiltinClosure>()) {
+  gctools::tagged_pointer<Closure> closure = fsym->closure;
+  if (gctools::tagged_pointer<BuiltinClosure> bcc = closure.asOrNull<BuiltinClosure>()) {
     (void)bcc; // suppress warning
     return Values(_lisp->_true(), Str_O::create("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
@@ -399,8 +399,8 @@ T_mv af_implicit_compile_hook_default(T_sp form, T_sp env) {
   stringstream ss;
   ss << "repl" << _lisp->nextReplCounter();
   Symbol_sp name = _lisp->intern(ss.str());
-  gctools::tagged_functor<InterpretedClosure> ic =
-      gctools::tagged_functor<InterpretedClosure>(gctools::ClassAllocator<InterpretedClosure>::allocateClass(
+  gctools::tagged_pointer<InterpretedClosure> ic =
+      gctools::tagged_pointer<InterpretedClosure>(gctools::ClassAllocator<InterpretedClosure>::allocateClass(
           name, sourcePosInfo, kw::_sym_function, llh, _Nil<T_O>(), _Nil<T_O>(), env, code));
   Function_sp thunk = Function_O::make(ic);
   return eval::funcall(thunk);
@@ -598,7 +598,7 @@ T_sp core_partialApplysPerSecond(int stage, T_sp fn, List_sp args) {
               }
 #endif
               if (stage >= 5) {
-                gctools::tagged_functor<Closure> closureP = func->closure;
+                gctools::tagged_pointer<Closure> closureP = func->closure;
                 ASSERTF(closureP, BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
                 eval::applyClosureToActivationFrame(closureP, frame);
               }
@@ -983,7 +983,7 @@ T_mv core_multipleValueFuncall(T_sp funcDesignator, List_sp functions) {
   }
   accArgs.setLength(idx);
   Function_sp fmv = coerce::functionDesignator(funcDesignator);
-  gctools::tagged_functor<Closure> func = fmv->closure;
+  gctools::tagged_pointer<Closure> func = fmv->closure;
   LCC_CALL_WITH_ARGS_IN_FRAME(result,func,accArgs);
   return T_mv(result);
 }

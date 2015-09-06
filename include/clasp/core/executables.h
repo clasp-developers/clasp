@@ -77,7 +77,7 @@ public:
   virtual int column() const;
 };
 
-extern void handleArgumentHandlingExceptions(gctools::tagged_functor<FunctionClosure>);
+extern void handleArgumentHandlingExceptions(gctools::tagged_pointer<FunctionClosure>);
 };
 
 namespace core {
@@ -91,14 +91,14 @@ class Function_O : public T_O {
   void archiveBase(ArchiveP node);
 #endif  // defined(XML_ARCHIVE)
 public: // was protected:
-  gctools::tagged_functor<Closure> closure;
+  gctools::tagged_pointer<Closure> closure;
 
 public:
   Function_O() : Base(), closure(){};
   virtual ~Function_O(){};
 
 public:
-  static Function_sp make(gctools::tagged_functor<Closure> c) {
+  static Function_sp make(gctools::tagged_pointer<Closure> c) {
     GC_ALLOCATE(Function_O, f);
     f->closure = c;
     return f;
@@ -191,7 +191,7 @@ public:
   virtual ~CompiledFunction_O(){};
 
 public:
-  static CompiledFunction_sp make(gctools::tagged_functor<Closure> c) {
+  static CompiledFunction_sp make(gctools::tagged_pointer<Closure> c) {
     GC_ALLOCATE(CompiledFunction_O, f);
     f->closure = c;
     //            printf("%s:%d Returning CompiledFunction_sp func=%p &f=%p\n", __FILE__, __LINE__, f.px_ref(), &f);

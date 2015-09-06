@@ -492,7 +492,6 @@ void WeakHashTable::clrhash() {
 extern "C" {
 using namespace gctools;
 mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
-  THROW_HARD_ERROR(BF("Handle tagged pointers"));
   MPS_SCAN_BEGIN(ss) {
     while (base < limit) {
       WeakObject *weakObj = reinterpret_cast<WeakObject *>(base);
@@ -502,7 +501,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         MPS_FIX12(ss, reinterpret_cast<mps_addr_t *>(&obj->dependent));
         for (int i(0), iEnd(obj->length()); i < iEnd; ++i) {
           core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket[i].raw_());
-          if (MPS_FIX1(ss, p)) {
+          if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
             core::T_O *pobj = gctools::untag_object<core::T_O*>(p);
             core::T_O *tag = gctools::tag<core::T_O*>(p);
             mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
@@ -525,7 +524,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         for (int i(0), iEnd(obj->length()); i < iEnd; ++i) {
           // MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&(obj->bucket[i].raw_())));
           core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket[i].raw_());
-          if (MPS_FIX1(ss, p)) {
+          if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
             core::T_O *pobj = gctools::untag_object<core::T_O*>(p);
             core::T_O *tag = gctools::tag<core::T_O*>(p);
             mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
@@ -541,7 +540,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         WeakMappingObjectType *obj = reinterpret_cast<WeakMappingObjectType *>(weakObj);
         MPS_FIX12(ss, reinterpret_cast<mps_addr_t *>(&obj->dependent));
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket.raw_());
-        if (MPS_FIX1(ss, p)) {
+        if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
           core::T_O *pobj = gctools::untag_object<core::T_O*>(p);
           core::T_O *tag = gctools::tag<core::T_O*>(p);
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
@@ -562,7 +561,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         MPS_FIX12(ss, reinterpret_cast<mps_addr_t *>(&obj->dependent));
         //                    MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&(obj->bucket.raw_())));
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket.raw_());
-        if (MPS_FIX1(ss, p)) {
+        if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
           core::T_O *pobj = gctools::untag_object<core::T_O*>(p);
           core::T_O *tag = gctools::tag<core::T_O*>(p);
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
@@ -577,7 +576,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         WeakPointer *obj = reinterpret_cast<WeakPointer *>(base);
         // MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&(obj->value.raw_())));
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->value.raw_());
-        if (MPS_FIX1(ss, p)) {
+        if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
           core::T_O *pobj = gctools::untag_object<core::T_O*>(p);
           core::T_O *tag = gctools::tag<core::T_O*>(p);
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));

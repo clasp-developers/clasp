@@ -88,7 +88,7 @@ public:
 public: // Functions here
   /*! Return the Cons of methods attached to this SingleDispatchGenericFunction */
   List_sp methods() const {
-    gctools::tagged_functor<SingleDispatchGenericFunctionClosure> cl = this->closure.as<SingleDispatchGenericFunctionClosure>();
+    gctools::tagged_pointer<SingleDispatchGenericFunctionClosure> cl = this->closure.as<SingleDispatchGenericFunctionClosure>();
     return cl->_Methods;
   };
 

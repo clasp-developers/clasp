@@ -429,7 +429,7 @@ Function_sp core_coerce_to_function(T_sp arg) {
       List_sp code;
       parse_lambda_body(body, declares, docstring, code);
       LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
-      InterpretedClosure *ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass
+      gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass
         ( cl::_sym_lambda, _Nil<T_O>(), kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code);
       Function_sp proc = Function_O::make(ic);
       return proc;
@@ -1142,7 +1142,8 @@ T_sp core_extractLambdaName(List_sp lambdaExpression, T_sp defaultValue) {
     T_sp first = oCar(form);
     if (cl_consp(first)) {
       if (oCar(first) == cl::_sym_block) {
-        Symbol_sp name = oCadr(first);
+        T_sp second = oCadr(first);
+        Symbol_sp name = gc::As<Symbol_sp>(oCadr(first));
         if (name.notnilp()) {
           // Only return block name if not nil
           return name;
@@ -1201,7 +1202,7 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
       printf("%s:%d   Could not find source info for lambda\n", __FILE__, __LINE__);
     }
   }
-  InterpretedClosure *ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(
+  gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(
       name, spi, kw::_sym_function, llh, declares, docstring, env, code);
   Function_sp proc = Function_O::make(ic);
   return proc;
@@ -1439,7 +1440,7 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
       parse_lambda_body(outer_body, declares, docstring, code);
       LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
       printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
-      InterpretedClosure *ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name, _Nil<SourcePosInfo_O>(), kw::_sym_macro, outer_llh, declares, docstring, newEnv, code);
+      gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name, _Nil<SourcePosInfo_O>(), kw::_sym_macro, outer_llh, declares, docstring, newEnv, code);
       outer_func = Function_O::make(ic);
     }
     LOG(BF("func = %s") % outer_func_cons->__repr__());
@@ -1493,7 +1494,7 @@ T_mv do_symbolMacrolet(List_sp args, T_sp env, bool topLevelForm) {
                                                                  oCadr(declares),
                                                                  cl::_sym_function);
     printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
-    InterpretedClosure *ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(_sym_symbolMacroletLambda, _Nil<T_O>(), kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion);
+    gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(_sym_symbolMacroletLambda, _Nil<T_O>(), kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion);
     Function_sp outer_func = Function_O::make(ic);
     newEnv->addSymbolMacro(name, outer_func);
     cur = oCdr(cur);
@@ -1600,7 +1601,7 @@ T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
   return exec;
 }
 
-T_mv applyClosureToActivationFrame(gctools::tagged_functor<Closure> func, ActivationFrame_sp args) {
+T_mv applyClosureToActivationFrame(gctools::tagged_pointer<Closure> func, ActivationFrame_sp args) {
   size_t nargs = args->length();
   T_sp *frame = args->argArray();
   switch (nargs) {
@@ -1613,7 +1614,7 @@ T_mv applyClosureToActivationFrame(gctools::tagged_functor<Closure> func, Activa
 }
 
 #if 0
-T_mv applyClosureToStackFrame(gctools::tagged_functor<Closure> func, T_sp stackFrame) {
+T_mv applyClosureToStackFrame(gctools::tagged_pointer<Closure> func, T_sp stackFrame) {
 IMPLEMENT_MEF(BF("Handle new valist"));
 #if 0
 T_mv result;
@@ -1638,7 +1639,7 @@ T_mv applyToStackFrame(T_sp head, T_sp stackFrame) {
   ASSERT(stackFrame.valistp());
   Function_sp fn = lookupFunction(head, stackFrame);
   ASSERT(fn.notnilp());
-  gctools::tagged_functor<Closure> closureP = fn->closure;
+  gctools::tagged_pointer<Closure> closureP = fn->closure;
   ASSERTF((closureP), BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
   return applyClosureToStackFrame(closureP, stackFrame);
 }
@@ -1656,7 +1657,7 @@ T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp args) {
     SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
   }
   Function_sp ffn = gc::As<Function_sp>(tfn);
-  gctools::tagged_functor<Closure> closureP = ffn->closure;
+  gctools::tagged_pointer<Closure> closureP = ffn->closure;
   if ( closureP ) {
     return applyClosureToActivationFrame(closureP, args);
   }
@@ -2157,6 +2158,9 @@ T_mv cl_apply(T_sp head, T_sp args) {
   //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
   //            printf("    environment: %s\n", _rep_(environment).c_str() );
     T_mv result;
+    Cons_sp cform;
+    List_sp form;
+    T_sp head;
     af_stackMonitor();
     EvaluateDepthUpdater evaluateDepthUpdater;
     if (_evaluateVerbosity > 0) {
@@ -2164,33 +2168,46 @@ T_mv cl_apply(T_sp head, T_sp args) {
     }
     if (exp.nilp()) {
     //		LOG(BF("Expression is nil - returning nil"));
-      return Values(exp);
+      if (_evaluateVerbosity > 0) {
+        printf("core::eval::evaluate depth[%5d] return <- %s\n", _evaluateDepth, _rep_(exp).c_str());
+      }
+      result = Values(exp);
+      goto DONE;
     }
-    if (cl_atom(exp))
-      return evaluate_atom(exp, environment);
+    if (cl_atom(exp)) {
+      result = evaluate_atom(exp, environment);
+      goto DONE;
+    }
   //
   // If it reached here then exp is a cons
   //
   //	    LOG(BF("Evaluating cons[%s]") % exp->__repr__() );
   //	    printf("    Evaluating: %s\n", _rep_(exp).c_str() );
   //	    printf("    In env: %s\n", _rep_(environment).c_str() );
-    Cons_sp cform = exp.asOrNull<Cons_O>();
-    List_sp form = cform;
+    cform = exp.asOrNull<Cons_O>();
+    form = cform;
     ASSERTNOTNULL(form);
-    T_sp head = oCar(form);
+    head = oCar(form);
     if (Symbol_sp headSym = head.asOrNull<Symbol_O>()) {
       T_sp specialForm = _lisp->specialFormOrNil(headSym);
-      if (!specialForm.nilp())
-        return evaluate_specialForm(specialForm, form, environment);
+      if (!specialForm.nilp()) {
+        result = evaluate_specialForm(specialForm, form, environment);
+        goto DONE;
+      }
 
-      if (headSym == cl::_sym_cond)
-        return evaluate_cond(form, environment);
-      else if (headSym == cl::_sym_case)
-        return evaluate_case(form, environment);
-      else if (headSym == cl::_sym_multipleValueSetq)
-        return evaluate_multipleValueSetq(form, environment);
-      else if (headSym == cl::_sym_prog1)
-        return evaluate_prog1(form, environment);
+      if (headSym == cl::_sym_cond) {
+        result = evaluate_cond(form, environment);
+        goto DONE;
+      } else if (headSym == cl::_sym_case) {
+        result = evaluate_case(form, environment);
+        goto DONE;
+      } else if (headSym == cl::_sym_multipleValueSetq) {
+        result =  evaluate_multipleValueSetq(form, environment);
+        goto DONE;
+      } else if (headSym == cl::_sym_prog1) {
+        result = evaluate_prog1(form, environment);
+        goto DONE;
+      }
 
       T_sp theadFunc = af_interpreter_lookup_macro(headSym, environment);
       if (theadFunc.notnilp()) {
@@ -2209,7 +2226,7 @@ T_mv cl_apply(T_sp head, T_sp args) {
         //			_lisp->error(cond.conditionObject()/*,environment*/);
         }; // catch (...) {throw;};
         result = eval::evaluate(expanded, environment);
-        return (result);
+        goto DONE;
       }
       theadFunc = af_interpreter_lookup_function(headSym, environment);
       if (theadFunc.nilp()) {
@@ -2231,13 +2248,20 @@ T_mv cl_apply(T_sp head, T_sp args) {
       VaList_S valist_struct(callArgs);
       VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
       Function_sp headFunc = gc::As<Function_sp>(theadFunc);
-      return eval::apply_consume_VaList(headFunc,valist);
+      result = eval::apply_consume_VaList(headFunc,valist);
+      goto DONE;
     }
     {
       List_sp headCons = head;
       ASSERTF(headCons, BF("Illegal head %s - must be a LAMBDA expression") % _rep_(head));
-      return evaluate_lambdaHead(headCons, form, environment);
+      result = evaluate_lambdaHead(headCons, form, environment);
+      goto DONE;
     }
+  DONE:
+    if (_evaluateVerbosity > 0) {
+      printf("core::eval::evaluate depth[%5d] <---- %p\n", _evaluateDepth, exp.raw_() );
+    }
+    return result;
   }
 
   void evaluateIntoActivationFrame(ActivationFrame_sp af,

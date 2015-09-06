@@ -57,7 +57,7 @@ namespace RegMap {
 using asttooling::internal::MatcherDescriptor;
 
 void RegistryMaps::_registerMatcher(core::Symbol_sp MatcherName,
-                                    MatcherDescriptor *Callback) const {
+                                    gctools::tagged_pointer<MatcherDescriptor> Callback) const {
 #ifdef DEBUG_ON
   ConstructorMap::iterator pos = this->find(MatcherName);
   ASSERTF(pos == Constructors.end(), BF("The MatcherName %s has already had a constructor defined for it") % _rep_(MatcherName));
@@ -72,9 +72,9 @@ void RegistryMaps::_registerMatcher(core::Symbol_sp MatcherName,
 #define SPECIFIC_MATCHER_OVERLOAD(name, Id)            \
   static_cast<::clang::ast_matchers::name##_Type##Id>( \
       ::clang::ast_matchers::name)
-#define REGISTER_OVERLOADED_2(name)                                                                                                                                                                                                                            \
-  do {                                                                                                                                                                                                                                                         \
-    MatcherDescriptor *Callbacks[] = {internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 0), core::lispify_intern_keyword(#name)), internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), core::lispify_intern_keyword(#name))}; \
+#define REGISTER_OVERLOADED_2(name) \
+  do { \
+  gctools::tagged_pointer<MatcherDescriptor> Callbacks[] = {internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 0), core::lispify_intern_keyword(#name)), internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), core::lispify_intern_keyword(#name))}; \
     _registerMatcher(core::lispify_intern_keyword(#name), gctools::ClassAllocator<internal::OverloadedMatcherDescriptor>::allocateClass(Callbacks) /*new internal::OverloadedMatcherDescriptor(Callbacks)*/);                                                  \
   } while (0)
 

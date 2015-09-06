@@ -882,7 +882,7 @@ public:
   /*! If this is the allocator for a primary CxxAdapter class then return true, */
   virtual int duplicationLevel() const { return 0; };
   virtual size_t templatedSizeof() const = 0;
-  virtual Creator *duplicateForClassName(core::Symbol_sp className) {
+  virtual gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
     printf("Subclass must implement Creator::duplicateForClassName\n");
     exit(1);
   };
@@ -1015,9 +1015,9 @@ string symbol_repr(Symbol_sp);
 Symbol_sp lisp_symbolNil();
 T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp sym);
 void lisp_exposeClass(const string &className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction);
-void lisp_addClass(Symbol_sp classSymbol, Creator *cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
+ void lisp_addClass(Symbol_sp classSymbol, gctools::tagged_pointer<Creator> cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
 void lisp_addClass(Symbol_sp classSymbol);
-void lisp_addClassAndInitialize(Symbol_sp classSymbol, Creator *cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
+ void lisp_addClassAndInitialize(Symbol_sp classSymbol, gctools::tagged_pointer<Creator> cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
 void lisp_throwIfBuiltInClassesNotInitialized();
 string lisp_classNameFromClassSymbol(Symbol_sp classSymbol);
 Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol);
@@ -1052,10 +1052,10 @@ LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List
 				 const string& docstring="", int locked=1, bool autoExport=true, int number_of_required_arguments=0 );
 #endif
 void lisp_defmacro(Symbol_sp name, const string &packageName,
-                   BuiltinClosure *, const string &arguments = "", const string &declarestring = "",
+                   gc::tagged_pointer<BuiltinClosure>, const string &arguments = "", const string &declarestring = "",
                    const string &docstring = "", bool autoExport = true);
 void lisp_defun(Symbol_sp name, const string &packageName,
-                BuiltinClosure *, const string &arguments = "", const string &declarestring = "",
+                gc::tagged_pointer<BuiltinClosure>, const string &arguments = "", const string &declarestring = "",
                 const string &docstring = "", const string &sourceFile = "", int sourceLine = 0, bool autoExport = true, int number_of_required_arguments = 0, const std::set<int> &skipIndices = std::set<int>());
 void lisp_defgeneric(const string &packageName, const string &name,
                      Functoid *, const string &arguments = "", const string &docstring = "", bool autoExport = true);
@@ -1063,7 +1063,7 @@ void lisp_defmethod(Symbol_sp gfSymbol, Functoid *func, const string &arguments,
 
 void lisp_defineSingleDispatchMethod(Symbol_sp name,
                                      Symbol_sp classSymbol,
-                                     BuiltinClosure *,
+                                     gc::tagged_pointer<BuiltinClosure> ,
                                      int TemplateDispatchOn = 0,
                                      const string &lambda_list = "",
                                      const string &declares = "",

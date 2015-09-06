@@ -178,7 +178,7 @@ public:
   virtual core::T_sp allocate() {
     SIMPLE_ERROR(BF("This class cannot allocate instances"));
   } //return _Nil<core::T_O>(); };
-  Creator *duplicateForClassName(core::Symbol_sp className) {
+  gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
     return gctools::ClassAllocator<DummyCreator>::allocateClass(core::lisp_symbolNameAsString(className));
   }
 };
@@ -392,7 +392,7 @@ struct memfun_registration : registration {
   void register_() const {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(name, symbol_packageName(classSymbol));
-    core::BuiltinClosure *methoid = gctools::ClassAllocator<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocateClass(sym, methodPtr);
+    gctools::tagged_pointer<core::BuiltinClosure> methoid = gctools::ClassAllocator<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocateClass(sym, methodPtr);
     lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, m_arguments, m_declares, m_docstring, true, CountMethodArguments<MethodPointerType>::value + 1 // +1 for the self argument
                                     ,
                                     GatherPureOutValues<Policies, 0>::gather());
@@ -427,7 +427,7 @@ struct iterator_registration : registration {
   void register_() const {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(name, symbol_packageName(classSymbol));
-    core::BuiltinClosure *methoid = gctools::ClassAllocator<IteratorMethoid<Policies, Class, Begin, End>>::allocateClass(sym, beginPtr, endPtr);
+    gctools::tagged_pointer<core::BuiltinClosure> methoid = gctools::ClassAllocator<IteratorMethoid<Policies, Class, Begin, End>>::allocateClass(sym, beginPtr, endPtr);
 
     //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
     //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
@@ -479,7 +479,7 @@ struct constructor_registration_base : public registration {
     };
     //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
     core::Symbol_sp sym = core::lispify_intern(tname, core::lisp_currentPackageName());
-    core::BuiltinClosure *f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies, Pointer, Class, Signature>>::allocateClass(sym);
+    gctools::tagged_pointer<core::BuiltinClosure> f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies, Pointer, Class, Signature>>::allocateClass(sym);
     lisp_defun(sym, core::lisp_currentPackageName(), f, m_arguments, m_declares, m_docstring, "=external=", 0, true, CountConstructorArguments<Signature>::value);
   }
 
@@ -499,8 +499,8 @@ struct constructor_registration : public constructor_registration_base<Class, Po
 template <class Class, class Pointer, class Policies>
 struct constructor_registration<Class, Pointer, default_constructor, Policies> : public constructor_registration_base<Class, Pointer, default_constructor, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
-  core::Creator *registerDefaultConstructor_() const {
-    core::Creator *allocator = gctools::ClassAllocator<DefaultConstructorCreator<Class, Pointer>>::allocateClass();
+  gc::tagged_pointer<core::Creator> registerDefaultConstructor_() const {
+    gc::tagged_pointer<core::Creator> allocator = gctools::ClassAllocator<DefaultConstructorCreator<Class, Pointer>>::allocateClass();
     return allocator;
   }
 };
@@ -539,10 +539,9 @@ struct constructor_registration_base<Class, reg::null_type, default_constructor,
 template <class Class, class Policies>
 struct constructor_registration<Class, reg::null_type, default_constructor, Policies> : public constructor_registration_base<Class, reg::null_type, default_constructor, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
-  core::Creator *registerDefaultConstructor_() const {
+  gc::tagged_pointer<core::Creator> registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
-    core::Creator *allocator = gctools::ClassAllocator<DerivableDefaultConstructorCreator<Class>>::allocateClass();
-    return allocator;
+    return gctools::ClassAllocator<DerivableDefaultConstructorCreator<Class>>::allocateClass();
   }
 };
 
@@ -581,7 +580,7 @@ struct property_registration : registration {
     //                printf("%p\n", i);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
-    core::BuiltinClosure *getter = gctools::ClassAllocator<GetterMethoid<reg::null_type, Class, Get>>::allocateClass(sym, get);
+    gctools::tagged_pointer<core::BuiltinClosure> getter = gctools::ClassAllocator<GetterMethoid<reg::null_type, Class, Get>>::allocateClass(sym, get);
     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, m_arguments, m_declares, m_docstring, true, 1);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here

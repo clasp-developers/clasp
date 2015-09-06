@@ -255,12 +255,12 @@ class Lisp_O {
     T_sp _TrueObject;
 
     /*! SingleDispatchGenericFunction cache */
-    Cache *_SingleDispatchMethodCachePtr;
+    gc::tagged_pointer<Cache> _SingleDispatchMethodCachePtr;
 #if CLOS
     /*! Generic functions method cache */
-    Cache *_MethodCachePtr;
+    gc::tagged_pointer<Cache> _MethodCachePtr;
     /*! Generic functions slot cache */
-    Cache *_SlotCachePtr;
+    gc::tagged_pointer<Cache> _SlotCachePtr;
 #endif
     DoubleFloat_sp _RehashSize;
     DoubleFloat_sp _RehashThreshold;
@@ -522,9 +522,9 @@ public: // numerical constants
   LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne; };
 #endif // ifdef CLASP_LONG_FLOAT
 public:
-  Cache *singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
-  Cache *methodCachePtr() const { return this->_Roots._MethodCachePtr; };
-  Cache *slotCachePtr() const { return this->_Roots._SlotCachePtr; };
+  gc::tagged_pointer<Cache> singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
+  gc::tagged_pointer<Cache> methodCachePtr() const { return this->_Roots._MethodCachePtr; };
+  gc::tagged_pointer<Cache> slotCachePtr() const { return this->_Roots._SlotCachePtr; };
 
 public:
   /*! Setup makePackage and exportSymbol callbacks */
@@ -953,8 +953,8 @@ public:
   void initializeEnvironment();
 
   void addClassNameToPackageAsDynamic(const string &package, const string &name, Class_sp cl);
-  void addClass(Symbol_sp classSymbol, Creator *creator, Symbol_sp base1ClassSymbol, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
-  void addClass(Symbol_sp classSymbol, Class_sp theClass, Creator *creator);
+  void addClass(Symbol_sp classSymbol, gc::tagged_pointer<Creator> creator, Symbol_sp base1ClassSymbol, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
+  void addClass(Symbol_sp classSymbol, Class_sp theClass, gc::tagged_pointer<Creator> creator);
   //	void addClass( Symbol_sp classSymbol);
 
   string __repr__() const;

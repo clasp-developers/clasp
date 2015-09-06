@@ -763,7 +763,7 @@ void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
   }
 }
 
-CoreExposer *CoreExposer::create_core_packages_and_classes() {
+gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_classes() {
   _G();
   LOG(BF("Initialize core classes by hand"));
   BootStrapCoreSymbolMap bootStrapSymbolMap;
@@ -828,7 +828,7 @@ CoreExposer *CoreExposer::create_core_packages_and_classes() {
 #include INIT_CLASSES_INC_H
 #undef Use_CorePkg
   }
-  CoreExposer *coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocateClass(_lisp);
+  gctools::tagged_pointer<CoreExposer> coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocateClass(_lisp);
   Package_sp corePackage = coreExposerPtr->package();
   _lisp->_Roots._CorePackage = corePackage;
   _lisp->_Roots._KeywordPackage = keywordPackage;

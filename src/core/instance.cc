@@ -111,7 +111,7 @@ T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots) {
   if (!cl->hasCreator()) {
     IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots);
   }
-  core::Creator *allocatorP = (cl->getCreator());
+  gc::tagged_pointer<core::Creator> allocatorP = (cl->getCreator());
   T_sp obj = allocatorP->allocate();
   if (obj.nilp()) {
     printf("%s:%d allocateInstance returning nil!!!\n", __FILE__, __LINE__);

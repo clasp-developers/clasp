@@ -128,15 +128,17 @@ Symbol_sp BootStrapCoreSymbolMap::lookupSymbol(string const &packageName, string
 void BootStrapCoreSymbolMap::finish_setup_of_symbols() {
   _G();
   //printf("%s:%d finish_setup_of_symbols\n", __FILE__, __LINE__ );
+  int idxEnd = this->_SymbolNamesToIndex.size();
   for (map<string, int>::const_iterator it = this->_SymbolNamesToIndex.begin();
        it != this->_SymbolNamesToIndex.end(); it++) {
-    //	    printf("%s:%d  Adding symbol to package: %s\n", __FILE__, __LINE__, this->_IndexToSymbol[it->second]._PackageName.c_str()  );
-    string packageName = this->_IndexToSymbol[it->second]._PackageName;
-    Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
-    //            printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.pbase());
     int idx = it->second;
+    SymbolStorage& ss = this->_IndexToSymbol[idx];
+    string packageName = ss._PackageName;
+    printf("%s:%d  Adding symbol[%d/%d] to package: %s\n", __FILE__, __LINE__, idx, idxEnd, packageName.c_str());
+    Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
+    printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.raw_());
     //            printf("%s:%d  The symbol index is %d\n", __FILE__, __LINE__, idx );
-    this->_IndexToSymbol[idx]._Symbol->finish_setup(pkg, this->_IndexToSymbol[idx]._Export);
+    ss._Symbol->finish_setup(pkg, ss._Export);
   }
 }
 
@@ -145,6 +147,9 @@ void BootStrapCoreSymbolMap::dump() {
        it != this->_SymbolNamesToIndex.end(); it++) {
     string ts = it->first;
     printf("%s\n", ts.c_str());
+    SymbolStorage& ss = this->_IndexToSymbol[it->second];
+    printf("    _PackageName: %s   _SymbolName: %s   _Export: %d\n",
+           ss._PackageName.c_str(), ss._SymbolName.c_str(), ss._Export );
   }
 }
 };

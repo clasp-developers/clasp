@@ -144,7 +144,7 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
     if (o.nilp()) {
       SIMPLE_ERROR(BF("You cannot pass nil as a function"));
     } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
-      gctools::tagged_functor<core::Closure> closure = func->closure;
+      gctools::tagged_pointer<core::Closure> closure = func->closure;
       if (auto compiledClosure = closure.asOrNull<llvmo::CompiledClosure>()) {
         core::CompiledClosure_fptr_type fptr = compiledClosure->fptr;
         this->_v = [fptr](const clang::tooling::CommandLineArguments &args) -> clang::tooling::CommandLineArguments {

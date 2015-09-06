@@ -177,6 +177,9 @@ extern "C" {
 using namespace gctools;
 
 const char *obj_name(gctools::GCKindEnum kind) {
+  if ( kind == KIND_null ) {
+    return "UNDEFINED";
+  }
 #ifndef RUNNING_GC_BUILDER
 #define GC_KIND_NAME_MAP_TABLE
 #include <clasp/main/clasp_gc.cc>
@@ -198,7 +201,6 @@ using namespace gctools;
 mps_addr_t obj_skip(mps_addr_t client) {
   mps_addr_t oldClient = client;
   // The client must have a valid header
-  DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SKIP_TABLE
 #include <clasp/main/clasp_gc.cc>
@@ -206,6 +208,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #endif
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
   MPS_LOG(BF(" client = %p   header=%p  header-desc: %s") % client % header % header->description());
+  DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
   if (header->kindP()) {
     gctools::GCKindEnum kind = header->kind();
 #ifndef RUNNING_GC_BUILDER

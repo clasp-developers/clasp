@@ -439,7 +439,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   this->_EnvironmentId = 0;
   this->_Roots._CommandLineArguments.reset_();
   this->_Bundle = bundle;
-  CoreExposer *coreExposerPtr = NULL;
+  gctools::tagged_pointer<CoreExposer> coreExposerPtr;
   BuiltInClass_sp classDummy;
   {
     _BLOCK_TRACE("Initialize core classes");
@@ -965,7 +965,7 @@ void Lisp_O::addClassNameToPackageAsDynamic(const string &package, const string 
 /*! Add the class with (className) to the current package
  */
 void Lisp_O::addClass(Symbol_sp classSymbol,
-                      Creator *alloc,
+                      gctools::tagged_pointer<Creator> alloc,
                       Symbol_sp base1ClassSymbol,
                       Symbol_sp base2ClassSymbol,
                       Symbol_sp base3ClassSymbol) {
@@ -994,13 +994,13 @@ void Lisp_O::addClass(Symbol_sp classSymbol,
   if (IS_SYMBOL_DEFINED(base3ClassSymbol)) {
     cc->addInstanceBaseClass(base3ClassSymbol);
   }
-  ASSERTF(alloc != NULL, BF("_creator for %s is NULL!!!") % _rep_(classSymbol));
+  ASSERTF((bool)alloc, BF("_creator for %s is NULL!!!") % _rep_(classSymbol));
   cc->setCreator(alloc);
 }
 
 /*! Add the class with (className) to the current package
  */
-void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, Creator *allocator) {
+void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, gc::tagged_pointer<Creator> allocator) {
   _G();
   //	printf("%s:%d:%s  Adding class with symbol %s -- _allocator=%p unless we initialize it properly\n", __FILE__,__LINE__,__FUNCTION__,_rep_(classSymbol).c_str(), allocator );
   LOG(BF("Lisp_O::addClass classSymbol(%s)") % _rep_(classSymbol));

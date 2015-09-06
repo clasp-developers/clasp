@@ -527,7 +527,7 @@ core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, char *sou
   core::SourceFileInfo_mv sfi = core::core_sourceFileInfo(sourceStr);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1))); // sfindex could be written into the Module global for debugging
   core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex, filePos, lineno, column);
-  core::FunctionClosure *closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP, spi, kw::_sym_function, funcPtr, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP);
+  gctools::tagged_pointer<core::FunctionClosure> closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP, spi, kw::_sym_function, funcPtr, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP);
   core::CompiledFunction_sp compiledFunction = core::CompiledFunction_O::make(closure);
   return compiledFunction;
 };
@@ -1770,7 +1770,7 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
   core::SourceFileInfo_mv sfi = core::core_sourceFileInfo(sourceStr);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1))); // sfindex could be written into the Module global for debugging
   core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,lineno,column);
-  llvmo::CompiledClosure *functoid = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(tlambdaName // functionName - make this something useful!
+  gctools::tagged_pointer<llvmo::CompiledClosure> functoid = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(tlambdaName // functionName - make this something useful!
                                                                                                     ,
                                                                                                     spi // _Nil<core::T_O>() // SourcePosInfo
                                                                                                     ,

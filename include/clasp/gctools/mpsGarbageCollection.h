@@ -517,7 +517,8 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
       obj = obj | tag;
       *taggedP = obj;
     };
-  } else {
+  } else if (*taggedP) {
+    printf("%s:%d POINTER_FIX called on untagged pointer\n", __FILE__, __LINE__ );
     DEBUG_MPS_MESSAGE(boost::format("Untagged POINTER_FIX of %s@%p px: %p") % client_name % taggedP % *taggedP);
     gctools::Tagged obj = *taggedP;
     if (MPS_FIX1(_ss, obj)) {

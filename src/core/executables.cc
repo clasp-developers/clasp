@@ -71,7 +71,7 @@ T_mv core_functionLambdaList(T_sp obj) {
 #define DOCS_core_functionSourcePosInfo "functionSourcePosInfo"
 gc::Nilable<SourcePosInfo_sp> core_functionSourcePosInfo(T_sp functionDesignator) {
   Function_sp func = coerce::functionDesignator(functionDesignator);
-  gctools::tagged_functor<Closure> closure = func->closure;
+  gctools::tagged_pointer<Closure> closure = func->closure;
   gc::Nilable<SourcePosInfo_sp> sourcePosInfo = closure->sourcePosInfo();
   return sourcePosInfo;
 }
@@ -209,7 +209,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
 SYMBOL_EXPORT_SC_(KeywordPkg, requiredNumberOfArguments);
 SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
 
-void handleArgumentHandlingExceptions(gctools::tagged_functor<FunctionClosure> closure) {
+void handleArgumentHandlingExceptions(gctools::tagged_pointer<FunctionClosure> closure) {
   Function_sp func = Function_O::make(closure);
   try {
     throw;
@@ -228,7 +228,7 @@ void handleArgumentHandlingExceptions(gctools::tagged_functor<FunctionClosure> c
 T_mv cl_functionLambdaExpression(Function_sp fn) {
   _G();
   List_sp code = _Nil<List_V>();
-  if (gctools::tagged_functor<InterpretedClosure> ic = fn->closure.asOrNull<InterpretedClosure>()) {
+  if (gctools::tagged_pointer<InterpretedClosure> ic = fn->closure.asOrNull<InterpretedClosure>()) {
     code = ic->_code;
   }
   bool closedp = true; // fn->closedEnvironment().notnilp();
@@ -241,7 +241,7 @@ T_mv cl_functionLambdaExpression(Function_sp fn) {
 #define DECL_core_functionSourceCode ""
 #define DOCS_core_functionSourceCode "functionSourceCode"
 T_sp core_functionSourceCode(Function_sp fn) {
-  gctools::tagged_functor<Closure> closure = fn->closure;
+  gctools::tagged_pointer<Closure> closure = fn->closure;
   if (auto ic = closure.as<InterpretedClosure>()) {
     return ic->code();
   }

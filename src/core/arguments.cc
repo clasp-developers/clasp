@@ -208,7 +208,8 @@ void ValueEnvironmentDynamicScopeManager::new_binding(const Argument &argument, 
     return;
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
-  this->_Environment->new_binding(gc::As<Symbol_sp>(argument._ArgTarget), argument._ArgTargetFrameIndex, val);
+  T_sp argTarget = argument._ArgTarget;
+  this->_Environment->new_binding(gc::As<Symbol_sp>(argTarget), argument._ArgTargetFrameIndex, val);
 }
 
 void ValueEnvironmentDynamicScopeManager::new_variable(List_sp classified, T_sp val) {

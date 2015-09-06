@@ -172,7 +172,7 @@ public:
   virtual core::T_sp allocate() {
     SIMPLE_ERROR(BF("This class cannot allocate instances"));
   } //return _Nil<core::T_O>(); };
-  Creator *duplicateForClassName(core::Symbol_sp className) {
+  gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
     return gctools::ClassAllocator<DummyCreator>::allocateClass(core::lisp_symbolNameAsString(className));
   }
 };

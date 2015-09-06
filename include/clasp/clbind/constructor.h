@@ -106,8 +106,8 @@ public:
     //            clbind::support_enable_wrapper_from_this<T,Pointer>(retval,naked_ptr,naked_ptr);
     return retval;
   }
-  Creator *duplicateForClassName(core::Symbol_sp className) {
-    Creator *allocator = gctools::ClassAllocator<DefaultConstructorCreator<T, Pointer>>::allocateClass(className, this->_Kind, this->_duplicationLevel + 1);
+  gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
+    gc::tagged_pointer<Creator> allocator = gctools::ClassAllocator<DefaultConstructorCreator<T, Pointer>>::allocateClass(className, this->_Kind, this->_duplicationLevel + 1);
     return allocator;
   }
 };
@@ -178,9 +178,8 @@ public:
     //            clbind::support_enable_wrapper_from_this<T,Pointer>(retval,naked_ptr,naked_ptr);
     return obj;
   }
-  Creator *duplicateForClassName(core::Symbol_sp className) {
-    Creator *allocator = gctools::ClassAllocator<DerivableDefaultConstructorCreator<T>>::allocateClass(className, this->_Kind, this->_duplicationLevel + 1);
-    return allocator;
+  gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
+    return gctools::ClassAllocator<DerivableDefaultConstructorCreator<T>>::allocateClass(className, this->_Kind, this->_duplicationLevel + 1);
   }
 };
 };

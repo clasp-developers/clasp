@@ -129,24 +129,32 @@ T_sp af_format(T_sp destination, T_sp control, List_sp args) {
       ++cur;
       switch (*cur) {
       case 'c':
-        tf << "%c";
-        break;
+          tf << "%c";
+          break;
       case 's':
       case 'S':
-        tf << "%s";
-        break;
+          tf << "%s";
+          break;
       case 'd':
-        tf << "%d";
-        break;
+          tf << "%d";
+          break;
       case 'a':
       case 'A':
-        tf << "%s";
-        break;
+          tf << "%s";
+          break;
+      case '&':
+          tf << std::endl;
+          break;
       case '%':
-        tf << std::endl;
-        break;
+          tf << std::endl;
+          break;
       default:
-        SIMPLE_ERROR(BF("Add support for control[%s]") % cur);
+        {
+          stringstream serr;
+          serr << "Add support to BFORMAT to translate FORMAT control <tilde>" << *cur;
+          SIMPLE_ERROR(BF("%s") % (serr.str()));
+        }
+        break;
       }
       ++cur;
     } else if (*cur == '%') {

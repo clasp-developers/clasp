@@ -69,7 +69,7 @@ class GCArray {
 #endif
 public:
   // Only this instance variable is allowed
-  GCArray_moveable<T> *_Contents;
+  gctools::tagged_pointer<GCArray_moveable<T>> _Contents;
 
 public:
   typedef Allocator allocator_type;
@@ -104,24 +104,13 @@ private:
 
 public:
   GCArray() : _Contents(NULL){};
-  ~GCArray() {
-#ifdef USE_REFCOUNT
-    if (this->_Contents != NULL) {
-      Allocator alloc;
-      GCArray_moveable<T> *ptr = this->_Contents;
-      this->_Contents = NULL;
-      alloc.deallocate(ptr, ptr->_Capacity); // When USE_MPS - does nothing
-    }
-#endif
-  }
+  ~GCArray() {}
 
   void clear() { this->_Contents = NULL; };
 
   template <typename... ARGS>
   void allocate(size_t numExtraArgs, const value_type &initialElement, ARGS &&... args) {
-    if (this->_Contents != NULL) {
-      THROW_HARD_ERROR(BF("GCArray allocate called and array has contents"));
-    }
+    GCTOOLS_ASSERTF(!(this->_Contents), BF("GCArray allocate called and array is already defined"));
     allocator_type alloc;
     pointer_to_moveable implAddress = alloc.allocate(sizeof...(ARGS) + numExtraArgs);
     new (implAddress) GCArray_moveable<value_type, sizeof...(ARGS)>(numExtraArgs, std::forward<ARGS>(args)...);

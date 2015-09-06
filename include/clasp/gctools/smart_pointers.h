@@ -228,7 +228,6 @@ namespace gctools {
     explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
       GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
     };
-
     inline smart_ptr(const return_type &rt) : theObject((Type*)rt.ret0) {};
 
     inline smart_ptr(const smart_ptr<Type> &obj) : theObject(obj.theObject){};
@@ -1279,6 +1278,7 @@ namespace core {
 using gctools::Fixnum;
 };
 
+#if 0
 namespace gctools {
 /*! Maintain tagged pointers to Functoids and their derived classes
       It would be better to have a separate tag for these.  
@@ -1291,9 +1291,9 @@ public:
   Type *thePointer;
 
 public:
-  tagged_functor() : thePointer(NULL){};
+ explicit tagged_functor() : thePointer(NULL){};
   template <typename From>
-  inline tagged_functor(tagged_functor<From> const &rhs) {
+  explicit inline tagged_functor(tagged_functor<From> const &rhs) {
     if (LIKELY(rhs.generalp())) {
       Type *px = dynamic_cast<Type *>(untag_general<From *>(rhs.thePointer));
       if (px) {
@@ -1305,7 +1305,7 @@ public:
     THROW_HARD_ERROR(BF("Bad tag on tagged_functor in constructor"));
   };
 
-  tagged_functor(Type *f) : thePointer(reinterpret_cast<Type *>(reinterpret_cast<char *>(f) + general_tag)){};
+ explicit tagged_functor(Type *f) : thePointer(reinterpret_cast<Type *>(reinterpret_cast<char *>(f) + general_tag)){};
   Type *operator->() {
     GCTOOLS_ASSERT(this->generalp());
     return untag_general(this->thePointer);
@@ -1373,6 +1373,104 @@ public:
     THROW_HARD_ERROR(BF("Illegal cast of tagged_functor"));
   }
 };
+};
+#endif
+
+
+namespace gctools {
+  /*! Maintain tagged pointers to stretchable arrays */
+  template <typename T>
+    class tagged_pointer {
+  public:
+    typedef T Type;
+    Type *thePointer;
+  public:
+  tagged_pointer() : thePointer(NULL){};
+    template <typename From>
+      inline tagged_pointer(tagged_pointer<From> const &rhs) {
+      if (LIKELY(rhs.generalp())) {
+        Type *px = dynamic_cast<Type *>(untag_general<From *>(rhs.thePointer));
+        if (px) {
+          this->thePointer = tag_general<Type *>(px);
+          return;
+        }
+        THROW_HARD_ERROR(BF("Cannot cast tagged_pointer in constructor"));
+      }
+      THROW_HARD_ERROR(BF("Bad tag on tagged_pointer in constructor"));
+    };
+
+    
+  tagged_pointer(Type *f) : thePointer(reinterpret_cast<Type *>(reinterpret_cast<char *>(f) + general_tag)){};
+    inline Type *operator->() {
+      GCTOOLS_ASSERT(this->generalp());
+      return untag_general(this->thePointer);
+    };
+    inline Type *operator->() const {
+      GCTOOLS_ASSERT(this->generalp());
+      return untag_general(this->thePointer);
+    };
+    inline Type &operator*() const {
+      GCTOOLS_ASSERT(this->generalp());
+      return *untag_general(this->thePointer);
+    };
+
+    inline Type* raw_() { return this->thePointer; };
+    inline bool generalp() const {
+      return tagged_generalp(this->thePointer);
+    }
+    void reset_() {
+      this->thePointer = NULL;
+    }
+    explicit inline operator bool() const {
+      return this->thePointer != NULL;
+    }
+
+    // Should never need to convert types
+    template <class o_class>
+      inline tagged_pointer<o_class> asOrNull() {
+      if (this->generalp()) {
+        o_class *cast = dynamic_cast<o_class *>(untag_general<T *>(this->thePointer));
+        if (cast == NULL)
+          return tagged_pointer<o_class>();
+        tagged_pointer<o_class> ret(cast);
+        return ret;
+      }
+      THROW_HARD_ERROR(BF("Illegal tagged pointer for tagged_pointer"));
+    // unreachable
+      tagged_pointer<o_class> fail;
+      return fail;
+    }
+
+    template <class o_class>
+      inline tagged_pointer<o_class> asOrNull() const {
+      if (this->generalp()) {
+        o_class *cast = dynamic_cast<o_class *>(untag_general<T *>(this->thePointer));
+        if (cast == NULL)
+          return tagged_pointer<o_class>();
+        tagged_pointer<o_class> ret(cast);
+        return ret;
+      }
+      THROW_HARD_ERROR(BF("Illegal tagged pointer for tagged_pointer"));
+    // unreachable
+      tagged_pointer<o_class> fail;
+      return fail;
+    }
+    template <class o_class>
+      inline tagged_pointer<o_class> as() {
+      tagged_pointer<o_class> ret = this->asOrNull<o_class>();
+      if (ret)
+        return ret;
+      THROW_HARD_ERROR(BF("Illegal cast of tagged_pointer"));
+    }
+
+    template <class o_class>
+      inline tagged_pointer<o_class> as() const {
+      tagged_pointer<o_class> ret = this->asOrNull<o_class>();
+      if (ret)
+        return ret;
+      THROW_HARD_ERROR(BF("Illegal cast of tagged_pointer"));
+    }
+  };
 };
 
 namespace gctools {
