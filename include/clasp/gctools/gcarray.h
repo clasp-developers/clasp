@@ -81,6 +81,7 @@ public:
   typedef GCArray<T, Allocator> my_type;
   typedef GCArray_moveable<T> impl_type;
   typedef GCArray_moveable<T> *pointer_to_moveable;
+    typedef gctools::tagged_pointer<GCArray_moveable<T>> tagged_pointer_to_moveable;
 
 private:
   GCArray<T, Allocator>(const GCArray<T, Allocator> &other);       // disable copy ctor
@@ -112,8 +113,8 @@ public:
   void allocate(size_t numExtraArgs, const value_type &initialElement, ARGS &&... args) {
     GCTOOLS_ASSERTF(!(this->_Contents), BF("GCArray allocate called and array is already defined"));
     allocator_type alloc;
-    pointer_to_moveable implAddress = alloc.allocate(sizeof...(ARGS) + numExtraArgs);
-    new (implAddress) GCArray_moveable<value_type, sizeof...(ARGS)>(numExtraArgs, std::forward<ARGS>(args)...);
+    tagged_pointer_to_moveable implAddress = alloc.allocate(sizeof...(ARGS) + numExtraArgs);
+    new (&*implAddress) GCArray_moveable<value_type, sizeof...(ARGS)>(numExtraArgs, std::forward<ARGS>(args)...);
     for (size_t i(sizeof...(ARGS)); i < (sizeof...(ARGS) + numExtraArgs); ++i) {
       T *p = &((*implAddress)[i]);
       alloc.construct(p, initialElement);

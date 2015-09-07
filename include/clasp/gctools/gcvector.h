@@ -66,10 +66,6 @@ class GCVector {
 //        friend GC_RESULT (::obj_scan)(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 #endif
 public:
-  // Only this instance variable is allowed
-  GCVector_moveable<T> *_Contents;
-
-public:
   typedef Allocator allocator_type;
   typedef T value_type;
   typedef T *pointer_type;
@@ -78,19 +74,24 @@ public:
   typedef T &reference;
   typedef GCVector<T, Allocator> my_type;
   typedef GCVector_moveable<T> impl_type; // implementation type
-  typedef GCVector_moveable<T> *pointer_to_moveable;
+    typedef GCVector_moveable<T> *pointer_to_moveable;
+    typedef gctools::tagged_pointer<GCVector_moveable<T>> tagged_pointer_to_moveable;
   static const size_t GCVectorPad = 8;
   constexpr static const float GCVectorGrow = 2.0;
   constexpr static const float GCVectorShrink = 0.5;
+public:
+  // Only this instance variable is allowed
+    gctools::tagged_pointer<GCVector_moveable<T>> _Contents;
+
 
 public:
   // Copy Ctor
   GCVector<T, Allocator>(const GCVector<T, Allocator> &that) // : GCContainer(GCInfo<value_type>::Kind)
   {
-    if (that._Contents != NULL) {
+    if (that._Contents) {
       allocator_type alloc;
-      pointer_to_moveable implAddress = alloc.allocate(that._Contents->_Capacity);
-      new (implAddress) GCVector_moveable<T>(that._Contents->_Capacity);
+      tagged_pointer_to_moveable implAddress = alloc.allocate(that._Contents->_Capacity);
+      new (&*implAddress) GCVector_moveable<T>(that._Contents->_Capacity);
       for (size_t i(0); i < that._Contents->_End; ++i) {
         T *p = &((*implAddress)[i]);
         alloc.construct(p, that._Contents->_Data[i]);
@@ -106,16 +107,16 @@ public:
   // Assignment operator must destroy the existing contents
   GCVector<T, Allocator> &operator=(const GCVector<T, Allocator> &that) {
     if (this != &that) {
-      if (this->_Contents != NULL) {
+      if (this->_Contents) {
         Allocator alloc;
-        GCVector_moveable<T> *ptr = this->_Contents;
+        gctools::tagged_pointer<GCVector_moveable<T>> ptr = this->_Contents;
         this->_Contents = NULL;
         alloc.deallocate(ptr, ptr->_End);
       }
-      if (that._Contents != NULL) {
+      if (that._Contents) {
         allocator_type alloc;
-        pointer_to_moveable implAddress = alloc.allocate(that._Contents->_Capacity);
-        new (implAddress) GCVector_moveable<T>(that._Contents->_Capacity);
+        tagged_pointer_to_moveable implAddress = alloc.allocate(that._Contents->_Capacity);
+        new (&*implAddress) GCVector_moveable<T>(that._Contents->_Capacity);
         for (size_t i(0); i < that._Contents->_End; ++i) {
           T *p = &((*implAddress)[i]);
           alloc.construct(p, that._Contents->_Data[i]);
@@ -129,7 +130,7 @@ public:
 
 public:
   void swap(my_type &that) {
-    pointer_to_moveable op = that._Contents;
+      tagged_pointer_to_moveable op = that._Contents;
     that._Contents = this->_Contents;
     this->_Contents = op;
   }
@@ -147,9 +148,9 @@ private:
 public:
   GCVector() : _Contents(NULL){};
   ~GCVector() {
-    if (this->_Contents != NULL) {
+    if (this->_Contents) {
       Allocator alloc;
-      GCVector_moveable<T> *ptr = this->_Contents;
+      gctools::tagged_pointer<GCVector_moveable<T>> ptr = this->_Contents;
       this->_Contents = NULL;
       alloc.deallocate(ptr, ptr->_End);
     }
@@ -165,7 +166,7 @@ public:
     if (!this->_Contents) {
       this->reserve(GCVectorPad);
     }
-    pointer_to_moveable vec = this->_Contents;
+    tagged_pointer_to_moveable vec = this->_Contents;
     Allocator alloc;
 #ifdef DEBUG_ASSERTS
     if (this->_Contents->_End > this->_Contents->_Capacity) {
@@ -182,7 +183,7 @@ public:
       }
 #endif
       vec = alloc.allocate(newCapacity);
-      new (vec) GCVector_moveable<T>(newCapacity);
+      new (&*vec) GCVector_moveable<T>(newCapacity);
       for (size_t zi(0); zi < this->_Contents->_End; ++zi) {
         // the array at newAddress is undefined - placement new to copy
         alloc.construct(&((*vec)[zi]), (*this->_Contents)[zi]);
@@ -194,7 +195,7 @@ public:
     ++vec->_End;
     if (vec != this->_Contents) {
       // Save the old vector impl
-      pointer_to_moveable oldVec(this->_Contents);
+        tagged_pointer_to_moveable oldVec(this->_Contents);
       // Replace the old one with the new one in the GVector
       this->_Contents = vec;
       // Deallocate the old one
@@ -207,29 +208,29 @@ public:
   void reserve(size_t n) {
     Allocator alloc;
     if (!this->_Contents) {
-      pointer_to_moveable vec;
-      size_t newCapacity = (n == 0 ? GCVectorPad : n);
-      vec = alloc.allocate(newCapacity);
-      new (vec) GCVector_moveable<T>(newCapacity);
-      // the array at newAddress is undefined - placement new to copy
-      vec->_End = 0;
-      this->_Contents = vec;
-      return;
+        tagged_pointer_to_moveable vec;
+        size_t newCapacity = (n == 0 ? GCVectorPad : n);
+        vec = alloc.allocate(newCapacity);
+        new (&*vec) GCVector_moveable<T>(newCapacity);
+        // the array at newAddress is undefined - placement new to copy
+        vec->_End = 0;
+        this->_Contents = vec;
+        return;
     }
     if (n > this->_Contents->_Capacity) {
-      pointer_to_moveable vec(this->_Contents);
-      size_t newCapacity = n;
-      vec = alloc.allocate(newCapacity);
-      new (vec) GCVector_moveable<T>(newCapacity);
-      // the array at newAddress is undefined - placement new to copy
-      for (size_t zi(0); zi < this->_Contents->_End; ++zi)
-        alloc.construct(&(*vec)[zi], (*this->_Contents)[zi]);
-      vec->_End = this->_Contents->_End;
-      pointer_to_moveable oldVec(this->_Contents);
-      this->_Contents = vec;
-      size_t num = oldVec->_End;
-      oldVec->_End = 0;
-      alloc.deallocate(oldVec, num);
+        tagged_pointer_to_moveable vec(this->_Contents);
+        size_t newCapacity = n;
+        vec = alloc.allocate(newCapacity);
+        new (&*vec) GCVector_moveable<T>(newCapacity);
+        // the array at newAddress is undefined - placement new to copy
+        for (size_t zi(0); zi < this->_Contents->_End; ++zi)
+            alloc.construct(&(*vec)[zi], (*this->_Contents)[zi]);
+        vec->_End = this->_Contents->_End;
+        tagged_pointer_to_moveable oldVec(this->_Contents);
+        this->_Contents = vec;
+        size_t num = oldVec->_End;
+        oldVec->_End = 0;
+        alloc.deallocate(oldVec, num);
     }
   }
 
@@ -237,10 +238,10 @@ public:
   void resize(size_t n, const value_type &x = value_type()) {
     Allocator alloc;
     if (!this->_Contents) {
-      pointer_to_moveable vec;
+        tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCVectorPad : n * GCVectorGrow);
       vec = alloc.allocate(newCapacity);
-      new (vec) GCVector_moveable<T>(newCapacity);
+      new (&*vec) GCVector_moveable<T>(newCapacity);
       // the array at newAddress is undefined - placement new to copy
       for (size_t i(0); i < n; ++i)
         alloc.construct(&(*vec)[i], x);
@@ -251,11 +252,11 @@ public:
     if (n == this->_Contents->_End)
       return; // Size isn't changing;
     if (n > this->_Contents->_End) {
-      pointer_to_moveable vec(this->_Contents);
+        tagged_pointer_to_moveable vec(this->_Contents);
       if (n > this->_Contents->_Capacity) {
         size_t newCapacity = n * GCVectorGrow;
         vec = alloc.allocate(newCapacity);
-        new (vec) GCVector_moveable<T>(newCapacity);
+        new (&*vec) GCVector_moveable<T>(newCapacity);
         // the array at newAddress is undefined - placement new to copy
         for (size_t zi(0); zi < this->_Contents->_End; ++zi)
           alloc.construct(&(*vec)[zi], (*this->_Contents)[zi]);
@@ -265,7 +266,7 @@ public:
         alloc.construct(&(*vec)[i], x);
       vec->_End = n;
       if (vec != this->_Contents) {
-        pointer_to_moveable oldVec(this->_Contents);
+        tagged_pointer_to_moveable oldVec(this->_Contents);
         this->_Contents = vec;
         size_t num = oldVec->_End;
         oldVec->_End = 0;
@@ -314,8 +315,8 @@ public:
       size_t iposition = position - this->begin();
       size_t newCapacity = (this->_Contents->_End + 1) * GCVectorGrow;
       // Allocate a new vector_moveable
-      pointer_to_moveable vec = alloc.allocate(newCapacity);
-      new (vec) GCVector_moveable<T>(newCapacity);
+      tagged_pointer_to_moveable vec = alloc.allocate(newCapacity);
+      new (&*vec) GCVector_moveable<T>(newCapacity);
       // copy elements up to but not including iposition
       for (size_t zi(0); zi < iposition; ++zi)
         alloc.construct(&(*vec)[zi], (*this->_Contents)[zi]);
@@ -325,7 +326,7 @@ public:
       for (size_t zi(iposition); zi < this->_Contents->_End; ++zi)
         alloc.construct(&(*vec)[zi + 1], (*this->_Contents)[zi]);
       vec->_End = this->_Contents->_End + 1;
-      pointer_to_moveable oldVec(this->_Contents);
+      tagged_pointer_to_moveable oldVec(this->_Contents);
       this->_Contents = vec;
       size_t num = oldVec->_End;
       oldVec->_End = 0;

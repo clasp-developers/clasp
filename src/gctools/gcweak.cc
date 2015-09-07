@@ -78,7 +78,7 @@ uint WeakHashTable::sxhashKey(const value_type &key
 	  Return 1 if the element is found or an unbound or deleted entry is found.
 	  Return the entry index in (b)
 	*/
-int WeakHashTable::find(KeyBucketsType *keys, const value_type &key
+    int WeakHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, const value_type &key
 #ifdef USE_MPS
                         ,
                         mps_ld_s *ldP

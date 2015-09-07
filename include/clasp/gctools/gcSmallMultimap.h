@@ -96,7 +96,7 @@ public:
 
   pair<iterator, bool> insert(const value_type &val) {
     iterator it;
-    if ( this->_Contents == NULL ) {
+    if ( !this->_Contents ) {
       this->reserve(4);
     }
     for (it = this->begin(); it != this->end(); ++it) {

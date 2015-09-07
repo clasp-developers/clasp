@@ -1414,6 +1414,16 @@ namespace gctools {
       return *untag_general(this->thePointer);
     };
 
+    template <class U>
+      inline bool operator==(tagged_pointer<U> const other) const {
+        return this->thePointer == other.thePointer;
+    }
+
+    template <class U>
+      inline bool operator!=(tagged_pointer<U> const other) const {
+      return this->thePointer != other.thePointer;
+    }
+
     inline Type* raw_() { return this->thePointer; };
     inline bool generalp() const {
       return tagged_generalp(this->thePointer);

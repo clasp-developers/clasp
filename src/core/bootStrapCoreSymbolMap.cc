@@ -134,9 +134,9 @@ void BootStrapCoreSymbolMap::finish_setup_of_symbols() {
     int idx = it->second;
     SymbolStorage& ss = this->_IndexToSymbol[idx];
     string packageName = ss._PackageName;
-    printf("%s:%d  Adding symbol[%d/%d] to package: %s\n", __FILE__, __LINE__, idx, idxEnd, packageName.c_str());
+//    printf("%s:%d  Adding symbol[%d/%d] to package: %s\n", __FILE__, __LINE__, idx, idxEnd, packageName.c_str());
     Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
-    printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.raw_());
+//    printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.raw_());
     //            printf("%s:%d  The symbol index is %d\n", __FILE__, __LINE__, idx );
     ss._Symbol->finish_setup(pkg, ss._Export);
   }

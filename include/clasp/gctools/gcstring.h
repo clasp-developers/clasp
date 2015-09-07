@@ -69,10 +69,6 @@ class GCString {
 //        friend GC_RESULT (::obj_scan)(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 #endif
 public:
-  // Only this instance variable is allowed
-  mutable GCString_moveable<T> *_Contents;
-
-public:
   typedef Allocator allocator_type;
   typedef T value_type;
   typedef T *pointer_type;
@@ -82,9 +78,15 @@ public:
   typedef GCString<T, Allocator> my_type;
   typedef GCString_moveable<T> impl_type; // implementation type
   typedef GCString_moveable<T> *pointer_to_moveable;
+    typedef gctools::tagged_pointer<GCString_moveable<T>> tagged_pointer_to_moveable;
   static const size_t GCStringPad = 8;
   constexpr static const float GCStringGrow = 2;
   constexpr static const float GCStringShrink = 0.5;
+
+public:
+  // Only this instance variable is allowed
+  mutable tagged_pointer_to_moveable _Contents;
+
 
 private:
   /*! This is slow! - it's just for debugging to trap illegal characters
@@ -151,15 +153,15 @@ public:
   // Assignment operator must destroy the existing contents
   GCString<T, Allocator> &operator=(const GCString<T, Allocator> &that) {
     if (this != &that) {
-      if (this->_Contents != NULL) {
+        if ((bool)this->_Contents) {
         Allocator alloc;
-        GCString_moveable<T> *ptr = this->_Contents;
+        gctools::tagged_pointer<GCString_moveable<T>> ptr = this->_Contents;
         this->_Contents = NULL;
         alloc.deallocate(ptr, ptr->_End);
       }
-      if (that._Contents != NULL) {
+        if ((bool)that._Contents) {
         allocator_type alloc;
-        pointer_to_moveable vec = alloc.allocate(that._Contents->_Capacity);
+        tagged_pointer_to_moveable vec = alloc.allocate(that._Contents->_Capacity);
         memcpy(vec->_Data, that._Contents->_Data, that._Contents->_End * sizeof(value_type));
         vec->_End = that._Contents->_End;
         this->_Contents = vec;
@@ -173,7 +175,7 @@ public:
 
 public:
   void swap(my_type &that) {
-    pointer_to_moveable op = that._Contents;
+      tagged_pointer_to_moveable op = that._Contents;
     that._Contents = this->_Contents;
     this->_Contents = op;
     THROW_IF_ILLEGAL_CHARACTERS(this);
@@ -192,10 +194,9 @@ private:
 public:
   GCString() : _Contents(NULL){};
   ~GCString() {
-    if (this->_Contents != NULL) {
+    if (this->_Contents) {
       Allocator alloc;
-      GCString_moveable<T> *ptr = this->_Contents;
-      this->_Contents = NULL;
+      gctools::tagged_pointer<GCString_moveable<T>> ptr = this->_Contents;
       alloc.deallocate(ptr, ptr->_End);
     }
   }
@@ -209,7 +210,7 @@ public:
   void reserve(size_t n) const {
     Allocator alloc;
     if (!this->_Contents) {
-      pointer_to_moveable vec;
+      tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCStringPad : n);
       vec = alloc.allocate(newCapacity);
       vec->_End = 0;
@@ -220,17 +221,17 @@ public:
       return;
     }
     if (n > this->_Contents->_Capacity) {
-      pointer_to_moveable vec(this->_Contents);
-      size_t newCapacity = n;
-      vec = alloc.allocate(newCapacity);
-      memcpy(vec->_Data, this->_Contents->_Data, this->_Contents->_End * sizeof(value_type));
-      vec->_End = this->_Contents->_End;
-      //                pointer_to_moveable oldVec(this->_Contents);
-      this->_Contents = vec;
-      GCTOOLS_ASSERT(newCapacity == this->_Contents->_Capacity);
-      GCTOOLS_ASSERT(this->_Contents->_End <= this->_Contents->_Capacity);
-      THROW_IF_ILLEGAL_CHARACTERS(this);
-      return;
+        tagged_pointer_to_moveable vec(this->_Contents);
+        size_t newCapacity = n;
+        vec = alloc.allocate(newCapacity);
+        memcpy(vec->_Data, this->_Contents->_Data, this->_Contents->_End * sizeof(value_type));
+        vec->_End = this->_Contents->_End;
+        //                pointer_to_moveable oldVec(this->_Contents);
+        this->_Contents = vec;
+        GCTOOLS_ASSERT(newCapacity == this->_Contents->_Capacity);
+        GCTOOLS_ASSERT(this->_Contents->_End <= this->_Contents->_Capacity);
+        THROW_IF_ILLEGAL_CHARACTERS(this);
+        return;
     }
     THROW_IF_ILLEGAL_CHARACTERS(this);
   }
@@ -248,7 +249,7 @@ public:
   void resize(size_t n, const value_type &x = value_type()) {
     Allocator alloc;
     if (!this->_Contents) {
-      pointer_to_moveable vec;
+        tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCStringPad : n * GCStringGrow);
       vec = alloc.allocate(newCapacity);
       // the array at newAddress is undefined - placement new to copy
@@ -266,12 +267,12 @@ public:
     if (n == this->_Contents->_End)
       return; // Size isn't changing;
     if (n > this->_Contents->_End) {
-      pointer_to_moveable vec(this->_Contents);
+        tagged_pointer_to_moveable vec(this->_Contents);
       if (n > this->_Contents->_Capacity) {
         // We need to expand
         size_t newCapacity = n * GCStringGrow;
         vec = alloc.allocate(newCapacity);
-        new (vec) GCString_moveable<T>(newCapacity);
+        new (&*vec) GCString_moveable<T>(newCapacity);
         memcpy(vec->_Data, this->_Contents->_Data, this->_Contents->_End * sizeof(value_type));
         // fill the new elements with x
         GCTOOLS_ASSERT(vec->_Capacity == newCapacity);
@@ -284,7 +285,7 @@ public:
       vec->_End = n;
       if (vec != this->_Contents) {
         // If we created a new vec then wipe out the old
-        pointer_to_moveable oldVec(this->_Contents);
+          tagged_pointer_to_moveable oldVec(this->_Contents);
         this->_Contents = vec;
         size_t num = oldVec->_End;
         oldVec->_End = 0;

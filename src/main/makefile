@@ -127,6 +127,9 @@ run-clang-check:
 run-clasp:
 	clasp_d clang0.lsp
 
+mps-interface-clasp:
+	$(BCLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
+
 
 mps-interface:
 	@echo Building mps-prep
@@ -134,7 +137,7 @@ mps-interface:
 	make boehm
 	make compile-commands
 	@echo Running parallel search and generating code when done
-	$(CCLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
+	make mps-interface-clasp
 
 export IDIR=$(CLASP_HOME)/build/clasp/Contents/Resources/lib/release
 fix-intrinsics:

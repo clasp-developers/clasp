@@ -40,6 +40,9 @@ local unity_sources =
       all.cc ;
 
 local sources =
+      weakKeyMapping.cc
+      weakHashTable.cc
+      weakPointer.cc
 	    evaluator.cc
 	    compiler.cc
       genericFunction.cc
@@ -92,9 +95,6 @@ local sources =
       write_symbol.cc
       corePackage.cc
       lisp.cc
-      weakKeyMapping.cc
-      weakHashTable.cc
-      weakPointer.cc
 #		objectSet.cc
 		profiler.cc
 		lispDefinitions.cc
