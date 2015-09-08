@@ -426,7 +426,7 @@ void testStrings() {
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   this->_Mode = FLAG_EXECUTE;
 
-  ::_lisp = this; // this->sharedThis<Lisp_O>();
+  ::_lisp = gctools::tagged_pointer<Lisp_O>(this); // this->sharedThis<Lisp_O>();
 
   //	initializeProfiler(this->profiler(),_lisp);
   this->_TraceLevel = 0;

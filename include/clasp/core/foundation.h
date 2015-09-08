@@ -813,7 +813,7 @@ typedef gctools::smart_ptr<Instance_O> Instance_sp;
 //    typedef T_mv (*ActivationFrameFunctionPtr)(ActivationFrame_sp);
 
 class Lisp_O;
-typedef Lisp_O *Lisp_sp;
+ typedef gctools::tagged_pointer<Lisp_O> Lisp_sp;
 class Function_O;
 typedef gctools::smart_ptr<Function_O> Function_sp;
 class Str_O;

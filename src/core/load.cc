@@ -120,7 +120,6 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat) {
 #define DECL_af_load ""
 #define DOCS_af_load "CLHS: load"
 T_sp af_load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_exist, T_sp external_format, T_sp search_list) {
-  _G();
   Pathname_sp pathname;
   T_sp pntype;
   T_sp hooks;

@@ -10,6 +10,7 @@
 		 :cleavir-ast-to-hir
 		 :cleavir-ast-transformations
 		 :cleavir-hir-transformations
+                 :cleavir-remove-useless-instructions
 		 :cleavir-hir-to-mir
 		 :cleavir-basic-blocks
                  :sicl-additional-conditions)
