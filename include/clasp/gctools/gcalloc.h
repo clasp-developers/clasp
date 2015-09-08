@@ -299,7 +299,7 @@ namespace gctools {
 template <class T>
 struct RootClassAllocator {
   template <class... ARGS>
-  static T *allocate(ARGS &&... args) {
+  static gctools::tagged_pointer<T> allocate(ARGS &&... args) {
     size_t sz = sizeof_with_header<T>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
@@ -310,7 +310,8 @@ struct RootClassAllocator {
     T *obj = BasePtrToMostDerivedPtr<T>(base);
     new (obj) T(std::forward<ARGS>(args)...);
     POLL_SIGNALS();
-    return obj;
+    gctools::tagged_pointer<T> tagged_obj(obj);
+    return tagged_obj;
 #endif
 #ifdef USE_MPS
     // Different classes can have different Headers
@@ -318,6 +319,7 @@ struct RootClassAllocator {
     T *obj;
     mps_ap_t obj_ap = global_non_moving_ap;
     mps_addr_t addr;
+    gctools::tagged_pointer<T> tagged_obj;
     do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -327,12 +329,13 @@ struct RootClassAllocator {
       new (header) HeadT(GCKind<T>::Kind);
       obj = BasePtrToMostDerivedPtr<T>(addr);
       new (obj) T(std::forward<ARGS>(args)...);
+      tagged_obj = gctools::tagged_pointer<T>(obj);
     } while (!mps_commit(obj_ap, addr, sz));
     globalMpsMetrics.nonMovingAllocation(sz);
     DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, gctools::GCKind<T>::Kind);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     POLL_SIGNALS();
-    return obj;
+    return tagged_obj;
 #endif
   }
 

@@ -330,7 +330,7 @@ RegistryMaps::~RegistryMaps() {
 }
 
 //        static gctools::ManagedStatic<RegistryMaps> RegistryData;
-RegistryMaps *RegistryData = NULL;
+    gctools::tagged_pointer<RegistryMaps> RegistryData;
 
 } // RegMap namespace - was anonymous namespace
 using namespace RegMap;

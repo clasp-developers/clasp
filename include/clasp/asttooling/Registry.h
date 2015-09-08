@@ -120,7 +120,7 @@ GCPRIVATE:
   mutable ConstructorMap Constructors;
 };
 
-extern RegistryMaps *RegistryData; // defined in Registry.cc
+    extern gctools::tagged_pointer<RegistryMaps> RegistryData; // defined in Registry.cc
 };
 
 class Registry {

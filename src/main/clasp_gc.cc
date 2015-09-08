@@ -14395,7 +14395,6 @@ static void* OBJ_FINALIZE_table[] = { NULL
  SMART_PTR_FIX(core::SourcePosInfo_O::___staticClassSymbol);
  SMART_PTR_FIX(llvmo::BlockAddress_O::___staticClassSymbol);
  SMART_PTR_FIX(core::Pointer_O::___staticClass);
- POINTER_FIX(clbind::globalClassMap);
  SMART_PTR_FIX(core::FunctionContainerEnvironment_O::___staticClassSymbol);
  SMART_PTR_FIX(llvmo::ConstantExpr_O::___staticClass);
  SMART_PTR_FIX(llvmo::EngineBuilder_O::___staticClass);
@@ -14407,7 +14406,6 @@ static void* OBJ_FINALIZE_table[] = { NULL
  SMART_PTR_FIX(core::MultiStringBuffer_O::___staticClass);
  SMART_PTR_FIX(core::SourceManager_O::___staticClass);
  SMART_PTR_FIX(core::SmallMultimap_O::___staticClassSymbol);
- POINTER_FIX(_lisp);
  SMART_PTR_FIX(core::Str_O::___staticClassSymbol);
  SMART_PTR_FIX(llvmo::UnreachableInst_O::___staticClass);
  SMART_PTR_FIX(llvmo::UndefValue_O::___staticClass);
@@ -14537,7 +14535,6 @@ static void* OBJ_FINALIZE_table[] = { NULL
  SMART_PTR_FIX(cffi::Pointer_O::___staticClassSymbol);
  SMART_PTR_FIX(core::RecursiveDirectoryIterator_O::___staticClassSymbol);
  SMART_PTR_FIX(core::MacroletEnvironment_O::___staticClassSymbol);
- POINTER_FIX(asttooling::RegMap::RegistryData);
  SMART_PTR_FIX(core::VaList_dummy_O::___staticClassSymbol);
  SMART_PTR_FIX(llvmo::SwitchInst_O::___staticClassSymbol);
  SMART_PTR_FIX(llvmo::TargetLibraryInfo_O::___staticClassSymbol);

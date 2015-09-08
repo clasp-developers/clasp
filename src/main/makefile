@@ -128,6 +128,9 @@ run-clasp:
 	clasp_d clang0.lsp
 
 mps-interface-clasp:
+	@echo Generating compile-commands
+	make compile-commands
+	@echo Running parallel search and generating code when done
 	$(BCLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
 
 
@@ -135,8 +138,6 @@ mps-interface:
 	@echo Building mps-prep
 	build -j$(PJOBS) link=static gc=mps-prep program=clasp install_clasp_mps-prep_o
 	make boehm
-	make compile-commands
-	@echo Running parallel search and generating code when done
 	make mps-interface-clasp
 
 export IDIR=$(CLASP_HOME)/build/clasp/Contents/Resources/lib/release
