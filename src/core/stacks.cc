@@ -87,7 +87,7 @@ Vector_sp ExceptionStack::backtrace() {
   return result;
 }
 
-InvocationHistoryFrame::InvocationHistoryFrame(Closure *c, core::T_O* valist_sptr, T_sp env)
+    InvocationHistoryFrame::InvocationHistoryFrame(gctools::tagged_pointer<Closure> c, core::T_O* valist_sptr, T_sp env)
   : closure(c), environment(env), runningSourceFileInfoHandle(c->sourceFileInfoHandle()), runningFilePos(c->filePos()), runningLineNumber(c->lineNumber()), runningColumn(c->column()), _NumberOfArguments(0), _RegisterArguments(NULL), _StackArguments(NULL)  {
   if (c->name.nilp()) {
     SIMPLE_ERROR(BF("The InvocationHistoryFrame closure has nil name"));
@@ -169,10 +169,10 @@ string InvocationHistoryFrame::argumentsAsString(int maxWidth) const
 }
       
 
-string InvocationHistoryFrame::asStringLowLevel(Closure *closure,
+string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure> closure,
                                                 uint lineNumber,
                                                 uint column) const {
-  if (closure == NULL) {
+  if (!closure) {
     return "InvocationHistoryFrame::asStringLowLevel NULL closure";
   };
   T_sp funcNameObj = closure->name;
@@ -192,7 +192,7 @@ string InvocationHistoryFrame::asStringLowLevel(Closure *closure,
     }
   } else closureType = "toplevel";
   string sargs = this->argumentsAsString(80);
-  ss << (BF("#%3d%2s@%p %20s %5d/%-3d (%s %s)") % this->_Index % closureType % (void *)closure % sourceFileName % lineNumber % column % funcName % sargs).str();
+  ss << (BF("#%3d%2s@%p %20s %5d/%-3d (%s %s)") % this->_Index % closureType % (void *)closure.raw_() % sourceFileName % lineNumber % column % funcName % sargs).str();
   //	ss << std::endl;
   //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
   return ss.str();

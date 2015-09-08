@@ -105,6 +105,9 @@ fix-scraping2:
 	-(cd src/serveEvent; bjam meta)
 	-(cd src/sockets; bjam meta)
 
+pump:
+	(cd src/core; make pump)
+	(cd src/clbind; make pump)
 
 submodules:
 	make submodules-boehm

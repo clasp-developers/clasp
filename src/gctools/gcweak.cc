@@ -50,9 +50,9 @@ WeakHashTable::WeakHashTable(size_t length) {
   this->_Keys = KeyBucketsAllocatorType::allocate(l);
   this->_Values = ValueBucketsAllocatorType::allocate(l);
   this->_Keys->dependent = this->_Values;
-  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->_Keys->dependent) & 0x3) == 0);
+//  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->_Keys->dependent) & 0x3) == 0);
   this->_Values->dependent = this->_Keys;
-  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->_Values->dependent) & 0x3) == 0);
+//  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->_Values->dependent) & 0x3) == 0);
 #ifdef USE_MPS
   mps_ld_reset(&this->_LocationDependency, _global_arena);
 #endif
@@ -127,7 +127,7 @@ uint WeakHashTable::sxhashKey(const value_type &key
     // Handle splatting
     if (!k.raw_()) {
       keys->set(i, value_type((Tagged)gctools::tag_deleted<core::T_O *>()));
-      ValueBucketsType *values = dynamic_cast<ValueBucketsType *>(keys->dependent);
+      ValueBucketsType *values = dynamic_cast<ValueBucketsType *>(&*keys->dependent);
       (*values)[i] = value_type((Tagged)gctools::tag_unbound<core::T_O *>());
     }
 #endif

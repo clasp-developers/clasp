@@ -147,7 +147,7 @@ void Instance_O::archiveBase(ArchiveP node) {
     }
   } else {
     this->_isgf = false;
-    this->closure = NULL;
+    this->closure.reset_();
 #if 1
     Symbol_sp className = node->getKind();
     //	    node->attribute(kw::_sym_iclass,className);

@@ -28,7 +28,7 @@
 
 (defconstant +file.dbg+ :file.dbg)
 
-(defvar *dbg-generate-dwarf* t)
+(defvar *dbg-generate-dwarf* nil)
 (defvar *dbg-compile-unit* )
 (defvar *dbg-current-file* )
 (defvar *dbg-current-function*)
@@ -219,13 +219,22 @@
            (progn
              ,@body)))))
 
+(defun dbg-attach-debugging-info-to-value-frame (af symbol-list-designator env)
+  (when *dbg-generate-dwarf*
+    (irc-attach-debugging-info-to-value-frame af symbol-list-designator env)))
+
+(defun dbg-set-activation-frame-for-ihs-top (renv)
+  (when *dbg-generate-dwarf*
+    (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-renv new-env))))
+
 (defun dbg-set-current-source-pos (form)
-  (setq *dbg-set-current-source-pos* t)
-  (cmp-log "dbg-set-current-source-pos on form: %s\n" form)
-  (multiple-value-bind (source-dir source-file filepos line-number column)
-      (walk-form-for-source-info form)
-    (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* line-number column *dbg-current-scope*)
-    (values source-dir source-file line-number column)))
+  (when *dbg-generate-dwarf*
+    (setq *dbg-set-current-source-pos* t)
+    (cmp-log "dbg-set-current-source-pos on form: %s\n" form)
+    (multiple-value-bind (source-dir source-file filepos line-number column)
+        (walk-form-for-source-info form)
+      (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* line-number column *dbg-current-scope*)
+      (values source-dir source-file line-number column))))
 
 (defun dbg-set-current-source-pos-for-irbuilder (form irbuilder)
   (with-irbuilder (irbuilder)
@@ -286,18 +295,19 @@
                           (print (list "Dumping backtrace and core:*source-database*" core:*source-database*))
                           (core:ihs-backtrace)
                           (core:dump-source-manager))
-  (multiple-value-bind (source-dir source-file filepos lineno column)
-      (walk-form-for-source-info form)
-    (when source-file
-      (let ((ln lineno)
-	    (col column))
-	(irc-intrinsic "trace_setLineNumberColumnForIHSTop"
-		       *gv-source-pathname*
-                       *gv-source-file-info-handle*
-		       (jit-constant-i64 filepos)
-                       (jit-constant-i32 ln) 
-		       (jit-constant-i32 col)))
-      nil)))
+  (when *dbg-generate-dwarf*
+    (multiple-value-bind (source-dir source-file filepos lineno column)
+        (walk-form-for-source-info form)
+      (when source-file
+        (let ((ln lineno)
+              (col column))
+          (irc-intrinsic "trace_setLineNumberColumnForIHSTop"
+                         *gv-source-pathname*
+                         *gv-source-file-info-handle*
+                         (jit-constant-i64 filepos)
+                         (jit-constant-i32 ln) 
+                         (jit-constant-i32 col)))
+        nil))))
 
 
 
@@ -359,7 +369,7 @@
 
 
 (defmacro trace-enter-lexical-scope ( scope-name env form )
-  `(irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-renv ,env)))
+  `(dbg-set-activation-frame-for-ihs-top (irc-renv ,env)))
 
 
 (defun trace-exit-lexical-scope (scope-name env traceid)

@@ -99,7 +99,7 @@ public:
       implAddress->_End = that._Contents->_End;
       this->_Contents = implAddress;
     } else {
-      this->_Contents = NULL;
+        this->_Contents.reset_();
     }
   }
 
@@ -110,7 +110,7 @@ public:
       if (this->_Contents) {
         Allocator alloc;
         gctools::tagged_pointer<GCVector_moveable<T>> ptr = this->_Contents;
-        this->_Contents = NULL;
+        this->_Contents.reset_();
         alloc.deallocate(ptr, ptr->_End);
       }
       if (that._Contents) {
@@ -146,12 +146,12 @@ private:
   };
 
 public:
-  GCVector() : _Contents(NULL){};
+  GCVector() : _Contents(){};
   ~GCVector() {
     if (this->_Contents) {
       Allocator alloc;
       gctools::tagged_pointer<GCVector_moveable<T>> ptr = this->_Contents;
-      this->_Contents = NULL;
+      this->_Contents.reset_();
       alloc.deallocate(ptr, ptr->_End);
     }
   }

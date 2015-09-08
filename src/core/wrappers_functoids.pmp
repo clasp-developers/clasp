@@ -45,7 +45,7 @@ $for template_ [[
             $if numArgs>0 [[
               gc::frame::Frame args($numArgs);
 	      core::StackFrameDynamicScopeManager scope(args);
-              lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+              lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
             ]]
             $if numArgs>0 [[
               $for Args_ [[translate::from_object<ARG$Args_> a$Args_(core::T_sp((gc::Tagged)args[$Args_]));

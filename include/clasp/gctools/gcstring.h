@@ -107,7 +107,7 @@ private:
 #endif
 
 public:
-  GCString(const char *chars) : _Contents(NULL) {
+  GCString(const char *chars) : _Contents() {
     size_t sz = strlen(chars);
     this->reserve(sz + GCStringPad);
     strncpy(this->_Contents->data(), chars, sz);
@@ -115,7 +115,7 @@ public:
     GCTOOLS_ASSERT(this->_Contents->_End <= this->_Contents->_Capacity);
     THROW_IF_ILLEGAL_CHARACTERS(this);
   };
-  GCString(const char *chars, int sz) : _Contents(NULL) {
+  GCString(const char *chars, int sz) : _Contents() {
     this->reserve(sz + GCStringPad);
     strncpy(this->_Contents->data(), chars, sz);
     this->_Contents->_End = sz;
@@ -123,7 +123,7 @@ public:
     THROW_IF_ILLEGAL_CHARACTERS(this);
   };
 
-  GCString(const string &str) : _Contents(NULL) {
+  GCString(const string &str) : _Contents() {
     this->reserve(str.size() + GCStringPad);
     strncpy(this->data(), str.data(), str.size());
     this->_Contents->_End = str.size();
@@ -156,7 +156,7 @@ public:
         if ((bool)this->_Contents) {
         Allocator alloc;
         gctools::tagged_pointer<GCString_moveable<T>> ptr = this->_Contents;
-        this->_Contents = NULL;
+        this->_Contents.reset_();
         alloc.deallocate(ptr, ptr->_End);
       }
         if ((bool)that._Contents) {
@@ -192,7 +192,7 @@ private:
   };
 
 public:
-  GCString() : _Contents(NULL){};
+  GCString() : _Contents(){};
   ~GCString() {
     if (this->_Contents) {
       Allocator alloc;

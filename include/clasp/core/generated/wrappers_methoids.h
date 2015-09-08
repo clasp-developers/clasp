@@ -34,7 +34,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -85,7 +85,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -133,7 +133,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -180,7 +180,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -226,7 +226,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -271,7 +271,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -315,7 +315,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -358,7 +358,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -400,7 +400,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -441,7 +441,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -480,7 +480,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -518,7 +518,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -555,7 +555,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -591,7 +591,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -626,7 +626,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v);
@@ -660,7 +660,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 RT retval =  ((*ot.untag_object()).*mptr)();
 return Values(translate::to_object<RT>::convert(retval));
@@ -695,7 +695,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -744,7 +744,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -792,7 +792,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -839,7 +839,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -885,7 +885,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -930,7 +930,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -974,7 +974,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1017,7 +1017,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1059,7 +1059,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1099,7 +1099,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1138,7 +1138,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1176,7 +1176,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1213,7 +1213,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1249,7 +1249,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1284,7 +1284,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 ((*ot.untag_object()).*mptr)(a1._v);
@@ -1318,7 +1318,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 ((*ot.untag_object()).*mptr)();
 return Values0<core::T_O>();
@@ -1355,7 +1355,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1408,7 +1408,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1458,7 +1458,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1506,7 +1506,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1553,7 +1553,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1599,7 +1599,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1643,7 +1643,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1686,7 +1686,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1728,7 +1728,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1769,7 +1769,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1808,7 +1808,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1846,7 +1846,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1883,7 +1883,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1919,7 +1919,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -1954,7 +1954,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v);
@@ -1988,7 +1988,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)();
 return retval.as_return_type();
@@ -2023,7 +2023,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2074,7 +2074,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2122,7 +2122,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2169,7 +2169,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2215,7 +2215,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2260,7 +2260,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2304,7 +2304,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2347,7 +2347,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2389,7 +2389,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2430,7 +2430,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2469,7 +2469,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2507,7 +2507,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2544,7 +2544,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2580,7 +2580,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2615,7 +2615,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v);
@@ -2649,7 +2649,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 RT retval =  ((*ot.untag_object()).*mptr)();
 return Values(translate::to_object<RT>::convert(retval));
@@ -2684,7 +2684,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2733,7 +2733,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2781,7 +2781,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2828,7 +2828,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2874,7 +2874,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2919,7 +2919,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -2963,7 +2963,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3006,7 +3006,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3048,7 +3048,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3088,7 +3088,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3127,7 +3127,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3165,7 +3165,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3202,7 +3202,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3238,7 +3238,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3273,7 +3273,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 ((*ot.untag_object()).*mptr)(a1._v);
@@ -3307,7 +3307,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 ((*ot.untag_object()).*mptr)();
 return Values0<core::T_O>();
@@ -3344,7 +3344,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3397,7 +3397,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3448,7 +3448,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3496,7 +3496,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3543,7 +3543,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3589,7 +3589,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3633,7 +3633,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3676,7 +3676,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3718,7 +3718,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3759,7 +3759,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3798,7 +3798,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3836,7 +3836,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3873,7 +3873,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3909,7 +3909,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 translate::from_object<ARG2> a2(frame.arg(2));
@@ -3944,7 +3944,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 translate::from_object<ARG1> a1(frame.arg(1));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v);
@@ -3978,7 +3978,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 gc::frame::Frame frame(1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)();
 return retval.as_return_type();

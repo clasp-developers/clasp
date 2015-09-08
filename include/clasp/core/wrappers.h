@@ -114,7 +114,7 @@ public:
   LCC_RETURN LISP_CALLING_CONVENTION() {
     List_sp form = gc::As<Cons_sp>(LCC_ARG0());
     T_sp env = gc::As<T_sp>(LCC_ARG1());
-    InvocationHistoryFrame _frame(this, lcc_arglist); // The environment could be a Non-Clasp Environment (Cleavir)
+    InvocationHistoryFrame _frame(gctools::tagged_pointer<Closure>(this), lcc_arglist); // The environment could be a Non-Clasp Environment (Cleavir)
     return ((this->mptr)(form, env)).as_return_type();
   };
 };
@@ -123,7 +123,7 @@ inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(L
   _G();
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFileName, 0, lineno);
-  gc::tagged_pointer<BuiltinClosure> f = gctools::ClassAllocator<MacroClosure>::allocateClass(symbol, spi, mp);
+  gc::tagged_pointer<BuiltinClosure> f = gc::tagged_pointer<BuiltinClosure>(gctools::ClassAllocator<MacroClosure>::allocateClass(symbol, spi, mp));
   lisp_defmacro(symbol, packageName, f, arguments, declares, docstring, autoExport);
 }
 

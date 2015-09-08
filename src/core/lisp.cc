@@ -190,7 +190,7 @@ Lisp_O::GCRoots::GCRoots() : _BufferStringPool(_Nil<T_O>())
                            , _BignumRegister2(_Unbound<Bignum_O>())
                              //                               , _TraceFunctions(_Unbound<HashTable_O>())
                              ,
-                             _SystemProperties(_Nil<T_O>()), _CatchInfo(_Nil<T_O>()), _SpecialForms(_Unbound<HashTableEq_O>()), _SingleDispatchMethodCachePtr(NULL), _MethodCachePtr(NULL), _SlotCachePtr(NULL), _NullStream(_Nil<T_O>()), _PathnameTranslations(_Nil<T_O>()) {}
+                             _SystemProperties(_Nil<T_O>()), _CatchInfo(_Nil<T_O>()), _SpecialForms(_Unbound<HashTableEq_O>()), _NullStream(_Nil<T_O>()), _PathnameTranslations(_Nil<T_O>()) {}
 
 Lisp_O::Lisp_O() : _StackWarnSize(7 * 1024 * 1024), // 6MB default stack size before warnings
                    _StackSampleCount(0),
@@ -216,8 +216,8 @@ Lisp_O::Lisp_O() : _StackWarnSize(7 * 1024 * 1024), // 6MB default stack size be
   this->_MakePackageCallback = NULL;
   this->_ExportSymbolCallback = NULL;
 #ifdef CLOS
-  this->_Roots._SlotCachePtr = NULL;
-  this->_Roots._MethodCachePtr = NULL;
+  this->_Roots._SlotCachePtr.reset_();
+  this->_Roots._MethodCachePtr.reset_();
 #endif
 }
 

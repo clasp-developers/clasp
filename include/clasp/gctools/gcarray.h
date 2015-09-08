@@ -104,7 +104,7 @@ private:
   };
 
 public:
-  GCArray() : _Contents(NULL){};
+  GCArray() : _Contents(){};
   ~GCArray() {}
 
   void clear() { this->_Contents = NULL; };

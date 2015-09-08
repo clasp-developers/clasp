@@ -78,7 +78,7 @@
   ;; The setParentOfActivationFrame should be set before we compile the lambda-list-code
   ;; otherwise it won't be able to access the closed over environment
   ;;  (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) closed-over-renv)
-  (irc-attach-debugging-info-to-value-frame (irc-renv new-env) lambda-list-handler new-env))
+  (dbg-attach-debugging-info-to-value-frame (irc-renv new-env) lambda-list-handler new-env))
 
 (defparameter *lambda-args-num* 0)
 
@@ -416,10 +416,10 @@ env is the parent environment of the (result-af) value frame"
 	  (result-af (irc-renv new-env)))
       (dbg-set-current-debug-location-here)
       (irc-make-value-frame result-af number-of-lexical-vars)
-      (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-renv new-env))
+      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
       (irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
       (dbg-set-current-debug-location-here)
-      (irc-attach-debugging-info-to-value-frame (irc-renv new-env)
+      (dbg-attach-debugging-info-to-value-frame (irc-renv new-env)
 						lambda-list-handler
 						new-env)
       ;; Save all special variables
@@ -464,10 +464,10 @@ env is the parent environment of the (result-af) value frame"
 	  (result-af (irc-renv new-env)))
       (dbg-set-current-debug-location-here)
       (irc-make-value-frame result-af number-of-lexical-vars)
-      (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-renv new-env))
+      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
       (irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
       (dbg-set-current-debug-location-here)
-      (irc-attach-debugging-info-to-value-frame (irc-renv new-env)
+      (dbg-attach-debugging-info-to-value-frame (irc-renv new-env)
 						lambda-list-handler
 						new-env)
       ;; Save all special variables
@@ -527,7 +527,7 @@ env is the parent environment of the (result-af) value frame"
 		(cmp-log "About to evaluate codegen-progn\n")
 		(codegen-progn result code new-env))
 	      ((cleanup)
-               (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-parent-renv new-env))
+               (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
 	       (irc-unwind-environment new-env)
 	       ))
 	    )
@@ -862,7 +862,7 @@ jump to blocks within this tagbody."
 				(trace-enter-flet-scope function-env code)
 				(trace-enter-labels-scope function-env code)))
 	      (codegen-fill-function-frame operator-symbol function-env functions env evaluate-env)
-	      (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-renv function-env))
+              (dbg-set-activation-frame-for-ihs-top (irc-renv function-env))
 	      (codegen-progn result code function-env))
 	    ((cleanup)
 	     (if (eq operator-symbol 'flet)

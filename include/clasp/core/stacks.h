@@ -55,7 +55,7 @@ public:
   InvocationHistoryStack *_Stack;
   InvocationHistoryFrame *_Previous;
   int _Bds;
-  Closure *closure;
+        gc::tagged_pointer<Closure> closure;
   T_sp environment;
   int runningSourceFileInfoHandle;
   size_t runningFilePos;
@@ -65,7 +65,7 @@ public:
   core::T_O** _RegisterArguments;
   core::T_O** _StackArguments;
 public:
-  InvocationHistoryFrame(Closure *fc, core::T_O* valist_args, T_sp env = _Nil<T_O>());
+        InvocationHistoryFrame(gctools::tagged_pointer<Closure> fc, core::T_O* valist_args, T_sp env = _Nil<T_O>());
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
   ATTR_WEAK virtual ~InvocationHistoryFrame();
   InvocationHistoryFrame *previous() { return this->_Previous; };
@@ -93,7 +93,7 @@ public:
 
   virtual void setActivationFrame(T_sp af) { this->environment = af; };
   virtual string asString();
-  string asStringLowLevel(Closure *closure,
+        string asStringLowLevel(gctools::tagged_pointer<Closure> closure,
                           // const string& functionName,
                           // const string& sourceFileName,
                           uint lineNumber, uint column) const;
@@ -281,7 +281,7 @@ public:
 };
 };
 
-#define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(this,lcc_arglist);
+#define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(gctools::tagged_pointer<core::Closure>(this),lcc_arglist);
 
 namespace core {
 void initialize_stacks();

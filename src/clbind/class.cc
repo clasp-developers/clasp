@@ -90,7 +90,7 @@ void class_registration::register_() const {
     core::_sym_STARallCxxClassesSTAR->setf_symbolValue(
         core::Cons_O::create(className, core::_sym_STARallCxxClassesSTAR->symbolValue()));
   }
-  gctools::tagged_pointer<core::Creator> allocator = NULL;
+  gctools::tagged_pointer<core::Creator> allocator;
   if (m_default_constructor != NULL) {
     allocator = m_default_constructor->registerDefaultConstructor_();
   } else {

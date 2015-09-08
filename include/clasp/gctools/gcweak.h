@@ -154,7 +154,7 @@ struct weak_pad1_s : public WeakObject {
 
 template <class T, class U>
 struct BucketsBase : public WeakObject {
-    BucketsBase(WeakKinds k, int l) : WeakObject(k), dependent(NULL), _length(gctools::make_tagged_fixnum<core::Fixnum_I>(l)), _used(gctools::make_tagged_fixnum<core::Fixnum_I>(0)), _deleted(gctools::make_tagged_fixnum<core::Fixnum_I>(0)) {
+    BucketsBase(WeakKinds k, int l) : WeakObject(k), _length(gctools::make_tagged_fixnum<core::Fixnum_I>(l)), _used(gctools::make_tagged_fixnum<core::Fixnum_I>(0)), _deleted(gctools::make_tagged_fixnum<core::Fixnum_I>(0)) {
         GCWEAK_LOG(BF("Created BucketsBase with length: %d") % this->length());
         for (size_t i(0); i < l; ++i) {
             this->bucket[i] = T((gctools::Tagged)gctools::tag_unbound<typename T::Type *>());
@@ -377,11 +377,12 @@ struct BucketsBase : public WeakObject {
 
     template <class T, class U>
     struct MappingBase : public WeakObject {
-        MappingBase(const T &val) : WeakObject(WeakMappingKind), dependent(NULL), bucket(val){};
+        MappingBase(const T &val) : WeakObject(WeakMappingKind), bucket(val){};
         virtual ~MappingBase(){};
         typedef T value_type;
         void *dependentPtr() const { return reinterpret_cast<void *>(&*this->dependent); };
-        gctools::tagged_pointer<MappingBase<U, T>> dependent; /* the dependent object */
+        typedef gctools::tagged_pointer<MappingBase<U, T>> dependent_type;
+        dependent_type dependent; /* the dependent object */
         T bucket;                     /* single buckets */
     };
 
@@ -391,6 +392,7 @@ struct BucketsBase : public WeakObject {
     template <class T, class U>
     struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
         typedef typename MappingBase<T, U>::value_type value_type;
+        typedef typename MappingBase<T, U>::dependent_type dependent_type;
         Mapping(const T &val) : MappingBase<T, U>(val) {
             if (!val.objectp()) {
                 THROW_HARD_ERROR(BF("Only objectp() objects can be added to Mapping"));
@@ -451,10 +453,8 @@ struct BucketsBase : public WeakObject {
         WeakKeyMappingPair(const value_type &key, const value_type &value) {
             this->Key = KeyAllocatorType::allocate(key);
             this->Value = ValueAllocatorType::allocate(value);
-            this->Key->dependent = this->Value;
-            GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->Key->dependent) & 0x3) == 0);
-            this->Value->dependent = this->Key;
-            GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->Value->dependent) & 0x3) == 0);
+            this->Key->dependent = KeyType::dependent_type(this->Value);
+            this->Value->dependent = ValueType::dependent_type(this->Key);
         }
         void swap(MyType &other) {
             gctools::tagged_pointer<KeyType> tempKey = this->Key;

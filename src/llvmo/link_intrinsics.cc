@@ -558,7 +558,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   gc::frame::Frame no_args(0);
   VaList_S empty_valist(no_args);
   core::T_O* empty_valist_ptr = empty_valist.asTaggedPtr();
-  core::InvocationHistoryFrame invFrame(&tempClosure, empty_valist_ptr, *frameP);
+  core::InvocationHistoryFrame invFrame(gctools::tagged_pointer<core::Closure>(&tempClosure), empty_valist_ptr, *frameP);
   core::T_sp closedEnv = _Nil<T_O>();
   ASSERT(ltvPP != NULL);
   core::LoadTimeValues_O *ltvP = *ltvPP;

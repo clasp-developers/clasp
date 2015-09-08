@@ -8,5 +8,5 @@
 // <define>CONFIG_THREAD_SINGLE - single threaded
 
 #ifdef USE_MPS
-#include "mps-temporary/code/mps.c"
+#include "mps/code/mps.c"
 #endif

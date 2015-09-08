@@ -46,7 +46,7 @@ $var ConstTypeCount = 1
                       $if numArgs>0 [[
                         gc::frame::Frame frame($numArgs);
                         core::StackFrameDynamicScopeManager scope(frame);
-                        lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+                        lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                       ]]
                       // translate::from_object<OT*> objPtr(frame.arg(0));
                       OT* objPtr = gc::As<core::WrappedPointer_sp>(frame.arg(0))->cast<OT>();

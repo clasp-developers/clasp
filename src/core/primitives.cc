@@ -1623,8 +1623,8 @@ T_sp InvocationHistoryFrameIterator_O::functionName() {
   if ( !this->isValid() ) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  Closure* closure = this->_Frame->closure;
-  if ( closure==NULL ) {
+  gctools::tagged_pointer<Closure> closure = this->_Frame->closure;
+  if ( !closure ) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
   return closure->name;
@@ -1635,8 +1635,8 @@ T_sp InvocationHistoryFrameIterator_O::environment() {
   if ( !this->isValid() ) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  Closure* closure = this->_Frame->closure;
-  if ( closure==NULL ) {
+  gctools::tagged_pointer<Closure> closure = this->_Frame->closure;
+  if ( !closure ) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
   return closure->closedEnvironment;
@@ -1653,8 +1653,8 @@ Function_sp InvocationHistoryFrameIterator_O::function() {
   if ( !this->isValid() ) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  Closure* closure = this->_Frame->closure;
-  if ( closure==NULL ) {
+  gctools::tagged_pointer<Closure> closure = this->_Frame->closure;
+  if ( !closure ) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
   return Function_O::make(closure); // Should I really be creating a new Function object every time???
@@ -1951,8 +1951,8 @@ void core_lowLevelBacktrace() {
   printf("From bottom to top invocation-history-stack frames = %d\n", top->_Index + 1);
   for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
     string name = "-no-name-";
-    Closure *closure = cur->closure;
-    if (closure == NULL) {
+    gctools::tagged_pointer<Closure> closure = cur->closure;
+    if (!closure ) {
       name = "-NO-CLOSURE-";
     } else {
       if (closure->name.notnilp()) {

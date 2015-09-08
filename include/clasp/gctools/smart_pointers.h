@@ -1385,9 +1385,9 @@ namespace gctools {
     typedef T Type;
     Type *thePointer;
   public:
-  tagged_pointer() : thePointer(NULL){};
+      explicit tagged_pointer() : thePointer(NULL){};
     template <typename From>
-      inline tagged_pointer(tagged_pointer<From> const &rhs) {
+    inline tagged_pointer(tagged_pointer<From> const &rhs) {
       if (LIKELY(rhs.generalp())) {
         Type *px = dynamic_cast<Type *>(untag_general<From *>(rhs.thePointer));
         if (px) {
@@ -1400,7 +1400,10 @@ namespace gctools {
     };
 
     
-  tagged_pointer(Type *f) : thePointer(reinterpret_cast<Type *>(reinterpret_cast<char *>(f) + general_tag)){};
+      explicit tagged_pointer(Type *f) : thePointer(reinterpret_cast<Type *>(reinterpret_cast<char *>(f) + general_tag)){
+      GCTOOLS_ASSERTF((f!=NULL),BF("Don't initialize tagged_pointer with NULL - use the constructor with zero arguments"));
+  };
+
     inline Type *operator->() {
       GCTOOLS_ASSERT(this->generalp());
       return untag_general(this->thePointer);

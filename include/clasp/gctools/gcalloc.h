@@ -695,7 +695,7 @@ public:
     new (base) Header_s(typeid(TY).name(), BoehmContainerKind);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
     POLL_SIGNALS();
-    return myAddress;
+    return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #ifdef USE_MPS
     typedef typename GCHeader<TY>::HeaderType HeadT;
@@ -878,7 +878,7 @@ public:
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
     new (myAddress) TY(num);
     POLL_SIGNALS();
-    return myAddress;
+    return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #if defined(USE_MPS)
     typedef typename GCHeader<TY>::HeaderType HeadT;
@@ -972,7 +972,7 @@ public:
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Check if Buckets has been initialized to unbound\n", __FILE__, __LINE__);
 #endif
-    return myAddress;
+    return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #ifdef USE_MPS
     mps_addr_t addr;
@@ -1060,7 +1060,7 @@ public:
     if (!myAddress)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
     new (myAddress) container_type(num);
-    return myAddress;
+    return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #ifdef USE_MPS
     mps_addr_t addr;
@@ -1142,7 +1142,7 @@ public:
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
     new (myAddress) container_type(val);
     printf("%s:%d Check if Mapping has been initialized to unbound\n", __FILE__, __LINE__);
-    return myAddress;
+    return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #ifdef USE_MPS
     typedef typename GCHeader<TY>::HeaderType HeadT;
@@ -1191,7 +1191,7 @@ public:
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
     new (myAddress) container_type(val);
     printf("%s:%d Check if Mapping has been initialized to unbound\n", __FILE__, __LINE__);
-    return myAddress;
+    return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #ifdef USE_MPS
     typedef typename GCHeader<TY>::HeaderType HeadT;
@@ -1239,7 +1239,7 @@ public:
     if (!myAddress)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
     new (myAddress) VT(val);
-    return myAddress;
+    return gctools::tagged_pointer<value_type>(myAddress);
 #endif
 #ifdef USE_MPS
     mps_addr_t addr;

@@ -37,7 +37,7 @@ $var NumArgs = 16
                         $if numArgs>0 [[
                           gc::frame::Frame frame($numArgs);
                           core::StackFrameDynamicScopeManager scope(frame);
-                          lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+                          lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                         ]]
                       $for Args_ [[
                         translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(frame.arg($Args_));

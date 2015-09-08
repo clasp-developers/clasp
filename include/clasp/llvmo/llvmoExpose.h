@@ -1256,7 +1256,7 @@ public:
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
   DISABLE_NEW();
   inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    core::InvocationHistoryFrame _frame(this, lcc_arglist, this->closedEnvironment);
+      core::InvocationHistoryFrame _frame(gctools::tagged_pointer<Closure>(this), lcc_arglist, this->closedEnvironment);
     core::T_O* closedEnv = LCC_FROM_ACTIVATION_FRAME_SMART_PTR(this->closedEnvironment);
     return (*(this->fptr))( LCC_PASS_ARGS_ENV(closedEnv));
   };
