@@ -9529,23 +9529,23 @@ obj_scan_KIND_ROOTCLASSALLOC_core__Lisp_O:
 {
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Roots._BufferStringPool);
-    POINTER_FIX(obj_gc_safe->_Roots._ExceptionStack._Stack._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Roots._ExceptionStack._Stack._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Roots._TerminalIO);
     SMART_PTR_FIX(obj_gc_safe->_Roots._BignumRegister0);
     SMART_PTR_FIX(obj_gc_safe->_Roots._BignumRegister1);
     SMART_PTR_FIX(obj_gc_safe->_Roots._BignumRegister2);
     SMART_PTR_FIX(obj_gc_safe->_Roots._IntegerOverflowAdjust);
-    POINTER_FIX(obj_gc_safe->_Roots.charInfo.gIndexedCharacters._Vector._Contents);
-    POINTER_FIX(obj_gc_safe->_Roots.charInfo.gCharacterNames._Vector._Contents);
-    POINTER_FIX(obj_gc_safe->_Roots._ClassSymbolsHolder._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Roots.charInfo.gIndexedCharacters._Vector._Contents.thePointer);
+    POINTER_FIX(obj_gc_safe->_Roots.charInfo.gCharacterNames._Vector._Contents.thePointer);
+    POINTER_FIX(obj_gc_safe->_Roots._ClassSymbolsHolder._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Roots._SystemProperties);
-    POINTER_FIX(obj_gc_safe->_Roots._Bindings._Bindings._Vector._Contents);
-    POINTER_FIX(obj_gc_safe->_Roots._SourceFiles._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Roots._Bindings._Bindings._Vector._Contents.thePointer);
+    POINTER_FIX(obj_gc_safe->_Roots._SourceFiles._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Roots._CatchInfo);
-    POINTER_FIX(obj_gc_safe->_Roots.bootClassTable._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Roots.bootClassTable._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Roots._LoadTimeValueArrays);
     SMART_PTR_FIX(obj_gc_safe->_Roots._CommandLineArguments);
-    POINTER_FIX(obj_gc_safe->_Roots._Packages._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Roots._Packages._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Roots._SetfDefinitions);
     SMART_PTR_FIX(obj_gc_safe->_Roots._CorePackage);
     SMART_PTR_FIX(obj_gc_safe->_Roots._KeywordPackage);
@@ -9604,8 +9604,8 @@ goto TOP;
 obj_scan_KIND_CLASSALLOC_core__Cache:
 {
     core::Cache* obj_gc_safe = reinterpret_cast<core::Cache*>(client);
-    POINTER_FIX(obj_gc_safe->_keys._Vector._Contents);
-    POINTER_FIX(obj_gc_safe->_table._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_keys._Vector._Contents.thePointer);
+    POINTER_FIX(obj_gc_safe->_table._Vector._Contents.thePointer);
     typedef core::Cache type_KIND_CLASSALLOC_core__Cache;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__Cache)) + global_alignup_sizeof_header;
 }
@@ -9613,7 +9613,7 @@ goto TOP;
 obj_scan_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps:
 {
     asttooling::RegMap::RegistryMaps* obj_gc_safe = reinterpret_cast<asttooling::RegMap::RegistryMaps*>(client);
-    POINTER_FIX(obj_gc_safe->Constructors._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->Constructors._Vector._Contents.thePointer);
     typedef asttooling::RegMap::RegistryMaps type_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps;
     client = (char*)client + AlignUp(sizeof(type_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps)) + global_alignup_sizeof_header;
 }
@@ -9652,7 +9652,7 @@ goto TOP;
 obj_scan_KIND_LISPALLOC_core__CandoException_O:
 {
     core::CandoException_O* obj_gc_safe = reinterpret_cast<core::CandoException_O*>(client);
-    POINTER_FIX(obj_gc_safe->_message._Contents);
+    POINTER_FIX(obj_gc_safe->_message._Contents.thePointer);
     typedef core::CandoException_O type_KIND_LISPALLOC_core__CandoException_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__CandoException_O)) + global_alignup_sizeof_header;
 }
@@ -9783,7 +9783,7 @@ obj_scan_KIND_LISPALLOC_core__VectorObjects_O:
 {
     core::VectorObjects_O* obj_gc_safe = reinterpret_cast<core::VectorObjects_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ElementType);
-    POINTER_FIX(obj_gc_safe->_Values._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Values._Vector._Contents.thePointer);
     typedef core::VectorObjects_O type_KIND_LISPALLOC_core__VectorObjects_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__VectorObjects_O)) + global_alignup_sizeof_header;
 }
@@ -9792,7 +9792,7 @@ obj_scan_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O:
 {
     core::VectorObjectsWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::VectorObjectsWithFillPtr_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ElementType);
-    POINTER_FIX(obj_gc_safe->_Values._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Values._Vector._Contents.thePointer);
     typedef core::VectorObjectsWithFillPtr_O type_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O)) + global_alignup_sizeof_header;
 }
@@ -9806,7 +9806,7 @@ goto TOP;
 obj_scan_KIND_BOOTSTRAP_core__Str_O:
 {
     core::Str_O* obj_gc_safe = reinterpret_cast<core::Str_O*>(client);
-    POINTER_FIX(obj_gc_safe->_Contents._Contents);
+    POINTER_FIX(obj_gc_safe->_Contents._Contents.thePointer);
     typedef core::Str_O type_KIND_BOOTSTRAP_core__Str_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Str_O)) + global_alignup_sizeof_header;
 }
@@ -9814,7 +9814,7 @@ goto TOP;
 obj_scan_KIND_LISPALLOC_core__StrWithFillPtr_O:
 {
     core::StrWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::StrWithFillPtr_O*>(client);
-    POINTER_FIX(obj_gc_safe->_Contents._Contents);
+    POINTER_FIX(obj_gc_safe->_Contents._Contents.thePointer);
     typedef core::StrWithFillPtr_O type_KIND_LISPALLOC_core__StrWithFillPtr_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StrWithFillPtr_O)) + global_alignup_sizeof_header;
 }
@@ -9823,7 +9823,7 @@ obj_scan_KIND_LISPALLOC_core__ArrayObjects_O:
 {
     core::ArrayObjects_O* obj_gc_safe = reinterpret_cast<core::ArrayObjects_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ElementType);
-    POINTER_FIX(obj_gc_safe->_Values._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Values._Vector._Contents.thePointer);
     typedef core::ArrayObjects_O type_KIND_LISPALLOC_core__ArrayObjects_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ArrayObjects_O)) + global_alignup_sizeof_header;
 }
@@ -9932,7 +9932,7 @@ obj_scan_KIND_LISPALLOC_core__TagbodyEnvironment_O:
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
     SMART_PTR_FIX(obj_gc_safe->_RuntimeEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Tags);
-    POINTER_FIX(obj_gc_safe->_TagCode._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_TagCode._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_ActivationFrame);
     typedef core::TagbodyEnvironment_O type_KIND_LISPALLOC_core__TagbodyEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__TagbodyEnvironment_O)) + global_alignup_sizeof_header;
@@ -10051,7 +10051,7 @@ goto TOP;
 obj_scan_KIND_LISPALLOC_core__SmallMultimap_O:
 {
     core::SmallMultimap_O* obj_gc_safe = reinterpret_cast<core::SmallMultimap_O*>(client);
-    POINTER_FIX(obj_gc_safe->map._Contents);
+    POINTER_FIX(obj_gc_safe->map._Contents.thePointer);
     typedef core::SmallMultimap_O type_KIND_LISPALLOC_core__SmallMultimap_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SmallMultimap_O)) + global_alignup_sizeof_header;
 }
@@ -10088,7 +10088,7 @@ obj_scan_KIND_BOOTSTRAP_core__Class_O:
     core::Class_O* obj_gc_safe = reinterpret_cast<core::Class_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_theCreator.thePointer);
-    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents.thePointer);
     typedef core::Class_O type_KIND_BOOTSTRAP_core__Class_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Class_O)) + global_alignup_sizeof_header;
 }
@@ -10098,7 +10098,7 @@ obj_scan_KIND_LISPALLOC_core__CxxClass_O:
     core::CxxClass_O* obj_gc_safe = reinterpret_cast<core::CxxClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_theCreator.thePointer);
-    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents.thePointer);
     typedef core::CxxClass_O type_KIND_LISPALLOC_core__CxxClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__CxxClass_O)) + global_alignup_sizeof_header;
 }
@@ -10108,7 +10108,7 @@ obj_scan_KIND_BOOTSTRAP_core__StdClass_O:
     core::StdClass_O* obj_gc_safe = reinterpret_cast<core::StdClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_theCreator.thePointer);
-    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents.thePointer);
     typedef core::StdClass_O type_KIND_BOOTSTRAP_core__StdClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StdClass_O)) + global_alignup_sizeof_header;
 }
@@ -10118,7 +10118,7 @@ obj_scan_KIND_LISPALLOC_core__FuncallableStandardClass_O:
     core::FuncallableStandardClass_O* obj_gc_safe = reinterpret_cast<core::FuncallableStandardClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_theCreator.thePointer);
-    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_InstanceCoreClass);
     typedef core::FuncallableStandardClass_O type_KIND_LISPALLOC_core__FuncallableStandardClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FuncallableStandardClass_O)) + global_alignup_sizeof_header;
@@ -10129,7 +10129,7 @@ obj_scan_KIND_BOOTSTRAP_core__StandardClass_O:
     core::StandardClass_O* obj_gc_safe = reinterpret_cast<core::StandardClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_theCreator.thePointer);
-    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_InstanceCoreClass);
     typedef core::StandardClass_O type_KIND_BOOTSTRAP_core__StandardClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StandardClass_O)) + global_alignup_sizeof_header;
@@ -10140,7 +10140,7 @@ obj_scan_KIND_LISPALLOC_core__ForwardReferencedClass_O:
     core::ForwardReferencedClass_O* obj_gc_safe = reinterpret_cast<core::ForwardReferencedClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_theCreator.thePointer);
-    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_InstanceCoreClass);
     typedef core::ForwardReferencedClass_O type_KIND_LISPALLOC_core__ForwardReferencedClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ForwardReferencedClass_O)) + global_alignup_sizeof_header;
@@ -10151,7 +10151,7 @@ obj_scan_KIND_BOOTSTRAP_core__StructureClass_O:
     core::StructureClass_O* obj_gc_safe = reinterpret_cast<core::StructureClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_theCreator.thePointer);
-    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_InstanceCoreClass);
     typedef core::StructureClass_O type_KIND_BOOTSTRAP_core__StructureClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StructureClass_O)) + global_alignup_sizeof_header;
@@ -10162,7 +10162,7 @@ obj_scan_KIND_BOOTSTRAP_core__BuiltInClass_O:
     core::BuiltInClass_O* obj_gc_safe = reinterpret_cast<core::BuiltInClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_theCreator.thePointer);
-    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents.thePointer);
     typedef core::BuiltInClass_O type_KIND_BOOTSTRAP_core__BuiltInClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__BuiltInClass_O)) + global_alignup_sizeof_header;
 }
@@ -10172,8 +10172,8 @@ obj_scan_KIND_LISPALLOC_clbind__ClassRep_O:
     clbind::ClassRep_O* obj_gc_safe = reinterpret_cast<clbind::ClassRep_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_theCreator.thePointer);
-    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents);
-    POINTER_FIX(obj_gc_safe->m_bases._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_MetaClassSlots._Vector._Contents.thePointer);
+    POINTER_FIX(obj_gc_safe->m_bases._Vector._Contents.thePointer);
     typedef clbind::ClassRep_O type_KIND_LISPALLOC_clbind__ClassRep_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_clbind__ClassRep_O)) + global_alignup_sizeof_header;
 }
@@ -10188,7 +10188,7 @@ obj_scan_KIND_LISPALLOC_core__StructureObject_O:
 {
     core::StructureObject_O* obj_gc_safe = reinterpret_cast<core::StructureObject_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Type);
-    POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents.thePointer);
     typedef core::StructureObject_O type_KIND_LISPALLOC_core__StructureObject_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StructureObject_O)) + global_alignup_sizeof_header;
 }
@@ -10235,7 +10235,7 @@ goto TOP;
 obj_scan_KIND_LISPALLOC_core__SmallMap_O:
 {
     core::SmallMap_O* obj_gc_safe = reinterpret_cast<core::SmallMap_O*>(client);
-    POINTER_FIX(obj_gc_safe->map._Contents);
+    POINTER_FIX(obj_gc_safe->map._Contents.thePointer);
     typedef core::SmallMap_O type_KIND_LISPALLOC_core__SmallMap_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SmallMap_O)) + global_alignup_sizeof_header;
 }
@@ -10258,8 +10258,8 @@ goto TOP;
 obj_scan_KIND_LISPALLOC_core__WeakKeyHashTable_O:
 {
     core::WeakKeyHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakKeyHashTable_O*>(client);
-    POINTER_FIX(obj_gc_safe->_HashTable._Keys);
-    POINTER_FIX(obj_gc_safe->_HashTable._Values);
+    POINTER_FIX(obj_gc_safe->_HashTable._Keys.thePointer);
+    POINTER_FIX(obj_gc_safe->_HashTable._Values.thePointer);
     typedef core::WeakKeyHashTable_O type_KIND_LISPALLOC_core__WeakKeyHashTable_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakKeyHashTable_O)) + global_alignup_sizeof_header;
 }
@@ -10985,8 +10985,8 @@ goto TOP;
 obj_scan_KIND_LISPALLOC_core__LoadTimeValues_O:
 {
     core::LoadTimeValues_O* obj_gc_safe = reinterpret_cast<core::LoadTimeValues_O*>(client);
-    POINTER_FIX(obj_gc_safe->_Objects._Vector._Contents);
-    POINTER_FIX(obj_gc_safe->_Symbols._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Objects._Vector._Contents.thePointer);
+    POINTER_FIX(obj_gc_safe->_Symbols._Vector._Contents.thePointer);
     typedef core::LoadTimeValues_O type_KIND_LISPALLOC_core__LoadTimeValues_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LoadTimeValues_O)) + global_alignup_sizeof_header;
 }
@@ -11161,7 +11161,7 @@ goto TOP;
 obj_scan_KIND_LISPALLOC_core__SymbolToEnumConverter_O:
 {
     core::SymbolToEnumConverter_O* obj_gc_safe = reinterpret_cast<core::SymbolToEnumConverter_O*>(client);
-    POINTER_FIX(obj_gc_safe->_WhatTheEnumsRepresent._Contents);
+    POINTER_FIX(obj_gc_safe->_WhatTheEnumsRepresent._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_EnumToSymbol);
     SMART_PTR_FIX(obj_gc_safe->_ArchiveSymbolToEnum);
     SMART_PTR_FIX(obj_gc_safe->_EnumToArchiveSymbol);
@@ -11211,14 +11211,14 @@ obj_scan_KIND_LISPALLOC_core__LambdaListHandler_O:
     SMART_PTR_FIX(obj_gc_safe->_ClassifiedSymbolList);
     POINTER_FIX(obj_gc_safe->_SpecialSymbolSet.theObject);
     SMART_PTR_FIX(obj_gc_safe->_DeclareSpecifierList);
-    POINTER_FIX(obj_gc_safe->_RequiredArguments._Vector._Contents);
-    POINTER_FIX(obj_gc_safe->_OptionalArguments._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_RequiredArguments._Vector._Contents.thePointer);
+    POINTER_FIX(obj_gc_safe->_OptionalArguments._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_RestArgument._ArgTarget);
     SMART_PTR_FIX(obj_gc_safe->_KeyFlag);
-    POINTER_FIX(obj_gc_safe->_KeywordArguments._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_KeywordArguments._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_AllowOtherKeys);
-    POINTER_FIX(obj_gc_safe->_AuxArguments._Vector._Contents);
-    POINTER_FIX(obj_gc_safe->_Comment._Contents);
+    POINTER_FIX(obj_gc_safe->_AuxArguments._Vector._Contents.thePointer);
+    POINTER_FIX(obj_gc_safe->_Comment._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_LexicalVariableNamesForDebugging);
     typedef core::LambdaListHandler_O type_KIND_LISPALLOC_core__LambdaListHandler_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LambdaListHandler_O)) + global_alignup_sizeof_header;
@@ -11249,12 +11249,12 @@ goto TOP;
 obj_scan_KIND_LISPALLOC_core__Package_O:
 {
     core::Package_O* obj_gc_safe = reinterpret_cast<core::Package_O*>(client);
-    POINTER_FIX(obj_gc_safe->_Name._Contents);
+    POINTER_FIX(obj_gc_safe->_Name._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_InternalSymbols);
     SMART_PTR_FIX(obj_gc_safe->_ExternalSymbols);
     SMART_PTR_FIX(obj_gc_safe->_Shadowing);
-    POINTER_FIX(obj_gc_safe->_UsingPackages._Vector._Contents);
-    POINTER_FIX(obj_gc_safe->_PackagesUsedBy._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_UsingPackages._Vector._Contents.thePointer);
+    POINTER_FIX(obj_gc_safe->_PackagesUsedBy._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Nicknames);
     typedef core::Package_O type_KIND_LISPALLOC_core__Package_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Package_O)) + global_alignup_sizeof_header;
@@ -11309,7 +11309,7 @@ goto TOP;
 obj_scan_KIND_LISPALLOC_core__WeakPointer_O:
 {
     core::WeakPointer_O* obj_gc_safe = reinterpret_cast<core::WeakPointer_O*>(client);
-    POINTER_FIX(obj_gc_safe->_WeakObject.pointer);
+    POINTER_FIX(obj_gc_safe->_WeakObject.pointer.thePointer);
     typedef core::WeakPointer_O type_KIND_LISPALLOC_core__WeakPointer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakPointer_O)) + global_alignup_sizeof_header;
 }
@@ -11415,8 +11415,8 @@ goto TOP;
 obj_scan_KIND_LISPALLOC_core__WeakKeyMapping_O:
 {
     core::WeakKeyMapping_O* obj_gc_safe = reinterpret_cast<core::WeakKeyMapping_O*>(client);
-    POINTER_FIX(obj_gc_safe->_WeakObject.Key);
-    POINTER_FIX(obj_gc_safe->_WeakObject.Value);
+    POINTER_FIX(obj_gc_safe->_WeakObject.Key.thePointer);
+    POINTER_FIX(obj_gc_safe->_WeakObject.Value.thePointer);
     typedef core::WeakKeyMapping_O type_KIND_LISPALLOC_core__WeakKeyMapping_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakKeyMapping_O)) + global_alignup_sizeof_header;
 }
@@ -11451,7 +11451,7 @@ obj_scan_KIND_LISPALLOC_core__Instance_O:
     core::Instance_O* obj_gc_safe = reinterpret_cast<core::Instance_O*>(client);
     POINTER_FIX(obj_gc_safe->closure.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Class);
-    POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Sig);
     typedef core::Instance_O type_KIND_LISPALLOC_core__Instance_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Instance_O)) + global_alignup_sizeof_header;
@@ -11575,7 +11575,7 @@ goto TOP;
 obj_scan_KIND_ROOTCLASSALLOC_clbind__detail__class_map:
 {
     clbind::detail::class_map* obj_gc_safe = reinterpret_cast<clbind::detail::class_map*>(client);
-    POINTER_FIX(obj_gc_safe->m_classes._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->m_classes._Vector._Contents.thePointer);
     typedef clbind::detail::class_map type_KIND_ROOTCLASSALLOC_clbind__detail__class_map;
     client = (char*)client + AlignUp(sizeof(type_KIND_ROOTCLASSALLOC_clbind__detail__class_map)) + global_alignup_sizeof_header;
 }
@@ -11646,7 +11646,7 @@ goto TOP;
 obj_scan_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor:
 {
     asttooling::internal::OverloadedMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::OverloadedMatcherDescriptor*>(client);
-    POINTER_FIX(obj_gc_safe->Overloads._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->Overloads._Vector._Contents.thePointer);
     typedef asttooling::internal::OverloadedMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor)) + global_alignup_sizeof_header;
 }
@@ -11744,7 +11744,7 @@ obj_scan_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory:
     asttooling::DerivableFrontendActionFactory* obj_gc_safe = reinterpret_cast<asttooling::DerivableFrontendActionFactory*>(client);
     POINTER_FIX(obj_gc_safe->closure.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Class);
-    POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Sig);
     typedef asttooling::DerivableFrontendActionFactory type_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory)) + global_alignup_sizeof_header;
@@ -11837,7 +11837,7 @@ obj_scan_KIND_LISPALLOC_asttooling__DerivableMatchCallback:
     asttooling::DerivableMatchCallback* obj_gc_safe = reinterpret_cast<asttooling::DerivableMatchCallback*>(client);
     POINTER_FIX(obj_gc_safe->closure.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Class);
-    POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Sig);
     typedef asttooling::DerivableMatchCallback type_KIND_LISPALLOC_asttooling__DerivableMatchCallback;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableMatchCallback)) + global_alignup_sizeof_header;
@@ -11904,7 +11904,7 @@ obj_scan_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction:
     asttooling::DerivableASTFrontendAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableASTFrontendAction*>(client);
     POINTER_FIX(obj_gc_safe->closure.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Class);
-    POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Sig);
     typedef asttooling::DerivableASTFrontendAction type_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction)) + global_alignup_sizeof_header;
@@ -11985,8 +11985,8 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_:
 {
     gctools::GCVector_moveable<asttooling::ErrorContent>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ErrorContent>*>(client);
     for (gctools::GCVector_moveable<asttooling::ErrorContent>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
-    POINTER_FIX(it->ContextStack._Vector._Contents);
-    POINTER_FIX(it->Messages._Vector._Contents);
+    POINTER_FIX(it->ContextStack._Vector._Contents.thePointer);
+    POINTER_FIX(it->Messages._Vector._Contents.thePointer);
     }
     typedef typename gctools::GCVector_moveable<asttooling::ErrorContent> type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
@@ -12055,7 +12055,7 @@ obj_scan_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction:
     asttooling::DerivableSyntaxOnlyAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableSyntaxOnlyAction*>(client);
     POINTER_FIX(obj_gc_safe->closure.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Class);
-    POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents);
+    POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents.thePointer);
     SMART_PTR_FIX(obj_gc_safe->_Sig);
     typedef asttooling::DerivableSyntaxOnlyAction type_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction)) + global_alignup_sizeof_header;
@@ -15380,8 +15380,8 @@ static void* OBJ_FINALIZE_table[] = { NULL
  SMART_PTR_FIX(cl::_sym_string_lessp);
  SMART_PTR_FIX(cl::_sym_find_restart);
  SMART_PTR_FIX(cl::_sym_atanh);
- SMART_PTR_FIX(kw::_sym_downcase);
  SMART_PTR_FIX(cl::_sym_min);
+ SMART_PTR_FIX(kw::_sym_downcase);
  SMART_PTR_FIX(llvmo::_sym_makeAP32);
  SMART_PTR_FIX(llvmo::_sym_LLVMDebugVersion5);
  SMART_PTR_FIX(core::_sym_debug_message);
