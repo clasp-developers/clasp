@@ -315,14 +315,14 @@ void Lisp_O::setupSpecialSymbols() {
   Symbol_sp symbol_deleted = Symbol_O::create_at_boot("DELETED");
   Symbol_sp symbol_sameAsKey = Symbol_O::create_at_boot("SAME-AS-KEY");
   //TODO: Ensure that these globals are updated by the garbage collector
-  gctools::global_Symbol_OP_nil = reinterpret_cast<Symbol_O *>(symbol_nil.raw_());
-  gctools::global_Symbol_OP_unbound = reinterpret_cast<Symbol_O *>(symbol_unbound.raw_());
-  gctools::global_Symbol_OP_deleted = reinterpret_cast<Symbol_O *>(symbol_deleted.raw_());
-  gctools::global_Symbol_OP_sameAsKey = reinterpret_cast<Symbol_O *>(symbol_sameAsKey.raw_());
+  gctools::global_tagged_Symbol_OP_nil = reinterpret_cast<Symbol_O *>(symbol_nil.raw_());
+  gctools::global_tagged_Symbol_OP_unbound = reinterpret_cast<Symbol_O *>(symbol_unbound.raw_());
+  gctools::global_tagged_Symbol_OP_deleted = reinterpret_cast<Symbol_O *>(symbol_deleted.raw_());
+  gctools::global_tagged_Symbol_OP_sameAsKey = reinterpret_cast<Symbol_O *>(symbol_sameAsKey.raw_());
 }
 
 void Lisp_O::finalizeSpecialSymbols() {
-  Symbol_sp symbol_nil = gctools::smart_ptr<Symbol_O>((gc::Tagged)gctools::global_Symbol_OP_nil);
+  Symbol_sp symbol_nil = gctools::smart_ptr<Symbol_O>((gc::Tagged)gctools::global_tagged_Symbol_OP_nil);
   symbol_nil->setf_symbolValue(_Nil<T_O>());
   symbol_nil->setf_name(Str_O::create("NIL"));
   symbol_nil->setPackage(_lisp->findPackage("COMMON-LISP"));

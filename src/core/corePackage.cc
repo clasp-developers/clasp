@@ -919,7 +919,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 #undef CorePkg_EXPORT
   };
   /* Set the values of some essential global symbols */
-  cl::_sym_nil = gctools::smart_ptr<core::Symbol_O>((gctools::Tagged)gctools::global_Symbol_OP_nil); //->initialize();
+  cl::_sym_nil = gctools::smart_ptr<core::Symbol_O>((gctools::Tagged)gctools::global_tagged_Symbol_OP_nil); //->initialize();
 #if 1
   cl::_sym_nil->_Name = Str_O::create("NIL");
 #if 1

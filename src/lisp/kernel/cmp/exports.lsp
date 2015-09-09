@@ -246,7 +246,6 @@ create-run-time-execution-engine
 *the-module*
 *run-time-execution-engine*
 *run-time-execution-engine*
-*run-time-literals-external-name*
 *run-time-literal-holder*
 set-associated-funcs
 *all-functions-for-one-compile*

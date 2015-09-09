@@ -54,13 +54,13 @@
 
 namespace gctools {
 /*! Tagged pointer to the global nil */
-extern core::Symbol_O *global_Symbol_OP_nil;
+  extern core::Symbol_O *global_tagged_Symbol_OP_nil;
 /*! Tagged pointer to the global UNBOUND */
-extern core::Symbol_O *global_Symbol_OP_unbound;
+  extern core::Symbol_O *global_tagged_Symbol_OP_unbound;
 /*! Tagged pointer to the global DELETED - used in weak hash tables */
-extern core::Symbol_O *global_Symbol_OP_deleted;
+  extern core::Symbol_O *global_tagged_Symbol_OP_deleted;
 /*! Tagged pointer to the global SAME-AS-KEY - used in weak hash tables */
-extern core::Symbol_O *global_Symbol_OP_sameAsKey;
+  extern core::Symbol_O *global_tagged_Symbol_OP_sameAsKey;
 };
 
 extern void lisp_errorUnexpectedNil(type_info const &toType);
@@ -179,40 +179,40 @@ ABI's  */
 
   template <class T>
     inline bool tagged_nilp(T ptr) {
-    return (reinterpret_cast<void *>(ptr) == global_Symbol_OP_nil);
+    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_nil);
   }
   template <class T>
     inline bool tagged_unboundp(T ptr) {
-    return (reinterpret_cast<void *>(ptr) == global_Symbol_OP_unbound);
+    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_unbound);
   }
   template <class T>
     inline bool tagged_deletedp(T ptr) {
-    return (reinterpret_cast<void *>(ptr) == global_Symbol_OP_deleted);
+    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_deleted);
   }
   template <class T>
     inline bool tagged_sameAsKeyp(T ptr) {
-    return (reinterpret_cast<void *>(ptr) == global_Symbol_OP_sameAsKey);
+    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_sameAsKey);
   }
 
   template <class T>
     inline T tag_nil() {
-    GCTOOLS_ASSERT(tagged_nilp(global_Symbol_OP_nil));
-    return reinterpret_cast<T>(global_Symbol_OP_nil);
+    GCTOOLS_ASSERT(tagged_nilp(global_tagged_Symbol_OP_nil));
+    return reinterpret_cast<T>(global_tagged_Symbol_OP_nil);
   }
   template <class T>
     inline T tag_unbound() {
-    GCTOOLS_ASSERT(tagged_unboundp(global_Symbol_OP_unbound));
-    return reinterpret_cast<T>(global_Symbol_OP_unbound);
+    GCTOOLS_ASSERT(tagged_unboundp(global_tagged_Symbol_OP_unbound));
+    return reinterpret_cast<T>(global_tagged_Symbol_OP_unbound);
   }
   template <class T>
     inline T tag_deleted() {
-    GCTOOLS_ASSERT(tagged_deletedp(global_Symbol_OP_deleted));
-    return reinterpret_cast<T>(global_Symbol_OP_deleted);
+    GCTOOLS_ASSERT(tagged_deletedp(global_tagged_Symbol_OP_deleted));
+    return reinterpret_cast<T>(global_tagged_Symbol_OP_deleted);
   }
   template <class T>
     inline T tag_sameAsKey() {
-    GCTOOLS_ASSERT(tagged_sameAsKeyp(global_Symbol_OP_sameAsKey));
-    return reinterpret_cast<T>(global_Symbol_OP_sameAsKey);
+    GCTOOLS_ASSERT(tagged_sameAsKeyp(global_tagged_Symbol_OP_sameAsKey));
+    return reinterpret_cast<T>(global_tagged_Symbol_OP_sameAsKey);
   }
   template <class T>
     inline T tag_valist(core::VaList_S* p) {

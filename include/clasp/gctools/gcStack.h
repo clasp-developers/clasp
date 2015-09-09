@@ -87,7 +87,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
     mutable bool _Called_va_arg;
     size_t numberOfArguments() const { return this->_NumArgs;};
     core::T_O* car() {
-      if ( this->_NumArgs == 0 ) return reinterpret_cast<core::T_O*>(gctools::global_Symbol_OP_nil);
+      if ( this->_NumArgs == 0 ) return reinterpret_cast<core::T_O*>(gctools::global_tagged_Symbol_OP_nil);
       if (this->_Called_va_arg) return this->_Car;
       this->_Car = va_arg(this->_Args,core::T_O*);
       --this->_NumArgs;
@@ -95,7 +95,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
       return this->_Car;
     }
     core::T_O* cdr() {
-      if ( this->_NumArgs == 0 ) return reinterpret_cast<core::T_O*>(gctools::global_Symbol_OP_nil);
+      if ( this->_NumArgs == 0 ) return reinterpret_cast<core::T_O*>(gctools::global_tagged_Symbol_OP_nil);
       if ( this->_Called_va_arg ) {
         this->_Called_va_arg = false;
         return gctools::tag_valist<core::T_O*>(this);

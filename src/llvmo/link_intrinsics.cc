@@ -561,8 +561,6 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   core::InvocationHistoryFrame invFrame(gctools::tagged_pointer<core::Closure>(&tempClosure), empty_valist_ptr, *frameP);
   core::T_sp closedEnv = _Nil<T_O>();
   ASSERT(ltvPP != NULL);
-  core::LoadTimeValues_O *ltvP = *ltvPP;
-  ASSERT(ltvP != NULL);
 #define TIME_TOP_LEVEL_FUNCTIONS
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   core::Number_sp startTime;
@@ -572,10 +570,10 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 #endif
   // Evaluate the function
   gc::frame::Frame onearg(1);
-  onearg[0] = ltvP;
+  onearg[0] = *ltvPP;  // Leave the tag on
   core::VaList_S onearg_valist_s(onearg);
   core::T_O* lcc_arglist = onearg_valist_s.asTaggedPtr();
-  *resultP = fptr(LCC_PASS_ARGS1_VA_LIST(ltvP));
+  *resultP = fptr(LCC_PASS_ARGS1_VA_LIST(onearg[0])); // Was  (ltvP));
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     core::Number_sp endTime = gc::As<core::Number_sp>(core::cl_getInternalRealTime());
@@ -1319,11 +1317,12 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 
 void getOrCreateLoadTimeValueArray(core::LoadTimeValues_O **ltvPP, const char *moduleName, int numberOfLoadTimeValues, int numberOfLoadTimeSymbols) {
   core::LoadTimeValues_sp loadTimeValues = _lisp->getOrCreateLoadTimeValues(moduleName, numberOfLoadTimeValues, numberOfLoadTimeSymbols);
-  *ltvPP = &(*loadTimeValues); //reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
+  *ltvPP = reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.raw_()); //reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
                                //	printf("%s:%d  getOrCreateLoadTimeValueArray ltvPP=%p  *ltvPP=%p\n", __FILE__, __LINE__, ltvPP, *ltvPP );
 }
 
-void dumpLoadTimeValues(core::LoadTimeValues_O *ltvP) {
+void dumpLoadTimeValues(core::LoadTimeValues_O *tagged_ltvP) {
+  core::LoadTimeValues_O* ltvP = gctools::untag_general<core::LoadTimeValues_O*>(tagged_ltvP);
   ltvP->dump();
 }
 
@@ -1352,7 +1351,9 @@ void debugSourceFileInfoHandle(int *sourceFileInfoHandleP) {
 };
 
 inline core::T_sp proto_copyLoadTimeValue(core::LoadTimeValues_O **ltvPP, int index) {
-  core::LoadTimeValues_O &ltv = **ltvPP;
+  core::LoadTimeValues_O* tagged_ltvP = *ltvPP;
+  core::LoadTimeValues_O* ltvP = gctools::untag_general<core::LoadTimeValues_O*>(tagged_ltvP);
+  core::LoadTimeValues_O &ltv = *ltvP;
   return ltv.data_element(index);
 }
 extern "C" {
@@ -1384,7 +1385,10 @@ void mv_copyLoadTimeValue(core::T_mv *resultP, core::LoadTimeValues_O **ltvPP, i
 };
 
 inline core::T_sp proto_getLoadTimeValue(core::LoadTimeValues_O **ltvPP, int index) {
-  return (*ltvPP)->data_element(index);
+  core::LoadTimeValues_O* tagged_ltvP = *ltvPP;
+  core::LoadTimeValues_O* ltvP = gctools::untag_general<core::LoadTimeValues_O*>(tagged_ltvP);
+  core::LoadTimeValues_O &ltv = *ltvP;
+  return ltv.data_element(index);
 }
 
 extern "C" {
@@ -1452,21 +1456,25 @@ void rplacd(core::T_sp *resultP, core::T_sp *carP) {
 }
 
 void ltv_initializeArrayObjectsRowMajorArefOrder(core::T_sp *arrayP, core::LoadTimeValues_O **ltvPP, int *indices) {
+  core::LoadTimeValues_O* tagged_ltvP = *ltvPP;
+  core::LoadTimeValues_O* ltvP = gctools::untag_general<core::LoadTimeValues_O*>(tagged_ltvP);
   core::Array_sp array = gc::As<core::Array_sp>((*arrayP));
   int arrayTotalSize = array->arrayTotalSize();
   for (int i = 0; i < arrayTotalSize; i++) {
-    array->rowMajorAset(i, (*ltvPP)->data_element(indices[i]));
+    array->rowMajorAset(i, ltvP->data_element(indices[i]));
   }
 }
 
 void ltv_initializeHashTable(core::T_sp *hashTableP, int numEntries, core::LoadTimeValues_O **ltvPP, int *indices) {
+  core::LoadTimeValues_O* tagged_ltvP = *ltvPP;
+  core::LoadTimeValues_O* ltvP = gctools::untag_general<core::LoadTimeValues_O*>(tagged_ltvP);
   core::HashTable_sp hashTable = gc::As<core::HashTable_sp>((*hashTableP));
   int j = 0;
   for (int i = 0; i < numEntries; i++) {
     int ikey = indices[j];
     int ival = indices[j + 1];
-    core::T_sp key = (*ltvPP)->data_element(ikey);
-    core::T_sp val = (*ltvPP)->data_element(ival);
+    core::T_sp key = (ltvP)->data_element(ikey);
+    core::T_sp val = (ltvP)->data_element(ival);
     hashTable->hash_table_setf_gethash(key, val);
     j += 2;
   }

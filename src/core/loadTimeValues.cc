@@ -41,7 +41,7 @@ extern "C" {
       We use a pointer to the smart_ptr because we don't want
       to have to maintain this as a garbage collection root.
     */
-core::LoadTimeValues_O *globalRunTimeValues ATTR_WEAK = NULL;
+core::LoadTimeValues_O* globalTaggedRunTimeValues ATTR_WEAK = NULL;
 };
 #pragma GCC visibility pop
 
@@ -55,13 +55,13 @@ namespace core {
 #define DOCS_core_setRunTimeValuesVector "setRunTimeValuesVector - return true if its set and false if it was already set"
 bool core_setRunTimeValuesVector(const string &name) {
   _G();
-  if (globalRunTimeValues != NULL) {
+  if (globalTaggedRunTimeValues!=NULL) {
     return false;
   }
   /*! LoadTimeValues_O are allocated in non-moving pool so we can
           set a global pointer to one of them without working about it moving */
   LoadTimeValues_sp ltv = _lisp->getOrCreateLoadTimeValues(name);
-  globalRunTimeValues = &(*(ltv));
+  globalTaggedRunTimeValues = reinterpret_cast<LoadTimeValues_O*>(ltv.raw_());
   return true;
 };
 

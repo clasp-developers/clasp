@@ -46,7 +46,7 @@
 (defvar *run-time-value-nil-index* (data-vector-push-extend *run-time-literal-holder* nil 16))
 (defvar *run-time-value-t-index* (data-vector-push-extend *run-time-literal-holder* t 16))
 
-(defvar *run-time-literals-external-name* "globalRunTimeValues")
+(defvar *run-time-literals-external-name* "globalTaggedRunTimeValues")
 
 
 (defvar +run-and-load-time-value-holder-global-var-type+ +ltv*+) ;; Was +ltvsp*+

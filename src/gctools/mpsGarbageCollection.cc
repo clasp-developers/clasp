@@ -723,7 +723,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create scan root");
 
-  registerLoadTimeValuesRoot(&globalRunTimeValues);
+  registerLoadTimeValuesRoot(&globalTaggedRunTimeValues);
 
   _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_size);
 

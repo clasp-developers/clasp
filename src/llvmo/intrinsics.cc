@@ -71,13 +71,16 @@ using namespace core;
 extern "C" {
 
 ALWAYS_INLINE core::T_sp *loadTimeValueReference(core::LoadTimeValues_O **ltvPP, int index) {
-  core::LoadTimeValues_O &ltv = **ltvPP;
-  core::T_sp &result = ltv.data_element(index);
+  core::LoadTimeValues_O* tagged_ltvP = *ltvPP;
+  core::LoadTimeValues_O* ltvP = gctools::untag_general<core::LoadTimeValues_O*>(tagged_ltvP);
+  core::T_sp &result = ltvP->data_element(index);
   return &result;
 }
 
 ALWAYS_INLINE core::Symbol_sp *loadTimeSymbolReference(core::LoadTimeValues_O **ltvPP, int index) {
-  core::Symbol_sp &result = (*ltvPP)->symbols_element(index);
+  core::LoadTimeValues_O* tagged_ltvP = *ltvPP;
+  core::LoadTimeValues_O* ltvP = gctools::untag_general<core::LoadTimeValues_O*>(tagged_ltvP);
+  core::Symbol_sp &result = ltvP->symbols_element(index);
 #ifdef DEBUG_LOAD_TIME_VALUES
 //        printf("%s:%d loadTimeSymbolReference@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, (*ltvPP), index, result.pbase(), _rep_(result).c_str());
 #endif
@@ -157,29 +160,32 @@ ALWAYS_INLINE void makeCons(core::T_sp *resultConsP, core::T_sp *carP, core::T_s
 extern "C" {
 
 ALWAYS_INLINE T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx) {
-  LoadTimeValues_O *array = *tarray;
+  core::LoadTimeValues_O* tagged_ltvP = *tarray;
+  core::LoadTimeValues_O* array = gctools::untag_general<core::LoadTimeValues_O*>(tagged_ltvP);
 #ifdef DEBUG_CC
   printf("%s:%d precalcSymbol idx[%zu] symbol = %p\n", __FILE__, __LINE__, idx, (*array).symbols_element(idx).px);
 #endif
-  T_O *res = (*array).symbols_element(idx).raw_();
+  T_O *res = array->symbols_element(idx).raw_();
   ASSERT(res != NULL);
   return res;
 }
 
 ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx) {
-  LoadTimeValues_O *array = *tarray;
+  core::LoadTimeValues_O* tagged_ltvP = *tarray;
+  core::LoadTimeValues_O* array = gctools::untag_general<core::LoadTimeValues_O*>(tagged_ltvP);
 #ifdef DEBUG_CC
   printf("%s:%d precalcValue idx[%zu] value = %p\n", __FILE__, __LINE__, idx, (*array).data_element(idx).px);
 #endif
-  T_O *res = (*array).data_element(idx).raw_();
+  T_O *res = array->data_element(idx).raw_();
   return res;
 }
 
 ALWAYS_INLINE core::T_O **cc_loadTimeValueReference(core::LoadTimeValues_O **ltvPP, size_t index) {
   ASSERT(ltvPP != NULL);
   ASSERT(*ltvPP != NULL);
-  core::LoadTimeValues_O &ltv = **ltvPP;
-  core::T_sp &result = ltv.data_element(index);
+  core::LoadTimeValues_O* tagged_ltvP = *ltvPP;
+  core::LoadTimeValues_O* ltvP = gctools::untag_general<core::LoadTimeValues_O*>(tagged_ltvP);
+  core::T_sp &result = ltvP->data_element(index);
   return &result.rawRef_();
 }
 

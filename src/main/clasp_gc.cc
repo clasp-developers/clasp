@@ -14571,7 +14571,7 @@ static void* OBJ_FINALIZE_table[] = { NULL
  SMART_PTR_FIX(core::UserData_O::___staticClassSymbol);
  SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::___staticClassSymbol);
  SMART_PTR_FIX(llvmo::DICompositeType_O::___staticClassSymbol);
- POINTER_FIX(gctools::global_Symbol_OP_nil);
+ POINTER_FIX(gctools::global_tagged_Symbol_OP_nil);
  SMART_PTR_FIX(llvmo::ConstantArray_O::___staticClass);
  SMART_PTR_FIX(llvmo::MDString_O::___staticClassSymbol);
  SMART_PTR_FIX(core::Function_O::___staticClass);
@@ -14616,7 +14616,7 @@ static void* OBJ_FINALIZE_table[] = { NULL
  SMART_PTR_FIX(core::StringStream_O::___staticClassSymbol);
  SMART_PTR_FIX(llvmo::PointerType_O::___staticClass);
  SMART_PTR_FIX(core::SingleDispatchMethod_O::___staticClassSymbol);
- POINTER_FIX(gctools::global_Symbol_OP_unbound);
+ POINTER_FIX(gctools::global_tagged_Symbol_OP_unbound);
  SMART_PTR_FIX(core::StringStream_O::___staticClass);
  SMART_PTR_FIX(llvmo::Function_O::___staticClass);
  SMART_PTR_FIX(llvmo::GlobalVariable_O::___staticClassSymbol);
@@ -14696,7 +14696,7 @@ static void* OBJ_FINALIZE_table[] = { NULL
  SMART_PTR_FIX(llvmo::LoadInst_O::___staticClass);
  SMART_PTR_FIX(llvmo::InvokeInst_O::___staticClassSymbol);
  SMART_PTR_FIX(llvmo::ValueAsMetadata_O::___staticClassSymbol);
- POINTER_FIX(gctools::global_Symbol_OP_deleted);
+ POINTER_FIX(gctools::global_tagged_Symbol_OP_deleted);
  SMART_PTR_FIX(llvmo::DIType_O::___staticClass);
  SMART_PTR_FIX(core::Instance_O::___staticClass);
  SMART_PTR_FIX(clbind::ClassRep_O::___staticClass);
@@ -14746,7 +14746,7 @@ static void* OBJ_FINALIZE_table[] = { NULL
  SMART_PTR_FIX(core::CatchEnvironment_O::___staticClass);
  SMART_PTR_FIX(llvmo::FunctionPass_O::___staticClass);
  SMART_PTR_FIX(core::RandomState_O::___staticClass);
- POINTER_FIX(gctools::global_Symbol_OP_sameAsKey);
+ POINTER_FIX(gctools::global_tagged_Symbol_OP_sameAsKey);
  SMART_PTR_FIX(core::RandomState_O::___staticClassSymbol);
  SMART_PTR_FIX(core::BitVector_O::___staticClass);
  SMART_PTR_FIX(core::IOFileStream_O::___staticClass);
@@ -14755,7 +14755,7 @@ static void* OBJ_FINALIZE_table[] = { NULL
  SMART_PTR_FIX(core::Regex_O::___staticClassSymbol);
  SMART_PTR_FIX(core::SourcePosInfo_O::___staticClass);
  SMART_PTR_FIX(core::FunctionValueEnvironment_O::___staticClass);
- POINTER_FIX(globalRunTimeValues);
+ POINTER_FIX(globalTaggedRunTimeValues);
  SMART_PTR_FIX(core::AnsiStream_O::___staticClass);
  SMART_PTR_FIX(core::HashTableEql_O::___staticClass);
  SMART_PTR_FIX(core::BlockEnvironment_O::___staticClassSymbol);

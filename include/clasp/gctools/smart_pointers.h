@@ -423,13 +423,13 @@ namespace gctools {
   template <typename Type>
     inline static smart_ptr<Type> make_tagged_other(Type *p) { return smart_ptr<Type>(p); }
   template <typename Type>
-    inline static smart_ptr<Type> make_tagged_nil() { return smart_ptr<Type>((Tagged)global_Symbol_OP_nil); };
+    inline static smart_ptr<Type> make_tagged_nil() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_nil); };
   template <typename Type>
-    inline static smart_ptr<Type> make_tagged_unbound() { return smart_ptr<Type>((Tagged)global_Symbol_OP_unbound); };
+    inline static smart_ptr<Type> make_tagged_unbound() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_unbound); };
   template <typename Type>
-    inline static smart_ptr<Type> make_tagged_deleted() { return smart_ptr<Type>((Tagged)global_Symbol_OP_deleted); };
+    inline static smart_ptr<Type> make_tagged_deleted() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_deleted); };
   template <typename Type>
-    inline static smart_ptr<Type> make_tagged_sameAsKey() { return smart_ptr<Type>((Tagged)global_Symbol_OP_sameAsKey); };
+    inline static smart_ptr<Type> make_tagged_sameAsKey() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_sameAsKey); };
 
 };
 
@@ -463,7 +463,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
     mutable bool _Called_va_arg;
     size_t numberOfArguments() const { return this->_NumArgs;};
     core::T_O* car() {
-      if ( this->_NumArgs == 0 ) return reinterpret_cast<core::T_O*>(gctools::global_Symbol_OP_nil);
+      if ( this->_NumArgs == 0 ) return reinterpret_cast<core::T_O*>(gctools::global_tagged_Symbol_OP_nil);
       if (this->_Called_va_arg) return this->_Car;
       this->_Car = va_arg(this->_Args,core::T_O*);
       --this->_NumArgs;
@@ -471,7 +471,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
       return this->_Car;
     }
     core::T_O* cdr() {
-      if ( this->_NumArgs == 0 ) return reinterpret_cast<core::T_O*>(gctools::global_Symbol_OP_nil);
+      if ( this->_NumArgs == 0 ) return reinterpret_cast<core::T_O*>(gctools::global_tagged_Symbol_OP_nil);
       if ( this->_Called_va_arg ) {
         this->_Called_va_arg = false;
         return gctools::tag_valist<core::T_O*>(this);
@@ -1545,7 +1545,7 @@ public:
       this->theObject = b.theObject;
       return;
     } else if (tagged_nilp(ot.theObject)) {
-      this->theObject = reinterpret_cast<Type *>(global_Symbol_OP_nil);
+      this->theObject = reinterpret_cast<Type *>(global_tagged_Symbol_OP_nil);
       return;
     }
     class_id expected_typ = reg::registered_class<Type>::id;
@@ -1556,7 +1556,7 @@ public:
   template <typename U>
     Nilable(smart_ptr<U> other) {
     if (other.nilp()) {
-      this->theObject = reinterpret_cast<Type *>(global_Symbol_OP_nil);
+      this->theObject = reinterpret_cast<Type *>(global_tagged_Symbol_OP_nil);
       return;
     }
     this->theObject = TaggedCast<U*,Type*>::castOrNULL(other.theObject);
@@ -1568,7 +1568,7 @@ public:
   template <typename U>
     Nilable(Nilable<smart_ptr<U>> other) {
     if (other.nilp()) {
-      this->theObject = reinterpret_cast<Type *>(global_Symbol_OP_nil);
+      this->theObject = reinterpret_cast<Type *>(global_tagged_Symbol_OP_nil);
       return;
     }
     this->theObject = TaggedCast<U*,Type*>::castOrNULL(other.theObject);
@@ -1592,7 +1592,7 @@ public:
 
   MyType &operator=(smart_ptr<core::T_O> const &orig) {
     if (tagged_nilp(orig.theObject)) {
-      this->theObject = reinterpret_cast<Type *>(global_Symbol_OP_nil);
+      this->theObject = reinterpret_cast<Type *>(global_tagged_Symbol_OP_nil);
       return *this;
     } else if (Base foo = orig.asOrNull<Type>()) {
       this->theObject = foo.theObject;
@@ -1659,7 +1659,7 @@ public:
       this->theObject = reinterpret_cast<Type *>(ot.theObject);
       return;
     } else if (tagged_nilp(ot.theObject)) {
-      this->theObject = reinterpret_cast<Type *>(global_Symbol_OP_nil);
+      this->theObject = reinterpret_cast<Type *>(global_tagged_Symbol_OP_nil);
       return;
     }
     class_id expected_typ = reg::registered_class<Type>::id;
@@ -1680,7 +1680,7 @@ public:
 
   MyType &operator=(smart_ptr<core::T_O> const &orig) {
     if (tagged_nilp(orig.theObject)) {
-      this->theObject = reinterpret_cast<Type *>(global_Symbol_OP_nil);
+      this->theObject = reinterpret_cast<Type *>(global_tagged_Symbol_OP_nil);
       return *this;
     } else if (Base foo = orig.asOrNull<Type>()) {
       this->theObject = foo.theObject;
