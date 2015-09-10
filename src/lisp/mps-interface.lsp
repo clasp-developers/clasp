@@ -299,6 +299,7 @@
 
 (defstruct (smart-ptr-ctype (:include ctype)) specializer)
 
+(defstruct (tagged-pointer-ctype (:include ctype)) specializer)
 
 (defstruct (pointer-ctype (:include ctype))
   pointee)
@@ -469,6 +470,12 @@ can be saved and reloaded within the project for later analysis"
                    (qtarg (cast:get-as-type arg)))
               (gclog "          Found a smart_ptr~%")
               (make-smart-ptr-ctype :key decl-key :specializer (cast:get-as-string qtarg))))
+           ((string= name "tagged_pointer")
+            (assert (eql (cast:size args) 1) nil "Must have 1 argument")
+            (let* ((arg (cast:template-argument-list-get args 0))
+                   (qtarg (cast:get-as-type arg)))
+              (gclog "          Found a tagged_pointer~%")
+              (make-tagged-pointer-ctype :key decl-key :specializer (cast:get-as-string qtarg))))
            ((string= name "GCVector_moveable")
             (let* ((arg (cast:template-argument-list-get args 0))
                    (qtarg (cast:get-as-type arg)))
@@ -486,6 +493,7 @@ can be saved and reloaded within the project for later analysis"
            (t
             #+gc-warnings(warn "classify-ctype cast:record-type unhandled class-template-specialization-decl  key = ~a  name = ~a~%IGNORE-NAME ~a~%IGNORE-KEY ~a" decl-key name name decl-key)
             (make-class-template-specialization-ctype :key decl-key 
+                                                      :name name
                                                       :arguments (classify-template-args decl)
                                                       )))))
       (cast:cxxrecord-decl
@@ -1241,6 +1249,7 @@ so that they don't have to be constantly recalculated"
 (defmethod contains-fixptr-impl-p ((x unclassified-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x unclassified-template-specialization-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x smart-ptr-ctype) project) t)
+(defmethod contains-fixptr-impl-p ((x tagged-pointer-ctype) project) t)
 (defmethod contains-fixptr-impl-p ((x pointer-ctype) project)
   (cond
     ((container-p (pointer-ctype-pointee x)) t)
@@ -1288,6 +1297,7 @@ so that they don't have to be constantly recalculated"
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype null)) nil)
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype unclassified-ctype)) nil)
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype smart-ptr-ctype)) nil)
+(defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype tagged-pointer-ctype)) nil)
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype cxxrecord-ctype))
   (add-ctype forwards (ctype-key alloc-ctype) alloc-ctype))
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype pointer-ctype))
@@ -1486,6 +1496,8 @@ so that they don't have to be constantly recalculated"
 (defgeneric fixer-macro-name (fixer-head fixer))
 
 (defmethod fixer-macro-name ((x (eql :smart-ptr-fix)) fixer) "SMART_PTR_FIX")
+
+(defmethod fixer-macro-name ((x (eql :tagged-pointer-fix)) fixer) "TAGGED_POINTER_FIX")
 
 (defmethod fixer-macro-name ((x pointer-fixer) fixer) "POINTER_FIX")
 
@@ -2071,6 +2083,8 @@ so that they don't have to be constantly recalculated"
 
 (defmethod fix-code ((x smart-ptr-ctype) analysis) :smart-ptr-fix)
 
+(defmethod fix-code ((x tagged-pointer-ctype) analysis) :tagged-pointer-fix)
+
 (defmethod fix-code ((x constant-array-ctype) analysis)
   (if (contains-fixptr-p x (analysis-project analysis))
       (make-array-fixer :element-type (constant-array-ctype-element-type x))))
@@ -2591,7 +2605,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (progn
   (lnew $test-search)
   (setq $test-search (append
-                      (lsel $* ".*weakPointer.*\.cc$"))
+                      (lsel $* ".*lambdaListHandler\.cc$"))
                       )
   )
 
@@ -2641,7 +2655,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (let ((jobvec (make-array num-parallel)))
     (do* ((i 0 (mod (1+ i) num-parallel))
           (one-job (pop job-list) (pop job-list)))
-         ((null job-list) (loop for idx below (length jobvec) collect (elt jobvec idx)))
+         ((null one-job) (loop for idx below (length jobvec) collect (elt jobvec idx)))
      (push one-job (elt jobvec i)))))
 
 
