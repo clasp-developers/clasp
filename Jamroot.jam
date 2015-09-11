@@ -115,11 +115,11 @@ project clasp : requirements
 #        <define>DEBUG_FIND      #    Define this when using DEBUG_GCWEAK but can be defined along & with DEBUG_TRYSET
 #       <define>SOURCE_DEBUG
 #-------- mps options
-	<define>DEBUG_MPS      # generate lots of debugging information for MPS
+#	<define>DEBUG_MPS      # generate lots of debugging information for MPS
   # DEBUG_MPS_UNDERSCANNING does a garbage collection after every allocation
   # This really, really slows things down
 #        <define>DEBUG_MPS_UNDERSCANNING
-        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
+#        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #         <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
 #         <define>CONFIG_THREAD_SINGLE #  Single threaded
           <define>USE_CLASP_DYNAMIC_CAST
