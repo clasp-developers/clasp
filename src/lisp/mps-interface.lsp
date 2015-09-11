@@ -2097,6 +2097,7 @@ so that they don't have to be constantly recalculated"
 (defgeneric ignorable-ctype-p (ctype))
 
 (defmethod ignorable-ctype-p ((ctype smart-ptr-ctype)) nil)
+(defmethod ignorable-ctype-p ((ctype tagged-pointer-ctype)) nil)
 
 (defun make-ignore-table (strings)
   (let ((ht (make-hash-table :test #'equal)))
@@ -2437,6 +2438,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-macro-name ((var global-variable))
   (fix-macro-name (global-variable-ctype var)))
 (defmethod fix-macro-name ((var smart-ptr-ctype)) "SMART_PTR_FIX")
+(defmethod fix-macro-name ((var tagged-pointer-ctype)) "TAGGED_POINTER_FIX")
 (defmethod fix-macro-name ((var pointer-ctype)) "POINTER_FIX")
 (defmethod fix-macro-name ((var cxxrecord-ctype)) "RECORD_FIX")
 
