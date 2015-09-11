@@ -37,6 +37,12 @@ class WrappedPointer_O;
 class Functoid;
 class Creator;
 class Iterator_O;
+    class SequenceStepper;
+};
+namespace asttooling {
+    namespace internal {
+        class MatcherDescriptor;
+    };
 };
 namespace clbind {
 class ConstructorCreator;

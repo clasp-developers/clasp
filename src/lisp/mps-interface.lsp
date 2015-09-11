@@ -1499,7 +1499,7 @@ so that they don't have to be constantly recalculated"
 
 (defmethod fixer-macro-name ((x (eql :tagged-pointer-fix)) fixer) "TAGGED_POINTER_FIX")
 
-(defmethod fixer-macro-name ((x pointer-fixer) fixer) "POINTER_FIX")
+(defmethod fixer-macro-name ((x pointer-fixer) fixer) "SIMPLE_POINTER_FIX")
 
 
 
@@ -1684,7 +1684,9 @@ so that they don't have to be constantly recalculated"
 			  ;;          (format fout "        // A scanner for ~a~%" parm0-ctype)
 			  (cond
 			   ((smart-ptr-ctype-p parm0-ctype)
-			    (format fout "          SMART_PTR_FIX(*it);~%"))
+			    (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+                           ((tagged-pointer-ctype-p parm0-ctype)
+                            (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
 			   ((cxxrecord-ctype-p parm0-ctype)
 			    (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
 			      (dolist (instance-var all-instance-variables)
@@ -1694,7 +1696,7 @@ so that they don't have to be constantly recalculated"
 			      (dolist (instance-var all-instance-variables)
 				(code-for-instance-var fout "it" instance-var))))
 			   ((pointer-ctype-p parm0-ctype)
-			    (format fout "          POINTER_FIX(*it);~%" ))
+			    (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
 			   (t (error "Write code to scan ~a" parm0-ctype)))
 			  (format fout "    }~%")
 			  (format fout "    typedef typename ~A type_~A;~%" key enum-name)
@@ -2419,6 +2421,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-variable-p ((var unclassified-ctype) analysis)
   nil)
 (defmethod fix-variable-p ((var smart-ptr-ctype) analysis) t)
+(defmethod fix-variable-p ((var tagged-pointer-ctype) analysis) t)
 (defmethod fix-variable-p ((var class-template-specialization-ctype) analysis) nil)
 (defmethod fix-variable-p ((var constant-array-ctype) analysis) nil)
 (defmethod fix-variable-p ((var pointer-ctype) analysis)
@@ -2439,7 +2442,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (fix-macro-name (global-variable-ctype var)))
 (defmethod fix-macro-name ((var smart-ptr-ctype)) "SMART_PTR_FIX")
 (defmethod fix-macro-name ((var tagged-pointer-ctype)) "TAGGED_POINTER_FIX")
-(defmethod fix-macro-name ((var pointer-ctype)) "POINTER_FIX")
+(defmethod fix-macro-name ((var pointer-ctype)) "SIMPLE_POINTER_FIX")
 (defmethod fix-macro-name ((var cxxrecord-ctype)) "RECORD_FIX")
 
 

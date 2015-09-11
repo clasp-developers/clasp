@@ -375,7 +375,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 
     //            printf("%s:%d  Fixing globalLoadTimeValuesRoots[%d]\n", __FILE__, __LINE__, globalLoadTimeValuesRoots.size() );
     for (auto &it : globalLoadTimeValuesRoots) {
-      POINTER_FIX(*it);
+      SIMPLE_POINTER_FIX(*it);
     }
 //            printf("---------Done\n");
 
