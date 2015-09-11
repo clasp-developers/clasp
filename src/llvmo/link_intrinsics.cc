@@ -1607,6 +1607,7 @@ void popDynamicBinding(core::Symbol_sp *symbolP) {
 
 extern "C" {
 
+#if 0
 void trace_setLineNumberColumnForIHSTop(char *sourceFileName, int *sourceFileInfoHandleP, size_t fileOffset, int ln, int col) {
   if (comp::_sym_STARlowLevelTracePrintSTAR->symbolValue().isTrue()) {
     if (*sourceFileInfoHandleP == 0) {
@@ -1615,11 +1616,14 @@ void trace_setLineNumberColumnForIHSTop(char *sourceFileName, int *sourceFileInf
   }
   _lisp->invocationHistoryStack().setSourcePosForTop(*sourceFileInfoHandleP, fileOffset, ln, col);
 }
+#endif
 
+#if 0
 void trace_setActivationFrameForIHSTop(core::T_sp *afP) {
   _G();
   _lisp->invocationHistoryStack().setActivationFrameForTop(*afP);
 }
+#endif
 
 extern size_t matchKeywordOnce(core::T_sp *xP, core::T_O *yP, unsigned char *sawKeyAlreadyP) {
   if ((*xP).raw_() != (yP))

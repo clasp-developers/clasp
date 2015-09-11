@@ -86,7 +86,6 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat) {
   InterpretedClosure loadSourceClosure(_sym_loadSource, spi, kw::_sym_function, LambdaListHandler_O::create(0), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
   InvocationHistoryFrame closure(&loadSourceClosure);
 #endif
-  _lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
   //        printf("%s:%d   Here set-up *load-pathname*, *load-truename* and *load-source-file-info* for source: %s\n", __FILE__, __LINE__, _rep_(source).c_str() );
   while (true) {
     bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
@@ -100,7 +99,6 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat) {
     if (echoReplRead) {
       _lisp->print(BF("Read: %s\n") % _rep_(x));
     }
-    _lisp->invocationHistoryStack().setExpressionForTop(x);
     if (x.number_of_values() > 0) {
       //                printf("%s:%d  ;; -- read- %s\n", __FILE__, __LINE__, _rep_(x).c_str() );
       if (print) {

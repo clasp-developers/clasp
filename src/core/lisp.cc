@@ -2137,7 +2137,9 @@ T_mv af_sourceFileName() {
   _G();
   Cons_sp ppcons;
   InvocationHistoryFrame *frame = _lisp->invocationHistoryStack().top();
-  string sourcePath = frame->sourcePathName();
+  gctools::tagged_pointer<Closure> closure = frame->closure;
+  int sourceFileInfoHandle = closure->sourceFileInfoHandle();
+  string sourcePath = gc::As<SourceFileInfo_sp>(core_sourceFileInfo(make_fixnum(sourceFileInfoHandle)))->namestring();
   Path_sp path = Path_O::create(sourcePath);
   Path_sp parent_path = path->parent_path();
   return Values(Str_O::create(path->fileName()), Str_O::create(parent_path->asString()));
@@ -2147,9 +2149,9 @@ T_mv af_sourceFileName() {
 #define DECL_af_sourceLineColumn ""
 #define DOCS_af_sourceLineColumn "sourceLineColumn"
 T_mv af_sourceLineColumn() {
-  _G();
   InvocationHistoryFrame *frame = _lisp->invocationHistoryStack().top();
-  return Values(make_fixnum(frame->lineno()), make_fixnum(frame->column()));
+  gctools::tagged_pointer<Closure> closure = frame->closure;
+  return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
 }
 
 /*

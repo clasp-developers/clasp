@@ -55,12 +55,8 @@ public:
   InvocationHistoryStack *_Stack;
   InvocationHistoryFrame *_Previous;
   int _Bds;
-        gc::tagged_pointer<Closure> closure;
+  gc::tagged_pointer<Closure> closure;
   T_sp environment;
-  int runningSourceFileInfoHandle;
-  size_t runningFilePos;
-  int runningLineNumber;
-  int runningColumn;
   size_t _NumberOfArguments;
   core::T_O** _RegisterArguments;
   core::T_O** _StackArguments;
@@ -70,34 +66,11 @@ public:
   ATTR_WEAK virtual ~InvocationHistoryFrame();
   InvocationHistoryFrame *previous() { return this->_Previous; };
   uint index() { return this->_Index; };
-  virtual string sourcePathName() const;
-  virtual size_t filepos() const { return this->runningFilePos; };
-  virtual int lineno() const { return this->runningLineNumber; };
-  virtual int column() const { return this->runningColumn; };
   VectorObjects_sp arguments() const;
   string argumentsAsString(int maxWidth) const;
-  virtual void setSourcePos(int fileHandle, size_t filePos, uint lineNumber, uint column) {
-    this->runningSourceFileInfoHandle = fileHandle;
-    this->runningFilePos = filePos;
-    this->runningLineNumber = lineNumber;
-    this->runningColumn = column;
-    //printf("%s:%d setSourcePos fileHandle=%d  lineno=%d\n", __FILE__, __LINE__, this->runningSourceFileInfoHandle, this->runningLineNumber );
-  };
-  virtual void setSourcePos(SourcePosInfo_sp info) {
-    this->runningSourceFileInfoHandle = clasp_sourcePosInfo_fileHandle(info);
-    this->runningFilePos = clasp_sourcePosInfo_filepos(info);
-    this->runningLineNumber = clasp_sourcePosInfo_lineno(info);
-    this->runningColumn = clasp_sourcePosInfo_column(info);
-    //	    printf("%s:%d setSourcePos fileHandle=%d  lineno=%d\n", __FILE__, __LINE__, this->runningSourceFileInfoHandle, this->runningLineNumber );
-  };
-
   virtual void setActivationFrame(T_sp af) { this->environment = af; };
   virtual string asString();
-        string asStringLowLevel(gctools::tagged_pointer<Closure> closure,
-                          // const string& functionName,
-                          // const string& sourceFileName,
-                          uint lineNumber, uint column) const;
-
+  string asStringLowLevel(gctools::tagged_pointer<Closure> closure) const;
   virtual T_sp activationFrame() const { return this->environment; };
   virtual int bds() const { return this->_Bds; };
 
@@ -132,36 +105,6 @@ public:
       cur = cur->previous();
     }
     return count;
-  }
-
-  void setExpressionForTop(T_sp expression);
-
-  void setSourcePosForTop(int sourceFileHandle, size_t filePos, uint lineNumber, uint column) {
-    if (this->_Top == NULL) {
-      printf("%s:%d IHSTop must never be NULL!\n", __FILE__, __LINE__);
-      exit(1);
-    }
-    this->_Top->setSourcePos(sourceFileHandle, filePos, lineNumber, column);
-  }
-
-  void setSourcePosForTop(SourcePosInfo_sp info) {
-    if (this->_Top == NULL) {
-      printf("%s:%d IHSTop must never be NULL!\n", __FILE__, __LINE__);
-      exit(1);
-    }
-    this->_Top->setSourcePos(info);
-  }
-
-  void setActivationFrameForTop(T_sp af) {
-    if (this->_Top == NULL) {
-      printf("%s:%d IHSTop must never be NULL!\n", __FILE__, __LINE__);
-      exit(1);
-    }
-    this->_Top->setActivationFrame(af);
-  }
-
-  void setSourcePosForTop(int sourceFileHandle, size_t filePos, uint lineNumber) {
-    this->_Top->setSourcePos(sourceFileHandle, filePos, lineNumber, 0);
   }
 
   vector<InvocationHistoryFrame *> asVectorFrames();

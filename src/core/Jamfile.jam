@@ -40,6 +40,7 @@ local unity_sources =
       all.cc ;
 
 local sources =
+      stacks.cc
       weakKeyMapping.cc
       weakHashTable.cc
       weakPointer.cc
@@ -50,7 +51,6 @@ local sources =
       cache.cc
       float_to_string.cc
 	    primitives.cc
-      stacks.cc
       random.cc
       cxxObject.cc
       cxxClass.cc

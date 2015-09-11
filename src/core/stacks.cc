@@ -88,7 +88,7 @@ Vector_sp ExceptionStack::backtrace() {
 }
 
     InvocationHistoryFrame::InvocationHistoryFrame(gctools::tagged_pointer<Closure> c, core::T_O* valist_sptr, T_sp env)
-  : closure(c), environment(env), runningSourceFileInfoHandle(c->sourceFileInfoHandle()), runningFilePos(c->filePos()), runningLineNumber(c->lineNumber()), runningColumn(c->column()), _NumberOfArguments(0), _RegisterArguments(NULL), _StackArguments(NULL)  {
+  : closure(c), environment(env), _NumberOfArguments(0), _RegisterArguments(NULL), _StackArguments(NULL)  {
   if (c->name.nilp()) {
     SIMPLE_ERROR(BF("The InvocationHistoryFrame closure has nil name"));
   }
@@ -113,17 +113,6 @@ InvocationHistoryFrame::~InvocationHistoryFrame() {
   this->_Stack->pop();
 }
 
-void InvocationHistoryStack::setExpressionForTop(T_sp expression) {
-//  uint ifilepos(0), ilineno(0), icolumn(0);
-  if (_lisp->sourceDatabase().notnilp()) {
-    T_sp info = gc::As<SourceManager_sp>(_lisp->sourceDatabase())->lookupSourcePosInfo(expression);
-    if (info.notnilp()) {
-      this->_Top->setSourcePos(info);
-    } else {
-      //                this->_Top->setSourcePos(0,0,0);
-    }
-  }
-}
 
 VectorObjects_sp InvocationHistoryFrame::arguments() const
 {
@@ -169,15 +158,16 @@ string InvocationHistoryFrame::argumentsAsString(int maxWidth) const
 }
       
 
-string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure> closure,
-                                                uint lineNumber,
-                                                uint column) const {
+string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure> closure) const
+{
   if (!closure) {
     return "InvocationHistoryFrame::asStringLowLevel NULL closure";
   };
   T_sp funcNameObj = closure->name;
   string funcName = _rep_(funcNameObj);
-  int sourceFileInfoHandle = this->runningSourceFileInfoHandle;
+  uint lineNumber = closure->lineNumber();
+  uint column = closure->column();
+  int sourceFileInfoHandle = closure->sourceFileInfoHandle();
   SourceFileInfo_sp sfi = core_sourceFileInfo(make_fixnum(sourceFileInfoHandle));
   string sourceFileName = sfi->fileName();
   stringstream ss;
@@ -198,15 +188,10 @@ string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure>
   return ss.str();
 }
 
-string InvocationHistoryFrame::sourcePathName() const {
-  return gc::As<SourceFileInfo_sp>(core_sourceFileInfo(make_fixnum(this->runningSourceFileInfoHandle)))->namestring();
-}
 
 string InvocationHistoryFrame::asString() {
   string name;
-  return this->asStringLowLevel(this->closure,
-                                this->runningLineNumber,
-                                this->runningColumn);
+  return this->asStringLowLevel(this->closure);
 }
 
 vector<InvocationHistoryFrame *> InvocationHistoryStack::asVectorFrames() {

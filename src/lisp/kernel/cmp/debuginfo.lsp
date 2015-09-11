@@ -223,9 +223,10 @@
   (when *dbg-generate-dwarf*
     (irc-attach-debugging-info-to-value-frame af symbol-list-designator env)))
 
-(defun dbg-set-activation-frame-for-ihs-top (renv)
-  (when *dbg-generate-dwarf*
-    (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-renv new-env))))
+#+(or)(defun dbg-set-activation-frame-for-ihs-top (renv)
+        (error "Depreciated dbg-set-activation-frame-for-ihs-top")
+        (when *dbg-generate-dwarf*
+          (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-renv new-env))))
 
 (defun dbg-set-current-source-pos (form)
   (when *dbg-generate-dwarf*
@@ -301,7 +302,8 @@
       (when source-file
         (let ((ln lineno)
               (col column))
-          (irc-intrinsic "trace_setLineNumberColumnForIHSTop"
+          (depreciated)
+          #+(or)(irc-intrinsic "trace_setLineNumberColumnForIHSTop"
                          *gv-source-pathname*
                          *gv-source-file-info-handle*
                          (jit-constant-i64 filepos)
@@ -369,10 +371,12 @@
 
 
 (defmacro trace-enter-lexical-scope ( scope-name env form )
-  `(dbg-set-activation-frame-for-ihs-top (irc-renv ,env)))
+  nil ;; do nothing
+  #+(or)`(dbg-set-activation-frame-for-ihs-top (irc-renv ,env)))
 
 
 (defun trace-exit-lexical-scope (scope-name env traceid)
+  nil ;; do nothing
   `(irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-parent-renv ,env)))
 
 

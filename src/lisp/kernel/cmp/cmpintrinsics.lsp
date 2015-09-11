@@ -681,8 +681,8 @@ Boehm and MPS use a single pointer"
 ;;  (primitive-nounwind module "va_allowOtherKeywords" +i32+ (list +i32+ +t*+))
   (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
 
-  (primitive-nounwind module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
-  (primitive-nounwind module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i64+ +i32+ +i32+))
+;;  (primitive-nounwind module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
+;;  (primitive-nounwind module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i64+ +i32+ +i32+))
 
   (primitive-nounwind module "trace_exitFunctionScope" +void+ (list +i32+) )
   (primitive-nounwind module "trace_exitBlockScope" +void+ (list +i32+ ) )
