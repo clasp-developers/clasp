@@ -173,7 +173,7 @@ struct BucketsBase : public WeakObject {
     gctools::smart_ptr<core::Fixnum_I> _deleted; /* number of deleted buckets (tagged) */
     T bucket[0];                                 /* hash buckets */
 
-    void* dependentPtr() const { reinterpret_cast<void*>(&*this->dependent); };
+    void* dependentPtr() const { return reinterpret_cast<void*>(&*this->dependent); };
 
 
     int length() const {
