@@ -21,7 +21,7 @@
 :pause-hir
 
 (setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
-(setq *echo-repl-read* nil)
+(setq *echo-repl-read* t)
 (setq *load-print* nil)
 (setq *print-source-code-cons* nil)
 

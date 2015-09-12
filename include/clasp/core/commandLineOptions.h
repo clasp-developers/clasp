@@ -48,6 +48,7 @@ struct CommandLineOptions {
   bool _Version;
   bool _SilentStartup;
   bool _NoRc;
+  bool _PauseForDebugger;
   std::vector<std::string> _Args;
 };
 };

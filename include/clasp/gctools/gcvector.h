@@ -34,15 +34,74 @@ class GCVector_moveable : public GCContainer {
 public:
   template <class U, typename Allocator>
   friend class GCVector;
+  typedef GCVector_moveable<T> container_type;
   typedef T value_type;
   typedef value_type &reference;
-  typedef T *iterator;
-  typedef T const *const_iterator;
 
   GCVector_moveable(size_t num, size_t e = 0) : _Capacity(num), _End(e){};
   size_t _Capacity; // Index one beyond the total number of elements allocated
   size_t _End;
   T _Data[0]; // Store _Capacity numbers of T structs/classes starting here
+
+  template <typename Uty>
+  struct GCVector_moveable_iterator {
+    typedef GCVector_moveable_iterator<Uty> Iterator;
+    mutable Uty* _TaggedCurP;
+  GCVector_moveable_iterator() : _TaggedCurP(NULL) {};
+  GCVector_moveable_iterator( tagged_pointer<GCVector_moveable<T>> vec, size_t index) : _TaggedCurP(tag_general<Uty*>(&(vec->_Data[index]))) {};
+  GCVector_moveable_iterator( GCVector_moveable<T>* vec, size_t index) : _TaggedCurP(tag_general<Uty*>(&(vec->_Data[index]))) {};
+    Uty* operator->() { return (untag_general<Uty*>(this->_TaggedCurP)); };
+    Uty & operator*() { return *(untag_general<Uty*>(this->_TaggedCurP)); };
+    Uty const * operator->() const { return (untag_general<Uty*>(this->_TaggedCurP)); };
+    Uty const & operator*() const { return *(untag_general<Uty*>(this->_TaggedCurP)); };
+    size_t operator-(const Iterator& other) const {
+      return (this->_TaggedCurP - other._TaggedCurP);
+    }
+    Iterator operator+(size_t num) const {
+      GCVector_moveable_iterator<Uty> clone(*this);
+      clone._TaggedCurP += num;
+      return clone;
+    }
+    Iterator operator-(size_t num) const {
+      GCVector_moveable_iterator<Uty> clone(*this);
+      clone._TaggedCurP -= num;
+      return clone;
+    }
+    bool operator==(const GCVector_moveable_iterator<Uty>& other) const {
+        return this->_TaggedCurP == other._TaggedCurP;
+    }
+    bool operator>(const GCVector_moveable_iterator<Uty>& other) const {
+        return this->_TaggedCurP > other._TaggedCurP;
+    }
+    bool operator>=(const GCVector_moveable_iterator<Uty>& other) const {
+        return this->_TaggedCurP >= other._TaggedCurP;
+    }
+    bool operator<(const GCVector_moveable_iterator<Uty>& other) const {
+        return this->_TaggedCurP < other._TaggedCurP;
+    }
+    bool operator<=(const GCVector_moveable_iterator<Uty>& other) const {
+        return this->_TaggedCurP <= other._TaggedCurP;
+    }
+    bool operator!=(const GCVector_moveable_iterator<Uty>& other) const {
+      return !(*this==other);
+    }
+    GCVector_moveable_iterator<Uty> & operator++() { ++this->_TaggedCurP; return *this; }
+    GCVector_moveable_iterator<Uty> operator++(int) {
+      GCVector_moveable_iterator<Uty> clone(*this);
+      ++this->_TaggedCurP;
+      return clone;
+    }
+    GCVector_moveable_iterator<Uty> & operator--() { --this->_TaggedCurP; return *this; }
+    GCVector_moveable_iterator<Uty> operator--(int) {
+      GCVector_moveable_iterator<Uty> clone(*this);
+      --this->_TaggedCurP;
+      return clone;
+    }
+  };
+
+ public:
+  typedef GCVector_moveable_iterator<T> iterator;
+  typedef GCVector_moveable_iterator<T> const const_iterator;
 
 private:
   GCVector_moveable<T>(const GCVector_moveable<T> &that);        // disable copy ctor
@@ -54,10 +113,10 @@ public:
   size_t capacity() const { return this->_Capacity; };
   inline value_type &operator[](size_t i) { return this->_Data[i]; };
   const value_type &operator[](size_t i) const { return this->_Data[i]; };
-  iterator begin() { return &this->_Data[0]; };
-  iterator end() { return &this->_Data[this->_End]; };
-  const_iterator begin() const { return &this->_Data[0]; };
-  const_iterator end() const { return &this->_Data[this->_End]; };
+  iterator begin() { return iterator(this,0); };
+  iterator end() { return iterator(this,this->_End); };
+  const_iterator begin() const { return iterator(this,0); };
+  const_iterator end() const { return iterator(this,this->_End); };
 };
 
 template <class T, typename Allocator>
@@ -68,9 +127,6 @@ class GCVector {
 public:
   typedef Allocator allocator_type;
   typedef T value_type;
-  typedef T *pointer_type;
-  typedef pointer_type iterator;
-  typedef T const *const_iterator;
   typedef T &reference;
   typedef GCVector<T, Allocator> my_type;
   typedef GCVector_moveable<T> impl_type; // implementation type
@@ -79,6 +135,10 @@ public:
   static const size_t GCVectorPad = 8;
   constexpr static const float GCVectorGrow = 2.0;
   constexpr static const float GCVectorShrink = 0.5;
+  typedef T *_pointer_type;
+  typedef typename impl_type::iterator iterator;
+  typedef typename impl_type::const_iterator const_iterator;
+
 public:
   // Only this instance variable is allowed
     gctools::tagged_pointer<GCVector_moveable<T>> _Contents;
@@ -303,7 +363,7 @@ public:
   }
 
   template <typename... ARGS>
-  iterator emplace(const_iterator position, ARGS &&... args) {
+  iterator emplace(iterator position, ARGS &&... args) {
 #ifdef DEBUG_ASSERTS
     if (!this->_Contents)
       this->errorEmpty();
@@ -331,18 +391,18 @@ public:
       size_t num = oldVec->_End;
       oldVec->_End = 0;
       alloc.deallocate(oldVec, num);
-      return static_cast<iterator>(&((*this->_Contents)[iposition])); // return the new iterator
+      return iterator(this->_Contents,iposition);
     }
     // slide the elements from position up to the end one element up
     // Use construct/destruct to deal with objects that have complex constructors/destructors
-    for (iterator zp(this->end()); zp > position; --zp) {
-      alloc.construct(zp, *(zp - 1));
-      alloc.destroy(zp - 1);
+    for (iterator zp(this->end()); zp>position; --zp) {
+      alloc.construct(&*zp, *(zp - 1));
+      alloc.destroy(&*(zp - 1));
     }
-    pointer_type ppos = const_cast<pointer_type>(position);
-    alloc.construct(ppos, std::forward<ARGS>(args)...);
+//    _pointer_type ppos = const_cast<_pointer_type>(position);
+    alloc.construct(&*position, std::forward<ARGS>(args)...);
     ++(this->_Contents->_End);
-    return ppos;
+    return position;
   }
 
   template <typename... ARGS>
@@ -353,19 +413,19 @@ public:
     this->emplace(this->end(), std::forward<ARGS>(args)...);
   };
 
-  iterator erase(const_iterator position) {
 // 0 1 2 3 4 5 6 7 ... N *
 // erase 3 ; position=3 end=N+1
 // zp element_of (3 4 5 ... N-1 )
 // move 3<4 4<5 5<6 6<7 ... N-2<N-1
 // 0 1 2 4 5 6 7
+  iterator erase(const_iterator position) {
 #ifdef DEBUG_ASSERTS
     if (!this->_Contents)
       this->errorEmpty();
 #endif
     Allocator alloc;
-    pointer_type zend = (pointer_type)(this->end() - 1);
-    pointer_type zp = (pointer_type)(position);
+    _pointer_type zend = (_pointer_type)(this->end() - 1);
+    _pointer_type zp = (_pointer_type)(position);
     for (; zp < zend; ++zp) {
       alloc.destroy(zp);
       alloc.construct(zp, *(zp + 1));
@@ -383,13 +443,13 @@ public:
     // Is it better to reallocate the contents?
   }
 
-  pointer_type data() const { return this->_Contents ? this->_Contents->data() : NULL; };
+//  pointer_type data() const { return this->_Contents ? this->_Contents->data() : NULL; };
 
-  iterator begin() { return this->_Contents ? &(*this->_Contents)[0] : NULL; }
-  iterator end() { return this->_Contents ? &(*this->_Contents)[this->_Contents->_End] : NULL; }
+  iterator begin() { return this->_Contents ? iterator(this->_Contents,0) : iterator(); };
+  iterator end() { return this->_Contents ? iterator(this->_Contents,this->_Contents->_End) : iterator(); };
 
-  const_iterator begin() const { return this->_Contents ? &(*this->_Contents)[0] : NULL; }
-  const_iterator end() const { return this->_Contents ? &(*this->_Contents)[this->_Contents->_End] : NULL; }
+  const_iterator begin() const { return this->_Contents ? iterator(this->_Contents,0) : iterator(); };
+  const_iterator end() const { return this->_Contents ? iterator(this->_Contents,this->_Contents->_End) : iterator(); };
 };
 
 template <typename Vector>

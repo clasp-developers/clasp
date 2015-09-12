@@ -352,6 +352,7 @@ void TargetClassifier::targetIsSubLambdaList(Argument &target, LambdaListHandler
 }
 
 void TargetClassifier::classifyTarget(Argument &target) {
+  printf("%s:%d  TargetClassifier::classifyTarget target._ArgTarget@%p --> %p\n", __FILE__, __LINE__, &target._ArgTarget.rawRef_(), target._ArgTarget.raw_());
   Symbol_sp sym = gc::As<Symbol_sp>(target._ArgTarget);
   if (sym->specialP() || (this->_SpecialSymbols.notnilp() && gc::As<HashTable_sp>(this->_SpecialSymbols)->contains(sym))) {
     target._ArgTargetFrameIndex = SPECIAL_TARGET;
@@ -370,6 +371,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
     for (gctools::Vec0<RequiredArgument>::iterator it = this->_RequiredArguments.begin();
          it != this->_RequiredArguments.end(); it++) {
       if (it->_lambdaListP()) {
+        DEPRECIATED();
         List_sp sub_lambda_list = it->lambdaList();
         //		    throw_if_not_destructuring_context(context);
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive(sub_lambda_list, declares, context, classifier);
@@ -383,6 +385,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
     for (gctools::Vec0<OptionalArgument>::iterator it = this->_OptionalArguments.begin();
          it != this->_OptionalArguments.end(); it++) {
       if (it->_lambdaListP()) {
+        DEPRECIATED();
         //		    throw_if_not_destructuring_context(context);
         List_sp sub_lambda_list = it->lambdaList();
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive(sub_lambda_list, declares, context, classifier);
@@ -401,6 +404,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
     for (gctools::Vec0<KeywordArgument>::iterator it = this->_KeywordArguments.begin();
          it != this->_KeywordArguments.end(); it++) {
       if (it->_lambdaListP()) {
+        DEPRECIATED();
         //		    throw_if_not_destructuring_context(context);
         List_sp sub_lambda_list = it->lambdaList();
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive(sub_lambda_list, declares, context, classifier);
@@ -821,6 +825,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     case required: {
       RequiredArgument required(oarg);
       reqs.push_back(required);
+      printf("%s:%d   Required argument[%d] _ArgTarget@%p --> %p  array size=%d\n", __FILE__, __LINE__, reqs.size()-1, &(reqs.back()._ArgTarget.rawRef_()), reqs.back()._ArgTarget.raw_(), reqs.size());
       break;
     }
     case optional: {

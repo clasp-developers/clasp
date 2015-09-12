@@ -1259,6 +1259,12 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
 
   CommandLineOptions options(endArg, argv);
 
+  if ( options._PauseForDebugger ) {
+    printf("The PID is  %d  - press enter to continue\n", getpid());
+    string temp;
+    std::cin >> temp;
+  }
+  
   List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   for (int i = 0; i < options._Features.size(); ++i) {
     features = Cons_O::create(_lisp->internKeyword(lispify_symbol_name(options._Features[i])), features);

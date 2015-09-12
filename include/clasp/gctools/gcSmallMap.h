@@ -38,8 +38,8 @@ public:
   typedef Value mapped_type;
   typedef pair<Key, Value> value_type;
   typedef GCVector<value_type, Allocator> Base;
-  typedef value_type *iterator;
-  typedef value_type const *const_iterator;
+  typedef typename Base::iterator iterator;
+  typedef typename Base::const_iterator const_iterator;
 
 public:
   const_iterator find(Key k) const {
