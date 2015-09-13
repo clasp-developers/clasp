@@ -31,6 +31,8 @@ THE SOFTWARE.
 #include <type_traits>
 #include <boost/config.hpp>
 #include <boost/utility/binary.hpp>
+#include <clasp/gctools/telemetry.h>
+
 
 extern "C" {
 typedef struct SegStruct *Seg;
@@ -443,7 +445,6 @@ inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_
                              const char *sptr_name
 #endif
                              ) {
-  DEBUG_MPS_MESSAGE(boost::format("SMART_PTR_FIX of %s@%p px: %p") % sptr_name % (taggedP) % (*taggedP));
   if (gctools::tagged_objectp(*taggedP)) {
     gctools::Tagged tagged_obj = *taggedP;
     if (MPS_FIX1(_ss, tagged_obj)) {
@@ -453,6 +454,14 @@ inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_
       mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
       if (res != MPS_RES_OK) return res;
       obj = obj | tag;
+#ifdef DEBUG_MPS
+      if ( obj != tagged_obj ) {
+        telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                          telemetry::label_smart_ptr_fix,
+                                          (uintptr_t)tagged_obj,
+                                          (uintptr_t)obj);
+      }
+#endif
       *taggedP = obj;
     }
   };
@@ -507,7 +516,6 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
 #endif
                         ) {
   if ( gctools::tagged_objectp(*taggedP)) {
-    DEBUG_MPS_MESSAGE(boost::format("TAGGED!! POINTER_FIX of %s@%p px: %p") % client_name % taggedP % *taggedP);
     gctools::Tagged tagged_obj = *taggedP;
     if (MPS_FIX1(_ss, tagged_obj)) {
       gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);
@@ -515,11 +523,18 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
       mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
       if (res != MPS_RES_OK) return res;
       obj = obj | tag;
+#ifdef DEBUG_MPS
+      if ( obj != tagged_obj ) {
+        telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                          telemetry::label_tagged_pointer_fix,
+                                          (uintptr_t)tagged_obj,
+                                          (uintptr_t)obj);
+      }
+#endif
       *taggedP = obj;
     };
   } else if (*taggedP) {
     printf("%s:%d POINTER_FIX called on untagged pointer\n", __FILE__, __LINE__ );
-    DEBUG_MPS_MESSAGE(boost::format("Untagged POINTER_FIX of %s@%p px: %p") % client_name % taggedP % *taggedP);
     gctools::Tagged obj = *taggedP;
     if (MPS_FIX1(_ss, obj)) {
       mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));

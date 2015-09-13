@@ -359,7 +359,8 @@ clang::ast_matchers::dynamic::VariantMatcher Registry::constructMatcher(core::Sy
   gctools::Vec0<ParserValue> VArgs;
   //       gctools::StackRootedStlContainer<vector<ParserValue> > VArgs;
   convertArgs(VArgs, Args);
-  return it->matcher->create(NameRange, ArrayRef<ParserValue>(VArgs.data(), VArgs.size()), Error);
+  auto b = VArgs.begin();
+  return it->matcher->create(NameRange, ArrayRef<ParserValue>(&*b, VArgs.size()), Error);
 }
 
 // static

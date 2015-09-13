@@ -152,7 +152,7 @@ int PASS_FUNCTION_KEYWORD(gctools::Vec0<KeywordArgument> const &keyed_args,
       arg_idx++;
       if (keyword != kw::_sym_allow_other_keys) {
         LOG(BF("Binding passed keyword[%s] value[%s]") % _rep_(keyword) % _rep_(value));
-        gctools::Vec0<KeywordArgument>::const_iterator fi;
+        gctools::Vec0<KeywordArgument>::iterator fi;
         int ik(0);
         for (fi = keyed_args.begin(); fi != keyed_args.end(); fi++) {
           if (fi->_Keyword == keyword) {
@@ -180,7 +180,7 @@ int PASS_FUNCTION_KEYWORD(gctools::Vec0<KeywordArgument> const &keyed_args,
   // Now fill in the default values for the missing parameters
   {
     _BLOCK_TRACEF(BF("Add missing keyword default init-form values to ActivationFrame"));
-    gctools::Vec0<KeywordArgument>::const_iterator fi;
+    gctools::Vec0<KeywordArgument>::iterator fi;
     int ik(0);
     for (fi = keyed_args.begin(); fi != keyed_args.end(); fi++) {
       LOG(BF("Checking if keyword[%s] needs default value") % fi->_Keyword->__repr__());

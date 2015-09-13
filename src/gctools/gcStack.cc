@@ -30,6 +30,7 @@ namespace frame {
 Frame::Frame(size_t numArguments,core::T_sp parent) : _Capacity(numArguments), _Length(numArguments) {
   size_t sz = FrameSize(numArguments);
   this->_frameImpl = reinterpret_cast<ElementType*>(threadLocalStack()->pushFrameImpl(sz));
+//  printf("%s:%d Pushing frame@%p\n", __FILE__, __LINE__, this->_frameImpl);
   this->_frameImpl[IdxNumElements] = reinterpret_cast<core::T_O*>(numArguments);
   for (size_t i(IdxValuesArray), iEnd(IdxValuesArray + numArguments); i < iEnd; ++i) {
     this->_frameImpl[i] = gctools::tag_unbound<core::T_O *>();
@@ -74,6 +75,7 @@ void Frame::dump() const {
 }
 
 Frame::~Frame() {
+//  printf("%s:%d Popping frame@%p\n", __FILE__, __LINE__, this->_frameImpl);
   threadLocalStack()->popFrameImpl(reinterpret_cast<void*>(this->_frameImpl));
 }
 

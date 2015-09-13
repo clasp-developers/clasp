@@ -66,15 +66,16 @@ namespace core {
   // when I use variable stack arrays
   //        printf("%s:%d About to alloca with lcc_nargs = %zu\n", __FILE__, __LINE__, lcc_nargs);
   //        T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
-  try {
-    llh->createBindingsInScopeVaList(lcc_nargs, VaList_sp((gc::Tagged)lcc_arglist), scope);
-  } catch (...) {
-    printf("%s:%d Caught an exception while in createBindingsInScope_argArray_TPtr\n", __FILE__, __LINE__);
-    handleArgumentHandlingExceptions(closure);
-  }
+//      printf("%s:%d lambdaListHandler_createBindings llh = %s nargs = %d lcc_arglist = %s\n", __FILE__, __LINE__, _rep_(llh).c_str(), lcc_nargs, _rep_(gctools::smart_ptr<T_O>((gc::Tagged)lcc_arglist)).c_str() );
+      try {
+        llh->createBindingsInScopeVaList(lcc_nargs, VaList_sp((gc::Tagged)lcc_arglist), scope);
+      } catch (...) {
+        printf("%s:%d Caught an exception while in createBindingsInScope_argArray_TPtr\n", __FILE__, __LINE__);
+        handleArgumentHandlingExceptions(closure);
+      }
   //        printf("%s:%d returning from lambdaListHandler_createBindings\n", __FILE__, __LINE__);
-  return;
-}
+      return;
+    }
 #endif
 
 
@@ -128,7 +129,7 @@ T_sp LambdaListHandler_O::lambdaList() {
   ql::list ll(_lisp);
   { // required arguments  req = ( num req1 req2 ...)
     for (gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
-         it != this->_RequiredArguments.end(); it++) {
+         it != this->_RequiredArguments.end(); ++it) {
       ll << it->_ArgTarget;
     }
   }
@@ -352,7 +353,7 @@ void TargetClassifier::targetIsSubLambdaList(Argument &target, LambdaListHandler
 }
 
 void TargetClassifier::classifyTarget(Argument &target) {
-  printf("%s:%d  TargetClassifier::classifyTarget target._ArgTarget@%p --> %p\n", __FILE__, __LINE__, &target._ArgTarget.rawRef_(), target._ArgTarget.raw_());
+//  printf("%s:%d  TargetClassifier::classifyTarget target._ArgTarget@%p --> %p\n", __FILE__, __LINE__, &target._ArgTarget.rawRef_(), target._ArgTarget.raw_());
   Symbol_sp sym = gc::As<Symbol_sp>(target._ArgTarget);
   if (sym->specialP() || (this->_SpecialSymbols.notnilp() && gc::As<HashTable_sp>(this->_SpecialSymbols)->contains(sym))) {
     target._ArgTargetFrameIndex = SPECIAL_TARGET;
@@ -498,7 +499,7 @@ void bind_aux(gctools::Vec0<AuxArgument> const &auxs, DynamicScopeManager &scope
   if (num_auxs == 0)
     return;
   LOG(BF("There are %d aux variables") % auxs.size());
-  gctools::Vec0<AuxArgument>::const_iterator ci;
+  gctools::Vec0<AuxArgument>::iterator ci;
   {
     _BLOCK_TRACE("Assigning aux variables");
     for (ci = auxs.begin(); ci != auxs.end(); ci++) {
@@ -825,7 +826,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     case required: {
       RequiredArgument required(oarg);
       reqs.push_back(required);
-      printf("%s:%d   Required argument[%d] _ArgTarget@%p --> %p  array size=%d\n", __FILE__, __LINE__, reqs.size()-1, &(reqs.back()._ArgTarget.rawRef_()), reqs.back()._ArgTarget.raw_(), reqs.size());
+//      printf("%s:%d   Required argument[%d] _ArgTarget@%p --> %p  array size=%d\n", __FILE__, __LINE__, reqs.size()-1, &(reqs.back()._ArgTarget.rawRef_()), reqs.back()._ArgTarget.raw_(), reqs.size());
       break;
     }
     case optional: {

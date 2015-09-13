@@ -80,6 +80,7 @@ typedef bool _Bool;
 #include <clang/ASTMatchers/Dynamic/VariantValue.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 
+#include <clasp/gctools/telemetry.h>
 #include <clasp/gctools/symbolTable.h>
 #include <clasp/sockets/symbolTable.h>
 #include <clasp/serveEvent/symbolTable.h>
@@ -166,13 +167,6 @@ typedef bool _Bool;
 
 #ifdef USE_MPS
 
-#ifdef DEBUG_MPS
-#define MPS_LOG(fm) \
-  { printf("%s:%d %s --> %s\n", __FILE__, __LINE__, __FUNCTION__, (fm).str().c_str()); }
-#else
-#define MPS_LOG(fm)
-#endif
-
 extern "C" {
 using namespace gctools;
 
@@ -207,7 +201,6 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #undef GC_OBJ_SKIP_TABLE
 #endif
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
-  MPS_LOG(BF(" client = %p   header=%p  header-desc: %s") % client % header % header->description());
   DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
   if (header->kindP()) {
     gctools::GCKindEnum kind = header->kind();
@@ -229,7 +222,13 @@ mps_addr_t obj_skip(mps_addr_t client) {
     THROW_HARD_ERROR(BF("Illegal header at %p") % header);
   }
 DONE:
-  DEBUG_MPS_MESSAGE(BF("Leaving obj_skip with client@%p size=%d/0x%x") % client % ((char*)client - (char*)oldClient) %  ((char*)client - (char*)oldClient));
+#ifdef DEBUG_MPS
+  telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                    telemetry::label_obj_skip,
+                                    (uintptr_t)oldClient,
+                                    (uintptr_t)client,
+                                    (uintptr_t)((char*)client - (char*)oldClient));
+#endif
   return client;
 }
 };
@@ -250,7 +249,6 @@ void obj_dump_base(mps_addr_t base) {
   }
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(base);
   void *client = BasePtrToMostDerivedPtr<void>(base);
-  MPS_LOG(BF("obj_dump base=%p header-desc: %s") % base % header->description());
   stringstream sout;
   if (header->kindP()) {
     gctools::GCKindEnum kind = header->kind();
@@ -302,15 +300,26 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #undef GC_OBJ_SCAN_TABLE
 #endif
 
-  DEBUG_MPS_MESSAGE(BF("obj_scan started - Incoming client %p   limit: %p") % client % limit);
+#ifdef DEBUG_MPS
+  telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                    telemetry::label_obj_scan_start,
+                                    (uintptr_t)client,
+                                    (uintptr_t)limit);
+#endif
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
     while (client < limit) {
         // The client must have a valid header
       DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
       gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
-      MPS_LOG(BF(" client = %p   header=%p  header-desc: %s") % client % header % header->description());
       if (header->kindP()) {
         GCKindEnum kind = header->kind();
+#ifdef DEBUG_MPS
+        telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                          telemetry::label_obj_scan_start,
+                                          (uintptr_t)client,
+                                          (uintptr_t)header,
+                                          (uintptr_t)kind);
+#endif
 #ifndef RUNNING_GC_BUILDER
         goto *(OBJ_SCAN_table[kind]);
 #define GC_OBJ_SCAN
@@ -348,7 +357,11 @@ void obj_finalize(mps_addr_t client) {
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
   ASSERTF(header->kindP(), BF("obj_finalized called without a valid object"));
   gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
-  DEBUG_MPS_MESSAGE(BF("Finalizing client@%p   kind=%s") % client % header->description());
+#ifdef DEBUG_MPS
+        telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                          telemetry::label_obj_finalize,
+                                          (uintptr_t)client);
+#endif
 #ifndef RUNNING_GC_BUILDER
   goto *(OBJ_FINALIZE_table[kind]);
 #define GC_OBJ_FINALIZE
@@ -363,17 +376,15 @@ void obj_finalize(mps_addr_t client) {
 vector<core::LoadTimeValues_O **> globalLoadTimeValuesRoots;
 
 void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr) {
-    DEBUG_MPS_MESSAGE(BF("registerLoadTimeValuesRoot address **ptr@%p  *ptr@%p\n") % (void*)ptr % (void*)(*ptr));
   globalLoadTimeValuesRoots.push_back(ptr);
 }
 
 mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
-  DEBUG_MPS_MESSAGE(BF("in main_thread_roots_scan"));
-  //	mps_thr_t gc__thr = 0; // This isn't passed in but the scanners need it
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-    MPS_LOG(BF("Starting rooted_HeapRoots"));
-
-    //            printf("%s:%d  Fixing globalLoadTimeValuesRoots[%d]\n", __FILE__, __LINE__, globalLoadTimeValuesRoots.size() );
+#ifdef DEBUG_MPS
+  telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                    telemetry::label_root_scan_start );
+#endif
     for (auto &it : globalLoadTimeValuesRoots) {
       SIMPLE_POINTER_FIX(*it);
     }
@@ -482,9 +493,12 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 #endif
 #endif // RUNNING_GC_BUILDER
 
-    MPS_LOG(BF("Done roots_scan"));
   }
   MPS_SCAN_END(GC_SCAN_STATE);
+#ifdef DEBUG_MPS
+  telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                    telemetry::label_root_scan_stop);
+#endif
   return MPS_RES_OK;
 }
 };

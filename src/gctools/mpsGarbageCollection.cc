@@ -91,12 +91,6 @@ mps_ap_t global_non_moving_ap;
 size_t global_sizeof_fwd;
 size_t global_alignup_sizeof_header;
 
-#ifdef DEBUG_MPS
-#define MPS_LOG(fm) \
-  { printf("%s:%d %s --> %s\n", __FILE__, __LINE__, __FUNCTION__, (fm).str().c_str()); }
-#else
-#define MPS_LOG(fm)
-#endif
 
 void rawHeaderDescribe(uintptr_t* headerP)
 {
@@ -217,7 +211,12 @@ static void obj_fwd(mps_addr_t old_client, mps_addr_t new_client) {
   // I'm assuming both old and new client pointers have valid headers at this point
   DEBUG_MPS_THROW_IF_INVALID_CLIENT(old_client);
   DEBUG_MPS_THROW_IF_INVALID_CLIENT(new_client);
-  DEBUG_MPS_MESSAGE(BF("obj_fwd old_client = %p   new_client = %p") % old_client % new_client);
+#ifdef DEBUG_MPS
+        telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                          telemetry::label_obj_fwd,
+                                          (uintptr_t)old_client,
+                                          (uintptr_t)new_client);
+#endif
   mps_addr_t limit = obj_skip(old_client);
   size_t size = (char *)limit - (char *)old_client;
   if (size < global_sizeof_fwd) {
@@ -231,19 +230,32 @@ static void obj_fwd(mps_addr_t old_client, mps_addr_t new_client) {
 static mps_addr_t obj_isfwd(mps_addr_t client) {
   DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
   Header_s *header = reinterpret_cast<Header_s *>(ClientPtrToBasePtr(client));
-  MPS_LOG(BF(" client = %p base=%p") % client % header);
-  MPS_LOG(BF("    kind = %s") % header->description());
+#ifdef DEBUG_MPS
   if (header->fwdP()) {
-    MPS_LOG(BF("   isfwd=TRUE returning %p") % header->fwdPointer());
-    return header->fwdPointer();
+    telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                      telemetry::label_obj_isfwd_true,
+                                      (uintptr_t)client,
+                                      (uintptr_t)header,
+                                      (uintptr_t)header->fwdPointer());
+  } else {
+    telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                      telemetry::label_obj_isfwd_false,
+                                      (uintptr_t)client,
+                                      (uintptr_t)header);
   }
-  MPS_LOG(BF("   isfwd=FALSE returning NULL"));
+#endif
+  if (header->fwdP()) return header->fwdPointer();
   return NULL;
 }
 
 static void obj_pad(mps_addr_t base, size_t size) {
   size_t alignment = Alignment();
-  MPS_LOG(BF("base = %p ALIGNMENT = %d size=%u ") % base % alignment % size);
+#ifdef DEBUG_MPS
+    telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                      telemetry::label_obj_pad,
+                                      (uintptr_t)base,
+                                      (uintptr_t)size);
+#endif  
   assert(size >= alignment);
   Header_s *header = reinterpret_cast<Header_s *>(base);
   if (size == alignment) {
@@ -329,18 +341,17 @@ static void stack_frame_pad(mps_addr_t addr, size_t size)
 void mpsAllocateStack(gctools::GCStack* stack)
 {
   mps_res_t res;
-  mps_fmt_t obj_fmt;
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, STACK_ALIGNMENT);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, stack_frame_scan);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, stack_frame_skip);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, stack_frame_pad);
-    res = mps_fmt_create_k(&obj_fmt, _global_arena, args);
+    res = mps_fmt_create_k(&stack->_ObjectFormat, _global_arena, args);
     if (res != MPS_RES_OK) THROW_HARD_ERROR(BF("Couldn't create stack frame format"));
   } MPS_ARGS_END(args);
  
   MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, stack->_ObjectFormat);
     res = mps_pool_create_k(&stack->_Pool, _global_arena, mps_class_snc(), args);
     if (res != MPS_RES_OK) THROW_HARD_ERROR(BF("Couldn't create stack frame pool"));
   } MPS_ARGS_END(args);
@@ -361,9 +372,10 @@ void mpsDeallocateStack(gctools::GCStack* stack)
   stack->_IsActive = false;
   mps_arena_park(_global_arena);
   mps_ap_destroy(stack->_AllocationPoint);
+  mps_fmt_destroy(stack->_ObjectFormat);
   mps_pool_destroy(stack->_Pool);
   mps_arena_release(_global_arena);
-  printf("%s:%d deallocateStack\n", __FILE__, __LINE__ );
+//  printf("%s:%d deallocateStack\n", __FILE__, __LINE__ );
 };
 
 // -----------------------------------------------------------
@@ -397,7 +409,6 @@ int processMpsMessages(void) {
 #endif
     } else if (type == mps_message_type_gc()) {
       ++mGc;
-      DEBUG_MPS_MESSAGE(BF("Message: mps_message_type_gc"));
 #if 0
                 printf("Message: mps_message_type_gc()\n");
                 size_t live = mps_message_gc_live_size(_global_arena, message);
@@ -412,7 +423,6 @@ int processMpsMessages(void) {
     } else if (type == mps_message_type_finalization()) {
       ++mFinalize;
       //                printf("%s:%d mps_message_type_finalization received\n", __FILE__, __LINE__);
-      DEBUG_MPS_MESSAGE(BF("Message: mps_message_type_finalization"));
       mps_addr_t ref_o;
       mps_message_finalization_ref(&ref_o, gctools::_global_arena, message);
       obj_finalize(ref_o);
