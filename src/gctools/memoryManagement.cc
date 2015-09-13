@@ -67,6 +67,7 @@ void handle_signals(int signo) {
   // Indicate that a signal was caught and handle it at a safe-point
   //
   SET_SIGNAL(signo);
+  telemetry::global_telemetry.flush();
   if (signo == SIGABRT && core::_global_debuggerOnSIGABRT) {
     printf("%s:%d Trapped SIGABRT - starting debugger\n", __FILE__, __LINE__);
     core::LispDebugger debugger(_Nil<core::T_O>());
@@ -150,10 +151,12 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   telemetry::global_clasp_telemetry_file = getenv("CLASP_TELEMETRY_FILE");
 
   if ( clasp_telemetry_mask_string ) {
+      printf("CLASP_TELEMETRY_MASK= %s\n", clasp_telemetry_mask_string);
     size_t mask = std::stoi(clasp_telemetry_mask_string);
     telemetry::global_telemetry.set_mask(mask);
   }
   if ( telemetry::global_clasp_telemetry_file ) {
+      printf("CLASP_TELEMETRY_FILE= %s\n", telemetry::global_clasp_telemetry_file);
     telemetry::global_telemetry.open_write(telemetry::global_clasp_telemetry_file);
   }
   
