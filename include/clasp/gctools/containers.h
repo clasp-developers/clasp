@@ -71,7 +71,7 @@ public:
   const_iterator end() const { return this->_Vector.end(); };
   size_t size() const { return this->_Vector.size(); };
   size_t capacity() const { return this->_Vector.capacity(); };
-  pointer_type data() const { return this->_Vector.data(); };
+//  pointer_type data() const { return this->_Vector.data(); };
   ALWAYS_INLINE reference operator[](size_t i) { return this->_Vector[i]; };
   ALWAYS_INLINE const_reference operator[](size_t i) const { return this->_Vector[i]; };
   void resize(size_t n, const value_type &initialElement = value_type()) {
@@ -133,35 +133,6 @@ public:
   ALWAYS_INLINE const_reference operator[](size_t i) const { return this->_Array[i]; };
   void clear() { this->_Array.clear(); };
 };
-
-#ifdef USE_REFCOUNT
-template <class T>
-class Vec0 : public Vec0_impl<GCVector<T, GCContainerAllocator_refcount<GCVector_moveable<T>>>> {
-public:
-  typedef Vec0_impl<GCVector<T, GCContainerAllocator_refcount<GCVector_moveable<T>>>> Base;
-  Vec0() : Base(){};
-};
-
-template <class T>
-class Array0 : public Array0_impl<GCArray<T, GCContainerAllocator_refcount<GCArray_moveable<T>>>> {
-public:
-  typedef Array0_impl<GCArray<T, GCContainerAllocator_refcount<GCArray_moveable<T>>>> Base;
-  //        template <typename...ARGS> Array0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
-  Array0() : Base(){};
-};
-
-//
-// Use these for ActivationFrames to distinguish them from GCArray
-//
-template <class T>
-class Frame0 : public Array0_impl<GCArray<T, GCContainerAllocator_refcount<GCArray_moveable<T>>>> {
-public:
-  typedef Array0_impl<GCArray<T, GCContainerAllocator_refcount<GCArray_moveable<T>>>> Base;
-  //        template <typename...ARGS> Frame0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
-  Frame0() : Base(){};
-};
-
-#endif
 
 #if defined(USE_BOEHM) || defined(USE_MPS)
 template <class T>

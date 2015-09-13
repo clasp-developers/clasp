@@ -375,11 +375,11 @@ void dbg_lowLevelDescribe(T_sp obj) {
   } else if (obj.characterp()) {
     printf("character: %d #\\%c\n", obj.unsafe_character(), obj.unsafe_character());
   } else if (obj.generalp()) {
-    printf("other_tag: %p  typeid: %s\n", &(*obj), typeid(obj).name());
+    printf("other_tag: %p  typeid: %s\n", &*obj, typeid(obj).name());
     printf("More info:\n");
     printf("%s\n", _rep_(obj).c_str());
   } else if (obj.consp()) {
-    printf("cons_tag: %p  typeid: %s\n", &(*obj), typeid(obj).name());
+    printf("cons_tag: %p  typeid: %s\n", &*obj, typeid(obj).name());
     printf("List:  \n");
     for (auto c : coerce_to_list(obj)) {
       printf("@%p > car@%p  cdr@%p : %s\n", c.raw_(), oCar(c).raw_(), oCdr(c).raw_(), _rep_(oCar(c)).c_str());

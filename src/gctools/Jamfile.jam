@@ -32,6 +32,7 @@ project internals/gctools : requirements
 local sources = 
 	gctoolsPackage.cc
         gcStack.cc
+        telemetry.cc
 #        gcalloc.cc
         gcweak.cc
 #        memoryRefSearch.c

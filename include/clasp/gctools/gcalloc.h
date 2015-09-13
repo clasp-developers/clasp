@@ -108,6 +108,7 @@ namespace gctools {
 #ifdef USE_MPS
       mps_pool_t _Pool;
       mps_ap_t _AllocationPoint;
+      mps_fmt_t _ObjectFormat;
       bool _IsActive;
       vector<mps_frame_t> frames;
 #endif

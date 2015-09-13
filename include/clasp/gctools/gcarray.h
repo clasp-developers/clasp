@@ -31,6 +31,7 @@ namespace gctools {
 
 template <class T, int SZ = 0>
 class GCArray_moveable : public GCContainer {
+
 public:
   template <class U, typename Allocator>
   friend class GCArray;

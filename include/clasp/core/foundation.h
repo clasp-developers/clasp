@@ -92,21 +92,10 @@ class type_info;
 #define ATTR_WEAK __attribute__((weak))
 
 #if defined(DEBUG_MPS)
-#define DEBUG_MPS_MESSAGE(_bf_) printf("%s:%d %s\n", __FILE__, __LINE__, (_bf_).str().c_str())
 #define DEBUG_MPS_ALLOCATION(poolName, addr, gcobject_addr, size, kind) clasp_mps_debug_allocation(poolName, addr, gcobject_addr, size, kind)
-//#define DEBUG_MPS_FIX1_BEFORE(base,smartaddr) clasp_mps_debug_fix1_before(base,smartaddr)
-#define DEBUG_MPS_FIX_BEFORE(pbase, px, offset) clasp_mps_debug_fix_before(pbase, px, offset)
-#define DEBUG_MPS_FIX_AFTER(pbase, px) clasp_mps_debug_fix_after(pbase, px)
-#define DEBUG_MPS_CONTAINER(ctype, cnt) clasp_mps_debug_container(ctype, #cnt, cnt.size())
-#define DEBUG_SCAN_OBJECT(obj) clasp_mps_debug_scan_object(obj)
 #else
 #define DEBUG_MPS_ALLOCATION(poolName, addr, gcobject_addr, size, kind)
 //#define DEBUG_MPS_FIX1_BEFORE(base,smartaddr)
-#define DEBUG_MPS_MESSAGE(_bf_)
-#define DEBUG_MPS_FIX_BEFORE(pbase, px, offset)
-#define DEBUG_MPS_FIX_AFTER(pbase, px)
-#define DEBUG_MPS_CONTAINER(ctype, cnt)
-#define DEBUG_SCAN_OBJECT(obj)
 #endif
 
 #define clasp_unlikely(x) __builtin_expect(!!(x), 0)

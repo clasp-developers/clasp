@@ -32,6 +32,7 @@ THE SOFTWARE.
 
 #include <csignal>
 
+#include <clasp/gctools/telemetry.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -213,15 +214,12 @@ bool debug_mps = true;
 };
 
 void clasp_mps_debug_allocation(const char *poolName, void *base, void *client, int size, int kind) {
-  if (!debug_mps)
-    return;
 #if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
-  const char *kindName = obj_name((gctools::GCKindEnum)(kind));
-  printf("%s:%d clasp_mps_allocation poolName: %s  client: %p  base: %p  size: %3d  kind[%d/%s]  \n",
-         __FILE__, __LINE__,
-         poolName,
-         client, base, size,
-         kind, kindName);
+  telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                    telemetry::label_allocation,
+                                    (uintptr_t)client,
+                                    size,
+                                    kind);
 #endif
 }
 

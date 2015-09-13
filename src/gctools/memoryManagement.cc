@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/debugger.h>
+#include <clasp/gctools/telemetry.h>
 #include <clasp/gctools/memoryManagement.h>
 //#include "main/allHeaders.cc"
 
@@ -145,6 +146,19 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 
   setupSignals();
 
+  char* clasp_telemetry_mask_string = getenv("CLASP_TELEMETRY_MASK");
+  telemetry::global_clasp_telemetry_file = getenv("CLASP_TELEMETRY_FILE");
+
+  if ( clasp_telemetry_mask_string ) {
+    size_t mask = std::stoi(clasp_telemetry_mask_string);
+    telemetry::global_telemetry.set_mask(mask);
+  }
+  if ( telemetry::global_clasp_telemetry_file ) {
+    telemetry::global_telemetry.open_write(telemetry::global_clasp_telemetry_file);
+  }
+  
+  telemetry::initialize_telemetry();
+  
 #if defined(USE_MPS)
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
@@ -158,6 +172,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_size);
   int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
+  telemetry::global_telemetry.close();
   return exitCode;
 }
 };

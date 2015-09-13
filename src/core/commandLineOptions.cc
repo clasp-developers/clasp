@@ -44,7 +44,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       _Interactive(true),
       _Version(false),
       _SilentStartup(true),
-      _NoRc(false)
+    _NoRc(false),
+    _PauseForDebugger(false)
 
 #if 0 // uses boost::program_options which is broken on OS X with -std=c++11
     {
@@ -203,7 +204,11 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "-n/--noinit          - Don't load the init.lsp (very minimal environment)\n"
              "-S/--seed #          - Seed the random number generator\n"
              "-t/--trap {symbol}   - Trap when a specific symbol is INTERN'd\n"
-             "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n");
+             "-w/--wait            - Print the PID and wait for the user to hit a key\n"
+             "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n"
+             "Environment variables: CLASP_TELEMETRY_MASK (0,1=gc)\n"
+             "                       CLASP_TELEMETRY_FILE (file to write telemetry)\n"
+             "                       CLASP_MPS_CONFIG (config MPS \"32 32 16 80 32 80\" for lots of GC's");
       exit(0);
     } else if (arg == "-I" || arg == "--ignore-image") {
       this->_DontLoadImage = true;
@@ -211,6 +216,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       this->_Interactive = false;
     } else if (arg == "-r" || arg == "--norc") {
       this->_NoRc = true;
+    } else if (arg == "-w" || arg == "--wait") {
+      this->_PauseForDebugger = true;
     } else if (arg == "-n" || arg == "--noinit") {
       this->_DontLoadInitLsp = true;
     } else if (arg == "-v" || arg == "--version") {

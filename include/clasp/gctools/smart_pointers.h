@@ -1428,6 +1428,7 @@ namespace gctools {
     }
 
     inline Type* raw_() { return this->thePointer; };
+    inline Type*& rawRef_() { return this->thePointer;};
     inline bool generalp() const {
       return tagged_generalp(this->thePointer);
     }

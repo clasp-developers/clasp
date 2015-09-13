@@ -56,7 +56,7 @@ T_sp SmallMap_O::find(T_sp key, T_sp defval) {
   if (it == this->map.end()) {
     return defval;
   }
-  return it->second;
+  return (*it).second;
 }
 
 void SmallMap_O::setf(T_sp key, T_sp val) {
