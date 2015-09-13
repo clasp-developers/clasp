@@ -13,6 +13,7 @@ namespace telemetry {
   struct Telemetry {
     typedef size_t Header;
     typedef size_t Handle;
+      bool _Write;
     FILE* _File;
     size_t _PrevRecordPos;
     size_t _Mask;
@@ -32,10 +33,12 @@ namespace telemetry {
 
     void open_write(const char* file_name) {
       this->_File = fopen(file_name,"wb");
+      this->_Write = true;
     }
 
     void open_read(const char* file_name) {
       this->_File = fopen(file_name,"rb");
+      this->_Write = false;
     }
 
     void initialize() {
@@ -67,8 +70,10 @@ namespace telemetry {
         handle = this->_Labels.size();
         this->_LabelsToHandles[label] = handle;
         this->_Labels.push_back(std::string(label));
-        this->write_header(intern_header);
-        this->write_label(label);
+        if ( this->_Write ) {
+            this->write_header(intern_header);
+            this->write_label(label);
+        }
       } else {
         handle = it->second;
       }
