@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <stdio.h>
 #include <vector>
+#include <sstream>
 #include <map>
 #include <cstring>
 #include <string>
@@ -101,7 +102,7 @@ namespace telemetry {
     }
     void write_label(const char* label) {
       size_t size = strlen(label);
-      stringstream buffer;
+      std::stringstream buffer;
       buffer << label << std::string(StringBufferSize,' ');
       fwrite(&size,sizeof(size_t),1,this->_File); // number of bytes in string
       fwrite(buffer.str().c_str(),StringBufferSize,1,this->_File); // string without zero terminator
