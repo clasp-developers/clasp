@@ -311,15 +311,9 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         // The client must have a valid header
       DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
       gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+      mps_addr_t original_client = (mps_addr_t)client;
       if (header->kindP()) {
         GCKindEnum kind = header->kind();
-#ifdef DEBUG_MPS
-        telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                          telemetry::label_obj_scan_start,
-                                          (uintptr_t)client,
-                                          (uintptr_t)header,
-                                          (uintptr_t)kind);
-#endif
 #ifndef RUNNING_GC_BUILDER
         goto *(OBJ_SCAN_table[kind]);
 #define GC_OBJ_SCAN
@@ -338,6 +332,13 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
     TOP:
       continue;
     }
+#ifdef DEBUG_MPS
+        telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
+                                          telemetry::label_obj_scan,
+                                          (uintptr_t)original_client,
+                                          (uintptr_t)client,
+                                          (uintptr_t)kind);
+#endif
   }
   MPS_SCAN_END(GC_SCAN_STATE);
   return MPS_RES_OK;

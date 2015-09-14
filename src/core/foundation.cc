@@ -218,7 +218,7 @@ void clasp_mps_debug_allocation(const char *poolName, void *base, void *client, 
   telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
                                     telemetry::label_allocation,
                                     (uintptr_t)client,
-                                    size,
+                                    (uintptr_t)((char*)client+size),
                                     kind);
 #endif
 }
