@@ -482,6 +482,7 @@ bool parseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nu
   size_t values[20];
   int numValues = 0;
   if (cur) {
+      printf("CLASP_MPS_CONFIG = %s\n", cur );
     while (*cur && numValues < 20) {
       values[numValues] = strtol(cur, &cur, 10);
       ++numValues;

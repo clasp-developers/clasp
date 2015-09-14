@@ -143,6 +143,7 @@ namespace core {
      need to be made consistent with lispCallingConvention.h */
       ASSERT(3 == LCC_ARGS_IN_REGISTERS);
       T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
+//      printf("%s:%d funcall fn=%s arg0=%s arg1=%s\n", __FILE__, __LINE__, _rep_(fn).c_str(), _rep_(arg0).c_str(), _rep_(arg1).c_str() );
       if (tfunc.raw_() == NULL || tfunc.nilp()) {
     // While booting, cl::_sym_findClass will apply'd before
     // it is bound to a symbol

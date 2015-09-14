@@ -15,6 +15,7 @@ namespace telemetry {
         typedef size_t Handle;
         bool _Write;
         FILE* _File;
+        size_t _Index;
         size_t _ThisRecordPos;
         size_t _Mask;
         std::vector<std::string> _Labels;
@@ -26,6 +27,7 @@ namespace telemetry {
         const Header intern_header = 0xBEF4;
         const Header data_header = 0xDADA;
         static const size_t GC_telemetry = 0x01;
+        static const size_t Message_telemetry = 0x02;
     
         Telemetry() : _File(NULL), _ThisRecordPos(0), _Mask(0) {
             this->initialize();
@@ -88,6 +90,8 @@ namespace telemetry {
 
         bool read_header( Header& header )
         {
+            this->_ThisRecordPos = ftell(this->_File);
+            ++this->_Index;
             if (feof(this->_File)) {
                 printf("%s:%d Hit end of telemetry\n", __FILE__, __LINE__ );
                 return false;
@@ -136,7 +140,7 @@ namespace telemetry {
         std::string entry_as_string(Handle label, size_t num, Word data[] );
 
         void write(size_t kind, Handle label ) {
-            if ( this->_Mask & kind ) {
+            if ( (this->_Mask & kind) && this->_File ) {
                 this->write_header(data_header);
                 this->write_handle(label);
                 size_t size = 0;
@@ -146,7 +150,7 @@ namespace telemetry {
         }
 
         void write(size_t kind, Handle label, Word data0 ) {
-            if ( this->_Mask & kind ) {
+            if ( (this->_Mask & kind) && this->_File ) {
                 this->write_header(data_header);
                 this->write_handle(label);
                 size_t size = 1;
@@ -157,7 +161,7 @@ namespace telemetry {
         }
 
         void write(size_t kind, Handle label, Word data0, Word data1 ) {
-            if ( this->_Mask & kind ) {
+            if ( (this->_Mask & kind) && this->_File ) {
                 this->write_header(data_header);
                 this->write_handle(label);
                 size_t size = 2;
@@ -168,8 +172,25 @@ namespace telemetry {
             }
         }
 
+        void write(size_t kind, Handle label, Word data0, const std::string& msg ) {
+            if ( (this->_Mask & kind) && this->_File ) {
+                this->write_header(data_header);
+                this->write_handle(label);
+                size_t size = 2;
+                fwrite(&size,sizeof(size_t),1,this->_File);
+                fwrite(&data0,sizeof(Word),1,this->_File);
+                Telemetry::Word data1 = 0;
+                int i;
+                for ( i=0; i<sizeof(Telemetry::Word)-1; ++i ) {
+                    ((char*)(&data1))[i] = msg[i];
+                }
+                fwrite(&data1,sizeof(Word),1,this->_File);
+                this->write_footer();
+            }
+        }
+
         void write(size_t kind, Handle label, Word data0, Word data1, Word data2 ) {
-            if ( this->_Mask & kind ) {
+            if ( (this->_Mask & kind) && this->_File ) {
                 this->write_header(data_header);
                 this->write_handle(label);
                 size_t size = 3;
@@ -210,8 +231,9 @@ namespace telemetry {
             return read_num;
         }
 
-        void seek(size_t pos) {
-            fseek(this->_File,pos,SEEK_SET);
+        void seek0() {
+            fseek(this->_File,0,SEEK_SET);
+            this->_Index = 0;
         }
     };
 
@@ -232,6 +254,7 @@ namespace telemetry {
     extern Telemetry::Handle label_smart_ptr_fix;
     extern Telemetry::Handle label_tagged_pointer_fix;
     extern Telemetry::Handle label_obj_finalize;
+    extern Telemetry::Handle label_msg;
 
     void initialize_telemetry();
     void initialize_telemetry_defuns();

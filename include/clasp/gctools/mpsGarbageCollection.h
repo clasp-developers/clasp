@@ -458,6 +458,7 @@ inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_
       if ( obj != tagged_obj ) {
         telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
                                           telemetry::label_smart_ptr_fix,
+                                          (uintptr_t)taggedP,
                                           (uintptr_t)tagged_obj,
                                           (uintptr_t)obj);
       }
@@ -527,6 +528,7 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
       if ( obj != tagged_obj ) {
         telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
                                           telemetry::label_tagged_pointer_fix,
+                                          (uintptr_t)taggedP,
                                           (uintptr_t)tagged_obj,
                                           (uintptr_t)obj);
       }
