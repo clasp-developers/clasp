@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <algorithm>
 //#include "clasp_gmpxx.h"
 #include <ctype.h>
+#include <clasp/gctools/telemetry.h>
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/symbolTable.h>
