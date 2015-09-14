@@ -81,6 +81,15 @@ namespace telemetry {
             return handle;
         }
 
+      void intern_predefined(size_t label, const std::string& label) {
+        Handle assigned_label = this->intern(label);
+        if ( assigned_label != label ) {
+          printf("%s:%d There is a problem with telemetry, pre-defined labels must match up with their assigned values - fix this in the code\n");
+          abort();
+        }
+        return handle;
+      }
+
         void write_header( Header header ) {
             this->_ThisRecordPos = ftell(this->_File);
             fwrite(&header,sizeof(Header),1,this->_File);

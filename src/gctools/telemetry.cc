@@ -163,6 +163,7 @@ void core_telemetry_dump(core::T_sp begin, core::T_sp end) {
 
 char* global_clasp_telemetry_file;
 Telemetry global_telemetry;
+Telemetry::Handle label_nop                  =  0;
 Telemetry::Handle label_allocation           =  1;
 Telemetry::Handle label_obj_pad              =  2;
 Telemetry::Handle label_obj_scan_start       =  3;
@@ -204,20 +205,21 @@ std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[
 }
 
 void Telemetry::initialize() {
-  global_telemetry.intern(label_allocation,"mps_allocation client@%p client_end@%p kind: %lu");
-  global_telemetry.intern(label_obj_pad,"obj_pad base@%p size: %lu");
-  global_telemetry.intern(label_obj_scan_start,"obj_scan_start client@%p limit@%p");
-  global_telemetry.intern(label_obj_scan,"obj_scan client@%p after_client@%p kind: %lu");
-  global_telemetry.intern(label_obj_isfwd_true,"obj_isfwd == TRUE client@%p base@%p forward@%p");
-  global_telemetry.intern(label_obj_isfwd_false,"obj_isfwd == FALSE client@%p base@%p");
-  global_telemetry.intern(label_obj_pad,"obj_pad base@%p size: %lu");
-  global_telemetry.intern(label_obj_fwd,"obj_fwd old-client@%p new-client@%p");
-  global_telemetry.intern(label_obj_skip,"obj_skip in-client@%p  out-client@%p size=%lu");
-  global_telemetry.intern(label_obj_finalize,"obj_finalize addr@%p");
-  global_telemetry.intern(label_root_scan_start,"root_scan_start");
-  global_telemetry.intern(label_root_scan_stop,"root_scan_stop");
-  global_telemetry.intern(label_smart_ptr_fix,"smart_ptr_fix before@%p after@%p");
-  global_telemetry.intern(label_tagged_pointer_fix,"tagged_pointer_fix before@%p after@%p");
+  global_telemetry.intern_predefined(label_nop,"telemetry nop");
+  global_telemetry.intern_predefined(label_allocation,"mps_allocation client@%p client_end@%p kind: %lu");
+  global_telemetry.intern_predefined(label_obj_pad,"obj_pad base@%p size: %lu");
+  global_telemetry.intern_predefined(label_obj_scan_start,"obj_scan_start client@%p limit@%p");
+  global_telemetry.intern_predefined(label_obj_scan,"obj_scan client@%p after_client@%p kind: %lu");
+  global_telemetry.intern_predefined(label_obj_isfwd_true,"obj_isfwd == TRUE client@%p base@%p forward@%p");
+  global_telemetry.intern_predefined(label_obj_isfwd_false,"obj_isfwd == FALSE client@%p base@%p");
+  global_telemetry.intern_predefined(label_obj_pad,"obj_pad base@%p size: %lu");
+  global_telemetry.intern_predefined(label_obj_fwd,"obj_fwd old-client@%p new-client@%p");
+  global_telemetry.intern_predefined(label_obj_skip,"obj_skip in-client@%p  out-client@%p size=%lu");
+  global_telemetry.intern_predefined(label_obj_finalize,"obj_finalize addr@%p");
+  global_telemetry.intern_predefined(label_root_scan_start,"root_scan_start");
+  global_telemetry.intern_predefined(label_root_scan_stop,"root_scan_stop");
+  global_telemetry.intern_predefined(label_smart_ptr_fix,"smart_ptr_fix before@%p after@%p");
+  global_telemetry.intern_predefined(label_tagged_pointer_fix,"tagged_pointer_fix before@%p after@%p");
 };
 
 void initialize_telemetry_defuns() {
