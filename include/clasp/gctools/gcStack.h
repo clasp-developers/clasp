@@ -40,23 +40,33 @@ This class always needs to be allocated on the stack.
 It uses RAII to pop its array of pointers from the stack when the Frame goes out of scope.
 */
     struct Frame {
-      size_t _Length;
-      size_t _Capacity; // May be larger than length
-      ElementType* _frameImpl;
+      size_t _ArrayLength;
+      size_t _ElementCapacity; // May be larger than length
+      ElementType* _frameBlock;
     /*! Calculate the number of elements required to represent the frame.
      It's IdxValuesArray+#elements */
-      static inline size_t FrameSize(size_t elements) {
-        return ((elements+IdxOverflowArgs) - LCC_ARGS_IN_REGISTERS)*sizeof(ElementType);
+      static inline size_t FrameElements(size_t frame_elements) {
+        return std::max((frame_elements+IdxOverflowArgs)-LCC_ARGS_IN_REGISTERS,IdxOverflowArgs+1);
+      }
+      static inline size_t FrameBytes(size_t elements) {
+        return FrameElements(elements)*sizeof(ElementType);
       }
       Frame(size_t numArguments,core::T_sp parent = _Nil<core::T_O>());
-      void setLength(size_t l) { this->_Length = l; };
+      inline ElementType& lowLevelElementRef(size_t idx) {
+        GCTOOLS_ASSERT(idx>=0 && idx <this->_ElementCapacity);
+        return this->_frameBlock[idx];
+      }
+      inline const ElementType& lowLevelElementRef(size_t idx) const {
+        GCTOOLS_ASSERT(idx>=0 && idx <this->_ElementCapacity);
+        return this->_frameBlock[idx];
+      }
+      inline void setLength(size_t l) { this->_ArrayLength = l; };
+      inline size_t getLength() const { return this->_ArrayLength; };
       //! Describe the Frame
       void dump() const;
       ~Frame();
-      inline ElementType& operator[](size_t idx) {
-        return this->_frameImpl[IdxValuesArray+idx];
-      }
-      inline core::T_sp arg(size_t idx) { return core::T_sp((gc::Tagged)this->operator[](idx));}
+      inline ElementType& operator[](size_t idx) { return this->lowLevelElementRef(idx+IdxValuesArray); }
+      inline core::T_sp arg(size_t idx) { return core::T_sp((gc::Tagged)this->lowLevelElementRef(idx+IdxValuesArray));}
     };
   };
 
@@ -113,10 +123,10 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 #endif
     {
       // This must match (and should be in) lispCallingConvention.h
-      this->_Args[0].reg_save_area = &frame._frameImpl[gc::frame::IdxRegisterSaveArea];
-      this->_Args[0].overflow_arg_area = &frame._frameImpl[gc::frame::IdxOverflowArgs];
+      this->_Args[0].reg_save_area = &frame.lowLevelElementRef(gc::frame::IdxRegisterSaveArea);
+      this->_Args[0].overflow_arg_area = &frame.lowLevelElementRef(gc::frame::IdxOverflowArgs);
       // This is where the number of arguments remaining should be stored
-      ((uintptr_t*)(this->_Args[0].reg_save_area))[LCC_NARGS_REGISTER] = frame._Length;
+      ((uintptr_t*)(this->_Args[0].reg_save_area))[LCC_NARGS_REGISTER] = frame._ArrayLength;
       ((uintptr_t*)(this->_Args[0].reg_save_area))[LCC_OVERFLOW_SAVE_REGISTER] = (uintptr_t)(this->_Args[0].overflow_arg_area);
       this->_Args[0].gp_offset = (gc::frame::IdxRegisterArgumentsStart-gc::frame::IdxRegisterSaveArea)*sizeof(gc::frame::ElementType);
       this->_Args[0].fp_offset = 304;

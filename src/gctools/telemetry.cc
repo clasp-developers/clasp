@@ -243,6 +243,15 @@ std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[
   case 4:
       sprintf(buffer,slabel.c_str(), data[0],data[1],data[2],data[3] );
       break;
+  case 5:
+      sprintf(buffer,slabel.c_str(), data[0],data[1],data[2],data[3],data[4] );
+      break;
+  case 6:
+      sprintf(buffer,slabel.c_str(), data[0],data[1],data[2],data[3],data[4],data[5] );
+      break;
+  case 7:
+      sprintf(buffer,slabel.c_str(), data[0],data[1],data[2],data[3],data[4],data[5],data[6] );
+      break;
   default:
       sprintf(buffer,"Add support for %d arguments", num_read);
   }
@@ -271,7 +280,7 @@ void Telemetry::initialize() {
     this->intern("label_stack_frame_scan base@%p base_end@%p type=%lu", label_stack_frame_scan);
     this->intern("label_stack_frame_skip base@%p base_end@%p size: %lu", label_stack_frame_skip);
     this->intern("label_stack_frame_pad  base@%p size: %lu", label_stack_frame_pad);
-    this->intern("label_stack_push_prepare ap@%p", label_stack_push_prepare);
+    this->intern("label_stack_push_prepare ap@%p ap->init@%p ap->alloc@%p ap->limit@%p ap->_frameptr@%p ap->_enabled:%lu ap->_lwpoppending:%lu", label_stack_push_prepare);
     this->intern("label_stack_push ap@%p frame@%p depth:%lu", label_stack_push);
     this->intern("label_stack_allocate alloc@%p size: %lu", label_stack_allocate);
     this->intern("label_stack_pop ap@%p frame@%p", label_stack_pop);

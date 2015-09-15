@@ -27,35 +27,35 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 namespace gctools {
 namespace frame {
-Frame::Frame(size_t numArguments,core::T_sp parent) : _Capacity(numArguments), _Length(numArguments) {
-  size_t sz = FrameSize(numArguments);
-  this->_frameImpl = reinterpret_cast<ElementType*>(threadLocalStack()->pushFrameImpl(sz));
+Frame::Frame(size_t numArguments,core::T_sp parent) : _ElementCapacity(FrameElements(numArguments)), _ArrayLength(numArguments) {
+  size_t sz = FrameBytes(numArguments);
+  this->_frameBlock = reinterpret_cast<ElementType*>(threadLocalStack()->pushFrameImpl(sz));
 //  printf("%s:%d Pushing frame@%p\n", __FILE__, __LINE__, this->_frameImpl);
-  this->_frameImpl[IdxNumElements] = reinterpret_cast<core::T_O*>(numArguments);
-  for (size_t i(IdxValuesArray), iEnd(IdxValuesArray + numArguments); i < iEnd; ++i) {
-    this->_frameImpl[i] = gctools::tag_unbound<core::T_O *>();
+  // I can't use a FIXNUM here - it has to be a raw size_t
+  this->lowLevelElementRef(IdxNumElements) = reinterpret_cast<ElementType>(numArguments);
+  for (size_t i(0), iEnd(numArguments); i < iEnd; ++i) {
+    this->operator[](i) = gctools::tag_unbound<core::T_O *>();
   }
 }
 
 void Frame::dump() const {
-  void* frameImplHeaderAddress = threadLocalStack()->frameImplHeaderAddress(this->_frameImpl);
-  GCStack::frameType frameImplHeaderType = threadLocalStack()->frameImplHeaderType(this->_frameImpl);
-  int frameImplHeaderSize = threadLocalStack()->frameImplHeaderSize(this->_frameImpl);
+  void* frameImplHeaderAddress = threadLocalStack()->frameImplHeaderAddress(this->_frameBlock);
+  GCStack::frameType frameImplHeaderType = threadLocalStack()->frameImplHeaderType(this->_frameBlock);
+  int frameImplHeaderSize = threadLocalStack()->frameImplHeaderSize(this->_frameBlock);
   printf("Frame info\n");
-  printf("    Frame._Length = %d    Frame._Capacity = %d\n", this->_Length, this->_Capacity );
-  printf("    Frame._frameImpl = %p\n", this->_frameImpl );
+  printf("    Frame._ArrayLength = %d    Frame._ElementCapacity = %d\n", this->_ArrayLength, this->_ElementCapacity );
+  printf("    Frame._frameImpl = %p\n", this->_frameBlock );
   printf("    frameImplHeaderAddress(Frame._frameImpl) = %p\n", frameImplHeaderAddress );
   void* frameImplEnd = (char*)frameImplHeaderAddress + frameImplHeaderSize;
   printf("    frameImplEnd                             = %p\n", frameImplEnd );
   printf("    frameImplHeaderType(Frame._frameImpl)    = %d\n", frameImplHeaderType );
   printf("    frameImplHeaderSize(Frame._frameImpl)    = %d\n", frameImplHeaderSize );
-  int frameImplBodySize = threadLocalStack()->frameImplBodySize(this->_frameImpl);
+  int frameImplBodySize = threadLocalStack()->frameImplBodySize(this->_frameBlock);
   printf("    frameImplBodySize(Frame._frameImpl)      = %d\n", frameImplBodySize );
   int numEntries = frameImplBodySize/sizeof(ElementType);
   printf("    numEntries in Frame._frameImpl           = %d\n", numEntries );
-  ElementType* cur = this->_frameImpl;
   for ( int i(0); i<numEntries; ++i ) {
-    ElementType val = cur[i];
+    ElementType val = this->lowLevelElementRef(i);
     stringstream desc;
     desc << "entry[" << i << "] ";
     if ( i >= IdxRegisterSaveArea && i < IdxOverflowArgs ) {
@@ -67,8 +67,8 @@ void Frame::dump() const {
     if ( i >= IdxOverflowArgs ) {
       desc << "  overflow[" << (i-IdxOverflowArgs) << "] ";
     }
-    printf("%p %30s --> %p\n", &cur[i], desc.str().c_str(), val);
-    if ((char*)&cur[i] >= frameImplEnd ) {
+    printf("%p %30s --> %p\n", &this->lowLevelElementRef(i), desc.str().c_str(), val);
+    if ((char*)&this->lowLevelElementRef(i) >= frameImplEnd ) {
       printf("PROBLEM!  This frame entry indexes past the end of the frameImpl\n");
     }
   }
@@ -76,7 +76,7 @@ void Frame::dump() const {
 
 Frame::~Frame() {
 //  printf("%s:%d Popping frame@%p\n", __FILE__, __LINE__, this->_frameImpl);
-  threadLocalStack()->popFrameImpl(reinterpret_cast<void*>(this->_frameImpl));
+  threadLocalStack()->popFrameImpl(reinterpret_cast<void*>(this->_frameBlock));
 }
 
 };

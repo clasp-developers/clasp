@@ -42,6 +42,9 @@
 
 #include <iostream>
 #include <cstring>
+
+#include <clasp/gctools/globals.h>
+
 //#include "tagged_ptr.h"
 //#define TAGGED_PTR_BASE tagged_ptr
 
@@ -52,16 +55,6 @@
 
 //#define	TAGGED_PTR core::T_O*
 
-namespace gctools {
-/*! Tagged pointer to the global nil */
-  extern core::Symbol_O *global_tagged_Symbol_OP_nil;
-/*! Tagged pointer to the global UNBOUND */
-  extern core::Symbol_O *global_tagged_Symbol_OP_unbound;
-/*! Tagged pointer to the global DELETED - used in weak hash tables */
-  extern core::Symbol_O *global_tagged_Symbol_OP_deleted;
-/*! Tagged pointer to the global SAME-AS-KEY - used in weak hash tables */
-  extern core::Symbol_O *global_tagged_Symbol_OP_sameAsKey;
-};
 
 extern void lisp_errorUnexpectedNil(type_info const &toType);
 extern void lisp_errorBadCast(type_info const &toType, type_info const &fromType, core::T_O *objP);

@@ -229,6 +229,68 @@ namespace telemetry {
             }
         }
 
+            void write(size_t kind, Handle label, Word d0, Word d1, Word d2, Word d3 ) {
+            if ( (this->_Mask & kind) && this->_File ) {
+                this->write_header(data_header);
+                this->write_handle(label);
+                size_t size = 4;
+                fwrite(&size,sizeof(size_t),1,this->_File);
+                fwrite(&d0,sizeof(Word),1,this->_File);
+                fwrite(&d1,sizeof(Word),1,this->_File);
+                fwrite(&d2,sizeof(Word),1,this->_File);
+                fwrite(&d3,sizeof(Word),1,this->_File);
+                this->write_footer();
+            }
+        }
+
+      void write(size_t kind, Handle label, Word d0, Word d1, Word d2, Word d3, Word d4 ) {
+            if ( (this->_Mask & kind) && this->_File ) {
+                this->write_header(data_header);
+                this->write_handle(label);
+                size_t size = 5;
+                fwrite(&size,sizeof(size_t),1,this->_File);
+                fwrite(&d0,sizeof(Word),1,this->_File);
+                fwrite(&d1,sizeof(Word),1,this->_File);
+                fwrite(&d2,sizeof(Word),1,this->_File);
+                fwrite(&d3,sizeof(Word),1,this->_File);
+                fwrite(&d4,sizeof(Word),1,this->_File);
+                this->write_footer();
+            }
+        }
+
+            void write(size_t kind, Handle label, Word d0, Word d1, Word d2, Word d3, Word d4, Word d5 ) {
+            if ( (this->_Mask & kind) && this->_File ) {
+                this->write_header(data_header);
+                this->write_handle(label);
+                size_t size = 6;
+                fwrite(&size,sizeof(size_t),1,this->_File);
+                fwrite(&d0,sizeof(Word),1,this->_File);
+                fwrite(&d1,sizeof(Word),1,this->_File);
+                fwrite(&d2,sizeof(Word),1,this->_File);
+                fwrite(&d3,sizeof(Word),1,this->_File);
+                fwrite(&d4,sizeof(Word),1,this->_File);
+                fwrite(&d5,sizeof(Word),1,this->_File);
+                this->write_footer();
+            }
+        }
+
+      void write(size_t kind, Handle label, Word d0, Word d1, Word d2, Word d3, Word d4, Word d5, Word d6 ) {
+            if ( (this->_Mask & kind) && this->_File ) {
+                this->write_header(data_header);
+                this->write_handle(label);
+                size_t size = 7;
+                fwrite(&size,sizeof(size_t),1,this->_File);
+                fwrite(&d0,sizeof(Word),1,this->_File);
+                fwrite(&d1,sizeof(Word),1,this->_File);
+                fwrite(&d2,sizeof(Word),1,this->_File);
+                fwrite(&d3,sizeof(Word),1,this->_File);
+                fwrite(&d4,sizeof(Word),1,this->_File);
+                fwrite(&d5,sizeof(Word),1,this->_File);
+                fwrite(&d6,sizeof(Word),1,this->_File);
+                this->write_footer();
+            }
+        }
+
     
         bool process_header( Header header) {
             if ( header == intern_header ) {
@@ -285,11 +347,13 @@ namespace telemetry {
 #define STACK_TELEMETRY1(label,arg0) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry,label,(uintptr_t)arg0)
 #define STACK_TELEMETRY2(label,arg0,arg1) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry,label,(uintptr_t)arg0,(uintptr_t)arg1)
 #define STACK_TELEMETRY3(label,arg0,arg1,arg2) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry,label,(uintptr_t)arg0,(uintptr_t)arg1,(uintptr_t)arg2)
+#define STACK_TELEMETRY7(label,a0,a1,a2,a3,a4,a5,a6) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry,label,(uintptr_t)a0,(uintptr_t)a1,(uintptr_t)a2,(uintptr_t)a3,(uintptr_t)a4,(uintptr_t)a5,(uintptr_t)a6)
 #else
 #define STACK_TELEMETRY0(label)
 #define STACK_TELEMETRY1(label,arg0)
 #define STACK_TELEMETRY2(label,arg0,arg1)
 #define STACK_TELEMETRY3(label,arg0,arg1,arg2)
+#define STACK_TELEMETRY7(label,a0,a1,a2,a3,a4,a5,a6)
 #endif    
 };
 #endif

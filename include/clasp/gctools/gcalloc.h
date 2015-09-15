@@ -201,7 +201,14 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
           mps_frame_t frame_o;
-          STACK_TELEMETRY1(telemetry::label_stack_push_prepare,this->_AllocationPoint);
+          STACK_TELEMETRY7(telemetry::label_stack_push_prepare,
+                           this->_AllocationPoint,
+                           this->_AllocationPoint->init,
+                           this->_AllocationPoint->alloc,
+                           this->_AllocationPoint->limit,
+                           this->_AllocationPoint->_frameptr,
+                           this->_AllocationPoint->_enabled,
+                           this->_AllocationPoint->_lwpoppending);
           mps_res_t respush = mps_ap_frame_push(&frame_o,this->_AllocationPoint);
           if (respush != MPS_RES_OK) {
               printf("%s:%d There was a problem with mps_ap_frame_push result=%d\n", __FILE__, __LINE__, respush);

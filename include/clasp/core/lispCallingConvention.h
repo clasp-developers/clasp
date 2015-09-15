@@ -203,7 +203,7 @@ THE SOFTWARE.
 #define LCC_CALL_WITH_ARGS_IN_FRAME(_result,_closure,_frame) \
   LCC_RETURN _result; \
   core::VaList_S valist_s(_frame); \
-  size_t lcc_nargs = _frame._Length; \
+  size_t lcc_nargs = _frame.getLength(); \
   core::T_O* lcc_arglist = valist_s.asTaggedPtr(); \
   switch (lcc_nargs) { \
   default : \

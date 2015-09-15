@@ -1254,10 +1254,6 @@ extern llvmAddSymbolCallbackType addSymbol;
     lisp_throwLispError(BF("Error - could not get string from boost::format --> %s") % exc.what()); \
   }
 
-extern "C" {
-#define _LISP _lisp
-DLL_PUBLIC extern core::Lisp_sp _lisp;
-};
 
 #include <clasp/core/exceptions.h>
 

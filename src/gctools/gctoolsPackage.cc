@@ -50,16 +50,6 @@ extern "C" {
 
 using namespace core;
 
-namespace gctools {
-/*! Point to the global nil */
-core::Symbol_O* global_tagged_Symbol_OP_nil;
-/*! Point to the global UNBOUND */
-core::Symbol_O* global_tagged_Symbol_OP_unbound;
-/*! Point to the global DELETED - used in weak hash tables */
-core::Symbol_O* global_tagged_Symbol_OP_deleted;
-/*! Point to the global SAME-AS-KEY - used in weak hash tables */
-core::Symbol_O* global_tagged_Symbol_OP_sameAsKey;
-};
 
 namespace gctools {
 

@@ -31,6 +31,7 @@ project internals/gctools : requirements
 
 local sources = 
 	gctoolsPackage.cc
+        globals.cc
         gcStack.cc
         telemetry.cc
 #        gcalloc.cc
