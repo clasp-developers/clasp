@@ -203,8 +203,12 @@ namespace gctools {
           mps_frame_t frame_o;
           STACK_TELEMETRY1(telemetry::label_stack_push_prepare,this->_AllocationPoint);
           mps_res_t respush = mps_ap_frame_push(&frame_o,this->_AllocationPoint);
-          STACK_TELEMETRY2(telemetry::label_stack_push,this->_AllocationPoint,frame_o);
+          if (respush != MPS_RES_OK) {
+              printf("%s:%d There was a problem with mps_ap_frame_push result=%d\n", __FILE__, __LINE__, respush);
+              abort();
+          }
           this->frames.push_back(frame_o);
+          STACK_TELEMETRY3(telemetry::label_stack_push,this->_AllocationPoint,frame_o,this->frames.size());
           if (respush != MPS_RES_OK) {
               THROW_HARD_ERROR(BF("Could not mps_ap_frame_push"));
           }
@@ -270,7 +274,7 @@ namespace gctools {
           STACK_TELEMETRY2(telemetry::label_stack_pop,this->_AllocationPoint,frame_o);
           mps_res_t res = mps_ap_frame_pop(this->_AllocationPoint,frame_o);
           if ( res != MPS_RES_OK ) {
-              THROW_HARD_ERROR(BF("There was a problem with mps_app_frame_pop"));
+              THROW_HARD_ERROR(BF("There was a problem with mps_app_frame_pop result = %d") % res);
           }
 #endif // USE_MPS
       }

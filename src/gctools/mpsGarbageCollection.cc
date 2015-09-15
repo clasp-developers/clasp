@@ -273,7 +273,7 @@ static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit
                      (uintptr_t)limit);
     MPS_SCAN_BEGIN(ss) {
         while (base<limit) {
-            mps_addr_t base_orig = base;
+            mps_addr_t original_base = base;
             uintptr_t* headerAndFrame = (uintptr_t*)base;
             GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
             size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);

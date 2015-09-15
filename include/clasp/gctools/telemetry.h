@@ -28,15 +28,14 @@ namespace telemetry {
     constexpr Handle label_smart_ptr_fix        = 12;
     constexpr Handle label_tagged_pointer_fix   = 13;
     constexpr Handle label_msg                  = 14;
-    constexpr Handle label_prep_push_frame      = 15;
-    constexpr Handle label_stack_frame_scan_start = 16;
-    constexpr Handle label_stack_frame_scan       = 17;
-    constexpr Handle label_stack_push_prepare     = 18;
-    constexpr Handle label_stack_push             = 19;
-    constexpr Handle label_stack_allocate         = 20;
-    constexpr Handle label_stack_pop              = 21;
-    constexpr Handle label_stack_frame_skip       = 22;
-    constexpr Handle label_stack_frame_pad        = 23;
+    constexpr Handle label_stack_frame_scan_start = 15;
+    constexpr Handle label_stack_frame_scan       = 16;
+    constexpr Handle label_stack_frame_skip       = 17;
+    constexpr Handle label_stack_frame_pad        = 18;
+    constexpr Handle label_stack_push_prepare     = 19;
+    constexpr Handle label_stack_push             = 20;
+    constexpr Handle label_stack_allocate         = 21;
+    constexpr Handle label_stack_pop              = 22;
 
 
     struct Telemetry {
