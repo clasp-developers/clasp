@@ -214,13 +214,10 @@ bool debug_mps = true;
 };
 
 void clasp_mps_debug_allocation(const char *poolName, void *base, void *client, int size, int kind) {
-#if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
-  telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                    telemetry::label_allocation,
-                                    (uintptr_t)client,
-                                    (uintptr_t)((char*)client+size),
-                                    kind);
-#endif
+    GC_TELEMETRY3(telemetry::label_allocation,
+                  (uintptr_t)client,
+                  (uintptr_t)((char*)client+size),
+                  kind);
 }
 
 void clasp_mps_debug_fix1_before(void *base, void *smartAddr) {
@@ -1541,7 +1538,7 @@ void lisp_errorExpectedTypeSymbol(Symbol_sp typeSym, T_sp datum) {
 }
 
 void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt) {
-    telemetry::global_telemetry.flush();
+    if ( telemetry::global_telemetry ) telemetry::global_telemetry->flush();
   stringstream ss;
   ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
   ss << fmt.str();

@@ -209,14 +209,11 @@ void searchMemoryForAddress(mps_addr_t addr) {
 
 static void obj_fwd(mps_addr_t old_client, mps_addr_t new_client) {
   // I'm assuming both old and new client pointers have valid headers at this point
-  DEBUG_MPS_THROW_IF_INVALID_CLIENT(old_client);
-  DEBUG_MPS_THROW_IF_INVALID_CLIENT(new_client);
-#ifdef DEBUG_MPS
-        telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                          telemetry::label_obj_fwd,
-                                          (uintptr_t)old_client,
-                                          (uintptr_t)new_client);
-#endif
+  DEBUG_THROW_IF_INVALID_CLIENT(old_client);
+  DEBUG_THROW_IF_INVALID_CLIENT(new_client);
+  GC_TELEMETRY2(telemetry::label_obj_fwd,
+                (uintptr_t)old_client,
+                (uintptr_t)new_client);
   mps_addr_t limit = obj_skip(old_client);
   size_t size = (char *)limit - (char *)old_client;
   if (size < global_sizeof_fwd) {
@@ -228,20 +225,18 @@ static void obj_fwd(mps_addr_t old_client, mps_addr_t new_client) {
 }
 
 static mps_addr_t obj_isfwd(mps_addr_t client) {
-  DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
+  DEBUG_THROW_IF_INVALID_CLIENT(client);
   Header_s *header = reinterpret_cast<Header_s *>(ClientPtrToBasePtr(client));
-#ifdef DEBUG_MPS
+#ifdef DEBUG_TELEMETRY
   if (header->fwdP()) {
-    telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                      telemetry::label_obj_isfwd_true,
-                                      (uintptr_t)client,
-                                      (uintptr_t)header,
-                                      (uintptr_t)header->fwdPointer());
+      GC_TELEMETRY3(telemetry::label_obj_isfwd_true,
+                    (uintptr_t)client,
+                    (uintptr_t)header,
+                    (uintptr_t)header->fwdPointer());
   } else {
-    telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                      telemetry::label_obj_isfwd_false,
-                                      (uintptr_t)client,
-                                      (uintptr_t)header);
+      GC_TELEMETRY2(telemetry::label_obj_isfwd_false,
+                    (uintptr_t)client,
+                    (uintptr_t)header);
   }
 #endif
   if (header->fwdP()) return header->fwdPointer();
@@ -250,12 +245,9 @@ static mps_addr_t obj_isfwd(mps_addr_t client) {
 
 static void obj_pad(mps_addr_t base, size_t size) {
   size_t alignment = Alignment();
-#ifdef DEBUG_MPS
-    telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                      telemetry::label_obj_pad,
-                                      (uintptr_t)base,
-                                      (uintptr_t)size);
-#endif  
+  GC_TELEMETRY2(telemetry::label_obj_pad,
+                (uintptr_t)base,
+                (uintptr_t)size);
   assert(size >= alignment);
   Header_s *header = reinterpret_cast<Header_s *>(base);
   if (size == alignment) {
@@ -276,43 +268,48 @@ static void obj_pad(mps_addr_t base, size_t size) {
 //
 
 static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit ) {
-  MPS_SCAN_BEGIN(ss) {
-    while (base<limit) {
-      uintptr_t* headerAndFrame = (uintptr_t*)base;
-      GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
-      size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
-      switch (ftype) {
-      case GCStack::frame_t: {
-          uintptr_t* frameStart = FRAME_START(headerAndFrame);
-          size_t elements = frameStart[gc::frame::IdxNumElements];
-          uintptr_t* taggedPtr = &frameStart[gc::frame::IdxValuesArray];
-          for ( size_t i=0; i<elements; ++i ) {
-            taggedPtrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,reinterpret_cast<gctools::Tagged*>(taggedPtr)
-#ifdef DEBUG_MPS
-                         , "FRAME-ELEMENT"
-#endif
-                         );
-            ++taggedPtr;
-          }
-          base = (char*)base + sz;
-      }
-          break;
-      case GCStack::pad_t:
-          base = (char*)base + sz;
-          break;
-      default:
-          THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
-          break;
-      }
-    }
-  } MPS_SCAN_END(ss);
-  return MPS_RES_OK;
+    STACK_TELEMETRY2(telemetry::label_stack_frame_scan_start,
+                     (uintptr_t)base,
+                     (uintptr_t)limit);
+    MPS_SCAN_BEGIN(ss) {
+        while (base<limit) {
+            mps_addr_t base_orig = base;
+            uintptr_t* headerAndFrame = (uintptr_t*)base;
+            GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
+            size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
+            switch (ftype) {
+            case GCStack::frame_t: {
+                uintptr_t* frameStart = FRAME_START(headerAndFrame);
+                size_t elements = frameStart[gc::frame::IdxNumElements];
+                uintptr_t* taggedPtr = &frameStart[gc::frame::IdxValuesArray];
+                for ( size_t i=0; i<elements; ++i ) {
+                    taggedPtrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,reinterpret_cast<gctools::Tagged*>(taggedPtr));
+                    ++taggedPtr;
+                }
+                base = (char*)base + sz;
+            }
+                break;
+            case GCStack::pad_t:
+                base = (char*)base + sz;
+                break;
+            default:
+                THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
+                break;
+            }
+            STACK_TELEMETRY3(telemetry::label_stack_frame_scan,
+                             (uintptr_t)original_base,
+                             (uintptr_t)base,
+                             (uintptr_t)ftype);
+        }
+    } MPS_SCAN_END(ss);
+    return MPS_RES_OK;
 };
 
 
 static mps_addr_t stack_frame_skip(mps_addr_t base)
 {
   uintptr_t* headerAndFrame = (uintptr_t*)base;
+  mps_addr_t original_base = base;
   GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
   size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
   switch (ftype) {
@@ -326,12 +323,19 @@ static mps_addr_t stack_frame_skip(mps_addr_t base)
       THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
       break;
   }
+  STACK_TELEMETRY3(telemetry::label_stack_frame_skip,
+                   (uintptr_t)original_base,
+                   (uintptr_t)base,
+                   (uintptr_t)((char*)original_base - (char*)base));
   return base;
 }
 
 
 static void stack_frame_pad(mps_addr_t addr, size_t size)
 {
+  STACK_TELEMETRY2(telemetry::label_stack_frame_pad,
+                   (uintptr_t)addr,
+                   (uintptr_t)size);
   uintptr_t* obj = reinterpret_cast<uintptr_t*>(addr);
   GCTOOLS_ASSERT(size>=STACK_ALIGN_UP(sizeof(uintptr_t)));
   FRAME_HEADER_TYPE_FIELD(obj) = (int)GCStack::frameType::pad_t;
@@ -400,13 +404,6 @@ int processMpsMessages(void) {
     assert(b); /* we just checked there was one */
     if (type == mps_message_type_gc_start()) {
       ++mGcStart;
-#if 0
-                DEBUG_MPS_MESSAGE(BF("Message: mps_message_type_gc_start"));
-                printf("Message: mps_message_type_gc_start\n");
-                printf("Collection started.\n");
-                printf("  Why: %s\n", mps_message_gc_start_why(_global_arena, message));
-                printf("  clock: %lu\n", (unsigned long)mps_message_clock(_global_arena, message));
-#endif
     } else if (type == mps_message_type_gc()) {
       ++mGc;
 #if 0

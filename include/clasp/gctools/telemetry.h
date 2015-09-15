@@ -10,6 +10,35 @@
 #include <string>
 namespace telemetry {
 
+    typedef uintptr_t Handle;
+    typedef uintptr_t Word;
+    constexpr int StringBufferSize = 256;
+    constexpr Handle label_undefined            =  0; // must be zero
+    constexpr Handle label_allocation           =  1;
+    constexpr Handle label_obj_pad              =  2;
+    constexpr Handle label_obj_scan_start       =  3;
+    constexpr Handle label_obj_scan             =  4;
+    constexpr Handle label_obj_isfwd_true       =  5;
+    constexpr Handle label_obj_isfwd_false      =  6;
+    constexpr Handle label_obj_skip             =  7;
+    constexpr Handle label_obj_fwd              =  8;
+    constexpr Handle label_obj_finalize         =  9;
+    constexpr Handle label_root_scan_start      = 10;
+    constexpr Handle label_root_scan_stop       = 11;
+    constexpr Handle label_smart_ptr_fix        = 12;
+    constexpr Handle label_tagged_pointer_fix   = 13;
+    constexpr Handle label_msg                  = 14;
+    constexpr Handle label_prep_push_frame      = 15;
+    constexpr Handle label_stack_frame_scan_start = 16;
+    constexpr Handle label_stack_frame_scan       = 17;
+    constexpr Handle label_stack_push_prepare     = 18;
+    constexpr Handle label_stack_push             = 19;
+    constexpr Handle label_stack_allocate         = 20;
+    constexpr Handle label_stack_pop              = 21;
+    constexpr Handle label_stack_frame_skip       = 22;
+    constexpr Handle label_stack_frame_pad        = 23;
+
+
     struct Telemetry {
         typedef size_t Header;
         typedef size_t Handle;
@@ -21,13 +50,12 @@ namespace telemetry {
         std::vector<std::string> _Labels;
         std::map<std::string,Handle> _LabelsToHandles;
 
-        typedef uintptr_t Word;
-        const int StringBufferSize = 256;
 
         const Header intern_header = 0xBEF4;
         const Header data_header = 0xDADA;
         static const size_t GC_telemetry = 0x01;
         static const size_t Message_telemetry = 0x02;
+        static const size_t STACK_telemetry = 0x04;
     
         Telemetry() : _File(NULL), _ThisRecordPos(0), _Mask(0) {
             this->initialize();
@@ -43,11 +71,7 @@ namespace telemetry {
             this->_Write = false;
         }
 
-        void initialize() {
-            char* intern = "INTERN";
-            this->_Labels.push_back(std::string(intern));
-            this->_LabelsToHandles[intern] = 0;
-        }
+        void initialize();
 
         void set_mask(size_t mask) {
             this->_Mask = mask;
@@ -61,7 +85,7 @@ namespace telemetry {
             if ( this->_File) fclose(this->_File);
         }
     
-        Handle intern(const std::string& label) {
+        Handle intern(const std::string& label, size_t predefined_handle=0) {
             std::map<std::string,Handle>::iterator it = this->_LabelsToHandles.find(label);
             if ( label.size() >= StringBufferSize ) {
                 printf("%s:%d The internd string is too long: %s\n", __FILE__, __LINE__, label.c_str() );
@@ -72,7 +96,7 @@ namespace telemetry {
                 handle = this->_Labels.size();
                 this->_LabelsToHandles[label] = handle;
                 this->_Labels.push_back(std::string(label));
-                if ( this->_Write ) {
+                if ( predefined_handle == 0 && this->_Write ) {
                     this->write_header(intern_header);
                     this->write_label(label);
                     this->write_footer();
@@ -80,17 +104,12 @@ namespace telemetry {
             } else {
                 handle = it->second;
             }
+            if ( predefined_handle != 0 && handle != predefined_handle ) {
+                printf("%s:%d The predefined_handle[%lu] doesn't match the handle[%lu] assigned - they must match or telemetry won't work - this is for label: %s\n", __FILE__, __LINE__, predefined_handle, handle, label.c_str() );
+                abort();
+            }
             return handle;
         }
-
-      void intern_predefined(size_t label, const std::string& label) {
-        Handle assigned_label = this->intern(label);
-        if ( assigned_label != label ) {
-          printf("%s:%d There is a problem with telemetry, pre-defined labels must match up with their assigned values - fix this in the code\n");
-          abort();
-        }
-        return handle;
-      }
 
         void write_header( Header header ) {
             this->_ThisRecordPos = ftell(this->_File);
@@ -188,9 +207,9 @@ namespace telemetry {
                 size_t size = 2;
                 fwrite(&size,sizeof(size_t),1,this->_File);
                 fwrite(&data0,sizeof(Word),1,this->_File);
-                Telemetry::Word data1 = 0;
+                Word data1 = 0;
                 int i;
-                for ( i=0; i<sizeof(Telemetry::Word)-1; ++i ) {
+                for ( i=0; i<sizeof(Word)-1; ++i ) {
                     ((char*)(&data1))[i] = msg[i];
                 }
                 fwrite(&data1,sizeof(Word),1,this->_File);
@@ -247,25 +266,31 @@ namespace telemetry {
     };
 
     extern char* global_clasp_telemetry_file;
-    extern Telemetry global_telemetry;
+    extern Telemetry* global_telemetry;
 
-    extern Telemetry::Handle label_allocation;
-    extern Telemetry::Handle label_obj_pad;
-    extern Telemetry::Handle label_obj_scan_start;
-    extern Telemetry::Handle label_obj_scan;
-    extern Telemetry::Handle label_obj_isfwd_true;
-    extern Telemetry::Handle label_obj_isfwd_false;
-    extern Telemetry::Handle label_obj_pad;
-    extern Telemetry::Handle label_obj_skip;
-    extern Telemetry::Handle label_obj_fwd;
-    extern Telemetry::Handle label_root_scan_start;
-    extern Telemetry::Handle label_root_scan_stop;
-    extern Telemetry::Handle label_smart_ptr_fix;
-    extern Telemetry::Handle label_tagged_pointer_fix;
-    extern Telemetry::Handle label_obj_finalize;
-    extern Telemetry::Handle label_msg;
-
-    void initialize_telemetry();
     void initialize_telemetry_defuns();
+
+#ifdef DEBUG_TELEMETRY
+#define GC_TELEMETRY0(label) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry,label)
+#define GC_TELEMETRY1(label,arg0) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry,label,(uintptr_t)arg0)
+#define GC_TELEMETRY2(label,arg0,arg1) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry,label,(uintptr_t)arg0,(uintptr_t)arg1)
+#define GC_TELEMETRY3(label,arg0,arg1,arg2) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry,label,(uintptr_t)arg0,(uintptr_t)arg1,(uintptr_t)arg2)
+#else
+#define GC_TELEMETRY0(label)
+#define GC_TELEMETRY1(label,arg0)
+#define GC_TELEMETRY2(label,arg0,arg1)
+#define GC_TELEMETRY3(label,arg0,arg1,arg2)
+#endif    
+#ifdef DEBUG_STACK_TELEMETRY
+#define STACK_TELEMETRY0(label) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry,label)
+#define STACK_TELEMETRY1(label,arg0) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry,label,(uintptr_t)arg0)
+#define STACK_TELEMETRY2(label,arg0,arg1) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry,label,(uintptr_t)arg0,(uintptr_t)arg1)
+#define STACK_TELEMETRY3(label,arg0,arg1,arg2) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry,label,(uintptr_t)arg0,(uintptr_t)arg1,(uintptr_t)arg2)
+#else
+#define STACK_TELEMETRY0(label)
+#define STACK_TELEMETRY1(label,arg0)
+#define STACK_TELEMETRY2(label,arg0,arg1)
+#define STACK_TELEMETRY3(label,arg0,arg1,arg2)
+#endif    
 };
 #endif

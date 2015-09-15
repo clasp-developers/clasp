@@ -201,7 +201,9 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
           mps_frame_t frame_o;
+          STACK_TELEMETRY1(telemetry::label_stack_push_prepare,this->_AllocationPoint);
           mps_res_t respush = mps_ap_frame_push(&frame_o,this->_AllocationPoint);
+          STACK_TELEMETRY2(telemetry::label_stack_push,this->_AllocationPoint,frame_o);
           this->frames.push_back(frame_o);
           if (respush != MPS_RES_OK) {
               THROW_HARD_ERROR(BF("Could not mps_ap_frame_push"));
@@ -216,6 +218,7 @@ namespace gctools {
               allocP = reinterpret_cast<uintptr_t*>(p);
               memset(allocP,0,headerAndFrameSize);
           } while (!mps_commit(this->_AllocationPoint, p, headerAndFrameSize)); /* see note 2 */
+          STACK_TELEMETRY2(telemetry::label_stack_allocate,allocP,headerAndFrameSize);
           DEBUG_MPS_UNDERSCANNING_TESTS();
           FRAME_HEADER_TYPE_FIELD(allocP) = frame_t;
           FRAME_HEADER_SIZE_FIELD(allocP) = headerAndFrameSize;
@@ -264,6 +267,7 @@ namespace gctools {
           this->_TotalSize -= headerAndFrameSize;
           mps_frame_t frame_o = this->frames.back();
           this->frames.pop_back();
+          STACK_TELEMETRY2(telemetry::label_stack_pop,this->_AllocationPoint,frame_o);
           mps_res_t res = mps_ap_frame_pop(this->_AllocationPoint,frame_o);
           if ( res != MPS_RES_OK ) {
               THROW_HARD_ERROR(BF("There was a problem with mps_app_frame_pop"));

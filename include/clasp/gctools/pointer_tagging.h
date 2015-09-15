@@ -296,7 +296,7 @@ ABI's  */
 
   template <class T>
     inline bool tagged_objectp(T ptr) {
-    return tagged_generalp(ptr) || tagged_consp(ptr);
+      return (reinterpret_cast<uintptr_t>(ptr)&pointer_tag_mask)==pointer_tag_eq;
   }
 
   template <class Type>

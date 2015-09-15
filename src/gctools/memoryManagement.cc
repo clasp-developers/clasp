@@ -67,7 +67,7 @@ void handle_signals(int signo) {
   // Indicate that a signal was caught and handle it at a safe-point
   //
   SET_SIGNAL(signo);
-  telemetry::global_telemetry.flush();
+  telemetry::global_telemetry->flush();
   if (signo == SIGABRT && core::_global_debuggerOnSIGABRT) {
     printf("%s:%d Trapped SIGABRT - starting debugger\n", __FILE__, __LINE__);
     core::LispDebugger debugger(_Nil<core::T_O>());
@@ -147,20 +147,20 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 
   setupSignals();
 
+  telemetry::global_telemetry = new telemetry::Telemetry();
+  
   char* clasp_telemetry_mask_string = getenv("CLASP_TELEMETRY_MASK");
   telemetry::global_clasp_telemetry_file = getenv("CLASP_TELEMETRY_FILE");
 
   if ( clasp_telemetry_mask_string ) {
       printf("CLASP_TELEMETRY_MASK= %s\n", clasp_telemetry_mask_string);
     size_t mask = std::stoi(clasp_telemetry_mask_string);
-    telemetry::global_telemetry.set_mask(mask);
+    telemetry::global_telemetry->set_mask(mask);
   }
   if ( telemetry::global_clasp_telemetry_file ) {
       printf("CLASP_TELEMETRY_FILE= %s\n", telemetry::global_clasp_telemetry_file);
-    telemetry::global_telemetry.open_write(telemetry::global_clasp_telemetry_file);
+    telemetry::global_telemetry->open_write(telemetry::global_clasp_telemetry_file);
   }
-  
-  telemetry::initialize_telemetry();
   
 #if defined(USE_MPS)
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
@@ -175,7 +175,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_size);
   int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
-  telemetry::global_telemetry.close();
+  telemetry::global_telemetry->close();
   return exitCode;
 }
 };

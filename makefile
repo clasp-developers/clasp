@@ -167,6 +167,13 @@ devshell:
 	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR) bash)
 
 
+devshell-telemetry:
+	@echo This shell sets up environment variables like BJAM
+	@echo as they are defined when commands execute within the makefile
+	@echo EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_BUILD_TARGET_DIR)
+	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR); export CLASP_MPS_CONFIG="32 32 16 80 32 80"; export CLASP_TELEMETRY_FILE=/tmp/clasp.tel; export CLASP_TELEMETRY_MASK=3; bash)
+
+
 testing:
 	which clang++
 

@@ -201,7 +201,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #undef GC_OBJ_SKIP_TABLE
 #endif
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
-  DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
+  DEBUG_THROW_IF_INVALID_CLIENT(client);
   if (header->kindP()) {
     gctools::GCKindEnum kind = header->kind();
 #ifndef RUNNING_GC_BUILDER
@@ -222,13 +222,10 @@ mps_addr_t obj_skip(mps_addr_t client) {
     THROW_HARD_ERROR(BF("Illegal header at %p") % header);
   }
 DONE:
-#ifdef DEBUG_MPS
-  telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                    telemetry::label_obj_skip,
-                                    (uintptr_t)oldClient,
-                                    (uintptr_t)client,
-                                    (uintptr_t)((char*)client - (char*)oldClient));
-#endif
+  GC_TELEMETRY3(telemetry::label_obj_skip,
+                (uintptr_t)oldClient,
+                (uintptr_t)client,
+                (uintptr_t)((char*)client - (char*)oldClient));
   return client;
 }
 };
@@ -300,20 +297,19 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #undef GC_OBJ_SCAN_TABLE
 #endif
 
-#ifdef DEBUG_MPS
-  telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                    telemetry::label_obj_scan_start,
-                                    (uintptr_t)client,
-                                    (uintptr_t)limit);
-#endif
+    GC_TELEMETRY2(telemetry::label_obj_scan_start,
+                  (uintptr_t)client,
+                  (uintptr_t)limit);
+  mps_addr_t original_client;
+  GCKindEnum kind;
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
     while (client < limit) {
         // The client must have a valid header
-      DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
+      DEBUG_THROW_IF_INVALID_CLIENT(client);
       gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
-      mps_addr_t original_client = (mps_addr_t)client;
+      original_client = (mps_addr_t)client;
       if (header->kindP()) {
-        GCKindEnum kind = header->kind();
+          kind = header->kind();
 #ifndef RUNNING_GC_BUILDER
         goto *(OBJ_SCAN_table[kind]);
 #define GC_OBJ_SCAN
@@ -330,15 +326,12 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         THROW_HARD_ERROR(BF("Illegal header at %p") % header);
       }
     TOP:
+      GC_TELEMETRY3(telemetry::label_obj_scan,
+                    (uintptr_t)original_client,
+                    (uintptr_t)client,
+                    (uintptr_t)kind);
       continue;
     }
-#ifdef DEBUG_MPS
-        telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                          telemetry::label_obj_scan,
-                                          (uintptr_t)original_client,
-                                          (uintptr_t)client,
-                                          (uintptr_t)kind);
-#endif
   }
   MPS_SCAN_END(GC_SCAN_STATE);
   return MPS_RES_OK;
@@ -348,7 +341,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #define GC_FINALIZE_METHOD
 void obj_finalize(mps_addr_t client) {
   // The client must have a valid header
-  DEBUG_MPS_THROW_IF_INVALID_CLIENT(client);
+  DEBUG_THROW_IF_INVALID_CLIENT(client);
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_FINALIZE_TABLE
 #include <clasp/main/clasp_gc.cc>
@@ -358,11 +351,8 @@ void obj_finalize(mps_addr_t client) {
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
   ASSERTF(header->kindP(), BF("obj_finalized called without a valid object"));
   gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
-#ifdef DEBUG_MPS
-        telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                          telemetry::label_obj_finalize,
-                                          (uintptr_t)client);
-#endif
+  GC_TELEMETRY1(telemetry::label_obj_finalize,
+                (uintptr_t)client);
 #ifndef RUNNING_GC_BUILDER
   goto *(OBJ_FINALIZE_table[kind]);
 #define GC_OBJ_FINALIZE
@@ -382,10 +372,7 @@ void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr) {
 
 mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-#ifdef DEBUG_MPS
-  telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                    telemetry::label_root_scan_start );
-#endif
+      GC_TELEMETRY0(telemetry::label_root_scan_start );
     for (auto &it : globalLoadTimeValuesRoots) {
       SIMPLE_POINTER_FIX(*it);
     }
@@ -496,10 +483,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 
   }
   MPS_SCAN_END(GC_SCAN_STATE);
-#ifdef DEBUG_MPS
-  telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                    telemetry::label_root_scan_stop);
-#endif
+  GC_TELEMETRY0(telemetry::label_root_scan_stop);
   return MPS_RES_OK;
 }
 };

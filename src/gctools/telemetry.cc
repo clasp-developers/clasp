@@ -8,14 +8,22 @@
 namespace telemetry {
 
 
-Telemetry global_telemetry_search;
+Telemetry* global_telemetry_search = NULL;
+
+    void throw_if_invalid_global_telemetry_search()
+    {
+        if (global_telemetry_search==NULL) {
+            SIMPLE_ERROR(BF("No global_telemetry_search has been defined - use telemetry-open"));
+        }
+    }
 
 #define ARGS_core_telemetry_open "(pathname)"
 #define DECL_core_telemetry_open ""
 #define DOCS_core_telemetry_open ""
 void core_telemetry_open(core::T_sp pathname) {
   core::Str_sp filename = core::cl_namestring(pathname);
-  global_telemetry_search.open_read(filename->c_str());
+  global_telemetry_search = new Telemetry();
+  global_telemetry_search->open_read(filename->c_str());
 }
 #define MAX_WORDS 16
 
@@ -27,11 +35,12 @@ void core_telemetry_open(core::T_sp pathname) {
 #define DECL_core_telemetry_search ""
 #define DOCS_core_telemetry_search ""
 void core_telemetry_search(core::List_sp addresses) {
-  global_telemetry_search.seek0();
+    throw_if_invalid_global_telemetry_search();
+  global_telemetry_search->seek0();
   size_t prev, cur;
   Telemetry::Header header;
   std::vector<std::string> results;
-  std::vector<Telemetry::Word> tests;
+  std::vector<Word> tests;
   for ( auto it : addresses ) {
     core::T_sp address = oCar(it);
     if ( !address.fixnump() ) {
@@ -39,17 +48,17 @@ void core_telemetry_search(core::List_sp addresses) {
     }
     tests.push_back(address.unsafe_fixnum() & (~0x7));
   }
-  Telemetry::Handle label;
-  Telemetry::Word data[MAX_WORDS];
+  Handle label;
+  Word data[MAX_WORDS];
   while (1) {
-      bool read = global_telemetry_search.read_header(header);
+      bool read = global_telemetry_search->read_header(header);
       if ( !read ) break;
-      if ( global_telemetry_search.process_header(header) ) continue;
-      size_t num_read = global_telemetry_search.read_data(label,MAX_WORDS,data);
+      if ( global_telemetry_search->process_header(header) ) continue;
+      size_t num_read = global_telemetry_search->read_data(label,MAX_WORDS,data);
       for ( int i(0); i<num_read; ++i ) {
           for ( auto it : tests ) {
               if ( it == CANONICAL_POINTER(data[i]) ) {
-                  std::string entry = global_telemetry_search.entry_as_string(label,num_read,data);
+                  std::string entry = global_telemetry_search->entry_as_string(label,num_read,data);
                   results.push_back(entry);
               }
           }
@@ -64,11 +73,12 @@ void core_telemetry_search(core::List_sp addresses) {
 #define DECL_core_telemetry_search_labels ""
 #define DOCS_core_telemetry_search_labels ""
 void core_telemetry_search_labels(core::List_sp labels) {
-  global_telemetry_search.seek0();
+    throw_if_invalid_global_telemetry_search();
+  global_telemetry_search->seek0();
   size_t prev, cur;
   Telemetry::Header header;
   std::vector<std::string> results;
-  std::vector<Telemetry::Word> tests;
+  std::vector<Word> tests;
   for ( auto it : labels ) {
     core::T_sp address = oCar(it);
     if ( !address.fixnump() ) {
@@ -76,18 +86,18 @@ void core_telemetry_search_labels(core::List_sp labels) {
     }
     tests.push_back(address.unsafe_fixnum() & (~0x7));
   }
-  Telemetry::Handle label;
-  Telemetry::Word data[MAX_WORDS];
+  Handle label;
+  Word data[MAX_WORDS];
   size_t index=0, pos;
   while (1) {
-      bool read = global_telemetry_search.read_header(header);
+      bool read = global_telemetry_search->read_header(header);
       if ( !read ) break;
-      if ( global_telemetry_search.process_header(header) ) continue;
-      size_t num_read = global_telemetry_search.read_data(label,MAX_WORDS,data);
+      if ( global_telemetry_search->process_header(header) ) continue;
+      size_t num_read = global_telemetry_search->read_data(label,MAX_WORDS,data);
       for ( int i(0); i<num_read; ++i ) {
           for ( auto it : tests ) {
               if ( it == label ) {
-                  std::string entry = global_telemetry_search.entry_as_string(label,num_read,data);
+                  std::string entry = global_telemetry_search->entry_as_string(label,num_read,data);
                   results.push_back(entry);
               }
           }
@@ -103,22 +113,23 @@ void core_telemetry_search_labels(core::List_sp labels) {
 #define DECL_core_telemetry_follow ""
 #define DOCS_core_telemetry_follow ""
     void core_telemetry_follow(core::T_sp address) {
-        global_telemetry_search.seek0();
+    throw_if_invalid_global_telemetry_search();
+        global_telemetry_search->seek0();
         size_t prev, cur;
         Telemetry::Header header;
         std::vector<std::string> results;
-        std::vector<Telemetry::Word> tests;
+        std::vector<Word> tests;
         if ( !address.fixnump() ) {
             SIMPLE_ERROR(BF("Input must be fixnum"));
         }   
         tests.push_back(address.unsafe_fixnum() & (~0x7));
-        Telemetry::Handle label;
-        Telemetry::Word data[MAX_WORDS];
+        Handle label;
+        Word data[MAX_WORDS];
         while (1) {
-            bool read = global_telemetry_search.read_header(header);
+            bool read = global_telemetry_search->read_header(header);
             if ( !read ) break;
-            if ( global_telemetry_search.process_header(header) ) continue;
-            size_t num_read = global_telemetry_search.read_data(label,MAX_WORDS,data);
+            if ( global_telemetry_search->process_header(header) ) continue;
+            size_t num_read = global_telemetry_search->read_data(label,MAX_WORDS,data);
             for ( auto it : tests ) {
                 if ( label == label_obj_fwd ) {
                     if ( it == CANONICAL_POINTER(data[0]) ) {
@@ -134,7 +145,7 @@ void core_telemetry_search_labels(core::List_sp labels) {
             }
             continue;
         SAVE_RESULT:
-            std::string entry = global_telemetry_search.entry_as_string(label,num_read,data);
+            std::string entry = global_telemetry_search->entry_as_string(label,num_read,data);
             results.push_back(entry);
         }
         for ( auto& it: results ) {
@@ -146,8 +157,9 @@ void core_telemetry_search_labels(core::List_sp labels) {
 #define DECL_core_telemetry_labels ""
 #define DOCS_core_telemetry_labels ""
 void core_telemetry_labels() {
-    for ( int i(0); i< global_telemetry_search._Labels.size(); ++i ) {
-        printf("[%d] %s\n", i, global_telemetry_search._Labels[i].c_str());
+    throw_if_invalid_global_telemetry_search();
+    for ( int i(0); i< global_telemetry_search->_Labels.size(); ++i ) {
+        printf("[%d] %s\n", i, global_telemetry_search->_Labels[i].c_str());
     }
 }
 
@@ -156,6 +168,7 @@ void core_telemetry_labels() {
 #define DECL_core_telemetry_dump ""
 #define DOCS_core_telemetry_dump ""
 void core_telemetry_dump(core::T_sp begin, core::T_sp end) {
+    throw_if_invalid_global_telemetry_search();
   if ( !begin.fixnump() ) {
     SIMPLE_ERROR(BF("begin must be a FIXNUM"));
   }
@@ -168,19 +181,19 @@ void core_telemetry_dump(core::T_sp begin, core::T_sp end) {
   } else {
     SIMPLE_ERROR(BF("Illegal value for end"));
   }
-  global_telemetry_search.seek0();
+  global_telemetry_search->seek0();
   size_t cur;
   Telemetry::Header header;
-  Telemetry::Handle label;
-  Telemetry::Word data[MAX_WORDS];
+  Handle label;
+  Word data[MAX_WORDS];
   while (1) {
-      bool read = global_telemetry_search.read_header(header);
+      bool read = global_telemetry_search->read_header(header);
       if ( !read ) break;
-      if ( global_telemetry_search.process_header(header) ) continue;
-      size_t num_read = global_telemetry_search.read_data(label,MAX_WORDS,data);
-      if ( global_telemetry_search._Index < fn_begin ) continue;
-      if ( global_telemetry_search._Index > fn_end ) break;
-      std::string entry = global_telemetry_search.entry_as_string(label,num_read,data);
+      if ( global_telemetry_search->process_header(header) ) continue;
+      size_t num_read = global_telemetry_search->read_data(label,MAX_WORDS,data);
+      if ( global_telemetry_search->_Index < fn_begin ) continue;
+      if ( global_telemetry_search->_Index > fn_end ) break;
+      std::string entry = global_telemetry_search->entry_as_string(label,num_read,data);
       printf("%s\n", entry.c_str() );
   }
 }
@@ -189,43 +202,30 @@ void core_telemetry_dump(core::T_sp begin, core::T_sp end) {
 #define DECL_core_telemetry_count ""
 #define DOCS_core_telemetry_count ""
   size_t core_telemetry_count() {
-      global_telemetry_search.seek0();
+    throw_if_invalid_global_telemetry_search();
+      global_telemetry_search->seek0();
   size_t prev, cur;
   Telemetry::Header header;
-  Telemetry::Handle label;
-  Telemetry::Word data[MAX_WORDS];
+  Handle label;
+  Word data[MAX_WORDS];
   while (1) {
-    bool read = global_telemetry_search.read_header(header);
+    bool read = global_telemetry_search->read_header(header);
     if ( !read ) break;
-    if ( global_telemetry_search.process_header(header) ) continue;
-    size_t num_read = global_telemetry_search.read_data(label,MAX_WORDS,data);
+    if ( global_telemetry_search->process_header(header) ) continue;
+    size_t num_read = global_telemetry_search->read_data(label,MAX_WORDS,data);
   }
-  return global_telemetry_search._Index;
+  return global_telemetry_search->_Index;
 }
 
 
 
 
 char* global_clasp_telemetry_file;
-Telemetry global_telemetry;
-Telemetry::Handle label_nop                  =  0;
-Telemetry::Handle label_allocation           =  1;
-Telemetry::Handle label_obj_pad              =  2;
-Telemetry::Handle label_obj_scan_start       =  3;
-Telemetry::Handle label_obj_scan             =  4;
-Telemetry::Handle label_obj_isfwd_true       =  5;
-Telemetry::Handle label_obj_isfwd_false      =  6;
-Telemetry::Handle label_obj_skip             =  7;
-Telemetry::Handle label_obj_fwd              =  8;
-Telemetry::Handle label_obj_finalize         =  9;
-Telemetry::Handle label_root_scan_start      = 10;
-Telemetry::Handle label_root_scan_stop       = 11;
-Telemetry::Handle label_smart_ptr_fix        = 12;
-Telemetry::Handle label_tagged_pointer_fix   = 13;
+Telemetry* global_telemetry = NULL;
 
 std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[])
 {
-  std::string slabel = global_telemetry_search._Labels[label];
+  std::string slabel = global_telemetry_search->_Labels[label];
   char buffer[1024];
   switch (num_read) {
   case 0:
@@ -246,25 +246,35 @@ std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[
   default:
       sprintf(buffer,"Add support for %d arguments", num_read);
   }
-  return std::string(buffer);
+  stringstream ss;
+  ss << "[" << this->_Index << "] fp: " << std::hex << this->_ThisRecordPos << " : " << buffer;
+  return ss.str();
 }
 
 void Telemetry::initialize() {
-  global_telemetry.intern_predefined(label_nop,"telemetry nop");
-  global_telemetry.intern_predefined(label_allocation,"mps_allocation client@%p client_end@%p kind: %lu");
-  global_telemetry.intern_predefined(label_obj_pad,"obj_pad base@%p size: %lu");
-  global_telemetry.intern_predefined(label_obj_scan_start,"obj_scan_start client@%p limit@%p");
-  global_telemetry.intern_predefined(label_obj_scan,"obj_scan client@%p after_client@%p kind: %lu");
-  global_telemetry.intern_predefined(label_obj_isfwd_true,"obj_isfwd == TRUE client@%p base@%p forward@%p");
-  global_telemetry.intern_predefined(label_obj_isfwd_false,"obj_isfwd == FALSE client@%p base@%p");
-  global_telemetry.intern_predefined(label_obj_pad,"obj_pad base@%p size: %lu");
-  global_telemetry.intern_predefined(label_obj_fwd,"obj_fwd old-client@%p new-client@%p");
-  global_telemetry.intern_predefined(label_obj_skip,"obj_skip in-client@%p  out-client@%p size=%lu");
-  global_telemetry.intern_predefined(label_obj_finalize,"obj_finalize addr@%p");
-  global_telemetry.intern_predefined(label_root_scan_start,"root_scan_start");
-  global_telemetry.intern_predefined(label_root_scan_stop,"root_scan_stop");
-  global_telemetry.intern_predefined(label_smart_ptr_fix,"smart_ptr_fix before@%p after@%p");
-  global_telemetry.intern_predefined(label_tagged_pointer_fix,"tagged_pointer_fix before@%p after@%p");
+    this->intern("telemetry undefined label", label_undefined);
+    this->intern("mps_allocation client@%p client_end@%p kind: %lu", label_allocation);
+    this->intern("obj_pad base@%p size: %lu", label_obj_pad);
+    this->intern("obj_scan_start client@%p limit@%p", label_obj_scan_start);
+    this->intern("obj_scan client@%p after_client@%p kind: %lu", label_obj_scan);
+    this->intern("obj_isfwd == TRUE client@%p base@%p forward@%p", label_obj_isfwd_true);
+    this->intern("obj_isfwd == FALSE client@%p base@%p", label_obj_isfwd_false);
+    this->intern("obj_skip in-client@%p  out-client@%p size=%lu", label_obj_skip);
+    this->intern("obj_fwd old-client@%p new-client@%p", label_obj_fwd);
+    this->intern("obj_finalize addr@%p", label_obj_finalize);
+    this->intern("root_scan_start", label_root_scan_start);
+    this->intern("root_scan_stop", label_root_scan_stop);
+    this->intern("smart_ptr_fix ptr@%p value before@%p after@%p", label_smart_ptr_fix);
+    this->intern("tagged_pointer_fix ptr@%p value before@%p after@%p", label_tagged_pointer_fix);
+    this->intern("Message address: %p value: %lu", label_msg);
+    this->intern("label_stack_frame_scan_start", label_stack_frame_scan_start);
+    this->intern("label_stack_frame_scan", label_stack_frame_scan);
+    this->intern("label_stack_push_prepare", label_stack_push_prepare);
+    this->intern("label_stack_push", label_stack_push);
+    this->intern("label_stack_allocate", label_stack_allocate);
+    this->intern("label_stack_pop", label_stack_pop);
+    this->intern("label_stack_frame_skip", label_stack_frame_skip);
+    this->intern("label_stack_frame_pad", label_stack_frame_pad);
 };
 
 void initialize_telemetry_defuns() {

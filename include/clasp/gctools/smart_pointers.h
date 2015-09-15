@@ -126,9 +126,9 @@ namespace gctools {
     }
 
   /*! Dereferencing operator - remove the other tag */
-    inline Type *operator->() { return this->untag_object(); };
-    inline Type *operator->() const { return this->untag_object(); };
-    inline Type &operator*() const { return *this->untag_object(); };
+    inline Type *operator->() { GCTOOLS_ASSERT(this->theObject);return this->untag_object(); };
+    inline Type *operator->() const { GCTOOLS_ASSERT(this->theObject);return this->untag_object(); };
+      inline Type &operator*() const { GCTOOLS_ASSERT(this->theObject);return *this->untag_object(); };
 
     Type *get() const { return this->untag_object(); };
     bool _NULLp() const { return this->theObject == NULL; };
@@ -311,16 +311,19 @@ namespace gctools {
 
   /*! Dereferencing operator - remove the other tag */
     Type *operator->() {
+        GCTOOLS_ASSERT(this->theObject);
       GCTOOLS_ASSERT(this->generalp());
       return untag_general(this->theObject);
     };
 
     Type *operator->() const {
+        GCTOOLS_ASSERT(this->theObject);
       GCTOOLS_ASSERT(this->generalp());
       return untag_general(this->theObject);
     };
 
     Type &operator*() const {
+        GCTOOLS_ASSERT(this->theObject);
       GCTOOLS_ASSERT(this->objectp());
       return *(this->untag_object());
     };

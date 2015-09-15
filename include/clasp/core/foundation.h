@@ -91,7 +91,7 @@ class type_info;
 //! Macro for attribute that causes symbols to be exposed
 #define ATTR_WEAK __attribute__((weak))
 
-#if defined(DEBUG_MPS)
+#if defined(DEBUG_TELEMETRY)
 #define DEBUG_MPS_ALLOCATION(poolName, addr, gcobject_addr, size, kind) clasp_mps_debug_allocation(poolName, addr, gcobject_addr, size, kind)
 #else
 #define DEBUG_MPS_ALLOCATION(poolName, addr, gcobject_addr, size, kind)

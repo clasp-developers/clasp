@@ -51,10 +51,10 @@ namespace gctools {
 #else
 #define DEBUG_MPS_UNDERSCANNING_TESTS()
 #endif
-#ifdef DEBUG_MPS
-  #define DEBUG_MPS_THROW_IF_INVALID_CLIENT(c) throwIfInvalidClient(reinterpret_cast<core::T_O*>(c))
+#ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
+  #define DEBUG_THROW_IF_INVALID_CLIENT(c) throwIfInvalidClient(reinterpret_cast<core::T_O*>(c))
 #else
-  #define DEBUG_MPS_THROW_IF_INVALID_CLIENT(c)
+  #define DEBUG_THROW_IF_INVALID_CLIENT(c)
 #endif
   
 struct MpsMetrics {
@@ -438,13 +438,7 @@ template <typename T>
 class smart_ptr;
 };
 
-#if 1
-inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged* taggedP
-#ifdef DEBUG_MPS
-                             ,
-                             const char *sptr_name
-#endif
-                             ) {
+inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged* taggedP) {
   if (gctools::tagged_objectp(*taggedP)) {
     gctools::Tagged tagged_obj = *taggedP;
     if (MPS_FIX1(_ss, tagged_obj)) {
@@ -454,13 +448,13 @@ inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_
       mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
       if (res != MPS_RES_OK) return res;
       obj = obj | tag;
-#ifdef DEBUG_MPS
-      if ( obj != tagged_obj ) {
-        telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                          telemetry::label_smart_ptr_fix,
-                                          (uintptr_t)taggedP,
-                                          (uintptr_t)tagged_obj,
-                                          (uintptr_t)obj);
+#ifdef DEBUG_TELEMETRY
+      // Telemetry only on pointer fixes that change
+      if ( tagged_obj != obj ) {
+          GC_TELEMETRY3(telemetry::label_smart_ptr_fix,
+                        (uintptr_t)taggedP,
+                        (uintptr_t)tagged_obj,
+                        (uintptr_t)obj);
       }
 #endif
       *taggedP = obj;
@@ -468,54 +462,10 @@ inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_
   };
   return MPS_RES_OK;
 };
-#else
-#error "I thought I wasn't using the shield remove code anymore - if I am then replicate the structure above into the code below"
-template <typename T>
-inline mps_res_t smartPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, const gctools::smart_ptr<T> *sptrP
-#ifdef DEBUG_MPS
-                             ,
-                             const char *sptr_name
-#endif
-                             ) {
-  DEBUG_MPS_MESSAGE(boost::format("SMART_PTR_FIX of %s@%p px: %p") % sptr_name % (sptrP) % (sptrP)->px_ref());
-  if (sptrP->pointerp()) {
-    if (MPS_FIX1(_ss, (sptrP)->px_ref())) {
-      Seg seg;
-      mps_addr_t client;
-      if (SegOfAddr(&seg, gctools::_global_arena, sptrP->px_ref())) {
-        ShieldExpose(gctools::_global_arena, seg);
-        client = dynamic_cast<void *>(sptrP->px_ref());
-        ShieldCover(gctools::_global_arena, seg);
-      } else {
-        THROW_HARD_ERROR(BF("SegOfAddr for address: %p failed - this should never happen") % sptrP->px_ref());
-      }
-      int offset = reinterpret_cast<char *>((sptrP)->px_ref()) - reinterpret_cast<char *>(client);
-      DEBUG_MPS_MESSAGE(boost::format("  px_ref()=%p client=%p  offset=%d  Seg=%p") % sptrP->px_ref() % client % offset % seg);
-      mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&client));
-      DEBUG_MPS_MESSAGE(boost::format("  new client=%p") % client);
-      if (res != MPS_RES_OK)
-        return res;
-      mps_addr_t new_obj = reinterpret_cast<void *>(reinterpret_cast<char *>(client) + offset);
-      DEBUG_MPS_MESSAGE(boost::format("  old_obj=%p  new_obj = %p\n") % (sptrP->px_ref()) % new_obj);
-      (sptrP)->_pxset(new_obj);
-    }
-  };
-  return MPS_RES_OK;
-};
-#endif
 
-#ifdef DEBUG_MPS
-#define SMART_PTR_FIX(_smartptr_) taggedPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged*>(&((_smartptr_).rawRef_())), #_smartptr_)
-#else
 #define SMART_PTR_FIX(_smartptr_) taggedPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged*>(&((_smartptr_).rawRef_())))
-#endif
 
-inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged* taggedP
-#ifdef DEBUG_MPS
-                        ,
-                        const char *client_name
-#endif
-                        ) {
+inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged* taggedP) {
   if ( gctools::tagged_objectp(*taggedP)) {
     gctools::Tagged tagged_obj = *taggedP;
     if (MPS_FIX1(_ss, tagged_obj)) {
@@ -524,13 +474,13 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
       mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
       if (res != MPS_RES_OK) return res;
       obj = obj | tag;
-#ifdef DEBUG_MPS
-      if ( obj != tagged_obj ) {
-        telemetry::global_telemetry.write(telemetry::Telemetry::GC_telemetry,
-                                          telemetry::label_tagged_pointer_fix,
-                                          (uintptr_t)taggedP,
-                                          (uintptr_t)tagged_obj,
-                                          (uintptr_t)obj);
+#ifdef DEBUG_TELEMETRY
+      // Telemetry only on pointer fixes that change
+      if ( tagged_obj != obj ) {
+          GC_TELEMETRY3(telemetry::label_tagged_pointer_fix,
+                        (uintptr_t)taggedP,
+                        (uintptr_t)tagged_obj,
+                        (uintptr_t)obj);
       }
 #endif
       *taggedP = obj;
@@ -546,13 +496,8 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
   };
   return MPS_RES_OK;
 };
-#ifdef DEBUG_MPS
-#define TAGGED_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged*>(&(_ptr_).rawRef_()), #_ptr_)
-#define SIMPLE_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged*>(&_ptr_), #_ptr_)
-#else
 #define TAGGED_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged*>(&(_ptr_).rawRef_()))
 #define SIMPLE_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged*>(&_ptr_))
-#endif
 
 namespace gctools {
 

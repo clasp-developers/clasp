@@ -173,7 +173,10 @@ struct BucketsBase : public WeakObject {
     gctools::smart_ptr<core::Fixnum_I> _deleted; /* number of deleted buckets (tagged) */
     T bucket[0];                                 /* hash buckets */
 
-    void* dependentPtr() const { return reinterpret_cast<void*>(&*this->dependent); };
+    void* dependentPtr() const { 
+        if ( this->dependent ) return reinterpret_cast<void*>(&*this->dependent); 
+        return NULL;
+    };
 
 
     int length() const {
@@ -380,7 +383,10 @@ struct BucketsBase : public WeakObject {
         MappingBase(const T &val) : WeakObject(WeakMappingKind), bucket(val){};
         virtual ~MappingBase(){};
         typedef T value_type;
-        void *dependentPtr() const { return reinterpret_cast<void *>(&*this->dependent); };
+        void *dependentPtr() const { 
+            if (this->dependent) return reinterpret_cast<void *>(&*this->dependent); 
+            return NULL;
+        };
         typedef gctools::tagged_pointer<MappingBase<U, T>> dependent_type;
         dependent_type dependent; /* the dependent object */
         T bucket;                     /* single buckets */
