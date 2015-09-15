@@ -267,14 +267,14 @@ void Telemetry::initialize() {
     this->intern("smart_ptr_fix ptr@%p value before@%p after@%p", label_smart_ptr_fix);
     this->intern("tagged_pointer_fix ptr@%p value before@%p after@%p", label_tagged_pointer_fix);
     this->intern("Message address: %p value: %lu", label_msg);
-    this->intern("label_stack_frame_scan_start", label_stack_frame_scan_start);
-    this->intern("label_stack_frame_scan", label_stack_frame_scan);
-    this->intern("label_stack_push_prepare", label_stack_push_prepare);
-    this->intern("label_stack_push", label_stack_push);
-    this->intern("label_stack_allocate", label_stack_allocate);
-    this->intern("label_stack_pop", label_stack_pop);
-    this->intern("label_stack_frame_skip", label_stack_frame_skip);
-    this->intern("label_stack_frame_pad", label_stack_frame_pad);
+    this->intern("label_stack_frame_scan_start base@%p limit@%p", label_stack_frame_scan_start);
+    this->intern("label_stack_frame_scan base@%p base_end@%p type=%lu", label_stack_frame_scan);
+    this->intern("label_stack_push_prepare ap@%p", label_stack_push_prepare);
+    this->intern("label_stack_push ap@%p frame@%p", label_stack_push);
+    this->intern("label_stack_allocate alloc@%p size: %lu", label_stack_allocate);
+    this->intern("label_stack_pop ap@%p pframe@%p", label_stack_pop);
+    this->intern("label_stack_frame_skip base@%p base_end@%p size: %lu", label_stack_frame_skip);
+    this->intern("label_stack_frame_pad  base@%p size: %lu", label_stack_frame_pad);
 };
 
 void initialize_telemetry_defuns() {
