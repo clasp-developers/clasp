@@ -127,3 +127,13 @@
   `(with-standard-io-syntax
      (let ((*print-circle* t))
        ,@body)))
+
+
+(defmacro interpreter-trace (name)
+  (if (null *interpreter-trace*)
+      (setq *interpreter-trace* (make-hash-table)))
+  (hash-table-setf-gethash *interpreter-trace* name t))
+
+(defmacro interpreter-untrace (name)
+  (if *interpreter-trace*
+      (remhash name *interpreter-trace*)))

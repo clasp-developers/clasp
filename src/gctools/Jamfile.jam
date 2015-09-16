@@ -34,7 +34,7 @@ local sources =
         globals.cc
         gcStack.cc
         telemetry.cc
-#        gcalloc.cc
+        gcalloc.cc
         gcweak.cc
 #        memoryRefSearch.c
 	memoryManagement.cc

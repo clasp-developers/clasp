@@ -17037,4 +17037,5 @@ static void* OBJ_FINALIZE_table[] = { NULL
  SMART_PTR_FIX(llvmo::_sym_VendorType_Freescale);
  SMART_PTR_FIX(core::_sym_process_macro_lambda_list);
  SMART_PTR_FIX(core::_sym_makeRegex);
+ SMART_PTR_FIX(core::_sym_STARinterpreterTraceSTAR);
 #endif // defined(GC_GLOBAL_SYMBOLS)

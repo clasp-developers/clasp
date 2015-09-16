@@ -183,72 +183,7 @@ namespace gctools {
         return (int)(FRAME_HEADER_SIZE_FIELD(frameImplHeader)-FRAME_HEADER_SIZE);
       }
 
-      void* pushFrameImpl(size_t frameSize) {
-          frameSize = STACK_ALIGN_UP(frameSize);
-          uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE + frameSize;
-#ifdef USE_BOEHM
-#ifdef BOEHM_ONE_BIG_STACK
-          uintptr_t* headerAndFrame = (uintptr_t*)this->_StackTop;
-          this->_StackTop = (uintptr_t*)((char*)this->_StackTop+headerAndFrameSize);
-#else
-          uintptr_t* headerAndFrame = (uintptr_t*)GC_MALLOC(headerAndFrameSize);
-#endif
-          FRAME_HEADER_TYPE_FIELD(headerAndFrame) = frame_t;
-          FRAME_HEADER_SIZE_FIELD(headerAndFrame) = headerAndFrameSize;
-          void* frameStart = headerAndFrame + 1; // skip uintptr_t header
-          this->_TotalSize += headerAndFrameSize;
-          goto DONE;
-#endif
-#ifdef USE_MPS
-          mps_frame_t frame_o;
-          STACK_TELEMETRY7(telemetry::label_stack_push_prepare,
-                           this->_AllocationPoint,
-                           this->_AllocationPoint->init,
-                           this->_AllocationPoint->alloc,
-                           this->_AllocationPoint->limit,
-                           this->_AllocationPoint->_frameptr,
-                           this->_AllocationPoint->_enabled,
-                           this->_AllocationPoint->_lwpoppending);
-          mps_res_t respush = mps_ap_frame_push(&frame_o,this->_AllocationPoint);
-          if (respush != MPS_RES_OK) {
-              printf("%s:%d There was a problem with mps_ap_frame_push result=%d\n", __FILE__, __LINE__, respush);
-              abort();
-          }
-          this->frames.push_back(frame_o);
-          STACK_TELEMETRY3(telemetry::label_stack_push,this->_AllocationPoint,frame_o,this->frames.size());
-          if (respush != MPS_RES_OK) {
-              THROW_HARD_ERROR(BF("Could not mps_ap_frame_push"));
-          }
-          mps_addr_t p;
-          uintptr_t* allocP;
-          do {
-              mps_res_t res = mps_reserve(&p, this->_AllocationPoint, headerAndFrameSize);
-              if (res != MPS_RES_OK) {
-                  THROW_HARD_ERROR(BF("Out of memory in GCStack::allocateFrame"));
-              }
-              allocP = reinterpret_cast<uintptr_t*>(p);
-              memset(allocP,0,headerAndFrameSize);
-          } while (!mps_commit(this->_AllocationPoint, p, headerAndFrameSize)); /* see note 2 */
-          STACK_TELEMETRY2(telemetry::label_stack_allocate,allocP,headerAndFrameSize);
-          DEBUG_MPS_UNDERSCANNING_TESTS();
-          FRAME_HEADER_TYPE_FIELD(allocP) = frame_t;
-          FRAME_HEADER_SIZE_FIELD(allocP) = headerAndFrameSize;
-          void* frameStart = FRAME_START(allocP); // skip uintptr_t header
-          this->_TotalSize += headerAndFrameSize;
-          goto DONE;
-#endif
-      DONE:
-#if defined(BEOHM_ONE_BIG_STACK) && defined(USE_BOEHM) && defined(DEBUG_BOEHM_STACK)
-          size_t calcSize = (char*)this->_StackTop - (char*)this->_StackBottom;
-          if ( calcSize != this->_TotalSize ) {
-              THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize );
-          }
-#endif
-          if ( this->_TotalSize > this->_MaxSize ) {
-              this->_MaxSize = this->_TotalSize;
-          }
-          return frameStart;
-      }
+      void* pushFrameImpl(size_t frameSize);
       void popFrameImpl(void* frameImpl) {
 #ifdef USE_BOEHM
           uintptr_t* frameHeaderP = reinterpret_cast<uintptr_t*>(frameImpl)-1;

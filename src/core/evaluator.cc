@@ -2153,6 +2153,17 @@ T_mv cl_apply(T_sp head, T_sp args) {
     return t1Evaluate(form, env);
   }
 
+
+int global_interpreter_trace_depth = 0;
+struct InterpreterTrace {
+  InterpreterTrace() {
+    ++global_interpreter_trace_depth;
+  };
+  ~InterpreterTrace() {
+    --global_interpreter_trace_depth;
+  };
+};
+
   T_mv evaluate(T_sp exp, T_sp environment) {
   //	    Environment_sp localEnvironment = environment;
   //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
@@ -2216,7 +2227,22 @@ T_mv cl_apply(T_sp head, T_sp args) {
 		    */
         T_sp expanded = _Nil<T_O>();
         try {
+#if 1
+          if ( _sym_STARinterpreterTraceSTAR->symbolValue().notnilp() ) {
+            if ( gc::As<HashTable_sp>(_sym_STARinterpreterTraceSTAR->symbolValue())->gethash(headSym).notnilp()) {
+              InterpreterTrace itrace;
+              printf("eval::evaluate Trace [%d] macroexpand > %s\n", global_interpreter_trace_depth, _rep_(form).c_str() );
+              expanded = cl_macroexpand(form, environment);
+              printf("eval::evaluate Trace [%d] < (%s ...)\n", global_interpreter_trace_depth, _rep_(headSym).c_str() );
+            } else {
+              expanded = cl_macroexpand(form, environment);
+            }
+          } else {
+            expanded = cl_macroexpand(form, environment);
+          }
+#else
           expanded = cl_macroexpand(form, environment);
+#endif
           if (_evaluateVerbosity > 0) {
             string es = _rep_(expanded);
             printf("core::eval::evaluate expression is macro - expanded --> %s\n", es.c_str());
@@ -2248,7 +2274,22 @@ T_mv cl_apply(T_sp head, T_sp args) {
       VaList_S valist_struct(callArgs);
       VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
       Function_sp headFunc = gc::As<Function_sp>(theadFunc);
-      result = eval::apply_consume_VaList(headFunc,valist);
+      if ( _sym_STARinterpreterTraceSTAR->symbolValue().notnilp() ) {
+        if ( gc::As<HashTable_sp>(_sym_STARinterpreterTraceSTAR->symbolValue())->gethash(headSym).notnilp()) {
+          InterpreterTrace itrace;
+          printf("eval::evaluate Trace [%d] > (%s ", global_interpreter_trace_depth, _rep_(headSym).c_str() );
+          for ( int i(0), iEnd(nargs); i<iEnd; ++i ) {
+            printf("%s ", _rep_(T_sp((gc::Tagged)callArgs[i])).c_str());
+          }
+          printf(" )\n");
+          result = eval::apply_consume_VaList(headFunc,valist);
+          printf("eval::evaluate Trace [%d] < (%s ...)\n", global_interpreter_trace_depth, _rep_(headSym).c_str() );
+        } else {
+          result = eval::apply_consume_VaList(headFunc,valist);
+        }
+      } else {
+        result = eval::apply_consume_VaList(headFunc,valist);
+      }
       goto DONE;
     }
     {

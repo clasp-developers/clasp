@@ -54,7 +54,7 @@ stripped-bitcode intrinsics_bitcode_boehm : intrinsics.cc
 
 explicit intrinsics_bitcode_boehm ;
 
-obj intrinsics_bitcode_mps : intrinsics.cc
+stripped-bitcode intrinsics_bitcode_mps : intrinsics.cc
 	/internals/core//core
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib
@@ -67,7 +67,7 @@ obj intrinsics_bitcode_mps : intrinsics.cc
 
 explicit intrinsics_bitcode_mps ;
 
-obj intrinsics_bitcode_mps_prep : intrinsics.cc
+stripped-bitcode intrinsics_bitcode_mps_prep : intrinsics.cc
 	/internals/core//core
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib

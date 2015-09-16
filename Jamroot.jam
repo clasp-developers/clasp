@@ -108,7 +108,7 @@ project clasp : requirements
 ### exactly how many bytes are CONSed by Clasp
 ### Compiling min-boehm-recompile with it defined 4:54 min and off 4.56 min
 ### so it has no significant impact at this stage
-         <define>TRACK_ALLOCATIONS   # this may slow down allocation
+#         <define>TRACK_ALLOCATIONS   # this may slow down allocation
 #         <define>DEBUG_FLOW_CONTROL  # use with core::*debug-flow-control* to print flow control debugging
 #	 <define>DEBUG_GCWEAK    # Debug the Weak pointer code
 #        <define>DEBUG_TRYSET    #    Define this if you are using DEBUG_GCWEAK but can be defined alone & with DEBUG_FIND
@@ -118,7 +118,7 @@ project clasp : requirements
 #	<define>DEBUG_THROW_IF_INVALID_CLIENT_ON      # turns on checks for DEBUG_THROW_IF_INVALID_CLIENT
 #	<define>DEBUG_TELEMETRY      # generate telemetry data for debugging general GC
 #	<define>DEBUG_STACK_TELEMETRY      # generate telemetry data for debugging stack GC
-        <define>MPS_RECOGNIZE_ZERO_TAG   # recognize #b000 as a tagged pointer
+#        <define>MPS_RECOGNIZE_ZERO_TAG   # recognize #b000 as a tagged pointer
 ##### DEBUG_MPS_UNDERSCANNING does a garbage collection after every allocation
 ##### This really, really slows things down
 #        <define>DEBUG_MPS_UNDERSCANNING

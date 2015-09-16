@@ -179,7 +179,6 @@ EXPOSE_CLASS(core, LoadTimeValues_O);
 #define DECL_LoadTimeValues_O_make ""
 #define DOCS_LoadTimeValues_O_make "This is a thin wrapper around VectorObjectsWithFillPtr - it creates a place to store LoadTimeValues"
 LoadTimeValues_sp LoadTimeValues_O::make(int dataDimension, int symbolsDimension) {
-  _G();
   GC_ALLOCATE(LoadTimeValues_O, vo);
   vo->_Objects.resize(dataDimension, _Nil<T_O>());
   vo->_Symbols.resize(symbolsDimension, _Nil<Symbol_O>());

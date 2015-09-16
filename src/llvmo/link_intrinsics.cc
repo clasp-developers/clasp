@@ -60,6 +60,7 @@ extern "C" {
 #include <clasp/llvmo/symbolTable.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/main/gc_interface.fwd.h>
 
 #define	DEBUG_FLOW_CONTROL	1
 
@@ -1317,6 +1318,11 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 
 void getOrCreateLoadTimeValueArray(core::LoadTimeValues_O **ltvPP, const char *moduleName, int numberOfLoadTimeValues, int numberOfLoadTimeSymbols) {
   core::LoadTimeValues_sp loadTimeValues = _lisp->getOrCreateLoadTimeValues(moduleName, numberOfLoadTimeValues, numberOfLoadTimeSymbols);
+  *ltvPP = NULL;
+  printf("%s:%d - I am registering the ltvPP=%p *ltvP=%p as a root in getOrCreateLoadTimeValueArray.\n   I believe this is the best place to do this - I previously did it in finalizeEngineAndRegisterWithGcAndGetCompiledFunction.\n  If this is the best place then remove this notice.",__FILE__,__LINE__, ltvPP, *ltvPP);
+#ifdef USE_MPS
+  registerLoadTimeValuesRoot(ltvPP);
+#endif
   *ltvPP = reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.raw_()); //reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
                                //	printf("%s:%d  getOrCreateLoadTimeValueArray ltvPP=%p  *ltvPP=%p\n", __FILE__, __LINE__, ltvPP, *ltvPP );
 }

@@ -204,8 +204,6 @@ typedef std::size_t class_id;
 #define INTERN_(_p_,_x_) (_p_::_sym_##_x_)
 
 
-/*! Use this here in the header to declare an extern function if you want */
-//#define	EXTERN_FN(x) extern T_sp fn_##x(Function_sp exec, List_sp args, Environment_sp env, Lisp_sp lisp);
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
 #define DEFUN(pkg, x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
@@ -240,7 +238,6 @@ typedef std::size_t class_id;
   _lisp->add_accessor_pair(_sym_##x, _sym_setf_##x);
 #endif
 
-//#define EXTERN_GENERIC(x) extern T_sp gf_##x(Function_sp exec, List_sp args, Environment_sp env, Lisp_sp lisp);
 /*! Use this in initializeCandoPrimitives to define a function
   This is a little more complicated than it needs to be to try and avoid unused variable warnings */
 #define DEFGENERIC(pkg, x) defgeneric(pkg, #x, &gf_##x, ARGS_gf_##x, DOCS_gf_##x, _lisp);
@@ -486,6 +483,8 @@ class FunctionClosure;
 class BuiltinClosure;
 };
 void dbg_hook(const char *errorString);
+
+
 
 namespace core {
 
@@ -796,56 +795,61 @@ typedef gctools::smart_ptr<ActivationFrame_O> ActivationFrame_sp;
 typedef core::T_O **ArgArray;
 
 namespace core {
-class Instance_O;
-typedef gctools::smart_ptr<Instance_O> Instance_sp;
+  class Instance_O;
+  typedef gctools::smart_ptr<Instance_O> Instance_sp;
 
 //    typedef T_mv (*ActivationFrameFunctionPtr)(ActivationFrame_sp);
 
-class Lisp_O;
- typedef gctools::tagged_pointer<Lisp_O> Lisp_sp;
-class Function_O;
-typedef gctools::smart_ptr<Function_O> Function_sp;
-class Str_O;
-typedef gctools::smart_ptr<Str_O> Str_sp;
-class StrWithFillPtr_O;
-typedef gctools::smart_ptr<StrWithFillPtr_O> StrWithFillPtr_sp;
+  class Lisp_O;
+  typedef gctools::tagged_pointer<Lisp_O> Lisp_sp;
+  class Function_O;
+  typedef gctools::smart_ptr<Function_O> Function_sp;
+  class Str_O;
+  typedef gctools::smart_ptr<Str_O> Str_sp;
+  class StrWithFillPtr_O;
+  typedef gctools::smart_ptr<StrWithFillPtr_O> StrWithFillPtr_sp;
 #ifdef USE_HEAP_FIXNUM
-class Fixnum_O;
-typedef gctools::smart_ptr<Fixnum_O> Fixnum_sp;
+  class Fixnum_O;
+  typedef gctools::smart_ptr<Fixnum_O> Fixnum_sp;
 #endif
-class LambdaListHandler_O;
-typedef gctools::smart_ptr<LambdaListHandler_O> LambdaListHandler_sp;
-class Environment_O;
-typedef gctools::smart_ptr<Environment_O> Environment_sp;
-class Symbol_O;
-typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
-typedef void (*ExposeCandoFunction)(Lisp_sp);
-typedef void (*ExposePythonFunction)(Lisp_sp);
-typedef T_mv (*SpecialFormCallback)(List_sp, T_sp);
-typedef void (*MakePackageCallback)(string const &packageName, Lisp_sp);
-typedef void (*ExportSymbolCallback)(Symbol_sp symbol, Lisp_sp);
+  class LambdaListHandler_O;
+  typedef gctools::smart_ptr<LambdaListHandler_O> LambdaListHandler_sp;
+  class Environment_O;
+  typedef gctools::smart_ptr<Environment_O> Environment_sp;
+  class Symbol_O;
+  typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
+  typedef void (*ExposeCandoFunction)(Lisp_sp);
+  typedef void (*ExposePythonFunction)(Lisp_sp);
+  typedef T_mv (*SpecialFormCallback)(List_sp, T_sp);
+  typedef void (*MakePackageCallback)(string const &packageName, Lisp_sp);
+  typedef void (*ExportSymbolCallback)(Symbol_sp symbol, Lisp_sp);
 
-class Package_O;
-typedef gctools::smart_ptr<Package_O> Package_sp;
+  class Package_O;
+  typedef gctools::smart_ptr<Package_O> Package_sp;
 
 /* A few symbols associated with error handling that everything needs */
-extern Symbol_sp _sym_error;
-extern Symbol_sp _sym_setThrowPosition;
-extern Symbol_sp _sym_makeCondition;
-extern Symbol_sp _sym_simpleError;
+  extern Symbol_sp _sym_error;
+  extern Symbol_sp _sym_setThrowPosition;
+  extern Symbol_sp _sym_makeCondition;
+  extern Symbol_sp _sym_simpleError;
 /*! Search for multiple occurances of a string and replace it
  * \param str The string that is modified
  * \param search The string to search for
  * \param replace The string to replace with
  */
-string searchAndReplaceString(const string &str, const string &search, const string &replace, Lisp_sp lisp);
+  string searchAndReplaceString(const string &str, const string &search, const string &replace, Lisp_sp lisp);
 
 /* The CallingConvention for Common Lisp functions is a pointer to where the multiple value result
    should be written, the closed over environment for the function, the number of args, three explicit args that will pass in registers (or be NULL)
    and a varargs list */
-typedef void (*LispCallingConventionPtr)(T_mv *result, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, va_list rest);
+  typedef void (*LispCallingConventionPtr)(T_mv *result, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, va_list rest);
 
 }
+
+
+#include <clasp/core/globals.h>
+
+
 
 namespace kw {
 extern core::Symbol_sp _sym_formatControl;

@@ -211,55 +211,6 @@ void clasp_mps_debug_allocation(const char *poolName, void *base, void *client, 
                   kind);
 }
 
-void clasp_mps_debug_fix1_before(void *base, void *smartAddr) {
-#if defined(USE_MPS)
-  if (!debug_mps)
-    return;
-  printf("clasp_mps_debug_fix1_before  base: %p  smartAddr: %p\n", base, smartAddr);
-#endif
-}
-
-void clasp_mps_debug_fix_before(void *pbase, void *px, int offset) {
-#if defined(USE_MPS)
-#if defined(DEBUG_LOG_MPS_KINDS)
-  if (!debug_mps)
-    return;
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(pbase);
-  const char *kindName = gctools::obj_name((gctools::GCKindEnum)(header->kind._Kind));
-  printf("clasp_mps_debug_fix_before   pbase: %p  px: %p   kind: %s\n", pbase, px, kindName);
-#else
-  printf("clasp_mps_debug_fix_before   pbase: %p  px: %p\n", pbase, px);
-#endif
-#endif
-}
-
-void clasp_mps_debug_fix_after(void *pbase, void *px) {
-#if defined(USE_MPS)
-  if (!debug_mps)
-    return;
-  printf("clasp_mps_debug_fix_after    pbase: %p  px: %p\n", pbase, px);
-#endif
-}
-
-void clasp_mps_debug_scan_object(gctools::GCObject *dobj) {
-#if defined(USE_MPS)
-  if (!debug_mps)
-    return;
-  if (core::T_O *tobj_gc_safe = dynamic_cast<core::T_O *>(dobj)) {
-    gctools::smart_ptr<core::T_O> tsp(tobj_gc_safe);
-    printf("clasp_mps_debug_scan_object   T_O*: %p\n", tobj_gc_safe);
-  }
-#endif
-}
-
-void clasp_mps_debug_container(const char *ctype, const char *name, int size) {
-#if defined(USE_MPS)
-  if (!debug_mps)
-    return;
-  printf("clasp_mps_debug_container   type: %s   name: %s    size: %d\n",
-         ctype, name, size);
-#endif
-};
 
 namespace boost {
 using namespace core;
