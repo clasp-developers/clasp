@@ -237,7 +237,8 @@ LOAD:
   void *handle = dlopen(name.c_str(), mode);
   if (handle == NULL) {
     string error = dlerror();
-    return (Values(_Nil<T_O>(), Str_O::create(error)));
+    SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
+    //    return (Values(_Nil<T_O>(), Str_O::create(error)));
   }
   _lisp->openDynamicLibraryHandles()[name] = handle;
   string mainName = CLASP_MAIN_FUNCTION_NAME;

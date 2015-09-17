@@ -251,7 +251,7 @@
 ||#
 
 (defun link-system-lto (output-pathname
-                        &key (intrinsics-bitcode-path +intrinsics-bitcode-pathname+)
+                        &key (intrinsics-bitcode-path (core:intrinsics-bitcode-pathname))
                           lisp-bitcode-files
                           prologue-form
                           epilogue-form

@@ -192,50 +192,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export 'defconstant)
 
 
-
-;; TODO: Really - find a better way to do this than hard-coding paths
-(defconstant +intrinsics-bitcode-pathname+
-  #+use-boehm "app-resources:lib;release;intrinsics_bitcode_boehm.sbc"
-  #+use-mps "app-resources:lib;release;intrinsics_bitcode_mps.sbc"
-)
-(defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
-(export '(+image-pathname+ +intrinsics-bitcode-pathname+))
-;; +min-image-pathname+ +intrinsics-bitcode-pathname+ +imagelto-pathname+))
-
-;; Don't bother with this test anymore
-#+(or)
-(let ((image-date (file-write-date core:*command-line-image*))
-      (intrinsics-date (file-write-date +intrinsics-bitcode-pathname+)))
-  (if image-date
-      (if intrinsics-date
-          (if (< image-date intrinsics-date)
-              (progn
-                (bformat t "!\n")
-                (bformat t "! WARNING:   The file %s is out of date \n" +image-pathname+ )
-                (bformat t "!            relative to %s\n" +intrinsics-bitcode-pathname+)
-                (bformat t "!\n")
-                (bformat t "!  Solution: Recompile the Common Lisp code\n")
-                (bformat t "!\n")
-                ))
-	(progn
-	  (bformat t "!\n")
-	  (bformat t "! WARNING:   Could not determine file-write-date of %s\n" +intrinsics-bitcode-pathname+)
-	  (bformat t "!\n")
-	  )
-	)
-    (progn
-      (bformat t "!\n")
-      (bformat t "WARNING:   Could not determine file-write-date of %s\n" *command-line-image*)
-      (bformat t "!\n")
-      )
-    ))
-
-
-
-
-
-
-
 (defconstant +ecl-optimization-settings+
   '((optimize (safety 2) (speed 1) (debug 1) (space 1))
     (ext::check-arguments-type nil)))
@@ -451,6 +407,15 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
       (if (eq item (car seq))
           t
           (recursive-find item (cdr seq)))))
+
+
+(defun build-intrinsics-bitcode-pathname ()
+  (if (recursive-find :use-mps *features*)
+      "app-resources:lib;release;intrinsics_bitcode_mps.sbc"
+      "app-resources:lib;release;intrinsics_bitcode_boehm.sbc"))
+
+(defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
+(export '(+image-pathname+ build-intrinsics-bitcode-pathname))
 
 (defun build-hostname (type)
   (let* ((stage (if (recursive-find :ecl-min *features*) "min" (if (recursive-find :cclasp *features*) "cclasp" "full")))
