@@ -76,7 +76,6 @@
 (export '(link-system-lto))
 
 
-(export '(link-system))
 (use-package :core)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
@@ -943,46 +942,47 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 
-(defun compile-cmp (&key (target-backend (default-target-backend)))
-  (let ((*target-backend* target-backend))
-        (compile-system :start :cmp :reload t )
-        (compile-system :init :start :reload nil )
-        ))
+(defun default-prologue-form (&optional features)
+  `(progn
+     ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
+     (if (member :interactive *features*)
+         (bformat t "Starting %s ... loading image... it takes a few seconds\n" (lisp-implementation-version)))))
 
+(defun default-epilogue-form ()
+  '(progn
+    (cl:in-package :cl-user)
+    (process-command-line-load-eval-sequence)
+    (when (member :interactive *features*) (core:run-repl))))
 
 (defconstant +minimal-epilogue-form+ '(progn
                                         (process-command-line-load-eval-sequence)
                                         (bformat t "Starting clasp-min low-level-repl\n")
                                         (core::low-level-repl)))
 
+(defun link-system (start end prologue-form epilogue-form &key (system *init-files*))
+  (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname x "bc")) (select-source-files end :first-file start :system system))))
+    (cmp:link-system-lto (target-backend-pathname +image-pathname+)
+                         :lisp-bitcode-files bitcode-files
+                         :prologue-form prologue-form
+                         :epilogue-form epilogue-form)))
+(export '(link-system)) ;; core
 
-
-(export 'compile-min-system)
-(defun compile-min-system (&key (source-backend (default-target-backend))(target-backend (default-target-backend)))
+(export '(compile-min))
+(defun compile-min (&key (source-backend (default-target-backend)) (target-backend (default-target-backend)))
   (let* ((*target-backend* source-backend)
          (bitcodes1 (compile-system :start :cmp :reload t ))
          (bitcodes0 (compile-system :init :start :reload nil :recompile t ))
          (bitcodes2 (compile-system :cmp :min ))
          (all-bitcodes (nconc bitcodes0 bitcodes1 bitcodes2)))
     (let ((*target-backend* target-backend))
-    (cmp::link-system-lto
-           (target-backend-pathname +image-pathname+ )
-           :lisp-bitcode-files all-bitcodes
-           :epilogue-form +minimal-epilogue-form+
-           ))))
-
+      (link-system :init :min (default-prologue-form) +minimal-epilogue-form+))))
 
 (export 'compile-min-recompile)
 (defun compile-min-recompile (&key (target-backend (default-target-backend)))
   (let ((*target-backend* target-backend)
         (bitcode-files0 (compile-system :init :start :recompile t))
-        (bitcode-files1 (compile-system :start :min :recompile t ))
-        )
-    (cmp:link-system-lto (target-backend-pathname +image-pathname+ )
-                     :lisp-bitcode-files (nconc bitcode-files0 bitcode-files1)
-                     :epilogue-form +minimal-epilogue-form+)))
-
-
+        (bitcode-files1 (compile-system :start :min :recompile t )))
+    (link-system :init :min (default-prologue-form) +minimal-epilogue-form+)))
 
 (export 'switch-to-full)
 (defun switch-to-full ()
@@ -990,65 +990,20 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (push :clos *features*)
   (bformat t "Removed :ecl-min from and added :clos to *features* --> %s\n" *features*))
 
-(defun partial-compile-full (end)
+
+(defun compile-full-init ()
   (if (member :ecl-min *features*) (switch-to-full))
-  (let ((*target-backend* (default-target-backend)))
-    (load-system :start end :interp t )))
-
-(defun link-full ()
-  (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname x "bc")) (select-source-files :all :first-file :init :system *init-files*))))
-    (cmp:link-system-lto (target-backend-pathname +image-pathname+)
-                         :lisp-bitcode-files bitcode-files
-                         :prologue-form '(progn
-                                          (push :clos *features*)
-                                          (if (member :interactive *features*) 
-                                              (bformat t "Starting Clasp %s ... loading image... it takes a few seconds\n"  (lisp-implementation-version))))
-                         :epilogue-form '(progn
-                                          (cl:in-package :cl-user)
-                                          (process-command-line-load-eval-sequence)
-                                          (when (member :interactive *features*) (core:run-repl))))
-    ))
+  (let* ((*target-backend* (default-target-backend)))
+    (compile-system :init :start :reload nil :recompile t )))
 
 
-(export 'compile-full)
+(export '(compile-full-init compile-full))
 (defun compile-full ()
   (if (member :ecl-min *features*) (switch-to-full))
   (let ((*target-backend* (default-target-backend)))
     (load-system :start :all :interp t )
-    (let ((bitcode-files (compile-system :init :all :recompile t )))
-      (link-full)
-      #+(or)
-      (cmp:link-system-lto (target-backend-pathname +image-pathname+)
-			   :lisp-bitcode-files bitcode-files
-			   :prologue-form '(progn
-					    (push :clos *features*)
-					    (if (member :interactive *features*) 
-						(bformat t "Starting Clasp %s ... loading image... it takes a few seconds\n"  (lisp-implementation-version))))
-			   :epilogue-form '(progn
-					    (cl:in-package :cl-user)
-					    (process-command-line-load-eval-sequence)
-					    (when (member :interactive *features*) (core:run-repl)))))))
-
-
-
-
-
-
-
-
-(defun compile-clos () ;; &key (target-backend (default-target-backend)))
-  (switch-to-full)
-  (let ((*target-backend* (default-target-backend)))
-    (load-system :start :clos :interp t )
-;;    (switch-to-full)
-    ;; Compile everything - ignore old bitcode
-    (let ((bitcode-files (compile-system :init :all :recompile t )))
-      (cmp:link-system-lto (target-backend-pathname +image-pathname+)
-                           :lisp-bitcode-files bitcode-files ))))
-
-
-
-
+    (compile-system :init :all :recompile t )
+    (link-system :init :all (default-prologue-form '(:clos)) (default-epilogue-form))))
 
 
 (defun help-build ()

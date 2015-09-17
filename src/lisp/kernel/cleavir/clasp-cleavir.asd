@@ -16,7 +16,7 @@
                  :sicl-additional-conditions)
     :serial t
     :components ((:file "packages")
-                 (:file "compile-cclasp")
+;;                 (:file "compile-cclasp")
 		 (:file "system")
 		 (:file "ast")
 		 (:file "convert-form")

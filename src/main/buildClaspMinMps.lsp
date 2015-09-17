@@ -5,6 +5,6 @@
 	      (core:mkdir (namestring (translate-logical-pathname dir)) #o777)))
       (list "min-mps:" "min-mps:kernel;" "min-mps:kernel;lsp;" "min-mps:kernel;cmp;" "min-mps:kernel;clos;"))
 (core:copy-system :start :min :from-target-backend "min-boehm" :to-target-backend "min-mps")
-(core:compile-min-system)
+(core:compile-min)
 (core:quit)
 

@@ -699,15 +699,15 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
                                    0);
 #else
   // use mask
-  res = mps_root_create_reg_masked(&global_stack_root,
-                                   _global_arena,
-                                   mps_rank_ambig(),
-                                   0,
-                                   global_thread,
-                                   gctools::pointer_tag_mask,
-                                   gctools::pointer_tag_eq,
-                                   _global_stack_marker
-                                   );
+  res = mps_root_create_stack(&global_stack_root,
+                                  _global_arena,
+                                  mps_rank_ambig(),
+                                  0,
+                                  global_thread,
+                                  gctools::pointer_tag_mask,
+                                  gctools::pointer_tag_eq,
+                                  _global_stack_marker
+                                  );
 #endif
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create stack root");
