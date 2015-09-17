@@ -4,3 +4,6 @@
 [submodule "src/lisp/kernel/contrib/sicl"]
 	path = src/lisp/kernel/contrib/sicl
 	url = https://github.com/robert-strandh/SICL.git
+[submodule "src/mps"]
+	path = src/mps
+	url = https://github.com/clasp-developers/mps-temporary.git
