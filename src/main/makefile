@@ -29,6 +29,10 @@ all:
 	make boehm
 #	make mps
 
+
+cclasp-mps:
+	clasp_mps_o -I -l "link-cclasp.lsp"
+
 application:
 	cp -R $(CLASP_LISP_SOURCE_DIR)/build $(CLASP_APP_RESOURCES_DIR)/lisp/
 	cp -R $(CLASP_INTERNAL_BUILD_TARGET_DIR)/* $(CLASP_APP_DIR)

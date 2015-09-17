@@ -72,8 +72,10 @@ all:
 	make clasp-boehm
 	make cclasp-boehm
 	make cclasp-boehm-addons
-#	make clasp-mps
+	make cclasp-mps
 
+cclasp-mps:
+	(cd src/main; make cclasp-mps)
 
 bclasp-only:
 	@echo Dumping local.config
