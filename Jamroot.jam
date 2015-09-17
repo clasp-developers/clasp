@@ -119,6 +119,7 @@ project clasp : requirements
 #	<define>DEBUG_TELEMETRY      # generate telemetry data for debugging general GC
 #	<define>DEBUG_STACK_TELEMETRY      # generate telemetry data for debugging stack GC
         <define>MPS_RECOGNIZE_ZERO_TAG   # recognize #b000 as a tagged pointer
+        <define>ZERO_TAG_MASK=7
 ##### DEBUG_MPS_UNDERSCANNING does a garbage collection after every allocation
 ##### This really, really slows things down
 #        <define>DEBUG_MPS_UNDERSCANNING

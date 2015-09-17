@@ -570,6 +570,21 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     // setup the build;system pathnames
     {
       Cons_sp p = Cons_O::createList(
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;min-bitcode;**;*.*"))));
+      af_pathnameTranslations(Str_O::create("min-bitcode"), _lisp->_true(), p);
+    }
+    {
+      Cons_sp p = Cons_O::createList(
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;full-bitcode;**;*.*"))));
+      af_pathnameTranslations(Str_O::create("full-bitcode"), _lisp->_true(), p);
+    }
+    {
+      Cons_sp p = Cons_O::createList(
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;cclasp-bitcode;**;*.*"))));
+      af_pathnameTranslations(Str_O::create("cclasp-bitcode"), _lisp->_true(), p);
+    }
+    {
+      Cons_sp p = Cons_O::createList(
           Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;min-boehm;**;*.*"))));
       af_pathnameTranslations(Str_O::create("min-boehm"), _lisp->_true(), p);
     }
@@ -580,6 +595,11 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     }
     {
       Cons_sp p = Cons_O::createList(
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;cclasp-boehm;**;*.*"))));
+      af_pathnameTranslations(Str_O::create("cclasp-boehm"), _lisp->_true(), p);
+    }
+    {
+      Cons_sp p = Cons_O::createList(
           Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;min-mps;**;*.*"))));
       af_pathnameTranslations(Str_O::create("min-mps"), _lisp->_true(), p);
     }
@@ -587,11 +607,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       Cons_sp p = Cons_O::createList(
           Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;full-mps;**;*.*"))));
       af_pathnameTranslations(Str_O::create("full-mps"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;cclasp-boehm;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("cclasp-boehm"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(

@@ -447,6 +447,39 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defvar *alien-declarations* ())
 (export '*alien-declarations*)
 
+(defun recursive-find (item seq)
+  (if seq
+      (if (eq item (car seq))
+          t
+          (recursive-find item (cdr seq)))))
+
+(defun build-hostname (type)
+  (let* ((stage (if (recursive-find :ecl-min *features*) "min" (if (recursive-find :cclasp *features*) "cclasp" "full")))
+         (type-modified-host-suffix (cond
+                                      ((string-equal type "bc") "bitcode")
+                                      (t (if (recursive-find :use-mps *features*) "mps" "boehm"))))
+         (bitcode-host (bformat nil "%s-%s" stage type-modified-host-suffix)))
+    bitcode-host))
+
+(defun build-pathname (module &optional (type "lsp"))
+  (let ((pathname (cond
+                    ((pathnamep module)
+                     (merge-pathnames module
+                                      (make-pathname
+                                       :type type
+                                       :defaults (translate-logical-pathname
+                                                  (make-pathname :host "sys")))))
+                    ((symbolp module)
+                     (merge-pathnames (pathname (string module))
+                                      (make-pathname :host "sys" :directory '(:absolute) :type type)))
+                    (t (error "bad module name: ~s" module))))
+        (target-host (build-hostname type)))
+    (if (member type '("lsp" "lisp") :test #'string-equal)
+        pathname
+        (let ((relative (maybe-relative-pathname-to-sys pathname)))
+          (merge-pathnames relative (translate-logical-pathname (make-pathname :host target-host)))))))
+
+  
 (defun get-pathname-with-type (module &optional (type "lsp"))
   (cond
     ((pathnamep module)
@@ -461,8 +494,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     (t (error "bad module name: ~s" module))))
 
 (defun lisp-source-pathname (module)
-  (or (probe-file (get-pathname-with-type module "lsp"))
-      (probe-file (get-pathname-with-type module "lisp"))
+  (or (probe-file (build-pathname module "lsp"))
+      (probe-file (build-pathname module "lisp"))
       (error "Could not find source file for ~a" module)))
 (export 'lisp-source-pathname)
 
@@ -476,6 +509,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 		 (load pathname)))
            nil)
 
+#+(or)
 (si::*fset 'ibundle
 	   #'(lambda (path)
 	       (multiple-value-call
@@ -489,6 +523,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                   (if image-file nil (error "Could not find ~a" image-path))
                   (bformat t "Loading image %s\n" image-path)
                   (load-bundle image-path llvm-sys:+clasp-main-function-name+)))))
+
 
 (si::*fset 'fset
 		 #'(lambda (whole env)
@@ -545,7 +580,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun iload (fn &key load-bitcode )
   (setq *reversed-init-filenames* (cons fn *reversed-init-filenames*))
   (let* ((lsp-path (lisp-source-pathname fn))
-	 (bc-path (target-backend-pathname (get-pathname-with-type fn "bc") ))
+	 (bc-path (build-pathname fn "bc")) ;; target-backend-pathname (get-pathname-with-type fn "bc") ))
 	 (load-bc (if (not (probe-file lsp-path))
 		      t
 		      (if (not (probe-file bc-path))
@@ -581,7 +616,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 (defun delete-init-file (module &key (really-delete t))
-  (let ((bitcode-path (target-backend-pathname (get-pathname-with-type module "bc"))))
+  (let ((bitcode-path (build-pathname module "bc"))) ;; (target-backend-pathname (get-pathname-with-type module "bc"))))
     (if (probe-file bitcode-path)
 	(if really-delete
 	    (progn
@@ -590,11 +625,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	      )
 	)))
 
-(defun recursive-find (item seq)
-  (if seq
-      (if (eq item (car seq))
-          t
-          (recursive-find item (cdr seq)))))
+
 
 ;; I need to search the list rather than using features because *features* may change at runtime
 (defun default-target-backend (&optional given-stage)
@@ -641,7 +672,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun compile-kernel-file (filename &key (reload nil) load-bitcode (recompile nil))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((source-path (lisp-source-pathname filename))
-	 (bitcode-path (target-backend-pathname (get-pathname-with-type filename "bc")))
+	 (bitcode-path (build-pathname filename "bc")) ;; (target-backend-pathname (get-pathname-with-type filename "bc")))
 	 (load-bitcode (if (probe-file bitcode-path)
 			   (if load-bitcode
 			       t
@@ -883,26 +914,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     (reverse bitcode-files)))
 (export 'compile-system)
 
-(defun copy-system (first-file last-file &key (from-target-backend nil) (to-target-backend nil) (system *init-files*))
-  ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
-  (or from-target-backend (error "from-target-backend must be defined"))
-  (or to-target-backend (error "to-target-backend must be defined"))
-  (bformat t "copy-system  from: %s  to: %s  from-target-backend: %s  to-target-backend: %s\n" first-file last-file from-target-backend to-target-backend)
-  (let* ((files (select-source-files last-file :first-file first-file :system system))
-	 (cur files))
-    (tagbody
-     top
-       (if (endp cur) (go done))
-       (let* ((bitcode-raw (get-pathname-with-type (car cur) "bc"))
-	      (bitcode-from (target-backend-pathname bitcode-raw :target-backend from-target-backend))
-	      (bitcode-to (target-backend-pathname bitcode-raw :target-backend to-target-backend)))
-	 (core:copy-file bitcode-from bitcode-to))
-       (setq cur (cdr cur))
-       (go top)
-     done
-       )
-))
-
 
 ;; Clean out the bitcode files.
 ;; passing :no-prompt t will not prompt the user
@@ -984,6 +995,20 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (let ((*target-backend* (default-target-backend)))
     (load-system :start end :interp t )))
 
+(defun link-full ()
+  (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname x "bc")) (select-source-files :all :first-file :init :system *init-files*))))
+    (cmp:link-system-lto (target-backend-pathname +image-pathname+)
+                         :lisp-bitcode-files bitcode-files
+                         :prologue-form '(progn
+                                          (push :clos *features*)
+                                          (if (member :interactive *features*) 
+                                              (bformat t "Starting Clasp %s ... loading image... it takes a few seconds\n"  (lisp-implementation-version))))
+                         :epilogue-form '(progn
+                                          (cl:in-package :cl-user)
+                                          (process-command-line-load-eval-sequence)
+                                          (when (member :interactive *features*) (core:run-repl))))
+    ))
+
 
 (export 'compile-full)
 (defun compile-full ()
@@ -991,6 +1016,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (let ((*target-backend* (default-target-backend)))
     (load-system :start :all :interp t )
     (let ((bitcode-files (compile-system :init :all :recompile t )))
+      (link-full)
+      #+(or)
       (cmp:link-system-lto (target-backend-pathname +image-pathname+)
 			   :lisp-bitcode-files bitcode-files
 			   :prologue-form '(progn
@@ -1000,8 +1027,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 			   :epilogue-form '(progn
 					    (cl:in-package :cl-user)
 					    (process-command-line-load-eval-sequence)
-					    (when (member :interactive *features*) (core:run-repl))))
-      )))
+					    (when (member :interactive *features*) (core:run-repl)))))))
+
+
 
 
 

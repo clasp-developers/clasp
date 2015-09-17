@@ -1319,7 +1319,7 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 void getOrCreateLoadTimeValueArray(core::LoadTimeValues_O **ltvPP, const char *moduleName, int numberOfLoadTimeValues, int numberOfLoadTimeSymbols) {
   core::LoadTimeValues_sp loadTimeValues = _lisp->getOrCreateLoadTimeValues(moduleName, numberOfLoadTimeValues, numberOfLoadTimeSymbols);
   *ltvPP = NULL;
-  printf("%s:%d - I am registering the ltvPP=%p *ltvP=%p as a root in getOrCreateLoadTimeValueArray.\n   I believe this is the best place to do this - I previously did it in finalizeEngineAndRegisterWithGcAndGetCompiledFunction.\n  If this is the best place then remove this notice.",__FILE__,__LINE__, ltvPP, *ltvPP);
+//  printf("%s:%d - I am registering the ltvPP=%p *ltvP=%p as a root in getOrCreateLoadTimeValueArray.\n   I believe this is the best place to do this - I previously did it in finalizeEngineAndRegisterWithGcAndGetCompiledFunction.\n  If this is the best place then remove this notice.",__FILE__,__LINE__, ltvPP, *ltvPP);
 #ifdef USE_MPS
   registerLoadTimeValuesRoot(ltvPP);
 #endif
