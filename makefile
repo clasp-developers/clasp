@@ -67,8 +67,8 @@ all:
 	make submodules
 	make asdf
 	make boostbuildv2-build
-	make -C src/main scrape-all
-	$(BJAM) /internals/lisp//bundle
+	$(BUILD) -j$(PJOBS) link=static program=clasp gc=boehm release src/main//dist
+	$(BUILD) -j$(PJOBS) link=static program=clasp gc=mps release src/main//dist
 	make clasp-boehm
 	make cclasp-boehm
 	make cclasp-boehm-addons
