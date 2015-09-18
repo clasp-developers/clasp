@@ -5,6 +5,8 @@
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
           *compile-print*
+          *compile-counter*
+          *compile-duration-ns*
           *current-function*
           *current-function-name*
           *debug-compile-file*

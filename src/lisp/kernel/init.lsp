@@ -2,9 +2,6 @@
 ;; :clos to compile with CLOS
 ;;
 
-#+(or)(setq *features* (cons :debug-format *features*))
-
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package "CORE"))
 
@@ -17,9 +14,9 @@
           cons-car
           cons-cdr
           ))
-
-:pause-hir
-
+(sys:*make-special 'core::*notify-on-compile*)
+(setq *notify-on-compile* (member :notify-on-compile *features*))
+(export '*notify-on-compile*)
 (setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
 (setq *echo-repl-read* nil)
 (setq *load-print* nil)

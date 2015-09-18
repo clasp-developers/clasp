@@ -1355,13 +1355,27 @@ be wrapped with to make a closure"
 	     )))
       (values compiled-function warnp failp))))
 
+(defvar *compile-counter* 0)
+(defvar *compile-duration-ns* 0)
+
 (defun compile-with-hook (compile-hook name &optional definition env pathname)
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
 We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
-  (if compile-hook
-      (progn
-        (funcall compile-hook name definition env pathname))
-      (clasp-compile* name definition env pathname)))
+  (let ((compile-start-ns (core:clock-gettime-nanoseconds)))
+    (setf *compile-counter* (+ 1 *compile-counter*))
+    (unwind-protect
+         (progn
+           (if compile-hook
+               (progn
+                 (funcall compile-hook name definition env pathname))
+               (clasp-compile* name definition env pathname)))
+      (let* ((compile-end-nanoseconds (core:clock-gettime-nanoseconds))
+             (this-compile-ns (- compile-end-ns compile-start-ns)))
+        (setf *compile-duration-ns* (+ *compile-duration-ns* this-compile-ns))
+        (if core:*notify-on-compile*
+            (bformat t "Compiled name: %s\n  form: %s\n  Took: %8.3f seconds\n" 
+                     name definition (float (/ this-compile-ns 1000000.0))))))))
+
 
 (defun compile-in-env (bind-to-name &optional definition env compile-hook &aux conditions)
   "Compile in the given environment"
@@ -1396,7 +1410,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
      (error "Handle compile with definition = function"))
     ((consp definition)
      (cmp-log "compile form: %s\n" definition)
-     (compile-in-env name definition nil *cleavir-compile-hook*))
+     (compile-in-env name definition nil compile-hook))
     ((null definition)
      (let ((func (symbol-function name)))
        (cond
@@ -1406,7 +1420,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	  (multiple-value-bind (lambda-expression wrapped-env)
 	      (generate-lambda-expression-from-interpreted-function func)
 	    (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
-	    (compile-in-env name lambda-expression wrapped-env *cleavir-compile-hook*)))
+	    (compile-in-env name lambda-expression wrapped-env compile-hook)))
 	 (t (error "Could not compile func")))))
     (t (error "Illegal combination of arguments for compile: ~a ~a"
 	      name definition))))
