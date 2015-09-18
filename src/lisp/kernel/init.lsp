@@ -789,6 +789,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     ))
 (export '*init-files*)
 
+(defvar *asdf-files*
+  '(:init
+    #P"kernel/asdf/build/asdf"
+    :end))
+(export '*asdf-files*)
+
 
 (defun select-source-files (last-file &key first-file system)
   (or first-file (error "You must provide first-file to select-source-files"))
@@ -861,8 +867,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun compile-system (first-file last-file &key recompile reload (system *init-files*))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (bformat t "compile-system  from: %s  to: %s\n" first-file last-file)
-  (if (not recompile)
-        (load-system first-file last-file :system system))
   (let* ((files (select-source-files last-file :first-file first-file :system system))
 	 (cur files)
          bitcode-files)
@@ -934,19 +938,20 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (export '(compile-min))
 (defun compile-min (&key (source-backend (default-target-backend)) (target-backend (default-target-backend)))
-  (let* ((*target-backend* source-backend)
-         (bitcodes1 (compile-system :start :cmp :reload t ))
-         (bitcodes0 (compile-system :init :start :reload nil :recompile t ))
-         (bitcodes2 (compile-system :cmp :min ))
-         (all-bitcodes (nconc bitcodes0 bitcodes1 bitcodes2)))
+  (load-system :start :cmp)
+  (let* ((*target-backend* source-backend))
+    (compile-system :start :cmp :reload t)
+    (compile-system :init :start :reload nil :recompile t)
+    (load-system :cmp :min)
+    (compile-system :cmp :min)
     (let ((*target-backend* target-backend))
       (link-system :init :min (default-prologue-form) +minimal-epilogue-form+))))
 
 (export 'compile-min-recompile)
 (defun compile-min-recompile (&key (target-backend (default-target-backend)))
-  (let ((*target-backend* target-backend)
-        (bitcode-files0 (compile-system :init :start :recompile t))
-        (bitcode-files1 (compile-system :start :min :recompile t )))
+  (let ((*target-backend* target-backend))
+    (compile-system :init :start :recompile t)
+    (compile-system :start :min :recompile t )
     (link-system :init :min (default-prologue-form) +minimal-epilogue-form+)))
 
 (export 'switch-to-full)
