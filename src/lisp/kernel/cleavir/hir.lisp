@@ -350,26 +350,26 @@
   (format stream "#<throw>"))
 
 
-(defmethod instruction-may-be-removed-p ((instruction debug-message-instruction)) nil)
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction debug-message-instruction)) nil)
 
-;;(defmethod instruction-may-be-removed-p ((instruction landing-pad-return-instruction)) nil)
+;;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction landing-pad-return-instruction)) nil)
 
-(defmethod instruction-may-be-removed-p ((instruction push-special-binding-instruction)) nil)
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction push-special-binding-instruction)) nil)
 
-(defmethod instruction-may-be-removed-p ((instruction pop-special-binding-instruction)) nil)
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction pop-special-binding-instruction)) nil)
 
-(defmethod instruction-may-be-removed-p ((instruction precalc-symbol-instruction)) nil)
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-symbol-instruction)) nil)
 
-(defmethod instruction-may-be-removed-p ((instruction precalc-value-instruction)) nil)
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-value-instruction)) nil)
 
-(defmethod instruction-may-be-removed-p ((instruction multiple-value-one-form-call-instruction)) nil)
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction multiple-value-one-form-call-instruction)) nil)
 
-(defmethod instruction-may-be-removed-p ((instruction setf-fdefinition-instruction)) nil)
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction setf-fdefinition-instruction)) nil)
 
-(defmethod instruction-may-be-removed-p ((instruction landing-pad-instruction)) nil)
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction landing-pad-instruction)) nil)
 
-;;(defmethod instruction-may-be-removed-p ((instruction indexed-unwind-instruction)) nil)
+;;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction indexed-unwind-instruction)) nil)
 
-(defmethod instruction-may-be-removed-p ((instruction throw-instruction)) nil)
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction throw-instruction)) nil)
 
 
