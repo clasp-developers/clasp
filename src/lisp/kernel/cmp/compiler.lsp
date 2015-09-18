@@ -1369,7 +1369,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
                (progn
                  (funcall compile-hook name definition env pathname))
                (clasp-compile* name definition env pathname)))
-      (let* ((compile-end-nanoseconds (core:clock-gettime-nanoseconds))
+      (let* ((compile-end-ns (core:clock-gettime-nanoseconds))
              (this-compile-ns (- compile-end-ns compile-start-ns)))
         (setf *compile-duration-ns* (+ *compile-duration-ns* this-compile-ns))
         (if core:*notify-on-compile*
