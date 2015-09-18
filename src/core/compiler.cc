@@ -922,18 +922,22 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     }
 #endif
     // Save any return value that may be in the multiple value return array
+#if 0 // I shouldn't save the result around the unwind form
     gctools::Vec0<T_sp> savemv;
     T_mv tresult;
     tresult.readFromMultipleValue0();
     tresult.saveToVec0(savemv);
+#endif
     {
       core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(cleanup_fn.raw_());
       ASSERT(func!=NULL);
       auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
-      tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
+      T_mv tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
     }
+#if 0 // What was I thinking? 
     tresult.loadFromVec0(savemv);
     tresult.saveToMultipleValue0();
+#endif
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
       printf("%s:%d In funwind_protect catch(...)    about to rethrow\n", __FILE__, __LINE__ );

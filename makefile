@@ -180,7 +180,10 @@ testing:
 	which clang++
 
 clasp-mps-cpp:
-	$(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release mps
+	$(BUILD) -j$(PJOBS) gc=mps link=static program=clasp release src/main//dist
+
+clasp-boehm-cpp:
+	$(BUILD) -j$(PJOBS) gc=boehm link=static program=clasp release src/main//dist
 
 clasp-mps:
 	make clasp-mps-cpp
@@ -206,10 +209,6 @@ clasp-boehm:
 
 cclasp-boehm:
 	(cd src/main; make cclasp-boehm)
-
-clasp-boehm-cpp:
-	(cd src/main; $(BUILD) -j$(PJOBS) $(USE_CXXFLAGS) gc=boehm link=$(LINK) program=clasp variant=release dist)
-
 
 cclasp-boehm-addons:
 	(cd src/main; make cclasp-boehm-addons)

@@ -67,7 +67,7 @@ T_mv gc_bytes_allocated()
   gc_bytes = GC_get_total_bytes();
 #endif
 #ifdef USE_MPS
-  IMPLEMENT_MEF(BF("Figure out how to get the total bytes allocated using MPS"));
+  gc_bytes = 0; // IMPLEMENT_MEF(BF("Figure out how to get the total bytes allocated using MPS"));
 #endif
   size_t my_bytes = globalBytesAllocated;
   ASSERT(gc_bytes < gc::most_positive_fixnum && my_bytes < gc::most_positive_fixnum);
