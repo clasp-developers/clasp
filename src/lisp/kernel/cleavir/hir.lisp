@@ -13,7 +13,7 @@
 
 (defmethod instruction-may-be-removed-p ((instruction precalc-value-instruction)) nil)
 
-;;(defmethod instruction-may-be-removed-p ((instruction multiple-value-one-form-call-instruction)) nil)
+(defmethod instruction-may-be-removed-p ((instruction multiple-value-one-form-call-instruction)) nil)
 
 (defmethod instruction-may-be-removed-p ((instruction setf-fdefinition-instruction)) nil)
 
