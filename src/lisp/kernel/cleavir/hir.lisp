@@ -366,7 +366,7 @@
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction setf-fdefinition-instruction)) nil)
 
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction landing-pad-instruction)) nil)
+;;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction landing-pad-instruction)) nil)
 
 ;;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction indexed-unwind-instruction)) nil)
 

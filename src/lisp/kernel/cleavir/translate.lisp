@@ -956,7 +956,7 @@ nil)
                (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
                (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
           ;;(warn "Turn on CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS HIR - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
-          (CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS hir)
+          ;(CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS hir)
           (cc-dbg-when *debug-log*
                        (let ((ast-pathname (make-pathname :name (format nil "ast~a" *debug-log-index*) 
                                                           :type "dot" 
@@ -1010,7 +1010,7 @@ nil)
                           (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
                           (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
               ;;(warn "Turn on run CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS HIR - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
-              (CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS hir)
+              ;(CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS hir)
               (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-first.dot")) ;; comment out
               (clasp-cleavir:convert-funcalls hir)
               (my-hir-transformations hir clasp-system nil nil)
