@@ -592,7 +592,7 @@ void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], int *numf
   int numfun = *numfunP;
   //        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
   for (int i = 0; i < numfun; ++i) {
-    //            printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
+    //printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
     *result = (fptr[i])(LCC_PASS_ARGS0_VA_LIST());
   }
 }

@@ -219,4 +219,21 @@ void dump_profile() {
   //	DumpFindClassCount dumpCount;
   //	_lisp->mapClassNamesAndClasses(&dumpCount);
 }
+
+
+
+
+simple_timer::simple_timer(const std::string& msg) {
+  this->_Message = msg;
+  this->_StartTime = profilerTimeNs();
+};
+
+simple_timer::~simple_timer() {
+  Bignum endTime = profilerTimeNs();
+  Bignum inclusiveElapsed = endTime - this->_StartTime;
+  stringstream bnss;
+  bnss << inclusiveElapsed;
+  printf("%s %s nanoseconds\n", this->_Message.c_str(), bnss.str().c_str());
+}
+
 };
