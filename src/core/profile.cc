@@ -76,6 +76,9 @@ Bignum profilerTimeNs() {
   return mpz_ns;
 }
 
+
+
+
 #define ARGS_af_clock_gettime_nanoseconds "()"
 #define DECL_af_clock_gettime_nanoseconds ""
 #define DOCS_af_clock_gettime_nanoseconds "clock_gettime_nanoseconds"

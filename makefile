@@ -235,6 +235,7 @@ compile-commands:
 
 
 clean:
+	git submodule sync
 	(cd src/main; rm -rf bin bundle)
 	(cd src/core; rm -rf bin bundle)
 	(cd src/gctools; rm -rf bin bundle)

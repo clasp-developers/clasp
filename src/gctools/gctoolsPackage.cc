@@ -74,6 +74,20 @@ T_mv gc_bytes_allocated()
   return Values(clasp_make_fixnum(gc_bytes),clasp_make_fixnum(my_bytes));
 }
 
+#define ARGS_core_header_kind "()"
+#define DECL_core_header_kind ""
+#define DOCS_core_header_kind "Return the header kind for the object"
+core::Fixnum_sp core_header_kind(T_sp obj) {
+  if ( obj.generalp() ) {
+    void* mostDerived = gctools::untag_general<void*>(obj.raw_());
+    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(mostDerived));
+    ASSERT(header->kindP());
+    return clasp_make_fixnum(header->kind());
+  }
+  printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
+  return clasp_make_fixnum(-1);
+}
+
 
 
 #if 0
@@ -757,6 +771,7 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
     //	    SYMBOL_EXPORT_SC_(GcTools,linkExternalGlobalsInModule);
     //	    Defun(linkExternalGlobalsInModule);
     Defun(debugAllocations);
+    CoreDefun(header_kind);
 #ifdef USE_GC_REF_COUNT_WRAPPER
     Defun(gcheader);
     Defun(gcaddress);
