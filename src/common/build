@@ -1,3 +1,3 @@
 #! /bin/bash -f
-make scrape-all
+make -C $CLASP_HOME/src/main scrape-all
 bjam $*
