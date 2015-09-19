@@ -31,7 +31,7 @@ all:
 
 
 cclasp-mps:
-	clasp_mps_o -I -l "link-cclasp.lsp"
+	$(CLASP_MPS) -I -l "link-cclasp.lsp"
 
 application:
 	cp -R $(CLASP_LISP_SOURCE_DIR)/build $(CLASP_APP_RESOURCES_DIR)/lisp/
