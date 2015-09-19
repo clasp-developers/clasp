@@ -207,11 +207,9 @@ their lambda lists ~A and ~A are not congruent."
   gf)
 
 (defun function-to-method (name signature)
-#+compare  (print (list "MLOG function-to-method: " name))
   (let* ((aux-name 'temp-method)
          (method (eval `(defmethod ,aux-name ,signature)))
          (generic-function (fdefinition aux-name)))
-    #+compare( print (list "MLOG Starting function-to-method"))
     (setf (method-function method) (wrapped-method-function (fdefinition name)))
     (setf (fdefinition name) generic-function)
     (setf (generic-function-name generic-function) name)

@@ -63,11 +63,15 @@
 	     (copy (copy-list slotd)))
 	(remf copy :initfunction)
 	(cond ((atom initfun)
-	       (push copy const)
-	       (push (ext:maybe-quote copy) output))
+	       #+ecl(push copy const)
+	       #+ecl(push (ext:maybe-quote copy) output)
+               #+clasp(push `(list* :initfunction #'(lambda () ,initfun) ,(ext:maybe-quote copy)) output)
+               #+clasp(setf non-const t))
 	      ((eq (first initfun) 'constantly)
-	       (push copy const)
-	       (push (ext:maybe-quote copy) output))
+	       #+ecl(push copy const)
+	       #+ecl(push (ext:maybe-quote copy) output)
+               #+clasp(push `(list* :initfunction #'(lambda () ,(cadr initfun)) ,(ext:maybe-quote copy)) output)
+               #+clasp(setf non-const t))
 	      (t
 	       (push `(list* :initfunction ,initfun ,(ext:maybe-quote copy))
 		     output)
@@ -112,7 +116,7 @@
   
 (defun load-defclass (name superclasses slot-definitions options)
   (apply #'ensure-class name :direct-superclasses superclasses
-	 :direct-slots (uncompress-slot-forms slot-definitions)
+	 :direct-slots #+ecl(uncompress-slot-forms slot-definitions) #+clasp slot-definitions
 	 options))
 
 ;;; ----------------------------------------------------------------------

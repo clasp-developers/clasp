@@ -536,14 +536,16 @@ T_mv sp_locally(List_sp args, T_sp env) {
   return eval::sp_progn(code, le);
 }
 
-#define DOCS_af_eval "eval"
-#define LOCK_af_eval 1
-#define ARGS_af_eval "(form)"
-#define DECL_af_eval ""
-T_mv af_eval(T_sp form) {
-  _G();
-  return t1Evaluate(form, _Nil<T_O>());
-  //	    return eval::evaluate(form,_Nil<T_O>());
+#define DOCS_cl_eval "eval"
+#define LOCK_cl_eval 1
+#define ARGS_cl_eval "(form)"
+#define DECL_cl_eval ""
+T_mv cl_eval(T_sp form) {
+  if ( core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue() ) {
+    return eval::evaluate(form,_Nil<T_O>());
+  } else {
+    return t1Evaluate(form, _Nil<T_O>());
+  }
 };
 
 #define when_load_p(s) ((s)&FLAG_LOAD)
@@ -2449,7 +2451,7 @@ struct InterpreterTrace {
     SYMBOL_SC_(CorePkg, processDeclarations);
     Defun(processDeclarations);
     SYMBOL_EXPORT_SC_(ClPkg, eval);
-    Defun(eval);
+    ClDefun(eval);
   //	    SYMBOL_SC_(CorePkg,extractDeclaresDocstringCode);
   //	    Defun(extractDeclaresDocstringCode);
     SYMBOL_SC_(CorePkg, evaluateVerbosity);
