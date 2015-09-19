@@ -48,8 +48,10 @@ ifneq ($(EXTERNALS_BUILD_TARGET_DIR),)
 	export PATH
 endif
 
+export BINDIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)
+
 export PATH := $(CLASP_HOME)/src/common:$(BOOST_BUILD_INSTALL)/bin:$(PATH)
-export PATH := $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR):$(PATH)
+export PATH := $(BINDIR):$(PATH)
 
 
 ifneq ($(CXXFLAGS),)
@@ -73,6 +75,11 @@ all:
 	make cclasp-boehm
 	make cclasp-boehm-addons
 	make cclasp-mps
+	make executable-symlinks
+
+executable-symlinks:
+	ln -s $(BINDIR)/release/boehm/clasp $(BINDIR)/clasp_boehm_o
+	ln -s $(BINDIR)/release/mps/clasp $(BINDIR)/clasp_mps_o
 
 cclasp-mps:
 	(cd src/main; make cclasp-mps)
