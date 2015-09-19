@@ -130,7 +130,7 @@ project clasp : requirements
 #---------
        <define>DEBUG_CL_SYMBOLS          # Lets you calculate which CL symbols are still missing from Clasp
 #       <define>DEBUG_LOAD_TIME_VALUES   # generate lots of debugging information when accessing ltvs
-	<cxxflags>-v        # this will generate a lot more output during compilation but help with tooling
+#	<cxxflags>-v        # this will generate a lot more output during compilation but help with tooling
 #	<target-os>darwin:<linkflags>-stdlib=libc++
 #	<target-os>darwin:<linkflags>"-flat_namespace -undefined warning"
 	<define>__STDC_LIMIT_MACROS
