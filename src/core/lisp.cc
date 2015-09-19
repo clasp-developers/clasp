@@ -3014,6 +3014,7 @@ void Lisp_O::run() {
   //	printf("%s:%d core:*debug-startup* is: %s\n", __FILE__, __LINE__, _rep_(core::_sym_STARdebugStartupSTAR->symbolValue()).c_str());
   if (!this->_IgnoreInitImage) {
     Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
+    DynamicScopeManager scope(core::_sym_STARuseInterpreterForEvalSTAR,_lisp->_true());
     T_mv result = eval::funcall(cl::_sym_load, initPathname); // core_loadBundle(initPathname);
     if (result.nilp()) {
       T_sp err = result.second();

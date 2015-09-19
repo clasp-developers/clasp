@@ -634,7 +634,8 @@ Boehm and MPS use a single pointer"
 
   (primitive module "invokeMainFunctions" +void+ (list +tmv*+ +fn-prototype**+ +i32*+))
   (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +i64+ +i32+ +i32+ +ltv**+))
-  (primitive module "invokeLlvmFunctionVoid" +void+ (list +fn-prototype*+))
+  (primitive module "invokeMainFunction" +void+ (list +i8*+ +fn-prototype*+))
+;;  (primitive module "invokeLlvmFunctionVoid" +void+ (list +i8*+ +fn-prototype*+))
 
   (primitive-nounwind module "activationFrameSize" +i32+ (list +afsp*+))
 

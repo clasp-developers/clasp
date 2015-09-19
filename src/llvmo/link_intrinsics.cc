@@ -597,9 +597,16 @@ void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], int *numf
   }
 }
 
-void invokeLlvmFunctionVoid(fnLispCallingConvention fptr) {
-  core::T_mv result;
-  result = fptr( LCC_PASS_ARGS0_VA_LIST());
+void invokeMainFunction(char* sourceName, fnLispCallingConvention fptr) {
+  if ( core::_sym_STARtrace_startupSTAR->symbolValue().isTrue() ) {
+    stringstream ss;
+    ss << "Time to run " << sourceName;
+    simple_timer timer(ss.str());
+    core::T_mv result = fptr( LCC_PASS_ARGS0_VA_LIST());
+    return;
+  } else {
+    core::T_mv result = fptr( LCC_PASS_ARGS0_VA_LIST());
+  }
 };
 
 extern void sp_symbolValueReadOrUnbound(core::T_sp *resultP, const core::Symbol_sp *symP) {

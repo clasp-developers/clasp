@@ -1373,8 +1373,10 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
              (this-compile-ns (- compile-end-ns compile-start-ns)))
         (setf *compile-duration-ns* (+ *compile-duration-ns* this-compile-ns))
         (if core:*notify-on-compile*
-            (bformat t "Compiled name: %s\n  form: %s\n  Took: %8.3f seconds\n" 
-                     name definition (float (/ this-compile-ns 1000000.0))))))))
+            (progn
+              (bformat t "Compiled name: %s\n  form: %s\n  Took: %8.3f seconds\n" 
+                       name definition (float (/ this-compile-ns 1000000000.0)))
+              (core:ihs-backtrace)))))))
 
 
 (defun compile-in-env (bind-to-name &optional definition env compile-hook &aux conditions)

@@ -62,6 +62,29 @@ int f(Environment_sp& e)
   (void)e;
   return 1;
 }
+
+
+#define ARGS_core_help_booting "()"
+#define DECL_core_help_booting ""
+#define DOCS_core_help_booting "Print info about booting"
+void core_help_booting() {
+  printf("Useful *features*\n"
+":ecl-min (should be clasp-min),  :bclasp, :cclasp  -- Tells Clasp what stage it's in and where to get its init file.\n"
+":notify-on-compile (core:*notify-on-compile*) - prints messages whenever COMPILE is invoked at startup\n"
+":trace-startup (core:*trace-startup*) - prints messages and timing for running the main function of the compiled code of each system file at startup\n"
+"\n"
+"Commands (all in CORE package)\n"
+"(load-system <start> <end> &key interp (system *init-files*))   - Load the system files\n"
+"(compile-min) - Compile a minimal system\n"
+"(compile-full) - Compile a full system\n"
+"(compile-kernel-file filename &key reload load-bitcode recompile)   - Compile a system file and put the bitcode in the correct directory\n"
+"(link-system start end prologue-form epilogue-form &key (system *init-files*)) - Link an image together\n"
+"(default-prologue-form &optional features) - Returns a prologue form for link-system\n"
+"(default-epilogue-form) - Returns an epilogue form for link-system\n"
+);
+  
+}
+
 #define ARGS_core_testTaggedCast "(pow2)"
 #define DECL_core_testTaggedCast ""
 #define DOCS_core_testTaggedCast "Evaluate a TaggedCast 2^pow2 times"
@@ -1154,6 +1177,7 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   CoreDefun(catchFunction);
   CoreDefun(throwFunction);
   CoreDefun(progvFunction);
+  CoreDefun(help_booting);
 }
 
 }; /* namespace */

@@ -230,10 +230,10 @@ simple_timer::simple_timer(const std::string& msg) {
 
 simple_timer::~simple_timer() {
   Bignum endTime = profilerTimeNs();
-  Bignum inclusiveElapsed = endTime - this->_StartTime;
-  stringstream bnss;
-  bnss << inclusiveElapsed;
-  printf("%s %s nanoseconds\n", this->_Message.c_str(), bnss.str().c_str());
+  Bignum delta = endTime - this->_StartTime;
+  double ddelta = delta.get_d();
+  double seconds_delta = ddelta / 1000000000.0;
+  printf("%s %8.3lf seconds\n", this->_Message.c_str(), seconds_delta);
 }
 
 };
