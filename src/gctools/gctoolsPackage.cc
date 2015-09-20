@@ -81,7 +81,9 @@ core::Fixnum_sp core_header_kind(T_sp obj) {
   if ( obj.generalp() ) {
     void* mostDerived = gctools::untag_general<void*>(obj.raw_());
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(mostDerived));
+#ifdef USE_MPS
     ASSERT(header->kindP());
+#endif
     return clasp_make_fixnum(header->kind());
   }
   printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);

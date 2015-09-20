@@ -2665,7 +2665,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 
 
-(defun run-forked-job (proc job-list)
+(defun run-job (proc job-list)
   (setf (multitool-results *tools*) (make-project))
   (format t "====== Running jobs in fork #~a: ~a~%" proc job-list)
   (batch-run-multitool *tools* :filenames job-list)
@@ -2691,18 +2691,28 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
       (let* ((job-list (elt all-jobs proc))
              (pid (core:fork)))
         (if (eql 0 pid)
-            (run-forked-job proc job-list)
+            (run-job proc job-list)
             (when (eql spare-processes 0)
               (core:waitpid -1 0)
               (setq spare-processes (1+ spare-processes)))))
-      (format t "Bottom of loop proc: ~a~%" proc)
-      )
+      (format t "Bottom of loop proc: ~a~%" proc))
     (dotimes (proc (1- *max-parallel-searches*))
       (core:waitpid -1 0))
     (format t "~%!~%!  Done ~%!~%")
-    (parallel-merge)
-    ))
+    (parallel-merge)))
 
+
+(defun serial-search-all (&key test one-at-a-time)
+  "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
+  (setq *parallel-search-pids* nil)
+  (let ((all-jobs (if test
+                      $test-search
+                      (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))))
+    (save-data all-jobs (project-pathname "project-all" "dat"))
+    (format t "all-jobs: ~a~%" all-jobs)
+    (setf (multitool-results *tools*) (make-project))
+    (batch-run-multitool *tools* :filenames all-jobs)
+    (save-data (multitool-results *tools*) (project-pathname "project" "dat"))))
 
 
 (defun parallel-search-all-then-generate-code-and-quit ()

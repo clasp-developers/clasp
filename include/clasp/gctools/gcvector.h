@@ -163,12 +163,13 @@ namespace gctools {
       if (that._Contents) {
         allocator_type alloc;
         tagged_pointer_to_moveable implAddress = alloc.allocate(that._Contents->_Capacity);
+        implAddress->_End = 0;
+        this->_Contents = implAddress;
         new (&*implAddress) GCVector_moveable<T>(that._Contents->_Capacity);
         for (iterator that_it(that.begin()), this_it(this->begin()); that_it!=that.end(); ++that_it, ++this_it ) {
           alloc.construct(&*this_it, *that_it);
         }
-        implAddress->_End = that._Contents->_End;
-        this->_Contents = implAddress;
+        this->_Contents->_End = that._Contents->_End;
       } else {
         this->_Contents.reset_();
       }
