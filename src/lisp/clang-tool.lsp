@@ -206,6 +206,7 @@ Return nil if no matcher could be compiled."
 
 (core:defvirtual on-start-of-translation-unit ((self code-match-callback))
   (when (slot-boundp self 'start-of-translation-unit-code)
+    (assert (start-of-translation-unit-code self))
     (funcall (start-of-translation-unit-code self))))
 
 (core:defvirtual run ((self code-match-callback) match)
@@ -219,6 +220,7 @@ Return nil if no matcher could be compiled."
 
 (core:defvirtual on-end-of-translation-unit ((self code-match-callback))
   (when (slot-boundp self 'end-of-translation-unit-code)
+    (assert (end-of-translation-unit-code self))
     (funcall (end-of-translation-unit-code self))))
 
 

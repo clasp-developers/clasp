@@ -72,6 +72,7 @@ void core_help_booting() {
 ":ecl-min (should be clasp-min),  :bclasp, :cclasp  -- Tells Clasp what stage it's in and where to get its init file.\n"
 ":notify-on-compile (core:*notify-on-compile*) - prints messages whenever COMPILE is invoked at startup\n"
 ":trace-startup (core:*trace-startup*) - prints messages and timing for running the main function of the compiled code of each system file at startup\n"
+         ":debug-startup (core:*debug-startup*) - prints a message and timing for running each top level function\n"
 "\n"
 "Commands (all in CORE package)\n"
 "(load-system <start> <end> &key interp (system *init-files*))   - Load the system files\n"
