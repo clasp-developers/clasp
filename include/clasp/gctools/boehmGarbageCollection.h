@@ -66,20 +66,35 @@ public:
   GCObject &operator=(const GCObject &) { return *this; };
 };
 
-typedef enum { KIND_null } GCKindEnum; // minimally define this GCKind
+/*! GCKindEnum has one integer value for each type allocated by the GC.
+This value is written into the Header_s of every allocated object.
+If USE_CXX_DYNAMIC_CAST is defined then GCKindEnum has only one value and every Boehm header
+contains that value and C++ dynamic_cast<...> is used to determine IsA relationships.
+If USE_CXX_DYNAMIC_CAST is not defined then the GCKindEnum values calculated by
+the mps-interface.lsp static analyzer are used along with template functions that
+calculate IsA relationships using simple GCKindEnum range comparisons.
+*/
 
-typedef enum { BoehmClassKind,
-               BoehmLispKind,
-               BoehmContainerKind,
-               BoehmStringKind } BoehmKind;
+#ifdef USE_CXX_DYNAMIC_CAST
+typedef enum { KIND_null } GCKindEnum; // minimally define this GCKind
+#else
+typedef
+#define GC_ENUM
+#include GARBAGE_COLLECTION_INCLUDE
+  GCKindEnum;
+ #undef GC_ENUM
+#endif 
+
 
 //#define BIG_BOEHM_HEADER
+
+
 #ifdef USE_BOEHM_MEMORY_MARKER
 extern int globalBoehmMarker;
 #endif
 class Header_s {
 public:
-  Header_s(const char *name, BoehmKind k) :
+  Header_s(GCKindEnum k) :
   Kind(k)
 #ifdef BIG_BOEHM_HEADER
     , ValidStamp(0xDEADBEEF)
@@ -118,7 +133,7 @@ public:
     return "TypeIdUnavailable";
 #endif
   };
-  BoehmKind kind() const { return (BoehmKind)this->Kind; };
+  GCKindEnum kind() const { return (GCKindEnum)this->Kind; };
   bool markerMatches(int m) const {
 #ifdef USE_BOEHM_MEMORY_MARKER
     if (m) {
@@ -132,11 +147,12 @@ public:
   static size_t HeaderSize() { return sizeof(Header_s); };
 };
 
+ #if 0
 class TemplatedHeader_s : public Header_s {
 public:
   TemplatedHeader_s(const char *name, BoehmKind k) : Header_s(name, k){};
 };
-
+#endif
 constexpr size_t Alignment() {
   //            return sizeof(Header_s);
   return alignof(Header_s);
@@ -145,31 +161,12 @@ constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alig
 
 template <class T>
 inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + AlignUp(sizeof(Header_s)); };
+
+ #if 0
 template <class T>
 inline size_t sizeof_with_templated_header() { return AlignUp(sizeof(T)) + AlignUp(sizeof(TemplatedHeader_s)); };
-
-#if 0
-    template <typename T>
-    const char* baseObjectName(T obj)
-    {
-        gctools::base_ptr base(obj);
-        if ( base.pointerp() ) {
-            const char* name = reinterpret_cast<const char*>(base.px_ref());
-            return name;
-        }
-        if (base.nilp()) {
-            return "NIL";
-        };
-        if (base.unboundp()) {
-            return "UNBOUND";
-        }
-        if (base.deletedp()) {
-            return "DELETED";
-        }
-        return "UNKNOWN-object";
-    }
 #endif
-
+ 
  void headerDescribe(core::T_O* taggedClient);
 
 };
@@ -187,6 +184,37 @@ inline T *BasePtrToMostDerivedPtr(void *base) {
   return ptr;
 }
 };
+
+
+namespace core {
+  class T_O;
+  class WrappedPointer_O;
+  class Functoid;
+  class Creator;
+  class Iterator_O;
+};
+namespace clbind {
+  class ConstructorCreator;
+};
+
+#ifndef USE_CXX_DYNAMIC_CAST
+  #define DECLARE_FORWARDS
+  #include GARBAGE_COLLECTION_INCLUDE
+  #undef DECLARE_FORWARDS
+#endif
+
+namespace gctools {
+#ifndef USE_CXX_DYNAMIC_CAST
+  #define GC_DYNAMIC_CAST
+  #include GARBAGE_COLLECTION_INCLUDE // "main/clasp_gc.cc"
+  #undef GC_DYNAMIC_CAST
+#endif
+};
+
+
+
+
+
 
 namespace gctools {
 /*! Initialize the memory pool system and call the startup function which

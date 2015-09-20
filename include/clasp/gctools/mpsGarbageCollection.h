@@ -140,11 +140,9 @@ inline size_t sizeof_with_header();
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 //
-// Define Header_s and stuff that can exist in the header
+// Define Header and stuff that can exist in the header
 //
 //
-
-//    typedef Header_s<void>* Header_t;
 
 /*!
 
@@ -239,67 +237,16 @@ public:
  void headerDescribe(core::T_O* taggedClient);
 };
 
-#if 0
-namespace gctools {    
-
-    /* Specialize this for every Header_s and set _Kind to its appropriate enum */
-    template <typename T>
-    struct SKind_s {
-        SKind_s() : Kind(GCKind<T>::Kind)
-                       , Length(sizeof_with_header<T>())
-        {};
-        SKind_s(size_t sz) : Kind(GCKind<T>::Kind)
-                                , Length(sz)
-        {};
-	unsigned int	Kind;
-        unsigned int    Length;
-    };
-    struct Pad1_s : public SKind_s<Pad1_s> {};
-    struct Pad_s : public SKind_s<Pad_s> {
-    };
-    struct Fwd2_s : public SKind_s<Fwd2_s> {
-	Header_s<void>*	Fwd;
-    };
-    struct Fwd_s : public SKind_s<Fwd_s> {
-	Header_s<void>*	Fwd;
-    };
-
-
-
-
-    template <typename T>
-    union Header_s {
-        Header_s() : kind(sizeof_with_header<T>()) {};
-        Header_s(size_t sz) : kind(sz) {};
-	SKind_s<T>	        kind;
-//        TemplatedKind_s<T>      templatedKind;
-	Pad1_s	                pad1;
-	Pad_s	                pad;
-	Fwd2_s	                fwd2;
-	Fwd_s                   fwd;
-        static size_t HeaderSize() { return sizeof(Header_s<T>);};
-    };
-
-};
-#endif
-
 namespace gctools {
 
 constexpr size_t Alignment() {
   return sizeof(Header_s);
-  //            return alignof(Header_s);
 };
 constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
 
 template <class T>
 inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
 
-#if 0
-    template <> inline size_t sizeof_with_header<gctools::Pad1_s>() { return AlignUp(sizeof(gctools::Pad1_s)); };
-    template <> inline size_t sizeof_with_header<gctools::Pad_s>() { return AlignUp(sizeof(gctools::Pad_s)); };
-    template <> inline size_t sizeof_with_header<gctools::Fwd_s>() { return AlignUp(sizeof(gctools::Fwd_s)); };
-    template <> inline size_t sizeof_with_header<gctools::Fwd2_s>() { return AlignUp(sizeof(gctools::Fwd2_s)); };
-#endif
 };
 
 /* Align size upwards and ensure that it's big enough to store a
@@ -362,12 +309,6 @@ class Cons_O;
 //
 namespace gctools {
 #define AMC_AP _global_automatic_mostly_copying_allocation_point
-#if 0
-    template <>
-    struct allocation_point<core::Fixnum_O> {
-        static mps_ap_t get() { return AMC_AP;};
-    };
-#endif
 template <>
 struct allocation_point<core::Cons_O> {
   static mps_ap_t get() { return AMC_AP; };

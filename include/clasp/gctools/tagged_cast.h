@@ -2,6 +2,7 @@ namespace gctools {
 
 // Cast assumes that the client pointer is untagged already
 #ifdef USE_BOEHM
+  #ifdef USE_CXX_DYNAMIC_CAST
     template <typename TOPTR, typename FROMPTR>
     struct Cast {
         typedef TOPTR ToType;
@@ -9,12 +10,19 @@ namespace gctools {
         inline static bool isA(FromType client) {
             return (dynamic_cast<ToType>(client) != NULL);
         }
-//        static ToType castOrNULL(FromType client) {
-//            ToType ptr = dynamic_cast<ToType>(client);
-//            if (ptr) return ptr;
-//            return NULL;
-//        }
     };
+  #else
+    template <typename TOPTR, typename FROMPTR>
+    struct Cast {
+        typedef TOPTR ToType;
+        typedef FROMPTR FromType;
+        // No default methods for isA or castOrNULL are provided for MPS - they must all be provided by clasp_gc.cc
+        inline static bool isA(FromType client) {
+            printf("%s:%d Add support for Cast::isA for this type\n", __FILE__, __LINE__);
+            return false;
+        }
+    };
+  #endif
 #endif
 #ifdef USE_MPS
     template <typename TOPTR, typename FROMPTR>

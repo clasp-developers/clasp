@@ -139,7 +139,13 @@ struct GCKind {
 #endif // RUNNING_GC_BUILDER
 #endif // USE_MPS
 #ifdef USE_BOEHM
+  #ifdef USE_CXX_DYNAMIC_CAST
   static GCKindEnum const Kind = KIND_null; // minimally define KIND_null
+  #else
+// We don't want a default Kind when compiling the boehm version of the code
+// to force compiler errors when the Kind for an object hasn't been declared
+// using clasp_gc.cc
+  #endif // USE_CXX_DYNAMIC_CAST
 #endif
 };
 };

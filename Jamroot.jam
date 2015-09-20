@@ -12,9 +12,10 @@ using clang : : [ os.environ CLASP_CLANG_PATH ] ; #   $(APPRES-EXTERNALS-RELEASE
 #using bundler : $(TOP) ;
 #using gc ;
 import feature ;
-feature.feature gc : mps-prep mps boehm
+feature.feature gc : boehmdc boehm mps-prep mps 
                 : symmetric composite propagated link-incompatible ;
 feature.compose <gc>mps : <define>USE_MPS ;
+feature.compose <gc>boehmdc : <define>USE_BOEHM <define>USE_CXX_DYNAMIC_CAST ;
 feature.compose <gc>boehm : <define>USE_BOEHM ;
 feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # used for testing MPS
 

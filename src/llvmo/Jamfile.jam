@@ -41,6 +41,19 @@ local sources =
 
 lib llvmo : $(sources) ;
 
+stripped-bitcode intrinsics_bitcode_boehmdc : intrinsics.cc
+	/internals/core//core
+	/externals//boostAndExpatLibs
+	/externals//llvm_lib
+	:
+	<implicit-dependency>/internals/core//core
+	<implicit-dependency>/internals/clbind//clbind
+	<link>static
+        <gc>boehmdc
+	<cxxflags>"-flto -emit-llvm" ;
+
+explicit intrinsics_bitcode_boehmdc ;
+
 stripped-bitcode intrinsics_bitcode_boehm : intrinsics.cc
 	/internals/core//core
 	/externals//boostAndExpatLibs
@@ -81,6 +94,11 @@ stripped-bitcode intrinsics_bitcode_mps_prep : intrinsics.cc
 explicit intrinsics_bitcode_mps_prep ;
 
 
+install install_intrinsics_bitcode : intrinsics_bitcode_boehmdc :
+	<variant>debug:<location>$(APP-DEBUG-LIB)
+	<variant>release:<location>$(APP-RELEASE-LIB)
+        <gc>boehmdc
+        ;
 
 install install_intrinsics_bitcode : intrinsics_bitcode_boehm :
 	<variant>debug:<location>$(APP-DEBUG-LIB)

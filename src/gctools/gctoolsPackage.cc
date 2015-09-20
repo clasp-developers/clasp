@@ -172,22 +172,23 @@ core::Fixnum_sp core_header_kind(T_sp obj) {
 #ifdef USE_BOEHM
 
 struct ReachableClass {
-  ReachableClass() : typeidName(NULL){};
-  ReachableClass(const char *tn) : typeidName(tn), instances(0), totalSize(0) {}
+  ReachableClass() : _Kind(gctools::KIND_null){};
+  ReachableClass(gctools::GCKindEnum tn) : _Kind(tn), instances(0), totalSize(0) {}
   void update(size_t sz) {
     ++this->instances;
     this->totalSize += sz;
   };
-  const char *typeidName;
+  gctools::GCKindEnum _Kind;
   size_t instances;
   size_t totalSize;
   size_t print(const std::string &shortName) {
-    printf("%s: total_size: %10lu count: %8lu avg.sz: %8lu %s\n", shortName.c_str(),
-           this->totalSize, this->instances, this->totalSize / this->instances, this->typeidName);
+    printf("%s: total_size: %10lu count: %8lu avg.sz: %8lu kind: %zu\n", shortName.c_str(),
+           this->totalSize, this->instances, this->totalSize / this->instances, this->_Kind);
     return this->totalSize;
   }
 };
 
+#if 0
 struct ReachableContainer {
   ReachableContainer() : typeidName(NULL){};
   ReachableContainer(const char *tn) : typeidName(tn), instances(0), totalSize(0), largest(0) {}
@@ -208,13 +209,11 @@ struct ReachableContainer {
     return this->totalSize;
   }
 };
+#endif
 
-typedef map<const char *, ReachableClass> ReachableClassMap;
-typedef map<const char *, ReachableContainer> ReachableContainerMap;
+
+typedef map<gctools::GCKindEnum, ReachableClass> ReachableClassMap;
 static ReachableClassMap *static_ReachableClassKinds;
-static ReachableClassMap *static_ReachableLispKinds;
-static ReachableContainerMap *static_ReachableContainerKinds;
-static ReachableContainerMap *static_ReachableStringKinds;
 static size_t invalidHeaderTotalSize = 0;
 int globalSearchMarker = 0;
 extern "C" {
@@ -223,51 +222,13 @@ void boehm_callback_reachable_object(GC_word *ptr, size_t sz) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
   if (h->isValid()) {
     if (h->markerMatches(globalSearchMarker)) {
-      switch (h->kind()) {
-      case gctools::BoehmClassKind: {
-        ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->name());
-        if (it == static_ReachableClassKinds->end()) {
-          ReachableClass reachableClass(h->name());
-          reachableClass.update(sz);
-          (*static_ReachableClassKinds)[h->name()] = reachableClass;
-        } else {
-          it->second.update(sz);
-        }
-        break;
-      }
-      case gctools::BoehmLispKind: {
-        ReachableClassMap::iterator it = static_ReachableLispKinds->find(h->name());
-        if (it == static_ReachableLispKinds->end()) {
-          ReachableClass reachableClass(h->name());
-          reachableClass.update(sz);
-          (*static_ReachableLispKinds)[h->name()] = reachableClass;
-        } else {
-          it->second.update(sz);
-        }
-        break;
-      }
-      case gctools::BoehmContainerKind: {
-        ReachableContainerMap::iterator it = static_ReachableContainerKinds->find(h->name());
-        if (it == static_ReachableContainerKinds->end()) {
-          ReachableContainer reachableContainer(h->name());
-          reachableContainer.update(sz);
-          (*static_ReachableContainerKinds)[h->name()] = reachableContainer;
-        } else {
-          it->second.update(sz);
-        }
-        break;
-      }
-      case gctools::BoehmStringKind: {
-        ReachableContainerMap::iterator it = static_ReachableStringKinds->find(h->name());
-        if (it == static_ReachableStringKinds->end()) {
-          ReachableContainer reachableContainer(h->name());
-          reachableContainer.update(sz);
-          (*static_ReachableStringKinds)[h->name()] = reachableContainer;
-        } else {
-          it->second.update(sz);
-        }
-        break;
-      }
+      ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->kind());
+      if (it == static_ReachableClassKinds->end()) {
+        ReachableClass reachableClass(h->kind());
+        reachableClass.update(sz);
+        (*static_ReachableClassKinds)[h->kind()] = reachableClass;
+      } else {
+        it->second.update(sz);
       }
     }
   } else {
@@ -451,22 +412,12 @@ T_mv af_room(T_sp x, Fixnum_sp marker, T_sp tmsg) {
 #ifdef USE_BOEHM
   globalSearchMarker = core::unbox_fixnum(marker);
   static_ReachableClassKinds = new (ReachableClassMap);
-  static_ReachableLispKinds = new (ReachableClassMap);
-  static_ReachableContainerKinds = new (ReachableContainerMap);
-  static_ReachableStringKinds = new (ReachableContainerMap);
   invalidHeaderTotalSize = 0;
   GC_enumerate_reachable_objects(boehm_callback_reachable_object);
   printf("Walked LispKinds\n");
   size_t totalSize(0);
-  totalSize += dumpResults("Reachable StringKinds", "strs", static_ReachableStringKinds);
-  totalSize += dumpResults("Reachable ContainerKinds", "cont", static_ReachableContainerKinds);
-  totalSize += dumpResults("Reachable LispKinds", "lisp", static_ReachableLispKinds);
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
-  printf("Done walk of memory  %lu ClassKinds   %lu LispKinds   %lu ContainerKinds   %lu StringKinds\n",
-         static_ReachableClassKinds->size(),
-         static_ReachableLispKinds->size(),
-         static_ReachableContainerKinds->size(),
-         static_ReachableStringKinds->size());
+  printf("Done walk of memory  %lu ClassKinds\n", static_ReachableClassKinds->size() );
   printf("%s invalidHeaderTotalSize = %12lu\n", smsg.c_str(), invalidHeaderTotalSize);
   printf("%s memory usage (bytes):    %12lu\n", smsg.c_str(), totalSize);
   printf("%s GC_get_heap_size()       %12lu\n", smsg.c_str(), GC_get_heap_size());
@@ -475,9 +426,6 @@ T_mv af_room(T_sp x, Fixnum_sp marker, T_sp tmsg) {
   printf("%s GC_get_total_bytes()     %12lu\n", smsg.c_str(), GC_get_total_bytes());
 
   delete static_ReachableClassKinds;
-  delete static_ReachableLispKinds;
-  delete static_ReachableContainerKinds;
-  delete static_ReachableStringKinds;
 #endif
   gc::GCStack* stack = threadLocalStack();
   size_t totalMaxSize = stack->maxSize();

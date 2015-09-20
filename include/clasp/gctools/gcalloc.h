@@ -257,7 +257,7 @@ struct RootClassAllocator {
 #endif
 #ifdef USE_BOEHM
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
-    new (base) Header_s(const_cast<char *>(typeid(T).name()), BoehmClassKind);
+    new (base) Header_s(GCKind<T>::Kind);
     T *obj = BasePtrToMostDerivedPtr<T>(base);
     new (obj) T(std::forward<ARGS>(args)...);
     POLL_SIGNALS();
@@ -311,7 +311,7 @@ struct ClassAllocator {
 #endif
 #ifdef USE_BOEHM
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
-    new (base) Header_s(typeid(T).name(), BoehmClassKind);
+    new (base) Header_s(GCKind<T>::Kind);
     T *obj = BasePtrToMostDerivedPtr<T>(base);
     new (obj) T(std::forward<ARGS>(args)...);
     POLL_SIGNALS();
@@ -363,7 +363,7 @@ struct GCObjectAppropriatePoolAllocator {
     // By default allocate in the normal pool for objects that contain pointers
     // to other objects.
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
-    new (base) Header_s(typeid(OT).name(), BoehmLispKind);
+    new (base) Header_s(GCKind<OT>::Kind);
     pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
     new (ptr) OT(std::forward<ARGS>(args)...);
     smart_pointer_type sp = smart_ptr<value_type>(ptr);
@@ -408,7 +408,7 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/true, /*Moveable=*/true> 
 #ifdef USE_BOEHM
     // Atomic objects (do not contain pointers) are allocated in separate pool
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(size));
-    new (base) Header_s(typeid(OT).name(), BoehmLispKind);
+    new (base) Header_s(GCKind<OT>::Kind);
     pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
     new (ptr) OT(std::forward<ARGS>(args)...);
     smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
@@ -454,7 +454,7 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/false, /*Moveable=*/false
     // By default allocate in the normal pool for objects that contain pointers
     // to other objects.
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
-    new (base) Header_s(typeid(OT).name(), BoehmLispKind);
+    new (base) Header_s(GCKind<OT>::Kind);
     pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
     new (ptr) OT(std::forward<ARGS>(args)...);
     smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
@@ -547,7 +547,7 @@ public:
     globalBytesAllocated += sz;
 #endif
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
-    new (base) Header_s(typeid(OT).name(), BoehmLispKind);
+    new (base) Header_s(GCKind<OT>::Kind);
     pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
     new (ptr) OT(std::forward<ARGS>(args)...);
     smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
@@ -646,7 +646,7 @@ public:
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
     if (!base)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
-    new (base) Header_s(typeid(TY).name(), BoehmContainerKind);
+    new (base) Header_s(GCKind<TY>::Kind);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
     POLL_SIGNALS();
     return gctools::tagged_pointer<container_type>(myAddress);
@@ -739,7 +739,7 @@ public:
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
     if (!base)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
-    new (base) Header_s(typeid(TY).name(), BoehmContainerKind);
+    new (base) Header_s(GCKind<TY>::Kind);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
     POLL_SIGNALS();
     return myAddress;
@@ -828,7 +828,7 @@ public:
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(sz));
     if (!base)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
-    new (base) Header_s(typeid(TY).name(), BoehmStringKind);
+    new (base) Header_s(GCKind<TY>::Kind);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
     new (myAddress) TY(num);
     POLL_SIGNALS();

@@ -48,22 +48,41 @@ namespace clbind {
 class ConstructorCreator;
 };
 
-#ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
 #ifdef USE_MPS
-#define DECLARE_FORWARDS
-#include GARBAGE_COLLECTION_INCLUDE
-#undef DECLARE_FORWARDS
+  #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
+    #define DECLARE_FORWARDS
+    #include GARBAGE_COLLECTION_INCLUDE
+    #undef DECLARE_FORWARDS
+  #endif // ifndef RUNNING_GC_BUILDER
 #endif
-#endif // ifndef RUNNING_GC_BUILDER
+#ifdef USE_BOEHM
+  #ifdef USE_CXX_DYNAMIC_CAST
+    // nothing
+  #else
+    #define DECLARE_FORWARDS
+    #include GARBAGE_COLLECTION_INCLUDE
+    #undef DECLARE_FORWARDS
+  #endif
+#endif
 
 namespace gctools {
 
-#ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
 #ifdef USE_MPS
-#define GC_KIND_SELECTORS
-#include GARBAGE_COLLECTION_INCLUDE
-#undef GC_KIND_SELECTORS
+  #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
+    #define GC_KIND_SELECTORS
+    #include GARBAGE_COLLECTION_INCLUDE
+    #undef GC_KIND_SELECTORS
+  #endif // ifndef RUNNING_GC_BUILDER
 #endif
-#endif // ifndef RUNNING_GC_BUILDER
+#ifdef USE_BOEHM
+  #ifdef USE_CXX_DYNAMIC_CAST
+    // Nothing
+  #else
+    #define GC_KIND_SELECTORS
+    #include GARBAGE_COLLECTION_INCLUDE
+    #undef GC_KIND_SELECTORS
+  #endif
+#endif
+
 };
 #endif

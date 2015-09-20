@@ -22,6 +22,9 @@ project internals/main : requirements
 lib rt : : <name>rt ;
 
 alias gclib : /externals//lib_boehm :
+      <gc>boehmdc ;
+
+alias gclib : /externals//lib_boehm :
       <gc>boehm ;
 
 alias gclib : mymps.c :
@@ -49,6 +52,11 @@ sources =
 
 exe clasp : main.cc $(sources)
     /externals//lib_boehm/<link>static
+    : <gc>boehmdc
+    ;
+
+exe clasp : main.cc $(sources)
+    /externals//lib_boehm/<link>static
     : <gc>boehm
     ;
 
@@ -67,15 +75,19 @@ exe clasp : main.cc $(sources)
 
 install dist : clasp
         :
+        <program>clasp,<target-os>linux,<variant>release,<gc>boehmdc:<location>$(APPBIN-LINUX)/release/boehmdc
         <program>clasp,<target-os>linux,<variant>release,<gc>boehm:<location>$(APPBIN-LINUX)/release/boehm
         <program>clasp,<target-os>linux,<variant>release,<gc>mps-prep:<location>$(APPBIN-LINUX)/release/mps-prep
         <program>clasp,<target-os>linux,<variant>release,<gc>mps:<location>$(APPBIN-LINUX)/release/mps
+        <program>clasp,<target-os>linux,<variant>debug,<gc>boehmdc:<location>$(APPBIN-LINUX)/debug/boehmdc
         <program>clasp,<target-os>linux,<variant>debug,<gc>boehm:<location>$(APPBIN-LINUX)/debug/boehm
         <program>clasp,<target-os>linux,<variant>debug,<gc>mps-prep:<location>$(APPBIN-LINUX)/debug/mps-prep
         <program>clasp,<target-os>linux,<variant>debug,<gc>mps:<location>$(APPBIN-LINUX)/debug/mps
+        <program>clasp,<target-os>darwin,<variant>release,<gc>boehmdc:<location>$(APPBIN-DARWIN)/release/boehmdc
         <program>clasp,<target-os>darwin,<variant>release,<gc>boehm:<location>$(APPBIN-DARWIN)/release/boehm
         <program>clasp,<target-os>darwin,<variant>release,<gc>mps-prep:<location>$(APPBIN-DARWIN)/release/mps-prep
         <program>clasp,<target-os>darwin,<variant>release,<gc>mps:<location>$(APPBIN-DARWIN)/release/mps
+        <program>clasp,<target-os>darwin,<variant>debug,<gc>boehmdc:<location>$(APPBIN-DARWIN)/debug/boehmdc
         <program>clasp,<target-os>darwin,<variant>debug,<gc>boehm:<location>$(APPBIN-DARWIN)/debug/boehm
         <program>clasp,<target-os>darwin,<variant>debug,<gc>mps-prep:<location>$(APPBIN-DARWIN)/debug/mps-prep
         <program>clasp,<target-os>darwin,<variant>debug,<gc>mps:<location>$(APPBIN-DARWIN)/debug/mps
