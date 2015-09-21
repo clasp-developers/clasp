@@ -106,12 +106,19 @@ namespace core {
       // Either assume that the VaList_sp is not at the start or ensure that it always is
       // Here I'm assuming that it is not always at the start.   To do it the other way
       // change cl_apply
+          core::T_O* arg0;
+          core::T_O* arg1;
+          core::T_O* arg2;
+          VaList_S& valist_s = *args;
+          LCC_VA_LIST_INDEXED_ARG(arg0,valist_s,0);
+          LCC_VA_LIST_INDEXED_ARG(arg1,valist_s,1);
+          LCC_VA_LIST_INDEXED_ARG(arg2,valist_s,2);
       gc::return_type res = (*ft).invoke_va_list( NULL,
                                                   args.raw_(),
                                                   LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),
-                                                  LCC_VA_LIST_REGISTER_ARG0(args),
-                                                  LCC_VA_LIST_REGISTER_ARG1(args),
-                                                  LCC_VA_LIST_REGISTER_ARG2(args) );
+                                                  arg0, // LCC_VA_LIST_REGISTER_ARG0(args),
+                                                  arg1, // LCC_VA_LIST_REGISTER_ARG1(args),
+                                                  arg2 ); //LCC_VA_LIST_REGISTER_ARG2(args) );
       return res;
     }
     inline LCC_RETURN funcall(T_sp fn) {

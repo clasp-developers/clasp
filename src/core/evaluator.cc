@@ -1701,9 +1701,10 @@ T_mv cl_apply(T_sp head, VaList_sp args) {
     core::T_O* arg0;
     core::T_O* arg1;
     core::T_O* arg2;
-    LCC_VA_LIST_INDEXED_ARG(arg0,args->_Args,0);
-    LCC_VA_LIST_INDEXED_ARG(arg1,args->_Args,1);
-    LCC_VA_LIST_INDEXED_ARG(arg2,args->_Args,2);
+          VaList_S& valist_s = *args;
+          LCC_VA_LIST_INDEXED_ARG(arg0,valist_s,0);
+          LCC_VA_LIST_INDEXED_ARG(arg1,valist_s,1);
+          LCC_VA_LIST_INDEXED_ARG(arg2,valist_s,2);
     gc::return_type res = (*ft).invoke_va_list( NULL,
                                                 args.raw_(),
                                                 LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),

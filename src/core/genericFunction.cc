@@ -208,8 +208,7 @@ T_mv compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
 }
 
 /*! Mimic ECL>>gfun.d fill_spec_vector */
-gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vektor,
-                                      VaList_sp vargs) {
+gctools::Vec0<T_sp>& fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp>& vektor, VaList_sp vargs) {
   va_list cargs;
   va_copy(cargs,(*vargs)._Args);
 #if DEBUG_CLOS >= 2
@@ -218,10 +217,9 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
   int narg = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
   T_sp spec_how_list = gf->GFUN_SPECIALIZERS();
   // cl_object *argtype = vector->vector.self.t; // ??
-  gctools::Vec0<T_sp> &argtype = vektor;
-  int spec_no = 1;
+  gctools::Vec0<T_sp>& argtype = vektor;
   argtype[0] = gf;
-  vektor.resize(1 + cl_length(spec_how_list), _Nil<T_O>());
+  int spec_no = 1;
 #if DEBUG_CLOS >= 2
   printf("MLOG fill_spec_vector - writing to argtype[%d] at %p wrote: %lX\n",
          0, argtype[0].px_address(), argtype[0].intptr());
@@ -231,7 +229,9 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
     T_sp spec_type = oCar(spec_how);
     int spec_position = unbox_fixnum(gc::As<Fixnum_sp>(oCdr(spec_how)));
     if (spec_position >= narg) {
-      SIMPLE_ERROR(BF("Insufficient arguments for %s - expected specializer argument at position %d of specializer-type %s but only %d arguments were passed") % _rep_(gf) % (spec_position + 1) % _rep_(spec_type) % narg);
+      SIMPLE_ERROR(BF("Insufficient arguments for %s - expected specializer argument at "
+                      "position %d of specializer-type %s but only %d arguments were passed")
+                   % _rep_(gf) % (spec_position + 1) % _rep_(spec_type) % narg);
     } else if (spec_no >= vektor.capacity()) {
       SIMPLE_ERROR(BF("Too many arguments to fill_spec_vector()"));
     }
@@ -241,7 +241,8 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
     {
       Class_sp mc = lisp_instance_class(spec_position_arg);
 #if DEBUG_CLOS >= 2
-      printf("MLOG fill_spec_vector argtype[%d] using class_of(args[%d]): %s\n", spec_no, spec_position, mc->__repr__().c_str());
+      printf("MLOG fill_spec_vector argtype[%d] using class_of(args[%d]): %s\n",
+             spec_no, spec_position, mc->__repr__().c_str());
 #endif
       argtype[spec_no] = mc;
     } else {
@@ -262,7 +263,7 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
 #endif
     ++spec_no;
   }
-  ASSERT(spec_no == vektor.size());
+  vektor.unsafe_set_end(spec_no);
   return vektor;
 }
 
@@ -274,7 +275,7 @@ LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist) {
 	   Then call the effective method with the saved arguments.
 	*/
   gc::tagged_pointer<Cache> cache(_lisp->methodCachePtr());
-  gctools::Vec0<T_sp> &vektor = fill_spec_vector(gf, cache->keys(), arglist );
+  gctools::Vec0<T_sp>& vektor = fill_spec_vector(gf, cache->keys(), arglist );
   CacheRecord *e; //gctools::StackRootedPointer<CacheRecord> e;
   try {
     cache->search_cache(e); // e = ecl_search_cache(cache);
@@ -308,29 +309,7 @@ LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist) {
       e->_value = func;
     }
   }
-#if 0
-        if ( _sym_STARdebugGenericDispatchSTAR->symbolValue().notnilp() ) {
-	    Function_sp gff = eval::lookupFunction(gf,frame);
-            printf("%s:%d:%s Entered standard_dispatch  gf->%s\n",
-		   __FILE__, __LINE__, __FUNCTION__, gff->closure->nameAsString().c_str());
-        }
-#endif
-  /* The call below depends on the modified cl_apply function defined in lisp.cc
-    it is set up to accept either a ValueFrame as the second (and last) argument
-    or a StackFrame and treat it like a list of arguments.
-*/
-        ASSERT_LCC_VA_LIST_AT_START(*arglist);
-        return eval::funcall(func, arglist, _Nil<T_O>());
-        // Was this using ALLOC_STACK_VALUE_FRAME... above
-//        return eval::funcall(func, frame, _Nil<T_O>()); 
-#if 0	
-        if ( _sym_STARdebugGenericDispatchSTAR->symbolValue().notnilp() ) {
-	    Function_sp gff = eval::lookupFunction(gf,frame);
-            printf("%s:%d:%s Returning from standard_dispatch  gf->%s\n",
-		   __FILE__, __LINE__, __FUNCTION__, gff->closure->nameAsString().c_str());
-	}
-	return result;
-#endif
+  return eval::funcall(func, arglist, _Nil<T_O>());
 }
 
 /*! Reproduces functionality in generic_function_dispatch_vararg

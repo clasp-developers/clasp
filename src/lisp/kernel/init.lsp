@@ -420,15 +420,15 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
 (export '(+image-pathname+ build-intrinsics-bitcode-pathname))
 
-(defun build-hostname (type)
-  (let* ((stage (if (recursive-find :ecl-min *features*) "min" (if (recursive-find :cclasp *features*) "cclasp" "full")))
+(defun build-hostname (type &optional stage)
+  (let* ((stage (if stage stage (if (recursive-find :ecl-min *features*) "min" (if (recursive-find :cclasp *features*) "cclasp" "full"))))
          (type-modified-host-suffix (cond
                                       ((string-equal type "bc") "bitcode")
                                       (t (if (recursive-find :use-mps *features*) "mps" "boehm"))))
          (bitcode-host (bformat nil "%s-%s" stage type-modified-host-suffix)))
     bitcode-host))
 
-(defun build-pathname (module &optional (type "lsp"))
+(defun build-pathname (module &optional (type "lsp") stage)
   (let ((pathname (cond
                     ((pathnamep module)
                      (merge-pathnames module
@@ -440,7 +440,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                      (merge-pathnames (pathname (string module))
                                       (make-pathname :host "sys" :directory '(:absolute) :type type)))
                     (t (error "bad module name: ~s" module))))
-        (target-host (build-hostname type)))
+        (target-host (build-hostname type stage)))
     (if (member type '("lsp" "lisp") :test #'string-equal)
         pathname
         (let ((relative (maybe-relative-pathname-to-sys pathname)))
@@ -582,8 +582,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 
-(defun delete-init-file (module &key (really-delete t))
-  (let ((bitcode-path (build-pathname module "bc"))) ;; (target-backend-pathname (get-pathname-with-type module "bc"))))
+(defun delete-init-file (module &key (really-delete t) stage)
+  (let ((bitcode-path (build-pathname module "bc" stage))) ;; (target-backend-pathname (get-pathname-with-type module "bc"))))
     (if (probe-file bitcode-path)
 	(if really-delete
 	    (progn
@@ -904,7 +904,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	  (tagbody
 	   top
 	     (if (endp cur) (go done))
-	     (delete-init-file (car cur) :really-delete t )
+	     (delete-init-file (car cur) :really-delete t :stage target-backend )
 	     (setq cur (cdr cur))
 	     (go top)
 	   done

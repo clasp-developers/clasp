@@ -123,7 +123,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
     inline size_t nargs() const {return LCC_raw_VA_LIST_NUMBER_OF_ARGUMENTS(this->_Args);};
     inline core::T_O* indexed_arg(size_t idx) const {
       core::T_O* res;
-      LCC_VA_LIST_INDEXED_ARG(res,this->_Args,idx);
+      LCC_VA_LIST_INDEXED_ARG(res,*this,idx);
       return res;
     }
   };

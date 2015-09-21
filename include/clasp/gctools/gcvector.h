@@ -112,6 +112,7 @@ namespace gctools {
   public:
     value_type *data() { return &this->_Data[0]; };
     size_t size() { return this->_End; };
+    inline void unsafe_set_end(size_t e) { this->_End = e;}
     size_t capacity() const { return this->_Capacity; };
     inline value_type &operator[](size_t i) { return this->_Data[i]; };
     const value_type &operator[](size_t i) const { return this->_Data[i]; };
@@ -121,6 +122,12 @@ namespace gctools {
     const_iterator end() const { return iterator(this,this->_End); };
   };
 };
+
+
+
+
+
+
 #if 0
 namespace std {
   template <typename T>
@@ -155,7 +162,8 @@ namespace gctools {
   // Only this instance variable is allowed
     gctools::tagged_pointer<GCVector_moveable<T>> _Contents;
 
-
+  public:
+    inline void unsafe_set_end(size_t e) { this->_Contents->unsafe_set_end(e);}
   public:
   // Copy Ctor
     GCVector<T, Allocator>(const GCVector<T, Allocator> &that) // : GCContainer(GCInfo<value_type>::Kind)

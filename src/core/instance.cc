@@ -50,7 +50,9 @@ LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
 #ifdef _DEBUG_BUILD
   VaList_S saved_args(*reinterpret_cast<VaList_S*>(untag_valist(lcc_arglist)));
 #endif
-  return (this->entryPoint)(this->instance,VaList_sp((gc::Tagged)lcc_arglist));
+  VaList_sp gfargs((gc::Tagged)lcc_arglist);
+//  LCC_SKIP_ARG(gfargs);
+  return (this->entryPoint)(this->instance,gfargs);
 }
 
 #define ARGS_clos_setFuncallableInstanceFunction "(instance func)"

@@ -57,11 +57,12 @@ public: // Functions here
   virtual T_sp elt(int index) const;
   virtual T_sp setf_elt(int index, T_sp value);
 
+
   string __repr__() const;
 
   cl_index fillPointer() const { return this->_FillPtr; };
   void setf_fillPointer(cl_index fp);
-
+  void unsafe_setf_fill_pointer(Fixnum fp) { this->_FillPtr = fp; };
   T_sp vectorPush(T_sp newElement);
   Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 16);
 };
