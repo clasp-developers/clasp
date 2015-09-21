@@ -414,6 +414,21 @@ struct TaggedCast<core::Cons_O *, FP> {
   }
 };
 
+ template <typename FROM>
+struct TaggedCast<core::VaList_S*, FROM> {
+  typedef core::VaList_S* ToType;
+  typedef FROM FromType;
+    inline static bool isA(FromType ptr) {
+      return tagged_valistp(ptr);
+  }
+    inline static ToType castOrNULL(FromType client) {
+    if (TaggedCast<ToType, FromType>::isA(client))
+      return reinterpret_cast<ToType>(client);
+    return NULL;
+  }
+};
+
+
 }; // namespace gctools
 
 

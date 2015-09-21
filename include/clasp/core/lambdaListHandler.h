@@ -44,6 +44,7 @@ typedef enum { required,
                optional,
                dot_rest,
                rest,
+               va_rest, 
                keyword,
                allowOtherKeys,
                aux } ArgumentMode;

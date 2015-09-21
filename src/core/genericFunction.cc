@@ -92,7 +92,7 @@ List_sp listOfObjects(VaList_sp vargs)
 {
   core::List_sp list = _Nil<core::T_O>(); 
   va_list cargs; 
-  va_copy(cargs,LCC_VA_LIST(vargs)); 
+  va_copy(cargs,(*vargs)._Args);
   size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs); 
   core::Cons_sp* cur = reinterpret_cast<core::Cons_sp*>(&list); 
   for( int p=0; p<nargs; ++p ) { 
@@ -108,7 +108,7 @@ List_sp listOfClasses(VaList_sp vargs)
 {
   core::List_sp list = _Nil<core::T_O>(); 
   va_list cargs; 
-  va_copy(cargs,LCC_VA_LIST(vargs)); 
+  va_copy(cargs,(*vargs)._Args);
   size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs); 
   core::Cons_sp* cur = reinterpret_cast<core::Cons_sp*>(&list); 
   for( int p=0; p<nargs; ++p ) { 
@@ -211,7 +211,7 @@ T_mv compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
 gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vektor,
                                       VaList_sp vargs) {
   va_list cargs;
-  va_copy(cargs,LCC_VA_LIST(vargs));
+  va_copy(cargs,(*vargs)._Args);
 #if DEBUG_CLOS >= 2
   printf("MLOG fill_spec_vector - entered with gf  %s\n", gf->GFUN_NAME()->__repr__().c_str());
 #endif

@@ -103,7 +103,9 @@ namespace core {
 
     inline T_mv apply_consume_VaList(Function_sp func, VaList_sp args ) {
       gctools::tagged_pointer<Closure> ft = func->closure;
-      ASSERT_LCC_VA_LIST_AT_START(*args);
+      // Either assume that the VaList_sp is not at the start or ensure that it always is
+      // Here I'm assuming that it is not always at the start.   To do it the other way
+      // change cl_apply
       gc::return_type res = (*ft).invoke_va_list( NULL,
                                                   args.raw_(),
                                                   LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),

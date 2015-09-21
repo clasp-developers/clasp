@@ -32,6 +32,9 @@ def accumulate_symbols(symbols,lambda_list):
                 elif ( x.lispName() == "&REST"):
                     mode = "rest"
                     continue
+                elif ( x.lispName() == "&VA-REST"):
+                    mode = "va-rest"
+                    continue
                 elif ( x.lispName() == "&BODY"):
                     mode = "rest"
                     continue

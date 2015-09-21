@@ -43,40 +43,16 @@ THE SOFTWARE.
 namespace core {
 
 
-#if 0
-    void lambdaListHandler_createBindings(gctools::tagged_pointer<core::FunctionClosure> closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
-  // TODO: I should allocate this on the stack - but clang doesn't behave consistently
-  // when I use variable stack arrays
-  //        printf("%s:%d About to alloca with lcc_nargs = %zu\n", __FILE__, __LINE__, lcc_nargs);
-  //        T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
-  LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(mv);
+
+void lambdaListHandler_createBindings(gctools::tagged_pointer<core::FunctionClosure> closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
   try {
-    llh->createBindingsInScope_argArray(mv.getSize(), mv.callingArgsStart(), scope);
+    llh->createBindingsInScopeVaList(lcc_nargs, VaList_sp((gc::Tagged)lcc_arglist), scope);
   } catch (...) {
     printf("%s:%d Caught an exception while in createBindingsInScope_argArray_TPtr\n", __FILE__, __LINE__);
     handleArgumentHandlingExceptions(closure);
   }
-  //        printf("%s:%d returning from lambdaListHandler_createBindings\n", __FILE__, __LINE__);
   return;
 }
-#else
-
-    void lambdaListHandler_createBindings(gctools::tagged_pointer<core::FunctionClosure> closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
-  // TODO: I should allocate this on the stack - but clang doesn't behave consistently
-  // when I use variable stack arrays
-  //        printf("%s:%d About to alloca with lcc_nargs = %zu\n", __FILE__, __LINE__, lcc_nargs);
-  //        T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
-//      printf("%s:%d lambdaListHandler_createBindings llh = %s nargs = %d lcc_arglist = %s\n", __FILE__, __LINE__, _rep_(llh).c_str(), lcc_nargs, _rep_(gctools::smart_ptr<T_O>((gc::Tagged)lcc_arglist)).c_str() );
-      try {
-        llh->createBindingsInScopeVaList(lcc_nargs, VaList_sp((gc::Tagged)lcc_arglist), scope);
-      } catch (...) {
-        printf("%s:%d Caught an exception while in createBindingsInScope_argArray_TPtr\n", __FILE__, __LINE__);
-        handleArgumentHandlingExceptions(closure);
-      }
-  //        printf("%s:%d returning from lambdaListHandler_createBindings\n", __FILE__, __LINE__);
-      return;
-    }
-#endif
 
 
 T_sp evaluate_lambda_list_form(T_sp form, T_sp env) {
@@ -149,7 +125,11 @@ T_sp LambdaListHandler_O::lambdaList() {
     }
   }
   if (this->_RestArgument._ArgTarget.notnilp()) {
-    ll << cl::_sym_AMPrest;
+    if ( this->_RestArgument.VaRest ) {
+      ll << core::_sym_AMPva_rest;
+    } else {
+      ll << cl::_sym_AMPrest;
+    }
     ll << this->_RestArgument._ArgTarget;
   }
   if (this->_KeyFlag.notnilp() || this->_KeywordArguments.size() > 0) {
@@ -219,7 +199,6 @@ HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecif
     other than zero but I'll let the caller decide.*/
 
 T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, bool allow_first_argument_default_dispatcher) {
-  _G();
   List_sp llprocessed = cl_copyList(llraw);
   Symbol_sp sd_symbol = _Nil<Symbol_O>();
   Symbol_sp sd_class = _Nil<Symbol_O>();
@@ -428,39 +407,6 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
 
 SYMBOL_SC_(CorePkg, tooFewArguments);
 
-// Setup argument binding for ActivationFrame
-#define PASS_FUNCTION_REQUIRED bind_required_af
-#define PASS_FUNCTION_OPTIONAL bind_optional_af
-#define PASS_FUNCTION_REST bind_rest_af
-#define PASS_FUNCTION_KEYWORD bind_keyword_af
-#define PASS_ARGS ActivationFrame_sp args
-#define PASS_ARGS_NUM cl_length(args)
-#define PASS_NEXT_ARG(arg_idx) args->entry(arg_idx)
-#include "argumentBinding.cc"
-#undef PASS_FUNCTION_REQUIRED
-#undef PASS_FUNCTION_OPTIONAL
-#undef PASS_FUNCTION_REST
-#undef PASS_FUNCTION_KEYWORD
-#undef PASS_ARGS
-#undef PASS_ARGS_NUM
-#undef PASS_NEXT_ARG
-
-#define PASS_FUNCTION_REQUIRED bind_required_argArray
-#define PASS_FUNCTION_OPTIONAL bind_optional_argArray
-#define PASS_FUNCTION_REST bind_rest_argArray
-#define PASS_FUNCTION_KEYWORD bind_keyword_argArray
-#define PASS_ARGS int n_args, ArgArray ap
-#define PASS_ARGS_NUM n_args
-#define PASS_NEXT_ARG(arg_idx) gctools::smart_ptr<core::T_O>((gctools::Tagged)ap[arg_idx])
-#include "argumentBinding.cc"
-#undef PASS_FUNCTION_REQUIRED
-#undef PASS_FUNCTION_OPTIONAL
-#undef PASS_FUNCTION_REST
-#undef PASS_FUNCTION_KEYWORD
-#undef PASS_ARGS
-#undef PASS_ARGS_NUM
-#undef PASS_NEXT_ARG
-
 #define PASS_FUNCTION_REQUIRED bind_required_va_list
 #define PASS_FUNCTION_OPTIONAL bind_optional_va_list
 #define PASS_FUNCTION_REST bind_rest_va_list
@@ -477,27 +423,8 @@ SYMBOL_SC_(CorePkg, tooFewArguments);
 #undef PASS_ARGS_NUM
 #undef PASS_NEXT_ARG
 
-#define PASS_FUNCTION_REQUIRED bind_required_argArray_TPtr
-#define PASS_FUNCTION_OPTIONAL bind_optional_argArray_TPtr
-#define PASS_FUNCTION_REST bind_rest_argArray_TPtr
-#define PASS_FUNCTION_KEYWORD bind_keyword_argArray_TPtr
-#define PASS_ARGS int n_args, T_O *ap[]
-#define PASS_ARGS_NUM n_args
-#define PASS_NEXT_ARG(arg_idx) gctools::smart_ptr<T_O>((gctools::Tagged)ap[arg_idx])
-#include "argumentBinding.cc"
-#undef PASS_FUNCTION_REQUIRED
-#undef PASS_FUNCTION_OPTIONAL
-#undef PASS_FUNCTION_REST
-#undef PASS_FUNCTION_KEYWORD
-#undef PASS_ARGS
-#undef PASS_ARGS_NUM
-#undef PASS_NEXT_ARG
-
 void bind_aux(gctools::Vec0<AuxArgument> const &auxs, DynamicScopeManager &scope) {
   _G();
-  int num_auxs = auxs.size();
-  if (num_auxs == 0)
-    return;
   LOG(BF("There are %d aux variables") % auxs.size());
   gctools::Vec0<AuxArgument>::iterator ci;
   {
@@ -514,74 +441,30 @@ void bind_aux(gctools::Vec0<AuxArgument> const &auxs, DynamicScopeManager &scope
   }
 }
 
-void LambdaListHandler_O::createBindingsInScope_af(
-    ActivationFrame_sp args,
-    DynamicScopeManager &scope) {
-  _G();
-  if (UNLIKELY(!this->_CreatesBindings))
-    return;
-  int arg_idx = 0;
-  arg_idx = bind_required_af(this->_RequiredArguments, args, arg_idx, scope);
-  arg_idx = bind_optional_af(this->_OptionalArguments, args, arg_idx, scope);
-  if (UNLIKELY(arg_idx < cl_length(args) && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
-    throwTooManyArgumentsError(cl_length(args), this->numberOfLexicalVariables());
-    //	    TOO_MANY_ARGUMENTS_ERROR();
-  }
-  bind_rest_af(this->_RestArgument, args, arg_idx, scope);
-  bind_keyword_af(this->_KeywordArguments, this->_AllowOtherKeys, args, arg_idx, scope);
-  bind_aux(this->_AuxArguments, scope);
-}
-
-void LambdaListHandler_O::createBindingsInScope_argArray(int n_args, ArgArray argArray,
-                                                         DynamicScopeManager &scope) {
-  _G();
-  if (UNLIKELY(!this->_CreatesBindings))
-    return;
-  int arg_idx = 0;
-  arg_idx = bind_required_argArray(this->_RequiredArguments, n_args, argArray, arg_idx, scope);
-  arg_idx = bind_optional_argArray(this->_OptionalArguments, n_args, argArray, arg_idx, scope);
-  if (UNLIKELY(arg_idx < n_args && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
-    throwTooManyArgumentsError(n_args, this->numberOfLexicalVariables());
-    //	    TOO_MANY_ARGUMENTS_ERROR();
-  }
-  bind_rest_argArray(this->_RestArgument, n_args, argArray, arg_idx, scope);
-  bind_keyword_argArray(this->_KeywordArguments, this->_AllowOtherKeys, n_args, argArray, arg_idx, scope);
-  bind_aux(this->_AuxArguments, scope);
-}
-
-void LambdaListHandler_O::createBindingsInScope_argArray_TPtr(int n_args, T_O *argArray[],
-                                                              DynamicScopeManager &scope) {
-  _G();
-  if (UNLIKELY(!this->_CreatesBindings))
-    return;
-  int arg_idx = 0;
-  arg_idx = bind_required_argArray_TPtr(this->_RequiredArguments, n_args, argArray, arg_idx, scope);
-  arg_idx = bind_optional_argArray_TPtr(this->_OptionalArguments, n_args, argArray, arg_idx, scope);
-  if (UNLIKELY(arg_idx < n_args && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
-    throwTooManyArgumentsError(n_args, this->numberOfLexicalVariables());
-    //	    TOO_MANY_ARGUMENTS_ERROR();
-  }
-  bind_rest_argArray_TPtr(this->_RestArgument, n_args, argArray, arg_idx, scope);
-  bind_keyword_argArray_TPtr(this->_KeywordArguments, this->_AllowOtherKeys, n_args, argArray, arg_idx, scope);
-  bind_aux(this->_AuxArguments, scope);
-}
 
 void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va,
                                                          DynamicScopeManager &scope) {
-  if (UNLIKELY(!this->_CreatesBindings))
-    return;
+  if (UNLIKELY(!this->_CreatesBindings)) return;
   VaList_S arglist_struct(*va);
   VaList_sp arglist(&arglist_struct);
   int arg_idx = 0;
   arg_idx = bind_required_va_list(this->_RequiredArguments, nargs, arglist, arg_idx, scope);
-  arg_idx = bind_optional_va_list(this->_OptionalArguments, nargs, arglist, arg_idx, scope);
-  if (UNLIKELY(arg_idx < nargs && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
+  if (UNLIKELY(this->_OptionalArguments.size()!=0)) {
+    arg_idx = bind_optional_va_list(this->_OptionalArguments, nargs, arglist, arg_idx, scope);
+  }
+  if (UNLIKELY(arg_idx < nargs 
+               && !(this->_RestArgument.isDefined())
+               && (this->_KeywordArguments.size() == 0))) {
     throwTooManyArgumentsError(nargs, this->numberOfLexicalVariables());
     //	    TOO_MANY_ARGUMENTS_ERROR();
   }
-  bind_rest_va_list(this->_RestArgument, nargs, arglist, arg_idx, scope);
-  bind_keyword_va_list(this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
-  bind_aux(this->_AuxArguments, scope);
+  if ( UNLIKELY(this->_RestArgument.isDefined()) ) {
+    bind_rest_va_list(this->_RestArgument, nargs, arglist, arg_idx, scope);
+  }
+  if ( UNLIKELY(this->_KeywordArguments.size()!=0) ) {
+    bind_keyword_va_list(this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
+  }
+  if (UNLIKELY(this->_AuxArguments.size()!=0)) bind_aux(this->_AuxArguments, scope);
 }
 
 string argument_mode_as_string(ArgumentMode mode) {
@@ -622,8 +505,11 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       if (symbol == cl::_sym_AMPoptional) {
         mode = optional;
         goto NEWMODE;
-      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody ) {
         mode = rest;
+        goto NEWMODE;
+      } else if (symbol == core::_sym_AMPva_rest ) {
+        mode = va_rest;
         goto NEWMODE;
       } else if (symbol == cl::_sym_AMPkey) {
         mode = keyword;
@@ -639,8 +525,11 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       break;
     case optional:
       LOG(BF("Was in optional mode"));
-      if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+      if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody ) {
         mode = rest;
+        goto NEWMODE;
+      } else if (symbol == core::_sym_AMPva_rest ) {
+        mode = va_rest;
         goto NEWMODE;
       } else if (symbol == cl::_sym_AMPkey) {
         mode = keyword;
@@ -656,6 +545,20 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       break;
     case rest:
       LOG(BF("Was in rest mode"));
+      if (symbol == cl::_sym_AMPkey) {
+        mode = keyword;
+        goto NEWMODE;
+      } else if (symbol == cl::_sym_AMPaux) {
+        mode = aux;
+        goto NEWMODE;
+      } else if (symbol == _sym_DOT) {
+        mode = dot_rest;
+        goto NEWMODE;
+      }
+      goto BADMODE;
+      break;
+    case va_rest:
+      LOG(BF("Was in va_rest mode"));
       if (symbol == cl::_sym_AMPkey) {
         mode = keyword;
         goto NEWMODE;
@@ -858,14 +761,15 @@ bool parse_lambda_list(List_sp original_lambda_list,
         SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: ") % restarg.asString());
       }
       restarg.setTarget(oarg);
-#if 0			
-			if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
-			    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
-			    restarg.setTarget(sarg);
-			} else if ( Cons_sp carg = oarg.asOrNull<Cons_O>() ) {
-			    restarg.setTarget(carg);
-			}
-#endif
+      restarg.VaRest = false;
+      break;
+    }
+    case va_rest: {
+      if (restarg.isDefined()) {
+        SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: ") % restarg.asString());
+      }
+      restarg.setTarget(oarg);
+      restarg.VaRest = true;
       break;
     }
     case dot_rest: {
@@ -873,14 +777,6 @@ bool parse_lambda_list(List_sp original_lambda_list,
         SIMPLE_ERROR(BF("Lambda list dot followed by more than one argument"));
       }
       restarg.setTarget(oarg);
-#if 0			
-			if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
-			    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
-			    restarg.setTarget(sarg);
-			} else if ( List_sp carg = oarg.asOrNull<Cons_O>() ) {
-			    restarg.setTarget(carg);
-			}
-#endif
       goto DONE;
     }
     case keyword: {
@@ -1146,7 +1042,11 @@ string LambdaListHandler_O::partsAsString() const {
     ss << asString(this->_OptionalArguments);
   }
   if (this->_RestArgument.isDefined()) {
-    ss << " &rest ";
+    if ( this->_RestArgument.VaRest ) {
+      ss << " &va-rest ";
+    } else {
+      ss << " &rest ";
+    }
     ss << this->_RestArgument.asString();
   }
   if (this->_KeyFlag.notnilp()) {
@@ -1227,7 +1127,9 @@ T_mv LambdaListHandler_O::processLambdaListHandler() const {
 
 bool LambdaListHandler_O::requiredLexicalArgumentsOnlyP() const {
   _G();
-  bool requiredArgumentsOnlyP = (this->_OptionalArguments.size() == 0) && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0) && (!this->_AllowOtherKeys.isTrue()) && (this->_AuxArguments.size() == 0);
+  bool requiredArgumentsOnlyP = (this->_OptionalArguments.size() == 0)
+    && (!this->_RestArgument.isDefined())
+    && (this->_KeywordArguments.size() == 0) && (!this->_AllowOtherKeys.isTrue()) && (this->_AuxArguments.size() == 0);
   if (requiredArgumentsOnlyP) {
     for (gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
          it != this->_RequiredArguments.end(); it++) {

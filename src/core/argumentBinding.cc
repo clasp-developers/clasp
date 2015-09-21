@@ -27,12 +27,13 @@ THE SOFTWARE.
 
 /*! Define the following macros to configure this code for using ActivationFrames 
   or var-args...
-  Name					var_args 				ActivationFrames
-  PASS_FUNCTION_REQUIRED 	bind_required_var_args			bind_required_af
-  PASS_FUNCTION_OPTIONAL 	bind_optional_var_args			bind_optional_af
-  PASS_FUNCTION_REST 		bind_rest_var_args			bind_rest_af
-  PASS_FUNCTION_KEYWORD 	bind_keyword_var_args			bind_keyword_af
-  PASS_ARGS  			'int n_args, va_list ap'		'ActivationFrame_sp args'
+  Name				va_list
+  PASS_FUNCTION_REQUIRED 	bind_required_var_args
+  PASS_FUNCTION_OPTIONAL 	bind_optional_var_args
+  PASS_FUNCTION_REST 		bind_rest_var_args
+  PASS_FUNCTION_VA_REST 	bind_va_rest_var_args
+  PASS_FUNCTION_KEYWORD 	bind_keyword_var_args
+  PASS_ARGS  			'int n_args, va_list ap'	'ActivationFrame_sp args'
   PASS_ARGS_NUM 		'n_args'				'cl_length(args)'
   PASS_NEXT_ARG(arg_idx) 		'gctools::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
 */
@@ -112,7 +113,10 @@ void PASS_FUNCTION_REST(RestArgument const &restarg,
                         PASS_ARGS,
                         int arg_idx,
                         DynamicScopeManager &scope) {
-  if (restarg.isDefined()) {
+  if ( restarg.VaRest ) {
+    scope.valist().set(&*arglist,n_args-arg_idx);
+    scope.va_rest_binding(restarg);
+  } else {
     Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
     Cons_O::CdrType_sp *curP = &rest;
     //        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&rest);
@@ -127,16 +131,25 @@ void PASS_FUNCTION_REST(RestArgument const &restarg,
   }
 }
 
+
+
+void PASS_FUNCTION_VA_REST(RestArgument const &va_restarg,
+                           PASS_ARGS,
+                           int arg_idx,
+                           DynamicScopeManager &scope) {
+  Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
+  Cons_O::CdrType_sp *curP = &rest;
+  scope.valist().set(&*arglist,n_args-arg_idx);
+  scope.va_rest_binding(va_restarg);
+}
+
 int PASS_FUNCTION_KEYWORD(gctools::Vec0<KeywordArgument> const &keyed_args,
                           T_sp allow_other_keys,
                           PASS_ARGS,
                           int arg_idx,
                           DynamicScopeManager &scope) {
-  _G();
   int num_args(PASS_ARGS_NUM);
   int num_keyed_arguments = keyed_args.size();
-  if (num_keyed_arguments == 0)
-    return arg_idx;
   bool passed_allow_other_keys = false;
   bool* sawkeys = (bool*)(__builtin_alloca(sizeof(bool)*num_keyed_arguments));
 //  bool sawkeys[num_keyed_arguments];// CALL_ARGUMENTS_LIMIT];

@@ -90,38 +90,10 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
     core::T_O* asTaggedPtr() {
       return gctools::tag_valist<core::T_O*>(this);
     }
-//#define SIMULATE_LIST
-#ifdef SIMULATE_LIST
-    mutable size_t _NumArgs;
-    mutable core::T_O* _Car;
-    mutable bool _Called_va_arg;
-    size_t numberOfArguments() const { return this->_NumArgs;};
-    core::T_O* car() {
-      if ( this->_NumArgs == 0 ) return reinterpret_cast<core::T_O*>(gctools::global_tagged_Symbol_OP_nil);
-      if (this->_Called_va_arg) return this->_Car;
-      this->_Car = va_arg(this->_Args,core::T_O*);
-      --this->_NumArgs;
-      this->_Called_va_arg = true;
-      return this->_Car;
-    }
-    core::T_O* cdr() {
-      if ( this->_NumArgs == 0 ) return reinterpret_cast<core::T_O*>(gctools::global_tagged_Symbol_OP_nil);
-      if ( this->_Called_va_arg ) {
-        this->_Called_va_arg = false;
-        return gctools::tag_valist<core::T_O*>(this);
-      }
-      this->_Car = va_arg(this->_Args,core::T_O*);
-      this->_Called_va_arg = true;
-      --this->_NumArgs;
-      return gctools::tag_valist<core::T_O*>(this);
-    };
-#endif
-
-  VaList_S(gc::frame::Frame& frame)
-#ifdef SIMULATE_LIST
-  : _NumArgs(nargs), _Called_va_arg(false)
-#endif
+    VaList_S(gc::frame::Frame& frame)
     {
+      LCC_SETUP_VA_LIST_FROM_FRAME(this->_Args,frame);
+#if 0
       // This must match (and should be in) lispCallingConvention.h
       this->_Args[0].reg_save_area = &frame.lowLevelElementRef(gc::frame::IdxRegisterSaveArea);
       this->_Args[0].overflow_arg_area = &frame.lowLevelElementRef(gc::frame::IdxOverflowArgs);
@@ -130,39 +102,30 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
       ((uintptr_t*)(this->_Args[0].reg_save_area))[LCC_OVERFLOW_SAVE_REGISTER] = (uintptr_t)(this->_Args[0].overflow_arg_area);
       this->_Args[0].gp_offset = (gc::frame::IdxRegisterArgumentsStart-gc::frame::IdxRegisterSaveArea)*sizeof(gc::frame::ElementType);
       this->_Args[0].fp_offset = 304;
+#endif
     };
     
-  VaList_S(int nargs, va_list vargs)
-#ifdef SIMULATE_LIST
-  : _NumArgs(nargs), _Called_va_arg(false)
-#endif
+    VaList_S(int nargs, va_list vargs)
     {
       va_copy(this->_Args,vargs);
     };
-  VaList_S(const VaList_S& other)
-#ifdef SIMULATE_LIST
-  : _NumArgs(other._NumArgs), _Called_va_arg(false)
-#endif
+    VaList_S(const VaList_S& other)
     {
       va_copy(this->_Args,other._Args);
     }
 
-#if 0    
-  VaList_S(int nargs)
-#ifdef SIMULATE_LIST
-  : _NumArgs(nargs), _Called_va_arg(false)
-#endif
-    {
-   // Nothing, caller must initialize _Args
-  };
-#endif
-  VaList_S()
-#ifdef SIMULATE_LIST
-  : _NumArgs(0), _Called_va_arg(false)
-#endif
-    {
-    };
+    VaList_S() {};
+
+    void set(VaList_S* other,size_t nargs_remaining) {
+      LCC_SETUP_VA_LIST_FROM_VA_LIST(this->_Args,other->_Args,nargs_remaining);
+    }
     virtual ~VaList_S() {}; // Make it polymorphic
+    inline size_t nargs() const {return LCC_raw_VA_LIST_NUMBER_OF_ARGUMENTS(this->_Args);};
+    inline core::T_O* indexed_arg(size_t idx) const {
+      core::T_O* res;
+      LCC_VA_LIST_INDEXED_ARG(res,this->_Args,idx);
+      return res;
+    }
   };
 };
 

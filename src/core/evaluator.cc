@@ -1683,10 +1683,76 @@ IMPLEMENT_MEF(BF("Handle new valist"));
 
 
 
-#define ARGS_cl_apply "(head &rest args)"
+#define ARGS_cl_apply "(head &va-rest args)"
 #define DECL_cl_apply ""
 #define DOCS_cl_apply "apply"
-T_mv cl_apply(T_sp head, T_sp args) {
+T_mv cl_apply(T_sp head, VaList_sp args) {
+#if 1
+  Function_sp func = coerce::functionDesignator(head);
+  int lenArgs = args->nargs();
+  if (lenArgs == 0) {
+    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs);
+  }
+  T_sp last = T_sp((gc::Tagged)args->indexed_arg(lenArgs-1));
+  if (last.nilp()) {
+    // Nil as last argument
+    LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS(args,lenArgs-1);
+    gctools::tagged_pointer<Closure> ft = func->closure;
+    core::T_O* arg0, arg1, arg2;
+    LCC_VA_LIST_INDEXED_ARG(arg0,args,0);
+    LCC_VA_LIST_INDEXED_ARG(arg1,args,1);
+    LCC_VA_LIST_INDEXED_ARG(arg2,args,2);
+    gc::return_type res = (*ft).invoke_va_list( NULL,
+                                                args.raw_(),
+                                                LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),
+                                                arg0, //LCC_VA_LIST_REGISTER_ARG0(args),
+                                                arg1, //LCC_VA_LIST_REGISTER_ARG1(args),
+                                                arg2 ); //LCC_VA_LIST_REGISTER_ARG2(args) );
+    return res;
+  } else if (last.valistp() && lenArgs==1) {
+    VaList_sp valast((gc::Tagged)last.raw_());
+    VaList_S valast_copy(*valast);
+    VaList_sp valast_copy_sp(&valast_copy);
+    return eval::apply_consume_VaList(func,valast_copy_sp);
+  } else if (last.valistp()) {
+    VaList_sp valast((gc::Tagged)last.raw_());
+    VaList_S valist_scopy(*valast);
+    VaList_sp lastArgs(&valist_scopy);// = gc::smart_ptr<VaList_S>((gc::Tagged)last.raw_());
+    int lenFirst = lenArgs - 1;
+    int lenRest = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(lastArgs);
+    int nargs = lenFirst + lenRest;
+    // Allocate a frame on the side stack that can take all arguments
+    gc::frame::Frame frame(nargs);
+    T_sp obj = args;
+    for (int i(0); i < lenFirst; ++i) {
+      frame[i] = LCC_NEXT_ARG_RAW(args,i);
+    }
+    for (int i(lenFirst); i < nargs; ++i) {
+      frame[i] = LCC_NEXT_ARG_RAW(lastArgs,i);
+    }
+    VaList_S valist_struct(frame);
+    VaList_sp valist(&valist_struct);// = frame.setupVaList(valist_struct);
+    return eval::apply_consume_VaList(func, valist);
+  } else if (List_sp cargs = gc::As<Cons_sp>(last)) {
+    // Cons as last argument
+    int lenFirst = lenArgs - 1;
+    int lenRest = cl_length(last);
+    int nargs = lenFirst + lenRest;
+    gc::frame::Frame frame(nargs);
+    T_sp obj = args;
+    for (int i(0); i < lenFirst; ++i) {
+      frame[i] = LCC_NEXT_ARG_RAW(args,i);
+    }
+    for (int i(lenFirst); i < nargs; ++i) {
+      frame[i] = oCar(cargs).raw_();
+      cargs = oCdr(cargs);
+    }
+    VaList_S valist_struct(frame);
+    VaList_sp valist(&valist_struct);// = frame.setupVaList(valist_struct);;
+    return eval::apply_consume_VaList(func, valist);
+  }
+  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
+#else
   Function_sp func = coerce::functionDesignator(head);
   int lenArgs = cl_length(args);
   if (lenArgs == 0) {
@@ -1748,29 +1814,10 @@ T_mv cl_apply(T_sp head, T_sp args) {
     VaList_S valist_struct(frame);
     VaList_sp valist(&valist_struct);// = frame.setupVaList(valist_struct);;
     return eval::apply_consume_VaList(func, valist);
-  } else if (ActivationFrame_sp af_args = gc::As<ActivationFrame_sp>(last)) {
-    DEPRECIATED(); // This should be handed using Frame
-#if 0
-    // ActivationFrame as last argument
-    int lenFirst = lenArgs - 1;
-    int lenRest = af_args->length();
-    int nargs = lenFirst + lenRest;
-    ValueFrame_sp frame(ValueFrame_O::create(nargs, _Nil<ActivationFrame_O>()));
-    T_sp obj = args;
-    for (int i(0); i < lenFirst; ++i) {
-      frame->operator[](i) = oCar(obj);
-      obj = oCdr(obj);
-    }
-    int idx = 0;
-    for (int i(lenFirst); i < nargs; ++i) {
-      frame->operator[](i) = (*af_args)[idx];
-      ++idx;
-    }
-    return eval::applyToActivationFrame(func, frame);
+  }
+  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
 #endif
-  }
-    SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
-  }
+}
 
 #define ARGS_cl_funcall "(function_desig &rest args)"
 #define DECL_cl_funcall ""
