@@ -1698,10 +1698,12 @@ T_mv cl_apply(T_sp head, VaList_sp args) {
     // Nil as last argument
     LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS(args,lenArgs-1);
     gctools::tagged_pointer<Closure> ft = func->closure;
-    core::T_O* arg0, arg1, arg2;
-    LCC_VA_LIST_INDEXED_ARG(arg0,args,0);
-    LCC_VA_LIST_INDEXED_ARG(arg1,args,1);
-    LCC_VA_LIST_INDEXED_ARG(arg2,args,2);
+    core::T_O* arg0;
+    core::T_O* arg1;
+    core::T_O* arg2;
+    LCC_VA_LIST_INDEXED_ARG(arg0,args->_Args,0);
+    LCC_VA_LIST_INDEXED_ARG(arg1,args->_Args,1);
+    LCC_VA_LIST_INDEXED_ARG(arg2,args->_Args,2);
     gc::return_type res = (*ft).invoke_va_list( NULL,
                                                 args.raw_(),
                                                 LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),
