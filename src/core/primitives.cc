@@ -167,26 +167,26 @@ void core_single_dispatch_method_cache_resize(Fixnum_sp pow) {
 #define DECL_core_method_cache_status ""
 #define DOCS_core_method_cache_status "cache_status - (values searches misses total-depth)"
 T_mv core_method_cache_status() {
-  return Values(Integer_O::create((uint64_t)_lisp->_Roots._MethodCachePtr->_searches),
-                Integer_O::create((uint64_t)_lisp->_Roots._MethodCachePtr->_misses),
-                Integer_O::create((uint64_t)_lisp->_Roots._MethodCachePtr->_total_depth));
+  return Values(clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_searches),
+                clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_misses),
+                clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_total_depth));
 }
 #define ARGS_core_slot_cache_status "()"
 #define DECL_core_slot_cache_status ""
 #define DOCS_core_slot_cache_status "cache_status - (values searches misses total-depth)"
 T_mv core_slot_cache_status() {
-  return Values(Integer_O::create((uint64_t)_lisp->_Roots._SlotCachePtr->_searches),
-                Integer_O::create((uint64_t)_lisp->_Roots._SlotCachePtr->_misses),
-                Integer_O::create((uint64_t)_lisp->_Roots._SlotCachePtr->_total_depth));
+  return Values(clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_searches),
+                clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_misses),
+                clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_total_depth));
 }
 
 #define ARGS_core_single_dispatch_method_cache_status "()"
 #define DECL_core_single_dispatch_method_cache_status ""
 #define DOCS_core_single_dispatch_method_cache_status "cache_status - (values searches misses total-depth)"
 T_mv core_single_dispatch_method_cache_status() {
-  return Values(Integer_O::create((uint64_t)_lisp->_Roots._SingleDispatchMethodCachePtr->_searches),
-                Integer_O::create((uint64_t)_lisp->_Roots._SingleDispatchMethodCachePtr->_misses),
-                Integer_O::create((uint64_t)_lisp->_Roots._SingleDispatchMethodCachePtr->_total_depth));
+  return Values(clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_searches),
+                clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_misses),
+                clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_total_depth));
 }
 
 
