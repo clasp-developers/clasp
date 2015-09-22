@@ -606,7 +606,6 @@ string symbol_repr(Symbol_sp sym) {
        Otherwise it returns lisp_static_class(o)
     */
 Class_sp lisp_instance_class(T_sp o) {
-  ASSERT(o);
   if (o.fixnump()) {
     return core::Fixnum_dummy_O::___staticClass;
     //	    return core::Fixnum_O::___staticClass;

@@ -132,6 +132,10 @@
      ;; Return NIL as the protocol stipulates.
      nil)))
 
+;;; The toplevel shell may have a bclasp environment - ignore it
+(defmethod cleavir-env:symbol-macro-expansion (symbol (environment core:value-frame))
+  (cleavir-environment:symbol-macro-expansion symbol *clasp-env*))
+
 (defmethod cleavir-env:function-info ((environment null) symbol)
   (cleavir-env:function-info *clasp-env* symbol))
 

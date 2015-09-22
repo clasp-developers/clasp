@@ -1105,7 +1105,7 @@ Use special code 0 to cancel this operation.")
 		(if (eq val si::unbound) "<unbound value>" val))))))
 
 #+clasp
-(defun clasp-backtrace (&optional n)
+(defun clasp-backtrace (&optional (n 99999999))
   (let (backtrace)
     (do* ((icur (core:ihs-top) (core:ihs-prev icur))
           (fun (core:ihs-fun icur) (core:ihs-fun icur))

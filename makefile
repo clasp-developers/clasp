@@ -80,6 +80,8 @@ all:
 executable-symlinks:
 	-ln -s $(BINDIR)/release/boehm/clasp $(BINDIR)/clasp_boehm_o
 	-ln -s $(BINDIR)/release/mps/clasp $(BINDIR)/clasp_mps_o
+	-ln -s $(BINDIR)/debug/boehm/clasp $(BINDIR)/clasp_boehm_d
+	-ln -s $(BINDIR)/debug/mps/clasp $(BINDIR)/clasp_mps_d
 
 cclasp-mps:
 	(cd src/main; make cclasp-mps)
