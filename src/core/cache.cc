@@ -98,6 +98,7 @@ cl_intptr_t Cache::vector_hash_key(gctools::Vec0<T_sp> &keys) {
 
 /*! TODO: I don't think this cache is location aware - it may need to be tuned to handle a moving garbage collector */
 void Cache::search_cache(CacheRecord *&min_e) {
+  ++this->_searches;
   gctools::Vec0<CacheRecord> &table = this->_table;
   gctools::Vec0<T_sp> &keys = this->_keys;
   int argno = keys.size();
@@ -113,7 +114,7 @@ void Cache::search_cache(CacheRecord *&min_e) {
 #endif
   //	i = i - (i % 3);
   min_gen = this->_generation;
-  for (k = 20; k--;) {
+  for (k = 20; k--; ++this->_total_depth) {
     CacheRecord &e = table.operator[](idx); //cl_object *e = table->vector.self.t + i;
     T_sp &hkey = e._key;                    // cl_object hkey = RECORD_KEY(e);
     if (hkey.nilp()) {                      // if (hkey == OBJNULL) {
@@ -154,6 +155,7 @@ void Cache::search_cache(CacheRecord *&min_e) {
     throw CacheError();
     SIMPLE_ERROR(BF("An error occured while searching the generic function method hash table - min_e == NULL - I should put this in a try/catch block"));
   }
+  ++this->_misses;
   min_e->_key = _Nil<T_O>(); // RECORD_KEY(min_e) = OBJNULL;
   this->_generation++;       // cache->generation++;
 FOUND:

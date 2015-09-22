@@ -245,13 +245,12 @@ gctools::Vec0<T_sp>& fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp>& vekto
 }
 
 // Arguments are passed in the multiple_values array
-LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist) {
+LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist, gc::tagged_pointer<Cache> cache) {
   /* Lookup the generic-function/arguments invocation in a cache and if an effective-method
 	   exists then use that.   If an effective-method does not exist then calculate it and put it in the cache.
 
 	   Then call the effective method with the saved arguments.
 	*/
-  gc::tagged_pointer<Cache> cache(_lisp->methodCachePtr());
   gctools::Vec0<T_sp>& vektor = fill_spec_vector(gf, cache->keys(), arglist );
   CacheRecord *e; //gctools::StackRootedPointer<CacheRecord> e;
   try {
@@ -301,17 +300,22 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
 }
  */
 LCC_RETURN generic_function_dispatch(Instance_sp gf, VaList_sp vargs) {
-  return standard_dispatch(gf,vargs);
+  gc::tagged_pointer<Cache> cache(_lisp->methodCachePtr());
+  return standard_dispatch(gf,vargs,cache);
 }
 
 /*! Reproduces functionality in ecl_slot_reader_dispatch */
 LCC_RETURN slotReaderDispatch(Instance_sp gf, VaList_sp vargs) {
-  IMPLEMENT_MEF(BF("Implement slotReaderDispatch"));
+  gc::tagged_pointer<Cache> cache(_lisp->slotCachePtr());
+  // Should I use standard_dispatch or do something special for slots?
+  return standard_dispatch(gf,vargs,cache);
 }
 
 /*! Reproduces functionality in ecl_slot_writer_dispatch */
 LCC_RETURN slotWriterDispatch(Instance_sp gf, VaList_sp vargs ) {
-  IMPLEMENT_MEF(BF("Implement slotWriterDispatch"));
+  gc::tagged_pointer<Cache> cache(_lisp->slotCachePtr());
+  // Should I use standard_dispatch or do something special for slots?
+  return standard_dispatch(gf,vargs,cache);
 }
 
 /*! Reproduces functionality in user_function_dispatch */

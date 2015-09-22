@@ -130,6 +130,65 @@ T_sp cl_lispImplementationVersion() {
 };
 
 
+#define ARGS_core_method_cache_resize "(pow)"
+#define DECL_core_method_cache_resize ""
+#define DOCS_core_method_cache_resize "cache_resize - Resize the cache to 2^pow"
+void core_method_cache_resize(Fixnum_sp pow) {
+  if ( pow < 2 || pow > 64 ) {
+    SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
+  }
+  size_t size = 1<<pow;
+  return _lisp->_Roots._MethodCachePtr->setup(Lisp_O::MaxFunctionArguments,size);
+}
+
+#define ARGS_core_slot_cache_resize "(pow)"
+#define DECL_core_slot_cache_resize ""
+#define DOCS_core_slot_cache_resize "cache_resize - Resize the cache to 2^pow"
+void core_slot_cache_resize(Fixnum_sp pow) {
+  if ( pow < 2 || pow > 64 ) {
+    SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
+  }
+  size_t size = 1<<pow;
+  return _lisp->_Roots._SlotCachePtr->setup(Lisp_O::MaxClosSlots,size);
+}
+
+#define ARGS_core_single_dispatch_method_cache_resize "(pow)"
+#define DECL_core_single_dispatch_method_cache_resize ""
+#define DOCS_core_single_dispatch_method_cache_resize "cache_resize - Resize the cache to 2^pow"
+void core_single_dispatch_method_cache_resize(Fixnum_sp pow) {
+  if ( pow < 2 || pow > 64 ) {
+    SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
+  }
+  size_t size = 1<<pow;
+  return _lisp->_Roots._SingleDispatchMethodCachePtr->setup(2,size);
+}
+
+#define ARGS_core_method_cache_status "()"
+#define DECL_core_method_cache_status ""
+#define DOCS_core_method_cache_status "cache_status - (values searches misses total-depth)"
+T_mv core_method_cache_status() {
+  return Values(Integer_O::create((uint64_t)_lisp->_Roots._MethodCachePtr->_searches),
+                Integer_O::create((uint64_t)_lisp->_Roots._MethodCachePtr->_misses),
+                Integer_O::create((uint64_t)_lisp->_Roots._MethodCachePtr->_total_depth));
+}
+#define ARGS_core_slot_cache_status "()"
+#define DECL_core_slot_cache_status ""
+#define DOCS_core_slot_cache_status "cache_status - (values searches misses total-depth)"
+T_mv core_slot_cache_status() {
+  return Values(Integer_O::create((uint64_t)_lisp->_Roots._SlotCachePtr->_searches),
+                Integer_O::create((uint64_t)_lisp->_Roots._SlotCachePtr->_misses),
+                Integer_O::create((uint64_t)_lisp->_Roots._SlotCachePtr->_total_depth));
+}
+
+#define ARGS_core_single_dispatch_method_cache_status "()"
+#define DECL_core_single_dispatch_method_cache_status ""
+#define DOCS_core_single_dispatch_method_cache_status "cache_status - (values searches misses total-depth)"
+T_mv core_single_dispatch_method_cache_status() {
+  return Values(Integer_O::create((uint64_t)_lisp->_Roots._SingleDispatchMethodCachePtr->_searches),
+                Integer_O::create((uint64_t)_lisp->_Roots._SingleDispatchMethodCachePtr->_misses),
+                Integer_O::create((uint64_t)_lisp->_Roots._SingleDispatchMethodCachePtr->_total_depth));
+}
+
 
 #define ARGS_core_lispImplementationId "()"
 #define DECL_core_lispImplementationId ""
@@ -2238,6 +2297,13 @@ void initialize_primitives() {
   CoreDefun(exceptionStack);
   CoreDefun(exceptionStackDump);
   CoreDefun(trapExecution);
+
+  CoreDefun(method_cache_status);
+  CoreDefun(slot_cache_status);
+  CoreDefun(single_dispatch_method_cache_status);
+  CoreDefun(method_cache_resize);
+  CoreDefun(slot_cache_resize);
+  CoreDefun(single_dispatch_method_cache_resize);
 
 }
 

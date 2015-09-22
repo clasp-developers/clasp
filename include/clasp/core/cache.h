@@ -47,11 +47,15 @@ public:
 
 class Cache {
   FRIEND_GC_SCANNER();
-GCPRIVATE:
+ public:
+  size_t _searches;
+  size_t _misses;
+  size_t _total_depth;
   gctools::Vec0<T_sp> _keys;
   gctools::Vec0<CacheRecord> _table;
   int _generation;
 
+ Cache() : _misses(0), _searches(0), _total_depth(0) {};
 private:
   void clearOneFromCache(T_sp target);
 
@@ -59,7 +63,6 @@ public:
   void empty();
 
   /*! Constructor - like ecl_make_cache */
-  explicit Cache(){};
   void setup(int keySize, int cacheSize);
 
   /*! Search cache - like ecl_search_cache

@@ -333,13 +333,15 @@ T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
     this->_isgf = ECL_READER_DISPATCH;
     // TODO: Switch to using slotReaderDispatch like ECL for improved performace
     //	    this->_Entry = &slotReaderDispatch;
-    Instance_O::ensureClosure(&generic_function_dispatch);
+    //Instance_O::ensureClosure(&generic_function_dispatch);
+    Instance_O::ensureClosure(&slotReaderDispatch);
   } else if (functionOrT == clos::_sym_standardOptimizedWriterMethod) {
     /* WARNING: We assume that f(a,...) behaves as f(a,b) */
     this->_isgf = ECL_WRITER_DISPATCH;
     // TODO: Switch to using slotWriterDispatch like ECL for improved performace
     //	    this->_Entry = &slotWriterDispatch;
-    Instance_O::ensureClosure(&generic_function_dispatch);
+    //Instance_O::ensureClosure(&generic_function_dispatch);
+    Instance_O::ensureClosure(&slotReaderDispatch);
   } else if (!cl_functionp(functionOrT)) {
     TYPE_ERROR(functionOrT, cl::_sym_function);
     //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
