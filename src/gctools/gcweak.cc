@@ -52,7 +52,6 @@ WeakHashTable::WeakHashTable(size_t length) {
   this->_Keys->dependent = this->_Values;
 //  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->_Keys->dependent) & 0x3) == 0);
   this->_Values->dependent = this->_Keys;
-//  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->_Values->dependent) & 0x3) == 0);
 #ifdef USE_MPS
   mps_ld_reset(&this->_LocationDependency, _global_arena);
 #endif

@@ -211,19 +211,12 @@ T_mv compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
 gctools::Vec0<T_sp>& fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp>& vektor, VaList_sp vargs) {
   va_list cargs;
   va_copy(cargs,(*vargs)._Args);
-#if DEBUG_CLOS >= 2
-  printf("MLOG fill_spec_vector - entered with gf  %s\n", gf->GFUN_NAME()->__repr__().c_str());
-#endif
   int narg = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
   T_sp spec_how_list = gf->GFUN_SPECIALIZERS();
   // cl_object *argtype = vector->vector.self.t; // ??
   gctools::Vec0<T_sp>& argtype = vektor;
   argtype[0] = gf;
   int spec_no = 1;
-#if DEBUG_CLOS >= 2
-  printf("MLOG fill_spec_vector - writing to argtype[%d] at %p wrote: %lX\n",
-         0, argtype[0].px_address(), argtype[0].intptr());
-#endif
   for (; spec_how_list.notnilp(); spec_how_list = oCdr(spec_how_list)) {
     List_sp spec_how = oCar(spec_how_list);
     T_sp spec_type = oCar(spec_how);
@@ -240,27 +233,11 @@ gctools::Vec0<T_sp>& fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp>& vekto
         gc::As<Cons_sp>(spec_type)->memberEql(spec_position_arg).nilp()) // Was as_or_nil
     {
       Class_sp mc = lisp_instance_class(spec_position_arg);
-#if DEBUG_CLOS >= 2
-      printf("MLOG fill_spec_vector argtype[%d] using class_of(args[%d]): %s\n",
-             spec_no, spec_position, mc->__repr__().c_str());
-#endif
       argtype[spec_no] = mc;
     } else {
-#if DEBUG_CLOS >= 2
-      printf("MLOG fill_spec_vector argtype[%d] using args[%d]\n", spec_no, spec_position);
-#endif
       // For immediate types we need to make sure that EQL will be true
       argtype[spec_no] = spec_position_arg;
     }
-#if DEBUG_CLOS >= 2
-    printf("MLOG fill_spec_vector - from arg[%d] val=%lX writing to argtype[%d] at %p wrote: %lX --> argtype/%s",
-           spec_position, ERROR/*args[spec_position].intptr()*/, spec_no, argtype->operator[](spec_no).px_address(), argtype->operator[](spec_no).intptr(), argtype->operator[](spec_no)->__repr__().c_str());
-    if (spec_position_arg.consp()) {
-      printf(" arg/CONS...\n");
-    } else {
-      printf(" arg/%s\n", args[spec_position]->__repr__().c_str());
-    }
-#endif
     ++spec_no;
   }
   vektor.unsafe_set_end(spec_no);

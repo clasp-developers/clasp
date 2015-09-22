@@ -610,6 +610,19 @@ void af_gdb(T_sp msg) {
   af_invokeInternalDebugger(_Nil<core::T_O>());
 };
 
+#define ARGS_core_trapExecution "(&optional msg)"
+#define DECL_core_trapExecution ""
+#define DOCS_core_trapExecution "hook to invoke gdb"
+void core_trapExecution(T_sp msg) {
+  _G();
+  T_sp obj = msg;
+  string smsg = "No msg";
+  if (obj.notnilp()) {
+    smsg = _rep_(obj);
+  }
+  dbg_hook(smsg.c_str());
+};
+
 #define ARGS_af_gdbInspect "(msg o)"
 #define DECL_af_gdbInspect ""
 #define DOCS_af_gdbInspect "hook to invoke gdb"
@@ -2224,6 +2237,7 @@ void initialize_primitives() {
   CoreDefun(lowLevelBacktrace);
   CoreDefun(exceptionStack);
   CoreDefun(exceptionStackDump);
+  CoreDefun(trapExecution);
 
 }
 

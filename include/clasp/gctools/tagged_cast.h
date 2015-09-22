@@ -16,10 +16,10 @@ namespace gctools {
     struct Cast {
         typedef TOPTR ToType;
         typedef FROMPTR FromType;
-        // No default methods for isA or castOrNULL are provided for MPS - they must all be provided by clasp_gc.cc
+      // Very few Cast's should default back to this one.
+      // Maybe keep a count of how often it gets called?
         inline static bool isA(FromType client) {
-            printf("%s:%d Add support for Cast::isA for this type\n", __FILE__, __LINE__);
-            return false;
+            return (dynamic_cast<ToType>(client) != NULL);
         }
     };
   #endif

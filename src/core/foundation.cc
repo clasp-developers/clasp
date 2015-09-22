@@ -606,22 +606,16 @@ string symbol_repr(Symbol_sp sym) {
        Otherwise it returns lisp_static_class(o)
     */
 Class_sp lisp_instance_class(T_sp o) {
-  if (o.nilp()) {
-    return core::Null_O::___staticClass;
-  } else if (o.fixnump()) {
+  ASSERT(o);
+  if (o.fixnump()) {
     return core::Fixnum_dummy_O::___staticClass;
     //	    return core::Fixnum_O::___staticClass;
   } else if (o.characterp()) {
     return core::Character_dummy_O::___staticClass;
   } else if (o.single_floatp()) {
     return core::SingleFloat_dummy_O::___staticClass;
-  } else if (o.valistp()) {
-    // What do I return for this?
-    return core::VaList_dummy_O::___staticClass;
-  } else if (!o) {
-    SIMPLE_ERROR(BF("There is no class of NULL"));
-  } else if (o.unboundp()) {
-    SIMPLE_ERROR(BF("There is no class of UNBOUND"));
+  } else if (o.nilp()) {
+    return core::Null_O::___staticClass;
   } else if (Instance_sp iobj = o.asOrNull<Instance_O>()) {
     return iobj->_instanceClass();
   } else if (WrappedPointer_sp exobj = o.asOrNull<WrappedPointer_O>()) {
@@ -630,10 +624,11 @@ Class_sp lisp_instance_class(T_sp o) {
   } else if (StructureObject_sp sobj = o.asOrNull<StructureObject_O>()) {
     (void)sobj;
     IMPLEMENT_MEF(BF("structureType returns a T_sp but I need a Class_sp - What do I return here????"));
-    //	    return sobj->structureType();
-    //#endif
   } else if (Class_sp cobj = o.asOrNull<Class_O>()) {
     return cobj->_instanceClass();
+  } else if (o.valistp()) {
+    // What do I return for this?
+    return core::VaList_dummy_O::___staticClass;
   } else if (o.objectp()) {
     return lisp_static_class(o);
   }

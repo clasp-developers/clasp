@@ -83,6 +83,9 @@ namespace gctools {
     #undef GC_KIND_SELECTORS
   #endif
 #endif
-
 };
+
+#include <clasp/gctools/other_tagged_casts.h>
+
+
 #endif

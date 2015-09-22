@@ -1392,11 +1392,22 @@ namespace gctools {
     template <typename From>
     inline tagged_pointer(tagged_pointer<From> const &rhs) {
       if (LIKELY(rhs.generalp())) {
+#if 0
+        // Old way using dynamic_cast
         Type *px = dynamic_cast<Type *>(untag_general<From *>(rhs.thePointer));
         if (px) {
           this->thePointer = tag_general<Type *>(px);
           return;
         }
+#else
+        // New way using TaggedCast
+        Type* px = TaggedCast<Type*,From*>::castOrNULL(rhs.thePointer);
+//        printf("%s:%d Trying TaggedCast in place of dynamic_cast\n", __FILE__, __LINE__ );
+        if (px) {
+          this->thePointer = px;
+          return;
+        }
+#endif
         THROW_HARD_ERROR(BF("Cannot cast tagged_pointer in constructor"));
       }
       THROW_HARD_ERROR(BF("Bad tag on tagged_pointer in constructor"));

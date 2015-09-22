@@ -528,7 +528,7 @@ core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, char *sou
   core::SourceFileInfo_mv sfi = core::core_sourceFileInfo(sourceStr);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1))); // sfindex could be written into the Module global for debugging
   core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex, filePos, lineno, column);
-  gctools::tagged_pointer<core::FunctionClosure> closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP, spi, kw::_sym_function, funcPtr, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP);
+  gctools::tagged_pointer<core::Closure> closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP, spi, kw::_sym_function, funcPtr, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP);
   core::CompiledFunction_sp compiledFunction = core::CompiledFunction_O::make(closure);
   return compiledFunction;
 };

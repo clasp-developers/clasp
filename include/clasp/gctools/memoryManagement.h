@@ -125,6 +125,8 @@ struct GCAllocationPoint;
 #include <clasp/gctools/mpsGarbageCollection.h>
 #endif
 
+
+
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
 template <class OT>

@@ -209,7 +209,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
 SYMBOL_EXPORT_SC_(KeywordPkg, requiredNumberOfArguments);
 SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
 
-void handleArgumentHandlingExceptions(gctools::tagged_pointer<FunctionClosure> closure) {
+void handleArgumentHandlingExceptions(gctools::tagged_pointer<Closure> closure) {
   Function_sp func = Function_O::make(closure);
   try {
     throw;

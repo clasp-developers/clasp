@@ -77,7 +77,7 @@ public:
   virtual int column() const;
 };
 
-extern void handleArgumentHandlingExceptions(gctools::tagged_pointer<FunctionClosure>);
+extern void handleArgumentHandlingExceptions(gctools::tagged_pointer<Closure>);
 };
 
 namespace core {
