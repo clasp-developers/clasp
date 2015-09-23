@@ -109,7 +109,10 @@ T_mv cl_getMacroCharacter(Character_sp chr, T_sp readtable) {
 #define ARGS_cl_copyReadtable "(&optional (from-readtable cl:*readtable*) to-readtable)"
 #define DECL_cl_copyReadtable ""
 #define DOCS_cl_copyReadtable "clhs: copy-readtable"
-T_sp cl_copyReadtable(ReadTable_sp fromReadTable, gc::Nilable<ReadTable_sp> toReadTable) {
+T_sp cl_copyReadtable(gc::Nilable<ReadTable_sp> fromReadTable, gc::Nilable<ReadTable_sp> toReadTable) {
+  if ( fromReadTable.nilp() ) {
+    return ReadTable_O::create_standard_readtable();
+  }
   return fromReadTable->copyReadTable(toReadTable);
 }
 

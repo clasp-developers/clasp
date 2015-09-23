@@ -609,7 +609,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
         (root orig-sys))
     (tagbody
      top
-       (if (eql (car cur) (car root))
+       (if (and (car cur) (eql (car cur) (car root)))
            (progn
              (setq cur (cdr cur))
              (setq root (cdr root))

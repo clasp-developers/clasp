@@ -28,6 +28,7 @@ THE SOFTWARE.
 #define _core_stacks_H_
 
 #include <clasp/core/foundation.h>
+#include <clasp/core/exceptions.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
 #include <clasp/core/stacks.fwd.h>
 #include <clasp/core/lispVector.fwd.h>
@@ -87,14 +88,13 @@ public:
   InvocationHistoryStack() : _Top(NULL){};
 
   InvocationHistoryFrame *top() const { return this->_Top; };
-  void push(InvocationHistoryFrame *frame) {
+  inline void push(InvocationHistoryFrame *frame) {
     this->_Top = frame;
   }
 
-  void pop() {
-    if (this->_Top != NULL) {
-      this->_Top = this->_Top->previous();
-    }
+  inline void pop() {
+    GCTOOLS_ASSERT(this->_Top!=NULL);
+    this->_Top = this->_Top->previous();
   }
 
   uint size() {

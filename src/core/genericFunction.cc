@@ -177,18 +177,17 @@ T_mv restricted_compute_applicable_method(Instance_sp gf, VaList_sp vargs ) {
 #define DECL_core_maybeExpandGenericFunctionArguments ""
 #define DOCS_core_maybeExpandGenericFunctionArguments "maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame"
 T_sp core_maybeExpandGenericFunctionArguments(T_sp args) {
-  IMPLEMENT_MEF(BF("Handle new valists"));
-#if 0
   if (cl_consp(args)) {
     T_sp first = oCar(args);
     if (first.nilp()) {
       return args;
     } else if (first.valistp()) {
+      VaList_sp vafirst = gc::As<VaList_sp>(first);
       List_sp expanded = _Nil<T_O>();
-      core::T_O **frameImpl(first.unsafe_frame());
-      frame::ElementType *values(frame::ValuesArray(frameImpl));
-      for (int i(0), iEnd(frame::ValuesArraySize(frameImpl)); i < iEnd; ++i) {
-        expanded = Cons_O::create(gctools::smart_ptr<T_O>((gc::Tagged)values[i]), expanded);
+      size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vafirst);
+      for ( int i(0), iEnd(nargs); i<iEnd; ++i ) {
+        T_sp v(LCC_NEXT_ARG(vafirst,i));
+        expanded = Cons_O::create(v, expanded);
       }
       return cl_nreverse(expanded);
     } else {
@@ -196,7 +195,6 @@ T_sp core_maybeExpandGenericFunctionArguments(T_sp args) {
     }
   }
   return args;
-#endif
 }
 
 T_mv compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
