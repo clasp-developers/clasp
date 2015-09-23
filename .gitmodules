@@ -4,3 +4,6 @@
 [submodule "src/mps"]
 	path = src/mps
 	url = https://github.com/clasp-developers/mps-temporary.git
+[submodule "src/lisp/modules/asdf"]
+	path = src/lisp/modules/asdf
+	url = https://github.com/drmeister/asdf.git
