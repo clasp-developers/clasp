@@ -784,7 +784,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/clos/inspect"
     :clos
     #P"kernel/lsp/ffi"
-    #P"sockets/sockets"
+    #P"modules/sockets/sockets"
 ;;    asdf/build/asdf
     :front
     #P"kernel/lsp/top"
