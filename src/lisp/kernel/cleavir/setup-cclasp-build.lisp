@@ -9,7 +9,7 @@
 
 
 (export '(load-system link))
-(load "sys:kernel;asdf;build;asdf.lisp")
+(load "sys:modules;asdf;build;asdf.lisp")
 (load "sys:local-asdf-config.lisp")
 
 (load "sys:kernel;cleavir;asdf-system-groveler.lisp")
