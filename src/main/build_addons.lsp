@@ -1,9 +1,11 @@
 (progn
   (bformat t "Compiling serve-event - required by Slime\n")
-  (core:compile-kernel-file #P"serve-event/serve-event")
-  (core:link-kernel-file #P"serve-event/serve-event")
+  (core:compile-kernel-file #P"modules/serve-event/serve-event")
+  (cmp:link-system-lto (core:build-pathname #P"modules/serve-event/serve-event" "fasl")
+                       :lisp-bitcode-files (list (core:build-pathname #P"modules/serve-event/serve-event" "bc")))
   (bformat t "Compiling asdf\n")
-  (core:compile-kernel-file #P"kernel/asdf/build/asdf")
-  (core:link-kernel-file #P"kernel/asdf/build/asdf")
+  (core:compile-kernel-file #P"modules/asdf/build/asdf")
+  (cmp:link-system-lto (core:build-pathname #P"modules/asdf/asdf" "fasl")
+                       :lisp-bitcode-files (list (core:build-pathname #P"modules/asdf/build/asdf" "bc")))
   (core:quit))
 
