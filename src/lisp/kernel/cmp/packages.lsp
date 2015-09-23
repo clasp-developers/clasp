@@ -100,8 +100,6 @@
           jit-function-name
           jit-make-global-string-ptr
           link-system-lto
-          build-pathname
-          build-hostname
           load-bitcode
           parse-function-arguments
           set-associated-funcs

@@ -446,6 +446,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
         (let ((relative (maybe-relative-pathname-to-sys pathname)))
           (merge-pathnames relative (translate-logical-pathname (make-pathname :host target-host)))))))
 
+(export '(build-pathname build-host))
   
 (defun get-pathname-with-type (module &optional (type "lsp"))
   (cond
