@@ -126,14 +126,14 @@ submodules:
 
 submodules-boehm:
 	-git submodule update --init src/lisp/kernel/contrib/sicl
-	-git submodule update --init src/lisp/kernel/asdf
-	-(cd src/lisp/kernel/asdf; git checkout master; git pull origin master)
+	-git submodule update --init src/lisp/modules/asdf
+#	-(cd src/lisp/modules/asdf; git checkout master; git pull origin master)
 
 submodules-mps:
 	-git submodule update --init src/mps
 
 asdf:
-	(cd src/lisp/kernel/asdf; make)
+	(cd src/lisp/modules/asdf; make)
 
 only-boehm:
 	make submodules-boehm
