@@ -139,8 +139,10 @@ compile-commands:
 
 
 mps-interface:
+	@echo Building boehmdc version
+	build -j$(PJOBS) link=static program=clasp gc=boehmdc release
 	@echo Building mps-prep
 	build -j$(PJOBS) link=static gc=mps-prep program=clasp release
 	make compile-commands
-	clasp_boehm_o -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
+	$(CANDO_HOME)/build/clasp/bin/release/boehmdc/clasp -l "sys:mps-interface.lsp" -e "(progn (load-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\") (parallel-search-all-then-generate-code-and-quit))"
 
