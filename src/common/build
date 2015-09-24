@@ -1,3 +1,10 @@
 #! /bin/bash -f
-make -C $CLASP_HOME/src/main scrape-all
+#
+# grovel project directories for symbols and classes
+#
+(export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/symbolGroveler.py include/generated/symbols_scraped_inc.h `cat project-directories.config`)
+(export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/classGroveler.py include/generated/initClasses_inc.h `cat project-directories.config` 2>registerClasses.log)
+#
+# run bjam to build app
+#
 bjam $*

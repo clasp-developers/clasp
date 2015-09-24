@@ -2583,7 +2583,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 ;; garbage collection scanners.
 
 
-(load-compilation-database "app-resources:build-databases;clasp_compile_commands.json")
+;;(load-compilation-database "app-resources:build-databases;clasp_compile_commands.json")
 
 (defvar *tools* nil)
 (defvar *arguments-adjuster* (lambda (args) (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
