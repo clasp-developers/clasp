@@ -51,6 +51,11 @@ namespace gctools {
       GCVector_moveable_iterator() : _TaggedCurP(NULL) {};
       GCVector_moveable_iterator( tagged_pointer<GCVector_moveable<T>> vec, size_t index) : _TaggedCurP(tag_general<Uty*>(&(vec->_Data[index]))) {};
       GCVector_moveable_iterator( GCVector_moveable<T>* vec, size_t index) : _TaggedCurP(tag_general<Uty*>(&(vec->_Data[index]))) {};
+        const Iterator& operator=(const Iterator& other) const {
+            if (&other == this) return *this;
+            this->_TaggedCurP = other._TaggedCurP;
+            return *this;
+        }
         Uty* operator->() { return (untag_general<Uty*>(this->_TaggedCurP)); };
         Uty & operator*() { return *(untag_general<Uty*>(this->_TaggedCurP)); };
         Uty const * operator->() const { return (untag_general<Uty*>(this->_TaggedCurP)); };

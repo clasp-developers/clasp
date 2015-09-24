@@ -119,6 +119,7 @@ public:
   };
 };
 
+ 
 inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourceFileName, int lineno, bool autoExport = true) {
   _G();
   Symbol_sp symbol = lispify_intern(name, packageName);

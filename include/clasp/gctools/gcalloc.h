@@ -289,8 +289,24 @@ struct RootClassAllocator {
     return tagged_obj;
 #endif
   }
+  
+  template <class... ARGS>
+  static T* untagged_allocate(ARGS &&... args) {
+    gctools::tagged_pointer<T> tagged_obj = allocate(args...);
+    return &*tagged_obj;
+  }
 
-  static void deallocate(void* memory) {
+  
+  static void deallocate(gctools::tagged_pointer<T> memory) {
+#ifdef USE_BOEHM
+    GC_FREE(&*memory);
+#endif
+#ifdef USE_MPS
+    GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
+#endif
+  };
+  
+  static void untagged_deallocate(void* memory) {
 #ifdef USE_BOEHM
     GC_FREE(memory);
 #endif

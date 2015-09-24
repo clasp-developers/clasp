@@ -301,7 +301,7 @@ void Instance_O::reshapeInstance(int delta) {
 SYMBOL_SC_(ClosPkg, standardOptimizedReaderMethod);
 SYMBOL_SC_(ClosPkg, standardOptimizedWriterMethod);
 
-void Instance_O::ensureClosure(ArgArrayGenericFunctionPtr entryPoint) {
+void Instance_O::ensureClosure(GenericFunctionPtr entryPoint) {
   if (!(bool)(this->closure)) {
     this->closure = gctools::ClassAllocator<InstanceClosure>::allocateClass(this->GFUN_NAME(), entryPoint, this->asSmartPtr());
   } else {

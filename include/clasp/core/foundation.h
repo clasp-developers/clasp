@@ -458,29 +458,30 @@ void intrusive_ptr_release(T *p);
     N = new X();
 
 namespace core {
-class T_O;
-typedef T_O FIXNUM;
-typedef T_O STACK_FRAME;
-class Cons_O;
-class Pointer_O;
-class Vector_O;
-class VectorObjects_O;
-class Number_O;
-class Integer_O;
-class LoadTimeValues_O;
+  class T_O;
+  typedef T_O FIXNUM;
+  typedef T_O STACK_FRAME;
+  class Cons_O;
+  class Pointer_O;
+  class Vector_O;
+  class VectorObjects_O;
+  class Number_O;
+  class Integer_O;
+  class LoadTimeValues_O;
 /* AMS pool classes */
-class Symbol_O;
-class Null_O;
-class Stream_O;
-class SourcePosInfo_O;
-class SourceFileInfo_O;
-class WeakKeyHashTable_O;
-class WeakKeyMapping_O;
-class DynamicScopeManager;
+  class Symbol_O;
+  class Null_O;
+  class Stream_O;
+  class SourcePosInfo_O;
+  class SourceFileInfo_O;
+  class WeakKeyHashTable_O;
+  class WeakKeyMapping_O;
+  class DynamicScopeManager;
 
-class Functoid;
-class FunctionClosure;
-class BuiltinClosure;
+  class Functoid;
+  class FunctionClosure;
+  class BuiltinClosure;
+  class InterpretedClosure;
 };
 void dbg_hook(const char *errorString);
 
@@ -1207,6 +1208,87 @@ public:
   virtual T_sp docstring() const;
   virtual List_sp declares() const;
 };
+};
+#include <clasp/core/exceptions.h>
+
+ #define DISABLE_NEW()                                                                        \
+  void *operator new(size_t s) { DEPRECIATEDP("Disabled new"); };                            \
+  void *operator new(size_t s, const std::nothrow_t &tag) { DEPRECIATEDP("Disabled new"); }; \
+  void *operator new(size_t s, void *ptr) { return ptr; };
+
+namespace kw {
+extern core::Symbol_sp _sym_function;
+extern core::Symbol_sp _sym_macro;
+};
+
+namespace core {
+ class FunctionClosure : public Closure {
+public:
+  T_sp _SourcePosInfo;
+  Symbol_sp kind;
+
+public:
+  DISABLE_NEW();
+  FunctionClosure(T_sp name, T_sp spo, Symbol_sp k, T_sp env)
+      : Closure(name, env), _SourcePosInfo(spo), kind(k){};
+  FunctionClosure(T_sp name)
+      : Closure(name, _Nil<T_O>()), _SourcePosInfo(_Nil<T_O>()), kind(kw::_sym_function){};
+
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+
+  virtual const char *describe() const { return "SingleDispatchGenericFunctoid"; };
+  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {SIMPLE_ERROR(BF("Subclass must implement"));};
+  void setKind(Symbol_sp k) { this->kind = k; };
+  Symbol_sp getKind() const { return this->kind; };
+  bool macroP() const;
+  T_sp sourcePosInfo() const { return this->_SourcePosInfo; };
+  T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
+  virtual int sourceFileInfoHandle() const;
+  virtual size_t filePos() const;
+  virtual int lineNumber() const;
+  virtual int column() const;
+};
+
+ class BuiltinClosure : public FunctionClosure {
+public:
+  LambdaListHandler_sp _lambdaListHandler;
+
+public:
+  DISABLE_NEW();
+  BuiltinClosure(T_sp name, T_sp sp, Symbol_sp k)
+      : FunctionClosure(name, sp, k, _Nil<T_O>()){};
+  BuiltinClosure(T_sp name)
+      : FunctionClosure(name) {}
+  void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
+    this->_lambdaListHandler = llh;
+    this->kind = k;
+  }
+  virtual T_sp lambdaList() const;
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+  virtual const char *describe() const { return "BuiltinClosure"; };
+  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
+  bool builtinP() const { return true; };
+  LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
+};
+
+
+/*! Shouldn't this derive from a Functoid - it doesn't need a closedEnvironment */
+class InstanceClosure : public FunctionClosure {
+public:
+  GenericFunctionPtr entryPoint;
+  Instance_sp instance;
+
+public:
+  DISABLE_NEW();
+  InstanceClosure(T_sp name, GenericFunctionPtr ep, Instance_sp inst)
+      : FunctionClosure(name), entryPoint(ep), instance(inst){};
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+  virtual const char *describe() const { return "InstanceClosure"; };
+  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
+  LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
+  T_sp lambdaList() const;
+};
+
 }
 
 #include <boost/random.hpp>
@@ -1259,12 +1341,7 @@ extern llvmAddSymbolCallbackType addSymbol;
   }
 
 
-#include <clasp/core/exceptions.h>
 
-#define DISABLE_NEW()                                                                        \
-  void *operator new(size_t s) { DEPRECIATEDP("Disabled new"); };                            \
-  void *operator new(size_t s, const std::nothrow_t &tag) { DEPRECIATEDP("Disabled new"); }; \
-  void *operator new(size_t s, void *ptr) { return ptr; };
 
 #include <clasp/core/clasp_gmpxx.h>
 

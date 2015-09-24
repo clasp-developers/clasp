@@ -3,7 +3,12 @@
 
 namespace core {
   class Closure;
+  class MacroClosure;
+  class InstanceClosure;
   class SingleDispatchGenericFunctionClosure;
+};
+namespace llvmo {
+  class CompiledClosure;
 };
 
 namespace gctools {

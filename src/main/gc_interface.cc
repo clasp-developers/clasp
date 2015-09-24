@@ -221,7 +221,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
   } else {
     THROW_HARD_ERROR(BF("Illegal header at %p") % header);
   }
-DONE:
+ DONE:
   GC_TELEMETRY3(telemetry::label_obj_skip,
                 (uintptr_t)oldClient,
                 (uintptr_t)client,
@@ -267,7 +267,7 @@ void obj_dump_base(mps_addr_t base) {
   } else {
     sout << "INVALID HEADER!!!!!";
   }
-BOTTOM:
+ BOTTOM:
   printf("Base@%p %s\n", base, sout.str().c_str());
 }
 
@@ -275,31 +275,16 @@ int trap_obj_scan = 0;
 
 //core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR.notnilp()
 
-#ifdef DEBUG_LOAD_TIME_VALUES
-#define SHIELD_SAFE_TELEMETRY(CLIENT, FMT)                                                                         \
-  if (core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR->symbolValue().notnilp()) { \
-    Seg seg;                                                                                                       \
-    if (SegOfAddr(&seg, gctools::_global_arena, CLIENT)) {                                                         \
-      ShieldExpose(gctools::_global_arena, seg);                                                                   \
-      printf("%s\n", (FMT).str().c_str());                                                                         \
-      ShieldCover(gctools::_global_arena, seg);                                                                    \
-    }                                                                                                              \
-  }
-#else
-#define SHIELD_SAFE_TELEMETRY(CLIENT, PARGS)
-#endif
-
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
-  
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_TABLE
 #include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_SCAN_TABLE
 #endif
 
-    GC_TELEMETRY2(telemetry::label_obj_scan_start,
-                  (uintptr_t)client,
-                  (uintptr_t)limit);
+  GC_TELEMETRY2(telemetry::label_obj_scan_start,
+                (uintptr_t)client,
+                (uintptr_t)limit);
   mps_addr_t original_client;
   GCKindEnum kind;
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
@@ -309,7 +294,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
       original_client = (mps_addr_t)client;
       if (header->kindP()) {
-          kind = header->kind();
+        kind = header->kind();
 #ifndef RUNNING_GC_BUILDER
         goto *(OBJ_SCAN_table[kind]);
 #define GC_OBJ_SCAN
@@ -372,7 +357,7 @@ void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr) {
 
 mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-      GC_TELEMETRY0(telemetry::label_root_scan_start );
+    GC_TELEMETRY0(telemetry::label_root_scan_start );
     for (auto &it : globalLoadTimeValuesRoots) {
       SIMPLE_POINTER_FIX(*it);
     }
@@ -488,8 +473,6 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 }
 };
 
-namespace gctools {
-};
 //
 // We don't want the static analyzer gc-builder.lsp to see the generated scanners
 //
@@ -497,19 +480,6 @@ namespace gctools {
 #define HOUSEKEEPING_SCANNERS
 #include <clasp/main/clasp_gc.cc>
 #undef HOUSEKEEPING_SCANNERS
-#endif
-
-//
-// Turn the following on if you want potentially dangerous local variables
-// identified by the static analyzer to throw errors in the compilation
-// of gc_interface.cc
-//
-#if 0
-#ifndef RUNNING_GC_BUILDER
-#define GC_LOCAL_VARIABLES_DANGEROUS_UNROOTED
-#include <clasp/main/clasp_gc.cc>
-#undef GC_LOCAL_VARIABLES_DANGEROUS_UNROOTED
-#endif
 #endif
 
 #endif // ifdef USE_MPS

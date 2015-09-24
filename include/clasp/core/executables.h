@@ -43,13 +43,10 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.fwd.h>
 #include <clasp/core/lispDefinitions.h>
 
-namespace kw {
-extern core::Symbol_sp _sym_function;
-extern core::Symbol_sp _sym_macro;
-};
 
 namespace core {
 
+#if 0
 class FunctionClosure : public Closure {
 public:
   T_sp _SourcePosInfo;
@@ -76,7 +73,7 @@ public:
   virtual int lineNumber() const;
   virtual int column() const;
 };
-
+#endif
 extern void handleArgumentHandlingExceptions(gctools::tagged_pointer<Closure>);
 };
 
@@ -153,6 +150,7 @@ public:
   T_sp lambdaList() const;
 };
 
+#if 0
 class BuiltinClosure : public FunctionClosure {
 public:
   LambdaListHandler_sp _lambdaListHandler;
@@ -174,6 +172,7 @@ public:
   bool builtinP() const { return true; };
   LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
 };
+#endif
 };
 
 namespace core {

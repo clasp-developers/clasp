@@ -68,15 +68,17 @@ THE SOFTWARE.
 
 namespace core {
 
+
+#if 0 // moved to foundation.h
 /*! Shouldn't this derive from a Functoid - it doesn't need a closedEnvironment */
 class InstanceClosure : public FunctionClosure {
 public:
-  ArgArrayGenericFunctionPtr entryPoint;
+  GenericFunctionPtr entryPoint;
   Instance_sp instance;
 
 public:
   DISABLE_NEW();
-  InstanceClosure(T_sp name, ArgArrayGenericFunctionPtr ep, Instance_sp inst)
+  InstanceClosure(T_sp name, GenericFunctionPtr ep, Instance_sp inst)
       : FunctionClosure(name), entryPoint(ep), instance(inst){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "InstanceClosure"; };
@@ -84,7 +86,8 @@ public:
   LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
   T_sp lambdaList() const;
 };
-
+#endif
+ 
 class Instance_O : public Function_O {
   LISP_BASE1(Function_O);
   LISP_CLASS(core, CorePkg, Instance_O, "Instance");
@@ -126,7 +129,7 @@ public: // Generic function ECL macros are replicated here
 public: // The hard-coded indexes above are defined below to be used by Class
 protected:
   void initializeSlots(int numberOfSlots);
-  void ensureClosure(ArgArrayGenericFunctionPtr entryPoint);
+  void ensureClosure(GenericFunctionPtr entryPoint);
 
 public:
   static T_sp allocateInstance(T_sp _theClass, int numberOfSlots = 0);

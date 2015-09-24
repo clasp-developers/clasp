@@ -263,7 +263,7 @@ THE SOFTWARE.
 typedef LCC_RETURN_RAW (*fnLispCallingConvention)(LCC_ARGS_VA_LIST);
 typedef LCC_RETURN_RAW (*CompiledClosure_fptr_type)(LCC_ARGS_VA_LIST);
 typedef LCC_RETURN (*InitFnPtr)(LCC_ARGS_VA_LIST);
-typedef LCC_RETURN (*ArgArrayGenericFunctionPtr)(core::Instance_sp gf, core::VaList_sp valist_sptr);
+typedef LCC_RETURN (*GenericFunctionPtr)(core::Instance_sp gf, core::VaList_sp valist_sptr);
 #endif
 
 
