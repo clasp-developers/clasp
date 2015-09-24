@@ -24,8 +24,9 @@ feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # u
 ###
 feature.feature program : clasp cando
                 : symmetric composite propagated link-incompatible ;
-feature.compose <program>clasp : <define>PROGRAM_CLASP <define>APPLICATION_CONFIG="<cando/projects/cando/src/main/application.config>" ;
-feature.compose <program>cando : <define>PROGRAM_CANDO <define>APPLICATION_CONFIG="<cando/src/main/application.config>" ;
+feature.compose <program>clasp : <define>PROGRAM_CLASP <define>APPLICATION_CONFIG="\"<src/main/application.config>\"" ;
+feature.compose <program>cando : <define>PROGRAM_CANDO <define>APPLICATION_CONFIG="\"<projects/cando/src/main/application.config>\"" ;
+feature.compose <program>other : <define>PROGRAM_OTHER ;   #  Define APPLICATION_CONFIG yourself
 
 GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
 

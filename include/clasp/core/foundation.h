@@ -41,7 +41,7 @@ THE SOFTWARE.
 // clang-format off
 
 /*! Configure the application Clasp or Cando currently */
-#include APPLICATION_CONFIGURATION_INCLUDE
+#include APPLICATION_CONFIG
 // clang-format on
 
 /*! Old way of doing #= and ## used alists which are slow
