@@ -83,6 +83,28 @@ executable-symlinks:
 	-ln -s $(BINDIR)/debug/boehm/clasp $(BINDIR)/clasp_boehm_d
 	-ln -s $(BINDIR)/debug/mps/clasp $(BINDIR)/clasp_mps_d
 
+boehm-setup:
+	(cd $(BOEHM_SOURCE_DIR); \
+		export ALL_INTERIOR_PTRS=1; \
+		CFLAGS="-DUSE_MMAP -g" \
+		./configure --enable-shared=no --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_EXTERNALS_COMMON_DIR);)
+boehm-build:
+	make boehm-compile
+	make boehm-install
+
+boehm-compile:
+	(cd $(BOEHM_SOURCE_DIR); make -j1 | tee _boehm.log)
+
+boehm-install:
+	(cd $(BOEHM_SOURCE_DIR); make -j1 install | tee _boehm_install.log)
+
+
+
+boehm-clean:
+	install -d $(BOEHM_SOURCE_DIR)
+	-(cd $(BOEHM_SOURCE_DIR); make clean )
+
+
 cclasp-mps:
 	(cd src/main; make cclasp-mps)
 

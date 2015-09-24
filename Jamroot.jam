@@ -24,8 +24,8 @@ feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # u
 ###
 feature.feature program : clasp cando
                 : symmetric composite propagated link-incompatible ;
-feature.compose <program>clasp : <define>PROGRAM_CLASP ;
-feature.compose <program>cando : <define>PROGRAM_CANDO ;
+feature.compose <program>clasp : <define>PROGRAM_CLASP <define>APPLICATION_CONFIG="<cando/projects/cando/src/main/application.config>" ;
+feature.compose <program>cando : <define>PROGRAM_CANDO <define>APPLICATION_CONFIG="<cando/src/main/application.config>" ;
 
 GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
 
@@ -68,6 +68,7 @@ project clasp : requirements
 #        <target-os>darwin:<cxxflags>"-resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
 #        <target-os>darwin:<cxxflags>"           -I /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
         <target-os>darwin:<cxxflags>"-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk"
+        <include>./
         <cxxflags>"-Wno-deprecated-register"
         <define>CLBIND_DYNAMIC_LINK
         <define>NDEBUG     # turns off some weird tests in clbind (will I eat these words?)
