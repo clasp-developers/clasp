@@ -69,8 +69,8 @@ all:
 	make submodules
 	make asdf
 	make boostbuildv2-build
-	$(BUILD) -j$(PJOBS) link=static program=clasp gc=boehm release src/main//dist src/llvmo//install_intrinsics_bitcode
-	$(BUILD) -j$(PJOBS) link=static program=clasp gc=mps release src/main//dist src/llvmo//install_intrinsics_bitcode
+	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehm release dist )
+	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=mps release dist )
 	make clasp-boehm
 	make cclasp-boehm
 	make cclasp-boehm-addons

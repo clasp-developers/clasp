@@ -73,7 +73,7 @@ exe clasp : main.cc $(sources)
     ;
 
 
-install dist : clasp
+install dist : clasp /internals/llvmo//install_intrinsics_bitcode
         :
         <program>clasp,<target-os>linux,<variant>release,<gc>boehmdc:<location>$(APPBIN-LINUX)/release/boehmdc
         <program>clasp,<target-os>linux,<variant>release,<gc>boehm:<location>$(APPBIN-LINUX)/release/boehm
