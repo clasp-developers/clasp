@@ -53,6 +53,8 @@ void initialize_link_intrinsics();
                , destinationMustBeActivationFrame
                , invalidIndexForFunctionFrame
                , unboundSymbolValue
+               , unboundSymbolFunction
+               , unboundSymbolSetfFunction
                } ErrorCode;
 
 

@@ -673,7 +673,7 @@ void af_gdb(T_sp msg) {
 #define DECL_core_cxx_lambda_list_handler_create_bindings_calls ""
 #define DOCS_core_cxx_lambda_list_handler_create_bindings_calls "Return the number of times lambdaListHandler_createBindings"
 Integer_sp core_cxx_lambda_list_handler_create_bindings_calls(T_sp msg) {
-  size_t calls = _lisp->threadLocalInfoPtr->_lambda_list_handler_create_bindings_calls;
+  size_t calls = threadLocalInfoPtr->_lambda_list_handler_create_bindings_count;
   return Integer_O::create((Fixnum)calls);
 };
 
