@@ -125,8 +125,11 @@ T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots) {
 
 /*! See ECL>>instance.d>>si_allocate_raw_instance */
 T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, int numberOfSlots) {
-  _G();
-  Instance_sp output = Instance_O::allocateInstance(theClass, numberOfSlots);
+    T_sp toutput = Instance_O::allocateInstance(theClass, numberOfSlots);
+    Instance_sp output = toutput.asOrNull<Instance_O>();
+    if (!output) {
+        SIMPLE_ERROR(BF("Could not convert a newly allocated instance of %s to Instance_sp - this going to require implementing the new Instance_O derived Kinds") % _rep_(theClass));
+    }
   if (orig.nilp()) {
     orig = output;
   } else if (Instance_sp iorig = orig.asOrNull<Instance_O>()) {

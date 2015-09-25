@@ -37,11 +37,12 @@ namespace gctools {
 int globalBoehmMarker = 0;
 #endif
 
-void rawHeaderDescribe(uintptr_t* headerP)
+void rawHeaderDescribe(uintptr_t* rawheaderP)
 {
-  printf( "  0x%16l0X : Kind: 0x%16l0X  vtable: 0x%16l0X\n", headerP, *headerP, *(headerP+1));
-  gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP)>>2);
-  printf(" Kind tag - kind: %d", kind );
+    Header_s* headerP = reinterpret_cast<Header_s*>(rawheaderP);
+  printf( "  0x%p : Kind: 0x%p  vtable: 0x%p\n", headerP, *headerP, *(headerP+1));
+  gctools::GCKindEnum kind = headerP->kind();
+  printf(" Kind tag - kind: %d\n", kind );
   fflush(stdout);
 };
 
