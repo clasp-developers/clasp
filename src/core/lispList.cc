@@ -264,19 +264,19 @@ List_sp cl_nbutlast(List_sp l, Integer_sp in) {
   return _Nil<T_O>();
 }
 
-#define ARGS_af_list "(&rest objects)"
-#define DECL_af_list ""
-#define DOCS_af_list "See CLHS: list"
-T_sp af_list(T_sp objects) {
+#define ARGS_cl_list "(&rest objects)"
+#define DECL_cl_list ""
+#define DOCS_cl_list "See CLHS: list"
+T_sp cl_list(T_sp objects) {
   _G();
   return objects;
 };
 
-#define DOCS_af_listSTAR "list* see CLHS"
-#define LOCK_af_listSTAR 0
-#define ARGS_af_listSTAR "(&rest objects)"
-#define DECL_af_listSTAR ""
-T_sp af_listSTAR(T_sp tobjects) {
+#define DOCS_cl_listSTAR "list* see CLHS"
+#define LOCK_cl_listSTAR 0
+#define ARGS_cl_listSTAR "(&rest objects)"
+#define DECL_cl_listSTAR ""
+T_sp cl_listSTAR(T_sp tobjects) {
   _G();
   T_sp objects = tobjects;
   if (objects.nilp())
@@ -392,9 +392,9 @@ void initialize_list() {
   SYMBOL_EXPORT_SC_(ClPkg, nreconc);
   ClDefun(nreconc);
   SYMBOL_EXPORT_SC_(ClPkg, list);
-  Defun(list);
+  ClDefun(list);
   SYMBOL_EXPORT_SC_(ClPkg, listSTAR);
-  Defun(listSTAR);
+  ClDefun(listSTAR);
   SYMBOL_EXPORT_SC_(ClPkg, butlast);
   Defun(butlast);
   SYMBOL_EXPORT_SC_(ClPkg, nbutlast);
