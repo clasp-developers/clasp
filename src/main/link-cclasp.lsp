@@ -10,7 +10,7 @@
           (list :auto-compile :cclasp)))
 (defparameter *cleavir-system* (setup-cclasp-system *init-files* *cleavir-partial-system*))
 (setq *features* (list* :cclasp :clos *features*))
-(load-system :start :cleavir-only :system *cleavir-system*)
+(load-system :start :cleavir-only :system *cleavir-system* :load-bitcode t)
 ;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE uses Cleavir
 (eval-when (:execute :load-toplevel)
   (setq cmp:*cleavir-compile-hook* 'cleavir-compile-t1expr))
