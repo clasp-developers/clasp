@@ -68,21 +68,9 @@ using namespace core;
 
 #pragma GCC visibility push(default)
 
-extern "C" {
 
-LispCallingConventionPtr lccGlobalFunction(core::Symbol_sp sym) {
-  printf("%s:%d lccSymbolFunction for %s returning NULL for now\n", __FILE__, __LINE__, _rep_(sym).c_str());
-  return NULL;
-}
-
-typedef enum { noFunctionBoundToSymbol
-               , badKeywordArgument
-               , couldNotCoerceToClosure
-               , destinationMustBeActivationFrame
-               , invalidIndexForFunctionFrame
-               } ErrorCode;
-
-void errorMessage(ErrorCode err, core::T_sp arg0=_Nil<core::T_O>(), core::T_sp arg1=_Nil<core::T_O>(), core::T_sp arg2=_Nil<core::T_O>() ) {
+namespace llvmo {
+void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2 ) {
   switch (err) {
   case noFunctionBoundToSymbol:
       SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % _rep_(arg0) );
@@ -94,9 +82,18 @@ void errorMessage(ErrorCode err, core::T_sp arg0=_Nil<core::T_O>(), core::T_sp a
       SIMPLE_ERROR(BF("Destination must be ActivationFrame"));
   case invalidIndexForFunctionFrame:
       SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
-
+  case unboundSymbolValue:
+      SIMPLE_ERROR(BF("The symbol %s is unbound") % _rep_(arg0) );
   };
 };
+};
+extern "C" {
+
+LispCallingConventionPtr lccGlobalFunction(core::Symbol_sp sym) {
+  printf("%s:%d lccSymbolFunction for %s returning NULL for now\n", __FILE__, __LINE__, _rep_(sym).c_str());
+  return NULL;
+}
+
 };
 
 
@@ -186,7 +183,7 @@ void va_fillActivationFrameWithRequiredVarargs(core::ActivationFrame_sp *afP, in
 
 Closure *va_coerceToClosure(core::T_sp *argP) {
   if (!(*argP).objectp()) {
-    errorMessage(couldNotCoerceToClosure,*argP);
+    intrinsic_error(llvmo::couldNotCoerceToClosure,*argP);
   }
   core::Function_sp func = core::coerce::functionDesignator((*argP));
   return &(*func->closure);
@@ -194,7 +191,7 @@ Closure *va_coerceToClosure(core::T_sp *argP) {
 
 
 ALWAYS_INLINE core::Closure *va_symbolFunction(core::Symbol_sp *symP) {
-  if (!(*symP)->fboundp()) errorMessage(noFunctionBoundToSymbol,*symP);
+  if (!(*symP)->fboundp()) intrinsic_error(llvmo::noFunctionBoundToSymbol,*symP);
   core::Function_sp func((gc::Tagged)(*symP)->_Function.theObject);
   core::Closure *funcPtr = &(*func->closure);
   return funcPtr;
@@ -260,7 +257,7 @@ void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwId
   if (allowOtherKeys == 2) {
     return;
   }
-  if (badKwIdx != 65536) errorMessage(badKeywordArgument,core::T_sp((gc::Tagged)kw));
+  if (badKwIdx != 65536) intrinsic_error(llvmo::badKeywordArgument,core::T_sp((gc::Tagged)kw));
 }
 
 void newFunction_sp(core::Function_sp *sharedP) {
@@ -609,30 +606,14 @@ void invokeMainFunction(char* sourceName, fnLispCallingConvention fptr) {
   }
 };
 
-extern void sp_symbolValueReadOrUnbound(core::T_sp *resultP, const core::Symbol_sp *symP) {
-  ASSERTF(symP != NULL, BF("passed symbol is NULL"));
-  *resultP = (*symP)->symbolValueUnsafe();
-  ASSERTNOTNULL(*resultP);
+ALWAYS_INLINE void sp_symbolValueRead(core::T_sp *resultP, const core::Symbol_sp *symP) {
+  *resultP = (*symP)->symbolValue();
 }
-extern void mv_symbolValueReadOrUnbound(core::T_mv *resultP, const core::Symbol_sp *symP) {
-  _G();
-  ASSERTF(symP != NULL, BF("passed symbol is NULL"));
-  *resultP = Values((*symP)->symbolValueUnsafe());
-  ASSERTNOTNULL(*resultP);
+ALWAYS_INLINE void mv_symbolValueRead(core::T_mv *resultP, const core::Symbol_sp *symP) {
+  *resultP = Values((*symP)->symbolValue());
 }
 
-extern void sp_symbolValueRead(core::T_sp *resultP, const core::Symbol_sp *symP) {
-  _G();
-  ASSERTF(symP != NULL, BF("passed symbol is NULL"));
-  *resultP = (*symP)->symbolValue();
-  ASSERTNOTNULL(*resultP);
-}
-extern void mv_symbolValueRead(core::T_mv *resultP, const core::Symbol_sp *symP) {
-  _G();
-  ASSERTF(symP != NULL, BF("passed symbol is NULL"));
-  *resultP = Values((*symP)->symbolValue());
-  ASSERTNOTNULL(*resultP);
-}
+
 
 core::T_sp *symbolValueReference(core::Symbol_sp *symbolP) {
   _G();
@@ -714,7 +695,7 @@ extern void setParentOfActivationFrameTPtr(core::T_sp *resultP, core::T_O *paren
     af->setParentFrame(parentP);
     return;
   }
-  errorMessage(destinationMustBeActivationFrame);
+  intrinsic_error(llvmo::destinationMustBeActivationFrame);
 #endif
 }
 
@@ -735,7 +716,7 @@ extern void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp
     af->setParentFrame(parentP);
     return;
   }
-  errorMessage(destinationMustBeActivationFrame);
+  intrinsic_error(llvmo::destinationMustBeActivationFrame);
 #endif
 }
 
@@ -792,7 +773,7 @@ extern core::T_sp *functionFrameReference(core::ActivationFrame_sp *frameP, int 
   ASSERT(frameP->objectp());
   core::FunctionFrame_sp frame = gc::As<core::FunctionFrame_sp>((*frameP));
   if (idx < 0 || idx >= frame->length()) {
-    errorMessage(invalidIndexForFunctionFrame
+    intrinsic_error(llvmo::invalidIndexForFunctionFrame
                  ,clasp_make_fixnum(idx)
                  ,clasp_make_fixnum(frame->length()));
   }
@@ -1701,30 +1682,6 @@ core::T_O *cc_fetch(core::T_O *array, std::size_t idx) {
   return (*a)[idx].raw_();
 }
 
-T_O *cc_fdefinition(core::T_O *sym) {
-  //	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
-  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
-  if (!s->fboundp())
-    SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
-  core::Function_sp fn = core::af_symbolFunction(s);
-  return fn.raw_();// &(*fn);
-}
-
-T_O *cc_getSetfFdefinition(core::T_O *sym) {
-  //	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
-  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
-  if (!s->setf_fboundp())
-    SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
-  core::Function_sp fn = s->getSetfFdefinition(); //_lisp->get_setfDefinition(s);
-  return fn.raw_(); //&(*fn);
-}
-
-T_O *cc_symbolValue(core::T_O *sym) {
-  //	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
-  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
-  core::T_sp v = core::af_symbolValue(s);
-  return v.raw_(); // &(*v);
-}
 
 #define PROTO_cc_setSymbolValue "void (t* t*)"
 #define CATCH_cc_setSymbolValue false
@@ -1734,33 +1691,7 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val) {
   s->setf_symbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
 }
 
-gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
-  //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
-  core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(lcc_func);
-  ASSERT(tagged_func != NULL);
-  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure.as<core::Closure>();
-  VaList_S lcc_arglist_s;
-  va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
-  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
-  core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  //*result = closure->invoke_va_list(LCC_PASS_ARGS);
-  return closure->invoke_va_list(LCC_PASS_ARGS);
-}
 
-#if 0
-gc::return_type cc_invoke(LCC_ARGS_CC_CALL_ELLIPSIS) {
-  //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
-  core::Function_O *tagged_func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(lcc_func);
-  ASSERT(tagged_func != NULL);
-  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
-  VaList_S lcc_arglist_s;
-  va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
-  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
-  core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  //*result = closure->invoke_va_list(LCC_PASS_ARGS);
-  return closure->invoke_va_list(LCC_PASS_ARGS);
-}
-#endif
 
 core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
                       char* sourceName, size_t filePos, size_t lineno, size_t column,

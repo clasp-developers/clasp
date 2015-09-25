@@ -890,10 +890,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 ;; Clean out the bitcode files.
 ;; passing :no-prompt t will not prompt the user
 (export 'clean-system)
-(defun clean-system ( &optional after-file &key no-prompt (target-backend *target-backend*)
+(defun clean-system ( &optional after-file &key no-prompt stage
                                            (system *init-files*))
-  (let* ((*target-backend* target-backend)
-         (files (select-trailing-source-files after-file :system system))
+  (let* ((files (select-trailing-source-files after-file :system system))
 	 (cur files))
     (bformat t "Will remove modules: %s\n" files)
     (bformat t "cur=%s\n" cur)
@@ -905,7 +904,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	  (tagbody
 	   top
 	     (if (endp cur) (go done))
-	     (delete-init-file (car cur) :really-delete t :stage target-backend )
+	     (delete-init-file (car cur) :really-delete t :stage stage )
 	     (setq cur (cdr cur))
 	     (go top)
 	   done

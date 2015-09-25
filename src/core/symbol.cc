@@ -128,7 +128,6 @@ Str_sp af_symbolName(Symbol_sp arg) {
 #define DECL_af_symbolValue ""
 #define DOCS_af_symbolValue "symbolValue"
 T_sp af_symbolValue(const Symbol_sp arg) {
-  _G();
   if (!arg->boundP()) {
     SIMPLE_ERROR(BF("Symbol %s@%p is unbound") % _rep_(arg) % (void *)arg.raw_());
   }

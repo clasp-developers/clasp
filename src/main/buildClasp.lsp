@@ -1,5 +1,4 @@
 (format t "Building clasp full version~%")
-(let ((*target-backend* (default-target-backend "full")))
-  (core:clean-system nil :no-prompt t :target-backend (default-target-backend "full")))
+(core:clean-system nil :no-prompt t :stage "full")
 (core:compile-full)
 (core:quit)

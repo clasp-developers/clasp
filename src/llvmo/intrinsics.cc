@@ -204,6 +204,61 @@ ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O**mvPtr, VaList_S* va_args )
   va_end(vl->_Args);
 }
 
+ALWAYS_INLINE T_O *cc_unsafe_symbol_value(core::T_O *sym) {
+  core::Symbol_O* symP = reinterpret_cast<core::Symbol_O*>(gctools::untag_general<core::T_O*>(sym));
+  return symP->symbolValueRef().raw_();
+}
+
+ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
+  core::Symbol_O* symP = reinterpret_cast<core::Symbol_O*>(gctools::untag_general<core::T_O*>(sym));
+  T_O* sv = symP->symbolValueRef().raw_();
+  if ( sv == gctools::global_tagged_Symbol_OP_unbound ) {
+    intrinsic_error( llvmo::unboundSymbolValue, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym) );
+  }
+  return sv;
+}
+
+
+ALWAYS_INLINE T_O *cc_unsafe_fdefinition(core::T_O *sym) {
+  core::Symbol_O* symP = reinterpret_cast<core::Symbol_O*>(gctools::untag_general<core::T_O*>(sym));
+  return symP->_Function.raw_();
+}
+
+ALWAYS_INLINE T_O *cc_safe_fdefinition(core::T_O *sym) {
+  core::Symbol_O* symP = reinterpret_cast<core::Symbol_O*>(gctools::untag_general<core::T_O*>(sym));
+  T_O* sv = symP->_Function.raw_();
+  if ( sv == gctools::global_tagged_Symbol_OP_unbound ) {
+    intrinsic_error( llvmo::unboundSymbolFunction, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym) );
+  }
+  return sv;
+}
+
+ALWAYS_INLINE T_O *cc_unsafe_setfdefinition(core::T_O *sym) {
+  core::Symbol_O* symP = reinterpret_cast<core::Symbol_O*>(gctools::untag_general<core::T_O*>(sym));
+  return symP->_SetfFunction.raw_();
+}
+
+ALWAYS_INLINE T_O *cc_safe_setfdefinition(core::T_O *sym) {
+  core::Symbol_O* symP = reinterpret_cast<core::Symbol_O*>(gctools::untag_general<core::T_O*>(sym));
+  T_O* sv = symP->_SetfFunction.raw_();
+  if ( sv == gctools::global_tagged_Symbol_OP_unbound ) {
+    intrinsic_error( llvmo::unboundSymbolSetfFunction, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym) );
+  }
+  return sv;
+}
+
+
+ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
+  //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+  core::Function_O *tagged_func = reinterpret_cast<core::Function_O*>(lcc_func);
+  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
+  VaList_S lcc_arglist_s;
+  va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
+  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+  core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
+  return closure->invoke_va_list(LCC_PASS_ARGS);
+}
+
 };
 
 

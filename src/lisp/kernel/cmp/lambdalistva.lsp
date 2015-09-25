@@ -126,25 +126,6 @@
     (irc-begin-block cont-block)
     ))
 
-
-
-
-#||
-(defun compile-save-if-special (env target &key make-unbound)
-  (when (eq (car target) 'ext:special-var)
-    (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it\n" target)
-    (let* ((target-symbol (cdr target))
-	   (saved-special-val (irc-alloca-tsp :label (bformat nil "saved->%s" (symbol-name target-symbol)))))
-      (irc-intrinsic "symbolValueReadOrUnbound" saved-special-val (irc-global-symbol target-symbol env))
-      (when make-unbound
-	(irc-intrinsic "makeUnboundTsp" (irc-intrinsic "symbolValueReference" (irc-global-symbol target-symbol env))))
-;;;      (irc-intrinsic "copyTsp" (codegen-special-var-reference target-symbol env) val)
-      (irc-push-unwind env `(symbolValueRestore ,saved-special-val ,target-symbol))
-      ;; Make the variable locally special
-      (value-environment-define-special-binding env target-symbol))))
-||#
-
-
 (defun compile-save-if-special (env target &key make-unbound)
   (when (eq (car target) 'ext:special-var)
     (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it\n" target)

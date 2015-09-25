@@ -232,6 +232,7 @@ void dbg_hook(const char *error) {
   // set a break point here to catch every error
   //
   printf("\n\n%s\n%s:%d dbg_hook(...) was called\n", error, __FILE__, __LINE__);
+  fflush(stdout);
   //	asm("int $3");
 
   //	af_invokeInternalDebugger(_Nil<core::T_O>());

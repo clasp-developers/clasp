@@ -454,7 +454,7 @@
   (cmp:irc-low-level-trace :flow)
   (let ((cell (cmp:irc-load (first inputs) "func-name")))
 ;;    (format t "translate-simple-instruction (first inputs) = ~a ~%" (first inputs))
-    (let ((result (cmp:irc-intrinsic-args "cc_fdefinition" (list cell) :label "func")))
+    (let ((result (cmp:irc-intrinsic-args "cc_safe_fdefinition" (list cell) :label "func")))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
@@ -467,14 +467,14 @@
     ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let ((cell (cmp:irc-load (first inputs) "setf-func-name")))
-    (let ((result (cmp:irc-intrinsic "cc_getSetfFdefinition" cell)))
+    (let ((result (cmp:irc-intrinsic "cc_safe_setfdefinition" cell)))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:symbol-value-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let ((sym (cmp:irc-load (first inputs) "sym-name")))
-    (let ((result (cmp:irc-create-call "cc_symbolValue" (list sym))))
+    (let ((result (cmp:irc-create-call "cc_safe_symbol_value" (list sym))))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction

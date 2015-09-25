@@ -2,7 +2,7 @@
 ;;;
 ;;; Compile ASDF for bclasp
 ;;;
-(compile-file "sys:kernel;asdf;build;asdf.lisp" 
+(compile-file "sys:modules;asdf;build;asdf.lisp" 
               :output-file (compile-file-pathname
                             "sys:modules;asdf;asdf.lisp" 
                             :target-backend (default-target-backend))
@@ -35,9 +35,12 @@
     (format t "Loading inline.lisp~%")
     (load "sys:kernel;cleavir;inline.lisp")
     (print (core:getpid)))
-  (load "sys:kernel;cleavir;auto-compile.lisp"))
+  (load "sys:kernel;cleavir;auto-compile.lisp")
+  (print "Done - you are ready to go"))
 
 (print "Hello")
+
+(clasp-cleavir:cleavir-compile-file "sys:tests;tlist.lsp")
 
 
 (deftype boolean () '(member nil t))

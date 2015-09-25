@@ -89,9 +89,6 @@ Vector_sp ExceptionStack::backtrace() {
 
     InvocationHistoryFrame::InvocationHistoryFrame(gctools::tagged_pointer<Closure> c, core::T_O* valist_sptr, T_sp env)
   : closure(c), environment(env), _NumberOfArguments(0), _RegisterArguments(NULL), _StackArguments(NULL)  {
-  if (c->name.nilp()) {
-    SIMPLE_ERROR(BF("The InvocationHistoryFrame closure has nil name"));
-  }
   if ( valist_sptr != NULL ) {
     VaList_sp arguments(reinterpret_cast<core::VaList_S*>(gc::untag_valist(valist_sptr)));
     this->_NumberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(arguments);

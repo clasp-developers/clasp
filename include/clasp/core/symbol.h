@@ -126,7 +126,7 @@ public:
   T_sp symbolValue() const;
 
   /*! Return the address of the value slot of the symbol */
-  T_sp &symbolValueRef() { return this->_Value; };
+  inline T_sp &symbolValueRef() { return this->_Value; };
 
   /*! Return the value slot of the symbol or UNBOUND if unbound */
   T_sp symbolValueUnsafe() const;
@@ -158,7 +158,7 @@ public:
 
   /*! Return the global bound function */
   inline T_sp symbolFunction() { return this->_Function; };
-
+  
   /*! Return true if the symbol has a function bound*/
   bool fboundp() const { return !this->_Function.unboundp(); };
 

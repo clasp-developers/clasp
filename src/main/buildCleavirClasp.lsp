@@ -1,4 +1,5 @@
 (format t "Building cleavir clasp full version - loading compile-cclasp.lisp~%")
+(core:clean-system nil :no-prompt t :stage "cclasp")
 (defpackage #:cclasp-build
   (:use #:common-lisp #:core))
 (in-package :cclasp-build)

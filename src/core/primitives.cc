@@ -669,6 +669,14 @@ void af_gdb(T_sp msg) {
   af_invokeInternalDebugger(_Nil<core::T_O>());
 };
 
+#define ARGS_core_cxx_lambda_list_handler_create_bindings_calls "()"
+#define DECL_core_cxx_lambda_list_handler_create_bindings_calls ""
+#define DOCS_core_cxx_lambda_list_handler_create_bindings_calls "Return the number of times lambdaListHandler_createBindings"
+Integer_sp core_cxx_lambda_list_handler_create_bindings_calls(T_sp msg) {
+  size_t calls = _lisp->threadLocalInfoPtr->_lambda_list_handler_create_bindings_calls;
+  return Integer_O::create((Fixnum)calls);
+};
+
 #define ARGS_core_trapExecution "(&optional msg)"
 #define DECL_core_trapExecution ""
 #define DOCS_core_trapExecution "hook to invoke gdb"
@@ -679,7 +687,8 @@ void core_trapExecution(T_sp msg) {
   if (obj.notnilp()) {
     smsg = _rep_(obj);
   }
-  dbg_hook(smsg.c_str());
+  printf("%s:%d In core_trapExecution: %s \n", __FILE__, __LINE__, smsg.c_str());
+  fflush(stdout);
 };
 
 #define ARGS_af_gdbInspect "(msg o)"
@@ -2304,7 +2313,7 @@ void initialize_primitives() {
   CoreDefun(method_cache_resize);
   CoreDefun(slot_cache_resize);
   CoreDefun(single_dispatch_method_cache_resize);
-
+  CoreDefun(cxx_lambda_list_handler_create_bindings_calls);
 }
 
 void initializePythonPrimitives(Lisp_sp lisp) {
