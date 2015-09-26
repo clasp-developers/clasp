@@ -924,7 +924,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   '(progn
     (cl:in-package :cl-user)
     (process-command-line-load-eval-sequence)
-    (when (member :interactive *features*) (core:run-repl))))
+    (let ((core:*use-interpreter-for-eval* nil))
+      (when (member :interactive *features*) (core:run-repl)))))
 
 (defconstant +minimal-epilogue-form+ '(progn
                                         (process-command-line-load-eval-sequence)

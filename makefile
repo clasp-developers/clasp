@@ -71,10 +71,10 @@ all:
 	make boostbuildv2-build
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehm release dist )
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=mps release dist )
-	make clasp-boehm
-	make cclasp-boehm
-	make cclasp-boehm-addons
-	make cclasp-mps
+	time make clasp-boehm
+	time make cclasp-boehm
+	time make cclasp-boehm-addons
+	time make cclasp-mps
 	make executable-symlinks
 
 $(BINDIR)/clasp_boehm_o : $(BINDIR)/release/boehm/clasp

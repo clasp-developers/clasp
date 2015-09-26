@@ -65,7 +65,8 @@
 						  (require 'system)
 						  (core:load-clasprc)
 						  (core:process-command-line-load-eval-sequence)
-						  (when (member :interactive *features*) (core:top-level)))))))))
+                                                  (let ((core:*use-interpreter-for-eval* nil))
+                                                    (when (member :interactive *features*) (core:top-level))))))))))
 
 (defun compile-min-cclasp (&key (recompile t))
   (let ((cmp:*compile-print* t))
