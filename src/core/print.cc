@@ -134,17 +134,17 @@ bool clasp_print_circle(void) {
   return cl::_sym_STARprint_circleSTAR->symbolValue().isTrue();
 }
 
-#define ARGS_cl_write "(x &key ((:stream strm) nil) (array *print-array*) (base *print-base*) ((:case cas) *print-case*) (escape *print-escape*) (gensym *print-gensym*) (length *print-length*) (level *print-level*) (lines *print-lines*) (miser_width *print-miser-width*) (pprint_dispatch *print-pprint-dispatch*) (pretty *print-pretty*) (radix *print-radix*) (readably *print-readably*) (right_margin *print-right-margin*))"
+#define ARGS_cl_write "(x &key ((:stream strm) nil) (array *print-array*) (base *print-base*) ((:case cas) *print-case*) (circle *print-circle*) (escape *print-escape*) (gensym *print-gensym*) (length *print-length*) (level *print-level*) (lines *print-lines*) (miser_width *print-miser-width*) (pprint_dispatch *print-pprint-dispatch*) (pretty *print-pretty*) (radix *print-radix*) (readably *print-readably*) (right_margin *print-right-margin*))"
 #define DECL_cl_write ""
 #define DOCS_cl_write "write"
 T_sp cl_write(T_sp x, T_sp strm, T_sp array, T_sp base,
-              T_sp cas, T_sp escape, T_sp gensym, T_sp length,
+              T_sp cas, T_sp circle, T_sp escape, T_sp gensym, T_sp length,
               T_sp level, T_sp lines, T_sp miser_width, T_sp pprint_dispatch,
               T_sp pretty, T_sp radix, T_sp readably, T_sp right_margin) {
-  _G();
   DynamicScopeManager scope(cl::_sym_STARprint_arraySTAR, array);
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_baseSTAR, base);
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_caseSTAR, cas);
+  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_circleSTAR, circle);
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_escapeSTAR, escape);
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_gensymSTAR, gensym);
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_lengthSTAR, length);

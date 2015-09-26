@@ -4,7 +4,7 @@ $var ReturnTypeCount = 3
 $var RetSV = 0
 $var RetVoid = 1
 $var RetMV = 2
-$var NumArgs = 16
+$var NumArgs = 18
 $var InnerCount = NumArgs+1
 $var Templates = InnerCount*ReturnTypeCount-1
 $range template_ 0..Templates

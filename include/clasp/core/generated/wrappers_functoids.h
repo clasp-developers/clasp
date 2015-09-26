@@ -4,8 +4,113 @@
 
 
 // ret = 0  RetSV
-// numArgs = 16
+// numArgs = 18
 // numVoids = 0
+/* Specialization */
+template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
+    typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14,
+    typename ARG15,typename ARG16,typename ARG17 >
+class VariadicFunctoid
+<RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15, ARG16, ARG17) >
+: public BuiltinClosure {
+public:
+typedef BuiltinClosure TemplatedBase;
+public:
+virtual const char* describe() const {return "VariadicFunctoid";};
+
+typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15, ARG16,
+    ARG17);
+Type fptr;
+public:
+enum { NumParams = 18 };
+VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+DISABLE_NEW();
+virtual size_t templatedSizeof() const { return sizeof(*this); };
+virtual void* functionAddress() const { return (void*)this->fptr; };
+inline LCC_RETURN LISP_CALLING_CONVENTION()
+{
+INVOCATION_HISTORY_FRAME();
+gc::frame::Frame args(18);
+core::StackFrameDynamicScopeManager scope(args);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)args[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)args[15]));
+translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)args[16]));
+translate::from_object<ARG17> a17(core::T_sp((gc::Tagged)args[17]));
+RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v,a16._v,
+    a17._v);
+return Values(translate::to_object<RT>::convert(retval));
+}
+
+};
+// ret = 0  RetSV
+// numArgs = 17
+// numVoids = 1
+/* Specialization */
+template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
+    typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14,
+    typename ARG15,typename ARG16 >
+class VariadicFunctoid
+<RT (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15, ARG16) >
+: public BuiltinClosure {
+public:
+typedef BuiltinClosure TemplatedBase;
+public:
+virtual const char* describe() const {return "VariadicFunctoid";};
+
+typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15, ARG16);
+Type fptr;
+public:
+enum { NumParams = 17 };
+VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+DISABLE_NEW();
+virtual size_t templatedSizeof() const { return sizeof(*this); };
+virtual void* functionAddress() const { return (void*)this->fptr; };
+inline LCC_RETURN LISP_CALLING_CONVENTION()
+{
+INVOCATION_HISTORY_FRAME();
+gc::frame::Frame args(17);
+core::StackFrameDynamicScopeManager scope(args);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)args[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)args[15]));
+translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)args[16]));
+RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v,a16._v);
+return Values(translate::to_object<RT>::convert(retval));
+}
+
+};
+// ret = 0  RetSV
+// numArgs = 16
+// numVoids = 2
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14,
@@ -55,7 +160,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 15
-// numVoids = 1
+// numVoids = 3
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14 >
@@ -103,7 +208,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 14
-// numVoids = 2
+// numVoids = 4
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
@@ -150,7 +255,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 13
-// numVoids = 3
+// numVoids = 5
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
@@ -196,7 +301,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 12
-// numVoids = 4
+// numVoids = 6
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
@@ -241,7 +346,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 11
-// numVoids = 5
+// numVoids = 7
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
@@ -285,7 +390,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 10
-// numVoids = 6
+// numVoids = 8
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9 >
@@ -328,7 +433,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 9
-// numVoids = 7
+// numVoids = 9
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8 >
@@ -370,7 +475,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 8
-// numVoids = 8
+// numVoids = 10
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7 >
@@ -411,7 +516,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 7
-// numVoids = 9
+// numVoids = 11
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class VariadicFunctoid
@@ -450,7 +555,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 6
-// numVoids = 10
+// numVoids = 12
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class VariadicFunctoid
@@ -488,7 +593,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 5
-// numVoids = 11
+// numVoids = 13
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicFunctoid
@@ -525,7 +630,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 4
-// numVoids = 12
+// numVoids = 14
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicFunctoid
@@ -561,7 +666,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 3
-// numVoids = 13
+// numVoids = 15
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2 >
 class VariadicFunctoid
@@ -596,7 +701,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 2
-// numVoids = 14
+// numVoids = 16
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1 >
 class VariadicFunctoid
@@ -630,7 +735,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 1
-// numVoids = 15
+// numVoids = 17
 /* Specialization */
 template <typename RT , typename ARG0 >
 class VariadicFunctoid
@@ -663,7 +768,7 @@ return Values(translate::to_object<RT>::convert(retval));
 };
 // ret = 0  RetSV
 // numArgs = 0
-// numVoids = 16
+// numVoids = 18
 /* Specialization */
 template <typename RT   >
 class VariadicFunctoid
@@ -691,8 +796,112 @@ return Values(translate::to_object<RT>::convert(retval));
 
 };
 // ret = 1  RetVoid
-// numArgs = 16
+// numArgs = 18
 // numVoids = 0
+/* Specialization */
+template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,typename ARG7,
+    typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14,typename ARG15,
+    typename ARG16,typename ARG17 >
+class VariadicFunctoid
+<void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15, ARG16, ARG17) >
+: public BuiltinClosure {
+public:
+typedef BuiltinClosure TemplatedBase;
+public:
+virtual const char* describe() const {return "VariadicFunctoid";};
+
+typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15, ARG16,
+    ARG17);
+Type fptr;
+public:
+enum { NumParams = 18 };
+VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+DISABLE_NEW();
+virtual size_t templatedSizeof() const { return sizeof(*this); };
+virtual void* functionAddress() const { return (void*)this->fptr; };
+inline LCC_RETURN LISP_CALLING_CONVENTION()
+{
+INVOCATION_HISTORY_FRAME();
+gc::frame::Frame args(18);
+core::StackFrameDynamicScopeManager scope(args);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)args[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)args[15]));
+translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)args[16]));
+translate::from_object<ARG17> a17(core::T_sp((gc::Tagged)args[17]));
+fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v,a16._v,a17._v);
+return Values0<core::T_O>();
+}
+
+};
+// ret = 1  RetVoid
+// numArgs = 17
+// numVoids = 1
+/* Specialization */
+template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,typename ARG7,
+    typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14,typename ARG15,
+    typename ARG16 >
+class VariadicFunctoid
+<void(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15, ARG16) >
+: public BuiltinClosure {
+public:
+typedef BuiltinClosure TemplatedBase;
+public:
+virtual const char* describe() const {return "VariadicFunctoid";};
+
+typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15, ARG16);
+Type fptr;
+public:
+enum { NumParams = 17 };
+VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+DISABLE_NEW();
+virtual size_t templatedSizeof() const { return sizeof(*this); };
+virtual void* functionAddress() const { return (void*)this->fptr; };
+inline LCC_RETURN LISP_CALLING_CONVENTION()
+{
+INVOCATION_HISTORY_FRAME();
+gc::frame::Frame args(17);
+core::StackFrameDynamicScopeManager scope(args);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)args[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)args[15]));
+translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)args[16]));
+fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v,a16._v);
+return Values0<core::T_O>();
+}
+
+};
+// ret = 1  RetVoid
+// numArgs = 16
+// numVoids = 2
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,typename ARG7,
     typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14,typename ARG15 >
@@ -741,7 +950,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 15
-// numVoids = 1
+// numVoids = 3
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,typename ARG7,
     typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14 >
@@ -789,7 +998,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 14
-// numVoids = 2
+// numVoids = 4
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,typename ARG7,
     typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
@@ -836,7 +1045,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 13
-// numVoids = 3
+// numVoids = 5
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,typename ARG7,
     typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
@@ -882,7 +1091,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 12
-// numVoids = 4
+// numVoids = 6
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,typename ARG7,
     typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
@@ -927,7 +1136,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 11
-// numVoids = 5
+// numVoids = 7
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,typename ARG7,
     typename ARG8,typename ARG9,typename ARG10 >
@@ -971,7 +1180,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 10
-// numVoids = 6
+// numVoids = 8
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,typename ARG7,
     typename ARG8,typename ARG9 >
@@ -1014,7 +1223,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 9
-// numVoids = 7
+// numVoids = 9
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,typename ARG7,
     typename ARG8 >
@@ -1056,7 +1265,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 8
-// numVoids = 8
+// numVoids = 10
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,typename ARG7 >
 class VariadicFunctoid
@@ -1096,7 +1305,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 7
-// numVoids = 9
+// numVoids = 11
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class VariadicFunctoid
@@ -1135,7 +1344,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 6
-// numVoids = 10
+// numVoids = 12
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class VariadicFunctoid
@@ -1173,7 +1382,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 5
-// numVoids = 11
+// numVoids = 13
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicFunctoid
@@ -1210,7 +1419,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 4
-// numVoids = 12
+// numVoids = 14
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicFunctoid
@@ -1246,7 +1455,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 3
-// numVoids = 13
+// numVoids = 15
 /* Specialization */
 template < typename ARG0,typename ARG1,typename ARG2 >
 class VariadicFunctoid
@@ -1281,7 +1490,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 2
-// numVoids = 14
+// numVoids = 16
 /* Specialization */
 template < typename ARG0,typename ARG1 >
 class VariadicFunctoid
@@ -1315,7 +1524,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 1
-// numVoids = 15
+// numVoids = 17
 /* Specialization */
 template < typename ARG0 >
 class VariadicFunctoid
@@ -1348,7 +1557,7 @@ return Values0<core::T_O>();
 };
 // ret = 1  RetVoid
 // numArgs = 0
-// numVoids = 16
+// numVoids = 18
 /* Specialization */
 template <  >
 class VariadicFunctoid
@@ -1376,8 +1585,117 @@ return Values0<core::T_O>();
 
 };
 // ret = 2  RetMV
-// numArgs = 16
+// numArgs = 18
 // numVoids = 0
+/* Specialization */
+template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
+    typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14,
+    typename ARG15,typename ARG16,typename ARG17 >
+class VariadicFunctoid
+<gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15,
+    ARG16, ARG17) >
+: public BuiltinClosure {
+public:
+typedef BuiltinClosure TemplatedBase;
+public:
+virtual const char* describe() const {return "VariadicFunctoid";};
+
+typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
+    ARG13, ARG14, ARG15, ARG16, ARG17);
+Type fptr;
+public:
+enum { NumParams = 18 };
+VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+DISABLE_NEW();
+virtual size_t templatedSizeof() const { return sizeof(*this); };
+virtual void* functionAddress() const { return (void*)this->fptr; };
+inline LCC_RETURN LISP_CALLING_CONVENTION()
+{
+INVOCATION_HISTORY_FRAME();
+gc::frame::Frame args(18);
+core::StackFrameDynamicScopeManager scope(args);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)args[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)args[15]));
+translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)args[16]));
+translate::from_object<ARG17> a17(core::T_sp((gc::Tagged)args[17]));
+gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
+    a13._v,a14._v,a15._v,a16._v,a17._v);
+return retval.as_return_type();
+}
+
+};
+// ret = 2  RetMV
+// numArgs = 17
+// numVoids = 1
+/* Specialization */
+template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
+    typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14,
+    typename ARG15,typename ARG16 >
+class VariadicFunctoid
+<gctools::multiple_values<RT>(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15,
+    ARG16) >
+: public BuiltinClosure {
+public:
+typedef BuiltinClosure TemplatedBase;
+public:
+virtual const char* describe() const {return "VariadicFunctoid";};
+
+typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12,
+    ARG13, ARG14, ARG15, ARG16);
+Type fptr;
+public:
+enum { NumParams = 17 };
+VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+DISABLE_NEW();
+virtual size_t templatedSizeof() const { return sizeof(*this); };
+virtual void* functionAddress() const { return (void*)this->fptr; };
+inline LCC_RETURN LISP_CALLING_CONVENTION()
+{
+INVOCATION_HISTORY_FRAME();
+gc::frame::Frame args(17);
+core::StackFrameDynamicScopeManager scope(args);
+lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)args[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)args[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)args[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)args[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)args[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)args[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)args[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)args[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)args[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)args[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)args[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)args[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)args[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)args[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)args[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)args[15]));
+translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)args[16]));
+gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
+    a13._v,a14._v,a15._v,a16._v);
+return retval.as_return_type();
+}
+
+};
+// ret = 2  RetMV
+// numArgs = 16
+// numVoids = 2
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14,
@@ -1430,7 +1748,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 15
-// numVoids = 1
+// numVoids = 3
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14 >
@@ -1480,7 +1798,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 14
-// numVoids = 2
+// numVoids = 4
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
@@ -1529,7 +1847,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 13
-// numVoids = 3
+// numVoids = 5
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
@@ -1575,7 +1893,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 12
-// numVoids = 4
+// numVoids = 6
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
@@ -1620,7 +1938,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 11
-// numVoids = 5
+// numVoids = 7
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
@@ -1664,7 +1982,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 10
-// numVoids = 6
+// numVoids = 8
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9 >
@@ -1707,7 +2025,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 9
-// numVoids = 7
+// numVoids = 9
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8 >
@@ -1749,7 +2067,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 8
-// numVoids = 8
+// numVoids = 10
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7 >
@@ -1790,7 +2108,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 7
-// numVoids = 9
+// numVoids = 11
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class VariadicFunctoid
@@ -1829,7 +2147,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 6
-// numVoids = 10
+// numVoids = 12
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class VariadicFunctoid
@@ -1867,7 +2185,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 5
-// numVoids = 11
+// numVoids = 13
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class VariadicFunctoid
@@ -1904,7 +2222,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 4
-// numVoids = 12
+// numVoids = 14
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2,typename ARG3 >
 class VariadicFunctoid
@@ -1940,7 +2258,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 3
-// numVoids = 13
+// numVoids = 15
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1,typename ARG2 >
 class VariadicFunctoid
@@ -1975,7 +2293,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 2
-// numVoids = 14
+// numVoids = 16
 /* Specialization */
 template <typename RT , typename ARG0,typename ARG1 >
 class VariadicFunctoid
@@ -2009,7 +2327,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 1
-// numVoids = 15
+// numVoids = 17
 /* Specialization */
 template <typename RT , typename ARG0 >
 class VariadicFunctoid
@@ -2042,7 +2360,7 @@ return retval.as_return_type();
 };
 // ret = 2  RetMV
 // numArgs = 0
-// numVoids = 16
+// numVoids = 18
 /* Specialization */
 template <typename RT   >
 class VariadicFunctoid
