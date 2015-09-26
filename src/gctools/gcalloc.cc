@@ -35,6 +35,8 @@ THE SOFTWARE.
 
 namespace gctools {
 
+#ifdef USE_BOEHM
+#ifdef BOEHM_ONE_BIG_STACK
 void GCStack::growStack()
 {
   size_t oldSize = (this->_StackLimit-this->_StackBottom);
@@ -48,7 +50,8 @@ void GCStack::growStack()
   this->_StackTop = (uintptr_t*)((char*)this->_StackBottom+((char*)this->_StackTop-(char*)oldStack));
   GC_FREE(oldStack);
 }
-  
+#endif
+#endif
 
 void* GCStack::pushFrameImpl(size_t frameSize) {
   frameSize = STACK_ALIGN_UP(frameSize);

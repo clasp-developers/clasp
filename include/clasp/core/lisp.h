@@ -558,7 +558,7 @@ public:
   List_sp trace_functions() const;
 
 public:
-  DynamicBindingStack &bindings() { return this->_Roots._Bindings; };
+  inline DynamicBindingStack &bindings() { return this->_Roots._Bindings; };
 
 public:
   /*! Add a pair of symbolIDs that provide an accessor get/setf pair */

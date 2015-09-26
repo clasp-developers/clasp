@@ -190,12 +190,6 @@ Closure *va_coerceToClosure(core::T_sp *argP) {
 }
 
 
-ALWAYS_INLINE core::Closure *va_symbolFunction(core::Symbol_sp *symP) {
-  if (!(*symP)->fboundp()) intrinsic_error(llvmo::noFunctionBoundToSymbol,*symP);
-  core::Function_sp func((gc::Tagged)(*symP)->_Function.theObject);
-  core::Closure *funcPtr = &(*func->closure);
-  return funcPtr;
-}
 
 ALWAYS_INLINE core::Closure *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP) {
   core::Function_sp func = core::Environment_O::clasp_lookupFunction(*evaluateFrameP, depth, index);
@@ -606,12 +600,6 @@ void invokeMainFunction(char* sourceName, fnLispCallingConvention fptr) {
   }
 };
 
-ALWAYS_INLINE void sp_symbolValueRead(core::T_sp *resultP, const core::Symbol_sp *symP) {
-  *resultP = (*symP)->symbolValue();
-}
-ALWAYS_INLINE void mv_symbolValueRead(core::T_mv *resultP, const core::Symbol_sp *symP) {
-  *resultP = Values((*symP)->symbolValue());
-}
 
 
 

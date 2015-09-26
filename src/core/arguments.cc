@@ -139,6 +139,7 @@ string AuxArgument::asString() const {
   return ((ss.str()));
 }
 
+#if 0 // moved to header
 DynamicScopeManager::DynamicScopeManager() {
   int top = _lisp->bindings().top();
   this->_beginTop = top;
@@ -151,6 +152,8 @@ DynamicScopeManager::DynamicScopeManager(Symbol_sp sym, T_sp val) {
   this->_endTop = top;
   this->pushSpecialVariableAndSet(sym, val);
 }
+#endif
+
 
 void DynamicScopeManager::dump() const {
   stringstream ss;
@@ -184,20 +187,15 @@ T_sp DynamicScopeManager::lexenv() const {
   SIMPLE_ERROR(BF("A ValueEnvironment was requested from a DynamicScopeManager - only ValueEnvironmentDynamicScopeManagers have those"));
 }
 
+#if 0
 DynamicScopeManager::~DynamicScopeManager() {
   DynamicBindingStack &bindings = _lisp->bindings();
   int numBindings = this->_endTop - this->_beginTop;
   for (int i = 0; i < numBindings; ++i) {
     bindings.pop();
   }
-#if 0	
-	for ( vector<SymbolSaveValue>::iterator it=this->_SavedValues.begin();
-	      it!=this->_SavedValues.end(); it++ )
-	{
-	    it->_Symbol->setf_symbolValue(it->_SavedValue);
-	}
-#endif
 }
+#endif
 
 bool ValueEnvironmentDynamicScopeManager::lexicalElementBoundP(const Argument &argument) {
   return ((this->_Environment->activationFrameElementBoundP(argument._ArgTargetFrameIndex)));

@@ -125,7 +125,7 @@ public:
   gctools::Vec0<DynamicBinding> _Bindings;
 
 public:
-  int top() const { return this->_Bindings.size() - 1; }
+  inline int top() const { return this->_Bindings.size() - 1; }
 
   Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
 

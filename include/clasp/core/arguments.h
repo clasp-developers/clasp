@@ -138,14 +138,30 @@ public:
   virtual VaList_S& valist() {N_A_();};
   virtual bool lexicalElementBoundP(const Argument &argument) { N_A_(); };
   void pushSpecialVariableAndSet(Symbol_sp sym, T_sp val);
-  explicit DynamicScopeManager();
-  explicit DynamicScopeManager(Symbol_sp sym, T_sp newVal);
+  inline explicit DynamicScopeManager() {
+    int top = _lisp->bindings().top();
+    this->_beginTop = top;
+    this->_endTop = top;
+  }
+    
+  inline explicit DynamicScopeManager(Symbol_sp sym, T_sp newVal) {
+    int top = _lisp->bindings().top();
+    this->_beginTop = top;
+    this->_endTop = top;
+    this->pushSpecialVariableAndSet(sym, newVal);
+  }
 
   void dump() const;
 
   virtual T_sp lexenv() const;
 
-  virtual ~DynamicScopeManager();
+  virtual ~DynamicScopeManager() {
+    DynamicBindingStack &bindings = _lisp->bindings();
+    int numBindings = this->_endTop - this->_beginTop;
+    for (int i = 0; i < numBindings; ++i) {
+      bindings.pop();
+    }
+  }
 };
 
 class ValueEnvironmentDynamicScopeManager : public DynamicScopeManager {
