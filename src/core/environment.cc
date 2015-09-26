@@ -1198,9 +1198,11 @@ T_sp ValueEnvironment_O::new_binding(Symbol_sp sym, int idx, T_sp obj) {
   if (idx < 0) {
     IMPLEMENT_MEF(BF("new_binding for special symbol[%s]") % _rep_(sym));
   }
+#if 0
   if (this->_SymbolIndex->find(sym).notnilp()) {
     SIMPLE_ERROR(BF("The symbol[%s] is already in the environment") % _rep_(sym));
   }
+#endif
   this->_SymbolIndex->hash_table_setf_gethash(sym, make_fixnum(idx));
   this->_ActivationFrame->set_entry(idx, obj);
   return obj;

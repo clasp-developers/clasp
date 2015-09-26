@@ -787,7 +787,7 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
   ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
   VectorObjects_sp debuggingInfo = VectorObjects_O::create(_Nil<T_O>(),
                                                            cl_length(valueFrame), _Nil<T_O>());
-  valueFrame->attachDebuggingInfo(debuggingInfo);
+//  valueFrame->attachDebuggingInfo(debuggingInfo);
 
   // Figure out which environment to evaluate in
   List_sp curExp = expressions;
@@ -862,7 +862,7 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
   ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
   VectorObjects_sp debuggingInfo = VectorObjects_O::create(_Nil<T_O>(),
                                                            cl_length(valueFrame), _Nil<T_O>());
-  valueFrame->attachDebuggingInfo(debuggingInfo);
+//  valueFrame->attachDebuggingInfo(debuggingInfo);
 
   // Figure out which environment to evaluate in
   List_sp curExp = expressions;
