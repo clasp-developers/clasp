@@ -36,8 +36,16 @@ inline bool cl_symbolp(T_sp obj) {
   return gc::IsA<Symbol_sp>(obj);
 }
 
-bool cl_endp(T_sp obj);
+#define ARGS_cl_endp "(arg)"
+#define DECL_cl_endp ""
+#define DOCS_cl_endp "endp"
+inline bool cl_endp(T_sp arg) {
+  if ( arg.consp() ) return false;
+  if ( arg.nilp() ) return true;
+  TYPE_ERROR(arg,cl::_sym_list);
+};
 
+ 
 #define ARGS_cl_atom "(arg)"
 #define DECL_cl_atom ""
 #define DOCS_cl_atom "atom"

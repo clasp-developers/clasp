@@ -66,14 +66,6 @@ bool core_baseCharP(T_sp arg) {
   return false;
 };
 
-#define ARGS_cl_endp "(arg)"
-#define DECL_cl_endp ""
-#define DOCS_cl_endp "endp"
-bool cl_endp(T_sp arg) {
-  return arg.nilp();
-};
-
-
 
 #define ARGS_af_bignumP "(arg)"
 #define DECL_af_bignumP ""
