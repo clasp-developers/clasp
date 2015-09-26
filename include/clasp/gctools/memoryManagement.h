@@ -234,4 +234,5 @@ int handleFatalCondition();
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize);
 };
 
+
 #endif // _clasp_memoryManagement_H

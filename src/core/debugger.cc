@@ -98,7 +98,9 @@ T_sp LispDebugger::invoke() {
       sprompt << "(+ENV)";
     }
     sprompt << "[" << _lisp->debuggerLevel() << "]>";
-    line = myReadLine(sprompt.str());
+    bool end_of_transmission(false);
+    line = myReadLine(sprompt.str(),end_of_transmission);
+    if ( end_of_transmission ) throw core::ExitProgram(0);
     char cmd;
     if (line[0] == ':') {
       cmd = line[1];

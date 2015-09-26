@@ -51,7 +51,7 @@ public:
   void initialize();
 
 GCPRIVATE: // instance variables here
-  vector<int> _Dimensions;
+  vector<cl_index> _Dimensions;
   T_sp _ElementType;
   Array_sp _Array;
   int _DisplacedIndexOffset;
@@ -72,6 +72,7 @@ public:
   virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const;
 
   LongLongInt setDimensions(List_sp dims, T_sp initialElement);
+  virtual std::vector<cl_index> dimensions() const { return this->_Dimensions; };
 
   void setElementType(T_sp et) { this->_ElementType = et; };
   /*! Return the value at the indices */

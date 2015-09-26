@@ -106,6 +106,7 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
     ASSERT(gctools::tagged_fixnump(failedUnwind.getFrame()));
     printf("%s:%d An unwind was thrown but not caught frame[%ld] tag[%lu]\n", __FILE__, __LINE__, gctools::untag_fixnum(failedUnwind.getFrame()), failedUnwind.index());
   } catch (core::ExitProgram &ee) {
+    printf("\n");
     //            printf("Caught ExitProgram in %s:%d\n", __FILE__, __LINE__);
     exitCode = ee.getExitResult();
   }; // catch (...) { exitCode = gctools::handleFatalCondition(); }

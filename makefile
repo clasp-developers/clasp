@@ -77,11 +77,19 @@ all:
 	make cclasp-mps
 	make executable-symlinks
 
+$(BINDIR)/clasp_boehm_o : $(BINDIR)/release/boehm/clasp
+	@ln -s $(BINDIR)/release/boehm/clasp $(BINDIR)/clasp_boehm_o
+
+$(BINDIR)/clasp_mps_o : $(BINDIR)/release/boehm/clasp
+	echo $< $>
+
 executable-symlinks:
-	-ln -s $(BINDIR)/release/boehm/clasp $(BINDIR)/clasp_boehm_o
-	-ln -s $(BINDIR)/release/mps/clasp $(BINDIR)/clasp_mps_o
-	-ln -s $(BINDIR)/debug/boehm/clasp $(BINDIR)/clasp_boehm_d
-	-ln -s $(BINDIR)/debug/mps/clasp $(BINDIR)/clasp_mps_d
+	@if [ -e $(BINDIR)/release/boehm/clasp -a \( ! -e $(BINDIR)/clasp_boehm_o \) ]; then ln -s $(BINDIR)/release/boehm/clasp $(BINDIR)/clasp_boehm_o; fi
+	@if [ -e $(BINDIR)/release/mps/clasp -a \( ! -e $(BINDIR)/clasp_mps_o \) ]; then ln -s $(BINDIR)/release/mps/clasp $(BINDIR)/clasp_mps_o; fi
+	@if [ -e $(BINDIR)/release/boehmdc/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_o \) ]; then ln -s $(BINDIR)/release/boehmdc/clasp $(BINDIR)/clasp_boehmdc_o; fi
+	@if [ -e $(BINDIR)/debug/boehm/clasp -a \( ! -e $(BINDIR)/clasp_boehm_d \) ]; then ln -s $(BINDIR)/debug/boehm/clasp $(BINDIR)/clasp_boehm_d; fi
+	@if [ -e $(BINDIR)/debug/mps/clasp -a \( ! -e $(BINDIR)/clasp_mps_d \) ]; then ln -s $(BINDIR)/debug/mps/clasp $(BINDIR)/clasp_mps_d; fi
+	@if [ -e $(BINDIR)/debug/boehmdc/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_d \) ]; then ln -s $(BINDIR)/debug/boehmdc/clasp $(BINDIR)/clasp_boehmdc_d; fi
 
 boehm-setup:
 	(cd $(BOEHM_SOURCE_DIR); \

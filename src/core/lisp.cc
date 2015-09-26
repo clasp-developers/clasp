@@ -87,7 +87,6 @@ THE SOFTWARE.
 #include <clasp/core/standardClass.h>
 #include <clasp/core/numberToString.h>
 #include <clasp/core/executables.h>
-#include <clasp/core/myReadLine.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/lispReader.h>
@@ -127,7 +126,6 @@ THE SOFTWARE.
 #include <clasp/core/num_arith.h>
 #include <clasp/core/num_co.h>
 #include <clasp/core/lispDefinitions.h>
-#include <clasp/core/myReadLine.h>
 #include <clasp/core/externalObject.h>
 #include <clasp/core/initializeClasses.h>
 #include <clasp/core/holder.h>

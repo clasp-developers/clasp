@@ -36,8 +36,8 @@ extern "C" void add_history(char *line);
 
 namespace core {
 
-string myReadLine(const string &prompt) {
-  _G();
+string myReadLine(const string &prompt, bool& end_of_transmission) {
+  end_of_transmission = false;
   string res;
 #ifdef READLINE
   char *line_read;
@@ -52,6 +52,8 @@ string myReadLine(const string &prompt) {
       ::add_history(line_read);
     res = line_read;
     free(line_read);
+  } else {
+    end_of_transmission = true;
   }
 #else
   if (prompt != "") {

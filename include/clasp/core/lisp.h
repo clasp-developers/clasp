@@ -81,6 +81,10 @@ SMART(SpecialForm);
 SMART(Hierarchy);
 SMART(Environment);
 
+ void af_stackMonitor();
+ void af_stackSizeWarning(size_t size);
+
+
 List_sp cl_member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
 void af_invokeInternalDebugger(T_sp condition);
 
@@ -433,6 +437,16 @@ public:
 	    this->_Roots._MultipleValuesCur = mv;
 	};
 #endif
+ public:
+        /*! Signal a problem if the stack gets too full*/
+        inline void stack_monitor() {
+          int x;
+          char *xaddr = (char*)(&x);
+          size_t stack = (size_t)(_lisp->_StackTop - xaddr);
+          if ( stack > _lisp->_StackWarnSize ) {
+            af_stackSizeWarning(stack);
+          }
+        }
 public:
   DebugStream &debugLog() {
     HARD_ASSERT(this->_DebugStream != NULL);
@@ -1027,8 +1041,6 @@ List_sp cl_assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_
 
 Class_mv cl_findClass(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
 Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env);
-
-void af_stackMonitor();
 
 void cl_error(T_sp err, List_sp initializers);
 

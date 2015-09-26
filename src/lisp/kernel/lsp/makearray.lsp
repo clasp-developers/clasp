@@ -5,7 +5,7 @@
                                 adjustable 
                                 fill-pointer 
                                 displaced-to
-                                displaced-index-offset)
+                                (displaced-index-offset 0))
   ;;  (when element-type (inform "Add support for element-type in make-array\n"))
   (if (and (consp element-type)
 	   (null initial-element)
