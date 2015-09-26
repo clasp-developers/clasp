@@ -1,5 +1,7 @@
 (provide 'clang-tool)
 
+(in-package :clasp-analyzer)
+
 (use-package :ast-tooling)
 (use-package :clang-ast)
 

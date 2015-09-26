@@ -1,3 +1,5 @@
+(in-package #:clasp-analyzer)
+
 ;;(require :serialize)
 ;;(push :use-breaks *features*)
 ;;(push :gc-warnings *features*)

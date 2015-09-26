@@ -1,6 +1,7 @@
-(cl:in-package #:common-lisp-user)
+(cl:in-package #:asdf-user)
 
 (asdf:defsystem :clasp-analyzer
     :components
-  ((:file "clang-tool")
+  ((:file "packages")
+   (:file "clang-tool")
    (:file "mps-interface")))

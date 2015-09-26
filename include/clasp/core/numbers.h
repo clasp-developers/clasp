@@ -851,6 +851,9 @@ public:
 public:
   NumberType number_type_() const { return number_Ratio; };
 
+    virtual bool zerop_() const { return clasp_zerop(this->_numerator);};
+    virtual Number_sp negate_() const { return Ratio_O::create(clasp_negate(this->_numerator),this->_denominator); };
+
   Integer_sp numerator() const { return this->_numerator; };
   Integer_sp denominator() const { return this->_denominator; };
   Integer_sp num() const { return this->_numerator; };
