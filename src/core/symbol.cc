@@ -244,9 +244,7 @@ void Symbol_O::setf_plist(List_sp plist) {
 }
 
 void Symbol_O::sxhash_(HashGenerator &hg) const {
-  _OF();
-  Bignum bn = Str_O::stringToBignum(this->_Name->c_str());
-  hg.addPart(bn);
+  if ( hg.isFilling() ) this->_Name->sxhash_(hg);
 }
 
 #define ARGS_Symbol_O_copy_symbol "(symbol &optional copy-properties)"

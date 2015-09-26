@@ -38,7 +38,14 @@
 (defvar *debug-compiler* nil)
 (export '*debug-compiler*)
 
+;;; Turn these on to verify llvm modules and functions
+(defvar *verify-llvm-modules* nil)
+(defvar *verify-llvm-functions* nil)
+
+
 (defvar *dump-module-on-completion* nil)
+
+
 
 
 ;; Generate a bitcode file for the llvm-ir prior to running optimization passes on it

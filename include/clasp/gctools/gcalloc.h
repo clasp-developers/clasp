@@ -123,6 +123,9 @@ namespace gctools {
           return _IsActive;
 #endif
       };
+#ifdef BOEHM_ONE_BIG_STACK
+      void growStack();
+#endif
       //*! Allocate a buffer for this 
       bool allocateStack(size_t bufferSize)
       {

@@ -589,9 +589,15 @@ void Str_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 void Str_O::sxhash_(HashGenerator &hg) const {
-  _OF();
-  Bignum bn = Str_O::stringToBignum(this->get().c_str());
-  hg.addPart(bn);
+  if ( hg.isFilling() ) {
+    Fixnum hash = 5381;
+    Fixnum c;
+    const char* str = this->get().c_str();
+    while (c = *str++) {
+      hash = ((hash << 5) + hash) + c;
+    }
+    hg.addPart(hash);
+  }
 }
 
 Fixnum_sp Str_O::asInt() const {

@@ -775,7 +775,8 @@ and then the irbuilder-alloca, irbuilder-body."
 #|	  (irc-cleanup-function-environment env invocation-history-frame )  |#
 	  (llvm-sys:create-ret *irbuilder* (irc-load result)))
 	(cmp-log "About to verify the function in irc-function-cleanup-and-return\n")
-	(irc-verify-function *current-function*)))))
+	(irc-verify-function *current-function*)
+        ))))
 
 
 (defun irc-cleanup-function-environment (env #||invocation-history-frame||#)
@@ -1121,23 +1122,26 @@ Otherwise just create a function call"
 
 
 
-
+(defun irc-verify-module (module return-action)
+  (when *verify-llvm-modules*
+    (llvm-sys:verify-module module return-action)))
 
 (defun irc-verify-function (fn &optional (continue t))
-  (cmp-log "At top of irc-verify-function  ---- about to verify-function - if there is a problem it will not return\n")
-  (multiple-value-bind (failed-verify error-msg)
-      (llvm-sys:verify-function fn)
-    (if failed-verify
-        (progn
-          (bformat t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!\n")
-          (bformat t "---------------- dumping function to assist in debugging\n")
-          (llvm-sys:dump fn)
-          (bformat t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!\n")
-          (bformat t "llvm::verifyFunction error[%s]\n" error-msg)
-          (if continue
-	      (break "Error when trying to verify-function")
-              (error "Failed function verify")))
-        (cmp-log "--------------  Function verified OK!!!!!!!\n"))))
+  (when *verify-llvm-functions*
+    (cmp-log "At top of irc-verify-function  ---- about to verify-function - if there is a problem it will not return\n")
+    (multiple-value-bind (failed-verify error-msg)
+        (llvm-sys:verify-function fn)
+      (if failed-verify
+          (progn
+            (bformat t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!\n")
+            (bformat t "---------------- dumping function to assist in debugging\n")
+            (llvm-sys:dump fn)
+            (bformat t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!\n")
+            (bformat t "llvm::verifyFunction error[%s]\n" error-msg)
+            (if continue
+                (break "Error when trying to verify-function")
+                (error "Failed function verify")))
+          (cmp-log "--------------  Function verified OK!!!!!!!\n")))))
 
 
 (defun get-function-or-error (module name &optional first-argument)

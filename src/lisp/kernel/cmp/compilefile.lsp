@@ -377,8 +377,7 @@ and the pathname of the source file - this will also be used as the module initi
 	      (multiple-value-bind (found-errors error-message)
 		  (progn
 		    (cmp-log "About to verify module prior to writing bitcode\n")
-		    (llvm-sys:verify-module *the-module* 'llvm-sys::return-status-action)
-		    )
+		    (irc-verify-module *the-module* 'llvm-sys::return-status-action))
 		(if found-errors
 		    (progn
 		      (format t "Module error: ~a~%" error-message)

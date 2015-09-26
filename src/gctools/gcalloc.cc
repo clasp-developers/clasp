@@ -35,6 +35,20 @@ THE SOFTWARE.
 
 namespace gctools {
 
+void GCStack::growStack()
+{
+  size_t oldSize = (this->_StackLimit-this->_StackBottom);
+  size_t newSize = oldSize*THREAD_LOCAL_CL_STACK_SIZE_SCALE;
+  uintptr_t* newStack = (uintptr_t*)GC_MALLOC(newSize);
+  memcpy(newStack,this->_StackBottom,oldSize);
+  memset((char*)this->_StackBottom+oldSize,0,newSize-oldSize);
+  uintptr_t* oldStack = this->_StackBottom;
+  this->_StackBottom = newStack;
+  this->_StackLimit = (uintptr_t*)((char*)newStack+newSize);
+  this->_StackTop = (uintptr_t*)((char*)this->_StackBottom+((char*)this->_StackTop-(char*)oldStack));
+  GC_FREE(oldStack);
+}
+  
 
 void* GCStack::pushFrameImpl(size_t frameSize) {
   frameSize = STACK_ALIGN_UP(frameSize);

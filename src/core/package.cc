@@ -98,21 +98,6 @@ T_mv cl_findSymbol(const string &symbolname, T_sp packageDesig) {
   return package->findSymbol(symbolname);
 };
 
-Bignum_sp nameToKey(const char *name) {
-  _G();
-  return Bignum_O::create(Str_O::stringToBignum(name));
-}
-
-Bignum_sp symbolNameToKey(Symbol_sp sym) {
-  Bignum_sp nameKey;
-  if (sym.nilp()) {
-    nameKey = nameToKey("NIL");
-  } else {
-    nameKey = nameToKey(sym->symbolName()->c_str());
-  }
-  return nameKey;
-}
-
 #define ARGS_af_makePackage "(package-name &key nicknames (use (list \"CL\")))"
 #define DECL_af_makePackage ""
 #define DOCS_af_makePackage "make_package"
@@ -400,8 +385,8 @@ Package_sp Package_O::create(const string &name) {
 
 void Package_O::initialize() {
   this->Base::initialize();
-  this->_InternalSymbols = HashTableEql_O::create_default();
-  this->_ExternalSymbols = HashTableEql_O::create_default();
+  this->_InternalSymbols = HashTableEqual_O::create_default();
+  this->_ExternalSymbols = HashTableEqual_O::create_default();
   this->_Shadowing = HashTableEq_O::create_default();
   this->_KeywordPackage = false;
   this->_AmpPackage = false;
@@ -457,7 +442,7 @@ string Package_O::allSymbols() {
   return ss.str();
 }
 
-Symbol_mv Package_O::_findSymbol(Bignum_sp nameKey) const {
+Symbol_mv Package_O::_findSymbol(Str_sp nameKey) const {
   T_mv ei = this->_ExternalSymbols->gethash(nameKey, _Nil<T_O>());
   Symbol_sp val = gc::As<Symbol_sp>(ei);
   bool foundp = ei.second().isTrue();
@@ -495,8 +480,8 @@ Symbol_mv Package_O::_findSymbol(Bignum_sp nameKey) const {
 
 
 Symbol_mv Package_O::findSymbol(const string &name) const {
-  Bignum_sp nameKey = nameToKey(name.c_str());
-  return this->_findSymbol(nameKey);
+  Str_sp sname = Str_O::create(name);
+  return this->_findSymbol(sname);
 }
 
 List_sp Package_O::packageUseList() {
@@ -587,9 +572,23 @@ bool Package_O::unusePackage(Package_sp usePackage) {
   return true;
 }
 
+bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
+  Str_sp nameKey = gc::As<Str_sp>(key);
+  Symbol_sp svalue = gc::As<Symbol_sp>(value);
+
+  Symbol_mv values = this->_me->_findSymbol(nameKey);
+  Symbol_sp mine = values;
+  T_sp foundp = values.second();
+  if (foundp.notnilp() && mine != svalue) {
+    LOG(BF("usePackage conflict - my symbol[%s] : usePackage symbol[%s]") % _rep_(mine) % _rep_(svalue));
+    this->_conflicts.insert(svalue->symbolNameAsString());
+  }
+  return true;
+}
+
 
 /*! Return a NULL package if there is no conflict */
-Package_sp Package_O::export_conflict_or_NULL(Bignum_sp nameKey, Symbol_sp sym)
+Package_sp Package_O::export_conflict_or_NULL(Str_sp nameKey, Symbol_sp sym)
 {
   for ( auto use_pkg : this->_PackagesUsedBy ) {
     Symbol_mv x = use_pkg->_findSymbol(nameKey);
@@ -612,7 +611,7 @@ typedef enum { no_problem,
                name_conflict_in_other_package } Export_errors;
 void Package_O::_export2(Symbol_sp sym)
 {
-  Bignum_sp nameKey = symbolNameToKey(sym);
+  Str_sp nameKey = sym->_Name;
   Package_sp error_pkg;
   Export_errors error;
   { // TODO: threading   ECL DOES A GLOBAL WRITE LOCK HERE
@@ -709,7 +708,7 @@ void Package_O::add_symbol_to_package(const char *symName, Symbol_sp sym, bool e
     printf("%s:%d Interning an internal symbol %s within COMMON-LISP\n", __FILE__, __LINE__, symName );
   }
 #endif
-  Bignum_sp nameKey = nameToKey(symName);
+  Str_sp nameKey = Str_O::create(symName);
   if (this->isKeywordPackage() || this->actsLikeKeywordPackage() || exportp) {
 #if 0
     if (sym.notnilp() && this == &(*(_lisp->commonLispPackage()))) {
@@ -748,16 +747,13 @@ T_mv Package_O::intern(const string &name) {
 }
 
 bool Package_O::unintern(Symbol_sp sym) {
-  _OF();
-  LOG(BF("About to unintern symbol[%s]") % _rep_(sym));
   // The following is not completely conformant with CLHS
   // unintern should throw an exception if removing a shadowing symbol
   // uncovers a name conflict of the symbol in two packages that are being used
-  Bignum_sp nameKey = symbolNameToKey(sym);
+  Str_sp nameKey = sym->_Name;
   {
     Symbol_sp sym, status;
     {
-      MULTIPLE_VALUES_CONTEXT();
       Symbol_mv values = this->_findSymbol(nameKey);
       sym = values;
       status = gc::As<Symbol_sp>(values.valueGet(1));
@@ -805,8 +801,7 @@ bool Package_O::unintern(Symbol_sp sym) {
 }
 
 bool Package_O::isExported(Symbol_sp sym) {
-  _OF();
-  Bignum_sp nameKey = symbolNameToKey(sym);
+  Str_sp nameKey = sym->_Name;
   T_mv values = this->_ExternalSymbols->gethash(nameKey, _Nil<T_O>());
   T_sp presentp = values.valueGet(1);
   LOG(BF("isExported test of symbol[%s] isExported[%d]") % sym->symbolNameAsString() % presentp.isTrue());
@@ -817,7 +812,7 @@ void Package_O::import(List_sp symbols) {
   _OF();
   for (auto cur : symbols) {
     Symbol_sp symbolToImport = gc::As<Symbol_sp>(oCar(cur));
-    Bignum_sp nameKey = symbolNameToKey(symbolToImport);
+    Str_sp nameKey = symbolToImport->_Name;
     Symbol_mv values = this->_findSymbol(nameKey);
     Symbol_sp foundSymbol = values;
     Symbol_sp status = gc::As<Symbol_sp>(values.valueGet(1));
@@ -834,7 +829,7 @@ void Package_O::import(List_sp symbols) {
 void Package_O::shadowingImport(List_sp symbols) {
   for (auto cur : symbols) {
     Symbol_sp symbolToImport = gc::As<Symbol_sp>(oCar(cur));
-    Bignum_sp nameKey = symbolNameToKey(symbolToImport);
+    Str_sp nameKey = symbolToImport->_Name;
     Symbol_mv values = this->_findSymbol(nameKey);
     Symbol_sp foundSymbol = values;
     Symbol_sp status = gc::As<Symbol_sp>(values.valueGet(1));
