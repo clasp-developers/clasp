@@ -97,6 +97,12 @@ project clasp : requirements
 
         <define>USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
 
+###
+### Define USE_ALLOCA_FOR_FRAME to use alloca to create stack frames
+### within the C++ stack frames  otherwise use the garbage collector to maintain
+### a side-stack
+###
+        <define>USE_ALLOCA_FOR_FRAME
 
 ## I wrote a drop in replacement for std::vector<X> that should work with the AMCpool
 ## If you turn on USE_STD_VECTOR then gctools::Vector0<X> will inherit from std::vector<X>

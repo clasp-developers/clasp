@@ -27,6 +27,7 @@ THE SOFTWARE.
 #ifndef gc_gcStack_H
 #define gc_gcStack_H
 
+
 namespace gctools {
   namespace frame {
     typedef core::T_O *ElementType;
@@ -39,6 +40,7 @@ namespace gctools {
 This class always needs to be allocated on the stack.
 It uses RAII to pop its array of pointers from the stack when the Frame goes out of scope.
 */
+  
     struct Frame {
       size_t _ArrayLength;
       size_t _ElementCapacity; // May be larger than length
@@ -51,7 +53,13 @@ It uses RAII to pop its array of pointers from the stack when the Frame goes out
       static inline size_t FrameBytes(size_t elements) {
         return FrameElements(elements)*sizeof(ElementType);
       }
-      Frame(size_t numArguments,core::T_sp parent = _Nil<core::T_O>());
+#ifdef USE_ALLOCA_FOR_FRAME
+      Frame(ElementType* buffer, size_t numArguments);
+#else
+      Frame(size_t numArguments);
+#endif
+
+      
       inline ElementType& lowLevelElementRef(size_t idx) {
         GCTOOLS_ASSERT(idx>=0 && idx <this->_ElementCapacity);
         return this->_frameBlock[idx];
@@ -69,6 +77,15 @@ It uses RAII to pop its array of pointers from the stack when the Frame goes out
       inline core::T_sp arg(size_t idx) { return core::T_sp((gc::Tagged)this->lowLevelElementRef(idx+IdxValuesArray));}
     };
   };
+
+#ifdef USE_ALLOCA_FOR_FRAME
+#define STACK_FRAME(buffername, framename,num_elements) \
+  gctools::frame::ElementType* buffername = reinterpret_cast<gctools::frame::ElementType*>(__builtin_alloca(gctools::frame::Frame::FrameBytes(num_elements))); \
+  gctools::frame::Frame framename(buffername,num_elements);
+#else 
+#define STACK_FRAME(buffername, framename,num_elements) gctools::frame::Frame framename(num_elements);
+#endif
+  
 
 } // namespace gctools
 

@@ -661,7 +661,7 @@ void allocateValueFrame5() {
 }
 
 void allocateStackFrame5() {
-  gc::frame::Frame frame(5);
+  STACK_FRAME(buff,frame,5);
 }
 
 Cons_sp consList5() {
@@ -995,7 +995,7 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #define DECL_core_multipleValueFuncall ""
 #define DOCS_core_multipleValueFuncall "multipleValueFuncall"
 T_mv core_multipleValueFuncall(T_sp funcDesignator, List_sp functions) {
-  gc::frame::Frame accArgs(MultipleValues::MultipleValuesLimit);
+  STACK_FRAME(buff,accArgs,MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
   size_t idx = 0;
   for (auto cur : functions) {

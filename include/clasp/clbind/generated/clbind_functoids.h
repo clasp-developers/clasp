@@ -27,7 +27,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(16);
+STACK_FRAME(buff,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -158,7 +158,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(15);
+STACK_FRAME(buff,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -282,7 +282,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(14);
+STACK_FRAME(buff,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -400,7 +400,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(13);
+STACK_FRAME(buff,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -512,7 +512,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(12);
+STACK_FRAME(buff,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -618,7 +618,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(11);
+STACK_FRAME(buff,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -718,7 +718,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(10);
+STACK_FRAME(buff,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -812,7 +812,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(9);
+STACK_FRAME(buff,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -900,7 +900,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(8);
+STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -982,7 +982,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(7);
+STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -1057,7 +1057,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(6);
+STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -1126,7 +1126,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(5);
+STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -1189,7 +1189,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(4);
+STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -1246,7 +1246,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(3);
+STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -1297,7 +1297,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(2);
+STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -1342,7 +1342,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(1);
+STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -1411,7 +1411,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(16);
+STACK_FRAME(buff,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -1540,7 +1540,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(15);
+STACK_FRAME(buff,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -1663,7 +1663,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(14);
+STACK_FRAME(buff,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -1780,7 +1780,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(13);
+STACK_FRAME(buff,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -1891,7 +1891,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(12);
+STACK_FRAME(buff,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -1996,7 +1996,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(11);
+STACK_FRAME(buff,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -2095,7 +2095,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(10);
+STACK_FRAME(buff,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -2188,7 +2188,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(9);
+STACK_FRAME(buff,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -2275,7 +2275,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(8);
+STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -2355,7 +2355,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(7);
+STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -2429,7 +2429,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(6);
+STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -2497,7 +2497,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(5);
+STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -2559,7 +2559,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(4);
+STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -2615,7 +2615,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(3);
+STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -2665,7 +2665,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(2);
+STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -2709,7 +2709,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(1);
+STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -2778,7 +2778,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(16);
+STACK_FRAME(buff,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -2912,7 +2912,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(15);
+STACK_FRAME(buff,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -3038,7 +3038,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(14);
+STACK_FRAME(buff,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -3157,7 +3157,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(13);
+STACK_FRAME(buff,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -3270,7 +3270,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(12);
+STACK_FRAME(buff,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -3377,7 +3377,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(11);
+STACK_FRAME(buff,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -3478,7 +3478,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(10);
+STACK_FRAME(buff,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -3573,7 +3573,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(9);
+STACK_FRAME(buff,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -3662,7 +3662,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(8);
+STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -3745,7 +3745,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(7);
+STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -3821,7 +3821,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(6);
+STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -3891,7 +3891,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(5);
+STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -3955,7 +3955,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(4);
+STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -4013,7 +4013,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(3);
+STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -4065,7 +4065,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(2);
+STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
@@ -4111,7 +4111,7 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-gc::frame::Frame frame(1);
+STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));

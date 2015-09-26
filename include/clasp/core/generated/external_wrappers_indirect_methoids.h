@@ -38,7 +38,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
-gc::frame::Frame frame(16);
+STACK_FRAME(buff,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -147,7 +147,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
-gc::frame::Frame frame(15);
+STACK_FRAME(buff,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -251,7 +251,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
-gc::frame::Frame frame(14);
+STACK_FRAME(buff,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -351,7 +351,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
-gc::frame::Frame frame(13);
+STACK_FRAME(buff,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -446,7 +446,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
-gc::frame::Frame frame(12);
+STACK_FRAME(buff,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -537,7 +537,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
-gc::frame::Frame frame(11);
+STACK_FRAME(buff,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -624,7 +624,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
-gc::frame::Frame frame(10);
+STACK_FRAME(buff,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -707,7 +707,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
-gc::frame::Frame frame(9);
+STACK_FRAME(buff,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -786,7 +786,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
-gc::frame::Frame frame(8);
+STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -861,7 +861,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
-gc::frame::Frame frame(7);
+STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -931,7 +931,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
-gc::frame::Frame frame(6);
+STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -997,7 +997,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
-gc::frame::Frame frame(5);
+STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -1059,7 +1059,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
-gc::frame::Frame frame(4);
+STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -1117,7 +1117,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
-gc::frame::Frame frame(3);
+STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -1171,7 +1171,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
-gc::frame::Frame frame(2);
+STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -1221,7 +1221,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-gc::frame::Frame frame(1);
+STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
@@ -1272,7 +1272,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
-gc::frame::Frame frame(16);
+STACK_FRAME(buff,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -1380,7 +1380,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
-gc::frame::Frame frame(15);
+STACK_FRAME(buff,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -1483,7 +1483,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
-gc::frame::Frame frame(14);
+STACK_FRAME(buff,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -1582,7 +1582,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
-gc::frame::Frame frame(13);
+STACK_FRAME(buff,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -1677,7 +1677,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
-gc::frame::Frame frame(12);
+STACK_FRAME(buff,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -1768,7 +1768,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
-gc::frame::Frame frame(11);
+STACK_FRAME(buff,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -1855,7 +1855,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
-gc::frame::Frame frame(10);
+STACK_FRAME(buff,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -1938,7 +1938,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
-gc::frame::Frame frame(9);
+STACK_FRAME(buff,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -2017,7 +2017,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
-gc::frame::Frame frame(8);
+STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -2091,7 +2091,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
-gc::frame::Frame frame(7);
+STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -2161,7 +2161,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
-gc::frame::Frame frame(6);
+STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -2227,7 +2227,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
-gc::frame::Frame frame(5);
+STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -2289,7 +2289,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
-gc::frame::Frame frame(4);
+STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -2347,7 +2347,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
-gc::frame::Frame frame(3);
+STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -2401,7 +2401,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
-gc::frame::Frame frame(2);
+STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -2451,7 +2451,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-gc::frame::Frame frame(1);
+STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
@@ -2502,7 +2502,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
-gc::frame::Frame frame(16);
+STACK_FRAME(buff,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -2613,7 +2613,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
-gc::frame::Frame frame(15);
+STACK_FRAME(buff,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -2717,7 +2717,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
-gc::frame::Frame frame(14);
+STACK_FRAME(buff,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -2817,7 +2817,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
-gc::frame::Frame frame(13);
+STACK_FRAME(buff,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -2912,7 +2912,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
-gc::frame::Frame frame(12);
+STACK_FRAME(buff,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3003,7 +3003,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
-gc::frame::Frame frame(11);
+STACK_FRAME(buff,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3090,7 +3090,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
-gc::frame::Frame frame(10);
+STACK_FRAME(buff,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3173,7 +3173,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
-gc::frame::Frame frame(9);
+STACK_FRAME(buff,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3252,7 +3252,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
-gc::frame::Frame frame(8);
+STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3327,7 +3327,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
-gc::frame::Frame frame(7);
+STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3397,7 +3397,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
-gc::frame::Frame frame(6);
+STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3463,7 +3463,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
-gc::frame::Frame frame(5);
+STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3525,7 +3525,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
-gc::frame::Frame frame(4);
+STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3583,7 +3583,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
-gc::frame::Frame frame(3);
+STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3637,7 +3637,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
-gc::frame::Frame frame(2);
+STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3687,7 +3687,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-gc::frame::Frame frame(1);
+STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
@@ -3738,7 +3738,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
-gc::frame::Frame frame(16);
+STACK_FRAME(buff,frame,16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3848,7 +3848,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
-gc::frame::Frame frame(15);
+STACK_FRAME(buff,frame,15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -3951,7 +3951,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
-gc::frame::Frame frame(14);
+STACK_FRAME(buff,frame,14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4050,7 +4050,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
-gc::frame::Frame frame(13);
+STACK_FRAME(buff,frame,13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4145,7 +4145,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
-gc::frame::Frame frame(12);
+STACK_FRAME(buff,frame,12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4236,7 +4236,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
-gc::frame::Frame frame(11);
+STACK_FRAME(buff,frame,11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4323,7 +4323,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
-gc::frame::Frame frame(10);
+STACK_FRAME(buff,frame,10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4406,7 +4406,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
-gc::frame::Frame frame(9);
+STACK_FRAME(buff,frame,9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4485,7 +4485,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
-gc::frame::Frame frame(8);
+STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4559,7 +4559,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
-gc::frame::Frame frame(7);
+STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4629,7 +4629,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
-gc::frame::Frame frame(6);
+STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4695,7 +4695,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
-gc::frame::Frame frame(5);
+STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4757,7 +4757,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
-gc::frame::Frame frame(4);
+STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4815,7 +4815,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
-gc::frame::Frame frame(3);
+STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4869,7 +4869,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
-gc::frame::Frame frame(2);
+STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG1> a1(frame.arg(1));
@@ -4919,7 +4919,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-gc::frame::Frame frame(1);
+STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));

@@ -44,7 +44,7 @@ $var ConstTypeCount = 1
                     {
                       INVOCATION_HISTORY_FRAME();
                       $if numArgs>0 [[
-                        gc::frame::Frame frame($numArgs);
+                        STACK_FRAME(buff,frame,$numArgs);
                         core::StackFrameDynamicScopeManager scope(frame);
                         lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                       ]]

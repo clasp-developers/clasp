@@ -1085,7 +1085,7 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
     }
   }
   size_t sz = cl_length(resultList);
-  gc::frame::Frame fargs(sz);
+  STACK_FRAME(buff,fargs,sz);
   size_t i(0);
   for ( auto c : resultList ) {
     fargs[i] = oCar(c).raw_();
@@ -1725,7 +1725,7 @@ T_mv cl_apply(T_sp head, VaList_sp args) {
     int lenRest = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(lastArgs);
     int nargs = lenFirst + lenRest;
     // Allocate a frame on the side stack that can take all arguments
-    gc::frame::Frame frame(nargs);
+    STACK_FRAME(buff,frame,nargs);
     T_sp obj = args;
     for (int i(0); i < lenFirst; ++i) {
       frame[i] = LCC_NEXT_ARG_RAW(args,i);
@@ -1741,7 +1741,7 @@ T_mv cl_apply(T_sp head, VaList_sp args) {
     int lenFirst = lenArgs - 1;
     int lenRest = cl_length(last);
     int nargs = lenFirst + lenRest;
-    gc::frame::Frame frame(nargs);
+    STACK_FRAME(buff,frame,nargs);
     T_sp obj = args;
     for (int i(0); i < lenFirst; ++i) {
       frame[i] = LCC_NEXT_ARG_RAW(args,i);
@@ -1831,7 +1831,7 @@ T_mv cl_apply(T_sp head, VaList_sp args) {
     if (func.nilp()) {
       ERROR_UNDEFINED_FUNCTION(function_desig);
     }
-    gc::frame::Frame passArgs(cl_length(args));
+    STACK_FRAME(buff,passArgs,cl_length(args));
     int idx(0);
     for ( auto cur : args ) {
       passArgs[idx] = oCar(cur).raw_();
@@ -2317,7 +2317,7 @@ struct InterpreterTrace {
     //
     //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
       size_t nargs = cl_length(oCdr(form));
-      gc::frame::Frame callArgs(nargs);
+      STACK_FRAME(buff,callArgs,nargs);
       size_t argIdx = 0;
       for ( auto cur : (List_sp)oCdr(form) ) {
         callArgs[argIdx] = eval::evaluate(oCar(cur),environment).raw_();

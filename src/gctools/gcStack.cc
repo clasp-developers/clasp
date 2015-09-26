@@ -27,7 +27,16 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 namespace gctools {
 namespace frame {
-Frame::Frame(size_t numArguments,core::T_sp parent) : _ElementCapacity(FrameElements(numArguments)), _ArrayLength(numArguments) {
+
+#ifdef USE_ALLOCA_FOR_FRAME
+Frame::Frame(ElementType* buffer, size_t numArguments) : _frameBlock(buffer), _ElementCapacity(FrameElements(numArguments)), _ArrayLength(numArguments) {
+  this->lowLevelElementRef(IdxNumElements) = reinterpret_cast<ElementType>(numArguments);
+  for (size_t i(0), iEnd(numArguments); i < iEnd; ++i) {
+    this->operator[](i) = gctools::tag_unbound<core::T_O *>();
+  }
+}
+#else
+Frame::Frame(size_t numArguments) : _ElementCapacity(FrameElements(numArguments)), _ArrayLength(numArguments) {
   size_t sz = FrameBytes(numArguments);
   this->_frameBlock = reinterpret_cast<ElementType*>(threadLocalStack()->pushFrameImpl(sz));
 //  printf("%s:%d Pushing frame@%p\n", __FILE__, __LINE__, this->_frameImpl);
@@ -37,7 +46,7 @@ Frame::Frame(size_t numArguments,core::T_sp parent) : _ElementCapacity(FrameElem
     this->operator[](i) = gctools::tag_unbound<core::T_O *>();
   }
 }
-
+#endif
 void Frame::dump() const {
   void* frameImplHeaderAddress = threadLocalStack()->frameImplHeaderAddress(this->_frameBlock);
   GCStack::frameType frameImplHeaderType = threadLocalStack()->frameImplHeaderType(this->_frameBlock);
@@ -76,7 +85,11 @@ void Frame::dump() const {
 
 Frame::~Frame() {
 //  printf("%s:%d Popping frame@%p\n", __FILE__, __LINE__, this->_frameImpl);
+#ifdef USE_ALLOCA_FOR_FRAME
+  // Nothing
+#else
   threadLocalStack()->popFrameImpl(reinterpret_cast<void*>(this->_frameBlock));
+#endif
 }
 
 };

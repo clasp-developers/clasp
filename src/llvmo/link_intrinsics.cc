@@ -208,7 +208,7 @@ ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
 ALWAYS_INLINE LCC_RETURN FUNCALL_argsInReversedList(core::Closure *closure, core::T_sp* argsP) {
   List_sp args(*argsP);
   size_t nargs = core::cl_length(args);
-  gc::frame::Frame fargs(nargs);
+  STACK_FRAME(buff,fargs,nargs);
   for ( int i(nargs-1); i>= 0; --i ) {
     fargs[i] = oCar(args).raw_();
     args = oCdr(args);
@@ -547,7 +547,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   SourcePosInfo_sp tempSourcePosInfo = SourcePosInfo_O::create(*sourceFileInfoHandleP, filePos, lineno, column);
   core::Str_sp name = core::Str_O::create(cpname);
   BuiltinClosure tempClosure(name, tempSourcePosInfo, kw::_sym_function);
-  gc::frame::Frame no_args(0);
+  STACK_FRAME(buff,no_args,0);
   VaList_S empty_valist(no_args);
   core::T_O* empty_valist_ptr = empty_valist.asTaggedPtr();
   core::InvocationHistoryFrame invFrame(gctools::tagged_pointer<core::Closure>(&tempClosure), empty_valist_ptr, *frameP);
@@ -561,7 +561,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   }
 #endif
   // Evaluate the function
-  gc::frame::Frame onearg(1);
+  STACK_FRAME(zbuff,onearg,1);
   onearg[0] = *ltvPP;  // Leave the tag on
   core::VaList_S onearg_valist_s(onearg);
   core::T_O* lcc_arglist = onearg_valist_s.asTaggedPtr();
@@ -1742,7 +1742,7 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
 LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
   core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
   size_t lcc_nargs = mvThreadLocal.getSize();
-  gc::frame::Frame mvargs(lcc_nargs);
+  STACK_FRAME(buff,mvargs,lcc_nargs);
   for ( size_t i(0); i<lcc_nargs; ++i ) {
     mvargs[i] = mvThreadLocal[i];
   }

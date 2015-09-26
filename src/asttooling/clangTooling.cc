@@ -152,7 +152,7 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
 			core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
 			core::T_mv result;
 			// Call the fptr
-                        gc::frame::Frame onearg(1);
+                        STACK_FRAME(buff,onearg,1);
                         onearg[0] = targs.raw_();
                         core::VaList_S onearg_valist_s(onearg);
                         core::T_O* lcc_arglist = onearg_valist_s.asTaggedPtr();
