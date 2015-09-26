@@ -120,6 +120,7 @@ GCPROTECTED: // instance variables
   gctools::gcstring _Comment;
   // -- calculated info --
   int _NumberOfLexicalVariables;
+  bool _RequiredLexicalArgumentsOnly;
   T_sp _LexicalVariableNamesForDebugging;
 
 public:
@@ -142,7 +143,7 @@ public:
 public:
   /*! Compile the argumentsInString into an argument handler and put the symbols into the
 	  given package */
-  static LambdaListHandler_sp createRecursive(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier &classifier);
+  static LambdaListHandler_sp createRecursive_(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier &classifier);
 
   /*! Compile the lambda-list into an LambdaListHandler */
   static LambdaListHandler_sp create(List_sp lambda_list, List_sp declares, T_sp context, const std::set<int> &pureOutValues = std::set<int>());
@@ -208,9 +209,10 @@ public:
   // Following are the methods that deal with preparing Lexical ActivationFrames for arguments
 
   /*! Return true if the LambdaListHandler only has required arguments */
-  bool requiredLexicalArgumentsOnlyP() const;
+  bool requiredLexicalArgumentsOnlyP_() const;
+  inline bool requiredLexicalArgumentsOnlyP() const { return this->_RequiredLexicalArgumentsOnly; };
 
-  int numberOfRequiredArguments() const { return this->_RequiredArguments.size(); };
+  inline int numberOfRequiredArguments() const { return this->_RequiredArguments.size(); };
   int numberOfOptionalArguments() const { return this->_OptionalArguments.size(); };
   int numberOfRestArguments() const { return this->_RestArgument._ArgTarget.nilp() ? 0 : 1; };
   bool hasKeyFlag() const { return this->_KeyFlag.isTrue(); };

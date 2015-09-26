@@ -46,10 +46,25 @@ namespace core {
 
 void lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure> closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
   ++(threadLocalInfoPtr->_lambda_list_handler_create_bindings_count);
+  if ( llh->requiredLexicalArgumentsOnlyP() ) {
+    size_t numReq = llh->numberOfRequiredArguments();
+    if ( numReq <= 3 && numReq == lcc_nargs ) {
+      switch (numReq) {
+      case 3:
+          scope.new_binding(llh->_RequiredArguments[2],T_sp((gc::Tagged)lcc_fixed_arg2));
+      case 2:
+          scope.new_binding(llh->_RequiredArguments[1],T_sp((gc::Tagged)lcc_fixed_arg1));
+      case 1:
+          scope.new_binding(llh->_RequiredArguments[0],T_sp((gc::Tagged)lcc_fixed_arg0));
+      case 0:
+          break;
+      }
+      return;
+    }
+  }
   try {
     llh->createBindingsInScopeVaList(lcc_nargs, VaList_sp((gc::Tagged)lcc_arglist), scope);
   } catch (...) {
-    printf("%s:%d Caught an exception while in createBindingsInScope_argArray_TPtr\n", __FILE__, __LINE__);
     handleArgumentHandlingExceptions(closure);
   }
   return;
@@ -355,7 +370,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
         DEPRECIATED();
         List_sp sub_lambda_list = it->lambdaList();
         //		    throw_if_not_destructuring_context(context);
-        LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive(sub_lambda_list, declares, context, classifier);
+        LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
         classifier.targetIsSubLambdaList(*it, sub_handler);
       } else {
         classifier.classifyTarget(*it);
@@ -369,7 +384,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
         DEPRECIATED();
         //		    throw_if_not_destructuring_context(context);
         List_sp sub_lambda_list = it->lambdaList();
-        LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive(sub_lambda_list, declares, context, classifier);
+        LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
         classifier.targetIsSubLambdaList(*it, sub_handler);
       } else {
         classifier.classifyTarget(*it);
@@ -388,7 +403,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
         DEPRECIATED();
         //		    throw_if_not_destructuring_context(context);
         List_sp sub_lambda_list = it->lambdaList();
-        LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive(sub_lambda_list, declares, context, classifier);
+        LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
         classifier.targetIsSubLambdaList(*it, sub_handler);
       } else {
         classifier.classifyTarget(*it);
@@ -930,7 +945,7 @@ T_mv af_processLambdaList(List_sp lambdaList, T_sp context) {
  * ------------------------------------------------------------
  */
 
-LambdaListHandler_sp LambdaListHandler_O::createRecursive(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier &classifier) {
+LambdaListHandler_sp LambdaListHandler_O::createRecursive_(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier &classifier) {
   _G();
   GC_ALLOCATE(LambdaListHandler_O, llh);
   llh->parse_lambda_list_declares(lambda_list, declares, context, classifier);
@@ -942,8 +957,9 @@ LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp de
   ql::list all_arguments_list;
   HashTableEq_sp specialSymbols(LambdaListHandler_O::identifySpecialSymbols(declares));
   TargetClassifier classifier(specialSymbols, skipFrameIndices);
-  LambdaListHandler_sp ollh = LambdaListHandler_O::createRecursive(lambda_list, declares, context, classifier);
+  LambdaListHandler_sp ollh = LambdaListHandler_O::createRecursive_(lambda_list, declares, context, classifier);
   ollh->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
+  ollh->_RequiredLexicalArgumentsOnly = ollh->requiredLexicalArgumentsOnlyP_();
   return ollh;
 }
 
@@ -975,6 +991,7 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
   this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
   ASSERTF(this->_ClassifiedSymbolList.nilp() || cl_consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
   this->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
+  this->_RequiredLexicalArgumentsOnly = this->requiredLexicalArgumentsOnlyP_();
 }
 
 void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_sp declareSpecifierList, T_sp context, TargetClassifier &classifier) {
@@ -1126,7 +1143,7 @@ T_mv LambdaListHandler_O::processLambdaListHandler() const {
                  auxs.cons()));
 }
 
-bool LambdaListHandler_O::requiredLexicalArgumentsOnlyP() const {
+bool LambdaListHandler_O::requiredLexicalArgumentsOnlyP_() const {
   _G();
   bool requiredArgumentsOnlyP = (this->_OptionalArguments.size() == 0)
     && (!this->_RestArgument.isDefined())
@@ -1170,7 +1187,8 @@ VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
 //
 
 EXPOSE_CLASS(core, LambdaListHandler_O);
-LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _LexicalVariableNamesForDebugging(_Nil<VectorObjects_O>()){};
+ LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _LexicalVariableNamesForDebugging(_Nil<VectorObjects_O>())
+   , _RequiredLexicalArgumentsOnly(false) {};
 
 void LambdaListHandler_O::exposeCando(Lisp_sp lisp) {
   _G();
