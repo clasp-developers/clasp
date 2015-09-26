@@ -42,6 +42,8 @@ void* GCStack::pushFrameImpl(size_t frameSize) {
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
   uintptr_t* headerAndFrame = (uintptr_t*)this->_StackTop;
+  uintptr_t* stackTop = (uintptr_t*)((char*)this->_StackTop+headerAndFrameSize);
+  if ( stackTop > this->_StackLimit ) this->growStack();
   this->_StackTop = (uintptr_t*)((char*)this->_StackTop+headerAndFrameSize);
 #else
   uintptr_t* headerAndFrame = (uintptr_t*)GC_MALLOC(headerAndFrameSize);
