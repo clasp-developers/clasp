@@ -77,6 +77,9 @@ all:
 	time make cclasp-mps
 	make executable-symlinks
 
+devbuild:
+	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehmdc release dist )
+
 $(BINDIR)/clasp_boehm_o : $(BINDIR)/release/boehm/clasp
 	@ln -s $(BINDIR)/release/boehm/clasp $(BINDIR)/clasp_boehm_o
 
