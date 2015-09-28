@@ -190,6 +190,8 @@ submodules:
 	make submodules-mps
 
 submodules-boehm:
+	-git submodule update --init src/boehm/libatomic_ops
+	-git submodule update --init src/boehm/bdwgc
 	-git submodule update --init src/lisp/kernel/contrib/sicl
 	-git submodule update --init src/lisp/modules/asdf
 #	-(cd src/lisp/modules/asdf; git checkout master; git pull origin master)
