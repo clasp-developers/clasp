@@ -9,7 +9,8 @@ export CLASP_INTERNAL_BUILD_TARGET_DIR = $(shell pwd)/build/clasp
 export EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_SOURCE_DIR)/build
 
 
-export BOEHM_SOURCE_DIR = $(CLASP_HOME)/src/bdwgc
+export LIBATOMIC_OPS_SOURCE_DIR = $(CLASP_HOME)/src/boehm/libatomic_ops
+export BOEHM_SOURCE_DIR = $(CLASP_HOME)/src/boehm/bdwgc
 export BOOST_BUILD_SOURCE_DIR = $(CLASP_HOME)/boost_build_v2
 export BOOST_BUILD_INSTALL = $(BOOST_BUILD_SOURCE_DIR)
 
@@ -20,6 +21,7 @@ export BOOST_BUILD_INSTALL = $(BOOST_BUILD_SOURCE_DIR)
 export BJAM = $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 export BUILD = build
 export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
+export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
 
@@ -70,6 +72,7 @@ all:
 	make submodules
 	make asdf
 	make boostbuildv2-build
+	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehm release dist )
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=mps release dist )
 	time make clasp-boehm
@@ -97,13 +100,30 @@ executable-symlinks:
 
 
 
+libatomic-setup:
+	-(cd $(LIBATOMIC_OPS_SOURCE_DIR); autoreconf -vif)
+	-(cd $(LIBATOMIC_OPS_SOURCE_DIR); automake --add-missing )
+	install -d $(CLASP_APP_RESOURCES_LIB_COMMON_DIR);
+	(cd $(LIBATOMIC_OPS_SOURCE_DIR); \
+		export ALL_INTERIOR_PTRS=1; \
+		CFLAGS="-DUSE_MMAP -g" \
+		./configure --enable-shared=no --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
+
+libatomic-compile:
+	(cd $(LIBATOMIC_OPS_SOURCE_DIR); make -j1 | tee _libatomic_ops.log)
+
+libatomic-install:
+	(cd $(LIBATOMIC_OPS_SOURCE_DIR); make -j1 install | tee _libatomic_ops_install.log)
+
 boehm-setup:
 	-(cd $(BOEHM_SOURCE_DIR); autoreconf -vif)
 	-(cd $(BOEHM_SOURCE_DIR); automake --add-missing )
 	(cd $(BOEHM_SOURCE_DIR); \
 		export ALL_INTERIOR_PTRS=1; \
 		CFLAGS="-DUSE_MMAP -g" \
-		./configure --enable-shared=no --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_EXTERNALS_COMMON_DIR);)
+		PKG_CONFIG_PATH=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR)/lib/pkgconfig/ \
+		./configure --enable-shared=no --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
+
 boehm-build:
 	make boehm-compile
 	make boehm-install
@@ -115,6 +135,13 @@ boehm-install:
 	(cd $(BOEHM_SOURCE_DIR); make -j1 install | tee _boehm_install.log)
 
 
+boehm:
+	make libatomic-setup
+	make libatomic-compile
+	make libatomic-install
+	make boehm-setup
+	make boehm-compile
+	make boehm-install
 
 boehm-clean:
 	install -d $(BOEHM_SOURCE_DIR)

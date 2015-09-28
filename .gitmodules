@@ -10,3 +10,6 @@
 [submodule "src/boehm/libatomic_ops"]
 	path = src/boehm/libatomic_ops
 	url = https://github.com/ivmai/libatomic_ops
+[submodule "src/boehm/bdwgc"]
+	path = src/boehm/bdwgc
+	url = https://github.com/ivmai/bdwgc

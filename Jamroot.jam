@@ -252,6 +252,10 @@ path-constant APPRES-EXTERNALS-RELEASE-INCLUDE : $(APPRES-EXTERNALS-RELEASE)/inc
 path-constant APPRES-EXTERNALS-COMMON : $(APPRES-EXTERNALS)/common ;
 path-constant APPRES-EXTERNALS-COMMON-LIB : $(APPRES-EXTERNALS-COMMON)/lib ;
 path-constant APPRES-EXTERNALS-COMMON-INCLUDE : $(APPRES-EXTERNALS-COMMON)/include ;
+path-constant APPRES-LIB : $(APPRES)/lib ;
+path-constant APPRES-LIB-COMMON : $(APPRES-LIB)/common ;
+path-constant APPRES-LIB-COMMON-LIB : $(APPRES-LIB-COMMON)/lib ;
+path-constant APPRES-LIB-COMMON-INCLUDE : $(APPRES-LIB-COMMON)/include ;
 path-constant APPRES-LISP : $(APPRES)/lisp ;
 path-constant APPRES-CANDO-LISP : $(APPRES)/cando/lisp ;
 path-constant APPBIN : $(APPTOP)/bin ;

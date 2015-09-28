@@ -6,7 +6,8 @@ project externals
 	: usage-requirements
 #	<include>gmp-5.0.5
 	<include>$(APPRES-EXTERNALS-RELEASE-INCLUDE)
-	<include>$(APPRES-EXTERNALS-COMMON-INCLUDE) ;
+	<include>$(APPRES-EXTERNALS-COMMON-INCLUDE)
+        <include>$(APPRES-LIB-COMMON-INCLUDE) ;
 
 
 
@@ -27,7 +28,7 @@ alias boostAndExpatLibs :
 lib lib_mps : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>mps-debug <variant>debug <link>static ;
 lib lib_mps : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>mps <variant>release <link>static ;
 
-lib lib_boehm : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>gc ;
+lib lib_boehm : : <search>$(APPRES-LIB-COMMON-LIB) <name>gc ;
 
 
 alias libgmp : gmp gmpxx ;
