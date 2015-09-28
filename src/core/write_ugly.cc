@@ -132,6 +132,7 @@ void Instance_O::__write__(T_sp stream) const {
 }
 
 void StructureObject_O::__write__(T_sp stream) const {
+//  printf("%s:%d StructureObject_O::__write__\n", __FILE__, __LINE__);
   if (UNLIKELY(!gc::IsA<Symbol_sp>(this->_Type)))
     SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type name~%  ~S") % _rep_(this->_Type));
   SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
