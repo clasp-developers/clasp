@@ -25,7 +25,9 @@ THE SOFTWARE.
 */
 /* -^- */
 #include <boost/mpl/list.hpp>
-
+#ifdef USE_BOEHM
+#include <gc/gc_mark.h>
+#endif
 #ifdef USE_MPS
 extern "C" {
 #include <clasp/mps/code/mpscamc.h>
@@ -217,8 +219,7 @@ static ReachableClassMap *static_ReachableClassKinds;
 static size_t invalidHeaderTotalSize = 0;
 int globalSearchMarker = 0;
 extern "C" {
-void boehm_callback_reachable_object(GC_word *ptr, size_t sz) {
-  sz <<= 2; // convert to bytes
+void boehm_callback_reachable_object(void *ptr, size_t sz,void* client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
   if (h->isValid()) {
     if (h->markerMatches(globalSearchMarker)) {
@@ -413,7 +414,7 @@ T_mv af_room(T_sp x, Fixnum_sp marker, T_sp tmsg) {
   globalSearchMarker = core::unbox_fixnum(marker);
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
-  GC_enumerate_reachable_objects(boehm_callback_reachable_object);
+  GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object,NULL);
   printf("Walked LispKinds\n");
   size_t totalSize(0);
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
