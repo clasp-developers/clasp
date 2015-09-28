@@ -5,13 +5,17 @@
 ;;(push :gc-warnings *features*)
 
 (defconstant +resource-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
   #+target-os-linux "/home/meister/Development/externals-clasp/build/release/bin/../lib/clang/3.6.2"
   "Define the -resource-dir command line option for Clang compiler runs"
 )
 (defconstant +additional-arguments+
-  #+target-os-darwin (vector "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include"
-			     "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/System/Library/Frameworks")
+  #+target-os-darwin (vector
+                      "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include"
+                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
+                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0/include"
+                      "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks"
+                      )
   #-target-os-darwin (vector))
 
 
@@ -2815,6 +2819,10 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                )
   )
 
+
+(defun run-serial-search ()
+  (clasp-analyzer:load-compilation-database "app-resources:build-databases;clasp_compile_commands.json")
+  (clasp-analyzer::serial-search-all))
 #||
 
 (load "sys:mps-interface.lsp")

@@ -75,9 +75,9 @@ Relative paths will be converted to absolute ones using this pathname.")
           (arg (car rest) (car rest)))
         ((null rest) arg-vec)
       (setf (elt arg-vec i) (cond
-                              ((consp arg) (new-parser-value rest (new-variant-value-matcher (compile-matcher* arg diagnostics))))
-                              ((stringp arg) (new-parser-value rest (new-variant-value-string arg)))
-                              ((integerp arg) (new-parser-value rest (new-variant-value-unsigned arg)))
+                              ((consp arg) (ast-tooling:new-parser-value rest (ast-tooling:new-variant-value-matcher (compile-matcher* arg diagnostics))))
+                              ((stringp arg) (ast-tooling:new-parser-value rest (ast-tooling:new-variant-value-string arg)))
+                              ((integerp arg) (ast-tooling:new-parser-value rest (ast-tooling:new-variant-value-unsigned arg)))
                               (t (error "Illegal matcher argument type ~a" arg)))))))
 
 
@@ -89,11 +89,11 @@ Relative paths will be converted to absolute ones using this pathname.")
             (body (caddr sexp))
             (bound-matcher-head (car body))
             (bound-matcher-arguments (compile-matcher-arguments* (cdr body) diagnostics)))
-       (construct-bound-matcher bound-matcher-head body (string bind-name) bound-matcher-arguments diagnostics)))
+       (ast-tooling:construct-bound-matcher bound-matcher-head body (string bind-name) bound-matcher-arguments diagnostics)))
     (t (let* ((matcher-head (car sexp))
               (matcher-arguments (compile-matcher-arguments* (cdr sexp) diagnostics)))
          (assert matcher-head)
-         (construct-matcher matcher-head sexp matcher-arguments diagnostics)))))
+         (ast-tooling:construct-matcher matcher-head sexp matcher-arguments diagnostics)))))
 
 
 (defparameter *hint-environment* nil)
@@ -124,9 +124,9 @@ Relative paths will be converted to absolute ones using this pathname.")
 Return nil if no matcher could be compiled."
   (if (contains-hint-request sexp)
       nil
-      (let* ((diag (new-diagnostics))
+      (let* ((diag (ast-tooling:new-diagnostics))
              (dyn-matcher (compile-matcher* sexp diag))
-             (single-matcher (get-single-matcher dyn-matcher)))
+             (single-matcher (ast-tooling:get-single-matcher dyn-matcher)))
         (if (null single-matcher)
             (error "Error while constructing matcher - diagnostics:~% ~a" (to-string-full diag))
             single-matcher))))
@@ -151,7 +151,7 @@ Return nil if no matcher could be compiled."
 
 (defparameter *match-dump-tag* nil)
 (defclass good-dump-match-callback (ast-tooling:match-callback) () )
-(core:defvirtual run ((self good-dump-match-callback) match)
+(core:defvirtual ast-tooling:run ((self good-dump-match-callback) match)
   (let* ((nodes (nodes match))
          (id-to-node-map (idto-node-map nodes))
          (node (gethash *match-dump-tag* id-to-node-map))
@@ -170,11 +170,10 @@ Return nil if no matcher could be compiled."
       (format t "~a~%" source)
       (format t "------------node dump~%")
       (cast:dump node)
-      (advance-match-counter)
-      )))
+      (advance-match-counter))))
 
-(defclass dump-match-callback (match-callback) () )
-(core:defvirtual run ((self dump-match-callback) match)
+(defclass dump-match-callback (ast-tooling:match-callback) () )
+(core:defvirtual ast-tooling:run ((self dump-match-callback) match)
   (let* ((nodes (nodes match))
          (id-to-node-map (idto-node-map nodes))
          (node (gethash *match-dump-tag* id-to-node-map)))
@@ -184,8 +183,8 @@ Return nil if no matcher could be compiled."
 
 
 
-(defclass count-match-callback (match-callback) () )
-(core:defvirtual run ((self count-match-callback) match)
+(defclass count-match-callback (ast-tooling:match-callback) () )
+(core:defvirtual ast-tooling:run ((self count-match-callback) match)
   (let* ((nodes (nodes match))
          (id-to-node-map (idto-node-map nodes))
          (node (gethash :whole id-to-node-map)))
@@ -201,17 +200,17 @@ Return nil if no matcher could be compiled."
 ;;Requires a lambda CODE that takes no arguments:
 ;;but runs in a dynamic environment where *match-id-to-node-map*
 ;;*match-ast-context* and *match-source-manager* are defined for the match
-(defclass code-match-callback (match-callback)
+(defclass code-match-callback (ast-tooling:match-callback)
   ((start-of-translation-unit-code :initarg :start-of-translation-unit-code :accessor start-of-translation-unit-code)
    (match-code :initarg :match-code :accessor match-code)
    (end-of-translation-unit-code :initarg :end-of-translation-unit-code :accessor end-of-translation-unit-code)))
 
-(core:defvirtual on-start-of-translation-unit ((self code-match-callback))
+(core:defvirtual ast-tooling:on-start-of-translation-unit ((self code-match-callback))
   (when (slot-boundp self 'start-of-translation-unit-code)
     (assert (start-of-translation-unit-code self))
     (funcall (start-of-translation-unit-code self))))
 
-(core:defvirtual run ((self code-match-callback) match)
+(core:defvirtual ast-tooling:run ((self code-match-callback) match)
   (let* ((nodes (nodes match))
          (*match-id-to-node-map* (idto-node-map nodes))
          (*match-ast-context* (context match))
@@ -220,7 +219,7 @@ Return nil if no matcher could be compiled."
       (funcall (match-code self))
       (advance-match-counter))))
 
-(core:defvirtual on-end-of-translation-unit ((self code-match-callback))
+(core:defvirtual ast-tooling:on-end-of-translation-unit ((self code-match-callback))
   (when (slot-boundp self 'end-of-translation-unit-code)
     (assert (end-of-translation-unit-code self))
     (funcall (end-of-translation-unit-code self))))
@@ -245,7 +244,7 @@ Return nil if no matcher could be compiled."
           
 
 (defparameter *match-source-location* nil)
-(core:defvirtual run ((self source-loc-match-callback) match)
+(core:defvirtual ast-tooling:run ((self source-loc-match-callback) match)
   (let* ((nodes (nodes match))
          (id-to-node-map (idto-node-map nodes))
          (node (gethash :whole id-to-node-map))
@@ -522,7 +521,7 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 (defun batch-run-matcher (match-sexp &key callback filenames arguments-adjuster-code run-and-save)
   (declare (type list match-sexp)
-           (type match-callback callback)
+           (type ast-tooling:match-callback callback)
            (type list filenames))
   (let* ((*match-refactoring-tool*
 	  (let ((temp (ast-tooling:new-refactoring-tool *db* filenames))
@@ -599,7 +598,7 @@ This can only be run in the context set up by the code-match-callback::run metho
 (defun batch-run-multitool (mtool &key (filenames $*) arguments-adjuster-code run-and-save)
   "Run the multitool on the given collection of filenames"
   (declare (type list match-sexp)
-           (type match-callback callback)
+           (type ast-tooling:match-callback callback)
            (type list filenames))
   (let* ((*match-refactoring-tool* (let ((temp (ast-tooling:new-refactoring-tool *db* filenames))
                            (syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))

@@ -9,6 +9,7 @@ export CLASP_INTERNAL_BUILD_TARGET_DIR = $(shell pwd)/build/clasp
 export EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_SOURCE_DIR)/build
 
 
+export BOEHM_SOURCE_DIR = $(CLASP_HOME)/src/bdwgc
 export BOOST_BUILD_SOURCE_DIR = $(CLASP_HOME)/boost_build_v2
 export BOOST_BUILD_INSTALL = $(BOOST_BUILD_SOURCE_DIR)
 
@@ -94,7 +95,11 @@ executable-symlinks:
 	@if [ -e $(BINDIR)/debug/mps/clasp -a \( ! -e $(BINDIR)/clasp_mps_d \) ]; then ln -s $(BINDIR)/debug/mps/clasp $(BINDIR)/clasp_mps_d; fi
 	@if [ -e $(BINDIR)/debug/boehmdc/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_d \) ]; then ln -s $(BINDIR)/debug/boehmdc/clasp $(BINDIR)/clasp_boehmdc_d; fi
 
+
+
 boehm-setup:
+	-(cd $(BOEHM_SOURCE_DIR); autoreconf -vif)
+	-(cd $(BOEHM_SOURCE_DIR); automake --add-missing )
 	(cd $(BOEHM_SOURCE_DIR); \
 		export ALL_INTERIOR_PTRS=1; \
 		CFLAGS="-DUSE_MMAP -g" \
