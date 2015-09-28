@@ -423,7 +423,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
       return _Nil<T_O>();
     // interpret failed symbols
-    SIMPLE_ERROR(BF("Could not interpret symbol - perhaps ::?"));
+    SIMPLE_ERROR(BF("Could not interpret symbol at %s- perhaps ::?") % _rep_(clasp_file_position(sin)));
     break;
   case tintt:
   case tintp:
