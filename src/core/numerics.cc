@@ -103,13 +103,14 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
 #define ARGS_af_getUniversalTime "()"
 #define DECL_af_getUniversalTime ""
 #define DOCS_af_getUniversalTime "getUniversalTime"
-Integer_mv af_getUniversalTime() {
+Integer_sp af_getUniversalTime() {
   _G();
-  time_t currentTime;
-  time(&currentTime);
-  stringstream ss;
-  ss << ((long long int)currentTime);
-  return (Values(Integer_O::create(ss.str())));
+  time_t current_time;
+  time(&current_time);
+  Integer_sp offset = Integer_O::create(2208988800);
+  Integer_sp unix_time = Integer_O::create(current_time);
+  Integer_sp utime = contagen_add(unix_time,offset);
+  return utime;
 }
 
 boost::mt11213b globalRealRandom01Producer;
