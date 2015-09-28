@@ -146,5 +146,5 @@ mps-interface:
 	make compile-commands
 	clasp_boehmdc_o -f bclasp -e "(require :asdf)" \
 	        -e "(asdf:load-system \"clasp-analyzer\")" \
-		-e "(clasp-analyzer:load-compilation-database \"app-resources:build-database;clasp_compile_commands.json\")" \
-	        -e "(serial-search-all-then-generate-code-and-quit)"
+		-e "(clasp-analyzer:load-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\")" \
+	        -e "(clasp-analyzer:serial-search-all-then-generate-code-and-quit)"
