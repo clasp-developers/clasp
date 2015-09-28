@@ -125,7 +125,7 @@
                     :name function-name
                     :compiler-macro (compiler-macro-function function-name)
                     :inline (core:global-inline-status function-name)
-                    :ast (global-function-inline-ast function-name)))
+                    :ast (core:cleavir-ast (fdefinition function-name))))
     ( ;; If it is neither of the cases above, then this name does
      ;; not have any function-info associated with it.
      t

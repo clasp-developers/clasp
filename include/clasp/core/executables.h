@@ -115,6 +115,8 @@ public:
   List_sp functionDeclares() const;
   T_sp functionName() const;
   T_mv functionSourcePos() const;
+  T_sp cleavir_ast() const;
+  virtual void setf_cleavir_ast(T_sp ast);
   List_sp declares() const;
   T_sp docstring() const;
 };
