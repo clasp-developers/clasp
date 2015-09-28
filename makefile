@@ -110,10 +110,10 @@ libatomic-setup:
 		./configure --enable-shared=no --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
 
 libatomic-compile:
-	(cd $(LIBATOMIC_OPS_SOURCE_DIR); make -j1 | tee _libatomic_ops.log)
+	(cd $(LIBATOMIC_OPS_SOURCE_DIR); make -j$(PJOBS) | tee _libatomic_ops.log)
 
 libatomic-install:
-	(cd $(LIBATOMIC_OPS_SOURCE_DIR); make -j1 install | tee _libatomic_ops_install.log)
+	(cd $(LIBATOMIC_OPS_SOURCE_DIR); make -j$(PJOBS) install | tee _libatomic_ops_install.log)
 
 boehm-setup:
 	-(cd $(BOEHM_SOURCE_DIR); autoreconf -vif)
@@ -129,10 +129,10 @@ boehm-build:
 	make boehm-install
 
 boehm-compile:
-	(cd $(BOEHM_SOURCE_DIR); make -j1 | tee _boehm.log)
+	(cd $(BOEHM_SOURCE_DIR); make -j$(PJOBS) | tee _boehm.log)
 
 boehm-install:
-	(cd $(BOEHM_SOURCE_DIR); make -j1 install | tee _boehm_install.log)
+	(cd $(BOEHM_SOURCE_DIR); make -j$(PJOBS) install | tee _boehm_install.log)
 
 
 boehm:
