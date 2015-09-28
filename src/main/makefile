@@ -144,5 +144,7 @@ mps-interface:
 	@echo Building mps-prep
 	build -j$(PJOBS) link=static gc=mps-prep program=clasp release
 	make compile-commands
-	$(CANDO_HOME)/build/clasp/bin/release/boehmdc/clasp -l "sys:mps-interface.lsp" -e "(progn (load-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\") (parallel-search-all-then-generate-code-and-quit))"
-
+	clasp_boehmdc_o -f bclasp -e "(require :asdf)" \
+	        -e "(asdf:load-system \"clasp-analyzer\")" \
+		-e "(clasp-analyzer:load-compilation-database \"app-resources:build-database;clasp_compile_commands.json\")" \
+	        -e "(serial-search-all-then-generate-code-and-quit)"

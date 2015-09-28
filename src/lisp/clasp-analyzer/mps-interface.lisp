@@ -2721,6 +2721,12 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (save-data (multitool-results *tools*) (project-pathname "project" "dat"))))
 
 
+(defun serial-search-all-then-generate-code-and-quit ()
+  (serial-search-all)
+  (analyze-project)
+  (generate-code)
+  (quit))
+
 (defun parallel-search-all-then-generate-code-and-quit ()
   (parallel-search-all)
   (analyze-project)
