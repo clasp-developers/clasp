@@ -155,6 +155,16 @@ T_mv Function_O::lambdaList() {
   return Values(this->closure->lambdaList(), _lisp->_true());
 }
 
+T_sp Function_O::cleavir_ast() const {
+  ASSERTF(this->closure, BF("The Function closure is NULL"));
+  return this->closure->cleavir_ast();
+}
+
+void Function_O::setf_cleavir_ast(T_sp ast)  {
+  ASSERTF(this->closure, BF("The Function closure is NULL"));
+  this->closure->setf_cleavir_ast(ast);
+}
+
 T_sp Function_O::functionLambdaListHandler() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->lambdaListHandler();
@@ -258,7 +268,9 @@ void Function_O::exposeCando(Lisp_sp lisp) {
       .def("core:functionSourcePos", &Function_O::functionSourcePos)
       .def("core:functionLambdaListHandler", &Function_O::functionLambdaListHandler)
       .def("core:function_declares", &Function_O::declares)
-      .def("core:function_docstring", &Function_O::docstring);
+      .def("core:function_docstring", &Function_O::docstring)
+  .def("core:cleavir_ast",&Function_O::cleavir_ast)
+  .def("core:setf_cleavir_ast",&Function_O::setf_cleavir_ast);
   ClDefun(functionLambdaExpression);
   CoreDefun(functionSourcePosInfo);
   CoreDefun(setKind);

@@ -736,7 +736,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   registerLoadTimeValuesRoot(&globalTaggedRunTimeValues);
 
-  _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_size);
+  _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
 
 #ifdef RUNNING_GC_BUILDER
   printf("%s:%d mps-prep version of clasp started up\n", __FILE__, __LINE__);

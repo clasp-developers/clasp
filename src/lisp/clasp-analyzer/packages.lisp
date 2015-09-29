@@ -1,7 +1,7 @@
 (cl:in-package #:common-lisp-user)
 
 (defpackage #:clasp-analyzer
-  (:use #:common-lisp #:core)
+  (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
   (:export
    ;; clang-tool stuff
    #:load-compilation-database

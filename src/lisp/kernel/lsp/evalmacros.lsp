@@ -125,8 +125,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
     `(progn
        ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
        ,@(si::expand-set-documentation name 'function doc-string)
-       ,(let ((hook *defun-inline-hook*))
-	     (and hook (funcall hook name global-function env)))
+       ,(and *defun-inline-hook* (funcall *defun-inline-hook* name global-function env))
        ',name)))
 
 ;;; DEFUN that generates interpreted functions

@@ -1196,6 +1196,8 @@ public:
   virtual T_sp lambdaList() const = 0;
   virtual T_sp docstring() const;
   virtual List_sp declares() const;
+  virtual T_sp cleavir_ast() const;
+  virtual void setf_cleavir_ast(T_sp ast);
 };
 };
 #include <clasp/core/exceptions.h>
@@ -1215,13 +1217,13 @@ namespace core {
 public:
   T_sp _SourcePosInfo;
   Symbol_sp kind;
-
+  T_sp _cleavir_ast;
 public:
   DISABLE_NEW();
   FunctionClosure(T_sp name, T_sp spo, Symbol_sp k, T_sp env)
-      : Closure(name, env), _SourcePosInfo(spo), kind(k){};
+    : Closure(name, env), _SourcePosInfo(spo), kind(k), _cleavir_ast(_Nil<T_O>()){};
   FunctionClosure(T_sp name)
-      : Closure(name, _Nil<T_O>()), _SourcePosInfo(_Nil<T_O>()), kind(kw::_sym_function){};
+    : Closure(name, _Nil<T_O>()), _SourcePosInfo(_Nil<T_O>()), kind(kw::_sym_function), _cleavir_ast(_Nil<T_O>()){};
 
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
@@ -1236,6 +1238,8 @@ public:
   virtual size_t filePos() const;
   virtual int lineNumber() const;
   virtual int column() const;
+  virtual T_sp cleavir_ast() const { return this->_cleavir_ast;};
+  virtual void setf_cleavir_ast(T_sp ast) { this->_cleavir_ast = ast;};
 };
 
  class BuiltinClosure : public FunctionClosure {

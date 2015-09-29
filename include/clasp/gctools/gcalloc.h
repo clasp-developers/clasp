@@ -98,8 +98,10 @@ namespace gctools {
       size_t _TotalSize;
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
+      uintptr_t* _StackCur;
       uintptr_t* _StackBottom;
-      uintptr_t* _StackTop;
+      size_t _StackMinOffset;
+      size_t _StackMiddleOffset;
       uintptr_t* _StackLimit;
 #else
       // Nothing
@@ -125,6 +127,7 @@ namespace gctools {
       };
 #ifdef BOEHM_ONE_BIG_STACK
       void growStack();
+      void shrinkStack();
 #endif
       //*! Allocate a buffer for this 
       bool allocateStack(size_t bufferSize)
@@ -133,8 +136,10 @@ namespace gctools {
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
           this->_StackBottom  = (uintptr_t*)GC_MALLOC(bufferSize);
-          this->_StackTop = this->_StackBottom;
+          this->_StackMiddleOffset = (bufferSize/2);
           this->_StackLimit = (uintptr_t*)((char*)this->_StackBottom + bufferSize);
+          this->_StackMinOffset = bufferSize;
+          this->_StackCur = this->_StackBottom;
           memset(this->_StackBottom,0,bufferSize);
 #else
           // Do nothing
@@ -148,7 +153,7 @@ namespace gctools {
       void deallocateStack() {
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
-          if ( this->_StackTop != this->_StackBottom ) {
+          if ( this->_StackCur != this->_StackBottom ) {
               THROW_HARD_ERROR(BF("The stack is not empty"));
           }
           GC_FREE(this->_StackBottom);
@@ -189,38 +194,39 @@ namespace gctools {
       void* pushFrameImpl(size_t frameSize);
       void popFrameImpl(void* frameImpl) {
 #ifdef USE_BOEHM
-          uintptr_t* frameHeaderP = reinterpret_cast<uintptr_t*>(frameImpl)-1;
-          uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
-          this->_TotalSize = this->_TotalSize - headerAndFrameSize;
+        uintptr_t* frameHeaderP = reinterpret_cast<uintptr_t*>(frameImpl)-1;
+        uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
+        this->_TotalSize = this->_TotalSize - headerAndFrameSize;
 #ifdef BOEHM_ONE_BIG_STACK
-          memset(frameHeaderP,0,headerAndFrameSize);
-          this->_StackTop = frameHeaderP;
+        memset(frameHeaderP,0,headerAndFrameSize);
+        this->_StackCur = frameHeaderP;
+        if ( this->_StackMinOffset <= (this->_StackLimit-this->_StackBottom) && (this->_StackCur-this->_StackBottom) < this->_StackMiddleOffset ) this->shrinkStack();
 #ifdef DEBUG_BOEHM_STACK
-          size_t calcSize = (char*)this->_StackTop - (char*)this->_StackBottom;
-          if ( calcSize != this->_TotalSize ) {
-              THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize );
+        size_t calcSize = (char*)this->_StackTop - (char*)this->_StackBottom;
+        if ( calcSize != this->_TotalSize ) {
+          THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize );
+        }
+        for ( char* i=(char*)this->_StackTop; i<(char*)this->_StackLimit; ++i ) {
+          if ( *i ) {
+            THROW_HARD_ERROR(BF("The side-stack has garbage in it!"));
           }
-          for ( char* i=(char*)this->_StackTop; i<(char*)this->_StackLimit; ++i ) {
-              if ( *i ) {
-                  THROW_HARD_ERROR(BF("The side-stack has garbage in it!"));
-              }
-          }
+        }
 #endif
 #else
-          GC_FREE(frameHeaderP);
+        GC_FREE(frameHeaderP);
 #endif
 #endif // USE_BOEHM
 #ifdef USE_MPS
-          uintptr_t* frameHeaderP = FRAME_HEADER(frameImpl);
-          uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
-          this->_TotalSize -= headerAndFrameSize;
-          mps_frame_t frame_o = this->frames.back();
-          this->frames.pop_back();
-          STACK_TELEMETRY2(telemetry::label_stack_pop,this->_AllocationPoint,frame_o);
-          mps_res_t res = mps_ap_frame_pop(this->_AllocationPoint,frame_o);
-          if ( res != MPS_RES_OK ) {
-              THROW_HARD_ERROR(BF("There was a problem with mps_app_frame_pop result = %d") % res);
-          }
+        uintptr_t* frameHeaderP = FRAME_HEADER(frameImpl);
+        uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
+        this->_TotalSize -= headerAndFrameSize;
+        mps_frame_t frame_o = this->frames.back();
+        this->frames.pop_back();
+        STACK_TELEMETRY2(telemetry::label_stack_pop,this->_AllocationPoint,frame_o);
+        mps_res_t res = mps_ap_frame_pop(this->_AllocationPoint,frame_o);
+        if ( res != MPS_RES_OK ) {
+          THROW_HARD_ERROR(BF("There was a problem with mps_app_frame_pop result = %d") % res);
+        }
 #endif // USE_MPS
       }
 

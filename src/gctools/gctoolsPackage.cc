@@ -430,8 +430,9 @@ T_mv af_room(T_sp x, Fixnum_sp marker, T_sp tmsg) {
 #endif
   gc::GCStack* stack = threadLocalStack();
   size_t totalMaxSize = stack->maxSize();
+  printf("Lisp-stack bottom %p cur %p limit %p\n", stack->_StackBottom, stack->_StackCur, stack->_StackLimit );
   printf("High water mark (max used) side-stack size: %u\n", totalMaxSize);
-    return Values(_Nil<core::T_O>());
+  return Values(_Nil<core::T_O>());
 };
 };
 

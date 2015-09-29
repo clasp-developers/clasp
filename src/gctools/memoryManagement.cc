@@ -172,7 +172,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   GC_set_warn_proc(clasp_warn_proc);
 //  GC_enable_incremental();
   GC_init();
-  _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_size);
+  _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
   int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
   telemetry::global_telemetry->close();

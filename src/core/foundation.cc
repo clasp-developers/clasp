@@ -263,6 +263,15 @@ T_sp Closure::docstring() const {
 List_sp Closure::declares() const {
   SIMPLE_ERROR(BF("Closure does not support declares"));
 }
+
+T_sp Closure::cleavir_ast() const {
+  SIMPLE_ERROR(BF("Subclass of Closure must support cleavir_ast"));
+}
+
+void Closure::setf_cleavir_ast(T_sp ast) {
+  SIMPLE_ERROR(BF("Subclass of Closure must support setf_cleavir_ast"));
+}
+
 };
 
 namespace core {

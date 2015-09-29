@@ -17,13 +17,53 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;; Running slime from bclasp+cleavir
+;;; Running slime from bclasp+cleavir - don't load inline.lsp or auto-compile
+;;;  --- Testing defun-inline-hook
+
+(progn
+  (progn ;; Set up everything for building cclasp from bclasp with auto-compile
+    (format t "Loading ASDF system~%")
+    (time (require :asdf))
+    (load "sys:local-asdf-config.lisp")
+    (pushnew :cleavir *features*)
+    (format t "Loading :clasp-cleavir system~%")
+    (time (require :clasp-cleavir))
+    (print (core:getpid)))
+  (print "Done - you are ready to go"))
+
+(format t "Loading inline.lisp~%")
+(load "sys:kernel;cleavir;inline.lisp")
+(print (core:getpid)))
+(load "sys:kernel;cleavir;auto-compile.lisp")
+
+(core:cleavir-ast (fdefinition 'car))
+
+(clasp-cleavir:cleavir-compile 'yyy '(lambda (z) (car z)) :debug t)
+
+(disassemble 'yyy)
+(yyy '(1 23))
+
+
+(declaim (inline bar2))
+(defun-inline-hook 'bar2 '(defun bar2 () 1))
+
+(print "Ready")
+
+(apropos "*compiler*")
+
+cleavir-generate-ast:*compiler*
+
+
+(apropos "do-inline-hook")
 
 
 ;;; Wipe out .cache/common-lisp/*
 ;;; wipe out .slime/fasl/2015-06-27/*
 ;;; clasp_boehm_o -f bclasp -f flow -f cclasp-eh
+(room)
 
+(clasp-cleavir:cleavir-compile-file "sys:modules;asdf;build;asdf-part.lsp")
+(trace cleavir-generate-ast:generate-ast)
 (progn
   (progn ;; Set up everything for building cclasp from bclasp with auto-compile
     (format t "Loading ASDF system~%")
