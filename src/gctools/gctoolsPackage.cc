@@ -457,7 +457,9 @@ T_mv af_room(T_sp x, Fixnum_sp marker, T_sp tmsg) {
 #endif
   gc::GCStack* stack = threadLocalStack();
   size_t totalMaxSize = stack->maxSize();
+#if defined(USE_BOEHM) && defined(BOEHM_ONE_BIG_STACK)
   printf("Lisp-stack bottom %p cur %p limit %p\n", stack->_StackBottom, stack->_StackCur, stack->_StackLimit );
+#endif
   printf("High water mark (max used) side-stack size: %u\n", totalMaxSize);
   return Values(_Nil<core::T_O>());
 };
