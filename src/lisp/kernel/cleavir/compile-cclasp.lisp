@@ -55,6 +55,8 @@
 	    (cmp:link-system-lto (core:target-backend-pathname core:+image-pathname+)
 				 :lisp-bitcode-files bitcode-files
 				 :prologue-form '(progn
+                                                  (make-package "CLEAVIR-AST")
+                                                  (make-package "CLASP-CLEAVIR-AST")
                                                   (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
                                                   (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
 						  (if (member :interactive *features*) 
@@ -101,21 +103,21 @@
        collect (bitcode-pathname mod :target-backend target-backend))))
 
 
-(defun link (start end &key (target-backend "CLEAVIR-BOEHM") (system *cleavir-system*))
-  (let ((bitcode-files (select-bitcode-files start end :target-backend target-backend
-					     :system system)))
-    (cmp:link-system-lto (core::target-backend-pathname core::+image-pathname+ 
-							:target-backend target-backend)
-			 :lisp-bitcode-files bitcode-files
-			 :prologue-form '(progn
-					  (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
-                                          (make-package "CLEAVIR-AST")
-                                          (make-package "CLASP-CLEAVIR-AST")
-					  (if (member :interactive *features*) 
-					      (core:bformat t "Starting %s Clasp %s ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
-			 :epilogue-form '(progn
-					  (cl:in-package :cl-user)
-					  (core::process-command-line-load-eval-sequence)
-					  (when (member :interactive *features*) (core:run-repl)))
-			 :target-backend target-backend)
-    ))
+#+(or)(defun link (start end &key (target-backend "CLEAVIR-BOEHM") (system *cleavir-system*))
+        (let ((bitcode-files (select-bitcode-files start end :target-backend target-backend
+                                                   :system system)))
+          (cmp:link-system-lto (core::target-backend-pathname core::+image-pathname+ 
+                                                              :target-backend target-backend)
+                               :lisp-bitcode-files bitcode-files
+                               :prologue-form '(progn
+                                                (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
+                                                (make-package "CLEAVIR-AST")
+                                                (make-package "CLASP-CLEAVIR-AST")
+                                                (if (member :interactive *features*) 
+                                                    (core:bformat t "Starting %s Clasp %s ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
+                               :epilogue-form '(progn
+                                                (cl:in-package :cl-user)
+                                                (core::process-command-line-load-eval-sequence)
+                                                (when (member :interactive *features*) (core:run-repl)))
+                               :target-backend target-backend)
+          ))
