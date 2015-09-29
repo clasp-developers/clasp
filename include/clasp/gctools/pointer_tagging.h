@@ -88,7 +88,7 @@ namespace gctools {
   typedef uintptr_t Tagged;
   static const int fixnum_bits = 63;
   static const int fixnum_shift = 1;
-  static const size_t thread_local_cl_stack_size = THREAD_LOCAL_CL_STACK_SIZE;
+  static const size_t thread_local_cl_stack_min_size = THREAD_LOCAL_CL_STACK_MIN_SIZE;
   static const int most_positive_int = std::numeric_limits<int>::max();
   static const int most_negative_int = std::numeric_limits<int>::min();
   static const uint most_positive_uint = std::numeric_limits<unsigned int>::max();

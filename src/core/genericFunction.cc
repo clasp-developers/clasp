@@ -299,7 +299,7 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
  */
 LCC_RETURN generic_function_dispatch(Instance_sp gf, VaList_sp vargs) {
 #ifdef DEBUG_ON
-  _lisp->stack_monitor();
+//  _lisp->stack_monitor();
 #endif
   gc::tagged_pointer<Cache> cache(_lisp->methodCachePtr());
   return standard_dispatch(gf,vargs,cache);

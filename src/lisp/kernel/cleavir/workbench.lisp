@@ -60,7 +60,10 @@ cleavir-generate-ast:*compiler*
 ;;; Wipe out .cache/common-lisp/*
 ;;; wipe out .slime/fasl/2015-06-27/*
 ;;; clasp_boehm_o -f bclasp -f flow -f cclasp-eh
+(room)
 
+(clasp-cleavir:cleavir-compile-file "sys:modules;asdf;build;asdf-part.lsp")
+(trace cleavir-generate-ast:generate-ast)
 (progn
   (progn ;; Set up everything for building cclasp from bclasp with auto-compile
     (format t "Loading ASDF system~%")

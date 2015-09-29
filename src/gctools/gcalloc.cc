@@ -40,14 +40,34 @@ namespace gctools {
 void GCStack::growStack()
 {
   size_t oldSize = (this->_StackLimit-this->_StackBottom);
-  size_t newSize = oldSize*THREAD_LOCAL_CL_STACK_SIZE_SCALE;
+  size_t newSize = oldSize * 2;
   uintptr_t* newStack = (uintptr_t*)GC_MALLOC(newSize);
-  memcpy(newStack,this->_StackBottom,oldSize);
-  memset((char*)this->_StackBottom+oldSize,0,newSize-oldSize);
+  memcpy(newStack,this->_StackBottom,oldSize); // Copy old to new
+  memset(newStack+oldSize,0,newSize-oldSize);  // Zero end of new part
+  long long int stack_top_offset = (char*)this->_StackCur - (char*)this->_StackBottom;
   uintptr_t* oldStack = this->_StackBottom;
   this->_StackBottom = newStack;
   this->_StackLimit = (uintptr_t*)((char*)newStack+newSize);
-  this->_StackTop = (uintptr_t*)((char*)this->_StackBottom+((char*)this->_StackTop-(char*)oldStack));
+  this->_StackMiddleOffset = (newSize/2);
+  this->_StackCur = (uintptr_t*)((char*)newStack+stack_top_offset);
+  GCTOOLS_ASSERT(this->_StackBottom<=this->_StackCur && this->_StackCur < this->_StackLimit);
+  GC_FREE(oldStack);
+}
+
+void GCStack::shrinkStack()
+{
+  GCTOOLS_ASSERT(this->_StackCur<this->_StackMiddle);
+  size_t oldSize = (this->_StackLimit-this->_StackBottom);
+  size_t newSize = oldSize / 2;
+  uintptr_t* newStack = (uintptr_t*)GC_MALLOC(newSize);
+  memcpy(newStack,this->_StackBottom,newSize); // Copy old to new
+  long long int stack_top_offset = (char*)this->_StackCur - (char*)this->_StackBottom;
+  uintptr_t* oldStack = this->_StackBottom;
+  this->_StackBottom = newStack;
+  this->_StackLimit = (uintptr_t*)((char*)newStack+newSize);
+  this->_StackMiddleOffset = (newSize/2);
+  this->_StackCur = (uintptr_t*)((char*)newStack+stack_top_offset);
+  GCTOOLS_ASSERT(this->_StackBottom<=this->_StackCur && this->_StackCur < this->_StackLimit);
   GC_FREE(oldStack);
 }
 #endif
@@ -58,10 +78,11 @@ void* GCStack::pushFrameImpl(size_t frameSize) {
   size_t headerAndFrameSize = FRAME_HEADER_SIZE + frameSize;
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
-  uintptr_t* headerAndFrame = (uintptr_t*)this->_StackTop;
-  uintptr_t* stackTop = (uintptr_t*)((char*)this->_StackTop+headerAndFrameSize);
-  if ( stackTop > this->_StackLimit ) this->growStack();
-  this->_StackTop = (uintptr_t*)((char*)this->_StackTop+headerAndFrameSize);
+  uintptr_t* headerAndFrame = (uintptr_t*)this->_StackCur;
+  uintptr_t* stackCur = (uintptr_t*)((char*)this->_StackCur+headerAndFrameSize);
+  if ( stackCur > this->_StackLimit ) this->growStack();
+  this->_StackCur = (uintptr_t*)((char*)this->_StackCur+headerAndFrameSize);
+  GCTOOLS_ASSERT(this->_StackBottom<=this->_StackCur && this->_StackCur < this->_StackLimit);
 #else
   uintptr_t* headerAndFrame = (uintptr_t*)GC_MALLOC(headerAndFrameSize);
 #endif
@@ -81,17 +102,6 @@ void* GCStack::pushFrameImpl(size_t frameSize) {
                    this->_AllocationPoint->_frameptr,
                    this->_AllocationPoint->_enabled,
                    this->_AllocationPoint->_lwpoppending);
-#if 0
-  if ( ((this->_TotalSize + headerAndFrameSize)%4096) == 0 ) {
-    headerAndFrameSize = STACK_ALIGN_UP(headerAndFrameSize+1);
-//            printf("%s:%d About to mps_ap_frame_push frame where total stack size would be 4096 - increasing the allocation request to bump the total stack size to %zu bytes\n", __FILE__, __LINE__, (this->_TotalSize+headerAndFrameSize) );
-  }
-#endif
-#if 0
-  if ( this->_TotalSize!=0 && this->_TotalSize%4096 == 0 ) {
-    printf("%s:%d Despite my best effort above... about to mps_ap_frame_push frame where total stack size is a multiple of 4096\n", __FILE__, __LINE__ );
-  }
-#endif
   mps_res_t respush = mps_ap_frame_push(&frame_o,this->_AllocationPoint);
   if (respush != MPS_RES_OK) {
     printf("%s:%d There was a problem with mps_ap_frame_push result=%d\n", __FILE__, __LINE__, respush);
@@ -122,7 +132,8 @@ void* GCStack::pushFrameImpl(size_t frameSize) {
 #endif
  DONE:
 #if defined(BEOHM_ONE_BIG_STACK) && defined(USE_BOEHM) && defined(DEBUG_BOEHM_STACK)
-  size_t calcSize = (char*)this->_StackTop - (char*)this->_StackBottom;
+  GCTOOLS_ASSERT(this->_StackBottom<=this->_StackCur && this->_StackCur < this->_StackLimit);
+  size_t calcSize = (char*)this->_StackCur - (char*)this->_StackBottom;
   if ( calcSize != this->_TotalSize ) {
     THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize );
   }
