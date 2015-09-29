@@ -160,7 +160,9 @@
 (defstruct analysis
   project
   manager
-  (cur-enum-value 0)
+  (cur-enum-value (multiple-value-bind (hardwired-kinds first-general)
+                      (core:hardwired-kinds)
+                    first-general))
   (forwards (make-hash-table :test #'equal))
   (enums (make-hash-table :test #'equal))
   sorted-enums
@@ -2389,6 +2391,9 @@ so that they don't have to be constantly recalculated"
 (defun generate-alloc-enum (&optional (fout t) (anal *analysis*))
   (let ((maxenum 0))
     (format fout "enum { KIND_null = 0, ~%")
+    (multiple-value-bind (hardwired-kinds first-general)
+        (core:hardwired-kinds)
+      (mapc (lambda (kv) (format fout "KIND_~a = ~a, " (car kv) (cdr kv))) hardwired-kinds))
     (mapc (lambda (enum)
                (format fout "~A = ~A,~%" (enum-name enum) (enum-value enum))
                (when (> (enum-value enum) maxenum)
