@@ -109,6 +109,8 @@
 			 :lisp-bitcode-files bitcode-files
 			 :prologue-form '(progn
 					  (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
+                                          (make-package "CLEAVIR-AST")
+                                          (make-package "CLASP-CLEAVIR-AST")
 					  (if (member :interactive *features*) 
 					      (core:bformat t "Starting %s Clasp %s ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
 			 :epilogue-form '(progn
