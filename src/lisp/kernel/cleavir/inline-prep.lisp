@@ -12,7 +12,6 @@
   (gethash name *function-inline-asts*))
 
 (defun do-inline-hook (name ast)
-  (format t "Attaching to name: ~a ast: ~a~%" name ast)
   (when (core:declared-global-inline-p name)
     (core:setf-cleavir-ast (fdefinition name) ast)))
   

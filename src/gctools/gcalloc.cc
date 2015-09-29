@@ -56,7 +56,7 @@ void GCStack::growStack()
 
 void GCStack::shrinkStack()
 {
-  GCTOOLS_ASSERT(this->_StackCur<this->_StackMiddle);
+  GCTOOLS_ASSERT((this->_StackCur-this->_StackBottom)<this->_StackMiddleOffset);
   size_t oldSize = (this->_StackLimit-this->_StackBottom);
   size_t newSize = oldSize / 2;
   uintptr_t* newStack = (uintptr_t*)GC_MALLOC(newSize);

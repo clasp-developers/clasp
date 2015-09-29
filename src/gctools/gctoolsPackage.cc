@@ -52,6 +52,9 @@ extern "C" {
 
 using namespace core;
 
+namespace cl {
+extern core::Symbol_sp _sym_fixnum;
+};
 
 namespace gctools {
 
@@ -80,16 +83,40 @@ T_mv gc_bytes_allocated()
 #define DECL_core_header_kind ""
 #define DOCS_core_header_kind "Return the header kind for the object"
 core::Fixnum_sp core_header_kind(T_sp obj) {
-  if ( obj.generalp() ) {
+  if ( obj.consp() ) {
+    return clasp_make_fixnum(kind_cons);
+  } else if ( obj.generalp() ) {
     void* mostDerived = gctools::untag_general<void*>(obj.raw_());
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(mostDerived));
 #ifdef USE_MPS
     ASSERT(header->kindP());
 #endif
     return clasp_make_fixnum(header->kind());
+  } else if ( obj.fixnump() ) {
+    return clasp_make_fixnum(kind_fixnum);
+  } else if ( obj.single_floatp() ) {
+    return clasp_make_fixnum(kind_single_float);
+  } else if ( obj.characterp() ) {
+    return clasp_make_fixnum(kind_character);
   }
   printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
   return clasp_make_fixnum(-1);
+}
+
+#define ARGS_core_hardwired_kinds "()"
+#define DECL_core_hardwired_kinds ""
+#define DOCS_core_hardwired_kinds "Return the header kind for the object"
+core::T_mv core_hardwired_kinds() {
+  List_sp result = Cons_O::createList(
+                                      Cons_O::create(cl::_sym_fixnum,clasp_make_fixnum(kind_fixnum)),
+                                      Cons_O::create(cl::_sym_cons,clasp_make_fixnum(kind_cons)),
+                                      Cons_O::create(cl::_sym_single_float,clasp_make_fixnum(kind_single_float)),
+                                      Cons_O::create(cl::_sym_character,clasp_make_fixnum(kind_character)));
+  return Values(result
+                , clasp_make_fixnum(kind_first_general)
+                , clasp_make_fixnum(kind_first_alien)
+                , clasp_make_fixnum(kind_last_alien)
+                , clasp_make_fixnum(kind_first_instance));
 }
 
 
@@ -724,6 +751,7 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
     //	    Defun(linkExternalGlobalsInModule);
     Defun(debugAllocations);
     CoreDefun(header_kind);
+    CoreDefun(hardwired_kinds);
 #ifdef USE_GC_REF_COUNT_WRAPPER
     Defun(gcheader);
     Defun(gcaddress);

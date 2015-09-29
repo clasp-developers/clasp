@@ -1,4 +1,6 @@
 (load "sys:kernel;cleavir-system.lsp")
+(make-package "CLEAVIR-AST")
+(make-package "CLASP-CLEAVIR-AST")
 (defun setup-cclasp-system (init-files cleavir-files)
   ;; Remove the cmprepl file and append the rest of the cleavir files
   (append init-files
@@ -20,7 +22,12 @@
 ;;(compile-system :init :start :recompile t :reload t)
 (let ((*target-backend* (default-target-backend)))
   (link-system :init :cclasp 
-               (default-prologue-form (list :cclasp :clos))
+               `(progn
+                  ,@(mapcar #'(lambda (f) `(push ,f *features*)) '(:cclasp :clos))
+                  (make-package "CLEAVIR-AST")
+                  (make-package "CLASP-CLEAVIR-AST")
+                  (if (member :interactive *features*)
+                      (bformat t "Starting %s ... loading image... it takes a few seconds\n" (lisp-implementation-version))))
                (default-epilogue-form)
                :system *cleavir-system*))
 (quit)
