@@ -604,6 +604,7 @@ can be saved and reloaded within the project for later analysis"
   (let ((*print-readably* t)
         (*print-array* t)
         (*print-circle* t)
+        (*print-width* 140)
         (*print-pretty* nil))
     (with-open-file (fout pathname :direction :output)
       (prin1 run fout))))
