@@ -82,22 +82,30 @@ T_mv gc_bytes_allocated()
 #define ARGS_core_header_kind "()"
 #define DECL_core_header_kind ""
 #define DOCS_core_header_kind "Return the header kind for the object"
-core::Fixnum_sp core_header_kind(T_sp obj) {
+Fixnum core_header_kind(T_sp obj) {
   if ( obj.consp() ) {
-    return clasp_make_fixnum(kind_cons);
+#if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
+    return reinterpret_cast<Fixnum>(&typeid(*obj));
+#else
+    return gctools::GCKind<core::Cons_O>::Kind;
+#endif
   } else if ( obj.generalp() ) {
+#if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
+    return reinterpret_cast<Fixnum>(&typeid(*obj));
+#else
     void* mostDerived = gctools::untag_general<void*>(obj.raw_());
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(mostDerived));
 #ifdef USE_MPS
     ASSERT(header->kindP());
 #endif
-    return clasp_make_fixnum(header->kind());
+    return header->kind();
+#endif
   } else if ( obj.fixnump() ) {
-    return clasp_make_fixnum(kind_fixnum);
+    return kind_fixnum;
   } else if ( obj.single_floatp() ) {
-    return clasp_make_fixnum(kind_single_float);
+    return kind_single_float;
   } else if ( obj.characterp() ) {
-    return clasp_make_fixnum(kind_character);
+    return kind_character;
   }
   printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
   return clasp_make_fixnum(-1);
@@ -107,12 +115,12 @@ core::Fixnum_sp core_header_kind(T_sp obj) {
 #define DECL_core_hardwired_kinds ""
 #define DOCS_core_hardwired_kinds "Return the header kind for the object"
 core::T_mv core_hardwired_kinds() {
-  List_sp result = Cons_O::createList(
-                                      Cons_O::create(cl::_sym_fixnum,clasp_make_fixnum(kind_fixnum)),
-                                      Cons_O::create(cl::_sym_cons,clasp_make_fixnum(kind_cons)),
-                                      Cons_O::create(cl::_sym_single_float,clasp_make_fixnum(kind_single_float)),
-                                      Cons_O::create(cl::_sym_character,clasp_make_fixnum(kind_character)));
+  List_sp result = Cons_O::createList(Cons_O::create(core::Str_O::create("FIXNUM"),clasp_make_fixnum(kind_fixnum)),
+                                      Cons_O::create(core::Str_O::create("SINGLE_FLOAT"),clasp_make_fixnum(kind_single_float)),
+                                      Cons_O::create(core::Str_O::create("CHARACTER"),clasp_make_fixnum(kind_character)));
+  List_sp ignoreClasses = _Nil<T_O>(); // Cons_O::createList(Str_O::create("core__Cons_O") <-- future when CONS are in their own pool
   return Values(result
+                , ignoreClasses
                 , clasp_make_fixnum(kind_first_general)
                 , clasp_make_fixnum(kind_first_alien)
                 , clasp_make_fixnum(kind_last_alien)
