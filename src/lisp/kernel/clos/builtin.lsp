@@ -121,7 +121,7 @@
       #+ecl(write-string " :" stream)
       #+ecl(prin1 (slot-definition-name (car scan)) stream)
       ;; fix bug where symbols like :FOO::BAR are printed
-      #+clasp(write-string " ")
+      #+clasp(write-string " " stream)
       #+clasp(let ((kw (intern (symbol-name (slot-definition-name (car scan)))
                                (load-time-value (find-package "KEYWORD")))))
                (prin1 kw stream))

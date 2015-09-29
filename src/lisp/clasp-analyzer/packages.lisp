@@ -8,6 +8,7 @@
 
    ;; mps-interface stuff
    #:load-project
+   #:save-project
    #:parallel-search-all-then-generate-code-and-quit
    #:serial-search-all-then-generate-code-and-quit
    #:serial-search-all
