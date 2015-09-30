@@ -135,10 +135,9 @@ ABI's  */
   static const uintptr_t single_float_mask  = 0x1FFFFFFFFF; // single-floats are in these 32+5bits
 
   static const uintptr_t kind_fixnum = 1;
-  static const uintptr_t kind_cons = 2;
-  static const uintptr_t kind_single_float = 3;
-  static const uintptr_t kind_character = 4;
-  static const uintptr_t kind_first_general = 8;
+  static const uintptr_t kind_single_float = 2;
+  static const uintptr_t kind_character = 3;
+  static const uintptr_t kind_first_general = 4;
   static const uintptr_t kind_first_alien = 65536;
   static const uintptr_t kind_last_alien = 2*65536-1;
   static const uintptr_t kind_first_instance = 2*65536;

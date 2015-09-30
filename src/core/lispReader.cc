@@ -198,6 +198,34 @@ typedef enum {
   tfloatp
 } TokenState;
 
+
+string stateString(TokenState state) {
+  switch (state) {
+  case tstart: return "tstart";
+  case tsyms: return "tsyms";
+  case tsymf: return "tsymf";
+  case tsymr: return "tsymr";
+  case tsymx: return "tsymx";
+  case tsymy: return "tsymy";
+  case tsymdot: return "tsymdot";
+  case tsymz: return "tsymz";
+  case tsymk: return "tsymk";
+  case tsymkw: return "tsymkw";
+  case tsymbad: return "tsymbad";
+  case tsyme: return "tsyme";
+  case tsymex: return "tsymex";
+  case tsymp: return "tsymp";
+  case tsympv: return "tsympv";
+  case tintt: return "tintt";
+  case tintp: return "tintp";
+  case tratio: return "tratio";
+  case tfloat0: return "tfloat0";
+  case tfloate: return "tfloate";
+  case tfloatp: return "tfloatp";
+  };
+  return "no-state";
+}
+
 typedef enum {
   undefined_exp,
   double_float_exp,
@@ -423,7 +451,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
       return _Nil<T_O>();
     // interpret failed symbols
-    SIMPLE_ERROR(BF("Could not interpret symbol at %s- perhaps ::?") % _rep_(clasp_file_position(sin)));
+    SIMPLE_ERROR(BF("Could not interpret symbol state(%s) at %s symbol: [%s]") % stateString(state) % _rep_(clasp_file_position(sin)) % tokenStr(token, start - token.data()));
     break;
   case tintt:
   case tintp:

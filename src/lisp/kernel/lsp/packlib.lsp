@@ -177,13 +177,18 @@ If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
 	    (string-lessp (prin1-to-string s1)
 			  (prin1-to-string s2)))))
 
-(defun apropos-list-inner (string package)
+;;; Clasp fix for infinite recursion that happens when packages use each other
+;;; uses an extra optional argument SEEN-PACKAGES that keeps track of which packages
+;;; apropos-list-inner has been run on
+(defun apropos-list-inner (string package #+clasp &optional #+clasp seen-packages)
   (declare (si::c-local))
+  #+clasp(when (member package seen-packages) (return-from apropos-list-inner nil))
+  #+clasp(setf seen-packages (cons package seen-packages))
   (let* ((list '())
 	 (string (string string)))
     (cond (package
 	   (dolist (p (package-use-list package))
-	     (setf list (nconc (apropos-list-inner string p) list)))
+	     (setf list (nconc (apropos-list-inner string p #+clasp seen-packages) list)))
 	   (do-symbols (symbol package)
 	     (when (search string (string symbol) :test #'char-equal)
 	       (setq list (cons symbol list)))))
