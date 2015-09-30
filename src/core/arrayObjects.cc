@@ -114,7 +114,6 @@ T_sp ArrayObjects_O::rowMajorAref(cl_index idx) const {
 };
 
 T_sp ArrayObjects_O::aref(List_sp indices) const {
-  _OF();
   LOG(BF("indices[%s]") % _rep_(indices));
   int index = this->index(indices);
   return ((this->_Values[index]));

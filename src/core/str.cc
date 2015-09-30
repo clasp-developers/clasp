@@ -643,6 +643,9 @@ T_sp Str_O::aref(List_sp indices) const {
   _OF();
   ASSERTF(cl_length(indices) == 1, BF("Illegal index for string: %s") % _rep_(indices));
   int index = unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices)));
+  if ( index < 0 || index >= this->size() ) {
+    SIMPLE_ERROR(BF("Index %d out of bounds - must be [0,%d)") % index % this->size());
+  }
   return this->elt(index);
 }
 

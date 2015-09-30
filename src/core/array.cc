@@ -197,9 +197,10 @@ cl_index Array_O::index_val(List_sp indices, bool last_value_is_val, List_sp &va
     }
     cl_index curDimension = this->arrayDimension(idx);
     cl_index oneIndex = clasp_to_int(gc::As<Rational_sp>(oCar(cur)));
-    if (oneIndex >= curDimension) {
-      SIMPLE_ERROR(BF("Bad index"));
+    if (oneIndex < 0 || oneIndex >= curDimension) {
+      SIMPLE_ERROR(BF("Bad index %d - must be [0,%d)") % curDimension);
     }
+    
     offset = offset * curDimension + oneIndex;
     idx++;
   }
