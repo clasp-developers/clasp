@@ -40,6 +40,7 @@ local unity_sources =
       all.cc ;
 
 local sources =
+      gcFunctions.cc
       stacks.cc
       weakKeyMapping.cc
       weakHashTable.cc
