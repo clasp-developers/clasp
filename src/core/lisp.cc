@@ -583,6 +583,21 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     }
     {
       Cons_sp p = Cons_O::createList(
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;min-boehmdc;**;*.*"))));
+      af_pathnameTranslations(Str_O::create("min-boehmdc"), _lisp->_true(), p);
+    }
+    {
+      Cons_sp p = Cons_O::createList(
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;full-boehmdc;**;*.*"))));
+      af_pathnameTranslations(Str_O::create("full-boehmdc"), _lisp->_true(), p);
+    }
+    {
+      Cons_sp p = Cons_O::createList(
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;cclasp-boehmdc;**;*.*"))));
+      af_pathnameTranslations(Str_O::create("cclasp-boehmdc"), _lisp->_true(), p);
+    }
+    {
+      Cons_sp p = Cons_O::createList(
           Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;min-boehm;**;*.*"))));
       af_pathnameTranslations(Str_O::create("min-boehm"), _lisp->_true(), p);
     }
@@ -1313,17 +1328,15 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   features = Cons_O::create(_lisp->internKeyword("USE-REFCOUNT"), features);
 #endif
 #ifdef USE_BOEHM
+  #ifdef USE_CXX_DYNAMIC_CAST
+  features = Cons_O::create(_lisp->internKeyword("USE-BOEHMDC"), features);
+  #else
   features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
+  #endif
 #endif
 #ifdef USE_MPS
   // Informs CL that MPS is being used
   features = Cons_O::create(_lisp->internKeyword("USE-MPS"), features);
-#ifdef USE_TAGGED_PTR_P0
-  // USE_TAGGED_PTR_P0  determines whether a p0 pointer,  the most-derived-pointer is stored
-  //         in the tagged_ptr.   If you turn it on then tagged_ptr uses twice as much
-  //         memory
-  features = Cons_O::create(_lisp->internKeyword("USE-TAGGED-PTR-P0"), features);
-#endif // USE_TAGGED_PTR_P0
 #ifdef USE_AMC_POOL
   // Informs that the Automatic-Mostly-Copying Pool is being used
   printf("%s:%d  USE-AMC-POOL is turned on\n", __FILE__, __LINE__);

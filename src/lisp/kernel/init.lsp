@@ -39,15 +39,6 @@
 (setq *features* (cons :compile-mcjit *features*))
 
 
-#+(or)(progn
-        (core:pathname-translations "min-boehm" '(("**;*.*" #P"SYS:build;system;min-boehm;**;*.*")))
-        (core:pathname-translations "full-boehm" '(("**;*.*" #P"SYS:build;system;full-boehm;**;*.*")))
-        (core:pathname-translations "min-mps" '(("**;*.*" #P"SYS:build;system;min-mps;**;*.*")))
-        (core:pathname-translations "full-mps" '(("**;*.*" #P"SYS:build;system;full-mps;**;*.*")))
-        )
-
-
-
 ;;(setq *features* (cons :compare *features*)) ;; compare ecl to clasp
 
 ;; When boostrapping in stages, set this feature,
@@ -405,26 +396,31 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defvar *alien-declarations* ())
 (export '*alien-declarations*)
 
-(defun recursive-find (item seq)
-  (if seq
-      (if (eq item (car seq))
-          t
-          (recursive-find item (cdr seq)))))
-
+(defun build-configuration ()
+  (cond
+    ((member :use-mps *features*) "mps")
+    ((member :use-boehmdc *features*) "boehmdc")
+    ((member :use-boehm *features*) "boehm")
+    (t (error "Unknown clasp configuration"))))
 
 (defun build-intrinsics-bitcode-pathname ()
-  (if (recursive-find :use-mps *features*)
-      "app-resources:lib;release;intrinsics_bitcode_mps.sbc"
-      "app-resources:lib;release;intrinsics_bitcode_boehm.sbc"))
+  (bformat nil "app-resources:lib;release;intrinsics_bitcode_%s.sbc" (build-configuration)))
+
 
 (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
 (export '(+image-pathname+ build-intrinsics-bitcode-pathname))
 
 (defun build-hostname (type &optional stage)
-  (let* ((stage (if stage stage (if (recursive-find :ecl-min *features*) "min" (if (recursive-find :cclasp *features*) "cclasp" "full"))))
+  (let* ((stage (if stage 
+                    stage 
+                    (if (member :ecl-min *features*) 
+                        "min" 
+                        (if (member :cclasp *features*) 
+                            "cclasp" 
+                            "full"))))
          (type-modified-host-suffix (cond
                                       ((string-equal type "bc") "bitcode")
-                                      (t (if (recursive-find :use-mps *features*) "mps" "boehm"))))
+                                      (t (build-configuration))))
          (bitcode-host (bformat nil "%s-%s" stage type-modified-host-suffix)))
     bitcode-host))
 
@@ -597,8 +593,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 ;; I need to search the list rather than using features because *features* may change at runtime
 (defun default-target-backend (&optional given-stage)
-  (let* ((stage (if given-stage given-stage (if (recursive-find :ecl-min *features*) "min" (if (recursive-find :cclasp *features*) "cclasp" "full"))))
-         (garbage-collector (if (recursive-find :use-mps *features*) "mps" "boehm"))
+  (let* ((stage (if given-stage given-stage (if (member :ecl-min *features*) "min" (if (member :cclasp *features*) "cclasp" "full"))))
+         (garbage-collector (build-configuration))
          (target-backend (bformat nil "%s-%s" stage garbage-collector)))
     target-backend))
 

@@ -65,12 +65,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     ',var))
 
 
-;; TODO: Remove this
-#||
-#+use-mps(eval-when (:compile-toplevel)
-           (bformat t "evalmacros.lsp !!!!!!!!!!! Turning on core:*debug-load-time-values*!!!!!\n")
-           (setq core:*debug-load-time-values* t))
-||#
 (defmacro defparameter (&whole whole var form &optional doc-string)
   "Syntax: (defparameter name form [doc])
 Declares the global variable named by NAME as a special variable and assigns

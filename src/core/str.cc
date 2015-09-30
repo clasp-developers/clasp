@@ -310,15 +310,19 @@ T_mv af_make_string(Fixnum_sp size, T_sp initial_element, T_sp element_type) {
 #define ARGS_af_base_string_concatenate_ "(&va-rest args)"
 #define DECL_af_base_string_concatenate_ ""
 #define DOCS_af_base_string_concatenate_ "base_string_concatenate"
-T_sp af_base_string_concatenate_(VaList_sp args) {
-  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args);
-  Str_sp result(nargs);
-  for ( size_t i(0); i<nargs; ++i ) {
-    T_sp csp = LCC_NEXT_ARG(args,i);
-    ASSERT(csp.characterp());
-    (*result)[i] = csp.unsafe_character();
-  }
-  return result;
+T_sp af_base_string_concatenate_(T_sp args) {
+    if ( !args.valistp() ) {
+        SIMPLE_ERROR(BF("arg must be valist"));
+    }
+    VaList_sp vargs = gctools::As<VaList_sp>(args);
+    size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
+    stringstream ss;
+    for ( size_t i(0); i<nargs; ++i ) {
+        T_sp csp = LCC_NEXT_ARG(vargs,i);
+        Str_sp ssp = coerce::stringDesignator(csp);
+        ss << ssp->c_str();
+    }
+    return Str_O::create(ss.str());
 };
 
 inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
@@ -518,7 +522,7 @@ void Str_O::exposeCando(Lisp_sp lisp) {
 
   SYMBOL_SC_(CorePkg, base_string_concatenate);
   Defun(searchString);
-  Defun(base_string_concatenate_);
+  core::af_def(CorePkg,"base_string_concatenate",&af_base_string_concatenate_,ARGS_af_base_string_concatenate_,DECL_af_base_string_concatenate_,DOCS_af_base_string_concatenate_);
   Defun(string_EQ_);
   Defun(string_NE_);
   Defun(string_LT_);

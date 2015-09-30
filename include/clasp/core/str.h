@@ -218,7 +218,7 @@ namespace core {
 T_mv af_parseInteger(Str_sp str, Fixnum start = 0, T_sp end = _Nil<T_O>(), uint radix = 10, T_sp junkAllowed = _Nil<T_O>());
 T_sp af_string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = make_fixnum(0), T_sp end1 = _Nil<T_O>(), Fixnum_sp start2 = make_fixnum(0), T_sp end2 = _Nil<T_O>());
 
- T_sp af_base_string_concatenate_(VaList_sp vargs);
+ T_sp af_base_string_concatenate_(T_sp vargs);
 
  inline T_sp af_base_string_concatenate(size_t nargs, ... ) {
    VaList_S lcc_arglist_s;

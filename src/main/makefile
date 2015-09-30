@@ -5,6 +5,7 @@ project-directories = ../gctools ../core ../clbind ../cffi ../asttooling ../llvm
 
 
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
+  BCLASP_BOEHMDC = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/release/boehmdc/clasp -f bclasp
   BCLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/release/boehm/clasp -f bclasp
   CCLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/release/boehm/clasp
   CCLASP_MPS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/release/mps/clasp
@@ -54,6 +55,8 @@ cclasp-reload:
 bclasp-to-cclasp:
 	$(BCLASP_BOEHM) -l "buildBclaspToCclasp.lsp"
 
+bclasp-boehmdc-addons:
+	$(BCLASP_BOEHMDC) -l "build_addons.lsp"
 
 bclasp-boehm-addons:
 	$(BCLASP_BOEHM) -l "build_addons.lsp"
@@ -75,6 +78,19 @@ boehm:
 boehm-recompile:
 	make min-boehm-recompile
 	make full-boehm
+
+boehmdc:
+	make min-boehmdc
+	make full-boehmdc
+
+min-boehmdc:
+	$(BCLASP_BOEHMDC) -I -f ecl-min -l "buildClaspMinBoot.lsp"
+
+min-boehmdc-recompile:
+	$(BCLASP_BOEHMDC) -f ecl-min -l "buildClaspMinRecompile.lsp"
+
+full-boehmdc:
+	$(BCLASP_BOEHMDC) -f ecl-min -l "buildClasp.lsp"
 
 min-boehm:
 	$(BCLASP_BOEHM) -I -f ecl-min -l "buildClaspMinBoot.lsp"
@@ -122,16 +138,17 @@ mps-interface-clasp:
 compile-commands:
 	-bjam link=static gc=mps-prep program=clasp link=static -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	python ../common/buildJSON.py clang bjam.out `$(BCLASP_BOEHM) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
+	python ../common/buildJSON.py clang bjam.out `$(BCLASP_BOEHMDC) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
 
 
 mps-interface:
 	@echo Building boehmdc version
-	build -j$(PJOBS) link=static program=clasp gc=boehmdc release
+	build -j$(PJOBS) link=static program=clasp gc=boehmdc release dist
 	@echo Building mps-prep
 	build -j$(PJOBS) link=static gc=mps-prep program=clasp release
 	make compile-commands
-	clasp_boehmdc_o -f bclasp -e "(require :asdf)" \
+	$(BCLASP_BOEHMDC)  \
+		-e "(load \"sys:modules;asdf;build;asdf.lisp\")" \
 	        -e "(asdf:load-system \"clasp-analyzer\")" \
 		-e "(clasp-analyzer:load-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\")" \
 	        -e "(clasp-analyzer:serial-search-all-then-generate-code-and-quit)"
