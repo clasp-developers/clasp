@@ -115,6 +115,12 @@ public:
     GCTOOLS_ASSERT(this->_Contents->_End <= this->_Contents->_Capacity);
     THROW_IF_ILLEGAL_CHARACTERS(this);
   };
+/*! Construct and don't initialize contents */
+  GCString(int sz) : _Contents() {
+    this->reserve(sz + GCStringPad);
+    this->_Contents->_End = sz;
+    GCTOOLS_ASSERT(this->_Contents->_End <= this->_Contents->_Capacity);
+  };
   GCString(const char *chars, int sz) : _Contents() {
     this->reserve(sz + GCStringPad);
     strncpy(this->_Contents->data(), chars, sz);

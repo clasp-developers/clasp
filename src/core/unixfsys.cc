@@ -865,7 +865,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
   for (;;) {
     if (hFind == NULL) {
       T_sp aux = make_constant_base_string(".\\*");
-      T_sp mask = af_base_string_concatenate(Cons_O::createList(prefix, aux));
+      T_sp mask = af_base_string_concatenate(2,prefix,aux);
       hFind = FindFirstFile((char *)mask->c_str(), &fd);
       if (hFind == INVALID_HANDLE_VALUE) {
         out = _Nil<T_O>();
@@ -905,7 +905,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
     if (!string_match(text, text_mask))
       continue;
     component = Str_O::create(text);
-    component = af_base_string_concatenate(Cons_O::createList(prefix, component));
+    component = af_base_string_concatenate(2,prefix.raw_(),component.raw_());
     component_path = cl_pathname(component);
     if (!pathname_mask.nilp()) {
       if (!af_pathnameMatchP(component, pathname_mask)) // should this not be inverted?

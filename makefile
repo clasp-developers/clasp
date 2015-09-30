@@ -75,10 +75,11 @@ all:
 	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehm release dist )
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=mps release dist )
-	time make clasp-boehm
-	time make cclasp-boehm
-	time make cclasp-boehm-addons
-	time make cclasp-mps
+	time make -C src/main boehm
+	time make -C src/main cclasp-boehm
+	time make -c src/main cclasp-boehm-addons
+	time make -C src/main cclasp-mps
+	time make -C src/main cclasp-mps-addons
 	make executable-symlinks
 
 devbuild:

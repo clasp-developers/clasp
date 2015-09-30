@@ -266,6 +266,13 @@ Str_sp Str_O::create(const char *nm, int numChars) {
   return v;
 };
 
+Str_sp Str_O::create(int numChars) {
+  GC_ALLOCATE(Str_O, v);
+  //	printf("%s:%d Str_O::create(const char* nm) @ %p nm = %s\n", __FILE__, __LINE__, v.raw_(), nm );
+  v->setFromSize(numChars);
+  return v;
+};
+
 Bignum Str_O::stringToBignum(const char *str) {
   _G();
   Bignum bn = 0;
@@ -300,17 +307,18 @@ T_mv af_make_string(Fixnum_sp size, T_sp initial_element, T_sp element_type) {
   return (Values(ns));
 };
 
-#define ARGS_af_base_string_concatenate "(&rest args)"
-#define DECL_af_base_string_concatenate ""
-#define DOCS_af_base_string_concatenate "base_string_concatenate"
-T_sp af_base_string_concatenate(List_sp args) {
-  _G();
-  stringstream ss;
-  for (auto cur : args) {
-    Str_sp str = coerce::stringDesignator(oCar(cur));
-    ss << str->get();
+#define ARGS_af_base_string_concatenate_ "(&va-rest args)"
+#define DECL_af_base_string_concatenate_ ""
+#define DOCS_af_base_string_concatenate_ "base_string_concatenate"
+T_sp af_base_string_concatenate_(VaList_sp args) {
+  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args);
+  Str_sp result(nargs);
+  for ( size_t i(0); i<nargs; ++i ) {
+    T_sp csp = LCC_NEXT_ARG(args,i);
+    ASSERT(csp.characterp());
+    (*result)[i] = csp.unsafe_character();
   }
-  return Str_O::create(ss.str());
+  return result;
 };
 
 inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
@@ -510,7 +518,7 @@ void Str_O::exposeCando(Lisp_sp lisp) {
 
   SYMBOL_SC_(CorePkg, base_string_concatenate);
   Defun(searchString);
-  Defun(base_string_concatenate);
+  Defun(base_string_concatenate_);
   Defun(string_EQ_);
   Defun(string_NE_);
   Defun(string_LT_);

@@ -7,7 +7,7 @@ project-directories = ../gctools ../core ../clbind ../cffi ../asttooling ../llvm
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
   BCLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/release/boehm/clasp -f bclasp
   CCLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/release/boehm/clasp
-  CLASP_MPS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/release/mps/clasp
+  CCLASP_MPS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/release/mps/clasp
 else
   echo "ERROR CLASP_INTERNAL_BUILD_TARGET_DIR is not defined - what should I do now?"
 endif
@@ -31,7 +31,7 @@ all:
 
 
 cclasp-mps:
-	$(CLASP_MPS) -I -l "link-cclasp.lsp"
+	$(CCLASP_MPS) -I -l "link-cclasp.lsp"
 
 application:
 	cp -R $(CLASP_LISP_SOURCE_DIR)/build $(CLASP_APP_RESOURCES_DIR)/lisp/
@@ -54,11 +54,15 @@ cclasp-reload:
 bclasp-to-cclasp:
 	$(BCLASP_BOEHM) -l "buildBclaspToCclasp.lsp"
 
-cclasp-boehm-addons:
-	$(CCLASP_BOEHM) -l "build_addons.lsp"
 
 bclasp-boehm-addons:
 	$(BCLASP_BOEHM) -l "build_addons.lsp"
+
+cclasp-boehm-addons:
+	$(BCLASP_BOEHM) -l "build_addons.lsp"
+
+cclasp-mps-addons:
+	$(CCLASP_MPS) -l "link_addons.lsp"
 
 #	make clasp-gc-interface
 
@@ -89,23 +93,6 @@ mps:
 mps-recompile:
 	make min-mps-recompile
 	make full-mps
-
-min-mps:
-	$(CLASP_MPS) -I -f ecl-min -l "buildClaspMinMps.lsp"
-
-min-mps-recompile:
-	$(CLASP_MPS) -f ecl-min -l "buildClaspMinRecompile.lsp"
-
-full-mps:
-	$(CLASP_MPS) -f ecl-min -l "buildClasp.lsp"
-
-
-short-compile-mps:
-	time $(BCLASP_MPS) -f ecl-min -l "shortCompile.lsp"
-
-short-compile-boehm:
-	time $(BCLASP_BOEHM) -f ecl-min -l "shortCompile.lsp"
-
 
 
 clasp-gc-interface:

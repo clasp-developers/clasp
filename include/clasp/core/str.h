@@ -32,8 +32,13 @@ THE SOFTWARE.
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/lispString.h>
 
+namespace cl {
+  extern core::Symbol_sp _sym_simple_vector;
+};
+
 namespace core {
 
+  
 FORWARD(Str);
 class Str_O : public String_O {
   LISP_BASE1(String_O);
@@ -58,6 +63,7 @@ public:
   static Str_sp create(const boost::format &fmt);
   static Str_sp create(const string &nm);
   static Str_sp create(const char *nm);
+  static Str_sp create(int numChars);
   static Str_sp create(const char *nm, int numChars);
   static Str_sp create(claspChar initial_element, int dimension, T_sp initialContents);
   static Str_sp create(Str_sp orig);
@@ -82,6 +88,10 @@ public:
   };
   virtual void setFromChars(const char *v) {
     str_type temp(v);
+    this->_Contents.swap(temp);
+  };
+  virtual void setFromSize(int num) {
+    str_type temp(num);
     this->_Contents.swap(temp);
   };
   virtual void setFromChars(const char *v, int num) {
@@ -176,8 +186,8 @@ public:
   virtual T_sp elt(int index) const;
   virtual T_sp setf_elt(int index, T_sp value);
 
-  virtual T_sp svref(int index) const { return elt(index); };
-  virtual T_sp setf_svref(int index, T_sp value) { return this->setf_elt(index, value); };
+  virtual T_sp svref(int index) const { TYPE_ERROR(this->asSmartPtr(), cl::_sym_simple_vector);};
+  virtual T_sp setf_svref(int index, T_sp value) { TYPE_ERROR(this->asSmartPtr(), cl::_sym_simple_vector);};
 
   virtual T_sp subseq(int start, T_sp end) const;
   virtual T_sp setf_subseq(int start, T_sp end, T_sp new_subseq);
@@ -208,7 +218,14 @@ namespace core {
 T_mv af_parseInteger(Str_sp str, Fixnum start = 0, T_sp end = _Nil<T_O>(), uint radix = 10, T_sp junkAllowed = _Nil<T_O>());
 T_sp af_string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = make_fixnum(0), T_sp end1 = _Nil<T_O>(), Fixnum_sp start2 = make_fixnum(0), T_sp end2 = _Nil<T_O>());
 
-T_sp af_base_string_concatenate(List_sp args);
+ T_sp af_base_string_concatenate_(VaList_sp vargs);
+
+ inline T_sp af_base_string_concatenate(size_t nargs, ... ) {
+   VaList_S lcc_arglist_s;
+   va_start(lcc_arglist_s._Args,nargs);
+   VaList_sp valist_sp(&lcc_arglist_s);
+   return af_base_string_concatenate_(valist_sp);
+ };
 
 inline claspChar clasp_char(Str_sp s, Fixnum pos) { return s->schar(pos); };
 };
