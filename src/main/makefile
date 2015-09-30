@@ -61,6 +61,9 @@ bclasp-boehmdc-addons:
 bclasp-boehm-addons:
 	$(BCLASP_BOEHM) -l "build_addons.lsp"
 
+bclasp-boehmdc-addons:
+	$(BCLASP_BOEHMDC) -l "build_addons.lsp"
+
 cclasp-boehm-addons:
 	$(BCLASP_BOEHM) -l "build_addons.lsp"
 
@@ -71,15 +74,12 @@ cclasp-mps-addons:
 
 
 
-boehm:
+bclasp-boehm:
 	make min-boehm
 	make full-boehm
 
-boehm-recompile:
-	make min-boehm-recompile
-	make full-boehm
 
-boehmdc:
+bclasp-boehmdc:
 	make min-boehmdc
 	make full-boehmdc
 

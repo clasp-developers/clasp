@@ -75,12 +75,22 @@ all:
 	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehm release dist )
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=mps release dist )
-	time make -C src/main boehm
+	time make -C src/main bclasp-boehm
 	time make -C src/main cclasp-boehm
 	time make -c src/main cclasp-boehm-addons
-	time make -C src/main cclasp-mps
-	time make -C src/main cclasp-mps-addons
+	time make -C src/main link-cclasp-mps
+	time make -C src/main link-cclasp-mps-addons
 	make executable-symlinks
+
+boot:
+	cat local.config
+	make submodules
+	make asdf
+	make boostbuildv2-build
+	make boehm
+	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehmdc release dist )
+	time make -C src/main bclasp-boehmdc
+	time make -C src/main bclasp-boehmdc-addons
 
 devbuild:
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehmdc release dist )
