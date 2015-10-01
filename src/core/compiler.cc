@@ -177,6 +177,7 @@ T_sp core_startupImagePathname() {
   Cons_sp features = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue());
   List_sp min = features->memberEq(kw::_sym_ecl_min);
   List_sp mps = features->memberEq(kw::_sym_use_mps);
+  List_sp boehmdc = features->memberEq(kw::_sym_use_boehmdc);
   List_sp bclasp = features->memberEq(kw::_sym_bclasp);
   string strStage = "min";
   if (min.nilp()) {
@@ -194,9 +195,14 @@ T_sp core_startupImagePathname() {
   } else if ( executable.find("cclasp") != string::npos ) {
     strStage = "cclasp";
   }
-  string strGc = "boehm";
-  if (mps.notnilp())
+  string strGc;
+  if ( boehmdc.notnilp() ) {
+    strGc = "boehmdc";
+  } else if ( mps.notnilp() ) {
     strGc = "mps";
+  } else {
+    strGc = "boehm";
+  }
   stringstream ss;
   ss << strStage << "-" << strGc;
   ss << ":image.fasl";

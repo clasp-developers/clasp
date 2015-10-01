@@ -164,6 +164,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg, load);
 SYMBOL_EXPORT_SC_(KeywordPkg, eval);
 SYMBOL_EXPORT_SC_(KeywordPkg, ecl_min);
 SYMBOL_EXPORT_SC_(KeywordPkg, use_mps);
+SYMBOL_EXPORT_SC_(KeywordPkg, use_boehmdc);
+SYMBOL_EXPORT_SC_(KeywordPkg, use_boehm);
 SYMBOL_EXPORT_SC_(KeywordPkg, lf);
 SYMBOL_EXPORT_SC_(KeywordPkg, cr);
 SYMBOL_EXPORT_SC_(KeywordPkg, lf);

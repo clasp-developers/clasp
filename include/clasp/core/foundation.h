@@ -1370,7 +1370,7 @@ core::Symbol_sp lisp_classSymbol() {
 }
 };
 
-#define EXECUTABLE_NAME "brcl"
+#define EXECUTABLE_NAME "clasp"
 #define KERNEL_NAME "kernel"
 
 #include <boost/filesystem.hpp>

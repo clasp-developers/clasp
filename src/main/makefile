@@ -61,9 +61,6 @@ bclasp-boehmdc-addons:
 bclasp-boehm-addons:
 	$(BCLASP_BOEHM) -l "build_addons.lsp"
 
-bclasp-boehmdc-addons:
-	$(BCLASP_BOEHMDC) -l "build_addons.lsp"
-
 cclasp-boehm-addons:
 	$(BCLASP_BOEHM) -l "build_addons.lsp"
 
