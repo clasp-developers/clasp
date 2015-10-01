@@ -31,6 +31,78 @@ namespace gctools {
 
 using namespace core;
 
+
+/*! Hardcode a few kinds of objects for bootstrapping
+ */
+
+const char *global_HardcodedKinds[] = {
+    "", "core::T_O", "core::StandardObject_O", "core::Metaobject_O", "core::Specializer_O", "core::Class_O", "core::BuiltInClass_O", "core::StdClass_O", "core::StandardClass_O", "core::StructureClass_O", "core::Symbol_O", "core::Str_O"};
+
+#define ARGS_af_maxBootstrapKinds "()"
+#define DECL_af_maxBootstrapKinds ""
+#define DOCS_af_maxBootstrapKinds "maxBootstrapKinds"
+int af_maxBootstrapKinds() {
+  _G();
+  return sizeof(global_HardcodedKinds) / sizeof(global_HardcodedKinds[0]);
+}
+
+int iBootstrapKind(const string &name) {
+  for (int i(0), iEnd(af_maxBootstrapKinds()); i < iEnd; ++i) {
+    //            printf("%s:%d i[%d]Checking if %s == %s\n", __FILE__, __LINE__, i, global_HardcodedKinds[i], name.c_str());
+    if (strcmp(global_HardcodedKinds[i], name.c_str()) == 0) {
+      return i;
+    }
+  }
+  SIMPLE_ERROR(BF("Illegal bootstrap-kind %s") % name);
+}
+
+void initialize_bootstrap_kinds() {
+  DEPRECIATED();
+// Hard-coded bootstrap kinds
+#define SetupKind(_x_) _x_::static_Kind = iBootstrapKind(#_x_)
+  SetupKind(core::T_O);
+  SetupKind(core::StandardObject_O);
+  SetupKind(core::Metaobject_O);
+  SetupKind(core::Specializer_O);
+  SetupKind(core::Class_O);
+  SetupKind(core::BuiltInClass_O);
+  SetupKind(core::StdClass_O);
+  SetupKind(core::StandardClass_O);
+  SetupKind(core::StructureClass_O);
+  SetupKind(core::Symbol_O);
+  SetupKind(core::Str_O);
+}
+
+#define ARGS_af_bootstrapKindSymbols "()"
+#define DECL_af_bootstrapKindSymbols ""
+#define DOCS_af_bootstrapKindSymbols "bootstrapKindSymbols"
+core::Cons_sp af_bootstrapKindSymbols() {
+  _G();
+  core::Cons_sp list(_Nil<core::Cons_O>());
+  for (int i(af_maxBootstrapKinds() - 1); i > 0; --i) {
+    string name = global_HardcodedKinds[i];
+    list = core::Cons_O::create(core::Str_O::create(name), list);
+  }
+  return list;
+}
+
+#define ARGS_af_bootstrapKindP "(arg)"
+#define DECL_af_bootstrapKindP ""
+#define DOCS_af_bootstrapKindP "bootstrap-kind-p return a generalized boolean of the bootstrap-kind - either the boostrap kind index or nil"
+core::T_sp af_bootstrapKindP(const string &name) {
+  _G();
+  for (int i(0), iEnd(af_maxBootstrapKinds()); i < iEnd; ++i) {
+    //            printf("%s:%d i[%d]Checking if %s == %s\n", __FILE__, __LINE__, i, global_HardcodedKinds[i], name.c_str());
+    if (strcmp(global_HardcodedKinds[i], name.c_str()) == 0) {
+      return core::make_fixnum(i);
+    }
+  }
+  return _Nil<core::T_O>();
+}
+
+
+
+
 #define ARGS_gc_bytes_allocated "()"
 #define DECL_gc_bytes_allocated ""
 #define DOCS_gc_bytes_allocated "Return the number of bytes allocated since Clasp started. Two values are returned the number reported by the GC and the number calculated by Clasp"
@@ -580,9 +652,9 @@ void initialize_gc_functions() {
     core::af_def(GcToolsPkg, "garbageCollect", &af_garbageCollect);
     core::af_def(GcToolsPkg, "stackDepth", &af_stackDepth);
     core::af_def(GcToolsPkg, "cleanup", &af_cleanup);
-//    core::af_def(GcToolsPkg, "maxBootstrapKinds", &af_maxBootstrapKinds);
-//    core::af_def(GcToolsPkg, "bootstrapKindP", &af_bootstrapKindP);
-//    core::af_def(GcToolsPkg, "bootstrapKindSymbols", &af_bootstrapKindSymbols);
+    core::af_def(GcToolsPkg, "maxBootstrapKinds", &af_maxBootstrapKinds);
+    core::af_def(GcToolsPkg, "bootstrapKindP", &af_bootstrapKindP);
+    core::af_def(GcToolsPkg, "bootstrapKindSymbols", &af_bootstrapKindSymbols);
     core::af_def(GcToolsPkg, "allocPatternBegin", &af_allocPatternBegin);
     core::af_def(GcToolsPkg, "allocPatternEnd", &af_allocPatternEnd);
     core::af_def(GcToolsPkg, "bytes_allocated", &gc_bytes_allocated);
