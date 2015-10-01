@@ -220,9 +220,10 @@ T_sp af_string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = make_fixnum(
 
  T_sp af_base_string_concatenate_(T_sp vargs);
 
- inline T_sp af_base_string_concatenate(size_t nargs, ... ) {
+ inline T_sp af_base_string_concatenate(LCC_ARGS_ELLIPSIS) {
    VaList_S lcc_arglist_s;
-   va_start(lcc_arglist_s._Args,nargs);
+   va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
+   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
    VaList_sp valist_sp(&lcc_arglist_s);
    return af_base_string_concatenate_(valist_sp);
  };
