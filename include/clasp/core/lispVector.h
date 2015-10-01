@@ -75,7 +75,7 @@ public:  // Functions here
   virtual T_sp vectorPush(T_sp newElement) { SUBIMP(); };
   virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 1) { SUBIMP(); };
 
-  virtual T_sp asetUnsafe(int j, T_sp val) {SUBIMP();};
+  virtual T_sp aset_unsafe(int j, T_sp val) {SUBIMP();};
   virtual T_sp aref_unsafe(cl_index index) const { SUBIMP();};
 
   virtual cl_index fillPointer() const { SUBIMP(); };

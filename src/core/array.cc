@@ -81,7 +81,7 @@ void af_copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in, Fixnum_sp i
     iLen = in->arrayDimension(0) - iInStart;
   if (iOutStart < iInStart) {
     for (int i = 0; i < iLen; ++i) {
-      out->setf_svref(iOutStart, in->svref(iInStart));
+      out->aset_unsafe(iOutStart, in->aref_unsafe(iInStart));
       ++iOutStart;
       ++iInStart;
     }
@@ -91,7 +91,7 @@ void af_copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in, Fixnum_sp i
     for (int i = 0; i < iLen; ++i) {
       --iOutStart;
       --iInStart;
-      out->setf_svref(iOutStart, in->svref(iInStart));
+      out->aset_unsafe(iOutStart, in->aref_unsafe(iInStart));
     }
   }
 }
@@ -110,7 +110,7 @@ T_sp af_aset(Array_sp array, List_sp indices_value) {
     T_sp ind0 = oCar(indices_value);
     indices_value = oCdr(indices_value);
     j = Array_O::checkedIndex(__FILE__, __LINE__, __FUNCTION__, array, 0, ind0, cl_length(vec));
-    return vec->asetUnsafe(j, oCar(indices_value));
+    return vec->aset_unsafe(j, oCar(indices_value));
   } else {
     if (r != array->rank()) {
       SIMPLE_ERROR(BF("Wrong number of indices."));
@@ -122,7 +122,7 @@ T_sp af_aset(Array_sp array, List_sp indices_value) {
       int s = Array_O::checkedIndex(__FILE__, __LINE__, __FUNCTION__, array, i, index, array->arrayDimension(i));
       j = j * (array->arrayDimension(i)) + s;
     }
-    return array->asetUnsafe(j, oCar(indices_value));
+    return array->aset_unsafe(j, oCar(indices_value));
   }
   IMPLEMENT_MEF(BF("Implement aset"));
 };

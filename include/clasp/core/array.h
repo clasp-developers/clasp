@@ -59,7 +59,7 @@ public:
 
 public: // Functions here
   virtual bool equalp(T_sp other) const;
-  virtual T_sp asetUnsafe(int j, T_sp val) { SUBIMP(); };
+  virtual T_sp aset_unsafe(int j, T_sp val) { SUBIMP(); };
   virtual bool arrayHasFillPointerP() const { return false; };
   virtual gc::Fixnum arrayTotalSize() const;
   virtual T_sp aref_unsafe(cl_index index) const { SUBIMP(); };

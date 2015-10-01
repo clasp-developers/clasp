@@ -60,7 +60,7 @@ public: // Functions here
   static ArrayDisplaced_sp make(T_sp dim, T_sp elementType, T_sp displacedTo, int displacedOffset);
 
 public:
-  virtual T_sp asetUnsafe(int j, T_sp val);
+  virtual T_sp aset_unsafe(int j, T_sp val);
   T_sp elementType() const { return this->_Array->elementType(); };
 
   virtual void rowMajorAset(cl_index idx, T_sp value);

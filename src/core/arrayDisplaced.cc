@@ -104,9 +104,9 @@ void ArrayDisplaced_O::rowMajorAset(cl_index idx, T_sp value) {
   this->_Array->rowMajorAset(this->_DisplacedIndexOffset + idx, value);
 }
 
-T_sp ArrayDisplaced_O::asetUnsafe(int idx, T_sp value) {
+T_sp ArrayDisplaced_O::aset_unsafe(int idx, T_sp value) {
   _G();
-  this->_Array->asetUnsafe(this->_DisplacedIndexOffset + idx, value);
+  this->_Array->aset_unsafe(this->_DisplacedIndexOffset + idx, value);
   return value;
 }
 
@@ -126,7 +126,7 @@ T_sp ArrayDisplaced_O::setf_aref(List_sp indices_val) {
   _OF();
   List_sp val_cons;
   LongLongInt index = this->index_val(indices_val, true, val_cons);
-  this->asetUnsafe(index, oCar(val_cons));
+  this->aset_unsafe(index, oCar(val_cons));
   return ((oCar(val_cons)));
 }
 
@@ -141,7 +141,7 @@ T_sp ArrayDisplaced_O::shallowCopy() const {
 
 void ArrayDisplaced_O::arrayFill(T_sp val) {
   for (int i = 0, iEnd(this->arrayTotalSize()); i < iEnd; i++) {
-    this->asetUnsafe(i, val);
+    this->aset_unsafe(i, val);
   }
 }
 

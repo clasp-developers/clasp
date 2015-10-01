@@ -160,7 +160,7 @@ T_sp Vector_O::reverse() {
   for (int i = 0; i < thisLength; i++) {
     int ri = lastElement - i;
 //    newVec->setf_elt(ri, this->elt(i));
-    newVec->asetUnsafe(ri,this->elt(i));
+    newVec->aset_unsafe(ri,this->elt(i));
   }
   return newVec;
 }

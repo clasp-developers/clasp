@@ -145,7 +145,8 @@ mps-interface:
 	build -j$(PJOBS) link=static gc=mps-prep program=clasp release
 	make compile-commands
 	$(BCLASP_BOEHMDC)  \
-		-e "(load \"sys:modules;asdf;build;asdf.lisp\")" \
+		-e "(require :asdf)" \
+		-e "(load \"sys:local-asdf-config.lisp\")" \
 	        -e "(asdf:load-system \"clasp-analyzer\")" \
 		-e "(clasp-analyzer:load-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\")" \
 	        -e "(clasp-analyzer:serial-search-all-then-generate-code-and-quit)"

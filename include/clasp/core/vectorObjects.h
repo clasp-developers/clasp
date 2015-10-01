@@ -81,7 +81,7 @@ public:
 public: // Functions here
   bool adjustableArrayP() const { return this->_Adjustable; };
 
-  virtual T_sp asetUnsafe(int j, T_sp val);
+  virtual T_sp aset_unsafe(int j, T_sp val);
   virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index];};
 
   virtual std::vector<cl_index> dimensions() const { std::vector<cl_index> dims; dims.push_back(this->length()); return dims;};

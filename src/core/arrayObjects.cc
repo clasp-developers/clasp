@@ -101,7 +101,7 @@ void ArrayObjects_O::rowMajorAset(cl_index idx, T_sp value) {
   this->_Values[idx] = value;
 }
 
-T_sp ArrayObjects_O::asetUnsafe(int idx, T_sp value) {
+T_sp ArrayObjects_O::aset_unsafe(int idx, T_sp value) {
   _G();
   this->_Values[idx] = value;
   return value;

@@ -59,7 +59,7 @@ public: // Functions here
   static ArrayObjects_sp make(T_sp dim, T_sp elementType, T_sp initialElement, T_sp adjustable);
 
 public:
-  virtual T_sp asetUnsafe(int j, T_sp val);
+  virtual T_sp aset_unsafe(int j, T_sp val);
   T_sp elementType() const { return this->_ElementType; };
 
   virtual void rowMajorAset(cl_index idx, T_sp value);

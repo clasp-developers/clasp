@@ -644,7 +644,7 @@ T_sp Str_O::setf_elt(int index, T_sp val) {
   return val;
 }
 
-T_sp Str_O::asetUnsafe(int index, T_sp val) {
+T_sp Str_O::aset_unsafe(int index, T_sp val) {
   _OF();
   char ch = clasp_as_char(gc::As<Character_sp>(val));
   this->_Contents[index] = ch;

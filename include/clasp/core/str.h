@@ -104,7 +104,7 @@ public:
       this->_Contents[i1] = t;
   }
 
-  virtual T_sp asetUnsafe(int j, T_sp val);
+  virtual T_sp aset_unsafe(int j, T_sp val);
   virtual T_sp aref_unsafe(cl_index index) const { return clasp_make_character(this->_Contents[index]);};
 
   gctools::gcstring &contents() { return this->_Contents; };
