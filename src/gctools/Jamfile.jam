@@ -29,7 +29,8 @@ project internals/gctools : requirements
 	<target-os>darwin:<linkflags>"-dynamiclib"
 	;
 
-local sources = 
+local sources =
+      gcFunctions.cc
 	gctoolsPackage.cc
         globals.cc
         gcStack.cc
@@ -44,7 +45,7 @@ local sources =
         ;
 
 
-lib gctools : $(sources) ;
+alias gctools : $(sources) ;
 
 
 #bundler.bundle $(dir) :

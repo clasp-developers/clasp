@@ -286,7 +286,7 @@ void Telemetry::initialize() {
     this->intern("label_stack_pop ap@%p frame@%p", label_stack_pop);
 };
 
-void initialize_telemetry_defuns() {
+void initialize_telemetry_functions() {
  CoreDefun(telemetry_open);
  CoreDefun(telemetry_search);
  CoreDefun(telemetry_search_labels);

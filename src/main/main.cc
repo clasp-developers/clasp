@@ -67,6 +67,9 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
 
     lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
 
+    gctools::GcToolsExposer GcToolsPkg(_lisp);
+    _lisp->installPackage(&GcToolsPkg);
+
     clbind::ClbindExposer ClbindPkg(_lisp);
     _lisp->installPackage(&ClbindPkg);
 
@@ -75,9 +78,6 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
 
     cffi::CffiExposer cffipkg(_lisp);
     _lisp->installPackage(&cffipkg);
-
-    gctools::GcToolsExposer GcToolsPkg(_lisp);
-    _lisp->installPackage(&GcToolsPkg);
 
     sockets::SocketsExposer SocketsPkg(_lisp);
     _lisp->installPackage(&SocketsPkg);

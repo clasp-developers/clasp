@@ -41,7 +41,6 @@ THE SOFTWARE.
 #include <boost/program_options.hpp>
 #pragma GCC diagnostic pop
 //#i n c l u d e	"boost/fstream.hpp"
-#include <clasp/gctools/telemetry.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/allClSymbols.h>
@@ -116,7 +115,6 @@ THE SOFTWARE.
 #include <clasp/core/bitVector.h>
 #include <clasp/core/character.h>
 #include <clasp/core/predicates.h>
-#include <clasp/core/gcFunctions.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/package.h>
 #include <clasp/core/symbol.h>
@@ -495,8 +493,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     initialize_object();
     initialize_foundation();
     initialize_primitives();
-    gctools::initialize_gc_functions();
-    telemetry::initialize_telemetry_defuns();
     initialize_stacks();
     initialize_documentation_primitives(_lisp);
     initialize_compiler_primitives(_lisp);

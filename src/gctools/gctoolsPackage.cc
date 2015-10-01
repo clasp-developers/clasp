@@ -38,6 +38,8 @@ extern "C" {
 
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/symbolTable.h>
+#include <clasp/gctools/gcFunctions.h>
+#include <clasp/gctools/telemetry.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/core/wrappers.h>
 
@@ -163,6 +165,8 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
     SYMBOL_EXPORT_SC_(GcToolsPkg, maxBootstrapKinds);
     SYMBOL_EXPORT_SC_(GcToolsPkg, bootstrapKindsP);
     SYMBOL_EXPORT_SC_(GcToolsPkg, bootstrapKindSymbols);
+    initialize_gc_functions();
+    telemetry::initialize_telemetry_functions();
     //nothing
   };
       break;

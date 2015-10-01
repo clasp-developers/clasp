@@ -329,7 +329,7 @@ namespace telemetry {
     extern char* global_clasp_telemetry_file;
     extern Telemetry* global_telemetry;
 
-    void initialize_telemetry_defuns();
+    void initialize_telemetry_functions();
 
 #ifdef DEBUG_TELEMETRY
 #define GC_TELEMETRY0(label) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry,label)
