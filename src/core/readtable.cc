@@ -1032,8 +1032,8 @@ string ReadTable_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString();
   ss << ":case " << _rep_(this->_Case) << std::endl;
-  ss << ":syntax " << this->_SyntaxTypes->hash_table_dump() << std::endl;
-  ss << ":macroCharacters " << this->_MacroCharacters->hash_table_dump() << std::endl;
+  ss << ":syntax " << this->_SyntaxTypes->hash_table_dump(0,_Nil<T_O>()) << std::endl;
+  ss << ":macroCharacters " << this->_MacroCharacters->hash_table_dump(0,_Nil<T_O>()) << std::endl;
   ss << "> ";
   return ss.str();
 }
