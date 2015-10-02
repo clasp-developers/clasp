@@ -1216,7 +1216,7 @@ T_sp Str_O::subseq(int start, T_sp end) const {
   } else {
       iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }
-  if ( iend <= start) {
+  if ( iend < start) {
       SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->get().size());
   }
   int ilen = iend - start;
