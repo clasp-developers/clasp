@@ -1210,19 +1210,42 @@ T_sp Str_O::subseq(int start, T_sp end) const {
   if (start < 0) {
     SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
   }
-  int ilen = 0;
+  int iend;
   if (end.nilp()) {
-    ilen = this->get().size() - start;
+      iend = this->get().size();
   } else {
-    ilen = unbox_fixnum(gc::As<Fixnum_sp>(end)) - start;
+      iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }
+  if ( iend <= start) {
+      SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->get().size());
+  }
+  int ilen = iend - start;
   Str_sp news = Str_O::create(this->get().substr(start, ilen));
   return news;
 }
 
 T_sp Str_O::setf_subseq(int start, T_sp end, T_sp new_subseq) {
-  _G();
-  IMPLEMENT_ME();
+    Str_sp sfrom = gc::As<Str_sp>(new_subseq);
+  if (start < 0) {
+    SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
+  }
+  int iend;
+  if (end.nilp()) {
+      iend = this->get().size();
+  } else {
+      iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
+  }
+  if ( iend <= start) {
+      SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->get().size());
+  }
+  int ileft = iend - start;
+  if ( ileft > sfrom->size() ) {
+      ileft = sfrom->size();
+  }
+  int ifrom(0);
+  for ( int i(start); ileft!= 0; ++i, --ileft ) {
+      this->_Contents[i] = sfrom->_Contents[ifrom];
+  }
 }
 
 claspChar Str_O::schar(gc::Fixnum index) const {
