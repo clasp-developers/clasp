@@ -36,7 +36,7 @@ local sources =
         clbindLlvmExpose.cc
 	/internals/core//core
 	/externals//boostAndExpatLibs
-	/externals//llvm_lib ;
+	/externals//llvm_lib_globbed ;
 
 
 lib llvmo : $(sources) ;
@@ -44,7 +44,7 @@ lib llvmo : $(sources) ;
 stripped-bitcode intrinsics_bitcode_boehmdc : intrinsics.cc
 	/internals/core//core
 	/externals//boostAndExpatLibs
-	/externals//llvm_lib
+	/externals//llvm_lib_globbed
 	:
 	<implicit-dependency>/internals/core//core
 	<implicit-dependency>/internals/clbind//clbind
@@ -57,7 +57,7 @@ explicit intrinsics_bitcode_boehmdc ;
 stripped-bitcode intrinsics_bitcode_boehm : intrinsics.cc
 	/internals/core//core
 	/externals//boostAndExpatLibs
-	/externals//llvm_lib
+	/externals//llvm_lib_globbed
 	:
 	<implicit-dependency>/internals/core//core
 	<implicit-dependency>/internals/clbind//clbind
@@ -70,7 +70,7 @@ explicit intrinsics_bitcode_boehm ;
 stripped-bitcode intrinsics_bitcode_mps : intrinsics.cc
 	/internals/core//core
 	/externals//boostAndExpatLibs
-	/externals//llvm_lib
+	/externals//llvm_lib_globbed
 	:
 	<implicit-dependency>/internals/core//core
 	<implicit-dependency>/internals/clbind//clbind
@@ -83,7 +83,7 @@ explicit intrinsics_bitcode_mps ;
 stripped-bitcode intrinsics_bitcode_mps_prep : intrinsics.cc
 	/internals/core//core
 	/externals//boostAndExpatLibs
-	/externals//llvm_lib
+	/externals//llvm_lib_globbed
 	:
 	<implicit-dependency>/internals/core//core
 	<implicit-dependency>/internals/clbind//clbind

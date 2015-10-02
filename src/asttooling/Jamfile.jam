@@ -32,7 +32,8 @@ sources =
 	asttoolingPackage.cc
 	/internals/core
 	/externals//boostAndExpatLibs
-	/externals//clang_lib ;
+	/externals//clang_lib_globbed
+        ;
 
 
 lib asttooling : $(sources) ;

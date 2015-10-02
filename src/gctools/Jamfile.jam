@@ -41,7 +41,7 @@ local sources =
 	memoryManagement.cc
 	/internals/core/
 	/externals//boostAndExpatLibs
-	/externals//llvm_lib
+	/externals//llvm_lib_globbed
         ;
 
 

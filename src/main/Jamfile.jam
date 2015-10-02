@@ -45,8 +45,8 @@ sources =
 		/internals/sockets//sockets     #//bundle/<link>static
 		/internals/serveEvent//serveEvent  #//bundle/<link>static
 		/internals/asttooling//asttooling  #//bundle/<link>static
-		/externals//llvm_lib/<link>static
-		/externals//clang_lib/<link>static
+		/externals//llvm_lib_globbed # /<link>static
+		/externals//clang_lib_globbed # /<link>static
 		/externals//boostAndExpatLibs/<link>static
 		;
 

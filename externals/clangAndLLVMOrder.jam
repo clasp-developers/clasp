@@ -1,3 +1,4 @@
+
 # clangOrder = ['clangBasic', 'clangLex', 'clangAST', 'clangEdit', 'clangAnalysis', 'clangRewriteCore', 'clangRewriteFrontend', 'clangARCMigrate', 'clangStaticAnalyzerCore', 'clangStaticAnalyzerCheckers', 'clangStaticAnalyzerFrontend', 'clangSema', 'clangParse', 'clangCodeGen', 'clangSerialization', 'clangDriver', 'clangFrontend', 'clangFrontendTool', 'clangToolingCore', 'clangTooling', 'clangDynamicASTMatchers']
 lib libclangBasic : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangBasic <variant>release <link>static ;
 lib libclangBasic : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangBasic <variant>debug <link>static ;
@@ -145,11 +146,18 @@ lib libLLVMMCJIT : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMMCJIT <vari
 #lib libLLVMJIT : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMJIT <variant>release <link>static ;
 #lib libLLVMJIT : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMJIT <variant>debug <link>static ;
 
+LLVM_LIB_DIR = [ SHELL "llvm-config --libdir | tr -d '\n'" ] ;
+LLVM_LIBS = [ GLOB $(LLVM_LIB_DIR) : libLLVM*.a ] ;
+CLANG_LIBS = [ GLOB $(LLVM_LIB_DIR) : libclang*.a ] ;
+
+echo " LLVM libraries are in directory: |" $(LLVM_LIB_DIR) "|" ;
+echo " LLVM libraries are --> " $(LLVM_LIBS) ;
+
+alias llvm_lib_globbed : $(LLVM_LIBS) ;
+alias clang_lib_globbed : $(CLANG_LIBS) ;
 
 
-# llvm_lib : [ SHELL "llvm-config --libfiles" ] ;
-
-alias llvm_lib :
+alias llvm_lib_old :
     libLLVMSupport
     libLLVMX86Utils
     libLLVMCore
@@ -189,3 +197,18 @@ alias llvm_lib :
     libLLVMMCJIT
 #    libLLVMJIT
   : <link>static ;
+
+
+
+rule rtrim ( string ) 
+{ 
+   local match = [ MATCH "^(.*)[\n]$" : $(string) ] ; 
+   if $(match) 
+   { 
+     return $(match[1]) ; 
+   } 
+   else 
+   { 
+     return $(string) ; 
+   } 
+} 
