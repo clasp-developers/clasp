@@ -288,4 +288,3 @@ typedef LCC_RETURN (*GenericFunctionPtr)(core::Instance_sp gf, core::VaList_sp v
     (_dest_)[0].fp_offset = 304; \
   }
 
-#define LCC_VA_LIST

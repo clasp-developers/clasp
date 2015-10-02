@@ -188,3 +188,9 @@ local sources =
              		;
 
 lib core : $(sources) ;
+
+alias this-lib : core ;
+install install-boehmdc : this-lib : <program>clasp,<gc>boehmdc,<variant>release:<location>$(APPCONT)/lib/boehmdc/release/ ;
+install install-boehm : this-lib : <program>clasp,<gc>boehm,<variant>release:<location>$(APPCONT)/lib/boehm/release/ ;
+install install-mps : this-lib : <program>clasp,<gc>mps,<variant>release:<location>$(APPCONT)/lib/mps/release/ ;
+alias install-lib : install-boehmdc install-boehm install-mps ;

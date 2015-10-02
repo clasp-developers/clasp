@@ -42,30 +42,8 @@ sources =
 
 lib clbind : $(sources) ;
 
-
-#bundler.bundle $(dir) :
-#	     $(sources) :
-#	     <link>static
-#	     <implicit-dependency>mi
-#	     <implicit-dependency>/internals/core//mi
-#            <implicit-dependency>meta
-#	     ;
-
-
-
-#h clbind_constructor_functoids : clbind_constructor_functoids.pmp ;
-#h clbind_functoids : clbind_functoids.pmp ;
-#h clbind_methoids : clbind_methoids.pmp ;
-#h clbind_static_members : clbind_static_members.pmp ;
-
-#alias generated-files : clbind_constructor_functoids clbind_functoids clbind_methoids clbind_static_members ;
-
-#alias meta : generated-files ;
-
-# Copy all generated header files to the include directory
-#install dist-generated-files : generated-files :
-#     <variant>release,<gc>mps:<location>$(INCLUDE)/clbind/generated/release/mps
-#     <variant>debug,<gc>mps:<location>$(INCLUDE)/clbind/generated/debug/mps
-#     <variant>release,<gc>boehm:<location>$(INCLUDE)/clbind/generated/release/boehm
-#     <variant>debug,<gc>boehm:<location>$(INCLUDE)/clbind/generated/debug/boehm
-# ;
+alias this-lib : clbind ;
+install install-boehmdc : this-lib : <program>clasp,<gc>boehmdc,<variant>release:<location>$(APPCONT)/lib/boehmdc/release/ ;
+install install-boehm : this-lib : <program>clasp,<gc>boehm,<variant>release:<location>$(APPCONT)/lib/boehm/release/ ;
+install install-mps : this-lib : <program>clasp,<gc>mps,<variant>release:<location>$(APPCONT)/lib/mps/release/ ;
+alias install-lib : install-boehmdc install-boehm install-mps ;

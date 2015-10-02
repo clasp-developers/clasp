@@ -92,6 +92,9 @@ boot:
 	time make -C src/main bclasp-boehmdc
 	time make -C src/main bclasp-boehmdc-addons
 
+clasp-libraries:
+	(cd src/gctools; $(BJAM) link=static program=clasp gc=boehmdc threading=single gctools install-lib)
+
 devbuild:
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehmdc release dist )
 

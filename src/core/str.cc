@@ -1206,7 +1206,6 @@ RETURN_TRUE:
 }
 
 T_sp Str_O::subseq(int start, T_sp end) const {
-  _G();
   if (start < 0) {
     SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
   }
