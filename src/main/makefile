@@ -31,7 +31,7 @@ all:
 #	make mps
 
 
-cclasp-mps:
+link-cclasp-mps:
 	$(CCLASP_MPS) -I -l "link-cclasp.lsp"
 
 application:
@@ -64,7 +64,7 @@ bclasp-boehm-addons:
 cclasp-boehm-addons:
 	$(BCLASP_BOEHM) -l "build_addons.lsp"
 
-cclasp-mps-addons:
+link-cclasp-mps-addons:
 	$(CCLASP_MPS) -l "link_addons.lsp"
 
 #	make clasp-gc-interface
