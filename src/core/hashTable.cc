@@ -798,16 +798,18 @@ string HashTable_O::__repr__() const {
   //	return this->hash_table_dump();
 }
 
-void dump_one_entry(stringstream& ss, List_sp first) {
+#define DUMP_LOW_LEVEL 1
+
+void dump_one_entry(HashTable_sp ht, size_t it, stringstream& ss, List_sp first) {
   for (auto cur : first) {
     List_sp pair = oCar(cur);
     T_sp key = oCar(pair);
     T_sp value = oCdr(pair);
 #ifdef DUMP_LOW_LEVEL
     ss << "     ( ";
-    size_t hi = this->hashIndex(key);
+    size_t hi = ht->hashIndex(key);
     if ( hi != it ) ss << "!!!ERROR-wrong bucket!!! hi=" << hi;
-    ss << "hashIndex(key)=" << this->hashIndex(key) << " ";
+    ss << "hashIndex(key)=" << ht->hashIndex(key) << " ";
     if (cl_consp(key)) {
       List_sp ckey = key;
       ss << "(cons " << oCar(ckey).raw_() << " . " << oCdr(ckey).raw_() << ")";
@@ -823,7 +825,6 @@ void dump_one_entry(stringstream& ss, List_sp first) {
 #define ARGS_HashTable_O_hash_table_dump "(&optional (start 0) end)"
 #define DECL_HashTable_O_hash_table_dump ""
 #define DOCS_HashTable_O_hash_table_dump "Dump the hash-table"
-#define DUMP_LOW_LEVEL 1
 string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
   stringstream ss;
 #ifndef DUMP_LOW_LEVEL
@@ -842,7 +843,7 @@ string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
   for (size_t it(start), itEnd(iend); it < itEnd; ++it) {
     List_sp first = this->_HashTable->operator[](it);
     ss << "HashTable[" << it << "]: " << std::endl;
-    dump_one_entry(ss,first);
+    dump_one_entry(this->asSmartPtr(),it,ss,first);
   }
 #ifndef DUMP_LOW_LEVEL
   ss << "> " << std::endl;

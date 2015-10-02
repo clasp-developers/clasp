@@ -601,15 +601,15 @@ void Str_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 void Str_O::sxhash_(HashGenerator &hg) const {
-  if ( hg.isFilling() ) {
-    Fixnum hash = 5381;
-    Fixnum c;
-    const char* str = this->get().c_str();
-    while (c = *str++) {
-      hash = ((hash << 5) + hash) + c;
+    if ( hg.isFilling() ) {
+        Fixnum hash = 5381;
+        Fixnum c;
+        for ( size_t i(0), iEnd(this->size()); i<iEnd; ++i ) {
+            c = this->operator[](i);
+            hash = ((hash << 5) + hash) + c;
+        }
+        hg.addPart(hash);
     }
-    hg.addPart(hash);
-  }
 }
 
 Fixnum_sp Str_O::asInt() const {
