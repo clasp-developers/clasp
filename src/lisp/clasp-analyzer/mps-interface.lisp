@@ -2492,7 +2492,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
             (destination-table-name dest))
     (dotimes (iskip (1- first-general))
       (format (destination-stream dest)
-              ", NULL /* Skip entry for immediate */"))
+              "       , NULL /* Skip entry for immediate */~%"))
     (let ((entries (reverse (destination-label-list dest))))
       (dolist (entry entries)
         (format (destination-stream dest) "  /* ~a */ , &&~a~%" (car entry) (cdr entry))))

@@ -4900,6 +4900,9 @@ return "KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__Clas
 #endif // defined(GC_KIND_NAME_MAP)
 #if defined(GC_KIND_NAME_MAP_TABLE)
 static void* KIND_NAME_MAP_table[] = { NULL 
+       , NULL /* Skip entry for immediate */
+       , NULL /* Skip entry for immediate */
+       , NULL /* Skip entry for immediate */
   /* 4 */ , &&kind_name_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps
   /* 5 */ , &&kind_name_KIND_ROOTCLASSALLOC_clbind__detail__class_map
   /* 6 */ , &&kind_name_KIND_TEMPLATED_CLASSALLOC_core__Creator
@@ -7049,6 +7052,9 @@ goto BOTTOM;
 #endif // defined(GC_OBJ_DUMP_MAP)
 #if defined(GC_OBJ_DUMP_MAP_TABLE)
 static void* OBJ_DUMP_MAP_table[] = { NULL 
+       , NULL /* Skip entry for immediate */
+       , NULL /* Skip entry for immediate */
+       , NULL /* Skip entry for immediate */
   /* 4 */ , &&obj_dump_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps
   /* 5 */ , &&obj_dump_KIND_ROOTCLASSALLOC_clbind__detail__class_map
   /* 6 */ , &&obj_dump_KIND_TEMPLATED_CLASSALLOC_core__Creator
@@ -9230,6 +9236,9 @@ obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__Cla
 #endif // defined(GC_OBJ_SKIP)
 #if defined(GC_OBJ_SKIP_TABLE)
 static void* OBJ_SKIP_table[] = { NULL 
+       , NULL /* Skip entry for immediate */
+       , NULL /* Skip entry for immediate */
+       , NULL /* Skip entry for immediate */
   /* 4 */ , &&obj_skip_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps
   /* 5 */ , &&obj_skip_KIND_ROOTCLASSALLOC_clbind__detail__class_map
   /* 6 */ , &&obj_skip_KIND_TEMPLATED_CLASSALLOC_core__Creator
@@ -12115,6 +12124,9 @@ goto TOP;
 #endif // defined(GC_OBJ_SCAN)
 #if defined(GC_OBJ_SCAN_TABLE)
 static void* OBJ_SCAN_table[] = { NULL 
+       , NULL /* Skip entry for immediate */
+       , NULL /* Skip entry for immediate */
+       , NULL /* Skip entry for immediate */
   /* 4 */ , &&obj_scan_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps
   /* 5 */ , &&obj_scan_KIND_ROOTCLASSALLOC_clbind__detail__class_map
   /* 6 */ , &&obj_scan_KIND_TEMPLATED_CLASSALLOC_core__Creator
@@ -14074,6 +14086,9 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind_
 #endif // defined(GC_OBJ_FINALIZE)
 #if defined(GC_OBJ_FINALIZE_TABLE)
 static void* OBJ_FINALIZE_table[] = { NULL 
+       , NULL /* Skip entry for immediate */
+       , NULL /* Skip entry for immediate */
+       , NULL /* Skip entry for immediate */
   /* 4 */ , &&obj_finalize_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps
   /* 5 */ , &&obj_finalize_KIND_ROOTCLASSALLOC_clbind__detail__class_map
   /* 6 */ , &&obj_finalize_KIND_TEMPLATED_CLASSALLOC_core__Creator
