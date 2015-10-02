@@ -824,7 +824,7 @@ void dump_one_entry(stringstream& ss, List_sp first) {
 #define DECL_HashTable_O_hash_table_dump ""
 #define DOCS_HashTable_O_hash_table_dump "Dump the hash-table"
 #define DUMP_LOW_LEVEL 1
-string HashTable_O::hash_table_dump() const {
+string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
   stringstream ss;
 #ifndef DUMP_LOW_LEVEL
   ss << "#<" << this->_instanceClass()->classNameAsString() << std::endl;

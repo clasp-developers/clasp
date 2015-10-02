@@ -136,7 +136,7 @@ class HashTable_O : public T_O {
 
   string __repr__() const;
 
-  string hash_table_dump() const;
+  string hash_table_dump(Fixnum start, T_sp end) const;
 
   void lowLevelMapHash(KeyValueMapper *mapper) const;
 
