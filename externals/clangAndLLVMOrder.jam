@@ -146,8 +146,12 @@ lib libLLVMMCJIT : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMMCJIT <vari
 #lib libLLVMJIT : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMJIT <variant>release <link>static ;
 #lib libLLVMJIT : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMJIT <variant>debug <link>static ;
 
+#LLVM_LIBS = [ GLOB $(LLVM_LIB_DIR) : libLLVM*.a ] ;
+
 LLVM_LIB_DIR = [ SHELL "llvm-config --libdir | tr -d '\n'" ] ;
-LLVM_LIBS = [ GLOB $(LLVM_LIB_DIR) : libLLVM*.a ] ;
+LLVM_LIBS_STRING = [ SHELL "llvm-config --libfiles | tr -d '\n'" ] ;
+LLVM_LIBS = [ SPLIT_BY_CHARACTERS $(LLVM_LIBS_STRING) : " " ] ;
+
 CLANG_LIBS = [ GLOB $(LLVM_LIB_DIR) : libclang*.a ] ;
 
 echo " LLVM libraries are in directory: |" $(LLVM_LIB_DIR) "|" ;
