@@ -49,8 +49,8 @@ public:
 #define THROW_HARD_ERROR(fmt)                                      \
   {                                                                \
     dbg_hook((fmt).str().c_str());                                 \
-    core::errorFormatted(fmt);                                     \
-    throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, fmt)); \
+    ::core::errorFormatted(fmt);                                     \
+    throw(::core::HardError(__FILE__, __FUNCTION__, __LINE__, fmt)); \
   }
 #define HARD_UNREACHABLE() THROW_HARD_ERROR(BF("Unreachable"));
 #define HARD_SUBCLASS_MUST_IMPLEMENT() THROW_HARD_ERROR(boost::format("Subclass must implement"));
