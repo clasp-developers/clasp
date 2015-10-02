@@ -206,9 +206,11 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "-t/--trap {symbol}   - Trap when a specific symbol is INTERN'd\n"
              "-w/--wait            - Print the PID and wait for the user to hit a key\n"
              "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n"
-             "Environment variables: CLASP_TELEMETRY_MASK (0,1=gc)\n"
-             "                       CLASP_TELEMETRY_FILE (file to write telemetry)\n"
-             "                       CLASP_MPS_CONFIG (config MPS \"32 32 16 80 32 80\" for lots of GC's\n");
+             "Environment variables:\n"
+             "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
+             "export CLASP_TELEMETRY_FILE=/tmp/clasp.tel # (file to write telemetry)\n"
+             "# to control MPS\n"
+             "export CLASP_MPS_CONFIG=\"32 32 16 80 32 80\" # for lots of GC's\n");
       exit(0);
     } else if (arg == "-I" || arg == "--ignore-image") {
       this->_DontLoadImage = true;

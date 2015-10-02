@@ -242,7 +242,7 @@ namespace gctools {
 constexpr size_t Alignment() {
   return sizeof(Header_s);
 };
-constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
+inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
 
 template <class T>
 inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }

@@ -205,9 +205,10 @@ mps_ap_t _global_automatic_mark_sweep_allocation_point;
 #endif //!defined(USE_MPS)
 
 void clasp_mps_debug_allocation(const char *poolName, void *base, void *client, int size, int kind) {
-    GC_TELEMETRY3(telemetry::label_allocation,
+    GC_TELEMETRY4(telemetry::label_allocation,
+                  (uintptr_t)base,
                   (uintptr_t)client,
-                  (uintptr_t)((char*)client+size),
+                  (uintptr_t)((char*)base+size),
                   kind);
 }
 

@@ -144,6 +144,11 @@ lib libLLVMMCJIT : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMMCJIT <va
 lib libLLVMMCJIT : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMMCJIT <variant>debug <link>static ;
 #lib libLLVMJIT : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMJIT <variant>release <link>static ;
 #lib libLLVMJIT : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMJIT <variant>debug <link>static ;
+
+
+
+# llvm_lib : [ SHELL "llvm-config --libfiles" ] ;
+
 alias llvm_lib :
     libLLVMSupport
     libLLVMX86Utils

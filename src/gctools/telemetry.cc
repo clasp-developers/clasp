@@ -262,7 +262,7 @@ std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[
 
 void Telemetry::initialize() {
     this->intern("telemetry undefined label", label_undefined);
-    this->intern("mps_allocation client@%p client_end@%p kind: %lu", label_allocation);
+    this->intern("mps_allocation base @%p client@%p client_end@%p kind: %lu", label_allocation);
     this->intern("obj_pad base@%p size: %lu", label_obj_pad);
     this->intern("obj_scan_start client@%p limit@%p", label_obj_scan_start);
     this->intern("obj_scan client@%p after_client@%p kind: %lu", label_obj_scan);

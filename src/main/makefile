@@ -111,6 +111,12 @@ mps-recompile:
 clasp-gc-interface:
 	$(BCLASP_BOEHM) -l "buildClaspGC.lsp"
 
+debug-mps:
+	export CLASP_TELEMETRY_MASK=1
+	export CLASP_TELEMETRY_FILE=/tmp/clasp.tel
+	export CLASP_MPS_DEBUG="32 32 16 80 32 80"
+	bash
+
 
 
 

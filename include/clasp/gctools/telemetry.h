@@ -336,11 +336,13 @@ namespace telemetry {
 #define GC_TELEMETRY1(label,arg0) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry,label,(uintptr_t)arg0)
 #define GC_TELEMETRY2(label,arg0,arg1) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry,label,(uintptr_t)arg0,(uintptr_t)arg1)
 #define GC_TELEMETRY3(label,arg0,arg1,arg2) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry,label,(uintptr_t)arg0,(uintptr_t)arg1,(uintptr_t)arg2)
+#define GC_TELEMETRY4(label,arg0,arg1,arg2,arg3) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry,label,(uintptr_t)arg0,(uintptr_t)arg1,(uintptr_t)arg2,(uintptr_t)arg3)
 #else
 #define GC_TELEMETRY0(label)
 #define GC_TELEMETRY1(label,arg0)
 #define GC_TELEMETRY2(label,arg0,arg1)
 #define GC_TELEMETRY3(label,arg0,arg1,arg2)
+#define GC_TELEMETRY4(label,arg0,arg1,arg2,arg3)
 #endif    
 #ifdef DEBUG_STACK_TELEMETRY
 #define STACK_TELEMETRY0(label) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry,label)

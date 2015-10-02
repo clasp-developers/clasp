@@ -2485,14 +2485,18 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 |#
 
 (defun generate-label-table (dest)
-  (format (destination-stream dest)
-	  "static void* ~a_table[] = { NULL ~%"
-	  (destination-table-name dest))
-  (let ((entries (reverse (destination-label-list dest))))
-    (dolist (entry entries)
-      (format (destination-stream dest) "  /* ~a */ , &&~a~%" (car entry) (cdr entry))))
-  (format (destination-stream dest) "};~%")
-  )
+  (multiple-value-bind (hardwired-kinds  ignore-classes first-general)
+      (core:hardwired-kinds)
+    (format (destination-stream dest)
+            "static void* ~a_table[] = { NULL ~%"
+            (destination-table-name dest))
+    (dotimes (iskip (1- first-general))
+      (format (destination-stream dest)
+              ", NULL /* Skip entry for immediate */"))
+    (let ((entries (reverse (destination-label-list dest))))
+      (dolist (entry entries)
+        (format (destination-stream dest) "  /* ~a */ , &&~a~%" (car entry) (cdr entry))))
+    (format (destination-stream dest) "};~%")))
 
 (defmacro do-generator (stream analysis &key table-name function-declaration function-prefix function-table-type generator)
   (let ((dest-gs (gensym)))
