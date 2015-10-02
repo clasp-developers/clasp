@@ -798,39 +798,51 @@ string HashTable_O::__repr__() const {
   //	return this->hash_table_dump();
 }
 
-#define ARGS_HashTable_O_hash_table_dump "()"
+void dump_one_entry(stringstream& ss, List_sp first) {
+  for (auto cur : first) {
+    List_sp pair = oCar(cur);
+    T_sp key = oCar(pair);
+    T_sp value = oCdr(pair);
+#ifdef DUMP_LOW_LEVEL
+    ss << "     ( ";
+    size_t hi = this->hashIndex(key);
+    if ( hi != it ) ss << "!!!ERROR-wrong bucket!!! hi=" << hi;
+    ss << "hashIndex(key)=" << this->hashIndex(key) << " ";
+    if (cl_consp(key)) {
+      List_sp ckey = key;
+      ss << "(cons " << oCar(ckey).raw_() << " . " << oCdr(ckey).raw_() << ")";
+    } else {
+      ss << key.raw_();
+    }
+    ss << ", " << value.raw_() << ")@" << pair.raw_() << " " << std::endl;
+#else
+    ss << "     " << _rep_(pair) << std::endl;
+#endif
+  }
+};
+#define ARGS_HashTable_O_hash_table_dump "(&optional (start 0) end)"
 #define DECL_HashTable_O_hash_table_dump ""
 #define DOCS_HashTable_O_hash_table_dump "Dump the hash-table"
 #define DUMP_LOW_LEVEL 1
 string HashTable_O::hash_table_dump() const {
-  _OF();
   stringstream ss;
 #ifndef DUMP_LOW_LEVEL
   ss << "#<" << this->_instanceClass()->classNameAsString() << std::endl;
 #endif
-  for (size_t it(0), itEnd(cl_length(this->_HashTable)); it < itEnd; ++it) {
+  int iend(cl_length(this->_HashTable));
+  if ( end.notnilp() ) {
+    iend = clasp_to_fixnum(gc::As<Fixnum_sp>(end));
+  }
+  if ( start < 0 || start >= cl_length(this->_HashTable) ){
+    SIMPLE_ERROR(BF("start must be [0,%d)") % cl_length(this->_HashTable));
+  }
+  if ( iend < start || iend>= cl_length(this->_HashTable) ){
+    SIMPLE_ERROR(BF("end must be nil or [%d,%d)") % start % cl_length(this->_HashTable));
+  }
+  for (size_t it(start), itEnd(iend); it < itEnd; ++it) {
     List_sp first = this->_HashTable->operator[](it);
     ss << "HashTable[" << it << "]: " << std::endl;
-    for (auto cur : first) {
-      List_sp pair = oCar(cur);
-      T_sp key = oCar(pair);
-      T_sp value = oCdr(pair);
-#ifdef DUMP_LOW_LEVEL
-      ss << "     ( ";
-      size_t hi = this->hashIndex(key);
-      if ( hi != it ) ss << "!!!ERROR-wrong bucket!!! hi=" << hi;
-      ss << "hashIndex(key)=" << this->hashIndex(key) << " ";
-      if (cl_consp(key)) {
-        List_sp ckey = key;
-        ss << "(cons " << oCar(ckey).raw_() << " . " << oCdr(ckey).raw_() << ")";
-      } else {
-        ss << key.raw_();
-      }
-      ss << ", " << value.raw_() << ")@" << pair.raw_() << " " << std::endl;
-#else
-      ss << "     " << _rep_(pair) << std::endl;
-#endif
-    }
+    dump_one_entry(ss,first);
   }
 #ifndef DUMP_LOW_LEVEL
   ss << "> " << std::endl;
