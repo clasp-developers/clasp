@@ -2726,7 +2726,8 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (format t "all-jobs: ~a~%" all-jobs)
     (setf (multitool-results *tools*) (make-project))
     (batch-run-multitool *tools* :filenames all-jobs)
-    (save-data (multitool-results *tools*) (project-pathname "project" "dat"))))
+    (setq *project* (multitool-results *tools*))
+    (save-data *project* (project-pathname "project" "dat"))))
 
 
 (defun serial-search-all-then-generate-code-and-quit ()
