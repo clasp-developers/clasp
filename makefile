@@ -70,6 +70,7 @@ all:
 	make asdf
 	make boost_build
 	make boehm
+	(cd src/lisp; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehm bundle )
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehm release dist )
 	make -C src/main bclasp-boehm
 	make -C src/main cclasp-boehm
