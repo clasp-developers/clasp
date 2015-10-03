@@ -14,11 +14,11 @@ project externals
 
 alias boostAndExpatLibs :
       		/externals//boost
+		/externals//libgmp
                 /externals//expat
                 /externals//zlib
-                /externals//readline	
 		/externals//ncurses
-		/externals//libgmp
+#                /externals//readline	
 #		/python//python
 #		/externals//lib_mps/<link>static
         ;
