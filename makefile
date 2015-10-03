@@ -122,8 +122,6 @@ libatomic-setup:
 
 libatomic-compile:
 	(cd $(LIBATOMIC_OPS_SOURCE_DIR); make -j$(PJOBS) | tee _libatomic_ops.log)
-
-libatomic-install:
 	(cd $(LIBATOMIC_OPS_SOURCE_DIR); make -j$(PJOBS) install | tee _libatomic_ops_install.log)
 
 boehm-setup:
@@ -135,24 +133,16 @@ boehm-setup:
 		PKG_CONFIG_PATH=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR)/lib/pkgconfig/ \
 		./configure --enable-shared=no --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
 
-boehm-build:
-	make boehm-compile
-	make boehm-install
-
 boehm-compile:
 	(cd $(BOEHM_SOURCE_DIR); make -j$(PJOBS) | tee _boehm.log)
-
-boehm-install:
 	(cd $(BOEHM_SOURCE_DIR); make -j$(PJOBS) install | tee _boehm_install.log)
 
 
 boehm:
-	make libatomic-setup
-	make libatomic-compile
-	make libatomic-install
-	make boehm-setup
-	make boehm-compile
-	make boehm-install
+	@if test ! -e src/boehm/libatomic_ops/configure; then make libatomic-setup ; fi
+	@if test ! -e $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common/lib/libatomic_ops.a ; then libatomic-compile ; fi
+	@if test ! -e src/boehm/bdwgc/configure ; then make boehm-setup ; fi
+	@if test ! -e $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common/lib/libgc.a ; then boehm-compile ; fi
 
 boehm-clean:
 	install -d $(BOEHM_SOURCE_DIR)
@@ -314,8 +304,10 @@ cl-min-boehm-recompile:
 cl-full-boehm:
 	(cd src/main; make full-boehm)
 
-
 boost_build:
+	@if test ! -e tools/boost_build/bin/bjam ; then make boost_build-compile ; fi
+
+boost_build-compile:
 	(cd $(BOOST_BUILD_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_INSTALL) --ignore-site-config)
 
 compile-commands:
