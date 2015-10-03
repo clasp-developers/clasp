@@ -1,4 +1,4 @@
-Clasp
+Clasp (Common Lisp and C++ and LLVM)
 ===============
 
 # Clasp is getting ready for a major new release
