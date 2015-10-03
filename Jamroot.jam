@@ -225,7 +225,7 @@ project clasp : requirements
 	<toolset>pathscale:<cxxflags>"-Wno-unused-variable -fopenmp"
 	<toolset>pgi:<cxxflags>"-mp -gopt"
 	<toolset>pgi:<linkflags>"-mp -gopt"
-#	<define>READLINE
+	<define>READLINE
 
 	: usage-requirements
     ;

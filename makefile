@@ -15,7 +15,7 @@ export BOOST_BUILD_SOURCE_DIR = $(CLASP_HOME)/tools/boost_build
 export BOOST_BUILD_INSTALL = $(BOOST_BUILD_SOURCE_DIR)
 
 export BJAM = $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
-export BUILD = build
+export BUILD = build -slinkflags=$(CLASP_LINKFLAGS) -scxxflags=$(CLASP_CXXFLAGS) -scflags=$(CLASP_CFLAGS)
 export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 
@@ -71,12 +71,12 @@ all:
 	make boost_build
 	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehm release dist )
-	time make -C src/main bclasp-boehm
-	time make -C src/main cclasp-boehm
-	time make -C src/main cclasp-boehm-addons
+	make -C src/main bclasp-boehm
+	make -C src/main cclasp-boehm
+	make -C src/main cclasp-boehm-addons
 #	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=mps release dist )
-#	time make -C src/main link-cclasp-mps
-#	time make -C src/main link-cclasp-mps-addons
+#	make -C src/main link-cclasp-mps
+#	make -C src/main link-cclasp-mps-addons
 	make executable-symlinks
 
 boot:
@@ -86,8 +86,8 @@ boot:
 	make boost_build
 	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehmdc release dist )
-	time make -C src/main bclasp-boehmdc
-	time make -C src/main bclasp-boehmdc-addons
+	make -C src/main bclasp-boehmdc
+	make -C src/main bclasp-boehmdc-addons
 
 clasp-libraries:
 	(cd src/gctools; $(BJAM) link=static program=clasp gc=boehmdc threading=single gctools install-lib)

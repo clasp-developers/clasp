@@ -17,8 +17,8 @@ alias boostAndExpatLibs :
 		/externals//libgmp
                 /externals//expat
                 /externals//zlib
-		/externals//ncurses
-#                /externals//readline	
+		/externals//ncurses/<link>shared
+                /externals//readline
 #		/python//python
 #		/externals//lib_mps/<link>static
         ;
@@ -40,8 +40,6 @@ lib zlib : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>z ;
 lib expat : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>expat ;
 lib readline : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>readline ;
 lib ncurses : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>ncurses ;
-
-
 
 lib boost_filesystem : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_filesystem <variant>release ;
 #lib boost_serialization : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_serialization <variant>release ;
