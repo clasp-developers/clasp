@@ -11,12 +11,8 @@ export EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_SOURCE_DIR)/build
 
 export LIBATOMIC_OPS_SOURCE_DIR = $(CLASP_HOME)/src/boehm/libatomic_ops
 export BOEHM_SOURCE_DIR = $(CLASP_HOME)/src/boehm/bdwgc
-export BOOST_BUILD_SOURCE_DIR = $(CLASP_HOME)/boost_build_v2
+export BOOST_BUILD_SOURCE_DIR = $(CLASP_HOME)/tools/boost_build
 export BOOST_BUILD_INSTALL = $(BOOST_BUILD_SOURCE_DIR)
-
-#export BOOST_BUILD_SOURCE_DIR = $(CLASP_HOME)/boost_build_v2
-#export BOOST_BUILD_INSTALL = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/boost_build_v2
-
 
 export BJAM = $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 export BUILD = build
@@ -53,7 +49,8 @@ endif
 
 export BINDIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)
 
-export PATH := $(CLASP_HOME)/src/common:$(BOOST_BUILD_INSTALL)/bin:$(PATH)
+export PATH := $(CLASP_HOME)/src/common:$(PATH)
+export PATH := $(BOOST_BUILD_INSTALL)/bin:$(PATH)
 export PATH := $(BINDIR):$(PATH)
 
 
@@ -204,6 +201,7 @@ submodules:
 	make submodules-mps
 
 submodules-boehm:
+	-git submodule update --init tools/boost_build
 	-git submodule update --init src/boehm/libatomic_ops
 	-git submodule update --init src/boehm/bdwgc
 	-git submodule update --init src/lisp/kernel/contrib/sicl

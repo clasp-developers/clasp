@@ -50,19 +50,6 @@ rule init ( top ? : : properties * ) {
 
 init clasp ;
 
-rule rtrim ( string ) 
-{ 
-   local match = [ MATCH "^(.*)[\n]$" : $(string) ] ; 
-   if $(match) 
-   { 
-     return $(match[1]) ; 
-   } 
-   else 
-   { 
-     return $(string) ; 
-   } 
-} 
-
 
 project clasp : requirements
 	<include>include
@@ -145,7 +132,7 @@ project clasp : requirements
         <define>ZERO_TAG_MASK=7
 ##### DEBUG_MPS_UNDERSCANNING does a garbage collection after every allocation
 ##### This really, really slows things down
-        <define>DEBUG_MPS_UNDERSCANNING
+#        <define>DEBUG_MPS_UNDERSCANNING
         <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #        <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
 #        <define>CONFIG_THREAD_SINGLE #  Single threaded
