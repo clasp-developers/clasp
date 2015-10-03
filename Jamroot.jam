@@ -2,6 +2,7 @@ import path ;
 import os ;
 import bitcode ;
 
+
 CLASP_VERSION = [ SHELL "(cd $CLASP_HOME;git describe --always | tr -d '\n') || echo unknown-version" ] ;
 
 echo "CLASP_VERSION " $(CLASP_VERSION) ;
