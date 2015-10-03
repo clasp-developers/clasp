@@ -15,7 +15,7 @@ export BOOST_BUILD_SOURCE_DIR = $(CLASP_HOME)/tools/boost_build
 export BOOST_BUILD_INSTALL = $(BOOST_BUILD_SOURCE_DIR)
 
 export BJAM = $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
-export BUILD = build -slinkflags=$(CLASP_LINKFLAGS) -scxxflags=$(CLASP_CXXFLAGS) -scflags=$(CLASP_CFLAGS)
+export BUILD = build
 export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 

@@ -1,27 +1,32 @@
-
-#
-# What system are you building on?   linux or darwin
-#
+##
+## What system are you building on?   linux or darwin
+##
 export TARGET_OS = linux
 
+##
+## CLASP_LINKFLAGS and CLASP_CXXFLAGS
+## let you add things to clasp compilation and linking
+##
+export CLASP_CXXFLAGS=""
+export CLASP_LINKFLAGS=""
 
-#
-# This defines where externals-clasp source code is
-#
-export EXTERNALS_SOURCE_DIR = $(HOME)/Development/externals-clasp
+##
+## This defines where externals-clasp source code is
+## 
+## externals-clasp isn't necessary anymore but you can use it
+#export EXTERNALS_SOURCE_DIR = $(HOME)/Development/externals-clasp
 
-#
-# This defines how many processors you have available to build with
-# More processors = faster build
-#
+##
+## This defines how many processors you have available to build with
+## More processors = faster build
+##
 export PJOBS = 2
 
-
-#
-# Define the path to the python2 interpreter
-#
+##
+## Define the path to the python2 interpreter
+##
 export PYTHON2 = /usr/bin/python2
 
-# --- Dont change the stuff below ---
+## --- Very rarely change the stuff below ---
 export LINK = static
 export ADDRESS-MODEL = 64

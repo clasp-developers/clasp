@@ -7,4 +7,5 @@
 #
 # run bjam to build app
 #
+echo bjam $*
 bjam $*

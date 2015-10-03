@@ -1,6 +1,0 @@
-
-export PREFIX = $(HOME)/local/clasp
-export TARGET-OS = darwin
-export PJOBS = 4
-export LINK = static
-export EXTERNALS = $(HOME)/local/externals-clasp
