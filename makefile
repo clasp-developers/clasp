@@ -141,9 +141,9 @@ boehm-compile:
 
 boehm:
 	@if test ! -e src/boehm/libatomic_ops/configure; then make libatomic-setup ; fi
-	@if test ! -e $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common/lib/libatomic_ops.a ; then libatomic-compile ; fi
+	@if test ! -e $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common/lib/libatomic_ops.a ; then make libatomic-compile ; fi
 	@if test ! -e src/boehm/bdwgc/configure ; then make boehm-setup ; fi
-	@if test ! -e $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common/lib/libgc.a ; then boehm-compile ; fi
+	@if test ! -e $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common/lib/libgc.a ; then make boehm-compile ; fi
 
 boehm-clean:
 	install -d $(BOEHM_SOURCE_DIR)
