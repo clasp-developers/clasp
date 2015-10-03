@@ -8,7 +8,7 @@ CLASP_VERSION = [ SHELL "(cd $CLASP_HOME;git describe --always | tr -d '\n') || 
 echo "CLASP_VERSION " $(CLASP_VERSION) ;
 
 
-using clang : : [ os.environ CLASP_CLANG_PATH ] ; #   $(APPRES-EXTERNALS-RELEASE)/bin/clang++  ; # CLASP_TOOLSET
+using clang : : [ os.environ CLASP_CLANG_PATH ] ;
 
 #using bundler : $(TOP) ;
 #using gc ;
@@ -95,7 +95,6 @@ project clasp : requirements
         <linkflags>"-fvisibility=default"
         <target-os>darwin:<linkflags>"-lc++"
 	<define>INCLUDED_FROM_CLASP
-	<include>$(APPRES-EXTERNALS-RELEASE-INCLUDE)
 	<define>EXPAT
         <cxxflags>"-Wgnu-array-member-paren-init"
         <linkflags>$(CLASP_LINKFLAGS)
@@ -252,16 +251,6 @@ path-constant APPTOP : [ os.environ CLASP_INTERNAL_BUILD_TARGET_DIR ] ;
 path-constant APPCONT : $(APPTOP)/Contents ;
 path-constant APPCONTLIB : $(APPCONT)/lib ;
 path-constant APPRES : $(APPCONT)/Resources ;
-path-constant APPRES-EXTERNALS : [ os.environ EXTERNALS_BUILD_TARGET_DIR ] ;
-path-constant APPRES-EXTERNALS-RELEASE : $(APPRES-EXTERNALS)/release ;
-path-constant APPRES-EXTERNALS-DEBUG : $(APPRES-EXTERNALS)/debug ;
-path-constant APPRES-EXTERNALS-DEBUG-LIB : $(APPRES-EXTERNALS-DEBUG)/lib ;
-path-constant APPRES-EXTERNALS-RELEASE-LIB : $(APPRES-EXTERNALS-RELEASE)/lib ;
-path-constant APPRES-EXTERNALS-DEBUG-INCLUDE : $(APPRES-EXTERNALS-DEBUG)/include ;
-path-constant APPRES-EXTERNALS-RELEASE-INCLUDE : $(APPRES-EXTERNALS-RELEASE)/include ;
-path-constant APPRES-EXTERNALS-COMMON : $(APPRES-EXTERNALS)/common ;
-path-constant APPRES-EXTERNALS-COMMON-LIB : $(APPRES-EXTERNALS-COMMON)/lib ;
-path-constant APPRES-EXTERNALS-COMMON-INCLUDE : $(APPRES-EXTERNALS-COMMON)/include ;
 path-constant APPRES-LIB : $(APPRES)/lib ;
 path-constant APPRES-LIB-COMMON : $(APPRES-LIB)/common ;
 path-constant APPRES-LIB-COMMON-LIB : $(APPRES-LIB-COMMON)/lib ;
@@ -275,19 +264,10 @@ path-constant APPINC : $(APPRES)/include ;
 path-constant APPLIB : $(APPRES)/lib ;
 path-constant APP-DEBUG-LIB : $(APPLIB)/debug ;
 path-constant APP-RELEASE-LIB : $(APPLIB)/release ;
-#path-constant BUILD : build ;
-
-
-
-path-constant MPS-SRC : ./externals/src/mps-kit-1.111.0/code ;
-path-constant MPS-LIB : $(APPRES-EXTERNALS-COMMON-LIB) ;
-
-
 
 use-project externals : ./externals ;
 use-project internals : src ;
 use-project internals/core : src/core ;
-# use-project boost : externals/src/boost ;
 use-project internals/llvmo : src/llvmo ;
 use-project internals/gctools : src/gctools ;
 use-project internals/asttooling : src/asttooling ;
