@@ -36,7 +36,8 @@ sources =
         ;
 
 
-lib asttooling : $(sources) ;
+lib asttooling : $(sources) 
+    : <use>/externals//clang_lib_globbed <use>/externals//llvm_lib_globbed ;
 
 
 

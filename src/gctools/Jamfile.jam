@@ -44,9 +44,6 @@ local sources =
 	/externals//llvm_lib_globbed
         ;
 
-
-alias gctools-objects : $(sources) ;
-
 lib gctools : $(sources) ;
 
 install install-boehmdc : gctools : <program>clasp,<gc>boehmdc,<variant>release:<location>$(APPCONT)/lib/boehmdc/release/ ;

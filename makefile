@@ -68,7 +68,7 @@ all:
 	cat local.config
 	make submodules
 	make asdf
-	make boostbuildv2-build
+	make boost_build
 	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehm release dist )
 	time make -C src/main bclasp-boehm
@@ -83,7 +83,7 @@ boot:
 	cat local.config
 	make submodules
 	make asdf
-	make boostbuildv2-build
+	make boost_build
 	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehmdc release dist )
 	time make -C src/main bclasp-boehmdc
@@ -167,7 +167,7 @@ bclasp-only:
 	cat local.config
 	make submodules
 	make asdf
-	make boostbuildv2-build
+	make boost_build
 	make -C src/main scrape-all
 	$(BJAM) /internals/lisp//bundle
 	make clasp-boehm
@@ -216,12 +216,12 @@ asdf:
 
 only-boehm:
 	make submodules-boehm
-	make boostbuildv2-build
+	make boost_build
 	make clasp-boehm
 
 boehm-build-mps-interface:
 	make submodules
-	make boostbuildv2-build
+	make boost_build
 	make clasp-boehm
 	(cd src/main; make mps-interface)
 
@@ -315,7 +315,7 @@ cl-full-boehm:
 	(cd src/main; make full-boehm)
 
 
-boostbuildv2-build:
+boost_build:
 	(cd $(BOOST_BUILD_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_INSTALL) --ignore-site-config)
 
 compile-commands:

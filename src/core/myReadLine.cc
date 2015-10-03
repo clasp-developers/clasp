@@ -47,7 +47,7 @@ string myReadLine(const string &prompt, bool& end_of_transmission) {
   ss << std::endl
      << prompt;
   line_read = ::readline(ss.str().c_str()); // prompt.c_str());
-  if (line_read != NULL) {
+   if (line_read != NULL) {
     if (*line_read)
       ::add_history(line_read);
     res = line_read;
@@ -59,7 +59,7 @@ string myReadLine(const string &prompt, bool& end_of_transmission) {
   if (prompt != "") {
     _lisp->print(BF("%s ") % prompt);
   }
-  getline(cin, res);
+  getline(std::cin, res);
 #endif
   return res;
 }

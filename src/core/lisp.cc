@@ -67,6 +67,7 @@ THE SOFTWARE.
 #include <clasp/core/cache.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/extensionPackage.h>
+#include <clasp/core/myReadLine.h>
 #include <clasp/core/binder.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/bits.h>
@@ -1705,23 +1706,9 @@ T_sp ext_getenv(Str_sp name) {
 T_mv af_getline(Str_sp prompt) {
   _G();
   string res;
-#ifdef READLINE
-  char *line_read;
-  /* Get a line from the user. */
-  line_read = readline(prompt->get().c_str());
-  if (line_read != NULL) {
-    if (*line_read)
-      add_history(line_read);
-    res = line_read;
-    free(line_read);
-  }
-#else
-  if (prompt->get() != "") {
-    _lisp->print(BF("%s ") % prompt->get());
-    _lisp->printvFlush();
-  }
-  getline(cin, res);
-#endif
+  string sprompt(prompt->get());
+  bool end_of_transmission;
+  res = myReadLine(sprompt.c_str(),end_of_transmission);
   Str_sp result = Str_O::create(res);
   return (Values(result));
 }

@@ -1,4 +1,18 @@
 
+LLVM_LIB_DIR = [ SHELL "llvm-config --libdir | tr -d '\n'" ] ;
+LLVM_LIBS = [ GLOB $(LLVM_LIB_DIR) : libLLVM*.a ] ;
+
+#LLVM_LIBS_STRING = [ SHELL "llvm-config --libfiles | tr -d '\n'" ] ;
+#LLVM_LIBS = [ SPLIT_BY_CHARACTERS $(LLVM_LIBS_STRING) : " " ] ;
+
+CLANG_LIBS = [ GLOB $(LLVM_LIB_DIR) : libclang*.a ] ;
+
+echo " LLVM libraries are in directory: |" $(LLVM_LIB_DIR) "|" ;
+echo " LLVM libraries are --> " $(LLVM_LIBS) ;
+
+alias llvm_lib_globbed : $(LLVM_LIBS) ;
+alias clang_lib_globbed : $(CLANG_LIBS) ;
+
 # clangOrder = ['clangBasic', 'clangLex', 'clangAST', 'clangEdit', 'clangAnalysis', 'clangRewriteCore', 'clangRewriteFrontend', 'clangARCMigrate', 'clangStaticAnalyzerCore', 'clangStaticAnalyzerCheckers', 'clangStaticAnalyzerFrontend', 'clangSema', 'clangParse', 'clangCodeGen', 'clangSerialization', 'clangDriver', 'clangFrontend', 'clangFrontendTool', 'clangToolingCore', 'clangTooling', 'clangDynamicASTMatchers']
 lib libclangBasic : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangBasic <variant>release <link>static ;
 lib libclangBasic : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangBasic <variant>debug <link>static ;
@@ -146,21 +160,6 @@ lib libLLVMMCJIT : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMMCJIT <vari
 #lib libLLVMJIT : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMJIT <variant>release <link>static ;
 #lib libLLVMJIT : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMJIT <variant>debug <link>static ;
 
-#LLVM_LIBS = [ GLOB $(LLVM_LIB_DIR) : libLLVM*.a ] ;
-
-LLVM_LIB_DIR = [ SHELL "llvm-config --libdir | tr -d '\n'" ] ;
-LLVM_LIBS_STRING = [ SHELL "llvm-config --libfiles | tr -d '\n'" ] ;
-LLVM_LIBS = [ SPLIT_BY_CHARACTERS $(LLVM_LIBS_STRING) : " " ] ;
-
-CLANG_LIBS = [ GLOB $(LLVM_LIB_DIR) : libclang*.a ] ;
-
-echo " LLVM libraries are in directory: |" $(LLVM_LIB_DIR) "|" ;
-echo " LLVM libraries are --> " $(LLVM_LIBS) ;
-
-alias llvm_lib_globbed : $(LLVM_LIBS) ;
-alias clang_lib_globbed : $(CLANG_LIBS) ;
-
-
 alias llvm_lib_old :
     libLLVMSupport
     libLLVMX86Utils
@@ -216,3 +215,4 @@ rule rtrim ( string )
      return $(string) ; 
    } 
 } 
+

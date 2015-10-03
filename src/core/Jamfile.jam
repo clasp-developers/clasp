@@ -5,9 +5,6 @@ echo "core dir = $(dir)" ;
 #
 project internals/core : requirements
 	<define>EXPAT
-#	<define>USEBOOSTPYTHON
-	<toolset>darwin:<define>READLINE
-	<toolset>clang:<define>READLINE
 	<threading>single
         <link>static
 #	<linkflags>-rdynamic
@@ -187,7 +184,8 @@ local sources =
 	     /externals//boostAndExpatLibs
              		;
 
-lib core : $(sources) ;
+lib core : $(sources) 
+         : <use>/externals//clang_lib_globbed <use>/externals//llvm_lib_globbed ;
 
 #install install-boehmdc : core : <program>clasp,<gc>boehmdc,<variant>release:<location>$(APPCONT)/lib/boehmdc/release/ ;
 #install install-boehm : core : <program>clasp,<gc>boehm,<variant>release:<location>$(APPCONT)/lib/boehm/release/ ;
