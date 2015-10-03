@@ -22,9 +22,9 @@ export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/C
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
 
 ifeq ($(TARGET_OS),linux)
-  export TARGET = clang-linux
+  export TOOLSET = clang-linux
 else
-  export TARGET = darwin
+  export TOOLSET = darwin
 endif
 
 ifeq ($(TARGET_OS),linux)
@@ -76,12 +76,12 @@ all:
 	make asdf
 	make boost_build
 	make boehm
-	(cd src/lisp; $(BUILD) -j$(PJOBS) target=$(TARGET) link=static program=clasp gc=boehm bundle )
-	(cd src/main; $(BUILD) -j$(PJOBS) target=$(TARGET) link=static program=clasp gc=boehm release dist )
+	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=static program=clasp gc=boehm bundle )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=static program=clasp gc=boehm release dist )
 	make -C src/main bclasp-boehm
 	make -C src/main cclasp-boehm
 	make -C src/main cclasp-boehm-addons
-#	(cd src/main; $(BUILD) -j$(PJOBS) target=$(TARGET) link=static program=clasp gc=mps release dist )
+#	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=static program=clasp gc=mps release dist )
 #	make -C src/main link-cclasp-mps
 #	make -C src/main link-cclasp-mps-addons
 	make executable-symlinks
@@ -92,7 +92,7 @@ boot:
 	make asdf
 	make boost_build
 	make boehm
-	(cd src/main; $(BUILD) -j$(PJOBS) target=$(TARGET) link=static program=clasp gc=boehmdc release dist )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=static program=clasp gc=boehmdc release dist )
 	make -C src/main bclasp-boehmdc
 	make -C src/main bclasp-boehmdc-addons
 
