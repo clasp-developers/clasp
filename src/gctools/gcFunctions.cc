@@ -1,7 +1,7 @@
 /* -^- */
 #include <boost/mpl/list.hpp>
 #ifdef USE_BOEHM
-#include <gc/gc_mark.h>
+#include <clasp/gc/gc_mark.h>
 #endif
 #ifdef USE_MPS
 extern "C" {

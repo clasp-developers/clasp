@@ -34,8 +34,8 @@ THE SOFTWARE.
 #define USE_WEAK_POINTER
 
 #ifdef USE_BOEHM
-#include <gc/gc.h>
-#include <gc/gc_allocator.h>
+#include <clasp/gc/gc.h>
+#include <clasp/gc/gc_allocator.h>
 typedef void *LocationDependencyPtrT;
 #endif // USE_BOEHM
 

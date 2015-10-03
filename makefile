@@ -6,8 +6,6 @@ export GIT_COMMIT := $(shell git describe --match='' --always || echo "unknown-c
 export CLASP_VERSION := $(shell git describe --always || echo "unknown-version")
 
 export CLASP_INTERNAL_BUILD_TARGET_DIR = $(shell pwd)/build/clasp
-export EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_SOURCE_DIR)/build
-
 
 export LIBATOMIC_OPS_SOURCE_DIR = $(CLASP_HOME)/src/boehm/libatomic_ops
 export BOEHM_SOURCE_DIR = $(CLASP_HOME)/src/boehm/bdwgc
@@ -33,6 +31,14 @@ else
   export DEVEMACS = open -n -a emacs ./
 endif
 
+ifeq ($(LINK),static)
+$(info Linking using static libraries)
+else ifeq ($(LINK),shared)
+$(info Linking using shared libraries)
+else
+$(info Only options for LINK are static and shared)
+exit 1
+endif
 
 #
 # If the local.config doesn't define PYTHON2 then provide a default
@@ -64,11 +70,6 @@ ifneq ($(CXXFLAGS),)
   export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
 endif
 
-
-ifeq ($(WHAT),)
-	WHAT = bundle debug release boehm mps
-endif
-
 all:
 	@echo Dumping local.config
 	cat local.config
@@ -76,12 +77,12 @@ all:
 	make asdf
 	make boost_build
 	make boehm
-	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=static program=clasp gc=boehm bundle )
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=static program=clasp gc=boehm release dist )
+	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release dist )
 	make -C src/main bclasp-boehm
 	make -C src/main cclasp-boehm
 	make -C src/main cclasp-boehm-addons
-#	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=static program=clasp gc=mps release dist )
+#	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=mps release dist )
 #	make -C src/main link-cclasp-mps
 #	make -C src/main link-cclasp-mps-addons
 	make executable-symlinks
@@ -92,15 +93,15 @@ boot:
 	make asdf
 	make boost_build
 	make boehm
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=static program=clasp gc=boehmdc release dist )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehmdc release dist )
 	make -C src/main bclasp-boehmdc
 	make -C src/main bclasp-boehmdc-addons
 
 clasp-libraries:
-	(cd src/gctools; $(BJAM) link=static program=clasp gc=boehmdc threading=single gctools install-lib)
+	(cd src/gctools; $(BJAM) link=$(LINK) program=clasp gc=boehmdc threading=single gctools install-lib)
 
 devbuild:
-	(cd src/main; $(BUILD) -j$(PJOBS) link=static program=clasp gc=boehmdc release dist )
+	(cd src/main; $(BUILD) -j$(PJOBS) link=$(LINK) program=clasp gc=boehmdc release dist )
 
 $(BINDIR)/clasp_boehm_o : $(BINDIR)/release/boehm/clasp
 	@ln -s $(BINDIR)/release/boehm/clasp $(BINDIR)/clasp_boehm_o
@@ -238,26 +239,22 @@ export DEV_CLASP_LISP_SOURCE_DIR := $(shell echo `pwd`/src/lisp)
 devemacs:
 	@echo This shell sets up environment variables like BJAM
 	@echo as they are defined when commands execute within the makefile
-	@echo EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_BUILD_TARGET_DIR)
 	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR) $(DEVEMACS))
 
 devemacs_no_clasp_lisp_source_dir:
 	@echo This shell sets up environment variables like BJAM
 	@echo as they are defined when commands execute within the makefile
-	@echo EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_BUILD_TARGET_DIR)
 	$(DEVEMACS)
 
 devshell:
 	@echo This shell sets up environment variables like BJAM
 	@echo as they are defined when commands execute within the makefile
-	@echo EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_BUILD_TARGET_DIR)
 	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR) bash)
 
 
 devshell-telemetry:
 	@echo This shell sets up environment variables like BJAM
 	@echo as they are defined when commands execute within the makefile
-	@echo EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_BUILD_TARGET_DIR)
 	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR); export CLASP_MPS_CONFIG="32 32 16 80 32 80"; export CLASP_TELEMETRY_FILE=/tmp/clasp.tel; export CLASP_TELEMETRY_MASK=3; bash)
 
 
@@ -265,10 +262,10 @@ testing:
 	which clang++
 
 clasp-mps-cpp:
-	$(BUILD) -j$(PJOBS) gc=mps link=static program=clasp release src/main//dist
+	$(BUILD) -j$(PJOBS) gc=mps link=$(LINK) program=clasp release src/main//dist
 
 clasp-boehm-cpp:
-	$(BUILD) -j$(PJOBS) gc=boehm link=static program=clasp release src/main//dist
+	$(BUILD) -j$(PJOBS) gc=boehm link=$(LINK) program=clasp release src/main//dist
 
 clasp-mps:
 	make clasp-mps-cpp
@@ -289,7 +286,7 @@ cl-full-mps:
 
 clasp-boehm:
 	make clasp-boehm-cpp
-	$(BJAM) everything gc=boehm link=static program=clasp release
+	$(BJAM) everything gc=boehm link=$(LINK) program=clasp release
 	(cd src/main; make boehm)
 
 cclasp-boehm:

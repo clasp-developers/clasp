@@ -33,6 +33,9 @@ GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
 CLASP_LINKFLAGS = [ os.environ CLASP_LINKFLAGS ] ;
 CLASP_CXXFLAGS = [ os.environ CLASP_CXXFLAGS ] ;
 
+echo "CLASP_CXXFLAGS = " $(CLASP_CXXFLAGS) ;
+echo "CLASP_LINKFLAGS = " $(CLASP_LINKFLAGS) ;
+
 # I'm leaving this rule in because it illustrates how to start something at init
 rule init ( top ? : : properties * ) {
      ECHO "STARTING init rule in Jamroot.jam --> $(top)"  ;
@@ -55,7 +58,9 @@ init clasp ;
 
 
 project clasp : requirements
-	<include>include
+        <include>"/usr/include"
+        <linkflags>"-L/usr/lib"
+        <include>include    #clasp/include/*
         <define>X86
 	<define>BUILDING_CLASP
 	<define>INHERITED_FROM_SRC

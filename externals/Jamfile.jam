@@ -15,10 +15,10 @@ alias boostAndExpatLibs :
 		/externals//libgmp
                 /externals//expat
                 /externals//zlib
-		/externals//ncurses/<link>shared
+		/externals//ncurses
                 /externals//readline
 #		/python//python
-#		/externals//lib_mps/<link>static
+#		/externals//lib_mps
         ;
 
 lib lib_boehm : : <search>$(APPRES-LIB-COMMON-LIB) <name>gc ;
