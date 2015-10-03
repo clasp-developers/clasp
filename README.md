@@ -1,9 +1,7 @@
-Clasp
+Clasp (Common Lisp and C++ and LLVM)
 ===============
 
-<a href="https://drmeister.wordpress.com/2015/01/25/release-0-2-of-clasp-is-available/">-- Update Jan 25, 2014 --  Please read regarding installing Clasp</a>
-
-Note: **EXTERNALS_BUILD_TARGET_DIR** and **CLASP_BUILD_TARGET_DIR** are not required any more in locals.config.  There is a new variable **EXTERNALS_SOURCE_DIR** that you set to the path of the exterals-clang source directory.
+# Clasp is getting ready for a major new release
 
 **If you have questions come ask them on IRC at freenode #clasp**
 
@@ -17,10 +15,7 @@ Currently you must build externals-clasp prior to building Clasp - we will elimi
 
 ## Systems Clasp has built on
 
-Clasp needs an advanced C++ compiler that supports C++11 (minimum clang 3.5 or gcc 4.8).
-
-Clasp also needs a very specific version of the llvm/clang 3.6 libraries that are not part of a standard release.
-This version of the llvm/clang3.6 is included in externals-clasp.  Incidentally, the externals-clasp/llvm3.6 builds a clang3.6 compiler, which can be used by the Clasp build system to compile Clasp.
+Clasp requires clang 3.6 or higher to compile
 
 |  Systems that Clasp is known to build on  |
 | ----------------------------------------- |
@@ -39,8 +34,7 @@ If you experience problems with the systems above please submit an issue here or
 
 To build Clasp from within the top level directory do the following.
 
-1) You need to download and build the <a href="https://github.com/drmeister/externals-clasp">externals-clasp repository</a><br>
-- it contains all of the external libraries that Clasp depends on and it downloads the specific version of LLVM 3.6 that Clasp needs.
+1) Clasp has a list of dependencies that we are working on - see below
 
 2) Copy local.config.darwin or local.config.linux to local.config depending on your system
 
@@ -48,30 +42,27 @@ To build Clasp from within the top level directory do the following.
 
 | Variable                                   |   Description                                                           |
 | ------------------------------------------ | ----------------------------------------------------------------------- |
-| **EXTERNALS_SOURCE_DIR**             | This defines where Clasp build will find the externals-clasp libraries.  I use $HOME/local/externals-clasp. This is the directory that contains the externals-clasp source. |
 | **TARGET_OS**                              | Currently either _linux_ or _darwin_                                    |
 | **PJOBS**                                  | The number of processors you have available to build with.              |
 |                                            | Set PJOBS <= the number of cores you have.                              |
 |                                            | Also if you have less than 8GB memory you should set PJOBS to 2 or 1,   |
 |                                            | otherwise your system will swap like crazy                              |
-| **CXXFLAGS**                               | If you set this export CXXFLAGS = -v  it will print more debugging info |
+| **CLASP_CXXFLAGS**                         | For instance, adding -v  it will print more debugging info              |
 |                                            | during the build                                                        |
-
-4) Make both the mps and boehm versions of Clasp (see note 1 for other options).
+| **CLASP_LINKFLAGS**                        | Add your local library dependencies here using -L and -l linker options |
+4) Make both the MPS and Boehm versions of Clasp (Currently only Boehm version is built).
 <pre># <b>make</b></pre>
-
-If you see the error "fatal error: 'core_scrape_flag.h' file not found" just stop the build with control-C and type "make" again. It will sort itself out.  It's something to do with the order in which boost-build builds things but I haven't sorted it out yet.
 
 5) Add the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS (OS X) or $**CLASP_BUILD_TARGET_DIR**/bin (linux) (from local.config) to your PATH<br>
 
-6) To run the MPS version of Clasp use
-<pre># <b>clasp_mps_o</b></pre>
+6) To run the Boehm version of Clasp use
+<pre># <b>clasp_boehm_o</b></pre>
 
 and to run the Boehm version of Clasp use
 <pre># <b>clasp_boehm_o</b></pre>
 
 7) When the Clasp REPL prompt appears you can type Common Lisp commands.
-<pre>Starting Clasp 0.1... loading image... it takes a few seconds
+<pre>Starting Clasp xxxxx   loading image... it takes a few seconds
 Loading .clasprc
 Top level.
 &gt; <b>(defun hello-world () (print "Clasp is running.  Huzzah!!!"))</b>
@@ -83,29 +74,21 @@ HELLO-WORLD
 "Clasp is running.  Huzzah!!!"
 &gt; <b>(quit)</b>
 </pre>
-Clasp will run within Emacs using \*inferior-lisp\* and in the future Clasp will have a SLIME interface (volunteer programmers will be showered with appreciation and praise!).
 
-Note 1:  You can make just one version of Clasp
-<pre># <b>make boostbuildv2-build</b> </pre>
-and then to make the boehm version of Clasp use
-<pre># <b>make clasp-boehm</b></pre>
-or to make the mps version of Clasp use
-<pre># <b>make clasp-mps</b></pre>
+The recommended way to run Clasp is using Slime and the latest Slime supports Clasp.
+
+Clasp also runs ASDF and Quicklisp.
 
 ## External libraries
 
-If you want to install the external libraries separately its more complicated because Clasp requires a particular version of LLVM/Clang3.6 which hasn't been officially released yet but is present in externals-clang.
-This should all become easier in a couple of months when LLVM/Clang3.6 is released.<br>
-These are the requirements as of Sep 28, 2014.<br>
-LLVM/clang 3.5 compiler<br>
+These are the requirements as of Oct, 2015.<br>
+LLVM/clang 3.6 compiler<br>
 Boost build v2<br>
 boost libraries ver 1.55<br>
-Boehm 7.2<br>
 gmp-6.0.0<br>
 expat-2.0.1<br>
 zlib-1.2.8<br>
 readline-6.2<br>
-
 
 ## Acknowledgments
 
