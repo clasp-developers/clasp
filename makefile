@@ -42,8 +42,8 @@ ifeq ($(TARGET_OS),darwin)
   export EXECUTABLE_DIR=MacOS
 endif
 
-ifneq ($(EXTERNALS_BUILD_TARGET_DIR),)
-	PATH := $(EXTERNALS_BUILD_TARGET_DIR)/release/bin:$(EXTERNALS_BUILD_TARGET_DIR)/common/bin:$(PATH)
+ifneq ($(CLANG_BIN_DIR),)
+	PATH := $(CLANG_BIN_DIR):$(PATH)
 	export PATH
 endif
 
