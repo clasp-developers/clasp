@@ -7,9 +7,6 @@ project externals
 #	<include>gmp-5.0.5
         <include>$(APPRES-LIB-COMMON-INCLUDE) ;
 
-
-
-
 alias boostAndExpatLibs :
       		/externals//boost
 		/externals//libgmp

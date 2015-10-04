@@ -185,7 +185,8 @@ local sources =
              		;
 
 lib core : $(sources) 
-         : <use>/externals//clang_lib_globbed <use>/externals//llvm_lib_globbed ;
+         : <use>/externals//clang_lib_globbed <use>/externals//llvm_lib_globbed
+         <link>static ;
 
 #install install-boehmdc : core : <program>clasp,<gc>boehmdc,<variant>release:<location>$(APPCONT)/lib/boehmdc/release/ ;
 #install install-boehm : core : <program>clasp,<gc>boehm,<variant>release:<location>$(APPCONT)/lib/boehm/release/ ;

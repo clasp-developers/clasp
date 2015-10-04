@@ -35,12 +35,12 @@ sources =
         clbindPackage.cc
         class.cc
         derivable_class.cc
-	/internals/core//core/
+	/internals/core//core/<link>static
 	/externals//boostAndExpatLibs ;
 
 
 
-lib clbind : $(sources) ;
+lib clbind : $(sources) : <link>static ;
 
 alias this-lib : clbind ;
 install install-boehmdc : this-lib : <program>clasp,<gc>boehmdc,<variant>release:<location>$(APPCONT)/lib/boehmdc/release/ ;
