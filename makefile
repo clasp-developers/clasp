@@ -22,7 +22,7 @@ export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
 ifeq ($(TARGET_OS),linux)
   export TOOLSET = clang-linux
 else
-  export TOOLSET = darwin
+  export TOOLSET = clang-darwin
 endif
 
 ifeq ($(TARGET_OS),linux)
