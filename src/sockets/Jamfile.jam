@@ -24,10 +24,10 @@ project internals/sockets : requirements
 sources = 
 	sockets.cc
 	socketsPackage.cc
-	/internals/core//core
+	/internals/core//core/<link>static
 	/externals//boostAndExpatLibs ;
 
-lib sockets : $(sources) ;
+lib sockets : $(sources) : <link>static ;
 
 #bundler.bundle $(dir) :
 #	     $(sources) :

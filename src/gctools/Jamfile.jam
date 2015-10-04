@@ -39,12 +39,12 @@ local sources =
         gcweak.cc
 #        memoryRefSearch.c
 	memoryManagement.cc
-	/internals/core/
+	/internals/core
 	/externals//boostAndExpatLibs
 	/externals//llvm_lib_globbed
         ;
 
-lib gctools : $(sources) ;
+lib gctools : $(sources) : <link>static ;
 
 install install-boehmdc : gctools : <program>clasp,<gc>boehmdc,<variant>release:<location>$(APPCONT)/lib/boehmdc/release/ ;
 install install-boehm : gctools : <program>clasp,<gc>boehm,<variant>release:<location>$(APPCONT)/lib/boehm/release/ ;

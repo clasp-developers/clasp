@@ -30,22 +30,12 @@ sources =
 	astExpose.cc
 	clangTooling.cc
 	asttoolingPackage.cc
-	/internals/core
+	/internals/core//core/<link>static
 	/externals//boostAndExpatLibs
 	/externals//clang_lib_globbed
         ;
 
 
 lib asttooling : $(sources) 
-    : <use>/externals//clang_lib_globbed <use>/externals//llvm_lib_globbed ;
+    : <use>/externals//clang_lib_globbed <use>/externals//llvm_lib_globbed <link>static ;
 
-
-
-#bundler.bundle $(dir) :
-#	     $(sources) :
-#	     <link>static
-#	     <implicit-dependency>mi
-#	     <implicit-dependency>/internals/core//mi
-#            <implicit-dependency>/internals/clbind//mi
-#           <implicit-dependency>/internals/llvmo//mi
-#	     ;
