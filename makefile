@@ -84,7 +84,7 @@ all:
 	make boost_build
 	make boehm
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/ gc=boehm $(VARIANT) clasp_install )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/$(VARIANT) gc=boehm $(VARIANT) clasp_install )
 	make -C src/main bclasp-boehm
 	make -C src/main cclasp-boehm
 	make -C src/main cclasp-boehm-addons
