@@ -14,6 +14,7 @@ export BOOST_BUILD_INSTALL = $(BOOST_BUILD_SOURCE_DIR)
 
 export BJAM = $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 export BUILD = build
+export CLASP_APP_EXECS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
 export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 
@@ -78,11 +79,11 @@ all:
 	make boost_build
 	make boehm
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release dist )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/release gc=boehm release clasp_install )
 	make -C src/main bclasp-boehm
 	make -C src/main cclasp-boehm
 	make -C src/main cclasp-boehm-addons
-#	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=mps release dist )
+#	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install )
 #	make -C src/main link-cclasp-mps
 #	make -C src/main link-cclasp-mps-addons
 	make executable-symlinks
@@ -93,7 +94,7 @@ boot:
 	make asdf
 	make boost_build
 	make boehm
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehmdc release dist )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/release gc=boehmdc release clasp_install )
 	make -C src/main bclasp-boehmdc
 	make -C src/main bclasp-boehmdc-addons
 

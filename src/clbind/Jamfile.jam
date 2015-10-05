@@ -22,7 +22,7 @@ project internals/clbind : requirements
 
 
 
-sources =
+local sources =
 #	dist-generated-files
         adapter.cc
         class_rep.cc
@@ -35,15 +35,7 @@ sources =
         clbindPackage.cc
         class.cc
         derivable_class.cc
-	/internals/core//core/<link>static
-	/externals//boostAndExpatLibs ;
+        ;
 
 
-
-lib clbind : $(sources) : <link>static ;
-
-alias this-lib : clbind ;
-install install-boehmdc : this-lib : <program>clasp,<gc>boehmdc,<variant>release:<location>$(APPCONT)/lib/boehmdc/release/ ;
-install install-boehm : this-lib : <program>clasp,<gc>boehm,<variant>release:<location>$(APPCONT)/lib/boehm/release/ ;
-install install-mps : this-lib : <program>clasp,<gc>mps,<variant>release:<location>$(APPCONT)/lib/mps/release/ ;
-alias install-lib : install-boehmdc install-boehm install-mps ;
+alias clbind : $(sources) ;

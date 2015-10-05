@@ -118,4 +118,5 @@ typedef unsigned int claspCharacter;
 #define clasp_ftello ftello
 #endif
 
-#define MKSTEMP
+// On linux and OS X we have mkstemp so use it
+#define HAVE_MKSTEMP

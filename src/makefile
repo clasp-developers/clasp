@@ -11,8 +11,8 @@ sub-prebuild:
 	make -C gctools/ $@
 	make -C core/ $@
 	make -C clbind/ $@
-	make -C asttooling/ $@
 	make -C llvmo/ $@
+	make -C asttooling/ $@
 	make -C serveEvent/ $@
 	make -C sockets/ $@
 

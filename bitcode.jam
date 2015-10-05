@@ -1,3 +1,4 @@
+# stripped-bitcode  type
 
 import type ;
 type.register STRIPPED_BITCODE : sbc ;

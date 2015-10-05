@@ -21,18 +21,9 @@ project internals/serveEvent : requirements
 	<target-os>darwin:<linkflags>"-dynamiclib"
 	;
 
-sources = 
+local sources = 
 	serveEvent.cc
 	serveEventPackage.cc
-	/internals/core//core/<link>static
-	/externals//boostAndExpatLibs ;
+        ;
 
-lib serveEvent : $(sources) : <link>static ;
-
-
-#bundler.bundle $(dir) :
-#	     $(sources) :
-#	     <link>static
-#	     <implicit-dependency>mi
-#	     <implicit-dependency>/internals/core//mi
-#	     ;
+alias serveEvent : $(sources) ;

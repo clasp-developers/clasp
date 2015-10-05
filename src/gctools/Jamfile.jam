@@ -37,12 +37,7 @@ local sources =
         telemetry.cc
         gcalloc.cc
         gcweak.cc
-#        memoryRefSearch.c
 	memoryManagement.cc
-	/internals/core
-	/externals//boostAndExpatLibs
-	/externals//llvm_lib_globbed
         ;
 
-lib gctools : $(sources) : <link>static ;
-
+alias gctools : $(sources) ;

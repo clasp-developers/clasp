@@ -21,41 +21,36 @@ project internals/main : requirements
 
 lib rt : : <name>rt ;
 
-alias gclib : /externals//lib_boehm :
-      <gc>boehmdc ;
+alias lib_boehm : $(APPRES-LIB-COMMON-LIB)/libgc.a ;
 
-alias gclib : /externals//lib_boehm :
-      <gc>boehm ;
+alias gclib : lib_boehm : <gc>boehmdc ;
 
-alias gclib : mymps.c :
-      <gc>mps ;
+alias gclib : lib_boehm : <gc>boehm ;
 
+alias gclib : mymps.c : <gc>mps ;
 
-alias gclib : mymps.c :
-      <gc>mps-prep ;
+alias gclib : mymps.c : <gc>mps-prep ;
 
 
 
-sources = 
-    	    	/internals/core//core/<link>static
-		/internals/cffi//cffi/<link>static
-		/internals/llvmo//llvmo/<link>static
-                /internals/clbind//clbind/<link>static
-		/internals/gctools//gctools/<link>static
-		/internals/sockets//sockets/<link>static
-		/internals/serveEvent//serveEvent/<link>static
-		/internals/asttooling//asttooling/<link>static
-		/externals//llvm_lib_globbed # /<link>static
-		/externals//clang_lib_globbed # /<link>static
-		/externals//boostAndExpatLibs/<link>static
-		/externals//llvm_lib_globbed # /<link>static
-		/externals//clang_lib_globbed # /<link>static
-		/externals//boostAndExpatLibs/<link>static
+local sources = 
+    	    	/internals/core//core
+		/internals/cffi//cffi
+		/internals/llvmo//llvmo
+                /internals/clbind//clbind
+		/internals/gctools//gctools
+		/internals/sockets//sockets
+		/internals/serveEvent//serveEvent
+		/internals/asttooling//asttooling
+		/externals//llvm_lib_globbed 
+		/externals//clang_lib_globbed 
+		/externals//boostAndExpatLibs
 		;
 
 exe clasp : main.cc $(sources)
     /externals//lib_boehm/<link>static
     : <gc>boehmdc
+
     ;
 
 exe clasp : main.cc $(sources)
@@ -76,41 +71,41 @@ exe clasp : main.cc $(sources)
     ;
 
 
-install dist : clasp /internals/llvmo//install_intrinsics_bitcode
-        :
-        <program>clasp,<target-os>linux,<variant>release,<gc>boehmdc:<location>$(APPBIN-LINUX)/release/boehmdc
-        <program>clasp,<target-os>linux,<variant>release,<gc>boehm:<location>$(APPBIN-LINUX)/release/boehm
-        <program>clasp,<target-os>linux,<variant>release,<gc>mps-prep:<location>$(APPBIN-LINUX)/release/mps-prep
-        <program>clasp,<target-os>linux,<variant>release,<gc>mps:<location>$(APPBIN-LINUX)/release/mps
-        <program>clasp,<target-os>linux,<variant>debug,<gc>boehmdc:<location>$(APPBIN-LINUX)/debug/boehmdc
-        <program>clasp,<target-os>linux,<variant>debug,<gc>boehm:<location>$(APPBIN-LINUX)/debug/boehm
-        <program>clasp,<target-os>linux,<variant>debug,<gc>mps-prep:<location>$(APPBIN-LINUX)/debug/mps-prep
-        <program>clasp,<target-os>linux,<variant>debug,<gc>mps:<location>$(APPBIN-LINUX)/debug/mps
-        <program>clasp,<target-os>darwin,<variant>release,<gc>boehmdc:<location>$(APPBIN-DARWIN)/release/boehmdc
-        <program>clasp,<target-os>darwin,<variant>release,<gc>boehm:<location>$(APPBIN-DARWIN)/release/boehm
-        <program>clasp,<target-os>darwin,<variant>release,<gc>mps-prep:<location>$(APPBIN-DARWIN)/release/mps-prep
-        <program>clasp,<target-os>darwin,<variant>release,<gc>mps:<location>$(APPBIN-DARWIN)/release/mps
-        <program>clasp,<target-os>darwin,<variant>debug,<gc>boehmdc:<location>$(APPBIN-DARWIN)/debug/boehmdc
-        <program>clasp,<target-os>darwin,<variant>debug,<gc>boehm:<location>$(APPBIN-DARWIN)/debug/boehm
-        <program>clasp,<target-os>darwin,<variant>debug,<gc>mps-prep:<location>$(APPBIN-DARWIN)/debug/mps-prep
-        <program>clasp,<target-os>darwin,<variant>debug,<gc>mps:<location>$(APPBIN-DARWIN)/debug/mps
-        <implicit-dependency>/internals/llvmo//bundle
-        ;
+
+stripped-bitcode intrinsics_bitcode : /internals/llvmo//intrinsics.cc
+	:
+	<cxxflags>"-flto -emit-llvm" ;
+
+explicit intrinsics_bitcode ;
 
 import package ;
-package.install boehm-libs :
-                <gc>boehm
-                :
-                : /internals/gctools//gctools
-                  /internals/core//core
-                  /internals/clbind//clbind
-                  ;
 
-package.install mps-libs :
-                <gc>mps
-                :
-                : /internals/gctools//gctools
-                  /internals/core//core
-                  /internals/clbind//clbind
-                  ;
+package.install clasp_install :
+                : clasp intrinsics_bitcode
+                : /externals//boostAndExpatLibs
+                : 
+                ;
 
+
+#
+#install dist : clasp /internals/llvmo//install_intrinsics_bitcode
+#        :
+#        <program>clasp,<target-os>linux,<variant>release,<gc>boehmdc:<location>$(APPBIN-LINUX)/release/boehmdc
+#        <program>clasp,<target-os>linux,<variant>release,<gc>boehm:<location>$(APPBIN-LINUX)/release/boehm
+#        <program>clasp,<target-os>linux,<variant>release,<gc>mps-prep:<location>$(APPBIN-LINUX)/release/mps-prep
+#        <program>clasp,<target-os>linux,<variant>release,<gc>mps:<location>$(APPBIN-LINUX)/release/mps
+#        <program>clasp,<target-os>linux,<variant>debug,<gc>boehmdc:<location>$(APPBIN-LINUX)/debug/boehmdc
+#        <program>clasp,<target-os>linux,<variant>debug,<gc>boehm:<location>$(APPBIN-LINUX)/debug/boehm
+#        <program>clasp,<target-os>linux,<variant>debug,<gc>mps-prep:<location>$(APPBIN-LINUX)/debug/mps-prep
+#        <program>clasp,<target-os>linux,<variant>debug,<gc>mps:<location>$(APPBIN-LINUX)/debug/mps
+#        <program>clasp,<target-os>darwin,<variant>release,<gc>boehmdc:<location>$(APPBIN-DARWIN)/release/boehmdc
+#        <program>clasp,<target-os>darwin,<variant>release,<gc>boehm:<location>$(APPBIN-DARWIN)/release/boehm
+#        <program>clasp,<target-os>darwin,<variant>release,<gc>mps-prep:<location>$(APPBIN-DARWIN)/release/mps-prep
+#        <program>clasp,<target-os>darwin,<variant>release,<gc>mps:<location>$(APPBIN-DARWIN)/release/mps
+#        <program>clasp,<target-os>darwin,<variant>debug,<gc>boehmdc:<location>$(APPBIN-DARWIN)/debug/boehmdc
+#        <program>clasp,<target-os>darwin,<variant>debug,<gc>boehm:<location>$(APPBIN-DARWIN)/debug/boehm
+#        <program>clasp,<target-os>darwin,<variant>debug,<gc>mps-prep:<location>$(APPBIN-DARWIN)/debug/mps-prep
+#        <program>clasp,<target-os>darwin,<variant>debug,<gc>mps:<location>$(APPBIN-DARWIN)/debug/mps
+#        <implicit-dependency>/internals/llvmo//bundle
+#        ;
+#

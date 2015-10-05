@@ -18,8 +18,8 @@ alias boostAndExpatLibs :
 #		/externals//lib_mps
         ;
 
-lib lib_boehm : : <search>$(APPRES-LIB-COMMON-LIB) <name>gc ;
-
+#lib lib_boehm : : <search>$(APPRES-LIB-COMMON-LIB) <name>gc ;
+#alias lib_boehm : $(APPRES-LIB-COMMON-LIB)/libgc.a ;
 alias libgmp : gmp gmpxx ;
 
 lib gmp : : <name>gmp ;
