@@ -21,16 +21,6 @@ project internals/main : requirements
 
 lib rt : : <name>rt ;
 
-alias lib_boehm : $(APPRES-LIB-COMMON-LIB)/libgc.a ;
-
-alias gclib : lib_boehm : <gc>boehmdc ;
-
-alias gclib : lib_boehm : <gc>boehm ;
-
-alias gclib : mymps.c : <gc>mps ;
-
-alias gclib : mymps.c : <gc>mps-prep ;
-
 
 
 local sources = 
@@ -47,26 +37,28 @@ local sources =
 		/externals//boostAndExpatLibs
 		;
 
+alias main : $(sources) ;
+
 exe clasp : main.cc $(sources)
-    lib_boehm
+    /internals/gctools//lib_boehm
     : <gc>boehmdc
 
     ;
 
 exe clasp : main.cc $(sources)
-    lib_boehm
+    /internals/gctools//lib_boehm
     : <gc>boehm
     ;
 
 exe clasp : main.cc $(sources)
     gc_interface.cc
-    gclib
+    /internals/gctools//gclib
     : <gc>mps
     ;
 
 exe clasp : main.cc $(sources)
     gc_interface.cc
-    gclib
+    /internals/gctools//gclib
     : <gc>mps-prep
     ;
 
@@ -85,30 +77,8 @@ import package ;
 package.install clasp_install :
                 : clasp intrinsics_bitcode
                 : /externals//boostAndExpatLibs
-                /internals/clbind//clasp-clbind
+                /internals/clbind//clasp-clbind/<link>shared
                 : 
                 ;
 
 
-#
-#install dist : clasp /internals/llvmo//install_intrinsics_bitcode
-#        :
-#        <program>clasp,<target-os>linux,<variant>release,<gc>boehmdc:<location>$(APPBIN-LINUX)/release/boehmdc
-#        <program>clasp,<target-os>linux,<variant>release,<gc>boehm:<location>$(APPBIN-LINUX)/release/boehm
-#        <program>clasp,<target-os>linux,<variant>release,<gc>mps-prep:<location>$(APPBIN-LINUX)/release/mps-prep
-#        <program>clasp,<target-os>linux,<variant>release,<gc>mps:<location>$(APPBIN-LINUX)/release/mps
-#        <program>clasp,<target-os>linux,<variant>debug,<gc>boehmdc:<location>$(APPBIN-LINUX)/debug/boehmdc
-#        <program>clasp,<target-os>linux,<variant>debug,<gc>boehm:<location>$(APPBIN-LINUX)/debug/boehm
-#        <program>clasp,<target-os>linux,<variant>debug,<gc>mps-prep:<location>$(APPBIN-LINUX)/debug/mps-prep
-#        <program>clasp,<target-os>linux,<variant>debug,<gc>mps:<location>$(APPBIN-LINUX)/debug/mps
-#        <program>clasp,<target-os>darwin,<variant>release,<gc>boehmdc:<location>$(APPBIN-DARWIN)/release/boehmdc
-#        <program>clasp,<target-os>darwin,<variant>release,<gc>boehm:<location>$(APPBIN-DARWIN)/release/boehm
-#        <program>clasp,<target-os>darwin,<variant>release,<gc>mps-prep:<location>$(APPBIN-DARWIN)/release/mps-prep
-#        <program>clasp,<target-os>darwin,<variant>release,<gc>mps:<location>$(APPBIN-DARWIN)/release/mps
-#        <program>clasp,<target-os>darwin,<variant>debug,<gc>boehmdc:<location>$(APPBIN-DARWIN)/debug/boehmdc
-#        <program>clasp,<target-os>darwin,<variant>debug,<gc>boehm:<location>$(APPBIN-DARWIN)/debug/boehm
-#        <program>clasp,<target-os>darwin,<variant>debug,<gc>mps-prep:<location>$(APPBIN-DARWIN)/debug/mps-prep
-#        <program>clasp,<target-os>darwin,<variant>debug,<gc>mps:<location>$(APPBIN-DARWIN)/debug/mps
-#        <implicit-dependency>/internals/llvmo//bundle
-#        ;
-#

@@ -116,6 +116,7 @@ $(BINDIR)/clasp_mps_o : $(BINDIR)/release/boehm/clasp
 	echo $< $>
 
 executable-symlinks:
+        install -d $(BINDIR)
 	@if [ -e $(EXECS)/boehm/release/bin/clasp -a \( ! -e $(BINDIR)/clasp_boehm_o \) ]; then ln -s $(EXECS)/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o; fi
 	@if [ -e $(EXECS)/boehmdc/release/bin/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_o \) ]; then ln -s $(EXECS)/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o; fi
 	@if [ -e $(EXECS)/mps/release/bin/clasp -a \( ! -e $(BINDIR)/clasp_mps_o \) ]; then ln -s $(EXECS)/mps/release/bin/clasp $(BINDIR)/clasp_mps_o; fi
