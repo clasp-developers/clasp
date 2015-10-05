@@ -34,90 +34,86 @@ local sources =
 	llvmoExpose.cc
 	llvmoPackage.cc
         clbindLlvmExpose.cc
-	/internals/core//core/<link>static
-	/externals//boostAndExpatLibs
-	/externals//llvm_lib_globbed ;
-
-
-lib llvmo : $(sources) 
-    : <use>/externals//llvm_lib_globbed <use>/externals//clang_lib_globbed <link>static
-;
-
-stripped-bitcode intrinsics_bitcode_boehmdc : intrinsics.cc
-	/internals/core//core/<link>static
-	/externals//boostAndExpatLibs
-	/externals//llvm_lib_globbed
-	:
-	<implicit-dependency>/internals/core//core
-	<implicit-dependency>/internals/clbind//clbind
-	<link>static
-        <gc>boehmdc
-	<cxxflags>"-flto -emit-llvm" ;
-
-explicit intrinsics_bitcode_boehmdc ;
-
-stripped-bitcode intrinsics_bitcode_boehm : intrinsics.cc
-	/internals/core//core/<link>static
-	/externals//boostAndExpatLibs
-	/externals//llvm_lib_globbed
-	:
-	<implicit-dependency>/internals/core//core
-	<implicit-dependency>/internals/clbind//clbind
-	<link>static
-        <gc>boehm
-	<cxxflags>"-flto -emit-llvm" ;
-
-explicit intrinsics_bitcode_boehm ;
-
-stripped-bitcode intrinsics_bitcode_mps : intrinsics.cc
-	/internals/core//core/<link>static
-	/externals//boostAndExpatLibs
-	/externals//llvm_lib_globbed
-	:
-	<implicit-dependency>/internals/core//core
-	<implicit-dependency>/internals/clbind//clbind
-	<link>static
-        <gc>mps
-	<cxxflags>"-flto -emit-llvm" ;
-
-explicit intrinsics_bitcode_mps ;
-
-stripped-bitcode intrinsics_bitcode_mps_prep : intrinsics.cc
-	/internals/core//core/<link>static
-	/externals//boostAndExpatLibs
-	/externals//llvm_lib_globbed
-	:
-	<implicit-dependency>/internals/core//core
-	<implicit-dependency>/internals/clbind//clbind
-	<link>static
-        <gc>mps-prep
-	<cxxflags>"-flto -emit-llvm" ;
-
-explicit intrinsics_bitcode_mps_prep ;
-
-
-install install_intrinsics_bitcode : intrinsics_bitcode_boehmdc :
-	<variant>debug:<location>$(APP-DEBUG-LIB)
-	<variant>release:<location>$(APP-RELEASE-LIB)
-        <gc>boehmdc
         ;
 
-install install_intrinsics_bitcode : intrinsics_bitcode_boehm :
-	<variant>debug:<location>$(APP-DEBUG-LIB)
-	<variant>release:<location>$(APP-RELEASE-LIB)
-        <gc>boehm
-        ;
 
-install install_intrinsics_bitcode : intrinsics_bitcode_mps :
-	<variant>debug:<location>$(APP-DEBUG-LIB)
-	<variant>release:<location>$(APP-RELEASE-LIB)
-        <gc>mps
-        ;
+alias llvmo : $(sources) ;
 
-install install_intrinsics_bitcode : intrinsics_bitcode_mps_prep :
-	<variant>debug:<location>$(APP-DEBUG-LIB)
-	<variant>release:<location>$(APP-RELEASE-LIB)
-        <gc>mps-prep
-        ;
 
-alias bundle : install_intrinsics_bitcode ;
+
+#
+#
+#stripped-bitcode intrinsics_bitcode_boehmdc : intrinsics.cc
+#	/internals/core//core/<link>static
+#	/externals//boostAndExpatLibs
+#	/externals//llvm_lib_globbed
+#	:
+#	<implicit-dependency>/internals/core//core
+#	<implicit-dependency>/internals/clbind//clbind
+#        <gc>boehmdc
+#	<cxxflags>"-flto -emit-llvm" ;
+#
+#explicit intrinsics_bitcode_boehmdc ;
+#
+#stripped-bitcode intrinsics_bitcode_boehm : intrinsics.cc
+#	/internals/core//core/<link>static
+#	/externals//boostAndExpatLibs
+#	/externals//llvm_lib_globbed
+#	:
+#	<implicit-dependency>/internals/core//core
+#	<implicit-dependency>/internals/clbind//clbind
+#        <gc>boehm
+#	<cxxflags>"-flto -emit-llvm" ;
+#
+#explicit intrinsics_bitcode_boehm ;
+#
+#stripped-bitcode intrinsics_bitcode_mps : intrinsics.cc
+#	/internals/core//core/<link>static
+#	/externals//boostAndExpatLibs
+#	/externals//llvm_lib_globbed
+#	:
+#	<implicit-dependency>/internals/core//core
+#	<implicit-dependency>/internals/clbind//clbind
+#        <gc>mps
+#	<cxxflags>"-flto -emit-llvm" ;
+#
+#explicit intrinsics_bitcode_mps ;
+#
+#stripped-bitcode intrinsics_bitcode_mps_prep : intrinsics.cc
+#	/internals/core//core/<link>static
+#	/externals//boostAndExpatLibs
+#	/externals//llvm_lib_globbed
+#	:
+#	<implicit-dependency>/internals/core//core
+#	<implicit-dependency>/internals/clbind//clbind
+#        <gc>mps-prep
+#	<cxxflags>"-flto -emit-llvm" ;
+#
+#explicit intrinsics_bitcode_mps_prep ;
+#
+#
+#install install_intrinsics_bitcode : intrinsics_bitcode_boehmdc :
+#	<variant>debug:<location>$(APP-DEBUG-LIB)
+#	<variant>release:<location>$(APP-RELEASE-LIB)
+#        <gc>boehmdc
+#        ;
+#
+#install install_intrinsics_bitcode : intrinsics_bitcode_boehm :
+#	<variant>debug:<location>$(APP-DEBUG-LIB)
+#	<variant>release:<location>$(APP-RELEASE-LIB)
+#        <gc>boehm
+#        ;
+#
+#install install_intrinsics_bitcode : intrinsics_bitcode_mps :
+#	<variant>debug:<location>$(APP-DEBUG-LIB)
+#	<variant>release:<location>$(APP-RELEASE-LIB)
+#        <gc>mps
+#        ;
+#
+#install install_intrinsics_bitcode : intrinsics_bitcode_mps_prep :
+#	<variant>debug:<location>$(APP-DEBUG-LIB)
+#	<variant>release:<location>$(APP-RELEASE-LIB)
+#        <gc>mps-prep
+#        ;
+#
+#alias bundle : install_intrinsics_bitcode ;

@@ -290,7 +290,3 @@ use-project internals/main : src/main ;
 #use-project cando/src/kinematics : cando/src/kinematics ;
 #use-project cando/src/packageManager : cando/src/packageManager ;
 #use-project cando/main-cando : cando/main-cando ;
-
-alias everything : /internals/llvmo//install_intrinsics_bitcode
-                   /internals/lisp//bundle
-                 ;

@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/globals.h>
+#include <clasp/core/core_globals.h>
 
 /*! Move all global/static variable definitions into this file so that we can control them
  */

@@ -1,5 +1,5 @@
 /*
-    File: globals.h
+    File: core_globals.h
 */
 
 /*

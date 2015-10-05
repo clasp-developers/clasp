@@ -30,9 +30,3 @@ sources =
 	/externals//mpi
 	/externals//boostAndExpatLibs ;
 
-#bundler.bundle $(dir) :
-#	     $(sources) :
-#	     <link>static
-#	     <implicit-dependency>mi
-#	     <implicit-dependency>/internals/core//mi
-#	     ;

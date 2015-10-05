@@ -88,7 +88,7 @@ THE SOFTWARE.
 #include <clasp/core/funcallableStandardClass.h>
 #include <clasp/core/gcInterface.h>
 #include <clasp/core/genericFunction.h>
-#include <clasp/core/globals.h>
+#include <clasp/core/core_globals.h>
 #include <clasp/core/glue.fwd.h>
 #include <clasp/core/glue.h>
 #include <clasp/core/grayPackage.fwd.h>

@@ -6,8 +6,6 @@ echo "core dir = $(dir)" ;
 project internals/core : requirements
 	<define>EXPAT
 	<threading>single
-        <link>static
-#	<linkflags>-rdynamic
 	<include>./
 	<include>..
 	<toolset>darwin:<define>darwin
@@ -30,11 +28,6 @@ project internals/core : requirements
 #
 # Precompiled headers
 #
-
-#cpp-pch pch : pch.h ;
-
-local unity_sources =
-      all.cc ;
 
 local sources =
       stacks.cc
@@ -72,7 +65,7 @@ local sources =
       print.cc
 	    sourceFileInfo.cc
 		symbolToEnumConverter.cc
-		globals.cc
+		core_globals.cc
 		externalObject.cc
 		myReadLine.cc
 		specialForm.cc
@@ -181,14 +174,6 @@ local sources =
 		intArray.cc
 		bitVector.cc
 		posixTime.cc
-	     /externals//boostAndExpatLibs
-             		;
+     		;
 
-lib core : $(sources) 
-         : <use>/externals//clang_lib_globbed <use>/externals//llvm_lib_globbed
-         <link>static ;
-
-#install install-boehmdc : core : <program>clasp,<gc>boehmdc,<variant>release:<location>$(APPCONT)/lib/boehmdc/release/ ;
-#install install-boehm : core : <program>clasp,<gc>boehm,<variant>release:<location>$(APPCONT)/lib/boehm/release/ ;
-#install install-mps : core : <program>clasp,<gc>mps,<variant>release:<location>$(APPCONT)/lib/mps/release/ ;
-#alias install-lib : install-boehmdc install-boehm install-mps ;
+alias core : $(sources) ;

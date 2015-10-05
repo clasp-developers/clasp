@@ -839,7 +839,7 @@ namespace core {
 }
 
 
-#include <clasp/core/globals.h>
+#include <clasp/core/core_globals.h>
 
 
 
