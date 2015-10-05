@@ -61,6 +61,7 @@ ifneq ($(CLANG_BIN_DIR),)
 endif
 
 export BINDIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)
+export EXECS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs/
 
 export PATH := $(CLASP_HOME)/src/common:$(PATH)
 export PATH := $(BOOST_BUILD_INSTALL)/bin:$(PATH)
@@ -111,14 +112,12 @@ $(BINDIR)/clasp_mps_o : $(BINDIR)/release/boehm/clasp
 	echo $< $>
 
 executable-symlinks:
-	@if [ -e $(BINDIR)/release/boehm/clasp -a \( ! -e $(BINDIR)/clasp_boehm_o \) ]; then ln -s $(BINDIR)/release/boehm/clasp $(BINDIR)/clasp_boehm_o; fi
-	@if [ -e $(BINDIR)/release/mps/clasp -a \( ! -e $(BINDIR)/clasp_mps_o \) ]; then ln -s $(BINDIR)/release/mps/clasp $(BINDIR)/clasp_mps_o; fi
-	@if [ -e $(BINDIR)/release/boehmdc/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_o \) ]; then ln -s $(BINDIR)/release/boehmdc/clasp $(BINDIR)/clasp_boehmdc_o; fi
-	@if [ -e $(BINDIR)/debug/boehm/clasp -a \( ! -e $(BINDIR)/clasp_boehm_d \) ]; then ln -s $(BINDIR)/debug/boehm/clasp $(BINDIR)/clasp_boehm_d; fi
-	@if [ -e $(BINDIR)/debug/mps/clasp -a \( ! -e $(BINDIR)/clasp_mps_d \) ]; then ln -s $(BINDIR)/debug/mps/clasp $(BINDIR)/clasp_mps_d; fi
-	@if [ -e $(BINDIR)/debug/boehmdc/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_d \) ]; then ln -s $(BINDIR)/debug/boehmdc/clasp $(BINDIR)/clasp_boehmdc_d; fi
-
-
+	@if [ -e $(EXECS)/boehm/release/clasp -a \( ! -e $(BINDIR)/clasp_boehm_o \) ]; then ln -s $(EXECS)/boehm/release/clasp $(BINDIR)/clasp_boehm_o; fi
+	@if [ -e $(EXECS)/boehmdc/release/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_o \) ]; then ln -s $(EXECS)/boehmdc/release/clasp $(BINDIR)/clasp_boehmdc_o; fi
+	@if [ -e $(EXECS)/mps/release/clasp -a \( ! -e $(BINDIR)/clasp_mps_o \) ]; then ln -s $(EXECS)/mps/release/clasp $(BINDIR)/clasp_mps_o; fi
+	@if [ -e $(EXECS)/boehm/debug/clasp -a \( ! -e $(BINDIR)/clasp_boehm_d \) ]; then ln -s $(EXECS)/boehm/debug/clasp $(BINDIR)/clasp_boehm_d; fi
+	@if [ -e $(EXECS)/boehmdc/debug/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_d \) ]; then ln -s $(EXECS)/boehmdc/debug/clasp $(BINDIR)/clasp_boehmdc_d; fi
+	@if [ -e $(EXECS)/mps/debug/clasp -a \( ! -e $(BINDIR)/clasp_mps_d \) ]; then ln -s $(EXECS)/mps/debug/clasp $(BINDIR)/clasp_mps_d; fi
 
 libatomic-setup:
 	-(cd $(LIBATOMIC_OPS_SOURCE_DIR); autoreconf -vif)
