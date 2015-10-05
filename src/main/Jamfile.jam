@@ -77,8 +77,8 @@ import package ;
 package.install clasp_install :
                 : clasp intrinsics_bitcode
                 : /externals//boostAndExpatLibs
-                /internals/clbind//clasp-clbind/<link>shared
                 : 
                 ;
 
 
+#                /internals/clbind//clasp-clbind/<link>shared
