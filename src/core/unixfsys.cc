@@ -118,7 +118,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, wild);
 
 namespace core {
 
-static Str_sp clasp_strerror(int e) {
+Str_sp clasp_strerror(int e) {
   return Str_O::create(strerror(e));
 }
 

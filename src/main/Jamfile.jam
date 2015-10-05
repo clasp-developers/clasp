@@ -48,13 +48,13 @@ local sources =
 		;
 
 exe clasp : main.cc $(sources)
-    /externals//lib_boehm/<link>static
+    lib_boehm
     : <gc>boehmdc
 
     ;
 
 exe clasp : main.cc $(sources)
-    /externals//lib_boehm/<link>static
+    lib_boehm
     : <gc>boehm
     ;
 

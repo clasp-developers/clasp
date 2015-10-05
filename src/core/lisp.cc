@@ -1731,7 +1731,7 @@ T_mv ext_system(Str_sp cmd) {
   if ( ret == 0 ) {
     return Values(core::make_fixnum(0),_Nil<T_O>());
   } else {
-    return Values(core::make_fixnum(ret),clasp_strerror());
+    return Values(core::make_fixnum(ret),clasp_strerror(errno));
   }
 }
 
