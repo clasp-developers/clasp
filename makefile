@@ -98,7 +98,7 @@ boot:
 	make -C src/main bclasp-boehmdc-addons
 
 clasp-libraries:
-	(cd src/gctools; $(BJAM) link=$(LINK) program=clasp gc=boehmdc threading=single gctools install-lib)
+	(cd src/gctools; $(BJAM) link=$(LINK) program=clasp gctools install-lib)
 
 devbuild:
 	(cd src/main; $(BUILD) -j$(PJOBS) link=$(LINK) program=clasp gc=boehmdc release dist )

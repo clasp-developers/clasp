@@ -567,62 +567,62 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     // setup the build;system pathnames
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;min-bitcode;**;*.*"))));
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-bitcode;**;*.*"))));
       af_pathnameTranslations(Str_O::create("min-bitcode"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;full-bitcode;**;*.*"))));
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-bitcode;**;*.*"))));
       af_pathnameTranslations(Str_O::create("full-bitcode"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;cclasp-bitcode;**;*.*"))));
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-bitcode;**;*.*"))));
       af_pathnameTranslations(Str_O::create("cclasp-bitcode"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;min-boehmdc;**;*.*"))));
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehmdc;**;*.*"))));
       af_pathnameTranslations(Str_O::create("min-boehmdc"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;full-boehmdc;**;*.*"))));
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehmdc;**;*.*"))));
       af_pathnameTranslations(Str_O::create("full-boehmdc"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;cclasp-boehmdc;**;*.*"))));
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehmdc;**;*.*"))));
       af_pathnameTranslations(Str_O::create("cclasp-boehmdc"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;min-boehm;**;*.*"))));
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehm;**;*.*"))));
       af_pathnameTranslations(Str_O::create("min-boehm"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;full-boehm;**;*.*"))));
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehm;**;*.*"))));
       af_pathnameTranslations(Str_O::create("full-boehm"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;cclasp-boehm;**;*.*"))));
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehm;**;*.*"))));
       af_pathnameTranslations(Str_O::create("cclasp-boehm"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;min-mps;**;*.*"))));
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-mps;**;*.*"))));
       af_pathnameTranslations(Str_O::create("min-mps"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;full-mps;**;*.*"))));
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-mps;**;*.*"))));
       af_pathnameTranslations(Str_O::create("full-mps"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("SYS:build;system;cclasp-mps;**;*.*"))));
+          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-mps;**;*.*"))));
       af_pathnameTranslations(Str_O::create("cclasp-mps"), _lisp->_true(), p);
     }
   }
@@ -1728,8 +1728,11 @@ T_mv ext_system(Str_sp cmd) {
   _G();
   string command = cmd->get();
   int ret = system(command.c_str());
-  core::Fixnum_sp iret = core::make_fixnum(ret);
-  return (Values(iret));
+  if ( ret == 0 ) {
+    return Values(core::make_fixnum(0),_Nil<T_O>());
+  } else {
+    return Values(core::make_fixnum(ret),clasp_strerror());
+  }
 }
 
 /*

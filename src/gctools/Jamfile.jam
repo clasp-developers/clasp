@@ -46,17 +46,3 @@ local sources =
 
 lib gctools : $(sources) : <link>static ;
 
-install install-boehmdc : gctools : <program>clasp,<gc>boehmdc,<variant>release:<location>$(APPCONT)/lib/boehmdc/release/ ;
-install install-boehm : gctools : <program>clasp,<gc>boehm,<variant>release:<location>$(APPCONT)/lib/boehm/release/ ;
-install install-mps : gctools : <program>clasp,<gc>mps,<variant>release:<location>$(APPCONT)/lib/mps/release/ ;
-alias install-lib : install-boehmdc install-boehm install-mps ;
-
-
-#bundler.bundle $(dir) :
-#	     $(sources) :
-#	     <link>static
-#	     <implicit-dependency>mi
-#	     <implicit-dependency>/internals/core//mi
-#	     <implicit-dependency>/internals/cffi//mi
-#	     <implicit-dependency>/internals/llvmo//mi
-#	     ;

@@ -96,3 +96,21 @@ install dist : clasp /internals/llvmo//install_intrinsics_bitcode
         <program>clasp,<target-os>darwin,<variant>debug,<gc>mps:<location>$(APPBIN-DARWIN)/debug/mps
         <implicit-dependency>/internals/llvmo//bundle
         ;
+
+import package ;
+package.install boehm-libs :
+                <gc>boehm
+                :
+                : /internals/gctools//gctools
+                  /internals/core//core
+                  /internals/clbind//clbind
+                  ;
+
+package.install mps-libs :
+                <gc>mps
+                :
+                : /internals/gctools//gctools
+                  /internals/core//core
+                  /internals/clbind//clbind
+                  ;
+
