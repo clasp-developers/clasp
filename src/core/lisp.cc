@@ -558,11 +558,11 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     af_pathnameTranslations(Str_O::create("tmp"), _lisp->_true(), ptsTmp);
 
     // setup the APP-CONTENTS logical-pathname-translations
-    Cons_sp app = Cons_O::createList(
+    Cons_sp appc = Cons_O::createList(
         Cons_O::createList(Str_O::create("app-contents:**;*.*"), bundle->getAppContentsPathname())
         /* , more here */
         );
-    af_pathnameTranslations(Str_O::create("app-contents"), _lisp->_true(), app);
+    af_pathnameTranslations(Str_O::create("app-contents"), _lisp->_true(), appc);
 
 
     // setup the APP-RESOURCES logical-pathname-translations
