@@ -47,7 +47,7 @@ lib clasp-clbind :
     	    	/internals/cffi//cffi
                 /internals/clbind//clbind
                 /internals/llvmo//llvmo
-                /internals/llvmo//asttooling
+                /internals/asttooling//asttooling
                 /internals/sockets//sockets
                 /internals/serveEvent//serveEvent
                 /internals/main//main

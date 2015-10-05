@@ -1,3 +1,5 @@
+# -*- Mode: Makefile -*-
+
 include local.config
 
 export CLASP_HOME = $(shell pwd)
