@@ -78,11 +78,14 @@ stripped-bitcode intrinsics_bitcode : /internals/llvmo//intrinsics.cc
 
 explicit intrinsics_bitcode ;
 
+
+
 import package ;
 
 package.install clasp_install :
                 : clasp intrinsics_bitcode
                 : /externals//boostAndExpatLibs
+                /internals/clbind//clasp-clbind
                 : 
                 ;
 

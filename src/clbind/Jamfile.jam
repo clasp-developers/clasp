@@ -39,3 +39,10 @@ local sources =
 
 
 alias clbind : $(sources) ;
+
+
+lib clasp-clbind : 
+		/internals/gctools//gctools
+    	    	/internals/core//core
+                /internals/clbind//clbind
+                ;
