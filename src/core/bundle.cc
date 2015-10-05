@@ -280,6 +280,17 @@ Pathname_sp Bundle::getAppContentsResourcesPathname() {
   return cl_pathname(Str_O::create(ss.str()));
 }
 
+Pathname_sp Bundle::getAppContentsPathname() {
+  stringstream ss;
+  ASSERT(!this->_RootDir.empty());
+  ss << this->_RootDir.string();
+  ss << DIR_SEPARATOR;
+  ss << "Contents";
+  ss << DIR_SEPARATOR;
+  ss << "**/*.*";
+  return cl_pathname(Str_O::create(ss.str()));
+}
+
 bf::path Bundle::getLibDir() {
   return this->_LibDir;
 }

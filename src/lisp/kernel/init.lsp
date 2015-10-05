@@ -404,7 +404,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     (t (error "Unknown clasp configuration"))))
 
 (defun build-intrinsics-bitcode-pathname ()
-  (bformat nil "app-resources:lib;release;intrinsics_bitcode_%s.sbc" (build-configuration)))
+  (bformat nil "app-contents:execs;%s;release;bin;intrinsics_bitcode.sbc" (build-configuration)))
 
 
 (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))

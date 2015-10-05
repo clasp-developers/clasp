@@ -79,6 +79,7 @@ public:
 
   Pathname_sp getRootPathname();
   Pathname_sp getSysPathname();
+  Pathname_sp getAppContentsPathname();
   Pathname_sp getAppContentsResourcesPathname();
 
   string describe();
