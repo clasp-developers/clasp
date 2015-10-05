@@ -20,6 +20,10 @@ export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/C
 
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
 
+ifeq ($(VARIANT),)
+  export VARIANT = release
+endif
+
 ifeq ($(TARGET_OS),linux)
   export TOOLSET = clang-linux
 else
@@ -80,11 +84,11 @@ all:
 	make boost_build
 	make boehm
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/release gc=boehm release clasp_install )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/ gc=boehm $(VARIANT) clasp_install )
 	make -C src/main bclasp-boehm
 	make -C src/main cclasp-boehm
 	make -C src/main cclasp-boehm-addons
-#	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install )
+#	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp_install )
 #	make -C src/main link-cclasp-mps
 #	make -C src/main link-cclasp-mps-addons
 	make executable-symlinks
@@ -95,7 +99,7 @@ boot:
 	make asdf
 	make boost_build
 	make boehm
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/release gc=boehmdc release clasp_install )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/$(VARIANT) gc=boehmdc $(VARIANT) clasp_install )
 	make -C src/main bclasp-boehmdc
 	make -C src/main bclasp-boehmdc-addons
 
@@ -112,12 +116,12 @@ $(BINDIR)/clasp_mps_o : $(BINDIR)/release/boehm/clasp
 	echo $< $>
 
 executable-symlinks:
-	@if [ -e $(EXECS)/boehm/release/clasp -a \( ! -e $(BINDIR)/clasp_boehm_o \) ]; then ln -s $(EXECS)/boehm/release/clasp $(BINDIR)/clasp_boehm_o; fi
-	@if [ -e $(EXECS)/boehmdc/release/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_o \) ]; then ln -s $(EXECS)/boehmdc/release/clasp $(BINDIR)/clasp_boehmdc_o; fi
-	@if [ -e $(EXECS)/mps/release/clasp -a \( ! -e $(BINDIR)/clasp_mps_o \) ]; then ln -s $(EXECS)/mps/release/clasp $(BINDIR)/clasp_mps_o; fi
-	@if [ -e $(EXECS)/boehm/debug/clasp -a \( ! -e $(BINDIR)/clasp_boehm_d \) ]; then ln -s $(EXECS)/boehm/debug/clasp $(BINDIR)/clasp_boehm_d; fi
-	@if [ -e $(EXECS)/boehmdc/debug/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_d \) ]; then ln -s $(EXECS)/boehmdc/debug/clasp $(BINDIR)/clasp_boehmdc_d; fi
-	@if [ -e $(EXECS)/mps/debug/clasp -a \( ! -e $(BINDIR)/clasp_mps_d \) ]; then ln -s $(EXECS)/mps/debug/clasp $(BINDIR)/clasp_mps_d; fi
+	@if [ -e $(EXECS)/boehm/release/bin/clasp -a \( ! -e $(BINDIR)/clasp_boehm_o \) ]; then ln -s $(EXECS)/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o; fi
+	@if [ -e $(EXECS)/boehmdc/release/bin/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_o \) ]; then ln -s $(EXECS)/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o; fi
+	@if [ -e $(EXECS)/mps/release/bin/clasp -a \( ! -e $(BINDIR)/clasp_mps_o \) ]; then ln -s $(EXECS)/mps/release/bin/clasp $(BINDIR)/clasp_mps_o; fi
+	@if [ -e $(EXECS)/boehm/debug/bin/clasp -a \( ! -e $(BINDIR)/clasp_boehm_d \) ]; then ln -s $(EXECS)/boehm/debug/bin/clasp $(BINDIR)/clasp_boehm_d; fi
+	@if [ -e $(EXECS)/boehmdc/debug/bin/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_d \) ]; then ln -s $(EXECS)/boehmdc/debug/bin/clasp $(BINDIR)/clasp_boehmdc_d; fi
+	@if [ -e $(EXECS)/mps/debug/bin/clasp -a \( ! -e $(BINDIR)/clasp_mps_d \) ]; then ln -s $(EXECS)/mps/debug/bin/clasp $(BINDIR)/clasp_mps_d; fi
 
 libatomic-setup:
 	-(cd $(LIBATOMIC_OPS_SOURCE_DIR); autoreconf -vif)

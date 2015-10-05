@@ -27,7 +27,9 @@
 	     (data-layout (llvm-sys:get-data-layout target-subtarget-info))
 	     )
 	(if data-layout (llvm-sys:set-data-layout module data-layout))
+        (bformat t "Adding tli to pass-manager\n")
 	(llvm-sys:pass-manager-add pm tli)
+        (bformat t "Done adding tli to pass-manager\n")
 	(llvm-sys:pass-manager-add pm data-layout-pass)
 	(llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream file-type module)))))
 

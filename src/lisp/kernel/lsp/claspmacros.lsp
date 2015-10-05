@@ -101,7 +101,7 @@
 ;;;
 ;;; Set the fdefinition for all special operators to something more reasonable than T
 ;;;
-(dolist (so (core:list-of-all-special-operators))
+(dolist (so (core::list-of-all-special-operators))
   (when (eq (fdefinition so) T)
     (core:*fset so
                 (let ((so so))

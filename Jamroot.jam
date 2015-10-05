@@ -10,7 +10,6 @@ echo "CLASP_VERSION " $(CLASP_VERSION) ;
 
 using clang : : [ os.environ CLASP_CLANG_PATH ] ;
 
-#using bundler : $(TOP) ;
 #using gc ;
 import feature ;
 feature.feature gc : boehmdc boehm mps-prep mps 
