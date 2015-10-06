@@ -1,15 +1,16 @@
+import os ;
 
-LLVM_LIB_DIR = [ SHELL "llvm-config --libdir | tr -d '\n'" ] ;
-LLVM_LIBS = [ GLOB $(LLVM_LIB_DIR) : libLLVM*.a ] ;
+LLVM_RELEASE_LIB_DIR = [ os.environ CLASP_RELEASE_LLVM_LIB_DIR ] ;
+LLVM_RELEASE_LIBS = [ GLOB $(LLVM_RELEASE_LIB_DIR) : libLLVM*.a ] ;
+CLANG_RELEASE_LIBS = [ GLOB $(LLVM_RELEASE_LIB_DIR) : libclang*.a ] ;
 
-#LLVM_LIBS_STRING = [ SHELL "llvm-config --libfiles | tr -d '\n'" ] ;
-#LLVM_LIBS = [ SPLIT_BY_CHARACTERS $(LLVM_LIBS_STRING) : " " ] ;
+LLVM_DEBUG_LIB_DIR = [ os.environ CLASP_DEBUG_LLVM_LIB_DIR ] ;
+LLVM_DEBUG_LIBS = [ GLOB $(LLVM_DEBUG_LIB_DIR) : libLLVM*.a ] ;
+CLANG_DEBUG_LIBS = [ GLOB $(LLVM_DEBUG_LIB_DIR) : libclang*.a ] ;
 
-CLANG_LIBS = [ GLOB $(LLVM_LIB_DIR) : libclang*.a ] ;
+alias llvm_lib_globbed : $(LLVM_RELEASE_LIBS) : <variant>release ;
+alias clang_lib_globbed : $(CLANG_RELEASE_LIBS) : <variant>release ;
 
-echo " LLVM libraries are in directory: |" $(LLVM_LIB_DIR) "|" ;
-echo " LLVM libraries are --> " $(LLVM_LIBS) ;
-
-alias llvm_lib_globbed : $(LLVM_LIBS) ;
-alias clang_lib_globbed : $(CLANG_LIBS) ;
+alias llvm_lib_globbed : $(LLVM_DEBUG_LIBS) : <variant>debug ;
+alias clang_lib_globbed : $(CLANG_DEBUG_LIBS) : <variant>debug ;
 

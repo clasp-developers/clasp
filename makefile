@@ -20,6 +20,13 @@ export CLASP_APP_EXECS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
 export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 
+ifeq ($(CLASP_DEBUG_LLVM_LIB_DIR),)
+  export CLASP_DEBUG_LLVM_LIB_DIR=`llvm-config --libdir | tr -d '\n'`
+endif
+ifeq ($(CLASP_RELEASE_LLVM_LIB_DIR),)
+  export CLASP_RELEASE_LLVM_LIB_DIR=`llvm-config --libdir | tr -d '\n'`
+endif
+
 ifeq ($(CLASP_DEBUG_CXXFLAGS),)
   export CLASP_DEBUG_CXXFLAGS = $(CLASP_CXXFLAGS)
 endif
@@ -36,9 +43,7 @@ endif
 
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
 
-ifeq ($(VARIANT),)
-  export VARIANT = release
-endif
+export VARIANT = release
 
 ifeq ($(TARGET_OS),linux)
   export TOOLSET = clang-linux
