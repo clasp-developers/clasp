@@ -18,6 +18,20 @@ export CLASP_APP_EXECS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
 export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 
+ifeq ($(CLASP_DEBUG_CXXFLAGS),)
+  export CLASP_DEBUG_CXXFLAGS = $(CLASP_CXXFLAGS)
+endif
+ifeq ($(CLASP_DEBUG_LINKFLAGS),)
+  export CLASP_DEBUG_LINKFLAGS = $(CLASP_LINKFLAGS)
+endif
+ifeq ($(CLASP_RELEASE_CXXFLAGS),)
+  export CLASP_RELEASE_CXXFLAGS = $(CLASP_CXXFLAGS)
+endif
+ifeq ($(CLASP_RELEASE_LINKFLAGS),)
+  export CLASP_RELEASE_LINKFLAGS = $(CLASP_LINKFLAGS)
+endif
+
+
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
 
 ifeq ($(VARIANT),)
@@ -116,12 +130,12 @@ $(BINDIR)/clasp_mps_o : $(BINDIR)/release/boehm/clasp
 	echo $< $>
 
 executable-symlinks:
-	@if [ -e $(EXECS)/boehm/release/bin/clasp -a \( ! -e $(BINDIR)/clasp_boehm_o \) ]; then ln -s $(EXECS)/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o; fi
-	@if [ -e $(EXECS)/boehmdc/release/bin/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_o \) ]; then ln -s $(EXECS)/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o; fi
-	@if [ -e $(EXECS)/mps/release/bin/clasp -a \( ! -e $(BINDIR)/clasp_mps_o \) ]; then ln -s $(EXECS)/mps/release/bin/clasp $(BINDIR)/clasp_mps_o; fi
-	@if [ -e $(EXECS)/boehm/debug/bin/clasp -a \( ! -e $(BINDIR)/clasp_boehm_d \) ]; then ln -s $(EXECS)/boehm/debug/bin/clasp $(BINDIR)/clasp_boehm_d; fi
-	@if [ -e $(EXECS)/boehmdc/debug/bin/clasp -a \( ! -e $(BINDIR)/clasp_boehmdc_d \) ]; then ln -s $(EXECS)/boehmdc/debug/bin/clasp $(BINDIR)/clasp_boehmdc_d; fi
-	@if [ -e $(EXECS)/mps/debug/bin/clasp -a \( ! -e $(BINDIR)/clasp_mps_d \) ]; then ln -s $(EXECS)/mps/debug/bin/clasp $(BINDIR)/clasp_mps_d; fi
+	ln -sf $(EXECS)/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o
+	ln -sf $(EXECS)/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o
+	ln -sf $(EXECS)/mps/release/bin/clasp $(BINDIR)/clasp_mps_o
+	ln -sf $(EXECS)/boehm/debug/bin/clasp $(BINDIR)/clasp_boehm_d
+	ln -sf $(EXECS)/boehmdc/debug/bin/clasp $(BINDIR)/clasp_boehmdc_d
+	ln -sf $(EXECS)/mps/debug/bin/clasp $(BINDIR)/clasp_mps_d
 
 libatomic-setup:
 	-(cd $(LIBATOMIC_OPS_SOURCE_DIR); autoreconf -vif)

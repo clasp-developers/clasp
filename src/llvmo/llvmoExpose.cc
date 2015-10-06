@@ -1454,6 +1454,7 @@ TargetLibraryInfo_sp TargetLibraryInfo_O::make(llvm::Triple *tripleP) {
   _G();
   GC_ALLOCATE(TargetLibraryInfo_O, self);
   self->_ptr = new llvm::TargetLibraryInfo(*tripleP);
+  ASSERT(self->_ptr);
   return self;
 };
 

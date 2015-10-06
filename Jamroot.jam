@@ -29,8 +29,10 @@ feature.compose <program>cando : <define>PROGRAM_CANDO <define>APPLICATION_CONFI
 feature.compose <program>other : <define>PROGRAM_OTHER ;   #  Define APPLICATION_CONFIG yourself
 
 GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
-CLASP_LINKFLAGS = [ os.environ CLASP_LINKFLAGS ] ;
-CLASP_CXXFLAGS = [ os.environ CLASP_CXXFLAGS ] ;
+CLASP_DEBUG_CXXFLAGS = [ os.environ CLASP_DEBUG_CXXFLAGS ] ;
+CLASP_DEBUG_LINKFLAGS = [ os.environ CLASP_DEBUG_LINKFLAGS ] ;
+CLASP_RELEASE_CXXFLAGS = [ os.environ CLASP_RELEASE_CXXFLAGS ] ;
+CLASP_RELEASE_LINKFLAGS = [ os.environ CLASP_RELEASE_LINKFLAGS ] ;
 
 echo "CLASP_CXXFLAGS = " $(CLASP_CXXFLAGS) ;
 echo "CLASP_LINKFLAGS = " $(CLASP_LINKFLAGS) ;
@@ -69,7 +71,7 @@ project clasp : requirements
         <define>CLASP_GIT_COMMIT="\\\"$(GIT_COMMIT)\\\""
         <define>CLASP_VERSION="\\\"$(CLASP_VERSION)\\\""
         <program>cando:<include>projects/cando/include
-        <cxxflags>"-Wno-attributes"
+        <cxxflags>"-Wno-attributes -Wno-null-conversion"
 #        <cxxflags>"-Wconversion"
         <target-os>linux:<cxxflags>"-fPIC"
         <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
@@ -96,8 +98,10 @@ project clasp : requirements
 	<define>INCLUDED_FROM_CLASP
 	<define>EXPAT
         <cxxflags>"-Wgnu-array-member-paren-init"
-        <linkflags>$(CLASP_LINKFLAGS)
-        <cxxflags>$(CLASP_CXXFLAGS)
+        <variant>debug:<cxxflags>$(CLASP_DEBUG_CXXFLAGS)
+        <variant>debug:<linkflags>$(CLASP_DEBUG_LINKFLAGS)
+        <variant>release:<cxxflags>$(CLASP_RELEASE_CXXFLAGS)
+        <variant>release:<linkflags>$(CLASP_RELEASE_LINKFLAGS)
 #
 # CONFIGURE CLASP BUILD
 #
