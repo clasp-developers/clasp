@@ -1,3 +1,5 @@
+# -*- Mode: Makefile -*-
+
 include local.config
 
 export CLASP_HOME = $(shell pwd)
@@ -114,6 +116,7 @@ boot:
 	make boost_build
 	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/$(VARIANT) gc=boehmdc $(VARIANT) clasp_install )
+	make executable-symlinks
 	make -C src/main bclasp-boehmdc
 	make -C src/main bclasp-boehmdc-addons
 

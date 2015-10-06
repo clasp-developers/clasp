@@ -44,5 +44,14 @@ alias clbind : $(sources) ;
 lib clasp-clbind : 
 		/internals/gctools//gctools
     	    	/internals/core//core
+    	    	/internals/cffi//cffi
                 /internals/clbind//clbind
+                /internals/llvmo//llvmo
+                /internals/asttooling//asttooling
+                /internals/sockets//sockets
+                /internals/serveEvent//serveEvent
+                /internals/main//main
+                /externals//boostAndExpatLibs
+       		/externals//llvm_lib_globbed
+                /internals/gctools//gclib
                 ;

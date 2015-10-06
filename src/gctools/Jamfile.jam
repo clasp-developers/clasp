@@ -29,6 +29,17 @@ project internals/gctools : requirements
 	<target-os>darwin:<linkflags>"-dynamiclib"
 	;
 
+
+alias lib_boehm : $(APPRES-LIB-COMMON-LIB)/libgc.a ;
+
+alias gclib : lib_boehm : <gc>boehmdc ;
+
+alias gclib : lib_boehm : <gc>boehm ;
+
+alias gclib : mymps.c : <gc>mps ;
+
+alias gclib : mymps.c : <gc>mps-prep ;
+
 local sources =
       gcFunctions.cc
 	gctoolsPackage.cc
@@ -40,4 +51,5 @@ local sources =
 	memoryManagement.cc
         ;
 
-alias gctools : $(sources) ;
+alias gctools : $(sources)
+              ;
