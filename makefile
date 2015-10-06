@@ -59,8 +59,6 @@ else
   export TOOLSET = clang-darwin
 endif
 
-echo TOOLSET = $(TOOLSET)
-
 ifeq ($(TARGET_OS),linux)
   export DEVEMACS = emacs -nw ./
 else
