@@ -21,10 +21,10 @@ export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Res
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 
 ifeq ($(CLASP_DEBUG_LLVM_LIB_DIR),)
-  export CLASP_DEBUG_LLVM_LIB_DIR=`llvm-config --libdir | tr -d '\n'`
+  export CLASP_DEBUG_LLVM_LIB_DIR = $(shell llvm-config --libdir | tr -d '\n')
 endif
 ifeq ($(CLASP_RELEASE_LLVM_LIB_DIR),)
-  export CLASP_RELEASE_LLVM_LIB_DIR=`llvm-config --libdir | tr -d '\n'`
+  export CLASP_RELEASE_LLVM_LIB_DIR = $(shell llvm-config --libdir | tr -d '\n')
 endif
 
 ifeq ($(CLASP_DEBUG_CXXFLAGS),)
@@ -40,6 +40,14 @@ ifeq ($(CLASP_RELEASE_LINKFLAGS),)
   export CLASP_RELEASE_LINKFLAGS = $(CLASP_LINKFLAGS)
 endif
 
+$(info CLASP_DEBUG_LLVM_LIB_DIR = $(CLASP_DEBUG_LLVM_LIB_DIR) )
+$(info CLASP_RELEASE_LLVM_LIB_DIR = $(CLASP_RELEASE_LLVM_LIB_DIR) )
+$(info CLASP_DEBUG_CXXFLAGS = $(CLASP_DEBUG_CXXFLAGS) )
+$(info CLASP_DEBUG_LINKFLAGS = $(CLASP_DEBUG_LINKFLAGS) )
+$(info CLASP_RELEASE_CXXFLAGS = $(CLASP_RELEASE_CXXFLAGS) )
+$(info CLASP_RELEASE_LINKFLAGS = $(CLASP_RELEASE_LINKFLAGS) )
+
+$(info xxxxxxxxxxxxxxxxxxxxxxxx)
 
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
 
@@ -138,6 +146,7 @@ $(BINDIR)/clasp_mps_o : $(BINDIR)/release/boehm/clasp
 	echo $< $>
 
 executable-symlinks:
+	install -d $(BINDIR)
 	ln -sf $(EXECS)/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o
 	ln -sf $(EXECS)/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o
 	ln -sf $(EXECS)/mps/release/bin/clasp $(BINDIR)/clasp_mps_o
