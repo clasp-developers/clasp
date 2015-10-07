@@ -175,4 +175,4 @@ mps-interface:
 		-e "(load \"sys:local-asdf-config.lisp\")" \
 	        -e "(asdf:load-system \"clasp-analyzer\")" \
 		-e "(clasp-analyzer:load-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\")" \
-	        -e "(clasp-analyzer:serial-search-all-then-generate-code-and-quit)"
+	        -e "(clasp-analyzer:serial-search-all-then-generate-code-and-quit \"`pwd`/\")"

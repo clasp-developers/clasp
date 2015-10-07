@@ -27,11 +27,7 @@
 	     (data-layout (llvm-sys:get-data-layout target-subtarget-info))
 	     )
 	(if data-layout (llvm-sys:set-data-layout module data-layout))
-        (bformat t "Adding tli to pass-manager tli: %s  isUndefined->%s: \n" tli (is-undefined tli))
-        (when (or (not tli) (is-undefined tli)) 
-            (error "Problem with target-library-info  tli: ~a isUndefined->~a" tli (is-undefined tli)))
 	(llvm-sys:pass-manager-add pm tli)
-        (bformat t "Done adding tli to pass-manager\n")
 	(llvm-sys:pass-manager-add pm data-layout-pass)
 	(llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream file-type module)))))
 

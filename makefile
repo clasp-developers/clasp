@@ -132,8 +132,8 @@ boot:
 	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/$(VARIANT) gc=boehmdc $(VARIANT) clasp_install )
 	make executable-symlinks
-	make -C src/main bclasp-boehmdc
-	make -C src/main bclasp-boehmdc-addons
+#	make -C src/main bclasp-boehmdc
+#	make -C src/main bclasp-boehmdc-addons
 
 clasp-libraries:
 	(cd src/gctools; $(BJAM) link=$(LINK) program=clasp gctools install-lib)

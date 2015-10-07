@@ -2,7 +2,6 @@
 
 project internals : requirements
 	: usage-requirements
-	<include>.
 ;
 
 alias mi : /internals/core//meta

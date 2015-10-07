@@ -8,5 +8,5 @@
 // <define>CONFIG_THREAD_SINGLE - single threaded
 
 #ifdef USE_MPS
-#include "mps/code/mps.c"
+#include <clasp/mps/code/mps.c>
 #endif
