@@ -1281,8 +1281,7 @@ be wrapped with to make a closure"
         (dolist (func funcs)
           (llvm-sys:function-pass-manager-run fpm func)))
       (llvm-sys:do-finalization fpm)
-      (llvm-sys:pass-manager-run mpm module)
-      )))
+      (llvm-sys:pass-manager-run mpm module))))
 
 (defmacro with-module (( &key module
                               (optimize t)

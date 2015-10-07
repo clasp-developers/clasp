@@ -37,7 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/structureClass.h>
-#include <clasp/core/globals.h>
+#include <clasp/gctools/globals.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/main/gc_interface.fwd.h>
 

@@ -4,13 +4,6 @@
 project internals/main : requirements
 	<define>EXPAT
 	<toolset>darwin:<define>READLINE
-	<include>./
-	<include>../core
-	<include>../cffi
-	<include>../llvmo
-	<include>../gctools
-	<include>../sockets
-	<include>../serveEvent
 	<toolset>darwin:<define>darwin
 	<toolset>darwin,<variant>debug:<cxxflags>"-g3"
 	<toolset>darwin:<cxxflags>"-Wno-unused-variable -fopenmp"

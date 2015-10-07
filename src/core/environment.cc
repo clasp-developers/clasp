@@ -419,7 +419,7 @@ T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index) {
 T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) {
   // set this to 1 to use dynamic_cast and 0 to use what is essentially a static cast
 #if USE_STATIC_CAST_FOR_ENVIRONMENT==1
-  ASSERT(env.isA<Environment_O>());
+  ASSERT(env && env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O,T_O>(env);
   return eenv->lookupValueReference(depth,index);
 #else

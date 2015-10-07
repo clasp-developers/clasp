@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 #ifdef USE_MPS
 // header for SNC pool
-#include "mps/code/mpscsnc.h"
+#include <clasp/mps/code/mpscsnc.h>
 #endif
 
 namespace gctools {

@@ -8,8 +8,6 @@ project internals/clbind : requirements
 	<define>_GNU_SOURCE
 	<toolset>darwin:<define>READLINE
 	<threading>single
-	<include>./
-	<include>../
 	<toolset>darwin:<define>darwin
 	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
 	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"

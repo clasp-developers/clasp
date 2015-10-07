@@ -1,5 +1,5 @@
 testVarArgsCall: testVarArgsCall.cc
-	clang++  -g -O0 -o testVarArgsCall testVarArgsCall.cc
+	clang++ -v -g -O0 -o testVarArgsCall testVarArgsCall.cc
 
 testVarArgs: testVarArgs.cc
 	clang++  -g -O0 -o testVarArgs testVarArgs.cc

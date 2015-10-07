@@ -6,17 +6,17 @@
 
 (defconstant +resource-dir+ 
   #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
-  #+target-os-linux "/home/meister/Development/externals-clasp/build/release/bin/../lib/clang/3.6.2"
-  "Define the -resource-dir command line option for Clang compiler runs"
-)
+  #+target-os-linux "/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
+  "Define the -resource-dir command line option for Clang compiler runs")
 (defconstant +additional-arguments+
   #+target-os-darwin (vector
                       "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include"
                       "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
                       "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0/include"
-                      "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks"
-                      )
-  #-target-os-darwin (vector))
+                      "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks")
+  #-target-os-darwin (vector
+                      "-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
+                      "-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"))
 
 
 ;;; --------------------------------------------------
@@ -2603,23 +2603,53 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 ;;(load-compilation-database "app-resources:build-databases;clasp_compile_commands.json")
 
+(defun fix-path (root rel)
+  (let* ((pnroot (pathname root))
+         (pnrel (pathname rel))
+         (merged (merge-pathnames pnrel pnroot))
+         (abs (uiop/filesystem:native-namestring merged)))
+    (format t "Fixed path path: ~a~%" abs)
+    (or abs (error "Could not find absolute path for ~a + ~a" root rel))))
+
+(defun ensure-directory (relpath)
+  (if (eq (elt relpath (1- (length relpath))) #\/)
+      relpath
+      (concatenate 'string relpath "/")))
+
+(defvar *root-directory*)
+(defun build-arguments-adjuster ()
+  "Build a function that fixes up compile command arguments.
+It converts relative -I../... arguments to absolute paths"
+  (lambda (args) 
+    (let ((new-args (copy-seq args)))
+      (dotimes (i (length new-args))
+        (let ((arg (elt new-args i)))
+          (cond
+            ((string= arg "-I.." :start1 0 :end1 4)
+             (let ((fixed-path (fix-path *root-directory* (ensure-directory (subseq arg 2)))))
+               (elt-set new-args i (concatenate 'string "-I" fixed-path))))
+            ((string= arg "../" :start1 0 :end1 3)
+             (let ((fixed-path (fix-path *root-directory* arg)))
+               (elt-set new-args i fixed-path)))
+            (t #| do nothing |# ))))
+      (let ((result (concatenate 'vector #-quiet new-args #+quiet(remove "-v" new-args)
+                                 (vector "-DUSE_MPS"
+                                         "-DRUNNING_GC_BUILDER"
+                                         "-resource-dir" +resource-dir+)
+                                 +additional-arguments+)))
+        result))))
+
+
 (defvar *tools* nil)
-(defvar *arguments-adjuster* (lambda (args) (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
-                                                         (vector "-DUSE_MPS"
-                                                                 "-DRUNNING_GC_BUILDER"
-                                                                 "-resource-dir" +resource-dir+)
-							 +additional-arguments+
-							 )))
-(progn
-  (setf *tools* (make-multitool :arguments-adjuster *arguments-adjuster*))
+(defun setup-*tools* ()
+  (setf *tools* (make-multitool :arguments-adjuster (build-arguments-adjuster)))
   (setup-cclass-search *tools*) ; search for all classes
   (setup-lispalloc-search *tools*)
   (setup-classalloc-search *tools*)
   (setup-rootclassalloc-search *tools*)
   (setup-containeralloc-search *tools*)
   (setup-global-variable-search *tools*)
-  (setup-variable-search *tools*)
-)
+  (setup-variable-search *tools*))
 
 
 ;; ----------------------------------------------------------------------
@@ -2720,8 +2750,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (parallel-merge)))
 
 
-(defun serial-search-all (&key test one-at-a-time)
+(defun serial-search-all (&key start-directory test one-at-a-time)
   "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
+  (format t "serial-search-all --> current-dir: ~a~%" (core:current-dir))
   (setq *parallel-search-pids* nil)
   (let ((all-jobs (if test
                       $test-search
@@ -2734,17 +2765,21 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (save-data *project* (project-pathname "project" "dat"))))
 
 
-(defun serial-search-all-then-generate-code-and-quit ()
-  (serial-search-all)
-  (analyze-project)
-  (generate-code)
-  (quit))
+(defun serial-search-all-then-generate-code-and-quit (root-directory)
+  (let ((*root-directory* root-directory))
+    (setup-*tools*)
+    (serial-search-all)
+    (analyze-project)
+    (generate-code)
+    (quit)))
 
-(defun parallel-search-all-then-generate-code-and-quit ()
-  (parallel-search-all)
-  (analyze-project)
-  (generate-code)
-  (quit))
+(defun parallel-search-all-then-generate-code-and-quit (root-directory)
+  (let ((*root-directory* root-directory))
+    (setup-*tools*)
+    (parallel-search-all)
+    (analyze-project)
+    (generate-code)
+    (quit)))
 
 
 (defun parallel-merge (&key end (start 0) restart)
