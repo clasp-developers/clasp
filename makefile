@@ -23,8 +23,6 @@ export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/C
 ifneq ($(CLANG_BIN_DIR),)
 	PATH := $(CLANG_BIN_DIR):$(PATH)
 	export PATH
-else
-    export CLANG_BIN_DIR=/usr/bin
 endif
 
 
