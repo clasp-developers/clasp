@@ -17,7 +17,7 @@
 (defun save-partial-system (filename system)
   "Save the list of files in *clasp-cleavir-files* to #P\"sys:kernel;cleavir-system.lsp\""
   (with-open-file (fout filename :direction :output)
-    (print `(defparameter *cleavir-partial-system* ',system) fout)))
+    (print system fout)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -25,6 +25,9 @@
 
 (format t "Saving Cleavir files to sys:kernel;cleavir-system.lsp~%")
 (save-partial-system #P"sys:kernel;cleavir-system.lsp"
-                     (asdf-system-groveler:determine-complete-set-of-asdf-source-files
-                      (list :clasp-cleavir)))
+                     (append
+                      (asdf-system-groveler:determine-complete-set-of-asdf-source-files (list :clasp-cleavir))
+                      (list :pre-inline
+                            #P"kernel/cleavir/inline"
+                            #P"kernel/cleavir/autocompile")))
 (format t "Done~%")

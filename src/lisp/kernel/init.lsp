@@ -791,8 +791,20 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     :all
 ;;    lsp/pprint
     ))
-(export '*init-files*)
+(defvar *system-files* *init-files*)
+(export '(*system-files* *init-files*))
 
+(defun add-cleavir-to-*system-files* ()
+  (let* ((fin (open "sys:kernel;cleavir-system.lsp"))
+         cleavir-files)
+    (unwind-protect
+         (progn
+           (setq cleavir-files (read fin)))
+      (close fin))
+    (setq *system-files* (append *init-files*
+                                 (list :bclasp)
+                                 cleavir-files
+                                 (list :cclasp)))))
 (defvar *asdf-files*
   '(:init
     #P"kernel/asdf/build/asdf"
