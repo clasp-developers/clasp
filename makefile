@@ -20,11 +20,19 @@ export CLASP_APP_EXECS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
 export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 
+ifneq ($(CLANG_BIN_DIR),)
+	PATH := $(CLANG_BIN_DIR):$(PATH)
+	export PATH
+else
+    export CLANG_BIN_DIR=/usr/bin
+endif
+
+
 ifeq ($(CLASP_DEBUG_LLVM_LIB_DIR),)
-  export CLASP_DEBUG_LLVM_LIB_DIR = $(shell llvm-config --libdir | tr -d '\n')
+  export CLASP_DEBUG_LLVM_LIB_DIR = $(shell $(CLANG_BIN_DIR)/llvm-config --libdir | tr -d '\n')
 endif
 ifeq ($(CLASP_RELEASE_LLVM_LIB_DIR),)
-  export CLASP_RELEASE_LLVM_LIB_DIR = $(shell llvm-config --libdir | tr -d '\n')
+  export CLASP_RELEASE_LLVM_LIB_DIR = $(shell $(CLANG_BIN_DIR)/llvm-config --libdir | tr -d '\n')
 endif
 
 ifeq ($(CLASP_DEBUG_CXXFLAGS),)
@@ -86,11 +94,6 @@ ifeq ($(TARGET_OS),linux)
 endif
 ifeq ($(TARGET_OS),darwin)
   export EXECUTABLE_DIR=MacOS
-endif
-
-ifneq ($(CLANG_BIN_DIR),)
-	PATH := $(CLANG_BIN_DIR):$(PATH)
-	export PATH
 endif
 
 export BINDIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)
