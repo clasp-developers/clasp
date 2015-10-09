@@ -79,13 +79,13 @@ Clasp also runs ASDF and Quicklisp.
 ## External libraries
 
 These are the requirements as of Oct, 2015.<br>
-LLVM/clang 3.6 compiler<br>
-Boost build v2<br>
-boost libraries ver 1.55<br>
-gmp-6.0.0<br>
-expat-2.0.1<br>
-zlib-1.2.8<br>
-readline-6.2<br>
+1. llvm-3.6
+1. clang-3.6
+1. boost libraries
+1. gmp-6.0.0
+1. expat-2.0.1
+1. zlib-1.2.8
+1. readline-6.2
 
 ## Acknowledgments
 
