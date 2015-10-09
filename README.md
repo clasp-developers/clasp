@@ -78,7 +78,8 @@ Clasp also runs ASDF and Quicklisp.
 
 ## External libraries
 
-These are the requirements as of Oct, 2015.<br>
+These are the requirements as of Oct, 2015.
+
 1. llvm-3.6
 1. clang-3.6 (needs clang header files)
 1. boost libraries
