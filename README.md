@@ -82,6 +82,7 @@ These are the requirements as of Oct, 2015.<br>
 1. llvm-3.6
 1. clang-3.6
 1. boost libraries
+2. autoreconf  (dh-autoreconf on Ubuntu)
 1. gmp-6.0.0
 1. expat-2.0.1
 1. zlib-1.2.8
