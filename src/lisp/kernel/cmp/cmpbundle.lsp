@@ -54,10 +54,9 @@
 (defun safe-system (cmd)
   (if *echo-system*
       (bformat t "%s\n" cmd))
-  (multiple-value-bind (ret error-message)
-      (ext:system cmd)
-    (unless (eql ret 0)
-      (error "Could not execute command with system: ~s~%  strerror: ~s~%" cmd error-message))))
+  (let ((retval (ext:system cmd)))
+    (unless (eql retval 0)
+      (error "Could not execute command with system: ~s~%  return-value: ~d~%" cmd retval))))
 
 
 

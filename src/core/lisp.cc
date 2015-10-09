@@ -1737,9 +1737,9 @@ T_mv ext_system(Str_sp cmd) {
   string command = cmd->get();
   int ret = system(command.c_str());
   if ( ret == 0 ) {
-    return Values(core::make_fixnum(0),_Nil<T_O>());
+    return Values(core::make_fixnum(0));
   } else {
-    return Values(core::make_fixnum(ret),clasp_strerror(errno));
+    return Values(core::make_fixnum(ret));
   }
 }
 
