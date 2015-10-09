@@ -27,10 +27,10 @@ endif
 
 
 ifeq ($(CLASP_DEBUG_LLVM_LIB_DIR),)
-  export CLASP_DEBUG_LLVM_LIB_DIR = $(shell $(CLANG_BIN_DIR)/llvm-config --libdir | tr -d '\n')
+  export CLASP_DEBUG_LLVM_LIB_DIR = $(shell llvm-config --libdir | tr -d '\n')
 endif
 ifeq ($(CLASP_RELEASE_LLVM_LIB_DIR),)
-  export CLASP_RELEASE_LLVM_LIB_DIR = $(shell $(CLANG_BIN_DIR)/llvm-config --libdir | tr -d '\n')
+  export CLASP_RELEASE_LLVM_LIB_DIR = $(shell llvm-config --libdir | tr -d '\n')
 endif
 
 ifeq ($(CLASP_DEBUG_CXXFLAGS),)
