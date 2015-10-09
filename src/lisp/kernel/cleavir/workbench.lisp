@@ -1116,7 +1116,7 @@ core:*pi*
 
 
 (defun select-bitcode-files (start end &key (target-backend (core::default-target-backend))
-					 (system core::*init-files*))
+					 (system core::*system-files*))
   (let ((rest (member start system)))
     (loop for mod in (member start system)
        until (eq mod end)

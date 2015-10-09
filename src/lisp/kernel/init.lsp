@@ -805,6 +805,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                                  (list :bclasp)
                                  cleavir-files
                                  (list :cclasp)))))
+(export 'add-cleavir-to-*system-files*)
+
 (defvar *asdf-files*
   '(:init
     #P"kernel/asdf/build/asdf"
@@ -863,7 +865,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 
-(defun load-system ( first-file last-file &key interp load-bitcode (target-backend *target-backend*) (system *init-files*))
+(defun load-system ( first-file last-file &key interp load-bitcode (target-backend *target-backend*) (system *system-files*))
   (let* ((*target-backend* target-backend)
          (files (select-source-files last-file :first-file first-file :system system))
 	 (cur files))
@@ -880,7 +882,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
        )))
 
 
-(defun compile-system (first-file last-file &key recompile reload (system *init-files*))
+(defun compile-system (first-file last-file &key recompile reload (system *system-files*))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (bformat t "compile-system  from: %s  to: %s\n" first-file last-file)
   (let* ((files (select-source-files last-file :first-file first-file :system system))
@@ -903,7 +905,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 ;; passing :no-prompt t will not prompt the user
 (export 'clean-system)
 (defun clean-system ( &optional after-file &key no-prompt stage
-                                           (system *init-files*))
+                                           (system *system-files*))
   (let* ((files (select-trailing-source-files after-file :system system))
 	 (cur files))
     (bformat t "Will remove modules: %s\n" files)
@@ -944,7 +946,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                                         (bformat t "Starting clasp-min low-level-repl\n")
                                         (core::low-level-repl)))
 
-(defun link-system (start end prologue-form epilogue-form &key (system *init-files*))
+(defun link-system (start end prologue-form epilogue-form &key (system *system-files*))
   (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname x "bc")) (select-source-files end :first-file start :system system))))
     (cmp:link-system-lto (target-backend-pathname +image-pathname+)
                          :lisp-bitcode-files bitcode-files
@@ -970,9 +972,17 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     (compile-system :start :min :recompile t )
     (link-system :init :min (default-prologue-form) +minimal-epilogue-form+)))
 
+(defun recursive-remove-from-list (item list)
+  (if list
+      (if (equal item (car list))
+          (recursive-remove-from-list item (cdr list))
+          (list* (car list) (recursive-remove-from-list item (cdr list))))
+      nil))
+(export 'recursive-remove-from-list)
+
 (export 'switch-to-full)
 (defun switch-to-full ()
-  (setq *features* (remove :ecl-min *features*))
+  (setq *features* (recursive-remove-from-list :ecl-min *features*))
   (push :clos *features*)
   (bformat t "Removed :ecl-min from and added :clos to *features* --> %s\n" *features*))
 
@@ -994,9 +1004,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun help-build ()
   (bformat t "Useful build commands:\n")
-  (bformat t "(load-system from-stage to-stage &key (interp t/nil) (system *init-files*))\n")
+  (bformat t "(load-system from-stage to-stage &key (interp t/nil) (system *system-files*))\n")
   (bformat t "          - Load parts of the system\n")
-  (bformat t "(compile-system from-stage to-stage &key :reload t (system *init-files*))\n")
+  (bformat t "(compile-system from-stage to-stage &key :reload t (system *system-files*))\n")
   (bformat t "          - Compile whatever parts of the system have changed\n")
   (bformat t "(clean-system after-stage)\n")
   (bformat t "          - Remove all built files after after-stage\n")

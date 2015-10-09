@@ -9,19 +9,6 @@
 (in-package :cclasp-build)
 
 
-;;;
-;;; Create a list of source files for clasp+cleavir
-;;;   - Inject the kernel/cleavir/inlining.lisp file at :inlining
-;;;   - #P"/kernel/cleavir/auto-compile" sets up automatic compilation of top-level forms
-(defun setup-cclasp-system (init-files cleavir-files)
-  ;; Remove the cmprepl file and append the rest of the cleavir files
-  (append init-files
-          (list :bclasp)
-          cleavir-files
-          (list #P"kernel/cleavir/inline")
-          (list #P"kernel/cleavir/auto-compile")
-          (list :auto-compile :cclasp)))
-
 (defun compile-system (first-file last-file &key recompile reload (system *cleavir-system*))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (format t "compile-system  from: ~a  to: ~a\n" first-file last-file)
@@ -41,7 +28,7 @@
 (defun compile-clasp (from-mod to-mod &key (recompile t) reload (system *cleavir-system*) dry-run dont-link)
   (pushnew :clos *features*)
   (pushnew :cclasp *features*)
-  (core:pathname-translations "cclasp-boehm" '(("**;*.*" #P"SYS:build;system;cclasp-boehm;**;*.*")))
+p  (core:pathname-translations "cclasp-boehm" '(("**;*.*" #P"SYS:build;system;cclasp-boehm;**;*.*")))
   (core:pathname-translations "cclasp-mps" '(("**;*.*" #P"SYS:build;system;cclasp-mps;**;*.*")))
   (let* ((core:*target-backend* (core:default-target-backend))
 	 (compiler-symbol (find-symbol "*COMPILER*" "CLEAVIR-GENERATE-AST")))
@@ -87,7 +74,7 @@
        collect (bitcode-pathname mod :target-backend target-backend))))
 
 (defun link-cclasp (from-mod to-mod &key (system *cleavir-system*))
-  (let* ((bitcode-files (seelect-bitcode-files from-mod to-mod :system system)))
+  (let* ((bitcode-files (select-bitcode-files from-mod to-mod :system system)))
     (cmp:link-system-lto (core:target-backend-pathname core:+image-pathname+)
                          :lisp-bitcode-files bitcode-files
                          :prologue-form '(progn

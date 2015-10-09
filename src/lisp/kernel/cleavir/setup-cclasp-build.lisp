@@ -29,5 +29,5 @@
                       (asdf-system-groveler:determine-complete-set-of-asdf-source-files (list :clasp-cleavir))
                       (list :pre-inline
                             #P"kernel/cleavir/inline"
-                            #P"kernel/cleavir/autocompile")))
+                            #P"kernel/cleavir/auto-compile")))
 (format t "Done~%")
