@@ -21,10 +21,10 @@ export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Res
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 
 ifeq ($(CLASP_DEBUG_LLVM_LIB_DIR),)
-  export CLASP_DEBUG_LLVM_LIB_DIR = $(shell llvm-config --libdir | tr -d '\n')
+  export CLASP_DEBUG_LLVM_LIB_DIR = $(shell $(CLANG_BIN_DIR)/llvm-config --libdir | tr -d '\n')
 endif
 ifeq ($(CLASP_RELEASE_LLVM_LIB_DIR),)
-  export CLASP_RELEASE_LLVM_LIB_DIR = $(shell llvm-config --libdir | tr -d '\n')
+  export CLASP_RELEASE_LLVM_LIB_DIR = $(shell $(CLANG_BIN_DIR)/llvm-config --libdir | tr -d '\n')
 endif
 
 ifeq ($(CLASP_DEBUG_CXXFLAGS),)

@@ -69,8 +69,9 @@ public:
   uint index() { return this->_Index; };
   VectorObjects_sp arguments() const;
   string argumentsAsString(int maxWidth) const;
+  void dump() const;
   virtual void setActivationFrame(T_sp af) { this->environment = af; };
-  virtual string asString();
+  virtual string asString() const;
   string asStringLowLevel(gctools::tagged_pointer<Closure> closure) const;
   virtual T_sp activationFrame() const { return this->environment; };
   virtual int bds() const { return this->_Bds; };

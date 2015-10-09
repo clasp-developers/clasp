@@ -178,18 +178,23 @@ string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure>
       closureType = "/b";
     }
   } else closureType = "toplevel";
-  string sargs = this->argumentsAsString(80);
+  string sargs = this->argumentsAsString(256);
   ss << (BF("#%3d%2s@%p %20s %5d/%-3d (%s %s)") % this->_Index % closureType % (void *)closure.raw_() % sourceFileName % lineNumber % column % funcName % sargs).str();
   //	ss << std::endl;
   //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
   return ss.str();
 }
 
-
-string InvocationHistoryFrame::asString() {
+string InvocationHistoryFrame::asString() const {
   string name;
   return this->asStringLowLevel(this->closure);
 }
+
+void InvocationHistoryFrame::dump() const {
+  string dump = this->asString();
+  printf("%s\n", dump.c_str());
+}
+
 
 vector<InvocationHistoryFrame *> InvocationHistoryStack::asVectorFrames() {
   vector<InvocationHistoryFrame *> frames;

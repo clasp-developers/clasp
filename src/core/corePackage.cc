@@ -1089,6 +1089,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   List_sp hooks = _Nil<T_O>();
   hooks = Cons_O::create(Cons_O::create(Str_O::create("fasl"), _sym_loadBundle), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("bundle"), _sym_loadBundle), hooks);
+  hooks = Cons_O::create(Cons_O::create(Str_O::create("dylib"), _sym_loadBundle), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("so"), _sym_loadBundle), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("bc"), _sym_loadBitcode), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("l"), _sym_loadSource), hooks);

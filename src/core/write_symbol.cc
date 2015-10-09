@@ -250,13 +250,25 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
         Symbol_mv sym2_mv = cl_findSymbol(x->symbolName()->get(), package);
         Symbol_sp sym2 = sym2_mv;
         Symbol_sp intern_flag2 = gc::As<Symbol_sp>(sym2_mv.valueGet(1));
-        if (sym2 != x)
-          SIMPLE_ERROR(BF("Cannot print symbol[%s]") % _rep_(x));
-        if (intern_flag2 == kw::_sym_internal || forced_package) {
+        if (sym2 != x) {
+          clasp_write_string("<UNPRINTABLE-SYMBOL@",stream);
+          stringstream ss;
+          ss << (void*)x.raw_();
+          clasp_write_string(ss.str(),stream);
+          clasp_write_string(">",stream);
+          return;
+          SIMPLE_ERROR(BF("Can't print symbol"));
+        } if (intern_flag2 == kw::_sym_internal || forced_package) {
           clasp_write_string("::", stream);
         } else if (intern_flag2 == kw::_sym_external) {
           clasp_write_char(':', stream);
         } else {
+          clasp_write_string("<PATHOLOGICAL-SYMBOL@",stream);
+          stringstream ss;
+          ss << (void*)x.raw_();
+          clasp_write_string(ss.str(),stream);
+          clasp_write_string(">",stream);
+          return;
           SIMPLE_ERROR(BF("Pathological symbol --- cannot print"));
         }
       } else {

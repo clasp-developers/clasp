@@ -51,24 +51,8 @@
 	(format t "Compiling files: ~a~%" (core:select-source-files to-mod :first-file from-mod :system system))
 	(let* ((cmp:*cleavir-compile-file-hook* (fdefinition (find-symbol "CLEAVIR-COMPILE-FILE-FORM" "CLASP-CLEAVIR")))
 	       (bitcode-files (core:compile-system from-mod to-mod :recompile recompile :reload reload :system system)))
-	  (unless dont-link 
-	    (cmp:link-system-lto (core:target-backend-pathname core:+image-pathname+)
-				 :lisp-bitcode-files bitcode-files
-				 :prologue-form '(progn
-                                                  (make-package "CLEAVIR-AST")
-                                                  (make-package "CLASP-CLEAVIR-AST")
-                                                  (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
-                                                  (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
-						  (if (member :interactive *features*) 
-						      (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n"
-								    (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
-				 :epilogue-form '(progn
-						  (cl:in-package :cl-user)
-						  (require 'system)
-						  (core:load-clasprc)
-						  (core:process-command-line-load-eval-sequence)
-                                                  (let ((core:*use-interpreter-for-eval* nil))
-                                                    (when (member :interactive *features*) (core:top-level))))))))))
+	  (unless dont-link
+            (link-cclasp from-mod to-mod :system system))))))
 
 (defun compile-min-cclasp (&key (recompile t))
   (let ((cmp:*compile-print* t))
@@ -102,22 +86,22 @@
        unless (keywordp mod)
        collect (bitcode-pathname mod :target-backend target-backend))))
 
-
-#+(or)(defun link (start end &key (target-backend "CLEAVIR-BOEHM") (system *cleavir-system*))
-        (let ((bitcode-files (select-bitcode-files start end :target-backend target-backend
-                                                   :system system)))
-          (cmp:link-system-lto (core::target-backend-pathname core::+image-pathname+ 
-                                                              :target-backend target-backend)
-                               :lisp-bitcode-files bitcode-files
-                               :prologue-form '(progn
-                                                (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
-                                                (make-package "CLEAVIR-AST")
-                                                (make-package "CLASP-CLEAVIR-AST")
-                                                (if (member :interactive *features*) 
-                                                    (core:bformat t "Starting %s Clasp %s ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
-                               :epilogue-form '(progn
-                                                (cl:in-package :cl-user)
-                                                (core::process-command-line-load-eval-sequence)
-                                                (when (member :interactive *features*) (core:run-repl)))
-                               :target-backend target-backend)
-          ))
+(defun link-cclasp (from-mod to-mod &key (system *cleavir-system*))
+  (let ((bitcode-files (seelect-bitcode-files from-mod to-mod :system system)))
+    (cmp:link-system-lto (core:target-backend-pathname core:+image-pathname+)
+                         :lisp-bitcode-files bitcode-files
+                         :prologue-form '(progn
+                                          (make-package "CLEAVIR-AST")
+                                          (make-package "CLASP-CLEAVIR-AST")
+                                          (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
+                                          (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
+                                          (if (member :interactive *features*) 
+                                              (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n"
+                                                            (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
+                         :epilogue-form '(progn
+                                          (cl:in-package :cl-user)
+                                          (require 'system)
+                                          (core:load-clasprc)
+                                          (core:process-command-line-load-eval-sequence)
+                                          (let ((core:*use-interpreter-for-eval* nil))
+                                            (when (member :interactive *features*) (core:top-level)))))))
