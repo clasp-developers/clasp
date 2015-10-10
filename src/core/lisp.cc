@@ -30,6 +30,8 @@ THE SOFTWARE.
 #include <clasp/core/useBoostPython.h>
 #endif
 
+#include <errno.h>
+#include <sys/wait.h>
 #include <stdlib.h>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
@@ -1739,8 +1741,48 @@ T_mv ext_system(Str_sp cmd) {
   if ( ret == 0 ) {
     return Values(core::make_fixnum(0));
   } else {
-    return Values(core::make_fixnum(ret));
+      return Values(core::make_fixnum(ret),Str_O::create(std::strerror(errno)));
   }
+}
+
+
+#define ARGS_ext_vfork_execvp "(call-and-arguments)"
+#define DECL_ext_vfork_execvp ""
+#define DOCS_ext_vfork_execvp "vfork_execvp"
+T_mv ext_vfork_execvp(List_sp call_and_arguments) {
+    if (call_and_arguments.nilp()) return Values0<T_O>();
+    std::vector<char const * > execvp_args(cl_length(call_and_arguments)+1);
+    size_t idx=0;
+    for ( auto cur : call_and_arguments ) {
+        Str_sp sarg = gc::As<Str_sp>(oCar(cur));
+        char* arg = (char*)malloc(sarg->size()+1);
+        std::strcpy(arg,sarg->c_str());
+        execvp_args[idx++] = arg;
+    }
+    execvp_args[idx] = NULL;
+    pid_t child_PID= vfork();
+    if ( child_PID >= 0 ) {
+        if ( child_PID == 0 ) {
+            // Child
+            execvp(execvp_args[0],(char * const *)execvp_args.data());
+            printf("%s:%d execvp returned!!!! Why!!!!\n", __FILE__, __LINE__ );
+            _exit(0); // Should never reach
+        } else {
+            // Parent
+            int status;
+            pid_t wait_ret = wait(&status);
+            if ( wait_ret >= 0 ) {
+                if ( wait_ret != child_PID ) {
+                    printf("%s:%d wait return PID(%d) that did not match child(%d)\n", __FILE__, __LINE__, wait_ret, child_PID);
+                }
+                return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID));
+            }
+            // error
+            return Values(clasp_make_fixnum(errno), Str_O::create(std::strerror(errno)));
+        }
+    } else {
+        return Values(clasp_make_fixnum(-1),Str_O::create(std::strerror(errno)));
+    }
 }
 
 /*
@@ -3187,6 +3229,7 @@ void Lisp_O::exposeCando() {
 
   SYMBOL_SC_(ExtPkg, system);
   ExtDefun(system);
+  ExtDefun(vfork_execvp);
 
   SYMBOL_EXPORT_SC_(ClPkg, apropos);
   Defun(apropos);

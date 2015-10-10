@@ -1438,7 +1438,7 @@ so that they don't have to be constantly recalculated"
      ;; We have a templated type - see if we need to construct a templated enum
      (let* ((class (gethash (alloc-key alloc) (project-classes (analysis-project analysis))))
             (single-base-key (let ((bases (cclass-bases class)))
-                               (assert (eql (length bases) 1)) ;; there can be only one base
+                               (assert (eql (length bases) 1) nil "There can only be one base but class ~a has bases ~a" class bases) ;; there can be only one base
                                (assert (null (cclass-vbases class))) ;; There can be no vbases
                                (car bases)))
             (single-base (gethash single-base-key (project-classes (analysis-project analysis)))))
