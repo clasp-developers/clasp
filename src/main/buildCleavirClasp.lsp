@@ -7,20 +7,21 @@
 (setq *features* (list* :clos :cclasp (remove :bclasp *features*)))
 (setq core:*target-backend* (core::default-target-backend))
 (core:clean-system nil :no-prompt t :stage "cclasp")
-(core:load-system :bclasp :pre-inline)
+(core:load-system :bclasp :cclasp) ;; :pre-inline)
 ;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE uses Cleavir
-(eval-when (:execute :load-toplevel)
-  (setq cmp:*cleavir-compile-hook* 'cleavir-compile-t1expr))
+#+(or)(eval-when (:execute :load-toplevel)
+        (setq cmp:*cleavir-compile-hook* 'cleavir-compile-t1expr))
 ;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE-FILE uses Cleavir
-(eval-when (:execute :load-toplevel)
-  (setq cmp:*cleavir-compile-file-hook* 'clasp-cleavir::cleavir-compile-file-form))
-(let ((compiler-symbol (find-symbol "*COMPILER*" "CLEAVIR-GENERATE-AST")))
-  (setf (symbol-value compiler-symbol) 'cl:compile-file))
-(let* ((cmp:*cleavir-compile-file-hook* (fdefinition (find-symbol "CLEAVIR-COMPILE-FILE-FORM" "CLASP-CLEAVIR"))))
-  (core:compile-system :init
-                       :cclasp
-                       :recompile t
-                       :reload nil))
+#+(or)(eval-when (:execute :load-toplevel)
+        (setq cmp:*cleavir-compile-file-hook* 'clasp-cleavir::cleavir-compile-file-form))
+#+(or)(let ((compiler-symbol (find-symbol "*COMPILER*" "CLEAVIR-GENERATE-AST")))
+        (setf (symbol-value compiler-symbol) 'cl:compile-file))
+#+(or)(let* ((cmp:*cleavir-compile-file-hook* (fdefinition (find-symbol "CLEAVIR-COMPILE-FILE-FORM" "CLASP-CLEAVIR"))))
+        (core:compile-system :init
+                             :cclasp
+                             :recompile t
+                             :reload nil))
+(core:compile-system :init :cclasp :recompile t :reload nil)
 (link-system :init :cclasp
              '(progn
                (make-package "CLEAVIR-AST")
