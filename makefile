@@ -164,7 +164,7 @@ libatomic-setup:
 	(cd $(LIBATOMIC_OPS_SOURCE_DIR); \
 		export ALL_INTERIOR_PTRS=1; \
 		CFLAGS="-DUSE_MMAP -g" \
-		./configure --enable-shared=no --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
+		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
 
 libatomic-compile:
 	(cd $(LIBATOMIC_OPS_SOURCE_DIR); make -j$(PJOBS) | tee _libatomic_ops.log)
@@ -177,7 +177,7 @@ boehm-setup:
 		export ALL_INTERIOR_PTRS=1; \
 		CFLAGS="-DUSE_MMAP -g" \
 		PKG_CONFIG_PATH=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR)/lib/pkgconfig/ \
-		./configure --enable-shared=no --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
+		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
 
 boehm-compile:
 	(cd $(BOEHM_SOURCE_DIR); make -j$(PJOBS) | tee _boehm.log)

@@ -26,8 +26,8 @@ project internals/gctools : requirements
 	<target-os>darwin:<linkflags>"-dynamiclib"
 	;
 
-
-alias lib_boehm : $(APPRES-LIB-COMMON-LIB)/libgc.a ;
+lib lib_boehm : : <search>$(APPRES-LIB-COMMON-LIB) <name>gc ;
+#alias lib_boehm : $(APPRES-LIB-COMMON-LIB)/libgc.a : <link>static ;
 
 alias gclib : lib_boehm : <gc>boehmdc ;
 
