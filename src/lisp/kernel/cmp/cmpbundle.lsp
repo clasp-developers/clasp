@@ -51,12 +51,19 @@
 ||#
 
 (defvar *echo-system* nil)
-(defun safe-system (cmd)
+(defun safe-system (cmd-list)
   (if *echo-system*
       (bformat t "%s\n" cmd))
-  (let ((retval (ext:system cmd)))
+  (multiple-value-bind (retval error-message)
+      (let ((cmd (with-output-to-string (sout)
+                   (do* ((cur cmd-list (cdr cur))
+                         (part (car cur) (car cur))
+                         (part-str (bformat nil "%s" part) (bformat nil " %s" part)))
+                        ((null cur))
+                     (princ part-str sout)))))
+        (ext:system cmd))
     (unless (eql retval 0)
-      (error "Could not execute command with system: ~s~%  return-value: ~d~%" cmd retval))))
+      (error "Could not execute command with system: ~s~%  return-value: ~d  error-message: %s~%" cmd retval error-message))))
 
 
 
@@ -92,21 +99,31 @@
 
 
 
-
 (defun generate-link-command (all-names bundle-file)
-  (let ((options "")) ;; "-v"
+  (let ((options nil)) ;; "-v"
     #+target-os-darwin
     (return-from generate-link-command
-      (bformat nil "ld %s %s -macosx_version_min 10.7 -flat_namespace -undefined warning -bundle -o %s" options all-names bundle-file))
+      `("ld" options 
+             ,@all-names 
+             "-macosx_version_min" "10.7"
+             "-flat_namespace" 
+             "-undefined" "warning"
+             "-bundle"
+             "-o"
+             ,bundle-file))
     #+target-os-linux
     (let* ((clasp-clang-path (ext:getenv "CLASP_CLANG_PATH"))
 	   (clang-executable (if clasp-clang-path
 				 clasp-clang-path
 				 "clang")))
-      (return-from generate-link-command (bformat nil "%s %s %s -shared -o %s" clang-executable options all-names bundle-file)))
-    (error "Add support for this operating system to cmp:execute-link")
-    ))
-
+      (return-from generate-link-command
+        `(,clang-executable
+          ,@options
+          ,@all-names
+          "-shared"
+          "-o"
+          bundle-file)))
+    (error "Add support for this operating system to cmp:execute-link")))
 
 (defun execute-link (bundle-pathname object-pathnames &key test)
   "Link object files together to create a shared library/bundle"

@@ -119,6 +119,7 @@ all:
 	make -C src/main cclasp-boehm
 	make -C src/main cclasp-boehm-addons
 	make executable-symlinks
+	echo Clasp is now built
 
 mps-build:
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp_install )
