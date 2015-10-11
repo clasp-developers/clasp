@@ -55,13 +55,14 @@
   (if *echo-system*
       (bformat t "%s\n" cmd))
   (multiple-value-bind (retval error-message)
-      (let ((cmd (with-output-to-string (sout)
-                   (do* ((cur cmd-list (cdr cur))
-                         (part (car cur) (car cur))
-                         (part-str (bformat nil "%s" part) (bformat nil " %s" part)))
-                        ((null cur))
-                     (princ part-str sout)))))
-        (ext:system cmd))
+      (ext:vfork-execvp cmd)
+      #+(or)(let ((cmd (with-output-to-string (sout)
+                                              (do* ((cur cmd-list (cdr cur))
+                                                    (part (car cur) (car cur))
+                                                    (part-str (bformat nil "%s" part) (bformat nil " %s" part)))
+                                                  ((null cur))
+                                                (princ part-str sout)))))
+              (ext:system cmd))
     (unless (eql retval 0)
       (error "Could not execute command with system: ~s~%  return-value: ~d  error-message: %s~%" cmd retval error-message))))
 
@@ -103,8 +104,8 @@
   (let ((options nil)) ;; "-v"
     #+target-os-darwin
     (return-from generate-link-command
-      `("ld" options 
-             ,@all-names 
+      `("ld" ,@options 
+             ,@(if (listp all-names) all-names (list all-names))
              "-macosx_version_min" "10.7"
              "-flat_namespace" 
              "-undefined" "warning"
@@ -119,7 +120,7 @@
       (return-from generate-link-command
         `(,clang-executable
           ,@options
-          ,@all-names
+          ,@(if (listp all-names) all-names (list all-names))
           "-shared"
           "-o"
           bundle-file)))

@@ -1771,6 +1771,8 @@ T_mv ext_vfork_execvp(List_sp call_and_arguments) {
             // Parent
             int status;
             pid_t wait_ret = wait(&status);
+            // Clean up args
+            for ( int i(0); i<execvp_args.size()-1; ++i ) free((void*)execvp_args[i]);
             if ( wait_ret >= 0 ) {
                 if ( wait_ret != child_PID ) {
                     printf("%s:%d wait return PID(%d) that did not match child(%d)\n", __FILE__, __LINE__, wait_ret, child_PID);
@@ -1781,7 +1783,9 @@ T_mv ext_vfork_execvp(List_sp call_and_arguments) {
             return Values(clasp_make_fixnum(errno), Str_O::create(std::strerror(errno)));
         }
     } else {
-        return Values(clasp_make_fixnum(-1),Str_O::create(std::strerror(errno)));
+            // Clean up args
+      for ( int i(0); i<execvp_args.size()-1; ++i ) free((void*)execvp_args[i]);
+          return Values(clasp_make_fixnum(-1),Str_O::create(std::strerror(errno)));
     }
 }
 
