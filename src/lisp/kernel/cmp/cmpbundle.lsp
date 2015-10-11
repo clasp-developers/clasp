@@ -53,18 +53,11 @@
 (defvar *echo-system* nil)
 (defun safe-system (cmd-list)
   (if *echo-system*
-      (bformat t "%s\n" cmd))
+      (bformat t "%s\n" cmd-list))
   (multiple-value-bind (retval error-message)
-      (ext:vfork-execvp cmd)
-      #+(or)(let ((cmd (with-output-to-string (sout)
-                                              (do* ((cur cmd-list (cdr cur))
-                                                    (part (car cur) (car cur))
-                                                    (part-str (bformat nil "%s" part) (bformat nil " %s" part)))
-                                                  ((null cur))
-                                                (princ part-str sout)))))
-              (ext:system cmd))
+      (ext:vfork-execvp cmd-list)
     (unless (eql retval 0)
-      (error "Could not execute command with system: ~s~%  return-value: ~d  error-message: %s~%" cmd retval error-message))))
+      (error "Could not execute command with ext:vfork-execvp with ~s~%  return-value: ~d  error-message: %s~%" cmd-list retval error-message))))
 
 
 
