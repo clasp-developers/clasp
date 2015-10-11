@@ -4,8 +4,6 @@ export CLASP_HOME = $(shell pwd)
 
 ifneq ("$(wildcard $(CLASP_HOME)/local.config)","")
   include $(CLASP_HOME)/local.config
-  $(info "Dumping local.config")
-  $(shell cat $(CLASP_HOME)/local.config)
 endif
 
 ifeq ($(LLVM_CONFIG),)
@@ -413,3 +411,6 @@ mps-submodule:
 
 asdf-submodule:
 	git submodule add --name updatedAsdf https://github.com/drmeister/asdf.git ./src/lisp/kernel/asdf
+
+dump-local-config:
+	cat $(CLASP_HOME)/local.config
