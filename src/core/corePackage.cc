@@ -839,9 +839,7 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
   Package_sp corePackage = coreExposerPtr->package();
   _lisp->_Roots._CorePackage = corePackage;
   _lisp->_Roots._KeywordPackage = keywordPackage;
-  //	_lisp->_PackageNameIndexMap[KeywordPkg] = _lisp->_Roots._Packages.size();
   _lisp->_Roots._CommonLispPackage = commonLispPackage;
-//  commonLispPackage->usePackage(corePackage);
   ext::initialize_extensionPackage();
   comp::initialize_compPackage();
   clos::initialize_closPackage();
@@ -861,55 +859,13 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
 #include INIT_CLASSES_INC_H
 #undef Use_CorePkg
   };
-
-#if 0
-	{// Create classes for the immediate types fixnum, base-char, extended-char, single-float
-	    core::Fixnum_O::___set_static_ClassSymbol(LOOKUP_SYMBOL(core::Fixnum_O::static_packageName(),core::Fixnum_O::static_className()));
-	    LOG(BF("Creating class[classcore__Fixnum_Oval]"));
-	    core::BuiltInClass_sp classcore__Fixnum_Oval = core::BuiltInClass_O::createUncollectable();
-	    classcore__Fixnum_Oval->__setup_stage1_with_sharedPtr_lisp_sid(classcore__Fixnum_Oval,_lisp,core::Fixnum_O::static_classSymbol());
-	    reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<core::Fixnum_O>::id,core::Fixnum_O::static_classSymbol());
-	    core::Fixnum_O::___staticClass = classcore__Fixnum_Oval;
-#ifdef USE_MPS
-	    core::Fixnum_O::static_Kind = gctools::GCKind<core::Fixnum_O>::Kind;
-#endif
-	    core::af_setf_findClass(classcore__Fixnum_Oval,core::Fixnum_O::static_classSymbol(),true,_Nil<core::Environment_O>());
-	    {
-		core::LispObjectCreator<core::Fixnum_O>* cb = gctools::ClassAllocator<core::LispObjectCreator<core::Fixnum_O>>::allocateClass();
-		core::Fixnum_O::___set_static_creator(cb);
-	    }
-	    LOG(BF("Set static_allocator for class(%s) to %X")% core::Fixnum_O::static_className() % (void*)(core::Fixnum_O::static_allocator) );
-	    classcore__Fixnum_Oval->setCreator(core::Fixnum_O::static_creator);
-	    {
-		LOG(BF("Created nil for class[%s]") % core::Fixnum_O::static_className() );
-	    }
-	    /* ----- the class and its nil are now defined and so is classcore__Fixnum_Oval::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
-	    classcore__Fixnum_Oval->addInstanceBaseClassDoNotCalculateClassPrecedenceList(core::Integer_O::static_classSymbol());
-	    classcore__Fixnum_Oval->__setupStage3NameAndCalculateClassPrecedenceList(core::Fixnum_O::static_classSymbol());
-	}
-#endif
-
-#if 0
-        //
-        // Test hashtables
-        //
-        printf("%s:%d Testing hashtables\n", __FILE__, __LINE__ );
-        HashTableEq_sp ht = HashTableEq_O::create(16,make_fixnum(256),1.5);
-        printf("Empty ht = %s\n", ht->hash_table_dump().c_str() );
-        ht->hash_table_setf_gethash(cl::_sym_first, make_fixnum(1));
-        ht->hash_table_setf_gethash(cl::_sym_car, _Nil<T_O>());
-        ht->hash_table_setf_gethash(cl::_sym_method, make_fixnum(2));
-        printf("after add ht = \n");
-        printf("%s\n", ht->hash_table_dump().c_str() );
-        T_sp find = ht->gethash(cl::_sym_first,_Nil<T_O>());
-        printf(" find = @%p\n", find.raw_());
-        printf("Testing done\n");
-        __builtin_trap();
-#endif
   //
   // Finish setting up the symbols
   //
   bootStrapSymbolMap.finish_setup_of_symbols();
+  reg::lisp_registerClassSymbol<Character_I>(cl::_sym_character);
+  reg::lisp_registerClassSymbol<Fixnum_I>(cl::_sym_fixnum);
+  reg::lisp_registerClassSymbol<SingleFloat_I>(cl::_sym_single_float);
 
   return coreExposerPtr;
 }

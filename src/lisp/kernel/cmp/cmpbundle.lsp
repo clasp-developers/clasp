@@ -66,17 +66,20 @@
   (let* ((bitcode-physical-pathname (translate-logical-pathname bitcode-pathname))
          (file (namestring bitcode-physical-pathname))
          (output-file (namestring (make-pathname :type "o" :defaults bitcode-physical-pathname))))
-    #+(and :target-os-linux :address-model-64)
-    (return-from generate-compile-command (values (bformat nil "llc -filetype=obj -relocation-model=pic -o %s %s" output-file file) output-file))
-    #+(and target-os-darwin use-clang)
-    (let* ((clasp-clang-path (ext:getenv "CLASP_CLANG_PATH"))
-           (clang-executable (if clasp-clang-path
-                                 clasp-clang-path
-                                 "clang")))
-      (return-from generate-compile-command (values (bformat nil "%s -c -o %s %s" clang-executable output-file file) output-file)))
-    #+(and target-os-darwin (not use-clang))
-    (return-from generate-compile-command (values (bformat nil "llc -filetype=obj -relocation-model=pic -o %s %s" output-file file) output-file))
-    (error "Add support for running external clang to cmpbundle.lsp>generate-compile-command on this system")))
+    (cond
+      ((and (member :target-os-linux *features*)
+            (member :address-model-64 *features*))
+       (return-from generate-compile-command (values (bformat nil "llc -filetype=obj -relocation-model=pic -o %s %s" output-file file) output-file)))
+      ((and (member :target-os-darwin *features*)
+            (member :address-model-64 *features*))
+       (if (member :use-clang *features*)
+           (let* ((clasp-clang-path (ext:getenv "CLASP_CLANG_PATH"))
+                  (clang-executable (if clasp-clang-path
+                                        clasp-clang-path
+                                        "clang")))
+             (return-from generate-compile-command (values (bformat nil "%s -c -o %s %s" clang-executable output-file file) output-file)))
+           (return-from generate-compile-command (values (bformat nil "llc -filetype=obj -relocation-model=pic -o %s %s" output-file file) output-file))))
+      (t (error "Add support for running external clang to cmpbundle.lsp>generate-compile-command on this system")))))
 
 
 
@@ -103,29 +106,30 @@
   (let ((options nil)
         (all-names (mapcar (lambda (n) (ensure-string n)) (if (listp in-all-names) in-all-names (list in-all-names))))
         (bundle-file (ensure-string in-bundle-file)))
-    #+target-os-darwin
-    (return-from generate-link-command
-      `("ld" ,@options 
+    (cond
+      ((member :target-os-darwin *features*)
+       (return-from generate-link-command
+         `("ld" ,@options 
+                ,@all-names
+                "-macosx_version_min" "10.7"
+                "-flat_namespace" 
+                "-undefined" "warning"
+                "-bundle"
+                "-o"
+                ,bundle-file)))
+      ((member :target-os-linux *features*)
+       (let* ((clasp-clang-path (ext:getenv "CLASP_CLANG_PATH"))
+              (clang-executable (if clasp-clang-path
+                                    clasp-clang-path
+                                    "clang")))
+         (return-from generate-link-command
+           `(,clang-executable
+             ,@options
              ,@all-names
-             "-macosx_version_min" "10.7"
-             "-flat_namespace" 
-             "-undefined" "warning"
-             "-bundle"
+             "-shared"
              "-o"
-             ,bundle-file))
-    #+target-os-linux
-    (let* ((clasp-clang-path (ext:getenv "CLASP_CLANG_PATH"))
-           (clang-executable (if clasp-clang-path
-                                 clasp-clang-path
-                                 "clang")))
-      (return-from generate-link-command
-        `(,clang-executable
-          ,@options
-          ,@all-names
-          "-shared"
-          "-o"
-          ,bundle-file)))
-    (error "Add support for this operating system to cmp:execute-link")))
+             ,bundle-file))))
+      (t (error "Add support for this operating system to cmp:execute-link")))))
 
 (defun execute-link (bundle-pathname all-names &key test)
   "Link object files together to create a shared library/bundle"

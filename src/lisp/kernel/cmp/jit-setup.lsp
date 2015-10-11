@@ -39,17 +39,14 @@
 (defun generate-target-triple ()
   "Uses *features* to generate the target triple for the current machine
 using features defined in corePackage.cc"
-  (let ((tt nil))
-    (setq tt
-	  #+(and target-os-darwin address-model-64) "x86_64-apple-macosx10.9.4" ;; minimum required OSX level (Mountain Lion)
-	  #+(and target-os-linux address-model-32) "i386-pc-linux-gnu"
-	  #+(and target-os-linux address-model-64) "x86_64-unknown-linux-gnu"
-	  )
-    (if tt
-	tt
-	(error "Could not calculate target triple"))))
-
-
+  (cond
+    ((and (member :target-os-darwin *features*)
+          (member :address-model-64 *features*))
+     "x86_64-apple-macosx10.9.4")
+    ((and (member :target-os-linux *features*)
+          (member :address-model-64 *features*))
+     "x86_64-pc-linux-gnu")
+    (t (error "Could not identify target triple for features ~a" *features*))))
 
 (defvar *default-target-triple* (generate-target-triple)
   "The default target-triple for this machine")

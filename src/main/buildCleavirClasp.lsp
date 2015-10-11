@@ -22,20 +22,21 @@
                              :recompile t
                              :reload nil))
 (core:compile-system :init :cclasp :recompile t :reload nil)
-(link-system :init :cclasp
-             '(progn
-               (make-package "CLEAVIR-AST")
-               (make-package "CLASP-CLEAVIR-AST")
-               (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
-               (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
-               (if (member :interactive *features*) 
-                   (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n"
-                                 (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
-             '(progn
-               (cl:in-package :cl-user)
-               (require 'system)
-               (core:load-clasprc)
-               (core:process-command-line-load-eval-sequence)
-               (let ((core:*use-interpreter-for-eval* nil))
-                 (when (member :interactive *features*) (core:top-level)))))
+;;; linking is done in the link-cclasp script
+#+(or)(link-system :init :cclasp
+                   '(progn
+                     (make-package "CLEAVIR-AST")
+                     (make-package "CLASP-CLEAVIR-AST")
+                     (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
+                     (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
+                     (if (member :interactive *features*) 
+                         (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n"
+                                       (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
+                   '(progn
+                     (cl:in-package :cl-user)
+                     (require 'system)
+                     (core:load-clasprc)
+                     (core:process-command-line-load-eval-sequence)
+                     (let ((core:*use-interpreter-for-eval* nil))
+                       (when (member :interactive *features*) (core:top-level)))))
 (core:quit)

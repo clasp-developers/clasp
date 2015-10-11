@@ -639,7 +639,7 @@ T_sp Str_O::elt(int index) const {
 T_sp Str_O::setf_elt(int index, T_sp val) {
   _OF();
   ASSERTF(index >= 0 && index < this->size(), BF("Index out of range for string: %d") % index);
-  char ch = clasp_as_char(gc::As<Character_sp>(val));
+  char ch = clasp_as_char(val);
   this->_Contents[index] = ch;
   return val;
 }

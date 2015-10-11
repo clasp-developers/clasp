@@ -46,8 +46,11 @@ cclasp-boehm-with-addons:
 	make cclasp-boehm
 	make cclasp-boehm-addons
 
-cclasp-boehm:
+cclasp-boehm-bitcode:
 	$(BCLASP_BOEHM) -l "buildCleavirClasp.lsp"
+
+cclasp-boehm-fasl:
+	$(BCLASP_BOEHM) -I -f ecl-min -l "link-cclasp.lsp"
 
 cclasp-reload:
 	$(BCLASP_BOEHM) -l "buildCleavirClaspReload.lsp"
@@ -93,22 +96,13 @@ boehm-debug-cxx:
 mps-debug-cxx:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/debug gc=mps debug clasp_install
 
-bclasp-boehm:
-	make min-boehm
-	make full-boehm
-
-
-bclasp-boehmdc:
-	make min-boehmdc
-	make full-boehmdc
-
 min-boehmdc:
 	$(BCLASP_BOEHMDC) -I -f ecl-min -l "buildClaspMinBoot.lsp"
 
 min-boehmdc-recompile:
 	$(BCLASP_BOEHMDC) -f ecl-min -l "buildClaspMinRecompile.lsp"
 
-full-boehmdc:
+bclasp-boehmdc:
 	$(BCLASP_BOEHMDC) -f ecl-min -l "buildClasp.lsp"
 
 min-boehm:
@@ -117,17 +111,14 @@ min-boehm:
 min-boehm-recompile:
 	$(BCLASP_BOEHM) -f ecl-min -l "buildClaspMinRecompile.lsp"
 
-full-boehm:
+bclasp-boehm:
 	$(BCLASP_BOEHM) -f ecl-min -l "buildClasp.lsp"
 
 
-mps:
-	make min-mps
-	make full-mps
 
 mps-recompile:
 	make min-mps-recompile
-	make full-mps
+	make bclasp-mps
 
 
 clasp-gc-interface:

@@ -66,8 +66,9 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +vtable*+ +i8*+)
 (defvar +i8**+ (llvm-sys:type-get-pointer-to +i8*+))
 (defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*))
-(defvar +fixnum+ #+address-model-64 +i64+
-	#-address-model-64(error "Add support for non 64-bit"))
+(defvar +fixnum+ (if (member :address-model-64 *features*)
+                     +i64+
+                     (error "Add support for non 64-bit address model")))
 ;;(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
 (defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
 (defvar +{i32.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i1+) nil))
