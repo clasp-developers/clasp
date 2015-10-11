@@ -56,8 +56,8 @@
       (bformat t "%s\n" cmd-list))
   (multiple-value-bind (retval error-message)
       (ext:vfork-execvp cmd-list)
-    (unless (eql retval 0)
-      (error "Could not execute command with ext:vfork-execvp with ~s~%  return-value: ~d  error-message: %s~%" cmd-list retval error-message))))
+    (when retval
+      (error "Could not execute command with ext:vfork-execvp with ~s~%  return-value: ~d  error-message: ~s~%" cmd-list retval error-message))))
 
 
 
@@ -92,13 +92,21 @@
     (truename output-pathname)))
 
 
+(defun ensure-string (name)
+  (cond
+    ((pathnamep name) (core:coerce-to-filename name))
+    ((stringp name) name)
+    (t (string name))))
 
-(defun generate-link-command (all-names bundle-file)
-  (let ((options nil)) ;; "-v"
+(defun generate-link-command (in-all-names in-bundle-file)
+  ;; options are a list of strings like (list "-v")
+  (let ((options nil)
+        (all-names (mapcar (lambda (n) (ensure-string n)) (if (listp in-all-names) in-all-names (list in-all-names))))
+        (bundle-file (ensure-string in-bundle-file)))
     #+target-os-darwin
     (return-from generate-link-command
       `("ld" ,@options 
-             ,@(if (listp all-names) all-names (list all-names))
+             ,@all-names
              "-macosx_version_min" "10.7"
              "-flat_namespace" 
              "-undefined" "warning"
@@ -107,31 +115,25 @@
              ,bundle-file))
     #+target-os-linux
     (let* ((clasp-clang-path (ext:getenv "CLASP_CLANG_PATH"))
-	   (clang-executable (if clasp-clang-path
-				 clasp-clang-path
-				 "clang")))
+           (clang-executable (if clasp-clang-path
+                                 clasp-clang-path
+                                 "clang")))
       (return-from generate-link-command
         `(,clang-executable
           ,@options
-          ,@(if (listp all-names) all-names (list all-names))
+          ,@all-names
           "-shared"
           "-o"
-          bundle-file)))
+          ,bundle-file)))
     (error "Add support for this operating system to cmp:execute-link")))
 
-(defun execute-link (bundle-pathname object-pathnames &key test)
+(defun execute-link (bundle-pathname all-names &key test)
   "Link object files together to create a shared library/bundle"
-  (let* ((part-files object-pathnames
-	   #+(or)(mapcar #'(lambda (pn) (namestring (translate-logical-pathname (make-pathname :type "o" :defaults pn)))) all-part-pathnames)
-	   )
-         (bundle-file (core:coerce-to-filename bundle-pathname))
-         (all-names (make-array 256 :element-type 'character :adjustable t :fill-pointer 0)))
-    (dolist (f part-files) (push-string all-names (bformat nil "%s " (namestring (truename f)))))
-    (let ((link-command (generate-link-command all-names bundle-file)))
-      (if test
-          (bformat t "About to execute: %s\n" link-command)
-          (safe-system link-command)))
-    (truename bundle-pathname)))
+  (let ((link-command (generate-link-command all-names bundle-pathname)))
+    (if test
+        (bformat t "About to execute: %s\n" link-command)
+        (safe-system link-command)))
+    (truename bundle-pathname))
 
 
 
