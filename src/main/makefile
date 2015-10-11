@@ -65,7 +65,7 @@ bclasp-boehm-addons:
 	$(BCLASP_BOEHM) -l "build_addons.lsp"
 
 cclasp-boehm-addons:
-	$(BCLASP_BOEHM) -l "build_addons.lsp"
+	$(CCLASP_BOEHM) -l "build_addons.lsp"
 
 link-cclasp-mps-addons:
 	$(CCLASP_MPS) -l "link_addons.lsp"
