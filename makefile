@@ -1,8 +1,43 @@
 # -*- Mode: Makefile -*-
 
-include local.config
-
 export CLASP_HOME = $(shell pwd)
+
+ifneq ("$(wildcard $(CLASP_HOME)/local.config)","")
+  include $(CLASP_HOME)/local.config
+  $(info "Dumping local.config")
+  $(shell cat $(CLASP_HOME)/local.config)
+endif
+
+ifeq ($(LLVM_CONFIG),)
+  export LLVM_CONFIG = $(wildcard /usr/bin/llvm-config)
+  ifeq ($(LLVM_CONFIG),)
+    export LLVM_CONFIG = $(windcard /usr/bin/llvm-config*)
+  endif
+endif
+
+
+ifeq ($(TARGET_OS),)
+  export TARGET_OS = $(shell uname)
+endif
+
+ifeq ($(ADDRESS-MODEL),)
+  export ADDRESS-MODEL = 64
+endif
+ifeq ($(LINK),)
+  export LINK=shared
+endif
+ifeq ($(PJOBS),)
+  export PJOBS=1
+endif
+ifeq ($(LLVM_CONFIG_DEBUG),)
+  export LLVM_CONFIG_DEBUG = $(LLVM_CONFIG)
+endif
+
+ifeq ($(LLVM_CONFIG_RELEASE),)
+  export LLVM_CONFIG_RELEASE = $(LLVM_CONFIG)
+endif
+
+export LLVM_BIN_DIR = $(shell $(LLVM_CONFIG_RELEASE) --bindir)
 
 export GIT_COMMIT := $(shell git describe --match='' --always || echo "unknown-commit")
 export CLASP_VERSION := $(shell git describe --always || echo "unknown-version")
@@ -27,31 +62,18 @@ endif
 
 
 ifeq ($(CLASP_DEBUG_LLVM_LIB_DIR),)
-  export CLASP_DEBUG_LLVM_LIB_DIR = $(shell llvm-config --libdir | tr -d '\n')
+  export CLASP_DEBUG_LLVM_LIB_DIR = $(shell $(LLVM_CONFIG_DEBUG) --libdir | tr -d '\n')
 endif
 ifeq ($(CLASP_RELEASE_LLVM_LIB_DIR),)
-  export CLASP_RELEASE_LLVM_LIB_DIR = $(shell llvm-config --libdir | tr -d '\n')
+  export CLASP_RELEASE_LLVM_LIB_DIR = $(shell $(LLVM_CONFIG_RELEASE) --libdir | tr -d '\n')
 endif
 
-ifeq ($(CLASP_DEBUG_CXXFLAGS),)
-  export CLASP_DEBUG_CXXFLAGS = $(CLASP_CXXFLAGS)
-endif
-ifeq ($(CLASP_DEBUG_LINKFLAGS),)
-  export CLASP_DEBUG_LINKFLAGS = $(CLASP_LINKFLAGS)
-endif
-ifeq ($(CLASP_RELEASE_CXXFLAGS),)
-  export CLASP_RELEASE_CXXFLAGS = $(CLASP_CXXFLAGS)
-endif
-ifeq ($(CLASP_RELEASE_LINKFLAGS),)
-  export CLASP_RELEASE_LINKFLAGS = $(CLASP_LINKFLAGS)
-endif
-
-$(info CLASP_DEBUG_LLVM_LIB_DIR = $(CLASP_DEBUG_LLVM_LIB_DIR) )
-$(info CLASP_RELEASE_LLVM_LIB_DIR = $(CLASP_RELEASE_LLVM_LIB_DIR) )
-$(info CLASP_DEBUG_CXXFLAGS = $(CLASP_DEBUG_CXXFLAGS) )
-$(info CLASP_DEBUG_LINKFLAGS = $(CLASP_DEBUG_LINKFLAGS) )
-$(info CLASP_RELEASE_CXXFLAGS = $(CLASP_RELEASE_CXXFLAGS) )
-$(info CLASP_RELEASE_LINKFLAGS = $(CLASP_RELEASE_LINKFLAGS) )
+export CLASP_DEBUG_CXXFLAGS += -I$(shell $(LLVM_CONFIG_DEBUG) --includedir)
+export CLASP_DEBUG_LINKFLAGS += -L$(CLASP_DEBUG_LLVM_LIB_DIR)
+export CLASP_DEBUG_LINKFLAGS += $(shell $(LLVM_CONFIG_DEBUG) --libs)
+export CLASP_RELEASE_CXXFLAGS += -I$(shell $(LLVM_CONFIG_RELEASE) --includedir)
+export CLASP_RELEASE_LINKFLAGS += -L$(CLASP_RELEASE_LLVM_LIB_DIR)
+export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --libs)
 
 $(info xxxxxxxxxxxxxxxxxxxxxxxx)
 
@@ -59,13 +81,13 @@ export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
 
 export VARIANT = release
 
-ifeq ($(TARGET_OS),linux)
+ifeq ($(TARGET_OS),Linux)
   export TOOLSET = clang-linux
 else
   export TOOLSET = clang-darwin
 endif
 
-ifeq ($(TARGET_OS),linux)
+ifeq ($(TARGET_OS),Linux)
   export DEVEMACS = emacs -nw ./
 else
   export DEVEMACS = open -n -a emacs ./
@@ -84,13 +106,13 @@ endif
 # If the local.config doesn't define PYTHON2 then provide a default
 #
 ifeq ($(PYTHON2),)
-	export PYTHON2 = /usr/bin/python
+	export PYTHON2 = /usr/bin/python2
 endif
 
-ifeq ($(TARGET_OS),linux)
+ifeq ($(TARGET_OS),Linux)
   export EXECUTABLE_DIR=bin
 endif
-ifeq ($(TARGET_OS),darwin)
+ifeq ($(TARGET_OS),Darwin)
   export EXECUTABLE_DIR=MacOS
 endif
 
@@ -107,8 +129,6 @@ ifneq ($(CXXFLAGS),)
 endif
 
 all:
-	@echo Dumping local.config
-	cat local.config
 	make submodules
 	make asdf
 	make boost_build
