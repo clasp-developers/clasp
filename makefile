@@ -155,7 +155,6 @@ mps-build:
 	make -C src/main link-cclasp-mps-addons
 
 boot:
-	cat local.config
 	make submodules
 	make asdf
 	make boost_build
