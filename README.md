@@ -47,6 +47,7 @@ To build Clasp from within the top level directory do the following.
 | **CLASP_CXXFLAGS**                         | For instance, adding -v  it will print more debugging info              |
 |                                            | during the build                                                        |
 | **CLASP_LINKFLAGS**                        | Add your local library dependencies here using -L and -l linker options |
+| **PYTHON2**                                | Path to python 2.7                                                      |
 4) Make both the MPS and Boehm versions of Clasp (Currently only Boehm version is built).
 <pre># <b>make</b></pre>
 
