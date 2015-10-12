@@ -308,7 +308,7 @@ boehm-build-mps-interface:
 # to tell clasp to use the development source directly rather than the
 # stuff in the clasp build target directory.  This saves us the trouble of
 # constantly having to copy the lisp sources to the target directory.
-export DEV_CLASP_LISP_SOURCE_DIR := $(shell echo `pwd`/src/lisp)
+export DEV_CLASP_LISP_SOURCE_DIR := $(shell pwd)/src/lisp
 
 devemacs:
 	@echo This shell sets up environment variables like BJAM
