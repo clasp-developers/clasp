@@ -50,7 +50,7 @@ lib clasp-clbind :
                 /internals/serveEvent//serveEvent
                 /internals/main//main
                 /externals//boostAndExpatLibs
-       		/externals//llvm_lib_globbed
+#       		/externals//llvm_lib_globbed
                 /internals/gctools//gclib
                 ;
 

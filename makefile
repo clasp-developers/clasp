@@ -81,10 +81,12 @@ export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
 
 export VARIANT = release
 
-ifeq ($(TARGET_OS),Linux)
-  export TOOLSET = clang-linux
-else
-  export TOOLSET = clang-darwin
+ifeq ($(TOOLSET),)
+  ifeq ($(TARGET_OS),Linux)
+    export TOOLSET = clang-linux
+  else
+    export TOOLSET = clang-darwin
+  endif
 endif
 
 ifeq ($(TARGET_OS),Linux)
@@ -223,8 +225,11 @@ boehm:
 	@if test ! -e $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common/lib/libgc.a ; then make boehm-compile ; fi
 
 
-boehm-clbind:
-	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/$(VARIANT) gc=boehm $(VARIANT) clasp-clbind-install)
+boehm-release-clbind:
+	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/release gc=boehm release clasp-clbind-install)
+
+boehmdc-release-clbind:
+	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/release gc=boehmdc release clasp-clbind-install)
 
 mps-clbind:
 	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp-clbind-install)
