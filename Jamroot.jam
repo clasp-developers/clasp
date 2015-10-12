@@ -34,8 +34,10 @@ CLASP_DEBUG_LINKFLAGS = [ os.environ CLASP_DEBUG_LINKFLAGS ] ;
 CLASP_RELEASE_CXXFLAGS = [ os.environ CLASP_RELEASE_CXXFLAGS ] ;
 CLASP_RELEASE_LINKFLAGS = [ os.environ CLASP_RELEASE_LINKFLAGS ] ;
 
-echo "CLASP_CXXFLAGS = " $(CLASP_CXXFLAGS) ;
-echo "CLASP_LINKFLAGS = " $(CLASP_LINKFLAGS) ;
+echo "CLASP_DEBUG_CXXFLAGS = " $(CLASP_DEBUG_CXXFLAGS) ;
+echo "CLASP_DEBUG_LINKFLAGS = " $(CLASP_DEBUG_LINKFLAGS) ;
+echo "CLASP_RELEASE_CXXFLAGS = " $(CLASP_RELEASE_CXXFLAGS) ;
+echo "CLASP_RELEASE_LINKFLAGS = " $(CLASP_RELEASE_LINKFLAGS) ;
 
 # I'm leaving this rule in because it illustrates how to start something at init
 rule init ( top ? : : properties * ) {
