@@ -153,8 +153,7 @@ all:
 
 mps-build:
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp_install )
-	make -C src/main link-cclasp-mps
-	make -C src/main link-cclasp-mps-addons
+	make -C src/main link-min.lsp
 
 boot:
 	make submodules

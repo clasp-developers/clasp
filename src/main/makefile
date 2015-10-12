@@ -70,6 +70,9 @@ bclasp-boehm-addons:
 cclasp-boehm-addons:
 	$(CCLASP_BOEHM) -l "build_addons.lsp"
 
+link-min-mps:
+	$(CCLASP_MPS) -I -f ecl-min -l link-min.lsp
+
 link-cclasp-mps-addons:
 	$(CCLASP_MPS) -l "link_addons.lsp"
 
