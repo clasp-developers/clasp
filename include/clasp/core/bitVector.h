@@ -137,7 +137,7 @@ public:
 SMART(BitVectorWithFillPtr);
 class BitVectorWithFillPtr_O : public BitVector_O {
   LISP_BASE1(BitVector_O);
-  LISP_CLASS(core, ClPkg, BitVectorWithFillPtr_O, "simple-bit-vector");
+  LISP_CLASS(core, ClPkg, BitVectorWithFillPtr_O, "bit-vector-with-fill-ptr");
 
 public:
   static BitVectorWithFillPtr_sp create(size_t size, size_t fill_ptr, bool adjustable);

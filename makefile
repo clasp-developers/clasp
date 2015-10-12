@@ -155,12 +155,15 @@ mps-build:
 	make -C src/main link-cclasp-mps-addons
 
 boot:
-	cat local.config
 	make submodules
 	make asdf
 	make boost_build
 	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/$(VARIANT) gc=boehmdc $(VARIANT) clasp_install )
+	make -C src/main min-boehmdc
+	make -C src/main bclasp-boehmdc
+	make -C src/main bclasp-boehmdc-addons
+	make -C src/main mps-interface
 	make executable-symlinks
 #	make -C src/main bclasp-boehmdc
 #	make -C src/main bclasp-boehmdc-addons

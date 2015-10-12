@@ -371,7 +371,7 @@ Fixnum_sp BitVectorWithFillPtr_O::vectorPushExtend(T_sp newElement, int extensio
 void BitVectorWithFillPtr_O::exposeCando(Lisp_sp lisp) {
   class_<BitVectorWithFillPtr_O>()
     ;
-  af_def(CorePkg,"make-bit-vector-with-fill-pointer",(BitVectorWithFillPtr_sp(*)(size_t,size_t,bool))&BitVectorWithFillPtr_O::create);
+  af_def(CorePkg,"make-bit-vector-with-fill-ptr",(BitVectorWithFillPtr_sp(*)(size_t,size_t,bool))&BitVectorWithFillPtr_O::create);
 }
 void BitVectorWithFillPtr_O::exposePython(Lisp_sp lisp) {
 #ifdef USEBOOSTPYTHON
