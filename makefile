@@ -53,8 +53,8 @@ export CLASP_APP_EXECS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
 export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 
-ifneq ($(CLANG_BIN_DIR),)
-	PATH := $(CLANG_BIN_DIR):$(PATH)
+ifneq ($(LLVM_BIN_DIR),)
+	PATH := $(LLVM_BIN_DIR):$(PATH)
 	export PATH
 endif
 
