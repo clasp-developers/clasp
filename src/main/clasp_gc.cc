@@ -3101,7 +3101,7 @@ template <> class gctools::GCKind<llvmo::IRBuilder_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IRBuilder_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
 };
@@ -3321,7 +3321,7 @@ template <> class gctools::GCKind<core::RuntimeVisibleEnvironment_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
 };
@@ -6824,9 +6824,9 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
 goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
-    gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*>(client);
-    sout << "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>" << " size/capacity[" << obj_gc_safe->size() << "/" << obj_gc_safe->capacity();
-    typedef typename gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___;
+    gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*>(client);
+    sout << "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>" << " size/capacity[" << obj_gc_safe->size() << "/" << obj_gc_safe->capacity();
+    typedef typename gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
@@ -6887,9 +6887,9 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
 goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-    gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>*>(client);
-    sout << "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>" << " size/capacity[" << obj_gc_safe->size() << "/" << obj_gc_safe->capacity();
-    typedef typename gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___;
+    gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>*>(client);
+    sout << "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>" << " size/capacity[" << obj_gc_safe->size() << "/" << obj_gc_safe->capacity();
+    typedef typename gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
@@ -8996,8 +8996,8 @@ obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
   {
-    gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*>(client);
-    typedef typename gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___;
+    gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*>(client);
+    typedef typename gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
   }
@@ -9064,8 +9064,8 @@ obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
 obj_skip_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
   {
-    gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>*>(client);
-    typedef typename gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___;
+    gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>*>(client);
+    typedef typename gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
   }
@@ -11802,12 +11802,12 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
-    gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*>(client);
-    for (gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*>(client);
+    for (gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->first);
     SMART_PTR_FIX(it->second);
     }
-    typedef typename gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___;
+    typedef typename gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
@@ -11889,12 +11889,12 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-    gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>*>(client);
-    for (gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>*>(client);
+    for (gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->first);
     SMART_PTR_FIX(it->second);
     }
-    typedef typename gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___;
+    typedef typename gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___;
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
@@ -14000,7 +14000,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_finalize_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor:
 {
     asttooling::internal::FreeFuncMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::FreeFuncMatcherDescriptor*>(client);
@@ -14033,7 +14033,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolClassPair>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>"));}
