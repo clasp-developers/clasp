@@ -89,6 +89,7 @@ project clasp : requirements
 	<toolset>clang:<cxxflags>-std=c++11
 	<target-os>darwin:<cxxflags>"-stdlib=libc++"
 	<target-os>darwin:<linkflags>-stdlib=libc++
+#        <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=0"
 	<cxxflags>"-fvisibility=default"
         <variant>debug:<cxxflags>"-O0 -fstandalone-debug -gdwarf-4"
         <variant>release:<cxxflags>"-O3 -gdwarf-4 -g"
