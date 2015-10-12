@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lispVector.h>
+#include <clasp/core/bitVector.h>
 #include <clasp/core/str.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/strWithFillPtr.h>
@@ -67,7 +68,14 @@ Vector_sp core_make_vector(T_sp element_type,
   ASSERTF(displaced_to.nilp(), BF("Add support for make-vector :displaced-to"));
   ASSERTF(displaced_index_offset.nilp() || unbox_fixnum(gc::As<Fixnum_sp>(displaced_index_offset)) == 0, BF("Add support for make-vector non-zero :displaced-index-offset "));
   if (element_type == cl::_sym_bit) {
-    IMPLEMENT_MEF(BF("Handle bitvectors"));
+    if ( adjustable || fill_pointer.notnilp() ) {
+      size_t s_fill_ptr = dimension;
+      if ( fill_pointer.notnilp() ) {
+        s_fill_ptr = clasp_to_fixnum(fill_pointer);
+      }
+      return BitVectorWithFillPtr_O::create(dimension,s_fill_ptr,adjustable);
+    }
+    return SimpleBitVector_O::create(dimension);
   } else if (element_type == cl::_sym_base_char || element_type == cl::_sym_character || element_type == cl::_sym_standard_char || element_type == cl::_sym_extended_char) {
     // Currently any kind of Character vector is a Str or subclass
     // TODO: Maybe use other types of strings - unicode?

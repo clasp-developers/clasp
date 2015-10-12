@@ -106,7 +106,13 @@ endif
 # If the local.config doesn't define PYTHON2 then provide a default
 #
 ifeq ($(PYTHON2),)
-	export PYTHON2 = /usr/bin/python2
+  export PYTHON2 = $(wildcard /usr/bin/python2.7)
+  ifeq ($(PYTHON2),)
+    export PYTHON2 = $(wildcard /usr/bin/python2)
+    ifeq ($(PYTHON2),)
+      export PYTHON2 = $(wildcard /usr/bin/python)
+    endif
+  endif
 endif
 
 ifeq ($(TARGET_OS),Linux)
