@@ -41,34 +41,15 @@ typedef unsigned char BitBlockType;
 
 SMART(BitVector);
 class BitVector_O : public Vector_O {
+  friend T_sp core_bitArrayOp(T_sp o, T_sp x, T_sp y, T_sp r);
   LISP_BASE1(Vector_O);
   LISP_CLASS(core, ClPkg, BitVector_O, "bit-vector");
 
-public:
-  bool bitVectorP() const { return true; };
-  virtual int offset() const { return 0; }; // displaced arrays?  used in bits.cc
-  virtual void __write__(T_sp strm) const;
-  virtual uint testBit(uint i) const {SUBIMP();};
-
-  explicit BitVector_O() : Vector_O(){};
-  virtual ~BitVector_O(){};
-};
-
-SMART(SimpleBitVector);
-class SimpleBitVector_O : public BitVector_O {
-  friend T_sp core_bitArrayOp(T_sp o, T_sp x, T_sp y, T_sp r);
-  LISP_BASE1(BitVector_O);
-  LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector");
-
-private:
-  uint _Length;
+ protected:
   vector<unsigned char> bits;
 
-public:
-  static SimpleBitVector_sp create(int size);
-
-public:
-  gc::Fixnum dimension() const { return this->_Length; };
+ public:
+  virtual gc::Fixnum dimension() const { return this->bits.size()*CHAR_BIT; };
   unsigned char *bytes() const { return const_cast<unsigned char *>(this->bits.data()); };
 
   void getOnIndices(vector<uint> &vals);
@@ -85,18 +66,18 @@ public:
   uint lowestIndex();
 
   //! Calculate the "or" of bv with this BitVector
-  void inPlaceOr(SimpleBitVector_sp bv);
+  void inPlaceOr(BitVector_sp bv);
   //! Calculate the "and" of bv with this BitVector
-  void inPlaceAnd(SimpleBitVector_sp bv);
+  void inPlaceAnd(BitVector_sp bv);
   //! Calculate the "xor" of bv with this BitVector
-  void inPlaceXor(SimpleBitVector_sp bv);
+  void inPlaceXor(BitVector_sp bv);
 
   //! Return a BitVector "or"ed with this
-  SimpleBitVector_sp bitOr(SimpleBitVector_sp bv);
+  BitVector_sp bitOr(BitVector_sp bv);
   //! Return a BitVector "and"ed with this
-  SimpleBitVector_sp bitAnd(SimpleBitVector_sp bv);
+  BitVector_sp bitAnd(BitVector_sp bv);
   //! Return a BitVector "xor"ed with this
-  SimpleBitVector_sp bitXor(SimpleBitVector_sp bv);
+  BitVector_sp bitXor(BitVector_sp bv);
 
   //! Return the number of set bits
   uint countSet();
@@ -122,11 +103,61 @@ public:
   virtual T_sp rowMajorAref(cl_index idx) const;
 
   virtual T_sp elementType() const { return cl::_sym_bit;};
+
+
+public:
+  bool bitVectorP() const { return true; };
+  virtual int offset() const { return 0; }; // displaced arrays?  used in bits.cc
+  virtual void __write__(T_sp strm) const;
+
+  explicit BitVector_O(size_t sz);
+  BitVector_O(const BitVector_O &bv);
+  explicit BitVector_O() : Vector_O(){};
+  virtual ~BitVector_O(){};
+};
+
+
+
+ 
+SMART(SimpleBitVector);
+class SimpleBitVector_O : public BitVector_O {
+  LISP_BASE1(BitVector_O);
+  LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector");
+public:
+  static SimpleBitVector_sp create(size_t size);
+ private:
+  size_t _length;
+public:
+  virtual gc::Fixnum dimension() const { return this->_length;};
+  explicit SimpleBitVector_O(size_t sz) : BitVector_O(sz), _length(sz){};
   explicit SimpleBitVector_O() : BitVector_O(){};
-  SimpleBitVector_O(const SimpleBitVector_O &bv);
   virtual ~SimpleBitVector_O(){};
 };
+
+SMART(BitVectorWithFillPtr);
+class BitVectorWithFillPtr_O : public BitVector_O {
+  LISP_BASE1(BitVector_O);
+  LISP_CLASS(core, ClPkg, BitVectorWithFillPtr_O, "bit-vector-with-fill-ptr");
+
+public:
+  static BitVectorWithFillPtr_sp create(size_t size, size_t fill_ptr, bool adjustable);
+ private:
+  size_t _fill_ptr;
+  bool _adjustable;
+public:
+  virtual gc::Fixnum dimension() const { return this->_fill_ptr; };
+
+  virtual T_sp vectorPush(T_sp newElement);
+  virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 8);
+  
+  explicit BitVectorWithFillPtr_O(size_t sz, size_t fill_ptr, bool adjust) : BitVector_O(sz), _fill_ptr(fill_ptr), _adjustable(adjust){};
+  explicit BitVectorWithFillPtr_O() : BitVector_O(){};
+  virtual ~BitVectorWithFillPtr_O(){};
+};
+
+
 };
 TRANSLATE(core::BitVector_O);
 TRANSLATE(core::SimpleBitVector_O);
+TRANSLATE(core::BitVectorWithFillPtr_O);
 #endif

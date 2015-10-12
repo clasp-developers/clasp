@@ -370,7 +370,6 @@ and is not adjustable."
              (when (< 64 #+ecl cl-fixnum-bits #+clasp core:cl-fixnum-bits) '(EXT::CL-INDEX FIXNUM))
              '(SINGLE-FLOAT DOUBLE-FLOAT T)))
 
-#-clasp
 (defun upgraded-array-element-type (element-type &optional env)
   (declare (ignore env))
   (let* ((hash (logand 127 (si:hash-eql element-type)))
@@ -391,8 +390,8 @@ and is not adjustable."
 ;;
 ;; For now we don't have specialized arrays
 ;;
-#+clasp
-(defun upgraded-array-element-type (x &optional env) t)
+;;#+clasp
+#+(or)(defun upgraded-array-element-type (x &optional env) t)
   
 
 (defun upgraded-complex-part-type (real-type &optional env)

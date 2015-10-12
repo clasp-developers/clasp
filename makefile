@@ -53,8 +53,8 @@ export CLASP_APP_EXECS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
 export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 
-ifneq ($(CLANG_BIN_DIR),)
-	PATH := $(CLANG_BIN_DIR):$(PATH)
+ifneq ($(LLVM_BIN_DIR),)
+	PATH := $(LLVM_BIN_DIR):$(PATH)
 	export PATH
 endif
 
@@ -108,7 +108,13 @@ endif
 # If the local.config doesn't define PYTHON2 then provide a default
 #
 ifeq ($(PYTHON2),)
-	export PYTHON2 = /usr/bin/python2
+  export PYTHON2 = $(wildcard /usr/bin/python2.7)
+  ifeq ($(PYTHON2),)
+    export PYTHON2 = $(wildcard /usr/bin/python2)
+    ifeq ($(PYTHON2),)
+      export PYTHON2 = $(wildcard /usr/bin/python)
+    endif
+  endif
 endif
 
 ifeq ($(TARGET_OS),Linux)
@@ -151,12 +157,15 @@ mps-build:
 	make -C src/main link-cclasp-mps-addons
 
 boot:
-	cat local.config
 	make submodules
 	make asdf
 	make boost_build
 	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/$(VARIANT) gc=boehmdc $(VARIANT) clasp_install )
+	make -C src/main min-boehmdc
+	make -C src/main bclasp-boehmdc
+	make -C src/main bclasp-boehmdc-addons
+	make -C src/main mps-interface
 	make executable-symlinks
 #	make -C src/main bclasp-boehmdc
 #	make -C src/main bclasp-boehmdc-addons

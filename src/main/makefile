@@ -79,6 +79,9 @@ link-cclasp-mps-addons:
 boehmdc-release-cxx:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/release gc=boehmdc release clasp_install
 
+boehmdc-release-cxx-a:
+	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/release gc=boehmdc release clasp_install -a
+
 boehm-release-cxx:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/release gc=boehm release clasp_install
 
@@ -156,16 +159,15 @@ compile-commands:
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
 	python ../common/buildJSON.py clang bjam.out `$(BCLASP_BOEHMDC) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
 
-
-mps-interface:
-	@echo Building boehmdc version
-	build -j$(PJOBS) link=static program=clasp gc=boehmdc release dist
-	@echo Building mps-prep
-	build -j$(PJOBS) link=static gc=mps-prep program=clasp release
-	make compile-commands
+mps-interface-run:
 	$(BCLASP_BOEHMDC)  \
 		-e "(require :asdf)" \
-		-e "(load \"sys:local-asdf-config.lisp\")" \
 	        -e "(asdf:load-system \"clasp-analyzer\")" \
 		-e "(clasp-analyzer:load-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\")" \
-	        -e "(clasp-analyzer:serial-search-all-then-generate-code-and-quit \"`pwd`/\")"
+	        -e "(clasp-analyzer:serial-search-all-then-generate-code-and-quit (current-dir))"
+
+mps-interface:
+	@echo Building mps-prep
+	build -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install
+	make compile-commands
+	make mps-interface-run
