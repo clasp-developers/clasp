@@ -70,7 +70,6 @@ project clasp : requirements
         <warnings>off
         <toolset>clang-darwin:<cxxflags>"-ferror-limit=999"
         <toolset>clang-linux:<cxxflags>"-ferror-limit=999"
-#        <define>_GLIBCXX_USE_CXX11_ABI=0
         <define>CLASP_GIT_COMMIT="\\\"$(GIT_COMMIT)\\\""
         <define>CLASP_VERSION="\\\"$(CLASP_VERSION)\\\""
         <program>cando:<include>projects/cando/include
@@ -92,7 +91,7 @@ project clasp : requirements
 	<toolset>clang:<cxxflags>-std=c++11
 	<target-os>darwin:<cxxflags>"-stdlib=libc++"
 	<target-os>darwin:<linkflags>-stdlib=libc++
-#        <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=0"
+        <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=0"
 	<cxxflags>"-fvisibility=default"
         <variant>debug:<cxxflags>"-O0 -fstandalone-debug -gdwarf-4"
         <variant>release:<cxxflags>"-O3 -gdwarf-4 -g"
