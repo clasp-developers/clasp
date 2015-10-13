@@ -9,7 +9,7 @@ endif
 ifeq ($(LLVM_CONFIG),)
   export LLVM_CONFIG = $(wildcard /usr/bin/llvm-config)
   ifeq ($(LLVM_CONFIG),)
-    export LLVM_CONFIG = $(windcard /usr/bin/llvm-config*)
+    export LLVM_CONFIG = $(wildcard /usr/bin/llvm-config*)
   endif
 endif
 
