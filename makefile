@@ -5,10 +5,7 @@ export CLASP_HOME := $(or $(wildcard $(CLASP_HOME)),\
 
 include $(wildcard $(CLASP_HOME)/local.config)
 
-export LLVM_CONFIG := $(or $(wildcard $(LLVM_CONFIG)),\
-                           $(wildcard /usr/bin/llvm-config),\
-                           $(wildcard /usr/bin/llvm-config*),\
-                           $(error Could not find llvm-config.))
+export PJOBS ?= 1
 
 export TARGET_OS ?= $(shell uname)
 export TARGET_OS := $(or $(filter $(TARGET_OS), Linux),\
@@ -21,16 +18,45 @@ export ADDRESS-MODEL := $(or $(filter $(ADDRESS-MODEL), 64),\
 
 export LINK ?= shared
 export LINK := $(or $(filter $(LINK), shared),\
-                    $(filter $(LINK), static))
+                    $(filter $(LINK), static),\
+                    $(error Invalid LINK: $(LINK))
 
-export PJOBS ?= 1
+
+export VARIANT ?= release
+export VARIANT := $(or $(filter $(VARIANT), debug),\
+                       $(filter $(VARIANT), release),\
+                       $(error Invalid VARIANT: $(VARIANT)))
+
+export TOOLSET ?= $(or $(and $(filter $(TARGET_OS),Linux), clang-linux),\
+                       $(and $(filter $(TARGET_OS),Darwin), clang-darwin))
+export TOOLSET := $(or $(filter $(TOOLSET), clang-linux),\
+                       $(filter $(TOOLSET), clang-darwin),\
+                       $(error Invalid TOOLSET: $(TOOLSET)))
+
+export PYTHON2 := $(or $(wildcard $(PYTHON2)),\
+                       $(wildcard /usr/bin/python2.7),\
+                       $(wildcard /usr/bin/python2),\
+                       $(wildcard /usr/bin/python),\
+                       $(error Could not find python.))
+
+export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
+                              $(and $(filter $(TARGET_OS),Darwin), MacOS))
+
+export DEVEMACS ?= $(or $(and $(filter $(TARGET_OS),Linux), emacs -nw ./),\
+                        $(and $(filter $(TARGET_OS),Darwin), open -n -a emacs ./))
+
+export LLVM_CONFIG := $(or $(wildcard $(LLVM_CONFIG)),\
+                           $(wildcard /usr/bin/llvm-config),\
+                           $(wildcard /usr/bin/llvm-config*),\
+                           $(error Could not find llvm-config.))
+
+export GIT_COMMIT ?= $(shell git rev-parse --short HEAD || echo "unknown-commit")
+export CLASP_VERSION ?= $(shell git describe --always || echo "unknown-version")
+
 export LLVM_CONFIG_DEBUG ?= $(LLVM_CONFIG)
 export LLVM_CONFIG_RELEASE ?= $(LLVM_CONFIG)
 
-export LLVM_BIN_DIR := $(shell $(LLVM_CONFIG_RELEASE) --bindir)
-
-export GIT_COMMIT := $(shell git rev-parse --short HEAD || echo "unknown-commit")
-export CLASP_VERSION := $(shell git describe --always || echo "unknown-version")
+export LLVM_BIN_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --bindir)
 
 export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
 
@@ -39,13 +65,11 @@ export BOEHM_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/bdwgc
 export BOOST_BUILD_SOURCE_DIR ?= $(CLASP_HOME)/tools/boost_build
 export BOOST_BUILD_INSTALL ?= $(BOOST_BUILD_SOURCE_DIR)
 
-export BJAM ?= $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 export BUILD ?= build
+export BJAM ?= $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 export CLASP_APP_EXECS ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
 export CLASP_APP_RESOURCES_DIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
-
-export PATH := $(LLVM_BIN_DIR):$(PATH)
 
 export CLASP_DEBUG_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_DEBUG) --libdir | tr -d '\n')
 export CLASP_RELEASE_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --libdir | tr -d '\n')
@@ -59,35 +83,14 @@ export CLASP_RELEASE_LINKFLAGS += -L$(CLASP_RELEASE_LLVM_LIB_DIR)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --libs)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --system-libs)
 
-export VARIANT ?= release
-export VARIANT := $(or $(filter $(VARIANT), debug),\
-                       $(filter $(VARIANT), release),\
-                       $(error Invalid VARIANT: $(VARIANT)))
-
-export TOOLSET ?= $(or $(and $(filter $(TARGET_OS),Linux), clang-linux),\
-                       $(and $(filter $(TARGET_OS),Darwin), clang-darwin))
-export TOOLSET := $(or $(filter $(TOOLSET), clang-linux),\
-                       $(filter $(TOOLSET), clang-darwin),\
-                       $(error Invalid TOOLSET: $(TOOLSET)))
-
-export DEVEMACS ?= $(or $(and $(filter $(TARGET_OS),Linux), emacs -nw ./),\
-                        $(and $(filter $(TARGET_OS),Darwin), open -n -a emacs ./))
-
-export PYTHON2 := $(or $(wildcard $(PYTHON2)),\
-                       $(wildcard /usr/bin/python2.7),\
-                       $(wildcard /usr/bin/python2),\
-                       $(wildcard /usr/bin/python),\
-                       $(error Could not find python.))
-
-export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
-                              $(and $(filter $(TARGET_OS),Darwin), MacOS))
-
 export BINDIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)
 export EXECS ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs/
 
-export PATH := $(CLASP_HOME)/src/common:$(PATH)
-export PATH := $(BOOST_BUILD_INSTALL)/bin:$(PATH)
-export PATH := $(BINDIR):$(PATH)
+export EXTRA_PATH += :$(LLVM_BIN_DIR)
+export EXTRA_PATH += :$(CLASP_HOME)/src/common
+export EXTRA_PATH += :$(BOOST_BUILD_INSTALL)/bin
+export EXTRA_PATH += :$(BINDIR)
+export PATH := $(EXTRA_PATH):$(PATH)
 
 ifneq ($(CXXFLAGS),)
   export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
