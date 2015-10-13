@@ -87,11 +87,10 @@ export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --system-libs)
 export BINDIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)
 export EXECS ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs/
 
-export EXTRA_PATH += :$(LLVM_BIN_DIR)
-export EXTRA_PATH += :$(CLASP_HOME)/src/common
-export EXTRA_PATH += :$(BOOST_BUILD_INSTALL)/bin
-export EXTRA_PATH += :$(BINDIR)
-export PATH := $(EXTRA_PATH):$(PATH)
+export PATH := $(LLVM_BIN_DIR):$(PATH)
+export PATH := $(CLASP_HOME)/src/common:$(PATH)
+export PATH := $(BOOST_BUILD_INSTALL)/bin:$(PATH)
+export PATH := $(BINDIR):$(PATH)
 
 ifneq ($(CXXFLAGS),)
   export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
