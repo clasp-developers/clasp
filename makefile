@@ -66,7 +66,7 @@ export BOEHM_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/bdwgc
 export BOOST_BUILD_SOURCE_DIR ?= $(CLASP_HOME)/tools/boost_build
 export BOOST_BUILD_INSTALL ?= $(BOOST_BUILD_SOURCE_DIR)
 
-export BUILD ?= build
+export BUILD ?= $(CLASP_HOME)/src/common/build
 export BJAM ?= $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 export CLASP_APP_EXECS ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
 export CLASP_APP_RESOURCES_DIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
