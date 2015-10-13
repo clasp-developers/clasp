@@ -20,7 +20,7 @@ export ADDRESS-MODEL := $(or $(filter $(ADDRESS-MODEL), 64),\
 export LINK ?= shared
 export LINK := $(or $(filter $(LINK), shared),\
                     $(filter $(LINK), static),\
-                    $(error Invalid LINK: $(LINK))
+                    $(error Invalid LINK: $(LINK)))
 
 
 export VARIANT ?= release
