@@ -68,8 +68,9 @@ project clasp : requirements
 	<define>BUILDING_CLASP
 	<define>INHERITED_FROM_SRC
         <warnings>off
-        <cxxflags>"-ferror-limit=999"
-        <define>_GLIBCXX_USE_CXX11_ABI=0
+        <toolset>clang-darwin:<cxxflags>"-ferror-limit=999"
+        <toolset>clang-linux:<cxxflags>"-ferror-limit=999"
+#        <define>_GLIBCXX_USE_CXX11_ABI=0
         <define>CLASP_GIT_COMMIT="\\\"$(GIT_COMMIT)\\\""
         <define>CLASP_VERSION="\\\"$(CLASP_VERSION)\\\""
         <program>cando:<include>projects/cando/include
@@ -100,7 +101,8 @@ project clasp : requirements
         <target-os>darwin:<linkflags>"-lc++"
 	<define>INCLUDED_FROM_CLASP
 	<define>EXPAT
-        <cxxflags>"-Wgnu-array-member-paren-init"
+        <toolset>clang-darwin:<cxxflags>"-Wgnu-array-member-paren-init"
+        <toolset>clang-linux:<cxxflags>"-Wgnu-array-member-paren-init"
         <variant>debug:<cxxflags>$(CLASP_DEBUG_CXXFLAGS)
         <variant>debug:<linkflags>$(CLASP_DEBUG_LINKFLAGS)
         <variant>release:<cxxflags>$(CLASP_RELEASE_CXXFLAGS)
