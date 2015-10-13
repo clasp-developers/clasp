@@ -3896,6 +3896,8 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
     _sym_STARnumberOfLlvmFinalizationsSTAR->defparameter(core::make_fixnum(0));
 
     core::af_def(LlvmoPkg, "TargetRegistryLookupTarget", &TargetRegistryLookupTarget);
+
+    llvm::initializeScalarOpts(*llvm::PassRegistry::getPassRegistry());
   }
 
 }; // llvmo
