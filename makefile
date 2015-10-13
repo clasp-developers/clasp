@@ -37,7 +37,7 @@ endif
 
 export LLVM_BIN_DIR = $(shell $(LLVM_CONFIG_RELEASE) --bindir)
 
-export GIT_COMMIT := $(shell git describe --match='' --always || echo "unknown-commit")
+export GIT_COMMIT := $(shell git rev-parse --short HEAD || echo "unknown-commit")
 export CLASP_VERSION := $(shell git describe --always || echo "unknown-version")
 
 export CLASP_INTERNAL_BUILD_TARGET_DIR = $(shell pwd)/build/clasp
