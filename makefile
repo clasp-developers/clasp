@@ -1,70 +1,54 @@
-# -*- Mode: Makefile -*-
+# -*- Mode: GNUmakefile -*-
 
-export CLASP_HOME = $(shell pwd)
+export CLASP_HOME := $(or $(wildcard $(CLASP_HOME)),\
+                          $(shell pwd))
 
-ifneq ("$(wildcard $(CLASP_HOME)/local.config)","")
-  include $(CLASP_HOME)/local.config
-endif
+include $(wildcard $(CLASP_HOME)/local.config)
 
-ifeq ($(LLVM_CONFIG),)
-  export LLVM_CONFIG = $(wildcard /usr/bin/llvm-config)
-  ifeq ($(LLVM_CONFIG),)
-    export LLVM_CONFIG = $(wildcard /usr/bin/llvm-config*)
-  endif
-endif
+export LLVM_CONFIG := $(or $(wildcard $(LLVM_CONFIG)),\
+                           $(wildcard /usr/bin/llvm-config),\
+                           $(wildcard /usr/bin/llvm-config*),\
+                           $(error Could not find llvm-config.))
 
+export TARGET_OS ?= $(shell uname)
+export TARGET_OS := $(or $(filter $(TARGET_OS), Linux),\
+                         $(filter $(TARGET_OS), Darwin),\
+                         $(error Invalid TARGET_OS: $(TARGET_OS)))
 
-ifeq ($(TARGET_OS),)
-  export TARGET_OS = $(shell uname)
-endif
+export ADDRESS-MODEL ?= 64
+export ADDRESS-MODEL := $(or $(filter $(ADDRESS-MODEL), 64),\
+                             $(error Invalid ADDRESS-MODEL: $(ADDRESS-MODEL)))
 
-ifeq ($(ADDRESS-MODEL),)
-  export ADDRESS-MODEL = 64
-endif
-ifeq ($(LINK),)
-  export LINK=shared
-endif
-ifeq ($(PJOBS),)
-  export PJOBS=1
-endif
-ifeq ($(LLVM_CONFIG_DEBUG),)
-  export LLVM_CONFIG_DEBUG = $(LLVM_CONFIG)
-endif
+export LINK ?= shared
+export LINK := $(or $(filter $(LINK), shared),\
+                    $(filter $(LINK), static))
 
-ifeq ($(LLVM_CONFIG_RELEASE),)
-  export LLVM_CONFIG_RELEASE = $(LLVM_CONFIG)
-endif
+export PJOBS ?= 1
+export LLVM_CONFIG_DEBUG ?= $(LLVM_CONFIG)
+export LLVM_CONFIG_RELEASE ?= $(LLVM_CONFIG)
 
-export LLVM_BIN_DIR = $(shell $(LLVM_CONFIG_RELEASE) --bindir)
+export LLVM_BIN_DIR := $(shell $(LLVM_CONFIG_RELEASE) --bindir)
 
 export GIT_COMMIT := $(shell git rev-parse --short HEAD || echo "unknown-commit")
 export CLASP_VERSION := $(shell git describe --always || echo "unknown-version")
 
-export CLASP_INTERNAL_BUILD_TARGET_DIR = $(shell pwd)/build/clasp
+export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
 
-export LIBATOMIC_OPS_SOURCE_DIR = $(CLASP_HOME)/src/boehm/libatomic_ops
-export BOEHM_SOURCE_DIR = $(CLASP_HOME)/src/boehm/bdwgc
-export BOOST_BUILD_SOURCE_DIR = $(CLASP_HOME)/tools/boost_build
-export BOOST_BUILD_INSTALL = $(BOOST_BUILD_SOURCE_DIR)
+export LIBATOMIC_OPS_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/libatomic_ops
+export BOEHM_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/bdwgc
+export BOOST_BUILD_SOURCE_DIR ?= $(CLASP_HOME)/tools/boost_build
+export BOOST_BUILD_INSTALL ?= $(BOOST_BUILD_SOURCE_DIR)
 
-export BJAM = $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
-export BUILD = build
-export CLASP_APP_EXECS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
-export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
-export CLASP_APP_RESOURCES_LIB_COMMON_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
+export BJAM ?= $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
+export BUILD ?= build
+export CLASP_APP_EXECS ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
+export CLASP_APP_RESOURCES_DIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
+export CLASP_APP_RESOURCES_LIB_COMMON_DIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 
-ifneq ($(LLVM_BIN_DIR),)
-	PATH := $(LLVM_BIN_DIR):$(PATH)
-	export PATH
-endif
+export PATH := $(LLVM_BIN_DIR):$(PATH)
 
-
-ifeq ($(CLASP_DEBUG_LLVM_LIB_DIR),)
-  export CLASP_DEBUG_LLVM_LIB_DIR = $(shell $(LLVM_CONFIG_DEBUG) --libdir | tr -d '\n')
-endif
-ifeq ($(CLASP_RELEASE_LLVM_LIB_DIR),)
-  export CLASP_RELEASE_LLVM_LIB_DIR = $(shell $(LLVM_CONFIG_RELEASE) --libdir | tr -d '\n')
-endif
+export CLASP_DEBUG_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_DEBUG) --libdir | tr -d '\n')
+export CLASP_RELEASE_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --libdir | tr -d '\n')
 
 export CLASP_DEBUG_CXXFLAGS += -I$(shell $(LLVM_CONFIG_DEBUG) --includedir)
 export CLASP_DEBUG_LINKFLAGS += -L$(CLASP_DEBUG_LLVM_LIB_DIR)
@@ -75,68 +59,46 @@ export CLASP_RELEASE_LINKFLAGS += -L$(CLASP_RELEASE_LLVM_LIB_DIR)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --libs)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --system-libs)
 
-$(info xxxxxxxxxxxxxxxxxxxxxxxx)
+export VARIANT ?= release
+export VARIANT := $(or $(filter $(VARIANT), debug),\
+                       $(filter $(VARIANT), release),\
+                       $(error Invalid VARIANT: $(VARIANT)))
 
-export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
+export TOOLSET ?= $(or $(and $(filter $(TARGET_OS),Linux), clang-linux),\
+                       $(and $(filter $(TARGET_OS),Darwin), clang-darwin))
+export TOOLSET := $(or $(filter $(TOOLSET), clang-linux),\
+                       $(filter $(TOOLSET), clang-darwin),\
+                       $(error Invalid TOOLSET: $(TOOLSET)))
 
-export VARIANT = release
+export DEVEMACS ?= $(or $(and $(filter $(TARGET_OS),Linux), emacs -nw ./),\
+                        $(and $(filter $(TARGET_OS),Darwin), open -n -a emacs ./))
 
-ifeq ($(TOOLSET),)
-  ifeq ($(TARGET_OS),Linux)
-    export TOOLSET = clang-linux
-  else
-    export TOOLSET = clang-darwin
-  endif
-endif
+export PYTHON2 := $(or $(wildcard $(PYTHON2)),\
+                       $(wildcard /usr/bin/python2.7),\
+                       $(wildcard /usr/bin/python2),\
+                       $(wildcard /usr/bin/python),\
+                       $(error Could not find python.))
 
-ifeq ($(TARGET_OS),Linux)
-  export DEVEMACS = emacs -nw ./
-else
-  export DEVEMACS = open -n -a emacs ./
-endif
+export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
+                              $(and $(filter $(TARGET_OS),Darwin), MacOS))
 
-ifeq ($(LINK),static)
-$(info Linking using static libraries)
-else ifeq ($(LINK),shared)
-$(info Linking using shared libraries)
-else
-$(info Only options for LINK are static and shared)
-exit 1
-endif
-
-#
-# If the local.config doesn't define PYTHON2 then provide a default
-#
-ifeq ($(PYTHON2),)
-  export PYTHON2 = $(wildcard /usr/bin/python2.7)
-  ifeq ($(PYTHON2),)
-    export PYTHON2 = $(wildcard /usr/bin/python2)
-    ifeq ($(PYTHON2),)
-      export PYTHON2 = $(wildcard /usr/bin/python)
-    endif
-  endif
-endif
-
-ifeq ($(TARGET_OS),Linux)
-  export EXECUTABLE_DIR=bin
-endif
-ifeq ($(TARGET_OS),Darwin)
-  export EXECUTABLE_DIR=MacOS
-endif
-
-export BINDIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)
-export EXECS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs/
+export BINDIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)
+export EXECS ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs/
 
 export PATH := $(CLASP_HOME)/src/common:$(PATH)
 export PATH := $(BOOST_BUILD_INSTALL)/bin:$(PATH)
 export PATH := $(BINDIR):$(PATH)
 
-
 ifneq ($(CXXFLAGS),)
   export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
 endif
 
+define varprint
+	@echo -e "\033[0;32m$(strip $(1))\033[0m: $($(strip $(1)))"
+endef
+
 all:
+	make print-config
 	make submodules
 	make asdf
 	make boost_build
@@ -239,7 +201,6 @@ mps-clbind:
 boehm-clean:
 	install -d $(BOEHM_SOURCE_DIR)
 	-(cd $(BOEHM_SOURCE_DIR); make clean )
-
 
 cclasp-mps:
 	(cd src/main; make cclasp-mps)
@@ -434,3 +395,42 @@ asdf-submodule:
 
 dump-local-config:
 	cat $(CLASP_HOME)/local.config
+
+print-config:
+	$(info >> Makefile Configuration:)
+	$(call varprint, CLASP_HOME)
+	$(call varprint, LLVM_CONFIG)
+	$(call varprint, TARGET_OS)
+	$(call varprint, ADDRESS-MODEL)
+	$(call varprint, LINK)
+	$(call varprint, PJOBS)
+	$(call varprint, LLVM_CONFIG_DEBUG)
+	$(call varprint, LLVM_CONFIG_RELEASE)
+	$(call varprint, LLVM_BIN_DIR)
+	$(call varprint, GIT_COMMIT)
+	$(call varprint, CLASP_VERSION)
+	$(call varprint, CLASP_INTERNAL_BUILD_TARGET_DIR)
+	$(call varprint, LIBATOMIC_OPS_SOURCE_DIR)
+	$(call varprint, BOEHM_SOURCE_DIR)
+	$(call varprint, BOOST_BUILD_SOURCE_DIR)
+	$(call varprint, BOOST_BUILD_INSTALL)
+	$(call varprint, BJAM)
+	$(call varprint, BUILD)
+	$(call varprint, CLASP_APP_EXECS)
+	$(call varprint, CLASP_APP_RESOURCES_DIR)
+	$(call varprint, CLASP_APP_RESOURCES_LIB_COMMON_DIR)
+	$(call varprint, CLASP_DEBUG_LLVM_LIB_DIR)
+	$(call varprint, CLASP_RELEASE_LLVM_LIB_DIR)
+	$(call varprint, CLASP_DEBUG_CXXFLAGS)
+	$(call varprint, CLASP_DEBUG_LINKFLAGS)
+	$(call varprint, CLASP_RELEASE_CXXFLAGS)
+	$(call varprint, CLASP_RELEASE_LINKFLAGS)
+	$(call varprint, VARIANT)
+	$(call varprint, TOOLSET)
+	$(call varprint, DEVEMACS)
+	$(call varprint, PYTHON2)
+	$(call varprint, EXECUTABLE_DIR)
+	$(call varprint, BINDIR)
+	$(call varprint, EXECS)
+	$(call varprint, PATH)
+	$(call varprint, USE_CXXFLAGS)
