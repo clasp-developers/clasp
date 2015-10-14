@@ -13,8 +13,15 @@
 
 (defun do-inline-hook (name ast)
   (when (core:declared-global-inline-p name)
-    (core:setf-cleavir-ast (fdefinition name) ast)))
+    (assert (fboundp name))
+    (if (fboundp name)
+        (core:setf-cleavir-ast (fdefinition name) ast))))
   
+(defun do-compile-time-inline-hook (name ast)
+  (error "What do I do at compile-time to inline?")
+  (when (core:declared-global-inline-p name)
+    (core:setf-cleavir-ast (fdefinition name) ast)))
+
 ;; Generate an AST and save it for inlining if the
 ;; function is proclaimed as inline
 (defun defun-inline-hook (name function-form)
@@ -23,12 +30,18 @@
            (ast-form (cleavir-ast-transformations:codegen-clone-ast ast))
            (astfn-gs (gensym "ASTFN")))
       (when (core:declared-global-inline-p name)
-        `(eval-when (:compile-toplevel :load-toplevel :execute)
-           (let ((,astfn-gs (lambda () ,ast-form)))
-             (when core:*do-inline-hook*
-               (funcall core:*do-inline-hook* (QUOTE ,name) (funcall ,astfn-gs)))))))))
+        `(progn
+           (eval-when (:compile-toplevel)
+             (let ((,astfn-gs (lambda () ,ast-form)))
+               (when core:*do-compile-time-inline-hook*
+                 (funcall core:*do-compile-time-inline-hook* (QUOTE ,name) (funcall ,astfn-gs)))))
+           (eval-when (:load-toplevel :execute)
+             (let ((,astfn-gs (lambda () ,ast-form)))
+               (when core:*do-inline-hook*
+                 (funcall core:*do-inline-hook* (QUOTE ,name) (funcall ,astfn-gs))))))))))
     
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setq core:*defun-inline-hook* 'defun-inline-hook)
+  (setq core:*do-compile-time-inline-hook* 'do-compile-time-inline-hook)
   (setq core:*do-inline-hook* 'do-inline-hook)
   (setq core:*proclaim-hook* 'proclaim-hook))
