@@ -173,7 +173,9 @@ boehm-setup:
 	-(cd $(BOEHM_SOURCE_DIR); automake --add-missing )
 	(cd $(BOEHM_SOURCE_DIR); \
 		export ALL_INTERIOR_PTRS=1; \
-		CFLAGS="-DUSE_MMAP -g" \
+                CC=$(LLVM_BIN_DIR)/clang \
+		CXX=$(LLVM_BIN_DIR)/clang++ \
+                CFLAGS="-DUSE_MMAP -g" \
 		PKG_CONFIG_PATH=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR)/lib/pkgconfig/ \
 		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
 
