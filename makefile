@@ -86,7 +86,7 @@ export CLASP_RELEASE_LINKFLAGS += -L$(CLASP_RELEASE_LLVM_LIB_DIR)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --libs)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --system-libs)
 
-ifeq($(TARGET_OS),Darwin)
+ifeq ($(TARGET_OS),Darwin)
   export INCLUDE_DIRS += /usr/local/Cellar/gmp/6.0.0a/include
   export INCLUDE_DIRS += /opt/local/include
   export LIB_DIRS += /usr/local/Cellar/gmp/6.0.0a/lib
