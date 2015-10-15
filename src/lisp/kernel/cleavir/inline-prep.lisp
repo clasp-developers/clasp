@@ -13,7 +13,6 @@
 
 (defun do-inline-hook (name ast)
   (when (core:declared-global-inline-p name)
-    (assert (fboundp name))
     (if (fboundp name)
         (core:setf-cleavir-ast (fdefinition name) ast))))
   
