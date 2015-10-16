@@ -84,6 +84,8 @@ class BitVector_O : public Vector_O {
   //! Return true if the BitVector contains only 0's
   bool isZero() { return (this->countSet() == 0); };
 
+  void do_subseq(BitVector_sp result, int start, int iend) const;
+  
   string asString();
 
   std::ostream &dumpToStream(std::ostream &out);
@@ -129,6 +131,7 @@ public:
   size_t _length;
 public:
   virtual gc::Fixnum dimension() const { return this->_length;};
+  virtual T_sp subseq(int start, T_sp end) const;
   explicit SimpleBitVector_O(size_t sz) : BitVector_O(sz), _length(sz){};
   explicit SimpleBitVector_O() : BitVector_O(){};
   virtual ~SimpleBitVector_O(){};
@@ -149,7 +152,7 @@ public:
 
   virtual T_sp vectorPush(T_sp newElement);
   virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 8);
-  
+  virtual T_sp subseq(int start, T_sp end) const;
   explicit BitVectorWithFillPtr_O(size_t sz, size_t fill_ptr, bool adjust) : BitVector_O(sz), _fill_ptr(fill_ptr), _adjustable(adjust){};
   explicit BitVectorWithFillPtr_O() : BitVector_O(){};
   virtual ~BitVectorWithFillPtr_O(){};

@@ -477,22 +477,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 		 (load pathname)))
            nil)
 
-#+(or)
-(si::*fset 'ibundle
-	   #'(lambda (path)
-	       (multiple-value-call
-                #'(lambda (loaded &optional error-msg)
-                    (if loaded
-                        loaded
-                        (bformat t "Could not load bundle %s - error: %s\n" (truename path) error-msg)))
-                (let* ((tb (default-target-backend))
-                       (image-path (target-backend-pathname path :target-backend tb))
-                       (image-file (probe-file image-path)))
-                  (if image-file nil (error "Could not find ~a" image-path))
-                  (bformat t "Loading image %s\n" image-path)
-                  (load-bundle image-path llvm-sys:+clasp-main-function-name+)))))
-
-
 (si::*fset 'fset
 		 #'(lambda (whole env)
 		     `(si::*fset ,(cadr whole) ,(caddr whole) ,(cadddr whole)))
@@ -511,7 +495,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 			 `(if ,(car forms)
 			      (and ,@(cdr forms)))))))
 	   t)
-
 
 (si::*fset 'or
 	   #'(lambda (whole env)
@@ -533,12 +516,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (eval-when (:execute)
   (load (lisp-source-pathname 'kernel/cmp/jit-setup))
   (load (lisp-source-pathname 'kernel/clsymbols)))
-
-
-
-
-#| If we aren't using the compiler then just load everything with the interpreter |#
-
 
 (defvar *reversed-init-filenames* ())
 
@@ -577,11 +554,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                   (bformat t "Loading/compiling source: %s\n" (truename lsp-path))
                   (bformat t "Loading/interpreting source: %s\n" (truename lsp-path)))
 	      (load lsp-path))
-	    (bformat t "No interpreted or bitcode file for %s could be found\n" (truename lsp-path))))
-    ))
-
-
-
+	    (bformat t "No interpreted or bitcode file for %s could be found\n" (truename lsp-path))))))
 
 (defun delete-init-file (module &key (really-delete t) stage)
   (let ((bitcode-path (build-pathname module "bc" stage))) ;; (target-backend-pathname (get-pathname-with-type module "bc"))))
@@ -589,11 +562,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	(if really-delete
 	    (progn
 	      (bformat t "     Deleting bitcode: %s\n" (truename bitcode-path))
-	      (delete-file bitcode-path))
-	      )
-	)))
-
-
+	      (delete-file bitcode-path))))))
 
 ;; I need to search the list rather than using features because *features* may change at runtime
 (defun default-target-backend (&optional given-stage)
@@ -636,20 +605,40 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (export '(default-target-backend target-backend-pathname))
 
+(defun bitcode-exists-and-up-to-date (filename)
+  (let* ((source-path (lisp-source-pathname filename))
+         (bitcode-path (build-pathname filename "bc"))
+         (found-bitcode (probe-file bitcode-path)))
+    (if found-bitcode
+        (> (file-write-date bitcode-path)
+           (file-write-date source-path))
+        nil)))
 
-(defun compile-kernel-file (filename &key (reload nil) load-bitcode (recompile nil))
+(defun out-of-date-bitcodes (start end &key (system *system-files*))
+  (let ((sources (select-source-files end :first-file start :system system))
+        out-of-dates)
+    (mapc #'(lambda (f) (if out-of-dates
+                            (setq out-of-dates (list* f out-of-dates))
+                            (if (not (bitcode-exists-and-up-to-date f))
+                                (setq out-of-dates (cons f nil)))))
+          sources)
+    (nreverse out-of-dates)))
+
+(defun out-of-date-image (source-files image)
+  (let* ((last-source (car (reverse source-files)))
+         (last-bitcode (build-pathname last-source "bc"))
+         (image-file (target-backend-pathname image)))
+    (if (probe-file image-file)
+        (> (file-write-date last-bitcode)
+           (file-write-date image-file))
+        t)))
+
+(defun compile-kernel-file (filename &key (reload nil) load-bitcode (force-recompile nil))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((source-path (lisp-source-pathname filename))
 	 (bitcode-path (build-pathname filename "bc")) ;; (target-backend-pathname (get-pathname-with-type filename "bc")))
-	 (load-bitcode (if (probe-file bitcode-path)
-			   (if load-bitcode
-			       t
-			       (if (> (file-write-date bitcode-path)
-				      (file-write-date source-path))
-				   t
-				   nil))
-			   nil)))
-    (if (and load-bitcode (not recompile))
+	 (load-bitcode (and (bitcode-exists-and-up-to-date filename) load-bitcode)))
+    (if (and load-bitcode (not force-recompile))
 	(progn
 	  (bformat t "Skipping compilation of %s - its bitcode file %s is more recent\n" (truename source-path) (translate-logical-pathname bitcode-path))
 	  ;;	  (bformat t "   Loading the compiled file: %s\n" (path-file-name bitcode-path))
@@ -678,10 +667,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   '(
     :init
     #P"kernel/init"
-    :cleavir-injection
+    :start
     #P"kernel/cmp/jit-setup"
     #P"kernel/clsymbols"
-    :start
     #P"kernel/lsp/packages"
     #P"kernel/lsp/foundation"
     #P"kernel/lsp/export"
@@ -730,9 +718,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/cmp/compilefile"
     #P"kernel/cmp/cmpbundle"
     #P"kernel/cmp/cmpwalk"
+    #P"kernel/cmp/cmprepl"
     :cmp
     :stage1
-    #P"kernel/cmp/cmprepl"
     :cmprepl
     #P"kernel/lsp/logging"
     #P"kernel/lsp/seqlib"
@@ -814,7 +802,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export '*asdf-files*)
 
 
-(defun select-source-files (last-file &key first-file system)
+(defun select-source-files (last-file &key first-file (system *system-files*))
   (or first-file (error "You must provide first-file to select-source-files"))
   (or system (error "You must provide system to select-source-files"))
   (let ((cur (member first-file system))
@@ -857,10 +845,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	   (setq files (cons file files)))
        (setq cur (cdr cur))
        (go top)
-     done
-       )
-    files
-    ))
+     done)
+    files))
 
 
 
@@ -873,7 +859,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
      top
        (if (endp cur) (go done))
        (if (not interp)
-	   (iload (car cur) :load-bitcode load-bitcode)
+	   (if (bitcode-exists-and-up-to-date (car cur))
+               (iload (car cur) :load-bitcode load-bitcode)
+               (progn
+                 (setq load-bitcode nil)
+                 (interpreter-iload (car cur))))
 	   (interpreter-iload (car cur)))
        (gctools:cleanup)
        (setq cur (cdr cur))
@@ -882,22 +872,16 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
        )))
 
 
-(defun compile-system (first-file last-file &key recompile reload (system *system-files*))
-;;  (if *target-backend* nil (error "*target-backend* is undefined"))
-  (bformat t "compile-system  from: %s  to: %s\n" first-file last-file)
-  (let* ((files (select-source-files last-file :first-file first-file :system system))
-	 (cur files)
-         bitcode-files)
+(defun compile-system (files &key reload (system *system-files*))
+  (bformat t "compile-system files: %s\n" files)
+  (let* ((cur files))
     (tagbody
      top
        (if (endp cur) (go done))
-       (let ((one-bitcode (compile-kernel-file (car cur) :recompile recompile :reload reload )))
-         (setq bitcode-files (cons one-bitcode bitcode-files)))
+       (compile-kernel-file (car cur) :reload reload )
        (setq cur (cdr cur))
        (go top)
-     done
-       )
-    (reverse bitcode-files)))
+     done)))
 (export 'compile-system)
 
 
@@ -921,10 +905,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	     (delete-init-file (car cur) :really-delete t :stage stage )
 	     (setq cur (cdr cur))
 	     (go top)
-	   done
-	     )
-	  (bformat t "Not deleting\n"))))
-  )
+	   done)
+	  (bformat t "Not deleting\n")))))
 
 
 
@@ -946,6 +928,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                                         (bformat t "Starting clasp-min low-level-repl\n")
                                         (core::low-level-repl)))
 
+
 (defun link-system (start end prologue-form epilogue-form &key (system *system-files*))
   (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname x "bc")) (select-source-files end :first-file start :system system))))
     (cmp:link-system-lto (target-backend-pathname +image-pathname+)
@@ -955,23 +938,22 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export '(link-system)) ;; core
 
 (export '(compile-min))
-(defun compile-min (&key (source-backend (default-target-backend)) (target-backend (default-target-backend)))
-  (load-system :start :cmp)
-  (let* ((*target-backend* source-backend))
-    (compile-system :start :cmp :reload t)
-    (compile-system :init :start :reload nil :recompile t)
-    (load-system :cmp :min)
-    (compile-system :cmp :min)
-    (let ((*target-backend* target-backend))
-      (link-system :init :min (default-prologue-form) +minimal-epilogue-form+))))
+(defun compile-min (&key (target-backend (default-target-backend)) (system *system-files*))
+  (if (out-of-date-bitcodes :init :cmp)
+      (progn
+        (load-system :start :cmp :system system)
+        (let* ((*target-backend* target-backend)
+               (files (out-of-date-bitcodes :init :cmp :system system)))
+          (compile-system files :reload t)))))
 
-(export 'compile-min-recompile)
-(defun compile-min-recompile (&key (target-backend (default-target-backend)))
-  (let ((*target-backend* target-backend))
-    (compile-system :init :start :recompile t)
-    (compile-system :start :min :recompile t )
-    (link-system :init :min (default-prologue-form) +minimal-epilogue-form+)))
-
+(export 'link-min)
+(defun link-min ()
+  (min-features)
+  (if (out-of-date-image (select-source-files :cmp :first-file :init) +image-pathname+)
+      (progn
+        (load-system :start :cmp)
+        (link-system :init :cmp (default-prologue-form) +minimal-epilogue-form+))))
+                   
 (defun recursive-remove-from-list (item list)
   (if list
       (if (equal item (car list))
@@ -980,26 +962,61 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
       nil))
 (export 'recursive-remove-from-list)
 
-(export 'switch-to-full)
-(defun switch-to-full ()
+(defun remove-stage-features ()
   (setq *features* (recursive-remove-from-list :ecl-min *features*))
-  (push :clos *features*)
-  (bformat t "Removed :ecl-min from and added :clos to *features* --> %s\n" *features*))
+  (setq *features* (recursive-remove-from-list :clos *features*))
+  (setq *features* (recursive-remove-from-list :bclasp *features*))
+  (setq *features* (recursive-remove-from-list :cclasp *features*)))
 
+(export 'min-features)
+(defun min-features ()
+  (remove-stage-features)
+  (setq *features* (list* :ecl-min *features*)))
 
-(defun compile-full-init ()
-  (if (member :ecl-min *features*) (switch-to-full))
-  (let* ((*target-backend* (default-target-backend)))
-    (compile-system :init :start :reload nil :recompile t )))
+(export 'bclasp-features)
+(defun bclasp-features()
+  (remove-stage-features)
+  (setq *features* (list* :clos :bclasp *features*)))
 
+(export 'cclasp-features)
+(defun cclasp-features ()
+  (remove-stage-features)
+  (setq *features* (list* :clos :cclasp *features*)))
 
-(export '(compile-full-init compile-full))
-(defun compile-full ()
-  (if (member :ecl-min *features*) (switch-to-full))
+(export '(compile-bclasp))
+(defun compile-bclasp ()
+  (bclasp-features)
   (let ((*target-backend* (default-target-backend)))
-    (load-system :start :all :interp t )
-    (compile-system :init :all :recompile t )
-    (link-system :init :all (default-prologue-form '(:clos)) (default-epilogue-form))))
+    (if (out-of-date-bitcodes :init :all)
+        (progn
+          (load-system :start :all :interp t )
+          (let ((files (out-of-date-bitcodes :init :all)))
+            (compile-system files))))))
+(export 'link-bclasp)
+(defun link-bclasp ()
+  (bclasp-features)
+  (let ((*target-backend* (default-target-backend)))
+    (if (out-of-date-image (select-source-files :all :first-file :init) +image-pathname+)
+        (link-system :init :all (default-prologue-form '(:clos)) (default-epilogue-form)))))
+
+(export '(compile-cclasp))
+(defun compile-cclasp ()
+  (cclasp-features)
+  (add-cleavir-to-*system-files*)
+  (let ((*target-backend* (default-target-backend)))
+    (if (out-of-date-bitcodes :init :all)
+        (progn
+          (load-system :start :all :interp t )
+          (let ((files (out-of-date-bitcodes :init :all)))
+            (compile-system files))))))
+(export 'link-cclasp)
+(defun link-cclasp ()
+  (bclasp-features)
+  (add-cleavir-to-*system-files*)
+  (let ((*target-backend* (default-target-backend)))
+    (if (out-of-date-image (select-source-files :cclasp :first-file :init) +image-pathname+)
+        (progn
+          (link-system :init :cclasp (default-prologue-form '(:clos)) (default-epilogue-form))))))
 
 
 (defun help-build ()

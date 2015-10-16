@@ -44,7 +44,7 @@ export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
                               $(and $(filter $(TARGET_OS),Darwin), MacOS))
 
 export DEVEMACS ?= $(or $(and $(filter $(TARGET_OS),Linux), emacs -nw ./),\
-                        $(and $(filter $(TARGET_OS),Darwin), open -n -a emacs ./))
+                        $(and $(filter $(TARGET_OS),Darwin), open -n -a /Applications/Emacs.app ./))
 
 export LLVM_CONFIG := $(or $(wildcard $(LLVM_CONFIG)),\
                            $(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),\

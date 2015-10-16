@@ -18,7 +18,7 @@
     (tagbody
      top
        (if (endp cur) (go done))
-       (let ((one-bitcode (core:compile-kernel-file (car cur) :recompile recompile :reload reload )))
+       (let ((one-bitcode (core:compile-kernel-file (car cur) :force-recompile recompile :reload reload )))
          (setq bitcode-files (cons one-bitcode bitcode-files)))
        (setq cur (cdr cur))
        (go top)
@@ -37,20 +37,20 @@ p  (core:pathname-translations "cclasp-boehm" '(("**;*.*" #P"SYS:build;system;cc
     (if dry-run
 	(format t "Compiling files: ~a~%" (core:select-source-files to-mod :first-file from-mod :system system))
 	(let* ((cmp:*cleavir-compile-file-hook* (fdefinition (find-symbol "CLEAVIR-COMPILE-FILE-FORM" "CLASP-CLEAVIR")))
-	       (bitcode-files (core:compile-system from-mod to-mod :recompile recompile :reload reload :system system)))
+	       (bitcode-files (core:compile-system from-mod to-mod :force-recompile recompile :reload reload :system system)))
 	  (unless dont-link
             (link-cclasp from-mod to-mod :system system))))))
 
 (defun compile-min-cclasp (&key (recompile t))
   (let ((cmp:*compile-print* t))
-    (compile-clasp :start :min :recompile recompile :reload nil
+    (compile-clasp :start :min :force-recompile recompile :reload nil
 				:system *cleavir-system*)))
 
 
 (defun compile-full-cclasp (system &key (recompile t) (reload nil))
   (let ((cmp:*compile-print* t))
     (compile-clasp :init :auto-cleavir
-                   :recompile recompile 
+                   :force-recompile recompile 
                    :reload reload
                    :system system)))
 
