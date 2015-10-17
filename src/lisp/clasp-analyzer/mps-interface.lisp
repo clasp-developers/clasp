@@ -360,9 +360,8 @@
       "NO-NAME-SAFE"))
 
 (defun decl-name (decl)
-  (cast:get-qualified-name-as-string decl)
-;;  (cast:get-name-as-string decl)
-  )
+  (let ((result (cast:get-qualified-name-as-string decl)))
+    result))
 
 
 (defun template-arg-as-string (template-arg)
@@ -746,6 +745,8 @@ can be saved and reloaded within the project for later analysis"
                                          (metadata-name (string-upcase (mtag-name :metadata))))
                                     (push (intern metadata-name :keyword) metadata))))
                  ;;                   (when (string= record-key "gctools::StackRootedPointer<class asttooling::BAR>") (break "Check fields"))
+                 (when (search "gctools::GCVector_moveable<chem::(anonymous)>" record-key)
+                   (break "Check (mtag-node :whole)"))
                  (setf (gethash record-key results)
                        (make-cclass :key record-key
                                     :template-specializer template-specializer
@@ -1251,7 +1252,7 @@ so that they don't have to be constantly recalculated"
 
 (defmethod contains-fixptr-impl-p ((x cxxrecord-ctype) project)
   (cond
-    ((string= (cxxrecord-ctype-key x) "(anonymous)") nil)
+    ((string= (cxxrecord-ctype-key x) "(my-anonymous-class-name)") nil)
     (t (let ((c (gethash (ctype-key x) (project-classes project))))
          (if c
              (contains-fixptr-impl-p x project)
@@ -1513,6 +1514,7 @@ so that they don't have to be constantly recalculated"
 
 (defmethod fixer-macro-name ((x pointer-fixer) fixer) "SIMPLE_POINTER_FIX")
 
+(defmethod fixer-macro-name ((x array-fixer) fixer) "ARRAY_FIX")
 
 
 (defun code-for-instance-var (stream ptr-name instance-var)
@@ -2658,7 +2660,7 @@ It converts relative -I../... arguments to absolute paths"
 (progn
   (lnew $test-search)
   (setq $test-search (append
-                      (lsel $* ".*lambdaListHandler\.cc$"))
+                      (lsel $* ".*mol2\.cc$"))
                       )
   )
 
@@ -2668,7 +2670,7 @@ It converts relative -I../... arguments to absolute paths"
   (multitool-activate-tools *tools* tools)
   (setf (multitool-results *tools*) (make-project))
   (let ((alljobs (if test
-                     $test-search
+                     test
                      (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))))
     (dolist (job alljobs)
 ;;;      (core:system (format nil "heap ~a" (core:getpid)))
@@ -2726,7 +2728,7 @@ It converts relative -I../... arguments to absolute paths"
   "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
   (setq *parallel-search-pids* nil)
   (let ((all-jobs (split-jobs (if test
-                                  $test-search
+                                  test
                                   (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))
                               *max-parallel-searches*
                               ))
@@ -2755,7 +2757,7 @@ It converts relative -I../... arguments to absolute paths"
   (format t "serial-search-all --> current-dir: ~a~%" (core:current-dir))
   (setq *parallel-search-pids* nil)
   (let ((all-jobs (if test
-                      $test-search
+                      test
                       (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))))
     (save-data all-jobs (project-pathname "project-all" "dat"))
     (format t "all-jobs: ~a~%" all-jobs)
@@ -2765,10 +2767,17 @@ It converts relative -I../... arguments to absolute paths"
     (save-data *project* (project-pathname "project" "dat"))))
 
 
-(defun serial-search-all-then-generate-code-and-quit (root-directory)
+(defun serial-search-only (root-directory &key test)
   (let ((*root-directory* root-directory))
     (setup-*tools*)
-    (serial-search-all)
+    (serial-search-all :test test)))  
+(export 'serial-search-only)
+(export '$*)
+
+(defun serial-search-all-then-generate-code-and-quit (root-directory &key test)
+  (let ((*root-directory* root-directory))
+    (setup-*tools*)
+    (serial-search-all :test test)
     (analyze-project)
     (generate-code)
     (quit)))
