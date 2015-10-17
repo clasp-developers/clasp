@@ -46,13 +46,7 @@ cclasp-boehm-with-addons:
 	make cclasp-boehm
 	make cclasp-boehm-addons
 
-cclasp-boehm-bitcode:
-	$(BCLASP_BOEHM) -l "buildCleavirClasp.lsp"
-
-cclasp-boehm-fasl:
-	$(BCLASP_BOEHM) -I -f ecl-min -l "link-cclasp.lsp"
-
-cclasp-reload:
+clasp-reload:
 	$(BCLASP_BOEHM) -l "buildCleavirClaspReload.lsp"
 
 bclasp-to-cclasp:
@@ -111,8 +105,17 @@ min-boehmdc-recompile:
 bclasp-boehmdc:
 	$(BCLASP_BOEHMDC) -f ecl-min -l "buildClasp.lsp"
 
+clean-bitcode:
+        $(BCLASP_BOEHM) -I -f ecl-min -e "(clean-system :init)" -e "(quit)"
+
 min-boehm:
-	$(BCLASP_BOEHM) -I -f ecl-min -l "buildClaspMinBoot.lsp"
+	$(BCLASP_BOEHM) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
+
+cclasp-boehm-bitcode:
+	$(BCLASP_BOEHM) -f ecl-min -e "(compile-cclasp)" -e "(quit)"
+
+cclasp-boehm-fasl:
+	$(BCLASP_BOEHM) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
 
 min-boehm-recompile:
 	$(BCLASP_BOEHM) -f ecl-min -l "buildClaspMinRecompile.lsp"

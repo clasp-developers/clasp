@@ -525,7 +525,7 @@ NIL
 
 
 (pushnew :cleavir *features*)
-(cc::compile-clasp :init :cclasp :recompile nil)
+(cc::compile-clasp :init :cclasp :force-recompile nil)
 (cc::link :init :cclasp :system clasp-cleavir::*clasp-cleavir-files*)
 
 *clasp-cleavir-files*
@@ -1096,7 +1096,7 @@ core:*pi*
 
 (with-open-file (clasp-cleavir::*debug-log* "/tmp/boot/boot.log" :direction :output)
   (let ((clasp-cleavir::*debug-log-on* t))
-    (time (clasp-cleavir:compile-clasp-with-cleavir 'core::kernel/clos/boot 'core::kernel/clos/boot :recompile t :reload nil :system clasp-cleavir::*cleavir-clasp-all*))
+    (time (clasp-cleavir:compile-clasp-with-cleavir 'core::kernel/clos/boot 'core::kernel/clos/boot :force-recompile t :reload nil :system clasp-cleavir::*cleavir-clasp-all*))
     ))
 
 ;;
@@ -1105,7 +1105,7 @@ core:*pi*
 
 (trace cleavir-environment:symbol-macro-expansion)
 
-(time (clasp-cleavir:compile-clasp-with-cleavir 'core::kernel/lsp/assert :cleavir-clasp :recompile t :reload nil :system clasp-cleavir::*cleavir-clasp-all*))
+(time (clasp-cleavir:compile-clasp-with-cleavir 'core::kernel/lsp/assert :cleavir-clasp :force-recompile t :reload nil :system clasp-cleavir::*cleavir-clasp-all*))
 
 (print "Hello")
 

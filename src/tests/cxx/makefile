@@ -1,3 +1,6 @@
+testNum: testNum.cc
+	clang++ -v -g -o0 -o testNum testNum.cc
+
 testVarArgsCall: testVarArgsCall.cc
 	clang++ -v -g -O0 -o testVarArgsCall testVarArgsCall.cc
 

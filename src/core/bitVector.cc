@@ -68,6 +68,58 @@ T_sp BitVector_O::rowMajorAref(cl_index idx) const {
   return (val != 0) ? clasp_make_fixnum(1) : clasp_make_fixnum(0);
 }
 
+void BitVector_O::do_subseq(BitVector_sp result, int start, int iend) const {
+ int idest = 0;
+  for ( int i(start); i<iend; ++i ) {
+    result->setBit(idest++,this->testBit(i));
+  }
+}
+
+T_sp SimpleBitVector_O::subseq(int start, T_sp end) const {
+  if ( start < 0 ) {
+    SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
+  }
+  int iend;
+  if (end.nilp()) {
+    iend = this->dimension();
+  } else {
+    iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
+  }
+  if ( iend < start) {
+    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->dimension());
+  }
+  if ( iend > this->dimension() ) {
+    iend = this->dimension();
+  }
+  int ilen = iend-start;
+  SimpleBitVector_sp result = SimpleBitVector_O::create(ilen);
+  this->do_subseq(result,start,iend);
+  return result;
+}
+
+T_sp BitVectorWithFillPtr_O::subseq(int start, T_sp end) const {
+  if ( start < 0 ) {
+    SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
+  }
+  int iend;
+  if (end.nilp()) {
+    iend = this->dimension();
+  } else {
+    iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
+  }
+  if ( iend < start) {
+      SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->dimension());
+  }
+  if ( iend > this->dimension() ) {
+    iend = this->dimension();
+  }
+  int ilen = iend-start;
+  BitVectorWithFillPtr_sp result = BitVectorWithFillPtr_O::create(ilen,ilen,this->_adjustable);
+  this->do_subseq(result,start,iend);
+  return result;
+}
+
+
 void BitVector_O::getOnIndices(vector<uint> &res) {
   _G();
   uint i;
