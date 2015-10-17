@@ -8,35 +8,5 @@
 (setq core:*target-backend* (core::default-target-backend))
 (core:clean-system nil :no-prompt t :stage "cclasp")
 (core:load-system :bclasp :cclasp) ;; :pre-inline)
-;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE uses Cleavir
-#+(or)(eval-when (:execute :load-toplevel)
-        (setq cmp:*cleavir-compile-hook* 'cleavir-compile-t1expr))
-;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE-FILE uses Cleavir
-#+(or)(eval-when (:execute :load-toplevel)
-        (setq cmp:*cleavir-compile-file-hook* 'clasp-cleavir::cleavir-compile-file-form))
-#+(or)(let ((compiler-symbol (find-symbol "*COMPILER*" "CLEAVIR-GENERATE-AST")))
-        (setf (symbol-value compiler-symbol) 'cl:compile-file))
-#+(or)(let* ((cmp:*cleavir-compile-file-hook* (fdefinition (find-symbol "CLEAVIR-COMPILE-FILE-FORM" "CLASP-CLEAVIR"))))
-        (core:compile-system :init
-                             :cclasp
-                             :recompile t
-                             :reload nil))
-(core:compile-system :init :cclasp :recompile t :reload nil)
-;;; linking is done in the link-cclasp script
-#+(or)(link-system :init :cclasp
-                   '(progn
-                     (make-package "CLEAVIR-AST")
-                     (make-package "CLASP-CLEAVIR-AST")
-                     (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
-                     (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
-                     (if (member :interactive *features*) 
-                         (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n"
-                                       (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
-                   '(progn
-                     (cl:in-package :cl-user)
-                     (require 'system)
-                     (core:load-clasprc)
-                     (core:process-command-line-load-eval-sequence)
-                     (let ((core:*use-interpreter-for-eval* nil))
-                       (when (member :interactive *features*) (core:top-level)))))
+(core:compile-system :init :cclasp :recompile nil :reload nil)
 (core:quit)
