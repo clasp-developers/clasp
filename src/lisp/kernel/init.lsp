@@ -628,6 +628,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (let* ((last-source (car (reverse source-files)))
          (last-bitcode (build-pathname last-source "bc"))
          (image-file (target-backend-pathname image)))
+    (format t "last-bitcode: ~a~%" last-bitcode)
+    (format t "image-file: ~a~%" image-file)
     (if (probe-file image-file)
         (> (file-write-date last-bitcode)
            (file-write-date image-file))
@@ -924,9 +926,10 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
       (when (member :interactive *features*) (core:run-repl)))))
 
 (defconstant +minimal-epilogue-form+ '(progn
-                                        (process-command-line-load-eval-sequence)
-                                        (bformat t "Starting clasp-min low-level-repl\n")
-                                        (core::low-level-repl)))
+                                       (process-command-line-load-eval-sequence)
+                                       (bformat t "Starting clasp-min low-level-repl\n")
+                                       (core::select-package :core)
+                                       (core::low-level-repl)))
 
 
 (defun link-system (start end prologue-form epilogue-form &key (system *system-files*))
@@ -968,6 +971,25 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (setq *features* (recursive-remove-from-list :bclasp *features*))
   (setq *features* (recursive-remove-from-list :cclasp *features*)))
 
+(export 'process-command-line-load-eval-sequence)
+(defun process-command-line-load-eval-sequence ()
+  (mapcar #'(lambda (entry)
+              (if (eq (car entry) :load)
+                  (load (cdr entry))
+                (eval (read-from-string (cdr entry)))))
+          core::*command-line-load-eval-sequence*)
+  )
+
+
+(defun load-clasprc ()
+  "Load the users startup code"
+  (let ((clasprc (make-pathname :name ""
+			       :type "clasprc"
+			       :defaults (user-homedir-pathname))))
+    (if (probe-file clasprc)
+	(load clasprc))))
+(export 'load-clasprc)
+
 (export 'min-features)
 (defun min-features ()
   (remove-stage-features)
@@ -1004,20 +1026,34 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (cclasp-features)
   (add-cleavir-to-*system-files*)
   (let ((*target-backend* (default-target-backend)))
-    (if (out-of-date-bitcodes :init :all)
+    (if (out-of-date-bitcodes :init :cclasp)
         (progn
-          (load-system :start :all :interp t )
-          (let ((files (out-of-date-bitcodes :init :all)))
+          (load-system :start :cclasp :interp t )
+          (let ((files (out-of-date-bitcodes :init :cclasp)))
             (compile-system files))))))
 (export 'link-cclasp)
-(defun link-cclasp ()
-  (bclasp-features)
+(defun link-cclasp (&key force)
+  (cclasp-features)
   (add-cleavir-to-*system-files*)
   (let ((*target-backend* (default-target-backend)))
-    (if (out-of-date-image (select-source-files :cclasp :first-file :init) +image-pathname+)
+    (if (or force (out-of-date-image (select-source-files :cclasp :first-file :init) +image-pathname+))
         (progn
-          (link-system :init :cclasp (default-prologue-form '(:clos)) (default-epilogue-form))))))
-
+          (link-system :init :cclasp
+                       '(progn
+                         (make-package "CLEAVIR-AST")
+                         (make-package "CLASP-CLEAVIR-AST")
+                         (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
+                         (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
+                         (if (member :interactive *features*) 
+                             (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n"
+                                           (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
+                       '(progn
+                         (cl:in-package :cl-user)
+                         (require 'system)
+                         (core:load-clasprc)
+                         (core:process-command-line-load-eval-sequence)
+                         (let ((core:*use-interpreter-for-eval* nil))
+                           (when (member :interactive *features*) (core:top-level)))))))))
 
 (defun help-build ()
   (bformat t "Useful build commands:\n")
@@ -1074,15 +1110,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
            t)
 (export 'my-time)
 
-
-(defun load-clasprc ()
-  "Load the users startup code"
-  (let ((clasprc (make-pathname :name ""
-			       :type "clasprc"
-			       :defaults (user-homedir-pathname))))
-    (if (probe-file clasprc)
-	(load clasprc))))
-(export 'load-clasprc)
 
 (defun load-pos ()
   (declare (special core:*load-current-source-file-info* core:*load-current-linenumber*))
@@ -1144,14 +1171,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 ;; Start everything up
 ;;
 
-
-(defun process-command-line-load-eval-sequence ()
-  (mapcar #'(lambda (entry)
-              (if (eq (car entry) :load)
-                  (load (cdr entry))
-                (eval (read-from-string (cdr entry)))))
-          core::*command-line-load-eval-sequence*)
-  )
 
 (export 'core:top-level)
 (defun run-repl ()
