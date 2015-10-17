@@ -669,6 +669,9 @@ typedef gctools::smart_ptr</* TODO: use const */ T_O> T_sp;
 class Class_O;
 typedef gctools::smart_ptr<Class_O> Class_sp;
 
+class Number_O;
+typedef gctools::smart_ptr<Number_O> Number_sp;
+ 
 class VectorObjects_O;
 typedef gctools::smart_ptr<VectorObjects_O> VectorObjects_sp;
 

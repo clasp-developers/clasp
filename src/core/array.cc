@@ -267,10 +267,6 @@ struct RecursivePrint {
   }
 };
 
-bool Array_O::equalp(T_sp other) const {
-  IMPLEMENT_MEF(BF("Implement Array_O::equalp"));
-}
-
 string Array_O::__repr__() const {
   _G();
   RecursivePrint rp(this->asSmartPtr());

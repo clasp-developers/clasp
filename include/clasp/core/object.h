@@ -823,17 +823,24 @@ inline bool cl_equal(T_sp x, T_sp y) {
   return x->equal(y);
 };
 
+ 
+extern int basic_compare(Number_sp na, Number_sp nb);
+
 #define ARGS_cl_equalp "(x y)"
 #define DECL_cl_equalp ""
 #define DOCS_cl_equalp "equalp"
 inline bool cl_equalp(T_sp x, T_sp y) {
   if (x.fixnump()) {
-    return x.raw_() == y.raw_();
+    if ( y.fixnump() ) {
+      return x.raw_() == y.raw_();
+    } else {
+      return basic_compare(x,y) == 0;
+    }
   } else if (x.single_floatp()) {
     if (y.single_floatp()) {
       return gc::tagged_single_float_masked(x.raw_()) == gc::tagged_single_float_masked(y.raw_());
     }
-    return false;
+    return basic_compare(x,y);
   } else if (x.characterp()) {
     return clasp_charEqual2(x, y);
   }

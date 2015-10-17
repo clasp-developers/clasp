@@ -144,6 +144,30 @@ List_sp Vector_O::arrayDimensions() const {
   return Cons_O::create(make_fixnum(this->dimension()), _Nil<T_O>());
 }
 
+bool Vector_O::equalp(T_sp o) const {
+  if ( this->eq(o) ) return true;
+  if ( Array_sp other = o.asOrNull<Array_O>() ) {
+    if (other->rank() != 1 ) return false;
+    size_t my_size = this->length();
+    if ( other->arrayDimension(0) != my_size ) return false;
+    for ( size_t i(0); i<my_size; ++i ) {
+      if ( !cl_equalp(this->svref(i),other->rowMajorAref(i)) ) return false;
+    }
+    return true;
+  } if ( Vector_sp vec = o.asOrNull<Vector_O>() ) {
+    size_t my_size = this->length();
+    size_t other_size = vec->length();
+    if ( my_size != other_size ) return false;
+    for ( int i(0); i<my_size; ++i ) {
+      if ( !cl_equalp(this->aref_unsafe(i),vec->aref_unsafe(i)) ) return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+
+
 T_sp Vector_O::aref(List_sp args) const
 {
   cl_index idx = this->index(args);

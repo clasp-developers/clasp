@@ -58,7 +58,7 @@ public:
   static int checkedIndex(const string &filename, int lineno, const string &function, Array_sp array, int which, T_sp index, int nonincl_index);
 
 public: // Functions here
-  virtual bool equalp(T_sp other) const;
+  virtual bool equalp(T_sp other) const {SUBIMP();};
   virtual T_sp aset_unsafe(int j, T_sp val) { SUBIMP(); };
   virtual bool arrayHasFillPointerP() const { return false; };
   virtual gc::Fixnum arrayTotalSize() const;

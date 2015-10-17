@@ -107,6 +107,33 @@ T_sp ArrayObjects_O::aset_unsafe(int idx, T_sp value) {
   return value;
 }
 
+bool ArrayObjects_O::equalp(T_sp o) const {
+  if ( this->eq(o) ) return true;
+  if ( ArrayObjects_sp other = o.asOrNull<ArrayObjects_O>() ) {
+    const std::vector<cl_index>& my_dimensions = this->_Dimensions;
+    const std::vector<cl_index>& other_dimensions = other->_Dimensions;
+    if ( my_dimensions.size() != other_dimensions.size() ) return false;
+    size_t size = 1;
+    for ( int i(0); i<my_dimensions.size(); ++i ) {
+      size *= my_dimensions[i];
+      if ( my_dimensions[i] != other_dimensions[i] ) return false;
+    }
+    for ( size_t i(0); i<size; ++i ) {
+      if ( !cl_equalp(this->rowMajorAref(i),other->rowMajorAref(i)) ) return false;
+    }
+    return true;
+  } if ( Vector_sp vec = o.asOrNull<Vector_O>() ) {
+    if ( this->_Dimensions.size() != 1 ) return false;
+    if ( this->_Dimensions[0] != cl_length(vec) ) return false;
+    size_t size = this->_Dimensions[0];
+    for ( int i(0); i<size; ++i ) {
+      if ( !cl_equalp(this->rowMajorAref(i),vec->aref_unsafe(i)) ) return false;
+    }
+    return true;
+  }
+  return false;
+}
+
 T_sp ArrayObjects_O::rowMajorAref(cl_index idx) const {
   _G();
   ASSERTF(idx < this->_Values.size(), BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size());

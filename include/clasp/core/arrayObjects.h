@@ -59,6 +59,7 @@ public: // Functions here
   static ArrayObjects_sp make(T_sp dim, T_sp elementType, T_sp initialElement, T_sp adjustable);
 
 public:
+  virtual bool equalp(T_sp other) const;
   virtual T_sp aset_unsafe(int j, T_sp val);
   T_sp elementType() const { return this->_ElementType; };
 
@@ -71,7 +72,6 @@ public:
   virtual std::vector<cl_index> dimensions() const { return this->_Dimensions; };
   virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const;
   virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index];};
-
 
   LongLongInt setDimensions(List_sp dims, T_sp initialElement);
 
