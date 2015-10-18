@@ -28,6 +28,7 @@ feature.compose <program>clasp : <define>PROGRAM_CLASP <define>APPLICATION_CONFI
 feature.compose <program>cando : <define>PROGRAM_CANDO <define>APPLICATION_CONFIG="\"<projects/cando/include/cando/main/application.config>\"" ;
 feature.compose <program>other : <define>PROGRAM_OTHER ;   #  Define APPLICATION_CONFIG yourself
 
+ISYSROOT = [ os.environ ISYSROOT ] ;
 GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
 CLASP_DEBUG_CXXFLAGS = [ os.environ CLASP_DEBUG_CXXFLAGS ] ;
 CLASP_DEBUG_LINKFLAGS = [ os.environ CLASP_DEBUG_LINKFLAGS ] ;
@@ -80,7 +81,7 @@ project clasp : requirements
         <target-os>darwin:<cxxflags>"-Wno-unused-local-typedef"
 #        <target-os>darwin:<cxxflags>"-resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
 #        <target-os>darwin:<cxxflags>"           -I /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
-        <target-os>darwin:<cxxflags>"-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk"
+        <target-os>darwin:<cxxflags>"-isysroot $(ISYSROOT)"
         <include>./
         <cxxflags>"-Wno-deprecated-register"
         <define>CLBIND_DYNAMIC_LINK

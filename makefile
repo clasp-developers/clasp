@@ -1,6 +1,7 @@
 # -*- Mode: GNUmakefile -*-
 # Cleaned up by Shinmera October 13, 2015
 
+export ISYSROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
 export CLASP_HOME := $(or $(wildcard $(CLASP_HOME)),\
                           $(shell pwd))
 
@@ -11,7 +12,7 @@ export PJOBS ?= 1
 export TARGET_OS ?= $(shell uname)
 export TARGET_OS := $(or $(filter $(TARGET_OS), Linux),\
                          $(filter $(TARGET_OS), Darwin),\
-                         $(error Invalid TARGET_OS: $(TARGET_OS)))
+                         $(error Invalid TARGET_O?S: $(TARGET_OS)))
 
 export ADDRESS-MODEL ?= 64
 export ADDRESS-MODEL := $(or $(filter $(ADDRESS-MODEL), 64),\
@@ -198,11 +199,12 @@ boehm-compile:
 	(cd $(BOEHM_SOURCE_DIR); make -j$(PJOBS) | tee _boehm.log)
 	(cd $(BOEHM_SOURCE_DIR); make -j$(PJOBS) install | tee _boehm_install.log)
 
-
+export LIBATOMIC_OPS_CONFIGURE=src/boehm/libatomic_ops/configure
+export BDWGC_CONFIGURE=src/boehm/bdwgc/configure
 boehm:
-	@if test ! -e src/boehm/libatomic_ops/configure; then make libatomic-setup ; fi
+	@if test ! -e $(LIBATOMIC_OPS_CONFIGURE); then make libatomic-setup ; fi
 	@if test ! -e $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common/lib/libatomic_ops.a ; then make libatomic-compile ; fi
-	@if test ! -e src/boehm/bdwgc/configure ; then make boehm-setup ; fi
+	@if test ! -e $(BDWGC_CONFIGURE); then make boehm-setup ; fi
 	@if test ! -e $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common/lib/libgc.a ; then make boehm-compile ; fi
 
 
@@ -221,6 +223,8 @@ mps-clbind:
 boehm-clean:
 	install -d $(BOEHM_SOURCE_DIR)
 	-(cd $(BOEHM_SOURCE_DIR); make clean )
+	if test -e $(LIBATOMIC_OPS_CONFIGURE); then rm $(LIBATOMIC_OPS_CONFIGURE) ; fi
+	if test	-e $(BDWGC_CONFIGURE); then rm $(BDWGC_CONFIGURE) ; fi
 
 cclasp-mps:
 	(cd src/main; make cclasp-mps)
@@ -385,6 +389,7 @@ compile-commands:
 
 clean:
 	git submodule sync
+	make boehm-clean
 	(cd src/main; rm -rf bin bundle)
 	(cd src/core; rm -rf bin bundle)
 	(cd src/gctools; rm -rf bin bundle)

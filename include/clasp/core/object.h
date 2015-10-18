@@ -833,14 +833,21 @@ inline bool cl_equalp(T_sp x, T_sp y) {
   if (x.fixnump()) {
     if ( y.fixnump() ) {
       return x.raw_() == y.raw_();
-    } else {
+    } else if ( y.single_floatp() ) {
+      return ( x.unsafe_fixnum() == y.unsafe_single_float() );
+    } else if ( Number_sp ny = y.asOrNull<Number_O>() ) {
       return basic_compare(x,y) == 0;
     }
+    return false;
   } else if (x.single_floatp()) {
     if (y.single_floatp()) {
-      return gc::tagged_single_float_masked(x.raw_()) == gc::tagged_single_float_masked(y.raw_());
+      return x.unsafe_single_float() == y.unsafe_single_float();
+    } else if ( y.fixnump() ) {
+      return x.unsafe_single_float() == y.unsafe_fixnum();
+    } else if ( Number_sp ny = y.asOrNull<Number_O>() ) {
+      return basic_compare(x,y);
     }
-    return basic_compare(x,y);
+    return false;
   } else if (x.characterp()) {
     return clasp_charEqual2(x, y);
   }
