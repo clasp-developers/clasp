@@ -1,8 +1,6 @@
 # -*- Mode: GNUmakefile -*-
 # Cleaned up by Shinmera October 13, 2015
 
-export ISYSROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
-
 export CLASP_HOME := $(or $(wildcard $(CLASP_HOME)),\
                           $(shell pwd))
 
