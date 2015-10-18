@@ -1,7 +1,6 @@
 # -*- Mode: GNUmakefile -*-
 # Cleaned up by Shinmera October 13, 2015
 
-export ISYSROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
 export CLASP_HOME := $(or $(wildcard $(CLASP_HOME)),\
                           $(shell pwd))
 
@@ -92,6 +91,13 @@ ifeq ($(TARGET_OS),Darwin)
   export INCLUDE_DIRS += /opt/local/include
   export LIB_DIRS += /usr/local/Cellar/gmp/6.0.0a/lib
   export LIB_DIRS += /opt/local/lib
+  export BOEHM_CC = gcc
+  export BOEHM_CXX = g++
+endif
+
+ifeq ($(TARGET_OS),Linux)
+  export BOEHM_CC = $(LLVM_BIN_DIR)/clang
+  export BOEHM_CXX = $(LLVM_BIN_DIR)/clang++
 endif
 
 include_flags := $(foreach dir,$(INCLUDE_DIRS),$(and $(wildcard $(dir)),-I$(dir)))
@@ -189,8 +195,8 @@ boehm-setup:
 	-(cd $(BOEHM_SOURCE_DIR); automake --add-missing )
 	(cd $(BOEHM_SOURCE_DIR); \
 		export ALL_INTERIOR_PTRS=1; \
-                CC=$(LLVM_BIN_DIR)/clang \
-		CXX=$(LLVM_BIN_DIR)/clang++ \
+                CC=$(BOEHM_CC) \
+		CXX=$(BOEHM_CXX) \
                 CFLAGS="-DUSE_MMAP -g" \
 		PKG_CONFIG_PATH=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR)/lib/pkgconfig/ \
 		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
