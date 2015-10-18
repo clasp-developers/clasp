@@ -2,6 +2,7 @@
 # Cleaned up by Shinmera October 13, 2015
 
 export ISYSROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+
 export CLASP_HOME := $(or $(wildcard $(CLASP_HOME)),\
                           $(shell pwd))
 
@@ -92,6 +93,7 @@ ifeq ($(TARGET_OS),Darwin)
   export INCLUDE_DIRS += /opt/local/include
   export LIB_DIRS += /usr/local/Cellar/gmp/6.0.0a/lib
   export LIB_DIRS += /opt/local/lib
+  export EXTRA_BOEHM_CXXFLAGS = "-isysroot $(ISYSROOT)"
 endif
 
 include_flags := $(foreach dir,$(INCLUDE_DIRS),$(and $(wildcard $(dir)),-I$(dir)))
@@ -192,6 +194,7 @@ boehm-setup:
                 CC=$(LLVM_BIN_DIR)/clang \
 		CXX=$(LLVM_BIN_DIR)/clang++ \
                 CFLAGS="-DUSE_MMAP -g" \
+		CXXFLAGS=$(EXTRA_BOEHM_CXXFLAGS) \
 		PKG_CONFIG_PATH=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR)/lib/pkgconfig/ \
 		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
 
