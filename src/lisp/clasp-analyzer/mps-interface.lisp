@@ -1533,6 +1533,7 @@ so that they don't have to be constantly recalculated"
 
 (defstruct destination
   stream
+  (helper-stream (make-string-output-stream))
   table-name
   label-list
   label-prefix )
@@ -1569,18 +1570,19 @@ so that they don't have to be constantly recalculated"
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     (with-destination (fout dest enum "goto TOP")
-		      ;;    (format fout "Header_s* header = reinterpret_cast<Header_s*>(base);~%")
-		      ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
-		      (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
-			(when all-instance-variables
-			  (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key))
-			;;      (when (string= enum-name "KIND_LISPALLOC_core__CompiledBody_O")
-			;;        (break "Check all-instance-variables"))
-			(dolist (instance-var all-instance-variables)
-			  (code-for-instance-var fout +ptr-name+ instance-var)))
-		      (format fout "    typedef ~A type_~A;~%" key enum-name)
-		      (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
-		      )))
+      ;;    (format fout "Header_s* header = reinterpret_cast<Header_s*>(base);~%")
+      ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
+      (format (destination-helper-stream dest) "/* Helper for ~a*/~%" key )
+      (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
+        (when all-instance-variables
+          (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key))
+        ;;      (when (string= enum-name "KIND_LISPALLOC_core__CompiledBody_O")
+        ;;        (break "Check all-instance-variables"))
+        (dolist (instance-var all-instance-variables)
+          (code-for-instance-var fout +ptr-name+ instance-var)))
+      (format fout "    typedef ~A type_~A;~%" key enum-name)
+      (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
+      )))
 
 
 (defun skipper-for-lispallocs (dest enum anal)
@@ -2244,26 +2246,6 @@ so that they don't have to be constantly recalculated"
     (t
       (warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)
       nil))))
-    
-
-
-(defun build-mps-scan (dest anal)
-  (dolist (enum (analysis-sorted-enums anal))
-      (funcall (species-scan (enum-species enum)) dest enum anal)))
-
-(defun build-mps-skip (dest anal)
-  (dolist (enum (analysis-sorted-enums anal))
-    (funcall (species-skip (enum-species enum)) dest enum anal)))
-
-(defun build-mps-finalize (dest anal)
-  (dolist (enum (analysis-sorted-enums anal))
-    (funcall (species-finalize (enum-species enum)) dest enum anal)))
-
-(defun build-mps-uses-finalize (dest anal)
-  (dolist (enum (analysis-sorted-enums anal))
-    (funcall (species-finalize (enum-species enum)) dest enum anal)))
-
-
 
 (defun separate-namespace-name (name)
 "Separate a X::Y::Z name into (list X Y Z) - strip any preceeding 'class '"
@@ -2486,6 +2468,10 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   )
 |#
 
+(defun generate-helper-table (dest)
+  (format (destination-stream dest) "~a~%" (get-output-stream-string (destination-helper-stream dest))))
+
+
 (defun generate-label-table (dest)
   (multiple-value-bind (hardwired-kinds  ignore-classes first-general)
       (core:hardwired-kinds)
@@ -2508,6 +2494,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
        (format ,stream "#if defined(GC_~a)~%" ,table-name)
        (funcall ,generator ,dest-gs ,analysis)
        (format stream "#endif // defined(GC_~a)~%" ,table-name)
+       (format stream "#if defined(GC_~a_HELPERS)~%" ,table-name)
+       (generate-helper-table ,dest-gs)
+       (format stream "#endif // defined(GC_~a_HELPERS)~%" ,table-name)
        (format stream "#if defined(GC_~a_TABLE)~%" ,table-name)
        (generate-label-table ,dest-gs)
        (format stream "#endif // defined(GC_~a_TABLE)~%" ,table-name))))
@@ -2571,24 +2560,6 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 				  :generator (lambda (dest anal)
 					       (dolist (enum (analysis-sorted-enums anal))
 						 (funcall (species-finalize (enum-species enum)) dest enum anal))))
-
-		    #||                    (format stream "#if defined(GC_OBJ_DUMP)~%")
-                    (build-mps-dump stream analysis)
-                    (format stream "#endif // defined(GC_OBJ_DUMP)~%")
-                    (format stream "#if defined(GC_OBJ_SCAN)~%")
-                    (build-mps-scan stream analysis)
-                    (format stream "#endif // defined(GC_OBJ_SCAN)~%")
-                    (format stream "#if defined(GC_OBJ_SKIP)~%")
-                    (build-mps-skip stream analysis)
-                    (format stream "#endif // defined(GC_OBJ_SKIP)~%")
-                    (format stream "#if defined(GC_OBJ_FINALIZE)~%")
-                    (build-mps-finalize stream analysis)
-                    (format stream "#endif // defined(GC_OBJ_FINALIZE)~%")
-                    (format stream "#if defined(GC_OBJ_USES_FINALIZE)~%")
-                    (build-mps-uses-finalize stream analysis)
-                    (format stream "#endif // defined(GC_OBJ_USES_FINALIZE)~%")
-||#
-                    (format stream "#if defined(GC_GLOBALS)~%")
                     (generate-code-for-global-non-symbol-variables stream analysis)
                     (format stream "#endif // defined(GC_GLOBALS)~%")
                     (format stream "#if defined(GC_GLOBAL_SYMBOLS)~%")
