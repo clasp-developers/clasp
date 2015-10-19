@@ -1,4 +1,4 @@
-# _*_ mode: makefile _*_
+# -*- mode: GNUmakefile; indent-tabs-mode: t -*-
 # Cleaned up by Shinmera October 13, 2015
 
 export CLASP_HOME := $(or $(wildcard $(CLASP_HOME)),\
