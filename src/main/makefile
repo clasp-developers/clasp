@@ -1,4 +1,4 @@
-# _*_ mode: GNUmakefile; _*_
+# -*- mode: GNUmakefile; indent-tabs-mode: t -*-
 
 include $(CLASP_HOME)/makefile.inc
 
