@@ -63,7 +63,7 @@ class HashTable_O : public T_O {
   friend T_mv cl_maphash(T_sp function_desig, HashTable_sp hash_table);
   friend T_mv cl_clrhash(HashTable_sp hash_table);
 
- private: // instance variables here
+ protected: // instance variables here
   uint _InitialSize;
   Number_sp _RehashSize;
   double _RehashThreshold;
