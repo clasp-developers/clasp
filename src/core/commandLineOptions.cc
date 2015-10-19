@@ -206,6 +206,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "-t/--trap {symbol}   - Trap when a specific symbol is INTERN'd\n"
              "-w/--wait            - Print the PID and wait for the user to hit a key\n"
              "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n"
+             "*feature* settings\n"
+             "  debug-startup      - Print a message for every top level form at startup\n"
              "Environment variables:\n"
              "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
              "export CLASP_TELEMETRY_FILE=/tmp/clasp.tel # (file to write telemetry)\n"

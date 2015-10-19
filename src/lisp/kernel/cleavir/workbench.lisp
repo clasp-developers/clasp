@@ -16,10 +16,31 @@
     (print (core:getpid)))
   (print "Done - you are ready to go"))
 
-(format t "Loading inline.lisp~%")
-(load "sys:kernel;cleavir;inline.lisp")
-(print (core:getpid)))
-(load "sys:kernel;cleavir;auto-compile.lisp")
+(print (core:getpid))
+(progn
+  (load "sys:kernel;cleavir;auto-compile.lisp")
+  (format t "Loading inline.lisp~%")
+  (load "sys:kernel;cleavir;inline.lisp")
+  (format t "Done loading inline.lisp~%"))
+
+(defgeneric foo (a b c d e f))
+(defmethod foo (a b c d e f))
+
+(foo 1 2 3 4 5 6)
+(time (progn (foo 1 2 3 4 5 6) (foo 1 2 3 4 5 6) (foo 1 2 3 4 5 6)))
+
+(time (dotimes (i 10000) (foo 1 2 3 4 5 6)))
+
+(defgeneric bar (a)
+  (:method (a) (1+ a))
+  (:method ((a number)) (call-next-method))
+  (:method ((a real)) (call-next-method))
+  (:method ((a integer)) (call-next-method)))
+
+(foo 0)
+
+
+
 
 (clasp-cleavir:cleavir-compile 'yyy '(lambda (z) (car z)) :debug t)
 (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;foundation.lsp")
