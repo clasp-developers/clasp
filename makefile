@@ -1,4 +1,4 @@
-# -*- Mode: GNUmakefile -*-
+# _*_ mode: makefile _*_
 # Cleaned up by Shinmera October 13, 2015
 
 export CLASP_HOME := $(or $(wildcard $(CLASP_HOME)),\
@@ -149,7 +149,8 @@ boot:
 	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/$(VARIANT) gc=boehmdc $(VARIANT) clasp_install )
 	make -C src/main min-boehmdc
-	make -C src/main bclasp-boehmdc
+	make -C src/main bclasp-boehmdc-bitcode
+	make -C src/main bclasp-boehmdc-fasl
 	make -C src/main bclasp-boehmdc-addons
 	make -C src/main mps-interface
 	make executable-symlinks

@@ -1,3 +1,5 @@
+# _*_ mode: GNUmakefile; _*_
+
 include $(CLASP_HOME)/makefile.inc
 
 
@@ -96,20 +98,32 @@ boehm-debug-cxx:
 mps-debug-cxx:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/debug gc=mps debug clasp_install
 
-min-boehmdc:
-	$(BCLASP_BOEHMDC) -I -f ecl-min -l "buildClaspMinBoot.lsp"
-
-min-boehmdc-recompile:
-	$(BCLASP_BOEHMDC) -f ecl-min -l "buildClaspMinRecompile.lsp"
-
-bclasp-boehmdc:
-	$(BCLASP_BOEHMDC) -f ecl-min -l "buildClasp.lsp"
-
 clean-bitcode:
         $(BCLASP_BOEHM) -I -f ecl-min -e "(clean-system :init)" -e "(quit)"
 
 min-boehm:
 	$(BCLASP_BOEHM) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
+
+min-boehmdc:
+	$(BCLASP_BOEHMDC) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
+
+bclasp-boehmdc-bitcode:
+	$(BCLASP_BOEHMDC) -f ecl-min -e "(compile-bclasp)" -e "(quit)"
+
+bclasp-boehmdc-fasl:
+	$(BCLASP_BOEHMDC) -f ecl-min -e "(link-bclasp)" -e "(quit)"
+
+cclasp-boehmdc-bitcode:
+	$(BCLASP_BOEHMDC) -f ecl-min -e "(compile-cclasp)" -e "(quit)"
+
+cclasp-boehmdc-fasl:
+	$(BCLASP_BOEHMDC) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
+
+bclasp-boehm-bitcode:
+	$(BCLASP_BOEHM) -f ecl-min -e "(compile-bclasp)" -e "(quit)"
+
+bclasp-boehm-fasl:
+	$(BCLASP_BOEHM) -f ecl-min -e "(link-bclasp :force t)" -e "(quit)"
 
 cclasp-boehm-bitcode:
 	$(BCLASP_BOEHM) -f ecl-min -e "(compile-cclasp)" -e "(quit)"
@@ -117,17 +131,7 @@ cclasp-boehm-bitcode:
 cclasp-boehm-fasl:
 	$(BCLASP_BOEHM) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
 
-min-boehm-recompile:
-	$(BCLASP_BOEHM) -f ecl-min -l "buildClaspMinRecompile.lsp"
 
-bclasp-boehm:
-	$(BCLASP_BOEHM) -f ecl-min -l "buildClasp.lsp"
-
-
-
-mps-recompile:
-	make min-mps-recompile
-	make bclasp-mps
 
 
 clasp-gc-interface:

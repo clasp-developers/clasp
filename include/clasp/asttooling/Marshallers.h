@@ -128,7 +128,7 @@ public:
 /// The marshaller is in charge of taking the VariantValue arguments, checking
 /// their types, unpacking them and calling the underlying function.
 class FixedArgCountMatcherDescriptor : public MatcherDescriptor {
-  friend_gc_scanner(asttooling::internal::FixedArgCountMatcherDescriptor);
+  FRIEND_GC_SCANNER(asttooling::internal::FixedArgCountMatcherDescriptor);
 
 public:
   typedef VariantMatcher (*MarshallerType)(void (*Func)(),
