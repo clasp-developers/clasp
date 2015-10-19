@@ -195,17 +195,20 @@
   )
 
 (defun make-method-lambda (gf method method-lambda env)
-  #+ecl(multiple-value-bind (call-next-method-p next-method-p-p in-closure-p)
-           (walk-method-lambda method-lambda env)
-         (values `(lambda (.combined-method-args. *next-methods*)
-                    (declare (special .combined-method-args. *next-methods*))
-                    (apply ,(if in-closure-p
-                                (add-call-next-method-closure method-lambda)
-                                method-lambda)
-                           .combined-method-args.))
-                 nil))
-  ;; Clasp always generates call-next-method and next-method-p
-  #+clasp
+  #+(or ecl bclasp)
+  (multiple-value-bind (call-next-method-p next-method-p-p in-closure-p)
+      (walk-method-lambda method-lambda env)
+    (values `(lambda (.combined-method-args. *next-methods*)
+               (declare (special .combined-method-args. *next-methods*))
+               (apply ,(if in-closure-p
+                           (add-call-next-method-closure method-lambda)
+                           method-lambda)
+                      .combined-method-args.))
+            nil))
+  ;; cclasp should be using Cleavir's REMOVE-USELESS-INSTRUCTIONS to
+  ;; remove the closure that we are adding here in cases where it
+  ;; can be removed
+  #+cclasp
   (values `(lambda (.combined-method-args. *next-methods*)
              (declare (special .combined-method-args. *next-methods*))
              (apply ,(add-call-next-method-closure method-lambda)
@@ -255,7 +258,7 @@
       (return-from environment-contains-closure t)))
   )
 
-#+ecl
+#-cclasp
 (defun walk-method-lambda (method-lambda env)
   (declare (si::c-local))
   (let ((call-next-method-p nil)
@@ -297,7 +300,7 @@
     (values call-next-method-p
 	    next-method-p-p
 	    in-closure-p)))
-
+
 ;;; ----------------------------------------------------------------------
 ;;;                                                                parsing
 

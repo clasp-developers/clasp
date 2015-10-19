@@ -345,7 +345,7 @@ the corresponding VAR.  Returns NIL."
 
 
 (defun class-name (x)
-  (name-of-class x))
+  (core:name-of-class x))
 
 (defun invoke-debugger (cond)
   (core:invoke-internal-debugger cond))

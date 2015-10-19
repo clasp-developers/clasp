@@ -1,46 +1,58 @@
 (in-package :clasp-cleavir)
 
+;;; These should be set up in Cleavir code
+;;; Remove them once beach implements them
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:rplaca-instruction))
+  nil)
+
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:rplacd-instruction))
+  nil)
+
+
 ;;; Stubs to keep the already compiled code working
-(clasp-cleavir:cleavir-compile
- 'cleavir-primop:consp
- '(lambda (x) (if (cleavir-primop:consp x) t nil )))
-  
-(clasp-cleavir:cleavir-compile
- 'cleavir-primop:car
- '(lambda (x)
-   (if (cleavir-primop:consp x)
-       (cleavir-primop:car x)
-       (if (null x)
-           nil
-           (error "Cannot get car of non list: ~s" x)))))
-  
-(clasp-cleavir:cleavir-compile
- 'cleavir-primop:cdr
- '(lambda (x)
-   (if (cleavir-primop:consp x)
-       (cleavir-primop:cdr x)
-       (if (null x)
-           nil
-           (error "Cannot get cdr of non list: ~s" x)))))
-  
-(clasp-cleavir:cleavir-compile
- 'cleavir-primop:rplaca
- '(lambda (p v)
-   (if (cleavir-primop:consp p)
-       (progn
-         (cleavir-primop:rplaca p v)
-         p)
-       (error "Cannot rplaca non-cons ~s" p))))
 
-(clasp-cleavir:cleavir-compile
- 'cleavir-primop:rplacd
- '(lambda (p v)
-   (if (cleavir-primop:consp p)
-       (progn
-         (cleavir-primop:rplacd p v)
-         p)
-       (error "Cannot rplacd non-cons ~s" p))))
+#+(or)
+(progn
+  (clasp-cleavir:cleavir-compile
+   'cleavir-primop:consp
+   '(lambda (x) (if (cleavir-primop:consp x) t nil )))
+  
+  (clasp-cleavir:cleavir-compile
+   'cleavir-primop:car
+   '(lambda (x)
+     (if (cleavir-primop:consp x)
+         (cleavir-primop:car x)
+         (if (null x)
+             nil
+             (error "Cannot get car of non list: ~s" x)))))
+  
+  (clasp-cleavir:cleavir-compile
+   'cleavir-primop:cdr
+   '(lambda (x)
+     (if (cleavir-primop:consp x)
+         (cleavir-primop:cdr x)
+         (if (null x)
+             nil
+             (error "Cannot get cdr of non list: ~s" x)))))
+  
+  (clasp-cleavir:cleavir-compile
+   'cleavir-primop:rplaca
+   '(lambda (p v)
+     (if (cleavir-primop:consp p)
+         (progn
+           (cleavir-primop:rplaca p v)
+           p)
+         (error "Cannot rplaca non-cons ~s" p))))
 
+  (clasp-cleavir:cleavir-compile
+   'cleavir-primop:rplacd
+   '(lambda (p v)
+     (if (cleavir-primop:consp p)
+         (progn
+           (cleavir-primop:rplacd p v)
+           p)
+         (error "Cannot rplacd non-cons ~s" p))))
+  )
 
 
 (progn

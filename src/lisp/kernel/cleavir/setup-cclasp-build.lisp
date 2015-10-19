@@ -28,6 +28,9 @@
                      (append
                       (asdf-system-groveler:determine-complete-set-of-asdf-source-files (list :clasp-cleavir))
                       (list :pre-inline
-                            #P"kernel/cleavir/inline"
-                            #P"kernel/cleavir/auto-compile")))
+                            ;; auto-compile must preceed inline because the Cleavir compiler
+                            ;; needs to be the default compiler before inlining is used to
+                            ;; replace CL functions like CONSP, CAR, CDR, RPLACA etc
+                            #P"kernel/cleavir/auto-compile"
+                            #P"kernel/cleavir/inline"))
 (format t "Done~%")

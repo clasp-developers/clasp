@@ -126,5 +126,7 @@
  #P"kernel/cleavir/hir-to-mir" #P"kernel/cleavir/ir"
  #P"kernel/cleavir/gml-drawing" #P"kernel/cleavir/landing-pad"
  #P"kernel/cleavir/arguments" #P"kernel/cleavir/translate"
- #P"kernel/cleavir/inline-prep" :PRE-INLINE #P"kernel/cleavir/inline"
- #P"kernel/cleavir/auto-compile") 
+ #P"kernel/cleavir/inline-prep" :PRE-INLINE
+ #P"kernel/cleavir/auto-compile"
+ #P"kernel/cleavir/inline"
+ ) 

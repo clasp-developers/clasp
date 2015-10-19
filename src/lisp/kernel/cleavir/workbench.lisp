@@ -1,18 +1,3 @@
-
-;;;
-;;; Compile ASDF for bclasp
-;;;
-(compile-file "sys:modules;asdf;build;asdf.lisp" 
-              :output-file (compile-file-pathname
-                            "sys:modules;asdf;asdf.lisp" 
-                            :target-backend (default-target-backend))
-              :print t)
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -25,7 +10,7 @@
     (format t "Loading ASDF system~%")
     (time (require :asdf))
     (load "sys:local-asdf-config.lisp")
-    (pushnew :cleavir *features*)
+    (core::cclasp-features)
     (format t "Loading :clasp-cleavir system~%")
     (time (require :clasp-cleavir))
     (print (core:getpid)))
@@ -36,13 +21,14 @@
 (print (core:getpid)))
 (load "sys:kernel;cleavir;auto-compile.lisp")
 
-(core:cleavir-ast (fdefinition 'car))
-
 (clasp-cleavir:cleavir-compile 'yyy '(lambda (z) (car z)) :debug t)
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;foundation.lsp")
+(trace cleavir-ir:delete-instruction)
+(trace cleavir-remove-useless-instructions:remove-useless-instructions)
+(trace clasp-cleavir::cleavir-compile-t1expr)
+(apropos "delete-instruction")
 
-(disassemble 'yyy)
-(yyy '(1 23))
-
+(apropos "compiled-function")
 
 (declaim (inline bar2))
 (defun-inline-hook 'bar2 '(defun bar2 () 1))
