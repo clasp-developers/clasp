@@ -934,13 +934,13 @@ typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
 }
 
 #if defined(USE_BOEHM)
-#define FRIEND_GC_SCANNER()
+#define FRIEND_GC_SCANNER(nscl)
 #endif
 #if defined(USE_MPS)
 #ifdef RUNNING_GC_BUILDER
-#define FRIEND_GC_SCANNER()
+#define FRIEND_GC_SCANNER(nscl)
 #else
-#define FRIEND_GC_SCANNER() friend GC_RESULT(::obj_scan(GC_SCAN_STATE_TYPE ss, mps_addr_t base, mps_addr_t limit));
+#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, mps_addr_t& client);
 #endif
 #endif
 
@@ -1139,8 +1139,10 @@ core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
 
 #endif
 class Functoid {
+ friend GC_RESULT gctools::obj_scan_helper<Functoid>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, mps_addr_t& client);
   struct metadata_always_fix_pointers_to_derived_classes;
-  FRIEND_GC_SCANNER();
+//  FRIEND_GC_SCANNER(core::Functoid);
+ 
 
 public:
   virtual const char *describe() const { return "Functoid - subclass must implement describe()"; };

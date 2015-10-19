@@ -240,7 +240,7 @@
   ;;
   #-clasp
   (let ((counter 0))
-    (declare (fixnum counter))
+    t(declare (fixnum counter))
     (dolist (item (car env))
       (when (and (consp item)
 		 (eq (first (the cons item)) 'si::function-boundary)

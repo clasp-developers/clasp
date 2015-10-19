@@ -165,7 +165,7 @@ public:
 };
 
 class ExceptionStack {
-  FRIEND_GC_SCANNER();
+  FRIEND_GC_SCANNER(ExceptionStack);
 
 public:
   gctools::Vec0<ExceptionEntry> _Stack;

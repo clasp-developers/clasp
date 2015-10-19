@@ -11,7 +11,7 @@ export PJOBS ?= 1
 export TARGET_OS ?= $(shell uname)
 export TARGET_OS := $(or $(filter $(TARGET_OS), Linux),\
                          $(filter $(TARGET_OS), Darwin),\
-                         $(error Invalid TARGET_O?S: $(TARGET_OS)))
+                         $(error Invalid TARGET_OS: $(TARGET_OS)))
 
 export ADDRESS-MODEL ?= 64
 export ADDRESS-MODEL := $(or $(filter $(ADDRESS-MODEL), 64),\

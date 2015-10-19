@@ -67,9 +67,8 @@ public:
 
 class RegistryMaps {
   struct metadata_always_fix_pointers_to_derived_classes;
-  FRIEND_GC_SCANNER();
+  FRIEND_GC_SCANNER(asttooling::RegMap::VariadicOperatorMatcherDescriptor);
   friend class SymbolMatcherDescriptorPair;
-
 public:
   RegistryMaps();
   ~RegistryMaps();

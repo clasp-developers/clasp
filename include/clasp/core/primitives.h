@@ -78,7 +78,7 @@ public:
 };
 
 class VectorStepper : public SequenceStepper {
-  FRIEND_GC_SCANNER();
+  FRIEND_GC_SCANNER(core::VectorStepper);
 GCPRIVATE:
   Vector_sp _Domain;
   int _Index;
@@ -99,7 +99,7 @@ public:
 };
 
 class ConsStepper : public SequenceStepper {
-  FRIEND_GC_SCANNER();
+  FRIEND_GC_SCANNER(core::ConsStepper);
 
 public: //private
   List_sp _Cur;

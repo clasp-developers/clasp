@@ -37,7 +37,7 @@ namespace core {
 // set this class up by hand
 SMART(WrappedPointer);
 class WrappedPointer_O : public core::T_O {
-  FRIEND_GC_SCANNER();
+  FRIEND_GC_SCANNER(core::WrappedPointer_O);
   LISP_BASE1(core::T_O);
   LISP_CLASS(core, CorePkg, WrappedPointer_O, "WrappedPointer");
 GCPROTECTED:

@@ -38,7 +38,7 @@ struct CacheError {
 
 class CacheRecord {
 public:
-  FRIEND_GC_SCANNER();
+  FRIEND_GC_SCANNER(core::CacheRecord);
   T_sp _key;
   T_sp _value;
   int _generation;
@@ -46,7 +46,7 @@ public:
 };
 
 class Cache {
-  FRIEND_GC_SCANNER();
+  FRIEND_GC_SCANNER(core::CacheRecord);
  public:
   size_t _searches;
   size_t _misses;

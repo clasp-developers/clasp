@@ -160,6 +160,7 @@
 (defstruct analysis
   project
   manager
+  inline
   (cur-enum-value (multiple-value-bind (hardwired-kinds ignore-classes first-general)
                       (core:hardwired-kinds)
                     first-general))
@@ -169,6 +170,12 @@
   enum-roots
   )
 
+;; Return "inline" if the function should be inlined
+;; For now it's really simple, inline if it's in a list and don't if it's not
+(defun inline-analysis (func key analysis)
+  (if (member key (analysis-inline analysis))
+    "inline"
+    ""))
 
 ;; ----------------------------------------------------------------------
 ;;
@@ -1570,18 +1577,22 @@ so that they don't have to be constantly recalculated"
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     (with-destination (fout dest enum "goto TOP")
-      ;;    (format fout "Header_s* header = reinterpret_cast<Header_s*>(base);~%")
-      ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
-      (format (destination-helper-stream dest) "/* Helper for ~a*/~%" key )
-      (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
-        (when all-instance-variables
-          (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key))
-        ;;      (when (string= enum-name "KIND_LISPALLOC_core__CompiledBody_O")
-        ;;        (break "Check all-instance-variables"))
-        (dolist (instance-var all-instance-variables)
-          (code-for-instance-var fout +ptr-name+ instance-var)))
-      (format fout "    typedef ~A type_~A;~%" key enum-name)
-      (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
+;; Generate a helper function
+      (let ((fh (destination-helper-stream dest)))
+        (format fh "template <>~%")
+        (format fh "~a mps_res_t obj_scan_helper<~a>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, mps_addr_t& client)~%" (inline-analysis :scan key anal) key)
+        (format fh "{~%")
+        (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
+          (when all-instance-variables
+            (format fh "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key))
+          (dolist (instance-var all-instance-variables)
+            (code-for-instance-var fh +ptr-name+ instance-var)))
+        (format fh "    typedef ~A type_~A;~%" key enum-name)
+        (format fh "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
+        (format fh "    return MPS_RES_OK;~%")
+        (format fh "}~%"))
+      (format fout "  mps_res_t result = gctools::obj_scan_helper<~a>(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,client);~%" key)
+      (format fout "  if ( result != MPS_RES_OK ) return result;~%")
       )))
 
 
@@ -1955,9 +1966,10 @@ so that they don't have to be constantly recalculated"
 
 
 (defparameter *analysis* nil)
-(defun analyze-project (&optional (project *project*))
+(defun analyze-project (&key (project *project*) types-to-inline-mps-functions )
   (setq *analysis* (make-analysis :project project
-                                  :manager (setup-manager)))
+                                  :manager (setup-manager)
+                                  :inline types-to-inline-mps-functions))
   (organize-allocs-into-species-and-create-enums *analysis*)
   (generate-forward-declarations *analysis*)
   (analyze-hierarchy *analysis*)
@@ -2560,6 +2572,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 				  :generator (lambda (dest anal)
 					       (dolist (enum (analysis-sorted-enums anal))
 						 (funcall (species-finalize (enum-species enum)) dest enum anal))))
+                    (format stream "#if defined(GC_GLOBALS)~%")
                     (generate-code-for-global-non-symbol-variables stream analysis)
                     (format stream "#endif // defined(GC_GLOBALS)~%")
                     (format stream "#if defined(GC_GLOBAL_SYMBOLS)~%")

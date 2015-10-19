@@ -128,7 +128,7 @@ public:
 /// The marshaller is in charge of taking the VariantValue arguments, checking
 /// their types, unpacking them and calling the underlying function.
 class FixedArgCountMatcherDescriptor : public MatcherDescriptor {
-  FRIEND_GC_SCANNER();
+  friend_gc_scanner(asttooling::internal::FixedArgCountMatcherDescriptor);
 
 public:
   typedef VariantMatcher (*MarshallerType)(void (*Func)(),
@@ -164,7 +164,7 @@ GCPRIVATE:
 /// functions as we want, reducing the number of symbols and size of the
 /// object file.
 class FreeFuncMatcherDescriptor : public MatcherDescriptor {
-  FRIEND_GC_SCANNER();
+  FRIEND_GC_SCANNER(asttooling::internal::FreeFuncMatcherDescriptor);
 
 public:
   typedef VariantMatcher (*RunFunc)(core::Symbol_sp MatcherName,
@@ -351,8 +351,7 @@ private:
 /// It will try every overload and generate appropriate errors for when none or
 /// more than one overloads match the arguments.
 class OverloadedMatcherDescriptor : public MatcherDescriptor {
-  FRIEND_GC_SCANNER();
-
+  FRIEND_GC_SCANNER(asttooling::internal::OverloadedMatcherDescriptor);
  public:
 // gctools::tagged_pointer<OverloadedMatcherDescriptor>rrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
 
@@ -403,8 +402,7 @@ GCPRIVATE:
 
 /// \brief Variadic operator marshaller function.
 class VariadicOperatorMatcherDescriptor : public MatcherDescriptor {
-  FRIEND_GC_SCANNER();
-
+  FRIEND_GC_SCANNER(asttooling::internal::VariadicOperatorMatcherDescriptor);
 public:
   typedef clang::ast_matchers::internal::DynTypedMatcher::VariadicOperator VarOp;
   VariadicOperatorMatcherDescriptor(unsigned MinCount, unsigned MaxCount,

@@ -274,7 +274,17 @@ void obj_dump_base(mps_addr_t base) {
 int trap_obj_scan = 0;
 
 //core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR.notnilp()
+};
 
+namespace gctools {
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_SCAN_HELPERS
+#include <clasp/main/clasp_gc.cc>
+#undef GC_OBJ_SCAN_HELPERS
+#endif
+};
+
+extern "C" {
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_TABLE

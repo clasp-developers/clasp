@@ -1822,6 +1822,22 @@ T_mv cl_apply(T_sp head, VaList_sp args) {
 #endif
 }
 
+#if 1
+// fast funcall
+#define ARGS_cl_funcall "(function_desig &va-rest args)"
+#define DECL_cl_funcall ""
+#define DOCS_cl_funcall "See CLHS: funcall"
+  T_mv cl_funcall(T_sp function_desig, VaList_sp args) {
+//    printf("%s:%d cl_funcall should be inlined after the compiler starts up\n", __FILE__, __LINE__ );
+    Function_sp func = coerce::functionDesignator(function_desig);
+    if (func.nilp()) {
+      ERROR_UNDEFINED_FUNCTION(function_desig);
+    }
+    T_mv res = eval::apply_consume_VaList(func,args);
+    return res;
+  }
+#else
+// slow funcall
 #define ARGS_cl_funcall "(function_desig &rest args)"
 #define DECL_cl_funcall ""
 #define DOCS_cl_funcall "See CLHS: funcall"
@@ -1841,12 +1857,9 @@ T_mv cl_apply(T_sp head, VaList_sp args) {
     VaList_sp vargs(&vargs_struct);
     T_mv res = eval::apply_consume_VaList(func,vargs);
     return res;
-#if 0
-    List_sp passArgs = args;
-    ValueFrame_sp frame(ValueFrame_O::create(passArgs, _Nil<ActivationFrame_O>()));
-    return eval::applyToActivationFrame(func, frame); // func->INVOKE(frame->length(),frame->argArray());//return eval::applyFunctionToActivationFrame(func,frame);
-#endif
   }
+#endif
+
 
 /*!
  * This method:
@@ -2522,8 +2535,6 @@ struct InterpreterTrace {
     CoreDefun(extractLambdaName);
     CoreDefun(lookup_symbol_macro);
     CoreDefun(coerce_to_function);
-
-
   };
 };
 };

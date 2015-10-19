@@ -37,11 +37,6 @@
 (defvar *debug-tags*)
 (defvar *debug-vars*)
 
-
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Stealth mixins

@@ -118,7 +118,7 @@ inline void class_id_map::put(class_id id, type_id type) {
 }
 
 class class_map {
-  FRIEND_GC_SCANNER();
+  FRIEND_GC_SCANNER(clbind::detail::class_map);
 
 public:
   DECLARE_onHeapScanGCRoots();

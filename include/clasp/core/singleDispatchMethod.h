@@ -100,7 +100,7 @@ namespace core {
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
 class Lambda_method_function : public BuiltinClosure {
-  FRIEND_GC_SCANNER();
+  FRIEND_GC_SCANNER(core::Lambda_method_function);
 
 private:
   SingleDispatchMethod_sp _method;

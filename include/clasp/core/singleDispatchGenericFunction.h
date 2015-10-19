@@ -114,7 +114,7 @@ public:
 };
 
 class Lambda_emf : public FunctionClosure {
-  FRIEND_GC_SCANNER();
+  FRIEND_GC_SCANNER(core::Lambda_emf);
 
 private:
   /*! Store the method_function that this emf invokes.

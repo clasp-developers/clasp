@@ -280,7 +280,7 @@ bool af_subclassp(T_sp low, T_sp high);
 bool af_ofClassP(T_sp object, T_sp _class);
 
 class InstanceCreator : public Creator {
-  FRIEND_GC_SCANNER();
+  FRIEND_GC_SCANNER(core::InstanceCreator);
 
 public:
   Symbol_sp _className;
