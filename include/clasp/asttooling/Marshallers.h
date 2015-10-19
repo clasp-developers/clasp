@@ -129,7 +129,6 @@ public:
 /// their types, unpacking them and calling the underlying function.
 class FixedArgCountMatcherDescriptor : public MatcherDescriptor {
   FRIEND_GC_SCANNER(FixedArgCountMatcherDescriptor);
-
 public:
   typedef VariantMatcher (*MarshallerType)(void (*Func)(),
                                            core::Symbol_sp MatcherName,
