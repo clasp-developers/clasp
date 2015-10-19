@@ -8,5 +8,5 @@
 (setq core:*target-backend* (core::default-target-backend))
 (core:clean-system nil :no-prompt t :stage "cclasp")
 (core:load-system :bclasp :cclasp) ;; :pre-inline)
-(core:compile-system :init :cclasp :recompile nil :reload nil)
+(core:compile-system (core::out-of-date-bitcodes :init :cclasp) :reload nil)
 (core:quit)
