@@ -1129,7 +1129,7 @@ jump to blocks within this tagbody."
   (dbg-set-current-source-pos form)
   (cond
     ;; A compiler macro
-    ((and ;;(symbolp (car form))
+    ((and (symbolp (car form))
           (not (core:lexical-function (car form) env))
           (not (core:lexical-macro-function (car form) env))
           (not (core:declared-global-notinline-p (car form)))
@@ -1214,6 +1214,8 @@ jump to blocks within this tagbody."
             (cond
               ((treat-as-special-operator-p head)
                (codegen-special-operator result head rest env))
+              ((and head (consp head) (eq (car head) 'cl:lambda))
+               (codegen result `(funcall ,head ,@rest) env))
               ((and head (symbolp head))
                (codegen-application result form env))
               (t

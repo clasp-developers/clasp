@@ -1139,9 +1139,8 @@ core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
 
 #endif
 class Functoid {
- friend GC_RESULT gctools::obj_scan_helper<Functoid>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, mps_addr_t& client);
   struct metadata_always_fix_pointers_to_derived_classes;
-//  FRIEND_GC_SCANNER(core::Functoid);
+  FRIEND_GC_SCANNER(Functoid);
  
 
 public:

@@ -191,10 +191,10 @@ Closure *va_coerceToClosure(core::T_sp *argP) {
 
 
 
-ALWAYS_INLINE core::Closure *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP) {
+ALWAYS_INLINE T_O *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP) {
   core::Function_sp func = core::Environment_O::clasp_lookupFunction(*evaluateFrameP, depth, index);
   ASSERTF(func.objectp(), BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s") % depth % index % _rep_(*evaluateFrameP));
-  return &(*func->closure);
+  return func.raw_();
 }
 
 ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
@@ -202,7 +202,8 @@ ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
   va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
   core::T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  return lcc_closure->invoke_va_list(LCC_PASS_ARGS);
+  core::Function_O* func = reinterpret_cast<Function_O*>(gctools::untag_general(lcc_func));
+  return func->closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
 ALWAYS_INLINE LCC_RETURN FUNCALL_argsInReversedList(core::Closure *closure, core::T_sp* argsP) {

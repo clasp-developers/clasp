@@ -172,11 +172,10 @@ ALWAYS_INLINE void mv_symbolValueRead(core::T_mv *resultP, const core::Symbol_sp
 }
 
 
-ALWAYS_INLINE core::Closure *va_symbolFunction(core::Symbol_sp *symP) {
+ALWAYS_INLINE T_O* va_symbolFunction(core::Symbol_sp *symP) {
   if (!(*symP)->fboundp()) intrinsic_error(llvmo::noFunctionBoundToSymbol,*symP);
   core::Function_sp func((gc::Tagged)(*symP)->_Function.theObject);
-  core::Closure *funcPtr = &(*func->closure);
-  return funcPtr;
+  return func.raw_();
 }
 
 };
