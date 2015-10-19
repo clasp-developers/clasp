@@ -60,9 +60,6 @@ bclasp-boehmdc-addons:
 link-bclasp-boehmdc-addons:
 	$(BCLASP_BOEHMDC) -l "link_addons.lsp"
 
-bclasp-boehm-addons:
-	$(BCLASP_BOEHM) -l "build_addons.lsp"
-
 cclasp-boehm-addons:
 	$(CCLASP_BOEHM) -l "build_addons.lsp"
 
@@ -122,8 +119,14 @@ cclasp-boehmdc-fasl:
 bclasp-boehm-bitcode:
 	$(BCLASP_BOEHM) -f ecl-min -e "(compile-bclasp)" -e "(quit)"
 
+bclasp-boehm-addons-bitcode:
+	$(BCLASP_BOEHM) -l "build_addons.lsp"
+
+bclasp-boehm-addons-fasl:
+	$(BCLASP_BOEHM) -l "link-addons.lsp"
+
 bclasp-boehm-fasl:
-	$(BCLASP_BOEHM) -f ecl-min -e "(link-bclasp :force t)" -e "(quit)"
+	$(BCLASP_BOEHM) -f ecl-min -e "(link-bclasp)" -e "(quit)"
 
 cclasp-boehm-bitcode:
 	$(BCLASP_BOEHM) -f ecl-min -e "(compile-cclasp)" -e "(quit)"

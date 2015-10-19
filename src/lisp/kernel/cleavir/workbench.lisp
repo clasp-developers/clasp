@@ -382,8 +382,9 @@ cleavir-generate-ast:*compiler*
 (defun foo () (loop for i below 10 collect i))
 ;;;   No applicable method for CLEAVIR-ENVIRONMENT:MACRO-FUNCTION with arguments of types SYMBOL VALUE-FRAME 
 
-
-
+(setq *print-circle* t)
+(defparameter *a* #0='(clasp . #0#))
+*a*
 
 (cleavir-env:eval '(progn (defmacro zfoo()) (zfoo)) nil nil)
 
