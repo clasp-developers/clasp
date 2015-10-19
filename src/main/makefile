@@ -128,6 +128,9 @@ bclasp-boehm-addons-fasl:
 bclasp-boehm-fasl:
 	$(BCLASP_BOEHM) -f ecl-min -e "(link-bclasp)" -e "(quit)"
 
+cclasp-from-bclasp-boehm-bitcode:
+	$(BCLASP_BOEHM) -f bclasp -l "buildCleavirClasp.lsp"
+
 cclasp-boehm-bitcode:
 	$(BCLASP_BOEHM) -f ecl-min -e "(compile-cclasp)" -e "(quit)"
 
