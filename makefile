@@ -65,14 +65,14 @@ export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
 
 export LIBATOMIC_OPS_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/libatomic_ops
 export BOEHM_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/bdwgc
-export BOOST_BUILD_SOURCE_DIR ?= $(CLASP_HOME)/tools/boost_build
-export BOOST_BUILD_INSTALL ?= $(BOOST_BUILD_SOURCE_DIR)
-
 export BUILD ?= $(CLASP_HOME)/src/common/build
-export BJAM ?= $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 export CLASP_APP_EXECS ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
 export CLASP_APP_RESOURCES_DIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
+
+export BOOST_BUILD_SOURCE_DIR ?= $(CLASP_HOME)/tools/boost_build
+export BOOST_BUILD_INSTALL ?= $(CLASP_APP_RESOURCES_DIR)/boost_build
+export BJAM ?= $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 
 export CLASP_DEBUG_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_DEBUG) --libdir | tr -d '\n')
 export CLASP_RELEASE_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --libdir | tr -d '\n')
@@ -389,10 +389,10 @@ cl-full-boehm:
 	(cd src/main; make full-boehm)
 
 boost_build:
-	@if test ! -e tools/boost_build/bin/bjam ; then make boost_build-compile ; fi
+	@if test ! -e $(BOOST_BUILD_INSTALL)/bin/bjam ; then make boost_build-compile ; fi
 
 boost_build-compile:
-	(cd $(BOOST_BUILD_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_INSTALL) --ignore-site-config)
+	(cd $(BOOST_BUILD_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; $(BJAM) toolset=clang install --prefix=$(BOOST_BUILD_INSTALL) --ignore-site-config)
 
 compile-commands:
 	(cd src/main; make compile-commands)
