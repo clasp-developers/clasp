@@ -59,7 +59,7 @@ void initialize_link_intrinsics();
 
 
 
- void intrinsic_error(ErrorCode err, core::T_sp arg0=_Nil<core::T_O>(), core::T_sp arg1=_Nil<core::T_O>(), core::T_sp arg2=_Nil<core::T_O>() );
+ extern void intrinsic_error(ErrorCode err, core::T_sp arg0=_Nil<core::T_O>(), core::T_sp arg1=_Nil<core::T_O>(), core::T_sp arg2=_Nil<core::T_O>() );
 
 }
 
