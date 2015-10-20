@@ -1,5 +1,4 @@
 
-(*FSET 'FOO-ADD #'(LAMBDA (X Y) (DECLARE (LAMBDA-NAME FOO-ADD)) (BLOCK FOO-ADD (+ X Y))) nil)
-NIL
-'FOO-ADD
+(defun foo-add (x y) (+ x y))
+
 

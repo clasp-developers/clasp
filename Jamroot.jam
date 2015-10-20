@@ -93,8 +93,15 @@ project clasp : requirements
         <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=0"
 	<cxxflags>"-fvisibility=default"
         <variant>debug:<cxxflags>"-O0 -fstandalone-debug -gdwarf-4"
-        <variant>release:<cxxflags>"-O3 -gdwarf-4 -g"
-        <variant>release:<cflags>"-O3 -gdwarf-4 -g"
+        <gc>mps,<variant>release:<cxxflags>"-O2 -gdwarf-4 -g"
+        <gc>mps,<variant>release:<optimization>off
+        <gc>mps-prep,<variant>release:<cxxflags>"-O2 -gdwarf-4 -g"
+        <gc>boehm,<variant>release:<cxxflags>"-O3 -gdwarf-4 -g"
+        <gc>boehmdc,<variant>release:<cxxflags>"-O3 -gdwarf-4 -g"
+        <gc>mps,<variant>release:<cflags>"-O2 -gdwarf-4 -g"
+        <gc>mps-prep,<variant>release:<cflags>"-O2 -gdwarf-4 -g"
+        <gc>boehm,<variant>release:<cflags>"-O3 -gdwarf-4 -g"
+        <gc>boehmdc,<variant>release:<cflags>"-O3 -gdwarf-4 -g"
         <linkflags>"-fvisibility=default"
         <target-os>darwin:<linkflags>"-lc++"
 	<define>INCLUDED_FROM_CLASP
@@ -112,11 +119,10 @@ project clasp : requirements
         <define>USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
 
 ###
-### Define USE_ALLOCA_FOR_FRAME to use alloca to create stack frames
-### within the C++ stack frames  otherwise use the garbage collector to maintain
-### a side-stack
+### Define USE_ALLOCA_FOR_FRAME to use alloca to create Lisp stack frames within the C++ stack
+### otherwise use the garbage collector to maintain a separate stack for lisp frames
 ###
-       <define>USE_ALLOCA_FOR_FRAME
+       <gc>boehm:<define>USE_ALLOCA_FOR_FRAME
 
 ## I wrote a drop in replacement for std::vector<X> that should work with the AMCpool
 ## If you turn on USE_STD_VECTOR then gctools::Vector0<X> will inherit from std::vector<X>

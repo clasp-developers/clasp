@@ -14,7 +14,6 @@ project internals/core : requirements
 	<toolset>pathscale:<cxxflags>"-Wno-unused-variable -fopenmp"
 	<toolset>pgi:<cxxflags>"-mp -gopt"
 	<toolset>pgi:<linkflags>"-mp -gopt"
-	<toolset>clang:<variant>release:<linkflags>"-O4"
 	<target-os>darwin:<linkflags>"-dynamiclib"
 #	<target-os>darwin:<make-bundle>no
 	;

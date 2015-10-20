@@ -15,4 +15,4 @@
 	url = https://github.com/ivmai/bdwgc
 [submodule "tools/boost_build"]
 	path = tools/boost_build
-	url = https://github.com/boostorg/build
+	url = https://github.com/clasp-developers/build
