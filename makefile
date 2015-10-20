@@ -283,6 +283,7 @@ submodules-boehm:
 	-git submodule update --init src/boehm/bdwgc
 	-git submodule update --init src/lisp/kernel/contrib/sicl
 	-git submodule update --init src/lisp/modules/asdf
+	-git submodule update --init tools/boost_build
 #	-(cd src/lisp/modules/asdf; git checkout master; git pull origin master)
 
 submodules-mps:
