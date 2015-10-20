@@ -137,7 +137,7 @@ all:
 	make -C src/main cclasp-from-bclasp-boehm-bitcode
 #	make -C src/main cclasp-boehm-fasl
 	make -C src/main cclasp-boehm-fasl
-#	make -C src/main cclasp-boehm-addons
+	make -C src/main cclasp-boehm-addons
 	make executable-symlinks
 	echo Clasp is now built
 
