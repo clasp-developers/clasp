@@ -392,7 +392,8 @@ boost_build:
 	@if test ! -e $(BOOST_BUILD_INSTALL)/bin/bjam ; then make boost_build-compile ; fi
 
 boost_build-compile:
-	(cd $(BOOST_BUILD_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; $(BJAM) toolset=clang install --prefix=$(BOOST_BUILD_INSTALL) --ignore-site-config)
+	install -d $(BOOST_BUILD_INSTALL)
+	(cd $(BOOST_BUILD_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_INSTALL) --ignore-site-config)
 
 compile-commands:
 	(cd src/main; make compile-commands)
