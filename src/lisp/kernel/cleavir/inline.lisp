@@ -9,6 +9,10 @@
   nil)
 
 
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:set-symbol-value-instruction))
+  nil)
+
+
 ;;; Stubs to keep the already compiled code working
 
 #+(or)
