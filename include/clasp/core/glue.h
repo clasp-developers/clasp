@@ -121,7 +121,7 @@ struct adopt_pointer {};
 /*! to_object takes a class to convert to an T_sp type and a template parameter
       that specifies if the pointer should be adopted or not adopted */
 template <class oClass, class AdoptPolicy = dont_adopt_pointer>
-struct to_object : public gctools::StackBoundClass {
+struct to_object {
 };
 
 template <typename T>
