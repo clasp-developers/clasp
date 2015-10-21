@@ -74,14 +74,11 @@ project clasp : requirements
         <define>CLASP_VERSION="\\\"$(CLASP_VERSION)\\\""
         <program>cando:<include>projects/cando/include
         <cxxflags>"-Wno-attributes -Wno-null-conversion"
-#        <cxxflags>"-Wconversion"
         <target-os>linux:<cxxflags>"-fPIC"
-        <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
-        <target-os>darwin:<cxxflags>"-Wno-unused-local-typedef"
-#        <target-os>darwin:<cxxflags>"-resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
-#        <target-os>darwin:<cxxflags>"           -I /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
+        <cxxflags>"-Wno-unused-local-typedef"
         <target-os>darwin:<cxxflags>"-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk "
-        <include>./ <cxxflags>"-Wno-deprecated-register"
+        <include>./
+        <cxxflags>"-Wno-deprecated-register"
         <define>CLBIND_DYNAMIC_LINK
         <define>NDEBUG     # turns off some weird tests in clbind (will I eat these words?)
         <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
