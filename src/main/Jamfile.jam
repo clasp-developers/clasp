@@ -43,14 +43,17 @@ exe clasp : main.cc $(sources)
     : <gc>boehm
     ;
 
+
+obj gc_interface : gc_interface.cc ; # : <gc>mps:<debug-symbols>off ;  # generates conflict
+
 exe clasp : main.cc $(sources)
-    gc_interface.cc
+    gc_interface
     /internals/gctools//gclib
     : <gc>mps
     ;
 
 exe clasp : main.cc $(sources)
-    gc_interface.cc
+    gc_interface
     /internals/gctools//gclib
     : <gc>mps-prep
     ;

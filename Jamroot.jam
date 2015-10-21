@@ -93,8 +93,11 @@ project clasp : requirements
         <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=0"
 	<cxxflags>"-fvisibility=default"
         <variant>debug:<cxxflags>"-O0 -fstandalone-debug -gdwarf-4"
-        <variant>release:<cxxflags>"-O3 -gdwarf-4 -g"
-        <variant>release:<cflags>"-O3 -gdwarf-4 -g"
+        <variant>release:<debug-symbols>on
+        <cxxflags>"-gdwarf-4"
+        <cflags>"-gdwarf-4"
+#        <variant>release:<cxxflags>"-O3 -gdwarf-4 -g"
+#        <variant>release:<cflags>"-O3 -gdwarf-4 -g"
         <linkflags>"-fvisibility=default"
         <target-os>darwin:<linkflags>"-lc++"
 	<define>INCLUDED_FROM_CLASP
@@ -138,16 +141,21 @@ project clasp : requirements
 #        <define>DEBUG_FIND      #    Define this when using DEBUG_GCWEAK but can be defined along & with DEBUG_TRYSET
 #       <define>SOURCE_DEBUG
 #-------- mps options
-        <define>MPS_RECOGNIZE_ZERO_TAG   # recognize #b000 as a tagged pointer
+###
+### Only define one of MPS_RECOGNIZE_ALL_TAGS or MPS_RECOGNIZE_ZERO_TAG or neither
+### MPS_RECOGNIZE_ALL_TAGS allows any value in the lower three bits to be considered as a pointer
+### MPS_RECOGNIZE_ZERO_TAG allows ( ZERO_TAG_MASK | ptr ) == 0 to be considered as a pointer
+        <define>MPS_RECOGNIZE_ALL_TAGS   # Anything can be a pointer
+#        <define>MPS_RECOGNIZE_ZERO_TAG   # recognize #b000 as a tagged pointer
         <define>ZERO_TAG_MASK=7   # goes with MPS_RECOGNIZE_ZERO_TAG
 
 #	<define>DEBUG_THROW_IF_INVALID_CLIENT_ON      # turns on checks for DEBUG_THROW_IF_INVALID_CLIENT
-#	<define>DEBUG_TELEMETRY      # generate telemetry data for debugging general GC
-#	<define>DEBUG_STACK_TELEMETRY      # generate telemetry data for debugging stack GC
+	<define>DEBUG_TELEMETRY      # generate telemetry data for debugging general GC
+	<define>DEBUG_STACK_TELEMETRY      # generate telemetry data for debugging stack GC
 ##### DEBUG_MPS_UNDERSCANNING does a garbage collection after every allocation
 ##### This really, really slows things down
-#        <define>DEBUG_MPS_UNDERSCANNING
-#        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
+        <define>DEBUG_MPS_UNDERSCANNING
+        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #        <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
 #        <define>CONFIG_THREAD_SINGLE #  Single threaded
          <define>USE_CLASP_DYNAMIC_CAST
