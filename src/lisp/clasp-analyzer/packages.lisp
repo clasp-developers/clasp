@@ -17,6 +17,7 @@
    #:generate-code
    ;; stuff
    #:match-count
+   #:match-run
    #:lnew
    #:lsel
    #:build-arguments-adjuster

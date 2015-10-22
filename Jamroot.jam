@@ -116,6 +116,7 @@ project clasp : requirements
 ### otherwise use the garbage collector to maintain a separate stack for lisp frames
 ###
        <gc>boehm:<define>USE_ALLOCA_FOR_FRAME
+       <gc>boehmdc:<define>USE_ALLOCA_FOR_FRAME
 
 ## I wrote a drop in replacement for std::vector<X> that should work with the AMCpool
 ## If you turn on USE_STD_VECTOR then gctools::Vector0<X> will inherit from std::vector<X>

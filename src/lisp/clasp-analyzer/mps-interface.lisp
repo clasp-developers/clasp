@@ -2602,20 +2602,20 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
       relpath
       (concatenate 'string relpath "/")))
 
-(defvar *root-directory*)
 (defun build-arguments-adjuster ()
   "Build a function that fixes up compile command arguments.
 It converts relative -I../... arguments to absolute paths"
   (lambda (args) 
-    (let ((new-args (copy-seq args)))
+    (let ((new-args (copy-seq args))
+          (root-directory (make-pathname :name nil :type nil :defaults *main-pathname*)))
       (dotimes (i (length new-args))
         (let ((arg (elt new-args i)))
           (cond
             ((string= arg "-I.." :start1 0 :end1 4)
-             (let ((fixed-path (fix-path *root-directory* (ensure-directory (subseq arg 2)))))
+             (let ((fixed-path (fix-path root-directory (ensure-directory (subseq arg 2)))))
                (elt-set new-args i (concatenate 'string "-I" fixed-path))))
             ((string= arg "../" :start1 0 :end1 3)
-             (let ((fixed-path (fix-path *root-directory* arg)))
+             (let ((fixed-path (fix-path root-directory arg)))
                (elt-set new-args i fixed-path)))
             (t #| do nothing |# ))))
       (let ((result (concatenate 'vector #-quiet new-args #+quiet(remove "-v" new-args)
