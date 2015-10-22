@@ -38,8 +38,19 @@
   (:method ((a integer)) (call-next-method)))
 
 (foo 0)
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:set-symbol-value-instruction))
+  nil)
 
+(let ((clasp-cleavir:*debug-cleavir* t))
+  (compile-file "sys:tests;tp.lsp")
+  )
+(apropos "foo-bar")
+(load "sys:tests;tp.fasl")
+(boundp '*foo-bar3*)
+*foo-bar3*
 
+(trace cleavir-remove-useless-instructions:remove-useless-instructions)
+(trace cleavir-ir:delete-instruction)
 
 
 (clasp-cleavir:cleavir-compile 'yyy '(lambda (z) (car z)) :debug t)

@@ -2827,12 +2827,6 @@ It converts relative -I../... arguments to absolute paths"
   (setq $tiny-test-search (lsel $* ".*/cons\.cc"))
   (load-asts $tiny-test-search
              :arguments-adjuster-code *arguments-adjuster*))
-#|(lambda (args) (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
-                                                                  (vector "-DUSE_MPS"
-                                                                          "-DRUNNING_GC_BUILDER"
-                                                                          "-resource-dir" +resource-dir+)))))
-
-|#
 
 (defun run-test ()
   (defparameter *test-matcher*

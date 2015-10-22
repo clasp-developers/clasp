@@ -16,4 +16,9 @@
    #:analyze-project
    #:generate-code
    ;; stuff
+   #:match-count
+   #:lnew
+   #:lsel
+   #:build-arguments-adjuster
+   #:load-asts
 ))

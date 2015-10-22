@@ -135,6 +135,8 @@ struct gctools::GCInfo<core::ValueFrame_O> {
   static bool const NeedsFinalization = false;
   static bool const Moveable = true;
   static bool constexpr Atomic = false;
+//  static bool const InlineScan = true;
+//  static bool const Roo
 };
 TRANSLATE(core::ActivationFrame_O);
 
