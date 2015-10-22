@@ -571,8 +571,22 @@ template <
     class Class, class Get, class GetPolicies, class Set = reg::null_type, class SetPolicies = reg::null_type>
 struct property_registration : registration {
   property_registration(
-      char const *name, Get const &get, GetPolicies const &get_policies, Set const &set = Set(), SetPolicies const &set_policies = SetPolicies(), string const &arguments = "", string const &declares = "", string const &docstring = "")
-      : name(name), get(get), get_policies(get_policies), set(set), set_policies(set_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+      char const *name,
+      Get const &get,
+      GetPolicies const &get_policies,
+      Set const &set = Set(),
+      SetPolicies const &set_policies = SetPolicies(),
+      string const &arguments = "",
+      string const &declares = "",
+      string const &docstring = "")
+      : name(name)
+  , get(get)
+  , get_policies(get_policies)
+  , set(set)
+  , set_policies(set_policies)
+  , m_arguments(arguments)
+  , m_declares(declares)
+  , m_docstring(docstring) {}
 
   void register_() const {
     const string n(name);
