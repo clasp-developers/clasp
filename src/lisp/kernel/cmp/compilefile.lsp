@@ -230,11 +230,11 @@
          (t1expr expanded env)))
       (t (compile-top-level form)))))
 
-(defun compile-file-t1expr (form)
+(defun compile-file-t1expr (form compile-file-hook)
   ;; If the Cleavir compiler hook is set up then use that
   ;; to generate code 
-  (if *cleavir-compile-file-hook*
-      (funcall *cleavir-compile-file-hook* form)
+  (if compile-file-hook
+      (funcall compile-file-hook form)
       (t1expr form)))
 
 (defun compile-form-into-module (form name)
@@ -323,7 +323,7 @@ and the pathname of the source file - this will also be used as the module initi
 
 (defvar *debug-compile-file* nil)
 
-(defun compile-file-to-module (given-input-pathname output-path &key type source-debug-namestring (source-debug-offset 0) )
+(defun compile-file-to-module (given-input-pathname output-path &key compile-file-hook type source-debug-namestring (source-debug-offset 0) )
   "Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; TODO: Save read-table and package with unwind-protect
   (let* ((input-pathname (probe-file given-input-pathname))
@@ -365,7 +365,7 @@ and the pathname of the source file - this will also be used as the module initi
 			     ;; otherwise fall back to using *current-source-pos-info*
 			     (let ((core:*current-source-pos-info* 
 				    (core:walk-to-find-source-pos-info form top-source-pos-info)))
-			       (compile-file-t1expr form))))))
+			       (compile-file-t1expr form compile-file-hook))))))
 		  (let ((main-fn (compile-main-function output-path ltv-init-fn )))
 		    (make-boot-function-global-variable *the-module* main-fn)
 		    (add-main-function *the-module*)))
@@ -416,7 +416,8 @@ and the pathname of the source file - this will also be used as the module initi
 	     (module (compile-file-to-module given-input-pathname output-path 
 					     :type type 
 					     :source-debug-namestring source-debug-namestring 
-					     :source-debug-offset source-debug-offset )))
+					     :source-debug-offset source-debug-offset
+                                             :compile-file-hook compile-file-hook )))
 	(cond
 	  ((eq output-type :object)
 	   (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
