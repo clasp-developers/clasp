@@ -1442,7 +1442,7 @@ void DataLayoutPass_O::exposePython(core::Lisp_sp lisp) {
 };
 }; // llvmo
 
-#if 1
+#if LLVM_VERSION<370
 // LLVM 3.6
 namespace llvmo {
 EXPOSE_CLASS(llvmo, TargetLibraryInfo_O);

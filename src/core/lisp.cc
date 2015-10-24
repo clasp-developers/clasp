@@ -1323,6 +1323,15 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   features = Cons_O::create(_lisp->internKeyword("LINUX"), features);
   features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
 #endif
+#if LLVM_VERSION<370
+  features = Cons_O::create(_lisp->internKeyword("LLVM36"), features);
+#endif
+#if (LLVM_VERSION>=370) && (LLVM_VERSION<380)
+  features = Cons_O::create(_lisp->internKeyword("LLVM37"), features);
+#endif
+#if (LLVM_VERSION>=380)
+  #error "Remove old LLVM code and add a feature for LLVM38
+#endif
 #ifdef VARARGS
   features = Cons_O::create(_lisp->internKeyword("VARARGS"), features);
 #endif

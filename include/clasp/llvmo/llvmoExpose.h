@@ -50,10 +50,10 @@ THE SOFTWARE.
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/ADT/Triple.h>
 #include <llvm/Support/TargetSelect.h>
-#if 1 // LLVM3.6
+#if LLVM_VERSION<370 // LLVM3.6
 #include <llvm/Target/TargetLibraryInfo.h>
 #else // LLVM3.7
-//#include <llvm/Analysis/TargetLibraryInfo.h>
+#include <llvm/Analysis/TargetLibraryInfo.h>
 #endif
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/IR/Instructions.h>
@@ -1723,6 +1723,7 @@ struct to_object<llvm::ExecutionEngine *> {
 };
     ;
 
+#if LLVM_VERSION<370
 namespace llvmo {
 FORWARD(DataLayoutPass);
 class DataLayoutPass_O : public ImmutablePass_O {
@@ -1745,7 +1746,10 @@ public:
 }; // llvmo
 TRANSLATE(llvmo::DataLayoutPass_O);
 /* from_object translators */
+#endif
 
+
+#if LLVM_VERSION<370
 namespace translate {
 template <>
 struct from_object<llvm::DataLayoutPass *, std::true_type> {
@@ -1760,7 +1764,6 @@ struct from_object<llvm::DataLayoutPass const &, std::true_type> {
   from_object(T_P object) : _v(*(gc::As<llvmo::DataLayoutPass_sp>(object)->wrappedPtr())){};
 };
 };
-    ;
 /* to_object translators */
 
 namespace translate {
@@ -1772,7 +1775,6 @@ struct to_object<llvm::DataLayoutPass *> {
   }
 };
 };
-    ;
 
 namespace translate {
 template <>
@@ -1783,9 +1785,9 @@ struct to_object<const llvm::DataLayoutPass *> {
   }
 };
 };
-    ;
+#endif
 
-#if 1
+#if LLVM_VERSION<370
 // LLVM3.6
 namespace llvmo {
 FORWARD(TargetLibraryInfo);
@@ -1847,8 +1849,8 @@ struct to_object<const llvm::TargetLibraryInfo *> {
 //
 namespace llvmo {
 FORWARD(TargetLibraryInfoWrapperPass);
-c l a s s TargetLibraryInfoWrapperPass_O : public ImmutablePass_O {
-  L I S P _EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetLibraryInfoWrapperPass, TargetLibraryInfoWrapperPass_O, "TargetLibraryInfoWrapperPass", ImmutablePass_O);
+class TargetLibraryInfoWrapperPass_O : public ImmutablePass_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetLibraryInfoWrapperPass, TargetLibraryInfoWrapperPass_O, "TargetLibraryInfoWrapperPass", ImmutablePass_O);
   typedef llvm::TargetLibraryInfoWrapperPass ExternalType;
   typedef llvm::TargetLibraryInfoWrapperPass *PointerToExternalType;
 

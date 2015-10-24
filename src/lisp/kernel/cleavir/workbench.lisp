@@ -38,7 +38,11 @@
 (print "Hello")
 (clasp-cleavir:cleavir-compile-file "sys:tests;tgf.lsp")
 (load "sys:tests;tgf.fasl")
-(time (baz 1))
+(time (bar 1))
+
+:r1
+
+
 (+ 48 32)
 (getpid)91639
 

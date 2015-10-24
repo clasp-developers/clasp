@@ -79,10 +79,7 @@ using features defined in corePackage.cc"
 
 (defvar *use-function-pass-manager-for-compile-file* t)
 (defun create-function-pass-manager-for-compile-file (module)
-  (let ((fpm (llvm-sys:make-function-pass-manager module))
-        ;;        (data-layout-pass (llvm-sys:make-data-layout-pass *data-layout*))
-        )
-;;    (llvm-sys:function-pass-manager-add fpm data-layout-pass) ;; (llvm-sys:data-layout-copy *data-layout*))
+  (let ((fpm (llvm-sys:make-function-pass-manager module)))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
@@ -95,10 +92,7 @@ using features defined in corePackage.cc"
 
 
 (defun create-function-pass-manager-for-compile (module)
-  (let ((fpm (llvm-sys:make-function-pass-manager module))
-;;        (data-layout-pass (llvm-sys:make-data-layout-pass *data-layout*))
-        )
-;;    (llvm-sys:function-pass-manager-add fpm data-layout-pass)
+  (let ((fpm (llvm-sys:make-function-pass-manager module)))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))

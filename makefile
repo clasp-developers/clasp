@@ -52,6 +52,8 @@ export LLVM_CONFIG := $(or $(wildcard $(LLVM_CONFIG)),\
                            $(wildcard /usr/bin/llvm-config*),\
                            $(error Could not find llvm-config.))
 
+export LLVM_VERSION_RAW = $(shell $(LLVM_CONFIG) --version )
+export LLVM_VERSION = $(shell $(PYTHON2) $(CLASP_HOME)/src/common/convertLlvmVersionToInteger.py $(LLVM_VERSION_RAW))
 export GIT_COMMIT ?= $(shell git rev-parse --short HEAD || echo "unknown-commit")
 export CLASP_VERSION ?= $(shell git describe --always || echo "unknown-version")
 
