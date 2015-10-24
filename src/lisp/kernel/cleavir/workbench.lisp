@@ -16,6 +16,7 @@
     (print (core:getpid)))
   (print "Done - you are ready to go"))
 
+*features*
 (print (core:getpid))
 (progn
   (load "sys:kernel;cleavir;auto-compile.lisp")
@@ -23,8 +24,43 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (format t "Done loading inline.lisp~%"))
 
-(defgeneric foo (a b c d e f))
-(defmethod foo (a b c d e f))
+(defgeneric foo (a b))
+(defmethod foo (a b))
+
+(progn
+  (trace cmp::irc-make-tagbody-frame)
+  (trace cmp::codegen-tagbody)
+  (trace cmp::compile-file*)
+  (trace cmp::compile-file-t1expr)
+  (trace cmp::t1expr)
+  (trace clasp-cleavir:cleavir-compile-file)
+  (trace clasp-cleavir::cleavir-compile-file-form))
+(print "Hello")
+(clasp-cleavir:cleavir-compile-file "sys:tests;tgf.lsp")
+(load "sys:tests;tgf.fasl")
+(time (baz 1))
+(+ 48 32)
+(getpid)91639
+
+(clasp-cleavir:cleavir-compile 'bar '(lambda () (defmethod foo (a b) (+ a b))) :debug nil)
+(clasp-cleavir:cleavir-compile 'bar2 '(lambda () (defun baz (n) (core:trap-execution "a") (gctools:gc-monitor-allocations t) (dotimes (i n) (foo 1 2)) (gctools:gc-monitor-allocations nil))))
+(bar)
+(bar2)
+
+
+
+(foo 1 2)
+(time (baz 3))
+(time (progn (foo 1 2) (foo 1 2) (foo 1 2)))
+(print "Hello")
+(trace cmp::irc-make-tagbody-frame)
+
+(macroexpand '(defmethod foo (a b)))
+
+
+(bar)
+(time (progn (+ 1 2) (+ 1 2) (+ 1 2) ))
+(- 936 744)
 
 (foo 1 2 3 4 5 6)
 (time (progn (foo 1 2 3 4 5 6) (foo 1 2 3 4 5 6) (foo 1 2 3 4 5 6)))

@@ -956,7 +956,9 @@ nil)
                (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
                (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
           ;;(warn "Turn on CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS HIR - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
+          (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
           (CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS hir)
+          (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
           (cc-dbg-when *debug-log*
                        (let ((ast-pathname (make-pathname :name (format nil "ast~a" *debug-log-index*) 
                                                           :type "dot" 
@@ -1010,8 +1012,9 @@ nil)
                           (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
                           (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
               ;;(warn "Turn on run CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS HIR - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
+              (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
               (CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS hir)
-              (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-first.dot")) ;; comment out
+              (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
               (clasp-cleavir:convert-funcalls hir)
               (my-hir-transformations hir clasp-system nil nil)
               #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
@@ -1086,14 +1089,15 @@ nil)
     (cmp:compile-in-env name form env #'cleavir-compile-t1expr)))
         
 	
-(defun cleavir-compile (name form &key debug)
+(defun cleavir-compile (name form &key (debug *debug-cleavir*))
   (let ((cmp:*dump-module-on-completion* debug)
 	(*debug-cleavir* debug))
     (cclasp-compile-in-env name form nil)))
 
 (defun cleavir-compile-file (given-input-pathname &rest args)
   (let ((*debug-log-index* 0)
-	(cleavir-generate-ast:*compiler* 'cl:compile-file))
+	(cleavir-generate-ast:*compiler* 'cl:compile-file)
+        (cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form))
     (apply #'cmp::compile-file* #'cleavir-compile-file-form given-input-pathname args)))
 
 (defmacro with-debug-compile-file ((log-file &key debug-log-on) &rest body)

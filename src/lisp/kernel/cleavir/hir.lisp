@@ -358,9 +358,9 @@
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction pop-special-binding-instruction)) nil)
 
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-symbol-instruction)) nil)
+;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-symbol-instruction)) t)
 
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-value-instruction)) nil)
+;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-value-instruction)) t)
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction multiple-value-one-form-call-instruction)) nil)
 
