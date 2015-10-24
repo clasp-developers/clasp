@@ -44,7 +44,7 @@ export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
                               $(and $(filter $(TARGET_OS),Darwin), MacOS))
 
 export DEVEMACS ?= $(or $(and $(filter $(TARGET_OS),Linux), emacs -nw ./),\
-                        $(and $(filter $(TARGET_OS),Darwin), open -n -a emacs ./))
+                        $(and $(filter $(TARGET_OS),Darwin), open -n -a /Applications/Emacs.app ./))
 
 export LLVM_CONFIG := $(or $(wildcard $(LLVM_CONFIG)),\
                            $(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),\
@@ -65,14 +65,14 @@ export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
 
 export LIBATOMIC_OPS_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/libatomic_ops
 export BOEHM_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/bdwgc
-export BOOST_BUILD_SOURCE_DIR ?= $(CLASP_HOME)/tools/boost_build
-export BOOST_BUILD_INSTALL ?= $(BOOST_BUILD_SOURCE_DIR)
-
 export BUILD ?= $(CLASP_HOME)/src/common/build
-export BJAM ?= $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 export CLASP_APP_EXECS ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
 export CLASP_APP_RESOURCES_DIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 export CLASP_APP_RESOURCES_LIB_COMMON_DIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
+
+export BOOST_BUILD_SOURCE_DIR ?= $(CLASP_HOME)/tools/boost_build
+export BOOST_BUILD_INSTALL ?= $(CLASP_APP_RESOURCES_DIR)/boost_build
+export BJAM ?= $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 
 export CLASP_DEBUG_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_DEBUG) --libdir | tr -d '\n')
 export CLASP_RELEASE_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --libdir | tr -d '\n')
@@ -91,6 +91,13 @@ ifeq ($(TARGET_OS),Darwin)
   export INCLUDE_DIRS += /opt/local/include
   export LIB_DIRS += /usr/local/Cellar/gmp/6.0.0a/lib
   export LIB_DIRS += /opt/local/lib
+  export BOEHM_CC = gcc
+  export BOEHM_CXX = g++
+endif
+
+ifeq ($(TARGET_OS),Linux)
+  export BOEHM_CC = $(LLVM_BIN_DIR)/clang
+  export BOEHM_CXX = $(LLVM_BIN_DIR)/clang++
 endif
 
 include_flags := $(foreach dir,$(INCLUDE_DIRS),$(and $(wildcard $(dir)),-I$(dir)))
@@ -125,16 +132,19 @@ all:
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/$(VARIANT) gc=boehm $(VARIANT) clasp_install )
 	make -C src/main min-boehm
-	make -C src/main bclasp-boehm
-	make -C src/main cclasp-boehm-bitcode
+	make -C src/main bclasp-boehm-bitcode
+	make -C src/main bclasp-boehm-fasl
+	make -C src/main cclasp-from-bclasp-boehm-bitcode
+#	make -C src/main cclasp-boehm-fasl
 	make -C src/main cclasp-boehm-fasl
 	make -C src/main cclasp-boehm-addons
 	make executable-symlinks
 	echo Clasp is now built
 
 mps-build:
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp_install )
-	make -C src/main link-min.lsp
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/debug gc=mps debug clasp_install )
+	make -C src/main link-min-mps
 
 boot:
 	make submodules
@@ -143,7 +153,8 @@ boot:
 	make boehm
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/$(VARIANT) gc=boehmdc $(VARIANT) clasp_install )
 	make -C src/main min-boehmdc
-	make -C src/main bclasp-boehmdc
+	make -C src/main bclasp-boehmdc-bitcode
+	make -C src/main bclasp-boehmdc-fasl
 	make -C src/main bclasp-boehmdc-addons
 	make -C src/main mps-interface
 	make executable-symlinks
@@ -189,8 +200,8 @@ boehm-setup:
 	-(cd $(BOEHM_SOURCE_DIR); automake --add-missing )
 	(cd $(BOEHM_SOURCE_DIR); \
 		export ALL_INTERIOR_PTRS=1; \
-                CC=$(LLVM_BIN_DIR)/clang \
-		CXX=$(LLVM_BIN_DIR)/clang++ \
+                CC=$(BOEHM_CC) \
+		CXX=$(BOEHM_CXX) \
                 CFLAGS="-DUSE_MMAP -g" \
 		PKG_CONFIG_PATH=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR)/lib/pkgconfig/ \
 		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
@@ -199,11 +210,12 @@ boehm-compile:
 	(cd $(BOEHM_SOURCE_DIR); make -j$(PJOBS) | tee _boehm.log)
 	(cd $(BOEHM_SOURCE_DIR); make -j$(PJOBS) install | tee _boehm_install.log)
 
-
+export LIBATOMIC_OPS_CONFIGURE=src/boehm/libatomic_ops/configure
+export BDWGC_CONFIGURE=src/boehm/bdwgc/configure
 boehm:
-	@if test ! -e src/boehm/libatomic_ops/configure; then make libatomic-setup ; fi
+	@if test ! -e $(LIBATOMIC_OPS_CONFIGURE); then make libatomic-setup ; fi
 	@if test ! -e $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common/lib/libatomic_ops.a ; then make libatomic-compile ; fi
-	@if test ! -e src/boehm/bdwgc/configure ; then make boehm-setup ; fi
+	@if test ! -e $(BDWGC_CONFIGURE); then make boehm-setup ; fi
 	@if test ! -e $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common/lib/libgc.a ; then make boehm-compile ; fi
 
 
@@ -222,6 +234,8 @@ mps-clbind:
 boehm-clean:
 	install -d $(BOEHM_SOURCE_DIR)
 	-(cd $(BOEHM_SOURCE_DIR); make clean )
+	if test -e $(LIBATOMIC_OPS_CONFIGURE); then rm $(LIBATOMIC_OPS_CONFIGURE) ; fi
+	if test	-e $(BDWGC_CONFIGURE); then rm $(BDWGC_CONFIGURE) ; fi
 
 cclasp-mps:
 	(cd src/main; make cclasp-mps)
@@ -270,6 +284,7 @@ submodules-boehm:
 	-git submodule update --init src/boehm/bdwgc
 	-git submodule update --init src/lisp/kernel/contrib/sicl
 	-git submodule update --init src/lisp/modules/asdf
+	-git submodule update --init tools/boost_build
 #	-(cd src/lisp/modules/asdf; git checkout master; git pull origin master)
 
 submodules-mps:
@@ -375,9 +390,10 @@ cl-full-boehm:
 	(cd src/main; make full-boehm)
 
 boost_build:
-	@if test ! -e tools/boost_build/bin/bjam ; then make boost_build-compile ; fi
+	@if test ! -e $(BOOST_BUILD_INSTALL)/bin/bjam ; then make boost_build-compile ; fi
 
 boost_build-compile:
+	install -d $(BOOST_BUILD_INSTALL)
 	(cd $(BOOST_BUILD_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_INSTALL) --ignore-site-config)
 
 compile-commands:
@@ -386,6 +402,7 @@ compile-commands:
 
 clean:
 	git submodule sync
+	make boehm-clean
 	(cd src/main; rm -rf bin bundle)
 	(cd src/core; rm -rf bin bundle)
 	(cd src/gctools; rm -rf bin bundle)
