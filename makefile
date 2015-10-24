@@ -437,6 +437,7 @@ dump-local-config:
 print-config:
 	$(info >> Makefile Configuration:)
 	$(call varprint, CLASP_HOME)
+	$(call varprint, EXTERNALS_CLASP_DIR)
 	$(call varprint, LLVM_CONFIG)
 	$(call varprint, TARGET_OS)
 	$(call varprint, ADDRESS-MODEL)
