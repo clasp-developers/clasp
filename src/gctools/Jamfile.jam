@@ -37,6 +37,7 @@ alias gclib : mymps.c : <gc>mps ;
 alias gclib : mymps.c : <gc>mps-prep ;
 
 local sources =
+      gc_interface.cc
       gcFunctions.cc
 	gctoolsPackage.cc
         globals.cc

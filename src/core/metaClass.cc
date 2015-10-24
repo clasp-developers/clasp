@@ -56,7 +56,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 
 #define NAMESPACE_gctools_mem
-#include GC_INTERFACE_HEADER
+#include <clasp/gctools/gc_interface.h>
 #undef NAMESPACE_gctools_mem
 
 namespace translate {

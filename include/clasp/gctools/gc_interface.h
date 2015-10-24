@@ -51,7 +51,7 @@ class ConstructorCreator;
 #ifdef USE_MPS
   #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
     #define DECLARE_FORWARDS
-    #include GARBAGE_COLLECTION_INCLUDE
+    #include STATIC_ANALYZER_PRODUCT
     #undef DECLARE_FORWARDS
   #endif // ifndef RUNNING_GC_BUILDER
 #endif
@@ -60,7 +60,7 @@ class ConstructorCreator;
     // nothing
   #else
     #define DECLARE_FORWARDS
-    #include GARBAGE_COLLECTION_INCLUDE
+    #include STATIC_ANALYZER_PRODUCT
     #undef DECLARE_FORWARDS
   #endif
 #endif
@@ -70,7 +70,7 @@ namespace gctools {
 #ifdef USE_MPS
   #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
     #define GC_KIND_SELECTORS
-    #include GARBAGE_COLLECTION_INCLUDE
+    #include STATIC_ANALYZER_PRODUCT
     #undef GC_KIND_SELECTORS
   #endif // ifndef RUNNING_GC_BUILDER
 #endif
@@ -79,7 +79,7 @@ namespace gctools {
     // Nothing
   #else
     #define GC_KIND_SELECTORS
-    #include GARBAGE_COLLECTION_INCLUDE
+    #include STATIC_ANALYZER_PRODUCT
     #undef GC_KIND_SELECTORS
   #endif
 #endif
@@ -87,5 +87,9 @@ namespace gctools {
 
 #include <clasp/gctools/other_tagged_casts.h>
 
+extern "C" {
+char* obj_name(gctools::GCKindEnum kind);
+extern void obj_dump_base(void* base);
+};
 
 #endif

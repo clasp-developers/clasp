@@ -159,34 +159,125 @@ typedef bool _Bool;
 #include <clasp/asttooling/Marshallers.h>
 #include <clasp/asttooling/testAST.h>
 
+#include PROJECT_HEADERS_INCLUDE
+
 #define NAMESPACE_gctools
 #define NAMESPACE_core
-#include <clasp/main/gc_interface.h>
+#include <clasp/gctools/gc_interface.h>
 #undef NAMESPACE_gctools
 #undef NAMESPACE_core
 
-#ifdef USE_MPS
+
+
 
 extern "C" {
 using namespace gctools;
 
-const char *obj_name(gctools::GCKindEnum kind) {
+char *obj_name(gctools::GCKindEnum kind) {
   if ( kind == KIND_null ) {
     return "UNDEFINED";
   }
-#ifndef RUNNING_GC_BUILDER
-#define GC_KIND_NAME_MAP_TABLE
-#include <clasp/main/clasp_gc.cc>
-#undef GC_KIND_NAME_MAP_TABLE
-  goto *(KIND_NAME_MAP_table[kind]);
-#define GC_KIND_NAME_MAP
-#include <clasp/main/clasp_gc.cc>
-#undef GC_KIND_NAME_MAP
+#ifdef USE_BOEHM
+  #ifndef USE_CXX_DYNAMIC_CAST
+    #define GC_KIND_NAME_MAP_TABLE
+    #include STATIC_ANALYZER_PRODUCT
+    #undef GC_KIND_NAME_MAP_TABLE
+      goto *(KIND_NAME_MAP_table[kind]);
+    #define GC_KIND_NAME_MAP
+    #include STATIC_ANALYZER_PRODUCT
+    #undef GC_KIND_NAME_MAP
+  #endif
 #endif
-  return "NONE";
+#ifdef USE_MPS
+  #ifndef RUNNING_GC_BUILDER
+  #define GC_KIND_NAME_MAP_TABLE
+  #include STATIC_ANALYZER_PRODUCT
+  #undef GC_KIND_NAME_MAP_TABLE
+    goto *(KIND_NAME_MAP_table[kind]);
+  #define GC_KIND_NAME_MAP
+  #include STATIC_ANALYZER_PRODUCT
+  #undef GC_KIND_NAME_MAP
+  #endif
+#endif
+    return "NONE";
 }
 };
 
+
+extern "C" {
+/*! I'm using a format_header so MPS gives me the object-pointer */
+void obj_dump_base(void* base) {
+#ifdef USE_BOEHM
+  #ifdef USE_CXX_DYNAMIC_CAST
+    return "UNDETERMINED";
+  #else
+    #ifndef RUNNING_GC_BUILDER
+    #define GC_OBJ_DUMP_MAP_TABLE
+    #include STATIC_ANALYZER_PRODUCT
+    #undef GC_OBJ_DUMP_MAP_TABLE
+    #endif
+  #endif
+#endif
+#ifdef USE_MPS
+  #ifndef RUNNING_GC_BUILDER
+  #define GC_OBJ_DUMP_MAP_TABLE
+  #include STATIC_ANALYZER_PRODUCT
+  #undef GC_OBJ_DUMP_MAP_TABLE
+  #endif
+#endif
+
+#ifdef USE_MPS
+  mps_bool_t inArena = mps_arena_has_addr(_global_arena, base);
+  if (!inArena) {
+    printf("Address@%p is not in the arena\n", base);
+    return;
+  }
+#endif
+  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(base);
+  void *client = BasePtrToMostDerivedPtr<void>(base);
+  stringstream sout;
+  if (header->kindP()) {
+    gctools::GCKindEnum kind = header->kind();
+#ifdef USE_BOEHM
+  #ifndef USE_CXX_DYNAMIC_CAST
+    goto *(OBJ_DUMP_MAP_table[kind]);
+    #define GC_OBJ_DUMP_MAP
+    #include STATIC_ANALYZER_PRODUCT
+    #undef GC_OBJ_DUMP_MAP
+  #else
+    sout << "BOEHMDC_UNKNOWN"; // do nothing
+  #endif
+#endif
+#ifdef USE_MPS
+  #ifndef RUNNING_GC_BUILDER
+    goto *(OBJ_DUMP_MAP_table[kind]);
+    #define GC_OBJ_DUMP_MAP
+    #include STATIC_ANALYZER_PRODUCT
+    #undef GC_OBJ_DUMP_MAP
+  #else
+    // do nothing
+  #endif
+#endif
+#ifdef USE_MPS
+  } else if (header->fwdP()) {
+    void *forwardPointer = header->fwdPointer();
+    sout << "FWD pointer[" << forwardPointer << "] size[" << header->fwdSize() << "]";
+  } else if (header->pad1P()) {
+    sout << "PAD1 size[" << header->pad1Size() << "]";
+  } else if (header->padP()) {
+    sout << "PAD size[" << header->padSize() << "]";
+  } else {
+    sout << "INVALID HEADER!!!!!";
+#endif
+  }
+ BOTTOM:
+  printf("%s:%d obj_dump_base: %s\n", __FILE__, __LINE__, sout.str().c_str());
+}
+
+};
+
+
+#ifdef USE_MPS
 extern "C" {
 
 using namespace gctools;
@@ -197,7 +288,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
   // The client must have a valid header
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SKIP_TABLE
-#include <clasp/main/clasp_gc.cc>
+#include STATIC_ANALYZER_PRODUCT
 #undef GC_OBJ_SKIP_TABLE
 #endif
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
@@ -207,7 +298,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #ifndef RUNNING_GC_BUILDER
     goto *(OBJ_SKIP_table[kind]);
 #define GC_OBJ_SKIP
-#include <clasp/main/clasp_gc.cc>
+#include STATIC_ANALYZER_PRODUCT
 #undef GC_OBJ_SKIP
 #else
     return NULL;
@@ -230,47 +321,6 @@ mps_addr_t obj_skip(mps_addr_t client) {
 }
 };
 
-extern "C" {
-/*! I'm using a format_header so MPS gives me the object-pointer */
-void obj_dump_base(mps_addr_t base) {
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_DUMP_MAP_TABLE
-#include <clasp/main/clasp_gc.cc>
-#undef GC_OBJ_DUMP_MAP_TABLE
-#endif
-
-  mps_bool_t inArena = mps_arena_has_addr(_global_arena, base);
-  if (!inArena) {
-    printf("Address@%p is not in the arena\n", base);
-    return;
-  }
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(base);
-  void *client = BasePtrToMostDerivedPtr<void>(base);
-  stringstream sout;
-  if (header->kindP()) {
-    gctools::GCKindEnum kind = header->kind();
-#ifndef RUNNING_GC_BUILDER
-    goto *(OBJ_DUMP_MAP_table[kind]);
-#define GC_OBJ_DUMP_MAP
-#include <clasp/main/clasp_gc.cc>
-#undef GC_OBJ_DUMP_MAP
-#else
-// do nothing
-#endif
-  } else if (header->fwdP()) {
-    void *forwardPointer = header->fwdPointer();
-    sout << "FWD pointer[" << forwardPointer << "] size[" << header->fwdSize() << "]";
-  } else if (header->pad1P()) {
-    sout << "PAD1 size[" << header->pad1Size() << "]";
-  } else if (header->padP()) {
-    sout << "PAD size[" << header->padSize() << "]";
-  } else {
-    sout << "INVALID HEADER!!!!!";
-  }
- BOTTOM:
-  printf("Base@%p %s\n", base, sout.str().c_str());
-}
-
 int trap_obj_scan = 0;
 
 //core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR.notnilp()
@@ -279,7 +329,7 @@ int trap_obj_scan = 0;
 namespace gctools {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_HELPERS
-#include <clasp/main/clasp_gc.cc>
+#include STATIC_ANALYZER_PRODUCT
 #undef GC_OBJ_SCAN_HELPERS
 #endif
 };
@@ -288,7 +338,7 @@ extern "C" {
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_TABLE
-#include <clasp/main/clasp_gc.cc>
+#include STATIC_ANALYZER_PRODUCT
 #undef GC_OBJ_SCAN_TABLE
 #endif
 
@@ -308,7 +358,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #ifndef RUNNING_GC_BUILDER
         goto *(OBJ_SCAN_table[kind]);
 #define GC_OBJ_SCAN
-#include <clasp/main/clasp_gc.cc>
+#include STATIC_ANALYZER_PRODUCT
 #undef GC_OBJ_SCAN
 #endif
       } else if (header->fwdP()) {
@@ -339,7 +389,7 @@ void obj_finalize(mps_addr_t client) {
   DEBUG_THROW_IF_INVALID_CLIENT(client);
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_FINALIZE_TABLE
-#include <clasp/main/clasp_gc.cc>
+#include STATIC_ANALYZER_PRODUCT
 #undef GC_OBJ_FINALIZE_TABLE
 #endif
 
@@ -351,7 +401,7 @@ void obj_finalize(mps_addr_t client) {
 #ifndef RUNNING_GC_BUILDER
   goto *(OBJ_FINALIZE_table[kind]);
 #define GC_OBJ_FINALIZE
-#include <clasp/main/clasp_gc.cc>
+#include STATIC_ANALYZER_PRODUCT
 #undef GC_OBJ_FINALIZE
 #else
 // do nothing
@@ -381,14 +431,14 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 
 #ifndef RUNNING_GC_BUILDER
 #define GC_GLOBALS
-#include <clasp/main/clasp_gc.cc>
+#include STATIC_ANALYZER_PRODUCT
 #undef GC_GLOBALS
 #endif
 
 #ifndef RUNNING_GC_BUILDER
 #if USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
 #define GC_GLOBAL_SYMBOLS
-#include <clasp/main/clasp_gc.cc>
+#include STATIC_ANALYZER_PRODUCT
 #undef GC_GLOBAL_SYMBOLS
 #else
 
@@ -488,7 +538,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 //
 #ifndef RUNNING_GC_BUILDER
 #define HOUSEKEEPING_SCANNERS
-#include <clasp/main/clasp_gc.cc>
+#include STATIC_ANALYZER_PRODUCT
 #undef HOUSEKEEPING_SCANNERS
 #endif
 

@@ -442,11 +442,12 @@ public: // Simple default ctor/dtor
 public:    // ctor/dtor for classes with shared virtual base
            //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
            //    virtual ~StringStream_O() {};
-GCPRIVATE: // instance variables here
+public: // instance variables here
   StrWithFillPtr_sp _Contents;
 
 public: // Functions here
   void fill(const string &data);
+  StrWithFillPtr_sp getAndReset();
 }; // StringStream class
 };
 template <>

@@ -108,7 +108,7 @@ void CffiExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) c
 //
 #ifndef RUNNING_GC_BUILDER
 #define NAMESPACE_cffi
-#include GARBAGE_COLLECTION_INCLUDE
+#include STATIC_ANALYZER_PRODUCT
 #undef NAMESPACE_cffi
 #endif
 #endif

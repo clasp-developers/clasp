@@ -647,7 +647,7 @@ uint lisp_hash(uintptr_t v);
 
 #include <clasp/gctools/gcstring.h>
 
-#include GC_INTERFACE_HEADER
+#include <clasp/gctools/gc_interface.h>
 
 #define DEFINE_O_SMART_POINTERS(zclass)                                    \
   class zclass##_O;                                                        \

@@ -80,7 +80,7 @@ typedef enum { KIND_null } GCKindEnum; // minimally define this GCKind
 #else
 typedef
 #define GC_ENUM
-#include GARBAGE_COLLECTION_INCLUDE
+#include STATIC_ANALYZER_PRODUCT
   GCKindEnum;
  #undef GC_ENUM
 #endif 
@@ -103,7 +103,11 @@ public:
 #ifdef USE_BOEHM_MEMORY_MARKER
     , Marker(globalBoehmMarker)
 #endif
-  {};
+  {
+    if ( k >= KIND_max ) {
+      printf("%s:%d Allocating object of kind: %zu\n", __FILE__, __LINE__, k);
+    }
+  };
 private:
 #ifdef _ADDRESS_MODEL_64
   uint64_t Kind;
@@ -133,6 +137,7 @@ public:
     return "TypeIdUnavailable";
 #endif
   };
+  bool kindP() const { return true;};
   GCKindEnum kind() const { return (GCKindEnum)this->Kind; };
   bool markerMatches(int m) const {
 #ifdef USE_BOEHM_MEMORY_MARKER
@@ -199,14 +204,14 @@ namespace clbind {
 
 #ifndef USE_CXX_DYNAMIC_CAST
   #define DECLARE_FORWARDS
-  #include GARBAGE_COLLECTION_INCLUDE
+  #include STATIC_ANALYZER_PRODUCT
   #undef DECLARE_FORWARDS
 #endif
 
 namespace gctools {
 #ifndef USE_CXX_DYNAMIC_CAST
   #define GC_DYNAMIC_CAST
-  #include GARBAGE_COLLECTION_INCLUDE // "main/clasp_gc.cc"
+  #include STATIC_ANALYZER_PRODUCT // "main/clasp_gc.cc"
   #undef GC_DYNAMIC_CAST
 #endif
 };

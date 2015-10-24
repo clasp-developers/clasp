@@ -54,7 +54,7 @@ namespace clbind {
 // Load the gctools::GcInfo<core-classes>::Kind specializers
 //
 #define NAMESPACE_clbind
-#include <clasp/main/gc_interface.h>
+#include <clasp/gctools/gc_interface.h>
 #undef NAMESPACE_clbind
 
 using namespace core;

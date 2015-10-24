@@ -76,7 +76,7 @@ THE SOFTWARE.
 #include <clasp/core/pointer.h>
 #include <clasp/core/str.h>
 #include <clasp/core/vectorObjectsWithFillPtr.h>
-#include <clasp/main/gc_interface.fwd.h>
+#include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/lightProfiler.h>

@@ -86,7 +86,7 @@ namespace llvmo {
 // Load the gctools::GcInfo<core-classes>::Kind specializers
 //
 #define NAMESPACE_llvmo
-#include <clasp/main/gc_interface.h>
+#include <clasp/gctools/gc_interface.h>
 #undef NAMESPACE_llvmo
 
 namespace llvmo {
@@ -365,7 +365,7 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
 //
 #ifndef RUNNING_GC_BUILDER
 #define NAMESPACE_llvmo
-#include GARBAGE_COLLECTION_INCLUDE
+#include STATIC_ANALYZER_PRODUCT
 #undef NAMESPACE_llvmo
 #endif
 #endif

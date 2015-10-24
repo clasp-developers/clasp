@@ -60,7 +60,7 @@ extern "C" {
 #include <clasp/llvmo/symbolTable.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
-#include <clasp/main/gc_interface.fwd.h>
+#include <clasp/gctools/gc_interface.fwd.h>
 
 #define	DEBUG_FLOW_CONTROL	1
 

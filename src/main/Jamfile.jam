@@ -17,11 +17,11 @@ lib rt : : <name>rt ;
 
 
 local sources = 
+		/internals/gctools//gctools
     	    	/internals/core//core
 		/internals/cffi//cffi
 		/internals/llvmo//llvmo
                 /internals/clbind//clbind
-		/internals/gctools//gctools
 		/internals/sockets//sockets
 		/internals/serveEvent//serveEvent
 		/internals/asttooling//asttooling
@@ -44,16 +44,12 @@ exe clasp : main.cc $(sources)
     ;
 
 
-obj gc_interface : gc_interface.cc ; # : <gc>mps:<debug-symbols>off ;  # generates conflict
-
 exe clasp : main.cc $(sources)
-    gc_interface
     /internals/gctools//gclib
     : <gc>mps
     ;
 
 exe clasp : main.cc $(sources)
-    gc_interface
     /internals/gctools//gclib
     : <gc>mps-prep
     ;

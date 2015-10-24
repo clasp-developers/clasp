@@ -99,7 +99,7 @@ public:
 #if !defined(RUNNING_GC_BUILDER)
 #define GC_ENUM
 typedef
-#include GARBAGE_COLLECTION_INCLUDE //"main/clasp_gc.cc"
+#include STATIC_ANALYZER_PRODUCT//"main/clasp_gc.cc"
     GCKindEnum;
 #undef GC_ENUM
 #else
@@ -114,13 +114,9 @@ namespace gctools {
 
 extern "C" {
 
-const char *obj_name(gctools::GCKindEnum kind);
 
 /*! Implemented in gc_interace.cc */
 mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
-
-/*! Dump a representation of the object at the base pointer to stdout */
-void obj_dump_base(mps_addr_t base);
 
 /*! Implemented in gc_interace.cc */
 mps_addr_t obj_skip(mps_addr_t base);
@@ -264,11 +260,11 @@ inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s
      : gctools::sizeof_with_header<gctools::Fwd_s>() ) 
 */
 namespace gctools {
-extern size_t global_sizeof_fwd;
-extern size_t global_alignup_sizeof_header;
-inline size_t Align(size_t size) {
-  return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd);
-};
+  extern size_t global_sizeof_fwd;
+//extern size_t global_alignup_sizeof_header;
+  inline size_t Align(size_t size) {
+    return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd);
+  };
 };
 
 namespace gctools {
@@ -366,14 +362,14 @@ class ConstructorCreator;
 
 #ifndef RUNNING_GC_BUILDER
 #define DECLARE_FORWARDS
-#include GARBAGE_COLLECTION_INCLUDE
+#include STATIC_ANALYZER_PRODUCT
 #undef DECLARE_FORWARDS
 #endif
 
 namespace gctools {
 #if !defined(RUNNING_GC_BUILDER)
 #define GC_DYNAMIC_CAST
-#include GARBAGE_COLLECTION_INCLUDE // "main/clasp_gc.cc"
+#include STATIC_ANALYZER_PRODUCT// "main/clasp_gc.cc"
 #undef GC_DYNAMIC_CAST
 #endif
 };
