@@ -173,9 +173,9 @@
 ;; Return "inline" if the function should be inlined
 ;; For now it's really simple, inline if it's in a list and don't if it's not
 (defun inline-analysis (func key analysis)
-  (if (member key (analysis-inline analysis))
-    "inline"
-    ""))
+  (if (member key (analysis-inline analysis) :test #'string=)
+    "ALWAYS_INLINE"
+    "MAYBE_INLINE"))
 
 ;; ----------------------------------------------------------------------
 ;;
@@ -2751,29 +2751,6 @@ It converts relative -I../... arguments to absolute paths"
     (save-data *project* (project-pathname "project" "dat"))))
 
 
-(defun serial-search-only (root-directory &key test)
-  (let ((*root-directory* root-directory))
-    (setup-*tools*)
-    (serial-search-all :test test)))  
-(export 'serial-search-only)
-(export '$*)
-
-(defun serial-search-all-then-generate-code-and-quit (root-directory &key test)
-  (let ((*root-directory* root-directory))
-    (setup-*tools*)
-    (serial-search-all :test test)
-    (analyze-project)
-    (generate-code)
-    (quit)))
-
-(defun parallel-search-all-then-generate-code-and-quit (root-directory)
-  (let ((*root-directory* root-directory))
-    (setup-*tools*)
-    (parallel-search-all)
-    (analyze-project)
-    (generate-code)
-    (quit)))
-
 
 (defun parallel-merge (&key end (start 0) restart)
   "Merge the analyses generated from the parallel search"
@@ -2864,22 +2841,27 @@ It converts relative -I../... arguments to absolute paths"
 (defun run-serial-search ()
   (clasp-analyzer:load-compilation-database "app-resources:build-databases;clasp_compile_commands.json")
   (clasp-analyzer::serial-search-all))
-#||
-
-(load "sys:mps-interface.lsp")
-(print "Done loading mps-interface")
-(parallel-search-all-then-generate-code-and-quit)
-(print "Done search and generated code")
 
 
-(print "Merging project parts")
-(parallel-merge)
-(print "Load the project")
-(setq *default-pathname-defaults* #P"/home/meister/Development/clasp/src/main/")
-(load-project)
-(print "Done loading project")
-(analyze-project)
-(generate-code)
-(print "Done generate code")
+(defun serial-search-only (&key test)
+    (setup-*tools*)
+    (serial-search-all :test test))
+(export 'serial-search-only)
+(export '$*)
 
-||#
+(defun serial-search-all-then-generate-code-and-quit (&key test)
+    (setup-*tools*)
+    (serial-search-all :test test)
+    (analyze-project)
+    (setf (analysis-inline *analysis*) '("core::Cons_O"))
+    (generate-code)
+    (quit))
+
+(defun parallel-search-all-then-generate-code-and-quit ()
+    (setup-*tools*)
+    (parallel-search-all)
+    (analyze-project)
+    (setf (analysis-inline *analysis*) '("core::Cons_O"))
+    (generate-code)
+    (quit))
+

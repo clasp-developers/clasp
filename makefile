@@ -151,13 +151,16 @@ boot:
 	make asdf
 	make boost_build
 	make boehm
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/$(VARIANT) gc=boehmdc $(VARIANT) clasp_install )
+	make -C src/main boehmdc-release-cxx
+	make executable-symlinks
 	make -C src/main min-boehmdc
 	make -C src/main bclasp-boehmdc-bitcode
 	make -C src/main bclasp-boehmdc-fasl
 	make -C src/main bclasp-boehmdc-addons
+
+boot-mps-interface:
+	make boot
 	make -C src/main mps-interface
-	make executable-symlinks
 #	make -C src/main bclasp-boehmdc
 #	make -C src/main bclasp-boehmdc-addons
 

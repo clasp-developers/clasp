@@ -76,7 +76,7 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
 */
 
 #ifdef USE_CXX_DYNAMIC_CAST
-typedef enum { KIND_null } GCKindEnum; // minimally define this GCKind
+ typedef enum { KIND_null=0, KIND_max } GCKindEnum; // minimally define this GCKind
 #else
 typedef
 #define GC_ENUM

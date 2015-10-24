@@ -39,7 +39,7 @@ THE SOFTWARE.
 #include <clasp/core/structureClass.h>
 #include <clasp/gctools/globals.h>
 #include <clasp/core/wrappers.h>
-#include <clasp/main/gc_interface.fwd.h>
+#include <clasp/gctools/gc_interface.fwd.h>
 
 extern "C" {
 #include "clasp/mps/code/mpscawl.h" // MVFF pool

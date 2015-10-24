@@ -209,7 +209,7 @@ extern "C" {
 void obj_dump_base(void* base) {
 #ifdef USE_BOEHM
   #ifdef USE_CXX_DYNAMIC_CAST
-    return "UNDETERMINED";
+    // Do nothing 
   #else
     #ifndef RUNNING_GC_BUILDER
     #define GC_OBJ_DUMP_MAP_TABLE
@@ -324,7 +324,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
 int trap_obj_scan = 0;
 
 //core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR.notnilp()
-};
+
 
 namespace gctools {
 #ifndef RUNNING_GC_BUILDER

@@ -49,6 +49,7 @@ THE SOFTWARE.
 
 #define ALWAYS_INLINE __attribute__((always_inline))
 #define NOINLINE __attribute__((noinline))
+#define MAYBE_INLINE __attribute__((noinline))
 
 namespace std {
 class type_info;

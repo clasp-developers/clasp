@@ -72,7 +72,7 @@ THE SOFTWARE.
 
 #ifdef USE_MPS
 #define NAMESPACE_clbind_clang
-#include <clasp/main/gc_interface.h>
+#include <clasp/gctools/gc_interface.h>
 #undef NAMESPACE_clbind_clang
 #endif
 

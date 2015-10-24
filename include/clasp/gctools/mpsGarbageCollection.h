@@ -108,6 +108,13 @@ typedef enum { KIND_null,
 #endif
 };
 
+
+extern "C" {
+char* obj_name(gctools::GCKindEnum kind);
+extern void obj_dump_base(void* base);
+};
+
+
 namespace gctools {
   template <class T> GC_RESULT obj_scan_helper(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, mps_addr_t& client);
 };

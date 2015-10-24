@@ -1,6 +1,15 @@
-
+(print "Testing")
 (require :asdf)
-(asdf:load-system "clasp-analyzer")
+(require :clasp-analyzer)
+
+(in-package :clasp-analyzer)
+
+(load-project)
+(analyze-project)
+(setf (analysis-inline *analysis*) '("core::Cons_O"))
+(generate-code)
+
+(print "Go go go")
 
 (clasp-analyzer:load-compilation-database "app-resources:build-databases;clasp_compile_commands.json")
  
