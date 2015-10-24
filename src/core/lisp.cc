@@ -692,6 +692,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_Roots._LongFloatMinusZero = LongFloat_O::create(-0.0l);
     this->_Roots._LongFloatPlusZero = LongFloat_O::create(0.0l);
 #endif // ifdef CLASP_LONG_FLOAT
+    this->_Roots._BformatStringOutputStream = clasp_make_string_output_stream();
     this->_Roots._BignumRegister0 = Bignum_O::create(0);
     this->_Roots._BignumRegister1 = Bignum_O::create(0);
     this->_Roots._BignumRegister2 = Bignum_O::create(0);

@@ -5885,6 +5885,14 @@ void StringOutputStream_O::exposePython(Lisp_sp lisp) {
 void StringOutputStream_O::fill(const string &data) {
   this->_Contents->pushString(data.c_str());
 }
+
+/*! Get the contents and reset them */
+StrWithFillPtr_sp StringOutputStream_O::getAndReset() {
+  StrWithFillPtr_sp contents = this->_Contents;
+  StringOutputStreamOutputString(this->asSmartPtr()) = StrWithFillPtr_O::createBufferString(128);
+  StreamOutputColumn(this->asSmartPtr()) = 0;
+  return contents;
+};
 };
 
 namespace core {

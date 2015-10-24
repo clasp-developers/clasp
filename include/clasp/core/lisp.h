@@ -228,6 +228,8 @@ class Lisp_O {
     /*! Multiple values - this should be per thread */
     MultipleValues *_MultipleValuesCur;
     T_sp _TerminalIO;
+    /*! bformat_StringOutputStream one per thread */
+    StringOutputStream_sp _BformatStringOutputStream;
     /*! Bignum registers should be one per thread */
     Bignum_sp _BignumRegister0;
     Bignum_sp _BignumRegister1;
@@ -437,6 +439,8 @@ public:
 	    this->_Roots._MultipleValuesCur = mv;
 	};
 #endif
+ public:
+        StringOutputStream_sp& bformatStringOutputStream() { return this->_Roots._BformatStringOutputStream; };
  public:
         /*! Signal a problem if the stack gets too full*/
         inline void stack_monitor() {

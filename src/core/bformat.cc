@@ -47,7 +47,7 @@ T_sp af_bformat(T_sp destination, const string &control, List_sp args) {
   _G();
   T_sp output;
   if (destination.nilp()) {
-    output = clasp_make_string_output_stream();
+    output = _lisp->bformatStringOutputStream();
   } else if (destination == _sym_printf) {
     output = destination;
   } else {
@@ -105,7 +105,8 @@ T_sp af_bformat(T_sp destination, const string &control, List_sp args) {
     clasp_write_string(fmter_str, output);
   }
   if (destination.nilp()) {
-    return cl_get_output_stream_string(output);
+    StringOutputStream_sp sout = gc::As<StringOutputStream_sp>(output);
+    return sout->getAndReset();
   }
   return _Nil<T_O>();
 }
