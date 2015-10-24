@@ -62,6 +62,14 @@ void *_global_stack_marker;
 
 namespace gctools {
 
+size_t global_alignup_sizeof_header;
+bool _global_monitor_allocations = false;
+
+void monitorAllocation(GCKindEnum k,size_t sz)
+{
+  printf("%s:%d monitor allocation of %s with %zu bytes\n", __FILE__, __LINE__, obj_name(k), sz);
+}
+
 void handle_signals(int signo) {
   //
   // Indicate that a signal was caught and handle it at a safe-point
@@ -141,6 +149,7 @@ int handleFatalCondition() {
   return exitCode;
 }
 
+
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
   void *stackMarker = NULL;
   gctools::_global_stack_marker = &stackMarker;
@@ -161,7 +170,8 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
       printf("CLASP_TELEMETRY_FILE= %s\n", telemetry::global_clasp_telemetry_file);
     telemetry::global_telemetry->open_write(telemetry::global_clasp_telemetry_file);
   }
-  
+
+  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
 #if defined(USE_MPS)
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif

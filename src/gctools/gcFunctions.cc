@@ -260,8 +260,15 @@ struct ReachableClass {
   size_t instances;
   size_t totalSize;
   size_t print(const std::string &shortName) {
-    printf("%s: total_size: %10lu count: %8lu avg.sz: %8lu kind: %zu\n", shortName.c_str(),
-           this->totalSize, this->instances, this->totalSize / this->instances, this->_Kind);
+    core::Fixnum k = this->_Kind;
+    stringstream className;
+    if ( k <= gctools::KIND_max ) {
+      className << obj_name(this->_Kind);
+    } else {
+      className << "Unknown";
+    }
+    printf("%s: total_size: %10lu count: %8lu avg.sz: %8lu kind: %s/%zu\n", shortName.c_str(),
+           this->totalSize, this->instances, this->totalSize / this->instances, className.str().c_str(), k);
     return this->totalSize;
   }
 };
@@ -395,17 +402,28 @@ T_mv af_gcInfo(T_sp x, Fixnum_sp marker) {
 #endif
 };
 
+
+#define ARGS_af_gcMonitorAllocations "(on)"
+#define DECL_af_gcMonitorAllocations ""
+#define DOCS_af_gcMonitorAllocations "gcMonitorAllocations"
+void af_gcMonitorAllocations(bool on) {
+  _global_monitor_allocations = on;
+  printf("%s:%d  gcMonitorAllocations set to %d\n", __FILE__, __LINE__, on );
+};
+
+
 #define ARGS_af_gcMarker "(&optional marker)"
 #define DECL_af_gcMarker ""
 #define DOCS_af_gcMarker "gcMarker"
-int af_gcMarker(Fixnum_sp marker) {
+Fixnum af_gcMarker(Fixnum_sp marker) {
   _G();
 #ifdef USE_BOEHM_MEMORY_MARKER
   if (marker.nilp()) {
     return gctools::globalBoehmMarker;
   }
-  int oldm = gctools::globalBoehmMarker;
-  int m = marker->get();
+  ASSERT(marker.fixnump());
+  Fixnum oldm = gctools::globalBoehmMarker;
+  Fixnum m = marker.unsafe_fixnum();
   gctools::globalBoehmMarker = m;
   return oldm;
 #endif
@@ -648,7 +666,8 @@ void initialize_gc_functions() {
     //            core::af_def(GcToolsPkg,"testArray0",&af_testArray0);
     core::af_def(GcToolsPkg, "gcInfo", &af_gcInfo);
     core::af_def(GcToolsPkg, "gcMarker", &af_gcMarker, ARGS_af_gcMarker, DECL_af_gcMarker, DOCS_af_gcMarker);
-    core::af_def(ClPkg, "room", &af_room, ARGS_af_room, DECL_af_room, DOCS_af_room);
+    core::af_def(GcToolsPkg, "gcMonitorAllocations", &af_gcMonitorAllocations, ARGS_af_gcMonitorAllocations, DECL_af_gcMonitorAllocations, DOCS_af_gcMonitorAllocations);
+     core::af_def(ClPkg, "room", &af_room, ARGS_af_room, DECL_af_room, DOCS_af_room);
     core::af_def(GcToolsPkg, "garbageCollect", &af_garbageCollect);
     core::af_def(GcToolsPkg, "stackDepth", &af_stackDepth);
     core::af_def(GcToolsPkg, "cleanup", &af_cleanup);

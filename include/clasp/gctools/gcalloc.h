@@ -263,6 +263,7 @@ struct RootClassAllocator {
     size_t sz = sizeof_with_header<T>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
+    MONITOR_ALLOCATION(GCKind<T>::Kind,sz);
 #endif
 #ifdef USE_BOEHM
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
@@ -333,6 +334,7 @@ struct ClassAllocator {
     size_t sz = sizeof_with_header<T>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
+    MONITOR_ALLOCATION(GCKind<T>::Kind,sz);
 #endif
 #ifdef USE_BOEHM
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
@@ -383,6 +385,7 @@ struct GCObjectAppropriatePoolAllocator {
     size_t size = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
+    MONITOR_ALLOCATION(GCKind<OT>::Kind,size);
 #endif
 #ifdef USE_BOEHM
     // By default allocate in the normal pool for objects that contain pointers
@@ -429,6 +432,7 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/true, /*Moveable=*/true> 
     size_t size = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
+    MONITOR_ALLOCATION(GCKind<OT>::Kind,size);
 #endif
 #ifdef USE_BOEHM
     // Atomic objects (do not contain pointers) are allocated in separate pool
@@ -474,6 +478,7 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/false, /*Moveable=*/false
     size_t size = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
+    MONITOR_ALLOCATION(GCKind<OT>::Kind,size);
 #endif
 #ifdef USE_BOEHM
     // By default allocate in the normal pool for objects that contain pointers
@@ -570,6 +575,7 @@ public:
     size_t sz = sizeof_with_header<OT>(); // USE HEADER FOR BOEHM ROOTS BUT NOT MPS
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
+    MONITOR_ALLOCATION(GCKind<OT>::Kind,sz);
 #endif
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
     new (base) Header_s(GCKind<OT>::Kind);
@@ -665,6 +671,7 @@ public:
     size_t size = sizeof_container_with_header<TY>(num);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
+    MONITOR_ALLOCATION(GCKind<TY>::Kind,size);
 #endif
 #ifdef USE_BOEHM
     // prepend a one pointer header with a pointer to the typeinfo.name
@@ -758,6 +765,7 @@ public:
     size_t size = sizeof_container_with_header<TY>(num);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
+    MONITOR_ALLOCATION(GCKind<TY>::Kind,size);
 #endif
 #ifdef USE_BOEHM
     // prepend a one pointer header with a pointer to the typeinfo.name
@@ -847,6 +855,7 @@ public:
     size_t sz = sizeof_container_with_header<container_type>(num);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
+    MONITOR_ALLOCATION(GCKind<TY>::Kind,sz);
 #endif
 #if defined(USE_BOEHM)
     // prepend a one pointer header with a pointer to the typeinfo.name
@@ -939,6 +948,7 @@ public:
     size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
+    MONITOR_ALLOCATION(KIND_null,size);
 #endif
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
@@ -1030,6 +1040,7 @@ public:
     size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
+    MONITOR_ALLOCATION(KIND_null,size);
 #endif
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
@@ -1113,6 +1124,7 @@ public:
     size_t size = sizeof(container_type);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
+    MONITOR_ALLOCATION(KIND_null,size);
 #endif
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
@@ -1162,6 +1174,7 @@ public:
     size_t size = sizeof(container_type);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
+    MONITOR_ALLOCATION(KIND_null,size);
 #endif
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__);
@@ -1211,6 +1224,7 @@ public:
     size_t size = sizeof(VT);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
+    MONITOR_ALLOCATION(KIND_null,size);
 #endif
 #ifdef USE_BOEHM
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);

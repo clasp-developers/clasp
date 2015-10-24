@@ -90,7 +90,6 @@ mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
 mps_pool_t global_non_moving_pool;
 mps_ap_t global_non_moving_ap;
 size_t global_sizeof_fwd;
-size_t global_alignup_sizeof_header;
 
 
 void rawHeaderDescribe(uintptr_t* headerP)
@@ -524,7 +523,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     //            printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
   }
   global_sizeof_fwd = AlignUp(sizeof(Header_s) + sizeof(uintptr_t));
-  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
+//  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
 
 #define CHAIN_SIZE 6400 // 256 // 6400
   size_t arenaSizeMb = 320;

@@ -71,13 +71,15 @@ constexpr size_t depreciatedAlignUpT(size_t size) { return (size + depreciatedAl
 //
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
+
+
 namespace gctools {
-
-extern void *_global_stack_marker;
-
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
-template <class OT>
-struct GCKind;
+  template <class OT> struct GCKind;
+  extern size_t global_alignup_sizeof_header;
+  extern void *_global_stack_marker;
+  extern bool _global_monitor_allocations;
+
 };
 
 namespace gctools {
@@ -118,12 +120,31 @@ struct GCAllocationPoint;
 
 #include <clasp/gctools/tagged_cast.h>
 
+
+
 #ifdef USE_BOEHM
 #include <clasp/gctools/boehmGarbageCollection.h>
 #endif
 #ifdef USE_MPS
 #include <clasp/gctools/mpsGarbageCollection.h>
 #endif
+
+ namespace gctools {
+
+   extern void monitorAllocation(GCKindEnum k,size_t sz);
+
+#ifdef GC_MONITOR_ALLOCATIONS
+#define MONITOR_ALLOCATION(k,sz) if (_global_monitor_allocations) { \
+    monitorAllocation(k,sz); \
+  }
+#else
+#define MONITOR_ALLOCATION(k,sz)
+#endif
+ }
+extern "C" {
+char* obj_name(gctools::GCKindEnum kind);
+extern void obj_dump_base(void* base);
+};
 
 
 
@@ -233,6 +254,5 @@ int handleFatalCondition();
        The main function is wrapped within this function */
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize);
 };
-
 
 #endif // _clasp_memoryManagement_H

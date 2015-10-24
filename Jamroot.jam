@@ -115,6 +115,15 @@ project clasp : requirements
        <gc>boehm:<define>USE_ALLOCA_FOR_FRAME
        <gc>boehmdc:<define>USE_ALLOCA_FOR_FRAME
 
+### USE_BOEHM_MEMORY_MARKER may be useful for debugging processes that cons memory
+### I lets you write an integer (by using (gctools:gc-marker <int>) into the header
+### of every object allocated while that marker is set.
+### Then you can use (room t <int>) to dump only those objects marked with the marker
+    <gc>boehm:<define>USE_BOEHM_MEMORY_MARKER
+
+### Print a message for every allocation - this can be turned on and off with (gctools:gc-monitor-allocations t/nil)
+    <define>GC_MONITOR_ALLOCATIONS
+    
 ## I wrote a drop in replacement for std::vector<X> that should work with the AMCpool
 ## If you turn on USE_STD_VECTOR then gctools::Vector0<X> will inherit from std::vector<X>
 ##   if you disable USE_STD_VECTOR then the gctools::Vector0<X> will inherit from my
