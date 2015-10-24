@@ -1,0 +1,77 @@
+#### Clasp build configuration file.
+### All of these parameters can also be passed as
+### environment variables to `make`.
+### 
+### This file has to be named `local.config` to be
+### recognised by the build system.
+### 
+### Most of the options are detected and determined
+### automatically and don't have to be specified
+### manually.
+### 
+### On Linux, no options should currently be necessary
+### if you have installed the required packages.
+### 
+### On Darwin/OS X, you have to build externals-clasp
+### first and use the EXTERNALS_CLASP_DIR option to
+### tell the build system where it is located. No
+### further options should be necessary.
+### 
+
+## Where Clasp is located. Defaults to the cwd.
+#export CLASP_HOME
+
+## Path to where externals-clasp is set up.
+#export EXTERNALS_CLASP_DIR
+
+## Path to the python2 binary.
+#export PYTHON2
+
+## Where the llvm-config file resides
+#export LLVM_CONFIG
+#export LLVM_CONFIG_DEBUG = $(LLVM_CONFIG)
+#export LLVM_CONFIG_RELEASE = $(LLVM_CONFIG)
+
+## Which OS to build for -- Darwin or Linux
+#export TARGET_OS
+
+## Which address model to use; currently only 64 is
+## supported.
+#export ADDRESS-MODEL
+
+## Whether to link shared or static libraries.
+#export LINK
+
+## How many parallel jobs to use for C/++ compilation.
+#export PJOBS
+
+## Extra compile or link flags to pass in debug/
+## release mode.
+#export CLASP_DEBUG_CXXFLAGS
+#export CLASP_DEBUG_LINKFLAGS
+#export CLASP_RELEASE_CXXFLAGS
+#export CLASP_RELEASE_LINKFLAGS
+
+## You probably don't want to mess with these
+## unless you know what you're doing.
+#export LLVM_BIN_DIR
+#export GIT_COMMIT
+#export CLASP_VERSION
+#export CLASP_INTERNAL_BUILD_TARGET_DIR
+#export LIBATOMIC_OPS_SOURCE_DIR
+#export BOEHM_SOURCE_DIR
+#export BOOST_BUILD_SOURCE_DIR
+#export BOOST_BUILD_INSTALL
+#export BJAM
+#export BUILD
+#export CLASP_APP_EXECS
+#export CLASP_APP_RESOURCES_DIR
+#export CLASP_APP_RESOURCES_LIB_COMMON_DIR
+#export CLASP_DEBUG_LLVM_LIB_DIR
+#export CLASP_RELEASE_LLVM_LIB_DIR
+#export VARIANT
+#export TOOLSET
+#export DEVEMACS
+#export EXECUTABLE_DIR
+#export BINDIR
+#export EXECS

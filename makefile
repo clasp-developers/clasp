@@ -20,7 +20,7 @@ export ADDRESS-MODEL := $(or $(filter $(ADDRESS-MODEL), 64),\
 export LINK ?= shared
 export LINK := $(or $(filter $(LINK), shared),\
                     $(filter $(LINK), static),\
-                    $(error Invalid LINK: $(LINK))
+                    $(error Invalid LINK: $(LINK)))
 
 
 export VARIANT ?= release
@@ -47,6 +47,7 @@ export DEVEMACS ?= $(or $(and $(filter $(TARGET_OS),Linux), emacs -nw ./),\
                         $(and $(filter $(TARGET_OS),Darwin), open -n -a emacs ./))
 
 export LLVM_CONFIG := $(or $(wildcard $(LLVM_CONFIG)),\
+                           $(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),\
                            $(wildcard /usr/bin/llvm-config),\
                            $(wildcard /usr/bin/llvm-config*),\
                            $(error Could not find llvm-config.))
@@ -54,8 +55,9 @@ export LLVM_CONFIG := $(or $(wildcard $(LLVM_CONFIG)),\
 export GIT_COMMIT ?= $(shell git rev-parse --short HEAD || echo "unknown-commit")
 export CLASP_VERSION ?= $(shell git describe --always || echo "unknown-version")
 
-export LLVM_CONFIG_DEBUG ?= $(LLVM_CONFIG)
 export LLVM_CONFIG_RELEASE ?= $(LLVM_CONFIG)
+export LLVM_CONFIG_DEBUG ?= $(or $(wildcard $(EXTERNALS_CLASP_DIR)/build/debug/bin/llvm-config),\
+                                 $(LLVM_CONFIG))
 
 export LLVM_BIN_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --bindir)
 
@@ -66,7 +68,7 @@ export BOEHM_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/bdwgc
 export BOOST_BUILD_SOURCE_DIR ?= $(CLASP_HOME)/tools/boost_build
 export BOOST_BUILD_INSTALL ?= $(BOOST_BUILD_SOURCE_DIR)
 
-export BUILD ?= build
+export BUILD ?= $(CLASP_HOME)/src/common/build
 export BJAM ?= $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 export CLASP_APP_EXECS ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
 export CLASP_APP_RESOURCES_DIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
@@ -84,14 +86,27 @@ export CLASP_RELEASE_LINKFLAGS += -L$(CLASP_RELEASE_LLVM_LIB_DIR)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --libs)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --system-libs)
 
+ifeq ($(TARGET_OS),Darwin)
+  export INCLUDE_DIRS += /usr/local/Cellar/gmp/6.0.0a/include
+  export INCLUDE_DIRS += /opt/local/include
+  export LIB_DIRS += /usr/local/Cellar/gmp/6.0.0a/lib
+  export LIB_DIRS += /opt/local/lib
+endif
+
+include_flags := $(foreach dir,$(INCLUDE_DIRS),$(and $(wildcard $(dir)),-I$(dir)))
+lib_flags := $(foreach dir,$(LIB_DIRS),$(and $(wildcard $(dir)),-L$(dir)))
+export CLASP_DEBUG_CXXFLAGS += $(include_flags)
+export CLASP_DEBUG_LINKFLAGS += $(lib_flags)
+export CLASP_RELEASE_CXXFLAGS += $(include_flags)
+export CLASP_RELEASE_LINKFLAGS += $(lib_flags)
+
 export BINDIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)
 export EXECS ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs/
 
-export EXTRA_PATH += :$(LLVM_BIN_DIR)
-export EXTRA_PATH += :$(CLASP_HOME)/src/common
-export EXTRA_PATH += :$(BOOST_BUILD_INSTALL)/bin
-export EXTRA_PATH += :$(BINDIR)
-export PATH := $(EXTRA_PATH):$(PATH)
+export PATH := $(LLVM_BIN_DIR):$(PATH)
+export PATH := $(CLASP_HOME)/src/common:$(PATH)
+export PATH := $(BOOST_BUILD_INSTALL)/bin:$(PATH)
+export PATH := $(BINDIR):$(PATH)
 
 ifneq ($(CXXFLAGS),)
   export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
@@ -174,7 +189,9 @@ boehm-setup:
 	-(cd $(BOEHM_SOURCE_DIR); automake --add-missing )
 	(cd $(BOEHM_SOURCE_DIR); \
 		export ALL_INTERIOR_PTRS=1; \
-		CFLAGS="-DUSE_MMAP -g" \
+                CC=$(LLVM_BIN_DIR)/clang \
+		CXX=$(LLVM_BIN_DIR)/clang++ \
+                CFLAGS="-DUSE_MMAP -g" \
 		PKG_CONFIG_PATH=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR)/lib/pkgconfig/ \
 		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
 
@@ -403,6 +420,7 @@ dump-local-config:
 print-config:
 	$(info >> Makefile Configuration:)
 	$(call varprint, CLASP_HOME)
+	$(call varprint, EXTERNALS_CLASP_DIR)
 	$(call varprint, LLVM_CONFIG)
 	$(call varprint, TARGET_OS)
 	$(call varprint, ADDRESS-MODEL)
