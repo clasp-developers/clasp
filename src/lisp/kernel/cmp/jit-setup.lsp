@@ -85,7 +85,7 @@ using features defined in corePackage.cc"
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1))
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1 #'(lambda (f) t)))
 ;;    (if *debug-ir* (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-debug-irpass "createDebugIR.log")))
     (llvm-sys:do-initialization fpm)
     fpm))
@@ -98,7 +98,7 @@ using features defined in corePackage.cc"
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1))
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1 #'(lambda (f) t)))
     (llvm-sys:do-initialization fpm)
     fpm))
 
@@ -120,9 +120,9 @@ Return the module and the global variable that represents the load-time-value-ho
 (defun create-run-time-execution-engine (module)
   (let ((engine-builder (llvm-sys:make-engine-builder module))
 	(target-options (llvm-sys:make-target-options)))
-    (llvm-sys:setf-no-frame-pointer-elim target-options t)
-    (llvm-sys:setf-jitemit-debug-info target-options t)
-    (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
+;;    (llvm-sys:setf-no-frame-pointer-elim target-options t)
+;;    (llvm-sys:setf-jitemit-debug-info target-options t)
+;;    (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
     (llvm-sys:set-target-options engine-builder target-options)
     (llvm-sys:create engine-builder)))
 
@@ -174,8 +174,10 @@ No DIBuilder is defined for the default module")
 								       'llvm-sys:internal-linkage
 								       constant-data-array
 								       "constant-array"))
-	 (gep (llvm-sys:constant-expr-get-in-bounds-get-element-ptr global-var-for-constant-array
-								    (list (jit-constant-i32 0) (jit-constant-i32 0)))))
+	 (gep (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
+               nil
+               global-var-for-constant-array
+               (list (jit-constant-i32 0) (jit-constant-i32 0)))))
     gep))
 
 
@@ -221,7 +223,10 @@ No DIBuilder is defined for the default module")
   (or *the-module* (error "jit-make-global-string-ptr *the-module* is NIL"))
   (let ((unique-string-global-variable (llvm-sys:get-or-create-uniqued-string-global-variable *the-module* str (bformat nil ":::global-str-%s" str))))
 ;;    (llvm-sys:create-in-bounds-gep *irbuilder* unique-string-global-variable (list (jit-constant-i32 0) (jit-constant-i32 0)) label )
-    (llvm-sys:constant-expr-get-in-bounds-get-element-ptr unique-string-global-variable (list (jit-constant-i32 0) (jit-constant-i32 0)))
+    (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
+     nil
+     unique-string-global-variable
+     (list (jit-constant-i32 0) (jit-constant-i32 0)))
     )
 )
 
@@ -267,9 +272,9 @@ No DIBuilder is defined for the default module")
 	      (engine-builder (llvm-sys:make-engine-builder module))
 	      ;; After make-engine-builder MODULE becomes invalid!!!!!
 	      (target-options (llvm-sys:make-target-options)))
-	 (llvm-sys:setf-no-frame-pointer-elim target-options t)
-	 (llvm-sys:setf-jitemit-debug-info target-options t)
-	 (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
+;;	 (llvm-sys:setf-no-frame-pointer-elim target-options t)
+;;	 (llvm-sys:setf-jitemit-debug-info target-options t)
+;;	 (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
 	 (llvm-sys:set-target-options engine-builder target-options)
 ;;;	 (llvm-sys:set-use-mcjit engine-builder t)
 	 (let* ((execution-engine (llvm-sys:create engine-builder))

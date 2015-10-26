@@ -37,11 +37,10 @@ THE SOFTWARE.
 
 namespace llvmo {
 
-DebugLoc_sp DebugLoc_O::get(int lineno, int column, DebugInfo_sp debugInfo) {
+DebugLoc_sp DebugLoc_O::get(int lineno, int column, DINode_sp debugInfo) {
   _G();
   GC_ALLOCATE(DebugLoc_O, oip);
-  llvm::DIDescriptor *didescriptor = debugInfo->operator llvm::DIDescriptor *();
-  llvm::DebugLoc dl = llvm::DebugLoc::get(lineno, column, didescriptor->operator llvm::MDNode *());
+  llvm::DebugLoc dl = llvm::DebugLoc::get(lineno, column, debugInfo->operator llvm::MDNode *());
   oip->_DebugLoc = dl;
   return oip;
 }
@@ -64,7 +63,6 @@ void DebugLoc_O::exposePython(core::Lisp_sp lisp) {
 }
 
 MDNode_sp DebugLoc_O::getScope(LLVMContext_sp context) const {
-  _G();
-  return translate::to_object<llvm::MDNode *>::convert(this->_DebugLoc.getScope(*(context->wrappedPtr())));
+  return translate::to_object<llvm::MDNode *>::convert(this->_DebugLoc.getScope());
 }
 };

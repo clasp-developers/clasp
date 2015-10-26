@@ -116,6 +116,52 @@ struct from_object<llvm::ArrayRef<std::string>> {
     SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<std::string>") % core::_rep_(o));
   }
 };
+
+ 
+template <>
+struct from_object<llvm::ArrayRef<int>> {
+  typedef std::vector<int> DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) {
+    if (o.nilp()) {
+      _v.clear();
+      return;
+    } else if (core::List_sp lcstrs = o.asOrNull<core::Cons_O>()) {
+      for (auto cstrs : lcstrs) {
+        core::Fixnum_sp s = gc::As<core::Fixnum_sp>(core::oCar(cstrs));
+        _v.push_back(s.unsafe_fixnum());
+      }
+      return;
+    } else if (core::Vector_sp vstrs = o.asOrNull<core::Vector_O>()) {
+      _v.resize(vstrs->length());
+      for (int i(0), iEnd(vstrs->length()); i < iEnd; ++i) {
+        _v[i] = gc::As<core::Fixnum_sp>(vstrs->elt(i)).unsafe_fixnum();
+      }
+      return;
+    }
+    SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<int>") % core::_rep_(o));
+  }
+};
+
+
+ template <>
+   struct from_object<std::function<bool (const llvm::Function& )> > {
+   // createCFGSimplificationPass takes a function object like this as an argument
+   // as of llvm3.7 - for now wrap a lambda
+  typedef std::function<bool (const llvm::Function& )> DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) {
+    if ( core::Function_sp func = gc::As<core::Function_sp>(o) ) {
+        printf("%s:%d  translate::from_object<std::function<bool (const llvm::Function&)> passing dummy for now \n", __FILE__, __LINE__ );
+        _v = std::function<bool (const llvm::Function&)> ([&func] (const llvm::Function& f)->bool {
+          return true;
+      }
+        );
+      return;
+    }
+    SIMPLE_ERROR(BF("Could not convert %s to std::function<bool (const llvm::Function&)") % core::_rep_(o));
+  }
+};
 };
 
 #endif

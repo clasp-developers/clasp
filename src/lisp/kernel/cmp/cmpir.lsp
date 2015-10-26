@@ -74,7 +74,7 @@
 
 
 (defun irc-create-landing-pad (num-clauses &optional (name ""))
-    (llvm-sys:create-landing-pad *irbuilder* +exception-struct+ (irc-personality-function) num-clauses name))
+    (llvm-sys:create-landing-pad *irbuilder* +exception-struct+ num-clauses name))
 
 (defun irc-add-clause (landpad type)
   (llvm-sys:add-clause landpad type))
@@ -386,8 +386,7 @@
 
 
 (defun irc-generate-terminate-code ()
-      (let* ((personality-function (get-function-or-error *the-module* "__gxx_personality_v0"))
-	     (landpad (llvm-sys:create-landing-pad *irbuilder* +exception-struct+ personality-function 1 "")))
+      (let* ((landpad (irc-create-landing-pad 1)))
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get +i8*+))
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
@@ -400,8 +399,7 @@
 
 
 (defun irc-generate-unwind-protect-landing-pad-code (env)
-      (let* ((personality-function (get-function-or-error *the-module* "__gxx_personality_v0"))
-	     (landpad (llvm-sys:create-landing-pad *irbuilder* +exception-struct+ personality-function 1 "")))
+      (let* ((landpad (irc-create-landing-pad 1)))
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get +i8*+))
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
@@ -520,7 +518,7 @@
   (if (member where *features*)
       (progn
         (let ((llt (get-function-or-error *the-module* "lowLevelTrace")))
-          (llvm-sys:create-call1 *irbuilder* llt (jit-constant-i32 *next-low-level-trace-index*) ""))
+          (llvm-sys:create-call-array-ref *irbuilder* llt (list (jit-constant-i32 *next-low-level-trace-index*)) ""))
         (setq *next-low-level-trace-index* (+ 1 *next-low-level-trace-index*)))
       nil))
 
@@ -716,6 +714,7 @@ and then the irbuilder-alloca, irbuilder-body."
 	 (irbuilder-cur (llvm-sys:make-irbuilder *llvm-context*))
 	 (irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
 	 (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*)))
+    (llvm-sys:set-personality-fn fn (irc-personality-function))
     (let ((args (llvm-sys:get-argument-list fn)))
       (mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
 	      (llvm-sys:get-argument-list fn) argument-names))
@@ -752,10 +751,7 @@ and then the irbuilder-alloca, irbuilder-body."
       (irc-br return-block)
       (irc-begin-landing-pad-block (irc-get-cleanup-landing-pad-block env)
 				   (irc-get-function-for-environment env))
-      (let* ((personality-function (get-function-or-error *the-module* "__gxx_personality_v0"))
-	     (landpad (llvm-sys:create-landing-pad *irbuilder*
-						   +exception-struct+
-						   personality-function 0 "")))
+      (let* ((landpad (irc-create-landing-pad 0)))
 	(llvm-sys:set-cleanup landpad t)
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
@@ -1061,18 +1057,10 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 (defun irc-create-call (function-name args &optional (label ""))
-;;  (check-debug-info-setup *irbuilder*)
+  ;;  (check-debug-info-setup *irbuilder*)
   (let* ((func (get-function-or-error *the-module* function-name (car args)))
 	 (ra args)
-         (code (case (length args)
-                 (0 (llvm-sys:create-call-array-ref *irbuilder* func nil label ))
-                 (1 (llvm-sys:create-call1 *irbuilder* func (pop ra) label))
-                 (2 (llvm-sys:create-call2 *irbuilder* func (pop ra) (pop ra) label))
-                 (3 (llvm-sys:create-call3 *irbuilder* func (pop ra) (pop ra) (pop ra) label))
-                 (4 (llvm-sys:create-call4 *irbuilder* func (pop ra) (pop ra) (pop ra) (pop ra) label))
-                 (5 (llvm-sys:create-call5 *irbuilder* func (pop ra) (pop ra) (pop ra) (pop ra) (pop ra) label))
-                 (otherwise
-		  (llvm-sys:create-call-array-ref *irbuilder* func ra label)))))
+         (code (llvm-sys:create-call-array-ref *irbuilder* func ra label)))
     (unless code (error "irc-create-call returning nil"))
     code))
 

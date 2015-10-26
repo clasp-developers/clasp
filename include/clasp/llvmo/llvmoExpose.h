@@ -1457,7 +1457,7 @@ public:
   virtual ~ConstantExpr_O(){};
 
 public:
-  static Constant_sp getInBoundsGetElementPtr(Constant_sp constant, core::List_sp idxList);
+  static Constant_sp getInBoundsGetElementPtr(llvm::Type* element_type, Constant_sp constant, core::List_sp idxList);
 
 }; // ConstantExpr_O
 }; // llvmo
@@ -1726,8 +1726,8 @@ struct to_object<llvm::ExecutionEngine *> {
 #if LLVM_VERSION<370
 namespace llvmo {
 FORWARD(DataLayoutPass);
-class DataLayoutPass_O : public ImmutablePass_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DataLayoutPass, DataLayoutPass_O, "DataLayoutPass", ImmutablePass_O);
+c l a s s DataLayoutPass_O : public ImmutablePass_O {
+  L I S P_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DataLayoutPass, DataLayoutPass_O, "DataLayoutPass", ImmutablePass_O);
   typedef llvm::DataLayoutPass ExternalType;
   typedef llvm::DataLayoutPass *PointerToExternalType;
 
@@ -1791,8 +1791,8 @@ struct to_object<const llvm::DataLayoutPass *> {
 // LLVM3.6
 namespace llvmo {
 FORWARD(TargetLibraryInfo);
-class TargetLibraryInfo_O : public ImmutablePass_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetLibraryInfo, TargetLibraryInfo_O, "TargetLibraryInfo", ImmutablePass_O);
+c l a s s TargetLibraryInfo_O : public ImmutablePass_O {
+  L I S P_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetLibraryInfo, TargetLibraryInfo_O, "TargetLibraryInfo", ImmutablePass_O);
   typedef llvm::TargetLibraryInfo ExternalType;
   typedef llvm::TargetLibraryInfo *PointerToExternalType;
 
@@ -2325,7 +2325,7 @@ public:
   /*! Set the current debug location for generated code */
   void SetCurrentDebugLocation(DebugLoc_sp loc);
   /*! Set the current debug location by building a DebugLoc on the fly */
-  void SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope);
+  void SetCurrentDebugLocationToLineColumnScope(int line, int col, DINode_sp scope);
   core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
 }; // IRBuilderBase_O
 }; // llvmo
@@ -3842,6 +3842,10 @@ struct from_object<llvm::Type *, std::true_type> {
   DeclareType _v;
   from_object(T_P object) {
     _G();
+    if ( object.nilp() ) {
+      this->_v = NULL;
+      return;
+    }
     this->_v = (gc::As<llvmo::Type_sp>(object)->wrappedPtr());
   };
 };

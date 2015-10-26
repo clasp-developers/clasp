@@ -162,7 +162,7 @@ public:
                                                                             Diagnostics *Error);
 
 private:
-  Registry() LLVM_DELETED_FUNCTION;
+  Registry(); //LLVM_DELETED_FUNCTION;
 };
 
 void initialize_Registry();

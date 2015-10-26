@@ -153,6 +153,7 @@
 	   (*entry-irbuilder* (llvm-sys:make-irbuilder cmp:*llvm-context*))
 	   (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
 	   (body-block (cmp:irc-basic-block-create "body")))
+      (llvm-sys:set-personality-fn fn (cmp:irc-personality-function))
       (llvm-sys:add-fn-attr fn 'llvm-sys:attribute-uwtable)
       (push fn cmp:*all-functions-for-one-compile*)
       (cc-dbg-when *debug-log*

@@ -285,12 +285,12 @@ void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passMa
   if (stream.nilp()) {
     SIMPLE_ERROR(BF("You must pass a valid stream"));
   }
-  llvm::raw_ostream *ostreamP;
-  std::string stringOutput;
+  llvm::raw_pwrite_stream *ostreamP;
+  llvm::SmallString<1024> stringOutput;
   bool stringOutputStream = false;
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
     (void)sos;
-    ostreamP = new llvm::raw_string_ostream(stringOutput);
+    ostreamP = new llvm::raw_svector_ostream(stringOutput);
     stringOutputStream = true;
   } else if (core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>()) {
     ostreamP = new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true);
@@ -300,8 +300,7 @@ void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passMa
   } else {
     SIMPLE_ERROR(BF("Illegal file type %s for addPassesToEmitFileAndRunPassManager") % _rep_(stream));
   }
-  llvm::formatted_raw_ostream FOS(*ostreamP, false);
-  if (this->wrappedPtr()->addPassesToEmitFile(*passManager->wrappedPtr(), FOS, FileType, true, nullptr, nullptr)) {
+  if (this->wrappedPtr()->addPassesToEmitFile(*passManager->wrappedPtr(), *ostreamP, FileType, true, nullptr, nullptr)) {
     delete ostreamP;
     SIMPLE_ERROR(BF("Could not generate file type"));
   }
@@ -314,7 +313,7 @@ void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passMa
 void TargetMachine_O::exposeCando(core::Lisp_sp lisp) {
   _G();
   core::externalClass_<TargetMachine_O>()
-      .def("getSubtargetImpl", (const llvm::TargetSubtargetInfo *(llvm::TargetMachine::*)() const) & llvm::TargetMachine::getSubtargetImpl)
+      .def("getDataLayout", &llvm::TargetMachine::getDataLayout)
       .def("addPassesToEmitFileAndRunPassManager", &TargetMachine_O::addPassesToEmitFileAndRunPassManager);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenFileType);
@@ -636,6 +635,7 @@ TargetOptions_sp TargetOptions_O::make() {
   return self;
 };
 
+#if LLVM_VERSION<370
 bool TargetOptions_O::NoFramePointerElim() {
   return this->wrappedPtr()->NoFramePointerElim;
 }
@@ -644,7 +644,9 @@ void TargetOptions_O::setfNoFramePointerElim(bool val) {
   // if val == true then turn OFF FramePointerElim
   this->wrappedPtr()->NoFramePointerElim = val;
 }
+#endif
 
+#if LLVM_VERSION<370
 bool TargetOptions_O::JITEmitDebugInfo() {
   return this->wrappedPtr()->JITEmitDebugInfo;
 }
@@ -660,18 +662,19 @@ bool TargetOptions_O::JITEmitDebugInfoToDisk() {
 void TargetOptions_O::setfJITEmitDebugInfoToDisk(bool val) {
   this->wrappedPtr()->JITEmitDebugInfoToDisk = val;
 }
-
+#endif
 EXPOSE_CLASS(llvmo, TargetOptions_O);
 
 void TargetOptions_O::exposeCando(core::Lisp_sp lisp) {
   _G();
   core::externalClass_<TargetOptions_O>()
-      .def("NoFramePointerElim", &TargetOptions_O::NoFramePointerElim)
-      .def("setfNoFramePointerElim", &TargetOptions_O::setfNoFramePointerElim)
-      .def("JITEmitDebugInfo", &TargetOptions_O::JITEmitDebugInfo)
-      .def("setfJITEmitDebugInfo", &TargetOptions_O::setfJITEmitDebugInfo)
-      .def("JITEmitDebugInfoToDisk", &TargetOptions_O::JITEmitDebugInfoToDisk)
-      .def("setfJITEmitDebugInfoToDisk", &TargetOptions_O::setfJITEmitDebugInfoToDisk);
+//      .def("NoFramePointerElim", &TargetOptions_O::NoFramePointerElim)
+//      .def("setfNoFramePointerElim", &TargetOptions_O::setfNoFramePointerElim)
+//      .def("JITEmitDebugInfo", &TargetOptions_O::JITEmitDebugInfo)
+//      .def("setfJITEmitDebugInfo", &TargetOptions_O::setfJITEmitDebugInfo)
+//      .def("JITEmitDebugInfoToDisk", &TargetOptions_O::JITEmitDebugInfoToDisk)
+//      .def("setfJITEmitDebugInfoToDisk", &TargetOptions_O::setfJITEmitDebugInfoToDisk)
+    ;
   Defun_maker(LlvmoPkg, TargetOptions);
 };
 
@@ -800,7 +803,8 @@ EXPOSE_CLASS(llvmo, Metadata_O);
 void Metadata_O::exposeCando(core::Lisp_sp lisp) {
   _G();
   core::externalClass_<Metadata_O>()
-      .def("dump", &llvm::Metadata::dump);
+//      .def("dump", &llvm::Metadata::dump)
+    ;
 };
 
 void Metadata_O::exposePython(core::Lisp_sp lisp) {
@@ -889,7 +893,7 @@ Module_sp af_parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context) {
   if (std::error_code ec = eo_membuf.getError()) {
     SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % ec.message());
   }
-  llvm::ErrorOr<llvm::Module *> eom = llvm::parseBitcodeFile(eo_membuf.get()->getMemBufferRef(), *(context->wrappedPtr()));
+  llvm::ErrorOr<std::unique_ptr<llvm::Module>> eom = llvm::parseBitcodeFile(eo_membuf.get()->getMemBufferRef(), *(context->wrappedPtr()));
   if (std::error_code eo2 = eom.getError()) {
     SIMPLE_ERROR(BF("Could not parse bitcode for file %s - error: %s") % filename->get() % eo2.message());
   }
@@ -904,7 +908,7 @@ Module_sp af_parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context) {
 	engine->addNamedModule(filename->get(),omodule);
 	LOG(BF("Added module: %s") % filename->get());
 #else
-  Module_sp omodule = core::RP_Create_wrapped<Module_O, llvm::Module *>(eom.get());
+        Module_sp omodule = core::RP_Create_wrapped<Module_O, llvm::Module *>(eom.get().release());
 #endif
   return omodule;
 };
@@ -1160,7 +1164,7 @@ void Module_O::exposeCando(core::Lisp_sp lisp) {
       .def("moduleDelete", &Module_O::moduleDelete)
       .def("setTargetTriple", &llvm::Module::setTargetTriple)
       .def("getTargetTriple", &llvm::Module::getTargetTriple)
-      .def("setDataLayout", (void (Module::*)(const DataLayout *)) & llvm::Module::setDataLayout);
+      .def("setDataLayout", (void (Module::*)(const DataLayout &)) &llvm::Module::setDataLayout);
   core::af_def(LlvmoPkg, "make-Module", &Module_O::make, ARGS_Module_O_make, DECL_Module_O_make, DOCS_Module_O_make);
   SYMBOL_EXPORT_SC_(LlvmoPkg, verifyModule);
   Defun(verifyModule);
@@ -1385,11 +1389,12 @@ EXPOSE_CLASS(llvmo, TargetSubtargetInfo_O);
 void TargetSubtargetInfo_O::exposeCando(core::Lisp_sp lisp) {
   _G();
   core::externalClass_<TargetSubtargetInfo_O>()
-      .def("getDataLayout", &llvm::TargetSubtargetInfo::getDataLayout);
+//      .def("getDataLayout", &llvm::TargetSubtargetInfo::getDataLayout)
+    ;
+                                                                         
 };
 
 void TargetSubtargetInfo_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1417,6 +1422,7 @@ void DataLayout_O::exposePython(core::Lisp_sp lisp) {
 };
 }; // llvmo
 
+#if LLVM_VERSION<370
 namespace llvmo {
 EXPOSE_CLASS(llvmo, DataLayoutPass_O);
 
@@ -1441,6 +1447,7 @@ void DataLayoutPass_O::exposePython(core::Lisp_sp lisp) {
   IMPLEMENT_ME();
 };
 }; // llvmo
+#endif
 
 #if LLVM_VERSION<370
 // LLVM 3.6
@@ -1876,7 +1883,7 @@ namespace llvmo {
 
 namespace llvmo {
 
-Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(Constant_sp constant, core::List_sp idxList) {
+Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(llvm::Type* etype, Constant_sp constant, core::List_sp idxList) {
   _G();
   GC_ALLOCATE(Constant_O, res);
   vector<llvm::Constant *> vector_IdxList;
@@ -1884,7 +1891,8 @@ Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(Constant_sp constant, core:
     vector_IdxList.push_back(gc::As<Constant_sp>(oCar(cur))->wrappedPtr());
   }
   llvm::ArrayRef<llvm::Constant *> array_ref_vector_IdxList(vector_IdxList);
-  llvm::Constant *llvm_res = llvm::ConstantExpr::getInBoundsGetElementPtr(constant->wrappedPtr(), array_ref_vector_IdxList);
+  llvm::Type* ct = etype;
+  llvm::Constant *llvm_res = llvm::ConstantExpr::getInBoundsGetElementPtr(ct,constant->wrappedPtr(), array_ref_vector_IdxList);
   res->set_wrapped(llvm_res);
   return res;
 }
@@ -2689,10 +2697,9 @@ void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
   //	printf("                       new DebugLocation: %d\n", dlnew.getLine() );
 }
 
-void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope) {
+void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int line, int col, DINode_sp scope) {
   this->_CurrentDebugLocationSet = true;
-  llvm::DIDescriptor *didescriptor = scope->operator llvm::DIDescriptor *();
-  llvm::MDNode *mdnode = didescriptor->operator llvm::MDNode *();
+  llvm::MDNode *mdnode = scope->operator llvm::MDNode *();
   llvm::DebugLoc dl = llvm::DebugLoc::get(line, col, mdnode);
   this->wrappedPtr()->SetCurrentDebugLocation(dl);
 }
@@ -2862,7 +2869,7 @@ void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
     .def("CreateFence", &IRBuilder_O::ExternalType::CreateFence)
     .def("CreateAtomicCmpXchg", &IRBuilder_O::ExternalType::CreateAtomicCmpXchg)
     .def("CreateAtomicRMW", &IRBuilder_O::ExternalType::CreateAtomicRMW)
-    .def("CreateConstGEP1-32", &IRBuilder_O::ExternalType::CreateConstGEP1_32)
+//    .def("CreateConstGEP1-32", &IRBuilder_O::ExternalType::CreateConstGEP1_32)
     .def("CreateConstInBoundsGEP1-32", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_32)
     .def("CreateConstGEP2-32", &IRBuilder_O::ExternalType::CreateConstGEP2_32)
     .def("CreateConstInBoundsGEP2-32", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_32)
@@ -2928,6 +2935,7 @@ void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
   llvm::CallInst *(IRBuilder_O::ExternalType::*CreateCallArrayRef)(llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name) = &IRBuilder_O::ExternalType::CreateCall;
   irbuilder.def("CreateCallArrayRef", CreateCallArrayRef);
 
+#if LLVM_VERSION<370
   AVOID_OVERLOAD(irbuilder, llvm::CallInst *, CreateCall, 0, (llvm::Value *, const llvm::Twine &));
   AVOID_OVERLOAD(irbuilder, llvm::CallInst *, CreateCall, 1, (llvm::Value *, llvm::Value *, const llvm::Twine &));
   // Add the one for variable numbers of arguments
@@ -2937,13 +2945,21 @@ void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
     .def("CreateCall3", &IRBuilder_O::ExternalType::CreateCall3)
     .def("CreateCall4", &IRBuilder_O::ExternalType::CreateCall4)
     .def("CreateCall5", &IRBuilder_O::ExternalType::CreateCall5);
-
+#endif
   irbuilder
     .def("CreateSelect", &IRBuilder_O::ExternalType::CreateSelect)
     .def("CreateVAArg", &IRBuilder_O::ExternalType::CreateVAArg)
-    .def("CreateExtractElement", &IRBuilder_O::ExternalType::CreateExtractElement)
-    .def("CreateInsertElement", &IRBuilder_O::ExternalType::CreateInsertElement)
-    .def("CreateShuffleVector", &IRBuilder_O::ExternalType::CreateShuffleVector)
+                 ;
+//    .def("CreateExtractElement", &IRBuilder_O::ExternalType::CreateExtractElement)
+  AVOID_OVERLOAD(irbuilder, llvm::Value*, CreateExtractElement, _value, (llvm::Value*, llvm::Value*, const llvm::Twine &));
+  AVOID_OVERLOAD(irbuilder, llvm::Value*, CreateExtractElement, _uint64, (llvm::Value*, uint64_t, const llvm::Twine &));
+//    .def("CreateInsertElement", &IRBuilder_O::ExternalType::CreateInsertElement)
+  AVOID_OVERLOAD(irbuilder, llvm::Value*, CreateInsertElement, _value, (llvm::Value*, llvm::Value*, llvm::Value*, const llvm::Twine &));
+  AVOID_OVERLOAD(irbuilder, llvm::Value*, CreateInsertElement, _uint64, (llvm::Value*, llvm::Value*, uint64_t, const llvm::Twine &));
+//    .def("CreateShuffleVector", &IRBuilder_O::ExternalType::CreateShuffleVector)
+  AVOID_OVERLOAD(irbuilder, llvm::Value*, CreateShuffleVector, _value, (llvm::Value*, llvm::Value*, llvm::Value*, const llvm::Twine &));
+  AVOID_OVERLOAD(irbuilder, llvm::Value*, CreateShuffleVector, _array_ints, (llvm::Value*, llvm::Value*, llvm::ArrayRef<int>, const llvm::Twine &));
+  irbuilder
     .def("CreateLandingPad", &IRBuilder_O::ExternalType::CreateLandingPad)
     .def("CreateIsNull", &IRBuilder_O::ExternalType::CreateIsNull)
     .def("CreateIsNotNull", &IRBuilder_O::ExternalType::CreateIsNotNull)
@@ -3140,6 +3156,7 @@ void Function_O::exposeCando(core::Lisp_sp lisp) {
       .def("empty", &llvm::Function::empty)
       .def("arg_size", &llvm::Function::arg_size)
       .def("setDoesNotThrow", &llvm::Function::setDoesNotThrow)
+      .def("setPersonalityFn", &llvm::Function::setPersonalityFn)
       .def("doesNotThrow", &llvm::Function::doesNotThrow)
       .def("setDoesNotReturn", &llvm::Function::setDoesNotReturn)
       .def("doesNotReturn", &llvm::Function::doesNotReturn)

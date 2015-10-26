@@ -69,73 +69,59 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoExpose.h>
 
 namespace llvmo {
-FORWARD(DebugInfo);
-class DebugInfo_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DebugInfo_O, "DebugInfo");
-
+FORWARD(DINode);
+class DINode_O : public MDNode_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DINode, DINode_O, "DINode", MDNode_O );
+  typedef llvm::DINode ExternalType;
+  typedef ExternalType* PointerToExternalType;
 public:
-  virtual operator llvm::DIDescriptor *() { SUBIMP(); };
-  virtual operator llvm::DICompositeType *() { SUBIMP(); };
-  virtual operator llvm::DIType *() { SUBIMP(); };
-  virtual ~DebugInfo_O(){};
-}; // DebugInfo_O
+  typedef llvm::DINode OtherType;
+public:
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  virtual operator llvm::MDNode *() { return reinterpret_cast<llvm::MDNode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+ 
+  //	virtual llvm::DINode* operator ->() const { return (llvm::DINode*)(this);};
+ DINode_O() : Base() {};
+  virtual ~DINode_O(){};
+}; // DINode_O
 }; // llvmo
-TRANSLATE(llvmo::DebugInfo_O);
-
-namespace llvmo {
-FORWARD(DIDescriptor);
-class DIDescriptor_O : public DebugInfo_O, public llvm::DIDescriptor {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DIDescriptor_O, "DIDescriptor");
-
-public:
-  typedef llvm::DIDescriptor OtherType;
-
-public:
-  virtual operator llvm::DIDescriptor *() { return this; };
-  //	virtual llvm::DIDescriptor* operator ->() const { return (llvm::DIDescriptor*)(this);};
-  DIDescriptor_O(const OtherType &val) : llvm::DIDescriptor(val){};
-  DIDescriptor_O(){};
-  virtual ~DIDescriptor_O(){};
-}; // DIDescriptor_O
-}; // llvmo
-TRANSLATE(llvmo::DIDescriptor_O);
+TRANSLATE(llvmo::DINode_O);
 
 namespace translate {
-template <>
-struct to_object<llvm::DIDescriptor> {
-  static core::T_sp convert(const llvm::DIDescriptor &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DIDescriptor_O, obj, val);
-    printf("to_object<llvm::DIDescriptor>\n");
-    return ((obj));
+  template <>
+    struct from_object<llvm::DINode*,std::true_type> {
+    typedef llvm::DINode* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DINode_sp>(o)->wrappedPtr()) {};
   };
-};
-template <>
-struct from_object<llvm::DIDescriptor, std::true_type> {
-  typedef llvm::DIDescriptor &DeclareType;
-  DeclareType _v;
-  //! Handle inheritance by casting up to DebugInfo_O and then down to the desired class
-  from_object(T_P object) : _v(*(gc::As<llvmo::DebugInfo_sp>(object)->operator llvm::DIDescriptor *())){};
-};
+  template <>
+    struct to_object<llvm::DINode*> {
+    static core::T_sp convert(const llvm::DINode* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DINode_O, llvm::DINode*>(const_cast<llvm::DINode*>(ptr)));
+    };
+  };
 };
 
 namespace llvmo {
 FORWARD(DIScope);
-class DIScope_O : public DebugInfo_O, public llvm::DIScope {
-  LISP_BASE1(DebugInfo_O)
-  LISP_CLASS(llvmo, LlvmoPkg, DIScope_O, "discope");
-
-private:
-  typedef llvm::DIScope OtherType;
-
+class DIScope_O : public DINode_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DIScope, DIScope_O, "discope", DINode_O);
+  typedef llvm::DIScope ExternalType;
+  typedef ExternalType* PointerToExternalType;
 public:
-  virtual operator llvm::DIDescriptor *() { return this; };
-  DIScope_O(const OtherType &val) : llvm::DIScope(val){};
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
   DIScope_O(){};
   virtual ~DIScope_O() {}
-
 }; // DIScope_O
 }; // llvmo
 TRANSLATE(llvmo::DIScope_O);
@@ -143,445 +129,487 @@ TRANSLATE(llvmo::DIScope_O);
 /* to_object translators */
 
 namespace translate {
-template <>
-struct to_object<llvm::DIScope> {
-  static core::T_sp convert(const llvm::DIScope &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DIScope_O, obj, val);
-    return ((obj));
+  template <>
+    struct from_object<llvm::DIScope*,std::true_type> {
+    typedef llvm::DIScope* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIScope_sp>(o)->wrappedPtr()) {};
   };
-};
-template <>
-struct from_object<llvm::DIScope, std::true_type> {
-  typedef llvm::DIScope &DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(*gc::As<llvmo::DIScope_sp>(object)){};
-};
+  template <>
+    struct to_object<llvm::DIScope*> {
+    static core::T_sp convert(const llvm::DIScope* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DIScope_O, llvm::DIScope*>(const_cast<llvm::DIScope*>(ptr)));
+    };
+  };
 };
 
 namespace llvmo {
-FORWARD(DIArray);
-class DIArray_O : public DebugInfo_O, public llvm::DIArray {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DIArray_O, "diarray");
-  typedef llvm::DIArray OtherType;
-
+FORWARD(DINodeArray);
+ class DINodeArray_O : public core::T_O {
+   LISP_BASE1(core::T_O);
+  LISP_CLASS(llvmo, LlvmoPkg, DINodeArray_O, "DINodeArray");
+  typedef llvm::DINodeArray OtherType;
+ private:
+  OtherType _Val;
 public:
-  DIArray_O(const OtherType &val) : llvm::DIArray(val){};
-  DIArray_O() : Base(){};
-  virtual ~DIArray_O() {}
+  OtherType& get() { return this->_Val;};
+ DINodeArray_O(const OtherType& v) : _Val(v) {};
+  DINodeArray_O() : Base(){};
+  virtual ~DINodeArray_O() {}
 
-}; // DIArray_O
+}; // DINodeArray_O
 }; // llvmo
-TRANSLATE(llvmo::DIArray_O);
+TRANSLATE(llvmo::DINodeArray_O);
 
 namespace translate {
 template <>
-struct to_object<llvm::DIArray> {
-  static core::T_sp convert(const llvm::DIArray &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DIArray_O, obj, val);
+struct to_object<llvm::DINodeArray> {
+  static core::T_sp convert(const llvm::DINodeArray &val) {
+    GC_ALLOCATE_VARIADIC(llvmo::DINodeArray_O, obj, val);
     return ((obj));
   };
 };
 template <>
-struct from_object<llvm::DIArray, std::true_type> {
-  typedef llvm::DIArray &DeclareType;
+struct from_object<llvm::DINodeArray, std::true_type> {
+  typedef llvm::DINodeArray &DeclareType;
   DeclareType _v;
-  from_object(T_P object) : _v(*(gc::As<llvmo::DIArray_sp>(object))){};
+ from_object(T_P object) : _v(gc::As<llvmo::DINodeArray_sp>(object)->get()) {};
 };
 };
+
 
 namespace llvmo {
-FORWARD(DITypeArray);
-class DITypeArray_O : public DebugInfo_O, public llvm::DITypeArray {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DITypeArray_O, "ditypearray");
-  typedef llvm::DITypeArray OtherType;
-
+FORWARD(DITypeRefArray);
+ class DITypeRefArray_O : public core::T_O {
+   LISP_BASE1(core::T_O);
+  LISP_CLASS(llvmo, LlvmoPkg, DITypeRefArray_O, "DITypeRefArray");
+  typedef llvm::DITypeRefArray OtherType;
+ private:
+  OtherType _Val;
 public:
-  DITypeArray_O(const OtherType &val) : llvm::DITypeArray(val){};
-  DITypeArray_O() : Base(){};
-  virtual ~DITypeArray_O() {}
-
-}; // DITypeArray_O
+  OtherType& get() { return this->_Val;};
+ DITypeRefArray_O(const OtherType &val) : _Val(val) {};
+ DITypeRefArray_O() : Base(), _Val(NULL) {};
+  virtual ~DITypeRefArray_O() {}
+}; // DITypeRefArray_O
 }; // llvmo
-TRANSLATE(llvmo::DITypeArray_O);
+TRANSLATE(llvmo::DITypeRefArray_O);
 
 namespace translate {
 template <>
-struct to_object<llvm::DITypeArray> {
-  static core::T_sp convert(const llvm::DITypeArray &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DITypeArray_O, obj, val);
+struct to_object<llvm::DITypeRefArray> {
+  static core::T_sp convert(const llvm::DITypeRefArray &val) {
+    GC_ALLOCATE_VARIADIC(llvmo::DITypeRefArray_O, obj, val);
     return ((obj));
   };
 };
 template <>
-struct from_object<llvm::DITypeArray, std::true_type> {
-  typedef llvm::DITypeArray &DeclareType;
+struct from_object<llvm::DITypeRefArray, std::true_type> {
+  typedef llvm::DITypeRefArray &DeclareType;
   DeclareType _v;
-  from_object(T_P object) : _v(*(gc::As<llvmo::DITypeArray_sp>(object))){};
+ from_object(core::T_sp object) : _v(gc::As<llvmo::DITypeRefArray_sp>(object)->get()){};
 };
 };
+
+
 
 namespace llvmo {
 FORWARD(DIFile);
-class DIFile_O : public DebugInfo_O, public llvm::DIFile {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DIFile_O, "difile");
-  typedef llvm::DIFile OtherType;
-
-private:
+class DIFile_O : public DIScope_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DIFile, DIFile_O, "difile", DIScope_O);
+  typedef llvm::DIFile ExternalType;
+  typedef ExternalType* PointerToExternalType;
 public:
-  virtual operator llvm::DIDescriptor *() { return this; };
-  DIFile_O() : Base(){};
-  DIFile_O(const llvm::DIFile &val) : llvm::DIFile(val){};
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DIFile_O(){};
   virtual ~DIFile_O() {}
-
-}; // DIFile_O
+};
 }; // llvmo
 TRANSLATE(llvmo::DIFile_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <>
-struct to_object<llvm::DIFile> {
-  static core::T_sp convert(const llvm::DIFile &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DIFile_O, obj, val);
-    return (obj);
+  template <>
+    struct from_object<llvm::DIFile*,std::true_type> {
+    typedef llvm::DIFile* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIFile_sp>(o)->wrappedPtr()) {};
+  };
+  template <>
+    struct to_object<llvm::DIFile*> {
+    static core::T_sp convert(const llvm::DIFile* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DIFile_O, llvm::DIFile*>(const_cast<llvm::DIFile*>(ptr)));
+    };
   };
 };
-template <>
-struct from_object<llvm::DIFile, std::true_type> {
-  typedef llvm::DIFile &DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(*gc::As<llvmo::DIFile_sp>(object)){};
+
+namespace llvmo {
+FORWARD(DILocalScope);
+class DILocalScope_O : public DIScope_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DILocalScope, DILocalScope_O, "dilocal-scope", DIScope_O);
+  typedef llvm::DILocalScope ExternalType;
+  typedef ExternalType* PointerToExternalType;
+public:
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DILocalScope_O(){};
+  virtual ~DILocalScope_O() {}
 };
+}; // llvmo
+TRANSLATE(llvmo::DILocalScope_O);
+/* from_object translators */
+/* to_object translators */
+
+namespace translate {
+  template <>
+    struct from_object<llvm::DILocalScope*,std::true_type> {
+    typedef llvm::DILocalScope* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DILocalScope_sp>(o)->wrappedPtr()) {};
+  };
+  template <>
+    struct to_object<llvm::DILocalScope*> {
+    static core::T_sp convert(const llvm::DILocalScope* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DILocalScope_O, llvm::DILocalScope*>(const_cast<llvm::DILocalScope*>(ptr)));
+    };
+  };
 };
 
 namespace llvmo {
 FORWARD(DISubprogram);
-class DISubprogram_O : public DebugInfo_O, public llvm::DISubprogram {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DISubprogram_O, "DISubprogram");
-  typedef llvm::DISubprogram OtherType;
-
-private:
+class DISubprogram_O : public DILocalScope_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DISubprogram, DISubprogram_O, "disubprogram", DILocalScope_O);
+  typedef llvm::DISubprogram ExternalType;
+  typedef ExternalType* PointerToExternalType;
 public:
-  virtual operator llvm::DIDescriptor *() { return this; };
-  DISubprogram_O() : Base(){};
-  DISubprogram_O(const OtherType &val) : OtherType(val){};
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DISubprogram_O(){};
   virtual ~DISubprogram_O() {}
-
-}; // DISubprogram_O
+};
 }; // llvmo
 TRANSLATE(llvmo::DISubprogram_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <>
-struct to_object<llvm::DISubprogram> {
-  static core::T_sp convert(const llvm::DISubprogram &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DISubprogram_O, obj, val);
-    return (obj);
+  template <>
+    struct from_object<llvm::DISubprogram*,std::true_type> {
+    typedef llvm::DISubprogram* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DISubprogram_sp>(o)->wrappedPtr()) {};
   };
-};
-#if 0 // old style
-    template <>
-    struct from_object<llvm::DISubprogram,std::true_type>
-    {
-	typedef llvm::DISubprogram& DeclareType;
-	static DeclareType convert(core::T_sp object)
-	{
-	    ASSERT(object.objectp());
-	    llvm::DIDescriptor* didescriptor = object.as<llvmo::DebugInfo_O>()->operator llvm::DIDescriptor* ();
-	    if ( didescriptor->isSubprogram() )
-	    {
-		return *static_cast<llvm::DISubprogram*>(didescriptor);
-	    }
-	    SIMPLE_ERROR(BF("Cannot convert %s to llvm::DISubprogram") % _rep_(object) );
-	}
+  template <>
+    struct to_object<llvm::DISubprogram*> {
+    static core::T_sp convert(const llvm::DISubprogram* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DISubprogram_O, llvm::DISubprogram*>(const_cast<llvm::DISubprogram*>(ptr)));
     };
-
-#endif
+  };
 };
 
 namespace llvmo {
 FORWARD(DIType);
-class DIType_O : public DebugInfo_O, public llvm::DIType {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DIType_O, "DIType");
-  typedef llvm::DIType OtherType;
-
-private:
+class DIType_O : public DIScope_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DIType, DIType_O, "ditype", DIScope_O);
+  typedef llvm::DIType ExternalType;
+  typedef ExternalType* PointerToExternalType;
 public:
-  virtual operator llvm::DIDescriptor *() { return this; };
-  virtual operator llvm::DIType *() { return this; };
-  DIType_O() : Base(){};
-  DIType_O(const OtherType &val) : OtherType(val){};
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DIType_O(){};
   virtual ~DIType_O() {}
-
-}; // DIType_O
+};
 }; // llvmo
 TRANSLATE(llvmo::DIType_O);
-
-namespace translate {
-template <>
-struct to_object<llvm::DIType> {
-  static core::T_sp convert(const llvm::DIType &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DIType_O, obj, val);
-    return (obj);
-  };
-};
-template <>
-struct from_object<llvm::DIType, std::true_type> {
-  typedef llvm::DIType &DeclareType;
-  DeclareType _v;
-  //! Handle inheritance by casting up to DebugInfo_O and then down to the desired class
-  from_object(T_P object) : _v(*(gc::As<llvmo::DebugInfo_sp>(object)->operator llvm::DIType *())){};
-};
-};
-
-namespace llvmo {
-FORWARD(DIDerivedType);
-class DIDerivedType_O : public DebugInfo_O, public llvm::DIDerivedType {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DIDerivedType_O, "DIDerivedType");
-  typedef llvm::DIDerivedType OtherType;
-
-private:
-public:
-  virtual operator llvm::DIDescriptor *() { return this; };
-  virtual operator llvm::DIType *() { return this; };
-  DIDerivedType_O() : Base(){};
-  DIDerivedType_O(const OtherType &val) : OtherType(val){};
-  virtual ~DIDerivedType_O() {}
-
-}; // DIDerivedType_O
-}; // llvmo
-TRANSLATE(llvmo::DIDerivedType_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <>
-struct to_object<llvm::DIDerivedType> {
-  static core::T_sp convert(const llvm::DIDerivedType &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DIDerivedType_O, obj, val);
-    return (obj);
+  template <>
+    struct from_object<llvm::DIType*,std::true_type> {
+    typedef llvm::DIType* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIType_sp>(o)->wrappedPtr()) {};
   };
-};
-template <>
-struct from_object<llvm::DIDerivedType, std::true_type> {
-  typedef llvm::DIDerivedType &DeclareType;
-  static DeclareType convert(core::T_sp object) {
-    ASSERT(object.objectp());
-    return *(gc::As<llvmo::DIDerivedType_sp>(object));
-  }
-};
+  template <>
+    struct to_object<llvm::DIType*> {
+    static core::T_sp convert(const llvm::DIType* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DIType_O, llvm::DIType*>(const_cast<llvm::DIType*>(ptr)));
+    };
+  };
 };
 
 namespace llvmo {
 FORWARD(DIBasicType);
-class DIBasicType_O : public DebugInfo_O, public llvm::DIBasicType {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DIBasicType_O, "DIBasicType");
-  typedef llvm::DIBasicType OtherType;
-
-private:
+class DIBasicType_O : public DIType_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DIBasicType, DIBasicType_O, "DIBasicType", DIType_O);
+  typedef llvm::DIBasicType ExternalType;
+  typedef ExternalType* PointerToExternalType;
 public:
-  virtual operator llvm::DIDescriptor *() { return this; };
-  virtual operator llvm::DIType *() { return this; };
-  DIBasicType_O() : Base(){};
-  DIBasicType_O(const OtherType &val) : OtherType(val){};
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DIBasicType_O(){};
   virtual ~DIBasicType_O() {}
-
-}; // DIBasicType_O
+};
 }; // llvmo
 TRANSLATE(llvmo::DIBasicType_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <>
-struct to_object<llvm::DIBasicType> {
-  static core::T_sp convert(const llvm::DIBasicType &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DIBasicType_O, obj, val);
-    return (obj);
+  template <>
+    struct from_object<llvm::DIBasicType*,std::true_type> {
+    typedef llvm::DIBasicType* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIBasicType_sp>(o)->wrappedPtr()) {};
+  };
+  template <>
+    struct to_object<llvm::DIBasicType*> {
+    static core::T_sp convert(const llvm::DIBasicType* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DIBasicType_O, llvm::DIBasicType*>(const_cast<llvm::DIBasicType*>(ptr)));
+    };
   };
 };
-template <>
-struct from_object<llvm::DIBasicType, std::true_type> {
-  typedef llvm::DIBasicType &DeclareType;
-  static DeclareType convert(core::T_sp object) {
-    ASSERT(object.objectp());
-    return *(gc::As<llvmo::DIBasicType_sp>(object));
+
+namespace llvmo {
+FORWARD(DIDerivedType);
+class DIDerivedType_O : public DIType_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DIDerivedType, DIDerivedType_O, "DIDerivedType", DIType_O);
+  typedef llvm::DIDerivedType ExternalType;
+  typedef ExternalType* PointerToExternalType;
+public:
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
   }
+  DIDerivedType_O(){};
+  virtual ~DIDerivedType_O() {}
 };
+}; // llvmo
+TRANSLATE(llvmo::DIDerivedType_O);
+/* from_object translators */
+/* to_object translators */
+
+namespace translate {
+  template <>
+    struct from_object<llvm::DIDerivedType*,std::true_type> {
+    typedef llvm::DIDerivedType* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIDerivedType_sp>(o)->wrappedPtr()) {};
+  };
+  template <>
+    struct to_object<llvm::DIDerivedType*> {
+    static core::T_sp convert(const llvm::DIDerivedType* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DIDerivedType_O, llvm::DIDerivedType*>(const_cast<llvm::DIDerivedType*>(ptr)));
+    };
+  };
 };
 
 namespace llvmo {
 FORWARD(DICompositeType);
-class DICompositeType_O : public DebugInfo_O, public llvm::DICompositeType {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DICompositeType_O, "DICompositeType");
-  typedef llvm::DICompositeType OtherType;
-
-private:
+class DICompositeType_O : public DIType_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DICompositeType, DICompositeType_O, "DICompositeType", DIType_O);
+  typedef llvm::DICompositeType ExternalType;
+  typedef ExternalType* PointerToExternalType;
 public:
-  virtual operator llvm::DIDescriptor *() { return this; };
-  virtual operator llvm::DIType *() { return this; };
-  DICompositeType_O() : Base(){};
-  DICompositeType_O(const OtherType &val) : OtherType(val){};
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DICompositeType_O(){};
   virtual ~DICompositeType_O() {}
-
-}; // DICompositeType_O
+};
 }; // llvmo
 TRANSLATE(llvmo::DICompositeType_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <>
-struct to_object<llvm::DICompositeType> {
-  static core::T_sp convert(const llvm::DICompositeType &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DICompositeType_O, obj, val);
-    return (obj);
+  template <>
+    struct from_object<llvm::DICompositeType*,std::true_type> {
+    typedef llvm::DICompositeType* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DICompositeType_sp>(o)->wrappedPtr()) {};
   };
-};
-template <>
-struct from_object<llvm::DICompositeType, std::true_type> {
-  typedef llvm::DICompositeType &DeclareType;
-  DeclareType _v;
-  //! Handle inheritance by casting up to DebugInfo_O and then down to the desired class
-  from_object(T_P object) : _v(*(gc::As<llvmo::DebugInfo_sp>(object)->operator llvm::DICompositeType *())){};
-};
+  template <>
+    struct to_object<llvm::DICompositeType*> {
+    static core::T_sp convert(const llvm::DICompositeType* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DICompositeType_O, llvm::DICompositeType*>(const_cast<llvm::DICompositeType*>(ptr)));
+    };
+  };
 };
 
 namespace llvmo {
 FORWARD(DISubroutineType);
-class DISubroutineType_O : public DebugInfo_O, public llvm::DISubroutineType {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DISubroutineType_O, "DISubroutineType");
-  typedef llvm::DISubroutineType OtherType;
-
-private:
+class DISubroutineType_O : public DIType_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DISubroutineType, DISubroutineType_O, "DISubroutineType", DIType_O);
+  typedef llvm::DISubroutineType ExternalType;
+  typedef ExternalType* PointerToExternalType;
 public:
-  //! Provide a convertor for every type this might be cast to
-  virtual operator llvm::DIDescriptor *() { return this; };
-  virtual operator llvm::DIType *() { return this; };
-  virtual operator llvm::DICompositeType *() { return this; };
-  DISubroutineType_O() : Base(){};
-  DISubroutineType_O(const OtherType &val) : OtherType(val){};
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DISubroutineType_O(){};
   virtual ~DISubroutineType_O() {}
-
-}; // DISubroutineType_O
+};
 }; // llvmo
 TRANSLATE(llvmo::DISubroutineType_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <>
-struct to_object<llvm::DISubroutineType> {
-  static core::T_sp convert(const llvm::DISubroutineType &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DISubroutineType_O, obj, val);
-    return (obj);
+  template <>
+    struct from_object<llvm::DISubroutineType*,std::true_type> {
+    typedef llvm::DISubroutineType* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DISubroutineType_sp>(o)->wrappedPtr()) {};
+  };
+  template <>
+    struct to_object<llvm::DISubroutineType*> {
+    static core::T_sp convert(const llvm::DISubroutineType* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DISubroutineType_O, llvm::DISubroutineType*>(const_cast<llvm::DISubroutineType*>(ptr)));
+    };
   };
 };
-template <>
-struct from_object<llvm::DISubroutineType, std::true_type> {
-  typedef llvm::DISubroutineType &DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(*(gc::As<llvmo::DISubroutineType_sp>(object))){};
+
+namespace llvmo {
+FORWARD(DILexicalBlockBase);
+class DILexicalBlockBase_O : public DILocalScope_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DILexicalBlockBase, DILexicalBlockBase_O, "DILexicalBlockBase", DILocalScope_O);
+  typedef llvm::DILexicalBlockBase ExternalType;
+  typedef ExternalType* PointerToExternalType;
+public:
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DILexicalBlockBase_O(){};
+  virtual ~DILexicalBlockBase_O() {}
 };
+}; // llvmo
+TRANSLATE(llvmo::DILexicalBlockBase_O);
+/* from_object translators */
+/* to_object translators */
+
+namespace translate {
+  template <>
+    struct from_object<llvm::DILexicalBlockBase*,std::true_type> {
+    typedef llvm::DILexicalBlockBase* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DILexicalBlockBase_sp>(o)->wrappedPtr()) {};
+  };
+  template <>
+    struct to_object<llvm::DILexicalBlockBase*> {
+    static core::T_sp convert(const llvm::DILexicalBlockBase* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DILexicalBlockBase_O, llvm::DILexicalBlockBase*>(const_cast<llvm::DILexicalBlockBase*>(ptr)));
+    };
+  };
 };
 
 namespace llvmo {
 FORWARD(DILexicalBlock);
-class DILexicalBlock_O : public DebugInfo_O, public llvm::DILexicalBlock {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DILexicalBlock_O, "DILexicalBlock");
-  typedef llvm::DILexicalBlock OtherType;
-
-private:
+class DILexicalBlock_O : public DILexicalBlockBase_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DILexicalBlock, DILexicalBlock_O, "DILexicalBlock", DILexicalBlockBase_O);
+  typedef llvm::DILexicalBlock ExternalType;
+  typedef ExternalType* PointerToExternalType;
 public:
-  virtual operator llvm::DIDescriptor *() { return this; };
-  DILexicalBlock_O() : Base(){};
-  DILexicalBlock_O(const OtherType &val) : OtherType(val){};
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DILexicalBlock_O(){};
   virtual ~DILexicalBlock_O() {}
-
-}; // DILexicalBlock_O
+};
 }; // llvmo
 TRANSLATE(llvmo::DILexicalBlock_O);
 /* from_object translators */
 /* to_object translators */
+
 namespace translate {
-template <>
-struct to_object<llvm::DILexicalBlock> {
-  static core::T_sp convert(const llvm::DILexicalBlock &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DILexicalBlock_O, obj, val);
-    return (obj);
+  template <>
+    struct from_object<llvm::DILexicalBlock*,std::true_type> {
+    typedef llvm::DILexicalBlock* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DILexicalBlock_sp>(o)->wrappedPtr()) {};
   };
-};
-template <>
-struct from_object<llvm::DILexicalBlock, std::true_type> {
-  typedef llvm::DILexicalBlock &DeclareType;
-  static DeclareType convert(core::T_sp object) {
-    ASSERT(object.objectp());
-    return *(gc::As<llvmo::DILexicalBlock_sp>(object));
-  }
-};
+  template <>
+    struct to_object<llvm::DILexicalBlock*> {
+    static core::T_sp convert(const llvm::DILexicalBlock* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DILexicalBlock_O, llvm::DILexicalBlock*>(const_cast<llvm::DILexicalBlock*>(ptr)));
+    };
+  };
 };
 
 namespace llvmo {
 FORWARD(DICompileUnit);
-class DICompileUnit_O : public DebugInfo_O, public llvm::DICompileUnit {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DICompileUnit_O, "DICompileUnit");
-  typedef llvm::DICompileUnit OtherType;
-
-private:
+class DICompileUnit_O : public DIScope_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DICompileUnit, DICompileUnit_O, "DICompileUnit", DIScope_O);
+  typedef llvm::DICompileUnit ExternalType;
+  typedef ExternalType* PointerToExternalType;
 public:
-  virtual operator llvm::DIDescriptor *() { return this; };
-  DICompileUnit_O() : Base(){};
-  DICompileUnit_O(const OtherType &val) : OtherType(val){};
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DICompileUnit_O(){};
   virtual ~DICompileUnit_O() {}
-
-}; // DICompileUnit_O
+};
 }; // llvmo
 TRANSLATE(llvmo::DICompileUnit_O);
 /* from_object translators */
 /* to_object translators */
+
 namespace translate {
-template <>
-struct to_object<llvm::DICompileUnit> {
-  static core::T_sp convert(const llvm::DICompileUnit &val) {
-    _G();
-    GC_ALLOCATE_VARIADIC(llvmo::DICompileUnit_O, obj, val);
-    return (obj);
+  template <>
+    struct from_object<llvm::DICompileUnit*,std::true_type> {
+    typedef llvm::DICompileUnit* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DICompileUnit_sp>(o)->wrappedPtr()) {};
+  };
+  template <>
+    struct to_object<llvm::DICompileUnit*> {
+    static core::T_sp convert(const llvm::DICompileUnit* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DICompileUnit_O, llvm::DICompileUnit*>(const_cast<llvm::DICompileUnit*>(ptr)));
+    };
   };
 };
-template <>
-struct from_object<llvm::DICompileUnit, std::true_type> {
-  typedef llvm::DICompileUnit &DeclareType;
-  static DeclareType convert(core::T_sp object) {
-    ASSERT(object.objectp());
-    return *(gc::As<llvmo::DICompileUnit_sp>(object));
-  }
-};
-};
+
+
 
 namespace llvmo {
 FORWARD(DIBuilder);
@@ -589,10 +617,8 @@ class DIBuilder_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DIBuilder, DIBuilder_O, "DIBuilder", core::ExternalObject_O);
   typedef llvm::DIBuilder ExternalType;
   typedef llvm::DIBuilder *PointerToExternalType;
-
 protected:
   PointerToExternalType _ptr;
-
 public:
   virtual void *externalObject() const {
     return this->_ptr;
@@ -600,20 +626,16 @@ public:
   PointerToExternalType wrappedPtr() const {
     return this->_ptr;
   }
-
 public:
   static DIBuilder_sp make(Module_sp context);
-
 public:
   void set_wrapped(PointerToExternalType ptr) {
     if (this->_ptr != NULL)
       delete this->_ptr;
     this->_ptr = ptr;
   };
-
-  DIArray_sp getOrCreateArray(core::List_sp elements);
-  DITypeArray_sp getOrCreateTypeArray(core::List_sp elements);
-
+  DINodeArray_sp getOrCreateArray(core::List_sp elements);
+  DITypeRefArray_sp getOrCreateTypeArray(core::List_sp elements);
   DIBuilder_O() : Base(), _ptr(NULL){};
   virtual ~DIBuilder_O() {
     if (_ptr != NULL) {
