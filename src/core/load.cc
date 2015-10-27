@@ -104,7 +104,7 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat) {
       if (print) {
         _lisp->print(BF(";; -- read- %s\n") % _rep_(x));
       };
-      eval::core_evalWithEnv(x, _Nil<T_O>());
+      eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(),x, _Nil<T_O>());
       //                gctools::af_cleanup();
     }
   }

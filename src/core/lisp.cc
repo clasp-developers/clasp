@@ -1464,7 +1464,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
           af_bformat(_lisp->_true(), "Cannot interpret %s - define core::*top-level-command-hook*", Cons_O::createList(tplCmd.cons()));
         }
       } else if (expression.notnilp()) {
-        result = eval::core_evalWithEnv(expression, environ);
+        result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(),expression, environ);
         gctools::Vec0<core::T_sp /*,gctools::RootedGCHolder*/> vresults;
         vresults.resize(result.number_of_values());
         if (result.number_of_values() > 0) {

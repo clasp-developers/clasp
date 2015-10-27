@@ -544,7 +544,7 @@ T_mv cl_eval(T_sp form) {
   if ( core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue() ) {
     return eval::evaluate(form,_Nil<T_O>());
   } else {
-    return t1Evaluate(form, _Nil<T_O>());
+    return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(),form,_Nil<T_O>());
   }
 };
 
@@ -2210,11 +2210,10 @@ T_mv cl_apply(T_sp head, VaList_sp args) {
     return eval::funcall(comp::_sym_STARimplicit_compile_hookSTAR->symbolValue(), exp, environment);
   }
 
-#define ARGS_core_evalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
-#define DECL_core_evalWithEnv ""
-#define DOCS_core_evalWithEnv "evalWithEnv"
-  T_mv core_evalWithEnv(T_sp form, T_sp env, bool stepping, bool compiler_env_p, bool execute) {
-    _G();
+#define ARGS_core_eval_with_env_default "(form &optional env stepping compiler-env-p (execute t))"
+#define DECL_core_eval_with_env_default ""
+#define DOCS_core_eval_with_env_default "eval_with_env_default"
+T_mv core_eval_with_env_default(T_sp form, T_sp env) {
     return t1Evaluate(form, env);
   }
 
@@ -2521,8 +2520,6 @@ struct InterpreterTrace {
     Defun(evaluateVerbosity);
     SYMBOL_EXPORT_SC_(CompPkg, compileFormAndEvalWithEnv); 
     CoreDefun(compileFormAndEvalWithEnv);
-    SYMBOL_EXPORT_SC_(CorePkg, evalWithEnv);
-    CoreDefun(evalWithEnv);
     SYMBOL_SC_(CorePkg, evaluateDepth);
     Defun(evaluateDepth);
     SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
@@ -2535,6 +2532,11 @@ struct InterpreterTrace {
     CoreDefun(extractLambdaName);
     CoreDefun(lookup_symbol_macro);
     CoreDefun(coerce_to_function);
+    SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
+    SYMBOL_EXPORT_SC_(CorePkg, eval_with_env_default);
+    af_def(CorePkg, "eval_with_env_default",
+           &core_eval_with_env_default);
+    core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_eval_with_env_default->symbolFunction());
   };
 };
 };

@@ -1042,6 +1042,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                        '(progn
                          (make-package "CLEAVIR-AST")
                          (make-package "CLASP-CLEAVIR-AST")
+                         (make-package "CLASP-CLEAVIR")
                          (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
                          (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
                          (if (member :interactive *features*) 

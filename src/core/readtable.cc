@@ -446,7 +446,7 @@ T_sp af_sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
                    Cons_O::create(object),
                    sin);
     }
-    T_sp result = eval::core_evalWithEnv(object, _Nil<T_O>());
+    T_sp result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), object, _Nil<T_O>());
     if (cl_consp(result)) {
       lisp_registerSourcePosInfo(result, spi);
     }

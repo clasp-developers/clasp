@@ -16,17 +16,35 @@
     (print (core:getpid)))
   (print "Done - you are ready to go"))
 
-*features*
-(print (core:getpid))
+
 (progn
   (load "sys:kernel;cleavir;auto-compile.lisp")
   (format t "Loading inline.lisp~%")
   (load "sys:kernel;cleavir;inline.lisp")
   (format t "Done loading inline.lisp~%"))
 
-(defgeneric foo (a b))
-(defmethod foo (a b))
 
+(apropos "method-p")
+(trace clos::define-complex-method-combination)
+(defgeneric foo1 (a b))
+(defmethod foo1 ((a integer) b) (+ 1 2))
+
+(clos::method-p (defmethod zzz (a b)))
+(trace)
+(untrace clos::effective-method-function)
+(trace clos::effective-method-function)
+(time (progn (gctools:gc-monitor-allocations t) (foo1 1 2) (foo1 1 2) (gctools:gc-monitor-allocations nil)))
+
+(macrolet ((mac () `(defmethod x ()))) (mac))
+(setq core:*eval-with-env-hook* #'cclasp-eval)
+(eq  core:*eval-with-env-hook* #'cclasp-eval)
+
+(trace core::eval-with-env-default)
+(trace clasp-cleavir::cclasp-eval)
+
+
+(trace clos::compute-effective-method)
+(clos::effective-method-function 
 (progn
   (trace cmp::irc-make-tagbody-frame)
   (trace cmp::codegen-tagbody)
@@ -46,7 +64,7 @@
 (clasp-cleavir:cleavir-compile 'bar2 '(lambda () (defun baz (n) (core:trap-execution "a") (gctools:gc-monitor-allocations t) (dotimes (i n) (foo 1 2)) (gctools:gc-monitor-allocations nil))))
 (bar)
 (bar2)
-
+(time (baz 2))
 
 
 (foo 1 2)

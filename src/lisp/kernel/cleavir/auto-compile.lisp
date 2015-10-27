@@ -70,4 +70,7 @@
 (eval-when (:execute :load-toplevel)
   (setq cmp:*implicit-compile-hook* #'cleavir-implicit-compile-hook))
 
+(eval-when (:execute :load-toplevel)
+  (setq core:*eval-with-env-hook* #'cclasp-eval))
+
 
