@@ -136,10 +136,10 @@ bclasp-boehm-addons-fasl:
 	$(BCLASP_BOEHM) -l "link-addons.lsp"
 
 cclasp-from-bclasp-boehm-bitcode:
-	$(BCLASP_BOEHM) -f bclasp -l "buildCleavirClasp.lsp"
+	$(BCLASP_BOEHM) -l "buildCleavirClasp.lsp"
 
 cclasp-boehm:
-	make cclasp-boehm-bitcode
+	make cclasp-from-bclasp-boehm-bitcode
 	make cclasp-boehm-fasl
 
 cclasp-boehm-bitcode:

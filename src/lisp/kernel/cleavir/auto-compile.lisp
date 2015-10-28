@@ -31,6 +31,8 @@
 
 (in-package :clasp-cleavir)
 
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE uses Cleavir
@@ -52,30 +54,44 @@
 ;;; cleavir-implicit-compile-hook - compile the form in the given environment
 ;;;
 
-(in-package :clasp-cleavir)
-
 (eval-when (:execute :load-toplevel)
   (setq core:*eval-with-env-hook* 'cclasp-eval))
 
-(defparameter *my-env* nil)
+
+;;; These should be set up in Cleavir code
+;;; Remove them once beach implements them
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:rplaca-instruction))
+  nil)
+
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:rplacd-instruction))
+  nil)
+
+
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:set-symbol-value-instruction)) nil)
+
+
+
+
+
+
+(defparameter *simple-environment* nil)
 (defvar *code-walker* nil)
-(export '(*my-env* *code-walker*))
+(export '(*simple-environment* *code-walker*))
 
-(in-package :cleavir-generate-ast)
-(defmethod cleavir-generate-ast:convert :around (form environment (system clasp-cleavir::clasp-64bit))
+(defun mark-env-as-function ()
+  (setf *simple-environment* (cons 'si::function-boundary *simple-environment*)))
+
+(defun local-function-form-p (form)
+  (and (listp form) (member (first form) '(flet labels))))
+
+(defmethod cleavir-generate-ast:convert :around (form environment (system clasp-64bit))
   (declare (ignore system))
-  (if clasp-cleavir:*code-walker*
-      (let ((clasp-cleavir:*my-env*
-             (if (and (consp form) (member (car form) '(cl:flet cl:labels)))
-                 (cons 'si::function-boundary clasp-cleavir:*my-env*)
-                 clasp-cleavir:*my-env*)))
-        (funcall clasp-cleavir:*code-walker* form clasp-cleavir:*my-env*)
-        (format t "form: ~a~%" form)
-        (format t "    *my-env*: ~a~%" clasp-cleavir::*my-env*)
-        (call-next-method))
-      (call-next-method)))
-
-(in-package :clasp-cleavir)
+  (let ((*simple-environment* *simple-environment*))
+    (when *code-walker*
+      (when (local-function-form-p form)
+        (mark-env-as-function))
+      (funcall *code-walker* form *simple-environment*))
+    (call-next-method)))
 
 (defun code-walk-for-method-lambda-closure (form env &key code-walker-function)
   (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
@@ -83,22 +99,5 @@
     (cleavir-generate-ast:generate-ast form env *clasp-system*)))
 
 (export 'code-walk-for-method-lambda-closure)
-
-
-#+(or)(defun cleavir-implicit-compile-hook (form &optional environment)
-        (declare (core:lambda-name cmp-repl-implicit-compile))
-        #+(or)(bformat t "*implicit-compile-hook* *load-truename* = %s   compiling form: %s\n" *load-truename* form)
-        (let ((cmp:*cleavir-compile-hook* #'cleavir-compile-t1expr))
-          (with-compilation-unit (:override t)
-            (multiple-value-bind (compiled-function warn fail)
-                (cmp:compile-in-env
-                 nil
-                 `(lambda () 
-                    (declare (core:lambda-name implicit-repl))
-                    ,form) environment cmp:*cleavir-compile-hook*)
-              (funcall compiled-function)))))
-
-#+(or)(eval-when (:execute :load-toplevel)
-        (setq cmp:*implicit-compile-hook* #'cleavir-implicit-compile-hook))
 
 

@@ -268,9 +268,8 @@
   #+cclasp
   (let ((res (member 'si::function-boundary env)))
     (format t "Checking env-> ~a~%" res)
-    (if res t nil)))
+    res))
 
-;#-cclasp
 (defun walk-method-lambda (method-lambda env)
   (declare (si::c-local))
   (let ((call-next-method-p nil)
@@ -309,13 +308,16 @@
       #+bclasp
       (progn
 	(cmp:code-walk-using-compiler method-lambda env
-                 :code-walker-function #'code-walker))
+                                      :code-walker-function #'code-walker))
       ;; cclasp uses *code-walk-hook* (set in kernel/cleavir/auto-compile.lisp)
       ;; but it doesn't use the code-walker function
       #+cclasp
-      (progn
-        (clasp-cleavir:code-walk-for-method-lambda-closure method-lambda env
-                                                           :code-walker-function #'code-walker)))
+      (if (fboundp 'clasp-cleavir:code-walk-for-method-lambda-closure)
+          (clasp-cleavir:code-walk-for-method-lambda-closure method-lambda env
+                                                             :code-walker-function #'code-walker)
+          (setq call-next-method-p t
+                next-method-p-p t
+                in-closure-p t)))
     (values call-next-method-p
 	    next-method-p-p
 	    in-closure-p)))

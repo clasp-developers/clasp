@@ -24,6 +24,8 @@
   (format t "Done loading inline.lisp~%"))
 
 
+(print clasp-cleavir:*my-env*)
+
 (defgeneric foo (x y))
 (macroexpand '(defmethod foo-close-over (x y) (flet ((xxx () (call-next-method))) #'xxx)))
 (macroexpand '(defmethod foo-dont-close-over (x y) t))
