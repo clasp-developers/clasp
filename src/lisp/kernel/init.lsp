@@ -1029,7 +1029,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (let ((*target-backend* (default-target-backend)))
     (if (out-of-date-bitcodes :init :cclasp)
         (progn
-          (load-system :start :cclasp :interp t )
+          (load-system :bclasp :cclasp :interp t )
           (let ((files (out-of-date-bitcodes :init :cclasp)))
             (compile-system files))))))
 (export 'link-cclasp)

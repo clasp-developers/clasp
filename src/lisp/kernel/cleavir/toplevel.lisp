@@ -112,4 +112,11 @@
   (cclasp-eval-with-env form (core:get-parent-environment env)))
 
 (defun cclasp-eval (form &optional env)
-  (cclasp-eval-with-env form env))
+  (handler-bind
+      ((cleavir-env:no-variable-info
+        (lambda (condition)
+          (invoke-restart 'cleavir-generate-ast::consider-special)))
+       (cleavir-env:no-function-info
+        (lambda (condition)
+          (invoke-restart 'cleavir-generate-ast::consider-global))))
+    (cclasp-eval-with-env form env)))

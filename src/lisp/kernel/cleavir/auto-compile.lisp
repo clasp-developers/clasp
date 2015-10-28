@@ -79,7 +79,7 @@
 (export '(*simple-environment* *code-walker*))
 
 (defun mark-env-as-function ()
-  (setf *simple-environment* (cons 'si::function-boundary *simple-environment*)))
+  (push 'si::function-boundary *simple-environment*))
 
 (defun local-function-form-p (form)
   (and (listp form) (member (first form) '(flet labels))))
