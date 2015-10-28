@@ -16,6 +16,7 @@
           *gv-source-file-info-handle*
           *gv-source-pathname*
           *implicit-compile-hook*
+          *code-walk-hook*
           *irbuilder*
           *llvm-context*
           *load-time-value-holder-global-var*

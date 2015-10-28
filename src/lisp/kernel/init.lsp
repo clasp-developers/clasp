@@ -719,11 +719,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/cmp/compiler"
     #P"kernel/cmp/compilefile"
     #P"kernel/cmp/cmpbundle"
-    #P"kernel/cmp/cmpwalk"
     #P"kernel/cmp/cmprepl"
     :cmp
     :stage1
     :cmprepl
+    #P"kernel/cmp/cmpwalk"
     #P"kernel/lsp/logging"
     #P"kernel/lsp/seqlib"
     #P"kernel/lsp/trace"
@@ -1003,7 +1003,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export 'cclasp-features)
 (defun cclasp-features ()
   (remove-stage-features)
-  (setq *features* (list* :clos :cclasp *features*)))
+  (setq *features* (list* :clos :cclasp *features*))
+  (make-package "CLASP-CLEAVIR"))
 
 (export '(compile-bclasp))
 (defun compile-bclasp ()

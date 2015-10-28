@@ -157,3 +157,4 @@
           SLOT-DEFINITION-INITFORM )
         )
 
+(export '*environment-contains-closure-hook*)

@@ -24,6 +24,17 @@
   (format t "Done loading inline.lisp~%"))
 
 
+(defgeneric foo (x y))
+(macroexpand '(defmethod foo-close-over (x y) (flet ((xxx () (call-next-method))) #'xxx)))
+(macroexpand '(defmethod foo-dont-close-over (x y) t))
+(trace clos::walk-method-lambda)
+
+(apropos "my-env")
+clasp-cleavir:*my-env*
+
+(trace clasp-cleavir::code-walk-for-method-lambda-closure)
+
+
 (apropos "method-p")
 (trace clos::define-complex-method-combination)
 (defgeneric foo1 (a b))
