@@ -267,7 +267,6 @@
     (> num 1))
   #+cclasp
   (let ((res (member 'si::function-boundary env)))
-    (format t "Checking env-> ~a~%" res)
     res))
 
 (defun walk-method-lambda (method-lambda env)

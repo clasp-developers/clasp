@@ -1003,8 +1003,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export 'cclasp-features)
 (defun cclasp-features ()
   (remove-stage-features)
-  (setq *features* (list* :clos :cclasp *features*))
-  (make-package "CLASP-CLEAVIR"))
+  (setq *features* (list* :clos :cclasp *features*)))
 
 (export '(compile-bclasp))
 (defun compile-bclasp ()

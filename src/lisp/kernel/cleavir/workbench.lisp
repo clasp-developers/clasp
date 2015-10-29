@@ -23,6 +23,8 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (format t "Done loading inline.lisp~%"))
 
+(eval '(defmethod foo () (zzzzz)))
+(eval '(defmethod m () (undefined)))
 
 (print clasp-cleavir:*my-env*)
 
@@ -47,6 +49,32 @@ clasp-cleavir:*my-env*
 (untrace clos::effective-method-function)
 (trace clos::effective-method-function)
 (time (progn (gctools:gc-monitor-allocations t) (foo1 1 2) (foo1 1 2) (gctools:gc-monitor-allocations nil)))
+
+
+(clasp-cleavir::cleavir-compile 'foo '(lambda() (defun effective-method-function (form &optional top-level &aux first)
+  (cond ((functionp form)
+	 form)
+	((method-p form)
+	 (method-function form))
+	((atom form)
+	 (error "Malformed effective method form:~%~A" form))
+	((eq (setf first (first form)) 'MAKE-METHOD)
+	 (coerce `(lambda (.combined-method-args. *next-methods*)
+		    (declare (special .combined-method-args. *next-methods*))
+		    ,(second form))
+		 'function))
+	((eq first 'CALL-METHOD)
+	 (combine-method-functions
+	  (effective-method-function (second form))
+	  (mapcar #'effective-method-function (third form))))
+	(top-level
+	 (coerce `(lambda (.combined-method-args. no-next-methods)
+		    (declare (ignorable no-next-methods))
+		    ,form)
+		 'function))
+	(t
+	 (error "Malformed effective method form:~%~A" form))))) :debug t)
+
 
 (macrolet ((mac () `(defmethod x ()))) (mac))
 (setq core:*eval-with-env-hook* #'cclasp-eval)
