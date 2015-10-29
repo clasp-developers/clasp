@@ -719,11 +719,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/cmp/compiler"
     #P"kernel/cmp/compilefile"
     #P"kernel/cmp/cmpbundle"
-    #P"kernel/cmp/cmpwalk"
     #P"kernel/cmp/cmprepl"
     :cmp
     :stage1
     :cmprepl
+    #P"kernel/cmp/cmpwalk"
     #P"kernel/lsp/logging"
     #P"kernel/lsp/seqlib"
     #P"kernel/lsp/trace"
@@ -1028,7 +1028,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (let ((*target-backend* (default-target-backend)))
     (if (out-of-date-bitcodes :init :cclasp)
         (progn
-          (load-system :start :cclasp :interp t )
+          (load-system :bclasp :cclasp :interp t )
           (let ((files (out-of-date-bitcodes :init :cclasp)))
             (compile-system files))))))
 (export 'link-cclasp)
@@ -1042,6 +1042,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                        '(progn
                          (make-package "CLEAVIR-AST")
                          (make-package "CLASP-CLEAVIR-AST")
+                         (make-package "CLASP-CLEAVIR")
                          (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
                          (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
                          (if (member :interactive *features*) 

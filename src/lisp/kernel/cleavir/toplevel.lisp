@@ -48,7 +48,10 @@
         macros)
   env)
 
-(defun cclasp-eval (form &optional env)
+
+(defgeneric cclasp-eval-with-env (form env))
+
+(defmethod cclasp-eval-with-env (form env)
 ;;  (format t "cclasp-eval eval: ~a~%" form)
   (flet ((eval-progn (body &optional (penv env))
            (loop for (form . next) on body
@@ -103,3 +106,17 @@
                        (let ((ml-env (augment-environment-with-symbol-macrolet macros env)))
                          (eval-progn macrolet-body (augment-environment-with-declares declares ml-env)))))
                  (t (eval-compile form))))))))))
+
+
+(defmethod cclasp-eval-with-env (form (env core:value-frame))
+  (cclasp-eval-with-env form (core:get-parent-environment env)))
+
+(defun cclasp-eval (form &optional env)
+  (handler-bind
+      ((cleavir-env:no-variable-info
+        (lambda (condition)
+          (invoke-restart 'cleavir-generate-ast::consider-special)))
+       (cleavir-env:no-function-info
+        (lambda (condition)
+          (invoke-restart 'cleavir-generate-ast::consider-global))))
+    (cclasp-eval-with-env form env)))

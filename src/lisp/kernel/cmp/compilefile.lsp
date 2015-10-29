@@ -135,7 +135,7 @@
     (when (or (member 'cl:compile situations) (member :compile-toplevel situations))
       (cmp-log "Performing eval-when :compile-toplevel side-effects\n")
       (cmp-log "Evaluating: %s\n" body)
-      (si:eval-with-env `(progn ,@body) env)
+      (funcall core:*eval-with-env-hook* `(progn ,@body) env)
       (cmp-log "Done eval-when compile-toplevel side-effects\n"))
     (when (or (member 'cl:load situations) (member :load-toplevel situations))
       (cmp-log "Compiling body due to :load-toplevel --> %s\n" body)

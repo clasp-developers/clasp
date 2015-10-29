@@ -45,3 +45,7 @@
         (llvm-sys::module-delete module)))))
 
 (export 'code-walk-using-compiler)
+
+
+(defvar *code-walk-hook* 'code-walk-using-compiler)
+(export '*code-walk-hook*)

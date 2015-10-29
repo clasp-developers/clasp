@@ -48,6 +48,10 @@ namespace clbind {
 class ConstructorCreator;
 };
 
+#define GC_INTERFACE_FORWARD
+#include PROJECT_HEADERS_INCLUDE
+#undef GC_INTERFACE_FORWARD
+
 #ifdef USE_MPS
   #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
     #define DECLARE_FORWARDS
