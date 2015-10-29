@@ -181,7 +181,7 @@ void af_lowLevelDescribe(T_sp obj) {
     printf("NIL\n");
     return;
   }
-  obj->describe();
+  obj->describe(_lisp->_true());
 };
 
 #define ARGS_af_copyTree "(arg)"
@@ -427,11 +427,8 @@ bool af_slBoundp(T_sp obj) {
   return boundp;
 };
 
-void T_O::describe() {
-  string s = this->__str__();
-  _lisp->print(BF("%s") % s.c_str());
-  //    _lisp->print(BF(""));
-  //    dumpSourceInfo(this->sharedThis<T_O>());
+void T_O::describe(T_sp stream) {
+  clasp_write_string(this->__str__(),stream);
 }
 
 void T_O::__write__(T_sp strm) const {

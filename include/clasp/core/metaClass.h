@@ -242,7 +242,7 @@ public:
   //	T_sp unboundValue();
 
   //    virtual T_sp new_Instance(Function_sp e, List_sp args,  Environment_sp environ, Lisp_sp lisp);
-  virtual void describe();
+  virtual void describe(T_sp stream);
 
   /*! predicate if this is a BuiltInClass class */
   virtual bool builtInClassP() const { return false; };

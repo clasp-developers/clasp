@@ -177,7 +177,7 @@ public: // Functions here
 
   bool genericFunctionP() const;
 
-  void describe();
+  void describe(T_sp stream);
 
   void __write__(T_sp sout) const; // Look in write_ugly.cc
 

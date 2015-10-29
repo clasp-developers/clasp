@@ -99,7 +99,7 @@ public:
 
   bool fullp();
 
-  void describe();
+  void describe(T_sp stream);
   virtual T_sp hashTableTest() const { return cl::_sym_eq; };
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 

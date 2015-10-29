@@ -97,7 +97,7 @@ public:
 	void appendInstanceVariablesFromStructureClass(StructureClass_sp cc);
 	void appendInstanceVariablesFromListOfSymbols(List_sp variableNames);
 
-        virtual void describe();
+        virtual void describe(T_sp stream);
         virtual string dumpInfo();
 
 #endif
