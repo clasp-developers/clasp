@@ -1766,7 +1766,7 @@ T_mv ext_vfork_execvp(List_sp call_and_arguments) {
         if ( child_PID == 0 ) {
             // Child
             execvp(execvp_args[0],(char * const *)execvp_args.data());
-            printf("%s:%d execvp returned!!!! Why!!!!\n", __FILE__, __LINE__ );
+            printf("%s:%d execvp returned when executing: %s!!!! Why?!?!? - exiting...\n", __FILE__, __LINE__, execvp_args[0]);
             _exit(0); // Should never reach
         } else {
             // Parent
