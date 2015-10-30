@@ -950,7 +950,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_char_code_limit->defconstant(make_fixnum(CHAR_CODE_LIMIT));
   cl::_sym_STARgensym_counterSTAR->defparameter(make_fixnum(0));
   cl::_sym_STARdefaultPathnameDefaultsSTAR->defparameter(_Nil<T_O>());
-  cl::_sym_STARprint_arraySTAR->defparameter(_Nil<T_O>());
+  cl::_sym_STARprint_arraySTAR->defparameter(_lisp->_true());
   cl::_sym_STARprint_baseSTAR->defparameter(make_fixnum(10));
   cl::_sym_STARprint_caseSTAR->defparameter(kw::_sym_upcase);
   cl::_sym_STARprint_circleSTAR->defparameter(_Nil<T_O>());

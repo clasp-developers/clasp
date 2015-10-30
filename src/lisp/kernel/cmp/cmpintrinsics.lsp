@@ -600,7 +600,7 @@ Boehm and MPS use a single pointer"
   #+long-float (primitive-nounwind module "makeLongFloat" +void+ (list +tsp*+ +long-float+))
   (primitive-nounwind module "makeString" +void+ (list +tsp*+ +i8*+))
   (primitive-nounwind module "makePathname" +void+ (list +tsp*+ +i8*+))
-  (primitive-nounwind module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +i64+ +i32+ +i32+ +tsp*+ +tsp*+ +afsp*+ +tsp*+))
+  (primitive-nounwind module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +tsp*+ +tsp*+ +afsp*+ +tsp*+))
 
   (primitive module "symbolValueRead" +void+ (list +tsp*-or-tmv*+ +symsp*+))
   (primitive-nounwind module "symbolValueReference" +tsp*+ (list +symsp*+))
@@ -627,7 +627,7 @@ Boehm and MPS use a single pointer"
   (primitive module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
 
   (primitive module "invokeMainFunctions" +void+ (list +tmv*+ +fn-prototype**+ +i32*+))
-  (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +i64+ +i32+ +i32+ +ltv**+))
+  (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +size_t+ +size_t+ +size_t+ +ltv**+))
   (primitive module "invokeMainFunction" +void+ (list +i8*+ +fn-prototype*+))
 ;;  (primitive module "invokeLlvmFunctionVoid" +void+ (list +i8*+ +fn-prototype*+))
 
@@ -771,7 +771,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_fetch" +t*+ (list +t*+ +size_t+))
   (primitive-nounwind module "cc_va_arg" +t*+ (list +VaList_S*+))
   (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +VaList_S*+))
-  (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i8*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
+  (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
   (primitive          module "cc_call_multipleValueOneFormCall" +return_type+ (list +t*+))
   (primitive-nounwind module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
   (primitive-nounwind module "cc_loadThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))

@@ -403,12 +403,21 @@ T_mv af_gcInfo(T_sp x, Fixnum_sp marker) {
 };
 
 
-#define ARGS_af_gcMonitorAllocations "(on)"
-#define DECL_af_gcMonitorAllocations ""
-#define DOCS_af_gcMonitorAllocations "gcMonitorAllocations"
-void af_gcMonitorAllocations(bool on) {
-  _global_monitor_allocations = on;
-  printf("%s:%d  gcMonitorAllocations set to %d\n", __FILE__, __LINE__, on );
+#define ARGS_af_monitorAllocations "(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6))"
+#define DECL_af_monitorAllocations ""
+#define DOCS_af_monitorAllocations "gcMonitorAllocations"
+void af_monitorAllocations(bool on, Fixnum_sp backtraceStart, Fixnum_sp backtraceCount, Fixnum_sp backtraceDepth  ) {
+  global_monitorAllocations.on = on;
+  global_monitorAllocations.counter = 0;
+  if ( backtraceStart.unsafe_fixnum() < 0 ||
+       backtraceCount.unsafe_fixnum() < 0 ||
+       backtraceDepth.unsafe_fixnum() < 0 ) {
+    SIMPLE_ERROR(BF("Keyword arguments must all be >= 0"));
+  }
+  global_monitorAllocations.start = backtraceStart.unsafe_fixnum();
+  global_monitorAllocations.end = backtraceStart.unsafe_fixnum()+backtraceCount.unsafe_fixnum();
+  global_monitorAllocations.backtraceDepth = backtraceDepth.unsafe_fixnum();
+  printf("%s:%d  monitorAllocations set to %d\n", __FILE__, __LINE__, on );
 };
 
 
@@ -666,7 +675,7 @@ void initialize_gc_functions() {
     //            core::af_def(GcToolsPkg,"testArray0",&af_testArray0);
     core::af_def(GcToolsPkg, "gcInfo", &af_gcInfo);
     core::af_def(GcToolsPkg, "gcMarker", &af_gcMarker, ARGS_af_gcMarker, DECL_af_gcMarker, DOCS_af_gcMarker);
-    core::af_def(GcToolsPkg, "gcMonitorAllocations", &af_gcMonitorAllocations, ARGS_af_gcMonitorAllocations, DECL_af_gcMonitorAllocations, DOCS_af_gcMonitorAllocations);
+    core::af_def(GcToolsPkg, "monitorAllocations", &af_monitorAllocations, ARGS_af_monitorAllocations, DECL_af_monitorAllocations, DOCS_af_monitorAllocations);
      core::af_def(ClPkg, "room", &af_room, ARGS_af_room, DECL_af_room, DOCS_af_room);
     core::af_def(GcToolsPkg, "garbageCollect", &af_garbageCollect);
     core::af_def(GcToolsPkg, "stackDepth", &af_stackDepth);

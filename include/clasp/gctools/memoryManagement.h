@@ -78,7 +78,6 @@ namespace gctools {
   template <class OT> struct GCKind;
   extern size_t global_alignup_sizeof_header;
   extern void *_global_stack_marker;
-  extern bool _global_monitor_allocations;
 
 };
 
@@ -131,10 +130,21 @@ struct GCAllocationPoint;
 
  namespace gctools {
 
+   struct MonitorAllocations {
+     bool on;
+     bool stackDump;
+     int counter;
+     int start;
+     int end;
+     int backtraceDepth;
+   MonitorAllocations() : on(false), stackDump(false), counter(0) {};
+   };
+   extern MonitorAllocations global_monitorAllocations;
+   
    extern void monitorAllocation(GCKindEnum k,size_t sz);
 
 #ifdef GC_MONITOR_ALLOCATIONS
-#define MONITOR_ALLOCATION(k,sz) if (_global_monitor_allocations) { \
+#define MONITOR_ALLOCATION(k,sz) if (global_monitorAllocations.on) { \
     monitorAllocation(k,sz); \
   }
 #else

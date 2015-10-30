@@ -1247,9 +1247,9 @@ public:
   virtual void *functionAddress() const { return (void *)this->fptr; }
 
 public:
- CompiledClosure(core::T_sp functionName, core::T_sp spi, core::Symbol_sp type, core::CompiledClosure_fptr_type ptr, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
-                  core::T_sp ll)
-      : FunctionClosure(functionName, spi, type, renv), fptr(ptr), associatedFunctions(assocFuncs), _lambdaList(ll){};
+ CompiledClosure(core::T_sp functionName, core::Symbol_sp type, core::CompiledClosure_fptr_type ptr, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
+                 core::T_sp ll, SOURCE_INFO)
+   : FunctionClosure(functionName, type, renv, SOURCE_INFO_PASS), fptr(ptr), associatedFunctions(assocFuncs), _lambdaList(ll){};
   void setAssociatedFunctions(core::List_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
   bool compiledP() const { return true; };
   core::T_sp lambdaList() const;

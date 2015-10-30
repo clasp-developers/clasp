@@ -117,9 +117,9 @@
 		     (irc-renv ltv-env)
 		     (jit-constant-unique-string-ptr "top-level")
                      *gv-source-file-info-handle*
-		     (irc-i64-*current-source-pos-info*-filepos)
-		     (irc-i32-*current-source-pos-info*-lineno)
-		     (irc-i32-*current-source-pos-info*-column)
+		     (irc-size_t-*current-source-pos-info*-filepos)
+		     (irc-size_t-*current-source-pos-info*-lineno)
+		     (irc-size_t-*current-source-pos-info*-column)
 		     *load-time-value-holder-global-var*
                      ))))
 

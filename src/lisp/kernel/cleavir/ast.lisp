@@ -228,9 +228,9 @@ If this form has already been precalculated then just return the precalculated-v
                                   (cmp:irc-renv ltv-env)
                                   (cmp:jit-constant-unique-string-ptr "top-level")
                                   cmp:*gv-source-file-info-handle*
-                                  (cmp:irc-i64-*current-source-pos-info*-filepos)
-                                  (cmp:irc-i32-*current-source-pos-info*-lineno)
-                                  (cmp:irc-i32-*current-source-pos-info*-column)
+                                  (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                                  (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                                  (cmp:irc-size_t-*current-source-pos-info*-column)
                                   cmp:*load-time-value-holder-global-var*
                                   ))
              index)

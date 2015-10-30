@@ -328,6 +328,7 @@ T_sp T_O::shallowCopy() const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
+
 T_sp T_O::deepCopy() const {
   _G();
   SUBCLASS_MUST_IMPLEMENT();
@@ -541,6 +542,14 @@ T_sp T_O::instanceSigSet() {
   SIMPLE_ERROR(BF("T_O::instanceSigSet() invoked on object class[%s] val-->%s") % this->_instanceClass()->classNameAsString() % _rep_(this->asSmartPtr()));
 }
 
+#define ARGS_core_deepCopy "(obj)"
+#define DECL_core_deepCopy ""
+#define DOCS_core_deepCopy "deepCopy"
+T_sp core_deepCopy(T_sp obj)
+{
+  return obj->deepCopy();
+}
+
 
 
 void T_O::exposeCando(core::Lisp_sp lisp) {
@@ -548,6 +557,7 @@ void T_O::exposeCando(core::Lisp_sp lisp) {
   Defun(lowLevelDescribe);
   SYMBOL_SC_(CorePkg, slBoundp);
   Defun(slBoundp);
+  CoreDefun(deepCopy);
   SYMBOL_SC_(CorePkg, isNil);
   Defun(isNil);
   SYMBOL_SC_(CorePkg, instanceRef);

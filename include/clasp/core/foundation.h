@@ -1222,15 +1222,21 @@ extern core::Symbol_sp _sym_macro;
 namespace core {
  class FunctionClosure : public Closure {
 public:
-  T_sp _SourcePosInfo;
+//  T_sp _SourcePosInfo;
   Symbol_sp kind;
   T_sp _cleavir_ast;
+   Fixnum  _sourceFileInfoHandle;
+   Fixnum _filePos;
+   Fixnum _lineno;
+   Fixnum _column;
 public:
   DISABLE_NEW();
-  FunctionClosure(T_sp name, T_sp spo, Symbol_sp k, T_sp env)
-    : Closure(name, env), _SourcePosInfo(spo), kind(k), _cleavir_ast(_Nil<T_O>()){};
+#define SOURCE_INFO core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column
+#define SOURCE_INFO_PASS sourceFileInfoHandle, filePos, lineno, column
+  FunctionClosure(T_sp name, Symbol_sp k, T_sp env, SOURCE_INFO )
+   : Closure(name, env), kind(k), _cleavir_ast(_Nil<T_O>()), _sourceFileInfoHandle(sourceFileInfoHandle), _filePos(filePos), _lineno(lineno), _column(column){};
   FunctionClosure(T_sp name)
-    : Closure(name, _Nil<T_O>()), _SourcePosInfo(_Nil<T_O>()), kind(kw::_sym_function), _cleavir_ast(_Nil<T_O>()){};
+    : Closure(name, _Nil<T_O>()), kind(kw::_sym_function), _cleavir_ast(_Nil<T_O>()), _sourceFileInfoHandle(0), _filePos(0), _lineno(0), _column(0) {};
 
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
@@ -1239,7 +1245,7 @@ public:
   void setKind(Symbol_sp k) { this->kind = k; };
   Symbol_sp getKind() const { return this->kind; };
   bool macroP() const;
-  T_sp sourcePosInfo() const { return this->_SourcePosInfo; };
+  T_sp sourcePosInfo() const;// { return this->_SourcePosInfo; };
   T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
   virtual int sourceFileInfoHandle() const;
   virtual size_t filePos() const;
@@ -1255,8 +1261,8 @@ public:
 
 public:
   DISABLE_NEW();
-  BuiltinClosure(T_sp name, T_sp sp, Symbol_sp k)
-      : FunctionClosure(name, sp, k, _Nil<T_O>()){};
+ BuiltinClosure(T_sp name, Symbol_sp k, SOURCE_INFO)
+   : FunctionClosure(name, k, _Nil<T_O>(), SOURCE_INFO_PASS){};
   BuiltinClosure(T_sp name)
       : FunctionClosure(name) {}
   void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {

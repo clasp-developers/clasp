@@ -23,7 +23,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 18 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -76,7 +77,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 17 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -127,7 +129,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 16 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -176,7 +179,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 15 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -224,7 +228,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 14 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -271,7 +276,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 13 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -317,7 +323,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 12 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -362,7 +369,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, A
 Type fptr;
 public:
 enum { NumParams = 11 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -406,7 +414,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9);
 Type fptr;
 public:
 enum { NumParams = 10 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -449,7 +458,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8);
 Type fptr;
 public:
 enum { NumParams = 9 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -491,7 +501,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
 Type fptr;
 public:
 enum { NumParams = 8 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -531,7 +542,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6);
 Type fptr;
 public:
 enum { NumParams = 7 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -570,7 +582,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5);
 Type fptr;
 public:
 enum { NumParams = 6 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -608,7 +621,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4);
 Type fptr;
 public:
 enum { NumParams = 5 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -645,7 +659,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2, ARG3);
 Type fptr;
 public:
 enum { NumParams = 4 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -681,7 +696,8 @@ typedef RT(*Type) (ARG0, ARG1, ARG2);
 Type fptr;
 public:
 enum { NumParams = 3 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -716,7 +732,8 @@ typedef RT(*Type) (ARG0, ARG1);
 Type fptr;
 public:
 enum { NumParams = 2 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -750,7 +767,8 @@ typedef RT(*Type) (ARG0);
 Type fptr;
 public:
 enum { NumParams = 1 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -783,7 +801,8 @@ typedef RT(*Type) ();
 Type fptr;
 public:
 enum { NumParams = 0 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -815,7 +834,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 18 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -867,7 +887,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 17 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -917,7 +938,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 16 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -966,7 +988,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 15 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1014,7 +1037,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 14 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1061,7 +1085,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 13 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1107,7 +1132,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 12 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1152,7 +1178,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9,
 Type fptr;
 public:
 enum { NumParams = 11 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1196,7 +1223,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)
 Type fptr;
 public:
 enum { NumParams = 10 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1239,7 +1267,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8);
 Type fptr;
 public:
 enum { NumParams = 9 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1280,7 +1309,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
 Type fptr;
 public:
 enum { NumParams = 8 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1320,7 +1350,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6);
 Type fptr;
 public:
 enum { NumParams = 7 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1359,7 +1390,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5);
 Type fptr;
 public:
 enum { NumParams = 6 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1397,7 +1429,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4);
 Type fptr;
 public:
 enum { NumParams = 5 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1434,7 +1467,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2, ARG3);
 Type fptr;
 public:
 enum { NumParams = 4 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1470,7 +1504,8 @@ typedef void(*Type) (ARG0, ARG1, ARG2);
 Type fptr;
 public:
 enum { NumParams = 3 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1505,7 +1540,8 @@ typedef void(*Type) (ARG0, ARG1);
 Type fptr;
 public:
 enum { NumParams = 2 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1539,7 +1575,8 @@ typedef void(*Type) (ARG0);
 Type fptr;
 public:
 enum { NumParams = 1 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1572,7 +1609,8 @@ typedef void(*Type) ();
 Type fptr;
 public:
 enum { NumParams = 0 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1605,7 +1643,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 18 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1660,7 +1699,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 17 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1714,7 +1754,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 16 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1765,7 +1806,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 15 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1815,7 +1857,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 14 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1863,7 +1906,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 13 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1909,7 +1953,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 12 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1954,7 +1999,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 11 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -1998,7 +2044,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 10 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -2041,7 +2088,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 9 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -2083,7 +2131,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 8 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -2123,7 +2172,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5,
 Type fptr;
 public:
 enum { NumParams = 7 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -2162,7 +2212,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4, ARG5)
 Type fptr;
 public:
 enum { NumParams = 6 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -2200,7 +2251,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3, ARG4);
 Type fptr;
 public:
 enum { NumParams = 5 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -2237,7 +2289,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2, ARG3);
 Type fptr;
 public:
 enum { NumParams = 4 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -2273,7 +2326,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1, ARG2);
 Type fptr;
 public:
 enum { NumParams = 3 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -2308,7 +2362,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0, ARG1);
 Type fptr;
 public:
 enum { NumParams = 2 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -2342,7 +2397,8 @@ typedef gctools::multiple_values<RT>(*Type) (ARG0);
 Type fptr;
 public:
 enum { NumParams = 1 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -2375,7 +2431,8 @@ typedef gctools::multiple_values<RT>(*Type) ();
 Type fptr;
 public:
 enum { NumParams = 0 };
-VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS),
+    fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 virtual void* functionAddress() const { return (void*)this->fptr; };

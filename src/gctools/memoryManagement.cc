@@ -63,15 +63,22 @@ void *_global_stack_marker;
 namespace gctools {
 
 size_t global_alignup_sizeof_header;
-bool _global_monitor_allocations = false;
+
+MonitorAllocations global_monitorAllocations;
 
 void monitorAllocation(GCKindEnum k,size_t sz)
 {
   printf("%s:%d monitor allocation of %s with %zu bytes\n", __FILE__, __LINE__, obj_name(k), sz);
+  if ( global_monitorAllocations.counter >= global_monitorAllocations.start
+       && global_monitorAllocations.counter < global_monitorAllocations.end) {
+    core::core_clibBacktrace(global_monitorAllocations.backtraceDepth);
+  }
+  global_monitorAllocations.counter++;
 }
 
+
 void handle_signals(int signo) {
-  //
+//
   // Indicate that a signal was caught and handle it at a safe-point
   //
   SET_SIGNAL(signo);
@@ -82,6 +89,8 @@ void handle_signals(int signo) {
     debugger.invoke();
   }
 }
+
+
 
 void fatal_error_handler(void *user_data, const std::string &reason, bool gen_crash_diag) {
   printf("Hit a fatal error in llvm/clang: %s\n", reason.c_str());

@@ -210,7 +210,6 @@ int af_ihsCurrentFrame();
 /*! Set the current core:*ihs-current* value.
       If the idx is out of bounds then return a valid value */
 int af_setIhsCurrentFrame(int idx);
-void core_lowLevelBacktrace();
 void core_exceptionStackDump();
 void core_dynamicBindingStackDump(std::ostream &out);
 

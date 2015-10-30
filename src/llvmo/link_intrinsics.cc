@@ -519,24 +519,28 @@ void makeLongFloat(core::T_sp *fnP, LongFloat s) {
 #endif
 };
 
-core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, char *sourceName, size_t filePos, int lineno, int column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
+core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr
+                                      , int* sourceFileInfoHandleP
+                                      , size_t filePos
+                                      , size_t lineno
+                                      , size_t column
+                                      , core::T_sp *functionNameP
+                                      , core::T_sp *compiledFuncsP
+                                      , core::ActivationFrame_sp *frameP
+                                      , core::T_sp *lambdaListP) {
   _G();
   // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
-  core::Str_sp sourceStr = core::Str_O::create(sourceName);
-  core::SourceFileInfo_mv sfi = core::core_sourceFileInfo(sourceStr);
-  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1))); // sfindex could be written into the Module global for debugging
-  core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex, filePos, lineno, column);
-  gctools::tagged_pointer<core::Closure> closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP, spi, kw::_sym_function, funcPtr, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP);
+  gctools::tagged_pointer<core::Closure> closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP, kw::_sym_function, funcPtr, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP, *sourceFileInfoHandleP, filePos, lineno, column );
   core::CompiledFunction_sp compiledFunction = core::CompiledFunction_O::make(closure);
   return compiledFunction;
 };
 extern "C" {
-void sp_makeCompiledFunction(core::T_sp *resultCompiledFunctionP, fnLispCallingConvention funcPtr, char *sourceName, size_t filePos, int lineno, int column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
-  (*resultCompiledFunctionP) = proto_makeCompiledFunction(funcPtr, sourceName, filePos, lineno, column, functionNameP, compiledFuncsP, frameP, lambdaListP);
+void sp_makeCompiledFunction(core::T_sp *resultCompiledFunctionP, fnLispCallingConvention funcPtr, int* sourceFileInfoHandleP, size_t filePos, size_t lineno, size_t column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
+  (*resultCompiledFunctionP) = proto_makeCompiledFunction(funcPtr, sourceFileInfoHandleP, filePos, lineno, column, functionNameP, compiledFuncsP, frameP, lambdaListP);
 }
 
-void mv_makeCompiledFunction(core::T_mv *resultCompiledFunctionP, fnLispCallingConvention funcPtr, char *sourceName, size_t filePos, int lineno, int column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
-  (*resultCompiledFunctionP) = Values(proto_makeCompiledFunction(funcPtr, sourceName, filePos, lineno, column, functionNameP, compiledFuncsP, frameP, lambdaListP));
+void mv_makeCompiledFunction(core::T_mv *resultCompiledFunctionP, fnLispCallingConvention funcPtr, int* sourceFileInfoHandleP, size_t filePos, size_t lineno, size_t column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
+  (*resultCompiledFunctionP) = Values(proto_makeCompiledFunction(funcPtr, sourceFileInfoHandleP, filePos, lineno, column, functionNameP, compiledFuncsP, frameP, lambdaListP));
 }
 };
 
@@ -547,13 +551,12 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             char *cpname,
                             int *sourceFileInfoHandleP,
                             size_t filePos,
-                            int lineno,
-                            int column,
+                            size_t lineno,
+                            size_t column,
                             core::LoadTimeValues_O **ltvPP) {
   ActivationFrame_sp frame = (*frameP);
-  SourcePosInfo_sp tempSourcePosInfo = SourcePosInfo_O::create(*sourceFileInfoHandleP, filePos, lineno, column);
   core::Str_sp name = core::Str_O::create(cpname);
-  BuiltinClosure tempClosure(name, tempSourcePosInfo, kw::_sym_function);
+  BuiltinClosure tempClosure(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
   STACK_FRAME(buff,no_args,0);
   VaList_S empty_valist(no_args);
   core::T_O* empty_valist_ptr = empty_valist.asTaggedPtr();
@@ -1689,54 +1692,40 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val) {
 
 
 core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
-                      char* sourceName, size_t filePos, size_t lineno, size_t column,
+                      int *sourceFileInfoHandleP,
+                      size_t filePos, size_t lineno, size_t column,
                       std::size_t numCells, ...) {
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
-  core::ValueFrame_sp vo = core::ValueFrame_O::create(numCells, _Nil<core::T_O>());
-#if 0
-  printf("%s:%d:%s  cc_enclose fileName: %s  filePos: %lu lineno: %d column: %d\n",
-         __FILE__, __LINE__, __FUNCTION__, fileName, filePos, lineno, column);
-#endif
-  core::T_O *p;
-  va_list argp;
-  va_start(argp, numCells);
-  int idx = 0;
-#ifdef DEBUG_CC
-  printf("%s:%d Starting enclose\n", __FILE__, __LINE__);
-#endif
-  for (; numCells; --numCells) {
-    p = va_arg(argp, core::T_O *);
-#ifdef DEBUG_CC
-    printf("%s:%d enclose environment@%p[%d] p[%p]\n", __FILE__, __LINE__, vo.raw_(), idx, p);
-#endif
-    (*vo)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
-    ++idx;
+  core::T_sp vo;
+  if ( numCells == 0 ) {
+    vo = _Nil<T_O>();
+  } else {
+    core::ValueFrame_sp vf = core::ValueFrame_O::create(numCells, _Nil<core::T_O>());
+    core::T_O *p;
+    va_list argp;
+    va_start(argp, numCells);
+    int idx = 0;
+    for (; numCells; --numCells) {
+      p = va_arg(argp, core::T_O *);
+      (*vf)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
+      ++idx;
+    }
+    va_end(argp);
+    vo = vf;
   }
-  va_end(argp);
-  //
-  // Holy hell - I have to spoof stuff to allocate a CompiledClosure - I need to make all this info
-  // available to the enclose instruction
-  //
-  core::Str_sp sourceStr = core::Str_O::create(sourceName);
-  core::SourceFileInfo_mv sfi = core::core_sourceFileInfo(sourceStr);
-  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1))); // sfindex could be written into the Module global for debugging
-  core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,lineno,column);
-  gctools::tagged_pointer<llvmo::CompiledClosure> functoid = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(tlambdaName // functionName - make this something useful!
-                                                                                                    ,
-                                                                                                    spi // _Nil<core::T_O>() // SourcePosInfo
-                                                                                                    ,
-                                                                                                    kw::_sym_function // fn-type
-                                                                                                    ,
-                                                                                                    llvm_func //(llvmo::CompiledClosure::fptr_type)NULL   // ptr - will be set when Module is compiled
-                                                                                                    ,
-                                                                                                    _Nil<core::T_O>() // llvm-func
-                                                                                                    ,
-                                                                                                    vo // renv
-                                                                                                    ,
-                                                                                                    _Nil<T_O>() // assocFuncs
-                                                                                                    ,
-                                                                                                    _Nil<T_O>() // lambdaList
-                                                                                                    );
+  gctools::tagged_pointer<llvmo::CompiledClosure> functoid =
+    gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass( tlambdaName // functionName - make this something useful!
+                                                                    , kw::_sym_function // fn-type
+                                                                    , llvm_func //(llvmo::CompiledClosure::fptr_type)NULL   // ptr - will be set when Module is compiled
+                                                                    , _Nil<core::T_O>() // llvm-func
+                                                                    , vo // renv
+                                                                    , _Nil<T_O>() // assocFuncs
+                                                                    , _Nil<T_O>() // lambdaList
+                                                                    , *sourceFileInfoHandleP
+                                                                    , filePos
+                                                                    , lineno
+                                                                    , column
+                                                                    );
   core::CompiledFunction_sp cf = core::CompiledFunction_O::make(functoid);
   core::T_sp res = cf;
   return res.raw_();

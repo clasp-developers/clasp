@@ -228,10 +228,10 @@ then compile it and return (values compiled-llvm-function lambda-name)"
             (irc-intrinsic "makeCompiledFunction" 
                            result 
                            compiled-fn 
-                           *gv-source-pathname* 
-                           (jit-constant-i64 file-pos)
-                           (jit-constant-i32 lineno)
-                           (jit-constant-i32 column)
+                           *gv-source-file-info-handle* 
+                           (jit-constant-size_t file-pos)
+                           (jit-constant-size_t lineno)
+                           (jit-constant-size_t column)
                            (compile-reference-to-literal lambda-name env)
                            funcs 
                            (irc-renv env)
@@ -1052,9 +1052,9 @@ jump to blocks within this tagbody."
                              (irc-renv ltv-env)
 			     (jit-constant-unique-string-ptr "load-time-value")
                              *gv-source-file-info-handle*
-			     (jit-constant-i64 file-pos)
-                             (jit-constant-i32 lineno)
-                             (jit-constant-i32 column)
+			     (jit-constant-size_t file-pos)
+                             (jit-constant-size_t lineno)
+                             (jit-constant-size_t column)
 			     *load-time-value-holder-global-var*
                              )))
 	  (irc-intrinsic "getLoadTimeValue" result *load-time-value-holder-global-var* (jit-constant-i32 index)))

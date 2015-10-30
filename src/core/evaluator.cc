@@ -430,7 +430,7 @@ Function_sp core_coerce_to_function(T_sp arg) {
       parse_lambda_body(body, declares, docstring, code);
       LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
       gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass
-        ( cl::_sym_lambda, _Nil<T_O>(), kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code);
+        ( cl::_sym_lambda, kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
       Function_sp proc = Function_O::make(ic);
       return proc;
 #if 0
@@ -1204,8 +1204,7 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
       printf("%s:%d   Could not find source info for lambda\n", __FILE__, __LINE__);
     }
   }
-  gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(
-      name, spi, kw::_sym_function, llh, declares, docstring, env, code);
+  gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass( name, kw::_sym_function, llh, declares, docstring, env, code, SOURCE_POS_INFO_FIELDS(spi));
   Function_sp proc = Function_O::make(ic);
   return proc;
 }
@@ -1442,7 +1441,7 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
       parse_lambda_body(outer_body, declares, docstring, code);
       LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
       printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
-      gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name, _Nil<SourcePosInfo_O>(), kw::_sym_macro, outer_llh, declares, docstring, newEnv, code);
+      gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name,  kw::_sym_macro, outer_llh, declares, docstring, newEnv, code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
       outer_func = Function_O::make(ic);
     }
     LOG(BF("func = %s") % outer_func_cons->__repr__());
@@ -1496,7 +1495,7 @@ T_mv do_symbolMacrolet(List_sp args, T_sp env, bool topLevelForm) {
                                                                  oCadr(declares),
                                                                  cl::_sym_function);
     printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
-    gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(_sym_symbolMacroletLambda, _Nil<T_O>(), kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion);
+    gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(_sym_symbolMacroletLambda,kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion, SOURCE_POS_INFO_FIELDS(_Nil<T_O>() ));
     Function_sp outer_func = Function_O::make(ic);
     newEnv->addSymbolMacro(name, outer_func);
     cur = oCdr(cur);

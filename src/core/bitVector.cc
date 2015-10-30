@@ -261,10 +261,13 @@ string BitVector_O::asString() {
   return ((s.str()));
 }
 
-T_sp BitVector_O::deepCopy() const {
-  _OF();
-  LOG(BF("About to copy BitVector@%p") % this);
-  GC_COPY(BitVector_O, n, *this);
+T_sp SimpleBitVector_O::deepCopy() const {
+  GC_COPY(SimpleBitVector_O, n, *this);
+  return (n);
+}
+
+T_sp BitVectorWithFillPtr_O::deepCopy() const {
+  GC_COPY(BitVectorWithFillPtr_O, n, *this);
   return (n);
 }
 
