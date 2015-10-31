@@ -246,7 +246,6 @@ gctools::Vec0<T_sp>& fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp>& vekto
 LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist, gc::tagged_pointer<Cache> cache) {
   /* Lookup the generic-function/arguments invocation in a cache and if an effective-method
 	   exists then use that.   If an effective-method does not exist then calculate it and put it in the cache.
-
 	   Then call the effective method with the saved arguments.
 	*/
   gctools::Vec0<T_sp>& vektor = fill_spec_vector(gf, cache->keys(), arglist );
@@ -268,9 +267,6 @@ LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist, gc::tagged_pointer<Cache
 	     * compute the applicable methods. We must save
 	     * the keys and recompute the cache location if
 	     * it was filled. */
-    if ( _sym_STARdebugGenericDispatchSTAR->symbolValue().notnilp() ) {
-      printf("%s:%d  compute_applicable_method is about to be called on a generic function\n", __FILE__, __LINE__);
-    }
     T_sp keys = VectorObjects_O::create(vektor);
     T_mv mv = compute_applicable_method(gf, arglist);
     func = gc::As<Function_sp>(mv);
