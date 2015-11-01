@@ -81,9 +81,9 @@
 #+compare(print "combin.lsp 81")
 (defun combine-method-functions (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (.combined-method-args. no-next-methods)
+  #'(lambda (args no-next-methods)
       (declare (ignorable no-next-methods))
-      (funcall method .combined-method-args. rest-methods)))
+      (funcall method args rest-methods)))
 
 #+compare(print "combin.lsp 88")
 (defmacro call-method (method &optional rest-methods)
