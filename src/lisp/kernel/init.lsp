@@ -5,6 +5,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package "CORE"))
 
+;;(setq *features* (cons :dbg-print *features*))
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
 (export '*echo-repl-tpl-read*)
 (export '(*echo-repl-tpl-read* 
@@ -392,6 +393,57 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
           declared-global-notinline-p
           declared-global-inline-p))
 
+(defun probe-dir-cs (root dirname)
+  (let ((dirs (directory (bformat nil "%s*/" root))))
+    #+dbg-print(bformat t "DBG-PRINT   dirs: %s\n" dirs)
+    (let ((d (car dirs))
+          last-dirname)
+      (tagbody
+       top
+         (if (null dirs) (go done))
+         (setq d (car dirs))
+         (setq last-dirname (car (last (pathname-directory d))))
+         #+dbg-print(bformat t "DBG-PRINT last-dirname: %s  dirname: %s\n" last-dirname dirname )
+         (if (string-equal last-dirname dirname)
+             (return-from probe-dir-cs d))
+         (setq dirs (cdr dirs))
+         (go top)
+       done)
+      nil)))
+
+(defun probe-dirs-cs (pn)
+  (let ((root (namestring (probe-file (make-pathname :host (pathname-host pn)))))
+        (dirs (cdr (pathname-directory pn))))
+    #+dbg-print(progn
+                 (bformat t "DBG-PRINT pn: %s\n" pn)
+                 (bformat t "DBG-PRINT root: %s\n" root)
+                 (bformat t "DBG-PRINT dirs: %s\n" dirs))
+    (let (d acc)
+      (tagbody
+       top
+         (if (null dirs) (return-from probe-dirs-cs root))
+         (setq d (car dirs))
+         (setq root (namestring (probe-dir-cs root d)))
+         #+dbg-print(bformat t "DBG-PRINT current root = %s\n" root)
+         (setq dirs (cdr dirs))
+         (go top)))))
+
+(defun probe-file-case-insensitive (pn)
+  (let* ((root (namestring (probe-dirs-cs (make-pathname :name nil :type nil :defaults pn))))
+         (fname (pathname-name pn))
+         (ftype (pathname-type pn))
+         (files (directory (bformat nil "%s*.*" root)))
+         file)
+    (tagbody
+     top
+       (if (null files) (return-from probe-file-case-insensitive nil))
+       (setq file (car files))
+       (if (and (string-equal fname (pathname-name file))
+                (string-equal ftype (pathname-type file)))
+           (return-from probe-file-case-insensitive file))
+       (setq files (cdr files))
+       (go top))))
+(export 'probe-file-case-insensitive)
 ;; This is used extensively in the ecl compiler and once in predlib.lsp
 (defvar *alien-declarations* ())
 (export '*alien-declarations*)
@@ -411,7 +463,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     (bformat nil "app-contents:execs;%s;%s;bin;intrinsics_bitcode.sbc" (build-configuration) variant)))
 
 
-(defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
+(defconstant +image-pathname+ (make-pathname :host "SYS" :directory '(:absolute) :name "image" :type "fasl"))
 (export '(+image-pathname+ build-intrinsics-bitcode-pathname))
 
 (defun build-hostname (type &optional stage)
@@ -423,28 +475,44 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                             "cclasp" 
                             "full"))))
          (type-modified-host-suffix (cond
-                                      ((string-equal type "bc") "bitcode")
+                                      ((eq type :bc) "bitcode")
                                       (t (build-configuration))))
          (bitcode-host (bformat nil "%s-%s" stage type-modified-host-suffix)))
     bitcode-host))
 
-(defun build-pathname (module &optional (type "lsp") stage)
-  (let ((pathname (cond
-                    ((pathnamep module)
-                     (merge-pathnames module
-                                      (make-pathname
-                                       :type type
-                                       :defaults (translate-logical-pathname
-                                                  (make-pathname :host "sys")))))
-                    ((symbolp module)
-                     (merge-pathnames (pathname (string module))
-                                      (make-pathname :host "sys" :directory '(:absolute) :type type)))
-                    (t (error "bad module name: ~s" module))))
-        (target-host (build-hostname type stage)))
-    (if (member type '("lsp" "lisp") :test #'string-equal)
-        pathname
-        (let ((relative (maybe-relative-pathname-to-sys pathname)))
-          (merge-pathnames relative (translate-logical-pathname (make-pathname :host target-host)))))))
+(defun maybe-relative-pathname-to-sys (x &optional (sys-pn (translate-logical-pathname "SYS:")))
+  (if (logical-pathname-p x)
+      (make-pathname :directory (pathname-directory x)
+                     :name (pathname-name x)
+                     :type (pathname-type x))
+      (let ((dir-x (pathname-directory x)))
+        (if (eq (car dir-x) :absolute)
+            (make-pathname :directory
+                           (cons :absolute
+                                 (strip-root (cdr dir-x) (cdr (pathname-directory sys-pn))))
+                           :defaults x)
+            x))))
+
+(defun build-pathname (orig-module &optional (type :lisp) stage)
+  (let ((module (maybe-relative-pathname-to-sys orig-module))
+        (target-host (build-hostname type stage))
+        pn)
+    #+dbg-print(bformat t "DBG-PRINT build-pathname  module: %s\n" module)
+    #+dbg-print(bformat t "DBG-PRINT   target-host: %s\n" target-host)
+    (cond
+      ((eq type :lisp)
+       (cond
+         ((progn
+            (setq pn (merge-pathnames module (make-pathname :host "SYS" :type "lsp")))
+            (if (probe-file pn) pn nil)))
+         ((progn
+            (setq pn (merge-pathnames module (make-pathname :host "SYS" :type "lisp")))
+            (if (probe-file pn) pn nil)))
+         (t (error "Could not file source file with lsp or lisp extension for ~s" module))))
+      ((eq type :bc)
+       (merge-pathnames module (make-pathname :host target-host :type "bc" )))
+      (t
+       (merge-pathnames module (make-pathname :host target-host :type (string-downcase (string type))))))))
 
 (export '(build-pathname build-host))
   
@@ -461,21 +529,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                       (make-pathname :host "sys" :directory '(:absolute) :type type)))
     (t (error "bad module name: ~s" module))))
 
-(defun lisp-source-pathname (module)
-  (or (probe-file (build-pathname module "lsp"))
-      (probe-file (build-pathname module "lisp"))
-      (error "Could not find source file for ~a" module)))
-(export 'lisp-source-pathname)
-
-(si::*fset 'interpreter-iload
-           #'(lambda (module)
-               (let* ((pathname (lisp-source-pathname module))
-		      (name (namestring pathname)))
-                 (if cmp:*implicit-compile-hook*
-                     (bformat t "Loading/compiling source: %s\n" (namestring name))
-                     (bformat t "Loading/interpreting source: %s\n" (namestring name)))
-		 (load pathname)))
-           nil)
 
 (si::*fset 'fset
 		 #'(lambda (whole env)
@@ -514,19 +567,27 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 (eval-when (:execute)
-  (load (lisp-source-pathname 'kernel/cmp/jit-setup))
-  (load (lisp-source-pathname 'kernel/clsymbols)))
+  (load (build-pathname #P"sys:kernel;cmp;jit-setup"))
+  (load (build-pathname #P"sys:kernel;clsymbols")))
 
 (defvar *reversed-init-filenames* ())
 
-(si::*fset 'iload #'interpreter-iload)
-#| Otherwise use the compiler |#
-#-nocmp
+(si::*fset 'interpreter-iload
+           #'(lambda (module)
+               (let* ((pathname (build-pathname module :lisp))
+		      (name (namestring pathname)))
+                 (if cmp:*implicit-compile-hook*
+                     (bformat t "Loading/compiling source: %s\n" (namestring name))
+                     (bformat t "Loading/interpreting source: %s\n" (namestring name)))
+		 (load pathname)))
+           nil)
+
 (defun iload (fn &key load-bitcode )
+  #+dbg-print(bformat t "DBG-PRINT iload fn: %s\n" fn)
   (setq *reversed-init-filenames* (cons fn *reversed-init-filenames*))
-  (let* ((lsp-path (lisp-source-pathname fn))
-	 (bc-path (build-pathname fn "bc")) ;; target-backend-pathname (get-pathname-with-type fn "bc") ))
-	 (load-bc (if (not (probe-file lsp-path))
+  (let* ((lsp-path (build-pathname fn))
+	 (bc-path (build-pathname fn :bc)) ;; target-backend-pathname (get-pathname-with-type fn "bc") ))
+	 (load-bc (if (not (probe-file-case-insensitive lsp-path))
 		      t
 		      (if (not (probe-file bc-path))
 			  (progn
@@ -546,22 +607,22 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 				      nil))))))))
     (if load-bc
 	(progn
-	  (bformat t "Loading bitcode file: %s\n" (namestring (truename bc-path)))
+	  (bformat t "Loading bitcode file: %s\n" bc-path)
 	  (load-bitcode bc-path))
-	(if (probe-file lsp-path)
+	(if (probe-file-case-insensitive lsp-path)
 	    (progn
               (if cmp:*implicit-compile-hook*
-                  (bformat t "Loading/compiling source: %s\n" (truename lsp-path))
-                  (bformat t "Loading/interpreting source: %s\n" (truename lsp-path)))
+                  (bformat t "Loading/compiling source: %s\n" lsp-path)
+                  (bformat t "Loading/interpreting source: %s\n" lsp-path))
 	      (load lsp-path))
-	    (bformat t "No interpreted or bitcode file for %s could be found\n" (truename lsp-path))))))
+	    (bformat t "No interpreted or bitcode file for %s could be found\n" lsp-path)))))
 
 (defun delete-init-file (module &key (really-delete t) stage)
-  (let ((bitcode-path (build-pathname module "bc" stage))) ;; (target-backend-pathname (get-pathname-with-type module "bc"))))
+  (let ((bitcode-path (build-pathname module :bc stage))) ;; (target-backend-pathname (get-pathname-with-type module "bc"))))
     (if (probe-file bitcode-path)
 	(if really-delete
 	    (progn
-	      (bformat t "     Deleting bitcode: %s\n" (truename bitcode-path))
+	      (bformat t "     Deleting bitcode: %s\n" bitcode-path)
 	      (delete-file bitcode-path))))))
 
 ;; I need to search the list rather than using features because *features* may change at runtime
@@ -589,14 +650,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     cur))
 
 
-(defun maybe-relative-pathname-to-sys (x &optional (sys-pn (translate-logical-pathname "SYS:")))
-  (let ((dir-x (pathname-directory x)))
-    (if (eq (car dir-x) :absolute)
-	(make-pathname :directory
-		       (cons :relative 
-			     (strip-root (cdr dir-x) (cdr (pathname-directory sys-pn))))
-		       :defaults x)
-	x)))
 
 (defun target-backend-pathname (pathname &key (target-backend *target-backend*) &allow-other-keys)
   ;;  (if target-backend nil (error "target-backend is nil"))
@@ -606,8 +659,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export '(default-target-backend target-backend-pathname))
 
 (defun bitcode-exists-and-up-to-date (filename)
-  (let* ((source-path (lisp-source-pathname filename))
-         (bitcode-path (build-pathname filename "bc"))
+  (let* ((source-path (build-pathname filename))
+         (bitcode-path (build-pathname filename :bc))
          (found-bitcode (probe-file bitcode-path)))
     (if found-bitcode
         (> (file-write-date bitcode-path)
@@ -626,8 +679,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun out-of-date-image (source-files image)
   (let* ((last-source (car (reverse source-files)))
-         (last-bitcode (build-pathname last-source "bc"))
-         (image-file (target-backend-pathname image)))
+         (last-bitcode (build-pathname last-source :bc))
+         (image-file (build-pathname image :fasl)))
     (format t "last-bitcode: ~a~%" last-bitcode)
     (format t "image-file: ~a~%" image-file)
     (if (probe-file image-file)
@@ -636,24 +689,26 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
         t)))
 
 (defun compile-kernel-file (filename &key (reload nil) load-bitcode (force-recompile nil))
+  #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s\n" filename)
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
-  (let* ((source-path (lisp-source-pathname filename))
-	 (bitcode-path (build-pathname filename "bc")) ;; (target-backend-pathname (get-pathname-with-type filename "bc")))
+  (let* ((source-path (build-pathname filename :lisp))
+	 (bitcode-path (build-pathname filename :bc)) ;; (target-backend-pathname (get-pathname-with-type filename "bc")))
 	 (load-bitcode (and (bitcode-exists-and-up-to-date filename) load-bitcode)))
     (if (and load-bitcode (not force-recompile))
 	(progn
-	  (bformat t "Skipping compilation of %s - its bitcode file %s is more recent\n" (truename source-path) (translate-logical-pathname bitcode-path))
+	  (bformat t "Skipping compilation of %s - its bitcode file %s is more recent\n" source-path bitcode-path)
 	  ;;	  (bformat t "   Loading the compiled file: %s\n" (path-file-name bitcode-path))
 	  ;;	  (load-bitcode (as-string bitcode-path))
 	  )
 	(progn
 	  (bformat t "\n")
-	  (bformat t "Compiling %s\n   to %s - will reload: %s\n" (truename source-path) bitcode-path reload)
+	  (bformat t "Compiling source %s\n   to %s - will reload: %s\n" source-path bitcode-path reload)
 	  (let ((cmp::*module-startup-prefix* "kernel"))
+            #+dbg-print(bformat t "DBG-PRINT  source-path = %s\n" source-path)
             (compile-file source-path :output-file bitcode-path :print t :verbose t :output-type :bitcode :type :kernel)
 	    (if reload
 		(progn
-		  (bformat t "    Loading newly compiled file: %s\n" (truename bitcode-path))
+		  (bformat t "    Loading newly compiled file: %s\n" bitcode-path)
 		  (load-bitcode bitcode-path))
 		(bformat t "      Skipping reload\n"))
 	    )))
@@ -668,118 +723,118 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defvar *init-files*
   '(
     :init
-    #P"kernel/init"
+    #P"sys:kernel;init"
     :start
-    #P"kernel/cmp/jit-setup"
-    #P"kernel/clsymbols"
-    #P"kernel/lsp/packages"
-    #P"kernel/lsp/foundation"
-    #P"kernel/lsp/export"
-    #P"kernel/lsp/defmacro"
+    #P"sys:kernel;cmp;jit-setup"
+    #P"sys:kernel;clsymbols"
+    #P"sys:kernel;lsp;packages"
+    #P"sys:kernel;lsp;foundation"
+    #P"sys:kernel;lsp;export"
+    #P"sys:kernel;lsp;defmacro"
     :defmacro
-    #P"kernel/lsp/helpfile"
-    #P"kernel/lsp/evalmacros"
-    #P"kernel/lsp/claspmacros"
-    #P"kernel/lsp/source-transformations"
+    #P"sys:kernel;lsp;helpfile"
+    #P"sys:kernel;lsp;evalmacros"
+    #P"sys:kernel;lsp;claspmacros"
+    #P"sys:kernel;lsp;source-transformations"
     :macros
-    #P"kernel/lsp/testing"
-    #P"kernel/lsp/makearray"
-    #P"kernel/lsp/arraylib"
-    #P"kernel/lsp/setf"
-    #P"kernel/lsp/listlib"
-    #P"kernel/lsp/mislib"
-    #P"kernel/lsp/defstruct"
-    #P"kernel/lsp/predlib"
-    #P"kernel/lsp/seq"
-    #P"kernel/lsp/cmuutil"
-    #P"kernel/lsp/seqmacros"
-    #P"kernel/lsp/iolib"
-;;    #P"kernel/lsp/profiling"    ;; Do micro-profiling of the GC
+   #P"sys:kernel;lsp;testing"
+    #P"sys:kernel;lsp;makearray"
+    #P"sys:kernel;lsp;arraylib"
+    #P"sys:kernel;lsp;setf"
+    #P"sys:kernel;lsp;listlib"
+    #P"sys:kernel;lsp;mislib"
+    #P"sys:kernel;lsp;defstruct"
+    #P"sys:kernel;lsp;predlib"
+    #P"sys:kernel;lsp;seq"
+    #P"sys:kernel;lsp;cmuutil"
+    #P"sys:kernel;lsp;seqmacros"
+    #P"sys:kernel;lsp;iolib"
+;;    #P"sys:kernel;lsp;profiling"    ;; Do micro-profiling of the GC
     :tiny
     :pre-cmp
     ;; Compiler code
-    #P"kernel/cmp/packages"
-    #P"kernel/cmp/cmpsetup"
-;;    #P"kernel/cmp/cmpenv-fun"
-;;    #P"kernel/cmp/cmpenv-proclaim"
-    #P"kernel/cmp/cmpglobals"
-    #P"kernel/cmp/cmptables"
-    #P"kernel/cmp/cmpvar"
-    #P"kernel/cmp/cmputil"
-    #P"kernel/cmp/cmpintrinsics"
-    #P"kernel/cmp/cmpir"
-    #P"kernel/cmp/cmpeh"
-    #P"kernel/cmp/debuginfo"
-;;    #P"kernel/cmp/arguments"
-    #P"kernel/cmp/lambdalistva"
-    #P"kernel/cmp/cmpvars"
-    #P"kernel/cmp/cmpquote"
-    #P"kernel/cmp/cmpobj"
-;;    #P"kernel/cmp/mincomp"
-    #P"kernel/cmp/compiler"
-    #P"kernel/cmp/compilefile"
-    #P"kernel/cmp/cmpbundle"
-    #P"kernel/cmp/cmprepl"
+    #P"sys:kernel;cmp;packages"
+    #P"sys:kernel;cmp;cmpsetup"
+;;    #P"sys:kernel;cmp;cmpenv-fun"
+;;    #P"sys:kernel;cmp;cmpenv-proclaim"
+    #P"sys:kernel;cmp;cmpglobals"
+    #P"sys:kernel;cmp;cmptables"
+    #P"sys:kernel;cmp;cmpvar"
+    #P"sys:kernel;cmp;cmputil"
+    #P"sys:kernel;cmp;cmpintrinsics"
+    #P"sys:kernel;cmp;cmpir"
+    #P"sys:kernel;cmp;cmpeh"
+    #P"sys:kernel;cmp;debuginfo"
+;;    #P"sys:kernel;cmp;arguments"
+    #P"sys:kernel;cmp;lambdalistva"
+    #P"sys:kernel;cmp;cmpvars"
+    #P"sys:kernel;cmp;cmpquote"
+    #P"sys:kernel;cmp;cmpobj"
+;;    #P"sys:kernel;cmp;mincomp"
+    #P"sys:kernel;cmp;compiler"
+    #P"sys:kernel;cmp;compilefile"
+    #P"sys:kernel;cmp;cmpbundle"
+    #P"sys:kernel;cmp;cmprepl"
     :cmp
     :stage1
     :cmprepl
-    #P"kernel/cmp/cmpwalk"
-    #P"kernel/lsp/logging"
-    #P"kernel/lsp/seqlib"
-    #P"kernel/lsp/trace"
+    #P"sys:kernel;cmp;cmpwalk"
+    #P"sys:kernel;lsp;logging"
+    #P"sys:kernel;lsp;seqlib"
+    #P"sys:kernel;lsp;trace"
     :was-pre-cmp
-    #P"kernel/lsp/sharpmacros"
-    #P"kernel/lsp/assert"
-    #P"kernel/lsp/numlib"
-    #P"kernel/lsp/describe"
-    #P"kernel/lsp/module"
-    #P"kernel/lsp/loop2"
-    #P"kernel/lsp/shiftf-rotatef"
-    #P"kernel/lsp/assorted"
-    #P"kernel/lsp/packlib"
-;;    cmp/cmpinterpreted
-    #P"kernel/lsp/defpackage"
-    #P"kernel/lsp/format"
+    #P"sys:kernel;lsp;sharpmacros"
+    #P"sys:kernel;lsp;assert"
+    #P"sys:kernel;lsp;numlib"
+    #P"sys:kernel;lsp;describe"
+    #P"sys:kernel;lsp;module"
+    #P"sys:kernel;lsp;loop2"
+    #P"sys:kernel;lsp;shiftf-rotatef"
+    #P"sys:kernel;lsp;assorted"
+    #P"sys:kernel;lsp;packlib"
+;;    cmp;cmpinterpreted
+    #P"sys:kernel;lsp;defpackage"
+    #P"sys:kernel;lsp;format"
     #|
     arraylib
     numlib
     |#
     :min
-    #P"kernel/clos/package"
-    #P"kernel/clos/hierarchy"
-    #P"kernel/clos/cpl"
-    #P"kernel/clos/std-slot-value"
-    #P"kernel/clos/slot"
-    #P"kernel/clos/boot"
-    #P"kernel/clos/kernel"
-    #P"kernel/clos/method"
-    #P"kernel/clos/combin"
-    #P"kernel/clos/std-accessors"
-    #P"kernel/clos/defclass"
-    #P"kernel/clos/slotvalue"
-    #P"kernel/clos/standard"
-    #P"kernel/clos/builtin"
-    #P"kernel/clos/change"
-    #P"kernel/clos/stdmethod"
-    #P"kernel/clos/generic"
+    #P"sys:kernel;clos;package"
+    #P"sys:kernel;clos;hierarchy"
+    #P"sys:kernel;clos;cpl"
+    #P"sys:kernel;clos;std-slot-value"
+    #P"sys:kernel;clos;slot"
+    #P"sys:kernel;clos;boot"
+    #P"sys:kernel;clos;kernel"
+    #P"sys:kernel;clos;method"
+    #P"sys:kernel;clos;combin"
+    #P"sys:kernel;clos;std-accessors"
+    #P"sys:kernel;clos;defclass"
+    #P"sys:kernel;clos;slotvalue"
+    #P"sys:kernel;clos;standard"
+    #P"sys:kernel;clos;builtin"
+    #P"sys:kernel;clos;change"
+    #P"sys:kernel;clos;stdmethod"
+    #P"sys:kernel;clos;generic"
     :generic
-    #P"kernel/clos/fixup"
-    #P"kernel/clos/extraclasses"
-    #P"kernel/lsp/defvirtual"
+    #P"sys:kernel;clos;fixup"
+    #P"sys:kernel;clos;extraclasses"
+    #P"sys:kernel;lsp;defvirtual"
     :stage3
-    #P"kernel/clos/conditions"
-    #P"kernel/clos/print"
-    #P"kernel/clos/streams"
-    #P"kernel/lsp/pprint"
-    #P"kernel/clos/inspect"
+    #P"sys:kernel;clos;conditions"
+    #P"sys:kernel;clos;print"
+    #P"sys:kernel;clos;streams"
+    #P"sys:kernel;lsp;pprint"
+    #P"sys:kernel;clos;inspect"
     :clos
-    #P"kernel/lsp/ffi"
-    #P"modules/sockets/sockets"
-;;    asdf/build/asdf
+    #P"sys:kernel;lsp;ffi"
+    #P"sys:modules;sockets;sockets.lisp"
+;;    asdf;build;asdf
     :front
-    #P"kernel/lsp/top"
+    #P"sys:kernel;lsp;top"
     :all
-;;    lsp/pprint
+;;    lsp;pprint
     ))
 (defvar *system-files* *init-files*)
 (export '(*system-files* *init-files*))
@@ -799,7 +854,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defvar *asdf-files*
   '(:init
-    #P"kernel/asdf/build/asdf"
+    #P"sys:kernel;asdf;build;asdf"
     :end))
 (export '*asdf-files*)
 
@@ -854,6 +909,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 (defun load-system ( first-file last-file &key interp load-bitcode (target-backend *target-backend*) (system *system-files*))
+  #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s\n" first-file last-file )
   (let* ((*target-backend* target-backend)
          (files (select-source-files last-file :first-file first-file :system system))
 	 (cur files))
@@ -875,7 +931,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 (defun compile-system (files &key reload (system *system-files*))
-  (bformat t "compile-system files: %s\n" files)
+  #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
   (let* ((cur files))
     (tagbody
      top
@@ -890,7 +946,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 ;; Clean out the bitcode files.
 ;; passing :no-prompt t will not prompt the user
 (export 'clean-system)
-(defun clean-system ( &optional after-file &key no-prompt stage
+(defun clean-system (after-file &key no-prompt stage
                                            (system *system-files*))
   (let* ((files (select-trailing-source-files after-file :system system))
 	 (cur files))
@@ -933,14 +989,15 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 (defun link-system (start end prologue-form epilogue-form &key (system *system-files*))
-  (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname x "bc")) (select-source-files end :first-file start :system system))))
-    (cmp:link-system-lto (target-backend-pathname +image-pathname+)
+  #+dbg-print(bformat t "DBG-PRINT About to link-system\n")
+  (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname x :bc)) (select-source-files end :first-file start :system system))))
+    (cmp:link-system-lto (build-pathname +image-pathname+ :fasl)
                          :lisp-bitcode-files bitcode-files
                          :prologue-form prologue-form
                          :epilogue-form epilogue-form)))
 (export '(link-system)) ;; core
 
-(export '(compile-min))
+(export '(compile-mino))
 (defun compile-min (&key (target-backend (default-target-backend)) (system *system-files*))
   (if (out-of-date-bitcodes :init :cmp)
       (progn
@@ -952,7 +1009,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export 'link-min)
 (defun link-min ()
   (min-features)
-  (if (out-of-date-image (select-source-files :cmp :first-file :init) +image-pathname+)
+  (if (out-of-date-image (select-source-files :cmp :first-file :init) (build-pathname +image-pathname+ :fasl))
       (progn
         (load-system :start :cmp)
         (link-system :init :cmp (default-prologue-form) +minimal-epilogue-form+))))
@@ -1018,7 +1075,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun link-bclasp ()
   (bclasp-features)
   (let ((*target-backend* (default-target-backend)))
-    (if (out-of-date-image (select-source-files :all :first-file :init) +image-pathname+)
+    (if (out-of-date-image (select-source-files :all :first-file :init) (build-pathname +image-pathname+ :fasl))
         (link-system :init :all (default-prologue-form '(:clos)) (default-epilogue-form)))))
 
 (export '(compile-cclasp))
@@ -1036,7 +1093,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (cclasp-features)
   (add-cleavir-to-*system-files*)
   (let ((*target-backend* (default-target-backend)))
-    (if (or force (out-of-date-image (select-source-files :cclasp :first-file :init) +image-pathname+))
+    (if (or force (out-of-date-image (select-source-files :cclasp :first-file :init) (build-pathname +image-pathname+ :fasl)))
         (progn
           (link-system :init :cclasp
                        '(progn

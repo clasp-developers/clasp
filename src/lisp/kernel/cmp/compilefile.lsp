@@ -247,8 +247,8 @@ to compile prologue and epilogue code when linking modules"
 	 (*compile-print* nil)
 	 (*compile-verbose* nil)	 )
     (with-compiler-env (conditions)
-      (with-module ( :module module
-                             :source-pathname (namestring name))
+      (with-module (:module module
+                            :source-pathname (namestring name))
         (with-debug-info-generator (:module *the-module*
                                             :pathname *compile-file-truename*)
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
