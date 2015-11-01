@@ -104,8 +104,8 @@ public:
     , Marker(globalBoehmMarker)
 #endif
   {
-    if ( k >= KIND_max ) {
-      printf("%s:%d Allocating object of kind: %zu\n", __FILE__, __LINE__, k);
+    if ( k > KIND_max ) {
+      printf("%s:%d Allocating object of kind: %zu - this is beyond KIND_max: %d\n", __FILE__, __LINE__, k, KIND_max);
     }
   };
 private:
