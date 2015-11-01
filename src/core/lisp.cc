@@ -709,10 +709,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   {
     _BLOCK_TRACE("Creating Caches for CLOS");
     this->_Roots._MethodCachePtr = gctools::ClassAllocator<Cache>::allocateClass();
-    // Stassats pointed out here https://gitlab.com/embeddable-common-lisp/ecl/commit/85165d989a563abdf0e31e14ece2e97b5d821187?view=parallel
-    // that the MethodCache key needs to be twice the number of function arguments to differentiate
-    // class specializers from EQL specializers - see comment in genericFunction.cc
-    this->_Roots._MethodCachePtr->setup(MaxFunctionArguments*2, ClosCacheSize);
+    this->_Roots._MethodCachePtr->setup(MaxFunctionArguments, ClosCacheSize);
     this->_Roots._SlotCachePtr = gctools::ClassAllocator<Cache>::allocateClass();
     this->_Roots._SlotCachePtr->setup(MaxClosSlots, ClosCacheSize);
   }

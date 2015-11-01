@@ -230,16 +230,21 @@ gctools::Vec0<T_sp>& fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp>& vekto
 // https://gitlab.com/embeddable-common-lisp/ecl/commit/85165d989a563abdf0e31e14ece2e97b5d821187?view=parallel
 // I'm duplicating the fix here - there is also a change in lisp.cc
     T_sp spec_position_arg = T_sp((gc::Tagged)va_arg(cargs,T_O*));
-    if (!cl_listp(spec_type) ||
-        gc::As<Cons_sp>(spec_type)->memberEql(spec_position_arg).nilp()) // Was as_or_nil
+    List_sp eql_spec;
+    if (cl_listp(spec_type) &&
+        (eql_spec = gc::As<Cons_sp>(spec_type)->memberEql(spec_position_arg)).notnilp())
     {
-      Class_sp mc = lisp_instance_class(spec_position_arg);
-      argtype[spec_no++] = mc;
-      argtype[spec_no++] = _Nil<T_O>();
-    } else {
-      // For immediate types we need to make sure that EQL will be true
+          // For immediate types we need to make sure that EQL will be true
+#if 1
+      argtype[spec_no++] = eql_spec;
+#else
       argtype[spec_no++] = spec_position_arg;
       argtype[spec_no++] = _lisp->_true();
+#endif
+    } else {
+            Class_sp mc = lisp_instance_class(spec_position_arg);
+      argtype[spec_no++] = mc;
+//      argtype[spec_no++] = _Nil<T_O>();
     }
   }
   vektor.unsafe_set_end(spec_no);
