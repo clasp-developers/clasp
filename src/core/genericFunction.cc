@@ -226,17 +226,21 @@ gctools::Vec0<T_sp>& fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp>& vekto
     } else if (spec_no >= vektor.capacity()) {
       SIMPLE_ERROR(BF("Too many arguments to fill_spec_vector()"));
     }
+// Stassats fixed a bug in ECL eql-specializer dispatch cacheing
+// https://gitlab.com/embeddable-common-lisp/ecl/commit/85165d989a563abdf0e31e14ece2e97b5d821187?view=parallel
+// I'm duplicating the fix here - there is also a change in lisp.cc
     T_sp spec_position_arg = T_sp((gc::Tagged)va_arg(cargs,T_O*));
     if (!cl_listp(spec_type) ||
         gc::As<Cons_sp>(spec_type)->memberEql(spec_position_arg).nilp()) // Was as_or_nil
     {
       Class_sp mc = lisp_instance_class(spec_position_arg);
-      argtype[spec_no] = mc;
+      argtype[spec_no++] = mc;
+      argtype[spec_no++] = _Nil<T_O>();
     } else {
       // For immediate types we need to make sure that EQL will be true
-      argtype[spec_no] = spec_position_arg;
+      argtype[spec_no++] = spec_position_arg;
+      argtype[spec_no++] = _lisp->_true();
     }
-    ++spec_no;
   }
   vektor.unsafe_set_end(spec_no);
   return vektor;
