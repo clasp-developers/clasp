@@ -504,11 +504,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
        (cond
          ((progn
             (setq pn (merge-pathnames module (make-pathname :host "SYS" :type "lsp")))
-            (if (probe-file pn) pn nil)))
+            (if (probe-file-case-insensitive pn) pn nil)))
          ((progn
             (setq pn (merge-pathnames module (make-pathname :host "SYS" :type "lisp")))
-            (if (probe-file pn) pn nil)))
-         (t (error "Could not file source file with lsp or lisp extension for ~s" module))))
+            (if (probe-file-case-insensitive pn) pn nil)))
+         (t (error "Could not find source file with lsp or lisp extension for ~s" module))))
       ((eq type :bc)
        (merge-pathnames module (make-pathname :host target-host :type "bc" )))
       (t
