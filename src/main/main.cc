@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #ifdef _TARGET_OS_LINUX
 #include <signal.h>
+#include <sys/resource.h>
 #endif
 
 #ifdef USE_MPI
