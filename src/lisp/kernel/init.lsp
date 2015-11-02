@@ -574,7 +574,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (si::*fset 'interpreter-iload
            #'(lambda (module)
-               (let* ((pathname (build-pathname module :lisp))
+               (let* ((pathname (probe-file-case-insensitive (build-pathname module :lisp)))
 		      (name (namestring pathname)))
                  (if cmp:*implicit-compile-hook*
                      (bformat t "Loading/compiling source: %s\n" (namestring name))
@@ -614,7 +614,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
               (if cmp:*implicit-compile-hook*
                   (bformat t "Loading/compiling source: %s\n" lsp-path)
                   (bformat t "Loading/interpreting source: %s\n" lsp-path))
-	      (load lsp-path))
+	      (load (probe-file-case-insensitive lsp-path)))
 	    (bformat t "No interpreted or bitcode file for %s could be found\n" lsp-path)))))
 
 (defun delete-init-file (module &key (really-delete t) stage)
@@ -705,7 +705,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	  (bformat t "Compiling source %s\n   to %s - will reload: %s\n" source-path bitcode-path reload)
 	  (let ((cmp::*module-startup-prefix* "kernel"))
             #+dbg-print(bformat t "DBG-PRINT  source-path = %s\n" source-path)
-            (compile-file source-path :output-file bitcode-path :print t :verbose t :output-type :bitcode :type :kernel)
+            (compile-file (probe-file-case-insensitive source-path) :output-file bitcode-path :print t :verbose t :output-type :bitcode :type :kernel)
 	    (if reload
 		(progn
 		  (bformat t "    Loading newly compiled file: %s\n" bitcode-path)
