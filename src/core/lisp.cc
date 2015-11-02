@@ -193,7 +193,7 @@ Lisp_O::GCRoots::GCRoots() : _BufferStringPool(_Nil<T_O>())
                              ,
                              _SystemProperties(_Nil<T_O>()), _CatchInfo(_Nil<T_O>()), _SpecialForms(_Unbound<HashTableEq_O>()), _NullStream(_Nil<T_O>()), _PathnameTranslations(_Nil<T_O>()) {}
 
-Lisp_O::Lisp_O() : _StackWarnSize(7 * 1024 * 1024), // 6MB default stack size before warnings
+Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size*0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
                    _StackSampleSize(0),
                    _StackSampleMax(0),
@@ -1585,6 +1585,13 @@ void af_stackMonitor() {
   if (stackUsed > _lisp->_StackWarnSize) {
     af_stackSizeWarning(stackUsed);
   }
+};
+
+#define ARGS_af_stackLimit "()"
+#define DECL_af_stackLimit ""
+#define DOCS_af_stackLimit "Return the soft and hard limits of the stack"
+T_mv af_stackLimit() {
+  return Values(clasp_make_fixnum(_lisp->_StackWarnSize));
 };
 
 #define ARGS_af_setupStackMonitor "(&key warn-size sample-size)"
@@ -3217,6 +3224,7 @@ void Lisp_O::exposeCando() {
   CoreDefun(singleDispatchGenericFunctionTable);
   SYMBOL_SC_(CorePkg, stackMonitor);
   Defun(stackMonitor);
+  Defun(stackLimit);
   Defun(lowLevelRepl);
   SYMBOL_SC_(CorePkg, setupStackMonitor);
   Defun(setupStackMonitor);

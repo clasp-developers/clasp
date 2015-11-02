@@ -45,6 +45,7 @@ namespace gctools {
 GCStack _ThreadLocalStack;
 
 void *_global_stack_marker;
+size_t _global_stack_max_size;
 
 #if 0
     HeapRoot* 	rooted_HeapRoots = NULL;
@@ -159,9 +160,10 @@ int handleFatalCondition() {
 }
 
 
-int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
+int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
   void *stackMarker = NULL;
   gctools::_global_stack_marker = &stackMarker;
+  gctools::_global_stack_max_size = stackMax;
 
   setupSignals();
 

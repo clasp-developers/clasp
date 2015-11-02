@@ -361,9 +361,13 @@ the corresponding VAR.  Returns NIL."
 (defun compiled-function-file (x)
   (multiple-value-bind (sfi pos)
       (core:function-source-pos x)
-    (let ((pn (core:probe-file-case-insensitive (core:source-file-info-source-debug-namestring sfi)))
-          (filepos (+ (core:source-file-info-source-debug-offset sfi) pos)))
-      (values pn filepos))))
+    (let* ((source-file (core:source-file-info-source-debug-namestring sfi)))
+      (if source-file
+          (let ((pn (core:probe-file-case-insensitive source-file))
+                (filepos (+ (core:source-file-info-source-debug-offset sfi) pos)))
+            (values pn filepos))
+          (values nil 0)))))
+
 (export '(compiled-function-name compiled-function-file))
 
 (defun warn-or-ignore (x &rest args)

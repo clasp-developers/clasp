@@ -78,6 +78,7 @@ namespace gctools {
   template <class OT> struct GCKind;
   extern size_t global_alignup_sizeof_header;
   extern void *_global_stack_marker;
+  extern size_t _global_stack_max_size;
 
 };
 
@@ -262,7 +263,7 @@ int handleFatalCondition();
 
 /* Start up the garbage collector and the main function.
        The main function is wrapped within this function */
-int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize);
+ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize);
 };
 
 #endif // _clasp_memoryManagement_H
