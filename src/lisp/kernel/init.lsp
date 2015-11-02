@@ -412,7 +412,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
       nil)))
 
 (defun probe-dirs-cs (pn)
-  (let ((root (namestring (probe-file (make-pathname :host (pathname-host pn)))))
+  (let ((root (if (pathname-host pn)
+                  (namestring (probe-file (make-pathname :host (pathname-host pn))))
+                  "/"))
         (dirs (cdr (pathname-directory pn))))
     #+dbg-print(progn
                  (bformat t "DBG-PRINT pn: %s\n" pn)
