@@ -1680,17 +1680,24 @@ IMPLEMENT_MEF(BF("Handle new valist"));
 #endif
 
 
+void errorApplyZeroArguments()
+{
+  SIMPLE_ERROR(BF("Illegal to have zero arguments for APPLY"));
+}
 
+void errorApplyLastArgumentNotList()
+{
+  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
+}
 
 #define ARGS_cl_apply "(head &va-rest args)"
 #define DECL_cl_apply ""
 #define DOCS_cl_apply "apply"
 T_mv cl_apply(T_sp head, VaList_sp args) {
-#if 1
   Function_sp func = coerce::functionDesignator(head);
   int lenArgs = args->nargs();
   if (lenArgs == 0) {
-    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs);
+    errorApplyZeroArguments();
   }
   T_sp last = T_sp((gc::Tagged)args->indexed_arg(lenArgs-1));
   if (last.nilp()) {
@@ -1753,72 +1760,7 @@ T_mv cl_apply(T_sp head, VaList_sp args) {
     VaList_sp valist(&valist_struct);// = frame.setupVaList(valist_struct);;
     return eval::apply_consume_VaList(func, valist);
   }
-  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
-#else
-  Function_sp func = coerce::functionDesignator(head);
-  int lenArgs = cl_length(args);
-  if (lenArgs == 0) {
-    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs);
-  }
-  T_sp last = oCar(cl_last(args));
-  if (last.nilp()) {
-    // Nil as last argument
-    int nargs = lenArgs - 1;
-    gc::frame::Frame frame(nargs);
-    T_sp obj = args;
-    for (int i(0); i < nargs; ++i) {
-      frame[i] = oCar(obj).raw_();
-      obj = oCdr(obj);
-    }
-    VaList_S valist_struct(frame);
-    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);
-    return eval::apply_consume_VaList(func, valist);
-  } else if (last.valistp() && lenArgs==1) {
-    VaList_sp valast((gc::Tagged)last.raw_());
-    VaList_S valast_copy(*valast);
-    VaList_sp valast_copy_sp(&valast_copy);
-    return eval::apply_consume_VaList(func,valast_copy_sp);
-  } else if (last.valistp()) {
-    VaList_sp valast((gc::Tagged)last.raw_());
-    VaList_S valist_scopy(*valast);
-    VaList_sp lastArgs(&valist_scopy);// = gc::smart_ptr<VaList_S>((gc::Tagged)last.raw_());
-    int lenFirst = lenArgs - 1;
-    int lenRest = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(lastArgs);
-    int nargs = lenFirst + lenRest;
-    // Allocate a frame on the side stack that can take all arguments
-    gc::frame::Frame frame(nargs);
-    T_sp obj = args;
-    for (int i(0); i < lenFirst; ++i) {
-      frame[i] = oCar(obj).raw_();
-      obj = oCdr(obj);
-    }
-    for (int i(lenFirst); i < nargs; ++i) {
-      frame[i] = LCC_NEXT_ARG_RAW(lastArgs,i);
-    }
-    VaList_S valist_struct(frame);
-    VaList_sp valist(&valist_struct);// = frame.setupVaList(valist_struct);
-    return eval::apply_consume_VaList(func, valist);
-  } else if (List_sp cargs = gc::As<Cons_sp>(last)) {
-    // Cons as last argument
-    int lenFirst = lenArgs - 1;
-    int lenRest = cl_length(last);
-    int nargs = lenFirst + lenRest;
-    gc::frame::Frame frame(nargs);
-    T_sp obj = args;
-    for (int i(0); i < lenFirst; ++i) {
-      frame[i] = oCar(obj).raw_();
-      obj = oCdr(obj);
-    }
-    for (int i(lenFirst); i < nargs; ++i) {
-      frame[i] = oCar(cargs).raw_();
-      cargs = oCdr(cargs);
-    }
-    VaList_S valist_struct(frame);
-    VaList_sp valist(&valist_struct);// = frame.setupVaList(valist_struct);;
-    return eval::apply_consume_VaList(func, valist);
-  }
-  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
-#endif
+  errorApplyLastArgumentNotList();
 }
 
 #if 1

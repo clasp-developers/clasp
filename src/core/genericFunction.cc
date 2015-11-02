@@ -265,7 +265,8 @@ LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist, gc::tagged_pointer<Cache
     printf("%s:%d - There was an CacheError searching the GF cache for the keys"
            "  You should try and get into cache->search_cache to see where the error is\n",
            __FILE__, __LINE__);
-    SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(gf));
+    abort();
+    //SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(gf));
   }
   ASSERT(e != NULL);
   Function_sp func;
@@ -284,7 +285,11 @@ LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist, gc::tagged_pointer<Cache
         try {
           cache->search_cache(e); // e = ecl_search_cache(cache);
         } catch (CacheError &err) {
-          SIMPLE_ERROR(BF("Try #2 generic function cache search error looking for %s") % _rep_(gf));
+          printf("%s:%d - There was an CacheError searching the GF cache for the keys"
+                 "  You should try and get into cache->search_cache to see where the error is\n",
+                 __FILE__, __LINE__);
+          abort();
+//          SIMPLE_ERROR(BF("Try #2 generic function cache search error looking for %s") % _rep_(gf));
         }
       }
       e->_key = keys;
