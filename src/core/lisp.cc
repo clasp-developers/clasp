@@ -193,7 +193,7 @@ Lisp_O::GCRoots::GCRoots() : _BufferStringPool(_Nil<T_O>())
                              ,
                              _SystemProperties(_Nil<T_O>()), _CatchInfo(_Nil<T_O>()), _SpecialForms(_Unbound<HashTableEq_O>()), _NullStream(_Nil<T_O>()), _PathnameTranslations(_Nil<T_O>()) {}
 
-Lisp_O::Lisp_O() : _StackWarnSize(7 * 1024 * 1024), // 6MB default stack size before warnings
+Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size*0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
                    _StackSampleSize(0),
                    _StackSampleMax(0),
@@ -1473,7 +1473,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
           af_bformat(_lisp->_true(), "Cannot interpret %s - define core::*top-level-command-hook*", Cons_O::createList(tplCmd.cons()));
         }
       } else if (expression.notnilp()) {
-        result = eval::core_evalWithEnv(expression, environ);
+        result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(),expression, environ);
         gctools::Vec0<core::T_sp /*,gctools::RootedGCHolder*/> vresults;
         vresults.resize(result.number_of_values());
         if (result.number_of_values() > 0) {
@@ -1594,6 +1594,13 @@ void af_stackMonitor() {
   if (stackUsed > _lisp->_StackWarnSize) {
     af_stackSizeWarning(stackUsed);
   }
+};
+
+#define ARGS_af_stackLimit "()"
+#define DECL_af_stackLimit ""
+#define DOCS_af_stackLimit "Return the soft and hard limits of the stack"
+T_mv af_stackLimit() {
+  return Values(clasp_make_fixnum(_lisp->_StackWarnSize));
 };
 
 #define ARGS_af_setupStackMonitor "(&key warn-size sample-size)"
@@ -1775,7 +1782,11 @@ T_mv ext_vfork_execvp(List_sp call_and_arguments) {
         if ( child_PID == 0 ) {
             // Child
             execvp(execvp_args[0],(char * const *)execvp_args.data());
-            printf("%s:%d execvp returned!!!! Why!!!!\n", __FILE__, __LINE__ );
+            printf("%s:%d execvp returned with errno=%d   strerror(errno) = %s\n",  __FILE__, __LINE__,  errno, strerror(errno));
+            for ( int i=0; execvp_args[i]!=NULL; ++i ) {
+              printf("    arg#%d  %s\n", i, execvp_args[i]);
+            }
+            printf("  cannot continue... exiting... sorry...\n");
             _exit(0); // Should never reach
         } else {
             // Parent
@@ -1994,16 +2005,26 @@ T_mv cl_macroexpand_1(T_sp form, T_sp env) {
     T_sp head = oCar(cform);
     if (cl_symbolp(head)) {
       Symbol_sp headSymbol = gc::As<Symbol_sp>(head);
-      T_sp func = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
-      expansionFunction = func;
+      if ( env.nilp() ) {
+        expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
+      } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+        expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env );
+      } else {
+        // It must be a Cleavir environment
+        if (cleavirEnv::_sym_macroFunction->fboundp() ) {
+          expansionFunction = eval::funcall(cleavirEnv::_sym_macroFunction, headSymbol, env );
+        }
+      }
     }
     if (expansionFunction.notnilp()) {
       T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
       Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
       T_sp expanded = eval::funcall(hookFunc, expansionFunction, form, env);
+#if 0
       if (_lisp->sourceDatabase().notnilp()) {
         gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(form, expanded, expansionFunction);
       }
+#endif
       return (Values(expanded, _lisp->_true()));
     }
     return (Values(form, _Nil<T_O>()));
@@ -2013,6 +2034,7 @@ T_mv cl_macroexpand_1(T_sp form, T_sp env) {
     } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
       expansionFunction = core_lookup_symbol_macro(sform, eenv);
     } else {
+      // It must be a Cleavir environment
       if (cleavirEnv::_sym_symbolMacroExpansion->fboundp()) {
         T_sp expanded = eval::funcall(cleavirEnv::_sym_symbolMacroExpansion, sform, env);
         if (expanded == sform) {
@@ -2027,9 +2049,11 @@ T_mv cl_macroexpand_1(T_sp form, T_sp env) {
       T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
       Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
       T_sp expanded = eval::funcall(hookFunc, expansionFunction, form, env);
+#if 0
       if (_lisp->sourceDatabase().notnilp()) {
         gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(form, expanded, expansionFunction);
       }
+#endif
       if (expanded != form) {
         return (Values(expanded, _lisp->_true()));
       }
@@ -3209,6 +3233,7 @@ void Lisp_O::exposeCando() {
   CoreDefun(singleDispatchGenericFunctionTable);
   SYMBOL_SC_(CorePkg, stackMonitor);
   Defun(stackMonitor);
+  Defun(stackLimit);
   Defun(lowLevelRepl);
   SYMBOL_SC_(CorePkg, setupStackMonitor);
   Defun(setupStackMonitor);

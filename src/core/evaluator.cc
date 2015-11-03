@@ -430,7 +430,7 @@ Function_sp core_coerce_to_function(T_sp arg) {
       parse_lambda_body(body, declares, docstring, code);
       LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
       gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass
-        ( cl::_sym_lambda, _Nil<T_O>(), kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code);
+        ( cl::_sym_lambda, kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
       Function_sp proc = Function_O::make(ic);
       return proc;
 #if 0
@@ -544,7 +544,7 @@ T_mv cl_eval(T_sp form) {
   if ( core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue() ) {
     return eval::evaluate(form,_Nil<T_O>());
   } else {
-    return t1Evaluate(form, _Nil<T_O>());
+    return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(),form,_Nil<T_O>());
   }
 };
 
@@ -1204,8 +1204,7 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
       printf("%s:%d   Could not find source info for lambda\n", __FILE__, __LINE__);
     }
   }
-  gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(
-      name, spi, kw::_sym_function, llh, declares, docstring, env, code);
+  gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass( name, kw::_sym_function, llh, declares, docstring, env, code, SOURCE_POS_INFO_FIELDS(spi));
   Function_sp proc = Function_O::make(ic);
   return proc;
 }
@@ -1442,7 +1441,7 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
       parse_lambda_body(outer_body, declares, docstring, code);
       LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
       printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
-      gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name, _Nil<SourcePosInfo_O>(), kw::_sym_macro, outer_llh, declares, docstring, newEnv, code);
+      gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name,  kw::_sym_macro, outer_llh, declares, docstring, newEnv, code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
       outer_func = Function_O::make(ic);
     }
     LOG(BF("func = %s") % outer_func_cons->__repr__());
@@ -1496,7 +1495,7 @@ T_mv do_symbolMacrolet(List_sp args, T_sp env, bool topLevelForm) {
                                                                  oCadr(declares),
                                                                  cl::_sym_function);
     printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
-    gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(_sym_symbolMacroletLambda, _Nil<T_O>(), kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion);
+    gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(_sym_symbolMacroletLambda,kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion, SOURCE_POS_INFO_FIELDS(_Nil<T_O>() ));
     Function_sp outer_func = Function_O::make(ic);
     newEnv->addSymbolMacro(name, outer_func);
     cur = oCdr(cur);
@@ -1681,17 +1680,24 @@ IMPLEMENT_MEF(BF("Handle new valist"));
 #endif
 
 
+void errorApplyZeroArguments()
+{
+  SIMPLE_ERROR(BF("Illegal to have zero arguments for APPLY"));
+}
 
+void errorApplyLastArgumentNotList()
+{
+  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
+}
 
 #define ARGS_cl_apply "(head &va-rest args)"
 #define DECL_cl_apply ""
 #define DOCS_cl_apply "apply"
 T_mv cl_apply(T_sp head, VaList_sp args) {
-#if 1
   Function_sp func = coerce::functionDesignator(head);
   int lenArgs = args->nargs();
   if (lenArgs == 0) {
-    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs);
+    errorApplyZeroArguments();
   }
   T_sp last = T_sp((gc::Tagged)args->indexed_arg(lenArgs-1));
   if (last.nilp()) {
@@ -1754,72 +1760,7 @@ T_mv cl_apply(T_sp head, VaList_sp args) {
     VaList_sp valist(&valist_struct);// = frame.setupVaList(valist_struct);;
     return eval::apply_consume_VaList(func, valist);
   }
-  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
-#else
-  Function_sp func = coerce::functionDesignator(head);
-  int lenArgs = cl_length(args);
-  if (lenArgs == 0) {
-    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs);
-  }
-  T_sp last = oCar(cl_last(args));
-  if (last.nilp()) {
-    // Nil as last argument
-    int nargs = lenArgs - 1;
-    gc::frame::Frame frame(nargs);
-    T_sp obj = args;
-    for (int i(0); i < nargs; ++i) {
-      frame[i] = oCar(obj).raw_();
-      obj = oCdr(obj);
-    }
-    VaList_S valist_struct(frame);
-    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);
-    return eval::apply_consume_VaList(func, valist);
-  } else if (last.valistp() && lenArgs==1) {
-    VaList_sp valast((gc::Tagged)last.raw_());
-    VaList_S valast_copy(*valast);
-    VaList_sp valast_copy_sp(&valast_copy);
-    return eval::apply_consume_VaList(func,valast_copy_sp);
-  } else if (last.valistp()) {
-    VaList_sp valast((gc::Tagged)last.raw_());
-    VaList_S valist_scopy(*valast);
-    VaList_sp lastArgs(&valist_scopy);// = gc::smart_ptr<VaList_S>((gc::Tagged)last.raw_());
-    int lenFirst = lenArgs - 1;
-    int lenRest = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(lastArgs);
-    int nargs = lenFirst + lenRest;
-    // Allocate a frame on the side stack that can take all arguments
-    gc::frame::Frame frame(nargs);
-    T_sp obj = args;
-    for (int i(0); i < lenFirst; ++i) {
-      frame[i] = oCar(obj).raw_();
-      obj = oCdr(obj);
-    }
-    for (int i(lenFirst); i < nargs; ++i) {
-      frame[i] = LCC_NEXT_ARG_RAW(lastArgs,i);
-    }
-    VaList_S valist_struct(frame);
-    VaList_sp valist(&valist_struct);// = frame.setupVaList(valist_struct);
-    return eval::apply_consume_VaList(func, valist);
-  } else if (List_sp cargs = gc::As<Cons_sp>(last)) {
-    // Cons as last argument
-    int lenFirst = lenArgs - 1;
-    int lenRest = cl_length(last);
-    int nargs = lenFirst + lenRest;
-    gc::frame::Frame frame(nargs);
-    T_sp obj = args;
-    for (int i(0); i < lenFirst; ++i) {
-      frame[i] = oCar(obj).raw_();
-      obj = oCdr(obj);
-    }
-    for (int i(lenFirst); i < nargs; ++i) {
-      frame[i] = oCar(cargs).raw_();
-      cargs = oCdr(cargs);
-    }
-    VaList_S valist_struct(frame);
-    VaList_sp valist(&valist_struct);// = frame.setupVaList(valist_struct);;
-    return eval::apply_consume_VaList(func, valist);
-  }
-  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
-#endif
+  errorApplyLastArgumentNotList();
 }
 
 #if 1
@@ -2210,11 +2151,10 @@ T_mv cl_apply(T_sp head, VaList_sp args) {
     return eval::funcall(comp::_sym_STARimplicit_compile_hookSTAR->symbolValue(), exp, environment);
   }
 
-#define ARGS_core_evalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
-#define DECL_core_evalWithEnv ""
-#define DOCS_core_evalWithEnv "evalWithEnv"
-  T_mv core_evalWithEnv(T_sp form, T_sp env, bool stepping, bool compiler_env_p, bool execute) {
-    _G();
+#define ARGS_core_eval_with_env_default "(form &optional env stepping compiler-env-p (execute t))"
+#define DECL_core_eval_with_env_default ""
+#define DOCS_core_eval_with_env_default "eval_with_env_default"
+T_mv core_eval_with_env_default(T_sp form, T_sp env) {
     return t1Evaluate(form, env);
   }
 
@@ -2521,8 +2461,6 @@ struct InterpreterTrace {
     Defun(evaluateVerbosity);
     SYMBOL_EXPORT_SC_(CompPkg, compileFormAndEvalWithEnv); 
     CoreDefun(compileFormAndEvalWithEnv);
-    SYMBOL_EXPORT_SC_(CorePkg, evalWithEnv);
-    CoreDefun(evalWithEnv);
     SYMBOL_SC_(CorePkg, evaluateDepth);
     Defun(evaluateDepth);
     SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
@@ -2535,6 +2473,11 @@ struct InterpreterTrace {
     CoreDefun(extractLambdaName);
     CoreDefun(lookup_symbol_macro);
     CoreDefun(coerce_to_function);
+    SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
+    SYMBOL_EXPORT_SC_(CorePkg, eval_with_env_default);
+    af_def(CorePkg, "eval_with_env_default",
+           &core_eval_with_env_default);
+    core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_eval_with_env_default->symbolFunction());
   };
 };
 };

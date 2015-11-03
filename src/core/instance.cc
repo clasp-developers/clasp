@@ -399,12 +399,14 @@ void Instance_O::LISP_INVOKE() {
 #endif
 }
 
-void Instance_O::describe() {
-  printf("#<Instance_O>\n");
-  printf("isgf %d\n", this->_isgf);
-  printf("_Class: %s\n", _rep_(this->_Class).c_str());
+void Instance_O::describe(T_sp stream) {
+  stringstream ss;
+  ss << (BF("Instance\n")).str();
+  ss << (BF("isgf %d\n") % this->_isgf).str();
+  ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
   for (int i(0); i < this->_Slots.size(); ++i) {
-    printf("_Slots[%d]: %s\n", i, _rep_(this->_Slots[i]).c_str());
+    ss << (BF("_Slots[%d]: %s\n") % i % _rep_(this->_Slots[i]).c_str()).str();
   }
+  clasp_write_string(ss.str(),stream);
 }
 };

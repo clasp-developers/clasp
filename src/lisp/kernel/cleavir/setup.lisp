@@ -192,8 +192,10 @@
 				 (core:macroexpand-default macro-function macro-form environment))
 				((or (null environment) (typep environment 'clasp-global-environment))
 				 (core:macroexpand-default macro-function macro-form nil))
-				(t
-				 (core:macroexpand-default macro-function macro-form environment)))))
+				((typep environment 'cleavir-environment::entry)
+                                 (funcall macro-function macro-form environment))
+                                (t
+                                 (error "Add support to macroexpand of ~a using non-bclasp, non-top-level environment like: ~a" macro-form environment)))))
 
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))

@@ -226,17 +226,26 @@ gctools::Vec0<T_sp>& fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp>& vekto
     } else if (spec_no >= vektor.capacity()) {
       SIMPLE_ERROR(BF("Too many arguments to fill_spec_vector()"));
     }
+// Stassats fixed a bug in ECL eql-specializer dispatch cacheing
+// https://gitlab.com/embeddable-common-lisp/ecl/commit/85165d989a563abdf0e31e14ece2e97b5d821187?view=parallel
+// I'm duplicating the fix here - there is also a change in lisp.cc
     T_sp spec_position_arg = T_sp((gc::Tagged)va_arg(cargs,T_O*));
-    if (!cl_listp(spec_type) ||
-        gc::As<Cons_sp>(spec_type)->memberEql(spec_position_arg).nilp()) // Was as_or_nil
+    List_sp eql_spec;
+    if (cl_listp(spec_type) &&
+        (eql_spec = gc::As<Cons_sp>(spec_type)->memberEql(spec_position_arg)).notnilp())
     {
-      Class_sp mc = lisp_instance_class(spec_position_arg);
-      argtype[spec_no] = mc;
+          // For immediate types we need to make sure that EQL will be true
+#if 1
+      argtype[spec_no++] = eql_spec;
+#else
+      argtype[spec_no++] = spec_position_arg;
+      argtype[spec_no++] = _lisp->_true();
+#endif
     } else {
-      // For immediate types we need to make sure that EQL will be true
-      argtype[spec_no] = spec_position_arg;
+            Class_sp mc = lisp_instance_class(spec_position_arg);
+      argtype[spec_no++] = mc;
+//      argtype[spec_no++] = _Nil<T_O>();
     }
-    ++spec_no;
   }
   vektor.unsafe_set_end(spec_no);
   return vektor;
@@ -246,7 +255,6 @@ gctools::Vec0<T_sp>& fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp>& vekto
 LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist, gc::tagged_pointer<Cache> cache) {
   /* Lookup the generic-function/arguments invocation in a cache and if an effective-method
 	   exists then use that.   If an effective-method does not exist then calculate it and put it in the cache.
-
 	   Then call the effective method with the saved arguments.
 	*/
   gctools::Vec0<T_sp>& vektor = fill_spec_vector(gf, cache->keys(), arglist );
@@ -257,7 +265,8 @@ LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist, gc::tagged_pointer<Cache
     printf("%s:%d - There was an CacheError searching the GF cache for the keys"
            "  You should try and get into cache->search_cache to see where the error is\n",
            __FILE__, __LINE__);
-    SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(gf));
+    abort();
+    //SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(gf));
   }
   ASSERT(e != NULL);
   Function_sp func;
@@ -268,15 +277,19 @@ LCC_RETURN standard_dispatch(T_sp gf,VaList_sp arglist, gc::tagged_pointer<Cache
 	     * compute the applicable methods. We must save
 	     * the keys and recompute the cache location if
 	     * it was filled. */
+    T_sp keys = VectorObjects_O::create(vektor);
     T_mv mv = compute_applicable_method(gf, arglist);
     func = gc::As<Function_sp>(mv);
     if (mv.valueGet(1).notnilp()) {
-      T_sp keys = VectorObjects_O::create(vektor);
       if (e->_key.notnilp()) {
         try {
           cache->search_cache(e); // e = ecl_search_cache(cache);
         } catch (CacheError &err) {
-          SIMPLE_ERROR(BF("Try #2 generic function cache search error looking for %s") % _rep_(gf));
+          printf("%s:%d - There was an CacheError searching the GF cache for the keys"
+                 "  You should try and get into cache->search_cache to see where the error is\n",
+                 __FILE__, __LINE__);
+          abort();
+//          SIMPLE_ERROR(BF("Try #2 generic function cache search error looking for %s") % _rep_(gf));
         }
       }
       e->_key = keys;

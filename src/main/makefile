@@ -99,8 +99,15 @@ boehm-debug-cxx:
 mps-debug-cxx:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/debug gc=mps debug clasp_install
 
-clean-bitcode:
-        $(BCLASP_BOEHM) -I -f ecl-min -e "(clean-system :init)" -e "(quit)"
+
+min-boehm-clean:
+	$(BCLASP_BOEHM) -I -f ecl-min -e "(clean-system :init :no-prompt t)" -e "(quit)"
+
+bclasp-boehm-clean:
+	$(BCLASP_BOEHM) -I -f ecl-min -e "(bclasp-features)" -e "(clean-system :init :no-prompt t)" -e "(quit)"
+
+cclasp-boehm-clean:
+	$(BCLASP_BOEHM) -I -f ecl-min -e "(cclasp-features)" -e "(clean-system :init :no-prompt t)" -e "(quit)"
 
 min-boehm:
 	$(BCLASP_BOEHM) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
@@ -119,21 +126,28 @@ cclasp-boehmdc-bitcode:
 
 cclasp-boehmdc-fasl:
 	$(BCLASP_BOEHMDC) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
+bclasp-boehm:
+	make bclasp-boehm-bitcode
+	make bclasp-boehm-fasl
 
 bclasp-boehm-bitcode:
 	$(BCLASP_BOEHM) -f ecl-min -e "(compile-bclasp)" -e "(quit)"
 
-bclasp-boehm-addons-bitcode:
+bclasp-boehm-fasl:
+	$(BCLASP_BOEHM) -f ecl-min -e "(link-bclasp)" -e "(quit)"
+
+bclasp-boehm-addons:
 	$(BCLASP_BOEHM) -l "build_addons.lsp"
 
 bclasp-boehm-addons-fasl:
 	$(BCLASP_BOEHM) -l "link-addons.lsp"
 
-bclasp-boehm-fasl:
-	$(BCLASP_BOEHM) -f ecl-min -e "(link-bclasp)" -e "(quit)"
-
 cclasp-from-bclasp-boehm-bitcode:
-	$(BCLASP_BOEHM) -f bclasp -l "buildCleavirClasp.lsp"
+	$(BCLASP_BOEHM) -l "buildCleavirClasp.lsp"
+
+cclasp-boehm:
+	make cclasp-from-bclasp-boehm-bitcode
+	make cclasp-boehm-fasl
 
 cclasp-boehm-bitcode:
 	$(BCLASP_BOEHM) -f ecl-min -e "(compile-cclasp)" -e "(quit)"

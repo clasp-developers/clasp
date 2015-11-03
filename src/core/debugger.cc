@@ -240,15 +240,55 @@ T_sp LispDebugger::invoke() {
   }
 }
 
-#define ARGS_af_clibBacktrace "()"
-#define DECL_af_clibBacktrace ""
-#define DOCS_af_clibBacktrace "backtrace"
-void af_clibBacktrace() {
+
+
+
+#define ARGS_core_lowLevelBacktrace "()"
+#define DECL_core_lowLevelBacktrace ""
+#define DOCS_core_lowLevelBacktrace "lowLevelBacktrace"
+void core_lowLevelBacktrace() {
+  InvocationHistoryStack &ihs = _lisp->invocationHistoryStack();
+  InvocationHistoryFrame *top = ihs.top();
+  if (top == NULL) {
+    printf("Empty InvocationHistoryStack\n");
+    return;
+  }
+  printf("From bottom to top invocation-history-stack frames = %d\n", top->_Index + 1);
+  for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
+    string name = "-no-name-";
+    gctools::tagged_pointer<Closure> closure = cur->closure;
+    if (!closure ) {
+      name = "-NO-CLOSURE-";
+    } else {
+      if (closure->name.notnilp()) {
+        try {
+          name = _rep_(closure->name);
+        } catch (...) {
+          name = "-BAD-NAME-";
+        }
+      }
+    }
+    /*Nilable?*/ T_sp sfi = core_sourceFileInfo(make_fixnum(closure->sourceFileInfoHandle()));
+    string sourceName = "cannot-determine";
+    if (sfi.notnilp()) {
+      sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
+    }
+    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", cur->_Index, cur, cur->_Previous, closure, name.c_str(), closure->lineNumber(), sourceName.c_str());
+  }
+  printf("----Done\n");
+}
+
+#define ARGS_core_clibBacktrace "(depth)"
+#define DECL_core_clibBacktrace ""
+#define DOCS_core_clibBacktrace "backtrace"
+void core_clibBacktrace(int depth) {
   _G();
 // Play with Unix backtrace(3)
 #define BACKTRACE_SIZE 1024
-  printf("Entered af_clibBacktrace - symbol: %s\n", _rep_(INTERN_(core,theClibBacktraceFunctionSymbol)).c_str());
+  printf("Entered core_clibBacktrace - symbol: %s\n", _rep_(INTERN_(core,theClibBacktraceFunctionSymbol)).c_str());
   void *buffer[BACKTRACE_SIZE];
+  char* funcname = (char*)malloc(1024);
+  size_t funcnamesize = 1024;
   int nptrs;
   nptrs = backtrace(buffer, BACKTRACE_SIZE);
   char **strings = backtrace_symbols(buffer, nptrs);
@@ -257,11 +297,33 @@ void af_clibBacktrace() {
     return;
   } else {
     for (int i = 0; i < nptrs; ++i) {
-      printf("Backtrace: %s\n", strings[i]);
+      if ( i >= depth ) break;
+      std::string front = std::string(strings[i],57);
+      char* fnName = &strings[i][59];
+      char* fnCur = fnName;
+      int len=0;
+      for ( ; *fnCur; ++fnCur) {
+        if (*fnCur == ' ') break;
+        ++len;
+      }
+      int status;
+      fnName[len] = '\0';
+      char* rest = &fnName[len+1];
+      char* ret = abi::__cxa_demangle(fnName, funcname, &funcnamesize, &status);
+      if (status == 0) {
+        funcname = ret; // use possibly realloc()-ed string
+        printf( "  %s %s %s\n", front.c_str(), funcname, rest);
+      } else {
+		// demangling failed. Output function name as a C function with
+		// no arguments.
+        printf( "  %s\n", strings[i]);
+      }
     }
   }
   if (strings)
     free(strings);
+  if ( funcname )
+    free(funcname);
 };
 
 #define ARGS_af_framePointers "()"
@@ -486,7 +548,8 @@ void dbg_controlC() {
 namespace core {
 
 void initialize_debugging() {
-  Defun(clibBacktrace);
+  CoreDefun(clibBacktrace);
+  CoreDefun(lowLevelBacktrace);
   Defun(framePointers);
   SYMBOL_EXPORT_SC_(CorePkg, printCurrentIhsFrameEnvironment);
   Defun(printCurrentIhsFrameEnvironment);

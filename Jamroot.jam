@@ -97,6 +97,7 @@ project clasp : requirements
         <target-os>darwin:<linkflags>"-lc++"
 	<define>INCLUDED_FROM_CLASP
 	<define>EXPAT
+        <target-os>darwin:<linkflags>"-Wl,-stack_size,0x1000000"
         <toolset>clang-darwin:<cxxflags>"-Wgnu-array-member-paren-init"
         <toolset>clang-linux:<cxxflags>"-Wgnu-array-member-paren-init"
         <variant>debug:<cxxflags>$(CLASP_DEBUG_CXXFLAGS)

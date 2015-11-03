@@ -301,7 +301,9 @@ for Stepper mode commands."
 	 (*step-level* 0)
 	 (*step-functions* (make-hash-table :size 128 :test 'eq)))
     (catch *step-tag*
-      (core:eval-with-env form nil t))))
+      #+ecl(core:eval-with-env form nil t)
+      #+clasp(funcall core:*eval-with-env-hook* form nil)
+      )))
 
 (defun steppable-function (form)
   (let ((*step-action* nil))
@@ -310,7 +312,9 @@ for Stepper mode commands."
 	    (function-lambda-expression form)
 	  (if (and (not (trace-record name)) f)
 	      (setf (gethash form *step-functions*)
-		    (eval-with-env `(function ,f) env t))
+		    #+ecl(eval-with-env `(function ,f) env t)
+                    #+clasp(funcall core:*eval-with-env-hook* `(function ,f) env)
+                    )
 	      form)))))
 
 (defun stepper (form)

@@ -1,17 +1,5 @@
 (in-package :clasp-cleavir)
 
-;;; These should be set up in Cleavir code
-;;; Remove them once beach implements them
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:rplaca-instruction))
-  nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:rplacd-instruction))
-  nil)
-
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:set-symbol-value-instruction))
-  nil)
-
 
 ;;; Stubs to keep the already compiled code working
 

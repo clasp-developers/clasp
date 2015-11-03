@@ -516,7 +516,7 @@ struct from_object<std::unique_ptr<T>> {
     printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T> *), typeid(clbind::Derivable<T> *).name());
     printf("dynamic_cast<void*>(o.px_ref()) = %p\n", dynamic_cast<void *>(&(*o)));
     printf("Invoking o.px_ref()->describe(); /* A virtual function */\n");
-    (*o).describe();
+    (*o).describe(core::lisp_true());
 #endif
     SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s") % _rep_(o) % typeid(o).name() % typeid(T *).name());
   }
@@ -552,7 +552,7 @@ struct from_object<T *> {
     printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T> *), typeid(clbind::Derivable<T> *).name());
     printf("dynamic_cast<void*>(o.px_ref()) = %p\n", dynamic_cast<void *>(&(*o)));
     printf("Invoking o.px_ref()->describe(); /* A virtual function */\n");
-    (*o).describe();
+    (*o).describe(core::lisp_true());
 #endif
     SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s") % _rep_(o) % typeid(o).name() % typeid(T *).name());
   }

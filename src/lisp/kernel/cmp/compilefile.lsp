@@ -117,9 +117,9 @@
 		     (irc-renv ltv-env)
 		     (jit-constant-unique-string-ptr "top-level")
                      *gv-source-file-info-handle*
-		     (irc-i64-*current-source-pos-info*-filepos)
-		     (irc-i32-*current-source-pos-info*-lineno)
-		     (irc-i32-*current-source-pos-info*-column)
+		     (irc-size_t-*current-source-pos-info*-filepos)
+		     (irc-size_t-*current-source-pos-info*-lineno)
+		     (irc-size_t-*current-source-pos-info*-column)
 		     *load-time-value-holder-global-var*
                      ))))
 
@@ -135,7 +135,7 @@
     (when (or (member 'cl:compile situations) (member :compile-toplevel situations))
       (cmp-log "Performing eval-when :compile-toplevel side-effects\n")
       (cmp-log "Evaluating: %s\n" body)
-      (si:eval-with-env `(progn ,@body) env)
+      (funcall core:*eval-with-env-hook* `(progn ,@body) env)
       (cmp-log "Done eval-when compile-toplevel side-effects\n"))
     (when (or (member 'cl:load situations) (member :load-toplevel situations))
       (cmp-log "Compiling body due to :load-toplevel --> %s\n" body)
@@ -247,8 +247,8 @@ to compile prologue and epilogue code when linking modules"
 	 (*compile-print* nil)
 	 (*compile-verbose* nil)	 )
     (with-compiler-env (conditions)
-      (with-module ( :module module
-                             :source-pathname (namestring name))
+      (with-module (:module module
+                            :source-pathname (namestring name))
         (with-debug-info-generator (:module *the-module*
                                             :pathname *compile-file-truename*)
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)

@@ -253,7 +253,7 @@
   ;;
   #-clasp
   (let ((counter 0))
-    t(declare (fixnum counter))
+    (declare (fixnum counter))
     (dolist (item (car env))
       (when (and (consp item)
 		 (eq (first (the cons item)) 'si::function-boundary)
@@ -262,13 +262,13 @@
   ;; ECL uses FUNCTION-BOUNDARY, I have linked lists of Environments
   ;; and I have FunctionContainerEnvironments to indicate the boundaries
   ;; of Functions within Lexical environments.
-  #+clasp
+  #+bclasp
   (let ((num (core:count-function-container-environments env)))
-    (when (> num 1)
-      (return-from environment-contains-closure t)))
-  )
+    (> num 1))
+  #+cclasp
+  (let ((res (member 'si::function-boundary env)))
+    res))
 
-;;#-cclasp
 (defun walk-method-lambda (method-lambda env)
   (declare (si::c-local))
   (let ((call-next-method-p nil)
@@ -301,15 +301,26 @@
 	;; stepping, compiler-env-p = t and execute = nil, so that the
 	;; form does not get executed.
 	(si::eval-with-env method-lambda env nil t t ))
-      ;;; This will not be called by clasp - I'm leaving this in
-      ;;; for now in case I need it later
-      #+clasp
+      ;; bclasp uses *code-walk-hook* (set in cmpwalk.lsp)
+      ;; To walk to method lambda and figure out if a closure
+      ;; is needed or not.
+      #+bclasp
       (progn
 	(cmp:code-walk-using-compiler method-lambda env
-				      :code-walker-function #'code-walker)))
+                                      :code-walker-function #'code-walker))
+      ;; cclasp uses *code-walk-hook* (set in kernel/cleavir/auto-compile.lisp)
+      ;; but it doesn't use the code-walker function
+      #+cclasp
+      (if (fboundp 'clasp-cleavir:code-walk-for-method-lambda-closure)
+          (clasp-cleavir:code-walk-for-method-lambda-closure method-lambda env
+                                                             :code-walker-function #'code-walker)
+          (setq call-next-method-p t
+                next-method-p-p t
+                in-closure-p t)))
     (values call-next-method-p
 	    next-method-p-p
 	    in-closure-p)))
+
 
 ;;; ----------------------------------------------------------------------
 ;;;                                                                parsing

@@ -71,7 +71,8 @@ Vector_sp core_make_vector(T_sp element_type,
     if ( adjustable || fill_pointer.notnilp() ) {
       size_t s_fill_ptr = dimension;
       if ( fill_pointer.notnilp() ) {
-        s_fill_ptr = clasp_to_fixnum(fill_pointer);
+        if (fill_pointer != cl::_sym_T_O)
+          s_fill_ptr = MIN(dimension, std::abs(unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer))));
       }
       return BitVectorWithFillPtr_O::create(dimension,s_fill_ptr,adjustable);
     }

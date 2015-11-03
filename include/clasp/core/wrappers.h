@@ -74,7 +74,7 @@ void af_def(const string &packageName, const string &name, RT (*fp)(ARGS...), co
   _G();
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
-  gc::tagged_pointer<BuiltinClosure> f = gctools::ClassAllocator<VariadicFunctoid<RT(ARGS...)>>::allocateClass(symbol, spi, kw::_sym_function, fp);
+  gc::tagged_pointer<BuiltinClosure> f = gctools::ClassAllocator<VariadicFunctoid<RT(ARGS...)>>::allocateClass(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi) );
   lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
 }
 };
@@ -107,7 +107,7 @@ private:
 public:
   virtual const char *describe() const { return "MacroClosure"; };
   // constructor
-  MacroClosure(Symbol_sp name, T_sp spi, MacroPtr ptr) : BuiltinClosure(name, spi, kw::_sym_macro), mptr(ptr) {}
+ MacroClosure(Symbol_sp name, MacroPtr ptr, SOURCE_INFO ) : BuiltinClosure(name, kw::_sym_macro, SOURCE_INFO_PASS ), mptr(ptr) {}
   DISABLE_NEW();
   size_t templatedSizeof() const { return sizeof(MacroClosure); };
   virtual Symbol_sp getKind() const { return kw::_sym_macro; };
@@ -124,7 +124,7 @@ inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(L
   _G();
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFileName, 0, lineno);
-  gc::tagged_pointer<BuiltinClosure> f = gc::tagged_pointer<BuiltinClosure>(gctools::ClassAllocator<MacroClosure>::allocateClass(symbol, spi, mp));
+  gc::tagged_pointer<BuiltinClosure> f = gc::tagged_pointer<BuiltinClosure>(gctools::ClassAllocator<MacroClosure>::allocateClass(symbol, mp, SOURCE_POS_INFO_FIELDS(spi) ));
   lisp_defmacro(symbol, packageName, f, arguments, declares, docstring, autoExport);
 }
 

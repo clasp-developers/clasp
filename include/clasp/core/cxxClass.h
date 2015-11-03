@@ -59,7 +59,7 @@ namespace core {
     static CxxClass_sp createUncollectable();
 
   public:
-    virtual void describe();
+    virtual void describe(T_sp stream);
 
     virtual bool cxxClassP() const { return true; }
 

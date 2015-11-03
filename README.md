@@ -39,7 +39,7 @@ To build Clasp from within the top level directory do the following.
 
 | Variable                                   |   Description                                                           |
 | ------------------------------------------ | ----------------------------------------------------------------------- |
-| **TARGET_OS**                              | Currently either _linux_ or _darwin_                                    |
+| **TARGET_OS**                              | Currently either _Linux_ or _Darwin_                                    |
 | **PJOBS**                                  | The number of processors you have available to build with.              |
 |                                            | Set PJOBS <= the number of cores you have.                              |
 |                                            | Also if you have less than 8GB memory you should set PJOBS to 2 or 1,   |
@@ -51,7 +51,7 @@ To build Clasp from within the top level directory do the following.
 4) Make both the MPS and Boehm versions of Clasp (Currently only Boehm version is built).
 <pre># <b>make</b></pre>
 
-5) Add the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS (OS X) or $**CLASP_BUILD_TARGET_DIR**/bin (linux) (from local.config) to your PATH<br>
+5) Add the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS (OS X) or $**CLASP_BUILD_TARGET_DIR**/bin (Linux) (from local.config) to your PATH<br>
 
 6) To run the Boehm version of Clasp use
 <pre># <b>clasp_boehm_o</b></pre>

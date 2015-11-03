@@ -638,8 +638,8 @@ public: // Description stuff
   virtual void __write__(T_sp strm) const;
   //! A pretty-print representation
   virtual string __str__() { return _rep_(this->sharedThis<T_O>()); };
-  virtual void describe();
-  virtual void dump() { this->describe(); };
+  virtual void describe(T_sp stream);
+  virtual void dump() { this->describe(lisp_true()); };
 
  public:
   //! Encode this object as an a-list

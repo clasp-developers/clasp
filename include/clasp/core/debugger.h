@@ -42,6 +42,10 @@ namespace core {
   the single step state to what it was.
 */
 
+  void core_lowLevelBacktrace();
+  void core_clibBacktrace(int depth=999999999);
+
+  
   FORWARD(InvocationHistoryFrameIterator);
   
 class LispDebugger {

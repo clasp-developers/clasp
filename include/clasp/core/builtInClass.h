@@ -59,7 +59,7 @@ public:
   static BuiltInClass_sp createUncollectable();
 
 public:
-  virtual void describe();
+  virtual void describe(T_sp stream);
 
   virtual bool builtInClassP() const { return true; }
 
