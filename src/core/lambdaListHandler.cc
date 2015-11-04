@@ -1172,7 +1172,7 @@ List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
 
 void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging() {
   List_sp names = this->namesOfLexicalVariables();
-  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(), names, cl_length(names), false);
+  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(), names, cl_length(names), false, cl::_sym_T_O);
 }
 
 VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {

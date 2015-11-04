@@ -304,7 +304,7 @@ namespace core {
         _G();
         using namespace boost;
         HashTableEq_sp supers = HashTableEq_O::create_default();
-        VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true));
+        VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
         this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Class_O>());
         vector<list<int>> graph(cl_length(arrayedSupers));
 

@@ -309,7 +309,7 @@ int af_incompleteNextHigherPowerOf_2(Fixnum_sp fn) {
 #define DOCS_af_allRegisteredClassNames "allRegisteredClassNames"
 Vector_sp af_allRegisteredClassNames() {
   _G();
-  VectorObjects_sp vo = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), _lisp->classSymbolsHolder().size(), false);
+  VectorObjects_sp vo = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), _lisp->classSymbolsHolder().size(), false, cl::_sym_T_O);
   for (int i(0), iEnd(_lisp->classSymbolsHolder().size()); i < iEnd; ++i) {
     vo->setf_elt(i, _lisp->classSymbolsHolder()[i]);
   }
@@ -1141,7 +1141,7 @@ T_sp cl_mapcar(T_sp func_desig, List_sp lists) {
 T_sp cl_mapc(T_sp top, List_sp lists) {
   _G();
   Function_sp op = coerce::functionDesignator(top);
-  VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 8, 0, true));
+  VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 8, 0, true, cl::_sym_T_O));
   // Copy the arguments into argumentLists
   for (auto carg : lists) {
     argumentLists->vectorPushExtend(oCar(carg), 8);
@@ -1173,7 +1173,7 @@ T_sp cl_maplist(T_sp func_desig, List_sp lists) {
   _G();
   //        printf("%s:%d maplist func_desig=%s   lists=%s\n", __FILE__, __LINE__, _rep_(func_desig).c_str(), _rep_(lists).c_str() );
   Function_sp op = coerce::functionDesignator(func_desig);
-  VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true));
+  VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
   //	vector<List_sp> argumentLists;
   // Copy the arguments into argumentLists
   for (auto carg : lists) {
