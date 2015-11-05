@@ -15,8 +15,10 @@
                       "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0/include"
                       "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks")
   #-target-os-darwin (vector
-                      "-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
-                      "-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"))
+                      #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
+                      #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
+                      #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/tr1"
+                      #+(or)"-I/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include"))
 
 
 ;;; --------------------------------------------------

@@ -86,6 +86,13 @@ export CLASP_RELEASE_LINKFLAGS += -L$(CLASP_RELEASE_LLVM_LIB_DIR)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --libs)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --system-libs)
 
+ifneq ($(EXTERNALS_CLASP_DIR),)
+  export CLASP_DEBUG_CXXFLAGS += -I$(EXTERNALS_CLASP_DIR)/build/common/include
+  export CLASP_DEBUG_LINKFLAGS += -L$(EXTERNALS_CLASP_DIR)/build/common/lib -lgmp -lgmpxx -lreadline -lexpat
+  export CLASP_RELEASE_CXXFLAGS += -I$(EXTERNALS_CLASP_DIR)/build/common/include
+  export CLASP_RELEASE_LINKFLAGS += -L$(EXTERNALS_CLASP_DIR)/build/common/lib -lgmp -lgmpxx -lreadline -lexpat
+endif
+
 ifeq ($(TARGET_OS),Darwin)
   export INCLUDE_DIRS += /usr/local/Cellar/gmp/6.0.0a/include
   export INCLUDE_DIRS += /opt/local/include
