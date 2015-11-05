@@ -1187,7 +1187,7 @@ T_sp core_rmdir(T_sp directory)
 
 #define ARGS_core_chmod "(file mode)"
 #define DECL_core_chmod ""
-#define DOCS_core_chmod "chmod"
+#define DOCS_core_chmod "chmod - use octal values for mode for convenience (eg #o777)"
 void core_chmod(T_sp file, T_sp mode)
 {
   mode_t code = clasp_to_uint32_t(mode);
