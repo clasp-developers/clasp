@@ -1170,36 +1170,42 @@ T_sp core_mkstemp(T_sp template)
     @(return (Null(output)? output : cl_truename(output)))
 	}
 
-T_sp
-si_rmdir(T_sp directory)
-{
-    return af_deleteFile(cl_make_pathname(6, kw::_sym_name, _Nil<T_O>(),
-					   kw::_sym_type, _Nil<T_O>(),
-					   kw::_sym_defaults, directory));
-}
-
-
-T_sp
-si_chmod(T_sp file, T_sp mode)
-{
-	mode_t code = ecl_to_uint32_t(mode);
-	T_sp filename = coerce_to_posix_filename(file);
-	unlikely_if (chmod((char*)filename->c_str(), code)) {
-		T_sp c_error = clasp_strerror(errno);
-		const char *msg = "Unable to change mode of file ~S to value ~O"
-			"~%C library error: ~S";
-		eval::funcall(_sym_signalSimpleError,
-			      cl::_sym_fileError, /* condition */
-			      _lisp->_true(), /* continuable */
-			      /* format */
-			      Str_O::create(msg),
-			      Cons_O::createList( file, mode, c_error), /* format args */
-			      kw::_sym_pathname, /* file-error options */
-			      file);
-	}
-	@(return)
-}
 #endif // working
+
+
+#define ARGS_core_rmdir "(directory)"
+#define DECL_core_rmdir ""
+#define DOCS_core_rmdir "rmdir"
+T_sp core_rmdir(T_sp directory)
+{
+  return af_deleteFile(eval::funcall(cl::_sym_makePathname,
+                                     kw::_sym_name, _Nil<T_O>(),
+                                     kw::_sym_type, _Nil<T_O>(),
+                                     kw::_sym_defaults, directory));
+}
+
+
+#define ARGS_core_chmod "(file mode)"
+#define DECL_core_chmod ""
+#define DOCS_core_chmod "chmod"
+void core_chmod(T_sp file, T_sp mode)
+{
+  mode_t code = clasp_to_uint32_t(mode);
+  T_sp filename = coerce_to_posix_filename(file);
+  unlikely_if (chmod((char*)gc::As<Str_sp>(filename)->c_str(), code)) {
+    T_sp c_error = clasp_strerror(errno);
+    const char *msg = "Unable to change mode of file ~S to value ~O"
+      "~%C library error: ~S";
+    eval::funcall(_sym_signalSimpleError,
+                  cl::_sym_fileError, /* condition */
+                  _lisp->_true(), /* continuable */
+			      /* format */
+                  Str_O::create(msg),
+                  Cons_O::createList( file, mode, c_error), /* format args */
+                  kw::_sym_pathname, /* file-error options */
+                  file);
+  }
+}
 
 #define ARGS_core_copy_file "(orig dest)"
 #define DECL_core_copy_file ""
@@ -1479,5 +1485,7 @@ void initialize_unixfsys() {
   ClDefun(renameFile);
   CoreDefun(mkstemp);
   CoreDefun(copy_file);
+  CoreDefun(rmdir);
+  CoreDefun(chmod);
 };
 };

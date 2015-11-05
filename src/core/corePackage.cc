@@ -270,6 +270,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, fully_buffered);
 SYMBOL_EXPORT_SC_(ClPkg, array);
 SYMBOL_EXPORT_SC_(KeywordPkg, array);
 SYMBOL_EXPORT_SC_(ClPkg, makeArray);
+SYMBOL_EXPORT_SC_(ClPkg, makePathname);
 SYMBOL_EXPORT_SC_(CorePkg, STARallCxxClassesSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, mismatch);
 SYMBOL_EXPORT_SC_(ClPkg, SignedByte);

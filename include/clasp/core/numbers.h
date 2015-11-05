@@ -127,6 +127,7 @@ Integer_sp clasp_shift(Integer_sp num, int bits);
  gc::Fixnum clasp_integer_length(Integer_sp x);
 mpz_class clasp_to_mpz(Integer_sp x);
 cl_index clasp_to_size(Integer_sp x);
+uint32_t clasp_to_uint32_t(Integer_sp x);
 Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
 SingleFloat_sp clasp_make_single_float(float d);
 DoubleFloat_sp clasp_make_double_float(double d);
@@ -1291,6 +1292,17 @@ inline cl_index clasp_to_size(Integer_sp i) {
   gc::Fixnum f = i->as_int_();
   if (f >= 0 ) return f;
   TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_fixnum)));
+};
+
+inline uint32_t clasp_to_uint32_t(Integer_sp i) {
+  if (i.fixnump()) {
+    gc::Fixnum f = i.unsafe_fixnum();
+    if (f >= 0 && f <= gc::most_positive_uint32) {
+      return f;
+    }
+    TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint32)));
+  }
+  TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint32)));
 };
 
 inline float clasp_to_float(Number_sp x) {
