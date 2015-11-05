@@ -288,8 +288,8 @@ pump:
 	(cd src/clbind; make pump)
 
 submodules:
-	make submodules-boehm
-	make submodules-mps
+	$(MAKE) submodules-boehm
+	$(MAKE) submodules-mps
 
 submodules-boehm:
 	-git submodule update --init tools/boost_build
@@ -362,20 +362,20 @@ clasp-boehm-cpp:
 	$(BUILD) -j$(PJOBS) gc=boehm link=$(LINK) program=clasp release src/main//dist
 
 clasp-mps:
-	make clasp-mps-cpp
-	(cd src/main; make mps)
+	$(MAKE) clasp-mps-cpp
+	(cd src/main; $(MAKE) mps)
 
 # Compile the CL sources for min-mps: and full-mps
 cl-mps:
-	(cd src/main; make mps)
+	(cd src/main; $(MAKE) mps)
 
 # Compile the CL sources for min-mps: using the existing min-mps: - FAST
 cl-min-mps-recompile:
-	(cd src/main; make min-mps-recompile)
+	(cd src/main; $(MAKE) min-mps-recompile)
 
 # Compile the CL sources for full-mps:
 cl-full-mps:
-	(cd src/main; make full-mps)
+	(cd src/main; $(MAKE) full-mps)
 
 
 clasp-boehm:
@@ -392,15 +392,15 @@ cclasp-boehm-addons:
 
 # Compile the CL sources for min-boehm: and full-boehm
 cl-boehm:
-	(cd src/main; make boehm)
+	(cd src/main; $(MAKE) boehm)
 
 # Compile the CL sources for min-boehm: using the existing min-boehm: - FAST
 cl-min-boehm-recompile:
-	(cd src/main; make min-boehm-recompile)
+	(cd src/main; $(MAKE) min-boehm-recompile)
 
 # Compile the CL sources for full-boehm:
 cl-full-boehm:
-	(cd src/main; make full-boehm)
+	(cd src/main; $(MAKE) full-boehm)
 
 boost_build:
 	@if test ! -e $(BOOST_BUILD_INSTALL)/bin/bjam ; then make boost_build-compile ; fi
@@ -410,7 +410,7 @@ boost_build-compile:
 	(cd $(BOOST_BUILD_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_INSTALL) --ignore-site-config)
 
 compile-commands:
-	(cd src/main; make compile-commands)
+	(cd src/main; $(MAKE) compile-commands)
 
 
 clean:
