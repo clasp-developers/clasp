@@ -476,7 +476,7 @@ void HashTable_O::fields(Record_sp node) {
 uint HashTable_O::resizeEmptyTable(uint sz) {
   if (sz < 4)
     sz = 4;
-  this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), sz, false);
+  this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), sz, false, cl::_sym_T_O);
 #ifdef USE_MPS
   mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)), gctools::_global_arena);
 #endif

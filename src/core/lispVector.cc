@@ -48,7 +48,7 @@ namespace core {
 #define DOCS_cl_vector "vector"
 Vector_sp cl_vector(List_sp args) {
   _G();
-  Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(), args, cl_length(args), false);
+  Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(), args, cl_length(args), false, cl::_sym_T_O);
   return vec;
 };
 
@@ -107,9 +107,9 @@ Vector_sp core_make_vector(T_sp element_type,
         ifp = dimension;
       else
         ifp = unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer));
-      return VectorObjectsWithFillPtr_O::make(initial_element, initialContents, dimension, ifp, adjustable);
+      return VectorObjectsWithFillPtr_O::make(initial_element, initialContents, dimension, ifp, adjustable, element_type);
     } else {
-      return VectorObjects_O::make(initial_element, initialContents, dimension, adjustable);
+      return VectorObjects_O::make(initial_element, initialContents, dimension, adjustable, element_type);
     }
   }
   SIMPLE_ERROR(BF("Handle make-vector :element-type %s") % _rep_(element_type));

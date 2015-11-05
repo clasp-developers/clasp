@@ -496,7 +496,7 @@ T_mv af_sharp_left_parenthesis(T_sp sin, Character_sp ch, /*Fixnum_sp*/ T_sp tnu
         list = cl_nreverse(reversed);
       }
     }
-    VectorObjects_sp vec = VectorObjects_O::make(_Nil<T_O>(), list, cl_length(list), false);
+    VectorObjects_sp vec = VectorObjects_O::make(_Nil<T_O>(), list, cl_length(list), false, cl::_sym_T_O);
     return (Values(vec));
   }
   return (Values(_Nil<T_O>()));
