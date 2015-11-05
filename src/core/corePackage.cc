@@ -218,7 +218,6 @@ SYMBOL_EXPORT_SC_(ExtPkg, stackVar);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_numberOfFixedArguments_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARinterpreterTraceSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugLoadTimeValuesSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARdebugGenericDispatchSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugEvalSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugInterpretedFunctionsSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg, FullDebug);
@@ -951,7 +950,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_char_code_limit->defconstant(make_fixnum(CHAR_CODE_LIMIT));
   cl::_sym_STARgensym_counterSTAR->defparameter(make_fixnum(0));
   cl::_sym_STARdefaultPathnameDefaultsSTAR->defparameter(_Nil<T_O>());
-  cl::_sym_STARprint_arraySTAR->defparameter(_Nil<T_O>());
+  cl::_sym_STARprint_arraySTAR->defparameter(_lisp->_true());
   cl::_sym_STARprint_baseSTAR->defparameter(make_fixnum(10));
   cl::_sym_STARprint_caseSTAR->defparameter(kw::_sym_upcase);
   cl::_sym_STARprint_circleSTAR->defparameter(_Nil<T_O>());
@@ -1033,7 +1032,6 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugMonitorSTAR->defparameter(_Nil<T_O>());
   _sym_STARwatchDynamicBindingStackSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugLoadTimeValuesSTAR->defparameter(_Nil<T_O>());
-  _sym_STARdebugGenericDispatchSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugEvalSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugStartupSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());

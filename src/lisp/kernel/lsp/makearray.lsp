@@ -13,7 +13,7 @@
       (setq initial-element 0))
   (cond
     ((null dimensions)
-     (make-array-objects dimensions element-type initial-element adjustable))
+     (make-array-objects dimensions (upgraded-array-element-type element-type) initial-element adjustable))
     ((or (fixnump dimensions) (and (consp dimensions) (eql 1 (length dimensions))))
      (let ((dim (if (fixnump dimensions)
 		    dimensions
@@ -25,14 +25,14 @@
              (if (eq (array-element-type displaced-to) element-type)
                  (make-array-displaced dimensions element-type displaced-to displaced-index-offset)
                  (error "Cannot displace the array, because the element types don't match")))
-           (make-vector element-type dim adjustable fill-pointer displaced-to displaced-index-offset initial-element initial-contents))))
+           (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset initial-element initial-contents))))
     ((consp dimensions)
      (and initial-contents (error "You passed initial-contents to make-array"))
      (if displaced-to
          (if (eq (array-element-type displaced-to) element-type)
              (make-array-displaced dimensions element-type displaced-to displaced-index-offset)
              (error "Cannot displace the array, because the element types don't match"))
-         (make-array-objects dimensions element-type initial-element adjustable)))
+         (make-array-objects dimensions (upgraded-array-element-type element-type) initial-element adjustable)))
     (t (error "Illegal dimensions ~a for make-array" dimensions ))))
 
 

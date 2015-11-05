@@ -1892,11 +1892,10 @@ Pathname_sp af_translatePathname(T_sp tsource, T_sp tfrom, T_sp tto, T_sp scase)
   /* Match directories */
   wilds = find_list_wilds(source->_Directory,
                           from->_Directory);
-  if (wilds == kw::_sym_error)
-    goto error;
+  if (wilds == kw::_sym_error) goto error;
   if ((to->_Directory).nilp()) {
     /* Missing components are replaced */
-    d = translate_list_case(from->_Directory, fromcase, tocase);
+    d = translate_list_case(source->_Directory, fromcase, tocase);
   } else {
     wilds = translate_list_case(wilds, fromcase, tocase);
     d = copy_list_wildcards(&wilds, to->_Directory);
@@ -1909,10 +1908,9 @@ Pathname_sp af_translatePathname(T_sp tsource, T_sp tfrom, T_sp tto, T_sp scase)
 
   /* Match name */
   wilds = find_wilds(_Nil<T_O>(), source->_Name, from->_Name);
-  if (wilds == kw::_sym_error)
-    goto error2;
+  if (wilds == kw::_sym_error) goto error2;
   if ((to->_Name.nilp())) {
-    d = translate_component_case(from->_Name, fromcase, tocase);
+    d = translate_component_case(source->_Name, fromcase, tocase);
   } else {
     wilds = translate_list_case(wilds, fromcase, tocase);
     d = copy_wildcards(&wilds, to->_Name);
@@ -1925,10 +1923,9 @@ Pathname_sp af_translatePathname(T_sp tsource, T_sp tfrom, T_sp tto, T_sp scase)
 
   /* Match type */
   wilds = find_wilds(_Nil<T_O>(), source->_Type, from->_Type);
-  if (wilds == kw::_sym_error)
-    goto error2;
+  if (wilds == kw::_sym_error) goto error2;
   if ((to->_Type).nilp()) {
-    d = translate_component_case(from->_Type, fromcase, tocase);
+    d = translate_component_case(source->_Type, fromcase, tocase);
   } else {
     wilds = translate_list_case(wilds, fromcase, tocase);
     d = copy_wildcards(&wilds, to->_Type);

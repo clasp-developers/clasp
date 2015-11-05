@@ -193,7 +193,7 @@ Lisp_O::GCRoots::GCRoots() : _BufferStringPool(_Nil<T_O>())
                              ,
                              _SystemProperties(_Nil<T_O>()), _CatchInfo(_Nil<T_O>()), _SpecialForms(_Unbound<HashTableEq_O>()), _NullStream(_Nil<T_O>()), _PathnameTranslations(_Nil<T_O>()) {}
 
-Lisp_O::Lisp_O() : _StackWarnSize(7 * 1024 * 1024), // 6MB default stack size before warnings
+Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size*0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
                    _StackSampleSize(0),
                    _StackSampleMax(0),
@@ -1596,6 +1596,13 @@ void af_stackMonitor() {
   }
 };
 
+#define ARGS_af_stackLimit "()"
+#define DECL_af_stackLimit ""
+#define DOCS_af_stackLimit "Return the soft and hard limits of the stack"
+T_mv af_stackLimit() {
+  return Values(clasp_make_fixnum(_lisp->_StackWarnSize));
+};
+
 #define ARGS_af_setupStackMonitor "(&key warn-size sample-size)"
 #define DECL_af_setupStackMonitor ""
 #define DOCS_af_setupStackMonitor "setupStackMonitor"
@@ -1775,7 +1782,11 @@ T_mv ext_vfork_execvp(List_sp call_and_arguments) {
         if ( child_PID == 0 ) {
             // Child
             execvp(execvp_args[0],(char * const *)execvp_args.data());
-            printf("%s:%d execvp returned!!!! Why!!!!\n", __FILE__, __LINE__ );
+            printf("%s:%d execvp returned with errno=%d   strerror(errno) = %s\n",  __FILE__, __LINE__,  errno, strerror(errno));
+            for ( int i=0; execvp_args[i]!=NULL; ++i ) {
+              printf("    arg#%d  %s\n", i, execvp_args[i]);
+            }
+            printf("  cannot continue... exiting... sorry...\n");
             _exit(0); // Should never reach
         } else {
             // Parent
@@ -3222,6 +3233,7 @@ void Lisp_O::exposeCando() {
   CoreDefun(singleDispatchGenericFunctionTable);
   SYMBOL_SC_(CorePkg, stackMonitor);
   Defun(stackMonitor);
+  Defun(stackLimit);
   Defun(lowLevelRepl);
   SYMBOL_SC_(CorePkg, setupStackMonitor);
   Defun(setupStackMonitor);

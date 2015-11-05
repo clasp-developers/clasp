@@ -140,7 +140,7 @@ public:
 
 public:
   DISABLE_NEW();
-  InterpretedClosure(T_sp fn, T_sp sp, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c);
+  InterpretedClosure(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO );
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "InterpretedClosure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();

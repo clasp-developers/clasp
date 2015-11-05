@@ -304,7 +304,7 @@ namespace core {
         _G();
         using namespace boost;
         HashTableEq_sp supers = HashTableEq_O::create_default();
-        VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true));
+        VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
         this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Class_O>());
         vector<list<int>> graph(cl_length(arrayedSupers));
 
@@ -469,25 +469,20 @@ namespace core {
   Dumps a description of the class to stdout.
   __END_DOC
 */
-    void Class_O::describe() {
-        _G();
-        printf("Class instanceClassName %s\n", this->instanceClassName().c_str());
-        printf("FullName %s\n", this->name()->fullName().c_str());
-        if (this->directSuperclasses().nilp()) {
-            printf("There are no super-classes!!!!!!\n");
-        } else {
-            for (Cons_sp cc : this->directSuperclasses()) {
-                printf("directSuperclasses: %s\n", gc::As<Class_sp>(oCar(cc))->instanceClassName().c_str());
-            }
+    void Class_O::describe(T_sp stream) {
+      stringstream ss;
+      ss << (BF("Class instanceClassName %s\n") % this->instanceClassName().c_str()).str();
+      ss << (BF("FullName %s\n") % this->name()->fullName().c_str()).str();
+      if (this->directSuperclasses().nilp()) {
+        ss << (BF("There are no super-classes!!!!!!\n")).str();
+      } else {
+        for (Cons_sp cc : this->directSuperclasses()) {
+          ss << (BF("directSuperclasses: %s\n") % gc::As<Class_sp>(oCar(cc))->instanceClassName().c_str()).str();
         }
-        printf(" this.instanceCreator* = %p\n", (void *)(this->getCreator().raw_()));
-        if (!this->hasCreator()) {
-            printf("_creator = NULL\n");
-        } else {
-            this->getCreator()->describe();
-        }
-        printf("cxxClassP[%d]  cxxDerivableClassP[%d]   primaryCxxDerivableClassP[%d]\n",
-               this->cxxClassP(), this->cxxDerivableClassP(), this->primaryCxxDerivableClassP());
+      }
+      ss << (BF(" this.instanceCreator* = %p\n") % (void *)(this->getCreator().raw_())).str();
+      ss << (BF("cxxClassP[%d]  cxxDerivableClassP[%d]   primaryCxxDerivableClassP[%d]\n") % this->cxxClassP() % this->cxxDerivableClassP() % this->primaryCxxDerivableClassP()).str();
+      clasp_write_string(ss.str(),stream);
     }
 
     T_sp Class_O::instanceRef(int idx) const {

@@ -181,7 +181,7 @@ void af_lowLevelDescribe(T_sp obj) {
     printf("NIL\n");
     return;
   }
-  obj->describe();
+  obj->describe(_lisp->_true());
 };
 
 #define ARGS_af_copyTree "(arg)"
@@ -328,6 +328,7 @@ T_sp T_O::shallowCopy() const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
+
 T_sp T_O::deepCopy() const {
   _G();
   SUBCLASS_MUST_IMPLEMENT();
@@ -427,11 +428,8 @@ bool af_slBoundp(T_sp obj) {
   return boundp;
 };
 
-void T_O::describe() {
-  string s = this->__str__();
-  _lisp->print(BF("%s") % s.c_str());
-  //    _lisp->print(BF(""));
-  //    dumpSourceInfo(this->sharedThis<T_O>());
+void T_O::describe(T_sp stream) {
+  clasp_write_string(this->__str__(),stream);
 }
 
 void T_O::__write__(T_sp strm) const {
@@ -544,6 +542,14 @@ T_sp T_O::instanceSigSet() {
   SIMPLE_ERROR(BF("T_O::instanceSigSet() invoked on object class[%s] val-->%s") % this->_instanceClass()->classNameAsString() % _rep_(this->asSmartPtr()));
 }
 
+#define ARGS_core_deepCopy "(obj)"
+#define DECL_core_deepCopy ""
+#define DOCS_core_deepCopy "deepCopy"
+T_sp core_deepCopy(T_sp obj)
+{
+  return obj->deepCopy();
+}
+
 
 
 void T_O::exposeCando(core::Lisp_sp lisp) {
@@ -551,6 +557,7 @@ void T_O::exposeCando(core::Lisp_sp lisp) {
   Defun(lowLevelDescribe);
   SYMBOL_SC_(CorePkg, slBoundp);
   Defun(slBoundp);
+  CoreDefun(deepCopy);
   SYMBOL_SC_(CorePkg, isNil);
   Defun(isNil);
   SYMBOL_SC_(CorePkg, instanceRef);

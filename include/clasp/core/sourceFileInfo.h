@@ -120,6 +120,28 @@ public:
   uint _Column;
   //	Function_sp 	_Expander;
 };
+inline core::Fixnum safe_fileId(T_sp spi) {
+  if (spi.nilp()) return 0;
+  return gc::As<SourcePosInfo_sp>(spi)->_FileId;
+}
+
+inline core::Fixnum safe_filepos(T_sp spi) {
+  if (spi.nilp()) return 0;
+  return gc::As<SourcePosInfo_sp>(spi)->_FileId;
+}
+
+inline core::Fixnum safe_lineno(T_sp spi) {
+  if (spi.nilp()) return 0;
+  return gc::As<SourcePosInfo_sp>(spi)->_Lineno;
+}
+
+inline core::Fixnum safe_column(T_sp spi) {
+  if (spi.nilp()) return 0;
+  return gc::As<SourcePosInfo_sp>(spi)->_Column;
+}
+// Pass all arguments to a FunctionClosure 
+#define SOURCE_POS_INFO_FIELDS(spi) safe_fileId(spi), safe_filepos(spi), safe_lineno(spi), safe_column(spi)
+
 };
 template <>
 struct gctools::GCInfo<core::SourcePosInfo_O> {
@@ -128,6 +150,9 @@ struct gctools::GCInfo<core::SourcePosInfo_O> {
   static bool constexpr Moveable = true;
   static bool constexpr Atomic = false;
 };
+
+
+
 
 namespace core {
 class SourceManager_O : public T_O {

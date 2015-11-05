@@ -309,7 +309,7 @@ int af_incompleteNextHigherPowerOf_2(Fixnum_sp fn) {
 #define DOCS_af_allRegisteredClassNames "allRegisteredClassNames"
 Vector_sp af_allRegisteredClassNames() {
   _G();
-  VectorObjects_sp vo = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), _lisp->classSymbolsHolder().size(), false);
+  VectorObjects_sp vo = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), _lisp->classSymbolsHolder().size(), false, cl::_sym_T_O);
   for (int i(0), iEnd(_lisp->classSymbolsHolder().size()); i < iEnd; ++i) {
     vo->setf_elt(i, _lisp->classSymbolsHolder()[i]);
   }
@@ -358,6 +358,19 @@ T_sp af_getEnv(Str_sp arg) {
   }
   return Str_O::create(sres);
 };
+
+#define ARGS_core_describe_cxx_object "(name &optional stream)"
+#define DECL_core_describe_cxx_object ""
+#define DOCS_core_describe_cxx_object "Describe a C++ object as CL:DESCRIBE"
+void core_describe_cxx_object(T_sp obj, T_sp stream) {
+  if ( obj.generalp() ) {
+    obj->describe(stream);
+  } else if ( obj.consp() ) {
+    obj->describe(stream);
+  }
+  SIMPLE_ERROR(BF("Use the CL facilities to describe this object"));
+};
+
 
 #define ARGS_core_setenv "(name arg overwrite)"
 #define DECL_core_setenv ""
@@ -1128,7 +1141,7 @@ T_sp cl_mapcar(T_sp func_desig, List_sp lists) {
 T_sp cl_mapc(T_sp top, List_sp lists) {
   _G();
   Function_sp op = coerce::functionDesignator(top);
-  VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 8, 0, true));
+  VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 8, 0, true, cl::_sym_T_O));
   // Copy the arguments into argumentLists
   for (auto carg : lists) {
     argumentLists->vectorPushExtend(oCar(carg), 8);
@@ -1160,7 +1173,7 @@ T_sp cl_maplist(T_sp func_desig, List_sp lists) {
   _G();
   //        printf("%s:%d maplist func_desig=%s   lists=%s\n", __FILE__, __LINE__, _rep_(func_desig).c_str(), _rep_(lists).c_str() );
   Function_sp op = coerce::functionDesignator(func_desig);
-  VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true));
+  VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
   //	vector<List_sp> argumentLists;
   // Copy the arguments into argumentLists
   for (auto carg : lists) {
@@ -2019,40 +2032,6 @@ void core_dynamicBindingStackDump(std::ostream &out) {
 }
 
 
-#define ARGS_core_lowLevelBacktrace "()"
-#define DECL_core_lowLevelBacktrace ""
-#define DOCS_core_lowLevelBacktrace "lowLevelBacktrace"
-void core_lowLevelBacktrace() {
-  InvocationHistoryStack &ihs = _lisp->invocationHistoryStack();
-  InvocationHistoryFrame *top = ihs.top();
-  if (top == NULL) {
-    printf("Empty InvocationHistoryStack\n");
-    return;
-  }
-  printf("From bottom to top invocation-history-stack frames = %d\n", top->_Index + 1);
-  for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
-    string name = "-no-name-";
-    gctools::tagged_pointer<Closure> closure = cur->closure;
-    if (!closure ) {
-      name = "-NO-CLOSURE-";
-    } else {
-      if (closure->name.notnilp()) {
-        try {
-          name = _rep_(closure->name);
-        } catch (...) {
-          name = "-BAD-NAME-";
-        }
-      }
-    }
-    /*Nilable?*/ T_sp sfi = core_sourceFileInfo(make_fixnum(closure->sourceFileInfoHandle()));
-    string sourceName = "cannot-determine";
-    if (sfi.notnilp()) {
-      sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
-    }
-    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", cur->_Index, cur, cur->_Previous, closure, name.c_str(), closure->lineNumber(), sourceName.c_str());
-  }
-  printf("----Done\n");
-}
 
 #define ARGS_af_ihsBacktrace "(&optional (out t) msg)"
 #define DECL_af_ihsBacktrace ""
@@ -2302,7 +2281,6 @@ void initialize_primitives() {
   Defun(bdsVar);
   SYMBOL_SC_(CorePkg, bdsVal);
   Defun(bdsVal);
-  CoreDefun(lowLevelBacktrace);
   CoreDefun(exceptionStack);
   CoreDefun(exceptionStackDump);
   CoreDefun(trapExecution);
@@ -2314,6 +2292,7 @@ void initialize_primitives() {
   CoreDefun(slot_cache_resize);
   CoreDefun(single_dispatch_method_cache_resize);
   CoreDefun(cxx_lambda_list_handler_create_bindings_calls);
+  CoreDefun(describe_cxx_object);
 }
 
 void initializePythonPrimitives(Lisp_sp lisp) {

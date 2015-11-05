@@ -89,22 +89,33 @@ bool FunctionClosure::macroP() const {
   return this->kind == kw::_sym_macro;
 }
 int FunctionClosure::sourceFileInfoHandle() const {
-  if (this->_SourcePosInfo.notnilp()) {
-    return gc::As<SourcePosInfo_sp>(this->_SourcePosInfo)->fileHandle();
-  }
-  return 0;
+  return this->_sourceFileInfoHandle;
 };
 
-size_t FunctionClosure::filePos() const { return this->_SourcePosInfo.notnilp() ? gc::As<SourcePosInfo_sp>(this->_SourcePosInfo)->filepos() : 0; };
+size_t FunctionClosure::filePos() const {
+  return this->_filePos;
+}
 
-int FunctionClosure::lineNumber() const { return this->_SourcePosInfo.notnilp() ? gc::As<SourcePosInfo_sp>(this->_SourcePosInfo)->lineno() : 0; };
-int FunctionClosure::column() const { return this->_SourcePosInfo.notnilp() ? gc::As<SourcePosInfo_sp>(this->_SourcePosInfo)->column() : 0; };
+int FunctionClosure::lineNumber() const {
+  return this->_lineno;
+}
+
+int FunctionClosure::column() const {
+  return this->_column;
+}
 
 T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {
   SourceFileInfo_mv sfi = core_sourceFileInfo(sourceFile);
-  Fixnum_sp fileId = gc::As<Fixnum_sp>(sfi.valueGet(1));
-  SourcePosInfo_sp spi = SourcePosInfo_O::create(unbox_fixnum(fileId), filePos, lineno, column);
-  this->_SourcePosInfo = spi;
+  this->_sourceFileInfoHandle = gc::As<Fixnum_sp>(sfi.valueGet(1)).unsafe_fixnum();
+  this->_filePos = filePos;
+  this->_lineno = lineno;
+  this->_column = column;
+  SourcePosInfo_sp spi = SourcePosInfo_O::create(this->_sourceFileInfoHandle, filePos, lineno, column);
+  return spi;
+}
+
+T_sp FunctionClosure::sourcePosInfo() const {
+  SourcePosInfo_sp spi = SourcePosInfo_O::create(this->_sourceFileInfoHandle, this->_filePos, this->_lineno, this->_column);
   return spi;
 }
 
@@ -116,17 +127,9 @@ LCC_RETURN BuiltinClosure::LISP_CALLING_CONVENTION() {
   IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
 };
 
-InterpretedClosure::InterpretedClosure(T_sp fn, T_sp sp, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c)
-    : FunctionClosure(fn, sp, k, e), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
-  if (sp.nilp()) {
-    sp = gc::As<SourcePosInfo_sp>(core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
-    if (sp.nilp()) {
-      printf("%s:%d Caught creation of InterpretedClosure %s with nil SourcePosInfo\n", __FILE__, __LINE__, _rep_(fn).c_str());
-    } else {
-      this->_SourcePosInfo = sp;
-    }
+InterpretedClosure::InterpretedClosure(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO )
+  : FunctionClosure(fn, k, e, SOURCE_INFO_PASS ), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
   }
-};
 
 T_sp InterpretedClosure::lambdaList() const {
   return this->lambdaListHandler()->lambdaList();

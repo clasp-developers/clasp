@@ -49,14 +49,15 @@ void WeakHashTable_O::exposePython(Lisp_sp lisp) {
 
 EXPOSE_CLASS(core, WeakKeyHashTable_O);
 
-void WeakKeyHashTable_O::describe() {
+void WeakKeyHashTable_O::describe(T_sp stream) {
   KeyBucketsType &keys = *this->_HashTable._Keys;
   ValueBucketsType &values = *this->_HashTable._Values;
-  printf("WeakKeyHashTable   size: %zu\n", this->_HashTable.length());
-  printf("   keys memory range:  %p  - %p \n", &keys[0].rawRef_(), &keys[this->_HashTable.length()].rawRef_());
-  printf("   _HashTable.length = %d\n", keys.length());
-  printf("   _HashTable.used = %d\n", keys.used());
-  printf("   _HashTable.deleted = %d\n", keys.deleted());
+  stringstream ss;
+  ss << (BF("WeakKeyHashTable   size: %zu\n") % this->_HashTable.length()).str();
+  ss << (BF("   keys memory range:  %p  - %p \n") % &keys[0].rawRef_() % &keys[this->_HashTable.length()].rawRef_()).str();
+  ss << (BF("   _HashTable.length = %d\n") % keys.length()).str();
+  ss << (BF("   _HashTable.used = %d\n") % keys.used()).str();
+  ss << (BF("   _HashTable.deleted = %d\n") % keys.deleted()).str();
   for (int i(0), iEnd(this->_HashTable.length()); i < iEnd; ++i) {
     value_type &key = keys[i];
     stringstream sentry;
@@ -81,7 +82,8 @@ void WeakKeyHashTable_O::describe() {
         sentry << _rep_(val);
       }
     }
-    printf("   %s\n", sentry.str().c_str());
+    ss << "      " << sentry.str();
+    clasp_write_string(ss.str(),stream);
   }
 }
 

@@ -42,7 +42,7 @@ using features defined in corePackage.cc"
   (cond
     ((and (member :target-os-darwin *features*)
           (member :address-model-64 *features*))
-     "x86_64-apple-macosx10.9.4")
+     "x86_64-apple-macosx10.7.0")
     ((and (member :target-os-linux *features*)
           (member :address-model-64 *features*))
      "x86_64-pc-linux-gnu")

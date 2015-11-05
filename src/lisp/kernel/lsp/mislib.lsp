@@ -13,7 +13,13 @@
 
 (in-package "SYSTEM")
 
-(defun   logical-pathname-translations (p) (si:pathname-translations p))
+(defun   logical-pathname-translations (p)
+  (or (si:pathname-translations p)
+      (error 'simple-type-error
+             :datum p
+             :expected-type 'logical-pathname
+             :format-control "logical host not yet defined: ~S"
+             :format-arguments (list p))))
 (defsetf logical-pathname-translations si:pathname-translations)
 
 (defun load-logical-pathname-translations (host)

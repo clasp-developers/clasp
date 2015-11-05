@@ -62,6 +62,9 @@ class BitVector_O : public Vector_O {
   uint testBit(uint i) const;
   void erase();
 
+  virtual T_sp svref(int index) const { return clasp_make_fixnum(this->testBit(index));};
+  virtual T_sp setf_svref(int index, T_sp value) { this->setBit(index,clasp_to_fixnum(value)); return value; };
+
   void sxhash_(HashGenerator &hg) const;
   uint lowestIndex();
 
@@ -90,8 +93,6 @@ class BitVector_O : public Vector_O {
 
   std::ostream &dumpToStream(std::ostream &out);
   void dump();
-
-  T_sp deepCopy() const;
 
 #if 0
     virtual T_sp& operator[](uint index);
@@ -132,6 +133,7 @@ public:
 public:
   virtual gc::Fixnum dimension() const { return this->_length;};
   virtual T_sp subseq(int start, T_sp end) const;
+  T_sp deepCopy() const;
   explicit SimpleBitVector_O(size_t sz) : BitVector_O(sz), _length(sz){};
   explicit SimpleBitVector_O() : BitVector_O(){};
   virtual ~SimpleBitVector_O(){};
@@ -153,6 +155,7 @@ public:
   virtual T_sp vectorPush(T_sp newElement);
   virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 8);
   virtual T_sp subseq(int start, T_sp end) const;
+  T_sp deepCopy() const;
   explicit BitVectorWithFillPtr_O(size_t sz, size_t fill_ptr, bool adjust) : BitVector_O(sz), _fill_ptr(fill_ptr), _adjustable(adjust){};
   explicit BitVectorWithFillPtr_O() : BitVector_O(){};
   virtual ~BitVectorWithFillPtr_O(){};

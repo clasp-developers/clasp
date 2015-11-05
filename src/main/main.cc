@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #ifdef _TARGET_OS_LINUX
 #include <signal.h>
+#include <sys/resource.h>
 #endif
 
 #ifdef USE_MPI
@@ -114,6 +115,13 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
 }
 
 int main(int argc, char *argv[]) { // Do not touch debug log until after MPI init
+// Set the stack size
+  rlimit rl;
+  rl.rlim_max = 16*1024*1024;
+  rl.rlim_cur = 15*1024*1024;
+  setrlimit(RLIMIT_STACK,&rl);
+  getrlimit(RLIMIT_STACK,&rl);
+
   bool mpiEnabled = false;
   int mpiRank = 0;
   int mpiSize = 1;
@@ -133,7 +141,7 @@ int main(int argc, char *argv[]) { // Do not touch debug log until after MPI ini
   }
 
   core::CommandLineOptions options(argc, argv);
-  int exitCode = gctools::startupGarbageCollectorAndSystem(&startup, argc, argv, mpiEnabled, mpiRank, mpiSize);
+  int exitCode = gctools::startupGarbageCollectorAndSystem(&startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize);
 
 #ifdef USE_MPI
   mpip::Mpi_O::Finalize();

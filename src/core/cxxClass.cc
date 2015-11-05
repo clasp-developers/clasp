@@ -65,20 +65,27 @@ void CxxClass_O::initialize() {
 
 /* See the description in object.cc Class_O::describe
  */
-void CxxClass_O::describe() {
-  _G();
-  _lisp->print(BF("-------------  Class name: %s") % _rep_(this->name())); //InstanceClassSymbol );
+void CxxClass_O::describe(T_sp stream) {
+  stringstream ss;
+  ss << (BF("-------------  Class name: %s") % _rep_(this->name())).str(); //InstanceClassSymbol );
   for (auto cur : this->directSuperclasses()) {
-    _lisp->print(BF("Base class: %s") % _rep_((gc::As<Class_sp>(oCar(cur)))->className()));
+    ss << (BF("Base class: %s") % _rep_((gc::As<Class_sp>(oCar(cur)))->className())).str();
   }
-  _lisp->print(BF("%s") % this->dumpInfo());
+  ss << (BF("%s") % this->dumpInfo()).str();
+  clasp_write_string(ss.str(),stream);
+#if 0
   if (!this->_theCreator) {
-    printf("this->_allocator -> NULL\n");
+    stringstream ss2;
+    ss2 << (BF("this->_allocator -> NULL\n")).str();
+    clasp_write_string(ss2.str(),stream);
   } else {
-    this->_theCreator->describe();
+    this->_theCreator->describe(stream);
   }
-  _lisp->print(BF("cxxDerivableClassP() -> %d") % this->cxxDerivableClassP());
-  _lisp->print(BF("primaryCxxDerivableClassP() -> %d") % this->primaryCxxDerivableClassP());
+#endif
+  stringstream sr;
+  sr << (BF("cxxDerivableClassP() -> %d") % this->cxxDerivableClassP()).str();
+  sr << (BF("primaryCxxDerivableClassP() -> %d") % this->primaryCxxDerivableClassP()).str();
+  clasp_write_string(sr.str(),stream);
 }
 
 void CxxClass_O::exposeCando(Lisp_sp lisp) {
