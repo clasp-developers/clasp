@@ -46,7 +46,7 @@ private: // instance variables here
   cl_index _FillPtr;
 
 public:
-  static VectorObjectsWithFillPtr_sp make(T_sp initial_element, T_sp initial_values, int dimension, cl_index fillPtr, bool adjustable);
+  static VectorObjectsWithFillPtr_sp make(T_sp initial_element, T_sp initial_values, int dimension, cl_index fillPtr, bool adjustable, T_sp elementType);
 
 public: // Functions here
   gc::Fixnum length() const { return this->_FillPtr; };

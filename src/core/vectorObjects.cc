@@ -42,10 +42,11 @@ EXPOSE_CLASS(core, VectorObjects_O);
 #define ARGS_VectorObjects_O_make "(initial-element initial-contents dimension adjustable)"
 #define DECL_VectorObjects_O_make ""
 #define DOCS_VectorObjects_O_make "make VectorObjects args: initial-element initial-contents dimension"
-VectorObjects_sp VectorObjects_O::make(T_sp initialElement, T_sp initialContents, int dimension, bool adjustable) {
+VectorObjects_sp VectorObjects_O::make(T_sp initialElement, T_sp initialContents, int dimension, bool adjustable, T_sp elementType) {
   _G();
   GC_ALLOCATE(VectorObjects_O, vo);
-  vo->setup(initialElement, initialContents, dimension, adjustable);
+  vo->setup(initialElement, initialContents, dimension, adjustable, cl::_sym_T_O);
+  vo->_ElementType = elementType;
   return vo;
 }
 
@@ -81,9 +82,10 @@ VectorObjects_sp VectorObjects_O::create(const gctools::Vec0<T_sp> &data) {
   return result;
 }
 
-void VectorObjects_O::setup(T_sp initialElement, T_sp initialContents, int dimension, bool adjustable) {
+void VectorObjects_O::setup(T_sp initialElement, T_sp initialContents, int dimension, bool adjustable, T_sp elementType ) {
   _G();
   this->_Adjustable = adjustable;
+  this->_ElementType = elementType;
   if (initialElement.notnilp() && initialContents.notnilp()) {
     SIMPLE_ERROR(BF("You can only specify one of initial-element or initialContents"));
   }
