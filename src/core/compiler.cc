@@ -951,7 +951,13 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     }
 #endif
     // Save any return value that may be in the multiple value return array
-#if 0 // I shouldn't save the result around the unwind form
+#if 1 // I shouldn't save the result around the unwind form
+    // In commit 22a8d7b1  I commented this and the block below
+    // that restored the return array value.  I can't remember why I did
+    // that and the commit message for 22a8d7b1 simply says "fixed unwind-protect bug"
+    // This save/restore has to be here for UNWIND-PROTECT to work properly
+    // with RETURN-FROM in the protected form.  I don't know why I would think
+    // it was a good idea to comment them out.
     gctools::Vec0<T_sp> savemv;
     T_mv tresult;
     tresult.readFromMultipleValue0();
@@ -963,7 +969,7 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
       auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
       T_mv tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
     }
-#if 0 // What was I thinking? 
+#if 1 // See comment above about 22a8d7b1
     tresult.loadFromVec0(savemv);
     tresult.saveToMultipleValue0();
 #endif
