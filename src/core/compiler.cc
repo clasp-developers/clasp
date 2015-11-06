@@ -951,7 +951,11 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     }
 #endif
     // Save any return value that may be in the multiple value return array
-#if 1 // I shouldn't save the result around the unwind form
+#if 1 // When this is enabled it breaks sldb
+    // but the test case: (defun test () (block nil (unwind-protect (return (values 1 2)) (print 10)))) works
+    // When it's disabled sldb works but the test case breaks.
+    //
+ // I shouldn't save the result around the unwind form
     // In commit 22a8d7b1  I commented this and the block below
     // that restored the return array value.  I can't remember why I did
     // that and the commit message for 22a8d7b1 simply says "fixed unwind-protect bug"
