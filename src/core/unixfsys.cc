@@ -1175,7 +1175,7 @@ T_sp core_mkstemp(T_sp template)
 
 #define ARGS_core_rmdir "(directory)"
 #define DECL_core_rmdir ""
-#define DOCS_core_rmdir "rmdir"
+#define DOCS_core_rmdir "Like unix rmdir"
 T_sp core_rmdir(T_sp directory)
 {
   return af_deleteFile(eval::funcall(cl::_sym_makePathname,

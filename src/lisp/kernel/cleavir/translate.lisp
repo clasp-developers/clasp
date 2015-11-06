@@ -186,6 +186,10 @@
       ;; to create allocas for them.
       (cmp:with-irbuilder (*entry-irbuilder*)
         (setq return-value (alloca-return_type))
+        ;; In case of a non-local exit, zero out the number of returned
+        ;; values
+        (with-return-values (return-values return-value abi)
+          (%store (%size_t 0) (number-of-return-values return-values)))
         (cmp:with-dbg-function ("repl-FIX"
                                 :linkage-name (llvm-sys:get-name fn)
                                 :function fn
