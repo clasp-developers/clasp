@@ -248,7 +248,7 @@ to compile prologue and epilogue code when linking modules"
 	 (*compile-verbose* nil)	 )
     (with-compiler-env (conditions)
       (with-module (:module module
-                            :source-pathname (namestring name))
+                            :source-namestring (namestring name))
         (with-debug-info-generator (:module *the-module*
                                             :pathname *compile-file-truename*)
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
@@ -351,7 +351,7 @@ and the pathname of the source file - this will also be used as the module initi
 	(let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
 	       (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
 	  (with-module (:module module
-                                :source-pathname source-location
+                                :source-namestring (namestring source-location)
                                 :source-debug-namestring source-debug-namestring
                                 :source-debug-offset source-debug-offset)
 	    (let* ()

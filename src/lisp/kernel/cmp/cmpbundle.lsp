@@ -199,7 +199,7 @@
 	     (bcnum 0))
 	(with-module ( :module module
                                :optimize t
-                               :source-pathname (namestring output-pathname))
+                               :source-namestring (namestring output-pathname))
           (with-debug-info-generator (:module module :pathname output-pathname)
             (let* ((linker (llvm-sys:make-linker *the-module*)))
               ;; Don't enforce .bc extension for additional-bitcode-pathnames
