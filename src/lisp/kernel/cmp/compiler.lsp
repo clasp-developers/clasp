@@ -1294,7 +1294,7 @@ be wrapped with to make a closure"
                               (source-debug-use-lineno t)) &rest body)
   `(let* ((*the-module* ,module)
  	  #+(or)(*generate-load-time-values* t)
-	  (*gv-source-pathname* (jit-make-global-string-ptr ,source-namestring "source-namestring"))
+	  (*gv-source-namestring* (jit-make-global-string-ptr ,source-namestring "source-namestring"))
 	  (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
 									,source-debug-namestring
 									,source-namestring) "source-debug-namestring"))

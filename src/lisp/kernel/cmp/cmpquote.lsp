@@ -799,11 +799,11 @@ marshaling of compiled quoted data"
                                 (cmp-log "Setting up getOrCreateLoadTimeValueArray\n")
                                 (irc-intrinsic "getOrCreateLoadTimeValueArray"
                                                *load-time-value-holder-global-var*
-                                               *gv-source-pathname*
+                                               *gv-source-namestring*
                                                (jit-constant-i32 ltv-value-counter)
                                                (jit-constant-i32 ltv-symbol-counter))
                                 (irc-intrinsic "assignSourceFileInfoHandle"
-                                               *gv-source-pathname*
+                                               *gv-source-namestring*
                                                *gv-source-debug-namestring*
                                                (jit-constant-i64 *source-debug-offset*)
                                                (jit-constant-i32 (if *source-debug-use-lineno* 1 0))

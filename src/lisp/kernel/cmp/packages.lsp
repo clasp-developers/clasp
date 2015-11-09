@@ -14,7 +14,7 @@
           *generate-compile-file-load-time-values*
           *gv-current-function-name*
           *gv-source-file-info-handle*
-          *gv-source-pathname*
+          *gv-source-namestring*
           *implicit-compile-hook*
           *code-walk-hook*
           *irbuilder*

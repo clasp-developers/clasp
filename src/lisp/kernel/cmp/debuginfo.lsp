@@ -304,7 +304,7 @@
               (col column))
           (depreciated)
           #+(or)(irc-intrinsic "trace_setLineNumberColumnForIHSTop"
-                         *gv-source-pathname*
+                         *gv-source-namestring*
                          *gv-source-file-info-handle*
                          (jit-constant-i64 filepos)
                          (jit-constant-i32 ln) 

@@ -45,7 +45,7 @@
 		   (let* ((given-name (llvm-sys:get-name main-fn)))
 		     (irc-low-level-trace)
 		     (cmp-log "About to add invokeMainFunction for ltv-manager-fn\n")
-		     (irc-intrinsic "invokeMainFunction" *gv-source-pathname* ltv-manager-fn)
+		     (irc-intrinsic "invokeMainFunction" *gv-source-namestring* ltv-manager-fn)
                      (irc-intrinsic "cc_setTmvToNil" fn-result)
 		     ))))
     ;;    (cmp-log-dump main-fn)

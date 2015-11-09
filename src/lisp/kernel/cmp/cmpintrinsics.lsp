@@ -815,7 +815,7 @@ Boehm and MPS use a single pointer"
 (defvar *compile-file-source-file-info* nil "Store the SourceFileInfo object for the compile-file target")
 
 
-(defvar *gv-source-pathname* nil
+(defvar *gv-source-namestring* nil
   "Store a global value that defines the filename of the current compilation")
 (defvar *gv-source-debug-namestring* nil
   "A global value that defines the spoofed name of the current compilation - used by SLIME")
