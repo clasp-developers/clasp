@@ -332,14 +332,26 @@ List_sp cl_packageUsedByList(T_sp pkgDesig) {
   return pkg->packageUsedByList();
 };
 
+#define ARGS_cl_packageName "(pkg)"
+#define DECL_cl_packageName ""
+#define DOCS_cl_packageName "packageName"
+T_sp cl_packageName(T_sp pkgDesig) {
+  Package_sp pkg = coerce::packageDesignator(pkgDesig);
+  string name = pkg->packageName();
+  if ( name == "" ) {
+    return _Nil<T_O>();
+  }
+  return Str_O::create(name);
+};
+
 void Package_O::exposeCando(Lisp_sp lisp) {
   _G();
   class_<Package_O>()
       //	    .def("allSymbols",&Package_O::allSymbols)
-      .def("packageName", &Package_O::packageName)
       .def("core:PackageHashTables", &Package_O::hashTables);
   SYMBOL_EXPORT_SC_(ClPkg, package_use_list);
   Defun(package_use_list);
+  ClDefun(packageName);
   SYMBOL_EXPORT_SC_(ClPkg, gentemp);
   Defun(gentemp);
   SYMBOL_EXPORT_SC_(ClPkg, makePackage);
