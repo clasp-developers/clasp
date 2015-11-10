@@ -488,7 +488,20 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     // interpret float
     {
       switch (exponent) {
-      case undefined_exp:
+      case undefined_exp: {
+        char *lastValid = NULL;
+        if ( cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_single_float ) {
+          string numstr = tokenStr(token, start - token.data()).c_str();
+          double d = ::strtod(numstr.c_str(), &lastValid);
+          return clasp_make_single_float(d);
+        } else if ( cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_DoubleFloat_O ) {
+          string numstr = tokenStr(token, start - token.data()).c_str();
+          double d = ::strtod(numstr.c_str(), &lastValid);
+          return DoubleFloat_O::create(d);
+        } else {
+          SIMPLE_ERROR(BF("Handle *read-default-float-format* of %s") % _rep_(cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() ));
+        }
+      }
       case float_exp: {
         char *lastValid = NULL;
         string numstr = fix_exponent_char(tokenStr(token, start - token.data()).c_str());
