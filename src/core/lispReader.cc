@@ -459,8 +459,15 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     {
       int read_base = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARread_baseSTAR->symbolValue()));
       string num = tokenStr(token, start - token.data());
-      mpz_class z(num.c_str(), read_base);
-      return Integer_O::create(z);
+      if ( num[0] == '+' ) num = num.substr(1,num.size());
+      try {
+        mpz_class z(num.c_str(), read_base);
+        return Integer_O::create(z);
+      } catch (std::invalid_argument& arg)
+      {
+        SIMPLE_ERROR(BF("Problem in mpz_class creation with %s error: %s") % num % arg.what());
+      }
+      SIMPLE_ERROR(BF("Problem while interpreting int from %s in reader") % num);
     }
     break;
   case tratio: {
