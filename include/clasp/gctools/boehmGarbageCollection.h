@@ -104,9 +104,14 @@ public:
     , Marker(globalBoehmMarker)
 #endif
   {
+#ifdef _DEBUG_BUILD
     if ( k > KIND_max ) {
       printf("%s:%d Allocating object of kind: %zu - this is beyond KIND_max: %d\n", __FILE__, __LINE__, k, KIND_max);
     }
+    if ( k == 0 ) {
+      printf("%s:%d Allocating object of kind: %zu - this is not allowed except for maybe in boehmdc\n", __FILE__, __LINE__, k);
+    }
+#endif
   };
 private:
 #ifdef _ADDRESS_MODEL_64
@@ -179,13 +184,15 @@ inline size_t sizeof_with_templated_header() { return AlignUp(sizeof(T)) + Align
 namespace gctools {
 
 inline void *ClientPtrToBasePtr(void *mostDerived) {
-  void *ptr = reinterpret_cast<char *>(mostDerived) - AlignUp(sizeof(Header_s));
+  size_t headerSize = AlignUp(sizeof(Header_s));
+  void *ptr = reinterpret_cast<char *>(mostDerived) - headerSize;
   return ptr;
 }
 
 template <typename T>
 inline T *BasePtrToMostDerivedPtr(void *base) {
-  T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + AlignUp(sizeof(Header_s)));
+  size_t headerSize = AlignUp(sizeof(Header_s));
+  T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + headerSize);
   return ptr;
 }
 };

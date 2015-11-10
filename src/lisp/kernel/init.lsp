@@ -393,59 +393,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
           declared-global-notinline-p
           declared-global-inline-p))
 
-(defun probe-dir-cs (root dirname)
-  (let ((dirs (directory (bformat nil "%s*/" root))))
-    #+dbg-print(bformat t "DBG-PRINT   dirs: %s\n" dirs)
-    (let ((d (car dirs))
-          last-dirname)
-      (tagbody
-       top
-         (if (null dirs) (go done))
-         (setq d (car dirs))
-         (setq last-dirname (car (last (pathname-directory d))))
-         #+dbg-print(bformat t "DBG-PRINT last-dirname: %s  dirname: %s\n" last-dirname dirname )
-         (if (string-equal last-dirname dirname)
-             (return-from probe-dir-cs d))
-         (setq dirs (cdr dirs))
-         (go top)
-       done)
-      nil)))
-
-(defun probe-dirs-cs (pn)
-  (let ((root (if (pathname-host pn)
-                  (namestring (probe-file (make-pathname :host (pathname-host pn))))
-                  "/"))
-        (dirs (cdr (pathname-directory pn))))
-    #+dbg-print(progn
-                 (bformat t "DBG-PRINT pn: %s\n" pn)
-                 (bformat t "DBG-PRINT root: %s\n" root)
-                 (bformat t "DBG-PRINT dirs: %s\n" dirs))
-    (let (d acc)
-      (tagbody
-       top
-         (if (null dirs) (return-from probe-dirs-cs root))
-         (setq d (car dirs))
-         (setq root (namestring (probe-dir-cs root d)))
-         #+dbg-print(bformat t "DBG-PRINT current root = %s\n" root)
-         (setq dirs (cdr dirs))
-         (go top)))))
-
-(defun probe-file-case-insensitive (pn)
-  (let* ((root (namestring (probe-dirs-cs (make-pathname :name nil :type nil :defaults pn))))
-         (fname (pathname-name pn))
-         (ftype (pathname-type pn))
-         (files (directory (bformat nil "%s*.*" root)))
-         file)
-    (tagbody
-     top
-       (if (null files) (return-from probe-file-case-insensitive nil))
-       (setq file (car files))
-       (if (and (string-equal fname (pathname-name file))
-                (string-equal ftype (pathname-type file)))
-           (return-from probe-file-case-insensitive file))
-       (setq files (cdr files))
-       (go top))))
-(export 'probe-file-case-insensitive)
 ;; This is used extensively in the ecl compiler and once in predlib.lsp
 (defvar *alien-declarations* ())
 (export '*alien-declarations*)
@@ -574,7 +521,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (si::*fset 'interpreter-iload
            #'(lambda (module)
-               (let* ((pathname (probe-file-case-insensitive (build-pathname module :lisp)))
+               (let* ((pathname (probe-file (build-pathname module :lisp)))
 		      (name (namestring pathname)))
                  (if cmp:*implicit-compile-hook*
                      (bformat t "Loading/compiling source: %s\n" (namestring name))
@@ -587,7 +534,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (setq *reversed-init-filenames* (cons fn *reversed-init-filenames*))
   (let* ((lsp-path (build-pathname fn))
 	 (bc-path (build-pathname fn :bc)) ;; target-backend-pathname (get-pathname-with-type fn "bc") ))
-	 (load-bc (if (not (probe-file-case-insensitive lsp-path))
+	 (load-bc (if (not (probe-file lsp-path))
 		      t
 		      (if (not (probe-file bc-path))
 			  (progn
@@ -609,12 +556,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	(progn
 	  (bformat t "Loading bitcode file: %s\n" bc-path)
 	  (load-bitcode bc-path))
-	(if (probe-file-case-insensitive lsp-path)
+	(if (probe-file-case lsp-path)
 	    (progn
               (if cmp:*implicit-compile-hook*
                   (bformat t "Loading/compiling source: %s\n" lsp-path)
                   (bformat t "Loading/interpreting source: %s\n" lsp-path))
-	      (load (probe-file-case-insensitive lsp-path)))
+	      (load (probe-file lsp-path)))
 	    (bformat t "No interpreted or bitcode file for %s could be found\n" lsp-path)))))
 
 (defun delete-init-file (module &key (really-delete t) stage)
@@ -705,7 +652,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	  (bformat t "Compiling source %s\n   to %s - will reload: %s\n" source-path bitcode-path reload)
 	  (let ((cmp::*module-startup-prefix* "kernel"))
             #+dbg-print(bformat t "DBG-PRINT  source-path = %s\n" source-path)
-            (compile-file (probe-file-case-insensitive source-path) :output-file bitcode-path :print t :verbose t :output-type :bitcode :type :kernel)
+            (compile-file (probe-file source-path) :output-file bitcode-path :print t :verbose t :output-type :bitcode :type :kernel)
 	    (if reload
 		(progn
 		  (bformat t "    Loading newly compiled file: %s\n" bitcode-path)
