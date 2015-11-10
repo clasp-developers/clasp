@@ -461,8 +461,13 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       string num = tokenStr(token, start - token.data());
       if ( num[0] == '+' ) num = num.substr(1,num.size());
       try {
-        mpz_class z(num.c_str(), read_base);
-        return Integer_O::create(z);
+        if ( num[num.size()-1] == '.' ) {
+          mpz_class z10(num.substr(0,num.size()-1), 10);
+          return Integer_O::create(z10);
+        } else {
+          mpz_class zbase(num.c_str(), read_base);
+          return Integer_O::create(zbase);
+        }
       } catch (std::invalid_argument& arg)
       {
         SIMPLE_ERROR(BF("Problem in mpz_class creation with %s error: %s") % num % arg.what());
