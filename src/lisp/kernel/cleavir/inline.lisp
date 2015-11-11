@@ -155,8 +155,15 @@
 (progn
   (define-compiler-macro + (&rest numbers)
     (core::expand-associative '+ 'primop:inlined-two-arg-+ numbers 0))
-  (define-compiler-macro - (&rest numbers)
-    (core::expand-associative '- 'primop:inlined-two-arg-- numbers 0))
+#+(or)(define-compiler-macro - (&rest numbers)
+        (core::expand-associative '- 'primop:inlined-two-arg-- numbers 0))
+(define-compiler-macro - (minuend &rest subtrahends)
+  (if (proper-list-p subtrahends)
+      (if subtrahends
+          `(primop:inlined-two-arg-- ,minuend ,(expand-associative '+ 'primop:inlined-two-arg-+ subtrahends 0))
+          `(core:negate ,minuend))
+      (error "The - operator can not be part of a form that is a dotted list.")))
+
   (define-compiler-macro < (&rest numbers)
     (core::expand-compare 'primop:inlined-two-arg-< numbers))
   (define-compiler-macro <= (&rest numbers)
