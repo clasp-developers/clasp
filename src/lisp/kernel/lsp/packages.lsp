@@ -97,6 +97,9 @@
             system
             float-nan-string
             float-infinity-string
+            proper-list-p
+            expand-associative
+            expand-compare
             )))
 
 
