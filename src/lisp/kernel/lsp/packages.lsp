@@ -27,6 +27,9 @@
             run-repl
             *defun-inline-hook*
             *proclaim-hook*
+            proper-list-p
+            expand-associative
+            expand-compare
             ))
 
   (export '( ;;;;MISSING SYMBOLS!!!!!
@@ -97,9 +100,6 @@
             system
             float-nan-string
             float-infinity-string
-            proper-list-p
-            expand-associative
-            expand-compare
             )))
 
 
