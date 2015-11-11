@@ -224,23 +224,23 @@ T_mv core_loadBundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_for
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
   scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
   Pathname_sp path = cl_pathname(pathDesig);
-  if (af_probe_file(path).notnilp())
+  if (cl_probe_file(path).notnilp())
     goto LOAD;
   path->_Type = Str_O::create("bundle");
-  if (af_probe_file(path).notnilp())
+  if (cl_probe_file(path).notnilp())
     goto LOAD;
   path->_Type = Str_O::create("fasl");
-  if (af_probe_file(path).notnilp())
+  if (cl_probe_file(path).notnilp())
     goto LOAD;
   path->_Type = Str_O::create("dylib");
-  if (af_probe_file(path).notnilp())
+  if (cl_probe_file(path).notnilp())
     goto LOAD;
   path->_Type = Str_O::create("so");
-  if (af_probe_file(path).notnilp())
+  if (cl_probe_file(path).notnilp())
     goto LOAD;
   SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
 LOAD:
-  Str_sp nameStr = cl_namestring(af_probe_file(path));
+  Str_sp nameStr = cl_namestring(cl_probe_file(path));
   string name = nameStr->get();
 
   /* Look up the initialization function. */

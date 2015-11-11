@@ -75,7 +75,7 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat) {
   Pathname_sp pathname = cl_pathname(source);
   ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));
   ;
-  Pathname_sp truename = af_truename(source);
+  Pathname_sp truename = cl_truename(source);
   ASSERTF(truename.objectp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));
   ;
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR, pathname);
@@ -201,7 +201,7 @@ NOT_A_FILENAME:
   DynamicScopeManager scope(cl::_sym_STARpackageSTAR, af_symbolValue(cl::_sym_STARpackageSTAR));
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, af_symbolValue(cl::_sym_STARreadtableSTAR));
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR, not_a_filename ? _Nil<T_O>() : source);
-  T_sp truename = af_truename(filename);
+  T_sp truename = cl_truename(filename);
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, not_a_filename ? _Nil<T_O>() : truename);
   if (!not_a_filename)
     filename = truename;

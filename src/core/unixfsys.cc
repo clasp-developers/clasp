@@ -1,3 +1,4 @@
+//#define DEBUG_FILE_KIND
 /*
     File: unixfsys.cc
 */
@@ -104,6 +105,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, directory);
 SYMBOL_EXPORT_SC_(KeywordPkg, error);
 SYMBOL_EXPORT_SC_(KeywordPkg, file);
 SYMBOL_EXPORT_SC_(KeywordPkg, link);
+SYMBOL_EXPORT_SC_(KeywordPkg, broken_link);
 SYMBOL_EXPORT_SC_(KeywordPkg, local);
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
 SYMBOL_EXPORT_SC_(KeywordPkg, newest);
@@ -268,18 +270,22 @@ Str_sp af_currentDir() {
 
 /*
  * Using a certain path, guess the type of the object it points to.
+ *
+ * Second return value is T if something is found with filename
+ * A dead symlink with follow_link=false returns (values NIL T)
  */
 
 static Symbol_sp
 file_kind(char *filename, bool follow_links) {
   Symbol_sp output;
   struct stat buf;
+  struct stat buf2;
 #ifdef HAVE_LSTAT
   if ((follow_links ? safe_stat : safe_lstat)(filename, &buf) < 0)
 #else
-  if (safe_stat(filename, &buf) < 0)
+    if (safe_stat(filename, &buf) < 0) 
 #endif
-    output = _Nil<Symbol_O>();
+      output = _Nil<Symbol_O>();
 #ifdef HAVE_LSTAT
   else if (S_ISLNK(buf.st_mode))
     output = kw::_sym_link;
@@ -295,12 +301,25 @@ file_kind(char *filename, bool follow_links) {
 
 #define ARGS_af_file_kind "(filename follow-links)"
 #define DECL_af_file_kind ""
-#define DOCS_af_file_kind "file_kind"
+#define DOCS_af_file_kind "file_kind (values kind found) - if found but kind==nil then its a broken symlink"
 Symbol_sp af_file_kind(T_sp filename, bool follow_links) {
   _G();
   ASSERT(filename);
   Str_sp sfilename = coerce_to_posix_filename(filename);
-  return file_kind((char *)(sfilename->c_str()), follow_links);
+  if ( follow_links ) {
+    Symbol_sp kind_follow_links = file_kind((char *)(sfilename->c_str()), true);
+    if ( kind_follow_links.notnilp() ) {
+      return kind_follow_links;
+    } else {
+      // If its a broken link return _sym_file
+      Symbol_sp kind_no_follow_links = file_kind((char *)(sfilename->c_str()), false);
+      if ( kind_no_follow_links.nilp() ) return _Nil<T_O>();
+      return kw::_sym_file;
+    }
+  } else {
+    Symbol_sp kind = file_kind((char *)(sfilename->c_str()), follow_links);
+    return kind;
+  }
 }
 
 #if defined(HAVE_LSTAT) && !defined(ECL_MS_WINDOWS_HOST)
@@ -320,7 +339,7 @@ si_readlink(Str_sp filename) {
     size += 256;
   } while (written == size);
   (*output)[written] = '\0';
-  kind = file_kind((char *)output->c_str(), false);
+  kind = af_file_kind(output, false);
   if (kind == kw::_sym_directory) {
     (*output)[written++] = DIR_SEPARATOR_CHAR;
     (*output)[written] = '\0';
@@ -365,7 +384,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
   aux = clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING);
   aux = Str_O::create(aux->substr(0, aux->length() - 1));
   //    aux->_contents()[aux->base_string.fillp-1] = 0;
-  kind = file_kind((char *)aux->c_str(), false);
+  kind = af_file_kind(aux, false);
   if (kind.nilp()) {
     if (ignore_if_failure)
       return _Nil<Pathname_O>();
@@ -373,7 +392,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
 //	FEcannot_open(aux);
 #ifdef HAVE_LSTAT
   } else if (kind == kw::_sym_link) {
-    output = af_truename(af_mergePathnames(si_readlink(aux),
+    output = cl_truename(af_mergePathnames(si_readlink(aux),
                                            base_dir, kw::_sym_default));
     if (output->_Name.notnilp() ||
         output->_Type.notnilp())
@@ -424,9 +443,14 @@ make_base_pathname(Pathname_sp pathname) {
 #define FOLLOW_SYMLINKS 1
 
 static Pathname_mv
-file_truename(T_sp pathname, T_sp filename, int flags) {
-  Symbol_sp kind;
-  if (pathname.nilp()) {
+file_truename(T_sp original_pathname, T_sp original_filename, int flags) {
+  Symbol_mv kind;
+  T_sp pathname = original_pathname;
+  T_sp filename = original_filename;
+#if DEBUG_FILE_KIND
+  printf("%s:%d file_truename original_pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str());
+#endif
+  if (original_pathname.nilp()) {
     if (filename.nilp()) {
       INTERNAL_ERROR(BF("file_truename:"
                         " both FILENAME and PATHNAME are null!"));
@@ -438,7 +462,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
       SIMPLE_ERROR(BF("Unprintable pathname %s found in TRUENAME") % _rep_(pathname));
     }
   }
-  kind = file_kind((char *)gc::As<Str_sp>(filename)->c_str(), false);
+  kind = af_file_kind(filename, true);
   if (kind.nilp()) {
     CANNOT_OPEN_FILE_ERROR(filename);
 #ifdef HAVE_LSTAT
@@ -455,7 +479,8 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
                                         _Nil<T_O>(),
                                         kw::_sym_local);
     pathname = clasp_mergePathnames(filename, pathname, kw::_sym_default);
-    return Values(af_truename(pathname), kind);
+    Pathname_sp truename = cl_truename(pathname);
+    return Values(truename, kind);
 #endif
   } else if (kind == kw::_sym_directory) {
     /* If the pathname is a directory but we have supplied
@@ -464,7 +489,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
     if (gc::As<Pathname_sp>(pathname)->_Name.notnilp() ||
         gc::As<Pathname_sp>(pathname)->_Type.notnilp()) {
       Str_sp spathname = (*(gc::As<Str_sp>(filename))) + DIR_SEPARATOR;
-      pathname = af_truename(spathname);
+      pathname = cl_truename(spathname);
     }
   }
   /* ECL does not contemplate version numbers
@@ -489,10 +514,10 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
  * current directory
  */
 
-#define ARGS_af_truename "(orig-pathname)"
-#define DECL_af_truename ""
-#define DOCS_af_truename "truename"
-Pathname_sp af_truename(T_sp orig_pathname) {
+#define ARGS_cl_truename "(orig-pathname)"
+#define DECL_cl_truename ""
+#define DOCS_cl_truename "truename"
+Pathname_sp cl_truename(T_sp orig_pathname) {
   Pathname_sp pathname = make_absolute_pathname(orig_pathname);
   Pathname_sp base_dir = make_base_pathname(pathname);
   Cons_sp dir;
@@ -507,7 +532,14 @@ Pathname_sp af_truename(T_sp orig_pathname) {
     base_dir = enter_directory(base_dir, oCar(dir), false);
   }
   pathname = clasp_mergePathnames(base_dir, pathname, kw::_sym_default);
-  return file_truename(pathname, _Nil<T_O>(), FOLLOW_SYMLINKS);
+#ifdef DEBUG_FILE_KIND
+  printf("%s:%d cl_truename pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str());
+#endif
+  Pathname_mv truename = file_truename(pathname, _Nil<T_O>(), FOLLOW_SYMLINKS);
+  if (truename.second().notnilp()) {
+    return pathname;
+  }
+  return truename;
 }
 
 int clasp_backup_open(const char *filename, int option, int mode) {
@@ -552,7 +584,7 @@ T_mv cl_renameFile(T_sp oldn, T_sp newn, T_sp if_exists) {
  *    or if it does not exist. Notice that the filename to be renamed
  *    is not the truename, because we might be renaming a symbolic link.
  */
-  old_truename = af_truename(oldn);
+  old_truename = cl_truename(oldn);
   old_filename = coerce_to_posix_filename(old_truename);
 
   /* 2) Create the new file name. */
@@ -560,7 +592,7 @@ T_mv cl_renameFile(T_sp oldn, T_sp newn, T_sp if_exists) {
   new_filename = af_coerceToFilename(pnewn);
 
   while (if_exists == kw::_sym_error || if_exists.nilp()) {
-    if (af_probe_file(new_filename).nilp()) {
+    if (cl_probe_file(new_filename).nilp()) {
       if_exists = _lisp->_true();
       break;
     }
@@ -653,7 +685,7 @@ FAILURE_CLOBBER:
 
 SUCCESS:
   clasp_enable_interrupts();
-  new_truename = af_truename(newn);
+  new_truename = cl_truename(newn);
   return Values(newn, old_truename, new_truename);
 }
 
@@ -692,14 +724,19 @@ T_sp af_deleteFile(T_sp file) {
   return _lisp->_true();
 }
 
-#define ARGS_af_probe_file "(filespec)"
-#define DECL_af_probe_file ""
-#define DOCS_af_probe_file "probe_file"
-T_sp af_probe_file(T_sp filespec) {
+#define ARGS_cl_probe_file "(filespec)"
+#define DECL_cl_probe_file ""
+#define DOCS_cl_probe_file "probe_file"
+T_sp cl_probe_file(T_sp filespec) {
   _G();
   Pathname_sp pfile = cl_pathname(filespec);
   /* INV: Both SI:FILE-KIND and TRUENAME complain if "file" has wildcards */
-  return (af_file_kind(pfile, true).notnilp() ? af_truename(pfile) : _Nil<Pathname_O>());
+  Symbol_sp kind = af_file_kind(pfile,true);
+  if (kind.notnilp() ) {
+    Pathname_sp truename = cl_truename(pfile);
+    return truename;
+  }
+  return _Nil<Pathname_O>();
 }
 
 #define ARGS_af_file_write_date "(pathspec)"
@@ -911,10 +948,18 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
       if (!af_pathnameMatchP(component, pathname_mask)) // should this not be inverted?
         continue;
     }
+//    printf("%s:%d  About to file_truename component_path: %s\n", __FILE__, __LINE__, _rep_(component_path).c_str());
+    T_sp original_component_path = component_path;
     T_mv component_path_mv = file_truename(component_path, component, flags);
     component_path = component_path_mv;
     kind = component_path_mv.valueGet(1);
-    out = Cons_O::create(Cons_O::create(component_path, kind), out);
+    if ( kind.nilp() ) {
+//      printf("%s:%d  kind returned from file_truename was nil - going with broken symlink of original path: %s\n", __FILE__, __LINE__, _rep_(original_component_path).c_str());
+      kind = kw::_sym_file;
+      out = Cons_O::create(Cons_O::create(original_component_path,kind),out);
+    } else {
+      out = Cons_O::create(Cons_O::create(component_path, kind), out);
+    }
   }
 #ifdef HAVE_DIRENT_H
   closedir(dir);
@@ -997,7 +1042,7 @@ T_sp core_mkstemp(Str_sp thetemplate) {
     output = _Nil<T_O>();
   } else {
     close(fd);
-    output = af_truename(Str_O::create(outname));
+    output = cl_truename(Str_O::create(outname));
   }
 #endif
   return output;
@@ -1058,7 +1103,7 @@ si_get_library_pathname(void)
 #endif
  OUTPUT:
         {
-                T_sp true_pathname = af_probe_file(s);
+                T_sp true_pathname = cl_probe_file(s);
                 if (Null(true_pathname)) {
                         s = current_dir();
                 } else {
@@ -1466,9 +1511,9 @@ void initialize_unixfsys() {
   SYMBOL_EXPORT_SC_(CorePkg, file_kind);
   Defun(file_kind);
   SYMBOL_EXPORT_SC_(ClPkg, truename);
-  Defun(truename);
+  ClDefun(truename);
   SYMBOL_EXPORT_SC_(ClPkg, probe_file);
-  Defun(probe_file);
+  ClDefun(probe_file);
   SYMBOL_EXPORT_SC_(ClPkg, deleteFile);
   Defun(deleteFile);
   SYMBOL_EXPORT_SC_(ClPkg, file_write_date);
