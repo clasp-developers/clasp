@@ -764,6 +764,9 @@ public:
   Real_sp real() const { return this->_real; };
   Real_sp imaginary() const { return this->_imaginary; };
 
+  void setf_realpart(Real_sp r) { this->_real = r; };
+  void setf_imagpart(Real_sp i) { this->_imaginary = i; };
+  
   void sxhash_(HashGenerator &hg) const;
   //	virtual Number_sp copy() const;
   string __repr__() const;

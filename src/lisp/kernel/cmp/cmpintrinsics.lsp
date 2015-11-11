@@ -596,7 +596,7 @@ Boehm and MPS use a single pointer"
   #+short-float (primitive-nounwind module "makeShortFloat" +void+ (list +tsp*+ +double+))
   (primitive-nounwind module "makeSingleFloat" +void+ (list +tsp*+ +float+))
   (primitive-nounwind module "makeDoubleFloat" +void+ (list +tsp*+ +double+))
-  (primitive-nounwind module "makeComplex" +void+ (list +tsp*+ +double+ +double+))
+  
   #+long-float (primitive-nounwind module "makeLongFloat" +void+ (list +tsp*+ +long-float+))
   (primitive-nounwind module "makeString" +void+ (list +tsp*+ +i8*+))
   (primitive-nounwind module "makePathname" +void+ (list +tsp*+ +i8*+))
@@ -734,12 +734,15 @@ Boehm and MPS use a single pointer"
 
   (primitive          module "ltv_findPackage" +void+ (list +tsp*+ +i8*+))
   (primitive-nounwind module "ltv_makeCons" +void+ (list +tsp*+))
+  (primitive-nounwind module "ltv_makeComplex" +void+ (list +tsp*+))
   (primitive-nounwind module "ltv_makeSourceCodeCons" +void+ (list +tsp*+ +i8*+ +i32+ +i32+))
   (primitive-nounwind module "ltv_makeArrayObjects" +void+ (list +tsp*+ +tsp*+ +i32+ +i32*+))
   (primitive-nounwind module "ltv_makeHashTable" +void+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "ltv_findBuiltInClass" +void+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "rplaca" +void+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "rplacd" +void+ (list +tsp*+ +tsp*+))
+  (primitive-nounwind module "ltv_setRealpart" +void+ (list +tsp*+ +tsp*+))
+  (primitive-nounwind module "ltv_setImagpart" +void+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "ltv_initializeArrayObjectsRowMajorArefOrder" +void+ (list +tsp*+ +ltv**+ +i32*+))
   (primitive-nounwind module "ltv_initializeHashTable" +void+ (list +tsp*+ +i32+ +ltv**+ +i32*+))
 

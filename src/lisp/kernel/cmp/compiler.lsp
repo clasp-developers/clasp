@@ -1167,7 +1167,7 @@ jump to blocks within this tagbody."
         ((packagep obj) (codegen-ltv/package result obj))
         ((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
         ((floatp obj) (codegen-ltv/float result obj))
-        ((complexp obj) (codegen-ltv/complex result obj))
+        ((complexp obj) (codegen-ltv/container result obj env))
         ;; symbol would be here
         ((characterp obj) (codegen-ltv/character result obj))
         ((arrayp obj) (codegen-ltv/array result obj env))
