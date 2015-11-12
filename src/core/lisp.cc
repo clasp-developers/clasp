@@ -1309,6 +1309,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   for (int i = 0; i < options._Features.size(); ++i) {
     features = Cons_O::create(_lisp->internKeyword(lispify_symbol_name(options._Features[i])), features);
   }
+  features = Cons_O::create(_lisp->internKeyword("SILENCE-CCLASP-COMPILE-WARNINGS"), features);
   features = Cons_O::create(_lisp->internKeyword("CLASP"), features);
 #ifdef _TARGET_OS_DARWIN
   features = Cons_O::create(_lisp->internKeyword("DARWIN"), features);
