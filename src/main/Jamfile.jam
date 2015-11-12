@@ -35,23 +35,26 @@ alias main : $(sources) ;
 exe clasp : main.cc $(sources)
     /internals/gctools//lib_boehm
     : <gc>boehmdc
-
+            <target-os>darwin:<linkflags>"-Wl,-stack_size,0x1000000"
     ;
 
 exe clasp : main.cc $(sources)
     /internals/gctools//lib_boehm
     : <gc>boehm
+            <target-os>darwin:<linkflags>"-Wl,-stack_size,0x1000000"
     ;
 
 
 exe clasp : main.cc $(sources)
     /internals/gctools//gclib
-    : <gc>mps
-    ;
+    : <gc>mps 
+            <target-os>darwin:<linkflags>"-Wl,-stack_size,0x1000000"
+   ;
 
 exe clasp : main.cc $(sources)
     /internals/gctools//gclib
     : <gc>mps-prep
+            <target-os>darwin:<linkflags>"-Wl,-stack_size,0x1000000"
     ;
 
 

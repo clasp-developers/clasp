@@ -1167,7 +1167,7 @@ jump to blocks within this tagbody."
         ((packagep obj) (codegen-ltv/package result obj))
         ((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
         ((floatp obj) (codegen-ltv/float result obj))
-        ((complexp obj) (codegen-ltv/complex result obj))
+        ((complexp obj) (codegen-ltv/container result obj env))
         ;; symbol would be here
         ((characterp obj) (codegen-ltv/character result obj))
         ((arrayp obj) (codegen-ltv/array result obj env))
@@ -1287,17 +1287,17 @@ be wrapped with to make a closure"
 
 (defmacro with-module (( &key module
                               (optimize t)
-                              source-pathname
+                              source-namestring
                               source-file-info-handle
                               source-debug-namestring
                               (source-debug-offset 0)
                               (source-debug-use-lineno t)) &rest body)
   `(let* ((*the-module* ,module)
  	  #+(or)(*generate-load-time-values* t)
-	  (*gv-source-pathname* (jit-make-global-string-ptr ,source-pathname "source-pathname"))
+	  (*gv-source-namestring* (jit-make-global-string-ptr ,source-namestring "source-namestring"))
 	  (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
 									,source-debug-namestring
-									,source-pathname) "source-debug-namestring"))
+									,source-namestring) "source-debug-namestring"))
 	  (*source-debug-offset* ,source-debug-offset)
 	  (*source-debug-use-lineno* ,source-debug-use-lineno)
 	  (*gv-source-file-info-handle* (make-gv-source-file-info-handle ,module ,source-file-info-handle)))
@@ -1399,7 +1399,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 			 (core:source-file-info pathname)
 		       the-handle)))
 	(with-module (:module *the-module*
-                      :source-pathname pathname
+                      :source-namestring (namestring pathname)
                       :source-file-info-handle handle)
 	  (multiple-value-bind (compiled-function warnp failp)
 	      (compile-with-hook compile-hook bind-to-name definition env pathname)

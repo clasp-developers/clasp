@@ -5509,8 +5509,7 @@ file_libc_error(T_sp error_type, T_sp stream,
                 error_type, _Nil<T_O>(),
                 Str_O::create("~?~%C library explanation: ~A."),
                 Cons_O::createList(Str_O::create(msg), rest,
-                                   error),
-                _Nil<T_O>());
+                                   error) );
 }
 
 static void

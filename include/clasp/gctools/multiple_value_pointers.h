@@ -79,6 +79,9 @@ public:
   };
 
   void saveToVec0(::gctools::Vec0<core::T_sp> &values) {
+    if ( this->_number_of_values < 0 || this->_number_of_values >= CALL_ARGUMENTS_LIMIT ) {
+      printf("%s:%d  Illegal number of return values: %zu\n", __FILE__, __LINE__, this->_number_of_values);
+    }
     values.resize(this->_number_of_values);
     values[0] = *this;
     for (int i(1); i < this->_number_of_values; ++i) {

@@ -43,7 +43,7 @@
     (expand-associative '+ 'two-arg-+ numbers 0))
 
   (define-compiler-macro * (&rest numbers)
-    (expand-associative '* 'two-arg-* numbers 0))
+    (expand-associative '* 'two-arg-* numbers 1))
 
   (define-compiler-macro - (minuend &rest subtrahends)
     (if (proper-list-p subtrahends)
@@ -60,7 +60,8 @@
                 `(,fun ,(car args) ,(cadr args))
                 `(if (,fun ,(car args) ,(cadr args))
                      ,(expand-compare fun (cdr args))
-                     nil)))))
+                     nil)))
+        args))
 
   (define-compiler-macro < (&rest numbers)
     (expand-compare 'two-arg-< numbers))

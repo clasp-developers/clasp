@@ -89,6 +89,13 @@ export CLASP_RELEASE_LINKFLAGS += -L$(CLASP_RELEASE_LLVM_LIB_DIR)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --libs)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --system-libs)
 
+ifneq ($(EXTERNALS_CLASP_DIR),)
+  export CLASP_DEBUG_CXXFLAGS += -I$(EXTERNALS_CLASP_DIR)/build/common/include
+  export CLASP_DEBUG_LINKFLAGS += -L$(EXTERNALS_CLASP_DIR)/build/common/lib -lgmp -lgmpxx -lreadline -lexpat
+  export CLASP_RELEASE_CXXFLAGS += -I$(EXTERNALS_CLASP_DIR)/build/common/include
+  export CLASP_RELEASE_LINKFLAGS += -L$(EXTERNALS_CLASP_DIR)/build/common/lib -lgmp -lgmpxx -lreadline -lexpat
+endif
+
 ifeq ($(TARGET_OS),Darwin)
   export INCLUDE_DIRS += /usr/local/Cellar/gmp/6.0.0a/include
   export INCLUDE_DIRS += /opt/local/include
@@ -181,12 +188,12 @@ $(BINDIR)/clasp_mps_o : $(BINDIR)/release/boehm/clasp
 
 executable-symlinks:
 	install -d $(BINDIR)
-	ln -sf $(EXECS)/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o
-	ln -sf $(EXECS)/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o
-	ln -sf $(EXECS)/mps/release/bin/clasp $(BINDIR)/clasp_mps_o
-	ln -sf $(EXECS)/boehm/debug/bin/clasp $(BINDIR)/clasp_boehm_d
-	ln -sf $(EXECS)/boehmdc/debug/bin/clasp $(BINDIR)/clasp_boehmdc_d
-	ln -sf $(EXECS)/mps/debug/bin/clasp $(BINDIR)/clasp_mps_d
+	ln -sf ../Contents/execs/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o
+	ln -sf ../Contents/execs/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o
+	ln -sf ../Contents/execs/mps/release/bin/clasp $(BINDIR)/clasp_mps_o
+	ln -sf ../Contents/execs/boehm/debug/bin/clasp $(BINDIR)/clasp_boehm_d
+	ln -sf ../Contents/execs/boehmdc/debug/bin/clasp $(BINDIR)/clasp_boehmdc_d
+	ln -sf ../Contents/execs/mps/debug/bin/clasp $(BINDIR)/clasp_mps_d
 
 libatomic-setup:
 	-(cd $(LIBATOMIC_OPS_SOURCE_DIR); autoreconf -vif)
@@ -228,8 +235,14 @@ boehm:
 boehm-release-clbind:
 	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/release gc=boehm release clasp-clbind-install)
 
+boehm-release-clbind-a:
+	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/release gc=boehm release clasp-clbind-install -a)
+
 boehm-debug-clbind:
 	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/debug gc=boehm debug clasp-clbind-install)
+
+boehm-debug-clbind-a:
+	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/debug gc=boehm debug clasp-clbind-install -a)
 
 boehmdc-release-clbind:
 	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/release gc=boehmdc release clasp-clbind-install)

@@ -504,11 +504,7 @@ void makeDoubleFloat(core::T_sp *fnP, double s) {
   (*fnP) = core::DoubleFloat_sp(core::DoubleFloat_O::create(s));
 }
 
-void makeComplex(core::T_sp *fnP, double r, double i) {
-  _G();
-  ASSERT(fnP != NULL);
-  (*fnP) = core::Complex_sp(core::Complex_O::create(r, i));
-}
+
 
 #ifdef CLASP_LONG_FLOAT
 void makeLongFloat(core::T_sp *fnP, LongFloat s) {
@@ -1407,6 +1403,23 @@ void ltv_makeCons(core::T_sp *resultP) {
   (*resultP) = core::Cons_O::create();
   ASSERTNOTNULL(*resultP);
 }
+
+void ltv_makeComplex(core::T_sp *resultP) {
+  ASSERT(resultP != NULL);
+  (*resultP) = core::Complex_O::create();
+  ASSERTNOTNULL(*resultP);
+}
+
+void ltv_setRealpart(core::T_sp *resultP, core::T_sp *carP) {
+  ASSERT(resultP != NULL);
+  gc::As<core::Complex_sp>((*resultP))->setf_realpart(*carP);
+}
+
+void ltv_setImagpart(core::T_sp *resultP, core::T_sp *carP) {
+  ASSERT(resultP != NULL);
+  gc::As<core::Complex_sp>((*resultP))->setf_imagpart(*carP);
+}
+
 #if 0
     void ltv_makeSourceCodeCons(core::T_sp* resultP, const char* sourceFileNameP, int lineNo, int column)
     {_G();

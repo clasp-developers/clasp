@@ -459,8 +459,20 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     {
       int read_base = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARread_baseSTAR->symbolValue()));
       string num = tokenStr(token, start - token.data());
-      mpz_class z(num.c_str(), read_base);
-      return Integer_O::create(z);
+      if ( num[0] == '+' ) num = num.substr(1,num.size());
+      try {
+        if ( num[num.size()-1] == '.' ) {
+          mpz_class z10(num.substr(0,num.size()-1), 10);
+          return Integer_O::create(z10);
+        } else {
+          mpz_class zbase(num.c_str(), read_base);
+          return Integer_O::create(zbase);
+        }
+      } catch (std::invalid_argument& arg)
+      {
+        SIMPLE_ERROR(BF("Problem in mpz_class creation with %s error: %s") % num % arg.what());
+      }
+      SIMPLE_ERROR(BF("Problem while interpreting int from %s in reader") % num);
     }
     break;
   case tratio: {
@@ -476,7 +488,20 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     // interpret float
     {
       switch (exponent) {
-      case undefined_exp:
+      case undefined_exp: {
+        char *lastValid = NULL;
+        if ( cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_single_float ) {
+          string numstr = tokenStr(token, start - token.data()).c_str();
+          double d = ::strtod(numstr.c_str(), &lastValid);
+          return clasp_make_single_float(d);
+        } else if ( cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_DoubleFloat_O ) {
+          string numstr = tokenStr(token, start - token.data()).c_str();
+          double d = ::strtod(numstr.c_str(), &lastValid);
+          return DoubleFloat_O::create(d);
+        } else {
+          SIMPLE_ERROR(BF("Handle *read-default-float-format* of %s") % _rep_(cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() ));
+        }
+      }
       case float_exp: {
         char *lastValid = NULL;
         string numstr = fix_exponent_char(tokenStr(token, start - token.data()).c_str());

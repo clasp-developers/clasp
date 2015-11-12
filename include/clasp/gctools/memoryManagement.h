@@ -27,6 +27,11 @@ THE SOFTWARE.
 #ifndef _clasp_memoryManagement_H
 #define _clasp_memoryManagement_H
 
+// Define compile-time flags that effect structure sizes
+//
+#include <clasp/gctools/configure_memory.h>
+
+
 #include <clasp/gctools/hardErrors.h>
 
 #define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(x)
@@ -154,6 +159,8 @@ struct GCAllocationPoint;
  }
 extern "C" {
 char* obj_name(gctools::GCKindEnum kind);
+char* obj_kind_name(core::T_O* ptr);
+size_t obj_kind(core::T_O* ptr);
 extern void obj_dump_base(void* base);
 };
 
@@ -170,6 +177,7 @@ struct GCKind {
 // We need a default Kind when running the gc-builder.lsp static analyzer
 // but we don't want a default Kind when compiling the mps version of the code
 // to force compiler errors when the Kind for an object hasn't been declared
+  static GCKindEnum const Kind = KIND_null; // provide default for weak dependents
 #endif // RUNNING_GC_BUILDER
 #endif // USE_MPS
 #ifdef USE_BOEHM

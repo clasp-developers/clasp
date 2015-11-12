@@ -224,23 +224,23 @@ T_mv core_loadBundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_for
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
   scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
   Pathname_sp path = cl_pathname(pathDesig);
-  if (af_probe_file(path).notnilp())
+  if (cl_probe_file(path).notnilp())
     goto LOAD;
   path->_Type = Str_O::create("bundle");
-  if (af_probe_file(path).notnilp())
+  if (cl_probe_file(path).notnilp())
     goto LOAD;
   path->_Type = Str_O::create("fasl");
-  if (af_probe_file(path).notnilp())
+  if (cl_probe_file(path).notnilp())
     goto LOAD;
   path->_Type = Str_O::create("dylib");
-  if (af_probe_file(path).notnilp())
+  if (cl_probe_file(path).notnilp())
     goto LOAD;
   path->_Type = Str_O::create("so");
-  if (af_probe_file(path).notnilp())
+  if (cl_probe_file(path).notnilp())
     goto LOAD;
   SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
 LOAD:
-  Str_sp nameStr = cl_namestring(af_probe_file(path));
+  Str_sp nameStr = cl_namestring(cl_probe_file(path));
   string name = nameStr->get();
 
   /* Look up the initialization function. */
@@ -951,7 +951,17 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     }
 #endif
     // Save any return value that may be in the multiple value return array
-#if 0 // I shouldn't save the result around the unwind form
+#if 1 // When this is enabled it breaks sldb
+    // but the test case: (defun test () (block nil (unwind-protect (return (values 1 2)) (print 10)))) works
+    // When it's disabled sldb works but the test case breaks.
+    //
+ // I shouldn't save the result around the unwind form
+    // In commit 22a8d7b1  I commented this and the block below
+    // that restored the return array value.  I can't remember why I did
+    // that and the commit message for 22a8d7b1 simply says "fixed unwind-protect bug"
+    // This save/restore has to be here for UNWIND-PROTECT to work properly
+    // with RETURN-FROM in the protected form.  I don't know why I would think
+    // it was a good idea to comment them out.
     gctools::Vec0<T_sp> savemv;
     T_mv tresult;
     tresult.readFromMultipleValue0();
@@ -963,7 +973,7 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
       auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
       T_mv tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
     }
-#if 0 // What was I thinking? 
+#if 1 // See comment above about 22a8d7b1
     tresult.loadFromVec0(savemv);
     tresult.saveToMultipleValue0();
 #endif

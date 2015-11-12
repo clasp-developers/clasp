@@ -337,7 +337,7 @@ string SourceFileInfo_O::sourceDebugNamestring() const {
   if (this->_SourceDebugNamestring.notnilp()) {
     return gc::As<Str_sp>(this->_SourceDebugNamestring)->get();
   }
-  return this->fileName();
+  return this->namestring();
 }
 
 string SourceFileInfo_O::fileName() const {

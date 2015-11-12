@@ -175,6 +175,18 @@ typedef bool _Bool;
 extern "C" {
 using namespace gctools;
 
+size_t obj_kind(core::T_O* tagged_ptr) {
+  core::T_O* client = untag_object<core::T_O*>(tagged_ptr);
+  Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(client));
+  return (size_t)(header->kind());
+}
+
+char *obj_kind_name(core::T_O* tagged_ptr) {
+  core::T_O* client = untag_object<core::T_O*>(tagged_ptr);
+  Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(client));
+  return obj_name(header->kind());
+}
+
 char *obj_name(gctools::GCKindEnum kind) {
   if ( kind == KIND_null ) {
     return "UNDEFINED";

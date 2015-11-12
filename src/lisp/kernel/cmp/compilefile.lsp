@@ -45,7 +45,7 @@
 		   (let* ((given-name (llvm-sys:get-name main-fn)))
 		     (irc-low-level-trace)
 		     (cmp-log "About to add invokeMainFunction for ltv-manager-fn\n")
-		     (irc-intrinsic "invokeMainFunction" *gv-source-pathname* ltv-manager-fn)
+		     (irc-intrinsic "invokeMainFunction" *gv-source-namestring* ltv-manager-fn)
                      (irc-intrinsic "cc_setTmvToNil" fn-result)
 		     ))))
     ;;    (cmp-log-dump main-fn)
@@ -248,7 +248,7 @@ to compile prologue and epilogue code when linking modules"
 	 (*compile-verbose* nil)	 )
     (with-compiler-env (conditions)
       (with-module (:module module
-                            :source-pathname (namestring name))
+                            :source-namestring (namestring name))
         (with-debug-info-generator (:module *the-module*
                                             :pathname *compile-file-truename*)
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
@@ -326,11 +326,17 @@ and the pathname of the source file - this will also be used as the module initi
 (defun compile-file-to-module (given-input-pathname output-path &key compile-file-hook type source-debug-namestring (source-debug-offset 0) )
   "Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; TODO: Save read-table and package with unwind-protect
-  (let* ((input-pathname (probe-file given-input-pathname))
+  (let* ((clasp-source-root (translate-logical-pathname "SYS:"))
+         (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
+         (source-location
+          (if (pathname-match-p given-input-pathname clasp-source)
+              (enough-namestring given-input-pathname clasp-source-root)
+              given-input-pathname))
+         (input-pathname (probe-file given-input-pathname))
 	 (source-sin (open input-pathname :direction :input))
 	 (eof-value (gensym))
 	 (module (create-llvm-module-for-compile-file (namestring input-pathname)))
-	 (module-name (cf-module-name type input-pathname))
+	 (module-name (cf-module-name type given-input-pathname))
 	 warnings-p failure-p)
     (or module (error "module is NIL"))
     (with-open-stream (sin source-sin)
@@ -344,10 +350,10 @@ and the pathname of the source file - this will also be used as the module initi
 	  (cmp-log "About to start with-compilation-unit\n")
 	(let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
 	       (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
-	  (with-module ( :module module
-			    :source-pathname (namestring *compile-file-pathname*)
-			    :source-debug-namestring source-debug-namestring
-			    :source-debug-offset source-debug-offset)
+	  (with-module (:module module
+                                :source-namestring (namestring source-location)
+                                :source-debug-namestring source-debug-namestring
+                                :source-debug-offset source-debug-offset)
 	    (let* ()
 	      (with-debug-info-generator (:module *the-module*
 						  :pathname *compile-file-truename*)

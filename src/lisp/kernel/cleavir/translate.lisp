@@ -187,6 +187,10 @@
       ;; to create allocas for them.
       (cmp:with-irbuilder (*entry-irbuilder*)
         (setq return-value (alloca-return_type))
+        ;; In case of a non-local exit, zero out the number of returned
+        ;; values
+        (with-return-values (return-values return-value abi)
+          (%store (%size_t 0) (number-of-return-values return-values)))
         (cmp:with-dbg-function ("repl-FIX"
                                 :linkage-name (llvm-sys:get-name fn)
                                 :function fn
@@ -934,12 +938,12 @@ nil)
           ((cleavir-env:no-variable-info
             (lambda (condition)
 ;;;	  (declare (ignore condition))
-              ;;(warn "Condition: ~a" condition)
+              #+silence-cclasp-compile-warnings(warn "Condition: ~a" condition)
               (invoke-restart 'cleavir-generate-ast::consider-special)))
            (cleavir-env:no-function-info
             (lambda (condition)
 ;;;	  (declare (ignore condition))
-              ;;(warn "Condition: ~a" condition)
+              #+silence-cclasp-compile-warnings(warn "Condition: ~a" condition)
               (invoke-restart 'cleavir-generate-ast::consider-global))))
         (when *compile-print* (describe-form form))
         (cc-dbg-when *debug-log*

@@ -258,7 +258,7 @@
 
 (defun generate-asts-for-clasp-source (start end)
   (let* ((parts (core::select-source-files end :first-file start :system core:*init-files*))
-	 (pathnames (mapcar (lambda (part) (core::lisp-source-pathname part)) parts))
+	 (pathnames (mapcar (lambda (part) (core:build-pathname part)) parts))
 	 (eof (gensym)))
     (loop for file in pathnames
 	 do (with-open-file (stream file :direction :input)
@@ -354,7 +354,7 @@
   (declare (special cleavir-generate-ast:*compiler*))
   (let* ((cleavir-generate-ast:*compiler* 'cl:compile-file)
 	 (parts (core::select-source-files end :first-file start :system core:*init-files*))
-	 (pathnames (mapcar (lambda (part) (core::lisp-source-pathname part)) parts))
+	 (pathnames (mapcar (lambda (part) (core:build-pathname part)) parts))
 	 (eof (gensym)))
     (loop for file in pathnames
        do (with-open-file (stream file :direction :input)

@@ -346,6 +346,7 @@ CharacterInfo::CharacterInfo() {
     gCharacterNames[fci] = Str_O::create(upcase_name);                  \
   }
   int ci = 0;
+  gNamesToCharacterIndex["NULL"] = 0;
   ADD_CHAR("Nul", ci++);
   ADD_CHAR("Soh", ci++);       //1
   ADD_CHAR("Stx", ci++);       //2

@@ -75,18 +75,13 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat) {
   Pathname_sp pathname = cl_pathname(source);
   ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));
   ;
-  Pathname_sp truename = af_truename(source);
+  Pathname_sp truename = cl_truename(source);
   ASSERTF(truename.objectp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));
   ;
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR, pathname);
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, truename);
   /* Create a temporary closure to load the source */
   SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(), 0, 0, 0);
-#if 0
-  InterpretedClosure loadSourceClosure(_sym_loadSource, spi, kw::_sym_function, LambdaListHandler_O::create(0), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
-  InvocationHistoryFrame closure(&loadSourceClosure);
-#endif
-  //        printf("%s:%d   Here set-up *load-pathname*, *load-truename* and *load-source-file-info* for source: %s\n", __FILE__, __LINE__, _rep_(source).c_str() );
   while (true) {
     bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
     DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
@@ -206,7 +201,7 @@ NOT_A_FILENAME:
   DynamicScopeManager scope(cl::_sym_STARpackageSTAR, af_symbolValue(cl::_sym_STARpackageSTAR));
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, af_symbolValue(cl::_sym_STARreadtableSTAR));
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR, not_a_filename ? _Nil<T_O>() : source);
-  T_sp truename = af_truename(filename);
+  T_sp truename = cl_truename(filename);
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, not_a_filename ? _Nil<T_O>() : truename);
   if (!not_a_filename)
     filename = truename;

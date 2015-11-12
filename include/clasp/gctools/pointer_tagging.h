@@ -92,6 +92,7 @@ namespace gctools {
   static const int most_positive_int = std::numeric_limits<int>::max();
   static const int most_negative_int = std::numeric_limits<int>::min();
   static const uint most_positive_uint = std::numeric_limits<unsigned int>::max();
+  static const uint64_t most_positive_uint32 = std::numeric_limits<uint32_t>::max();
   static const uint64_t most_positive_uint64 = std::numeric_limits<uint64_t>::max();
   static const unsigned long long most_positive_unsigned_long_long = std::numeric_limits<unsigned long long>::max();
   static const long int most_positive_fixnum = 4611686018427387903;
