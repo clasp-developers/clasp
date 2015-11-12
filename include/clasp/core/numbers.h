@@ -277,10 +277,14 @@ public:
   static Integer_sp create(const mpz_class &v);
   static Integer_sp create(gctools::Fixnum v);
   static Integer_sp create(const string &v) {
-    mpz_class zv(v);
-    return create(zv);
+    return Integer_O::create(v.c_str());
   };
   static Integer_sp create(const char *v) {
+    if ( v[0] == '+' ) {
+      // Skip leading +
+      mpz_class zv(&v[1]);
+      return create(zv);
+    }
     mpz_class zv(v);
     return create(zv);
   };

@@ -478,6 +478,10 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
   case tratio: {
     // interpret ratio
     string ratioStr = tokenStr(token, start - token.data());
+    if ( ratioStr[0] == '+' ) {
+      Ratio_sp rp = Ratio_O::create(ratioStr.substr(1,ratioStr.size()-1).c_str());
+      return rp;
+    }
     Ratio_sp r = Ratio_O::create(ratioStr.c_str());
     return r;
     break;
