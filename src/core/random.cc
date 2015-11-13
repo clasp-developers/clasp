@@ -67,6 +67,10 @@ T_sp cl_random(T_sp olimit, RandomState_sp random_state) {
   } else if (DoubleFloat_sp df = olimit.asOrNull<DoubleFloat_O>() ) {
     boost::random::uniform_real_distribution<> range(0.0,df->get());
     return DoubleFloat_O::create(range(random_state->_Producer));
+  } else if (olimit.single_floatp()) {
+    float flimit = olimit.unsafe_single_float();
+    boost::random::uniform_real_distribution<> range(0.0,flimit);
+    return clasp_make_single_float(range(random_state->_Producer));
   }
   SIMPLE_ERROR(BF("Illegal limit for random"));
 }

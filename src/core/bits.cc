@@ -740,6 +740,7 @@ void initialize_bits() {
   cl::_sym_boole_xor->defconstant(make_fixnum(boole_xor));
 
   ClDefun(boole);
+  CoreDefun(bitArrayOp);
   af_def(ClPkg,"logbitp",&cl_logbitp);
 };
 };

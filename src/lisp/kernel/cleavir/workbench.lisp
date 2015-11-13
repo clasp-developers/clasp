@@ -16,6 +16,9 @@
     (print (core:getpid)))
   (print "Done - you are ready to go"))
 
+(apropos "cleavir-compile-file")
+
+(clasp-cleavir::cleavir-compile-file "sys:tests;targs.lsp")
 
 (progn
   (load "sys:kernel;cleavir;auto-compile.lisp")

@@ -92,7 +92,7 @@ EXPOSE_CLASS(core, HashTable_O);
 #define DOCS_cl_make_hash_table "see CLHS"
 #define ARGS_cl_make_hash_table "(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0) weakness debug)"
 #define DECL_cl_make_hash_table ""
-T_sp cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold, Symbol_sp weakness, T_sp debug) {
+T_sp cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug) {
   SYMBOL_EXPORT_SC_(KeywordPkg,key);
   if ( weakness.notnilp() ) {
     if ( weakness == INTERN_(kw,key) ) {
@@ -104,7 +104,7 @@ T_sp cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Double
 //  printf("%s:%d make_hash_table WARNING DEBUG_HASH_TABLE is on\n", __FILE__, __LINE__);
 #endif
   int isize = clasp_to_int(size);
-  double rehash_threshold = orehash_threshold->get();
+  double rehash_threshold = clasp_to_double(orehash_threshold);
   HashTable_sp table = _Nil<HashTable_O>();
   //	_lisp->print(BF("%s:%d - make_hash_table - fix me so that I grow by powers of 2\n") % __FILE__ % __LINE__ );
   if (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunction()) {

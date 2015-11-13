@@ -249,6 +249,8 @@
 
 (defun compile-<=3-required-arguments (reqargs outputs cc)
 ;;  (cmp:compile-error-if-wrong-number-of-arguments (calling-convention-nargs cc) (car reqargs))
+  (cmp:compile-error-if-not-enough-arguments (cmp:calling-convention-nargs cc)
+					     (%size_t (car reqargs)))
   (let ((fixed-args (cmp:calling-convention-register-args cc)))
     (do* ((cur-target (cdr reqargs) (cdr cur-target))
 	  (cur-fixed-args fixed-args (cdr cur-fixed-args))
