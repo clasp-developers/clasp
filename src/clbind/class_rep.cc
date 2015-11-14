@@ -78,7 +78,7 @@ void ClassRep_O::exposePython(core::Lisp_sp lisp) {
 
 EXPOSE_CLASS(clbind, ClassRep_O);
 
-ClassRep_O::ClassRep_O(type_id const &type, const char *name, bool derivable)
+ClassRep_O::ClassRep_O(type_id const &type, const std::string& name, bool derivable)
     : m_type(type), m_name(name)
       //	, m_class_type(cpp_class)
       //	, m_operator_cache(0)
@@ -118,7 +118,7 @@ ClassRep_O::ClassRep_O(type_id const &type, const char *name, bool derivable)
 #endif
 }
 
-ClassRep_O::ClassRep_O(const char *name, bool derivable)
+ClassRep_O::ClassRep_O(const std::string& name, bool derivable)
     : m_type(typeid(reg::null_type)), m_name(name)
       //	, m_class_type(cl_class)
       //	, m_operator_cache(0)

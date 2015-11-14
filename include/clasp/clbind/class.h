@@ -305,11 +305,11 @@ struct cast_entry {
 } // namespace unnamed
 
 struct class_registration : registration {
-  class_registration(char const *name);
+  class_registration(const string& name);
 
   void register_() const;
 
-  const char *m_name;
+  std::string m_name;
 
   mutable std::map<const char *, int, detail::ltstr> m_static_constants;
 
@@ -331,7 +331,7 @@ struct class_registration : registration {
 
 struct CLBIND_API class_base : scope {
 public:
-  class_base(char const *name);
+  class_base(const string& name);
 
   struct base_desc {
     type_id type;
@@ -347,7 +347,7 @@ public:
   void add_member(registration *member);
   void add_default_member(registration *member);
 
-  const char *name() const;
+  string name() const;
 
   void add_static_constant(const char *name, int val);
   void add_inner_scope(scope &s);
@@ -571,7 +571,7 @@ template <
     class Class, class Get, class GetPolicies, class Set = reg::null_type, class SetPolicies = reg::null_type>
 struct property_registration : registration {
   property_registration(
-      char const *name,
+                        const string& name,
       Get const &get,
       GetPolicies const &get_policies,
       Set const &set = Set(),
@@ -666,7 +666,7 @@ struct property_registration : registration {
                 context[name] = property(get_);
             }
 #endif
-  char const *name;
+            std::string name;
   Get get;
   GetPolicies get_policies;
   Set set;
@@ -739,7 +739,7 @@ public:
 
 #undef CLBIND_GEN_BASE_INFO
 
-  class_(const char *name) : class_base(name), scope(*this) {
+ class_(const std::string& name) : class_base(name), scope(*this) {
 #ifndef NDEBUG
     detail::check_link_compatibility();
 #endif
@@ -861,7 +861,7 @@ public:
         }
 #endif // meister disabled
   template <class C, class D>
-  class_ &def_readonly(const char *name, D C::*mem_ptr) {
+  class_ &def_readonly(const string& name, D C::*mem_ptr) {
     typedef detail::property_registration<T, D C::*, detail::null_type>
         registration_type;
 
@@ -871,7 +871,7 @@ public:
   }
 
   template <class C, class D, class Policies>
-  class_ &def_readonly(const char *name, D C::*mem_ptr, Policies const &policies) {
+  class_ &def_readonly(const string& name, D C::*mem_ptr, Policies const &policies) {
     typedef detail::property_registration<T, D C::*, Policies>
         registration_type;
 
