@@ -1,21 +1,16 @@
-//#define DEBUG_FILE_KIND
 /*
     File: unixfsys.cc
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
-
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
-
 See directory 'clasp/licenses' for full details.
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,13 +29,10 @@ THE SOFTWARE.
     Copyright (c) 1990, Giuseppe Attardi.
     Copyright (c) 2001, Juan Jose Garcia Ripoll.
     Copyright (c) 2013, Christian E. Schafmeister.  - converted to C++
-
-
     ECL is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
     version 2 of the License, or (at your option) any later version.
-
     See file '../Copyright' for full details.
 */
 
@@ -270,42 +262,67 @@ Str_sp af_currentDir() {
 
 /*
  * Using a certain path, guess the type of the object it points to.
- *
- * Second return value is T if something is found with filename
- * A dead symlink with follow_link=false returns (values NIL T)
  */
 
 static Symbol_sp
-file_kind(char *filename, bool follow_links) {
+file_kind(const char *filename, bool follow_links) {
   Symbol_sp output;
   struct stat buf;
-  struct stat buf2;
+#ifdef DEBUG_FILE_KIND
+  printf("%s:%d   (file_kind %s %d)\n", __FILE__, __LINE__, filename, follow_links );
+  #ifdef HAVE_LSTAT
+  printf("%s:%d    Using lstat\n", __FILE__, __LINE__ );
+  #endif
+#endif
+
 #ifdef HAVE_LSTAT
   if ((follow_links ? safe_stat : safe_lstat)(filename, &buf) < 0)
 #else
     if (safe_stat(filename, &buf) < 0) 
 #endif
+    {
       output = _Nil<Symbol_O>();
+    }
 #ifdef HAVE_LSTAT
   else if (S_ISLNK(buf.st_mode))
+  {
     output = kw::_sym_link;
+#ifdef DEBUG_FILE_KIND
+    printf("%s:%d   output = :LINK\n", __FILE__, __LINE__ );
+#endif
+  }
 #endif
   else if (S_ISDIR(buf.st_mode))
+  {
     output = kw::_sym_directory;
+#ifdef DEBUG_FILE_KIND
+    printf("%s:%d   output = :DIRECTORY\n", __FILE__, __LINE__ );
+#endif
+  }
   else if (S_ISREG(buf.st_mode))
+  {
     output = kw::_sym_file;
+#ifdef DEBUG_FILE_KIND
+    printf("%s:%d   output = :FILE\n", __FILE__, __LINE__ );
+#endif
+  }
   else
+  {
     output = kw::_sym_special;
+#ifdef DEBUG_FILE_KIND
+    printf("%s:%d   output = :SPECIAL\n", __FILE__, __LINE__ );
+#endif
+  }
+#ifdef DEBUG_FILE_KIND
+  printf("%s:%d   Final file_kind --> %s\n", __FILE__, __LINE__, _rep_(output).c_str());
+#endif
   return output;
 }
 
-#define ARGS_af_file_kind "(filename follow-links)"
-#define DECL_af_file_kind ""
-#define DOCS_af_file_kind "file_kind (values kind found) - if found but kind==nil then its a broken symlink"
-Symbol_sp af_file_kind(T_sp filename, bool follow_links) {
-  _G();
-  ASSERT(filename);
-  Str_sp sfilename = coerce_to_posix_filename(filename);
+
+static Symbol_sp
+smart_file_kind(Str_sp sfilename, bool follow_links)
+{
   if ( follow_links ) {
     Symbol_sp kind_follow_links = file_kind((char *)(sfilename->c_str()), true);
     if ( kind_follow_links.notnilp() ) {
@@ -314,17 +331,30 @@ Symbol_sp af_file_kind(T_sp filename, bool follow_links) {
       // If its a broken link return _sym_file
       Symbol_sp kind_no_follow_links = file_kind((char *)(sfilename->c_str()), false);
       if ( kind_no_follow_links.nilp() ) return _Nil<T_O>();
-      return kw::_sym_file;
+      return kw::_sym_broken_link;
     }
   } else {
-    Symbol_sp kind = file_kind((char *)(sfilename->c_str()), follow_links);
+    Symbol_sp kind = file_kind((char *)(sfilename->c_str()), false );
     return kind;
   }
 }
 
+
+#define ARGS_af_file_kind "(filename follow-links)"
+#define DECL_af_file_kind ""
+#define DOCS_af_file_kind "file_kind (values kind found) - if found but kind==nil then its a broken symlink"
+Symbol_sp af_file_kind(T_sp filename, bool follow_links) {
+  _G();
+  ASSERT(filename);
+  Str_sp sfilename = coerce_to_posix_filename(filename);
+  return smart_file_kind(sfilename,follow_links);
+}
+
 #if defined(HAVE_LSTAT) && !defined(ECL_MS_WINDOWS_HOST)
-static T_sp
-si_readlink(Str_sp filename) {
+#define ARGS_core_readlink "(filename)"
+#define DECL_core_readlink ""
+#define DOCS_core_readlink "file_kind (values kind found) - if found but kind==nil then its a br"
+static T_sp core_readlink(Str_sp filename) {
   /* Given a filename which is a symlink, this routine returns
 	 * the value of this link in the form of a pathname. */
   size_t size = 128, written;
@@ -339,7 +369,7 @@ si_readlink(Str_sp filename) {
     size += 256;
   } while (written == size);
   (*output)[written] = '\0';
-  kind = af_file_kind(output, false);
+  kind = file_kind((char *)output->c_str(), false);
   if (kind == kw::_sym_directory) {
     (*output)[written++] = DIR_SEPARATOR_CHAR;
     (*output)[written] = '\0';
@@ -384,7 +414,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
   aux = clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING);
   aux = Str_O::create(aux->substr(0, aux->length() - 1));
   //    aux->_contents()[aux->base_string.fillp-1] = 0;
-  kind = af_file_kind(aux, false);
+  kind = file_kind((char *)aux->c_str(), false);
   if (kind.nilp()) {
     if (ignore_if_failure)
       return _Nil<Pathname_O>();
@@ -392,7 +422,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
 //	FEcannot_open(aux);
 #ifdef HAVE_LSTAT
   } else if (kind == kw::_sym_link) {
-    output = cl_truename(af_mergePathnames(si_readlink(aux),
+    output = cl_truename(af_mergePathnames(core_readlink(aux),
                                            base_dir, kw::_sym_default));
     if (output->_Name.notnilp() ||
         output->_Type.notnilp())
@@ -443,14 +473,12 @@ make_base_pathname(Pathname_sp pathname) {
 #define FOLLOW_SYMLINKS 1
 
 static Pathname_mv
-file_truename(T_sp original_pathname, T_sp original_filename, int flags) {
+file_truename(T_sp pathname, T_sp filename, int flags) {
   Symbol_mv kind;
-  T_sp pathname = original_pathname;
-  T_sp filename = original_filename;
-#if DEBUG_FILE_KIND
-  printf("%s:%d file_truename original_pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str());
+#ifdef DEBUG_FILE_KIND
+  printf("%s:%d file_truename pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str());
 #endif
-  if (original_pathname.nilp()) {
+  if (pathname.nilp()) {
     if (filename.nilp()) {
       INTERNAL_ERROR(BF("file_truename:"
                         " both FILENAME and PATHNAME are null!"));
@@ -462,23 +490,34 @@ file_truename(T_sp original_pathname, T_sp original_filename, int flags) {
       SIMPLE_ERROR(BF("Unprintable pathname %s found in TRUENAME") % _rep_(pathname));
     }
   }
-  kind = af_file_kind(filename, true);
+  T_sp original_pathname = pathname;
+  T_sp original_filename = filename;
+  kind = file_kind((char *)gc::As<Str_sp>(filename)->c_str(), false);
+//  kind = smart_file_kind( filename, false);
   if (kind.nilp()) {
     CANNOT_OPEN_FILE_ERROR(filename);
 #ifdef HAVE_LSTAT
   } else if (kind == kw::_sym_link && (flags & FOLLOW_SYMLINKS)) {
+                /* The link might be a relative pathname. In that case
+                 * we have to merge with the original pathname.  On
+                 * the other hand, if the link is broken – return file
+                 * truename "as is". */
+    struct stat filestatus;
+    if (safe_stat(gc::As<Str_sp>(filename)->c_str(), &filestatus) < 0)
+      return Values(pathname, kind);
     /* The link might be a relative pathname. In that case we have
 	 * to merge with the original pathname */
-    filename = si_readlink(filename);
+    filename = core_readlink(filename);
     Pathname_sp pn = gc::As<Pathname_sp>(pathname);
     pathname = Pathname_O::makePathname(pn->_Host,
-                                        pn->_Device,
-                                        pn->_Directory,
-                                        _Nil<T_O>(),
-                                        _Nil<T_O>(),
-                                        _Nil<T_O>(),
-                                        kw::_sym_local);
+                                          pn->_Device,
+                                          pn->_Directory,
+                                          _Nil<T_O>(),
+                                          _Nil<T_O>(),
+                                          _Nil<T_O>(),
+                                          kw::_sym_local);
     pathname = clasp_mergePathnames(filename, pathname, kw::_sym_default);
+    filename = clasp_namestring(pathname, CLASP_NAMESTRING_FORCE_BASE_STRING);
     Pathname_sp truename = cl_truename(pathname);
     return Values(truename, kind);
 #endif
@@ -506,6 +545,14 @@ file_truename(T_sp original_pathname, T_sp original_filename, int flags) {
     gc::As<Pathname_sp>(pathname)->_Version = kw::_sym_newest;
   }
   return Values(gc::As<Pathname_sp>(pathname), kind);
+}
+
+
+#define ARGS_core_file_truename "(pathname filename follow-links)"
+#define DECL_core_file_truename ""
+#define DOCS_core_file_truename "truename"
+Pathname_mv core_file_truename(T_sp pathname, T_sp filename, bool follow_links) {
+  return file_truename(pathname,filename,follow_links);
 }
 
 /*
@@ -536,9 +583,6 @@ Pathname_sp cl_truename(T_sp orig_pathname) {
   printf("%s:%d cl_truename pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str());
 #endif
   Pathname_mv truename = file_truename(pathname, _Nil<T_O>(), FOLLOW_SYMLINKS);
-  if (truename.second().notnilp()) {
-    return pathname;
-  }
   return truename;
 }
 
@@ -731,12 +775,7 @@ T_sp cl_probe_file(T_sp filespec) {
   _G();
   Pathname_sp pfile = cl_pathname(filespec);
   /* INV: Both SI:FILE-KIND and TRUENAME complain if "file" has wildcards */
-  Symbol_sp kind = af_file_kind(pfile,true);
-  if (kind.notnilp() ) {
-    Pathname_sp truename = cl_truename(pfile);
-    return truename;
-  }
-  return _Nil<Pathname_O>();
+  return (af_file_kind(pfile, true).notnilp() ? cl_truename(pfile) : _Nil<Pathname_O>());
 }
 
 #define ARGS_af_file_write_date "(pathspec)"
@@ -948,18 +987,10 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
       if (!af_pathnameMatchP(component, pathname_mask)) // should this not be inverted?
         continue;
     }
-//    printf("%s:%d  About to file_truename component_path: %s\n", __FILE__, __LINE__, _rep_(component_path).c_str());
-    T_sp original_component_path = component_path;
     T_mv component_path_mv = file_truename(component_path, component, flags);
     component_path = component_path_mv;
     kind = component_path_mv.valueGet(1);
-    if ( kind.nilp() ) {
-//      printf("%s:%d  kind returned from file_truename was nil - going with broken symlink of original path: %s\n", __FILE__, __LINE__, _rep_(original_component_path).c_str());
-      kind = kw::_sym_file;
-      out = Cons_O::create(Cons_O::create(original_component_path,kind),out);
-    } else {
-      out = Cons_O::create(Cons_O::create(component_path, kind), out);
-    }
+    out = Cons_O::create(Cons_O::create(component_path, kind), out);
   }
 #ifdef HAVE_DIRENT_H
   closedir(dir);
@@ -1049,9 +1080,6 @@ T_sp core_mkstemp(Str_sp thetemplate) {
 }
 
 #if 0 // working
-
-
-
 @(defun ext::getcwd (&optional (change_d_p_d ECL_NIL))
 	T_sp output;
 @
@@ -1061,7 +1089,6 @@ T_sp core_mkstemp(Str_sp thetemplate) {
 	}
 	@(return output)
 @)
-
 T_sp
 si_get_library_pathname(void)
 {
@@ -1115,7 +1142,6 @@ si_get_library_pathname(void)
  OUTPUT_UNCHANGED:
         @(return s);
 }
-
 @(defun ext::chdir (directory &optional (change_d_p_d ECL_T))
 	T_sp previous = si_getcwd(0);
 	T_sp namestring;
@@ -1145,21 +1171,17 @@ si_get_library_pathname(void)
 	}
 	@(return previous)
 @)
-
-
 T_sp core_mkstemp(T_sp template)
 {
     T_sp output;
     cl_index l;
     int fd;
-
 #if defined(ECL_MS_WINDOWS_HOST)
     T_sp phys, dir, file;
     char strTempDir[MAX_PATH];
     char strTempFileName[MAX_PATH];
     char *s;
     int ok;
-
     phys = cl_translate_logical_pathname(1, template);
     dir = cl_make_pathname(8,
 			   kw::_sym_type, _Nil<T_O>(),
@@ -1168,14 +1190,12 @@ T_sp core_mkstemp(T_sp template)
 			   kw::_sym_defaults, phys);
     dir = af_coerceToFilename(dir);
     file = cl_file_namestring(phys);
-
     l = dir->base_string.fillp;
     memcpy(strTempDir, dir->c_str(), l);
     strTempDir[l] = 0;
     for (s = strTempDir; *s; s++)
 	if (*s == '/')
 	    *s = '\\';
-
     clasp_disable_interrupts();
     ok = GetTempFileName(strTempDir, (char*)file->c_str(), 0,
 			 strTempFileName);
@@ -1193,7 +1213,6 @@ T_sp core_mkstemp(T_sp template)
     output = ecl_alloc_simple_base_string(l + 6);
     memcpy(output->c_str(), template->c_str(), l);
     memcpy(output->c_str() + l, "XXXXXX", 6);
-
     clasp_disable_interrupts();
 #ifdef HAVE_MKSTEMP
     fd = mkstemp((char*)output->c_str());
@@ -1205,7 +1224,6 @@ T_sp core_mkstemp(T_sp template)
     }
 #endif
     clasp_enable_interrupts();
-
     if (fd < 0) {
 	output = _Nil<T_O>();
     } else {
@@ -1214,7 +1232,6 @@ T_sp core_mkstemp(T_sp template)
 #endif
     @(return (Null(output)? output : cl_truename(output)))
 	}
-
 #endif // working
 
 
@@ -1528,9 +1545,11 @@ void initialize_unixfsys() {
   CoreDefun(mkdir);
   ClDefun(directory);
   ClDefun(renameFile);
+  CoreDefun(file_truename);
   CoreDefun(mkstemp);
   CoreDefun(copy_file);
   CoreDefun(rmdir);
   CoreDefun(chmod);
+  CoreDefun(readlink);
 };
 };

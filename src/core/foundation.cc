@@ -220,6 +220,17 @@ void assertion_failed(char const *expr, char const *function, char const *file, 
 }
 };
 
+
+extern "C" {
+
+void closure_dump(core::Closure* closureP) {
+  core::T_sp sourceFileInfo = core_sourceFileInfo(core::clasp_make_fixnum(closureP->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false );
+  std::string namestring = gc::As<core::SourceFileInfo_sp>(sourceFileInfo)->namestring();
+  printf("%s:%d  Closure %s  file: %s lineno: %d\n", __FILE__, __LINE__, _rep_(closureP->name).c_str(), namestring.c_str(), closureP->lineNumber());
+}
+
+};
+
 namespace llvm_interface {
 
 ::llvm_interface::llvmAddSymbolCallbackType addSymbol = NULL;
@@ -253,6 +264,8 @@ Functoid::Functoid(T_sp n) : name(n) {
   }
 }
 
+
+    
 int Closure::sourceFileInfoHandle() const {
   return 0;
 }

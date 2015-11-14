@@ -1159,9 +1159,6 @@ public:
     exit(1);
   };
   virtual size_t templatedSizeof() const { return sizeof(*this); };
-  void dump() const {
-    printf("Functoid - %s\n", _rep_(this->name).c_str());
-  }
 public:
   T_sp name;
 

@@ -38,8 +38,7 @@ link-cclasp-mps:
 	$(CCLASP_MPS) -I -l "link-cclasp.lsp"
 
 application:
-	cp -R $(CLASP_LISP_SOURCE_DIR)/build $(CLASP_APP_RESOURCES_DIR)/lisp/
-	cp -R $(CLASP_INTERNAL_BUILD_TARGET_DIR)/* $(CLASP_APP_DIR)
+	cp -R $(CLASP_INTERNAL_BUILD_TARGET_DIR) $(CLASP_APP_DIR)
 
 boehm-cleavir:
 	make boehm

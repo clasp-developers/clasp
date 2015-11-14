@@ -250,9 +250,9 @@ Boehm and MPS use a single pointer"
 (defun parse-function-arguments (arguments)
   (let ((closed-env (first arguments))
         (cc (make-calling-convention-impl
-           :valist (second arguments)
-           :nargs (third arguments) ;; The number of arguments
-           :register-args (nthcdr 3 arguments))))
+             :valist (second arguments)
+             :nargs (third arguments) ;; The number of arguments
+             :register-args (nthcdr 3 arguments))))
     (values closed-env cc)))
 
 (defun calling-convention-nargs (cc)

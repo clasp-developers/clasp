@@ -125,4 +125,7 @@
           +uintptr_t+
           +return_type+
           null-t-ptr
+          compile-error-if-wrong-number-of-arguments
+          compile-error-if-too-many-arguments
+          compile-throw-if-excess-keyword-arguments
           ))

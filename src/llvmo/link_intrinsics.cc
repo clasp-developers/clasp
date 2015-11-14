@@ -172,9 +172,9 @@ NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::siz
   stringstream ss;
   for (int i(argIdx); i < nargs; ++i) {
     T_sp obj(va_arg(vrest,T_O*));
-    ss << _rep_(obj) << " ";
+    ss << _rep_(obj).c_str() << " ";
   }
-  SIMPLE_ERROR(BF("va_ifExcessKeywordArgumentsException>> Excess keyword arguments fnName: %s argIdx: %d  args: %s") % fnName % argIdx % ss.str());
+  SIMPLE_ERROR(BF("va_ifExcessKeywordArgumentsException>> Excess keyword arguments fnName: %s nargs: %d argIdx: %d  args: %s") % fnName % nargs % argIdx % ss.str());
   //        core::throwUnrecognizedKeywordArgumentError(argArray[argIdx]);
 }
 
@@ -571,7 +571,11 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   onearg[0] = *ltvPP;  // Leave the tag on
   core::VaList_S onearg_valist_s(onearg);
   core::T_O* lcc_arglist = onearg_valist_s.asTaggedPtr();
+#if 0
   *resultP = fptr(LCC_PASS_ARGS1_VA_LIST(onearg[0])); // Was  (ltvP));
+#else
+  *resultP = fptr(LCC_PASS_ARGS0_VA_LIST()); // Was  (ltvP));
+#endif  
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     core::Number_sp endTime = gc::As<core::Number_sp>(core::cl_getInternalRealTime());
