@@ -386,7 +386,7 @@ struct CountMethodArguments<RT (OT::*)(ARGS...) const> {
 
 template <class Class, class MethodPointerType, class Policies>
 struct memfun_registration : registration {
-  memfun_registration(char const *name, MethodPointerType f, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
+ memfun_registration(const std::string& name, MethodPointerType f, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
       : name(name), methodPtr(f), policies(policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
@@ -411,7 +411,7 @@ struct memfun_registration : registration {
 #endif
   }
 
-  char const *name;
+  std::string name;
   MethodPointerType methodPtr;
   Policies policies;
   string m_arguments;
@@ -774,7 +774,7 @@ public:
   }
 
   template <class F>
-  class_ &def(const char *name, F f)
+    class_ &def(const std::string& name, F f)
   //                        string const& arguments="",
   //                        string const& declares="",
   //                        string const& docstring="")
@@ -787,7 +787,7 @@ public:
 
   // virtual functions
   template <class F, class DefaultOrPolicies>
-  class_ &def(char const *name, F fn, DefaultOrPolicies default_or_policies, string const &arguments = "", string const &declares = "", string const &docstring = "") {
+    class_ &def(const std::string& name, F fn, DefaultOrPolicies default_or_policies, string const &arguments = "", string const &declares = "", string const &docstring = "") {
     return this->virtual_def(
         name, fn, default_or_policies, reg::null_type(), CLBIND_MSVC_TYPENAME is_policy_list<DefaultOrPolicies>::type(), arguments, declares, docstring);
   }
@@ -1000,7 +1000,7 @@ private:
         }
 
         template<class F, class Default, class Policies>
-        class_& virtual_def(char const* name, F const& fn
+          class_& virtual_def(const std::string& name, F const& fn
                             , Default const& default_, Policies const&, boost::mpl::false_)
         {
             this->add_member(
@@ -1018,7 +1018,7 @@ private:
 
   // these handle default implementation of virtual functions
   template <class F, class Policies>
-  class_ &virtual_def(char const *name, F const &fn, Policies const &, reg::null_type, boost::mpl::true_,
+    class_ &virtual_def(const std::string& name, F const &fn, Policies const &, reg::null_type, boost::mpl::true_,
                       string const &arguments, string const &declares, string const &docstring) {
     this->add_member(
         new detail::memfun_registration<T, F, Policies>(
