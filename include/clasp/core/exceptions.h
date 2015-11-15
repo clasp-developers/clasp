@@ -120,7 +120,7 @@ struct _TRACE {
 #define TYPE_ERROR(_datum_, _expectedType_) ERROR(cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, _datum_, kw::_sym_expectedType, _expectedType_))
 #define FILE_ERROR(_file_) ERROR(cl::_sym_fileError, core::lisp_createList(kw::_sym_pathname, _file_))
 #define CANNOT_OPEN_FILE_ERROR(_file_) FILE_ERROR(_file_)
-//#define TOO_FEW_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooFewArgumentsError)
+#define TOO_FEW_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooFewArgumentsError)
 //#define TOO_MANY_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooManyArgumentsError)
 //#define UNRECOGNIZED_KEYWORD_ARGUMENTS_ERROR(obj) ERROR(core::_sym_unrecognizedKeywordArgumentsError,obj)
 #define INVALID_KEYWORD_ARGUMENT_ERROR(obj) ERROR(core::_sym_invalidKeywordArgumentError, obj)

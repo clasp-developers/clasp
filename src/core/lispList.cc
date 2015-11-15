@@ -280,7 +280,7 @@ T_sp cl_listSTAR(T_sp tobjects) {
   _G();
   T_sp objects = tobjects;
   if (objects.nilp())
-    return (Values(_Nil<T_O>()));
+    TOO_FEW_ARGUMENTS_ERROR();
   if (oCdr(objects).nilp())
     return (oCar(objects));
   Cons_sp cur;
