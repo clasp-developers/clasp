@@ -31,7 +31,7 @@ namespace core
 {
     static void
     write_array_inner(bool vector, T_sp x, T_sp stream) {
-	printf("%s:%d write_array_inner\n", __FILE__, __LINE__ );
+//	printf("%s:%d write_array_inner\n", __FILE__, __LINE__ );
 	//cl_env_ptr env = ecl_process_env();
 	std::vector<cl_index> adims;
 	cl_index subscripts[CLASP_ARRAY_RANK_LIMIT];
