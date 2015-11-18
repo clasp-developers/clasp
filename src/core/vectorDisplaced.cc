@@ -46,6 +46,9 @@ VectorDisplaced_sp core_make_vector_displaced(T_sp dim, T_sp elementType, T_sp d
   GC_ALLOCATE(VectorDisplaced_O, vo);
   vo->_ElementType = elementType;
   vo->_Size = clasp_to_fixnum(dim);
+  if ( vo->_Size >= displacedOffset+cl_length(displacedTo)) {
+    vo->_Size = cl_length(displacedTo)-displacedOffset;
+  }
   vo->_DisplacedIndexOffset = displacedOffset;
   vo->_Vector = gc::As<Vector_sp>(displacedTo);
   return vo;
