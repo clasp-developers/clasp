@@ -41,7 +41,7 @@ EXPOSE_CLASS(core, ArrayObjects_O);
 #define ARGS_ArrayObjects_O_make "(dimensions element-type initial-element adjustable)"
 #define DECL_ArrayObjects_O_make ""
 #define DOCS_ArrayObjects_O_make "make ArrayObjects args: dimensions element-type initial-element"
-    ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp adjustable) {
+ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp adjustable) {
   _G();
   GC_ALLOCATE(ArrayObjects_O, array);
   array->_ElementType = elementType;
@@ -108,26 +108,34 @@ T_sp ArrayObjects_O::aset_unsafe(int idx, T_sp value) {
 }
 
 bool ArrayObjects_O::equalp(T_sp o) const {
-  if ( this->eq(o) ) return true;
-  if ( ArrayObjects_sp other = o.asOrNull<ArrayObjects_O>() ) {
-    const std::vector<cl_index>& my_dimensions = this->_Dimensions;
-    const std::vector<cl_index>& other_dimensions = other->_Dimensions;
-    if ( my_dimensions.size() != other_dimensions.size() ) return false;
+  if (this->eq(o))
+    return true;
+  if (ArrayObjects_sp other = o.asOrNull<ArrayObjects_O>()) {
+    const std::vector<cl_index> &my_dimensions = this->_Dimensions;
+    const std::vector<cl_index> &other_dimensions = other->_Dimensions;
+    if (my_dimensions.size() != other_dimensions.size())
+      return false;
     size_t size = 1;
-    for ( int i(0); i<my_dimensions.size(); ++i ) {
+    for (int i(0); i < my_dimensions.size(); ++i) {
       size *= my_dimensions[i];
-      if ( my_dimensions[i] != other_dimensions[i] ) return false;
+      if (my_dimensions[i] != other_dimensions[i])
+        return false;
     }
-    for ( size_t i(0); i<size; ++i ) {
-      if ( !cl_equalp(this->rowMajorAref(i),other->rowMajorAref(i)) ) return false;
+    for (size_t i(0); i < size; ++i) {
+      if (!cl_equalp(this->rowMajorAref(i), other->rowMajorAref(i)))
+        return false;
     }
     return true;
-  } if ( Vector_sp vec = o.asOrNull<Vector_O>() ) {
-    if ( this->_Dimensions.size() != 1 ) return false;
-    if ( this->_Dimensions[0] != cl_length(vec) ) return false;
+  }
+  if (Vector_sp vec = o.asOrNull<Vector_O>()) {
+    if (this->_Dimensions.size() != 1)
+      return false;
+    if (this->_Dimensions[0] != cl_length(vec))
+      return false;
     size_t size = this->_Dimensions[0];
-    for ( int i(0); i<size; ++i ) {
-      if ( !cl_equalp(this->rowMajorAref(i),vec->aref_unsafe(i)) ) return false;
+    for (int i(0); i < size; ++i) {
+      if (!cl_equalp(this->rowMajorAref(i), vec->aref_unsafe(i)))
+        return false;
     }
     return true;
   }
@@ -204,7 +212,7 @@ LongLongInt ArrayObjects_O::setDimensions(List_sp dim, T_sp initialElement) {
   _OF();
   LongLongInt elements = 1;
   int newRank = cl_length(dim);
-  if ( newRank >= CLASP_ARRAY_RANK_LIMIT ) {
+  if (newRank >= CLASP_ARRAY_RANK_LIMIT) {
     SIMPLE_ERROR(BF("Maximum rank is %d") % CLASP_ARRAY_RANK_LIMIT);
   }
   this->_Dimensions.resize(newRank);

@@ -59,7 +59,7 @@ public: // virtual functions inherited from Object
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-  //	string	__repr__() const;
+       //	string	__repr__() const;
 
 private: // instance variables
   boost::posix_time::ptime _Time;
@@ -92,7 +92,7 @@ public: // virtual functions inherited from Object
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-  //	string	__repr__() const;
+       //	string	__repr__() const;
 
 public:
   static PosixTimeDuration_sp createDurationSince(PosixTime_sp past);

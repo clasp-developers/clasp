@@ -34,11 +34,11 @@ THE SOFTWARE.
 // in math_dispatch2.h
 //
 //
-#define MATH_DISPATCH_BEGIN(a, b)                \
-  {                                              \
-    int ta = (int)(clasp_t_of(a));               \
-    int tb = (int)(clasp_t_of(b));               \
-    int dispatch_combo = ta * (number_NUM) + tb; \
+#define MATH_DISPATCH_BEGIN(a, b)              \
+  {                                            \
+    int ta = (int)(clasp_t_of(a));             \
+    int tb = (int)(clasp_t_of(b));             \
+    int dispatch_combo = ta * (number_NUM)+tb; \
     switch (dispatch_combo)
 
 #define MDL(na, nb) ((int)(na) * (int)(number_NUM) + (int)(nb))

@@ -1087,7 +1087,7 @@ void initialize_astExpose() {
         .def("getLocStart", &clang::Decl::getLocStart)
         .def("getLocEnd", &clang::Decl::getLocEnd)
 #define CLASS_DECL(_Class_, _Base_) class_<_Class_##Decl, _Base_>(#_Class_ "Decl", no_default_constructor)
-        ,
+    ,
     CLASS_DECL(AccessSpec, Decl),
     CLASS_DECL(Block, Decl),
     CLASS_DECL(Captured, Decl),
@@ -1143,12 +1143,12 @@ void initialize_astExpose() {
         .def("getSpecializedTemplate", &clang::ClassTemplateSpecializationDecl::getSpecializedTemplate)
         .def("getSpecializationKind", &clang::ClassTemplateSpecializationDecl::getSpecializationKind)
         .enum_<clang::TemplateSpecializationKind>(asttooling::_sym_STARclangTemplateSpecializationKindSTAR)[
-          value("TSK_Undeclared", clang::TemplateSpecializationKind::TSK_Undeclared),
-          value("TSK_ImplicitInstantiation", clang::TemplateSpecializationKind::TSK_ImplicitInstantiation),
-          value("TSK_ExplicitSpecialization", clang::TemplateSpecializationKind::TSK_ExplicitSpecialization),
-          value("TSK_ExplicitInstantiationDeclaration", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDeclaration),
-          value("TSK_ExplicitInstantiationDefinition", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDefinition)
-        ],
+      value("TSK_Undeclared", clang::TemplateSpecializationKind::TSK_Undeclared),
+      value("TSK_ImplicitInstantiation", clang::TemplateSpecializationKind::TSK_ImplicitInstantiation),
+      value("TSK_ExplicitSpecialization", clang::TemplateSpecializationKind::TSK_ExplicitSpecialization),
+      value("TSK_ExplicitInstantiationDeclaration", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDeclaration),
+      value("TSK_ExplicitInstantiationDefinition", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDefinition)
+    ],
     /* af_fn */ def("getNameForDiagnostic", &af_getNameForDiagnostic, policies<>(),
                     ARGS_af_getNameForDiagnostic,
                     DECL_af_getNameForDiagnostic,
@@ -1197,13 +1197,13 @@ void initialize_astExpose() {
     CLASS_DECL(StaticAssert, Decl),
     CLASS_DECL(TranslationUnit, Decl)
 #undef DECL
-        ,
+    ,
     class_<Stmt>("Stmt", no_default_constructor)
         .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
         .def("getLocStart", &clang::Stmt::getLocStart)
         .def("getLocEnd", &clang::Stmt::getLocEnd)
 #define CLASS_STMT(_Class_, _Base_) class_<_Class_, _Base_>(#_Class_, no_default_constructor)
-        ,
+    ,
     CLASS_STMT(AsmStmt, Stmt),
     CLASS_STMT(GCCAsmStmt, AsmStmt),
     CLASS_STMT(MSAsmStmt, AsmStmt),
@@ -1356,7 +1356,7 @@ void initialize_astExpose() {
     CLASS_STMT(SwitchStmt, Stmt),
     CLASS_STMT(WhileStmt, Stmt)
 
-        ,
+    ,
     class_<Type>("Type", no_default_constructor)
         .def("dump", &clang::Type::dump)
         //            .  def("getAsCXXRecordDecl",&clang::Type::getAsCXXRecordDecl)
@@ -1367,7 +1367,7 @@ void initialize_astExpose() {
     /* regular function bug first arg is Type*/ def("getAsCXXRecordDecl", &af_getAsCXXRecordDecl, policies<>(), ARGS_af_getAsCXXRecordDecl, DECL_af_getAsCXXRecordDecl, DOCS_af_getAsCXXRecordDecl)
 
 #define CLASS_TYPE(_Class_, _Base_) class_<_Class_##Type, _Base_>(#_Class_ "Type", no_default_constructor)
-        ,
+    ,
     CLASS_TYPE(Builtin, Type)
         .def("desugar", &clang::BuiltinType::desugar),
     CLASS_TYPE(Complex, Type),
@@ -1474,16 +1474,16 @@ void initialize_astExpose() {
         .def("getAsExpr", &clang::TemplateArgument::getAsExpr)
         //            .  iterator("pack",&clang::TemplateArgument::pack_begin, &clang::TemplateArgument::pack_end)
         .enum_<clang::TemplateArgument::ArgKind>(asttooling::_sym_STARclangTemplateArgumentArgKindSTAR)[
-          value("Type", clang::TemplateArgument::ArgKind::Type),
-          value("Null", clang::TemplateArgument::ArgKind::Null),
-          value("Declaration", clang::TemplateArgument::ArgKind::Declaration),
-          value("NullPtr", clang::TemplateArgument::ArgKind::NullPtr),
-          value("Integral", clang::TemplateArgument::ArgKind::Integral),
-          value("Template", clang::TemplateArgument::ArgKind::Template),
-          value("TemplateExpansion", clang::TemplateArgument::ArgKind::TemplateExpansion),
-          value("Expression", clang::TemplateArgument::ArgKind::Expression),
-          value("Pack", clang::TemplateArgument::ArgKind::Pack)
-        ],
+      value("Type", clang::TemplateArgument::ArgKind::Type),
+      value("Null", clang::TemplateArgument::ArgKind::Null),
+      value("Declaration", clang::TemplateArgument::ArgKind::Declaration),
+      value("NullPtr", clang::TemplateArgument::ArgKind::NullPtr),
+      value("Integral", clang::TemplateArgument::ArgKind::Integral),
+      value("Template", clang::TemplateArgument::ArgKind::Template),
+      value("TemplateExpansion", clang::TemplateArgument::ArgKind::TemplateExpansion),
+      value("Expression", clang::TemplateArgument::ArgKind::Expression),
+      value("Pack", clang::TemplateArgument::ArgKind::Pack)
+    ],
     class_<clang::TemplateName>("TemplateName", no_default_constructor)
         .def("getAsTemplateDecl", &clang::TemplateName::getAsTemplateDecl),
     class_<clang::TypeSourceInfo>("TypeSourceInfo", no_default_constructor)

@@ -31,15 +31,13 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 namespace gctools {
 /*! Tagged pointer to the global nil */
-  extern core::Symbol_O *global_tagged_Symbol_OP_nil;
+extern core::Symbol_O *global_tagged_Symbol_OP_nil;
 /*! Tagged pointer to the global UNBOUND */
-  extern core::Symbol_O *global_tagged_Symbol_OP_unbound;
+extern core::Symbol_O *global_tagged_Symbol_OP_unbound;
 /*! Tagged pointer to the global DELETED - used in weak hash tables */
-  extern core::Symbol_O *global_tagged_Symbol_OP_deleted;
+extern core::Symbol_O *global_tagged_Symbol_OP_deleted;
 /*! Tagged pointer to the global SAME-AS-KEY - used in weak hash tables */
-  extern core::Symbol_O *global_tagged_Symbol_OP_sameAsKey;
+extern core::Symbol_O *global_tagged_Symbol_OP_sameAsKey;
 };
-
-
 
 #endif

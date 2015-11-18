@@ -40,12 +40,13 @@ inline bool cl_symbolp(T_sp obj) {
 #define DECL_cl_endp ""
 #define DOCS_cl_endp "endp"
 inline bool cl_endp(T_sp arg) {
-  if ( arg.consp() ) return false;
-  if ( arg.nilp() ) return true;
-  TYPE_ERROR(arg,cl::_sym_list);
+  if (arg.consp())
+    return false;
+  if (arg.nilp())
+    return true;
+  TYPE_ERROR(arg, cl::_sym_list);
 };
 
- 
 #define ARGS_cl_atom "(arg)"
 #define DECL_cl_atom ""
 #define DOCS_cl_atom "atom"
@@ -53,13 +54,13 @@ inline bool cl_atom(T_sp obj) {
   return !obj.consp();
 }
 
-
 inline bool cl_consp(T_sp obj) {
   return obj.consp();
 };
 
 inline bool cl_listp(T_sp obj) {
-  if (obj.consp()) return true;
+  if (obj.consp())
+    return true;
   return obj.nilp();
 }
 

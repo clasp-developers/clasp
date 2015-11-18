@@ -110,7 +110,7 @@ T_mv cl_getMacroCharacter(Character_sp chr, T_sp readtable) {
 #define DECL_cl_copyReadtable ""
 #define DOCS_cl_copyReadtable "clhs: copy-readtable"
 T_sp cl_copyReadtable(gc::Nilable<ReadTable_sp> fromReadTable, gc::Nilable<ReadTable_sp> toReadTable) {
-  if ( fromReadTable.nilp() ) {
+  if (fromReadTable.nilp()) {
     return ReadTable_O::create_standard_readtable();
   }
   return fromReadTable->copyReadTable(toReadTable);
@@ -1032,8 +1032,8 @@ string ReadTable_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString();
   ss << ":case " << _rep_(this->_Case) << std::endl;
-  ss << ":syntax " << this->_SyntaxTypes->hash_table_dump(0,_Nil<T_O>()) << std::endl;
-  ss << ":macroCharacters " << this->_MacroCharacters->hash_table_dump(0,_Nil<T_O>()) << std::endl;
+  ss << ":syntax " << this->_SyntaxTypes->hash_table_dump(0, _Nil<T_O>()) << std::endl;
+  ss << ":macroCharacters " << this->_MacroCharacters->hash_table_dump(0, _Nil<T_O>()) << std::endl;
   ss << "> ";
   return ss.str();
 }

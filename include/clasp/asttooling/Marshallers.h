@@ -129,6 +129,7 @@ public:
 /// their types, unpacking them and calling the underlying function.
 class FixedArgCountMatcherDescriptor : public MatcherDescriptor {
   FRIEND_GC_SCANNER(FixedArgCountMatcherDescriptor);
+
 public:
   typedef VariantMatcher (*MarshallerType)(void (*Func)(),
                                            core::Symbol_sp MatcherName,
@@ -182,7 +183,7 @@ public:
 
 GCPRIVATE:
   const RunFunc Func;
-    core::Symbol_sp MatcherName;
+  core::Symbol_sp MatcherName;
 };
 
 /// \brief Helper macros to check the arguments on all marshaller functions.
@@ -351,16 +352,17 @@ private:
 /// more than one overloads match the arguments.
 class OverloadedMatcherDescriptor : public MatcherDescriptor {
   FRIEND_GC_SCANNER(asttooling::internal::OverloadedMatcherDescriptor);
- public:
-// gctools::tagged_pointer<OverloadedMatcherDescriptor>rrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
 
-//    gctools::tagged_pointer<OverloadedMatcherDescriptor>rrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
-  OverloadedMatcherDescriptor( const gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> Callbacks) {
+public:
+  // gctools::tagged_pointer<OverloadedMatcherDescriptor>rrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
+
+  //    gctools::tagged_pointer<OverloadedMatcherDescriptor>rrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
+  OverloadedMatcherDescriptor(const gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> Callbacks) {
     for (auto it = Callbacks.begin(); it != Callbacks.end(); ++it) {
       Overloads.push_back(*it);
     }
   }
-  OverloadedMatcherDescriptor( ArrayRef<gctools::tagged_pointer<MatcherDescriptor>> Callbacks) {
+  OverloadedMatcherDescriptor(ArrayRef<gctools::tagged_pointer<MatcherDescriptor>> Callbacks) {
     for (auto it = Callbacks.begin(); it != Callbacks.end(); ++it) {
       Overloads.push_back(*it);
     }
@@ -402,6 +404,7 @@ GCPRIVATE:
 /// \brief Variadic operator marshaller function.
 class VariadicOperatorMatcherDescriptor : public MatcherDescriptor {
   FRIEND_GC_SCANNER(asttooling::internal::VariadicOperatorMatcherDescriptor);
+
 public:
   typedef clang::ast_matchers::internal::DynTypedMatcher::VariadicOperator VarOp;
   VariadicOperatorMatcherDescriptor(unsigned MinCount, unsigned MaxCount,
@@ -438,7 +441,7 @@ GCPRIVATE:
   const unsigned MinCount;
   const unsigned MaxCount;
   const VarOp Op;
-    core::Symbol_sp MatcherName;
+  core::Symbol_sp MatcherName;
 };
 
 /// Helper functions to select the appropriate marshaller functions.
@@ -446,8 +449,8 @@ GCPRIVATE:
 
 /// \brief 0-arg overload
 template <typename ReturnType>
-  gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(),
-                                           core::Symbol_sp MatcherName) {
+gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(),
+                                                              core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
   return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocateClass(matcherMarshall0<ReturnType>, reinterpret_cast<void (*)()>(Func), MatcherName);
 #else
@@ -459,8 +462,8 @@ template <typename ReturnType>
 
 /// \brief 1-arg overload
 template <typename ReturnType, typename ArgType1>
-  gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1),
-                                           core::Symbol_sp MatcherName) {
+gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1),
+                                                              core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
   return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocateClass(
       matcherMarshall1<ReturnType, ArgType1>,
@@ -474,9 +477,9 @@ template <typename ReturnType, typename ArgType1>
 
 /// \brief 2-arg overload
 template <typename ReturnType, typename ArgType1, typename ArgType2>
-  gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1,
-                                                              ArgType2),
-                                           core::Symbol_sp MatcherName) {
+gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1,
+                                                                                 ArgType2),
+                                                              core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
   return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocateClass(
       matcherMarshall2<ReturnType, ArgType1, ArgType2>,
@@ -491,7 +494,7 @@ template <typename ReturnType, typename ArgType1, typename ArgType2>
 /// \brief Variadic overload.
 template <typename ResultT, typename ArgT,
           ResultT (*Func)(ArrayRef<const ArgT *>)>
-  gc::tagged_pointer<MatcherDescriptor>
+gc::tagged_pointer<MatcherDescriptor>
 makeMatcherAutoMarshall(llvm::VariadicFunction<ResultT, ArgT, Func> VarFunc,
                         core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
@@ -506,7 +509,7 @@ makeMatcherAutoMarshall(llvm::VariadicFunction<ResultT, ArgT, Func> VarFunc,
 /// \brief Argument adaptative overload.
 template <template <typename ToArg, typename FromArg> class ArgumentAdapterT,
           typename FromTypes, typename ToTypes>
-  gc::tagged_pointer<MatcherDescriptor>
+gc::tagged_pointer<MatcherDescriptor>
 makeMatcherAutoMarshall(clang::ast_matchers::internal::ArgumentAdaptingMatcherFunc<
                             ArgumentAdapterT, FromTypes, ToTypes>,
                         core::Symbol_sp MatcherName) {
@@ -532,7 +535,7 @@ inline void AdaptativeOverloadCollector<ArgumentAdapterT, FromTypes,
 
 /// \brief Variadic operator overload.
 template <unsigned MinCount, unsigned MaxCount>
-  gc::tagged_pointer<MatcherDescriptor>
+gc::tagged_pointer<MatcherDescriptor>
 makeMatcherAutoMarshall(clang::ast_matchers::internal::VariadicOperatorMatcherFunc<MinCount, MaxCount> Func,
                         core::Symbol_sp MatcherName) {
 #ifndef USE_NEW

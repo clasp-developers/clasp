@@ -676,7 +676,7 @@ Fixnum_sp Stream_O::writeVector(Vector_sp vec, Fixnum_sp fnstart, Fixnum_sp fnen
 #ifdef BRCL_UNICODE
 // elementType == cl::_sym_UnicodeCharacter???
 #endif
-      /* TODO: Handle specialized arrays */
+                                                 /* TODO: Handle specialized arrays */
       ) {
     for (; start < end; start++) {
       this->writeChar(vec->elt(start).as<Character_O>()->asChar());

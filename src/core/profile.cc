@@ -76,9 +76,6 @@ Bignum profilerTimeNs() {
   return mpz_ns;
 }
 
-
-
-
 #define ARGS_af_clock_gettime_nanoseconds "()"
 #define DECL_af_clock_gettime_nanoseconds ""
 #define DOCS_af_clock_gettime_nanoseconds "clock_gettime_nanoseconds"
@@ -220,10 +217,7 @@ void dump_profile() {
   //	_lisp->mapClassNamesAndClasses(&dumpCount);
 }
 
-
-
-
-simple_timer::simple_timer(const std::string& msg) {
+simple_timer::simple_timer(const std::string &msg) {
   this->_Message = msg;
   this->_StartTime = profilerTimeNs();
 };
@@ -235,5 +229,4 @@ simple_timer::~simple_timer() {
   double seconds_delta = ddelta / 1000000000.0;
   printf("%s %8.3lf seconds\n", this->_Message.c_str(), seconds_delta);
 }
-
 };

@@ -602,7 +602,7 @@ static void HandleTopLevelExpression() {
 
       // Cast it to the right type (takes no arguments, returns a double) so we
       // can call it as a native function.
-      double (*FP)() = (double (*)())(intptr_t)FPtr;
+      double (*FP)() = (double (*)())(intptr_t) FPtr;
       fprintf(stderr, "Evaluated to %f\n", FP());
     }
   } else {

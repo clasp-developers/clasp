@@ -130,29 +130,29 @@ T_sp af_cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(_sym_size_t, make_fixnum((int)sizeof(size_t))), list);
   list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadInfo))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("LCC-ARGS-IN-REGISTERS"), make_fixnum((int)sizeof(LCC_ARGS_IN_REGISTERS))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-MASK"), make_fixnum((int)gctools::fixnum_mask)),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-MASK"), make_fixnum((int)gctools::tag_mask)),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-TAG"), make_fixnum((int)gctools::fixnum_tag)),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-TAG"), make_fixnum((int)gctools::cons_tag)),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CHARACTER-TAG"), make_fixnum((int)gctools::character_tag)),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("SINGLE-FLOAT-TAG"), make_fixnum((int)gctools::single_float_tag)),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-MASK"), make_fixnum((int)gctools::fixnum_mask)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-MASK"), make_fixnum((int)gctools::tag_mask)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-TAG"), make_fixnum((int)gctools::fixnum_tag)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-TAG"), make_fixnum((int)gctools::cons_tag)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CHARACTER-TAG"), make_fixnum((int)gctools::character_tag)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("SINGLE-FLOAT-TAG"), make_fixnum((int)gctools::single_float_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-LIMIT"), make_fixnum((int)MultipleValues::MultipleValuesLimit)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-SIZEOF"), make_fixnum((int)sizeof(MultipleValues))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CAR-OFFSET"), make_fixnum(core::Cons_O::car_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CDR-OFFSET"), make_fixnum(core::Cons_O::cdr_offset())), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"),make_fixnum(sizeof(uintptr_t))), list);
-#define ENTRY(list,name,code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(#name),code),list)
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"), make_fixnum(sizeof(uintptr_t))), list);
+#define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(#name), code), list)
   LoadTimeValues_O tempLtv;
-  ENTRY(list,LOAD-TIME-VALUES-OBJECTS-OFFSET,make_fixnum((char*)&tempLtv._Objects-(char*)&tempLtv));
-  ENTRY(list,LOAD-TIME-VALUES-SYMBOLS-OFFSET,make_fixnum((char*)&tempLtv._Symbols-(char*)&tempLtv));
+  ENTRY(list, LOAD - TIME - VALUES - OBJECTS - OFFSET, make_fixnum((char *)&tempLtv._Objects - (char *)&tempLtv));
+  ENTRY(list, LOAD - TIME - VALUES - SYMBOLS - OFFSET, make_fixnum((char *)&tempLtv._Symbols - (char *)&tempLtv));
   gc::Vec0<T_sp> tempVec0Tsp;
-  ENTRY(list,VEC0-VECTOR-OFFSET,make_fixnum((char*)&tempVec0Tsp._Vector-(char*)&tempVec0Tsp));
-  gc::GCVector_moveable<T_O*> tempGCVector(1,0);
-  ENTRY(list,GCVECTOR-CAPACITY-OFFSET,make_fixnum((char*)&tempGCVector._Capacity-(char*)&tempGCVector));
-  ENTRY(list,GCVECTOR-END-OFFSET,make_fixnum((char*)&tempGCVector._End-(char*)&tempGCVector));
-  ENTRY(list,GCVECTOR-DATA0-OFFSET,make_fixnum((char*)&tempGCVector._Data[0]-(char*)&tempGCVector));
+  ENTRY(list, VEC0 - VECTOR - OFFSET, make_fixnum((char *)&tempVec0Tsp._Vector - (char *)&tempVec0Tsp));
+  gc::GCVector_moveable<T_O *> tempGCVector(1, 0);
+  ENTRY(list, GCVECTOR - CAPACITY - OFFSET, make_fixnum((char *)&tempGCVector._Capacity - (char *)&tempGCVector));
+  ENTRY(list, GCVECTOR - END - OFFSET, make_fixnum((char *)&tempGCVector._End - (char *)&tempGCVector));
+  ENTRY(list, GCVECTOR - DATA0 - OFFSET, make_fixnum((char *)&tempGCVector._Data[0] - (char *)&tempGCVector));
   return list;
 }
 

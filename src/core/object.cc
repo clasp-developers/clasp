@@ -88,15 +88,14 @@ namespace core {
 
 T_sp core_initialize(T_sp obj, core::List_sp arg);
 
-
 T_sp alist_from_plist(List_sp plist) {
   T_sp alist(_Nil<T_O>());
-  while (plist.notnilp() ) {
+  while (plist.notnilp()) {
     T_sp key = oCar(plist);
     plist = oCdr(plist);
     T_sp val = oCar(plist);
     plist = oCdr(plist);
-    alist = Cons_O::create(Cons_O::create(key,val),alist);
+    alist = Cons_O::create(Cons_O::create(key, val), alist);
   }
   return alist; // should I reverse this?
 }
@@ -104,73 +103,70 @@ T_sp alist_from_plist(List_sp plist) {
 #define ARGS_core_makeCxxObject "(class-name &rest args)"
 #define DECL_core_makeCxxObject ""
 #define DOCS_core_makeCxxObject "makeCxxObject"
-T_sp core_makeCxxObject(T_sp class_or_name, T_sp args)
-{
-  Class_sp theClass;;
-  if ( Class_sp argClass = class_or_name.asOrNull<Class_O>() ) {
+T_sp core_makeCxxObject(T_sp class_or_name, T_sp args) {
+  Class_sp theClass;
+  ;
+  if (Class_sp argClass = class_or_name.asOrNull<Class_O>()) {
     theClass = argClass;
-  } else if ( class_or_name.nilp() ) {
+  } else if (class_or_name.nilp()) {
     goto BAD_ARG0;
-  } else if ( Symbol_sp name = class_or_name.asOrNull<Symbol_O>() ) {
-    theClass = cl_findClass(name,true,_Nil<T_O>());
+  } else if (Symbol_sp name = class_or_name.asOrNull<Symbol_O>()) {
+    theClass = cl_findClass(name, true, _Nil<T_O>());
   } else {
     goto BAD_ARG0;
   }
   {
     T_sp instance = theClass->make_instance();
-    if ( args.notnilp() ) {
+    if (args.notnilp()) {
       args = alist_from_plist(args);
-//      printf("%s:%d initializer alist = %s\n", __FILE__, __LINE__, _rep_(args).c_str());
+      //      printf("%s:%d initializer alist = %s\n", __FILE__, __LINE__, _rep_(args).c_str());
       instance->initialize(args);
     }
     return instance;
   }
- BAD_ARG0:
-  TYPE_ERROR(class_or_name,Cons_O::createList(cl::_sym_Class_O,cl::_sym_Symbol_O));
+BAD_ARG0:
+  TYPE_ERROR(class_or_name, Cons_O::createList(cl::_sym_Class_O, cl::_sym_Symbol_O));
   UNREACHABLE();
 }
 
 #define ARGS_core_fieldsp "(obj)"
 #define DECL_core_fieldsp ""
 #define DOCS_core_fieldsp "fieldsp returns true if obj has a fields function"
-bool core_fieldsp(T_sp obj)
-{
+bool core_fieldsp(T_sp obj) {
   return obj->fieldsp();
 }
 
 #define ARGS_core_printCxxObject "(obj stream)"
 #define DECL_core_printCxxObject ""
 #define DOCS_core_printCxxObject "printCxxObject"
-T_sp core_printCxxObject(T_sp obj, T_sp stream)
-{
-  if ( core_fieldsp(obj) ) {
-    clasp_write_char('#',stream);
-    clasp_write_char('I',stream);
-    clasp_write_char('(',stream);
+T_sp core_printCxxObject(T_sp obj, T_sp stream) {
+  if (core_fieldsp(obj)) {
+    clasp_write_char('#', stream);
+    clasp_write_char('I', stream);
+    clasp_write_char('(', stream);
     Class_sp myclass = lisp_instance_class(obj);
     ASSERT(myclass);
     Symbol_sp className = myclass->name();
-    cl_prin1(className,stream);
+    cl_prin1(className, stream);
     core::List_sp alist = obj->encode();
-    for ( auto cur : alist ) {
+    for (auto cur : alist) {
       Cons_sp entry = gc::As<Cons_sp>(oCar(cur));
       Symbol_sp key = gc::As<Symbol_sp>(oCar(entry));
       T_sp val = oCdr(entry);
-      clasp_write_char(' ',stream);
-      cl_prin1(key,stream);
+      clasp_write_char(' ', stream);
+      cl_prin1(key, stream);
       clasp_finish_output(stream);
-      clasp_write_char(' ',stream);
-      cl_prin1(val,stream);
+      clasp_write_char(' ', stream);
+      cl_prin1(val, stream);
     }
-    clasp_write_char(' ',stream);
-    clasp_write_char(')',stream);
+    clasp_write_char(' ', stream);
+    clasp_write_char(')', stream);
     clasp_finish_output(stream);
   } else {
     SIMPLE_ERROR(BF("Object does not provide fields"));
   }
   return obj;
 }
-
 
 #define ARGS_af_lowLevelDescribe "(arg)"
 #define DECL_af_lowLevelDescribe ""
@@ -285,7 +281,6 @@ T_sp core_decode(T_sp obj, core::List_sp arg) {
   return obj;
 };
 
-
 void T_O::initialize() {
   // do nothing
 }
@@ -295,9 +290,6 @@ void T_O::initialize(core::List_sp alist) {
   this->fields(record);
   record->errorIfInvalidArguments();
 }
-
-
-
 
 List_sp T_O::encode() {
   Record_sp record = Record_O::create_encoder();
@@ -309,7 +301,6 @@ void T_O::decode(core::List_sp alist) {
   Record_sp record = Record_O::create_decoder(alist);
   this->fields(record);
 }
-
 
 string T_O::className() const {
   // TODO: refactor this as ->__class()->classNameAsString
@@ -327,7 +318,6 @@ T_sp T_O::shallowCopy() const {
   _G();
   SUBCLASS_MUST_IMPLEMENT();
 }
-
 
 T_sp T_O::deepCopy() const {
   _G();
@@ -367,9 +357,9 @@ bool HashGenerator::addPart(const mpz_class &bignum) {
   unsigned int *buffer = static_HashGenerator_addPart_buffer.getOrAllocate(bignum, 0);
   size_t count(0);
 #ifdef DEBUG_HASH_GENERATOR
-    if (this->_debug) {
-      printf("%s:%d Adding hash bignum\n", __FILE__, __LINE__ );
-    }
+  if (this->_debug) {
+    printf("%s:%d Adding hash bignum\n", __FILE__, __LINE__);
+  }
 #endif
   buffer = (unsigned int *)::mpz_export(buffer, &count,
                                         _lisp->integer_ordering()._mpz_import_word_order,
@@ -429,12 +419,12 @@ bool af_slBoundp(T_sp obj) {
 };
 
 void T_O::describe(T_sp stream) {
-  clasp_write_string(this->__str__(),stream);
+  clasp_write_string(this->__str__(), stream);
 }
 
 void T_O::__write__(T_sp strm) const {
-  if ( clasp_print_readably() && this->fieldsp() ) {
-    core_printCxxObject(this->asSmartPtr(),strm);
+  if (clasp_print_readably() && this->fieldsp()) {
+    core_printCxxObject(this->asSmartPtr(), strm);
   } else {
     clasp_write_string(this->__repr__(), strm);
   }
@@ -545,12 +535,9 @@ T_sp T_O::instanceSigSet() {
 #define ARGS_core_deepCopy "(obj)"
 #define DECL_core_deepCopy ""
 #define DOCS_core_deepCopy "deepCopy"
-T_sp core_deepCopy(T_sp obj)
-{
+T_sp core_deepCopy(T_sp obj) {
   return obj->deepCopy();
 }
-
-
 
 void T_O::exposeCando(core::Lisp_sp lisp) {
   class_<T_O> ot;
@@ -670,8 +657,6 @@ namespace core {
 EXPOSE_CLASS(core, T_O);
 
 #include <clasp/core/multipleValues.h>
-
-
 
 void initialize_object() {
   SYMBOL_EXPORT_SC_(ClPkg, eq);

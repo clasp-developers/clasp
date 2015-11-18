@@ -242,7 +242,7 @@ T_sp cl_princ(T_sp obj, T_sp output_stream_desig) {
 T_sp cl_prin1(T_sp obj, T_sp output_stream_desig) {
   _G();
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
-//  T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
+  //  T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
   eval::funcall(cl::_sym_write, obj, kw::_sym_stream, output_stream_desig);
   return obj;
 }

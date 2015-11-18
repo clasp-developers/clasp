@@ -1535,7 +1535,7 @@ const FileOps clos_stream_ops = {
 
 static claspCharacter
 str_out_write_char(T_sp strm, claspCharacter c) {
-//  StringOutputStream_sp sout = gc::As<StringOutputStream_sp>(strm);
+  //  StringOutputStream_sp sout = gc::As<StringOutputStream_sp>(strm);
   int column = StreamOutputColumn(strm);
   if (c == '\n')
     StreamOutputColumn(strm) = 0;
@@ -4688,7 +4688,7 @@ void writestr_stream(const char *s, T_sp strm) {
 
 void clasp_write_addr(T_sp x, T_sp strm) {
   stringstream ss;
-  ss << (void*)x.raw_();
+  ss << (void *)x.raw_();
   writestr_stream(ss.str().c_str(), strm);
 }
 
@@ -4770,10 +4770,11 @@ T_sp core_do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
   }
   if (e.nilp()) {
     end = limit;
-  } else if (!e.fixnump()) {//!af_fixnumP(e)) {
+  } else if (!e.fixnump()) { //!af_fixnumP(e)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_end, e,
                              Integer_O::makeIntegerType(0, limit));
-  } else end = clasp_fixnum(e);
+  } else
+    end = clasp_fixnum(e);
   if ((end < 0) || (end > limit)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_end, e,
                              Integer_O::makeIntegerType(0, limit));
@@ -5509,7 +5510,7 @@ file_libc_error(T_sp error_type, T_sp stream,
                 error_type, _Nil<T_O>(),
                 Str_O::create("~?~%C library explanation: ~A."),
                 Cons_O::createList(Str_O::create(msg), rest,
-                                   error) );
+                                   error));
 }
 
 static void

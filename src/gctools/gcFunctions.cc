@@ -11,8 +11,6 @@ extern "C" {
 
 #include <stdint.h>
 
-
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -30,7 +28,6 @@ extern "C" {
 namespace gctools {
 
 using namespace core;
-
 
 /*! Hardcode a few kinds of objects for bootstrapping
  */
@@ -100,14 +97,10 @@ core::T_sp af_bootstrapKindP(const string &name) {
   return _Nil<core::T_O>();
 }
 
-
-
-
 #define ARGS_gc_bytes_allocated "()"
 #define DECL_gc_bytes_allocated ""
 #define DOCS_gc_bytes_allocated "Return the number of bytes allocated since Clasp started. Two values are returned the number reported by the GC and the number calculated by Clasp"
-core::T_mv gc_bytes_allocated()
-{
+core::T_mv gc_bytes_allocated() {
   size_t gc_bytes = 0;
 #ifdef USE_BOEHM
   gc_bytes = GC_get_total_bytes();
@@ -117,35 +110,35 @@ core::T_mv gc_bytes_allocated()
 #endif
   size_t my_bytes = globalBytesAllocated;
   ASSERT(gc_bytes < gc::most_positive_fixnum && my_bytes < gc::most_positive_fixnum);
-  return Values(core::clasp_make_fixnum(gc_bytes),core::clasp_make_fixnum(my_bytes));
+  return Values(core::clasp_make_fixnum(gc_bytes), core::clasp_make_fixnum(my_bytes));
 }
 
 #define ARGS_core_header_kind "()"
 #define DECL_core_header_kind ""
 #define DOCS_core_header_kind "Return the header kind for the object"
 Fixnum core_header_kind(T_sp obj) {
-  if ( obj.consp() ) {
+  if (obj.consp()) {
 #if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
     return reinterpret_cast<Fixnum>(&typeid(*obj));
 #else
     return gctools::GCKind<core::Cons_O>::Kind;
 #endif
-  } else if ( obj.generalp() ) {
+  } else if (obj.generalp()) {
 #if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
     return reinterpret_cast<Fixnum>(&typeid(*obj));
 #else
-    void* mostDerived = gctools::untag_general<void*>(obj.raw_());
-    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(mostDerived));
+    void *mostDerived = gctools::untag_general<void *>(obj.raw_());
+    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(mostDerived));
 #ifdef USE_MPS
     ASSERT(header->kindP());
 #endif
     return header->kind();
 #endif
-  } else if ( obj.fixnump() ) {
+  } else if (obj.fixnump()) {
     return kind_fixnum;
-  } else if ( obj.single_floatp() ) {
+  } else if (obj.single_floatp()) {
     return kind_single_float;
-  } else if ( obj.characterp() ) {
+  } else if (obj.characterp()) {
     return kind_character;
   }
   printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
@@ -156,19 +149,12 @@ Fixnum core_header_kind(T_sp obj) {
 #define DECL_core_hardwired_kinds ""
 #define DOCS_core_hardwired_kinds "Return the header kind for the object"
 core::T_mv core_hardwired_kinds() {
-  List_sp result = Cons_O::createList(Cons_O::create(core::Str_O::create("FIXNUM"),clasp_make_fixnum(kind_fixnum)),
-                                      Cons_O::create(core::Str_O::create("SINGLE_FLOAT"),clasp_make_fixnum(kind_single_float)),
-                                      Cons_O::create(core::Str_O::create("CHARACTER"),clasp_make_fixnum(kind_character)));
+  List_sp result = Cons_O::createList(Cons_O::create(core::Str_O::create("FIXNUM"), clasp_make_fixnum(kind_fixnum)),
+                                      Cons_O::create(core::Str_O::create("SINGLE_FLOAT"), clasp_make_fixnum(kind_single_float)),
+                                      Cons_O::create(core::Str_O::create("CHARACTER"), clasp_make_fixnum(kind_character)));
   List_sp ignoreClasses = _Nil<T_O>(); // Cons_O::createList(Str_O::create("core__Cons_O") <-- future when CONS are in their own pool
-  return Values(result
-                , ignoreClasses
-                , clasp_make_fixnum(kind_first_general)
-                , clasp_make_fixnum(kind_first_alien)
-                , clasp_make_fixnum(kind_last_alien)
-                , clasp_make_fixnum(kind_first_instance));
+  return Values(result, ignoreClasses, clasp_make_fixnum(kind_first_general), clasp_make_fixnum(kind_first_alien), clasp_make_fixnum(kind_last_alien), clasp_make_fixnum(kind_first_instance));
 }
-
-
 
 #if 0
 #define ARGS_af_testVec0 "()"
@@ -262,7 +248,7 @@ struct ReachableClass {
   size_t print(const std::string &shortName) {
     core::Fixnum k = this->_Kind;
     stringstream className;
-    if ( k <= gctools::KIND_max ) {
+    if (k <= gctools::KIND_max) {
       className << obj_name(this->_Kind);
     } else {
       className << "Unknown";
@@ -296,13 +282,12 @@ struct ReachableContainer {
 };
 #endif
 
-
 typedef map<gctools::GCKindEnum, ReachableClass> ReachableClassMap;
 static ReachableClassMap *static_ReachableClassKinds;
 static size_t invalidHeaderTotalSize = 0;
 int globalSearchMarker = 0;
 extern "C" {
-void boehm_callback_reachable_object(void *ptr, size_t sz,void* client_data) {
+void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
   if (h->isValid()) {
     if (h->markerMatches(globalSearchMarker)) {
@@ -402,24 +387,22 @@ T_mv af_gcInfo(T_sp x, Fixnum_sp marker) {
 #endif
 };
 
-
 #define ARGS_af_monitorAllocations "(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6))"
 #define DECL_af_monitorAllocations ""
 #define DOCS_af_monitorAllocations "gcMonitorAllocations"
-void af_monitorAllocations(bool on, Fixnum_sp backtraceStart, Fixnum_sp backtraceCount, Fixnum_sp backtraceDepth  ) {
+void af_monitorAllocations(bool on, Fixnum_sp backtraceStart, Fixnum_sp backtraceCount, Fixnum_sp backtraceDepth) {
   global_monitorAllocations.on = on;
   global_monitorAllocations.counter = 0;
-  if ( backtraceStart.unsafe_fixnum() < 0 ||
-       backtraceCount.unsafe_fixnum() < 0 ||
-       backtraceDepth.unsafe_fixnum() < 0 ) {
+  if (backtraceStart.unsafe_fixnum() < 0 ||
+      backtraceCount.unsafe_fixnum() < 0 ||
+      backtraceDepth.unsafe_fixnum() < 0) {
     SIMPLE_ERROR(BF("Keyword arguments must all be >= 0"));
   }
   global_monitorAllocations.start = backtraceStart.unsafe_fixnum();
-  global_monitorAllocations.end = backtraceStart.unsafe_fixnum()+backtraceCount.unsafe_fixnum();
+  global_monitorAllocations.end = backtraceStart.unsafe_fixnum() + backtraceCount.unsafe_fixnum();
   global_monitorAllocations.backtraceDepth = backtraceDepth.unsafe_fixnum();
-  printf("%s:%d  monitorAllocations set to %d\n", __FILE__, __LINE__, on );
+  printf("%s:%d  monitorAllocations set to %d\n", __FILE__, __LINE__, on);
 };
-
 
 #define ARGS_af_gcMarker "(&optional marker)"
 #define DECL_af_gcMarker ""
@@ -438,7 +421,7 @@ Fixnum af_gcMarker(Fixnum_sp marker) {
   return oldm;
 #endif
 #else
-  printf("%s:%d Only boehm supports memory markers\n", __FILE__, __LINE__ );
+  printf("%s:%d Only boehm supports memory markers\n", __FILE__, __LINE__);
 #endif
   return 0;
 }
@@ -521,11 +504,11 @@ T_mv af_room(T_sp x, Fixnum_sp marker, T_sp tmsg) {
   globalSearchMarker = core::unbox_fixnum(marker);
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
-  GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object,NULL);
+  GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, NULL);
   printf("Walked LispKinds\n");
   size_t totalSize(0);
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
-  printf("Done walk of memory  %lu ClassKinds\n", static_ReachableClassKinds->size() );
+  printf("Done walk of memory  %lu ClassKinds\n", static_ReachableClassKinds->size());
   printf("%s invalidHeaderTotalSize = %12lu\n", smsg.c_str(), invalidHeaderTotalSize);
   printf("%s memory usage (bytes):    %12lu\n", smsg.c_str(), totalSize);
   printf("%s GC_get_heap_size()       %12lu\n", smsg.c_str(), GC_get_heap_size());
@@ -535,10 +518,10 @@ T_mv af_room(T_sp x, Fixnum_sp marker, T_sp tmsg) {
 
   delete static_ReachableClassKinds;
 #endif
-  gc::GCStack* stack = threadLocalStack();
+  gc::GCStack *stack = threadLocalStack();
   size_t totalMaxSize = stack->maxSize();
 #if defined(USE_BOEHM) && defined(BOEHM_ONE_BIG_STACK)
-  printf("Lisp-stack bottom %p cur %p limit %p\n", stack->_StackBottom, stack->_StackCur, stack->_StackLimit );
+  printf("Lisp-stack bottom %p cur %p limit %p\n", stack->_StackBottom, stack->_StackCur, stack->_StackLimit);
 #endif
   printf("High water mark (max used) side-stack size: %u\n", totalMaxSize);
   return Values(_Nil<core::T_O>());
@@ -670,41 +653,35 @@ void af_testReferenceCounting() {
 };
 #endif
 
-
-
-
 void initialize_gc_functions() {
 
-    //            core::af_def(GcToolsPkg,"testVec0",&af_testVec0);
-    //            core::af_def(GcToolsPkg,"testArray0",&af_testArray0);
-    core::af_def(GcToolsPkg, "gcInfo", &af_gcInfo);
-    core::af_def(GcToolsPkg, "gcMarker", &af_gcMarker, ARGS_af_gcMarker, DECL_af_gcMarker, DOCS_af_gcMarker);
-    core::af_def(GcToolsPkg, "monitorAllocations", &af_monitorAllocations, ARGS_af_monitorAllocations, DECL_af_monitorAllocations, DOCS_af_monitorAllocations);
-     core::af_def(ClPkg, "room", &af_room, ARGS_af_room, DECL_af_room, DOCS_af_room);
-    core::af_def(GcToolsPkg, "garbageCollect", &af_garbageCollect);
-    core::af_def(GcToolsPkg, "stackDepth", &af_stackDepth);
-    core::af_def(GcToolsPkg, "cleanup", &af_cleanup);
-    core::af_def(GcToolsPkg, "maxBootstrapKinds", &af_maxBootstrapKinds);
-    core::af_def(GcToolsPkg, "bootstrapKindP", &af_bootstrapKindP);
-    core::af_def(GcToolsPkg, "bootstrapKindSymbols", &af_bootstrapKindSymbols);
-    core::af_def(GcToolsPkg, "allocPatternBegin", &af_allocPatternBegin);
-    core::af_def(GcToolsPkg, "allocPatternEnd", &af_allocPatternEnd);
-    core::af_def(GcToolsPkg, "bytes_allocated", &gc_bytes_allocated);
+  //            core::af_def(GcToolsPkg,"testVec0",&af_testVec0);
+  //            core::af_def(GcToolsPkg,"testArray0",&af_testArray0);
+  core::af_def(GcToolsPkg, "gcInfo", &af_gcInfo);
+  core::af_def(GcToolsPkg, "gcMarker", &af_gcMarker, ARGS_af_gcMarker, DECL_af_gcMarker, DOCS_af_gcMarker);
+  core::af_def(GcToolsPkg, "monitorAllocations", &af_monitorAllocations, ARGS_af_monitorAllocations, DECL_af_monitorAllocations, DOCS_af_monitorAllocations);
+  core::af_def(ClPkg, "room", &af_room, ARGS_af_room, DECL_af_room, DOCS_af_room);
+  core::af_def(GcToolsPkg, "garbageCollect", &af_garbageCollect);
+  core::af_def(GcToolsPkg, "stackDepth", &af_stackDepth);
+  core::af_def(GcToolsPkg, "cleanup", &af_cleanup);
+  core::af_def(GcToolsPkg, "maxBootstrapKinds", &af_maxBootstrapKinds);
+  core::af_def(GcToolsPkg, "bootstrapKindP", &af_bootstrapKindP);
+  core::af_def(GcToolsPkg, "bootstrapKindSymbols", &af_bootstrapKindSymbols);
+  core::af_def(GcToolsPkg, "allocPatternBegin", &af_allocPatternBegin);
+  core::af_def(GcToolsPkg, "allocPatternEnd", &af_allocPatternEnd);
+  core::af_def(GcToolsPkg, "bytes_allocated", &gc_bytes_allocated);
 
-    _sym_STARallocPatternStackSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARallocPatternStackSTAR->defparameter(_Nil<core::T_O>());
 #ifdef USE_MPS
-    core::af_def(GcToolsPkg, "mpsTelemetrySet", &af_mpsTelemetrySet);
-    core::af_def(GcToolsPkg, "mpsTelemetryReset", &af_mpsTelemetryReset);
-    core::af_def(GcToolsPkg, "mpsTelemetryFlush", &af_mpsTelemetryFlush);
+  core::af_def(GcToolsPkg, "mpsTelemetrySet", &af_mpsTelemetrySet);
+  core::af_def(GcToolsPkg, "mpsTelemetryReset", &af_mpsTelemetryReset);
+  core::af_def(GcToolsPkg, "mpsTelemetryFlush", &af_mpsTelemetryFlush);
 #endif
 
-    //	    SYMBOL_EXPORT_SC_(GcTools,linkExternalGlobalsInModule);
-    //	    Defun(linkExternalGlobalsInModule);
-    Defun(debugAllocations);
-    CoreDefun(header_kind);
-    CoreDefun(hardwired_kinds);
+  //	    SYMBOL_EXPORT_SC_(GcTools,linkExternalGlobalsInModule);
+  //	    Defun(linkExternalGlobalsInModule);
+  Defun(debugAllocations);
+  CoreDefun(header_kind);
+  CoreDefun(hardwired_kinds);
 };
-
-
-
 };

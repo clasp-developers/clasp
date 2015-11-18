@@ -101,14 +101,14 @@ public:
 
   ClassRep_O() : m_derivable(false){};
 
-  ClassRep_O(type_id const &type, const std::string& name, bool derivable);
+  ClassRep_O(type_id const &type, const std::string &name, bool derivable);
 
-  ClassRep_O(const std::string& name, bool derivable);
+  ClassRep_O(const std::string &name, bool derivable);
 
   virtual ~ClassRep_O();
 
 public:
-  static ClassRep_sp create(type_id const &mtype, const std::string& name, bool derivable) {
+  static ClassRep_sp create(type_id const &mtype, const std::string &name, bool derivable) {
     GC_ALLOCATE_VARIADIC(ClassRep_O, val, mtype, name, derivable);
     return val;
   }

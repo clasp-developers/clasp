@@ -36,7 +36,7 @@ extern "C" void add_history(char *line);
 
 namespace core {
 
-string myReadLine(const string &prompt, bool& end_of_transmission) {
+string myReadLine(const string &prompt, bool &end_of_transmission) {
   end_of_transmission = false;
   string res;
 #ifdef READLINE
@@ -47,7 +47,7 @@ string myReadLine(const string &prompt, bool& end_of_transmission) {
   ss << std::endl
      << prompt;
   line_read = ::readline(ss.str().c_str()); // prompt.c_str());
-   if (line_read != NULL) {
+  if (line_read != NULL) {
     if (*line_read)
       ::add_history(line_read);
     res = line_read;

@@ -45,16 +45,15 @@ class BitVector_O : public Vector_O {
   LISP_BASE1(Vector_O);
   LISP_CLASS(core, ClPkg, BitVector_O, "bit-vector");
 
- protected:
+protected:
   vector<unsigned char> bits;
 
- public:
-  virtual gc::Fixnum dimension() const { return this->bits.size()*CHAR_BIT; };
+public:
+  virtual gc::Fixnum dimension() const { return this->bits.size() * CHAR_BIT; };
   unsigned char *bytes() const { return const_cast<unsigned char *>(this->bits.data()); };
 
   void getOnIndices(vector<uint> &vals);
   void setOnIndices(const vector<uint> &indices);
-
 
   bool equal(T_sp bv) const;
 
@@ -62,8 +61,11 @@ class BitVector_O : public Vector_O {
   uint testBit(uint i) const;
   void erase();
 
-  virtual T_sp svref(int index) const { return clasp_make_fixnum(this->testBit(index));};
-  virtual T_sp setf_svref(int index, T_sp value) { this->setBit(index,clasp_to_fixnum(value)); return value; };
+  virtual T_sp svref(int index) const { return clasp_make_fixnum(this->testBit(index)); };
+  virtual T_sp setf_svref(int index, T_sp value) {
+    this->setBit(index, clasp_to_fixnum(value));
+    return value;
+  };
 
   void sxhash_(HashGenerator &hg) const;
   uint lowestIndex();
@@ -88,7 +90,7 @@ class BitVector_O : public Vector_O {
   bool isZero() { return (this->countSet() == 0); };
 
   void do_subseq(BitVector_sp result, int start, int iend) const;
-  
+
   string asString();
 
   std::ostream &dumpToStream(std::ostream &out);
@@ -105,8 +107,7 @@ class BitVector_O : public Vector_O {
   virtual void rowMajorAset(cl_index idx, T_sp value);
   virtual T_sp rowMajorAref(cl_index idx) const;
 
-  virtual T_sp elementType() const { return cl::_sym_bit;};
-
+  virtual T_sp elementType() const { return cl::_sym_bit; };
 
 public:
   bool bitVectorP() const { return true; };
@@ -119,19 +120,19 @@ public:
   virtual ~BitVector_O(){};
 };
 
-
-
- 
 SMART(SimpleBitVector);
 class SimpleBitVector_O : public BitVector_O {
   LISP_BASE1(BitVector_O);
   LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector");
+
 public:
   static SimpleBitVector_sp create(size_t size);
- private:
+
+private:
   size_t _length;
+
 public:
-  virtual gc::Fixnum dimension() const { return this->_length;};
+  virtual gc::Fixnum dimension() const { return this->_length; };
   virtual T_sp subseq(int start, T_sp end) const;
   T_sp deepCopy() const;
   explicit SimpleBitVector_O(size_t sz) : BitVector_O(sz), _length(sz){};
@@ -146,9 +147,11 @@ class BitVectorWithFillPtr_O : public BitVector_O {
 
 public:
   static BitVectorWithFillPtr_sp create(size_t size, size_t fill_ptr, bool adjustable);
- private:
+
+private:
   size_t _fill_ptr;
   bool _adjustable;
+
 public:
   virtual gc::Fixnum dimension() const { return this->_fill_ptr; };
 
@@ -160,8 +163,6 @@ public:
   explicit BitVectorWithFillPtr_O() : BitVector_O(){};
   virtual ~BitVectorWithFillPtr_O(){};
 };
-
-
 };
 TRANSLATE(core::BitVector_O);
 TRANSLATE(core::SimpleBitVector_O);

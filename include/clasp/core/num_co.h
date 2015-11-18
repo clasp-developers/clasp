@@ -34,7 +34,7 @@ namespace core {
 
 Real_mv cl_integer_decode_float(Float_sp x);
 
- int clasp_signbit(Number_sp x);
+int clasp_signbit(Number_sp x);
 
 void initialize_num_co();
 };

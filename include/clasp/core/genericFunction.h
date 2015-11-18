@@ -34,15 +34,15 @@ namespace core {
 
 // Arguments are passed in the multiple_values structure
 
-  LCC_RETURN notFuncallableDispatch(Instance_sp gf, VaList_sp vargs);
+LCC_RETURN notFuncallableDispatch(Instance_sp gf, VaList_sp vargs);
 
-  LCC_RETURN generic_function_dispatch(Instance_sp gf, VaList_sp vargs);
+LCC_RETURN generic_function_dispatch(Instance_sp gf, VaList_sp vargs);
 
-  LCC_RETURN slotReaderDispatch(Instance_sp gf, VaList_sp vargs);
+LCC_RETURN slotReaderDispatch(Instance_sp gf, VaList_sp vargs);
 
-  LCC_RETURN slotWriterDispatch(Instance_sp gf, VaList_sp vargs);
+LCC_RETURN slotWriterDispatch(Instance_sp gf, VaList_sp vargs);
 
-  LCC_RETURN userFunctionDispatch(Instance_sp gf, VaList_sp vargs);
+LCC_RETURN userFunctionDispatch(Instance_sp gf, VaList_sp vargs);
 
 void initialize_genericFunction();
 };

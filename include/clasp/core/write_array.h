@@ -39,6 +39,5 @@ void _clasp_write_array(T_sp x, T_sp stream);
 void _clasp_write_vector(T_sp x, T_sp stream);
 void _clasp_write_base_string(T_sp x, T_sp stream);
 void _clasp_write_bitvector(T_sp x, T_sp stream);
-
 };
 #endif

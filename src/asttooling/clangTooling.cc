@@ -575,8 +575,7 @@ void initialize_clangTooling() {
         .def("matchAST", &clang::ast_matchers::MatchFinder::matchAST),
     def("match", &af_match, policies<>(), ARGS_af_match, DECL_af_match, DOCS_af_match),
     def("runToolOnCode", &clang::tooling::runToolOnCode),
-    class_<clang::ast_matchers::MatchFinder::MatchCallback>("MatchCallback-abstract", no_default_constructor)
-    ,
+    class_<clang::ast_matchers::MatchFinder::MatchCallback>("MatchCallback-abstract", no_default_constructor),
     derivable_class_<DerivableMatchCallback, clang::ast_matchers::MatchFinder::MatchCallback>("MatchCallback")
         .def("run", &DerivableMatchCallback::default_run)
         .def("onStartOfTranslationUnit", &DerivableMatchCallback::default_onStartOfTranslationUnit)

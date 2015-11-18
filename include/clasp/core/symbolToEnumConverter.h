@@ -45,7 +45,7 @@ class SymbolToEnumConverter_O : public T_O {
 
 public:
   static SymbolToEnumConverter_sp create(const string &whatDoesEnumRepresent);
-  static SymbolToEnumConverter_sp create(const string &whatDoesEnumRepresent, string const &packageName, NullTerminatedEnumAssociation assoc[],bool expose=false);
+  static SymbolToEnumConverter_sp create(const string &whatDoesEnumRepresent, string const &packageName, NullTerminatedEnumAssociation assoc[], bool expose = false);
 
 public: // virtual functions inherited from Object
   void initialize();

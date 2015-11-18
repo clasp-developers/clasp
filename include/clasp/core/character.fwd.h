@@ -39,6 +39,5 @@ struct CharacterInfo {
 };
 
 Character_sp clasp_make_character(claspCharacter c);
-
 }
 #endif

@@ -44,7 +44,7 @@ namespace clos {
 #pragma GCC visibility pop
 
 SYMBOL_SC_(ClosPkg, aSingleClosSymbol);
-SYMBOL_EXPORT_SC_(ClosPkg,class_precedence_list);
+SYMBOL_EXPORT_SC_(ClosPkg, class_precedence_list);
 
 void initialize_closPackage() {
   list<string> lnicknames;

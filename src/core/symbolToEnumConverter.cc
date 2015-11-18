@@ -62,7 +62,8 @@ SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string &whatDoesE
   SymbolToEnumConverter_sp c = SymbolToEnumConverter_O::create(whatDoesEnumRepresent);
   for (int i = 0; assoc[i]._Key != ""; ++i) {
     Symbol_sp sym = _lisp->internWithPackageName(packageName, assoc[i]._Key);
-    if (exportSymbols) sym->exportYourself();
+    if (exportSymbols)
+      sym->exportYourself();
     c->addSymbolEnumPair(sym, sym, assoc[i]._Enum);
   }
   return c;

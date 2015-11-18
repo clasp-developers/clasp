@@ -43,7 +43,7 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.fwd.h>
 
 namespace core {
-  using namespace core;
+using namespace core;
 SMART(SmallMap);
 class SmallMap_O : public T_O {
   LISP_BASE1(T_O);
@@ -61,7 +61,6 @@ public:
   DEFAULT_CTOR_DTOR(SmallMap_O);
 };
 };
-
 
 TRANSLATE(core::SmallMap_O);
 #endif

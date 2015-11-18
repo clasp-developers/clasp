@@ -127,7 +127,7 @@ private:
 public:
   ListOfSequenceSteppers(){};
   ListOfSequenceSteppers(List_sp sequences);
-  virtual ~ListOfSequenceSteppers() {};
+  virtual ~ListOfSequenceSteppers(){};
   bool atEnd() const { return this->_AtEnd; };
   //	List_sp makeListFromCurrentSteppers() const;
   void fillValueFrameUsingCurrentSteppers(ActivationFrame_sp frame) const;
@@ -153,47 +153,48 @@ void initialize_primitives();
 void initializePythonPrimitives(Lisp_sp lisp);
 };
 
-
 namespace core {
-  FORWARD(InvocationHistoryFrameIterator);
-  class InvocationHistoryFrameIterator_O : public T_O {
-    LISP_BASE1(T_O);
-    LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator");
-  private: // instance variables here
-    InvocationHistoryFrame*  _Frame;
-  public:
-  InvocationHistoryFrameIterator_O() : _Frame(NULL) {};
-    virtual ~InvocationHistoryFrameIterator_O() {};
-    
-  public:  // Functions here
-    static InvocationHistoryFrameIterator_sp make(Fixnum first, T_sp test = _Nil<T_O>());
-  public:
-    InvocationHistoryFrameIterator_sp prev(T_sp test);
-    void setFrame(InvocationHistoryFrame* cur) { this->_Frame = cur;};
-    InvocationHistoryFrame* frame() { return this->_Frame;};
-    int index();
-    T_sp functionName();
-    Function_sp function();
-    Vector_sp arguments();
-    T_sp environment();
-    InvocationHistoryFrameIterator_sp copy() {
-      InvocationHistoryFrameIterator_sp cp = InvocationHistoryFrameIterator_O::create();
-      cp->_Frame = this->_Frame;
-      return cp;
-    };
-    /*! Return true if this points to a real InvocationHistoryFrame */
-    bool isValid() { return this->_Frame!=NULL;};
-  }; /* core */
+FORWARD(InvocationHistoryFrameIterator);
+class InvocationHistoryFrameIterator_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator");
+
+private: // instance variables here
+  InvocationHistoryFrame *_Frame;
+
+public:
+  InvocationHistoryFrameIterator_O() : _Frame(NULL){};
+  virtual ~InvocationHistoryFrameIterator_O(){};
+
+public: // Functions here
+  static InvocationHistoryFrameIterator_sp make(Fixnum first, T_sp test = _Nil<T_O>());
+
+public:
+  InvocationHistoryFrameIterator_sp prev(T_sp test);
+  void setFrame(InvocationHistoryFrame *cur) { this->_Frame = cur; };
+  InvocationHistoryFrame *frame() { return this->_Frame; };
+  int index();
+  T_sp functionName();
+  Function_sp function();
+  Vector_sp arguments();
+  T_sp environment();
+  InvocationHistoryFrameIterator_sp copy() {
+    InvocationHistoryFrameIterator_sp cp = InvocationHistoryFrameIterator_O::create();
+    cp->_Frame = this->_Frame;
+    return cp;
+  };
+  /*! Return true if this points to a real InvocationHistoryFrame */
+  bool isValid() { return this->_Frame != NULL; };
+}; /* core */
 };
 TRANSLATE(core::InvocationHistoryFrameIterator_O);
 
 namespace core {
-  InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameTop();
-  InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrame(int idx);
-  InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameNext(int idx);
-  InvocationHistoryFrameIterator_sp core_getInvocationHistoryFramePrev(int idx);
+InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameTop();
+InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrame(int idx);
+InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameNext(int idx);
+InvocationHistoryFrameIterator_sp core_getInvocationHistoryFramePrev(int idx);
 };
-
 
 extern "C" {
 core::T_sp af_ihsBacktrace(core::T_sp outDesignator, core::T_sp msg);
@@ -212,8 +213,6 @@ int af_ihsCurrentFrame();
 int af_setIhsCurrentFrame(int idx);
 void core_exceptionStackDump();
 void core_dynamicBindingStackDump(std::ostream &out);
-
-
 };
 
 #endif /* _core_primitives_H */

@@ -55,8 +55,6 @@ List_sp coerce_to_list(T_sp o) {
   TYPE_ERROR(o, cl::_sym_list);
 }
 
-
-
 #define ARGS_core_put_f "(plist value indicator)"
 #define DECL_core_put_f ""
 #define DOCS_core_put_f "putF"
@@ -92,7 +90,6 @@ T_sp cl_getf(List_sp plist, T_sp indicator, T_sp default_value) {
     return (default_value);
   return plist.asCons()->getf(indicator, default_value);
 };
-
 
 #define ARGS_core_rem_f "(plist indicator)"
 #define DECL_core_rem_f ""
@@ -140,14 +137,6 @@ Cons_sp cl_rplaca(Cons_sp c, T_sp o) {
 Cons_sp cl_rplacd(Cons_sp c, T_sp o) {
   return c->rplacd(o);
 };
-
-
-
-
-
-
-
-
 
 #define DOCS_af_make_list "make_list"
 #define LOCK_af_make_list 1
@@ -784,10 +773,11 @@ List_sp Cons_O::onthcdr(int idx) const {
 and then stepping to the end with (l) and (r).  Once (r) hits the end
 (l) will point to the (n)th from the end CONS cell */
 List_sp Cons_O::last(int n) const {
-  ASSERT(n>=0);
+  ASSERT(n >= 0);
   List_sp l = this->asSmartPtr();
   T_sp r = l;
-  for (r = l; n && cl_consp(r); --n, r = oCdr(r)) ;
+  for (r = l; n && cl_consp(r); --n, r = oCdr(r))
+    ;
   if (r == l) {
     if (!cl_listp(r)) {
       SIMPLE_ERROR(BF("Type not list"));
@@ -880,7 +870,8 @@ uint Cons_O::length() const {
   int sz = 1;
 #pragma GCC diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
-  for (auto p : coerce_to_list(this->_Cdr)) ++sz;
+  for (auto p : coerce_to_list(this->_Cdr))
+    ++sz;
 #pragma GCC diagnostic pop
   return ((sz));
 };

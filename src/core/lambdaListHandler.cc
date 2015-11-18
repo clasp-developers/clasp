@@ -42,22 +42,20 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-
-
 void lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure> closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
   ++(threadLocalInfoPtr->_lambda_list_handler_create_bindings_count);
-  if ( llh->requiredLexicalArgumentsOnlyP() ) {
+  if (llh->requiredLexicalArgumentsOnlyP()) {
     size_t numReq = llh->numberOfRequiredArguments();
-    if ( numReq <= 3 && numReq == lcc_nargs ) {
+    if (numReq <= 3 && numReq == lcc_nargs) {
       switch (numReq) {
       case 3:
-          scope.new_binding(llh->_RequiredArguments[2],T_sp((gc::Tagged)lcc_fixed_arg2));
+        scope.new_binding(llh->_RequiredArguments[2], T_sp((gc::Tagged)lcc_fixed_arg2));
       case 2:
-          scope.new_binding(llh->_RequiredArguments[1],T_sp((gc::Tagged)lcc_fixed_arg1));
+        scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
       case 1:
-          scope.new_binding(llh->_RequiredArguments[0],T_sp((gc::Tagged)lcc_fixed_arg0));
+        scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
       case 0:
-          break;
+        break;
       }
       return;
     }
@@ -69,7 +67,6 @@ void lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure> clo
   }
   return;
 }
-
 
 T_sp evaluate_lambda_list_form(T_sp form, T_sp env) {
   // TODO:: The code should be compiled and not interpreted
@@ -141,7 +138,7 @@ T_sp LambdaListHandler_O::lambdaList() {
     }
   }
   if (this->_RestArgument._ArgTarget.notnilp()) {
-    if ( this->_RestArgument.VaRest ) {
+    if (this->_RestArgument.VaRest) {
       ll << core::_sym_AMPva_rest;
     } else {
       ll << cl::_sym_AMPrest;
@@ -348,7 +345,7 @@ void TargetClassifier::targetIsSubLambdaList(Argument &target, LambdaListHandler
 }
 
 void TargetClassifier::classifyTarget(Argument &target) {
-//  printf("%s:%d  TargetClassifier::classifyTarget target._ArgTarget@%p --> %p\n", __FILE__, __LINE__, &target._ArgTarget.rawRef_(), target._ArgTarget.raw_());
+  //  printf("%s:%d  TargetClassifier::classifyTarget target._ArgTarget@%p --> %p\n", __FILE__, __LINE__, &target._ArgTarget.rawRef_(), target._ArgTarget.raw_());
   Symbol_sp sym = gc::As<Symbol_sp>(target._ArgTarget);
   if (sym->specialP() || (this->_SpecialSymbols.notnilp() && gc::As<HashTable_sp>(this->_SpecialSymbols)->contains(sym))) {
     target._ArgTargetFrameIndex = SPECIAL_TARGET;
@@ -429,7 +426,7 @@ SYMBOL_SC_(CorePkg, tooFewArguments);
 #define PASS_FUNCTION_KEYWORD bind_keyword_va_list
 #define PASS_ARGS size_t n_args, VaList_sp arglist
 #define PASS_ARGS_NUM n_args
-#define PASS_NEXT_ARG(_ai) LCC_NEXT_ARG(arglist,_ai)
+#define PASS_NEXT_ARG(_ai) LCC_NEXT_ARG(arglist, _ai)
 #include "argumentBinding.cc"
 #undef PASS_FUNCTION_REQUIRED
 #undef PASS_FUNCTION_OPTIONAL
@@ -457,30 +454,29 @@ void bind_aux(gctools::Vec0<AuxArgument> const &auxs, DynamicScopeManager &scope
   }
 }
 
-
 void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va,
-                                                         DynamicScopeManager &scope) {
-  if (UNLIKELY(!this->_CreatesBindings)) return;
+                                                      DynamicScopeManager &scope) {
+  if (UNLIKELY(!this->_CreatesBindings))
+    return;
   VaList_S arglist_struct(*va);
   VaList_sp arglist(&arglist_struct);
   int arg_idx = 0;
   arg_idx = bind_required_va_list(this->_RequiredArguments, nargs, arglist, arg_idx, scope);
-  if (UNLIKELY(this->_OptionalArguments.size()!=0)) {
+  if (UNLIKELY(this->_OptionalArguments.size() != 0)) {
     arg_idx = bind_optional_va_list(this->_OptionalArguments, nargs, arglist, arg_idx, scope);
   }
-  if (UNLIKELY(arg_idx < nargs 
-               && !(this->_RestArgument.isDefined())
-               && (this->_KeywordArguments.size() == 0))) {
+  if (UNLIKELY(arg_idx < nargs && !(this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
     throwTooManyArgumentsError(nargs, this->numberOfLexicalVariables());
     //	    TOO_MANY_ARGUMENTS_ERROR();
   }
-  if ( UNLIKELY(this->_RestArgument.isDefined()) ) {
+  if (UNLIKELY(this->_RestArgument.isDefined())) {
     bind_rest_va_list(this->_RestArgument, nargs, arglist, arg_idx, scope);
   }
-  if ( UNLIKELY(this->_KeywordArguments.size()!=0) ) {
+  if (UNLIKELY(this->_KeywordArguments.size() != 0)) {
     bind_keyword_va_list(this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
   }
-  if (UNLIKELY(this->_AuxArguments.size()!=0)) bind_aux(this->_AuxArguments, scope);
+  if (UNLIKELY(this->_AuxArguments.size() != 0))
+    bind_aux(this->_AuxArguments, scope);
 }
 
 string argument_mode_as_string(ArgumentMode mode) {
@@ -521,10 +517,10 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       if (symbol == cl::_sym_AMPoptional) {
         mode = optional;
         goto NEWMODE;
-      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody ) {
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
         mode = rest;
         goto NEWMODE;
-      } else if (symbol == core::_sym_AMPva_rest ) {
+      } else if (symbol == core::_sym_AMPva_rest) {
         mode = va_rest;
         goto NEWMODE;
       } else if (symbol == cl::_sym_AMPkey) {
@@ -541,10 +537,10 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       break;
     case optional:
       LOG(BF("Was in optional mode"));
-      if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody ) {
+      if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
         mode = rest;
         goto NEWMODE;
-      } else if (symbol == core::_sym_AMPva_rest ) {
+      } else if (symbol == core::_sym_AMPva_rest) {
         mode = va_rest;
         goto NEWMODE;
       } else if (symbol == cl::_sym_AMPkey) {
@@ -745,7 +741,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     case required: {
       RequiredArgument required(oarg);
       reqs.push_back(required);
-//      printf("%s:%d   Required argument[%d] _ArgTarget@%p --> %p  array size=%d\n", __FILE__, __LINE__, reqs.size()-1, &(reqs.back()._ArgTarget.rawRef_()), reqs.back()._ArgTarget.raw_(), reqs.size());
+      //      printf("%s:%d   Required argument[%d] _ArgTarget@%p --> %p  array size=%d\n", __FILE__, __LINE__, reqs.size()-1, &(reqs.back()._ArgTarget.rawRef_()), reqs.back()._ArgTarget.raw_(), reqs.size());
       break;
     }
     case optional: {
@@ -1060,7 +1056,7 @@ string LambdaListHandler_O::partsAsString() const {
     ss << asString(this->_OptionalArguments);
   }
   if (this->_RestArgument.isDefined()) {
-    if ( this->_RestArgument.VaRest ) {
+    if (this->_RestArgument.VaRest) {
       ss << " &va-rest ";
     } else {
       ss << " &rest ";
@@ -1145,9 +1141,7 @@ T_mv LambdaListHandler_O::processLambdaListHandler() const {
 
 bool LambdaListHandler_O::requiredLexicalArgumentsOnlyP_() const {
   _G();
-  bool requiredArgumentsOnlyP = (this->_OptionalArguments.size() == 0)
-    && (!this->_RestArgument.isDefined())
-    && (this->_KeywordArguments.size() == 0) && (!this->_AllowOtherKeys.isTrue()) && (this->_AuxArguments.size() == 0);
+  bool requiredArgumentsOnlyP = (this->_OptionalArguments.size() == 0) && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0) && (!this->_AllowOtherKeys.isTrue()) && (this->_AuxArguments.size() == 0);
   if (requiredArgumentsOnlyP) {
     for (gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
          it != this->_RequiredArguments.end(); it++) {
@@ -1187,8 +1181,7 @@ VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
 //
 
 EXPOSE_CLASS(core, LambdaListHandler_O);
- LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _LexicalVariableNamesForDebugging(_Nil<VectorObjects_O>())
-   , _RequiredLexicalArgumentsOnly(false) {};
+LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _LexicalVariableNamesForDebugging(_Nil<VectorObjects_O>()), _RequiredLexicalArgumentsOnly(false){};
 
 void LambdaListHandler_O::exposeCando(Lisp_sp lisp) {
   _G();

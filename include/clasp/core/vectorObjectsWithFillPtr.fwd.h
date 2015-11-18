@@ -31,7 +31,7 @@ THE SOFTWARE.
 namespace core {
 FORWARD(VectorObjectsWithFillPtr);
 
- void lisp_vectorPushExtend(T_sp vector, T_sp obj);
+void lisp_vectorPushExtend(T_sp vector, T_sp obj);
 };
 
 #endif /* _core_vectorObjectsWithFillPtr_fwd_H_ */

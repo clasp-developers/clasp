@@ -170,7 +170,7 @@ public:
 
 #define ALIGNMENT alignof(char *)
 #define ALIGN_UP(size) \
-  (((size) + ALIGNMENT - 1) & ~(ALIGNMENT - 1))
+  (((size)+ALIGNMENT - 1) & ~(ALIGNMENT - 1))
 
 typedef const char *Header_s;
 

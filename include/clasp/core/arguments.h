@@ -98,8 +98,8 @@ class RestArgument : public Argument {
 public:
   bool VaRest;
   typedef Argument Base;
-  explicit RestArgument() : Argument(), VaRest(false) {};
-  explicit RestArgument(T_sp target) : Argument(target), VaRest(false) {};
+  explicit RestArgument() : Argument(), VaRest(false){};
+  explicit RestArgument(T_sp target) : Argument(target), VaRest(false){};
   DECLARE_onHeapScanGCRoots();
   void setTarget(T_sp target) { this->_ArgTarget = target; };
   string asString() const;
@@ -132,10 +132,11 @@ class DynamicScopeManager : gctools::StackBoundClass {
 private:
   int _beginTop;
   int _endTop;
+
 public:
   virtual void new_binding(const Argument &argument, T_sp val);
-  virtual void va_rest_binding(const Argument& argument) {N_A_();};
-  virtual VaList_S& valist() {N_A_();};
+  virtual void va_rest_binding(const Argument &argument) { N_A_(); };
+  virtual VaList_S &valist() { N_A_(); };
   virtual bool lexicalElementBoundP(const Argument &argument) { N_A_(); };
   void pushSpecialVariableAndSet(Symbol_sp sym, T_sp val);
   inline explicit DynamicScopeManager() {
@@ -143,7 +144,7 @@ public:
     this->_beginTop = top;
     this->_endTop = top;
   }
-    
+
   inline explicit DynamicScopeManager(Symbol_sp sym, T_sp newVal) {
     int top = _lisp->bindings().top();
     this->_beginTop = top;
@@ -196,19 +197,20 @@ public:
 
 class StackFrameDynamicScopeManager : public DynamicScopeManager {
 private:
-  gc::frame::Frame& frame;
- public:
+  gc::frame::Frame &frame;
+
+public:
   VaList_S VaRest;
 
 public:
- StackFrameDynamicScopeManager(gc::frame::Frame& f) : frame(f){};
+  StackFrameDynamicScopeManager(gc::frame::Frame &f) : frame(f){};
 
 public:
-  virtual VaList_S& valist() { return this->VaRest;};
-  virtual void va_rest_binding(const Argument& argument);
+  virtual VaList_S &valist() { return this->VaRest; };
+  virtual void va_rest_binding(const Argument &argument);
   virtual void new_binding(const Argument &argument, T_sp val);
   virtual bool lexicalElementBoundP(const Argument &argument);
-//  T_sp activationFrame() const;
+  //  T_sp activationFrame() const;
   virtual T_sp lexenv() const;
 };
 };

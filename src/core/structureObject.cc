@@ -239,7 +239,7 @@ T_sp StructureObject_O::structureAsList() const {
   List_sp slots = af_get_sysprop(this->_Type, _sym_structure_slot_descriptions);
   for (; slots.notnilp(); slots = oCdr(slots)) {
     List_sp slotDesc = oCar(slots);
-//    printf("%s:%d slots: %s\n", __FILE__, __LINE__, _rep_(slots).c_str());
+    //    printf("%s:%d slots: %s\n", __FILE__, __LINE__, _rep_(slots).c_str());
     Cons_sp slotNameCons = Cons_O::create(_lisp->internKeyword(gc::As<Symbol_sp>(oCar(slotDesc))->symbolName()->get()));
     *curP = slotNameCons;          // cur.setPointee(slotNameCons); // *cur = slotNameCons;
     curP = slotNameCons->cdrPtr(); // cur.setPointer(slotNameCons->cdrPtr()); // cur = slotNameCons->cdrPtr();

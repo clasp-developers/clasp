@@ -198,30 +198,50 @@ typedef enum {
   tfloatp
 } TokenState;
 
-
 string stateString(TokenState state) {
   switch (state) {
-  case tstart: return "tstart";
-  case tsyms: return "tsyms";
-  case tsymf: return "tsymf";
-  case tsymr: return "tsymr";
-  case tsymx: return "tsymx";
-  case tsymy: return "tsymy";
-  case tsymdot: return "tsymdot";
-  case tsymz: return "tsymz";
-  case tsymk: return "tsymk";
-  case tsymkw: return "tsymkw";
-  case tsymbad: return "tsymbad";
-  case tsyme: return "tsyme";
-  case tsymex: return "tsymex";
-  case tsymp: return "tsymp";
-  case tsympv: return "tsympv";
-  case tintt: return "tintt";
-  case tintp: return "tintp";
-  case tratio: return "tratio";
-  case tfloat0: return "tfloat0";
-  case tfloate: return "tfloate";
-  case tfloatp: return "tfloatp";
+  case tstart:
+    return "tstart";
+  case tsyms:
+    return "tsyms";
+  case tsymf:
+    return "tsymf";
+  case tsymr:
+    return "tsymr";
+  case tsymx:
+    return "tsymx";
+  case tsymy:
+    return "tsymy";
+  case tsymdot:
+    return "tsymdot";
+  case tsymz:
+    return "tsymz";
+  case tsymk:
+    return "tsymk";
+  case tsymkw:
+    return "tsymkw";
+  case tsymbad:
+    return "tsymbad";
+  case tsyme:
+    return "tsyme";
+  case tsymex:
+    return "tsymex";
+  case tsymp:
+    return "tsymp";
+  case tsympv:
+    return "tsympv";
+  case tintt:
+    return "tintt";
+  case tintp:
+    return "tintp";
+  case tratio:
+    return "tratio";
+  case tfloat0:
+    return "tfloat0";
+  case tfloate:
+    return "tfloate";
+  case tfloatp:
+    return "tfloatp";
   };
   return "no-state";
 }
@@ -423,11 +443,11 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     string packageName = packageSin.str();
     Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
     Symbol_sp sym;
-    if ( separator == 1 ) { // Asking for external symbol
+    if (separator == 1) { // Asking for external symbol
       Symbol_mv sym_mv = pkg->findSymbol(symbolName);
       sym = sym_mv;
       T_sp status = sym_mv.second();
-      if (status != kw::_sym_external ) {
+      if (status != kw::_sym_external) {
         SIMPLE_ERROR(BF("Cannot find the external symbol %s in %s") % symbolName % _rep_(pkg));
       }
     } else {
@@ -459,17 +479,17 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     {
       int read_base = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARread_baseSTAR->symbolValue()));
       string num = tokenStr(token, start - token.data());
-      if ( num[0] == '+' ) num = num.substr(1,num.size());
+      if (num[0] == '+')
+        num = num.substr(1, num.size());
       try {
-        if ( num[num.size()-1] == '.' ) {
-          mpz_class z10(num.substr(0,num.size()-1), 10);
+        if (num[num.size() - 1] == '.') {
+          mpz_class z10(num.substr(0, num.size() - 1), 10);
           return Integer_O::create(z10);
         } else {
           mpz_class zbase(num.c_str(), read_base);
           return Integer_O::create(zbase);
         }
-      } catch (std::invalid_argument& arg)
-      {
+      } catch (std::invalid_argument &arg) {
         SIMPLE_ERROR(BF("Problem in mpz_class creation with %s error: %s") % num % arg.what());
       }
       SIMPLE_ERROR(BF("Problem while interpreting int from %s in reader") % num);
@@ -478,8 +498,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
   case tratio: {
     // interpret ratio
     string ratioStr = tokenStr(token, start - token.data());
-    if ( ratioStr[0] == '+' ) {
-      Ratio_sp rp = Ratio_O::create(ratioStr.substr(1,ratioStr.size()-1).c_str());
+    if (ratioStr[0] == '+') {
+      Ratio_sp rp = Ratio_O::create(ratioStr.substr(1, ratioStr.size() - 1).c_str());
       return rp;
     }
     Ratio_sp r = Ratio_O::create(ratioStr.c_str());
@@ -494,16 +514,16 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       switch (exponent) {
       case undefined_exp: {
         char *lastValid = NULL;
-        if ( cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_single_float ) {
+        if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_single_float) {
           string numstr = tokenStr(token, start - token.data()).c_str();
           double d = ::strtod(numstr.c_str(), &lastValid);
           return clasp_make_single_float(d);
-        } else if ( cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_DoubleFloat_O ) {
+        } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_DoubleFloat_O) {
           string numstr = tokenStr(token, start - token.data()).c_str();
           double d = ::strtod(numstr.c_str(), &lastValid);
           return DoubleFloat_O::create(d);
         } else {
-          SIMPLE_ERROR(BF("Handle *read-default-float-format* of %s") % _rep_(cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() ));
+          SIMPLE_ERROR(BF("Handle *read-default-float-format* of %s") % _rep_(cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue()));
         }
       }
       case float_exp: {

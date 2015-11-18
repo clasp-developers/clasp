@@ -68,7 +68,6 @@ THE SOFTWARE.
 
 namespace core {
 
-
 #if 0 // moved to foundation.h
 /*! Shouldn't this derive from a Functoid - it doesn't need a closedEnvironment */
 class InstanceClosure : public FunctionClosure {
@@ -87,7 +86,7 @@ public:
   T_sp lambdaList() const;
 };
 #endif
- 
+
 class Instance_O : public Function_O {
   LISP_BASE1(Function_O);
   LISP_CLASS(core, CorePkg, Instance_O, "Instance");
@@ -96,7 +95,7 @@ class Instance_O : public Function_O {
 
 public: // ctor/dtor for classes with shared virtual base
   explicit Instance_O() : Function_O(), _isgf(ECL_NOT_FUNCALLABLE), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
-  virtual ~Instance_O() {};
+  virtual ~Instance_O(){};
 GCPROTECTED: // instance variables here
   int _isgf;
   Class_sp _Class;

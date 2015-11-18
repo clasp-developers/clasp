@@ -60,7 +60,7 @@ namespace asttooling {
 namespace RegMap {
 class SymbolMatcherDescriptorPair {
 public:
- SymbolMatcherDescriptorPair(core::Symbol_sp k, /*const*/ gctools::tagged_pointer<internal::MatcherDescriptor> v) : Name(k), matcher(v){};
+  SymbolMatcherDescriptorPair(core::Symbol_sp k, /*const*/ gctools::tagged_pointer<internal::MatcherDescriptor> v) : Name(k), matcher(v){};
   core::Symbol_sp Name;
   gctools::tagged_pointer<internal::MatcherDescriptor> matcher;
 };
@@ -69,6 +69,7 @@ class RegistryMaps {
   struct metadata_always_fix_pointers_to_derived_classes;
   FRIEND_GC_SCANNER(asttooling::RegMap::RegistryMaps);
   friend class SymbolMatcherDescriptorPair;
+
 public:
   RegistryMaps();
   ~RegistryMaps();
@@ -119,7 +120,7 @@ GCPRIVATE:
   mutable ConstructorMap Constructors;
 };
 
-    extern gctools::tagged_pointer<RegistryMaps> RegistryData; // defined in Registry.cc
+extern gctools::tagged_pointer<RegistryMaps> RegistryData; // defined in Registry.cc
 };
 
 class Registry {

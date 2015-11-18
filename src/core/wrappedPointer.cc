@@ -72,7 +72,7 @@ void WrappedPointer_O::setInstanceClassUsingSymbol(Symbol_sp classSymbol) {
 
 bool WrappedPointer_O::eql_(T_sp obj) const {
   _G();
-  if (WrappedPointer_sp wo = obj.asOrNull<WrappedPointer_O>() ) {
+  if (WrappedPointer_sp wo = obj.asOrNull<WrappedPointer_O>()) {
     return (wo->mostDerivedPointer() == this->mostDerivedPointer());
   }
   return false;

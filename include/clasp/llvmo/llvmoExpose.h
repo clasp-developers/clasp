@@ -1247,18 +1247,18 @@ public:
   virtual void *functionAddress() const { return (void *)this->fptr; }
 
 public:
- CompiledClosure(core::T_sp functionName, core::Symbol_sp type, core::CompiledClosure_fptr_type ptr, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
-                 core::T_sp ll, SOURCE_INFO)
-   : FunctionClosure(functionName, type, renv, SOURCE_INFO_PASS), fptr(ptr), associatedFunctions(assocFuncs), _lambdaList(ll){};
+  CompiledClosure(core::T_sp functionName, core::Symbol_sp type, core::CompiledClosure_fptr_type ptr, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
+                  core::T_sp ll, SOURCE_INFO)
+      : FunctionClosure(functionName, type, renv, SOURCE_INFO_PASS), fptr(ptr), associatedFunctions(assocFuncs), _lambdaList(ll){};
   void setAssociatedFunctions(core::List_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
   bool compiledP() const { return true; };
   core::T_sp lambdaList() const;
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
   DISABLE_NEW();
   inline LCC_RETURN LISP_CALLING_CONVENTION() {
-      core::InvocationHistoryFrame _frame(gctools::tagged_pointer<Closure>(this), lcc_arglist, this->closedEnvironment);
-    core::T_O* closedEnv = LCC_FROM_ACTIVATION_FRAME_SMART_PTR(this->closedEnvironment);
-    return (*(this->fptr))( LCC_PASS_ARGS_ENV(closedEnv));
+    core::InvocationHistoryFrame _frame(gctools::tagged_pointer<Closure>(this), lcc_arglist, this->closedEnvironment);
+    core::T_O *closedEnv = LCC_FROM_ACTIVATION_FRAME_SMART_PTR(this->closedEnvironment);
+    return (*(this->fptr))(LCC_PASS_ARGS_ENV(closedEnv));
   };
 };
 };
@@ -2291,7 +2291,7 @@ class IRBuilderBase_O : public core::ExternalObject_O {
 
 protected:
   PointerToExternalType _ptr;
-  bool  _CurrentDebugLocationSet;
+  bool _CurrentDebugLocationSet;
 
 public:
   virtual void *externalObject() const {
@@ -2309,7 +2309,7 @@ public:
   }
   static IRBuilderBase_sp create(llvm::IRBuilderBase *ptr);
   ;
- IRBuilderBase_O() : Base(), _ptr(NULL), _CurrentDebugLocationSet(false){};
+  IRBuilderBase_O() : Base(), _ptr(NULL), _CurrentDebugLocationSet(false){};
   ~IRBuilderBase_O() {
     if (_ptr != NULL) { /* delete _ptr;*/
       _ptr = NULL;

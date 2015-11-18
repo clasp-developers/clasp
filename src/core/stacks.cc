@@ -67,30 +67,30 @@ Vector_sp ExceptionStack::backtrace() {
     SYMBOL_EXPORT_SC_(KeywordPkg, landingPadFrame);
     switch (this->_Stack[i]._FrameKind) {
     case NullFrame:
-        kind = _Nil<Symbol_O>();
-        break;
+      kind = _Nil<Symbol_O>();
+      break;
     case CatchFrame:
-        kind = kw::_sym_catchFrame;
-        break;
+      kind = kw::_sym_catchFrame;
+      break;
     case BlockFrame:
-        kind = kw::_sym_blockFrame;
-        break;
+      kind = kw::_sym_blockFrame;
+      break;
     case TagbodyFrame:
-        kind = kw::_sym_tagbodyFrame;
-        break;
+      kind = kw::_sym_tagbodyFrame;
+      break;
     case LandingPadFrame:
-        kind = kw::_sym_landingPadFrame;
-        break;
+      kind = kw::_sym_landingPadFrame;
+      break;
     };
     result->setf_elt(i, Cons_O::create(kind, this->_Stack[i]._Key));
   }
   return result;
 }
 
-    InvocationHistoryFrame::InvocationHistoryFrame(gctools::tagged_pointer<Closure> c, core::T_O* valist_sptr, T_sp env)
-  : closure(c), environment(env), _NumberOfArguments(0), _RegisterArguments(NULL), _StackArguments(NULL)  {
-  if ( valist_sptr != NULL ) {
-    VaList_sp arguments(reinterpret_cast<core::VaList_S*>(gc::untag_valist(valist_sptr)));
+InvocationHistoryFrame::InvocationHistoryFrame(gctools::tagged_pointer<Closure> c, core::T_O *valist_sptr, T_sp env)
+    : closure(c), environment(env), _NumberOfArguments(0), _RegisterArguments(NULL), _StackArguments(NULL) {
+  if (valist_sptr != NULL) {
+    VaList_sp arguments(reinterpret_cast<core::VaList_S *>(gc::untag_valist(valist_sptr)));
     this->_NumberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(arguments);
     this->_RegisterArguments = LCC_VA_LIST_REGISTER_SAVE_AREA(arguments);
     this->_StackArguments = LCC_VA_LIST_OVERFLOW_ARG_AREA(arguments);
@@ -110,53 +110,48 @@ InvocationHistoryFrame::~InvocationHistoryFrame() {
   this->_Stack->pop();
 }
 
-
-VectorObjects_sp InvocationHistoryFrame::arguments() const
-{
-  if ( this->_NumberOfArguments==0 ) {
-    VectorObjects_sp vnone = VectorObjects_O::create(_Nil<T_O>(),0,cl::_sym_T_O->symbolValue());
+VectorObjects_sp InvocationHistoryFrame::arguments() const {
+  if (this->_NumberOfArguments == 0) {
+    VectorObjects_sp vnone = VectorObjects_O::create(_Nil<T_O>(), 0, cl::_sym_T_O->symbolValue());
     return vnone;
   }
   size_t numberOfArguments = this->_NumberOfArguments;
-  VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(),numberOfArguments,cl::_sym_T_O->symbolValue());
-  for ( size_t i(0); i<numberOfArguments; ++i ) {
+  VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(), numberOfArguments, cl::_sym_T_O->symbolValue());
+  for (size_t i(0); i < numberOfArguments; ++i) {
     T_sp obj;
-    if ( i < LCC_ARGS_IN_REGISTERS ) {
-      obj = core::T_sp((gc::Tagged)(this->_RegisterArguments[LCC_ABI_ARGS_IN_REGISTERS-LCC_ARGS_IN_REGISTERS+i]));
+    if (i < LCC_ARGS_IN_REGISTERS) {
+      obj = core::T_sp((gc::Tagged)(this->_RegisterArguments[LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS + i]));
     } else {
-      obj = core::T_sp((gc::Tagged)(this->_StackArguments[i-LCC_ARGS_IN_REGISTERS]));
+      obj = core::T_sp((gc::Tagged)(this->_StackArguments[i - LCC_ARGS_IN_REGISTERS]));
     }
-    vargs->setf_elt(i,obj);
+    vargs->setf_elt(i, obj);
   }
   return vargs;
 }
 
-string InvocationHistoryFrame::argumentsAsString(int maxWidth) const
-{
+string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
   VectorObjects_sp vargs = this->arguments();
   T_sp sout = clasp_make_string_output_stream();
   int nargs = cl_length(vargs);
-  for ( int i(0); i<nargs; ++i ) {
+  for (int i(0); i < nargs; ++i) {
     T_sp obj = vargs->elt(i);
-    if ( Instance_sp iobj = obj.asOrNull<Instance_O>() ) {
-      clasp_write_string("#<",sout);
-      write_ugly_object(af_classOf(obj),sout);
-      clasp_write_string("> ",sout);
+    if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
+      clasp_write_string("#<", sout);
+      write_ugly_object(af_classOf(obj), sout);
+      clasp_write_string("> ", sout);
     } else {
-      write_ugly_object(obj,sout);
-      clasp_write_char(' ',sout);
+      write_ugly_object(obj, sout);
+      clasp_write_char(' ', sout);
     }
   }
   Str_sp strres = gc::As<Str_sp>(cl_get_output_stream_string(sout));
-  if (cl_length(strres)>maxWidth) {
-    return strres->get().substr(0,maxWidth)+"...";
+  if (cl_length(strres) > maxWidth) {
+    return strres->get().substr(0, maxWidth) + "...";
   }
   return strres->get();
 }
-      
 
-string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure> closure) const
-{
+string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure> closure) const {
   if (!closure) {
     return "InvocationHistoryFrame::asStringLowLevel NULL closure";
   };
@@ -177,7 +172,8 @@ string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure>
     } else if (closure->builtinP()) {
       closureType = "/b";
     }
-  } else closureType = "toplevel";
+  } else
+    closureType = "toplevel";
   string sargs = this->argumentsAsString(256);
   ss << (BF("#%3d%2s@%p %20s %5d/%-3d (%s %s)") % this->_Index % closureType % (void *)closure.raw_() % sourceFileName % lineNumber % column % funcName % sargs).str();
   //	ss << std::endl;
@@ -194,7 +190,6 @@ void InvocationHistoryFrame::dump() const {
   string dump = this->asString();
   printf("%s\n", dump.c_str());
 }
-
 
 vector<InvocationHistoryFrame *> InvocationHistoryStack::asVectorFrames() {
   vector<InvocationHistoryFrame *> frames;
@@ -336,12 +331,7 @@ GC_RESULT InvocationHistoryStack::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
   return GC_RES_OK;
 }
 #endif
-
 }
-
-
-
-
 
 namespace core {
 

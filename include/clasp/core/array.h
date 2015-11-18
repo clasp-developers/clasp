@@ -58,13 +58,13 @@ public:
   static int checkedIndex(const string &filename, int lineno, const string &function, Array_sp array, int which, T_sp index, int nonincl_index);
 
 public: // Functions here
-  virtual bool equalp(T_sp other) const {SUBIMP();};
+  virtual bool equalp(T_sp other) const { SUBIMP(); };
   virtual T_sp aset_unsafe(int j, T_sp val) { SUBIMP(); };
   virtual bool arrayHasFillPointerP() const { return false; };
   virtual gc::Fixnum arrayTotalSize() const;
   virtual T_sp aref_unsafe(cl_index index) const { SUBIMP(); };
   /*! For write_array */
-  virtual std::vector<cl_index> dimensions() const {SUBIMP();};
+  virtual std::vector<cl_index> dimensions() const { SUBIMP(); };
   virtual void rowMajorAset(cl_index idx, T_sp value) { SUBIMP(); };
   virtual T_sp rowMajorAref(cl_index idx) const { SUBIMP(); };
   virtual gc::Fixnum arrayRowMajorIndex(List_sp indices) const;

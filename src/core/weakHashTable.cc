@@ -83,7 +83,7 @@ void WeakKeyHashTable_O::describe(T_sp stream) {
       }
     }
     ss << "      " << sentry.str();
-    clasp_write_string(ss.str(),stream);
+    clasp_write_string(ss.str(), stream);
   }
 }
 

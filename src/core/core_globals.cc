@@ -36,7 +36,6 @@ namespace core {
 uint __nextPredefinedSymbolIndex = 0;
 };
 
-
 #pragma GCC visibility push(default)
 
 extern "C" {
@@ -45,7 +44,7 @@ extern "C" {
       We use a pointer to the smart_ptr because we don't want
       to have to maintain this as a garbage collection root.
     */
-core::LoadTimeValues_O* globalTaggedRunTimeValues ATTR_WEAK = NULL;
+core::LoadTimeValues_O *globalTaggedRunTimeValues ATTR_WEAK = NULL;
 };
 #pragma GCC visibility pop
 
@@ -57,5 +56,3 @@ core::Lisp_sp _lisp;
 
 bool debug_mps = true;
 };
-
-

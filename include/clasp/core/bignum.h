@@ -33,10 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/numbers.h>
 #include <clasp/core/bignum.fwd.h>
 
-
 namespace core {
-
-
 
 struct BignumExportBuffer {
   BignumExportBuffer() : buffer(NULL), bufferSize(0){};
@@ -124,6 +121,7 @@ public:
 
   //	virtual	bool	eqn(T_sp obj) const;
   virtual bool eql_(T_sp obj) const;
+
 public:
   virtual string valueAsString() const {
     stringstream ss;

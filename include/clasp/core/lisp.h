@@ -81,9 +81,8 @@ SMART(SpecialForm);
 SMART(Hierarchy);
 SMART(Environment);
 
- void af_stackMonitor();
- void af_stackSizeWarning(size_t size);
-
+void af_stackMonitor();
+void af_stackSizeWarning(size_t size);
 
 List_sp cl_member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
 void af_invokeInternalDebugger(T_sp condition);
@@ -211,7 +210,7 @@ struct ThreadInfo {
   MultipleValues multipleValues;
   size_t _lambda_list_handler_create_bindings_count;
 
-ThreadInfo() : _lambda_list_handler_create_bindings_count(0) {};
+  ThreadInfo() : _lambda_list_handler_create_bindings_count(0){};
 };
 
 extern __thread ThreadInfo *threadLocalInfoPtr;
@@ -219,8 +218,8 @@ extern __thread ThreadInfo *threadLocalInfoPtr;
 class Lisp_O {
   friend T_mv core_sourceFileInfo(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);
   struct GCRoots //: public gctools::HeapRoot
-  {
-        //! A pool of strings for string manipulation - must be per thread
+      {
+    //! A pool of strings for string manipulation - must be per thread
     List_sp _BufferStringPool;
     /*! The invocation history stack this should be per thread */
     InvocationHistoryStack _InvocationHistoryStack;
@@ -439,18 +438,20 @@ public:
 	    this->_Roots._MultipleValuesCur = mv;
 	};
 #endif
- public:
-        StringOutputStream_sp& bformatStringOutputStream() { return this->_Roots._BformatStringOutputStream; };
- public:
-        /*! Signal a problem if the stack gets too full*/
-        inline void stack_monitor() {
-          int x;
-          char *xaddr = (char*)(&x);
-          size_t stack = (size_t)(_lisp->_StackTop - xaddr);
-          if ( stack > _lisp->_StackWarnSize ) {
-            af_stackSizeWarning(stack);
-          }
-        }
+public:
+  StringOutputStream_sp &bformatStringOutputStream() { return this->_Roots._BformatStringOutputStream; };
+
+public:
+  /*! Signal a problem if the stack gets too full*/
+  inline void stack_monitor() {
+    int x;
+    char *xaddr = (char *)(&x);
+    size_t stack = (size_t)(_lisp->_StackTop - xaddr);
+    if (stack > _lisp->_StackWarnSize) {
+      af_stackSizeWarning(stack);
+    }
+  }
+
 public:
   DebugStream &debugLog() {
     HARD_ASSERT(this->_DebugStream != NULL);
@@ -468,9 +469,11 @@ public:
   bool mpiEnabled() { return this->_MpiEnabled; }
   int mpiRank() { return this->_MpiRank; }
   int mpiSize() { return this->_MpiSize; }
- public:
+
+public:
   StrWithFillPtr_sp get_buffer_string();
   void put_buffer_string(StrWithFillPtr_sp str);
+
 public:
   IntegerOrdering const &integer_ordering() const { return this->_IntegerOrdering; };
 
@@ -596,6 +599,7 @@ public:
   Bignum_sp bigRegister1() { return this->_Roots._BignumRegister1; };
   Bignum_sp bigRegister2() { return this->_Roots._BignumRegister2; };
   Integer_sp integerOverflowAdjust() { return this->_Roots._IntegerOverflowAdjust; };
+
 public:
   bool isEnvironmentInitialized() { return this->_EnvironmentInitialized; };
   uint nextEnvironmentId();
@@ -876,7 +880,6 @@ public:
 
   Symbol_sp getClassSymbolForClassName(const string &symbolName);
 
-
   //	void setGlobal(Symbol_sp sym, T_sp obj);
   //	void setGlobalIfNotDefined(Symbol_sp sym, T_sp obj);
   //	T_sp valueGlobal(Symbol_sp sym);
@@ -993,8 +996,7 @@ public:
   void exposePython();
 
   explicit Lisp_O();
-  virtual ~Lisp_O() {};
-
+  virtual ~Lisp_O(){};
 };
 
 /*! Scoped change of lisp mode */
@@ -1047,7 +1049,6 @@ Class_mv cl_findClass(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>
 Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env);
 
 void cl_error(T_sp err, List_sp initializers);
-
 };
 
 //TRANSLATE(core::Lisp_O);

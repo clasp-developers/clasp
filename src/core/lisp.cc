@@ -150,8 +150,8 @@ __thread ThreadInfo *threadLocalInfoPtr;
 
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 const int Lisp_O::MaxClosSlots = 3;          //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
-const int Lisp_O::ClosCacheSize = 1024*16;
-const int Lisp_O::SingleDispatchMethodCacheSize = 1024*8;
+const int Lisp_O::ClosCacheSize = 1024 * 16;
+const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 8;
 
 extern void lispScannerDebug(std::istream &sin);
 extern string getLispError();
@@ -168,7 +168,7 @@ public:
     this->_symbols = HashTableEq_O::create_default();
   };
   virtual bool mapKeyValue(T_sp key, T_sp value) {
-//    Bignum_sp skey = gc::As<Bignum_sp>(key);
+    //    Bignum_sp skey = gc::As<Bignum_sp>(key);
     Symbol_sp svalue = gc::As<Symbol_sp>(value);
     string symbolName = lisp_symbolNameAsString(svalue);
     string::size_type pos = symbolName.find(this->_substr);
@@ -184,16 +184,12 @@ public:
 //
 // Constructor
 //
-Lisp_O::GCRoots::GCRoots() : _BufferStringPool(_Nil<T_O>())
-                           , _MultipleValuesCur(NULL)
-                           , _BignumRegister0(_Unbound<Bignum_O>())
-                           , _BignumRegister1(_Unbound<Bignum_O>())
-                           , _BignumRegister2(_Unbound<Bignum_O>())
+Lisp_O::GCRoots::GCRoots() : _BufferStringPool(_Nil<T_O>()), _MultipleValuesCur(NULL), _BignumRegister0(_Unbound<Bignum_O>()), _BignumRegister1(_Unbound<Bignum_O>()), _BignumRegister2(_Unbound<Bignum_O>())
                              //                               , _TraceFunctions(_Unbound<HashTable_O>())
                              ,
                              _SystemProperties(_Nil<T_O>()), _CatchInfo(_Nil<T_O>()), _SpecialForms(_Unbound<HashTableEq_O>()), _NullStream(_Nil<T_O>()), _PathnameTranslations(_Nil<T_O>()) {}
 
-Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size*0.9), // 6MB default stack size before warnings
+Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
                    _StackSampleSize(0),
                    _StackSampleMax(0),
@@ -332,54 +328,27 @@ void Lisp_O::finalizeSpecialSymbols() {
   //    	Symbol_sp symbol_sameAsKey = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_sameAsKey);
 }
 
-
 /*! Run some quick tests to determine if eval::funcall is working properly.
 Changes to the calling convention in lispCallingConvention.h must synchronize with code in evaluator.h
 Sometimes they get out of sync and this code is designed to trap that.
 */
 void run_quick_tests() {
-#define TEST_ASSERT_ALWAYS(_x) if (!(_x)) SIMPLE_ERROR(BF("Test failed"));
-  List_sp val1 = eval::funcall(cl::_sym_list
-                               ,cl::_sym_nil);
+#define TEST_ASSERT_ALWAYS(_x) \
+  if (!(_x))                   \
+    SIMPLE_ERROR(BF("Test failed"));
+  List_sp val1 = eval::funcall(cl::_sym_list, cl::_sym_nil);
   TEST_ASSERT_ALWAYS(cl_length(val1) == 1);
-  List_sp val2 = eval::funcall(cl::_sym_list
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil);
+  List_sp val2 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil);
   TEST_ASSERT_ALWAYS(cl_length(val2) == 2);
-  List_sp val3 = eval::funcall(cl::_sym_list
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil);
+  List_sp val3 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil);
   TEST_ASSERT_ALWAYS(cl_length(val3) == 3);
-  List_sp val4 = eval::funcall(cl::_sym_list
-                               ,clasp_make_fixnum(1)
-                               ,clasp_make_fixnum(2)
-                               ,clasp_make_fixnum(3)
-                               ,clasp_make_fixnum(4));
+  List_sp val4 = eval::funcall(cl::_sym_list, clasp_make_fixnum(1), clasp_make_fixnum(2), clasp_make_fixnum(3), clasp_make_fixnum(4));
   TEST_ASSERT_ALWAYS(cl_length(val4) == 4);
-  List_sp val5 = eval::funcall(cl::_sym_list
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil);
+  List_sp val5 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil);
   TEST_ASSERT_ALWAYS(cl_length(val5) == 5);
-  List_sp val6 = eval::funcall(cl::_sym_list
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil);
+  List_sp val6 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil);
   TEST_ASSERT_ALWAYS(cl_length(val6) == 6);
-  List_sp val7 = eval::funcall(cl::_sym_list
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil
-                               ,cl::_sym_nil);
+  List_sp val7 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil);
   TEST_ASSERT_ALWAYS(cl_length(val7) == 7);
 
   T_sp num = clasp_make_fixnum(63);
@@ -420,7 +389,7 @@ void testContainers() {
 #endif
 
 void testStrings() {
-//  Str_sp str = Str_O::create("This is a test");
+  //  Str_sp str = Str_O::create("This is a test");
   //        printf("%s:%d  Str_sp = %s\n", __FILE__, __LINE__, str->c_str() );
 }
 
@@ -543,7 +512,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   {
     // Run some tests to make sure that lisp calling convention is ok.
     run_quick_tests();
-    
+
     // setup the SYS logical-pathname-translations
     Cons_sp pts = Cons_O::createList(
         Cons_O::createList(Str_O::create("sys:**;*.*"), bundle->getSysPathname())
@@ -565,7 +534,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
         /* , more here */
         );
     af_pathnameTranslations(Str_O::create("app-contents"), _lisp->_true(), appc);
-
 
     // setup the APP-RESOURCES logical-pathname-translations
     Cons_sp app = Cons_O::createList(
@@ -698,8 +666,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_Roots._BignumRegister2 = Bignum_O::create(0);
     Real_sp bits = gc::As<Real_sp>(clasp_make_fixnum(gc::fixnum_bits));
     Real_sp two = gc::As<Real_sp>(clasp_make_fixnum(2));
-    this->_Roots._IntegerOverflowAdjust = cl_expt(two,bits); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
-    getcwd(true); // set *default-pathname-defaults*
+    this->_Roots._IntegerOverflowAdjust = cl_expt(two, bits); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
+    getcwd(true);                                             // set *default-pathname-defaults*
   };
   {
     _BLOCK_TRACE("Creating Caches for SingleDispatchGenericFunctions");
@@ -720,12 +688,11 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 }
 
 /*! Get a buffer string from the BufferStringPool */
-StrWithFillPtr_sp Lisp_O::get_buffer_string()
-{
+StrWithFillPtr_sp Lisp_O::get_buffer_string() {
   /* BufferStringPool must be thread local */
-  if ( this->_Roots._BufferStringPool.nilp() ) {
-    StrWithFillPtr_sp one = StrWithFillPtr_O::create(' ', 256, 0, true );
-    this->_Roots._BufferStringPool = Cons_O::create(one,_Nil<T_O>());
+  if (this->_Roots._BufferStringPool.nilp()) {
+    StrWithFillPtr_sp one = StrWithFillPtr_O::create(' ', 256, 0, true);
+    this->_Roots._BufferStringPool = Cons_O::create(one, _Nil<T_O>());
   }
   StrWithFillPtr_sp ret = gc::As<StrWithFillPtr_sp>(oCar(this->_Roots._BufferStringPool));
   this->_Roots._BufferStringPool = oCdr(this->_Roots._BufferStringPool);
@@ -735,11 +702,9 @@ StrWithFillPtr_sp Lisp_O::get_buffer_string()
 
 /*! Return a buffer string to the BufferStringPool
 */
-void Lisp_O::put_buffer_string(StrWithFillPtr_sp str)
-{
-  this->_Roots._BufferStringPool = Cons_O::create(str,this->_Roots._BufferStringPool);
+void Lisp_O::put_buffer_string(StrWithFillPtr_sp str) {
+  this->_Roots._BufferStringPool = Cons_O::create(str, this->_Roots._BufferStringPool);
 }
-
 
 void Lisp_O::setCurrentWorkingDirectory(Path_sp dir) {
   _sym_STARcurrent_working_directorySTAR->setf_symbolValueReadOnlyOverRide(dir);
@@ -936,18 +901,13 @@ T_sp Lisp_O::specialFormOrNil(Symbol_sp sym) {
 #define ARGS_core_listOfAllSpecialOperators "()"
 #define DECL_core_listOfAllSpecialOperators ""
 #define DOCS_core_listOfAllSpecialOperators "listOfAllSpecialOperators"
-T_sp core_listOfAllSpecialOperators()
-{
+T_sp core_listOfAllSpecialOperators() {
   List_sp sos(_Nil<T_O>());
-  _lisp->_Roots._SpecialForms->maphash( [&sos] (T_sp key, T_sp val) {
+  _lisp->_Roots._SpecialForms->maphash([&sos](T_sp key, T_sp val) {
       sos = Cons_O::create(key,sos);
-    });
+  });
   return sos;
 }
-  
-
-
-
 
 void Lisp_O::installPackage(const Exposer *pkg) {
   _OF();
@@ -1299,12 +1259,12 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
 
   CommandLineOptions options(endArg, argv);
 
-  if ( options._PauseForDebugger ) {
+  if (options._PauseForDebugger) {
     printf("The PID is  %d  - press enter to continue\n", getpid());
     string temp;
     std::cin >> temp;
   }
-  
+
   List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   for (int i = 0; i < options._Features.size(); ++i) {
     features = Cons_O::create(_lisp->internKeyword(lispify_symbol_name(options._Features[i])), features);
@@ -1339,11 +1299,11 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   features = Cons_O::create(_lisp->internKeyword("USE-REFCOUNT"), features);
 #endif
 #ifdef USE_BOEHM
-  #ifdef USE_CXX_DYNAMIC_CAST
+#ifdef USE_CXX_DYNAMIC_CAST
   features = Cons_O::create(_lisp->internKeyword("USE-BOEHMDC"), features);
-  #else
+#else
   features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
-  #endif
+#endif
 #endif
 #ifdef USE_MPS
   // Informs CL that MPS is being used
@@ -1406,17 +1366,18 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   }
   {
     this->_TrapIntern = false;
-    if ( options._TrapIntern != "" ) {
+    if (options._TrapIntern != "") {
       this->_TrapIntern = true;
       size_t sep = options._TrapIntern.find(':');
-      if ( sep == string::npos ) {
+      if (sep == string::npos) {
         printf("You must provide a symbol name of the form PKG:NAME or PKG::NAME\n");
         abort();
       }
-      size_t nameStart = sep+1;
-      if ( options._TrapIntern[nameStart] == ':' ) ++nameStart;
-      this->_TrapInternPackage = options._TrapIntern.substr(0,sep);
-      this->_TrapInternName = options._TrapIntern.substr(nameStart,9999999);
+      size_t nameStart = sep + 1;
+      if (options._TrapIntern[nameStart] == ':')
+        ++nameStart;
+      this->_TrapInternPackage = options._TrapIntern.substr(0, sep);
+      this->_TrapInternName = options._TrapIntern.substr(nameStart, 9999999);
       printf("%s:%d Trapping INTERN of symbol %s in package %s\n", __FILE__, __LINE__, this->_TrapInternPackage.c_str(), this->_TrapInternName.c_str());
     }
   }
@@ -1465,7 +1426,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
           af_bformat(_lisp->_true(), "Cannot interpret %s - define core::*top-level-command-hook*", Cons_O::createList(tplCmd.cons()));
         }
       } else if (expression.notnilp()) {
-        result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(),expression, environ);
+        result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), expression, environ);
         gctools::Vec0<core::T_sp /*,gctools::RootedGCHolder*/> vresults;
         vresults.resize(result.number_of_values());
         if (result.number_of_values() > 0) {
@@ -1727,7 +1688,7 @@ T_mv af_getline(Str_sp prompt) {
   string res;
   string sprompt(prompt->get());
   bool end_of_transmission;
-  res = myReadLine(sprompt.c_str(),end_of_transmission);
+  res = myReadLine(sprompt.c_str(), end_of_transmission);
   Str_sp result = Str_O::create(res);
   return (Values(result));
 }
@@ -1747,59 +1708,61 @@ T_mv ext_system(Str_sp cmd) {
   _G();
   string command = cmd->get();
   int ret = system(command.c_str());
-  if ( ret == 0 ) {
+  if (ret == 0) {
     return Values(core::make_fixnum(0));
   } else {
-      return Values(core::make_fixnum(ret),Str_O::create(std::strerror(errno)));
+    return Values(core::make_fixnum(ret), Str_O::create(std::strerror(errno)));
   }
 }
-
 
 #define ARGS_ext_vfork_execvp "(call-and-arguments)"
 #define DECL_ext_vfork_execvp ""
 #define DOCS_ext_vfork_execvp "vfork_execvp"
 T_mv ext_vfork_execvp(List_sp call_and_arguments) {
-    if (call_and_arguments.nilp()) return Values0<T_O>();
-    std::vector<char const * > execvp_args(cl_length(call_and_arguments)+1);
-    size_t idx=0;
-    for ( auto cur : call_and_arguments ) {
-        Str_sp sarg = gc::As<Str_sp>(oCar(cur));
-        char* arg = (char*)malloc(sarg->size()+1);
-        std::strcpy(arg,sarg->c_str());
-        execvp_args[idx++] = arg;
-    }
-    execvp_args[idx] = NULL;
-    pid_t child_PID= vfork();
-    if ( child_PID >= 0 ) {
-        if ( child_PID == 0 ) {
-            // Child
-            execvp(execvp_args[0],(char * const *)execvp_args.data());
-            printf("%s:%d execvp returned with errno=%d   strerror(errno) = %s\n",  __FILE__, __LINE__,  errno, strerror(errno));
-            for ( int i=0; execvp_args[i]!=NULL; ++i ) {
-              printf("    arg#%d  %s\n", i, execvp_args[i]);
-            }
-            printf("  cannot continue... exiting... sorry...\n");
-            _exit(0); // Should never reach
-        } else {
-            // Parent
-            int status;
-            pid_t wait_ret = wait(&status);
-            // Clean up args
-            for ( int i(0); i<execvp_args.size()-1; ++i ) free((void*)execvp_args[i]);
-            if ( wait_ret >= 0 ) {
-                if ( wait_ret != child_PID ) {
-                    printf("%s:%d wait return PID(%d) that did not match child(%d)\n", __FILE__, __LINE__, wait_ret, child_PID);
-                }
-                return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID));
-            }
-            // error
-            return Values(clasp_make_fixnum(errno), Str_O::create(std::strerror(errno)));
-        }
+  if (call_and_arguments.nilp())
+    return Values0<T_O>();
+  std::vector<char const *> execvp_args(cl_length(call_and_arguments) + 1);
+  size_t idx = 0;
+  for (auto cur : call_and_arguments) {
+    Str_sp sarg = gc::As<Str_sp>(oCar(cur));
+    char *arg = (char *)malloc(sarg->size() + 1);
+    std::strcpy(arg, sarg->c_str());
+    execvp_args[idx++] = arg;
+  }
+  execvp_args[idx] = NULL;
+  pid_t child_PID = vfork();
+  if (child_PID >= 0) {
+    if (child_PID == 0) {
+      // Child
+      execvp(execvp_args[0], (char *const *)execvp_args.data());
+      printf("%s:%d execvp returned with errno=%d   strerror(errno) = %s\n", __FILE__, __LINE__, errno, strerror(errno));
+      for (int i = 0; execvp_args[i] != NULL; ++i) {
+        printf("    arg#%d  %s\n", i, execvp_args[i]);
+      }
+      printf("  cannot continue... exiting... sorry...\n");
+      _exit(0); // Should never reach
     } else {
-            // Clean up args
-      for ( int i(0); i<execvp_args.size()-1; ++i ) free((void*)execvp_args[i]);
-          return Values(clasp_make_fixnum(-1),Str_O::create(std::strerror(errno)));
+      // Parent
+      int status;
+      pid_t wait_ret = wait(&status);
+      // Clean up args
+      for (int i(0); i < execvp_args.size() - 1; ++i)
+        free((void *)execvp_args[i]);
+      if (wait_ret >= 0) {
+        if (wait_ret != child_PID) {
+          printf("%s:%d wait return PID(%d) that did not match child(%d)\n", __FILE__, __LINE__, wait_ret, child_PID);
+        }
+        return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID));
+      }
+      // error
+      return Values(clasp_make_fixnum(errno), Str_O::create(std::strerror(errno)));
     }
+  } else {
+    // Clean up args
+    for (int i(0); i < execvp_args.size() - 1; ++i)
+      free((void *)execvp_args[i]);
+    return Values(clasp_make_fixnum(-1), Str_O::create(std::strerror(errno)));
+  }
 }
 
 /*
@@ -1997,14 +1960,14 @@ T_mv cl_macroexpand_1(T_sp form, T_sp env) {
     T_sp head = oCar(cform);
     if (cl_symbolp(head)) {
       Symbol_sp headSymbol = gc::As<Symbol_sp>(head);
-      if ( env.nilp() ) {
+      if (env.nilp()) {
         expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
-      } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
-        expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env );
+      } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+        expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
       } else {
         // It must be a Cleavir environment
-        if (cleavirEnv::_sym_macroFunction->fboundp() ) {
-          expansionFunction = eval::funcall(cleavirEnv::_sym_macroFunction, headSymbol, env );
+        if (cleavirEnv::_sym_macroFunction->fboundp()) {
+          expansionFunction = eval::funcall(cleavirEnv::_sym_macroFunction, headSymbol, env);
         }
       }
     }
@@ -2413,7 +2376,7 @@ T_sp cl_export(T_sp symDes, T_sp packageDes) {
   _G();
   List_sp symbols = coerce::listOfSymbols(symDes);
   Package_sp package = coerce::packageDesignator(packageDes);
-  for ( auto sym : symbols ) {
+  for (auto sym : symbols) {
     package->_export2(gc::As<Symbol_sp>(oCar(sym)));
   }
   return _lisp->_true();
@@ -2921,7 +2884,7 @@ Symbol_sp Lisp_O::internUniqueWithPackageName(string const &packageName, string 
   _G();
   T_sp package = this->findPackage(packageName);
   Symbol_mv symStatus = this->intern(symbolName, package);
-//  T_sp status = symStatus.second();
+  //  T_sp status = symStatus.second();
   return symStatus;
 }
 
@@ -3078,14 +3041,13 @@ void Lisp_O::dump_backtrace(int numcol) {
 void Lisp_O::run() {
   _G();
 
-  
   // If the user adds "-f debug-startup" to the command line
   // then set core::*debug-startup* to true
   // This will print timings of top-level forms as they load at startup
   // See llvmo::intrinsics.cc
   // cl_member isn't available yet so check for the feature by hand.
-  for ( auto cur : (List_sp)cl::_sym_STARfeaturesSTAR->symbolValue() ) {
-    if ( oCar(cur) == kw::_sym_debugStartup ) {
+  for (auto cur : (List_sp)cl::_sym_STARfeaturesSTAR->symbolValue()) {
+    if (oCar(cur) == kw::_sym_debugStartup) {
       printf("%s:%d Setting core:*debug-startup* to T\n", __FILE__, __LINE__);
       core::_sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
     }
@@ -3093,7 +3055,7 @@ void Lisp_O::run() {
   //	printf("%s:%d core:*debug-startup* is: %s\n", __FILE__, __LINE__, _rep_(core::_sym_STARdebugStartupSTAR->symbolValue()).c_str());
   if (!this->_IgnoreInitImage) {
     Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
-    DynamicScopeManager scope(core::_sym_STARuseInterpreterForEvalSTAR,_lisp->_true());
+    DynamicScopeManager scope(core::_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
     T_mv result = eval::funcall(cl::_sym_load, initPathname); // core_loadBundle(initPathname);
     if (result.nilp()) {
       T_sp err = result.second();
@@ -3372,7 +3334,7 @@ void Lisp_O::exposeCando() {
   Defun(acons);
   SYMBOL_EXPORT_SC_(ClPkg, assoc);
   ClDefun(assoc);
-  SYMBOL_EXPORT_SC_(ClPkg,member);
+  SYMBOL_EXPORT_SC_(ClPkg, member);
   ClDefun(member);
   Defun(memberTest);
 

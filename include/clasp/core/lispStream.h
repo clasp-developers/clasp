@@ -171,9 +171,8 @@ T_sp cl_make_synonym_stream(T_sp sym);
 T_sp cl_make_two_way_stream(T_sp in, T_sp out);
 
 T_sp cl_make_string_input_stream(Str_sp strng, Fixnum_sp istart, T_sp iend);
- T_sp clasp_make_string_output_stream(cl_index line_length = 128, bool extended = false);
- T_sp cl_get_output_stream_string(T_sp strm);
-
+T_sp clasp_make_string_output_stream(cl_index line_length = 128, bool extended = false);
+T_sp cl_get_output_stream_string(T_sp strm);
 
 T_sp cl_close(T_sp strm, T_sp abort = _Nil<T_O>());
 };
@@ -439,9 +438,9 @@ class StringOutputStream_O : public StringStream_O {
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
 
-public:    // ctor/dtor for classes with shared virtual base
-           //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
-           //    virtual ~StringStream_O() {};
+public: // ctor/dtor for classes with shared virtual base
+        //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
+        //    virtual ~StringStream_O() {};
 public: // instance variables here
   StrWithFillPtr_sp _Contents;
 
@@ -646,13 +645,13 @@ Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart = 0, T_sp end = _Ni
 //    int af_streamLinenumber(T_sp strm);
 //    int af_streamColumn(T_sp strm);
 
- void clasp_terpri(T_sp strm);
- void clasp_write_characters(const char *buf, int sz, T_sp strm);
- void clasp_write_string(const string &str, T_sp strm);
- void clasp_writeln_string(const string &str, T_sp strm);
- void writestr_stream(const char* str, T_sp strm);
- void clasp_write_addr(T_sp x, T_sp strm);
- claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
+void clasp_terpri(T_sp strm);
+void clasp_write_characters(const char *buf, int sz, T_sp strm);
+void clasp_write_string(const string &str, T_sp strm);
+void clasp_writeln_string(const string &str, T_sp strm);
+void writestr_stream(const char *str, T_sp strm);
+void clasp_write_addr(T_sp x, T_sp strm);
+claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 
 void initialize_lispStream();
 
@@ -663,7 +662,7 @@ T_sp cl_open(T_sp filename,
              T_sp if_does_not_exist, bool idnesp,
              T_sp external_format,
              T_sp cstream);
- T_mv cl_read_line(T_sp sin, T_sp eof_error_p = cl::_sym_T_O, T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
+T_mv cl_read_line(T_sp sin, T_sp eof_error_p = cl::_sym_T_O, T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
 
 T_sp clasp_openRead(T_sp pathDesig);
 T_sp clasp_openWrite(T_sp pathDesig);

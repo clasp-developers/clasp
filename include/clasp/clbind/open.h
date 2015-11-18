@@ -64,7 +64,7 @@ extern detail::cast_graph *globalCastGraph;
 //! Take the place of __clbind_class_id_map
 extern detail::class_id_map *globalClassIdMap;
 //! Take the place of __clbind_class_map
-    extern gctools::tagged_pointer<detail::class_map> globalClassMap;
+extern gctools::tagged_pointer<detail::class_map> globalClassMap;
 
 CLBIND_API void initialize_clbind();
 }

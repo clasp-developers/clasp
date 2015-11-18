@@ -101,8 +101,6 @@ class_id allocate_class_id(type_id const &cls) {
   return inserted.first->second;
 }
 
-
-
 void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym) {
   ASSERT(_lisp);
   if (cid >= _lisp->classSymbolsHolder().size()) {
@@ -205,13 +203,12 @@ mps_ap_t _global_automatic_mark_sweep_allocation_point;
 #endif //!defined(USE_MPS)
 
 void clasp_mps_debug_allocation(const char *poolName, void *base, void *client, int size, int kind) {
-    GC_TELEMETRY4(telemetry::label_allocation,
-                  (uintptr_t)base,
-                  (uintptr_t)client,
-                  (uintptr_t)((char*)base+size),
-                  kind);
+  GC_TELEMETRY4(telemetry::label_allocation,
+                (uintptr_t)base,
+                (uintptr_t)client,
+                (uintptr_t)((char *)base + size),
+                kind);
 }
-
 
 namespace boost {
 using namespace core;
@@ -220,15 +217,13 @@ void assertion_failed(char const *expr, char const *function, char const *file, 
 }
 };
 
-
 extern "C" {
 
-void closure_dump(core::Closure* closureP) {
-  core::T_sp sourceFileInfo = core_sourceFileInfo(core::clasp_make_fixnum(closureP->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false );
+void closure_dump(core::Closure *closureP) {
+  core::T_sp sourceFileInfo = core_sourceFileInfo(core::clasp_make_fixnum(closureP->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false);
   std::string namestring = gc::As<core::SourceFileInfo_sp>(sourceFileInfo)->namestring();
   printf("%s:%d  Closure %s  file: %s lineno: %d\n", __FILE__, __LINE__, _rep_(closureP->name).c_str(), namestring.c_str(), closureP->lineNumber());
 }
-
 };
 
 namespace llvm_interface {
@@ -252,7 +247,6 @@ void dbg_hook(const char *error) {
 
 namespace core {
 
-
 void lisp_vectorPushExtend(T_sp vec, T_sp obj) {
   VectorObjectsWithFillPtr_sp vvec = gc::As<VectorObjectsWithFillPtr_sp>(vec);
   vvec->vectorPushExtend(obj);
@@ -264,8 +258,6 @@ Functoid::Functoid(T_sp n) : name(n) {
   }
 }
 
-
-    
 int Closure::sourceFileInfoHandle() const {
   return 0;
 }
@@ -285,7 +277,6 @@ T_sp Closure::cleavir_ast() const {
 void Closure::setf_cleavir_ast(T_sp ast) {
   SIMPLE_ERROR(BF("Subclass of Closure must support setf_cleavir_ast"));
 }
-
 };
 
 namespace core {
@@ -694,7 +685,6 @@ T_sp lisp_apply(T_sp funcDesig, ActivationFrame_sp frame) {
 }
 #endif
 
-
 #if 0
     string lisp_convertCNameToLispName(string const& cname, bool convertUnderscoreToDash)
     {_G();
@@ -860,7 +850,6 @@ void lisp_addClass(Symbol_sp classSymbol,
   _lisp->addClass(classSymbol, cb, base1ClassSymbol, base2ClassSymbol);
 }
 
-
 void lisp_addClass(Symbol_sp classSymbol) {
   _G();
   DEPRECIATED();
@@ -976,7 +965,7 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
   LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]") % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport);
   Str_sp docStr = Str_O::create(docstring);
   T_sp gfn = af_ensureSingleDispatchGenericFunction(sym, llhandler); // Ensure the single dispatch generic function exists
-  (void)gfn; // silence compiler warning
+  (void)gfn;                                                         // silence compiler warning
   LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  methoid@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(methoid)));
   methoid->finishSetup(llhandler, kw::_sym_function);
   Function_sp fn = Function_O::make(methoid);
@@ -1036,7 +1025,7 @@ void lisp_defun(Symbol_sp sym,
     return;
   }
   List_sp ldeclares = lisp_parse_declares(packageName, declarestring); // get the declares but ignore them for now
-  (void)ldeclares; // suppress warning
+  (void)ldeclares;                                                     // suppress warning
   LambdaListHandler_sp llh;
   if ((arguments == "" || arguments == "()") && number_of_required_arguments >= 0) {
     llh = LambdaListHandler_O::create(number_of_required_arguments, skipIndices);
@@ -1498,7 +1487,8 @@ void lisp_errorExpectedTypeSymbol(Symbol_sp typeSym, T_sp datum) {
 }
 
 void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt) {
-    if ( telemetry::global_telemetry ) telemetry::global_telemetry->flush();
+  if (telemetry::global_telemetry)
+    telemetry::global_telemetry->flush();
   stringstream ss;
   ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
   ss << fmt.str();
@@ -1531,10 +1521,10 @@ void lisp_error_condition(const char *functionName, const char *fileName, int li
     dbg.invoke();
     //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
   }
-  eval::applyLastArgsPLUSFirst(_sym_signalSimpleError
-                               , initializers // initializers is a LIST and the last argument to APPLY!!!!!
+  eval::applyLastArgsPLUSFirst(_sym_signalSimpleError, initializers // initializers is a LIST and the last argument to APPLY!!!!!
                                // this allows us to include a variable number of arguments next
-                               , baseCondition, _Nil<T_O>(), Str_O::create(ss.str()), _Nil<T_O>());
+                               ,
+                               baseCondition, _Nil<T_O>(), Str_O::create(ss.str()), _Nil<T_O>());
 }
 
 void lisp_error(T_sp datum, T_sp arguments) {

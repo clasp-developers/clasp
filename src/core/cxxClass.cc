@@ -72,7 +72,7 @@ void CxxClass_O::describe(T_sp stream) {
     ss << (BF("Base class: %s") % _rep_((gc::As<Class_sp>(oCar(cur)))->className())).str();
   }
   ss << (BF("%s") % this->dumpInfo()).str();
-  clasp_write_string(ss.str(),stream);
+  clasp_write_string(ss.str(), stream);
 #if 0
   if (!this->_theCreator) {
     stringstream ss2;
@@ -85,7 +85,7 @@ void CxxClass_O::describe(T_sp stream) {
   stringstream sr;
   sr << (BF("cxxDerivableClassP() -> %d") % this->cxxDerivableClassP()).str();
   sr << (BF("primaryCxxDerivableClassP() -> %d") % this->primaryCxxDerivableClassP()).str();
-  clasp_write_string(sr.str(),stream);
+  clasp_write_string(sr.str(), stream);
 }
 
 void CxxClass_O::exposeCando(Lisp_sp lisp) {

@@ -59,10 +59,11 @@ public:
   gc::tagged_pointer<Closure> closure;
   T_sp environment;
   size_t _NumberOfArguments;
-  core::T_O** _RegisterArguments;
-  core::T_O** _StackArguments;
+  core::T_O **_RegisterArguments;
+  core::T_O **_StackArguments;
+
 public:
-        InvocationHistoryFrame(gctools::tagged_pointer<Closure> fc, core::T_O* valist_args, T_sp env = _Nil<T_O>());
+  InvocationHistoryFrame(gctools::tagged_pointer<Closure> fc, core::T_O *valist_args, T_sp env = _Nil<T_O>());
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
   ATTR_WEAK virtual ~InvocationHistoryFrame();
   InvocationHistoryFrame *previous() { return this->_Previous; };
@@ -94,7 +95,7 @@ public:
   }
 
   inline void pop() {
-    GCTOOLS_ASSERT(this->_Top!=NULL);
+    GCTOOLS_ASSERT(this->_Top != NULL);
     this->_Top = this->_Top->previous();
   }
 
@@ -141,7 +142,6 @@ public:
   int size() const { return this->_Bindings.size(); };
 };
 #pragma GCC visibility pop
-
 }
 
 namespace core {
@@ -176,38 +176,38 @@ public:
   string summary() {
     stringstream ss;
     ss << "ExceptionStackSummary: depth[" << this->size() << "] ";
-    for ( int idx=this->size()-1; idx>=0; --idx) {
+    for (int idx = this->size() - 1; idx >= 0; --idx) {
       FrameKind fk = this->_Stack[idx]._FrameKind;
       char frameChar;
       switch (fk) {
       case NullFrame:
-          frameChar = 'N';
-          break;
+        frameChar = 'N';
+        break;
       case CatchFrame:
-          frameChar = 'C';
-          break;
+        frameChar = 'C';
+        break;
       case BlockFrame:
-          frameChar = 'B';
-          break;
+        frameChar = 'B';
+        break;
       case TagbodyFrame:
-          frameChar = 'T';
-          break;
+        frameChar = 'T';
+        break;
       case LandingPadFrame:
-          frameChar = 'L';
-          break;
+        frameChar = 'L';
+        break;
       default:
-          frameChar = 'u';
-          break;
+        frameChar = 'u';
+        break;
       }
       ss << frameChar << idx;
-      if ( this->_Stack[idx]._Key.notnilp() ) {
-        ss << "{@" << (void*)this->_Stack[idx]._Key.raw_() << "}";
+      if (this->_Stack[idx]._Key.notnilp()) {
+        ss << "{@" << (void *)this->_Stack[idx]._Key.raw_() << "}";
       }
       ss << " ";
     };
     return ss.str();
   };
-  
+
   size_t push(FrameKind kind, T_sp key) {
     size_t frame = this->_Stack.size();
     this->_Stack.emplace_back(kind, key);
@@ -225,13 +225,10 @@ public:
 };
 };
 
-#define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(gctools::tagged_pointer<core::Closure>(this),lcc_arglist);
+#define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(gctools::tagged_pointer<core::Closure>(this), lcc_arglist);
 
 namespace core {
 void initialize_stacks();
 };
-
-
-
 
 #endif /* _core_stacks_H_ */

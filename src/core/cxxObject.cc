@@ -40,8 +40,7 @@ namespace core {
 EXPOSE_CLASS(core, CxxObject_O);
 
 void CxxObject_O::exposeCando(Lisp_sp e) {
-  class_<CxxObject_O>()
-    ;
+  class_<CxxObject_O>();
 }
 
 void CxxObject_O::exposePython(Lisp_sp lisp) {
@@ -49,6 +48,4 @@ void CxxObject_O::exposePython(Lisp_sp lisp) {
   PYTHON_CLASS(CorePkg, CxxObject, "", "", _lisp);
 #endif //]
 }
-
-
 };

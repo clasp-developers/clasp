@@ -157,15 +157,15 @@ namespace core {
 
 /*! Construct a symbol that is incomplete, it has no Class or Package */
 Symbol_O::Symbol_O(bool dummy) : T_O(),
-                                         _HomePackage(_Nil<T_O>()),
-                                         _Value(_Unbound<T_O>()),
-                                         _Function(_Unbound<T_O>()),
-                                         _SetfFunction(_Unbound<T_O>()),
-                                         _IsSpecial(false),
-                                         _IsConstant(false),
-                                         _ReadOnlyFunction(false),
-                                         _PropertyList(_Nil<List_V>()) { //no guard
-//  this->_Name = Str_O::create(name);
+                                 _HomePackage(_Nil<T_O>()),
+                                 _Value(_Unbound<T_O>()),
+                                 _Function(_Unbound<T_O>()),
+                                 _SetfFunction(_Unbound<T_O>()),
+                                 _IsSpecial(false),
+                                 _IsConstant(false),
+                                 _ReadOnlyFunction(false),
+                                 _PropertyList(_Nil<List_V>()) { //no guard
+  //  this->_Name = Str_O::create(name);
 }
 
 Symbol_O::Symbol_O() : Base(),
@@ -244,7 +244,8 @@ void Symbol_O::setf_plist(List_sp plist) {
 }
 
 void Symbol_O::sxhash_(HashGenerator &hg) const {
-  if ( hg.isFilling() ) this->_Name->sxhash_(hg);
+  if (hg.isFilling())
+    this->_Name->sxhash_(hg);
 }
 
 #define ARGS_Symbol_O_copy_symbol "(symbol &optional copy-properties)"
@@ -460,7 +461,6 @@ T_sp Symbol_O::funcall() {
 }
 #endif
 
-
 string Symbol_O::__repr__() const {
   return this->formattedName(false);
 };
@@ -493,18 +493,18 @@ void Symbol_O::exposeCando(Lisp_sp lisp) {
   _G();
   // TODO: By default these symbols like SPECIALP are being dumped into the COMMON-LISP package - don't do that.
   class_<Symbol_O>()
-    .def("core:specialp", &Symbol_O::specialP)
-    .def("core:STARmakeSpecial", &Symbol_O::makeSpecial)
-    .def("core:STARmakeConstant", &Symbol_O::makeConstant)
-    .def("core:fullName", &Symbol_O::fullName)
-    .def("core:asKeywordSymbol", &Symbol_O::asKeywordSymbol)
-    .def("core:setf_symbolFunction", &Symbol_O::setf_symbolFunction)
-    .def("makunbound", &Symbol_O::makunbound)
-    .def("cl:copy_symbol", &Symbol_O::copy_symbol,
-         ARGS_Symbol_O_copy_symbol,
-         DECL_Symbol_O_copy_symbol,
-         DOCS_Symbol_O_copy_symbol )
-  SYMBOL_EXPORT_SC_(ClPkg, make_symbol);
+      .def("core:specialp", &Symbol_O::specialP)
+      .def("core:STARmakeSpecial", &Symbol_O::makeSpecial)
+      .def("core:STARmakeConstant", &Symbol_O::makeConstant)
+      .def("core:fullName", &Symbol_O::fullName)
+      .def("core:asKeywordSymbol", &Symbol_O::asKeywordSymbol)
+      .def("core:setf_symbolFunction", &Symbol_O::setf_symbolFunction)
+      .def("makunbound", &Symbol_O::makunbound)
+      .def("cl:copy_symbol", &Symbol_O::copy_symbol,
+           ARGS_Symbol_O_copy_symbol,
+           DECL_Symbol_O_copy_symbol,
+           DOCS_Symbol_O_copy_symbol)
+      SYMBOL_EXPORT_SC_(ClPkg, make_symbol);
   Defun(make_symbol);
   SYMBOL_EXPORT_SC_(ClPkg, symbolName);
   Defun(symbolName);

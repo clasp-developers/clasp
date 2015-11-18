@@ -173,33 +173,32 @@ T_sp cl_unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig) {
   return _lisp->_true();
 }
 
-
-
 #define ARGS_cl_delete_package "(packages-to-unuse-desig &optional (package-desig *package*))"
 #define DECL_cl_delete_package ""
 #define DOCS_cl_delete_package "SeeCLHS unuse-package"
-T_sp cl_delete_package(T_sp pobj)
-{
+T_sp cl_delete_package(T_sp pobj) {
   T_sp hash, l;
   cl_index i;
   Package_sp pkg = coerce::packageDesignator(pobj);
-  if ( pkg == _lisp->commonLispPackage() || pkg == _lisp->keywordPackage() ) {
-    FEpackage_error("Cannot delete the package ~S", pkg, 0 );
+  if (pkg == _lisp->commonLispPackage() || pkg == _lisp->keywordPackage()) {
+    FEpackage_error("Cannot delete the package ~S", pkg, 0);
   }
 
-	/* 2) Now remove the package from the other packages that use it
+  /* 2) Now remove the package from the other packages that use it
 	 *    and empty the package.
 	 */
-  if ( pkg->packageName() == "" ) {
+  if (pkg->packageName() == "") {
     return _Nil<T_O>();
   }
-  for ( auto pi : pkg->_UsingPackages ) {
-    if (pi.notnilp()) cl_unuse_package(pi,pkg);
+  for (auto pi : pkg->_UsingPackages) {
+    if (pi.notnilp())
+      cl_unuse_package(pi, pkg);
   }
-  for ( auto pi : pkg->_PackagesUsedBy ) {
-    if (pi.notnilp()) cl_unuse_package(pkg,pi);
+  for (auto pi : pkg->_PackagesUsedBy) {
+    if (pi.notnilp())
+      cl_unuse_package(pkg, pi);
   }
-  
+
   IMPLEMENT_MEF(BF("Finish implementing delete-package"));
 #if 0
 
@@ -224,11 +223,6 @@ T_sp cl_delete_package(T_sp pobj)
   @(return ECL_T);
 #endif
 }
-
-
-
-
-
 
 #define ARGS_af_package_shadowing_symbols "(package_desig)"
 #define DECL_af_package_shadowing_symbols ""
@@ -338,7 +332,7 @@ List_sp cl_packageUsedByList(T_sp pkgDesig) {
 T_sp cl_packageName(T_sp pkgDesig) {
   Package_sp pkg = coerce::packageDesignator(pkgDesig);
   string name = pkg->packageName();
-  if ( name == "" ) {
+  if (name == "") {
     return _Nil<T_O>();
   }
   return Str_O::create(name);
@@ -462,8 +456,9 @@ Symbol_mv Package_O::_findSymbol(Str_sp nameKey) const {
     LOG(BF("Found it in the _ExternalsSymbols list - returning[%s]") % (_rep_(val)));
     return (Values(val, kw::_sym_external));
   }
-    // There is no need to look further if this is the keyword package
-  if ( this->isKeywordPackage() ) return Values(_Nil<T_O>(),_Nil<T_O>());
+  // There is no need to look further if this is the keyword package
+  if (this->isKeywordPackage())
+    return Values(_Nil<T_O>(), _Nil<T_O>());
   T_mv ej = this->_InternalSymbols->gethash(nameKey, _Nil<T_O>());
   val = gc::As<Symbol_sp>(ej);
   foundp = ej.second().isTrue();
@@ -471,12 +466,13 @@ Symbol_mv Package_O::_findSymbol(Str_sp nameKey) const {
     LOG(BF("Found it in the _InternalSymbols list - returning[%s]") % (_rep_(first)));
     return (Values(val, kw::_sym_internal));
   }
-  {_BLOCK_TRACEF(BF("Looking in _UsingPackages"));
+  {
+    _BLOCK_TRACEF(BF("Looking in _UsingPackages"));
     for (auto it = this->_UsingPackages.begin();
          it != this->_UsingPackages.end(); it++) {
       Package_sp upkg = *it;
       LOG(BF("Looking in package[%s]") % _rep_(upkg));
-      
+
       T_mv eu = upkg->_ExternalSymbols->gethash(nameKey, _Nil<T_O>());
       val = gc::As<Symbol_sp>(eu);
       foundp = ei.second().isTrue();
@@ -488,8 +484,6 @@ Symbol_mv Package_O::_findSymbol(Str_sp nameKey) const {
   }
   return (Values(_Nil<Symbol_O>(), _Nil<Symbol_O>()));
 }
-
-
 
 Symbol_mv Package_O::findSymbol(const string &name) const {
   Str_sp sname = Str_O::create(name);
@@ -598,16 +592,14 @@ bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
   return true;
 }
 
-
 /*! Return a NULL package if there is no conflict */
-Package_sp Package_O::export_conflict_or_NULL(Str_sp nameKey, Symbol_sp sym)
-{
-  for ( auto use_pkg : this->_PackagesUsedBy ) {
+Package_sp Package_O::export_conflict_or_NULL(Str_sp nameKey, Symbol_sp sym) {
+  for (auto use_pkg : this->_PackagesUsedBy) {
     Symbol_mv x = use_pkg->_findSymbol(nameKey);
     Symbol_sp xsym = x;
     Symbol_sp status = gc::As<Symbol_sp>(x.second());
-    if ( status.notnilp() && sym != xsym &&
-         !use_pkg->_Shadowing->contains(xsym)) {
+    if (status.notnilp() && sym != xsym &&
+        !use_pkg->_Shadowing->contains(xsym)) {
       return use_pkg;
     }
   }
@@ -615,14 +607,12 @@ Package_sp Package_O::export_conflict_or_NULL(Str_sp nameKey, Symbol_sp sym)
   return noConflict;
 }
 
-
 typedef enum { no_problem,
-               no_problem_already_exported, 
-               not_accessible_in_this_package, 
-               already_symbol_with_same_name_in_this_package, 
+               no_problem_already_exported,
+               not_accessible_in_this_package,
+               already_symbol_with_same_name_in_this_package,
                name_conflict_in_other_package } Export_errors;
-void Package_O::_export2(Symbol_sp sym)
-{
+void Package_O::_export2(Symbol_sp sym) {
   Str_sp nameKey = sym->_Name;
   Package_sp error_pkg;
   Export_errors error;
@@ -630,41 +620,41 @@ void Package_O::_export2(Symbol_sp sym)
     T_mv values = this->_findSymbol(nameKey);
     Symbol_sp foundSym = gc::As<Symbol_sp>(values);
     Symbol_sp status = gc::As<Symbol_sp>(values.second());
-    if ( status.nilp() ) {
+    if (status.nilp()) {
       error = not_accessible_in_this_package;
-    } else if ( foundSym != sym ) {
+    } else if (foundSym != sym) {
       error = already_symbol_with_same_name_in_this_package;
-    } else if ( status == kw::_sym_external ) {
+    } else if (status == kw::_sym_external) {
       error = no_problem_already_exported;
-    } else if ( Package_sp pkg_with_conflict = this->export_conflict_or_NULL(nameKey,sym) ) {
+    } else if (Package_sp pkg_with_conflict = this->export_conflict_or_NULL(nameKey, sym)) {
       error = name_conflict_in_other_package;
       error_pkg = pkg_with_conflict;
     } else {
-      if ( status == kw::_sym_internal ) {
+      if (status == kw::_sym_internal) {
         this->_InternalSymbols->remhash(nameKey);
       }
       this->_ExternalSymbols->hash_table_setf_gethash(nameKey, sym);
       error = no_problem;
     }
   } // TO HERE
-  if ( error == not_accessible_in_this_package ) {
+  if (error == not_accessible_in_this_package) {
     CEpackage_error("The symbol ~S is not accessible from ~S "
                     "and cannot be exported.",
                     "Import the symbol in the package and proceed.",
-                    this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_() );
-  } else if ( error == already_symbol_with_same_name_in_this_package ) {
+                    this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
+  } else if (error == already_symbol_with_same_name_in_this_package) {
     FEpackage_error("Cannot export the symbol ~S from ~S,~%"
                     "because there is already a symbol with the same name~%"
-                    "in the package.", this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_() );
-  } else if ( error == name_conflict_in_other_package ) {
+                    "in the package.",
+                    this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
+  } else if (error == name_conflict_in_other_package) {
     FEpackage_error("Cannot export the symbol ~S~%"
                     "from ~S,~%"
                     "because it will cause a name conflict~%"
-                    "in ~S.", this->asSmartPtr(), 3, sym.raw_(), this->asSmartPtr().raw_(), error_pkg.raw_());
+                    "in ~S.",
+                    this->asSmartPtr(), 3, sym.raw_(), this->asSmartPtr().raw_(), error_pkg.raw_());
   }
 }
-
- 
 
 bool Package_O::shadow(Str_sp symbolName) {
   _G();
@@ -679,7 +669,7 @@ bool Package_O::shadow(Str_sp symbolName) {
     LOG(BF("Created symbol<%s>") % _rep_(shadowSym));
     this->add_symbol_to_package(shadowSym->symbolName()->get().c_str(), shadowSym);
   }
-  this->_Shadowing->setf_gethash(shadowSym,_lisp->_true());
+  this->_Shadowing->setf_gethash(shadowSym, _lisp->_true());
   return true;
 }
 
@@ -708,10 +698,10 @@ void trapSymbol(Package_O *pkg, Symbol_sp sym, const string &name) {
 
 void Package_O::add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp) {
   //trapSymbol(this,sym,symName);
-  if ( _lisp->_TrapIntern ) {
-    if (strcmp(this->_Name.c_str(),_lisp->_TrapInternPackage.c_str()) == 0 ) {
-      if ( strcmp (symName,_lisp->_TrapInternName.c_str()) == 0 ) {
-        printf("%s:%d TRAPPED INTERN of symbol %s in package %s\n", __FILE__, __LINE__, symName, this->_Name.c_str() );
+  if (_lisp->_TrapIntern) {
+    if (strcmp(this->_Name.c_str(), _lisp->_TrapInternPackage.c_str()) == 0) {
+      if (strcmp(symName, _lisp->_TrapInternName.c_str()) == 0) {
+        printf("%s:%d TRAPPED INTERN of symbol %s in package %s\n", __FILE__, __LINE__, symName, this->_Name.c_str());
       }
     }
   }

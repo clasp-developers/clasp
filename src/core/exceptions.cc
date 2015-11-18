@@ -550,7 +550,7 @@ void af_wrongTypeKeyArg(const string &sourceFile, int lineno,
   _G();
   stringstream message;
   message << "In ";
-  if ( function.nilp() ) {
+  if (function.nilp()) {
     message << "an anonymous function ~A";
   } else {
     message << "function ~A";
@@ -571,7 +571,7 @@ void af_wrongTypeKeyArg(const string &sourceFile, int lineno,
 void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
   _G();
   stringstream message;
-  if ( function.nilp() ) {
+  if (function.nilp()) {
     message << "In an anonymous function,";
     message << "the value of the only argument is~&  ~S~&which is ";
     message << "not of the expected type ~A";
@@ -579,7 +579,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
                   Str_O::create(message.str()), // arg2
-                  Cons_O::createList( value, type),
+                  Cons_O::createList(value, type),
                   kw::_sym_expectedType, type,
                   kw::_sym_datum, value);
   } else {
@@ -590,7 +590,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
                   Str_O::create(message.str()), // arg2
-                  Cons_O::createList( function, value, type),
+                  Cons_O::createList(function, value, type),
                   kw::_sym_expectedType, type,
                   kw::_sym_datum, value);
   }
@@ -602,10 +602,10 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
 void af_wrongTypeArgument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
   _G();
   stringstream message;
-  if ( function.nilp() ) {
+  if (function.nilp()) {
     message << "In an anonymous function, "
-      "the value of an argument is~&  ~S~&which is "
-      "not of the expected type ~A";
+               "the value of an argument is~&  ~S~&which is "
+               "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
@@ -615,8 +615,8 @@ void af_wrongTypeArgument(const string &sourceFile, int lineno, Symbol_sp functi
                   kw::_sym_datum, value);
   } else {
     message << "In function ~A, "
-      "the value of an argument is~&  ~S~&which is "
-      "not of the expected type ~A";
+               "the value of an argument is~&  ~S~&which is "
+               "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
@@ -631,23 +631,23 @@ void af_wrongTypeArgument(const string &sourceFile, int lineno, Symbol_sp functi
 #define DECL_af_wrongTypeNthArg ""
 #define DOCS_af_wrongTypeNthArg "wrongTypeNthArg"
 void af_wrongTypeNthArg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
-  if ( function.nilp() ) {
+  if (function.nilp()) {
     stringstream message;
     message << "In an anonymous function, "
-      "the value of the ~:R argument is~&  ~S~&which is "
-      "not of the expected type ~A";
+               "the value of the ~:R argument is~&  ~S~&which is "
+               "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
                   Str_O::create(message.str()), // arg2
-                  Cons_O::createList( make_fixnum(narg), value, type),
+                  Cons_O::createList(make_fixnum(narg), value, type),
                   kw::_sym_expectedType, type,
                   kw::_sym_datum, value);
   } else {
     stringstream message;
     message << "In function ~A, "
-      "the value of the ~:R argument is~&  ~S~&which is "
-      "not of the expected type ~A";
+               "the value of the ~:R argument is~&  ~S~&which is "
+               "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_typeError,           //arg0
                   _Nil<T_O>(),                  // arg1
@@ -662,15 +662,15 @@ void af_wrongTypeNthArg(const string &sourceFile, int lineno, Symbol_sp function
 #define DECL_af_wrongIndex ""
 #define DOCS_af_wrongIndex "wrongIndex"
 void af_wrongIndex(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int nonincl_limit) {
-  if ( function.nilp() ) {
+  if (function.nilp()) {
     const char *message1 =
-      "In an anonymous function, "
-      "the ~*index into the object~% ~A.~%"
-      "takes a value ~D out of the range ~A.";
+        "In an anonymous function, "
+        "the ~*index into the object~% ~A.~%"
+        "takes a value ~D out of the range ~A.";
     const char *message2 =
-      "In an anonymous function, "
-      "the ~:R index into the object~% ~A~%"
-      "takes a value ~D out of the range ~A.";
+        "In an anonymous function, "
+        "the ~:R index into the object~% ~A~%"
+        "takes a value ~D out of the range ~A.";
     T_sp limit = Integer_O::create((gc::Fixnum)(nonincl_limit - 1));
     T_sp type = Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), limit);
     const char *msg = (which < 0) ? message1 : message2;
@@ -679,18 +679,18 @@ void af_wrongIndex(const string &sourceFile, int lineno, Symbol_sp function, T_s
                   cl::_sym_typeError, //arg0
                   _Nil<T_O>(),        // arg1
                   message,            // arg2
-                  Cons_O::createList( make_fixnum(which + 1), array, index, type),
+                  Cons_O::createList(make_fixnum(which + 1), array, index, type),
                   kw::_sym_expectedType, type,
                   kw::_sym_datum, index);
   } else {
     const char *message1 =
-      "In function ~A, "
-      "the ~*index into the object~% ~A.~%"
-      "takes a value ~D out of the range ~A.";
+        "In function ~A, "
+        "the ~*index into the object~% ~A.~%"
+        "takes a value ~D out of the range ~A.";
     const char *message2 =
-      "In function ~A, "
-      "the ~:R index into the object~% ~A~%"
-      "takes a value ~D out of the range ~A.";
+        "In function ~A, "
+        "the ~:R index into the object~% ~A~%"
+        "takes a value ~D out of the range ~A.";
     T_sp limit = Integer_O::create((gc::Fixnum)(nonincl_limit - 1));
     T_sp type = Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), limit);
     const char *msg = (which < 0) ? message1 : message2;
@@ -744,9 +744,9 @@ void FEerror(const string &fmt, int nargs, ...) {
     l << arg;
     --nargs;
   }
-  eval::funcall(core::_sym_universalErrorHandler
-                , _Nil<T_O>() // not correctable
-                , sfmt, l.cons());
+  eval::funcall(core::_sym_universalErrorHandler, _Nil<T_O>() // not correctable
+                ,
+                sfmt, l.cons());
   UNREACHABLE();
 }
 
@@ -777,17 +777,16 @@ T_sp CEerror(T_sp c, const char *err, int narg, ...) {
   return result;
 }
 
-
-void CEpackage_error(const char* fmt,
-                     const char* continue_message,
+void CEpackage_error(const char *fmt,
+                     const char *continue_message,
                      T_sp package,
-                     int nargs, ... )
-{
+                     int nargs, ...) {
   clasp_va_list args;
   clasp_va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
   clasp_va_end(args);
-  if ( fmtargs.nilp() ) fmtargs = Cons_O::create(package);
+  if (fmtargs.nilp())
+    fmtargs = Cons_O::create(package);
   eval::funcall(core::_sym_signalSimpleError,
                 cl::_sym_package_error,
                 Str_O::create(continue_message),
@@ -797,15 +796,15 @@ void CEpackage_error(const char* fmt,
                 package);
 }
 
-void FEpackage_error(const char* fmt,
+void FEpackage_error(const char *fmt,
                      T_sp package,
-                     int nargs, ... )
-{
+                     int nargs, ...) {
   clasp_va_list args;
   clasp_va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
   clasp_va_end(args);
-  if ( fmtargs.nilp() ) fmtargs = Cons_O::create(package);
+  if (fmtargs.nilp())
+    fmtargs = Cons_O::create(package);
   eval::funcall(core::_sym_signalSimpleError,
                 cl::_sym_package_error,
                 _Nil<T_O>(),
@@ -815,13 +814,10 @@ void FEpackage_error(const char* fmt,
                 package);
 }
 
-
-void Warn(T_sp datum, List_sp arguments)
-{
-  eval::applyLastArgsPLUSFirst(cl::_sym_warn,arguments,datum);
+void Warn(T_sp datum, List_sp arguments) {
+  eval::applyLastArgsPLUSFirst(cl::_sym_warn, arguments, datum);
 }
 
-                    
 void clasp_internal_error(const char *msg) {
   printf("%s:%d %s\n", __FILE__, __LINE__, msg);
   SIMPLE_ERROR(BF("Internal error: %s\n") % msg);

@@ -57,7 +57,6 @@ public: // Functions here
   virtual T_sp elt(int index) const;
   virtual T_sp setf_elt(int index, T_sp value);
 
-
   string __repr__() const;
 
   cl_index fillPointer() const { return this->_FillPtr; };

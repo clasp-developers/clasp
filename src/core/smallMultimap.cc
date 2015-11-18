@@ -52,15 +52,15 @@ SmallMultimap_sp core_makeSmallMultimap() {
 };
 
 void SmallMultimap_O::describe() {
-  for ( auto it = this->map.begin(); it!=this->map.end(); ++it ) {
-    printf("%s:%d  key: %s   value: %s\n", __FILE__, __LINE__, _rep_(it->first).c_str(), _rep_(it->second).c_str() );
+  for (auto it = this->map.begin(); it != this->map.end(); ++it) {
+    printf("%s:%d  key: %s   value: %s\n", __FILE__, __LINE__, _rep_(it->first).c_str(), _rep_(it->second).c_str());
   }
 }
 
 void SmallMultimap_O::describeRange(T_sp key) {
-  pair<map_type::iterator,map_type::iterator> range = this->map.equal_range(key);
-  for ( auto it = range.first; it!=range.second; ++it ) {
-    printf("%s:%d  key: %s   value: %s\n", __FILE__, __LINE__, _rep_(it->first).c_str(), _rep_(it->second).c_str() );
+  pair<map_type::iterator, map_type::iterator> range = this->map.equal_range(key);
+  for (auto it = range.first; it != range.second; ++it) {
+    printf("%s:%d  key: %s   value: %s\n", __FILE__, __LINE__, _rep_(it->first).c_str(), _rep_(it->second).c_str());
   }
 }
 
@@ -69,14 +69,12 @@ void SmallMultimap_O::insert(T_sp key, T_sp val) {
   (void)found;
 }
 
-
 void SmallMultimap_O::exposeCando(Lisp_sp lisp) {
   class_<SmallMultimap_O>()
       .def("small_multimap_describe", &SmallMultimap_O::describe)
       .def("small_multimap_describe_range", &SmallMultimap_O::describeRange)
       .def("small_multimap_insert", &SmallMultimap_O::insert)
-      .def("small_multimap_size", &SmallMultimap_O::size)
-    ;
+      .def("small_multimap_size", &SmallMultimap_O::size);
   CoreDefun(makeSmallMultimap);
 }
 

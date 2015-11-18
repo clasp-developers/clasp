@@ -269,48 +269,42 @@ file_kind(const char *filename, bool follow_links) {
   Symbol_sp output;
   struct stat buf;
 #ifdef DEBUG_FILE_KIND
-  printf("%s:%d   (file_kind %s %d)\n", __FILE__, __LINE__, filename, follow_links );
-  #ifdef HAVE_LSTAT
-  printf("%s:%d    Using lstat\n", __FILE__, __LINE__ );
-  #endif
+  printf("%s:%d   (file_kind %s %d)\n", __FILE__, __LINE__, filename, follow_links);
+#ifdef HAVE_LSTAT
+  printf("%s:%d    Using lstat\n", __FILE__, __LINE__);
+#endif
 #endif
 
 #ifdef HAVE_LSTAT
   if ((follow_links ? safe_stat : safe_lstat)(filename, &buf) < 0)
 #else
-    if (safe_stat(filename, &buf) < 0) 
+  if (safe_stat(filename, &buf) < 0)
 #endif
-    {
-      output = _Nil<Symbol_O>();
-    }
-#ifdef HAVE_LSTAT
-  else if (S_ISLNK(buf.st_mode))
   {
+    output = _Nil<Symbol_O>();
+  }
+#ifdef HAVE_LSTAT
+  else if (S_ISLNK(buf.st_mode)) {
     output = kw::_sym_link;
 #ifdef DEBUG_FILE_KIND
-    printf("%s:%d   output = :LINK\n", __FILE__, __LINE__ );
+    printf("%s:%d   output = :LINK\n", __FILE__, __LINE__);
 #endif
   }
 #endif
-  else if (S_ISDIR(buf.st_mode))
-  {
+  else if (S_ISDIR(buf.st_mode)) {
     output = kw::_sym_directory;
 #ifdef DEBUG_FILE_KIND
-    printf("%s:%d   output = :DIRECTORY\n", __FILE__, __LINE__ );
+    printf("%s:%d   output = :DIRECTORY\n", __FILE__, __LINE__);
 #endif
-  }
-  else if (S_ISREG(buf.st_mode))
-  {
+  } else if (S_ISREG(buf.st_mode)) {
     output = kw::_sym_file;
 #ifdef DEBUG_FILE_KIND
-    printf("%s:%d   output = :FILE\n", __FILE__, __LINE__ );
+    printf("%s:%d   output = :FILE\n", __FILE__, __LINE__);
 #endif
-  }
-  else
-  {
+  } else {
     output = kw::_sym_special;
 #ifdef DEBUG_FILE_KIND
-    printf("%s:%d   output = :SPECIAL\n", __FILE__, __LINE__ );
+    printf("%s:%d   output = :SPECIAL\n", __FILE__, __LINE__);
 #endif
   }
 #ifdef DEBUG_FILE_KIND
@@ -319,26 +313,24 @@ file_kind(const char *filename, bool follow_links) {
   return output;
 }
 
-
 static Symbol_sp
-smart_file_kind(Str_sp sfilename, bool follow_links)
-{
-  if ( follow_links ) {
+smart_file_kind(Str_sp sfilename, bool follow_links) {
+  if (follow_links) {
     Symbol_sp kind_follow_links = file_kind((char *)(sfilename->c_str()), true);
-    if ( kind_follow_links.notnilp() ) {
+    if (kind_follow_links.notnilp()) {
       return kind_follow_links;
     } else {
       // If its a broken link return _sym_file
       Symbol_sp kind_no_follow_links = file_kind((char *)(sfilename->c_str()), false);
-      if ( kind_no_follow_links.nilp() ) return _Nil<T_O>();
+      if (kind_no_follow_links.nilp())
+        return _Nil<T_O>();
       return kw::_sym_broken_link;
     }
   } else {
-    Symbol_sp kind = file_kind((char *)(sfilename->c_str()), false );
+    Symbol_sp kind = file_kind((char *)(sfilename->c_str()), false);
     return kind;
   }
 }
-
 
 #define ARGS_af_file_kind "(filename follow-links)"
 #define DECL_af_file_kind ""
@@ -347,7 +339,7 @@ Symbol_sp af_file_kind(T_sp filename, bool follow_links) {
   _G();
   ASSERT(filename);
   Str_sp sfilename = coerce_to_posix_filename(filename);
-  return smart_file_kind(sfilename,follow_links);
+  return smart_file_kind(sfilename, follow_links);
 }
 
 #if defined(HAVE_LSTAT) && !defined(ECL_MS_WINDOWS_HOST)
@@ -493,12 +485,12 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
   T_sp original_pathname = pathname;
   T_sp original_filename = filename;
   kind = file_kind((char *)gc::As<Str_sp>(filename)->c_str(), false);
-//  kind = smart_file_kind( filename, false);
+  //  kind = smart_file_kind( filename, false);
   if (kind.nilp()) {
     CANNOT_OPEN_FILE_ERROR(filename);
 #ifdef HAVE_LSTAT
   } else if (kind == kw::_sym_link && (flags & FOLLOW_SYMLINKS)) {
-                /* The link might be a relative pathname. In that case
+    /* The link might be a relative pathname. In that case
                  * we have to merge with the original pathname.  On
                  * the other hand, if the link is broken – return file
                  * truename "as is". */
@@ -510,12 +502,12 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
     filename = core_readlink(filename);
     Pathname_sp pn = gc::As<Pathname_sp>(pathname);
     pathname = Pathname_O::makePathname(pn->_Host,
-                                          pn->_Device,
-                                          pn->_Directory,
-                                          _Nil<T_O>(),
-                                          _Nil<T_O>(),
-                                          _Nil<T_O>(),
-                                          kw::_sym_local);
+                                        pn->_Device,
+                                        pn->_Directory,
+                                        _Nil<T_O>(),
+                                        _Nil<T_O>(),
+                                        _Nil<T_O>(),
+                                        kw::_sym_local);
     pathname = clasp_mergePathnames(filename, pathname, kw::_sym_default);
     filename = clasp_namestring(pathname, CLASP_NAMESTRING_FORCE_BASE_STRING);
     Pathname_sp truename = cl_truename(pathname);
@@ -547,12 +539,11 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
   return Values(gc::As<Pathname_sp>(pathname), kind);
 }
 
-
 #define ARGS_core_file_truename "(pathname filename follow-links)"
 #define DECL_core_file_truename ""
 #define DOCS_core_file_truename "truename"
 Pathname_mv core_file_truename(T_sp pathname, T_sp filename, bool follow_links) {
-  return file_truename(pathname,filename,follow_links);
+  return file_truename(pathname, filename, follow_links);
 }
 
 /*
@@ -941,7 +932,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
   for (;;) {
     if (hFind == NULL) {
       T_sp aux = make_constant_base_string(".\\*");
-      T_sp mask = af_base_string_concatenate(2,prefix,aux);
+      T_sp mask = af_base_string_concatenate(2, prefix, aux);
       hFind = FindFirstFile((char *)mask->c_str(), &fd);
       if (hFind == INVALID_HANDLE_VALUE) {
         out = _Nil<T_O>();
@@ -981,7 +972,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
     if (!string_match(text, text_mask))
       continue;
     component = Str_O::create(text);
-    component = af_base_string_concatenate(LCC_PASS_ARGS2_ELLIPSIS(prefix.raw_(),component.raw_()));
+    component = af_base_string_concatenate(LCC_PASS_ARGS2_ELLIPSIS(prefix.raw_(), component.raw_()));
     component_path = cl_pathname(component);
     if (!pathname_mask.nilp()) {
       if (!af_pathnameMatchP(component, pathname_mask)) // should this not be inverted?
@@ -1010,7 +1001,7 @@ OUTPUT:
 #define DECL_core_mkstemp ""
 #define DOCS_core_mkstemp "mkstemp"
 T_sp core_mkstemp(Str_sp thetemplate) {
-//  cl_index l;
+  //  cl_index l;
   int fd;
 
 #if defined(ECL_MS_WINDOWS_HOST)
@@ -1234,37 +1225,33 @@ T_sp core_mkstemp(T_sp template)
 	}
 #endif // working
 
-
 #define ARGS_core_rmdir "(directory)"
 #define DECL_core_rmdir ""
 #define DOCS_core_rmdir "Like unix rmdir"
-T_sp core_rmdir(T_sp directory)
-{
+T_sp core_rmdir(T_sp directory) {
   return af_deleteFile(eval::funcall(cl::_sym_makePathname,
                                      kw::_sym_name, _Nil<T_O>(),
                                      kw::_sym_type, _Nil<T_O>(),
                                      kw::_sym_defaults, directory));
 }
 
-
 #define ARGS_core_chmod "(file mode)"
 #define DECL_core_chmod ""
 #define DOCS_core_chmod "chmod - use octal values for mode for convenience (eg #o777)"
-void core_chmod(T_sp file, T_sp mode)
-{
+void core_chmod(T_sp file, T_sp mode) {
   mode_t code = clasp_to_uint32_t(mode);
   T_sp filename = coerce_to_posix_filename(file);
-  unlikely_if (chmod((char*)gc::As<Str_sp>(filename)->c_str(), code)) {
+  unlikely_if(chmod((char *)gc::As<Str_sp>(filename)->c_str(), code)) {
     T_sp c_error = clasp_strerror(errno);
     const char *msg = "Unable to change mode of file ~S to value ~O"
-      "~%C library error: ~S";
+                      "~%C library error: ~S";
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_fileError, /* condition */
-                  _lisp->_true(), /* continuable */
-			      /* format */
+                  _lisp->_true(),     /* continuable */
+                                      /* format */
                   Str_O::create(msg),
-                  Cons_O::createList( file, mode, c_error), /* format args */
-                  kw::_sym_pathname, /* file-error options */
+                  Cons_O::createList(file, mode, c_error), /* format args */
+                  kw::_sym_pathname,                       /* file-error options */
                   file);
   }
 }

@@ -33,13 +33,11 @@ THE SOFTWARE.
 
 namespace core {
 
-
-
 //
 // Constructor
 //
 BitVector_O::BitVector_O(size_t sz) {
-  this->bits.resize(((sz-1)/CHAR_BIT) + 1, 0);
+  this->bits.resize(((sz - 1) / CHAR_BIT) + 1, 0);
 }
 
 BitVector_O::BitVector_O(const BitVector_O &bv) {
@@ -69,14 +67,14 @@ T_sp BitVector_O::rowMajorAref(cl_index idx) const {
 }
 
 void BitVector_O::do_subseq(BitVector_sp result, int start, int iend) const {
- int idest = 0;
-  for ( int i(start); i<iend; ++i ) {
-    result->setBit(idest++,this->testBit(i));
+  int idest = 0;
+  for (int i(start); i < iend; ++i) {
+    result->setBit(idest++, this->testBit(i));
   }
 }
 
 T_sp SimpleBitVector_O::subseq(int start, T_sp end) const {
-  if ( start < 0 ) {
+  if (start < 0) {
     SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
   }
   int iend;
@@ -85,20 +83,20 @@ T_sp SimpleBitVector_O::subseq(int start, T_sp end) const {
   } else {
     iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }
-  if ( iend < start) {
+  if (iend < start) {
     SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->dimension());
   }
-  if ( iend > this->dimension() ) {
+  if (iend > this->dimension()) {
     iend = this->dimension();
   }
-  int ilen = iend-start;
+  int ilen = iend - start;
   SimpleBitVector_sp result = SimpleBitVector_O::create(ilen);
-  this->do_subseq(result,start,iend);
+  this->do_subseq(result, start, iend);
   return result;
 }
 
 T_sp BitVectorWithFillPtr_O::subseq(int start, T_sp end) const {
-  if ( start < 0 ) {
+  if (start < 0) {
     SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
   }
   int iend;
@@ -107,18 +105,17 @@ T_sp BitVectorWithFillPtr_O::subseq(int start, T_sp end) const {
   } else {
     iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }
-  if ( iend < start) {
-      SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->dimension());
+  if (iend < start) {
+    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->dimension());
   }
-  if ( iend > this->dimension() ) {
+  if (iend > this->dimension()) {
     iend = this->dimension();
   }
-  int ilen = iend-start;
-  BitVectorWithFillPtr_sp result = BitVectorWithFillPtr_O::create(ilen,ilen,this->_adjustable);
-  this->do_subseq(result,start,iend);
+  int ilen = iend - start;
+  BitVectorWithFillPtr_sp result = BitVectorWithFillPtr_O::create(ilen, ilen, this->_adjustable);
+  this->do_subseq(result, start, iend);
   return result;
 }
-
 
 void BitVector_O::getOnIndices(vector<uint> &res) {
   _G();
@@ -355,87 +352,74 @@ void BitVector_O::exposePython(Lisp_sp lisp) {
 
 EXPOSE_CLASS(core, BitVector_O);
 
-
 SimpleBitVector_sp SimpleBitVector_O::create(size_t size) {
-  GC_ALLOCATE_VARIADIC(SimpleBitVector_O, sbv ,size);
+  GC_ALLOCATE_VARIADIC(SimpleBitVector_O, sbv, size);
   return sbv;
 }
 
 void SimpleBitVector_O::exposeCando(Lisp_sp lisp) {
-  class_<SimpleBitVector_O>()
-    ;
-  af_def(CorePkg,"make-simple-bit-vector",(SimpleBitVector_sp(*)(size_t)) &SimpleBitVector_O::create);
+  class_<SimpleBitVector_O>();
+  af_def(CorePkg, "make-simple-bit-vector", (SimpleBitVector_sp (*)(size_t)) & SimpleBitVector_O::create);
 }
 void SimpleBitVector_O::exposePython(Lisp_sp lisp) {
 #ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp)
-    ;
+  PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp);
 #endif
 }
 
 EXPOSE_CLASS(core, SimpleBitVector_O);
 
-
-
-BitVectorWithFillPtr_sp BitVectorWithFillPtr_O::create(size_t size, size_t fill_ptr, bool adjust )
-{
-  GC_ALLOCATE_VARIADIC(BitVectorWithFillPtr_O, sbv ,size, fill_ptr, adjust);
+BitVectorWithFillPtr_sp BitVectorWithFillPtr_O::create(size_t size, size_t fill_ptr, bool adjust) {
+  GC_ALLOCATE_VARIADIC(BitVectorWithFillPtr_O, sbv, size, fill_ptr, adjust);
   return sbv;
 }
 
-
 T_sp BitVectorWithFillPtr_O::vectorPush(T_sp newElement) {
-  if ( !newElement.fixnump() ) {
-    TYPE_ERROR(newElement,cl::_sym_bit);
+  if (!newElement.fixnump()) {
+    TYPE_ERROR(newElement, cl::_sym_bit);
   }
   Fixnum b = newElement.unsafe_fixnum();
-  if ( b !=0 && b != 1 ) {
-    TYPE_ERROR(newElement,cl::_sym_bit);
+  if (b != 0 && b != 1) {
+    TYPE_ERROR(newElement, cl::_sym_bit);
   }
-  if ( !this->_adjustable ) {
-    if ( this->_fill_ptr>= this->BitVector_O::dimension() ) {
+  if (!this->_adjustable) {
+    if (this->_fill_ptr >= this->BitVector_O::dimension()) {
       return _Nil<T_O>();
     }
   }
-  this->setBit(this->_fill_ptr,b);
+  this->setBit(this->_fill_ptr, b);
   ++this->_fill_ptr;
-  return clasp_make_fixnum(this->_fill_ptr-1);
+  return clasp_make_fixnum(this->_fill_ptr - 1);
 }
 
 Fixnum_sp BitVectorWithFillPtr_O::vectorPushExtend(T_sp newElement, int extension) {
-  if ( !this->_adjustable ) {
+  if (!this->_adjustable) {
     SIMPLE_ERROR(BF("This bit-vector is not extensible"));
   }
-  if ( !newElement.fixnump() ) {
-    TYPE_ERROR(newElement,cl::_sym_bit);
+  if (!newElement.fixnump()) {
+    TYPE_ERROR(newElement, cl::_sym_bit);
   }
   Fixnum b = newElement.unsafe_fixnum();
-  if ( b !=0 && b != 1 ) {
-    TYPE_ERROR(newElement,cl::_sym_bit);
+  if (b != 0 && b != 1) {
+    TYPE_ERROR(newElement, cl::_sym_bit);
   }
-  this->setBit(this->_fill_ptr,b);
+  this->setBit(this->_fill_ptr, b);
   ++this->_fill_ptr;
-  if ( this->_fill_ptr > this->BitVector_O::dimension() ) {
-    this->bits.resize((this->_fill_ptr-1+extension)/CHAR_BIT+1,0);
+  if (this->_fill_ptr > this->BitVector_O::dimension()) {
+    this->bits.resize((this->_fill_ptr - 1 + extension) / CHAR_BIT + 1, 0);
   }
-  return clasp_make_fixnum(this->_fill_ptr-1);
+  return clasp_make_fixnum(this->_fill_ptr - 1);
 }
 
-  
-
 void BitVectorWithFillPtr_O::exposeCando(Lisp_sp lisp) {
-  class_<BitVectorWithFillPtr_O>()
-    ;
-  af_def(CorePkg,"make-bit-vector-with-fill-ptr",(BitVectorWithFillPtr_sp(*)(size_t,size_t,bool))&BitVectorWithFillPtr_O::create);
+  class_<BitVectorWithFillPtr_O>();
+  af_def(CorePkg, "make-bit-vector-with-fill-ptr", (BitVectorWithFillPtr_sp (*)(size_t, size_t, bool)) & BitVectorWithFillPtr_O::create);
 }
 void BitVectorWithFillPtr_O::exposePython(Lisp_sp lisp) {
 #ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp)
-    ;
+  PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp);
 #endif
 }
 
 EXPOSE_CLASS(core, BitVectorWithFillPtr_O);
-
-
 };

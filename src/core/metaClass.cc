@@ -105,7 +105,7 @@ T_sp af_allocateRawClass(T_sp orig, Class_sp metaClass, int slots, T_sp classNam
   return newClass;
 };
 
-Class_O::Class_O() : Class_O::Base(), _Signature_ClassSlots(_Unbound<T_O>()), _theCreator() {};
+Class_O::Class_O() : Class_O::Base(), _Signature_ClassSlots(_Unbound<T_O>()), _theCreator(){};
 
 void Class_O::initializeSlots(int slots) {
   if (slots < Class_O::NumberOfClassSlots) {
@@ -300,71 +300,71 @@ namespace gcroots {
 
 namespace core {
 
-    void Class_O::lowLevel_calculateClassPrecedenceList() {
-        _G();
-        using namespace boost;
-        HashTableEq_sp supers = HashTableEq_O::create_default();
-        VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
-        this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Class_O>());
-        vector<list<int>> graph(cl_length(arrayedSupers));
+void Class_O::lowLevel_calculateClassPrecedenceList() {
+  _G();
+  using namespace boost;
+  HashTableEq_sp supers = HashTableEq_O::create_default();
+  VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
+  this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Class_O>());
+  vector<list<int>> graph(cl_length(arrayedSupers));
 
-        class TopoSortSetup : public KeyValueMapper {
-        private:
-            HashTable_sp supers;
-            vector<list<int>> *graphP;
+  class TopoSortSetup : public KeyValueMapper {
+  private:
+    HashTable_sp supers;
+    vector<list<int>> *graphP;
 
-        public:
-            TopoSortSetup(HashTable_sp asupers, vector<list<int>> *gP) : supers(asupers), graphP(gP){};
-            virtual bool mapKeyValue(T_sp key, T_sp value) {
-                Fixnum_sp fnValue(gc::As<Fixnum_sp>(value));
-                int mcIndex = unbox_fixnum(fnValue);
-                Class_sp mc = gc::As<Class_sp>(key);
-                for (auto mit : (List_sp)(mc->directSuperclasses())) {
-                    T_sp val = this->supers->gethash(oCar(mit));
-                    ASSERTF(val.notnilp(),BF("val.notnilp() failed"));
-                    Fixnum_sp fnval = gc::As<Fixnum_sp>(val);
-                    int aSuperIndex = unbox_fixnum(fnval);
-                    (*this->graphP)[mcIndex].push_front(aSuperIndex);
-                }
-                return true;
-            }
-        };
-        TopoSortSetup topoSortSetup(supers, &graph);
-        supers->lowLevelMapHash(&topoSortSetup);
-#ifdef DEBUG_ON
-        {
-            for (size_t zi(0), ziEnd(cl_length(arrayedSupers)); zi < ziEnd; ++zi) {
-                stringstream ss;
-                ss << (BF("graph[%d/name=%s] = ") % zi % arrayedSupers->operator[](zi).as<Class_O>()->instanceClassName()).str();
-                for (list<int>::const_iterator it = graph[zi].begin(); it != graph[zi].end(); it++) {
-                    ss << *it << "-> ";
-                }
-                ss << ";";
-                LOG(BF("%s") % ss.str());
-            }
-        }
-#endif
-        deque<int> topo_order;
-        topological_sort(graph, front_inserter(topo_order), vertex_index_map(identity_property_map()));
-#ifdef DEBUG_ON
-        {
-            stringstream ss;
-            ss << "Topologically sorted superclasses ";
-            for (deque<int>::const_reverse_iterator it = topo_order.rbegin(); it != topo_order.rend(); it++) {
-                Class_sp mc = arrayedSupers->operator[](*it).as<Class_O>();
-                ss << "-> " << mc->className() << "/" << mc->instanceClassName();
-            }
-            LOG(BF("%s") % ss.str());
-        }
-#endif
-        List_sp cpl = _Nil<T_O>();
-        for (deque<int>::const_reverse_iterator it = topo_order.rbegin(); it != topo_order.rend(); it++) {
-            Class_sp mc = gc::As<Class_sp>(arrayedSupers->operator[](*it));
-            LOG(BF("pushing superclass[%s] to front of ClassPrecedenceList") % mc->instanceClassName());
-            cpl = Cons_O::create(mc, cpl);
-        }
-        this->instanceSet(REF_CLASS_PRECEDENCE_LIST, cpl);
+  public:
+    TopoSortSetup(HashTable_sp asupers, vector<list<int>> *gP) : supers(asupers), graphP(gP){};
+    virtual bool mapKeyValue(T_sp key, T_sp value) {
+      Fixnum_sp fnValue(gc::As<Fixnum_sp>(value));
+      int mcIndex = unbox_fixnum(fnValue);
+      Class_sp mc = gc::As<Class_sp>(key);
+      for (auto mit : (List_sp)(mc->directSuperclasses())) {
+        T_sp val = this->supers->gethash(oCar(mit));
+        ASSERTF(val.notnilp(), BF("val.notnilp() failed"));
+        Fixnum_sp fnval = gc::As<Fixnum_sp>(val);
+        int aSuperIndex = unbox_fixnum(fnval);
+        (*this->graphP)[mcIndex].push_front(aSuperIndex);
+      }
+      return true;
     }
+  };
+  TopoSortSetup topoSortSetup(supers, &graph);
+  supers->lowLevelMapHash(&topoSortSetup);
+#ifdef DEBUG_ON
+  {
+    for (size_t zi(0), ziEnd(cl_length(arrayedSupers)); zi < ziEnd; ++zi) {
+      stringstream ss;
+      ss << (BF("graph[%d/name=%s] = ") % zi % arrayedSupers->operator[](zi).as<Class_O>()->instanceClassName()).str();
+      for (list<int>::const_iterator it = graph[zi].begin(); it != graph[zi].end(); it++) {
+        ss << *it << "-> ";
+      }
+      ss << ";";
+      LOG(BF("%s") % ss.str());
+    }
+  }
+#endif
+  deque<int> topo_order;
+  topological_sort(graph, front_inserter(topo_order), vertex_index_map(identity_property_map()));
+#ifdef DEBUG_ON
+  {
+    stringstream ss;
+    ss << "Topologically sorted superclasses ";
+    for (deque<int>::const_reverse_iterator it = topo_order.rbegin(); it != topo_order.rend(); it++) {
+      Class_sp mc = arrayedSupers->operator[](*it).as<Class_O>();
+      ss << "-> " << mc->className() << "/" << mc->instanceClassName();
+    }
+    LOG(BF("%s") % ss.str());
+  }
+#endif
+  List_sp cpl = _Nil<T_O>();
+  for (deque<int>::const_reverse_iterator it = topo_order.rbegin(); it != topo_order.rend(); it++) {
+    Class_sp mc = gc::As<Class_sp>(arrayedSupers->operator[](*it));
+    LOG(BF("pushing superclass[%s] to front of ClassPrecedenceList") % mc->instanceClassName());
+    cpl = Cons_O::create(mc, cpl);
+  }
+  this->instanceSet(REF_CLASS_PRECEDENCE_LIST, cpl);
+}
 
 #if 0
     void Class_O::lowLevel_calculateClassPrecedenceList()
@@ -425,42 +425,42 @@ namespace core {
     }
 #endif
 
-    void Class_O::addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp className) {
-        _OF();
-        Class_sp cl = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, className, _lisp->_true()));
-        // When booting _DirectSuperClasses may be undefined
-        ASSERT(this->directSuperclasses());
-        List_sp dsc = _Nil<List_V>();
-        if (!this->directSuperclasses().unboundp()) {
-            dsc = this->directSuperclasses();
-        }
-        this->instanceSet(REF_DIRECT_SUPERCLASSES, Cons_O::create(cl, dsc));
-    }
+void Class_O::addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp className) {
+  _OF();
+  Class_sp cl = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, className, _lisp->_true()));
+  // When booting _DirectSuperClasses may be undefined
+  ASSERT(this->directSuperclasses());
+  List_sp dsc = _Nil<List_V>();
+  if (!this->directSuperclasses().unboundp()) {
+    dsc = this->directSuperclasses();
+  }
+  this->instanceSet(REF_DIRECT_SUPERCLASSES, Cons_O::create(cl, dsc));
+}
 
-    void Class_O::addInstanceBaseClass(Symbol_sp className) {
-        _OF();
-        this->addInstanceBaseClassDoNotCalculateClassPrecedenceList(className);
-        this->lowLevel_calculateClassPrecedenceList();
-    }
+void Class_O::addInstanceBaseClass(Symbol_sp className) {
+  _OF();
+  this->addInstanceBaseClassDoNotCalculateClassPrecedenceList(className);
+  this->lowLevel_calculateClassPrecedenceList();
+}
 
-    void Class_O::setInstanceBaseClasses(List_sp classes) {
-        _OF();
-        this->instanceSet(REF_DIRECT_SUPERCLASSES, cl_copyList(classes));
-        this->lowLevel_calculateClassPrecedenceList();
-    }
+void Class_O::setInstanceBaseClasses(List_sp classes) {
+  _OF();
+  this->instanceSet(REF_DIRECT_SUPERCLASSES, cl_copyList(classes));
+  this->lowLevel_calculateClassPrecedenceList();
+}
 
-    List_sp Class_O::directSuperclasses() const {
-        _OF();
-        return coerce_to_list(this->instanceRef(REF_DIRECT_SUPERCLASSES));
-    }
+List_sp Class_O::directSuperclasses() const {
+  _OF();
+  return coerce_to_list(this->instanceRef(REF_DIRECT_SUPERCLASSES));
+}
 
-    void Class_O::appendDirectSuperclassAndResetClassPrecedenceList(Class_sp superClass) {
-        _G();
-        List_sp directSuperclasses = this->directSuperclasses();
-        directSuperclasses = Cons_O::create(superClass, directSuperclasses);
-        this->instanceSet(REF_DIRECT_SUPERCLASSES, directSuperclasses);
-        this->instanceSet(REF_CLASS_PRECEDENCE_LIST, _Nil<T_O>());
-    }
+void Class_O::appendDirectSuperclassAndResetClassPrecedenceList(Class_sp superClass) {
+  _G();
+  List_sp directSuperclasses = this->directSuperclasses();
+  directSuperclasses = Cons_O::create(superClass, directSuperclasses);
+  this->instanceSet(REF_DIRECT_SUPERCLASSES, directSuperclasses);
+  this->instanceSet(REF_CLASS_PRECEDENCE_LIST, _Nil<T_O>());
+}
 
 /*
   __BEGIN_DOC(classes.classMethods.describe,describe)
@@ -469,131 +469,131 @@ namespace core {
   Dumps a description of the class to stdout.
   __END_DOC
 */
-    void Class_O::describe(T_sp stream) {
-      stringstream ss;
-      ss << (BF("Class instanceClassName %s\n") % this->instanceClassName().c_str()).str();
-      ss << (BF("FullName %s\n") % this->name()->fullName().c_str()).str();
-      if (this->directSuperclasses().nilp()) {
-        ss << (BF("There are no super-classes!!!!!!\n")).str();
-      } else {
-        for (Cons_sp cc : this->directSuperclasses()) {
-          ss << (BF("directSuperclasses: %s\n") % gc::As<Class_sp>(oCar(cc))->instanceClassName().c_str()).str();
-        }
-      }
-      ss << (BF(" this.instanceCreator* = %p\n") % (void *)(this->getCreator().raw_())).str();
-      ss << (BF("cxxClassP[%d]  cxxDerivableClassP[%d]   primaryCxxDerivableClassP[%d]\n") % this->cxxClassP() % this->cxxDerivableClassP() % this->primaryCxxDerivableClassP()).str();
-      clasp_write_string(ss.str(),stream);
+void Class_O::describe(T_sp stream) {
+  stringstream ss;
+  ss << (BF("Class instanceClassName %s\n") % this->instanceClassName().c_str()).str();
+  ss << (BF("FullName %s\n") % this->name()->fullName().c_str()).str();
+  if (this->directSuperclasses().nilp()) {
+    ss << (BF("There are no super-classes!!!!!!\n")).str();
+  } else {
+    for (Cons_sp cc : this->directSuperclasses()) {
+      ss << (BF("directSuperclasses: %s\n") % gc::As<Class_sp>(oCar(cc))->instanceClassName().c_str()).str();
     }
+  }
+  ss << (BF(" this.instanceCreator* = %p\n") % (void *)(this->getCreator().raw_())).str();
+  ss << (BF("cxxClassP[%d]  cxxDerivableClassP[%d]   primaryCxxDerivableClassP[%d]\n") % this->cxxClassP() % this->cxxDerivableClassP() % this->primaryCxxDerivableClassP()).str();
+  clasp_write_string(ss.str(), stream);
+}
 
-    T_sp Class_O::instanceRef(int idx) const {
-        ASSERTF(idx >= 0 && idx < this->_MetaClassSlots.size(), BF("Out of range index %d for instanceRef(%d)") % idx % this->_MetaClassSlots.size());
-        ASSERT(this->_MetaClassSlots[idx]);
-        return this->_MetaClassSlots[idx];
-    }
+T_sp Class_O::instanceRef(int idx) const {
+  ASSERTF(idx >= 0 && idx < this->_MetaClassSlots.size(), BF("Out of range index %d for instanceRef(%d)") % idx % this->_MetaClassSlots.size());
+  ASSERT(this->_MetaClassSlots[idx]);
+  return this->_MetaClassSlots[idx];
+}
 
-    T_sp Class_O::instanceSet(int idx, T_sp val) {
-        ASSERTF(idx >= 0 && idx < this->_MetaClassSlots.size(), BF("Out of range index %d for instanceRef(%d)") % idx % this->_MetaClassSlots.size());
-        this->_MetaClassSlots[idx] = val;
-        return val;
-    }
+T_sp Class_O::instanceSet(int idx, T_sp val) {
+  ASSERTF(idx >= 0 && idx < this->_MetaClassSlots.size(), BF("Out of range index %d for instanceRef(%d)") % idx % this->_MetaClassSlots.size());
+  this->_MetaClassSlots[idx] = val;
+  return val;
+}
 
 /*! Return true if every member of subset is in superset */
-    bool subsetp(List_sp subset, List_sp superset) {
-        ASSERT(subset);
-        ASSERT(superset);
-        if (subset.nilp() && superset.nilp())
-            return true;
-        if (superset.nilp())
-            return false;
-        if (subset.nilp())
-            return true;
-        for (; subset.notnilp(); subset = oCdr(subset)) {
-            T_sp o = oCar(subset);
-            if (!superset.asCons()->memberEq(o))
-                return false;
-        }
-        return true;
-    }
+bool subsetp(List_sp subset, List_sp superset) {
+  ASSERT(subset);
+  ASSERT(superset);
+  if (subset.nilp() && superset.nilp())
+    return true;
+  if (superset.nilp())
+    return false;
+  if (subset.nilp())
+    return true;
+  for (; subset.notnilp(); subset = oCdr(subset)) {
+    T_sp o = oCar(subset);
+    if (!superset.asCons()->memberEq(o))
+      return false;
+  }
+  return true;
+}
 
-    T_sp Class_O::instanceSigSet() {
-        // Do nothing
-        Class_sp mc = gc::As<Class_sp>(this->_instanceClass());
-        ASSERTNOTNULL(mc);
-        T_sp sig = mc->slots();
-        ASSERTNOTNULL(sig);
-        this->_Signature_ClassSlots = sig;
+T_sp Class_O::instanceSigSet() {
+  // Do nothing
+  Class_sp mc = gc::As<Class_sp>(this->_instanceClass());
+  ASSERTNOTNULL(mc);
+  T_sp sig = mc->slots();
+  ASSERTNOTNULL(sig);
+  this->_Signature_ClassSlots = sig;
 #if DEBUG_CLOS >= 2
-        printf("\nMLOG instance_set_sig object %p\n", (void *)(this));
+  printf("\nMLOG instance_set_sig object %p\n", (void *)(this));
 #endif
-        return sig;
-    }
+  return sig;
+}
 
-    T_sp Class_O::instanceSig() const {
-        ASSERTNOTNULL(this->_Signature_ClassSlots);
+T_sp Class_O::instanceSig() const {
+  ASSERTNOTNULL(this->_Signature_ClassSlots);
 #if DEBUG_CLOS >= 2
-        printf("\nMLOG instance_sig object %p\n", (void *)(this));
+  printf("\nMLOG instance_sig object %p\n", (void *)(this));
 #endif
-        return this->_Signature_ClassSlots;
-    }
+  return this->_Signature_ClassSlots;
+}
 
-    Class_sp Class_O::_instanceClass() const {
-        return this->__class();
-    }
+Class_sp Class_O::_instanceClass() const {
+  return this->__class();
+}
 
-    T_sp Class_O::instanceClassSet(Class_sp mc) {
-        if (mc.get() == this)
-            return mc;
-        SIMPLE_ERROR(BF("You cannot change the meta-class of a class object"));
-    }
+T_sp Class_O::instanceClassSet(Class_sp mc) {
+  if (mc.get() == this)
+    return mc;
+  SIMPLE_ERROR(BF("You cannot change the meta-class of a class object"));
+}
 
-    void Class_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp className) {
-        _G();
-        this->setName(className);
-        T_sp tmc = this->_instanceClass();
-        ASSERTNOTNULL(tmc);
-        Class_sp mc = gc::As<Class_sp>(tmc);
-        (void)mc;
-        this->lowLevel_calculateClassPrecedenceList();
-    }
+void Class_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp className) {
+  _G();
+  this->setName(className);
+  T_sp tmc = this->_instanceClass();
+  ASSERTNOTNULL(tmc);
+  Class_sp mc = gc::As<Class_sp>(tmc);
+  (void)mc;
+  this->lowLevel_calculateClassPrecedenceList();
+}
 
 #define ARGS_af_subclassp "(low high)"
 #define DECL_af_subclassp ""
 #define DOCS_af_subclassp "subclassp"
-    bool af_subclassp(T_sp low, T_sp high) {
-        _G();
-        if (low == high)
-            return true;
-        if (Class_sp lowmc = low.asOrNull<Class_O>()) {
-            List_sp lowClassPrecedenceList = lowmc->instanceRef(Class_O::REF_CLASS_PRECEDENCE_LIST); // classPrecedenceList();
-            return lowClassPrecedenceList.asCons()->memberEq(high).notnilp();
-        } else if (Instance_sp inst = low.asOrNull<Instance_O>()) {
-            (void)inst;
-            IMPLEMENT_MEF(BF("Run some other tests to make sure that instance is a Class: %s") % _rep_(low));
-        }
-        SIMPLE_ERROR(BF("Illegal argument for subclassp: %s") % _rep_(low));
-    };
+bool af_subclassp(T_sp low, T_sp high) {
+  _G();
+  if (low == high)
+    return true;
+  if (Class_sp lowmc = low.asOrNull<Class_O>()) {
+    List_sp lowClassPrecedenceList = lowmc->instanceRef(Class_O::REF_CLASS_PRECEDENCE_LIST); // classPrecedenceList();
+    return lowClassPrecedenceList.asCons()->memberEq(high).notnilp();
+  } else if (Instance_sp inst = low.asOrNull<Instance_O>()) {
+    (void)inst;
+    IMPLEMENT_MEF(BF("Run some other tests to make sure that instance is a Class: %s") % _rep_(low));
+  }
+  SIMPLE_ERROR(BF("Illegal argument for subclassp: %s") % _rep_(low));
+};
 
-    void Class_O::exposeCando(Lisp_sp lisp) {
-        class_<Class_O>()
-            .def("core:nameOfClass", &Class_O::className)
-            .def("core:direct-superclasses", &Class_O::directSuperclasses)
-            .def("core:hasCreator", &Class_O::hasCreator)
-//      .def("core:getCreator", &Class_O::getCreator);
-            //	SYMBOL_SC_(CorePkg,makeSureClosClassSlotsMatchClass);
-            //	Defun(makeSureClosClassSlotsMatchClass);
-            SYMBOL_SC_(CorePkg, subclassp);
-        Defun(subclassp);
-        SYMBOL_SC_(CorePkg, allocateRawClass);
-        Defun(allocateRawClass);
-        SYMBOL_EXPORT_SC_(CorePkg, inheritDefaultAllocator);
-        Defun(inheritDefaultAllocator);
-    }
-    void Class_O::exposePython(Lisp_sp lisp) {
-        _G();
+void Class_O::exposeCando(Lisp_sp lisp) {
+  class_<Class_O>()
+      .def("core:nameOfClass", &Class_O::className)
+      .def("core:direct-superclasses", &Class_O::directSuperclasses)
+      .def("core:hasCreator", &Class_O::hasCreator)
+      //      .def("core:getCreator", &Class_O::getCreator);
+      //	SYMBOL_SC_(CorePkg,makeSureClosClassSlotsMatchClass);
+      //	Defun(makeSureClosClassSlotsMatchClass);
+      SYMBOL_SC_(CorePkg, subclassp);
+  Defun(subclassp);
+  SYMBOL_SC_(CorePkg, allocateRawClass);
+  Defun(allocateRawClass);
+  SYMBOL_EXPORT_SC_(CorePkg, inheritDefaultAllocator);
+  Defun(inheritDefaultAllocator);
+}
+void Class_O::exposePython(Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-        PYTHON_CLASS(CorePkg, Class, "", "", _lisp);
+  PYTHON_CLASS(CorePkg, Class, "", "", _lisp);
 #endif
-    }
+}
 
-    EXPOSE_CLASS(core, Class_O);
+EXPOSE_CLASS(core, Class_O);
 };

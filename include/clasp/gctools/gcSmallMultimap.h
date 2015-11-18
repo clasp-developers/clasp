@@ -31,8 +31,7 @@ namespace gctools {
 
 struct SmallMultimapGetError : public std::exception {};
 
-
-template <class Key, class Value, class Compare,typename Allocator>
+template <class Key, class Value, class Compare, typename Allocator>
 class GCSmallMultimap : public GCVector<pair<Key, Value>, Allocator> {
 public:
   typedef Compare key_compare;
@@ -44,32 +43,34 @@ public:
   typedef typename Base::const_iterator const_iterator;
 
 public:
-  pair<iterator,iterator> equal_range(Key k) {
-    for ( auto it = this->begin(); it != this->end(); ++it ) {
-      int order = key_compare::order(k,it->first);
-      if ( order == -1 ) { // hit greater, never found equal
-        return pair<iterator,iterator>(this->end(),this->end());
+  pair<iterator, iterator> equal_range(Key k) {
+    for (auto it = this->begin(); it != this->end(); ++it) {
+      int order = key_compare::order(k, it->first);
+      if (order == -1) { // hit greater, never found equal
+        return pair<iterator, iterator>(this->end(), this->end());
       }
-      if ( order == 0 ) { // equal - find end of equal range
-        for (auto jt = it+1; jt != this->end(); ++jt ) {
-          int jorder = key_compare::order(k,jt->first);
-          if ( jorder!=0 ) {
-            return pair<iterator,iterator>(it,jt);
+      if (order == 0) { // equal - find end of equal range
+        for (auto jt = it + 1; jt != this->end(); ++jt) {
+          int jorder = key_compare::order(k, jt->first);
+          if (jorder != 0) {
+            return pair<iterator, iterator>(it, jt);
           }
         }
-        return pair<iterator,iterator>(it,this->end());
+        return pair<iterator, iterator>(it, this->end());
       }
     }
-      // never found greater
-    return pair<iterator,iterator>(this->end(),this->end());
+    // never found greater
+    return pair<iterator, iterator>(this->end(), this->end());
   }
 
-    const_iterator find(Key k) const {
+  const_iterator find(Key k) const {
     const_iterator it;
     for (it = this->begin(); it != this->end(); ++it) {
-      int order = key_compare::order(k,it->first);
-      if (order==0) return it;
-      if (order==1) return this->end();
+      int order = key_compare::order(k, it->first);
+      if (order == 0)
+        return it;
+      if (order == 1)
+        return this->end();
     }
     return it;
   }
@@ -77,39 +78,39 @@ public:
   iterator find(Key k) {
     iterator it;
     for (it = this->begin(); it != this->end(); ++it) {
-      int order = key_compare::order(k,it->first);
-      if (order==0) return it;
-      if (order==1) return this->end();
+      int order = key_compare::order(k, it->first);
+      if (order == 0)
+        return it;
+      if (order == 1)
+        return this->end();
     }
     return it;
   }
 
-
-  bool contains (Key k) const {
+  bool contains(Key k) const {
     return (this->find(k) != this->end());
   }
 
   int count(Key k) const {
-    pair<iterator,iterator> range = this->equal_range(k);
-    return range->second-range->first;
+    pair<iterator, iterator> range = this->equal_range(k);
+    return range->second - range->first;
   }
 
   pair<iterator, bool> insert(const value_type &val) {
     iterator it;
-    if ( !this->_Contents ) {
+    if (!this->_Contents) {
       this->reserve(4);
     }
     for (it = this->begin(); it != this->end(); ++it) {
-      int order = key_compare::order(val.first,it->first);
-      if (order!=1) {
-        it = this->emplace(it,val);
-        return pair<iterator,bool>(it,true);
+      int order = key_compare::order(val.first, it->first);
+      if (order != 1) {
+        it = this->emplace(it, val);
+        return pair<iterator, bool>(it, true);
       }
     }
-    it = this->emplace(it,val);
-    return pair<iterator,bool>(it,true);
+    it = this->emplace(it, val);
+    return pair<iterator, bool>(it, true);
   }
-
 
   mapped_type &get(const key_type &k) {
     iterator it = this->find(k);
@@ -126,7 +127,6 @@ public:
     }
     return it->second;
   }
-
 };
 
 } // namespace gctools

@@ -57,10 +57,6 @@ namespace gctools {
 class GCObject;
 class GCLinkedList;
 
-
-
-
- 
 class GCObject {
 public:
   GCObject &operator=(const GCObject &) { return *this; };
@@ -76,43 +72,43 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
 */
 
 #ifdef USE_CXX_DYNAMIC_CAST
- typedef enum { KIND_null=0, KIND_max } GCKindEnum; // minimally define this GCKind
+typedef enum { KIND_null = 0,
+               KIND_max } GCKindEnum; // minimally define this GCKind
 #else
 typedef
 #define GC_ENUM
 #include STATIC_ANALYZER_PRODUCT
-  GCKindEnum;
- #undef GC_ENUM
-#endif 
-
+    GCKindEnum;
+#undef GC_ENUM
+#endif
 
 //#define BIG_BOEHM_HEADER
-
 
 #ifdef USE_BOEHM_MEMORY_MARKER
 extern int globalBoehmMarker;
 #endif
 class Header_s {
 public:
-  Header_s(GCKindEnum k) :
-  Kind(k)
+  Header_s(GCKindEnum k) : Kind(k)
 #ifdef BIG_BOEHM_HEADER
-    , ValidStamp(0xDEADBEEF)
-    , TypeidName(name)
+                           ,
+                           ValidStamp(0xDEADBEEF), TypeidName(name)
 #endif
 #ifdef USE_BOEHM_MEMORY_MARKER
-    , Marker(globalBoehmMarker)
+                           ,
+                           Marker(globalBoehmMarker)
 #endif
   {
 #ifdef _DEBUG_BUILD
-    if ( k > KIND_max ) {
+    if (k > KIND_max) {
       printf("%s:%d Allocating object of kind: %zu - this is beyond KIND_max: %d\n", __FILE__, __LINE__, k, KIND_max);
     }
-    if ( k == 0 ) {
+    if (k == 0) {
       printf("%s:%d Allocating object of kind: %zu - this is not allowed except for maybe in boehmdc\n", __FILE__, __LINE__, k);
     }
 #endif
   };
+
 private:
 #ifdef _ADDRESS_MODEL_64
   uint64_t Kind;
@@ -142,8 +138,8 @@ public:
     return "TypeIdUnavailable";
 #endif
   };
-  bool kindP() const { return true;};
-  GCKindEnum kind() const { return (GCKindEnum)this->Kind; };
+  bool kindP() const { return true; };
+  GCKindEnum kind() const { return (GCKindEnum) this->Kind; };
   bool markerMatches(int m) const {
 #ifdef USE_BOEHM_MEMORY_MARKER
     if (m) {
@@ -157,7 +153,7 @@ public:
   static size_t HeaderSize() { return sizeof(Header_s); };
 };
 
- #if 0
+#if 0
 class TemplatedHeader_s : public Header_s {
 public:
   TemplatedHeader_s(const char *name, BoehmKind k) : Header_s(name, k){};
@@ -172,13 +168,12 @@ constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alig
 template <class T>
 inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + AlignUp(sizeof(Header_s)); };
 
- #if 0
+#if 0
 template <class T>
 inline size_t sizeof_with_templated_header() { return AlignUp(sizeof(T)) + AlignUp(sizeof(TemplatedHeader_s)); };
 #endif
- 
- void headerDescribe(core::T_O* taggedClient);
 
+void headerDescribe(core::T_O *taggedClient);
 };
 
 namespace gctools {
@@ -197,36 +192,30 @@ inline T *BasePtrToMostDerivedPtr(void *base) {
 }
 };
 
-
 namespace core {
-  class T_O;
-  class WrappedPointer_O;
-  class Functoid;
-  class Creator;
-  class Iterator_O;
+class T_O;
+class WrappedPointer_O;
+class Functoid;
+class Creator;
+class Iterator_O;
 };
 namespace clbind {
-  class ConstructorCreator;
+class ConstructorCreator;
 };
 
 #ifndef USE_CXX_DYNAMIC_CAST
-  #define DECLARE_FORWARDS
-  #include STATIC_ANALYZER_PRODUCT
-  #undef DECLARE_FORWARDS
+#define DECLARE_FORWARDS
+#include STATIC_ANALYZER_PRODUCT
+#undef DECLARE_FORWARDS
 #endif
 
 namespace gctools {
 #ifndef USE_CXX_DYNAMIC_CAST
-  #define GC_DYNAMIC_CAST
-  #include STATIC_ANALYZER_PRODUCT // "main/clasp_gc.cc"
-  #undef GC_DYNAMIC_CAST
+#define GC_DYNAMIC_CAST
+#include STATIC_ANALYZER_PRODUCT // "main/clasp_gc.cc"
+#undef GC_DYNAMIC_CAST
 #endif
 };
-
-
-
-
-
 
 namespace gctools {
 /*! Initialize the memory pool system and call the startup function which

@@ -57,33 +57,29 @@ THE SOFTWARE.
 
 namespace core {
 
-int f(Environment_sp& e)
-{
+int f(Environment_sp &e) {
   (void)e;
   return 1;
 }
-
 
 #define ARGS_core_help_booting "()"
 #define DECL_core_help_booting ""
 #define DOCS_core_help_booting "Print info about booting"
 void core_help_booting() {
   printf("Useful *features*\n"
-":ecl-min (should be clasp-min),  :bclasp, :cclasp  -- Tells Clasp what stage it's in and where to get its init file.\n"
-":notify-on-compile (core:*notify-on-compile*) - prints messages whenever COMPILE is invoked at startup\n"
-":trace-startup (core:*trace-startup*) - prints messages and timing for running the main function of the compiled code of each system file at startup\n"
+         ":ecl-min (should be clasp-min),  :bclasp, :cclasp  -- Tells Clasp what stage it's in and where to get its init file.\n"
+         ":notify-on-compile (core:*notify-on-compile*) - prints messages whenever COMPILE is invoked at startup\n"
+         ":trace-startup (core:*trace-startup*) - prints messages and timing for running the main function of the compiled code of each system file at startup\n"
          ":debug-startup (core:*debug-startup*) - prints a message and timing for running each top level function\n"
-"\n"
-"Commands (all in CORE package)\n"
-"(load-system <start> <end> &key interp (system *init-files*))   - Load the system files\n"
-"(compile-min) - Compile a minimal system\n"
-"(compile-full) - Compile a full system\n"
-"(compile-kernel-file filename &key reload load-bitcode recompile)   - Compile a system file and put the bitcode in the correct directory\n"
-"(link-system start end prologue-form epilogue-form &key (system *init-files*)) - Link an image together\n"
-"(default-prologue-form &optional features) - Returns a prologue form for link-system\n"
-"(default-epilogue-form) - Returns an epilogue form for link-system\n"
-);
-  
+         "\n"
+         "Commands (all in CORE package)\n"
+         "(load-system <start> <end> &key interp (system *init-files*))   - Load the system files\n"
+         "(compile-min) - Compile a minimal system\n"
+         "(compile-full) - Compile a full system\n"
+         "(compile-kernel-file filename &key reload load-bitcode recompile)   - Compile a system file and put the bitcode in the correct directory\n"
+         "(link-system start end prologue-form epilogue-form &key (system *init-files*)) - Link an image together\n"
+         "(default-prologue-form &optional features) - Returns a prologue form for link-system\n"
+         "(default-epilogue-form) - Returns an epilogue form for link-system\n");
 }
 
 #define ARGS_core_testTaggedCast "(pow2)"
@@ -93,18 +89,17 @@ __attribute__((optnone)) Fixnum_sp core_testTaggedCast(Fixnum_sp pow2) {
   Fixnum fpow2 = clasp_to_fixnum(pow2);
   Fixnum times = 1;
   times = times << fpow2;
-  printf("%s:%d  fpow2 = %ld  times = %ld\n", __FILE__, __LINE__, fpow2, times );
-  Environment_sp env = ValueEnvironment_O::createForNumberOfEntries(5,_Nil<T_O>());
+  printf("%s:%d  fpow2 = %ld  times = %ld\n", __FILE__, __LINE__, fpow2, times);
+  Environment_sp env = ValueEnvironment_O::createForNumberOfEntries(5, _Nil<T_O>());
   Fixnum i;
   Fixnum v = 0;
-  for ( i=0; i<times; ++i ) {
+  for (i = 0; i < times; ++i) {
     f(env);
     Environment_sp e = env.asOrNull<Environment_O>();
     v += f(e);
   }
   return Integer_O::create(v);
 }
-
 
 #define ARGS_core_cxxFibn "(reps num)"
 #define DECL_core_cxxFibn ""
@@ -113,11 +108,11 @@ Integer_sp core_cxxFibn(Fixnum_sp reps, Fixnum_sp num) {
   long int freps = clasp_to_fixnum(reps);
   long int fnum = clasp_to_fixnum(num);
   long int p1, p2, z;
-  for ( long int r = 0; r<freps; ++r ) {
+  for (long int r = 0; r < freps; ++r) {
     p1 = 1;
     p2 = 1;
     long int rnum = fnum - 2;
-    for ( long int i=0; i<rnum; ++i ) {
+    for (long int i = 0; i < rnum; ++i) {
       z = p1 + p2;
       p2 = p1;
       p1 = z;
@@ -125,7 +120,6 @@ Integer_sp core_cxxFibn(Fixnum_sp reps, Fixnum_sp num) {
   }
   return Integer_O::create(z);
 }
-
 
 T_sp varArgsList(int n_args, ...) {
   DEPRECIATED();
@@ -190,15 +184,15 @@ T_sp core_startupImagePathname() {
   // Now check if the executable name contains bclasp or cclasp
   // if it does then these will change the value of strStage
   string executable = _lisp->_Argv[0];
-  if ( executable.find("bclasp") != string::npos ) {
+  if (executable.find("bclasp") != string::npos) {
     strStage = "full";
-  } else if ( executable.find("cclasp") != string::npos ) {
+  } else if (executable.find("cclasp") != string::npos) {
     strStage = "cclasp";
   }
   string strGc;
-  if ( boehmdc.notnilp() ) {
+  if (boehmdc.notnilp()) {
     strGc = "boehmdc";
-  } else if ( mps.notnilp() ) {
+  } else if (mps.notnilp()) {
     strGc = "mps";
   } else {
     strGc = "boehm";
@@ -431,7 +425,7 @@ T_mv af_implicit_compile_hook_default(T_sp form, T_sp env) {
   ss << "repl" << _lisp->nextReplCounter();
   Symbol_sp name = _lisp->intern(ss.str());
   gctools::tagged_pointer<InterpretedClosure> ic =
-      gctools::tagged_pointer<InterpretedClosure>(gctools::ClassAllocator<InterpretedClosure>::allocateClass( name, kw::_sym_function, llh, _Nil<T_O>(), _Nil<T_O>(), env, code, SOURCE_POS_INFO_FIELDS(sourcePosInfo)));
+      gctools::tagged_pointer<InterpretedClosure>(gctools::ClassAllocator<InterpretedClosure>::allocateClass(name, kw::_sym_function, llh, _Nil<T_O>(), _Nil<T_O>(), env, code, SOURCE_POS_INFO_FIELDS(sourcePosInfo)));
   Function_sp thunk = Function_O::make(ic);
   return eval::funcall(thunk);
 };
@@ -618,7 +612,7 @@ T_sp core_partialApplysPerSecond(int stage, T_sp fn, List_sp args) {
           int nargs = cl_length(args);
 #endif
           if (stage >= 3) { // This is expensive
-#if 1                       // heap based frame
+#if 1 // heap based frame
             ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs, _Nil<ActivationFrame_O>()));
             if (stage >= 4) {
               List_sp cur = args;
@@ -647,9 +641,6 @@ T_sp core_partialApplysPerSecond(int stage, T_sp fn, List_sp args) {
 }
 #endif
 
-
-
- 
 T_sp allocFixnum() {
   Fixnum_sp fn = make_fixnum(3);
   return fn;
@@ -666,7 +657,7 @@ void allocateValueFrame5() {
 }
 
 void allocateStackFrame5() {
-  STACK_FRAME(buff,frame,5);
+  STACK_FRAME(buff, frame, 5);
 }
 
 Cons_sp consList5() {
@@ -693,7 +684,7 @@ T_sp lexicalFrameLookup(T_sp fr, int depth, int index) {
   return val;
 }
 
- #if 0
+#if 0
 #define ARGS_core_operationsPerSecond "(op &optional arg)"
 #define DECL_core_operationsPerSecond ""
 #define DOCS_core_operationsPerSecond "operationsPerSecond"
@@ -817,7 +808,7 @@ T_mv core_operationsPerSecond(int op, T_sp arg) {
   return Values(DoubleFloat_O::create(((double)times) / timer.getAccumulatedTime()), Str_O::create(name));
 }
 #endif
- #if 0
+#if 0
 #define ARGS_core_callsByValuePerSecond "()"
 #define DECL_core_callsByValuePerSecond ""
 #define DOCS_core_callsByValuePerSecond "callsByValuePerSecond"
@@ -850,7 +841,7 @@ T_sp core_callsByValuePerSecond() {
   return _Nil<T_O>();
 }
 #endif
- #if 0
+#if 0
 #define ARGS_core_callsByConstantReferencePerSecond "()"
 #define DECL_core_callsByConstantReferencePerSecond ""
 #define DOCS_core_callsByConstantReferencePerSecond "callsByConstantReferencePerSecond"
@@ -883,7 +874,7 @@ T_sp core_callsByConstantReferencePerSecond() {
   return _Nil<T_O>();
 }
 #endif
- #if 0
+#if 0
 #define ARGS_core_callsByPointerPerSecond "()"
 #define DECL_core_callsByPointerPerSecond ""
 #define DOCS_core_callsByPointerPerSecond "callsByPointerPerSecond"
@@ -916,8 +907,6 @@ T_sp core_callsByPointerPerSecond() {
 }
 #endif
 
-
- 
 #define ARGS_core_callWithVariableBound "(sym val thunk)"
 #define DECL_core_callWithVariableBound ""
 #define DOCS_core_callWithVariableBound "callWithVariableBound"
@@ -934,28 +923,28 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   T_mv result;
   try {
 #ifdef DEBUG_FLOW_CONTROL
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-      printf("%s:%d In funwind_protect try\n", __FILE__, __LINE__ );
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+      printf("%s:%d In funwind_protect try\n", __FILE__, __LINE__);
       printf("   %s\n", _lisp->exceptionStack().summary().c_str());
     }
 #endif
-    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(protected_fn.raw_());
-    ASSERT(func!=NULL);
+    core::Function_O *func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(protected_fn.raw_());
+    ASSERT(func != NULL);
     auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
     result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
   } catch (...) {
 #ifdef DEBUG_FLOW_CONTROL
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-      printf("%s:%d In funwind_protect catch(...) just caught\n", __FILE__, __LINE__ );
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+      printf("%s:%d In funwind_protect catch(...) just caught\n", __FILE__, __LINE__);
       printf("   %s\n", _lisp->exceptionStack().summary().c_str());
     }
 #endif
-    // Save any return value that may be in the multiple value return array
+// Save any return value that may be in the multiple value return array
 #if 1 // When this is enabled it breaks sldb
     // but the test case: (defun test () (block nil (unwind-protect (return (values 1 2)) (print 10)))) works
     // When it's disabled sldb works but the test case breaks.
     //
- // I shouldn't save the result around the unwind form
+    // I shouldn't save the result around the unwind form
     // In commit 22a8d7b1  I commented this and the block below
     // that restored the return array value.  I can't remember why I did
     // that and the commit message for 22a8d7b1 simply says "fixed unwind-protect bug"
@@ -968,8 +957,8 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     tresult.saveToVec0(savemv);
 #endif
     {
-      core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(cleanup_fn.raw_());
-      ASSERT(func!=NULL);
+      core::Function_O *func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(cleanup_fn.raw_());
+      ASSERT(func != NULL);
       auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
       T_mv tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
     }
@@ -978,16 +967,16 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     tresult.saveToMultipleValue0();
 #endif
 #ifdef DEBUG_FLOW_CONTROL
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-      printf("%s:%d In funwind_protect catch(...)    about to rethrow\n", __FILE__, __LINE__ );
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+      printf("%s:%d In funwind_protect catch(...)    about to rethrow\n", __FILE__, __LINE__);
       printf("   %s\n", _lisp->exceptionStack().summary().c_str());
     }
 #endif
     throw;
   }
 #ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d In funwind_protect  normal exit\n", __FILE__, __LINE__ );
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+    printf("%s:%d In funwind_protect  normal exit\n", __FILE__, __LINE__);
     printf("   %s\n", _lisp->exceptionStack().summary().c_str());
   }
 #endif
@@ -995,8 +984,8 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   result.saveToVec0(savemv);
   {
     T_mv tresult;
-    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(cleanup_fn.raw_());
-    ASSERT(func!=NULL);
+    core::Function_O *func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(cleanup_fn.raw_());
+    ASSERT(func != NULL);
     auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
     tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
   }
@@ -1004,13 +993,11 @@ T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   return result;
 }
 
-
- 
 #define ARGS_core_multipleValueFuncall "(function-designator &rest functions)"
 #define DECL_core_multipleValueFuncall ""
 #define DOCS_core_multipleValueFuncall "multipleValueFuncall"
 T_mv core_multipleValueFuncall(T_sp funcDesignator, List_sp functions) {
-  STACK_FRAME(buff,accArgs,MultipleValues::MultipleValuesLimit);
+  STACK_FRAME(buff, accArgs, MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
   size_t idx = 0;
   for (auto cur : functions) {
@@ -1028,7 +1015,7 @@ T_mv core_multipleValueFuncall(T_sp funcDesignator, List_sp functions) {
   accArgs.setLength(idx);
   Function_sp fmv = coerce::functionDesignator(funcDesignator);
   gctools::tagged_pointer<Closure> func = fmv->closure;
-  LCC_CALL_WITH_ARGS_IN_FRAME(result,func,accArgs);
+  LCC_CALL_WITH_ARGS_IN_FRAME(result, func, accArgs);
   return T_mv(result);
 }
 
@@ -1061,20 +1048,20 @@ T_mv core_catchFunction(T_sp tag, Function_sp thunk) {
   T_mv result;
   int frame = _lisp->exceptionStack().push(CatchFrame, tag);
 #ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_catch tag@%p thisFrame: %d\n", __FILE__, __LINE__, tag.raw_(), frame);
     printf("   %s\n", _lisp->exceptionStack().summary().c_str());
   }
 #endif
   try {
-    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(thunk.raw_());
-    ASSERT(func!=NULL);
+    core::Function_O *func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(thunk.raw_());
+    ASSERT(func != NULL);
     auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
     result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
 #ifdef DEBUG_FLOW_CONTROL
-      if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
         printf("- - - - - Rethrowing CatchThrow targetFrame[%d] (thisFrame is: %d)\n", catchThrow.getFrame(), frame);
       }
 #endif
@@ -1083,15 +1070,15 @@ T_mv core_catchFunction(T_sp tag, Function_sp thunk) {
     result = gctools::multiple_values<T_O>::createFromValues();
   }
 #ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("- - - - - Matched CatchThrow (thisFrame is: %d)\n", frame);
-    printf("- - - - - Unwinding to thisFrame: %d\n", frame );
+    printf("- - - - - Unwinding to thisFrame: %d\n", frame);
   }
 #endif
   _lisp->exceptionStack().unwind(frame);
 #ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d  After cc_catch unwind\n", __FILE__, __LINE__ );
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
+    printf("%s:%d  After cc_catch unwind\n", __FILE__, __LINE__);
     printf("   %s\n", _lisp->exceptionStack().summary().c_str());
   }
 #endif
@@ -1107,21 +1094,20 @@ void core_throwFunction(T_sp tag, T_sp result_form) {
     CONTROL_ERROR();
   }
 #ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
+  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_throw     throwing CatchThrow to reach targetFrame[%d]\n", __FILE__, __LINE__, frame);
     printf("   %s\n", _lisp->exceptionStack().summary().c_str());
   }
 #endif
   T_mv result;
-  core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(result_form.raw_());
-  ASSERT(func!=NULL);
+  core::Function_O *func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(result_form.raw_());
+  ASSERT(func != NULL);
   auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
   result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
   result.saveToMultipleValue0();
   throw CatchThrow(frame);
 }
 
- 
 #define ARGS_core_progvFunction "(symbols values func)"
 #define DECL_core_progvFunction ""
 #define DOCS_core_progvFunction "progvFunction"
@@ -1143,13 +1129,12 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   //	Defun(processDeclarations);
   SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
   SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);
-  SYMBOL_EXPORT_SC_(CompPkg, STARall_functions_for_one_compileSTAR );
-  af_def(CompPkg,"implicit_compile_hook_default",&af_implicit_compile_hook_default,
+  SYMBOL_EXPORT_SC_(CompPkg, STARall_functions_for_one_compileSTAR);
+  af_def(CompPkg, "implicit_compile_hook_default", &af_implicit_compile_hook_default,
          ARGS_af_implicit_compile_hook_default,
          DECL_af_implicit_compile_hook_default,
          DOCS_af_implicit_compile_hook_default);
-  ASSERT(comp::_sym_implicit_compile_hook_default->symbolFunction().notnilp()
-         && !comp::_sym_implicit_compile_hook_default->symbolFunction().unboundp());
+  ASSERT(comp::_sym_implicit_compile_hook_default->symbolFunction().notnilp() && !comp::_sym_implicit_compile_hook_default->symbolFunction().unboundp());
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default->symbolFunction());
 
 #ifdef EXPOSE_DLLOAD

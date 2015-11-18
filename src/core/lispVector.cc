@@ -68,13 +68,13 @@ Vector_sp core_make_vector(T_sp element_type,
   ASSERTF(displaced_to.nilp(), BF("Add support for make-vector :displaced-to"));
   ASSERTF(displaced_index_offset.nilp() || unbox_fixnum(gc::As<Fixnum_sp>(displaced_index_offset)) == 0, BF("Add support for make-vector non-zero :displaced-index-offset "));
   if (element_type == cl::_sym_bit) {
-    if ( adjustable || fill_pointer.notnilp() ) {
+    if (adjustable || fill_pointer.notnilp()) {
       size_t s_fill_ptr = dimension;
-      if ( fill_pointer.notnilp() ) {
+      if (fill_pointer.notnilp()) {
         if (fill_pointer != cl::_sym_T_O)
           s_fill_ptr = MIN(dimension, std::abs(unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer))));
       }
-      return BitVectorWithFillPtr_O::create(dimension,s_fill_ptr,adjustable);
+      return BitVectorWithFillPtr_O::create(dimension, s_fill_ptr, adjustable);
     }
     return SimpleBitVector_O::create(dimension);
   } else if (element_type == cl::_sym_base_char || element_type == cl::_sym_character || element_type == cl::_sym_standard_char || element_type == cl::_sym_extended_char) {
@@ -146,54 +146,55 @@ List_sp Vector_O::arrayDimensions() const {
 }
 
 bool Vector_O::equalp(T_sp o) const {
-  if ( this->eq(o) ) return true;
-  if ( Array_sp other = o.asOrNull<Array_O>() ) {
-    if (other->rank() != 1 ) return false;
+  if (this->eq(o))
+    return true;
+  if (Array_sp other = o.asOrNull<Array_O>()) {
+    if (other->rank() != 1)
+      return false;
     size_t my_size = this->length();
-    if ( other->arrayDimension(0) != my_size ) return false;
-    for ( size_t i(0); i<my_size; ++i ) {
-      if ( !cl_equalp(this->svref(i),other->rowMajorAref(i)) ) return false;
+    if (other->arrayDimension(0) != my_size)
+      return false;
+    for (size_t i(0); i < my_size; ++i) {
+      if (!cl_equalp(this->svref(i), other->rowMajorAref(i)))
+        return false;
     }
     return true;
-  } if ( Vector_sp vec = o.asOrNull<Vector_O>() ) {
+  }
+  if (Vector_sp vec = o.asOrNull<Vector_O>()) {
     size_t my_size = this->length();
     size_t other_size = vec->length();
-    if ( my_size != other_size ) return false;
-    for ( int i(0); i<my_size; ++i ) {
-      if ( !cl_equalp(this->aref_unsafe(i),vec->aref_unsafe(i)) ) return false;
+    if (my_size != other_size)
+      return false;
+    for (int i(0); i < my_size; ++i) {
+      if (!cl_equalp(this->aref_unsafe(i), vec->aref_unsafe(i)))
+        return false;
     }
     return true;
   }
   return false;
 }
 
-
-
-T_sp Vector_O::aref(List_sp args) const
-{
+T_sp Vector_O::aref(List_sp args) const {
   cl_index idx = this->index(args);
   return this->rowMajorAref(idx);
 }
 
-T_sp Vector_O::setf_aref(List_sp args_val)
-{
+T_sp Vector_O::setf_aref(List_sp args_val) {
   List_sp cons_val;
-  cl_index idx = this->index_val(args_val,true,cons_val);
-  this->rowMajorAset(idx,oCar(cons_val));
+  cl_index idx = this->index_val(args_val, true, cons_val);
+  this->rowMajorAset(idx, oCar(cons_val));
   return oCar(cons_val);
 }
-
-
 
 T_sp Vector_O::reverse() {
   _OF();
   int thisLength = this->length();
-  int lastElement = thisLength-1;
+  int lastElement = thisLength - 1;
   Vector_sp newVec = gc::As<Vector_sp>(eval::funcall(_sym_make_vector, this->elementType(), make_fixnum(thisLength)));
   for (int i = 0; i < thisLength; i++) {
     int ri = lastElement - i;
-//    newVec->setf_elt(ri, this->elt(i));
-    newVec->aset_unsafe(ri,this->elt(i));
+    //    newVec->setf_elt(ri, this->elt(i));
+    newVec->aset_unsafe(ri, this->elt(i));
   }
   return newVec;
 }
@@ -212,7 +213,7 @@ T_sp Vector_O::nreverse() {
   _OF();
   int thisLength = this->length();
   int halfLength = thisLength / 2; // 5/2 = 2  0
-  int lasti = thisLength-1;
+  int lasti = thisLength - 1;
   for (int i = 0; i < halfLength; i++) {
     int ri = lasti - i;
     this->swapElements(i, ri);

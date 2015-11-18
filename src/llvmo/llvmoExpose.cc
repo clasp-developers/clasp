@@ -529,7 +529,7 @@ void Triple_O::exposeCando(core::Lisp_sp lisp) {
       .value(_sym_VendorType_NVIDIA, llvm::Triple::NVIDIA)
       .value(_sym_VendorType_CSR, llvm::Triple::CSR)
 
-          SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_UnknownOS);
+      SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_UnknownOS);
   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Darwin);
   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_DragonFly);
   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_FreeBSD);
@@ -605,7 +605,7 @@ void Triple_O::exposeCando(core::Lisp_sp lisp) {
       .value(_sym_EnvironmentType_Itanium, llvm::Triple::Itanium)
       .value(_sym_EnvironmentType_Cygnus, llvm::Triple::Cygnus)
 
-          SYMBOL_EXPORT_SC_(LlvmoPkg, ObjectFormatType_UnknownObjectFormat);
+      SYMBOL_EXPORT_SC_(LlvmoPkg, ObjectFormatType_UnknownObjectFormat);
   SYMBOL_EXPORT_SC_(LlvmoPkg, ObjectFormatType_COFF);
   SYMBOL_EXPORT_SC_(LlvmoPkg, ObjectFormatType_ELF);
   SYMBOL_EXPORT_SC_(LlvmoPkg, ObjectFormatType_MachO);
@@ -1128,7 +1128,7 @@ Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context) {
 #define DOCS_af_module_get_function_list "module_get_function_list"
 core::List_sp af_module_get_function_list(Module_sp module) {
   ql::list fl(_lisp);
-  for ( llvm::Function& f : *module->wrappedPtr() ) {
+  for (llvm::Function &f : *module->wrappedPtr()) {
     Function_sp wrapped_func = gc::As<Function_sp>(translate::to_object<const llvm::Function &>::convert(f));
     fl << wrapped_func;
   }
@@ -1334,7 +1334,6 @@ void ExecutionEngine_O::addModule(Module_sp module) {
   module->set_wrapped(NULL);
   ee->addModule(std::move(mod));
 }
-
 
 Function_sp ExecutionEngine_O::FindFunctionNamed(core::Str_sp name) {
   return translate::to_object<llvm::Function *>::convert(this->wrappedPtr()->FindFunctionNamed(name->get().c_str()));
@@ -1549,10 +1548,10 @@ EXPOSE_CLASS(llvmo, FunctionPassManager_O);
 
 void FunctionPassManager_O::exposeCando(core::Lisp_sp lisp) {
   core::externalClass_<FunctionPassManager_O>()
-    .def("function-pass-manager-add", &llvm::FunctionPassManager::add)
-    .def("doInitialization", &llvm::FunctionPassManager::doInitialization)
-    .def("doFinalization",&llvm::FunctionPassManager::doFinalization)
-    .def("function-pass-manager-run", &llvm::FunctionPassManager::run);
+      .def("function-pass-manager-add", &llvm::FunctionPassManager::add)
+      .def("doInitialization", &llvm::FunctionPassManager::doInitialization)
+      .def("doFinalization", &llvm::FunctionPassManager::doFinalization)
+      .def("function-pass-manager-run", &llvm::FunctionPassManager::run);
   core::af_def(LlvmoPkg, "makeFunctionPassManager", &FunctionPassManager_O::make, ARGS_FunctionPassManager_O_make, DECL_FunctionPassManager_O_make, DOCS_FunctionPassManager_O_make);
 };
 
@@ -1695,8 +1694,8 @@ PassManagerBuilder_sp PassManagerBuilder_O::make() {
 #define ARGS_passManagerBuilderSetfInliner "()"
 #define DECL_passManagerBuilderSetfInliner ""
 #define DOCS_passManagerBuilderSetfInliner ""
-void PassManagerBuilderSetfInliner(PassManagerBuilder_sp pmb, llvm::Pass* inliner) {
-//  printf("%s:%d Setting inliner for PassManagerBuilder to %p\n", __FILE__, __LINE__, inliner );
+void PassManagerBuilderSetfInliner(PassManagerBuilder_sp pmb, llvm::Pass *inliner) {
+  //  printf("%s:%d Setting inliner for PassManagerBuilder to %p\n", __FILE__, __LINE__, inliner );
   pmb->wrappedPtr()->Inliner = inliner;
 };
 
@@ -1718,10 +1717,9 @@ EXPOSE_CLASS(llvmo, PassManagerBuilder_O);
 
 void PassManagerBuilder_O::exposeCando(core::Lisp_sp lisp) {
   core::externalClass_<PassManagerBuilder_O>()
-    .def("populateModulePassManager", &llvm::PassManagerBuilder::populateModulePassManager)
-    .def("populateFunctionPassManager", &llvm::PassManagerBuilder::populateFunctionPassManager)
-    .def("populateLTOPassManager", &llvm::PassManagerBuilder::populateLTOPassManager)
-     ;
+      .def("populateModulePassManager", &llvm::PassManagerBuilder::populateModulePassManager)
+      .def("populateFunctionPassManager", &llvm::PassManagerBuilder::populateFunctionPassManager)
+      .def("populateLTOPassManager", &llvm::PassManagerBuilder::populateLTOPassManager);
   core::af_def(LlvmoPkg, "make-PassManagerBuilder", &PassManagerBuilder_O::make, ARGS_PassManagerBuilder_O_make, DECL_PassManagerBuilder_O_make, DOCS_PassManagerBuilder_O_make);
   core::af_def(LlvmoPkg, "pass-manager-builder-setf-inliner", &PassManagerBuilderSetfInliner);
   core::af_def(LlvmoPkg, "pass-manager-builder-setf-OptLevel", &PassManagerBuilderSetfOptLevel);
@@ -2655,10 +2653,8 @@ void IRBuilderBase_O::exposeCando(core::Lisp_sp lisp) {
       .def("restoreIP", &IRBuilderBase_O::restoreIP)
       .def("saveIP", &IRBuilderBase_O::saveIP)
       .def("SetCurrentDebugLocation", &IRBuilderBase_O::SetCurrentDebugLocation)
-    .def("SetCurrentDebugLocationToLineColumnScope", &IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope)
-    .def("CurrentDebugLocation",&IRBuilderBase_O::CurrentDebugLocation)
-    ;
-  
+      .def("SetCurrentDebugLocationToLineColumnScope", &IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope)
+      .def("CurrentDebugLocation", &IRBuilderBase_O::CurrentDebugLocation);
 };
 
 void IRBuilderBase_O::exposePython(core::Lisp_sp lisp) {
@@ -2780,35 +2776,35 @@ void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
 
   core::externalClass_<IRBuilder_O> irbuilder;
   irbuilder
-    .def("CreateRet", &IRBuilder_O::ExternalType::CreateRet)
-    .def("CreateRetVoid", &IRBuilder_O::ExternalType::CreateRetVoid)
-    .def("CreateBr", &IRBuilder_O::ExternalType::CreateBr)
-    .def("CreateCondBr", &IRBuilder_O::ExternalType::CreateCondBr,"(irbuilder cond true-branch false-branch &optional branch-weights)")
-    .def("CreateSwitch", &IRBuilder_O::ExternalType::CreateSwitch)
-    .def("CreateIndirectBr", &IRBuilder_O::ExternalType::CreateIndirectBr)
-    .def("CreateInvoke", &IRBuilder_O::CreateInvoke)
-    .def("CreateResume", &IRBuilder_O::ExternalType::CreateResume)
-    .def("CreateUnreachable", &IRBuilder_O::ExternalType::CreateUnreachable)
-    .def("CreateAdd", &IRBuilder_O::ExternalType::CreateAdd,"(irbuilder lhs rhs &optional (name \"\") has-nuw has-nsw)")
-    .def("CreateNSWAdd", &IRBuilder_O::ExternalType::CreateNSWAdd)
-    .def("CreateNUWAdd", &IRBuilder_O::ExternalType::CreateNUWAdd)
-    .def("CreateFAdd", &IRBuilder_O::ExternalType::CreateFAdd)
-    .def("CreateSub", &IRBuilder_O::ExternalType::CreateSub)
-    .def("CreateNSWSub", &IRBuilder_O::ExternalType::CreateNSWSub)
-    .def("CreateNUWSub", &IRBuilder_O::ExternalType::CreateNUWSub)
-    .def("CreateFSub", &IRBuilder_O::ExternalType::CreateFSub)
-    .def("CreateMul", &IRBuilder_O::ExternalType::CreateMul)
-    .def("CreateNSWMul", &IRBuilder_O::ExternalType::CreateNSWMul)
-    .def("CreateNUWMul", &IRBuilder_O::ExternalType::CreateNUWMul)
-    .def("CreateFMul", &IRBuilder_O::ExternalType::CreateFMul)
-    .def("CreateUDiv", &IRBuilder_O::ExternalType::CreateUDiv)
-    .def("CreateExactUDiv", &IRBuilder_O::ExternalType::CreateExactUDiv)
-    .def("CreateSDiv", &IRBuilder_O::ExternalType::CreateSDiv)
-    .def("CreateExactSDiv", &IRBuilder_O::ExternalType::CreateExactSDiv)
-    .def("CreateFDiv", &IRBuilder_O::ExternalType::CreateFDiv)
-    .def("CreateURem", &IRBuilder_O::ExternalType::CreateURem)
-    .def("CreateSRem", &IRBuilder_O::ExternalType::CreateSRem)
-    .def("CreateFRem", &IRBuilder_O::ExternalType::CreateFRem);
+      .def("CreateRet", &IRBuilder_O::ExternalType::CreateRet)
+      .def("CreateRetVoid", &IRBuilder_O::ExternalType::CreateRetVoid)
+      .def("CreateBr", &IRBuilder_O::ExternalType::CreateBr)
+      .def("CreateCondBr", &IRBuilder_O::ExternalType::CreateCondBr, "(irbuilder cond true-branch false-branch &optional branch-weights)")
+      .def("CreateSwitch", &IRBuilder_O::ExternalType::CreateSwitch)
+      .def("CreateIndirectBr", &IRBuilder_O::ExternalType::CreateIndirectBr)
+      .def("CreateInvoke", &IRBuilder_O::CreateInvoke)
+      .def("CreateResume", &IRBuilder_O::ExternalType::CreateResume)
+      .def("CreateUnreachable", &IRBuilder_O::ExternalType::CreateUnreachable)
+      .def("CreateAdd", &IRBuilder_O::ExternalType::CreateAdd, "(irbuilder lhs rhs &optional (name \"\") has-nuw has-nsw)")
+      .def("CreateNSWAdd", &IRBuilder_O::ExternalType::CreateNSWAdd)
+      .def("CreateNUWAdd", &IRBuilder_O::ExternalType::CreateNUWAdd)
+      .def("CreateFAdd", &IRBuilder_O::ExternalType::CreateFAdd)
+      .def("CreateSub", &IRBuilder_O::ExternalType::CreateSub)
+      .def("CreateNSWSub", &IRBuilder_O::ExternalType::CreateNSWSub)
+      .def("CreateNUWSub", &IRBuilder_O::ExternalType::CreateNUWSub)
+      .def("CreateFSub", &IRBuilder_O::ExternalType::CreateFSub)
+      .def("CreateMul", &IRBuilder_O::ExternalType::CreateMul)
+      .def("CreateNSWMul", &IRBuilder_O::ExternalType::CreateNSWMul)
+      .def("CreateNUWMul", &IRBuilder_O::ExternalType::CreateNUWMul)
+      .def("CreateFMul", &IRBuilder_O::ExternalType::CreateFMul)
+      .def("CreateUDiv", &IRBuilder_O::ExternalType::CreateUDiv)
+      .def("CreateExactUDiv", &IRBuilder_O::ExternalType::CreateExactUDiv)
+      .def("CreateSDiv", &IRBuilder_O::ExternalType::CreateSDiv)
+      .def("CreateExactSDiv", &IRBuilder_O::ExternalType::CreateExactSDiv)
+      .def("CreateFDiv", &IRBuilder_O::ExternalType::CreateFDiv)
+      .def("CreateURem", &IRBuilder_O::ExternalType::CreateURem)
+      .def("CreateSRem", &IRBuilder_O::ExternalType::CreateSRem)
+      .def("CreateFRem", &IRBuilder_O::ExternalType::CreateFRem);
 
 #define AVOID_OVERLOAD(irb, ret, fn, suffix, args)                             \
   {                                                                            \
@@ -2844,12 +2840,12 @@ void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
   AVOID_OVERLOAD(irbuilder, llvm::Value *, CreateXor, _value_apint, (llvm::Value *, llvm::APInt const &, const llvm::Twine &));
   AVOID_OVERLOAD(irbuilder, llvm::Value *, CreateXor, _value_uint64, (llvm::Value *, uint64_t, const llvm::Twine &));
   irbuilder
-    .def("CreateNeg", &IRBuilder_O::ExternalType::CreateNeg)
-    .def("CreateNSWNeg", &IRBuilder_O::ExternalType::CreateNSWNeg)
-    .def("CreateNUWNeg", &IRBuilder_O::ExternalType::CreateNUWNeg)
-    .def("CreateFNeg", &IRBuilder_O::ExternalType::CreateFNeg)
-    .def("CreateNot", &IRBuilder_O::ExternalType::CreateNot)
-    .def("CreateAlloca", &IRBuilder_O::ExternalType::CreateAlloca);
+      .def("CreateNeg", &IRBuilder_O::ExternalType::CreateNeg)
+      .def("CreateNSWNeg", &IRBuilder_O::ExternalType::CreateNSWNeg)
+      .def("CreateNUWNeg", &IRBuilder_O::ExternalType::CreateNUWNeg)
+      .def("CreateFNeg", &IRBuilder_O::ExternalType::CreateFNeg)
+      .def("CreateNot", &IRBuilder_O::ExternalType::CreateNot)
+      .def("CreateAlloca", &IRBuilder_O::ExternalType::CreateAlloca);
 
   //	AVOID_OVERLOAD(irbuilder,llvm::LoadInst*,CreateLoad,_value_string,(llvm::Value*,const char*));
   AVOID_OVERLOAD(irbuilder, llvm::LoadInst *, CreateLoad, _value_twine, (llvm::Value *, const llvm::Twine &));
@@ -2858,37 +2854,37 @@ void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
   //	    .def("CreateLoad",&IRBuilder_O::ExternalType::CreateLoad)
   //	    .def("CreateLoad",&IRBuilder_O::ExternalType::CreateLoad)
   irbuilder
-    .def("CreateStore", &IRBuilder_O::ExternalType::CreateStore)
-    .def("CreateFence", &IRBuilder_O::ExternalType::CreateFence)
-    .def("CreateAtomicCmpXchg", &IRBuilder_O::ExternalType::CreateAtomicCmpXchg)
-    .def("CreateAtomicRMW", &IRBuilder_O::ExternalType::CreateAtomicRMW)
-    .def("CreateConstGEP1-32", &IRBuilder_O::ExternalType::CreateConstGEP1_32)
-    .def("CreateConstInBoundsGEP1-32", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_32)
-    .def("CreateConstGEP2-32", &IRBuilder_O::ExternalType::CreateConstGEP2_32)
-    .def("CreateConstInBoundsGEP2-32", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_32)
-    .def("CreateConstGEP1-64", &IRBuilder_O::ExternalType::CreateConstGEP1_64)
-    .def("CreateConstInBoundsGEP1-64", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_64)
-    .def("CreateConstGEP2-64", &IRBuilder_O::ExternalType::CreateConstGEP2_64)
-    .def("CreateConstInBoundsGEP2-64", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_64)
-    .def("CreateStructGEP", &IRBuilder_O::ExternalType::CreateStructGEP)
-    .def("CreateGlobalStringPtr", &IRBuilder_O::ExternalType::CreateGlobalStringPtr)
-    .def("CreateTrunc", &IRBuilder_O::ExternalType::CreateTrunc)
-    .def("CreateZExt", &IRBuilder_O::ExternalType::CreateZExt)
-    .def("CreateSExt", &IRBuilder_O::ExternalType::CreateSExt)
-    .def("CreateFPToUI", &IRBuilder_O::ExternalType::CreateFPToUI)
-    .def("CreateFPToSI", &IRBuilder_O::ExternalType::CreateFPToSI)
-    .def("CreateUIToFP", &IRBuilder_O::ExternalType::CreateUIToFP)
-    .def("CreateSIToFP", &IRBuilder_O::ExternalType::CreateSIToFP)
-    .def("CreateFPTrunc", &IRBuilder_O::ExternalType::CreateFPTrunc)
-    .def("CreateFPExt", &IRBuilder_O::ExternalType::CreateFPExt)
-    .def("CreatePtrToInt", &IRBuilder_O::ExternalType::CreatePtrToInt)
-    .def("CreateIntToPtr", &IRBuilder_O::ExternalType::CreateIntToPtr)
-    .def("CreateBitCast", &IRBuilder_O::ExternalType::CreateBitCast)
-    .def("CreateZExtOrBitCast", &IRBuilder_O::ExternalType::CreateZExtOrBitCast)
-    .def("CreateSExtOrBitCast", &IRBuilder_O::ExternalType::CreateSExtOrBitCast)
-    .def("CreateTruncOrBitCast", &IRBuilder_O::ExternalType::CreateTruncOrBitCast)
-    .def("CreateCast", &IRBuilder_O::ExternalType::CreateCast)
-    .def("CreatePointerCast", &IRBuilder_O::ExternalType::CreatePointerCast);
+      .def("CreateStore", &IRBuilder_O::ExternalType::CreateStore)
+      .def("CreateFence", &IRBuilder_O::ExternalType::CreateFence)
+      .def("CreateAtomicCmpXchg", &IRBuilder_O::ExternalType::CreateAtomicCmpXchg)
+      .def("CreateAtomicRMW", &IRBuilder_O::ExternalType::CreateAtomicRMW)
+      .def("CreateConstGEP1-32", &IRBuilder_O::ExternalType::CreateConstGEP1_32)
+      .def("CreateConstInBoundsGEP1-32", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_32)
+      .def("CreateConstGEP2-32", &IRBuilder_O::ExternalType::CreateConstGEP2_32)
+      .def("CreateConstInBoundsGEP2-32", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_32)
+      .def("CreateConstGEP1-64", &IRBuilder_O::ExternalType::CreateConstGEP1_64)
+      .def("CreateConstInBoundsGEP1-64", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_64)
+      .def("CreateConstGEP2-64", &IRBuilder_O::ExternalType::CreateConstGEP2_64)
+      .def("CreateConstInBoundsGEP2-64", &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_64)
+      .def("CreateStructGEP", &IRBuilder_O::ExternalType::CreateStructGEP)
+      .def("CreateGlobalStringPtr", &IRBuilder_O::ExternalType::CreateGlobalStringPtr)
+      .def("CreateTrunc", &IRBuilder_O::ExternalType::CreateTrunc)
+      .def("CreateZExt", &IRBuilder_O::ExternalType::CreateZExt)
+      .def("CreateSExt", &IRBuilder_O::ExternalType::CreateSExt)
+      .def("CreateFPToUI", &IRBuilder_O::ExternalType::CreateFPToUI)
+      .def("CreateFPToSI", &IRBuilder_O::ExternalType::CreateFPToSI)
+      .def("CreateUIToFP", &IRBuilder_O::ExternalType::CreateUIToFP)
+      .def("CreateSIToFP", &IRBuilder_O::ExternalType::CreateSIToFP)
+      .def("CreateFPTrunc", &IRBuilder_O::ExternalType::CreateFPTrunc)
+      .def("CreateFPExt", &IRBuilder_O::ExternalType::CreateFPExt)
+      .def("CreatePtrToInt", &IRBuilder_O::ExternalType::CreatePtrToInt)
+      .def("CreateIntToPtr", &IRBuilder_O::ExternalType::CreateIntToPtr)
+      .def("CreateBitCast", &IRBuilder_O::ExternalType::CreateBitCast)
+      .def("CreateZExtOrBitCast", &IRBuilder_O::ExternalType::CreateZExtOrBitCast)
+      .def("CreateSExtOrBitCast", &IRBuilder_O::ExternalType::CreateSExtOrBitCast)
+      .def("CreateTruncOrBitCast", &IRBuilder_O::ExternalType::CreateTruncOrBitCast)
+      .def("CreateCast", &IRBuilder_O::ExternalType::CreateCast)
+      .def("CreatePointerCast", &IRBuilder_O::ExternalType::CreatePointerCast);
 
 #if 0
   irbuilder
@@ -2896,34 +2892,34 @@ void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
     ;
 #endif
   irbuilder
-    .def("CreateFPCast", &IRBuilder_O::ExternalType::CreateFPCast)
-    .def("CreateICmpEQ", &IRBuilder_O::ExternalType::CreateICmpEQ)
-    .def("CreateICmpNE", &IRBuilder_O::ExternalType::CreateICmpNE)
-    .def("CreateICmpUGT", &IRBuilder_O::ExternalType::CreateICmpUGT)
-    .def("CreateICmpUGE", &IRBuilder_O::ExternalType::CreateICmpUGE)
-    .def("CreateICmpULT", &IRBuilder_O::ExternalType::CreateICmpULT)
-    .def("CreateICmpULE", &IRBuilder_O::ExternalType::CreateICmpULE)
-    .def("CreateICmpSGT", &IRBuilder_O::ExternalType::CreateICmpSGT)
-    .def("CreateICmpSGE", &IRBuilder_O::ExternalType::CreateICmpSGE)
-    .def("CreateICmpSLT", &IRBuilder_O::ExternalType::CreateICmpSLT)
-    .def("CreateICmpSLE", &IRBuilder_O::ExternalType::CreateICmpSLE)
-    .def("CreateFCmpOEQ", &IRBuilder_O::ExternalType::CreateFCmpOEQ)
-    .def("CreateFCmpOGT", &IRBuilder_O::ExternalType::CreateFCmpOGT)
-    .def("CreateFCmpOGE", &IRBuilder_O::ExternalType::CreateFCmpOGE)
-    .def("CreateFCmpOLT", &IRBuilder_O::ExternalType::CreateFCmpOLT)
-    .def("CreateFCmpOLE", &IRBuilder_O::ExternalType::CreateFCmpOLE)
-    .def("CreateFCmpONE", &IRBuilder_O::ExternalType::CreateFCmpONE)
-    .def("CreateFCmpORD", &IRBuilder_O::ExternalType::CreateFCmpORD)
-    .def("CreateFCmpUNO", &IRBuilder_O::ExternalType::CreateFCmpUNO)
-    .def("CreateFCmpUEQ", &IRBuilder_O::ExternalType::CreateFCmpUEQ)
-    .def("CreateFCmpUGT", &IRBuilder_O::ExternalType::CreateFCmpUGT)
-    .def("CreateFCmpUGE", &IRBuilder_O::ExternalType::CreateFCmpUGE)
-    .def("CreateFCmpULT", &IRBuilder_O::ExternalType::CreateFCmpULT)
-    .def("CreateFCmpULE", &IRBuilder_O::ExternalType::CreateFCmpULE)
-    .def("CreateFCmpUNE", &IRBuilder_O::ExternalType::CreateFCmpUNE)
-    .def("CreateICmp", &IRBuilder_O::ExternalType::CreateICmp)
-    .def("CreateFCmp", &IRBuilder_O::ExternalType::CreateFCmp)
-    .def("CreatePHI", &IRBuilder_O::ExternalType::CreatePHI);
+      .def("CreateFPCast", &IRBuilder_O::ExternalType::CreateFPCast)
+      .def("CreateICmpEQ", &IRBuilder_O::ExternalType::CreateICmpEQ)
+      .def("CreateICmpNE", &IRBuilder_O::ExternalType::CreateICmpNE)
+      .def("CreateICmpUGT", &IRBuilder_O::ExternalType::CreateICmpUGT)
+      .def("CreateICmpUGE", &IRBuilder_O::ExternalType::CreateICmpUGE)
+      .def("CreateICmpULT", &IRBuilder_O::ExternalType::CreateICmpULT)
+      .def("CreateICmpULE", &IRBuilder_O::ExternalType::CreateICmpULE)
+      .def("CreateICmpSGT", &IRBuilder_O::ExternalType::CreateICmpSGT)
+      .def("CreateICmpSGE", &IRBuilder_O::ExternalType::CreateICmpSGE)
+      .def("CreateICmpSLT", &IRBuilder_O::ExternalType::CreateICmpSLT)
+      .def("CreateICmpSLE", &IRBuilder_O::ExternalType::CreateICmpSLE)
+      .def("CreateFCmpOEQ", &IRBuilder_O::ExternalType::CreateFCmpOEQ)
+      .def("CreateFCmpOGT", &IRBuilder_O::ExternalType::CreateFCmpOGT)
+      .def("CreateFCmpOGE", &IRBuilder_O::ExternalType::CreateFCmpOGE)
+      .def("CreateFCmpOLT", &IRBuilder_O::ExternalType::CreateFCmpOLT)
+      .def("CreateFCmpOLE", &IRBuilder_O::ExternalType::CreateFCmpOLE)
+      .def("CreateFCmpONE", &IRBuilder_O::ExternalType::CreateFCmpONE)
+      .def("CreateFCmpORD", &IRBuilder_O::ExternalType::CreateFCmpORD)
+      .def("CreateFCmpUNO", &IRBuilder_O::ExternalType::CreateFCmpUNO)
+      .def("CreateFCmpUEQ", &IRBuilder_O::ExternalType::CreateFCmpUEQ)
+      .def("CreateFCmpUGT", &IRBuilder_O::ExternalType::CreateFCmpUGT)
+      .def("CreateFCmpUGE", &IRBuilder_O::ExternalType::CreateFCmpUGE)
+      .def("CreateFCmpULT", &IRBuilder_O::ExternalType::CreateFCmpULT)
+      .def("CreateFCmpULE", &IRBuilder_O::ExternalType::CreateFCmpULE)
+      .def("CreateFCmpUNE", &IRBuilder_O::ExternalType::CreateFCmpUNE)
+      .def("CreateICmp", &IRBuilder_O::ExternalType::CreateICmp)
+      .def("CreateFCmp", &IRBuilder_O::ExternalType::CreateFCmp)
+      .def("CreatePHI", &IRBuilder_O::ExternalType::CreatePHI);
 
   llvm::CallInst *(IRBuilder_O::ExternalType::*CreateCallArrayRef)(llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name) = &IRBuilder_O::ExternalType::CreateCall;
   irbuilder.def("CreateCallArrayRef", CreateCallArrayRef);
@@ -2933,29 +2929,29 @@ void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
   // Add the one for variable numbers of arguments
 
   irbuilder
-    .def("CreateCall2", &IRBuilder_O::ExternalType::CreateCall2)
-    .def("CreateCall3", &IRBuilder_O::ExternalType::CreateCall3)
-    .def("CreateCall4", &IRBuilder_O::ExternalType::CreateCall4)
-    .def("CreateCall5", &IRBuilder_O::ExternalType::CreateCall5);
+      .def("CreateCall2", &IRBuilder_O::ExternalType::CreateCall2)
+      .def("CreateCall3", &IRBuilder_O::ExternalType::CreateCall3)
+      .def("CreateCall4", &IRBuilder_O::ExternalType::CreateCall4)
+      .def("CreateCall5", &IRBuilder_O::ExternalType::CreateCall5);
 
   irbuilder
-    .def("CreateSelect", &IRBuilder_O::ExternalType::CreateSelect)
-    .def("CreateVAArg", &IRBuilder_O::ExternalType::CreateVAArg)
-    .def("CreateExtractElement", &IRBuilder_O::ExternalType::CreateExtractElement)
-    .def("CreateInsertElement", &IRBuilder_O::ExternalType::CreateInsertElement)
-    .def("CreateShuffleVector", &IRBuilder_O::ExternalType::CreateShuffleVector)
-    .def("CreateLandingPad", &IRBuilder_O::ExternalType::CreateLandingPad)
-    .def("CreateIsNull", &IRBuilder_O::ExternalType::CreateIsNull)
-    .def("CreateIsNotNull", &IRBuilder_O::ExternalType::CreateIsNotNull)
-    .def("CreatePtrDiff", &IRBuilder_O::ExternalType::CreatePtrDiff);
+      .def("CreateSelect", &IRBuilder_O::ExternalType::CreateSelect)
+      .def("CreateVAArg", &IRBuilder_O::ExternalType::CreateVAArg)
+      .def("CreateExtractElement", &IRBuilder_O::ExternalType::CreateExtractElement)
+      .def("CreateInsertElement", &IRBuilder_O::ExternalType::CreateInsertElement)
+      .def("CreateShuffleVector", &IRBuilder_O::ExternalType::CreateShuffleVector)
+      .def("CreateLandingPad", &IRBuilder_O::ExternalType::CreateLandingPad)
+      .def("CreateIsNull", &IRBuilder_O::ExternalType::CreateIsNull)
+      .def("CreateIsNotNull", &IRBuilder_O::ExternalType::CreateIsNotNull)
+      .def("CreatePtrDiff", &IRBuilder_O::ExternalType::CreatePtrDiff);
 
   irbuilder
-    .def("CreateBinOp", &IRBuilder_O::ExternalType::CreateBinOp)
-    .def("CreateInBoundsGEP", &IRBuilder_O::CreateInBoundsGEP)
-    .def("CreateExtractValue", &IRBuilder_O::CreateExtractValue)
-    .def("CreateInsertValue", &IRBuilder_O::CreateInsertValue)
+      .def("CreateBinOp", &IRBuilder_O::ExternalType::CreateBinOp)
+      .def("CreateInBoundsGEP", &IRBuilder_O::CreateInBoundsGEP)
+      .def("CreateExtractValue", &IRBuilder_O::CreateExtractValue)
+      .def("CreateInsertValue", &IRBuilder_O::CreateInsertValue)
       //	    .def("CreateCall",&IRBuilder_O::ExternalType::CreateCall)
-    ;
+      ;
 
   AVOID_OVERLOAD(irbuilder, llvm::Value *, CreateGEP, 0, (llvm::Value *, llvm::Value *, const llvm::Twine &));
   AVOID_OVERLOAD(irbuilder, llvm::Value *, CreateGEP, Array, (llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &));
@@ -3230,7 +3226,7 @@ PointerType_sp Type_O::getPointerTo(int addressSpace) {
 }
 
 core::Integer_sp Type_O::getArrayNumElements() const {
-    gc::Fixnum v64 = this->wrappedPtr()->getArrayNumElements();
+  gc::Fixnum v64 = this->wrappedPtr()->getArrayNumElements();
   core::Integer_sp ival = core::Integer_O::create(v64);
   return ival;
 }
@@ -3503,14 +3499,14 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
   return func;
 }
 
-  void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
-    llvm::ExecutionEngine *engine = oengine->wrappedPtr();
-    auto closure = func->closure.as<llvmo::CompiledClosure>();
-    llvmo::Function_sp llvm_func = closure->llvmFunction;
-    void *p = engine->getPointerToFunction(llvm_func->wrappedPtr());
-    core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
-    closure->fptr = lisp_funcPtr;
-  }
+void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
+  llvm::ExecutionEngine *engine = oengine->wrappedPtr();
+  auto closure = func->closure.as<llvmo::CompiledClosure>();
+  llvmo::Function_sp llvm_func = closure->llvmFunction;
+  void *p = engine->getPointerToFunction(llvm_func->wrappedPtr());
+  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
+  closure->fptr = lisp_funcPtr;
+}
 
 #if 0
   core::T_mv finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine
@@ -3562,40 +3558,40 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
 #endif
 
 /*! Return (values target nil) if successful or (values nil error-message) if not */
-  core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Triple_sp triple) {
-    string message;
-    llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(ArchName, *triple->wrappedPtr(), message));
-    if (target == NULL) {
-      return Values(_Nil<core::T_O>(), core::Str_O::create(message));
-    }
-    Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
-    return Values(targeto, _Nil<core::T_O>());
+core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Triple_sp triple) {
+  string message;
+  llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(ArchName, *triple->wrappedPtr(), message));
+  if (target == NULL) {
+    return Values(_Nil<core::T_O>(), core::Str_O::create(message));
   }
+  Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
+  return Values(targeto, _Nil<core::T_O>());
+}
 
-  void initialize_llvmo_expose() {
-    _G();
-    llvm::InitializeNativeTarget();
-    llvm::InitializeNativeTargetAsmPrinter();
-    llvm::InitializeNativeTargetAsmParser();
+void initialize_llvmo_expose() {
+  _G();
+  llvm::InitializeNativeTarget();
+  llvm::InitializeNativeTargetAsmPrinter();
+  llvm::InitializeNativeTargetAsmParser();
 
-    SYMBOL_SC_(LlvmoPkg, STARglobal_value_linkage_typesSTAR);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ExternalLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, AvailableExternallyLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, LinkOnceAnyLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, LinkOnceODRLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, LinkOnceODRAutoHideLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, WeakAnyLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, WeakODRLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, AppendingLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, InternalLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, PrivateLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, LinkerPrivateLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, LinkerPrivateWeakLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, DLLImportLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, DLLExportLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ExternalWeakLinkage);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, CommonLinkage);
-    core::enum_<llvm::GlobalValue::LinkageTypes>(_sym_STARglobal_value_linkage_typesSTAR, "llvm::GlobalValue::LinkageTypes")
+  SYMBOL_SC_(LlvmoPkg, STARglobal_value_linkage_typesSTAR);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ExternalLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, AvailableExternallyLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, LinkOnceAnyLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, LinkOnceODRLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, LinkOnceODRAutoHideLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, WeakAnyLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, WeakODRLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, AppendingLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, InternalLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, PrivateLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, LinkerPrivateLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, LinkerPrivateWeakLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, DLLImportLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, DLLExportLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ExternalWeakLinkage);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, CommonLinkage);
+  core::enum_<llvm::GlobalValue::LinkageTypes>(_sym_STARglobal_value_linkage_typesSTAR, "llvm::GlobalValue::LinkageTypes")
       .value(_sym_ExternalLinkage, llvm::GlobalValue::ExternalLinkage)
       .value(_sym_AvailableExternallyLinkage, llvm::GlobalValue::AvailableExternallyLinkage)
       .value(_sym_LinkOnceAnyLinkage, llvm::GlobalValue::LinkOnceAnyLinkage)
@@ -3613,31 +3609,31 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
       .value(_sym_ExternalWeakLinkage, llvm::GlobalValue::ExternalWeakLinkage)
       .value(_sym_CommonLinkage, llvm::GlobalValue::CommonLinkage);
 
-    SYMBOL_SC_(LlvmoPkg, STARglobal_ThreadLocalModesSTAR);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, NotThreadLocal);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, GeneralDynamicTLSModel);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, LocalDynamicTLSModel);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, InitialExecTLSModel);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, LocalExecTLSModel);
-    core::enum_<llvm::GlobalValue::ThreadLocalMode>(_sym_STARglobal_ThreadLocalModesSTAR, "llvm::GlobalValue::ThreadLocalMode")
+  SYMBOL_SC_(LlvmoPkg, STARglobal_ThreadLocalModesSTAR);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, NotThreadLocal);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, GeneralDynamicTLSModel);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, LocalDynamicTLSModel);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, InitialExecTLSModel);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, LocalExecTLSModel);
+  core::enum_<llvm::GlobalValue::ThreadLocalMode>(_sym_STARglobal_ThreadLocalModesSTAR, "llvm::GlobalValue::ThreadLocalMode")
       .value(_sym_NotThreadLocal, llvm::GlobalValue::NotThreadLocal)
       .value(_sym_GeneralDynamicTLSModel, llvm::GlobalValue::GeneralDynamicTLSModel)
       .value(_sym_LocalDynamicTLSModel, llvm::GlobalValue::LocalDynamicTLSModel)
       .value(_sym_InitialExecTLSModel, llvm::GlobalValue::InitialExecTLSModel)
       .value(_sym_LocalExecTLSModel, llvm::GlobalValue::LocalExecTLSModel);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, verifyFunction);
-    Defun(verifyFunction);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, verifyFunction);
+  Defun(verifyFunction);
 
   //
   // Compiler optimization passes
   //
   //    core::af_def(LlvmoPkg,"createDebugIRPass",&llvmo::af_createDebugIRPass);
-    core::af_def(LlvmoPkg, "createAliasAnalysisCounterPass", &llvm::createAliasAnalysisCounterPass);
-    core::af_def(LlvmoPkg, "createFunctionInliningPass", (llvm::Pass* (*)(unsigned,unsigned))&llvm::createFunctionInliningPass);
-    core::af_def(LlvmoPkg, "createAlwaysInlinerPass", (llvm::Pass* (*)())&llvm::createAlwaysInlinerPass);
-    core::af_def(LlvmoPkg, "createAAEvalPass", &llvm::createAAEvalPass);
-    core::af_def(LlvmoPkg, "createScalarEvolutionAliasAnalysisPass", &llvm::createScalarEvolutionAliasAnalysisPass);
+  core::af_def(LlvmoPkg, "createAliasAnalysisCounterPass", &llvm::createAliasAnalysisCounterPass);
+  core::af_def(LlvmoPkg, "createFunctionInliningPass", (llvm::Pass * (*)(unsigned, unsigned)) & llvm::createFunctionInliningPass);
+  core::af_def(LlvmoPkg, "createAlwaysInlinerPass", (llvm::Pass * (*)()) & llvm::createAlwaysInlinerPass);
+  core::af_def(LlvmoPkg, "createAAEvalPass", &llvm::createAAEvalPass);
+  core::af_def(LlvmoPkg, "createScalarEvolutionAliasAnalysisPass", &llvm::createScalarEvolutionAliasAnalysisPass);
   //    core::af_def(LlvmoPkg,"createProfileLoaderPass",&llvm::createProfileLoaderPass);
   //    core::af_def(LlvmoPkg,"createNoProfileInfoPass",&llvm::createNoProfileInfoPass);
   //    core::af_def(LlvmoPkg,"createProfileEstimatorPass",&llvm::createProfileEstimatorPass);
@@ -3645,57 +3641,57 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
   //    core::af_def(LlvmoPkg,"createPathProfileLoaderPass",&llvm::createPathProfileLoaderPass);
   //    core::af_def(LlvmoPkg,"createNoPathProfileInfoPass",&llvm::createNoPathProfileInfoPass);
   //    core::af_def(LlvmoPkg,"createPathProfileVerifierPass",&llvm::createPathProfileVerifierPass);
-    core::af_def(LlvmoPkg, "createLazyValueInfoPass", &llvm::createLazyValueInfoPass);
-    core::af_def(LlvmoPkg, "createInstCountPass", &llvm::createInstCountPass);
+  core::af_def(LlvmoPkg, "createLazyValueInfoPass", &llvm::createLazyValueInfoPass);
+  core::af_def(LlvmoPkg, "createInstCountPass", &llvm::createInstCountPass);
   //    core::af_def(LlvmoPkg,"createDbgInfoPrinterPass",&llvm::createDbgInfoPrinterPass);
-    core::af_def(LlvmoPkg, "createRegionInfoPass", &llvm::createRegionInfoPass);
-    core::af_def(LlvmoPkg, "createModuleDebugInfoPrinterPass", &llvm::createModuleDebugInfoPrinterPass);
-    core::af_def(LlvmoPkg, "createMemDepPrinter", &llvm::createMemDepPrinter);
+  core::af_def(LlvmoPkg, "createRegionInfoPass", &llvm::createRegionInfoPass);
+  core::af_def(LlvmoPkg, "createModuleDebugInfoPrinterPass", &llvm::createModuleDebugInfoPrinterPass);
+  core::af_def(LlvmoPkg, "createMemDepPrinter", &llvm::createMemDepPrinter);
   //    core::af_def(LlvmoPkg,"createInstructionCombiningPass",&llvm::createInstructionCombiningPass);
   //    core::af_def(LlvmoPkg,"createReassociatePass",&llvm::createReassociatePass);
   //    core::af_def(LlvmoPkg,"createPostDomTree",&llvm::createPostDomTree);
-    core::af_def(LlvmoPkg, "InitializeNativeTarget", &llvm::InitializeNativeTarget);
+  core::af_def(LlvmoPkg, "InitializeNativeTarget", &llvm::InitializeNativeTarget);
 
-    core::af_def(LlvmoPkg, "createAggressiveDCEPass", &llvm::createAggressiveDCEPass);
-    core::af_def(LlvmoPkg, "createCFGSimplificationPass", &llvm::createCFGSimplificationPass);
-    core::af_def(LlvmoPkg, "createDeadStoreEliminationPass", &llvm::createDeadStoreEliminationPass);
-    core::af_def(LlvmoPkg, "createGVNPass", &llvm::createGVNPass);
-    core::af_def(LlvmoPkg, "createIndVarSimplifyPass", &llvm::createIndVarSimplifyPass);
-    core::af_def(LlvmoPkg, "createInstructionCombiningPass", &llvm::createInstructionCombiningPass);
-    core::af_def(LlvmoPkg, "createJumpThreadingPass", &llvm::createJumpThreadingPass);
-    core::af_def(LlvmoPkg, "createLICMPass", &llvm::createLICMPass);
-    core::af_def(LlvmoPkg, "createLoopDeletionPass", &llvm::createLoopDeletionPass);
-    core::af_def(LlvmoPkg, "createLoopIdiomPass", &llvm::createLoopIdiomPass);
-    core::af_def(LlvmoPkg, "createLoopRotatePass", &llvm::createLoopRotatePass);
-    core::af_def(LlvmoPkg, "createLoopUnrollPass", &llvm::createLoopUnrollPass);
-    core::af_def(LlvmoPkg, "createLoopUnswitchPass", &llvm::createLoopUnswitchPass);
-    core::af_def(LlvmoPkg, "createMemCpyOptPass", &llvm::createMemCpyOptPass);
-    core::af_def(LlvmoPkg, "createPromoteMemoryToRegisterPass", &llvm::createPromoteMemoryToRegisterPass);
-    core::af_def(LlvmoPkg, "createReassociatePass", &llvm::createReassociatePass);
-    core::af_def(LlvmoPkg, "createSCCPPass", &llvm::createSCCPPass);
-    core::af_def(LlvmoPkg, "createScalarReplAggregatesPass", &llvm::createScalarReplAggregatesPass);
+  core::af_def(LlvmoPkg, "createAggressiveDCEPass", &llvm::createAggressiveDCEPass);
+  core::af_def(LlvmoPkg, "createCFGSimplificationPass", &llvm::createCFGSimplificationPass);
+  core::af_def(LlvmoPkg, "createDeadStoreEliminationPass", &llvm::createDeadStoreEliminationPass);
+  core::af_def(LlvmoPkg, "createGVNPass", &llvm::createGVNPass);
+  core::af_def(LlvmoPkg, "createIndVarSimplifyPass", &llvm::createIndVarSimplifyPass);
+  core::af_def(LlvmoPkg, "createInstructionCombiningPass", &llvm::createInstructionCombiningPass);
+  core::af_def(LlvmoPkg, "createJumpThreadingPass", &llvm::createJumpThreadingPass);
+  core::af_def(LlvmoPkg, "createLICMPass", &llvm::createLICMPass);
+  core::af_def(LlvmoPkg, "createLoopDeletionPass", &llvm::createLoopDeletionPass);
+  core::af_def(LlvmoPkg, "createLoopIdiomPass", &llvm::createLoopIdiomPass);
+  core::af_def(LlvmoPkg, "createLoopRotatePass", &llvm::createLoopRotatePass);
+  core::af_def(LlvmoPkg, "createLoopUnrollPass", &llvm::createLoopUnrollPass);
+  core::af_def(LlvmoPkg, "createLoopUnswitchPass", &llvm::createLoopUnswitchPass);
+  core::af_def(LlvmoPkg, "createMemCpyOptPass", &llvm::createMemCpyOptPass);
+  core::af_def(LlvmoPkg, "createPromoteMemoryToRegisterPass", &llvm::createPromoteMemoryToRegisterPass);
+  core::af_def(LlvmoPkg, "createReassociatePass", &llvm::createReassociatePass);
+  core::af_def(LlvmoPkg, "createSCCPPass", &llvm::createSCCPPass);
+  core::af_def(LlvmoPkg, "createScalarReplAggregatesPass", &llvm::createScalarReplAggregatesPass);
   //    core::af_def(LlvmoPkg,"createScalarReplAggregatesPassSSA",&llvm::createScalarReplAggregatesPassSSA);
   //    core::af_def(LlvmoPkg,"createScalarReplAggregatesPassWithThreshold",&llvm::createScalarReplAggregatesPassWithThreshold);
   //    core::af_def(LlvmoPkg,"createSimplifyLibCallsPass",&llvm::createSimplifyLibCallsPass);
-    core::af_def(LlvmoPkg, "createTailCallEliminationPass", &llvm::createTailCallEliminationPass);
-    core::af_def(LlvmoPkg, "createConstantPropagationPass", &llvm::createConstantPropagationPass);
+  core::af_def(LlvmoPkg, "createTailCallEliminationPass", &llvm::createTailCallEliminationPass);
+  core::af_def(LlvmoPkg, "createConstantPropagationPass", &llvm::createConstantPropagationPass);
   //    core::af_def(LlvmoPkg,"createDemoteMemoryToRegisterPass",&llvm::createDemoteMemoryToRegisterPass);
-    core::af_def(LlvmoPkg, "createVerifierPass", &llvm::createVerifierPass);
-    core::af_def(LlvmoPkg, "createCorrelatedValuePropagationPass", &llvm::createCorrelatedValuePropagationPass);
-    core::af_def(LlvmoPkg, "createEarlyCSEPass", &llvm::createEarlyCSEPass);
-    core::af_def(LlvmoPkg, "createLowerExpectIntrinsicPass", &llvm::createLowerExpectIntrinsicPass);
-    core::af_def(LlvmoPkg, "createTypeBasedAliasAnalysisPass", &llvm::createTypeBasedAliasAnalysisPass);
-    core::af_def(LlvmoPkg, "createBasicAliasAnalysisPass", &llvm::createBasicAliasAnalysisPass);
+  core::af_def(LlvmoPkg, "createVerifierPass", &llvm::createVerifierPass);
+  core::af_def(LlvmoPkg, "createCorrelatedValuePropagationPass", &llvm::createCorrelatedValuePropagationPass);
+  core::af_def(LlvmoPkg, "createEarlyCSEPass", &llvm::createEarlyCSEPass);
+  core::af_def(LlvmoPkg, "createLowerExpectIntrinsicPass", &llvm::createLowerExpectIntrinsicPass);
+  core::af_def(LlvmoPkg, "createTypeBasedAliasAnalysisPass", &llvm::createTypeBasedAliasAnalysisPass);
+  core::af_def(LlvmoPkg, "createBasicAliasAnalysisPass", &llvm::createBasicAliasAnalysisPass);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, STARatomic_orderingSTAR);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, NotAtomic);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Unordered);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Monotonic);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Acquire);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Release);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, AquireRelease);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, SequentiallyConsistent);
-    core::enum_<llvm::AtomicOrdering>(_sym_STARatomic_orderingSTAR, "llvm::AtomicOrdering")
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARatomic_orderingSTAR);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, NotAtomic);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Unordered);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Monotonic);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Acquire);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Release);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, AquireRelease);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, SequentiallyConsistent);
+  core::enum_<llvm::AtomicOrdering>(_sym_STARatomic_orderingSTAR, "llvm::AtomicOrdering")
       .value(_sym_NotAtomic, llvm::NotAtomic)
       .value(_sym_Unordered, llvm::Unordered)
       .value(_sym_Monotonic, llvm::Monotonic)
@@ -3704,26 +3700,26 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
       //	.value(_sym_AquireRelease,llvm::AtomicOrdering::AquireRelease)
       .value(_sym_SequentiallyConsistent, llvm::SequentiallyConsistent);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, STARsynchronization_scopeSTAR);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, SingleThread);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, CrossThread);
-    core::enum_<llvm::SynchronizationScope>(_sym_STARsynchronization_scopeSTAR, "llvm::SynchronizationScope")
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARsynchronization_scopeSTAR);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, SingleThread);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, CrossThread);
+  core::enum_<llvm::SynchronizationScope>(_sym_STARsynchronization_scopeSTAR, "llvm::SynchronizationScope")
       .value(_sym_SingleThread, llvm::SingleThread)
       .value(_sym_CrossThread, llvm::CrossThread);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, STARAtomicRMWInstBinOpSTAR);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Xchg);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Add);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Sub);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, And);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Nand);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Or);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Xor);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Max);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Min);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, UMax);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, UMin);
-    core::enum_<llvm::AtomicRMWInst::BinOp>(_sym_STARAtomicRMWInstBinOpSTAR, "llvm::AtomicRMWInst::BinOp")
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARAtomicRMWInstBinOpSTAR);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Xchg);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Add);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Sub);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, And);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Nand);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Or);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Xor);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Max);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Min);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, UMax);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, UMin);
+  core::enum_<llvm::AtomicRMWInst::BinOp>(_sym_STARAtomicRMWInstBinOpSTAR, "llvm::AtomicRMWInst::BinOp")
       .value(_sym_Xchg, llvm::AtomicRMWInst::Xchg)
       .value(_sym_Add, llvm::AtomicRMWInst::Add)
       .value(_sym_Sub, llvm::AtomicRMWInst::Sub)
@@ -3736,26 +3732,26 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
       .value(_sym_UMax, llvm::AtomicRMWInst::UMax)
       .value(_sym_UMin, llvm::AtomicRMWInst::UMin);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Add);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FAdd);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Sub);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FSub);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Mul);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FMul);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, UDiv);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, SDiv);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FDiv);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, URem);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, SRem);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FRem);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Shl);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, LShr);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, AShr);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, And);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Or);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Xor);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, STARBinaryOpsSTAR);
-    core::enum_<llvm::Instruction::BinaryOps>(_sym_STARBinaryOpsSTAR, "llvm::Instruction::BinaryOps")
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Add);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FAdd);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Sub);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FSub);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Mul);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FMul);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, UDiv);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, SDiv);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FDiv);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, URem);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, SRem);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FRem);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Shl);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, LShr);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, AShr);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, And);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Or);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Xor);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARBinaryOpsSTAR);
+  core::enum_<llvm::Instruction::BinaryOps>(_sym_STARBinaryOpsSTAR, "llvm::Instruction::BinaryOps")
       .value(_sym_Add, llvm::Instruction::Add)
       .value(_sym_FAdd, llvm::Instruction::FAdd)
       .value(_sym_Sub, llvm::Instruction::Sub)
@@ -3775,20 +3771,20 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
       .value(_sym_Or, llvm::Instruction::Or)
       .value(_sym_Xor, llvm::Instruction::Xor);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, Trunc);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ZExt);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, SExt);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FPToUI);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FPToSI);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, UIToFP);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, SIToFP);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FPTrunc);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FPExt);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, PtrToInt);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, IntToPtr);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, BitCast);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, STARInstructionCastOpsSTAR);
-    core::enum_<llvm::Instruction::CastOps>(_sym_STARInstructionCastOpsSTAR, "llvm::Instruction::CastOps")
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Trunc);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ZExt);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, SExt);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FPToUI);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FPToSI);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, UIToFP);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, SIToFP);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FPTrunc);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FPExt);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, PtrToInt);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, IntToPtr);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, BitCast);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARInstructionCastOpsSTAR);
+  core::enum_<llvm::Instruction::CastOps>(_sym_STARInstructionCastOpsSTAR, "llvm::Instruction::CastOps")
       .value(_sym_Trunc, llvm::Instruction::Trunc)
       .value(_sym_ZExt, llvm::Instruction::ZExt)
       .value(_sym_SExt, llvm::Instruction::SExt)
@@ -3802,37 +3798,37 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
       .value(_sym_IntToPtr, llvm::Instruction::IntToPtr)
       .value(_sym_BitCast, llvm::Instruction::BitCast);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_FALSE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_OEQ);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_OGT);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_OGE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_OLT);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_OLE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_ONE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_ORD);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_UNO);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_UEQ);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_UGT);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_UGE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_ULT);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_ULE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_UNE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_TRUE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FIRST_FCMP_PREDICATE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_PREDICATE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_PREDICATE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_EQ);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_NE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_UGT);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_UGE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_ULT);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_ULE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_SGT);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_SGE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_SLT);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_SLE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, STARCmpInstPredicateSTAR);
-    core::enum_<llvm::CmpInst::Predicate>(_sym_STARCmpInstPredicateSTAR, "llvm::CmpInst::Predicate")
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_FALSE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_OEQ);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_OGT);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_OGE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_OLT);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_OLE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_ONE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_ORD);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_UNO);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_UEQ);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_UGT);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_UGE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_ULT);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_ULE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_UNE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_TRUE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FIRST_FCMP_PREDICATE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_PREDICATE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_PREDICATE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_EQ);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_NE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_UGT);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_UGE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_ULT);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_ULE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_SGT);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_SGE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_SLT);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, ICMP_SLE);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARCmpInstPredicateSTAR);
+  core::enum_<llvm::CmpInst::Predicate>(_sym_STARCmpInstPredicateSTAR, "llvm::CmpInst::Predicate")
       .value(_sym_FCMP_FALSE, llvm::CmpInst::FCMP_FALSE)
       .value(_sym_FCMP_OEQ, llvm::CmpInst::FCMP_OEQ)
       .value(_sym_FCMP_OGT, llvm::CmpInst::FCMP_OGT)
@@ -3859,44 +3855,44 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
       .value(_sym_ICMP_SGE, llvm::CmpInst::ICMP_SGE)
       .value(_sym_ICMP_SLT, llvm::CmpInst::ICMP_SLT)
       .value(_sym_ICMP_SLE, llvm::CmpInst::ICMP_SLE);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, valid);
-    Defun(valid);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, valid);
+  Defun(valid);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, makeStringGlobal);
-    Defun(makeStringGlobal);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, makeStringGlobal);
+  Defun(makeStringGlobal);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, valuep);
-    Defun(valuep);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, valuep);
+  Defun(valuep);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, parseBitcodeFile);
-    Defun(parseBitcodeFile);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, parseBitcodeFile);
+  Defun(parseBitcodeFile);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, writeBitcodeToFile);
-    Defun(writeBitcodeToFile);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, writeBitcodeToFile);
+  Defun(writeBitcodeToFile);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, writeIrToFile);
-    Defun(writeIrToFile);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, writeIrToFile);
+  Defun(writeIrToFile);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, llvm_value_p);
-    Defun(llvm_value_p);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, llvm_value_p);
+  Defun(llvm_value_p);
 
-    CompDefun(setAssociatedFuncs);
+  CompDefun(setAssociatedFuncs);
 
-    core::af_def(LlvmoPkg, "finalizeEngineAndRegisterWithGcAndGetCompiledFunction", &finalizeEngineAndRegisterWithGcAndGetCompiledFunction);
+  core::af_def(LlvmoPkg, "finalizeEngineAndRegisterWithGcAndGetCompiledFunction", &finalizeEngineAndRegisterWithGcAndGetCompiledFunction);
   //        core::af_def(LlvmoPkg,"finalizeEngineAndRegisterWithGcAndRunFunction",&finalizeEngineAndRegisterWithGcAndRunFunction);
 
-    core::af_def(LlvmoPkg, "finalizeClosure", &finalizeClosure);
+  core::af_def(LlvmoPkg, "finalizeClosure", &finalizeClosure);
 
-    SYMBOL_EXPORT_SC_(LlvmoPkg, STARmostRecentLlvmFinalizationTimeSTAR);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, STARaccumulatedLlvmFinalizationTimeSTAR);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, STARnumberOfLlvmFinalizationsSTAR);
-    _sym_STARmostRecentLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
-    _sym_STARaccumulatedLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
-    _sym_STARnumberOfLlvmFinalizationsSTAR->defparameter(core::make_fixnum(0));
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARmostRecentLlvmFinalizationTimeSTAR);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARaccumulatedLlvmFinalizationTimeSTAR);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARnumberOfLlvmFinalizationsSTAR);
+  _sym_STARmostRecentLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
+  _sym_STARaccumulatedLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
+  _sym_STARnumberOfLlvmFinalizationsSTAR->defparameter(core::make_fixnum(0));
 
-    core::af_def(LlvmoPkg, "TargetRegistryLookupTarget", &TargetRegistryLookupTarget);
+  core::af_def(LlvmoPkg, "TargetRegistryLookupTarget", &TargetRegistryLookupTarget);
 
-    llvm::initializeScalarOpts(*llvm::PassRegistry::getPassRegistry());
-  }
+  llvm::initializeScalarOpts(*llvm::PassRegistry::getPassRegistry());
+}
 
 }; // llvmo

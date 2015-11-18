@@ -87,10 +87,10 @@ struct _TRACE {
     lisp_error_condition(__FUNCTION__, __FILE__, __LINE__, _type_, _initializers_); \
     THROW_NEVER_REACH();                                                            \
   }
-#define SIMPLE_ERROR(_boost_fmt_)                                           \
-  {                                                                         \
-      ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_); \
-    THROW_NEVER_REACH();                                                    \
+#define SIMPLE_ERROR(_boost_fmt_)                                             \
+  {                                                                           \
+    ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_); \
+    THROW_NEVER_REACH();                                                      \
   }
 #define NOT_ENVIRONMENT_ERROR(e) SIMPLE_ERROR(BF("Not an environment"))
 #define SIMPLE_ERROR_BF(_str_) SIMPLE_ERROR(BF(_str_))
@@ -712,9 +712,9 @@ void FElibc_error(const char *fmt, int nargs, ...);
 void FEcannot_open(T_sp fn);
 T_sp CEerror(T_sp c, const char *fmt, int numArgs, ...);
 
- void FEpackage_error(const char *fmt, T_sp package, int nargs, ...);
- void CEpackage_error(const char *fmt, const char* continue_message, T_sp package, int nargs, ...);
- void Warn(T_sp datum, List_sp arguments);
+void FEpackage_error(const char *fmt, T_sp package, int nargs, ...);
+void CEpackage_error(const char *fmt, const char *continue_message, T_sp package, int nargs, ...);
+void Warn(T_sp datum, List_sp arguments);
 
 void clasp_internal_error(const char *error);
 

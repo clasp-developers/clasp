@@ -44,8 +44,8 @@ public:
   //	HashTable_sp	classesToClosures;
 public:
   DISABLE_NEW();
- SingleDispatchGenericFunctionClosure(T_sp name, Symbol_sp k, SOURCE_INFO)
-   : FunctionClosure(name, k, _Nil<T_O>() /*Env*/, SOURCE_INFO_PASS), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>() ){};
+  SingleDispatchGenericFunctionClosure(T_sp name, Symbol_sp k, SOURCE_INFO)
+      : FunctionClosure(name, k, _Nil<T_O>() /*Env*/, SOURCE_INFO_PASS), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
   SingleDispatchGenericFunctionClosure(T_sp name)
       : FunctionClosure(name), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
   void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {

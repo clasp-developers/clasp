@@ -123,12 +123,7 @@ T_sp write_object(T_sp x, T_sp stream) {
   }
 #endif /* ECL_CMU_FORMAT */
   bool circle = clasp_print_circle();
-  if (circle && (x) 
-      && !x.fixnump() 
-      && !x.valistp() 
-      && !x.characterp() 
-      && !cl_symbolp(x)
-      && !cl_numberp(x) // && !x.single_floatp() 
+  if (circle && (x) && !x.fixnump() && !x.valistp() && !x.characterp() && !cl_symbolp(x) && !cl_numberp(x) // && !x.single_floatp()
       && (cl_listp(x) || !cl_symbolp(x) || !gc::As<Symbol_sp>(x)->homePackage().nilp())) {
     Fixnum code;
     T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();

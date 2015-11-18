@@ -85,7 +85,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, version);
 SYMBOL_EXPORT_SC_(KeywordPkg, directory);
 
 namespace core {
-    typedef int (*delim_fn)(int);
+typedef int (*delim_fn)(int);
 
 /*
  * Translates a string into the host's preferred case.
@@ -96,380 +96,380 @@ namespace core {
  * and it should translate to _opposite_ of the local case.
  */
 
-    static T_sp normalize_case(T_sp path, T_sp cas) {
+static T_sp normalize_case(T_sp path, T_sp cas) {
 
-        if (cas == kw::_sym_local) {
-            if (af_logicalPathnameP(path))
-                return kw::_sym_upcase;
-            return kw::_sym_downcase;
-        } else if (cas == kw::_sym_common || cas == kw::_sym_downcase || cas == kw::_sym_upcase) {
-            return cas;
-        } else {
-            SIMPLE_ERROR(BF("Not a valid pathname case :\n%s") % _rep_(cas));
-        }
-    }
+  if (cas == kw::_sym_local) {
+    if (af_logicalPathnameP(path))
+      return kw::_sym_upcase;
+    return kw::_sym_downcase;
+  } else if (cas == kw::_sym_common || cas == kw::_sym_downcase || cas == kw::_sym_upcase) {
+    return cas;
+  } else {
+    SIMPLE_ERROR(BF("Not a valid pathname case :\n%s") % _rep_(cas));
+  }
+}
 
-    static bool
-    in_local_case_p(T_sp str, T_sp cas) {
-        if (cas == kw::_sym_downcase)
-            return clasp_string_case(gc::As<Str_sp>(str)) < 0;
-        return true;
-    }
+static bool
+in_local_case_p(T_sp str, T_sp cas) {
+  if (cas == kw::_sym_downcase)
+    return clasp_string_case(gc::As<Str_sp>(str)) < 0;
+  return true;
+}
 
-    static bool
-    in_antilocal_case_p(T_sp str, T_sp cas) {
-        if (cas == kw::_sym_downcase)
-            return clasp_string_case(gc::As<Str_sp>(str)) > 0;
-        return false;
-    }
+static bool
+in_antilocal_case_p(T_sp str, T_sp cas) {
+  if (cas == kw::_sym_downcase)
+    return clasp_string_case(gc::As<Str_sp>(str)) > 0;
+  return false;
+}
 
-    static T_sp
-    to_local_case(T_sp str, T_sp cas) {
-        if (cas == kw::_sym_downcase)
-            return cl_string_downcase(str);
-        return cl_string_upcase(str);
-    }
+static T_sp
+to_local_case(T_sp str, T_sp cas) {
+  if (cas == kw::_sym_downcase)
+    return cl_string_downcase(str);
+  return cl_string_upcase(str);
+}
 
-    static Symbol_sp
-    host_case(T_sp host) {
-        if (host.nilp())
-            return kw::_sym_local;
-        if (clasp_logical_hostname_p(host))
-            return kw::_sym_upcase;
-        return kw::_sym_downcase;
-    }
+static Symbol_sp
+host_case(T_sp host) {
+  if (host.nilp())
+    return kw::_sym_local;
+  if (clasp_logical_hostname_p(host))
+    return kw::_sym_upcase;
+  return kw::_sym_downcase;
+}
 
-    static T_sp
-    to_antilocal_case(T_sp str, T_sp cas) {
-        if (cas == kw::_sym_downcase)
-            return cl_string_upcase(str);
-        return cl_string_upcase(str);
-    }
+static T_sp
+to_antilocal_case(T_sp str, T_sp cas) {
+  if (cas == kw::_sym_downcase)
+    return cl_string_upcase(str);
+  return cl_string_upcase(str);
+}
 
-    static T_sp
-    translate_from_common(T_sp tstr, T_sp tocase) {
-        Str_sp str = gc::As<Str_sp>(tstr);
-        int string_case = clasp_string_case(str);
-        if (string_case > 0) { /* ALL_UPPER */
-            return to_local_case(str, tocase);
-        } else if (string_case < 0) { /* ALL_LOWER */
-            return to_antilocal_case(str, tocase);
-        } else { /* Mixed case goes unchanged */
-            return str;
-        }
-    }
+static T_sp
+translate_from_common(T_sp tstr, T_sp tocase) {
+  Str_sp str = gc::As<Str_sp>(tstr);
+  int string_case = clasp_string_case(str);
+  if (string_case > 0) { /* ALL_UPPER */
+    return to_local_case(str, tocase);
+  } else if (string_case < 0) { /* ALL_LOWER */
+    return to_antilocal_case(str, tocase);
+  } else { /* Mixed case goes unchanged */
+    return str;
+  }
+}
 
-    static T_sp
-    translate_to_common(T_sp str, T_sp fromcase) {
-        if (in_local_case_p(str, fromcase)) {
-            return cl_string_upcase(str);
-        } else if (in_antilocal_case_p(str, fromcase)) {
-            return cl_string_downcase(str);
-        } else {
-            return str;
-        }
-    }
+static T_sp
+translate_to_common(T_sp str, T_sp fromcase) {
+  if (in_local_case_p(str, fromcase)) {
+    return cl_string_upcase(str);
+  } else if (in_antilocal_case_p(str, fromcase)) {
+    return cl_string_downcase(str);
+  } else {
+    return str;
+  }
+}
 
-    static T_sp
-    translate_component_case(T_sp str, T_sp fromcase, T_sp tocase) {
-        /* Pathnames may contain some other objects, such as symbols,
+static T_sp
+translate_component_case(T_sp str, T_sp fromcase, T_sp tocase) {
+  /* Pathnames may contain some other objects, such as symbols,
 	 * numbers, etc, which need not be translated */
-        if (str.nilp()) {
-            return str;
-        } else if (!gc::IsA<Str_sp>(str)) {
+  if (str.nilp()) {
+    return str;
+  } else if (!gc::IsA<Str_sp>(str)) {
 #ifdef CLASP_UNICODE
-            if (CLASP_EXTENDED_STRING_P(str) && brcl_fits_in_base_string(str)) {
-                str = si_coerce_to_base_string(str);
-                return translate_component_case(str, fromcase, tocase);
-            }
-#endif
-            return str;
-        } else if (tocase == fromcase) {
-            return str;
-        } else if (tocase == kw::_sym_common) {
-            return translate_to_common(str, fromcase);
-        } else if (fromcase == kw::_sym_common) {
-            return translate_from_common(str, tocase);
-        } else {
-            str = translate_to_common(str, fromcase);
-            return translate_from_common(str, tocase);
-        }
+    if (CLASP_EXTENDED_STRING_P(str) && brcl_fits_in_base_string(str)) {
+      str = si_coerce_to_base_string(str);
+      return translate_component_case(str, fromcase, tocase);
     }
+#endif
+    return str;
+  } else if (tocase == fromcase) {
+    return str;
+  } else if (tocase == kw::_sym_common) {
+    return translate_to_common(str, fromcase);
+  } else if (fromcase == kw::_sym_common) {
+    return translate_from_common(str, tocase);
+  } else {
+    str = translate_to_common(str, fromcase);
+    return translate_from_common(str, tocase);
+  }
+}
 
-    static T_sp
-    translate_list_case(List_sp list, T_sp fromcase, T_sp tocase) {
-        /* If the argument is really a list, translate all strings in it and
+static T_sp
+translate_list_case(List_sp list, T_sp fromcase, T_sp tocase) {
+  /* If the argument is really a list, translate all strings in it and
 	 * return this new list, else assume it is a string and translate it.
 	 */
-        if (!cl_consp(list)) {
-            return translate_component_case(list, fromcase, tocase);
-        } else {
-            list = cl_copyList(list);
-            for (auto l : list) {
-                /* It is safe to pass anything to translate_component_case,
+  if (!cl_consp(list)) {
+    return translate_component_case(list, fromcase, tocase);
+  } else {
+    list = cl_copyList(list);
+    for (auto l : list) {
+      /* It is safe to pass anything to translate_component_case,
 		 * because it will only transform strings, leaving other
 		 * object (such as symbols) unchanged.*/
-                T_sp name = oCar(l);
-                name = cl_listp(name) ? translate_list_case(name, fromcase, tocase) : translate_component_case(name, fromcase, tocase);
-                l->rplaca(name);
-            }
-            return list;
-        }
+      T_sp name = oCar(l);
+      name = cl_listp(name) ? translate_list_case(name, fromcase, tocase) : translate_component_case(name, fromcase, tocase);
+      l->rplaca(name);
     }
+    return list;
+  }
+}
 
-    static T_sp
-    destructively_check_directory(List_sp directory, bool logical, bool delete_back) {
-        /* This function performs two tasks
+static T_sp
+destructively_check_directory(List_sp directory, bool logical, bool delete_back) {
+  /* This function performs two tasks
 	 * 1) It ensures that the list is a valid directory list
 	 * 2) It ensures that all strings in the list are valid C strings without fill pointer
 	 *    All strings are copied, thus avoiding problems with the user modifying the
 	 *    list that was passed to MAKE-PATHNAME.
 	 * 3) Redundant :back are removed.
 	 */
-        /* INV: directory is always a list */
-        if (!cl_listp(directory)) {
-//    printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
-            return kw::_sym_error;
-        }
-        if (directory.nilp())
-            return directory;
-        if (oCar(directory) != kw::_sym_absolute &&
-            oCar(directory) != kw::_sym_relative) {
-//    printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
-            return kw::_sym_error;
-        }
-    BEGIN:
-        T_sp ptr;
-        int i;
-        for (i = 0, ptr = directory; ptr.consp(); ptr = oCdr(ptr), ++i) {
-            T_sp item = oCar(ptr);
-            if (item == kw::_sym_back) {
-                if (i == 0) {
-//        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
-                    return kw::_sym_error;
-                }
-                item = cl_nth(i - 1, directory);
-                if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors) {
-//        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
-                    return kw::_sym_error;
-                }
-                if (delete_back && i >= 2) {
-                    T_sp next = oCdr(ptr);
-                    ptr = cl_nthcdr(i - 2, directory);
-                    gc::As<Cons_sp>(ptr)->rplacd(next);
-                    i = i - 2; // Was i--;
-                }
-            } else if (item == kw::_sym_up) {
-                if (i == 0) {
-//        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
-                    return kw::_sym_error;
-                }
-                item = cl_nth(i - 1, directory);
-                if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors) {
-//        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
-                    return kw::_sym_error;
-                }
-            } else if (item == kw::_sym_relative || item == kw::_sym_absolute) {
-                if (i > 0) {
-//        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
-                    return kw::_sym_error;
-                }
-            } else if (af_stringP(item)) {
-                size_t l = cl_length(item);
+  /* INV: directory is always a list */
+  if (!cl_listp(directory)) {
+    //    printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
+    return kw::_sym_error;
+  }
+  if (directory.nilp())
+    return directory;
+  if (oCar(directory) != kw::_sym_absolute &&
+      oCar(directory) != kw::_sym_relative) {
+    //    printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
+    return kw::_sym_error;
+  }
+BEGIN:
+  T_sp ptr;
+  int i;
+  for (i = 0, ptr = directory; ptr.consp(); ptr = oCdr(ptr), ++i) {
+    T_sp item = oCar(ptr);
+    if (item == kw::_sym_back) {
+      if (i == 0) {
+        //        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
+        return kw::_sym_error;
+      }
+      item = cl_nth(i - 1, directory);
+      if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors) {
+        //        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
+        return kw::_sym_error;
+      }
+      if (delete_back && i >= 2) {
+        T_sp next = oCdr(ptr);
+        ptr = cl_nthcdr(i - 2, directory);
+        gc::As<Cons_sp>(ptr)->rplacd(next);
+        i = i - 2; // Was i--;
+      }
+    } else if (item == kw::_sym_up) {
+      if (i == 0) {
+        //        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
+        return kw::_sym_error;
+      }
+      item = cl_nth(i - 1, directory);
+      if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors) {
+        //        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
+        return kw::_sym_error;
+      }
+    } else if (item == kw::_sym_relative || item == kw::_sym_absolute) {
+      if (i > 0) {
+        //        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
+        return kw::_sym_error;
+      }
+    } else if (af_stringP(item)) {
+      size_t l = cl_length(item);
 #ifdef CLASP_UNICODE
 //		if (clasp_fits_in_base_string(item)) {
 //		    item = si_copy_to_simple_base_string(item);
 //		} else {
 #endif
-                item = cl_copySeq(gc::As<T_sp>(item));
-                gc::As<Cons_sp>(ptr)->rplaca(item);
-                if (logical) {
-                    continue;
-                }
-                if (l && af_char(item, 0) == '.') {
-                    if (l == 1) {
-                        /* Single dot */
-                        if (i == 0) {
-//            printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
-                            return kw::_sym_error;
-                        }
-                        gc::As<Cons_sp>(cl_nthcdr(--i, directory))->rplacd(oCdr(ptr));
-                    } else if (l == 2 && af_char(item, 1) == '.') {
-                        gc::As<Cons_sp>(ptr)->rplaca(kw::_sym_up);
-                        goto BEGIN;
-                    }
-                }
-            } else if (item != kw::_sym_wild && item != kw::_sym_wild_inferiors) {
-//      printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
-                return kw::_sym_error;
-            }
+      item = cl_copySeq(gc::As<T_sp>(item));
+      gc::As<Cons_sp>(ptr)->rplaca(item);
+      if (logical) {
+        continue;
+      }
+      if (l && af_char(item, 0) == '.') {
+        if (l == 1) {
+          /* Single dot */
+          if (i == 0) {
+            //            printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
+            return kw::_sym_error;
+          }
+          gc::As<Cons_sp>(cl_nthcdr(--i, directory))->rplacd(oCdr(ptr));
+        } else if (l == 2 && af_char(item, 1) == '.') {
+          gc::As<Cons_sp>(ptr)->rplaca(kw::_sym_up);
+          goto BEGIN;
         }
-        return directory;
+      }
+    } else if (item != kw::_sym_wild && item != kw::_sym_wild_inferiors) {
+      //      printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
+      return kw::_sym_error;
     }
+  }
+  return directory;
+}
 
 #define ARGS_Pathname_O_makePathname "(host device directory name type version fromcase &optional logical)"
 #define DECL_Pathname_O_makePathname ""
 #define DOCS_Pathname_O_makePathname "makePathname - force it to be logical-pathname with logical"
-    Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
-                                         T_sp name, T_sp type, T_sp version,
-                                         T_sp fromcase, bool logical) {
-        T_sp x, component;
-        Pathname_sp p;
-        if (logical) {
-            p = LogicalPathname_O::create();
-        } else {
-            if (af_stringP(host)) {
-                if (clasp_logical_hostname_p(host)) {
-                    p = LogicalPathname_O::create();
-                    logical = true;
-                } else {
-                    p = Pathname_O::create();
-                }
-            } else if (host.nilp()) {
-                p = Pathname_O::create();
-            } else {
-                x = directory;
-                component = kw::_sym_host;
-                goto ERROR;
-            }
-        }
-        if (device.notnilp() && device != kw::_sym_unspecific &&
-            !(!af_logicalPathnameP(p) && af_stringP(device))) {
-            x = device;
-            component = kw::_sym_device;
-            goto ERROR;
-        }
-        if (name.notnilp() && name != kw::_sym_wild && !af_stringP(name)) {
-            x = name;
-            component = kw::_sym_name;
-            goto ERROR;
-        }
-        if (type.notnilp() && type != kw::_sym_unspecific && type != kw::_sym_wild && !af_stringP(type)) {
-            x = type;
-            component = kw::_sym_type;
-            goto ERROR;
-        }
-        if (version != kw::_sym_unspecific && version != kw::_sym_newest &&
-            version != kw::_sym_wild && version.notnilp() && !af_fixnumP(version)) {
-            x = version;
-            component = kw::_sym_version;
-        ERROR : {
-                SIMPLE_ERROR(BF("%s is not a valid pathname-%s component") % _rep_(x) % _rep_(component));
-            }
-        }
+Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
+                                     T_sp name, T_sp type, T_sp version,
+                                     T_sp fromcase, bool logical) {
+  T_sp x, component;
+  Pathname_sp p;
+  if (logical) {
+    p = LogicalPathname_O::create();
+  } else {
+    if (af_stringP(host)) {
+      if (clasp_logical_hostname_p(host)) {
+        p = LogicalPathname_O::create();
+        logical = true;
+      } else {
+        p = Pathname_O::create();
+      }
+    } else if (host.nilp()) {
+      p = Pathname_O::create();
+    } else {
+      x = directory;
+      component = kw::_sym_host;
+      goto ERROR;
+    }
+  }
+  if (device.notnilp() && device != kw::_sym_unspecific &&
+      !(!af_logicalPathnameP(p) && af_stringP(device))) {
+    x = device;
+    component = kw::_sym_device;
+    goto ERROR;
+  }
+  if (name.notnilp() && name != kw::_sym_wild && !af_stringP(name)) {
+    x = name;
+    component = kw::_sym_name;
+    goto ERROR;
+  }
+  if (type.notnilp() && type != kw::_sym_unspecific && type != kw::_sym_wild && !af_stringP(type)) {
+    x = type;
+    component = kw::_sym_type;
+    goto ERROR;
+  }
+  if (version != kw::_sym_unspecific && version != kw::_sym_newest &&
+      version != kw::_sym_wild && version.notnilp() && !af_fixnumP(version)) {
+    x = version;
+    component = kw::_sym_version;
+  ERROR : {
+    SIMPLE_ERROR(BF("%s is not a valid pathname-%s component") % _rep_(x) % _rep_(component));
+  }
+  }
 
-        if (directory.nilp()) {
+  if (directory.nilp()) {
 // do nothing
 #ifdef CLASP_UNICODE
-        } else if (String_sp sd = directory.asOrNull<String_O>()) {
-            directory = lisp_createList(kw::_sym_absolute, directory);
+  } else if (String_sp sd = directory.asOrNull<String_O>()) {
+    directory = lisp_createList(kw::_sym_absolute, directory);
 #endif
-        } else if (Str_sp strdirectory = directory.asOrNull<Str_O>()) {
-            directory = Cons_O::createList(kw::_sym_absolute, strdirectory);
-        } else if (Symbol_sp sdirectory = directory.asOrNull<Symbol_O>()) {
-            if (sdirectory == kw::_sym_wild) {
-                directory = lisp_createList(kw::_sym_absolute, kw::_sym_wild_inferiors);
-            } else {
-                x = sdirectory;
-                component = kw::_sym_directory;
-                goto ERROR;
-            }
-        } else if (Cons_sp cdirectory = directory.asOrNull<Cons_O>()) {
-            directory = cl_copyList(cdirectory);
-        } else {
-            x = directory;
-            component = kw::_sym_directory;
-            goto ERROR;
-        }
-        p->_Host = host;
-        {
-            T_sp tocase = normalize_case(p, kw::_sym_local);
-            if (af_logicalPathnameP(p))
-                fromcase = kw::_sym_common;
-            else
-                fromcase = normalize_case(p, fromcase);
-            p->_Host =
-                translate_component_case(host, fromcase, tocase);
-            p->_Device =
-                translate_component_case(device, fromcase, tocase);
-            directory =
-                translate_list_case(directory, fromcase, tocase); // .as<List_O>()
-            p->_Directory = directory;
-            p->_Name =
-                translate_component_case(name, fromcase, tocase);
-            p->_Type =
-                translate_component_case(type, fromcase, tocase);
-            p->_Version = version;
-        }
-//  List_sp directory_copy = cl_copyList(directory);
-        directory = destructively_check_directory(directory, af_logicalPathnameP(p), 0);
-        unlikely_if(directory == kw::_sym_error) {
-            eval::funcall(cl::_sym_error, cl::_sym_fileError, kw::_sym_pathname, p);
-            //cl_error(3, @'file-error', kw::_sym_pathname, p);
-        }
-        p->_Directory = directory;
-        return (p);
+  } else if (Str_sp strdirectory = directory.asOrNull<Str_O>()) {
+    directory = Cons_O::createList(kw::_sym_absolute, strdirectory);
+  } else if (Symbol_sp sdirectory = directory.asOrNull<Symbol_O>()) {
+    if (sdirectory == kw::_sym_wild) {
+      directory = lisp_createList(kw::_sym_absolute, kw::_sym_wild_inferiors);
+    } else {
+      x = sdirectory;
+      component = kw::_sym_directory;
+      goto ERROR;
     }
+  } else if (Cons_sp cdirectory = directory.asOrNull<Cons_O>()) {
+    directory = cl_copyList(cdirectory);
+  } else {
+    x = directory;
+    component = kw::_sym_directory;
+    goto ERROR;
+  }
+  p->_Host = host;
+  {
+    T_sp tocase = normalize_case(p, kw::_sym_local);
+    if (af_logicalPathnameP(p))
+      fromcase = kw::_sym_common;
+    else
+      fromcase = normalize_case(p, fromcase);
+    p->_Host =
+        translate_component_case(host, fromcase, tocase);
+    p->_Device =
+        translate_component_case(device, fromcase, tocase);
+    directory =
+        translate_list_case(directory, fromcase, tocase); // .as<List_O>()
+    p->_Directory = directory;
+    p->_Name =
+        translate_component_case(name, fromcase, tocase);
+    p->_Type =
+        translate_component_case(type, fromcase, tocase);
+    p->_Version = version;
+  }
+  //  List_sp directory_copy = cl_copyList(directory);
+  directory = destructively_check_directory(directory, af_logicalPathnameP(p), 0);
+  unlikely_if(directory == kw::_sym_error) {
+    eval::funcall(cl::_sym_error, cl::_sym_fileError, kw::_sym_pathname, p);
+    //cl_error(3, @'file-error', kw::_sym_pathname, p);
+  }
+  p->_Directory = directory;
+  return (p);
+}
 
-    bool Pathname_O::equal(T_sp obj) const {
-        if (obj.nilp())
-            return false;
-        if (Pathname_sp other = obj.asOrNull<Pathname_O>()) {
-            if (!cl_equal(this->_Host, other->_Host))
-                return false;
-            if (!cl_equal(this->_Device, other->_Device))
-                return false;
-            if (!cl_equal(this->_Directory, other->_Directory))
-                return false;
-            if (!cl_equal(this->_Name, other->_Name))
-                return false;
-            if (!cl_equal(this->_Type, other->_Type))
-                return false;
-            if (!cl_equal(this->_Version, other->_Version))
-                return false;
-            return true;
-        }
-        return false;
-    }
+bool Pathname_O::equal(T_sp obj) const {
+  if (obj.nilp())
+    return false;
+  if (Pathname_sp other = obj.asOrNull<Pathname_O>()) {
+    if (!cl_equal(this->_Host, other->_Host))
+      return false;
+    if (!cl_equal(this->_Device, other->_Device))
+      return false;
+    if (!cl_equal(this->_Directory, other->_Directory))
+      return false;
+    if (!cl_equal(this->_Name, other->_Name))
+      return false;
+    if (!cl_equal(this->_Type, other->_Type))
+      return false;
+    if (!cl_equal(this->_Version, other->_Version))
+      return false;
+    return true;
+  }
+  return false;
+}
 
-    void Pathname_O::sxhash_(HashGenerator &hg) const {
-        if (hg.isFilling())
-            hg.hashObject(this->_Host);
-        if (hg.isFilling())
-            hg.hashObject(this->_Device);
-        if (hg.isFilling())
-            hg.hashObject(this->_Directory);
-        if (hg.isFilling())
-            hg.hashObject(this->_Name);
-        if (hg.isFilling())
-            hg.hashObject(this->_Type);
-        if (hg.isFilling())
-            hg.hashObject(this->_Version);
-    }
+void Pathname_O::sxhash_(HashGenerator &hg) const {
+  if (hg.isFilling())
+    hg.hashObject(this->_Host);
+  if (hg.isFilling())
+    hg.hashObject(this->_Device);
+  if (hg.isFilling())
+    hg.hashObject(this->_Directory);
+  if (hg.isFilling())
+    hg.hashObject(this->_Name);
+  if (hg.isFilling())
+    hg.hashObject(this->_Type);
+  if (hg.isFilling())
+    hg.hashObject(this->_Version);
+}
 
-    Pathname_sp Pathname_O::tilde_expand(Pathname_sp pathname) {
-        /*
+Pathname_sp Pathname_O::tilde_expand(Pathname_sp pathname) {
+  /*
 	 * If the pathname is a physical one, without hostname, without device
 	 * and the first element is either a tilde '~' or '~' followed by
 	 * a user name, we merge the user homedir pathname with this one.
 	 */
-        T_sp directory, head;
-        if (af_logicalPathnameP(pathname) || pathname->_Host.notnilp() || pathname->_Device.notnilp()) {
-            return pathname;
-        }
-        directory = pathname->_Directory;
-        if (!cl_consp(directory) || CONS_CAR(directory) != kw::_sym_relative || CONS_CDR(directory).nilp()) {
-            return pathname;
-        }
-        head = oCadr(directory);
-        if (af_stringP(head) && cl_length(head) > 0 &&
-            af_char(head, 0) == '~') {
-            /* Remove the tilde component */
-            gc::As<Cons_sp>(directory)->rplacd(oCddr(directory));
-            pathname = af_mergePathnames(pathname, homedirPathname(gc::As<Str_sp>(head)), kw::_sym_default);
-        }
-        return pathname;
-    }
+  T_sp directory, head;
+  if (af_logicalPathnameP(pathname) || pathname->_Host.notnilp() || pathname->_Device.notnilp()) {
+    return pathname;
+  }
+  directory = pathname->_Directory;
+  if (!cl_consp(directory) || CONS_CAR(directory) != kw::_sym_relative || CONS_CDR(directory).nilp()) {
+    return pathname;
+  }
+  head = oCadr(directory);
+  if (af_stringP(head) && cl_length(head) > 0 &&
+      af_char(head, 0) == '~') {
+    /* Remove the tilde component */
+    gc::As<Cons_sp>(directory)->rplacd(oCddr(directory));
+    pathname = af_mergePathnames(pathname, homedirPathname(gc::As<Str_sp>(head)), kw::_sym_default);
+  }
+  return pathname;
+}
 
 #define WORD_INCLUDE_DELIM 1
 #define WORD_ALLOW_ASTERISK 2
@@ -480,16 +480,16 @@ namespace core {
 #define WORD_DISALLOW_SLASH 64
 #define WORD_DISALLOW_SEMICOLON 128
 
-    static T_sp
-    make_one(T_sp s, size_t start, size_t end) {
-        return gc::As<Str_sp>(s)->subseq(start, make_fixnum((uint)end));
-    }
+static T_sp
+make_one(T_sp s, size_t start, size_t end) {
+  return gc::As<Str_sp>(s)->subseq(start, make_fixnum((uint)end));
+}
 
-    static int is_colon(int c) { return c == ':'; }
-    static int is_slash(int c) { return IS_DIR_SEPARATOR(c); }
-    static int is_semicolon(int c) { return c == ';'; }
-    static int is_dot(int c) { return c == '.'; }
-    static int is_null(int c) { return c == '\0'; }
+static int is_colon(int c) { return c == ':'; }
+static int is_slash(int c) { return IS_DIR_SEPARATOR(c); }
+static int is_semicolon(int c) { return c == ';'; }
+static int is_dot(int c) { return c == '.'; }
+static int is_null(int c) { return c == '\0'; }
 
 /*
  * Parses a word from string `S' until either:
@@ -502,84 +502,84 @@ namespace core {
  *	3) "" or _Nil<T_O>() when word has no elements
  *	5) A non empty string
  */
-    static T_sp
-    parse_word(T_sp s, delim_fn delim, int flags, size_t start,
-               size_t end, size_t *end_of_word) {
-        size_t i, j, last_delim = end;
-        bool wild_inferiors = false;
+static T_sp
+parse_word(T_sp s, delim_fn delim, int flags, size_t start,
+           size_t end, size_t *end_of_word) {
+  size_t i, j, last_delim = end;
+  bool wild_inferiors = false;
 
-        i = j = start;
-        for (; i < end; i++) {
-            bool valid_char;
-            size_t c = af_char(s, i);
-            if (delim(c)) {
-                if ((i == start) && (flags & WORD_ALLOW_LEADING_DOT)) {
-                    /* Leading dot is included */
-                    continue;
-                }
-                last_delim = i;
-                if (!(flags & WORD_SEARCH_LAST_DOT)) {
-                    break;
-                }
-            }
-            if (c == '*') {
-                if (!(flags & WORD_ALLOW_ASTERISK))
-                    valid_char = false; /* Asterisks not allowed in this word */
-                else {
-                    wild_inferiors = (i > start && af_char(s, i - 1) == '*');
-                    valid_char = true; /* single "*" */
-                }
-            } else if (c == ';' && (flags & WORD_DISALLOW_SEMICOLON)) {
-                valid_char = 0;
-            } else if (c == '/' && (flags & WORD_DISALLOW_SLASH)) {
-                valid_char = 0;
-            } else {
-                valid_char = c != 0;
-            }
-            if (!valid_char) {
-                *end_of_word = start;
-                return kw::_sym_error;
-            }
-        }
-        if (i > last_delim) {
-            /* Go back to the position of the last delimiter */
-            i = last_delim;
-        }
-        if (i < end) {
-            *end_of_word = i + 1;
-        } else {
-            *end_of_word = end;
-            /* We have reached the end of the string without finding
-	       the proper delimiter */
-            if (flags & WORD_INCLUDE_DELIM) {
-                *end_of_word = start;
-                return _Nil<T_O>();
-            }
-        }
-        switch (i - j) {
-        case 0:
-            if (flags & WORD_EMPTY_IS_NIL)
-                return _Nil<T_O>();
-            return Str_O::create(""); // cl_core.null_string;
-        case 1:
-            if (af_char(s, j) == '*')
-                return kw::_sym_wild;
-            break;
-        case 2: {
-            size_t c0 = af_char(s, j);
-            size_t c1 = af_char(s, j + 1);
-            if (c0 == '*' && c1 == '*')
-                return kw::_sym_wild_inferiors;
-            if (!(flags & WORD_LOGICAL) && c0 == '.' && c1 == '.')
-                return kw::_sym_up;
-            break;
-        }
-        default:
-            if (wild_inferiors) /* '**' surrounded by other characters */
-                return kw::_sym_error;
-        }
-        return make_one(s, j, i);
+  i = j = start;
+  for (; i < end; i++) {
+    bool valid_char;
+    size_t c = af_char(s, i);
+    if (delim(c)) {
+      if ((i == start) && (flags & WORD_ALLOW_LEADING_DOT)) {
+        /* Leading dot is included */
+        continue;
+      }
+      last_delim = i;
+      if (!(flags & WORD_SEARCH_LAST_DOT)) {
+        break;
+      }
     }
+    if (c == '*') {
+      if (!(flags & WORD_ALLOW_ASTERISK))
+        valid_char = false; /* Asterisks not allowed in this word */
+      else {
+        wild_inferiors = (i > start && af_char(s, i - 1) == '*');
+        valid_char = true; /* single "*" */
+      }
+    } else if (c == ';' && (flags & WORD_DISALLOW_SEMICOLON)) {
+      valid_char = 0;
+    } else if (c == '/' && (flags & WORD_DISALLOW_SLASH)) {
+      valid_char = 0;
+    } else {
+      valid_char = c != 0;
+    }
+    if (!valid_char) {
+      *end_of_word = start;
+      return kw::_sym_error;
+    }
+  }
+  if (i > last_delim) {
+    /* Go back to the position of the last delimiter */
+    i = last_delim;
+  }
+  if (i < end) {
+    *end_of_word = i + 1;
+  } else {
+    *end_of_word = end;
+    /* We have reached the end of the string without finding
+	       the proper delimiter */
+    if (flags & WORD_INCLUDE_DELIM) {
+      *end_of_word = start;
+      return _Nil<T_O>();
+    }
+  }
+  switch (i - j) {
+  case 0:
+    if (flags & WORD_EMPTY_IS_NIL)
+      return _Nil<T_O>();
+    return Str_O::create(""); // cl_core.null_string;
+  case 1:
+    if (af_char(s, j) == '*')
+      return kw::_sym_wild;
+    break;
+  case 2: {
+    size_t c0 = af_char(s, j);
+    size_t c1 = af_char(s, j + 1);
+    if (c0 == '*' && c1 == '*')
+      return kw::_sym_wild_inferiors;
+    if (!(flags & WORD_LOGICAL) && c0 == '.' && c1 == '.')
+      return kw::_sym_up;
+    break;
+  }
+  default:
+    if (wild_inferiors) /* '**' surrounded by other characters */
+      return kw::_sym_error;
+  }
+  return make_one(s, j, i);
+}
 
 /*
  * Parses a logical or physical directory tree. Output is always a
@@ -590,48 +590,48 @@ namespace core {
  * pathname-name or pathname-type when the same error is detected.
  */
 
-    static T_sp
-    parse_directories(T_sp s, int flags, size_t start, size_t end,
-                      size_t *end_of_dir) {
-        size_t i, j;
-        List_sp path = _Nil<T_O>();
-        delim_fn delim = (flags & WORD_LOGICAL) ? is_semicolon : is_slash;
+static T_sp
+parse_directories(T_sp s, int flags, size_t start, size_t end,
+                  size_t *end_of_dir) {
+  size_t i, j;
+  List_sp path = _Nil<T_O>();
+  delim_fn delim = (flags & WORD_LOGICAL) ? is_semicolon : is_slash;
 
-        flags |= WORD_INCLUDE_DELIM | WORD_ALLOW_ASTERISK;
-        *end_of_dir = start;
-        for (i = j = start; i < end; j = i) {
-            T_sp part = parse_word(s, delim, flags, j, end, &i);
-            if (part == kw::_sym_error || part.nilp())
-                break;
-            if (Str_sp spart = part.asOrNull<Str_O>()) {
-                if (spart->get() == "") { /* "/", ";" */
-                    if (j != start) {
-                        if (flags & WORD_LOGICAL)
-                            return kw::_sym_error;
-                        *end_of_dir = i;
-                        continue;
-                    }
-                    part = (flags & WORD_LOGICAL) ? kw::_sym_relative : kw::_sym_absolute;
-                }
-            }
-            *end_of_dir = i;
-            path = Cons_O::create(part, path);
+  flags |= WORD_INCLUDE_DELIM | WORD_ALLOW_ASTERISK;
+  *end_of_dir = start;
+  for (i = j = start; i < end; j = i) {
+    T_sp part = parse_word(s, delim, flags, j, end, &i);
+    if (part == kw::_sym_error || part.nilp())
+      break;
+    if (Str_sp spart = part.asOrNull<Str_O>()) {
+      if (spart->get() == "") { /* "/", ";" */
+        if (j != start) {
+          if (flags & WORD_LOGICAL)
+            return kw::_sym_error;
+          *end_of_dir = i;
+          continue;
         }
-        return cl_nreverse(path);
+        part = (flags & WORD_LOGICAL) ? kw::_sym_relative : kw::_sym_absolute;
+      }
     }
+    *end_of_dir = i;
+    path = Cons_O::create(part, path);
+  }
+  return cl_nreverse(path);
+}
 
-    bool clasp_logical_hostname_p(T_sp host) {
-        if (!af_stringP(host))
-            return false;
-        if (cl::_sym_assoc->fboundp()) {
-            return T_sp(eval::funcall(cl::_sym_assoc, host, _lisp->pathnameTranslations(), kw::_sym_test, cl::_sym_string_equal)).notnilp();
-        } else {
-            if (_lisp->pathnameTranslations().notnilp()) {
-                return _lisp->pathnameTranslations().asCons()->assoc(host, _Nil<T_O>(), cl::_sym_string_equal, _Nil<T_O>()).notnilp();
-            }
-        }
-        return false;
+bool clasp_logical_hostname_p(T_sp host) {
+  if (!af_stringP(host))
+    return false;
+  if (cl::_sym_assoc->fboundp()) {
+    return T_sp(eval::funcall(cl::_sym_assoc, host, _lisp->pathnameTranslations(), kw::_sym_test, cl::_sym_string_equal)).notnilp();
+  } else {
+    if (_lisp->pathnameTranslations().notnilp()) {
+      return _lisp->pathnameTranslations().asCons()->assoc(host, _Nil<T_O>(), cl::_sym_string_equal, _Nil<T_O>()).notnilp();
     }
+  }
+  return false;
+}
 
 /*
  * Parses a lisp namestring until the whole substring is parsed or an
@@ -1207,7 +1207,7 @@ NO_DIRECTORY:
         clasp_write_string("*", buffer);
       } else if (y == kw::_sym_newest) {
         cl_write_sequence(af_symbolName(gc::As<Symbol_sp>(y)), buffer,
-                         make_fixnum(0), _Nil<T_O>());
+                          make_fixnum(0), _Nil<T_O>());
       } else {
         /* Since the printer is not reentrant,
 		     * we cannot use cl_write and friends.
@@ -1892,7 +1892,8 @@ Pathname_sp af_translatePathname(T_sp tsource, T_sp tfrom, T_sp tto, T_sp scase)
   /* Match directories */
   wilds = find_list_wilds(source->_Directory,
                           from->_Directory);
-  if (wilds == kw::_sym_error) goto error;
+  if (wilds == kw::_sym_error)
+    goto error;
   if ((to->_Directory).nilp()) {
     /* Missing components are replaced */
     d = translate_list_case(source->_Directory, fromcase, tocase);
@@ -1908,7 +1909,8 @@ Pathname_sp af_translatePathname(T_sp tsource, T_sp tfrom, T_sp tto, T_sp scase)
 
   /* Match name */
   wilds = find_wilds(_Nil<T_O>(), source->_Name, from->_Name);
-  if (wilds == kw::_sym_error) goto error2;
+  if (wilds == kw::_sym_error)
+    goto error2;
   if ((to->_Name.nilp())) {
     d = translate_component_case(source->_Name, fromcase, tocase);
   } else {
@@ -1923,7 +1925,8 @@ Pathname_sp af_translatePathname(T_sp tsource, T_sp tfrom, T_sp tto, T_sp scase)
 
   /* Match type */
   wilds = find_wilds(_Nil<T_O>(), source->_Type, from->_Type);
-  if (wilds == kw::_sym_error) goto error2;
+  if (wilds == kw::_sym_error)
+    goto error2;
   if ((to->_Type).nilp()) {
     d = translate_component_case(source->_Type, fromcase, tocase);
   } else {
@@ -1963,11 +1966,11 @@ begin:
     return pathname;
   }
   List_sp l = eval::funcall(core::_sym_pathnameTranslations, pathname->_Host);
-//  TESTING();
-  for (auto cur : l) { // ; !cl_endp(l); l = CDR(l)) {
+  //  TESTING();
+  for (auto cur : l) {     // ; !cl_endp(l); l = CDR(l)) {
     T_sp pair = oCar(cur); // I just noticed that I had oCar(l) in here!!!!!
     if (af_pathnameMatchP(pathname, CAR(pair))) {
-//      printf("%s:%d Trying to translate pathname: %s   pair: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str(), _rep_(pair).c_str() );
+      //      printf("%s:%d Trying to translate pathname: %s   pair: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str(), _rep_(pair).c_str() );
       pathname = af_translatePathname(pathname,
                                       CAR(pair),
                                       oCadr(pair),

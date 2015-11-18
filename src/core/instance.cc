@@ -45,14 +45,14 @@ T_sp InstanceClosure::lambdaList() const {
 }
 
 LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
-  // Copy the arguments passed in registers into the multiple_values array and those
-  // will be processed by the generic function
+// Copy the arguments passed in registers into the multiple_values array and those
+// will be processed by the generic function
 #ifdef _DEBUG_BUILD
-  VaList_S saved_args(*reinterpret_cast<VaList_S*>(untag_valist(lcc_arglist)));
+  VaList_S saved_args(*reinterpret_cast<VaList_S *>(untag_valist(lcc_arglist)));
 #endif
   VaList_sp gfargs((gc::Tagged)lcc_arglist);
-//  LCC_SKIP_ARG(gfargs);
-  return (this->entryPoint)(this->instance,gfargs);
+  //  LCC_SKIP_ARG(gfargs);
+  return (this->entryPoint)(this->instance, gfargs);
 }
 
 #define ARGS_clos_setFuncallableInstanceFunction "(instance func)"
@@ -123,11 +123,11 @@ T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots) {
 
 /*! See ECL>>instance.d>>si_allocate_raw_instance */
 T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, int numberOfSlots) {
-    T_sp toutput = Instance_O::allocateInstance(theClass, numberOfSlots);
-    Instance_sp output = toutput.asOrNull<Instance_O>();
-    if (!output) {
-        SIMPLE_ERROR(BF("Could not convert a newly allocated instance of %s to Instance_sp - this going to require implementing the new Instance_O derived Kinds") % _rep_(theClass));
-    }
+  T_sp toutput = Instance_O::allocateInstance(theClass, numberOfSlots);
+  Instance_sp output = toutput.asOrNull<Instance_O>();
+  if (!output) {
+    SIMPLE_ERROR(BF("Could not convert a newly allocated instance of %s to Instance_sp - this going to require implementing the new Instance_O derived Kinds") % _rep_(theClass));
+  }
   if (orig.nilp()) {
     orig = output;
   } else if (Instance_sp iorig = orig.asOrNull<Instance_O>()) {
@@ -168,7 +168,6 @@ void Instance_O::archiveBase(ArchiveP node) {
     this->instanceSigSet();
   }
 }
-
 
 T_sp Instance_O::instanceSigSet() {
   T_sp classSlots(_Nil<T_O>());
@@ -407,6 +406,6 @@ void Instance_O::describe(T_sp stream) {
   for (int i(0); i < this->_Slots.size(); ++i) {
     ss << (BF("_Slots[%d]: %s\n") % i % _rep_(this->_Slots[i]).c_str()).str();
   }
-  clasp_write_string(ss.str(),stream);
+  clasp_write_string(ss.str(), stream);
 }
 };

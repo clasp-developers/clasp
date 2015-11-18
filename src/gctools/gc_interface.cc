@@ -170,75 +170,71 @@ typedef bool _Bool;
 #undef NAMESPACE_gctools
 #undef NAMESPACE_core
 
-
-
-
 extern "C" {
 using namespace gctools;
 
-size_t obj_kind(core::T_O* tagged_ptr) {
-  core::T_O* client = untag_object<core::T_O*>(tagged_ptr);
-  Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(client));
+size_t obj_kind(core::T_O *tagged_ptr) {
+  core::T_O *client = untag_object<core::T_O *>(tagged_ptr);
+  Header_s *header = reinterpret_cast<Header_s *>(ClientPtrToBasePtr(client));
   return (size_t)(header->kind());
 }
 
-char *obj_kind_name(core::T_O* tagged_ptr) {
-  core::T_O* client = untag_object<core::T_O*>(tagged_ptr);
-  Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(client));
+char *obj_kind_name(core::T_O *tagged_ptr) {
+  core::T_O *client = untag_object<core::T_O *>(tagged_ptr);
+  Header_s *header = reinterpret_cast<Header_s *>(ClientPtrToBasePtr(client));
   return obj_name(header->kind());
 }
 
 char *obj_name(gctools::GCKindEnum kind) {
-  if ( kind == KIND_null ) {
+  if (kind == KIND_null) {
     return "UNDEFINED";
   }
 #ifdef USE_BOEHM
-  #ifndef USE_CXX_DYNAMIC_CAST
-    #define GC_KIND_NAME_MAP_TABLE
-    #include STATIC_ANALYZER_PRODUCT
-    #undef GC_KIND_NAME_MAP_TABLE
-      goto *(KIND_NAME_MAP_table[kind]);
-    #define GC_KIND_NAME_MAP
-    #include STATIC_ANALYZER_PRODUCT
-    #undef GC_KIND_NAME_MAP
-  #endif
+#ifndef USE_CXX_DYNAMIC_CAST
+#define GC_KIND_NAME_MAP_TABLE
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_KIND_NAME_MAP_TABLE
+  goto *(KIND_NAME_MAP_table[kind]);
+#define GC_KIND_NAME_MAP
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_KIND_NAME_MAP
+#endif
 #endif
 #ifdef USE_MPS
-  #ifndef RUNNING_GC_BUILDER
-  #define GC_KIND_NAME_MAP_TABLE
-  #include STATIC_ANALYZER_PRODUCT
-  #undef GC_KIND_NAME_MAP_TABLE
-    goto *(KIND_NAME_MAP_table[kind]);
-  #define GC_KIND_NAME_MAP
-  #include STATIC_ANALYZER_PRODUCT
-  #undef GC_KIND_NAME_MAP
-  #endif
+#ifndef RUNNING_GC_BUILDER
+#define GC_KIND_NAME_MAP_TABLE
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_KIND_NAME_MAP_TABLE
+  goto *(KIND_NAME_MAP_table[kind]);
+#define GC_KIND_NAME_MAP
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_KIND_NAME_MAP
 #endif
-    return "NONE";
+#endif
+  return "NONE";
 }
 };
 
-
 extern "C" {
 /*! I'm using a format_header so MPS gives me the object-pointer */
-void obj_dump_base(void* base) {
+void obj_dump_base(void *base) {
 #ifdef USE_BOEHM
-  #ifdef USE_CXX_DYNAMIC_CAST
-    // Do nothing 
-  #else
-    #ifndef RUNNING_GC_BUILDER
-    #define GC_OBJ_DUMP_MAP_TABLE
-    #include STATIC_ANALYZER_PRODUCT
-    #undef GC_OBJ_DUMP_MAP_TABLE
-    #endif
-  #endif
+#ifdef USE_CXX_DYNAMIC_CAST
+// Do nothing
+#else
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_DUMP_MAP_TABLE
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_OBJ_DUMP_MAP_TABLE
+#endif
+#endif
 #endif
 #ifdef USE_MPS
-  #ifndef RUNNING_GC_BUILDER
-  #define GC_OBJ_DUMP_MAP_TABLE
-  #include STATIC_ANALYZER_PRODUCT
-  #undef GC_OBJ_DUMP_MAP_TABLE
-  #endif
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_DUMP_MAP_TABLE
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_OBJ_DUMP_MAP_TABLE
+#endif
 #endif
 
 #ifdef USE_MPS
@@ -254,24 +250,24 @@ void obj_dump_base(void* base) {
   if (header->kindP()) {
     gctools::GCKindEnum kind = header->kind();
 #ifdef USE_BOEHM
-  #ifndef USE_CXX_DYNAMIC_CAST
+#ifndef USE_CXX_DYNAMIC_CAST
     goto *(OBJ_DUMP_MAP_table[kind]);
-    #define GC_OBJ_DUMP_MAP
-    #include STATIC_ANALYZER_PRODUCT
-    #undef GC_OBJ_DUMP_MAP
-  #else
+#define GC_OBJ_DUMP_MAP
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_OBJ_DUMP_MAP
+#else
     sout << "BOEHMDC_UNKNOWN"; // do nothing
-  #endif
+#endif
 #endif
 #ifdef USE_MPS
-  #ifndef RUNNING_GC_BUILDER
+#ifndef RUNNING_GC_BUILDER
     goto *(OBJ_DUMP_MAP_table[kind]);
-    #define GC_OBJ_DUMP_MAP
-    #include STATIC_ANALYZER_PRODUCT
-    #undef GC_OBJ_DUMP_MAP
-  #else
-    // do nothing
-  #endif
+#define GC_OBJ_DUMP_MAP
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_OBJ_DUMP_MAP
+#else
+// do nothing
+#endif
 #endif
 #ifdef USE_MPS
   } else if (header->fwdP()) {
@@ -285,12 +281,10 @@ void obj_dump_base(void* base) {
     sout << "INVALID HEADER!!!!!";
 #endif
   }
- BOTTOM:
+BOTTOM:
   printf("%s:%d obj_dump_base: %s\n", __FILE__, __LINE__, sout.str().c_str());
 }
-
 };
-
 
 #ifdef USE_MPS
 extern "C" {
@@ -300,7 +294,7 @@ using namespace gctools;
 /*! I'm using a format_header so MPS gives me the object-pointer */
 mps_addr_t obj_skip(mps_addr_t client) {
   mps_addr_t oldClient = client;
-  // The client must have a valid header
+// The client must have a valid header
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SKIP_TABLE
 #include STATIC_ANALYZER_PRODUCT
@@ -327,11 +321,11 @@ mps_addr_t obj_skip(mps_addr_t client) {
   } else {
     THROW_HARD_ERROR(BF("Illegal header at %p") % header);
   }
- DONE:
+DONE:
   GC_TELEMETRY3(telemetry::label_obj_skip,
                 (uintptr_t)oldClient,
                 (uintptr_t)client,
-                (uintptr_t)((char*)client - (char*)oldClient));
+                (uintptr_t)((char *)client - (char *)oldClient));
   return client;
 }
 };
@@ -339,7 +333,6 @@ mps_addr_t obj_skip(mps_addr_t client) {
 int trap_obj_scan = 0;
 
 //core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR.notnilp()
-
 
 namespace gctools {
 #ifndef RUNNING_GC_BUILDER
@@ -364,7 +357,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
   GCKindEnum kind;
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
     while (client < limit) {
-        // The client must have a valid header
+      // The client must have a valid header
       DEBUG_THROW_IF_INVALID_CLIENT(client);
       gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
       original_client = (mps_addr_t)client;
@@ -432,7 +425,7 @@ void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr) {
 
 mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-    GC_TELEMETRY0(telemetry::label_root_scan_start );
+    GC_TELEMETRY0(telemetry::label_root_scan_start);
     for (auto &it : globalLoadTimeValuesRoots) {
       SIMPLE_POINTER_FIX(*it);
     }
@@ -540,7 +533,6 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 
 #endif
 #endif // RUNNING_GC_BUILDER
-
   }
   MPS_SCAN_END(GC_SCAN_STATE);
   GC_TELEMETRY0(telemetry::label_root_scan_stop);
