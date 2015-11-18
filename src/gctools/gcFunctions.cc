@@ -426,6 +426,7 @@ void af_monitorAllocations(bool on, Fixnum_sp backtraceStart, Fixnum_sp backtrac
 #define DOCS_af_gcMarker "gcMarker"
 Fixnum af_gcMarker(Fixnum_sp marker) {
   _G();
+#ifdef USE_BOEHM
 #ifdef USE_BOEHM_MEMORY_MARKER
   if (marker.nilp()) {
     return gctools::globalBoehmMarker;
@@ -435,6 +436,9 @@ Fixnum af_gcMarker(Fixnum_sp marker) {
   Fixnum m = marker.unsafe_fixnum();
   gctools::globalBoehmMarker = m;
   return oldm;
+#endif
+#else
+  printf("%s:%d Only boehm supports memory markers\n", __FILE__, __LINE__ );
 #endif
   return 0;
 }
