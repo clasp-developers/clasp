@@ -429,58 +429,37 @@ bool af_logicalPathnameP(T_sp obj) {
 
 void initialize_predicates() {
   af_def(ClPkg, "endp", &cl_endp);
-#define newNameDefun(pkg, myname, lispname) af_def(CorePkg, #lispname, &myname, ARGS_##myname, DECL_##myname, DOCS_##myname)
+#define newNameDefun(pkg, myname, lispname) af_def(pkg, #lispname, &myname, ARGS_##myname, DECL_##myname, DOCS_##myname)
   af_def(ClPkg, "symbolp", &cl_symbolp);
   af_def(ClPkg, "consp", &cl_consp);
   af_def(ClPkg, "listp", &cl_listp);
   ClDefun(numberp);
-  newNameDefun(CorePkg, af_integerP, cl
-               : integerp);
-  newNameDefun(CorePkg, af_rationalP, cl
-               : rationalp);
-  newNameDefun(CorePkg, af_floatP, cl
-               : floatp);
-  newNameDefun(CorePkg, af_realP, cl
-               : realp);
-  newNameDefun(CorePkg, af_complexP, cl
-               : complexp);
-  newNameDefun(CorePkg, af_characterP, cl
-               : characterp);
-  newNameDefun(CorePkg, af_stringP, cl
-               : stringp);
-  newNameDefun(CorePkg, af_bitVectorP, cl
-               : bit_vector_p);
-  newNameDefun(CorePkg, af_vectorP, cl
-               : vectorp);
-  newNameDefun(CorePkg, af_simple_vector_p, cl
-               : simple_vector_p);
-  newNameDefun(CorePkg, af_strP, cl
-               : simple_string_p);
-  newNameDefun(CorePkg, af_simple_bit_vector_p, cl
-               : simple_bit_vector_p);
-  newNameDefun(CorePkg, af_arrayP, cl
-               : arrayp);
-  newNameDefun(CorePkg, cl_packagep, cl
-               : packagep);
-  newNameDefun(CorePkg, cl_functionp, cl
-               : functionp);
-  newNameDefun(CorePkg, af_compiled_function_p, cl
-               : compiled_function_p);
-  newNameDefun(CorePkg, af_genericFunctionP, core
-               : genericFunctionP);
-  newNameDefun(CorePkg, af_keywordP, cl
-               : keywordp);
-  newNameDefun(CorePkg, cl_atom, cl
-               : atom);
+// clang-format off
+  newNameDefun(CorePkg, af_integerP, cl:integerp);
+  newNameDefun(CorePkg, af_rationalP, cl:rationalp);
+  newNameDefun(CorePkg, af_floatP, cl:floatp);
+  newNameDefun(CorePkg, af_realP, cl:realp);
+  newNameDefun(CorePkg, af_complexP, cl:complexp);
+  newNameDefun(CorePkg, af_characterP, cl:characterp);
+  newNameDefun(CorePkg, af_stringP, cl:stringp);
+  newNameDefun(CorePkg, af_bitVectorP, cl:bit_vector_p);
+  newNameDefun(CorePkg, af_vectorP, cl:vectorp);
+  newNameDefun(CorePkg, af_simple_vector_p, cl:simple_vector_p);
+  newNameDefun(CorePkg, af_strP, cl:simple_string_p);
+  newNameDefun(CorePkg, af_simple_bit_vector_p, cl:simple_bit_vector_p);
+  newNameDefun(CorePkg, af_arrayP, cl:arrayp);
+  newNameDefun(CorePkg, cl_packagep, cl:packagep);
+  newNameDefun(CorePkg, cl_functionp, cl:functionp);
+  newNameDefun(CorePkg, af_compiled_function_p, cl:compiled_function_p);
+  newNameDefun(CorePkg, af_genericFunctionP, core:genericFunctionP);
+  newNameDefun(CorePkg, af_keywordP, cl:keywordp);
+  newNameDefun(CorePkg, cl_atom, cl:atom);
+  newNameDefun(CorePkg, af_fixnumP, core:fixnump);
+  newNameDefun(CorePkg, af_bignumP, core:bignump);
+  newNameDefun(CorePkg, af_strP, core:strP);
+  newNameDefun(CorePkg, af_doubleFloatP, core:doubleFloatP);
+// clang-format off
   CoreDefun(baseCharP);
-  newNameDefun(CorePkg, af_fixnumP, core
-               : fixnump);
-  newNameDefun(CorePkg, af_bignumP, core
-               : bignump);
-  newNameDefun(CorePkg, af_strP, core
-               : strP);
-  newNameDefun(CorePkg, af_doubleFloatP, core
-               : doubleFloatP);
   SYMBOL_EXPORT_SC_(ClosPkg, classp);
   af_def(ClosPkg, "classp", &af_classp, ARGS_af_classp, DECL_af_classp, DOCS_af_classp);
   af_def(CorePkg, "builtInClassP", &core_builtInClassP, ARGS_core_builtInClassP, DECL_core_builtInClassP, DOCS_core_builtInClassP);
