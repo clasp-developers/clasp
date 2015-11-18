@@ -766,9 +766,9 @@ void FEcannot_open(T_sp fileName) {
   cl_error(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, fileName));
 }
 
-SYMBOL_EXPORT_SC_(CorePkg,incorrect_argument_count_error);
-void FEincorrect_argument_count_error() {
-  cl_error(core::_sym_incorrect_argument_count_error, _Nil<T_O>());
+SYMBOL_EXPORT_SC_(CorePkg,argument_number_error);
+void FEargument_number_error() {
+  cl_error(core::_sym_argument_number_error, _Nil<T_O>());
 }
 
 T_sp CEerror(T_sp c, const char *err, int narg, ...) {
