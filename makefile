@@ -490,3 +490,8 @@ print-config:
 	$(call varprint, EXECS)
 	$(call varprint, PATH)
 	$(call varprint, USE_CXXFLAGS)
+
+clang-format:
+	git ls-files src/ include/ \
+	| perl -ne 'chomp;print "$$_\n" if -f $$_ and (/\.[hc][hcp]?p?$$/) and !-l and !m#^include/.+/generated#;' \
+	| xargs -P$(PJOBS) -n1 --verbose clang-format -i
