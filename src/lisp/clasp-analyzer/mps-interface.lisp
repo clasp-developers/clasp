@@ -4,9 +4,15 @@
 ;;(push :use-breaks *features*)
 ;;(push :gc-warnings *features*)
 
+(defconstant +isystem-dir+ 
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
+  #+target-os-linux "/usr/include/clang/3.6/include"
+  "Define the -isystem command line option for Clang compiler runs")
+
 (defconstant +resource-dir+ 
   #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
-  #+target-os-linux "/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
+  #+target-os-linux "/usr/lib/llvm-3.6/bin/../lib/clang/3.6.0/include"
+  #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
   "Define the -resource-dir command line option for Clang compiler runs")
 (defconstant +additional-arguments+
   #+target-os-darwin (vector
@@ -2623,6 +2629,7 @@ It converts relative -I../... arguments to absolute paths"
       (let ((result (concatenate 'vector #-quiet new-args #+quiet(remove "-v" new-args)
                                  (vector "-DUSE_MPS"
                                          "-DRUNNING_GC_BUILDER"
+                                         "-isystem" +isystem-dir+
                                          "-resource-dir" +resource-dir+)
                                  +additional-arguments+)))
         result))))

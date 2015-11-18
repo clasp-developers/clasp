@@ -131,6 +131,7 @@ typedef bool _Bool;
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/binder.h>
 #include <clasp/core/fileSystem.h>
+#include <clasp/core/vectorDisplaced.h>
 #include <clasp/core/null.h>
 #include <clasp/core/multiStringBuffer.h>
 #include <clasp/core/posixTime.h>
