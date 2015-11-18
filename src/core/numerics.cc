@@ -109,7 +109,7 @@ Integer_sp af_getUniversalTime() {
   time(&current_time);
   Integer_sp offset = Integer_O::create(2208988800);
   Integer_sp unix_time = Integer_O::create(current_time);
-  Integer_sp utime = contagen_add(unix_time,offset);
+  Integer_sp utime = contagen_add(unix_time, offset);
   return utime;
 }
 
@@ -142,7 +142,6 @@ void seedRandomNumberGeneratorsUsingTime() {
   LOG(BF("seedRandomNumberGeneratorsUsingTime using value(%d)") % tt);
   seedRandomNumberGenerators(tt);
 }
-
 
 double randomNumber01() {
   return globalRandomReal01Generator();
@@ -1187,7 +1186,6 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 
 #endif
 
-
 #if 0
 T_sp
 cl_integer_decode_float(T_sp x)
@@ -1253,7 +1251,6 @@ cl_integer_decode_float(T_sp x)
 }
 #endif
 
-  
 #define ARGS_core_asin "(arg)"
 #define DECL_core_asin ""
 #define DOCS_core_asin "asinh"
@@ -1351,7 +1348,7 @@ void exposeCando_Numerics() {
   SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedSingleFloat);
   SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedShortFloat);
   SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedDoubleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedLongFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedLongFloat);
   cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastNegativeNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
@@ -1360,7 +1357,7 @@ void exposeCando_Numerics() {
   SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedSingleFloat);
   SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedShortFloat);
   SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedDoubleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedLongFloat);
+  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedLongFloat);
   cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastPositiveNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));

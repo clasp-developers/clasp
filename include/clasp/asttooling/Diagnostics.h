@@ -155,8 +155,8 @@ public:
   ArgStream addError(core::Cons_sp Range, ErrorType Error);
   gctools::Vec0<ErrorContent>::iterator b = Errors.begin();
   gctools::Vec0<ErrorContent>::iterator e = Errors.end();
-  ArrayRef<ErrorContent> errors() const { return ArrayRef<ErrorContent>(&(*b),&(*e));}
-  
+  ArrayRef<ErrorContent> errors() const { return ArrayRef<ErrorContent>(&(*b), &(*e)); }
+
   /// \brief Returns a simple string representation of each error.
   ///
   /// Each error only shows the error message without any context.

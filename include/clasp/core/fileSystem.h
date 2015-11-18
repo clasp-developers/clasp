@@ -39,122 +39,122 @@ THE SOFTWARE.
 
 namespace core {
 
-  SMART(Path);
-  class Path_O : public T_O {
-    friend class XmlSaveArchive_O;
-    LISP_BASE1(T_O);
-    LISP_CLASS(core, CorePkg, Path_O, "path");
+SMART(Path);
+class Path_O : public T_O {
+  friend class XmlSaveArchive_O;
+  LISP_BASE1(T_O);
+  LISP_CLASS(core, CorePkg, Path_O, "path");
 
-  public:
+public:
 #if defined(XML_ARCHIVE)
-    void archiveBase(ArchiveP node);
+  void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-    void initialize();
+  void initialize();
 
-  private:
-    boost_filesystem::path _Path;
+private:
+  boost_filesystem::path _Path;
 
-  public:
-    static Path_sp create(const string &path);
-    static Path_sp create(boost_filesystem::path p);
-    static Path_sp pathnameDesignator(T_sp obj);
+public:
+  static Path_sp create(const string &path);
+  static Path_sp create(boost_filesystem::path p);
+  static Path_sp pathnameDesignator(T_sp obj);
 
-  public:
-    boost_filesystem::path &getPath() { return this->_Path; };
+public:
+  boost_filesystem::path &getPath() { return this->_Path; };
 
-  public:
+public:
   /*! Comparison of paths */
-    virtual bool lt(T_sp obj) const;
+  virtual bool lt(T_sp obj) const;
 
-    bool isAbsolute() const { return this->_Path.is_absolute(); };
+  bool isAbsolute() const { return this->_Path.is_absolute(); };
 
-    Path_sp copyPath() const;
+  Path_sp copyPath() const;
 
   /*! Generate the boost_filesystem complete path */
-    Path_sp absolute() const;
+  Path_sp absolute() const;
 
   /*! Return the POSIX time_t value for the last_write_time */
-    Integer_sp last_write_time() const;
+  Integer_sp last_write_time() const;
 
-    void setPath(const boost_filesystem::path &p);
-    void setPathFromString(const string &path);
+  void setPath(const boost_filesystem::path &p);
+  void setPathFromString(const string &path);
 
-    void sxhash_(HashGenerator &hg) const;
-    Path_sp parent_path();
+  void sxhash_(HashGenerator &hg) const;
+  Path_sp parent_path();
 
   /*! Return just the fileName (*--end) as a string*/
-    string fileName() const;
+  string fileName() const;
 
   /*! Return the path as a string */
-    string asString() const;
+  string asString() const;
 
-    string __repr__() const;
+  string __repr__() const;
 
   /*! If the fileName has aaa/bbbb/xxxx.yyy
 		 * then the fileName is xxxx.yyy
 		 * and this function only returns the xxxx part
 		 * the prefix of the fileName
 		 */
-    string stem();
+  string stem();
 
   /*! Return the extension */
-    string extension();
+  string extension();
 
   /*! Append to the extension with this new extension */
-    void appendToExtension(string const &newExtension);
+  void appendToExtension(string const &newExtension);
 
   /*! Replace the extension with this new extension */
-    Path_sp replaceExtension(string const &newExtension);
+  Path_sp replaceExtension(string const &newExtension);
 
   /*! Append a path component */
-    Path_O &operator/=(string const &pp);
+  Path_O &operator/=(string const &pp);
 
   /*! Append to the path - returns itself */
-    Path_sp path_append(string const &pp);
+  Path_sp path_append(string const &pp);
 
   /*! Break the path up into parts. */
-    List_sp parts() const;
+  List_sp parts() const;
 
-    List_sp glob(const string &globTemplate);
+  List_sp glob(const string &globTemplate);
 
   /*! Return true if the file pointed to by this path exists */
-    bool exists();
-    Path_O(const Path_O &ss); //!< Copy constructor
+  bool exists();
+  Path_O(const Path_O &ss); //!< Copy constructor
 
-    DEFAULT_CTOR_DTOR(Path_O);
-  };
+  DEFAULT_CTOR_DTOR(Path_O);
+};
 
-  SMART(DirectoryIterator);
-  class DirectoryIterator_O : public Iterator_O {
-    LISP_BASE1(Iterator_O);
-    LISP_CLASS(core, CorePkg, DirectoryIterator_O, "DirectoryIterator");
-    DECLARE_MAKE_INIT();
+SMART(DirectoryIterator);
+class DirectoryIterator_O : public Iterator_O {
+  LISP_BASE1(Iterator_O);
+  LISP_CLASS(core, CorePkg, DirectoryIterator_O, "DirectoryIterator");
+  DECLARE_MAKE_INIT();
 
-  public:
-    void initialize();
-  GCPRIVATE:
-    Path_sp _Path;
+public:
+  void initialize();
+GCPRIVATE:
+  Path_sp _Path;
   /* A new CurrentIterator is created (new) whenever first() is called
 	   So we have to manage the memory for _CurrentIterator
 	 */
-    boost_filesystem::directory_iterator *_CurrentIterator;
-    boost_filesystem::directory_iterator _EndIterator;
+  boost_filesystem::directory_iterator *_CurrentIterator;
+  boost_filesystem::directory_iterator _EndIterator;
 
-  public:
-    DirectoryIterator_sp create(Path_sp path);
+public:
+  DirectoryIterator_sp create(Path_sp path);
 
-  private:
-    void setupCurrentIterator();
-    void setPath(Path_sp p);
+private:
+  void setupCurrentIterator();
+  void setPath(Path_sp p);
 
-  public:
-    virtual void first();
-    virtual void next();
-    virtual bool isDone();
-    virtual T_sp currentObject();
-    explicit DirectoryIterator_O() : Base(), _CurrentIterator(NULL){};
-    virtual ~DirectoryIterator_O(); // non-trivial destructor
-  };
+public:
+  virtual void first();
+  virtual void next();
+  virtual bool isDone();
+  virtual T_sp currentObject();
+  explicit DirectoryIterator_O() : Base(), _CurrentIterator(NULL){};
+  virtual ~DirectoryIterator_O(); // non-trivial destructor
+};
 };
 
 template <>
@@ -164,7 +164,6 @@ struct gctools::GCInfo<core::DirectoryIterator_O> {
   static bool constexpr Moveable = true;
   static bool constexpr Atomic = false;
 };
-
 
 namespace core {
 SMART(RecursiveDirectoryIterator);
@@ -231,7 +230,7 @@ public:
   FileStatus_sp symlinkStatus();
   Path_sp path();
   explicit DirectoryEntry_O() : DirectoryEntry_O::Base(), _Entry(NULL){};
-  virtual ~DirectoryEntry_O();  // Nontrivial
+  virtual ~DirectoryEntry_O(); // Nontrivial
 };
 };
 template <>
@@ -269,7 +268,6 @@ public:
 //    extern void rename_file(Path_sp src, Path_sp dest);
 //    extern bool delete_file(Path_sp dest);
 };
-
 
 TRANSLATE(core::Path_O);
 TRANSLATE(core::DirectoryIterator_O);

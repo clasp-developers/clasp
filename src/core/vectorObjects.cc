@@ -82,7 +82,7 @@ VectorObjects_sp VectorObjects_O::create(const gctools::Vec0<T_sp> &data) {
   return result;
 }
 
-void VectorObjects_O::setup(T_sp initialElement, T_sp initialContents, int dimension, bool adjustable, T_sp elementType ) {
+void VectorObjects_O::setup(T_sp initialElement, T_sp initialContents, int dimension, bool adjustable, T_sp elementType) {
   _G();
   this->_Adjustable = adjustable;
   this->_ElementType = elementType;

@@ -111,7 +111,7 @@ bool cl_upper_case_p(Character_sp c) {
 #define DOCS_cl_both_case_p "both_case_p"
 bool cl_both_case_p(Character_sp c) {
   claspCharacter x = clasp_char_code(c);
-  return isupper(x)||islower(x);
+  return isupper(x) || islower(x);
 };
 
 #define ARGS_cl_alphanumericp "(char)"
@@ -119,12 +119,11 @@ bool cl_both_case_p(Character_sp c) {
 #define DOCS_cl_alphanumericp "alphanumericp"
 bool cl_alphanumericp(Character_sp ch) {
   claspCharacter x = clasp_char_code(ch);
-  if ( x < 128 ) {
+  if (x < 128) {
     return isalpha(x) || isdigit(x);
   }
   return false;
 };
-
 
 #define ARGS_af_charUpcase "(char)"
 #define DECL_af_charUpcase ""

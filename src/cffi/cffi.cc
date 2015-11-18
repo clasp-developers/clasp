@@ -497,16 +497,16 @@ EXPOSE_CLASS(cffi, Pointer_O);
 
 void Pointer_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<Pointer_O>()
-    .def("CFFI-SYS:foreign_free",&Pointer_O::foreign_free)
-    .def("CFFI-SYS:PERCENTmem_ref",&Pointer_O::PERCENTmem_ref,
-         ARGS_Pointer_O_PERCENTmem_ref,
-         DECL_Pointer_O_PERCENTmem_ref,
-         DOCS_Pointer_O_PERCENTmem_ref )
-    .def("CFFI-SYS:PERCENTsetf_mem_ref",&Pointer_O::PERCENTsetf_mem_ref,
-         ARGS_Pointer_O_PERCENTsetf_mem_ref,
-         DECL_Pointer_O_PERCENTsetf_mem_ref,
-         DOCS_Pointer_O_PERCENTsetf_mem_ref )
-    .def("CFFI-SYS:inc-pointer", &Pointer_O::inc_pointer);
+      .def("CFFI-SYS:foreign_free", &Pointer_O::foreign_free)
+      .def("CFFI-SYS:PERCENTmem_ref", &Pointer_O::PERCENTmem_ref,
+           ARGS_Pointer_O_PERCENTmem_ref,
+           DECL_Pointer_O_PERCENTmem_ref,
+           DOCS_Pointer_O_PERCENTmem_ref)
+      .def("CFFI-SYS:PERCENTsetf_mem_ref", &Pointer_O::PERCENTsetf_mem_ref,
+           ARGS_Pointer_O_PERCENTsetf_mem_ref,
+           DECL_Pointer_O_PERCENTsetf_mem_ref,
+           DOCS_Pointer_O_PERCENTsetf_mem_ref)
+      .def("CFFI-SYS:inc-pointer", &Pointer_O::inc_pointer);
   core::af_def(CffiPkg, "make-pointer", &Pointer_O::make, ARGS_Pointer_O_make, DECL_Pointer_O_make, DOCS_Pointer_O_make);
   core::af_def(CffiPkg, "null-pointer", &Pointer_O::null_pointer, ARGS_Pointer_O_null_pointer, DECL_Pointer_O_null_pointer, DOCS_Pointer_O_null_pointer);
 

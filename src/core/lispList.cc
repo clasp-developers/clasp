@@ -71,7 +71,7 @@ static bool
 test_compare_not(struct cl_test *t, T_sp x) {
   x = KEY(t, x);
   //t->env->function = t->test_function;
-  T_sp res = (*t->test_fn->closure)( LCC_PASS_ARGS2_ELLIPSIS(t->item_compared.raw_(), x.raw_()));
+  T_sp res = (*t->test_fn->closure)(LCC_PASS_ARGS2_ELLIPSIS(t->item_compared.raw_(), x.raw_()));
   return res.nilp();
 }
 
@@ -224,10 +224,12 @@ List_sp af_butlast(List_sp ll, Integer_sp in) {
   gc::Fixnum n = clasp_to_int(in);
   T_sp r;
   T_sp l = ll;
-  for ( r = l; n && cl_consp(r); --n, r = oCdr(r));
-  if ( r.nilp() ) return _Nil<T_O>();
+  for (r = l; n && cl_consp(r); --n, r = oCdr(r))
+    ;
+  if (r.nilp())
+    return _Nil<T_O>();
   else if (!cl_listp(r)) {
-    if ( r == l ) {
+    if (r == l) {
       TYPE_ERROR_LIST(r);
     }
     return _Nil<T_O>();
@@ -235,7 +237,7 @@ List_sp af_butlast(List_sp ll, Integer_sp in) {
     Cons_sp head;
     Cons_sp tail;
     head = tail = Cons_O::create(oCar(l));
-    while ( l = oCdr(l), r = oCdr(r), cl_consp(r) ) {
+    while (l = oCdr(l), r = oCdr(r), cl_consp(r)) {
       Cons_sp cons = Cons_O::create(oCar(l));
       tail->rplacd(cons);
       tail = cons;
@@ -251,7 +253,8 @@ List_sp cl_nbutlast(List_sp l, Integer_sp in) {
   gc::Fixnum n = clasp_to_fixnum(in);
   if (clasp_unlikely(!cl_listp(l)))
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_nbutlast, l, cl::_sym_list);
-  for (n++, r = l; n && cl_consp(r); n--, r = oCdr(r)) ;
+  for (n++, r = l; n && cl_consp(r); n--, r = oCdr(r))
+    ;
   if (n == 0) {
     Cons_sp tail = gc::As<Cons_sp>(l);
     while (cl_consp(r)) {
@@ -299,8 +302,10 @@ T_sp cl_listSTAR(T_sp tobjects) {
 #define ARGS_cl_last "(list &optional (on 1))"
 #define DECL_cl_last ""
 T_sp cl_last(T_sp list, int n) {
-  if (list.nilp()) return list;
-  if (n < 0) CELL_ERROR(make_fixnum(n));
+  if (list.nilp())
+    return list;
+  if (n < 0)
+    CELL_ERROR(make_fixnum(n));
   if (Cons_sp clist = list.asOrNull<Cons_O>()) {
     return clist->last(n);
   }
@@ -440,18 +445,12 @@ void initialize_list() {
     }
 #endif
 
-
-
-
 EXPOSE_CLASS(core, VaList_dummy_O);
 
 void VaList_dummy_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<VaList_dummy_O>();
 };
 
-void VaList_dummy_O::exposePython(::core::Lisp_sp lisp) {
-};
-
-
+void VaList_dummy_O::exposePython(::core::Lisp_sp lisp){};
 
 }; /* core */

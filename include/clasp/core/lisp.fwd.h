@@ -27,5 +27,4 @@ THE SOFTWARE.
 #ifndef lisp_fwd_H
 #define lisp_fwd_H
 
-
 #endif

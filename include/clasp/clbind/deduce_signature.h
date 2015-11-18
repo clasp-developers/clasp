@@ -90,33 +90,33 @@ deduce_signature(R (T::*)() const, Wrapped *) {
 #define NPLUS1 BOOST_PP_INC(N)
 
 template <class R, BOOST_PP_ENUM_PARAMS(N, class A)>
-BOOST_PP_CAT(mpl::vector, NPLUS1) <R, BOOST_PP_ENUM_PARAMS(N, A)> deduce_signature(R (*)(BOOST_PP_ENUM_PARAMS(N, A)), ...) {
-  return BOOST_PP_CAT(mpl::vector, NPLUS1) <R, BOOST_PP_ENUM_PARAMS(N, A)>();
+BOOST_PP_CAT(mpl::vector, NPLUS1)<R, BOOST_PP_ENUM_PARAMS(N, A)> deduce_signature(R (*)(BOOST_PP_ENUM_PARAMS(N, A)), ...) {
+  return BOOST_PP_CAT(mpl::vector, NPLUS1)<R, BOOST_PP_ENUM_PARAMS(N, A)>();
 }
 
 #define NPLUS2 BOOST_PP_INC(NPLUS1)
 
 template <class R, class T, BOOST_PP_ENUM_PARAMS(N, class A)>
-BOOST_PP_CAT(mpl::vector, NPLUS2) <R, T &, BOOST_PP_ENUM_PARAMS(N, A)> deduce_signature(R (T::*)(BOOST_PP_ENUM_PARAMS(N, A))) {
-  return BOOST_PP_CAT(mpl::vector, NPLUS2) <R, T &, BOOST_PP_ENUM_PARAMS(N, A)>();
+BOOST_PP_CAT(mpl::vector, NPLUS2)<R, T &, BOOST_PP_ENUM_PARAMS(N, A)> deduce_signature(R (T::*)(BOOST_PP_ENUM_PARAMS(N, A))) {
+  return BOOST_PP_CAT(mpl::vector, NPLUS2)<R, T &, BOOST_PP_ENUM_PARAMS(N, A)>();
 }
 
 template <class R, class T, BOOST_PP_ENUM_PARAMS(N, class A), class Wrapped>
-BOOST_PP_CAT(mpl::vector, NPLUS2) <
+BOOST_PP_CAT(mpl::vector, NPLUS2)<
     R, typename most_derived<T, Wrapped>::type &, BOOST_PP_ENUM_PARAMS(N, A)> deduce_signature(R (T::*)(BOOST_PP_ENUM_PARAMS(N, A)), Wrapped *) {
-  return BOOST_PP_CAT(mpl::vector, NPLUS2) <
+  return BOOST_PP_CAT(mpl::vector, NPLUS2)<
       R, typename most_derived<T, Wrapped>::type &, BOOST_PP_ENUM_PARAMS(N, A)>();
 }
 
 template <class R, class T, BOOST_PP_ENUM_PARAMS(N, class A)>
-BOOST_PP_CAT(mpl::vector, NPLUS2) <R, T const &, BOOST_PP_ENUM_PARAMS(N, A)> deduce_signature(R (T::*)(BOOST_PP_ENUM_PARAMS(N, A)) const) {
-  return BOOST_PP_CAT(mpl::vector, NPLUS2) <R, T const &, BOOST_PP_ENUM_PARAMS(N, A)>();
+BOOST_PP_CAT(mpl::vector, NPLUS2)<R, T const &, BOOST_PP_ENUM_PARAMS(N, A)> deduce_signature(R (T::*)(BOOST_PP_ENUM_PARAMS(N, A)) const) {
+  return BOOST_PP_CAT(mpl::vector, NPLUS2)<R, T const &, BOOST_PP_ENUM_PARAMS(N, A)>();
 }
 
 template <class R, class T, BOOST_PP_ENUM_PARAMS(N, class A), class Wrapped>
-BOOST_PP_CAT(mpl::vector, NPLUS2) <
+BOOST_PP_CAT(mpl::vector, NPLUS2)<
     R, typename most_derived<T, Wrapped>::type const &, BOOST_PP_ENUM_PARAMS(N, A)> deduce_signature(R (T::*)(BOOST_PP_ENUM_PARAMS(N, A)) const, Wrapped *) {
-  return BOOST_PP_CAT(mpl::vector, NPLUS2) <
+  return BOOST_PP_CAT(mpl::vector, NPLUS2)<
       R, typename most_derived<T, Wrapped>::type const &, BOOST_PP_ENUM_PARAMS(N, A)>();
 }
 

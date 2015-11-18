@@ -124,7 +124,7 @@ bool clasp_float_nan_p(Float_sp num);
 bool clasp_float_infinity_p(Float_sp num);
 NumberType clasp_t_of(Number_sp num);
 Integer_sp clasp_shift(Integer_sp num, int bits);
- gc::Fixnum clasp_integer_length(Integer_sp x);
+gc::Fixnum clasp_integer_length(Integer_sp x);
 mpz_class clasp_to_mpz(Integer_sp x);
 cl_index clasp_to_size(Integer_sp x);
 uint32_t clasp_to_uint32_t(Integer_sp x);
@@ -280,7 +280,7 @@ public:
     return Integer_O::create(v.c_str());
   };
   static Integer_sp create(const char *v) {
-    if ( v[0] == '+' ) {
+    if (v[0] == '+') {
       // Skip leading +
       mpz_class zv(&v[1]);
       return create(zv);
@@ -296,6 +296,7 @@ public:
   static Integer_sp create(float f);
   static Integer_sp create(double f);
   static Integer_sp createLongFloat(LongFloat f);
+
 public:
   virtual bool evenp_() const { SUBIMP(); };
   virtual bool oddp_() const { SUBIMP(); };
@@ -310,7 +311,7 @@ public:
   virtual unsigned long long as_unsigned_long_long_() const { SUBIMP(); };
   virtual void __write__(T_sp strm) const;
   Integer_O(){};
-  virtual ~Integer_O() {};
+  virtual ~Integer_O(){};
 };
 };
 
@@ -412,7 +413,7 @@ class Fixnum_dummy_O : public Integer_O {
     Fixnum_dummy_O() : _Value(0) {};
 #endif
 };
- inline Fixnum_sp make_fixnum(gc::Fixnum x) { return gc::make_tagged_fixnum<core::Fixnum_I>(x); };
+inline Fixnum_sp make_fixnum(gc::Fixnum x) { return gc::make_tagged_fixnum<core::Fixnum_I>(x); };
 inline gc::Fixnum unbox_fixnum(Fixnum_sp x) { return x.unsafe_fixnum(); };
 };
 
@@ -465,6 +466,7 @@ public:
   Number_sp abs_() const;
   bool isnan_() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!
   bool isinf_() const { return isinf(this->_Value); };
+
 public:
   //	virtual	string	valueAsString_() const;
   //	virtual	void	setFromString( const string& strVal );
@@ -564,7 +566,7 @@ public:
 #endif
 };
 
- inline SingleFloat_sp make_single_float(float x) { return gc::make_tagged_single_float<core::SingleFloat_I>(x); };
+inline SingleFloat_sp make_single_float(float x) { return gc::make_tagged_single_float<core::SingleFloat_I>(x); };
 inline float unbox_single_float(SingleFloat_sp x) { return x.unsafe_single_float(); };
 };
 
@@ -603,6 +605,7 @@ public:
   Number_sp abs_() const { return DoubleFloat_O::create(fabs(this->_Value)); };
   bool isnan_() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!!!!
   bool isinf_() const { return isinf(this->_Value); };
+
 public:
   //	virtual	string	valueAsString_() const;
   //	virtual	void	setFromString( const string& strVal );
@@ -659,7 +662,7 @@ class LongFloat_O : public Float_O {
 
 public:
 private:
-//  LongFloat _Value;
+  //  LongFloat _Value;
 public:
   static DoubleFloat_sp create(LongFloat nm) {
     return DoubleFloat_O::create(nm);
@@ -770,13 +773,14 @@ public:
 
   void setf_realpart(Real_sp r) { this->_real = r; };
   void setf_imagpart(Real_sp i) { this->_imaginary = i; };
-  
+
   void sxhash_(HashGenerator &hg) const;
   //	virtual Number_sp copy() const;
   string __repr__() const;
   Number_sp signum_() const;
   Number_sp abs_() const;
   bool isnan_() const;
+
 public:
   //	virtual	string	valueAsString_() const;
   //	virtual	void	setFromString( const string& str);
@@ -859,8 +863,8 @@ public:
 public:
   NumberType number_type_() const { return number_Ratio; };
 
-    virtual bool zerop_() const { return clasp_zerop(this->_numerator);};
-    virtual Number_sp negate_() const { return Ratio_O::create(clasp_negate(this->_numerator),this->_denominator); };
+  virtual bool zerop_() const { return clasp_zerop(this->_numerator); };
+  virtual Number_sp negate_() const { return Ratio_O::create(clasp_negate(this->_numerator), this->_denominator); };
 
   Integer_sp numerator() const { return this->_numerator; };
   Integer_sp denominator() const { return this->_denominator; };
@@ -1208,7 +1212,7 @@ inline Integer_sp clasp_shift(Integer_sp n, int bits) {
   return n->shift_(bits);
 }
 
- inline gc::Fixnum clasp_integer_length(Integer_sp x) {
+inline gc::Fixnum clasp_integer_length(Integer_sp x) {
   if (x.fixnump()) {
     Fixnum i(x.unsafe_fixnum());
     Fixnum count = 0;
@@ -1276,7 +1280,7 @@ inline unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
   }
   return i->as_unsigned_long_long_();
 };
- 
+
 inline Fixnum clasp_to_fixnum(Integer_sp i) {
   if (i.fixnump()) {
     gc::Fixnum f = i.unsafe_fixnum();
@@ -1297,7 +1301,8 @@ inline cl_index clasp_to_size(Integer_sp i) {
     TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_fixnum)));
   }
   gc::Fixnum f = i->as_int_();
-  if (f >= 0 ) return f;
+  if (f >= 0)
+    return f;
   TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_fixnum)));
 };
 
@@ -1402,26 +1407,21 @@ inline Number_sp clasp_conjugate(Number_sp x) {
   return x->conjugate_();
 }
 
+inline bool clasp_float_nan_p(Float_sp num) {
+  if (num.single_floatp()) {
+    float f = num.unsafe_single_float();
+    return f != f;
+  }
+  return num->isnan_();
+}
 
-inline bool clasp_float_nan_p(Float_sp num)
- {
-   if ( num.single_floatp() ) {
-     float f = num.unsafe_single_float();
-     return f!=f;
-   }
-   return num->isnan_();
- }
- 
-inline bool clasp_float_infinity_p(Float_sp num)
- {
-   if ( num.single_floatp() ) {
-     float f = num.unsafe_single_float();
-     return isinf(f);
-   }
-   return num->isnan_();
- }
-   
-
+inline bool clasp_float_infinity_p(Float_sp num) {
+  if (num.single_floatp()) {
+    float f = num.unsafe_single_float();
+    return isinf(f);
+  }
+  return num->isnan_();
+}
 };
 
 #endif //]

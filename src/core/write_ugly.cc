@@ -132,7 +132,7 @@ void Instance_O::__write__(T_sp stream) const {
 }
 
 void StructureObject_O::__write__(T_sp stream) const {
-//  printf("%s:%d StructureObject_O::__write__\n", __FILE__, __LINE__);
+  //  printf("%s:%d StructureObject_O::__write__\n", __FILE__, __LINE__);
   if (UNLIKELY(!gc::IsA<Symbol_sp>(this->_Type)))
     SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type name~%  ~S") % _rep_(this->_Type));
   SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
@@ -413,14 +413,10 @@ void Integer_O::__write__(T_sp stream) const {
 #endif // working
 
 void
-_clasp_write_fixnum(gctools::Fixnum i, T_sp stream)
-{
+_clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
   StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
-  core_integerToString(buffer, 
-                       clasp_make_fixnum(i)
-                       , clasp_make_fixnum(clasp_print_base())
-                       , cl::_sym_STARprint_radixSTAR->symbolValue().isTrue()
-                       , true);
+  core_integerToString(buffer,
+                       clasp_make_fixnum(i), clasp_make_fixnum(clasp_print_base()), cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(), true);
   cl_write_sequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
 }
 
@@ -441,14 +437,13 @@ void write_single_float(T_sp strm, SingleFloat_sp i) {
   clasp_write_string(ss.str(), strm);
 }
 
- void
- write_float(T_sp f, T_sp stream)
- {
-   StrWithFillPtr_sp s = _lisp->get_buffer_string();
-   s = core_float_to_string_free(s, f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
-   cl_write_sequence(s, stream, clasp_make_fixnum(0), _Nil<T_O>());
-   _lisp->put_buffer_string(s);
- }
+void
+write_float(T_sp f, T_sp stream) {
+  StrWithFillPtr_sp s = _lisp->get_buffer_string();
+  s = core_float_to_string_free(s, f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
+  cl_write_sequence(s, stream, clasp_make_fixnum(0), _Nil<T_O>());
+  _lisp->put_buffer_string(s);
+}
 
 void write_character(T_sp strm, T_sp chr) {
   ASSERT(chr.characterp());
@@ -474,8 +469,8 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
   } else if (x.single_floatp()) {
     write_float(gc::As<SingleFloat_sp>(x), stream);
   } else if (x.generalp() || x.consp()) {
-    if (Float_sp fx = x.asOrNull<Float_O>() ) {
-      write_float(fx,stream);
+    if (Float_sp fx = x.asOrNull<Float_O>()) {
+      write_float(fx, stream);
     } else {
       x->__write__(stream);
     }

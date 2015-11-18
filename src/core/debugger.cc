@@ -76,7 +76,8 @@ void LispDebugger::printExpression() {
 
 InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
   InvocationHistoryFrameIterator_sp frame = core_getInvocationHistoryFrame(af_ihsCurrentFrame());
-  if (frame->isValid()) return frame;
+  if (frame->isValid())
+    return frame;
   THROW_HARD_ERROR(BF("%s:%d Could not get frame") % __FILE__ % __LINE__);
 }
 
@@ -99,8 +100,9 @@ T_sp LispDebugger::invoke() {
     }
     sprompt << "[" << _lisp->debuggerLevel() << "]>";
     bool end_of_transmission(false);
-    line = myReadLine(sprompt.str(),end_of_transmission);
-    if ( end_of_transmission ) throw core::ExitProgram(0);
+    line = myReadLine(sprompt.str(), end_of_transmission);
+    if (end_of_transmission)
+      throw core::ExitProgram(0);
     char cmd;
     if (line[0] == ':') {
       cmd = line[1];
@@ -240,9 +242,6 @@ T_sp LispDebugger::invoke() {
   }
 }
 
-
-
-
 #define ARGS_core_lowLevelBacktrace "()"
 #define DECL_core_lowLevelBacktrace ""
 #define DOCS_core_lowLevelBacktrace "lowLevelBacktrace"
@@ -257,7 +256,7 @@ void core_lowLevelBacktrace() {
   for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
     string name = "-no-name-";
     gctools::tagged_pointer<Closure> closure = cur->closure;
-    if (!closure ) {
+    if (!closure) {
       name = "-NO-CLOSURE-";
     } else {
       if (closure->name.notnilp()) {
@@ -285,9 +284,9 @@ void core_clibBacktrace(int depth) {
   _G();
 // Play with Unix backtrace(3)
 #define BACKTRACE_SIZE 1024
-  printf("Entered core_clibBacktrace - symbol: %s\n", _rep_(INTERN_(core,theClibBacktraceFunctionSymbol)).c_str());
+  printf("Entered core_clibBacktrace - symbol: %s\n", _rep_(INTERN_(core, theClibBacktraceFunctionSymbol)).c_str());
   void *buffer[BACKTRACE_SIZE];
-  char* funcname = (char*)malloc(1024);
+  char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
   int nptrs;
   nptrs = backtrace(buffer, BACKTRACE_SIZE);
@@ -297,32 +296,34 @@ void core_clibBacktrace(int depth) {
     return;
   } else {
     for (int i = 0; i < nptrs; ++i) {
-      if ( i >= depth ) break;
-      std::string front = std::string(strings[i],57);
-      char* fnName = &strings[i][59];
-      char* fnCur = fnName;
-      int len=0;
-      for ( ; *fnCur; ++fnCur) {
-        if (*fnCur == ' ') break;
+      if (i >= depth)
+        break;
+      std::string front = std::string(strings[i], 57);
+      char *fnName = &strings[i][59];
+      char *fnCur = fnName;
+      int len = 0;
+      for (; *fnCur; ++fnCur) {
+        if (*fnCur == ' ')
+          break;
         ++len;
       }
       int status;
       fnName[len] = '\0';
-      char* rest = &fnName[len+1];
-      char* ret = abi::__cxa_demangle(fnName, funcname, &funcnamesize, &status);
+      char *rest = &fnName[len + 1];
+      char *ret = abi::__cxa_demangle(fnName, funcname, &funcnamesize, &status);
       if (status == 0) {
         funcname = ret; // use possibly realloc()-ed string
-        printf( "  %s %s %s\n", front.c_str(), funcname, rest);
+        printf("  %s %s %s\n", front.c_str(), funcname, rest);
       } else {
-		// demangling failed. Output function name as a C function with
-		// no arguments.
-        printf( "  %s\n", strings[i]);
+        // demangling failed. Output function name as a C function with
+        // no arguments.
+        printf("  %s\n", strings[i]);
       }
     }
   }
   if (strings)
     free(strings);
-  if ( funcname )
+  if (funcname)
     free(funcname);
 };
 
@@ -331,7 +332,8 @@ void core_clibBacktrace(int depth) {
 #define DOCS_af_framePointers "framePointers"
 void af_framePointers() {
   void *fp = __builtin_frame_address(0); // Constant integer only
-  if (fp != NULL) printf("Frame pointer --> %p\n", fp);
+  if (fp != NULL)
+    printf("Frame pointer --> %p\n", fp);
 };
 };
 
@@ -392,9 +394,9 @@ void af_printCurrentIhsFrame() {
 #define DOCS_af_printCurrentIhsFrameEnvironment "printCurrentIhsFrameEnvironment"
 void af_printCurrentIhsFrameEnvironment() {
   T_sp args = af_ihsArguments(af_ihsCurrentFrame());
-  if ( args.notnilp() ) {
+  if (args.notnilp()) {
     VectorObjects_sp vargs = gc::As<VectorObjects_sp>(args);
-    for ( int i=0; i<cl_length(vargs); ++i ) {
+    for (int i = 0; i < cl_length(vargs); ++i) {
       _lisp->print(BF("arg%s --> %s") % i % _rep_(vargs->elt(i)));
     }
   } else {
@@ -424,13 +426,13 @@ void dbg_lowLevelDescribe(T_sp obj) {
   if (obj.valistp()) {
     // Convert the T_sp object into a VaList_sp object
     VaList_sp vl = VaList_sp((gc::Tagged)obj.raw_());
-    printf("Original va_list at: %p\n", &((VaList_S*)gc::untag_valist(reinterpret_cast<VaList_S*>(obj.raw_())))->_Args);
+    printf("Original va_list at: %p\n", &((VaList_S *)gc::untag_valist(reinterpret_cast<VaList_S *>(obj.raw_())))->_Args);
     // Create a copy of the VaList_S with a va_copy of the va_list
     VaList_S vlcopy_s(*vl);
     VaList_sp vlcopy(&vlcopy_s);
     printf("VaList_sp\n");
-    for ( size_t i(0); i<LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vlcopy); ++i ) {
-      printf("entry %3d --> %s\n", i, _rep_(LCC_NEXT_ARG(vlcopy,i)).c_str() );
+    for (size_t i(0); i < LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vlcopy); ++i) {
+      printf("entry %3d --> %s\n", i, _rep_(LCC_NEXT_ARG(vlcopy, i)).c_str());
     }
   } else if (obj.fixnump()) {
     printf("fixnum_tag: %ld\n", obj.unsafe_fixnum());
@@ -458,7 +460,7 @@ void dbg_lowLevelDescribe(T_sp obj) {
 void dbg_mv_lowLevelDescribe(T_mv mv_obj) {
   gc::Vec0<core::T_sp> values;
   mv_obj.saveToVec0(values);
-  for ( int i(0),iEnd(values.size()); i<iEnd; ++i ) {
+  for (int i(0), iEnd(values.size()); i < iEnd; ++i) {
     printf("Multiple value#%d\n", i);
     dbg_lowLevelDescribe(values[i]);
   }
@@ -527,12 +529,12 @@ void dbg_describeTPtr(uintptr_t raw) {
 void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   core::T_sp sout = cl::_sym_STARstandard_outputSTAR->symbolValue();
   T_sp obj = gctools::smart_ptr<T_O>((gc::Tagged)raw);
-  clasp_write_string((BF("dbg_printTPtr Raw pointer value: %p\n") % (void*)obj.raw_()).str(),sout);
+  clasp_write_string((BF("dbg_printTPtr Raw pointer value: %p\n") % (void *)obj.raw_()).str(), sout);
   DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR,_lisp->_boolean(print_pretty));
-  clasp_write_string((BF("dbg_printTPtr object class --> %s\n")% _rep_(obj->__class()->className())).str(),sout);
+  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR, _lisp->_boolean(print_pretty));
+  clasp_write_string((BF("dbg_printTPtr object class --> %s\n") % _rep_(obj->__class()->className())).str(), sout);
   fflush(stdout);
-  write_ugly_object(obj,sout);
+  write_ugly_object(obj, sout);
   clasp_force_output(sout);
 }
 };

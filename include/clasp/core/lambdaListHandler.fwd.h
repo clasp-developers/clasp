@@ -31,6 +31,6 @@ namespace core {
 
 FORWARD(LambdaListHandler);
 
-    extern void lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure> closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST);
+extern void lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure> closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST);
 };
 #endif

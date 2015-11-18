@@ -50,7 +50,7 @@ namespace core {
 T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat) {
   _G();
   T_sp strm;
-  void* strmPointer;
+  void *strmPointer;
   if (cl_streamp(source)) {
     strm = source;
     if (!clasp_input_stream_p(strm)) {
@@ -66,7 +66,7 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat) {
                    _Nil<T_O>());
     if (strm.nilp())
       return _Nil<T_O>();
-//    printf("%s:%d  Just created strm@%p  tagged-pointer: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
+    //    printf("%s:%d  Just created strm@%p  tagged-pointer: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
     strmPointer = &(*strm);
   }
   /* Define the source file */
@@ -85,7 +85,7 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat) {
   while (true) {
     bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
     DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
-//    printf("%s:%d  Pushing stream source pos for strm@%p   tagged-ptr: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
+    //    printf("%s:%d  Pushing stream source pos for strm@%p   tagged-ptr: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
     innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, core_inputStreamSourcePosInfo(strm));
     T_sp x = read_lisp_object(strm, false, _Unbound<T_O>(), false);
     if (x.unboundp())
@@ -99,11 +99,11 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat) {
       if (print) {
         _lisp->print(BF(";; -- read- %s\n") % _rep_(x));
       };
-      eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(),x, _Nil<T_O>());
+      eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), x, _Nil<T_O>());
       //                gctools::af_cleanup();
     }
   }
-//  printf("%s:%d  closing strm@%p  tagged-ptr: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
+  //  printf("%s:%d  closing strm@%p  tagged-ptr: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
   cl_close(strm);
   return _lisp->_true();
 }

@@ -837,7 +837,7 @@ yy_symbol_value_print(FILE *yyoutput, int yytype, YYSTYPE const *const yyvaluep)
 #else
 static void
     yy_symbol_value_print(yyoutput, yytype, yyvaluep)
-        FILE *yyoutput;
+    FILE *yyoutput;
 int yytype;
 YYSTYPE const *const yyvaluep;
 #endif
@@ -866,7 +866,7 @@ yy_symbol_print(FILE *yyoutput, int yytype, YYSTYPE const *const yyvaluep)
 #else
 static void
     yy_symbol_print(yyoutput, yytype, yyvaluep)
-        FILE *yyoutput;
+    FILE *yyoutput;
 int yytype;
 YYSTYPE const *const yyvaluep;
 #endif
@@ -891,7 +891,7 @@ yy_stack_print(yytype_int16 *bottom, yytype_int16 *top)
 #else
 static void
     yy_stack_print(bottom, top)
-        yytype_int16 *bottom;
+    yytype_int16 *bottom;
 yytype_int16 *top;
 #endif
 {
@@ -917,7 +917,7 @@ yy_reduce_print(YYSTYPE *yyvsp, int yyrule)
 #else
 static void
     yy_reduce_print(yyvsp, yyrule)
-        YYSTYPE *yyvsp;
+    YYSTYPE *yyvsp;
 int yyrule;
 #endif
 {
@@ -980,7 +980,7 @@ yystrlen(const char *yystr)
 #else
 static YYSIZE_T
     yystrlen(yystr)
-        const char *yystr;
+    const char *yystr;
 #endif
 {
   YYSIZE_T yylen;
@@ -1171,7 +1171,7 @@ yydestruct(const char *yymsg, int yytype, YYSTYPE *yyvaluep)
 #else
 static void
     yydestruct(yymsg, yytype, yyvaluep)
-        const char *yymsg;
+    const char *yymsg;
 int yytype;
 YYSTYPE *yyvaluep;
 #endif

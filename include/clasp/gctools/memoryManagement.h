@@ -31,7 +31,6 @@ THE SOFTWARE.
 //
 #include <clasp/gctools/configure_memory.h>
 
-
 #include <clasp/gctools/hardErrors.h>
 
 #define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(x)
@@ -77,14 +76,13 @@ constexpr size_t depreciatedAlignUpT(size_t size) { return (size + depreciatedAl
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 
-
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
-  template <class OT> struct GCKind;
-  extern size_t global_alignup_sizeof_header;
-  extern void *_global_stack_marker;
-  extern size_t _global_stack_max_size;
-
+template <class OT>
+struct GCKind;
+extern size_t global_alignup_sizeof_header;
+extern void *_global_stack_marker;
+extern size_t _global_stack_max_size;
 };
 
 namespace gctools {
@@ -125,8 +123,6 @@ struct GCAllocationPoint;
 
 #include <clasp/gctools/tagged_cast.h>
 
-
-
 #ifdef USE_BOEHM
 #include <clasp/gctools/boehmGarbageCollection.h>
 #endif
@@ -134,37 +130,36 @@ struct GCAllocationPoint;
 #include <clasp/gctools/mpsGarbageCollection.h>
 #endif
 
- namespace gctools {
+namespace gctools {
 
-   struct MonitorAllocations {
-     bool on;
-     bool stackDump;
-     int counter;
-     int start;
-     int end;
-     int backtraceDepth;
-   MonitorAllocations() : on(false), stackDump(false), counter(0) {};
-   };
-   extern MonitorAllocations global_monitorAllocations;
-   
-   extern void monitorAllocation(GCKindEnum k,size_t sz);
+struct MonitorAllocations {
+  bool on;
+  bool stackDump;
+  int counter;
+  int start;
+  int end;
+  int backtraceDepth;
+  MonitorAllocations() : on(false), stackDump(false), counter(0){};
+};
+extern MonitorAllocations global_monitorAllocations;
+
+extern void monitorAllocation(GCKindEnum k, size_t sz);
 
 #ifdef GC_MONITOR_ALLOCATIONS
-#define MONITOR_ALLOCATION(k,sz) if (global_monitorAllocations.on) { \
-    monitorAllocation(k,sz); \
+#define MONITOR_ALLOCATION(k, sz)     \
+  if (global_monitorAllocations.on) { \
+    monitorAllocation(k, sz);         \
   }
 #else
-#define MONITOR_ALLOCATION(k,sz)
+#define MONITOR_ALLOCATION(k, sz)
 #endif
- }
+}
 extern "C" {
-char* obj_name(gctools::GCKindEnum kind);
-char* obj_kind_name(core::T_O* ptr);
-size_t obj_kind(core::T_O* ptr);
-extern void obj_dump_base(void* base);
+char *obj_name(gctools::GCKindEnum kind);
+char *obj_kind_name(core::T_O *ptr);
+size_t obj_kind(core::T_O *ptr);
+extern void obj_dump_base(void *base);
 };
-
-
 
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
@@ -174,20 +169,20 @@ struct GCKind {
 #ifdef RUNNING_GC_BUILDER
   static GCKindEnum const Kind = KIND_null;
 #else
-// We need a default Kind when running the gc-builder.lsp static analyzer
-// but we don't want a default Kind when compiling the mps version of the code
-// to force compiler errors when the Kind for an object hasn't been declared
+  // We need a default Kind when running the gc-builder.lsp static analyzer
+  // but we don't want a default Kind when compiling the mps version of the code
+  // to force compiler errors when the Kind for an object hasn't been declared
   static GCKindEnum const Kind = KIND_null; // provide default for weak dependents
 #endif // RUNNING_GC_BUILDER
 #endif // USE_MPS
 #ifdef USE_BOEHM
-  #ifdef USE_CXX_DYNAMIC_CAST
+#ifdef USE_CXX_DYNAMIC_CAST
   static GCKindEnum const Kind = KIND_null; // minimally define KIND_null
-  #else
-// We don't want a default Kind when compiling the boehm version of the code
-// to force compiler errors when the Kind for an object hasn't been declared
+#else
+                                            // We don't want a default Kind when compiling the boehm version of the code
+                                            // to force compiler errors when the Kind for an object hasn't been declared
 // using clasp_gc.cc
-  #endif // USE_CXX_DYNAMIC_CAST
+#endif // USE_CXX_DYNAMIC_CAST
 #endif
 };
 };
@@ -198,7 +193,7 @@ template <class OT>
 struct GCInfo {
   static constexpr bool Atomic = false;
   static bool const NeedsInitialization = true; // Currently, by default,  everything needs initialization
-  static bool const NeedsFinalization = false;   // By default, nothing needs finalization
+  static bool const NeedsFinalization = false;  // By default, nothing needs finalization
   static constexpr bool Moveable = true;
 };
 };
@@ -242,8 +237,8 @@ inline size_t sizeof_container_with_header(size_t num) {
 };
 
 namespace gctools {
-  class GCStack;
-  GCStack* threadLocalStack();
+class GCStack;
+GCStack *threadLocalStack();
 };
 
 #include <clasp/gctools/gcStack.h>
@@ -271,7 +266,7 @@ int handleFatalCondition();
 
 /* Start up the garbage collector and the main function.
        The main function is wrapped within this function */
- int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize);
+int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize);
 };
 
 #endif // _clasp_memoryManagement_H

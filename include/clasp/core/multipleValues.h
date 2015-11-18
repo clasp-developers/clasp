@@ -57,7 +57,7 @@ public: // Functions here
 	callingArgs returns a pointer to the first value for when the values passed in registers
 	need to be written into the array for easier parsing*/
   T_O **callingArgsStart() { return &this->_Values[0]; }
-  
+
   //        void setMaxSize() { this->_Size = MultipleValuesLimit;};
   void setSize(size_t sz) { this->_Size = sz; };
   size_t getSize() const { return this->_Size; };
@@ -74,8 +74,7 @@ public: // Functions here
   }
 
   /*! Return a Cons of elements 1 up to but not including iend */
-//  List_sp asCons(int iend) const;
-
+  //  List_sp asCons(int iend) const;
 };
 #pragma GCC visibility pop
 };
@@ -94,15 +93,15 @@ extern core::T_mv ValuesFromCons(core::List_sp vals);
 
 template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9>
 inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
-                                   const gctools::smart_ptr<T1> &v1,
-                                   const gctools::smart_ptr<T2> &v2,
-                                   const gctools::smart_ptr<T3> &v3,
-                                   const gctools::smart_ptr<T4> &v4,
-                                   const gctools::smart_ptr<T5> &v5,
-                                   const gctools::smart_ptr<T6> &v6,
-                                   const gctools::smart_ptr<T7> &v7,
-                                   const gctools::smart_ptr<T8> &v8,
-                                   const gctools::smart_ptr<T9> &v9) {
+                                          const gctools::smart_ptr<T1> &v1,
+                                          const gctools::smart_ptr<T2> &v2,
+                                          const gctools::smart_ptr<T3> &v3,
+                                          const gctools::smart_ptr<T4> &v4,
+                                          const gctools::smart_ptr<T5> &v5,
+                                          const gctools::smart_ptr<T6> &v6,
+                                          const gctools::smart_ptr<T7> &v7,
+                                          const gctools::smart_ptr<T8> &v8,
+                                          const gctools::smart_ptr<T9> &v9) {
   core::MultipleValues &me = (core::lisp_multipleValues());
   me.setSize(0);
   me.emplace_back(v0);
@@ -120,14 +119,14 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
 
 template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8>
 inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
-                                           const gctools::smart_ptr<T1> &v1,
-                                           const gctools::smart_ptr<T2> &v2,
-                                           const gctools::smart_ptr<T3> &v3,
-                                           const gctools::smart_ptr<T4> &v4,
-                                           const gctools::smart_ptr<T5> &v5,
-                                           const gctools::smart_ptr<T6> &v6,
-                                           const gctools::smart_ptr<T7> &v7,
-                                           const gctools::smart_ptr<T8> &v8) {
+                                          const gctools::smart_ptr<T1> &v1,
+                                          const gctools::smart_ptr<T2> &v2,
+                                          const gctools::smart_ptr<T3> &v3,
+                                          const gctools::smart_ptr<T4> &v4,
+                                          const gctools::smart_ptr<T5> &v5,
+                                          const gctools::smart_ptr<T6> &v6,
+                                          const gctools::smart_ptr<T7> &v7,
+                                          const gctools::smart_ptr<T8> &v8) {
   core::MultipleValues &me = (core::lisp_multipleValues());
   me.setSize(0);
   me.emplace_back(v0);
@@ -144,13 +143,13 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
 
 template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7>
 inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
-                                           const gctools::smart_ptr<T1> &v1,
-                                           const gctools::smart_ptr<T2> &v2,
-                                           const gctools::smart_ptr<T3> &v3,
-                                           const gctools::smart_ptr<T4> &v4,
-                                           const gctools::smart_ptr<T5> &v5,
-                                           const gctools::smart_ptr<T6> &v6,
-                                           const gctools::smart_ptr<T7> &v7) {
+                                          const gctools::smart_ptr<T1> &v1,
+                                          const gctools::smart_ptr<T2> &v2,
+                                          const gctools::smart_ptr<T3> &v3,
+                                          const gctools::smart_ptr<T4> &v4,
+                                          const gctools::smart_ptr<T5> &v5,
+                                          const gctools::smart_ptr<T6> &v6,
+                                          const gctools::smart_ptr<T7> &v7) {
   core::MultipleValues &me = (core::lisp_multipleValues());
   me.setSize(0);
   me.emplace_back(v0);
@@ -166,12 +165,12 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
 
 template <class T0, class T1, class T2, class T3, class T4, class T5, class T6>
 inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
-                                           const gctools::smart_ptr<T1> &v1,
-                                           const gctools::smart_ptr<T2> &v2,
-                                           const gctools::smart_ptr<T3> &v3,
-                                           const gctools::smart_ptr<T4> &v4,
-                                           const gctools::smart_ptr<T5> &v5,
-                                           const gctools::smart_ptr<T6> &v6) {
+                                          const gctools::smart_ptr<T1> &v1,
+                                          const gctools::smart_ptr<T2> &v2,
+                                          const gctools::smart_ptr<T3> &v3,
+                                          const gctools::smart_ptr<T4> &v4,
+                                          const gctools::smart_ptr<T5> &v5,
+                                          const gctools::smart_ptr<T6> &v6) {
   core::MultipleValues &me = (core::lisp_multipleValues());
   me.setSize(0);
   me.emplace_back(v0);
@@ -186,11 +185,11 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
 
 template <class T0, class T1, class T2, class T3, class T4, class T5>
 inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
-                                           const gctools::smart_ptr<T1> &v1,
-                                           const gctools::smart_ptr<T2> &v2,
-                                           const gctools::smart_ptr<T3> &v3,
-                                           const gctools::smart_ptr<T4> &v4,
-                                           const gctools::smart_ptr<T5> &v5) {
+                                          const gctools::smart_ptr<T1> &v1,
+                                          const gctools::smart_ptr<T2> &v2,
+                                          const gctools::smart_ptr<T3> &v3,
+                                          const gctools::smart_ptr<T4> &v4,
+                                          const gctools::smart_ptr<T5> &v5) {
   core::MultipleValues &me = (core::lisp_multipleValues());
   me.setSize(0);
   me.emplace_back(v0);
@@ -204,10 +203,10 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
 
 template <class T0, class T1, class T2, class T3, class T4>
 inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
-                                           const gctools::smart_ptr<T1> &v1,
-                                           const gctools::smart_ptr<T2> &v2,
-                                           const gctools::smart_ptr<T3> &v3,
-                                           const gctools::smart_ptr<T4> &v4) {
+                                          const gctools::smart_ptr<T1> &v1,
+                                          const gctools::smart_ptr<T2> &v2,
+                                          const gctools::smart_ptr<T3> &v3,
+                                          const gctools::smart_ptr<T4> &v4) {
   core::MultipleValues &me = (core::lisp_multipleValues());
   me.setSize(0);
   me.emplace_back(v0);
@@ -220,9 +219,9 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
 
 template <class T0, class T1, class T2, class T3>
 inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
-                                           const gctools::smart_ptr<T1> &v1,
-                                           const gctools::smart_ptr<T2> &v2,
-                                           const gctools::smart_ptr<T3> &v3) {
+                                          const gctools::smart_ptr<T1> &v1,
+                                          const gctools::smart_ptr<T2> &v2,
+                                          const gctools::smart_ptr<T3> &v3) {
   core::MultipleValues &me = (core::lisp_multipleValues());
   me.setSize(0);
   me.emplace_back(v0);
@@ -234,8 +233,8 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
 
 template <class T0, class T1, class T2>
 inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
-                                           const gctools::smart_ptr<T1> &v1,
-                                           const gctools::smart_ptr<T2> &v2) {
+                                          const gctools::smart_ptr<T1> &v1,
+                                          const gctools::smart_ptr<T2> &v2) {
   core::MultipleValues &me = (core::lisp_multipleValues());
   me.setSize(0);
   me.emplace_back(v0);
@@ -246,7 +245,7 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
 
 template <class T0, class T1>
 inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0,
-                                   const gctools::smart_ptr<T1> &v1) {
+                                          const gctools::smart_ptr<T1> &v1) {
   core::MultipleValues &me = (core::lisp_multipleValues());
   me.setSize(0);
   me.emplace_back(v0);

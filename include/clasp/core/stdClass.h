@@ -49,8 +49,8 @@ class StdClass_O : public Class_O {
 public:
   StdClass_O(const StdClass_O &ss); //!< Copy constructor
 
-  explicit StdClass_O() : Base() {};
-  virtual ~StdClass_O() {};
+  explicit StdClass_O() : Base(){};
+  virtual ~StdClass_O(){};
 };
 };
 

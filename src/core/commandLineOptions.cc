@@ -34,8 +34,8 @@ THE SOFTWARE.
 namespace core {
 
 CommandLineOptions::CommandLineOptions(int argc, char *argv[])
-  : _TrapIntern(""),
-    _DontLoadImage(false),
+    : _TrapIntern(""),
+      _DontLoadImage(false),
       _DontLoadInitLsp(false),
       _HasImageFile(false),
       _ImageFile(""),
@@ -44,8 +44,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       _Interactive(true),
       _Version(false),
       _SilentStartup(true),
-    _NoRc(false),
-    _PauseForDebugger(false)
+      _NoRc(false),
+      _PauseForDebugger(false)
 
 #if 0 // uses boost::program_options which is broken on OS X with -std=c++11
     {
@@ -229,7 +229,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     } else if (arg == "-s" || arg == "--verbose") {
       this->_SilentStartup = false;
     } else if (arg == "-t" || arg == "--trap") {
-      this->_TrapIntern = argv[iarg+1];
+      this->_TrapIntern = argv[iarg + 1];
       iarg++;
     } else if (arg == "-f" || arg == "--feature") {
       ASSERTF(iarg < (argc + 1), BF("Missing argument for --feature,-f"));

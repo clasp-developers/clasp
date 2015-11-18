@@ -154,7 +154,6 @@ DynamicScopeManager::DynamicScopeManager(Symbol_sp sym, T_sp val) {
 }
 #endif
 
-
 void DynamicScopeManager::dump() const {
   stringstream ss;
   ss << "DynamicScopeManager  _beginTop[" << this->_beginTop << "] _endTop[" << this->_endTop << "]" << std::endl;
@@ -181,7 +180,6 @@ void DynamicScopeManager::new_binding(const Argument &arg, T_sp val) {
   }
   SIMPLE_ERROR(BF("DynamicScopeManager doesn't bind anything other than SPECIAL_TARGET bindings - you gave it a binding to[%s] index[%d]") % _rep_(arg._ArgTarget) % arg._ArgTargetFrameIndex);
 }
-
 
 T_sp DynamicScopeManager::lexenv() const {
   SIMPLE_ERROR(BF("A ValueEnvironment was requested from a DynamicScopeManager - only ValueEnvironmentDynamicScopeManagers have those"));
@@ -210,7 +208,6 @@ void ValueEnvironmentDynamicScopeManager::new_binding(const Argument &argument, 
   T_sp argTarget = argument._ArgTarget;
   this->_Environment->new_binding(gc::As<Symbol_sp>(argTarget), argument._ArgTargetFrameIndex, val);
 }
-
 
 void ValueEnvironmentDynamicScopeManager::new_variable(List_sp classified, T_sp val) {
   Symbol_sp type = gc::As<Symbol_sp>(oCar(classified));
@@ -282,7 +279,7 @@ bool StackFrameDynamicScopeManager::lexicalElementBoundP(const Argument &argumen
 }
 
 T_sp StackFrameDynamicScopeManager::lexenv() const {
-//  printf("%s:%d Returning nil as the lexical environment for a StackFrameDynamicScopeManager\n", __FILE__, __LINE__);
+  //  printf("%s:%d Returning nil as the lexical environment for a StackFrameDynamicScopeManager\n", __FILE__, __LINE__);
   return _Nil<core::T_O>();
 }
 #if 0 // Oh oh - do I need these?

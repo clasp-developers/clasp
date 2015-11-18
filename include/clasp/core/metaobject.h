@@ -52,7 +52,7 @@ class Metaobject_O : public StandardObject_O {
 
 public:
   explicit Metaobject_O();
-  virtual ~Metaobject_O() {};
+  virtual ~Metaobject_O(){};
 };
 };
 TRANSLATE(core::Metaobject_O);

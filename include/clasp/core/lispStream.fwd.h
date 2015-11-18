@@ -41,9 +41,8 @@ FORWARD(IOFileStream);
 FORWARD(IOStreamStream);
 FORWARD(ConcatenatedStream);
 
- void clasp_write_string(const string &str, T_sp strm);
- inline void clasp_write_format(boost::format const& f, T_sp strm) {clasp_write_string(f.str(),strm);}
-
+void clasp_write_string(const string &str, T_sp strm);
+inline void clasp_write_format(boost::format const &f, T_sp strm) { clasp_write_string(f.str(), strm); }
 
 #define STDOUT_BFORMAT(x) core::clasp_write_string((x).str(), cl::_sym_STARstandard_outputSTAR->symbolValue())
 }

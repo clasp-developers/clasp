@@ -83,7 +83,9 @@ namespace core {
 };
 
 namespace core {
-const char *CorePkg_nicknames[] = {"SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/};
+const char *CorePkg_nicknames[] = {
+    "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
+};
 
 SYMBOL_EXPORT_SC_(ClPkg, printNotReadableObject);
 
@@ -1171,4 +1173,3 @@ void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
 #include INIT_CLASSES_INC_H
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
-

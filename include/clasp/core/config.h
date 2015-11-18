@@ -60,7 +60,7 @@ typedef unsigned int claspCharacter;
 
 // 64Kilobytes for thread local stack size
 // Compiling minimal clasp or full clasp didn't require more than 24Kb
-#define THREAD_LOCAL_CL_STACK_MIN_SIZE (size_t)(16*1024)
+#define THREAD_LOCAL_CL_STACK_MIN_SIZE (size_t)(16 * 1024)
 
 // OS X 10.6   LINUX 4096???
 #define CLASP_MAXPATHLEN 1024

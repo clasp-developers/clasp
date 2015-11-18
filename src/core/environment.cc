@@ -142,9 +142,9 @@ T_mv core_lexicalMacroFunction(T_sp name, T_sp env) {
 #define DECL_af_updateValue ""
 #define DOCS_af_updateValue "updateValue"
 bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val) {
-#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT(env.isA<Environment_O>());
-  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O,T_O>(env);
+  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
   return eenv->_updateValue(sym, val);
 #else
   if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
@@ -261,7 +261,7 @@ T_sp Environment_O::clasp_getActivationFrame(T_sp tenv) {
     return (env->getActivationFrame());
   }
   return _Nil<T_O>();
-//  NOT_ENVIRONMENT_ERROR(tenv);
+  //  NOT_ENVIRONMENT_ERROR(tenv);
 };
 
 T_sp Environment_O::getActivationFrame() const {
@@ -401,7 +401,7 @@ T_mv Environment_O::localMetadata(Symbol_sp key) const {
 }
 
 T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index) {
-#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O>(env);
   return eenv->_lookupValue(depth, index);
@@ -417,11 +417,11 @@ T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index) {
 }
 
 T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) {
-  // set this to 1 to use dynamic_cast and 0 to use what is essentially a static cast
-#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+// set this to 1 to use dynamic_cast and 0 to use what is essentially a static cast
+#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT(env && env.isA<Environment_O>());
-  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O,T_O>(env);
-  return eenv->lookupValueReference(depth,index);
+  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
+  return eenv->lookupValueReference(depth, index);
 #else
   if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->lookupValueReference(depth, index);
@@ -433,10 +433,10 @@ T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) 
 }
 
 Function_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index) {
-#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT(env.isA<Environment_O>());
-  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O,T_O>(env);
-  return eenv->_lookupFunction(depth,index);
+  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
+  return eenv->_lookupFunction(depth, index);
 #else
   if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->_lookupFunction(depth, index);
@@ -449,9 +449,9 @@ Function_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index) 
 }
 
 T_sp Environment_O::clasp_lookupTagbodyId(T_sp env, int depth, int index) {
-#if USE_STATIC_CAST_FOR_ENVIRONMENT==1
+#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT(env.isA<Environment_O>());
-  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O,T_O>(env);
+  Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
   return eenv->_lookupTagbodyId(depth, index);
 #else
   if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
@@ -523,7 +523,7 @@ bool Environment_O::clasp_findValue(T_sp env, T_sp sym, int &depth, int &index, 
     valueKind = undeterminedValue;
     return false;
   }
-if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->_findValue(sym, depth, index, valueKind, value);
   }
   NOT_ENVIRONMENT_ERROR(env);
@@ -748,7 +748,7 @@ int Environment_O::getBlockSymbolFrame(Symbol_sp sym) const {
 bool Environment_O::clasp_findTag(T_sp env, Symbol_sp sym, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) {
   if (env.nilp())
     return false;
-if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->_findTag(sym, depth, index, interFunction, tagbodyEnv);
   }
   NOT_ENVIRONMENT_ERROR(env);
@@ -798,7 +798,7 @@ string Environment_O::clasp_summaryOfContents(T_sp env) {
     ss << string(tab, ' ') << "#<Environment nil>" << std::endl;
     return ss.str();
   }
-if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->summaryOfContents();
   }
   NOT_ENVIRONMENT_ERROR(env);
@@ -1035,7 +1035,7 @@ T_sp ValueEnvironment_O::_lookupValue(int depth, int index) {
   if (parent.nilp()) {
     SIMPLE_ERROR(BF("Ran out of parent environments - could not find value"));
   }
-  return Environment_O::clasp_lookupValue(parent, depth-1, index);
+  return Environment_O::clasp_lookupValue(parent, depth - 1, index);
 }
 
 void ValueEnvironment_O::defineLexicalBinding(Symbol_sp sym, int idx) {

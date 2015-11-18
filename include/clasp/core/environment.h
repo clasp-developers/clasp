@@ -91,7 +91,7 @@ public:
   void dump();
   uint environmentId() const { return this->_EnvId; };
   void setEnvironmentId(uint id) { this->_EnvId = id; };
-  virtual bool environmentp() const { return true;}
+  virtual bool environmentp() const { return true; }
   virtual bool lexicalEnvironmentP() const { return false; };
   virtual bool functionContainerEnvironmentP() const { return false; };
   virtual bool unwindProtectEnvironmentP() const { return false; };
@@ -400,8 +400,8 @@ public:
 
 #endif
 
- ValueEnvironment_O() : Base() {};
-  virtual ~ValueEnvironment_O() {};
+  ValueEnvironment_O() : Base(){};
+  virtual ~ValueEnvironment_O(){};
 };
 };
 template <>

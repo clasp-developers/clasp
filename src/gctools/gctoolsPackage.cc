@@ -54,15 +54,9 @@ namespace gctools {
 uint64_t globalBytesAllocated = 0;
 bool _GlobalDebugAllocations = false;
 
-
 // -----------------------------------------------------------
 // -----------------------------------------------------------
 // -----------------------------------------------------------
-
-
-
-
-
 
 #pragma GCC visibility push(default)
 #define GcToolsPkg_SYMBOLS

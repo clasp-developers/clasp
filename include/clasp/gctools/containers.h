@@ -72,7 +72,7 @@ public:
   size_t size() const { return this->_Vector.size(); };
   inline void unsafe_set_end(size_t e) { this->_Vector.unsafe_set_end(e); };
   size_t capacity() const { return this->_Vector.capacity(); };
-//  pointer_type data() const { return this->_Vector.data(); };
+  //  pointer_type data() const { return this->_Vector.data(); };
   ALWAYS_INLINE reference operator[](size_t i) { return this->_Vector[i]; };
   ALWAYS_INLINE const_reference operator[](size_t i) const { return this->_Vector[i]; };
   void resize(size_t n, const value_type &initialElement = value_type()) {
@@ -150,13 +150,14 @@ public:
   SmallMap() : Base(){};
 };
 
- template <class K, class V, class Compare>
-   class SmallMultimap : public GCSmallMultimap<K, V, Compare, GCContainerAllocator<GCVector_moveable<pair<K, V>>>> {
+template <class K, class V, class Compare>
+class SmallMultimap : public GCSmallMultimap<K, V, Compare, GCContainerAllocator<GCVector_moveable<pair<K, V>>>> {
 public:
-   typedef GCSmallMultimap<K, V, Compare, GCContainerAllocator<GCVector_moveable<pair<K, V>>>> Base;
- public:
-   void insert2(K key, V value) {
-     pair<K,V> key_value(key,value);
+  typedef GCSmallMultimap<K, V, Compare, GCContainerAllocator<GCVector_moveable<pair<K, V>>>> Base;
+
+public:
+  void insert2(K key, V value) {
+    pair<K, V> key_value(key, value);
     this->insert(key_value);
   }
 

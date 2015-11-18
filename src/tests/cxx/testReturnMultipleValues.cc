@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
   MV x(NULL, 1);
   x.p = NULL;
   x.n = 1;
-  MV ret = foo(NULL,1);
+  MV ret = foo(NULL, 1);
   printf("ret.p = %p\n", ret.p);
   printf("ret.n = %d\n", ret.n);
 };

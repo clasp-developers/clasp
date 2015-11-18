@@ -82,7 +82,7 @@ string VectorDisplaced_O::__repr__() const {
 void VectorDisplaced_O::rowMajorAset(cl_index idx, T_sp value) {
   _G();
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
-  (*this)[idx+this->_DisplacedIndexOffset] = value;
+  (*this)[idx + this->_DisplacedIndexOffset] = value;
 }
 
 T_sp VectorDisplaced_O::rowMajorAref(cl_index idx) const {

@@ -99,7 +99,7 @@ public:
     return reinterpret_cast<T *>((reinterpret_cast<uintptr_t>(p) & ptr_mask) | frame_tag);
   }
 
-  static T* untagged_frame(T *ptr) {
+  static T *untagged_frame(T *ptr) {
     return reinterpret_cast<core::T_O **>(reinterpret_cast<uintptr_t>(ptr) & ptr_mask);
   }
 
@@ -112,8 +112,8 @@ public:
   }
 
   static bool tagged_pointerp(T *ptr) {
-    return ((uintptr_t)(ptr)&tag_mask) == ptr_tag // Is ptr
-           && ((uintptr_t)(ptr)&ptr_mask);        // Is not NULL
+    return ((uintptr_t)(ptr) & tag_mask) == ptr_tag // Is ptr
+           && ((uintptr_t)(ptr) & ptr_mask);        // Is not NULL
   }
 
   static bool tagged_nilp(T *ptr) {

@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 
 namespace core {
-  string myReadLine(const string &prompt, bool& end_of_transmission);
+string myReadLine(const string &prompt, bool &end_of_transmission);
 };
 
 #endif

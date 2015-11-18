@@ -89,8 +89,8 @@ public:
 
   virtual T_sp copyStructure() const;
 
-  explicit StructureObject_O() : Base() {};
-  virtual ~StructureObject_O() {};
+  explicit StructureObject_O() : Base(){};
+  virtual ~StructureObject_O(){};
 };
 
 T_sp af_makeStructure(T_sp type, List_sp slot_values);

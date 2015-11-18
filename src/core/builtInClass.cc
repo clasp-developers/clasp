@@ -51,7 +51,6 @@ BuiltInClass_sp BuiltInClass_O::createUncollectable() {
   return ((oclass));
 }
 
-
 #if defined(XML_ARCHIVE)
 void BuiltInClass_O::archive(ArchiveP node) {
   IMPLEMENT_ME();
@@ -73,7 +72,7 @@ void BuiltInClass_O::describe(T_sp stream) {
     ss << (BF("Base class: %s") % _rep_((gc::As<Class_sp>(oCar(cur)))->className())).str();
   }
   ss << (BF("%s") % this->dumpInfo()).str();
-  clasp_write_string(ss.str(),stream);
+  clasp_write_string(ss.str(), stream);
 }
 
 void BuiltInClass_O::exposeCando(Lisp_sp lisp) {

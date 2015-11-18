@@ -643,8 +643,8 @@ List_sp Reader_O::readDelimitedList(char endChar, bool recursiveP) {
       this->nextChar();
       break;
     }
-//    uint lineNumber = clasp_input_lineno(this->_Input);
-//    uint column = clasp_input_column(this->_Input);
+    //    uint lineNumber = clasp_input_lineno(this->_Input);
+    //    uint column = clasp_input_column(this->_Input);
     //	    uint filePos = this->_Input->tell();
     T_sp element = this->primitive_read(true, _Unbound<T_O>(), true);
     ASSERTNOTNULL(element);

@@ -79,7 +79,7 @@ public: // virtual functions inherited from Object
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-  //	string	__repr__() const;
+       //	string	__repr__() const;
 
 private: // instance variables
   vector<MultiStringBlock *> _Blocks;

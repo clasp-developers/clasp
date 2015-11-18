@@ -4,15 +4,12 @@
 #include <clasp/core/pathname.h>
 #include <clasp/core/wrappers.h>
 
-
 namespace telemetry {
 
+Telemetry *global_telemetry_search = NULL;
 
-Telemetry* global_telemetry_search = NULL;
-
-void throw_if_invalid_global_telemetry_search()
-{
-  if (global_telemetry_search==NULL) {
+void throw_if_invalid_global_telemetry_search() {
+  if (global_telemetry_search == NULL) {
     SIMPLE_ERROR(BF("No global_telemetry_search has been defined - use telemetry-open"));
   }
 }
@@ -27,9 +24,7 @@ void core_telemetry_open(core::T_sp pathname) {
 }
 #define MAX_WORDS 16
 
-
-
-#define CANONICAL_POINTER(p) (p&(~0x7))
+#define CANONICAL_POINTER(p) (p & (~0x7))
 
 #define ARGS_core_telemetry_search "(addresses)"
 #define DECL_core_telemetry_search ""
@@ -41,9 +36,9 @@ void core_telemetry_search(core::List_sp addresses) {
   Telemetry::Header header;
   std::vector<std::string> results;
   std::vector<Word> tests;
-  for ( auto it : addresses ) {
+  for (auto it : addresses) {
     core::T_sp address = oCar(it);
-    if ( !address.fixnump() ) {
+    if (!address.fixnump()) {
       SIMPLE_ERROR(BF("Inputs must all be fixnums"));
     }
     tests.push_back(address.unsafe_fixnum() & (~0x7));
@@ -52,19 +47,21 @@ void core_telemetry_search(core::List_sp addresses) {
   Word data[MAX_WORDS];
   while (1) {
     bool read = global_telemetry_search->read_header(header);
-    if ( !read ) break;
-    if ( global_telemetry_search->process_header(header) ) continue;
-    size_t num_read = global_telemetry_search->read_data(label,MAX_WORDS,data);
-    for ( int i(0); i<num_read; ++i ) {
-      for ( auto it : tests ) {
-        if ( it == CANONICAL_POINTER(data[i]) ) {
-          std::string entry = global_telemetry_search->entry_as_string(label,num_read,data);
+    if (!read)
+      break;
+    if (global_telemetry_search->process_header(header))
+      continue;
+    size_t num_read = global_telemetry_search->read_data(label, MAX_WORDS, data);
+    for (int i(0); i < num_read; ++i) {
+      for (auto it : tests) {
+        if (it == CANONICAL_POINTER(data[i])) {
+          std::string entry = global_telemetry_search->entry_as_string(label, num_read, data);
           results.push_back(entry);
         }
       }
     }
   }
-  for ( auto& it: results ) {
+  for (auto &it : results) {
     printf("%s:%d  %s\n", __FILE__, __LINE__, it.c_str());
   }
 }
@@ -79,35 +76,36 @@ void core_telemetry_search_labels(core::List_sp labels) {
   Telemetry::Header header;
   std::vector<std::string> results;
   std::vector<Word> tests;
-  for ( auto it : labels ) {
+  for (auto it : labels) {
     core::T_sp address = oCar(it);
-    if ( !address.fixnump() ) {
+    if (!address.fixnump()) {
       SIMPLE_ERROR(BF("Inputs must all be fixnums"));
     }
     tests.push_back(address.unsafe_fixnum() & (~0x7));
   }
   Handle label;
   Word data[MAX_WORDS];
-  size_t index=0, pos;
+  size_t index = 0, pos;
   while (1) {
     bool read = global_telemetry_search->read_header(header);
-    if ( !read ) break;
-    if ( global_telemetry_search->process_header(header) ) continue;
-    size_t num_read = global_telemetry_search->read_data(label,MAX_WORDS,data);
-    for ( int i(0); i<num_read; ++i ) {
-      for ( auto it : tests ) {
-        if ( it == label ) {
-          std::string entry = global_telemetry_search->entry_as_string(label,num_read,data);
+    if (!read)
+      break;
+    if (global_telemetry_search->process_header(header))
+      continue;
+    size_t num_read = global_telemetry_search->read_data(label, MAX_WORDS, data);
+    for (int i(0); i < num_read; ++i) {
+      for (auto it : tests) {
+        if (it == label) {
+          std::string entry = global_telemetry_search->entry_as_string(label, num_read, data);
           results.push_back(entry);
         }
       }
     }
   }
-  for ( auto& it: results ) {
+  for (auto &it : results) {
     printf("%s:%d  %s\n", __FILE__, __LINE__, it.c_str());
   }
 }
-
 
 #define ARGS_core_telemetry_follow "(address)"
 #define DECL_core_telemetry_follow ""
@@ -119,36 +117,38 @@ void core_telemetry_follow(core::T_sp address) {
   Telemetry::Header header;
   std::vector<std::string> results;
   std::vector<Word> tests;
-  if ( !address.fixnump() ) {
+  if (!address.fixnump()) {
     SIMPLE_ERROR(BF("Input must be fixnum"));
-  }   
+  }
   tests.push_back(address.unsafe_fixnum() & (~0x7));
   Handle label;
   Word data[MAX_WORDS];
   while (1) {
     bool read = global_telemetry_search->read_header(header);
-    if ( !read ) break;
-    if ( global_telemetry_search->process_header(header) ) continue;
-    size_t num_read = global_telemetry_search->read_data(label,MAX_WORDS,data);
-    for ( auto it : tests ) {
-      if ( label == label_obj_fwd ) {
-        if ( it == CANONICAL_POINTER(data[0]) ) {
+    if (!read)
+      break;
+    if (global_telemetry_search->process_header(header))
+      continue;
+    size_t num_read = global_telemetry_search->read_data(label, MAX_WORDS, data);
+    for (auto it : tests) {
+      if (label == label_obj_fwd) {
+        if (it == CANONICAL_POINTER(data[0])) {
           tests.push_back(data[1]);
           goto SAVE_RESULT;
         }
       }
-      for ( int i(0); i<num_read; ++i ) {
-        if ( it == CANONICAL_POINTER(data[i]) ) {
+      for (int i(0); i < num_read; ++i) {
+        if (it == CANONICAL_POINTER(data[i])) {
           goto SAVE_RESULT;
         }
       }
     }
     continue;
   SAVE_RESULT:
-    std::string entry = global_telemetry_search->entry_as_string(label,num_read,data);
+    std::string entry = global_telemetry_search->entry_as_string(label, num_read, data);
     results.push_back(entry);
   }
-  for ( auto& it: results ) {
+  for (auto &it : results) {
     printf("%s:%d  %s\n", __FILE__, __LINE__, it.c_str());
   }
 }
@@ -158,25 +158,24 @@ void core_telemetry_follow(core::T_sp address) {
 #define DOCS_core_telemetry_labels ""
 void core_telemetry_labels() {
   throw_if_invalid_global_telemetry_search();
-  for ( int i(0); i< global_telemetry_search->_Labels.size(); ++i ) {
+  for (int i(0); i < global_telemetry_search->_Labels.size(); ++i) {
     printf("[%d] %s\n", i, global_telemetry_search->_Labels[i].c_str());
   }
 }
-
 
 #define ARGS_core_telemetry_dump "(&optional (begin 0) end)"
 #define DECL_core_telemetry_dump ""
 #define DOCS_core_telemetry_dump ""
 void core_telemetry_dump(core::T_sp begin, core::T_sp end) {
   throw_if_invalid_global_telemetry_search();
-  if ( !begin.fixnump() ) {
+  if (!begin.fixnump()) {
     SIMPLE_ERROR(BF("begin must be a FIXNUM"));
   }
   core::Fixnum fn_begin = begin.unsafe_fixnum();
   core::Fixnum fn_end;
-  if ( end.nilp() ) {
+  if (end.nilp()) {
     fn_end = gctools::most_positive_uint;
-  } else if ( end.fixnump() ){
+  } else if (end.fixnump()) {
     fn_end = end.unsafe_fixnum();
   } else {
     SIMPLE_ERROR(BF("Illegal value for end"));
@@ -188,13 +187,17 @@ void core_telemetry_dump(core::T_sp begin, core::T_sp end) {
   Word data[MAX_WORDS];
   while (1) {
     bool read = global_telemetry_search->read_header(header);
-    if ( !read ) break;
-    if ( global_telemetry_search->process_header(header) ) continue;
-    size_t num_read = global_telemetry_search->read_data(label,MAX_WORDS,data);
-    if ( global_telemetry_search->_Index < fn_begin ) continue;
-    if ( global_telemetry_search->_Index > fn_end ) break;
-    std::string entry = global_telemetry_search->entry_as_string(label,num_read,data);
-    printf("%s\n", entry.c_str() );
+    if (!read)
+      break;
+    if (global_telemetry_search->process_header(header))
+      continue;
+    size_t num_read = global_telemetry_search->read_data(label, MAX_WORDS, data);
+    if (global_telemetry_search->_Index < fn_begin)
+      continue;
+    if (global_telemetry_search->_Index > fn_end)
+      break;
+    std::string entry = global_telemetry_search->entry_as_string(label, num_read, data);
+    printf("%s\n", entry.c_str());
   }
 }
 
@@ -210,50 +213,48 @@ size_t core_telemetry_count() {
   Word data[MAX_WORDS];
   while (1) {
     bool read = global_telemetry_search->read_header(header);
-    if ( !read ) break;
-    if ( global_telemetry_search->process_header(header) ) continue;
-    size_t num_read = global_telemetry_search->read_data(label,MAX_WORDS,data);
+    if (!read)
+      break;
+    if (global_telemetry_search->process_header(header))
+      continue;
+    size_t num_read = global_telemetry_search->read_data(label, MAX_WORDS, data);
   }
   return global_telemetry_search->_Index;
 }
 
+char *global_clasp_telemetry_file;
+Telemetry *global_telemetry = NULL;
 
-
-
-char* global_clasp_telemetry_file;
-Telemetry* global_telemetry = NULL;
-
-std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[])
-{
+std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[]) {
   std::string slabel = global_telemetry_search->_Labels[label];
   char buffer[1024];
   switch (num_read) {
   case 0:
-      sprintf(buffer,slabel.c_str());
-      break;
+    sprintf(buffer, slabel.c_str());
+    break;
   case 1:
-      sprintf(buffer,slabel.c_str(), data[0] );
-      break;
+    sprintf(buffer, slabel.c_str(), data[0]);
+    break;
   case 2:
-      sprintf(buffer,slabel.c_str(), data[0],data[1] );
-      break;
+    sprintf(buffer, slabel.c_str(), data[0], data[1]);
+    break;
   case 3:
-      sprintf(buffer,slabel.c_str(), data[0],data[1],data[2] );
-      break;
+    sprintf(buffer, slabel.c_str(), data[0], data[1], data[2]);
+    break;
   case 4:
-      sprintf(buffer,slabel.c_str(), data[0],data[1],data[2],data[3] );
-      break;
+    sprintf(buffer, slabel.c_str(), data[0], data[1], data[2], data[3]);
+    break;
   case 5:
-      sprintf(buffer,slabel.c_str(), data[0],data[1],data[2],data[3],data[4] );
-      break;
+    sprintf(buffer, slabel.c_str(), data[0], data[1], data[2], data[3], data[4]);
+    break;
   case 6:
-      sprintf(buffer,slabel.c_str(), data[0],data[1],data[2],data[3],data[4],data[5] );
-      break;
+    sprintf(buffer, slabel.c_str(), data[0], data[1], data[2], data[3], data[4], data[5]);
+    break;
   case 7:
-      sprintf(buffer,slabel.c_str(), data[0],data[1],data[2],data[3],data[4],data[5],data[6] );
-      break;
+    sprintf(buffer, slabel.c_str(), data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
+    break;
   default:
-      sprintf(buffer,"Add support for %d arguments", num_read);
+    sprintf(buffer, "Add support for %d arguments", num_read);
   }
   stringstream ss;
   ss << "[" << this->_Index << "] fp: " << std::hex << this->_ThisRecordPos << " : " << buffer;
@@ -295,7 +296,6 @@ void initialize_telemetry_functions() {
   CoreDefun(telemetry_count);
   CoreDefun(telemetry_follow);
 }
-
 };
 
 extern "C" {
@@ -303,4 +303,3 @@ void global_telemetry_flush() {
   telemetry::global_telemetry->flush();
 };
 };
-

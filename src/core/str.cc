@@ -311,18 +311,18 @@ T_mv af_make_string(Fixnum_sp size, T_sp initial_element, T_sp element_type) {
 #define DECL_af_base_string_concatenate_ ""
 #define DOCS_af_base_string_concatenate_ "base_string_concatenate"
 T_sp af_base_string_concatenate_(T_sp args) {
-    if ( !args.valistp() ) {
-        SIMPLE_ERROR(BF("arg must be valist"));
-    }
-    VaList_sp vargs = gctools::As<VaList_sp>(args);
-    size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
-    stringstream ss;
-    for ( size_t i(0); i<nargs; ++i ) {
-        T_sp csp = LCC_NEXT_ARG(vargs,i);
-        Str_sp ssp = coerce::stringDesignator(csp);
-        ss << ssp->c_str();
-    }
-    return Str_O::create(ss.str());
+  if (!args.valistp()) {
+    SIMPLE_ERROR(BF("arg must be valist"));
+  }
+  VaList_sp vargs = gctools::As<VaList_sp>(args);
+  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
+  stringstream ss;
+  for (size_t i(0); i < nargs; ++i) {
+    T_sp csp = LCC_NEXT_ARG(vargs, i);
+    Str_sp ssp = coerce::stringDesignator(csp);
+    ss << ssp->c_str();
+  }
+  return Str_O::create(ss.str());
 };
 
 inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
@@ -522,7 +522,7 @@ void Str_O::exposeCando(Lisp_sp lisp) {
 
   SYMBOL_SC_(CorePkg, base_string_concatenate);
   Defun(searchString);
-  core::af_def(CorePkg,"base_string_concatenate",&af_base_string_concatenate_,ARGS_af_base_string_concatenate_,DECL_af_base_string_concatenate_,DOCS_af_base_string_concatenate_);
+  core::af_def(CorePkg, "base_string_concatenate", &af_base_string_concatenate_, ARGS_af_base_string_concatenate_, DECL_af_base_string_concatenate_, DOCS_af_base_string_concatenate_);
   Defun(string_EQ_);
   Defun(string_NE_);
   Defun(string_LT_);
@@ -601,15 +601,15 @@ void Str_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 void Str_O::sxhash_(HashGenerator &hg) const {
-    if ( hg.isFilling() ) {
-        Fixnum hash = 5381;
-        Fixnum c;
-        for ( size_t i(0), iEnd(this->size()); i<iEnd; ++i ) {
-            c = this->operator[](i);
-            hash = ((hash << 5) + hash) + c;
-        }
-        hg.addPart(hash);
+  if (hg.isFilling()) {
+    Fixnum hash = 5381;
+    Fixnum c;
+    for (size_t i(0), iEnd(this->size()); i < iEnd; ++i) {
+      c = this->operator[](i);
+      hash = ((hash << 5) + hash) + c;
     }
+    hg.addPart(hash);
+  }
 }
 
 Fixnum_sp Str_O::asInt() const {
@@ -655,7 +655,7 @@ T_sp Str_O::aref(List_sp indices) const {
   _OF();
   ASSERTF(cl_length(indices) == 1, BF("Illegal index for string: %s") % _rep_(indices));
   int index = unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices)));
-  if ( index < 0 || index >= this->size() ) {
+  if (index < 0 || index >= this->size()) {
     SIMPLE_ERROR(BF("Index %d out of bounds - must be [0,%d)") % index % this->size());
   }
   return this->elt(index);
@@ -1211,12 +1211,12 @@ T_sp Str_O::subseq(int start, T_sp end) const {
   }
   int iend;
   if (end.nilp()) {
-      iend = this->get().size();
+    iend = this->get().size();
   } else {
-      iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
+    iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }
-  if ( iend < start) {
-      SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->get().size());
+  if (iend < start) {
+    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->get().size());
   }
   int ilen = iend - start;
   Str_sp news = Str_O::create(this->get().substr(start, ilen));
@@ -1224,26 +1224,26 @@ T_sp Str_O::subseq(int start, T_sp end) const {
 }
 
 T_sp Str_O::setf_subseq(int start, T_sp end, T_sp new_subseq) {
-    Str_sp sfrom = gc::As<Str_sp>(new_subseq);
+  Str_sp sfrom = gc::As<Str_sp>(new_subseq);
   if (start < 0) {
     SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
   }
   int iend;
   if (end.nilp()) {
-      iend = this->get().size();
+    iend = this->get().size();
   } else {
-      iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
+    iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }
-  if ( iend <= start) {
-      SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->get().size());
+  if (iend <= start) {
+    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->get().size());
   }
   int ileft = iend - start;
-  if ( ileft > sfrom->size() ) {
-      ileft = sfrom->size();
+  if (ileft > sfrom->size()) {
+    ileft = sfrom->size();
   }
   int ifrom(0);
-  for ( int i(start); ileft!= 0; ++i, --ileft ) {
-      this->_Contents[i] = sfrom->_Contents[ifrom];
+  for (int i(start); ileft != 0; ++i, --ileft) {
+    this->_Contents[i] = sfrom->_Contents[ifrom];
   }
 }
 

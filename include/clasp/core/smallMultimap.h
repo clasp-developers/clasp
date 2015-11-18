@@ -44,16 +44,14 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.fwd.h>
 
 namespace core {
-  using namespace core;
+using namespace core;
 
-
-  
 SMART(SmallMultimap);
 class SmallMultimap_O : public T_O {
   LISP_BASE1(T_O);
   LISP_CLASS(core, CorePkg, SmallMultimap_O, "SmallMultimap");
 GCPRIVATE:
-  typedef gctools::SmallMultimap<Symbol_sp, T_sp, SymbolComparer > map_type;
+  typedef gctools::SmallMultimap<Symbol_sp, T_sp, SymbolComparer> map_type;
   map_type map;
 
 public:
@@ -66,8 +64,6 @@ public:
   DEFAULT_CTOR_DTOR(SmallMultimap_O);
 };
 };
-
-
 
 TRANSLATE(core::SmallMultimap_O);
 #endif

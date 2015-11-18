@@ -127,9 +127,9 @@ LCC_RETURN BuiltinClosure::LISP_CALLING_CONVENTION() {
   IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
 };
 
-InterpretedClosure::InterpretedClosure(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO )
-  : FunctionClosure(fn, k, e, SOURCE_INFO_PASS ), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
-  }
+InterpretedClosure::InterpretedClosure(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO)
+    : FunctionClosure(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
+}
 
 T_sp InterpretedClosure::lambdaList() const {
   return this->lambdaListHandler()->lambdaList();
@@ -138,7 +138,7 @@ T_sp InterpretedClosure::lambdaList() const {
 LCC_RETURN InterpretedClosure::LISP_CALLING_CONVENTION() {
   ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->closedEnvironment);
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
-  InvocationHistoryFrame _frame(gctools::tagged_pointer<Closure>(this),lcc_arglist);
+  InvocationHistoryFrame _frame(gctools::tagged_pointer<Closure>(this), lcc_arglist);
   lambdaListHandler_createBindings(gctools::tagged_pointer<Closure>(this), this->_lambdaListHandler, scope, LCC_PASS_ARGS);
   ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
   VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();
@@ -163,7 +163,7 @@ T_sp Function_O::cleavir_ast() const {
   return this->closure->cleavir_ast();
 }
 
-void Function_O::setf_cleavir_ast(T_sp ast)  {
+void Function_O::setf_cleavir_ast(T_sp ast) {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   this->closure->setf_cleavir_ast(ast);
 }
@@ -272,8 +272,8 @@ void Function_O::exposeCando(Lisp_sp lisp) {
       .def("core:functionLambdaListHandler", &Function_O::functionLambdaListHandler)
       .def("core:function_declares", &Function_O::declares)
       .def("core:function_docstring", &Function_O::docstring)
-  .def("core:cleavir_ast",&Function_O::cleavir_ast)
-  .def("core:setf_cleavir_ast",&Function_O::setf_cleavir_ast);
+      .def("core:cleavir_ast", &Function_O::cleavir_ast)
+      .def("core:setf_cleavir_ast", &Function_O::setf_cleavir_ast);
   ClDefun(functionLambdaExpression);
   CoreDefun(functionSourcePosInfo);
   CoreDefun(setKind);

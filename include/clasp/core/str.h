@@ -33,12 +33,11 @@ THE SOFTWARE.
 #include <clasp/core/lispString.h>
 
 namespace cl {
-  extern core::Symbol_sp _sym_simple_vector;
+extern core::Symbol_sp _sym_simple_vector;
 };
 
 namespace core {
 
-  
 FORWARD(Str);
 class Str_O : public String_O {
   LISP_BASE1(String_O);
@@ -98,14 +97,14 @@ public:
     str_type temp(v, num);
     this->_Contents.swap(temp);
   };
-    virtual void swapElements(uint i1, uint i2) {
-      char t = this->_Contents[i2];
-      this->_Contents[i2] = this->_Contents[i1];
-      this->_Contents[i1] = t;
+  virtual void swapElements(uint i1, uint i2) {
+    char t = this->_Contents[i2];
+    this->_Contents[i2] = this->_Contents[i1];
+    this->_Contents[i1] = t;
   }
 
   virtual T_sp aset_unsafe(int j, T_sp val);
-  virtual T_sp aref_unsafe(cl_index index) const { return clasp_make_character(this->_Contents[index]);};
+  virtual T_sp aref_unsafe(cl_index index) const { return clasp_make_character(this->_Contents[index]); };
 
   gctools::gcstring &contents() { return this->_Contents; };
   string __repr__() const;
@@ -186,8 +185,8 @@ public:
   virtual T_sp elt(int index) const;
   virtual T_sp setf_elt(int index, T_sp value);
 
-  virtual T_sp svref(int index) const { TYPE_ERROR(this->asSmartPtr(), cl::_sym_simple_vector);};
-  virtual T_sp setf_svref(int index, T_sp value) { TYPE_ERROR(this->asSmartPtr(), cl::_sym_simple_vector);};
+  virtual T_sp svref(int index) const { TYPE_ERROR(this->asSmartPtr(), cl::_sym_simple_vector); };
+  virtual T_sp setf_svref(int index, T_sp value) { TYPE_ERROR(this->asSmartPtr(), cl::_sym_simple_vector); };
 
   virtual T_sp subseq(int start, T_sp end) const;
   virtual T_sp setf_subseq(int start, T_sp end, T_sp new_subseq);
@@ -201,7 +200,7 @@ public:
 
 public:
   explicit Str_O() : Base(){};
-  virtual ~Str_O() {};
+  virtual ~Str_O(){};
 };
 };
 template <>
@@ -218,15 +217,15 @@ namespace core {
 T_mv af_parseInteger(Str_sp str, Fixnum start = 0, T_sp end = _Nil<T_O>(), uint radix = 10, T_sp junkAllowed = _Nil<T_O>());
 T_sp af_string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = make_fixnum(0), T_sp end1 = _Nil<T_O>(), Fixnum_sp start2 = make_fixnum(0), T_sp end2 = _Nil<T_O>());
 
- T_sp af_base_string_concatenate_(T_sp vargs);
+T_sp af_base_string_concatenate_(T_sp vargs);
 
- inline T_sp af_base_string_concatenate(LCC_ARGS_ELLIPSIS) {
-   VaList_S lcc_arglist_s;
-   va_start(lcc_arglist_s._Args,LCC_VA_START_ARG);
-   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
-   VaList_sp valist_sp(&lcc_arglist_s);
-   return af_base_string_concatenate_(valist_sp);
- };
+inline T_sp af_base_string_concatenate(LCC_ARGS_ELLIPSIS) {
+  VaList_S lcc_arglist_s;
+  va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
+  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+  VaList_sp valist_sp(&lcc_arglist_s);
+  return af_base_string_concatenate_(valist_sp);
+};
 
 inline claspChar clasp_char(Str_sp s, Fixnum pos) { return s->schar(pos); };
 };

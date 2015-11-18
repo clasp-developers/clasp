@@ -149,7 +149,7 @@ class Reader_O : public T_O {
 
 public: // ctors-dtors
   explicit Reader_O();
-  virtual ~Reader_O() {};
+  virtual ~Reader_O(){};
 GCPRIVATE: // ---- instance variables ----
   T_sp _Input;
 

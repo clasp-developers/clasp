@@ -75,9 +75,8 @@ public:
   //	void setInstanceVariableValue(Symbol_sp sym, T_sp obj);
   //	T_sp getInstanceVariableValue(Symbol_sp sym);
 
-  explicit StandardObject_O() : Base() {};
-  virtual ~StandardObject_O() {};
-
+  explicit StandardObject_O() : Base(){};
+  virtual ~StandardObject_O(){};
 };
 };
 TRANSLATE(core::StandardObject_O);

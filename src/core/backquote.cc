@@ -94,7 +94,7 @@ T_sp af_backquote_append(List_sp lists) {
   List_sp appendArg = lists;
   for (; oCdr(appendArg).notnilp(); appendArg = oCdr(appendArg)) {
     T_sp head = oCar(appendArg);
-    ASSERT(head.consp()||head.nilp());
+    ASSERT(head.consp() || head.nilp());
     List_sp oneList = head;
     for (auto element : oneList) {
       list << oCar(element);

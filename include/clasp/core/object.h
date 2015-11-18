@@ -136,7 +136,7 @@ bool clasp_charEqual2(T_sp, T_sp);
 //
 namespace core {
 SMART(Class);
- SMART(Record);
+SMART(Record);
 SMART(BuiltInClass);
 SMART(StandardClass);
 SMART(Model);
@@ -330,12 +330,12 @@ private:
   bool _debug;
 #endif
 public:
- HashGenerator(bool debug=false) :  _NextPartIndex(0)
+  HashGenerator(bool debug = false) : _NextPartIndex(0)
 #ifdef DEBUG_HASH_GENERATOR
-    , _debug(debug)
+                                      ,
+                                      _debug(debug)
 #endif
-    {};
-
+                                      {};
 
   bool addPart(Fixnum part) {
     if (this->_NextPartIndex >= MaxParts)
@@ -343,7 +343,7 @@ public:
     this->_Parts[this->_NextPartIndex] = part;
 #ifdef DEBUG_HASH_GENERATOR
     if (this->_debug) {
-      printf("%s:%d Added part[%d] --> %ld\n", __FILE__, __LINE__, this->_NextPartIndex, part );
+      printf("%s:%d Added part[%d] --> %ld\n", __FILE__, __LINE__, this->_NextPartIndex, part);
     }
 #endif
     ++this->_NextPartIndex;
@@ -366,7 +366,7 @@ public:
   gc::Fixnum hash(gc::Fixnum bound = 0) const {
     gc::Fixnum hash = 5381;
     for (int i = 0; i < this->_NextPartIndex; i++) {
-      hash = (gc::Fixnum)hash_word((cl_intptr_t)hash, (cl_intptr_t)this->_Parts[i]);
+      hash = (gc::Fixnum)hash_word((cl_intptr_t)hash, (cl_intptr_t) this->_Parts[i]);
 #ifdef DEBUG_HASH_GENERATOR
       if (this->_debug) {
         printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[i]);
@@ -377,9 +377,9 @@ public:
     if (bound)
       return ((cl_intptr_t)hash) % bound;
 #ifdef DEBUG_HASH_GENERATOR
-      if (this->_debug) {
-        printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash );
-      }
+    if (this->_debug) {
+      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
+    }
 #endif
     return hash;
   }
@@ -409,6 +409,7 @@ private:
 
 #define __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)                                         \
   FRIEND_GC_SCANNER(oNamespace::oClass);                                                                               \
+                                                                                                                       \
 public:                                                                                                                \
   template <class DestClass> gctools::smart_ptr</* TODO: const */ DestClass> const_sharedThis() const {                \
     oClass *not_const_this_gc_safe = const_cast<oClass *>(this); /* Should be GC-safe because this should be a root */ \
@@ -428,7 +429,7 @@ public:                                                                         
 public:                                                                                                                \
   static core::Symbol_sp ___staticClassSymbol;                                                                         \
   static core::Class_sp ___staticClass;                                                                                \
-  static gctools::tagged_pointer<core::Creator> static_creator;                                                                                \
+  static gctools::tagged_pointer<core::Creator> static_creator;                                                        \
   static int static_Kind;                                                                                              \
   /* static gctools::smart_ptr<oClass> _nil; depreciate this in favor of _Nil<oClass>()? */                            \
   /* static gctools::smart_ptr<oClass> _unbound; depreciate this in favor of _Unbound<oClass>()? */                    \
@@ -436,7 +437,7 @@ public:                                                                         
   /*    static oClass* ___staticDereferencedUnboundInstance; */                                                        \
 public:                                                                                                                \
   static void ___set_static_ClassSymbol(core::Symbol_sp i) { oClass::___staticClassSymbol = i; };                      \
-  static void ___set_static_creator(gctools::tagged_pointer<core::Creator> al) { oClass::static_creator = al; };                               \
+  static void ___set_static_creator(gctools::tagged_pointer<core::Creator> al) { oClass::static_creator = al; };       \
   static string static_packageName() { return oPackage; };                                                             \
   static string static_className() { return core::lispify_symbol_name(oclassName); };                                  \
   static core::Symbol_sp static_classSymbol() { return oClass::___staticClassSymbol; };                                \
@@ -641,14 +642,15 @@ public: // Description stuff
   virtual void describe(T_sp stream);
   virtual void dump() { this->describe(lisp_true()); };
 
- public:
+public:
   //! Encode this object as an a-list
   virtual core::List_sp encode();
   //! Decode this object from an a-list
   virtual void decode(core::List_sp);
   virtual void initialize(core::List_sp alist);
   virtual bool fieldsp() const { return false; };
-  virtual void fields(Record_sp record) {SUBIMP();};
+  virtual void fields(Record_sp record) { SUBIMP(); };
+
 public:
   string descriptionNonConst();
 
@@ -746,7 +748,7 @@ public: // Instance protocol
   /*! Return number of slots if instance of Instance_O otherwise return nil */
   virtual T_sp oinstancep() const { return _Nil<T_O>(); }; //
   bool instancep() const { return oinstancep().isTrue(); };
-  virtual bool environmentp() const { return false;};
+  virtual bool environmentp() const { return false; };
   virtual bool genericFunctionP() const { return false; };
   /*! Return number of slots if instance of Instance_O otherwise return nil */
   virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
@@ -755,7 +757,7 @@ public: // Instance protocol
 public:
   /*! Some objects can return contained objects references by class and name
 	 */
-//  virtual T_sp oGetReference(core::ObjRef_sp ref) { return _Nil<T_O>(); };
+  //  virtual T_sp oGetReference(core::ObjRef_sp ref) { return _Nil<T_O>(); };
 };
 
 inline void clasp_sxhash(T_sp obj, HashGenerator &hg) {
@@ -822,7 +824,6 @@ inline bool cl_equal(T_sp x, T_sp y) {
   return x->equal(y);
 };
 
- 
 extern int basic_compare(Number_sp na, Number_sp nb);
 
 #define ARGS_cl_equalp "(x y)"
@@ -830,21 +831,21 @@ extern int basic_compare(Number_sp na, Number_sp nb);
 #define DOCS_cl_equalp "equalp"
 inline bool cl_equalp(T_sp x, T_sp y) {
   if (x.fixnump()) {
-    if ( y.fixnump() ) {
+    if (y.fixnump()) {
       return x.raw_() == y.raw_();
-    } else if ( y.single_floatp() ) {
-      return ( x.unsafe_fixnum() == y.unsafe_single_float() );
-    } else if ( Number_sp ny = y.asOrNull<Number_O>() ) {
-      return basic_compare(x,y) == 0;
+    } else if (y.single_floatp()) {
+      return (x.unsafe_fixnum() == y.unsafe_single_float());
+    } else if (Number_sp ny = y.asOrNull<Number_O>()) {
+      return basic_compare(x, y) == 0;
     }
     return false;
   } else if (x.single_floatp()) {
     if (y.single_floatp()) {
       return x.unsafe_single_float() == y.unsafe_single_float();
-    } else if ( y.fixnump() ) {
+    } else if (y.fixnump()) {
       return x.unsafe_single_float() == y.unsafe_fixnum();
-    } else if ( Number_sp ny = y.asOrNull<Number_O>() ) {
-      return basic_compare(x,y);
+    } else if (Number_sp ny = y.asOrNull<Number_O>()) {
+      return basic_compare(x, y);
     }
     return false;
   } else if (x.characterp()) {
@@ -1138,7 +1139,6 @@ TRANSLATE(core::T_O);
 #include <clasp/core/cxxObject.h>
 
 namespace core {
-  void initialize_object();
-
+void initialize_object();
 };
 #endif //]

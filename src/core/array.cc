@@ -152,8 +152,8 @@ void Array_O::initialize() {
 }
 
 Symbol_sp Array_O::element_type_as_symbol() const {
-// If this fails we need a different way of doing this
-  if ( this->elementType() == _lisp->_true() ) {
+  // If this fails we need a different way of doing this
+  if (this->elementType() == _lisp->_true()) {
     return cl::_sym_T;
   }
   SIMPLE_ERROR(BF("Handle more array types"));
@@ -200,7 +200,7 @@ cl_index Array_O::index_val(List_sp indices, bool last_value_is_val, List_sp &va
     if (oneIndex < 0 || oneIndex >= curDimension) {
       SIMPLE_ERROR(BF("Bad index %d - must be [0,%d)") % curDimension);
     }
-    
+
     offset = offset * curDimension + oneIndex;
     idx++;
   }
@@ -279,7 +279,7 @@ string Array_O::__repr__() const {
 void Array_O::exposeCando(::core::Lisp_sp lisp) {
   _G();
   ::core::class_<Array_O>()
-      .def("cl:aref",&Array_O::aref,
+      .def("cl:aref", &Array_O::aref,
            ARGS_Array_O_aref,
            DECL_Array_O_aref,
            DOCS_Array_O_aref)

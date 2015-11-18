@@ -97,7 +97,7 @@ void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, La
                     " --> The solution is to give the most recent Common Lisp method you defined\n"
                     " a new name by prefixing it with the class name\n"
                     " eg: getFilename -> PresumedLoc-getFilename") %
-                 _rep_(gfname)  % gf_llh->numberOfRequiredArguments() % _rep_(gf->methods()) % _rep_(receiver_class) % lambda_list_handler->numberOfRequiredArguments());
+                 _rep_(gfname) % gf_llh->numberOfRequiredArguments() % _rep_(gf->methods()) % _rep_(receiver_class) % lambda_list_handler->numberOfRequiredArguments());
   }
   gfc->addMethod(method);
 };

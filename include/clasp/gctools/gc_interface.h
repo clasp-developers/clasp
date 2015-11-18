@@ -37,12 +37,12 @@ class WrappedPointer_O;
 class Functoid;
 class Creator;
 class Iterator_O;
-    class SequenceStepper;
+class SequenceStepper;
 };
 namespace asttooling {
-    namespace internal {
-        class MatcherDescriptor;
-    };
+namespace internal {
+class MatcherDescriptor;
+};
 };
 namespace clbind {
 class ConstructorCreator;
@@ -53,47 +53,47 @@ class ConstructorCreator;
 #undef GC_INTERFACE_FORWARD
 
 #ifdef USE_MPS
-  #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
-    #define DECLARE_FORWARDS
-    #include STATIC_ANALYZER_PRODUCT
-    #undef DECLARE_FORWARDS
-  #endif // ifndef RUNNING_GC_BUILDER
+#ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
+#define DECLARE_FORWARDS
+#include STATIC_ANALYZER_PRODUCT
+#undef DECLARE_FORWARDS
+#endif // ifndef RUNNING_GC_BUILDER
 #endif
 #ifdef USE_BOEHM
-  #ifdef USE_CXX_DYNAMIC_CAST
-    // nothing
-  #else
-    #define DECLARE_FORWARDS
-    #include STATIC_ANALYZER_PRODUCT
-    #undef DECLARE_FORWARDS
-  #endif
+#ifdef USE_CXX_DYNAMIC_CAST
+// nothing
+#else
+#define DECLARE_FORWARDS
+#include STATIC_ANALYZER_PRODUCT
+#undef DECLARE_FORWARDS
+#endif
 #endif
 
 namespace gctools {
 
 #ifdef USE_MPS
-  #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
-    #define GC_KIND_SELECTORS
-    #include STATIC_ANALYZER_PRODUCT
-    #undef GC_KIND_SELECTORS
-  #endif // ifndef RUNNING_GC_BUILDER
+#ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
+#define GC_KIND_SELECTORS
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_KIND_SELECTORS
+#endif // ifndef RUNNING_GC_BUILDER
 #endif
 #ifdef USE_BOEHM
-  #ifdef USE_CXX_DYNAMIC_CAST
-    // Nothing
-  #else
-    #define GC_KIND_SELECTORS
-    #include STATIC_ANALYZER_PRODUCT
-    #undef GC_KIND_SELECTORS
-  #endif
+#ifdef USE_CXX_DYNAMIC_CAST
+// Nothing
+#else
+#define GC_KIND_SELECTORS
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_KIND_SELECTORS
+#endif
 #endif
 };
 
 #include <clasp/gctools/other_tagged_casts.h>
 
 extern "C" {
-char* obj_name(gctools::GCKindEnum kind);
-extern void obj_dump_base(void* base);
+char *obj_name(gctools::GCKindEnum kind);
+extern void obj_dump_base(void *base);
 };
 
 #endif

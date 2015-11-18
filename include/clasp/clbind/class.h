@@ -305,7 +305,7 @@ struct cast_entry {
 } // namespace unnamed
 
 struct class_registration : registration {
-  class_registration(const string& name);
+  class_registration(const string &name);
 
   void register_() const;
 
@@ -331,7 +331,7 @@ struct class_registration : registration {
 
 struct CLBIND_API class_base : scope {
 public:
-  class_base(const string& name);
+  class_base(const string &name);
 
   struct base_desc {
     type_id type;
@@ -386,7 +386,7 @@ struct CountMethodArguments<RT (OT::*)(ARGS...) const> {
 
 template <class Class, class MethodPointerType, class Policies>
 struct memfun_registration : registration {
- memfun_registration(const std::string& name, MethodPointerType f, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
+  memfun_registration(const std::string &name, MethodPointerType f, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
       : name(name), methodPtr(f), policies(policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
@@ -571,7 +571,7 @@ template <
     class Class, class Get, class GetPolicies, class Set = reg::null_type, class SetPolicies = reg::null_type>
 struct property_registration : registration {
   property_registration(
-                        const string& name,
+      const string &name,
       Get const &get,
       GetPolicies const &get_policies,
       Set const &set = Set(),
@@ -579,14 +579,7 @@ struct property_registration : registration {
       string const &arguments = "",
       string const &declares = "",
       string const &docstring = "")
-      : name(name)
-  , get(get)
-  , get_policies(get_policies)
-  , set(set)
-  , set_policies(set_policies)
-  , m_arguments(arguments)
-  , m_declares(declares)
-  , m_docstring(docstring) {}
+      : name(name), get(get), get_policies(get_policies), set(set), set_policies(set_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
     const string n(name);
@@ -666,7 +659,7 @@ struct property_registration : registration {
                 context[name] = property(get_);
             }
 #endif
-            std::string name;
+  std::string name;
   Get get;
   GetPolicies get_policies;
   Set set;
@@ -739,7 +732,7 @@ public:
 
 #undef CLBIND_GEN_BASE_INFO
 
- class_(const std::string& name) : class_base(name), scope(*this) {
+  class_(const std::string &name) : class_base(name), scope(*this) {
 #ifndef NDEBUG
     detail::check_link_compatibility();
 #endif
@@ -774,7 +767,7 @@ public:
   }
 
   template <class F>
-    class_ &def(const std::string& name, F f)
+  class_ &def(const std::string &name, F f)
   //                        string const& arguments="",
   //                        string const& declares="",
   //                        string const& docstring="")
@@ -787,7 +780,7 @@ public:
 
   // virtual functions
   template <class F, class DefaultOrPolicies>
-    class_ &def(const std::string& name, F fn, DefaultOrPolicies default_or_policies, string const &arguments = "", string const &declares = "", string const &docstring = "") {
+  class_ &def(const std::string &name, F fn, DefaultOrPolicies default_or_policies, string const &arguments = "", string const &declares = "", string const &docstring = "") {
     return this->virtual_def(
         name, fn, default_or_policies, reg::null_type(), CLBIND_MSVC_TYPENAME is_policy_list<DefaultOrPolicies>::type(), arguments, declares, docstring);
   }
@@ -861,7 +854,7 @@ public:
         }
 #endif // meister disabled
   template <class C, class D>
-  class_ &def_readonly(const string& name, D C::*mem_ptr) {
+  class_ &def_readonly(const string &name, D C::*mem_ptr) {
     typedef detail::property_registration<T, D C::*, detail::null_type>
         registration_type;
 
@@ -871,7 +864,7 @@ public:
   }
 
   template <class C, class D, class Policies>
-  class_ &def_readonly(const string& name, D C::*mem_ptr, Policies const &policies) {
+  class_ &def_readonly(const string &name, D C::*mem_ptr, Policies const &policies) {
     typedef detail::property_registration<T, D C::*, Policies>
         registration_type;
 
@@ -1018,7 +1011,7 @@ private:
 
   // these handle default implementation of virtual functions
   template <class F, class Policies>
-    class_ &virtual_def(const std::string& name, F const &fn, Policies const &, reg::null_type, boost::mpl::true_,
+  class_ &virtual_def(const std::string &name, F const &fn, Policies const &, reg::null_type, boost::mpl::true_,
                       string const &arguments, string const &declares, string const &docstring) {
     this->add_member(
         new detail::memfun_registration<T, F, Policies>(

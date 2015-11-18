@@ -39,5 +39,4 @@ class Bar {
     static core::T_sp _staticObj;
   };
 };
-
 };

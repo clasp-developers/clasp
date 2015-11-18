@@ -37,32 +37,29 @@ namespace gctools {
 int globalBoehmMarker = 0;
 #endif
 
-void rawHeaderDescribe(uintptr_t* rawheaderP)
-{
-    Header_s* headerP = reinterpret_cast<Header_s*>(rawheaderP);
-  printf( "  0x%p : Kind: 0x%p  vtable: 0x%p\n", headerP, *headerP, *(headerP+1));
+void rawHeaderDescribe(uintptr_t *rawheaderP) {
+  Header_s *headerP = reinterpret_cast<Header_s *>(rawheaderP);
+  printf("  0x%p : Kind: 0x%p  vtable: 0x%p\n", headerP, *headerP, *(headerP + 1));
   gctools::GCKindEnum kind = headerP->kind();
-  printf(" Kind tag - kind: %d\n", kind );
+  printf(" Kind tag - kind: %d\n", kind);
   fflush(stdout);
 };
 
-
-
-void headerDescribe(core::T_O* taggedClient) {
-  if ( tagged_generalp(taggedClient) || tagged_consp(taggedClient) ) {
+void headerDescribe(core::T_O *taggedClient) {
+  if (tagged_generalp(taggedClient) || tagged_consp(taggedClient)) {
     printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
     // Currently this assumes that Conses and General objects share the same header
     // this may not be true in the future
     // conses may be moved into a separate pool and dealt with in a different way
-    uintptr_t* headerP;
-    if ( tagged_generalp(taggedClient) ) {
-      headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(untag_general(taggedClient)));
+    uintptr_t *headerP;
+    if (tagged_generalp(taggedClient)) {
+      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_general(taggedClient)));
     } else {
-      headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(untag_cons(taggedClient)));
+      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_cons(taggedClient)));
     }
     rawHeaderDescribe(headerP);
   } else {
-    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__ );
+    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
   };
 };
 };

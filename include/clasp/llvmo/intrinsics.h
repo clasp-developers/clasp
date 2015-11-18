@@ -29,14 +29,10 @@ THE SOFTWARE.
 
 extern "C" {
 
-
-void cc_call_with_variable_bound(core::T_mv* result, core::T_O* symbol, core::T_O* value, core::T_O* thunk);
-void cc_funwind_protect(core::T_mv* result, core::T_O* protected_fn, core::T_O* cleanup_fn);
-void cc_catch(core::T_mv* result, core::T_O* tag, core::T_O* func);
-void cc_throw(core::T_O* tag, core::T_O* resultP);
-
-
-
+void cc_call_with_variable_bound(core::T_mv *result, core::T_O *symbol, core::T_O *value, core::T_O *thunk);
+void cc_funwind_protect(core::T_mv *result, core::T_O *protected_fn, core::T_O *cleanup_fn);
+void cc_catch(core::T_mv *result, core::T_O *tag, core::T_O *func);
+void cc_throw(core::T_O *tag, core::T_O *resultP);
 };
 
 namespace llvmo {
@@ -46,21 +42,17 @@ void redirect_llvm_interface_addSymbol();
 void initialize_intrinsics();
 void initialize_link_intrinsics();
 
+typedef enum { noFunctionBoundToSymbol,
+               badKeywordArgument,
+               couldNotCoerceToClosure,
+               destinationMustBeActivationFrame,
+               invalidIndexForFunctionFrame,
+               unboundSymbolValue,
+               unboundSymbolFunction,
+               unboundSymbolSetfFunction
+} ErrorCode;
 
- typedef enum { noFunctionBoundToSymbol
-               , badKeywordArgument
-               , couldNotCoerceToClosure
-               , destinationMustBeActivationFrame
-               , invalidIndexForFunctionFrame
-               , unboundSymbolValue
-               , unboundSymbolFunction
-               , unboundSymbolSetfFunction
-               } ErrorCode;
-
-
-
- extern void intrinsic_error(ErrorCode err, core::T_sp arg0=_Nil<core::T_O>(), core::T_sp arg1=_Nil<core::T_O>(), core::T_sp arg2=_Nil<core::T_O>() );
-
+extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());
 }
 
 #endif

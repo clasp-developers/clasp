@@ -33,85 +33,85 @@ namespace core {
 
 #define PROFILER_NANOSECONDS_PER_SECOND 1000000000.0
 
-  struct ProfilerFunctionInfo;
+struct ProfilerFunctionInfo;
 
-  extern ProfilerFunctionInfo *_LinkedListOfProfilerFunctionInfos;
+extern ProfilerFunctionInfo *_LinkedListOfProfilerFunctionInfos;
 
 /*! Class to profile a single function */
-  struct ProfilerFunctionInfo {
-    ProfilerFunctionInfo *_Next;
-    const char *_SourceFileName;
-    const char *_FunctionName;
-    uint _LineNumber;
-    uint _InitializeSensor;
-    uint _TimesInvoked;
-    Bignum _InclusiveTime;
-    Bignum _SelfTime;
+struct ProfilerFunctionInfo {
+  ProfilerFunctionInfo *_Next;
+  const char *_SourceFileName;
+  const char *_FunctionName;
+  uint _LineNumber;
+  uint _InitializeSensor;
+  uint _TimesInvoked;
+  Bignum _InclusiveTime;
+  Bignum _SelfTime;
 
   ProfilerFunctionInfo(const char *fileName, const char *functionName, uint lineNumber) : _Next(NULL),
-      _SourceFileName(fileName),
-      _FunctionName(functionName),
-      _LineNumber(lineNumber),
-      _InitializeSensor(0),
-      _TimesInvoked(0),
-      _InclusiveTime(0),
-      _SelfTime(0) {
+                                                                                          _SourceFileName(fileName),
+                                                                                          _FunctionName(functionName),
+                                                                                          _LineNumber(lineNumber),
+                                                                                          _InitializeSensor(0),
+                                                                                          _TimesInvoked(0),
+                                                                                          _InclusiveTime(0),
+                                                                                          _SelfTime(0) {
     this->_Next = _LinkedListOfProfilerFunctionInfos;
     _LinkedListOfProfilerFunctionInfos = this;
   };
 
-    void dumpProfileInfo();
+  void dumpProfileInfo();
 
   /*! Dump the info for this function */
-    virtual ~ProfilerFunctionInfo();
-  };
+  virtual ~ProfilerFunctionInfo();
+};
 
 /*! Class to keep track of timers on profile stack */
-  struct ProfilerFunctionTimer {
-    ProfilerFunctionInfo *_ProfilerFunctionInfo;
+struct ProfilerFunctionTimer {
+  ProfilerFunctionInfo *_ProfilerFunctionInfo;
   //	ProfilerFunctionTimer* 	_CallerFunctionTimer;
-    Bignum _StartTime;
-    Bignum _CalleeElapsed;
+  Bignum _StartTime;
+  Bignum _CalleeElapsed;
 
-    ProfilerFunctionTimer(ProfilerFunctionInfo *funcInfo);
-    void startFunctionTimer();
-    void stopFunctionTimer(ProfilerFunctionTimer *callerFunctionTimer);
+  ProfilerFunctionTimer(ProfilerFunctionInfo *funcInfo);
+  void startFunctionTimer();
+  void stopFunctionTimer(ProfilerFunctionTimer *callerFunctionTimer);
 
-    virtual ~ProfilerFunctionTimer();
-  };
+  virtual ~ProfilerFunctionTimer();
+};
 
-  class Profiler {
-    friend void restart_profile();
+class Profiler {
+  friend void restart_profile();
 
-  private:
-    vector<ProfilerFunctionTimer> _Stack;
-    Bignum _ProgramStartTime;
+private:
+  vector<ProfilerFunctionTimer> _Stack;
+  Bignum _ProgramStartTime;
 
-  public:
-    void print(boost::format &fmt);
-    void start();
-    void end();
+public:
+  void print(boost::format &fmt);
+  void start();
+  void end();
 
-    void enterFunction(ProfilerFunctionInfo &funcInfo);
-    void exitFunction();
-  };
+  void enterFunction(ProfilerFunctionInfo &funcInfo);
+  void exitFunction();
+};
 
-  void profiler_print(boost::format &fmt);
+void profiler_print(boost::format &fmt);
 
-  class ProfilerGuard {
-  private:
-    Profiler *profilerP;
+class ProfilerGuard {
+private:
+  Profiler *profilerP;
 
-  public:
-    ProfilerGuard(Profiler &profiler, ProfilerFunctionInfo *funcInfoP) {
-      this->profilerP = &profiler;
-      profilerP->enterFunction(*funcInfoP);
-    }
+public:
+  ProfilerGuard(Profiler &profiler, ProfilerFunctionInfo *funcInfoP) {
+    this->profilerP = &profiler;
+    profilerP->enterFunction(*funcInfoP);
+  }
 
-    virtual ~ProfilerGuard() {
-      profilerP->exitFunction();
-    }
-  };
+  virtual ~ProfilerGuard() {
+    profilerP->exitFunction();
+  }
+};
 
 #if ENABLE_PROFILING
 #define _PROFILE_FUNCTION()                                                                      \
@@ -131,33 +131,30 @@ namespace core {
   {}
 #endif
 
-  extern Profiler _globalProfiler;
+extern Profiler _globalProfiler;
 
 /*! Provide the time in nanoseconds since a system defined epoch */
-  Bignum profilerTimeNs();
+Bignum profilerTimeNs();
 
-  void initialize_profile();
+void initialize_profile();
 
 /*! Reset the clocks on all functions to start profiling from the current time */
-  void restart_profile();
+void restart_profile();
 
 /*! Dump all profiling information */
-  void dump_profile();
+void dump_profile();
 
 /*! Dump all profiling information and shutdown profiling */
-  void shutdown_profile();
+void shutdown_profile();
 
-
-
-  /*! Class to keep track of timers on profile stack */
+/*! Class to keep track of timers on profile stack */
 struct simple_timer {
   //	ProfilerFunctionTimer* 	_CallerFunctionTimer;
   std::string _Message;
   Bignum _StartTime;
 
-  simple_timer(const std::string& message);
+  simple_timer(const std::string &message);
   virtual ~simple_timer();
 };
-
 };
 #endif // _core_profile_H

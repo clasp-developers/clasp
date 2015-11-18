@@ -36,8 +36,7 @@ THE SOFTWARE.
 namespace core {
 //#define DEBUG_HASH_TABLE
 
-
-  T_sp cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>());
+T_sp cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>());
 
 FORWARD(HashTable);
 class HashTable_O : public T_O {
@@ -49,11 +48,12 @@ class HashTable_O : public T_O {
   void fields(Record_sp node);
 
   friend T_mv cl_maphash(T_sp function_desig, T_sp hash_table);
- HashTable_O() : _InitialSize(4), _RehashSize(_Nil<Number_O>()), _RehashThreshold(1.2), _HashTable(_Nil<VectorObjects_O>()), _HashTableCount(0)
+  HashTable_O() : _InitialSize(4), _RehashSize(_Nil<Number_O>()), _RehashThreshold(1.2), _HashTable(_Nil<VectorObjects_O>()), _HashTableCount(0)
 #ifdef DEBUG_HASH_TABLE
-    , _DebugHashTable(false)
+                  ,
+                  _DebugHashTable(false)
 #endif
-  {};
+                  {};
   virtual ~HashTable_O(){};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
   friend class HashTableEq_O;
@@ -63,7 +63,7 @@ class HashTable_O : public T_O {
   friend T_mv cl_maphash(T_sp function_desig, HashTable_sp hash_table);
   friend T_mv cl_clrhash(HashTable_sp hash_table);
 
- protected: // instance variables here
+protected: // instance variables here
   uint _InitialSize;
   Number_sp _RehashSize;
   double _RehashThreshold;
@@ -73,27 +73,28 @@ class HashTable_O : public T_O {
   mps_ld_s _LocationDependencyTracker;
 #endif
 #ifdef DEBUG_HASH_TABLE
- public: // Turn on to debug a particular hash table
+public: // Turn on to debug a particular hash table
   bool _DebugHashTable;
 #endif
- public:
+public:
   static HashTable_sp create(T_sp test); // set everything up with defaults
 
- public:
+public:
   static void sxhash_eq(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
   static void sxhash_eql(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
   static void sxhash_equal(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
   static void sxhash_equalp(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
 
- private:
+private:
   void setup(uint sz, Number_sp rehashSize, double rehashThreshold);
   uint resizeEmptyTable(uint sz);
   uint calculateHashTableCount() const;
- public:
+
+public:
   /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
   List_sp rehash(bool expandTable, T_sp findKey);
 
- public: // Functions here
+public: // Functions here
   virtual bool equalp(T_sp other) const;
 
   /*! See CLHS */
@@ -144,7 +145,7 @@ class HashTable_O : public T_O {
   void maphash(std::function<void(T_sp, T_sp)> const &fn) { this->mapHash(fn); };
 
   /*! maps function across a hash table until the function returns false */
-  void /*terminatingMapHash*/map_while_true(std::function<bool(T_sp, T_sp)> const &fn);
+  void /*terminatingMapHash*/ map_while_true(std::function<bool(T_sp, T_sp)> const &fn);
 
   /*! Return the number of entries in the HashTable Vector0 */
   int hashTableNumberOfHashes() const;
@@ -154,7 +155,7 @@ class HashTable_O : public T_O {
   string keysAsString();
 
   /*! Look like a set */
-  void insert(T_sp obj) { this->setf_gethash(obj,_Nil<T_O>()); };
+  void insert(T_sp obj) { this->setf_gethash(obj, _Nil<T_O>()); };
   /*! Return a Cons of all keys */
   List_sp keysAsCons();
 };

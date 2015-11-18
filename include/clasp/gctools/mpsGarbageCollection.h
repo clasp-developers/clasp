@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <boost/utility/binary.hpp>
 #include <clasp/gctools/telemetry.h>
 
-
 extern "C" {
 typedef struct SegStruct *Seg;
 typedef mps_arena_t Arena;
@@ -47,16 +46,18 @@ extern void ShieldCover(Arena arena, Seg seg);
 namespace gctools {
 
 #ifdef DEBUG_MPS_UNDERSCANNING
-#define DEBUG_MPS_UNDERSCANNING_TESTS() mps_arena_collect(_global_arena); mps_arena_release(_global_arena);
+#define DEBUG_MPS_UNDERSCANNING_TESTS() \
+  mps_arena_collect(_global_arena);     \
+  mps_arena_release(_global_arena);
 #else
 #define DEBUG_MPS_UNDERSCANNING_TESTS()
 #endif
 #ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
-  #define DEBUG_THROW_IF_INVALID_CLIENT(c) throwIfInvalidClient(reinterpret_cast<core::T_O*>(c))
+#define DEBUG_THROW_IF_INVALID_CLIENT(c) throwIfInvalidClient(reinterpret_cast<core::T_O *>(c))
 #else
-  #define DEBUG_THROW_IF_INVALID_CLIENT(c)
+#define DEBUG_THROW_IF_INVALID_CLIENT(c)
 #endif
-  
+
 struct MpsMetrics {
   size_t finalizationRequests = 0;
   size_t movingAllocations = 0;
@@ -99,7 +100,7 @@ public:
 #if !defined(RUNNING_GC_BUILDER)
 #define GC_ENUM
 typedef
-#include STATIC_ANALYZER_PRODUCT//"main/clasp_gc.cc"
+#include STATIC_ANALYZER_PRODUCT //"main/clasp_gc.cc"
     GCKindEnum;
 #undef GC_ENUM
 #else
@@ -108,19 +109,17 @@ typedef enum { KIND_null,
 #endif
 };
 
-
 extern "C" {
-char* obj_name(gctools::GCKindEnum kind);
-extern void obj_dump_base(void* base);
+char *obj_name(gctools::GCKindEnum kind);
+extern void obj_dump_base(void *base);
 };
-
 
 namespace gctools {
-  template <class T> GC_RESULT obj_scan_helper(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, mps_addr_t& client);
+template <class T>
+GC_RESULT obj_scan_helper(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, mps_addr_t &client);
 };
 
 extern "C" {
-
 
 /*! Implemented in gc_interace.cc */
 mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
@@ -173,12 +172,12 @@ inline size_t sizeof_with_header();
 
 class Header_s {
 public:
-  static const uintptr_t tag_mask = BOOST_BINARY( 11);
-  static const uintptr_t kind_tag = BOOST_BINARY( 01); // KIND = tagged_value>>2
-  static const uintptr_t fwd_tag =  BOOST_BINARY( 10);
+  static const uintptr_t tag_mask = BOOST_BINARY(11);
+  static const uintptr_t kind_tag = BOOST_BINARY(01); // KIND = tagged_value>>2
+  static const uintptr_t fwd_tag = BOOST_BINARY(10);
   static const uintptr_t pad_mask = BOOST_BINARY(111);
   static const uintptr_t pad_test = BOOST_BINARY(011);
-  static const uintptr_t pad_tag =  BOOST_BINARY(011);
+  static const uintptr_t pad_tag = BOOST_BINARY(011);
   static const uintptr_t pad1_tag = BOOST_BINARY(111);
   static const uintptr_t fwd_ptr_mask = ~tag_mask;
   //        static const uintptr_t  fwd2_tag        = BOOST_BINARY(001);
@@ -241,7 +240,7 @@ public:
   }
 };
 
- void headerDescribe(core::T_O* taggedClient);
+void headerDescribe(core::T_O *taggedClient);
 };
 
 namespace gctools {
@@ -253,7 +252,6 @@ inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) &
 
 template <class T>
 inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
-
 };
 
 /* Align size upwards and ensure that it's big enough to store a
@@ -267,11 +265,11 @@ inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s
      : gctools::sizeof_with_header<gctools::Fwd_s>() ) 
 */
 namespace gctools {
-  extern size_t global_sizeof_fwd;
+extern size_t global_sizeof_fwd;
 //extern size_t global_alignup_sizeof_header;
-  inline size_t Align(size_t size) {
-    return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd);
-  };
+inline size_t Align(size_t size) {
+  return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd);
+};
 };
 
 namespace gctools {
@@ -342,12 +340,12 @@ inline void *ClientPtrToBasePtr(void *mostDerived) {
   return ptr;
 }
 
-  inline void throwIfInvalidClient(core::T_O* client) {
-    Header_s* header = (Header_s*)ClientPtrToBasePtr(client);
-    if ( header->invalidP() ) {
-      THROW_HARD_ERROR(BF("The client pointer at %p is invalid!\n") % (void*)client);
-    }
+inline void throwIfInvalidClient(core::T_O *client) {
+  Header_s *header = (Header_s *)ClientPtrToBasePtr(client);
+  if (header->invalidP()) {
+    THROW_HARD_ERROR(BF("The client pointer at %p is invalid!\n") % (void *)client);
   }
+}
 
 template <typename T>
 inline T *BasePtrToMostDerivedPtr(void *base) {
@@ -376,7 +374,7 @@ class ConstructorCreator;
 namespace gctools {
 #if !defined(RUNNING_GC_BUILDER)
 #define GC_DYNAMIC_CAST
-#include STATIC_ANALYZER_PRODUCT// "main/clasp_gc.cc"
+#include STATIC_ANALYZER_PRODUCT // "main/clasp_gc.cc"
 #undef GC_DYNAMIC_CAST
 #endif
 };
@@ -386,23 +384,24 @@ template <typename T>
 class smart_ptr;
 };
 
-inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged* taggedP) {
+inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged *taggedP) {
   if (gctools::tagged_objectp(*taggedP)) {
     gctools::Tagged tagged_obj = *taggedP;
     if (MPS_FIX1(_ss, tagged_obj)) {
-            //	    Type* obj(NULL);
+      //	    Type* obj(NULL);
       gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);
       gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);
       mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-      if (res != MPS_RES_OK) return res;
+      if (res != MPS_RES_OK)
+        return res;
       obj = obj | tag;
 #ifdef DEBUG_TELEMETRY
       // Telemetry only on pointer fixes that change
-      if ( tagged_obj != obj ) {
-          GC_TELEMETRY3(telemetry::label_smart_ptr_fix,
-                        (uintptr_t)taggedP,
-                        (uintptr_t)tagged_obj,
-                        (uintptr_t)obj);
+      if (tagged_obj != obj) {
+        GC_TELEMETRY3(telemetry::label_smart_ptr_fix,
+                      (uintptr_t)taggedP,
+                      (uintptr_t)tagged_obj,
+                      (uintptr_t)obj);
       }
 #endif
       *taggedP = obj;
@@ -411,41 +410,43 @@ inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_
   return MPS_RES_OK;
 };
 
-#define SMART_PTR_FIX(_smartptr_) taggedPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged*>(&((_smartptr_).rawRef_())))
+#define SMART_PTR_FIX(_smartptr_) taggedPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&((_smartptr_).rawRef_())))
 
-inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged* taggedP) {
-  if ( gctools::tagged_objectp(*taggedP)) {
+inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged *taggedP) {
+  if (gctools::tagged_objectp(*taggedP)) {
     gctools::Tagged tagged_obj = *taggedP;
     if (MPS_FIX1(_ss, tagged_obj)) {
       gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);
       gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);
       mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-      if (res != MPS_RES_OK) return res;
+      if (res != MPS_RES_OK)
+        return res;
       obj = obj | tag;
 #ifdef DEBUG_TELEMETRY
       // Telemetry only on pointer fixes that change
-      if ( tagged_obj != obj ) {
-          GC_TELEMETRY3(telemetry::label_tagged_pointer_fix,
-                        (uintptr_t)taggedP,
-                        (uintptr_t)tagged_obj,
-                        (uintptr_t)obj);
+      if (tagged_obj != obj) {
+        GC_TELEMETRY3(telemetry::label_tagged_pointer_fix,
+                      (uintptr_t)taggedP,
+                      (uintptr_t)tagged_obj,
+                      (uintptr_t)obj);
       }
 #endif
       *taggedP = obj;
     };
   } else if (*taggedP) {
-    printf("%s:%d POINTER_FIX called on untagged pointer\n", __FILE__, __LINE__ );
+    printf("%s:%d POINTER_FIX called on untagged pointer\n", __FILE__, __LINE__);
     gctools::Tagged obj = *taggedP;
     if (MPS_FIX1(_ss, obj)) {
       mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-      if (res != MPS_RES_OK) return res;
+      if (res != MPS_RES_OK)
+        return res;
       *taggedP = obj;
     };
   };
   return MPS_RES_OK;
 };
-#define TAGGED_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged*>(&(_ptr_).rawRef_()))
-#define SIMPLE_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged*>(&_ptr_))
+#define TAGGED_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_).rawRef_()))
+#define SIMPLE_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&_ptr_))
 
 namespace gctools {
 
@@ -462,9 +463,9 @@ void searchHeapAndStackForAddress(mps_addr_t addr);
 };
 
 namespace gctools {
-  class GCStack;
-  void mpsAllocateStack(GCStack* stack);
-  void mpsDeallocateStack(GCStack* stack);
+class GCStack;
+void mpsAllocateStack(GCStack *stack);
+void mpsDeallocateStack(GCStack *stack);
 };
 
 extern "C" {

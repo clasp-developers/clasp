@@ -120,11 +120,11 @@ double EnergyFunction_O::evaluateAll(
   _G();
 
 #if 0 //[
-#define ForceAcc(i, o, v)                                               \
-  {                                                                     \
-    if (hasForce) {                                                     \
-      force->setElement((i) + (o), (v) + force->getElement((i) + (o))); \
-    }                                                                   \
+#define ForceAcc(i, o, v)                                             \
+  {                                                                   \
+    if (hasForce) {                                                   \
+      force->setElement((i) + (o), (v)+force->getElement((i) + (o))); \
+    }                                                                 \
   }
 
 //

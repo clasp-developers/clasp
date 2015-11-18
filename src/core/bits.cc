@@ -367,12 +367,12 @@ L1:
   (place) = ((place) & (-0400 >> (8 - (nbits)))) | ((value) & ~(-0400 >> (8 - (nbits))));
 
 #define extract_byte(integer, pointer, index, offset) \
-  (integer) = (pointer)[(index) + 1] & 0377;          \
+  (integer) = (pointer)[(index)+1] & 0377;            \
   (integer) = ((pointer)[index] << (offset)) | ((integer) >> (8 - (offset)));
 
 #define store_byte(pointer, index, offset, value)               \
   set_low((pointer)[index], 8 - (offset), (value) >> (offset)); \
-  set_high((pointer)[(index) + 1], offset, (value) << (8 - (offset)));
+  set_high((pointer)[(index)+1], offset, (value) << (8 - (offset)));
 
   //
   if (xo == 0 && yo == 0 && ro == 0) {
@@ -417,8 +417,7 @@ ERROR:
 
 /*! Copied from ECL */
 T_sp
-cl_logbitp(Integer_sp p, Integer_sp x)
-{
+cl_logbitp(Integer_sp p, Integer_sp x) {
   bool i;
   if (p.fixnump()) {
     cl_index n = clasp_to_size(p);
@@ -741,6 +740,6 @@ void initialize_bits() {
 
   ClDefun(boole);
   CoreDefun(bitArrayOp);
-  af_def(ClPkg,"logbitp",&cl_logbitp);
+  af_def(ClPkg, "logbitp", &cl_logbitp);
 };
 };

@@ -241,13 +241,13 @@ T_mv core_float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> po
   StrWithFillPtr_sp digits;
   if (tdigits.nilp()) {
     digits = gc::As<StrWithFillPtr_sp>(core_make_vector(cl::_sym_base_char,
-                                                      10,
-                                                      true /* adjustable */,
-                                                      clasp_make_fixnum(0) /* fill pointer */,
-                                                      _Nil<T_O>() /* displacement */,
-                                                      _Nil<T_O>() /* displ. offset */,
-                                                      _Nil<T_O>() /* initial_element */,
-                                                      _Nil<T_O>() /* initial_contents */));
+                                                        10,
+                                                        true /* adjustable */,
+                                                        clasp_make_fixnum(0) /* fill pointer */,
+                                                        _Nil<T_O>() /* displacement */,
+                                                        _Nil<T_O>() /* displ. offset */,
+                                                        _Nil<T_O>() /* initial_element */,
+                                                        _Nil<T_O>() /* initial_contents */));
   } else {
     digits = gc::As<StrWithFillPtr_sp>(tdigits);
   }

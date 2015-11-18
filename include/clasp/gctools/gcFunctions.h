@@ -3,8 +3,7 @@
 
 namespace gctools {
 
-  void initialize_gc_functions();
-
+void initialize_gc_functions();
 };
 
 #endif

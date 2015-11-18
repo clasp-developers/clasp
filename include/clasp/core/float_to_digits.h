@@ -32,10 +32,10 @@ THE SOFTWARE.
 
 namespace core {
 
-  T_mv core_float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
-                            T_sp relativep);
+T_mv core_float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
+                          T_sp relativep);
 
-  void initialize_float_to_digits();
+void initialize_float_to_digits();
 };
 
 #endif

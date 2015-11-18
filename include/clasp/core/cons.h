@@ -148,6 +148,7 @@ public:
   typedef T_O CdrType_O;
   typedef T_sp CarType_sp;
   typedef T_sp CdrType_sp;
+
 public:
   CarType_sp _Car;
   CdrType_sp _Cdr;
@@ -166,7 +167,6 @@ public:
     }
     return res;
   }
-
 
   static Cons_sp createFrom_va_list(va_list &va_args);
   static Cons_sp createList(T_sp o1);
@@ -187,16 +187,18 @@ public:
     Cons_sp ret = gctools::GCObjectAllocator<Cons_O>::allocate(obj, _Nil<T_O>());
     return ret;
   }
- public:
+
+public:
   inline static int car_offset() {
     Cons_O x;
-    return (int)(reinterpret_cast<char*>(&x._Car)-reinterpret_cast<char*>(&x));
+    return (int)(reinterpret_cast<char *>(&x._Car) - reinterpret_cast<char *>(&x));
   }
   inline static int cdr_offset() {
     Cons_O x;
-    return (int)(reinterpret_cast<char*>(&x._Cdr)-reinterpret_cast<char*>(&x));
+    return (int)(reinterpret_cast<char *>(&x._Cdr) - reinterpret_cast<char *>(&x));
   }
- public:
+
+public:
   static void appendInto(T_sp head, T_sp *&tailP, T_sp l);
   static T_sp append(List_sp x, List_sp y);
 
@@ -425,7 +427,7 @@ public:
 
   explicit Cons_O();
   explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr){};
-  virtual ~Cons_O() {};
+  virtual ~Cons_O(){};
 };
 
 //
@@ -553,23 +555,21 @@ namespace core {
 /* Erase the entry with _key_ from the list. Return the new list. 
      In cases where the key was in the first entry the first entry is unhooked and the CDR is returned.
     In other cases the entry is unhooked from the inside of the alist*/
-  List_sp alist_erase(List_sp alist, T_sp key);
+List_sp alist_erase(List_sp alist, T_sp key);
 
 /*! Push the key/val onto the alist.  This will shadow other entries with the same val */
-  List_sp alist_push(List_sp alist, T_sp key, T_sp val);
+List_sp alist_push(List_sp alist, T_sp key, T_sp val);
 
 /*! Lookup the key and return the Cons containing the key/val pair - or return NIL if not found */
-  List_sp alist_get(List_sp alist, T_sp key);
+List_sp alist_get(List_sp alist, T_sp key);
 
-  string alist_asString(List_sp alist);
+string alist_asString(List_sp alist);
 };
 
-
-
 namespace core {
-  List_sp plistErase(List_sp& plist, T_sp key);
-  List_sp plistSetf(List_sp& plist, T_sp key, T_sp val);
-  T_sp plistGetf(List_sp plist, T_sp key, T_sp defaultValue);
+List_sp plistErase(List_sp &plist, T_sp key);
+List_sp plistSetf(List_sp &plist, T_sp key, T_sp val);
+T_sp plistGetf(List_sp plist, T_sp key, T_sp defaultValue);
 };
 
 namespace core {
@@ -577,18 +577,16 @@ List_sp coerce_to_list(T_sp o);
 
 T_sp cl_getf(List_sp plist, T_sp indicator, T_sp default_value);
 List_sp core_put_f(List_sp plist, T_sp value, T_sp indicator);
- T_mv core_rem_f(List_sp plist, Symbol_sp indicator);
+T_mv core_rem_f(List_sp plist, Symbol_sp indicator);
 };
 
 namespace core {
-  template <class T>
-    void fillVec0(core::List_sp c, gctools::Vec0<T> &vec) {
-    vec.clear();
-    for (auto me : (List_sp)(c)) {
-      vec.emplace_back(gc::As<T>(me->_Car));
-    }
+template <class T>
+void fillVec0(core::List_sp c, gctools::Vec0<T> &vec) {
+  vec.clear();
+  for (auto me : (List_sp)(c)) {
+    vec.emplace_back(gc::As<T>(me->_Car));
   }
-
-
+}
 };
 #endif //]

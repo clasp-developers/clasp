@@ -112,8 +112,8 @@ void PASS_FUNCTION_REST(RestArgument const &restarg,
                         PASS_ARGS,
                         int arg_idx,
                         DynamicScopeManager &scope) {
-  if ( restarg.VaRest ) {
-    scope.valist().set(&*arglist,n_args-arg_idx);
+  if (restarg.VaRest) {
+    scope.valist().set(&*arglist, n_args - arg_idx);
     scope.va_rest_binding(restarg);
   } else {
     Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
@@ -130,15 +130,13 @@ void PASS_FUNCTION_REST(RestArgument const &restarg,
   }
 }
 
-
-
 void PASS_FUNCTION_VA_REST(RestArgument const &va_restarg,
                            PASS_ARGS,
                            int arg_idx,
                            DynamicScopeManager &scope) {
   Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
   Cons_O::CdrType_sp *curP = &rest;
-  scope.valist().set(&*arglist,n_args-arg_idx);
+  scope.valist().set(&*arglist, n_args - arg_idx);
   scope.va_rest_binding(va_restarg);
 }
 
@@ -150,8 +148,8 @@ int PASS_FUNCTION_KEYWORD(gctools::Vec0<KeywordArgument> const &keyed_args,
   int num_args(PASS_ARGS_NUM);
   int num_keyed_arguments = keyed_args.size();
   bool passed_allow_other_keys = false;
-  bool* sawkeys = (bool*)(__builtin_alloca(sizeof(bool)*num_keyed_arguments));
-//  bool sawkeys[num_keyed_arguments];// CALL_ARGUMENTS_LIMIT];
+  bool *sawkeys = (bool *)(__builtin_alloca(sizeof(bool) * num_keyed_arguments));
+  //  bool sawkeys[num_keyed_arguments];// CALL_ARGUMENTS_LIMIT];
   memset(sawkeys, 0, num_keyed_arguments);
   LOG(BF(":allow-other-keywords --> %d") % passed_allow_other_keys);
   T_sp first_illegal_keyword(_Nil<T_O>());

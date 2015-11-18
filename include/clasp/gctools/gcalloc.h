@@ -34,46 +34,46 @@ THE SOFTWARE.
 
 #define STACK_ALIGNMENT alignof(char *)
 #define STACK_ALIGN_UP(size) \
-  (((size) + STACK_ALIGNMENT - 1) & ~(STACK_ALIGNMENT - 1))
+  (((size)+STACK_ALIGNMENT - 1) & ~(STACK_ALIGNMENT - 1))
 
 namespace gctools {
-  extern uint64_t globalBytesAllocated;
+extern uint64_t globalBytesAllocated;
 };
 
 namespace gctools {
-  template <class OT, bool Needed = true>
-    struct GCObjectInitializer {};
+template <class OT, bool Needed = true>
+struct GCObjectInitializer {};
 
-  template <class OT>
-    struct GCObjectInitializer<OT, true> {
-    typedef smart_ptr<OT> smart_pointer_type;
-    static void initializeIfNeeded(smart_pointer_type sp) {
-      sp->initialize();
-    };
+template <class OT>
+struct GCObjectInitializer<OT, true> {
+  typedef smart_ptr<OT> smart_pointer_type;
+  static void initializeIfNeeded(smart_pointer_type sp) {
+    sp->initialize();
   };
+};
 
-  template <class OT>
-    struct GCObjectInitializer<OT, false> {
-    typedef smart_ptr<OT> smart_pointer_type;
-    static void initializeIfNeeded(smart_pointer_type sp){
+template <class OT>
+struct GCObjectInitializer<OT, false> {
+  typedef smart_ptr<OT> smart_pointer_type;
+  static void initializeIfNeeded(smart_pointer_type sp){
       // initialize not needed
-    };
   };
+};
 
-  template <class OT>
-    struct GCObjectInitializer<tagged_pointer<OT>, true> {
-    typedef tagged_pointer<OT> functor_pointer_type;
-    static void initializeIfNeeded(functor_pointer_type sp) {
-      THROW_HARD_ERROR(BF("Figure out why this is being invoked, you should never need to initialize a functor!"));
-    };
+template <class OT>
+struct GCObjectInitializer<tagged_pointer<OT>, true> {
+  typedef tagged_pointer<OT> functor_pointer_type;
+  static void initializeIfNeeded(functor_pointer_type sp) {
+    THROW_HARD_ERROR(BF("Figure out why this is being invoked, you should never need to initialize a functor!"));
   };
-  template <class OT>
-    struct GCObjectInitializer<tagged_pointer<OT>, false> {
-    typedef tagged_pointer<OT> functor_pointer_type;
-    static void initializeIfNeeded(functor_pointer_type sp){
+};
+template <class OT>
+struct GCObjectInitializer<tagged_pointer<OT>, false> {
+  typedef tagged_pointer<OT> functor_pointer_type;
+  static void initializeIfNeeded(functor_pointer_type sp){
       // initialize not needed
-    };
   };
+};
 }
 
 #if defined(USE_BOEHM) || defined(USE_MPS)
@@ -85,173 +85,168 @@ class root_allocator : public traceable_allocator<T> {};
 };
 #endif
 
-
 namespace gctools {
-
 
 /*! Maintain a stack containing pointers that are garbage collected
 */
-  class GCStack {
-  public:
-      typedef enum { undefined_t, frame_t, pad_t } frameType;
-      size_t _MaxSize;
-      size_t _TotalSize;
+class GCStack {
+public:
+  typedef enum { undefined_t,
+                 frame_t,
+                 pad_t } frameType;
+  size_t _MaxSize;
+  size_t _TotalSize;
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
-      uintptr_t* _StackCur;
-      uintptr_t* _StackBottom;
-      size_t _StackMinOffset;
-      size_t _StackMiddleOffset;
-      uintptr_t* _StackLimit;
+  uintptr_t *_StackCur;
+  uintptr_t *_StackBottom;
+  size_t _StackMinOffset;
+  size_t _StackMiddleOffset;
+  uintptr_t *_StackLimit;
 #else
-      // Nothing
+// Nothing
 #endif
 #endif
 #ifdef USE_MPS
-      mps_pool_t _Pool;
-      mps_ap_t _AllocationPoint;
-      mps_fmt_t _ObjectFormat;
-      bool _IsActive;
-      vector<mps_frame_t> frames;
+  mps_pool_t _Pool;
+  mps_ap_t _AllocationPoint;
+  mps_fmt_t _ObjectFormat;
+  bool _IsActive;
+  vector<mps_frame_t> frames;
 #endif
-      //! Return true if this Stack object is active and can receive pushFrame/popFrame messages
-  public:
-      size_t maxSize() const { return this->_MaxSize; };
-      bool isActive() {
+  //! Return true if this Stack object is active and can receive pushFrame/popFrame messages
+public:
+  size_t maxSize() const { return this->_MaxSize; };
+  bool isActive() {
 #ifdef USE_BOEHM
-          return true;
+    return true;
 #endif
 #ifdef USE_MPS
-          return _IsActive;
+    return _IsActive;
 #endif
-      };
+  };
 #ifdef BOEHM_ONE_BIG_STACK
-      void growStack();
-      void shrinkStack();
+  void growStack();
+  void shrinkStack();
 #endif
-      //*! Allocate a buffer for this 
-      bool allocateStack(size_t bufferSize)
-      {
-          bufferSize = STACK_ALIGN_UP(bufferSize);
+  //*! Allocate a buffer for this
+  bool allocateStack(size_t bufferSize) {
+    bufferSize = STACK_ALIGN_UP(bufferSize);
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
-          this->_StackBottom  = (uintptr_t*)GC_MALLOC(bufferSize);
-          this->_StackMiddleOffset = (bufferSize/2);
-          this->_StackLimit = (uintptr_t*)((char*)this->_StackBottom + bufferSize);
-          this->_StackMinOffset = bufferSize;
-          this->_StackCur = this->_StackBottom;
-          memset(this->_StackBottom,0,bufferSize);
+    this->_StackBottom = (uintptr_t *)GC_MALLOC(bufferSize);
+    this->_StackMiddleOffset = (bufferSize / 2);
+    this->_StackLimit = (uintptr_t *)((char *)this->_StackBottom + bufferSize);
+    this->_StackMinOffset = bufferSize;
+    this->_StackCur = this->_StackBottom;
+    memset(this->_StackBottom, 0, bufferSize);
 #else
-          // Do nothing
+// Do nothing
 #endif
 #endif
 #ifdef USE_MPS
-          mpsAllocateStack(this);
+    mpsAllocateStack(this);
 #endif
-          return true;
-      };
-      void deallocateStack() {
+    return true;
+  };
+  void deallocateStack() {
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
-          if ( this->_StackCur != this->_StackBottom ) {
-              THROW_HARD_ERROR(BF("The stack is not empty"));
-          }
-          GC_FREE(this->_StackBottom);
+    if (this->_StackCur != this->_StackBottom) {
+      THROW_HARD_ERROR(BF("The stack is not empty"));
+    }
+    GC_FREE(this->_StackBottom);
 #else
-          // Do nothing
+// Do nothing
 #endif
 #endif
 #ifdef USE_MPS
-          mpsDeallocateStack(this);
+    mpsDeallocateStack(this);
 #endif
-      };
+  };
 
-      size_t totalSize() const {
-          return this->_TotalSize;
-      }
-#define FRAME_HEADER_SIZE (sizeof(int)*2)
-#define FRAME_HEADER_TYPE_FIELD(hptr) *(((int*)hptr))
-#define FRAME_HEADER_SIZE_FIELD(hptr) *(((int*)hptr)+1)
-#define FRAME_START(hptr) (uintptr_t*)(((char*)hptr)+FRAME_HEADER_SIZE)
-#define FRAME_HEADER(fptr) (uintptr_t*)(((char*)fptr)-FRAME_HEADER_SIZE)
-      void* frameImplHeaderAddress(void* frameImpl) {
-        return (void*)((char*)frameImpl - FRAME_HEADER_SIZE);
-      }
-      GCStack::frameType frameImplHeaderType(void* frameImpl) {
-        void* frameImplHeader = (void*)((char*)frameImpl - FRAME_HEADER_SIZE);
-        return (GCStack::frameType)(FRAME_HEADER_TYPE_FIELD(frameImplHeader));
-      }
-      int frameImplHeaderSize(void* frameImpl) {
-        void* frameImplHeader = (void*)((char*)frameImpl - FRAME_HEADER_SIZE);
-        return (int)(FRAME_HEADER_SIZE_FIELD(frameImplHeader));
-      }
+  size_t totalSize() const {
+    return this->_TotalSize;
+  }
+#define FRAME_HEADER_SIZE (sizeof(int) * 2)
+#define FRAME_HEADER_TYPE_FIELD(hptr) *(((int *)hptr))
+#define FRAME_HEADER_SIZE_FIELD(hptr) *(((int *)hptr) + 1)
+#define FRAME_START(hptr) (uintptr_t *)(((char *)hptr) + FRAME_HEADER_SIZE)
+#define FRAME_HEADER(fptr) (uintptr_t *)(((char *)fptr) - FRAME_HEADER_SIZE)
+  void *frameImplHeaderAddress(void *frameImpl) {
+    return (void *)((char *)frameImpl - FRAME_HEADER_SIZE);
+  }
+  GCStack::frameType frameImplHeaderType(void *frameImpl) {
+    void *frameImplHeader = (void *)((char *)frameImpl - FRAME_HEADER_SIZE);
+    return (GCStack::frameType)(FRAME_HEADER_TYPE_FIELD(frameImplHeader));
+  }
+  int frameImplHeaderSize(void *frameImpl) {
+    void *frameImplHeader = (void *)((char *)frameImpl - FRAME_HEADER_SIZE);
+    return (int)(FRAME_HEADER_SIZE_FIELD(frameImplHeader));
+  }
 
-      int frameImplBodySize(void* frameImpl) {
-        void* frameImplHeader = (void*)((char*)frameImpl - FRAME_HEADER_SIZE);
-        return (int)(FRAME_HEADER_SIZE_FIELD(frameImplHeader)-FRAME_HEADER_SIZE);
-      }
+  int frameImplBodySize(void *frameImpl) {
+    void *frameImplHeader = (void *)((char *)frameImpl - FRAME_HEADER_SIZE);
+    return (int)(FRAME_HEADER_SIZE_FIELD(frameImplHeader) - FRAME_HEADER_SIZE);
+  }
 
-      void* pushFrameImpl(size_t frameSize);
-      void popFrameImpl(void* frameImpl) {
+  void *pushFrameImpl(size_t frameSize);
+  void popFrameImpl(void *frameImpl) {
 #ifdef USE_BOEHM
-        uintptr_t* frameHeaderP = reinterpret_cast<uintptr_t*>(frameImpl)-1;
-        uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
-        this->_TotalSize = this->_TotalSize - headerAndFrameSize;
+    uintptr_t *frameHeaderP = reinterpret_cast<uintptr_t *>(frameImpl) - 1;
+    uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
+    this->_TotalSize = this->_TotalSize - headerAndFrameSize;
 #ifdef BOEHM_ONE_BIG_STACK
-        memset(frameHeaderP,0,headerAndFrameSize);
-        this->_StackCur = frameHeaderP;
-        if ( this->_StackMinOffset <= (this->_StackLimit-this->_StackBottom) && (this->_StackCur-this->_StackBottom) < this->_StackMiddleOffset ) this->shrinkStack();
+    memset(frameHeaderP, 0, headerAndFrameSize);
+    this->_StackCur = frameHeaderP;
+    if (this->_StackMinOffset <= (this->_StackLimit - this->_StackBottom) && (this->_StackCur - this->_StackBottom) < this->_StackMiddleOffset)
+      this->shrinkStack();
 #ifdef DEBUG_BOEHM_STACK
-        size_t calcSize = (char*)this->_StackTop - (char*)this->_StackBottom;
-        if ( calcSize != this->_TotalSize ) {
-          THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize );
-        }
-        for ( char* i=(char*)this->_StackTop; i<(char*)this->_StackLimit; ++i ) {
-          if ( *i ) {
-            THROW_HARD_ERROR(BF("The side-stack has garbage in it!"));
-          }
-        }
+    size_t calcSize = (char *)this->_StackTop - (char *)this->_StackBottom;
+    if (calcSize != this->_TotalSize) {
+      THROW_HARD_ERROR(BF("The side-stack has gotten out of whack!  this->_TotalSize = %u  calcSize = %u\n") % this->_TotalSize % calcSize);
+    }
+    for (char *i = (char *)this->_StackTop; i < (char *)this->_StackLimit; ++i) {
+      if (*i) {
+        THROW_HARD_ERROR(BF("The side-stack has garbage in it!"));
+      }
+    }
 #endif
 #else
-        GC_FREE(frameHeaderP);
+    GC_FREE(frameHeaderP);
 #endif
 #endif // USE_BOEHM
 #ifdef USE_MPS
-        uintptr_t* frameHeaderP = FRAME_HEADER(frameImpl);
-        uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
-        this->_TotalSize -= headerAndFrameSize;
-        mps_frame_t frame_o = this->frames.back();
-        this->frames.pop_back();
-        STACK_TELEMETRY2(telemetry::label_stack_pop,this->_AllocationPoint,frame_o);
-        mps_res_t res = mps_ap_frame_pop(this->_AllocationPoint,frame_o);
-        if ( res != MPS_RES_OK ) {
-          THROW_HARD_ERROR(BF("There was a problem with mps_app_frame_pop result = %d") % res);
-        }
+    uintptr_t *frameHeaderP = FRAME_HEADER(frameImpl);
+    uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
+    this->_TotalSize -= headerAndFrameSize;
+    mps_frame_t frame_o = this->frames.back();
+    this->frames.pop_back();
+    STACK_TELEMETRY2(telemetry::label_stack_pop, this->_AllocationPoint, frame_o);
+    mps_res_t res = mps_ap_frame_pop(this->_AllocationPoint, frame_o);
+    if (res != MPS_RES_OK) {
+      THROW_HARD_ERROR(BF("There was a problem with mps_app_frame_pop result = %d") % res);
+    }
 #endif // USE_MPS
-      }
+  }
 
-      GCStack() : _TotalSize(0)
-                , _MaxSize(0)
+  GCStack() : _TotalSize(0), _MaxSize(0)
 #ifdef USE_BOEHM
 #endif
 #ifdef USE_MPS
 // What do I do here?
 #endif
-      {};
-      virtual ~GCStack() {
+              {};
+  virtual ~GCStack(){
 #ifdef USE_BOEHM
-          // Nothing to do
+// Nothing to do
 #endif
 #ifdef USE_MPS
 // What do I do here?
 #endif
-      };
-   
   };
-
 };
-
-
+};
 
 namespace gctools {
 
@@ -263,7 +258,7 @@ struct RootClassAllocator {
     size_t sz = sizeof_with_header<T>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
-    MONITOR_ALLOCATION(GCKind<T>::Kind,sz);
+    MONITOR_ALLOCATION(GCKind<T>::Kind, sz);
 #endif
 #ifdef USE_BOEHM
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
@@ -299,14 +294,13 @@ struct RootClassAllocator {
     return tagged_obj;
 #endif
   }
-  
+
   template <class... ARGS>
-  static T* untagged_allocate(ARGS &&... args) {
+  static T *untagged_allocate(ARGS &&... args) {
     gctools::tagged_pointer<T> tagged_obj = allocate(args...);
     return &*tagged_obj;
   }
 
-  
   static void deallocate(gctools::tagged_pointer<T> memory) {
 #ifdef USE_BOEHM
     GC_FREE(&*memory);
@@ -315,8 +309,8 @@ struct RootClassAllocator {
     GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif
   };
-  
-  static void untagged_deallocate(void* memory) {
+
+  static void untagged_deallocate(void *memory) {
 #ifdef USE_BOEHM
     GC_FREE(memory);
 #endif
@@ -334,7 +328,7 @@ struct ClassAllocator {
     size_t sz = sizeof_with_header<T>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
-    MONITOR_ALLOCATION(GCKind<T>::Kind,sz);
+    MONITOR_ALLOCATION(GCKind<T>::Kind, sz);
 #endif
 #ifdef USE_BOEHM
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
@@ -369,7 +363,6 @@ struct ClassAllocator {
     return tagged_obj;
 #endif
   }
-
 };
 };
 
@@ -385,7 +378,7 @@ struct GCObjectAppropriatePoolAllocator {
     size_t size = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
-    MONITOR_ALLOCATION(GCKind<OT>::Kind,size);
+    MONITOR_ALLOCATION(GCKind<OT>::Kind, size);
 #endif
 #ifdef USE_BOEHM
     // By default allocate in the normal pool for objects that contain pointers
@@ -432,7 +425,7 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/true, /*Moveable=*/true> 
     size_t size = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
-    MONITOR_ALLOCATION(GCKind<OT>::Kind,size);
+    MONITOR_ALLOCATION(GCKind<OT>::Kind, size);
 #endif
 #ifdef USE_BOEHM
     // Atomic objects (do not contain pointers) are allocated in separate pool
@@ -478,7 +471,7 @@ struct GCObjectAppropriatePoolAllocator<OT, /*Atomic=*/false, /*Moveable=*/false
     size_t size = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
-    MONITOR_ALLOCATION(GCKind<OT>::Kind,size);
+    MONITOR_ALLOCATION(GCKind<OT>::Kind, size);
 #endif
 #ifdef USE_BOEHM
     // By default allocate in the normal pool for objects that contain pointers
@@ -575,7 +568,7 @@ public:
     size_t sz = sizeof_with_header<OT>(); // USE HEADER FOR BOEHM ROOTS BUT NOT MPS
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
-    MONITOR_ALLOCATION(GCKind<OT>::Kind,sz);
+    MONITOR_ALLOCATION(GCKind<OT>::Kind, sz);
 #endif
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
     new (base) Header_s(GCKind<OT>::Kind);
@@ -667,11 +660,11 @@ public:
   }
 
   // allocate but don't initialize num elements of type value_type
-    gc::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
+  gc::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
     size_t size = sizeof_container_with_header<TY>(num);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
-    MONITOR_ALLOCATION(GCKind<TY>::Kind,size);
+    MONITOR_ALLOCATION(GCKind<TY>::Kind, size);
 #endif
 #ifdef USE_BOEHM
     // prepend a one pointer header with a pointer to the typeinfo.name
@@ -721,7 +714,7 @@ public:
   }
 
   // deallocate storage p of deleted elements
-    void deallocate(gctools::tagged_pointer<container_type> p, size_type num) {
+  void deallocate(gctools::tagged_pointer<container_type> p, size_type num) {
     // Do nothing
   }
 };
@@ -761,11 +754,11 @@ public:
   }
 
   // allocate but don't initialize num elements of type value_type
-    gctools::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
+  gctools::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
     size_t size = sizeof_container_with_header<TY>(num);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
-    MONITOR_ALLOCATION(GCKind<TY>::Kind,size);
+    MONITOR_ALLOCATION(GCKind<TY>::Kind, size);
 #endif
 #ifdef USE_BOEHM
     // prepend a one pointer header with a pointer to the typeinfo.name
@@ -815,7 +808,7 @@ public:
   }
 
   // deallocate storage p of deleted elements
-    void deallocate(gctools::tagged_pointer<container_type> p, size_type num) {
+  void deallocate(gctools::tagged_pointer<container_type> p, size_type num) {
     // Do nothing
   }
 };
@@ -851,11 +844,11 @@ public:
   }
 
   // allocate but don't initialize num elements of type value_type
-    gctools::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
+  gctools::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
     size_t sz = sizeof_container_with_header<container_type>(num);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
-    MONITOR_ALLOCATION(GCKind<TY>::Kind,sz);
+    MONITOR_ALLOCATION(GCKind<TY>::Kind, sz);
 #endif
 #if defined(USE_BOEHM)
     // prepend a one pointer header with a pointer to the typeinfo.name
@@ -894,7 +887,7 @@ public:
 #endif
   }
 
-    void deallocate(gctools::tagged_pointer<container_type> p, size_type num) {
+  void deallocate(gctools::tagged_pointer<container_type> p, size_type num) {
     // Do nothing
   }
 };
@@ -948,7 +941,7 @@ public:
     size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
-    MONITOR_ALLOCATION(KIND_null,size);
+    MONITOR_ALLOCATION(KIND_null, size);
 #endif
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
@@ -1040,7 +1033,7 @@ public:
     size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
-    MONITOR_ALLOCATION(KIND_null,size);
+    MONITOR_ALLOCATION(KIND_null, size);
 #endif
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
@@ -1124,7 +1117,7 @@ public:
     size_t size = sizeof(container_type);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
-    MONITOR_ALLOCATION(KIND_null,size);
+    MONITOR_ALLOCATION(KIND_null, size);
 #endif
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
@@ -1174,7 +1167,7 @@ public:
     size_t size = sizeof(container_type);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
-    MONITOR_ALLOCATION(KIND_null,size);
+    MONITOR_ALLOCATION(KIND_null, size);
 #endif
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__);
@@ -1209,9 +1202,9 @@ public:
 template <class VT>
 class GCWeakPointerAllocator {
 public:
-    typedef VT value_type;
-    typedef value_type *value_pointer;
-    typedef typename VT::value_type contained_type;
+  typedef VT value_type;
+  typedef value_type *value_pointer;
+  typedef typename VT::value_type contained_type;
   /* constructors and destructor
          * - nothing to do because the allocator has no state
          */
@@ -1220,11 +1213,11 @@ public:
   ~GCWeakPointerAllocator() throw() {}
 
   // allocate but don't initialize num elements of type value_type
-    static gctools::tagged_pointer<value_type> allocate(const contained_type &val) {
+  static gctools::tagged_pointer<value_type> allocate(const contained_type &val) {
     size_t size = sizeof(VT);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
-    MONITOR_ALLOCATION(KIND_null,size);
+    MONITOR_ALLOCATION(KIND_null, size);
 #endif
 #ifdef USE_BOEHM
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
