@@ -766,6 +766,11 @@ void FEcannot_open(T_sp fileName) {
   cl_error(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, fileName));
 }
 
+SYMBOL_EXPORT_SC_(CorePkg,incorrect_argument_count_error);
+void FEincorrect_argument_count_error() {
+  cl_error(core::_sym_incorrect_argument_count_error, _Nil<T_O>());
+}
+
 T_sp CEerror(T_sp c, const char *err, int narg, ...) {
   clasp_va_list args;
   clasp_va_start(args, narg);

@@ -572,6 +572,8 @@ memory limits before executing the program again."))
 
 (define-condition program-error (error) ())
 
+(define-condition invalid-argument-number-error (program-error) ())
+
 (define-condition control-error (error) ())
 
 (define-condition stream-error (error)

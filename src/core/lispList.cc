@@ -283,7 +283,7 @@ T_sp cl_listSTAR(T_sp tobjects) {
   _G();
   T_sp objects = tobjects;
   if (objects.nilp())
-    TOO_FEW_ARGUMENTS_ERROR();
+    FEincorrect_argument_count_error();
   if (oCdr(objects).nilp())
     return (oCar(objects));
   Cons_sp cur;
