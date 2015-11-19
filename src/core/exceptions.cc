@@ -767,8 +767,14 @@ void FEcannot_open(T_sp fileName) {
 }
 
 SYMBOL_EXPORT_SC_(CorePkg,argument_number_error);
-void FEargument_number_error() {
-  cl_error(core::_sym_argument_number_error, _Nil<T_O>());
+SYMBOL_EXPORT_SC_(KeywordPkg,supplied);
+SYMBOL_EXPORT_SC_(KeywordPkg,min);
+SYMBOL_EXPORT_SC_(KeywordPkg,max);
+void FEargument_number_error(T_sp supplied, T_sp min, T_sp max) {
+  cl_error(core::_sym_argument_number_error,
+           core::Cons_O::createList(kw::_sym_supplied, supplied,
+                                    kw::_sym_min, min,
+                                    kw::_sym_max, max));
 }
 
 T_sp CEerror(T_sp c, const char *err, int narg, ...) {

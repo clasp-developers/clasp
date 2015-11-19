@@ -282,7 +282,7 @@ T_sp cl_list(T_sp objects) {
 T_sp cl_listSTAR(T_sp tobjects) {
   _G();
   T_sp objects = tobjects;
-  if (objects.nilp()) FEargument_number_error();
+  if (objects.nilp()) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),_Nil<T_O>());
   if (oCdr(objects).nilp())
     return (oCar(objects));
   Cons_sp cur;
