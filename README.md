@@ -22,7 +22,7 @@ To build Clasp from within the top level directory do the following.
 clasp$ make
 </pre>
 
-More control over the build process can be gained by setting up a <pre>local.config</pre> file.
+More control over the build process can be gained by setting up a local.config file.
 
 1) Copy local.config.template to local.config in the clasp top level directory
 2) Edit local.config and configure it for your system. The following configuration variables affect the build process.
