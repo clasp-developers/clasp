@@ -30,14 +30,7 @@ More control over the build process can be gained by setting up a local.config f
 | Variable                                   |   Description                                                           |
 | ------------------------------------------ | ----------------------------------------------------------------------- |
 | **TARGET_OS**                              | Currently either _Linux_ or _Darwin_                                    |
-| **PJOBS**                                  | The number of processors you have available to build with.              |
-|                                            | Set PJOBS <= the number of cores you have.                              |
-|                                            | Also if you have less than 8GB memory you should set PJOBS to 2 or 1,   |
-|                                            | otherwise your system will swap like crazy                              |
-| **CLASP_CXXFLAGS**                         | For instance, adding -v  it will print more debugging info              |
-|                                            | during the build                                                        |
-| **CLASP_LINKFLAGS**                        | Add your local library dependencies here using -L and -l linker options |
-| **PYTHON2**                                | Path to python 2.7                                                      |
+| **PJOBS**                                  | The number of processors you have available to build with. Set PJOBS <= the number of cores you have.  |
 
 ## Systems Clasp has built on
 
