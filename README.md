@@ -1,7 +1,13 @@
-Clasp (Common Lisp and C++ and LLVM)
+Clasp 0.4.0 (Common Lisp and C++ and LLVM)
 ===============
 
-# Clasp is getting ready for a major new release (As of Oct 6, 2015)
+## Building Clasp
+
+To build Clasp from within the top level directory do the following.
+
+<pre>
+clasp$  make
+</pre>
 
 **If you have questions come ask them on IRC at freenode #clasp**
 

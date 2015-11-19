@@ -724,7 +724,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/cmp/cmpbundle"
     #P"kernel/cmp/cmprepl"
     :cmp
-    :stage1
+    :min
     :cmprepl
     #P"kernel/cmp/cmpwalk"
     #P"kernel/lsp/logging"
@@ -746,7 +746,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     arraylib
     numlib
     |#
-    :min
     #P"kernel/clos/package"
     #P"kernel/clos/hierarchy"
     #P"kernel/clos/cpl"
