@@ -1,20 +1,43 @@
 Clasp 0.4.0 (Common Lisp and C++ and LLVM)
 ===============
 
-## Building Clasp
-
-To build Clasp from within the top level directory do the following.
-
-<pre>
-clasp$  make
-</pre>
-
-**If you have questions come ask them on IRC at freenode #clasp**
+## Description of Clasp
 
 Clasp is a Common Lisp implementation that interoperates with C++ and uses LLVM for just-in-time (JIT) compilation to native code.
 See http://drmeister.wordpress.com/2014/09/18/announcing-clasp/ for the initial announcement.
 
-Clasp is not yet a full ANSI compliant Common Lisp - if you find differences between Clasp and the Common Lisp standard they are considered bugs in Clasp and please feel free to report them.
+It is designed as a Common Lisp implementation that can be easily extended using C++ libraries.
+
+**If you have questions come ask them on IRC at freenode #clasp**
+
+## Building Clasp
+
+Clasp builds on Linux and OS X. Clasp is dependent on several libraries including llvm3.6, clang3.6, the boost libraries.
+
+<a href="https://github.com/drmeister/clasp/wiki/Building-Clasp-0.4-on-Ubuntu">An example of how to configure Ubuntu Linux to build Clasp</a>
+
+To build Clasp from within the top level directory do the following.
+
+<pre>
+clasp$ make
+</pre>
+
+More control over the build process can be gained by setting up a <pre>local.config</pre> file.
+
+1) Copy local.config.template to local.config in the clasp top level directory
+2) Edit local.config and configure it for your system. The following configuration variables affect the build process.
+
+| Variable                                   |   Description                                                           |
+| ------------------------------------------ | ----------------------------------------------------------------------- |
+| **TARGET_OS**                              | Currently either _Linux_ or _Darwin_                                    |
+| **PJOBS**                                  | The number of processors you have available to build with.              |
+|                                            | Set PJOBS <= the number of cores you have.                              |
+|                                            | Also if you have less than 8GB memory you should set PJOBS to 2 or 1,   |
+|                                            | otherwise your system will swap like crazy                              |
+| **CLASP_CXXFLAGS**                         | For instance, adding -v  it will print more debugging info              |
+|                                            | during the build                                                        |
+| **CLASP_LINKFLAGS**                        | Add your local library dependencies here using -L and -l linker options |
+| **PYTHON2**                                | Path to python 2.7                                                      |
 
 ## Systems Clasp has built on
 
@@ -33,51 +56,7 @@ Clasp requires clang 3.6 or higher to compile
 
 If you experience problems with the systems above please submit an issue here or come see us on **#clasp on irc.freenode.net**
 
-## Building Clasp
-
-To build Clasp from within the top level directory do the following.
-
-1) Clasp has a list of dependencies that we are working on - see below
-
-2) Copy local.config.darwin or local.config.linux to local.config depending on your system
-
-3) Edit local.config and configure it for your system. The following configuration variables affect the build process.
-
-| Variable                                   |   Description                                                           |
-| ------------------------------------------ | ----------------------------------------------------------------------- |
-| **TARGET_OS**                              | Currently either _Linux_ or _Darwin_                                    |
-| **PJOBS**                                  | The number of processors you have available to build with.              |
-|                                            | Set PJOBS <= the number of cores you have.                              |
-|                                            | Also if you have less than 8GB memory you should set PJOBS to 2 or 1,   |
-|                                            | otherwise your system will swap like crazy                              |
-| **CLASP_CXXFLAGS**                         | For instance, adding -v  it will print more debugging info              |
-|                                            | during the build                                                        |
-| **CLASP_LINKFLAGS**                        | Add your local library dependencies here using -L and -l linker options |
-| **PYTHON2**                                | Path to python 2.7                                                      |
-4) Make both the MPS and Boehm versions of Clasp (Currently only Boehm version is built).
-<pre># <b>make</b></pre>
-
-5) Add the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS (OS X) or $**CLASP_BUILD_TARGET_DIR**/bin (Linux) (from local.config) to your PATH<br>
-
-6) To run the Boehm version of Clasp use
-<pre># <b>clasp_boehm_o</b></pre>
-
-and to run the Boehm version of Clasp use
-<pre># <b>clasp_boehm_o</b></pre>
-
-7) When the Clasp REPL prompt appears you can type Common Lisp commands.
-<pre>Starting Clasp xxxxx   loading image... it takes a few seconds
-Loading .clasprc
-Top level.
-&gt; <b>(defun hello-world () (print "Clasp is running.  Huzzah!!!"))</b>
-
-HELLO-WORLD
-&gt; <b>(hello-world)</b>
-
-"Clasp is running.  Huzzah!!!"
-"Clasp is running.  Huzzah!!!"
-&gt; <b>(quit)</b>
-</pre>
+## Using Clasp
 
 The recommended way to run Clasp is using Slime and the latest Slime supports Clasp.
 
