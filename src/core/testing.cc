@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
@@ -68,70 +68,53 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/profile.h>
 #include <clasp/core/wrappers.h>
-namespace core
-{
+namespace core {
 
-    
-    
 #define ARGS_af_isString "(arg)"
 #define DECL_af_isString ""
 #define DOCS_af_isString "isString"
-    void af_isString(T_sp arg)
-    {_G();
-	if ( Str_sp s = arg.asOrNull<Str_O>() )
-	{
-	    printf("The object |%s| is a string\n", s->get().c_str() );
-	} else
-	{
-	    printf("The object is not a string\n" );
-	}
-    };
+void af_isString(T_sp arg) {
+  _G();
+  if (Str_sp s = arg.asOrNull<Str_O>()) {
+    printf("The object |%s| is a string\n", s->get().c_str());
+  } else {
+    printf("The object is not a string\n");
+  }
+};
 
-
-    
 #define ARGS_af_isArray "(arg)"
 #define DECL_af_isArray ""
 #define DOCS_af_isArray "isArray"
-    void af_isArray(T_sp arg)
-    {_G();
-	if ( Array_sp s = arg.asOrNull<Array_O>() )
-	{
-	    printf("The object |%s| is an array\n", _rep_(s).c_str() );
-	} else
-	{
-	    printf("The object is not an array\n" );
-	}
-    };
+void af_isArray(T_sp arg) {
+  _G();
+  if (Array_sp s = arg.asOrNull<Array_O>()) {
+    printf("The object |%s| is an array\n", _rep_(s).c_str());
+  } else {
+    printf("The object is not an array\n");
+  }
+};
 
-
-    
-    
-    
 #define ARGS_af_testVal "(arg)"
 #define DECL_af_testVal ""
 #define DOCS_af_testVal "testVal"
-    T_sp af_testVal(T_sp v)
-    {_G();
-	if ( Fixnum_sp fn = v.asOrNull<Fixnum_O>() ) {
-	    return Str_O::create("val is fixnum");
-	} else if ( Symbol_sp sym = v.asOrNull<Symbol_O>() ) {
-	    return Str_O::create("arg is symbol");
-	}
-	return Str_O::create("arg didn't match");
-    };
+T_sp af_testVal(T_sp v) {
+  _G();
+  if (v.fixnump()) { // Fixnum_sp fn = v.asOrNull<Fixnum_O>() ) {
+    return Str_O::create("val is fixnum");
+  } else if (Symbol_sp sym = v.asOrNull<Symbol_O>()) {
+    (void)sym;
+    return Str_O::create("arg is symbol");
+  }
+  return Str_O::create("arg didn't match");
+};
 
-    
-
-
-    void initialize_testing()
-    {
-	SYMBOL_EXPORT_SC_(CorePkg,isString);
-	Defun(isString);
-	SYMBOL_EXPORT_SC_(CorePkg,isArray);
-	Defun(isArray);
-	SYMBOL_EXPORT_SC_(CorePkg,testVal);
-	Defun(testVal);
-    }
-
+void initialize_testing() {
+  SYMBOL_EXPORT_SC_(CorePkg, isString);
+  Defun(isString);
+  SYMBOL_EXPORT_SC_(CorePkg, isArray);
+  Defun(isArray);
+  SYMBOL_EXPORT_SC_(CorePkg, testVal);
+  Defun(testVal);
+}
 
 }; /* core */

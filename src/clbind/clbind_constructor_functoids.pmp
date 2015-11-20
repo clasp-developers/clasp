@@ -27,25 +27,21 @@ $var NumArgs = 8
                     VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
                     DISABLE_NEW();
                     virtual size_t templatedSizeof() const { return sizeof(*this);};
-                    void LISP_CALLING_CONVENTION()
+                    inline LCC_RETURN LISP_CALLING_CONVENTION()
                     {
                         INVOCATION_HISTORY_FRAME();
                         $if numArgs>0 [[
-                          ALLOC_STACK_VALUE_FRAME(frameImpl,frame,$numArgs);
+                          STACK_FRAME(buff,frame,$numArgs);
                           core::StackFrameDynamicScopeManager scope(frame);
-                          lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+                          lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                         ]]
-                        this->invoke(lcc_resultP $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
-                    }
-                    void invoke(core::T_mv* lcc_resultP $for Args_ [[, core::T_sp arg$Args_]] )
-                    {
                       $for Args_ [[
-                        translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(arg$Args_);
+                        translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(frame.arg($Args_));
                       ]]
                       T* naked_ptr(new T($for Args_ ,[[a$Args_._v]]));
                       gctools::smart_ptr<WrapperType> retval = WrapperType::create(naked_ptr,reg::registered_class<T>::id);
                       $if numArgs>0 [[
-                        core::MultipleValues& returnValues = _lisp->multipleValues();
+                        core::MultipleValues& returnValues = core::lisp_multipleValues();
                         returnValues.setSize(0);
                       ]]
                       int oidx = 1;
@@ -55,7 +51,7 @@ $var NumArgs = 8
                                         , typename AdoptPointer<Pols,$Args_>::type()
                                         , a$Args_._v);
                       ]]
-                      *lcc_resultP = gctools::multiple_values<core::T_O>(retval,oidx);
+                      return LCC_RETURN(retval.raw_(),oidx);
                     }
                 };
                 ]]

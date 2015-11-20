@@ -439,7 +439,7 @@
 
 (defun find (item sequence &key test test-not (start 0) end from-end key)
   (with-tests (test test-not key)
-;    (declare (optimize (speed 3) (safety 0) (debug 0)))
+    (declare (optimize (speed 3) (safety 0) (debug 0)))
     (with-start-end (start end sequence length)
       (declare (ignore length))
       (let ((output nil))

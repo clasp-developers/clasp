@@ -10,6 +10,9 @@
 ;;; Written by William Lott.  Algorithm stolen from Richard Waters' XP.
 ;;;
 
+#+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
+	(setq core::*echo-repl-read* t))
+  
 (in-package "SI")
 
 #-clasp(declaim #.+ecl-unsafe-declarations+)

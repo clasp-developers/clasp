@@ -38,6 +38,15 @@
 (defvar *debug-compiler* nil)
 (export '*debug-compiler*)
 
+;;; Turn these on to verify llvm modules and functions
+(defvar *verify-llvm-modules* nil)
+(defvar *verify-llvm-functions* nil)
+
+
+(defvar *dump-module-on-completion* nil)
+
+
+
 
 ;; Generate a bitcode file for the llvm-ir prior to running optimization passes on it
 ;;
@@ -103,8 +112,12 @@ Options are :tagbody :go :all :eh-landing-pads
 
 
 
-
-#-debug-compiler
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Turn off compiler debugging code once we are confident it works
+;;;
+;;;
+#-(or)
 (progn
   (defmacro debug-print-i32 (num) nil)
   (defmacro cmp-log-dump (fn) nil)
@@ -113,25 +126,31 @@ Options are :tagbody :go :all :eh-landing-pads
   )
 
 
-#+debug-compiler
 (progn
   (defun is-debug-compiler-on ()
     *debug-compiler*)
-
   (defmacro debug-print-i32 (num)
     `(if (is-debug-compiler-on)
 	 (irc-intrinsic "debugPrintI32" (jit-constant-i32 ,num))
 	 nil))
-
   (defmacro cmp-log (fmt &rest args)
     `(if (is-debug-compiler-on)
 	 (progn
 	   (bformat t "%s:%s " (source-file-name) (source-line-column))
 	   (bformat t ,fmt ,@args))
 	 nil))
-
   (defmacro cmp-log-dump (fn-or-module)
     `(if (is-debug-compiler-on)
 	 (llvm-sys:dump ,fn-or-module)
 	 nil))
   )
+
+
+;; When Cleavir is installed set the value of *cleavir-compile-hook* to use it to compile forms
+;; It expects a function of one argument (lambda (form) ...) that will generate code in the
+;; current *module* for the form.  The lambda returns T if cleavir succeeded in compiling the form
+;; and nil otherwise
+(defvar *cleavir-compile-hook* nil)
+(defvar *cleavir-compile-file-hook* nil)
+
+

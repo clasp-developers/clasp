@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/lisp.h>
 #include <clasp/core/standardObject.h>
@@ -33,32 +33,20 @@ THE SOFTWARE.
 #include <clasp/core/metaobject.h>
 #include <clasp/core/wrappers.h>
 
+namespace core {
 
-namespace core
-{
+Metaobject_O::Metaobject_O() : Metaobject_O::Base(){};
 
+void Metaobject_O::exposeCando(Lisp_sp lisp) {
+  class_<Metaobject_O>();
+}
 
-
-
-    Metaobject_O::Metaobject_O() : Metaobject_O::Base()  {};
-    Metaobject_O::~Metaobject_O() {};
-
-
-    void Metaobject_O::exposeCando(Lisp_sp lisp)
-	{
-	    class_<Metaobject_O>()
-		;
-	}
-
-    void Metaobject_O::exposePython(Lisp_sp lisp)
-    {_G();
+void Metaobject_O::exposePython(Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,Metaobject,"","",_lisp)
-		;
+  PYTHON_CLASS(CorePkg, Metaobject, "", "", _lisp);
 #endif
-	}
+}
 
-
-
-    EXPOSE_CLASS(core,Metaobject_O);
+EXPOSE_CLASS(core, Metaobject_O);
 };

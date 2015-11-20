@@ -29,7 +29,7 @@ THE SOFTWARE.
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #ifndef CLBIND_FUNCTION2_081014_HPP
-# define CLBIND_FUNCTION2_081014_HPP
+#define CLBIND_FUNCTION2_081014_HPP
 
 #include <clasp/clbind/policies.h>
 #include <clasp/clbind/details.h>
@@ -37,105 +37,59 @@ THE SOFTWARE.
 
 namespace clbind {
 
+class GoofBase {};
+template <typename F>
+class Goof : public GoofBase {};
 
-    class GoofBase{};
-    template <typename F>
-    class Goof : public GoofBase {};
-
-    template <>
-    class Goof<int(int,int)> : public GoofBase {
-    public:
-        typedef int(*F)(int,int);
-        Goof( F y ) {};
-    };
-
-    template <typename FunctionPtrType,typename Policies>
-    class VariadicFunctoid : public core::Functoid {
-    public:
-        typedef core::Functoid TemplatedBase;
-        virtual size_t templatedSizeof() const { return sizeof(*this);};
-    };
-
-    // What was...
-    // #include <clbind_functoids.h>
-    // now becomes...
-#ifdef BUILDING_CLASP
-#  include <clbind_functoids.h>
-#else
-#  ifdef USE_CLASP_DEBUG
-#    ifdef USE_CLASP_BOEHM
-#      include <clasp/clbind/generated/debug/boehm/clbind_functoids.h>
-#    else
-#      include <clasp/clbind/generated/debug/mps/clbind_functoids.h>
-#    endif
-#  else
-#    ifdef USE_CLASP_BOEHM
-#      include <clasp/clbind/generated/release/boehm/clbind_functoids.h>
-#    else
-#      include <clasp/clbind/generated/release/mps/clbind_functoids.h>
-#    endif
-#  endif
-#endif
-    
-};
-
-
-template <typename FunctionPtrType, typename Policies> class gctools::GCKind<clbind::VariadicFunctoid<FunctionPtrType,Policies> > {
+template <>
+class Goof<int(int, int)> : public GoofBase {
 public:
-    static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::VariadicFunctoid<FunctionPtrType,Policies>::TemplatedBase>::Kind;
+  typedef int (*F)(int, int);
+  Goof(F y){};
 };
 
+template <typename FunctionPtrType, typename Policies>
+class VariadicFunctoid : public core::Functoid {
+public:
+  typedef core::Functoid TemplatedBase;
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+};
 
+// What was...
+// #include <clbind_functoids.h>
+// now becomes...
+#include <clasp/clbind/generated/clbind_functoids.h>
+};
+
+template <typename FunctionPtrType, typename Policies>
+class gctools::GCKind<clbind::VariadicFunctoid<FunctionPtrType, Policies>> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::VariadicFunctoid<FunctionPtrType, Policies>::TemplatedBase>::Kind;
+};
 
 namespace clbind {
 
-    namespace detail
-    {
+namespace detail {
 
+template <typename FunctionPointerType>
+struct CountFunctionArguments {
+  enum { value = 0 };
+};
 
-        template <typename FunctionPointerType>
-        struct CountFunctionArguments {
-            enum {value = 0 };
-        };
+template <typename RT, typename... ARGS>
+struct CountFunctionArguments<RT (*)(ARGS...)> {
+  enum { value = sizeof...(ARGS) };
+};
 
-        template <typename RT, typename... ARGS>
-        struct CountFunctionArguments<RT(*)(ARGS...)> {
-            enum {value = sizeof...(ARGS)};
-        };
+template <class FunctionPointerType, class Policies>
+struct function_registration : registration {
+  function_registration(char const *name, FunctionPointerType f, Policies const &policies, string const &lambdalist, string const &declares, string const &docstring)
+      : name(name), functionPtr(f), policies(policies), m_lambdalist(lambdalist), m_declares(declares), m_docstring(docstring) {}
 
-
-        template <class FunctionPointerType,class Policies>
-        struct function_registration : registration
-        {
-            function_registration(char const* name, FunctionPointerType f
-                                  , Policies const& policies
-                                  , string const& lambdalist
-                                  , string const& declares
-                                  , string const& docstring
-                )
-                : name(name)
-                , functionPtr(f)
-                , policies(policies)
-                , m_lambdalist(lambdalist)
-                , m_declares(declares)
-                , m_docstring(docstring)
-            {}
-
-            void register_() const
-            {
-                core::Symbol_sp symbol = core::lispify_intern(name,core::lisp_currentPackageName());
-                core::BuiltinClosure* functoid = gctools::ClassAllocator<VariadicFunctoid<FunctionPointerType,Policies>>::allocateClass(symbol,functionPtr);
-                core::lisp_defun(symbol
-                                 , core::lisp_currentPackageName()
-                                 , functoid
-                                 , m_lambdalist
-                                 , m_declares
-                                 , m_docstring
-                                 , "=external="
-                                 , 0
-                                 , true
-                                 , (CountFunctionArguments<FunctionPointerType>::value)
-                                 , GatherPureOutValues<Policies,-1>::gather() );
+  void register_() const {
+    core::Symbol_sp symbol = core::lispify_intern(name, core::lisp_currentPackageName());
+    gctools::tagged_pointer<core::BuiltinClosure> functoid = gctools::ClassAllocator<VariadicFunctoid<FunctionPointerType, Policies>>::allocateClass(symbol, functionPtr);
+    core::lisp_defun(symbol, core::lisp_currentPackageName(), functoid, m_lambdalist, m_declares, m_docstring, "=external=", 0, true, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());
 #if 0
                 object fn = make_function(L, f, deduce_signature(f), policies);
 
@@ -145,39 +99,28 @@ namespace clbind {
                     , fn
                     );
 #endif
-            }
+  }
 
-            char const* name;
-            FunctionPointerType functionPtr;
-            Policies policies;
-            string m_lambdalist;
-            string m_declares;
-            string m_docstring;
-        };
+  char const *name;
+  FunctionPointerType functionPtr;
+  Policies policies;
+  string m_lambdalist;
+  string m_declares;
+  string m_docstring;
+};
 
+} // namespace detail
 
-    } // namespace detail
+template <typename F, class Policies>
+scope def(char const *name, F f, Policies const &policies, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
+  return scope(std::auto_ptr<detail::registration>(
+      new detail::function_registration<F, Policies>(name, f, policies, lambdalist, declares, docstring)));
+}
 
-    template < typename F, class Policies>
-    scope def(char const* name, F f
-              , Policies const& policies
-              , string const& lambdalist=""
-              , string const& declares=""
-              , string const& docstring="" )
-    {
-        return scope(std::auto_ptr<detail::registration>(
-                         new detail::function_registration<F,Policies>(name, f, policies
-                                                                        ,lambdalist,declares,docstring)));
-    }
-
-    template <class F>
-    scope def(char const* name, F f
-              , string const& lambdalist=""
-              , string const& declares=""
-              , string const& docstring="" )
-    {
-        return def(name, f, policies<>(), lambdalist,declares,docstring);
-    }
+template <class F>
+scope def(char const *name, F f, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
+  return def(name, f, policies<>(), lambdalist, declares, docstring);
+}
 
 } // namespace clbind
 

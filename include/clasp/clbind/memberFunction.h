@@ -27,69 +27,28 @@ THE SOFTWARE.
 #ifndef clbind_memberFunction_H
 #define clbind_memberFunction_H
 
-
 #include <clasp/clbind/clbind_wrappers.h>
 #include <clasp/clbind/policies.h>
 #include <clasp/clbind/details.h>
 
 namespace clbind {
 
-
-
-    template <typename Pols , typename OT, typename MethodPtrType >
-    class IndirectVariadicMethoid : public core::Functoid {
-    public:
-        typedef Functoid TemplatedBase;
-        virtual size_t templatedSizeof() const { return sizeof(*this);};
-    };
-
-
-
-#ifdef BUILDING_CLASP
-#  include <clbind_methoids.h>
-#else
-#  ifdef USE_CLASP_DEBUG
-#    ifdef USE_CLASP_BOEHM
-#      include <clasp/clbind/generated/debug/boehm/clbind_methoids.h>
-#    else
-#      include <clasp/clbind/generated/debug/mps/clbind_methoids.h>
-#    endif
-#  else
-#    ifdef USE_CLASP_BOEHM
-#      include <clasp/clbind/generated/release/boehm/clbind_methoids.h>
-#    else
-#      include <clasp/clbind/generated/release/mps/clbind_methoids.h>
-#    endif
-#  endif
-#endif
-
-#ifdef BUILDING_CLASP
-#  include <clbind_static_members.h>
-#else
-#  ifdef USE_CLASP_DEBUG
-#    ifdef USE_CLASP_BOEHM
-#      include <clasp/clbind/generated/debug/boehm/clbind_static_members.h>
-#    else
-#      include <clasp/clbind/generated/debug/mps/clbind_static_members.h>
-#    endif
-#  else
-#    ifdef USE_CLASP_BOEHM
-#      include <clasp/clbind/generated/release/boehm/clbind_static_members.h>
-#    else
-#      include <clasp/clbind/generated/release/mps/clbind_static_members.h>
-#    endif
-#  endif
-#endif
-
-};
-
-template <typename Pols , typename OT, typename MethodPtrType >
-class gctools::GCKind<clbind::IndirectVariadicMethoid<Pols,OT,MethodPtrType>> {
+template <typename Pols, typename OT, typename MethodPtrType>
+class IndirectVariadicMethoid : public core::Functoid {
 public:
-    static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::IndirectVariadicMethoid<Pols,OT,MethodPtrType>::TemplatedBase>::Kind;
+  typedef Functoid TemplatedBase;
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
 
+#include <clasp/clbind/generated/clbind_methoids.h>
 
+#include <clasp/clbind/generated/clbind_static_members.h>
+};
 
+template <typename Pols, typename OT, typename MethodPtrType>
+class gctools::GCKind<clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>::TemplatedBase>::Kind;
+};
 
 #endif

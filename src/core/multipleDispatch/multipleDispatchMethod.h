@@ -31,66 +31,59 @@ THE SOFTWARE.
 #include "core/object.h"
 #include "core/multipleDispatchMethod.fwd.h"
 
+namespace core {
+class MultipleDispatchMethod_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_CLASS(CorePkg, MultipleDispatchMethod_O, "MultipleDispatchMethod");
+  DECLARE_INIT();
+  //    DECLARE_ARCHIVE();
+public:
+  friend class MultipleDispatchMethodPrimitive_O;
+  friend class MultipleDispatchGeneralFunction_O;
+  friend class Lambda_emf;
+  friend class Lambda_method_function;
 
-namespace core
-{
-    class MultipleDispatchMethod_O : public T_O
-    {
-	LISP_BASE1(T_O);
-	LISP_CLASS(CorePkg,MultipleDispatchMethod_O,"MultipleDispatchMethod");
-	DECLARE_INIT();
-//    DECLARE_ARCHIVE();
-    public:
-	friend class MultipleDispatchMethodPrimitive_O;
-	friend class MultipleDispatchGeneralFunction_O;
-	friend class Lambda_emf;
-	friend class Lambda_method_function;
-    public: // Simple default ctor/dtor
-	DEFAULT_CTOR_DTOR(MultipleDispatchMethod_O);
-    public:
-	void initialize();
-	
-    private: // instance variables here
-		/*! Store the generic function name */
-	Symbol_sp	_name;
-	/*! Store the receiver class for this method */
-	MetaClass_sp	_receiver_class;
-	/*! Store the method environment */
-	Environment_sp	_environment;
-	/*! Store the body of the method */
-	Cons_sp		_body;
-	/*! Store the computed function for this method - this
+public: // Simple default ctor/dtor
+  DEFAULT_CTOR_DTOR(MultipleDispatchMethod_O);
+
+public:
+  void initialize();
+
+private: // instance variables here
+         /*! Store the generic function name */
+  Symbol_sp _name;
+  /*! Store the receiver class for this method */
+  MetaClass_sp _receiver_class;
+  /*! Store the method environment */
+  Environment_sp _environment;
+  /*! Store the body of the method */
+  Cons_sp _body;
+  /*! Store the computed function for this method - this
 	  takes two arguments: (args next-emfun)
 	  (args) is the list of arguments passed to the method (first argument is the receiver)
 	  (next-emfun) is the next effective method function called with call-next-method.
 	*/
-	Function_sp	_method_function;
-	LambdaListHandler_sp	_argument_handler;
-	Cons_sp 	_declares;
-	/*! Store the docstring */
-	Str_sp		_docstring;
-	/*! Store whether the method can be redefined */
-	bool		_can_be_redefined;
+  Function_sp _method_function;
+  LambdaListHandler_sp _argument_handler;
+  Cons_sp _declares;
+  /*! Store the docstring */
+  Str_sp _docstring;
+  /*! Store whether the method can be redefined */
+  bool _can_be_redefined;
 
-    public: // creation function
-	// The creates above are depreciated
-	static MultipleDispatchMethod_sp create(Symbol_sp name, MetaClass_sp receiver, LambdaListHandler_sp lambda_list_handler, Cons_sp declares, Str_sp docstr, Cons_sp body, Lisp_sp lisp);
+public: // creation function
+  // The creates above are depreciated
+  static MultipleDispatchMethod_sp create(Symbol_sp name, MetaClass_sp receiver, LambdaListHandler_sp lambda_list_handler, Cons_sp declares, Str_sp docstr, Cons_sp body, Lisp_sp lisp);
 
+public: // Functions here
+  MetaClass_sp receiver_class() const { return this->_receiver_class; };
+  bool can_be_redefined() const { return this->_can_be_redefined; };
 
-    public: // Functions here
+  string __repr__() const;
 
-	MetaClass_sp receiver_class() const { return this->_receiver_class; };
-	bool can_be_redefined() const { return this->_can_be_redefined;};
+}; // MultipleDispatchMethod class
 
-	string __repr__() const;
-
-
-    }; // MultipleDispatchMethod class
-    
 }; // core namespace
 TRANSLATE(core::MultipleDispatchMethod_O);
-
-
-
 
 #endif /* _multipleDispatchMethod_H_ */

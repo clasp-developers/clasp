@@ -4514,42 +4514,30 @@ in the system-species and assign them a GCKind value"
 (defun reset-class-smart-pointer-info (&optional (analysis *analysis*))
   (maphash (lambda (k v)
              (remhash k (analysis-housekeeping-class-on-stack-has-smart-pointers-on-heap analysis))
-             (remhash k (analysis-housekeeping-class-contains-smart-pointers analysis))
-             )
+             (remhash k (analysis-housekeeping-class-contains-smart-pointers analysis)))
            (project-housekeeping-classes (analysis-project analysis))))
-
 
 (defun describe-global-variables (&optional (name "") (analysis *analysis*))
   (with-all-housekeeping-classes ((project-housekeeping-classes (analysis-project analysis)))
     (maphash (lambda (k v)
                (when (search name (format nil "~a" v))
-                 (format t "~10a ~a~%" (contains-smart-pointers-p (global-variable-ctype v) analysis) k)
-                 )
-               )
+                 (format t "~10a ~a~%" (contains-smart-pointers-p (global-variable-ctype v) analysis) k)))
              (project-global-variables (analysis-project analysis)))))
-
-
-
 
 (defun find-global-variable-roots (&optional (analysis *analysis*))
   (let #|symbol-macrolet|# ((project (analysis-project analysis)))
     (with-all-housekeeping-classes ((project-housekeeping-classes project))
       (maphash (lambda (k v)
                  (when (contains-smart-pointers-p (global-variable-ctype v) analysis)
-                   (format t "~10a ~a~%" (contains-smart-pointers-p (global-variable-ctype v) analysis) k)
-                   )
-                 )
+                   (format t "~10a ~a~%" (contains-smart-pointers-p (global-variable-ctype v) analysis) k)))
                (project-global-variables project)))))
-  
 
 (defun describe-static-local-variables (&optional (name "") (analysis *analysis*))
   (let #|symbol-macrolet|# ((project (analysis-project analysis)))
     (with-all-housekeeping-classes ((project-housekeeping-classes project))
       (maphash (lambda (k v)
                  (when (search name (format nil "~a" v))
-                   (format t "~10a ~a~%" (contains-smart-pointers-p (static-local-variable-ctype v) analysis) k)
-                   )
-                 )
+                   (format t "~10a ~a~%" (contains-smart-pointers-p (static-local-variable-ctype v) analysis) k)))
                (project-static-local-variables project)))))
 
 (defun describe-local-variables (&key (name "") (analysis *analysis*) details all)
@@ -4563,8 +4551,7 @@ in the system-species and assign them a GCKind value"
                    (when (search name (format nil "~a" v))
                      (when (or all csp oshspohp)
                        (format t "~10a ~10a ~a~%" csp oshspohp k)
-                       (when details (format t "~a~%" v))))
-                   ))
+                       (when details (format t "~a~%" v))))))
                (project-local-variables project)))))
 
 

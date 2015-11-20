@@ -31,13 +31,9 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/compPackage.fwd.h>
 
-namespace comp
-{
+namespace comp {
 
-    void initialize_compPackage();
-
-
+void initialize_compPackage();
 };
-
 
 #endif

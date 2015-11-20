@@ -35,69 +35,59 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/package.h>
 
-namespace ext
-{
-    using namespace core;
+namespace ext {
+using namespace core;
 
 #pragma GCC visibility push(default)
 #define ExtPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
-#include <clasp/core/symbols_scraped_inc.h>
+#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef ExtPkg_SYMBOLS
 #pragma GCC visibility pop
 
+SYMBOL_EXPORT_SC_(ExtPkg, STARloadHooksSTAR);
+SYMBOL_SC_(ExtPkg, aSingleExtSymbol);
+SYMBOL_SC_(ExtPkg, lambda_block);
+SYMBOL_EXPORT_SC_(ExtPkg, STARinvokeDebuggerHookSTAR);
+SYMBOL_EXPORT_SC_(ExtPkg, compiledFunctionName);
 
-  SYMBOL_EXPORT_SC_(ExtPkg,STARloadHooksSTAR);
-    SYMBOL_SC_(ExtPkg,aSingleExtSymbol);
-    SYMBOL_SC_(ExtPkg,lambda_block);
-    SYMBOL_EXPORT_SC_(ExtPkg,STARinvokeDebuggerHookSTAR);
-    SYMBOL_EXPORT_SC_(ExtPkg,compiledFunctionName);
-
-
-
-
-    
-    
 #define ARGS_af_maybeQuote "(form)"
 #define DECL_af_maybeQuote ""
 #define DOCS_af_maybeQuote "Quotes a form only if strictly required. This happens when FORM is either a symbol and not a keyword"
-    T_sp af_maybeQuote(T_sp form)
-    {_G();
-	if ( af_atom(form) ) {
-	    if ( form.nilp() ) goto DONTQUOTEIT; // nil
-	    if ( form == _lisp->_true() ) goto DONTQUOTEIT; // t
-	    if ( af_symbolp(form) ) {
-		if ( af_keywordP(form) ) {
-		    goto DONTQUOTEIT; // symbol keyword
-		} else goto QUOTEIT; // symbol not keyword
-	    }
-	    goto DONTQUOTEIT; // every other atom
-	} else {
-	    if ( oFirst(form) == cl::_sym_quote ) goto DONTQUOTEIT; // already quoted
-	}
-    QUOTEIT:
-	return Cons_O::createList(cl::_sym_quote,form);
-    DONTQUOTEIT:
-	return form;
+T_sp af_maybeQuote(T_sp form) {
+  _G();
+  if (cl_atom(form)) {
+    if (form.nilp())
+      goto DONTQUOTEIT; // nil
+    if (form == _lisp->_true())
+      goto DONTQUOTEIT; // t
+    if (cl_symbolp(form)) {
+      if (af_keywordP(form)) {
+        goto DONTQUOTEIT; // symbol keyword
+      } else
+        goto QUOTEIT; // symbol not keyword
     }
+    goto DONTQUOTEIT; // every other atom
+  } else {
+    if (oFirst(form) == cl::_sym_quote)
+      goto DONTQUOTEIT; // already quoted
+  }
+QUOTEIT:
+  return Cons_O::createList(cl::_sym_quote, form);
+DONTQUOTEIT:
+  return form;
+}
 
+void initialize_extension_functions() {
+  SYMBOL_EXPORT_SC_(ExtPkg, maybeQuote);
+  Defun(maybeQuote);
+};
 
-    void initialize_extension_functions()
-    {
-	SYMBOL_EXPORT_SC_(ExtPkg,maybeQuote);
-	Defun(maybeQuote);
-    };
-
-
-    void initialize_extensionPackage()
-    {
-	list<string> lnicknames;
-	list<string> luse = { "COMMON-LISP" };
-	_lisp->makePackage("EXT",lnicknames,luse);
-	// We don't have to create the EXTENSION symbols here - it's done in bootStrapCoreSymbolMap
-
-    }
-
-
+void initialize_extensionPackage() {
+  list<string> lnicknames;
+  list<string> luse = {"COMMON-LISP"};
+  _lisp->makePackage("EXT", lnicknames, luse);
+  // We don't have to create the EXTENSION symbols here - it's done in bootStrapCoreSymbolMap
+}
 };

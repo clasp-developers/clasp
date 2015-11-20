@@ -68,40 +68,38 @@ THE SOFTWARE.
 #include <cstring>
 #include <iostream>
 
+namespace clbind {
+namespace detail {
 
-namespace clbind { namespace detail {
-    
-        derivable_class_registration::derivable_class_registration(char const* name) : m_default_constructor(NULL)
-        {
-            m_name = name;
-        }
+derivable_class_registration::derivable_class_registration(char const *name) : m_default_constructor(NULL) {
+  m_name = name;
+}
 
-        void derivable_class_registration::register_() const
-        {
-            ClassRegistry_sp registry = ClassRegistry_O::get_registry();
-            clbind::ClassRep_sp crep = clbind::ClassRep_O::create(this->m_type,this->m_name,this->m_derivable);
-            std::string classNameString(this->m_name);
-            core::Symbol_sp className = core::lispify_intern(classNameString,_lisp->getCurrentPackage()->packageName());
-            className->exportYourself();
-            crep->setName(className);
-            reg::lisp_associateClassIdWithClassSymbol(m_id,className); // TODO: Or do I want m_wrapper_id????
-            if ( core::_sym_STARallCxxClassesSTAR->symbolValueUnsafe() ) {
-                core::_sym_STARallCxxClassesSTAR->setf_symbolValue(
-                    core::Cons_O::create(className, core::_sym_STARallCxxClassesSTAR->symbolValue()));
-            }
-            core::Creator* allocator = NULL;
-            if ( m_default_constructor != NULL ) {
-                allocator = m_default_constructor->registerDefaultConstructor_();
-            } else {
-                allocator = gctools::ClassAllocator<DummyCreator>::allocateClass(classNameString);
-            }
-            _lisp->addClass(className,crep,allocator);
-            registry->add_class(m_type,crep);
+void derivable_class_registration::register_() const {
+  ClassRegistry_sp registry = ClassRegistry_O::get_registry();
+  clbind::ClassRep_sp crep = clbind::ClassRep_O::create(this->m_type, this->m_name, this->m_derivable);
+  std::string classNameString(this->m_name);
+  core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
+  className->exportYourself();
+  crep->setName(className);
+  reg::lisp_associateClassIdWithClassSymbol(m_id, className); // TODO: Or do I want m_wrapper_id????
+  if (core::_sym_STARallCxxClassesSTAR->symbolValueUnsafe()) {
+    core::_sym_STARallCxxClassesSTAR->setf_symbolValue(
+        core::Cons_O::create(className, core::_sym_STARallCxxClassesSTAR->symbolValue()));
+  }
+  gctools::tagged_pointer<core::Creator> allocator;
+  if (m_default_constructor != NULL) {
+    allocator = m_default_constructor->registerDefaultConstructor_();
+  } else {
+    allocator = gctools::ClassAllocator<DummyCreator>::allocateClass(classNameString);
+  }
+  _lisp->addClass(className, crep, allocator);
+  registry->add_class(m_type, crep);
 
-            detail::class_map& classes = *globalClassMap;
-            classes.put(m_id,crep);
+  detail::class_map &classes = *globalClassMap;
+  classes.put(m_id, crep);
 
-            bool const has_wrapper = m_wrapper_id != reg::registered_class<reg::null_type>::id;
+  bool const has_wrapper = m_wrapper_id != reg::registered_class<reg::null_type>::id;
 #if 0
             if (has_wrapper) {
                 printf("%s:%d:%s   class[%s] has wrapper\n", __FILE__,__LINE__,__FUNCTION__,m_name);
@@ -109,110 +107,92 @@ namespace clbind { namespace detail {
                 printf("%s:%d:%s   class[%s] does not have wrapper\n", __FILE__,__LINE__,__FUNCTION__,m_name);
             }
 #endif
-            classes.put(m_wrapper_id,crep);
+  classes.put(m_wrapper_id, crep);
 
-            m_members.register_();
+  m_members.register_();
 
-            cast_graph* const casts = globalCastGraph;
-            class_id_map* const class_ids = globalClassIdMap;
+  cast_graph *const casts = globalCastGraph;
+  class_id_map *const class_ids = globalClassIdMap;
 
-            class_ids->put(m_id,m_type);
-            if (has_wrapper)
-                class_ids->put(m_wrapper_id,m_wrapper_type);
+  class_ids->put(m_id, m_type);
+  if (has_wrapper)
+    class_ids->put(m_wrapper_id, m_wrapper_type);
 
-            BOOST_FOREACH(cast_entry const& e, m_casts)
-            {
-                casts->insert(e.src,e.target,e.cast);
-            }
+  BOOST_FOREACH (cast_entry const &e, m_casts) {
+    casts->insert(e.src, e.target, e.cast);
+  }
 
-            if ( m_bases.size() == 0 ) {
-                // If no base classes are specified then make T a base class from Common Lisp's point of view
-                //
-                crep->addInstanceBaseClass(cl::_sym_T_O);
-            } else {
-                for (std::vector<base_desc>::iterator i = m_bases.begin();
-                     i != m_bases.end(); ++i)
-                {
-//            CLBIND_CHECK_STACK(L);
+  if (m_bases.size() == 0) {
+    // If no base classes are specified then make T a base class from Common Lisp's point of view
+    //
+    crep->addInstanceBaseClass(cl::_sym_T_O);
+  } else {
+    for (std::vector<base_desc>::iterator i = m_bases.begin();
+         i != m_bases.end(); ++i) {
+      //            CLBIND_CHECK_STACK(L);
 
-                    // the baseclass' class_rep structure
-                    ClassRep_sp bcrep = registry->find_class(i->first);
-                    ASSERTF(bcrep.notnilp(),BF("Could not find base class %s") % i->first.name());
-                    // Add it to the DirectSuperClass list
-                    crep->addInstanceBaseClass(bcrep->className());
-                    crep->add_base_class(core::Fixnum_O::create(0),bcrep);
-                }
-            }
-
-
-        }
-    
-        // -- interface ---------------------------------------------------------
-
-        derivable_class_base::derivable_class_base(char const* name)
-            : scope(std::auto_ptr<registration>(
-                        m_registration = new derivable_class_registration(name))
-                )
-        {
-        }
-
-        void derivable_class_base::init(
-            type_id const& type_id_, class_id id
-            , type_id const& wrapper_type, class_id wrapper_id, bool derivable)
-        {
-            m_registration->m_type = type_id_;
-            m_registration->m_id = id;
-            m_registration->m_wrapper_type = wrapper_type;
-            m_registration->m_wrapper_id = wrapper_id;
-            m_registration->m_derivable = derivable;
-        }
-
-        void derivable_class_base::add_base(type_id const& base, cast_function cast)
-        {
-            m_registration->m_bases.push_back(std::make_pair(base, cast));
-        }
-
-	void derivable_class_base::set_default_constructor(registration* member)
-	{
-//            std::auto_ptr<registration> ptr(member);
-            m_registration->m_default_constructor = member;
-	}
-
-	void derivable_class_base::add_member(registration* member)
-	{
-            std::auto_ptr<registration> ptr(member);
-            m_registration->m_members.operator,(scope(ptr));
-	}
-
-	void derivable_class_base::add_default_member(registration* member)
-	{
-            std::auto_ptr<registration> ptr(member);
-            m_registration->m_default_members.operator,(scope(ptr));
-	}
-
-        const char* derivable_class_base::name() const 
-        { 
-            return m_registration->m_name; 
-        }
-
-        void derivable_class_base::add_static_constant(const char* name, int val)
-        {
-            m_registration->m_static_constants[name] = val;
-        }
-
-        void derivable_class_base::add_inner_scope(scope& s)
-        {
-            m_registration->m_scope.operator,(s);
-        }
-
-        void derivable_class_base::add_cast(
-            class_id src, class_id target, cast_function cast)
-        {
-//            printf("%s:%d:%s   src[%lu] target[%lu]\n", __FILE__,__LINE__,__FUNCTION__,src,target);
-            m_registration->m_casts.push_back(cast_entry(src, target, cast));
-        }
-
-
+      // the baseclass' class_rep structure
+      ClassRep_sp bcrep = registry->find_class(i->first);
+      ASSERTF(bcrep.notnilp(), BF("Could not find base class %s") % i->first.name());
+      // Add it to the DirectSuperClass list
+      crep->addInstanceBaseClass(bcrep->className());
+      crep->add_base_class(core::make_fixnum(0), bcrep);
     }
+  }
+}
+
+// -- interface ---------------------------------------------------------
+
+derivable_class_base::derivable_class_base(char const *name)
+    : scope(std::auto_ptr<registration>(
+          m_registration = new derivable_class_registration(name))) {
+}
+
+void derivable_class_base::init(
+    type_id const &type_id_, class_id id, type_id const &wrapper_type, class_id wrapper_id, bool derivable) {
+  m_registration->m_type = type_id_;
+  m_registration->m_id = id;
+  m_registration->m_wrapper_type = wrapper_type;
+  m_registration->m_wrapper_id = wrapper_id;
+  m_registration->m_derivable = derivable;
+}
+
+void derivable_class_base::add_base(type_id const &base, cast_function cast) {
+  m_registration->m_bases.push_back(std::make_pair(base, cast));
+}
+
+void derivable_class_base::set_default_constructor(registration *member) {
+  //            std::auto_ptr<registration> ptr(member);
+  m_registration->m_default_constructor = member;
+}
+
+void derivable_class_base::add_member(registration *member) {
+  std::auto_ptr<registration> ptr(member);
+  m_registration->m_members.operator, (scope(ptr));
+}
+
+void derivable_class_base::add_default_member(registration *member) {
+  std::auto_ptr<registration> ptr(member);
+  m_registration->m_default_members.operator, (scope(ptr));
+}
+
+const char *derivable_class_base::name() const {
+  return m_registration->m_name;
+}
+
+void derivable_class_base::add_static_constant(const char *name, int val) {
+  m_registration->m_static_constants[name] = val;
+}
+
+void derivable_class_base::add_inner_scope(scope &s) {
+  m_registration->m_scope.operator, (s);
+}
+
+void derivable_class_base::add_cast(
+    class_id src, class_id target, cast_function cast) {
+  //            printf("%s:%d:%s   src[%lu] target[%lu]\n", __FILE__,__LINE__,__FUNCTION__,src,target);
+  m_registration->m_casts.push_back(cast_entry(src, target, cast));
+}
+}
 
 } // namespace clbind::detail

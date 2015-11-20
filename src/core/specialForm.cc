@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/lisp.h>
 #include <clasp/core/specialForm.h>
@@ -33,62 +33,47 @@ THE SOFTWARE.
 // last include is wrappers.h
 #include <clasp/core/wrappers.h>
 
-
 namespace core {
 
-
-void SpecialForm_O::exposeCando(Lisp_sp lisp)
-{
-    class_<SpecialForm_O>()
-    ;
+void SpecialForm_O::exposeCando(Lisp_sp lisp) {
+  class_<SpecialForm_O>();
 }
 
-    void SpecialForm_O::exposePython(Lisp_sp lisp)
-    {_G();
-#if	0 // USEBOOSTPYTHON //[
+void SpecialForm_O::exposePython(Lisp_sp lisp) {
+  _G();
+#if 0  // USEBOOSTPYTHON //[
 	PYTHON_CLASS(CorePkg,SpecialForm,"","",_lisp)
     ;
 #endif //]
 }
 
-
-SpecialForm_sp SpecialForm_O::create(Symbol_sp symbol, SpecialFormCallback fptr )
-{
-    SpecialForm_sp sf = SpecialForm_O::create();
-    sf->_SpecialSymbol = symbol;
-    sf->_fptr = fptr;
-    return sf;
+SpecialForm_sp SpecialForm_O::create(Symbol_sp symbol, SpecialFormCallback fptr) {
+  SpecialForm_sp sf = SpecialForm_O::create();
+  sf->_SpecialSymbol = symbol;
+  sf->_fptr = fptr;
+  return sf;
 }
 
+T_mv SpecialForm_O::evaluate(List_sp args, T_sp environment) {
+  _OF();
+  ASSERTP(this->_fptr != NULL, "Functoid can not be NULL");
+  return (this->_fptr)(args, environment);
+}
 
-    T_mv SpecialForm_O::evaluate( Cons_sp args, T_sp environment )
-    {_OF();
-	ASSERTP(this->_fptr!=NULL,"Functoid can not be NULL");
-	return (this->_fptr)(args,environment);
-    }
-
-
-
-void	SpecialForm_O::initialize()
-{
-    this->Base::initialize();
-
+void SpecialForm_O::initialize() {
+  this->Base::initialize();
 }
 
 #if defined(XML_ARCHIVE)
-void	SpecialForm_O::archiveBase(ArchiveP node)
-{
-    this->Base::archiveBase(node);
-    IMPLEMENT_ME();
+void SpecialForm_O::archiveBase(ArchiveP node) {
+  this->Base::archiveBase(node);
+  IMPLEMENT_ME();
 }
 #endif // defined(XML_ARCHIVE)
 
-
-string SpecialForm_O::__repr__() const
-{
-    return this->_SpecialSymbol->fullName();
+string SpecialForm_O::__repr__() const {
+  return this->_SpecialSymbol->fullName();
 }
 
-    EXPOSE_CLASS(core,SpecialForm_O);
-
+EXPOSE_CLASS(core, SpecialForm_O);
 };

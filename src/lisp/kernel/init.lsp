@@ -2,33 +2,42 @@
 ;; :clos to compile with CLOS
 ;;
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (core:select-package "CORE"))
 
-(SYS:*MAKE-SPECIAL 'core:*echo-repl-tpl-read*)
-:pause-hir
+;;(setq *features* (cons :dbg-print *features*))
+(SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
+(export '*echo-repl-tpl-read*)
+(export '(*echo-repl-tpl-read* 
+          run-repl 
+          *load-current-source-file-info* 
+          *load-current-linenumber*
+          cons-car
+          cons-cdr
+          ))
+(sys:*make-special 'core::*notify-on-compile*)
+(setq *notify-on-compile* (member :notify-on-compile *features*))
+(export '*notify-on-compile*)
 
-(setq core:*echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
+(sys:*make-special 'core::*trace-startup*)
+(setq *trace-startup* (member :trace-startup *features*))
+(export '*trace-startup*)
+
+
+(setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
+(setq *echo-repl-read* nil)
+(setq *load-print* nil)
+(setq *print-source-code-cons* nil)
 
 (sys:*make-special 'core::*boot-verbose*)
 (setq core::*boot-verbose* nil)
 (setq cl:*print-circle* nil)
-(setq *echo-repl-read* nil)
-(setq *load-print* nil)
-(setq *print-source-code-cons* nil)
 
 ;;(setq *features* (cons :ecl-min *features*))
 (setq *features* (cons :clasp *features*))
 ;;(setq *features* (cons :clos *features*))
 ;;(setq *features* (cons :debug-compiler *features*))
 (setq *features* (cons :compile-mcjit *features*))
-
-
-#+(or)(progn
-        (core:pathname-translations "min-boehm" '(("**;*.*" #P"SYS:build;system;min-boehm;**;*.*")))
-        (core:pathname-translations "full-boehm" '(("**;*.*" #P"SYS:build;system;full-boehm;**;*.*")))
-        (core:pathname-translations "min-mps" '(("**;*.*" #P"SYS:build;system;min-mps;**;*.*")))
-        (core:pathname-translations "full-mps" '(("**;*.*" #P"SYS:build;system;full-mps;**;*.*")))
-        )
-
 
 
 ;;(setq *features* (cons :compare *features*)) ;; compare ecl to clasp
@@ -41,36 +50,40 @@
 (setq *features* (cons :clasp-boot *features*)) ;; When bootstrapping in stages
 
 ;; Set up a few things for the CLOS package
-;;(core::select-package :clos)
-;;(use-package :core)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (core::select-package :clos))
+(export '(standard-class
+          ))
 
 ;; Setup a few things for the GRAY streams package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :gray))
-(core:shadow '(STREAM-ELEMENT-TYPE OPEN-STREAM-P OUTPUT-STREAM-P INPUT-STREAM-P STREAMP CLOSE))
-(core:use-package :core)
+(shadow '(STREAM-ELEMENT-TYPE OPEN-STREAM-P OUTPUT-STREAM-P INPUT-STREAM-P STREAMP CLOSE))
 
 ;; Setup a few things for the CORE package
 (eval-when (:execute :compile-toplevel :load-toplevel)
-  (select-package :core))
-(use-package '(:compiler :clos :ext))
+  (core::select-package :core))
+(use-package '(:compiler :ext))
 
 ;; Setup a few things for the CMP package
 (eval-when (:execute :compile-toplevel :load-toplevel)
-  (select-package :cmp))
+  (core::select-package :cmp))
+(export '(link-system-lto))
 
-;;; cmp:*implicit-compilation* is set to T in cmp/cmprepl.lsp
-(SYS:*MAKE-SPECIAL 'cmp:*implicit-compilation*)
-(setq cmp:*implicit-compilation* nil)
-(export '(cmp:*implicit-compilation*))
 
-(export '(link-system))
 (use-package :core)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :core))
-(if (find-package "C") nil
+(if (find-package "C")
+    nil
     (make-package "C" :use '(:cl :core)))
+
+;; Compiling with Cleavir injects some symbols that
+;; need to be interned in this package
+(if (find-package "CLASP-CLEAVIR-GENERATE-AST")
+    nil
+    (make-package "CLASP-CLEAVIR-GENERATE-AST"))
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :core))
@@ -80,6 +93,26 @@
 ;; Setup a few things for the EXT package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
+#+(or)(export '(*module-provider-functions*
+          check-arguments-type
+          array-index
+          byte8
+          integer8
+          byte16
+          integer16
+          byte32
+          integer32
+          byte64
+          integer64
+          cl-fixnum
+          cl-index
+          assume-no-errors
+          sequence-stream
+          all-encodings
+          load-encoding
+          make-encoding
+          assume-right-type
+          ))
 (core:*make-special '*register-with-pde-hook*)
 (core:*make-special '*module-provider-functions*)
 (export '*module-provider-functions*)
@@ -154,55 +187,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export 'defconstant)
 
 
-
-
-;; TODO: Really - find a better way to do this than hard-coding paths
-(defconstant +intrinsics-bitcode-pathname+
-  #+use-refcount "app-resources:lib;release;intrinsics_bitcode_refcount.o"
-  #+use-boehm "app-resources:lib;release;intrinsics_bitcode_boehm.o"
-  #+use-mps "app-resources:lib;release;intrinsics_bitcode_mps.o"
-)
-(defconstant +image-pathname+ (make-pathname :directory '(:absolute) :name "image" :type "fasl"))
-(export '(+image-pathname+ +intrinsics-bitcode-pathname+))
-;; +min-image-pathname+ +intrinsics-bitcode-pathname+ +imagelto-pathname+))
-
-;; Don't bother with this test anymore
-#+(or)
-(let ((image-date (file-write-date core:*command-line-image*))
-      (intrinsics-date (file-write-date +intrinsics-bitcode-pathname+)))
-  (if image-date
-      (if intrinsics-date
-          (if (< image-date intrinsics-date)
-              (progn
-                (bformat t "!\n")
-                (bformat t "! WARNING:   The file %s is out of date \n" +image-pathname+ )
-                (bformat t "!            relative to %s\n" +intrinsics-bitcode-pathname+)
-                (bformat t "!\n")
-                (bformat t "!  Solution: Recompile the Common Lisp code\n")
-                (bformat t "!\n")
-                ))
-	(progn
-	  (bformat t "!\n")
-	  (bformat t "! WARNING:   Could not determine file-write-date of %s\n" +intrinsics-bitcode-pathname+)
-	  (bformat t "!\n")
-	  )
-	)
-    (progn
-      (bformat t "!\n")
-      (bformat t "WARNING:   Could not determine file-write-date of %s\n" *command-line-image*)
-      (bformat t "!\n")
-      )
-    ))
-
-
-
-
-
-
-
 (defconstant +ecl-optimization-settings+
   '((optimize (safety 2) (speed 1) (debug 1) (space 1))
-    (ext:check-arguments-type nil)))
+    (ext::check-arguments-type nil)))
 (defconstant +ecl-unsafe-declarations+
   '(optimize (safety 0) (speed 3) (debug 0) (space 0)))
 (defconstant +ecl-safe-declarations+
@@ -322,7 +309,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cl))
 (defvar *print-pretty* nil)  ;; Turn this on by default
@@ -338,7 +324,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
 
-
+;;; A temporary definition of defun - the real one is in evalmacros
 (si::*fset 'defun
 	   #'(lambda (def env)
 	       (let ((name (second def))	;cadr
@@ -353,64 +339,143 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 			 (ext::register-with-pde def `(si::*fset ',name ,func)))))
 		   (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#)) 
 
-		 #|		 
-		 (multiple-value-bind (decl body doc)
-		 (si::process-declarations lambda-body)
-		 (when decl (setq decl (list (cons 'declare decl))))
-		 (let ((func `(function (lambda ,lambda-list ,@doc ,@decl (block ,@body)))))
-		 (ext:register-with-pde def `(si::*fset ',name ,func))))
-		 |#
 		 ))
 	   t)
 
 (export '(defun))
 
 
+;;; Define these here so that Cleavir can do inlining
+(defvar *defun-inline-hook* nil)
+(defvar *do-inline-hook* nil)
+(defvar *proclaim-hook* nil)
+(export '(*defun-inline-hook*
+          *do-inline-hook*
+          *proclaim-hook*))
+
 ;; Discard documentation until helpfile.lsp is loaded
 (defun set-documentation (o d s) nil)
 
+(defvar *functions-to-inline* (make-hash-table :test #'equal))
+(defvar *functions-to-notinline* (make-hash-table :test #'equal))
+
+(defun proclaim (decl)
+  "Args: (decl-spec)
+Gives a global declaration.  See DECLARE for possible DECL-SPECs."
+  (cond
+    ((eq (car decl) 'SPECIAL)
+     (mapc #'sys::*make-special (cdr decl)))
+    ((eq (car decl) 'cl:inline)
+     (let ((name (cadr decl)))
+       (core:hash-table-setf-gethash *functions-to-inline* name t)
+       (remhash name *functions-to-notinline*)))
+    ((eq (car decl) 'cl:notinline)
+     (let ((name (cadr decl)))
+       (core:hash-table-setf-gethash *functions-to-notinline* name t)
+       (remhash name *functions-to-inline*)))
+    (*proclaim-hook*
+     (funcall *proclaim-hook* decl))))
+
+(defun declared-global-inline-p (name)
+  (gethash name *functions-to-inline*))
+
+(defun declared-global-notinline-p (name)
+  (gethash name *functions-to-notinline*))
+
+(defun global-inline-status (name)
+  "Return 'cl:inline 'cl:notinline or nil"
+  (cond
+    ((declared-global-inline-p name) 'cl:inline)
+    ((declared-global-notinline-p name) 'cl:notinline)
+    (t nil)))
+
+(export '(global-inline-status
+          declared-global-notinline-p
+          declared-global-inline-p))
 
 ;; This is used extensively in the ecl compiler and once in predlib.lsp
 (defvar *alien-declarations* ())
+(export '*alien-declarations*)
+
+(defun build-configuration ()
+  (cond
+    ((member :use-mps *features*) "mps")
+    ((member :use-boehmdc *features*) "boehmdc")
+    ((member :use-boehm *features*) "boehm")
+    (t (error "Unknown clasp configuration"))))
+
+(defun build-intrinsics-bitcode-pathname ()
+  (let ((variant (cond
+                   ((member :release-build *features*) "release")
+                   ((member :debug-build *features*) "debug")
+                   (t (error "Unknown build type")))))
+    (bformat nil "app-contents:execs;%s;%s;bin;intrinsics_bitcode.sbc" (build-configuration) variant)))
 
 
+(defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
+(export '(+image-pathname+ build-intrinsics-bitcode-pathname))
 
+(defun build-hostname (type &optional stage)
+  (let* ((stage (if stage 
+                    stage 
+                    (if (member :ecl-min *features*) 
+                        "min" 
+                        (if (member :cclasp *features*) 
+                            "cclasp" 
+                            "full"))))
+         (type-modified-host-suffix (cond
+                                      ((eq type :bc) "bitcode")
+                                      (t (build-configuration))))
+         (bitcode-host (bformat nil "%s-%s" stage type-modified-host-suffix)))
+    bitcode-host))
 
+(defun maybe-relative-pathname-to-sys (x &optional (sys-pn (translate-logical-pathname "SYS:")))
+  (flet ((relative-pathname-p (pathname)
+           (eq :relative (pathname-directory pathname))))
+    (if (relative-pathname-p x)
+        (make-pathname :directory (pathname-directory x)
+                       :name (pathname-name x)
+                       :type (pathname-type x))
+        (let ((dir-x (pathname-directory x)))
+          (if (eq (car dir-x) :absolute)
+              (make-pathname :directory
+                             (cons :relative
+                                   (strip-root (cdr dir-x) (cdr (pathname-directory sys-pn))))
+                             :defaults x)
+              x)))))
+
+(defun build-pathname (partial-pathname &optional (type :lisp) stage)
+  (let ((module (maybe-relative-pathname-to-sys partial-pathname))
+        (target-host (build-hostname type stage))
+        (sys-root (translate-logical-pathname "SYS:"))
+        pn)
+    #+dbg-print(bformat t "DBG-PRINT build-pathname  module: %s\n" module)
+    #+dbg-print(bformat t "DBG-PRINT   target-host: %s\n" target-host)
+    (cond
+      ((eq type :lisp)
+       (cond
+         ((probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lsp")) sys-root)))
+         ((probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) sys-root)))
+         (t (error "Could not find source file with lsp or lisp extension for ~s" module))))
+      (t
+       (merge-pathnames (merge-pathnames module (make-pathname :type (string-downcase (string type))))
+                        (translate-logical-pathname (make-pathname :host target-host)) )))))
+(export '(build-pathname build-host))
+  
 (defun get-pathname-with-type (module &optional (type "lsp"))
-  (merge-pathnames (pathname (string module))
-		   (make-pathname :host "sys" :directory '(:absolute "kernel") :type type)))
+  (error "Depreciated get-pathname-with-type")
+  (cond
+    ((pathnamep module)
+     (merge-pathnames module
+                      (make-pathname
+                       :type type
+                       :defaults (translate-logical-pathname
+                                  (make-pathname :host "sys")))))
+    ((symbolp module)
+     (merge-pathnames (pathname (string module))
+                      (make-pathname :host "sys" :directory '(:absolute) :type type)))
+    (t (error "bad module name: ~s" module))))
 
-(defun lisp-source-pathname (module)
-  (or (probe-file (get-pathname-with-type module "lsp"))
-      (probe-file (get-pathname-with-type module "lisp"))
-      (error "Could not find source file for ~a" module)))
-
-
-
-
-
-(si::*fset 'interpreter-iload
-           #'(lambda (module)
-               (let* ((pathname (lisp-source-pathname module))
-		      (name (namestring pathname)))
-                 (if cmp:*implicit-compilation*
-                     (bformat t "Loading/compiling source: %s\n" (namestring name))
-                     (bformat t "Loading/interpreting source: %s\n" (namestring name)))
-		 (load pathname)))
-           nil)
-
-(si::*fset 'ibundle
-	   #'(lambda (path)
-	       (multiple-value-call #'(lambda (loaded &optional error-msg)
-					(if loaded
-					    loaded
-					    (bformat t "Could not load bundle %s - error: %s\n" (truename path) error-msg)))
-                 (let* ((tb (default-target-backend))
-                        (image-path (target-backend-pathname path :target-backend tb))
-                        (image-file (probe-file image-path)))
-                   (if image-file nil (error "Could not find ~a" image-path))
-                   (bformat t "Loading image %s\n" image-path)
-                   (load-bundle image-path llvm-sys:+clasp-main-function-name+)))))
 
 (si::*fset 'fset
 		 #'(lambda (whole env)
@@ -431,7 +496,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 			      (and ,@(cdr forms)))))))
 	   t)
 
-
 (si::*fset 'or
 	   #'(lambda (whole env)
 	       (let ((forms (cdr whole)))
@@ -450,24 +514,26 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (eval-when (:execute)
-  (load (lisp-source-pathname 'cmp/jit-setup))
-  (load (lisp-source-pathname 'clsymbols)))
-
-
-
-
-#| If we aren't using the compiler then just load everything with the interpreter |#
-
+  (load (build-pathname #P"kernel/cmp/jit-setup"))
+  (load (build-pathname #P"kernel/clsymbols")))
 
 (defvar *reversed-init-filenames* ())
 
-(si::*fset 'iload #'interpreter-iload)
-#| Otherwise use the compiler |#
-#-nocmp
+(si::*fset 'interpreter-iload
+           #'(lambda (module)
+               (let* ((pathname (probe-file (build-pathname module :lisp)))
+		      (name (namestring pathname)))
+                 (if cmp:*implicit-compile-hook*
+                     (bformat t "Loading/compiling source: %s\n" (namestring name))
+                     (bformat t "Loading/interpreting source: %s\n" (namestring name)))
+		 (load pathname)))
+           nil)
+
 (defun iload (fn &key load-bitcode )
+  #+dbg-print(bformat t "DBG-PRINT iload fn: %s\n" fn)
   (setq *reversed-init-filenames* (cons fn *reversed-init-filenames*))
-  (let* ((lsp-path (lisp-source-pathname fn))
-	 (bc-path (target-backend-pathname (get-pathname-with-type fn "bc") ))
+  (let* ((lsp-path (build-pathname fn))
+	 (bc-path (build-pathname fn :bc)) ;; target-backend-pathname (get-pathname-with-type fn "bc") ))
 	 (load-bc (if (not (probe-file lsp-path))
 		      t
 		      (if (not (probe-file bc-path))
@@ -488,85 +554,114 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 				      nil))))))))
     (if load-bc
 	(progn
-	  (bformat t "Loading bitcode file: %s\n" (namestring (truename bc-path)))
+	  (bformat t "Loading bitcode file: %s\n" bc-path)
 	  (load-bitcode bc-path))
-	(if (probe-file lsp-path)
+	(if (probe-file-case lsp-path)
 	    (progn
-              (if cmp:*implicit-compilation*
-                  (bformat t "Loading/compiling source: %s\n" (truename lsp-path))
-                  (bformat t "Loading/interpreting source: %s\n" (truename lsp-path)))
-	      (load lsp-path))
-	    (bformat t "No interpreted or bitcode file for %s could be found\n" (truename lsp-path))))
-    ))
+              (if cmp:*implicit-compile-hook*
+                  (bformat t "Loading/compiling source: %s\n" lsp-path)
+                  (bformat t "Loading/interpreting source: %s\n" lsp-path))
+	      (load (probe-file lsp-path)))
+	    (bformat t "No interpreted or bitcode file for %s could be found\n" lsp-path)))))
 
-
-
-
-(defun delete-init-file (module &key (really-delete t))
-  (let ((bitcode-path (target-backend-pathname (get-pathname-with-type module "bc"))))
+(defun delete-init-file (module &key (really-delete t) stage)
+  (let ((bitcode-path (build-pathname module :bc stage))) ;; (target-backend-pathname (get-pathname-with-type module "bc"))))
     (if (probe-file bitcode-path)
 	(if really-delete
 	    (progn
-	      (bformat t "     Deleting bitcode: %s\n" (truename bitcode-path))
-	      (delete-file bitcode-path))
-	      )
-	)))
-
-(defun recursive-find (item seq)
-  (if seq
-      (if (eq item (car seq))
-          t
-          (recursive-find item (cdr seq)))))
+	      (bformat t "     Deleting bitcode: %s\n" bitcode-path)
+	      (delete-file bitcode-path))))))
 
 ;; I need to search the list rather than using features because *features* may change at runtime
 (defun default-target-backend (&optional given-stage)
-  (let* ((stage (if given-stage given-stage (if (recursive-find :ecl-min *features*) "min" "full")))
-         (garbage-collector (if (recursive-find :use-mps *features*) "mps" "boehm"))
+  (let* ((stage (if given-stage given-stage (if (member :ecl-min *features*) "min" (if (member :cclasp *features*) "cclasp" "full"))))
+         (garbage-collector (build-configuration))
          (target-backend (bformat nil "%s-%s" stage garbage-collector)))
     target-backend))
 
 (defvar *target-backend* (default-target-backend))
 (export '*target-backend*)
 
+(defun strip-root (l orig-sys)
+  (let ((cur l)
+        (root orig-sys))
+    (tagbody
+     top
+       (if (and (car cur) (eql (car cur) (car root)))
+           (progn
+             (setq cur (cdr cur))
+             (setq root (cdr root))
+             (go top))))
+    (if root
+        (error "Roots don't match - could not strip all of root ~s from ~s" orig-sys l))
+    cur))
+
+
 
 (defun target-backend-pathname (pathname &key (target-backend *target-backend*) &allow-other-keys)
-;;  (if target-backend nil (error "target-backend is nil"))
-  (merge-pathnames (make-pathname :host target-backend) pathname))
+  ;;  (if target-backend nil (error "target-backend is nil"))
+  (let ((relative (maybe-relative-pathname-to-sys pathname)))
+    (merge-pathnames relative (translate-logical-pathname (make-pathname :host target-backend)))))
 
 (export '(default-target-backend target-backend-pathname))
 
+(defun bitcode-exists-and-up-to-date (filename)
+  (let* ((source-path (build-pathname filename))
+         (bitcode-path (build-pathname filename :bc))
+         (found-bitcode (probe-file bitcode-path)))
+    (if found-bitcode
+        (> (file-write-date bitcode-path)
+           (file-write-date source-path))
+        nil)))
 
-(defun compile-kernel-file (filename &key (reload nil) load-bitcode (recompile nil))
+(defun out-of-date-bitcodes (start end &key (system *system-files*))
+  (let ((sources (select-source-files end :first-file start :system system))
+        out-of-dates)
+    (mapc #'(lambda (f) (if out-of-dates
+                            (setq out-of-dates (list* f out-of-dates))
+                            (if (not (bitcode-exists-and-up-to-date f))
+                                (setq out-of-dates (cons f nil)))))
+          sources)
+    (nreverse out-of-dates)))
+
+(defun out-of-date-image (image source-files)
+  (let* ((last-source (car (reverse source-files)))
+         (last-bitcode (build-pathname last-source :bc))
+         (image-file image))
+    (format t "last-bitcode: ~a~%" last-bitcode)
+    (format t "image-file: ~a~%" image-file)
+    (if (probe-file image-file)
+        (> (file-write-date last-bitcode)
+           (file-write-date image-file))
+        t)))
+
+(defun compile-kernel-file (filename &key (reload nil) load-bitcode (force-recompile nil))
+  #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s\n" filename)
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
-  (let* ((source-path (lisp-source-pathname filename))
-	 (bitcode-path (target-backend-pathname (get-pathname-with-type filename "bc")))
-	 (load-bitcode (if (probe-file bitcode-path)
-			   (if load-bitcode
-			       t
-			       (if (> (file-write-date bitcode-path)
-				      (file-write-date source-path))
-				   t
-				   nil))
-			   nil)))
-    (if (and load-bitcode (not recompile))
+  (let* ((source-path (build-pathname filename :lisp))
+	 (bitcode-path (build-pathname filename :bc)) ;; (target-backend-pathname (get-pathname-with-type filename "bc")))
+	 (load-bitcode (and (bitcode-exists-and-up-to-date filename) load-bitcode)))
+    (if (and load-bitcode (not force-recompile))
 	(progn
-	  (bformat t "Skipping compilation of %s - its bitcode file %s is more recent\n" (truename source-path) (translate-logical-pathname bitcode-path))
+	  (bformat t "Skipping compilation of %s - its bitcode file %s is more recent\n" source-path bitcode-path)
 	  ;;	  (bformat t "   Loading the compiled file: %s\n" (path-file-name bitcode-path))
 	  ;;	  (load-bitcode (as-string bitcode-path))
 	  )
 	(progn
 	  (bformat t "\n")
-	  (bformat t "Compiling %s to %s - will reload: %s\n" (truename source-path) bitcode-path reload)
+	  (bformat t "Compiling source %s\n   to %s - will reload: %s\n" source-path bitcode-path reload)
 	  (let ((cmp::*module-startup-prefix* "kernel"))
-            (compile-file source-path :output-file bitcode-path :print t :verbose t :output-type :bitcode :type :kernel)
+            #+dbg-print(bformat t "DBG-PRINT  source-path = %s\n" source-path)
+            (compile-file (probe-file source-path) :output-file bitcode-path :print t :verbose t :output-type :bitcode :type :kernel)
 	    (if reload
 		(progn
-		  (bformat t "    Loading newly compiled file: %s\n" (truename bitcode-path))
+		  (bformat t "    Loading newly compiled file: %s\n" bitcode-path)
 		  (load-bitcode bitcode-path))
 		(bformat t "      Skipping reload\n"))
 	    )))
     bitcode-path
     ))
+(export 'compile-kernel-file)
 
 
 
@@ -575,116 +670,142 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defvar *init-files*
   '(
     :init
-    init
-    cmp/jit-setup
-    clsymbols
+    #P"kernel/init"
     :start
-    lsp/foundation
-    lsp/export
-    lsp/defmacro
+    #P"kernel/cmp/jit-setup"
+    #P"kernel/clsymbols"
+    #P"kernel/lsp/packages"
+    #P"kernel/lsp/foundation"
+    #P"kernel/lsp/export"
+    #P"kernel/lsp/defmacro"
     :defmacro
-    lsp/helpfile
-    lsp/evalmacros
-    lsp/claspmacros
-    lsp/testing
-    lsp/makearray
-    lsp/arraylib
-    lsp/setf
-    lsp/listlib
-    lsp/mislib
-    lsp/defstruct
-    lsp/predlib
-    lsp/seq
-    lsp/cmuutil
-    lsp/seqmacros
-    lsp/iolib
-    lsp/profiling    ;; Do micro-profiling of the GC
+    #P"kernel/lsp/helpfile"
+    #P"kernel/lsp/evalmacros"
+    #P"kernel/lsp/claspmacros"
+    #P"kernel/lsp/source-transformations"
+    :macros
+   #P"kernel/lsp/testing"
+    #P"kernel/lsp/makearray"
+    #P"kernel/lsp/arraylib"
+    #P"kernel/lsp/setf"
+    #P"kernel/lsp/listlib"
+    #P"kernel/lsp/mislib"
+    #P"kernel/lsp/defstruct"
+    #P"kernel/lsp/predlib"
+    #P"kernel/lsp/seq"
+    #P"kernel/lsp/cmuutil"
+    #P"kernel/lsp/seqmacros"
+    #P"kernel/lsp/seqlib"
+    #P"kernel/lsp/iolib"
+;;    #P"kernel/lsp/profiling"    ;; Do micro-profiling of the GC
     :tiny
     :pre-cmp
     ;; Compiler code
-    cmp/packages
-    cmp/cmpsetup
-    cmp/cmpenv-fun
-    cmp/cmpenv-proclaim
-    cmp/cmpglobals
-    cmp/cmptables
-    cmp/cmpvar
-    cmp/cmputil
-    cmp/cmpintrinsics
-    cmp/cmpir
-    cmp/cmpeh
-    cmp/debuginfo
-    cmp/lambdalistva
-    cmp/cmpvars
-    cmp/cmpquote
-    cmp/cmpobj
-    cmp/compiler
-    cmp/compilefile
-    cmp/cmpbundle
-    cmp/cmpwalk
+    #P"kernel/cmp/packages"
+    #P"kernel/cmp/cmpsetup"
+;;    #P"kernel/cmp/cmpenv-fun"
+;;    #P"kernel/cmp/cmpenv-proclaim"
+    #P"kernel/cmp/cmpglobals"
+    #P"kernel/cmp/cmptables"
+    #P"kernel/cmp/cmpvar"
+    #P"kernel/cmp/cmputil"
+    #P"kernel/cmp/cmpintrinsics"
+    #P"kernel/cmp/cmpir"
+    #P"kernel/cmp/cmpeh"
+    #P"kernel/cmp/debuginfo"
+;;    #P"kernel/cmp/arguments"
+    #P"kernel/cmp/lambdalistva"
+    #P"kernel/cmp/cmpvars"
+    #P"kernel/cmp/cmpquote"
+    #P"kernel/cmp/cmpobj"
+;;    #P"kernel/cmp/mincomp"
+    #P"kernel/cmp/compiler"
+    #P"kernel/cmp/compilefile"
+    #P"kernel/cmp/cmpbundle"
+    #P"kernel/cmp/cmprepl"
     :cmp
-    :stage1
-    cmp/cmprepl
-    :cmprepl
-    lsp/logging
-    lsp/seqlib
-    lsp/trace
-    :was-pre-cmp
-    lsp/sharpmacros
-    lsp/assert
-    lsp/numlib
-    lsp/describe
-    lsp/module
-    lsp/loop2
-    lsp/assorted
-    lsp/packlib
-;;    cmp/cmpinterpreted
-    lsp/defpackage
-    lsp/format
-    #|
-		 arraylib
-		 numlib
-		 |#
     :min
-    clos/package
-    clos/hierarchy
-    clos/cpl
-    clos/std-slot-value
-    clos/slot
-    clos/boot
-    clos/kernel
-    clos/method
-    clos/combin
-    clos/std-accessors
-    clos/defclass
-    clos/slotvalue
-    clos/standard
-    clos/builtin
-    clos/change
-    clos/stdmethod
-    clos/generic
+    :cmprepl
+    #P"kernel/cmp/cmpwalk"
+    #P"kernel/lsp/logging"
+    #P"kernel/lsp/trace"
+    :was-pre-cmp
+    #P"kernel/lsp/sharpmacros"
+    #P"kernel/lsp/assert"
+    #P"kernel/lsp/numlib"
+    #P"kernel/lsp/describe"
+    #P"kernel/lsp/module"
+    #P"kernel/lsp/loop2"
+    #P"kernel/lsp/shiftf-rotatef"
+    #P"kernel/lsp/assorted"
+    #P"kernel/lsp/packlib"
+;;    cmp/cmpinterpreted
+    #P"kernel/lsp/defpackage"
+    #P"kernel/lsp/format"
+    #|
+    arraylib
+    numlib
+    |#
+    #P"kernel/clos/package"
+    #P"kernel/clos/hierarchy"
+    #P"kernel/clos/cpl"
+    #P"kernel/clos/std-slot-value"
+    #P"kernel/clos/slot"
+    #P"kernel/clos/boot"
+    #P"kernel/clos/kernel"
+    #P"kernel/clos/method"
+    #P"kernel/clos/combin"
+    #P"kernel/clos/std-accessors"
+    #P"kernel/clos/defclass"
+    #P"kernel/clos/slotvalue"
+    #P"kernel/clos/standard"
+    #P"kernel/clos/builtin"
+    #P"kernel/clos/change"
+    #P"kernel/clos/stdmethod"
+    #P"kernel/clos/generic"
     :generic
-    clos/fixup
-    clos/extraclasses
-    lsp/defvirtual
+    #P"kernel/clos/fixup"
+    #P"kernel/clos/extraclasses"
+    #P"kernel/lsp/defvirtual"
     :stage3
-    clos/conditions
-    clos/print
-    clos/streams
-    lsp/pprint
-    clos/inspect
+    #P"kernel/clos/conditions"
+    #P"kernel/clos/print"
+    #P"kernel/clos/streams"
+    #P"kernel/lsp/pprint"
+    #P"kernel/clos/inspect"
     :clos
-    lsp/ffi
+    #P"kernel/lsp/ffi"
+    #P"modules/sockets/sockets.lisp"
 ;;    asdf/build/asdf
     :front
-    lsp/top
+    #P"kernel/lsp/top"
     :all
+;;    lsp;pprint
+    ))
+(defvar *system-files* *init-files*)
+(export '(*system-files* *init-files*))
 
-;;    lsp/pprint
-))
+(defun add-cleavir-to-*system-files* ()
+  (let* ((fin (open (build-pathname #P"kernel/cleavir-system" :lisp)))
+         cleavir-files)
+    (unwind-protect
+         (progn
+           (setq cleavir-files (read fin)))
+      (close fin))
+    (setq *system-files* (append *init-files*
+                                 (list :bclasp)
+                                 cleavir-files
+                                 (list :cclasp)))))
+(export 'add-cleavir-to-*system-files*)
+
+(defvar *asdf-files*
+  '(:init
+    #P"kernel/asdf/build/asdf"
+    :end))
+(export '*asdf-files*)
 
 
-(defun select-source-files (last-file &key first-file system)
+(defun select-source-files (last-file &key first-file (system *system-files*))
   (or first-file (error "You must provide first-file to select-source-files"))
   (or system (error "You must provide system to select-source-files"))
   (let ((cur (member first-file system))
@@ -696,7 +817,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        (setq file (car cur))
        (if (endp cur) (go done))
        (if last-file
-	   (if (eq last-file file)
+	   (if (equal last-file file)
 	       (progn
 		 (if (not (keywordp file))
 		     (setq files (cons file files)))
@@ -705,11 +826,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	   (setq files (cons file files)))
        (setq cur (cdr cur))
        (go top)
-     done
-       )
-    (nreverse files)
-    ))
+     done)
+    (nreverse files)))
 
+(export 'select-source-files)
 
 
 
@@ -728,15 +848,14 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	   (setq files (cons file files)))
        (setq cur (cdr cur))
        (go top)
-     done
-       )
-    files
-    ))
+     done)
+    files))
 
 
 
 
-(defun load-system ( first-file last-file &key interp load-bitcode (target-backend *target-backend*) (system *init-files*))
+(defun load-system ( first-file last-file &key interp load-bitcode (target-backend *target-backend*) (system *system-files*))
+  #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s\n" first-file last-file )
   (let* ((*target-backend* target-backend)
          (files (select-source-files last-file :first-file first-file :system system))
 	 (cur files))
@@ -744,7 +863,11 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
      top
        (if (endp cur) (go done))
        (if (not interp)
-	   (iload (car cur) :load-bitcode load-bitcode)
+	   (if (bitcode-exists-and-up-to-date (car cur))
+               (iload (car cur) :load-bitcode load-bitcode)
+               (progn
+                 (setq load-bitcode nil)
+                 (interpreter-iload (car cur))))
 	   (interpreter-iload (car cur)))
        (gctools:cleanup)
        (setq cur (cdr cur))
@@ -753,53 +876,25 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        )))
 
 
-(defun compile-system (first-file last-file &key recompile reload (system *init-files*))
-;;  (if *target-backend* nil (error "*target-backend* is undefined"))
-  (bformat t "compile-system  from: %s  to: %s\n" first-file last-file)
-  (if (not recompile)
-        (load-system first-file last-file :system system))
-  (let* ((files (select-source-files last-file :first-file first-file :system system))
-	 (cur files)
-         bitcode-files)
+(defun compile-system (files &key reload (system *system-files*))
+  #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
+  (let* ((cur files))
     (tagbody
      top
        (if (endp cur) (go done))
-       (let ((one-bitcode (compile-kernel-file (car cur) :recompile recompile :reload reload )))
-         (setq bitcode-files (cons one-bitcode bitcode-files)))
+       (compile-kernel-file (car cur) :reload reload )
        (setq cur (cdr cur))
        (go top)
-     done
-       )
-    (reverse bitcode-files)))
-
-
-(defun copy-system (first-file last-file &key (from-target-backend nil) (to-target-backend nil) (system *init-files*))
-  ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
-  (or from-target-backend (error "from-target-backend must be defined"))
-  (or to-target-backend (error "to-target-backend must be defined"))
-  (bformat t "copy-system  from: %s  to: %s  from-target-backend: %s  to-target-backend: %s\n" first-file last-file from-target-backend to-target-backend)
-  (let* ((files (select-source-files last-file :first-file first-file :system system))
-	 (cur files))
-    (tagbody
-     top
-       (if (endp cur) (go done))
-       (let* ((bitcode-raw (get-pathname-with-type (car cur) "bc"))
-	      (bitcode-from (target-backend-pathname bitcode-raw :target-backend from-target-backend))
-	      (bitcode-to (target-backend-pathname bitcode-raw :target-backend to-target-backend)))
-	 (core:copy-file bitcode-from bitcode-to))
-       (setq cur (cdr cur))
-       (go top)
-     done
-       )
-))
+     done)))
+(export 'compile-system)
 
 
 ;; Clean out the bitcode files.
 ;; passing :no-prompt t will not prompt the user
-(defun clean-system ( &optional after-file &key no-prompt (target-backend *target-backend*)
-                                           (system *init-files*))
-  (let* ((*target-backend* target-backend)
-         (files (select-trailing-source-files after-file :system system))
+(export 'clean-system)
+(defun clean-system (after-file &key no-prompt stage
+                                           (system *system-files*))
+  (let* ((files (select-trailing-source-files after-file :system system))
 	 (cur files))
     (bformat t "Will remove modules: %s\n" files)
     (bformat t "cur=%s\n" cur)
@@ -811,93 +906,164 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	  (tagbody
 	   top
 	     (if (endp cur) (go done))
-	     (delete-init-file (car cur) :really-delete t )
+	     (delete-init-file (car cur) :really-delete t :stage stage )
 	     (setq cur (cdr cur))
 	     (go top)
-	   done
-	     )
-	  (bformat t "Not deleting\n"))))
+	   done)
+	  (bformat t "Not deleting\n")))))
+
+
+
+(defun default-prologue-form (&optional features)
+  `(progn
+     ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
+     (if (member :interactive *features*)
+         (bformat t "Starting %s ... loading image... it takes a few seconds\n" (lisp-implementation-version)))))
+
+(defun default-epilogue-form ()
+  '(progn
+    (cl:in-package :cl-user)
+    (process-command-line-load-eval-sequence)
+    (let ((core:*use-interpreter-for-eval* nil))
+      (when (member :interactive *features*) (core:run-repl)))))
+
+(defconstant +minimal-epilogue-form+ '(progn
+                                       (process-command-line-load-eval-sequence)
+                                       (bformat t "Starting clasp-min low-level-repl\n")
+                                       (core::select-package :core)
+                                       (core::low-level-repl)))
+
+
+(defun link-system (start end prologue-form epilogue-form &key (system *system-files*))
+  #+dbg-print(bformat t "DBG-PRINT About to link-system\n")
+  (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname x :bc)) (select-source-files end :first-file start :system system))))
+    (cmp:link-system-lto (build-pathname +image-pathname+ :fasl)
+                         :lisp-bitcode-files bitcode-files
+                         :prologue-form prologue-form
+                         :epilogue-form epilogue-form)))
+(export '(link-system)) ;; core
+
+(export '(compile-mino))
+(defun compile-min (&key (target-backend (default-target-backend)) (system *system-files*))
+  (if (out-of-date-bitcodes :init :cmp)
+      (progn
+        (load-system :start :cmp :system system)
+        (let* ((*target-backend* target-backend)
+               (files (out-of-date-bitcodes :init :cmp :system system)))
+          (compile-system files :reload t)))))
+
+(export 'link-min)
+(defun link-min (&key force)
+  (min-features)
+  (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cmp :first-file :init)))
+      (progn
+        (load-system :start :cmp)
+        (link-system :init :cmp (default-prologue-form) +minimal-epilogue-form+))))
+                   
+(defun recursive-remove-from-list (item list)
+  (if list
+      (if (equal item (car list))
+          (recursive-remove-from-list item (cdr list))
+          (list* (car list) (recursive-remove-from-list item (cdr list))))
+      nil))
+(export 'recursive-remove-from-list)
+
+(defun remove-stage-features ()
+  (setq *features* (recursive-remove-from-list :ecl-min *features*))
+  (setq *features* (recursive-remove-from-list :clos *features*))
+  (setq *features* (recursive-remove-from-list :bclasp *features*))
+  (setq *features* (recursive-remove-from-list :cclasp *features*)))
+
+(export 'process-command-line-load-eval-sequence)
+(defun process-command-line-load-eval-sequence ()
+  (mapcar #'(lambda (entry)
+              (if (eq (car entry) :load)
+                  (load (cdr entry))
+                (eval (read-from-string (cdr entry)))))
+          core::*command-line-load-eval-sequence*)
   )
 
 
+(defun load-clasprc ()
+  "Load the users startup code"
+  (let ((clasprc (make-pathname :name ""
+			       :type "clasprc"
+			       :defaults (user-homedir-pathname))))
+    (if (probe-file clasprc)
+	(load clasprc))))
+(export 'load-clasprc)
 
-(defun compile-cmp (&key (target-backend (default-target-backend)))
-  (let ((*target-backend* target-backend))
-        (compile-system :start :cmp :reload t )
-        (compile-system :init :start :reload nil )
-        ))
+(export 'min-features)
+(defun min-features ()
+  (remove-stage-features)
+  (setq *features* (list* :ecl-min *features*)))
 
-(defconstant +minimal-epilogue-form+ '(progn
-                                        (process-command-line-load-eval-sequence)
-                                        (bformat t "Starting clasp-min low-level-repl\n")
-                                        (core::low-level-repl)))
+(export 'bclasp-features)
+(defun bclasp-features()
+  (remove-stage-features)
+  (setq *features* (list* :clos :bclasp *features*)))
 
-(defun compile-min-system (&key (source-backend (default-target-backend))(target-backend (default-target-backend)))
-  (let* ((*target-backend* source-backend)
-         (bitcodes1 (compile-system :start :cmp :reload t ))
-         (bitcodes0 (compile-system :init :start :reload nil :recompile t ))
-         (bitcodes2 (compile-system :cmp :min ))
-         (all-bitcodes (nconc bitcodes0 bitcodes1 bitcodes2)))
-    (let ((*target-backend* target-backend))
-    (cmp:link-system-lto
-           (target-backend-pathname +image-pathname+ )
-           :lisp-bitcode-files all-bitcodes
-           :epilogue-form +minimal-epilogue-form+
-           ))))
+(export 'cclasp-features)
+(defun cclasp-features ()
+  (remove-stage-features)
+  (setq *features* (list* :clos :cclasp *features*)))
 
-
-(defun compile-min-recompile (&key (target-backend (default-target-backend)))
-  (let ((*target-backend* target-backend)
-        (bitcode-files0 (compile-system :init :start :recompile t))
-        (bitcode-files1 (compile-system :start :min :recompile t ))
-        )
-    (cmp:link-system-lto (target-backend-pathname +image-pathname+ )
-                     :lisp-bitcode-files (nconc bitcode-files0 bitcode-files1)
-                     :epilogue-form +minimal-epilogue-form+)))
-
-
-
-(defun switch-to-full ()
-  (setq *features* (remove :ecl-min *features*))
-  (push :clos *features*)
-  (bformat t "Removed :ecl-min from and added :clos to *features* --> %s\n" *features*)
-)
-
-(defun compile-full ()
-  (if (member :ecl-min *features*) (switch-to-full))
+(export '(compile-bclasp))
+(defun compile-bclasp ()
+  (bclasp-features)
   (let ((*target-backend* (default-target-backend)))
-    (load-system :start :all :interp t )
-    (let ((bitcode-files (compile-system :init :all :recompile t )))
-      (cmp:link-system-lto (target-backend-pathname +image-pathname+)
-			   :lisp-bitcode-files bitcode-files
-			   :prologue-form '(progn
-					    (if (member :interactive *features*) 
-						(bformat t "Starting %s Clasp %s ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
-			   :epilogue-form '(progn
-					    (cl:in-package :cl-user)
-					    (require 'system)
-					    (load-clasprc)
-					    (process-command-line-load-eval-sequence)
-					    (when (member :interactive *features*) (core:top-level))))
-      )))
-
-
-(defun compile-clos () ;; &key (target-backend (default-target-backend)))
-  (switch-to-full)
+    (if (out-of-date-bitcodes :init :all)
+        (progn
+          (load-system :start :all :interp t )
+          (let ((files (out-of-date-bitcodes :init :all)))
+            (compile-system files))))))
+(export 'link-bclasp)
+(defun link-bclasp ()
+  (bclasp-features)
   (let ((*target-backend* (default-target-backend)))
-    (load-system :start :clos :interp t )
-;;    (switch-to-full)
-    ;; Compile everything - ignore old bitcode
-    (let ((bitcode-files (compile-system :init :all :recompile t )))
-      (cmp:link-system-lto (target-backend-pathname +image-pathname+)
-                           :lisp-bitcode-files bitcode-files ))))
+    (if (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :all :first-file :init))
+        (link-system :init :all (default-prologue-form '(:clos)) (default-epilogue-form)))))
 
+(export '(compile-cclasp))
+(defun compile-cclasp ()
+  (cclasp-features)
+  (add-cleavir-to-*system-files*)
+  (let ((*target-backend* (default-target-backend)))
+    (if (out-of-date-bitcodes :init :cclasp)
+        (progn
+          (load-system :bclasp :cclasp :interp t )
+          (let ((files (out-of-date-bitcodes :init :cclasp)))
+            (compile-system files))))))
+(export 'link-cclasp)
+(defun link-cclasp (&key force)
+  (cclasp-features)
+  (add-cleavir-to-*system-files*)
+  (let ((*target-backend* (default-target-backend)))
+    (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cclasp :first-file :init)))
+        (progn
+          (link-system :init :cclasp
+                       '(progn
+                         (make-package "CLEAVIR-AST")
+                         (make-package "CLASP-CLEAVIR-AST")
+                         (make-package "CLASP-CLEAVIR")
+                         (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
+                         (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
+                         (if (member :interactive *features*) 
+                             (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n"
+                                           (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
+                       '(progn
+                         (cl:in-package :cl-user)
+                         (require 'system)
+                         (core:load-clasprc)
+                         (core:process-command-line-load-eval-sequence)
+                         (let ((core:*use-interpreter-for-eval* nil))
+                           (when (member :interactive *features*) (core:top-level)))))))))
 
 (defun help-build ()
   (bformat t "Useful build commands:\n")
-  (bformat t "(load-system from-stage to-stage &key (interp t/nil) (system *init-files*))\n")
+  (bformat t "(load-system from-stage to-stage &key (interp t/nil) (system *system-files*))\n")
   (bformat t "          - Load parts of the system\n")
-  (bformat t "(compile-system from-stage to-stage &key :reload t (system *init-files*))\n")
+  (bformat t "(compile-system from-stage to-stage &key :reload t (system *system-files*))\n")
   (bformat t "          - Compile whatever parts of the system have changed\n")
   (bformat t "(clean-system after-stage)\n")
   (bformat t "          - Remove all built files after after-stage\n")
@@ -949,14 +1115,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export 'my-time)
 
 
-(defun load-clasprc ()
-  "Load the users startup code"
-  (let ((clasprc (make-pathname :name ""
-			       :type "clasprc"
-			       :defaults (user-homedir-pathname))))
-    (if (probe-file clasprc)
-	(load clasprc))))
-
 (defun load-pos ()
   (declare (special core:*load-current-source-file-info* core:*load-current-linenumber*))
   (bformat t "Load pos: %s %s\n" core:*load-current-source-file-info* core:*load-current-linenumber*))
@@ -971,16 +1129,16 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;;  Setup the build system for ASDF
 ;;
 ;;
-(defun setup-asdf () (load "sys:kernel;asdf;build;asdf.lsp"))
+(defun setup-asdf () (load "kernel;asdf;build;asdf.lsp"))
 (export 'setup-asdf)
 
 (defun compile-asdf ()
   ;; Run make on asdf wherever it is installed
-;  (core:system (bformat nil "(cd %s; make)" (namestring (translate-logical-pathname "sys:kernel;asdf;"))))
-  (compile-file "sys:kernel;asdf;build;asdf.lisp" :output-file (compile-file-pathname "sys:modules;asdf;asdf.fasl"
+;  (core:system (bformat nil "(cd %s; make)" (namestring (translate-logical-pathname "kernel;asdf;"))))
+  (compile-file "kernel;asdf;build;asdf.lisp" :output-file (compile-file-pathname "modules;asdf;asdf.fasl"
 										      :target-backend (default-target-backend)))
-  #+(or)(cmp::link-system-lto "sys:kernel;asdf;build;asdf.fasl"
-			      :lisp-bitcode-files (list #P"sys:kernel;asdf;build;asdf.bc"))
+  #+(or)(cmp::link-system-lto "kernel;asdf;build;asdf.fasl"
+			      :lisp-bitcode-files (list #P"kernel/asdf/build/asdf.bc"))
   )
 
 
@@ -989,8 +1147,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;;  Setup the build system for SICL
 ;;
 (defun setup-cleavir ()
-  (load "sys:kernel;asdf;build;asdf.fasl")
-  (load "sys:kernel;cleavir;ccmp-all.lsp")
+  (load "kernel;asdf;build;asdf.fasl")
+  (load "kernel;cleavir;ccmp-all.lsp")
   )
 
 (export 'setup-sicl)
@@ -1002,10 +1160,13 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;;  Setup the swank
 ;;
 (defun load-swank ()
-  (load "sys:swank.lsp"))
+  (load "swank.lsp"))
 (export '(load-swank))
 
 
+(defun load-cleavir-system ()
+  (let* ((fin (open "kernel;cleavir-system.lsp")))
+    (read fin)))
 
 
 
@@ -1015,13 +1176,14 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;;
 
 
-(defun process-command-line-load-eval-sequence ()
-  (mapcar #'(lambda (entry)
-              (if (eq (car entry) :load)
-                  (load (cdr entry))
-                (eval (read-from-string (cdr entry)))))
-          core::*command-line-load-eval-sequence*)
-  )
+(export 'core:top-level)
+(defun run-repl ()
+  (if (fboundp 'core:top-level)
+      (progn
+	(require 'system)
+	(load-clasprc)
+	(core:top-level))
+      (core:low-level-repl)))
 
 
 (eval-when (:execute)

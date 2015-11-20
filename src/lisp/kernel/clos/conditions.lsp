@@ -65,12 +65,16 @@
       (restart-report restart stream))
   restart)
 
+
+
+
 (defstruct (restart (:PRINT-FUNCTION restart-print))
   name
   function
   report-function
   interactive-function
   (test-function (constantly t)))
+
 
 (defun restart-report (restart stream)
   (declare (si::c-local))
@@ -568,6 +572,23 @@ memory limits before executing the program again."))
 
 (define-condition program-error (error) ())
 
+#+clasp
+(define-condition core:argument-number-error (program-error)
+  ((supplied :initarg :supplied :reader argument-number-error-supplied)
+   (min :initarg :min :reader argument-number-error-min)
+   (max :initarg :max :reader argument-number-error-max))
+  (:report
+   (lambda (condition stream)
+     (let ((supplied (argument-number-error-supplied condition))
+           (max (argument-number-error-max condition))
+           (min (argument-number-error-min condition)))
+       (if (and max (> supplied max))
+           (format stream "No more than ~s argument~:p allowed, ~s argument~:p supplied."
+                   max supplied)
+           (format stream "At least ~s argument~:p required, ~s argument~:p supplied."
+                   min supplied))))))
+
+
 (define-condition control-error (error) ())
 
 (define-condition stream-error (error)
@@ -626,6 +647,12 @@ memory limits before executing the program again."))
 (define-condition floating-point-inexact (arithmetic-error) ())
 
 (define-condition floating-point-invalid-operation (arithmetic-error) ())
+
+#+clasp (define-condition core:do-not-funcall-special-operator (error)
+          ((operator :initarg :operator :reader operator))
+          (:report (lambda (condition stream)
+                     (format stream "You should never funcall special operator: ~s"
+                             (operator condition)))))
 
 #+clasp (define-condition core:too-few-arguments-error (error)
          ((called-function :initarg :called-function :reader called-function)
@@ -803,8 +830,10 @@ memory limits before executing the program again."))
             (read-it)))
       value))
 
+(defvar *assert-failure-test-form* nil)
 (defun assert-failure (test-form &optional place-names values
                        &rest arguments)
+  (setq *assert-failure-test-form* test-form)
   (unless arguments
     (setf arguments (list 'SIMPLE-TYPE-ERROR
 			  :DATUM test-form

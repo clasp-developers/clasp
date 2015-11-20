@@ -31,8 +31,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/instance.fwd.h>
 
-
-
 #define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__0_
 #define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__1_
 #define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__2_
@@ -46,7 +44,7 @@ THE SOFTWARE.
 #define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__10_
 #define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__11_
 // may need more later
-#include GC_INTERFACE_HEADER
+#include <clasp/gctools/gc_interface.h>
 #undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__0_
 #undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__1_
 #undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__2_
@@ -60,63 +58,54 @@ THE SOFTWARE.
 #undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__10_
 #undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__11_
 
-
 /*! Different values for Instance_O.isgf */
-#define ECL_NOT_FUNCALLABLE	0
-#define ECL_STANDARD_DISPATCH	1
-#define ECL_RESTRICTED_DISPATCH	2
-#define ECL_READER_DISPATCH	3
-#define ECL_WRITER_DISPATCH	4
-#define ECL_USER_DISPATCH	5
+#define ECL_NOT_FUNCALLABLE 0
+#define ECL_STANDARD_DISPATCH 1
+#define ECL_RESTRICTED_DISPATCH 2
+#define ECL_READER_DISPATCH 3
+#define ECL_WRITER_DISPATCH 4
+#define ECL_USER_DISPATCH 5
 
+namespace core {
 
+#if 0 // moved to foundation.h
+/*! Shouldn't this derive from a Functoid - it doesn't need a closedEnvironment */
+class InstanceClosure : public FunctionClosure {
+public:
+  GenericFunctionPtr entryPoint;
+  Instance_sp instance;
 
-namespace core
-{
+public:
+  DISABLE_NEW();
+  InstanceClosure(T_sp name, GenericFunctionPtr ep, Instance_sp inst)
+      : FunctionClosure(name), entryPoint(ep), instance(inst){};
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+  virtual const char *describe() const { return "InstanceClosure"; };
+  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
+  LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
+  T_sp lambdaList() const;
+};
+#endif
 
+class Instance_O : public Function_O {
+  LISP_BASE1(Function_O);
+  LISP_CLASS(core, CorePkg, Instance_O, "Instance");
+  friend class Class_O;
+  void archiveBase(ArchiveP node);
 
-    /*! Shouldn't this derive from a Functoid - it doesn't need a closedEnvironment */
-    class InstanceClosure : public FunctionClosure
-    {
-    public:
-	ArgArrayGenericFunctionPtr 	        entryPoint;
-        Instance_sp                             instance;
-    public:
-        DISABLE_NEW();
-        InstanceClosure(T_sp name,ArgArrayGenericFunctionPtr ep,Instance_sp inst)
-            : FunctionClosure(name)
-            , entryPoint(ep)
-            , instance(inst){};
-        virtual size_t templatedSizeof() const { return sizeof(*this); };
-	virtual const char* describe() const {return "InstanceClosure";};
-	virtual void LISP_CALLING_CONVENTION();
-        LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
-	T_sp lambdaList() const;
-    };
-
-
-
-
-
-    class Instance_O : public Function_O
-    {
-	LISP_BASE1(Function_O);
-	LISP_CLASS(core,CorePkg,Instance_O,"Instance");
-	friend class Class_O;
-	void archiveBase(ArchiveP node);
-    public: // ctor/dtor for classes with shared virtual base
-	explicit Instance_O();
-	virtual ~Instance_O();
-    GCPROTECTED: // instance variables here
-	int					_isgf;
-	Class_sp 				_Class;
-        gctools::Vec0<T_sp>			_Slots;
-	/*! TODO: I don't know what this is for
-	  - mimicking ECL instance->sig generation signature
+public: // ctor/dtor for classes with shared virtual base
+  explicit Instance_O() : Function_O(), _isgf(ECL_NOT_FUNCALLABLE), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
+  virtual ~Instance_O(){};
+GCPROTECTED: // instance variables here
+  int _isgf;
+  Class_sp _Class;
+  gctools::Vec0<T_sp> _Slots;
+  /*! Mimicking ECL instance->sig generation signature
         Jul 2014 - I think it is pointed to the class slots in case they change - then the instances can be updated*/
-	T_sp 		_Sig;
-    public:
-        bool    isCallable() const { return this->closure!=NULL; };
+  T_sp _Sig;
+
+public:
+  bool isCallable() const { return (bool)(this->closure); };
 #if 0
     public: // Functions that mimic ECL_XXXX_XXXX macros (eg: ECL_CLASS_SLOTS(x))
 	// Instances that represent CL classes have slots that are hard-coded to represent
@@ -131,80 +120,76 @@ namespace core
 	T_sp& _CLASS_CPL() 	{ return this->_Slots[3+4];};
 
 #endif
-    public: // Generic function ECL macros are replicated here
-	T_sp GFUN_NAME() const { return this->_Slots[0]; };
-	T_sp GFUN_SPECIALIZERS() const { return this->_Slots[1]; };
-	T_sp GFUN_COMB() const { return this->_Slots[2]; };
-    public: // The hard-coded indexes above are defined below to be used by Class
-    protected:
-	void initializeSlots(int numberOfSlots);
-        void ensureClosure(ArgArrayGenericFunctionPtr entryPoint);
-    public:
-	static T_sp allocateInstance(T_sp _theClass, int numberOfSlots=0);
-	static T_sp allocateRawInstance(T_sp orig, T_sp _theClass, int numberOfSlots);
+public: // Generic function ECL macros are replicated here
+  T_sp GFUN_NAME() const { return this->_Slots[0]; };
+  T_sp GFUN_SPECIALIZERS() const { return this->_Slots[1]; };
+  T_sp GFUN_COMB() const { return this->_Slots[2]; };
 
-    private:
-	void reshapeInstance(int delta);
+public: // The hard-coded indexes above are defined below to be used by Class
+protected:
+  void initializeSlots(int numberOfSlots);
+  void ensureClosure(GenericFunctionPtr entryPoint);
 
-    public:
-	virtual void LISP_INVOKE();
-    public: // Functions here
-	int numberOfSlots() const { return this->_Slots.size();};
-	/*! Return number of slots if not nil otherwise nil */
-	T_sp oinstancepSTAR() const;
-	/*! Return number of slots if not nil otherwise nil */
-	T_sp oinstancep() const;
+public:
+  static T_sp allocateInstance(T_sp _theClass, int numberOfSlots = 0);
+  static T_sp allocateRawInstance(T_sp orig, T_sp _theClass, int numberOfSlots);
 
-	int isgf() const { return this->_isgf;};
+private:
+  void reshapeInstance(int delta);
 
-	Class_sp _instanceClass() const { return this->_Class;};
+public:
+  virtual void LISP_INVOKE();
 
-	T_sp instanceClassSet(Class_sp mc);
+public: // Functions here
+  int numberOfSlots() const { return this->_Slots.size(); };
+  /*! Return number of slots if not nil otherwise nil */
+  T_sp oinstancepSTAR() const;
+  /*! Return number of slots if not nil otherwise nil */
+  T_sp oinstancep() const;
 
-	virtual T_sp instanceSigSet();
-	virtual T_sp instanceSig() const;
+  int isgf() const { return this->_isgf; };
 
-        bool macroP() const { return false; };
-        Symbol_sp functionKind() const { return kw::_sym_function; };
-        void setKind(Symbol_sp k);
+  Class_sp _instanceClass() const { return this->_Class; };
 
-        virtual bool equalp(T_sp obj) const;
-	virtual void sxhash(HashGenerator& hg) const;
+  T_sp instanceClassSet(Class_sp mc);
 
+  virtual T_sp instanceSigSet();
+  virtual T_sp instanceSig() const;
 
-	/*! Return the value of a slot */
-	T_sp instanceRef(int idx) const; // { return this->_Slots[idx];};
-	/*! Set the value of a slot and return the new value */
-	T_sp instanceSet(int idx,T_sp val); // { this->_Slots[idx] = val; return val;};
+  bool macroP() const { return false; };
+  Symbol_sp functionKind() const { return kw::_sym_function; };
+  void setKind(Symbol_sp k);
 
-	string __repr__() const;
+  virtual bool equalp(T_sp obj) const;
+  virtual void sxhash_(HashGenerator &hg) const;
 
-	T_sp copyInstance() const;
+  /*! Return the value of a slot */
+  T_sp instanceRef(int idx) const; // { return this->_Slots[idx];};
+  /*! Set the value of a slot and return the new value */
+  T_sp instanceSet(int idx, T_sp val); // { this->_Slots[idx] = val; return val;};
 
-	T_sp setFuncallableInstanceFunction(T_sp functionOrT);
+  string __repr__() const;
 
-	bool genericFunctionP() const;
+  T_sp copyInstance() const;
 
+  T_sp setFuncallableInstanceFunction(T_sp functionOrT);
 
-        void describe();
+  bool genericFunctionP() const;
 
-	void __write__(T_sp sout) const; // Look in write_ugly.cc
+  void describe(T_sp stream);
 
+  void __write__(T_sp sout) const; // Look in write_ugly.cc
 
-    }; // Instance class
-    
+}; // Instance class
+
 }; // core namespace
-template<> struct gctools::GCInfo<core::Instance_O> {
-    static bool constexpr NeedsInitialization = false;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true;
-    static bool constexpr Atomic = false;
+template <>
+struct gctools::GCInfo<core::Instance_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static bool constexpr Moveable = true;
+  static bool constexpr Atomic = false;
 };
 TRANSLATE(core::Instance_O);
-
-
-
-
-
 
 #endif /* _core_instance_H_ */

@@ -24,30 +24,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_serveEvent_symbolTable_H
+#ifndef _serveEvent_symbolTable_H
 #define _serveEvent_symbolTable_H
 
 #include <clasp/core/foundation.h>
 
-
-namespace kw
-{
+namespace kw {
 #define KeywordPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,export) extern core::Symbol_sp cname;
-#include <clasp/serveEvent/symbols_scraped_inc.h>
+#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
 }; /* kw package */
 
-namespace serveEvent
-{
+namespace serveEvent {
 #define ServeEventPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,export) extern core::Symbol_sp cname;
-#include <clasp/serveEvent/symbols_scraped_inc.h>
+#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef ServeEventPkg_SYMBOLS
 }; /* serveEvent package */
-
-
 
 #endif /* _serveEvent_symbolTable_H */

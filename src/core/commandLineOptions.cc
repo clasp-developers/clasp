@@ -31,23 +31,23 @@ THE SOFTWARE.
 #include <boost/program_options.hpp>
 #include <clasp/core/commandLineOptions.h>
 
-namespace core
-{
+namespace core {
 
+CommandLineOptions::CommandLineOptions(int argc, char *argv[])
+    : _TrapIntern(""),
+      _DontLoadImage(false),
+      _DontLoadInitLsp(false),
+      _HasImageFile(false),
+      _ImageFile(""),
+      _GotRandomNumberSeed(false),
+      _RandomNumberSeed(0),
+      _Interactive(true),
+      _Version(false),
+      _SilentStartup(true),
+      _NoRc(false),
+      _PauseForDebugger(false)
 
-    CommandLineOptions::CommandLineOptions(int argc, char* argv[])
-        : _DontLoadImage(false),
-          _DontLoadInitLsp(false),
-          _HasImageFile(false),
-          _ImageFile(""),
-          _GotRandomNumberSeed(false),
-          _RandomNumberSeed(0),
-          _Interactive(true),
-          _Version(false),
-          _SilentStartup(true),
-          _NoRc(false)
-          
-#if 0   // uses boost::program_options which is broken on OS X with -std=c++11
+#if 0 // uses boost::program_options which is broken on OS X with -std=c++11
     {
 	try 
 	{ 
@@ -95,7 +95,7 @@ namespace core
 		if ( vm.count("image") )
 		{
 		    SYMBOL_EXPORT_SC_(KeywordPkg,ignoreInitImage);
-		    Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
+		    List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
 		    features = Cons_O::create(kw::_sym_ignoreInitImage,features);
 		    cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
 		}
@@ -103,7 +103,7 @@ namespace core
 		if ( vm.count("feature") )
 		{
 		    vector<string> feature = vm["feature"].as< vector<string> >();
-		    Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
+		    List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
 		    for ( vector<string>::iterator fit=feature.begin(); fit!=feature.end(); fit++ )
 		    {
 			if ( (*fit) == "" )
@@ -185,67 +185,79 @@ namespace core
 	} 
     }
 #else
-    {
-	int iarg = 1;
-	while (iarg<argc) {
-	    string arg = argv[iarg];
-	    if ( arg == "-h" || arg == "--help" ) {
-		printf("clasp options\n"
-		       "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
-                       "-i/--image file      - Use the file as the boot image\n"
-                       "-N/--non-interactive - Suppress all repls\n"
-		       "-v/--version         - Print version\n"
-		       "-s/--verbose         - Print more info while booting\n"
-		       "-f/--feature feature - Add the feature to *features*\n"
-		       "-e/--eval {form}     - Evaluate a form\n"
-		       "-l/--load {file}     - LOAD the file\n"
-                       "-r/--norc            - Don't load the ~/.clasprc file\n"
-		       "-n/--noinit          - Don't load the init.lsp (very minimal environment)\n"
-		       "-s/--seed #          - Seed the random number generator\n"
-		       "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n");
-		exit(1);
-	    } else if ( arg == "-I" || arg == "--ignore-image" ) {
-		this->_DontLoadImage = true;
-            } else if ( arg == "-N" || arg == "--non-interactive") {
-                this->_Interactive = false;
-            } else if ( arg == "-r" || arg == "--norc" ) {
-                this->_NoRc = true;
-	    } else if ( arg == "-n" || arg == "--noinit") {
-		this->_DontLoadInitLsp = true;
-	    } else if ( arg == "-v" || arg == "--version" ) {
-		this->_Version = true;
-	    } else if ( arg == "-s" || arg == "--verbose" ) {
-		this->_SilentStartup = false;
-	    } else if ( arg == "-f" || arg == "--feature" ) {
-		ASSERTF(iarg<(argc+1),BF("Missing argument for --feature,-f"));
-		this->_Features.push_back(argv[iarg+1]);
-		iarg++;
-	    } else if ( arg == "-i" || arg == "--image" ) {
-		ASSERTF(iarg<(argc+1),BF("Missing argument for --image,-i"));
-                this->_HasImageFile = true;
-		this->_ImageFile = argv[iarg+1];
-		iarg++;
-	    } else if ( arg == "-e" || arg == "--eval" ) {
-		ASSERTF(iarg<(argc+1),BF("Missing argument for --eval,-e"));
-                pair<LoadEvalEnum,std::string> eval(std::make_pair(cloEval,argv[iarg+1]));
-                this->_LoadEvalList.push_back(eval);
-		iarg++;
-	    } else if ( arg == "-l" || arg == "--load" ) {
-		ASSERTF(iarg<(argc+1),BF("Missing argument for --load,-l"));
-                pair<LoadEvalEnum,std::string> eval(std::make_pair(cloLoad,argv[iarg+1]));
-                this->_LoadEvalList.push_back(eval);
-		iarg++;
-	    } else if ( arg == "-s" || arg == "--seed") {
-		this->_RandomNumberSeed = atoi(argv[iarg+1]);
-		iarg++;
-	    } else {
-		this->_Args.push_back(arg);
-	    }
-	    iarg++;
-	}
+{
+  this->_ExecutableName = argv[0];
+  int iarg = 1;
+  while (iarg < argc) {
+    string arg = argv[iarg];
+    if (arg == "-h" || arg == "--help") {
+      printf("clasp options\n"
+             "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
+             "-i/--image file      - Use the file as the boot image\n"
+             "-N/--non-interactive - Suppress all repls\n"
+             "-v/--version         - Print version\n"
+             "-s/--verbose         - Print more info while booting\n"
+             "-f/--feature feature - Add the feature to *features*\n"
+             "-e/--eval {form}     - Evaluate a form\n"
+             "-l/--load {file}     - LOAD the file\n"
+             "-r/--norc            - Don't load the ~/.clasprc file\n"
+             "-n/--noinit          - Don't load the init.lsp (very minimal environment)\n"
+             "-S/--seed #          - Seed the random number generator\n"
+             "-t/--trap {symbol}   - Trap when a specific symbol is INTERN'd\n"
+             "-w/--wait            - Print the PID and wait for the user to hit a key\n"
+             "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n"
+             "*feature* settings\n"
+             "  debug-startup      - Print a message for every top level form at startup\n"
+             "Environment variables:\n"
+             "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
+             "export CLASP_TELEMETRY_FILE=/tmp/clasp.tel # (file to write telemetry)\n"
+             "# to control MPS\n"
+             "export CLASP_MPS_CONFIG=\"32 32 16 80 32 80\" # for lots of GC's\n");
+      exit(0);
+    } else if (arg == "-I" || arg == "--ignore-image") {
+      this->_DontLoadImage = true;
+    } else if (arg == "-N" || arg == "--non-interactive") {
+      this->_Interactive = false;
+    } else if (arg == "-r" || arg == "--norc") {
+      this->_NoRc = true;
+    } else if (arg == "-w" || arg == "--wait") {
+      this->_PauseForDebugger = true;
+    } else if (arg == "-n" || arg == "--noinit") {
+      this->_DontLoadInitLsp = true;
+    } else if (arg == "-v" || arg == "--version") {
+      this->_Version = true;
+    } else if (arg == "-s" || arg == "--verbose") {
+      this->_SilentStartup = false;
+    } else if (arg == "-t" || arg == "--trap") {
+      this->_TrapIntern = argv[iarg + 1];
+      iarg++;
+    } else if (arg == "-f" || arg == "--feature") {
+      ASSERTF(iarg < (argc + 1), BF("Missing argument for --feature,-f"));
+      this->_Features.push_back(argv[iarg + 1]);
+      iarg++;
+    } else if (arg == "-i" || arg == "--image") {
+      ASSERTF(iarg < (argc + 1), BF("Missing argument for --image,-i"));
+      this->_HasImageFile = true;
+      this->_ImageFile = argv[iarg + 1];
+      iarg++;
+    } else if (arg == "-e" || arg == "--eval") {
+      ASSERTF(iarg < (argc + 1), BF("Missing argument for --eval,-e"));
+      pair<LoadEvalEnum, std::string> eval(std::make_pair(cloEval, argv[iarg + 1]));
+      this->_LoadEvalList.push_back(eval);
+      iarg++;
+    } else if (arg == "-l" || arg == "--load") {
+      ASSERTF(iarg < (argc + 1), BF("Missing argument for --load,-l"));
+      pair<LoadEvalEnum, std::string> eval(std::make_pair(cloLoad, argv[iarg + 1]));
+      this->_LoadEvalList.push_back(eval);
+      iarg++;
+    } else if (arg == "-S" || arg == "--seed") {
+      this->_RandomNumberSeed = atoi(argv[iarg + 1]);
+      iarg++;
+    } else {
+      this->_Args.push_back(arg);
     }
+    iarg++;
+  }
+}
 #endif
-
-
-
 };

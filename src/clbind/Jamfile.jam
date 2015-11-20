@@ -1,4 +1,3 @@
-import bundler ;
 local dir = $(__file__:D) ;
 
 #
@@ -9,8 +8,6 @@ project internals/clbind : requirements
 	<define>_GNU_SOURCE
 	<toolset>darwin:<define>READLINE
 	<threading>single
-	<include>./
-	<include>../
 	<toolset>darwin:<define>darwin
 	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
 	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
@@ -23,8 +20,8 @@ project internals/clbind : requirements
 
 
 
-sources =
-	dist-generated-files
+local sources =
+#	dist-generated-files
         adapter.cc
         class_rep.cc
         open.cc
@@ -36,35 +33,30 @@ sources =
         clbindPackage.cc
         class.cc
         derivable_class.cc
-	/internals/core//bundle
-	/externals//boostAndExpatLibs ;
+        ;
 
 
-
-bundler.bundle $(dir) :
-	     $(sources) :
-	     <link>static
-	     <implicit-dependency>mi
-	     <implicit-dependency>/internals/core//mi
-             <implicit-dependency>meta
-	     ;
-#	     <implicit-dependency>/internals/core//symbol_apply_inc  ;
+alias clbind : $(sources) ;
 
 
+lib clasp-clbind : 
+		/internals/gctools//gctools
+    	    	/internals/core//core
+    	    	/internals/cffi//cffi
+                /internals/clbind//clbind
+                /internals/llvmo//llvmo
+                /internals/asttooling//asttooling
+                /internals/sockets//sockets
+                /internals/serveEvent//serveEvent
+                /internals/main//main
+                /externals//boostAndExpatLibs
+#       		/externals//llvm_lib_globbed
+#                /internals/gctools//gclib
+                ;
 
-h clbind_constructor_functoids : clbind_constructor_functoids.pmp ;
-h clbind_functoids : clbind_functoids.pmp ;
-h clbind_methoids : clbind_methoids.pmp ;
-h clbind_static_members : clbind_static_members.pmp ;
-
-alias generated-files : clbind_constructor_functoids clbind_functoids clbind_methoids clbind_static_members ;
-
-alias meta : generated-files ;
-
-# Copy all generated header files to the include directory
-install dist-generated-files : generated-files :
-     <variant>release,<gc>mps:<location>$(INCLUDE)/clbind/generated/release/mps
-     <variant>debug,<gc>mps:<location>$(INCLUDE)/clbind/generated/debug/mps
-     <variant>release,<gc>boehm:<location>$(INCLUDE)/clbind/generated/release/boehm
-     <variant>debug,<gc>boehm:<location>$(INCLUDE)/clbind/generated/debug/boehm
- ;
+import package ;
+package.install clasp-clbind-install :
+                :
+                : clasp-clbind
+                :
+                ;

@@ -24,12 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <string.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
-#include <clasp/core/stringSet.h>
+#include <clasp/core/hashTableEqual.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/binder.h>
@@ -39,60 +39,45 @@ THE SOFTWARE.
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/evaluator.h>
 //#i n c l u d e "render.h"
+#include <clasp/core/hashTableEq.h>
 #include <clasp/core/wrappers.h>
 
+#define MAX_CONS_CHARS 1024
 
-#define	MAX_CONS_CHARS	1024
+namespace core {
 
-namespace core
-{
+EXPOSE_CLASS(core, Binder_O);
 
+void Binder_O::exposeCando(Lisp_sp lisp) {
+  class_<Binder_O>()
+      //	    .def("contains",&Binder_O::contains)
+      //	    .def("extend",&Binder_O::extend)
+      //	    .def("lookup",&Binder_O::lookupSymbol)
+      //	    .def("keysAsCons",&Binder_O::allKeysAsCons)
+      ;
+}
 
-    EXPOSE_CLASS(core,Binder_O);
-
-
-    void Binder_O::exposeCando(Lisp_sp lisp)
-    {
-	class_<Binder_O>()
-//	    .def("contains",&Binder_O::contains)
-//	    .def("extend",&Binder_O::extend)
-//	    .def("lookup",&Binder_O::lookupSymbol)
-//	    .def("keysAsCons",&Binder_O::allKeysAsCons)
-	    ;
-    }
-
-    void Binder_O::exposePython(Lisp_sp lisp)
-    {_G();
+void Binder_O::exposePython(Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,Binder,"","",_lisp)
-	    .def("contains",&Binder_O::contains)
-//	    .def("extend",&Binder_O::extend)
-	    .def("lookup",&Binder_O::lookupSymbol)
-	    .def("keysAsCons",&Binder_O::allKeysAsCons)
-	    ;
+  PYTHON_CLASS(CorePkg, Binder, "", "", _lisp)
+      .def("contains", &Binder_O::contains)
+      //	    .def("extend",&Binder_O::extend)
+      .def("lookup", &Binder_O::lookupSymbol)
+      .def("keysAsCons", &Binder_O::allKeysAsCons);
 #endif
-    }
+}
 
+void Binder_O::initialize() {
+  this->_Bindings = HashTableEq_O::create_default();
+  this->_Values = VectorObjects_O::create();
+}
 
-    void Binder_O::initialize()
-    {
-        this->_Bindings = HashTableEq_O::create_default();
-        this->_Values = VectorObjects_O::create();
-    }
-
-
-
-
-
-
-
-void	Binder_O::archiveBase(ArchiveP node)
-    {_G();
-	node->attribute("bindings",this->_Bindings);
-        node->attribute("values",this->_Values);
-    }
-
-
+void Binder_O::archiveBase(ArchiveP node) {
+  _G();
+  node->attribute("bindings", this->_Bindings);
+  node->attribute("values", this->_Values);
+}
 
 #if 0
     Render_sp Binder_O::rendered(Cons_sp kargs)
@@ -112,14 +97,11 @@ void	Binder_O::archiveBase(ArchiveP node)
     }
 #endif
 
-    void Binder_O::erase()
-    {
-	this->_Bindings->clrhash();
-        VectorObjects_sp vo = VectorObjects_O::create();
-        this->_Values->swap(vo);
-    }
-
-
+void Binder_O::erase() {
+  this->_Bindings->clrhash();
+  VectorObjects_sp vo = VectorObjects_O::create();
+  this->_Values->swap(vo);
+}
 
 #if 0
 /*! Currently, if the symbol is unbound then it will be created
@@ -138,23 +120,21 @@ void	Binder_O::archiveBase(ArchiveP node)
     }
 #endif
 
-    T_sp Binder_O::extend(Symbol_sp sym, T_sp val)
-    {_G();
-	this->_Bindings->setf_gethash(sym,val);
-	return(val);
-    }
+T_sp Binder_O::extend(Symbol_sp sym, T_sp val) {
+  _G();
+  this->_Bindings->setf_gethash(sym, val);
+  return (val);
+}
 
-
-    T_sp Binder_O::lookup(Symbol_sp sym ) const
-    {_G();
-	LOG(BF("Looking for symbol(%s)") % _rep_(sym));
-	T_sp val = this->_Bindings->gethash(sym,_Unbound<T_O>());
-	if ( val.unboundp() )
-	{
-	    SIMPLE_ERROR(BF("Could not find variable binding for %s") % _rep_(sym) );
-	}
-	return((this->_Values->operator[](val.as<Fixnum_O>()->get())));
-    }
+T_sp Binder_O::lookup(Symbol_sp sym) const {
+  _G();
+  LOG(BF("Looking for symbol(%s)") % _rep_(sym));
+  T_sp val = this->_Bindings->gethash(sym, _Unbound<T_O>());
+  if (val.unboundp()) {
+    SIMPLE_ERROR(BF("Could not find variable binding for %s") % _rep_(sym));
+  }
+  return ((this->_Values->operator[](unbox_fixnum(gc::As<Fixnum_sp>(val)))));
+}
 
 #if 0
     T_sp Binder_O::lookup(const string& rawpackage,const string& rawsymStr) const
@@ -165,7 +145,6 @@ void	Binder_O::archiveBase(ArchiveP node)
 	return((this->lookup(sym)));
     }
 #endif
-
 
 #if 0
     Binder_O::const_iterator Binder_O::find(Symbol_sp sym) const
@@ -184,20 +163,19 @@ void	Binder_O::archiveBase(ArchiveP node)
     }
 #endif
 
-    bool Binder_O::contains(Symbol_sp sym) const
-    {_G();
-        return _lisp->_boolean(this->_Bindings->gethash(sym,_Nil<T_O>()));
-    }
+bool Binder_O::contains(Symbol_sp sym) const {
+  _G();
+  TESTING();
+  return this->_Bindings->gethash(sym, _Nil<T_O>()).notnilp();
+}
 
-
-    bool Binder_O::containsSymbolFromString(const string& str)
-    {_G();
-	Symbol_sp sym = _lisp->findSymbol(str);
-	if ( sym.nilp() ) return((false));
-	return((this->contains(sym)));
-    }
-
-
+bool Binder_O::containsSymbolFromString(const string &str) {
+  _G();
+  Symbol_sp sym = _lisp->findSymbol(str);
+  if (sym.nilp())
+    return ((false));
+  return ((this->contains(sym)));
+}
 
 #if 0
     T_sp Binder_O::value(const string& str)
@@ -208,16 +186,12 @@ void	Binder_O::archiveBase(ArchiveP node)
 
 #endif
 
-
-    int Binder_O::intValueOrDefault(Symbol_sp sym, int defVal )
-    {
-	if ( !this->contains(sym) )
-	{
-	    return((defVal));
-	}
-	return((this->lookup(sym).as<Fixnum_O>()->get()));
-    }
-
+int Binder_O::intValueOrDefault(Symbol_sp sym, int defVal) {
+  if (!this->contains(sym)) {
+    return ((defVal));
+  }
+  return (unbox_fixnum(gc::As<Fixnum_sp>(this->lookup(sym))));
+}
 
 #if 0
     string Binder_O::allKeysAsString() const
@@ -255,7 +229,7 @@ void	Binder_O::archiveBase(ArchiveP node)
 	Cons_sp cur = first;
 	for ( Binder_O::const_iterator it=this->_Bindings.begin(); it!=this->_Bindings.end(); it++ )
 	{
-	    Cons_sp one = Cons_O::create(it->first,_Nil<Cons_O>());
+	    Cons_sp one = Cons_O::create(it->first,_Nil<T_O>());
 	    cur->setCdr(one);
 	    cur = one;
 	}
@@ -270,7 +244,7 @@ void	Binder_O::archiveBase(ArchiveP node)
 	Cons_sp cur = first;
 	for ( Binder_O::const_iterator it=this->_Bindings.begin(); it!=this->_Bindings.end(); it++ )
 	{
-	    Cons_sp one = Cons_O::create(this->_Bindings.indexed_value(it->second),_Nil<Cons_O>());
+	    Cons_sp one = Cons_O::create(this->_Bindings.indexed_value(it->second),_Nil<T_O>());
 	    cur->setCdr(one);
 	    cur = one;
 	}
@@ -285,7 +259,5 @@ void	Binder_O::archiveBase(ArchiveP node)
     }
 
 #endif
-
-
 
 }; // namespace core

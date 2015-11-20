@@ -34,117 +34,84 @@ THE SOFTWARE.
 #include <clasp/serveEvent/serveEventPackage.h>
 #include <clasp/core/wrappers.h>
 
-
 namespace serveEvent {
 
-
-    using namespace core;
-
-
-
+using namespace core;
 
 #define ARGS_af_ll_fd_zero "(fdset)"
 #define DECL_af_ll_fd_zero ""
 #define DOCS_af_ll_fd_zero "ll_fd_zero"
-    void af_ll_fd_zero(core::ForeignData_sp fdset)
-    {_G();
-	FD_ZERO(fdset->data<fd_set*>());
-    }
-
-
+void af_ll_fd_zero(core::ForeignData_sp fdset) {
+  _G();
+  FD_ZERO(fdset->data<fd_set *>());
+}
 
 #define ARGS_af_ll_fd_set "(fd fdset)"
 #define DECL_af_ll_fd_set ""
 #define DOCS_af_ll_fd_set "ll_fd_set"
-    void af_ll_fd_set(int fd, core::ForeignData_sp fdset)
-    {_G();
-	FD_SET(fd,fdset->data<fd_set*>());
-    }
+void af_ll_fd_set(int fd, core::ForeignData_sp fdset) {
+  _G();
+  FD_SET(fd, fdset->data<fd_set *>());
+}
 
-	     
-	     
 #define ARGS_af_ll_fd_isset "(fd fdset)"
 #define DECL_af_ll_fd_isset ""
 #define DOCS_af_ll_fd_isset "ll_fd_isset"
-    int af_ll_fd_isset(int fd, core::ForeignData_sp fdset)
-    {_G();
-	return FD_ISSET(fd,fdset->data<fd_set*>());
-    }
+int af_ll_fd_isset(int fd, core::ForeignData_sp fdset) {
+  _G();
+  return FD_ISSET(fd, fdset->data<fd_set *>());
+}
 
-
-
-
-
-	     
-	     
 #define ARGS_af_ll_fdset_size "()"
 #define DECL_af_ll_fdset_size ""
 #define DOCS_af_ll_fdset_size "ll_fdset_size"
-    int af_ll_fdset_size()
-    {_G();
-	return sizeof(fd_set);
-    }
+int af_ll_fdset_size() {
+  _G();
+  return sizeof(fd_set);
+}
 
-
-
-  
-  
 #define ARGS_af_ll_serveEventNoTimeout "(rfd wfd maxfdp1)"
 #define DECL_af_ll_serveEventNoTimeout ""
 #define DOCS_af_ll_serveEventNoTimeout "ll_serveEventNoTimeout"
-    core::Integer_mv af_ll_serveEventNoTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1)
-    {_G();
-	int selectRet = select(maxfdp1, rfd->data<fd_set*>(), wfd->data<fd_set*>(), NULL, NULL );
-	return Values(Integer_O::create(selectRet),Integer_O::create(errno));
-    }
+core::Integer_mv af_ll_serveEventNoTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1) {
+  _G();
+  gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set *>(), wfd->data<fd_set *>(), NULL, NULL);
+  return Values(Integer_O::create(selectRet), Integer_O::create((gc::Fixnum)errno));
+}
 
-		
-		
 #define ARGS_af_ll_serveEventWithTimeout "(rfd wfd maxfdp1 seconds)"
 #define DECL_af_ll_serveEventWithTimeout ""
 #define DOCS_af_ll_serveEventWithTimeout "ll_serveEventWithTimeout"
-    Integer_mv af_ll_serveEventWithTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1, double seconds)
-    {_G();
-	if ( seconds < 0.0 ) {
-	    SIMPLE_ERROR(BF("Illegal timeout %lf seconds") % seconds);
-	}
-	struct timeval tv;
-	tv.tv_sec = seconds;
-	tv.tv_usec = ((seconds-floor(seconds)) * 1e6);
-	int selectRet = select(maxfdp1, rfd->data<fd_set*>(), wfd->data<fd_set*>(), NULL,&tv);
-	return Values(Integer_O::create(selectRet),Integer_O::create(errno));
-    }
+Integer_mv af_ll_serveEventWithTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1, double seconds) {
+  _G();
+  if (seconds < 0.0) {
+    SIMPLE_ERROR(BF("Illegal timeout %lf seconds") % seconds);
+  }
+  struct timeval tv;
+  tv.tv_sec = seconds;
+  tv.tv_usec = ((seconds - floor(seconds)) * 1e6);
+  gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set *>(), wfd->data<fd_set *>(), NULL, &tv);
+  return Values(Integer_O::create(selectRet), Integer_O::create((gc::Fixnum)errno));
+}
 
+void initialize_serveEvent_globals() {
+  SYMBOL_EXPORT_SC_(ServeEventPkg, _PLUS_EINTR_PLUS_);
+  _sym__PLUS_EINTR_PLUS_->defconstant(Integer_O::create((gc::Fixnum)EINTR));
+};
 
+void initialize_serveEvent_functions() {
 
-
-
-
-    void initialize_serveEvent_globals()
-    {
-	SYMBOL_EXPORT_SC_(ServeEventPkg,_PLUS_EINTR_PLUS_);
-	_sym__PLUS_EINTR_PLUS_->defconstant(Integer_O::create(EINTR));
-    };
-
-
-
-    void initialize_serveEvent_functions()
-    {
-
-	SYMBOL_EXPORT_SC_(ServeEventPkg,ll_fd_zero);
-	Defun(ll_fd_zero);
-	SYMBOL_EXPORT_SC_(ServeEventPkg,ll_fd_set);
-	Defun(ll_fd_set);
-	SYMBOL_EXPORT_SC_(ServeEventPkg,ll_fd_isset);
-	Defun(ll_fd_isset);
-	SYMBOL_EXPORT_SC_(ServeEventPkg,ll_fdset_size);
-	Defun(ll_fdset_size);
-	SYMBOL_EXPORT_SC_(ServeEventPkg,ll_serveEventNoTimeout);
-	Defun(ll_serveEventNoTimeout);
-	SYMBOL_EXPORT_SC_(ServeEventPkg,ll_serveEventWithTimeout);
-	Defun(ll_serveEventWithTimeout);
-    };
-
-
-
+  SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fd_zero);
+  Defun(ll_fd_zero);
+  SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fd_set);
+  Defun(ll_fd_set);
+  SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fd_isset);
+  Defun(ll_fd_isset);
+  SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fdset_size);
+  Defun(ll_fdset_size);
+  SYMBOL_EXPORT_SC_(ServeEventPkg, ll_serveEventNoTimeout);
+  Defun(ll_serveEventNoTimeout);
+  SYMBOL_EXPORT_SC_(ServeEventPkg, ll_serveEventWithTimeout);
+  Defun(ll_serveEventWithTimeout);
+};
 };

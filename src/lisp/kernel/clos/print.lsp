@@ -169,7 +169,7 @@ printer and we should rather use MAKE-LOAD-FORM."
 (defmethod print-object ((instance t) stream)
   (print-unreadable-object (instance stream)
     (let ((*package* (find-package "CL")))
-      (format stream "a ~S"
+      (format stream "~S"
 	      (class-name (si:instance-class instance)))))
   instance)
 

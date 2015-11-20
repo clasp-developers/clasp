@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 #include <clasp/core/common.h>
 #include <clasp/core/str.h>
 #include <clasp/core/environment.h>
@@ -35,13 +35,12 @@ THE SOFTWARE.
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/wrappers.h>
 
-
 namespace core {
 
-	/*! The argument list is: (args next-emfun)
+/*! The argument list is: (args next-emfun)
 	  Use next-emfun to set up a FunctionValueEnvironment that defines call-next-method and next-method-p */
-    void Lambda_method_function::LISP_INVOKE()
-	{_G();
+void Lambda_method_function::LISP_INVOKE() {
+  _G();
 #if 0
 	    ASSERTF(this->_method->_body.notnilp(),BF("The method body should never by nil"));
 // TODO: Make this more efficient - this is crazy to put the arguments into a Cons and then
@@ -107,8 +106,7 @@ namespace core {
 #endif
 #endif
 
-
-            IMPLEMENT_MEF(BF("Handle single dispatch method - fixup the code below"));
+  IMPLEMENT_MEF(BF("Handle single dispatch method - fixup the code below"));
 #if 0 // Fix the following so that it will work 
 	    Functoid* functoid = this->_method->_body->functoid();
 	    ValueFrame_sp frame(ValueFrame_O::createForLambdaListHandler(this->_method->_argument_handler,_Nil<ActivationFrame_O>()));
@@ -117,93 +115,73 @@ namespace core {
 //	    DBG_HOOK(BF("Check the new arguments"));
 	    return varargs_activateWithFrameef(functoid,frame->activate(,frame->length(),frame->argArray());
 #endif
-	}
-
+}
 };
 
+namespace core {
 
-
-
-
-namespace core
-{
-    
 // ----------------------------------------------------------------------
 //
-    
-    EXPOSE_CLASS(core,SingleDispatchMethod_O);
-    
-    void SingleDispatchMethod_O::exposeCando(::core::Lisp_sp lisp)
-    {
-	::core::class_<SingleDispatchMethod_O>()
-            .def("singleDispatchMethodName",&SingleDispatchMethod_O::singleDispatchMethodName)
-            .def("singleDispatchMethodReceiverClass",&SingleDispatchMethod_O::singleDispatchMethodReceiverClass)
-            .def("singleDispatchMethodCode",&SingleDispatchMethod_O::singleDispatchMethodCode)
-            .def("singleDispatchMethodLambdaListHandler",&SingleDispatchMethod_O::singleDispatchMethodLambdaListHandler)
-            .def("singleDispatchMethodDeclares",&SingleDispatchMethod_O::singleDispatchMethodDeclares)
-            .def("singleDispatchMethodDocstring",&SingleDispatchMethod_O::singleDispatchMethodDocstring)
-//	.initArgs("(self)")
-	    ;
-    }
-    
-    void SingleDispatchMethod_O::exposePython(::core::Lisp_sp lisp)
-    {
+
+EXPOSE_CLASS(core, SingleDispatchMethod_O);
+
+void SingleDispatchMethod_O::exposeCando(::core::Lisp_sp lisp) {
+  ::core::class_<SingleDispatchMethod_O>()
+      .def("singleDispatchMethodName", &SingleDispatchMethod_O::singleDispatchMethodName)
+      .def("singleDispatchMethodReceiverClass", &SingleDispatchMethod_O::singleDispatchMethodReceiverClass)
+      .def("singleDispatchMethodCode", &SingleDispatchMethod_O::singleDispatchMethodCode)
+      .def("singleDispatchMethodLambdaListHandler", &SingleDispatchMethod_O::singleDispatchMethodLambdaListHandler)
+      .def("singleDispatchMethodDeclares", &SingleDispatchMethod_O::singleDispatchMethodDeclares)
+      .def("singleDispatchMethodDocstring", &SingleDispatchMethod_O::singleDispatchMethodDocstring)
+      //	.initArgs("(self)")
+      ;
+}
+
+void SingleDispatchMethod_O::exposePython(::core::Lisp_sp lisp) {
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(Pkg(),SingleDispatchMethod,"","",_LISP)
-//	.initArgs("(self)")
-	    ;
+  PYTHON_CLASS(Pkg(), SingleDispatchMethod, "", "", _LISP)
+      //	.initArgs("(self)")
+      ;
 #endif
-    }
+}
 
-
-    SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
-							   Class_sp receiverClass,
-							   LambdaListHandler_sp llh,
-							   Cons_sp declares,
-							   Str_sp docstr,
-							   Function_sp body )
-    {_G();
-        GC_ALLOCATE(SingleDispatchMethod_O,method );
-	method->_name = name;
-	method->_receiver_class = receiverClass;
-	ASSERTF(body.notnilp(),BF("The body of a method should never be nil"));
-	method->code = body; 
-	method->_argument_handler = llh;
-	method->_declares = declares;
-	method->_docstring = docstr;
-	// method->_Function this is what we need to set up NOW.
-	// -- this function has to accept two arguments: (args next-emfun)
-	// So it's a chainable methoid, it can be called with a next-emfun argument
-	// which can be called by applying arguments to the local function "call-next-method"
+SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
+                                                       Class_sp receiverClass,
+                                                       LambdaListHandler_sp llh,
+                                                       List_sp declares,
+                                                       gc::Nilable<Str_sp> docstr,
+                                                       Function_sp body) {
+  _G();
+  GC_ALLOCATE(SingleDispatchMethod_O, method);
+  method->_name = name;
+  method->_receiver_class = receiverClass;
+  ASSERTF(body.notnilp(), BF("The body of a method should never be nil"));
+  method->code = body;
+  method->_argument_handler = llh;
+  method->_declares = declares;
+  method->_docstring = docstr;
+// method->_Function this is what we need to set up NOW.
+// -- this function has to accept two arguments: (args next-emfun)
+// So it's a chainable methoid, it can be called with a next-emfun argument
+// which can be called by applying arguments to the local function "call-next-method"
 #if 0
 	CompiledBody_sp cb_method_function_primitive = CompiledBody_O::create(method_functoid,_Nil<T_O>());
 	LambdaListHandler_sp llh_pass_arguments_through(_Nil<LambdaListHandler_O>());
 	BuiltinClosure* method_functoid = gctools::ClassAllocator<Lambda_method_function>::allocateClass(name,method);
 	method->_method_builtin = BuiltIn_O::make(name,llh_pass_arguments_through,cb_method_function_primitive);
 #endif
-	return method;
-    }
+  return method;
+}
 
+string SingleDispatchMethod_O::__repr__() const {
+  stringstream ss;
+  ss << "#<" << this->_instanceClass()->classNameAsString()
+     << " :name " << _rep_(this->_name)
+     << " :receiver-class " << _rep_(this->_receiver_class)
+     << " :code " << _rep_(this->code)
+     //	   << " :method_builtin " << _rep_(this->_method_builtin)
+     << " >";
+  return ss.str();
+}
 
-
-
-
-
-
-
-
-
-    string SingleDispatchMethod_O::__repr__() const
-    {
-	stringstream ss;
-	ss << "#<" << this->_instanceClass()->classNameAsString()
-	   << " :name " << _rep_(this->_name)
-	   << " :receiver-class " << _rep_(this->_receiver_class)
-	   << " :code " << _rep_(this->code)
-//	   << " :method_builtin " << _rep_(this->_method_builtin)
-	   << " >";
-	return ss.str();
-    }
-    
-    
 }; /* core */

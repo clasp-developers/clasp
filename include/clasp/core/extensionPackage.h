@@ -31,15 +31,11 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/extensionPackage.fwd.h>
 
-namespace ext
-{
+namespace ext {
 
-    void initialize_extension_functions();
+void initialize_extension_functions();
 
-    void initialize_extensionPackage();
-
-
+void initialize_extensionPackage();
 };
-
 
 #endif

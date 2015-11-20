@@ -26,8 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #ifndef externalObject_fwd_H
 #define externalObject_fwd_H
-namespace core
-{
+namespace core {
 FORWARD(ExternalObjectManager);
 FORWARD(ExternalObject);
 }

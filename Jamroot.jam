@@ -1,60 +1,108 @@
 import path ;
 import os ;
-
-CLASP_VERSION = "0.2" ;
-
+import bitcode ;
 
 
+CLASP_VERSION = [ SHELL "(cd $CLASP_HOME;git describe --always | tr -d '\n') || echo unknown-version" ] ;
 
-using clang : : [ os.environ CLASP_CLANG_PATH ] ; #   $(APPRES-EXTERNALS-RELEASE)/bin/clang++  ; # CLASP_TOOLSET
+echo "CLASP_VERSION " $(CLASP_VERSION) ;
 
-# using gc ;
+
+using clang : : [ os.environ CLASP_CLANG_PATH ] ;
+
+#using gc ;
 import feature ;
-feature.feature gc : boehm mps mps-prep
-                : symmetric implicit composite propagated link-incompatible ;
-feature.compose <gc>boehm : <define>USE_BOEHM ;
+feature.feature gc : boehmdc boehm mps-prep mps 
+                : symmetric composite propagated link-incompatible ;
 feature.compose <gc>mps : <define>USE_MPS ;
+feature.compose <gc>boehmdc : <define>USE_BOEHM <define>USE_CXX_DYNAMIC_CAST ;
+feature.compose <gc>boehm : <define>USE_BOEHM ;
 feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # used for testing MPS
 
+###
+### Build clasp or cando
+###
+feature.feature program : clasp cando
+                : symmetric composite propagated link-incompatible ;
+feature.compose <program>clasp : <define>PROGRAM_CLASP <define>APPLICATION_CONFIG="\"<clasp/main/application.config>\"" ;
+feature.compose <program>cando : <define>PROGRAM_CANDO <define>APPLICATION_CONFIG="\"<projects/cando/include/cando/main/application.config>\"" ;
+feature.compose <program>other : <define>PROGRAM_OTHER ;   #  Define APPLICATION_CONFIG yourself
 
 GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
+CLASP_DEBUG_CXXFLAGS = [ os.environ CLASP_DEBUG_CXXFLAGS ] ;
+CLASP_DEBUG_LINKFLAGS = [ os.environ CLASP_DEBUG_LINKFLAGS ] ;
+CLASP_RELEASE_CXXFLAGS = [ os.environ CLASP_RELEASE_CXXFLAGS ] ;
+CLASP_RELEASE_LINKFLAGS = [ os.environ CLASP_RELEASE_LINKFLAGS ] ;
 
+echo "CLASP_DEBUG_CXXFLAGS = " $(CLASP_DEBUG_CXXFLAGS) ;
+echo "CLASP_DEBUG_LINKFLAGS = " $(CLASP_DEBUG_LINKFLAGS) ;
+echo "CLASP_RELEASE_CXXFLAGS = " $(CLASP_RELEASE_CXXFLAGS) ;
+echo "CLASP_RELEASE_LINKFLAGS = " $(CLASP_RELEASE_LINKFLAGS) ;
 
+# I'm leaving this rule in because it illustrates how to start something at init
+rule init ( top ? : : properties * ) {
+     ECHO "STARTING init rule in Jamroot.jam --> $(top)"  ;
+#     echo [ SHELL "ls" ] ;
+     if $(top) {
+          .top = $(top) ;
+     }
+     else {
+     	  errors.error "Please set the project root in your Jamroot file" ;
+     }
+     .common = $(top)/src/common ;
+     .applib = $(APPLIB) ;
+#     local ecl = [ common.get-invocation-command-nodefault clasp : ecl ] ;
+#     if ! $(ecl) {
+#     	  ECHO "WARNING: Command ecl not found." ;
+#     }
+}
+
+init clasp ;
 
 
 project clasp : requirements
-	<include>include
+        <include>"/usr/include"
+        <linkflags>"-L/usr/lib"
+        <include>include    #clasp/include/*
+        <define>X86
 	<define>BUILDING_CLASP
 	<define>INHERITED_FROM_SRC
-        <warnings>on
-        <cxxflags>"-ferror-limit=999"
+        <warnings>off
+        <toolset>clang-darwin:<cxxflags>"-ferror-limit=999"
+        <toolset>clang-linux:<cxxflags>"-ferror-limit=999"
         <define>CLASP_GIT_COMMIT="\\\"$(GIT_COMMIT)\\\""
         <define>CLASP_VERSION="\\\"$(CLASP_VERSION)\\\""
-        <cxxflags>"-Wno-attributes"
+        <program>cando:<include>projects/cando/include
+        <cxxflags>"-Wno-attributes -Wno-null-conversion"
         <target-os>linux:<cxxflags>"-fPIC"
-        <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
-        <target-os>darwin:<cxxflags>"-resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
+        <cxxflags>"-Wno-unused-local-typedef"
+        <target-os>darwin:<cxxflags>"-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk "
+        <include>./
         <cxxflags>"-Wno-deprecated-register"
         <define>CLBIND_DYNAMIC_LINK
         <define>NDEBUG     # turns off some weird tests in clbind (will I eat these words?)
         <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
-	<target-os>linux:<linkflags>"-lpthread -ldl"
+	<target-os>linux:<linkflags>"-lpthread -ldl -lrt"
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
 	<toolset>clang:<cxxflags>-std=c++11
 	<target-os>darwin:<cxxflags>"-stdlib=libc++"
 	<target-os>darwin:<linkflags>-stdlib=libc++
+        <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=0"
 	<cxxflags>"-fvisibility=default"
-        <variant>debug:<cxxflags>"-O0 -gdwarf-4"
-        <variant>release:<cxxflags>"-O3 -gdwarf-4"
-        <variant>release:<cflags>"-O3 -gdwarf-4"
+        <variant>debug:<optimization>off
+        <variant>release:<optimization>speed
+        <cxxflags>"-gdwarf-4 -g"
         <linkflags>"-fvisibility=default"
         <target-os>darwin:<linkflags>"-lc++"
 	<define>INCLUDED_FROM_CLASP
-	<include>$(APPRES-EXTERNALS-RELEASE-INCLUDE)
 	<define>EXPAT
-        <cxxflags>"-Wgnu-array-member-paren-init"
-
-
+#        <target-os>darwin:<linkflags>"-Wl,-stack_size,0x1000000"
+        <toolset>clang-darwin:<cxxflags>"-Wgnu-array-member-paren-init"
+        <toolset>clang-linux:<cxxflags>"-Wgnu-array-member-paren-init"
+        <variant>debug:<cxxflags>$(CLASP_DEBUG_CXXFLAGS)
+        <variant>debug:<linkflags>$(CLASP_DEBUG_LINKFLAGS)
+        <variant>release:<cxxflags>$(CLASP_RELEASE_CXXFLAGS)
+        <variant>release:<linkflags>$(CLASP_RELEASE_LINKFLAGS)
 #
 # CONFIGURE CLASP BUILD
 #
@@ -62,6 +110,10 @@ project clasp : requirements
         <define>USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
 
 
+
+### Print a message for every allocation - this can be turned on and off with (gctools:gc-monitor-allocations t/nil)
+    <define>GC_MONITOR_ALLOCATIONS
+    
 ## I wrote a drop in replacement for std::vector<X> that should work with the AMCpool
 ## If you turn on USE_STD_VECTOR then gctools::Vector0<X> will inherit from std::vector<X>
 ##   if you disable USE_STD_VECTOR then the gctools::Vector0<X> will inherit from my
@@ -71,17 +123,23 @@ project clasp : requirements
 ##        Turn on USE_GCVECTOR_MALLOC_ALLOCATOR to use the malloc/free one
 
 #        <define>RUN_SAFE   # Turn on safety checks in smart_ptr - this slows things down
-
+#         <define>DEBUG_FLOW_CONTROL  # use with core::*debug-flow-control* to print flow control debugging
 #	 <define>DEBUG_GCWEAK    # Debug the Weak pointer code
 #        <define>DEBUG_TRYSET    #    Define this if you are using DEBUG_GCWEAK but can be defined alone & with DEBUG_FIND
 #        <define>DEBUG_FIND      #    Define this when using DEBUG_GCWEAK but can be defined along & with DEBUG_TRYSET
 #       <define>SOURCE_DEBUG
 #-------- mps options
-#	<define>DEBUG_MPS      # generate lots of debugging information for MPS
-#        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
-#         <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
-#         <define>CONFIG_THREAD_SINGLE #  Single threaded
-          <define>USE_CLASP_DYNAMIC_CAST
+
+#	<define>DEBUG_THROW_IF_INVALID_CLIENT_ON      # turns on checks for DEBUG_THROW_IF_INVALID_CLIENT
+	<define>DEBUG_TELEMETRY      # generate telemetry data for debugging general GC
+	<define>DEBUG_STACK_TELEMETRY      # generate telemetry data for debugging stack GC
+##### DEBUG_MPS_UNDERSCANNING does a garbage collection after every allocation
+##### This really, really slows things down
+        <define>DEBUG_MPS_UNDERSCANNING
+        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
+#        <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
+#        <define>CONFIG_THREAD_SINGLE #  Single threaded
+         <define>USE_CLASP_DYNAMIC_CAST
 #---------
        <define>DEBUG_CL_SYMBOLS          # Lets you calculate which CL symbols are still missing from Clasp
 #       <define>DEBUG_LOAD_TIME_VALUES   # generate lots of debugging information when accessing ltvs
@@ -145,7 +203,7 @@ project clasp : requirements
 
 # for now
         <target-os>darwin:<define>_ADDRESS_MODEL_64
-        <target-os>linux:<define>_ADDRESS_MODEL_32
+        <target-os>linux:<define>_ADDRESS_MODEL_64
 	<address-model>32:<define>_ADDRESS_MODEL_32
 	<address-model>64:<define>_ADDRESS_MODEL_64
 #	<cxxflags>-D_ADDRESS_MODEL_[<address-model>]
@@ -187,39 +245,25 @@ path-constant INCLUDE : $(TOP)/include/clasp ;
 path-constant COMMON : src/common ;
 path-constant APPTOP : [ os.environ CLASP_INTERNAL_BUILD_TARGET_DIR ] ;
 path-constant APPCONT : $(APPTOP)/Contents ;
+path-constant APPCONTLIB : $(APPCONT)/lib ;
 path-constant APPRES : $(APPCONT)/Resources ;
-path-constant APPRES-EXTERNALS : [ os.environ EXTERNALS_BUILD_TARGET_DIR ] ;
-path-constant APPRES-EXTERNALS-RELEASE : $(APPRES-EXTERNALS)/release ;
-path-constant APPRES-EXTERNALS-DEBUG : $(APPRES-EXTERNALS)/debug ;
-path-constant APPRES-EXTERNALS-DEBUG-LIB : $(APPRES-EXTERNALS-DEBUG)/lib ;
-path-constant APPRES-EXTERNALS-RELEASE-LIB : $(APPRES-EXTERNALS-RELEASE)/lib ;
-path-constant APPRES-EXTERNALS-DEBUG-INCLUDE : $(APPRES-EXTERNALS-DEBUG)/include ;
-path-constant APPRES-EXTERNALS-RELEASE-INCLUDE : $(APPRES-EXTERNALS-RELEASE)/include ;
-path-constant APPRES-EXTERNALS-COMMON : $(APPRES-EXTERNALS)/common ;
-path-constant APPRES-EXTERNALS-COMMON-LIB : $(APPRES-EXTERNALS-COMMON)/lib ;
-path-constant APPRES-EXTERNALS-COMMON-INCLUDE : $(APPRES-EXTERNALS-COMMON)/include ;
+path-constant APPRES-LIB : $(APPRES)/lib ;
+path-constant APPRES-LIB-COMMON : $(APPRES-LIB)/common ;
+path-constant APPRES-LIB-COMMON-LIB : $(APPRES-LIB-COMMON)/lib ;
+path-constant APPRES-LIB-COMMON-INCLUDE : $(APPRES-LIB-COMMON)/include ;
 path-constant APPRES-LISP : $(APPRES)/lisp ;
-path-constant APPBIN_LINUX : $(APPTOP)/bin ;
-path-constant APPBIN_OSX : $(APPTOP)/MacOS ;
+path-constant APPRES-CANDO-LISP : $(APPRES)/cando/lisp ;
+path-constant APPBIN : $(APPTOP)/bin ;
+path-constant APPBIN-DARWIN : $(APPTOP)/MacOS ;
+path-constant APPBIN-LINUX : $(APPTOP)/bin ;
 path-constant APPINC : $(APPRES)/include ;
 path-constant APPLIB : $(APPRES)/lib ;
 path-constant APP-DEBUG-LIB : $(APPLIB)/debug ;
 path-constant APP-RELEASE-LIB : $(APPLIB)/release ;
-#path-constant BUILD : build ;
-
-
-
-path-constant MPS-SRC : ./externals/src/mps-kit-1.111.0/code ;
-path-constant MPS-LIB : $(APPRES-EXTERNALS-COMMON-LIB) ;
-
-
-
-using bundler : $(TOP) ;
 
 use-project externals : ./externals ;
 use-project internals : src ;
 use-project internals/core : src/core ;
-# use-project boost : externals/src/boost ;
 use-project internals/llvmo : src/llvmo ;
 use-project internals/gctools : src/gctools ;
 use-project internals/asttooling : src/asttooling ;
@@ -229,6 +273,7 @@ use-project internals/sockets : src/sockets ;
 use-project internals/clbind : src/clbind ;
 use-project internals/serveEvent : src/serveEvent ;
 use-project internals/lisp : src/lisp ;
+use-project internals/main : src/main ;
 
 
 

@@ -59,101 +59,83 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/symbolTable.h>
 
-namespace clbind { namespace detail {
+namespace clbind {
+namespace detail {
 
-    registration::registration()
-        : m_next(0)
-    {
+registration::registration()
+    : m_next(0) {
+}
+
+registration::~registration() {
+  delete m_next;
+}
+
+} // namespace detail
+
+scope::scope()
+    : m_chain(0) {
+}
+
+scope::scope(std::auto_ptr<detail::registration> reg)
+    : m_chain(reg.release()) {
+}
+
+scope::scope(scope const &other)
+    : m_chain(other.m_chain) {
+  const_cast<scope &>(other).m_chain = 0;
+}
+
+scope &scope::operator=(scope const &other_) {
+  delete m_chain;
+  m_chain = other_.m_chain;
+  const_cast<scope &>(other_).m_chain = 0;
+  return *this;
+}
+
+scope::~scope() {
+  delete m_chain;
+}
+
+scope &scope::operator, (scope s) {
+  if (!m_chain) {
+    m_chain = s.m_chain;
+    s.m_chain = 0;
+    return *this;
+  }
+
+  for (detail::registration *c = m_chain;; c = c->m_next) {
+    if (!c->m_next) {
+      c->m_next = s.m_chain;
+      s.m_chain = 0;
+      break;
     }
+  }
 
-    registration::~registration()
-    {
-        delete m_next;
-    }
+  return *this;
+}
 
-    } // namespace detail
-
-    scope::scope()
-        : m_chain(0)
-    {
-    }
-
-    scope::scope(std::auto_ptr<detail::registration> reg)
-        : m_chain(reg.release())
-    {
-    }
-
-    scope::scope(scope const& other)
-        : m_chain(other.m_chain)
-    {
-        const_cast<scope&>(other).m_chain = 0;
-    }
-
-    scope& scope::operator=(scope const& other_)
-    {
-        delete m_chain;
-        m_chain = other_.m_chain;
-        const_cast<scope&>(other_).m_chain = 0;
-        return *this;
-    }
-
-    scope::~scope()
-    {
-        delete m_chain;
-    }
-
-    scope& scope::operator,(scope s)
-    {
-        if (!m_chain)
-        {
-            m_chain = s.m_chain;
-            s.m_chain = 0;
-            return *this;
-        }
-
-        for (detail::registration* c = m_chain;; c = c->m_next)
-        {
-            if (!c->m_next)
-            {
-                c->m_next = s.m_chain;
-                s.m_chain = 0;
-                break;
-            }
-        }
-
-        return *this;
-    }
-
-    void scope::register_() const
-    {
-        for (detail::registration* r = m_chain; r != 0; r = r->m_next)
-        {
-            r->register_();
-        }
-    }
+void scope::register_() const {
+  for (detail::registration *r = m_chain; r != 0; r = r->m_next) {
+    r->register_();
+  }
+}
 
 } // namespace clbind
 
 namespace clbind {
 
+package_::package_(string const &name, std::list<std::string> nicknames, std::list<string> usePackageNames)
+    : m_name(name), m_nicknames(nicknames), m_usePackageNames(usePackageNames) {
+}
 
-
-    package_::package_(string const& name, std::list<std::string> nicknames, std::list<string> usePackageNames )
-        : m_name(name)
-        , m_nicknames(nicknames)
-        , m_usePackageNames(usePackageNames)
-    {
-    }
-
-    void package_::operator[](scope s)
-    {
-        string packageName = m_name;
-        core::Package_sp pkg = _lisp->findPackage(packageName);
-        if ( pkg.nilp() ) {
-            pkg = _lisp->makePackage(packageName,m_nicknames,m_usePackageNames);
-        }
-        core::DynamicScopeManager lispScope(cl::_sym_STARpackageSTAR,pkg);
-        s.register_();
-    }
+void package_::operator[](scope s) {
+  string packageName = m_name;
+  core::T_sp pkg = _lisp->findPackage(packageName);
+  if (pkg.nilp()) {
+    pkg = _lisp->makePackage(packageName, m_nicknames, m_usePackageNames);
+  }
+  core::DynamicScopeManager lispScope(cl::_sym_STARpackageSTAR, pkg);
+  s.register_();
+}
 
 } // namespace clbind

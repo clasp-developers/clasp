@@ -24,51 +24,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_VectorObjectsWithFillPtr_H
+#ifndef _core_VectorObjectsWithFillPtr_H
 #define _core_VectorObjectsWithFillPtr_H
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/vectorObjects.h>
 #include <clasp/core/corePackage.fwd.h>
 
-namespace core
-{
+namespace core {
 
-    FORWARD(VectorObjectsWithFillPtr);
-    class VectorObjectsWithFillPtr_O : public VectorObjects_O
-    {
-	LISP_BASE1(VectorObjects_O);
-	LISP_CLASS(core,CorePkg,VectorObjectsWithFillPtr_O,"VectorObjectsWithFillPtr");
-	void archiveBase(SNode_sp node);
-    public:
-	VectorObjectsWithFillPtr_O();
-	virtual ~VectorObjectsWithFillPtr_O() {};
-    public:
-	void initialize();
-    private: // instance variables here
-	int 		_FillPtr;
-    public:
-	static VectorObjectsWithFillPtr_sp make(T_sp initial_element, T_sp initial_values, int dimension, int fillPtr, bool adjustable );
+FORWARD(VectorObjectsWithFillPtr);
+class VectorObjectsWithFillPtr_O : public VectorObjects_O {
+  LISP_BASE1(VectorObjects_O);
+  LISP_CLASS(core, CorePkg, VectorObjectsWithFillPtr_O, "VectorObjectsWithFillPtr");
+  void archiveBase(SNode_sp node);
 
-    public: // Functions here
+public:
+  VectorObjectsWithFillPtr_O();
+  virtual ~VectorObjectsWithFillPtr_O(){};
 
-	uint length() const { return this->_FillPtr;};
+public:
+  void initialize();
 
-	virtual bool arrayHasFillPointerP() const { return true;};
-	virtual T_sp& operator[](uint index);
+private: // instance variables here
+  int _FillPtr;
 
-	virtual T_sp elt(int index) const;
-	virtual T_sp setf_elt(int index, T_sp value);
+public:
+  static VectorObjectsWithFillPtr_sp make(T_sp initial_element, T_sp initial_values, int dimension, int fillPtr, bool adjustable);
 
-	string __repr__() const;
+public: // Functions here
+  uint length() const { return this->_FillPtr; };
 
-	int fillPointer() const { return this->_FillPtr;};
-	void setf_fillPointer(int fp);
+  virtual bool arrayHasFillPointerP() const { return true; };
+  virtual T_sp &operator[](uint index);
 
-	Fixnum_sp vectorPush(T_sp newElement);
-	Fixnum_sp vectorPushExtend(T_sp newElement, int extension=16);
+  virtual T_sp elt(int index) const;
+  virtual T_sp setf_elt(int index, T_sp value);
 
-    };
+  string __repr__() const;
+
+  int fillPointer() const { return this->_FillPtr; };
+  void setf_fillPointer(int fp);
+
+  Fixnum_sp vectorPush(T_sp newElement);
+  Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 16);
+};
 
 }; /* core */
 

@@ -1,0 +1,12 @@
+(format t "Building cleavir clasp full version - loading compile-cclasp.lisp~%")
+(defpackage #:cclasp-build
+  (:use #:common-lisp #:core))
+(in-package :cclasp-build)
+(format t "Loading cleavir-system.lsp~%")
+(cclasp-features)
+(core::add-cleavir-to-*system-files*)
+(setq core:*target-backend* (core::default-target-backend))
+(core:clean-system nil :no-prompt t :stage "cclasp")
+(core:load-system :bclasp :cclasp) ;; :pre-inline)
+(core:compile-system (core::out-of-date-bitcodes :init :cclasp) :reload nil)
+(core:quit)

@@ -17,7 +17,7 @@
 
 (in-package "SYS")
 
-;;(defmacro fmt-log (&rest args) `(print (list "FMT-LOG" ,@args)))
+;;(defmacro fmt-log (&rest args) `(core:bformat t "FMT-LOG: %s\n" (list ,@args)))
 (defmacro fmt-log (&rest args) nil)
 
 
@@ -703,6 +703,7 @@
 				    `((declare (ignore ,directive ,directives))
 				      ,@body)))
       #+clasp(lambda (,directive ,directives)
+	       (declare (core::lambda-name ,defun-name))
 	       ,@(if lambda-list
 		     `((let ,(mapcar #'(lambda (var)
 					 (declare (core:lambda-name ,defun-name))
@@ -774,11 +775,13 @@
 	   ,@body))))
 
 (defmacro def-complex-format-interpreter (char lambda-list &body body)
-  (let ((directive (gensym))
-	(directives (if lambda-list (car (last lambda-list)) (gensym))))
+  (let* ((directive (gensym))
+	 (directives (if lambda-list (car (last lambda-list)) (gensym)))
+	 (name (or (char-name char) (string char)))
+	 (defun-name (intern (concatenate 'string name "-FORMAT-INTERPRETER"))))
     `(%set-format-directive-interpreter ,char
        (lambda (stream ,directive ,directives orig-args args)
-	 (declare (ignorable stream orig-args args))
+	 (declare (ignorable stream orig-args args) (core::lambda-name ,defun-name))
 	 ,@(if lambda-list
 	       `((let ,(mapcar #'(lambda (var)
 				   `(,var

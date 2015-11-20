@@ -27,21 +27,8 @@
 
 (in-package :compiler)
 
-(defstruct (calling-convention (:type vector))
-  nargs
-  register-args
-  args ;; This is where the args are copied into
-  )
-(defun calling-convention-copy-args (cc)
-  (let ((mv-start (irc-store-multiple-values 0 (calling-convention-register-args cc))))
-    (setf (calling-convention-args cc) mv-start)))
 
-(defun calling-convention-args.gep (cc idx &optional target-idx)
-  (let ((label (if (and target-idx core::*enable-print-pretty*)
-                   (bformat nil "arg-%d" target-idx)
-                   "rawarg")))
-    (llvm-sys:create-geparray *irbuilder* (calling-convention-args cc) (list (jit-constant-i32 0) idx) label)))
-
+  
 
 
 ;;--------------------------------------------------
@@ -78,7 +65,7 @@
       ((and (atom head) (symbolp head))
        (let ((nargs (length (cdr form)))
              args
-             (temp-result (irc-alloca-tsp evaluate-env)))
+             (temp-result (irc-alloca-tsp)))
          (dbg-set-invocation-history-stack-top-source-pos form)
          ;; evaluate the arguments into the array
          ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
@@ -89,7 +76,9 @@
            (codegen temp-result exp evaluate-env)
            (push (irc-smart-ptr-extract (irc-load temp-result)) args))
          (let ((closure (cmp-lookup-function head evaluate-env)))
-           (irc-funcall result closure (reverse args)))
+	   (irc-low-level-trace :flow)
+           (irc-funcall result closure (reverse args))
+	   (irc-low-level-trace :flow))
          ))
       ((and (consp head) (eq head 'lambda))
        (error "Handle lambda applications"))
@@ -108,29 +97,6 @@
 ;;--------------------------------------------------
 
 
-#+(or)(defun compile-copy-only-required-arguments (new-env ; The environment that will be enriched by the copied arguments
-                                                   lambda-list-handler ; Names of the copied arguments
-                                                   dest-activation-frame ; where the arguments will be copied to
-                                                   argument-holder) ; (contains narg and va-list )
-        (let ((number-of-required-arguments (number-of-required-arguments lambda-list-handler))
-              (nargs (first argument-holder))
-              (va-list (second argument-holder))
-              )
-          (compile-error-if-wrong-number-of-arguments nargs number-of-required-arguments )
-          ;; enrich the new-env with the local variables
-          (dolist (classified-local (classified-symbols lambda-list-handler))
-            (cond
-              ((eq (car classified-local) 'ext:heap-var)
-               (let ((local-sym (cadr classified-local))
-                     (local-idx (cddr classified-local)))
-                 (value-environment-define-lexical-binding new-env local-sym local-idx)))
-              ((eq (car classified-local) 'ext:special-var)
-               (value-environment-define-special-binding new-env (cdr classified-local)))
-              (t (error "Illegal variable classification: ~a" classified-local))))
-          (irc-intrinsic "va_fillActivationFrameWithRequiredVarargs" dest-activation-frame nargs va-list)
-          ))
-
-
 
 (defun compile-error-if-not-enough-arguments (nargs lv-required-number-of-arguments)
   "If nargs < lv-required-number-of-arguments then throw an exception - no cleanup needed because no new environment was created yet"
@@ -139,7 +105,7 @@
     (let ((cmp (irc-icmp-slt nargs lv-required-number-of-arguments "enough-args")))
       (irc-cond-br cmp error-block cont-block)
       (irc-begin-block error-block)
-      (irc-intrinsic "va_throwNotEnoughArgumentsException" *gv-current-function-name* nargs lv-required-number-of-arguments )
+      (irc-intrinsic "va_notEnoughArgumentsException" *gv-current-function-name* nargs lv-required-number-of-arguments )
       (irc-unreachable)
       (irc-begin-block cont-block)
       )))
@@ -150,34 +116,29 @@
   (let* ((error-block (irc-basic-block-create "error"))
 	 (cont-block (irc-basic-block-create "continue"))
 	 (given-number-of-arguments nargs )
-	 (required-number-of-arguments (jit-constant-i32 required-number-of-arguments))
+	 (required-number-of-arguments (jit-constant-size_t required-number-of-arguments))
 	 (cmp (irc-icmp-ne given-number-of-arguments required-number-of-arguments "correct-num-args")))
     (irc-cond-br cmp error-block cont-block)
     (irc-begin-block error-block)
     (compile-error-if-not-enough-arguments given-number-of-arguments required-number-of-arguments)
-    (irc-intrinsic "va_throwTooManyArgumentsException" *gv-current-function-name* given-number-of-arguments required-number-of-arguments)
+    (irc-intrinsic "va_tooManyArgumentsException" *gv-current-function-name* given-number-of-arguments required-number-of-arguments)
     (irc-unreachable)
     (irc-begin-block cont-block)
     ))
 
-
-
-
-#||
-(defun compile-save-if-special (env target &key make-unbound)
-  (when (eq (car target) 'ext:special-var)
-    (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it\n" target)
-    (let* ((target-symbol (cdr target))
-	   (saved-special-val (irc-alloca-tsp env :label (bformat nil "saved->%s" (symbol-name target-symbol)))))
-      (irc-intrinsic "symbolValueReadOrUnbound" saved-special-val (irc-global-symbol target-symbol env))
-      (when make-unbound
-	(irc-intrinsic "makeUnboundTsp" (irc-intrinsic "symbolValueReference" (irc-global-symbol target-symbol env))))
-;;;      (irc-intrinsic "copyTsp" (codegen-special-var-reference target-symbol env) val)
-      (irc-push-unwind env `(symbolValueRestore ,saved-special-val ,target-symbol))
-      ;; Make the variable locally special
-      (value-environment-define-special-binding env target-symbol))))
-||#
-
+(defun compile-error-if-too-many-arguments (nargs maximum-number-of-arguments)
+  "If nargs > lv-maximum-number-of-arguments then throw an exception - no cleanup needed/nothing was created"
+  (let* ((error-block (irc-basic-block-create "error"))
+	 (cont-block (irc-basic-block-create "continue"))
+	 (given-number-of-arguments nargs )
+	 (maximum-number-of-arguments (jit-constant-size_t maximum-number-of-arguments))
+	 (cmp (irc-icmp-sgt given-number-of-arguments maximum-number-of-arguments "max-num-args")))
+    (irc-cond-br cmp error-block cont-block)
+    (irc-begin-block error-block)
+    (irc-intrinsic "va_tooManyArgumentsException" *gv-current-function-name* given-number-of-arguments maximum-number-of-arguments)
+    (irc-unreachable)
+    (irc-begin-block cont-block)
+    ))
 
 (defun compile-save-if-special (env target &key make-unbound)
   (when (eq (car target) 'ext:special-var)
@@ -209,13 +170,13 @@ you need to also bind the target in the compile-time environment "
 	     (car target)		; target-type --> 'special-var
 	     (cdr target)		; target-symbol
 	     ))
-    ((eq (car target) 'ext:heap-var)
+    ((eq (car target) 'ext:lexical-var)
      (cmp-log "compiling as a ext:lexical-var\n")
      (values (irc-intrinsic "lexicalValueReference"
 		       (jit-constant-i32 0)
 		       (jit-constant-i32 (cddr target))
 		       (irc-renv env))
-	     (car target)		; target-type --> 'ext:heap-var
+	     (car target)		; target-type --> 'ext:lexical-var
 	     (cadr target)		; target-symbol
 	     (cddr target)		; target-lexical-index
 	     ))
@@ -233,7 +194,7 @@ If the target is lexical then define-lexical-binding."
     ((eq (car target) 'ext:special-var)
      (let ((target-symbol (cdr target)))
        (value-environment-define-special-binding env target-symbol)))
-    ((eq (car target) 'ext:heap-var)
+    ((eq (car target) 'ext:lexical-var)
      (let ((target-symbol (cadr target))
 	   (target-lexical-index (cddr target)))
        (value-environment-define-lexical-binding env target-symbol target-lexical-index)))
@@ -259,6 +220,24 @@ Use cases:
      ;; Add the target to the ValueEnvironment AFTER storing it in the target reference
      ;; otherwise the target may shadow a variable in the lexical environment
      (define-binding-in-value-environment* ,env ,target)
+     ))
+
+(defmacro with-target-reference-no-bind-do ((target-ref target env) &rest body)
+  "This function generates code to write val into target
+\(special-->Symbol value slot or lexical-->ActivationFrame) at run-time.
+Use cases:
+- generate code to copy a value into the target-ref
+\(with-target-reference-do (target-ref target env)
+  (irc-intrinsic \"copyTsp\" target-ref val))
+- compile arbitrary code that writes result into the target-ref
+\(with-target-reference-do (target-ref target env)
+  (codegen target-ref form env))"
+  `(progn
+     (let ((,target-ref (compile-target-reference* ,env ,target)))
+       ,@body)
+     ;; Add the target to the ValueEnvironment AFTER storing it in the target reference
+     ;; otherwise the target may shadow a variable in the lexical environment
+;;     (define-binding-in-value-environment* ,env ,target)
      ))
 
 
@@ -287,35 +266,14 @@ will put a value into target-ref."
        (define-binding-in-value-environment* ,env ,target)
        )))
 
-
-
-(defun required-arguments-to-registers (reqargs env
-					args
-					new-env
-					entry-arg-idx)
-  (irc-branch-to-and-begin-block (irc-basic-block-create "process-required-arguments"))
-  (compile-error-if-not-enough-arguments (calling-convention-nargs args)
-					 (jit-constant-i32 (car reqargs)))
-  (let (registers)
-    (do* ((cur-req (cdr reqargs) (cdr cur-req))
-	  (arg-idx entry-arg-idx (irc-add arg-idx (jit-constant-i32 1) "arg-idx")))
-	 ((endp cur-req) (values arg-idx (nreverse registers)))
-      (let* ((register (irc-alloca-tsp new-env)))
-	(calling-convention-args.store args arg-idx register)
-	(push register registers)))))
-  
-  
-
-
-
 (defun compile-required-arguments (reqargs env
-                                   args ;;  nargs va-list
+                                   args
 				   new-env
 				   entry-arg-idx ;; this is now in a register
 				   )
   (irc-branch-to-and-begin-block (irc-basic-block-create "process-required-arguments"))
   (compile-error-if-not-enough-arguments (calling-convention-nargs args)
-					 (jit-constant-i32 (car reqargs)))
+					 (jit-constant-size_t (car reqargs)))
   (dbg-set-current-debug-location-here)
   ;; First save any special values
   (do* ((cur-req (cdr reqargs) (cdr cur-req))
@@ -325,13 +283,12 @@ will put a value into target-ref."
   ;; Now copy the required arguments into their targets
   (do* ((cur-req (cdr reqargs) (cdr cur-req))
 	(target (car cur-req) (car cur-req))
-	(arg-idx entry-arg-idx (irc-add arg-idx (jit-constant-i32 1) "arg-idx")))
+	(arg-idx entry-arg-idx (irc-add arg-idx (jit-constant-size_t 1) "arg-idx")))
        ((endp cur-req) arg-idx)
     (let* ((target-idx (cdr target))
-	   (val-ref (calling-convention-args.gep args arg-idx target-idx)))
+	   (val-ref (calling-convention-args.va-arg args arg-idx target-idx)))
       (with-target-reference-do (tref target new-env) ; run-time binding
-	(irc-intrinsic "copyTsp" tref val-ref)))))
-
+	(irc-intrinsic "copyTspTptr" tref val-ref)))))
 
 
 (defun compile-optional-arguments (optargs old-env
@@ -344,8 +301,7 @@ will put a value into target-ref."
   (do* ((cur-opt (cdr optargs) (cdddr cur-opt))
 	(target (car cur-opt) (car cur-opt))
 	(init-form (cadr cur-opt) (cadr cur-opt))
-	(flag (caddr cur-opt) (caddr cur-opt))
-	)
+	(flag (caddr cur-opt) (caddr cur-opt)))
        ((endp cur-opt) ())
     (compile-save-if-special new-env target)
     (when flag
@@ -355,8 +311,8 @@ will put a value into target-ref."
 	(target (car cur-opt) (car cur-opt))
 	(init-form (cadr cur-opt) (cadr cur-opt))
 	(flag (caddr cur-opt) (caddr cur-opt))
-	(temp-result (irc-alloca-tsp new-env :label "temp-result"))
-	(arg-idx entry-arg-idx (irc-add arg-idx (jit-constant-i32 1) "arg-idx")))
+	(temp-result (irc-alloca-tsp :label "temp-result"))
+	(arg-idx entry-arg-idx (irc-add arg-idx (jit-constant-size_t 1) "arg-idx")))
        ((endp cur-opt) arg-idx)
     (let ((arg-block (irc-basic-block-create "opt-arg"))
 	  (init-block (irc-basic-block-create "opt-init"))
@@ -364,33 +320,41 @@ will put a value into target-ref."
 	  (cmp (irc-icmp-slt arg-idx (calling-convention-nargs args) "enough-given-args")))
       (irc-cond-br cmp arg-block init-block)
       (irc-begin-block arg-block)
-      (let ((val-ref (calling-convention-args.gep args arg-idx)))
-	(with-target-reference-do (target-ref target new-env) ; run-time af binding
-	  (irc-intrinsic "copyTsp" target-ref val-ref))
+      (let ((val-ref (calling-convention-args.va-arg args arg-idx)))
+	(with-target-reference-no-bind-do (target-ref target new-env) ; run-time af binding
+	  (irc-intrinsic "copyTspTptr" target-ref val-ref))
 	(when flag
-	  (with-target-reference-do (flag-ref flag new-env) ; run-time AF binding
+	  (with-target-reference-no-bind-do (flag-ref flag new-env) ; run-time AF binding
 	    (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
 	(irc-br cont-block)
 	(irc-begin-block init-block)
-	(with-target-reference-do (target-ref target new-env) ; codegen init-form into target-ref
+	(with-target-reference-no-bind-do (target-ref target new-env) ; codegen init-form into target-ref
 	  ;; Use new-env so that symbols already defined in this lambda can be accessed
 	  (codegen target-ref init-form new-env))
 	(when flag
-	  (with-target-reference-do (flag-ref flag new-env) ; copy nil into flag-ref
+	  (with-target-reference-no-bind-do (flag-ref flag new-env) ; copy nil into flag-ref
 	    (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal nil new-env))))
 	(irc-br cont-block)
-	(irc-begin-block cont-block)))))
+	(irc-begin-block cont-block)))
+    (define-binding-in-value-environment* new-env target)
+    (when flag
+      (define-binding-in-value-environment* new-env flag))
+    ))
+
+
 
 
 (defun compile-rest-arguments (rest-var old-env
-			       args ; nargs va-list
+			       args     ; nargs va-list
 			       new-env entry-arg-idx)
   (irc-branch-to-and-begin-block (irc-basic-block-create "process-rest-arguments"))
   (with-target-reference-do (rest-ref rest-var new-env)
-    (irc-intrinsic "va_fillRestTarget" rest-ref (calling-convention-nargs args) (calling-convention-args args)
-                   entry-arg-idx *gv-current-function-name* )))
-
-
+    (irc-intrinsic "copyTspTptr"
+                   rest-ref
+                   (irc-intrinsic "cc_gatherRestArguments"
+                                  (calling-convention-nargs args)
+                                  (calling-convention-va-list args)
+                                  entry-arg-idx *gv-current-function-name* ))))
 
 (defun compile-key-arguments-parse-arguments (keyargs
 					      lambda-list-allow-other-keys
@@ -403,8 +367,8 @@ will put a value into target-ref."
    saw-aok can have the values (2[&a-o-k or :a-o-k t], 1[:a-o-k nil] or 0 [no &a-o-k or :a-o-k]) "
   (let ((process-kw-args-block (irc-basic-block-create "process-kw-args")))
     (irc-branch-to-and-begin-block process-kw-args-block)
-    (let* ((entry-saw-aok (jit-constant-i32 (if lambda-list-allow-other-keys 2 0)))
-	   (entry-bad-kw-idx (jit-constant-i32 -1))
+    (let* ((entry-saw-aok (jit-constant-size_t (if lambda-list-allow-other-keys 2 0)))
+	   (entry-bad-kw-idx (jit-constant-size_t 65536))
 	   (aok-ref (compile-reference-to-literal :allow-other-keys old-env))
 	   (loop-kw-args-block (irc-basic-block-create "loop-kw-args"))
 	   (kw-exit-block (irc-basic-block-create "kw-exit-block"))
@@ -414,16 +378,18 @@ will put a value into target-ref."
       (let ((entry-arg-idx_lt_nargs (irc-icmp-slt entry-arg-idx (calling-convention-nargs args))) )
 	(irc-cond-br entry-arg-idx_lt_nargs loop-kw-args-block kw-exit-block))
       (irc-begin-block loop-kw-args-block)
-      (let* ((phi-saw-aok (irc-phi +i32+ 2 "phi-saw-aok"))
-	     (phi-arg-idx (irc-phi +i32+ 2 "phi-reg-arg-idx"))
-	     (phi-bad-kw-idx (irc-phi +i32+ 2 "phi-bad-kw-idx")) )
+      (let* ((phi-saw-aok (irc-phi +size_t+ 2 "phi-saw-aok"))
+	     (phi-arg-idx (irc-phi +size_t+ 2 "phi-reg-arg-idx"))
+	     (phi-bad-kw-idx (irc-phi +size_t+ 2 "phi-bad-kw-idx")) )
 	(irc-phi-add-incoming phi-saw-aok entry-saw-aok kw-start-block)
 	(irc-phi-add-incoming phi-arg-idx entry-arg-idx kw-start-block)
 	(irc-phi-add-incoming phi-bad-kw-idx entry-bad-kw-idx kw-start-block)
 	(irc-low-level-trace)
-	(let* ((arg-ref (calling-convention-args.gep args phi-arg-idx))) ;; (irc-gep va-list (list phi-arg-idx))))
-	  (irc-intrinsic "kw_throwIfNotKeyword" arg-ref)
-	  (let* ((eq-aok-ref-and-arg-ref (irc-trunc (irc-intrinsic "compareTsp" aok-ref arg-ref) +i1+)) ; compare arg-ref to a-o-k
+	(let* ((arg-ref (calling-convention-args.va-arg args phi-arg-idx))
+               (arg-idx+1 (irc-add phi-arg-idx (jit-constant-size_t 1)))
+               (kw-arg-val (calling-convention-args.va-arg args arg-idx+1)))
+	  (irc-intrinsic "cc_ifNotKeywordException" arg-ref phi-arg-idx (calling-convention-va-list args))
+	  (let* ((eq-aok-ref-and-arg-ref (irc-trunc (irc-intrinsic "compareTspTptr" aok-ref arg-ref) +i1+)) ; compare arg-ref to a-o-k
 		 (aok-block (irc-basic-block-create "aok-block"))
 		 (possible-kw-block (irc-basic-block-create "possible-kw-block"))
 		 (advance-arg-idx-block (irc-basic-block-create "advance-arg-idx-block"))
@@ -433,11 +399,9 @@ will put a value into target-ref."
 		 )
 	    (irc-cond-br eq-aok-ref-and-arg-ref aok-block possible-kw-block)
 	    (irc-begin-block aok-block)
-	    (let* ((loop-saw-aok (irc-intrinsic "va_allowOtherKeywords"
+	    (let* ((loop-saw-aok (irc-intrinsic "cc_allowOtherKeywords"
 					   phi-saw-aok
-					   (calling-convention-nargs args)
-					   (calling-convention-args args)
-					   phi-arg-idx)) )
+                                           kw-arg-val)))
 	      (irc-br advance-arg-idx-block)
 	      (irc-begin-block possible-kw-block)
 	      ;; Generate a test for each keyword
@@ -454,34 +418,27 @@ will put a value into target-ref."
 		(irc-low-level-trace)
 		(let* ((kw-ref (compile-reference-to-literal key old-env))
 		       (test-kw-and-arg (irc-intrinsic "matchKeywordOnce" kw-ref arg-ref (elt sawkeys idx)))
-                       (no-kw-match (irc-icmp-eq test-kw-and-arg (jit-constant-i32 0)))
+                       (no-kw-match (irc-icmp-eq test-kw-and-arg (jit-constant-size_t 0)))
 		       (matched-kw-block (irc-basic-block-create "matched-kw-block"))
 		       (not-seen-before-kw-block (irc-basic-block-create "not-seen-before-kw-block"))
                        )
 		  (irc-cond-br no-kw-match next-kw-test-block matched-kw-block)
 		  (irc-begin-block matched-kw-block)
-		  (let ((arg-idx+1 (irc-add phi-arg-idx (jit-constant-i32 1)))
-                        (kw-seen-already (irc-icmp-eq test-kw-and-arg (jit-constant-i32 2))))
+		  (let ((kw-seen-already (irc-icmp-eq test-kw-and-arg (jit-constant-size_t 2))))
                     (irc-cond-br kw-seen-already good-kw-block not-seen-before-kw-block)
                     (irc-begin-block not-seen-before-kw-block)
-                    (let ((kw-arg-ref (calling-convention-args.gep args arg-idx+1)))
-                      (with-target-reference-do (target-ref target new-env) ; run-time binding
-                                                (irc-intrinsic "copyTsp" target-ref kw-arg-ref))
-                      ;; Set the boolean flag to indicate that we saw this key
-                      (irc-store (jit-constant-i8 1) (elt sawkeys idx))
-                      (when flag
-                        (with-target-reference-do (flag-ref flag new-env)
-                                                  (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
-                      #|| ;; The old way was to write a value only if the target was UNBOUND - that was wrong
-                      (with-target-reference-if-runtime-unbound-do (flag-ref flag new-env) ; run-time binding ; ; ;
-                      (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
-		  ||#
-		  (irc-br good-kw-block)
-		  (irc-begin-block next-kw-test-block)
-		  ))))
+                    (with-target-reference-no-bind-do (target-ref target new-env) ; run-time binding
+                      (irc-intrinsic "copyTspTptr" target-ref kw-arg-val))
+                    ;; Set the boolean flag to indicate that we saw this key
+                    (irc-store (jit-constant-i8 1) (elt sawkeys idx))
+                    (when flag
+                      (with-target-reference-no-bind-do (flag-ref flag new-env)
+                        (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
+                    (irc-br good-kw-block)
+                    (irc-begin-block next-kw-test-block))))
 	      ;; We fell through all the keyword tests - this might be a unparameterized keyword
 	    (irc-branch-to-and-begin-block bad-kw-block) ; fall through to here if no kw recognized
-	    (let ((loop-bad-kw-idx (irc-intrinsic "kw_trackFirstUnexpectedKeyword"
+	    (let ((loop-bad-kw-idx (irc-intrinsic "cc_trackFirstUnexpectedKeyword"
 					     phi-bad-kw-idx phi-arg-idx)))
 	      (irc-low-level-trace)
 	      (irc-br advance-arg-idx-block)
@@ -491,8 +448,8 @@ will put a value into target-ref."
 	      ;; Now advance the arg-idx, finish up the phi-nodes
 	      ;; and if we ran out of arguments branch out of the loop else branch to the top of the loop
 	      (irc-begin-block advance-arg-idx-block)
-	      (let* ((phi-arg-bad-good-aok (irc-phi +i32+ 3 "phi-this-was-aok"))
-		     (phi.aok-bad-good.bad-kw-idx (irc-phi +i32+ 3 "phi.aok-bad-good.bad-kw-idx")))
+	      (let* ((phi-arg-bad-good-aok (irc-phi +size_t+ 3 "phi-this-was-aok"))
+		     (phi.aok-bad-good.bad-kw-idx (irc-phi +size_t+ 3 "phi.aok-bad-good.bad-kw-idx")))
 		(irc-phi-add-incoming phi-arg-bad-good-aok loop-saw-aok aok-block)
 		(irc-phi-add-incoming phi-arg-bad-good-aok phi-saw-aok bad-kw-block)
 		(irc-phi-add-incoming phi-arg-bad-good-aok phi-saw-aok good-kw-block)
@@ -500,18 +457,18 @@ will put a value into target-ref."
 		(irc-phi-add-incoming phi.aok-bad-good.bad-kw-idx loop-bad-kw-idx bad-kw-block)
 		(irc-phi-add-incoming phi.aok-bad-good.bad-kw-idx phi-bad-kw-idx good-kw-block)
 		(irc-low-level-trace)
-		(let* ((loop-arg-idx (irc-add phi-arg-idx (jit-constant-i32 2)))
+		(let* ((loop-arg-idx (irc-add phi-arg-idx (jit-constant-size_t 2)))
 		       (loop-arg-idx_lt_nargs (irc-icmp-slt loop-arg-idx (calling-convention-nargs args))))
 		  (irc-phi-add-incoming phi-saw-aok phi-arg-bad-good-aok advance-arg-idx-block)
 		  (irc-phi-add-incoming phi-bad-kw-idx phi.aok-bad-good.bad-kw-idx advance-arg-idx-block)
 		  (irc-phi-add-incoming phi-arg-idx loop-arg-idx advance-arg-idx-block)
 		  (irc-cond-br loop-arg-idx_lt_nargs loop-kw-args-block loop-cont-block)
 		  (irc-begin-block loop-cont-block)
-		  (irc-intrinsic "va_throwIfBadKeywordArgument" phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx (calling-convention-nargs args) (calling-convention-args args))
+		  (irc-intrinsic "cc_ifBadKeywordArgumentException" phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx arg-ref)
 		  (let ((kw-done-block (irc-basic-block-create "kw-done-block")))
 		    (irc-branch-to-and-begin-block kw-done-block)
 		    (irc-branch-to-and-begin-block kw-exit-block)
-		    (let ((phi-arg-idx-final (irc-phi +i32+ 2 "phi-arg-idx-final")))
+		    (let ((phi-arg-idx-final (irc-phi +size_t+ 2 "phi-arg-idx-final")))
 		      (irc-phi-add-incoming phi-arg-idx-final entry-arg-idx kw-start-block)
 		      (irc-phi-add-incoming phi-arg-idx-final loop-arg-idx kw-done-block)
 		      (irc-low-level-trace)
@@ -534,16 +491,20 @@ will put a value into target-ref."
       (irc-cond-br i1-missing-key init-default-kw-block next-kw-block)
       (irc-begin-block init-default-kw-block)
       (irc-low-level-trace)
-      (with-target-reference-do (target-ref target new-env) ; run-time binding
+      (with-target-reference-no-bind-do (target-ref target new-env) ; run-time binding
 	(irc-low-level-trace)
 	(codegen target-ref init-form new-env))
       (irc-low-level-trace)
       (when flag
 	(irc-low-level-trace)
-	(with-target-reference-do (flag-ref flag new-env) ; run-time binding
+	(with-target-reference-no-bind-do (flag-ref flag new-env) ; run-time binding
 	  (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal nil new-env))))
       (irc-low-level-trace)
-      (irc-branch-to-and-begin-block next-kw-block))))
+      (irc-branch-to-and-begin-block next-kw-block))
+    (define-binding-in-value-environment* new-env target)
+    (when flag
+      (define-binding-in-value-environment* new-env flag))
+    ))
 
 
 
@@ -588,10 +549,9 @@ will put a value into target-ref."
 
 
 
-(defun compile-throw-if-excess-keyword-arguments (env
-                                                  args ;; nargs va-list
+(defun compile-throw-if-excess-keyword-arguments ( args ;; nargs va-list
                                                   arg-idx)
-  (irc-intrinsic "va_throwIfExcessKeywordArguments" *gv-current-function-name* (calling-convention-nargs args) (calling-convention-args args) arg-idx))
+  (irc-intrinsic "va_ifExcessKeywordArgumentsException" *gv-current-function-name* (calling-convention-nargs args) (calling-convention-va-list args) arg-idx))
 
 
 
@@ -605,7 +565,7 @@ will put a value into target-ref."
   (do* ((cur-aux (cdr auxargs) (cddr cur-aux))
 	(target (car cur-aux) (car cur-aux))
 	(init-form (cadr cur-aux) (cadr cur-aux))
-	(temp-result (irc-alloca-tsp new-env :label "temp-result")))
+	(temp-result (irc-alloca-tsp :label "temp-result")))
        ;; TODO: setup one temp-result and use it for all types of args
        ((endp cur-aux) ())
     (compile-save-if-special new-env target))
@@ -613,7 +573,7 @@ will put a value into target-ref."
   (do* ((cur-aux (cdr auxargs) (cddr cur-aux))
 	(target (car cur-aux) (car cur-aux))
 	(init-form (cadr cur-aux) (cadr cur-aux))
-	(temp-result (irc-alloca-tsp new-env :label "temp-result")))
+	(temp-result (irc-alloca-tsp :label "temp-result")))
        ((endp cur-aux) ())
     ;; Copy the argument into _temp-result_
     (cmp-log "Compiling aux init-form %s\n" init-form)
@@ -631,14 +591,11 @@ will put a value into target-ref."
 ;;;				 &aux (nargs (first argument-holder)) (va-list (second argument-holder)))
   "Fill the dest-activation-frame with values using the
 lambda-list-handler/env/argument-activation-frame"
-  ;;(calling-convention-copy-args args new-env)
-  (irc-store-multiple-values 0 (calling-convention-register-args args))
-  (setf (calling-convention-args args) (irc-intrinsic "getMultipleValues" (jit-constant-i32 0)))
   ;; Declare the arg-idx i32 that stores the current index in the argument-activation-frame
   (dbg-set-current-debug-location-here)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
       (process-lambda-list-handler lambda-list-handler)
-    (let* ((arg-idx (jit-constant-i32 0))
+    (let* ((arg-idx (jit-constant-size_t 0))
 	   (opt-arg-idx (compile-required-arguments reqargs
 						    old-env
 						    args ;; nargs va-list
@@ -664,9 +621,9 @@ lambda-list-handler/env/argument-activation-frame"
 						    rest/key-arg-idx)
 			     rest/key-arg-idx)))
       (unless rest-var
-	(compile-throw-if-excess-keyword-arguments old-env
-                                                   args ; nargs va-list
-                                                   last-arg-idx))
+        (if key-flag
+            (compile-throw-if-excess-keyword-arguments args last-arg-idx)
+            (compile-error-if-too-many-arguments (calling-convention-nargs args) (+ (car reqargs) (car optargs)))))
       (when (/= 0 (car auxargs))
 	(compile-aux-arguments auxargs old-env new-env))
       )
@@ -692,12 +649,10 @@ lambda-list-handler/env/argument-activation-frame"
     (do* ((cur-target (cdr reqargs) (cdr cur-target))
           (cur-fixed-args fixed-args (cdr cur-fixed-args))
           (target (car cur-target) (car cur-target))
-          (arg (car cur-fixed-args) (car cur-fixed-args))
-          )
+          (arg (car cur-fixed-args) (car cur-fixed-args)))
          ((null cur-target))
       (let ((tsp-arg (irc-insert-value (llvm-sys:undef-value-get +tsp+) arg (list 0) "arg")))
-        (with-target-reference-do (tref target new-env) (irc-store tsp-arg tref))))
-    ))
+        (with-target-reference-do (tref target new-env) (irc-store tsp-arg tref))))))
 
 
 

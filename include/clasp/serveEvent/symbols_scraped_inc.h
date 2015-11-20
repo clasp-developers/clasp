@@ -1,1 +1,0 @@
-../../../src/serveEvent/symbols_scraped_inc.h

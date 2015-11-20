@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_HashTableEqualp_H
+#ifndef _core_HashTableEqualp_H
 #define _core_HashTableEqualp_H
 
 #include <clasp/core/foundation.h>
@@ -33,39 +33,37 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/corePackage.fwd.h>
 
-namespace core
-{
+namespace core {
 
-    FORWARD(HashTableEqualp);
-    class HashTableEqualp_O : public HashTable_O
-    {
-	LISP_BASE1(HashTable_O);
-	LISP_CLASS(core,CorePkg,HashTableEqualp_O,"HashTableEqualp");
+FORWARD(HashTableEqualp);
+class HashTableEqualp_O : public HashTable_O {
+  LISP_BASE1(HashTable_O);
+  LISP_CLASS(core, CorePkg, HashTableEqualp_O, "HashTableEqualp");
 #if defined(XML_ARCHIVE)
-	DECLARE_ARCHIVE();
+  DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
-	DEFAULT_CTOR_DTOR(HashTableEqualp_O);
-    public:
-	static HashTableEqualp_sp create( uint sz,  Number_sp rehashSize, double rehashThreshold);
-    public:
-//	static int sxhash_equalp(T_sp obj);
-    public: // Functions here
+  DEFAULT_CTOR_DTOR(HashTableEqualp_O);
 
-	virtual T_sp hashTableTest() const { return cl::_sym_equalp;};
+public:
+  static HashTableEqualp_sp create(uint sz, Number_sp rehashSize, double rehashThreshold);
 
-	bool keyTest(T_sp entryKey, T_sp searchKey) const;
+public:
+  //	static int sxhash_equalp(T_sp obj);
+public: // Functions here
+  virtual T_sp hashTableTest() const { return cl::_sym_equalp; };
 
-	int sxhashKey(T_sp key,int bound, bool willAddKey) const;
+  bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-
-    };
+  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
+};
 
 }; /* core */
-template<> struct gctools::GCInfo<core::HashTableEqualp_O> {
-    static bool constexpr NeedsInitialization = false;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true;
-    static bool constexpr Atomic = false;
+template <>
+struct gctools::GCInfo<core::HashTableEqualp_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static bool constexpr Moveable = true;
+  static bool constexpr Atomic = false;
 };
 
 TRANSLATE(core::HashTableEqualp_O);

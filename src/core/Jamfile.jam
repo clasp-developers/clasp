@@ -1,4 +1,3 @@
-import bundler ;
 local dir = $(__file__:D) ;
 
 echo "core dir = $(dir)" ;
@@ -6,14 +5,7 @@ echo "core dir = $(dir)" ;
 #
 project internals/core : requirements
 	<define>EXPAT
-#	<define>USEBOOSTPYTHON
-	<toolset>darwin:<define>READLINE
-	<toolset>clang:<define>READLINE
 	<threading>single
-        <link>static
-#	<linkflags>-rdynamic
-	<include>./
-	<include>..
 	<toolset>darwin:<define>darwin
 	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
 	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
@@ -22,9 +14,8 @@ project internals/core : requirements
 	<toolset>pathscale:<cxxflags>"-Wno-unused-variable -fopenmp"
 	<toolset>pgi:<cxxflags>"-mp -gopt"
 	<toolset>pgi:<linkflags>"-mp -gopt"
-	<toolset>clang:<variant>release:<linkflags>"-O4"
 	<target-os>darwin:<linkflags>"-dynamiclib"
-	<target-os>darwin:<make-bundle>no
+#	<target-os>darwin:<make-bundle>no
 	;
 
 #
@@ -35,21 +26,52 @@ project internals/core : requirements
 # Precompiled headers
 #
 
-#cpp-pch pch : pch.h ;
-
-local unity_sources =
-      all.cc ;
-
 local sources =
-      unixfsys.cc
+      vectorDisplaced.cc
+      stacks.cc
+      weakKeyMapping.cc
+      weakHashTable.cc
+      weakPointer.cc
+	    evaluator.cc
+	    compiler.cc
+      genericFunction.cc
+	    instance.cc
+      cache.cc
+      float_to_string.cc
+	    primitives.cc
+      random.cc
+      cxxObject.cc
+      cxxClass.cc
+      record.cc
+      debugger.cc
+      smallMap.cc
+      smallMultimap.cc
+	    hashTable.cc
+	    hashTableEq.cc
+	    hashTableEql.cc
+	    hashTableEqual.cc
+	    hashTableEqualp.cc
+      numbers.cc
+		numerics.cc
+      num_arith.cc
+      numberToString.cc
+      num_co.cc
+      load.cc
+	    bignum.cc
+      write_object.cc
+      write_array.cc
+      print.cc
 	    sourceFileInfo.cc
+		symbolToEnumConverter.cc
+		core_globals.cc
+		externalObject.cc
+		myReadLine.cc
+		specialForm.cc
+      unixfsys.cc
       executables.cc
 	    lispList.cc
     activationFrame.cc
 	    environment.cc
-      genericFunction.cc
-	    instance.cc
-		microHeap.cc
 	    binder.cc
 		multiStringBuffer.cc
 		candoOpenMp.cc
@@ -57,22 +79,18 @@ local sources =
 	    lambdaListHandler.cc
 	    lispStream.cc
       bits.cc
-      smallMap.cc
+#      smallMap.cc
       write_symbol.cc
       corePackage.cc
       lisp.cc
-      weakKeyMapping.cc
-      weakHashTable.cc
-      weakPointer.cc
-		objectSet.cc
+#		objectSet.cc
 		profiler.cc
 		lispDefinitions.cc
-		objRef.cc
+#		objRef.cc
 		bundle.cc
-		numerics.cc
 		object.cc
-	    stringSet.cc
-	    stringList.cc
+#	    stringSet.cc
+#	    stringList.cc
 	    profile.cc
       specializer.cc
       write_ugly.cc
@@ -83,55 +101,40 @@ local sources =
       sexpLoadArchive.cc
       sexpSaveArchive.cc
 	    readtable.cc
-      debugger.cc
       float_to_digits.cc
-      num_arith.cc
-      numbers.cc
-      numberToString.cc
-      load.cc
-      num_co.cc
       pathname.cc
       commandLineOptions.cc
       exceptions.cc
       commonLispUserPackage.cc
 	    metaClass.cc
 	    multipleValues.cc
-	    hashTable.cc
-	    hashTableEq.cc
-	    hashTableEql.cc
-	    hashTableEqual.cc
-	    hashTableEqualp.cc
-      stacks.cc
       testing.cc
       predicates.cc
       write_list.cc
 	    str.cc
-	    primitives.cc
-	    symbolList.cc
+#	    symbolList.cc
 	    package.cc
       commonLispPackage.cc
       allClSymbols.cc
       keywordPackage.cc
       extensionPackage.cc
-      print.cc
       vectorObjectsWithFillPtr.cc
       vectorObjects.cc
-      cons.cc
-      write_object.cc
 	    array.cc
       strWithFillPtr.cc
 	    lispMath.cc
       grayPackage.cc
       closPackage.cc
+      cleavirPrimopsPackage.cc
+      cleavirEnvPackage.cc
       compPackage.cc
 	    bootStrapCoreSymbolMap.cc
+      cons.cc
 	    symbol.cc
-	    evaluator.cc
 	    builtInClass.cc
 	    standardClass.cc
-	    compiler.cc
 	conditions.cc
-      cache.cc
+      arrayDisplaced.cc
 		object.cc
       stdClass.cc
       metaobject.cc
@@ -162,54 +165,13 @@ local sources =
 	    arrayObjects.cc
 #	    model.cc
 #	    symbolVector.cc
-	    symbolSet.cc
+#	    symbolSet.cc
 	    reader.cc
 	        lightProfiler.cc
 		fileSystem.cc
 		intArray.cc
 		bitVector.cc
 		posixTime.cc
-		symbolToEnumConverter.cc
-		globals.cc
-		externalObject.cc
-		myReadLine.cc
-		specialForm.cc
-	    bignum.cc
-	     /externals//boostAndExpatLibs
-             		;
+     		;
 
-#Declares virtual target af_function_templates dependent on the two
-#concrete .lisp files.
-h wrappers_functoids : wrappers_functoids.pmp ;
-h wrappers_methoids : wrappers_methoids.pmp ;
-h external_wrappers_indirect_methoids : external_wrappers_indirect_methoids.pmp ;
-h applyToActivationFrame : applyToActivationFrame.pmp ;
-
-alias generated-files : wrappers_functoids wrappers_methoids external_wrappers_indirect_methoids applyToActivationFrame ;
-
-#h symbol_apply_inc : generate_symbol_apply_inc.lisp ;
-
-
-bundler.bundle $(dir) :
-	     $(sources) :
-	     <link>static
-             <implicit-dependency>mi
-             <implicit-dependency>meta
-	     ;
-
-alias meta :     wrappers_functoids
-                 wrappers_methoids
-                 external_wrappers_indirect_methoids
-                 applyToActivationFrame
-                 ;
-
-
-# preprocessed corePackage : corePackage.cc : <variant>debug <define>SOURCE_DEBUG ;
-
-# Copy all generated header files to the include directory
-install dist-generated-files : generated-files :
-     <variant>release,<gc>mps:<location>$(INCLUDE)/core/generated/release/mps
-     <variant>debug,<gc>mps:<location>$(INCLUDE)/core/generated/debug/mps
-     <variant>release,<gc>boehm:<location>$(INCLUDE)/core/generated/release/boehm
-     <variant>debug,<gc>boehm:<location>$(INCLUDE)/core/generated/debug/boehm
- ;
+alias core : $(sources) ;

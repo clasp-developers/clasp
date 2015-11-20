@@ -1,4 +1,4 @@
-
+(in-package :core)
 
 (defmacro blog (fmt &rest args)
   `(progn

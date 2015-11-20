@@ -88,7 +88,7 @@ THE SOFTWARE.
 #include <clasp/core/funcallableStandardClass.h>
 #include <clasp/core/gcInterface.h>
 #include <clasp/core/genericFunction.h>
-#include <clasp/core/globals.h>
+#include <clasp/core/core_globals.h>
 #include <clasp/core/glue.fwd.h>
 #include <clasp/core/glue.h>
 #include <clasp/core/grayPackage.fwd.h>
@@ -221,7 +221,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/symbolVector.fwd.h>
 #include <core/symbolVector.h>
-#include <clasp/core/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #include <clasp/core/sysprop.h>
 #include <core/tagged_intrusive_ptr.h>
 #include <clasp/core/tnc.h>

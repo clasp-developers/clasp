@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/structureClass.h>
@@ -36,14 +36,11 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/wrappers.h>
 
-namespace core
-{
-    StructureClass_sp StructureClass_O::createUncollectable()
-    {
-        GC_ALLOCATE_UNCOLLECTABLE(StructureClass_O,bic);
-	return bic;
-    }
-
+namespace core {
+StructureClass_sp StructureClass_O::createUncollectable() {
+  GC_ALLOCATE_UNCOLLECTABLE(StructureClass_O, bic);
+  return bic;
+}
 
 #if 0
     StructureClass_sp StructureClass_O::create(Class_sp mc)
@@ -54,26 +51,21 @@ namespace core
     }
 #endif
 
+StructureClass_O::StructureClass_O() {
+}
 
-    StructureClass_O::StructureClass_O()
-    {
-    }
-
-
-    void StructureClass_O::initialize()
-    {_OF();
-	this->Base::initialize();
-	this->initializeSlots(REF_NUMBER_OF_SLOTS_IN_CLASSES);
-	this->_InstanceCoreClass = _Nil<Class_O>();
-    }
+void StructureClass_O::initialize() {
+  _OF();
+  this->Base::initialize();
+  this->initializeSlots(REF_NUMBER_OF_SLOTS_IN_CLASSES);
+  this->_InstanceCoreClass = _Nil<Class_O>();
+}
 
 #if defined(XML_ARCHIVE)
-    void StructureClass_O::archiveBase(ArchiveP node)
-    {
-	IMPLEMENT_ME();
-    }
+void StructureClass_O::archiveBase(ArchiveP node) {
+  IMPLEMENT_ME();
+}
 #endif // defined(XML_ARCHIVE)
-
 
 #if 0 // All functions
     void	StructureClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)
@@ -94,7 +86,7 @@ namespace core
     void	StructureClass_O::initialize()
     {
 	this->Base::initialize();
-//    this->_InstanceVariableNames = _Nil<Cons_O>();
+//    this->_InstanceVariableNames = _Nil<T_O>();
 //	this->_SlotSpecifiers.clear();
 	this->_InstanceCoreClass = _Nil<BuiltInClass_O>();
     }
@@ -105,7 +97,7 @@ namespace core
 	    oclass->_Name = name;
 	    oclass->_InstanceClassSymbol = UNDEFINED_SYMBOL; // Not used anymore instanceClassSymbol;
 	    oclass->_InstanceCoreClass = _Nil<BuiltInClass_O>();
-//    oclass->_InstanceVariableNames = _Nil<Cons_O>();
+//    oclass->_InstanceVariableNames = _Nil<T_O>();
 	return oclass;
     }
 
@@ -124,7 +116,7 @@ namespace core
 	{_BLOCK_TRACE("About to assign base class");
 	    if ( baseClassesDesignator->consP() )
 	    {
-		baseClasses = baseClassesDesignator.as_or_nil<Cons_O>();
+		baseClasses = baseClassesDesignator;
 	    } else
 	    {
 		LOG(BF("baseClassesDesignator class(%s) value(%s)")
@@ -201,7 +193,6 @@ namespace core
 #endif
     }
 
-
 #if 0
     StructureClass_O::slotIterator StructureClass_O::find(Symbol_sp sym)
     {_G();
@@ -214,7 +205,7 @@ namespace core
 	{
 	    if ( (*it)->_SlotName == sym ) break;
 	}
-#ifdef	DEBUG_ON
+#ifdef DEBUG_ON
 	if ( it==this->_SlotSpecifiers.end() )
 	{
 	    LOG(BF("Could not find slot"));
@@ -228,17 +219,13 @@ namespace core
     }
 #endif
 
-
-
-
-
 #if 0
     T_sp StructureClass_O::allocate_newNil()
     {_G();
 	IMPLEMENT_ME();
 #if 0
 	T_sp obj = this->_InstanceCoreClass->new_instance(_Nil<Function_O>(), 
-							  _Nil<Cons_O>(),
+							  _Nil<T_O>(),
 							  _Nil<Environment_O>(), _lisp );
 	StructureClass_sp thisClass = this->sharedThis<StructureClass_O>();
 	obj->__setClass(thisClass);
@@ -246,7 +233,6 @@ namespace core
 #endif
     }
 #endif
-
 
 #if 0
     void StructureClass_O::appendInstanceVariablesFromListOfSymbols(Cons_sp instanceVariableNames)
@@ -288,7 +274,7 @@ namespace core
 
 
 
-    void StructureClass_O::setupAccessors(Cons_sp slotNames)
+    void StructureClass_O::setupAccessors(List_sp slotNames)
     {_G();
 	IMPLEMENT_ME(); // Dont pass the slot names, use the slots already defined
 #if 0
@@ -311,23 +297,15 @@ namespace core
 
 #endif
 
-
-
-
-    void StructureClass_O::exposeCando(Lisp_sp lisp)
-    {
-	class_<StructureClass_O>()
-	    ;
-    }
-    void StructureClass_O::exposePython(Lisp_sp lisp)
-    {_G();
+void StructureClass_O::exposeCando(Lisp_sp lisp) {
+  class_<StructureClass_O>();
+}
+void StructureClass_O::exposePython(Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,StructureClass,"","",_lisp)
-	    ;
+  PYTHON_CLASS(CorePkg, StructureClass, "", "", _lisp);
 #endif
-    }
+}
 
-
-    EXPOSE_CLASS(core,StructureClass_O);
-
+EXPOSE_CLASS(core, StructureClass_O);
 };

@@ -1,7 +1,4 @@
-
-
-
-include	$(CANDO_HOME)/makefile.inc
+include	$(CLASP_HOME)/makefile.inc
 
 
 INC_NEEDS = 
@@ -47,3 +44,5 @@ totalClean:
 
 
 
+sub-prebuild:
+	make scrape-all

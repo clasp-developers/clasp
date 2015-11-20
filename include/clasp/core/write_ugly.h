@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_write_ugly_H
+#ifndef _core_write_ugly_H
 #define _core_write_ugly_H
 
 #include <clasp/core/object.h>
@@ -32,13 +32,11 @@ THE SOFTWARE.
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/wrappers.h>
 
-namespace core
-{
+namespace core {
+void write_fixnum(T_sp strm, T_sp i);
+T_sp write_ugly_object(T_sp x, T_sp stream);
+void _clasp_write_fixnum(gc::Fixnum i, T_sp stream);
 
-    T_sp write_ugly_object(T_sp x, T_sp stream);
-
-
-    void initialize_write_ugly_object();
-
+void initialize_write_ugly_object();
 };
 #endif

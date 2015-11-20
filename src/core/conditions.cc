@@ -24,9 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
-	// This should be the last TURN_DEBUG_off turned off when compiling production code
-
+#define DEBUG_LEVEL_FULL
+// This should be the last TURN_DEBUG_off turned off when compiling production code
 
 //
 // (C) 2004 Christian E. Schafmeister
@@ -51,118 +50,85 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/wrappers.h>
 
-
-#ifdef	WIN32
-#	define vsnprintf _vsnprintf
+#ifdef WIN32
+#define vsnprintf _vsnprintf
 #endif
 
-#define	MAX_DEBUG_CALL_DEPTH	200
+#define MAX_DEBUG_CALL_DEPTH 200
 
-namespace core
-{
+namespace core {
 
+EXPOSE_CLASS(core, CandoException_O);
 
+void CandoException_O::exposeCando(core::Lisp_sp lisp) {
+  core::class_<CandoException_O>();
+}
 
-    
-    EXPOSE_CLASS(core,CandoException_O);
-    
-    void CandoException_O::exposeCando(core::Lisp_sp lisp)
-    {
-	core::class_<CandoException_O>()
-	    ;
-    }
-    
-    void CandoException_O::exposePython(core::Lisp_sp lisp)
-    {_G();
+void CandoException_O::exposePython(core::Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,CandoException,"","",_lisp)
-	    ;
+  PYTHON_CLASS(CorePkg, CandoException, "", "", _lisp);
 #endif
-    }
+}
 
+CandoException_sp CandoException_O::create(const string &msg) {
+  GC_ALLOCATE(CandoException_O, ce);
+  ce->setMessage(msg);
+  return ce;
+}
 
-    CandoException_sp CandoException_O::create(const string& msg)
-    {
-        GC_ALLOCATE(CandoException_O,ce );
-	ce->setMessage(msg);
-	return ce;
-    }
+CandoException_sp CandoException_O::create(const boost::format &fmt) {
+  GC_ALLOCATE(CandoException_O, ce);
+  ce->setMessage(fmt.str());
+  return ce;
+}
 
-    CandoException_sp CandoException_O::create(const boost::format& fmt)
-    {
-        GC_ALLOCATE(CandoException_O,ce );
-	ce->setMessage(fmt.str());
-	return ce;
-    }
+Condition::Condition(T_sp cond) {
+  this->_ConditionObject = cond;
+}
 
+Condition::Condition(const Condition &cc) {
+  this->_ConditionObject = cc._ConditionObject;
+}
 
+Condition::~Condition() throw() {
+  // do nothing
+}
 
+T_sp Condition::conditionObject() const {
+  HARD_ASSERT(this->_ConditionObject);
+  return this->_ConditionObject;
+};
 
-
-    Condition::Condition(T_sp cond)
-    {
-        this->_ConditionObject = cond;
-    }
-
-    Condition::Condition(const Condition& cc)
-    {
-        this->_ConditionObject = cc._ConditionObject;
-    }
-
-    Condition::~Condition() throw()
-    {
-        // do nothing
-    }
-
-    T_sp Condition::conditionObject() const
-    {
-        HARD_ASSERT(this->_ConditionObject);
-        return this->_ConditionObject;
-    };
-
-    void Condition::setConditionObject(T_sp co)
-    {
-        this->_ConditionObject = co;
-    }
-
-
-
-
-
+void Condition::setConditionObject(T_sp co) {
+  this->_ConditionObject = co;
+}
 
 #define DOCS_af_makeCondition "make-condition while brcl is booting - replace this once "
 #define ARGS_af_makeCondition "(type &rest slot-initializations)"
 #define DECL_af_makeCondition ""
-    T_sp af_makeCondition(T_sp type, Cons_sp slot_initializations)
-    {_G();
-        GC_ALLOCATE(CandoException_O,condition );
-	Cons_sp all = Cons_O::createList(type,slot_initializations);
-	Str_sp msg = af_bformat(_Nil<T_O>(),"%s %s",all).as<Str_O>();
-	condition->setMessage(msg->get());
-	return condition;
-    };
+T_sp af_makeCondition(T_sp type, List_sp slot_initializations) {
+  _G();
+  GC_ALLOCATE(CandoException_O, condition);
+  Cons_sp all = Cons_O::createList(type, slot_initializations);
+  Str_sp msg = gc::As<Str_sp>(af_bformat(_Nil<T_O>(), "%s %s", all));
+  condition->setMessage(msg->get());
+  return condition;
+};
 
-
-    
-    
 #define ARGS_af_conditionMessage "(c)"
 #define DECL_af_conditionMessage ""
 #define DOCS_af_conditionMessage "conditionMessage"
-    string af_conditionMessage(T_sp condition)
-    {
-	if ( CandoException_sp ce=condition.asOrNull<CandoException_O>() )
-	{
-	    return ce->message();
-	}
-	T_sp sout = clasp_make_string_output_stream();
-	eval::funcall(cl::_sym_printObject,condition,sout);
-	return cl_get_output_stream_string(sout).as<Str_O>()->get();
-    }
+string af_conditionMessage(T_sp condition) {
+  if (CandoException_sp ce = condition.asOrNull<CandoException_O>()) {
+    return ce->message();
+  }
+  T_sp sout = clasp_make_string_output_stream();
+  eval::funcall(cl::_sym_printObject, condition, sout);
+  return gc::As<Str_sp>(cl_get_output_stream_string(sout))->get();
+}
 
-
-
-    
-#if 0    
+#if 0
 #define ARGS_af_setThrowPosition "(cond file function line)"
 #define DECL_af_setThrowPosition ""
 #define DOCS_af_setThrowPosition "setThrowPosition"
@@ -180,20 +146,14 @@ namespace core
     };
 #endif
 
-    void initialize_conditions()
-    {
-	SYMBOL_EXPORT_SC_(ClPkg,makeCondition);
-	Defun(makeCondition);
+void initialize_conditions() {
+  SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
+  Defun(makeCondition);
 
-	SYMBOL_SC_(CorePkg,conditionMessage);
-	Defun(conditionMessage);
+  SYMBOL_SC_(CorePkg, conditionMessage);
+  Defun(conditionMessage);
 
-//	SYMBOL_SC_(CorePkg,setThrowPosition);
-//	Defun(setThrowPosition);
-    };
-
-
-
-
-
+  //	SYMBOL_SC_(CorePkg,setThrowPosition);
+  //	Defun(setThrowPosition);
+};
 };

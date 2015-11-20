@@ -55,8 +55,21 @@
     #P"/Users/meister/Development/clasp/src/main/"
     #P"/Users/meister/Development/clasp/src/mpip/"
     #P"/Users/meister/Development/clasp/src/serveEvent/"
-    #P"/Users/meister/Development/clasp/src/sockets/"))
+    #P"/Users/meister/Development/clasp/src/sockets/"
+    #P"/Users/meister/Development/clasp/projects/cando/src/candoBase/"
+    #P"/Users/meister/Development/clasp/projects/cando/src/chem/"
+    #P"/Users/meister/Development/clasp/projects/cando/src/kinematics/"
+    #P"/Users/meister/Development/clasp/projects/cando/src/openmmPackage/"
+    #P"/Users/meister/Development/clasp/projects/cando/src/units/"
+    ))
 
+(defparameter +base-paths+ (make-hash-table :test #'equal))
+(dolist (path +source-directories+)
+  (setf (gethash (car (last (pathname-directory path))) +base-paths+) (butlast (pathname-directory path))))
++base-paths+
+
+  
+(second (pathname-directory #P"Users/meister/Development/clasp/"))
 (defun gather-source-files (dir)
   (let ((header-files (directory (make-pathname :name :wild :type "h" :defaults dir)))
 	(cxx-files (directory (make-pathname :name :wild :type "cc" :defaults dir))))
@@ -80,27 +93,53 @@
 
 
 
+(defun calculate-absolute-pathname (include-path base-paths)
+  (let* ((rel-dir (second (pathname-directory include-path)))
+         (abs-dir (gethash rel-dir base-paths))
+         (abs-path (merge-pathnames include-path (make-pathname :directory abs-dir))))
+    abs-path))
 
-(defun fix-include (inc &optional base-path relative-to)
+   
+(defun absolute-include (inc base-paths)
+  (let* ((source-dir (include-file-source-dir inc))
+	 (include-path (include-file-include-path inc)))
+    (if (null (pathname-directory include-path))
+        (merge-pathnames include-path source-dir)
+        (calculate-absolute-pathname include-path base-paths))))
+
+(defun shortest-enough-namestring (absolute-include-path prefix-list)
+  (let (shortest)
+    (dolist (prefix prefix-list)
+      (let ((one (enough-namestring absolute-include-path prefix)))
+        (when (or (null shortest) (< (length one) (length shortest)))
+          (setq shortest one))))
+    (make-pathname :directory (remove-if (lambda (x) (string-equal "src" x)) (pathname-directory shortest))
+                   :name (pathname-name shortest)
+                   :type (pathname-type shortest))))
+
+
+(defun fix-include (inc &optional base-paths relative-to-list)
   (let* ((source-dir (include-file-source-dir inc))
 	 (include-path (include-file-include-path inc))
-	 (new-path (cond
-		     ((null (pathname-directory include-path))
-		      (merge-pathnames include-path source-dir))
-		     ((pathname-directory include-path)
-		      (merge-pathnames include-path base-path))
-		     (t (warn "Do something")))))
-    (if (probe-file new-path)
-	(let ((inc (enough-namestring new-path relative-to)))
-	  (make-pathname :directory (remove-if (lambda (x) (string-equal "src" x)) (pathname-directory inc)) :defaults inc))
+	 (absolute-include-path (if (null (pathname-directory include-path))
+                                    (merge-pathnames include-path source-dir)
+                                    (calculate-absolute-pathname include-path base-paths))))
+    (if (probe-file absolute-include-path)
+	(shortest-enough-namestring absolute-include-path relative-to-list)
 	(namestring include-path))))
+
+(fix-include (make-include-file :source-dir #P"/Users/meister/Development/clasp/projects/src/claspBase"
+                                :include-path #P"core/foundation.h")
+             +base-paths+
+             '(#P"/Users/meister/Development/"
+               #P"/Users/meister/Development/clasp/projects/"))
 
 (defun generate-rewrites (includes-table)
   (let ((includes-rewrites (make-hash-table :test #'equalp)))
     (maphash (lambda (orig v)
-	       (let ((fix (fix-include orig 
-				       #P"/Users/meister/Development/clasp/src/"
-				       #P"/Users/meister/Development/")))
+	       (let ((fix (fix-include orig +base-paths+
+                                       '(#P"/Users/meister/Development/"
+                                         #P"/Users/meister/Development/clasp/projects/"))))
 		 (setf (gethash orig includes-rewrites) fix)))
 	     includes-table)
     includes-rewrites))
@@ -127,12 +166,17 @@
 (defparameter *source-files* nil)
 (defparameter *rewrites* nil)
 
-(defun do-all (&key testing)
+(defun do-all (&key (testing t))
   (multiple-value-setq (*source-files* *rewrites*)
     (search-and-generate-rewrites))
-  (rewrite-all *source-files* *rewrites* :testing t))
+  (rewrite-all *source-files* *rewrites* :testing testing))
 
-(print "Hello")
+(multiple-value-setq (*source-files* *rewrites*)
+  (search-and-generate-rewrites))
 
-(do-all)
+(print "Done")
 
+(do-all :testing nil)
+
+
+*rewrites*

@@ -30,7 +30,7 @@
 
 ;;(in-package :cmp)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (select-package :cmp))
+  (core:select-package :cmp))
 
 
 (defconstant +debug-dwarf-version+ 4)
@@ -39,17 +39,14 @@
 (defun generate-target-triple ()
   "Uses *features* to generate the target triple for the current machine
 using features defined in corePackage.cc"
-  (let ((tt nil))
-    (setq tt
-	  #+(and target-os-darwin address-model-64) "x86_64-apple-macosx10.9.4" ;; minimum required OSX level (Mountain Lion)
-	  #+(and target-os-linux address-model-32) "i386-pc-linux-gnu"
-	  #+(and target-os-linux address-model-64) "x86_64-unknown-linux-gnu"
-	  )
-    (if tt
-	tt
-	(error "Could not calculate target triple"))))
-
-
+  (cond
+    ((and (member :target-os-darwin *features*)
+          (member :address-model-64 *features*))
+     "x86_64-apple-macosx10.7.0")
+    ((and (member :target-os-linux *features*)
+          (member :address-model-64 *features*))
+     "x86_64-pc-linux-gnu")
+    (t (error "Could not identify target triple for features ~a" *features*))))
 
 (defvar *default-target-triple* (generate-target-triple)
   "The default target-triple for this machine")
@@ -61,70 +58,8 @@ using features defined in corePackage.cc"
     m))
 
 
-(defun make-gv-source-file-info-handle-in-*the-module* (&optional handle)
-  (if (null handle) (setq handle -1))
-  (llvm-sys:make-global-variable *the-module*
-                                 +i32+  ; type
-                                 nil    ; constant
-                                 'llvm-sys:internal-linkage
-                                 (jit-constant-i32 handle)
-                                 "source-file-info-handle"))
 
 
-(defun make-boot-function-global-variable (module func-ptr)
-  (llvm-sys:make-global-variable module
-                                 +fn-void-ptr-array1+ ; type
-                                 t ; is constant
-                                 'llvm-sys:appending-linkage
-                                 (llvm-sys:constant-array-get +fn-void-ptr-array1+ (list func-ptr))
-                                 llvm-sys:+global-boot-functions-name+)
-  (llvm-sys:make-global-variable module
-                                 +i32+ ; type
-                                 t ; is constant
-                                 'llvm-sys:internal-linkage
-                                 (jit-constant-i32 1)
-                                 llvm-sys:+global-boot-functions-name-size+)
-  )
-
-
-
-
-(defun remove-main-function-if-exists (module)
-  (let ((fn (llvm-sys:get-function module llvm-sys:+clasp-main-function-name+)))
-    (if fn
-      (llvm-sys:erase-from-parent fn))))
-
-(defun reset-global-boot-functions-name-size (module)
-  (remove-main-function-if-exists module)
-  (let* ((funcs (llvm-sys:get-named-global module llvm-sys:+global-boot-functions-name+))
-         (ptype (llvm-sys:get-type funcs))
-         (atype (llvm-sys:get-sequential-element-type ptype))
-         (num-elements (llvm-sys:get-array-num-elements atype))
-         (var (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t)))
-    (if var (llvm-sys:erase-from-parent var))
-    (llvm-sys:make-global-variable module
-                                   +i32+ ; type
-                                   t     ; is constant
-                                   'llvm-sys:internal-linkage
-                                   (jit-constant-i32 num-elements)
-                                   llvm-sys:+global-boot-functions-name-size+)))
-
-(defun add-main-function (module)
-  (let ((*the-module* module))
-    (remove-main-function-if-exists module)
-    (let ((fn (with-new-function
-                  (main-func func-env
-                             :function-name llvm-sys:+clasp-main-function-name+
-                             :parent-env nil
-                             :linkage 'llvm-sys:external-linkage
-                             :function-type +fn-void+
-                             :argument-names nil)
-                (let* ((boot-functions (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name+ t))
-                       (boot-functions-size (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t))
-                       (bc-bf (llvm-sys:create-bit-cast *irbuilder* boot-functions +fn-void-ptr-pointer+ "fnptr-pointer"))
-                       )
-                  (irc-intrinsic "invokeMainFunctions" bc-bf boot-functions-size)))))
-      fn)))
 
 
 
@@ -171,9 +106,7 @@ using features defined in corePackage.cc"
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1))
     (llvm-sys:do-initialization fpm)
-    fpm
-    )
-  )
+    fpm))
 
 
 (defvar *run-time-module-counter* 1)
@@ -263,11 +196,27 @@ No DIBuilder is defined for the default module")
     (llvm-sys:constant-int-get *llvm-context* ap-arg)))
 
 
+(defun jit-constant-size_t (val)
+  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+    (cond
+      ((= 8 sizeof-size_t) (jit-constant-i64 val))
+      ((= 4 sizeof_size_t) (jit-constant-i32 val))
+      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
+
+(defun jit-constant-size_t (val)
+  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+    (cond
+      ((= 8 sizeof-size_t) (jit-constant-i64 val))
+      ((= 4 sizeof_size_t) (jit-constant-i32 val))
+      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
+
+
 (defun jit-constant-unique-string-ptr (sn &optional (label "unique-str"))
   "Get or create a unique string within the module and return a GEP i8* pointer to it"
+  (or *the-module* (error "jit-constant-unique-string-ptr *the-module* is NIL"))
   (let* ((sn-gv (llvm-sys:get-or-create-uniqued-string-global-variable
 		 *the-module* sn
-		 (bformat nil ":::symbol-name-%s" sn)))
+		 (bformat nil "str-%s" sn)))
 	 (sn-value-ptr (llvm-sys:create-in-bounds-gep
 			*irbuilder* sn-gv (list (jit-constant-i32 0) (jit-constant-i32 0)) "sn")))
     sn-value-ptr))
@@ -275,6 +224,7 @@ No DIBuilder is defined for the default module")
 
 (defun jit-make-global-string-ptr (str &optional (label "global-str"))
   "A function for creating unique strings within the module - return an LLVM pointer to the string"
+  (or *the-module* (error "jit-make-global-string-ptr *the-module* is NIL"))
   (let ((unique-string-global-variable (llvm-sys:get-or-create-uniqued-string-global-variable *the-module* str (bformat nil ":::global-str-%s" str))))
 ;;    (llvm-sys:create-in-bounds-gep *irbuilder* unique-string-global-variable (list (jit-constant-i32 0) (jit-constant-i32 0)) label )
     (llvm-sys:constant-expr-get-in-bounds-get-element-ptr unique-string-global-variable (list (jit-constant-i32 0) (jit-constant-i32 0)))
@@ -318,22 +268,33 @@ No DIBuilder is defined for the default module")
      "Load a bitcode file, link it and execute it"
      (let ((*package* *package*)
 	   (time-load-start (clock-gettime-nanoseconds)))
-;;       (bformat t "Loading module from file: %s\n" filename)
+       ;;       (bformat t "Loading module from file: %s\n" filename)
        (let* ((module (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
 	      (engine-builder (llvm-sys:make-engine-builder module))
-	 ;; After make-engine-builder MODULE becomes invalid!!!!!
+	      ;; After make-engine-builder MODULE becomes invalid!!!!!
 	      (target-options (llvm-sys:make-target-options)))
 	 (llvm-sys:setf-no-frame-pointer-elim target-options t)
 	 (llvm-sys:setf-jitemit-debug-info target-options t)
 	 (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
 	 (llvm-sys:set-target-options engine-builder target-options)
 ;;;	 (llvm-sys:set-use-mcjit engine-builder t)
-	 (let*((execution-engine (llvm-sys:create engine-builder))
-	       (stem (string-downcase (pathname-name filename)))
-               (main-fn-name llvm-sys:+clasp-main-function-name+)
-	       (time-jit-start (clock-gettime-nanoseconds)))
-	   (llvm-sys:finalize-engine-and-register-with-gc-and-run-function execution-engine main-fn-name (namestring (truename filename)) 0 0 *load-time-value-holder-name* )
-	   )))
+	 (let* ((execution-engine (llvm-sys:create engine-builder))
+		(stem (string-downcase (pathname-name filename)))
+		(main-fn-name llvm-sys:+clasp-main-function-name+)
+		(time-jit-start (clock-gettime-nanoseconds))
+		(main-llvm-function (llvm-sys:find-function-named execution-engine llvm-sys:+clasp-main-function-name+)))
+	   (let ((main-fn (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+			   execution-engine 
+			   (intern llvm-sys:+clasp-main-function-name+)	      ; main fn name as symbol
+			   main-llvm-function ; llvm-fn
+			   nil		      ; environment
+			   *load-time-value-holder-name*
+			   (namestring (truename filename)) ; file name
+			   0 
+			   0 
+			   nil)))
+	     (funcall main-fn)
+	     ))))
      t)
  nil)
 (export 'load-bitcode)

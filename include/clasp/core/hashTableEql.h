@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_HashTableEql_H
+#ifndef _core_HashTableEql_H
 #define _core_HashTableEql_H
 
 #include <clasp/core/object.h>
@@ -32,42 +32,39 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/corePackage.fwd.h>
 
-namespace core
-{
+namespace core {
 
-    FORWARD(HashTableEql);
-    class HashTableEql_O : public HashTable_O
-    {
-	LISP_BASE1(HashTable_O);
-	LISP_CLASS(core,CorePkg,HashTableEql_O,"HashTableEql");
+FORWARD(HashTableEql);
+class HashTableEql_O : public HashTable_O {
+  LISP_BASE1(HashTable_O);
+  LISP_CLASS(core, CorePkg, HashTableEql_O, "HashTableEql");
 #if defined(XML_ARCHIVE)
-	DECLARE_ARCHIVE();
+  DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
-	DEFAULT_CTOR_DTOR(HashTableEql_O);
-    private: // instance variables here
+  DEFAULT_CTOR_DTOR(HashTableEql_O);
 
-    public:
-	static HashTableEql_sp create( uint sz,  Number_sp rehashSize, double rehashThreshold);
-	static HashTableEql_sp create_default();
-    public:
-//	static int sxhash_eql(T_sp obj);
-    public: // Functions here
+private: // instance variables here
+public:
+  static HashTableEql_sp create(uint sz, Number_sp rehashSize, double rehashThreshold);
+  static HashTableEql_sp create_default();
 
-	virtual T_sp hashTableTest() const { return cl::_sym_eql;};
+public:
+  //	static int sxhash_eql(T_sp obj);
+public: // Functions here
+  virtual T_sp hashTableTest() const { return cl::_sym_eql; };
 
-	bool keyTest(T_sp entryKey, T_sp searchKey) const;
+  bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-	int sxhashKey(T_sp key,int bound, bool willAddKey) const;
-
-
-    };
+  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
+};
 
 }; /* core */
-template<> struct gctools::GCInfo<core::HashTableEql_O> {
-    static bool constexpr NeedsInitialization = false;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true;
-    static bool constexpr Atomic = false;
+template <>
+struct gctools::GCInfo<core::HashTableEql_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static bool constexpr Moveable = true;
+  static bool constexpr Atomic = false;
 };
 
 TRANSLATE(core::HashTableEql_O);

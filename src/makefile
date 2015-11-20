@@ -4,30 +4,20 @@
 # Targets are subAll, subInstall, subClean
 #
 sa subAll subInstall subClean subClassTree sct subBundle sb subMeta sm sad:
+
+SRC-SUB-DIRS = gctools core cffi clbind asttooling llvmo serveEvent sockets
+
+sub-prebuild:
+	make -C gctools/ $@
 	make -C core/ $@
-	make -C cffi/ $@
+	make -C clbind/ $@
 	make -C llvmo/ $@
-	make -C lisp/ $@
-	make -C candoLisp/ $@
-#	make -C sys/ $@
-	make -C addon/ $@
-	make -C units/ $@
-	make -C chem/ $@
-#	make -C numerics/ $@
-	make -C kinematics/ $@
-#	make -C openmmPackage $@
-	make -C packageManager $@
-	make -C cando/ $@
-	make -C tools/ $@
-	make -C python/ $@
-#	make -C databases/ $@
-#	make -C mwxCando/ $@
+	make -C asttooling/ $@
+	make -C serveEvent/ $@
+	make -C sockets/ $@
 
 
 
-sal:
-	make -C core/ sa
-	make -C candoLisp/ sa
 
 tags:
 	$(CTAGS_BIN) -e -R .

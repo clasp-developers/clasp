@@ -24,30 +24,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_sockets_symbolTable_H
+#ifndef _sockets_symbolTable_H
 #define _sockets_symbolTable_H
 
 #include <clasp/core/foundation.h>
 
-
-namespace kw
-{
+namespace kw {
 #define KeywordPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,export) extern core::Symbol_sp cname;
-#include <clasp/sockets/symbols_scraped_inc.h>
+#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
 }; /* kw package */
 
-namespace sockets
-{
+namespace sockets {
 #define SocketsPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,export) extern core::Symbol_sp cname;
-#include <clasp/sockets/symbols_scraped_inc.h>
+#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef SocketsPkg_SYMBOLS
 }; /* sockets package */
-
-
 
 #endif /* _sockets_symbolTable_H */

@@ -131,8 +131,8 @@
 (defun find-slot-definition (class slot-name)
   (with-slots ((slots slots) (slot-table slot-table))
       class
-    (if (or (eq (si:instance-class class) +the-standard-class+)
-	    (eq (si:instance-class class) +the-funcallable-standard-class+))
+    (if (or (eq (si:instance-class class) (load-time-value (find-class 'clos:standard-class)) #+(or)+the-standard-class+)
+	    (eq (si:instance-class class) (load-time-value (find-class 'clos:funcallable-standard-class)) #+(or)+the-funcallable-standard-class+))
 	(gethash slot-name slot-table nil)
 	(find slot-name slots :key #'slot-definition-name))))
 
@@ -192,16 +192,10 @@
     val))
 
 (defun slot-value (self slot-name)
-  #+compare (print "MLOG slot-value (self slot-name) -> ")
-  #+compare (princ (list self slot-name))
   (with-early-accessors (+standard-class-slots+
 			 +slot-definition-slots+)
     (let* ((class (class-of self))
 	   (location-table (class-location-table class)))
-      #+compare(print "MLOG (class-of self) --> ")
-      #+compare(princ (class-of self))
-      #+compare(print "MLOG location-table --> ")
-      #+compare(princ location-table)
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
@@ -234,6 +228,7 @@
 		(slot-boundp-using-class class self slotd)
 		(values (slot-missing class self slot-name 'SLOT-BOUNDP))))))))
 
+
 (defun (setf slot-value) (value self slot-name)
   (with-early-accessors (+standard-class-slots+
 			 +slot-definition-slots+)
@@ -249,6 +244,7 @@
 		(setf (slot-value-using-class class self slotd) value)
 		(slot-missing class self slot-name 'SETF value))))))
   value)
+
 
 ;;;
 ;;; 2) Overloadable methods on which the previous functions are based

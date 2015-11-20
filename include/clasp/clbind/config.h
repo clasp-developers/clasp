@@ -46,57 +46,54 @@ THE SOFTWARE.
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 #ifndef CLBIND_CONFIG_HPP_INCLUDED
 #define CLBIND_CONFIG_HPP_INCLUDED
 
 #include <boost/config.hpp>
 
 #ifdef BOOST_MSVC
-	#define CLBIND_ANONYMOUS_FIX static
+#define CLBIND_ANONYMOUS_FIX static
 #else
-	#define CLBIND_ANONYMOUS_FIX
+#define CLBIND_ANONYMOUS_FIX
 #endif
 
-#if defined (BOOST_MSVC) && (BOOST_MSVC <= 1200)
+#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1200)
 
-#define for if (false) {} else for
+#define for if (false){} else for
 
 #include <cstring>
 
-namespace std
-{
-	using ::strlen;
-	using ::strcmp;
-	using ::type_info;
+namespace std {
+using ::strlen;
+using ::strcmp;
+using ::type_info;
 }
 
 #endif
 
-
-#if defined (BOOST_MSVC) && (BOOST_MSVC <= 1300)
-	#define CLBIND_MSVC_TYPENAME
+#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
+#define CLBIND_MSVC_TYPENAME
 #else
-	#define CLBIND_MSVC_TYPENAME typename
+#define CLBIND_MSVC_TYPENAME typename
 #endif
 
 // the maximum number of arguments of functions that's
 // registered. Must at least be 2
 #ifndef CLBIND_MAX_ARITY
-	#define CLBIND_MAX_ARITY 10
+#define CLBIND_MAX_ARITY 10
 #elif CLBIND_MAX_ARITY <= 1
-	#undef CLBIND_MAX_ARITY
-	#define CLBIND_MAX_ARITY 2
+#undef CLBIND_MAX_ARITY
+#define CLBIND_MAX_ARITY 2
 #endif
 
 // the maximum number of classes one class
 // can derive from
 // max bases must at least be 1
 #ifndef CLBIND_MAX_BASES
-	#define CLBIND_MAX_BASES 4
+#define CLBIND_MAX_BASES 4
 #elif CLBIND_MAX_BASES <= 0
-	#undef CLBIND_MAX_BASES
-	#define CLBIND_MAX_BASES 1
+#undef CLBIND_MAX_BASES
+#define CLBIND_MAX_BASES 1
 #endif
 
 // CLBIND_NO_ERROR_CHECKING
@@ -126,23 +123,23 @@ namespace std
 // by clbind throws an exception (throwing exceptions through
 // C code has undefined behavior, lua is written in C).
 #ifdef CLBIND_DYNAMIC_LINK
-# ifdef BOOST_WINDOWS
-#  ifdef CLBIND_BUILDING
-#   define CLBIND_API __declspec(dllexport)
-#  else
-#   define CLBIND_API __declspec(dllimport)
-#  endif
-# else
-#  if defined(_GNUC_) && _GNUC_ >=4
-#   define CLBIND_API __attribute__ ((visibility("default")))
-#  else
-#   define CLBIND_API __attribute__ ((visibility("default")))
-#  endif
-# endif
+#ifdef BOOST_WINDOWS
+#ifdef CLBIND_BUILDING
+#define CLBIND_API __declspec(dllexport)
+#else
+#define CLBIND_API __declspec(dllimport)
+#endif
+#else
+#if defined(_GNUC_) && _GNUC_ >= 4
+#define CLBIND_API __attribute__((visibility("default")))
+#else
+#define CLBIND_API __attribute__((visibility("default")))
+#endif
+#endif
 #endif
 
 #ifndef CLBIND_API
-# define CLBIND_API
+#define CLBIND_API
 #endif
 
 namespace clbind {

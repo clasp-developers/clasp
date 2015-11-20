@@ -46,7 +46,6 @@ THE SOFTWARE.
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 #ifndef CLBIND_OPEN_HPP_INCLUDED
 #define CLBIND_OPEN_HPP_INCLUDED
 
@@ -61,14 +60,13 @@ class class_map;
 };
 
 //! Take the place of __clbind_cast_graph
-extern detail::cast_graph*         globalCastGraph;
+extern detail::cast_graph *globalCastGraph;
 //! Take the place of __clbind_class_id_map
-extern detail::class_id_map*       globalClassIdMap;
+extern detail::class_id_map *globalClassIdMap;
 //! Take the place of __clbind_class_map
-extern detail::class_map*          globalClassMap;
+extern gctools::tagged_pointer<detail::class_map> globalClassMap;
 
 CLBIND_API void initialize_clbind();
-
 }
 
 #endif // CLBIND_OPEN_HPP_INCLUDED

@@ -475,6 +475,7 @@ the corresponding PLACE.  Returns NIL."
 
 
 ;;; SHIFTF macro.
+#+ecl
 (defmacro shiftf (&environment env &rest rest)
   "Syntax: (shiftf {place}+ form)
 Saves the values of PLACE and FORM, and then assigns the value of each PLACE
@@ -505,7 +506,9 @@ Returns the original value of the leftmost PLACE."
       (setq access-forms (cons access-form access-forms)))))
 
 
+
 ;;; ROTATEF macro.
+#+ecl
 (defmacro rotatef (&environment env &rest rest)
   "Syntax: (rotatef {place}*)
 Saves the values of PLACEs, and then assigns to each PLACE the saved value of
@@ -661,6 +664,9 @@ Increments the value of PLACE by the value of FORM.  FORM defaults to 1.")
   "Syntax: (decf place [form])
 Decrements the value of PLACE by the value of FORM.  FORM defaults to 1.")
 
+#+(or)(eval-when (:compile-toplevel)
+	(setq clasp-cleavir:*debug-log-on* t))
+
 (defmacro push (&environment env item place)
   "Syntax: (push form place)
 Evaluates FORM, conses the value of FORM to the value stored in PLACE, and
@@ -680,6 +686,9 @@ makes it the new value of PLACE.  Returns the new value of PLACE."
 		    (append vals (list (list 'cons item access-form))))
        (declare (:read-only ,@vars)) ; Beppe
        ,store-form)))
+
+#+(or)(eval-when (:compile-toplevel)
+	(setq clasp-cleavir:*debug-log-on* nil))
 
 (defmacro pushnew (&environment env item place &rest rest)
   "Syntax: (pushnew form place {keyword-form value-form}*)

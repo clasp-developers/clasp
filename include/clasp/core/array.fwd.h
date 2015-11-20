@@ -30,13 +30,9 @@ THE SOFTWARE.
 #ifndef _core_Array_fwd_H
 #define _core_Array_fwd_H
 
-
-namespace core
-{
+namespace core {
 FORWARD(Array);
 
-
-
-    }; /* core */
+}; /* core */
 
 #endif /* _core_Array_fwd_H */

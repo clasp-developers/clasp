@@ -30,12 +30,8 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
-namespace core
-{
-    
+namespace core {
 
-    void initialize_documentation_primitives(Lisp_sp lisp);
-    
-    
+void initialize_documentation_primitives(Lisp_sp lisp);
 };
 #endif /* _documentation_H_ */

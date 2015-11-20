@@ -81,9 +81,9 @@
 #+compare(print "combin.lsp 81")
 (defun combine-method-functions (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (.combined-method-args. no-next-methods)
+  #'(lambda (args no-next-methods)
       (declare (ignorable no-next-methods))
-      (funcall method .combined-method-args. rest-methods)))
+      (funcall method args rest-methods)))
 
 #+compare(print "combin.lsp 88")
 (defmacro call-method (method &optional rest-methods)
@@ -422,15 +422,26 @@
 ;;
 #+compare(print "MLOG About to install-method-combination")
 (install-method-combination 'standard 'standard-compute-effective-method)
-(eval '(progn
-	(define-method-combination progn :identity-with-one-argument t)
-	(define-method-combination and :identity-with-one-argument t)
-	(define-method-combination max :identity-with-one-argument t)
-	(define-method-combination + :identity-with-one-argument t)
-	(define-method-combination nconc :identity-with-one-argument t)
-	(define-method-combination append :identity-with-one-argument nil)
-	(define-method-combination list :identity-with-one-argument nil)
-	(define-method-combination min :identity-with-one-argument t)
-	(define-method-combination or :identity-with-one-argument t)))
+#+ecl(eval '(progn
+             (define-method-combination progn :identity-with-one-argument t)
+             (define-method-combination and :identity-with-one-argument t)
+             (define-method-combination max :identity-with-one-argument t)
+             (define-method-combination + :identity-with-one-argument t)
+             (define-method-combination nconc :identity-with-one-argument t)
+             (define-method-combination append :identity-with-one-argument nil)
+             (define-method-combination list :identity-with-one-argument nil)
+             (define-method-combination min :identity-with-one-argument t)
+             (define-method-combination or :identity-with-one-argument t)))
+
+#+clasp(progn
+         (define-method-combination progn :identity-with-one-argument t)
+         (define-method-combination and :identity-with-one-argument t)
+         (define-method-combination max :identity-with-one-argument t)
+         (define-method-combination + :identity-with-one-argument t)
+         (define-method-combination nconc :identity-with-one-argument t)
+         (define-method-combination append :identity-with-one-argument nil)
+         (define-method-combination list :identity-with-one-argument nil)
+         (define-method-combination min :identity-with-one-argument t)
+         (define-method-combination or :identity-with-one-argument t))
 
 #+compare( print "MLOG ****** Done with combin.lsp ******")

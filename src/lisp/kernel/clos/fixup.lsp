@@ -207,11 +207,9 @@ their lambda lists ~A and ~A are not congruent."
   gf)
 
 (defun function-to-method (name signature)
-#+compare  (print (list "MLOG function-to-method: " name))
   (let* ((aux-name 'temp-method)
          (method (eval `(defmethod ,aux-name ,signature)))
          (generic-function (fdefinition aux-name)))
-    #+compare( print (list "MLOG Starting function-to-method"))
     (setf (method-function method) (wrapped-method-function (fdefinition name)))
     (setf (fdefinition name) generic-function)
     (setf (generic-function-name generic-function) name)
@@ -257,14 +255,20 @@ their lambda lists ~A and ~A are not congruent."
 ;;; the other.
 
 #+clasp(eval-when (compile) (fixup-log "defgeneric aux-compute-applicable-methods"))
-#+compare (print "MLOG Now aux-compute-applicable-methods")
-#+clasp-test(eval-when (compile eval)
-	 (fixup-log "defmethod aux-compute-applicable-methods")
-;;	 (setq *low-level-trace* :print)
-;;	 (setq cmp:*debug-compiler* t)
-	 )
 
 
+#+(or)
+(defgeneric aux-compute-applicable-methods (gf args)
+  (:method ((gf standard-generic-function) args)
+    (std-compute-applicable-methods gf args)))
+
+(defmethod aux-compute-applicable-methods ((gf standard-generic-function) args)
+  (std-compute-applicable-methods gf args))
+(let ((aux #'aux-compute-applicable-methods))
+  (setf (generic-function-name aux) 'compute-applicable-methods
+	(fdefinition 'compute-applicable-methods) aux))
+
+#+(or)
 (eval-when (:compile-toplevel :load-toplevel)
   ;;#+(or)
   (defgeneric aux-compute-applicable-methods (gf args)
@@ -272,7 +276,6 @@ their lambda lists ~A and ~A are not congruent."
       (std-compute-applicable-methods gf args)))
 
 
-  ;;(eval-when (compile eval) (print "HUNT - About to defmethod aux-compute-applicable-methods"))
   (defmethod aux-compute-applicable-methods ((gf standard-generic-function) args)
     (std-compute-applicable-methods gf args))
 
@@ -282,11 +285,11 @@ their lambda lists ~A and ~A are not congruent."
 	  (fdefinition 'compute-applicable-methods) aux))
 )  
 
-  #+clasp(eval-when (compile) (fixup-log "defmethod compute-applicable-methods-using-classes"))
-  (defmethod compute-applicable-methods-using-classes
-      ((gf standard-generic-function) classes)
-    ;;  (print (list "HUNT entering compute-applicable-methods-using-classes gf: " gf))
-    (std-compute-applicable-methods-using-classes gf classes))
+#+clasp(eval-when (compile) (fixup-log "defmethod compute-applicable-methods-using-classes"))
+(defmethod compute-applicable-methods-using-classes
+    ((gf standard-generic-function) classes)
+  ;;  (print (list "HUNT entering compute-applicable-methods-using-classes gf: " gf))
+  (std-compute-applicable-methods-using-classes gf classes))
 
   #+compare (print "MLOG About to function-to-method compute-effective-method")
   #+clasp(eval-when (compile) (fixup-log "function-to-method compute-effective-method"))

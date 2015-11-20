@@ -24,10 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_funcallableStandardClass_H
+#ifndef _core_funcallableStandardClass_H
 #define _core_funcallableStandardClass_H
-
-
 
 #include <stdio.h>
 #include <string>
@@ -40,39 +38,34 @@ THE SOFTWARE.
 
 namespace core {
 
-    SMART(FuncallableStandardClass);
+SMART(FuncallableStandardClass);
 
+SMART(StringSet);
 
-    SMART(StringSet);
+SMART(FuncallableStandardClass);
+class FuncallableStandardClass_O : public StdClass_O {
+  LISP_META_CLASS(StandardClass);
+  LISP_BASE1(StdClass_O);
+  LISP_CLASS(core, ClosPkg, FuncallableStandardClass_O, "FuncallableStandardClass");
 
-
-
-
-
-
-    SMART(FuncallableStandardClass );
-    class FuncallableStandardClass_O : public StdClass_O
-    {
-        LISP_META_CLASS(StandardClass);
-        LISP_BASE1(StdClass_O);
-        LISP_CLASS(clos,ClosPkg,FuncallableStandardClass_O,"FuncallableStandardClass");
-    public:
+public:
 #if defined(XML_ARCHIVE)
-	void	archiveBase(ArchiveP node);
+  void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-	void	initialize();
-    GCPROTECTED:
-	Class_sp			_InstanceCoreClass;
-    public:
-	/*! Special creator used when starting up lisp environment */
-	static FuncallableStandardClass_sp create(Class_sp mc);
+  void initialize();
+GCPROTECTED:
+  Class_sp _InstanceCoreClass;
+
+public:
+  /*! Special creator used when starting up lisp environment */
+  static FuncallableStandardClass_sp create(Class_sp mc);
 
 #if 0 // for now comment out all functions
-	static FuncallableStandardClass_sp create(Lisp_sp e,Symbol_sp name /* , Symbol_sp instanceClassSymbol */ );
+	static FuncallableStandardClass_sp create(Symbol_sp name /* , Symbol_sp instanceClassSymbol */ );
 
 	/*! ensure-class-using-class - see AOMOP-183 */
 	static T_sp create_ensureClassUsingClass( Function_sp exec,
-						  Cons_sp args,
+						  List_sp args,
 						  Environment_sp env,
 						  Lisp_sp lisp);
 
@@ -89,46 +82,38 @@ namespace core {
     public:
 
 	void appendInstanceVariablesFromFuncallableStandardClass(FuncallableStandardClass_sp cc);
-	void appendInstanceVariablesFromListOfSymbols(Cons_sp variableNames);
+	void appendInstanceVariablesFromListOfSymbols(List_sp variableNames);
 
-        virtual void describe();
+        virtual void describe(T_sp stream);
         virtual string dumpInfo();
 
 #endif
 
-        DEFAULT_CTOR_DTOR(FuncallableStandardClass_O);
-    };
-
+  DEFAULT_CTOR_DTOR(FuncallableStandardClass_O);
+};
 };
 
-template<> struct gctools::GCInfo<core::FuncallableStandardClass_O> {
-    static bool constexpr NeedsInitialization = true;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true; // old=false
-    static bool constexpr Atomic = false;
+template <>
+struct gctools::GCInfo<core::FuncallableStandardClass_O> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = false;
+  static bool constexpr Moveable = true; // old=false
+  static bool constexpr Atomic = false;
 };
-
-
-
-
-
 
 namespace core {
 
+class FuncallableStandardClassInitializationFunctoid : public Functoid {
+private:
+  FuncallableStandardClass_sp _FuncallableStandardClass;
 
-    class	FuncallableStandardClassInitializationFunctoid : public Functoid
-    {
-    private:
-	FuncallableStandardClass_sp	_FuncallableStandardClass;	
-    public:
-        DISABLE_NEW();
+public:
+  DISABLE_NEW();
 
-        virtual const char* describe() const {return "FuncallableStandardClassInitializationFunctoid";};
-        FuncallableStandardClassInitializationFunctoid(T_sp name, FuncallableStandardClass_sp c) : Functoid(name)
-        { this->_FuncallableStandardClass = c;};
-        virtual ~FuncallableStandardClassInitializationFunctoid() {};
-    };
-
+  virtual const char *describe() const { return "FuncallableStandardClassInitializationFunctoid"; };
+  FuncallableStandardClassInitializationFunctoid(T_sp name, FuncallableStandardClass_sp c) : Functoid(name) { this->_FuncallableStandardClass = c; };
+  virtual ~FuncallableStandardClassInitializationFunctoid(){};
+};
 };
 TRANSLATE(core::FuncallableStandardClass_O);
 #endif //]

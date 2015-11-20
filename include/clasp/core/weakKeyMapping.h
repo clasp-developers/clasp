@@ -24,44 +24,42 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_WeakKeyMapping_H
+#ifndef _core_WeakKeyMapping_H
 #define _core_WeakKeyMapping_H
 
 #include <clasp/core/object.h>
 #include <clasp/core/corePackage.fwd.h>
 
-namespace core
-{
-    FORWARD(WeakKeyMapping);
-    class WeakKeyMapping_O : public T_O
-    {
-        LISP_BASE1(T_O);
-        LISP_CLASS(core,CorePkg,WeakKeyMapping_O,"WeakKeyMapping");
+namespace core {
+FORWARD(WeakKeyMapping);
+class WeakKeyMapping_O : public T_O {
+  LISP_BASE1(T_O);
+  LISP_CLASS(core, CorePkg, WeakKeyMapping_O, "WeakKeyMapping");
 #if defined(OLD_SERIALIZE)
-        DECLARE_SERIALIZE();
+  DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)
 #if defined(XML_ARCHIVE)
-        DECLARE_ARCHIVE();
+  DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
-        WeakKeyMapping_O() : _WeakObject(_Nil<T_O>()
-                                         , _Nil<T_O>()) {};
-        WeakKeyMapping_O(T_sp key, T_sp val) : _WeakObject(key , val) {};
-    public:
-        static WeakKeyMapping_sp make(T_sp key, T_sp val);
-    public:
-    GCPRIVATE: // instance variables here
-        typedef typename gctools::WeakKeyMappingPair::value_type  value_type;
-        gctools::WeakKeyMappingPair 	_WeakObject;
+  WeakKeyMapping_O() : _WeakObject(_Nil<T_O>(), _Nil<T_O>()){};
+  WeakKeyMapping_O(T_sp key, T_sp val) : _WeakObject(key, val){};
 
-    public: // Functions here
+public:
+  static WeakKeyMapping_sp make(T_sp key, T_sp val);
+
+public:
+GCPRIVATE: // instance variables here
+  typedef typename gctools::WeakKeyMappingPair::value_type value_type;
+  gctools::WeakKeyMappingPair _WeakObject;
+
+public: // Functions here
         /*! Return the (values key value t) of the mapping.  If not valid return (values nil nil nil) */
-	T_mv keyValue() const;
-	
-	/*! Return true if the object referenced by _WeakObject still exists, otherwise return false
-	 */
-	bool valid() const;
+  T_mv keyValue() const;
 
-    };
+  /*! Return true if the object referenced by _WeakObject still exists, otherwise return false
+	 */
+  bool valid() const;
+};
 
 }; /* core */
 

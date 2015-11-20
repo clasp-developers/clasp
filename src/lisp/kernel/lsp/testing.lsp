@@ -1,3 +1,4 @@
+(in-package :core)
 
 ;;
 ;; Simple regression testing macros

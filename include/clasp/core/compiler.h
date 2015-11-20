@@ -30,22 +30,15 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
-namespace core
-{
+namespace core {
 
+T_sp varArgsList(int numArgs, ...);
 
-    T_sp varArgsList(int numArgs, ... );
+T_sp core_startupImagePathname();
+T_mv core_loadBundle(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);
 
-    T_sp core_startupImagePathname();
-    T_mv core_loadBundle(T_sp pathDesig, T_sp verbose=_Nil<T_O>(), T_sp print=_Nil<T_O>(), T_sp external_format = kw::_sym_default );
+T_mv af_implicit_compile_hook_default(T_sp form, T_sp env);
 
-
-
-    T_mv af_implicit_compile_hook_default(T_sp form, Environment_sp env);
-
-    void initialize_compiler_primitives(Lisp_sp lisp);
-
-
-
+void initialize_compiler_primitives(Lisp_sp lisp);
 };
 #endif /* _compiler_H_ */

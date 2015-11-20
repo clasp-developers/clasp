@@ -5,76 +5,51 @@ import os ;
 project externals 
 	: usage-requirements
 #	<include>gmp-5.0.5
-	<include>$(APPRES-EXTERNALS-RELEASE-INCLUDE)
-	<include>$(APPRES-EXTERNALS-COMMON-INCLUDE) ;
-
-
-
+        <include>$(APPRES-LIB-COMMON-INCLUDE) ;
 
 alias boostAndExpatLibs :
       		/externals//boost
+		/externals//libgmp
                 /externals//expat
                 /externals//zlib
-                /externals//readline	
 		/externals//ncurses
-		/externals//libgmp
+                /externals//readline
 #		/python//python
-#		/externals//lib_mps/<link>static
+#		/externals//lib_mps
         ;
 
-
-
-lib lib_mps : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>mps-debug <variant>debug <link>static ;
-lib lib_mps : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>mps <variant>release <link>static ;
-
-lib lib_boehm : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>gc ;
-
-
+#lib lib_boehm : : <search>$(APPRES-LIB-COMMON-LIB) <name>gc ;
+#alias lib_boehm : $(APPRES-LIB-COMMON-LIB)/libgc.a ;
 alias libgmp : gmp gmpxx ;
 
-lib gmp : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>gmp ;
-lib gmpxx : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>gmpxx ;
+lib gmp : : <name>gmp ;
+lib gmpxx : : <name>gmpxx ;
 
-lib zlib : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>z ;
-lib expat : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>expat ;
-lib readline : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>readline ;
-lib ncurses : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>ncurses ;
+lib zlib : : <name>z ;
+lib expat : : <name>expat ;
+lib readline : : <name>readline ;
+lib ncurses : : <name>ncurses ;
 
-
-
-lib boost_filesystem : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_filesystem <variant>release ;
-#lib boost_serialization : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_serialization <variant>release ;
-lib boost_program_options : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_program_options <variant>release ;
-lib boost_python : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_python <variant>release ;
-#lib boost_thread : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_thread <variant>release ;
-lib boost_system : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_system <variant>release ;
-lib boost_regex : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_regex <variant>release ;
-lib boost_iostreams : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_iostreams <variant>release ;
-lib boost_date_time : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_date_time <variant>release ;
-lib boost_mpi : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_mpi <variant>release ;
-
-
-lib boost_filesystem : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>boost_filesystem <variant>debug ;
-lib boost_serialization : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>boost_serialization <variant>debug ;
-lib boost_program_options : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>boost_program_options <variant>debug ;
-lib boost_python : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>boost_python <variant>debug ;
-#lib boost_thread : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>boost_thread <variant>debug ;
-lib boost_system : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>boost_system <variant>debug ;
-lib boost_regex : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>boost_regex <variant>debug ;
-lib boost_iostreams : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>boost_iostreams <variant>debug ;
-lib boost_date_time : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>boost_date_time <variant>debug ;
-lib boost_mpi : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>boost_mpi <variant>debug ;
-
+lib boost_filesystem : : <name>boost_filesystem ;
+lib boost_program_options : : <name>boost_program_options ;
+lib boost_python : : <name>boost_python ;
+lib boost_system : : <name>boost_system ;
+lib boost_regex : : <name>boost_regex ;
+lib boost_iostreams : : <name>boost_iostreams ;
+lib boost_date_time : : <name>boost_date_time ;
+lib boost_mpi : : <name>boost_mpi ;
+#lib boost_thread : : <name>boost_thread ;
+#lib boost_serialization : : <name>boost_serialization ;
 
 alias boost :
                 /externals//boost_filesystem
                 /externals//boost_regex
-#                /externals//boost_thread
                 /externals//boost_date_time
-#                /externals//boost_serialization
                 /externals//boost_program_options
                 /externals//boost_system
 		/externals//boost_iostreams
+#                /externals//boost_thread
+#                /externals//boost_serialization
 #		/externals//boost_python
 ;
 
@@ -87,32 +62,10 @@ lib mpi_raw : : <name>mpi ;
 alias mpi : mpi_cxx mpi_raw ; # open-rte open-pal ;
 
 
-
-
-
-
-#
-#
-# openmm library
-#
-#
-
-lib openmm : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>openmm <variant>release ;
-lib openmm_d : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>openmm_d <variant>debug ;
-
-
-lib openmmSerialization : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>OpenMMSerialization <variant>release ;
-
-
-
-
-
-
-
-
 #
 #
 # Clang and LLVM libraries - generated by scripts/orderClangAndLLVMStaticLibraries.py
 #
 #
+
 import clangAndLLVMOrder ;

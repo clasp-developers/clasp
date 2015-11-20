@@ -20,13 +20,10 @@
 ;;;;  Reworked for CLOS November 1988, by Giuseppe Attardi.
 ;;;;  Updated May 2009, by Jean-Claude Beaudoin
 
-
 (in-package "SYSTEM")
 
 (export '(*break-readtable* *break-on-warnings*
 	  *tpl-evalhook* *tpl-prompt-hook*))
-
-
 
 #+clasp(defvar sys:*echo-repl-tpl-read* nil "Set to t if you want to echo what was typed at the REPL top-level")
 (defparameter *quit-tag* (cons nil nil))
@@ -549,6 +546,12 @@ Use special code 0 to cancel this operation.")
   #-threads
   (single-threaded-terminal-interrupt))
 
+
+#+(or)(eval-when (:compile-toplevel :execute)
+  (push :flow cmp:*low-level-trace*)
+  (setq cmp:*debug-compiler* t)
+  )
+
 (defun tpl (&key ((:commands *tpl-commands*) tpl-commands)
 	      ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
 	      (broken-at nil)
@@ -607,7 +610,9 @@ Use special code 0 to cancel this operation.")
 		   ;; update *current-source-pos-info* if we can extract it from the source
 		   (setq core:*current-source-pos-info* (core:walk-to-find-source-pos-info - core:*current-source-pos-info*))
 		   (setq values (multiple-value-list
-				 (top-level-eval-with-env - *break-env*))
+				 #+ecl(core:eval-with-env - *break-env*)
+                                 #+clasp(funcall core:*eval-with-env-hook* - *break-env*)
+                                 )
 			 /// // // / / values *** ** ** * * (car /))
 		   (tpl-print values))))))
       (loop
@@ -623,6 +628,12 @@ Use special code 0 to cancel this operation.")
 		     (rep)))
 	       nil)
 	   (setf quiet nil))))))
+
+
+#+(or)(eval-when (:compile-toplevel :execute)
+  (pop cmp:*low-level-trace*)
+  (setq cmp:*debug-compiler* nil)
+  )
 
 (defun tpl-prompt ()
   (typecase *tpl-prompt-hook*
@@ -1037,17 +1048,18 @@ Use special code 0 to cancel this operation.")
 	(*print-escape* nil)
 	(*print-readably* nil))
     #+clasp(core:print-current-ihs-frame-environment)
-    #-clasp(multiple-value-bind (local-variables special-variables functions blocks restarts)
-        (ihs-environment *ihs-current*)
-      (format t "~:[~;Local functions: ~:*~{~s~^, ~}.~%~]" functions)
-      (format t "~:[~;Block names: ~:*~{~s~^, ~}.~%~]" blocks)
-      (when restarts
-        (format t "New restarts:")
-        (loop for r in restarts
-           do (format t "~% ~A: ~A" (restart-name r) r)))
-      (tpl-print-variables "~%Local variables: " local-variables no-values)
-      (tpl-print-variables "~%Special variables: "
-                           special-variables no-values))
+    #+ecl
+    (multiple-value-bind (local-variables special-variables functions blocks restarts)
+               (ihs-environment *ihs-current*)
+             (format t "~:[~;Local functions: ~:*~{~s~^, ~}.~%~]" functions)
+             (format t "~:[~;Block names: ~:*~{~s~^, ~}.~%~]" blocks)
+             (when restarts
+               (format t "New restarts:")
+               (loop for r in restarts
+                  do (format t "~% ~A: ~A" (restart-name r) r)))
+             (tpl-print-variables "~%Local variables: " local-variables no-values)
+             (tpl-print-variables "~%Special variables: "
+                                  special-variables no-values))
     (terpri)
     (values)))
 
@@ -1091,62 +1103,86 @@ Use special code 0 to cancel this operation.")
 	      (let ((val (bds-val bi)))
 		(if (eq val si::unbound) "<unbound value>" val))))))
 
-(defun tpl-backtrace (&optional n)
-  (core:ihs-backtrace))
-#|
-  (let ((*print-pretty* nil)	 ;; because CLOS allows (setf foo) as function names
-	(base *ihs-base*)
-	(top *ihs-top*))
-    (format t "~&Backtrace:~%")
-    (if (null n)
-	(do ((i top (si::ihs-prev i))
-	     ;;(b nil t)
-	     )
-	    ((< i base))
-	    (when (ihs-visible i)
-	      (let ((*print-case* (if (= i *ihs-current*) :UPCASE :DOWNCASE))
-		    (*print-readably* nil)
-		    (func-name (ihs-fname i)))
-		;;(format t "~:[~; >~] ~S" b (ihs-fname i)) ;; JCB
-		(format t "  > ~S" func-name)
-		(when (eq func-name 'si::bytecodes)
-		  (format t " [Evaluation of: ~S]"
-                          (function-lambda-expression (ihs-fun i))))
-		(terpri)
-		)))
-      (progn
-	(if (eq t n)
-	    (setq base 0)
-	  (progn
-	    (unless (integerp n)
-	      (error "Argument to command :backtrace must be an integer or t."))
-	    (setq top *ihs-current*)
-	    )
-	  )
-	(do ((i top (si::ihs-prev i))
-	     ;;(b nil t)
-	     (j 0 (1+ j))
-	     (max (if (eq t n) *ihs-top* n))
-	     )
-	    ((or (< i base) (>= j max))
-	     (when (zerop i) (format t "  > ---end-of-stack---~%"))
-	     )
-	    (when (or (ihs-visible i) (eq t n))
-	      (let ((*print-case* (if (= i *ihs-current*) :UPCASE :DOWNCASE))
-		    (*print-readably* nil)
-		    (func-name (ihs-fname i)))
-		;;(format t "~:[~; >~] ~S" b (ihs-fname i)) ;; JCB
-		(format t "  > ~S" (ihs-fname i))
-		(when (eq func-name 'si::bytecodes)
-                  (format t " [Evaluation of: ~S]"
-                          (function-lambda-expression (ihs-fun i))))
-		(terpri)
-		))))
-      )
-    (terpri))
+#+clasp
+(defun clasp-backtrace (&optional (n 99999999))
+  (unless n (setq n 99999999))
+  (let (backtrace)
+    (do* ((icur (core:ihs-top) (core:ihs-prev icur))
+          (fun (core:ihs-fun icur) (core:ihs-fun icur))
+          (args (core::ihs-arguments icur) (core:ihs-arguments icur))
+          (i 0 (1+ i)))
+         ((or (= icur 0) (>= i n)))
+      (let ((arg-str (with-output-to-string (sout)
+                       (dotimes (i (length args))
+                         (handler-case (format sout "~s " (elt args i))
+                           (error (c)
+                             (format sout "#<UNPRINTABLE> ")))))))
+        (let* ((fun (core:ihs-fun icur))
+               (source-file (source-file-info-pathname (function-source-pos fun)))
+               (filename (if source-file (format nil "~a.~a" (pathname-name source-file) (pathname-type source-file))))
+               (source-pos-info (core:function-source-pos-info fun))
+               (lineno (if source-pos-info (core:source-pos-info-lineno source-pos-info))))
+          (push (if (eq (function-name fun) 'cl:lambda)
+                    (format nil "~4a ~20a ~5d LAMBDA(~a)" icur filename lineno (subseq arg-str 0 160))
+                    (format nil "~4a ~20a ~5d (~s ~a)" icur filename lineno (function-name fun) (subseq arg-str 0 160)))
+                backtrace))))
+    (dolist (bl backtrace)
+      (format t "~a~%" bl))))
 
+(defun tpl-backtrace (&optional n)
+  #+clasp
+  (clasp-backtrace n)
+  #+ecl(let ((*print-pretty* nil) ;; because CLOS allows (setf foo) as function names
+             (base *ihs-base*)
+             (top *ihs-top*))
+         (format t "~&Backtrace:~%")
+         (if (null n)
+             (do ((i top (si::ihs-prev i))
+                  ;;(b nil t)
+                  )
+                 ((< i base))
+               (when (ihs-visible i)
+                 (let ((*print-case* (if (= i *ihs-current*) :UPCASE :DOWNCASE))
+                       (*print-readably* nil)
+                       (func-name (ihs-fname i)))
+                   ;;(format t "~:[~; >~] ~S" b (ihs-fname i)) ;; JCB
+                   (format t "  > ~S" func-name)
+                   (when (eq func-name 'si::bytecodes)
+                     (format t " [Evaluation of: ~S]"
+                             (function-lambda-expression (ihs-fun i))))
+                   (terpri)
+                   )))
+             (progn
+               (if (eq t n)
+                   (setq base 0)
+                   (progn
+                     (unless (integerp n)
+                       (error "Argument to command :backtrace must be an integer or t."))
+                     (setq top *ihs-current*)
+                     )
+                   )
+               (do ((i top (si::ihs-prev i))
+                    ;;(b nil t)
+                    (j 0 (1+ j))
+                    (max (if (eq t n) *ihs-top* n))
+                    )
+                   ((or (< i base) (>= j max))
+                    (when (zerop i) (format t "  > ---end-of-stack---~%"))
+                    )
+                 (when (or (ihs-visible i) (eq t n))
+                   (let ((*print-case* (if (= i *ihs-current*) :UPCASE :DOWNCASE))
+                         (*print-readably* nil)
+                         (func-name (ihs-fname i)))
+                     ;;(format t "~:[~; >~] ~S" b (ihs-fname i)) ;; JCB
+                     (format t "  > ~S" (ihs-fname i))
+                     (when (eq func-name 'si::bytecodes)
+                       (format t " [Evaluation of: ~S]"
+                               (function-lambda-expression (ihs-fun i))))
+                     (terpri)
+                     ))))
+             )
+         (terpri))
   (values))
-||#
 
 (defun tpl-frs-command (&optional n)
   (format *debug-io* "tpl-frs-command   ignored~%"))
@@ -1472,7 +1508,8 @@ package."
 				    (type-of condition) condition))
            (*break-level* (1+ *break-level*))
            (break-level *break-level*)
-           (*break-env* nil))
+           (*break-env* nil)
+	   #+clasp(cmp:*implicit-compile-hook* #'cmp:implicit-compile-hook-default))
       (check-default-debugger-runaway)
       #+threads
       ;; We give our process priority for grabbing the console.
@@ -1542,7 +1579,9 @@ value."
 				 (declare (ignore condition))
                                  (return-from safe-eval err-value))
                              #'invoke-debugger)))
-           (setf output (si::top-level-eval-with-env form env)
+           (setf output
+                 #+ecl(core:eval-with-env form env)
+                 #+clasp(funcall core:*eval-with-env-hook* form env)
                  ok t))
       (return-from safe-eval (if ok output err-value)))))
 

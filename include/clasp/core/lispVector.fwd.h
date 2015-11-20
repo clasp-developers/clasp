@@ -28,6 +28,6 @@ THE SOFTWARE.
 #define core_lispVector_fwd_H
 
 namespace core {
-    FORWARD(Vector);
+FORWARD(Vector);
 };
 #endif

@@ -177,7 +177,9 @@ printed.  If FORMAT-STRING is NIL, however, no prompt will appear."
   (declare (ignore subchar))
   (when (and arg (null *read-suppress*))
         (error "~S is an extra argument for the #s readmacro." arg))
-  (let ((l (read stream)))
+;;; meister 2015 - I believe the following should be (read stream t nil t) so that
+;;; things like (defstruct foo a) (read-from-string "(#1=\"Hello\" #S(FOO :A #1#))") work
+  (let ((l #+ecl(read stream) #+clasp(read stream t nil t)))
     (when *read-suppress*
       (return-from sharp-s-reader nil))
     (unless (get-sysprop (car l) 'is-a-structure)

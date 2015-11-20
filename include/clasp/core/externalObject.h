@@ -27,7 +27,6 @@ THE SOFTWARE.
 #ifndef ExternalObject_H
 #define ExternalObject_H
 
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/standardObject.h>
@@ -55,103 +54,105 @@ TRANSLATE(core::ExternalObjectManager_O);
 };
 #endif
 
-
 namespace core {
 
 // set this class up by hand
-    SMART(ExternalObject);
-    class ExternalObject_O : public T_O // StandardObject_O
-    {
-	LISP_BASE1(T_O); // LISP_BASE1(StandardObject_O);
-	LISP_CLASS(core,CorePkg,ExternalObject_O,"ExternalObject");
-    GCPRIVATE:
-        Class_sp _Class;
-    public:
-	virtual bool eq(T_sp obj) const;
-	virtual bool isUndefined() const { return this->externalObject()==NULL; };
-	virtual void* externalObject() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
-	virtual void set_externalObject(void* ptr) {_OF(); SUBCLASS_MUST_IMPLEMENT();};
-    public:
-	explicit ExternalObject_O() : Base(), _Class(_Nil<Class_O>()) {};
-	virtual ~ExternalObject_O() {};
-    };
+SMART(ExternalObject);
+class ExternalObject_O : public T_O // StandardObject_O
+                         {
+  LISP_BASE1(T_O); // LISP_BASE1(StandardObject_O);
+  LISP_CLASS(core, CorePkg, ExternalObject_O, "ExternalObject");
+GCPRIVATE:
+  Class_sp _Class;
 
+public:
+  virtual bool eql_(T_sp obj) const;
+  virtual bool isUndefined() const { return this->externalObject() == NULL; };
+  virtual void *externalObject() const {
+    _OF();
+    SUBCLASS_MUST_IMPLEMENT();
+  };
+  virtual void set_externalObject(void *ptr) {
+    _OF();
+    SUBCLASS_MUST_IMPLEMENT();
+  };
 
+public:
+  explicit ExternalObject_O() : Base(), _Class(_Nil<Class_O>()){};
+  virtual ~ExternalObject_O(){};
+};
 
-    template <class OT,class WT>
-    gctools::smart_ptr<OT> RP_Create_wrapped(WT ptr)
-    {_G();
-        GC_ALLOCATE(OT,wrapper);
-        wrapper->set_wrapped(ptr);
-	return wrapper;
-    }
+template <class OT, class WT>
+gctools::smart_ptr<OT> RP_Create_wrapped(WT ptr) {
+  _G();
+  GC_ALLOCATE(OT, wrapper);
+  wrapper->set_wrapped(ptr);
+  return wrapper;
+}
 
+// public:
 
-
-
-
-
-// public:							
-
-
-#define LISP_EXTERNAL_CLASS(oNamespace,oPackage,wrappedClass,o_nameOfWrappedClass,nameOfWrappedClass,o_nameOfWrappedClassBase) \
-    /* */    LISP_BASE1(o_nameOfWrappedClassBase);			\
-    /* */	__COMMON_CLASS_PARTS(oNamespace,oPackage,o_nameOfWrappedClass,nameOfWrappedClass) \
-public:											\
-    typedef wrappedClass	WrappedClass;						\
-public:											\
-		/*Derived from StandardObject so it supports slots*/			\
-	static bool static_supportsSlots() {return true;};				\
-    	/* end */
-
-
-
-
+#define LISP_EXTERNAL_CLASS(oNamespace, oPackage, wrappedClass, o_nameOfWrappedClass, nameOfWrappedClass, o_nameOfWrappedClassBase)      \
+  /* */ LISP_BASE1(o_nameOfWrappedClassBase);                                                                                            \
+  /* */ __COMMON_CLASS_PARTS(oNamespace, oPackage, o_nameOfWrappedClass, nameOfWrappedClass) public : typedef wrappedClass WrappedClass; \
+                                                                                                                                         \
+public:                                                                                                                                  \
+  /*Derived from StandardObject so it supports slots*/                                                                                   \
+  static bool static_supportsSlots() { return true; };                                                                                   \
+  /* end */
 };
 
 TRANSLATE(core::ExternalObject_O);
 
-
-
-
 namespace core {
 
-    typedef enum { DeleteOnDtor=1, Copyable=2,  } ForeignDataFlagEnum;
+typedef enum { DeleteOnDtor = 1,
+               Copyable = 2,
+} ForeignDataFlagEnum;
 
 // set this class up by hand
 SMART(ForeignData);
-    /* Maintain a pointer to a block of Foreign data that we may or may not own depending on _OwnershipFlags */
+/* Maintain a pointer to a block of Foreign data that we may or may not own depending on _OwnershipFlags */
 
-
-    class ForeignData_O : public ExternalObject_O // StandardObject_O
-    {
-	LISP_BASE1(ExternalObject_O); // LISP_BASE1(StandardObject_O);
-	LISP_CLASS(core,CorePkg,ForeignData_O,"ForeignData");
+class ForeignData_O : public ExternalObject_O // StandardObject_O
+                      {
+  LISP_BASE1(ExternalObject_O); // LISP_BASE1(StandardObject_O);
+  LISP_CLASS(core, CorePkg, ForeignData_O, "ForeignData");
 #if defined(XML_ARCHIVE)
-	void	archiveBase(ArchiveP node);
+  void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-//	string	__repr__() const;
-	T_sp 				_Kind;
-	int				_OwnershipFlags;
-	size_t				_Size;
-	void*				_Data;
-    public:
-	static ForeignData_sp allocateForeignObject(T_sp kind);
+       //	string	__repr__() const;
+  T_sp _Kind;
+  int _OwnershipFlags;
+  size_t _Size;
+  void *_Data;
 
-    public:
-	template <class T>
-	T data() { return reinterpret_cast<T>(this->_Data);};
-    private:
-	void allocate(T_sp kind, int ownershipFlags, size_t size);
+public:
+  static ForeignData_sp allocateForeignObject(T_sp kind);
 
-	void freeForeignObject();
-    public:
-	explicit ForeignData_O();
-	virtual ~ForeignData_O();
-    };
+public:
+  template <class T>
+  T data() { return reinterpret_cast<T>(this->_Data); };
+
+private:
+  void allocate(T_sp kind, int ownershipFlags, size_t size);
+
+  void freeForeignObject();
+
+public:
+  explicit ForeignData_O();
+  virtual ~ForeignData_O(); // non-trivial
+};
 };
 
 TRANSLATE(core::ForeignData_O);
 
+template <>
+struct gctools::GCInfo<core::ForeignData_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static bool constexpr Moveable = true;
+  static bool constexpr Atomic = false;
+};
 
 #endif

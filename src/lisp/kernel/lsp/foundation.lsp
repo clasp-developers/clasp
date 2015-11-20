@@ -1,4 +1,3 @@
-
 ;;(in-package :core)
 (eval-when (eval compile load) (core:select-package :core))
 
@@ -18,8 +17,8 @@
       t)
 
 
-(fset '1- #'(lambda (num) (declare (function-name 1-)) (- num 1)))
-(fset '1+ #'(lambda (num) (declare (function-name 1+)) (+ num 1)))
+(fset '1- #'(lambda (num) (declare (core::lambda-name 1-)) (- num 1)))
+(fset '1+ #'(lambda (num) (declare (core::lambda-name 1+)) (+ num 1)))
 
 
 
@@ -324,12 +323,35 @@ the corresponding VAR.  Returns NIL."
 
 
 
-(if (not (fboundp 'compile))
-    (defun proclaim (d)
-      "Args: (decl-spec)
-Gives a global declaration.  See DECLARE for possible DECL-SPECs."
-      (when (eq (car d) 'SPECIAL) (mapc #'sys::*make-special (cdr d))))
-)
+
+
+(in-package :cl)
+
+;; We do not use this macroexpanso, and thus we do not care whether
+;; it is efficiently compiled by ECL or not.
+(core:fset 'multiple-value-bind
+           #'(lambda (whole env)
+               (declare (core:lambda-name multiple-value-bind-macro))
+               (let ((vars (cadr whole))
+                     (form (caddr whole))
+                     (body (cdddr whole)))
+                 `(multiple-value-call
+                      #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body)
+                    ,form)))
+           t)
+
+(defun warn (x &rest args)
+  (core:bformat t "WARN: %s %s\n" x args))
+
+
+(defun class-name (x)
+  (core:name-of-class x))
+
+(defun invoke-debugger (cond)
+  (core:invoke-internal-debugger cond))
+
+
+(export 'class-name)
 
 
 (in-package :ext)
@@ -339,33 +361,19 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun compiled-function-file (x)
   (multiple-value-bind (sfi pos)
       (core:function-source-pos x)
-    (values (core:source-file-info-source-debug-namestring sfi)
-	     (+ (core:source-file-info-source-debug-offset sfi) pos))))
-
+    (let* ((source-file (core:source-file-info-source-debug-namestring sfi)))
+      (if source-file
+          (let* ((source-pathname (pathname source-file))
+                 (source-directory (pathname-directory source-pathname))
+                 (pn (if (eq (car source-directory) :relative)
+                         (merge-pathnames source-pathname (translate-logical-pathname "SYS:"))
+                         source-pathname))
+                 (filepos (+ (core:source-file-info-source-debug-offset sfi) pos)))
+            (values pn filepos))
+          (values nil 0)))))
 (export '(compiled-function-name compiled-function-file))
 
 (defun warn-or-ignore (x &rest args)
   nil)
 (export 'warn-or-ignore)
 
-
-(in-package :cl)
-
-;; We do not use this macroexpanso, and thus we do not care whether
-;; it is efficiently compiled by ECL or not.
-(core:fset 'multiple-value-bind
-      #'(lambda (whole env)
-	  (let ((vars (cadr whole))
-		(form (caddr whole))
-		(body (cdddr whole)))
-	  `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
-      t)
-
-(defun warn (x &rest args)
-  (bformat t "WARN: %s %s\n" x args))
-
-
-(defun class-name (x)
-  (name-of-class x))
-
-(export 'class-name)

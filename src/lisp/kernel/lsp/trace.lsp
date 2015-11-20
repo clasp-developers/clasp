@@ -156,38 +156,50 @@ all functions."
 	   (floor indent 4)
 	 (dotimes (i bars) (princ (if (< i 10) "|   " "|    ") *trace-output*))
 	 (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
-       #+formatter(format *trace-output*
-                          "~D> (~S~{ ~S~})~%"
-                          *trace-level* fname vals)
-       #-formatter(bformat *trace-output*
-                           "%s> %s %s\n"
-                           *trace-level* fname vals)
+       #-debug-format(progn
+		       #+formatter(format *trace-output*
+					  "~D> (~S~{ ~S~})~%"
+					  *trace-level* fname vals)
+		       #-formatter(bformat *trace-output*
+					   "%s> %s %s\n"
+					   *trace-level* fname vals))
+       #+debug-format(bformat *trace-output*
+			      "debug-format| %s> %s %s\n"
+			      *trace-level* fname vals)
        )
       (EXIT
        (multiple-value-bind (bars rem)
 	   (floor indent 4)
 	 (dotimes (i bars) (princ "|   " *trace-output*))
 	 (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
-       #+formatter(format *trace-output*
-                          "<~D (~S~{ ~S~})~%"
-                          *trace-level*
-                          fname vals)
-       #-formatter(bformat *trace-output*
-                           "<%s %s %s\n"
-                           *trace-level* fname vals)
-
+       #-debug-format(progn
+		       #+formatter(format *trace-output*
+					  "<~D (~S~{ ~S~})~%"
+					  *trace-level*
+					  fname vals)
+		       #-formatter(bformat *trace-output*
+					   "<%s %s %s\n"
+					   *trace-level* fname vals))
+       #+debug-format(bformat *trace-output*
+			      "debug-format| <%s %s %s\n"
+			      *trace-level* fname vals)
        ))
     (when extras
       (multiple-value-bind (bars rem)
 	  (floor indent 4)
 	(dotimes (i bars) (princ "|   " *trace-output*))
 	(when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
-      #+formatter (format *trace-output*
-                          "~0,4@T\\\\ ~{ ~S~}~%"
-                          extras)
-      #-formatter (bformat *trace-output*
-                           "      %s\n" extras)
-      )))
+      #-debug-format (progn
+		       #+formatter (format *trace-output*
+					   "~0,4@T\\\\ ~{ ~S~}~%"
+					   extras)
+		       #-formatter (bformat *trace-output*
+					    "      %s\n" extras)
+		       )
+      #+debug-format(bformat *trace-output*
+			     "debug-format|       %s\n" extras)
+      )
+    ))
 
 (defun trace-record (fname)
   (declare (si::c-local))
@@ -289,7 +301,9 @@ for Stepper mode commands."
 	 (*step-level* 0)
 	 (*step-functions* (make-hash-table :size 128 :test 'eq)))
     (catch *step-tag*
-      (si:eval-with-env form nil t))))
+      #+ecl(core:eval-with-env form nil t)
+      #+clasp(funcall core:*eval-with-env-hook* form nil)
+      )))
 
 (defun steppable-function (form)
   (let ((*step-action* nil))
@@ -298,7 +312,9 @@ for Stepper mode commands."
 	    (function-lambda-expression form)
 	  (if (and (not (trace-record name)) f)
 	      (setf (gethash form *step-functions*)
-		    (eval-with-env `(function ,f) env t))
+		    #+ecl(eval-with-env `(function ,f) env t)
+                    #+clasp(funcall core:*eval-with-env-hook* `(function ,f) env)
+                    )
 	      form)))))
 
 (defun stepper (form)

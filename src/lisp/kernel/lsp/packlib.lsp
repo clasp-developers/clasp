@@ -142,9 +142,8 @@ to NIL) and returns all values."
                 (princ "  Function"))))
   (when (boundp symbol)
         (if (constantp symbol)
-            (princ "  Constant: ")
-            (princ "  has value: "))
-        (prin1 (symbol-value symbol)))
+            (princ "  Constant")
+            (princ "  has value")))
   (terpri))
 
 
@@ -156,7 +155,20 @@ PACKAGE is non-NIL, then only the specified PACKAGE is searched."
   (mapc #'print-symbol-apropos (apropos-list string package))
   (values))
 
+;; apropos-list function from stassats June 28, 2015
 (defun apropos-list (string &optional package)
+  "Args: (string &optional (package nil))
+Returns a list of all symbols whose print-names contain STRING as substring.
+If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
+  ;; Remove duplicates, since it's sorted, this is faster than delete-duplicates
+  (loop with previous = 0
+        for x in (sort (apropos-list-inner string package)
+                       #'string-lessp)
+        if (not (eq previous x))
+        collect (setf previous x)))
+
+;; Original apropos-list from ECL
+#+(or)(defun apropos-list (string &optional package)
   "Args: (string &optional (package nil))
 Returns a list of all symbols whose print-names contain STRING as substring.
 If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
@@ -165,13 +177,18 @@ If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
 	    (string-lessp (prin1-to-string s1)
 			  (prin1-to-string s2)))))
 
-(defun apropos-list-inner (string package)
+;;; Clasp fix for infinite recursion that happens when packages use each other
+;;; uses an extra optional argument SEEN-PACKAGES that keeps track of which packages
+;;; apropos-list-inner has been run on
+(defun apropos-list-inner (string package #+clasp &optional #+clasp seen-packages)
   (declare (si::c-local))
+  #+clasp(when (member package seen-packages) (return-from apropos-list-inner nil))
+  #+clasp(setf seen-packages (cons package seen-packages))
   (let* ((list '())
 	 (string (string string)))
     (cond (package
 	   (dolist (p (package-use-list package))
-	     (setf list (nconc (apropos-list-inner string p) list)))
+	     (setf list (nconc (apropos-list-inner string p #+clasp seen-packages) list)))
 	   (do-symbols (symbol package)
 	     (when (search string (string symbol) :test #'char-equal)
 	       (setq list (cons symbol list)))))
@@ -191,7 +208,7 @@ If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
 (defun find-relative-package (name)
   ;; Given a package name, a string, do a relative package name lookup.
   ;;
-  (declare (optimize speed))
+  (declare (optimize (speed 3)))
   (flet ((relative-to (package name)
 	   (if (zerop (length name))
 	       package
@@ -224,7 +241,7 @@ If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
   ;;
   ;; Because this function is called via the reader, we want it to be as
   ;; fast as possible.
-  (declare (optimize speed))
+  (declare (optimize (speed 3)))
   (flet ((find-last-dot (name)
 	   (do* ((len (1- (length name)))
 		 (i len (1- i)))
@@ -253,7 +270,7 @@ If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
   ;;
   ;; While this function is not called via the reader, we do want it to be
   ;; fast.
-  (declare (optimize speed))
+  (declare (optimize (speed 3)))
   (let* ((res ())
          (parent (cond ((packagep package-specifier)
                         (package-name package-specifier))

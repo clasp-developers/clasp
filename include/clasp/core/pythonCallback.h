@@ -24,18 +24,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-       
-       
+
 //
 // (C) 2004 Christian E. Schafmeister
 //
 
-
-
-#ifndef	PYTHONCALLBACK_H
-#define	PYTHONCALLBACK_H
-
-
+#ifndef PYTHONCALLBACK_H
+#define PYTHONCALLBACK_H
 
 //
 //
@@ -57,61 +52,53 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 
-
-#ifdef	USEBOOSTPYTHON
+#ifdef USEBOOSTPYTHON
 #include <Python.h>
 #endif
 
-
 namespace core {
 
-
-class	Dumb_PythonCallback;
-    typedef	gctools::smart_ptr<Dumb_PythonCallback>	RPPythonCallback;
-class	Dumb_PythonCallback{
+class Dumb_PythonCallback;
+typedef gctools::smart_ptr<Dumb_PythonCallback> RPPythonCallback;
+class Dumb_PythonCallback {
 
 public:
-    	friend	RPPythonCallback	PythonCallback();
+  friend RPPythonCallback PythonCallback();
 
-#ifdef	USEBOOSTPYTHON
-	void	setCallback(PyObject*	callback);
+#ifdef USEBOOSTPYTHON
+  void setCallback(PyObject *callback);
 #endif
 
-	void	callCallback();
+  void callCallback();
 
-	void	setDoubleVal0(double v) { this->doubleVal0 = v;};
-	double	getDoubleVal0()		{ return this->doubleVal0; };
-	void	setDoubleVal1(double v) { this->doubleVal1 = v;};
-	double	getDoubleVal1()		{ return this->doubleVal1; };
-	void	setLongVal0(long v) 	{ this->longVal0 = v;};
-	long	getLongVal0() 		{ return this->longVal0;};
-	void	setLongVal1(long v) 	{ this->longVal1 = v;};
-	long	getLongVal1() 		{ return this->longVal0;};
-	long	getLongReturn() 	{ return this->longReturn;};
+  void setDoubleVal0(double v) { this->doubleVal0 = v; };
+  double getDoubleVal0() { return this->doubleVal0; };
+  void setDoubleVal1(double v) { this->doubleVal1 = v; };
+  double getDoubleVal1() { return this->doubleVal1; };
+  void setLongVal0(long v) { this->longVal0 = v; };
+  long getLongVal0() { return this->longVal0; };
+  void setLongVal1(long v) { this->longVal1 = v; };
+  long getLongVal1() { return this->longVal0; };
+  long getLongReturn() { return this->longReturn; };
 
-#ifdef	USEBOOSTPYTHON
-	bool	callbackIsActive()	{ return (this->callbackFn!=NULL); };
+#ifdef USEBOOSTPYTHON
+  bool callbackIsActive() { return (this->callbackFn != NULL); };
 #else
-	bool	callbackIsActive()	{ return false; };
+  bool callbackIsActive() { return false; };
 #endif
-
 
 private:
-	double		doubleVal0;
-	double		doubleVal1;
-	long		longVal0;
-	long		longVal1;
-	long		longReturn;
+  double doubleVal0;
+  double doubleVal1;
+  long longVal0;
+  long longVal1;
+  long longReturn;
 
-#ifdef	USEBOOSTPYTHON
-	PyObject*	callbackFn;
+#ifdef USEBOOSTPYTHON
+  PyObject *callbackFn;
 #endif
-
-
 };
 
-inline RPPythonCallback	PythonCallback() { return RPPythonCallback(new Dumb_PythonCallback());};
-
-
+inline RPPythonCallback PythonCallback() { return RPPythonCallback(new Dumb_PythonCallback()); };
 };
 #endif

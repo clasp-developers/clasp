@@ -24,58 +24,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	methodptr_H
-#define	methodptr_H
+#ifndef methodptr_H
+#define methodptr_H
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 
-
-namespace core
-{
+namespace core {
 
 #if 0
 template <typename OT>
 class OldStyleMethoid : public SingleDispatchMethoid
 {
 private:
-	T_sp (OT::*fptr)(Function_sp,Cons_sp, Environment_sp, Lisp_sp );
+	T_sp (OT::*fptr)(Function_sp,List_sp, Environment_sp, Lisp_sp );
 public:
     virtual string describe() const {return "OldStyleMethoid";};
-    OldStyleMethoid( const string& name, T_sp (OT::*fp)(Function_sp,Cons_sp, Environment_sp, Lisp_sp ) ) : SingleDispatchMethoid("OldStyleMethoid->"+name)
+    OldStyleMethoid( const string& name, T_sp (OT::*fp)(Function_sp,List_sp, Environment_sp, Lisp_sp ) ) : SingleDispatchMethoid("OldStyleMethoid->"+name)
     {
 	this->fptr = fp;
     };
 };
 #endif
 
-
-
 /*! Methods that don't need to have argument/result translation are
  * stored as Methoid objects
  */
 template <typename OT>
-class Methoid : public SingleDispatchMethoid
-{
+class Methoid : public SingleDispatchMethoid {
 private:
-    T_mv (OT::*fptr)(ActivationFrame_sp frame,int singleDispatchArgumentIndex);
+  T_mv (OT::*fptr)(ActivationFrame_sp frame, int singleDispatchArgumentIndex);
+
 public:
-    Methoid(T_mv (OT::*fp)(ActivationFrame_sp) )
-    {
-	this->fptr = fp;
-    };
-    virtual string describe() const {return "Methoid";};
-    T_mv activate( ActivationFrame_sp closedEnv,const_ActivationFrame_spREF frame)
-    {
-	T_sp receiver = frame->entry(this->_SingleDispatchArgumentIndex);
-        gctools::smart_ptr<OT> obj = receiver.as<OT>();
-	T_mv result = ((obj.get())->*fptr)(frame,this->_SingleDispatchArgumentIndex);
-	return result;
-    }
+  Methoid(T_mv (OT::*fp)(ActivationFrame_sp)) {
+    this->fptr = fp;
+  };
+  virtual string describe() const { return "Methoid"; };
+  T_mv activate(ActivationFrame_sp closedEnv, const_ActivationFrame_spREF frame) {
+    T_sp receiver = frame->entry(this->_SingleDispatchArgumentIndex);
+    gctools::smart_ptr<OT> obj = receiver.as<OT>();
+    T_mv result = ((obj.get())->*fptr)(frame, this->_SingleDispatchArgumentIndex);
+    return result;
+  }
 };
-
-
-
-
 };
 #endif // methodptr_H

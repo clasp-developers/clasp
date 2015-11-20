@@ -33,45 +33,43 @@ THE SOFTWARE.
 #include <clasp/clbind/adapter.fwd.h>
 #include <clasp/clbind/inheritance.h>
 
-namespace clbind
-{
+namespace clbind {
 
-    template <class IT, typename Policy=reg::null_type>
-    class Iterator : public core::Iterator_O /*, public gctools::GC_MergeKinds */ {
-    public:
-        typedef core::Iterator_O TemplatedBase;
-    public:
-        IT      _Iterator;
-//        End     _end;
-    public:
-        Iterator(IT it /*, End end */) : _Iterator(it) /* , _end(end) */ {};
+template <class IT, typename Policy = reg::null_type>
+class Iterator : public core::Iterator_O /*, public gctools::GC_MergeKinds */ {
+public:
+  typedef core::Iterator_O TemplatedBase;
 
-        core::T_sp unsafeElement() const {
-            return translate::to_object<IT>::convert(this->_Iterator);
-        }
-        size_t templatedSizeof() const { return sizeof(*this); };
-        void step() {++this->_Iterator;};
-        bool operator==(core::T_sp other) const {
-            if ( gctools::smart_ptr<Iterator > io = other.asOrNull<Iterator<IT> >() ) {
-                return this->_Iterator == io.get()->_Iterator;
-            }
-            return false;
-        }
-        bool operator<(core::T_sp other) {
-            if ( Iterator<IT>* io = other.as<Iterator<IT> >() ) {
-                return this->_Iterator < io->rawIterator();
-            }
-            return false;
-        }
-    };
+public:
+  IT _Iterator;
+  //        End     _end;
+public:
+  Iterator(IT it /*, End end */) : _Iterator(it) /* , _end(end) */ {};
+
+  core::T_sp unsafeElement() const {
+    return translate::to_object<IT>::convert(this->_Iterator);
+  }
+  size_t templatedSizeof() const { return sizeof(*this); };
+  void step() { ++this->_Iterator; };
+  bool operator==(core::T_sp other) const {
+    if (gctools::smart_ptr<Iterator> io = other.asOrNull<Iterator<IT>>()) {
+      return this->_Iterator == io.get()->_Iterator;
+    }
+    return false;
+  }
+  bool operator<(core::T_sp other) {
+    if (Iterator<IT> *io = gc::As<gc::smart_ptr<Iterator<IT>>>(other)) {
+      return this->_Iterator < io->rawIterator();
+    }
+    return false;
+  }
 };
-
+};
 
 template <typename IT, typename Policy>
-class gctools::GCKind<clbind::Iterator<IT,Policy> > {
+class gctools::GCKind<clbind::Iterator<IT, Policy>> {
 public:
-    static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::Iterator<IT,Policy>::TemplatedBase>::Kind;
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::Iterator<IT, Policy>::TemplatedBase>::Kind;
 };
-
 
 #endif // clbind_wrapped_iterator

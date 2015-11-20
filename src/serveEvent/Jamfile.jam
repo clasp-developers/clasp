@@ -1,4 +1,4 @@
-import bundler ;
+
 local dir = $(__file__:D) ;
 
 #
@@ -9,8 +9,6 @@ project internals/serveEvent : requirements
 	<define>_GNU_SOURCE
 	<toolset>darwin:<define>READLINE
 	<threading>single
-	<include>./
-	<include>../
 	<toolset>darwin:<define>darwin
 	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
 	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
@@ -21,16 +19,9 @@ project internals/serveEvent : requirements
 	<target-os>darwin:<linkflags>"-dynamiclib"
 	;
 
-sources = 
+local sources = 
 	serveEvent.cc
 	serveEventPackage.cc
-	/internals/core//bundle
-	/externals//boostAndExpatLibs ;
+        ;
 
-bundler.bundle $(dir) :
-	     $(sources) :
-	     <link>static
-	     <implicit-dependency>mi
-	     <implicit-dependency>/internals/core//mi
-	     ;
-#	     <implicit-dependency>/internals/core//symbol_apply_inc  ;
+alias serveEvent : $(sources) ;

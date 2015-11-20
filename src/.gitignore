@@ -16,3 +16,4 @@ symbols_scraped_sorted.txt
 symbols_scraped_sorted_uniq.txt
 symbols_static.txt
 symbols_static_sorted.txt
+.DS_Store

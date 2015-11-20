@@ -24,20 +24,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	predefined_symbols_H
-#define	predefined_symbols_H
+#ifndef predefined_symbols_H
+#define predefined_symbols_H
 
 #include <clasp/core/foundation.h>
-namespace core
-{
-
-
-
-
+namespace core {
 
 extern void initializeAllPredefinedSymbols(Lisp_sp lisp);
 
-#define	PredefinedSymbol_externs
+#define PredefinedSymbol_externs
 #include <clasp/core/predefinedSymbols_inc.h>
 
 //
@@ -45,6 +40,5 @@ extern void initializeAllPredefinedSymbols(Lisp_sp lisp);
 //    lisp->predefinedSymbol(_sym_kw_renderStyle)
 //
 //
-
 };
 #endif

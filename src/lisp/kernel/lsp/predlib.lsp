@@ -42,6 +42,7 @@ Builds a new function which accepts any number of arguments but always outputs N
 (defun create-type-name (name)
   (when (member name *alien-declarations*)
     (error "Symbol ~s is a declaration specifier and cannot be used to name a new type" name)))
+(export 'create-type-name)
 
 (defun do-deftype (name form function)
   (unless (symbolp name)
@@ -107,7 +108,7 @@ by (documentation 'NAME 'type)."
   '(member nil t))
 
 (deftype index ()
-  '(INTEGER 0 #.array-dimension-limit))
+  '(INTEGER 0 #.(1- array-dimension-limit)))
 
 (deftype fixnum ()
   "A FIXNUM is an integer between MOST-NEGATIVE-FIXNUM (= - 2^29 in ECL) and
@@ -125,8 +126,8 @@ bignums."
 (deftype ext::integer32 () '(INTEGER #x-80000000 #x7FFFFFFF))
 (deftype ext::byte64 () '(INTEGER 0 #xFFFFFFFFFFFFFFFF))
 (deftype ext::integer64 () '(INTEGER #x-8000000000000000 #x7FFFFFFFFFFFFFFF))
-(deftype ext::cl-fixnum () '(SIGNED-BYTE #.core::CL-FIXNUM-BITS))
-(deftype ext::cl-index () '(UNSIGNED-BYTE #.core::CL-FIXNUM-BITS))
+(deftype ext::cl-fixnum () '(SIGNED-BYTE #.sys:CL-FIXNUM-BITS))  ;; Clasp change
+(deftype ext::cl-index () '(UNSIGNED-BYTE #.sys:CL-FIXNUM-BITS)) ;; Clasp change
 
 (deftype real (&optional (start '* start-p) (end '*))
   (if start-p
@@ -364,12 +365,12 @@ and is not adjustable."
   '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT EXT:BYTE8 EXT:INTEGER8)
              #+:uint16-t '(EXT:BYTE16 EXT:INTEGER16)
              #+:uint32-t '(EXT:BYTE32 EXT:INTEGER32)
-             (when (< 32 cl-fixnum-bits 64) '(EXT::CL-INDEX FIXNUM))
+             (when (< 32 #+ecl cl-fixnum-bits #+clasp core:cl-fixnum-bits 64) '(EXT::CL-INDEX FIXNUM))
              #+:uint64-t '(EXT:BYTE64 EXT:INTEGER64)
-             (when (< 64 cl-fixnum-bits) '(EXT::CL-INDEX FIXNUM))
+             (when (< 64 #+ecl cl-fixnum-bits #+clasp core:cl-fixnum-bits) '(EXT::CL-INDEX FIXNUM))
              '(SINGLE-FLOAT DOUBLE-FLOAT T)))
 
-#-clasp
+#+ecl
 (defun upgraded-array-element-type (element-type &optional env)
   (declare (ignore env))
   (let* ((hash (logand 127 (si:hash-eql element-type)))
@@ -384,15 +385,17 @@ and is not adjustable."
 			    (when (subtypep element-type v)
 			      (return v))))))
 	  (array-setf-aref *upgraded-array-element-type-cache* hash
-		(cons element-type answer))
+                           (cons element-type answer))
 	  answer))))
 
-;;
-;; For now we don't have specialized arrays
-;;
 #+clasp
-(defun upgraded-array-element-type (x &optional env) t)
-  
+(defun upgraded-array-element-type (element-type &optional env)
+  (cond
+    ((subtypep element-type nil) nil) 
+    ((subtypep element-type 'bit) 'bit)
+    ((subtypep element-type 'base-char) 'base-char)
+    ((subtypep element-type 'character) 'character)
+    (t T)))
 
 (defun upgraded-complex-part-type (real-type &optional env)
   (declare (ignore env))
@@ -462,7 +465,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 	((consp type)
 	 (setq tp (car type) i (cdr type)))
 	#+clos
-	(#-clasp(sys:instancep type) #+clasp(classp type)
+	(#-clasp(sys:instancep type) #+clasp(clos::classp type)
 	 (return-from typep (si::subclassp (class-of object) type)))
 	(t
 	 (error-type-specifier type)))
@@ -586,7 +589,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 #+clos
 (defun of-class-p (object class)
   (declare (optimize (speed 3) (safety 0)))
-  (macrolet ((class-precedence-list (x)
+  (macrolet ((clos::class-precedence-list (x)
 	       `(si::instance-ref ,x clos::+class-precedence-list-ndx+))
 	     (class-name (x)
 	       `(si::instance-ref ,x clos::+class-name-ndx+)))
@@ -594,8 +597,8 @@ Returns T if X belongs to TYPE; NIL otherwise."
       (declare (class x-class))
       (if (eq x-class class)
 	  t
-	  (let ((x-cpl (class-precedence-list x-class)))
-	    (if #-clasp(instancep class) #+clasp(classp class)
+	  (let ((x-cpl (clos::class-precedence-list x-class)))
+	    (if #-clasp(instancep class) #+clasp(clos::classp class)
 		(member class x-cpl :test #'eq)
 		(dolist (c x-cpl)
 		  (declare (class c))
@@ -921,7 +924,7 @@ if not possible."
       (and (not (clos::class-finalized-p class))
            (throw '+canonical-type-failure+ nil))
       (register-type class
-		     #'(lambda (c) (or #-clasp(si::instancep c) #+clasp(classp c) (symbolp c)))
+		     #'(lambda (c) (or #-clasp(si::instancep c) #+clasp(clos::classp c) (symbolp c)))
 		     #'(lambda (c1 c2)
 			 (when (symbolp c1)
 			   (setq c1 (find-class c1 nil)))
@@ -1273,7 +1276,7 @@ if not possible."
 (defconstant +built-in-types+
   (hash-table-fill
      (make-hash-table :test 'eq :size 128)
-     '#.+built-in-type-list+))
+     '#.sys::+built-in-type-list+)) ;; Clasp change
 
 (defun find-built-in-tag (name)
 ;;  (declare (si::c-local))
@@ -1436,7 +1439,7 @@ if not possible."
   ;; Another easy case: types are classes.
   (when #-clasp(and (instancep t1) (instancep t2)
 		    (clos::classp t1) (clos::classp t2))
-	#+clasp(and (classp t1) (classp t2))
+	#+clasp(and (clos::classp t1) (clos::classp t2))
     (return-from subtypep (values (subclassp t1 t2) t)))
   ;; Finally, cached results.
   (let* ((cache *subtypep-cache*)

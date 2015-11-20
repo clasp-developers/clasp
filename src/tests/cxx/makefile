@@ -1,3 +1,31 @@
+testNum: testNum.cc
+	clang++ -v -g -o0 -o testNum testNum.cc
+
+testVarArgsCall: testVarArgsCall.cc
+	clang++ -v -g -O0 -o testVarArgsCall testVarArgsCall.cc
+
+testVarArgs: testVarArgs.cc
+	clang++  -g -O0 -o testVarArgs testVarArgs.cc
+
+
+testEH.bc: testEH.cc
+	/usr/bin/clang++ -c -O0 -emit-llvm testEH.cc
+
+testReturnMultipleValues.bc: testReturnMultipleValues.cc
+	/usr/bin/clang++ -O0 -emit-llvm testReturnMultipleValues.cc
+
+testReturnMultipleValues: testReturnMultipleValues.cc
+	$(CLANG) -O3 -o testReturnMultipleValues testReturnMultipleValues.cc
+
+testints.bc: testints.cc
+	clang++ -O3 testints.cc -o testints
+
+testalign.bc: testalign.cc
+	/usr/bin/clang++ -O3 testalign.cc -o testalign
+
+testfixnum.bc: testfixnum.cc
+	/usr/bin/clang++ -O0 testfixnum.cc -o testfixnum
+
 
 computedGoto: computedGoto.cc
 	/usr/bin/clang++ -o computedGoto computedGoto.cc
@@ -84,8 +112,6 @@ testTemplate0: testTemplate0.cc
 
 
 
-testVarArgs: testVarArgs.cc
-	clang++  -Os -o testVarArgs testVarArgs.cc
 
 testmpi: testmpi.cc
 	mpicxx -g -v -o testmpi testmpi.cc -I$(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_INCLUDE_DIR) -std=c++11 -stdlib=libc++ -lboost_mpi -L$(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_LIB_DIR)

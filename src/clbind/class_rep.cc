@@ -61,42 +61,33 @@ THE SOFTWARE.
 #include <clasp/clbind/class_rep.h>
 #include <clasp/core/wrappers.h>
 
-
 using namespace clbind::detail;
 
+namespace clbind {
 
-
-namespace clbind
-{
-
-
-    void ClassRep_O::exposeCando(core::Lisp_sp lisp)
-    {_G();
-        core::class_<ClassRep_O>()
-            ;
-    }
-    void ClassRep_O::exposePython(core::Lisp_sp lisp)
-    {_G();
+void ClassRep_O::exposeCando(core::Lisp_sp lisp) {
+  _G();
+  core::class_<ClassRep_O>();
+}
+void ClassRep_O::exposePython(core::Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,ClassRep,"","",_lisp)
-	    ;
+  PYTHON_CLASS(CorePkg, ClassRep, "", "", _lisp);
 #endif
-    }
+}
 
+EXPOSE_CLASS(clbind, ClassRep_O);
 
-
-
-    EXPOSE_CLASS(clbind,ClassRep_O);
-
-    ClassRep_O::ClassRep_O(type_id const& type , const char* name, bool derivable)
-	: m_type(type)
-	, m_name(name)
-//	, m_class_type(cpp_class)
-//	, m_operator_cache(0)
-        , m_casts(globalCastGraph) // Meister - luabind did this
-        , m_classes(globalClassIdMap) // Meister - luabind did this
-        , m_derivable(derivable)
-    {
+ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool derivable)
+    : m_type(type), m_name(name)
+      //	, m_class_type(cpp_class)
+      //	, m_operator_cache(0)
+      ,
+      m_casts(globalCastGraph) // Meister - luabind did this
+      ,
+      m_classes(globalClassIdMap) // Meister - luabind did this
+      ,
+      m_derivable(derivable) {
 #if 0
 	cl_newtable(L);
 	handle(L, -1).swap(m_table);
@@ -125,17 +116,18 @@ namespace clbind
         m_classes = static_cast<class_id_map*>(cl_touserdata(L, -1));
         cl_pop(L, 1);
 #endif
-    }
+}
 
-    ClassRep_O::ClassRep_O(const char* name, bool derivable)
-	: m_type(typeid(reg::null_type))
-	, m_name(name)
-//	, m_class_type(cl_class)
-//	, m_operator_cache(0)
-        , m_casts(globalCastGraph) // Meister - luabind did this
-        , m_classes(globalClassIdMap) // Meister - luabind did this
-        , m_derivable(derivable)
-    {
+ClassRep_O::ClassRep_O(const std::string &name, bool derivable)
+    : m_type(typeid(reg::null_type)), m_name(name)
+      //	, m_class_type(cl_class)
+      //	, m_operator_cache(0)
+      ,
+      m_casts(globalCastGraph) // Meister - luabind did this
+      ,
+      m_classes(globalClassIdMap) // Meister - luabind did this
+      ,
+      m_derivable(derivable) {
 #if 0
 	cl_newtable(L);
 	handle(L, -1).swap(m_table);
@@ -163,11 +155,10 @@ namespace clbind
         m_classes = static_cast<class_id_map*>(cl_touserdata(L, -1));
         cl_pop(L, 1);
 #endif
-    }
+}
 
-    ClassRep_O::~ClassRep_O()
-    {
-    }
+ClassRep_O::~ClassRep_O() {
+}
 
 #if 0
 // leaves object on cl stack
@@ -232,18 +223,17 @@ namespace clbind
     }
 #endif
 
+void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base)
+//const ClassRep_O::base_info& binfo)
+{
+  // If you hit this assert you are deriving from a type that is not registered
+  // in cl. That is, in the class_<> you are giving a baseclass that isn't registered.
+  // Please note that if you don't need to have access to the base class or the
+  // conversion from the derived class to the base class, you don't need
+  // to tell clbind that it derives.
+  ASSERTF(base.objectp(), BF("You cannot derive from an unregistered type"));
 
-    void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base )
-    //const ClassRep_O::base_info& binfo)
-    {
-	// If you hit this assert you are deriving from a type that is not registered
-	// in cl. That is, in the class_<> you are giving a baseclass that isn't registered.
-	// Please note that if you don't need to have access to the base class or the
-	// conversion from the derived class to the base class, you don't need
-	// to tell clbind that it derives.
-	ASSERTF(base.pointerp(),BF("You cannot derive from an unregistered type"));
-
-	ClassRep_sp bcrep = base;
+  ClassRep_sp bcrep = base;
 #if 0
 	// import all static constants
 	for (std::map<const char*, int, ltstr>::const_iterator i = bcrep->m_static_constants.begin(); 
@@ -253,10 +243,10 @@ namespace clbind
             v = i->second;
 	}
 #endif
-	// also, save the baseclass info to be used for typecasts
-        core::Cons_sp binfo  = core::Cons_O::create(pointer_offset,base);
-	m_bases.push_back(binfo);
-    }
+  // also, save the baseclass info to be used for typecasts
+  core::Cons_sp binfo = core::Cons_O::create(pointer_offset, base);
+  m_bases.push_back(binfo);
+}
 #if 0
     CLBIND_API void clbind::disable_super_deprecation()
     {

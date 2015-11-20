@@ -33,8 +33,6 @@ last FORM.  If not, simply returns NIL."
        ',name)))
 
 
-(defun cl:macro-function (symbol &optional environment)
-  (core:macro-function symbol environment))
 
 (defun si::register-global (name)
   "This should augment a global environment object that the compiler uses
@@ -67,12 +65,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     ',var))
 
 
-;; TODO: Remove this
-#||
-#+use-mps(eval-when (:compile-toplevel)
-           (bformat t "evalmacros.lsp !!!!!!!!!!! Turning on core:*debug-load-time-values*!!!!!\n")
-           (setq core:*debug-load-time-values* t))
-||#
 (defmacro defparameter (&whole whole var form &optional doc-string)
   "Syntax: (defparameter name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
@@ -112,8 +104,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
     ',var))
 
 
-(defparameter *defun-inline-hook* nil)
-
 #+ecl
 (defmacro defun (&whole whole name vl &body body &environment env &aux doc-string)
   ;; Documentation in help.lsp
@@ -129,33 +119,42 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
     `(progn
        ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
        ,@(si::expand-set-documentation name 'function doc-string)
-       ,(let ((hook *defun-inline-hook*))
-	     (and hook (funcall hook name global-function env)))
+       ,(and *defun-inline-hook* (funcall *defun-inline-hook* name global-function env))
        ',name)))
 
+;;; DEFUN that generates interpreted functions
 #+clasp
-(defmacro defun (&whole whole name vl &body body &environment env)
-  ;; Documentation in help.lsp
-  (multiple-value-bind (decls body doc-string) 
-      (process-declarations body t)
-    (let* ((doclist (when doc-string (list doc-string)))
-	   (global-function `#'(lambda ,vl 
-				 (declare (core:lambda-name ,name) ,@decls) 
-				 ,@doclist (block ,(si::function-block-name name) ,@body))))
-      ;;(bformat t "DEFUN global-function --> %s\n" global-function )
-      `(progn
-	 ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
-	 ,@(si::expand-set-documentation name 'function doc-string)
-	 ,(let ((hook *defun-inline-hook*))
-	       (and hook (funcall hook name global-function env)))
-	 ',name))))
+(si::fset 'defun
+          #'(lambda (def env)
+              (declare (ignore env))
+              (let ((whole def)
+                    (name (cadr def))
+                    (vl (caddr def))
+                    (body (cdddr def)))
+                ;; Documentation in help.lsp
+                (multiple-value-bind (decls body doc-string) 
+                    (process-declarations body t)
+                  (let* ((doclist (when doc-string (list doc-string)))
+                         (global-function `#'(lambda ,vl 
+                                               (declare (core:lambda-name ,name) ,@decls) 
+                                               ,@doclist (block ,(si::function-block-name name) ,@body))))
+                    ;;(bformat t "DEFUN global-function --> %s\n" global-function )
+                    `(progn
+                       ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
+                       ,@(si::expand-set-documentation name 'function doc-string)
+                       ,(and *defun-inline-hook*
+                             (funcall *defun-inline-hook* name global-function))
+                       ',name)))))
+          t)
+
 
 ;;;
 ;;; This is a no-op unless the compiler is installed
 ;;;
 (defmacro define-compiler-macro (&whole whole name vl &rest body)
+  (or (not (eq name 'funcall)) (error "You currently cannot define a compiler macro named funcall"))
   (multiple-value-bind (function pprint doc-string)
-      (sys::expand-defmacro name vl body)
+      (sys::expand-defmacro name vl body 'cl:define-compiler-macro)
     (declare (ignore pprint))
     (setq function `(function ,function))
     (when *dump-defun-definitions*
@@ -167,12 +166,36 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
        ,(ext:register-with-pde whole)
        ',name)))
 
-#+compiler-macros(defun compiler-macro-function (name &optional env)
-;;  (declare (ignorable env))
-  (get-sysprop name 'sys::compiler-macro))
+(defun compiler-macro-function (name &optional env)
+  ;;  (declare (ignorable env))
+  (values (get-sysprop name 'sys::compiler-macro)))
 
-#-compiler-macros(defun compiler-macro-function (name &optional env)
-                   nil)
+(defun compiler-macroexpand-1 (form &optional env)
+  (if (atom form)
+      form
+      (or
+       (and (eq (car form) 'cl:funcall)
+            (listp (cadr form))
+            (eq (car (cadr form)) 'cl:function)
+            (let ((expander (compiler-macro-function (cadr (cadr form)) env)))
+              (if expander
+                  (funcall *macroexpand-hook* expander (cons (cadr (cadr form)) (cddr form)) env)
+                  form)))
+       (let ((expander (compiler-macro-function (car form) env)))
+         (if expander
+             (funcall *macroexpand-hook* expander form env)
+             form)))))
+
+(defun compiler-macroexpand (form &optional env)
+  (let ((expansion (compiler-macroexpand-1 form env)))
+    (if (eq expansion form)
+        (return-from compiler-macroexpand form)
+        (compiler-macroexpand expansion env))))
+
+(export '(compiler-macroexpand-1 compiler-macroexpand))
+
+
+
 
 ;;; Each of the following macros is also defined as a special form,
 ;;; as required by CLtL. Some of them are used by the compiler (e.g.
@@ -234,14 +257,6 @@ the corresponding VAR.  Returns NIL."
   )
 
 
-(macroexpand '   (do ((l args (cddr l))
-        (forms nil)
-        (bindings nil))
-       ((endp l) (list* 'LET* (nreverse bindings) (nreverse (cons nil forms))))
-       (let ((sym (gensym)))
-            (push (list sym (cadr l)) bindings)
-            (push (list 'setq (car l) sym) forms)))
-)
 ; conditionals
 
 (defmacro cond (&rest clauses &aux (form nil))
@@ -452,9 +467,14 @@ values of the last FORM.  If no FORM is given, returns NIL."
 	  (import 'maybe-quote :ext)
 	  (export 'maybe-quote :ext))
 
-(defmacro ext:truly-the (&rest args)
+(in-package :ext)
+(defmacro truly-the (&rest args)
   `(the ,@args))
 
-(defmacro ext:checked-value (&rest args)
+
+(defmacro checked-value (&rest args)
   `(the ,@args))
 
+(in-package :core)
+(import 'ext:truly-the)
+(export 'truly-the)

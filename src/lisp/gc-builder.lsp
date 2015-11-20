@@ -5312,7 +5312,7 @@ in the system-species and assign them a GCKind value"
 
 #+testing 
 (progn
-  (lnew $test-search)
+  (defvar $test-search nil)
   (setq $test-search (lsel $* ".*/lisp\.cc"))
   (load-asts $test-search
              :arguments-adjuster-code (lambda (args) (concatenate 'vector #-quiet args #+quiet(remove "-v" args)

@@ -24,10 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	core_Specializer_H //[
+#ifndef core_Specializer_H //[
 #define core_Specializer_H
-
-
 
 #include <stdio.h>
 #include <string>
@@ -43,19 +41,16 @@ namespace core {
 
 // Set up this class differently
 
-    SMART(Specializer);
-    class Specializer_O : public Metaobject_O
-    {
-	LISP_META_CLASS(StandardClass);
-	LISP_BASE1(Metaobject_O);
-	LISP_CLASS(core,CorePkg,Specializer_O,"specializer");
-    public:
+SMART(Specializer);
+class Specializer_O : public Metaobject_O {
+  LISP_META_CLASS(StandardClass);
+  LISP_BASE1(Metaobject_O);
+  LISP_CLASS(core, CorePkg, Specializer_O, "specializer");
 
-	explicit Specializer_O();
-	virtual ~Specializer_O();
-    };
-
-
+public:
+  explicit Specializer_O() : Base(){};
+  virtual ~Specializer_O(){};
+};
 };
 TRANSLATE(core::Specializer_O);
 #endif //]

@@ -24,15 +24,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_bignum_fwd_H
+#ifndef _core_bignum_fwd_H
 #define _core_bignum_fwd_H
 
-namespace core
-{
+namespace core {
 
-    FORWARD(Bignum);
+inline mpz_class clasp_create_mpz_class(uint64_t x) {
+  ASSERT(sizeof(x) == sizeof(unsigned long int));
+  return mpz_class((unsigned long int)x);
+}
 
+#ifndef _TARGET_OS_DARWIN
+inline mpz_class clasp_create_mpz_class(unsigned long long int x) {
+  ASSERT(sizeof(x) == sizeof(unsigned long int));
+  return mpz_class((unsigned long int)x);
+}
+#endif
+#if 0
+ inline mpz_class clasp_create_mpz_class(long long int x)
+    {
+        ASSERT(sizeof(x) == sizeof(long int));
+        return mpz_class((long int)x);
+    }
+#endif
 
-
+FORWARD(Bignum);
 };
 #endif

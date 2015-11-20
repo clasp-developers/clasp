@@ -24,16 +24,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_Sequence_H
+#ifndef _core_Sequence_H
 #define _core_Sequence_H
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/corePackage.fwd.h>
 
-namespace core
-{
-
+namespace core {
 
 #if 0
     FORWARD(Sequence);
@@ -70,30 +68,25 @@ namespace core
 
 //TRANSLATE(core::Sequence_O);
 
-
-
 namespace core {
-    uint cl_length(T_sp arg);
+uint cl_length(T_sp arg);
 
-    T_sp cl_reverse(T_sp obj);
-    T_sp cl_nreverse(T_sp obj);
+T_sp cl_reverse(T_sp obj);
+T_sp cl_nreverse(T_sp obj);
 
-    T_sp cl_elt(T_sp sequence, int index);
-    T_sp core_setf_elt(T_sp sequence, int index, T_sp value);
+T_sp cl_elt(T_sp sequence, int index);
+T_sp core_setf_elt(T_sp sequence, int index, T_sp value);
 
-    T_sp cl_subseq(T_sp sequence, int start, T_sp end);
-    T_sp core_setf_subseq(T_sp sequence, int start, T_sp end, T_sp newSubseq);
+T_sp cl_subseq(T_sp sequence, int start, T_sp end);
+T_sp core_setf_subseq(T_sp sequence, int start, T_sp end, T_sp newSubseq);
 
+T_sp cl_copySeq(T_sp seq);
 
-    T_sp cl_copySeq(T_sp seq);
+/* Return a valid start/end/length of a sequence or throw an error if invalid values are provided */
+size_t_pair sequenceStartEnd(const char *sourcefile, uint lineno, const char *functionName,
+                             const string &packageName,
+                             T_sp seq, Fixnum_sp start, T_sp end);
 
-    /* Return a valid start/end/length of a sequence or throw an error if invalid values are provided */
-    size_t_pair sequenceStartEnd(const char* sourcefile, uint lineno, const char* functionName,
-				 const string& packageName,
-				 T_sp seq, Fixnum_sp start, Fixnum_sp end);
-
-
-    void initialize_sequence();
-
+void initialize_sequence();
 };
 #endif /* _core_Sequence_H */

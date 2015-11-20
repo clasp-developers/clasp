@@ -4,7 +4,7 @@ $var ReturnTypeCount = 3
 $var RetSV = 0
 $var RetVoid = 1
 $var RetMV = 2
-$var NumArgs = 16
+$var NumArgs = 18
 $var InnerCount = NumArgs+1
 $var Templates = InnerCount*ReturnTypeCount-1
 $range template_ 0..Templates
@@ -35,34 +35,30 @@ $for template_ [[
         Type fptr;
         public:
         enum { NumParams = $numArgs };
-        VariadicFunctoid(T_sp name, SourcePosInfo_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+        VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
-        void LISP_CALLING_CONVENTION()
+	virtual void* functionAddress() const { return (void*)this->fptr; };
+        inline LCC_RETURN LISP_CALLING_CONVENTION()
         {
             INVOCATION_HISTORY_FRAME();
             $if numArgs>0 [[
-              ALLOC_STACK_VALUE_FRAME(frameImpl,frame,$numArgs);
-	      core::StackFrameDynamicScopeManager scope(frame);
-              lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+              STACK_FRAME(buff,fargs,$numArgs);
+	      core::StackFrameDynamicScopeManager scope(fargs);
+              lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
             ]]
-            this->invoke(lcc_resultP $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
-        }
-
-        void invoke(core::T_mv* lcc_resultP $for Args_  [[, core::T_sp arg$Args_]] )
-        {
             $if numArgs>0 [[
-              $for Args_ [[translate::from_object<ARG$Args_> a$Args_(arg$Args_);
+              $for Args_ [[translate::from_object<ARG$Args_> a$Args_(core::T_sp((gc::Tagged)fargs[$Args_]));
               ]]
             ]]
             $$ Do the call ------
             $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] fptr($for Args_ ,[[a$Args_._v]]);
             $if ret==RetVoid [[
-              *lcc_resultP = Values0<core::T_O>();
+              return Values0<core::T_O>();
             ]] $elif ret==RetMV [[
-              *lcc_resultP = retval;
+              return retval.as_return_type();
             ]] $else [[
-              *lcc_resultP = Values(translate::to_object<RT>::convert(retval));
+              return Values(translate::to_object<RT>::convert(retval));
             ]]
         }
 

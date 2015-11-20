@@ -4,144 +4,76 @@
 project internals/main : requirements
 	<define>EXPAT
 	<toolset>darwin:<define>READLINE
-	<include>./
-	<include>../core
-	<include>../cffi
-	<include>../llvmo
-	<include>../gctools
-	<include>../sockets
-	<include>../serveEvent
-#	<target-os>linux:<linkflags>"-Wl,--start-group  -lclangRewriteFrontend -lclangRewriteCore -lclangTooling -lclangParse -lclangDriver -lclangEdit -lclangSema -lclangAnalysis -lclangSerialization -lclangLex -lclangFrontend -lclangAST -lclangASTMatchers -lclangBasic -Wl,--end-group"
-#	<target-os>darwin:<linkflags>"-lclang -lclangRewriteFrontend -lclangRewriteCore -lclangTooling -lclangParse -lclangDriver -lclangEdit -lclangSema -lclangAnalysis -lclangSerialization -lclangLex -lclangFrontend -lclangAST -lclangASTMatchers -lclangBasic " # -Wl,-exported_symbols_list,exportedSymbols.txt"
 	<toolset>darwin:<define>darwin
 	<toolset>darwin,<variant>debug:<cxxflags>"-g3"
 	<toolset>darwin:<cxxflags>"-Wno-unused-variable -fopenmp"
-#-include pch.h"
 	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
 	<toolset>gcc:<cxxflags>"-Wno-unused-variable"
-#	<toolset>gcc:<linkflags>"-lpthread"
 	<linkflags>"-rdynamic"
 	;
 
 lib rt : : <name>rt ;
 
-alias gclib : /externals//boehm/libgc :
-      <gc>boehm ;
-
-alias gclib : mymps.c :
-      <gc>mps ;
 
 
-
-sources = 
-        mymps.c
-        gc_interface.cc
-    	    	/internals/core//bundle/<link>static
-		/internals/cffi//bundle/<link>static
-		/internals/llvmo//bundle/<link>static
-                /internals/clbind//bundle/<link>static
-		/internals/gctools//bundle/<link>static
-		/internals/sockets//bundle/<link>static
-		/internals/serveEvent//bundle/<link>static
-		/internals/asttooling//bundle/<link>static
-		/externals//llvm_lib/<link>static
-		/externals//clang_lib/<link>static
-		/externals//boostAndExpatLibs/<link>static
-#		/externals//lib_mps/<link>static
-#		/externals//openmm	
+local sources = 
+		/internals/gctools//gctools
+    	    	/internals/core//core
+		/internals/cffi//cffi
+		/internals/llvmo//llvmo
+                /internals/clbind//clbind
+		/internals/sockets//sockets
+		/internals/serveEvent//serveEvent
+		/internals/asttooling//asttooling
+#		/externals//llvm_lib_globbed 
+		/externals//clang_lib_globbed 
+		/externals//boostAndExpatLibs
 		;
 
-# exe testLldb : testLldb.cc
-#             ;
+alias main : $(sources) ;
+
+exe clasp : main.cc $(sources)
+    /internals/gctools//lib_boehm
+    : <gc>boehmdc
+            <target-os>darwin:<linkflags>"-Wl,-stack_size,0x1000000"
+    ;
+
+exe clasp : main.cc $(sources)
+    /internals/gctools//lib_boehm
+    : <gc>boehm
+            <target-os>darwin:<linkflags>"-Wl,-stack_size,0x1000000"
+    ;
+
+
+exe clasp : main.cc $(sources)
+    /internals/gctools//gclib
+    : <gc>mps 
+            <target-os>darwin:<linkflags>"-Wl,-stack_size,0x1000000"
+   ;
+
+exe clasp : main.cc $(sources)
+    /internals/gctools//gclib
+    : <gc>mps-prep
+            <target-os>darwin:<linkflags>"-Wl,-stack_size,0x1000000"
+    ;
 
 
 
+stripped-bitcode intrinsics_bitcode : /internals/llvmo//intrinsics.cc
+	:
+	<cxxflags>"-flto -emit-llvm" ;
 
-
-local deps =
-             <implicit-dependency>/internals/gctools//mi/<link>static
-             <implicit-dependency>/internals/cffi//mi/<link>static
-      	     <implicit-dependency>/internals/core//mi/<link>static
-             <implicit-dependency>/internals/clbind//mi/<link>static
-             <implicit-dependency>/internals/llvmo//mi/<link>static
-             <implicit-dependency>/internals/asttooling//mi/<link>static
-             <implicit-dependency>/internals/serveEvent//mi/<link>static
-             <implicit-dependency>/internals/sockets//mi/<link>static
-             <implicit-dependency>/internals/mpip//mi/<link>static
-      	     <dependency>/internals/lisp//bundle
-	     <target-os>linux:<library>rt         # real time functions not included in libc on linux
-	     ;
+explicit intrinsics_bitcode ;
 
 
 
-exe clasp_boehm_o : main.cc $(sources)
-                    /externals//lib_boehm
-    	   : $(deps) <gc>boehm ;
+import package ;
 
-exe clasp_boehm_d : main.cc $(sources) /externals//lib_boehm/<link>static
-    	   : $(deps) <gc>boehm ;
-
-exe clasp_mps_o : main.cc $(sources)
-    	   : $(deps) <gc>mps ;
-
-exe clasp_mps_d : main.cc $(sources)
-    	   : $(deps) <gc>mps ;
-
-exe clasp_mps_prep_o : main.cc $(sources)
-    	   : $(deps) <gc>mps-prep ;
-
-exe clasp_mps_prep_d : main.cc $(sources)
-    	   : $(deps) <gc>mps-prep ;
+package.install clasp_install :
+                : clasp intrinsics_bitcode
+                : /externals//boostAndExpatLibs
+                : 
+                ;
 
 
-alias mpi_stuff : /internals//mpip/<link>static
-                  /externals//boost_mpi/<link>static
-                  /externals//mpi
-                  ;
-
-exe clasp_mpi_o : mainMpi.cc $(sources) mpi_stuff
-        	   : $(deps)
-                   <gc>mps
-		   ;
-
-exe clasp_mpi_d : mainMpi.cc $(sources) mpi_stuff
-        	   : $(deps)
-                   <gc>mps
-		   ;
-
-
-exe clasp_mpi_mps_o : mainMpi.cc $(sources) mpi_stuff 
-        	   : $(deps)
-                   <gc>mps
-		   ;
-
-exe clasp_mpi_mps_d : mainMpi.cc $(sources) mpi_stuff
-        	   : $(deps)
-                   <gc>mps
-		   ;
-
-alias clasp : clasp_boehm_o : <variant>release <gc>boehm ;
-alias clasp : clasp_boehm_d : <variant>debug <gc>boehm ;
-
-alias clasp : clasp_mps_o : <variant>release <gc>mps ;
-alias clasp : clasp_mps_d : <variant>debug <gc>mps ;
-
-alias clasp : clasp_mps_prep_o : <variant>release <gc>mps-prep ;
-alias clasp : clasp_mps_prep_d : <variant>debug <gc>mps-prep ;
-
-alias clasp_mpi : clasp_mpi_mps_o : <variant>release <gc>boehm ;
-alias clasp_mpi : clasp_mpi_mps_d : <variant>debug <gc>boehm ;
-
-install bundle : clasp
-#               clasp_mpi
-               :
-			<target-os>darwin:<location>$(APPBIN_OSX)
-			<target-os>linux:<location>$(APPBIN_LINUX)
-#			<dll-path>$(APPLIB)
-		   	# <variant>debug:<dll-path>$(APPRES-EXTERNALS-DEBUG-LIB) #Uncomment to get the debug version of llvm
-#                         <dll-path>$(APPRES-EXTERNALS-RELEASE-LIB)
-# Add the link path for the externals-clasp libraries to the executable(s)
-                        <dll-path>$(APPRES-EXTERNALS-RELEASE-LIB)
-                        <dll-path>$(APPRES-EXTERNALS-COMMON-LIB)
-                        ;
-
+#                /internals/clbind//clasp-clbind/<link>shared

@@ -189,41 +189,20 @@
 
 (labels ((generate-accessors (class)
 	   (declare (optimize speed (safety 0)))
-	   #+compare(print "MLOG generate-accessors for class: ")
-	   #+compare(princ (with-early-accessors (+standard-class-slots+) (class-id class)))
 	   (if (and (typep class 'std-class)
-		    #+(or)
-		    (not (member (slot-value class 'name)
-				 '(slot-definition
-				   direct-slot-definition
-				   effective-slot-definition
-				   standard-slot-definition
-				   standard-direct-slot-definition
-				   standard-effective-slot-definition))))
-	       (progn
-		 #+compare (print "MLOG generating using std-class-generate-accessors for class")
-		 #+compare (princ class)
-		 (std-class-generate-accessors class t))
-	       (progn
-		 #+compare (print "MLOG generating using loop")
-		 (loop for slotd in (slot-value class 'slots)
-		    for index = (slot-value slotd 'location)
-		    do (loop for reader in (slot-value slotd 'readers)
-			  do (progn
-			       #+compare(print "MLOG Creating reader-closure for reader: ")
-			       #+compare(princ reader)
-			       #+compare(print "MLOG     slotd: ")
-			       #+compare(princ slotd)
-			       #+compare(print "MLOG     index: ")
-			       #+compare(princ index))
-			  do (setf (fdefinition reader) (reader-closure index)))
-		    do (loop for writer in (slot-value slotd 'writers)
-			  do (setf (fdefinition writer) (writer-closure index))))))
-	   #+compare(print "MLOG Generating accessors of direct-subclasses ")
-	   #+compare(mapc #'(lambda (x) (with-early-accessors (+standard-class-slots+) (princ (list (class-id x) " ")))) (slot-value class 'direct-subclasses))
-	   (mapc #'generate-accessors (slot-value class 'direct-subclasses))
-	   ))
-  
-  (generate-accessors +the-t-class+)
-  #+compare(print "MLOG Done generating accessors")
-  )
+		    #+(or)(not (member (slot-value class 'name)
+				       '(slot-definition
+					 direct-slot-definition
+					 effective-slot-definition
+					 standard-slot-definition
+					 standard-direct-slot-definition
+					 standard-effective-slot-definition))))
+	       (std-class-generate-accessors class t)
+	       (loop for slotd in (slot-value class 'slots)
+		  for index = (slot-value slotd 'location)
+		  do (loop for reader in (slot-value slotd 'readers)
+			do (setf (fdefinition reader) (reader-closure index)))
+		  do (loop for writer in (slot-value slotd 'writers)
+			do (setf (fdefinition writer) (writer-closure index)))))
+	   (mapc #'generate-accessors (slot-value class 'direct-subclasses))))
+  (generate-accessors +the-t-class+))

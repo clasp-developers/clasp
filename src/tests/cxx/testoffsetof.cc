@@ -29,12 +29,9 @@ THE SOFTWARE.
 
 #define GC_SCAN_ARGS_PROTOTYPE int
 
-
 #include "vectorCore.h"
 
-
-int main(int argc, const char* argv[])
-{
-    printf("sizeof myvector<void*> = %zu\n", sizeof(myvector<void*>));
-    printf("sizeof myvector<int> = %zu\n", sizeof(myvector<int>));
+int main(int argc, const char *argv[]) {
+  printf("sizeof myvector<void*> = %zu\n", sizeof(myvector<void *>));
+  printf("sizeof myvector<int> = %zu\n", sizeof(myvector<int>));
 }

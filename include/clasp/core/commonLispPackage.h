@@ -31,13 +31,9 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/package.fwd.h>
 
-namespace cl
-{
+namespace cl {
 
-    core::Package_sp initialize_commonLispPackage();
-
-
+core::Package_sp initialize_commonLispPackage();
 };
-
 
 #endif

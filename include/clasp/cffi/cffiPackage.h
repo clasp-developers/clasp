@@ -25,39 +25,27 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#ifndef	cffiCando_H
+#ifndef cffiCando_H
 #define cffiCando_H
 
 #include <clasp/core/common.h>
 
+NAMESPACE_PACKAGE_ASSOCIATION(cffi, CffiPkg, "CFFI-SYS");
 
+namespace cffi {
 
-
-NAMESPACE_PACKAGE_ASSOCIATION(cffi,CffiPkg,"CFFI-SYS");
-
-
-namespace cffi
-{
-
-
-#define	CffiPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,export) extern core::Symbol_sp cname;
-#include <clasp/cffi/symbols_scraped_inc.h>
+#define CffiPkg_SYMBOLS
+#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
+#include SYMBOLS_SCRAPED_INC_H
 #undef DO_SYMBOL
 #undef CffiPkg_SYMBOLS
 
-
-
-    class CffiExposer : public core::Exposer
-    {
-    private:
-    public:
-        DISABLE_NEW();
-    CffiExposer(core::Lisp_sp lisp) : Exposer(lisp,CffiPkg) {};
-        virtual void expose(core::Lisp_sp lisp,WhatToExpose what) const;
-    };
-
-
-
+class CffiExposer : public core::Exposer {
+private:
+public:
+  DISABLE_NEW();
+  CffiExposer(core::Lisp_sp lisp) : Exposer(lisp, CffiPkg){};
+  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
+};
 };
 #endif

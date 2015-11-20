@@ -24,16 +24,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	lambdaListHandler_fwd_H
+#ifndef lambdaListHandler_fwd_H
 #define lambdaListHandler_fwd_H
 
-namespace core
-{
+namespace core {
 
-    FORWARD(LambdaListHandler);
+FORWARD(LambdaListHandler);
 
-    extern void lambdaListHandler_createBindings(core::FunctionClosure* closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager& scope, LCC_ARGS);
-
-                                          
+extern void lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure> closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST);
 };
 #endif

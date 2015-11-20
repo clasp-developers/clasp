@@ -28,10 +28,10 @@ THE SOFTWARE.
 #ifndef _core_vectorObjectsWithFillPtr_fwd_H_
 #define _core_vectorObjectsWithFillPtr_fwd_H_
 
-namespace core
-{
-    FORWARD(VectorObjectsWithFillPtr);
-};
+namespace core {
+FORWARD(VectorObjectsWithFillPtr);
 
+void lisp_vectorPushExtend(T_sp vector, T_sp obj);
+};
 
 #endif /* _core_vectorObjectsWithFillPtr_fwd_H_ */

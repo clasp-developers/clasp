@@ -24,81 +24,76 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	_core_ArrayObjects_H
+#ifndef _core_ArrayObjects_H
 #define _core_ArrayObjects_H
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/array.h>
 #include <clasp/core/corePackage.fwd.h>
 
-namespace core
-{
+namespace core {
 
 FORWARD(ArrayObjects);
-class ArrayObjects_O : public Array_O
-{
-    LISP_BASE1(Array_O);
-    LISP_CLASS(core,CorePkg,ArrayObjects_O,"ArrayObjects");
+class ArrayObjects_O : public Array_O {
+  LISP_BASE1(Array_O);
+  LISP_CLASS(core, CorePkg, ArrayObjects_O, "ArrayObjects");
 #if defined(XML_ARCHIVE)
-    DECLARE_ARCHIVE();
+  DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
 #if defined(OLD_SERIALIZE)
-    DECLARE_SERIALIZE();
+  DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)
 public:
-    explicit ArrayObjects_O() : Base() {};
-    virtual ~ArrayObjects_O() {};
-public:
-	void initialize();
+  explicit ArrayObjects_O() : Base(){};
+  virtual ~ArrayObjects_O(){};
+  friend void write_array_inner(bool, T_sp, T_sp);
 
-GCPRIVATE: // instance variables here
-    vector<int>			_Dimensions;
-    T_sp			_ElementType;
-    gctools::Vec0<T_sp>	_Values;
+public:
+  void initialize();
+
+private: // instance variables here
+  vector<cl_index> _Dimensions;
+  T_sp _ElementType;
+  gctools::Vec0<T_sp> _Values;
 
 public: // Functions here
-    static ArrayObjects_sp make(T_sp dim, T_sp elementType, T_sp initialElement );
+  static ArrayObjects_sp make(T_sp dim, T_sp elementType, T_sp initialElement, T_sp adjustable);
 
 public:
-    virtual T_sp asetUnsafe(int j, T_sp val);
-    T_sp elementType() const { return this->_ElementType;};
+  virtual bool equalp(T_sp other) const;
+  virtual T_sp aset_unsafe(int j, T_sp val);
+  T_sp elementType() const { return this->_ElementType; };
 
-	virtual void rowMajorAset( int idx, T_sp value);
-	virtual T_sp rowMajorAref(int idx) const;
+  virtual void rowMajorAset(cl_index idx, T_sp value);
+  virtual T_sp rowMajorAref(cl_index idx) const;
 
-    virtual int rank() const { return this->_Dimensions.size();};
+  virtual gc::Fixnum rank() const { return this->_Dimensions.size(); };
 
-    virtual int arrayDimension(int axisNumber) const;
+  /* Copy the dimensions for printing */
+  virtual std::vector<cl_index> dimensions() const { return this->_Dimensions; };
+  virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const;
+  virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index]; };
 
-	LongLongInt setDimensions(Cons_sp dims,T_sp initialElement);
+  LongLongInt setDimensions(List_sp dims, T_sp initialElement);
 
-    void setElementType(T_sp et) { this->_ElementType = et;};
-	/*! Return the value at the indices */
-    virtual T_sp aref(Cons_sp indices) const;
+  void setElementType(T_sp et) { this->_ElementType = et; };
+  /*! Return the value at the indices */
+  virtual T_sp aref(List_sp indices) const;
 
-	/*! Return the value at the indices */
-	virtual T_sp setf_aref(Cons_sp indices_val);
+  /*! Return the value at the indices */
+  virtual T_sp setf_aref(List_sp indices_val);
 
+  /*! Return a shallow copy of this object */
+  virtual T_sp shallowCopy() const;
 
-	/*! Return a shallow copy of this object */
-	virtual T_sp shallowCopy() const;
+  /*! Return the value at the indices */
+  virtual void arrayFill(T_sp val);
 
-	/*! Return the value at the indices */
-	virtual void arrayFill(T_sp val);
+  /*! Return a deepCopy of the ArrayObjects */
+  virtual T_sp deepCopy() const;
 
-
-	/*! Return a deepCopy of the ArrayObjects */
-	virtual T_sp deepCopy() const;
-
-
-
-    virtual T_sp svref(int index) const;
-    virtual T_sp setf_svref(int index, T_sp value);
-
-
-
-
-
+  virtual T_sp svref(int index) const;
+  virtual T_sp setf_svref(int index, T_sp value);
 };
 
 }; /* core */

@@ -509,6 +509,10 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
     ;; as the class might be defined _after_ the system decides to evaluate
     ;; LOAD-TIME-VALUE.
     ;;
+    ;; In Cleavir/Clasp the LOAD-TIME-VALUEs may be evaluated before ANY
+    ;; toplevel forms in the file - so we can't depend on ANY toplevel forms
+    ;; to define values required by LOAD-TIME-VALUEs
+    ;;
     (let ((core `(define-structure ',name ',conc-name ',type ',named ',slots
 				',slot-descriptions ',copier ',include
 				',print-function ',print-object ',constructors
@@ -522,7 +526,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
 	 (eval-when (:compile-toplevel :load-toplevel)
 	   ,core
 	   ,(ext::register-with-pde whole)
-	   ,@(subst `(load-time-value (find-class ',name))
+	   ,@(subst `#+ecl(load-time-value (find-class ',name)) #+clasp(find-class ',name)
 		    '.structure-constructor-class.
 		    constructors))
 	 (eval-when (:execute)

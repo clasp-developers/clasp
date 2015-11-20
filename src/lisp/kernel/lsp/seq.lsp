@@ -49,7 +49,7 @@
   (let (elt-type length name args)
     (cond ((consp type)
 	   (setq name (first type) args (cdr type)))
-	  (#-clasp(si::instancep type) #+clasp(classp type)
+	  (#-clasp(si::instancep type) #+clasp(clos::classp type)
 	   (setf name (class-name (truly-the class type)) args nil))
 	  (t
 	   (setq name type args nil)))
@@ -97,7 +97,7 @@
 		    (LIST . LIST)
                     (STRING . CHARACTER)
                     . #.(mapcar #'(lambda (i) `((VECTOR ,i) . ,i))
-                         +upgraded-array-element-types+))
+                         sys::+upgraded-array-element-types+)) ;; clasp change
 		(if (subtypep type 'vector)
 		    ;; Does this have to be a type-error?
 		    ;; 17.3 for MAKE-SEQUENCE says it should be an error,

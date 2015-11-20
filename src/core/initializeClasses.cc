@@ -25,26 +25,19 @@ THE SOFTWARE.
 */
 /* -^- */
 
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 
-
-
-namespace core 
-{
+namespace core {
 
 //
 // Initialize classes without WxWidgets
 //
-void initializePackagesAndClasses(Lisp_sp lisp)
-{
-    DEPRECIATED();
+void initializePackagesAndClasses(Lisp_sp lisp) {
+  DEPRECIATED();
 #define Use_CorePkg
 #define Use_MbbPackage
 // #define Use_WxPackage
-#include <core_initClasses_inc.h>
-
+#include INIT_CLASSES_INC_H
 };
-
 };

@@ -29,12 +29,8 @@ THE SOFTWARE.
 
 namespace core {
 
-
 struct CommandLineOptions {
-    void process(int argc, char* argv[]);
+  void process(int argc, char *argv[]);
 };
-
-
-
 };
 #endif

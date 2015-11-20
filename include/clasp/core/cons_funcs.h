@@ -25,8 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-
-
+#if 0
 inline T_sp ocar(T_sp obj) {
 	if (obj.nilp()) return _Nil<T_O>();
 	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
@@ -42,9 +41,9 @@ inline T_sp ocar(T_sp obj) {
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     }
     inline Cons_sp ccar(T_sp obj) {
-	if (obj.nilp()) return _Nil<Cons_O>();
-	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cobj->_Car.as_or_nil<Cons_O>();
+	if (obj.nilp()) return _Nil<T_O>();
+	if (Cons_sp cobj = obj.asOrNull<T_O>()) {
+	    return cobj->_Car;
 	}
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     }

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define	DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/standardClass.h>
@@ -37,28 +37,24 @@ THE SOFTWARE.
 #include <clasp/core/funcallableStandardClass.h>
 #include <clasp/core/wrappers.h>
 
-namespace core
-{
-    FuncallableStandardClass_sp FuncallableStandardClass_O::create(Class_sp mc)
-    {
-        GC_ALLOCATE(FuncallableStandardClass_O,bic);
-//	FuncallableStandardClass_sp bic = FuncallableStandardClass_sp(new FuncallableStandardClass_O());
-	return bic;
-    }
+namespace core {
+FuncallableStandardClass_sp FuncallableStandardClass_O::create(Class_sp mc) {
+  GC_ALLOCATE(FuncallableStandardClass_O, bic);
+  //	FuncallableStandardClass_sp bic = FuncallableStandardClass_sp(new FuncallableStandardClass_O());
+  return bic;
+}
 
-    void FuncallableStandardClass_O::initialize()
-    {_OF();
-	this->Base::initialize();
-	this->_InstanceCoreClass = _Nil<Class_O>();
-    }
+void FuncallableStandardClass_O::initialize() {
+  _OF();
+  this->Base::initialize();
+  this->_InstanceCoreClass = _Nil<Class_O>();
+}
 
 #if defined(XML_ARCHIVE)
-    void FuncallableStandardClass_O::archiveBase(ArchiveP node)
-    {
-	IMPLEMENT_ME();
-    }
+void FuncallableStandardClass_O::archiveBase(ArchiveP node) {
+  IMPLEMENT_ME();
+}
 #endif // defined(XML_ARCHIVE)
-
 
 #if 0 // All functions
     void	FuncallableStandardClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)
@@ -79,7 +75,7 @@ namespace core
     void	FuncallableStandardClass_O::initialize()
     {
 	this->Base::initialize();
-//    this->_InstanceVariableNames = _Nil<Cons_O>();
+//    this->_InstanceVariableNames = _Nil<T_O>();
 //	this->_SlotSpecifiers.clear();
 	this->_InstanceCoreClass = _Nil<FuncallableStandardClass_O>();
     }
@@ -90,7 +86,7 @@ namespace core
 	    oclass->_Name = name;
 	    oclass->_InstanceClassSymbol = UNDEFINED_SYMBOL; // Not used anymore instanceClassSymbol;
 	    oclass->_InstanceCoreClass = _Nil<BuiltInClass_O>();
-//    oclass->_InstanceVariableNames = _Nil<Cons_O>();
+//    oclass->_InstanceVariableNames = _Nil<T_O>();
 	return oclass;
     }
 
@@ -109,7 +105,7 @@ namespace core
 	{_BLOCK_TRACE("About to assign base class");
 	    if ( baseClassesDesignator->consP() )
 	    {
-		baseClasses = baseClassesDesignator.as_or_nil<Cons_O>();
+		baseClasses = baseClassesDesignator;
 	    } else
 	    {
 		LOG(BF("baseClassesDesignator class(%s) value(%s)")
@@ -191,7 +187,6 @@ namespace core
 #endif
     }
 
-
 #if 0
     FuncallableStandardClass_O::slotIterator FuncallableStandardClass_O::find(Symbol_sp sym)
     {_G();
@@ -204,7 +199,7 @@ namespace core
 	{
 	    if ( (*it)->_SlotName == sym ) break;
 	}
-#ifdef	DEBUG_ON
+#ifdef DEBUG_ON
 	if ( it==this->_SlotSpecifiers.end() )
 	{
 	    LOG(BF("Could not find slot"));
@@ -217,13 +212,6 @@ namespace core
 #endif
     }
 #endif
-
-
-
-
-
-
-
 
 #if 0
     void FuncallableStandardClass_O::appendInstanceVariablesFromListOfSymbols(Cons_sp instanceVariableNames)
@@ -288,23 +276,15 @@ namespace core
 
 #endif
 
-
-
-
-    void FuncallableStandardClass_O::exposeCando(Lisp_sp lisp)
-    {
-	class_<FuncallableStandardClass_O>()
-	    ;
-    }
-    void FuncallableStandardClass_O::exposePython(Lisp_sp lisp)
-    {_G();
+void FuncallableStandardClass_O::exposeCando(Lisp_sp lisp) {
+  class_<FuncallableStandardClass_O>();
+}
+void FuncallableStandardClass_O::exposePython(Lisp_sp lisp) {
+  _G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,FuncallableStandardClass,"","",_lisp)
-	    ;
+  PYTHON_CLASS(CorePkg, FuncallableStandardClass, "", "", _lisp);
 #endif
-    }
+}
 
-
-    EXPOSE_CLASS(core,FuncallableStandardClass_O);
-
+EXPOSE_CLASS(core, FuncallableStandardClass_O);
 };

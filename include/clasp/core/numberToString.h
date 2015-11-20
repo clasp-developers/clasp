@@ -31,11 +31,9 @@ THE SOFTWARE.
 #include <clasp/core/strWithFillPtr.h>
 namespace core {
 
-    StrWithFillPtr_sp core_integerToString(StrWithFillPtr_sp buffer, Integer_sp integer,
-					 Fixnum_sp base, bool radix, bool decimalp);
+StrWithFillPtr_sp core_integerToString(StrWithFillPtr_sp buffer, Integer_sp integer,
+                                       Fixnum_sp base, bool radix, bool decimalp);
 
-    void initialize_numberToString();
-
-
+void initialize_numberToString();
 };
 #endif

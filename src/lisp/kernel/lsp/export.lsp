@@ -17,10 +17,8 @@
 
 ;;; ----------------------------------------------------------------------
 ;;;
-(*make-special '*dump-defun-definitions*)
-(setq *dump-defun-definitions* nil)
-(*make-special '*dump-defmacro-definitions*)
-(setq *dump-defmacro-definitions* *dump-defun-definitions*)
+(defparameter *dump-defun-definitions* nil)
+(defparameter *dump-defmacro-definitions* nil)
 
 ;; This is needed only when bootstrapping ECL using ECL-MIN
 (eval-when (eval)

@@ -31,103 +31,100 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/singleDispatchMethod.fwd.h>
 
+namespace core {
+class SingleDispatchMethod_O : public T_O {
+  friend class SingleDispatchGenericFunctionClosure;
+  LISP_BASE1(T_O);
+  LISP_CLASS(core, CorePkg, SingleDispatchMethod_O, "SingleDispatchMethod");
+  DECLARE_INIT();
+  //    DECLARE_ARCHIVE();
+public:
+  friend class SingleDispatchMethodPrimitive_O;
+  friend class SingleDispatchGeneralFunction_O;
+  friend class Lambda_emf;
+  friend class Lambda_method_function;
 
-namespace core
-{
-    class SingleDispatchMethod_O : public T_O
-    {
-        friend class SingleDispatchGenericFunctionClosure;
-	LISP_BASE1(T_O);
-	LISP_CLASS(core,CorePkg,SingleDispatchMethod_O,"SingleDispatchMethod");
-	DECLARE_INIT();
-//    DECLARE_ARCHIVE();
-    public:
-	friend class SingleDispatchMethodPrimitive_O;
-	friend class SingleDispatchGeneralFunction_O;
-	friend class Lambda_emf;
-	friend class Lambda_method_function;
-    public: // Simple default ctor/dtor
-	DEFAULT_CTOR_DTOR(SingleDispatchMethod_O);
-    GCPRIVATE: // instance variables here
-		/*! Store the generic function name */
-	Symbol_sp	_name;
-	/*! Store the receiver class for this method */
-	Class_sp	_receiver_class;
-	/*! Store the body of the method */
-	Function_sp     code;
-//        CompiledBody_sp		_body;
-//	BuiltIn_sp	_method_builtin;
-	/*! This is the LambdaListHandler for the Builtin method */
-	LambdaListHandler_sp	_argument_handler;
-	Cons_sp 	_declares;
-	/*! Store the docstring */
-	Str_sp		_docstring;
-    public: // creation function
-	// The creates above are depreciated
-	static SingleDispatchMethod_sp create(Symbol_sp name,
-					      Class_sp receiver,
-					      LambdaListHandler_sp lambda_list_handler,
-					      Cons_sp declares, Str_sp docstr,
-					      Function_sp body );
-    public: // Functions here
+public: // Simple default ctor/dtor
+  DEFAULT_CTOR_DTOR(SingleDispatchMethod_O);
+GCPRIVATE: // instance variables here
+           /*! Store the generic function name */
+  Symbol_sp _name;
+  /*! Store the receiver class for this method */
+  Class_sp _receiver_class;
+  /*! Store the body of the method */
+  Function_sp code;
+  //        CompiledBody_sp		_body;
+  //	BuiltIn_sp	_method_builtin;
+  /*! This is the LambdaListHandler for the Builtin method */
+  LambdaListHandler_sp _argument_handler;
+  List_sp _declares;
+  /*! Store the docstring */
+  T_sp _docstring;
 
-	Class_sp receiver_class() const { return this->_receiver_class; };
-	LambdaListHandler_sp method_lambda_list_handler() const { return this->_argument_handler;};
-	string __repr__() const;
+public: // creation function
+  // The creates above are depreciated
+  static SingleDispatchMethod_sp create(Symbol_sp name,
+                                        Class_sp receiver,
+                                        LambdaListHandler_sp lambda_list_handler,
+                                        List_sp declares, gc::Nilable<Str_sp> docstr,
+                                        Function_sp body);
 
-        Symbol_sp singleDispatchMethodName() const { return this->_name; };
-        Class_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class;};
-        Function_sp singleDispatchMethodCode() const { return this->code;};
-        LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_argument_handler;};
-        Cons_sp singleDispatchMethodDeclares() const { return this->_declares;};
-        Str_sp singleDispatchMethodDocstring() const { return this->_docstring;};
+public: // Functions here
+  Class_sp receiver_class() const { return this->_receiver_class; };
+  LambdaListHandler_sp method_lambda_list_handler() const { return this->_argument_handler; };
+  string __repr__() const;
 
-    }; // SingleDispatchMethod class
-    
+  Symbol_sp singleDispatchMethodName() const { return this->_name; };
+  Class_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class; };
+  Function_sp singleDispatchMethodCode() const { return this->code; };
+  LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_argument_handler; };
+  List_sp singleDispatchMethodDeclares() const { return this->_declares; };
+  T_sp singleDispatchMethodDocstring() const { return this->_docstring; };
+
+}; // SingleDispatchMethod class
+
 }; // core namespace
-template<> struct gctools::GCInfo<core::SingleDispatchMethod_O> {
-    static bool constexpr NeedsInitialization = false;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true;
-    static bool constexpr Atomic = false;
+template <>
+struct gctools::GCInfo<core::SingleDispatchMethod_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static bool constexpr Moveable = true;
+  static bool constexpr Atomic = false;
 };
 TRANSLATE(core::SingleDispatchMethod_O);
 
-
-
 namespace core {
 
-
-    /*! A method function when invoked is given two arguments: (args next-emfun)
+/*! A method function when invoked is given two arguments: (args next-emfun)
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
-    class Lambda_method_function : public BuiltinClosure
-    {
-        FRIEND_GC_SCANNER();
-    private:
-	SingleDispatchMethod_sp	_method;
-	Function_sp 		_temporary_function;
-    public:
-	const char* describe() const { return "Lambda_method_function";};
-    public:
-	Lambda_method_function(T_sp name, SingleDispatchMethod_sp method)
-	    : BuiltinClosure(name)
-	{_G();
-	    this->_method = method;
-	    this->_temporary_function = _Nil<Function_O>();
-	}
+class Lambda_method_function : public BuiltinClosure {
+  FRIEND_GC_SCANNER(core::Lambda_method_function);
 
-        DISABLE_NEW();
-        virtual size_t templatedSizeof() const { return sizeof(*this);};
-	bool requires_activation_frame() const { return true; };
+private:
+  SingleDispatchMethod_sp _method;
+  Function_sp _temporary_function;
 
-	/*! The argument list is: (args next-emfun)
+public:
+  const char *describe() const { return "Lambda_method_function"; };
+
+public:
+  Lambda_method_function(T_sp name, SingleDispatchMethod_sp method)
+      : BuiltinClosure(name) {
+    _G();
+    this->_method = method;
+    this->_temporary_function = _Nil<Function_O>();
+  }
+
+  DISABLE_NEW();
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+  bool requires_activation_frame() const { return true; };
+
+  /*! The argument list is: (args next-emfun)
 	  Use next-emfun to set up a FunctionValueEnvironment that defines call-next-method and next-method-p */
-	void LISP_INVOKE();
-    };
-
+  void LISP_INVOKE();
 };
-
+};
 
 #endif /* _singleDispatchMethod_H_ */

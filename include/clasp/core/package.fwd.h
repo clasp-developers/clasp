@@ -26,8 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #ifndef package_fwd_H
 #define package_fwd_H
-namespace core
-{
+namespace core {
 FORWARD(Package);
 }
 #endif

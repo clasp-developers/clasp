@@ -27,15 +27,13 @@ THE SOFTWARE.
 #ifndef debugger_H
 #define debugger_H
 
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/stacks.h>
 #include <clasp/core/conditions.h>
 
-namespace core
-{
+namespace core {
 /*! This class controls the single-step state of the Lisp interpreter
   in an exception safe way.
   When you want to force a form to execute in single step mode
@@ -44,51 +42,53 @@ namespace core
   the single step state to what it was.
 */
 
-    class LispDebugger 
-    {
-    private:
-	bool			_CanContinue;
-	T_sp			_Condition;
-    public:
-	/* Immediatly returns if we are not single stepping or if the step stack level
+void core_lowLevelBacktrace();
+void core_clibBacktrace(int depth = 999999999);
+
+FORWARD(InvocationHistoryFrameIterator);
+
+class LispDebugger {
+private:
+  bool _CanContinue;
+  T_sp _Condition;
+
+public:
+  /* Immediatly returns if we are not single stepping or if the step stack level
 	   is less than the current stack level.
 	   Otherwise print the next instruction to be evaluated and wait for
 	   the user to indicate what they want to do. */
-	static void step();
-    public:
+  static void step();
 
-	/*! Print the current expression */
-	void printExpression();
+public:
+  /*! Print the current expression */
+  void printExpression();
 
-	/*! Invoke the debugger,
+  /*! Invoke the debugger,
 	  If the user is allowed to resume and opts to resume then return the resume object 
 	*/
-	T_sp invoke();
+  T_sp invoke();
 
-	InvocationHistoryFrame& currentFrame() const;
+  InvocationHistoryFrameIterator_sp currentFrame() const;
 
-	LispDebugger(T_sp condition);
-	LispDebugger();
+  LispDebugger(T_sp condition);
+  LispDebugger();
 
-	virtual ~LispDebugger()
-	{_G();
-	    _lisp->decrementDebuggerLevel();
-	};
-    };
+  virtual ~LispDebugger() {
+    _G();
+    _lisp->decrementDebuggerLevel();
+  };
+};
 
+void af_backtrace();
 
-    void af_backtrace();
-    
-    void initialize_debugging();
+void initialize_debugging();
 
-
-    extern "C" {
-	void af_gotoIhsTop();
-	void af_gotoIhsNext();
-	void af_gotoIhsPrev();
-	void af_printCurrentIhsFrame();
-	void af_evalPrint(const string& expr);
-    };
-    
+extern "C" {
+void af_gotoIhsTop();
+void af_gotoIhsNext();
+void af_gotoIhsPrev();
+void af_printCurrentIhsFrame();
+void af_evalPrint(const string &expr);
+};
 };
 #endif
