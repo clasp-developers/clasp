@@ -220,7 +220,7 @@ boehm-setup:
 		CXX=$(BOEHM_CXX) \
                 CFLAGS="-DUSE_MMAP -g" \
 		PKG_CONFIG_PATH=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR)/lib/pkgconfig/ \
-		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
+		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR) --with-libatomic-ops=yes;)
 
 boehm-compile:
 	(cd $(BOEHM_SOURCE_DIR); make -j$(PJOBS) | tee _boehm.log)
