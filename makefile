@@ -134,8 +134,15 @@ ifneq ($(CXXFLAGS),)
   export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
 endif
 
+ifeq ($(NO_COLOR),)
+TPUT = $(call pathsearch,tput)
+ifneq ($(TPUT),)
+  COLOR_GREEN = $(shell $(TPUT) setaf 2 2>/dev/null)
+  COLOR_RESET = $(shell $(TPUT) sgr0    2>/dev/null)
+endif
+endif
 define varprint
-	@echo -e "\033[0;32m$(strip $(1))\033[0m: $($(strip $(1)))"
+	@echo -e "$(COLOR_GREEN)$(strip $(1))$(COLOR_RESET): $($(strip $(1)))"
 endef
 
 all:
