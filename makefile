@@ -66,6 +66,9 @@ export LLVM_CONFIG_DEBUG ?= $(or $(wildcard $(EXTERNALS_CLASP_DIR)/build/debug/b
                                  $(LLVM_CONFIG))
 
 export LLVM_BIN_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --bindir)
+# Not always the same as LLVM_BIN_DIR!
+export CLANG_BIN_DIR ?= $(if $(wildcard $(LLVM_BIN_DIR)/clang),$(LLVM_BIN_DIR),$(dir $(or $(call pathsearch, clang),\
+                                        $(error Could not find clang.))))
 
 export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
 
@@ -109,8 +112,8 @@ ifeq ($(TARGET_OS),Darwin)
 endif
 
 ifeq ($(TARGET_OS),Linux)
-  export BOEHM_CC = $(LLVM_BIN_DIR)/clang
-  export BOEHM_CXX = $(LLVM_BIN_DIR)/clang++
+  export BOEHM_CC = $(CLANG_BIN_DIR)/clang
+  export BOEHM_CXX = $(CLANG_BIN_DIR)/clang++
 endif
 
 include_flags := $(foreach dir,$(INCLUDE_DIRS),$(and $(wildcard $(dir)),-I$(dir)))
@@ -468,6 +471,7 @@ print-config:
 	$(call varprint, LLVM_CONFIG_DEBUG)
 	$(call varprint, LLVM_CONFIG_RELEASE)
 	$(call varprint, LLVM_BIN_DIR)
+	$(call varprint, CLANG_BIN_DIR)
 	$(call varprint, GIT_COMMIT)
 	$(call varprint, CLASP_VERSION)
 	$(call varprint, CLASP_INTERNAL_BUILD_TARGET_DIR)
