@@ -2,10 +2,9 @@
 # -*- mode: GNUmakefile; indent-tabs-mode: t -*-
 # Cleaned up by Shinmera October 13, 2015
 
-export CLASP_HOME := $(or $(wildcard $(CLASP_HOME)),\
-                          $(shell pwd))
-
 include $(wildcard $(CLASP_HOME)/local.config)
+
+export CLASP_HOME ?= $(shell pwd)
 
 export PJOBS ?= 1
 
