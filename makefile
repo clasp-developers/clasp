@@ -35,10 +35,14 @@ export TOOLSET := $(or $(filter $(TOOLSET), clang-linux),\
                        $(filter $(TOOLSET), clang-darwin),\
                        $(error Invalid TOOLSET: $(TOOLSET)))
 
-export PYTHON2 := $(or $(wildcard $(PYTHON2)),\
-                       $(wildcard /usr/bin/python2.7),\
-                       $(wildcard /usr/bin/python2),\
-                       $(wildcard /usr/bin/python),\
+# From the GNU Make manual; portably search PATH for a program. We can't rely on `which` existing...
+# Use $(call pathsearch,foo) instead of $(shell which foo)
+pathsearch = $(firstword $(wildcard $(addsuffix /$(strip $(1)),$(subst :, ,$(PATH)))))
+
+export PYTHON2 := $(or $(PYTHON2),\
+                       $(call pathsearch, python2.7),\
+                       $(call pathsearch, python2),\
+                       $(call pathsearch, python),\
                        $(error Could not find python.))
 
 export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
@@ -47,10 +51,11 @@ export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
 export DEVEMACS ?= $(or $(and $(filter $(TARGET_OS),Linux), emacs -nw ./),\
                         $(and $(filter $(TARGET_OS),Darwin), open -n -a /Applications/Emacs.app ./))
 
-export LLVM_CONFIG := $(or $(wildcard $(LLVM_CONFIG)),\
-                           $(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),\
-                           $(wildcard /usr/bin/llvm-config),\
-                           $(wildcard /usr/bin/llvm-config*),\
+# XXX: confirm the necessity of llvm-config* pathsearch!
+export LLVM_CONFIG := $(or $(LLVM_CONFIG),\
+                           $(ifneq $(EXTERNALS_CLASP_DIR),$(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),),\
+                           $(call pathsearch, llvm-config),\
+                           $(call pathsearch, llvm-config*),\
                            $(error Could not find llvm-config.))
 
 export GIT_COMMIT ?= $(shell git rev-parse --short HEAD || echo "unknown-commit")
