@@ -119,8 +119,7 @@ template <>
 struct gctools::GCInfo<core::VectorDisplaced_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif /* _core_VectorDisplaced_H */

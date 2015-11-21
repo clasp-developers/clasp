@@ -196,8 +196,7 @@ template <>
 struct gctools::GCInfo<clbind::ClassRep_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true; // old=false
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 //#include <clasp/clbind/detail/overload_rep_impl.hpp>

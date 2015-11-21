@@ -77,8 +77,7 @@ template <>
 struct gctools::GCInfo<core::LoadTimeValues_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = false; // THIS CANNOT MOVE - ALL COMPILED CODE DEPENDS ON THIS!!!
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = noncollectable_immobile;
 };
 
 #if 0
@@ -120,8 +119,7 @@ TRANSLATE(core::MemoryLockedLoadTimeValuesPointer_O);
 template<> struct gctools::GCInfo<core::MemoryLockedLoadTimeValuesPointer_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = false;
-    static bool constexpr Atomic = false;
+    static GCInfo_policy constexpr Policy = noncollectable_immobile;
 };
 
 #endif

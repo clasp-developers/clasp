@@ -177,7 +177,7 @@ public:
 
 public:
   // Copy Ctor
-  GCVector<T, Allocator>(const GCVector<T, Allocator> &that) // : GCContainer(GCInfo<value_type>::Kind)
+  GCVector<T, Allocator>(const GCVector<T, Allocator> &that) 
   {
     if (that._Contents) {
       allocator_type alloc;

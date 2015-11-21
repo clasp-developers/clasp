@@ -65,8 +65,7 @@ template <>
 struct gctools::GCInfo<core::ForwardReferencedClass_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true; // old=false
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif /* _core_ForwardReferencedClass_H */

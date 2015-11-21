@@ -116,8 +116,7 @@ namespace core {
 template<> struct gctools::GCInfo<core::StandardChar_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true;
-    static bool constexpr Atomic = true;
+    static GCInfo_policy constexpr Policy = normal;
 };
 #endif
 
@@ -142,8 +141,7 @@ namespace core {
 template<> struct gctools::GCInfo<core::ExtendedChar_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true;
-    static bool constexpr Atomic = true;
+    static GCInfo_policy constexpr Policy = normal;
 };
 #endif
 
