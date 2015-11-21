@@ -158,7 +158,6 @@ typedef bool _Bool;
 #include <clasp/asttooling/Registry.h>
 #include <clasp/asttooling/Diagnostics.h>
 #include <clasp/asttooling/Marshallers.h>
-#include <clasp/asttooling/testAST.h>
 
 #define GC_INTERFACE_INCLUDE
 #include PROJECT_HEADERS_INCLUDE
