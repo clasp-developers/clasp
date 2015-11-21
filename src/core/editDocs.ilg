@@ -1,9 +1,0 @@
-This is makeindex, version 2.14 [02-Oct-2002] (kpathsea + Thai support).
-Scanning input file editDocs.idx....
-!! Input index error (file = editDocs.idx, line = 67):
-   -- Illegal null field.
-done (99 entries accepted, 1 rejected).
-Sorting entries....done (662 comparisons).
-Generating output file editDocs.ind....done (154 lines written, 0 warnings).
-Output written in editDocs.ind.
-Transcript written in editDocs.ilg.

@@ -1,5 +1,0 @@
-digraph "CFG for '_ZN2XXD1Ev' function" {
-	label="CFG for '_ZN2XXD1Ev' function";
-
-	Node0x7fdd3340f9a0 [shape=record,label="{entry:\l  %this.addr = alloca %class.XX*, align 8\l  store %class.XX* %this, %class.XX** %this.addr, align 8\l  %this1 = load %class.XX** %this.addr\l  call void @_ZN2XXD2Ev(%class.XX* %this1)\l  ret void\l}"];
-}

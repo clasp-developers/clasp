@@ -1,1 +1,0 @@
-m4_undefine(`index') m4_undefine(`substr') m4_define(`LOG_SIGNAL',VP_SIGNAL(($*))) m4_define(`OBJECT_LOG',OBJECT_VP($1,(`m4_shift($*)'))) m4_define(`OLOG',OBJECT_VP($1,(`m4_shift($*)'))) m4_define(`LOG',VP(($*))) m4_define(`LOGRAW',VPRAW(($*))) m4_define(`ASSERTV',ASSERT_VP($1,(`m4_shift($*)')))

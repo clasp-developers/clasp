@@ -1,6 +1,0 @@
-digraph "CFG for 'z' function" {
-	label="CFG for 'z' function";
-
-	Node0x7fdd3340cb70 [shape=record,label="{entry:\l  %xx = alloca i32, align 4\l  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([7 x i8]* @.str, i32 0, i32 0))\l  store i32 1, i32* %xx, align 4\l  %exception = call i8* @__cxa_allocate_exception(i64 4) nounwind\l  %0 = bitcast i8* %exception to i32*\l  %1 = load i32* %xx, align 4\l  store i32 %1, i32* %0\l  call void @__cxa_throw(i8* %exception, i8* bitcast (i8** @_ZTIi to i8*), i8* null) noreturn\l  unreachable\l}"];
-	Node0x7fdd3340d0e0 [shape=record,label="{return:                                           \l  ret void\l}"];
-}

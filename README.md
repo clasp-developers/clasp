@@ -3,6 +3,13 @@
 ## What Is This?
 Clasp is a new [Common Lisp](https://common-lisp.net/) implementation that seamlessly interoperates with C++ libraries and programs using [LLVM](http://llvm.org/) for compilation to native code. This allows Clasp to take advantage of a vast array of preexisting libraries and programs, such as out of the scientific computing ecosystem. Embedding them in a Common Lisp environment allows you to make use of rapid prototyping, incremental development, and other capabilities that make it a powerful language.
 
+## New Features
+* Clasp has a completely new, <a href="https://drmeister.wordpress.com/2015/07/30/timing-data-comparing-cclasp-to-c-sbcl-and-python/">optimizing/inlining compiler called cclasp!</a>
+* Fixnum, character and single-float types are immediate values.
+* General object pointers and cons pointers are tagged for speed.
+* Clbind library allows programmers to expose external C++ libraries.
+* Lots of bug fixes and stability improvements.
+
 ## Getting Clasp
 Precompiled and prepackaged versions of Clasp will be available for a limited number of distributions. Check the [releases](https://github.com/drmeister/clasp/releases) to see if there is something available for you.
 
@@ -77,6 +84,10 @@ Generally you can report problems in two fashions, either by [opening an issue t
 
 ## IRC
 Clasp has an IRC channel on [Freenode](https://freenode.net/) called [#clasp](irc://irc.freenode.net/#clasp). If you have questions, problems, suggestions, or generally would like to just hang out with us devs, come and stop by!
+
+## My Blog
+
+<a href="https://drmeister.wordpress.com">More details on Clasp.</a>
 
 ## Acknowledgments
 Clasp was supported by the Defense Threat Reduction Agency (DOD-DTRA) (HDTRA1-09-1-0009) the National Institutes of Health (NIH/NIGMS Grant number: 2R01GM067866-07A2) and the National Science Foundation (Grant number: 1300231).

@@ -1,4 +1,0 @@
-#! /bin/bash
-
-export DISTCC_HOSTS='localhost/3 meister@farnsworth.chem.temple.edu/16'
-make -e -j18 CC="/usr/bin/distcc /usr/bin/g++" $*

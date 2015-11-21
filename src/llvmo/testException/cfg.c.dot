@@ -1,5 +1,0 @@
-digraph "CFG for 'c' function" {
-	label="CFG for 'c' function";
-
-	Node0x7fdd33410130 [shape=record,label="{entry:\l  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str3, i32 0, i32 0))\l  ret void\l}"];
-}
