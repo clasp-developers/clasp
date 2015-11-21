@@ -78,5 +78,9 @@ Generally you can report problems in two fashions, either by [opening an issue t
 ## IRC
 Clasp has an IRC channel on [Freenode](https://freenode.net/) called [#clasp](irc://irc.freenode.net/#clasp). If you have questions, problems, suggestions, or generally would like to just hang out with us devs, come and stop by!
 
+## My Blog
+
+<a href="https://drmeister.wordpress.com">More details on Clasp.</a>
+
 ## Acknowledgments
 Clasp was supported by the Defense Threat Reduction Agency (DOD-DTRA) (HDTRA1-09-1-0009) the National Institutes of Health (NIH/NIGMS Grant number: 2R01GM067866-07A2) and the National Science Foundation (Grant number: 1300231).
