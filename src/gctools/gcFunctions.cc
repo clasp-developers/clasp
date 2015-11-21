@@ -97,6 +97,15 @@ core::T_sp af_bootstrapKindP(const string &name) {
   return _Nil<core::T_O>();
 }
 
+
+
+#define ARGS_gc_deallocate_unmanaged_instance "()"
+#define DECL_gc_deallocate_unmanaged_instance ""
+#define DOCS_gc_deallocate_unmanaged_instance "Deallocate the memory for unmanaged instances and do nothing for other instances"
+void gc_deallocate_unmanaged_instance(T_sp obj) {
+  obj_deallocate_unmanaged_instance(obj);
+}
+
 #define ARGS_gc_bytes_allocated "()"
 #define DECL_gc_bytes_allocated ""
 #define DOCS_gc_bytes_allocated "Return the number of bytes allocated since Clasp started. Two values are returned the number reported by the GC and the number calculated by Clasp"
@@ -670,6 +679,7 @@ void initialize_gc_functions() {
   core::af_def(GcToolsPkg, "allocPatternBegin", &af_allocPatternBegin);
   core::af_def(GcToolsPkg, "allocPatternEnd", &af_allocPatternEnd);
   core::af_def(GcToolsPkg, "bytes_allocated", &gc_bytes_allocated);
+  core::af_def(GcToolsPkg, "deallocate_unmanaged_instance", &gc_deallocate_unmanaged_instance );
 
   _sym_STARallocPatternStackSTAR->defparameter(_Nil<core::T_O>());
 #ifdef USE_MPS

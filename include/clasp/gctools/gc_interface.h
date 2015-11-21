@@ -94,6 +94,7 @@ namespace gctools {
 extern "C" {
 char *obj_name(gctools::GCKindEnum kind);
 extern void obj_dump_base(void *base);
+extern void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj);
 };
 
 #endif

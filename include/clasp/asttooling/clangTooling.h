@@ -209,7 +209,7 @@ template <>
 struct gctools::GCInfo<asttooling::DerivableMatchCallback> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = noncollectable_immobile;
+  static GCInfo_policy constexpr Policy = unmanaged;
 };
 
 namespace asttooling {

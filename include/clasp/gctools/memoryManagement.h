@@ -193,12 +193,12 @@ namespace gctools {
  * atomic == Object contains no internal tagged pointers, is collectable
  * normal == Object contains internal tagged pointers, is collectable
  * collectable_immobile == Object cannot be moved but is collectable
- * noncollectable_immobile == Object cannot be moved and cannot be automatically collected
+ * unmanaged == Object cannot be moved and cannot be automatically collected
  */
   typedef enum { atomic,
                  normal,
                  collectable_immobile,
-                 noncollectable_immobile } GCInfo_policy;
+                 unmanaged } GCInfo_policy;
   
 template <class OT>
 struct GCInfo {

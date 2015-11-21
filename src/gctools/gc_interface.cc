@@ -212,6 +212,36 @@ char *obj_name(gctools::GCKindEnum kind) {
 #endif
   return "NONE";
 }
+
+/*! I'm using a format_header so MPS gives me the object-pointer */
+#define GC_DEALLOCATOR_METHOD
+void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
+  void* client = &*obj;
+  printf("%s:%d in obj_deallocate_unmanaged_instance %s\n", __FILE__, __LINE__, _rep_(obj).c_str() );
+#if 0
+  // The client must have a valid header
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_DEALLOCATOR_TABLE
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_OBJ_DEALLOCATOR_TABLE
+#endif
+
+  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+  ASSERTF(header->kindP(), BF("obj_deallocate_unmanaged_instance called without a valid object"));
+  gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
+  GC_TELEMETRY1(telemetry::label_obj_deallocate_unmanaged_instance, (uintptr_t)client);
+#ifndef RUNNING_GC_BUILDER
+  goto *(OBJ_DEALLOCATOR_table[kind]);
+#define GC_OBJ_DEALLOCATOR
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_OBJ_DEALLOCATOR
+#else
+// do nothing
+#endif
+#endif
+};
+#undef GC_DEALLOCATOR_METHOD
+
 };
 
 extern "C" {
@@ -416,6 +446,8 @@ void obj_finalize(mps_addr_t client) {
 };
 #undef GC_FINALIZE_METHOD
 
+
+
 vector<core::LoadTimeValues_O **> globalLoadTimeValuesRoots;
 
 void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr) {
@@ -542,7 +574,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 //
 // We don't want the static analyzer gc-builder.lsp to see the generated scanners
 //
-#ifndef RUNNING_GC_BUILDER
+#ifndef RUNNING_GC_gBUILDER
 #define HOUSEKEEPING_SCANNERS
 #include STATIC_ANALYZER_PRODUCT
 #undef HOUSEKEEPING_SCANNERS

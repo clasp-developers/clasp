@@ -285,6 +285,7 @@ void Telemetry::initialize() {
   this->intern("label_stack_push ap@%p frame@%p depth:%lu", label_stack_push);
   this->intern("label_stack_allocate alloc@%p size: %lu", label_stack_allocate);
   this->intern("label_stack_pop ap@%p frame@%p", label_stack_pop);
+  this->intern("obj_deallocate_unmanaged_instance addr@%p", label_obj_deallocate_unmanaged_instance);
 };
 
 void initialize_telemetry_functions() {

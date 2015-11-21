@@ -305,8 +305,9 @@ struct RootClassAllocator {
 #ifdef USE_BOEHM
     GC_FREE(&*memory);
 #endif
-#ifdef USE_MPS
-    GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
+#if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
+ #error "I need a way to deallocate MPS allocated objects that are not moveable or collectable"
+      GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif
   };
 
@@ -413,10 +414,14 @@ namespace gctools {
         return sp;
 #endif
       };
+      static void deallocate(gctools::smart_ptr<OT> memory) {
+      // Nothing needs to be done but this function needs to be here
+      // so that the static analyzer has something to call
+      };
     };
 
   template <class OT>
-    struct GCObjectAppropriatePoolAllocator<OT, atomic> {
+    struct GCObjectAppropriatePoolAllocator<OT, /* Policy= */ atomic> {
     typedef OT value_type;
     typedef OT *pointer_type;
     typedef smart_ptr<OT> smart_pointer_type;
@@ -459,10 +464,18 @@ namespace gctools {
       return sp;
 #endif
     };
+    static void deallocate(gctools::smart_ptr<OT> memory) {
+      // Nothing needs to be done but this function needs to be here
+      // so that the static analyzer has something to call
+    };
+
   };
 
+  /*! This Policy of collectible_immobile may not be a useful policy.
+When would I ever want the GC to automatically collect objects but not move them?
+*/
   template <class OT>
-    struct GCObjectAppropriatePoolAllocator<OT, collectable_immobile > {
+    struct GCObjectAppropriatePoolAllocator<OT,  /* Policy= */ collectable_immobile > {
     typedef OT value_type;
     typedef OT *pointer_type;
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
@@ -506,11 +519,18 @@ namespace gctools {
       return sp;
 #endif
     };
+    static void deallocate(gctools::smart_ptr<OT> memory) {
+      // Nothing needs to be done but this function needs to be here
+      // so that the static analyzer has something to call
+    };
+
   };
 
 
+  /*! This is for CL classes that derive from C++ classes and other CL classes that
+should not be managed by the GC */
   template <class OT>
-    struct GCObjectAppropriatePoolAllocator<OT, noncollectable_immobile > {
+    struct GCObjectAppropriatePoolAllocator<OT, unmanaged > {
     typedef OT value_type;
     typedef OT *pointer_type;
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
@@ -560,7 +580,8 @@ namespace gctools {
 #ifdef USE_BOEHM
       GC_FREE(&*memory);
 #endif
-#ifdef USE_MPS
+#if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
+ #error "I need a way to deallocate MPS allocated objects that are not moveable or collectable"
       GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif
     };
@@ -684,6 +705,10 @@ public:
     GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     return sp;
 #endif
+  }
+
+   static void deallocate_unmanaged_instance(const smart_ptr<OT> that) {
+     GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::deallocate(that);
   }
 };
 };
