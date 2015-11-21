@@ -2,10 +2,9 @@
 # -*- mode: GNUmakefile; indent-tabs-mode: t -*-
 # Cleaned up by Shinmera October 13, 2015
 
-export CLASP_HOME := $(or $(wildcard $(CLASP_HOME)),\
-                          $(shell pwd))
-
 include $(wildcard $(CLASP_HOME)/local.config)
+
+export CLASP_HOME ?= $(shell pwd)
 
 export PJOBS ?= 1
 
@@ -35,10 +34,14 @@ export TOOLSET := $(or $(filter $(TOOLSET), clang-linux),\
                        $(filter $(TOOLSET), clang-darwin),\
                        $(error Invalid TOOLSET: $(TOOLSET)))
 
-export PYTHON2 := $(or $(wildcard $(PYTHON2)),\
-                       $(wildcard /usr/bin/python2.7),\
-                       $(wildcard /usr/bin/python2),\
-                       $(wildcard /usr/bin/python),\
+# From the GNU Make manual; portably search PATH for a program. We can't rely on `which` existing...
+# Use $(call pathsearch,foo) instead of $(shell which foo)
+pathsearch = $(firstword $(wildcard $(addsuffix /$(strip $(1)),$(subst :, ,$(PATH)))))
+
+export PYTHON2 := $(or $(PYTHON2),\
+                       $(call pathsearch, python2.7),\
+                       $(call pathsearch, python2),\
+                       $(call pathsearch, python),\
                        $(error Could not find python.))
 
 export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
@@ -47,10 +50,11 @@ export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
 export DEVEMACS ?= $(or $(and $(filter $(TARGET_OS),Linux), emacs -nw ./),\
                         $(and $(filter $(TARGET_OS),Darwin), open -n -a /Applications/Emacs.app ./))
 
-export LLVM_CONFIG := $(or $(wildcard $(LLVM_CONFIG)),\
-                           $(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),\
-                           $(wildcard /usr/bin/llvm-config),\
-                           $(wildcard /usr/bin/llvm-config*),\
+# XXX: confirm the necessity of llvm-config* pathsearch!
+export LLVM_CONFIG := $(or $(LLVM_CONFIG),\
+                           $(ifneq $(EXTERNALS_CLASP_DIR),$(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),),\
+                           $(call pathsearch, llvm-config),\
+                           $(call pathsearch, llvm-config*),\
                            $(error Could not find llvm-config.))
 
 export GIT_COMMIT ?= $(shell git rev-parse --short HEAD || echo "unknown-commit")
@@ -61,6 +65,9 @@ export LLVM_CONFIG_DEBUG ?= $(or $(wildcard $(EXTERNALS_CLASP_DIR)/build/debug/b
                                  $(LLVM_CONFIG))
 
 export LLVM_BIN_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --bindir)
+# Not always the same as LLVM_BIN_DIR!
+export CLANG_BIN_DIR ?= $(if $(wildcard $(LLVM_BIN_DIR)/clang),$(LLVM_BIN_DIR),$(dir $(or $(call pathsearch, clang),\
+                                        $(error Could not find clang.))))
 
 export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
 
@@ -104,8 +111,8 @@ ifeq ($(TARGET_OS),Darwin)
 endif
 
 ifeq ($(TARGET_OS),Linux)
-  export BOEHM_CC = $(LLVM_BIN_DIR)/clang
-  export BOEHM_CXX = $(LLVM_BIN_DIR)/clang++
+  export BOEHM_CC = $(CLANG_BIN_DIR)/clang
+  export BOEHM_CXX = $(CLANG_BIN_DIR)/clang++
 endif
 
 include_flags := $(foreach dir,$(INCLUDE_DIRS),$(and $(wildcard $(dir)),-I$(dir)))
@@ -127,8 +134,15 @@ ifneq ($(CXXFLAGS),)
   export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
 endif
 
+ifeq ($(NO_COLOR),)
+TPUT = $(call pathsearch,tput)
+ifneq ($(TPUT),)
+  COLOR_GREEN = $(shell $(TPUT) setaf 2 2>/dev/null)
+  COLOR_RESET = $(shell $(TPUT) sgr0    2>/dev/null)
+endif
+endif
 define varprint
-	@echo -e "\033[0;32m$(strip $(1))\033[0m: $($(strip $(1)))"
+	@echo -e "$(COLOR_GREEN)$(strip $(1))$(COLOR_RESET): $($(strip $(1)))"
 endef
 
 all:
@@ -215,7 +229,7 @@ boehm-setup:
 		CXX=$(BOEHM_CXX) \
                 CFLAGS="-DUSE_MMAP -g" \
 		PKG_CONFIG_PATH=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR)/lib/pkgconfig/ \
-		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
+		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR) --with-libatomic-ops=yes;)
 
 boehm-compile:
 	(cd $(BOEHM_SOURCE_DIR); make -j$(PJOBS) | tee _boehm.log)
@@ -463,6 +477,7 @@ print-config:
 	$(call varprint, LLVM_CONFIG_DEBUG)
 	$(call varprint, LLVM_CONFIG_RELEASE)
 	$(call varprint, LLVM_BIN_DIR)
+	$(call varprint, CLANG_BIN_DIR)
 	$(call varprint, GIT_COMMIT)
 	$(call varprint, CLASP_VERSION)
 	$(call varprint, CLASP_INTERNAL_BUILD_TARGET_DIR)
