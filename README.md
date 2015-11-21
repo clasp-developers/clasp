@@ -3,6 +3,13 @@
 ## What Is This?
 Clasp is a new [Common Lisp](https://common-lisp.net/) implementation that seamlessly interoperates with C++ libraries and programs using [LLVM](http://llvm.org/) for compilation to native code. This allows Clasp to take advantage of a vast array of preexisting libraries and programs, such as out of the scientific computing ecosystem. Embedding them in a Common Lisp environment allows you to make use of rapid prototyping, incremental development, and other capabilities that make it a powerful language.
 
+## New Features
+* Clasp has a completely new, optimizing/inlining compiler called cclasp!
+* Fixnum, character and single-float types are immediate values.
+* General object pointers and cons pointers are tagged for speed.
+* Clbind library allows programmers to expose external C++ libraries.
+* Lots of bug fixes and stability improvements.
+
 ## Getting Clasp
 Precompiled and prepackaged versions of Clasp will be available for a limited number of distributions. Check the [releases](https://github.com/drmeister/clasp/releases) to see if there is something available for you.
 
