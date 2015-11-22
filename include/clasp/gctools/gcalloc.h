@@ -552,24 +552,24 @@ should not be managed by the GC */
 #endif
 #ifdef USE_MPS
     // Different classes can have different Headers
-      typedef typename GCHeader<T>::HeaderType HeadT;
-      T *obj;
+      typedef typename GCHeader<OT>::HeaderType HeadT;
+      OT *obj;
       mps_ap_t obj_ap = global_non_moving_ap;
       mps_addr_t addr;
-      gctools::smart_ptr<T> sp;
+      gctools::smart_ptr<OT> sp;
       do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
         mps_res_t res = mps_reserve(&addr, obj_ap, sz);
 #pragma clang diagnostic pop
         HeadT *header = reinterpret_cast<HeadT *>(addr);
-        new (header) HeadT(GCKind<T>::Kind);
-        obj = BasePtrToMostDerivedPtr<T>(addr);
-        new (obj) T(std::forward<ARGS>(args)...);
-        sp = gctools::smart_ptr<T>(obj);
+        new (header) HeadT(GCKind<OT>::Kind);
+        obj = BasePtrToMostDerivedPtr<OT>(addr);
+        new (obj) OT(std::forward<ARGS>(args)...);
+        sp = gctools::smart_ptr<OT>(obj);
       } while (!mps_commit(obj_ap, addr, sz));
       globalMpsMetrics.nonMovingAllocation(sz);
-      DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, gctools::GCKind<T>::Kind);
+      DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, gctools::GCKind<OT>::Kind);
       DEBUG_MPS_UNDERSCANNING_TESTS();
       POLL_SIGNALS();
       return sp;
