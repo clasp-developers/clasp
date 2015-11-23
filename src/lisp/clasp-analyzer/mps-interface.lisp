@@ -1655,7 +1655,7 @@ so that they don't have to be constantly recalculated"
     (gclog "build-mps-deallocator-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
-    (format fout "    GCObjectAllocator<~A>::deallocate_unmanaged_instance(~A);~%" cn +ptr-name+)
+    (format fout "    GCObjectAllocator<~A>::deallocate_unmanaged_instance(~A);~%" key +ptr-name+)
     (format fout "    return;~%"))))
 
 
@@ -1721,7 +1721,7 @@ so that they don't have to be constantly recalculated"
     (with-destination (fout dest enum)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
-    (format fout "    GCObjectAllocator<~A>::deallocate_unmanaged_instance(~A);~%" cn +ptr-name+)
+    (format fout "    GCObjectAllocator<~A>::deallocate_unmanaged_instance(~A);~%" key +ptr-name+)
     )))
 
 
