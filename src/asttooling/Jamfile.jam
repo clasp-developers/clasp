@@ -25,7 +25,7 @@ sources =
 	astExpose.cc
 	clangTooling.cc
 	asttoolingPackage.cc
-        clang_compile.cc
+        clangCompiler.cc
         ;
 
 
