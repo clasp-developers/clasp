@@ -217,8 +217,7 @@ char *obj_name(gctools::GCKindEnum kind) {
 #define GC_DEALLOCATOR_METHOD
 void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
   void* client = &*obj;
-  printf("%s:%d in obj_deallocate_unmanaged_instance %s\n", __FILE__, __LINE__, _rep_(obj).c_str() );
-#if 0
+  printf("%s:%d About to obj_deallocate_unmanaged_instance %s\n", __FILE__, __LINE__, _rep_(obj).c_str() );
   // The client must have a valid header
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_DEALLOCATOR_TABLE
@@ -237,7 +236,6 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 #undef GC_OBJ_DEALLOCATOR
 #else
 // do nothing
-#endif
 #endif
 };
 #undef GC_DEALLOCATOR_METHOD

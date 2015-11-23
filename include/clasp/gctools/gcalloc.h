@@ -414,7 +414,7 @@ namespace gctools {
         return sp;
 #endif
       };
-      static void deallocate(gctools::smart_ptr<OT> memory) {
+      static void deallocate(OT* memory) {
       // Nothing needs to be done but this function needs to be here
       // so that the static analyzer has something to call
       };
@@ -464,7 +464,7 @@ namespace gctools {
       return sp;
 #endif
     };
-    static void deallocate(gctools::smart_ptr<OT> memory) {
+    static void deallocate(OT* memory) {
       // Nothing needs to be done but this function needs to be here
       // so that the static analyzer has something to call
     };
@@ -519,7 +519,7 @@ When would I ever want the GC to automatically collect objects but not move them
       return sp;
 #endif
     };
-    static void deallocate(gctools::smart_ptr<OT> memory) {
+    static void deallocate(OT* memory) {
       // Nothing needs to be done but this function needs to be here
       // so that the static analyzer has something to call
     };
@@ -576,9 +576,10 @@ should not be managed by the GC */
 #endif
     }
 
-    static void deallocate(gctools::smart_ptr<OT> memory) {
+    static void deallocate(OT* memory) {
 #ifdef USE_BOEHM
-      GC_FREE(&*memory);
+      printf("%s:%d Using GC_FREE to free memory at@%p\n", __FILE__, __LINE__, memory );
+      GC_FREE(memory);
 #endif
 #if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
  #error "I need a way to deallocate MPS allocated objects that are not moveable or collectable"
@@ -707,8 +708,8 @@ public:
 #endif
   }
 
-   static void deallocate_unmanaged_instance(const smart_ptr<OT> that) {
-     GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::deallocate(that);
+   static void deallocate_unmanaged_instance(OT* obj) {
+     GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::deallocate(obj);
   }
 };
 };

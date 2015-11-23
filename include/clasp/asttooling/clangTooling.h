@@ -202,22 +202,25 @@ public:
       printf("_Slots[%d]: %s\n", i, _rep_(this->_Slots[i]).c_str());
     }
   }
+  virtual ~DerivableMatchCallback() {
+    printf("%s:%d ~DerivableMatchCallback dtor\n", __FILE__, __LINE__ );
+  }
 };
 };
-
 template <>
 struct gctools::GCInfo<asttooling::DerivableMatchCallback> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = unmanaged;
 };
+DERIVABLE_TRANSLATE(asttooling::DerivableMatchCallback);
+
+
 
 namespace asttooling {
-
 void initialize_clangTooling();
 };
 //DERIVABLE_TRANSLATE(asttooling::DerivableArgumentsAdjuster);
-DERIVABLE_TRANSLATE(asttooling::DerivableMatchCallback);
 DERIVABLE_TRANSLATE(asttooling::DerivableASTFrontendAction);
 DERIVABLE_TRANSLATE(asttooling::DerivableSyntaxOnlyAction);
 DERIVABLE_TRANSLATE(asttooling::DerivableFrontendActionFactory);
