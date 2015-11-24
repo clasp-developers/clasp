@@ -216,31 +216,9 @@ typedef std::size_t class_id;
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
 //#define DEFUN_NAME_EXPORT(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
 
-#if 0
-/*! Define a PAIR of accessor functions, the getter and setter */
-#define DEFACCESSORS(x)                                                   \
-  af_def(CurrentPkg, #x, &af_##x, ARGS_af_##x, DOCS_af_##x, LOCK_af_##x); \
-  _lisp->add_accessor_pair(_sym_##x, _sym_setf_##x);
-
-/*! Define a PAIR of accessor functions, the getter and setter */
-#define DEFACCESSORS_EXPORT(x)                                                         \
-  af_def(CurrentPkg, #x, &af_##x, ARGS_af_##x, DECL_af_##x, DOCS_af_##x, LOCK_af_##x); \
-  _lisp->add_accessor_pair(_sym_##x, _sym_setf_##x);
-#endif
-
 /*! Use this in initializeCandoPrimitives to define a function
   This is a little more complicated than it needs to be to try and avoid unused variable warnings */
 #define DEFGENERIC(pkg, x) defgeneric(pkg, #x, &gf_##x, ARGS_gf_##x, DOCS_gf_##x, _lisp);
-
-#if 0
-/*! Use this in initializeCandoPrimitives to attach methods to the generic function */
-#define DEFMETHOD(x, id) defmethod(_sym_##x, md_##x##id, ARGS_md_##x##id, DECL_md_##x##id, DOCS_md_##x##id, _lisp);
-#endif
-
-//
-// Define this if you want to debug energy evaluation
-//
-#define TURN_ENERGY_FUNCTION_DEBUG_ON 1
 
 //
 // For Production code set PRODUCTION_CODE to 1
