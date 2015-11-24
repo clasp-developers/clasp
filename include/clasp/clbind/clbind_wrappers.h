@@ -204,7 +204,7 @@ public:
   virtual void *castTo(class_id cid) const {
     this->throwIfInvalid();
     std::pair<void *, int> res = globalCastGraph->cast(const_cast<typename std::remove_const<OT>::type *>(this->nakedPtr_gc_ignore) // ptr
-                                                       ,
+1                                                       ,
                                                        this->_classId // src
                                                        ,
                                                        cid // target
