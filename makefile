@@ -51,7 +51,7 @@ export DEVEMACS ?= $(or $(and $(filter $(TARGET_OS),Linux), emacs -nw ./),\
 
 # XXX: confirm the necessity of llvm-config* pathsearch!
 export LLVM_CONFIG := $(or $(LLVM_CONFIG),\
-                           $(ifneq $(EXTERNALS_CLASP_DIR),$(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),),\
+                           $(if $(not $(eq $(EXTERNALS_CLASP_DIR),)),$(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),),\
                            $(call pathsearch, llvm-config),\
                            $(call pathsearch, llvm-config*),\
                            $(error Could not find llvm-config.))
