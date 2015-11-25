@@ -49,19 +49,26 @@ export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
 export DEVEMACS ?= $(or $(and $(filter $(TARGET_OS),Linux), emacs -nw ./),\
                         $(and $(filter $(TARGET_OS),Darwin), open -n -a /Applications/Emacs.app ./))
 
-# XXX: confirm the necessity of llvm-config* pathsearch!
+ifneq ($(EXTERNALS_CLASP_DIR),)
 export LLVM_CONFIG := $(or $(LLVM_CONFIG),\
-                           $(if $(not $(eq $(EXTERNALS_CLASP_DIR),)),$(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),),\
-                           $(call pathsearch, llvm-config),\
+                           $(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),\
+                           $(error Could not find llvm-config (release build) in externals-clasp.))
+export LLVM_CONFIG_DEBUG := $(or $(LLVM_CONFIG_DEBUG),\
+                                 $(wildcard $(EXTERNALS_CLASP_DIR)/build/debug/bin/llvm-config),\
+                                 $(warning Could not find llvm-config (debug build) in externals-clasp.),\
+                                 $(LLVM_CONFIG))
+else
+# XXX: confirm the necessity of llvm-config* pathsearch!
+export LLVM_CONFIG ?= $(or $(call pathsearch, llvm-config),\
                            $(call pathsearch, llvm-config*),\
                            $(error Could not find llvm-config.))
+endif
 
 export GIT_COMMIT ?= $(shell git rev-parse --short HEAD || echo "unknown-commit")
 export CLASP_VERSION ?= $(shell git describe --always || echo "unknown-version")
 
 export LLVM_CONFIG_RELEASE ?= $(LLVM_CONFIG)
-export LLVM_CONFIG_DEBUG ?= $(or $(wildcard $(EXTERNALS_CLASP_DIR)/build/debug/bin/llvm-config),\
-                                 $(LLVM_CONFIG))
+export LLVM_CONFIG_DEBUG ?= $(LLVM_CONFIG)
 
 export LLVM_BIN_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --bindir)
 # Not always the same as LLVM_BIN_DIR!
