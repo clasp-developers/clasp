@@ -82,12 +82,12 @@ string VectorDisplaced_O::__repr__() const {
 void VectorDisplaced_O::rowMajorAset(cl_index idx, T_sp value) {
   _G();
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
-  (*this)[idx + this->_DisplacedIndexOffset] = value;
+  this->_Vector->setf_elt(idx,value);
 }
 
 T_sp VectorDisplaced_O::rowMajorAref(cl_index idx) const {
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
-  return this->operator[](idx);
+  return this->elt(idx);
 }
 
 T_sp VectorDisplaced_O::elt(int index) const {
@@ -95,7 +95,7 @@ T_sp VectorDisplaced_O::elt(int index) const {
   if (index >= this->length()) {
     SIMPLE_ERROR(BF("Index too large %d must be less than %d") % index % this->length());
   }
-  return (*this)[index];
+  return this->_Vector->elt(index+this->_DisplacedIndexOffset);
 }
 
 T_sp VectorDisplaced_O::aref(List_sp indices) const {
@@ -105,8 +105,7 @@ T_sp VectorDisplaced_O::aref(List_sp indices) const {
 }
 
 T_sp VectorDisplaced_O::setf_elt(int index, T_sp obj) {
-  _G();
-  (*this)[index] = obj;
+  this->_Vector->setf_elt(index+this->_DisplacedIndexOffset,obj);
   return obj;
 }
 
