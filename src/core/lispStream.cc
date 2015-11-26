@@ -4741,7 +4741,7 @@ BEGIN:
     l = compute_char_size(stream, clasp_charCode(string));
   } else if (af_stringP(string)) {
     for (int i(0), iEnd(StringFillp(string)); i < iEnd; ++i) {
-      l += compute_char_size(stream, af_char(string, i));
+      l += compute_char_size(stream, cl_char(string, i));
     }
   } else {
     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_file_string_length, 2, string, cl::_sym_String_O);

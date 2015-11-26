@@ -286,7 +286,7 @@ BEGIN:
       if (logical) {
         continue;
       }
-      if (l && af_char(item, 0) == '.') {
+      if (l && cl_char(item, 0) == '.') {
         if (l == 1) {
           /* Single dot */
           if (i == 0) {
@@ -294,7 +294,7 @@ BEGIN:
             return kw::_sym_error;
           }
           gc::As<Cons_sp>(cl_nthcdr(--i, directory))->rplacd(oCdr(ptr));
-        } else if (l == 2 && af_char(item, 1) == '.') {
+        } else if (l == 2 && cl_char(item, 1) == '.') {
           gc::As<Cons_sp>(ptr)->rplaca(kw::_sym_up);
           goto BEGIN;
         }
@@ -463,7 +463,7 @@ Pathname_sp Pathname_O::tilde_expand(Pathname_sp pathname) {
   }
   head = oCadr(directory);
   if (af_stringP(head) && cl_length(head) > 0 &&
-      af_char(head, 0) == '~') {
+      cl_char(head, 0) == '~') {
     /* Remove the tilde component */
     gc::As<Cons_sp>(directory)->rplacd(oCddr(directory));
     pathname = af_mergePathnames(pathname, homedirPathname(gc::As<Str_sp>(head)), kw::_sym_default);
@@ -511,7 +511,7 @@ parse_word(T_sp s, delim_fn delim, int flags, size_t start,
   i = j = start;
   for (; i < end; i++) {
     bool valid_char;
-    size_t c = af_char(s, i);
+    size_t c = cl_char(s, i);
     if (delim(c)) {
       if ((i == start) && (flags & WORD_ALLOW_LEADING_DOT)) {
         /* Leading dot is included */
@@ -526,7 +526,7 @@ parse_word(T_sp s, delim_fn delim, int flags, size_t start,
       if (!(flags & WORD_ALLOW_ASTERISK))
         valid_char = false; /* Asterisks not allowed in this word */
       else {
-        wild_inferiors = (i > start && af_char(s, i - 1) == '*');
+        wild_inferiors = (i > start && cl_char(s, i - 1) == '*');
         valid_char = true; /* single "*" */
       }
     } else if (c == ';' && (flags & WORD_DISALLOW_SEMICOLON)) {
@@ -562,12 +562,12 @@ parse_word(T_sp s, delim_fn delim, int flags, size_t start,
       return _Nil<T_O>();
     return Str_O::create(""); // cl_core.null_string;
   case 1:
-    if (af_char(s, j) == '*')
+    if (cl_char(s, j) == '*')
       return kw::_sym_wild;
     break;
   case 2: {
-    size_t c0 = af_char(s, j);
-    size_t c1 = af_char(s, j + 1);
+    size_t c0 = cl_char(s, j);
+    size_t c1 = cl_char(s, j + 1);
     if (c0 == '*' && c1 == '*')
       return kw::_sym_wild_inferiors;
     if (!(flags & WORD_LOGICAL) && c0 == '.' && c1 == '.')
@@ -708,14 +708,14 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
     return _Nil<Pathname_O>();
   type = _Nil<T_O>();
   version = _Nil<T_O>();
-  if (*ep == start || af_char(s, *ep - 1) != '.')
+  if (*ep == start || cl_char(s, *ep - 1) != '.')
     goto make_it;
   type = parse_word(s, is_dot, WORD_LOGICAL | WORD_ALLOW_ASTERISK |
                                    WORD_EMPTY_IS_NIL,
                     *ep, end, ep);
   if (type == kw::_sym_error)
     return _Nil<Pathname_O>();
-  if (*ep == start || af_char(s, *ep - 1) != '.')
+  if (*ep == start || cl_char(s, *ep - 1) != '.')
     goto make_it;
   aux = parse_word(s, is_null, WORD_LOGICAL | WORD_ALLOW_ASTERISK |
                                    WORD_EMPTY_IS_NIL,
@@ -725,13 +725,13 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
   } else if (cl_symbolp(aux)) {
     version = aux;
   } else {
-    T_mv version_mv = af_parseInteger(gc::As<Str_sp>(aux), 0, _Nil<T_O>(), 10, _lisp->_true());
+    T_mv version_mv = cl_parseInteger(gc::As<Str_sp>(aux), 0, _Nil<T_O>(), 10, _lisp->_true());
     T_sp tversion = version_mv;
     Fixnum_sp parsed_length = gc::As<Fixnum_sp>(version_mv.valueGet(1));
     if (unbox_fixnum(parsed_length) == cl_length(aux) &&
         af_integerP(tversion) && clasp_plusp(gc::As<Integer_sp>(tversion))) {
       version = gc::As<Integer_sp>(tversion);
-    } else if (af_string_equal(aux, kw::_sym_newest).notnilp()) {
+    } else if (cl_string_equal(aux, kw::_sym_newest).notnilp()) {
       version = kw::_sym_newest;
     } else {
       return _Nil<Pathname_O>();
@@ -751,7 +751,7 @@ physical:
 	 * resource.
 	 */
 #if defined(CLASP_MS_WINDOWS_HOST)
-  if ((start + 1 <= end) && is_slash(af_char(s, start))) {
+  if ((start + 1 <= end) && is_slash(cl_char(s, start))) {
     device = _Nil<T_O>();
     goto maybe_parse_host;
   }
@@ -771,12 +771,12 @@ physical:
 maybe_parse_host:
 #endif
   /* Files have no effective device. */
-  if (af_string_equal(device, kw::_sym_file).notnilp())
+  if (cl_string_equal(device, kw::_sym_file).notnilp())
     device = _Nil<T_O>();
   start = *ep;
   host = _Nil<T_O>();
-  if ((start + 2) <= end && is_slash(af_char(s, start)) &&
-      is_slash(af_char(s, start + 1))) {
+  if ((start + 2) <= end && is_slash(cl_char(s, start)) &&
+      is_slash(cl_char(s, start + 1))) {
     host = parse_word(s, is_slash, WORD_EMPTY_IS_NIL,
                       start + 2, end, ep);
     if (host == kw::_sym_error) {
@@ -785,7 +785,7 @@ maybe_parse_host:
       if (!af_stringP(host))
         return _Nil<Pathname_O>();
       start = *ep;
-      if (is_slash(af_char(s, --start)))
+      if (is_slash(cl_char(s, --start)))
         *ep = start;
     }
   }
@@ -808,7 +808,7 @@ done_device_and_host:
                     start, end, ep);
   if (name == kw::_sym_error)
     return _Nil<Pathname_O>();
-  if ((*ep - start) <= 1 || af_char(s, *ep - 1) != '.') {
+  if ((*ep - start) <= 1 || cl_char(s, *ep - 1) != '.') {
     type = _Nil<T_O>();
   } else {
     type = parse_word(s, is_null, WORD_ALLOW_ASTERISK, *ep, end, ep);
@@ -1267,7 +1267,7 @@ T_mv af_parseNamestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum_sp start, 
   T_sp tempdefaults = (tdefaults.nilp()) ? cl::_sym_STARdefaultPathnameDefaultsSTAR->symbolValue() : gc::As<T_sp>(cl_pathname(tdefaults));
   T_sp output;
   if (host.notnilp()) {
-    host = af_string(host);
+    host = cl_string(host);
   }
   if (!af_stringP(thing)) {
     output = cl_pathname(thing);
@@ -1506,7 +1506,7 @@ bool clasp_wild_string_p(T_sp item) {
   if (af_stringP(item)) {
     size_t i, l = cl_length(item);
     for (i = 0; i < l; i++) {
-      claspChar c = af_char(item, i);
+      claspChar c = cl_char(item, i);
       if (c == '\\' || c == '*' || c == '?')
         return 1;
     }
@@ -1522,7 +1522,7 @@ bool clasp_wild_string_p(T_sp item) {
 bool clasp_stringMatch(T_sp s, size_t j, size_t ls,
                        T_sp p, size_t i, size_t lp) {
   while (i < lp) {
-    size_t cp = af_char(p, i);
+    size_t cp = cl_char(p, i);
     switch (cp) {
     case '*': {
       /* An asterisk in the pattern matches any
@@ -1530,7 +1530,7 @@ bool clasp_stringMatch(T_sp s, size_t j, size_t ls,
 		 * sequence that matches. */
       size_t cn = 0, next;
       for (next = i + 1;
-           next < lp && ((cn = af_char(p, next)) == '*');
+           next < lp && ((cn = cl_char(p, next)) == '*');
            next++)
         ;
       if (next == lp) {
@@ -1558,7 +1558,7 @@ bool clasp_stringMatch(T_sp s, size_t j, size_t ls,
       if (++i >= lp)
         i--;
     default:
-      if ((j >= ls) || (cp != af_char(s, j))) {
+      if ((j >= ls) || (cp != cl_char(s, j))) {
         /* Either there are no characters left in "s"
 		     * or the next character does not match. */
         return false;
@@ -1732,17 +1732,17 @@ find_wilds(T_sp l, T_sp source, T_sp match) {
   ls = cl_length(source);
   lm = cl_length(match);
   for (i = j = 0; i < ls && j < lm;) {
-    size_t pattern_char = af_char(match, j);
+    size_t pattern_char = cl_char(match, j);
     if (pattern_char == '*') {
       for (j++, k = i;
-           k < ls && af_char(source, k) != pattern_char;
+           k < ls && cl_char(source, k) != pattern_char;
            k++)
         ;
       l = Cons_O::create(make_one(source, i, k), l);
       i = k;
       continue;
     }
-    if (af_char(source, i) != pattern_char)
+    if (cl_char(source, i) != pattern_char)
       return kw::_sym_error;
     i++, j++;
   }
@@ -1806,7 +1806,7 @@ copy_wildcards(T_sp *wilds_list, T_sp pattern) {
   l = cl_length(pattern);
   StrWithFillPtr_sp token = StrWithFillPtr_O::createBufferString();
   for (j = i = 0; i < l;) {
-    size_t c = af_char(pattern, i);
+    size_t c = cl_char(pattern, i);
     if (c != '*') {
       i++;
       continue;
@@ -1882,7 +1882,7 @@ Pathname_sp af_translatePathname(T_sp tsource, T_sp tfrom, T_sp tto, T_sp scase)
     goto error;
 
   /* Match host names */
-  if (af_string_equal(source->_Host, from->_Host).nilp())
+  if (cl_string_equal(source->_Host, from->_Host).nilp())
     goto error;
   host = to->_Host;
 

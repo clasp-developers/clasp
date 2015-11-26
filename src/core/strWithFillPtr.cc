@@ -161,9 +161,9 @@ string StrWithFillPtr_O::__repr__() const {
 }
 
 void StrWithFillPtr_O::pushSubString(T_sp tstr, size_t start, size_t end) {
-  Str_sp str = af_string(tstr);
+  Str_sp str = cl_string(tstr);
   while (start < end) {
-    this->vectorPushExtend(clasp_make_character(af_char(str, start)));
+    this->vectorPushExtend(clasp_make_character(cl_char(str, start)));
     start++;
   }
 }
