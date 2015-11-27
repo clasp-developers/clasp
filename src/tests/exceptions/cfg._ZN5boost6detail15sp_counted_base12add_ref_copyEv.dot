@@ -1,5 +1,0 @@
-digraph "CFG for '_ZN5boost6detail15sp_counted_base12add_ref_copyEv' function" {
-	label="CFG for '_ZN5boost6detail15sp_counted_base12add_ref_copyEv' function";
-
-	Node0x7fd4417770a0 [shape=record,label="{entry:\l  %this.addr = alloca %\"class.boost::detail::sp_counted_base\"*, align 8\l  store %\"class.boost::detail::sp_counted_base\"* %this, %\"class.boost::detail::sp_counted_base\"** %this.addr, align 8\l  call void @llvm.dbg.declare(metadata !\{%\"class.boost::detail::sp_counted_base\"** %this.addr\}, metadata !20515), !dbg !20516\l  %this1 = load %\"class.boost::detail::sp_counted_base\"** %this.addr\l  %use_count_ = getelementptr inbounds %\"class.boost::detail::sp_counted_base\"* %this1, i32 0, i32 1, !dbg !20517\l  call void @_ZN5boost6detail16atomic_incrementEPi(i32* %use_count_), !dbg !20517\l  ret void, !dbg !20519\l}"];
-}

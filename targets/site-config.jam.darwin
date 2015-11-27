@@ -1,7 +1,0 @@
-#
-# Put this in /etc or $HOME
-
-using darwin ;
-
-using mpi ;
-
