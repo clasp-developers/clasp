@@ -784,7 +784,7 @@ T_sp Str_O::subseq(int start, T_sp end) const {
   }
   int iend;
   if (end.nilp()) {
-    iend = this->get().size();
+    iend = this->size();
   } else {
     iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }

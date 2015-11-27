@@ -45,19 +45,12 @@ THE SOFTWARE.
 #include <clasp/core/numbers.fwd.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/evaluator.fwd.h>
-//#i n c l u d e "f u n c t ionptr.h"
 #include <clasp/core/cache.h>
 #include <clasp/core/translators.h>
-//#include <clasp/core/stringSet.fwd.h>
-//#i n c l u d e "setfExpander.fwd.h"
-//#i n c l u d e "environment.h"
 #include <clasp/core/executables.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/readtable.fwd.h>
-//#i n c l u d e "genericFunction.fwd.h"
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
-//#i n c l u d e "executableEnvironment.h"
-//#i n c l u d e "lispDefinitions.h"
 
 namespace cl {
 extern core::Symbol_sp _sym_eq;

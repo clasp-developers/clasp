@@ -106,12 +106,12 @@ public:
 
   const char *c_str() const { return this->_Contents.c_str(); };
   string __str__() { return this->_Contents.asStdString(); };
-  string get() const { return this->_Contents.asStdString(); };
-  void set(const string &v) {
+  virtual string get() const { return this->_Contents.asStdString(); };
+  virtual void set(const string &v) {
     str_type temp(v);
     this->_Contents.swap(temp);
   };
-  void setFromChars(const char *v) {
+  virtual void setFromChars(const char *v) {
     str_type temp(v);
     this->_Contents.swap(temp);
   };
