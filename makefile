@@ -195,15 +195,6 @@ boot-mps-interface:
 clasp-libraries:
 	(cd src/gctools; $(BJAM) link=$(LINK) program=clasp gctools install-lib)
 
-devbuild:
-	(cd src/main; $(BUILD) -j$(PJOBS) link=$(LINK) program=clasp gc=boehmdc release dist )
-
-$(BINDIR)/clasp_boehm_o : $(BINDIR)/release/boehm/clasp
-	@ln -s $(BINDIR)/release/boehm/clasp $(BINDIR)/clasp_boehm_o
-
-$(BINDIR)/clasp_mps_o : $(BINDIR)/release/boehm/clasp
-	echo $< $>
-
 executable-symlinks:
 	install -d $(BINDIR)
 	ln -sf ../Contents/execs/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o
@@ -274,39 +265,6 @@ boehm-clean:
 	if test -e $(LIBATOMIC_OPS_CONFIGURE); then rm $(LIBATOMIC_OPS_CONFIGURE) ; fi
 	if test	-e $(BDWGC_CONFIGURE); then rm $(BDWGC_CONFIGURE) ; fi
 
-cclasp-mps:
-	(cd src/main; make cclasp-mps)
-
-bclasp-only:
-	@echo Dumping local.config
-	cat local.config
-	make submodules
-	make asdf
-	make boost_build
-	make -C src/main scrape-all
-	$(BJAM) /internals/lisp//bundle
-	make clasp-boehm
-	make -C src/main bclasp-boehm-addons
-
-sub-prebuild:
-	make -C src/ $@
-
-fix-scraping:
-	for d in src/*/; do cd "$$d"; export PYTHONPATH="$$PWD:$$PYTHONPATH"; python ../../src/common/symbolScraper.py symbols_scraped.inc *.h *.cc *.scrape.inc; cd ../..; done
-
-fix-scraping2:
-	-(cd src/asttooling; bjam meta)
-	-(cd src/cffi; bjam meta)
-	-(cd src/clbind; bjam meta)
-	-(cd src/core; bjam meta)
-	-(cd src/gctools; bjam meta)
-	-(cd src/llvmo; bjam meta)
-	-(cd src/main; bjam meta)
-	-(cd src/mpip; bjam meta)
-	-(cd src/mps; bjam meta)
-	-(cd src/serveEvent; bjam meta)
-	-(cd src/sockets; bjam meta)
-
 pump:
 	(cd src/core; make pump)
 	(cd src/clbind; make pump)
@@ -329,17 +287,6 @@ submodules-mps:
 
 asdf:
 	(cd src/lisp/modules/asdf; make)
-
-only-boehm:
-	make submodules-boehm
-	make boost_build
-	make clasp-boehm
-
-boehm-build-mps-interface:
-	make submodules
-	make boost_build
-	make clasp-boehm
-	(cd src/main; make mps-interface)
 
 
 #
@@ -375,66 +322,6 @@ devshell-telemetry:
 	@echo as they are defined when commands execute within the makefile
 	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR); export CLASP_MPS_CONFIG="32 32 16 80 32 80"; export CLASP_TELEMETRY_FILE=/tmp/clasp.tel; export CLASP_TELEMETRY_MASK=3; bash)
 
-
-testing:
-	which clang++
-
-clasp-mps-cpp:
-	$(BUILD) -j$(PJOBS) gc=mps link=$(LINK) program=clasp release src/main//dist
-
-clasp-boehm-cpp:
-	$(BUILD) -j$(PJOBS) gc=boehm link=$(LINK) program=clasp release src/main//dist
-
-clasp-mps:
-	$(MAKE) clasp-mps-cpp
-	(cd src/main; $(MAKE) mps)
-
-# Compile the CL sources for min-mps: and full-mps
-cl-mps:
-	(cd src/main; $(MAKE) mps)
-
-# Compile the CL sources for min-mps: using the existing min-mps: - FAST
-cl-min-mps-recompile:
-	(cd src/main; $(MAKE) min-mps-recompile)
-
-# Compile the CL sources for full-mps:
-cl-full-mps:
-	(cd src/main; $(MAKE) full-mps)
-
-
-clasp-boehm:
-	make clasp-boehm-cpp
-	$(BJAM) everything gc=boehm link=$(LINK) program=clasp release
-	(cd src/main; make boehm)
-
-cclasp-boehm:
-	(cd src/main; make cclasp-boehm)
-
-cclasp-boehm-addons:
-	(cd src/main; make cclasp-boehm-addons)
-
-
-# Compile the CL sources for min-boehm: and full-boehm
-cl-boehm:
-	(cd src/main; $(MAKE) boehm)
-
-# Compile the CL sources for min-boehm: using the existing min-boehm: - FAST
-cl-min-boehm-recompile:
-	(cd src/main; $(MAKE) min-boehm-recompile)
-
-# Compile the CL sources for full-boehm:
-cl-full-boehm:
-	(cd src/main; $(MAKE) full-boehm)
-
-boost_build:
-	@if test ! -e $(BOOST_BUILD_INSTALL)/bin/bjam ; then make boost_build-compile ; fi
-
-boost_build-compile:
-	install -d $(BOOST_BUILD_INSTALL)
-	(cd $(BOOST_BUILD_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_INSTALL) --ignore-site-config)
-
-compile-commands:
-	(cd src/main; $(MAKE) compile-commands)
 
 
 clean:
