@@ -329,7 +329,7 @@ boost_build:
 boost_build-compile:
 	install -d $(BOOST_BUILD_INSTALL)
 	(cd $(BOOST_BUILD_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_INSTALL) --ignore-site-config)
-|
+
 clean:
 	git submodule sync
 	make boehm-clean
