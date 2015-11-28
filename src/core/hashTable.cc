@@ -601,9 +601,9 @@ void core_hashTableForceRehash(HashTable_sp ht) {
   ht->rehash(false, _Unbound<T_O>());
 }
 
-#define ARGS_HashTable_O_gethash "(key (self hash-table) &optional default_value)"
-#define DECL_HashTable_O_gethash ""
-#define DOCS_HashTable_O_gethash "See CLHS"
+//#define ARGS_HashTable_O_gethash "(key (self hash-table) &optional default_value)"
+//#define DECL_HashTable_O_gethash ""
+//#define DOCS_HashTable_O_gethash "See CLHS"
 T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   LOG(BF("gethash looking for key[%s]") % _rep_(key));
   List_sp keyValuePair = this->tableRef(key);
@@ -667,8 +667,6 @@ bool HashTable_O::remhash(T_sp key) {
 #define DECL_HashTable_O_hash_table_setf_gethash ""
 #define DOCS_HashTable_O_hash_table_setf_gethash "setf into the hash-table"
 T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
-  _OF();
-  //        printf("%s:%d key@%p value@%p\n", __FILE__, __LINE__, key.raw_(), value.raw_() );
   List_sp keyValuePair = this->tableRef(key);
 #ifdef DEBUG_HASH_TABLE
   if (this->_DebugHashTable) {
