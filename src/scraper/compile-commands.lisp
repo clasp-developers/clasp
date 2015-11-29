@@ -107,22 +107,9 @@
 
 #|
 
-(setf *default-pathname-defaults* #P"/Users/meister/Development/clasp/src/scraper/")
 (defparameter *file* "/tmp/commands.txt")
-(defparameter *lines* (read-compile-command-lines *file*))
-
 (defparameter *cc* (read-compile-commands *file*))
-(car *cc*)
-;;; Generate a CPP compilation command from one of the compile-commands
-(cpp-needs-run (car *cc*))
-(run-cpp (car *cc*))
-
-*cc*
-(generate-cpp-command (car *cc*))
-
-(pathname (cpp-name (car *cc*)))
 (update-cpps *cc*)
-(cpp-needs-run (cadr *cc*))
 
 |#
 
