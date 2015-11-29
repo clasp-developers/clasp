@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#include <clasp/core/scrape.h>
 #define DEBUG_LEVEL_FULL
 
 #include <unistd.h>
@@ -359,7 +360,13 @@ T_sp af_getEnv(Str_sp arg) {
 #define ARGS_core_describe_cxx_object "(name &optional stream)"
 #define DECL_core_describe_cxx_object ""
 #define DOCS_core_describe_cxx_object "Describe a C++ object as CL:DESCRIBE"
-void core_describe_cxx_object(T_sp obj, T_sp stream) {
+LAMBDA(name &optional stream)
+DECLARE()
+DOCSTRING(R"doc(Describe a
+C++ object
+like CL:DESCRIBE)doc")
+DEFUN void core_describe_cxx_object(T_sp obj, T_sp stream)
+{
   if (obj.generalp()) {
     obj->describe(stream);
   } else if (obj.consp()) {
