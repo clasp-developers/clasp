@@ -1,9 +1,5 @@
-(defpackage #:cscrape
-  (:use :cl)
-  (:export ))
+(in-package :cscrape)
 
-
-(defparameter *clang-path* "/Users/meister/Development/externals-clasp/build/release/bin/clang++")
 
 
 ;;; Everything necessary to run the preprocessor on one input file
@@ -105,12 +101,78 @@
 
 
 
-#|
 
-(defparameter *file* "/tmp/commands.txt")
-(defparameter *cc* (read-compile-commands *file*))
-(update-cpps *cc*)
+(defclass buffer-stream ()
+  ((buffer :initarg :buffer :accessor buffer)
+   (buffer-stream :initarg :buffer-stream :accessor buffer-stream)))
 
-|#
+(defun read-entire-file (cc)
+  (with-open-file (stream (pathname (cpp-name cc)))
+    (let ((data (make-string (file-length stream))))
+      (read-sequence data stream)
+      (make-instance 'buffer-stream
+                     :buffer data
+                     :buffer-stream (make-string-input-stream data)))))
+
+(defun search-for-tag (bufs tag)
+  (let ((tag-pos (search tag (buffer bufs) :start2 (file-position (buffer-stream bufs)))))
+    (when tag-pos
+      (let ((next-pos (+ tag-pos (length tag))))
+        (file-position (buffer-stream bufs) next-pos)
+        (values tag-pos next-pos)))))
+
+(defun skip-char (bufs)
+  (read-char (buffer-stream bufs)))
+
+(defun skip-tag (bufs tag)
+  (let ((strm (buffer-stream bufs)))
+    (file-position strm (+ (file-position strm)))))
+
+(defun search-for-character (bufs ch)
+  (let ((ch-pos (position ch (buffer bufs) :start (file-position (buffer-stream bufs)))))
+    (when ch-pos
+      (file-position (buffer-stream bufs) (1+ ch-pos))
+      ch-pos)))
+
+(defun read-string-to-character (bufs ch &optional keep-last-char)
+  "Read up to the character and keep it if (keep-last-char)"
+  (let* ((start (file-position (buffer-stream bufs)))
+         (ch-pos (search-for-character bufs ch))
+         (keep-to (if keep-last-char
+                      (1+ ch-pos)
+                      ch-pos)))
+    (subseq (buffer bufs) start keep-to)))
+
+(defun next-tag-name (bufs)
+  (let ((tag-start (search-for-tag bufs *begin-tag*)))
+    (when tag-start
+      (skip-char bufs)
+      (let ((tag-kind-start (file-position (buffer-stream bufs)))
+            (tag-kind-end (search-for-character bufs #\space)))
+        (let ((tag-name (subseq (buffer bufs) tag-kind-start tag-kind-end)))
+          tag-name)))))
+
+(defun read-string-to-tag (bufs tag)
+  (let ((start (start bufs))
+        (end (search-for-tag bufs tag)))
+    (subseq (buffer bufs) start end)))
+
+
+(defun parse-tag (bufs tag tag-handlers)
+  (let ((handler (gethash tag tag-handlers)))
+    (if handler
+        (funcall (tags:handler-code handler) bufs)
+        (error 'tags:unknown-tag :tag tag))))
+
+(defun extract-all-tags (bufs)
+  (declare (optimize (debug 3)))
+  (let (tags
+        (tag-handlers (tags:make-handler-hash-table)))
+    (loop
+       (let ((next-tag (next-tag-name bufs)))
+         (unless next-tag
+           (return (nreverse tags)))
+         (push (parse-tag bufs next-tag tag-handlers) tags)))))
+
 
 
