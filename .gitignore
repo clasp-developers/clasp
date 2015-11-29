@@ -1,6 +1,7 @@
 .svn/
 .git/
 *~
+.#*
 *.log
 *.dSYM/
 *.i
