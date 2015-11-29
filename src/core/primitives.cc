@@ -78,7 +78,7 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/profile.h>
 #include <clasp/core/wrappers.h>
-namespace core {
+CL_NAMESPACE() namespace core {
 
 #define ARGS_cl_sleep "(seconds)"
 #define DECL_cl_sleep ""
@@ -365,7 +365,7 @@ DECLARE()
 DOCSTRING(R"doc(Describe a
 C++ object
 like CL:DESCRIBE)doc")
-DEFUN void core_describe_cxx_object(T_sp obj, T_sp stream)
+CL_DEFUN() void core_describe_cxx_object(T_sp obj, T_sp stream)
 {
   if (obj.generalp()) {
     obj->describe(stream);
@@ -1669,7 +1669,7 @@ Integer_sp cl_sxhash(T_sp obj) {
 
 }; /* core */
 
-namespace core {
+CL_NAMESPACE() namespace core {
 
 EXPOSE_CLASS(core, InvocationHistoryFrameIterator_O);
 
@@ -2049,7 +2049,7 @@ T_sp af_ihsBacktrace(T_sp outputDesignator, T_sp msg) {
 };
 };
 
-namespace core {
+CL_NAMESPACE() namespace core {
 void initialize_primitives() {
   _G();
   //
