@@ -97,4 +97,9 @@ extern void obj_dump_base(void *base);
 extern void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj);
 };
 
+void initialize_functions();
+
+void initialize_source_info(core::T_sp);
+
+
 #endif

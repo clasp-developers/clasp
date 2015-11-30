@@ -100,8 +100,6 @@
        do (run-cpp cc :print t)))
 
 
-
-
 (defclass buffer-stream ()
   ((buffer :initarg :buffer :accessor buffer)
    (buffer-stream :initarg :buffer-stream :accessor buffer-stream)))
@@ -125,8 +123,7 @@
   (read-char (buffer-stream bufs)))
 
 (defun skip-tag (bufs tag)
-  (let ((strm (buffer-stream bufs)))
-    (file-position strm (+ (file-position strm)))))
+  (search-for-tag bufs tag))
 
 (defun search-for-character (bufs ch)
   (let ((ch-pos (position ch (buffer bufs) :start (file-position (buffer-stream bufs)))))
@@ -153,7 +150,7 @@
           tag-name)))))
 
 (defun read-string-to-tag (bufs tag)
-  (let ((start (start bufs))
+  (let ((start (file-position (buffer-stream bufs)))
         (end (search-for-tag bufs tag)))
     (subseq (buffer bufs) start end)))
 
@@ -175,4 +172,9 @@
          (push (parse-tag bufs next-tag tag-handlers) tags)))))
 
 
-
+(defun read-all-tags-all-compile-commands (all-cc)
+  (loop for cc in all-cc
+     for bufs = (read-entire-file cc)
+     for tags = (extract-all-tags bufs)
+     do (interpret-tags tags)
+     nconc tags))

@@ -169,6 +169,67 @@ typedef bool _Bool;
 #undef NAMESPACE_gctools
 #undef NAMESPACE_core
 
+
+/* ----------------------------------------------------------------------
+ *
+ *  Expose functions
+ *
+ */
+
+template <typename RT, typename...ARGS>
+void expose_function(const std::string& pkgName,
+                     const std::string& symbolName,
+                     bool exported,
+                     RT (*fp)(ARGS...),
+                     const std::string& lambdaList)
+{
+  core::wrap_function(pkgName,symbolName,fp,lambdaList);
+}
+                     
+#define EXPOSE_FUNCTION_SIGNATURES
+#include INIT_FUNCTIONS_INC_H
+#undef EXPOSE_FUNCTION_SIGNATURES
+
+void initialize_functions()
+{
+  #define EXPOSE_FUNCTION_BINDINGS
+  #include INIT_FUNCTIONS_INC_H
+  #undef EXPOSE_FUNCTION_BINDINGS
+};
+
+
+struct SourceInfo {
+  const char* _Package_name;
+  const char* _Symbol_name;
+  const char* _File;
+  int _Line_number;
+  const char* _Documentation;
+};
+
+SourceInfo global_source_info[] = {
+#define SOURCE_INFO
+#include SOURCE_INFO_INC_H
+#undef SOURCE_INFO
+    {NULL,NULL,NULL,0,NULL}
+};
+
+void initialize_source_info(core::T_sp documentation) {
+  core::HashTableEql_sp ht = gc::As<core::HashTableEql_sp>(documentation);
+  for ( int i=0; i<(sizeof(global_source_info)/sizeof(SourceInfo)-1); ++i ) {
+    std::string lispified = core::lispify_symbol_name(global_source_info[i]._Symbol_name);
+    core::Symbol_sp sym = core::lisp_intern(lispified,
+                                            global_source_info[i]._Package_name);
+    core::Cons_sp docs =
+      core::Cons_O::createList(core::Str_O::create(global_source_info[i]._File),
+                               core::clasp_make_fixnum(global_source_info[i]._Line_number),
+                               core::Str_O::create(global_source_info[i]._Documentation));
+    ht->setf_gethash(sym,docs);
+  }
+};
+
+
+
+
 extern "C" {
 using namespace gctools;
 

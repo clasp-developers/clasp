@@ -189,11 +189,6 @@ typedef std::size_t class_id;
 #endif //]
 #endif
 
-// Empty macros to scrape symbol and keyword symbol declarations from
-// the source code
-#define SYMBOL_EXPORT_SC_(p, x)
-#define SYMBOL_SC_(p, x)
-#define INTERN_(_p_, _x_) (_p_::_sym_##_x_)
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
 #define DEFUN(pkg, x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
@@ -297,11 +292,6 @@ const handleType UniqueIdHandle = 1;
   This is scraped out of the code by "registerClasses.py"
 */
 
-#define NAMESPACE_PACKAGE_ASSOCIATION(x, y, z) \
-  static const std::string y = z;              \
-  namespace x {                                \
-  static const std::string CurrentPkg = z;     \
-  }
 
 #define UndefinedUnsignedInt UINT_MAX
 #define UNDEF_UINT UndefinedUnsignedInt
@@ -585,6 +575,7 @@ namespace core {
 #undef LCC_MACROS
 };
 
+#include <clasp/core/scrape.h>
 #include <clasp/gctools/memoryManagement.h>
 
 namespace core {

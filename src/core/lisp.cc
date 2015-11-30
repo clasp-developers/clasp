@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include <boost/program_options.hpp>
 #pragma GCC diagnostic pop
 //#i n c l u d e	"boost/fstream.hpp"
+#include <clasp/gctools/gc_interface.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/allClSymbols.h>
@@ -428,6 +429,10 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 #undef Use_CorePkg
 
     //            testStrings();
+    initialize_functions();
+    core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
+    initialize_source_info(ht);
+    core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
     initialize_object();
     initialize_foundation();
     initialize_primitives();

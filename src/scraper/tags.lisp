@@ -11,6 +11,15 @@
   (:report (lambda (condition stream)
              (format stream "Bad tag ~a at |~a|" (bad-tag-tag condition) (bad-tag-context condition)))))
 
+(defun extract-function-name-from-signature (sig)
+  (with-input-from-string (sin sig)
+    (let ((*readtable* (copy-readtable)))
+      (setf (readtable-case *readtable*) :preserve)
+      (let ((return-type (read sin))
+            (function-name (read sin)))
+        (declare (ignore return-type))
+        (string function-name)))))
+
 (defclass tag-handler ()
   ((begin-tag :initarg :begin-tag)
    (handler-code :initarg :handler-code :accessor handler-code)))
@@ -25,14 +34,43 @@
 (defclass declare-tag ()
   ((declare-form :initarg :declare-form :accessor declare-form)))
 
-(defclass expose-function-tag ()
+(defclass source-tag-mixin ()
   ((file :initarg :file :accessor file)
    (line :initarg :line :accessor line)
-   (signature-text :initarg :signature-text :accessor signature-text)))
+   (character-offset :initarg :character-offset :accessor character-offset)))
+  
+(defclass expose-code-tag (source-tag-mixin)
+  ((function-name :initarg :function-name :accessor function-name)
+   (signature-text :initarg :signature-text :accessor signature-text)
+   (lambda-tag :initarg :lambda-tag :accessor lambda-tag)
+   (declare-tag :initarg :declare-tag :accessor declare-tag)
+   (docstring-tag :initarg :docstring-tag :accessor docstring-tag)
+   (namespace-tag :initarg :namespace-tag :accessor namespace-tag)))
+
+(defclass expose-function-tag (expose-code-tag) ())
+
+(defclass expose-method-tag (expose-code-tag)
+  ((class-tag :initarg :class-tag :accessor class-tag)))
 
 (defclass namespace-tag ()
   ((namespace :initarg :namespace :accessor namespace)))
 
+(defclass symbol-internal-tag ()
+  ((tag-package :initarg :tag-package :accessor tag-package)
+   (tag-name :initarg :tag-name :accessor tag-name)))
+
+(defclass symbol-external-tag ()
+  ((tag-package :initarg :tag-package :accessor tag-package)
+   (tag-name :initarg :tag-name :accessor tag-name)))
+
+(defclass intern-tag ()
+  ((namespace :initarg :namespace :accessor namespace)
+   (intern-name :initarg :intern-name :accessor intern-name)))
+
+(defclass namespace-package-association-tag ()
+  ((namespace :initarg :namespace :accessor namespace)
+   (package-var :initarg :package-var :accessor package-var)
+   (package-str :initarg :package-str :accessor package-str)))
 
 (defmacro add-tag-handler (tag-handlers begin-tag code)
   `(setf (gethash ,begin-tag ,tag-handlers)
@@ -51,28 +89,26 @@
                            (cscrape:skip-tag bufs cscrape:*end-tag*))))
     (add-tag-handler handlers "DOCSTRING_BEGIN"
                      #'(lambda (bufs) ;(declare (core:lambda-name docstring-tag-handler))
-                         (prog1
-                             (make-instance 'tags:docstring-tag
-                                            :docstring (read (cscrape:buffer-stream bufs)))
-                           (cscrape:skip-tag bufs cscrape:*end-tag*))))
-
+                         (let ((docstr (cscrape:read-string-to-tag bufs cscrape:*end-tag*)))
+                               (make-instance 'tags:docstring-tag
+                                              :docstring docstr))))
     (add-tag-handler handlers "DECLARE_BEGIN"
                      #'(lambda (bufs) ;(declare (core:lambda-name declare-tag-handler))
                          (prog1
                              (make-instance 'tags:declare-tag
                                             :declare-form (read (cscrape:buffer-stream bufs)))
                            (cscrape:skip-tag bufs cscrape:*end-tag*))))
-
     (add-tag-handler handlers "EXPOSE_FUNCTION"
                      #'(lambda (bufs) ;(declare (core:lambda-name expose-function-tag-handler))
-                         (let ((file (read (cscrape:buffer-stream bufs)))
-                               (line (read (cscrape:buffer-stream bufs)))
-                               (signature-text (cscrape:read-string-to-character bufs #\) t)))
+                         (let* ((file (read (cscrape:buffer-stream bufs)))
+                                (line (read (cscrape:buffer-stream bufs)))
+                                (signature-text (cscrape:read-string-to-character bufs #\) t))
+                                (function-name (extract-function-name-from-signature signature-text)))
                            (make-instance 'tags:expose-function-tag
                                           :file file
                                           :line line
+                                          :function-name function-name
                                           :signature-text signature-text))))
-
     (add-tag-handler handlers "NAMESPACE"
                      #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
                          (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))
@@ -85,4 +121,46 @@
                                       :context cur-pos-context )))
                            (make-instance 'tags:namespace-tag
                                           :namespace namespace-name))))
+    (add-tag-handler handlers "SYMBOL_INTERNAL"
+                     #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
+                         (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))
+                                (pkg-name (cscrape:read-string-to-character bufs #\space))
+                                (sym-name (cscrape:read-string-to-character bufs #\space)))
+                           (declare (ignore cur-pos))
+                           (cscrape:skip-tag bufs cscrape:*end-tag*)
+                           (make-instance 'tags:symbol-internal-tag
+                                          :tag-package pkg-name
+                                          :tag-name sym-name))))
+    (add-tag-handler handlers "SYMBOL_EXTERNAL"
+                     #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
+                         (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))
+                                (pkg-name (cscrape:read-string-to-character bufs #\space))
+                                (sym-name (cscrape:read-string-to-character bufs #\space)))
+                           (declare (ignore cur-pos))
+                           (cscrape:skip-tag bufs cscrape:*end-tag*)
+                           (make-instance 'tags:symbol-external-tag
+                                          :tag-package pkg-name
+                                          :tag-name sym-name))))
+    (add-tag-handler handlers "SYMBOL_INTERN"
+                     #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
+                         (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))
+                                (ns-name (cscrape:read-string-to-character bufs #\space))
+                                (sym-name (cscrape:read-string-to-character bufs #\space)))
+                           (declare (ignore cur-pos))
+                           (cscrape:skip-tag bufs cscrape:*end-tag*)
+                           (make-instance 'tags:intern-tag
+                                          :namespace ns-name
+                                          :intern-name sym-name))))
+    (add-tag-handler handlers "NAMESPACE_PACKAGE_ASSOCIATION"
+                     #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
+                         (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))
+                                (ns-name (cscrape:read-string-to-character bufs #\space))
+                                (pkg (cscrape:read-string-to-character bufs #\space))
+                                (pkg-name (cscrape:read-string-to-character bufs #\space)))
+                           (declare (ignore cur-pos))
+                           (cscrape:skip-tag bufs cscrape:*end-tag*)
+                           (make-instance 'tags:namespace-package-association-tag
+                                          :namespace ns-name
+                                          :package-var pkg
+                                          :package-str pkg-name))))
     handlers))

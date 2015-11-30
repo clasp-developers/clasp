@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include <clasp/core/scrape.h>
 #define DEBUG_LEVEL_FULL
 
 #include <unistd.h>
@@ -378,14 +377,20 @@ CL_DEFUN void core_describe_cxx_object(T_sp obj, T_sp stream)
 #define ARGS_core_setenv "(name arg overwrite)"
 #define DECL_core_setenv ""
 #define DOCS_core_setenv "getEnv"
-void core_setenv(Str_sp name, Str_sp arg, bool overwrite) {
+LAMBDA(name arg overwrite)
+DECLARE()
+DOCSTRING(R"doc(Set an environment variable)doc")
+CL_DEFUN void core_setenv(Str_sp name, Str_sp arg, bool overwrite) {
   setenv(name->c_str(), arg->c_str(), overwrite);
 };
 
-#define ARGS_af_pointer "(arg)"
-#define DECL_af_pointer ""
-#define DOCS_af_pointer "Return the value of the pointer - used by conditions.lsp"
-int af_pointer(T_sp obj) {
+#define ARGS_core_pointer "(arg)"
+#define DECL_core_pointer ""
+#define DOCS_core_pointer "Return the value of the pointer - used by conditions.lsp"
+LAMBDA(arg)
+DECLARE()
+DOCSTRING(R"doc(Return the value of a pointer - used by conditions.lsp - not useful in MPS)doc")
+CL_DEFUN int core_pointer(T_sp obj) {
   _G();
   return obj.intptr();
 };
@@ -2220,13 +2225,16 @@ void initialize_primitives() {
 
   Defun(isTrue);
 
-  SYMBOL_EXPORT_SC_(CorePkg, pointer);
-  Defun(pointer);
 
   SYMBOL_EXPORT_SC_(ExtPkg, getEnv);
   Defun(getEnv);
-  CoreDefun(setenv);
+  SYMBOL_EXPORT_SC_(CorePkg, pointer);
 
+#if 0
+  CoreDefun(describe_cxx_object);
+  CoreDefun(setenv);
+  CoreDefun(pointer);
+#endif
   SYMBOL_EXPORT_SC_(CorePkg, toTaggedFixnum);
   SYMBOL_EXPORT_SC_(CorePkg, fromTaggedFixnum);
   SYMBOL_EXPORT_SC_(CorePkg, dumpTaggedFixnum);
@@ -2279,7 +2287,6 @@ void initialize_primitives() {
   CoreDefun(slot_cache_resize);
   CoreDefun(single_dispatch_method_cache_resize);
   CoreDefun(cxx_lambda_list_handler_create_bindings_calls);
-  CoreDefun(describe_cxx_object);
 }
 
 void initializePythonPrimitives(Lisp_sp lisp) {
