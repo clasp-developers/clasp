@@ -185,16 +185,20 @@ void expose_function(const std::string& pkgName,
 {
   core::wrap_function(pkgName,symbolName,fp,lambdaList);
 }
-                     
-#define EXPOSE_FUNCTION_SIGNATURES
-#include INIT_FUNCTIONS_INC_H
-#undef EXPOSE_FUNCTION_SIGNATURES
+
+#ifndef SCRAPING
+  #define EXPOSE_FUNCTION_SIGNATURES
+  #include INIT_FUNCTIONS_INC_H
+  #undef EXPOSE_FUNCTION_SIGNATURES
+#endif
 
 void initialize_functions()
 {
+#ifndef SCRAPING
   #define EXPOSE_FUNCTION_BINDINGS
   #include INIT_FUNCTIONS_INC_H
   #undef EXPOSE_FUNCTION_BINDINGS
+#endif
 };
 
 
@@ -207,9 +211,11 @@ struct SourceInfo {
 };
 
 SourceInfo global_source_info[] = {
+#ifndef SCRAPING
 #define SOURCE_INFO
 #include SOURCE_INFO_INC_H
 #undef SOURCE_INFO
+#endif
     {NULL,NULL,NULL,0,NULL}
 };
 

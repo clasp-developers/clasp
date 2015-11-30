@@ -333,6 +333,7 @@ boost_build-compile:
 clean:
 	git submodule sync
 	make boehm-clean
+	(cd include/clasp/main/generated; rm *)
 	(cd src/main; rm -rf bin bundle)
 	(cd src/core; rm -rf bin bundle)
 	(cd src/gctools; rm -rf bin bundle)
