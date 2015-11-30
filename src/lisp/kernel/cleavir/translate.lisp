@@ -138,13 +138,13 @@
 	 (lambda-name (get-or-create-lambda-name initial-instruction)))
     ;; HYPOTHESIS: This builds a function with no arguments
     ;; that will enclose and set up other functions with arguments
-    (let* ((main-fn-name (format nil "cl->~a" lambda-name))
-	   (cmp:*current-function-name* main-fn-name)
+    (let* ((main-fn-name lambda-name) ;;(format nil "cl->~a" lambda-name))
+	   (cmp:*current-function-name* (cmp:jit-function-name main-fn-name))
 	   (cmp:*gv-current-function-name* (cmp:jit-make-global-string-ptr cmp:*current-function-name* "fn-name"))
 	   (fn (llvm-sys:function-create
 		cmp:+fn-prototype+
 		'llvm-sys:internal-linkage
-		(cmp:jit-function-name cmp:*current-function-name*)
+		(cmp:jit-function-name main-fn-name) ;cmp:*current-function-name*)
 		cmp:*the-module*))
 	   (cmp:*current-function* fn)
 	   (entry-block (cmp:irc-basic-block-create "entry" fn))

@@ -262,8 +262,8 @@
          (part-pathnames lisp-bitcode-files)
          ;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
 	 (bundle-bitcode-pathname (cfp-output-file-default output-pathname :linked-bitcode)))
-    (let* ((prologue-module (if prologue-form (compile-form-into-module prologue-form "prologueForm")))
-           (epilogue-module (if epilogue-form (compile-form-into-module epilogue-form "epilogueForm")))
+    (let* ((prologue-module (if prologue-form (compile-form-into-module prologue-form 'prologue-form)))
+           (epilogue-module (if epilogue-form (compile-form-into-module epilogue-form 'epilogue-form)))
            (module (link-bitcode-modules part-pathnames
                                          :additional-bitcode-pathnames (if intrinsics-bitcode-path
                                                                            (list intrinsics-bitcode-path)

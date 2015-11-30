@@ -109,7 +109,7 @@
 (defun compile-top-level (form)
   (when *compile-print*
     (describe-form form))
-  (let ((fn (compile-thunk "repl" form nil)))
+  (let ((fn (compile-thunk 'repl form nil)))
     (with-ltv-function-codegen (result ltv-env)
       (irc-intrinsic "invokeTopLevelFunction" 
 		     result 
@@ -248,7 +248,7 @@ to compile prologue and epilogue code when linking modules"
 	 (*compile-verbose* nil)	 )
     (with-compiler-env (conditions)
       (with-module (:module module
-                            :source-namestring (namestring name))
+                            :source-namestring (namestring (string name)))
         (with-debug-info-generator (:module *the-module*
                                             :pathname *compile-file-truename*)
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)

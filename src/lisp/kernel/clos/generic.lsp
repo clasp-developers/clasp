@@ -134,7 +134,7 @@
 					     (or name :anonymous)))
 			      )
   (declare (ignore initargs slot-names)
-           (core:lambda-name 'shared-initialize-generic-function))
+           (core:lambda-name shared-initialize-generic-function))
   ;;
   ;; Check the validity of several fields.
   ;;
@@ -185,7 +185,7 @@
 (defmethod shared-initialize ((gfun standard-generic-function) slot-names
 			      &rest initargs)
   (declare (ignore initargs slot-names)
-           (core:lambda-name 'shared-initialize-standard-generic-function))
+           (core:lambda-name shared-initialize-standard-generic-function))
   (call-next-method)
   (when (generic-function-methods gfun)
     (compute-g-f-spec-list gfun))

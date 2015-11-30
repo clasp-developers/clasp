@@ -747,7 +747,7 @@ marshaling of compiled quoted data"
         (result (gensym "result")))
     `(multiple-value-bind (,ltv-init-fn ,fn-env-gs ,cleanup-block-gs
 					,irbuilder-alloca ,irbuilder-body ,result )
-	 (irc-function-create "runAll" nil nil
+	 (irc-function-create 'run-all nil nil
 			      :function-type +fn-prototype+
 			      :argument-names +fn-prototype-argument-names+)
        (let ((*load-time-value-initialization-function* ,ltv-init-fn)
@@ -760,7 +760,7 @@ marshaling of compiled quoted data"
                                  :linkage-name (llvm-sys:get-name ,ltv-init-fn)
                                  :function ,ltv-init-fn
                                  :function-type +fn-prototype+
-                                 :form nil) ;; No form for runAll
+                                 :form nil) ;; No form for run-all
            ;; Set up dummy debug info for these irbuilders
            (cmp:with-irbuilder (*irbuilder-ltv-function-alloca*)
              (cmp:dbg-set-current-source-pos nil))
@@ -852,7 +852,6 @@ marshaling of compiled quoted data"
 (defun compile-ltv-thunk (name form env)
   "Compile the form into an llvm function and return that function"
   (dbg-set-current-debug-location-here)
-  (or (stringp name) (error "name must be a string"))
   (let* ((ltv-index (get-next-available-ltv-entry))
 	 (fn (with-new-function (fn fn-env fn-result
 				    :function-name name
