@@ -80,6 +80,7 @@
 (defun run-cpp (cc &key print)
   "Run the C-preprocessor on the compile-command"
   (let* ((cpp-cmd (generate-cpp-command cc)))
+    (format t "Running preprocessor to generate ~a~%" (cpp-name cc))
     (when print
       (format t "~a~%" (with-output-to-string (sout)
                          (loop for x in cpp-cmd
@@ -88,16 +89,16 @@
     (ensure-directories-exist (pathname (cpp-name cc)))
     (with-output-to-string (serr)
       (with-output-to-string (sout)
-        (sb-ext:run-program (car cpp-cmd) (cdr cpp-cmd) :output sout :error serr)
-        (unless (string= (get-output-stream-string serr) "")
-          (format t "error: ~a~%" (get-output-stream-string serr)))
+        (let ((exit (sb-ext:run-program (car cpp-cmd) (cdr cpp-cmd) :output sout :error serr)))
+          (unless (eql (sb-ext:process-exit-code exit) 0)
+            (format t "error: ~a~%" (get-output-stream-string serr))))
         (values (get-output-stream-string sout) (get-output-stream-string serr))))))
 
 
 (defun update-cpps (ccs)
   "Run the c-preprocessor on the commands"
   (loop for cc in ccs
-       do (run-cpp cc :print t)))
+       do (run-cpp cc)))
 
 
 (defclass buffer-stream ()
