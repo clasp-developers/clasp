@@ -4,6 +4,15 @@
 #
 (export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/symbolGroveler.py include/generated/symbols_scraped_inc.h `cat project-directories.config`)
 (export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/classGroveler.py include/generated/initClasses_inc.h `cat project-directories.config` 2>registerClasses.log)
+
+#
+# Run the new SBCL scraper
+# currently it needs the files generated above by the python grovelers
+#
+bjam $* -n -a >/tmp/all-commands.txt
+bjam $* -n >/tmp/commands.txt
+sbcl --load $CLASP_HOME/src/scraper/scraper.lisp -- `$LLVM_CONFIG --bindir`/clang $CLASP_HOME/include/ `pwd`/include/application.config /tmp/all-commands.txt /tmp/commands.txt
+
 #
 # run bjam to build app
 #
