@@ -18552,7 +18552,7 @@ static void* OBJ_FINALIZE_table[] = { NULL
  SMART_PTR_FIX(sockets::_sym_ll_getProtocolByName);
  SMART_PTR_FIX(clos::_sym_classp);
  SMART_PTR_FIX(kw::_sym_eval);
- SMART_PTR_FIX(core::_sym_evalWithEnv);
+// SMART_PTR_FIX(core::_sym_evalWithEnv);
  SMART_PTR_FIX(cl::_sym_cadr);
  SMART_PTR_FIX(llvmo::_sym_RelocModel_DynamicNoPIC);
  SMART_PTR_FIX(core::_sym_sharp_dot);

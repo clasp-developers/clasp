@@ -142,6 +142,10 @@ all:
 	echo Clasp is now built
 
 mps-build:
+	make print-config
+	make submodules
+	make asdf
+	make boost_build
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install )
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/debug gc=mps debug clasp_install )
 	make -C src/main link-min-mps
