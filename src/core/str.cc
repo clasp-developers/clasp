@@ -54,7 +54,6 @@ string str_get(T_sp str) {
 T_sp str_create(const string &str) { return Str_O::create(str); };
 T_sp str_create(const char *str) { return Str_O::create(str); };
 
-#if 0
 #define ARGS_af_searchString "(str1 start1 end1 str2 start2 end2)"
 #define DECL_af_searchString ""
 #define DOCS_af_searchString "searchString"
@@ -69,7 +68,6 @@ T_sp af_searchString(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_sp str2, Fixn
   }
   return make_fixnum(static_cast<int>(pos + unbox_fixnum(start2)));
 };
-#endif
 
 Str_sp Str_O::create(const boost::format &nm) {
   GC_ALLOCATE(Str_O, v);
@@ -166,7 +164,7 @@ void Str_O::exposeCando(Lisp_sp lisp) {
       ;
 
   SYMBOL_SC_(CorePkg, base_string_concatenate);
-//  Defun(searchString);
+  Defun(searchString);
   core::af_def(CorePkg, "base_string_concatenate", &af_base_string_concatenate_, ARGS_af_base_string_concatenate_, DECL_af_base_string_concatenate_, DOCS_af_base_string_concatenate_);
 
 }
