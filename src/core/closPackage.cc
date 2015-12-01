@@ -38,7 +38,9 @@ namespace clos {
 #pragma GCC visibility push(default)
 #define ClosPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include SYMBOLS_SCRAPED_INC_H
+  #ifndef SCRAPING
+    #include SYMBOLS_SCRAPED_INC_H
+  #endif
 #undef DO_SYMBOL
 #undef ClosPkg_SYMBOLS
 #pragma GCC visibility pop

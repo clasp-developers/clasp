@@ -61,7 +61,9 @@ bool _GlobalDebugAllocations = false;
 #pragma GCC visibility push(default)
 #define GcToolsPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include SYMBOLS_SCRAPED_INC_H
+  #ifndef SCRAPING
+    #include SYMBOLS_SCRAPED_INC_H
+  #endif
 #undef DO_SYMBOL
 #undef GcToolsPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -74,10 +76,12 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
 #define GcToolsPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, exportp)                   \
   {                                                                     \
-    gctools::cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
+    gctools::cname = _lisp->internUniqueWithPackageName(pkg, core::lispify_symbol_name(lispname)); \
     gctools::cname->exportYourself(exportp);                            \
   }
-#include SYMBOLS_SCRAPED_INC_H
+  #ifndef SCRAPING
+    #include SYMBOLS_SCRAPED_INC_H
+  #endif
 #undef DO_SYMBOL
 #undef GcToolsPkg_SYMBOLS
 

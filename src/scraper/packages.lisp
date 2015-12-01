@@ -19,6 +19,13 @@
   (:export
    #:unknown-tag
    #:handler-code
+   #:lisp-base-tag
+   #:lisp-class-tag
+   #:c++-base%
+   #:namespace%
+   #:package%
+   #:c++-class%
+   #:class-symbol%
    #:lambda-tag
    #:lambda-list
    #:docstring-tag
@@ -34,9 +41,12 @@
    #:function-name
    #:signature-text
    #:namespace-tag
-   #:symbol-internal-tag
-   #:symbol-external-tag
-   #:intern-tag
+   #:symbol-tag
+   #:name%
+   #:c++-name%
+   #:class-symbol%
+   #:exported%
    #:namespace-package-association-tag
+   #:package-var
    #:make-handler-hash-table))
            

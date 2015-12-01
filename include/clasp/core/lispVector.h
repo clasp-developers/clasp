@@ -104,6 +104,10 @@ public:  // Functions here
 };
 TRANSLATE(core::Vector_O);
 
+namespace cl {
+  extern core::Symbol_sp _sym_T_O;
+};
+
 namespace core {
 // Like ecl_vector_start_end
 T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp end);

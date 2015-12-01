@@ -496,7 +496,6 @@ bool lispify_match(const char *&cur, const char *match) {
 }
 
 string lispify_symbol_name(const string &s) {
-  _G();
   LOG(BF("lispify_symbol_name pass1 source[%s]") % s);
   stringstream stream_pass1;
   const char *start_pass1 = s.c_str();

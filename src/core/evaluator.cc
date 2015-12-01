@@ -57,6 +57,12 @@ THE SOFTWARE.
 #include <clasp/core/str.h>
 #include <clasp/core/wrappers.h>
 
+namespace cl {
+extern core::Symbol_sp _sym_or;
+extern core::Symbol_sp _sym_Symbol_O;
+extern core::Symbol_sp _sym_Cons_O;
+};
+
 namespace core {
 namespace eval {
 T_mv t1Evaluate(T_sp exp, T_sp environment);

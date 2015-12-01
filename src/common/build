@@ -2,7 +2,7 @@
 #
 # grovel project directories for symbols and classes
 #
-(export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/symbolGroveler.py include/generated/symbols_scraped_inc.h `cat project-directories.config`)
+(export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/symbolGroveler.py include/generated/symbols_scraped_python_inc.h `cat project-directories.config`)
 (export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/classGroveler.py include/generated/initClasses_inc.h `cat project-directories.config` 2>registerClasses.log)
 
 #
@@ -11,7 +11,8 @@
 #
 bjam $* -n -a >/tmp/all-commands.txt
 bjam $* -n >/tmp/commands.txt
-sbcl --load $CLASP_HOME/src/scraper/scraper.lisp -- `$LLVM_CONFIG --bindir`/clang $CLASP_HOME/include/ `pwd`/include/application.config /tmp/all-commands.txt /tmp/commands.txt
+echo Running $CLASP_SBCL --load $CLASP_HOME/src/scraper/scraper.lisp -- `$LLVM_CONFIG_RELEASE --bindir`/clang `pwd`/ `pwd`/include/application.config /tmp/all-commands.txt /tmp/commands.txt
+$CLASP_SBCL --load $CLASP_HOME/src/scraper/scraper.lisp -- `$LLVM_CONFIG_RELEASE --bindir`/clang `pwd`/ `pwd`/include/application.config /tmp/all-commands.txt /tmp/commands.txt
 
 #
 # run bjam to build app

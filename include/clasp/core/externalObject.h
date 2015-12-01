@@ -92,6 +92,7 @@ gctools::smart_ptr<OT> RP_Create_wrapped(WT ptr) {
 
 // public:
 
+#ifndef SCRAPING
 #define LISP_EXTERNAL_CLASS(oNamespace, oPackage, wrappedClass, o_nameOfWrappedClass, nameOfWrappedClass, o_nameOfWrappedClassBase)      \
   /* */ LISP_BASE1(o_nameOfWrappedClassBase);                                                                                            \
   /* */ __COMMON_CLASS_PARTS(oNamespace, oPackage, o_nameOfWrappedClass, nameOfWrappedClass) public : typedef wrappedClass WrappedClass; \
@@ -101,7 +102,7 @@ public:                                                                         
   static bool static_supportsSlots() { return true; };                                                                                   \
   /* end */
 };
-
+#endif // SCRAPING
 TRANSLATE(core::ExternalObject_O);
 
 namespace core {

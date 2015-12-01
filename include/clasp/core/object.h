@@ -461,12 +461,12 @@ public:                                                                         
   __COMMON_VIRTUAL_CLASS_PARTS(CurrentPkg, oClass, typeid(oClass).name())
 
 #define LISP_META_CLASS(x) // nothing
-
+#ifndef SCRAPING
 #define LISP_BASE1(b1) \
 public:                \
   typedef b1 Base;     \
   typedef LispBases1<b1> Bases;
-
+#endif
 #define LISP_VIRTUAL_BASE2(v0, b1, b2) \
 public:                                \
   typedef LispVirtualBases2<v0, b1, b2> Bases;
@@ -478,11 +478,13 @@ public:                    \
 #define LISP_TEMPLATE_BASE1(b1) \
   /*no-scrape*/ LISP_BASE1(b1);
 
+#ifndef SCRAPING
 #define LISP_CLASS(aNamespace, aPackage, aClass, aClassName) \
   __COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);
 
 #define LISP_VIRTUAL_CLASS(aNamespace, aPackage, aClass, aClassName) \
   __COMMON_VIRTUAL_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);
+#endif
 
   LISP_BASE1(_RootDummyClass);
   LISP_VIRTUAL_CLASS(core, ClPkg, T_O, "T");

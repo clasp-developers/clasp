@@ -37,6 +37,10 @@ export TOOLSET := $(or $(filter $(TOOLSET), clang-linux),\
 # Use $(call pathsearch,foo) instead of $(shell which foo)
 pathsearch = $(firstword $(wildcard $(addsuffix /$(strip $(1)),$(subst :, ,$(PATH)))))
 
+export CLASP_SBCL := $(or $(CLASP_SBCL),\
+			$(call pathsearch, sbcl),\
+			$(error Could not find sbcl.))
+
 export PYTHON2 := $(or $(PYTHON2),\
                        $(call pathsearch, python2.7),\
                        $(call pathsearch, python2),\

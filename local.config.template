@@ -27,6 +27,9 @@
 ## Path to the python2 binary.
 #export PYTHON2
 
+## Path to the sbcl binary.
+#export CLASP_SBCL
+
 ## Where the llvm-config file resides
 #export LLVM_CONFIG
 #export LLVM_CONFIG_DEBUG = $(LLVM_CONFIG)
