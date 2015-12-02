@@ -1768,10 +1768,9 @@ T_sp af_find_package(T_sp name_desig) {
   return _lisp->findPackage(name->get());
 }
 
-#define DOCS_af_selectPackage "selectPackage"
-#define LOCK_af_selectPackage 1
 #define ARGS_af_selectPackage "(package-designator)"
 #define DECL_af_selectPackage ""
+#define DOCS_af_selectPackage "selectPackage"
 void af_selectPackage(T_sp package_designator) {
   _G();
   Package_sp pkg = coerce::packageDesignator(package_designator);

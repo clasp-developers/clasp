@@ -94,13 +94,12 @@ public: // instance member functions here
   T_sp make_dispatch_macro_character(Character_sp ch,
                                      T_sp non_terminating_p);
 
-  Function_sp get_dispatch_macro_character(Character_sp disp_char, Character_sp sub_chDar);
+  T_sp get_dispatch_macro_character(Character_sp disp_char, Character_sp sub_chDar);
   T_sp set_dispatch_macro_character(Character_sp ch,
                                     Character_sp second,
                                     T_sp funcDesig);
 
   Character_sp convert_case(Character_sp c);
-  Function_sp lookup_reader_macro(Character_sp c);
 };
 
 }; /* core */

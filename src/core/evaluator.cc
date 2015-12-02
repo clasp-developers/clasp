@@ -533,10 +533,9 @@ T_mv sp_locally(List_sp args, T_sp env) {
   return eval::sp_progn(code, le);
 }
 
-#define DOCS_cl_eval "eval"
-#define LOCK_cl_eval 1
 #define ARGS_cl_eval "(form)"
 #define DECL_cl_eval ""
+#define DOCS_cl_eval "eval"
 T_mv cl_eval(T_sp form) {
   if (core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()) {
     return eval::evaluate(form, _Nil<T_O>());
@@ -549,10 +548,9 @@ T_mv cl_eval(T_sp form) {
 #define when_compile_p(s) ((s)&FLAG_COMPILE)
 #define when_execute_p(s) ((s)&FLAG_EXECUTE)
 
-#define DOCS_sp_eval_when "eval_when"
-#define LOCK_sp_eval_when 1
 #define ARGS_sp_eval_when "(situation &rest body)"
 #define DECL_sp_eval_when ""
+#define DOCS_sp_eval_when "eval_when"
 T_mv sp_eval_when(List_sp args, T_sp env) {
   _G();
   List_sp situation_list = oCar(args);
@@ -625,9 +623,9 @@ T_mv sp_eval_when(List_sp args, T_sp env) {
 #endif
 };
 
-#define DOCS_sp_step "step is implemented as a special"
 #define ARGS_sp_step "(form)"
 #define DECL_sp_step ""
+#define DOCS_sp_step "step is implemented as a special"
 T_mv sp_step(List_sp args, T_sp env) {
   _G();
   IMPLEMENT_ME();

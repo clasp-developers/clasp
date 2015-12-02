@@ -38,10 +38,9 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-#define DOCS_af_record_cons "record_cons - see ECL helpfile.lsp>>record-cons"
-#define LOCK_af_record_cons 1
 #define ARGS_af_record_cons "(record key sub-key)"
 #define DECL_af_record_cons ""
+#define DOCS_af_record_cons "record_cons - see ECL helpfile.lsp>>record-cons"
 T_sp af_record_cons(List_sp record, T_sp key, T_sp sub_key) {
   _G();
   Cons_sp cons = Cons_O::create(key, sub_key);
@@ -54,10 +53,9 @@ T_sp af_record_cons(List_sp record, T_sp key, T_sp sub_key) {
   return (_Nil<T_O>());
 }
 
-#define DOCS_af_record_field "record_field see ecl>>helpfile.lsp>>record-field"
-#define LOCK_af_record_field 1
 #define ARGS_af_record_field "(record key sub-key)"
 #define DECL_af_record_field ""
+#define DOCS_af_record_field "record_field see ecl>>helpfile.lsp>>record-field"
 T_sp af_record_field(List_sp record, T_sp key, T_sp sub_key) {
   _G();
   List_sp cons = eval::funcall(_sym_record_cons, record, key, sub_key);
@@ -65,10 +63,9 @@ T_sp af_record_field(List_sp record, T_sp key, T_sp sub_key) {
   return oCdr(cons);
 }
 
-#define DOCS_af_set_record_field "set_record_field"
-#define LOCK_af_set_record_field 1
 #define ARGS_af_set_record_field "(record key sub-key value)"
 #define DECL_af_set_record_field ""
+#define DOCS_af_set_record_field "set_record_field"
 T_sp af_set_record_field(List_sp record, T_sp key, T_sp sub_key, Str_sp value) {
   _G();
   List_sp field = gc::As<List_sp>(eval::funcall(_sym_record_cons, record, key, sub_key));
@@ -82,10 +79,9 @@ T_sp af_set_record_field(List_sp record, T_sp key, T_sp sub_key, Str_sp value) {
   return record;
 };
 
-#define DOCS_af_rem_record_field "rem_record_field"
-#define LOCK_af_rem_record_field 1
 #define ARGS_af_rem_record_field "(record key sub-key)"
 #define DECL_af_rem_record_field ""
+#define DOCS_af_rem_record_field "rem_record_field"
 T_sp af_rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
   _G();
   List_sp x = af_record_cons(record, key, sub_key);
@@ -102,10 +98,9 @@ T_sp af_rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
   return record;
 }
 
-#define DOCS_ext_annotate "annotate - see ecl>>helpfile.lsp>>annotate; key is either 'documentation or 'setf-documentation and I currently think (object) must be a symbol so I'll trigger an exception if it isn't"
-#define LOCK_ext_annotate 1
 #define ARGS_ext_annotate "(object key sub-key value)"
 #define DECL_ext_annotate ""
+#define DOCS_ext_annotate "annotate - see ecl>>helpfile.lsp>>annotate; key is either 'documentation or 'setf-documentation and I currently think (object) must be a symbol so I'll trigger an exception if it isn't"
 T_mv ext_annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value) {
   _G();
   HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
@@ -115,10 +110,9 @@ T_mv ext_annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value) {
   return (Values(result));
 };
 
-#define DOCS_af_ensure_documentation "ensure_documentation"
-#define LOCK_af_ensure_documentation 1
 #define ARGS_af_ensure_documentation "(sub-key symbol value)"
 #define DECL_af_ensure_documentation ""
+#define DOCS_af_ensure_documentation "ensure_documentation"
 SYMBOL_EXPORT_SC_(ClPkg, documentation);
 void af_ensure_documentation(T_sp sub_key, Symbol_sp symbol, Str_sp value) {
   _G();

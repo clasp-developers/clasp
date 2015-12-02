@@ -109,7 +109,6 @@ T_sp af_backquote_append(List_sp lists) {
 #define ARGS_af_backquote_completely_process "(x)"
 #define DECL_af_backquote_completely_process ""
 #define DOCS_af_backquote_completely_process "backquote_completely_process"
-#define LOCK_af_backquote_completely_process 0
 T_mv af_backquote_completely_process(T_sp x) {
   _G();
   T_sp raw_result = af_backquote_process(x);
@@ -247,10 +246,11 @@ bool af_backquote_frob(T_sp x) {
   return ((false));
 };
 
+SYMBOL_SC_(CorePkg, backquote_maptree);
+
 #define ARGS_af_backquote_maptree "(op x)"
 #define DECL_af_backquote_maptree ""
 #define DOCS_af_backquote_maptree "backquote_maptree"
-SYMBOL_SC_(CorePkg, backquote_maptree);
 T_sp af_backquote_maptree(Function_sp op, T_sp x) {
   _G();
   if (cl_atom(x)) {

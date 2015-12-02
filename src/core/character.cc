@@ -141,82 +141,73 @@ char af_charDowncase(Character_sp ch) {
   return tolower(clasp_as_char(ch));
 };
 
-#define DOCS_af_char_LT_ "Return true if characters are monotonically increasing"
-#define LOCK_af_char_LT_ 1
 #define ARGS_af_char_LT_ "(&rest args)"
 #define DECL_af_char_LT_ ""
+#define DOCS_af_char_LT_ "Return true if characters are monotonically increasing"
 T_sp af_char_LT_(List_sp args) {
   _G();
   return ((monotonic(-1, 1, args)));
 };
 
-#define DOCS_af_char_GT_ "Return true if characters are monotonically decreasing"
-#define LOCK_af_char_GT_ 1
 #define ARGS_af_char_GT_ "(&rest args)"
 #define DECL_af_char_GT_ ""
+#define DOCS_af_char_GT_ "Return true if characters are monotonically decreasing"
 T_sp af_char_GT_(List_sp args) {
   _G();
   return ((monotonic(1, 1, args)));
 };
 
-#define DOCS_af_char_LE_ "Return true if characters are monotonically non-decreasing"
-#define LOCK_af_char_LE_ 1
 #define ARGS_af_char_LE_ "(&rest args)"
 #define DECL_af_char_LE_ ""
+#define DOCS_af_char_LE_ "Return true if characters are monotonically non-decreasing"
 T_sp af_char_LE_(List_sp args) {
   _G();
   return (Values(monotonic(-1, 0, args)));
 };
 
-#define DOCS_af_char_GE_ "Return true if characters are monotonically non-increasing"
-#define LOCK_af_char_GE_ 1
 #define ARGS_af_char_GE_ "(&rest args)"
 #define DECL_af_char_GE_ ""
+#define DOCS_af_char_GE_ "Return true if characters are monotonically non-increasing"
 T_mv af_char_GE_(List_sp args) {
   _G();
   return (Values(monotonic(1, 0, args)));
 };
 
-#define DOCS_af_charLessp "Return true if characters are monotonically increasing, ignore case"
-#define LOCK_af_charLessp 1
 #define ARGS_af_charLessp "(&rest args)"
 #define DECL_af_charLessp ""
+#define DOCS_af_charLessp "Return true if characters are monotonically increasing, ignore case"
 T_mv af_charLessp(List_sp args) {
   _G();
   return (Values(monotonic(-1, 1, args, false)));
 };
 
-#define DOCS_af_charGreaterp "Return true if characters are monotonically decreasing, ignore case"
-#define LOCK_af_charGreaterp 1
 #define ARGS_af_charGreaterp "(&rest args)"
 #define DECL_af_charGreaterp ""
+#define DOCS_af_charGreaterp "Return true if characters are monotonically decreasing, ignore case"
 T_mv af_charGreaterp(List_sp args) {
   _G();
   return (Values(monotonic(1, 1, args, false)));
 };
 
-#define DOCS_af_charNotGreaterp "Return true if characters are monotonically non-increasing, ignore case"
-#define LOCK_af_charNotGreaterp 1
 #define ARGS_af_charNotGreaterp "(&rest args)"
 #define DECL_af_charNotGreaterp ""
+#define DOCS_af_charNotGreaterp "Return true if characters are monotonically non-increasing, ignore case"
 T_mv af_charNotGreaterp(List_sp args) {
   _G();
   return (Values(monotonic(-1, 0, args, false)));
 };
 
-#define DOCS_af_charNotLessp "Return true if characters are monotonically non-decreasing, ignore case"
-#define LOCK_af_charNotLessp 1
 #define ARGS_af_charNotLessp "(&rest args)"
 #define DECL_af_charNotLessp ""
+#define DOCS_af_charNotLessp "Return true if characters are monotonically non-decreasing, ignore case"
 T_sp af_charNotLessp(List_sp args) {
   _G();
   return ((monotonic(1, 0, args, false)));
 };
 
-#define DOCS_af_char_NE_ "NE_"
-#define LOCK_af_char_NE_ 1
 #define ARGS_af_char_NE_ "(&rest args)"
 #define DECL_af_char_NE_ ""
+#define DOCS_af_char_NE_ "NE_"
 T_sp af_char_NE_(List_sp args) {
   _G();
   while (args.notnilp()) {
@@ -231,10 +222,9 @@ T_sp af_char_NE_(List_sp args) {
   return ((_lisp->_true()));
 }
 
-#define DOCS_af_char_EQ_ "EQ_"
-#define LOCK_af_char_EQ_ 1
 #define ARGS_af_char_EQ_ "(&rest args)"
 #define DECL_af_char_EQ_ ""
+#define DOCS_af_char_EQ_ "EQ_"
 T_sp af_char_EQ_(List_sp args) {
   _G();
   if (args.nilp())
@@ -250,10 +240,9 @@ T_sp af_char_EQ_(List_sp args) {
   return ((_lisp->_true()));
 };
 
-#define DOCS_af_charNotEqual "Like char_NE_ but ignore case"
-#define LOCK_af_charNotEqual 1
 #define ARGS_af_charNotEqual "(&rest args)"
 #define DECL_af_charNotEqual ""
+#define DOCS_af_charNotEqual "Like char_NE_ but ignore case"
 T_mv af_charNotEqual(List_sp args) {
   _G();
   while (args.notnilp()) {
@@ -282,10 +271,9 @@ bool clasp_charEqual2(T_sp x, T_sp y) {
   return icx == icy;
 }
 
-#define DOCS_af_charEqual "Like char_EQ_, ignore case"
-#define LOCK_af_charEqual 1
 #define ARGS_af_charEqual "(&rest args)"
 #define DECL_af_charEqual ""
+#define DOCS_af_charEqual "Like char_EQ_, ignore case"
 bool af_charEqual(List_sp args) {
   _G();
   if (args.nilp())
@@ -563,10 +551,9 @@ T_sp cl_digitCharP(Character_sp c, Fixnum_sp radix) {
   return make_fixnum(value);
 };
 
-#define DOCS_af_name_char "name_char"
-#define LOCK_af_name_char 1
 #define ARGS_af_name_char "(sname)"
 #define DECL_af_name_char ""
+#define DOCS_af_name_char "name_char"
 T_mv af_name_char(Str_sp sname) {
   _G();
   Str_sp name = coerce::stringDesignator(sname);
@@ -578,19 +565,18 @@ T_mv af_name_char(Str_sp sname) {
   return (Values(_Nil<T_O>()));
 };
 
-#define DOCS_cl_char_name "char_name"
-#define LOCK_cl_char_name 1
 #define ARGS_cl_char_name "(och)"
 #define DECL_cl_char_name ""
+#define DOCS_cl_char_name "char_name"
 Str_sp cl_char_name(Character_sp och) {
   _G();
   char ch = clasp_as_char(och);
   return (_lisp->characterInfo().gCharacterNames[ch]);
 };
 
-#define DOCS_cl_char_code "char_code"
 #define ARGS_cl_char_code "(och)"
 #define DECL_cl_char_code ""
+#define DOCS_cl_char_code "char_code"
 Fixnum_sp cl_char_code(Character_sp och) {
   _G();
   int ch = clasp_as_char(och);
@@ -600,18 +586,18 @@ Fixnum_sp cl_char_code(Character_sp och) {
   SIMPLE_ERROR(BF("Character is beyon CHAR_CODE_LIMIT: %d") % CHAR_CODE_LIMIT);
 };
 
-#define DOCS_cl_char_int "char_int"
 #define ARGS_cl_char_int "(och)"
 #define DECL_cl_char_int ""
+#define DOCS_cl_char_int "char_int"
 Fixnum_sp cl_char_int(Character_sp och) {
   _G();
   char ch = clasp_as_char(och);
   return make_fixnum((int)ch);
 };
 
-#define DOCS_cl_code_char "code_char"
 #define ARGS_cl_code_char "(och)"
 #define DECL_cl_code_char ""
+#define DOCS_cl_code_char "code_char"
 Character_sp cl_code_char(Integer_sp ich) {
   _G();
   int ii = clasp_to_int(ich);

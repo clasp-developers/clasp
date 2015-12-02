@@ -113,10 +113,9 @@ T_mv core_rem_f(List_sp plist, Symbol_sp indicator) {
   return (Values(tplist, _lisp->_false()));
 };
 
-#define DOCS_af_cons "cons"
-#define LOCK_af_cons 1
 #define ARGS_af_cons "(object1 object2)"
 #define DECL_af_cons ""
+#define DOCS_af_cons "cons"
 Cons_sp af_cons(T_sp obj1, T_sp obj2) {
   _G();
   ASSERTNOTNULL(obj1);
@@ -138,10 +137,9 @@ Cons_sp cl_rplacd(Cons_sp c, T_sp o) {
   return c->rplacd(o);
 };
 
-#define DOCS_af_make_list "make_list"
-#define LOCK_af_make_list 1
 #define ARGS_af_make_list "(osize &key initial_element)"
 #define DECL_af_make_list ""
+#define DOCS_af_make_list "make_list"
 List_sp af_make_list(Integer_sp osize, T_sp initial_element) {
   _G();
   int size = clasp_to_int(osize);

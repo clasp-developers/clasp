@@ -307,10 +307,9 @@ DONE:
   return (Values(retval));
 };
 
-#define DOCS_af_package_use_list "package_use_list"
-#define LOCK_af_package_use_list 0
 #define ARGS_af_package_use_list "(package-designator)"
 #define DECL_af_package_use_list ""
+#define DOCS_af_package_use_list "package_use_list"
 T_sp af_package_use_list(T_sp package_designator) {
   _G();
   Package_sp pkg = coerce::packageDesignator(package_designator);

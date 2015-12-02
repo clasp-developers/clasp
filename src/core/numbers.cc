@@ -1147,37 +1147,33 @@ bool two_arg__EQ_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) == 0;
 }
 
-#define DOCS_af__LT_ "LT less than function"
-#define LOCK_af__LT_ 1
 #define ARGS_af__LT_ "(&rest args)"
 #define DECL_af__LT_ ""
+#define DOCS_af__LT_ "LT less than function"
 T_sp af__LT_(List_sp args) {
   _G();
   return numbers_monotonic(-1, 1, args);
 };
 
-#define DOCS_af__GT_ "GT less than function"
-#define LOCK_af__GT_ 1
 #define ARGS_af__GT_ "(&rest args)"
 #define DECL_af__GT_ ""
+#define DOCS_af__GT_ "GT less than function"
 T_mv af__GT_(List_sp args) {
   _G();
   return (Values(numbers_monotonic(1, 1, args)));
 };
 
-#define DOCS_af__LE_ "LT less than function"
-#define LOCK_af__LE_ 1
 #define ARGS_af__LE_ "(&rest args)"
 #define DECL_af__LE_ ""
+#define DOCS_af__LE_ "LT less than function"
 T_mv af__LE_(List_sp args) {
   _G();
   return (Values(numbers_monotonic(-1, 0, args)));
 };
 
-#define DOCS_af__GE_ "GT less than function"
-#define LOCK_af__GE_ 1
 #define ARGS_af__GE_ "(&rest args)"
 #define DECL_af__GE_ ""
+#define DOCS_af__GE_ "GT less than function"
 T_mv af__GE_(List_sp args) {
   _G();
   return (Values(numbers_monotonic(1, 0, args)));
@@ -1291,10 +1287,9 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_END();
 }
 
-#define DOCS_af__NE_ "NE_"
-#define LOCK_af__NE_ 1
 #define ARGS_af__NE_ "(&rest args)"
 #define DECL_af__NE_ ""
+#define DOCS_af__NE_ "NE"
 T_sp af__NE_(List_sp args) {
   _G();
   if (args.nilp())
@@ -1309,10 +1304,9 @@ T_sp af__NE_(List_sp args) {
   return _lisp->_true();
 }
 
-#define DOCS_af__EQ_ "EQ_"
-#define LOCK_af__EQ_ 1
 #define ARGS_af__EQ_ "(&rest args)"
 #define DECL_af__EQ_ ""
+#define DOCS_af__EQ_ "EQ_"
 T_sp af__EQ_(List_sp args) {
   _G();
   if (args.nilp())

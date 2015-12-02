@@ -142,10 +142,9 @@ T_sp af_symbolValueAddress(const Symbol_sp arg) {
   return Pointer_O::create(&arg->symbolValueRef());
 };
 
-#define DOCS_af_make_symbol "make_symbol"
-#define LOCK_af_make_symbol 1
 #define ARGS_af_make_symbol "(name)"
 #define DECL_af_make_symbol ""
+#define DOCS_af_make_symbol "make_symbol"
 Symbol_mv af_make_symbol(Str_sp name) {
   _G();
   Symbol_sp sym = Symbol_O::create(name->get());

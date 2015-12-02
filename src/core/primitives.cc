@@ -764,10 +764,9 @@ T_mv af_identity(T_sp arg) {
   return (Values(arg));
 };
 
-#define DOCS_af_macroexpand_default "macroexpand_default Default value of *macroexpand-hook*"
-#define LOCK_af_macroexpand_default 1
 #define ARGS_af_macroexpand_default "(macro_function form macro_env)"
 #define DECL_af_macroexpand_default ""
+#define DOCS_af_macroexpand_default "macroexpand_default Default value of *macroexpand-hook*"
 T_mv af_macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_env) {
   _G();
   Function_sp debugMacroFunction = macro_function;
@@ -798,7 +797,6 @@ T_mv af_macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_en
 #define ARGS_af_null "(obj)"
 #define DECL_af_null ""
 #define DOCS_af_null "null test - return true if the object is the empty list otherwise return nil"
-#define LOCK_af_null 1
 T_mv af_null(T_sp obj) {
   _G();
   if (obj.nilp())
@@ -806,10 +804,9 @@ T_mv af_null(T_sp obj) {
   return (Values(_Nil<T_O>()));
 };
 
-#define LOCK_af_classOf 1
-#define DOCS_af_classOf "return class of object - see CLHS"
 #define ARGS_af_classOf "(obj)"
 #define DECL_af_classOf ""
+#define DOCS_af_classOf "return class of object - see CLHS"
 Class_sp af_classOf(T_sp obj) {
   _G();
   Class_sp result = lisp_instance_class(obj);
@@ -819,10 +816,9 @@ Class_sp af_classOf(T_sp obj) {
   return (result);
 }
 
-#define LOCK_af_STARfset 1
-#define DOCS_af_STARfset "fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not."
 #define ARGS_af_STARfset "(function-name fn &optional macro)"
 #define DECL_af_STARfset ""
+#define DOCS_af_STARfset "fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not."
 T_sp af_STARfset(T_sp functionName, Function_sp functionObject, T_sp macro) {
   ASSERTF(functionObject, BF("function is undefined\n"));
   if (macro.isTrue()) {
@@ -912,10 +908,9 @@ T_mv af_fmakunbound(T_sp functionName) {
   SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
 }
 
-#define LOCK_af_read_delimited_list 1
-#define DOCS_af_read_delimited_list "read a list up to a specific character - see CLHS"
 #define ARGS_af_read_delimited_list "(char &optional input-stream-designator recursive-p)"
 #define DECL_af_read_delimited_list ""
+#define DOCS_af_read_delimited_list "read a list up to a specific character - see CLHS"
 T_mv af_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p) {
   _G();
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
@@ -933,19 +928,18 @@ T_mv af_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp
   return (Values(result));
 }
 
-#define LOCK_cl_read 1
-#define DOCS_cl_read "read an object from a stream - see CLHS"
 #define ARGS_cl_read "(&optional input-stream-designator (eof-error-p t) eof-value recursive-p)"
 #define DECL_cl_read ""
+#define DOCS_cl_read "read an object from a stream - see CLHS"
 T_sp cl_read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   _G();
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
   return (read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.notnilp()));
 }
 
-#define DOCS_cl_read_preserving_whitespace "read an object from a stream while preserving whitespace - see CLHS"
 #define ARGS_cl_read_preserving_whitespace "(&optional input-stream-designator (eof-error-p t) eof-value recursive-p)"
 #define DECL_cl_read_preserving_whitespace ""
+#define DOCS_cl_read_preserving_whitespace "read an object from a stream while preserving whitespace - see CLHS"
 T_sp cl_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   _G();
   DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR, _lisp->_true());
@@ -1072,10 +1066,9 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
   return fallThroughReturn;
 }
 
-#define LOCK_af_every 1
-#define DOCS_af_every "See CLHS for every"
 #define ARGS_af_every "(predicate &rest sequences)"
 #define DECL_af_every ""
+#define DOCS_af_every "See CLHS for every"
 T_sp af_every(T_sp predicate, List_sp sequences) {
   _G();
   Function_sp op = coerce::functionDesignator(predicate);
@@ -1084,10 +1077,9 @@ T_sp af_every(T_sp predicate, List_sp sequences) {
   return _lisp->_boolean(result);
 }
 
-#define LOCK_af_some 1
-#define DOCS_af_some "See CLHS for some"
 #define ARGS_af_some "(predicate &rest sequences)"
 #define DECL_af_some ""
+#define DOCS_af_some "See CLHS for some"
 T_sp af_some(T_sp predicate, List_sp sequences) {
   _G();
   Function_sp op = coerce::functionDesignator(predicate);
@@ -1098,10 +1090,9 @@ T_sp af_some(T_sp predicate, List_sp sequences) {
   return _Nil<T_O>();
 }
 
-#define LOCK_af_notany 1
-#define DOCS_af_notany "See CLHS for notany"
 #define ARGS_af_notany "(predicate &rest sequences)"
 #define DECL_af_notany ""
+#define DOCS_af_notany "See CLHS for notany"
 T_sp af_notany(T_sp predicate, List_sp sequences) {
   _G();
   Function_sp op = coerce::functionDesignator(predicate);
@@ -1110,10 +1101,9 @@ T_sp af_notany(T_sp predicate, List_sp sequences) {
   return _lisp->_boolean(result);
 }
 
-#define LOCK_af_notevery 1
-#define DOCS_af_notevery "See CLHS for notevery"
 #define ARGS_af_notevery "(predicate &rest sequences)"
 #define DECL_af_notevery ""
+#define DOCS_af_notevery "See CLHS for notevery"
 T_sp af_notevery(T_sp predicate, List_sp sequences) {
   _G();
   Function_sp op = coerce::functionDesignator(predicate);
@@ -1126,10 +1116,9 @@ T_sp af_notevery(T_sp predicate, List_sp sequences) {
   __BEGIN_DOC(candoScript.general.mapcar)
   __END_DOC
 */
-#define LOCK_cl_mapcar 1
-#define DOCS_cl_mapcar "See CLHS for mapcar"
 #define ARGS_cl_mapcar "(func_desig &rest lists)"
 #define DECL_cl_mapcar ""
+#define DOCS_cl_mapcar "See CLHS for mapcar"
 SYMBOL_EXPORT_SC_(ClPkg, mapcar);
 T_sp cl_mapcar(T_sp func_desig, List_sp lists) {
   _G();
@@ -1150,10 +1139,9 @@ T_sp cl_mapcar(T_sp func_desig, List_sp lists) {
   __BEGIN_DOC(candoScript.general.mapcar)
   __END_DOC
 */
-#define LOCK_cl_mapc 1
-#define DOCS_cl_mapc "See CLHS mapc"
 #define ARGS_cl_mapc "(op &rest lists)"
 #define DECL_cl_mapc ""
+#define DOCS_cl_mapc "See CLHS mapc"
 T_sp cl_mapc(T_sp top, List_sp lists) {
   _G();
   Function_sp op = coerce::functionDesignator(top);
@@ -1182,9 +1170,9 @@ T_sp cl_mapc(T_sp top, List_sp lists) {
   return oCar(lists);
 }
 
-#define DOCS_cl_maplist "See CLHS maplist"
 #define ARGS_cl_maplist "(func_desig &rest lists)"
 #define DECL_cl_maplist ""
+#define DOCS_cl_maplist "See CLHS maplist"
 T_sp cl_maplist(T_sp func_desig, List_sp lists) {
   _G();
   //        printf("%s:%d maplist func_desig=%s   lists=%s\n", __FILE__, __LINE__, _rep_(func_desig).c_str(), _rep_(lists).c_str() );
@@ -1227,10 +1215,9 @@ T_sp cl_maplist(T_sp func_desig, List_sp lists) {
   return oCdr(result);
 }
 
-#define LOCK_cl_mapl 1
-#define DOCS_cl_mapl "See CLHS maplist"
 #define ARGS_cl_mapl "(op &rest lists)"
 #define DECL_cl_mapl ""
+#define DOCS_cl_mapl "See CLHS maplist"
 T_sp cl_mapl(T_sp top, List_sp lists) {
   _G();
   Function_sp op = coerce::functionDesignator(top);
@@ -1238,10 +1225,9 @@ T_sp cl_mapl(T_sp top, List_sp lists) {
   return oCar(lists);
 }
 
-#define LOCK_af_mapappend 1
-#define DOCS_af_mapappend "mapappend is like mapcar except that the results are appended together - see AMOP 280"
 #define ARGS_af_mapappend "(fun &rest cargs)"
 #define DECL_af_mapappend ""
+#define DOCS_af_mapappend "mapappend is like mapcar except that the results are appended together - see AMOP 280"
 T_mv af_mapappend(Function_sp fun, List_sp cargs) {
   _G();
   IMPLEMENT_MEF(BF("Fix me - I think I'm broken"));

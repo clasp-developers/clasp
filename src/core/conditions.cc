@@ -104,9 +104,9 @@ void Condition::setConditionObject(T_sp co) {
   this->_ConditionObject = co;
 }
 
-#define DOCS_af_makeCondition "make-condition while brcl is booting - replace this once "
 #define ARGS_af_makeCondition "(type &rest slot-initializations)"
 #define DECL_af_makeCondition ""
+#define DOCS_af_makeCondition "make-condition while brcl is booting - replace this once "
 T_sp af_makeCondition(T_sp type, List_sp slot_initializations) {
   _G();
   GC_ALLOCATE(CandoException_O, condition);

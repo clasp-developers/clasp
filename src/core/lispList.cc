@@ -275,10 +275,9 @@ T_sp cl_list(T_sp objects) {
   return objects;
 };
 
-#define DOCS_cl_listSTAR "list* see CLHS"
-#define LOCK_cl_listSTAR 0
 #define ARGS_cl_listSTAR "(&rest objects)"
 #define DECL_cl_listSTAR ""
+#define DOCS_cl_listSTAR "list* see CLHS"
 T_sp cl_listSTAR(T_sp tobjects) {
   _G();
   T_sp objects = tobjects;
@@ -296,10 +295,9 @@ T_sp cl_listSTAR(T_sp tobjects) {
   return result.cons();
 }
 
-#define DOCS_cl_last "last - see CLHS"
-#define LOCK_cl_last 1
 #define ARGS_cl_last "(list &optional (on 1))"
 #define DECL_cl_last ""
+#define DOCS_cl_last "last - see CLHS"
 T_sp cl_last(T_sp list, int n) {
   if (list.nilp())
     return list;
@@ -355,10 +353,9 @@ T_sp clasp_nconc(T_sp l, T_sp y) {
   TYPE_ERROR(l, cl::_sym_list);
 }
 
-#define DOCS_af_revappend "revappend"
-#define LOCK_af_revappend 1
 #define ARGS_af_revappend "(list tail)"
 #define DECL_af_revappend ""
+#define DOCS_af_revappend "revappend"
 T_sp af_revappend(List_sp list, T_sp tail) {
   _G();
   if (list.nilp())
@@ -366,10 +363,9 @@ T_sp af_revappend(List_sp list, T_sp tail) {
   return list.asCons()->revappend(tail);
 };
 
-#define DOCS_cl_nreconc "nreconc"
-#define LOCK_cl_nreconc 1
 #define ARGS_cl_nreconc "(list tail)"
 #define DECL_cl_nreconc ""
+#define DOCS_cl_nreconc "nreconc"
 T_sp cl_nreconc(List_sp list, T_sp tail) {
   _G();
   if (list.nilp())
