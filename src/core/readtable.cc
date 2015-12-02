@@ -314,22 +314,19 @@ T_mv af_dispatch_macro_character(T_sp sin, Character_sp ch) {
 };
 
 /*! See SACLA reader.lisp::read-ch */
-Character_sp read_ch(T_sp sin) {
-  _G();
-  Character_sp nc = gc::As<Character_sp>(cl_readChar(sin, _Nil<T_O>(), _Nil<T_O>(), _lisp->_true()));
+T_sp read_ch(T_sp sin) {
+  T_sp nc = cl_readChar(sin, _Nil<T_O>(), _Nil<T_O>(), _lisp->_true());
   return nc;
 }
 
 /*! See SACLA reader.lisp::read-ch-or-die */
-Character_sp read_ch_or_die(T_sp sin) {
-  _G();
-  Character_sp nc = gc::As<Character_sp>(cl_readChar(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+T_sp read_ch_or_die(T_sp sin) {
+  T_sp nc = cl_readChar(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   return nc;
 }
 
 /*! See SACLA reader.lisp::unread-ch */
 void unread_ch(T_sp sin, Character_sp c) {
-  _G();
   clasp_unread_char(clasp_as_char(c), sin);
 }
 
@@ -1077,7 +1074,7 @@ T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character
 #endif
 }
 
-Function_sp ReadTable_O::get_dispatch_macro_character(Character_sp disp_char, Character_sp sub_char) {
+T_sp ReadTable_O::get_dispatch_macro_character(Character_sp disp_char, Character_sp sub_char) {
   _OF();
   if (this->get_macro_character(disp_char) != _sym_dispatch_macro_character->symbolFunction()) {
     SIMPLE_ERROR(BF("%c is not a dispatch character") % _rep_(disp_char));
@@ -1085,7 +1082,7 @@ Function_sp ReadTable_O::get_dispatch_macro_character(Character_sp disp_char, Ch
   HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
   ASSERTF(dispatch_table.notnilp(), BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char));
   Character_sp upcase_sub_char = clasp_char_upcase(sub_char);
-  Function_sp func = gc::As<Function_sp>(dispatch_table->gethash(upcase_sub_char, _Nil<T_O>()));
+  T_sp func = dispatch_table->gethash(upcase_sub_char, _Nil<T_O>());
   return func;
 #if 0
 	HashTable_sp syntax_table = this->_Syntax;
