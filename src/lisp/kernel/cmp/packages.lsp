@@ -58,6 +58,7 @@
           compiler-message-file
           compiler-message-file-position
           create-run-time-execution-engine
+          safe-system
           dbg-set-current-debug-location-here
           irc-add
           irc-add-clause

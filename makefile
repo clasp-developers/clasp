@@ -37,9 +37,10 @@ export TOOLSET := $(or $(filter $(TOOLSET), clang-linux),\
 # Use $(call pathsearch,foo) instead of $(shell which foo)
 pathsearch = $(firstword $(wildcard $(addsuffix /$(strip $(1)),$(subst :, ,$(PATH)))))
 
+
 export CLASP_SBCL := $(or $(CLASP_SBCL),\
 			$(call pathsearch, sbcl),\
-			$(error Could not find sbcl.))
+			$(error Could not find sbcl - it needs to be installed an in your path.))
 
 export PYTHON2 := $(or $(PYTHON2),\
                        $(call pathsearch, python2.7),\
@@ -68,6 +69,7 @@ export LLVM_CONFIG ?= $(or $(call pathsearch, llvm-config),\
                            $(error Could not find llvm-config.))
 endif
 
+
 export GIT_COMMIT ?= $(shell git rev-parse --short HEAD || echo "unknown-commit")
 export CLASP_VERSION ?= $(shell git describe --always || echo "unknown-version")
 
@@ -78,6 +80,12 @@ export LLVM_BIN_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --bindir)
 # Not always the same as LLVM_BIN_DIR!
 export CLANG_BIN_DIR ?= $(if $(wildcard $(LLVM_BIN_DIR)/clang),$(LLVM_BIN_DIR),$(dir $(or $(call pathsearch, clang),\
                                         $(error Could not find clang.))))
+
+export CLASP_CLANG_PATH := $(or $(CLASP_CLANG_PATH),\
+			$(shell `which clang`),\
+			$(CLANG_BIN_DIR)/clang, \
+			$(error Could not find clang - it needs to be installed an in your path.))
+
 
 export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
 

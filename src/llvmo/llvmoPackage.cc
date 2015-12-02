@@ -93,7 +93,7 @@ namespace llvmo {
 #include <clasp/gctools/gc_interface.h>
 #undef NAMESPACE_llvmo
 
-namespace llvmo {
+CL_NAMESPACE namespace llvmo {
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
 
@@ -122,6 +122,7 @@ Str_sp af_mangleSymbolName(Str_sp name) {
   }
   return Str_O::create(sout.str());
 };
+
 
 #define ARGS_af_cxxDataStructuresInfo "()"
 #define DECL_af_cxxDataStructuresInfo ""
