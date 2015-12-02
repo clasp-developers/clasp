@@ -104,10 +104,9 @@ Str_sp cl_stringRightTrim(T_sp charbag, T_sp str) {
   return string_trim0(false, true, charbag, str);
 };
 
-#define DOCS_cl_string_upcase "string_upcase"
-#define LOCK_cl_string_upcase 1
 #define ARGS_cl_string_upcase "(arg)"
 #define DECL_cl_string_upcase ""
+#define DOCS_cl_string_upcase "string_upcase"
 Str_sp cl_string_upcase(T_sp arg) {
   _G();
   Str_sp str = coerce::stringDesignator(arg);
@@ -137,10 +136,9 @@ claspChar cl_char(T_sp ostr, int idx) {
   THROW_HARD_ERROR(BF("Should never reach here"));
 };
 
-#define DOCS_cl_string_downcase "string_downcase"
-#define LOCK_cl_string_downcase 1
 #define ARGS_cl_string_downcase "(arg)"
 #define DECL_cl_string_downcase ""
+#define DOCS_cl_string_downcase "string_downcase"
 Str_sp cl_string_downcase(T_sp arg) {
   _G();
   Str_sp str = coerce::stringDesignator(arg);
@@ -151,10 +149,9 @@ Str_sp cl_string_downcase(T_sp arg) {
   return (result);
 };
 
-#define DOCS_cl_nstring_upcase "string_upcase"
-#define LOCK_cl_nstring_upcase 1
 #define ARGS_cl_nstring_upcase "(arg)"
 #define DECL_cl_nstring_upcase ""
+#define DOCS_cl_nstring_upcase "string_upcase"
 Str_sp cl_nstring_upcase(T_sp arg) {
   _G();
   Str_sp result = coerce::stringDesignator(arg);
@@ -164,10 +161,9 @@ Str_sp cl_nstring_upcase(T_sp arg) {
   return (result);
 };
 
-#define DOCS_cl_nstring_downcase "string_downcase"
-#define LOCK_cl_nstring_downcase 1
 #define ARGS_cl_nstring_downcase "(arg)"
 #define DECL_cl_nstring_downcase ""
+#define DOCS_cl_nstring_downcase "string_downcase"
 Str_sp cl_nstring_downcase(T_sp arg) {
   _G();
   Str_sp result = coerce::stringDesignator(arg);
@@ -177,10 +173,9 @@ Str_sp cl_nstring_downcase(T_sp arg) {
   return (result);
 };
 
-#define DOCS_cl_string "string"
-#define LOCK_cl_string 1
 #define ARGS_cl_string "(arg)"
 #define DECL_cl_string ""
+#define DOCS_cl_string "string"
 Str_sp cl_string(T_sp arg) {
   _G();
   Str_sp result = coerce::stringDesignator(arg);
@@ -683,10 +678,9 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
 
 
 
-#define DOCS_cl_string_EQ_ "string_EQ_"
-#define LOCK_cl_string_EQ_ 1
 #define ARGS_cl_string_EQ_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_cl_string_EQ_ ""
+#define DOCS_cl_string_EQ_ "string_EQ_"
 T_sp cl_string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   _G();
   int istart1, iend1, istart2, iend2;
@@ -696,10 +690,9 @@ T_sp cl_string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixn
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_EQ_,istart1,iend1,istart2,iend2);
 }
 
-#define DOCS_cl_string_NE_ "string_NE_"
-#define LOCK_cl_string_NE_ 1
 #define ARGS_cl_string_NE_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_cl_string_NE_ ""
+#define DOCS_cl_string_NE_ "string_NE_"
 T_mv cl_string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   _G();
   int istart1, iend1, istart2, iend2;
@@ -709,10 +702,9 @@ T_mv cl_string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixn
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_NE_, istart1, iend1, istart2, iend2);
 }
 
-#define DOCS_cl_string_LT_ "string_LT_"
-#define LOCK_cl_string_LT_ 1
 #define ARGS_cl_string_LT_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_cl_string_LT_ ""
+#define DOCS_cl_string_LT_ "string_LT_"
 T_mv cl_string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   _G();
   int istart1, iend1, istart2, iend2;
@@ -722,10 +714,9 @@ T_mv cl_string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixn
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_LT_, istart1, iend1, istart2, iend2);
 }
 
-#define DOCS_cl_string_GT_ "string_GT_"
-#define LOCK_cl_string_GT_ 1
 #define ARGS_cl_string_GT_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_cl_string_GT_ ""
+#define DOCS_cl_string_GT_ "string_GT_"
 T_mv cl_string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   _G();
   int istart1, iend1, istart2, iend2;
@@ -735,10 +726,9 @@ T_mv cl_string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixn
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_GT_, istart1, iend1, istart2, iend2);
 }
 
-#define DOCS_cl_string_LE_ "string_LE_"
-#define LOCK_cl_string_LE_ 1
 #define ARGS_cl_string_LE_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_cl_string_LE_ ""
+#define DOCS_cl_string_LE_ "string_LE_"
 T_mv cl_string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   _G();
   int istart1, iend1, istart2, iend2;
@@ -748,10 +738,9 @@ T_mv cl_string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixn
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_LE_, istart1, iend1, istart2, iend2);
 }
 
-#define DOCS_cl_string_GE_ "string_GE_"
-#define LOCK_cl_string_GE_ 1
 #define ARGS_cl_string_GE_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_cl_string_GE_ ""
+#define DOCS_cl_string_GE_ "string_GE_"
 T_mv cl_string_GE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   _G();
   int istart1, iend1, istart2, iend2;
@@ -761,10 +750,9 @@ T_mv cl_string_GE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixn
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_GE_, istart1, iend1, istart2, iend2);
 }
 
-#define DOCS_cl_string_equal "string_equal"
-#define LOCK_cl_string_equal 1
 #define ARGS_cl_string_equal "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_cl_string_equal ""
+#define DOCS_cl_string_equal "string_equal"
 T_sp cl_string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   _G();
   int istart1, iend1, istart2, iend2;
@@ -774,10 +762,9 @@ T_sp cl_string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fi
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_equal, istart1, iend1, istart2, iend2);
 }
 
-#define DOCS_cl_string_not_equal "string_not_equal"
-#define LOCK_cl_string_not_equal 1
 #define ARGS_cl_string_not_equal "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_cl_string_not_equal ""
+#define DOCS_cl_string_not_equal "string_not_equal"
 T_mv cl_string_not_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   _G();
   int istart1, iend1, istart2, iend2;
@@ -786,10 +773,9 @@ T_mv cl_string_not_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_not_equal, istart1, iend1, istart2, iend2);
 }
-#define DOCS_cl_string_lessp "string_lessp"
-#define LOCK_cl_string_lessp 1
 #define ARGS_cl_string_lessp "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_cl_string_lessp ""
+#define DOCS_cl_string_lessp "string_lessp"
 T_mv cl_string_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   _G();
   int istart1, iend1, istart2, iend2;
@@ -798,10 +784,9 @@ T_mv cl_string_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fi
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_lessp, istart1, iend1, istart2, iend2);
 }
-#define DOCS_cl_string_greaterp "string_greaterp"
-#define LOCK_cl_string_greaterp 1
 #define ARGS_cl_string_greaterp "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_cl_string_greaterp ""
+#define DOCS_cl_string_greaterp "string_greaterp"
 T_mv cl_string_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   _G();
   int istart1, iend1, istart2, iend2;
@@ -810,10 +795,9 @@ T_mv cl_string_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1,
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_greaterp, istart1, iend1, istart2, iend2);
 }
-#define DOCS_cl_string_not_greaterp "string_not_greaterp"
-#define LOCK_cl_string_not_greaterp 1
 #define ARGS_cl_string_not_greaterp "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_cl_string_not_greaterp ""
+#define DOCS_cl_string_not_greaterp "string_not_greaterp"
 T_mv cl_string_not_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   _G();
   int istart1, iend1, istart2, iend2;
@@ -822,10 +806,9 @@ T_mv cl_string_not_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp e
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_not_greaterp, istart1, iend1, istart2, iend2);
 }
-#define DOCS_cl_string_not_lessp "string_not_lessp"
-#define LOCK_cl_string_not_lessp 1
 #define ARGS_cl_string_not_lessp "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_cl_string_not_lessp ""
+#define DOCS_cl_string_not_lessp "string_not_lessp"
 T_mv cl_string_not_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   _G();
   int istart1, iend1, istart2, iend2;

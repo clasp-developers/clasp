@@ -59,8 +59,6 @@ uint cl_length(T_sp arg) {
 #define ARGS_cl_elt "(sequence index)"
 #define DECL_cl_elt ""
 #define DOCS_cl_elt "elt"
-#define FILE_cl_elt __FILE__
-#define LINE_cl_elt __LINE__
 T_sp cl_elt(T_sp sequence, int index) {
   _G();
   if (sequence.nilp()) {
@@ -73,10 +71,9 @@ T_sp cl_elt(T_sp sequence, int index) {
   TYPE_ERROR(sequence, cl::_sym_sequence);
 };
 
-#define DOCS_af_make_sequence "make_sequence"
-#define LOCK_af_make_sequence 0
 #define ARGS_af_make_sequence "(type size &key (initial-element nil iesp))"
 #define DECL_af_make_sequence ""
+#define DOCS_af_make_sequence "make_sequence"
 T_mv af_make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element, T_sp iesp) {
   _G();
   IMPLEMENT_MEF(BF("make-sequence"));
@@ -98,10 +95,9 @@ T_mv af_make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element, T_sp iesp
 #endif
 };
 
-#define DOCS_cl_reverse "reverse"
-#define LOCK_cl_reverse 1
 #define ARGS_cl_reverse "(seq)"
 #define DECL_cl_reverse ""
+#define DOCS_cl_reverse "reverse"
 T_sp cl_reverse(T_sp seq) {
   _G();
   if (seq.nilp()) {
@@ -117,7 +113,6 @@ T_sp cl_reverse(T_sp seq) {
 #define ARGS_cl_nreverse "(seq)"
 #define DECL_cl_nreverse "(declare (locked))"
 #define DOCS_cl_nreverse "nreverse"
-#define LOCK_cl_nreverse 1
 T_sp cl_nreverse(T_sp seq) {
   _G();
   if (seq.nilp()) {

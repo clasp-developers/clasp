@@ -306,20 +306,18 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
   return macro_ll;
 }
 
-#define DOCS_af_process_macro_lambda_list "process_macro_lambda_list"
-#define LOCK_af_process_macro_lambda_list 1
 #define ARGS_af_process_macro_lambda_list "(lambda-list)"
 #define DECL_af_process_macro_lambda_list ""
+#define DOCS_af_process_macro_lambda_list "process_macro_lambda_list"
 T_sp af_process_macro_lambda_list(List_sp lambda_list) {
   _G();
   List_sp new_ll = LambdaListHandler_O::process_macro_lambda_list(lambda_list);
   return new_ll;
 }
 
-#define DOCS_af_process_single_dispatch_lambda_list "process_single_dispatch_lambda_list"
-#define LOCK_af_process_single_dispatch_lambda_list 1
 #define ARGS_af_process_single_dispatch_lambda_list "(lambda-list)"
 #define DECL_af_process_single_dispatch_lambda_list ""
+#define DOCS_af_process_single_dispatch_lambda_list "process_single_dispatch_lambda_list"
 T_mv af_process_single_dispatch_lambda_list(List_sp lambda_list) {
   _G();
   return LambdaListHandler_O::process_single_dispatch_lambda_list(lambda_list);

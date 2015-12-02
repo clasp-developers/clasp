@@ -47,9 +47,9 @@ THE SOFTWARE.
 
 namespace core {
 
-#define DOCS_af_ensureSingleDispatchGenericFunction "ensureSingleDispatchGenericFunction"
 #define ARGS_af_ensureSingleDispatchGenericFunction "(gfname llhandler)"
 #define DECL_af_ensureSingleDispatchGenericFunction ""
+#define DOCS_af_ensureSingleDispatchGenericFunction "ensureSingleDispatchGenericFunction"
 T_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler) {
   _G();
   T_sp gfn = Lisp_O::find_single_dispatch_generic_function(gfname, false);
@@ -72,10 +72,9 @@ T_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_
   return gfn;
 };
 
-#define DOCS_af_ensureSingleDispatchMethod "ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function"
-#define LOCK_af_ensureSingleDispatchMethod 0
 #define ARGS_af_ensureSingleDispatchMethod "(gfname receiver-class &key lambda-list-handler declares (docstring \"\") body )"
 #define DECL_af_ensureSingleDispatchMethod ""
+#define DOCS_af_ensureSingleDispatchMethod "ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function"
 void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body) {
   //	string docstr = docstring->get();
   if (!gfname->fboundp()) {

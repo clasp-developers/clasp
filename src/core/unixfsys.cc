@@ -343,6 +343,7 @@ Symbol_sp af_file_kind(T_sp filename, bool follow_links) {
 }
 
 #if defined(HAVE_LSTAT) && !defined(ECL_MS_WINDOWS_HOST)
+
 #define ARGS_core_readlink "(filename)"
 #define DECL_core_readlink ""
 #define DOCS_core_readlink "file_kind (values kind found) - if found but kind==nil then its a br"

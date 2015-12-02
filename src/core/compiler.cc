@@ -85,7 +85,7 @@ void core_help_booting() {
 #define ARGS_core_testTaggedCast "(pow2)"
 #define DECL_core_testTaggedCast ""
 #define DOCS_core_testTaggedCast "Evaluate a TaggedCast 2^pow2 times"
-__attribute__((optnone)) Fixnum_sp core_testTaggedCast(Fixnum_sp pow2) {
+Fixnum_sp core_testTaggedCast(Fixnum_sp pow2) __attribute__((optnone)) {
   Fixnum fpow2 = clasp_to_fixnum(pow2);
   Fixnum times = 1;
   times = times << fpow2;

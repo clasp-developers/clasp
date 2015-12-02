@@ -123,7 +123,6 @@ void safeRename(Path_sp src, Path_sp dest) {
   rename_file(src, dest);
 }
 
-#define LOCK_af_ensure_directories_exist 1
 #define ARGS_af_ensure_directories_exist "(pathspec)"
 #define DECL_af_ensure_directories_exist ""
 #define DOCS_af_ensure_directories_exist \

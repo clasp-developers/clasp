@@ -88,10 +88,9 @@ struct HashTableLocker {
 
 EXPOSE_CLASS(core, HashTable_O);
 
-#define LOCK_cl_make_hash_table 1
-#define DOCS_cl_make_hash_table "see CLHS"
 #define ARGS_cl_make_hash_table "(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0) weakness debug)"
 #define DECL_cl_make_hash_table ""
+#define DOCS_cl_make_hash_table "see CLHS"
 T_sp cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug) {
   SYMBOL_EXPORT_SC_(KeywordPkg, key);
   if (weakness.notnilp()) {
@@ -149,8 +148,6 @@ HashTable_sp HashTable_O::create(T_sp test) {
 #define ARGS_cl_maphash "(function_desig hash_table)"
 #define DECL_cl_maphash ""
 #define DOCS_cl_maphash "see CLHS"
-#define FILE_cl_maphash __FILE__
-#define LINE_cl_maphash __LINE__
 T_mv cl_maphash(T_sp function_desig, T_sp thash_table) {
   _G();
   //        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
@@ -857,7 +854,7 @@ string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
   if (start < 0 || start >= cl_length(this->_HashTable)) {
     SIMPLE_ERROR(BF("start must be [0,%d)") % cl_length(this->_HashTable));
   }
-  if (iend < start || iend >= cl_length(this->_HashTable)) {
+  if (iend < start || iend > cl_length(this->_HashTable)) {
     SIMPLE_ERROR(BF("end must be nil or [%d,%d)") % start % cl_length(this->_HashTable));
   }
   for (size_t it(start), itEnd(iend); it < itEnd; ++it) {
