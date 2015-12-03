@@ -415,7 +415,7 @@ T_mv af_sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
       return (Values(gc::As<Character_sp>(tch)));
     }
   }
-  return (Values0<T_O>());
+  return Values(_Nil<T_O>());//(Values0<T_O>());
 }
 
 #define ARGS_af_sharp_dot "(stream ch num)"
