@@ -139,13 +139,12 @@ LETTER:
   return result;
 }
 
-#define ARGS_af_nread "(sin &optional (eof-error-p t) eof-value)"
-#define DECL_af_nread ""
-#define DOCS_af_nread "nread"
-T_mv af_nread(T_sp sin, T_sp eof_error_p, T_sp eof_value) {
-  _G();
+#define ARGS_core_nread "(sin &optional (eof-error-p t) eof-value)"
+#define DECL_core_nread ""
+#define DOCS_core_nread "nread"
+T_mv core_nread(T_sp sin, T_sp eof_error_p, T_sp eof_value) {
   T_sp result = read_lisp_object(sin, eof_error_p.isTrue(), eof_value, false);
-  return (Values(result));
+  return Values(result);
 };
 
 string fix_exponent_char(const char *cur) {
@@ -702,14 +701,12 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
     }
   } else {
     increment_read_lisp_object_recursion_depth::reset();
-
     DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR,
                               HashTableEql_O::create(40, make_fixnum(4000), 0.8));
     scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_temp_tableSTAR,
                                     HashTableEql_O::create(40, make_fixnum(4000), 0.8));
     scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_repl_tableSTAR,
                                     HashTableEq_O::create(40, make_fixnum(4000), 0.8));
-
     result = read_lisp_object(sin, eofErrorP, eofValue, true);
   }
   if (result.nilp())
@@ -880,9 +877,7 @@ step10:
 }
 
 void exposeCore_lisp_reader() {
-  _G();
-  SYMBOL_SC_(CorePkg, nread);
-  Defun(nread);
+  CoreDefun(nread);
 
   // functions for reader
 }

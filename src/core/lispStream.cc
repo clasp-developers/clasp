@@ -6114,7 +6114,6 @@ END_OF_FILE:
 #define DECL_cl_read_from_string ""
 #define DOCS_cl_read_from_string "read_from_string"
 T_mv cl_read_from_string(Str_sp content, T_sp eof_error_p, T_sp eof_value, Fixnum_sp start, T_sp end, T_sp preserve_whitespace) {
-  _G();
   bool eofErrorP = eof_error_p.isTrue();
   int istart = clasp_to_int(start);
   int iend;
@@ -6122,11 +6121,6 @@ T_mv cl_read_from_string(Str_sp content, T_sp eof_error_p, T_sp eof_value, Fixnu
     iend = content->get().size();
   else
     iend = clasp_to_int(gc::As<Fixnum_sp>(end));
-  bool preserveWhitespace = preserve_whitespace.isTrue();
-  if (preserveWhitespace) {
-    printf("Implement preserve-whitespace\n");
-    IMPLEMENT_ME(); // handle this
-  }
   StringInputStream_sp sin = StringInputStream_O::make(content->get().substr(istart, iend - istart));
   if (iend - istart == 0) {
     if (eofErrorP) {
@@ -6137,11 +6131,12 @@ T_mv cl_read_from_string(Str_sp content, T_sp eof_error_p, T_sp eof_value, Fixnu
   }
   LOG(BF("Seeking to position: %d") % start);
   LOG(BF("Character at position[%d] is[%c/%d]") % sin->tell() % (char)sin->peek_char() % (int)sin->peek_char());
-#if 0
-	Reader_sp reader = Reader_O::create(sin,_lisp);
-	T_sp res = reader->read(false,_lisp->_eof());
-#endif
-  T_sp res = read_lisp_object(sin, false, _Unbound<T_O>(), false);
+  T_sp res;
+  if ( preserve_whitespace.isTrue() ) {
+     res = cl_read_preserving_whitespace(sin, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
+  } else {
+     res = cl_read(sin, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
+  }
   if (res.unboundp()) {
     if (eofErrorP) {
       ERROR_END_OF_FILE(sin);

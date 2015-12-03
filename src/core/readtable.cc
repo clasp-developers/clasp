@@ -196,7 +196,7 @@ T_mv af_reader_backquoted_expression(T_sp sin, Character_sp ch) {
   Fixnum_sp new_backquote_level = make_fixnum(unbox_fixnum(backquote_level) + 1);
   // DynamicScopeManager will save the dynamic value of the symbol and restore it in dtor
   DynamicScopeManager scope(_sym_STARbackquote_levelSTAR, new_backquote_level);
-  T_sp quoted_object = read_lisp_object(sin, true, _Nil<T_O>(), true);
+  T_sp quoted_object = cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   Cons_sp result = Cons_O::createList(_sym_backquote, quoted_object);
   //HERE_scCONS_CREATE_LIST2(_sym_backquote,quoted_object);
   if (_lisp->sourceDatabase().notnilp()) {
@@ -225,7 +225,7 @@ T_sp af_reader_comma_form(T_sp sin, Character_sp ch) {
     gc::As<Character_sp>(cl_readChar(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
   }
   SourcePosInfo_sp info = core_inputStreamSourcePosInfo(sin);
-  T_sp comma_object = read_lisp_object(sin, true, _Nil<T_O>(), true);
+  T_sp comma_object = cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   list << head << comma_object;
   lisp_registerSourcePosInfo(list.cons(), info);
   return (list.cons());
@@ -260,7 +260,7 @@ T_sp af_reader_quote(T_sp sin, Character_sp ch) {
   //	ql::source_code_list result(sin->lineNumber(),sin->column(),core_sourceFileInfo(sin));
   ql::list acc;
   SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(sin);
-  T_sp quoted_object = read_lisp_object(sin, true, _Nil<T_O>(), true);
+  T_sp quoted_object = cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   acc << cl::_sym_quote << quoted_object;
   T_sp result = acc.cons();
   lisp_registerSourcePosInfo(result, spi);
@@ -424,7 +424,7 @@ T_mv af_sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
 T_sp af_sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
   _G();
   SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(sin);
-  T_sp object = read_lisp_object(sin, true, _Nil<T_O>(), true);
+  T_sp object = cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     if (!cl::_sym_STARread_evalSTAR->symbolValue().isTrue()) {
       READER_ERROR(Str_O::create("Cannot evaluate the form #.~S"),
@@ -446,7 +446,7 @@ T_sp af_sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
 T_sp af_sharp_single_quote(T_sp sin, Character_sp ch, T_sp num) {
   _G();
   SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(sin);
-  T_sp quoted_object = read_lisp_object(sin, true, _Nil<T_O>(), true);
+  T_sp quoted_object = cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   //	ql::source_code_list result(sin->lineNumber(),sin->column(),core_sourceFileInfo(sin));
   ql::list result;
   result << cl::_sym_function << quoted_object;
@@ -495,7 +495,7 @@ T_mv af_sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
   ReadTable_sp rtbl = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
 
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    read_lisp_object(sin, true, _Nil<T_O>(), true);
+    cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
     return Values(_Nil<T_O>());
   }
   for (dimcount = 0;; dimcount++) {
@@ -563,7 +563,7 @@ T_mv af_sharp_colon(T_sp sin, Character_sp ch, T_sp num) {
 T_mv af_sharp_r(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> nradix) {
   _G();
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    T_sp object = read_lisp_object(sin, true, _Nil<T_O>(), true);
+    T_sp object = cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
     (void)object; // suppress warning
     return (Values(_Nil<T_O>()));
   } else if (nradix.nilp()) {
@@ -578,7 +578,7 @@ T_mv af_sharp_r(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> nradix) {
     {
       Fixnum_sp oradix = make_fixnum(iradix);
       DynamicScopeManager scope(cl::_sym_STARread_baseSTAR, oradix);
-      T_sp val = read_lisp_object(sin, true, _Nil<T_O>(), true);
+      T_sp val = cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
       if (!gc::IsA<Rational_sp>(val)) {
         SIMPLE_ERROR(BF("#%s (base %d) is not a rational: %s") % _rep_(ch) % iradix % _rep_(val));
       }
@@ -616,7 +616,7 @@ T_mv af_sharp_x(T_sp sin, Character_sp ch, T_sp num) {
 #define DOCS_af_sharp_c "sharp_c"
 T_mv af_sharp_c(T_sp sin, Character_sp ch, T_sp num) {
   _G();
-  T_sp olist = read_lisp_object(sin, true, _Nil<T_O>(), true);
+  T_sp olist = cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   List_sp list = olist;
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     int list_length = cl_length(list);
@@ -655,7 +655,7 @@ T_mv af_sharp_p(T_sp sin, Character_sp ch, T_sp num) {
   bool suppress = cl::_sym_STARread_suppressSTAR->symbolValue().isTrue();
   if (num.notnilp() && !suppress)
     extra_argument('P', sin, num);
-  T_sp d = read_lisp_object(sin, true, _Nil<T_O>(), true);
+  T_sp d = cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   if (suppress) {
     d = _Nil<T_O>();
   } else {
@@ -684,7 +684,7 @@ T_mv af_sharp_p(T_sp sin, Character_sp ch, T_sp num) {
 // 	    sharp_sharp_alist = Cons_O::create(Cons_O::create(num,sharpThis),sharp_sharp_alist,_lisp);
 // 	    _sym_STARsharp_sharp_alistSTAR->setf_symbolValue(sharp_sharp_alist);
 // 	}
-// 	T_sp object = read_lisp_object(sin,true,_Nil<T_O>(),true);
+// 	T_sp object = cl_read(sin,true,_Nil<T_O>(),true);
 // 	List_sp sharp_equal_alist = _sym_STARsharp_equal_alistSTAR->symbolValue();
 // 	if ( sharp_equal_alist->assoc(sharpThis,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).notnilp() )
 // 	{
@@ -757,7 +757,7 @@ T_sp read_feature_test(T_sp sin) {
   _G();
   // Read the feature test in the keyword package
   DynamicScopeManager dynamicScopeManager(cl::_sym_STARpackageSTAR, _lisp->keywordPackage());
-  T_sp feature = read_lisp_object(sin, true, _Nil<T_O>(), true);
+  T_sp feature = cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   return feature;
 }
 
@@ -770,17 +770,14 @@ T_mv af_sharp_plus(T_sp sin, Character_sp ch, T_sp num) {
   LOG(BF("feature[%s]") % _rep_(feat));
   if (T_sp(eval::funcall(_sym_reader_feature_p, feat)).isTrue()) {
     LOG(BF("The feature test passed - reading lisp object"));
-    T_sp obj = read_lisp_object(sin, true, _Nil<T_O>(), true);
+    T_sp obj = cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
     LOG(BF("Read the object[%s]") % _rep_(obj));
-    return (Values(obj));
+    return Values(obj);
   } else {
-    LOG(BF("The feature test failed - returning nil"));
-    {
-      _BLOCK_TRACEF(BF("Suppressing read for unsupported feature[%s]") % feat->__repr__());
-      DynamicScopeManager dynScopeManager(cl::_sym_STARread_suppressSTAR, _lisp->_true());
-      read_lisp_object(sin, true, _Nil<T_O>(), true);
-    }
-    return (Values0<T_O>());
+    _BLOCK_TRACEF(BF("Suppressing read for unsupported feature[%s]") % feat->__repr__());
+    DynamicScopeManager dynScopeManager(cl::_sym_STARread_suppressSTAR, _lisp->_true());
+    cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+    return Values0<T_O>();
   }
 }; // af_sharp_plus
 
@@ -788,19 +785,18 @@ T_mv af_sharp_plus(T_sp sin, Character_sp ch, T_sp num) {
 #define DECL_af_sharp_minus ""
 #define DOCS_af_sharp_minus "sharp_minus"
 T_mv af_sharp_minus(T_sp sin, Character_sp ch, T_sp num) {
-  _G();
   T_sp feat = read_feature_test(sin);
   LOG(BF("feature[%s]") % _rep_(feat));
   if (!T_sp(eval::funcall(_sym_reader_feature_p, feat)).isTrue()) {
     LOG(BF("The feature test passed - reading lisp object"));
-    T_sp obj = read_lisp_object(sin, true, _Nil<T_O>(), true);
+    T_sp obj = cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
     LOG(BF("Read the object[%s]") % _rep_(obj));
-    return (Values(obj));
+    return Values(obj);
   } else {
     LOG(BF("The feature test failed - returning nil"));
     DynamicScopeManager dynScopeManager(cl::_sym_STARread_suppressSTAR, _lisp->_true());
-    read_lisp_object(sin, true, _Nil<T_O>(), true);
-    return (Values0<T_O>());
+    cl_read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+    return Values0<T_O>();
   }
 }; // af_sharp_minus
 

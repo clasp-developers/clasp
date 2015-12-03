@@ -87,7 +87,7 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat) {
     DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
     //    printf("%s:%d  Pushing stream source pos for strm@%p   tagged-ptr: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
     innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, core_inputStreamSourcePosInfo(strm));
-    T_sp x = read_lisp_object(strm, false, _Unbound<T_O>(), false);
+    T_sp x = cl_read(strm, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
     if (x.unboundp())
       break;
     _sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core_walkToFindSourcePosInfo(x, _sym_STARcurrentSourcePosInfoSTAR->symbolValue()));

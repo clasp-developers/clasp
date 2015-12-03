@@ -1280,7 +1280,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
       }
       DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
       innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, core_inputStreamSourcePosInfo(stream));
-      T_sp expression = read_lisp_object(stream, false, _Unbound<T_O>(), false);
+      T_sp expression = cl_read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
       if (expression.unboundp())
         break;
       _sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core_walkToFindSourcePosInfo(expression, _sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
@@ -1298,7 +1298,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
       if (af_keywordP(expression)) {
         ql::list tplCmd;
         tplCmd << expression;
-        while (T_sp exp = read_lisp_object(stream, false, _Unbound<T_O>(), false)) {
+        while (T_sp exp = cl_read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>())) {
           if (exp.unboundp())
             break;
           tplCmd << exp;
