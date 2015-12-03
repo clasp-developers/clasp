@@ -45,6 +45,7 @@ extern void af_ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaL
 extern T_mv af_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p);
 
 T_sp cl_read(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
+T_sp cl_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
 
 extern void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body);
 

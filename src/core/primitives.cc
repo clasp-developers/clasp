@@ -932,19 +932,30 @@ T_mv af_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp
 #define DECL_cl_read ""
 #define DOCS_cl_read "read an object from a stream - see CLHS"
 T_sp cl_read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
-  _G();
+  bool preserve_whitespace = true;
+  if ( recursive_p.isTrue() ) {
+    preserve_whitespace = _sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue();
+  } else {
+    preserve_whitespace = false;
+  }
+  DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR, _lisp->_boolean(preserve_whitespace));
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
-  return (read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.notnilp()));
+  return read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.notnilp());
 }
 
 #define ARGS_cl_read_preserving_whitespace "(&optional input-stream-designator (eof-error-p t) eof-value recursive-p)"
 #define DECL_cl_read_preserving_whitespace ""
 #define DOCS_cl_read_preserving_whitespace "read an object from a stream while preserving whitespace - see CLHS"
 T_sp cl_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
-  _G();
-  DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR, _lisp->_true());
+  bool preserve_whitespace = true;
+  if ( recursive_p.isTrue() ) {
+    preserve_whitespace = _sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue();
+  } else {
+    preserve_whitespace = true;
+  }
+  DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR, _lisp->_boolean(preserve_whitespace));
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
-  return (read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.isTrue()));
+  return read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.isTrue());
 }
 
 /* -------------------------------------------------------- */
