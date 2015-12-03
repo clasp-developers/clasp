@@ -29,12 +29,8 @@ feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # u
 
 feature.feature program : clasp cando
                 : symmetric composite propagated link-incompatible ;
-#feature.compose <program>clasp : <define>PROGRAM_CLASP <define>APPLICATION_CONFIG="\\\"<clasp/main/application.config>\\\"" ;
-#feature.compose <program>cando : <define>PROGRAM_CANDO <define>APPLICATION_CONFIG="\\\"<projects/cando/include/cando/main/application.config>\\\"" ;
 feature.compose <program>clasp : <define>PROGRAM_CLASP <define>APPLICATION_CONFIG="\"<clasp/main/application.config>\"" ;
 feature.compose <program>cando : <define>PROGRAM_CANDO <define>APPLICATION_CONFIG="\"<projects/cando/include/cando/main/application.config>\"" ;
-#feature.compose <program>clasp : <define>PROGRAM_CLASP <define>APPLICATION_CONFIG="<clasp/main/application.config>" ;
-#feature.compose <program>cando : <define>PROGRAM_CANDO <define>APPLICATION_CONFIG="<projects/cando/include/cando/main/application.config>" ;
 feature.compose <program>other : <define>PROGRAM_OTHER ;   #  Define APPLICATION_CONFIG yourself
 
 GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
@@ -286,7 +282,8 @@ use-project internals/clbind : src/clbind ;
 use-project internals/serveEvent : src/serveEvent ;
 use-project internals/lisp : src/lisp ;
 use-project internals/main : src/main ;
-
+use-project internals/include/clasp : include/clasp ;
+use-project internals/src : src ;
 
 
 

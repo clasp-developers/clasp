@@ -1,6 +1,6 @@
 
 
-project internals : requirements
+project internals/src : requirements
 	: usage-requirements
 ;
 
