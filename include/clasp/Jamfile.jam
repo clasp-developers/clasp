@@ -1,0 +1,11 @@
+
+
+project includes : requirements
+	: usage-requirements
+;
+
+
+install includes : [ glob-tree *.h : .svn old originals beforeTransform unit_tests HelloWorld tw.l ]
+	       : <location>$(APPRES-INCLUDE)
+	       <install-source-root>. ;
+
