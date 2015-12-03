@@ -1,4 +1,4 @@
-(in-package :cmp)
+(in-package :ext)
 ;;; Written by Shinmera 2015
 ;;; adapted to clasp by Christian Schafmeister 2015
 
@@ -17,14 +17,13 @@
                (write-char char out))
         finally (return (nreverse parts))))
 
-(princ #+windows #\\ #-windows #\/  )
 (defun ensure-directory-namestring (namestring)
   (if (char= (char namestring (1- (length namestring)))
              #+windows #\\ #-windows #\/ )
       namestring
       (format NIL "~a/" namestring)))
 
-(defun external-path-paths (&optional (var (getenv "PATH")))
+(defun external-path-paths (&optional (var (ext:getenv "PATH")))
   (mapcar
    (lambda (namestring)
      (pathname (ensure-directory-namestring namestring)))
@@ -36,19 +35,21 @@
                        "clang" "clang++"))
 
 (defun discover-clang (&key (search-paths (external-path-paths)) (names *clang-names*))
-  (or (getenv "CLASP_CLANG_PATH")
+  (or (ext:getenv "CLASP_CLANG_PATH")
       (dolist (path search-paths)
-        (dolist (file name names)
-          (when (probe-file (make-pathname :name name :type NIL :defaults path))
-            (return-from discover-clang file))))))
+        (dolist (n names)
+          (let ((file (probe-file (make-pathname :name n :type NIL :defaults path))))
+            (when file (return-from discover-clang file)))))))
+
+(defparameter *clang-bin* (discover-clang))
 
 (define-condition clang-not-found-error (error)
   ((tried-path :initarg :path :initform NIL :accessor tried-path))
   (:report (lambda (c s) (format s "Could not find clang~@[ on path ~s~]."
                                  (tried-path c)))))
 
-(defparameter *clang-bin* (discover-clang))
-(defun run-clang (args &key (clang *clang-bin*))
+(defun run-clang (args &key (clang core:*clang-bin*))
+  "Run the discovered clang compiler on the arguments. This replaces a simpler version of run-clang."
   (labels ((read-path ()
              (list (pathname (read *query-io*))))
            (clang-usable-p ()
@@ -69,4 +70,4 @@
                  (setf *clang-bin* value clang value)
                  NIL))))
     (loop until (clang-usable-p)))
-  (ext:run-clang args :clang clang))
+  (cmp:safe-system (list* (namestring clang) args)))
