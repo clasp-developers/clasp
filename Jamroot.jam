@@ -262,6 +262,8 @@ path-constant APPRES-LIB-COMMON : $(APPRES-LIB)/common ;
 path-constant APPRES-LIB-COMMON-LIB : $(APPRES-LIB-COMMON)/lib ;
 path-constant APPRES-LIB-COMMON-INCLUDE : $(APPRES-LIB-COMMON)/include ;
 path-constant APPRES-LISP : $(APPRES)/lisp ;
+path-constant APPRES-SOURCE : $(APPRES)/src ;
+path-constant APPRES-INCLUDE : $(APPRES)/include ;
 path-constant APPRES-CANDO-LISP : $(APPRES)/cando/lisp ;
 path-constant APPBIN : $(APPTOP)/bin ;
 path-constant APPBIN-DARWIN : $(APPTOP)/MacOS ;

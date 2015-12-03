@@ -486,11 +486,29 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     run_quick_tests();
 
     // setup the SYS logical-pathname-translations
-    Cons_sp pts = Cons_O::createList(
-        Cons_O::createList(Str_O::create("sys:**;*.*"), bundle->getSysPathname())
+    {
+      Cons_sp pts = Cons_O::createList(
+                                       Cons_O::createList(Str_O::create("sys:**;*.*"), bundle->getSysPathname())
         /* ,  more here */
-        );
-    af_pathnameTranslations(Str_O::create("sys"), _lisp->_true(), pts);
+                                       );
+      af_pathnameTranslations(Str_O::create("sys"), _lisp->_true(), pts);
+    }
+
+    {
+      Cons_sp pts = Cons_O::createList(
+                                       Cons_O::createList(Str_O::create("source:**;*.*"), bundle->getSourcePathname())
+        /* ,  more here */
+                                       );
+      af_pathnameTranslations(Str_O::create("source"), _lisp->_true(), pts);
+    }
+
+    {
+      Cons_sp pts = Cons_O::createList(
+                                       Cons_O::createList(Str_O::create("include:**;*.*"), bundle->getIncludePathname())
+        /* ,  more here */
+                                       );
+      af_pathnameTranslations(Str_O::create("include"), _lisp->_true(), pts);
+    }
 
     // setup the TMP logical-pathname-translations
     Cons_sp entryTmp = Cons_O::createList(Str_O::create("tmp:**;*.*"),

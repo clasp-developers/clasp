@@ -1,5 +1,5 @@
 project internals/lisp ;
 
 install bundle : [ glob-tree *.l *.lsp *.lisp *.sh : .svn old originals beforeTransform unit_tests HelloWorld tw.l ]
-	       : <location>$(APPRES-LISP)
+	       : <location>$(APPRES-SOURCE)
 	       <install-source-root>. ;

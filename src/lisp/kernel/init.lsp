@@ -772,7 +772,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     :clos
     #P"kernel/lsp/ffi"
     #P"modules/sockets/sockets.lisp"
-;;    asdf/build/asdf
+    ;;    asdf/build/asdf
+    #P"kernel/cmp/external-clang"
     :front
     #P"kernel/lsp/top"
     :all
