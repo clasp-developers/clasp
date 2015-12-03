@@ -289,7 +289,6 @@ use-project internals/main : src/main ;
 
 
 
-
 ## If using cando
 #use-project cando : cando ;
 #use-project cando/addon : cando/addon ;
