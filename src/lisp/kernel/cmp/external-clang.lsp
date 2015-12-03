@@ -34,11 +34,14 @@
                        (format NIL "clang++-~a" (llvm-short-version))
                        "clang" "clang++"))
 
-(defun discover-clang (&key (search-paths (external-path-paths)) (names *clang-names*))
+(defun discover-clang (&key debug (search-paths (external-path-paths)) (names *clang-names*))
   (or (ext:getenv "CLASP_CLANG_PATH")
       (dolist (path search-paths)
         (dolist (n names)
-          (let ((file (probe-file (make-pathname :name n :type NIL :defaults path))))
+          (let ((cp (make-pathname :name n :type nil :defaults path)))
+          (when debug
+            (format t "Searching for clang at ~a~%" cp))
+          (let ((file (probe-file cp)))
             (when file (return-from discover-clang file)))))))
 
 (defparameter *clang-bin* (discover-clang))
