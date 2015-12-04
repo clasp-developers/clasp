@@ -35,6 +35,10 @@
 #export LLVM_CONFIG_DEBUG = $(LLVM_CONFIG)
 #export LLVM_CONFIG_RELEASE = $(LLVM_CONFIG)
 
+## The path to the clang executable
+#export CLASP_CLANG_PATH
+#export CLASP_CLANGXX_PATH
+
 ## Which OS to build for -- Darwin or Linux
 #export TARGET_OS
 
