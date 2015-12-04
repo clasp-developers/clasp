@@ -21,7 +21,6 @@ export LINK := $(or $(filter $(LINK), shared),\
                     $(filter $(LINK), static),\
                     $(error Invalid LINK: $(LINK)))
 
-
 export VARIANT ?= release
 export VARIANT := $(or $(filter $(VARIANT), debug),\
                        $(filter $(VARIANT), release),\
@@ -69,26 +68,32 @@ export LLVM_CONFIG ?= $(or $(call pathsearch, llvm-config),\
                            $(error Could not find llvm-config.))
 endif
 
-
 export GIT_COMMIT ?= $(shell git rev-parse --short HEAD || echo "unknown-commit")
 export CLASP_VERSION ?= $(shell git describe --always || echo "unknown-version")
 
 export LLVM_CONFIG_RELEASE ?= $(LLVM_CONFIG)
 export LLVM_CONFIG_DEBUG ?= $(LLVM_CONFIG)
-
 export LLVM_BIN_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --bindir)
 # Not always the same as LLVM_BIN_DIR!
-export CLANG_BIN_DIR ?= $(if $(wildcard $(LLVM_BIN_DIR)/clang),$(LLVM_BIN_DIR),$(dir $(or $(call pathsearch, clang),\
-                                        $(error Could not find clang.))))
 
+export LLVM_VERSION := $(shell $(LLVM_CONFIG) --version)
+export LLVM_MAJOR_MINOR_VERSION := $(shell echo $(LLVM_VERSION) | sed 's/^\([0-9]*\)[.]\([0-9]*\)[.]\([0-9]*\)/\1.\2/')
+#$(info llvm-version is $(LLVM_VERSION))
+#$(info llvm-major-minor-version is $(LLVM_MAJOR_MINOR_VERSION))
 export CLASP_CLANG_PATH := $(or $(CLASP_CLANG_PATH),\
-			$(shell `which clang`),\
-			$(CLANG_BIN_DIR)/clang, \
+			$(wildcard $(LLVM_BIN_DIR)/clang),\
+			$(wildcard $(LLVM_BIN_DIR)/clang-$(LLVM_MAJOR_MINOR_VERSION)),\
+			$(call pathsearch, clang),\
+			$(call pathsearch, clang-$(LLVM_MAJOR_MINOR_VERSION)),\
+			$(error Could not find clang - it needs to be installed an in your path.))
+export CLASP_CLANGXX_PATH := $(or $(CLASP_CLANGXX_PATH),\
+			$(wildcard $(LLVM_BIN_DIR)/clang++),\
+			$(wildcard $(LLVM_BIN_DIR)/clang++-$(LLVM_MAJOR_MINOR_VERSION)),\
+			$(call pathsearch, clang++),\
+			$(call pathsearch, clang++-$(LLVM_MAJOR_MINOR_VERSION)),\
 			$(error Could not find clang - it needs to be installed an in your path.))
 
-
 export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
-
 export LIBATOMIC_OPS_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/libatomic_ops
 export BOEHM_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/bdwgc
 export BUILD ?= $(CLASP_HOME)/src/common/build
@@ -111,7 +116,6 @@ export CLASP_RELEASE_CXXFLAGS += -I$(shell $(LLVM_CONFIG_RELEASE) --includedir)
 export CLASP_RELEASE_LINKFLAGS += -L$(CLASP_RELEASE_LLVM_LIB_DIR)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --libs)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --system-libs)
-
 ifneq ($(EXTERNALS_CLASP_DIR),)
   export CLASP_DEBUG_CXXFLAGS += -I$(EXTERNALS_CLASP_DIR)/build/common/include
   export CLASP_DEBUG_LINKFLAGS += -L$(EXTERNALS_CLASP_DIR)/build/common/lib -lgmp -lgmpxx -lreadline -lexpat
@@ -129,8 +133,8 @@ ifeq ($(TARGET_OS),Darwin)
 endif
 
 ifeq ($(TARGET_OS),Linux)
-  export BOEHM_CC = $(CLANG_BIN_DIR)/clang
-  export BOEHM_CXX = $(CLANG_BIN_DIR)/clang++
+  export BOEHM_CC = $(CLASP_CLANG_PATH)
+  export BOEHM_CXX = $(CLASP_CLANGXX_PATH)
 endif
 
 include_flags := $(foreach dir,$(INCLUDE_DIRS),$(and $(wildcard $(dir)),-I$(dir)))
@@ -182,6 +186,9 @@ all:
 	make -C src/main cclasp-boehm-addons
 	make executable-symlinks
 	echo Clasp is now built
+
+lisp-source:
+	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
 
 mps-build:
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install )
@@ -391,7 +398,8 @@ print-config:
 	$(call varprint, LLVM_CONFIG_DEBUG)
 	$(call varprint, LLVM_CONFIG_RELEASE)
 	$(call varprint, LLVM_BIN_DIR)
-	$(call varprint, CLANG_BIN_DIR)
+	$(call varprint, CLASP_CLANG_PATH)
+	$(call varprint, CLASP_CLANGXX_PATH)
 	$(call varprint, GIT_COMMIT)
 	$(call varprint, CLASP_VERSION)
 	$(call varprint, CLASP_INTERNAL_BUILD_TARGET_DIR)
