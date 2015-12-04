@@ -169,8 +169,8 @@ all:
 	make asdf
 	make boost_build
 	make boehm
-	(cd src; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm sources )
-	(cd include/clasp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm includes )
+	install -d build/clasp/Contents/Resources
+	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/$(VARIANT) gc=boehm $(VARIANT) clasp_install )
 	make -C src/main min-boehm

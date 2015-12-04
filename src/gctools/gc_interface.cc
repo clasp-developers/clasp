@@ -99,6 +99,7 @@ typedef bool _Bool;
 #include <clasp/core/funcallableStandardClass.h>
 #include <clasp/core/structureClass.h>
 //#include "core/symbolVector.h"
+#include <clasp/core/designators.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/hashTableEql.h>
@@ -203,10 +204,11 @@ void initialize_functions()
 
 
 struct SourceInfo {
-  const char* _Package_name;
-  const char* _Symbol_name;
+  const char* _PackageName;
+  const char* _SymbolName;
   const char* _File;
-  int _Line_number;
+  size_t _FilePos;
+  size_t _LineNumber;
   const char* _Documentation;
 };
 
@@ -216,19 +218,20 @@ SourceInfo global_source_info[] = {
 #include SOURCE_INFO_INC_H
 #undef SOURCE_INFO
 #endif
-    {NULL,NULL,NULL,0,NULL}
+    {NULL,NULL,NULL,0,0,NULL}
 };
 
 void initialize_source_info(core::T_sp documentation) {
   core::HashTableEql_sp ht = gc::As<core::HashTableEql_sp>(documentation);
   for ( int i=0; i<(sizeof(global_source_info)/sizeof(SourceInfo)-1); ++i ) {
-    std::string lispified = core::lispify_symbol_name(global_source_info[i]._Symbol_name);
+    std::string lispified = core::lispify_symbol_name(global_source_info[i]._SymbolName);
     core::Symbol_sp sym = core::lisp_intern(lispified,
-                                            global_source_info[i]._Package_name);
-    core::Cons_sp docs =
-      core::Cons_O::createList(core::Str_O::create(global_source_info[i]._File),
-                               core::clasp_make_fixnum(global_source_info[i]._Line_number),
-                               core::Str_O::create(global_source_info[i]._Documentation));
+                                            global_source_info[i]._PackageName);
+    core::Function_sp func = core::coerce::functionDesignator(sym);
+    core::Str_sp sourceFile = core::Str_O::create(global_source_info[i]._File);
+    func->closure->setSourcePosInfo(sourceFile, global_source_info[i]._FilePos,
+                                    global_source_info[i]._LineNumber, 0);
+    core::Str_sp docs = core::Str_O::create(global_source_info[i]._Documentation);
     ht->setf_gethash(sym,docs);
   }
 };

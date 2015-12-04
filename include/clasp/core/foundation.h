@@ -1163,6 +1163,7 @@ public:
   virtual List_sp declares() const;
   virtual T_sp cleavir_ast() const;
   virtual void setf_cleavir_ast(T_sp ast);
+  virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
 };
 };
 #include <clasp/core/exceptions.h>
@@ -1205,7 +1206,7 @@ public:
   Symbol_sp getKind() const { return this->kind; };
   bool macroP() const;
   T_sp sourcePosInfo() const; // { return this->_SourcePosInfo; };
-  T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
+  virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
   virtual int sourceFileInfoHandle() const;
   virtual size_t filePos() const;
   virtual int lineNumber() const;

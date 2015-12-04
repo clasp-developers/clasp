@@ -143,8 +143,15 @@ T_sp cl_mapc(T_sp op, List_sp lists);
 T_sp cl_mapcar(T_sp op, List_sp lists);
 };
 
-namespace core {
+CL_NAMESPACE namespace core {
 
+  LAMBDA(x y);
+  DECLARE();
+  DOCSTRING(R"doc(add two numbers)doc");
+  inline CL_DEFUN int core_test_add(int x, int y) {
+    return x + y;
+  }
+  
 /*! Return the SourceFileInfo for the obj - if obj is nil then return 
       one for anonymous */
 

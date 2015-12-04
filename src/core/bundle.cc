@@ -201,7 +201,7 @@ void Bundle::findSubDirectories(boost_filesystem::path rootDir) {
         this->_DatabasesDir = dirs->path();
       } else if (leaf == "lib" && (this->_LibDir.empty() || (dirsSize < this->_LibDir.string().size()))) {
         this->_LibDir = dirs->path();
-      } else if (leaf == "src" && (this->_SourceDir.empty() || (dirsSize < this->_SourceDir.string().size()))) {
+      } else if (leaf == "clasp-src" && (this->_SourceDir.empty() || (dirsSize < this->_SourceDir.string().size()))) {
         this->_SourceDir = dirs->path();
       } else if (leaf == "include" && (this->_IncludeDir.empty() || (dirsSize < this->_IncludeDir.string().size()))) {
         this->_IncludeDir = dirs->path();

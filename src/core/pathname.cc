@@ -1304,10 +1304,10 @@ OUTPUT:
   return Values(output, start);
 };
 
-#define ARGS_af_makePathname "(&key (host nil hostp) (device nil devicep) (directory nil directoryp) (name nil namep) (type nil typep) (version nil versionp) ((:case scase) :local) defaults)"
-#define DECL_af_makePathname ""
-#define DOCS_af_makePathname "makePathname"
-Pathname_sp af_makePathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name, bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp odefaults) {
+#define ARGS_cl_make_pathname "(&key (host nil hostp) (device nil devicep) (directory nil directoryp) (name nil namep) (type nil typep) (version nil versionp) ((:case scase) :local) defaults)"
+#define DECL_cl_make_pathname ""
+#define DOCS_cl_make_pathname "makePathname"
+Pathname_sp cl_make_pathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name, bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp odefaults) {
   _G();
   Pathname_sp x;
   Pathname_sp defaults;
@@ -2034,8 +2034,8 @@ void initialize_pathname() {
   Defun(mergePathnames);
   SYMBOL_EXPORT_SC_(ClPkg, wildPathnameP);
   Defun(wildPathnameP);
-  SYMBOL_EXPORT_SC_(ClPkg, makePathname);
-  Defun(makePathname);
+  SYMBOL_EXPORT_SC_(ClPkg, make_pathname);
+  ClDefun(make_pathname);
   SYMBOL_EXPORT_SC_(ClPkg, pathnameHost);
   Defun(pathnameHost);
   SYMBOL_EXPORT_SC_(ClPkg, pathnameDevice);

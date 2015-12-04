@@ -145,6 +145,9 @@ extern "C" char *readline(const char *prompt);
 extern "C" void add_history(char *line);
 #endif
 
+/*! A function that creates the source-main: host */
+extern void create_source_main_host();
+
 namespace core {
 
 __thread ThreadInfo *threadLocalInfoPtr;
@@ -494,22 +497,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       af_pathnameTranslations(Str_O::create("sys"), _lisp->_true(), pts);
     }
 
-    {
-      Cons_sp pts = Cons_O::createList(
-                                       Cons_O::createList(Str_O::create("source:**;*.*"), bundle->getSourcePathname())
-        /* ,  more here */
-                                       );
-      af_pathnameTranslations(Str_O::create("source"), _lisp->_true(), pts);
-    }
-
-    {
-      Cons_sp pts = Cons_O::createList(
-                                       Cons_O::createList(Str_O::create("include:**;*.*"), bundle->getIncludePathname())
-        /* ,  more here */
-                                       );
-      af_pathnameTranslations(Str_O::create("include"), _lisp->_true(), pts);
-    }
-
     // setup the TMP logical-pathname-translations
     Cons_sp entryTmp = Cons_O::createList(Str_O::create("tmp:**;*.*"),
                                           cl_pathname(Str_O::create("/tmp/**/*.*")));
@@ -593,6 +580,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
           Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-mps;**;*.*"))));
       af_pathnameTranslations(Str_O::create("cclasp-mps"), _lisp->_true(), p);
     }
+    /* Call the function defined in main.cc that creates the source-main: host */
+    create_source_main_host();
   }
   //
   //

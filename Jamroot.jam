@@ -286,7 +286,6 @@ use-project internals/include/clasp : include/clasp ;
 use-project internals/src : src ;
 
 
-
 ## If using cando
 #use-project cando : cando ;
 #use-project cando/addon : cando/addon ;

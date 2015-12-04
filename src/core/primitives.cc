@@ -1384,7 +1384,7 @@ Stream_mv af_open(T_sp filespec_desig, Symbol_sp direction, T_sp element_type, T
       {
         LOG(BF("supersede"));
 		// First write output to a temporary file and then rename it to the original on close
-        Pathname_sp temporaryFileSpec = af_makePathname(_Nil<T_O>(), // host
+        Pathname_sp temporaryFileSpec = cl_make_pathname(_Nil<T_O>(), // host
                                                         false, // hostp
                                                         _Nil<T_O>(), // device
                                                         false, // devicep

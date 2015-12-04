@@ -274,6 +274,11 @@ T_sp Closure::cleavir_ast() const {
   SIMPLE_ERROR(BF("Subclass of Closure must support cleavir_ast"));
 }
 
+T_sp Closure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column)
+{
+  SIMPLE_ERROR(BF("Subclass of Closure must support this method"));
+}
+
 void Closure::setf_cleavir_ast(T_sp ast) {
   SIMPLE_ERROR(BF("Subclass of Closure must support setf_cleavir_ast"));
 }

@@ -39,10 +39,10 @@
       (dolist (path search-paths)
         (dolist (n names)
           (let ((cp (make-pathname :name n :type nil :defaults path)))
-          (when debug
-            (format t "Searching for clang at ~a~%" cp))
-          (let ((file (probe-file cp)))
-            (when file (return-from discover-clang file)))))))
+            (when debug
+              (format t "Searching for clang at ~a~%" cp))
+            (let ((file (probe-file cp)))
+              (when file (return-from discover-clang file))))))))
 
 (defparameter *clang-bin* (discover-clang))
 

@@ -359,18 +359,33 @@ the corresponding VAR.  Returns NIL."
   (core:function-name x))
 
 (defun compiled-function-file (x)
-  (multiple-value-bind (sfi pos)
-      (core:function-source-pos x)
-    (let* ((source-file (core:source-file-info-source-debug-namestring sfi)))
-      (if source-file
-          (let* ((source-pathname (pathname source-file))
-                 (source-directory (pathname-directory source-pathname))
-                 (pn (if (eq (car source-directory) :relative)
-                         (merge-pathnames source-pathname (translate-logical-pathname "SYS:"))
-                         source-pathname))
-                 (filepos (+ (core:source-file-info-source-debug-offset sfi) pos)))
-            (values pn filepos))
-          (values nil 0)))))
+  (block top
+    (multiple-value-bind (sfi pos)
+	(core:function-source-pos x)
+      (let* ((source-file (core:source-file-info-source-debug-namestring sfi)))
+	(when source-file
+	  (let* ((src-pathname (pathname source-file))
+		 (src-directory (pathname-directory src-pathname))
+		 (src-name (pathname-name src-pathname))
+		 (src-type (pathname-type src-pathname))
+		 (filepos (+ (core:source-file-info-source-debug-offset sfi) pos)))
+	    (cond
+              ((or (string= src-type "lsp")
+                   (string= src-type "lisp"))
+               (let* ((pn (if (eq (car src-directory) :relative)
+                              (merge-pathnames src-pathname (translate-logical-pathname "SYS:"))
+                              src-pathname)))
+                 (return-from top (values pn filepos))))
+              ((or (string= src-type "cc")
+                   (string= src-type "cpp")
+                   (string= src-type "h")
+                   (string= src-type "hpp"))
+               (let ((absolute-dir (merge-pathnames src-pathname
+                                                    (translate-logical-pathname "source-main:"))))
+                 (return-from top (values absolute-dir filepos))))
+              (t (error "add support for compiled-function-file for function with source file ~a" src-pathname)))))))
+    (values nil 0)))
+
 (export '(compiled-function-name compiled-function-file))
 
 (defun warn-or-ignore (x &rest args)

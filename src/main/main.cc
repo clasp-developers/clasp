@@ -52,6 +52,7 @@ THE SOFTWARE.
 #include <clasp/sockets/socketsPackage.h>
 #include <clasp/serveEvent/serveEventPackage.h>
 #include <clasp/asttooling/asttoolingPackage.h>
+#include <clasp/core/pathname.h>
 #ifdef USE_MPI
 #include <clasp/mpip/mpiPackage.h>
 #include <clasp/mpip/claspMpi.h>
@@ -113,6 +114,18 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
   }; // catch (...) { exitCode = gctools::handleFatalCondition(); }
   return exitCode;
 }
+
+
+void create_source_main_host()
+{
+  core::Cons_sp pts =
+    core::Cons_O::createList(core::Cons_O::createList(core::Str_O::create("source-main:**;*.*"),
+                                                      cl_pathname(core::Str_O::create("app-resources:clasp;src;main;**;*.*")))
+        /* ,  more here */
+                       );
+af_pathnameTranslations(core::Str_O::create("source-main"), _lisp->_true(), pts);
+}
+
 
 int main(int argc, char *argv[]) { // Do not touch debug log until after MPI init
                                    // Set the stack size

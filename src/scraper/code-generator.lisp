@@ -1,5 +1,6 @@
 (in-package :cscrape)
 
+
 (defun group-expose-functions-by-namespace (tags)
   (let ((ns-hashes (make-hash-table :test #'equal))
         current-namespace)
@@ -9,9 +10,9 @@
          (setq current-namespace (tags:namespace tag)))
         ((typep tag 'tags:expose-function-tag)
          (or current-namespace (error "There must be a current namespace defined"))
-         (let ((ns-list (gethash current-namespace ns-hashes)))
-           (push tag ns-list)
-           (setf (gethash current-namespace ns-hashes) ns-list)))
+         (let ((ns-ht (gethash current-namespace ns-hashes (make-hash-table :test #'equal))))
+           (setf (gethash (tags:function-name tag) ns-ht) tag)
+           (setf (gethash current-namespace ns-hashes) ns-ht)))
         (t #|nothing|#)))
     ns-hashes))
 
@@ -19,10 +20,11 @@
 
 (defun generate-expose-function-signatures (sout ns-grouped-expose-functions)
   (format sout "#ifdef EXPOSE_FUNCTION_SIGNATURES~%")
-  (maphash (lambda (ns funcs)
+  (maphash (lambda (ns func-ht)
              (format sout "namespace ~a {~%" ns)
-             (dolist (f funcs)
-               (format sout "    ~a;~%" (tags:signature-text f)))
+             (maphash (lambda (name f)
+                        (format sout "    ~a;~%" (tags:signature-text f)))
+                      func-ht)
              (format sout "};~%"))
            ns-grouped-expose-functions)
   (format sout "#endif // EXPOSE_FUNCTION_SIGNATURES~%"))
@@ -40,36 +42,40 @@
 
 (defun generate-expose-function-bindings (sout ns-grouped-expose-functions)
   (format sout "#ifdef EXPOSE_FUNCTION_BINDINGS~%")
-  (maphash (lambda (ns funcs)
-             (dolist (f funcs)
-               (let* ((lambda-list-tag (tags:lambda-tag f))
-                      (lambda-list-str (if lambda-list-tag
-                                           (tags:lambda-list lambda-list-tag)
-                                           "")))
-                 (multiple-value-bind (pkg name extern)
-                     (split-c++-name (tags:function-name f))
-                   (format sout "  expose_function(\"~a\",\"~a\",~a,&~a::~a,\"(~a)\");~%"
-                           pkg name
-                           (if extern "true" "false")
-                           ns (tags:function-name f) lambda-list-str)))))
+  (maphash (lambda (ns funcs-ht)
+             (maphash (lambda (name f)
+                        (let* ((lambda-list-tag (tags:lambda-tag f))
+                               (lambda-list-str (if lambda-list-tag
+                                                    (tags:lambda-list lambda-list-tag)
+                                                    "")))
+                          (multiple-value-bind (pkg name extern)
+                              (split-c++-name (tags:function-name f))
+                            (format sout "  expose_function(\"~a\",\"~a\",~a,&~a::~a,\"(~a)\");~%"
+                                    pkg name
+                                    (if extern "true" "false")
+                                    ns (tags:function-name f) lambda-list-str))))
+                      funcs-ht))
            ns-grouped-expose-functions)
   (format sout "#endif // EXPOSE_FUNCTION_BINDINGS~%"))
 
 
 (defun extract-source-info-tags (tags)
-  (let ((source-info nil))
+  (let ((unique-source-info (make-hash-table :test #'equal)))
     (dolist (tag tags)
       (cond
         ((typep tag 'tags:expose-function-tag)
-         (push tag source-info))
+         (setf (gethash (tags:function-name tag) unique-source-info) tag))
         (t #|nothing|#)))
-    source-info))
+    (let (source-info)
+      (maphash (lambda (k v) (push v source-info)) unique-source-info)
+      source-info)))
 
 (defun generate-expose-source-info (sout source-info-tags cppdefine)
   (format sout "#ifdef ~a~%" cppdefine)
   (dolist (f source-info-tags)
     (let* ((fn (tags:function-name f))
            (file (tags:file f))
+           (line (tags:line f))
            (char-offset (tags:character-offset f))
            (docstring-tag (tags:docstring-tag f))
            (docstring (if docstring-tag
@@ -77,8 +83,8 @@
                           "")))
       (multiple-value-bind (package-name symbol-name)
           (split-c++-name fn)
-        (format sout "  { \"~a\", \"~a\", ~s, ~d, ~a }, ~%"
-                package-name symbol-name file char-offset docstring ))))
+        (format sout "  { \"~a\", \"~a\", ~s, ~d, ~d, ~a }, ~%"
+                package-name symbol-name file char-offset line docstring ))))
   (format sout "#endif // ~a~%" cppdefine))
 
 (defun generate-code-for-init-functions (tags)

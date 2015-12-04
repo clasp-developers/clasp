@@ -16,8 +16,3 @@ alias mi : /internals/core//meta
 	   /internals/serveEvent//mi
 	   ;
 
-
-install sources : [ glob-tree *.cc : .svn old originals beforeTransform unit_tests HelloWorld tw.l ]
-	       : <location>$(APPRES-SOURCE)
-	       <install-source-root>. ;
-

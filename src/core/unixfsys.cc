@@ -1305,7 +1305,7 @@ dir_files(T_sp base_dir, T_sp tpathname, int flags) {
   if (name.nilp() && type.nilp()) {
     return Cons_O::create(base_dir);
   }
-  mask = af_makePathname(_Nil<T_O>(), false,
+  mask = cl_make_pathname(_Nil<T_O>(), false,
                          _Nil<T_O>(), false,
                          _Nil<T_O>(), false,
                          name, true,

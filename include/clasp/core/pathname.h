@@ -91,7 +91,7 @@ class Pathname_O : public T_O {
   friend Str_sp af_coerceToFilename(T_sp pathname);
   friend T_sp clasp_namestring(T_sp tx, int flags);
   friend Pathname_mv af_parseNamestring(T_sp thing, T_sp host, T_sp defaults, Fixnum_sp start, Fixnum_sp end, bool junk_allowed);
-  friend Pathname_sp af_makePathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name, bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp defaults);
+  friend Pathname_sp cl_make_pathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name, bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp defaults);
   friend T_sp af_pathnameHost(T_sp tpname, Symbol_sp scase);
   friend T_sp af_pathnameDevice(T_sp tpname, Symbol_sp scase);
   friend T_sp af_pathnameDirectory(T_sp tpname, Symbol_sp scase);
@@ -195,7 +195,7 @@ T_sp af_pathnameTranslations(T_sp host, T_sp hostp, T_sp set);
 							     this->_OriginalPathname, // defaults 
 							     )
     */
-Pathname_sp af_makePathname(T_sp host, bool hostp,
+Pathname_sp cl_make_pathname(T_sp host, bool hostp,
                             T_sp device, bool devicep,
                             T_sp directory, bool directoryp,
                             T_sp name, bool namep,

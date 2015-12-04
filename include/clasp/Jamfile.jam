@@ -4,8 +4,3 @@ project internal/includes/clasp : requirements
 	: usage-requirements
 ;
 
-
-install includes : [ glob-tree *.h : .svn old originals beforeTransform unit_tests HelloWorld tw.l ]
-	       : <location>$(APPRES-INCLUDE)/clasp
-	       <install-source-root>. ;
-
