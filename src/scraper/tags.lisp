@@ -85,60 +85,52 @@
 (defun make-handler-hash-table ()
   (declare (optimize (debug 3)))
   (let ((handlers (make-hash-table :test #'equal)))
-    (add-tag-handler handlers "LISP_BASE"
+    (add-tag-handler handlers "LISP_BASE1_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
-                         (make-instance 'tags:lisp-base-tag
-                                        :c++-base% (cscrape:read-string-to-tag bufs cscrape:*end-tag*))))
-    (add-tag-handler handlers "LISP_CLASS"
+                         (let ((plist (read (cscrape:buffer-stream bufs))))
+                           (make-instance 'tags:lisp-base-tag
+                                          :c++-base% (getf plist :base)))))
+    (add-tag-handler handlers "LISP_CLASS_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
-                         (prog1
+                         (let ((plist (read (cscrape:buffer-stream bufs))))
+                           (make-instance 'tags:lisp-class-tag
+                                          :namespace% (getf plist :namespace)
+                                          :package% (getf plist :package)
+                                          :c++-class% (getf plist :class)
+                                          :class-symbol% (getf plist :class-symbol)))))
+    (add-tag-handler handlers "LISP_EXTERNAL_CLASS_TAG"
+                     #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
+                         (let ((plist (read (cscrape:buffer-stream bufs))))
                              (make-instance 'tags:lisp-class-tag
-                                            :namespace% (read (cscrape:buffer-stream bufs))
-                                            :package% (read (cscrape:buffer-stream bufs))
-                                            :c++-class% (read (cscrape:buffer-stream bufs))
-                                            :class-symbol% (read (cscrape:buffer-stream bufs)))
-                           (cscrape:skip-tag bufs cscrape:*end-tag*))))
-    (add-tag-handler handlers "LISP_EXTERNAL_CLASS"
+                                            :namespace% (getf plist :namespace)
+                                            :package% (getf plist :package)
+                                            :c++-class% (getf plist :class)
+                                            :class-symbol% (getf plist :class-symbol)
+                                            :c++-base% (getf plist :base)))))
+    (add-tag-handler handlers "LAMBDA"
                      #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
-                         (prog1
-                             (let ((namespace (read (cscrape:buffer-stream bufs)))
-                                   (package (read (cscrape:buffer-stream bufs)))
-                                   (external-class (read (cscrape:buffer-stream bufs)))
-                                   (c++-class (read (cscrape:buffer-stream bufs)))
-                                   (class-symbol (read (cscrape:buffer-stream bufs)))
-                                   (c++-base (cscrape:read-string-to-tag bufs cscrape:*end-tag*)))
-                               (make-instance 'tags:lisp-class-tag
-                                              :namespace% namespace
-                                              :package% package
-                                              :c++-class% c++-class
-                                              :class-symbol% class-symbol
-                                              :c++-base% c++-base)))))
-    (add-tag-handler handlers "LAMBDA_BEGIN"
-                     #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
-                         (prog1
+                         (let ((plist (read (cscrape:buffer-stream bufs))))
                              (make-instance 'tags:lambda-tag
-                                            :lambda-list (read (cscrape:buffer-stream bufs)))
-                           (cscrape:skip-tag bufs cscrape:*end-tag*))))
-    (add-tag-handler handlers "DOCSTRING_BEGIN"
+                                            :lambda-list (getf plist :lambda)))))
+    (add-tag-handler handlers "DOCSTRING"
                      #'(lambda (bufs) ;(declare (core:lambda-name docstring-tag-handler))
-                         (let ((docstr (cscrape:read-string-to-tag bufs cscrape:*end-tag*)))
+                         (let ((plist (read (cscrape:buffer-stream bufs))))
                                (make-instance 'tags:docstring-tag
-                                              :docstring docstr))))
-    (add-tag-handler handlers "DECLARE_BEGIN"
+                                              :docstring (getf plist :docstring)))))
+    (add-tag-handler handlers "DECLARE"
                      #'(lambda (bufs) ;(declare (core:lambda-name declare-tag-handler))
-                         (prog1
-                             (make-instance 'tags:declare-tag
-                                            :declare-form (read (cscrape:buffer-stream bufs)))
-                           (cscrape:skip-tag bufs cscrape:*end-tag*))))
+                         (let ((plist (read (cscrape:buffer-stream bufs))))
+                           (make-instance 'tags:declare-tag
+                                          :declare-form (getf plist :declare)))))
     (add-tag-handler handlers "EXPOSE_FUNCTION"
                      #'(lambda (bufs) ;(declare (core:lambda-name expose-function-tag-handler))
-                         (let* ((file (read (cscrape:buffer-stream bufs)))
-                                (line (read (cscrape:buffer-stream bufs)))
+;;                         (format t "EXPOSE_FUNCTION ~a~%" (cscrape::buffer-peek bufs))
+                         (let* ((plist (read (cscrape:buffer-stream bufs)))
                                 (signature-text (cscrape:read-string-to-character bufs #\) t))
                                 (function-name (extract-function-name-from-signature signature-text)))
                            (make-instance 'tags:expose-function-tag
-                                          :file file
-                                          :line line
+                                          :file (getf plist :file)
+                                          :line (getf plist :line)
                                           :function-name function-name
                                           :signature-text signature-text))))
     (add-tag-handler handlers "NAMESPACE"
@@ -155,47 +147,32 @@
                                           :namespace namespace-name))))
     (add-tag-handler handlers "SYMBOL_INTERNAL"
                      #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
-                         (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))
-                                (pkg-name (cscrape:read-string-to-character bufs #\space))
-                                (sym-name (cscrape:read-string-to-character bufs #\space)))
-                           (declare (ignore cur-pos))
-                           (cscrape:skip-tag bufs cscrape:*end-tag*)
+                         (let* ((plist (read (cscrape:buffer-stream bufs))))
                            (make-instance 'tags:symbol-tag
-                                          :package% pkg-name
+                                          :package% (getf plist :PACKAGE)
                                           :exported% nil
-                                          :name% sym-name))))
+                                          :name% (getf plist :NAME)))))
     (add-tag-handler handlers "SYMBOL_EXTERNAL"
                      #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
-                         (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))
-                                (pkg-name (cscrape:read-string-to-character bufs #\space))
-                                (sym-name (cscrape:read-string-to-character bufs #\space)))
-                           (declare (ignore cur-pos))
-                           (cscrape:skip-tag bufs cscrape:*end-tag*)
+                         (let* ((plist (read (cscrape:buffer-stream bufs))))
                            (make-instance 'tags:symbol-tag
-                                          :package% pkg-name
+                                          :package% (getf plist :PACKAGE)
                                           :exported% t
-                                          :name% sym-name))))
+                                          :name% (getf plist :NAME)))))
     (add-tag-handler handlers "SYMBOL_INTERN"
                      #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
-                         (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))
-                                (ns-name (cscrape:read-string-to-character bufs #\space))
-                                (sym-name (cscrape:read-string-to-character bufs #\space)))
-                           (declare (ignore cur-pos))
-                           (cscrape:skip-tag bufs cscrape:*end-tag*)
+                         (let* ((plist (read (cscrape:buffer-stream bufs))))
                            (make-instance 'tags:symbol-tag
-                                          :namespace% ns-name
+                                          :namespace% (getf plist :namespace)
                                           :exported% t
-                                          :name% sym-name))))
+                                          :name% (getf plist :name)))))
     (add-tag-handler handlers "NAMESPACE_PACKAGE_ASSOCIATION"
                      #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
-                         (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))
-                                (ns-name (cscrape:read-string-to-character bufs #\space))
-                                (pkg (cscrape:read-string-to-character bufs #\space))
-                                (pkg-name (cscrape:read-string-to-character bufs #\space)))
+                         (let* ((plist (read (cscrape:buffer-stream bufs))))
                            (declare (ignore cur-pos))
                            (cscrape:skip-tag bufs cscrape:*end-tag*)
                            (make-instance 'tags:namespace-package-association-tag
-                                          :namespace ns-name
-                                          :package-var pkg
-                                          :package-str pkg-name))))
+                                          :namespace (getf plist :namespace)
+                                          :package-var (getf plist :package)
+                                          :package-str (getf plist :package-name)))))
     handlers))

@@ -38,10 +38,10 @@
         (generate-code tags main-path app-config)))))
 
 
-
-(let ((args (cdr (member "--" sb-ext:*posix-argv* :test #'string=))))
+#-testing-scraper
+(progn
+  (let ((args (cdr (member "--" sb-ext:*posix-argv* :test #'string=))))
   (format t "args: ~a~%" args)
   (do-scraping args))
-(format t "Scraping done~%")
-
-(sb-ext:quit)
+  (format t "Scraping done~%")
+  (sb-ext:quit))

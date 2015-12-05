@@ -357,9 +357,9 @@ T_sp af_getEnv(Str_sp arg) {
 };
 
 
-LAMBDA();
-DECLARE();
-DOCSTRING(R"doc(Return a string representing the llvm version (eg: 3.6.0))doc")
+             LAMBDA();
+             DECLARE();
+             DOCSTRING(R"doc(Return a string representing the llvm version (eg: 3.6.0))doc");
 CL_DEFUN T_sp ext_llvm_version() {
   return core::Str_O::create(LLVM_VERSION);
 }
@@ -368,9 +368,9 @@ CL_DEFUN T_sp ext_llvm_version() {
 #define ARGS_core_describe_cxx_object "(name &optional stream)"
 #define DECL_core_describe_cxx_object ""
 #define DOCS_core_describe_cxx_object "Describe a C++ object as CL:DESCRIBE"
-LAMBDA(name &optional stream)
-DECLARE()
-DOCSTRING(R"doc(Describe a
+             LAMBDA((name &optional stream));
+             DECLARE();
+             DOCSTRING(R"doc(Describe a
 C++ object
 like CL:DESCRIBE)doc")
 CL_DEFUN void core_describe_cxx_object(T_sp obj, T_sp stream)
@@ -386,9 +386,9 @@ CL_DEFUN void core_describe_cxx_object(T_sp obj, T_sp stream)
 #define ARGS_core_setenv "(name arg overwrite)"
 #define DECL_core_setenv ""
 #define DOCS_core_setenv "getEnv"
-LAMBDA(name arg overwrite)
-DECLARE()
-DOCSTRING(R"doc(Set an environment variable)doc")
+             LAMBDA((name arg overwrite));
+             DECLARE();
+             DOCSTRING(R"doc(Set an environment variable)doc");
 CL_DEFUN void core_setenv(Str_sp name, Str_sp arg, bool overwrite) {
   setenv(name->c_str(), arg->c_str(), overwrite);
 };
@@ -396,9 +396,9 @@ CL_DEFUN void core_setenv(Str_sp name, Str_sp arg, bool overwrite) {
 #define ARGS_core_pointer "(arg)"
 #define DECL_core_pointer ""
 #define DOCS_core_pointer "Return the value of the pointer - used by conditions.lsp"
-LAMBDA(arg)
-DECLARE()
-DOCSTRING(R"doc(Return the value of a pointer - used by conditions.lsp - not useful in MPS)doc")
+             LAMBDA((arg));
+             DECLARE();
+             DOCSTRING(R"doc(Return the value of a pointer - used by conditions.lsp - not useful in MPS)doc");
 CL_DEFUN int core_pointer(T_sp obj) {
   _G();
   return obj.intptr();

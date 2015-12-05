@@ -105,7 +105,13 @@
   ((buffer :initarg :buffer :accessor buffer)
    (buffer-stream :initarg :buffer-stream :accessor buffer-stream)))
 
+(defun buffer-peek (bufs)
+  (let* ((pos (file-position (buffer-stream bufs)))
+         (epos (position #\newline (buffer bufs) :start pos :test #'char=)))
+    (subseq (buffer bufs) pos (1- epos))))
+
 (defun read-entire-file (cc)
+  (format t "Scraping ~a~%" (cpp-name cc))
   (with-open-file (stream (pathname (cpp-name cc)))
     (let ((data (make-string (file-length stream))))
       (read-sequence data stream)
