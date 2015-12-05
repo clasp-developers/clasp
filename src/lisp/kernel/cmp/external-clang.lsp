@@ -44,7 +44,7 @@
             (let ((file (probe-file cp)))
               (when file (return-from discover-clang file))))))))
 
-(defparameter *clang-bin* (discover-clang))
+(defparameter core:*clang-bin* (discover-clang))
 
 (define-condition clang-not-found-error (error)
   ((tried-path :initarg :path :initform NIL :accessor tried-path))
