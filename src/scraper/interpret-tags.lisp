@@ -1,5 +1,22 @@
 (in-package :cscrape)
 
+(define-condition bad-cl-defun ()
+  ((tag :initarg :tag :accessor tag)
+   (other-kind :initarg :other-kind :accessor other-kind)
+   (other-tag :initarg :other-tag :accessor other-tag)))
+
+(defun error-if-bad-expose-function-setup* (tag kind other-tag)
+  (declare (optimize (debug 3)))
+  (unless (and (string= (tags:file tag) (tags:file other-tag))
+               (< (- (tags:line tag) (tags:line other-tag)) 8))
+    (error 'bad-cl-defun :tag tag :other-kind kind :other-tag other-tag)))
+                   
+(defun error-if-bad-expose-function-setup (tag cur-lambda cur-declare cur-docstring)
+  (when cur-lambda (error-if-bad-expose-function-setup* tag "LAMBDA" cur-lambda))
+  (when cur-declare (error-if-bad-expose-function-setup* tag "DECLARE" cur-declare))
+  (when cur-docstring (error-if-bad-expose-function-setup* tag "DOCSTRING" cur-docstring)))
+  
+
 (defun interpret-tags (tags)
   (declare (optimize (debug 3)))
   (let ((source-info (gather-source-files tags)))
@@ -26,6 +43,7 @@
          (setf cur-declare tag))
         ((typep tag 'tags:expose-code-tag)
                                         ; Fill in latest info since last expose-code-tag
+         (error-if-bad-expose-function-setup tag cur-lambda cur-declare cur-docstring)
          (setf (tags:lambda-tag tag) cur-lambda
                (tags:declare-tag tag) cur-declare
                (tags:docstring-tag tag) cur-docstring
