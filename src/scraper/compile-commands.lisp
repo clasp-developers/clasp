@@ -132,6 +132,14 @@
 (defun skip-tag (bufs tag)
   (search-for-tag bufs tag))
 
+(defun search-for-white-space (bufs)
+  (declare (optimize (debug 3)))
+  (let* ((start (file-position (buffer-stream bufs)))
+         (ch-pos (position-if (lambda (c) (or (char= c #\space) (char= c #\newline) (char= c #\tab))) (buffer bufs) :start start)))
+    (when ch-pos
+      (file-position (buffer-stream bufs) (1+ ch-pos))
+      ch-pos)))
+
 (defun search-for-character (bufs ch)
   (let ((ch-pos (position ch (buffer bufs) :start (file-position (buffer-stream bufs)))))
     (when ch-pos
@@ -147,12 +155,21 @@
                       ch-pos)))
     (subseq (buffer bufs) start keep-to)))
 
+(defun read-string-to-white-space (bufs &optional keep-last-char)
+  "Read up to the character and keep it if (keep-last-char)"
+  (let* ((start (file-position (buffer-stream bufs)))
+         (ch-pos (search-for-white-space bufs))
+         (keep-to (if keep-last-char
+                      (1+ ch-pos)
+                      ch-pos)))
+    (subseq (buffer bufs) start keep-to)))
+
 (defun next-tag-name (bufs)
   (let ((tag-start (search-for-tag bufs *begin-tag*)))
     (when tag-start
       (skip-char bufs)
       (let ((tag-kind-start (file-position (buffer-stream bufs)))
-            (tag-kind-end (search-for-character bufs #\space)))
+            (tag-kind-end (search-for-white-space bufs)))
         (let ((tag-name (subseq (buffer bufs) tag-kind-start tag-kind-end)))
           tag-name)))))
 

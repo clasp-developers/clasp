@@ -47,13 +47,17 @@
                         (let* ((lambda-list-tag (tags:lambda-tag f))
                                (lambda-list-str (if lambda-list-tag
                                                     (tags:lambda-list lambda-list-tag)
-                                                    "")))
+                                                    nil)))
                           (multiple-value-bind (pkg name extern)
                               (split-c++-name (tags:function-name f))
-                            (format sout "  expose_function(\"~a\",\"~a\",~a,&~a::~a,\"(~a)\");~%"
+                            (format sout "  expose_function(\"~a\",\"~a\",~a,&~a::~a,\"~a\");~%"
                                     pkg name
                                     (if extern "true" "false")
-                                    ns (tags:function-name f) lambda-list-str))))
+                                    ns
+                                    (tags:function-name f)
+                                    (if lambda-list-str
+                                        (format nil "(~a)" lambda-list-str)
+                                        "")))))
                       funcs-ht))
            ns-grouped-expose-functions)
   (format sout "#endif // EXPOSE_FUNCTION_BINDINGS~%"))

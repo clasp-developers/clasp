@@ -8,7 +8,9 @@
      #:search-for-tag
      #:skip-char
      #:search-for-character
+     #:search-for-whitespace
      #:read-string-to-character
+     #:read-string-to-white-space
      #:next-tag-name
      #:read-string-to-tag
      #:skip-tag

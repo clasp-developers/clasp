@@ -109,14 +109,14 @@
                                             :c++-class% (getf plist :class)
                                             :class-symbol% (getf plist :class-symbol)
                                             :c++-base% (getf plist :base)))))
-    (add-tag-handler handlers "LAMBDA"
+    (add-tag-handler handlers "LAMBDA_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
                          (let ((plist (read (cscrape:buffer-stream bufs))))
                            (make-instance 'tags:lambda-tag
                                           :file (getf plist :file)
                                           :line (getf plist :line)
-                                          :lambda-list (getf plist :lambda)))))
-    (add-tag-handler handlers "DOCSTRING"
+                                          :lambda-list (getf plist :lambda-list)))))
+    (add-tag-handler handlers "DOCSTRING_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name docstring-tag-handler))
                          (let ((plist (read (cscrape:buffer-stream bufs)))
                                (docstring (cscrape:read-string-to-tag bufs cscrape:*end-tag*)))
@@ -124,7 +124,7 @@
                                           :file (getf plist :file)
                                           :line (getf plist :line)
                                           :docstring docstring))))
-    (add-tag-handler handlers "DECLARE"
+    (add-tag-handler handlers "DECLARE_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name declare-tag-handler))
                          (let ((plist (read (cscrape:buffer-stream bufs))))
                            (make-instance 'tags:declare-tag
@@ -142,15 +142,18 @@
                                           :line (getf plist :line)
                                           :function-name function-name
                                           :signature-text signature-text))))
-    (add-tag-handler handlers "NAMESPACE"
+    (add-tag-handler handlers "NAMESPACE_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
                          (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))
-                                (next (cscrape:read-string-to-character bufs #\space))
-                                (c++namespace-keyword (string-trim " " next))
-                                (namespace-name (cscrape:read-string-to-character bufs #\space)))
-                           (unless (string= c++namespace-keyword "namespace")
+                                (c++namespace-keyword (let ((*package* (find-package :keyword)))
+                                                        (read (cscrape:buffer-stream bufs))))
+                                (namespace-name (string (let ((*readtable* (copy-readtable))
+                                                              (*package* (find-package :keyword)))
+                                                          (setf (readtable-case *readtable*) :preserve)
+                                                          (read (cscrape:buffer-stream bufs))))))
+                           (unless (eq c++namespace-keyword :namespace)
                              (let ((cur-pos-context (subseq (cscrape:buffer bufs) cur-pos (+ cur-pos 128))))
-                               (error 'bad-tag :tag "NAMESPACE"
+                               (error 'bad-tag :tag "NAMESPACE_TAG"
                                       :context cur-pos-context )))
                            (make-instance 'tags:namespace-tag
                                           :namespace namespace-name))))
