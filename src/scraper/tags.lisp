@@ -112,8 +112,7 @@
                                               :package% package
                                               :c++-class% c++-class
                                               :class-symbol% class-symbol
-                                              :c++-base% c++-base))
-                           (cscrape:skip-tag bufs cscrape:*end-tag*))))
+                                              :c++-base% c++-base)))))
     (add-tag-handler handlers "LAMBDA_BEGIN"
                      #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
                          (prog1
