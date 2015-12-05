@@ -168,8 +168,11 @@ define varprint
 endef
 
 all:
-	make print-config
 	make submodules
+	make build_all
+
+build_all:
+	make print-config
 	make asdf
 	make boost_build
 	make boehm
@@ -195,6 +198,12 @@ fixup:
 	make -C src/main cclasp-boehm-addons
 	make executable-symlinks
 	echo Fixed-up Clasp is now built
+
+ARCHIVE_NAME ?= clasp-$(CLASP_VERSION)-$(GIT_COMMIT).tar.bz2
+
+archive:
+	$(MAKE) submodules
+	$(PYTHON2) src/common/git_archive_all.py $(ARCHIVE_NAME)
 
 mps-build:
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install )
@@ -370,6 +379,7 @@ clean:
 	(cd src/clbind; rm -rf bin bundle)
 	(cd src/sockets; rm -rf bin bundle)
 	(cd src/serveEvent; rm -rf bin bundle)
+	rm -f $(ARCHIVE_NAME)
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
 	install -d $(CLASP_INTERNAL_BUILD_TARGET_DIR)
 	-(find $(CLASP_INTERNAL_BUILD_TARGET_DIR) -type f -print0 | xargs -0 rm -f)
