@@ -372,7 +372,7 @@ CL_DEFUN T_sp ext_llvm_version() {
              DECLARE();
              DOCSTRING(R"doc(Describe a
 C++ object
-like CL:DESCRIBE)doc")
+like CL:DESCRIBE)doc");
 CL_DEFUN void core_describe_cxx_object(T_sp obj, T_sp stream)
 {
   if (obj.generalp()) {

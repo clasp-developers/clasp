@@ -31,8 +31,9 @@
    #:docstring-tag
    #:docstring
    #:declare-tag
-   #:source-tag-mixin
+   #:source-tag
    #:expose-code-tag
+   #:code-tag
    #:file
    #:line
    #:character-offset

@@ -34,21 +34,23 @@
    (c++-class% :initarg :c++-class% :accessor c++-class%)
    (class-symbol% :initarg :class-symbol% :accessor class-symbol%)))
 
-(defclass lambda-tag ()
+(defclass code-tag ()
+  ((file :initarg :file :accessor file)
+   (line :initarg :line :accessor line)))
+  
+(defclass lambda-tag (code-tag)
   ((lambda-list :initarg :lambda-list :accessor lambda-list)))
 
-(defclass docstring-tag ()
+(defclass docstring-tag (code-tag)
   ((docstring :initarg :docstring :accessor docstring)))
 
-(defclass declare-tag ()
+(defclass declare-tag (code-tag)
   ((declare-form :initarg :declare-form :accessor declare-form)))
 
-(defclass source-tag-mixin ()
-  ((file :initarg :file :accessor file)
-   (line :initarg :line :accessor line)
-   (character-offset :initarg :character-offset :accessor character-offset)))
+(defclass source-tag (code-tag)
+  ((character-offset :initarg :character-offset :accessor character-offset)))
   
-(defclass expose-code-tag (source-tag-mixin)
+(defclass expose-code-tag (source-tag)
   ((function-name :initarg :function-name :accessor function-name)
    (signature-text :initarg :signature-text :accessor signature-text)
    (lambda-tag :initarg :lambda-tag :accessor lambda-tag)
@@ -110,17 +112,24 @@
     (add-tag-handler handlers "LAMBDA"
                      #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
                          (let ((plist (read (cscrape:buffer-stream bufs))))
-                             (make-instance 'tags:lambda-tag
-                                            :lambda-list (getf plist :lambda)))))
+                           (make-instance 'tags:lambda-tag
+                                          :file (getf plist :file)
+                                          :line (getf plist :line)
+                                          :lambda-list (getf plist :lambda)))))
     (add-tag-handler handlers "DOCSTRING"
                      #'(lambda (bufs) ;(declare (core:lambda-name docstring-tag-handler))
-                         (let ((plist (read (cscrape:buffer-stream bufs))))
-                               (make-instance 'tags:docstring-tag
-                                              :docstring (getf plist :docstring)))))
+                         (let ((plist (read (cscrape:buffer-stream bufs)))
+                               (docstring (cscrape:read-string-to-tag bufs cscrape:*end-tag*)))
+                           (make-instance 'tags:docstring-tag
+                                          :file (getf plist :file)
+                                          :line (getf plist :line)
+                                          :docstring docstring))))
     (add-tag-handler handlers "DECLARE"
                      #'(lambda (bufs) ;(declare (core:lambda-name declare-tag-handler))
                          (let ((plist (read (cscrape:buffer-stream bufs))))
                            (make-instance 'tags:declare-tag
+                                          :file (getf plist :file)
+                                          :line (getf plist :line)
                                           :declare-form (getf plist :declare)))))
     (add-tag-handler handlers "EXPOSE_FUNCTION"
                      #'(lambda (bufs) ;(declare (core:lambda-name expose-function-tag-handler))
@@ -166,11 +175,10 @@
                                           :namespace% (getf plist :namespace)
                                           :exported% t
                                           :name% (getf plist :name)))))
-    (add-tag-handler handlers "NAMESPACE_PACKAGE_ASSOCIATION"
+    (add-tag-handler handlers "NAMESPACE_PACKAGE_ASSOCIATION_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
                          (let* ((plist (read (cscrape:buffer-stream bufs))))
                            (declare (ignore cur-pos))
-                           (cscrape:skip-tag bufs cscrape:*end-tag*)
                            (make-instance 'tags:namespace-package-association-tag
                                           :namespace (getf plist :namespace)
                                           :package-var (getf plist :package)

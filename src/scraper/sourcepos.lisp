@@ -4,7 +4,7 @@
 (defun gather-source-files (tags)
   (let ((source-files (make-hash-table :test #'equal)))
     (loop for tag in tags
-         do (when (typep tag 'tags:source-tag-mixin)
+         do (when (typep tag 'tags:source-tag)
               (let* ((source-file (tags:file tag))
                      (entries (gethash source-file source-files)))
                 (push tag entries)

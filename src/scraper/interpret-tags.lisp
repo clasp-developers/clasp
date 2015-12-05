@@ -19,19 +19,20 @@
          (setf cur-namespace (tags:namespace tag)))
         ((typep tag 'tags:lambda-tag)
                                         ; Lambda starts the declaration of a binding
-         (setf cur-lambda tag)
-         (setf cur-docstring nil)
-         (setf cur-declare nil))
+         (setf cur-lambda tag))
         ((typep tag 'tags:docstring-tag)
          (setf cur-docstring tag))
         ((typep tag 'tags:declare-tag)
          (setf cur-declare tag))
         ((typep tag 'tags:expose-code-tag)
-                                        ; Fill in latest info since LAMBDA
-         (setf (tags:lambda-tag tag) cur-lambda)
-         (setf (tags:declare-tag tag) cur-declare)
-         (setf (tags:docstring-tag tag) cur-docstring)
-         (setf (tags:namespace-tag tag) cur-namespace))
+                                        ; Fill in latest info since last expose-code-tag
+         (setf (tags:lambda-tag tag) cur-lambda
+               (tags:declare-tag tag) cur-declare
+               (tags:docstring-tag tag) cur-docstring
+               (tags:namespace-tag tag) cur-namespace)
+         (setf cur-lambda nil
+               cur-docstring nil
+               cur-declare nil))
         ((typep tag 'tags:symbol-tag)
                                         ; Fill in missing info
          (unless (slot-boundp tag 'tags:c++-name%)
