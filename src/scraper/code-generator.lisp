@@ -50,7 +50,7 @@
                               (split-c++-name (tags:function-name f))
                             (format sout "  expose_function(\"~a\",\"~a\",~a,&~a::~a,\"~a\");~%"
                                     pkg name
-                                    "true" "false"
+                                    "true"
                                     ns
                                     (tags:function-name f)
                                     (if lambda-list-str

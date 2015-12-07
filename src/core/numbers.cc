@@ -805,10 +805,10 @@ T_mv af__PLUS_(List_sp numbers) {
   return (Values(result));
 }
 
-#define ARGS_cl___TIMES_ "(&rest numbers)"
-#define DECL_cl___TIMES_ ""
-#define DOCS_cl___TIMES_ "See CLHS: +"
-T_mv cl___TIMES_(List_sp numbers) {
+#define ARGS_cl__TIMES_ "(&rest numbers)"
+#define DECL_cl__TIMES_ ""
+#define DOCS_cl__TIMES_ "See CLHS: *"
+T_mv cl__TIMES_(List_sp numbers) {
   _G();
   if (numbers.nilp())
     return (Values(make_fixnum(1)));
@@ -819,10 +819,10 @@ T_mv cl___TIMES_(List_sp numbers) {
   return (Values(result));
 }
 
-#define ARGS_cl___MINUS_ "(num &rest numbers)"
-#define DECL_cl___MINUS_ ""
-#define DOCS_cl___MINUS_ "See CLHS: +"
-T_mv cl___MINUS_(Number_sp num, List_sp numbers) {
+#define ARGS_cl__MINUS_ "(num &rest numbers)"
+#define DECL_cl__MINUS_ ""
+#define DOCS_cl__MINUS_ "See CLHS: +"
+T_mv cl__MINUS_(Number_sp num, List_sp numbers) {
   _G();
   if (numbers.nilp()) {
     return (Values(clasp_negate(num)));
