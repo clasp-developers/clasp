@@ -255,18 +255,18 @@ T_sp cl_machineInstance() {
   return _Nil<T_O>();
 };
 
-#define ARGS_af_argc "()"
-#define DECL_af_argc ""
-#define DOCS_af_argc "argc"
-int af_argc() {
+#define ARGS_core_argc "()"
+#define DECL_core_argc ""
+#define DOCS_core_argc "argc"
+int core_argc() {
   _G();
   return _lisp->_Argc;
 };
 
-#define ARGS_af_argv "(idx)"
-#define DECL_af_argv ""
-#define DOCS_af_argv "argv"
-Str_sp af_argv(int idx) {
+#define ARGS_core_argv "(idx)"
+#define DECL_core_argv ""
+#define DOCS_core_argv "argv"
+Str_sp core_argv(int idx) {
   _G();
   return Str_O::create(_lisp->_Argv[idx]);
 };
@@ -283,29 +283,29 @@ T_sp cl_set(Symbol_sp sym, T_sp val) {
   return val;
 };
 
-#define ARGS_af_dumpAddressOf "(arg)"
-#define DECL_af_dumpAddressOf ""
-#define DOCS_af_dumpAddressOf "dumpAddressOf"
-void af_dumpAddressOf(T_sp arg) {
+#define ARGS_core_dumpAddressOf "(arg)"
+#define DECL_core_dumpAddressOf ""
+#define DOCS_core_dumpAddressOf "dumpAddressOf"
+void core_dumpAddressOf(T_sp arg) {
   _G();
   ASSERT(arg.objectp());
   void *ptr = &(*arg);
   printf("%s:%d  AddressOf = %p\n", __FILE__, __LINE__, ptr);
 };
 
-#define ARGS_af_incompleteNextHigherPowerOf_2 "(arg)"
-#define DECL_af_incompleteNextHigherPowerOf_2 ""
-#define DOCS_af_incompleteNextHigherPowerOf_2 "incompleteNextHigherPowerOf_2 - see the incompleteNextHigherPowerOf_2 builtin - only works for Fixnums and not the full range; just for testing"
-int af_incompleteNextHigherPowerOf_2(Fixnum_sp fn) {
+#define ARGS_core_incompleteNextHigherPowerOf_2 "(arg)"
+#define DECL_core_incompleteNextHigherPowerOf_2 ""
+#define DOCS_core_incompleteNextHigherPowerOf_2 "incompleteNextHigherPowerOf_2 - see the incompleteNextHigherPowerOf_2 builtin - only works for Fixnums and not the full range; just for testing"
+int core_incompleteNextHigherPowerOf_2(Fixnum_sp fn) {
   _G();
   unsigned int f = unbox_fixnum(fn);
   return 1 << ((sizeof(f) * 8) - __builtin_clz(f));
 };
 
-#define ARGS_af_allRegisteredClassNames "()"
-#define DECL_af_allRegisteredClassNames ""
-#define DOCS_af_allRegisteredClassNames "allRegisteredClassNames"
-Vector_sp af_allRegisteredClassNames() {
+#define ARGS_core_allRegisteredClassNames "()"
+#define DECL_core_allRegisteredClassNames ""
+#define DOCS_core_allRegisteredClassNames "allRegisteredClassNames"
+Vector_sp core_allRegisteredClassNames() {
   _G();
   VectorObjects_sp vo = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), _lisp->classSymbolsHolder().size(), false, cl::_sym_T_O);
   for (int i(0), iEnd(_lisp->classSymbolsHolder().size()); i < iEnd; ++i) {
@@ -314,18 +314,18 @@ Vector_sp af_allRegisteredClassNames() {
   return vo;
 };
 
-#define ARGS_af_toTaggedFixnum "(arg)"
-#define DECL_af_toTaggedFixnum ""
-#define DOCS_af_toTaggedFixnum "toTaggedFixnum"
-T_sp af_toTaggedFixnum(int val) {
+#define ARGS_core_toTaggedFixnum "(arg)"
+#define DECL_core_toTaggedFixnum ""
+#define DOCS_core_toTaggedFixnum "toTaggedFixnum"
+T_sp core_toTaggedFixnum(int val) {
   _G();
   return gctools::smart_ptr<T_O>(val);
 };
 
-#define ARGS_af_fromTaggedFixnum "(val)"
-#define DECL_af_fromTaggedFixnum ""
-#define DOCS_af_fromTaggedFixnum "fromTaggedFixnum"
-gctools::Fixnum af_fromTaggedFixnum(T_sp val) {
+#define ARGS_core_fromTaggedFixnum "(val)"
+#define DECL_core_fromTaggedFixnum ""
+#define DOCS_core_fromTaggedFixnum "fromTaggedFixnum"
+gctools::Fixnum core_fromTaggedFixnum(T_sp val) {
   _G();
   if (val.fixnump()) {
     return val.unsafe_fixnum();
@@ -333,10 +333,10 @@ gctools::Fixnum af_fromTaggedFixnum(T_sp val) {
   SIMPLE_ERROR(BF("Not a fixnum"));
 };
 
-#define ARGS_af_dumpTaggedFixnum "(arg)"
-#define DECL_af_dumpTaggedFixnum ""
-#define DOCS_af_dumpTaggedFixnum "dumpTaggedFixnum"
-void af_dumpTaggedFixnum(T_sp val) {
+#define ARGS_core_dumpTaggedFixnum "(arg)"
+#define DECL_core_dumpTaggedFixnum ""
+#define DOCS_core_dumpTaggedFixnum "dumpTaggedFixnum"
+void core_dumpTaggedFixnum(T_sp val) {
   _G();
   if (val.fixnump()) {
     printf("%s:%d Raw TaggedFixnum %p   Untagged %ld\n",
@@ -345,10 +345,10 @@ void af_dumpTaggedFixnum(T_sp val) {
     printf("%s:%d Not a tagged fixnum\n", __FILE__, __LINE__);
 }
 
-#define ARGS_af_getEnv "(arg)"
-#define DECL_af_getEnv ""
-#define DOCS_af_getEnv "getEnv"
-T_sp af_getEnv(Str_sp arg) {
+#define ARGS_ext_getEnv "(arg)"
+#define DECL_ext_getEnv ""
+#define DOCS_ext_getEnv "getEnv"
+T_sp ext_getEnv(Str_sp arg) {
   _G();
   char *sres = getenv(arg->c_str());
   if (sres == NULL) {
@@ -359,20 +359,17 @@ T_sp af_getEnv(Str_sp arg) {
 
 
 DOCSTRING(R"doc(Return a string representing the llvm version (eg: 3.6.0))doc");
-CL_DEFUN T_sp ext_llvm_version() {
+CL_DEFUN T_sp ext__llvm_version() {
   return core::Str_O::create(LLVM_VERSION);
 }
 
 
-#define ARGS_core_describe_cxx_object "(name &optional stream)"
-#define DECL_core_describe_cxx_object ""
-#define DOCS_core_describe_cxx_object "Describe a C++ object as CL:DESCRIBE"
 LAMBDA(name &optional stream);
 DECLARE();
 DOCSTRING(R"doc(Describe a
 C++ object
 like CL:DESCRIBE)doc");
-CL_DEFUN void core_describe_cxx_object(T_sp obj, T_sp stream)
+CL_DEFUN void core__describe_cxx_object(T_sp obj, T_sp stream)
 {
   if (obj.generalp()) {
     obj->describe(stream);
@@ -382,13 +379,10 @@ CL_DEFUN void core_describe_cxx_object(T_sp obj, T_sp stream)
   SIMPLE_ERROR(BF("Use the CL facilities to describe this object"));
 };
 
-#define ARGS_core_setenv "(name arg overwrite)"
-#define DECL_core_setenv ""
-#define DOCS_core_setenv "getEnv"
 LAMBDA(name arg overwrite);
 DECLARE();
 DOCSTRING(R"doc(Set an environment variable)doc");
-CL_DEFUN void core_setenv(Str_sp name, Str_sp arg, bool overwrite) {
+CL_DEFUN void core__setenv(Str_sp name, Str_sp arg, bool overwrite) {
   setenv(name->c_str(), arg->c_str(), overwrite);
 };
 
@@ -398,39 +392,39 @@ CL_DEFUN void core_setenv(Str_sp name, Str_sp arg, bool overwrite) {
 LAMBDA(arg);
 DECLARE();
 DOCSTRING(R"doc(Return the value of a pointer - used by conditions.lsp - not useful in MPS)doc");
-CL_DEFUN int core_pointer(T_sp obj) {
+CL_DEFUN int core__pointer(T_sp obj) {
   _G();
   return obj.intptr();
 };
 
-#define ARGS_af_isTrue "(arg)"
-#define DECL_af_isTrue ""
-#define DOCS_af_isTrue "isTrue"
-bool af_isTrue(T_sp arg) {
+#define ARGS_core_isTrue "(arg)"
+#define DECL_core_isTrue ""
+#define DOCS_core_isTrue "isTrue"
+bool core_isTrue(T_sp arg) {
   _G();
   return arg.isTrue();
 };
 
-#define ARGS_af_substitute "(arg)"
-#define DECL_af_substitute ""
-#define DOCS_af_substitute "substitute"
-T_mv af_substitute() {
+#define ARGS_core_substitute "(arg)"
+#define DECL_core_substitute ""
+#define DOCS_core_substitute "substitute"
+T_mv core_substitute() {
   _G();
   IMPLEMENT_MEF(BF("Implement substitute"));
 };
 
-#define ARGS_af_unbound "()"
-#define DECL_af_unbound ""
-#define DOCS_af_unbound "Return the UNBOUND value"
-T_sp af_unbound() {
+#define ARGS_core_unbound "()"
+#define DECL_core_unbound ""
+#define DOCS_core_unbound "Return the UNBOUND value"
+T_sp core_unbound() {
   _G();
   return _Unbound<T_O>();
 };
 
-#define ARGS_af_smartPointerDetails "()"
-#define DECL_af_smartPointerDetails ""
-#define DOCS_af_smartPointerDetails "smartPointerDetails - returns (values ptr-type px-offset px-size). The ptr-type is the type of pointer used to pass objects - either MPS-GARBAGE-COLLECTION or INTRUSIVE-REFERENCE-COUNTED-POINTER. The px-offset is the number of bytes offset of the smart_ptr data pointer from the start of the smart_ptr and px-size is the size of the data pointer"
-T_mv af_smartPointerDetails() {
+#define ARGS_core_smartPointerDetails "()"
+#define DECL_core_smartPointerDetails ""
+#define DOCS_core_smartPointerDetails "smartPointerDetails - returns (values ptr-type px-offset px-size). The ptr-type is the type of pointer used to pass objects - either MPS-GARBAGE-COLLECTION or INTRUSIVE-REFERENCE-COUNTED-POINTER. The px-offset is the number of bytes offset of the smart_ptr data pointer from the start of the smart_ptr and px-size is the size of the data pointer"
+T_mv core_smartPointerDetails() {
   _G();
   SYMBOL_SC_(CorePkg, intrusiveReferenceCountedPointer);
   SYMBOL_SC_(CorePkg, sharedReferenceCountedPointer);
@@ -467,10 +461,10 @@ T_mv core_valuesTesting(List_sp args) {
   return result;
 }
 
-#define ARGS_af_values_list "(list)"
-#define DECL_af_values_list ""
-#define DOCS_af_values_list "values_list"
-T_mv af_values_list(List_sp list) {
+#define ARGS_cl_values_list "(list)"
+#define DECL_cl_values_list ""
+#define DOCS_cl_values_list "values_list"
+T_mv cl_values_list(List_sp list) {
   _G();
   return ValuesFromCons(list);
 }
@@ -488,10 +482,10 @@ Symbol_sp functionBlockName(T_sp functionName) {
   return _Nil<Symbol_O>();
 }
 
-#define ARGS_af_functionBlockName "(functionName)"
-#define DECL_af_functionBlockName ""
-#define DOCS_af_functionBlockName "See CLHS glossary 'function block name'. If the functionName is a symbol return it.  If the functionName is a cons of the form (setf xxxx) return xxxx"
-Symbol_mv af_functionBlockName(T_sp functionName) {
+#define ARGS_core_functionBlockName "(functionName)"
+#define DECL_core_functionBlockName ""
+#define DOCS_core_functionBlockName "See CLHS glossary 'function block name'. If the functionName is a symbol return it.  If the functionName is a cons of the form (setf xxxx) return xxxx"
+Symbol_mv core_functionBlockName(T_sp functionName) {
   _G();
   Symbol_sp output = functionBlockName(functionName);
   if (output.nilp()) {
@@ -500,10 +494,10 @@ Symbol_mv af_functionBlockName(T_sp functionName) {
   return (Values(output));
 }
 
-#define ARGS_af_validFunctionNameP "(arg)"
-#define DECL_af_validFunctionNameP ""
-#define DOCS_af_validFunctionNameP "validFunctionNameP"
-T_mv af_validFunctionNameP(T_sp arg) {
+#define ARGS_core_validFunctionNameP "(arg)"
+#define DECL_core_validFunctionNameP ""
+#define DOCS_core_validFunctionNameP "validFunctionNameP"
+T_mv core_validFunctionNameP(T_sp arg) {
   _G();
   T_sp name = functionBlockName(arg);
   if (name.nilp())
@@ -511,22 +505,10 @@ T_mv af_validFunctionNameP(T_sp arg) {
   return (Values(_lisp->_true()));
 };
 
-#define ARGS_af_makeStringOutputStream "(&key (elementType 'character))"
-#define DECL_af_makeStringOutputStream ""
-#define DOCS_af_makeStringOutputStream "makeStringOutputStream"
-T_mv af_makeStringOutputStream(T_sp elementType) {
-  _G();
-  if (elementType != cl::_sym_character) {
-    SIMPLE_ERROR(BF("Add support for non character string output streams - you asked for %s") % _rep_(elementType));
-  }
-  T_sp ss = clasp_make_string_output_stream();
-  return (Values(ss));
-};
-
-#define ARGS_af_testMemoryError "()"
-#define DECL_af_testMemoryError ""
-#define DOCS_af_testMemoryError "testMemoryError"
-void af_testMemoryError() {
+#define ARGS_core_testMemoryError "()"
+#define DECL_core_testMemoryError ""
+#define DOCS_core_testMemoryError "testMemoryError"
+void core_testMemoryError() {
   _G();
   int *h = (int *)malloc(sizeof(int));
   *h = 1;
@@ -534,10 +516,10 @@ void af_testMemoryError() {
   *h = 2;
 };
 
-#define ARGS_af_separatePairList "(listOfPairs)"
-#define DECL_af_separatePairList ""
-#define DOCS_af_separatePairList "Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element"
-T_mv af_separatePairList(List_sp listOfPairs) {
+#define ARGS_core_separatePairList "(listOfPairs)"
+#define DECL_core_separatePairList ""
+#define DOCS_core_separatePairList "Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element"
+T_mv core_separatePairList(List_sp listOfPairs) {
   _G();
   ql::list firsts(_lisp);
   ql::list seconds(_lisp);
@@ -564,10 +546,10 @@ T_mv af_separatePairList(List_sp listOfPairs) {
 }
 
 #if DEPRECIATED_C_FUNCTION
-#define ARGS_af_c_function "(sym)"
-#define DECL_af_c_function ""
-#define DOCS_af_c_function "c_function"
-Pointer_mv af_c_function(Symbol_sp sym) {
+#define ARGS_core_c_function "(sym)"
+#define DECL_core_c_function ""
+#define DOCS_core_c_function "c_function"
+Pointer_mv core_c_function(Symbol_sp sym) {
   _G();
   return (Values(_lisp->lookup_c_function_ptr(sym)));
 };
@@ -672,10 +654,10 @@ Integer_sp cl_ash(Integer_sp integer, Integer_sp count) {
   return clasp_shift(integer, cnt);
 }
 
-#define ARGS_af_break "(&optional fmt-control &rest args)"
-#define DECL_af_break ""
-#define DOCS_af_break "Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version"
-void af_break(T_sp fmt, List_sp args) {
+#define ARGS_core_break "(&optional fmt-control &rest args)"
+#define DECL_core_break ""
+#define DOCS_core_break "Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version"
+void core_break(T_sp fmt, List_sp args) {
   _G();
   if (fmt.notnilp()) {
     af_format(_lisp->_true(), gc::As<Str_sp>(fmt), args);
@@ -684,10 +666,10 @@ void af_break(T_sp fmt, List_sp args) {
   af_invokeInternalDebugger(_Nil<core::T_O>());
 };
 
-#define ARGS_af_gdb "(&optional msg)"
-#define DECL_af_gdb ""
-#define DOCS_af_gdb "hook to invoke gdb"
-void af_gdb(T_sp msg) {
+#define ARGS_core_gdb "(&optional msg)"
+#define DECL_core_gdb ""
+#define DOCS_core_gdb "hook to invoke gdb"
+void core_gdb(T_sp msg) {
   _G();
   T_sp obj = msg;
   string smsg = "No msg";
@@ -720,20 +702,20 @@ void core_trapExecution(T_sp msg) {
   fflush(stdout);
 };
 
-#define ARGS_af_gdbInspect "(msg o)"
-#define DECL_af_gdbInspect ""
-#define DOCS_af_gdbInspect "hook to invoke gdb"
-void af_gdbInspect(Str_sp msg, T_sp o) {
+#define ARGS_core_gdbInspect "(msg o)"
+#define DECL_core_gdbInspect ""
+#define DOCS_core_gdbInspect "hook to invoke gdb"
+void core_gdbInspect(Str_sp msg, T_sp o) {
   _G();
   printf("gdbInspect object: %s\n", _rep_(o).c_str());
   dbg_hook(msg->get().c_str());
   af_invokeInternalDebugger(_Nil<core::T_O>());
 };
 
-#define ARGS_af_constantp "(obj &optional env)"
-#define DECL_af_constantp ""
-#define DOCS_af_constantp "constantp"
-bool af_constantp(T_sp obj, T_sp env) {
+#define ARGS_cl_constantp "(obj &optional env)"
+#define DECL_cl_constantp ""
+#define DOCS_cl_constantp "constantp"
+bool cl_constantp(T_sp obj, T_sp env) {
   _G();
   // ignore env
   if (cl_numberp(obj))
@@ -755,18 +737,18 @@ bool af_constantp(T_sp obj, T_sp env) {
   return false;
 };
 
-#define ARGS_af_identity "(arg)"
-#define DECL_af_identity ""
-#define DOCS_af_identity "identity"
-T_mv af_identity(T_sp arg) {
+#define ARGS_cl_identity "(arg)"
+#define DECL_cl_identity ""
+#define DOCS_cl_identity "identity"
+T_mv cl_identity(T_sp arg) {
   _G();
   return (Values(arg));
 };
 
-#define ARGS_af_macroexpand_default "(macro_function form macro_env)"
-#define DECL_af_macroexpand_default ""
-#define DOCS_af_macroexpand_default "macroexpand_default Default value of *macroexpand-hook*"
-T_mv af_macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_env) {
+#define ARGS_core_macroexpand_default "(macro_function form macro_env)"
+#define DECL_core_macroexpand_default ""
+#define DOCS_core_macroexpand_default "macroexpand_default Default value of *macroexpand-hook*"
+T_mv core_macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_env) {
   _G();
   Function_sp debugMacroFunction = macro_function;
   T_sp debugForm = form;
@@ -793,20 +775,20 @@ T_mv af_macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_en
   return (Values(result));
 };
 
-#define ARGS_af_null "(obj)"
-#define DECL_af_null ""
-#define DOCS_af_null "null test - return true if the object is the empty list otherwise return nil"
-T_mv af_null(T_sp obj) {
+#define ARGS_cl_null "(obj)"
+#define DECL_cl_null ""
+#define DOCS_cl_null "null test - return true if the object is the empty list otherwise return nil"
+T_mv cl_null(T_sp obj) {
   _G();
   if (obj.nilp())
     return (Values(_lisp->_true()));
   return (Values(_Nil<T_O>()));
 };
 
-#define ARGS_af_classOf "(obj)"
-#define DECL_af_classOf ""
-#define DOCS_af_classOf "return class of object - see CLHS"
-Class_sp af_classOf(T_sp obj) {
+#define ARGS_cl_classOf "(obj)"
+#define DECL_cl_classOf ""
+#define DOCS_cl_classOf "return class of object - see CLHS"
+Class_sp cl_classOf(T_sp obj) {
   _G();
   Class_sp result = lisp_instance_class(obj);
 #if DEBUG_CLOS >= 3
@@ -815,10 +797,10 @@ Class_sp af_classOf(T_sp obj) {
   return (result);
 }
 
-#define ARGS_af_STARfset "(function-name fn &optional macro)"
-#define DECL_af_STARfset ""
-#define DOCS_af_STARfset "fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not."
-T_sp af_STARfset(T_sp functionName, Function_sp functionObject, T_sp macro) {
+#define ARGS_core_STARfset "(function-name fn &optional macro)"
+#define DECL_core_STARfset ""
+#define DOCS_core_STARfset "fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not."
+T_sp core_STARfset(T_sp functionName, Function_sp functionObject, T_sp macro) {
   ASSERTF(functionObject, BF("function is undefined\n"));
   if (macro.isTrue()) {
     functionObject->setKind(kw::_sym_macro);
@@ -844,10 +826,10 @@ T_sp af_STARfset(T_sp functionName, Function_sp functionObject, T_sp macro) {
   SIMPLE_ERROR(BF("Illegal name for function[%s]") % _rep_(functionName));
 };
 
-#define ARGS_af_fdefinition "(function-name)"
-#define DECL_af_fdefinition ""
-#define DOCS_af_fdefinition "fdefinition"
-T_sp af_fdefinition(T_sp functionName) {
+#define ARGS_cl_fdefinition "(function-name)"
+#define DECL_cl_fdefinition ""
+#define DOCS_cl_fdefinition "fdefinition"
+T_sp cl_fdefinition(T_sp functionName) {
   if (cl_symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
     return sym->symbolFunction();
@@ -863,10 +845,10 @@ T_sp af_fdefinition(T_sp functionName) {
   SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
 }
 
-#define ARGS_af_fboundp "(function-name)"
-#define DECL_af_fboundp ""
-#define DOCS_af_fboundp "fboundp"
-bool af_fboundp(T_sp functionName) {
+#define ARGS_cl_fboundp "(function-name)"
+#define DECL_cl_fboundp ""
+#define DOCS_cl_fboundp "fboundp"
+bool cl_fboundp(T_sp functionName) {
   _G();
   if (functionName.nilp()) {
     return false;
@@ -885,10 +867,10 @@ bool af_fboundp(T_sp functionName) {
   SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
 }
 
-#define ARGS_af_fmakunbound "(function-name)"
-#define DECL_af_fmakunbound ""
-#define DOCS_af_fmakunbound "fmakunbound"
-T_mv af_fmakunbound(T_sp functionName) {
+#define ARGS_cl_fmakunbound "(function-name)"
+#define DECL_cl_fmakunbound ""
+#define DOCS_cl_fmakunbound "fmakunbound"
+T_mv cl_fmakunbound(T_sp functionName) {
   _G();
   if (cl_symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
@@ -907,10 +889,10 @@ T_mv af_fmakunbound(T_sp functionName) {
   SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
 }
 
-#define ARGS_af_read_delimited_list "(char &optional input-stream-designator recursive-p)"
-#define DECL_af_read_delimited_list ""
-#define DOCS_af_read_delimited_list "read a list up to a specific character - see CLHS"
-T_mv af_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p) {
+#define ARGS_cl_read_delimited_list "(char &optional input-stream-designator recursive-p)"
+#define DECL_cl_read_delimited_list ""
+#define DOCS_cl_read_delimited_list "read a list up to a specific character - see CLHS"
+T_mv cl_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p) {
   _G();
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 #if 0
@@ -1076,10 +1058,10 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
   return fallThroughReturn;
 }
 
-#define ARGS_af_every "(predicate &rest sequences)"
-#define DECL_af_every ""
-#define DOCS_af_every "See CLHS for every"
-T_sp af_every(T_sp predicate, List_sp sequences) {
+#define ARGS_cl_every "(predicate &rest sequences)"
+#define DECL_cl_every ""
+#define DOCS_cl_every "See CLHS for every"
+T_sp cl_every(T_sp predicate, List_sp sequences) {
   _G();
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
@@ -1087,10 +1069,10 @@ T_sp af_every(T_sp predicate, List_sp sequences) {
   return _lisp->_boolean(result);
 }
 
-#define ARGS_af_some "(predicate &rest sequences)"
-#define DECL_af_some ""
-#define DOCS_af_some "See CLHS for some"
-T_sp af_some(T_sp predicate, List_sp sequences) {
+#define ARGS_cl_some "(predicate &rest sequences)"
+#define DECL_cl_some ""
+#define DOCS_cl_some "See CLHS for some"
+T_sp cl_some(T_sp predicate, List_sp sequences) {
   _G();
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp retVal;
@@ -1100,10 +1082,10 @@ T_sp af_some(T_sp predicate, List_sp sequences) {
   return _Nil<T_O>();
 }
 
-#define ARGS_af_notany "(predicate &rest sequences)"
-#define DECL_af_notany ""
-#define DOCS_af_notany "See CLHS for notany"
-T_sp af_notany(T_sp predicate, List_sp sequences) {
+#define ARGS_cl_notany "(predicate &rest sequences)"
+#define DECL_cl_notany ""
+#define DOCS_cl_notany "See CLHS for notany"
+T_sp cl_notany(T_sp predicate, List_sp sequences) {
   _G();
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
@@ -1111,10 +1093,10 @@ T_sp af_notany(T_sp predicate, List_sp sequences) {
   return _lisp->_boolean(result);
 }
 
-#define ARGS_af_notevery "(predicate &rest sequences)"
-#define DECL_af_notevery ""
-#define DOCS_af_notevery "See CLHS for notevery"
-T_sp af_notevery(T_sp predicate, List_sp sequences) {
+#define ARGS_cl_notevery "(predicate &rest sequences)"
+#define DECL_cl_notevery ""
+#define DOCS_cl_notevery "See CLHS for notevery"
+T_sp cl_notevery(T_sp predicate, List_sp sequences) {
   _G();
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
@@ -1235,10 +1217,10 @@ T_sp cl_mapl(T_sp top, List_sp lists) {
   return oCar(lists);
 }
 
-#define ARGS_af_mapappend "(fun &rest cargs)"
-#define DECL_af_mapappend ""
-#define DOCS_af_mapappend "mapappend is like mapcar except that the results are appended together - see AMOP 280"
-T_mv af_mapappend(Function_sp fun, List_sp cargs) {
+#define ARGS_core_mapappend "(fun &rest cargs)"
+#define DECL_core_mapappend ""
+#define DOCS_core_mapappend "mapappend is like mapcar except that the results are appended together - see AMOP 280"
+T_mv core_mapappend(Function_sp fun, List_sp cargs) {
   _G();
   IMPLEMENT_MEF(BF("Fix me - I think I'm broken"));
   T_sp testNull = eval::funcall(cl::_sym_some, cl::_sym_null->symbolFunction(), cargs);
@@ -1294,10 +1276,10 @@ T_mv macro_backquote(List_sp form, T_sp env) {
   them together into one list and then points the cdr of the last element of this new list
   to c.
 */
-#define ARGS_af_append "(&rest lists)"
-#define DECL_af_append ""
-#define DOCS_af_append "append as in clhs"
-List_sp af_append(List_sp lists) {
+#define ARGS_cl_append "(&rest lists)"
+#define DECL_cl_append ""
+#define DOCS_cl_append "append as in clhs"
+List_sp cl_append(List_sp lists) {
   _G();
   ql::list list;
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
@@ -1321,11 +1303,11 @@ List_sp af_append(List_sp lists) {
   return res;
 }
 
-#define ARGS_af_sequence_start_end "(func sequence start end)"
-#define DECL_af_sequence_start_end ""
-#define DOCS_af_sequence_start_end "Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence." \
+#define ARGS_core_sequence_start_end "(func sequence start end)"
+#define DECL_core_sequence_start_end ""
+#define DOCS_core_sequence_start_end "Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence." \
   " I'm not sure what the func argument is for. If end is nil then it is set to the end of the sequence.  Return MultipleValues(start,end,length)."
-T_mv af_sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, T_sp end) {
+T_mv core_sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, T_sp end) {
   _G();
   uint len = cl_length(sequence);
   if (end.nilp())
@@ -1344,120 +1326,11 @@ T_mv af_sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, T_sp end) 
   return (Values(start, fnend, length));
 };
 
-#if 0
-#define ARGS_af_open "(filespec_desig &key (direction :input) element-type if-exists if-does-not-exist (external-format :default))"
-#define DECL_af_open ""
-#define DOCS_af_open ""
-Stream_mv af_open(T_sp filespec_desig, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format )
-{_G();
-  LOG(BF("filespec_desig = %s") % _rep_(filespec_desig) );
-  LOG(BF("direction[%s]") % _rep_(direction) );
-  LOG(BF("if_exists[%s]") % _rep_(if_exists));
-  LOG(BF("if_does_not_exist[%s]") % _rep_(if_does_not_exist));
-  LOG(BF("external_format[%s]") % _rep_(external_format));
-  Pathname_sp filespec = cl_pathname(filespec_desig);
-  if ( direction == kw::_sym_input )
-  {
-    LOG(BF("status"));
-    if ( af_file_kind(filespec) != kw::_sym_file )
-    {
-      FILE_ERROR(filespec);
-    }
-    if ( external_format == kw::_sym_default )
-    {
-      LOG(BF("status"));
-      FDInStream_sp fin = FDInStream_O::create(filespec);
-      return(Values(fin));
-      SYMBOL_SC_(KeywordPkg,gzip);
-    }
-    SIMPLE_ERROR(BF("For file[%s] Bad external-format option: %s") % filespec % _rep_(external_format) );
-  } else if ( direction == kw::_sym_output )
-  {
-    LOG(BF("direction was :output"));
-    if ( cl_probe_file(filespec).notnilp() )
-    {
-      Str_sp truename = cl_namestring(cl_truename(filespec));
-      LOG(BF("The file[%s] already exists")% truename->get() );
-      SYMBOL_SC_(KeywordPkg,supersede);
-      if ( if_exists.nilp() || if_exists == kw::_sym_supersede)
-      {
-        LOG(BF("supersede"));
-		// First write output to a temporary file and then rename it to the original on close
-        Pathname_sp temporaryFileSpec = cl_make_pathname(_Nil<T_O>(), // host
-                                                         false, // hostp
-                                                         _Nil<T_O>(), // device
-                                                         false, // devicep
-                                                         _Nil<T_O>(), // directory
-                                                         false, // directoryp
-                                                         _Nil<T_O>(), // name
-                                                         false, // namep
-                                                         Str_O::create(filespec->_Type.as<Str_O>()->get()+"Temp"), //type
-                                                         true, // typep
-                                                         _Nil<T_O>(), // version
-                                                         false, // versionp
-                                                         kw::_sym_local, // scase
-                                                         filespec // defaults
-                                                         );
-        if ( external_format == kw::_sym_default)
-        {
-          LOG(BF("external_format is :default"));
-          FDOutStream_sp fout = FDOutStream_O::createTemporary(temporaryFileSpec,filespec,std::ios_base::out|std::ios_base::trunc);
-          return(Values(fout));
-        }
-        SYMBOL_SC_(KeywordPkg,error);
-      } else if ( if_exists == kw::_sym_error )
-      {
-        FILE_ERROR(filespec);
-        SYMBOL_SC_(KeywordPkg,append);
-      } else if ( if_exists == kw::_sym_append )
-      {
-        LOG(BF("if_exists is :append"));
-        if ( external_format != kw::_sym_default)
-        {
-          SIMPLE_ERROR(BF("You cannot append to a file of external_format[%s]") % _rep_(external_format) );
-        }
-        LOG(BF("Setting up FDOutStream with append"));
-        FDOutStream_sp fout = FDOutStream_O::create(filespec,std::ios_base::ate|std::ios_base::app);
-        return(Values(fout));
-      }
-      SIMPLE_ERROR(BF("unknown option[%s] for if-exists") % _rep_(if_exists) );
-    } else
-    {
-      LOG(BF("File does not exist"));
-      SYMBOL_SC_(KeywordPkg,create);
-      if ( if_does_not_exist.nilp() || if_does_not_exist == kw::_sym_create )
-      {
-        LOG(BF("if_does_not_exist is :create"));
-        if ( external_format == kw::_sym_default)
-        {
-          LOG(BF("external_format is :default"));
-          FDOutStream_sp fout = FDOutStream_O::create(filespec,std::ios_base::out|std::ios_base::trunc);
-          return(Values(fout));
-#if 0
-        } else if ( external_format == kw::_sym_gzip )
-        {
-          LOG(BF("external_format is :gzip"));
-          FileOutCompressedStream_sp fout = FileOutCompressedStream_O::createGzip(filespec);
-          return(Values(fout));
-#endif
-        }
-      } else if ( if_does_not_exist == kw::_sym_error )
-      {
-        FILE_ERROR(filespec);
-      }
-      LOG(BF("falling through to unimplemented"));
-      IMPLEMENT_ME();
-    }
-  }
-  LOG(BF("status"));
-  IMPLEMENT_ME();
-}
-#endif
 
-#define ARGS_af_gensym "(&optional x)"
-#define DECL_af_gensym ""
-#define DOCS_af_gensym "See CLHS gensym"
-Symbol_mv af_gensym(T_sp x) {
+#define ARGS_cl_gensym "(&optional x)"
+#define DECL_cl_gensym ""
+#define DOCS_cl_gensym "See CLHS gensym"
+Symbol_mv cl_gensym(T_sp x) {
   _G();
   stringstream ss;
   if (x.nilp()) {
@@ -1483,10 +1356,10 @@ Symbol_mv af_gensym(T_sp x) {
   return (Values(sym));
 }
 
-#define ARGS_af_type_to_symbol "(x)"
-#define DECL_af_type_to_symbol ""
-#define DOCS_af_type_to_symbol "type_to_symbol"
-Symbol_mv af_type_to_symbol(T_sp x) {
+#define ARGS_core_type_to_symbol "(x)"
+#define DECL_core_type_to_symbol ""
+#define DOCS_core_type_to_symbol "type_to_symbol"
+Symbol_mv core_type_to_symbol(T_sp x) {
   _G();
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -1640,13 +1513,13 @@ T_sp type_of(T_sp x) {
         return cl::_sym_pathname;
       }
     }
-  return af_type_to_symbol(x);
+  return core_type_to_symbol(x);
 }
 
-#define ARGS_af_type_of "(obj)"
-#define DECL_af_type_of ""
-#define DOCS_af_type_of "type_of"
-T_sp af_type_of(T_sp x) {
+#define ARGS_cl_type_of "(obj)"
+#define DECL_cl_type_of ""
+#define DOCS_cl_type_of "type_of"
+T_sp cl_type_of(T_sp x) {
   _G();
   return type_of(x);
 }
@@ -1858,137 +1731,137 @@ InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameNext(int idx) {
 
 extern "C" {
 using namespace core;
-#define ARGS_af_ihsBacktraceNoArgs "()"
-#define DECL_af_ihsBacktraceNoArgs ""
-#define DOCS_af_ihsBacktraceNoArgs "ihsBacktraceNoArgs"
-void af_ihsBacktraceNoArgs() {
+#define ARGS_core_ihsBacktraceNoArgs "()"
+#define DECL_core_ihsBacktraceNoArgs ""
+#define DOCS_core_ihsBacktraceNoArgs "ihsBacktraceNoArgs"
+void core_ihsBacktraceNoArgs() {
   _G();
-  af_ihsBacktrace(_lisp->_true(), _Nil<core::T_O>());
+  core_ihsBacktrace(_lisp->_true(), _Nil<core::T_O>());
 };
 
-#define ARGS_af_ihsTop "()"
-#define DECL_af_ihsTop ""
-#define DOCS_af_ihsTop "ihsTop"
-int af_ihsTop() {
+#define ARGS_core_ihsTop "()"
+#define DECL_core_ihsTop ""
+#define DOCS_core_ihsTop "ihsTop"
+int core_ihsTop() {
   InvocationHistoryFrameIterator_sp top = core_getInvocationHistoryFrameTop();
   if (!top->isValid())
     return 0;
   return top->index();
 };
 
-#define ARGS_af_ihsPrev "(cur)"
-#define DECL_af_ihsPrev ""
-#define DOCS_af_ihsPrev "ihsPrev"
-int af_ihsPrev(int idx) {
+#define ARGS_core_ihsPrev "(cur)"
+#define DECL_core_ihsPrev ""
+#define DOCS_core_ihsPrev "ihsPrev"
+int core_ihsPrev(int idx) {
   InvocationHistoryFrameIterator_sp prev = core_getInvocationHistoryFramePrev(idx);
   if (!prev->isValid())
     return 0;
   return prev->index();
 };
 
-#define ARGS_af_ihsNext "(cur)"
-#define DECL_af_ihsNext ""
-#define DOCS_af_ihsNext "ihsNext"
-int af_ihsNext(int idx) {
+#define ARGS_core_ihsNext "(cur)"
+#define DECL_core_ihsNext ""
+#define DOCS_core_ihsNext "ihsNext"
+int core_ihsNext(int idx) {
   InvocationHistoryFrameIterator_sp next = core_getInvocationHistoryFrameNext(idx);
   if (!next->isValid())
     return 0;
   return next->index();
 }
 
-#define ARGS_af_ihsFun "(arg)"
-#define DECL_af_ihsFun ""
-#define DOCS_af_ihsFun "ihsFun: return the function in the invocation history stack at i"
-T_sp af_ihsFun(int idx) {
+#define ARGS_core_ihsFun "(arg)"
+#define DECL_core_ihsFun ""
+#define DOCS_core_ihsFun "ihsFun: return the function in the invocation history stack at i"
+T_sp core_ihsFun(int idx) {
   InvocationHistoryFrameIterator_sp cur = core_getInvocationHistoryFrame(idx);
   if (!cur->isValid())
     return _Nil<T_O>();
   return cur->function();
 };
 
-#define ARGS_af_ihsArguments "(arg)"
-#define DECL_af_ihsArguments ""
-#define DOCS_af_ihsArguments "ihsArguments: return the arguments to the function in the invocation history stack at i"
-T_sp af_ihsArguments(int idx) {
+#define ARGS_core_ihsArguments "(arg)"
+#define DECL_core_ihsArguments ""
+#define DOCS_core_ihsArguments "ihsArguments: return the arguments to the function in the invocation history stack at i"
+T_sp core_ihsArguments(int idx) {
   InvocationHistoryFrameIterator_sp cur = core_getInvocationHistoryFrame(idx);
   if (!cur->isValid())
     return _Nil<T_O>();
   return cur->arguments();
 };
 
-#define ARGS_af_ihsEnv "(cur)"
-#define DECL_af_ihsEnv ""
-#define DOCS_af_ihsEnv "ihsEnv"
-T_sp af_ihsEnv(int idx) {
+#define ARGS_core_ihsEnv "(cur)"
+#define DECL_core_ihsEnv ""
+#define DOCS_core_ihsEnv "ihsEnv"
+T_sp core_ihsEnv(int idx) {
   InvocationHistoryFrameIterator_sp cur = core_getInvocationHistoryFrame(idx);
   if (!cur->isValid())
     return _Nil<T_O>();
   return cur->environment();
 };
 
-#define ARGS_af_ihsBds "(cur)"
-#define DECL_af_ihsBds ""
-#define DOCS_af_ihsBds "ihsBds"
-int af_ihsBds(int idx) {
+#define ARGS_core_ihsBds "(cur)"
+#define DECL_core_ihsBds ""
+#define DOCS_core_ihsBds "ihsBds"
+int core_ihsBds(int idx) {
   InvocationHistoryFrameIterator_sp cur = core_getInvocationHistoryFrame(idx);
   if (!cur->isValid())
     return 0;
   return cur->frame()->bds();
 };
 
-#define ARGS_af_ihsCurrentFrame "()"
-#define DECL_af_ihsCurrentFrame ""
-#define DOCS_af_ihsCurrentFrame "ihsCurrentFrame"
-int af_ihsCurrentFrame() {
+#define ARGS_core_ihsCurrentFrame "()"
+#define DECL_core_ihsCurrentFrame ""
+#define DOCS_core_ihsCurrentFrame "ihsCurrentFrame"
+int core_ihsCurrentFrame() {
   _G();
   T_sp cf = _sym_STARihsCurrentSTAR->symbolValue();
   if (cf.nilp()) {
-    int icf = af_ihsTop();
-    return af_setIhsCurrentFrame(icf);
+    int icf = core_ihsTop();
+    return core_setIhsCurrentFrame(icf);
   }
   int icf = unbox_fixnum(gc::As<Fixnum_sp>(cf));
   if (icf < 0) {
     _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(icf));
     return 0;
   }
-  if (icf >= af_ihsTop()) {
-    _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(af_ihsTop()));
-    return af_ihsTop();
+  if (icf >= core_ihsTop()) {
+    _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(core_ihsTop()));
+    return core_ihsTop();
   }
   return icf;
 }
 
-#define ARGS_af_setIhsCurrentFrame "()"
-#define DECL_af_setIhsCurrentFrame ""
-#define DOCS_af_setIhsCurrentFrame "setIhsCurrentFrame"
-int af_setIhsCurrentFrame(int icf) {
+#define ARGS_core_setIhsCurrentFrame "()"
+#define DECL_core_setIhsCurrentFrame ""
+#define DOCS_core_setIhsCurrentFrame "setIhsCurrentFrame"
+int core_setIhsCurrentFrame(int icf) {
   _G();
   if (icf < 0)
     icf = 0;
-  else if (icf >= af_ihsTop())
-    icf = af_ihsTop();
+  else if (icf >= core_ihsTop())
+    icf = core_ihsTop();
   _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(icf));
   return icf;
 }
 
-#define ARGS_af_bdsTop "()"
-#define DECL_af_bdsTop ""
-#define DOCS_af_bdsTop "bdsTop"
-int af_bdsTop() {
+#define ARGS_core_bdsTop "()"
+#define DECL_core_bdsTop ""
+#define DOCS_core_bdsTop "bdsTop"
+int core_bdsTop() {
   return _lisp->bindings().top();
 };
 
-#define ARGS_af_bdsVar "(idx)"
-#define DECL_af_bdsVar ""
-#define DOCS_af_bdsVar "bdsVar"
-Symbol_sp af_bdsVar(int idx) {
+#define ARGS_core_bdsVar "(idx)"
+#define DECL_core_bdsVar ""
+#define DOCS_core_bdsVar "bdsVar"
+Symbol_sp core_bdsVar(int idx) {
   return _lisp->bindings().var(idx);
 };
 
-#define ARGS_af_bdsVal "(idx)"
-#define DECL_af_bdsVal ""
-#define DOCS_af_bdsVal "bdsVal"
-T_sp af_bdsVal(int idx) {
+#define ARGS_core_bdsVal "(idx)"
+#define DECL_core_bdsVal ""
+#define DOCS_core_bdsVal "bdsVal"
+T_sp core_bdsVal(int idx) {
   return _lisp->bindings().val(idx);
 };
 
@@ -2037,10 +1910,10 @@ void core_dynamicBindingStackDump(std::ostream &out) {
   };
 }
 
-#define ARGS_af_ihsBacktrace "(&optional (out t) msg)"
-#define DECL_af_ihsBacktrace ""
-#define DOCS_af_ihsBacktrace "ihsBacktrace"
-T_sp af_ihsBacktrace(T_sp outputDesignator, T_sp msg) {
+#define ARGS_core_ihsBacktrace "(&optional (out t) msg)"
+#define DECL_core_ihsBacktrace ""
+#define DOCS_core_ihsBacktrace "ihsBacktrace"
+T_sp core_ihsBacktrace(T_sp outputDesignator, T_sp msg) {
   _G();
   T_sp ss;
   if (outputDesignator.nilp()) {
@@ -2065,18 +1938,18 @@ void initialize_primitives() {
   //
   // Define functions first because generics and methods depend on some of them
   //
-  Defun(allRegisteredClassNames);
+  CoreDefun(allRegisteredClassNames);
 
   SYMBOL_SC_(CorePkg, smartPointerDetails);
-  Defun(smartPointerDetails);
+  CoreDefun(smartPointerDetails);
   SYMBOL_EXPORT_SC_(ClPkg, null);
-  Defun(null);
+  ClDefun(null);
 
   SYMBOL_SC_(CorePkg, STARfset);
-  Defun(STARfset);
+  CoreDefun(STARfset);
 
   SYMBOL_SC_(CorePkg, unbound);
-  Defun(unbound);
+  CoreDefun(unbound);
 
   SYMBOL_EXPORT_SC_(ClPkg, read);
   ClDefun(read);
@@ -2085,19 +1958,19 @@ void initialize_primitives() {
   ClDefun(read_preserving_whitespace);
 
   SYMBOL_EXPORT_SC_(ClPkg, read_delimited_list);
-  Defun(read_delimited_list);
+  ClDefun(read_delimited_list);
 
   SYMBOL_EXPORT_SC_(ClPkg, every);
-  Defun(every);
+  ClDefun(every);
 
   SYMBOL_EXPORT_SC_(ClPkg, some);
-  Defun(some);
+  ClDefun(some);
 
   SYMBOL_EXPORT_SC_(ClPkg, notevery);
-  Defun(notevery);
+  ClDefun(notevery);
 
   SYMBOL_EXPORT_SC_(ClPkg, notany);
-  Defun(notany);
+  ClDefun(notany);
 
   SYMBOL_EXPORT_SC_(ClPkg, mapcar);
   ClDefun(mapcar);
@@ -2112,7 +1985,7 @@ void initialize_primitives() {
   ClDefun(mapl);
 
   SYMBOL_SC_(CorePkg, mapappend);
-  Defun(mapappend);
+  CoreDefun(mapappend);
 
   SYMBOL_EXPORT_SC_(ClPkg, mapcan);
   ClDefun(mapcan);
@@ -2121,45 +1994,42 @@ void initialize_primitives() {
   ClDefun(mapcon);
 
   SYMBOL_SC_(CorePkg, macroexpand_default);
-  Defun(macroexpand_default);
+  CoreDefun(macroexpand_default);
 
   SYMBOL_EXPORT_SC_(ClPkg, append);
-  Defun(append);
+  ClDefun(append);
 
   SYMBOL_EXPORT_SC_(ClPkg, classOf);
-  Defun(classOf);
+  ClDefun(classOf);
 
   SYMBOL_EXPORT_SC_(ClPkg, identity);
-  Defun(identity);
+  ClDefun(identity);
 
   SYMBOL_EXPORT_SC_(ClPkg, constantp);
-  Defun(constantp);
+  ClDefun(constantp);
 
   SYMBOL_SC_(CorePkg, sequence_start_end);
-  Defun(sequence_start_end);
-
-  //	SYMBOL_EXPORT_SC_(ClPkg,open);
-  //	Defun(open);
+  CoreDefun(sequence_start_end);
 
   SYMBOL_EXPORT_SC_(ClPkg, ash);
   ClDefun(ash);
 
   SYMBOL_SC_(CorePkg, type_to_symbol);
-  Defun(type_to_symbol);
+  CoreDefun(type_to_symbol);
 
   SYMBOL_SC_(CorePkg, gdb);
-  Defun(gdb);
-  Defun(break);
+  CoreDefun(gdb);
+  CoreDefun(break);
   SYMBOL_SC_(CorePkg, gdbInspect);
-  Defun(gdbInspect);
+  CoreDefun(gdbInspect);
 
   defmacro(CorePkg, "backquote", &macro_backquote, ARGS_macro_backquote, DECL_macro_backquote, DOCS_macro_backquote, __FILE__, __LINE__);
 
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-  Defun(gensym);
+  ClDefun(gensym);
 
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
-  Defun(type_of);
+  ClDefun(type_of);
 
   SYMBOL_EXPORT_SC_(ClPkg, specialOperatorP);
   ClDefun(specialOperatorP);
@@ -2168,71 +2038,62 @@ void initialize_primitives() {
   ClDefun(macroFunction);
 
   SYMBOL_SC_(CorePkg, separatePairList);
-  Defun(separatePairList);
-
-  SYMBOL_EXPORT_SC_(ClPkg, makeStringOutputStream);
-  Defun(makeStringOutputStream);
+  CoreDefun(separatePairList);
 
   SYMBOL_EXPORT_SC_(ClPkg, set);
 
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-  Defun(gensym);
+  ClDefun(gensym);
 
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
-  Defun(type_of);
+  ClDefun(type_of);
 
   SYMBOL_SC_(CorePkg, separatePairList);
-  Defun(separatePairList);
-
-  SYMBOL_EXPORT_SC_(ClPkg, makeStringOutputStream);
-  Defun(makeStringOutputStream);
+  CoreDefun(separatePairList);
 
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-  Defun(gensym);
+  ClDefun(gensym);
 
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
-  Defun(type_of);
+  ClDefun(type_of);
 
   //  CoreDefun(treatAsSpecialOperatorP);
 
   SYMBOL_SC_(CorePkg, separatePairList);
-  Defun(separatePairList);
-
-  SYMBOL_EXPORT_SC_(ClPkg, makeStringOutputStream);
-  Defun(makeStringOutputStream);
+  CoreDefun(separatePairList);
 
   ClDefun(set);
 
   SYMBOL_SC_(CorePkg, testMemoryError);
-  Defun(testMemoryError);
+  CoreDefun(testMemoryError);
 
   SYMBOL_SC_(CorePkg, functionBlockName);
-  Defun(functionBlockName);
+  CoreDefun(functionBlockName);
 
   SYMBOL_SC_(CorePkg, validFunctionNameP);
-  Defun(validFunctionNameP);
+  CoreDefun(validFunctionNameP);
 
   SYMBOL_EXPORT_SC_(ClPkg, fdefinition);
-  Defun(fdefinition);
+  ClDefun(fdefinition);
 
   SYMBOL_EXPORT_SC_(ClPkg, fboundp);
-  Defun(fboundp);
+  ClDefun(fboundp);
 
   SYMBOL_EXPORT_SC_(ClPkg, fmakunbound);
-  Defun(fmakunbound);
+  ClDefun(fmakunbound);
 
   SYMBOL_EXPORT_SC_(ClPkg, values);
   ClDefun(values);
   CoreDefun(valuesTesting);
 
   SYMBOL_EXPORT_SC_(ClPkg, values_list);
-  Defun(values_list);
+  ClDefun(values_list);
 
-  Defun(isTrue);
+  CoreDefun(isTrue);
 
 
   SYMBOL_EXPORT_SC_(ExtPkg, getEnv);
-  Defun(getEnv);
+  ExtDefun(getEnv);
   SYMBOL_EXPORT_SC_(CorePkg, pointer);
 
 #if 0
@@ -2243,13 +2104,13 @@ void initialize_primitives() {
   SYMBOL_EXPORT_SC_(CorePkg, toTaggedFixnum);
   SYMBOL_EXPORT_SC_(CorePkg, fromTaggedFixnum);
   SYMBOL_EXPORT_SC_(CorePkg, dumpTaggedFixnum);
-  Defun(toTaggedFixnum);
-  Defun(fromTaggedFixnum);
-  Defun(dumpTaggedFixnum);
-  Defun(dumpAddressOf);
-  Defun(incompleteNextHigherPowerOf_2);
-  Defun(argc);
-  Defun(argv);
+  CoreDefun(toTaggedFixnum);
+  CoreDefun(fromTaggedFixnum);
+  CoreDefun(dumpTaggedFixnum);
+  CoreDefun(dumpAddressOf);
+  CoreDefun(incompleteNextHigherPowerOf_2);
+  CoreDefun(argc);
+  CoreDefun(argv);
   ClDefun(lispImplementationVersion);
   ClDefun(lispImplementationType);
   CoreDefun(lispImplementationId);
@@ -2263,24 +2124,24 @@ void initialize_primitives() {
   CoreDefun(create_tagged_immediate_value_or_nil);
 
   SYMBOL_SC_(CorePkg, ihsBacktrace);
-  Defun(ihsBacktrace);
+  CoreDefun(ihsBacktrace);
   SYMBOL_SC_(CorePkg, ihsTop);
-  Defun(ihsTop);
+  CoreDefun(ihsTop);
   SYMBOL_SC_(CorePkg, ihsPrev);
-  Defun(ihsPrev);
+  CoreDefun(ihsPrev);
   SYMBOL_SC_(CorePkg, ihsNext);
-  Defun(ihsNext);
+  CoreDefun(ihsNext);
   SYMBOL_SC_(CorePkg, ihsFun);
-  Defun(ihsFun);
-  Defun(ihsArguments);
+  CoreDefun(ihsFun);
+  CoreDefun(ihsArguments);
   SYMBOL_SC_(CorePkg, ihsEnv);
-  Defun(ihsEnv);
+  CoreDefun(ihsEnv);
   SYMBOL_SC_(CorePkg, bdsTop);
-  Defun(bdsTop);
+  CoreDefun(bdsTop);
   SYMBOL_SC_(CorePkg, bdsVar);
-  Defun(bdsVar);
+  CoreDefun(bdsVar);
   SYMBOL_SC_(CorePkg, bdsVal);
-  Defun(bdsVal);
+  CoreDefun(bdsVal);
   CoreDefun(exceptionStack);
   CoreDefun(exceptionStackDump);
   CoreDefun(trapExecution);

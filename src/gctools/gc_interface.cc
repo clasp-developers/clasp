@@ -178,12 +178,13 @@ typedef bool _Bool;
  */
 
 template <typename RT, typename...ARGS>
-void expose_function(const std::string& pkgName,
+void expose_function(const std::string& rawPkgName,
                      const std::string& symbolName,
                      bool exported,
                      RT (*fp)(ARGS...),
                      const std::string& lambdaList)
 {
+  std::string pkgName = core::lispify_symbol_name(rawPkgName);
   core::wrap_function(pkgName,symbolName,fp,lambdaList);
 }
 
@@ -225,8 +226,8 @@ void initialize_source_info(core::T_sp documentation) {
   core::HashTableEql_sp ht = gc::As<core::HashTableEql_sp>(documentation);
   for ( int i=0; i<(sizeof(global_source_info)/sizeof(SourceInfo)-1); ++i ) {
     std::string lispified = core::lispify_symbol_name(global_source_info[i]._SymbolName);
-    core::Symbol_sp sym = core::lisp_intern(lispified,
-                                            global_source_info[i]._PackageName);
+    std::string packageName = core::lispify_symbol_name(global_source_info[i]._PackageName);
+    core::Symbol_sp sym = core::lisp_intern(lispified,packageName);
     core::Function_sp func = core::coerce::functionDesignator(sym);
     core::Str_sp sourceFile = core::Str_O::create(global_source_info[i]._File);
     func->closure->setSourcePosInfo(sourceFile, global_source_info[i]._FilePos,

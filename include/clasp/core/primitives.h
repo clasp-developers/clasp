@@ -36,18 +36,16 @@ THE SOFTWARE.
 namespace core {
 
 extern T_sp cl_macroFunction(Symbol_sp symbol, T_sp env);
-extern T_mv af_separatePairList(List_sp listOfPairs);
+extern T_mv core_separatePairList(List_sp listOfPairs);
 
-extern Symbol_mv af_functionBlockName(T_sp functionName);
+extern Symbol_mv core_functionBlockName(T_sp functionName);
 
-extern void af_ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llh);
+//extern void af_ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llh);
 
-extern T_mv af_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p);
+extern T_mv cl_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p);
 
 T_sp cl_read(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
 T_sp cl_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
-
-extern void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body);
 
 #if 0
     EXTERN_FN(read);
@@ -59,17 +57,17 @@ extern void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_cl
     EXTERN_GENERIC(reinitialize_instance);
 #endif
 
-T_sp af_type_of(T_sp x);
-T_sp af_notany(T_sp predicate, List_sp sequences);
-T_sp af_every(T_sp predicate, List_sp sequences);
+T_sp cl_type_of(T_sp x);
+T_sp cl_notany(T_sp predicate, List_sp sequences);
+T_sp cl_every(T_sp predicate, List_sp sequences);
 
 T_sp cl_mapcar(T_sp func_desig, List_sp lists);
 
-List_sp af_append(List_sp lists);
+List_sp cl_append(List_sp lists);
 
 //    Stream_mv af_open(T_sp filespec, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format );
 
-Symbol_mv af_gensym(T_sp x);
+Symbol_mv cl_gensym(T_sp x);
 
 class SequenceStepper {
 public:
@@ -148,7 +146,7 @@ CL_NAMESPACE namespace core {
   LAMBDA(x y);
   DECLARE();
   DOCSTRING(R"doc(add two numbers)doc");
-  inline CL_DEFUN int core_test_add(int x, int y) {
+  inline CL_DEFUN int core__test_add(int x, int y) {
     return x + y;
   }
   
@@ -205,20 +203,20 @@ InvocationHistoryFrameIterator_sp core_getInvocationHistoryFramePrev(int idx);
 };
 
 extern "C" {
-core::T_sp af_ihsBacktrace(core::T_sp outDesignator, core::T_sp msg);
-int af_ihsTop();
-void af_ihsTopSetLineColumn(int lineno, int column);
-int af_ihsPrev(int idx);
-int af_ihsNext(int idx);
-core::T_sp af_ihsFun(int idx);
-core::T_sp af_ihsArguments(int idx);
-core::T_sp af_ihsEnv(int idx);
+core::T_sp core_ihsBacktrace(core::T_sp outDesignator, core::T_sp msg);
+int core_ihsTop();
+void core_ihsTopSetLineColumn(int lineno, int column);
+int core_ihsPrev(int idx);
+int core_ihsNext(int idx);
+core::T_sp core_ihsFun(int idx);
+core::T_sp core_ihsArguments(int idx);
+core::T_sp core_ihsEnv(int idx);
 /*! Return the current frame index stored in core:*ihs-current*
       Update core:*ihs-current* to a valid value */
-int af_ihsCurrentFrame();
+int core_ihsCurrentFrame();
 /*! Set the current core:*ihs-current* value.
       If the idx is out of bounds then return a valid value */
-int af_setIhsCurrentFrame(int idx);
+int core_setIhsCurrentFrame(int idx);
 void core_exceptionStackDump();
 void core_dynamicBindingStackDump(std::ostream &out);
 };

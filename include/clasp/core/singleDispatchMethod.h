@@ -124,6 +124,10 @@ public:
 	  Use next-emfun to set up a FunctionValueEnvironment that defines call-next-method and next-method-p */
   void LISP_INVOKE();
 };
+
+ void core_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body);
+
+
 };
 
 #endif /* _singleDispatchMethod_H_ */

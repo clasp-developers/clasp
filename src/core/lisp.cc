@@ -369,6 +369,24 @@ void testStrings() {
 }
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
+
+  { // Trap symbols as they are interned
+    char* trapInterncP = getenv("CLASP_TRAP_INTERN");
+    if ( trapInterncP ) {
+      this->_TrapIntern = true;
+      std::string trapIntern(trapInterncP);
+      size_t sep = trapIntern.find(':');
+      if (sep == string::npos) {
+        printf("You must provide a symbol name of the form PKG:NAME or PKG::NAME\n");
+        abort();
+      }
+      size_t nameStart = sep + 1;
+      if (trapIntern[nameStart] == ':') ++nameStart;
+      this->_TrapInternPackage = trapIntern.substr(0, sep);
+      this->_TrapInternName = trapIntern.substr(nameStart, 9999999);
+    }
+  }
+
   this->_Mode = FLAG_EXECUTE;
 
   ::_lisp = gctools::tagged_pointer<Lisp_O>(this); // this->sharedThis<Lisp_O>();
@@ -1268,7 +1286,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
         ++nameStart;
       this->_TrapInternPackage = options._TrapIntern.substr(0, sep);
       this->_TrapInternName = options._TrapIntern.substr(nameStart, 9999999);
-      printf("%s:%d Trapping INTERN of symbol %s in package %s\n", __FILE__, __LINE__, this->_TrapInternPackage.c_str(), this->_TrapInternName.c_str());
+      printf("%s:%d Trapping INTERN of symbol %s in package %s\n", __FILE__, __LINE__, this->_TrapInternName.c_str(), this->_TrapInternPackage.c_str() );
     }
   }
   LOG(BF("lisp->_ScriptInFile(%d)  lisp->_FileNameOrCode(%s)") % this->_ScriptInFile % this->_FileNameOrCode);
@@ -1657,43 +1675,6 @@ T_mv ext_vfork_execvp(List_sp call_and_arguments) {
   __END_DOC
 */
 
-#if defined(XML_ARCHIVE)
-/*
-  __BEGIN_DOC( candoScript.general.saveCando, subsection, saveCando)
-  \scriptCmd{save}{Object::object Text::fileName}
-
-  Save the \sa{object} to the \sa{fileName} in Cando-OML format.
-  __END_DOC
-*/
-#define ARGS_af_saveCando "(obj pathDesignator)"
-#define DECL_af_saveCando ""
-#define DOCS_af_saveCando "saveCando"
-T_mv af_saveCando(T_sp obj, T_sp pathDesignator) {
-  _G();
-  Path_sp path = coerce::pathDesignator(pathDesignator);
-  T_sp sout = cl_open(path,
-                      kw::_sym_output,
-                      cl::_sym_standard_char,
-                      _Nil<Symbol_O>(),
-                      _Nil<Symbol_O>(),
-                      kw::_sym_default);
-  _lisp->sprint(obj, sout);
-  sout->close();
-  return (Values(_Nil<T_O>()));
-}
-
-#define ARGS_af_loadCando "(pathDesignator)"
-#define DECL_af_loadCando ""
-#define DOCS_af_loadCando "loadCando"
-T_mv af_loadCando(T_sp pathDesignator) {
-  _G();
-  Path_sp path = coerce::pathDesignator(pathDesignator);
-  T_sp sin = cl_open(path, kw::_sym_input, cl::_sym_standard_char, _Nil<Symbol_O>(), _Nil<Symbol_O>(), kw::_sym_default);
-  T_sp obj = _lisp->sread(sin.as<Stream_O>(), true, _Nil<T_O>());
-  sin->close();
-  return (Values(obj));
-}
-#endif // defined(XML_ARCHIVE)
 
 #define ARGS_cl_findClass "(symbol &optional (errorp t) environment)"
 #define DECL_cl_findClass ""
@@ -1938,7 +1919,7 @@ void searchForApropos(List_sp packages, const string &raw_substring, bool print_
                     if ( (sym)->fboundp() )
                     {
                         ss << " ";
-                        ss << af_classOf(af_symbolFunction((sym)))->classNameAsString();
+                        ss << cl_classOf(af_symbolFunction((sym)))->classNameAsString();
 			Function_sp fn = af_symbolFunction(sym);
                         if ( !fn.unboundp() && fn->closure && gc::As<Function_sp>(af_symbolFunction(sym))->closure->macroP() )
                         {
@@ -2389,7 +2370,7 @@ void cl_cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
 #define DOCS_af_isAssignableTo "isAssignableTo"
 T_mv af_isAssignableTo(T_sp tag, Class_sp mc) {
   _G();
-  LOG(BF("Checking if instances of class(%s) is assignable to variables of class(%s)") % af_classOf(tag)->className() % af_classOf(mc)->className());
+  LOG(BF("Checking if instances of class(%s) is assignable to variables of class(%s)") % cl_classOf(tag)->className() % cl_classOf(mc)->className());
   bool io = (tag->isAssignableToByClassSymbol(mc->name()));
   return (Values(_lisp->_boolean(io)));
 }
@@ -3298,6 +3279,7 @@ LispHolder::LispHolder(bool mpiEnabled, int mpiRank, int mpiSize) {
 void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmentVariable) {
   this->_Lisp->_StackTop = (char *)&argc;
   ::_lisp = this->_Lisp;
+
   const char *argv0 = "./";
   if (argc > 0)
     argv0 = argv[0];

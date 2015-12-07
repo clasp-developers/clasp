@@ -98,14 +98,14 @@ T_sp af_structureRef(T_sp obj, Symbol_sp type, int idx) {
   }
 #ifdef CLOS
   if (Instance_sp so = obj.asOrNull<Instance_O>()) {
-    if (!af_structureSubtypep(af_classOf(so), type)) {
+    if (!af_structureSubtypep(cl_classOf(so), type)) {
       QERROR_WRONG_TYPE_NTH_ARG(1, obj, type);
     }
     return so->instanceRef(idx);
   }
 #endif
   if (StructureObject_sp so = obj.asOrNull<StructureObject_O>()) {
-    T_sp soclass = af_type_of(so);
+    T_sp soclass = cl_type_of(so);
     if (!af_structureSubtypep(soclass, type)) {
       QERROR_WRONG_TYPE_NTH_ARG(1, obj, type);
     }
@@ -124,14 +124,14 @@ T_sp af_structureSet(T_sp obj, Symbol_sp type, int idx, T_sp val) {
   }
 #ifdef CLOS
   if (Instance_sp so = obj.asOrNull<Instance_O>()) {
-    if (!af_structureSubtypep(af_classOf(so), type)) {
+    if (!af_structureSubtypep(cl_classOf(so), type)) {
       QERROR_WRONG_TYPE_NTH_ARG(1, obj, type);
     }
     return so->instanceSet(idx, val);
   }
 #endif
   if (StructureObject_sp so = obj.asOrNull<StructureObject_O>()) {
-    T_sp sotype = af_type_of(so);
+    T_sp sotype = cl_type_of(so);
     if (!af_structureSubtypep(sotype, type)) {
       QERROR_WRONG_TYPE_NTH_ARG(1, obj, type);
     }

@@ -67,8 +67,26 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
     core::ThreadInfo mainThreadInfo;
     core::lisp_setThreadLocalInfoPtr(&mainThreadInfo);
 
-    lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
+#if 1
 
+    gctools::GcToolsExposer GcToolsPkg(_lisp);
+    clbind::ClbindExposer ClbindPkg(_lisp);
+    llvmo::LlvmoExposer llvmopkg(_lisp);
+    cffi::CffiExposer cffipkg(_lisp);
+    sockets::SocketsExposer SocketsPkg(_lisp);
+    serveEvent::ServeEventExposer ServeEventPkg(_lisp);
+    asttooling::AsttoolingExposer AsttoolingPkg(_lisp);
+    lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
+    _lisp->installPackage(&GcToolsPkg);
+    _lisp->installPackage(&ClbindPkg);
+    _lisp->installPackage(&llvmopkg);
+    _lisp->installPackage(&cffipkg);
+    _lisp->installPackage(&SocketsPkg);
+    _lisp->installPackage(&ServeEventPkg);
+    _lisp->installPackage(&AsttoolingPkg);
+
+#else
+    lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
     gctools::GcToolsExposer GcToolsPkg(_lisp);
     _lisp->installPackage(&GcToolsPkg);
 
@@ -89,7 +107,11 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
 
     asttooling::AsttoolingExposer AsttoolingPkg(_lisp);
     _lisp->installPackage(&AsttoolingPkg);
+#endif
 
+
+
+    
 #ifdef USE_MPI
     mpip::MpiExposer TheMpiPkg(_lisp);
     _lisp->installPackage(&TheMpiPkg);

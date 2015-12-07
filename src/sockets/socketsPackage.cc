@@ -88,7 +88,6 @@ void SocketsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
   } break;
   case candoFunctions: {
     //nothing
-    initialize_sockets();
   };
       break;
   case candoGlobals: {

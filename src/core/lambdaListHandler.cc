@@ -291,11 +291,11 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
     }
   }
   if (whole_symbol.nilp())
-    whole_symbol = af_gensym(Str_O::create("whole"));
+    whole_symbol = cl_gensym(Str_O::create("whole"));
   if (environment_symbol.nilp())
-    environment_symbol = af_gensym(Str_O::create("environment"));
+    environment_symbol = cl_gensym(Str_O::create("environment"));
 
-  Symbol_sp name_symbol = af_gensym(Str_O::create("macro-name"));
+  Symbol_sp name_symbol = cl_gensym(Str_O::create("macro-name"));
   //	SourceCodeList_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
   ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core_sourceFileInfo(lambda_list));
   sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol, new_lambda_list);
@@ -977,7 +977,7 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
   _OF();
   TargetClassifier classifier(skipIndices);
   for (int i = 0, iEnd(num - skipIndices.size()); i < iEnd; ++i) {
-    Symbol_sp name = af_gensym(Str_O::create("arg"));
+    Symbol_sp name = cl_gensym(Str_O::create("arg"));
     RequiredArgument req(name, i);
     this->_RequiredArguments.push_back(req);
     classifier.classifyTarget(req);

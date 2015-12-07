@@ -480,7 +480,7 @@ Function_sp Environment_O::_lookupFunction(int depth, int index) const {
 
 string Environment_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << lisp_classNameAsString(af_classOf(this->asSmartPtr())) << ">";
+  ss << "#<" << lisp_classNameAsString(cl_classOf(this->asSmartPtr())) << ">";
 #if 0
 	int tab = gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue())->get();
 	{

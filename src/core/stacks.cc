@@ -137,7 +137,7 @@ string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
     T_sp obj = vargs->elt(i);
     if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
       clasp_write_string("#<", sout);
-      write_ugly_object(af_classOf(obj), sout);
+      write_ugly_object(cl_classOf(obj), sout);
       clasp_write_string("> ", sout);
     } else {
       write_ugly_object(obj, sout);
@@ -207,7 +207,7 @@ string InvocationHistoryStack::asString() const {
   ss << std::endl;
   vector<InvocationHistoryFrame *> frames = _lisp->invocationHistoryStack().asVectorFrames();
   ss << "--------STACK TRACE--------" << std::endl;
-  int ihsCur = af_ihsCurrentFrame();
+  int ihsCur = core_ihsCurrentFrame();
   for (int i = 0; i < frames.size(); ++i) {
     InvocationHistoryFrame *cur = frames[i];
     if (i == ihsCur) {

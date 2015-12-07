@@ -35,6 +35,7 @@
    #:declare-tag
    #:source-tag
    #:expose-code-tag
+   #:expose-method-tag
    #:code-tag
    #:file
    #:line

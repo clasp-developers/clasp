@@ -192,7 +192,7 @@ void af_printUnreadableObjectFunction(T_sp o, T_sp ostream, T_sp type, T_sp id, 
     stringstream ss;
     ss << "#<";
     if (type.notnilp()) {
-      type = af_type_of(o);
+      type = cl_type_of(o);
       if (!gc::IsA<Symbol_sp>(type)) {
         type = cl::_sym_StandardObject_O;
       }

@@ -12,13 +12,20 @@
              (format stream "Bad tag ~a at |~a|" (bad-tag-tag condition) (bad-tag-context condition)))))
 
 (defun extract-function-name-from-signature (sig)
-  (with-input-from-string (sin sig)
-    (let ((*readtable* (copy-readtable)))
-      (setf (readtable-case *readtable*) :preserve)
-      (let ((return-type (read sin))
-            (function-name (read sin)))
-        (declare (ignore return-type))
-        (string function-name)))))
+  (declare (optimize (debug 3)))
+  (let* ((tsig (string-trim '(#\newline #\space #\tab) sig))
+         (first-space (position-if
+                       (lambda (c) (or (char= c #\newline) (char= c #\space) (char= c #\tab)))
+                       tsig))
+         (open-paren (position #\( tsig :test #'char=)))
+    (string-trim '(#\newline #\space #\tab) (subseq tsig first-space open-paren))))
+    
+(defun extract-method-name-from-signature (sig)
+  (let* ((class-method-name (extract-function-name-from-signature sig))
+         (colon-colon-pos (search "::" class-method-name :test #'string=))
+         (class-name (subseq class-method-name 0 colon-colon-pos))
+         (method-name (subseq class-method-name (+ 2 colon-colon-pos) nil)))
+    (values class-name method-name)))
 
 (defclass tag-handler ()
   ((begin-tag :initarg :begin-tag)
@@ -142,6 +149,18 @@
                                           :line (getf plist :line)
                                           :function-name function-name
                                           :signature-text signature-text))))
+    (add-tag-handler handlers "EXPOSE_METHOD"
+                     #'(lambda (bufs) ;(declare (core:lambda-name expose-function-tag-handler))
+                         (let* ((plist (read (cscrape:buffer-stream bufs)))
+                                (signature-text (cscrape:read-string-to-character bufs #\) t)))
+                           (multiple-value-bind (class-name method-name)
+                               (extract-method-name-from-signature signature-text)
+                             (make-instance 'tags:expose-method-tag
+                                            :file (getf plist :file)
+                                            :line (getf plist :line)
+                                            :class-name class-name
+                                            :method-name function-name
+                                            :signature-text signature-text)))))
     (add-tag-handler handlers "NAMESPACE_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
                          (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))

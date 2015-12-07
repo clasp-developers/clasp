@@ -201,6 +201,8 @@ typedef std::size_t class_id;
 #define ExtDefun(x) core::af_def(ExtPkg, #x, &ext_##x, ARGS_ext_##x, DECL_ext_##x, DOCS_ext_##x, __FILE__, __LINE__);
 #define ClosDefun(x) core::af_def(ClosPkg, #x, &clos_##x, ARGS_clos_##x, DECL_clos_##x, DOCS_clos_##x, __FILE__, __LINE__);
 #define CoreDefun(x) core::af_def(CorePkg, #x, &core_##x, ARGS_core_##x, DECL_core_##x, DOCS_core_##x, __FILE__, __LINE__);
+#define SocketsDefun(x) core::af_def(SocketsPkg, #x, &sockets_##x, ARGS_sockets_##x, DECL_sockets_##x, DOCS_sockets_##x, __FILE__, __LINE__);
+
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
 //#define DEFUN_EXPORT(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);

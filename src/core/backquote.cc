@@ -322,11 +322,11 @@ T_sp af_backquote_simplify_args(T_sp x) {
     if (cl_atom(oCar(args))) {
       result = af_backquote_attach_append(_sym_STARbq_appendSTAR, oCar(args), result);
     } else if ((oCaar(args) == _sym_STARbq_listSTAR) &&
-               af_notany(_sym_backquote_splicing_frob,
+               cl_notany(_sym_backquote_splicing_frob,
                          Cons_O::create(oCdar(args))).isTrue()) {
       result = af_backquote_attach_conses(oCdar(args), result);
     } else if ((oCaar(args) == _sym_STARbq_listSTARSTAR) &&
-               af_notany(_sym_backquote_splicing_frob,
+               cl_notany(_sym_backquote_splicing_frob,
                          Cons_O::create(oCdar(args))).isTrue()) {
       List_sp rev1 = cl_reverse(oCdar(args));
       List_sp rev2 = cl_reverse(oCdr(rev1));
@@ -391,7 +391,7 @@ T_sp af_backquote_attach_append(T_sp op, T_sp item, T_sp result) {
 #define DOCS_af_backquote_attach_conses "backquote_attach_conses"
 List_sp af_backquote_attach_conses(T_sp items, T_sp result) {
   _G();
-  if (af_every(_sym_backquote_null_or_quoted, Cons_O::create(items)).isTrue() && af_backquote_null_or_quoted(result).isTrue()) {
+  if (cl_every(_sym_backquote_null_or_quoted, Cons_O::create(items)).isTrue() && af_backquote_null_or_quoted(result).isTrue()) {
     Cons_sp ti = Cons_O::create(items);
     Cons_sp tl = Cons_O::createList(cl_mapcar(cl::_sym_cadr, ti), oCadr(result));
     return Cons_O::createList(_sym_STARbq_quoteSTAR, af_backquote_append(tl));

@@ -111,7 +111,7 @@ List_sp listOfClasses(VaList_sp vargs) {
   core::Cons_sp *cur = reinterpret_cast<core::Cons_sp *>(&list);
   for (int p = 0; p < nargs; ++p) {
     core::T_sp obj = T_sp((gc::Tagged)va_arg(cargs, T_O *));
-    core::Class_sp cobj = af_classOf(obj);
+    core::Class_sp cobj = cl_classOf(obj);
     *cur = core::Cons_O::create(cobj, _Nil<core::T_O>());
     cur = reinterpret_cast<core::Cons_sp *>(&(*cur)->_Cdr);
   }

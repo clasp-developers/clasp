@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 #include <clasp/core/common.h>
 
-NAMESPACE_PACKAGE_ASSOCIATION(serveEvent, ServeEventPkg, "SERVE-EVENT-INTERNAL");
+NAMESPACE_PACKAGE_ASSOCIATION(serveEvent, ServeEventPkg, "SERVE-EVENT");
 
 namespace serveEvent {
 

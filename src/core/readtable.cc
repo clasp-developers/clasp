@@ -461,7 +461,7 @@ T_sp af_sharp_single_quote(T_sp sin, Character_sp ch, T_sp num) {
 T_mv af_sharp_left_parenthesis(T_sp sin, Character_sp ch, /*Fixnum_sp*/ T_sp tnum) {
   _G();
   Character_sp right_paren = clasp_make_character(')');
-  T_sp olist = af_read_delimited_list(right_paren, sin, _lisp->_true());
+  T_sp olist = cl_read_delimited_list(right_paren, sin, _lisp->_true());
   List_sp list = olist;
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     int list_length = cl_length(list);
@@ -664,65 +664,6 @@ T_mv af_sharp_p(T_sp sin, Character_sp ch, T_sp num) {
   return Values(d);
 }; // af_sharp_p
 
-// #if 0
-// #define DOCS_af_sharp_equal "sharp_equal"
-// #define ARGS_af_sharp_equal "(stream ch num)"
-// #define DECL_af_sharp_equal ""
-//     T_mv af_sharp_equal(T_sp sin, Character_sp ch, Fixnum_sp num)
-//     {_G();
-// 	if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
-// 	{
-// 	    SIMPLE_ERROR(BF("af_sharp_equal should have read something before it returned nil"));
-// 	    return(Values(_Nil<T_O>()));
-// 	}
-// 	// Associate the object with the num
-// 	if ( num.nilp() ) SIMPLE_ERROR(BF("You must provide a number for #xx="));
-// 	LOG(BF("num[%s]") % num->__repr__() );
-// 	T_sp sharpThis = af_gensym(_Nil<T_O>());
-// 	{ // (setq *sharp-sharp-aliast* (acons n sharpThis *sharp-sharp-alist*))
-// 	    List_sp sharp_sharp_alist = _sym_STARsharp_sharp_alistSTAR->symbolValue();
-// 	    sharp_sharp_alist = Cons_O::create(Cons_O::create(num,sharpThis),sharp_sharp_alist,_lisp);
-// 	    _sym_STARsharp_sharp_alistSTAR->setf_symbolValue(sharp_sharp_alist);
-// 	}
-// 	T_sp object = cl_read(sin,true,_Nil<T_O>(),true);
-// 	List_sp sharp_equal_alist = _sym_STARsharp_equal_alistSTAR->symbolValue();
-// 	if ( sharp_equal_alist->assoc(sharpThis,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).notnilp() )
-// 	{
-// 	    SIMPLE_ERROR(BF("#%d= is already defined") % num->get() );
-// 	}
-// 	if ( object == sharpThis )
-// 	{
-// 	    SIMPLE_ERROR(BF("need to tag something more than just #%d#") % num->get());
-// 	}
-// 	_sym_STARsharp_equal_alistSTAR->setf_symbolValue(Cons_O::create(Cons_O::create(sharpThis,object),sharp_equal_alist,_lisp));
-// 	return(Values(object));
-//     }
-
-// #define DOCS_af_sharp_sharp "sharp_sharp"
-// #define ARGS_af_sharp_sharp "(stream ch num)"
-// #define DECL_af_sharp_sharp ""
-//     T_mv af_sharp_sharp(T_sp sin, Character_sp ch, Fixnum_sp num)
-//     {_G();
-// 	if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
-// 	{
-// 	    return( Values0<T_O>() );
-// 	}
-// 	// Associate the object with the num
-// 	if ( num.nilp() ) SIMPLE_ERROR(BF("You must provide a number for #xx#"));
-// 	LOG(BF("num[%s]") % num->__repr__() );
-// 	List_sp assoc = _sym_STARsharp_sharp_alistSTAR->symbolValue()->assoc(num,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
-// 	if ( assoc.notnilp() )
-// 	{
-// 	    List_sp sharp_equal_assoc = _sym_STARsharp_equal_alistSTAR->symbolValue()->assoc(assoc->ocdr(),_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
-// 	    if ( assoc.notnilp() )
-// 	    {
-// 		return(Values(sharp_equal_assoc->ocdr()));
-// 	    }
-// 	    SIMPLE_ERROR(BF("Whoah! no object labeled %d could be identified") % num->get() );
-// 	}
-// 	SIMPLE_ERROR(BF("No object labeled %d is seen") % num->get() );
-//     }
-// #endif
 
 #define ARGS_af_reader_feature_p "(feature-test)"
 #define DECL_af_reader_feature_p ""

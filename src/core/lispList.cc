@@ -267,11 +267,9 @@ List_sp cl_nbutlast(List_sp l, Integer_sp in) {
   return _Nil<T_O>();
 }
 
-#define ARGS_cl_list "(&rest objects)"
-#define DECL_cl_list ""
-#define DOCS_cl_list "See CLHS: list"
-T_sp cl_list(T_sp objects) {
-  _G();
+LAMBDA(&rest objects);
+DOCSTRING("See CLHS: list");
+CL_DEFUN T_sp cl__list(T_sp objects) {
   return objects;
 };
 
@@ -392,7 +390,6 @@ void initialize_list() {
   SYMBOL_EXPORT_SC_(ClPkg, nreconc);
   ClDefun(nreconc);
   SYMBOL_EXPORT_SC_(ClPkg, list);
-  ClDefun(list);
   SYMBOL_EXPORT_SC_(ClPkg, listSTAR);
   ClDefun(listSTAR);
   SYMBOL_EXPORT_SC_(ClPkg, butlast);

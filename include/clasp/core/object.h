@@ -1119,7 +1119,7 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
                         boost::noncopyable>(#className, init<core::Lisp_sp>)
 
 namespace core {
-Class_sp af_classOf(T_sp obj);
+Class_sp cl_classOf(T_sp obj);
 bool cl_eq(T_sp x, T_sp y);
 bool cl_eql(T_sp x, T_sp y);
 bool cl_equal(T_sp x, T_sp y);

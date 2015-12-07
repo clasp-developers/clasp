@@ -761,7 +761,7 @@ T_mv af_classifyLetVariablesAndDeclares(List_sp variables, List_sp declaredSpeci
 */
 T_mv sp_let(List_sp args, T_sp parentEnvironment) {
   List_sp assignments = oCar(args);
-  T_mv pairOfLists = af_separatePairList(assignments);
+  T_mv pairOfLists = core_separatePairList(assignments);
   List_sp variables = coerce_to_list(pairOfLists);
   List_sp expressions = pairOfLists.valueGet(1);
   List_sp body = oCdr(args);
@@ -835,7 +835,7 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
 
 T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
   List_sp assignments = oCar(args);
-  T_mv pairOfLists = af_separatePairList(assignments);
+  T_mv pairOfLists = core_separatePairList(assignments);
   List_sp variables = coerce_to_list(pairOfLists);
   List_sp expressions = pairOfLists.valueGet(1);
   List_sp body = oCdr(args);
@@ -1183,7 +1183,7 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
   if (wrap_block) {
     code = Cons_O::create(Cons_O::create(cl::_sym_block,
                                          Cons_O::create(
-                                             af_functionBlockName(name),
+                                             core_functionBlockName(name),
                                              code)));
     if (_lisp->sourceDatabase().notnilp()) {
       gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(body, code);
@@ -1249,7 +1249,7 @@ T_mv sp_function(List_sp args, T_sp environment) {
         wrapBlock = false;
       } else // head==cl::_sym_lambda_block
       {
-        name = af_functionBlockName(oCadr(consArg));
+        name = core_functionBlockName(oCadr(consArg));
         lambdaList = oCaddr(consArg);
         body = oCdddr(consArg);
         wrapBlock = true;

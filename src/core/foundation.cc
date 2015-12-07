@@ -968,13 +968,13 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
     sym->exportYourself();
   LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]") % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport);
   Str_sp docStr = Str_O::create(docstring);
-  T_sp gfn = af_ensureSingleDispatchGenericFunction(sym, llhandler); // Ensure the single dispatch generic function exists
+  T_sp gfn = core_ensureSingleDispatchGenericFunction(sym, llhandler); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
   LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  methoid@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(methoid)));
   methoid->finishSetup(llhandler, kw::_sym_function);
   Function_sp fn = Function_O::make(methoid);
   ASSERT(llhandler || llhandler.notnilp())
-  af_ensureSingleDispatchMethod(sym, receiver_class, llhandler, ldeclares, docStr, fn);
+  core_ensureSingleDispatchMethod(sym, receiver_class, llhandler, ldeclares, docStr, fn);
 }
 
 void lisp_throwIfBuiltInClassesNotInitialized() {
@@ -995,6 +995,7 @@ Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {
       exported or not respectively.   If there is no package prefix then use the defaultPackageName */
 Symbol_sp lispify_intern(const string &name, const string &defaultPackageName, bool exportSymbol) {
   string lispName = lispify_symbol_name(name);
+  string packageName = lispify_symbol_name(defaultPackageName);
 #if 0
 	// Trap the definition of specific functions here
 	// sometimes I accidentally define things more than once and
@@ -1005,7 +1006,7 @@ Symbol_sp lispify_intern(const string &name, const string &defaultPackageName, b
 	    printf("%s:%d defining %s - break here to trap\n", __FILE__,__LINE__, lispName.c_str() );
 	}
 #endif
-  Symbol_sp sym = _lisp->internWithDefaultPackageName(defaultPackageName, lispName);
+  Symbol_sp sym = _lisp->internWithDefaultPackageName(packageName, lispName);
   if (exportSymbol) {
     sym->exportYourself();
   }
