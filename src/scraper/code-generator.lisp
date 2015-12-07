@@ -34,14 +34,9 @@
   (let ((under (search "__" name :test #'string=)))
     (unless under
       (error "Could not translate ~a into a package:symbol-name pair" name))
-    ;; internal symbol names are separated by three underscores ___
-    (let*((internal (eq (elt name (+ under 2)) #\_))
-          (name-pos (if internal
-                        (+ 3 under)
-                        (+ 2 under))))
+    (let* ((name-pos (+ 2 under)))
       (values (subseq name 0 under)
-              (subseq name name-pos)
-              (not internal)))))
+              (subseq name name-pos)))))
 
 (defun generate-expose-function-bindings (sout ns-grouped-expose-functions)
   (format sout "#ifdef EXPOSE_FUNCTION_BINDINGS~%")
@@ -51,11 +46,11 @@
                                (lambda-list-str (if lambda-list-tag
                                                     (tags:lambda-list lambda-list-tag)
                                                     nil)))
-                          (multiple-value-bind (pkg name extern)
+                          (multiple-value-bind (pkg name)
                               (split-c++-name (tags:function-name f))
                             (format sout "  expose_function(\"~a\",\"~a\",~a,&~a::~a,\"~a\");~%"
                                     pkg name
-                                    (if extern "true" "false")
+                                    "true" "false"
                                     ns
                                     (tags:function-name f)
                                     (if lambda-list-str

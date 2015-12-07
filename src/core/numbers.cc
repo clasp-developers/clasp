@@ -805,10 +805,10 @@ T_mv af__PLUS_(List_sp numbers) {
   return (Values(result));
 }
 
-#define ARGS_af__TIMES_ "(&rest numbers)"
-#define DECL_af__TIMES_ ""
-#define DOCS_af__TIMES_ "See CLHS: +"
-T_mv af__TIMES_(List_sp numbers) {
+#define ARGS_cl___TIMES_ "(&rest numbers)"
+#define DECL_cl___TIMES_ ""
+#define DOCS_cl___TIMES_ "See CLHS: +"
+T_mv cl___TIMES_(List_sp numbers) {
   _G();
   if (numbers.nilp())
     return (Values(make_fixnum(1)));
@@ -819,10 +819,10 @@ T_mv af__TIMES_(List_sp numbers) {
   return (Values(result));
 }
 
-#define ARGS_af__MINUS_ "(num &rest numbers)"
-#define DECL_af__MINUS_ ""
-#define DOCS_af__MINUS_ "See CLHS: +"
-T_mv af__MINUS_(Number_sp num, List_sp numbers) {
+#define ARGS_cl___MINUS_ "(num &rest numbers)"
+#define DECL_cl___MINUS_ ""
+#define DOCS_cl___MINUS_ "See CLHS: +"
+T_mv cl___MINUS_(Number_sp num, List_sp numbers) {
   _G();
   if (numbers.nilp()) {
     return (Values(clasp_negate(num)));
@@ -1366,10 +1366,10 @@ void Number_O::exposeCando(Lisp_sp lisp) {
   Defun(_PLUS_);
 
   SYMBOL_EXPORT_SC_(ClPkg, _TIMES_);
-  Defun(_TIMES_);
+  ClDefun(_TIMES_);
 
   SYMBOL_EXPORT_SC_(ClPkg, _MINUS_);
-  Defun(_MINUS_);
+  ClDefun(_MINUS_);
 
   SYMBOL_EXPORT_SC_(ClPkg, _DIVIDE_);
   Defun(_DIVIDE_);
