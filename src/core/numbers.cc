@@ -74,10 +74,10 @@ void clasp_deliver_fpe(int status) {
   }
 }
 
-#define ARGS_cl_zerop "(num)"
-#define DECL_cl_zerop ""
-#define DOCS_cl_zerop "zerop"
-bool cl_zerop(T_sp num) {
+LAMBDA(num);
+DECLARE();
+DOCSTRING("zerop");
+CL_DEFUN bool cl__zerop(T_sp num) {
   _G();
   return clasp_zerop(gc::As<Number_sp>(num));
 }
@@ -117,10 +117,10 @@ Real_sp clasp_min2(Real_sp x, Real_sp y) {
   return min;
 }
 
-#define ARGS_cl_min "(min &rest nums)"
-#define DECL_cl_min ""
-#define DOCS_cl_min "min"
-Real_sp cl_min(Real_sp min, List_sp nums) {
+LAMBDA(min &rest nums);
+DECLARE();
+DOCSTRING("min");
+CL_DEFUN Real_sp cl__min(Real_sp min, List_sp nums) {
   _G();
   /* INV: type check occurs in clasp_number_compare() for the rest of
 	   numbers, but for the first argument it happens in clasp_zerop(). */
@@ -131,10 +131,10 @@ Real_sp cl_min(Real_sp min, List_sp nums) {
   return min;
 }
 
-#define ARGS_cl_max "(max &rest nums)"
-#define DECL_cl_max ""
-#define DOCS_cl_max "max"
-Real_sp cl_max(Real_sp max, List_sp nums) {
+LAMBDA(max &rest nums);
+DECLARE();
+DOCSTRING("max");
+CL_DEFUN Real_sp cl__max(Real_sp max, List_sp nums) {
   _G();
   /* INV: type check occurs in clasp_number_compare() for the rest of
 	   numbers, but for the first argument it happens in clasp_zerop(). */
@@ -145,10 +145,10 @@ Real_sp cl_max(Real_sp max, List_sp nums) {
   return max;
 }
 
-#define ARGS_cl_logand "(&rest integers)"
-#define DECL_cl_logand ""
-#define DOCS_cl_logand "logand"
-Integer_sp cl_logand(List_sp integers) {
+LAMBDA(&rest integers);
+DECLARE();
+DOCSTRING("logand");
+CL_DEFUN Integer_sp cl__logand(List_sp integers) {
   _G();
   if (integers.nilp())
     return Integer_O::create((gc::Fixnum) - 1);
@@ -162,10 +162,10 @@ Integer_sp cl_logand(List_sp integers) {
   return Integer_O::create(acc);
 };
 
-#define ARGS_cl_logior "(&rest integers)"
-#define DECL_cl_logior ""
-#define DOCS_cl_logior "logior"
-Integer_sp cl_logior(List_sp integers) {
+LAMBDA(&rest integers);
+DECLARE();
+DOCSTRING("logior");
+CL_DEFUN Integer_sp cl__logior(List_sp integers) {
   _G();
   if (integers.nilp())
     return Integer_O::create((gc::Fixnum)0);
@@ -181,10 +181,10 @@ Integer_sp cl_logior(List_sp integers) {
   return Integer_O::create(acc);
 };
 
-#define ARGS_af_logxor "(&rest integers)"
-#define DECL_af_logxor ""
-#define DOCS_af_logxor "logxor"
-Integer_sp af_logxor(List_sp integers) {
+LAMBDA(&rest integers);
+DECLARE();
+DOCSTRING("logxor");
+CL_DEFUN Integer_sp cl__logxor(List_sp integers) {
   _G();
   if (integers.nilp())
     return Integer_O::create((gc::Fixnum)0);
@@ -199,10 +199,10 @@ Integer_sp af_logxor(List_sp integers) {
   return Integer_O::create(acc);
 };
 
-#define ARGS_af_logeqv "(&rest integers)"
-#define DECL_af_logeqv ""
-#define DOCS_af_logeqv "logeqv"
-Integer_mv af_logeqv(List_sp integers) {
+LAMBDA(&rest integers);
+DECLARE();
+DOCSTRING("logeqv");
+CL_DEFUN Integer_mv cl__logeqv(List_sp integers) {
   _G();
   if (integers.nilp())
     return Integer_O::create((gc::Fixnum) - 1);
@@ -225,10 +225,10 @@ Integer_mv af_logeqv(List_sp integers) {
   return (Values(Integer_O::create(x)));
 };
 
-#define ARGS_cl_logandc1 "(a b)"
-#define DECL_cl_logandc1 ""
-#define DOCS_cl_logandc1 "logandc1"
-T_mv cl_logandc1(Integer_sp a, Integer_sp b) {
+LAMBDA(a b);
+DECLARE();
+DOCSTRING("logandc1");
+CL_DEFUN T_mv cl__logandc1(Integer_sp a, Integer_sp b) {
   _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class zb = clasp_to_mpz(b);
@@ -239,10 +239,10 @@ T_mv cl_logandc1(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
-#define ARGS_cl_logandc2 "(a b)"
-#define DECL_cl_logandc2 ""
-#define DOCS_cl_logandc2 "logandc2"
-T_mv cl_logandc2(Integer_sp a, Integer_sp b) {
+LAMBDA(a b);
+DECLARE();
+DOCSTRING("logandc2");
+CL_DEFUN T_mv cl__logandc2(Integer_sp a, Integer_sp b) {
   _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class zb = clasp_to_mpz(b);
@@ -253,10 +253,10 @@ T_mv cl_logandc2(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
-#define ARGS_cl_logorc1 "(a b)"
-#define DECL_cl_logorc1 ""
-#define DOCS_cl_logorc1 "logorc1"
-T_mv cl_logorc1(Integer_sp a, Integer_sp b) {
+LAMBDA(a b);
+DECLARE();
+DOCSTRING("logorc1");
+CL_DEFUN T_mv cl__logorc1(Integer_sp a, Integer_sp b) {
   _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class zb = clasp_to_mpz(b);
@@ -267,10 +267,10 @@ T_mv cl_logorc1(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
-#define ARGS_cl_logorc2 "(a b)"
-#define DECL_cl_logorc2 ""
-#define DOCS_cl_logorc2 "logorc2"
-T_mv cl_logorc2(Integer_sp a, Integer_sp b) {
+LAMBDA(a b);
+DECLARE();
+DOCSTRING("logorc2");
+CL_DEFUN T_mv cl__logorc2(Integer_sp a, Integer_sp b) {
   _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class zb = clasp_to_mpz(b);
@@ -281,10 +281,10 @@ T_mv cl_logorc2(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
-#define ARGS_af_lognot "(a)"
-#define DECL_af_lognot ""
-#define DOCS_af_lognot "lognot"
-T_mv af_lognot(Integer_sp a) {
+LAMBDA(a);
+DECLARE();
+DOCSTRING("lognot");
+CL_DEFUN T_mv cl__lognot(Integer_sp a) {
   _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class cza;
@@ -292,10 +292,10 @@ T_mv af_lognot(Integer_sp a) {
   return (Values(Integer_O::create(cza)));
 };
 
-#define ARGS_af_lognand "(a b)"
-#define DECL_af_lognand ""
-#define DOCS_af_lognand "lognand"
-T_mv af_lognand(Integer_sp a, Integer_sp b) {
+LAMBDA(a b);
+DECLARE();
+DOCSTRING("lognand");
+CL_DEFUN T_mv cl__lognand(Integer_sp a, Integer_sp b) {
   _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class zb = clasp_to_mpz(b);
@@ -306,10 +306,10 @@ T_mv af_lognand(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
-#define ARGS_af_lognor "(a b)"
-#define DECL_af_lognor ""
-#define DOCS_af_lognor "lognor"
-T_mv af_lognor(Integer_sp a, Integer_sp b) {
+LAMBDA(a b);
+DECLARE();
+DOCSTRING("lognor");
+CL_DEFUN T_mv cl__lognor(Integer_sp a, Integer_sp b) {
   _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class zb = clasp_to_mpz(b);
@@ -805,10 +805,10 @@ T_mv af__PLUS_(List_sp numbers) {
   return (Values(result));
 }
 
-#define ARGS_cl__TIMES_ "(&rest numbers)"
-#define DECL_cl__TIMES_ ""
-#define DOCS_cl__TIMES_ "See CLHS: *"
-T_mv cl__TIMES_(List_sp numbers) {
+LAMBDA(&rest numbers);
+DECLARE();
+DOCSTRING("See CLHS: *");
+CL_DEFUN T_mv cl___TIMES_(List_sp numbers) {
   _G();
   if (numbers.nilp())
     return (Values(make_fixnum(1)));
@@ -819,10 +819,10 @@ T_mv cl__TIMES_(List_sp numbers) {
   return (Values(result));
 }
 
-#define ARGS_cl__MINUS_ "(num &rest numbers)"
-#define DECL_cl__MINUS_ ""
-#define DOCS_cl__MINUS_ "See CLHS: +"
-T_mv cl__MINUS_(Number_sp num, List_sp numbers) {
+LAMBDA(num &rest numbers);
+DECLARE();
+DOCSTRING("See CLHS: +");
+CL_DEFUN T_mv cl___MINUS_(Number_sp num, List_sp numbers) {
   _G();
   if (numbers.nilp()) {
     return (Values(clasp_negate(num)));
@@ -1287,10 +1287,10 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_END();
 }
 
-#define ARGS_af__NE_ "(&rest args)"
-#define DECL_af__NE_ ""
-#define DOCS_af__NE_ "NE"
-T_sp af__NE_(List_sp args) {
+LAMBDA(&rest args);
+DECLARE();
+DOCSTRING("NE");
+CL_DEFUN T_sp cl___NE_(List_sp args) {
   _G();
   if (args.nilp())
     return _lisp->_true();
@@ -1304,10 +1304,10 @@ T_sp af__NE_(List_sp args) {
   return _lisp->_true();
 }
 
-#define ARGS_af__EQ_ "(&rest args)"
-#define DECL_af__EQ_ ""
-#define DOCS_af__EQ_ "EQ_"
-T_sp af__EQ_(List_sp args) {
+LAMBDA(&rest args);
+DECLARE();
+DOCSTRING("EQ_");
+CL_DEFUN T_sp cl___EQ_(List_sp args) {
   _G();
   if (args.nilp())
     return (_lisp->_true());
@@ -1338,11 +1338,8 @@ void Number_O::exposeCando(Lisp_sp lisp) {
   af_def(ClPkg, "abs", &clasp_abs);
   af_def(ClPkg, "signum", &clasp_signum);
   SYMBOL_EXPORT_SC_(ClPkg, max);
-  ClDefun(max);
   SYMBOL_EXPORT_SC_(ClPkg, min);
-  ClDefun(min);
   SYMBOL_EXPORT_SC_(ClPkg, zerop);
-  ClDefun(zerop);
 
   SYMBOL_SC_(CorePkg, fixnum_number_of_bits);
   CoreDefun(fixnum_number_of_bits);
@@ -1352,8 +1349,6 @@ void Number_O::exposeCando(Lisp_sp lisp) {
   Defun(_GT_);
   Defun(_LE_);
   Defun(_GE_);
-  Defun(_EQ_);
-  Defun(_NE_);
 
   SYMBOL_EXPORT_SC_(ClPkg, _LT_);
   SYMBOL_EXPORT_SC_(ClPkg, _GT_);
@@ -1366,10 +1361,8 @@ void Number_O::exposeCando(Lisp_sp lisp) {
   Defun(_PLUS_);
 
   SYMBOL_EXPORT_SC_(ClPkg, _TIMES_);
-  ClDefun(_TIMES_);
 
   SYMBOL_EXPORT_SC_(ClPkg, _MINUS_);
-  ClDefun(_MINUS_);
 
   SYMBOL_EXPORT_SC_(ClPkg, _DIVIDE_);
   Defun(_DIVIDE_);
@@ -1386,28 +1379,28 @@ Number_sp Number_O::create(double val) {
 }
 
 bool Number_O::operator<(T_sp obj) const {
-  if (cl_numberp(obj)) {
+  if (cl__numberp(obj)) {
     return basic_compare(this->asSmartPtr(), gc::As<Number_sp>(obj)) < 0;
   }
   return this->Base::operator<(obj);
 }
 
 bool Number_O::operator<=(T_sp obj) const {
-  if (cl_numberp(obj)) {
+  if (cl__numberp(obj)) {
     return basic_compare(this->asSmartPtr(), gc::As<Number_sp>(obj)) <= 0;
   }
   return this->Base::operator<=(obj);
 }
 
 bool Number_O::operator>(T_sp obj) const {
-  if (cl_numberp(obj)) {
+  if (cl__numberp(obj)) {
     return basic_compare(this->asSmartPtr(), gc::As<Number_sp>(obj)) > 0;
   }
   return this->Base::operator>(obj);
 }
 
 bool Number_O::operator>=(T_sp obj) const {
-  if (cl_numberp(obj)) {
+  if (cl__numberp(obj)) {
     return basic_compare(this->asSmartPtr(), gc::As<Number_sp>(obj)) >= 0;
   }
   return this->Base::operator>=(obj);
@@ -1416,7 +1409,7 @@ bool Number_O::operator>=(T_sp obj) const {
 bool Number_O::equal(T_sp obj) const {
   if (this->eq(obj))
     return true;
-  return cl_eql(this->asSmartPtr(), obj);
+  return cl__eql(this->asSmartPtr(), obj);
 }
 
 #if 0
@@ -1492,10 +1485,10 @@ void Rational_O::exposePython(Lisp_sp lisp) {
 #endif
 };
 
-#define ARGS_af_nan "(num)"
-#define DECL_af_nan ""
-#define DOCS_af_nan "Return a number that is NAN"
-DoubleFloat_mv af_nan() {
+#define ARGS_core__nan "(num)"
+#define DECL_core__nan ""
+#define DOCS_core__nan "Return a number that is NAN"
+DoubleFloat_mv core__nan() {
   _G();
   DoubleFloat_sp rnan = DoubleFloat_O::create(NAN);
   return (Values(rnan));
@@ -1625,27 +1618,16 @@ void Integer_O::exposeCando(Lisp_sp lisp) {
   af_def(ClPkg, "evenp", &clasp_evenp);
   af_def(ClPkg, "oddp", &clasp_oddp);
   SYMBOL_EXPORT_SC_(ClPkg, logand);
-  ClDefun(logand);
   SYMBOL_EXPORT_SC_(ClPkg, logior);
-  ClDefun(logior);
   SYMBOL_EXPORT_SC_(ClPkg, logandc1);
-  ClDefun(logandc1);
   SYMBOL_EXPORT_SC_(ClPkg, logandc2);
-  ClDefun(logandc2);
   SYMBOL_EXPORT_SC_(ClPkg, logeqv);
-  Defun(logeqv);
   SYMBOL_EXPORT_SC_(ClPkg, lognand);
-  Defun(lognand);
   SYMBOL_EXPORT_SC_(ClPkg, lognor);
-  Defun(lognor);
   SYMBOL_EXPORT_SC_(ClPkg, lognot);
-  Defun(lognot);
   SYMBOL_EXPORT_SC_(ClPkg, logorc1);
-  ClDefun(logorc1);
   SYMBOL_EXPORT_SC_(ClPkg, logorc2);
-  ClDefun(logorc2);
   SYMBOL_EXPORT_SC_(ClPkg, logxor);
-  Defun(logxor);
 }
 
 void Integer_O::exposePython(Lisp_sp lisp) {
@@ -1837,7 +1819,7 @@ bool Fixnum_O::eql_(T_sp obj) const {
     bool	Fixnum_O::eqn(T_sp obj) const
     {_G();
 	if ( this->eq(obj) ) return true;
-	if ( af_doubleFloatP(obj) )
+	if ( core__double_float_p(obj) )
 	{
 	    DoubleFloat_sp t = obj.as<DoubleFloat_O>();
 	    return this->get() == t->get();
@@ -1857,7 +1839,7 @@ bool Fixnum_O::eql_(T_sp obj) const {
 	    return b;
 #endif
 	}
-	ASSERT(!cl_numberp(obj) );
+	ASSERT(!cl__numberp(obj) );
 	return false;
     }
 #endif
@@ -1970,7 +1952,7 @@ bool ShortFloat_O::eql_(T_sp obj) const {
 #if 0
     bool	ShortFloat_O::eqn(T_sp obj) const
     {_OF();
-	if ( af_shortFloatP(obj) )
+	if ( core__short_float_p(obj) )
 	{
 	    ShortFloat_sp t = obj.as<ShortFloat_O>();
 	    return this->get() == t->get();
@@ -1979,7 +1961,7 @@ bool ShortFloat_O::eql_(T_sp obj) const {
 	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
 	}
-	ASSERT(!cl_numberp(obj) );
+	ASSERT(!cl__numberp(obj) );
 	return false;
     }
 #endif
@@ -2102,7 +2084,7 @@ void ShortFloat_O::exposePython(Lisp_sp lisp) {
 #if 0
     bool	SingleFloat_O::eqn(T_sp obj) const
     {_OF();
-	if ( af_singleFloatP(obj) )
+	if ( core__single_float_p(obj) )
 	{
 	    SingleFloat_sp t = obj.as<SingleFloat_O>();
 	    return this->get() == t->get();
@@ -2111,7 +2093,7 @@ void ShortFloat_O::exposePython(Lisp_sp lisp) {
 	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
 	}
-	ASSERT(!cl_numberp(obj) );
+	ASSERT(!cl__numberp(obj) );
 	return false;
     }
 #endif
@@ -2254,7 +2236,7 @@ bool DoubleFloat_O::eql_(T_sp obj) const {
 #if 0
     bool	DoubleFloat_O::eqn(T_sp obj) const
     {_OF();
-	if ( af_doubleFloatP(obj) )
+	if ( core__double_float_p(obj) )
 	{
 	    DoubleFloat_sp t = obj.as<DoubleFloat_O>();
 	    return this->get() == t->get();
@@ -2263,7 +2245,7 @@ bool DoubleFloat_O::eql_(T_sp obj) const {
 	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
 	}
-	ASSERT(!cl_numberp(obj));
+	ASSERT(!cl__numberp(obj));
 	return false;
     }
 #endif
@@ -2282,7 +2264,7 @@ void DoubleFloat_O::exposeCando(Lisp_sp lisp) {
       //	    .def("exp",&DoubleFloat_O::exp)
       //.def("core:isnan", &DoubleFloat_O::isnan);
       SYMBOL_SC_(CorePkg, nan);
-  Defun(nan);
+  Core_temp_Defun(nan);
   ;
 }
 
@@ -2390,14 +2372,14 @@ bool LongFloat_O::eql(T_sp obj) const {
 
 bool LongFloat_O::eqn(T_sp obj) const {
   _OF();
-  if (af_longFloatP(obj)) {
+  if (core__long_float_p(obj)) {
     LongFloat_sp t = obj.as<LongFloat_O>();
     return this->get() == t->get();
   } else if (af_fixnumP(obj)) {
     Fixnum_sp t = gc::As<Fixnum_sp>(obj);
     return this->get() == t->get();
   }
-  ASSERT(!cl_numberp(obj));
+  ASSERT(!cl__numberp(obj));
   return false;
 }
 
@@ -2481,9 +2463,9 @@ bool Ratio_O::eql_(T_sp obj) const {
   if (this->eq(obj))
     return true;
   if (Ratio_sp other = obj.asOrNull<Ratio_O>()) {
-    if (!cl_eql(this->_numerator, other->_numerator))
+    if (!cl__eql(this->_numerator, other->_numerator))
       return false;
-    if (!cl_eql(this->_denominator, other->_denominator))
+    if (!cl__eql(this->_denominator, other->_denominator))
       return false;
     return true;
   }
@@ -2625,9 +2607,9 @@ bool Complex_O::eql_(T_sp o) const {
   if (this->eq(o))
     return true;
   if (Complex_sp other = o.asOrNull<Complex_O>()) {
-    if (!cl_eql(this->_real, other->_real))
+    if (!cl__eql(this->_real, other->_real))
       return false;
-    if (!cl_eql(this->_imaginary, other->_imaginary))
+    if (!cl__eql(this->_imaginary, other->_imaginary))
       return false;
     return true;
   }
@@ -2709,13 +2691,13 @@ Number_sp LongFloat_O::sqrt_() const {
 #endif
 
 Number_sp Complex_O::sqrt_() const {
-  return cl_expt(this->asSmartPtr(), _lisp->plusHalf());
+  return cl__expt(this->asSmartPtr(), _lisp->plusHalf());
 }
 
-#define ARGS_cl_sqrt "(arg)"
-#define DECL_cl_sqrt ""
-#define DOCS_cl_sqrt "sqrt"
-Number_sp cl_sqrt(Number_sp x) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("sqrt");
+CL_DEFUN Number_sp cl__sqrt(Number_sp x) {
   _G();
   return clasp_sqrt(x);
 };
@@ -2776,10 +2758,10 @@ Number_sp Complex_O::sin_() const {
   return Complex_O::create(gc::As<Real_sp>(a), gc::As<Real_sp>(b));
 }
 
-#define ARGS_cl_sin "(x)"
-#define DECL_cl_sin ""
-#define DOCS_cl_sin "sin"
-Number_sp cl_sin(Number_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("sin");
+CL_DEFUN Number_sp cl__sin(Number_sp x) {
   _G();
   return clasp_sin(x);
 }
@@ -2838,10 +2820,10 @@ Number_sp Complex_O::cos_() const {
   return Complex_O::create(gc::As<Real_sp>(a), gc::As<Real_sp>(b));       // clasp_make_complex(a, b);
 }
 
-#define ARGS_cl_cos "(x)"
-#define DECL_cl_cos ""
-#define DOCS_cl_cos "cos"
-Number_sp cl_cos(Number_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("cos");
+CL_DEFUN Number_sp cl__cos(Number_sp x) {
   _G();
   return clasp_cos(x);
 }
@@ -2905,10 +2887,10 @@ Number_sp Complex_O::tan_() const {
   return clasp_divide(a, b);
 }
 
-#define ARGS_cl_tan "(x)"
-#define DECL_cl_tan ""
-#define DOCS_cl_tan "tan"
-Number_sp cl_tan(Number_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("tan");
+CL_DEFUN Number_sp cl__tan(Number_sp x) {
   _G();
   return clasp_tan(x);
 }
@@ -2968,10 +2950,10 @@ Number_sp Complex_O::sinh_() const {
   return Complex_O::create(gc::As<Real_sp>(a), gc::As<Real_sp>(b)); // clasp_make_complex(a, b);
 }
 
-#define ARGS_cl_sinh "(x)"
-#define DECL_cl_sinh ""
-#define DOCS_cl_sinh "sinh"
-Number_sp cl_sinh(Number_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("sinh");
+CL_DEFUN Number_sp cl__sinh(Number_sp x) {
   _G();
   return clasp_sinh(x);
 }
@@ -3032,10 +3014,10 @@ Number_sp Complex_O::cosh_() const {
   return Complex_O::create(gc::As<Real_sp>(a), gc::As<Real_sp>(b)); // clasp_make_complex(a, b);
 }
 
-#define ARGS_cl_cosh "(x)"
-#define DECL_cl_cosh ""
-#define DOCS_cl_cosh "cosh"
-Number_sp cl_cosh(Number_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("cosh");
+CL_DEFUN Number_sp cl__cosh(Number_sp x) {
   _G();
   return clasp_cosh(x);
 }
@@ -3088,10 +3070,10 @@ Number_sp Complex_O::tanh_() const {
   return clasp_divide(a, b);
 }
 
-#define ARGS_cl_tanh "(x)"
-#define DECL_cl_tanh ""
-#define DOCS_cl_tanh "tanh"
-Number_sp cl_tanh(Number_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("tanh");
+CL_DEFUN Number_sp cl__tanh(Number_sp x) {
   _G();
   return clasp_tanh(x);
 }
@@ -3125,10 +3107,10 @@ Number_sp Complex_O::conjugate_() const {
   return Complex_O::create(this->_real, gc::As<Real_sp>(clasp_negate(this->_imaginary)));
 }
 
-#define ARGS_cl_conjugate "(x)"
-#define DECL_cl_conjugate ""
-#define DOCS_cl_conjugate "conjugate"
-Number_sp cl_conjugate(Number_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("conjugate");
+CL_DEFUN Number_sp cl__conjugate(Number_sp x) {
   _G();
   return clasp_conjugate(x);
 }
@@ -3188,10 +3170,10 @@ Number_sp Complex_O::exp_() const {
   return clasp_times(x, cy);
 }
 
-#define ARGS_cl_exp "(x)"
-#define DECL_cl_exp ""
-#define DOCS_cl_exp "exp"
-Number_sp cl_exp(Number_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("exp");
+CL_DEFUN Number_sp cl__exp(Number_sp x) {
   _G();
   return clasp_exp(x);
 }
@@ -3292,7 +3274,7 @@ clasp_expt(Number_sp x, Number_sp y) {
 	   is double-float */
     z = clasp_log1(clasp_times(x, expt_zero(x, y)));
     z = clasp_times(z, y);
-    z = cl_exp(z);
+    z = cl__exp(z);
   } else if (clasp_minusp(gc::As<Real_sp>(y))) {
     z = clasp_negate(y);
     z = clasp_expt(x, z);
@@ -3315,10 +3297,10 @@ clasp_expt(Number_sp x, Number_sp y) {
   return z;
 }
 
-#define ARGS_cl_expt "(x y)"
-#define DECL_cl_expt ""
-#define DOCS_cl_expt "expt"
-Number_sp cl_expt(Number_sp x, Number_sp y) {
+LAMBDA(x y);
+DECLARE();
+DOCSTRING("expt");
+CL_DEFUN Number_sp cl__expt(Number_sp x, Number_sp y) {
   _G();
   return clasp_expt(x, y);
 }
@@ -3465,10 +3447,10 @@ Number_sp clasp_atan1(Number_sp y) {
   }
 }
 
-#define ARGS_af_atan "(x &optional y)"
-#define DECL_af_atan ""
-#define DOCS_af_atan "atan"
-T_sp af_atan(Number_sp x, T_sp y) {
+LAMBDA(x &optional y);
+DECLARE();
+DOCSTRING("atan");
+CL_DEFUN T_sp cl__atan(Number_sp x, T_sp y) {
   _G();
   /* INV: type check in clasp_atan() & clasp_atan2() */
   /* FIXME clasp_atan() and clasp_atan2() produce generic errors
@@ -3628,20 +3610,20 @@ Number_sp Complex_O::log1p_() const {
   return clasp_log1_complex_inner(clasp_one_plus(this->real()), this->imaginary());
 }
 
-#define ARGS_af_log "(number &optional base)"
-#define DECL_af_log ""
-#define DOCS_af_log "Calculate the log of (number) to base (base)."
-Number_sp af_log(Number_sp number, T_sp base) {
+LAMBDA(number &optional base);
+DECLARE();
+DOCSTRING("Calculate the log of (number) to base (base).");
+CL_DEFUN Number_sp cl__log(Number_sp number, T_sp base) {
   _G();
   if (base.nilp())
     return clasp_log1(number);
   return clasp_log2(gc::As<Number_sp>(base), number);
 }
 
-#define ARGS_af_log1p "(arg)"
-#define DECL_af_log1p ""
-#define DOCS_af_log1p "log1p"
-Number_sp af_log1p(Number_sp arg) {
+#define ARGS_core__log1p "(arg)"
+#define DECL_core__log1p ""
+#define DOCS_core__log1p "log1p"
+Number_sp core__log1p(Number_sp arg) {
   _G();
   return clasp_log1p(arg);
 };
@@ -3700,12 +3682,10 @@ fixint(T_sp x) {
   UNREACHABLE();
 }
 
-#define ARGS_cl_integerLength "(i)"
-#define DECL_cl_integerLength ""
-#define DOCS_cl_integerLength "integerLength"
-#define FILE_cl_integerLength __FILE__
-#define LINE_cl_integerLength __LINE__
-int cl_integerLength(Integer_sp i) {
+LAMBDA(i);
+DECLARE();
+DOCSTRING("integerLength");
+CL_DEFUN gc::Fixnum cl__integer_length(Integer_sp i) {
   _G();
   return clasp_integer_length(i);
 };
@@ -3713,30 +3693,18 @@ int cl_integerLength(Integer_sp i) {
 void initialize_numbers() {
   af_def(CorePkg, "negate", &clasp_negate);
   SYMBOL_EXPORT_SC_(ClPkg, sqrt);
-  ClDefun(sqrt);
   SYMBOL_EXPORT_SC_(ClPkg, sin);
-  ClDefun(sin);
   SYMBOL_EXPORT_SC_(ClPkg, cos);
-  ClDefun(cos);
   SYMBOL_EXPORT_SC_(ClPkg, tan);
-  ClDefun(tan);
   SYMBOL_EXPORT_SC_(ClPkg, sinh);
-  ClDefun(sinh);
   SYMBOL_EXPORT_SC_(ClPkg, cosh);
-  ClDefun(cosh);
   SYMBOL_EXPORT_SC_(ClPkg, tanh);
-  ClDefun(tanh);
   SYMBOL_EXPORT_SC_(ClPkg, conjugate);
-  ClDefun(conjugate);
   SYMBOL_EXPORT_SC_(ClPkg, log);
-  Defun(log);
   SYMBOL_EXPORT_SC_(CorePkg, log1p);
-  Defun(log1p);
+  Core_temp_Defun(log1p);
   SYMBOL_EXPORT_SC_(ClPkg, expt);
-  ClDefun(expt);
   SYMBOL_EXPORT_SC_(ClPkg, exp);
-  ClDefun(exp);
-  ClDefun(integerLength);
 
   af_def(CorePkg, "two-arg-_PLUS_", &contagen_add);
   af_def(CorePkg, "two-arg-_MINUS_", &contagen_sub);

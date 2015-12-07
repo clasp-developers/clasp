@@ -23,6 +23,7 @@
   (maphash (lambda (ns func-ht)
              (format sout "namespace ~a {~%" ns)
              (maphash (lambda (name f)
+                        (declare (ignore name))
                         (format sout "    ~a;~%" (tags:signature-text f)))
                       func-ht)
              (format sout "};~%"))
@@ -31,6 +32,7 @@
 
 
 (defun split-c++-name (name)
+  (declare (optimize (debug 3)))
   (let ((under (search "__" name :test #'string=)))
     (unless under
       (error "Could not translate ~a into a package:symbol-name pair" name))
@@ -39,16 +41,18 @@
               (subseq name name-pos)))))
 
 (defun generate-expose-function-bindings (sout ns-grouped-expose-functions)
+  (declare (optimize (debug 3)))
   (format sout "#ifdef EXPOSE_FUNCTION_BINDINGS~%")
   (maphash (lambda (ns funcs-ht)
              (maphash (lambda (name f)
+                        (declare (ignore name))
                         (let* ((lambda-list-tag (tags:lambda-tag f))
                                (lambda-list-str (if lambda-list-tag
                                                     (tags:lambda-list lambda-list-tag)
                                                     nil)))
                           (multiple-value-bind (pkg name)
                               (split-c++-name (tags:function-name f))
-                            (format sout "  expose_function(\"~a\",\"~a\",~a,&~a::~a,\"~a\");~%"
+                            (format sout "  expose_function(\"~a\",\"~a\",~a,&~a::~a,~s);~%"
                                     pkg name
                                     "true"
                                     ns
@@ -69,7 +73,9 @@
          (setf (gethash (tags:function-name tag) unique-source-info) tag))
         (t #|nothing|#)))
     (let (source-info)
-      (maphash (lambda (k v) (push v source-info)) unique-source-info)
+      (maphash (lambda (k v)
+                 (declare (ignore k))
+                 (push v source-info)) unique-source-info)
       source-info)))
 
 (defun generate-expose-source-info (sout source-info-tags cppdefine)
@@ -117,6 +123,7 @@
 
 
 (defun generate-code-for-init-functions (tags)
+  (declare (optimize (debug 3)))
   (with-output-to-string (sout)
     (let ((ns-grouped (group-expose-functions-by-namespace tags)))
       (generate-expose-function-signatures sout ns-grouped)

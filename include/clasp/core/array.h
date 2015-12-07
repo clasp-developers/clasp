@@ -100,7 +100,7 @@ public: // Functions here
     SUBCLASS_MUST_IMPLEMENT();
   };
 
-  /*! This replicates ECL ecl_elttype_to_symbol in array.d */
+  /*! This replicates ECL ecl__elttype_to_symbol in array.d */
 
   Symbol_sp element_type_as_symbol() const;
 

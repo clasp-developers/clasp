@@ -107,7 +107,7 @@ void ExternalObject_O::archiveBase(ArchiveP node) {
 
 bool ExternalObject_O::eql_(T_sp obj) const {
   _G();
-  if (af_externalObjectP(obj)) {
+  if (core__external_object_p(obj)) {
     return (gc::As<ExternalObject_sp>(obj)->externalObject() == this->externalObject());
   }
   return false;

@@ -67,14 +67,14 @@ SYMBOL_SC_(CorePkg, bq_remove_tokens);
 
 namespace core {
 
-#define ARGS_af_quasiquote "(whole env)"
-#define DECL_af_quasiquote ""
-#define DOCS_af_quasiquote "quasiquote"
-T_mv af_quasiquote(List_sp whole, T_sp env) {
+#define ARGS_core__quasiquote "(whole env)"
+#define DECL_core__quasiquote ""
+#define DOCS_core__quasiquote "quasiquote"
+T_mv core__quasiquote(List_sp whole, T_sp env) {
   _G();
-  ASSERT(cl_length(whole) == 2);
+  ASSERT(cl__length(whole) == 2);
   T_sp form = oCadr(whole);
-  return af_backquote_completely_process(form);
+  return core__backquote_completely_process(form);
 };
 
 /*!
@@ -84,10 +84,10 @@ T_mv af_quasiquote(List_sp whole, T_sp env) {
   them together into one list and then points the cdr of the last element of this new list
   to c.
 */
-#define ARGS_af_backquote_append "(&rest lists)"
-#define DECL_af_backquote_append ""
-#define DOCS_af_backquote_append "append as in clhs"
-T_sp af_backquote_append(List_sp lists) {
+#define ARGS_core__backquote_append "(&rest lists)"
+#define DECL_core__backquote_append ""
+#define DOCS_core__backquote_append "append as in clhs"
+T_sp core__backquote_append(List_sp lists) {
   _G();
   ql::list list; // (lists);
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
@@ -106,25 +106,25 @@ T_sp af_backquote_append(List_sp lists) {
   return result;
 }
 
-#define ARGS_af_backquote_completely_process "(x)"
-#define DECL_af_backquote_completely_process ""
-#define DOCS_af_backquote_completely_process "backquote_completely_process"
-T_mv af_backquote_completely_process(T_sp x) {
+#define ARGS_core__backquote_completely_process "(x)"
+#define DECL_core__backquote_completely_process ""
+#define DOCS_core__backquote_completely_process "backquote_completely_process"
+T_mv core__backquote_completely_process(T_sp x) {
   _G();
-  T_sp raw_result = af_backquote_process(x);
+  T_sp raw_result = core__backquote_process(x);
   if (_sym_STARbq_simplifySTAR->symbolValue().isTrue()) {
-    T_sp process_result = af_backquote_simplify(raw_result);
-    T_sp result = af_backquote_remove_tokens(process_result);
+    T_sp process_result = core__backquote_simplify(raw_result);
+    T_sp result = core__backquote_remove_tokens(process_result);
     (void)result;
   }
-  T_sp result = af_backquote_remove_tokens(raw_result);
+  T_sp result = core__backquote_remove_tokens(raw_result);
   return Values(result);
 }
 
-#define ARGS_af_backquote_process "(ox)"
-#define DECL_af_backquote_process ""
-#define DOCS_af_backquote_process "bq_process"
-T_sp af_backquote_process(T_sp ox) {
+#define ARGS_core__backquote_process "(ox)"
+#define DECL_core__backquote_process ""
+#define DOCS_core__backquote_process "bq_process"
+T_sp core__backquote_process(T_sp ox) {
   _G();
   // C-version if 0    Lisp-version if 1
   T_sp result = _Nil<T_O>();
@@ -136,15 +136,15 @@ T_sp af_backquote_process(T_sp ox) {
   T_sp x;
   T_sp nreconc;
   T_sp ax;
-  if (cl_atom(ox)) {
+  if (cl__atom(ox)) {
     result = Cons_O::createList(_sym_STARbq_quoteSTAR, ox);
     goto DONE;
   }
   x = ox;
   ax = oCar(x);
   if (ax == _sym_backquote) {
-    T_sp passone = af_backquote_completely_process(oCadr(x)); // eval::funcall(_sym_backquote_completely_process,oCadr(x));
-    result = af_backquote_process(passone);                   // eval::funcall(_sym_backquote_process,passone);
+    T_sp passone = core__backquote_completely_process(oCadr(x)); // eval::funcall(_sym_backquote_completely_process,oCadr(x));
+    result = core__backquote_process(passone);                   // eval::funcall(_sym_backquote_process,passone);
     goto DONE;
   } else if (ax == _sym_unquote) {
     result = oCadr(x);
@@ -157,13 +157,13 @@ T_sp af_backquote_process(T_sp ox) {
   p = x;
   q = _Nil<T_O>();
   step = 0;
-  while (!cl_atom(p)) {
+  while (!cl__atom(p)) {
     cp = p;
     if (oCar(cp) == _sym_unquote) {
       if (!oCddr(cp).nilp()) {
         SIMPLE_ERROR(BF("Malformed ,%s") % _rep_(p));
       }
-      nreconc = cl_nreconc(q, Cons_O::create(oCadr(cp))); // eval::funcall(cl::_sym_nreconc,q,Cons_O::create(oCadr(cp)))); // HERE_scCONS_CREATE(oCadr(cp)));
+      nreconc = cl__nreconc(q, Cons_O::create(oCadr(cp))); // eval::funcall(cl::_sym_nreconc,q,Cons_O::create(oCadr(cp)))); // HERE_scCONS_CREATE(oCadr(cp)));
       result = Cons_O::create(_sym_STARbq_appendSTAR, nreconc);
       goto DONE;
     }
@@ -176,14 +176,14 @@ T_sp af_backquote_process(T_sp ox) {
 
     // Advance
     T_sp next_p = oCdr(cp);
-    T_sp bracketed = af_backquote_bracket(oCar(cp)); // eval::funcall(_sym_backquote_bracket,oCar(cp));
+    T_sp bracketed = core__backquote_bracket(oCar(cp)); // eval::funcall(_sym_backquote_bracket,oCar(cp));
     Cons_sp next_q = Cons_O::create(bracketed, q);
     p = next_p;
     q = next_q;
     step++;
   }
   {
-    nr = cl_nreconc(q, Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p)));
+    nr = cl__nreconc(q, Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p)));
     //	    nr = eval::funcall(cl::_sym_nreconc,q,Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p)));
   }
   result = Cons_O::create(_sym_STARbq_appendSTAR, nr);
@@ -192,19 +192,19 @@ DONE:
   return result;
 }
 
-#define ARGS_af_backquote_bracket "(x)"
-#define DECL_af_backquote_bracket ""
-#define DOCS_af_backquote_bracket "bracket"
-T_sp af_backquote_bracket(T_sp x) {
+#define ARGS_core__backquote_bracket "(x)"
+#define DECL_core__backquote_bracket ""
+#define DOCS_core__backquote_bracket "bracket"
+T_sp core__backquote_bracket(T_sp x) {
   _G();
 #if 0
 	// Call out to LISP for this one
 	SYMBOL_SC_(CorePkg,bq_bracket);
 	return(Values(eval::funcall(_sym_bq_bracket,x)));
 #else
-  if (cl_atom(x)) {
+  if (cl__atom(x)) {
     //	    return Cons_O::createList(_sym_STARbq_listSTAR,eval::funcall(_sym_backquote_process,x));
-    return Cons_O::createList(_sym_STARbq_listSTAR, af_backquote_process(x));
+    return Cons_O::createList(_sym_STARbq_listSTAR, core__backquote_process(x));
   }
   List_sp cx = x;
   if (oCar(cx) == _sym_unquote) {
@@ -215,15 +215,15 @@ T_sp af_backquote_bracket(T_sp x) {
     return (Values(Cons_O::createList(_sym_STARbq_clobberableSTAR, oCadr(cx))));
   }
   //	return Cons_O::createList(_sym_STARbq_listSTAR,eval::funcall(_sym_backquote_process,x));
-  return Cons_O::createList(_sym_STARbq_listSTAR, af_backquote_process(x));
+  return Cons_O::createList(_sym_STARbq_listSTAR, core__backquote_process(x));
 
 #endif
 };
 
-#define ARGS_af_backquote_splicing_frob "(x)"
-#define DECL_af_backquote_splicing_frob ""
-#define DOCS_af_backquote_splicing_frob "backquote_splicing_frob is true if a form that when read looked like ,@foo or ,.foo"
-bool af_backquote_splicing_frob(T_sp x) {
+#define ARGS_core__backquote_splicing_frob "(x)"
+#define DECL_core__backquote_splicing_frob ""
+#define DOCS_core__backquote_splicing_frob "backquote_splicing_frob is true if a form that when read looked like ,@foo or ,.foo"
+bool core__backquote_splicing_frob(T_sp x) {
   _G();
   if (cl_consp(x)) {
     List_sp cx = x;
@@ -233,10 +233,10 @@ bool af_backquote_splicing_frob(T_sp x) {
   return ((false));
 };
 
-#define ARGS_af_backquote_frob "(x)"
-#define DECL_af_backquote_frob ""
-#define DOCS_af_backquote_frob "backquote_frob is true if a form that when read looked like ,foo or ,@foo or ,.foo"
-bool af_backquote_frob(T_sp x) {
+#define ARGS_core__backquote_frob "(x)"
+#define DECL_core__backquote_frob ""
+#define DOCS_core__backquote_frob "backquote_frob is true if a form that when read looked like ,foo or ,@foo or ,.foo"
+bool core__backquote_frob(T_sp x) {
   _G();
   if (cl_consp(x)) {
     List_sp cx = x;
@@ -248,19 +248,19 @@ bool af_backquote_frob(T_sp x) {
 
 SYMBOL_SC_(CorePkg, backquote_maptree);
 
-#define ARGS_af_backquote_maptree "(op x)"
-#define DECL_af_backquote_maptree ""
-#define DOCS_af_backquote_maptree "backquote_maptree"
-T_sp af_backquote_maptree(Function_sp op, T_sp x) {
+#define ARGS_core__backquote_maptree "(op x)"
+#define DECL_core__backquote_maptree ""
+#define DOCS_core__backquote_maptree "backquote_maptree"
+T_sp core__backquote_maptree(Function_sp op, T_sp x) {
   _G();
-  if (cl_atom(x)) {
+  if (cl__atom(x)) {
     T_sp result = eval::funcall(op, x);
     return result;
   }
   List_sp cx = x;
   T_sp a = eval::funcall(op, oCar(cx));
-  T_sp d = af_backquote_maptree(op, oCdr(cx));
-  if (cl_eql(a, oCar(cx)) && cl_eql(d, oCdr(cx))) {
+  T_sp d = core__backquote_maptree(op, oCdr(cx));
+  if (cl__eql(a, oCar(cx)) && cl__eql(d, oCdr(cx))) {
     return x;
   }
   return (Cons_O::create(a, d));
@@ -269,7 +269,7 @@ T_sp af_backquote_maptree(Function_sp op, T_sp x) {
 #if 0 //   Function pointer version - this should be faster than the version above
     T_sp backquote_maptree(T_sp (*op)(T_sp), T_sp x)
     {_G();
-	if ( cl_atom(x) )
+	if ( cl__atom(x) )
 	{
 	    T_sp result = op(x);
 	    return((result));
@@ -277,7 +277,7 @@ T_sp af_backquote_maptree(Function_sp op, T_sp x) {
 	List_sp cx = x;
 	T_sp a = op(x);
 	T_sp d = backquote_maptree(op,cCdr(cx));
-	if ( cl_eql(a,oCar(cx)) && cl_eql(d,cCdr(cx)))
+	if ( cl__eql(a,oCar(cx)) && cl__eql(d,cCdr(cx)))
 	{
 	    return((x));
 	}
@@ -285,32 +285,32 @@ T_sp af_backquote_maptree(Function_sp op, T_sp x) {
     };
 #endif
 
-#define ARGS_af_backquote_simplify "(x)"
-#define DECL_af_backquote_simplify ""
-#define DOCS_af_backquote_simplify "temp_backquote_simplify"
-T_sp af_backquote_simplify(T_sp x) {
+#define ARGS_core__backquote_simplify "(x)"
+#define DECL_core__backquote_simplify ""
+#define DOCS_core__backquote_simplify "temp_backquote_simplify"
+T_sp core__backquote_simplify(T_sp x) {
   _G();
-  if (cl_atom(x))
+  if (cl__atom(x))
     return (Values(x));
   List_sp cx = x;
   if (oCar(cx) == _sym_STARbq_quoteSTAR) {
     // do nothing x = x;
   } else {
     SYMBOL_SC_(CorePkg, backquote_simplify);
-    x = af_backquote_maptree(_sym_backquote_simplify->symbolFunction(), x);
+    x = core__backquote_maptree(_sym_backquote_simplify->symbolFunction(), x);
     cx = x;
   }
   if (oCar(cx) != _sym_STARbq_appendSTAR) {
     return (x);
   }
-  T_sp s = af_backquote_simplify_args(x);
+  T_sp s = core__backquote_simplify_args(x);
   return (s);
 };
 
-#define ARGS_af_backquote_simplify_args "(x)"
-#define DECL_af_backquote_simplify_args ""
-#define DOCS_af_backquote_simplify_args "backquote_simplify_args"
-T_sp af_backquote_simplify_args(T_sp x) {
+#define ARGS_core__backquote_simplify_args "(x)"
+#define DECL_core__backquote_simplify_args ""
+#define DOCS_core__backquote_simplify_args "backquote_simplify_args"
+T_sp core__backquote_simplify_args(T_sp x) {
   _G();
   List_sp cx = x;
   List_sp args = gc::As<Cons_sp>(oCdr(cx))->reverse();
@@ -319,42 +319,42 @@ T_sp af_backquote_simplify_args(T_sp x) {
     // Advance args
     args = oCdr(args);
     // Advance result
-    if (cl_atom(oCar(args))) {
-      result = af_backquote_attach_append(_sym_STARbq_appendSTAR, oCar(args), result);
+    if (cl__atom(oCar(args))) {
+      result = core__backquote_attach_append(_sym_STARbq_appendSTAR, oCar(args), result);
     } else if ((oCaar(args) == _sym_STARbq_listSTAR) &&
-               cl_notany(_sym_backquote_splicing_frob,
+               cl__notany(_sym_backquote_splicing_frob,
                          Cons_O::create(oCdar(args))).isTrue()) {
-      result = af_backquote_attach_conses(oCdar(args), result);
+      result = core__backquote_attach_conses(oCdar(args), result);
     } else if ((oCaar(args) == _sym_STARbq_listSTARSTAR) &&
-               cl_notany(_sym_backquote_splicing_frob,
+               cl__notany(_sym_backquote_splicing_frob,
                          Cons_O::create(oCdar(args))).isTrue()) {
-      List_sp rev1 = cl_reverse(oCdar(args));
-      List_sp rev2 = cl_reverse(oCdr(rev1));
-      List_sp car_last_car_args = oCar(cl_last(oCar(args)));
-      result = af_backquote_attach_conses(rev2,
-                                          af_backquote_attach_append(_sym_STARbq_appendSTAR,
+      List_sp rev1 = cl__reverse(oCdar(args));
+      List_sp rev2 = cl__reverse(oCdr(rev1));
+      List_sp car_last_car_args = oCar(cl__last(oCar(args)));
+      result = core__backquote_attach_conses(rev2,
+                                          core__backquote_attach_append(_sym_STARbq_appendSTAR,
                                                                      car_last_car_args,
                                                                      result));
     } else if ((oCaar(args) == _sym_STARbq_quoteSTAR) &&
                (cl_consp(oCadar(args))) &&
-               (!af_backquote_frob(oCadar(args))) &&
+               (!core__backquote_frob(oCadar(args))) &&
                (oCddar(args).nilp())) {
       Cons_sp tl = Cons_O::createList(_sym_STARbq_quoteSTAR, oCaadar(args));
       Cons_sp tc = Cons_O::create(tl);
-      result = af_backquote_attach_conses(tc, result);
+      result = core__backquote_attach_conses(tc, result);
     } else if (oCaar(args) == _sym_STARbq_clobberableSTAR) {
-      result = af_backquote_attach_append(_sym_STARbq_nconcSTAR, oCadar(args), result);
+      result = core__backquote_attach_append(_sym_STARbq_nconcSTAR, oCadar(args), result);
     } else {
-      result = af_backquote_attach_append(_sym_STARbq_appendSTAR, oCar(args), result);
+      result = core__backquote_attach_append(_sym_STARbq_appendSTAR, oCar(args), result);
     }
   }
   return (result);
 };
 
-#define ARGS_af_backquote_null_or_quoted "(x)"
-#define DECL_af_backquote_null_or_quoted ""
-#define DOCS_af_backquote_null_or_quoted "backquote_null_or_quoted"
-T_sp af_backquote_null_or_quoted(T_sp x) {
+#define ARGS_core__backquote_null_or_quoted "(x)"
+#define DECL_core__backquote_null_or_quoted ""
+#define DOCS_core__backquote_null_or_quoted "backquote_null_or_quoted"
+T_sp core__backquote_null_or_quoted(T_sp x) {
   _G();
   if (x.nilp())
     return (Values(_lisp->_true()));
@@ -366,17 +366,17 @@ T_sp af_backquote_null_or_quoted(T_sp x) {
   return _Nil<T_O>();
 };
 
-#define ARGS_af_backquote_attach_append "(op item result)"
-#define DECL_af_backquote_attach_append ""
-#define DOCS_af_backquote_attach_append "backquote_attach_append"
-T_sp af_backquote_attach_append(T_sp op, T_sp item, T_sp result) {
+#define ARGS_core__backquote_attach_append "(op item result)"
+#define DECL_core__backquote_attach_append ""
+#define DOCS_core__backquote_attach_append "backquote_attach_append"
+T_sp core__backquote_attach_append(T_sp op, T_sp item, T_sp result) {
   _G();
-  if (af_backquote_null_or_quoted(item).isTrue() && af_backquote_null_or_quoted(result).isTrue()) {
+  if (core__backquote_null_or_quoted(item).isTrue() && core__backquote_null_or_quoted(result).isTrue()) {
     List_sp tl = Cons_O::createList(oCadr(item), oCadr(result));
     return Cons_O::createList(_sym_STARbq_quoteSTAR,
-                              af_backquote_append(tl));
-  } else if (cl_equal(result, _sym_STARbq_quote_nilSTAR->symbolValue())) {
-    if (af_backquote_splicing_frob(item)) {
+                              core__backquote_append(tl));
+  } else if (cl__equal(result, _sym_STARbq_quote_nilSTAR->symbolValue())) {
+    if (core__backquote_splicing_frob(item)) {
       return Cons_O::createList(op, item);
     } else
       return item;
@@ -386,30 +386,30 @@ T_sp af_backquote_attach_append(T_sp op, T_sp item, T_sp result) {
   return Cons_O::createList(op, item, result);
 }
 
-#define ARGS_af_backquote_attach_conses "(items result)"
-#define DECL_af_backquote_attach_conses ""
-#define DOCS_af_backquote_attach_conses "backquote_attach_conses"
-List_sp af_backquote_attach_conses(T_sp items, T_sp result) {
+#define ARGS_core__backquote_attach_conses "(items result)"
+#define DECL_core__backquote_attach_conses ""
+#define DOCS_core__backquote_attach_conses "backquote_attach_conses"
+List_sp core__backquote_attach_conses(T_sp items, T_sp result) {
   _G();
-  if (cl_every(_sym_backquote_null_or_quoted, Cons_O::create(items)).isTrue() && af_backquote_null_or_quoted(result).isTrue()) {
+  if (cl__every(_sym_backquote_null_or_quoted, Cons_O::create(items)).isTrue() && core__backquote_null_or_quoted(result).isTrue()) {
     Cons_sp ti = Cons_O::create(items);
-    Cons_sp tl = Cons_O::createList(cl_mapcar(cl::_sym_cadr, ti), oCadr(result));
-    return Cons_O::createList(_sym_STARbq_quoteSTAR, af_backquote_append(tl));
-  } else if (cl_equal(result, _sym_STARbq_quote_nilSTAR->symbolValue())) {
+    Cons_sp tl = Cons_O::createList(cl__mapcar(cl::_sym_cadr, ti), oCadr(result));
+    return Cons_O::createList(_sym_STARbq_quoteSTAR, core__backquote_append(tl));
+  } else if (cl__equal(result, _sym_STARbq_quote_nilSTAR->symbolValue())) {
     return Cons_O::create(_sym_STARbq_listSTAR, items);
   } else if (cl_consp(result) && ((oCar(result) == _sym_STARbq_listSTAR) || (oCar(result) == _sym_STARbq_listSTARSTAR))) {
     List_sp tl = Cons_O::createList(items, oCdr(result));
-    return Cons_O::create(oCar(result), af_backquote_append(tl));
+    return Cons_O::create(oCar(result), core__backquote_append(tl));
   }
   Cons_sp ta = Cons_O::create(result);
   Cons_sp tr = Cons_O::createList(items, ta);
-  return Cons_O::create(_sym_STARbq_listSTARSTAR, af_backquote_append(tr));
+  return Cons_O::create(_sym_STARbq_listSTARSTAR, core__backquote_append(tr));
 }
 
-#define ARGS_af_backquote_remove_tokens "(x)"
-#define DECL_af_backquote_remove_tokens ""
-#define DOCS_af_backquote_remove_tokens "backquote_remove_tokens"
-T_sp af_backquote_remove_tokens(T_sp x) {
+#define ARGS_core__backquote_remove_tokens "(x)"
+#define DECL_core__backquote_remove_tokens ""
+#define DOCS_core__backquote_remove_tokens "backquote_remove_tokens"
+T_sp core__backquote_remove_tokens(T_sp x) {
   _G();
   if (x == _sym_STARbq_listSTAR)
     return cl::_sym_list;
@@ -421,49 +421,49 @@ T_sp af_backquote_remove_tokens(T_sp x) {
     return cl::_sym_listSTAR;
   if (x == _sym_STARbq_quoteSTAR)
     return cl::_sym_quote;
-  if (cl_atom(x))
+  if (cl__atom(x))
     return x;
   List_sp cx = x;
   if (oCar(cx) == _sym_STARbq_clobberableSTAR) {
-    return ((af_backquote_remove_tokens(oCadr(cx))));
+    return ((core__backquote_remove_tokens(oCadr(cx))));
   }
   if ((oCar(cx) == _sym_STARbq_listSTARSTAR) && cl_consp(oCddr(cx)) && oCdddr(cx).nilp()) {
     return Cons_O::create(cl::_sym_cons,
-                          af_backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(), oCdr(cx)));
+                          core__backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(), oCdr(cx)));
   }
-  T_sp mapped = af_backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(), x);
+  T_sp mapped = core__backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(), x);
   return mapped;
 }
 
 void initialize_backquote(Lisp_sp lisp) {
   _G();
   SYMBOL_SC_(CorePkg, backquote_completely_process);
-  Defun(backquote_completely_process);
+  Core_temp_Defun(backquote_completely_process);
   SYMBOL_SC_(CorePkg, backquote_process);
-  Defun(backquote_process);
+  Core_temp_Defun(backquote_process);
   SYMBOL_SC_(CorePkg, backquote_bracket);
-  Defun(backquote_bracket);
-  Defun(backquote_maptree);
-  Defun(backquote_simplify);
-  Defun(backquote_simplify_args);
+  Core_temp_Defun(backquote_bracket);
+  Core_temp_Defun(backquote_maptree);
+  Core_temp_Defun(backquote_simplify);
+  Core_temp_Defun(backquote_simplify_args);
   SYMBOL_SC_(CorePkg, backquote_null_or_quoted);
-  Defun(backquote_null_or_quoted);
+  Core_temp_Defun(backquote_null_or_quoted);
   SYMBOL_SC_(CorePkg, backquote_attach_append);
-  Defun(backquote_attach_append);
+  Core_temp_Defun(backquote_attach_append);
   SYMBOL_SC_(CorePkg, backquote_attach_conses);
-  Defun(backquote_attach_conses);
+  Core_temp_Defun(backquote_attach_conses);
   SYMBOL_SC_(CorePkg, backquote_remove_tokens);
-  Defun(backquote_remove_tokens);
+  Core_temp_Defun(backquote_remove_tokens);
   SYMBOL_SC_(CorePkg, backquote_frob);
-  Defun(backquote_frob);
+  Core_temp_Defun(backquote_frob);
   SYMBOL_SC_(CorePkg, backquote_splicing_frob);
-  Defun(backquote_splicing_frob);
+  Core_temp_Defun(backquote_splicing_frob);
 
   SYMBOL_SC_(CorePkg, backquote_append);
-  Defun(backquote_append);
+  Core_temp_Defun(backquote_append);
 
   SYMBOL_SC_(CorePkg, quasiquote);
-  defmacro(CorePkg, "quasiquote", af_quasiquote, ARGS_af_quasiquote, DECL_af_quasiquote, DOCS_af_quasiquote, __FILE__, __LINE__, false);
+  defmacro(CorePkg, "quasiquote", core__quasiquote, ARGS_core__quasiquote, DECL_core__quasiquote, DOCS_core__quasiquote, __FILE__, __LINE__, false);
 
   SYMBOL_SC_(CorePkg, STARbq_simplifySTAR);
   _sym_STARbq_simplifySTAR->setf_symbolValue(_lisp->_true());

@@ -157,46 +157,46 @@ bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val) {
 #endif
 };
 
-#define ARGS_af_countFunctionContainerEnvironments "(arg)"
-#define DECL_af_countFunctionContainerEnvironments ""
-#define DOCS_af_countFunctionContainerEnvironments "countFunctionContainerEnvironments"
-T_mv af_countFunctionContainerEnvironments() {
+#define ARGS_core__count_function_container_environments "(arg)"
+#define DECL_core__count_function_container_environments ""
+#define DOCS_core__count_function_container_environments "countFunctionContainerEnvironments"
+T_mv core__count_function_container_environments() {
   _G();
   IMPLEMENT_MEF(BF("Implement countFunctionContainerEnvironments"));
 };
 
-#define ARGS_af_environmentActivationFrame "(env)"
-#define DECL_af_environmentActivationFrame ""
-#define DOCS_af_environmentActivationFrame "environmentActivationFrame"
-T_sp af_environmentActivationFrame(T_sp env) {
+#define ARGS_core__environment_activation_frame "(env)"
+#define DECL_core__environment_activation_frame ""
+#define DOCS_core__environment_activation_frame "environmentActivationFrame"
+T_sp core__environment_activation_frame(T_sp env) {
   _G();
   if (env.nilp())
     return env;
   return gc::As<Environment_sp>(env)->getActivationFrame();
 };
 
-#define ARGS_af_environmentList "(env)"
-#define DECL_af_environmentList ""
-#define DOCS_af_environmentList "Return a list of environment parents"
-T_sp af_environmentList(T_sp env) {
+#define ARGS_core__environment_list "(env)"
+#define DECL_core__environment_list ""
+#define DOCS_core__environment_list "Return a list of environment parents"
+T_sp core__environment_list(T_sp env) {
   _G();
   List_sp result = _Nil<T_O>();
   for (T_sp ecur = env; ecur.notnilp(); ecur = gc::As<Environment_sp>(ecur)->getParentEnvironment()) {
     result = Cons_O::create(ecur, result);
   }
-  return (cl_nreverse(result));
+  return (cl__nreverse(result));
 };
 
-#define ARGS_af_environmentTypeList "(env)"
-#define DECL_af_environmentTypeList ""
-#define DOCS_af_environmentTypeList "Return a list of environment parents"
-T_sp af_environmentTypeList(T_sp env) {
+#define ARGS_core__environment_type_list "(env)"
+#define DECL_core__environment_type_list ""
+#define DOCS_core__environment_type_list "Return a list of environment parents"
+T_sp core__environment_type_list(T_sp env) {
   _G();
   List_sp result = _Nil<T_O>();
   for (T_sp ecur = env; ecur.notnilp(); ecur = gc::As<Environment_sp>(ecur)->getParentEnvironment()) {
     result = Cons_O::create(lisp_static_class(ecur), result);
   }
-  return cl_nreverse(result);
+  return cl__nreverse(result);
 };
 
 int Environment_O::clasp_countFunctionContainerEnvironments(T_sp env) {
@@ -208,10 +208,10 @@ int Environment_O::clasp_countFunctionContainerEnvironments(T_sp env) {
   NOT_ENVIRONMENT_ERROR(env);
 };
 
-#define ARGS_af_runtimeEnvironment "(env)"
-#define DECL_af_runtimeEnvironment ""
-#define DOCS_af_runtimeEnvironment "Return the RuntimeEnvironment or nil"
-T_sp af_runtimeEnvironment(T_sp tenv) {
+#define ARGS_core__runtime_environment "(env)"
+#define DECL_core__runtime_environment ""
+#define DOCS_core__runtime_environment "Return the RuntimeEnvironment or nil"
+T_sp core__runtime_environment(T_sp tenv) {
   _G();
   if (tenv.nilp())
     return _Nil<T_O>();
@@ -221,10 +221,10 @@ T_sp af_runtimeEnvironment(T_sp tenv) {
   SIMPLE_ERROR(BF("No runtime environment available for %s") % _rep_(tenv));
 };
 
-#define ARGS_af_environmentId "(env)"
-#define DECL_af_environmentId ""
-#define DOCS_af_environmentId "environmentId"
-int af_environmentId(T_sp tenv) {
+#define ARGS_core__environment_id "(env)"
+#define DECL_core__environment_id ""
+#define DOCS_core__environment_id "environmentId"
+int core__environment_id(T_sp tenv) {
   _G();
   if (tenv.nilp()) {
     return 0;
@@ -295,18 +295,18 @@ void Environment_O::exposeCando(Lisp_sp lisp) {
   CoreDefun(environmentDebugNames);
   CoreDefun(environmentDebugValues);
   SYMBOL_SC_(CorePkg, environmentActivationFrame);
-  Defun(environmentActivationFrame);
+  Core_temp_Defun(environment_activation_frame);
   CoreDefun(classifyReturnFromSymbol);
   SYMBOL_SC_(CorePkg, currentVisibleEnvironment);
   af_def(CorePkg, "currentVisibleEnvironment", &Environment_O::clasp_currentVisibleEnvironment);
   SYMBOL_SC_(CorePkg, runtimeEnvironment);
-  Defun(runtimeEnvironment);
+  Core_temp_Defun(runtime_environment);
   SYMBOL_SC_(CorePkg, environmentList);
-  Defun(environmentList);
+  Core_temp_Defun(environment_list);
   SYMBOL_SC_(CorePkg, environmentTypeList);
-  Defun(environmentTypeList);
+  Core_temp_Defun(environment_type_list);
   SYMBOL_SC_(CorePkg, environmentId);
-  Defun(environmentId);
+  Core_temp_Defun(environment_id);
   CoreDefun(lexicalFunction);
   CoreDefun(lexicalMacroFunction);
 }
@@ -480,7 +480,7 @@ Function_sp Environment_O::_lookupFunction(int depth, int index) const {
 
 string Environment_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << lisp_classNameAsString(cl_classOf(this->asSmartPtr())) << ">";
+  ss << "#<" << lisp_classNameAsString(cl__class_of(this->asSmartPtr())) << ">";
 #if 0
 	int tab = gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue())->get();
 	{
@@ -1154,7 +1154,7 @@ string ValueEnvironment_O::summaryOfContents() const {
                 if ( ivalue == SPECIAL_TARGET )
                 {
                     ss << "SPECIAL-VAR";
-                } else if ( ivalue >= cl_length(this->_ActivationFrame) )
+                } else if ( ivalue >= cl__length(this->_ActivationFrame) )
                 {
                     ss << "ActivationFrame->index["<<ivalue<<"]->OUT-OF-RANGE";
                 } else if ( this->_ActivationFrame->boundp_entry(ivalue) )

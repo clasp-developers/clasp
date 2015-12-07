@@ -312,19 +312,19 @@ void run_quick_tests() {
   if (!(_x))                   \
     SIMPLE_ERROR(BF("Test failed"));
   List_sp val1 = eval::funcall(cl::_sym_list, cl::_sym_nil);
-  TEST_ASSERT_ALWAYS(cl_length(val1) == 1);
+  TEST_ASSERT_ALWAYS(cl__length(val1) == 1);
   List_sp val2 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil);
-  TEST_ASSERT_ALWAYS(cl_length(val2) == 2);
+  TEST_ASSERT_ALWAYS(cl__length(val2) == 2);
   List_sp val3 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil);
-  TEST_ASSERT_ALWAYS(cl_length(val3) == 3);
+  TEST_ASSERT_ALWAYS(cl__length(val3) == 3);
   List_sp val4 = eval::funcall(cl::_sym_list, clasp_make_fixnum(1), clasp_make_fixnum(2), clasp_make_fixnum(3), clasp_make_fixnum(4));
-  TEST_ASSERT_ALWAYS(cl_length(val4) == 4);
+  TEST_ASSERT_ALWAYS(cl__length(val4) == 4);
   List_sp val5 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil);
-  TEST_ASSERT_ALWAYS(cl_length(val5) == 5);
+  TEST_ASSERT_ALWAYS(cl__length(val5) == 5);
   List_sp val6 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil);
-  TEST_ASSERT_ALWAYS(cl_length(val6) == 6);
+  TEST_ASSERT_ALWAYS(cl__length(val6) == 6);
   List_sp val7 = eval::funcall(cl::_sym_list, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil, cl::_sym_nil);
-  TEST_ASSERT_ALWAYS(cl_length(val7) == 7);
+  TEST_ASSERT_ALWAYS(cl__length(val7) == 7);
 
   T_sp num = clasp_make_fixnum(63);
   Real_sp r = gc::As<Real_sp>(num);
@@ -512,91 +512,91 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
                                        Cons_O::createList(Str_O::create("sys:**;*.*"), bundle->getSysPathname())
         /* ,  more here */
                                        );
-      af_pathnameTranslations(Str_O::create("sys"), _lisp->_true(), pts);
+      core__pathname_translations(Str_O::create("sys"), _lisp->_true(), pts);
     }
 
     // setup the TMP logical-pathname-translations
     Cons_sp entryTmp = Cons_O::createList(Str_O::create("tmp:**;*.*"),
-                                          cl_pathname(Str_O::create("/tmp/**/*.*")));
+                                          cl__pathname(Str_O::create("/tmp/**/*.*")));
     Cons_sp ptsTmp = Cons_O::createList(entryTmp
                                         /* ,  more here */
                                         );
-    af_pathnameTranslations(Str_O::create("tmp"), _lisp->_true(), ptsTmp);
+    core__pathname_translations(Str_O::create("tmp"), _lisp->_true(), ptsTmp);
 
     // setup the APP-CONTENTS logical-pathname-translations
     Cons_sp appc = Cons_O::createList(
         Cons_O::createList(Str_O::create("app-contents:**;*.*"), bundle->getAppContentsPathname())
         /* , more here */
         );
-    af_pathnameTranslations(Str_O::create("app-contents"), _lisp->_true(), appc);
+    core__pathname_translations(Str_O::create("app-contents"), _lisp->_true(), appc);
 
     // setup the APP-RESOURCES logical-pathname-translations
     Cons_sp app = Cons_O::createList(
         Cons_O::createList(Str_O::create("app-resources:**;*.*"), bundle->getAppContentsResourcesPathname())
         /* , more here */
         );
-    af_pathnameTranslations(Str_O::create("app-resources"), _lisp->_true(), app);
+    core__pathname_translations(Str_O::create("app-resources"), _lisp->_true(), app);
 
     // setup the build;system pathnames
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-bitcode;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("min-bitcode"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-bitcode;**;*.*"))));
+      core__pathname_translations(Str_O::create("min-bitcode"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-bitcode;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("full-bitcode"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-bitcode;**;*.*"))));
+      core__pathname_translations(Str_O::create("full-bitcode"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-bitcode;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("cclasp-bitcode"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-bitcode;**;*.*"))));
+      core__pathname_translations(Str_O::create("cclasp-bitcode"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehmdc;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("min-boehmdc"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehmdc;**;*.*"))));
+      core__pathname_translations(Str_O::create("min-boehmdc"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehmdc;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("full-boehmdc"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehmdc;**;*.*"))));
+      core__pathname_translations(Str_O::create("full-boehmdc"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehmdc;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("cclasp-boehmdc"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehmdc;**;*.*"))));
+      core__pathname_translations(Str_O::create("cclasp-boehmdc"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehm;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("min-boehm"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehm;**;*.*"))));
+      core__pathname_translations(Str_O::create("min-boehm"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehm;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("full-boehm"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehm;**;*.*"))));
+      core__pathname_translations(Str_O::create("full-boehm"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehm;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("cclasp-boehm"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehm;**;*.*"))));
+      core__pathname_translations(Str_O::create("cclasp-boehm"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-mps;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("min-mps"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-mps;**;*.*"))));
+      core__pathname_translations(Str_O::create("min-mps"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-mps;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("full-mps"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-mps;**;*.*"))));
+      core__pathname_translations(Str_O::create("full-mps"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl_pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-mps;**;*.*"))));
-      af_pathnameTranslations(Str_O::create("cclasp-mps"), _lisp->_true(), p);
+          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-mps;**;*.*"))));
+      core__pathname_translations(Str_O::create("cclasp-mps"), _lisp->_true(), p);
     }
     /* Call the function defined in main.cc that creates the source-main: host */
     create_source_main_host();
@@ -649,7 +649,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_Roots._BignumRegister2 = Bignum_O::create(0);
     Real_sp bits = gc::As<Real_sp>(clasp_make_fixnum(gc::fixnum_bits));
     Real_sp two = gc::As<Real_sp>(clasp_make_fixnum(2));
-    this->_Roots._IntegerOverflowAdjust = cl_expt(two, bits); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
+    this->_Roots._IntegerOverflowAdjust = cl__expt(two, bits); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
     getcwd(true);                                             // set *default-pathname-defaults*
   };
   {
@@ -913,7 +913,7 @@ void Lisp_O::addClass(Symbol_sp classSymbol,
     cc = BuiltInClass_O::create(classSymbol);
   }
   printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str());
-  af_setf_findClass(cc, classSymbol, true, _Nil<T_O>());
+  core__setf_find_class(cc, classSymbol, true, _Nil<T_O>());
   if (IS_SYMBOL_DEFINED(base1ClassSymbol)) {
     cc->addInstanceBaseClass(base1ClassSymbol);
   } else {
@@ -936,7 +936,7 @@ void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, gc::tagged_point
   //	printf("%s:%d:%s  Adding class with symbol %s -- _allocator=%p unless we initialize it properly\n", __FILE__,__LINE__,__FUNCTION__,_rep_(classSymbol).c_str(), allocator );
   LOG(BF("Lisp_O::addClass classSymbol(%s)") % _rep_(classSymbol));
   //	printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str() );
-  af_setf_findClass(theClass, classSymbol, true, _Nil<T_O>());
+  core__setf_find_class(theClass, classSymbol, true, _Nil<T_O>());
   //        IMPLEMENT_MEF(BF("Pass an AllocateInstanceFunctor"));
   theClass->setCreator(allocator);
 }
@@ -1247,7 +1247,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
     }
     loadEvals = Cons_O::create(one, loadEvals);
   }
-  _sym_STARcommandLineLoadEvalSequenceSTAR->defparameter(cl_nreverse(loadEvals));
+  _sym_STARcommandLineLoadEvalSequenceSTAR->defparameter(cl__nreverse(loadEvals));
 
   this->_Interactive = options._Interactive;
   if (this->_Interactive) {
@@ -1268,7 +1268,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   }
   if (options._HasImageFile) {
     SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineImageSTAR);
-    _sym_STARcommandLineImageSTAR->defparameter(cl_pathname(Str_O::create(options._ImageFile)));
+    _sym_STARcommandLineImageSTAR->defparameter(cl__pathname(Str_O::create(options._ImageFile)));
   } else {
     _sym_STARcommandLineImageSTAR->defparameter(core_startupImagePathname());
   }
@@ -1305,7 +1305,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
       }
       DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
       innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, core_inputStreamSourcePosInfo(stream));
-      T_sp expression = cl_read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
+      T_sp expression = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
       if (expression.unboundp())
         break;
       _sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core_walkToFindSourcePosInfo(expression, _sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
@@ -1323,7 +1323,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
       if (af_keywordP(expression)) {
         ql::list tplCmd;
         tplCmd << expression;
-        while (T_sp exp = cl_read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>())) {
+        while (T_sp exp = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>())) {
           if (exp.unboundp())
             break;
           tplCmd << exp;
@@ -1331,7 +1331,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
         if (_sym_STARtopLevelCommandHookSTAR->symbolValue().notnilp()) {
           eval::funcall(_sym_STARtopLevelCommandHookSTAR->symbolValue(), tplCmd.cons());
         } else {
-          af_bformat(_lisp->_true(), "Cannot interpret %s - define core::*top-level-command-hook*", Cons_O::createList(tplCmd.cons()));
+          core__bformat(_lisp->_true(), "Cannot interpret %s - define core::*top-level-command-hook*", Cons_O::createList(tplCmd.cons()));
         }
       } else if (expression.notnilp()) {
         result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), expression, environ);
@@ -1378,14 +1378,14 @@ T_mv Lisp_O::readEvalPrintString(const string &code, T_sp environ, bool printRes
   _OF();
   StringInputStream_sp sin = StringInputStream_O::make(code);
   T_mv result = this->readEvalPrint(sin, environ, printResults, false);
-  cl_close(sin);
+  cl__close(sin);
   return result;
 }
 
-#define ARGS_af_lowLevelRepl "()"
-#define DECL_af_lowLevelRepl ""
-#define DOCS_af_lowLevelRepl "lowLevelRepl - this is a built in repl for when the top-level repl isn't available"
-void af_lowLevelRepl() {
+#define ARGS_core__low_level_repl "()"
+#define DECL_core__low_level_repl ""
+#define DOCS_core__low_level_repl "lowLevelRepl - this is a built in repl for when the top-level repl isn't available"
+void core__low_level_repl() {
   _G();
   _lisp->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
 };
@@ -1397,10 +1397,10 @@ void Lisp_O::readEvalPrintInteractive() {
   this->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
 }
 
-#define ARGS_af_stackUsed "()"
-#define DECL_af_stackUsed ""
-#define DOCS_af_stackUsed "stackUsed"
-uint af_stackUsed() {
+#define ARGS_core__stack_used "()"
+#define DECL_core__stack_used ""
+#define DOCS_core__stack_used "stackUsed"
+uint core__stack_used() {
   _G();
   int x;
   char *xaddr = (char *)(&x);
@@ -1429,16 +1429,16 @@ void af_stackSizeWarning(size_t stackUsed) {
            __FILE__, __LINE__,
            stackUsed, _lisp->_StackWarnSize);
     ExceptionSafeResetInvokedInternalDebugger safe;
-    af_invokeInternalDebugger(_Nil<core::T_O>());
+    core__invoke_internal_debugger(_Nil<core::T_O>());
   }
 };
 
-#define ARGS_af_stackMonitor "()"
-#define DECL_af_stackMonitor ""
-#define DOCS_af_stackMonitor "monitor stack for problems - warn if getting too large"
-void af_stackMonitor() {
+#define ARGS_core__stack_monitor "()"
+#define DECL_core__stack_monitor ""
+#define DOCS_core__stack_monitor "monitor stack for problems - warn if getting too large"
+void core__stack_monitor() {
   _G();
-  uint stackUsed = af_stackUsed();
+  uint stackUsed = core__stack_used();
   if (stackUsed > _lisp->_StackSampleMax)
     _lisp->_StackSampleMax = stackUsed;
   if (_lisp->_StackSampleSize > 0) {
@@ -1457,17 +1457,17 @@ void af_stackMonitor() {
   }
 };
 
-#define ARGS_af_stackLimit "()"
-#define DECL_af_stackLimit ""
-#define DOCS_af_stackLimit "Return the soft and hard limits of the stack"
-T_mv af_stackLimit() {
+#define ARGS_core__stack_limit "()"
+#define DECL_core__stack_limit ""
+#define DOCS_core__stack_limit "Return the soft and hard limits of the stack"
+T_mv core__stack_limit() {
   return Values(clasp_make_fixnum(_lisp->_StackWarnSize));
 };
 
-#define ARGS_af_setupStackMonitor "(&key warn-size sample-size)"
-#define DECL_af_setupStackMonitor ""
-#define DOCS_af_setupStackMonitor "setupStackMonitor"
-void af_setupStackMonitor(T_sp warnSize, T_sp sampleSize) {
+#define ARGS_core__setup_stack_monitor "(&key warn-size sample-size)"
+#define DECL_core__setup_stack_monitor ""
+#define DOCS_core__setup_stack_monitor "setupStackMonitor"
+void core__setup_stack_monitor(T_sp warnSize, T_sp sampleSize) {
   _G();
   if (!warnSize.nilp()) {
     _lisp->_StackWarnSize = unbox_fixnum(gc::As<Fixnum_sp>(warnSize));
@@ -1495,29 +1495,29 @@ void core_quit(int exitValue) {
   core_exit(exitValue);
 };
 
-#define ARGS_af_acons "(key datum alist)"
-#define DECL_af_acons ""
-#define DOCS_af_acons "acons"
-List_sp af_acons(T_sp key, T_sp val, List_sp alist) {
+LAMBDA(key datum alist);
+DECLARE();
+DOCSTRING("acons");
+CL_DEFUN List_sp cl__acons(T_sp key, T_sp val, List_sp alist) {
   _G();
   Cons_sp acons = Cons_O::create(key, val);
   return Cons_O::create(acons, alist);
 }
 
-#define ARGS_cl_assoc "(item alist &key key test test-not)"
-#define DECL_cl_assoc ""
-#define DOCS_cl_assoc "assoc"
-List_sp cl_assoc(T_sp item, List_sp alist, T_sp key, T_sp test, T_sp test_not) {
+LAMBDA(item alist &key key test test-not);
+DECLARE();
+DOCSTRING("assoc");
+CL_DEFUN List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test, T_sp test_not) {
   _G();
   if (alist.nilp())
     return alist;
   return alist.asCons()->assoc(item, key, test, test_not);
 }
 
-#define ARGS_cl_member "(item list &key key test test-not)"
-#define DECL_cl_member ""
-#define DOCS_cl_member "See CLHS member"
-List_sp cl_member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not) {
+LAMBDA(item list &key key test test-not);
+DECLARE();
+DOCSTRING("See CLHS member");
+CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not) {
   _G();
   if (tlist.nilp())
     return _Nil<T_O>();
@@ -1528,24 +1528,24 @@ List_sp cl_member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not) {
   UNREACHABLE();
 }
 
-#define ARGS_af_memberTest "(item list &key key test test-not)"
-#define DECL_af_memberTest ""
-#define DOCS_af_memberTest "See CLHS memberTest"
-#define FILE_af_memberTest __FILE__
-#define LINE_af_memberTest __LINE__
-List_sp af_memberTest(T_sp item, List_sp list, T_sp key, T_sp test, T_sp test_not) {
+#define ARGS_core__member_test "(item list &key key test test-not)"
+#define DECL_core__member_test ""
+#define DOCS_core__member_test "See CLHS memberTest"
+#define FILE_core__member_test __FILE__
+#define LINE_core__member_test __LINE__
+List_sp core__member_test(T_sp item, List_sp list, T_sp key, T_sp test, T_sp test_not) {
   _G();
   if (list.nilp())
     return list;
   return (list.asCons()->member(item, key, test, test_not));
 }
 
-#define ARGS_af_member1 "(item list test test-not key)"
-#define DECL_af_member1 ""
-#define DOCS_af_member1 "Like member but if a key function is provided then apply it to the item. See ecl::list.d::member1"
-#define FILE_af_member1 __FILE__
-#define LINE_af_member1 __LINE__
-List_sp af_member1(T_sp item, List_sp list, T_sp test, T_sp test_not, T_sp key) {
+#define ARGS_core__member1 "(item list test test-not key)"
+#define DECL_core__member1 ""
+#define DOCS_core__member1 "Like member but if a key function is provided then apply it to the item. See ecl::list.d::member1"
+#define FILE_core__member1 __FILE__
+#define LINE_core__member1 __LINE__
+List_sp core__member1(T_sp item, List_sp list, T_sp test, T_sp test_not, T_sp key) {
   _G();
   if (list.nilp())
     return list;
@@ -1582,10 +1582,10 @@ T_sp ext_getenv(Str_sp name) {
   __END_DOC
 */
 
-#define ARGS_af_getline "(&optional (prompt \"\"))"
-#define DECL_af_getline ""
-#define DOCS_af_getline "getline"
-T_mv af_getline(Str_sp prompt) {
+#define ARGS_core__getline "(&optional (prompt \"\"))"
+#define DECL_core__getline ""
+#define DOCS_core__getline "getline"
+T_mv core__getline(Str_sp prompt) {
   _G();
   string res;
   string sprompt(prompt->get());
@@ -1623,7 +1623,7 @@ T_mv ext_system(Str_sp cmd) {
 T_mv ext_vfork_execvp(List_sp call_and_arguments) {
   if (call_and_arguments.nilp())
     return Values0<T_O>();
-  std::vector<char const *> execvp_args(cl_length(call_and_arguments) + 1);
+  std::vector<char const *> execvp_args(cl__length(call_and_arguments) + 1);
   size_t idx = 0;
   for (auto cur : call_and_arguments) {
     Str_sp sarg = gc::As<Str_sp>(oCar(cur));
@@ -1676,10 +1676,10 @@ T_mv ext_vfork_execvp(List_sp call_and_arguments) {
 */
 
 
-#define ARGS_cl_findClass "(symbol &optional (errorp t) environment)"
-#define DECL_cl_findClass ""
-#define DOCS_cl_findClass "findClass"
-Class_mv cl_findClass(Symbol_sp symbol, bool errorp, T_sp env) {
+LAMBDA(symbol &optional (errorp t) environment);
+DECLARE();
+DOCSTRING("findClass");
+CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   if (_lisp->bootClassTableIsValid()) {
     return Values(_lisp->boot_findClass(symbol, errorp));
   }
@@ -1703,10 +1703,10 @@ Class_mv cl_findClass(Symbol_sp symbol, bool errorp, T_sp env) {
   return (Values(omc));
 }
 
-#define ARGS_af_setf_findClass "(new-value name)"
-#define DECL_af_setf_findClass ""
-#define DOCS_af_setf_findClass "setf_findClass"
-Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env) {
+#define ARGS_core__setf_find_class "(new-value name)"
+#define DECL_core__setf_find_class ""
+#define DOCS_core__setf_find_class "setf_findClass"
+Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool errorp, T_sp env) {
   _G();
   if (!af_classp(newValue)) {
     SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
@@ -1734,10 +1734,10 @@ Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env)
   __END_DOC
 */
 
-#define ARGS_af_findFileInLispPath "(partialPath)"
-#define DECL_af_findFileInLispPath ""
-#define DOCS_af_findFileInLispPath "findFileInLispPath"
-T_mv af_findFileInLispPath(Str_sp partialPath) {
+#define ARGS_core__find_file_in_lisp_path "(partialPath)"
+#define DECL_core__find_file_in_lisp_path ""
+#define DOCS_core__find_file_in_lisp_path "findFileInLispPath"
+T_mv core__find_file_in_lisp_path(Str_sp partialPath) {
   _G();
   LOG(BF("PartialPath=[%s]") % partialPath->get());
   Path_sp fullPath = _lisp->translateLogicalPathnameUsingPaths(partialPath);
@@ -1745,10 +1745,10 @@ T_mv af_findFileInLispPath(Str_sp partialPath) {
   return (Values(fullPath));
 }
 
-#define ARGS_af_find_package "(name_desig)"
-#define DECL_af_find_package ""
-#define DOCS_af_find_package "See CLHS: find-package"
-T_sp af_find_package(T_sp name_desig) {
+LAMBDA(name_desig);
+DECLARE();
+DOCSTRING("See CLHS: find-package");
+CL_DEFUN T_sp cl__find_package(T_sp name_desig) {
   _G();
   if (Package_sp pkg = name_desig.asOrNull<Package_O>())
     return pkg;
@@ -1756,10 +1756,10 @@ T_sp af_find_package(T_sp name_desig) {
   return _lisp->findPackage(name->get());
 }
 
-#define ARGS_af_selectPackage "(package-designator)"
-#define DECL_af_selectPackage ""
-#define DOCS_af_selectPackage "selectPackage"
-void af_selectPackage(T_sp package_designator) {
+#define ARGS_core__select_package "(package-designator)"
+#define DECL_core__select_package ""
+#define DOCS_core__select_package "selectPackage"
+void core__select_package(T_sp package_designator) {
   _G();
   Package_sp pkg = coerce::packageDesignator(package_designator);
   _lisp->selectPackage(pkg);
@@ -1773,10 +1773,10 @@ void af_selectPackage(T_sp package_designator) {
   __END_DOC
 */
 
-#define ARGS_af_mpi_enabled "()"
-#define DECL_af_mpi_enabled ""
-#define DOCS_af_mpi_enabled "mpi_enabled"
-T_mv af_mpi_enabled() {
+#define ARGS_core__mpi_enabled "()"
+#define DECL_core__mpi_enabled ""
+#define DOCS_core__mpi_enabled "mpi_enabled"
+T_mv core__mpi_enabled() {
   _G();
   return (Values(_lisp->_boolean(_lisp->mpiEnabled())));
 }
@@ -1788,10 +1788,10 @@ T_mv af_mpi_enabled() {
   Return the mpi rank or 0 if not enabled.
   __END_DOC
 */
-#define ARGS_af_mpi_rank "()"
-#define DECL_af_mpi_rank ""
-#define DOCS_af_mpi_rank "Return the mpi_rank or 0 if mpi is disabled"
-T_mv af_mpi_rank() {
+#define ARGS_core__mpi_rank "()"
+#define DECL_core__mpi_rank ""
+#define DOCS_core__mpi_rank "Return the mpi_rank or 0 if mpi is disabled"
+T_mv core__mpi_rank() {
   _G();
   return (Values(make_fixnum(_lisp->mpiRank())));
 }
@@ -1804,18 +1804,18 @@ T_mv af_mpi_rank() {
   __END_DOC
 */
 
-#define ARGS_af_mpi_size "()"
-#define DECL_af_mpi_size ""
-#define DOCS_af_mpi_size "Return mpi_size or 0 if mpi is not enabled"
-T_mv af_mpi_size() {
+#define ARGS_core__mpi_size "()"
+#define DECL_core__mpi_size ""
+#define DOCS_core__mpi_size "Return mpi_size or 0 if mpi is not enabled"
+T_mv core__mpi_size() {
   _G();
   return (Values(make_fixnum(_lisp->mpiSize())));
 }
 
-#define ARGS_cl_macroexpand_1 "(form &optional env)"
-#define DECL_cl_macroexpand_1 ""
-#define DOCS_cl_macroexpand_1 "macroexpand_1"
-T_mv cl_macroexpand_1(T_sp form, T_sp env) {
+LAMBDA(form &optional env);
+DECLARE();
+DOCSTRING("macroexpand_1");
+CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
   _G();
   T_sp expansionFunction = _Nil<T_O>();
   if (form.nilp()) {
@@ -1872,10 +1872,10 @@ T_mv cl_macroexpand_1(T_sp form, T_sp env) {
   return Values(form, _Nil<T_O>());
 }
 
-#define ARGS_cl_macroexpand "(form &optional env)"
-#define DECL_cl_macroexpand ""
-#define DOCS_cl_macroexpand "macroexpand"
-T_mv cl_macroexpand(T_sp form, T_sp env) {
+LAMBDA(form &optional env);
+DECLARE();
+DOCSTRING("macroexpand");
+CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
   _G();
   bool sawAMacro = false;
   bool expandedMacro = false;
@@ -1885,7 +1885,7 @@ T_mv cl_macroexpand(T_sp form, T_sp env) {
   }
   T_sp cur = form;
   do {
-    T_mv mv = cl_macroexpand_1(cur, env);
+    T_mv mv = cl__macroexpand_1(cur, env);
     cur = mv;
     sawAMacro = gc::As<T_sp>(mv.valueGet(1)).isTrue();
     expandedMacro |= sawAMacro;
@@ -1919,9 +1919,9 @@ void searchForApropos(List_sp packages, const string &raw_substring, bool print_
                     if ( (sym)->fboundp() )
                     {
                         ss << " ";
-                        ss << cl_classOf(af_symbolFunction((sym)))->classNameAsString();
-			Function_sp fn = af_symbolFunction(sym);
-                        if ( !fn.unboundp() && fn->closure && gc::As<Function_sp>(af_symbolFunction(sym))->closure->macroP() )
+                        ss << cl__class_of(cl__symbol_function((sym)))->classNameAsString();
+			Function_sp fn = cl__symbol_function(sym);
+                        if ( !fn.unboundp() && fn->closure && gc::As<Function_sp>(cl__symbol_function(sym))->closure->macroP() )
                         {
                             ss << "(MACRO)";
                         }
@@ -1954,10 +1954,10 @@ void searchForApropos(List_sp packages, const string &raw_substring, bool print_
   __END_DOC
 */
 
-#define ARGS_af_apropos "(string_desig &optional package_desig)"
-#define DECL_af_apropos ""
-#define DOCS_af_apropos "apropos"
-T_sp af_apropos(Str_sp string_desig, T_sp package_desig) {
+LAMBDA(string_desig &optional package_desig);
+DECLARE();
+DOCSTRING("apropos");
+CL_DEFUN T_sp cl__apropos(Str_sp string_desig, T_sp package_desig) {
   _G();
   string substring = coerce::stringDesignator(string_desig)->get();
   List_sp packages(_Nil<List_V>());
@@ -1994,13 +1994,13 @@ public:
   }
 };
 
-#define ARGS_af_sorted "(unsorted)"
-#define DECL_af_sorted ""
-#define DOCS_af_sorted "Sort the list in ascending order using operator< and return the sorted list"
-List_sp af_sorted(List_sp unsorted) {
+#define ARGS_core__sorted "(unsorted)"
+#define DECL_core__sorted ""
+#define DOCS_core__sorted "Sort the list in ascending order using operator< and return the sorted list"
+List_sp core__sorted(List_sp unsorted) {
   _G();
   gctools::Vec0<T_sp /*,gctools::RootedGCHolder*/> sorted;
-  if (cl_length(unsorted) == 0)
+  if (cl__length(unsorted) == 0)
     return _Nil<T_O>();
   fillVec0FromCons(sorted, unsorted);
   OrderByLessThan orderer;
@@ -2031,7 +2031,7 @@ T_sp af_sort(List_sp sequence, T_sp predicate) {
   gctools::Vec0<T_sp> sorted;
   Function_sp sortProc = coerce::functionDesignator(predicate);
   LOG(BF("Unsorted data: %s") % _rep_(sequence));
-  if (cl_length(sequence) == 0)
+  if (cl__length(sequence) == 0)
     return _Nil<T_O>();
   fillVec0FromCons(sorted, sequence);
   LOG(BF("Sort function: %s") % _rep_(sortProc));
@@ -2049,10 +2049,10 @@ T_sp af_sort(List_sp sequence, T_sp predicate) {
   __END_DOC
 */
 
-#define ARGS_af_sourceFileName "()"
-#define DECL_af_sourceFileName ""
-#define DOCS_af_sourceFileName "Return the current sourceFileName"
-T_mv af_sourceFileName() {
+#define ARGS_core__source_file_name "()"
+#define DECL_core__source_file_name ""
+#define DOCS_core__source_file_name "Return the current sourceFileName"
+T_mv core__source_file_name() {
   _G();
   Cons_sp ppcons;
   InvocationHistoryFrame *frame = _lisp->invocationHistoryStack().top();
@@ -2064,10 +2064,10 @@ T_mv af_sourceFileName() {
   return Values(Str_O::create(path->fileName()), Str_O::create(parent_path->asString()));
 }
 
-#define ARGS_af_sourceLineColumn "()"
-#define DECL_af_sourceLineColumn ""
-#define DOCS_af_sourceLineColumn "sourceLineColumn"
-T_mv af_sourceLineColumn() {
+#define ARGS_core__source_line_column "()"
+#define DECL_core__source_line_column ""
+#define DOCS_core__source_line_column "sourceLineColumn"
+T_mv core__source_line_column() {
   InvocationHistoryFrame *frame = _lisp->invocationHistoryStack().top();
   gctools::tagged_pointer<Closure> closure = frame->closure;
   return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
@@ -2089,19 +2089,19 @@ T_mv af_sourceLineColumn() {
   __END_DOC
 */
 
-#define ARGS_af_script_dir "()"
-#define DECL_af_script_dir ""
-#define DOCS_af_script_dir "script_dir"
-Path_mv af_script_dir() {
+#define ARGS_core__script_dir "()"
+#define DECL_core__script_dir ""
+#define DOCS_core__script_dir "script_dir"
+Path_mv core__script_dir() {
   _G();
   Path_sp dir = Path_O::create(_lisp->bundle().getLispDir());
   return (Values(dir));
 }
 
-#define ARGS_af_libraryPath "(&optional rel-path)"
-#define DECL_af_libraryPath ""
-#define DOCS_af_libraryPath "Returns the absolute path to the library directory - if rel-path is not nil then it prepends the library directory path to rel-path and returns that"
-Path_mv af_libraryPath(T_sp relPathDesignator) {
+#define ARGS_core__library_path "(&optional rel-path)"
+#define DECL_core__library_path ""
+#define DOCS_core__library_path "Returns the absolute path to the library directory - if rel-path is not nil then it prepends the library directory path to rel-path and returns that"
+Path_mv core__library_path(T_sp relPathDesignator) {
   _G();
   if (relPathDesignator.notnilp()) {
     Path_sp relPath = coerce::pathDesignator(relPathDesignator);
@@ -2112,10 +2112,10 @@ Path_mv af_libraryPath(T_sp relPathDesignator) {
   return (Values(Path_O::create(_lisp->bundle().getLibDir())));
 }
 
-#define ARGS_af_lispCodePath "(&optional rel-path)"
-#define DECL_af_lispCodePath ""
-#define DOCS_af_lispCodePath "Returns the absolute path to the lisp code directory - if rel-path is not nil then it prepends the directory path to rel-path and returns that"
-Path_mv af_lispCodePath(T_sp relPathDesignator) {
+#define ARGS_core__lisp_code_path "(&optional rel-path)"
+#define DECL_core__lisp_code_path ""
+#define DOCS_core__lisp_code_path "Returns the absolute path to the lisp code directory - if rel-path is not nil then it prepends the directory path to rel-path and returns that"
+Path_mv core__lisp_code_path(T_sp relPathDesignator) {
   _G();
   if (relPathDesignator.notnilp()) {
     Path_sp relPath = coerce::pathDesignator(relPathDesignator);
@@ -2134,10 +2134,10 @@ Path_mv af_lispCodePath(T_sp relPathDesignator) {
   __END_DOC
 */
 
-#define ARGS_af_database_dir "()"
-#define DECL_af_database_dir ""
-#define DOCS_af_database_dir "database_dir"
-Path_mv af_database_dir() {
+#define ARGS_core__database_dir "()"
+#define DECL_core__database_dir ""
+#define DOCS_core__database_dir "database_dir"
+Path_mv core__database_dir() {
   _G();
   Path_sp dir = Path_O::create(_lisp->bundle().getDatabasesDir());
   return (Values(dir));
@@ -2151,10 +2151,10 @@ Path_mv af_database_dir() {
   __END_DOC
 */
 
-#define ARGS_af_setCurrentWorkingDirectory "(dir)"
-#define DECL_af_setCurrentWorkingDirectory ""
-#define DOCS_af_setCurrentWorkingDirectory "setCurrentWorkingDirectory"
-T_mv af_setCurrentWorkingDirectory(Str_sp dir) {
+#define ARGS_core__set_current_working_directory "(dir)"
+#define DECL_core__set_current_working_directory ""
+#define DOCS_core__set_current_working_directory "setCurrentWorkingDirectory"
+T_mv core__set_current_working_directory(Str_sp dir) {
   _G();
   Path_sp cwd = Path_O::create(dir->get());
   _lisp->setCurrentWorkingDirectory(cwd);
@@ -2168,10 +2168,10 @@ T_mv af_setCurrentWorkingDirectory(Str_sp dir) {
   __END_DOC
 */
 
-#define ARGS_af_isTopLevelScript "()"
-#define DECL_af_isTopLevelScript ""
-#define DOCS_af_isTopLevelScript "isTopLevelScript"
-T_mv af_isTopLevelScript() {
+#define ARGS_core__is_top_level_script "()"
+#define DECL_core__is_top_level_script ""
+#define DOCS_core__is_top_level_script "isTopLevelScript"
+T_mv core__is_top_level_script() {
   _G();
   LOG(BF("isTopLevelScript = %d") % _lisp->getRequireLevel());
   T_sp top = _lisp->_boolean(_lisp->getRequireLevel() == 0);
@@ -2188,10 +2188,10 @@ T_mv af_isTopLevelScript() {
   __END_DOC
 */
 
-#define ARGS_af_debugLogOn "()"
-#define DECL_af_debugLogOn ""
-#define DOCS_af_debugLogOn "debugLogOn"
-void af_debugLogOn() {
+#define ARGS_core__debug_log_on "()"
+#define DECL_core__debug_log_on ""
+#define DOCS_core__debug_log_on "debugLogOn"
+void core__debug_log_on() {
   _G();
   _lisp->debugLog().setSuppressMessages(false);
   LOG(BF("Turning debugLogOn"));
@@ -2207,10 +2207,10 @@ void af_debugLogOn() {
   __END_DOC
 */
 
-#define ARGS_af_debugLogOff "()"
-#define DECL_af_debugLogOff ""
-#define DOCS_af_debugLogOff "debugLogOff"
-void af_debugLogOff() {
+#define ARGS_core__debug_log_off "()"
+#define DECL_core__debug_log_off ""
+#define DOCS_core__debug_log_off "debugLogOff"
+void core__debug_log_off() {
   _G();
   _lisp->debugLog().setSuppressMessages(true);
 }
@@ -2223,10 +2223,10 @@ void af_debugLogOff() {
 
   __END_DOC
 */
-#define ARGS_cl_export "(symDes &optional (packageDes *package*))"
-#define DECL_cl_export ""
-#define DOCS_cl_export "CLHS: export"
-T_sp cl_export(T_sp symDes, T_sp packageDes) {
+LAMBDA(symDes &optional (packageDes *package*));
+DECLARE();
+DOCSTRING("CLHS: export");
+CL_DEFUN T_sp cl__export(T_sp symDes, T_sp packageDes) {
   _G();
   List_sp symbols = coerce::listOfSymbols(symDes);
   Package_sp package = coerce::packageDesignator(packageDes);
@@ -2236,10 +2236,10 @@ T_sp cl_export(T_sp symDes, T_sp packageDes) {
   return _lisp->_true();
 }
 
-#define ARGS_af_exportToPython "(symbolsDesig)"
-#define DECL_af_exportToPython ""
-#define DOCS_af_exportToPython "exportToPython"
-void af_exportToPython(T_sp symbolsDesig) {
+#define ARGS_core__export_to_python "(symbolsDesig)"
+#define DECL_core__export_to_python ""
+#define DOCS_core__export_to_python "exportToPython"
+void core__export_to_python(T_sp symbolsDesig) {
   _G();
   List_sp symbols = coerce::listOfSymbols(symbolsDesig);
   for (Cons_sp cur : symbols) {
@@ -2249,43 +2249,43 @@ void af_exportToPython(T_sp symbolsDesig) {
   }
 }
 
-#define ARGS_cl_intern "(symbol_name &optional (package-desig *package*))"
-#define DECL_cl_intern ""
-#define DOCS_cl_intern "See CLHS: intern"
-T_mv cl_intern(Str_sp symbol_name, T_sp package_desig) {
+LAMBDA(symbol_name &optional (package-desig *package*));
+DECLARE();
+DOCSTRING("See CLHS: intern");
+CL_DEFUN T_mv cl__intern(Str_sp symbol_name, T_sp package_desig) {
   _G();
   Package_sp package = coerce::packageDesignator(package_desig);
   return (package->intern(symbol_name->get()));
 }
 
-#define ARGS_af_universalErrorHandler "(continue-string datum initializers)"
-#define DECL_af_universalErrorHandler ""
-#define DOCS_af_universalErrorHandler "universalErrorHandler"
-T_mv af_universalErrorHandler(T_sp continueString, T_sp datum, List_sp initializers) {
+#define ARGS_core__universal_error_handler "(continue-string datum initializers)"
+#define DECL_core__universal_error_handler ""
+#define DOCS_core__universal_error_handler "universalErrorHandler"
+T_mv core__universal_error_handler(T_sp continueString, T_sp datum, List_sp initializers) {
   _G();
   if (af_stringP(datum)) {
-    af_format(_lisp->_true(), datum, initializers);
+    cl__format(_lisp->_true(), datum, initializers);
   } else {
     stringstream ss;
     ss << "datum: " << _rep_(datum) << " " << _rep_(initializers);
     printf("%s\n", ss.str().c_str());
   }
   dbg_hook("universalErrorHandler");
-  af_invokeInternalDebugger(_Nil<T_O>());
+  core__invoke_internal_debugger(_Nil<T_O>());
   abort();
 };
 
-#define ARGS_af_invokeInternalDebugger "(&optional condition)"
-#define DECL_af_invokeInternalDebugger ""
-#define DOCS_af_invokeInternalDebugger "invokeInternalDebugger"
-void af_invokeInternalDebugger(T_sp condition) {
+#define ARGS_core__invoke_internal_debugger "(&optional condition)"
+#define DECL_core__invoke_internal_debugger ""
+#define DOCS_core__invoke_internal_debugger "invokeInternalDebugger"
+void core__invoke_internal_debugger(T_sp condition) {
   _G();
   stringstream ss;
   if (condition.nilp()) {
     LispDebugger debugger;
     debugger.invoke();
   } else {
-    _lisp->print(BF("%s:%d af_invokeInternalDebugger --> %s") % __FILE__ % __LINE__ % _rep_(condition).c_str());
+    _lisp->print(BF("%s:%d core__invoke_internal_debugger --> %s") % __FILE__ % __LINE__ % _rep_(condition).c_str());
     LispDebugger debugger(condition);
     debugger.invoke();
   }
@@ -2301,20 +2301,20 @@ HashTable_sp core_singleDispatchGenericFunctionTable() {
 
 extern "C" {
 
-#define ARGS_af_invokeInternalDebuggerFromGdb "()"
-#define DECL_af_invokeInternalDebuggerFromGdb ""
-#define DOCS_af_invokeInternalDebuggerFromGdb "invokeInternalDebuggerFromGdb"
-void af_invokeInternalDebuggerFromGdb() {
+#define ARGS_core__invoke_internal_debugger_from_gdb "()"
+#define DECL_core__invoke_internal_debugger_from_gdb ""
+#define DOCS_core__invoke_internal_debugger_from_gdb "invokeInternalDebuggerFromGdb"
+void core__invoke_internal_debugger_from_gdb() {
   _G();
   eval::funcall(_sym_invokeInternalDebugger);
   SIMPLE_ERROR(BF("This should never happen"));
 };
 };
 
-#define ARGS_cl_error "(datum &rest arguments)"
-#define DECL_cl_error ""
-#define DOCS_cl_error "See CLHS error"
-void cl_error(T_sp datum, List_sp initializers) {
+LAMBDA(datum &rest arguments);
+DECLARE();
+DOCSTRING("See CLHS error");
+CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
   _G();
   int nestedErrorDepth = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARnestedErrorDepthSTAR->symbolValue()));
   if (nestedErrorDepth > 10) {
@@ -2335,13 +2335,13 @@ void cl_error(T_sp datum, List_sp initializers) {
     Function_sp fn = _sym_universalErrorHandler->symbolFunction();
     eval::funcall(fn, _Nil<T_O>(), datum, initializers);
   }
-  THROW_HARD_ERROR(BF("cl_error should never return because universal-error-handler should never return - but it did"));
+  THROW_HARD_ERROR(BF("cl__error should never return because universal-error-handler should never return - but it did"));
 }
 
-#define ARGS_cl_cerror "(cformat eformat &rest arguments)"
-#define DECL_cl_cerror ""
-#define DOCS_cl_cerror "See CLHS cerror"
-void cl_cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
+LAMBDA(cformat eformat &rest arguments);
+DECLARE();
+DOCSTRING("See CLHS cerror");
+CL_DEFUN void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
   _G();
   eval::funcall(_sym_universalErrorHandler, cformat, eformat, arguments);
 }
@@ -2365,12 +2365,12 @@ void cl_cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
   __END_DOC
 */
 
-#define ARGS_af_isAssignableTo "(tag secondArgument)"
-#define DECL_af_isAssignableTo ""
-#define DOCS_af_isAssignableTo "isAssignableTo"
-T_mv af_isAssignableTo(T_sp tag, Class_sp mc) {
+#define ARGS_core__is_assignable_to "(tag secondArgument)"
+#define DECL_core__is_assignable_to ""
+#define DOCS_core__is_assignable_to "isAssignableTo"
+T_mv core__is_assignable_to(T_sp tag, Class_sp mc) {
   _G();
-  LOG(BF("Checking if instances of class(%s) is assignable to variables of class(%s)") % cl_classOf(tag)->className() % cl_classOf(mc)->className());
+  LOG(BF("Checking if instances of class(%s) is assignable to variables of class(%s)") % cl__class_of(tag)->className() % cl__class_of(mc)->className());
   bool io = (tag->isAssignableToByClassSymbol(mc->name()));
   return (Values(_lisp->_boolean(io)));
 }
@@ -2383,10 +2383,10 @@ T_mv af_isAssignableTo(T_sp tag, Class_sp mc) {
   __END_DOC
 */
 
-#define ARGS_af_isSubClassOf "(tag mc)"
-#define DECL_af_isSubClassOf ""
-#define DOCS_af_isSubClassOf "isSubClassOf"
-T_mv af_isSubClassOf(Class_sp tag, Class_sp mc) {
+#define ARGS_core__is_sub_class_of "(tag mc)"
+#define DECL_core__is_sub_class_of ""
+#define DOCS_core__is_sub_class_of "isSubClassOf"
+T_mv core__is_sub_class_of(Class_sp tag, Class_sp mc) {
   _G();
   LOG(BF("Checking if instances of class(%s) is assignable to variables of class(%s)") % tag->className() % mc->className());
   bool io = tag->isSubClassOf(mc);
@@ -2401,10 +2401,10 @@ T_mv af_isSubClassOf(Class_sp tag, Class_sp mc) {
   __END_DOC
 */
 
-#define ARGS_af_repr "(arg)"
-#define DECL_af_repr ""
-#define DOCS_af_repr "Return a string representation of the object"
-T_mv af_repr(T_sp obj) {
+#define ARGS_core__repr "(arg)"
+#define DECL_core__repr ""
+#define DOCS_core__repr "Return a string representation of the object"
+T_mv core__repr(T_sp obj) {
   _G();
   Str_sp res = Str_O::create(_rep_(obj));
   return (Values(res));
@@ -2427,10 +2427,10 @@ T_mv af_repr(T_sp obj) {
   __END_DOC
 */
 
-#define ARGS_af_not "(arg)"
-#define DECL_af_not ""
-#define DOCS_af_not "not"
-T_mv af_not(T_sp x) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("not");
+CL_DEFUN T_mv cl__not(T_sp x) {
   _G();
   return (Values(_lisp->_boolean(!x.isTrue())));
 };
@@ -2846,7 +2846,7 @@ void Lisp_O::dump_backtrace(int numcol) {
 	stringstream strace;
 	Cons_sp btReversed = this->getBackTrace();
 	List_sp bt = btReversed->reverse();
-	strace << "Cando-backtrace number of entries: " << cl_length(bt) <<std::endl;
+	strace << "Cando-backtrace number of entries: " << cl__length(bt) <<std::endl;
 	while ( bt.notnilp() )
 	{
 	    T_sp code = bt->ocar();
@@ -2880,7 +2880,7 @@ void Lisp_O::run() {
   // then set core::*debug-startup* to true
   // This will print timings of top-level forms as they load at startup
   // See llvmo::intrinsics.cc
-  // cl_member isn't available yet so check for the feature by hand.
+  // cl__member isn't available yet so check for the feature by hand.
   for (auto cur : (List_sp)cl::_sym_STARfeaturesSTAR->symbolValue()) {
     if (oCar(cur) == kw::_sym_debugStartup) {
       printf("%s:%d Setting core:*debug-startup* to T\n", __FILE__, __LINE__);
@@ -2902,7 +2902,7 @@ void Lisp_O::run() {
     //
     {
       _BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_RCFileName);
-      Pathname_sp initPathname = cl_pathname(Str_O::create(this->_RCFileName));
+      Pathname_sp initPathname = cl__pathname(Str_O::create(this->_RCFileName));
       T_mv result = eval::funcall(cl::_sym_load, initPathname);
       if (result.nilp()) {
         T_sp err = result.second();
@@ -2992,7 +2992,7 @@ void Lisp_O::initializeGlobals(Lisp_sp lisp) {
   _G();
   LOG(BF("Lisp_O::initializeGlobals"));
   SYMBOL_EXPORT_SC_(CorePkg, selectPackage);
-  Defun(selectPackage);
+  Core_temp_Defun(select_package);
   CoreDefun(allSourceFiles);
 }
 
@@ -3021,20 +3021,20 @@ void Lisp_O::exposeCando() {
   CoreDefun(listOfAllSpecialOperators);
   CoreDefun(singleDispatchGenericFunctionTable);
   SYMBOL_SC_(CorePkg, stackMonitor);
-  Defun(stackMonitor);
-  Defun(stackLimit);
-  Defun(lowLevelRepl);
+  Core_temp_Defun(stack_monitor);
+  Core_temp_Defun(stack_limit);
+  Core_temp_Defun(low_level_repl);
   SYMBOL_SC_(CorePkg, setupStackMonitor);
-  Defun(setupStackMonitor);
+  Core_temp_Defun(setup_stack_monitor);
 
   SYMBOL_SC_(CorePkg, invokeInternalDebugger);
-  Defun(invokeInternalDebugger);
+  Core_temp_Defun(invoke_internal_debugger);
   SYMBOL_SC_(CorePkg, invokeInternalDebuggerFromGdb);
-  Defun(invokeInternalDebuggerFromGdb);
+  Core_temp_Defun(invoke_internal_debugger_from_gdb);
   SYMBOL_SC_(CorePkg, universalErrorHandler);
-  Defun(universalErrorHandler);
+  Core_temp_Defun(universal_error_handler);
   SYMBOL_SC_(CorePkg, stackUsed);
-  Defun(stackUsed);
+  Core_temp_Defun(stack_used);
 
   SYMBOL_SC_(CorePkg, exit);
   CoreDefun(exit);
@@ -3053,48 +3053,41 @@ void Lisp_O::exposeCando() {
   Defun(loadCando);
 #endif // defined(XML_ARCHIVE)
   SYMBOL_SC_(CorePkg, getline);
-  Defun(getline);
+  Core_temp_Defun(getline);
 
   SYMBOL_SC_(ExtPkg, system);
   ExtDefun(system);
   ExtDefun(vfork_execvp);
 
   SYMBOL_EXPORT_SC_(ClPkg, apropos);
-  Defun(apropos);
-
-  af_def(CorePkg, "brcl-apropos", &af_apropos, ARGS_af_apropos, DECL_af_apropos, DOCS_af_apropos);
-
   SYMBOL_EXPORT_SC_(ClPkg, export);
-  ClDefun(export);
   SYMBOL_EXPORT_SC_(ClPkg, intern);
-  ClDefun(intern);
   //	defNoWrapPackage(CorePkg,"apply", &prim_apply,_LISP);
   SYMBOL_SC_(CorePkg, isTopLevelScript);
-  Defun(isTopLevelScript);
+  Core_temp_Defun(is_top_level_script);
 
   //	defNoWrapPackage(CorePkg,"allGlobalNames", &prim_allGlobalNames ,_LISP);
   //	defNoWrapPackage(CorePkg,"locals", &prim_locals,_LISP);
   SYMBOL_SC_(CorePkg, sourceFileName);
-  Defun(sourceFileName);
+  Core_temp_Defun(source_file_name);
   SYMBOL_SC_(CorePkg, sourceLineColumn);
-  Defun(sourceLineColumn);
+  Core_temp_Defun(source_line_column);
   //	SYMBOL_SC_(CorePkg,backtrace);
   //	Defun(backtrace);
   //	defNoWrapPackage(CorePkg,"globals", &prim_globals,_LISP);
   SYMBOL_SC_(CorePkg, findFileInLispPath);
-  Defun(findFileInLispPath);
+  Core_temp_Defun(find_file_in_lisp_path);
 
   SYMBOL_EXPORT_SC_(ClPkg, findClass);
-  ClDefun(findClass);
   SYMBOL_SC_(CorePkg, setf_findClass);
-  Defun(setf_findClass);
+  Core_temp_Defun(setf_find_class);
 
   //	defNoWrapPackage(CorePkg,"print", &prim_print ,_LISP);
 
   SYMBOL_SC_(CorePkg, isAssignableTo);
-  Defun(isAssignableTo);
+  Core_temp_Defun(is_assignable_to);
   SYMBOL_SC_(CorePkg, isSubClassOf);
-  Defun(isSubClassOf);
+  Core_temp_Defun(is_sub_class_of);
 
   //	defNoWrapPackage(CorePkg,"derive", &prim_derive ,_LISP);
   //	defNoWrapPackage(CorePkg,"isA", &prim_isA ,_LISP);
@@ -3111,31 +3104,28 @@ void Lisp_O::exposeCando() {
   //	defNoWrapPackage(CorePkg,"className", &prim_className ,_LISP);
 
   SYMBOL_SC_(CorePkg, repr);
-  Defun(repr);
+  Core_temp_Defun(repr);
 
   SYMBOL_EXPORT_SC_(ClPkg, error);
-  ClDefun(error);
   SYMBOL_EXPORT_SC_(ClPkg, cerror);
-  ClDefun(cerror);
   SYMBOL_EXPORT_SC_(ExtPkg, setenv);
   ExtDefun(setenv);
   SYMBOL_EXPORT_SC_(ExtPkg, getenv);
   ExtDefun(getenv);
   SYMBOL_EXPORT_SC_(ClPkg, not);
-  Defun(not);
 
   SYMBOL_SC_(CorePkg, debugLogOn);
-  Defun(debugLogOn);
+  Core_temp_Defun(debug_log_on);
   SYMBOL_SC_(CorePkg, debugLogOff);
-  Defun(debugLogOff);
+  Core_temp_Defun(debug_log_off);
 
   // mpi commands that are always built in
   SYMBOL_SC_(CorePkg, mpi_enabled);
-  Defun(mpi_enabled);
+  Core_temp_Defun(mpi_enabled);
   SYMBOL_SC_(CorePkg, mpi_rank);
-  Defun(mpi_rank);
+  Core_temp_Defun(mpi_rank);
   SYMBOL_SC_(CorePkg, mpi_size);
-  Defun(mpi_size);
+  Core_temp_Defun(mpi_size);
   // Basic tests
   //	defNoWrapPackage(CorePkg,"consp",&prim_consp,_LISP);
   //	defNoWrapPackage(CorePkg,"symbolp",&prim_symbolp,_LISP);
@@ -3143,44 +3133,38 @@ void Lisp_O::exposeCando() {
   // aliases for "list" command
 
   SYMBOL_SC_(CorePkg, sorted);
-  Defun(sorted);
+  Core_temp_Defun(sorted);
   SYMBOL_EXPORT_SC_(ClPkg, sort);
   Defun(sort);
   SYMBOL_EXPORT_SC_(ClPkg, macroexpand_1);
-  ClDefun(macroexpand_1);
   SYMBOL_EXPORT_SC_(ClPkg, macroexpand);
-  ClDefun(macroexpand);
 
   // information functions
   SYMBOL_SC_(CorePkg, database_dir);
-  Defun(database_dir);
+  Core_temp_Defun(database_dir);
   SYMBOL_SC_(CorePkg, script_dir);
-  Defun(script_dir);
+  Core_temp_Defun(script_dir);
   SYMBOL_SC_(CorePkg, libraryPath);
-  Defun(libraryPath);
+  Core_temp_Defun(library_path);
   SYMBOL_SC_(CorePkg, lispCodePath);
-  Defun(lispCodePath);
+  Core_temp_Defun(lisp_code_path);
   //	defNoWrapPackage(CorePkg,"dumpHidden", &prim_dumpHidden,_LISP);
 
   SYMBOL_SC_(CorePkg, setCurrentWorkingDirectory);
-  Defun(setCurrentWorkingDirectory);
+  Core_temp_Defun(set_current_working_directory);
 
   SYMBOL_EXPORT_SC_(ClPkg, acons);
-  Defun(acons);
   SYMBOL_EXPORT_SC_(ClPkg, assoc);
-  ClDefun(assoc);
   SYMBOL_EXPORT_SC_(ClPkg, member);
-  ClDefun(member);
-  Defun(memberTest);
+  Core_temp_Defun(member_test);
 
   SYMBOL_SC_(CorePkg, member1);
-  Defun(member1);
+  Core_temp_Defun(member1);
 
   SYMBOL_SC_(CorePkg, exportToPython);
-  Defun(exportToPython);
+  Core_temp_Defun(export_to_python);
 
   SYMBOL_EXPORT_SC_(ClPkg, find_package);
-  Defun(find_package);
 }
 
 void Lisp_O::exposePython() {

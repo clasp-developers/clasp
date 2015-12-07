@@ -161,15 +161,15 @@ string StrWithFillPtr_O::__repr__() const {
 }
 
 void StrWithFillPtr_O::pushSubString(T_sp tstr, size_t start, size_t end) {
-  Str_sp str = cl_string(tstr);
+  Str_sp str = cl__string(tstr);
   while (start < end) {
-    this->vectorPushExtend(clasp_make_character(cl_char(str, start)));
+    this->vectorPushExtend(clasp_make_character(cl__char(str, start)));
     start++;
   }
 }
 
 void StrWithFillPtr_O::pushString(T_sp str) {
-  this->pushSubString(str, 0, cl_length(str));
+  this->pushSubString(str, 0, cl__length(str));
 }
 
 void StrWithFillPtr_O::pushString(const char *cPtr) {

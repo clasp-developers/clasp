@@ -88,10 +88,10 @@ struct HashTableLocker {
 
 EXPOSE_CLASS(core, HashTable_O);
 
-#define ARGS_cl_make_hash_table "(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0) weakness debug)"
-#define DECL_cl_make_hash_table ""
-#define DOCS_cl_make_hash_table "see CLHS"
-T_sp cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug) {
+LAMBDA(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0) weakness debug);
+DECLARE();
+DOCSTRING("see CLHS");
+CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug) {
   SYMBOL_EXPORT_SC_(KeywordPkg, key);
   if (weakness.notnilp()) {
     if (weakness == INTERN_(kw, key)) {
@@ -141,14 +141,14 @@ HashTable_sp HashTable_O::create(T_sp test) {
   Fixnum_sp size = make_fixnum(16);
   DoubleFloat_sp rehashSize = DoubleFloat_O::create(2.0);
   DoubleFloat_sp rehashThreshold = DoubleFloat_O::create(0.9);
-  HashTable_sp ht = cl_make_hash_table(test, size, rehashSize, rehashThreshold);
+  HashTable_sp ht = cl__make_hash_table(test, size, rehashSize, rehashThreshold);
   return ht;
 }
 
-#define ARGS_cl_maphash "(function_desig hash_table)"
-#define DECL_cl_maphash ""
-#define DOCS_cl_maphash "see CLHS"
-T_mv cl_maphash(T_sp function_desig, T_sp thash_table) {
+LAMBDA(function_desig hash_table);
+DECLARE();
+DOCSTRING("see CLHS");
+CL_DEFUN T_mv cl__maphash(T_sp function_desig, T_sp thash_table) {
   _G();
   //        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
   Function_sp func = coerce::functionDesignator(function_desig);
@@ -158,7 +158,7 @@ T_mv cl_maphash(T_sp function_desig, T_sp thash_table) {
   //        HASH_TABLE_LOCK();
   HashTable_sp hash_table = gc::As<HashTable_sp>(thash_table);
   VectorObjects_sp table = hash_table->_HashTable;
-  for (size_t it = 0, itEnd = cl_length(table); it < itEnd; ++it) {
+  for (size_t it = 0, itEnd = cl__length(table); it < itEnd; ++it) {
     List_sp first = (*table)[it];
     for (auto cur : first) {
       List_sp entry = oCar(cur);
@@ -173,29 +173,29 @@ T_mv cl_maphash(T_sp function_desig, T_sp thash_table) {
   return (Values(_Nil<T_O>()));
 }
 
-#define ARGS_cl_clrhash "(hash_table)"
-#define DECL_cl_clrhash ""
-#define DOCS_cl_clrhash "See CLHS"
-T_mv cl_clrhash(HashTable_sp hash_table) {
+LAMBDA(hash_table);
+DECLARE();
+DOCSTRING("See CLHS");
+CL_DEFUN T_mv cl__clrhash(HashTable_sp hash_table) {
   _G();
   hash_table->clrhash();
   return (Values(_Nil<T_O>()));
 };
 
-#define ARGS_af_hashTableEntryDeletedP "(cons)"
-#define DECL_af_hashTableEntryDeletedP ""
-#define DOCS_af_hashTableEntryDeletedP "hashTableEntryDeletedP"
-bool af_hashTableEntryDeletedP(T_sp cons) {
+#define ARGS_core__hash_table_entry_deleted_p "(cons)"
+#define DECL_core__hash_table_entry_deleted_p ""
+#define DOCS_core__hash_table_entry_deleted_p "hashTableEntryDeletedP"
+bool core__hash_table_entry_deleted_p(T_sp cons) {
   _G();
   if (!cons.consp())
     SIMPLE_ERROR(BF("Arg must be a cons"));
   return oCdr(gc::As<Cons_sp>(cons)).unboundp();
 };
 
-#define ARGS_af_hash_eql "(&rest args)"
-#define DECL_af_hash_eql ""
-#define DOCS_af_hash_eql "hash_eql generates an eql hash for a list of objects"
-int af_hash_eql(List_sp args) {
+#define ARGS_core__hash_eql "(&rest args)"
+#define DECL_core__hash_eql ""
+#define DOCS_core__hash_eql "hash_eql generates an eql hash for a list of objects"
+int core__hash_eql(List_sp args) {
   _G();
   HashGenerator hg;
   for (auto cur : args) {
@@ -206,10 +206,10 @@ int af_hash_eql(List_sp args) {
   return hg.hash();
 };
 
-#define ARGS_af_hash_equal "(&rest args)"
-#define DECL_af_hash_equal ""
-#define DOCS_af_hash_equal "hash_equal generates an equal hash for a list of objects"
-int af_hash_equal(List_sp args) {
+#define ARGS_core__hash_equal "(&rest args)"
+#define DECL_core__hash_equal ""
+#define DOCS_core__hash_equal "hash_equal generates an equal hash for a list of objects"
+int core__hash_equal(List_sp args) {
   _G();
   HashGenerator hg;
   for (auto cur : args) {
@@ -220,10 +220,10 @@ int af_hash_equal(List_sp args) {
   return hg.hash();
 };
 
-#define ARGS_af_hash_equalp "(&rest args)"
-#define DECL_af_hash_equalp ""
-#define DOCS_af_hash_equalp "hash_equalp generates an equalp hash for a list of objects"
-int af_hash_equalp(List_sp args) {
+#define ARGS_core__hash_equalp "(&rest args)"
+#define DECL_core__hash_equalp ""
+#define DOCS_core__hash_equalp "hash_equalp generates an equalp hash for a list of objects"
+int core__hash_equalp(List_sp args) {
   _G();
   HashGenerator hg;
   for (auto cur : args) {
@@ -234,10 +234,10 @@ int af_hash_equalp(List_sp args) {
   return hg.hash();
 };
 
-#define ARGS_af_remhash "(key hashtable)"
-#define DECL_af_remhash ""
-#define DOCS_af_remhash "remhash"
-bool af_remhash(T_sp key, HashTable_sp ht) {
+LAMBDA(key hashtable);
+DECLARE();
+DOCSTRING("remhash");
+CL_DEFUN bool cl__remhash(T_sp key, HashTable_sp ht) {
   _G();
   return ht->remhash(key);
 };
@@ -298,7 +298,7 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT
     return;
   }
   if (obj.objectp()) {
-    if (cl_numberp(obj)) {
+    if (cl__numberp(obj)) {
       hg.hashObject(obj);
       return;
     }
@@ -325,7 +325,7 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
     return;
   }
   if (obj.objectp()) {
-    if (cl_numberp(obj)) {
+    if (cl__numberp(obj)) {
       hg.hashObject(obj);
       return;
     } else if (String_sp str_obj = obj.asOrNull<String_O>()) {
@@ -379,15 +379,15 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
     return;
   }
   if (obj.objectp()) {
-    if (cl_numberp(obj)) {
+    if (cl__numberp(obj)) {
       hg.hashObject(obj);
       return;
     }
     if (Str_sp str = obj.asOrNull<Str_O>()) {
-      Str_sp upstr = cl_string_upcase(str);
+      Str_sp upstr = cl__string_upcase(str);
       hg.hashObject(upstr);
       return;
-    } else if (cl_numberp(obj)) {
+    } else if (cl__numberp(obj)) {
       if (hg.isFilling())
         clasp_sxhash(obj, hg);
       return;
@@ -471,7 +471,7 @@ void HashTable_O::fields(Record_sp node) {
     Vector_sp keyValueVec;
     node->field(INTERN_(core, data), keyValueVec);
     this->clrhash();
-    for (size_t i(0), iEnd(cl_length(keyValueVec)); i < iEnd; ++++i) {
+    for (size_t i(0), iEnd(cl__length(keyValueVec)); i < iEnd; ++++i) {
       T_sp key = (*keyValueVec)[i + 0];
       T_sp val = (*keyValueVec)[i + 1];
       this->hash_table_setf_gethash(key, val);
@@ -508,14 +508,14 @@ uint HashTable_O::hashTableCount() const {
 
 uint HashTable_O::calculateHashTableCount() const {
   uint cnt = 0;
-  for (size_t it(0), itEnd(cl_length(this->_HashTable)); it < itEnd; ++it) {
-    cnt += cl_length((this->_HashTable->operator[](it)));
+  for (size_t it(0), itEnd(cl__length(this->_HashTable)); it < itEnd; ++it) {
+    cnt += cl__length((this->_HashTable->operator[](it)));
   }
   return cnt;
 }
 
 uint HashTable_O::hashTableSize() const {
-  return cl_length(this->_HashTable);
+  return cl__length(this->_HashTable);
 }
 
 bool HashTable_O::keyTest(T_sp entryKey, T_sp searchKey) const {
@@ -540,10 +540,10 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   return _Nil<T_O>();
 }
 
-#define ARGS_cl_gethash "(key hash-table &optional default_value)"
-#define DECL_cl_gethash ""
-#define DOCS_cl_gethash "gethash"
-T_mv cl_gethash(T_sp key, T_sp hashTable, T_sp default_value) {
+LAMBDA(key hash-table &optional default_value);
+DECLARE();
+DOCSTRING("gethash");
+CL_DEFUN T_mv cl__gethash(T_sp key, T_sp hashTable, T_sp default_value) {
   _G();
 #ifdef DEBUG_HASH_TABLE
   if (gc::As<HashTable_sp>(hashTable)->_DebugHashTable) {
@@ -562,10 +562,10 @@ List_sp HashTable_O::bucketsFind(T_sp key) const {
   ASSERT(this->_HashTable);
 #ifdef DEBUG_HASH_TABLE
   if (this->_DebugHashTable) {
-    printf("%s:%d  About to sxhashKey: %s hash table length: %d\n", __FILE__, __LINE__, _rep_(key).c_str(), cl_length(this->_HashTable));
+    printf("%s:%d  About to sxhashKey: %s hash table length: %d\n", __FILE__, __LINE__, _rep_(key).c_str(), cl__length(this->_HashTable));
   }
 #endif
-  gc::Fixnum index = this->sxhashKey(key, cl_length(this->_HashTable), false);
+  gc::Fixnum index = this->sxhashKey(key, cl__length(this->_HashTable), false);
 #ifdef DEBUG_HASH_TABLE
   if (this->_DebugHashTable) {
     printf("%s:%d  bucketsFind index = %ld\n", __FILE__, __LINE__, index);
@@ -627,7 +627,7 @@ T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
 }
 
 gc::Fixnum HashTable_O::hashIndex(T_sp key) const {
-  gc::Fixnum idx = this->sxhashKey(key, cl_length(this->_HashTable), false);
+  gc::Fixnum idx = this->sxhashKey(key, cl__length(this->_HashTable), false);
   return idx;
 }
 
@@ -673,7 +673,7 @@ T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   }
 #endif
   if (keyValuePair.nilp()) {
-    gc::Fixnum index = this->sxhashKey(key, cl_length(this->_HashTable), true /*Will add key*/);
+    gc::Fixnum index = this->sxhashKey(key, cl__length(this->_HashTable), true /*Will add key*/);
     Cons_sp newKeyValue = Cons_O::create(key, value);
     //            printf("%s:%d  Inserted newKeyValue@%p\n", __FILE__, __LINE__, newKeyValue.raw_());
     Cons_sp newEntry = Cons_O::create(newKeyValue, this->_HashTable->operator[](index));
@@ -701,7 +701,7 @@ T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
 #endif
     keyValuePair.asCons()->setCdr(value);
   }
-  if (this->_HashTableCount > this->_RehashThreshold * cl_length(this->_HashTable)) {
+  if (this->_HashTableCount > this->_RehashThreshold * cl__length(this->_HashTable)) {
     LOG(BF("Expanding hash table"));
     this->rehash(true, _Unbound<T_O>());
   }
@@ -712,24 +712,24 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
   _OF();
   //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
   ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
-  ASSERTF(cl_length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
+  ASSERTF(cl__length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
   List_sp foundKeyValuePair(_Nil<T_O>());
   uint startCount = this->hashTableCount();
   LOG(BF("At start of expandHashTable current hash table size: %d") % startSize);
   gc::Fixnum newSize = 0;
   if (expandTable) {
     if (af_integerP(this->_RehashSize)) {
-      newSize = cl_length(this->_HashTable) + clasp_to_int(gc::As<Integer_sp>(this->_RehashSize));
+      newSize = cl__length(this->_HashTable) + clasp_to_int(gc::As<Integer_sp>(this->_RehashSize));
     } else if (af_floatP(this->_RehashSize)) {
-      newSize = cl_length(this->_HashTable) * clasp_to_double(this->_RehashSize);
+      newSize = cl__length(this->_HashTable) * clasp_to_double(this->_RehashSize);
     }
   } else {
-    newSize = cl_length(this->_HashTable);
+    newSize = cl__length(this->_HashTable);
   }
   VectorObjects_sp oldTable = this->_HashTable;
   newSize = this->resizeEmptyTable(newSize);
   LOG(BF("Resizing table to size: %d") % newSize);
-  size_t oldSize = cl_length(oldTable);
+  size_t oldSize = cl__length(oldTable);
   for (size_t it(0), itEnd(oldSize); it < itEnd; ++it) {
     {
       _BLOCK_TRACEF(BF("Re-indexing hash table row index[%d]") % it);
@@ -789,7 +789,7 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
               foundKeyValuePair = pair;
             }
           }
-          uint index = this->sxhashKey(key,cl_length(this->_HashTable),true /* Will add key */);
+          uint index = this->sxhashKey(key,cl__length(this->_HashTable),true /* Will add key */);
           LOG(BF("Re-indexing key[%s] to index[%d]") % _rep_(key) % index );
           Cons_sp newCur = Cons_O::create(pair,this->_HashTable->operator[](index));
           this->_HashTable->operator[](index) = newCur;
@@ -847,15 +847,15 @@ string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
 #ifndef DUMP_LOW_LEVEL
   ss << "#<" << this->_instanceClass()->classNameAsString() << std::endl;
 #endif
-  int iend(cl_length(this->_HashTable));
+  int iend(cl__length(this->_HashTable));
   if (end.notnilp()) {
     iend = clasp_to_fixnum(gc::As<Fixnum_sp>(end));
   }
-  if (start < 0 || start >= cl_length(this->_HashTable)) {
-    SIMPLE_ERROR(BF("start must be [0,%d)") % cl_length(this->_HashTable));
+  if (start < 0 || start >= cl__length(this->_HashTable)) {
+    SIMPLE_ERROR(BF("start must be [0,%d)") % cl__length(this->_HashTable));
   }
-  if (iend < start || iend > cl_length(this->_HashTable)) {
-    SIMPLE_ERROR(BF("end must be nil or [%d,%d)") % start % cl_length(this->_HashTable));
+  if (iend < start || iend > cl__length(this->_HashTable)) {
+    SIMPLE_ERROR(BF("end must be nil or [%d,%d)") % start % cl__length(this->_HashTable));
   }
   for (size_t it(start), itEnd(iend); it < itEnd; ++it) {
     List_sp first = this->_HashTable->operator[](it);
@@ -871,7 +871,7 @@ string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
 void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const &fn) {
   //        HASH_TABLE_LOCK();
   VectorObjects_sp table = this->_HashTable;
-  for (size_t it(0), itEnd(cl_length(table)); it < itEnd; ++it) {
+  for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
     List_sp first = coerce_to_list((*table)[it]);
     for (auto cur : first) {
       List_sp pair = oCar(cur);
@@ -886,7 +886,7 @@ void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const &fn) {
 void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) {
   //        HASH_TABLE_LOCK();
   VectorObjects_sp table = this->_HashTable;
-  for (size_t it(0), itEnd(cl_length(table)); it < itEnd; ++it) {
+  for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
     List_sp first = (*table)[it];
     for (auto cur : first) {
       List_sp pair = oCar(cur);
@@ -905,7 +905,7 @@ void HashTable_O::lowLevelMapHash(KeyValueMapper *mapper) const {
   _OF();
   //        HASH_TABLE_LOCK();
   VectorObjects_sp table = this->_HashTable;
-  for (size_t it(0), itEnd(cl_length(table)); it < itEnd; ++it) {
+  for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {
     T_sp first = (*table)[it];
     List_sp l = coerce_to_list(first);
     for (auto cur : l) {
@@ -929,11 +929,11 @@ DONE:
 }
 
 int HashTable_O::hashTableNumberOfHashes() const {
-  return cl_length(this->_HashTable);
+  return cl__length(this->_HashTable);
 }
 
 List_sp HashTable_O::hashTableAlistAtHash(int hash) const {
-  ASSERTF(hash >= 0 && hash < cl_length(this->_HashTable), BF("Illegal hash value[%d] must between [0,%d)") % hash % cl_length(this->_HashTable));
+  ASSERTF(hash >= 0 && hash < cl__length(this->_HashTable), BF("Illegal hash value[%d] must between [0,%d)") % hash % cl__length(this->_HashTable));
   return this->_HashTable->operator[](hash);
 }
 
@@ -962,25 +962,20 @@ void HashTable_O::exposeCando(::core::Lisp_sp lisp) {
       .def("core:hashTableSetfGethash", &HashTable_O::hash_table_setf_gethash)
       .def("core:hashTableDump", &HashTable_O::hash_table_dump);
   SYMBOL_EXPORT_SC_(ClPkg, make_hash_table);
-  ClDefun(make_hash_table);
   SYMBOL_EXPORT_SC_(ClPkg, maphash);
-  ClDefun(maphash);
   SYMBOL_EXPORT_SC_(ClPkg, clrhash);
-  ClDefun(clrhash);
   SYMBOL_SC_(CorePkg, hash_eql);
-  Defun(hash_eql);
+  Core_temp_Defun(hash_eql);
   SYMBOL_SC_(CorePkg, hash_equal);
-  Defun(hash_equal);
+  Core_temp_Defun(hash_equal);
   SYMBOL_SC_(CorePkg, hash_equalp);
-  Defun(hash_equalp);
+  Core_temp_Defun(hash_equalp);
   SYMBOL_EXPORT_SC_(ClPkg, remhash);
-  Defun(remhash);
   SYMBOL_EXPORT_SC_(ClPkg, gethash);
-  ClDefun(gethash);
   CoreDefun(DebugHashTable);
   CoreDefun(hashTableForceRehash);
 
-  Defun(hashTableEntryDeletedP);
+  Core_temp_Defun(hash_table_entry_deleted_p);
 }
 
 void HashTable_O::exposePython(::core::Lisp_sp lisp) {

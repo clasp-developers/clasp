@@ -273,7 +273,7 @@ struct gctools::GCInfo<core::Class_O> {
 namespace core {
 
 /*!Return true if low is a subclass of high */
-bool af_subclassp(T_sp low, T_sp high);
+bool core__subclassp(T_sp low, T_sp high);
 
 /*! Return true if the object is of the class _class */
 bool af_ofClassP(T_sp object, T_sp _class);

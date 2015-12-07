@@ -35,9 +35,9 @@ extern core::Symbol_sp _sym_default;
 
 namespace core {
 
-T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat);
+T_sp core__load_source(T_sp source, bool verbose, bool print, T_sp externalFormat);
 
-T_sp af_load(T_sp source,
+T_sp cl__load(T_sp source,
              T_sp verbose = _Nil<T_O>(),
              T_sp print = _Nil<T_O>(),
              T_sp if_does_not_exist = _Nil<T_O>(),

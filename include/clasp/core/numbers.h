@@ -950,7 +950,7 @@ inline Number_sp clasp_log1p(Number_sp x) {
   return x->log1p_();
 };
 
-Number_sp cl_expt(Number_sp x, Number_sp y);
+Number_sp cl__expt(Number_sp x, Number_sp y);
 
 Integer_sp clasp_ash(Integer_sp x, int bits);
 
@@ -1039,8 +1039,8 @@ unsigned char clasp_toUint8(T_sp n);
 signed char clasp_toSignedInt8(T_sp n);
 cl_index clasp_toSize(T_sp f);
 
-Integer_sp cl_logior(List_sp integers);
-Integer_sp cl_logand(List_sp integers);
+Integer_sp cl__logior(List_sp integers);
+Integer_sp cl__logand(List_sp integers);
 
 gctools::Fixnum fixint(T_sp x);
 

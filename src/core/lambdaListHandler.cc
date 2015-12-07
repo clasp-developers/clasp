@@ -212,7 +212,7 @@ HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecif
     other than zero but I'll let the caller decide.*/
 
 T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, bool allow_first_argument_default_dispatcher) {
-  List_sp llprocessed = cl_copyList(llraw);
+  List_sp llprocessed = cl__copy_list(llraw);
   Symbol_sp sd_symbol = _Nil<Symbol_O>();
   Symbol_sp sd_class = _Nil<Symbol_O>();
   bool saw_amp = false;
@@ -227,7 +227,7 @@ T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, boo
       }
     } else if (cl_consp(arg)) {
       List_sp carg = arg;
-      if (cl_length(carg) != 2) {
+      if (cl__length(carg) != 2) {
         SYMBOL_SC_(CorePkg, singleDispatchWrongNumberArgumentsError);
         SYMBOL_SC_(KeywordPkg, arguments);
         ERROR(_sym_singleDispatchWrongNumberArgumentsError,
@@ -268,7 +268,7 @@ T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, boo
       generate temporary symbols */
 List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
   _G();
-  List_sp new_lambda_list = cl_copyList(lambda_list);
+  List_sp new_lambda_list = cl__copy_list(lambda_list);
   Symbol_sp whole_symbol = _Nil<Symbol_O>();
   Symbol_sp environment_symbol = _Nil<Symbol_O>();
   if (oCar(new_lambda_list) == cl::_sym_AMPwhole) {
@@ -291,11 +291,11 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
     }
   }
   if (whole_symbol.nilp())
-    whole_symbol = cl_gensym(Str_O::create("whole"));
+    whole_symbol = cl__gensym(Str_O::create("whole"));
   if (environment_symbol.nilp())
-    environment_symbol = cl_gensym(Str_O::create("environment"));
+    environment_symbol = cl__gensym(Str_O::create("environment"));
 
-  Symbol_sp name_symbol = cl_gensym(Str_O::create("macro-name"));
+  Symbol_sp name_symbol = cl__gensym(Str_O::create("macro-name"));
   //	SourceCodeList_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
   ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core_sourceFileInfo(lambda_list));
   sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol, new_lambda_list);
@@ -306,19 +306,19 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
   return macro_ll;
 }
 
-#define ARGS_af_process_macro_lambda_list "(lambda-list)"
-#define DECL_af_process_macro_lambda_list ""
-#define DOCS_af_process_macro_lambda_list "process_macro_lambda_list"
-T_sp af_process_macro_lambda_list(List_sp lambda_list) {
+#define ARGS_core__process_macro_lambda_list "(lambda-list)"
+#define DECL_core__process_macro_lambda_list ""
+#define DOCS_core__process_macro_lambda_list "process_macro_lambda_list"
+T_sp core__process_macro_lambda_list(List_sp lambda_list) {
   _G();
   List_sp new_ll = LambdaListHandler_O::process_macro_lambda_list(lambda_list);
   return new_ll;
 }
 
-#define ARGS_af_process_single_dispatch_lambda_list "(lambda-list)"
-#define DECL_af_process_single_dispatch_lambda_list ""
-#define DOCS_af_process_single_dispatch_lambda_list "process_single_dispatch_lambda_list"
-T_mv af_process_single_dispatch_lambda_list(List_sp lambda_list) {
+#define ARGS_core__process_single_dispatch_lambda_list "(lambda-list)"
+#define DECL_core__process_single_dispatch_lambda_list ""
+#define DOCS_core__process_single_dispatch_lambda_list "process_single_dispatch_lambda_list"
+T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
   _G();
   return LambdaListHandler_O::process_single_dispatch_lambda_list(lambda_list);
 }
@@ -715,7 +715,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
   if (original_lambda_list.nilp())
     return false;
   throw_if_invalid_context(context);
-  List_sp arguments = cl_copyList(original_lambda_list);
+  List_sp arguments = cl__copy_list(original_lambda_list);
   LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % arguments->__repr__());
   ArgumentMode add_argument_mode = required;
   restarg.clear();
@@ -868,10 +868,10 @@ DONE:
   return true;
 }
 
-#define ARGS_af_processLambdaList "(vl context)"
-#define DECL_af_processLambdaList ""
-#define DOCS_af_processLambdaList "processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!"
-T_mv af_processLambdaList(List_sp lambdaList, T_sp context) {
+#define ARGS_core__process_lambda_list "(vl context)"
+#define DECL_core__process_lambda_list ""
+#define DOCS_core__process_lambda_list "processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!"
+T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   _G();
   gctools::Vec0<RequiredArgument> reqs;
   gctools::Vec0<OptionalArgument> optionals;
@@ -977,7 +977,7 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
   _OF();
   TargetClassifier classifier(skipIndices);
   for (int i = 0, iEnd(num - skipIndices.size()); i < iEnd; ++i) {
-    Symbol_sp name = cl_gensym(Str_O::create("arg"));
+    Symbol_sp name = cl__gensym(Str_O::create("arg"));
     RequiredArgument req(name, i);
     this->_RequiredArguments.push_back(req);
     classifier.classifyTarget(req);
@@ -1159,12 +1159,12 @@ List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
       namesRev = Cons_O::create(oCadr(oCar(cur)), namesRev);
     }
   }
-  return cl_nreverse(namesRev);
+  return cl__nreverse(namesRev);
 }
 
 void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging() {
   List_sp names = this->namesOfLexicalVariables();
-  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(), names, cl_length(names), false, cl::_sym_T_O);
+  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(), names, cl__length(names), false, cl::_sym_T_O);
 }
 
 VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
@@ -1199,13 +1199,13 @@ void LambdaListHandler_O::exposeCando(Lisp_sp lisp) {
       .def("namesOfLexicalVariablesForDebugging", &LambdaListHandler_O::namesOfLexicalVariablesForDebugging)
       .def("LambdaListHandler-lambdaList", &LambdaListHandler_O::lambdaList);
   SYMBOL_SC_(CorePkg, process_macro_lambda_list);
-  Defun(process_macro_lambda_list);
+  Core_temp_Defun(process_macro_lambda_list);
   SYMBOL_SC_(CorePkg, process_single_dispatch_lambda_list);
-  Defun(process_single_dispatch_lambda_list);
+  Core_temp_Defun(process_single_dispatch_lambda_list);
   af_def(CorePkg, "makeLambdaListHandler", &LambdaListHandler_O::makeLambdaListHandler, ARGS_LambdaListHandler_O_makeLambdaListHandler, DECL_LambdaListHandler_O_makeLambdaListHandler, DOCS_LambdaListHandler_O_makeLambdaListHandler);
   SYMBOL_SC_(CorePkg, makeLambdaListHandler);
   SYMBOL_SC_(CorePkg, processLambdaList);
-  Defun(processLambdaList);
+  Core_temp_Defun(process_lambda_list);
 }
 
 void LambdaListHandler_O::exposePython(Lisp_sp lisp) {

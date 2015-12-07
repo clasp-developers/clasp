@@ -43,12 +43,12 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-#define ARGS_cl_vector "(&rest args)"
-#define DECL_cl_vector ""
-#define DOCS_cl_vector "vector"
-Vector_sp cl_vector(List_sp args) {
+LAMBDA(&rest args);
+DECLARE();
+DOCSTRING("vector");
+CL_DEFUN Vector_sp cl__vector(List_sp args) {
   _G();
-  Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(), args, cl_length(args), false, cl::_sym_T_O);
+  Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(), args, cl__length(args), false, cl::_sym_T_O);
   return vec;
 };
 
@@ -158,7 +158,7 @@ bool Vector_O::equalp(T_sp o) const {
     if (other->arrayDimension(0) != my_size)
       return false;
     for (size_t i(0); i < my_size; ++i) {
-      if (!cl_equalp(this->svref(i), other->rowMajorAref(i)))
+      if (!cl__equalp(this->svref(i), other->rowMajorAref(i)))
         return false;
     }
     return true;
@@ -169,7 +169,7 @@ bool Vector_O::equalp(T_sp o) const {
     if (my_size != other_size)
       return false;
     for (int i(0); i < my_size; ++i) {
-      if (!cl_equalp(this->aref_unsafe(i), vec->aref_unsafe(i)))
+      if (!cl__equalp(this->aref_unsafe(i), vec->aref_unsafe(i)))
         return false;
     }
     return true;
@@ -224,18 +224,18 @@ T_sp Vector_O::nreverse() {
   return this->sharedThis<T_O>();
 }
 
-#define ARGS_cl_vectorPush "(newElement vector)"
-#define DECL_cl_vectorPush ""
-#define DOCS_cl_vectorPush "vectorPush"
-T_sp cl_vectorPush(T_sp newElement, Vector_sp vec) {
+LAMBDA(newElement vector);
+DECLARE();
+DOCSTRING("vectorPush");
+CL_DEFUN T_sp cl__vector_push(T_sp newElement, Vector_sp vec) {
   _G();
   return vec->vectorPush(newElement);
 };
 
-#define ARGS_cl_vectorPushExtend "(newElement vector &optional (exension 16))"
-#define DECL_cl_vectorPushExtend ""
-#define DOCS_cl_vectorPushExtend "vectorPushExtend"
-Fixnum_sp cl_vectorPushExtend(T_sp newElement, Vector_sp vec, int extension) {
+LAMBDA(newElement vector &optional (exension 16));
+DECLARE();
+DOCSTRING("vectorPushExtend");
+CL_DEFUN Fixnum_sp cl__vector_push_extend(T_sp newElement, Vector_sp vec, int extension) {
   _G();
   return vec->vectorPushExtend(newElement, extension);
 }
@@ -253,10 +253,7 @@ void Vector_O::exposeCando(::core::Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(CorePkg, adjustVector);
   CoreDefun(adjustVector);
   SYMBOL_EXPORT_SC_(ClPkg, vectorPush);
-  ClDefun(vectorPush);
   SYMBOL_EXPORT_SC_(ClPkg, vectorPushExtend);
-  ClDefun(vectorPushExtend);
-  ClDefun(vector);
 }
 
 void Vector_O::exposePython(::core::Lisp_sp lisp) {

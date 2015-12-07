@@ -56,7 +56,7 @@ public:
   inline bool isDefined() const { return (this->_ArgTarget) && (this->_ArgTarget.notnilp()); };
   inline bool _symbolP() const { return cl_symbolp(this->_ArgTarget); };
   Symbol_sp symbol() const;
-  inline bool _lambdaListHandlerP() const { return af_lambda_list_handler_p(this->_ArgTarget); };
+  inline bool _lambdaListHandlerP() const { return core__lambda_list_handler_p(this->_ArgTarget); };
   LambdaListHandler_sp lambdaListHandler() const;
   inline bool _lambdaListP() const { return cl_consp(this->_ArgTarget); };
   List_sp lambdaList() const;

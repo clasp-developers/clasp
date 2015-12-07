@@ -29,10 +29,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_af_pointerRelease "(arg)"
-#define DECL_af_pointerRelease ""
-#define DOCS_af_pointerRelease "pointerRelease"
-Pointer_sp af_pointerRelease(T_sp ptr) {
+#define ARGS_core__pointer_release "(arg)"
+#define DECL_core__pointer_release ""
+#define DOCS_core__pointer_release "pointerRelease"
+Pointer_sp core__pointer_release(T_sp ptr) {
   _G();
   if (ptr.nilp()) {
     return _Nil<Pointer_O>();
@@ -43,10 +43,10 @@ Pointer_sp af_pointerRelease(T_sp ptr) {
   SIMPLE_ERROR(BF("Could not release pointer for %s") % _rep_(ptr));
 }
 
-#define ARGS_af_pointerDelete "(arg)"
-#define DECL_af_pointerDelete ""
-#define DOCS_af_pointerDelete "pointerDelete"
-void af_pointerDelete(T_sp ptr) {
+#define ARGS_core__pointer_delete "(arg)"
+#define DECL_core__pointer_delete ""
+#define DOCS_core__pointer_delete "pointerDelete"
+void core__pointer_delete(T_sp ptr) {
   _G();
   if (ptr.nilp()) {
     return;
@@ -66,7 +66,7 @@ T_sp WrappedPointer_O::instanceClassSet(Class_sp cl) {
 }
 
 void WrappedPointer_O::setInstanceClassUsingSymbol(Symbol_sp classSymbol) {
-  Class_sp cl = gc::As<Class_sp>(cl_findClass(classSymbol));
+  Class_sp cl = gc::As<Class_sp>(cl__find_class(classSymbol));
   this->instanceClassSet(cl);
 }
 
@@ -84,10 +84,10 @@ Pointer_sp WrappedPointer_O::address() const {
   return Pointer_O::create(addr);
 }
 
-#define ARGS_af_pointerAddress "(arg)"
-#define DECL_af_pointerAddress ""
-#define DOCS_af_pointerAddress "pointerAddress"
-T_sp af_pointerAddress(T_sp ptr) {
+#define ARGS_core__pointer_address "(arg)"
+#define DECL_core__pointer_address ""
+#define DOCS_core__pointer_address "pointerAddress"
+T_sp core__pointer_address(T_sp ptr) {
   _G();
   if (ptr.nilp()) {
     return _Nil<Pointer_O>();
@@ -101,9 +101,9 @@ T_sp af_pointerAddress(T_sp ptr) {
 void WrappedPointer_O::exposeCando(core::Lisp_sp e) {
   class_<WrappedPointer_O>()
       .def("validp", &WrappedPointer_O::validp);
-  Defun(pointerRelease);
-  Defun(pointerDelete);
-  Defun(pointerAddress);
+  Core_temp_Defun(pointer_release);
+  Core_temp_Defun(pointer_delete);
+  Core_temp_Defun(pointer_address);
 }
 
 void WrappedPointer_O::exposePython(core::Lisp_sp lisp) {

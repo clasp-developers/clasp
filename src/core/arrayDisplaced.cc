@@ -52,7 +52,7 @@ ArrayDisplaced_sp ArrayDisplaced_O::make(T_sp dim_desig, T_sp elementType, T_sp 
   array->_Array = displacedTo;
   array->_DisplacedIndexOffset = displacedIndexOffset;
   List_sp dim;
-  if (cl_atom(dim_desig)) {
+  if (cl__atom(dim_desig)) {
     int idim = clasp_to_int(gc::As<Integer_sp>(dim_desig));
     dim = Cons_O::create(make_fixnum(idim));
   } else {
@@ -172,7 +172,7 @@ T_sp ArrayDisplaced_O::setf_svref(int index, T_sp value) {
 LongLongInt ArrayDisplaced_O::setDimensions(List_sp ldim, T_sp displacedTo) {
   _OF();
   LongLongInt elements = 1;
-  this->_Dimensions.resize(cl_length(ldim));
+  this->_Dimensions.resize(cl__length(ldim));
   int idx = 0;
   for (auto dim : ldim) {
     int oneDim = clasp_to_int(gc::As<Rational_sp>(oCar(dim)));

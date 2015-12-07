@@ -40,10 +40,10 @@ namespace core {
 //
 EXPOSE_CLASS(core, Array_O);
 
-#define ARGS_cl_arrayDisplacement "(core::array)"
-#define DECL_cl_arrayDisplacement ""
-#define DOCS_cl_arrayDisplacement "arrayDisplacement"
-T_mv cl_arrayDisplacement(T_sp array) {
+LAMBDA(core::array);
+DECLARE();
+DOCSTRING("arrayDisplacement");
+CL_DEFUN T_mv cl__array_displacement(T_sp array) {
   if (array.notnilp()) {
     if (Array_sp arr = array.asOrNull<Array_O>()) {
       (void)arr;
@@ -53,18 +53,18 @@ T_mv cl_arrayDisplacement(T_sp array) {
   TYPE_ERROR(array, cl::_sym_array);
 }
 
-#define ARGS_af_upgradedArrayElementType "(core::type &optional core::env)"
-#define DECL_af_upgradedArrayElementType ""
-#define DOCS_af_upgradedArrayElementType "upgradedArrayElementType"
-T_mv af_upgradedArrayElementType(T_sp type) {
+LAMBDA(core::type &optional core::env);
+DECLARE();
+DOCSTRING("upgradedArrayElementType");
+CL_DEFUN T_mv cl__upgraded_array_element_type(T_sp type) {
   _G();
   return (Values(T_O::___staticClass));
 };
 
-#define ARGS_af_copy_subarray "(out outStart in inStart len)"
-#define DECL_af_copy_subarray ""
-#define DOCS_af_copy_subarray "copy_subarray"
-void af_copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in, Fixnum_sp inStart, Fixnum_sp len) {
+#define ARGS_core__copy_subarray "(out outStart in inStart len)"
+#define DECL_core__copy_subarray ""
+#define DOCS_core__copy_subarray "copy_subarray"
+void core__copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in, Fixnum_sp inStart, Fixnum_sp len) {
   _G();
   // TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
   //       Currently this is very inefficient
@@ -96,12 +96,12 @@ void af_copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in, Fixnum_sp i
   }
 }
 
-#define ARGS_af_aset "(array &rest indices-value)"
-#define DECL_af_aset ""
-#define DOCS_af_aset "aset"
-T_sp af_aset(Array_sp array, List_sp indices_value) {
+#define ARGS_core__aset "(array &rest indices-value)"
+#define DECL_core__aset ""
+#define DOCS_core__aset "aset"
+T_sp core__aset(Array_sp array, List_sp indices_value) {
   _G();
-  int r = cl_length(indices_value) - 1;
+  int r = cl__length(indices_value) - 1;
   int j;
   if (Vector_sp vec = array.asOrNull<Vector_O>()) {
     if (r != 1) {
@@ -109,7 +109,7 @@ T_sp af_aset(Array_sp array, List_sp indices_value) {
     }
     T_sp ind0 = oCar(indices_value);
     indices_value = oCdr(indices_value);
-    j = Array_O::checkedIndex(__FILE__, __LINE__, __FUNCTION__, array, 0, ind0, cl_length(vec));
+    j = Array_O::checkedIndex(__FILE__, __LINE__, __FUNCTION__, array, 0, ind0, cl__length(vec));
     return vec->aset_unsafe(j, oCar(indices_value));
   } else {
     if (r != array->rank()) {
@@ -131,11 +131,11 @@ int Array_O::checkedIndex(const string &filename, int lineno, const string &func
   if (index.fixnump()) {
     int ifn = unbox_fixnum(gc::As<Fixnum_sp>(index));
     if (ifn < 0 || ifn >= nonincl_index) {
-      af_wrongIndex(filename, lineno, lisp_intern(function, CurrentPkg), array, which, index, nonincl_index);
+      core__wrong_index(filename, lineno, lisp_intern(function, CurrentPkg), array, which, index, nonincl_index);
     }
     return ifn;
   }
-  af_wrongIndex(filename, lineno, lisp_intern(function, CurrentPkg), array, which, index, nonincl_index);
+  core__wrong_index(filename, lineno, lisp_intern(function, CurrentPkg), array, which, index, nonincl_index);
   UNREACHABLE();
 }
 
@@ -184,7 +184,7 @@ cl_index Array_O::index_vector_int(const vector<int> &indices) const {
 cl_index Array_O::index_val(List_sp indices, bool last_value_is_val, List_sp &val_cons) const {
   _OF();
 #ifdef DEBUG_ON
-  int indices_passed = cl_length(indices) - (last_value_is_val ? 1 : 0);
+  int indices_passed = cl__length(indices) - (last_value_is_val ? 1 : 0);
   ASSERTF(indices_passed == (int)this->rank(),
           BF("Wrong number of indices[%d] must match rank[%d]") % indices_passed % this->rank());
 #endif
@@ -301,10 +301,9 @@ void Array_O::exposeCando(::core::Lisp_sp lisp) {
 
       ;
   SYMBOL_SC_(CorePkg, copy_subarray);
-  Defun(copy_subarray);
+  Core_temp_Defun(copy_subarray);
   SYMBOL_SC_(CorePkg, aset);
-  Defun(aset);
-  ClDefun(arrayDisplacement);
+  Core_temp_Defun(aset);
 }
 
 void Array_O::exposePython(Lisp_sp lisp) {

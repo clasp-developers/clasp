@@ -270,7 +270,7 @@ Pathname_sp Bundle::getSysPathname() {
   ss << this->_LispDir.string();
   ss << DIR_SEPARATOR;
   ss << "**/*.*";
-  return cl_pathname(Str_O::create(ss.str()));
+  return cl__pathname(Str_O::create(ss.str()));
 }
 
 Pathname_sp Bundle::getSourcePathname() {
@@ -278,7 +278,7 @@ Pathname_sp Bundle::getSourcePathname() {
   ss << this->_SourceDir.string();
   ss << DIR_SEPARATOR;
   ss << "**/*.*";
-  return cl_pathname(Str_O::create(ss.str()));
+  return cl__pathname(Str_O::create(ss.str()));
 }
 
 Pathname_sp Bundle::getIncludePathname() {
@@ -286,7 +286,7 @@ Pathname_sp Bundle::getIncludePathname() {
   ss << this->_IncludeDir.string();
   ss << DIR_SEPARATOR;
   ss << "**/*.*";
-  return cl_pathname(Str_O::create(ss.str()));
+  return cl__pathname(Str_O::create(ss.str()));
 }
 
 Pathname_sp Bundle::getAppContentsResourcesPathname() {
@@ -299,7 +299,7 @@ Pathname_sp Bundle::getAppContentsResourcesPathname() {
   ss << "Resources";
   ss << DIR_SEPARATOR;
   ss << "**/*.*";
-  return cl_pathname(Str_O::create(ss.str()));
+  return cl__pathname(Str_O::create(ss.str()));
 }
 
 Pathname_sp Bundle::getAppContentsPathname() {
@@ -310,7 +310,7 @@ Pathname_sp Bundle::getAppContentsPathname() {
   ss << "Contents";
   ss << DIR_SEPARATOR;
   ss << "**/*.*";
-  return cl_pathname(Str_O::create(ss.str()));
+  return cl__pathname(Str_O::create(ss.str()));
 }
 
 bf::path Bundle::getLibDir() {

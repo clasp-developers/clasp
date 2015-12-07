@@ -84,9 +84,9 @@ public:
 
 namespace core {
 
-T_sp af_makeCondition(T_sp datum, List_sp initializers);
+T_sp cl__make_condition(T_sp datum, List_sp initializers);
 
-string af_conditionMessage(T_sp condition);
+string core__condition_message(T_sp condition);
 
 void initialize_conditions();
 }

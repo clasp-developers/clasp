@@ -67,7 +67,7 @@ void Record_O::errorIfInvalidArguments() {
     Cons_sp apair = gc::As<Cons_sp>(oCar(cur));
     T_sp argName = oCar(apair);
     bool found = false;
-    for (int i(0), iEnd(cl_length(seenvec)); i < iEnd; ++i) {
+    for (int i(0), iEnd(cl__length(seenvec)); i < iEnd; ++i) {
       if (oCar((*seenvec)[i]) == argName) {
         found = true;
         break;

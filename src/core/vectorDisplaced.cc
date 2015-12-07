@@ -46,8 +46,8 @@ VectorDisplaced_sp core_make_vector_displaced(T_sp dim, T_sp elementType, T_sp d
   GC_ALLOCATE(VectorDisplaced_O, vo);
   vo->_ElementType = elementType;
   vo->_Size = clasp_to_fixnum(dim);
-  if ( vo->_Size >= displacedOffset+cl_length(displacedTo)) {
-    vo->_Size = cl_length(displacedTo)-displacedOffset;
+  if ( vo->_Size >= displacedOffset+cl__length(displacedTo)) {
+    vo->_Size = cl__length(displacedTo)-displacedOffset;
   }
   vo->_DisplacedIndexOffset = displacedOffset;
   vo->_Vector = gc::As<Vector_sp>(displacedTo);
@@ -100,7 +100,7 @@ T_sp VectorDisplaced_O::elt(int index) const {
 
 T_sp VectorDisplaced_O::aref(List_sp indices) const {
   _G();
-  ASSERTF(cl_length(indices) == 1, BF("Vectors only support one index - passed: %s") % _rep_(indices));
+  ASSERTF(cl__length(indices) == 1, BF("Vectors only support one index - passed: %s") % _rep_(indices));
   return this->elt(clasp_to_int(gc::As<Integer_sp>(oCar(indices))));
 }
 
@@ -111,7 +111,7 @@ T_sp VectorDisplaced_O::setf_elt(int index, T_sp obj) {
 
 T_sp VectorDisplaced_O::setf_aref(List_sp indices_val) {
   _G();
-  ASSERTF(cl_length(indices_val) == 2, BF("Vectors only support one index followed by a value - passed: %s") % _rep_(indices_val));
+  ASSERTF(cl__length(indices_val) == 2, BF("Vectors only support one index followed by a value - passed: %s") % _rep_(indices_val));
   return this->setf_elt(clasp_to_int(gc::As<Integer_sp>(oCar(indices_val))), oCadr(indices_val));
 }
 

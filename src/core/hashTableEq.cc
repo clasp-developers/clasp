@@ -106,7 +106,7 @@ void HashTableEq_O::archiveBase(::core::ArchiveP node) {
 
 bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   _OF();
-  return cl_eq(entryKey, searchKey);
+  return cl__eq(entryKey, searchKey);
 }
 
 gc::Fixnum HashTableEq_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {

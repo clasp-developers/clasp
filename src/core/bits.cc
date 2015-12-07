@@ -254,7 +254,7 @@ static _clasp_big_binary_op bignum_operations[16] = {
 	} else {
             do {
                 y = ecl_va_arg(ARGS);
-                x = ecl_boole(op, x, y);
+                x = ecl__boole(op, x, y);
             } while (--narg);
 	}
 	return x;
@@ -576,25 +576,25 @@ cl_logbitp(Integer_sp p, Integer_sp x) {
             }
 
     T_sp
-    cl_logandc1(T_sp x, T_sp y)
+    cl__logandc1(T_sp x, T_sp y)
     {
 	@(return clasp_boole(CLASP_BOOLANDC1, x, y))
             }
 
     T_sp
-    cl_logandc2(T_sp x, T_sp y)
+    cl__logandc2(T_sp x, T_sp y)
     {
 	@(return clasp_boole(CLASP_BOOLANDC2, x, y))
             }
 
     T_sp
-    cl_logorc1(T_sp x, T_sp y)
+    cl__logorc1(T_sp x, T_sp y)
     {
 	@(return clasp_boole(CLASP_BOOLORC1, x, y))
             }
 
     T_sp
-    cl_logorc2(T_sp x, T_sp y)
+    cl__logorc2(T_sp x, T_sp y)
     {
 	@(return clasp_boole(CLASP_BOOLORC2, x, y))
             }
@@ -610,7 +610,7 @@ cl_logbitp(Integer_sp p, Integer_sp x) {
     }
 
     T_sp
-    cl_boole(T_sp o, T_sp x, T_sp y)
+    cl__boole(T_sp o, T_sp x, T_sp y)
     {
 	/* INV: log_op2() checks types */
 	@(return clasp_boole(coerce_to_logical_operator(o), x, y))
@@ -618,7 +618,7 @@ cl_logbitp(Integer_sp p, Integer_sp x) {
 
 
     T_sp
-    cl_ash(T_sp x, T_sp y)
+    cl__ash(T_sp x, T_sp y)
     {
 	T_sp r;
 	int sign_x;
@@ -691,10 +691,10 @@ cl_logbitp(Integer_sp p, Integer_sp x) {
 
 #endif
 
-#define ARGS_cl_boole "(op arg1 arg2)"
-#define DECL_cl_boole ""
-#define DOCS_cl_boole "boole"
-T_sp cl_boole(T_sp op, T_sp arg1, T_sp arg2) {
+LAMBDA(op arg1 arg2);
+DECLARE();
+DOCSTRING("boole");
+CL_DEFUN T_sp cl__boole(T_sp op, T_sp arg1, T_sp arg2) {
   _G();
   if (op.nilp()) {
     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 1, op, cl::_sym_integer);
@@ -738,7 +738,6 @@ void initialize_bits() {
   cl::_sym_boole_set->defconstant(make_fixnum(boole_set));
   cl::_sym_boole_xor->defconstant(make_fixnum(boole_xor));
 
-  ClDefun(boole);
   CoreDefun(bitArrayOp);
   af_def(ClPkg, "logbitp", &cl_logbitp);
 };

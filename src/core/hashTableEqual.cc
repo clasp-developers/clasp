@@ -84,7 +84,7 @@ void HashTableEqual_O::archiveBase(::core::ArchiveP node) {
 
 bool HashTableEqual_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   _OF();
-  return cl_equal(entryKey, searchKey);
+  return cl__equal(entryKey, searchKey);
 }
 
 gc::Fixnum HashTableEqual_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {

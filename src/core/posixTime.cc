@@ -43,20 +43,20 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_cl_getInternalRealTime "()"
-#define DECL_cl_getInternalRealTime ""
-#define DOCS_cl_getInternalRealTime "getInternalRealTime"
-T_sp cl_getInternalRealTime() {
+LAMBDA();
+DECLARE();
+DOCSTRING("getInternalRealTime");
+CL_DEFUN T_sp cl__get_internal_real_time() {
   _G();
   PosixTime_sp now = PosixTime_O::createNow();
   PosixTimeDuration_sp diff = now->sub(gc::As<PosixTime_sp>(_sym_STARstartRunTimeSTAR->symbolValue()));
   return Integer_O::create(diff->totalMilliseconds());
 };
 
-#define ARGS_cl_getInternalRunTime "()"
-#define DECL_cl_getInternalRunTime ""
-#define DOCS_cl_getInternalRunTime "getInternalRunTime"
-T_sp cl_getInternalRunTime() {
+LAMBDA();
+DECLARE();
+DOCSTRING("getInternalRunTime");
+CL_DEFUN T_sp cl__get_internal_run_time() {
   _G();
   struct rusage r;
   getrusage(RUSAGE_SELF, &r);
@@ -207,8 +207,6 @@ void PosixTime_O::exposeCando(Lisp_sp lisp) {
       .def("setToLocalTime", &PosixTime_O::setToLocalTime)
       .def("now", &PosixTime_O::setToLocalTime)
       .def("sub", &PosixTime_O::sub);
-  ClDefun(getInternalRealTime);
-  ClDefun(getInternalRunTime);
 }
 
 void PosixTime_O::exposePython(Lisp_sp lisp) {

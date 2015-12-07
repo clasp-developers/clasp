@@ -602,20 +602,20 @@ T_mv floor1(Real_sp x)
 	return Values(v0,v1);
     }
 
-#define ARGS_af_truncate "(x &optional y)"
-#define DECL_af_truncate ""
-#define DOCS_af_truncate "truncate"
-    T_mv af_truncate(Real_sp x, Real_sp y)
+LAMBDA(x &optional y);
+DECLARE();
+DOCSTRING("truncate");
+CL_DEFUN     T_mv cl__truncate(Real_sp x, Real_sp y)
     {_G();
 	if (y.nilp())
 	    return truncate1(x);
 	return truncate2(x,y);
     };
 
-#define ARGS_af_ceiling "(x &optional y)"
-#define DECL_af_ceiling ""
-#define DOCS_af_ceiling "ceiling"
-    T_mv af_ceiling(Real_sp x, Real_sp y)
+LAMBDA(x &optional y);
+DECLARE();
+DOCSTRING("ceiling");
+CL_DEFUN     T_mv cl__ceiling(Real_sp x, Real_sp y)
     {_G();
 	if ( y.nilp() )
 	{
@@ -626,10 +626,10 @@ T_mv floor1(Real_sp x)
 	}
     }
 
-#define ARGS_af_floor "(numb &optional divisor )"
-#define DECL_af_floor ""
-#define DOCS_af_floor "floor"
-T_mv af_floor(Real_sp number, Real_sp divisor )
+LAMBDA(numb &optional divisor );
+DECLARE();
+DOCSTRING("floor");
+CL_DEFUN T_mv cl__floor(Real_sp number, Real_sp divisor )
 {_G();
     if ( divisor.nilp() )
     {
@@ -640,20 +640,20 @@ T_mv af_floor(Real_sp number, Real_sp divisor )
     }
 };
 
-#define ARGS_af_mod "(num div)"
-#define DECL_af_mod ""
-#define DOCS_af_mod "mod"
-    Real_mv af_mod(Real_sp num, Real_sp div)
+LAMBDA(num div);
+DECLARE();
+DOCSTRING("mod");
+CL_DEFUN     Real_mv cl__mod(Real_sp num, Real_sp div)
 {_G();
-    T_mv floor_mv = af_floor(num,div);
+    T_mv floor_mv = cl__floor(num,div);
     Real_sp res = floor_mv.valueGet(1).as<Real_O>();
     return(Values(res));
 };
 
-#define ARGS_af_rem "(numb divisor)"
-#define DECL_af_rem ""
-#define DOCS_af_rem "rem"
-T_sp af_rem(Real_sp x, Real_sp y)
+LAMBDA(numb divisor);
+DECLARE();
+DOCSTRING("rem");
+CL_DEFUN T_sp cl__rem(Real_sp x, Real_sp y)
     {_G();
 	T_mv v0v1 = truncate2(x,y);
 	return v0v1.valueGet(1);
@@ -664,15 +664,10 @@ void initialize_math() {
   _G();
 #if 0
 	SYMBOL_EXPORT_SC_(ClPkg,floor);
-	Defun(floor);
 	SYMBOL_EXPORT_SC_(ClPkg,mod);
-	Defun(mod);
 	SYMBOL_EXPORT_SC_(ClPkg,ceiling);
-	Defun(ceiling);
 	SYMBOL_EXPORT_SC_(ClPkg,truncate);
-	Defun(truncate);
 	SYMBOL_EXPORT_SC_(ClPkg,rem);
-	Defun(rem);
 #endif
 }
 };

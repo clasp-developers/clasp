@@ -77,13 +77,12 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/profile.h>
 #include <clasp/core/wrappers.h>
-CL_NAMESPACE
 namespace core {
 
-#define ARGS_cl_sleep "(seconds)"
-#define DECL_cl_sleep ""
-#define DOCS_cl_sleep "sleep"
-void cl_sleep(T_sp oseconds) {
+LAMBDA(seconds);
+DECLARE();
+DOCSTRING("sleep");
+CL_DEFUN void cl__sleep(T_sp oseconds) {
   _G();
   SYMBOL_EXPORT_SC_(ClPkg, sleep);
   if (oseconds.nilp()) {
@@ -102,18 +101,18 @@ void cl_sleep(T_sp oseconds) {
   nanosleep(&ts, NULL);
 }
 
-#define ARGS_cl_lispImplementationType "()"
-#define DECL_cl_lispImplementationType ""
-#define DOCS_cl_lispImplementationType "lispImplementationType"
-T_sp cl_lispImplementationType() {
+LAMBDA();
+DECLARE();
+DOCSTRING("lispImplementationType");
+CL_DEFUN T_sp cl__lisp_implementation_type() {
   _G();
   return Str_O::create("Clasp");
 };
 
-#define ARGS_cl_lispImplementationVersion "()"
-#define DECL_cl_lispImplementationVersion ""
-#define DOCS_cl_lispImplementationVersion "lispImplementationVersion"
-T_sp cl_lispImplementationVersion() {
+LAMBDA();
+DECLARE();
+DOCSTRING("lispImplementationVersion");
+CL_DEFUN T_sp cl__lisp_implementation_version() {
   _G();
   stringstream ss;
   List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cclasp);
@@ -215,42 +214,42 @@ T_sp core_create_tagged_immediate_value_or_nil(T_sp object) {
   return _Nil<T_O>();
 };
 
-#define ARGS_cl_softwareType "()"
-#define DECL_cl_softwareType ""
-#define DOCS_cl_softwareType "softwareType"
-T_sp cl_softwareType() {
+LAMBDA();
+DECLARE();
+DOCSTRING("softwareType");
+CL_DEFUN T_sp cl__software_type() {
   return _Nil<T_O>();
 };
 
-#define ARGS_cl_softwareVersion "()"
-#define DECL_cl_softwareVersion ""
-#define DOCS_cl_softwareVersion "softwareVersion"
-T_sp cl_softwareVersion() {
+LAMBDA();
+DECLARE();
+DOCSTRING("softwareVersion");
+CL_DEFUN T_sp cl__software_version() {
   _G();
   string all = CLASP_VERSION;
   return Str_O::create(all);
 };
 
-#define ARGS_cl_machineType "()"
-#define DECL_cl_machineType ""
-#define DOCS_cl_machineType "machineType"
-T_sp cl_machineType() {
+LAMBDA();
+DECLARE();
+DOCSTRING("machineType");
+CL_DEFUN T_sp cl__machine_type() {
   _G();
   return _Nil<T_O>();
 };
 
-#define ARGS_cl_machineVersion "()"
-#define DECL_cl_machineVersion ""
-#define DOCS_cl_machineVersion "machineVersion"
-T_sp cl_machineVersion() {
+LAMBDA();
+DECLARE();
+DOCSTRING("machineVersion");
+CL_DEFUN T_sp cl__machine_version() {
   _G();
   return _Nil<T_O>();
 };
 
-#define ARGS_cl_machineInstance "()"
-#define DECL_cl_machineInstance ""
-#define DOCS_cl_machineInstance "machineInstance"
-T_sp cl_machineInstance() {
+LAMBDA();
+DECLARE();
+DOCSTRING("machineInstance");
+CL_DEFUN T_sp cl__machine_instance() {
   _G();
   return _Nil<T_O>();
 };
@@ -271,10 +270,10 @@ Str_sp core_argv(int idx) {
   return Str_O::create(_lisp->_Argv[idx]);
 };
 
-#define ARGS_cl_set "(sym value)"
-#define DECL_cl_set ""
-#define DOCS_cl_set "set"
-T_sp cl_set(Symbol_sp sym, T_sp val) {
+LAMBDA(sym value);
+DECLARE();
+DOCSTRING("set");
+CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
   _G();
   if (sym.nilp()) {
     SIMPLE_ERROR(BF("You cannot assign to the constant NIL"));
@@ -440,10 +439,10 @@ T_mv core_smartPointerDetails() {
   return Values(ptrType, pxOffset, pxSize);
 }
 
-#define ARGS_cl_values "(&rest args)"
-#define DECL_cl_values ""
-#define DOCS_cl_values "values"
-T_mv cl_values(List_sp args) {
+LAMBDA(&rest args);
+DECLARE();
+DOCSTRING("values");
+CL_DEFUN T_mv cl__values(List_sp args) {
   _G();
   // returns multiple values
   T_mv result = ValuesFromCons(args);
@@ -461,10 +460,10 @@ T_mv core_valuesTesting(List_sp args) {
   return result;
 }
 
-#define ARGS_cl_values_list "(list)"
-#define DECL_cl_values_list ""
-#define DOCS_cl_values_list "values_list"
-T_mv cl_values_list(List_sp list) {
+LAMBDA(list);
+DECLARE();
+DOCSTRING("values_list");
+CL_DEFUN T_mv cl__values_list(List_sp list) {
   _G();
   return ValuesFromCons(list);
 }
@@ -525,12 +524,12 @@ T_mv core_separatePairList(List_sp listOfPairs) {
   ql::list seconds(_lisp);
   for (auto cur : listOfPairs) {
     T_sp element = oCar(cur);
-    if (cl_atom(element)) {
+    if (cl__atom(element)) {
       firsts << element;
       seconds << _Nil<T_O>();
     } else if (cl_consp(element)) {
       List_sp pair = element;
-      size_t pairlen = cl_length(pair);
+      size_t pairlen = cl__length(pair);
       if (pairlen == 2 || pairlen == 1) {
         firsts << oCar(pair);
         seconds << oCadr(pair);
@@ -555,10 +554,10 @@ Pointer_mv core_c_function(Symbol_sp sym) {
 };
 #endif
 
-#define ARGS_cl_macroFunction "(symbol &optional env)"
-#define DECL_cl_macroFunction ""
-#define DOCS_cl_macroFunction "See CLHS: macroFunction"
-T_sp cl_macroFunction(Symbol_sp symbol, T_sp env) {
+LAMBDA(symbol &optional env);
+DECLARE();
+DOCSTRING("See CLHS: macroFunction");
+CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
   _G();
   T_sp func = _Nil<T_O>();
   if (env.nilp()) {
@@ -576,10 +575,10 @@ T_sp cl_macroFunction(Symbol_sp symbol, T_sp env) {
   return func;
 }
 
-#define ARGS_cl_specialOperatorP "(symbol)"
-#define DECL_cl_specialOperatorP ""
-#define DOCS_cl_specialOperatorP "See CLHS: special-operator-p"
-T_mv cl_specialOperatorP(T_sp sym) {
+LAMBDA(symbol);
+DECLARE();
+DOCSTRING("See CLHS: special-operator-p");
+CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
   _G();
   SYMBOL_EXPORT_SC_(ClPkg, let);
   SYMBOL_EXPORT_SC_(ClPkg, letSTAR);
@@ -642,14 +641,14 @@ T_sp core_treatAsSpecialOperatorP(T_sp sym) {
     return _Nil<T_O>(); // All handled in macros
   if (sym == core::_sym_debug_message)
     return _lisp->_true();
-  return cl_specialOperatorP(sym);
+  return cl__special_operator_p(sym);
 };
 #endif
 
-#define ARGS_cl_ash "(integer count)"
-#define DECL_cl_ash ""
-#define DOCS_cl_ash "CLHS: ash"
-Integer_sp cl_ash(Integer_sp integer, Integer_sp count) {
+LAMBDA(integer count);
+DECLARE();
+DOCSTRING("CLHS: ash");
+CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
   int cnt = clasp_to_int(count);
   return clasp_shift(integer, cnt);
 }
@@ -660,10 +659,10 @@ Integer_sp cl_ash(Integer_sp integer, Integer_sp count) {
 void core_break(T_sp fmt, List_sp args) {
   _G();
   if (fmt.notnilp()) {
-    af_format(_lisp->_true(), gc::As<Str_sp>(fmt), args);
+    cl__format(_lisp->_true(), gc::As<Str_sp>(fmt), args);
   }
   dbg_hook("built in break");
-  af_invokeInternalDebugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
 #define ARGS_core_gdb "(&optional msg)"
@@ -677,7 +676,7 @@ void core_gdb(T_sp msg) {
     smsg = _rep_(obj);
   }
   dbg_hook(smsg.c_str());
-  af_invokeInternalDebugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
 #define ARGS_core_cxx_lambda_list_handler_create_bindings_calls "()"
@@ -709,16 +708,16 @@ void core_gdbInspect(Str_sp msg, T_sp o) {
   _G();
   printf("gdbInspect object: %s\n", _rep_(o).c_str());
   dbg_hook(msg->get().c_str());
-  af_invokeInternalDebugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-#define ARGS_cl_constantp "(obj &optional env)"
-#define DECL_cl_constantp ""
-#define DOCS_cl_constantp "constantp"
-bool cl_constantp(T_sp obj, T_sp env) {
+LAMBDA(obj &optional env);
+DECLARE();
+DOCSTRING("constantp");
+CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
   _G();
   // ignore env
-  if (cl_numberp(obj))
+  if (cl__numberp(obj))
     return true;
   if (af_characterP(obj))
     return true;
@@ -737,10 +736,10 @@ bool cl_constantp(T_sp obj, T_sp env) {
   return false;
 };
 
-#define ARGS_cl_identity "(arg)"
-#define DECL_cl_identity ""
-#define DOCS_cl_identity "identity"
-T_mv cl_identity(T_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("identity");
+CL_DEFUN T_mv cl__identity(T_sp arg) {
   _G();
   return (Values(arg));
 };
@@ -775,20 +774,20 @@ T_mv core_macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_
   return (Values(result));
 };
 
-#define ARGS_cl_null "(obj)"
-#define DECL_cl_null ""
-#define DOCS_cl_null "null test - return true if the object is the empty list otherwise return nil"
-T_mv cl_null(T_sp obj) {
+LAMBDA(obj);
+DECLARE();
+DOCSTRING("null test - return true if the object is the empty list otherwise return nil");
+CL_DEFUN T_mv cl__null(T_sp obj) {
   _G();
   if (obj.nilp())
     return (Values(_lisp->_true()));
   return (Values(_Nil<T_O>()));
 };
 
-#define ARGS_cl_classOf "(obj)"
-#define DECL_cl_classOf ""
-#define DOCS_cl_classOf "return class of object - see CLHS"
-Class_sp cl_classOf(T_sp obj) {
+LAMBDA(obj);
+DECLARE();
+DOCSTRING("return class of object - see CLHS");
+CL_DEFUN Class_sp cl__class_of(T_sp obj) {
   _G();
   Class_sp result = lisp_instance_class(obj);
 #if DEBUG_CLOS >= 3
@@ -826,10 +825,10 @@ T_sp core_STARfset(T_sp functionName, Function_sp functionObject, T_sp macro) {
   SIMPLE_ERROR(BF("Illegal name for function[%s]") % _rep_(functionName));
 };
 
-#define ARGS_cl_fdefinition "(function-name)"
-#define DECL_cl_fdefinition ""
-#define DOCS_cl_fdefinition "fdefinition"
-T_sp cl_fdefinition(T_sp functionName) {
+LAMBDA(function-name);
+DECLARE();
+DOCSTRING("fdefinition");
+CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
   if (cl_symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
     return sym->symbolFunction();
@@ -845,10 +844,10 @@ T_sp cl_fdefinition(T_sp functionName) {
   SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
 }
 
-#define ARGS_cl_fboundp "(function-name)"
-#define DECL_cl_fboundp ""
-#define DOCS_cl_fboundp "fboundp"
-bool cl_fboundp(T_sp functionName) {
+LAMBDA(function-name);
+DECLARE();
+DOCSTRING("fboundp");
+CL_DEFUN bool cl__fboundp(T_sp functionName) {
   _G();
   if (functionName.nilp()) {
     return false;
@@ -867,10 +866,10 @@ bool cl_fboundp(T_sp functionName) {
   SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
 }
 
-#define ARGS_cl_fmakunbound "(function-name)"
-#define DECL_cl_fmakunbound ""
-#define DOCS_cl_fmakunbound "fmakunbound"
-T_mv cl_fmakunbound(T_sp functionName) {
+LAMBDA(function-name);
+DECLARE();
+DOCSTRING("fmakunbound");
+CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
   _G();
   if (cl_symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
@@ -889,10 +888,10 @@ T_mv cl_fmakunbound(T_sp functionName) {
   SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
 }
 
-#define ARGS_cl_read_delimited_list "(char &optional input-stream-designator recursive-p)"
-#define DECL_cl_read_delimited_list ""
-#define DOCS_cl_read_delimited_list "read a list up to a specific character - see CLHS"
-T_mv cl_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p) {
+LAMBDA(char &optional input-stream-designator recursive-p);
+DECLARE();
+DOCSTRING("read a list up to a specific character - see CLHS");
+CL_DEFUN T_mv cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p) {
   _G();
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 #if 0
@@ -909,10 +908,10 @@ T_mv cl_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp
   return (Values(result));
 }
 
-#define ARGS_cl_read "(&optional input-stream-designator (eof-error-p t) eof-value recursive-p)"
-#define DECL_cl_read ""
-#define DOCS_cl_read "read an object from a stream - see CLHS"
-T_sp cl_read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
+LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
+DECLARE();
+DOCSTRING("read an object from a stream - see CLHS");
+CL_DEFUN T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   bool preserve_whitespace = true;
   if ( recursive_p.isTrue() ) {
     preserve_whitespace = _sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue();
@@ -924,10 +923,10 @@ T_sp cl_read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_s
   return read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.notnilp());
 }
 
-#define ARGS_cl_read_preserving_whitespace "(&optional input-stream-designator (eof-error-p t) eof-value recursive-p)"
-#define DECL_cl_read_preserving_whitespace ""
-#define DOCS_cl_read_preserving_whitespace "read an object from a stream while preserving whitespace - see CLHS"
-T_sp cl_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
+LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
+DECLARE();
+DOCSTRING("read an object from a stream while preserving whitespace - see CLHS");
+CL_DEFUN T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   bool preserve_whitespace = true;
   if ( recursive_p.isTrue() ) {
     preserve_whitespace = _sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue();
@@ -972,7 +971,7 @@ ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
   for (auto cur : sequences) {
     T_sp obj = oCar(cur);
     if (Vector_sp vobj = obj.asOrNull<Vector_O>()) {
-      if (cl_length(vobj) == 0)
+      if (cl__length(vobj) == 0)
         goto EMPTY;
       gctools::tagged_pointer<VectorStepper> vP(gctools::ClassAllocator<VectorStepper>::allocateClass(vobj));
       this->_Steppers.push_back(vP);
@@ -1058,10 +1057,10 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
   return fallThroughReturn;
 }
 
-#define ARGS_cl_every "(predicate &rest sequences)"
-#define DECL_cl_every ""
-#define DOCS_cl_every "See CLHS for every"
-T_sp cl_every(T_sp predicate, List_sp sequences) {
+LAMBDA(predicate &rest sequences);
+DECLARE();
+DOCSTRING("See CLHS for every");
+CL_DEFUN T_sp cl__every(T_sp predicate, List_sp sequences) {
   _G();
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
@@ -1069,10 +1068,10 @@ T_sp cl_every(T_sp predicate, List_sp sequences) {
   return _lisp->_boolean(result);
 }
 
-#define ARGS_cl_some "(predicate &rest sequences)"
-#define DECL_cl_some ""
-#define DOCS_cl_some "See CLHS for some"
-T_sp cl_some(T_sp predicate, List_sp sequences) {
+LAMBDA(predicate &rest sequences);
+DECLARE();
+DOCSTRING("See CLHS for some");
+CL_DEFUN T_sp cl__some(T_sp predicate, List_sp sequences) {
   _G();
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp retVal;
@@ -1082,10 +1081,10 @@ T_sp cl_some(T_sp predicate, List_sp sequences) {
   return _Nil<T_O>();
 }
 
-#define ARGS_cl_notany "(predicate &rest sequences)"
-#define DECL_cl_notany ""
-#define DOCS_cl_notany "See CLHS for notany"
-T_sp cl_notany(T_sp predicate, List_sp sequences) {
+LAMBDA(predicate &rest sequences);
+DECLARE();
+DOCSTRING("See CLHS for notany");
+CL_DEFUN T_sp cl__notany(T_sp predicate, List_sp sequences) {
   _G();
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
@@ -1093,10 +1092,10 @@ T_sp cl_notany(T_sp predicate, List_sp sequences) {
   return _lisp->_boolean(result);
 }
 
-#define ARGS_cl_notevery "(predicate &rest sequences)"
-#define DECL_cl_notevery ""
-#define DOCS_cl_notevery "See CLHS for notevery"
-T_sp cl_notevery(T_sp predicate, List_sp sequences) {
+LAMBDA(predicate &rest sequences);
+DECLARE();
+DOCSTRING("See CLHS for notevery");
+CL_DEFUN T_sp cl__notevery(T_sp predicate, List_sp sequences) {
   _G();
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
@@ -1108,11 +1107,12 @@ T_sp cl_notevery(T_sp predicate, List_sp sequences) {
   __BEGIN_DOC(candoScript.general.mapcar)
   __END_DOC
 */
-#define ARGS_cl_mapcar "(func_desig &rest lists)"
-#define DECL_cl_mapcar ""
-#define DOCS_cl_mapcar "See CLHS for mapcar"
 SYMBOL_EXPORT_SC_(ClPkg, mapcar);
-T_sp cl_mapcar(T_sp func_desig, List_sp lists) {
+
+LAMBDA(func_desig &rest lists);
+DECLARE();
+DOCSTRING("See CLHS for mapcar");
+CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
   _G();
   Function_sp func = coerce::functionDesignator(func_desig);
   ListOfListSteppers steppers(lists);
@@ -1131,10 +1131,10 @@ T_sp cl_mapcar(T_sp func_desig, List_sp lists) {
   __BEGIN_DOC(candoScript.general.mapcar)
   __END_DOC
 */
-#define ARGS_cl_mapc "(op &rest lists)"
-#define DECL_cl_mapc ""
-#define DOCS_cl_mapc "See CLHS mapc"
-T_sp cl_mapc(T_sp top, List_sp lists) {
+LAMBDA(op &rest lists);
+DECLARE();
+DOCSTRING("See CLHS mapc");
+CL_DEFUN T_sp cl__mapc(T_sp top, List_sp lists) {
   _G();
   Function_sp op = coerce::functionDesignator(top);
   VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 8, 0, true, cl::_sym_T_O));
@@ -1143,10 +1143,10 @@ T_sp cl_mapc(T_sp top, List_sp lists) {
     argumentLists->vectorPushExtend(oCar(carg), 8);
   }
   List_sp result, curResult;
-  ValueFrame_sp frame(ValueFrame_O::create(cl_length(argumentLists), _Nil<ActivationFrame_O>()));
+  ValueFrame_sp frame(ValueFrame_O::create(cl__length(argumentLists), _Nil<ActivationFrame_O>()));
   while (1) {
     int idx = 0;
-    for (size_t it(0), itEnd(cl_length(argumentLists)); it < itEnd; ++it) {
+    for (size_t it(0), itEnd(cl__length(argumentLists)); it < itEnd; ++it) {
       if (argumentLists->operator[](it).nilp()) {
         // We hit a nil - jump to the end
         goto RETURN;
@@ -1162,10 +1162,10 @@ T_sp cl_mapc(T_sp top, List_sp lists) {
   return oCar(lists);
 }
 
-#define ARGS_cl_maplist "(func_desig &rest lists)"
-#define DECL_cl_maplist ""
-#define DOCS_cl_maplist "See CLHS maplist"
-T_sp cl_maplist(T_sp func_desig, List_sp lists) {
+LAMBDA(func_desig &rest lists);
+DECLARE();
+DOCSTRING("See CLHS maplist");
+CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
   _G();
   //        printf("%s:%d maplist func_desig=%s   lists=%s\n", __FILE__, __LINE__, _rep_(func_desig).c_str(), _rep_(lists).c_str() );
   Function_sp op = coerce::functionDesignator(func_desig);
@@ -1179,12 +1179,12 @@ T_sp cl_maplist(T_sp func_desig, List_sp lists) {
   //        printf("%s:%d  argumentLists = %s\n", __FILE__, __LINE__, _rep_(argumentLists).c_str() );
   List_sp result, curResult;
   result = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
-  ValueFrame_sp frame(ValueFrame_O::create(cl_length(argumentLists), _Nil<ActivationFrame_O>()));
+  ValueFrame_sp frame(ValueFrame_O::create(cl__length(argumentLists), _Nil<ActivationFrame_O>()));
   curResult = result;
   while (1) {
     int idx = 0;
-    //            printf("%s:%d  length(argumentLists) = %d   argumentLists->fillPointer()=%d\n", __FILE__, __LINE__, cl_length(argumentLists), argumentLists->fillPointer() );
-    for (int it(0), itEnd(cl_length(argumentLists)); it < itEnd; ++it) {
+    //            printf("%s:%d  length(argumentLists) = %d   argumentLists->fillPointer()=%d\n", __FILE__, __LINE__, cl__length(argumentLists), argumentLists->fillPointer() );
+    for (int it(0), itEnd(cl__length(argumentLists)); it < itEnd; ++it) {
       T_sp val = (*argumentLists)[it];
       if (val.nilp())
         goto RETURN; // hit nil in arguments - exit
@@ -1198,7 +1198,7 @@ T_sp cl_maplist(T_sp func_desig, List_sp lists) {
     curResult.asCons()->setCdr(one);
     curResult = one;
     // Advance to the next element
-    for (int it(0), itEnd(cl_length(argumentLists)); it < itEnd; ++it) {
+    for (int it(0), itEnd(cl__length(argumentLists)); it < itEnd; ++it) {
       argumentLists->operator[](it) = oCdr(argumentLists->operator[](it));
       //		*it = cCdr((*it));
     }
@@ -1207,13 +1207,13 @@ T_sp cl_maplist(T_sp func_desig, List_sp lists) {
   return oCdr(result);
 }
 
-#define ARGS_cl_mapl "(op &rest lists)"
-#define DECL_cl_mapl ""
-#define DOCS_cl_mapl "See CLHS maplist"
-T_sp cl_mapl(T_sp top, List_sp lists) {
+LAMBDA(op &rest lists);
+DECLARE();
+DOCSTRING("See CLHS maplist");
+CL_DEFUN T_sp cl__mapl(T_sp top, List_sp lists) {
   _G();
   Function_sp op = coerce::functionDesignator(top);
-  cl_maplist(op, lists);
+  cl__maplist(op, lists);
   return oCar(lists);
 }
 
@@ -1233,23 +1233,23 @@ T_mv core_mapappend(Function_sp fun, List_sp cargs) {
   return eval::funcall(cl::_sym_append, appendHead, appendTail);
 };
 
-#define ARGS_cl_mapcon "(op &rest lists)"
-#define DECL_cl_mapcon ""
-#define DOCS_cl_mapcon "mapcon"
-T_mv cl_mapcon(T_sp op, List_sp lists) {
+LAMBDA(op &rest lists);
+DECLARE();
+DOCSTRING("mapcon");
+CL_DEFUN T_mv cl__mapcon(T_sp op, List_sp lists) {
   _G();
-  List_sp parts = cl_maplist(op, lists);
-  T_sp result = cl_nconc(parts);
+  List_sp parts = cl__maplist(op, lists);
+  T_sp result = cl__nconc(parts);
   return (Values(result));
 };
 
-#define ARGS_cl_mapcan "(op &rest lists)"
-#define DECL_cl_mapcan ""
-#define DOCS_cl_mapcan "mapcan"
-T_mv cl_mapcan(T_sp op, List_sp lists) {
+LAMBDA(op &rest lists);
+DECLARE();
+DOCSTRING("mapcan");
+CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
   _G();
-  List_sp parts = cl_mapcar(op, lists);
-  T_sp result = cl_nconc(parts);
+  List_sp parts = cl__mapcar(op, lists);
+  T_sp result = cl__nconc(parts);
 #if 0
   ValueFrame_sp frame(ValueFrame_O::create(parts,_Nil<ActivationFrame_O>()));
   T_sp result = eval::applyToActivationFrame(cl::_sym_nconc,frame);
@@ -1264,7 +1264,7 @@ T_mv macro_backquote(List_sp form, T_sp env) {
   _G();
   T_sp arg = oCadr(form);
   LOG(BF("Expanding backquote going in: %s") % _rep_(arg));
-  T_mv result = af_backquote_completely_process(arg);
+  T_mv result = core__backquote_completely_process(arg);
   LOG(BF("Expanded backquote result: %s") % _rep_(result));
   return (result);
 }
@@ -1276,10 +1276,10 @@ T_mv macro_backquote(List_sp form, T_sp env) {
   them together into one list and then points the cdr of the last element of this new list
   to c.
 */
-#define ARGS_cl_append "(&rest lists)"
-#define DECL_cl_append ""
-#define DOCS_cl_append "append as in clhs"
-List_sp cl_append(List_sp lists) {
+LAMBDA(&rest lists);
+DECLARE();
+DOCSTRING("append as in clhs");
+CL_DEFUN List_sp cl__append(List_sp lists) {
   _G();
   ql::list list;
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
@@ -1309,7 +1309,7 @@ List_sp cl_append(List_sp lists) {
   " I'm not sure what the func argument is for. If end is nil then it is set to the end of the sequence.  Return MultipleValues(start,end,length)."
 T_mv core_sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, T_sp end) {
   _G();
-  uint len = cl_length(sequence);
+  uint len = cl__length(sequence);
   if (end.nilp())
     end = make_fixnum(len);
   Fixnum_sp fnend = gc::As<Fixnum_sp>(end);
@@ -1327,10 +1327,10 @@ T_mv core_sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, T_sp end
 };
 
 
-#define ARGS_cl_gensym "(&optional x)"
-#define DECL_cl_gensym ""
-#define DOCS_cl_gensym "See CLHS gensym"
-Symbol_mv cl_gensym(T_sp x) {
+LAMBDA(&optional x);
+DECLARE();
+DOCSTRING("See CLHS gensym");
+CL_DEFUN Symbol_mv cl__gensym(T_sp x) {
   _G();
   stringstream ss;
   if (x.nilp()) {
@@ -1445,7 +1445,7 @@ T_sp type_of(T_sp x) {
       res << cl::_sym_integer << ix << ix;
       return res.cons();
     } else if (af_characterP(x)) {
-      if (af_standard_char_p(gc::As<Character_sp>(x)))
+      if (cl__standard_char_p(gc::As<Character_sp>(x)))
         return cl::_sym_standard_char;
       return cl::_sym_character;
     } else if (Symbol_sp symx = x.asOrNull<Symbol_O>()) {
@@ -1460,14 +1460,14 @@ T_sp type_of(T_sp x) {
         t = cl::_sym_array;
       } else
         t = cl::_sym_simple_array;
-      return (ql::list(_lisp) << t << cl::_sym_base_char << Cons_O::createList(make_fixnum(1), make_fixnum(cl_length(sx)))).cons();
+      return (ql::list(_lisp) << t << cl::_sym_base_char << Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(sx)))).cons();
     } else if (Vector_sp vx = x.asOrNull<Vector_O>()) {
       if (vx->adjustable_array_p() || vx->_displaced_array_p()) {
         return (ql::list(_lisp) << cl::_sym_vector << vx->element_type_as_symbol() << vx->arrayDimensions()).cons();
-      } else if (vx->array_has_fill_pointer_p() /* || (cl_elttype)x->vector.elttype != aet_object) */) {
+      } else if (vx->array_has_fill_pointer_p() /* || (cl__elttype)x->vector.elttype != aet_object) */) {
         return (ql::list(_lisp) << cl::_sym_simple_array << vx->element_type_as_symbol() << vx->arrayDimensions()).cons();
       } else {
-        return (ql::list(_lisp) << cl::_sym_simple_vector << make_fixnum(cl_length(vx))).cons();
+        return (ql::list(_lisp) << cl::_sym_simple_vector << make_fixnum(cl__length(vx))).cons();
       }
     } else if (Array_sp ax = x.asOrNull<Array_O>()) {
       Symbol_sp t;
@@ -1482,10 +1482,10 @@ T_sp type_of(T_sp x) {
         t = cl::_sym_array;
       } else
         t = cl::_sym_simple_array;
-      return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(make_fixnum(1), make_fixnum(cl_length(bx)))).cons();
+      return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(bx)))).cons();
     } else if (WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>()) {
       return pp->_instanceClass()->className();
-    } else if (af_structurep(x)) {
+    } else if (core__structurep(x)) {
       return gc::As<StructureObject_sp>(x)->structureType();
     } else if (Stream_sp stx = x.asOrNull<Stream_O>()) {
       if (gc::IsA<SynonymStream_sp>(stx))
@@ -1507,7 +1507,7 @@ T_sp type_of(T_sp x) {
     } else if (x.consp()) {
       return cl::_sym_cons;
     } else if (Pathname_sp px = x.asOrNull<Pathname_O>()) {
-      if (af_logicalPathnameP(px)) {
+      if (core__logical_pathname_p(px)) {
         return cl::_sym_logical_pathname;
       } else {
         return cl::_sym_pathname;
@@ -1516,18 +1516,18 @@ T_sp type_of(T_sp x) {
   return core_type_to_symbol(x);
 }
 
-#define ARGS_cl_type_of "(obj)"
-#define DECL_cl_type_of ""
-#define DOCS_cl_type_of "type_of"
-T_sp cl_type_of(T_sp x) {
+LAMBDA(obj);
+DECLARE();
+DOCSTRING("type_of");
+CL_DEFUN T_sp cl__type_of(T_sp x) {
   _G();
   return type_of(x);
 }
 
-#define ARGS_cl_sxhash "(obj)"
-#define DECL_cl_sxhash ""
-#define DOCS_cl_sxhash "sxhash"
-Integer_sp cl_sxhash(T_sp obj) {
+LAMBDA(obj);
+DECLARE();
+DOCSTRING("sxhash");
+CL_DEFUN Integer_sp cl__sxhash(T_sp obj) {
   _G();
   if (obj.nilp())
     return make_fixnum(1);
@@ -1552,7 +1552,7 @@ Integer_sp cl_sxhash(T_sp obj) {
 
 }; /* core */
 
-CL_NAMESPACE namespace core {
+namespace core {
 
 EXPOSE_CLASS(core, InvocationHistoryFrameIterator_O);
 
@@ -1926,13 +1926,13 @@ T_sp core_ihsBacktrace(T_sp outputDesignator, T_sp msg) {
   }
   clasp_writeln_string(((BF("%s") % _lisp->invocationHistoryStack().asString()).str()), ss);
   if (outputDesignator.nilp()) {
-    return cl_get_output_stream_string(ss);
+    return cl__get_output_stream_string(ss);
   }
   return _Nil<T_O>();
 };
 };
 
-CL_NAMESPACE namespace core {
+namespace core {
 void initialize_primitives() {
   _G();
   //
@@ -1943,7 +1943,6 @@ void initialize_primitives() {
   SYMBOL_SC_(CorePkg, smartPointerDetails);
   CoreDefun(smartPointerDetails);
   SYMBOL_EXPORT_SC_(ClPkg, null);
-  ClDefun(null);
 
   SYMBOL_SC_(CorePkg, STARfset);
   CoreDefun(STARfset);
@@ -1952,67 +1951,49 @@ void initialize_primitives() {
   CoreDefun(unbound);
 
   SYMBOL_EXPORT_SC_(ClPkg, read);
-  ClDefun(read);
 
   SYMBOL_EXPORT_SC_(ClPkg, read_preserving_whitespace);
-  ClDefun(read_preserving_whitespace);
 
   SYMBOL_EXPORT_SC_(ClPkg, read_delimited_list);
-  ClDefun(read_delimited_list);
 
   SYMBOL_EXPORT_SC_(ClPkg, every);
-  ClDefun(every);
 
   SYMBOL_EXPORT_SC_(ClPkg, some);
-  ClDefun(some);
 
   SYMBOL_EXPORT_SC_(ClPkg, notevery);
-  ClDefun(notevery);
 
   SYMBOL_EXPORT_SC_(ClPkg, notany);
-  ClDefun(notany);
 
   SYMBOL_EXPORT_SC_(ClPkg, mapcar);
-  ClDefun(mapcar);
 
   SYMBOL_EXPORT_SC_(ClPkg, mapc);
-  ClDefun(mapc);
 
   SYMBOL_EXPORT_SC_(ClPkg, maplist);
-  ClDefun(maplist);
 
   SYMBOL_EXPORT_SC_(ClPkg, mapl);
-  ClDefun(mapl);
 
   SYMBOL_SC_(CorePkg, mapappend);
   CoreDefun(mapappend);
 
   SYMBOL_EXPORT_SC_(ClPkg, mapcan);
-  ClDefun(mapcan);
 
   SYMBOL_EXPORT_SC_(ClPkg, mapcon);
-  ClDefun(mapcon);
 
   SYMBOL_SC_(CorePkg, macroexpand_default);
   CoreDefun(macroexpand_default);
 
   SYMBOL_EXPORT_SC_(ClPkg, append);
-  ClDefun(append);
 
   SYMBOL_EXPORT_SC_(ClPkg, classOf);
-  ClDefun(classOf);
 
   SYMBOL_EXPORT_SC_(ClPkg, identity);
-  ClDefun(identity);
 
   SYMBOL_EXPORT_SC_(ClPkg, constantp);
-  ClDefun(constantp);
 
   SYMBOL_SC_(CorePkg, sequence_start_end);
   CoreDefun(sequence_start_end);
 
   SYMBOL_EXPORT_SC_(ClPkg, ash);
-  ClDefun(ash);
 
   SYMBOL_SC_(CorePkg, type_to_symbol);
   CoreDefun(type_to_symbol);
@@ -2026,16 +2007,12 @@ void initialize_primitives() {
   defmacro(CorePkg, "backquote", &macro_backquote, ARGS_macro_backquote, DECL_macro_backquote, DOCS_macro_backquote, __FILE__, __LINE__);
 
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-  ClDefun(gensym);
 
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
-  ClDefun(type_of);
 
   SYMBOL_EXPORT_SC_(ClPkg, specialOperatorP);
-  ClDefun(specialOperatorP);
 
   SYMBOL_EXPORT_SC_(ClPkg, macroFunction);
-  ClDefun(macroFunction);
 
   SYMBOL_SC_(CorePkg, separatePairList);
   CoreDefun(separatePairList);
@@ -2043,26 +2020,21 @@ void initialize_primitives() {
   SYMBOL_EXPORT_SC_(ClPkg, set);
 
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-  ClDefun(gensym);
 
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
-  ClDefun(type_of);
 
   SYMBOL_SC_(CorePkg, separatePairList);
   CoreDefun(separatePairList);
 
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-  ClDefun(gensym);
 
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
-  ClDefun(type_of);
 
   //  CoreDefun(treatAsSpecialOperatorP);
 
   SYMBOL_SC_(CorePkg, separatePairList);
   CoreDefun(separatePairList);
 
-  ClDefun(set);
 
   SYMBOL_SC_(CorePkg, testMemoryError);
   CoreDefun(testMemoryError);
@@ -2074,20 +2046,15 @@ void initialize_primitives() {
   CoreDefun(validFunctionNameP);
 
   SYMBOL_EXPORT_SC_(ClPkg, fdefinition);
-  ClDefun(fdefinition);
 
   SYMBOL_EXPORT_SC_(ClPkg, fboundp);
-  ClDefun(fboundp);
 
   SYMBOL_EXPORT_SC_(ClPkg, fmakunbound);
-  ClDefun(fmakunbound);
 
   SYMBOL_EXPORT_SC_(ClPkg, values);
-  ClDefun(values);
   CoreDefun(valuesTesting);
 
   SYMBOL_EXPORT_SC_(ClPkg, values_list);
-  ClDefun(values_list);
 
   CoreDefun(isTrue);
 
@@ -2111,16 +2078,7 @@ void initialize_primitives() {
   CoreDefun(incompleteNextHigherPowerOf_2);
   CoreDefun(argc);
   CoreDefun(argv);
-  ClDefun(lispImplementationVersion);
-  ClDefun(lispImplementationType);
   CoreDefun(lispImplementationId);
-  ClDefun(softwareVersion);
-  ClDefun(softwareType);
-  ClDefun(machineVersion);
-  ClDefun(machineType);
-  ClDefun(machineInstance);
-  ClDefun(sxhash);
-  ClDefun(sleep);
   CoreDefun(create_tagged_immediate_value_or_nil);
 
   SYMBOL_SC_(CorePkg, ihsBacktrace);

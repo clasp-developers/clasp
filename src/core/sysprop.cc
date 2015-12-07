@@ -34,10 +34,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_af_put_sysprop "(key area value)"
-#define DECL_af_put_sysprop ""
-#define DOCS_af_put_sysprop "put_sysprop - returns value"
-T_sp af_put_sysprop(T_sp key, T_sp area, T_sp value) {
+#define ARGS_core__put_sysprop "(key area value)"
+#define DECL_core__put_sysprop ""
+#define DOCS_core__put_sysprop "put_sysprop - returns value"
+T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
   _G();
   ASSERT(_lisp->_Roots._SystemProperties);
   if (_lisp->_Roots._SystemProperties.nilp()) {
@@ -58,10 +58,10 @@ T_sp af_put_sysprop(T_sp key, T_sp area, T_sp value) {
   return (retval);
 }
 
-#define ARGS_af_get_sysprop "(key area)"
-#define DECL_af_get_sysprop ""
-#define DOCS_af_get_sysprop "get_sysprop - returns (values val foundp)"
-T_mv af_get_sysprop(T_sp key, T_sp area) {
+#define ARGS_core__get_sysprop "(key area)"
+#define DECL_core__get_sysprop ""
+#define DOCS_core__get_sysprop "get_sysprop - returns (values val foundp)"
+T_mv core__get_sysprop(T_sp key, T_sp area) {
   _G();
   if (_lisp->_Roots._SystemProperties.notnilp()) {
     T_mv values = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->gethash(area, _Nil<T_O>());
@@ -74,10 +74,10 @@ T_mv af_get_sysprop(T_sp key, T_sp area) {
   return (Values(_Nil<T_O>(), _Nil<T_O>()));
 }
 
-#define ARGS_af_rem_sysprop "(key area)"
-#define DECL_af_rem_sysprop ""
-#define DOCS_af_rem_sysprop "rem_sysprop"
-T_sp af_rem_sysprop(T_sp key, T_sp area) {
+#define ARGS_core__rem_sysprop "(key area)"
+#define DECL_core__rem_sysprop ""
+#define DOCS_core__rem_sysprop "rem_sysprop"
+T_sp core__rem_sysprop(T_sp key, T_sp area) {
   _G();
   T_mv mv_values = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->gethash(area, _Nil<T_O>());
   HashTable_sp hashTable = gc::As<HashTable_sp>(mv_values);
@@ -92,12 +92,12 @@ T_sp af_rem_sysprop(T_sp key, T_sp area) {
 void initialize_sysprop() {
   _G();
   SYMBOL_SC_(CorePkg, put_sysprop);
-  Defun(put_sysprop);
+  Core_temp_Defun(put_sysprop);
 
   SYMBOL_SC_(CorePkg, get_sysprop);
-  Defun(get_sysprop);
+  Core_temp_Defun(get_sysprop);
 
   SYMBOL_SC_(CorePkg, rem_sysprop);
-  Defun(rem_sysprop);
+  Core_temp_Defun(rem_sysprop);
 }
 };

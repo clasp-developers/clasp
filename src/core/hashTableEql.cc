@@ -86,7 +86,7 @@ void HashTableEql_O::archiveBase(::core::ArchiveP node) {
 
 bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   _OF();
-  return cl_eql(entryKey, searchKey);
+  return cl__eql(entryKey, searchKey);
 }
 
 gc::Fixnum HashTableEql_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {

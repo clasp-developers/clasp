@@ -239,7 +239,7 @@ void BranchSNode_O::saveVector(gctools::Vec0<T_sp> const &vec) {
 T_sp BranchSNode_O::createObject(HashTable_sp snodeToObject) {
   _G();
   SYMBOL_EXPORT_SC_(CorePkg, serialize);
-  Class_sp cl = cl_findClass(this->_Kind);
+  Class_sp cl = cl__find_class(this->_Kind);
   BranchSNode_sp me = this->asSmartPtr();
   T_sp obj = cl->make_instance();
   snodeToObject->hash_table_setf_gethash(me, obj);

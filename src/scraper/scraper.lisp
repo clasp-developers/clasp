@@ -4,6 +4,9 @@
 (load "packages.lisp")
 (in-package :cscrape)
 
+(defparameter *clang-path* nil)
+(defparameter *tags* nil)
+
 (load "foundation.lisp")
 (load "tags.lisp")
 (load "compile-commands.lisp")
@@ -11,8 +14,13 @@
 (load "interpret-tags.lisp")
 (load "code-generator.lisp")
 
-(defparameter *clang-path* nil)
-(defparameter *tags* nil)
+(defun read-all-tags-all-compile-commands (all-cc)
+  (loop for cc in all-cc
+     for bufs = (read-entire-file cc)
+     for tags = (process-all-recognition-elements bufs)
+     do (interpret-tags tags)
+     nconc tags))
+
 (defun do-scraping (args &key (run-preprocessor t))
   (declare (optimize (debug 3)))
   (let* ((*clang-path* (first args))

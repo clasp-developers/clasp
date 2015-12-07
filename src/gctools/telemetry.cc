@@ -18,7 +18,7 @@ void throw_if_invalid_global_telemetry_search() {
 #define DECL_core_telemetry_open ""
 #define DOCS_core_telemetry_open ""
 void core_telemetry_open(core::T_sp pathname) {
-  core::Str_sp filename = core::cl_namestring(pathname);
+  core::Str_sp filename = core::cl__namestring(pathname);
   global_telemetry_search = new Telemetry();
   global_telemetry_search->open_read(filename->c_str());
 }

@@ -324,10 +324,10 @@ void core_clibBacktrace(int depth) {
     free(funcname);
 };
 
-#define ARGS_af_framePointers "()"
-#define DECL_af_framePointers ""
-#define DOCS_af_framePointers "framePointers"
-void af_framePointers() {
+#define ARGS_core__frame_pointers "()"
+#define DECL_core__frame_pointers ""
+#define DOCS_core__frame_pointers "framePointers"
+void core__frame_pointers() {
   void *fp = __builtin_frame_address(0); // Constant integer only
   if (fp != NULL)
     printf("Frame pointer --> %p\n", fp);
@@ -386,14 +386,14 @@ void af_printCurrentIhsFrame() {
   printf("Frame[%d] %s\n", ihsCur, _rep_(fun).c_str());
 };
 
-#define ARGS_af_printCurrentIhsFrameEnvironment "()"
-#define DECL_af_printCurrentIhsFrameEnvironment ""
-#define DOCS_af_printCurrentIhsFrameEnvironment "printCurrentIhsFrameEnvironment"
-void af_printCurrentIhsFrameEnvironment() {
+#define ARGS_core__print_current_ihs_frame_environment "()"
+#define DECL_core__print_current_ihs_frame_environment ""
+#define DOCS_core__print_current_ihs_frame_environment "printCurrentIhsFrameEnvironment"
+void core__print_current_ihs_frame_environment() {
   T_sp args = core_ihsArguments(core_ihsCurrentFrame());
   if (args.notnilp()) {
     VectorObjects_sp vargs = gc::As<VectorObjects_sp>(args);
-    for (int i = 0; i < cl_length(vargs); ++i) {
+    for (int i = 0; i < cl__length(vargs); ++i) {
       _lisp->print(BF("arg%s --> %s") % i % _rep_(vargs->elt(i)));
     }
   } else {
@@ -549,8 +549,8 @@ namespace core {
 void initialize_debugging() {
   CoreDefun(clibBacktrace);
   CoreDefun(lowLevelBacktrace);
-  Defun(framePointers);
+  Core_temp_Defun(frame_pointers);
   SYMBOL_EXPORT_SC_(CorePkg, printCurrentIhsFrameEnvironment);
-  Defun(printCurrentIhsFrameEnvironment);
+  Core_temp_Defun(print_current_ihs_frame_environment);
 }
 };

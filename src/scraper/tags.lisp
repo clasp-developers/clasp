@@ -71,7 +71,8 @@
   ((class-tag :initarg :class-tag :accessor class-tag)))
 
 (defclass namespace-tag ()
-  ((namespace :initarg :namespace :accessor namespace)))
+  ((namespace :initarg :namespace :accessor namespace)
+   (file :initarg :file :accessor file)))
 
 (defclass symbol-tag ()
   ((namespace% :initarg :namespace% :accessor namespace%)
@@ -119,10 +120,14 @@
     (add-tag-handler handlers "LAMBDA_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
                          (let ((plist (read (cscrape:buffer-stream bufs))))
+                           (let ((lambda-list (getf plist :lambda-list)))
+                             (when (and (> (length lambda-list) 1)
+                                        (char= (elt lambda-list 0) #\"))
+                               (setf lambda-list (read-from-string lambda-list)))
                            (make-instance 'tags:lambda-tag
                                           :file (getf plist :file)
                                           :line (getf plist :line)
-                                          :lambda-list (getf plist :lambda-list)))))
+                                          :lambda-list lambda-list)))))
     (add-tag-handler handlers "DOCSTRING_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name docstring-tag-handler))
                          (let ((plist (read (cscrape:buffer-stream bufs)))
@@ -159,9 +164,9 @@
                                             :file (getf plist :file)
                                             :line (getf plist :line)
                                             :class-name class-name
-                                            :method-name function-name
+                                            :method-name method-name
                                             :signature-text signature-text)))))
-    (add-tag-handler handlers "NAMESPACE_TAG"
+    #+(or)(add-tag-handler handlers "NAMESPACE_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
                          (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))
                                 (c++namespace-keyword (let ((*package* (find-package :keyword)))
@@ -200,7 +205,6 @@
     (add-tag-handler handlers "NAMESPACE_PACKAGE_ASSOCIATION_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
                          (let* ((plist (read (cscrape:buffer-stream bufs))))
-                           (declare (ignore cur-pos))
                            (make-instance 'tags:namespace-package-association-tag
                                           :namespace (getf plist :namespace)
                                           :package-var (getf plist :package)

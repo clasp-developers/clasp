@@ -53,19 +53,19 @@ bool core_setRunTimeValuesVector(const string &name) {
   return true;
 };
 
-#define ARGS_af_loadTimeValueArray "(name &optional (data-size 0) (symbol-size 0))"
-#define DECL_af_loadTimeValueArray ""
-#define DOCS_af_loadTimeValueArray "loadTimeValueArray"
-LoadTimeValues_mv af_loadTimeValueArray(const string &name, int dataSize, int symbolSize) {
+#define ARGS_core__load_time_value_array "(name &optional (data-size 0) (symbol-size 0))"
+#define DECL_core__load_time_value_array ""
+#define DOCS_core__load_time_value_array "loadTimeValueArray"
+LoadTimeValues_mv core__load_time_value_array(const string &name, int dataSize, int symbolSize) {
   _G();
   LoadTimeValues_sp ltv = _lisp->getOrCreateLoadTimeValues(name, dataSize, symbolSize);
   return Values(ltv);
 };
 
-#define ARGS_af_lookupLoadTimeValue "(name idx)"
-#define DECL_af_lookupLoadTimeValue ""
-#define DOCS_af_lookupLoadTimeValue "Return the load-time-value associated with array NAME and IDX"
-T_sp af_lookupLoadTimeValue(const string &name, int idx) {
+#define ARGS_core__lookup_load_time_value "(name idx)"
+#define DECL_core__lookup_load_time_value ""
+#define DOCS_core__lookup_load_time_value "Return the load-time-value associated with array NAME and IDX"
+T_sp core__lookup_load_time_value(const string &name, int idx) {
   _G();
   int count = 0;
   LoadTimeValues_sp ltva = gc::As<LoadTimeValues_sp>(_lisp->findLoadTimeValuesWithNameContaining(name, count));
@@ -78,10 +78,10 @@ T_sp af_lookupLoadTimeValue(const string &name, int idx) {
   return ltva->data_element(idx);
 };
 
-#define ARGS_af_lookupLoadTimeSymbol "(name idx)"
-#define DECL_af_lookupLoadTimeSymbol ""
-#define DOCS_af_lookupLoadTimeSymbol "Return the load-time-value associated with array NAME and IDX"
-Symbol_sp af_lookupLoadTimeSymbol(const string &name, int idx) {
+#define ARGS_core__lookup_load_time_symbol "(name idx)"
+#define DECL_core__lookup_load_time_symbol ""
+#define DOCS_core__lookup_load_time_symbol "Return the load-time-value associated with array NAME and IDX"
+Symbol_sp core__lookup_load_time_symbol(const string &name, int idx) {
   _G();
   int count = 0;
   T_sp tltva = _lisp->findLoadTimeValuesWithNameContaining(name, count);
@@ -98,10 +98,10 @@ Symbol_sp af_lookupLoadTimeSymbol(const string &name, int idx) {
   return ltva->symbols_element(idx);
 };
 
-#define ARGS_af_loadTimeValuesIds "()"
-#define DECL_af_loadTimeValuesIds ""
-#define DOCS_af_loadTimeValuesIds "Return a cons of the load-time-values ids"
-void af_loadTimeValuesIds() {
+#define ARGS_core__load_time_values_ids "()"
+#define DECL_core__load_time_values_ids ""
+#define DOCS_core__load_time_values_ids "Return a cons of the load-time-values ids"
+void core__load_time_values_ids() {
   _G();
   List_sp names = _lisp->loadTimeValuesIds();
   for (auto cur : names) {
@@ -192,14 +192,14 @@ void LoadTimeValues_O::exposeCando(::core::Lisp_sp lisp) {
   CoreDefun(loadTimeValuesDumpValues);
   CoreDefun(loadTimeValuesDumpSymbols);
   SYMBOL_SC_(CorePkg, loadTimeValuesIds);
-  Defun(loadTimeValuesIds);
+  Core_temp_Defun(load_time_values_ids);
   SYMBOL_SC_(CorePkg, loadTimeValueArray);
-  Defun(loadTimeValueArray);
+  Core_temp_Defun(load_time_value_array);
 
   SYMBOL_SC_(CorePkg, lookupLoadTimeValue);
-  Defun(lookupLoadTimeValue);
+  Core_temp_Defun(lookup_load_time_value);
   SYMBOL_SC_(CorePkg, lookupLoadTimeSymbol);
-  Defun(lookupLoadTimeSymbol);
+  Core_temp_Defun(lookup_load_time_symbol);
   SYMBOL_EXPORT_SC_(CorePkg, setRunTimeValuesVector);
   CoreDefun(setRunTimeValuesVector);
 }

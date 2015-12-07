@@ -88,7 +88,7 @@ T_mv core_sourceFileInfo(T_sp sourceFile, T_sp sourceDebugNamestring, size_t sou
   } else if (Str_sp strSourceFile = sourceFile.asOrNull<Str_O>()) {
     return _lisp->getOrRegisterSourceFileInfo(strSourceFile->get(), sourceDebugNamestring, sourceDebugOffset, useLineno);
   } else if (Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>()) {
-    T_sp ns = cl_namestring(pnSourceFile);
+    T_sp ns = cl__namestring(pnSourceFile);
     if (ns.nilp()) {
       SIMPLE_ERROR(BF("No namestring could be generated for %s") % _rep_(pnSourceFile));
     }
@@ -101,7 +101,7 @@ T_mv core_sourceFileInfo(T_sp sourceFile, T_sp sourceDebugNamestring, size_t sou
       //                SIMPLE_ERROR(BF("Illegal index %d for source file info") % fnSourceFile->get() );
     }
     return Values(_lisp->_Roots._SourceFiles[idx], fnSourceFile);
-  } else if (cl_streamp(sourceFile)) {
+  } else if (cl__streamp(sourceFile)) {
     T_sp so = sourceFile;
     T_sp sfi = clasp_input_source_file_info(so);
     return core_sourceFileInfo(sfi);
@@ -165,7 +165,7 @@ uint af_lineno(T_sp obj) {
     return 0;
   } else if (Cons_sp co = obj.asOrNull<Cons_O>()) {
     IMPLEMENT_MEF(BF("Handle cons %s for af_lineno") % _rep_(co));
-  } else if (cl_streamp(obj)) {
+  } else if (cl__streamp(obj)) {
     return clasp_input_lineno(obj);
   } else if (Function_sp fo = obj.asOrNull<Function_O>()) {
     return af_lineno(fo->closure->sourcePosInfo());
@@ -185,7 +185,7 @@ uint af_column(T_sp obj) {
   } else if (Cons_sp co = obj.asOrNull<Cons_O>()) {
     (void)co;
     IMPLEMENT_MEF(BF("Handle cons for af_column"));
-  } else if (cl_streamp(obj)) {
+  } else if (cl__streamp(obj)) {
     return clasp_input_column(obj);
   } else if (Function_sp fo = obj.asOrNull<Function_O>()) {
     return af_column(fo->closure->sourcePosInfo());
@@ -316,7 +316,7 @@ SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path, int handle, T_sp so
 
 SourceFileInfo_sp SourceFileInfo_O::create(const string &str, int handle, T_sp truename, size_t offset, bool useLineno) {
   _G();
-  Pathname_sp pn = cl_pathname(Str_O::create(str));
+  Pathname_sp pn = cl__pathname(Str_O::create(str));
   return SourceFileInfo_O::create(pn, handle, truename, offset, useLineno);
 }
 
@@ -341,17 +341,17 @@ string SourceFileInfo_O::sourceDebugNamestring() const {
 }
 
 string SourceFileInfo_O::fileName() const {
-  Str_sp s = af_fileNamestring(this->_pathname);
+  Str_sp s = cl__file_namestring(this->_pathname);
   return s->get();
 }
 
 string SourceFileInfo_O::namestring() const {
-  Str_sp s = cl_namestring(this->_pathname);
+  Str_sp s = cl__namestring(this->_pathname);
   return s->get();
 }
 
 string SourceFileInfo_O::parentPathName() const {
-  Str_sp s = af_directoryNamestring(this->_pathname);
+  Str_sp s = cl__directory_namestring(this->_pathname);
   return s->get();
 }
 
@@ -424,10 +424,10 @@ void SourcePosInfo_O::exposePython(core::Lisp_sp lisp) {
 #endif
 }
 
-#define ARGS_af_dumpSourceManager "(dumpAll)"
-#define DECL_af_dumpSourceManager ""
-#define DOCS_af_dumpSourceManager "dumpSourceManager"
-void af_dumpSourceManager(T_sp dumpAll) {
+#define ARGS_core__dump_source_manager "(dumpAll)"
+#define DECL_core__dump_source_manager ""
+#define DOCS_core__dump_source_manager "dumpSourceManager"
+void core__dump_source_manager(T_sp dumpAll) {
   _G();
   if (_lisp->sourceDatabase().notnilp()) {
     _lisp->print(BF("Source Manager entries: %d\n") % gc::As<SourceManager_sp>(_lisp->sourceDatabase())->_SourcePosInfo->size());
@@ -442,10 +442,10 @@ void af_dumpSourceManager(T_sp dumpAll) {
 
 EXPOSE_CLASS(core, SourceManager_O);
 
-#define ARGS_af_makeSourceManager "()"
-#define DECL_af_makeSourceManager ""
-#define DOCS_af_makeSourceManager "makeSourceManager"
-SourceManager_sp af_makeSourceManager() {
+#define ARGS_core__make_source_manager "()"
+#define DECL_core__make_source_manager ""
+#define DOCS_core__make_source_manager "makeSourceManager"
+SourceManager_sp core__make_source_manager() {
   _G();
   SourceManager_sp sm = SourceManager_O::create();
   return sm;
@@ -455,8 +455,8 @@ void SourceManager_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<SourceManager_O>();
 
   SYMBOL_EXPORT_SC_(CorePkg, lookupSourceFileInfo);
-  Defun(dumpSourceManager);
-  Defun(makeSourceManager);
+  Core_temp_Defun(dump_source_manager);
+  Core_temp_Defun(make_source_manager);
   CoreDefun(sourceFileInfo);
 }
 
@@ -488,7 +488,7 @@ T_sp SourceManager_O::registerSourceInfo(T_sp key,
   if (_sym_STARmonitorRegisterSourceInfoSTAR->symbolValue().notnilp()) {
     printf("%s:%d  registerSourceInfo  sourceFile: %s:%d:%d  --> %s\n", __FILE__, __LINE__, sourceFile->__repr__().c_str(), lineno, column, _rep_(key).c_str());
     printf("%s:%d        *source-database* =\n", __FILE__, __LINE__);
-    af_dumpSourceManager(_lisp->_true());
+    core__dump_source_manager(_lisp->_true());
   }
 
   if (this->availablep()) {
@@ -502,7 +502,7 @@ T_sp SourceManager_O::registerSourceInfo(T_sp key,
 
 T_sp SourceManager_O::registerSourcePosInfo(T_sp obj, SourcePosInfo_sp info) {
   _G();
-  if (this->availablep() && !cl_atom(obj)) {
+  if (this->availablep() && !cl__atom(obj)) {
     this->_SourcePosInfo->setf_gethash(obj, info);
     return info;
   }
@@ -546,9 +546,9 @@ T_sp SourceManager_O::duplicateSourcePosInfo(T_sp orig_obj, T_sp new_obj, T_sp m
 void SourceManager_O::dump() {
   T_sp stream = cl::_sym_STARstandard_outputSTAR->symbolValue();
   this->_SourcePosInfo->maphash([this, &stream](T_sp k, T_sp v) {
-		cl_print(k,stream);
+		cl__print(k,stream);
 		clasp_write_string(" --> ",stream);
-		cl_print(v,stream);
+		cl__print(v,stream);
 		clasp_terpri(stream);
   });
 }

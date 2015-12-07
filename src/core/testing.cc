@@ -70,10 +70,10 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-#define ARGS_af_isString "(arg)"
-#define DECL_af_isString ""
-#define DOCS_af_isString "isString"
-void af_isString(T_sp arg) {
+#define ARGS_core__is_string "(arg)"
+#define DECL_core__is_string ""
+#define DOCS_core__is_string "isString"
+void core__is_string(T_sp arg) {
   _G();
   if (Str_sp s = arg.asOrNull<Str_O>()) {
     printf("The object |%s| is a string\n", s->get().c_str());
@@ -82,10 +82,10 @@ void af_isString(T_sp arg) {
   }
 };
 
-#define ARGS_af_isArray "(arg)"
-#define DECL_af_isArray ""
-#define DOCS_af_isArray "isArray"
-void af_isArray(T_sp arg) {
+#define ARGS_core__is_array "(arg)"
+#define DECL_core__is_array ""
+#define DOCS_core__is_array "isArray"
+void core__is_array(T_sp arg) {
   _G();
   if (Array_sp s = arg.asOrNull<Array_O>()) {
     printf("The object |%s| is an array\n", _rep_(s).c_str());
@@ -94,10 +94,10 @@ void af_isArray(T_sp arg) {
   }
 };
 
-#define ARGS_af_testVal "(arg)"
-#define DECL_af_testVal ""
-#define DOCS_af_testVal "testVal"
-T_sp af_testVal(T_sp v) {
+#define ARGS_core__test_val "(arg)"
+#define DECL_core__test_val ""
+#define DOCS_core__test_val "testVal"
+T_sp core__test_val(T_sp v) {
   _G();
   if (v.fixnump()) { // Fixnum_sp fn = v.asOrNull<Fixnum_O>() ) {
     return Str_O::create("val is fixnum");
@@ -110,11 +110,11 @@ T_sp af_testVal(T_sp v) {
 
 void initialize_testing() {
   SYMBOL_EXPORT_SC_(CorePkg, isString);
-  Defun(isString);
+  Core_temp_Defun(is_string);
   SYMBOL_EXPORT_SC_(CorePkg, isArray);
-  Defun(isArray);
+  Core_temp_Defun(is_array);
   SYMBOL_EXPORT_SC_(CorePkg, testVal);
-  Defun(testVal);
+  Core_temp_Defun(test_val);
 }
 
 }; /* core */

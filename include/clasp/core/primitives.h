@@ -35,17 +35,17 @@ THE SOFTWARE.
 
 namespace core {
 
-extern T_sp cl_macroFunction(Symbol_sp symbol, T_sp env);
+extern T_sp cl__macro_function(Symbol_sp symbol, T_sp env);
 extern T_mv core_separatePairList(List_sp listOfPairs);
 
 extern Symbol_mv core_functionBlockName(T_sp functionName);
 
 //extern void af_ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llh);
 
-extern T_mv cl_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p);
+extern T_mv cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p);
 
-T_sp cl_read(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
-T_sp cl_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
+T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
+T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
 
 #if 0
     EXTERN_FN(read);
@@ -57,17 +57,17 @@ T_sp cl_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_
     EXTERN_GENERIC(reinitialize_instance);
 #endif
 
-T_sp cl_type_of(T_sp x);
-T_sp cl_notany(T_sp predicate, List_sp sequences);
-T_sp cl_every(T_sp predicate, List_sp sequences);
+T_sp cl__type_of(T_sp x);
+T_sp cl__notany(T_sp predicate, List_sp sequences);
+T_sp cl__every(T_sp predicate, List_sp sequences);
 
-T_sp cl_mapcar(T_sp func_desig, List_sp lists);
+T_sp cl__mapcar(T_sp func_desig, List_sp lists);
 
-List_sp cl_append(List_sp lists);
+List_sp cl__append(List_sp lists);
 
 //    Stream_mv af_open(T_sp filespec, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format );
 
-Symbol_mv cl_gensym(T_sp x);
+Symbol_mv cl__gensym(T_sp x);
 
 class SequenceStepper {
 public:
@@ -86,10 +86,10 @@ public:
   VectorStepper(Vector_sp domain) : _Domain(domain), _Index(0){};
   virtual bool advance() {
     this->_Index++;
-    return (this->_Index >= cl_length(this->_Domain));
+    return (this->_Index >= cl__length(this->_Domain));
   };
   virtual T_sp element() const {
-    if (this->_Index < cl_length(this->_Domain)) {
+    if (this->_Index < cl__length(this->_Domain)) {
       return this->_Domain->elt(this->_Index);
     } else {
       return _Nil<T_O>();
@@ -137,11 +137,11 @@ public:
 };
 
 namespace core {
-T_sp cl_mapc(T_sp op, List_sp lists);
-T_sp cl_mapcar(T_sp op, List_sp lists);
+T_sp cl__mapc(T_sp op, List_sp lists);
+T_sp cl__mapcar(T_sp op, List_sp lists);
 };
 
-CL_NAMESPACE namespace core {
+namespace core {
 
   LAMBDA(x y);
   DECLARE();

@@ -122,7 +122,7 @@ TRANSLATE(core::PosixTimeDuration_O);
 
 namespace core {
 
-T_sp cl_getInternalRealTime();
-T_sp cl_getInternalRunTime();
+T_sp cl__get_internal_real_time();
+T_sp cl__get_internal_run_time();
 };
 #endif //]

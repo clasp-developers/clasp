@@ -83,22 +83,22 @@ TRANSLATE(core::String_O);
 
 namespace core {
 
-Str_sp cl_string(T_sp str);
+Str_sp cl__string(T_sp str);
 
-Str_sp cl_string_upcase(T_sp arg);
-Str_sp cl_string_downcase(T_sp arg);
+Str_sp cl__string_upcase(T_sp arg);
+Str_sp cl__string_downcase(T_sp arg);
 
-claspChar cl_char(T_sp str, int idx);
+claspChar cl__char(T_sp str, int idx);
 
 bool clasp_memberChar(claspChar c, T_sp charBag);
 
-Str_sp cl_stringTrim(T_sp charbag, T_sp str);
-Str_sp cl_stringLeftTrim(T_sp charbag, T_sp str);
-Str_sp cl_stringRightTrim(T_sp charbag, T_sp str);
+Str_sp cl__string_trim(T_sp charbag, T_sp str);
+Str_sp cl__string_left_trim(T_sp charbag, T_sp str);
+Str_sp cl__string_right_trim(T_sp charbag, T_sp str);
 
- T_mv cl_parseInteger(Str_sp str, Fixnum start = 0, T_sp end = _Nil<T_O>(), uint radix = 10, T_sp junkAllowed = _Nil<T_O>());
+ T_mv cl__parse_integer(Str_sp str, Fixnum start = 0, T_sp end = _Nil<T_O>(), uint radix = 10, T_sp junkAllowed = _Nil<T_O>());
 
- T_sp cl_string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = make_fixnum(0), T_sp end1 = _Nil<T_O>(), Fixnum_sp start2 = make_fixnum(0), T_sp end2 = _Nil<T_O>());
+ T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = make_fixnum(0), T_sp end1 = _Nil<T_O>(), Fixnum_sp start2 = make_fixnum(0), T_sp end2 = _Nil<T_O>());
 
 
  void initialize_string();

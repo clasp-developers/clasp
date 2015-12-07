@@ -38,10 +38,10 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-#define ARGS_af_record_cons "(record key sub-key)"
-#define DECL_af_record_cons ""
-#define DOCS_af_record_cons "record_cons - see ECL helpfile.lsp>>record-cons"
-T_sp af_record_cons(List_sp record, T_sp key, T_sp sub_key) {
+#define ARGS_core__record_cons "(record key sub-key)"
+#define DECL_core__record_cons ""
+#define DOCS_core__record_cons "record_cons - see ECL helpfile.lsp>>record-cons"
+T_sp core__record_cons(List_sp record, T_sp key, T_sp sub_key) {
   _G();
   Cons_sp cons = Cons_O::create(key, sub_key);
   for (auto cur : coerce_to_list(record)) {
@@ -53,20 +53,20 @@ T_sp af_record_cons(List_sp record, T_sp key, T_sp sub_key) {
   return (_Nil<T_O>());
 }
 
-#define ARGS_af_record_field "(record key sub-key)"
-#define DECL_af_record_field ""
-#define DOCS_af_record_field "record_field see ecl>>helpfile.lsp>>record-field"
-T_sp af_record_field(List_sp record, T_sp key, T_sp sub_key) {
+#define ARGS_core__record_field "(record key sub-key)"
+#define DECL_core__record_field ""
+#define DOCS_core__record_field "record_field see ecl>>helpfile.lsp>>record-field"
+T_sp core__record_field(List_sp record, T_sp key, T_sp sub_key) {
   _G();
   List_sp cons = eval::funcall(_sym_record_cons, record, key, sub_key);
   ;
   return oCdr(cons);
 }
 
-#define ARGS_af_set_record_field "(record key sub-key value)"
-#define DECL_af_set_record_field ""
-#define DOCS_af_set_record_field "set_record_field"
-T_sp af_set_record_field(List_sp record, T_sp key, T_sp sub_key, Str_sp value) {
+#define ARGS_core__set_record_field "(record key sub-key value)"
+#define DECL_core__set_record_field ""
+#define DOCS_core__set_record_field "set_record_field"
+T_sp core__set_record_field(List_sp record, T_sp key, T_sp sub_key, Str_sp value) {
   _G();
   List_sp field = gc::As<List_sp>(eval::funcall(_sym_record_cons, record, key, sub_key));
   if (field.notnilp()) {
@@ -79,12 +79,12 @@ T_sp af_set_record_field(List_sp record, T_sp key, T_sp sub_key, Str_sp value) {
   return record;
 };
 
-#define ARGS_af_rem_record_field "(record key sub-key)"
-#define DECL_af_rem_record_field ""
-#define DOCS_af_rem_record_field "rem_record_field"
-T_sp af_rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
+#define ARGS_core__rem_record_field "(record key sub-key)"
+#define DECL_core__rem_record_field ""
+#define DOCS_core__rem_record_field "rem_record_field"
+T_sp core__rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
   _G();
-  List_sp x = af_record_cons(record, key, sub_key);
+  List_sp x = core__record_cons(record, key, sub_key);
   if (x.notnilp()) {
     List_sp output = _Nil<T_O>();
     for (auto cur : record) {
@@ -105,16 +105,16 @@ T_mv ext_annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value) {
   _G();
   HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
   List_sp record = coerce_to_list(dict->gethash(object, _Nil<T_O>()));
-  record = coerce_to_list(af_set_record_field(record, key, sub_key, value));
+  record = coerce_to_list(core__set_record_field(record, key, sub_key, value));
   T_sp result = dict->hash_table_setf_gethash(object, record);
   return (Values(result));
 };
 
-#define ARGS_af_ensure_documentation "(sub-key symbol value)"
-#define DECL_af_ensure_documentation ""
-#define DOCS_af_ensure_documentation "ensure_documentation"
+#define ARGS_core__ensure_documentation "(sub-key symbol value)"
+#define DECL_core__ensure_documentation ""
+#define DOCS_core__ensure_documentation "ensure_documentation"
 SYMBOL_EXPORT_SC_(ClPkg, documentation);
-void af_ensure_documentation(T_sp sub_key, Symbol_sp symbol, Str_sp value) {
+void core__ensure_documentation(T_sp sub_key, Symbol_sp symbol, Str_sp value) {
   _G();
   ext_annotate(symbol, cl::_sym_documentation, sub_key, value);
 };
@@ -122,17 +122,17 @@ void af_ensure_documentation(T_sp sub_key, Symbol_sp symbol, Str_sp value) {
 void initialize_documentation_primitives(Lisp_sp lisp) {
   _G();
   SYMBOL_SC_(CorePkg, record_cons);
-  Defun(record_cons);
+  Core_temp_Defun(record_cons);
   SYMBOL_SC_(CorePkg, record_field);
-  Defun(record_field);
+  Core_temp_Defun(record_field);
   SYMBOL_SC_(CorePkg, set_record_field);
-  Defun(set_record_field);
+  Core_temp_Defun(set_record_field);
   SYMBOL_SC_(CorePkg, rem_record_field);
-  Defun(rem_record_field);
+  Core_temp_Defun(rem_record_field);
   SYMBOL_EXPORT_SC_(ExtPkg, annotate);
   ExtDefun(annotate);
   SYMBOL_SC_(CorePkg, ensure_documentation);
-  Defun(ensure_documentation);
+  Core_temp_Defun(ensure_documentation);
   // TODO move help_file.dat definition somewhere better
   _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), Str_O::create("help_file.dat")));
   _sym_STARdocumentation_poolSTAR->exportYourself();

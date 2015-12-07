@@ -37,7 +37,7 @@ T_sp varArgsList(int numArgs, ...);
 T_sp core_startupImagePathname();
 T_mv core_loadBundle(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);
 
-T_mv af_implicit_compile_hook_default(T_sp form, T_sp env);
+T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env);
 
 void initialize_compiler_primitives(Lisp_sp lisp);
 };

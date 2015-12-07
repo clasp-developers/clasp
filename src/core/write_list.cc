@@ -119,7 +119,7 @@ void Cons_O::__write__(T_sp stream) const {
     x = oCdr(x);
     write_object(y, stream);
     /* FIXME! */
-    if (!x || cl_atom(x) ||
+    if (!x || cl__atom(x) ||
         (circle && will_print_as_hash(x))) {
       if (!x.nilp()) {
         clasp_write_char(' ', stream);

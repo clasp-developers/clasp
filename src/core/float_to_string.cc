@@ -110,7 +110,7 @@ core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
     T_sp s = eval::funcall(ext::_sym_float_infinity_string, number);
     return push_base_string(buffer_or_nil, s);
   }
-  base = cl_length(buffer_or_nil);
+  base = cl__length(buffer_or_nil);
   T_mv mv_exp = core_float_to_digits(buffer_or_nil, number, _Nil<T_O>(), _Nil<T_O>());
   T_sp exp = mv_exp;
   StrWithFillPtr_sp buffer = gc::As<StrWithFillPtr_sp>(mv_exp.second());

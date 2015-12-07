@@ -81,10 +81,10 @@ List_sp core_put_f(List_sp place, T_sp value, T_sp indicator) {
   return place;
 };
 
-#define ARGS_cl_getf "(plist indicator &optional default-value)"
-#define DECL_cl_getf ""
-#define DOCS_cl_getf "getf"
-T_sp cl_getf(List_sp plist, T_sp indicator, T_sp default_value) {
+LAMBDA(plist indicator &optional default-value);
+DECLARE();
+DOCSTRING("getf");
+CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
   _G();
   if (plist.nilp())
     return (default_value);
@@ -113,34 +113,34 @@ T_mv core_rem_f(List_sp plist, Symbol_sp indicator) {
   return (Values(tplist, _lisp->_false()));
 };
 
-#define ARGS_af_cons "(object1 object2)"
-#define DECL_af_cons ""
-#define DOCS_af_cons "cons"
-Cons_sp af_cons(T_sp obj1, T_sp obj2) {
+LAMBDA(object1 object2);
+DECLARE();
+DOCSTRING("cons");
+CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
   _G();
   ASSERTNOTNULL(obj1);
   ASSERTNOTNULL(obj2);
   return Cons_O::create(obj1, obj2);
 };
 
-#define ARGS_cl_rplaca "(c o)"
-#define DECL_cl_rplaca ""
-#define DOCS_cl_rplaca ""
-Cons_sp cl_rplaca(Cons_sp c, T_sp o) {
+LAMBDA(c o);
+DECLARE();
+DOCSTRING("");
+CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) {
   return c->rplaca(o);
 };
 
-#define ARGS_cl_rplacd "(c o)"
-#define DECL_cl_rplacd ""
-#define DOCS_cl_rplacd ""
-Cons_sp cl_rplacd(Cons_sp c, T_sp o) {
+LAMBDA(c o);
+DECLARE();
+DOCSTRING("");
+CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
   return c->rplacd(o);
 };
 
-#define ARGS_af_make_list "(osize &key initial_element)"
-#define DECL_af_make_list ""
-#define DOCS_af_make_list "make_list"
-List_sp af_make_list(Integer_sp osize, T_sp initial_element) {
+LAMBDA(osize &key initial_element);
+DECLARE();
+DOCSTRING("make_list");
+CL_DEFUN List_sp cl__make_list(Integer_sp osize, T_sp initial_element) {
   _G();
   int size = clasp_to_int(osize);
   if (size < 0) {
@@ -262,10 +262,10 @@ void Cons_O::appendInto(T_sp head, gctools::StackRootedPointerToSmartPtr<T_O> &t
 }
 #endif
 
-#define ARGS_af_append2 "(l1 l2)"
-#define DECL_af_append2 ""
-#define DOCS_af_append2 "append2 - append l2 to l1 by copying l1 and pointing the end of it to l2"
-T_sp af_append2(List_sp x, List_sp y) {
+#define ARGS_core__append2 "(l1 l2)"
+#define DECL_core__append2 ""
+#define DOCS_core__append2 "append2 - append l2 to l1 by copying l1 and pointing the end of it to l2"
+T_sp core__append2(List_sp x, List_sp y) {
   _G();
   return Cons_O::append(x, y);
 };
@@ -390,7 +390,7 @@ List_sp Cons_O::memberEq(T_sp item) const {
 
 List_sp Cons_O::memberEql(T_sp item) const {
   for (auto cur : (List_sp) this->asSmartPtr()) {
-    if (cl_eql(oCar(cur), item))
+    if (cl__eql(oCar(cur), item))
       return cur;
   }
   return _Nil<T_O>();
@@ -539,7 +539,7 @@ void Cons_O::archiveBase(ArchiveP node) {
   _G();
 #if 1
   if (node->saving()) {
-    af_stackMonitor(); // make sure the stack isn't exhausted.
+    core__stack_monitor(); // make sure the stack isn't exhausted.
     // Convert the the list that this Cons points to into a vector of elements where
     // the last element is the very last CDR
     T_sp cur = this->asSmartPtr();
@@ -598,11 +598,11 @@ bool Cons_O::equal(T_sp obj) const {
   if (!obj.consp())
     return false;
   List_sp other = obj;
-  if (!cl_equal(this->_Car, oCar(other)))
+  if (!cl__equal(this->_Car, oCar(other)))
     return false;
   T_sp this_cdr = this->_Cdr;
   T_sp other_cdr = oCdr(other);
-  return cl_equal(this_cdr, other_cdr);
+  return cl__equal(this_cdr, other_cdr);
 }
 
 bool Cons_O::equalp(T_sp obj) const {
@@ -611,11 +611,11 @@ bool Cons_O::equalp(T_sp obj) const {
   if (!obj.consp())
     return false;
   List_sp other = obj;
-  if (!cl_equalp(this->_Car, oCar(other)))
+  if (!cl__equalp(this->_Car, oCar(other)))
     return false;
   T_sp this_cdr = this->_Cdr;
   T_sp other_cdr = oCdr(other);
-  return cl_equalp(this_cdr, other_cdr);
+  return cl__equalp(this_cdr, other_cdr);
 }
 
 List_sp Cons_O::extend(List_sp rest) {
@@ -1143,8 +1143,8 @@ string Cons_O::__repr__() const {
 	if ( this->_FileName != other->_FileName ) return((false));
 	if ( this->_ParsePosLineNumber != other->_ParsePosLineNumber ) return((false));
 	if ( this->_ParsePosColumn != other->_ParsePosColumn ) return((false));
-	if ( !cl_equal(this->ocar(),other->ocar() ) ) return((false));
-	if ( !cl_equal(this->cdr(),other->cdr() ) ) return((false));
+	if ( !cl__equal(this->ocar(),other->ocar() ) ) return((false));
+	if ( !cl__equal(this->cdr(),other->cdr() ) ) return((false));
 	return((true));
     }
 #endif
@@ -1352,18 +1352,15 @@ void Cons_O::exposeCando(Lisp_sp lisp) {
       //        .def_raw("eval",&Cons_O::evaluateArgsAsExpression)
       ;
   SYMBOL_EXPORT_SC_(ClPkg, make_list);
-  Defun(make_list);
-  Defun(append2);
+  Core_temp_Defun(append2);
   SYMBOL_EXPORT_SC_(ClPkg, cons);
-  Defun(cons);
   SYMBOL_EXPORT_SC_(ClPkg, getf);
-  ClDefun(getf);
   SYMBOL_EXPORT_SC_(CorePkg, rem_f);
   CoreDefun(rem_f);
   SYMBOL_SC_(CorePkg, put_f);
   CoreDefun(put_f);
-  af_def(ClPkg, "rplaca", &cl_rplaca);
-  af_def(ClPkg, "rplacd", &cl_rplacd);
+  af_def(ClPkg, "rplaca", &cl__rplaca);
+  af_def(ClPkg, "rplacd", &cl__rplacd);
   af_def(ClPkg, "rest", &oCdr);
   af_def(ClPkg, "car", &oCar);
   af_def(ClPkg, "cdr", &oCdr);

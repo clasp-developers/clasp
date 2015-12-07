@@ -142,10 +142,10 @@ void create_source_main_host()
 {
   core::Cons_sp pts =
     core::Cons_O::createList(core::Cons_O::createList(core::Str_O::create("source-main:**;*.*"),
-                                                      cl_pathname(core::Str_O::create("app-resources:clasp;src;main;**;*.*")))
+                                                      cl__pathname(core::Str_O::create("app-resources:clasp;src;main;**;*.*")))
         /* ,  more here */
                        );
-af_pathnameTranslations(core::Str_O::create("source-main"), _lisp->_true(), pts);
+core__pathname_translations(core::Str_O::create("source-main"), _lisp->_true(), pts);
 }
 
 

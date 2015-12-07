@@ -129,23 +129,23 @@ struct _TRACE {
 #define ERROR_END_OF_FILE(st) ERROR(cl::_sym_endOfFile, core::lisp_createList(kw::_sym_stream, st))
 #define CLOSED_STREAM_ERROR(st) ERROR(core::_sym_closedStream, core::lisp_createList(kw::_sym_stream, st))
 
-#define READER_ERROR(_fmt_, _fmtArgs_, _stream_) af_readerError(__FILE__, __LINE__, INTERN(__FUNCTION__), _fmt_, _fmtArgs_, _stream_)
-#define PARSE_ERROR(_fmt_, _fmtArgs_) af_readerError(__FILE__, __LINE__, INTERN(__FUNCTION__), _fmt_, _fmtArgs_, _Nil<Stream_O>())
+#define READER_ERROR(_fmt_, _fmtArgs_, _stream_) cl__reader_error(__FILE__, __LINE__, INTERN(__FUNCTION__), _fmt_, _fmtArgs_, _stream_)
+#define PARSE_ERROR(_fmt_, _fmtArgs_) cl__reader_error(__FILE__, __LINE__, INTERN(__FUNCTION__), _fmt_, _fmtArgs_, _Nil<Stream_O>())
 
 #define PRINT_NOT_READABLE_ERROR(obj) ERROR(cl::_sym_printNotReadable, core::lisp_createList(kw::_sym_object, obj));
 #define CELL_ERROR(name) ERROR(cl::_sym_cellError, core::lisp_createList(kw::_sym_name, name))
 #define KEY_NOT_FOUND_ERROR(_key_) SIMPLE_ERROR(BF("Key %s not found") % _key_)
 #define CONTROL_ERROR() NO_INITIALIZERS_ERROR(cl::_sym_controlError);
 
-#define WRONG_TYPE_ARG(_datum_, _expectedType_) af_wrongTypeArgument(__FILE__, __LINE__, core::lisp_intern(__FUNCTION__, CurrentPkg), _datum_, _expectedType_)
+#define WRONG_TYPE_ARG(_datum_, _expectedType_) core__wrong_type_argument(__FILE__, __LINE__, core::lisp_intern(__FUNCTION__, CurrentPkg), _datum_, _expectedType_)
 
 #define ERROR_WRONG_TYPE_KEY_ARG(_fn_, _key_, _value_, _type_) af_wrongTypeKeyArg(__FILE__, __LINE__, _fn_, _key_, _value_, _type_)
 
 #define ERROR_WRONG_TYPE_ONLY_ARG(_fn_, _datum_, _expectedType_) af_wrongTypeOnlyArg(__FILE__, __LINE__, _fn_, _datum_, _expectedType_)
 
-#define ERROR_WRONG_TYPE_NTH_ARG(_fn_, _nth_, _datum_, _expectedType_) af_wrongTypeNthArg(__FILE__, __LINE__, _fn_, _nth_, _datum_, _expectedType_)
+#define ERROR_WRONG_TYPE_NTH_ARG(_fn_, _nth_, _datum_, _expectedType_) core__wrong_type_nth_arg(__FILE__, __LINE__, _fn_, _nth_, _datum_, _expectedType_)
 
-#define QERROR_WRONG_TYPE_NTH_ARG(_nth_, _datum_, _expectedType_) af_wrongTypeNthArg(__FILE__, __LINE__, core::lisp_intern(__FUNCTION__, CurrentPkg), _nth_, _datum_, _expectedType_)
+#define QERROR_WRONG_TYPE_NTH_ARG(_nth_, _datum_, _expectedType_) core__wrong_type_nth_arg(__FILE__, __LINE__, core::lisp_intern(__FUNCTION__, CurrentPkg), _nth_, _datum_, _expectedType_)
 
 #define ARITHMATIC_ERROR(_operation_, _operands_) ERROR(cl::_sym_arithmaticError, core::lisp_createList(kw::_sym_operation, _operation_, kw::_sym_operands, _operands_))
 
@@ -689,22 +689,22 @@ public:
   T_mv returnObject() { return this->_ReturnObject; };
 };
 
-void af_wrongTypeArgument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
+void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
 
 void af_wrongTypeKeyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp key, T_sp value, T_sp type);
 
-void af_wrongTypeNthArg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type);
+void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type);
 
 void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
 
-void af_wrongIndex(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int noninc_index);
+void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int noninc_index);
 
-void af_readerError(const string &sourceFile, uint lineno, Symbol_sp function,
+void cl__reader_error(const string &sourceFile, uint lineno, Symbol_sp function,
                     Str_sp fmt, List_sp fmtargs, T_sp stream = _Nil<T_O>());
 
 void assert_type_integer(T_sp p, int idx);
 
-T_sp af_signalSimpleError(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args);
+T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args);
 
 void FEerror(const string &fmt, int numArgs, ...);
 void FEtype_error_list(T_sp thing);

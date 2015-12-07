@@ -5,7 +5,7 @@
      #:*end-tag*
      #:buffer-stream
      #:buffer
-     #:search-for-tag
+     #:search-for-element
      #:skip-char
      #:search-for-character
      #:search-for-whitespace
@@ -13,7 +13,7 @@
      #:read-string-to-white-space
      #:next-tag-name
      #:read-string-to-tag
-     #:skip-tag
+     #:gather-source-files
      ))
 
 (defpackage "TAGS"

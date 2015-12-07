@@ -145,7 +145,7 @@ string ValueFrame_O::summaryOfContents() const {
     debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
   }
   for (int i = 0; i < this->_Objects.capacity(); ++i) {
-    if (debuggingInfo.notnilp() && (i < cl_length(gc::As<Vector_sp>(debuggingInfo)))) {
+    if (debuggingInfo.notnilp() && (i < cl__length(gc::As<Vector_sp>(debuggingInfo)))) {
       ss << _rep_(gc::As<Vector_sp>(debuggingInfo)->elt(i)) << " ";
     } else {
       ss << ":arg" << i << "@" << (void *)(&(this->operator[](i))) << " ";
@@ -155,7 +155,7 @@ string ValueFrame_O::summaryOfContents() const {
     } else if (!this->boundp_entry(i)) {
       ss << "!!UNBOUND!! ";
     } else {
-      if (af_activation_frame_p(this->operator[](i))) {
+      if (core__activation_frame_p(this->operator[](i))) {
         ss << "ActivationFrame@" << (void *)(&(this->operator[](i)));
       } else {
         ss << "-->" << _rep_(this->operator[](i)) << "  ";
@@ -194,7 +194,7 @@ T_sp &ValueFrame_O::lookupValueReference(int depth, int index) {
 
 void ValueFrame_O::fillRestOfEntries(int istart, List_sp values) {
   _G();
-  ASSERTF((istart + cl_length(values)) == this->length(), BF("Mismatch between size of ValueFrame[%d] and the number of entries[%d] that are about to fill it") % this->length() % (istart + cl_length(values)));
+  ASSERTF((istart + cl__length(values)) == this->length(), BF("Mismatch between size of ValueFrame[%d] and the number of entries[%d] that are about to fill it") % this->length() % (istart + cl__length(values)));
   int iend = this->length();
   ASSERT(values.consp());
   List_sp cur = values;
@@ -218,8 +218,8 @@ ValueFrame_sp ValueFrame_O::createForLambdaListHandler(LambdaListHandler_sp llh,
 
 ValueFrame_sp ValueFrame_O::create(List_sp values, T_sp parent) {
   _G();
-  ValueFrame_sp vf = ValueFrame_O::create(cl_length(values), parent);
-  //	vf->allocateStorage(cl_length(values));
+  ValueFrame_sp vf = ValueFrame_O::create(cl__length(values), parent);
+  //	vf->allocateStorage(cl__length(values));
   int idx = 0;
   for (auto cur : values) {
     vf->_Objects[idx] = oCar(cur);
@@ -230,8 +230,8 @@ ValueFrame_sp ValueFrame_O::create(List_sp values, T_sp parent) {
 
 ValueFrame_sp ValueFrame_O::createFromReversedCons(List_sp values, T_sp parent) {
   _G();
-  ValueFrame_sp vf = ValueFrame_O::create(cl_length(values), parent);
-  int len = cl_length(values);
+  ValueFrame_sp vf = ValueFrame_O::create(cl__length(values), parent);
+  int len = cl__length(values);
   //	vf->allocateStorage(len);
   int idx = len - 1;
   for (auto cur : values) {

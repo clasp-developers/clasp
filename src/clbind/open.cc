@@ -73,12 +73,12 @@ namespace {
   {
       IMPLEMENT_ME();
 #if 0
-      int args = cl_gettop(L);
+      int args = cl__gettop(L);
 
       if (args == 0 || args > 2)
       {
           cl_pushstring(L, "make_property() called with wrong number of arguments.");
-          cl_error(L);
+          cl__error(L);
       }
 
       if (args == 1)
@@ -100,7 +100,7 @@ namespace {
           "directly calling the base class __init() function. "
           "This error can be disabled by calling 'clbind::disable_super_deprecation()'."
       );
-      cl_error(L);
+      cl__error(L);
 
       return 0;
 #endif

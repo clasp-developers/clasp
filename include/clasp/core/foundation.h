@@ -203,6 +203,15 @@ typedef std::size_t class_id;
 #define CoreDefun(x) core::af_def(CorePkg, #x, &core_##x, ARGS_core_##x, DECL_core_##x, DOCS_core_##x, __FILE__, __LINE__);
 #define SocketsDefun(x) core::af_def(SocketsPkg, #x, &sockets_##x, ARGS_sockets_##x, DECL_sockets_##x, DOCS_sockets_##x, __FILE__, __LINE__);
 
+#define Cl_temp_Defun(x) core::af_def(CorePkg, "COMMON-LISP:" #x, &cl__##x, ARGS_cl__##x, DECL_cl__##x, DOCS_cl__##x, __FILE__, __LINE__);
+#define Comp_temp_Defun(x) core::af_def(CompPkg, #x, &comp__##x, ARGS_comp__##x, DECL_comp__##x, DOCS_comp__##x, __FILE__, __LINE__);
+#define Gctools_temp_Defun(x) core::af_def(GcToolsPkg, #x, &gctools__##x, ARGS_gctools__##x, DECL_gctools__##x, DOCS_gctools__##x, __FILE__, __LINE__);
+#define Ext_temp_Defun(x) core::af_def(ExtPkg, #x, &ext__##x, ARGS_ext__##x, DECL_ext__##x, DOCS_ext__##x, __FILE__, __LINE__);
+#define Clos_temp_Defun(x) core::af_def(ClosPkg, #x, &clos__##x, ARGS_clos__##x, DECL_clos__##x, DOCS_clos__##x, __FILE__, __LINE__);
+#define Core_temp_Defun(x) core::af_def(CorePkg, #x, &core__##x, ARGS_core__##x, DECL_core__##x, DOCS_core__##x, __FILE__, __LINE__);
+#define Sockets_temp_Defun(x) core::af_def(SocketsPkg, #x, &sockets__##x, ARGS_sockets__##x, DECL_sockets__##x, DOCS_sockets__##x, __FILE__, __LINE__);
+#define Llvmo_temp_Defun(x) core::af_def(LlvmoPkg, #x, &llvm_sys__##x, ARGS_llvm_sys__##x, DECL_llvm_sys__##x, DOCS_llvm_sys__##x, __FILE__, __LINE__);
+
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
 //#define DEFUN_EXPORT(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);

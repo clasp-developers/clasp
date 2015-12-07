@@ -46,24 +46,24 @@ namespace core {
 //    Symbol_sp 	_sym_nil;	// equivalent to _Nil<T_O>()
 //    Symbol_sp 	_sym_t;		// equivalent to _lisp->_true()
 
-#define ARGS_cl_symbolPlist "(sym)"
-#define DECL_cl_symbolPlist ""
-#define DOCS_cl_symbolPlist "Return the symbol plist"
-List_sp cl_symbolPlist(Symbol_sp sym) {
+LAMBDA(sym);
+DECLARE();
+DOCSTRING("Return the symbol plist");
+CL_DEFUN List_sp cl__symbol_plist(Symbol_sp sym) {
   if (sym.nilp()) {
     return _Nil<List_V>();
   };
   return sym->plist();
 }
 
-#define ARGS_cl_get "(sym indicator &optional default)"
-#define DECL_cl_get ""
-#define DOCS_cl_get "Return the symbol plist"
-T_sp cl_get(Symbol_sp sym, T_sp indicator, T_sp defval) {
+LAMBDA(sym indicator &optional default);
+DECLARE();
+DOCSTRING("Return the symbol plist");
+CL_DEFUN T_sp cl__get(Symbol_sp sym, T_sp indicator, T_sp defval) {
   if (sym.nilp()) {
-    return cl_getf(coerce_to_list(cl::_sym_nil), indicator, defval);
+    return cl__getf(coerce_to_list(cl::_sym_nil), indicator, defval);
   }
-  return cl_getf(sym->_PropertyList, indicator, defval);
+  return cl__getf(sym->_PropertyList, indicator, defval);
 }
 
 #define ARGS_core_setfSymbolPlist "(sym plist)"
@@ -87,28 +87,28 @@ T_sp core_putprop(Symbol_sp sym, T_sp val, T_sp indicator) {
   return val;
 }
 
-#define ARGS_af_boundp "(arg)"
-#define DECL_af_boundp ""
-#define DOCS_af_boundp "boundp"
-bool af_boundp(Symbol_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("boundp");
+CL_DEFUN bool cl__boundp(Symbol_sp arg) {
   _G();
   if (arg.nilp())
     return true;
   return arg->boundP();
 };
 
-#define ARGS_af_symbolPackage "(arg)"
-#define DECL_af_symbolPackage ""
-#define DOCS_af_symbolPackage "symbolPackage"
-T_sp af_symbolPackage(Symbol_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("symbolPackage");
+CL_DEFUN T_sp cl__symbol_package(Symbol_sp arg) {
   _G();
   return arg->homePackage();
 };
 
-#define ARGS_af_symbolFunction "(arg)"
-#define DECL_af_symbolFunction ""
-#define DOCS_af_symbolFunction "symbolFunction"
-Function_sp af_symbolFunction(Symbol_sp sym) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("symbolFunction");
+CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
   _G();
   if (!sym->fboundp()) {
     SIMPLE_ERROR(BF("No function bound to %s") % _rep_(sym));
@@ -116,36 +116,36 @@ Function_sp af_symbolFunction(Symbol_sp sym) {
   return sym->symbolFunction();
 };
 
-#define ARGS_af_symbolName "(arg)"
-#define DECL_af_symbolName ""
-#define DOCS_af_symbolName "symbolName"
-Str_sp af_symbolName(Symbol_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("symbolName");
+CL_DEFUN Str_sp cl__symbol_name(Symbol_sp arg) {
   _G();
   return arg->symbolName();
 }
 
-#define ARGS_af_symbolValue "(arg)"
-#define DECL_af_symbolValue ""
-#define DOCS_af_symbolValue "symbolValue"
-T_sp af_symbolValue(const Symbol_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("symbolValue");
+CL_DEFUN T_sp cl__symbol_value(const Symbol_sp arg) {
   if (!arg->boundP()) {
     SIMPLE_ERROR(BF("Symbol %s@%p is unbound") % _rep_(arg) % (void *)arg.raw_());
   }
   return arg->symbolValue();
 };
 
-#define ARGS_af_symbolValueAddress "(arg)"
-#define DECL_af_symbolValueAddress ""
-#define DOCS_af_symbolValueAddress "symbolValueAddress"
-T_sp af_symbolValueAddress(const Symbol_sp arg) {
+#define ARGS_core__symbol_value_address "(arg)"
+#define DECL_core__symbol_value_address ""
+#define DOCS_core__symbol_value_address "symbolValueAddress"
+T_sp core__symbol_value_address(const Symbol_sp arg) {
   _G();
   return Pointer_O::create(&arg->symbolValueRef());
 };
 
-#define ARGS_af_make_symbol "(name)"
-#define DECL_af_make_symbol ""
-#define DOCS_af_make_symbol "make_symbol"
-Symbol_mv af_make_symbol(Str_sp name) {
+LAMBDA(name);
+DECLARE();
+DOCSTRING("make_symbol");
+CL_DEFUN Symbol_mv cl__make_symbol(Str_sp name) {
   _G();
   Symbol_sp sym = Symbol_O::create(name->get());
   return (Values(sym));
@@ -259,7 +259,7 @@ Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
     new_symbol->_Function = this->_Function;
     new_symbol->_IsConstant = this->_IsConstant;
     new_symbol->_ReadOnlyFunction = this->_ReadOnlyFunction;
-    new_symbol->_PropertyList = cl_copyList(this->_PropertyList);
+    new_symbol->_PropertyList = cl__copy_list(this->_PropertyList);
   }
   return new_symbol;
 };
@@ -504,20 +504,12 @@ void Symbol_O::exposeCando(Lisp_sp lisp) {
            DECL_Symbol_O_copy_symbol,
            DOCS_Symbol_O_copy_symbol)
       SYMBOL_EXPORT_SC_(ClPkg, make_symbol);
-  Defun(make_symbol);
   SYMBOL_EXPORT_SC_(ClPkg, symbolName);
-  Defun(symbolName);
   SYMBOL_EXPORT_SC_(ClPkg, symbolValue);
-  Defun(symbolValueAddress);
-  Defun(symbolValue);
+  Core_temp_Defun(symbol_value_address);
   SYMBOL_EXPORT_SC_(ClPkg, symbolPackage);
-  Defun(symbolPackage);
   SYMBOL_EXPORT_SC_(ClPkg, symbolFunction);
-  Defun(symbolFunction);
   SYMBOL_EXPORT_SC_(ClPkg, boundp);
-  Defun(boundp);
-  ClDefun(symbolPlist);
-  ClDefun(get);
   CoreDefun(setfSymbolPlist);
   CoreDefun(putprop);
 }

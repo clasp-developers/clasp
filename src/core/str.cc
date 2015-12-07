@@ -54,10 +54,10 @@ string str_get(T_sp str) {
 T_sp str_create(const string &str) { return Str_O::create(str); };
 T_sp str_create(const char *str) { return Str_O::create(str); };
 
-#define ARGS_af_searchString "(str1 start1 end1 str2 start2 end2)"
-#define DECL_af_searchString ""
-#define DOCS_af_searchString "searchString"
-T_sp af_searchString(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_sp str2, Fixnum_sp start2, T_sp end2) {
+#define ARGS_core__search_string "(str1 start1 end1 str2 start2 end2)"
+#define DECL_core__search_string ""
+#define DOCS_core__search_string "searchString"
+T_sp core__search_string(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_sp str2, Fixnum_sp start2, T_sp end2) {
   _G();
   string s1 = str1->get().substr(unbox_fixnum(start1), end1.nilp() ? str1->get().size() : unbox_fixnum(gc::As<Fixnum_sp>(end1)));
   string s2 = str2->get().substr(unbox_fixnum(start2), end2.nilp() ? str2->get().size() : unbox_fixnum(gc::As<Fixnum_sp>(end2)));
@@ -164,7 +164,7 @@ void Str_O::exposeCando(Lisp_sp lisp) {
       ;
 
   SYMBOL_SC_(CorePkg, base_string_concatenate);
-  Defun(searchString);
+  Core_temp_Defun(search_string);
   core::af_def(CorePkg, "base_string_concatenate", &af_base_string_concatenate_, ARGS_af_base_string_concatenate_, DECL_af_base_string_concatenate_, DOCS_af_base_string_concatenate_);
 
 }
@@ -251,7 +251,7 @@ T_sp Str_O::aset_unsafe(int index, T_sp val) {
 
 T_sp Str_O::aref(List_sp indices) const {
   _OF();
-  ASSERTF(cl_length(indices) == 1, BF("Illegal index for string: %s") % _rep_(indices));
+  ASSERTF(cl__length(indices) == 1, BF("Illegal index for string: %s") % _rep_(indices));
   int index = unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices)));
   if (index < 0 || index >= this->size()) {
     SIMPLE_ERROR(BF("Index %d out of bounds - must be [0,%d)") % index % this->size());
@@ -261,7 +261,7 @@ T_sp Str_O::aref(List_sp indices) const {
 
 T_sp Str_O::setf_aref(List_sp indices_val) {
   _OF();
-  ASSERTF(cl_length(indices_val) == 2, BF("Illegal index/val for setf_aref of string: %s") % _rep_(indices_val));
+  ASSERTF(cl__length(indices_val) == 2, BF("Illegal index/val for setf_aref of string: %s") % _rep_(indices_val));
   int index = unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices_val)));
   return this->setf_elt(index, oCadr(indices_val));
 }
@@ -349,7 +349,7 @@ bool Str_O::eql_(T_sp obj) const {
 
 #if 0
 bool Str_O::equal(T_sp obj) const {
-  if (af_strP(obj)) {
+  if (core__str_p(obj)) {
     return this->eql_(obj);
   }
   return false;
@@ -360,7 +360,7 @@ void Str_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling()) {
     Fixnum hash = 5381;
     Fixnum c;
-    for (size_t i(0), iEnd(cl_length(this->asSmartPtr())); i < iEnd; ++i) {
+    for (size_t i(0), iEnd(cl__length(this->asSmartPtr())); i < iEnd; ++i) {
       c = this->operator[](i);
       hash = ((hash << 5) + hash) + c;
     }
@@ -856,7 +856,7 @@ void *Str_O::addressOfBuffer() const {
 void Str_O::fillInitialContents(T_sp seq) {
   if (Cons_sp cls = seq.asOrNull<Cons_O>()) {
     List_sp ls = cls;
-    if (cl_length(seq) != this->size())
+    if (cl__length(seq) != this->size())
       goto ERROR;
     size_t i = 0;
     for (auto cur : ls) {
@@ -880,7 +880,7 @@ void Str_O::fillInitialContents(T_sp seq) {
   }
   return;
 ERROR:
-  SIMPLE_ERROR(BF("There are %d elements in the :INITIAL-CONTENTS, but the %s length is %d") % cl_length(seq) % _rep_(seq->__class()->className()) % this->size());
+  SIMPLE_ERROR(BF("There are %d elements in the :INITIAL-CONTENTS, but the %s length is %d") % cl__length(seq) % _rep_(seq->__class()->className()) % this->size());
 }
 
 void Str_O::__write__(T_sp stream) const {

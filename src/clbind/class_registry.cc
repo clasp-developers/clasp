@@ -112,7 +112,7 @@ void ClassRegistry_O::exposePython(core::Lisp_sp lisp) {
             cl_rawset(L, -3);
 
             cl_pushstring(L, "__newindex");
-            cl_pushcclosure(L, &class_rep::cl_settable_dispatcher, 0);
+            cl_pushcclosure(L, &class_rep::cl__settable_dispatcher, 0);
             cl_rawset(L, -3);
 
             return clL_ref(L, CL_REGISTRYINDEX);
@@ -140,7 +140,7 @@ void ClassRegistry_O::exposePython(core::Lisp_sp lisp) {
             cl_rawset(L, -3);
 
             cl_pushstring(L, "__newindex");
-            cl_pushcclosure(L, &class_rep::cl_settable_dispatcher, 0);
+            cl_pushcclosure(L, &class_rep::cl__settable_dispatcher, 0);
             cl_rawset(L, -3);
 
             cl_pushstring(L, "__call");

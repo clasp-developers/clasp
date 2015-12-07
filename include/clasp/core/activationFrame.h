@@ -333,7 +333,7 @@ public:
 
   static FunctionFrame_sp create(List_sp args, T_sp parent) {
     _G();
-    FunctionFrame_sp vf(FunctionFrame_O::create(cl_length(args), parent));
+    FunctionFrame_sp vf(FunctionFrame_O::create(cl__length(args), parent));
     //	    vf->allocateStorage(args->length());
     int idx = 0;
     for (auto cur : args) {

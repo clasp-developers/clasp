@@ -1,11 +1,10 @@
 (in-package :cscrape)
 
-
-
 ;;; Everything necessary to run the preprocessor on one input file
 ;;; original - original compile command as a string
 ;;; cpp-name - namestring to write/read the preprocessed file to/from
 ;;; input - the original source input name
+
 (defclass compile-command ()
   ((original :initarg :original :accessor original)
    (parts :initarg :parts :accessor parts)
@@ -103,12 +102,22 @@
 
 (defclass buffer-stream ()
   ((buffer :initarg :buffer :accessor buffer)
+   (buffer-pathname :initarg :buffer-pathname :accessor buffer-pathname)
    (buffer-stream :initarg :buffer-stream :accessor buffer-stream)))
 
 (defun buffer-peek (bufs)
   (let* ((pos (file-position (buffer-stream bufs)))
          (epos (position #\newline (buffer bufs) :start pos :test #'char=)))
     (subseq (buffer bufs) pos (1- epos))))
+
+
+(defun buffer-peek-char (bufs)
+  (declare (optimize (debug 3)))
+  (let ((pos (file-position (buffer-stream bufs)))
+        (len (length (buffer bufs))))
+  (if (>= pos len)
+      nil
+      (elt (buffer bufs) pos))))
 
 (defun read-entire-file (cc)
   (format t "Scraping ~a~%" (cpp-name cc))
@@ -117,9 +126,16 @@
       (read-sequence data stream)
       (make-instance 'buffer-stream
                      :buffer data
+                     :buffer-pathname (pathname (input cc))
                      :buffer-stream (make-string-input-stream data)))))
 
-(defun search-for-tag (bufs tag)
+(defun peek-for-element (bufs tag end)
+  (let ((tag-pos (search tag (buffer bufs) :start2 (file-position (buffer-stream bufs)) :end2 end)))
+    (when tag-pos
+      (let ((next-pos (+ tag-pos (length tag))))
+        (values tag-pos next-pos)))))
+
+(defun search-for-element (bufs tag)
   (let ((tag-pos (search tag (buffer bufs) :start2 (file-position (buffer-stream bufs)))))
     (when tag-pos
       (let ((next-pos (+ tag-pos (length tag))))
@@ -129,9 +145,6 @@
 (defun skip-char (bufs)
   (read-char (buffer-stream bufs)))
 
-(defun skip-tag (bufs tag)
-  (search-for-tag bufs tag))
-
 (defun search-for-white-space (bufs)
   (declare (optimize (debug 3)))
   (let* ((start (file-position (buffer-stream bufs)))
@@ -140,11 +153,35 @@
       (file-position (buffer-stream bufs) (1+ ch-pos))
       ch-pos)))
 
+(defun skip-white-space (bufs)
+  (declare (optimize (debug 3)))
+  (let* ((start (file-position (buffer-stream bufs)))
+         (ch-pos (position-if (lambda (c) (not (or (char= c #\space) (char= c #\newline) (char= c #\tab)))) (buffer bufs) :start start)))
+    (when ch-pos
+      (file-position (buffer-stream bufs) ch-pos)
+      ch-pos)))
+
 (defun search-for-character (bufs ch)
   (let ((ch-pos (position ch (buffer bufs) :start (file-position (buffer-stream bufs)))))
     (when ch-pos
       (file-position (buffer-stream bufs) (1+ ch-pos))
       ch-pos)))
+
+(defun read-identifier (bufs)
+  "Read a C++ identifier, assume we start on the first char"
+  (with-output-to-string (sout)
+    (block done
+      (let ((first-char (buffer-peek-char bufs)))
+        (when (or (alpha-char-p first-char) (char= #\_ first-char))
+          (princ first-char sout)
+          (skip-char bufs)
+          (loop
+             (let ((next-char (buffer-peek-char bufs)))
+               (if (or (alphanumericp next-char) (char= #\_ next-char))
+                   (progn
+                     (princ next-char sout)
+                     (skip-char bufs))
+                   (return-from done nil)))))))))
 
 (defun read-string-to-character (bufs ch &optional keep-last-char)
   "Read up to the character and keep it if (keep-last-char)"
@@ -164,18 +201,11 @@
                       ch-pos)))
     (subseq (buffer bufs) start keep-to)))
 
-(defun next-tag-name (bufs)
-  (let ((tag-start (search-for-tag bufs *begin-tag*)))
-    (when tag-start
-      (skip-char bufs)
-      (let ((tag-kind-start (file-position (buffer-stream bufs)))
-            (tag-kind-end (search-for-white-space bufs)))
-        (let ((tag-name (subseq (buffer bufs) tag-kind-start tag-kind-end)))
-          tag-name)))))
+
 
 (defun read-string-to-tag (bufs tag)
   (let ((start (file-position (buffer-stream bufs)))
-        (end (search-for-tag bufs tag)))
+        (end (search-for-element bufs tag)))
     (subseq (buffer bufs) start end)))
 
 
@@ -185,20 +215,67 @@
         (funcall (tags:handler-code handler) bufs)
         (error 'tags:unknown-tag :tag tag))))
 
-(defun extract-all-tags (bufs)
+
+(defun namespace-recognizer (bufs tags)
+  "Recognize namespace name {"
   (declare (optimize (debug 3)))
-  (let (tags
-        (tag-handlers (tags:make-handler-hash-table)))
+  ;; Advance to after "namespace"
+  (let* ((pos (skip-white-space bufs))
+         (namespace-name (read-identifier bufs))
+         (pos2 (skip-white-space bufs))
+         (char2 (buffer-peek-char bufs)))
+    (declare (ignore pos pos2))
+    (when (and (char= char2 #\{) (not (string= namespace-name "")))
+      (push (make-instance 'tags:namespace-tag
+                           :namespace namespace-name
+                           :file (buffer-pathname bufs))
+            tags))
+    tags))
+
+(defparameter *tag-handlers* (tags:make-handler-hash-table))
+
+(defun begin-tag-recognizer (bufs tags)
+  (declare (optimize (debug 3)))
+  ;; Recognize BEGIN_TAGxxxx <tag info>
+  (let* ((pos (skip-white-space bufs))
+         (tag-name (read-string-to-white-space bufs))
+         (parsed (parse-tag bufs tag-name *tag-handlers*)))
+    (declare (ignore pos))
+    (when parsed
+      (push parsed tags)))
+  tags)
+
+;;; A list of (string . callback) pairs
+(defparameter *recognition-elements*
+  (list
+   (cons "namespace" #'namespace-recognizer)
+   (cons *begin-tag* #'begin-tag-recognizer)))
+
+
+(defun next-recognition-element (bufs)
+  (let (end-pos
+        nearest-pos
+        nearest-after-pos
+        nearest-element)
+    (dolist (rec-el *recognition-elements*)
+      (multiple-value-bind (pos after-pos)
+          (peek-for-element bufs (car rec-el) end-pos)
+        (when (and pos (or (null nearest-pos) (< pos nearest-pos)))
+          (setf nearest-pos pos
+                nearest-element rec-el
+                nearest-after-pos after-pos
+                end-pos pos))))
+    (values nearest-element nearest-pos nearest-after-pos)))
+
+(defun process-all-recognition-elements (bufs)
+  (declare (optimize (debug 3)))
+  (let (tags)
     (loop
-       (let ((next-tag (next-tag-name bufs)))
-         (unless next-tag
+       (multiple-value-bind (rec-el nearest-pos nearest-after-pos)
+           (next-recognition-element bufs)
+         (declare (ignore nearest-pos))
+         (unless rec-el
            (return (nreverse tags)))
-         (push (parse-tag bufs next-tag tag-handlers) tags)))))
+         (file-position (buffer-stream bufs) nearest-after-pos)
+         (setq tags (funcall (cdr rec-el) bufs tags))))))
 
-
-(defun read-all-tags-all-compile-commands (all-cc)
-  (loop for cc in all-cc
-     for bufs = (read-entire-file cc)
-     for tags = (extract-all-tags bufs)
-     do (interpret-tags tags)
-     nconc tags))

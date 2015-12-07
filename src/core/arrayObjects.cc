@@ -48,7 +48,7 @@ ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp init
   List_sp dim;
   if (dim_desig.nilp()) {
     dim = dim_desig;
-  } else if (cl_atom(dim_desig)) {
+  } else if (cl__atom(dim_desig)) {
     int idim = clasp_to_int(gc::As<Integer_sp>(dim_desig));
     dim = Cons_O::create(make_fixnum(idim));
   } else {
@@ -122,7 +122,7 @@ bool ArrayObjects_O::equalp(T_sp o) const {
         return false;
     }
     for (size_t i(0); i < size; ++i) {
-      if (!cl_equalp(this->rowMajorAref(i), other->rowMajorAref(i)))
+      if (!cl__equalp(this->rowMajorAref(i), other->rowMajorAref(i)))
         return false;
     }
     return true;
@@ -130,11 +130,11 @@ bool ArrayObjects_O::equalp(T_sp o) const {
   if (Vector_sp vec = o.asOrNull<Vector_O>()) {
     if (this->_Dimensions.size() != 1)
       return false;
-    if (this->_Dimensions[0] != cl_length(vec))
+    if (this->_Dimensions[0] != cl__length(vec))
       return false;
     size_t size = this->_Dimensions[0];
     for (int i(0); i < size; ++i) {
-      if (!cl_equalp(this->rowMajorAref(i), vec->aref_unsafe(i)))
+      if (!cl__equalp(this->rowMajorAref(i), vec->aref_unsafe(i)))
         return false;
     }
     return true;
@@ -211,7 +211,7 @@ T_sp ArrayObjects_O::setf_svref(int index, T_sp value) {
 LongLongInt ArrayObjects_O::setDimensions(List_sp dim, T_sp initialElement) {
   _OF();
   LongLongInt elements = 1;
-  int newRank = cl_length(dim);
+  int newRank = cl__length(dim);
   if (newRank >= CLASP_ARRAY_RANK_LIMIT) {
     SIMPLE_ERROR(BF("Maximum rank is %d") % CLASP_ARRAY_RANK_LIMIT);
   }

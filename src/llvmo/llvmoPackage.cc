@@ -93,7 +93,7 @@ namespace llvmo {
 #include <clasp/gctools/gc_interface.h>
 #undef NAMESPACE_llvmo
 
-CL_NAMESPACE namespace llvmo {
+namespace llvmo {
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
 

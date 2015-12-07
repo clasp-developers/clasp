@@ -863,7 +863,7 @@ public:
 TRANSLATE(core::GlueEnvironment_O);
 
 namespace core {
-T_sp af_environmentActivationFrame(T_sp env);
+T_sp core__environment_activation_frame(T_sp env);
 
 bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val);
 

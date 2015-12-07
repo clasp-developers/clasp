@@ -111,7 +111,7 @@ List_sp listOfClasses(VaList_sp vargs) {
   core::Cons_sp *cur = reinterpret_cast<core::Cons_sp *>(&list);
   for (int p = 0; p < nargs; ++p) {
     core::T_sp obj = T_sp((gc::Tagged)va_arg(cargs, T_O *));
-    core::Class_sp cobj = cl_classOf(obj);
+    core::Class_sp cobj = cl__class_of(obj);
     *cur = core::Cons_O::create(cobj, _Nil<core::T_O>());
     cur = reinterpret_cast<core::Cons_sp *>(&(*cur)->_Cdr);
   }
@@ -187,7 +187,7 @@ T_sp core_maybeExpandGenericFunctionArguments(T_sp args) {
         T_sp v(LCC_NEXT_ARG(vafirst, i));
         expanded = Cons_O::create(v, expanded);
       }
-      return cl_nreverse(expanded);
+      return cl__nreverse(expanded);
     } else {
       SIMPLE_ERROR(BF("Handle %s") % _rep_(first));
     }
@@ -336,10 +336,10 @@ LCC_RETURN notFuncallableDispatch(Instance_sp gf, VaList_sp vargs) {
   IMPLEMENT_MEF(BF("Implement notFuncallableDispatch"));
 }
 
-#define ARGS_af_clearGfunHash "(what)"
-#define DECL_af_clearGfunHash ""
-#define DOCS_af_clearGfunHash "See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the generic function call hashes selectively. If what=T then clear the hash completely.  If what=generic_function then clear only these entries."
-void af_clearGfunHash(T_sp what) {
+#define ARGS_core__clear_gfun_hash "(what)"
+#define DECL_core__clear_gfun_hash ""
+#define DOCS_core__clear_gfun_hash "See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the generic function call hashes selectively. If what=T then clear the hash completely.  If what=generic_function then clear only these entries."
+void core__clear_gfun_hash(T_sp what) {
   _G();
   ASSERT(_lisp->methodCachePtr());
   ASSERT(_lisp->slotCachePtr());
@@ -349,7 +349,7 @@ void af_clearGfunHash(T_sp what) {
 
 void initialize_genericFunction() {
   SYMBOL_SC_(ClosPkg, clearGfunHash);
-  Defun(clearGfunHash);
+  Core_temp_Defun(clear_gfun_hash);
   CoreDefun(maybeExpandGenericFunctionArguments);
 }
 };

@@ -201,7 +201,7 @@ T_sp core_startupImagePathname() {
   ss << strStage << "-" << strGc;
   ss << ":image.fasl";
   Str_sp spath = Str_O::create(ss.str());
-  Pathname_sp pn = cl_pathname(spath);
+  Pathname_sp pn = cl__pathname(spath);
   return pn;
 };
 
@@ -217,28 +217,28 @@ T_mv core_loadBundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_for
   scope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
   scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
-  Pathname_sp path = cl_pathname(pathDesig);
-  if (cl_probe_file(path).notnilp())
+  Pathname_sp path = cl__pathname(pathDesig);
+  if (cl__probe_file(path).notnilp())
     goto LOAD;
   path->_Type = Str_O::create("bundle");
-  if (cl_probe_file(path).notnilp())
+  if (cl__probe_file(path).notnilp())
     goto LOAD;
   path->_Type = Str_O::create("fasl");
-  if (cl_probe_file(path).notnilp())
+  if (cl__probe_file(path).notnilp())
     goto LOAD;
   path->_Type = Str_O::create("dylib");
-  if (cl_probe_file(path).notnilp())
+  if (cl__probe_file(path).notnilp())
     goto LOAD;
   path->_Type = Str_O::create("so");
-  if (cl_probe_file(path).notnilp())
+  if (cl__probe_file(path).notnilp())
     goto LOAD;
   SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
 LOAD:
-  Str_sp nameStr = cl_namestring(cl_probe_file(path));
+  Str_sp nameStr = cl__namestring(cl__probe_file(path));
   string name = nameStr->get();
 
   /* Look up the initialization function. */
-  string stem = cl_string_downcase(gc::As<Str_sp>(path->_Name))->get();
+  string stem = cl__string_downcase(gc::As<Str_sp>(path->_Name))->get();
   size_t dsp = 0;
   if ((dsp = stem.find("_dbg")) != string::npos)
     stem = stem.substr(0, dsp);
@@ -327,10 +327,10 @@ T_mv af_dlload(T_sp pathDesig) {
 }
 #endif
 
-#define ARGS_af_dlopen "(pathDesig)"
-#define DECL_af_dlopen ""
-#define DOCS_af_dlopen "dlopen - Open a dynamic library and return the handle. Returns (values returned-value error-message(or nil if no error))"
-T_mv af_dlopen(T_sp pathDesig) {
+#define ARGS_core__dlopen "(pathDesig)"
+#define DECL_core__dlopen ""
+#define DOCS_core__dlopen "dlopen - Open a dynamic library and return the handle. Returns (values returned-value error-message(or nil if no error))"
+T_mv core__dlopen(T_sp pathDesig) {
   _G();
   string lib_extension = ".dylib";
   int mode = RTLD_NOW | RTLD_LOCAL;
@@ -345,10 +345,10 @@ T_mv af_dlopen(T_sp pathDesig) {
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 }
 
-#define ARGS_af_dlsym "(handle name)"
-#define DECL_af_dlsym ""
-#define DOCS_af_dlsym "(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found."
-T_sp af_dlsym(T_sp ohandle, Str_sp name) {
+#define ARGS_core__dlsym "(handle name)"
+#define DECL_core__dlsym ""
+#define DOCS_core__dlsym "(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found."
+T_sp core__dlsym(T_sp ohandle, Str_sp name) {
   _G();
   void *handle = NULL;
   if (ohandle.nilp()) {
@@ -392,10 +392,10 @@ void core_callDlMainFunction(Pointer_sp addr) {
   (*mainFunctionPointer)(LCC_PASS_ARGS0_VA_LIST_INITFNPTR());
 }
 
-#define ARGS_af_dladdr "(addr)"
-#define DECL_af_dladdr ""
-#define DOCS_af_dladdr "(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)"
-T_mv af_dladdr(Integer_sp addr) {
+#define ARGS_core__dladdr "(addr)"
+#define DECL_core__dladdr ""
+#define DOCS_core__dladdr "(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)"
+T_mv core__dladdr(Integer_sp addr) {
   _G();
   uint64_t val = clasp_to_uint64(addr);
   void *ptr = (void *)val;
@@ -411,10 +411,10 @@ T_mv af_dladdr(Integer_sp addr) {
   }
 }
 
-#define ARGS_af_implicit_compile_hook_default "(form &optional environment)"
-#define DECL_af_implicit_compile_hook_default ""
-#define DOCS_af_implicit_compile_hook_default "implicit_compile_hook_default"
-T_mv af_implicit_compile_hook_default(T_sp form, T_sp env) {
+#define ARGS_compiler__implicit_compile_hook_default "(form &optional environment)"
+#define DECL_compiler__implicit_compile_hook_default ""
+#define DOCS_compiler__implicit_compile_hook_default "implicit_compile_hook_default"
+T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   _G();
   // Convert the form into a thunk and return like COMPILE does
   LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
@@ -437,7 +437,7 @@ T_mv af_implicit_compile_hook_default(T_sp form, T_sp env) {
 T_sp core_applysPerSecond(T_sp fn, List_sp args) {
   _G();
   LightTimer timer;
-  int nargs = cl_length(args);
+  int nargs = cl__length(args);
   ALLOC_STACK_VALUE_FRAME(frameImpl, frame, nargs);
   for (int pow = 0; pow < 16; ++pow) {
     int times = 1 << pow * 2;
@@ -508,7 +508,7 @@ namespace core {
     T_sp core_globalFuncallCyclesPerSecond(int stage, Symbol_sp fn, List_sp args )
     {_G();
         LightTimer timer;
-        int nargs = cl_length(args);
+        int nargs = cl__length(args);
         T_sp v1, v2, v3;
         T_O* rawArgs[64];
         int nargs = af_length(args);
@@ -545,7 +545,7 @@ namespace core {
                             break;
 
                         mv_FUNCALL(&result_mv,closure,
-                        int nargs = cl_length(args);
+                        int nargs = cl__length(args);
                         if ( stage>=3 ) { // This is expensive
                             ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
                             if ( stage>=4 ) {
@@ -581,7 +581,7 @@ namespace core {
 T_sp core_partialApplysPerSecond(int stage, T_sp fn, List_sp args) {
   _G();
   LightTimer timer;
-  int nargs = cl_length(args);
+  int nargs = cl__length(args);
   T_sp v1, v2, v3, v4;
   ALLOC_STACK_VALUE_FRAME(frameImpl, frame, nargs);
   for (int pow = 0; pow < 16; ++pow) {
@@ -601,7 +601,7 @@ T_sp core_partialApplysPerSecond(int stage, T_sp fn, List_sp args) {
         func = eval::lookupFunction(fn, _Nil<T_O>());
 #endif
         if (stage >= 2) {
-#if 0 // This is the fastest alternative I can think of relative to cl_length()
+#if 0 // This is the fastest alternative I can think of relative to cl__length()
                         int nargs;
                         if ( args.nilp() ) {
                             nargs = 0;
@@ -609,7 +609,7 @@ T_sp core_partialApplysPerSecond(int stage, T_sp fn, List_sp args) {
                             nargs = args->fastUnsafeLength();
                         }
 #else
-          int nargs = cl_length(args);
+          int nargs = cl__length(args);
 #endif
           if (stage >= 3) { // This is expensive
 #if 1 // heap based frame
@@ -1126,14 +1126,14 @@ T_mv core_progvFunction(List_sp symbols, List_sp values, Function_sp func) {
 void initialize_compiler_primitives(Lisp_sp lisp) {
   _G();
   //	SYMBOL_SC_(CorePkg,processDeclarations);
-  //	Defun(processDeclarations);
+  //	Core_temp_Defun(process_declarations);
   SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
   SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);
   SYMBOL_EXPORT_SC_(CompPkg, STARall_functions_for_one_compileSTAR);
-  af_def(CompPkg, "implicit_compile_hook_default", &af_implicit_compile_hook_default,
-         ARGS_af_implicit_compile_hook_default,
-         DECL_af_implicit_compile_hook_default,
-         DOCS_af_implicit_compile_hook_default);
+  af_def(CompPkg, "implicit_compile_hook_default", &compiler__implicit_compile_hook_default,
+         ARGS_compiler__implicit_compile_hook_default,
+         DECL_compiler__implicit_compile_hook_default,
+         DOCS_compiler__implicit_compile_hook_default);
   ASSERT(comp::_sym_implicit_compile_hook_default->symbolFunction().notnilp() && !comp::_sym_implicit_compile_hook_default->symbolFunction().unboundp());
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default->symbolFunction());
 
@@ -1143,15 +1143,15 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
 #endif
 
   SYMBOL_SC_(CorePkg, dlopen);
-  Defun(dlopen);
+  Core_temp_Defun(dlopen);
 
   SYMBOL_SC_(CorePkg, dlsym);
-  Defun(dlsym);
+  Core_temp_Defun(dlsym);
 
   CoreDefun(testTaggedCast);
 
   SYMBOL_SC_(CorePkg, dladdr);
-  Defun(dladdr);
+  Core_temp_Defun(dladdr);
   CoreDefun(callDlMainFunction);
   CoreDefun(funwind_protect);
 

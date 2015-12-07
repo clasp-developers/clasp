@@ -85,14 +85,14 @@ struct function_object_impl : function_object {
     }
 
     if (exception_caught)
-      cl_error(L);
+      cl__error(L);
 #else
     results = invoke(L, *impl, ctx, impl->f, Signature(), impl->policies);
 #endif
 
     if (!ctx) {
       ctx.format_error(L, impl);
-      cl_error(L);
+      cl__error(L);
     }
 
     return results;

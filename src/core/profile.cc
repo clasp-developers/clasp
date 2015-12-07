@@ -76,20 +76,20 @@ Bignum profilerTimeNs() {
   return mpz_ns;
 }
 
-#define ARGS_af_clock_gettime_nanoseconds "()"
-#define DECL_af_clock_gettime_nanoseconds ""
-#define DOCS_af_clock_gettime_nanoseconds "clock_gettime_nanoseconds"
-core::Bignum_mv af_clock_gettime_nanoseconds() {
+#define ARGS_core__clock_gettime_nanoseconds "()"
+#define DECL_core__clock_gettime_nanoseconds ""
+#define DOCS_core__clock_gettime_nanoseconds "clock_gettime_nanoseconds"
+core::Bignum_mv core__clock_gettime_nanoseconds() {
   _G();
   Bignum ns = profilerTimeNs();
   core::Bignum_sp bn = core::Bignum_O::create(ns);
   return (Values(bn));
 };
 
-#define ARGS_af_testProfileTimer "(delay)"
-#define DECL_af_testProfileTimer ""
-#define DOCS_af_testProfileTimer "testProfileTimer"
-core::Bignum_mv af_testProfileTimer(uint delay) {
+#define ARGS_core__test_profile_timer "(delay)"
+#define DECL_core__test_profile_timer ""
+#define DOCS_core__test_profile_timer "testProfileTimer"
+core::Bignum_mv core__test_profile_timer(uint delay) {
   _G();
   struct timespec start, stop;
   profilerReadClock(start);
@@ -173,9 +173,9 @@ void profiler_print(boost::format &fmt) {
 void initialize_profile() {
   _G();
   SYMBOL_SC_(CorePkg, clock_gettime_nanoseconds);
-  Defun(clock_gettime_nanoseconds);
+  Core_temp_Defun(clock_gettime_nanoseconds);
   SYMBOL_SC_(CorePkg, testProfileTimer);
-  Defun(testProfileTimer);
+  Core_temp_Defun(test_profile_timer);
 }
 
 void restart_profile() {

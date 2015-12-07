@@ -111,7 +111,7 @@ T_sp core_makeCxxObject(T_sp class_or_name, T_sp args) {
   } else if (class_or_name.nilp()) {
     goto BAD_ARG0;
   } else if (Symbol_sp name = class_or_name.asOrNull<Symbol_O>()) {
-    theClass = cl_findClass(name, true, _Nil<T_O>());
+    theClass = cl__find_class(name, true, _Nil<T_O>());
   } else {
     goto BAD_ARG0;
   }
@@ -147,17 +147,17 @@ T_sp core_printCxxObject(T_sp obj, T_sp stream) {
     Class_sp myclass = lisp_instance_class(obj);
     ASSERT(myclass);
     Symbol_sp className = myclass->name();
-    cl_prin1(className, stream);
+    cl__prin1(className, stream);
     core::List_sp alist = obj->encode();
     for (auto cur : alist) {
       Cons_sp entry = gc::As<Cons_sp>(oCar(cur));
       Symbol_sp key = gc::As<Symbol_sp>(oCar(entry));
       T_sp val = oCdr(entry);
       clasp_write_char(' ', stream);
-      cl_prin1(key, stream);
+      cl__prin1(key, stream);
       clasp_finish_output(stream);
       clasp_write_char(' ', stream);
-      cl_prin1(val, stream);
+      cl__prin1(val, stream);
     }
     clasp_write_char(' ', stream);
     clasp_write_char(')', stream);
@@ -168,10 +168,10 @@ T_sp core_printCxxObject(T_sp obj, T_sp stream) {
   return obj;
 }
 
-#define ARGS_af_lowLevelDescribe "(arg)"
-#define DECL_af_lowLevelDescribe ""
-#define DOCS_af_lowLevelDescribe "lowLevelDescribe"
-void af_lowLevelDescribe(T_sp obj) {
+#define ARGS_core__low_level_describe "(arg)"
+#define DECL_core__low_level_describe ""
+#define DOCS_core__low_level_describe "lowLevelDescribe"
+void core__low_level_describe(T_sp obj) {
   _G();
   if (obj.nilp()) {
     printf("NIL\n");
@@ -180,10 +180,10 @@ void af_lowLevelDescribe(T_sp obj) {
   obj->describe(_lisp->_true());
 };
 
-#define ARGS_af_copyTree "(arg)"
-#define DECL_af_copyTree ""
-#define DOCS_af_copyTree "copyTree"
-T_sp af_copyTree(T_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("copyTree");
+CL_DEFUN T_sp cl__copy_tree(T_sp arg) {
   _G();
   if (arg.nilp())
     return _Nil<T_O>();
@@ -193,75 +193,75 @@ T_sp af_copyTree(T_sp arg) {
   return arg;
 };
 
-#define ARGS_af_implementationClass "(arg)"
-#define DECL_af_implementationClass ""
-#define DOCS_af_implementationClass "implementationClass"
-T_sp af_implementationClass(T_sp arg) {
+#define ARGS_core__implementation_class "(arg)"
+#define DECL_core__implementation_class ""
+#define DOCS_core__implementation_class "implementationClass"
+T_sp core__implementation_class(T_sp arg) {
   _G();
   return lisp_static_class(arg);
 };
 
-#define ARGS_af_instanceClass "(arg)"
-#define DECL_af_instanceClass ""
-#define DOCS_af_instanceClass "instanceClass"
-Class_sp af_instanceClass(T_sp arg) {
+#define ARGS_core__instance_class "(arg)"
+#define DECL_core__instance_class ""
+#define DOCS_core__instance_class "instanceClass"
+Class_sp core__instance_class(T_sp arg) {
   _G();
   return lisp_instance_class(arg);
 };
 
-#define ARGS_af_classNameAsString "(arg)"
-#define DECL_af_classNameAsString ""
-#define DOCS_af_classNameAsString "classNameAsString"
-string af_classNameAsString(T_sp arg) {
+#define ARGS_core__class_name_as_string "(arg)"
+#define DECL_core__class_name_as_string ""
+#define DOCS_core__class_name_as_string "classNameAsString"
+string core__class_name_as_string(T_sp arg) {
   _G();
-  Class_sp c = af_instanceClass(arg);
+  Class_sp c = core__instance_class(arg);
   return c->name()->fullName();
 };
 
-#define ARGS_af_instanceSig "(arg)"
-#define DECL_af_instanceSig ""
-#define DOCS_af_instanceSig "instanceSig"
-T_sp af_instanceSig(T_sp obj) {
+#define ARGS_core__instance_sig "(arg)"
+#define DECL_core__instance_sig ""
+#define DOCS_core__instance_sig "instanceSig"
+T_sp core__instance_sig(T_sp obj) {
   _G();
   return obj->instanceSig();
 };
 
-#define ARGS_af_instanceSigSet "(arg)"
-#define DECL_af_instanceSigSet ""
-#define DOCS_af_instanceSigSet "instanceSigSet"
-T_sp af_instanceSigSet(T_sp arg) {
+#define ARGS_core__instance_sig_set "(arg)"
+#define DECL_core__instance_sig_set ""
+#define DOCS_core__instance_sig_set "instanceSigSet"
+T_sp core__instance_sig_set(T_sp arg) {
   _G();
   return arg->instanceSigSet();
 };
 
-#define ARGS_af_instanceSet "(obj idx val)"
-#define DECL_af_instanceSet ""
-#define DOCS_af_instanceSet "instanceSet - set the (idx) slot of (obj) to (val)"
-T_sp af_instanceSet(T_sp obj, int idx, T_sp val) {
+#define ARGS_core__instance_set "(obj idx val)"
+#define DECL_core__instance_set ""
+#define DOCS_core__instance_set "instanceSet - set the (idx) slot of (obj) to (val)"
+T_sp core__instance_set(T_sp obj, int idx, T_sp val) {
   _G();
   return obj->instanceSet(idx, val);
 };
 
-#define ARGS_af_instanceRef "(obj idx)"
-#define DECL_af_instanceRef ""
-#define DOCS_af_instanceRef "instanceRef - return the (idx) slot value of (obj)"
-T_sp af_instanceRef(T_sp obj, int idx) {
+#define ARGS_core__instance_ref "(obj idx)"
+#define DECL_core__instance_ref ""
+#define DOCS_core__instance_ref "instanceRef - return the (idx) slot value of (obj)"
+T_sp core__instance_ref(T_sp obj, int idx) {
   _G();
   return obj->instanceRef(idx);
 };
 
-#define ARGS_af_instancep "(obj)"
-#define DECL_af_instancep ""
-#define DOCS_af_instancep "instancep"
-T_sp af_instancep(T_sp obj) {
+#define ARGS_core__instancep "(obj)"
+#define DECL_core__instancep ""
+#define DOCS_core__instancep "instancep"
+T_sp core__instancep(T_sp obj) {
   _G();
   return obj->oinstancep();
 };
 
-#define ARGS_af_isNil "(arg)"
-#define DECL_af_isNil ""
-#define DOCS_af_isNil "isNil"
-bool af_isNil(T_sp arg) {
+#define ARGS_core__is_nil "(arg)"
+#define DECL_core__is_nil ""
+#define DOCS_core__is_nil "isNil"
+bool core__is_nil(T_sp arg) {
   _G();
   return arg.nilp();
 };
@@ -405,10 +405,10 @@ void	T_O::initialize_setOwner(T_sp obj)
 }
 #endif
 
-#define ARGS_af_slBoundp "(arg)"
-#define DECL_af_slBoundp ""
-#define DOCS_af_slBoundp "Return t if obj is equal to T_O::_class->unboundValue()"
-bool af_slBoundp(T_sp obj) {
+#define ARGS_core__sl_boundp "(arg)"
+#define DECL_core__sl_boundp ""
+#define DOCS_core__sl_boundp "Return t if obj is equal to T_O::_class->unboundValue()"
+bool core__sl_boundp(T_sp obj) {
   _G();
   //    bool boundp = (obj.get() != T_O::___staticClass->unboundValue().get());
   bool boundp = !obj.unboundp();
@@ -484,7 +484,7 @@ string T_O::descriptionNonConst() {
 bool T_O::isAssignableToByClassSymbol(Symbol_sp ancestorClassSymbol) const {
   T_sp ancestorClass = eval::funcall(cl::_sym_findClass, ancestorClassSymbol, _lisp->_true());
   Class_sp myClass = this->__class();
-  bool b = af_subclassp(myClass, ancestorClass);
+  bool b = core__subclassp(myClass, ancestorClass);
   return b;
 }
 
@@ -541,30 +541,29 @@ T_sp core_deepCopy(T_sp obj) {
 
 void T_O::exposeCando(core::Lisp_sp lisp) {
   class_<T_O> ot;
-  Defun(lowLevelDescribe);
+  Core_temp_Defun(low_level_describe);
   SYMBOL_SC_(CorePkg, slBoundp);
-  Defun(slBoundp);
+  Core_temp_Defun(sl_boundp);
   CoreDefun(deepCopy);
   SYMBOL_SC_(CorePkg, isNil);
-  Defun(isNil);
+  Core_temp_Defun(is_nil);
   SYMBOL_SC_(CorePkg, instanceRef);
-  Defun(instanceRef);
+  Core_temp_Defun(instance_ref);
   SYMBOL_SC_(CorePkg, instanceSet);
-  Defun(instanceSet);
+  Core_temp_Defun(instance_set);
   SYMBOL_SC_(CorePkg, instancep);
-  Defun(instancep);
+  Core_temp_Defun(instancep);
   SYMBOL_SC_(CorePkg, instanceSigSet);
-  Defun(instanceSigSet);
+  Core_temp_Defun(instance_sig_set);
   SYMBOL_SC_(CorePkg, instanceSig);
-  Defun(instanceSig);
+  Core_temp_Defun(instance_sig);
   SYMBOL_EXPORT_SC_(CorePkg, instanceClass);
-  Defun(instanceClass);
+  Core_temp_Defun(instance_class);
   SYMBOL_EXPORT_SC_(CorePkg, implementationClass);
-  Defun(implementationClass);
+  Core_temp_Defun(implementation_class);
   SYMBOL_EXPORT_SC_(CorePkg, classNameAsString);
-  Defun(classNameAsString);
+  Core_temp_Defun(class_name_as_string);
   SYMBOL_EXPORT_SC_(ClPkg, copyTree);
-  Defun(copyTree);
   CoreDefun(encode);
   CoreDefun(decode);
 };
@@ -660,13 +659,9 @@ EXPOSE_CLASS(core, T_O);
 
 void initialize_object() {
   SYMBOL_EXPORT_SC_(ClPkg, eq);
-  ClDefun(eq);
   SYMBOL_EXPORT_SC_(ClPkg, eql);
-  ClDefun(eql);
   SYMBOL_EXPORT_SC_(ClPkg, equal);
-  ClDefun(equal);
   SYMBOL_EXPORT_SC_(ClPkg, equalp);
-  ClDefun(equalp);
   CoreDefun(printCxxObject);
   CoreDefun(makeCxxObject);
   CoreDefun(fieldsp);

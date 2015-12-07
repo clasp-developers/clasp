@@ -60,12 +60,12 @@ void multipleValuesSaveToVector(T_mv values, VectorObjects_sp save) {
 }
 
 T_mv multipleValuesLoadFromVector(VectorObjects_sp load) {
-  if (cl_length(load) > 0) {
-    T_mv mvn(load->operator[](0), cl_length(load));
+  if (cl__length(load) > 0) {
+    T_mv mvn(load->operator[](0), cl__length(load));
     core::MultipleValues &mv = lisp_multipleValues();
     SUPPRESS_GC();
     int i(0);
-    int iEnd(cl_length(load));
+    int iEnd(cl__length(load));
     mv.setSize(iEnd);
     for (; i < iEnd; ++i) {
       mv.valueSet(i, load->operator[](i));
@@ -80,7 +80,7 @@ T_mv multipleValuesLoadFromVector(VectorObjects_sp load) {
 }; /* core */
 
 core::T_mv ValuesFromCons(core::List_sp vals) {
-  size_t len = cl_length(vals);
+  size_t len = cl__length(vals);
   if (len == 0) {
     return core::T_mv(_Nil<core::T_O>(), 0);
   }
@@ -90,7 +90,7 @@ core::T_mv ValuesFromCons(core::List_sp vals) {
   me.setSize(0);
   for (auto cur : (core::List_sp)oCdr(vals)) {
     if (i >= core::MultipleValues::MultipleValuesLimit) {
-      SIMPLE_ERROR(BF("Overflow when returning multiple values - only %d are supported and you tried to return %d values") % core::MultipleValues::MultipleValuesLimit % cl_length(vals));
+      SIMPLE_ERROR(BF("Overflow when returning multiple values - only %d are supported and you tried to return %d values") % core::MultipleValues::MultipleValuesLimit % cl__length(vals));
     }
     core::T_sp obj = oCar(cur);
     me.valueSet(i, obj);

@@ -66,10 +66,10 @@ T_sp clos_setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   SIMPLE_ERROR(BF("You can only setFuncallableInstanceFunction on instances - you tried to set it on a: %s") % _rep_(obj));
 };
 
-#define ARGS_af_instanceClassSet "(instance func)"
-#define DECL_af_instanceClassSet ""
-#define DOCS_af_instanceClassSet "instanceClassSet"
-T_sp af_instanceClassSet(T_sp obj, Class_sp mc) {
+#define ARGS_core__instance_class_set "(instance func)"
+#define DECL_core__instance_class_set ""
+#define DOCS_core__instance_class_set "instanceClassSet"
+T_sp core__instance_class_set(T_sp obj, Class_sp mc) {
   _G();
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->instanceClassSet(mc);
@@ -199,7 +199,7 @@ void Instance_O::exposeCando(core::Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
   ClosDefun(setFuncallableInstanceFunction);
   SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
-  Defun(instanceClassSet);
+  Core_temp_Defun(instance_class_set);
   CoreDefun(copyInstance);
 }
 
@@ -342,7 +342,7 @@ T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
     //	    this->_Entry = &slotWriterDispatch;
     //Instance_O::ensureClosure(&generic_function_dispatch);
     Instance_O::ensureClosure(&slotReaderDispatch);
-  } else if (!cl_functionp(functionOrT)) {
+  } else if (!cl__functionp(functionOrT)) {
     TYPE_ERROR(functionOrT, cl::_sym_function);
     //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
   } else {
@@ -369,7 +369,7 @@ bool Instance_O::equalp(T_sp obj) const {
     if (this->_Class != iobj->_Class)
       return false;
     for (int i(0), iEnd(this->_Slots.size()); i < iEnd; ++i) {
-      if (!cl_equalp(this->_Slots[i], iobj->_Slots[i])) {
+      if (!cl__equalp(this->_Slots[i], iobj->_Slots[i])) {
         return false;
       }
     }

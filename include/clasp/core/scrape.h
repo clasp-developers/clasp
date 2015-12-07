@@ -7,7 +7,6 @@
 #define DECLARE(...) BEGIN_TAG DECLARE_TAG ( :FILE __FILE__ :LINE __LINE__ :DECLARE #__VA_ARGS__ )
 #define CL_DEFUN BEGIN_TAG EXPOSE_FUNCTION ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_DEFMETHOD BEGIN_TAG EXPOSE_METHOD ( :FILE __FILE__ :LINE __LINE__ )
-#define CL_NAMESPACE BEGIN_TAG NAMESPACE_TAG
 #define SYMBOL_SC_(pkg,name) BEGIN_TAG SYMBOL_INTERNAL ( :PACKAGE #pkg :NAME #name )
 #define SYMBOL_EXPORT_SC_(pkg,name) BEGIN_TAG SYMBOL_EXTERNAL ( :PACKAGE #pkg :NAME #name )
 #define INTERN_(ns,name) BEGIN_TAG SYMBOL_INTERN ( :NAMESPACE #ns :NAME #name )
@@ -21,7 +20,6 @@
 #define DOCSTRING(...)
 #define DECLARE(...)
 #define CL_DEFUN
-#define CL_NAMESPACE
 #define SYMBOL_SC_(pkg,name)
 #define SYMBOL_EXPORT_SC_(pkg,name)
 #define INTERN_(ns,name) (ns::_sym_##name)

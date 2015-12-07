@@ -82,17 +82,17 @@ test_eq(struct cl_test *t, T_sp x) {
 
 static bool
 test_eql(struct cl_test *t, T_sp x) {
-  return cl_eql(t->item_compared, KEY(t, x));
+  return cl__eql(t->item_compared, KEY(t, x));
 }
 
 static bool
 test_equal(struct cl_test *t, T_sp x) {
-  return cl_equal(t->item_compared, KEY(t, x));
+  return cl__equal(t->item_compared, KEY(t, x));
 }
 
 static bool
 test_equalp(struct cl_test *t, T_sp x) {
-  return cl_equalp(t->item_compared, KEY(t, x));
+  return cl__equalp(t->item_compared, KEY(t, x));
 }
 
 static T_sp
@@ -151,10 +151,10 @@ setup_test(struct cl_test *t, T_sp item, T_sp test,
 //
 
 /*! Duplicated from ECL rassoc */
-#define ARGS_cl_rassoc "(item a-list &key test test-not key)"
-#define DECL_cl_rassoc ""
-#define DOCS_cl_rassoc "See CLHS rassoc"
-T_sp cl_rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_sp key) {
+LAMBDA(item a-list &key test test-not key);
+DECLARE();
+DOCSTRING("See CLHS rassoc");
+CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_sp key) {
   struct cl_test t;
   if (test.notnilp())
     test = coerce::functionDesignator(test);
@@ -178,10 +178,10 @@ T_sp cl_rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_sp key) {
   return a_list;
 }
 
-#define ARGS_cl_nth "(idx arg)"
-#define DECL_cl_nth ""
-#define DOCS_cl_nth "See CLHS nth"
-T_sp cl_nth(int idx, T_sp arg) {
+LAMBDA(idx arg);
+DECLARE();
+DOCSTRING("See CLHS nth");
+CL_DEFUN T_sp cl__nth(int idx, T_sp arg) {
   _G();
   if (arg.nilp())
     return _Nil<T_O>();
@@ -191,10 +191,10 @@ T_sp cl_nth(int idx, T_sp arg) {
   TYPE_ERROR(arg, cl::_sym_list);
 };
 
-#define ARGS_cl_nthcdr "(idx arg)"
-#define DECL_cl_nthcdr ""
-#define DOCS_cl_nthcdr "See CLHS nth"
-T_sp cl_nthcdr(int idx, T_sp arg) {
+LAMBDA(idx arg);
+DECLARE();
+DOCSTRING("See CLHS nth");
+CL_DEFUN T_sp cl__nthcdr(int idx, T_sp arg) {
   _G();
   if (arg.nilp())
     return arg;
@@ -204,10 +204,10 @@ T_sp cl_nthcdr(int idx, T_sp arg) {
   TYPE_ERROR(arg, cl::_sym_list);
 };
 
-#define ARGS_cl_copyList "(arg)"
-#define DECL_cl_copyList ""
-#define DOCS_cl_copyList "copyList"
-T_sp cl_copyList(T_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("copyList");
+CL_DEFUN T_sp cl__copy_list(T_sp arg) {
   _G();
   if (arg.nilp())
     return arg;
@@ -217,10 +217,10 @@ T_sp cl_copyList(T_sp arg) {
   TYPE_ERROR(arg, cl::_sym_list);
 };
 /*! Code translated from ecl_butlast */
-#define ARGS_af_butlast "(list &optional (n 1))"
-#define DECL_af_butlast ""
-#define DOCS_af_butlast "butlast"
-List_sp af_butlast(List_sp ll, Integer_sp in) {
+LAMBDA(list &optional (n 1));
+DECLARE();
+DOCSTRING("butlast");
+CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
   gc::Fixnum n = clasp_to_int(in);
   T_sp r;
   T_sp l = ll;
@@ -245,10 +245,10 @@ List_sp af_butlast(List_sp ll, Integer_sp in) {
     return head;
   }
 }
-#define ARGS_cl_nbutlast "(list &optional (n 1))"
-#define DECL_cl_nbutlast ""
-#define DOCS_cl_nbutlast "butlast"
-List_sp cl_nbutlast(List_sp l, Integer_sp in) {
+LAMBDA(list &optional (n 1));
+DECLARE();
+DOCSTRING("butlast");
+CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
   T_sp r;
   gc::Fixnum n = clasp_to_fixnum(in);
   if (clasp_unlikely(!cl_listp(l)))
@@ -273,10 +273,10 @@ CL_DEFUN T_sp cl__list(T_sp objects) {
   return objects;
 };
 
-#define ARGS_cl_listSTAR "(&rest objects)"
-#define DECL_cl_listSTAR ""
-#define DOCS_cl_listSTAR "list* see CLHS"
-T_sp cl_listSTAR(T_sp tobjects) {
+LAMBDA(&rest objects);
+DECLARE();
+DOCSTRING("list* see CLHS");
+CL_DEFUN T_sp cl__listSTAR(T_sp tobjects) {
   _G();
   T_sp objects = tobjects;
   if (objects.nilp()) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),_Nil<T_O>());
@@ -293,10 +293,10 @@ T_sp cl_listSTAR(T_sp tobjects) {
   return result.cons();
 }
 
-#define ARGS_cl_last "(list &optional (on 1))"
-#define DECL_cl_last ""
-#define DOCS_cl_last "last - see CLHS"
-T_sp cl_last(T_sp list, int n) {
+LAMBDA(list &optional (on 1));
+DECLARE();
+DOCSTRING("last - see CLHS");
+CL_DEFUN T_sp cl__last(T_sp list, int n) {
   if (list.nilp())
     return list;
   if (n < 0)
@@ -309,10 +309,10 @@ T_sp cl_last(T_sp list, int n) {
 
 /* Adapted from ECL list.d nconc function */
 
-#define ARGS_cl_nconc "(&rest lists)"
-#define DECL_cl_nconc ""
-#define DOCS_cl_nconc "tnconc"
-T_sp cl_nconc(List_sp lists) {
+LAMBDA(&rest lists);
+DECLARE();
+DOCSTRING("tnconc");
+CL_DEFUN T_sp cl__nconc(List_sp lists) {
   _G();
   T_sp head = _Nil<T_O>();
   T_sp tail = _Nil<T_O>();
@@ -322,7 +322,7 @@ T_sp cl_nconc(List_sp lists) {
     if (other.nilp()) {
       new_tail = tail;
     } else if (Cons_sp cother = other.asOrNull<Cons_O>()) {
-      new_tail = cl_last(cother, 1);
+      new_tail = cl__last(cother, 1);
     } else {
       if (oCdr(cur).notnilp()) {
         TYPE_ERROR_LIST(other);
@@ -344,27 +344,27 @@ T_sp clasp_nconc(T_sp l, T_sp y) {
     return y;
   }
   if (Cons_sp conslist = l.asOrNull<Cons_O>()) {
-    Cons_sp last = gc::As<Cons_sp>(cl_last(conslist, 1));
+    Cons_sp last = gc::As<Cons_sp>(cl__last(conslist, 1));
     last->rplacd(y);
     return conslist;
   }
   TYPE_ERROR(l, cl::_sym_list);
 }
 
-#define ARGS_af_revappend "(list tail)"
-#define DECL_af_revappend ""
-#define DOCS_af_revappend "revappend"
-T_sp af_revappend(List_sp list, T_sp tail) {
+LAMBDA(list tail);
+DECLARE();
+DOCSTRING("revappend");
+CL_DEFUN T_sp cl__revappend(List_sp list, T_sp tail) {
   _G();
   if (list.nilp())
     return (tail);
   return list.asCons()->revappend(tail);
 };
 
-#define ARGS_cl_nreconc "(list tail)"
-#define DECL_cl_nreconc ""
-#define DOCS_cl_nreconc "nreconc"
-T_sp cl_nreconc(List_sp list, T_sp tail) {
+LAMBDA(list tail);
+DECLARE();
+DOCSTRING("nreconc");
+CL_DEFUN T_sp cl__nreconc(List_sp list, T_sp tail) {
   _G();
   if (list.nilp())
     return (tail);
@@ -386,26 +386,15 @@ T_sp cl_nreconc(List_sp list, T_sp tail) {
 
 void initialize_list() {
   SYMBOL_EXPORT_SC_(ClPkg, revappend);
-  Defun(revappend);
   SYMBOL_EXPORT_SC_(ClPkg, nreconc);
-  ClDefun(nreconc);
   SYMBOL_EXPORT_SC_(ClPkg, list);
   SYMBOL_EXPORT_SC_(ClPkg, listSTAR);
-  ClDefun(listSTAR);
   SYMBOL_EXPORT_SC_(ClPkg, butlast);
-  Defun(butlast);
   SYMBOL_EXPORT_SC_(ClPkg, nbutlast);
-  ClDefun(nbutlast);
   SYMBOL_EXPORT_SC_(ClPkg, nth);
-  ClDefun(nth);
-  ClDefun(rassoc);
   SYMBOL_EXPORT_SC_(ClPkg, nthcdr);
-  ClDefun(nthcdr);
   SYMBOL_EXPORT_SC_(ClPkg, copyList);
-  ClDefun(copyList);
   SYMBOL_EXPORT_SC_(ClPkg, last);
-  ClDefun(last);
-  ClDefun(nconc);
 }
 
 #if 0

@@ -242,7 +242,7 @@ void dbg_hook(const char *error) {
   fflush(stdout);
   //	asm("int $3");
 
-  //	af_invokeInternalDebugger(_Nil<core::T_O>());
+  //	core__invoke_internal_debugger(_Nil<core::T_O>());
 }
 
 namespace core {
@@ -304,13 +304,13 @@ void lisp_pollSignals() {
       } catch (...) {
         throw;
       }
-      //    af_invokeInternalDebugger(_Nil<core::T_O>());
+      //    core__invoke_internal_debugger(_Nil<core::T_O>());
       printf("Resuming after Ctrl+C\n");
     } else if (signo == SIGCHLD) {
       //            printf("A child terminated\n");
     } else if (signo == SIGABRT) {
       printf("ABORT was called!!!!!!!!!!!!\n");
-      af_invokeInternalDebugger(_Nil<core::T_O>());
+      core__invoke_internal_debugger(_Nil<core::T_O>());
       //    core:eval::funcall(cl::_sym_break,core::Str_O::create("ABORT was called"));
     }
   }
@@ -412,10 +412,10 @@ bool lisp_search(T_sp seq, T_sp obj, int &index) {
     }
 #endif
 
-#define ARGS_af_lispifyName "(name)"
-#define DECL_af_lispifyName ""
-#define DOCS_af_lispifyName "lispifyName"
-Str_sp af_lispifyName(Str_sp name) {
+#define ARGS_core__lispify_name "(name)"
+#define DECL_core__lispify_name ""
+#define DOCS_core__lispify_name "lispifyName"
+Str_sp core__lispify_name(Str_sp name) {
   _G();
   ASSERT(name.notnilp());
   string lispified = lispify_symbol_name(name->get());
@@ -439,17 +439,17 @@ MultipleValues &lisp_callArgs() {
 void errorFormatted(boost::format fmt) {
   TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
   dbg_hook(fmt_str.c_str());
-  af_invokeInternalDebugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(_Nil<core::T_O>());
 }
 
 void errorFormatted(const string &msg) {
   dbg_hook(msg.c_str());
-  af_invokeInternalDebugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(_Nil<core::T_O>());
 }
 
 void errorFormatted(const char *msg) {
   dbg_hook(msg);
-  af_invokeInternalDebugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(_Nil<core::T_O>());
 }
 
 string lisp_currentPackageName() {
@@ -706,7 +706,7 @@ string _rep_(T_sp obj) {
 #if defined(USE_WRITE_OBJECT)
   T_sp sout = clasp_make_string_output_stream();
   write_object(obj, sout);
-  return cl_get_output_stream_string(sout).as<Str_O>()->get();
+  return cl__get_output_stream_string(sout).as<Str_O>()->get();
 #else
   if (obj.fixnump()) {
     stringstream ss;
@@ -877,7 +877,7 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args) {
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   Str_sp ss = Str_O::create(args);
-  Stream_sp str = cl_make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
+  Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
   Reader_sp reader = Reader_O::create(str);
   T_sp osscons = reader->primitive_read(true, _Nil<T_O>(), false);
   List_sp sscons = osscons;
@@ -891,7 +891,7 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   Str_sp ss = Str_O::create(declarestring);
-  Stream_sp str = cl_make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
+  Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
   Reader_sp reader = Reader_O::create(str);
   List_sp sscons = reader->primitive_read(true, _Nil<T_O>(), false);
   return sscons;
@@ -1788,6 +1788,6 @@ void InitPython_Foundation() {
 
 void initialize_foundation() {
 
-  Defun(lispifyName);
+  Core_temp_Defun(lispify_name);
 };
 };

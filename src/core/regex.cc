@@ -38,10 +38,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-#define ARGS_af_makeRegex "(regex-str)"
-#define DECL_af_makeRegex ""
-#define DOCS_af_makeRegex "makeRegex"
-Regex_sp af_makeRegex(const string &str) {
+#define ARGS_core__make_regex "(regex-str)"
+#define DECL_core__make_regex ""
+#define DOCS_core__make_regex "makeRegex"
+Regex_sp core__make_regex(const string &str) {
   _G();
   Regex_sp regex = Regex_O::make(str);
   return regex;
@@ -56,7 +56,7 @@ void Regex_O::exposeCando(core::Lisp_sp lisp) {
       .def("regexSedReplace", &Regex_O::regexSedReplace) // Need to rethink exposing this function so result is returned
       ;
   SYMBOL_EXPORT_SC_(CorePkg, makeRegex);
-  Defun(makeRegex);
+  Core_temp_Defun(make_regex);
 }
 
 void Regex_O::exposePython(core::Lisp_sp lisp) {

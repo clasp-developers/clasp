@@ -235,10 +235,10 @@ void handleArgumentHandlingExceptions(gctools::tagged_pointer<Closure> closure) 
   }
 }
 
-#define ARGS_cl_functionLambdaExpression "(fn)"
-#define DECL_cl_functionLambdaExpression ""
-#define DOCS_cl_functionLambdaExpression "functionLambdaExpression"
-T_mv cl_functionLambdaExpression(Function_sp fn) {
+LAMBDA(fn);
+DECLARE();
+DOCSTRING("functionLambdaExpression");
+CL_DEFUN T_mv cl__function_lambda_expression(Function_sp fn) {
   _G();
   List_sp code = _Nil<List_V>();
   if (gctools::tagged_pointer<InterpretedClosure> ic = fn->closure.asOrNull<InterpretedClosure>()) {
@@ -274,7 +274,6 @@ void Function_O::exposeCando(Lisp_sp lisp) {
       .def("core:function_docstring", &Function_O::docstring)
       .def("core:cleavir_ast", &Function_O::cleavir_ast)
       .def("core:setf_cleavir_ast", &Function_O::setf_cleavir_ast);
-  ClDefun(functionLambdaExpression);
   CoreDefun(functionSourcePosInfo);
   CoreDefun(setKind);
   CoreDefun(functionLambdaList);

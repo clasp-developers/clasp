@@ -38,12 +38,12 @@ inline claspCharacter unbox_character(Character_sp c) {
   return c.unsafe_character();
 };
 
-Str_sp cl_char_name(Character_sp och);
+Str_sp cl__char_name(Character_sp och);
 
 int clasp_string_case(Str_sp s);
 Fixnum clasp_digitp(int ch, int basis);
 
-bool af_standard_char_p(Character_sp ch);
+bool cl__standard_char_p(Character_sp ch);
 
 class Character_dummy_O : public T_O {
   LISP_BASE1(T_O);
@@ -183,7 +183,7 @@ struct to_object<char> {
 TRANSLATE(core::Character_O);
 
 namespace core {
-claspChar clasp_charCode(T_sp elt); // like ecl_char_code
+claspChar clasp_charCode(T_sp elt); // like ecl__char_code
 
 inline bool clasp_invalid_character_p(int c) {
   return (c <= 32) || (c == 127);

@@ -74,11 +74,11 @@ SMART(SpecialForm);
 SMART(Hierarchy);
 SMART(Environment);
 
-void af_stackMonitor();
+void core__stack_monitor();
 void af_stackSizeWarning(size_t size);
 
-List_sp cl_member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
-void af_invokeInternalDebugger(T_sp condition);
+List_sp cl__member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
+void core__invoke_internal_debugger(T_sp condition);
 
 class SymbolClassPair {
 public:
@@ -298,10 +298,10 @@ class Lisp_O {
   friend void define_base_class(Class_sp co, Class_sp cob, uint &classesUpdated);
   template <class oclass>
   friend BuiltInClass_sp hand_initialize_allocatable_class(uint &classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class);
-  friend T_sp af_put_sysprop(T_sp key, T_sp area, T_sp value);
-  friend T_mv af_get_sysprop(T_sp key, T_sp area);
+  friend T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value);
+  friend T_mv core__get_sysprop(T_sp key, T_sp area);
 
-  friend void af_clearGfunHash(T_sp what);
+  friend void core__clear_gfun_hash(T_sp what);
   //	/* disable scrape */ LISP_BASE1(T_O);
   //	/* disable scrape */ LISP_CLASS(core,CorePkg,Lisp_O,"Lisp");
 public:
@@ -1033,15 +1033,15 @@ public:
 
 namespace core {
 
-T_mv cl_macroexpand_1(T_sp form, T_sp env);
-T_mv cl_macroexpand(T_sp form, T_sp env);
+T_mv cl__macroexpand_1(T_sp form, T_sp env);
+T_mv cl__macroexpand(T_sp form, T_sp env);
 
-List_sp cl_assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
+List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
 
-Class_mv cl_findClass(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
-Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env);
+Class_mv cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
+Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool errorp, T_sp env);
 
-void cl_error(T_sp err, List_sp initializers);
+void cl__error(T_sp err, List_sp initializers);
 };
 
 //TRANSLATE(core::Lisp_O);

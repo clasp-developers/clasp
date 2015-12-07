@@ -48,10 +48,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_cl_renamePackage "(package new-name &optional nick-names)"
-#define DECL_cl_renamePackage ""
-#define DOCS_cl_renamePackage "renamePackage"
-Package_sp cl_renamePackage(T_sp pkg, T_sp newNameDesig, T_sp nickNameDesigs) {
+LAMBDA(package new-name &optional nick-names);
+DECLARE();
+DOCSTRING("renamePackage");
+CL_DEFUN Package_sp cl__rename_package(T_sp pkg, T_sp newNameDesig, T_sp nickNameDesigs) {
   _G();
   Package_sp package = coerce::packageDesignator(pkg);
   string newName = coerce::packageNameDesignator(newNameDesig);
@@ -71,37 +71,37 @@ Package_sp cl_renamePackage(T_sp pkg, T_sp newNameDesig, T_sp nickNameDesigs) {
   return package;
 };
 
-#define ARGS_cl_packageNicknames "(pkg)"
-#define DECL_cl_packageNicknames ""
-#define DOCS_cl_packageNicknames "packageNicknames"
-T_sp cl_packageNicknames(T_sp pkg) {
+LAMBDA(pkg);
+DECLARE();
+DOCSTRING("packageNicknames");
+CL_DEFUN T_sp cl__package_nicknames(T_sp pkg) {
   _G();
   Package_sp package = coerce::packageDesignator(pkg);
   return package->getNicknames();
 };
 
-#define ARGS_af_unintern "(symbol &optional (package *package*))"
-#define DECL_af_unintern ""
-#define DOCS_af_unintern "unintern"
-bool af_unintern(Symbol_sp sym, T_sp packageDesig) {
+LAMBDA(symbol &optional (package *package*));
+DECLARE();
+DOCSTRING("unintern");
+CL_DEFUN bool cl__unintern(Symbol_sp sym, T_sp packageDesig) {
   _G();
   Package_sp pkg = coerce::packageDesignator(packageDesig);
   return pkg->unintern(sym);
 };
 
-#define ARGS_cl_findSymbol "(sym &optional (package *package*))"
-#define DECL_cl_findSymbol ""
-#define DOCS_cl_findSymbol "findSymbol"
-T_mv cl_findSymbol(const string &symbolname, T_sp packageDesig) {
+LAMBDA(sym &optional (package *package*));
+DECLARE();
+DOCSTRING("findSymbol");
+CL_DEFUN T_mv cl__find_symbol(const string &symbolname, T_sp packageDesig) {
   _G();
   Package_sp package = coerce::packageDesignator(packageDesig);
   return package->findSymbol(symbolname);
 };
 
-#define ARGS_af_makePackage "(package-name &key nicknames (use (list \"CL\")))"
-#define DECL_af_makePackage ""
-#define DOCS_af_makePackage "make_package"
-T_mv af_makePackage(T_sp package_name_desig, List_sp nick_names, List_sp use_packages) {
+LAMBDA("package-name &key nicknames (use (list \"CL\"))");
+DECLARE();
+DOCSTRING("make_package");
+CL_DEFUN T_mv cl__make_package(T_sp package_name_desig, List_sp nick_names, List_sp use_packages) {
   _G();
   Str_sp package_name = coerce::stringDesignator(package_name_desig);
   list<string> lnn;
@@ -125,10 +125,10 @@ T_mv af_makePackage(T_sp package_name_desig, List_sp nick_names, List_sp use_pac
   __END_DOC
 */
 
-#define ARGS_cl_listAllPackages "()"
-#define DECL_cl_listAllPackages ""
-#define DOCS_cl_listAllPackages "listAllPackages"
-T_sp cl_listAllPackages() {
+LAMBDA();
+DECLARE();
+DOCSTRING("listAllPackages");
+CL_DEFUN T_sp cl__list_all_packages() {
   _G();
   List_sp packages = _Nil<List_V>();
   for (auto mi = _lisp->packages().begin(); mi != _lisp->packages().end(); mi++) {
@@ -145,10 +145,10 @@ T_sp cl_listAllPackages() {
   __END_DOC
 */
 
-#define ARGS_af_use_package "(packages-to-use-desig &optional (package-desig *package*))"
-#define DECL_af_use_package ""
-#define DOCS_af_use_package "SeeCLHS use-package"
-T_sp af_use_package(T_sp packages_to_use_desig, T_sp package_desig) {
+LAMBDA(packages-to-use-desig &optional (package-desig *package*));
+DECLARE();
+DOCSTRING("SeeCLHS use-package");
+CL_DEFUN T_sp cl__use_package(T_sp packages_to_use_desig, T_sp package_desig) {
   _G();
   List_sp packages_to_use = coerce::listOfPackageDesignators(packages_to_use_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
@@ -159,10 +159,10 @@ T_sp af_use_package(T_sp packages_to_use_desig, T_sp package_desig) {
   return _lisp->_true();
 }
 
-#define ARGS_cl_unuse_package "(packages-to-unuse-desig &optional (package-desig *package*))"
-#define DECL_cl_unuse_package ""
-#define DOCS_cl_unuse_package "SeeCLHS unuse-package"
-T_sp cl_unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig) {
+LAMBDA(packages-to-unuse-desig &optional (package-desig *package*));
+DECLARE();
+DOCSTRING("SeeCLHS unuse-package");
+CL_DEFUN T_sp cl__unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig) {
   _G();
   List_sp packages_to_unuse = coerce::listOfPackageDesignators(packages_to_unuse_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
@@ -173,10 +173,10 @@ T_sp cl_unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig) {
   return _lisp->_true();
 }
 
-#define ARGS_cl_delete_package "(packages-to-unuse-desig &optional (package-desig *package*))"
-#define DECL_cl_delete_package ""
-#define DOCS_cl_delete_package "SeeCLHS unuse-package"
-T_sp cl_delete_package(T_sp pobj) {
+LAMBDA(packages-to-unuse-desig &optional (package-desig *package*));
+DECLARE();
+DOCSTRING("SeeCLHS unuse-package");
+CL_DEFUN T_sp cl__delete_package(T_sp pobj) {
   T_sp hash, l;
   cl_index i;
   Package_sp pkg = coerce::packageDesignator(pobj);
@@ -192,11 +192,11 @@ T_sp cl_delete_package(T_sp pobj) {
   }
   for (auto pi : pkg->_UsingPackages) {
     if (pi.notnilp())
-      cl_unuse_package(pi, pkg);
+      cl__unuse_package(pi, pkg);
   }
   for (auto pi : pkg->_PackagesUsedBy) {
     if (pi.notnilp())
-      cl_unuse_package(pkg, pi);
+      cl__unuse_package(pkg, pi);
   }
 
   IMPLEMENT_MEF(BF("Finish implementing delete-package"));
@@ -208,13 +208,13 @@ T_sp cl_delete_package(T_sp pobj) {
         T_sp s = hash->hash.data[i].value;
         symbol_remove_package(s, p);
       }
-    cl_clrhash(p->pack.internal);
+    cl__clrhash(p->pack.internal);
     for (hash = p->pack.external, i = 0; i < hash->hash.size; i++)
       if (hash->hash.data[i].key != OBJNULL) {
         T_sp s = hash->hash.data[i].value;
         symbol_remove_package(s, p);
       }
-    cl_clrhash(p->pack.external);
+    cl__clrhash(p->pack.external);
     p->pack.shadowings = ECL_NIL;
     p->pack.name = ECL_NIL;
                 /* 2) Only at the end, remove the package from the list of packages. */
@@ -224,10 +224,10 @@ T_sp cl_delete_package(T_sp pobj) {
 #endif
 }
 
-#define ARGS_af_package_shadowing_symbols "(package_desig)"
-#define DECL_af_package_shadowing_symbols ""
-#define DOCS_af_package_shadowing_symbols "See CLHS package_shadowing_symbols"
-T_sp af_package_shadowing_symbols(T_sp package_desig) {
+LAMBDA(package_desig);
+DECLARE();
+DOCSTRING("See CLHS package_shadowing_symbols");
+CL_DEFUN T_sp cl__package_shadowing_symbols(T_sp package_desig) {
   _G();
   Package_sp package = coerce::packageDesignator(package_desig);
   return package->shadowingSymbols();
@@ -240,10 +240,10 @@ T_sp af_package_shadowing_symbols(T_sp package_desig) {
   Import the symbols into the (package) or the current package.
   __END_DOC
 */
-#define ARGS_af_import "(symbols-desig &optional (package-desig *package*))"
-#define DECL_af_import ""
-#define DOCS_af_import "See CLHS: import"
-T_mv af_import(T_sp symbols_desig, T_sp package_desig) {
+LAMBDA(symbols-desig &optional (package-desig *package*));
+DECLARE();
+DOCSTRING("See CLHS: import");
+CL_DEFUN T_mv cl__import(T_sp symbols_desig, T_sp package_desig) {
   _G();
   List_sp symbols = coerce::listOfSymbols(symbols_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
@@ -251,10 +251,10 @@ T_mv af_import(T_sp symbols_desig, T_sp package_desig) {
   return (Values(_lisp->_true()));
 }
 
-#define ARGS_af_shadow "(symbol-names-desig &optional (package_desig *package*))"
-#define DECL_af_shadow ""
-#define DOCS_af_shadow "See CLHS: shadow"
-T_mv af_shadow(List_sp symbol_names_desig, T_sp package_desig) {
+LAMBDA(symbol-names-desig &optional (package_desig *package*));
+DECLARE();
+DOCSTRING("See CLHS: shadow");
+CL_DEFUN T_mv cl__shadow(List_sp symbol_names_desig, T_sp package_desig) {
   _G();
   List_sp symbolNames = coerce::listOfStringDesignators(symbol_names_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
@@ -262,10 +262,10 @@ T_mv af_shadow(List_sp symbol_names_desig, T_sp package_desig) {
   return (Values(_lisp->_true()));
 }
 
-#define ARGS_af_shadowing_import "(symbol-names-desig &optional (package-desig *package*))"
-#define DECL_af_shadowing_import ""
-#define DOCS_af_shadowing_import "See CLHS: shadowing-import"
-T_mv af_shadowing_import(T_sp symbol_names_desig, T_sp package_desig) {
+LAMBDA(symbol-names-desig &optional (package-desig *package*));
+DECLARE();
+DOCSTRING("See CLHS: shadowing-import");
+CL_DEFUN T_mv cl__shadowing_import(T_sp symbol_names_desig, T_sp package_desig) {
   _G();
   List_sp symbolNames = coerce::listOfSymbols(symbol_names_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
@@ -274,10 +274,10 @@ T_mv af_shadowing_import(T_sp symbol_names_desig, T_sp package_desig) {
 }
 
 static uint static_gentemp_counter = 1;
-#define ARGS_af_gentemp "(&optional prefix (package *package*))"
-#define DECL_af_gentemp ""
-#define DOCS_af_gentemp "See CLHS gentemp"
-T_mv af_gentemp(T_sp prefix, T_sp package_designator) {
+LAMBDA(&optional prefix (package *package*));
+DECLARE();
+DOCSTRING("See CLHS gentemp");
+CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
   _G();
   stringstream ss;
   string spref = "T";
@@ -307,28 +307,28 @@ DONE:
   return (Values(retval));
 };
 
-#define ARGS_af_package_use_list "(package-designator)"
-#define DECL_af_package_use_list ""
-#define DOCS_af_package_use_list "package_use_list"
-T_sp af_package_use_list(T_sp package_designator) {
+LAMBDA(package-designator);
+DECLARE();
+DOCSTRING("package_use_list");
+CL_DEFUN T_sp cl__package_use_list(T_sp package_designator) {
   _G();
   Package_sp pkg = coerce::packageDesignator(package_designator);
   return pkg->packageUseList();
 };
 
-#define ARGS_cl_packageUsedByList "(pkg)"
-#define DECL_cl_packageUsedByList ""
-#define DOCS_cl_packageUsedByList "packageUsedByList"
-List_sp cl_packageUsedByList(T_sp pkgDesig) {
+LAMBDA(pkg);
+DECLARE();
+DOCSTRING("packageUsedByList");
+CL_DEFUN List_sp cl__package_used_by_list(T_sp pkgDesig) {
   _G();
   Package_sp pkg = coerce::packageDesignator(pkgDesig);
   return pkg->packageUsedByList();
 };
 
-#define ARGS_cl_packageName "(pkg)"
-#define DECL_cl_packageName ""
-#define DOCS_cl_packageName "packageName"
-T_sp cl_packageName(T_sp pkgDesig) {
+LAMBDA(pkg);
+DECLARE();
+DOCSTRING("packageName");
+CL_DEFUN T_sp cl__package_name(T_sp pkgDesig) {
   Package_sp pkg = coerce::packageDesignator(pkgDesig);
   string name = pkg->packageName();
   if (name == "") {
@@ -343,34 +343,17 @@ void Package_O::exposeCando(Lisp_sp lisp) {
       //	    .def("allSymbols",&Package_O::allSymbols)
       .def("core:PackageHashTables", &Package_O::hashTables);
   SYMBOL_EXPORT_SC_(ClPkg, package_use_list);
-  Defun(package_use_list);
-  ClDefun(packageName);
   SYMBOL_EXPORT_SC_(ClPkg, gentemp);
-  Defun(gentemp);
   SYMBOL_EXPORT_SC_(ClPkg, makePackage);
-  Defun(makePackage);
   SYMBOL_EXPORT_SC_(ClPkg, listAllPackages);
-  ClDefun(listAllPackages);
-  ClDefun(delete_package);
   SYMBOL_EXPORT_SC_(ClPkg, use_package);
-  Defun(use_package);
   SYMBOL_EXPORT_SC_(ClPkg, unuse_package);
-  ClDefun(unuse_package);
   SYMBOL_EXPORT_SC_(ClPkg, package_shadowing_symbols);
-  Defun(package_shadowing_symbols);
   SYMBOL_EXPORT_SC_(ClPkg, import);
-  Defun(import);
   SYMBOL_EXPORT_SC_(ClPkg, shadow);
-  Defun(shadow);
   SYMBOL_EXPORT_SC_(ClPkg, shadowing_import);
-  Defun(shadowing_import);
   SYMBOL_EXPORT_SC_(ClPkg, findSymbol);
-  ClDefun(findSymbol);
   SYMBOL_EXPORT_SC_(ClPkg, unintern);
-  Defun(unintern);
-  ClDefun(packageNicknames);
-  ClDefun(renamePackage);
-  ClDefun(packageUsedByList);
 }
 
 void Package_O::exposePython(Lisp_sp lisp) {

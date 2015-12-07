@@ -59,7 +59,7 @@ THE SOFTWARE.
 #include <clasp/sockets/symbolTable.h>
 #include <clasp/core/wrappers.h>
 
-CL_NAMESPACE namespace sockets {
+namespace sockets {
 
 #define REINTERPRET_CAST(t, c) reinterpret_cast<t>(c)
 

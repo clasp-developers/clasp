@@ -46,7 +46,7 @@ class ReadTable_O : public T_O {
   LISP_CLASS(core, ClPkg, ReadTable_O, "readtable");
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
-  friend T_sp cl_setSyntaxFromChar(Character_sp toChar, Character_sp fromChar, ReadTable_sp toReadTable, ReadTable_sp fromReadTable);
+  friend T_sp cl__set_syntax_from_char(Character_sp toChar, Character_sp fromChar, ReadTable_sp toReadTable, ReadTable_sp fromReadTable);
 
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(ReadTable_O);

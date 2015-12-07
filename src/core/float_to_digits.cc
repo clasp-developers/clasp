@@ -66,7 +66,7 @@ Real_sp times2(Real_sp x) {
 }
 
 static float_approx *setup(Float_sp number, float_approx *approx) {
-  Real_mv mv_f = cl_integer_decode_float(number);
+  Real_mv mv_f = cl__integer_decode_float(number);
   Integer_sp f = gc::As<Integer_sp>(mv_f);
   Fixnum_sp fne = gc::As<Fixnum_sp>(mv_f.valueGet(1));
   Fixnum e = clasp_fixnum(fne), min_e;
@@ -204,16 +204,16 @@ change_precision(float_approx *approx, T_sp tposition, T_sp relativep) {
     }
     position = gc::As<Real_sp>(clasp_minus(k, position));
     {
-      Real_sp e1 = gc::As<Real_sp>(cl_expt(PRINT_BASE, position));
+      Real_sp e1 = gc::As<Real_sp>(cl__expt(PRINT_BASE, position));
       Real_sp e2 = gc::As<Real_sp>(clasp_divide(e1, clasp_make_fixnum(2)));
-      Real_sp e3 = gc::As<Real_sp>(cl_expt(PRINT_BASE, k));
+      Real_sp e3 = gc::As<Real_sp>(cl__expt(PRINT_BASE, k));
       if (clasp_greatereq(clasp_plus(approx->r, clasp_times(approx->s, e1)),
                           clasp_times(approx->s, e2)))
         position = gc::As<Real_sp>(clasp_one_minus(position));
     }
   }
   {
-    Real_sp x = gc::As<Real_sp>(clasp_times(approx->s, cl_expt(PRINT_BASE, position)));
+    Real_sp x = gc::As<Real_sp>(clasp_times(approx->s, cl__expt(PRINT_BASE, position)));
     Real_sp e = gc::As<Real_sp>(clasp_divide(x, clasp_make_fixnum(2)));
     Real_sp low = clasp_max2(approx->mm, e);
     Real_sp high = clasp_max2(approx->mp, e);

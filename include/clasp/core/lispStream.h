@@ -148,7 +148,7 @@ Pathname_sp clasp_input_pathname(T_sp strm);
 /*! Return the filename of the stream if possible, error if errorp=true and no name can be determined */
 T_sp clasp_filename(T_sp strm, bool errorp = false);
 
-T_sp cl_get_output_stream_string(T_sp strm);
+T_sp cl__get_output_stream_string(T_sp strm);
 
 T_sp clasp_file_length(T_sp strm);
 T_sp clasp_file_position(T_sp strm);
@@ -167,14 +167,14 @@ T_sp clasp_make_stream_from_FILE(T_sp fname, FILE *f, enum StreamMode smm, gctoo
 
 T_sp clasp_make_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = _Nil<T_O>());
 
-T_sp cl_make_synonym_stream(T_sp sym);
-T_sp cl_make_two_way_stream(T_sp in, T_sp out);
+T_sp cl__make_synonym_stream(T_sp sym);
+T_sp cl__make_two_way_stream(T_sp in, T_sp out);
 
-T_sp cl_make_string_input_stream(Str_sp strng, Fixnum_sp istart, T_sp iend);
+T_sp cl__make_string_input_stream(Str_sp strng, Fixnum_sp istart, T_sp iend);
 T_sp clasp_make_string_output_stream(cl_index line_length = 128, bool extended = false);
-T_sp cl_get_output_stream_string(T_sp strm);
+T_sp cl__get_output_stream_string(T_sp strm);
 
-T_sp cl_close(T_sp strm, T_sp abort = _Nil<T_O>());
+T_sp cl__close(T_sp strm, T_sp abort = _Nil<T_O>());
 };
 
 namespace core {
@@ -501,7 +501,7 @@ GCPROTECTED: // instance variables here
 
 public:
   static SynonymStream_sp make(Symbol_sp symbol) {
-    return cl_make_synonym_stream(symbol);
+    return cl__make_synonym_stream(symbol);
   }
 
 public: // Functions here
@@ -534,7 +534,7 @@ GCPROTECTED: // instance variables here
 
 public:
   static T_sp make(T_sp in, T_sp out) {
-    return cl_make_two_way_stream(in, out);
+    return cl__make_two_way_stream(in, out);
   };
 }; // TwoWayStream class
 
@@ -621,19 +621,19 @@ struct gctools::GCInfo<core::EchoStream_O> {
 
 namespace core {
 
-T_sp cl_peekChar(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T_sp recursivep);
-T_sp cl_readChar(T_sp ostrm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p);
+T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T_sp recursivep);
+T_sp cl__read_char(T_sp ostrm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p);
 
-Str_sp cl_writeString(Str_sp str, T_sp stream, int start, T_sp end);
+Str_sp cl__write_string(Str_sp str, T_sp stream, int start, T_sp end);
 
-T_sp cl_write_sequence(T_sp seq, T_sp stream, Fixnum_sp start, T_sp end);
+T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp start, T_sp end);
 
-bool cl_streamp(T_sp strm);
+bool cl__streamp(T_sp strm);
 
 Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart = 0, T_sp end = _Nil<T_O>());
 
-//    int af_streamLinenumber(T_sp strm);
-//    int af_streamColumn(T_sp strm);
+//    int core__stream_linenumber(T_sp strm);
+//    int core__stream_column(T_sp strm);
 
 void clasp_terpri(T_sp strm);
 void clasp_write_characters(const char *buf, int sz, T_sp strm);
@@ -645,14 +645,14 @@ claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 
 void initialize_lispStream();
 
-T_sp cl_open(T_sp filename,
+T_sp cl__open(T_sp filename,
              T_sp direction,
              T_sp element_type,
              T_sp if_exists, bool iesp,
              T_sp if_does_not_exist, bool idnesp,
              T_sp external_format,
              T_sp cstream);
-T_mv cl_read_line(T_sp sin, T_sp eof_error_p = cl::_sym_T_O, T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
+T_mv cl__read_line(T_sp sin, T_sp eof_error_p = cl::_sym_T_O, T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
 
 T_sp clasp_openRead(T_sp pathDesig);
 T_sp clasp_openWrite(T_sp pathDesig);

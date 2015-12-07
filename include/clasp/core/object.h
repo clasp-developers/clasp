@@ -83,10 +83,10 @@ typedef gctools::smart_ptr<SNode_O> ArchiveP;
 class Function_O;
 typedef gctools::smart_ptr<Function_O> Function_sp;
 
-bool cl_eq(T_sp x, T_sp y);
-bool cl_eql(T_sp x, T_sp y);
-bool cl_equal(T_sp x, T_sp y);
-bool cl_equalp(T_sp x, T_sp y);
+bool cl__eq(T_sp x, T_sp y);
+bool cl__eql(T_sp x, T_sp y);
+bool cl__equal(T_sp x, T_sp y);
+bool cl__equalp(T_sp x, T_sp y);
 bool clasp_charEqual2(T_sp, T_sp);
 };
 
@@ -718,7 +718,7 @@ public:
     SUBCLASS_MUST_IMPLEMENT();
   }; // This is the only one that absolutely has to be defined in a subclass
   virtual bool operator<=(T_sp obj) const {
-    if (cl_eql(this->asSmartPtr(), obj))
+    if (cl__eql(this->asSmartPtr(), obj))
       return true;
     return this->operator<(obj);
   };
@@ -779,17 +779,17 @@ inline void clasp_sxhash(T_sp obj, HashGenerator &hg) {
 
 namespace core {
 
-#define ARGS_cl_eq "(x y)"
-#define DECL_cl_eq ""
-#define DOCS_cl_eq "eq"
-inline bool cl_eq(T_sp x, T_sp y) {
+  LAMBDA(x y);
+  DECLARE();
+  DOCSTRING("eq");
+inline CL_DEFUN bool cl__eq(T_sp x, T_sp y) {
   return (x == y);
 };
 
-#define ARGS_cl_eql "(x y)"
-#define DECL_cl_eql ""
-#define DOCS_cl_eql "eql"
-inline bool cl_eql(T_sp x, T_sp y) {
+ LAMBDA(x y);
+ DECLARE();
+ DOCSTRING("eql");
+inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
   if (x.fixnump()) {
     return x.raw_() == y.raw_();
   } else if (x.single_floatp()) {
@@ -806,10 +806,10 @@ inline bool cl_eql(T_sp x, T_sp y) {
   return x->eql_(y);
 };
 
-#define ARGS_cl_equal "(x y)"
-#define DECL_cl_equal ""
-#define DOCS_cl_equal "equal"
-inline bool cl_equal(T_sp x, T_sp y) {
+ LAMBDA(x y);
+ DECLARE();
+ DOCSTRING("equal");
+inline CL_DEFUN bool cl__equal(T_sp x, T_sp y) {
   if (x.fixnump()) {
     return x.raw_() == y.raw_();
   } else if (x.single_floatp()) {
@@ -828,10 +828,10 @@ inline bool cl_equal(T_sp x, T_sp y) {
 
 extern int basic_compare(Number_sp na, Number_sp nb);
 
-#define ARGS_cl_equalp "(x y)"
-#define DECL_cl_equalp ""
-#define DOCS_cl_equalp "equalp"
-inline bool cl_equalp(T_sp x, T_sp y) {
+ LAMBDA(x y);
+ DECLARE();
+ DOCSTRING("equalp");
+inline CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
   if (x.fixnump()) {
     if (y.fixnump()) {
       return x.raw_() == y.raw_();
@@ -1119,11 +1119,11 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
                         boost::noncopyable>(#className, init<core::Lisp_sp>)
 
 namespace core {
-Class_sp cl_classOf(T_sp obj);
-bool cl_eq(T_sp x, T_sp y);
-bool cl_eql(T_sp x, T_sp y);
-bool cl_equal(T_sp x, T_sp y);
-bool cl_equalp(T_sp x, T_sp y);
+Class_sp cl__class_of(T_sp obj);
+bool cl__eq(T_sp x, T_sp y);
+bool cl__eql(T_sp x, T_sp y);
+bool cl__equal(T_sp x, T_sp y);
+bool cl__equalp(T_sp x, T_sp y);
 };
 
 #include <clasp/core/glue.h>
