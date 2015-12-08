@@ -382,8 +382,7 @@ the corresponding VAR.  Returns NIL."
                    (string= src-type "hpp"))
                (let ((absolute-dir (merge-pathnames src-pathname
                                                     (translate-logical-pathname "source-main:"))))
-                 (return-from top (values absolute-dir filepos))))
-              (t (error "add support for compiled-function-file for function with source file ~a" src-pathname)))))))
+                 (return-from top (values absolute-dir filepos)))))))))
     (values nil 0)))
 
 (export '(compiled-function-name compiled-function-file))
