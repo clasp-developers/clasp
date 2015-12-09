@@ -26,6 +26,8 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
