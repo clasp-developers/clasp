@@ -58,7 +58,7 @@ Vector_sp ExceptionStack::backtrace() {
     return _Nil<Vector_O>();
   }
   printf("%s:%d ExceptionStack::backtrace stack size = %lu\n", __FILE__, __LINE__, this->_Stack.size());
-  Vector_sp result = core_make_vector(_Nil<T_O>(), this->_Stack.size(), false, make_fixnum((int)(this->_Stack.size())));
+  Vector_sp result = core__make_vector(_Nil<T_O>(), this->_Stack.size(), false, make_fixnum((int)(this->_Stack.size())));
   for (int i(0), iEnd(this->_Stack.size()); i < iEnd; ++i) {
     Symbol_sp kind;
     SYMBOL_EXPORT_SC_(KeywordPkg, catchFrame);
@@ -160,7 +160,7 @@ string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure>
   uint lineNumber = closure->lineNumber();
   uint column = closure->column();
   int sourceFileInfoHandle = closure->sourceFileInfoHandle();
-  SourceFileInfo_sp sfi = core_sourceFileInfo(make_fixnum(sourceFileInfoHandle));
+  SourceFileInfo_sp sfi = core__source_file_info(make_fixnum(sourceFileInfoHandle));
   string sourceFileName = sfi->fileName();
   stringstream ss;
   string closureType = "/?";
@@ -207,7 +207,7 @@ string InvocationHistoryStack::asString() const {
   ss << std::endl;
   vector<InvocationHistoryFrame *> frames = _lisp->invocationHistoryStack().asVectorFrames();
   ss << "--------STACK TRACE--------" << std::endl;
-  int ihsCur = core_ihsCurrentFrame();
+  int ihsCur = core__ihs_current_frame();
   for (int i = 0; i < frames.size(); ++i) {
     InvocationHistoryFrame *cur = frames[i];
     if (i == ihsCur) {
@@ -336,6 +336,5 @@ GC_RESULT InvocationHistoryStack::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
 namespace core {
 
 void initialize_stacks() {
-  //	CoreDefun(dynamicBindingStackDump);
 }
 };

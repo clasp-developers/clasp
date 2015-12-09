@@ -33,18 +33,18 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_core__iterator_unsafe_element "(it)"
-#define DECL_core__iterator_unsafe_element ""
-#define DOCS_core__iterator_unsafe_element "iteratorUnsafeElement"
-T_sp core__iterator_unsafe_element(Iterator_sp it) {
+LAMBDA(it);
+DECLARE();
+DOCSTRING("iteratorUnsafeElement");
+CL_DEFUN T_sp core__iterator_unsafe_element(Iterator_sp it) {
   _G();
   return it->unsafeElement();
 };
 
-#define ARGS_core__iterator_step "(it)"
-#define DECL_core__iterator_step ""
-#define DOCS_core__iterator_step "iteratorStep"
-Iterator_sp core__iterator_step(Iterator_sp it) {
+LAMBDA(it);
+DECLARE();
+DOCSTRING("iteratorStep");
+CL_DEFUN Iterator_sp core__iterator_step(Iterator_sp it) {
   _G();
   it->step();
   return it;
@@ -68,8 +68,6 @@ void Iterator_O::exposeCando(Lisp_sp lisp) {
       .def("notDone", &Iterator_O::notDone)
       .def("currentObject", &Iterator_O::currentObject);
   //	def("create_Iterator",&Iterator_O::create);
-  Core_temp_Defun(iterator_step);
-  Core_temp_Defun(iterator_unsafe_element);
 }
 
 void Iterator_O::exposePython(Lisp_sp lisp) {

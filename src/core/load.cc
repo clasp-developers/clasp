@@ -44,10 +44,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_core__load_source "(source &optional verbose print external-format)"
-#define DECL_core__load_source ""
-#define DOCS_core__load_source "loadSource"
-T_sp core__load_source(T_sp source, bool verbose, bool print, T_sp externalFormat) {
+LAMBDA(source &optional verbose print external-format);
+DECLARE();
+DOCSTRING("loadSource");
+CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, T_sp externalFormat) {
   _G();
   T_sp strm;
   void *strmPointer;
@@ -70,7 +70,7 @@ T_sp core__load_source(T_sp source, bool verbose, bool print, T_sp externalForma
     strmPointer = &(*strm);
   }
   /* Define the source file */
-  SourceFileInfo_sp sfi = core_sourceFileInfo(source);
+  SourceFileInfo_sp sfi = core__source_file_info(source);
   DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, sfi);
   Pathname_sp pathname = cl__pathname(source);
   ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));
@@ -86,11 +86,11 @@ T_sp core__load_source(T_sp source, bool verbose, bool print, T_sp externalForma
     bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
     DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
     //    printf("%s:%d  Pushing stream source pos for strm@%p   tagged-ptr: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
-    innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, core_inputStreamSourcePosInfo(strm));
+    innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, core__input_stream_source_pos_info(strm));
     T_sp x = cl__read(strm, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
     if (x.unboundp())
       break;
-    _sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core_walkToFindSourcePosInfo(x, _sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
+    _sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core__walk_to_find_source_pos_info(x, _sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
     if (echoReplRead) {
       _lisp->print(BF("Read: %s\n") % _rep_(x));
     }
@@ -223,6 +223,5 @@ NOT_A_FILENAME:
 
 void initialize_load() {
   SYMBOL_EXPORT_SC_(CorePkg, loadSource);
-  Core_temp_Defun(load_source);
 }
 };

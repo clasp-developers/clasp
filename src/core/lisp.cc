@@ -450,6 +450,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 #undef Use_CorePkg
 
     //            testStrings();
+    initialize_Lisp_O();
     initialize_functions();
     core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
     initialize_source_info(ht);
@@ -624,8 +625,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 
   {
     _BLOCK_TRACE("Setup system values");
-    FILE *null_out = fopen("/tmp/null", "w");
-    this->_Roots._NullStream = IOStreamStream_O::makeIO("/tmp/null", null_out);
+    FILE *null_out = fopen("/dev/null", "w");
+    this->_Roots._NullStream = IOStreamStream_O::makeIO("/dev/null", null_out);
     this->_Roots._RehashSize = DoubleFloat_O::create(2.0);
     this->_Roots._RehashThreshold = DoubleFloat_O::create(0.9);
     this->_Roots._ImaginaryUnit = Complex_O::create(0.0, 1.0);
@@ -829,10 +830,10 @@ T_sp Lisp_O::specialFormOrNil(Symbol_sp sym) {
   return this->_Roots._SpecialForms->gethash(sym);
 }
 
-#define ARGS_core_listOfAllSpecialOperators "()"
-#define DECL_core_listOfAllSpecialOperators ""
-#define DOCS_core_listOfAllSpecialOperators "listOfAllSpecialOperators"
-T_sp core_listOfAllSpecialOperators() {
+LAMBDA();
+DECLARE();
+DOCSTRING("listOfAllSpecialOperators");
+CL_DEFUN T_sp core__list_of_all_special_operators() {
   List_sp sos(_Nil<T_O>());
   _lisp->_Roots._SpecialForms->maphash([&sos](T_sp key, T_sp val) {
       sos = Cons_O::create(key,sos);
@@ -1270,7 +1271,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
     SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineImageSTAR);
     _sym_STARcommandLineImageSTAR->defparameter(cl__pathname(Str_O::create(options._ImageFile)));
   } else {
-    _sym_STARcommandLineImageSTAR->defparameter(core_startupImagePathname());
+    _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname());
   }
   {
     this->_TrapIntern = false;
@@ -1294,7 +1295,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
 
 T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prompt) {
   T_mv result = Values(_Nil<T_O>());
-  DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, core_sourceFileInfo(stream));
+  DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, core__source_file_info(stream));
   while (1) {
     TRY() {
       if (prompt) {
@@ -1304,11 +1305,11 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
         clasp_write_string(prompts.str(), stream);
       }
       DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
-      innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, core_inputStreamSourcePosInfo(stream));
+      innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, core__input_stream_source_pos_info(stream));
       T_sp expression = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
       if (expression.unboundp())
         break;
-      _sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core_walkToFindSourcePosInfo(expression, _sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
+      _sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core__walk_to_find_source_pos_info(expression, _sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
       if (_sym_STARechoReplReadSTAR->symbolValue().isTrue()) {
         string suppress;
         if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
@@ -1382,10 +1383,10 @@ T_mv Lisp_O::readEvalPrintString(const string &code, T_sp environ, bool printRes
   return result;
 }
 
-#define ARGS_core__low_level_repl "()"
-#define DECL_core__low_level_repl ""
-#define DOCS_core__low_level_repl "lowLevelRepl - this is a built in repl for when the top-level repl isn't available"
-void core__low_level_repl() {
+LAMBDA();
+DECLARE();
+DOCSTRING("lowLevelRepl - this is a built in repl for when the top-level repl isn't available");
+CL_DEFUN void core__low_level_repl() {
   _G();
   _lisp->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
 };
@@ -1397,10 +1398,10 @@ void Lisp_O::readEvalPrintInteractive() {
   this->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
 }
 
-#define ARGS_core__stack_used "()"
-#define DECL_core__stack_used ""
-#define DOCS_core__stack_used "stackUsed"
-uint core__stack_used() {
+LAMBDA();
+DECLARE();
+DOCSTRING("stackUsed");
+CL_DEFUN uint core__stack_used() {
   _G();
   int x;
   char *xaddr = (char *)(&x);
@@ -1433,10 +1434,10 @@ void af_stackSizeWarning(size_t stackUsed) {
   }
 };
 
-#define ARGS_core__stack_monitor "()"
-#define DECL_core__stack_monitor ""
-#define DOCS_core__stack_monitor "monitor stack for problems - warn if getting too large"
-void core__stack_monitor() {
+LAMBDA();
+DECLARE();
+DOCSTRING("monitor stack for problems - warn if getting too large");
+CL_DEFUN void core__stack_monitor() {
   _G();
   uint stackUsed = core__stack_used();
   if (stackUsed > _lisp->_StackSampleMax)
@@ -1457,17 +1458,17 @@ void core__stack_monitor() {
   }
 };
 
-#define ARGS_core__stack_limit "()"
-#define DECL_core__stack_limit ""
-#define DOCS_core__stack_limit "Return the soft and hard limits of the stack"
-T_mv core__stack_limit() {
+LAMBDA();
+DECLARE();
+DOCSTRING("Return the soft and hard limits of the stack");
+CL_DEFUN T_mv core__stack_limit() {
   return Values(clasp_make_fixnum(_lisp->_StackWarnSize));
 };
 
-#define ARGS_core__setup_stack_monitor "(&key warn-size sample-size)"
-#define DECL_core__setup_stack_monitor ""
-#define DOCS_core__setup_stack_monitor "setupStackMonitor"
-void core__setup_stack_monitor(T_sp warnSize, T_sp sampleSize) {
+LAMBDA(&key warn-size sample-size);
+DECLARE();
+DOCSTRING("setupStackMonitor");
+CL_DEFUN void core__setup_stack_monitor(T_sp warnSize, T_sp sampleSize) {
   _G();
   if (!warnSize.nilp()) {
     _lisp->_StackWarnSize = unbox_fixnum(gc::As<Fixnum_sp>(warnSize));
@@ -1479,20 +1480,20 @@ void core__setup_stack_monitor(T_sp warnSize, T_sp sampleSize) {
   }
 };
 
-#define ARGS_core_exit "(&optional (exit-value 0))"
-#define DECL_core_exit ""
-#define DOCS_core_exit "exit"
-void core_exit(int exitValue) {
+LAMBDA(&optional (exit-value 0));
+DECLARE();
+DOCSTRING("exit");
+CL_DEFUN void core__exit(int exitValue) {
   _global_debuggerOnSIGABRT = false;
   throw(ExitProgram(exitValue));
 };
 
-#define ARGS_core_quit "(&optional (exit-value 0))"
-#define DECL_core_quit ""
-#define DOCS_core_quit "quit"
-void core_quit(int exitValue) {
+LAMBDA(&optional (exit-value 0));
+DECLARE();
+DOCSTRING("quit");
+CL_DEFUN void core__quit(int exitValue) {
   _G();
-  core_exit(exitValue);
+  core__exit(exitValue);
 };
 
 LAMBDA(key datum alist);
@@ -1528,50 +1529,24 @@ CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp tes
   UNREACHABLE();
 }
 
-#define ARGS_core__member_test "(item list &key key test test-not)"
-#define DECL_core__member_test ""
-#define DOCS_core__member_test "See CLHS memberTest"
-#define FILE_core__member_test __FILE__
-#define LINE_core__member_test __LINE__
-List_sp core__member_test(T_sp item, List_sp list, T_sp key, T_sp test, T_sp test_not) {
+LAMBDA(item list &key key test test-not);
+DECLARE();
+DOCSTRING("See CLHS memberTest");
+CL_DEFUN List_sp core__member_test(T_sp item, List_sp list, T_sp key, T_sp test, T_sp test_not) {
   _G();
   if (list.nilp())
     return list;
   return (list.asCons()->member(item, key, test, test_not));
 }
 
-#define ARGS_core__member1 "(item list test test-not key)"
-#define DECL_core__member1 ""
-#define DOCS_core__member1 "Like member but if a key function is provided then apply it to the item. See ecl::list.d::member1"
-#define FILE_core__member1 __FILE__
-#define LINE_core__member1 __LINE__
-List_sp core__member1(T_sp item, List_sp list, T_sp test, T_sp test_not, T_sp key) {
+LAMBDA(item list test test-not key);
+DECLARE();
+DOCSTRING("Like member but if a key function is provided then apply it to the item. See ecl::list.d::member1");
+CL_DEFUN List_sp core__member1(T_sp item, List_sp list, T_sp test, T_sp test_not, T_sp key) {
   _G();
   if (list.nilp())
     return list;
   return list.asCons()->member1(item, key, test, test_not);
-}
-
-#define ARGS_ext_setenv "(name value)"
-#define DECL_ext_setenv ""
-#define DOCS_ext_setenv "Set environment variable NAME to VALUE"
-void ext_setenv(Str_sp name, Str_sp value) {
-  _G();
-  setenv(name->get().c_str(), value->get().c_str(), 1);
-}
-
-#define ARGS_ext_getenv "(name)"
-#define DECL_ext_getenv ""
-#define DOCS_ext_getenv "Get environment variable NAME"
-T_sp ext_getenv(Str_sp name) {
-  _G();
-  string s = name->get();
-  char *e = getenv(s.c_str());
-  string value;
-  if (e) {
-    return Str_O::create(e);
-  }
-  return _Nil<T_O>();
 }
 
 /*
@@ -1582,10 +1557,10 @@ T_sp ext_getenv(Str_sp name) {
   __END_DOC
 */
 
-#define ARGS_core__getline "(&optional (prompt \"\"))"
-#define DECL_core__getline ""
-#define DOCS_core__getline "getline"
-T_mv core__getline(Str_sp prompt) {
+LAMBDA("&optional (prompt \"\")");
+DECLARE();
+DOCSTRING("getline");
+CL_DEFUN T_mv core__getline(Str_sp prompt) {
   _G();
   string res;
   string sprompt(prompt->get());
@@ -1602,70 +1577,6 @@ T_mv core__getline(Str_sp prompt) {
   Invoke a system call using the UNIX system function call.
   __END_DOC
 */
-
-#define ARGS_ext_system "(cmd)"
-#define DECL_ext_system ""
-#define DOCS_ext_system "system"
-T_mv ext_system(Str_sp cmd) {
-  _G();
-  string command = cmd->get();
-  int ret = system(command.c_str());
-  if (ret == 0) {
-    return Values(core::make_fixnum(0));
-  } else {
-    return Values(core::make_fixnum(ret), Str_O::create(std::strerror(errno)));
-  }
-}
-
-#define ARGS_ext_vfork_execvp "(call-and-arguments)"
-#define DECL_ext_vfork_execvp ""
-#define DOCS_ext_vfork_execvp "vfork_execvp"
-T_mv ext_vfork_execvp(List_sp call_and_arguments) {
-  if (call_and_arguments.nilp())
-    return Values0<T_O>();
-  std::vector<char const *> execvp_args(cl__length(call_and_arguments) + 1);
-  size_t idx = 0;
-  for (auto cur : call_and_arguments) {
-    Str_sp sarg = gc::As<Str_sp>(oCar(cur));
-    char *arg = (char *)malloc(sarg->size() + 1);
-    std::strcpy(arg, sarg->c_str());
-    execvp_args[idx++] = arg;
-  }
-  execvp_args[idx] = NULL;
-  pid_t child_PID = vfork();
-  if (child_PID >= 0) {
-    if (child_PID == 0) {
-      // Child
-      execvp(execvp_args[0], (char *const *)execvp_args.data());
-      printf("%s:%d execvp returned with errno=%d   strerror(errno) = %s\n", __FILE__, __LINE__, errno, strerror(errno));
-      for (int i = 0; execvp_args[i] != NULL; ++i) {
-        printf("    arg#%d  %s\n", i, execvp_args[i]);
-      }
-      printf("  cannot continue... exiting... sorry...\n");
-      _exit(0); // Should never reach
-    } else {
-      // Parent
-      int status;
-      pid_t wait_ret = wait(&status);
-      // Clean up args
-      for (int i(0); i < execvp_args.size() - 1; ++i)
-        free((void *)execvp_args[i]);
-      if (wait_ret >= 0) {
-        if (wait_ret != child_PID) {
-          printf("%s:%d wait return PID(%d) that did not match child(%d)\n", __FILE__, __LINE__, wait_ret, child_PID);
-        }
-        return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID));
-      }
-      // error
-      return Values(clasp_make_fixnum(errno), Str_O::create(std::strerror(errno)));
-    }
-  } else {
-    // Clean up args
-    for (int i(0); i < execvp_args.size() - 1; ++i)
-      free((void *)execvp_args[i]);
-    return Values(clasp_make_fixnum(-1), Str_O::create(std::strerror(errno)));
-  }
-}
 
 /*
   __BEGIN_DOC( candoScript.general.render, subsection, render)
@@ -1703,10 +1614,10 @@ CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   return (Values(omc));
 }
 
-#define ARGS_core__setf_find_class "(new-value name)"
-#define DECL_core__setf_find_class ""
-#define DOCS_core__setf_find_class "setf_findClass"
-Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool errorp, T_sp env) {
+LAMBDA(new-value name);
+DECLARE();
+DOCSTRING("setf_findClass");
+CL_DEFUN Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool errorp, T_sp env) {
   _G();
   if (!af_classp(newValue)) {
     SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
@@ -1734,10 +1645,10 @@ Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool errorp, T_sp 
   __END_DOC
 */
 
-#define ARGS_core__find_file_in_lisp_path "(partialPath)"
-#define DECL_core__find_file_in_lisp_path ""
-#define DOCS_core__find_file_in_lisp_path "findFileInLispPath"
-T_mv core__find_file_in_lisp_path(Str_sp partialPath) {
+LAMBDA(partialPath);
+DECLARE();
+DOCSTRING("findFileInLispPath");
+CL_DEFUN T_mv core__find_file_in_lisp_path(Str_sp partialPath) {
   _G();
   LOG(BF("PartialPath=[%s]") % partialPath->get());
   Path_sp fullPath = _lisp->translateLogicalPathnameUsingPaths(partialPath);
@@ -1756,10 +1667,10 @@ CL_DEFUN T_sp cl__find_package(T_sp name_desig) {
   return _lisp->findPackage(name->get());
 }
 
-#define ARGS_core__select_package "(package-designator)"
-#define DECL_core__select_package ""
-#define DOCS_core__select_package "selectPackage"
-void core__select_package(T_sp package_designator) {
+LAMBDA(package-designator);
+DECLARE();
+DOCSTRING("selectPackage");
+CL_DEFUN void core__select_package(T_sp package_designator) {
   _G();
   Package_sp pkg = coerce::packageDesignator(package_designator);
   _lisp->selectPackage(pkg);
@@ -1773,10 +1684,10 @@ void core__select_package(T_sp package_designator) {
   __END_DOC
 */
 
-#define ARGS_core__mpi_enabled "()"
-#define DECL_core__mpi_enabled ""
-#define DOCS_core__mpi_enabled "mpi_enabled"
-T_mv core__mpi_enabled() {
+LAMBDA();
+DECLARE();
+DOCSTRING("mpi_enabled");
+CL_DEFUN T_mv core__mpi_enabled() {
   _G();
   return (Values(_lisp->_boolean(_lisp->mpiEnabled())));
 }
@@ -1788,10 +1699,10 @@ T_mv core__mpi_enabled() {
   Return the mpi rank or 0 if not enabled.
   __END_DOC
 */
-#define ARGS_core__mpi_rank "()"
-#define DECL_core__mpi_rank ""
-#define DOCS_core__mpi_rank "Return the mpi_rank or 0 if mpi is disabled"
-T_mv core__mpi_rank() {
+LAMBDA();
+DECLARE();
+DOCSTRING("Return the mpi_rank or 0 if mpi is disabled");
+CL_DEFUN T_mv core__mpi_rank() {
   _G();
   return (Values(make_fixnum(_lisp->mpiRank())));
 }
@@ -1804,10 +1715,10 @@ T_mv core__mpi_rank() {
   __END_DOC
 */
 
-#define ARGS_core__mpi_size "()"
-#define DECL_core__mpi_size ""
-#define DOCS_core__mpi_size "Return mpi_size or 0 if mpi is not enabled"
-T_mv core__mpi_size() {
+LAMBDA();
+DECLARE();
+DOCSTRING("Return mpi_size or 0 if mpi is not enabled");
+CL_DEFUN T_mv core__mpi_size() {
   _G();
   return (Values(make_fixnum(_lisp->mpiSize())));
 }
@@ -1844,9 +1755,9 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
     return (Values(form, _Nil<T_O>()));
   } else if (Symbol_sp sform = form.asOrNull<Symbol_O>()) {
     if (env.nilp()) {
-      expansionFunction = core_lookup_symbol_macro(sform, env);
+      expansionFunction = core__lookup_symbol_macro(sform, env);
     } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-      expansionFunction = core_lookup_symbol_macro(sform, eenv);
+      expansionFunction = core__lookup_symbol_macro(sform, eenv);
     } else {
       // It must be a Cleavir environment
       if (cleavirEnv::_sym_symbolMacroExpansion->fboundp()) {
@@ -1994,10 +1905,10 @@ public:
   }
 };
 
-#define ARGS_core__sorted "(unsorted)"
-#define DECL_core__sorted ""
-#define DOCS_core__sorted "Sort the list in ascending order using operator< and return the sorted list"
-List_sp core__sorted(List_sp unsorted) {
+LAMBDA(unsorted);
+DECLARE();
+DOCSTRING("Sort the list in ascending order using operator< and return the sorted list");
+CL_DEFUN List_sp core__sorted(List_sp unsorted) {
   _G();
   gctools::Vec0<T_sp /*,gctools::RootedGCHolder*/> sorted;
   if (cl__length(unsorted) == 0)
@@ -2023,10 +1934,10 @@ public:
   }
 };
 
-#define ARGS_af_sort "(sequence predicate)"
-#define DECL_af_sort ""
-#define DOCS_af_sort "Like CLHS: sort but does not support key"
-T_sp af_sort(List_sp sequence, T_sp predicate) {
+LAMBDA(sequence predicate);
+DECLARE();
+DOCSTRING("Like CLHS: sort but does not support key");
+CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate) {
   _G();
   gctools::Vec0<T_sp> sorted;
   Function_sp sortProc = coerce::functionDesignator(predicate);
@@ -2049,25 +1960,25 @@ T_sp af_sort(List_sp sequence, T_sp predicate) {
   __END_DOC
 */
 
-#define ARGS_core__source_file_name "()"
-#define DECL_core__source_file_name ""
-#define DOCS_core__source_file_name "Return the current sourceFileName"
-T_mv core__source_file_name() {
+LAMBDA();
+DECLARE();
+DOCSTRING("Return the current sourceFileName");
+CL_DEFUN T_mv core__source_file_name() {
   _G();
   Cons_sp ppcons;
   InvocationHistoryFrame *frame = _lisp->invocationHistoryStack().top();
   gctools::tagged_pointer<Closure> closure = frame->closure;
   int sourceFileInfoHandle = closure->sourceFileInfoHandle();
-  string sourcePath = gc::As<SourceFileInfo_sp>(core_sourceFileInfo(make_fixnum(sourceFileInfoHandle)))->namestring();
+  string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(make_fixnum(sourceFileInfoHandle)))->namestring();
   Path_sp path = Path_O::create(sourcePath);
   Path_sp parent_path = path->parent_path();
   return Values(Str_O::create(path->fileName()), Str_O::create(parent_path->asString()));
 }
 
-#define ARGS_core__source_line_column "()"
-#define DECL_core__source_line_column ""
-#define DOCS_core__source_line_column "sourceLineColumn"
-T_mv core__source_line_column() {
+LAMBDA();
+DECLARE();
+DOCSTRING("sourceLineColumn");
+CL_DEFUN T_mv core__source_line_column() {
   InvocationHistoryFrame *frame = _lisp->invocationHistoryStack().top();
   gctools::tagged_pointer<Closure> closure = frame->closure;
   return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
@@ -2089,19 +2000,19 @@ T_mv core__source_line_column() {
   __END_DOC
 */
 
-#define ARGS_core__script_dir "()"
-#define DECL_core__script_dir ""
-#define DOCS_core__script_dir "script_dir"
-Path_mv core__script_dir() {
+LAMBDA();
+DECLARE();
+DOCSTRING("script_dir");
+CL_DEFUN Path_mv core__script_dir() {
   _G();
   Path_sp dir = Path_O::create(_lisp->bundle().getLispDir());
   return (Values(dir));
 }
 
-#define ARGS_core__library_path "(&optional rel-path)"
-#define DECL_core__library_path ""
-#define DOCS_core__library_path "Returns the absolute path to the library directory - if rel-path is not nil then it prepends the library directory path to rel-path and returns that"
-Path_mv core__library_path(T_sp relPathDesignator) {
+LAMBDA(&optional rel-path);
+DECLARE();
+DOCSTRING("Returns the absolute path to the library directory - if rel-path is not nil then it prepends the library directory path to rel-path and returns that");
+CL_DEFUN Path_mv core__library_path(T_sp relPathDesignator) {
   _G();
   if (relPathDesignator.notnilp()) {
     Path_sp relPath = coerce::pathDesignator(relPathDesignator);
@@ -2112,10 +2023,10 @@ Path_mv core__library_path(T_sp relPathDesignator) {
   return (Values(Path_O::create(_lisp->bundle().getLibDir())));
 }
 
-#define ARGS_core__lisp_code_path "(&optional rel-path)"
-#define DECL_core__lisp_code_path ""
-#define DOCS_core__lisp_code_path "Returns the absolute path to the lisp code directory - if rel-path is not nil then it prepends the directory path to rel-path and returns that"
-Path_mv core__lisp_code_path(T_sp relPathDesignator) {
+LAMBDA(&optional rel-path);
+DECLARE();
+DOCSTRING("Returns the absolute path to the lisp code directory - if rel-path is not nil then it prepends the directory path to rel-path and returns that");
+CL_DEFUN Path_mv core__lisp_code_path(T_sp relPathDesignator) {
   _G();
   if (relPathDesignator.notnilp()) {
     Path_sp relPath = coerce::pathDesignator(relPathDesignator);
@@ -2134,10 +2045,10 @@ Path_mv core__lisp_code_path(T_sp relPathDesignator) {
   __END_DOC
 */
 
-#define ARGS_core__database_dir "()"
-#define DECL_core__database_dir ""
-#define DOCS_core__database_dir "database_dir"
-Path_mv core__database_dir() {
+LAMBDA();
+DECLARE();
+DOCSTRING("database_dir");
+CL_DEFUN Path_mv core__database_dir() {
   _G();
   Path_sp dir = Path_O::create(_lisp->bundle().getDatabasesDir());
   return (Values(dir));
@@ -2151,10 +2062,10 @@ Path_mv core__database_dir() {
   __END_DOC
 */
 
-#define ARGS_core__set_current_working_directory "(dir)"
-#define DECL_core__set_current_working_directory ""
-#define DOCS_core__set_current_working_directory "setCurrentWorkingDirectory"
-T_mv core__set_current_working_directory(Str_sp dir) {
+LAMBDA(dir);
+DECLARE();
+DOCSTRING("setCurrentWorkingDirectory");
+CL_DEFUN T_mv core__set_current_working_directory(Str_sp dir) {
   _G();
   Path_sp cwd = Path_O::create(dir->get());
   _lisp->setCurrentWorkingDirectory(cwd);
@@ -2168,10 +2079,10 @@ T_mv core__set_current_working_directory(Str_sp dir) {
   __END_DOC
 */
 
-#define ARGS_core__is_top_level_script "()"
-#define DECL_core__is_top_level_script ""
-#define DOCS_core__is_top_level_script "isTopLevelScript"
-T_mv core__is_top_level_script() {
+LAMBDA();
+DECLARE();
+DOCSTRING("isTopLevelScript");
+CL_DEFUN T_mv core__is_top_level_script() {
   _G();
   LOG(BF("isTopLevelScript = %d") % _lisp->getRequireLevel());
   T_sp top = _lisp->_boolean(_lisp->getRequireLevel() == 0);
@@ -2188,10 +2099,10 @@ T_mv core__is_top_level_script() {
   __END_DOC
 */
 
-#define ARGS_core__debug_log_on "()"
-#define DECL_core__debug_log_on ""
-#define DOCS_core__debug_log_on "debugLogOn"
-void core__debug_log_on() {
+LAMBDA();
+DECLARE();
+DOCSTRING("debugLogOn");
+CL_DEFUN void core__debug_log_on() {
   _G();
   _lisp->debugLog().setSuppressMessages(false);
   LOG(BF("Turning debugLogOn"));
@@ -2207,10 +2118,10 @@ void core__debug_log_on() {
   __END_DOC
 */
 
-#define ARGS_core__debug_log_off "()"
-#define DECL_core__debug_log_off ""
-#define DOCS_core__debug_log_off "debugLogOff"
-void core__debug_log_off() {
+LAMBDA();
+DECLARE();
+DOCSTRING("debugLogOff");
+CL_DEFUN void core__debug_log_off() {
   _G();
   _lisp->debugLog().setSuppressMessages(true);
 }
@@ -2236,10 +2147,10 @@ CL_DEFUN T_sp cl__export(T_sp symDes, T_sp packageDes) {
   return _lisp->_true();
 }
 
-#define ARGS_core__export_to_python "(symbolsDesig)"
-#define DECL_core__export_to_python ""
-#define DOCS_core__export_to_python "exportToPython"
-void core__export_to_python(T_sp symbolsDesig) {
+LAMBDA(symbolsDesig);
+DECLARE();
+DOCSTRING("exportToPython");
+CL_DEFUN void core__export_to_python(T_sp symbolsDesig) {
   _G();
   List_sp symbols = coerce::listOfSymbols(symbolsDesig);
   for (Cons_sp cur : symbols) {
@@ -2258,10 +2169,10 @@ CL_DEFUN T_mv cl__intern(Str_sp symbol_name, T_sp package_desig) {
   return (package->intern(symbol_name->get()));
 }
 
-#define ARGS_core__universal_error_handler "(continue-string datum initializers)"
-#define DECL_core__universal_error_handler ""
-#define DOCS_core__universal_error_handler "universalErrorHandler"
-T_mv core__universal_error_handler(T_sp continueString, T_sp datum, List_sp initializers) {
+LAMBDA(continue-string datum initializers);
+DECLARE();
+DOCSTRING("universalErrorHandler");
+CL_DEFUN T_mv core__universal_error_handler(T_sp continueString, T_sp datum, List_sp initializers) {
   _G();
   if (af_stringP(datum)) {
     cl__format(_lisp->_true(), datum, initializers);
@@ -2275,10 +2186,10 @@ T_mv core__universal_error_handler(T_sp continueString, T_sp datum, List_sp init
   abort();
 };
 
-#define ARGS_core__invoke_internal_debugger "(&optional condition)"
-#define DECL_core__invoke_internal_debugger ""
-#define DOCS_core__invoke_internal_debugger "invokeInternalDebugger"
-void core__invoke_internal_debugger(T_sp condition) {
+LAMBDA(&optional condition);
+DECLARE();
+DOCSTRING("invokeInternalDebugger");
+CL_DEFUN void core__invoke_internal_debugger(T_sp condition) {
   _G();
   stringstream ss;
   if (condition.nilp()) {
@@ -2291,24 +2202,21 @@ void core__invoke_internal_debugger(T_sp condition) {
   }
 };
 
-#define ARGS_core_singleDispatchGenericFunctionTable "()"
-#define DECL_core_singleDispatchGenericFunctionTable ""
-#define DOCS_core_singleDispatchGenericFunctionTable "singleDispatchGenericFunctionTable"
-HashTable_sp core_singleDispatchGenericFunctionTable() {
+LAMBDA();
+DECLARE();
+DOCSTRING("singleDispatchGenericFunctionTable");
+CL_DEFUN HashTable_sp core__single_dispatch_generic_function_table() {
   _G();
   return _lisp->singleDispatchGenericFunctionTable();
 };
 
-extern "C" {
-
-#define ARGS_core__invoke_internal_debugger_from_gdb "()"
-#define DECL_core__invoke_internal_debugger_from_gdb ""
-#define DOCS_core__invoke_internal_debugger_from_gdb "invokeInternalDebuggerFromGdb"
-void core__invoke_internal_debugger_from_gdb() {
+LAMBDA();
+DECLARE();
+DOCSTRING("invokeInternalDebuggerFromGdb");
+CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
   _G();
   eval::funcall(_sym_invokeInternalDebugger);
   SIMPLE_ERROR(BF("This should never happen"));
-};
 };
 
 LAMBDA(datum &rest arguments);
@@ -2327,7 +2235,7 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
       printf("               initializers: %s\n", _rep_(initializers).c_str());
     }
     printf("Dumping backtrace\n");
-    core_lowLevelBacktrace();
+    core__low_level_backtrace();
   }
   ++nestedErrorDepth;
   DynamicScopeManager scope(_sym_STARnestedErrorDepthSTAR, make_fixnum(nestedErrorDepth));
@@ -2365,10 +2273,10 @@ CL_DEFUN void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
   __END_DOC
 */
 
-#define ARGS_core__is_assignable_to "(tag secondArgument)"
-#define DECL_core__is_assignable_to ""
-#define DOCS_core__is_assignable_to "isAssignableTo"
-T_mv core__is_assignable_to(T_sp tag, Class_sp mc) {
+LAMBDA(tag secondArgument);
+DECLARE();
+DOCSTRING("isAssignableTo");
+CL_DEFUN T_mv core__is_assignable_to(T_sp tag, Class_sp mc) {
   _G();
   LOG(BF("Checking if instances of class(%s) is assignable to variables of class(%s)") % cl__class_of(tag)->className() % cl__class_of(mc)->className());
   bool io = (tag->isAssignableToByClassSymbol(mc->name()));
@@ -2383,10 +2291,10 @@ T_mv core__is_assignable_to(T_sp tag, Class_sp mc) {
   __END_DOC
 */
 
-#define ARGS_core__is_sub_class_of "(tag mc)"
-#define DECL_core__is_sub_class_of ""
-#define DOCS_core__is_sub_class_of "isSubClassOf"
-T_mv core__is_sub_class_of(Class_sp tag, Class_sp mc) {
+LAMBDA(tag mc);
+DECLARE();
+DOCSTRING("isSubClassOf");
+CL_DEFUN T_mv core__is_sub_class_of(Class_sp tag, Class_sp mc) {
   _G();
   LOG(BF("Checking if instances of class(%s) is assignable to variables of class(%s)") % tag->className() % mc->className());
   bool io = tag->isSubClassOf(mc);
@@ -2401,10 +2309,10 @@ T_mv core__is_sub_class_of(Class_sp tag, Class_sp mc) {
   __END_DOC
 */
 
-#define ARGS_core__repr "(arg)"
-#define DECL_core__repr ""
-#define DOCS_core__repr "Return a string representation of the object"
-T_mv core__repr(T_sp obj) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("Return a string representation of the object");
+CL_DEFUN T_mv core__repr(T_sp obj) {
   _G();
   Str_sp res = Str_O::create(_rep_(obj));
   return (Values(res));
@@ -2856,7 +2764,7 @@ void Lisp_O::dump_backtrace(int numcol) {
 		List_sp entry = code;
 		if ( entry->hasParsePos() )
 		{
-		    sline << core_sourceFileInfo(entry)->permanentFileName() << ":" << af_lineno(entry) << " " << entry->__repr__();
+		    sline << core__source_file_info(entry)->permanentFileName() << ":" << af_lineno(entry) << " " << entry->__repr__();
 		} else
 		{
 		    sline << "no-function: " << entry->__repr__();
@@ -2884,14 +2792,14 @@ void Lisp_O::run() {
   for (auto cur : (List_sp)cl::_sym_STARfeaturesSTAR->symbolValue()) {
     if (oCar(cur) == kw::_sym_debugStartup) {
       printf("%s:%d Setting core:*debug-startup* to T\n", __FILE__, __LINE__);
-      core::_sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
+      _sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
     }
   }
   //	printf("%s:%d core:*debug-startup* is: %s\n", __FILE__, __LINE__, _rep_(core::_sym_STARdebugStartupSTAR->symbolValue()).c_str());
   if (!this->_IgnoreInitImage) {
     Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
-    DynamicScopeManager scope(core::_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
-    T_mv result = eval::funcall(cl::_sym_load, initPathname); // core_loadBundle(initPathname);
+    DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
+    T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
     if (result.nilp()) {
       T_sp err = result.second();
       printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
@@ -2947,10 +2855,10 @@ SourceFileInfo_mv Lisp_O::getOrRegisterSourceFileInfo(const string &fileName, T_
   return Values(sfi, make_fixnum(it->second));
 }
 
-#define ARGS_core_allSourceFiles "()"
-#define DECL_core_allSourceFiles ""
-#define DOCS_core_allSourceFiles "List all of the source files"
-List_sp core_allSourceFiles() {
+LAMBDA();
+DECLARE();
+DOCSTRING("List all of the source files");
+CL_DEFUN List_sp core__all_source_files() {
   List_sp list = _Nil<T_O>();
   for (auto it : _lisp->_SourceFileIndices) {
     Str_sp sf = Str_O::create(it.first);
@@ -2992,179 +2900,9 @@ void Lisp_O::initializeGlobals(Lisp_sp lisp) {
   _G();
   LOG(BF("Lisp_O::initializeGlobals"));
   SYMBOL_EXPORT_SC_(CorePkg, selectPackage);
-  Core_temp_Defun(select_package);
-  CoreDefun(allSourceFiles);
 }
 
 void Lisp_O::exposeCando() {
-  _G();
-  //	printf("%s:%d in core::Lisp_O::exposeCando\n", __FILE__, __LINE__ );
-  SYMBOL_SC_(CorePkg, find_single_dispatch_generic_function);
-  af_def(CorePkg, "find-single-dispatch-generic-function",
-         &Lisp_O::find_single_dispatch_generic_function,
-         ARGS_Lisp_O_find_single_dispatch_generic_function,
-         DECL_Lisp_O_find_single_dispatch_generic_function,
-         DOCS_Lisp_O_find_single_dispatch_generic_function);
-  SYMBOL_SC_(CorePkg, setf_find_single_dispatch_generic_function);
-  af_def(CorePkg, "setf-find-single-dispatch-generic-function",
-         &Lisp_O::setf_find_single_dispatch_generic_function,
-         ARGS_Lisp_O_setf_find_single_dispatch_generic_function,
-         DECL_Lisp_O_setf_find_single_dispatch_generic_function,
-         DOCS_Lisp_O_setf_find_single_dispatch_generic_function);
-  SYMBOL_SC_(CorePkg, forget_all_single_dispatch_generic_functions);
-  af_def(CorePkg, "forget-all-single-dispatch-generic-functions",
-         &Lisp_O::forget_all_single_dispatch_generic_functions,
-         ARGS_Lisp_O_forget_all_single_dispatch_generic_functions,
-         DECL_Lisp_O_forget_all_single_dispatch_generic_functions,
-         DOCS_Lisp_O_forget_all_single_dispatch_generic_functions);
-
-  CoreDefun(listOfAllSpecialOperators);
-  CoreDefun(singleDispatchGenericFunctionTable);
-  SYMBOL_SC_(CorePkg, stackMonitor);
-  Core_temp_Defun(stack_monitor);
-  Core_temp_Defun(stack_limit);
-  Core_temp_Defun(low_level_repl);
-  SYMBOL_SC_(CorePkg, setupStackMonitor);
-  Core_temp_Defun(setup_stack_monitor);
-
-  SYMBOL_SC_(CorePkg, invokeInternalDebugger);
-  Core_temp_Defun(invoke_internal_debugger);
-  SYMBOL_SC_(CorePkg, invokeInternalDebuggerFromGdb);
-  Core_temp_Defun(invoke_internal_debugger_from_gdb);
-  SYMBOL_SC_(CorePkg, universalErrorHandler);
-  Core_temp_Defun(universal_error_handler);
-  SYMBOL_SC_(CorePkg, stackUsed);
-  Core_temp_Defun(stack_used);
-
-  SYMBOL_SC_(CorePkg, exit);
-  CoreDefun(exit);
-  SYMBOL_SC_(CorePkg, quit);
-  CoreDefun(quit);
-#if defined(XML_ARCHIVE)
-  SYMBOL_SC_(CorePkg, serialize_xml);
-  Defun(serialize_xml);
-  SYMBOL_SC_(CorePkg, deserialize_xml);
-  Defun(deserialize_xml);
-  SYMBOL_SC_(CorePkg, render);
-  Defun(render);
-  SYMBOL_SC_(CorePkg, saveCando);
-  Defun(saveCando);
-  SYMBOL_SC_(CorePkg, loadCando);
-  Defun(loadCando);
-#endif // defined(XML_ARCHIVE)
-  SYMBOL_SC_(CorePkg, getline);
-  Core_temp_Defun(getline);
-
-  SYMBOL_SC_(ExtPkg, system);
-  ExtDefun(system);
-  ExtDefun(vfork_execvp);
-
-  SYMBOL_EXPORT_SC_(ClPkg, apropos);
-  SYMBOL_EXPORT_SC_(ClPkg, export);
-  SYMBOL_EXPORT_SC_(ClPkg, intern);
-  //	defNoWrapPackage(CorePkg,"apply", &prim_apply,_LISP);
-  SYMBOL_SC_(CorePkg, isTopLevelScript);
-  Core_temp_Defun(is_top_level_script);
-
-  //	defNoWrapPackage(CorePkg,"allGlobalNames", &prim_allGlobalNames ,_LISP);
-  //	defNoWrapPackage(CorePkg,"locals", &prim_locals,_LISP);
-  SYMBOL_SC_(CorePkg, sourceFileName);
-  Core_temp_Defun(source_file_name);
-  SYMBOL_SC_(CorePkg, sourceLineColumn);
-  Core_temp_Defun(source_line_column);
-  //	SYMBOL_SC_(CorePkg,backtrace);
-  //	Defun(backtrace);
-  //	defNoWrapPackage(CorePkg,"globals", &prim_globals,_LISP);
-  SYMBOL_SC_(CorePkg, findFileInLispPath);
-  Core_temp_Defun(find_file_in_lisp_path);
-
-  SYMBOL_EXPORT_SC_(ClPkg, findClass);
-  SYMBOL_SC_(CorePkg, setf_findClass);
-  Core_temp_Defun(setf_find_class);
-
-  //	defNoWrapPackage(CorePkg,"print", &prim_print ,_LISP);
-
-  SYMBOL_SC_(CorePkg, isAssignableTo);
-  Core_temp_Defun(is_assignable_to);
-  SYMBOL_SC_(CorePkg, isSubClassOf);
-  Core_temp_Defun(is_sub_class_of);
-
-  //	defNoWrapPackage(CorePkg,"derive", &prim_derive ,_LISP);
-  //	defNoWrapPackage(CorePkg,"isA", &prim_isA ,_LISP);
-
-  //	defNoWrapPackage(CorePkg,"parseConsOfStrings", &prim_parseConsOfStrings ,_LISP);
-
-  //	defNoWrapPackage(CorePkg,"sub", &prim_sub ,_LISP);
-  //	defNoWrapPackage(CorePkg,"-", &prim_sub ,_LISP);
-  //	defNoWrapPackage(CorePkg,"div", &prim_div ,_LISP);
-  //    defNoWrapPackage(CorePkg,"mod", &prim_mod ,_LISP);
-  //	defNoWrapPackage(CorePkg,"/", &prim_div ,_LISP);
-  //	defNoWrapPackage(CorePkg,"mul", &prim_mul ,_LISP);
-  //	defNoWrapPackage(CorePkg,"*", &prim_mul ,_LISP);
-  //	defNoWrapPackage(CorePkg,"className", &prim_className ,_LISP);
-
-  SYMBOL_SC_(CorePkg, repr);
-  Core_temp_Defun(repr);
-
-  SYMBOL_EXPORT_SC_(ClPkg, error);
-  SYMBOL_EXPORT_SC_(ClPkg, cerror);
-  SYMBOL_EXPORT_SC_(ExtPkg, setenv);
-  ExtDefun(setenv);
-  SYMBOL_EXPORT_SC_(ExtPkg, getenv);
-  ExtDefun(getenv);
-  SYMBOL_EXPORT_SC_(ClPkg, not);
-
-  SYMBOL_SC_(CorePkg, debugLogOn);
-  Core_temp_Defun(debug_log_on);
-  SYMBOL_SC_(CorePkg, debugLogOff);
-  Core_temp_Defun(debug_log_off);
-
-  // mpi commands that are always built in
-  SYMBOL_SC_(CorePkg, mpi_enabled);
-  Core_temp_Defun(mpi_enabled);
-  SYMBOL_SC_(CorePkg, mpi_rank);
-  Core_temp_Defun(mpi_rank);
-  SYMBOL_SC_(CorePkg, mpi_size);
-  Core_temp_Defun(mpi_size);
-  // Basic tests
-  //	defNoWrapPackage(CorePkg,"consp",&prim_consp,_LISP);
-  //	defNoWrapPackage(CorePkg,"symbolp",&prim_symbolp,_LISP);
-
-  // aliases for "list" command
-
-  SYMBOL_SC_(CorePkg, sorted);
-  Core_temp_Defun(sorted);
-  SYMBOL_EXPORT_SC_(ClPkg, sort);
-  Defun(sort);
-  SYMBOL_EXPORT_SC_(ClPkg, macroexpand_1);
-  SYMBOL_EXPORT_SC_(ClPkg, macroexpand);
-
-  // information functions
-  SYMBOL_SC_(CorePkg, database_dir);
-  Core_temp_Defun(database_dir);
-  SYMBOL_SC_(CorePkg, script_dir);
-  Core_temp_Defun(script_dir);
-  SYMBOL_SC_(CorePkg, libraryPath);
-  Core_temp_Defun(library_path);
-  SYMBOL_SC_(CorePkg, lispCodePath);
-  Core_temp_Defun(lisp_code_path);
-  //	defNoWrapPackage(CorePkg,"dumpHidden", &prim_dumpHidden,_LISP);
-
-  SYMBOL_SC_(CorePkg, setCurrentWorkingDirectory);
-  Core_temp_Defun(set_current_working_directory);
-
-  SYMBOL_EXPORT_SC_(ClPkg, acons);
-  SYMBOL_EXPORT_SC_(ClPkg, assoc);
-  SYMBOL_EXPORT_SC_(ClPkg, member);
-  Core_temp_Defun(member_test);
-
-  SYMBOL_SC_(CorePkg, member1);
-  Core_temp_Defun(member1);
-
-  SYMBOL_SC_(CorePkg, exportToPython);
-  Core_temp_Defun(export_to_python);
-
-  SYMBOL_EXPORT_SC_(ClPkg, find_package);
 }
 
 void Lisp_O::exposePython() {
@@ -3327,4 +3065,135 @@ ChangePackage::ChangePackage(Package_sp newPackage) : _SavedPackage(_lisp->getCu
 ChangePackage::~ChangePackage() {
   _lisp->selectPackage(this->_SavedPackage);
 }
+
+
+void initialize_Lisp_O() {
+    _G();
+  //	printf("%s:%d in core::Lisp_O::exposeCando\n", __FILE__, __LINE__ );
+  SYMBOL_SC_(CorePkg, find_single_dispatch_generic_function);
+  af_def(CorePkg, "find-single-dispatch-generic-function",
+         &Lisp_O::find_single_dispatch_generic_function,
+         ARGS_Lisp_O_find_single_dispatch_generic_function,
+         DECL_Lisp_O_find_single_dispatch_generic_function,
+         DOCS_Lisp_O_find_single_dispatch_generic_function);
+  SYMBOL_SC_(CorePkg, setf_find_single_dispatch_generic_function);
+  af_def(CorePkg, "setf-find-single-dispatch-generic-function",
+         &Lisp_O::setf_find_single_dispatch_generic_function,
+         ARGS_Lisp_O_setf_find_single_dispatch_generic_function,
+         DECL_Lisp_O_setf_find_single_dispatch_generic_function,
+         DOCS_Lisp_O_setf_find_single_dispatch_generic_function);
+  SYMBOL_SC_(CorePkg, forget_all_single_dispatch_generic_functions);
+  af_def(CorePkg, "forget-all-single-dispatch-generic-functions",
+         &Lisp_O::forget_all_single_dispatch_generic_functions,
+         ARGS_Lisp_O_forget_all_single_dispatch_generic_functions,
+         DECL_Lisp_O_forget_all_single_dispatch_generic_functions,
+         DOCS_Lisp_O_forget_all_single_dispatch_generic_functions);
+
+  SYMBOL_SC_(CorePkg, stackMonitor);
+  SYMBOL_SC_(CorePkg, setupStackMonitor);
+
+  SYMBOL_SC_(CorePkg, invokeInternalDebugger);
+  SYMBOL_SC_(CorePkg, invokeInternalDebuggerFromGdb);
+  SYMBOL_SC_(CorePkg, universalErrorHandler);
+  SYMBOL_SC_(CorePkg, stackUsed);
+
+  SYMBOL_SC_(CorePkg, exit);
+  SYMBOL_SC_(CorePkg, quit);
+#if defined(XML_ARCHIVE)
+  SYMBOL_SC_(CorePkg, serialize_xml);
+  Defun(serialize_xml);
+  SYMBOL_SC_(CorePkg, deserialize_xml);
+  Defun(deserialize_xml);
+  SYMBOL_SC_(CorePkg, render);
+  Defun(render);
+  SYMBOL_SC_(CorePkg, saveCando);
+  Defun(saveCando);
+  SYMBOL_SC_(CorePkg, loadCando);
+  Defun(loadCando);
+#endif // defined(XML_ARCHIVE)
+  SYMBOL_SC_(CorePkg, getline);
+
+  SYMBOL_SC_(ExtPkg, system);
+  SYMBOL_EXPORT_SC_(ClPkg, apropos);
+  SYMBOL_EXPORT_SC_(ClPkg, export);
+  SYMBOL_EXPORT_SC_(ClPkg, intern);
+  //	defNoWrapPackage(CorePkg,"apply", &prim_apply,_LISP);
+  SYMBOL_SC_(CorePkg, isTopLevelScript);
+
+  //	defNoWrapPackage(CorePkg,"allGlobalNames", &prim_allGlobalNames ,_LISP);
+  //	defNoWrapPackage(CorePkg,"locals", &prim_locals,_LISP);
+  SYMBOL_SC_(CorePkg, sourceFileName);
+  SYMBOL_SC_(CorePkg, sourceLineColumn);
+  //	SYMBOL_SC_(CorePkg,backtrace);
+  //	Defun(backtrace);
+  //	defNoWrapPackage(CorePkg,"globals", &prim_globals,_LISP);
+  SYMBOL_SC_(CorePkg, findFileInLispPath);
+
+  SYMBOL_EXPORT_SC_(ClPkg, findClass);
+  SYMBOL_SC_(CorePkg, setf_findClass);
+
+  //	defNoWrapPackage(CorePkg,"print", &prim_print ,_LISP);
+
+  SYMBOL_SC_(CorePkg, isAssignableTo);
+  SYMBOL_SC_(CorePkg, isSubClassOf);
+
+  //	defNoWrapPackage(CorePkg,"derive", &prim_derive ,_LISP);
+  //	defNoWrapPackage(CorePkg,"isA", &prim_isA ,_LISP);
+
+  //	defNoWrapPackage(CorePkg,"parseConsOfStrings", &prim_parseConsOfStrings ,_LISP);
+
+  //	defNoWrapPackage(CorePkg,"sub", &prim_sub ,_LISP);
+  //	defNoWrapPackage(CorePkg,"-", &prim_sub ,_LISP);
+  //	defNoWrapPackage(CorePkg,"div", &prim_div ,_LISP);
+  //    defNoWrapPackage(CorePkg,"mod", &prim_mod ,_LISP);
+  //	defNoWrapPackage(CorePkg,"/", &prim_div ,_LISP);
+  //	defNoWrapPackage(CorePkg,"mul", &prim_mul ,_LISP);
+  //	defNoWrapPackage(CorePkg,"*", &prim_mul ,_LISP);
+  //	defNoWrapPackage(CorePkg,"className", &prim_className ,_LISP);
+
+  SYMBOL_SC_(CorePkg, repr);
+
+  SYMBOL_EXPORT_SC_(ClPkg, error);
+  SYMBOL_EXPORT_SC_(ClPkg, cerror);
+  SYMBOL_EXPORT_SC_(ExtPkg, setenv);
+  SYMBOL_EXPORT_SC_(ExtPkg, getenv);
+  SYMBOL_EXPORT_SC_(ClPkg, not);
+
+  SYMBOL_SC_(CorePkg, debugLogOn);
+  SYMBOL_SC_(CorePkg, debugLogOff);
+
+  // mpi commands that are always built in
+  SYMBOL_SC_(CorePkg, mpi_enabled);
+  SYMBOL_SC_(CorePkg, mpi_rank);
+  SYMBOL_SC_(CorePkg, mpi_size);
+  // Basic tests
+  //	defNoWrapPackage(CorePkg,"consp",&prim_consp,_LISP);
+  //	defNoWrapPackage(CorePkg,"symbolp",&prim_symbolp,_LISP);
+
+  // aliases for "list" command
+
+  SYMBOL_SC_(CorePkg, sorted);
+  SYMBOL_EXPORT_SC_(ClPkg, sort);
+  SYMBOL_EXPORT_SC_(ClPkg, macroexpand_1);
+  SYMBOL_EXPORT_SC_(ClPkg, macroexpand);
+
+  // information functions
+  SYMBOL_SC_(CorePkg, database_dir);
+  SYMBOL_SC_(CorePkg, script_dir);
+  SYMBOL_SC_(CorePkg, libraryPath);
+  SYMBOL_SC_(CorePkg, lispCodePath);
+  //	defNoWrapPackage(CorePkg,"dumpHidden", &prim_dumpHidden,_LISP);
+
+  SYMBOL_SC_(CorePkg, setCurrentWorkingDirectory);
+
+  SYMBOL_EXPORT_SC_(ClPkg, acons);
+  SYMBOL_EXPORT_SC_(ClPkg, assoc);
+  SYMBOL_EXPORT_SC_(ClPkg, member);
+
+  SYMBOL_SC_(CorePkg, member1);
+
+  SYMBOL_SC_(CorePkg, exportToPython);
+
+  SYMBOL_EXPORT_SC_(ClPkg, find_package);
+};
 };

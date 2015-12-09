@@ -154,7 +154,7 @@ void StructureObject_O::__write__(T_sp stream) const {
 void Integer_O::__write__(T_sp stream) const {
   StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
   int print_base = clasp_print_base();
-  core_integerToString(buffer, this->const_sharedThis<Integer_O>(),
+  core__integer_to_string(buffer, this->const_sharedThis<Integer_O>(),
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        true);
@@ -415,7 +415,7 @@ void Integer_O::__write__(T_sp stream) const {
 void
 _clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
   StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
-  core_integerToString(buffer,
+  core__integer_to_string(buffer,
                        clasp_make_fixnum(i), clasp_make_fixnum(clasp_print_base()), cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(), true);
   cl__write_sequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
 }
@@ -424,7 +424,7 @@ void write_fixnum(T_sp strm, T_sp i) {
   Fixnum_sp fn = gc::As<Fixnum_sp>(i);
   StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
   int print_base = clasp_print_base();
-  core_integerToString(buffer, fn,
+  core__integer_to_string(buffer, fn,
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        true);
@@ -482,16 +482,15 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
   return x;
 }
 
-#define ARGS_core__write_ugly_object "(obj &optional strm)"
-#define DECL_core__write_ugly_object ""
-#define DOCS_core__write_ugly_object "writeUglyObject"
-T_sp core__write_ugly_object(T_sp obj, T_sp ostrm) {
+LAMBDA(obj &optional strm);
+DECLARE();
+DOCSTRING("writeUglyObject");
+CL_DEFUN T_sp core__write_ugly_object(T_sp obj, T_sp ostrm) {
   _G();
   T_sp strm = coerce::outputStreamDesignator(ostrm);
   return write_ugly_object(obj, strm);
 };
 
 void initialize_write_ugly_object() {
-  Core_temp_Defun(write_ugly_object);
 }
 };

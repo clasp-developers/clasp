@@ -98,7 +98,7 @@ bool af_fixnumP(T_sp obj);
 bool af_bignumP(T_sp obj);
 bool af_stringP(T_sp obj);
 bool af_simpleStringP(T_sp obj);
-bool core__str_p(T_sp obj);
+bool core__simple_string_p(T_sp obj);
 bool cl__packagep(T_sp obj);
 bool af_booleanP(T_sp obj);
 bool af_specialFormP(T_sp obj);

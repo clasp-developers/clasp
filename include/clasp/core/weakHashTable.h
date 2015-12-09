@@ -121,7 +121,7 @@ struct gctools::GCInfo<core::WeakKeyHashTable_O> {
 TRANSLATE(core::WeakKeyHashTable_O);
 
 namespace core {
-WeakKeyHashTable_sp core_makeWeakKeyHashTable(Fixnum_sp size);
+WeakKeyHashTable_sp core__make_weak_key_hash_table(Fixnum_sp size);
 };
 
 #endif /* _core_WeakHashTable_H */

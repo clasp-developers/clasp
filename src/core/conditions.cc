@@ -116,10 +116,10 @@ CL_DEFUN T_sp cl__make_condition(T_sp type, List_sp slot_initializations) {
   return condition;
 };
 
-#define ARGS_core__condition_message "(c)"
-#define DECL_core__condition_message ""
-#define DOCS_core__condition_message "conditionMessage"
-string core__condition_message(T_sp condition) {
+LAMBDA(c);
+DECLARE();
+DOCSTRING("conditionMessage");
+CL_DEFUN string core__condition_message(T_sp condition) {
   if (CandoException_sp ce = condition.asOrNull<CandoException_O>()) {
     return ce->message();
   }
@@ -129,10 +129,10 @@ string core__condition_message(T_sp condition) {
 }
 
 #if 0
-#define ARGS_core__set_throw_position "(cond file function line)"
-#define DECL_core__set_throw_position ""
-#define DOCS_core__set_throw_position "setThrowPosition"
-    void core__set_throw_position(T_sp cond, Str_sp file, Str_sp function, Fixnum_sp line)
+LAMBDA(cond file function line);
+DECLARE();
+DOCSTRING("setThrowPosition");
+CL_DEFUN     void core__set_throw_position(T_sp cond, Str_sp file, Str_sp function, Fixnum_sp line)
     {_G();
 	if ( CandoException_sp ce = cond.asOrNull<CandoException_O>() )
 	{
@@ -150,9 +150,7 @@ void initialize_conditions() {
   SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
 
   SYMBOL_SC_(CorePkg, conditionMessage);
-  Core_temp_Defun(condition_message);
 
   //	SYMBOL_SC_(CorePkg,setThrowPosition);
-  //	Core_temp_Defun(set_throw_position);
 };
 };

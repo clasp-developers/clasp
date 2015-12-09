@@ -204,52 +204,52 @@ void WeakKeyHashTable_O::clrhash() {
   this->_HashTable.clrhash();
 }
 
-#define ARGS_core_makeWeakKeyHashTable "(&optional (size 16))"
-#define DECL_core_makeWeakKeyHashTable ""
-#define DOCS_core_makeWeakKeyHashTable "makeWeakKeyHashTable"
-WeakKeyHashTable_sp core_makeWeakKeyHashTable(Fixnum_sp size) {
+LAMBDA(&optional (size 16));
+DECLARE();
+DOCSTRING("makeWeakKeyHashTable");
+CL_DEFUN WeakKeyHashTable_sp core__make_weak_key_hash_table(Fixnum_sp size) {
   _G();
   int sz = unbox_fixnum(size);
   WeakKeyHashTable_sp ht = gctools::GCObjectAllocator<WeakKeyHashTable_O>::allocate(sz);
   return ht;
 }
 
-#define ARGS_core_weakGethash "(key hash-table &optional default-value)"
-#define DECL_core_weakGethash ""
-#define DOCS_core_weakGethash "weakGethash"
-T_mv core_weakGethash(T_sp tkey, WeakKeyHashTable_sp ht, T_sp defaultValue) {
+LAMBDA(key hash-table &optional default-value);
+DECLARE();
+DOCSTRING("weakGethash");
+CL_DEFUN T_mv core__weak_gethash(T_sp tkey, WeakKeyHashTable_sp ht, T_sp defaultValue) {
   _G();
   return ht->gethash(tkey, defaultValue);
 };
 
-#define ARGS_core_weakSetfGethash "(ht key value)"
-#define DECL_core_weakSetfGethash ""
-#define DOCS_core_weakSetfGethash "weakSetfGethash"
-void core_weakSetfGethash(T_sp key, WeakKeyHashTable_sp ht, T_sp val) {
+LAMBDA(ht key value);
+DECLARE();
+DOCSTRING("weakSetfGethash");
+CL_DEFUN void core__weak_setf_gethash(T_sp key, WeakKeyHashTable_sp ht, T_sp val) {
   _G();
   ht->setf_gethash(key, val);
 };
 
-#define ARGS_core_weakRemhash "(ht key)"
-#define DECL_core_weakRemhash ""
-#define DOCS_core_weakRemhash "weakRemhash"
-void core_weakRemhash(WeakKeyHashTable_sp ht, T_sp key) {
+LAMBDA(ht key);
+DECLARE();
+DOCSTRING("weakRemhash");
+CL_DEFUN void core__weak_remhash(WeakKeyHashTable_sp ht, T_sp key) {
   _G();
   ht->remhash(key);
 };
 
-#define ARGS_core_weakClrhash "(ht)"
-#define DECL_core_weakClrhash ""
-#define DOCS_core_weakClrhash "weakClrhash"
-void core_weakClrhash(WeakKeyHashTable_sp ht) {
+LAMBDA(ht);
+DECLARE();
+DOCSTRING("weakClrhash");
+CL_DEFUN void core__weak_clrhash(WeakKeyHashTable_sp ht) {
   _G();
   ht->clrhash();
 };
 
-#define ARGS_core_weakSplat "(ht idx)"
-#define DECL_core_weakSplat ""
-#define DOCS_core_weakSplat "weakSplat"
-void core_weakSplat(WeakKeyHashTable_sp ht, Fixnum_sp idx) {
+LAMBDA(ht idx);
+DECLARE();
+DOCSTRING("weakSplat");
+CL_DEFUN void core__weak_splat(WeakKeyHashTable_sp ht, Fixnum_sp idx) {
   _G();
   T_sp splatted;     // This will be NULL
   splatted.reset_(); // This will force it to be NULL
@@ -257,10 +257,10 @@ void core_weakSplat(WeakKeyHashTable_sp ht, Fixnum_sp idx) {
   (*ht->_HashTable._Keys).set(unbox_fixnum(idx), WeakKeyHashTable_O::value_type(splatted));
 };
 
-#define ARGS_core_weakRehash "(ht &optional sz)"
-#define DECL_core_weakRehash ""
-#define DOCS_core_weakRehash "weakRehash"
-void core_weakRehash(WeakKeyHashTable_sp ht, T_sp sz) {
+LAMBDA(ht &optional sz);
+DECLARE();
+DOCSTRING("weakRehash");
+CL_DEFUN void core__weak_rehash(WeakKeyHashTable_sp ht, T_sp sz) {
   _G();
   size_t newLength;
   if (sz.nilp()) {
@@ -277,13 +277,6 @@ void core_weakRehash(WeakKeyHashTable_sp ht, T_sp sz) {
 void WeakKeyHashTable_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<WeakKeyHashTable_O>()
       .def("weakHashTableSize", &WeakKeyHashTable_O::tableSize);
-  CoreDefun(makeWeakKeyHashTable);
-  CoreDefun(weakGethash);
-  CoreDefun(weakSetfGethash);
-  CoreDefun(weakRemhash);
-  CoreDefun(weakClrhash);
-  CoreDefun(weakSplat);
-  CoreDefun(weakRehash);
 }
 
 void WeakKeyHashTable_O::exposePython(Lisp_sp lisp) {

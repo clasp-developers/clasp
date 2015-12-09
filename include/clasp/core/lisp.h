@@ -209,7 +209,7 @@ struct ThreadInfo {
 extern __thread ThreadInfo *threadLocalInfoPtr;
 
 class Lisp_O {
-  friend T_mv core_sourceFileInfo(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);
+  friend T_mv core__source_file_info(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);
   struct GCRoots //: public gctools::HeapRoot
       {
     //! A pool of strings for string manipulation - must be per thread
@@ -293,7 +293,7 @@ class Lisp_O {
   friend class ConditionHandlerManager;
   friend class BootStrapCoreSymbolMap;
   friend T_sp sp_eval_when(List_sp args, T_sp env);
-  friend List_sp core_allSourceFiles();
+  friend List_sp core__all_source_files();
   template <class oclass>
   friend void define_base_class(Class_sp co, Class_sp cob, uint &classesUpdated);
   template <class oclass>
@@ -1047,5 +1047,10 @@ void cl__error(T_sp err, List_sp initializers);
 //TRANSLATE(core::Lisp_O);
 
 #define INTERN(x) _lisp->internWithPackageName(x, CurrentPkg)
+
+namespace core {
+  void initialize_Lisp_O();
+};
+
 
 #endif //]

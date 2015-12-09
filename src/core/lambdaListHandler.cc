@@ -297,7 +297,7 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
 
   Symbol_sp name_symbol = cl__gensym(Str_O::create("macro-name"));
   //	SourceCodeList_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
-  ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core_sourceFileInfo(lambda_list));
+  ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core__source_file_info(lambda_list));
   sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol, new_lambda_list);
   List_sp macro_ll = sclist.cons();
   if (_lisp->sourceDatabase().notnilp()) {
@@ -306,19 +306,19 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
   return macro_ll;
 }
 
-#define ARGS_core__process_macro_lambda_list "(lambda-list)"
-#define DECL_core__process_macro_lambda_list ""
-#define DOCS_core__process_macro_lambda_list "process_macro_lambda_list"
-T_sp core__process_macro_lambda_list(List_sp lambda_list) {
+LAMBDA(lambda-list);
+DECLARE();
+DOCSTRING("process_macro_lambda_list");
+CL_DEFUN T_sp core__process_macro_lambda_list(List_sp lambda_list) {
   _G();
   List_sp new_ll = LambdaListHandler_O::process_macro_lambda_list(lambda_list);
   return new_ll;
 }
 
-#define ARGS_core__process_single_dispatch_lambda_list "(lambda-list)"
-#define DECL_core__process_single_dispatch_lambda_list ""
-#define DOCS_core__process_single_dispatch_lambda_list "process_single_dispatch_lambda_list"
-T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
+LAMBDA(lambda-list);
+DECLARE();
+DOCSTRING("process_single_dispatch_lambda_list");
+CL_DEFUN T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
   _G();
   return LambdaListHandler_O::process_single_dispatch_lambda_list(lambda_list);
 }
@@ -868,10 +868,10 @@ DONE:
   return true;
 }
 
-#define ARGS_core__process_lambda_list "(vl context)"
-#define DECL_core__process_lambda_list ""
-#define DOCS_core__process_lambda_list "processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!"
-T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
+LAMBDA(vl context);
+DECLARE();
+DOCSTRING("processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!");
+CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   _G();
   gctools::Vec0<RequiredArgument> reqs;
   gctools::Vec0<OptionalArgument> optionals;
@@ -1199,13 +1199,10 @@ void LambdaListHandler_O::exposeCando(Lisp_sp lisp) {
       .def("namesOfLexicalVariablesForDebugging", &LambdaListHandler_O::namesOfLexicalVariablesForDebugging)
       .def("LambdaListHandler-lambdaList", &LambdaListHandler_O::lambdaList);
   SYMBOL_SC_(CorePkg, process_macro_lambda_list);
-  Core_temp_Defun(process_macro_lambda_list);
   SYMBOL_SC_(CorePkg, process_single_dispatch_lambda_list);
-  Core_temp_Defun(process_single_dispatch_lambda_list);
   af_def(CorePkg, "makeLambdaListHandler", &LambdaListHandler_O::makeLambdaListHandler, ARGS_LambdaListHandler_O_makeLambdaListHandler, DECL_LambdaListHandler_O_makeLambdaListHandler, DOCS_LambdaListHandler_O_makeLambdaListHandler);
   SYMBOL_SC_(CorePkg, makeLambdaListHandler);
   SYMBOL_SC_(CorePkg, processLambdaList);
-  Core_temp_Defun(process_lambda_list);
 }
 
 void LambdaListHandler_O::exposePython(Lisp_sp lisp) {

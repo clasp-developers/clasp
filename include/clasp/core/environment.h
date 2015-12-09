@@ -867,8 +867,8 @@ T_sp core__environment_activation_frame(T_sp env);
 
 bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val);
 
-T_mv core_lexicalFunction(T_sp sym, T_sp env);
-T_mv core_lexicalMacroFunction(T_sp sym, T_sp env);
+T_mv core__lexical_function(T_sp sym, T_sp env);
+T_mv core__lexical_macro_function(T_sp sym, T_sp env);
 };
 
 #endif //]

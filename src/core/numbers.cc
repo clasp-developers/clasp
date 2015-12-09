@@ -82,10 +82,10 @@ CL_DEFUN bool cl__zerop(T_sp num) {
   return clasp_zerop(gc::As<Number_sp>(num));
 }
 
-#define ARGS_core_convert_overflow_result_to_bignum "()"
-#define DECL_core_convert_overflow_result_to_bignum ""
-#define DOCS_core_convert_overflow_result_to_bignum "convert_overflow_result_to_bignum"
-Integer_sp core_convert_overflow_result_to_bignum(Fixnum_sp z) {
+LAMBDA();
+DECLARE();
+DOCSTRING("convert_overflow_result_to_bignum");
+CL_DEFUN Integer_sp core__convert_overflow_result_to_bignum(Fixnum_sp z) {
   if ((Fixnum)z.raw_() > 0) {
     return contagen_sub(z, _lisp->_Roots._IntegerOverflowAdjust);
   } else {
@@ -93,10 +93,10 @@ Integer_sp core_convert_overflow_result_to_bignum(Fixnum_sp z) {
   }
 }
 
-#define ARGS_core_fixnum_number_of_bits "()"
-#define DECL_core_fixnum_number_of_bits ""
-#define DOCS_core_fixnum_number_of_bits "fixnum_number_of_bits"
-Fixnum_sp core_fixnum_number_of_bits() {
+LAMBDA();
+DECLARE();
+DOCSTRING("fixnum_number_of_bits");
+CL_DEFUN Fixnum_sp core__fixnum_number_of_bits() {
   int num = gc::fixnum_bits;
   return make_fixnum(num);
 };
@@ -1342,8 +1342,6 @@ void Number_O::exposeCando(Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(ClPkg, zerop);
 
   SYMBOL_SC_(CorePkg, fixnum_number_of_bits);
-  CoreDefun(fixnum_number_of_bits);
-  CoreDefun(convert_overflow_result_to_bignum);
 
   Defun(_LT_);
   Defun(_GT_);
@@ -1485,10 +1483,10 @@ void Rational_O::exposePython(Lisp_sp lisp) {
 #endif
 };
 
-#define ARGS_core__nan "(num)"
-#define DECL_core__nan ""
-#define DOCS_core__nan "Return a number that is NAN"
-DoubleFloat_mv core__nan() {
+LAMBDA(num);
+DECLARE();
+DOCSTRING("Return a number that is NAN");
+CL_DEFUN DoubleFloat_mv core__nan() {
   _G();
   DoubleFloat_sp rnan = DoubleFloat_O::create(NAN);
   return (Values(rnan));
@@ -2264,7 +2262,6 @@ void DoubleFloat_O::exposeCando(Lisp_sp lisp) {
       //	    .def("exp",&DoubleFloat_O::exp)
       //.def("core:isnan", &DoubleFloat_O::isnan);
       SYMBOL_SC_(CorePkg, nan);
-  Core_temp_Defun(nan);
   ;
 }
 
@@ -3620,10 +3617,10 @@ CL_DEFUN Number_sp cl__log(Number_sp number, T_sp base) {
   return clasp_log2(gc::As<Number_sp>(base), number);
 }
 
-#define ARGS_core__log1p "(arg)"
-#define DECL_core__log1p ""
-#define DOCS_core__log1p "log1p"
-Number_sp core__log1p(Number_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("log1p");
+CL_DEFUN Number_sp core__log1p(Number_sp arg) {
   _G();
   return clasp_log1p(arg);
 };
@@ -3702,7 +3699,6 @@ void initialize_numbers() {
   SYMBOL_EXPORT_SC_(ClPkg, conjugate);
   SYMBOL_EXPORT_SC_(ClPkg, log);
   SYMBOL_EXPORT_SC_(CorePkg, log1p);
-  Core_temp_Defun(log1p);
   SYMBOL_EXPORT_SC_(ClPkg, expt);
   SYMBOL_EXPORT_SC_(ClPkg, exp);
 

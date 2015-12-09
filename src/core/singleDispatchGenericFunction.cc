@@ -47,10 +47,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_core_ensureSingleDispatchGenericFunction "(gfname llhandler)"
-#define DECL_core_ensureSingleDispatchGenericFunction ""
-#define DOCS_core_ensureSingleDispatchGenericFunction "ensureSingleDispatchGenericFunction"
-T_sp core_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler) {
+LAMBDA(gfname llhandler);
+DECLARE();
+DOCSTRING("ensureSingleDispatchGenericFunction");
+CL_DEFUN T_sp core__ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llhandler) {
   _G();
   T_sp gfn = Lisp_O::find_single_dispatch_generic_function(gfname, false);
   //        printf("%s:%d find_single_dispatch_generic_function(%s) --> %p\n", __FILE__, __LINE__, _rep_(gfname).c_str(), gfn.raw_() );
@@ -72,10 +72,10 @@ T_sp core_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandle
   return gfn;
 };
 
-#define ARGS_core_ensureSingleDispatchMethod "(gfname receiver-class &key lambda-list-handler declares (docstring \"\") body )"
-#define DECL_core_ensureSingleDispatchMethod ""
-#define DOCS_core_ensureSingleDispatchMethod "ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function"
-void core_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body) {
+LAMBDA("gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ");
+DECLARE();
+DOCSTRING("ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function");
+CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body) {
   //	string docstr = docstring->get();
   if (!gfname->fboundp()) {
     SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));
@@ -234,9 +234,7 @@ void SingleDispatchGenericFunction_O::exposeCando(::core::Lisp_sp lisp) {
       //	    .def("single-dispatch-generic-function-dispatch-on-index",&SingleDispatchGenericFunction_O::dispatch_on_index)
       .def("SingleDispatchGenericFunction-methods", &SingleDispatchGenericFunction_O::methods);
   SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchGenericFunction);
-  CoreDefun(ensureSingleDispatchGenericFunction);
   SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchMethod);
-  CoreDefun(ensureSingleDispatchMethod);
 }
 
 void SingleDispatchGenericFunction_O::exposePython(::core::Lisp_sp lisp) {

@@ -1550,7 +1550,7 @@ str_out_write_char(T_sp strm, claspCharacter c) {
 static T_sp
 str_out_element_type(T_sp strm) {
   T_sp string = StringOutputStreamOutputString(strm);
-  if (core__str_p(string))
+  if (core__simple_string_p(string))
     return cl::_sym_base_char;
   return cl::_sym_character;
 }
@@ -1615,10 +1615,10 @@ const FileOps str_out_ops = {
     str_out_column,
     generic_close};
 
-#define ARGS_core_make_string_output_stream_from_string "(s)"
-#define DECL_core_make_string_output_stream_from_string ""
-#define DOCS_core_make_string_output_stream_from_string "make_string_output_stream_from_string"
-T_sp core_make_string_output_stream_from_string(T_sp s) {
+LAMBDA(s);
+DECLARE();
+DOCSTRING("make_string_output_stream_from_string");
+CL_DEFUN T_sp core__make_string_output_stream_from_string(T_sp s) {
   _G();
   T_sp strm = StringOutputStream_O::create();
   bool stringp = af_stringP(s);
@@ -1633,7 +1633,7 @@ T_sp core_make_string_output_stream_from_string(T_sp s) {
   StreamFlags(strm) = CLASP_STREAM_DEFAULT_FORMAT;
   StreamByteSize(strm) = 8;
 #else
-  if (core__str_p(s)) {
+  if (core__simple_string_p(s)) {
     StreamFormat(strm) = kw::_sym_latin_1;
     StreamFlags(strm) = CLASP_STREAM_LATIN_1;
     StreamByteSize(strm) = 8;
@@ -1652,7 +1652,7 @@ T_sp clasp_make_string_output_stream(cl_index line_length, bool extended) {
 #else
   T_sp s = StrWithFillPtr_O::createBufferString(line_length); // clasp_alloc_adjustable_base_string(line_length);
 #endif
-  return core_make_string_output_stream_from_string(s);
+  return core__make_string_output_stream_from_string(s);
 }
 
 LAMBDA("&key (element-type 'character)");
@@ -1740,7 +1740,7 @@ str_in_listen(T_sp strm) {
 static T_sp
 str_in_element_type(T_sp strm) {
   T_sp string = StringInputStreamInputString(strm);
-  if (core__str_p(string))
+  if (core__simple_string_p(string))
     return cl::_sym_base_char;
   return cl::_sym_character;
 }
@@ -1810,7 +1810,7 @@ T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) 
   StreamFlags(strm) = CLASP_STREAM_DEFAULT_FORMAT;
   StreamByteSize(strm) = 8;
 #else
-  if (core__str_p(strng) == t_base_string) {
+  if (core__simple_string_p(strng) == t_base_string) {
     StreamFormat(strm) = kw::_sym_latin_1;
     StreamFlags(strm) = CLASP_STREAM_LATIN_1;
     StreamByteSize(strm) = 8;
@@ -4063,11 +4063,11 @@ maybe_make_windows_console_fd(T_sp fname, int desc, StreamMode smm,
 #define maybe_make_windows_console_fd clasp_make_file_stream_from_fd
 #endif
 
-#define ARGS_core_set_buffering_mode "(stream mode)"
-#define DECL_core_set_buffering_mode ""
-#define DOCS_core_set_buffering_mode "set-buffering-mode"
-
-T_sp core_set_buffering_mode(T_sp stream, T_sp buffer_mode_symbol) {
+LAMBDA(stream mode);
+DECLARE();
+DOCSTRING("set-buffering-mode");
+CL_DEFUN 
+T_sp core__set_buffering_mode(T_sp stream, T_sp buffer_mode_symbol) {
   enum StreamMode mode = StreamMode(stream);
   int buffer_mode;
 
@@ -4227,10 +4227,10 @@ BEGIN:
   return -1;
 }
 
-#define ARGS_core_file_stream_fd "(s)"
-#define DECL_core_file_stream_fd ""
-#define DOCS_core_file_stream_fd "core-file-stream-fd"
-T_sp core_file_stream_fd(T_sp s) {
+LAMBDA(s);
+DECLARE();
+DOCSTRING("core-file-stream-fd");
+CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
   T_sp ret;
   unlikely_if(!AnsiStreamP(s))
       FEerror("file_stream_fd: not a stream", 0);
@@ -4369,7 +4369,7 @@ T_sp core_file_stream_fd(T_sp s) {
 	StreamMode(strm) = clasp_smm_sequence_input;
         if (!byte_size) {
 #if defined(ECL_UNICODE)
-            if (core__str_p(vector)) {
+            if (core__simple_string_p(vector)) {
                 if (Null(external_format))
                     external_format = kw::_sym_default;
             } else {
@@ -4516,7 +4516,7 @@ T_sp core_file_stream_fd(T_sp s) {
 	StreamMode(strm) = clasp_smm_sequence_output;
         if (!byte_size) {
 #if defined(ECL_UNICODE)
-            if (core__str_p(vector)) {
+            if (core__simple_string_p(vector)) {
                 if (Null(external_format))
                     external_format = kw::_sym_default;
             } else {
@@ -4749,10 +4749,10 @@ BEGIN:
   return make_fixnum(l);
 }
 
-#define ARGS_core_do_write_sequence "(seq stream start end)"
-#define DECL_core_do_write_sequence ""
-#define DOCS_core_do_write_sequence "do_write_sequence"
-T_sp core_do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
+LAMBDA(seq stream start end);
+DECLARE();
+DOCSTRING("do_write_sequence");
+CL_DEFUN T_sp core__do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
   gctools::Fixnum start, limit, end(0);
 
   /* Since we have called clasp_length(), we know that SEQ is a valid
@@ -5144,7 +5144,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
     }
     output = clasp_make_stream_from_FILE(fn, fp, smm, byte_size, flags,
                                          external_format);
-    core_set_buffering_mode(output, byte_size ? kw::_sym_full : kw::_sym_line);
+    core__set_buffering_mode(output, byte_size ? kw::_sym_full : kw::_sym_line);
   } else {
     output = clasp_make_file_stream_from_fd(fn, f, smm, byte_size, flags,
                                             external_format);
@@ -5688,17 +5688,17 @@ THIS NEEDS TO BE TAKEN OUT
     }
 #endif
 
-#define ARGS_core__stream_linenumber "(stream)"
-#define DECL_core__stream_linenumber ""
-#define DOCS_core__stream_linenumber "streamLinenumber"
-int core__stream_linenumber(T_sp tstream) {
+LAMBDA(stream);
+DECLARE();
+DOCSTRING("streamLinenumber");
+CL_DEFUN int core__stream_linenumber(T_sp tstream) {
   return clasp_input_lineno(tstream);
 };
 
-#define ARGS_core__stream_column "(stream)"
-#define DECL_core__stream_column ""
-#define DOCS_core__stream_column "streamColumn"
-int core__stream_column(T_sp tstream) {
+LAMBDA(stream);
+DECLARE();
+DOCSTRING("streamColumn");
+CL_DEFUN int core__stream_column(T_sp tstream) {
   return clasp_input_column(tstream);
 };
 };
@@ -5766,10 +5766,10 @@ int clasp_input_column(T_sp strm) {
   return 0;
 }
 
-#define ARGS_core_inputStreamSourcePosInfo "(arg)"
-#define DECL_core_inputStreamSourcePosInfo ""
-#define DOCS_core_inputStreamSourcePosInfo "sourcePosInfo"
-SourcePosInfo_sp core_inputStreamSourcePosInfo(T_sp strm) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("sourcePosInfo");
+CL_DEFUN SourcePosInfo_sp core__input_stream_source_pos_info(T_sp strm) {
   strm = coerce::inputStreamDesignator(strm);
   SourceFileInfo_sp sfi = clasp_input_source_file_info(strm);
   size_t filePos = clasp_input_filePos(strm);
@@ -5782,7 +5782,7 @@ SourcePosInfo_sp core_inputStreamSourcePosInfo(T_sp strm) {
 
 SourceFileInfo_sp clasp_input_source_file_info(T_sp strm) {
   T_sp filename = clasp_filename(strm);
-  SourceFileInfo_sp sfi = core_sourceFileInfo(filename);
+  SourceFileInfo_sp sfi = core__source_file_info(filename);
   return sfi;
 }
 };
@@ -6333,10 +6333,10 @@ CL_DEFUN void cl__unread_char(Character_sp ch, T_sp dstrm) {
   clasp_unread_char(clasp_as_char(ch), dstrm);
 };
 
-#define ARGS_core_fileColumn "(arg)"
-#define DECL_core_fileColumn ""
-#define DOCS_core_fileColumn "column"
-T_sp core_fileColumn(T_sp strm) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("column");
+CL_DEFUN T_sp core__file_column(T_sp strm) {
   _G();
   strm = coerce::outputStreamDesignator(strm);
   return make_fixnum(clasp_file_column(strm));
@@ -6443,12 +6443,9 @@ void initialize_lispStream() {
   SYMBOL_EXPORT_SC_(ClPkg, listen);
   SYMBOL_EXPORT_SC_(ClPkg, unread_char);
   SYMBOL_EXPORT_SC_(CorePkg, fileColumn);
-  CoreDefun(fileColumn);
   SYMBOL_EXPORT_SC_(CorePkg, makeStringOutputStreamFromString);
-  CoreDefun(make_string_output_stream_from_string);
   SYMBOL_EXPORT_SC_(ClPkg, makeStringOutputStream);
   SYMBOL_EXPORT_SC_(CorePkg, do_write_sequence);
-  CoreDefun(do_write_sequence);
   SYMBOL_EXPORT_SC_(ClPkg, writeByte);
   SYMBOL_EXPORT_SC_(ClPkg, input_stream_p);
   SYMBOL_EXPORT_SC_(ClPkg, output_stream_p);
@@ -6457,12 +6454,7 @@ void initialize_lispStream() {
   SYMBOL_EXPORT_SC_(ClPkg, close);
   SYMBOL_EXPORT_SC_(ClPkg, get_output_stream_string);
   SYMBOL_EXPORT_SC_(CorePkg, streamLinenumber);
-  Core_temp_Defun(stream_linenumber);
   SYMBOL_EXPORT_SC_(CorePkg, streamColumn);
-  Core_temp_Defun(stream_column);
   SYMBOL_EXPORT_SC_(ClPkg, synonymStreamSymbol);
-  CoreDefun(set_buffering_mode);
-  CoreDefun(file_stream_fd);
-  CoreDefun(inputStreamSourcePosInfo);
 }
 };

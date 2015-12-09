@@ -575,8 +575,8 @@ namespace core {
 List_sp coerce_to_list(T_sp o);
 
 T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value);
-List_sp core_put_f(List_sp plist, T_sp value, T_sp indicator);
-T_mv core_rem_f(List_sp plist, Symbol_sp indicator);
+List_sp core__put_f(List_sp plist, T_sp value, T_sp indicator);
+T_mv core__rem_f(List_sp plist, Symbol_sp indicator);
 };
 
 namespace core {

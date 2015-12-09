@@ -2,17 +2,18 @@
 #
 # grovel project directories for symbols and classes
 #
-(export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/symbolGroveler.py include/generated/symbols_scraped_python_inc.h `cat project-directories.config`)
+#(export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/symbolGroveler.py include/generated/symbols_scraped_python_inc.h `cat project-directories.config`)
 (export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/classGroveler.py include/generated/initClasses_inc.h `cat project-directories.config` 2>registerClasses.log)
 
 #
 # Run the new SBCL scraper
 # currently it needs the files generated above by the python grovelers
 #
-bjam $* -n -a >/tmp/all-commands.txt
-bjam $* -n >/tmp/commands.txt
-echo Running $CLASP_SBCL --load $CLASP_HOME/src/scraper/scraper.lisp -- `$LLVM_CONFIG_RELEASE --bindir`/clang `pwd`/ `pwd`/include/application.config /tmp/all-commands.txt /tmp/commands.txt
-$CLASP_SBCL --load $CLASP_HOME/src/scraper/scraper.lisp -- `$LLVM_CONFIG_RELEASE --bindir`/clang `pwd`/ `pwd`/include/application.config /tmp/all-commands.txt /tmp/commands.txt
+install -d bin
+bjam $* -n -a >bin/all-commands.txt
+bjam $* -n >bin/commands.txt
+echo Running $CLASP_SBCL --load $CLASP_HOME/src/scraper/scraper.lisp -- `$LLVM_CONFIG_RELEASE --bindir`/clang `pwd`/ `pwd`/include/application.config bin/all-commands.txt bin/commands.txt
+$CLASP_SBCL --load $CLASP_HOME/src/scraper/scraper.lisp -- `$LLVM_CONFIG_RELEASE --bindir`/clang `pwd`/ `pwd`/include/application.config bin/all-commands.txt bin/commands.txt
 
 #
 # run bjam to build app

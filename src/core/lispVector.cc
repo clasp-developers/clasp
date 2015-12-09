@@ -51,12 +51,12 @@ CL_DEFUN Vector_sp cl__vector(List_sp args) {
   Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(), args, cl__length(args), false, cl::_sym_T_O);
   return vec;
 };
-
-#define ARGS_core_make_vector "(element-type dimension &optional adjustable (fill-pointer t) displaced-to displaced-index-offset initial-element initial-contents)"
-#define DECL_core_make_vector ""
-#define DOCS_core_make_vector "make_vector See si_make_vector in ecl>>array.d"
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
-Vector_sp core_make_vector(T_sp element_type,
+
+LAMBDA(element-type dimension &optional adjustable (fill-pointer t) displaced-to displaced-index-offset initial-element initial-contents);
+DECLARE();
+DOCSTRING("make_vector See si_make_vector in ecl>>array.d");
+CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
                            int dimension,
                            bool adjustable,
                            T_sp fill_pointer,
@@ -118,10 +118,10 @@ Vector_sp core_make_vector(T_sp element_type,
   SIMPLE_ERROR(BF("Handle make-vector :element-type %s") % _rep_(element_type));
 };
 
-#define ARGS_core_adjustVector "(array dimensions initial-element initial-contents)"
-#define DECL_core_adjustVector ""
-#define DOCS_core_adjustVector "adjustVector"
-T_sp core_adjustVector(T_sp array, int new_dimensions, T_sp initial_element, List_sp initial_contents) {
+LAMBDA(array dimensions initial-element initial-contents);
+DECLARE();
+DOCSTRING("adjustVector");
+CL_DEFUN T_sp core__adjust_vector(T_sp array, int new_dimensions, T_sp initial_element, List_sp initial_contents) {
   _G();
   if (VectorObjects_sp vo = array.asOrNull<VectorObjects_O>()) {
     vo->adjust(initial_element, initial_contents, new_dimensions);
@@ -249,9 +249,7 @@ void Vector_O::exposeCando(::core::Lisp_sp lisp) {
       //	.initArgs("(self)")
       ;
   SYMBOL_SC_(CorePkg, make_vector);
-  CoreDefun(make_vector);
   SYMBOL_EXPORT_SC_(CorePkg, adjustVector);
-  CoreDefun(adjustVector);
   SYMBOL_EXPORT_SC_(ClPkg, vectorPush);
   SYMBOL_EXPORT_SC_(ClPkg, vectorPushExtend);
 }

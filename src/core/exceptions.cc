@@ -126,10 +126,10 @@ CxxFunctionInvocationLogger::~CxxFunctionInvocationLogger() {
   _lisp->debugLog().endNode(DEBUG_CPP_FUNCTION);
 };
 
-#define ARGS_core__signal_simple_error "(base-condition continue-message format-control format-args &rest args)"
-#define DECL_core__signal_simple_error ""
-#define DOCS_core__signal_simple_error "signalSimpleError"
-T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args) {
+LAMBDA(base-condition continue-message format-control format-args &rest args);
+DECLARE();
+DOCSTRING("signalSimpleError");
+CL_DEFUN T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args) {
   printf("%s:%d core__signal_simple_error  caught because signal-simple-error is not installed yet\n", __FILE__, __LINE__);
   printf("%s\n", _rep_(baseCondition).c_str());
   cl__format(_lisp->_true(), formatControl, formatArgs);
@@ -596,10 +596,10 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
   }
 };
 
-#define ARGS_core__wrong_type_argument "(source-file lineno function narg value type)"
-#define DECL_core__wrong_type_argument ""
-#define DOCS_core__wrong_type_argument "wrongTypeArgument"
-void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
+LAMBDA(source-file lineno function narg value type);
+DECLARE();
+DOCSTRING("wrongTypeArgument");
+CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
   _G();
   stringstream message;
   if (function.nilp()) {
@@ -627,10 +627,10 @@ void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp f
   }
 };
 
-#define ARGS_core__wrong_type_nth_arg "(source-file lineno function narg value type)"
-#define DECL_core__wrong_type_nth_arg ""
-#define DOCS_core__wrong_type_nth_arg "wrongTypeNthArg"
-void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
+LAMBDA(source-file lineno function narg value type);
+DECLARE();
+DOCSTRING("wrongTypeNthArg");
+CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
   if (function.nilp()) {
     stringstream message;
     message << "In an anonymous function, "
@@ -658,10 +658,10 @@ void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp fu
   }
 };
 
-#define ARGS_core__wrong_index "(source-file lineno function narg value type)"
-#define DECL_core__wrong_index ""
-#define DOCS_core__wrong_index "wrongIndex"
-void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int nonincl_limit) {
+LAMBDA(source-file lineno function narg value type);
+DECLARE();
+DOCSTRING("wrongIndex");
+CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int nonincl_limit) {
   if (function.nilp()) {
     const char *message1 =
         "In an anonymous function, "
@@ -836,10 +836,7 @@ void clasp_internal_error(const char *msg) {
 
 void initialize_exceptions() {
   SYMBOL_EXPORT_SC_(CorePkg, signalSimpleError);
-  Core_temp_Defun(signal_simple_error);
   SYMBOL_EXPORT_SC_(CorePkg, wrongTypeNthArg);
-  Core_temp_Defun(wrong_type_nth_arg)
       SYMBOL_EXPORT_SC_(CorePkg, wrongIndex);
-  Core_temp_Defun(wrong_index)
 };
 };

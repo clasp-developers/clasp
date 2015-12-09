@@ -130,7 +130,7 @@ public:
     RECORD_LOG(BF("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s") % _rep_(name));
     switch (this->stage()) {
     case saving: {
-      Vector_sp vec_value = core_make_vector(cl::_sym_T_O, value.size());
+      Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
       size_t idx(0);
       for (auto it : value)
         vec_value->operator[](idx++) = it;

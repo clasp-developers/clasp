@@ -563,7 +563,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
     core::Number_sp diff = core::contagen_sub(endTime, startTime);
     core::Number_sp seconds = core::contagen_div(diff, gc::As<Number_sp>(cl::_sym_internalTimeUnitsPerSecond->symbolValue()));
     double dseconds = clasp_to_double(seconds);
-    core::SourceFileInfo_sp sfi = core::core_sourceFileInfo(core::make_fixnum(*sourceFileInfoHandleP));
+    core::SourceFileInfo_sp sfi = core::core__source_file_info(core::make_fixnum(*sourceFileInfoHandleP));
     printf("TOP-LEVEL-FUNCTION-TIME %lf %s %d\n", dseconds, sfi->namestring().c_str(), lineno);
   }
 #endif
@@ -1294,7 +1294,7 @@ void assignSourceFileInfoHandle(const char *moduleName, const char *sourceDebugP
   //	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
   core::Str_sp mname = core::Str_O::create(moduleName);
   core::Str_sp struename = core::Str_O::create(sourceDebugPathname);
-  SourceFileInfo_mv sfi_mv = core::core_sourceFileInfo(mname, struename, sourceDebugOffset, useLineno ? true : false);
+  SourceFileInfo_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet(1)));
 #if 0
 	if ( sfindex == 0 ) {
@@ -1309,7 +1309,7 @@ void assignSourceFileInfoHandle(const char *moduleName, const char *sourceDebugP
 void debugSourceFileInfoHandle(int *sourceFileInfoHandleP) {
   int sfindex = *sourceFileInfoHandleP;
   core::Fixnum_sp fn = core::make_fixnum(sfindex);
-  SourceFileInfo_sp sfi = core::core_sourceFileInfo(fn);
+  SourceFileInfo_sp sfi = core::core__source_file_info(fn);
   printf("%s:%d debugSourceFileInfoHandle[%d] --> %s\n", __FILE__, __LINE__, sfindex, _rep_(sfi).c_str());
 }
 };
@@ -1578,7 +1578,7 @@ void popDynamicBinding(core::Symbol_sp *symbolP) {
     ss << " popDynamicBinding of " << _rep_(*symbolP) << std::endl;
     ss << "  mismatch with top of dynamic binding stack: " << _rep_(top) << std::endl;
     ss << "  dumping stack: " << std::endl;
-    core_dynamicBindingStackDump(ss);
+    core::core__dynamic_binding_stack_dump(ss);
     SIMPLE_ERROR(BF("Mismatch in popDynamicBinding:\n%s") % ss.str());
   }
   _lisp->bindings().pop();

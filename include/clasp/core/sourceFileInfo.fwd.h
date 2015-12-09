@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_sourceFileInfo_fwd_H_
-#define _core_sourceFileInfo_fwd_H_
+#ifndef _core__source_file_info_fwd_H_
+#define _core__source_file_info_fwd_H_
 
 namespace core {
 FORWARD(SourceFileInfo);
@@ -38,4 +38,4 @@ uint clasp_sourcePosInfo_lineno(SourcePosInfo_sp info);
 uint clasp_sourcePosInfo_column(SourcePosInfo_sp info);
 };
 
-#endif /* _core_sourceFileInfo_fwd_H_ */
+#endif /* _core__source_file_info_fwd_H_ */

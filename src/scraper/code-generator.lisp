@@ -1,5 +1,9 @@
 (in-package :cscrape)
 
+(define-condition bad-c++-name (error)
+  ((name :initarg :name :accessor name))
+  (:report (lambda (condition stream)
+             (format stream "Bad C++ function name: ~a" (name condition)))))
 
 (defun group-expose-functions-by-namespace (tags)
   (let ((ns-hashes (make-hash-table :test #'equal))
@@ -35,34 +39,39 @@
   (declare (optimize (debug 3)))
   (let ((under (search "__" name :test #'string=)))
     (unless under
-      (error "Could not translate ~a into a package:symbol-name pair" name))
+      (error 'bad-c++-name :name name))
     (let* ((name-pos (+ 2 under)))
       (values (subseq name 0 under)
               (subseq name name-pos)))))
 
 (defun generate-expose-function-bindings (sout ns-grouped-expose-functions)
   (declare (optimize (debug 3)))
-  (format sout "#ifdef EXPOSE_FUNCTION_BINDINGS~%")
-  (maphash (lambda (ns funcs-ht)
-             (maphash (lambda (name f)
-                        (declare (ignore name))
-                        (let* ((lambda-list-tag (tags:lambda-tag f))
-                               (lambda-list-str (if lambda-list-tag
-                                                    (tags:lambda-list lambda-list-tag)
-                                                    nil)))
-                          (multiple-value-bind (pkg name)
-                              (split-c++-name (tags:function-name f))
-                            (format sout "  expose_function(\"~a\",\"~a\",~a,&~a::~a,~s);~%"
-                                    pkg name
-                                    "true"
-                                    ns
-                                    (tags:function-name f)
-                                    (if lambda-list-str
-                                        (format nil "(~a)" lambda-list-str)
-                                        "")))))
-                      funcs-ht))
-           ns-grouped-expose-functions)
-  (format sout "#endif // EXPOSE_FUNCTION_BINDINGS~%"))
+  (flet ((expose-one (f ns)
+           (let* ((lambda-list-tag (tags:lambda-tag f))
+                  (lambda-list-str (if lambda-list-tag
+                                       (tags:lambda-list lambda-list-tag)
+                                       nil)))
+             (multiple-value-bind (pkg name)
+                 (split-c++-name (tags:function-name f))
+               (format sout "  expose_function(\"~a\",\"~a\",~a,&~a::~a,~s);~%"
+                       pkg name
+                       "true"
+                       ns
+                       (tags:function-name f)
+                       (if lambda-list-str
+                           (format nil "(~a)" lambda-list-str)
+                           ""))))))
+    (format sout "#ifdef EXPOSE_FUNCTION_BINDINGS~%")
+    (maphash (lambda (ns funcs-ht)
+               (maphash (lambda (name f)
+                          (declare (ignore name))
+                          (handler-case
+                              (expose-one f ns)
+                            (serious-condition (condition)
+                              (error "There was an error while exposing a function in ~a at line ~d~%~a~%" (tags:file f) (tags:line f) condition))))
+                        funcs-ht))
+             ns-grouped-expose-functions)
+    (format sout "#endif // EXPOSE_FUNCTION_BINDINGS~%")))
 
 
 (defun extract-unique-source-info-tags (tags)
@@ -88,7 +97,7 @@
            (docstring-tag (tags:docstring-tag f))
            (docstring (if docstring-tag
                           (tags:docstring docstring-tag)
-                          "")))
+                          "\"\"")))
       (multiple-value-bind (package-name symbol-name)
           (split-c++-name fn)
         (format sout "  { \"~a\", \"~a\", ~s, ~d, ~d, ~a }, ~%"

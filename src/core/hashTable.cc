@@ -52,10 +52,10 @@ namespace core {
 
 bool DebugHashTable = false;
 
-#define ARGS_core_DebugHashTable "(on)"
-#define DECL_core_DebugHashTable ""
-#define DOCS_core_DebugHashTable "DebugHashTable"
-void core_DebugHashTable(bool don) {
+LAMBDA(on);
+DECLARE();
+DOCSTRING("DebugHashTable");
+CL_DEFUN void core__debug_hash_table(bool don) {
   DebugHashTable = don;
 }
 
@@ -95,7 +95,7 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   SYMBOL_EXPORT_SC_(KeywordPkg, key);
   if (weakness.notnilp()) {
     if (weakness == INTERN_(kw, key)) {
-      return core_makeWeakKeyHashTable(clasp_make_fixnum(size));
+      return core__make_weak_key_hash_table(clasp_make_fixnum(size));
     }
     SIMPLE_ERROR(BF("Only :weakness :key (weak-key hash tables) are currently supported"));
   }
@@ -125,10 +125,10 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   return table;
 }
 
-#define ARGS_core_hash_table_weakness "(ht)"
-#define DECL_core_hash_table_weakness ""
-#define DOCS_core_hash_table_weakness "hash_table_weakness"
-Symbol_sp core_hash_table_weakness(T_sp ht) {
+LAMBDA(ht);
+DECLARE();
+DOCSTRING("hash_table_weakness");
+CL_DEFUN Symbol_sp core__hash_table_weakness(T_sp ht) {
   if (WeakKeyHashTable_sp wkht = ht.asOrNull<WeakKeyHashTable_O>()) {
     (void)wkht;
     return kw::_sym_key;
@@ -182,20 +182,20 @@ CL_DEFUN T_mv cl__clrhash(HashTable_sp hash_table) {
   return (Values(_Nil<T_O>()));
 };
 
-#define ARGS_core__hash_table_entry_deleted_p "(cons)"
-#define DECL_core__hash_table_entry_deleted_p ""
-#define DOCS_core__hash_table_entry_deleted_p "hashTableEntryDeletedP"
-bool core__hash_table_entry_deleted_p(T_sp cons) {
+LAMBDA(cons);
+DECLARE();
+DOCSTRING("hashTableEntryDeletedP");
+CL_DEFUN bool core__hash_table_entry_deleted_p(T_sp cons) {
   _G();
   if (!cons.consp())
     SIMPLE_ERROR(BF("Arg must be a cons"));
   return oCdr(gc::As<Cons_sp>(cons)).unboundp();
 };
 
-#define ARGS_core__hash_eql "(&rest args)"
-#define DECL_core__hash_eql ""
-#define DOCS_core__hash_eql "hash_eql generates an eql hash for a list of objects"
-int core__hash_eql(List_sp args) {
+LAMBDA(&rest args);
+DECLARE();
+DOCSTRING("hash_eql generates an eql hash for a list of objects");
+CL_DEFUN int core__hash_eql(List_sp args) {
   _G();
   HashGenerator hg;
   for (auto cur : args) {
@@ -206,10 +206,10 @@ int core__hash_eql(List_sp args) {
   return hg.hash();
 };
 
-#define ARGS_core__hash_equal "(&rest args)"
-#define DECL_core__hash_equal ""
-#define DOCS_core__hash_equal "hash_equal generates an equal hash for a list of objects"
-int core__hash_equal(List_sp args) {
+LAMBDA(&rest args);
+DECLARE();
+DOCSTRING("hash_equal generates an equal hash for a list of objects");
+CL_DEFUN int core__hash_equal(List_sp args) {
   _G();
   HashGenerator hg;
   for (auto cur : args) {
@@ -220,10 +220,10 @@ int core__hash_equal(List_sp args) {
   return hg.hash();
 };
 
-#define ARGS_core__hash_equalp "(&rest args)"
-#define DECL_core__hash_equalp ""
-#define DOCS_core__hash_equalp "hash_equalp generates an equalp hash for a list of objects"
-int core__hash_equalp(List_sp args) {
+LAMBDA(&rest args);
+DECLARE();
+DOCSTRING("hash_equalp generates an equalp hash for a list of objects");
+CL_DEFUN int core__hash_equalp(List_sp args) {
   _G();
   HashGenerator hg;
   for (auto cur : args) {
@@ -478,7 +478,7 @@ void HashTable_O::fields(Record_sp node) {
     };
   } break;
   case Record_O::saving: {
-    Vector_sp keyValueVec = core_make_vector(cl::_sym_T_O, 2 * this->hashTableCount());
+    Vector_sp keyValueVec = core__make_vector(cl::_sym_T_O, 2 * this->hashTableCount());
     size_t idx = 0;
     this->mapHash([&idx, &keyValueVec](T_sp key, T_sp val) {
         (*keyValueVec)[idx++] = key;
@@ -591,10 +591,10 @@ List_sp HashTable_O::tableRef(T_sp key) {
   return keyValueCons;
 }
 
-#define ARGS_core_hashTableForceRehash "(ht)"
-#define DECL_core_hashTableForceRehash ""
-#define DOCS_core_hashTableForceRehash "hashTableForceRehash"
-void core_hashTableForceRehash(HashTable_sp ht) {
+LAMBDA(ht);
+DECLARE();
+DOCSTRING("hashTableForceRehash");
+CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
   ht->rehash(false, _Unbound<T_O>());
 }
 
@@ -965,17 +965,11 @@ void HashTable_O::exposeCando(::core::Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(ClPkg, maphash);
   SYMBOL_EXPORT_SC_(ClPkg, clrhash);
   SYMBOL_SC_(CorePkg, hash_eql);
-  Core_temp_Defun(hash_eql);
   SYMBOL_SC_(CorePkg, hash_equal);
-  Core_temp_Defun(hash_equal);
   SYMBOL_SC_(CorePkg, hash_equalp);
-  Core_temp_Defun(hash_equalp);
   SYMBOL_EXPORT_SC_(ClPkg, remhash);
   SYMBOL_EXPORT_SC_(ClPkg, gethash);
-  CoreDefun(DebugHashTable);
-  CoreDefun(hashTableForceRehash);
 
-  Core_temp_Defun(hash_table_entry_deleted_p);
 }
 
 void HashTable_O::exposePython(::core::Lisp_sp lisp) {

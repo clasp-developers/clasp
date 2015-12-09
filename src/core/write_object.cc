@@ -169,16 +169,15 @@ OUTPUT:
   return x;
 }
 
-#define ARGS_core__write_object "(obj &optional strm)"
-#define DECL_core__write_object ""
-#define DOCS_core__write_object "writeObject"
-T_sp core__write_object(T_sp obj, T_sp ostrm) {
+LAMBDA(obj &optional strm);
+DECLARE();
+DOCSTRING("writeObject");
+CL_DEFUN T_sp core__write_object(T_sp obj, T_sp ostrm) {
   _G();
   T_sp strm = coerce::outputStreamDesignator(ostrm);
   return write_object(obj, strm);
 };
 
 void initialize_write_object() {
-  Core_temp_Defun(write_object);
 }
 };

@@ -50,7 +50,7 @@ void dumpSourceInfo(core::T_sp exp) {
   if (_lisp->sourceDatabase().notnilp()) {
     core::T_sp tspi = gc::As<core::SourceManager_sp>(_lisp->sourceDatabase())->lookupSourcePosInfo(exp);
     if (core::SourcePosInfo_sp spi = gc::As<core::SourcePosInfo_sp>(tspi)) {
-      core::SourceFileInfo_sp sfi = core_sourceFileInfo(core::make_fixnum(spi->fileHandle()));
+      core::SourceFileInfo_sp sfi = core__source_file_info(core::make_fixnum(spi->fileHandle()));
       string sf = sfi->sourceDebugNamestring();
       size_t filepos = spi->_Filepos;
       int lineno = spi->_Lineno;
@@ -79,12 +79,12 @@ void dumpSourceInfoCons(core::Cons_sp exp) {
 
 namespace core {
 
-#define ARGS_core_sourceFileInfo "(name &optional source-debug-namestring (source-debug-offset 0) (use-lineno t))"
-#define DECL_core_sourceFileInfo ""
-#define DOCS_core_sourceFileInfo "sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index"
-T_mv core_sourceFileInfo(T_sp sourceFile, T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno) {
+LAMBDA(name &optional source-debug-namestring (source-debug-offset 0) (use-lineno t));
+DECLARE();
+DOCSTRING("sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index");
+CL_DEFUN T_mv core__source_file_info(T_sp sourceFile, T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno) {
   if (sourceFile.nilp()) {
-    return core_sourceFileInfo(make_fixnum(0));
+    return core__source_file_info(make_fixnum(0));
   } else if (Str_sp strSourceFile = sourceFile.asOrNull<Str_O>()) {
     return _lisp->getOrRegisterSourceFileInfo(strSourceFile->get(), sourceDebugNamestring, sourceDebugOffset, useLineno);
   } else if (Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>()) {
@@ -104,11 +104,11 @@ T_mv core_sourceFileInfo(T_sp sourceFile, T_sp sourceDebugNamestring, size_t sou
   } else if (cl__streamp(sourceFile)) {
     T_sp so = sourceFile;
     T_sp sfi = clasp_input_source_file_info(so);
-    return core_sourceFileInfo(sfi);
+    return core__source_file_info(sfi);
   } else if (SourceFileInfo_sp sfi = sourceFile.asOrNull<SourceFileInfo_O>()) {
     return _lisp->getOrRegisterSourceFileInfo(sfi->namestring(), sourceDebugNamestring, sourceDebugOffset, useLineno);
   } else if (SourcePosInfo_sp spi = sourceFile.asOrNull<SourcePosInfo_O>()) {
-    return core_sourceFileInfo(make_fixnum(spi->_FileId));
+    return core__source_file_info(make_fixnum(spi->_FileId));
   }
   SIMPLE_ERROR(BF("Add support for source-file-info for %s") % _rep_(sourceFile));
 };
@@ -124,10 +124,10 @@ size_t clasp_sourcePosInfo_filepos(SourcePosInfo_sp info) {
   return info->_Filepos;
 }
 
-#define ARGS_core_sourcePosInfoFilepos "(source-pos-info)"
-#define DECL_core_sourcePosInfoFilepos ""
-#define DOCS_core_sourcePosInfoFilepos "sourcePosInfoFilepos"
-Integer_sp core_sourcePosInfoFilepos(SourcePosInfo_sp info) {
+LAMBDA(source-pos-info);
+DECLARE();
+DOCSTRING("sourcePosInfoFilepos");
+CL_DEFUN Integer_sp core__source_pos_info_filepos(SourcePosInfo_sp info) {
   return Integer_O::create((gc::Fixnum)clasp_sourcePosInfo_filepos(info));
 }
 
@@ -135,10 +135,10 @@ uint clasp_sourcePosInfo_lineno(SourcePosInfo_sp info) {
   return info->_Lineno;
 }
 
-#define ARGS_core_sourcePosInfoLineno "(source-pos-info)"
-#define DECL_core_sourcePosInfoLineno ""
-#define DOCS_core_sourcePosInfoLineno "sourcePosInfoLineno"
-Fixnum_sp core_sourcePosInfoLineno(SourcePosInfo_sp info) {
+LAMBDA(source-pos-info);
+DECLARE();
+DOCSTRING("sourcePosInfoLineno");
+CL_DEFUN Fixnum_sp core__source_pos_info_lineno(SourcePosInfo_sp info) {
   return make_fixnum(clasp_sourcePosInfo_lineno(info));
 }
 
@@ -146,10 +146,10 @@ uint clasp_sourcePosInfo_column(SourcePosInfo_sp info) {
   return info->_Column;
 }
 
-#define ARGS_core_sourcePosInfoColumn "(source-pos-info)"
-#define DECL_core_sourcePosInfoColumn ""
-#define DOCS_core_sourcePosInfoColumn "sourcePosInfoColumn"
-Fixnum_sp core_sourcePosInfoColumn(SourcePosInfo_sp info) {
+LAMBDA(source-pos-info);
+DECLARE();
+DOCSTRING("sourcePosInfoColumn");
+CL_DEFUN Fixnum_sp core__source_pos_info_column(SourcePosInfo_sp info) {
   return make_fixnum(clasp_sourcePosInfo_column(info));
 }
 };
@@ -195,16 +195,16 @@ uint af_column(T_sp obj) {
   SIMPLE_ERROR(BF("Implement column for %s") % _rep_(obj));
 };
 
-#define ARGS_core_walkToFindSourceInfo "(arg)"
-#define DECL_core_walkToFindSourceInfo ""
-#define DOCS_core_walkToFindSourceInfo "walkToFindSourceInfo"
-T_mv core_walkToFindSourceInfo(T_sp obj) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("walkToFindSourceInfo");
+CL_DEFUN T_mv core__walk_to_find_source_info(T_sp obj) {
   _G();
   if (_lisp->sourceDatabase().notnilp()) {
     if (cl_consp(obj)) {
       T_sp tspi = gc::As<SourceManager_sp>(_lisp->sourceDatabase())->lookupSourcePosInfo(obj);
       if (SourcePosInfo_sp spi = tspi.asOrNull<SourcePosInfo_O>()) {
-        SourceFileInfo_sp sfi = core_sourceFileInfo(make_fixnum(spi->fileHandle()));
+        SourceFileInfo_sp sfi = core__source_file_info(make_fixnum(spi->fileHandle()));
         Fixnum_sp fnlineno = make_fixnum(spi->_Lineno);
         Fixnum_sp fncolumn = make_fixnum(spi->_Column);
         Integer_sp fnfilepos = Integer_O::create((gc::Fixnum)spi->_Filepos);
@@ -213,7 +213,7 @@ T_mv core_walkToFindSourceInfo(T_sp obj) {
       T_sp cur = obj;
       for (; cur.notnilp(); cur = oCdr(cur)) {
         if (cl_consp(cur)) {
-          T_mv sfisub = core_walkToFindSourceInfo(oCar(cur));
+          T_mv sfisub = core__walk_to_find_source_info(oCar(cur));
           if (sfisub.notnilp())
             return sfisub;
         } else {
@@ -225,10 +225,10 @@ T_mv core_walkToFindSourceInfo(T_sp obj) {
   return Values(_Nil<T_O>());
 };
 
-#define ARGS_core_walkToAssignSourcePosInfo "(obj top &optional stream)"
-#define DECL_core_walkToAssignSourcePosInfo ""
-#define DOCS_core_walkToAssignSourcePosInfo "Walk down the tree and carry source info down"
-void core_walkToAssignSourcePosInfo(T_sp obj, SourcePosInfo_sp topInfo, T_sp stream) {
+LAMBDA(obj top &optional stream);
+DECLARE();
+DOCSTRING("Walk down the tree and carry source info down");
+CL_DEFUN void core__walk_to_assign_source_pos_info(T_sp obj, SourcePosInfo_sp topInfo, T_sp stream) {
   if (_lisp->sourceDatabase().notnilp()) {
     if (cl_consp(obj)) {
       T_sp curInfo = gc::As<SourceManager_sp>(_lisp->sourceDatabase())->lookupSourcePosInfo(obj);
@@ -245,18 +245,18 @@ void core_walkToAssignSourcePosInfo(T_sp obj, SourcePosInfo_sp topInfo, T_sp str
       }
       T_sp car = oCar(obj);
       if (cl_consp(car))
-        core_walkToAssignSourcePosInfo(car, curInfo, stream);
+        core__walk_to_assign_source_pos_info(car, curInfo, stream);
       T_sp cdr = oCdr(obj);
       if (cl_consp(cdr))
-        core_walkToAssignSourcePosInfo(cdr, curInfo, stream);
+        core__walk_to_assign_source_pos_info(cdr, curInfo, stream);
     }
   }
 }
 
-#define ARGS_core_walkToFindSourcePosInfo "(arg &optional default-spi)"
-#define DECL_core_walkToFindSourcePosInfo ""
-#define DOCS_core_walkToFindSourcePosInfo "Walk down the tree and find the first source info you can"
-T_sp core_walkToFindSourcePosInfo(T_sp obj, T_sp defaultSpi) {
+LAMBDA(arg &optional default-spi);
+DECLARE();
+DOCSTRING("Walk down the tree and find the first source info you can");
+CL_DEFUN T_sp core__walk_to_find_source_pos_info(T_sp obj, T_sp defaultSpi) {
   _G();
   if (_lisp->sourceDatabase().notnilp()) {
     if (cl_consp(obj)) {
@@ -267,7 +267,7 @@ T_sp core_walkToFindSourcePosInfo(T_sp obj, T_sp defaultSpi) {
       T_sp cur = obj;
       for (; cur.notnilp(); cur = oCdr(cur)) {
         if (cl_consp(cur)) {
-          T_sp spisub = core_walkToFindSourcePosInfo(oCar(cur));
+          T_sp spisub = core__walk_to_find_source_pos_info(oCar(cur));
           if (spisub.notnilp())
             return spisub;
         } else {
@@ -385,9 +385,6 @@ void SourceFileInfo_O::exposeCando(core::Lisp_sp lisp) {
   //	Defun(SourceFileInfoGetOrCreate);
 
   SYMBOL_EXPORT_SC_(CorePkg, walkToFindSourceInfo);
-  CoreDefun(walkToFindSourcePosInfo);
-  CoreDefun(walkToFindSourceInfo);
-  CoreDefun(walkToAssignSourcePosInfo);
 }
 
 void SourceFileInfo_O::exposePython(core::Lisp_sp lisp) {
@@ -412,9 +409,6 @@ string SourcePosInfo_O::__repr__() const {
 
 void SourcePosInfo_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<SourcePosInfo_O>();
-  CoreDefun(sourcePosInfoFilepos);
-  CoreDefun(sourcePosInfoLineno);
-  CoreDefun(sourcePosInfoColumn);
 }
 
 void SourcePosInfo_O::exposePython(core::Lisp_sp lisp) {
@@ -424,10 +418,10 @@ void SourcePosInfo_O::exposePython(core::Lisp_sp lisp) {
 #endif
 }
 
-#define ARGS_core__dump_source_manager "(dumpAll)"
-#define DECL_core__dump_source_manager ""
-#define DOCS_core__dump_source_manager "dumpSourceManager"
-void core__dump_source_manager(T_sp dumpAll) {
+LAMBDA(dumpAll);
+DECLARE();
+DOCSTRING("dumpSourceManager");
+CL_DEFUN void core__dump_source_manager(T_sp dumpAll) {
   _G();
   if (_lisp->sourceDatabase().notnilp()) {
     _lisp->print(BF("Source Manager entries: %d\n") % gc::As<SourceManager_sp>(_lisp->sourceDatabase())->_SourcePosInfo->size());
@@ -442,10 +436,10 @@ void core__dump_source_manager(T_sp dumpAll) {
 
 EXPOSE_CLASS(core, SourceManager_O);
 
-#define ARGS_core__make_source_manager "()"
-#define DECL_core__make_source_manager ""
-#define DOCS_core__make_source_manager "makeSourceManager"
-SourceManager_sp core__make_source_manager() {
+LAMBDA();
+DECLARE();
+DOCSTRING("makeSourceManager");
+CL_DEFUN SourceManager_sp core__make_source_manager() {
   _G();
   SourceManager_sp sm = SourceManager_O::create();
   return sm;
@@ -455,9 +449,6 @@ void SourceManager_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<SourceManager_O>();
 
   SYMBOL_EXPORT_SC_(CorePkg, lookupSourceFileInfo);
-  Core_temp_Defun(dump_source_manager);
-  Core_temp_Defun(make_source_manager);
-  CoreDefun(sourceFileInfo);
 }
 
 void SourceManager_O::exposePython(core::Lisp_sp lisp) {
@@ -469,7 +460,7 @@ void SourceManager_O::exposePython(core::Lisp_sp lisp) {
 
 void SourceManager_O::initialize() {
   this->Base::initialize();
-//        this->_SourcePosInfo = core_makeWeakKeyHashTable(make_fixnum(1024));
+//        this->_SourcePosInfo = core__make_weak_key_hash_table(make_fixnum(1024));
 //	printf("%s:%d>>%s  WARNING:   SourceManager uses a regular hash table - this will gobble memory\n", __FILE__, __LINE__, __FUNCTION__ );
 #ifdef USE_WEAK_HASH_TABLE_FOR_SOURCE_POS_INFO
   this->_SourcePosInfo = WeakKeyHashTable_O::create();
@@ -492,7 +483,7 @@ T_sp SourceManager_O::registerSourceInfo(T_sp key,
   }
 
   if (this->availablep()) {
-    SourceFileInfo_sp sfi = core_sourceFileInfo(sourceFile);
+    SourceFileInfo_sp sfi = core__source_file_info(sourceFile);
     SourcePosInfo_sp info = SourcePosInfo_O::create(sfi->fileHandle(), filepos, lineno, column);
     this->_SourcePosInfo->setf_gethash(key, info);
     return info;
@@ -526,7 +517,7 @@ T_sp SourceManager_O::duplicateSourcePosInfo(T_sp orig_obj, T_sp new_obj, T_sp m
       this->registerSourcePosInfo(new_obj, info);
       return info;
     } else if (cl_consp(orig_obj)) {
-      T_sp walkInfo = core_walkToFindSourcePosInfo(orig_obj);
+      T_sp walkInfo = core__walk_to_find_source_pos_info(orig_obj);
       if (walkInfo.notnilp()) {
         this->registerSourcePosInfo(new_obj, walkInfo);
         return walkInfo;

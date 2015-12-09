@@ -1015,10 +1015,10 @@ CL_DEFUN bool cl__wild_pathname_p(T_sp tpathname, T_sp component) {
  * INV: The pathname is absolute.
  */
 
-#define ARGS_core__coerce_to_file_pathname "(tpathname)"
-#define DECL_core__coerce_to_file_pathname ""
-#define DOCS_core__coerce_to_file_pathname "coerceToFilePathname"
-Pathname_sp core__coerce_to_file_pathname(T_sp tpathname) {
+LAMBDA(tpathname);
+DECLARE();
+DOCSTRING("coerceToFilePathname");
+CL_DEFUN Pathname_sp core__coerce_to_file_pathname(T_sp tpathname) {
   _G();
   Pathname_sp pathname = core__coerce_to_physical_pathname(tpathname);
   pathname = cl__merge_pathnames(pathname);
@@ -1043,10 +1043,10 @@ Pathname_sp core__coerce_to_file_pathname(T_sp tpathname) {
  * performing the appropiate transformation if P was a logical pathname.
  */
 
-#define ARGS_core__coerce_to_physical_pathname "(x)"
-#define DECL_core__coerce_to_physical_pathname ""
-#define DOCS_core__coerce_to_physical_pathname "coerceToPhysicalPathname"
-Pathname_sp core__coerce_to_physical_pathname(T_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("coerceToPhysicalPathname");
+CL_DEFUN Pathname_sp core__coerce_to_physical_pathname(T_sp x) {
   Pathname_sp px = cl__pathname(x);
   if (core__logical_pathname_p(px))
     return cl__translate_logical_pathname(px);
@@ -1060,10 +1060,10 @@ Pathname_sp core__coerce_to_physical_pathname(T_sp x) {
  * INV: No wildcards are allowed.
  */
 
-#define ARGS_core__coerce_to_filename "(pathname-orig)"
-#define DECL_core__coerce_to_filename ""
-#define DOCS_core__coerce_to_filename "coerceToFilename"
-Str_sp core__coerce_to_filename(T_sp pathname_orig) {
+LAMBDA(pathname-orig);
+DECLARE();
+DOCSTRING("coerceToFilename");
+CL_DEFUN Str_sp core__coerce_to_filename(T_sp pathname_orig) {
   _G();
   Pathname_sp pathname;
 
@@ -1666,10 +1666,10 @@ coerce_to_from_pathname(T_sp x, T_sp host) {
   SIMPLE_ERROR(BF("%s is not a valid from-pathname translation") % _rep_(x));
 }
 
-#define ARGS_core__pathname_translations "(&optional (host nil hostp) set)"
-#define DECL_core__pathname_translations ""
-#define DOCS_core__pathname_translations "core::pathnameTranslations"
-T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
+LAMBDA(&optional (host nil hostp) set);
+DECLARE();
+DOCSTRING("core::pathnameTranslations");
+CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
   _G();
   if (hostp.nilp())
     return _lisp->pathnameTranslations();
@@ -2020,13 +2020,9 @@ void LogicalPathname_O::exposePython(Lisp_sp lisp) {
 
 void initialize_pathname() {
   SYMBOL_EXPORT_SC_(CorePkg, coerceToFilename);
-  Core_temp_Defun(coerce_to_filename);
   SYMBOL_EXPORT_SC_(CorePkg, coerceToFilePathname);
-  Core_temp_Defun(coerce_to_file_pathname);
   SYMBOL_EXPORT_SC_(CorePkg, pathnameTranslations);
-  Core_temp_Defun(pathname_translations);
   SYMBOL_EXPORT_SC_(CorePkg, coerceToPhysicalPathname);
-  Core_temp_Defun(coerce_to_physical_pathname);
 
   SYMBOL_EXPORT_SC_(ClPkg, pathname);
   SYMBOL_EXPORT_SC_(ClPkg, mergePathnames);

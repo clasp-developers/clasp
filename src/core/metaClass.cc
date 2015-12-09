@@ -77,19 +77,19 @@ namespace core {
 
 const int Class_O::NumberOfClassSlots;
 
-#define ARGS_core__inherit_default_allocator "(class directSuperclasses)"
-#define DECL_core__inherit_default_allocator ""
-#define DOCS_core__inherit_default_allocator "inheritDefaultAllocator - make this a regular function so that there are no dispatching problems at boot time"
-void core__inherit_default_allocator(Class_sp cl, T_sp directSuperclasses) {
+LAMBDA(class directSuperclasses);
+DECLARE();
+DOCSTRING("inheritDefaultAllocator - make this a regular function so that there are no dispatching problems at boot time");
+CL_DEFUN void core__inherit_default_allocator(Class_sp cl, T_sp directSuperclasses) {
   _G();
   //        printf("%s:%d In core__inherit_default_allocator for class: %s direct-superclasses: %s\n",__FILE__,__LINE__, _rep_(cl).c_str(), _rep_(directSuperclasses).c_str());
   cl->inheritDefaultAllocator(directSuperclasses);
 };
 
-#define ARGS_core__allocate_raw_class "(original meta-class slots &optional name)"
-#define DECL_core__allocate_raw_class ""
-#define DOCS_core__allocate_raw_class "allocateRawClass - behaves like ECL instance::allocate_raw_instance, The allocator for the new class is taken from (allocatorPrototype).  If (allocatorPrototype) is nil then use the allocator for Instance_O."
-T_sp core__allocate_raw_class(T_sp orig, Class_sp metaClass, int slots, T_sp className) {
+LAMBDA(original meta-class slots &optional name);
+DECLARE();
+DOCSTRING("allocateRawClass - behaves like ECL instance::allocate_raw_instance, The allocator for the new class is taken from (allocatorPrototype).  If (allocatorPrototype) is nil then use the allocator for Instance_O.");
+CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, Class_sp metaClass, int slots, T_sp className) {
   _G();
   if (orig.notnilp()) {
     SIMPLE_ERROR(BF("Deal with non-nil orig class in allocateRawClass"));
@@ -556,10 +556,10 @@ void Class_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp classNa
   this->lowLevel_calculateClassPrecedenceList();
 }
 
-#define ARGS_core__subclassp "(low high)"
-#define DECL_core__subclassp ""
-#define DOCS_core__subclassp "subclassp"
-bool core__subclassp(T_sp low, T_sp high) {
+LAMBDA(low high);
+DECLARE();
+DOCSTRING("subclassp");
+CL_DEFUN bool core__subclassp(T_sp low, T_sp high) {
   _G();
   if (low == high)
     return true;
@@ -582,11 +582,8 @@ void Class_O::exposeCando(Lisp_sp lisp) {
       //	SYMBOL_SC_(CorePkg,makeSureClosClassSlotsMatchClass);
       //	Defun(makeSureClosClassSlotsMatchClass);
       SYMBOL_SC_(CorePkg, subclassp);
-  Core_temp_Defun(subclassp);
   SYMBOL_SC_(CorePkg, allocateRawClass);
-  Core_temp_Defun(allocate_raw_class);
   SYMBOL_EXPORT_SC_(CorePkg, inheritDefaultAllocator);
-  Core_temp_Defun(inherit_default_allocator);
 }
 void Class_O::exposePython(Lisp_sp lisp) {
   _G();

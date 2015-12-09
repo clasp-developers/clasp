@@ -27,8 +27,8 @@ THE SOFTWARE.
 
 #define USE_WEAK_HASH_TABLE_FOR_SOURCE_POS_INFO 1
 
-#ifndef _core_sourceFileInfo_H_
-#define _core_sourceFileInfo_H_
+#ifndef _core__source_file_info_H_
+#define _core__source_file_info_H_
 
 #include <boost/filesystem.hpp>
 #include <clasp/core/foundation.h>
@@ -81,7 +81,7 @@ public: // Functions here
 FORWARD(SourcePosInfo);
 class SourcePosInfo_O : public T_O {
   friend class SourceManager_O;
-  friend T_mv core_sourceFileInfo(T_sp sourceFile, T_sp truename, size_t offset, bool useLineno);
+  friend T_mv core__source_file_info(T_sp sourceFile, T_sp truename, size_t offset, bool useLineno);
 
   LISP_BASE1(T_O);
   LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo");
@@ -195,11 +195,11 @@ public: // Functions here
 
 }; // SourceManager class
 
-T_mv core_walkToFindSourceInfo(T_sp obj);
-T_sp core_walkToFindSourcePosInfo(T_sp obj, T_sp defaultSpi = _Nil<T_O>());
+T_mv core__walk_to_find_source_info(T_sp obj);
+T_sp core__walk_to_find_source_pos_info(T_sp obj, T_sp defaultSpi = _Nil<T_O>());
 //    SourceFileInfo_mv af_lookupSourceFileInfo(T_sp obj);
 
-T_mv core_sourceFileInfo(T_sp sourceFile, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
+T_mv core__source_file_info(T_sp sourceFile, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
 
 }; // core namespace
 TRANSLATE(core::SourceFileInfo_O);
@@ -210,4 +210,4 @@ extern "C" {
 void dumpSourceInfo(core::T_sp exp);
 };
 
-#endif /* _core_sourceFileInfo_H_ */
+#endif /* _core__source_file_info_H_ */

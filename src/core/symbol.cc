@@ -66,24 +66,24 @@ CL_DEFUN T_sp cl__get(Symbol_sp sym, T_sp indicator, T_sp defval) {
   return cl__getf(sym->_PropertyList, indicator, defval);
 }
 
-#define ARGS_core_setfSymbolPlist "(sym plist)"
-#define DECL_core_setfSymbolPlist ""
-#define DOCS_core_setfSymbolPlist "Set the symbol plist"
-void core_setfSymbolPlist(Symbol_sp sym, List_sp plist) {
+LAMBDA(sym plist);
+DECLARE();
+DOCSTRING("Set the symbol plist");
+CL_DEFUN void core__setf_symbol_plist(Symbol_sp sym, List_sp plist) {
   if (sym.nilp()) {
     SIMPLE_ERROR(BF("You cannot set the plist of nil"));
   };
   sym->setf_plist(plist);
 }
 
-#define ARGS_core_putprop "(sym val indicator)"
-#define DECL_core_putprop ""
-#define DOCS_core_putprop "Set the symbol plist"
-T_sp core_putprop(Symbol_sp sym, T_sp val, T_sp indicator) {
+LAMBDA(sym val indicator);
+DECLARE();
+DOCSTRING("Set the symbol plist");
+CL_DEFUN T_sp core__putprop(Symbol_sp sym, T_sp val, T_sp indicator) {
   if (sym.nilp()) {
     SIMPLE_ERROR(BF("You cannot set the plist of nil"));
   };
-  sym->_PropertyList = core_put_f(sym->_PropertyList, val, indicator);
+  sym->_PropertyList = core__put_f(sym->_PropertyList, val, indicator);
   return val;
 }
 
@@ -134,10 +134,10 @@ CL_DEFUN T_sp cl__symbol_value(const Symbol_sp arg) {
   return arg->symbolValue();
 };
 
-#define ARGS_core__symbol_value_address "(arg)"
-#define DECL_core__symbol_value_address ""
-#define DOCS_core__symbol_value_address "symbolValueAddress"
-T_sp core__symbol_value_address(const Symbol_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("symbolValueAddress");
+CL_DEFUN T_sp core__symbol_value_address(const Symbol_sp arg) {
   _G();
   return Pointer_O::create(&arg->symbolValueRef());
 };
@@ -506,12 +506,9 @@ void Symbol_O::exposeCando(Lisp_sp lisp) {
       SYMBOL_EXPORT_SC_(ClPkg, make_symbol);
   SYMBOL_EXPORT_SC_(ClPkg, symbolName);
   SYMBOL_EXPORT_SC_(ClPkg, symbolValue);
-  Core_temp_Defun(symbol_value_address);
   SYMBOL_EXPORT_SC_(ClPkg, symbolPackage);
   SYMBOL_EXPORT_SC_(ClPkg, symbolFunction);
   SYMBOL_EXPORT_SC_(ClPkg, boundp);
-  CoreDefun(setfSymbolPlist);
-  CoreDefun(putprop);
 }
 
 void Symbol_O::exposePython(Lisp_sp lisp) {

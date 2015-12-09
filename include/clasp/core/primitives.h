@@ -36,9 +36,9 @@ THE SOFTWARE.
 namespace core {
 
 extern T_sp cl__macro_function(Symbol_sp symbol, T_sp env);
-extern T_mv core_separatePairList(List_sp listOfPairs);
+extern T_mv core__separate_pair_list(List_sp listOfPairs);
 
-extern Symbol_mv core_functionBlockName(T_sp functionName);
+extern Symbol_mv core__function_block_name(T_sp functionName);
 
 //extern void af_ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llh);
 
@@ -196,29 +196,29 @@ public:
 TRANSLATE(core::InvocationHistoryFrameIterator_O);
 
 namespace core {
-InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameTop();
-InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrame(int idx);
-InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameNext(int idx);
-InvocationHistoryFrameIterator_sp core_getInvocationHistoryFramePrev(int idx);
+InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_top();
+InvocationHistoryFrameIterator_sp core__get_invocation_history_frame(int idx);
+InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_next(int idx);
+InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_prev(int idx);
 };
 
-extern "C" {
-core::T_sp core_ihsBacktrace(core::T_sp outDesignator, core::T_sp msg);
-int core_ihsTop();
-void core_ihsTopSetLineColumn(int lineno, int column);
-int core_ihsPrev(int idx);
-int core_ihsNext(int idx);
-core::T_sp core_ihsFun(int idx);
-core::T_sp core_ihsArguments(int idx);
-core::T_sp core_ihsEnv(int idx);
+namespace core {
+  void core__dynamic_binding_stack_dump(std::ostream &out);
+  core::T_sp core__ihs_backtrace(core::T_sp outDesignator, core::T_sp msg);
+  int core__ihs_top();
+  void core__ihs_topSetLineColumn(int lineno, int column);
+  int core__ihs_prev(int idx);
+  int core__ihs_next(int idx);
+  core::T_sp core__ihs_fun(int idx);
+  core::T_sp core__ihs_arguments(int idx);
+  core::T_sp core__ihs_env(int idx);
 /*! Return the current frame index stored in core:*ihs-current*
       Update core:*ihs-current* to a valid value */
-int core_ihsCurrentFrame();
+  int core__ihs_current_frame();
 /*! Set the current core:*ihs-current* value.
       If the idx is out of bounds then return a valid value */
-int core_setIhsCurrentFrame(int idx);
-void core_exceptionStackDump();
-void core_dynamicBindingStackDump(std::ostream &out);
+  int core__set_ihs_current_frame(int idx);
+  void core__exception_stack_dump();
 };
 
 #endif /* _core_primitives_H */

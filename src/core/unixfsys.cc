@@ -142,19 +142,19 @@ safe_chdir(const char *path, T_sp tprefix) {
   }
 }
 
-#define ARGS_core__fork "()"
-#define DECL_core__fork ""
-#define DOCS_core__fork "fork"
-T_sp core__fork() {
+LAMBDA();
+DECLARE();
+DOCSTRING("fork");
+CL_DEFUN T_sp core__fork() {
   _G();
   Fixnum_sp pid = make_fixnum(fork());
   return pid;
 };
 
-#define ARGS_core__waitpid "(pid options)"
-#define DECL_core__waitpid ""
-#define DOCS_core__waitpid "waitpid - see unix waitpid - returns status"
-int core__waitpid(Fixnum_sp pid, Fixnum_sp options) {
+LAMBDA(pid options);
+DECLARE();
+DOCSTRING("waitpid - see unix waitpid - returns status");
+CL_DEFUN int core__waitpid(Fixnum_sp pid, Fixnum_sp options) {
   _G();
   pid_t p = unbox_fixnum(pid);
   int status(0);
@@ -163,28 +163,28 @@ int core__waitpid(Fixnum_sp pid, Fixnum_sp options) {
   return status;
 };
 
-#define ARGS_core__getpid "()"
-#define DECL_core__getpid ""
-#define DOCS_core__getpid "getpid"
-T_sp core__getpid() {
+LAMBDA();
+DECLARE();
+DOCSTRING("getpid");
+CL_DEFUN T_sp core__getpid() {
   _G();
   Fixnum_sp pid = make_fixnum(getpid());
   return pid;
 };
 
-#define ARGS_core__getppid "()"
-#define DECL_core__getppid ""
-#define DOCS_core__getppid "getppid"
-T_sp core__getppid() {
+LAMBDA();
+DECLARE();
+DOCSTRING("getppid");
+CL_DEFUN T_sp core__getppid() {
   _G();
   Fixnum_sp pid = make_fixnum(getppid());
   return pid;
 };
 
-#define ARGS_ext_chdir "(pathname)"
-#define DECL_ext_chdir ""
-#define DOCS_ext_chdir "chdir"
-T_sp ext_chdir(Pathname_sp dir) {
+LAMBDA(pathname);
+DECLARE();
+DOCSTRING("chdir");
+CL_DEFUN T_sp ext__chdir(Pathname_sp dir) {
   _G();
   Str_sp sdir = clasp_namestring(dir, true);
   return Integer_O::create((gc::Fixnum)safe_chdir(sdir->get().c_str(), _Nil<T_O>()));
@@ -227,10 +227,10 @@ ecl_cstring_to_pathname(char *s)
  * string which grows until it can host the whole path.
  */
 
-#define ARGS_core__current_dir "()"
-#define DECL_core__current_dir ""
-#define DOCS_core__current_dir "currentDir"
-Str_sp core__current_dir() {
+LAMBDA();
+DECLARE();
+DOCSTRING("currentDir");
+CL_DEFUN Str_sp core__current_dir() {
   _G();
   const char *ok;
   size_t size = 128;
@@ -332,10 +332,10 @@ smart_file_kind(Str_sp sfilename, bool follow_links) {
   }
 }
 
-#define ARGS_core__file_kind "(filename follow-links)"
-#define DECL_core__file_kind ""
-#define DOCS_core__file_kind "file_kind (values kind found) - if found but kind==nil then its a broken symlink"
-Symbol_sp core__file_kind(T_sp filename, bool follow_links) {
+LAMBDA(filename follow-links);
+DECLARE();
+DOCSTRING("file_kind (values kind found) - if found but kind==nil then its a broken symlink");
+CL_DEFUN Symbol_sp core__file_kind(T_sp filename, bool follow_links) {
   _G();
   ASSERT(filename);
   Str_sp sfilename = coerce_to_posix_filename(filename);
@@ -344,10 +344,10 @@ Symbol_sp core__file_kind(T_sp filename, bool follow_links) {
 
 #if defined(HAVE_LSTAT) && !defined(ECL_MS_WINDOWS_HOST)
 
-#define ARGS_core_readlink "(filename)"
-#define DECL_core_readlink ""
-#define DOCS_core_readlink "file_kind (values kind found) - if found but kind==nil then its a br"
-static T_sp core_readlink(Str_sp filename) {
+LAMBDA(filename);
+DECLARE();
+DOCSTRING("file_kind (values kind found) - if found but kind==nil then its a br");
+CL_DEFUN T_sp core__readlink(Str_sp filename) {
   /* Given a filename which is a symlink, this routine returns
 	 * the value of this link in the form of a pathname. */
   size_t size = 128, written;
@@ -415,7 +415,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
 //	FEcannot_open(aux);
 #ifdef HAVE_LSTAT
   } else if (kind == kw::_sym_link) {
-    output = cl__truename(cl__merge_pathnames(core_readlink(aux),
+    output = cl__truename(cl__merge_pathnames(core__readlink(aux),
                                            base_dir, kw::_sym_default));
     if (output->_Name.notnilp() ||
         output->_Type.notnilp())
@@ -500,7 +500,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
       return Values(pathname, kind);
     /* The link might be a relative pathname. In that case we have
 	 * to merge with the original pathname */
-    filename = core_readlink(filename);
+    filename = core__readlink(filename);
     Pathname_sp pn = gc::As<Pathname_sp>(pathname);
     pathname = Pathname_O::makePathname(pn->_Host,
                                         pn->_Device,
@@ -540,10 +540,10 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
   return Values(gc::As<Pathname_sp>(pathname), kind);
 }
 
-#define ARGS_core_file_truename "(pathname filename follow-links)"
-#define DECL_core_file_truename ""
-#define DOCS_core_file_truename "truename"
-Pathname_mv core_file_truename(T_sp pathname, T_sp filename, bool follow_links) {
+LAMBDA(pathname filename follow-links);
+DECLARE();
+DOCSTRING("truename");
+CL_DEFUN Pathname_mv core__file_truename(T_sp pathname, T_sp filename, bool follow_links) {
   return file_truename(pathname, filename, follow_links);
 }
 
@@ -998,10 +998,10 @@ OUTPUT:
   return cl__nreverse(out);
 }
 
-#define ARGS_core_mkstemp "(template)"
-#define DECL_core_mkstemp ""
-#define DOCS_core_mkstemp "mkstemp"
-T_sp core_mkstemp(Str_sp thetemplate) {
+  LAMBDA(template);
+  DECLARE();
+  DOCSTRING("mkstemp");
+CL_DEFUN T_sp core__mkstemp(Str_sp thetemplate) {
   //  cl_index l;
   int fd;
 
@@ -1163,7 +1163,7 @@ si_get_library_pathname(void)
 	}
 	@(return previous)
 @)
-T_sp core_mkstemp(T_sp template)
+T_sp core__mkstemp(T_sp template)
 {
     T_sp output;
     cl_index l;
@@ -1226,20 +1226,20 @@ T_sp core_mkstemp(T_sp template)
 	}
 #endif // working
 
-#define ARGS_core_rmdir "(directory)"
-#define DECL_core_rmdir ""
-#define DOCS_core_rmdir "Like unix rmdir"
-T_sp core_rmdir(T_sp directory) {
+ LAMBDA(directory);
+ DECLARE();
+ DOCSTRING("Like unix rmdir");
+CL_DEFUN T_sp core__rmdir(T_sp directory) {
   return cl__delete_file(eval::funcall(cl::_sym_makePathname,
                                      kw::_sym_name, _Nil<T_O>(),
                                      kw::_sym_type, _Nil<T_O>(),
                                      kw::_sym_defaults, directory));
 }
 
-#define ARGS_core_chmod "(file mode)"
-#define DECL_core_chmod ""
-#define DOCS_core_chmod "chmod - use octal values for mode for convenience (eg #o777)"
-void core_chmod(T_sp file, T_sp mode) {
+ LAMBDA(file mode);
+ DECLARE();
+ DOCSTRING("chmod - use octal values for mode for convenience (eg #o777)");
+CL_DEFUN void core__chmod(T_sp file, T_sp mode) {
   mode_t code = clasp_to_uint32_t(mode);
   T_sp filename = coerce_to_posix_filename(file);
   unlikely_if(chmod((char *)gc::As<Str_sp>(filename)->c_str(), code)) {
@@ -1257,10 +1257,10 @@ void core_chmod(T_sp file, T_sp mode) {
   }
 }
 
-#define ARGS_core_copy_file "(orig dest)"
-#define DECL_core_copy_file ""
-#define DOCS_core_copy_file "copy_file"
-T_sp core_copy_file(T_sp orig, T_sp dest) {
+ LAMBDA(orig dest);
+ DECLARE();
+ DOCSTRING("copy_file");
+CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
   FILE *in, *out;
   int ok = 0;
   Str_sp sorig = core__coerce_to_filename(orig);
@@ -1422,20 +1422,20 @@ CL_DEFUN T_sp cl__directory(T_sp mask, T_sp resolveSymlinks) {
   return output;
 };
 
-#define ARGS_core__unix_daylight_saving_time "(unix-time)"
-#define DECL_core__unix_daylight_saving_time ""
-#define DOCS_core__unix_daylight_saving_time "unixDaylightSavingTime return true if in daylight saving time"
-bool core__unix_daylight_saving_time(Integer_sp unix_time) {
+ LAMBDA(unix-time);
+ DECLARE();
+ DOCSTRING("unixDaylightSavingTime return true if in daylight saving time");
+CL_DEFUN bool core__unix_daylight_saving_time(Integer_sp unix_time) {
   _G();
   time_t when = clasp_to_uint64(unix_time);
   struct tm *ltm = localtime(&when);
   return ltm->tm_isdst;
 }
 
-#define ARGS_core__unix_get_local_time_zone "()"
-#define DECL_core__unix_get_local_time_zone ""
-#define DOCS_core__unix_get_local_time_zone "unixGetLocalTimeZone"
-Ratio_sp core__unix_get_local_time_zone() {
+ LAMBDA();
+ DECLARE();
+ DOCSTRING("unixGetLocalTimeZone");
+CL_DEFUN Ratio_sp core__unix_get_local_time_zone() {
   _G();
   gctools::Fixnum mw;
 #if 0 && defined(HAVE_TZSET)
@@ -1458,10 +1458,10 @@ Ratio_sp core__unix_get_local_time_zone() {
   return Ratio_O::create(make_fixnum(mw), make_fixnum(60));
 }
 
-#define ARGS_core_mkdir "(dir mode)"
-#define DECL_core_mkdir ""
-#define DOCS_core_mkdir "mkdir"
-T_sp core_mkdir(T_sp directory, T_sp mode) {
+ LAMBDA(dir mode);
+ DECLARE();
+ DOCSTRING("mkdir");
+CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
   int modeint = 0;
   int ok;
   Str_sp filename = coerce::stringDesignator(directory);
@@ -1508,28 +1508,12 @@ T_sp core_mkdir(T_sp directory, T_sp mode) {
 }
 
 void initialize_unixfsys() {
-  ExtDefun(chdir);
-  Core_temp_Defun(unix_get_local_time_zone);
-  Core_temp_Defun(unix_daylight_saving_time);
   SYMBOL_EXPORT_SC_(CorePkg, currentDir);
-  Core_temp_Defun(current_dir);
   SYMBOL_EXPORT_SC_(CorePkg, file_kind);
-  Core_temp_Defun(file_kind);
   SYMBOL_EXPORT_SC_(ClPkg, truename);
   SYMBOL_EXPORT_SC_(ClPkg, probe_file);
   SYMBOL_EXPORT_SC_(ClPkg, deleteFile);
   SYMBOL_EXPORT_SC_(ClPkg, file_write_date);
   SYMBOL_EXPORT_SC_(ClPkg, userHomedirPathname);
-  Core_temp_Defun(fork);
-  Core_temp_Defun(getpid);
-  Core_temp_Defun(getppid);
-  Core_temp_Defun(waitpid);
-  CoreDefun(mkdir);
-  CoreDefun(file_truename);
-  CoreDefun(mkstemp);
-  CoreDefun(copy_file);
-  CoreDefun(rmdir);
-  CoreDefun(chmod);
-  CoreDefun(readlink);
 };
 };

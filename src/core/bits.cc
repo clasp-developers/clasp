@@ -299,10 +299,10 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
   return x;
 }
 
-#define ARGS_core_bitArrayOp "(op x y &optional r)"
-#define DECL_core_bitArrayOp ""
-#define DOCS_core_bitArrayOp "bitArrayOp"
-T_sp core_bitArrayOp(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
+LAMBDA(op x y &optional r);
+DECLARE();
+DOCSTRING("bitArrayOp");
+CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
   _G();
   if (o.nilp()) {
     ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 1, o, cl::_sym_fixnum);
@@ -738,7 +738,6 @@ void initialize_bits() {
   cl::_sym_boole_set->defconstant(make_fixnum(boole_set));
   cl::_sym_boole_xor->defconstant(make_fixnum(boole_xor));
 
-  CoreDefun(bitArrayOp);
   af_def(ClPkg, "logbitp", &cl_logbitp);
 };
 };

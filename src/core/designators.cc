@@ -54,7 +54,7 @@ Function_sp functionDesignator(T_sp obj) {
 
 Path_sp pathDesignator(T_sp obj) {
   _G();
-  if (core__str_p(obj)) {
+  if (core__simple_string_p(obj)) {
     return Path_O::create(gc::As<Str_sp>(obj)->get());
   } else if (gc::IsA<Path_sp>(obj)) {
     return gc::As<Path_sp>(obj);

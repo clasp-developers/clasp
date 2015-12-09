@@ -70,7 +70,7 @@ MonitorAllocations global_monitorAllocations;
 void monitorAllocation(GCKindEnum k, size_t sz) {
   printf("%s:%d monitor allocation of %s with %zu bytes\n", __FILE__, __LINE__, obj_name(k), sz);
   if (global_monitorAllocations.counter >= global_monitorAllocations.start && global_monitorAllocations.counter < global_monitorAllocations.end) {
-    core::core_clibBacktrace(global_monitorAllocations.backtraceDepth);
+    core::core__clib_backtrace(global_monitorAllocations.backtraceDepth);
   }
   global_monitorAllocations.counter++;
 }

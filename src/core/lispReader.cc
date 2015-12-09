@@ -81,7 +81,7 @@ namespace core {
   {                                                     \
     if (cl_consp(x)) {                                  \
       LOG(BF("About to try trap bad cons"));            \
-      string ssss = core_sourceFileInfo(x)->fileName(); \
+      string ssss = core__source_file_info(x)->fileName(); \
     }                                                   \
   }
 #endif
@@ -139,10 +139,10 @@ LETTER:
   return result;
 }
 
-#define ARGS_core_nread "(sin &optional (eof-error-p t) eof-value)"
-#define DECL_core_nread ""
-#define DOCS_core_nread "nread"
-T_mv core_nread(T_sp sin, T_sp eof_error_p, T_sp eof_value) {
+LAMBDA(sin &optional (eof-error-p t) eof-value);
+DECLARE();
+DOCSTRING("nread");
+CL_DEFUN T_mv core__nread(T_sp sin, T_sp eof_error_p, T_sp eof_value) {
   T_sp result = read_lisp_object(sin, eof_error_p.isTrue(), eof_value, false);
   return Values(result);
 };
@@ -597,7 +597,7 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   List_sp cur = first;
   while (1) {
-    SourcePosInfo_sp info = core_inputStreamSourcePosInfo(sin);
+    SourcePosInfo_sp info = core__input_stream_source_pos_info(sin);
     Character_sp cp = gc::As<Character_sp>(cl__peek_char(_lisp->_true(), sin, _lisp->_true(), _Nil<Character_O>(), _lisp->_true()));
     LOG(BF("read_list ---> peeked char[%s]") % _rep_(cp));
     if (clasp_as_char(cp) == end_char) {
@@ -643,9 +643,9 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
         Cons_sp one = Cons_O::create(obj, _Nil<T_O>());
         lisp_registerSourcePosInfo(one, info);
         LOG(BF("One = %s\n") % _rep_(one));
-        LOG(BF("one->sourceFileInfo()=%s") % _rep_(core_sourceFileInfo(one)));
-        LOG(BF("one->sourceFileInfo()->fileName()=%s") % core_sourceFileInfo(one)->fileName());
-        LOG(BF("one->sourceFileInfo()->fileName().c_str() = %s") % core_sourceFileInfo(one)->fileName().c_str());
+        LOG(BF("one->sourceFileInfo()=%s") % _rep_(core__source_file_info(one)));
+        LOG(BF("one->sourceFileInfo()->fileName()=%s") % core__source_file_info(one)->fileName());
+        LOG(BF("one->sourceFileInfo()->fileName().c_str() = %s") % core__source_file_info(one)->fileName().c_str());
         TRAP_BAD_CONS(one);
         cur.asCons()->setCdr(one);
         cur = one;
@@ -877,7 +877,6 @@ step10:
 }
 
 void exposeCore_lisp_reader() {
-  CoreDefun(nread);
 
   // functions for reader
 }

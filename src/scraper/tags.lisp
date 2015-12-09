@@ -1,5 +1,6 @@
 (in-package :tags)
 
+
 (define-condition unknown-tag ()
   ((tag :initarg :tag :accessor unknown-tag-tag))
   (:report (lambda (condition stream)

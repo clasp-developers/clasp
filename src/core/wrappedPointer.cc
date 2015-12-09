@@ -29,10 +29,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_core__pointer_release "(arg)"
-#define DECL_core__pointer_release ""
-#define DOCS_core__pointer_release "pointerRelease"
-Pointer_sp core__pointer_release(T_sp ptr) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("pointerRelease");
+CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
   _G();
   if (ptr.nilp()) {
     return _Nil<Pointer_O>();
@@ -43,10 +43,10 @@ Pointer_sp core__pointer_release(T_sp ptr) {
   SIMPLE_ERROR(BF("Could not release pointer for %s") % _rep_(ptr));
 }
 
-#define ARGS_core__pointer_delete "(arg)"
-#define DECL_core__pointer_delete ""
-#define DOCS_core__pointer_delete "pointerDelete"
-void core__pointer_delete(T_sp ptr) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("pointerDelete");
+CL_DEFUN void core__pointer_delete(T_sp ptr) {
   _G();
   if (ptr.nilp()) {
     return;
@@ -84,10 +84,10 @@ Pointer_sp WrappedPointer_O::address() const {
   return Pointer_O::create(addr);
 }
 
-#define ARGS_core__pointer_address "(arg)"
-#define DECL_core__pointer_address ""
-#define DOCS_core__pointer_address "pointerAddress"
-T_sp core__pointer_address(T_sp ptr) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("pointerAddress");
+CL_DEFUN T_sp core__pointer_address(T_sp ptr) {
   _G();
   if (ptr.nilp()) {
     return _Nil<Pointer_O>();
@@ -101,9 +101,6 @@ T_sp core__pointer_address(T_sp ptr) {
 void WrappedPointer_O::exposeCando(core::Lisp_sp e) {
   class_<WrappedPointer_O>()
       .def("validp", &WrappedPointer_O::validp);
-  Core_temp_Defun(pointer_release);
-  Core_temp_Defun(pointer_delete);
-  Core_temp_Defun(pointer_address);
 }
 
 void WrappedPointer_O::exposePython(core::Lisp_sp lisp) {

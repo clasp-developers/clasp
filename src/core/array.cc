@@ -61,10 +61,10 @@ CL_DEFUN T_mv cl__upgraded_array_element_type(T_sp type) {
   return (Values(T_O::___staticClass));
 };
 
-#define ARGS_core__copy_subarray "(out outStart in inStart len)"
-#define DECL_core__copy_subarray ""
-#define DOCS_core__copy_subarray "copy_subarray"
-void core__copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in, Fixnum_sp inStart, Fixnum_sp len) {
+LAMBDA(out outStart in inStart len);
+DECLARE();
+DOCSTRING("copy_subarray");
+CL_DEFUN void core__copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in, Fixnum_sp inStart, Fixnum_sp len) {
   _G();
   // TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
   //       Currently this is very inefficient
@@ -96,10 +96,10 @@ void core__copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in, Fixnum_s
   }
 }
 
-#define ARGS_core__aset "(array &rest indices-value)"
-#define DECL_core__aset ""
-#define DOCS_core__aset "aset"
-T_sp core__aset(Array_sp array, List_sp indices_value) {
+LAMBDA(array &rest indices-value);
+DECLARE();
+DOCSTRING("aset");
+CL_DEFUN T_sp core__aset(Array_sp array, List_sp indices_value) {
   _G();
   int r = cl__length(indices_value) - 1;
   int j;
@@ -301,9 +301,7 @@ void Array_O::exposeCando(::core::Lisp_sp lisp) {
 
       ;
   SYMBOL_SC_(CorePkg, copy_subarray);
-  Core_temp_Defun(copy_subarray);
   SYMBOL_SC_(CorePkg, aset);
-  Core_temp_Defun(aset);
 }
 
 void Array_O::exposePython(Lisp_sp lisp) {

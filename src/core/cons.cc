@@ -55,10 +55,10 @@ List_sp coerce_to_list(T_sp o) {
   TYPE_ERROR(o, cl::_sym_list);
 }
 
-#define ARGS_core_put_f "(plist value indicator)"
-#define DECL_core_put_f ""
-#define DOCS_core_put_f "putF"
-List_sp core_put_f(List_sp place, T_sp value, T_sp indicator) {
+LAMBDA(plist value indicator);
+DECLARE();
+DOCSTRING("putF");
+CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
   _G();
   auto it = place.begin();
   auto end = place.end();
@@ -91,10 +91,10 @@ CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
   return plist.asCons()->getf(indicator, default_value);
 };
 
-#define ARGS_core_rem_f "(plist indicator)"
-#define DECL_core_rem_f ""
-#define DOCS_core_rem_f "Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found"
-T_mv core_rem_f(List_sp plist, Symbol_sp indicator) {
+LAMBDA(plist indicator);
+DECLARE();
+DOCSTRING("Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found");
+CL_DEFUN T_mv core__rem_f(List_sp plist, Symbol_sp indicator) {
   if (oCar(plist) == indicator) {
     plist = oCddr(plist);
     T_sp tplist = plist;
@@ -262,10 +262,10 @@ void Cons_O::appendInto(T_sp head, gctools::StackRootedPointerToSmartPtr<T_O> &t
 }
 #endif
 
-#define ARGS_core__append2 "(l1 l2)"
-#define DECL_core__append2 ""
-#define DOCS_core__append2 "append2 - append l2 to l1 by copying l1 and pointing the end of it to l2"
-T_sp core__append2(List_sp x, List_sp y) {
+LAMBDA(l1 l2);
+DECLARE();
+DOCSTRING("append2 - append l2 to l1 by copying l1 and pointing the end of it to l2");
+CL_DEFUN T_sp core__append2(List_sp x, List_sp y) {
   _G();
   return Cons_O::append(x, y);
 };
@@ -1091,7 +1091,7 @@ string Cons_O::__repr__() const {
     {
 	int lineNumber, col;
 	parsed->getParsePos(lineNumber,col);
-	SourceFileInfo_sp fileName = core_sourceFileInfo(parsed);
+	SourceFileInfo_sp fileName = core__source_file_info(parsed);
 	return((SourceCodeCons_O::create(car,cdr,lineNumber,col,fileName,env)));
     }
 
@@ -1099,7 +1099,7 @@ string Cons_O::__repr__() const {
     {
 	int lineNumber, col;
 	parsed->getParsePos(lineNumber,col);
-	SourceFileInfo_sp fileName = core_sourceFileInfo(parsed);
+	SourceFileInfo_sp fileName = core__source_file_info(parsed);
 	return((SourceCodeCons_O::create(car,_Nil<T_O>(),lineNumber,col,fileName,lisp)));
     }
 
@@ -1109,7 +1109,7 @@ string Cons_O::__repr__() const {
 	if ( parsed.nilp() ) return((_Nil<SourceCodeCons_O>()));
 	int lineNumber, col;
 	parsed->getParsePos(lineNumber,col);
-	SourceFileInfo_sp fileName = core_sourceFileInfo(parsed);
+	SourceFileInfo_sp fileName = core__source_file_info(parsed);
 	return((SourceCodeCons_O::create(lineNumber,col,fileName,env)));
     }
 
@@ -1129,7 +1129,7 @@ string Cons_O::__repr__() const {
 	int lineNumber, col;
 	string fileName;
 	c->getParsePos(lineNumber,col);
-	this->_SourceFileInfo = core_sourceFileInfo(c);
+	this->_SourceFileInfo = core__source_file_info(c);
 	this->_ParsePosLineNumber = lineNumber;
 	this->_ParsePosColumn = col;
     }
@@ -1352,13 +1352,10 @@ void Cons_O::exposeCando(Lisp_sp lisp) {
       //        .def_raw("eval",&Cons_O::evaluateArgsAsExpression)
       ;
   SYMBOL_EXPORT_SC_(ClPkg, make_list);
-  Core_temp_Defun(append2);
   SYMBOL_EXPORT_SC_(ClPkg, cons);
   SYMBOL_EXPORT_SC_(ClPkg, getf);
   SYMBOL_EXPORT_SC_(CorePkg, rem_f);
-  CoreDefun(rem_f);
   SYMBOL_SC_(CorePkg, put_f);
-  CoreDefun(put_f);
   af_def(ClPkg, "rplaca", &cl__rplaca);
   af_def(ClPkg, "rplacd", &cl__rplacd);
   af_def(ClPkg, "rest", &oCdr);

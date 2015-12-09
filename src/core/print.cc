@@ -179,10 +179,10 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
     }
 #endif
 
-#define ARGS_core__print_unreadable_object_function "(o stream type id function)"
-#define DECL_core__print_unreadable_object_function ""
-#define DOCS_core__print_unreadable_object_function "printUnreadableObjectFunction - see ecl::print_unreadable.d"
-void core__print_unreadable_object_function(T_sp o, T_sp ostream, T_sp type, T_sp id, T_sp function) {
+LAMBDA(o stream type id function);
+DECLARE();
+DOCSTRING("printUnreadableObjectFunction - see ecl::print_unreadable.d");
+CL_DEFUN void core__print_unreadable_object_function(T_sp o, T_sp ostream, T_sp type, T_sp id, T_sp function) {
   _G();
   if (clasp_print_readably()) {
     PRINT_NOT_READABLE_ERROR(o);
@@ -265,7 +265,6 @@ void initialize_print() {
   //        SYMBOL_EXPORT_SC_(CorePkg,writeAddr);
   //        Defun(writeAddr);
   SYMBOL_EXPORT_SC_(CorePkg, printUnreadableObjectFunction);
-  Core_temp_Defun(print_unreadable_object_function);
   SYMBOL_EXPORT_SC_(ClPkg, print);
   SYMBOL_EXPORT_SC_(ClPkg, prin1);
   SYMBOL_EXPORT_SC_(ClPkg, princ);

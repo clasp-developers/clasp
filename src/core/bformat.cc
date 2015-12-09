@@ -40,10 +40,10 @@ namespace core {
 
 /*! Boost-format interface - works like CL:format but uses boost format strings
  */
-#define ARGS_core__bformat "(destination control &rest args)"
-#define DECL_core__bformat ""
-#define DOCS_core__bformat "Like CL format but uses C/boost format strings"
-T_sp core__bformat(T_sp destination, const string &control, List_sp args) {
+LAMBDA(destination control &rest args);
+DECLARE();
+DOCSTRING("Like CL format but uses C/boost format strings");
+CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp args) {
   _G();
   T_sp output;
   if (destination.nilp()) {
@@ -72,7 +72,7 @@ T_sp core__bformat(T_sp destination, const string &control, List_sp args) {
         stringstream ss;
         ss << clasp_to_mpz(flli);
         fmter % ss.str();
-      } else if (core__str_p(fobj)) {
+      } else if (core__simple_string_p(fobj)) {
         Str_sp ftext = gc::As<Str_sp>(fobj);
         fmter % ftext->get();
       } else if (core__double_float_p(fobj)) {
@@ -170,7 +170,6 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
 void initialize_bformat(Lisp_sp lisp) {
   _G();
   SYMBOL_SC_(CorePkg, bformat);
-  Core_temp_Defun(bformat);
   SYMBOL_EXPORT_SC_(ClPkg, format);
 }
 

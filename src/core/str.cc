@@ -54,10 +54,10 @@ string str_get(T_sp str) {
 T_sp str_create(const string &str) { return Str_O::create(str); };
 T_sp str_create(const char *str) { return Str_O::create(str); };
 
-#define ARGS_core__search_string "(str1 start1 end1 str2 start2 end2)"
-#define DECL_core__search_string ""
-#define DOCS_core__search_string "searchString"
-T_sp core__search_string(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_sp str2, Fixnum_sp start2, T_sp end2) {
+LAMBDA(str1 start1 end1 str2 start2 end2);
+DECLARE();
+DOCSTRING("searchString");
+CL_DEFUN T_sp core__search_string(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_sp str2, Fixnum_sp start2, T_sp end2) {
   _G();
   string s1 = str1->get().substr(unbox_fixnum(start1), end1.nilp() ? str1->get().size() : unbox_fixnum(gc::As<Fixnum_sp>(end1)));
   string s2 = str2->get().substr(unbox_fixnum(start2), end2.nilp() ? str2->get().size() : unbox_fixnum(gc::As<Fixnum_sp>(end2)));
@@ -164,7 +164,6 @@ void Str_O::exposeCando(Lisp_sp lisp) {
       ;
 
   SYMBOL_SC_(CorePkg, base_string_concatenate);
-  Core_temp_Defun(search_string);
   core::af_def(CorePkg, "base_string_concatenate", &af_base_string_concatenate_, ARGS_af_base_string_concatenate_, DECL_af_base_string_concatenate_, DOCS_af_base_string_concatenate_);
 
 }
@@ -349,7 +348,7 @@ bool Str_O::eql_(T_sp obj) const {
 
 #if 0
 bool Str_O::equal(T_sp obj) const {
-  if (core__str_p(obj)) {
+  if (core__simple_string_p(obj)) {
     return this->eql_(obj);
   }
   return false;

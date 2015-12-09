@@ -39,10 +39,10 @@ namespace core {
 
 EXPOSE_CLASS(core, VectorDisplaced_O);
 
-#define ARGS_core_make_vector_displaced "(dim element-type displaced-to displaced-offset)"
-#define DECL_core_make_vector_displaced ""
-#define DOCS_core_make_vector_displaced ""
-VectorDisplaced_sp core_make_vector_displaced(T_sp dim, T_sp elementType, T_sp displacedTo, size_t displacedOffset) {
+LAMBDA(dim element-type displaced-to displaced-offset);
+DECLARE();
+DOCSTRING("");
+CL_DEFUN VectorDisplaced_sp core__make_vector_displaced(T_sp dim, T_sp elementType, T_sp displacedTo, size_t displacedOffset) {
   GC_ALLOCATE(VectorDisplaced_O, vo);
   vo->_ElementType = elementType;
   vo->_Size = clasp_to_fixnum(dim);
@@ -57,7 +57,6 @@ VectorDisplaced_sp core_make_vector_displaced(T_sp dim, T_sp elementType, T_sp d
 void VectorDisplaced_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<VectorDisplaced_O>();
 
-  CoreDefun(make_vector_displaced);
 }
 
 void VectorDisplaced_O::exposePython(::core::Lisp_sp lisp) {

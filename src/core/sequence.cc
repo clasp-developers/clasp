@@ -158,10 +158,10 @@ CL_DEFUN T_sp cl__copy_seq(T_sp seq) {
   TYPE_ERROR(seq, cl::_sym_sequence);
 };
 
-#define ARGS_core_setfElt "(sequence index value)"
-#define DECL_core_setfElt ""
-#define DOCS_core_setfElt "setfElt"
-T_sp core_setfElt(T_sp sequence, int index, T_sp value) {
+LAMBDA(sequence index value);
+DECLARE();
+DOCSTRING("setfElt");
+CL_DEFUN T_sp core__setf_elt(T_sp sequence, int index, T_sp value) {
   _G();
   if (sequence.nilp()) {
     TYPE_ERROR(sequence, cl::_sym_sequence);
@@ -175,18 +175,18 @@ T_sp core_setfElt(T_sp sequence, int index, T_sp value) {
   TYPE_ERROR(sequence, cl::_sym_sequence);
 };
 
-#define ARGS_core_eltSet "(seq index val)"
-#define DECL_core_eltSet ""
-#define DOCS_core_eltSet "eltSet"
-T_sp core_eltSet(T_sp sequence, int index, T_sp val) {
+LAMBDA(seq index val);
+DECLARE();
+DOCSTRING("eltSet");
+CL_DEFUN T_sp core__elt_set(T_sp sequence, int index, T_sp val) {
   _G();
-  return core_setfElt(sequence, index, val);
+  return core__setf_elt(sequence, index, val);
 };
 
-#define ARGS_core_setfSubseq "(sequence start end subseq)"
-#define DECL_core_setfSubseq ""
-#define DOCS_core_setfSubseq "setfSubseq"
-T_sp core_setfSubseq(T_sp sequence, int start, Fixnum_sp end, T_sp subseq) {
+LAMBDA(sequence start end subseq);
+DECLARE();
+DOCSTRING("setfSubseq");
+CL_DEFUN T_sp core__setf_subseq(T_sp sequence, int start, Fixnum_sp end, T_sp subseq) {
   _G();
   if (sequence.nilp()) {
     TYPE_ERROR(sequence, cl::_sym_sequence);
@@ -217,14 +217,11 @@ T_sp core_setfSubseq(T_sp sequence, int start, Fixnum_sp end, T_sp subseq) {
 
 void initialize_sequence() {
   SYMBOL_EXPORT_SC_(CorePkg, setfElt);
-  CoreDefun(setfElt);
 
   SYMBOL_EXPORT_SC_(CorePkg, eltSet);
-  CoreDefun(eltSet);
 
 
   SYMBOL_EXPORT_SC_(CorePkg, setfSubseq);
-  CoreDefun(setfSubseq);
 
   SYMBOL_EXPORT_SC_(ClPkg, make_sequence);
 

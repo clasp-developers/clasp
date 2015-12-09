@@ -184,10 +184,10 @@ FOUND:
   }
 }
 
-#define ARGS_core_clearGenericFunctionDispatchCache "()"
-#define DECL_core_clearGenericFunctionDispatchCache ""
-#define DOCS_core_clearGenericFunctionDispatchCache "clearGenericFunctionDispatchCache"
-void core_clearGenericFunctionDispatchCache() {
+LAMBDA();
+DECLARE();
+DOCSTRING("clearGenericFunctionDispatchCache");
+CL_DEFUN void core__clear_generic_function_dispatch_cache() {
   _G();
   printf("%s:%d Clearing generic function dispatch cache\n", __FILE__, __LINE__);
   _lisp->methodCachePtr()->empty();
@@ -195,6 +195,5 @@ void core_clearGenericFunctionDispatchCache() {
 
 void initialize_cache() {
   _G();
-  CoreDefun(clearGenericFunctionDispatchCache);
 }
 };

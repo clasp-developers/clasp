@@ -112,7 +112,7 @@ namespace core {
 // Like ecl__vector_start_end
 T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp end);
 
-Vector_sp core_make_vector(T_sp element_type,
+Vector_sp core__make_vector(T_sp element_type,
                            int dimension,
                            bool adjustable = false,
                            T_sp fill_pointer = cl::_sym_T_O,

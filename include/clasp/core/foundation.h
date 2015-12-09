@@ -529,7 +529,7 @@ struct registered_class<T const>
 
 namespace core {
 extern int _global_signalTrap;
-extern bool _global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the program. See core_exit!
+extern bool _global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the program. See core__exit!
 void lisp_pollSignals();
 };
 #define SET_SIGNAL(s) \

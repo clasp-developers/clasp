@@ -27,8 +27,6 @@ extern "C" {
 
 namespace gctools {
 
-using namespace core;
-
 /*! Hardcode a few kinds of objects for bootstrapping
  */
 
@@ -102,7 +100,7 @@ core::T_sp gctools__bootstrap_kind_p(const string &name) {
 #define ARGS_gc_deallocate_unmanaged_instance "()"
 #define DECL_gc_deallocate_unmanaged_instance ""
 #define DOCS_gc_deallocate_unmanaged_instance "Deallocate the memory for unmanaged instances and do nothing for other instances"
-void gc_deallocate_unmanaged_instance(T_sp obj) {
+void gc_deallocate_unmanaged_instance(core::T_sp obj) {
   obj_deallocate_unmanaged_instance(obj);
 }
 
@@ -122,10 +120,10 @@ core::T_mv gc_bytes_allocated() {
   return Values(core::clasp_make_fixnum(gc_bytes), core::clasp_make_fixnum(my_bytes));
 }
 
-#define ARGS_core_header_kind "()"
-#define DECL_core_header_kind ""
-#define DOCS_core_header_kind "Return the header kind for the object"
-Fixnum core_header_kind(T_sp obj) {
+LAMBDA();
+DECLARE();
+DOCSTRING("Return the header kind for the object");
+CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   if (obj.consp()) {
 #if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
     return reinterpret_cast<Fixnum>(&typeid(*obj));
@@ -151,18 +149,18 @@ Fixnum core_header_kind(T_sp obj) {
     return kind_character;
   }
   printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
-  return clasp_make_fixnum(-1);
+  return core::clasp_make_fixnum(-1);
 }
 
-#define ARGS_core_hardwired_kinds "()"
-#define DECL_core_hardwired_kinds ""
-#define DOCS_core_hardwired_kinds "Return the header kind for the object"
-core::T_mv core_hardwired_kinds() {
-  List_sp result = Cons_O::createList(Cons_O::create(core::Str_O::create("FIXNUM"), clasp_make_fixnum(kind_fixnum)),
-                                      Cons_O::create(core::Str_O::create("SINGLE_FLOAT"), clasp_make_fixnum(kind_single_float)),
-                                      Cons_O::create(core::Str_O::create("CHARACTER"), clasp_make_fixnum(kind_character)));
-  List_sp ignoreClasses = _Nil<T_O>(); // Cons_O::createList(Str_O::create("core__Cons_O") <-- future when CONS are in their own pool
-  return Values(result, ignoreClasses, clasp_make_fixnum(kind_first_general), clasp_make_fixnum(kind_first_alien), clasp_make_fixnum(kind_last_alien), clasp_make_fixnum(kind_first_instance));
+LAMBDA();
+DECLARE();
+DOCSTRING("Return the header kind for the object");
+CL_DEFUN core::T_mv core__hardwired_kinds() {
+  core::List_sp result = core::Cons_O::createList(core::Cons_O::create(core::Str_O::create("FIXNUM"), core::clasp_make_fixnum(kind_fixnum)),
+                                                  core::Cons_O::create(core::Str_O::create("SINGLE_FLOAT"), core::clasp_make_fixnum(kind_single_float)),
+                                                  core::Cons_O::create(core::Str_O::create("CHARACTER"), core::clasp_make_fixnum(kind_character)));
+  core::List_sp ignoreClasses = _Nil<core::T_O>(); // core::Cons_O::createList(Str_O::create("core__Cons_O") <-- future when CONS are in their own pool
+  return Values(result, ignoreClasses, core::clasp_make_fixnum(kind_first_general), core::clasp_make_fixnum(kind_first_alien), core::clasp_make_fixnum(kind_last_alien), core::clasp_make_fixnum(kind_first_instance));
 }
 
 #if 0
@@ -222,11 +220,11 @@ core::T_mv core_hardwired_kinds() {
     {_G();
 //        int N = 4;
         printf("Creating Array0(4)\n");
-        gctools::Array0<core::T_sp> v;
-        v.allocate(4,_Nil<T_O>());
+        gctools::Array0<core::core::T_sp> v;
+        v.allocate(4,_Nil<core::T_O>());
         Array0_dump(v,"Nil*4");
-        gctools::Array0<core::T_sp> w;
-        w.allocate(4,_Nil<T_O>());
+        gctools::Array0<core::core::T_sp> w;
+        w.allocate(4,_Nil<core::T_O>());
         for (int i(0); i<4; ++i ) {
             w[i] = core::make_fixnum(i);
         }
@@ -386,8 +384,7 @@ namespace gctools {
 #define ARGS_gctools__gc_info "(&optional x (marker 0))"
 #define DECL_gctools__gc_info ""
 #define DOCS_gctools__gc_info "gcInfo - Return info about the reachable objects"
-T_mv gctools__gc_info(T_sp x, Fixnum_sp marker) {
-  _G();
+core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
 #ifdef USE_MPS
   return Values(_Nil<core::T_O>());
 #endif
@@ -399,7 +396,7 @@ T_mv gctools__gc_info(T_sp x, Fixnum_sp marker) {
 #define ARGS_gctools__monitor_allocations "(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6))"
 #define DECL_gctools__monitor_allocations ""
 #define DOCS_gctools__monitor_allocations "gcMonitorAllocations"
-void gctools__monitor_allocations(bool on, Fixnum_sp backtraceStart, Fixnum_sp backtraceCount, Fixnum_sp backtraceDepth) {
+void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core::Fixnum_sp backtraceCount, core::Fixnum_sp backtraceDepth) {
   global_monitorAllocations.on = on;
   global_monitorAllocations.counter = 0;
   if (backtraceStart.unsafe_fixnum() < 0 ||
@@ -416,7 +413,7 @@ void gctools__monitor_allocations(bool on, Fixnum_sp backtraceStart, Fixnum_sp b
 #define ARGS_gctools__gc_marker "(&optional marker)"
 #define DECL_gctools__gc_marker ""
 #define DOCS_gctools__gc_marker "gcMarker"
-Fixnum gctools__gc_marker(Fixnum_sp marker) {
+Fixnum gctools__gc_marker(core::Fixnum_sp marker) {
   _G();
 #ifdef USE_BOEHM
 #ifdef USE_BOEHM_MEMORY_MARKER
@@ -442,7 +439,7 @@ SYMBOL_EXPORT_SC_(GcToolsPkg, rampCollectAll);
 #define ARGS_gctools__alloc_pattern_begin "(pattern)"
 #define DECL_gctools__alloc_pattern_begin ""
 #define DOCS_gctools__alloc_pattern_begin "allocPatternBegin - pass either gctools:ramp or gctools:ramp-collect-all"
-void gctools__alloc_pattern_begin(Symbol_sp pattern) {
+void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
 #ifdef USE_MPS
   if (pattern == _sym_ramp || pattern == _sym_rampCollectAll) {
     core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
@@ -462,8 +459,8 @@ void gctools__alloc_pattern_begin(Symbol_sp pattern) {
 #define ARGS_gctools__alloc_pattern_end "()"
 #define DECL_gctools__alloc_pattern_end ""
 #define DOCS_gctools__alloc_pattern_end "allocPatternEnd - end the current alloc-pattern - return what it was"
-Symbol_sp gctools__alloc_pattern_end() {
-  Symbol_sp pattern(_Nil<core::Symbol_O>());
+core::Symbol_sp gctools__alloc_pattern_end() {
+  core::Symbol_sp pattern(_Nil<core::Symbol_O>());
 #ifdef USE_MPS
   core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
   if (patternStack.nilp())
@@ -613,7 +610,7 @@ void af_cleanup() {
 #define ARGS_gctools__debug_allocations "(arg)"
 #define DECL_gctools__debug_allocations ""
 #define DOCS_gctools__debug_allocations "debugAllocations"
-void gctools__debug_allocations(T_sp debugOn) {
+void gctools__debug_allocations(core::T_sp debugOn) {
   _G();
   _GlobalDebugAllocations = debugOn.isTrue();
 };
@@ -633,7 +630,7 @@ void af_gcheader(core::Pointer_sp addr, const string &msg) {
 #define DOCS_af_gcaddress "gcaddress"
 core::Pointer_sp af_gcaddress(core::T_sp obj) {
   _G();
-  T_O *ptr = dynamic_cast<T_O *>(obj.get());
+  core::T_O *ptr = dynamic_cast<core::T_O *>(obj.get());
   void *hptr = reinterpret_cast<void *>(GCWrapper<core::T_O>::gcHeader(ptr));
   core::Pointer_sp po = core::Pointer_O::create(hptr);
   return po;
@@ -690,7 +687,5 @@ void initialize_gc_functions() {
   //	    SYMBOL_EXPORT_SC_(GcTools,linkExternalGlobalsInModule);
   //	    Defun(linkExternalGlobalsInModule);
   Gctools_temp_Defun(debug_allocations);
-  CoreDefun(header_kind);
-  CoreDefun(hardwired_kinds);
 };
 };

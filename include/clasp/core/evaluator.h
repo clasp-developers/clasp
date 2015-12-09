@@ -46,13 +46,14 @@ namespace core {
 T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env);
 T_sp af_interpreter_lookup_function(Symbol_sp sym, T_sp env);
 T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env);
-T_sp core_lookup_symbol_macro(Symbol_sp sym, T_sp env);
+T_sp core__lookup_symbol_macro(Symbol_sp sym, T_sp env);
+
+ /*! Evaluate within env.
+          See ecl/src/c/compiler.d:eval-with-env */
+T_mv core__eval_with_env_default(T_sp form, T_sp env);
 
 namespace eval {
 
-/*! Evaluate within env.
-          See ecl/src/c/compiler.d:eval-with-env */
-T_mv core_eval_with_env_default(T_sp form, T_sp env);
 
 extern List_sp evaluateList(List_sp args, T_sp environment);
 extern T_mv evaluateListReturnLast(List_sp args, T_sp environment);

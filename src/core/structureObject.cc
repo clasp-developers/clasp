@@ -43,10 +43,10 @@ namespace core {
 
 #define USE_INSTANCES_FOR_STRUCTURES
 
-#define ARGS_core__make_structure "(type &rest slot_values)"
-#define DECL_core__make_structure ""
-#define DOCS_core__make_structure "makeStructure"
-T_sp core__make_structure(T_sp type, List_sp slot_values) {
+LAMBDA(type &rest slot_values);
+DECLARE();
+DOCSTRING("makeStructure");
+CL_DEFUN T_sp core__make_structure(T_sp type, List_sp slot_values) {
   _G();
   if (type.nilp()) {
     SIMPLE_ERROR(BF("You cannot makeStructure of type nil"));
@@ -88,10 +88,10 @@ CL_DEFUN T_sp cl__copy_structure(T_sp arg) {
   SIMPLE_ERROR(BF("You cannot copy-structure a %s") % _rep_(arg));
 };
 
-#define ARGS_core__structure_ref "(obj name idx)"
-#define DECL_core__structure_ref ""
-#define DOCS_core__structure_ref "structureRef"
-T_sp core__structure_ref(T_sp obj, Symbol_sp type, int idx) {
+LAMBDA(obj name idx);
+DECLARE();
+DOCSTRING("structureRef");
+CL_DEFUN T_sp core__structure_ref(T_sp obj, Symbol_sp type, int idx) {
   _G();
   if (obj.nilp()) {
     TYPE_ERROR(obj, type);
@@ -114,10 +114,10 @@ T_sp core__structure_ref(T_sp obj, Symbol_sp type, int idx) {
   TYPE_ERROR(obj, type);
 };
 
-#define ARGS_core__structure_set "(struct type idx val)"
-#define DECL_core__structure_set ""
-#define DOCS_core__structure_set "structureSet"
-T_sp core__structure_set(T_sp obj, Symbol_sp type, int idx, T_sp val) {
+LAMBDA(struct type idx val);
+DECLARE();
+DOCSTRING("structureSet");
+CL_DEFUN T_sp core__structure_set(T_sp obj, Symbol_sp type, int idx, T_sp val) {
   _G();
   if (obj.nilp()) {
     TYPE_ERROR(obj, type);
@@ -140,10 +140,10 @@ T_sp core__structure_set(T_sp obj, Symbol_sp type, int idx, T_sp val) {
   TYPE_ERROR(obj, type);
 };
 
-#define ARGS_core__structurep "(arg)"
-#define DECL_core__structurep ""
-#define DOCS_core__structurep "structurep"
-bool core__structurep(T_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("structurep");
+CL_DEFUN bool core__structurep(T_sp arg) {
   _G();
   if (arg.nilp()) {
     return false;
@@ -161,10 +161,10 @@ bool core__structurep(T_sp arg) {
   return false;
 };
 
-#define ARGS_core__structure_subtypep "(x y)"
-#define DECL_core__structure_subtypep ""
-#define DOCS_core__structure_subtypep "structureSubtypep checks if the structure type Y is a subtype of X"
-bool core__structure_subtypep(T_sp x, Symbol_sp y) {
+LAMBDA(x y);
+DECLARE();
+DOCSTRING("structureSubtypep checks if the structure type Y is a subtype of X");
+CL_DEFUN bool core__structure_subtypep(T_sp x, Symbol_sp y) {
   _G();
   if (x.nilp())
     return false;
@@ -333,19 +333,14 @@ void StructureObject_O::exposeCando(Lisp_sp lisp) {
 	    Defun(make_structure);
 #endif
   SYMBOL_EXPORT_SC_(CorePkg, structureRef);
-  Core_temp_Defun(structure_ref);
   SYMBOL_EXPORT_SC_(CorePkg, structureSet);
-  Core_temp_Defun(structure_set);
   SYMBOL_EXPORT_SC_(CorePkg, makeStructure);
-  Core_temp_Defun(make_structure);
 
   SYMBOL_EXPORT_SC_(ClPkg, copyStructure);
 
   SYMBOL_EXPORT_SC_(CorePkg, structurep);
-  Core_temp_Defun(structurep);
 
   SYMBOL_EXPORT_SC_(CorePkg, structureSubtypep);
-  Core_temp_Defun(structure_subtypep);
 }
 
 void StructureObject_O::exposePython(Lisp_sp lisp) {

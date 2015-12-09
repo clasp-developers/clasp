@@ -129,10 +129,10 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   return Str_O::create(ss.str());
 };
 
-#define ARGS_core_method_cache_resize "(pow)"
-#define DECL_core_method_cache_resize ""
-#define DOCS_core_method_cache_resize "cache_resize - Resize the cache to 2^pow"
-void core_method_cache_resize(Fixnum_sp pow) {
+LAMBDA(pow);
+DECLARE();
+DOCSTRING("cache_resize - Resize the cache to 2^pow");
+CL_DEFUN void core__method_cache_resize(Fixnum_sp pow) {
   if (pow < 2 || pow > 64) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
   }
@@ -140,10 +140,10 @@ void core_method_cache_resize(Fixnum_sp pow) {
   return _lisp->_Roots._MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, size);
 }
 
-#define ARGS_core_slot_cache_resize "(pow)"
-#define DECL_core_slot_cache_resize ""
-#define DOCS_core_slot_cache_resize "cache_resize - Resize the cache to 2^pow"
-void core_slot_cache_resize(Fixnum_sp pow) {
+LAMBDA(pow);
+DECLARE();
+DOCSTRING("cache_resize - Resize the cache to 2^pow");
+CL_DEFUN void core__slot_cache_resize(Fixnum_sp pow) {
   if (pow < 2 || pow > 64) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
   }
@@ -151,10 +151,10 @@ void core_slot_cache_resize(Fixnum_sp pow) {
   return _lisp->_Roots._SlotCachePtr->setup(Lisp_O::MaxClosSlots, size);
 }
 
-#define ARGS_core_single_dispatch_method_cache_resize "(pow)"
-#define DECL_core_single_dispatch_method_cache_resize ""
-#define DOCS_core_single_dispatch_method_cache_resize "cache_resize - Resize the cache to 2^pow"
-void core_single_dispatch_method_cache_resize(Fixnum_sp pow) {
+LAMBDA(pow);
+DECLARE();
+DOCSTRING("cache_resize - Resize the cache to 2^pow");
+CL_DEFUN void core__single_dispatch_method_cache_resize(Fixnum_sp pow) {
   if (pow < 2 || pow > 64) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
   }
@@ -162,36 +162,36 @@ void core_single_dispatch_method_cache_resize(Fixnum_sp pow) {
   return _lisp->_Roots._SingleDispatchMethodCachePtr->setup(2, size);
 }
 
-#define ARGS_core_method_cache_status "()"
-#define DECL_core_method_cache_status ""
-#define DOCS_core_method_cache_status "cache_status - (values searches misses total-depth)"
-T_mv core_method_cache_status() {
+LAMBDA();
+DECLARE();
+DOCSTRING("cache_status - (values searches misses total-depth)");
+CL_DEFUN T_mv core__method_cache_status() {
   return Values(clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_searches),
                 clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_misses),
                 clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_total_depth));
 }
-#define ARGS_core_slot_cache_status "()"
-#define DECL_core_slot_cache_status ""
-#define DOCS_core_slot_cache_status "cache_status - (values searches misses total-depth)"
-T_mv core_slot_cache_status() {
+LAMBDA();
+DECLARE();
+DOCSTRING("cache_status - (values searches misses total-depth)");
+CL_DEFUN T_mv core__slot_cache_status() {
   return Values(clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_searches),
                 clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_misses),
                 clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_total_depth));
 }
 
-#define ARGS_core_single_dispatch_method_cache_status "()"
-#define DECL_core_single_dispatch_method_cache_status ""
-#define DOCS_core_single_dispatch_method_cache_status "cache_status - (values searches misses total-depth)"
-T_mv core_single_dispatch_method_cache_status() {
+LAMBDA();
+DECLARE();
+DOCSTRING("cache_status - (values searches misses total-depth)");
+CL_DEFUN T_mv core__single_dispatch_method_cache_status() {
   return Values(clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_searches),
                 clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_misses),
                 clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_total_depth));
 }
 
-#define ARGS_core_lispImplementationId "()"
-#define DECL_core_lispImplementationId ""
-#define DOCS_core_lispImplementationId "lispImplementationId - the git commit sha1 code"
-T_sp core_lispImplementationId() {
+LAMBDA();
+DECLARE();
+DOCSTRING("lispImplementationId - the git commit sha1 code");
+CL_DEFUN T_sp core__lisp_implementation_id() {
   _G();
   string all = CLASP_GIT_COMMIT;
 #define RIGHT_CHARS 8
@@ -204,10 +204,10 @@ T_sp core_lispImplementationId() {
   return Str_O::create(rightChars);
 };
 
-#define ARGS_core_create_tagged_immediate_value_or_nil "(obj)"
-#define DECL_core_create_tagged_immediate_value_or_nil ""
-#define DOCS_core_create_tagged_immediate_value_or_nil "Convert an object, either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL"
-T_sp core_create_tagged_immediate_value_or_nil(T_sp object) {
+LAMBDA(obj);
+DECLARE();
+DOCSTRING("Convert an object, either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL");
+CL_DEFUN T_sp core__create_tagged_immediate_value_or_nil(T_sp object) {
   if (object.fixnump() || object.characterp() || object.single_floatp()) {
     return Integer_O::create((gc::Fixnum)object.raw_());
   }
@@ -254,18 +254,18 @@ CL_DEFUN T_sp cl__machine_instance() {
   return _Nil<T_O>();
 };
 
-#define ARGS_core_argc "()"
-#define DECL_core_argc ""
-#define DOCS_core_argc "argc"
-int core_argc() {
+LAMBDA();
+DECLARE();
+DOCSTRING("argc");
+CL_DEFUN int core__argc() {
   _G();
   return _lisp->_Argc;
 };
 
-#define ARGS_core_argv "(idx)"
-#define DECL_core_argv ""
-#define DOCS_core_argv "argv"
-Str_sp core_argv(int idx) {
+LAMBDA(idx);
+DECLARE();
+DOCSTRING("argv");
+CL_DEFUN Str_sp core__argv(int idx) {
   _G();
   return Str_O::create(_lisp->_Argv[idx]);
 };
@@ -282,29 +282,29 @@ CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
   return val;
 };
 
-#define ARGS_core_dumpAddressOf "(arg)"
-#define DECL_core_dumpAddressOf ""
-#define DOCS_core_dumpAddressOf "dumpAddressOf"
-void core_dumpAddressOf(T_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("dumpAddressOf");
+CL_DEFUN void core__dump_address_of(T_sp arg) {
   _G();
   ASSERT(arg.objectp());
   void *ptr = &(*arg);
   printf("%s:%d  AddressOf = %p\n", __FILE__, __LINE__, ptr);
 };
 
-#define ARGS_core_incompleteNextHigherPowerOf_2 "(arg)"
-#define DECL_core_incompleteNextHigherPowerOf_2 ""
-#define DOCS_core_incompleteNextHigherPowerOf_2 "incompleteNextHigherPowerOf_2 - see the incompleteNextHigherPowerOf_2 builtin - only works for Fixnums and not the full range; just for testing"
-int core_incompleteNextHigherPowerOf_2(Fixnum_sp fn) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("incompleteNextHigherPowerOf_2 - see the incompleteNextHigherPowerOf_2 builtin - only works for Fixnums and not the full range; just for testing");
+CL_DEFUN int core__incomplete_next_higher_power_of_2(Fixnum_sp fn) {
   _G();
   unsigned int f = unbox_fixnum(fn);
   return 1 << ((sizeof(f) * 8) - __builtin_clz(f));
 };
 
-#define ARGS_core_allRegisteredClassNames "()"
-#define DECL_core_allRegisteredClassNames ""
-#define DOCS_core_allRegisteredClassNames "allRegisteredClassNames"
-Vector_sp core_allRegisteredClassNames() {
+LAMBDA();
+DECLARE();
+DOCSTRING("allRegisteredClassNames");
+CL_DEFUN Vector_sp core__all_registered_class_names() {
   _G();
   VectorObjects_sp vo = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), _lisp->classSymbolsHolder().size(), false, cl::_sym_T_O);
   for (int i(0), iEnd(_lisp->classSymbolsHolder().size()); i < iEnd; ++i) {
@@ -313,18 +313,18 @@ Vector_sp core_allRegisteredClassNames() {
   return vo;
 };
 
-#define ARGS_core_toTaggedFixnum "(arg)"
-#define DECL_core_toTaggedFixnum ""
-#define DOCS_core_toTaggedFixnum "toTaggedFixnum"
-T_sp core_toTaggedFixnum(int val) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("toTaggedFixnum");
+CL_DEFUN T_sp core__to_tagged_fixnum(int val) {
   _G();
   return gctools::smart_ptr<T_O>(val);
 };
 
-#define ARGS_core_fromTaggedFixnum "(val)"
-#define DECL_core_fromTaggedFixnum ""
-#define DOCS_core_fromTaggedFixnum "fromTaggedFixnum"
-gctools::Fixnum core_fromTaggedFixnum(T_sp val) {
+LAMBDA(val);
+DECLARE();
+DOCSTRING("fromTaggedFixnum");
+CL_DEFUN gctools::Fixnum core__from_tagged_fixnum(T_sp val) {
   _G();
   if (val.fixnump()) {
     return val.unsafe_fixnum();
@@ -332,10 +332,10 @@ gctools::Fixnum core_fromTaggedFixnum(T_sp val) {
   SIMPLE_ERROR(BF("Not a fixnum"));
 };
 
-#define ARGS_core_dumpTaggedFixnum "(arg)"
-#define DECL_core_dumpTaggedFixnum ""
-#define DOCS_core_dumpTaggedFixnum "dumpTaggedFixnum"
-void core_dumpTaggedFixnum(T_sp val) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("dumpTaggedFixnum");
+CL_DEFUN void core__dump_tagged_fixnum(T_sp val) {
   _G();
   if (val.fixnump()) {
     printf("%s:%d Raw TaggedFixnum %p   Untagged %ld\n",
@@ -344,10 +344,82 @@ void core_dumpTaggedFixnum(T_sp val) {
     printf("%s:%d Not a tagged fixnum\n", __FILE__, __LINE__);
 }
 
-#define ARGS_ext_getEnv "(arg)"
-#define DECL_ext_getEnv ""
-#define DOCS_ext_getEnv "getEnv"
-T_sp ext_getEnv(Str_sp arg) {
+LAMBDA(name value);
+DECLARE();
+DOCSTRING("Set environment variable NAME to VALUE");
+CL_DEFUN void ext__setenv(Str_sp name, Str_sp value) {
+  _G();
+  setenv(name->get().c_str(), value->get().c_str(), 1);
+}
+
+LAMBDA(cmd);
+DECLARE();
+DOCSTRING("system");
+CL_DEFUN T_mv ext__system(Str_sp cmd) {
+  _G();
+  string command = cmd->get();
+  int ret = system(command.c_str());
+  if (ret == 0) {
+    return Values(core::make_fixnum(0));
+  } else {
+    return Values(core::make_fixnum(ret), Str_O::create(std::strerror(errno)));
+  }
+}
+
+LAMBDA(call-and-arguments);
+DECLARE();
+DOCSTRING("vfork_execvp");
+CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments) {
+  if (call_and_arguments.nilp())
+    return Values0<T_O>();
+  std::vector<char const *> execvp_args(cl__length(call_and_arguments) + 1);
+  size_t idx = 0;
+  for (auto cur : call_and_arguments) {
+    Str_sp sarg = gc::As<Str_sp>(oCar(cur));
+    char *arg = (char *)malloc(sarg->size() + 1);
+    std::strcpy(arg, sarg->c_str());
+    execvp_args[idx++] = arg;
+  }
+  execvp_args[idx] = NULL;
+  pid_t child_PID = vfork();
+  if (child_PID >= 0) {
+    if (child_PID == 0) {
+      // Child
+      execvp(execvp_args[0], (char *const *)execvp_args.data());
+      printf("%s:%d execvp returned with errno=%d   strerror(errno) = %s\n", __FILE__, __LINE__, errno, strerror(errno));
+      for (int i = 0; execvp_args[i] != NULL; ++i) {
+        printf("    arg#%d  %s\n", i, execvp_args[i]);
+      }
+      printf("  cannot continue... exiting... sorry...\n");
+      _exit(0); // Should never reach
+    } else {
+      // Parent
+      int status;
+      pid_t wait_ret = wait(&status);
+      // Clean up args
+      for (int i(0); i < execvp_args.size() - 1; ++i)
+        free((void *)execvp_args[i]);
+      if (wait_ret >= 0) {
+        if (wait_ret != child_PID) {
+          printf("%s:%d wait return PID(%d) that did not match child(%d)\n", __FILE__, __LINE__, wait_ret, child_PID);
+        }
+        return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID));
+      }
+      // error
+      return Values(clasp_make_fixnum(errno), Str_O::create(std::strerror(errno)));
+    }
+  } else {
+    // Clean up args
+    for (int i(0); i < execvp_args.size() - 1; ++i)
+      free((void *)execvp_args[i]);
+    return Values(clasp_make_fixnum(-1), Str_O::create(std::strerror(errno)));
+  }
+}
+
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("Get environment variable NAME");
+CL_DEFUN T_sp ext__getenv(Str_sp arg) {
   _G();
   char *sres = getenv(arg->c_str());
   if (sres == NULL) {
@@ -385,45 +457,42 @@ CL_DEFUN void core__setenv(Str_sp name, Str_sp arg, bool overwrite) {
   setenv(name->c_str(), arg->c_str(), overwrite);
 };
 
-#define ARGS_core_pointer "(arg)"
-#define DECL_core_pointer ""
-#define DOCS_core_pointer "Return the value of the pointer - used by conditions.lsp"
 LAMBDA(arg);
 DECLARE();
-DOCSTRING(R"doc(Return the value of a pointer - used by conditions.lsp - not useful in MPS)doc");
+DOCSTRING("Return the value of the pointer - used by conditions.lsp");
 CL_DEFUN int core__pointer(T_sp obj) {
   _G();
   return obj.intptr();
 };
 
-#define ARGS_core_isTrue "(arg)"
-#define DECL_core_isTrue ""
-#define DOCS_core_isTrue "isTrue"
-bool core_isTrue(T_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("isTrue");
+CL_DEFUN bool core__is_true(T_sp arg) {
   _G();
   return arg.isTrue();
 };
 
-#define ARGS_core_substitute "(arg)"
-#define DECL_core_substitute ""
-#define DOCS_core_substitute "substitute"
-T_mv core_substitute() {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("substitute");
+CL_DEFUN T_mv core__substitute() {
   _G();
   IMPLEMENT_MEF(BF("Implement substitute"));
 };
 
-#define ARGS_core_unbound "()"
-#define DECL_core_unbound ""
-#define DOCS_core_unbound "Return the UNBOUND value"
-T_sp core_unbound() {
+LAMBDA();
+DECLARE();
+DOCSTRING("Return the UNBOUND value");
+CL_DEFUN T_sp core__unbound() {
   _G();
   return _Unbound<T_O>();
 };
 
-#define ARGS_core_smartPointerDetails "()"
-#define DECL_core_smartPointerDetails ""
-#define DOCS_core_smartPointerDetails "smartPointerDetails - returns (values ptr-type px-offset px-size). The ptr-type is the type of pointer used to pass objects - either MPS-GARBAGE-COLLECTION or INTRUSIVE-REFERENCE-COUNTED-POINTER. The px-offset is the number of bytes offset of the smart_ptr data pointer from the start of the smart_ptr and px-size is the size of the data pointer"
-T_mv core_smartPointerDetails() {
+LAMBDA();
+DECLARE();
+DOCSTRING("smartPointerDetails - returns (values ptr-type px-offset px-size). The ptr-type is the type of pointer used to pass objects - either MPS-GARBAGE-COLLECTION or INTRUSIVE-REFERENCE-COUNTED-POINTER. The px-offset is the number of bytes offset of the smart_ptr data pointer from the start of the smart_ptr and px-size is the size of the data pointer");
+CL_DEFUN T_mv core__smart_pointer_details() {
   _G();
   SYMBOL_SC_(CorePkg, intrusiveReferenceCountedPointer);
   SYMBOL_SC_(CorePkg, sharedReferenceCountedPointer);
@@ -449,14 +518,14 @@ CL_DEFUN T_mv cl__values(List_sp args) {
   return result;
 }
 
-#define ARGS_core_valuesTesting "(&rest args)"
-#define DECL_core_valuesTesting ""
-#define DOCS_core_valuesTesting "values"
-T_mv core_valuesTesting(List_sp args) {
+LAMBDA(&rest args);
+DECLARE();
+DOCSTRING("values");
+CL_DEFUN T_mv core__values_testing(List_sp args) {
   _G();
   // returns multiple values
   T_mv result = ValuesFromCons(args);
-  printf("%s:%d core_valuesTesting: %s\n", __FILE__, __LINE__, _rep_(args).c_str());
+  printf("%s:%d core__values_testing: %s\n", __FILE__, __LINE__, _rep_(args).c_str());
   return result;
 }
 
@@ -481,10 +550,10 @@ Symbol_sp functionBlockName(T_sp functionName) {
   return _Nil<Symbol_O>();
 }
 
-#define ARGS_core_functionBlockName "(functionName)"
-#define DECL_core_functionBlockName ""
-#define DOCS_core_functionBlockName "See CLHS glossary 'function block name'. If the functionName is a symbol return it.  If the functionName is a cons of the form (setf xxxx) return xxxx"
-Symbol_mv core_functionBlockName(T_sp functionName) {
+LAMBDA(functionName);
+DECLARE();
+DOCSTRING("See CLHS glossary 'function block name'. If the functionName is a symbol return it.  If the functionName is a cons of the form (setf xxxx) return xxxx");
+CL_DEFUN Symbol_mv core__function_block_name(T_sp functionName) {
   _G();
   Symbol_sp output = functionBlockName(functionName);
   if (output.nilp()) {
@@ -493,10 +562,10 @@ Symbol_mv core_functionBlockName(T_sp functionName) {
   return (Values(output));
 }
 
-#define ARGS_core_validFunctionNameP "(arg)"
-#define DECL_core_validFunctionNameP ""
-#define DOCS_core_validFunctionNameP "validFunctionNameP"
-T_mv core_validFunctionNameP(T_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("validFunctionNameP");
+CL_DEFUN T_mv core__valid_function_name_p(T_sp arg) {
   _G();
   T_sp name = functionBlockName(arg);
   if (name.nilp())
@@ -504,10 +573,10 @@ T_mv core_validFunctionNameP(T_sp arg) {
   return (Values(_lisp->_true()));
 };
 
-#define ARGS_core_testMemoryError "()"
-#define DECL_core_testMemoryError ""
-#define DOCS_core_testMemoryError "testMemoryError"
-void core_testMemoryError() {
+LAMBDA();
+DECLARE();
+DOCSTRING("testMemoryError");
+CL_DEFUN void core__test_memory_error() {
   _G();
   int *h = (int *)malloc(sizeof(int));
   *h = 1;
@@ -515,10 +584,10 @@ void core_testMemoryError() {
   *h = 2;
 };
 
-#define ARGS_core_separatePairList "(listOfPairs)"
-#define DECL_core_separatePairList ""
-#define DOCS_core_separatePairList "Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element"
-T_mv core_separatePairList(List_sp listOfPairs) {
+LAMBDA(listOfPairs);
+DECLARE();
+DOCSTRING("Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element");
+CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
   _G();
   ql::list firsts(_lisp);
   ql::list seconds(_lisp);
@@ -545,10 +614,10 @@ T_mv core_separatePairList(List_sp listOfPairs) {
 }
 
 #if DEPRECIATED_C_FUNCTION
-#define ARGS_core_c_function "(sym)"
-#define DECL_core_c_function ""
-#define DOCS_core_c_function "c_function"
-Pointer_mv core_c_function(Symbol_sp sym) {
+LAMBDA(sym);
+DECLARE();
+DOCSTRING("c_function");
+CL_DEFUN Pointer_mv core__c_function(Symbol_sp sym) {
   _G();
   return (Values(_lisp->lookup_c_function_ptr(sym)));
 };
@@ -631,10 +700,10 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
 };
 
 #if 0
-#define ARGS_core_treatAsSpecialOperatorP "(symbol)"
-#define DECL_core_treatAsSpecialOperatorP ""
-#define DOCS_core_treatAsSpecialOperatorP "See CLHS: special-operator-p"
-T_sp core_treatAsSpecialOperatorP(T_sp sym) {
+LAMBDA(symbol);
+DECLARE();
+DOCSTRING("See CLHS: special-operator-p");
+CL_DEFUN T_sp core__treat_as_special_operator_p(T_sp sym) {
   _G();
   SYMBOL_EXPORT_SC_(CorePkg, debug_message);
   if (sym == cl::_sym_unwind_protect)
@@ -653,10 +722,10 @@ CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
   return clasp_shift(integer, cnt);
 }
 
-#define ARGS_core_break "(&optional fmt-control &rest args)"
-#define DECL_core_break ""
-#define DOCS_core_break "Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version"
-void core_break(T_sp fmt, List_sp args) {
+LAMBDA(&optional fmt-control &rest args);
+DECLARE();
+DOCSTRING("Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version");
+CL_DEFUN void core__break(T_sp fmt, List_sp args) {
   _G();
   if (fmt.notnilp()) {
     cl__format(_lisp->_true(), gc::As<Str_sp>(fmt), args);
@@ -665,10 +734,10 @@ void core_break(T_sp fmt, List_sp args) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-#define ARGS_core_gdb "(&optional msg)"
-#define DECL_core_gdb ""
-#define DOCS_core_gdb "hook to invoke gdb"
-void core_gdb(T_sp msg) {
+LAMBDA(&optional msg);
+DECLARE();
+DOCSTRING("hook to invoke gdb");
+CL_DEFUN void core__gdb(T_sp msg) {
   _G();
   T_sp obj = msg;
   string smsg = "No msg";
@@ -679,32 +748,32 @@ void core_gdb(T_sp msg) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-#define ARGS_core_cxx_lambda_list_handler_create_bindings_calls "()"
-#define DECL_core_cxx_lambda_list_handler_create_bindings_calls ""
-#define DOCS_core_cxx_lambda_list_handler_create_bindings_calls "Return the number of times lambdaListHandler_createBindings"
-Integer_sp core_cxx_lambda_list_handler_create_bindings_calls() {
+LAMBDA();
+DECLARE();
+DOCSTRING("Return the number of times lambdaListHandler_createBindings");
+CL_DEFUN Integer_sp core__cxx_lambda_list_handler_create_bindings_calls() {
   size_t calls = threadLocalInfoPtr->_lambda_list_handler_create_bindings_count;
   return Integer_O::create((Fixnum)calls);
 };
 
-#define ARGS_core_trapExecution "(&optional msg)"
-#define DECL_core_trapExecution ""
-#define DOCS_core_trapExecution "hook to invoke gdb"
-void core_trapExecution(T_sp msg) {
+LAMBDA(&optional msg);
+DECLARE();
+DOCSTRING("hook to invoke gdb");
+CL_DEFUN void core__trap_execution(T_sp msg) {
   _G();
   T_sp obj = msg;
   string smsg = "No msg";
   if (obj.notnilp()) {
     smsg = _rep_(obj);
   }
-  printf("%s:%d In core_trapExecution: %s \n", __FILE__, __LINE__, smsg.c_str());
+  printf("%s:%d In core__trap_execution: %s \n", __FILE__, __LINE__, smsg.c_str());
   fflush(stdout);
 };
 
-#define ARGS_core_gdbInspect "(msg o)"
-#define DECL_core_gdbInspect ""
-#define DOCS_core_gdbInspect "hook to invoke gdb"
-void core_gdbInspect(Str_sp msg, T_sp o) {
+LAMBDA(msg o);
+DECLARE();
+DOCSTRING("hook to invoke gdb");
+CL_DEFUN void core__gdb_inspect(Str_sp msg, T_sp o) {
   _G();
   printf("gdbInspect object: %s\n", _rep_(o).c_str());
   dbg_hook(msg->get().c_str());
@@ -744,10 +813,10 @@ CL_DEFUN T_mv cl__identity(T_sp arg) {
   return (Values(arg));
 };
 
-#define ARGS_core_macroexpand_default "(macro_function form macro_env)"
-#define DECL_core_macroexpand_default ""
-#define DOCS_core_macroexpand_default "macroexpand_default Default value of *macroexpand-hook*"
-T_mv core_macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_env) {
+LAMBDA(macro_function form macro_env);
+DECLARE();
+DOCSTRING("macroexpand_default Default value of *macroexpand-hook*");
+CL_DEFUN T_mv core__macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_env) {
   _G();
   Function_sp debugMacroFunction = macro_function;
   T_sp debugForm = form;
@@ -796,10 +865,10 @@ CL_DEFUN Class_sp cl__class_of(T_sp obj) {
   return (result);
 }
 
-#define ARGS_core_STARfset "(function-name fn &optional macro)"
-#define DECL_core_STARfset ""
-#define DOCS_core_STARfset "fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not."
-T_sp core_STARfset(T_sp functionName, Function_sp functionObject, T_sp macro) {
+LAMBDA(function-name fn &optional macro);
+DECLARE();
+DOCSTRING("fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not.");
+CL_DEFUN T_sp core__STARfset(T_sp functionName, Function_sp functionObject, T_sp macro) {
   ASSERTF(functionObject, BF("function is undefined\n"));
   if (macro.isTrue()) {
     functionObject->setKind(kw::_sym_macro);
@@ -1217,10 +1286,10 @@ CL_DEFUN T_sp cl__mapl(T_sp top, List_sp lists) {
   return oCar(lists);
 }
 
-#define ARGS_core_mapappend "(fun &rest cargs)"
-#define DECL_core_mapappend ""
-#define DOCS_core_mapappend "mapappend is like mapcar except that the results are appended together - see AMOP 280"
-T_mv core_mapappend(Function_sp fun, List_sp cargs) {
+LAMBDA(fun &rest cargs);
+DECLARE();
+DOCSTRING("mapappend is like mapcar except that the results are appended together - see AMOP 280");
+CL_DEFUN T_mv core__mapappend(Function_sp fun, List_sp cargs) {
   _G();
   IMPLEMENT_MEF(BF("Fix me - I think I'm broken"));
   T_sp testNull = eval::funcall(cl::_sym_some, cl::_sym_null->symbolFunction(), cargs);
@@ -1303,11 +1372,10 @@ CL_DEFUN List_sp cl__append(List_sp lists) {
   return res;
 }
 
-#define ARGS_core_sequence_start_end "(func sequence start end)"
-#define DECL_core_sequence_start_end ""
-#define DOCS_core_sequence_start_end "Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence." \
-  " I'm not sure what the func argument is for. If end is nil then it is set to the end of the sequence.  Return MultipleValues(start,end,length)."
-T_mv core_sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, T_sp end) {
+LAMBDA(func sequence start end);
+DECLARE();
+DOCSTRING("Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence. I'm not sure what the func argument is for. If end is nil then it is set to the end of the sequence.  Return MultipleValues(start,end,length).");
+CL_DEFUN T_mv core__sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, T_sp end) {
   _G();
   uint len = cl__length(sequence);
   if (end.nilp())
@@ -1356,10 +1424,10 @@ CL_DEFUN Symbol_mv cl__gensym(T_sp x) {
   return (Values(sym));
 }
 
-#define ARGS_core_type_to_symbol "(x)"
-#define DECL_core_type_to_symbol ""
-#define DOCS_core_type_to_symbol "type_to_symbol"
-Symbol_mv core_type_to_symbol(T_sp x) {
+          LAMBDA(x);
+          DECLARE();
+          DOCSTRING("type_to_symbol");
+CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
   _G();
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -1513,7 +1581,7 @@ T_sp type_of(T_sp x) {
         return cl::_sym_pathname;
       }
     }
-  return core_type_to_symbol(x);
+  return core__type_to_symbol(x);
 }
 
 LAMBDA(obj);
@@ -1662,15 +1730,10 @@ void InvocationHistoryFrameIterator_O::exposePython(::core::Lisp_sp lisp) {
 #endif
 }
 
-#define ARGS_core_getInvocationHistoryFrameSearch "(idx direction)"
-#define DECL_core_getInvocationHistoryFrameSearch ""
-#define DOCS_core_getInvocationHistoryFrameSearch "getInvocationHistoryFrameSearch - Return an InvocationHistoryFrame as an iterator."                                                               \
-                                                  "If idx == NIL return the top frame. "                                                                                                             \
-                                                  "If idx>=0 return the frame that satisfies *backtrace-frame-selector-hook* that has the index idx if direction==NIL, "                             \
-                                                  "or if direction==:PREV return the frame previous to it (away from the top) or if direction==:NEXT the next frame (towards the top). "             \
-                                                  "*backtrace-frame-selector-hook* is a function that takes an invocation-history-frame-iterator and returns true if it should be in the backtrace." \
-                                                  "Test the result to make sure it is valid."
-InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameSearch(T_sp idx, Symbol_sp direction) {
+LAMBDA(idx direction);
+DECLARE();
+DOCSTRING("getInvocationHistoryFrameSearch - Return an InvocationHistoryFrame as an iterator. If idx == NIL return the top frame. If idx>=0 return the frame that satisfies *backtrace-frame-selector-hook* that has the index idx if direction==NIL, or if direction==:PREV return the frame previous to it (away from the top) or if direction==:NEXT the next frame (towards the top). *backtrace-frame-selector-hook* is a function that takes an invocation-history-frame-iterator and returns true if it should be in the backtrace. Test the result to make sure it is valid.");
+CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_search(T_sp idx, Symbol_sp direction) {
   SYMBOL_EXPORT_SC_(CorePkg, STARbacktraceFrameSelectorHookSTAR);
   SYMBOL_EXPORT_SC_(KeywordPkg, next);
   SYMBOL_EXPORT_SC_(KeywordPkg, prev);
@@ -1697,185 +1760,184 @@ InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameSearch(T_sp idx,
   SIMPLE_ERROR(BF("Direction argument must be one of NIL, :NEXT, :PREV - received %s") % _rep_(direction));
 }
 
-#define ARGS_core_getInvocationHistoryFrameTop ""
-#define DECL_core_getInvocationHistoryFrameTop ""
-#define DOCS_core_getInvocationHistoryFrameTop "getInvocationHistoryFrameSearch - Return an top InvocationHistoryFrame as an iterator."
-InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameTop() {
-  return core_getInvocationHistoryFrameSearch(_Nil<T_O>(), _Nil<T_O>());
+          LAMBDA();
+          DECLARE();
+          DOCSTRING("getInvocationHistoryFrameSearch - Return an top InvocationHistoryFrame as an iterator.");
+CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_top() {
+  return core__get_invocation_history_frame_search(_Nil<T_O>(), _Nil<T_O>());
 }
 
-#define ARGS_core_getInvocationHistoryFrame ""
-#define DECL_core_getInvocationHistoryFrame ""
-#define DOCS_core_getInvocationHistoryFrame "getInvocationHistoryFrame - Return an indexed InvocationHistoryFrame as an iterator."
-InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrame(int idx) {
+          LAMBDA();
+          DECLARE();
+          DOCSTRING("getInvocationHistoryFrame - Return an indexed InvocationHistoryFrame as an iterator.");
+CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame(int idx) {
   Fixnum_sp fnidx = clasp_make_fixnum(idx);
-  return core_getInvocationHistoryFrameSearch(fnidx, _Nil<T_O>());
+  return core__get_invocation_history_frame_search(fnidx, _Nil<T_O>());
 }
 
-#define ARGS_core_getInvocationHistoryFramePrev ""
-#define DECL_core_getInvocationHistoryFramePrev ""
-#define DOCS_core_getInvocationHistoryFramePrev "getInvocationHistoryFramePrev - Return the prev InvocationHistoryFrame before index as an iterator."
-InvocationHistoryFrameIterator_sp core_getInvocationHistoryFramePrev(int idx) {
+          LAMBDA();
+          DECLARE();
+          DOCSTRING("getInvocationHistoryFramePrev - Return the prev InvocationHistoryFrame before index as an iterator.");
+CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_prev(int idx) {
   Fixnum_sp fnidx = clasp_make_fixnum(idx);
-  return core_getInvocationHistoryFrameSearch(fnidx, kw::_sym_prev);
+  return core__get_invocation_history_frame_search(fnidx, kw::_sym_prev);
 }
 
-#define ARGS_core_getInvocationHistoryFrameNext ""
-#define DECL_core_getInvocationHistoryFrameNext ""
-#define DOCS_core_getInvocationHistoryFrameNext "getInvocationHistoryFrameNext - Return the next InvocationHistoryFrame after index as an iterator."
-InvocationHistoryFrameIterator_sp core_getInvocationHistoryFrameNext(int idx) {
+          LAMBDA();
+          DECLARE();
+          DOCSTRING("getInvocationHistoryFrameNext - Return the next InvocationHistoryFrame after index as an iterator.");
+CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_next(int idx) {
   Fixnum_sp fnidx = clasp_make_fixnum(idx);
-  return core_getInvocationHistoryFrameSearch(fnidx, kw::_sym_next);
+  return core__get_invocation_history_frame_search(fnidx, kw::_sym_next);
 }
 };
 
-extern "C" {
-using namespace core;
-#define ARGS_core_ihsBacktraceNoArgs "()"
-#define DECL_core_ihsBacktraceNoArgs ""
-#define DOCS_core_ihsBacktraceNoArgs "ihsBacktraceNoArgs"
-void core_ihsBacktraceNoArgs() {
+namespace core {
+LAMBDA();
+DECLARE();
+DOCSTRING("ihsBacktraceNoArgs");
+CL_DEFUN void core__ihs_backtrace_no_args() {
   _G();
-  core_ihsBacktrace(_lisp->_true(), _Nil<core::T_O>());
+  core__ihs_backtrace(_lisp->_true(), _Nil<core::T_O>());
 };
 
-#define ARGS_core_ihsTop "()"
-#define DECL_core_ihsTop ""
-#define DOCS_core_ihsTop "ihsTop"
-int core_ihsTop() {
-  InvocationHistoryFrameIterator_sp top = core_getInvocationHistoryFrameTop();
+LAMBDA();
+DECLARE();
+DOCSTRING("ihsTop");
+CL_DEFUN int core__ihs_top() {
+  InvocationHistoryFrameIterator_sp top = core__get_invocation_history_frame_top();
   if (!top->isValid())
     return 0;
   return top->index();
 };
 
-#define ARGS_core_ihsPrev "(cur)"
-#define DECL_core_ihsPrev ""
-#define DOCS_core_ihsPrev "ihsPrev"
-int core_ihsPrev(int idx) {
-  InvocationHistoryFrameIterator_sp prev = core_getInvocationHistoryFramePrev(idx);
+LAMBDA(cur);
+DECLARE();
+DOCSTRING("ihsPrev");
+CL_DEFUN int core__ihs_prev(int idx) {
+  InvocationHistoryFrameIterator_sp prev = core__get_invocation_history_frame_prev(idx);
   if (!prev->isValid())
     return 0;
   return prev->index();
 };
 
-#define ARGS_core_ihsNext "(cur)"
-#define DECL_core_ihsNext ""
-#define DOCS_core_ihsNext "ihsNext"
-int core_ihsNext(int idx) {
-  InvocationHistoryFrameIterator_sp next = core_getInvocationHistoryFrameNext(idx);
+LAMBDA(cur);
+DECLARE();
+DOCSTRING("ihsNext");
+CL_DEFUN int core__ihs_next(int idx) {
+  InvocationHistoryFrameIterator_sp next = core__get_invocation_history_frame_next(idx);
   if (!next->isValid())
     return 0;
   return next->index();
 }
 
-#define ARGS_core_ihsFun "(arg)"
-#define DECL_core_ihsFun ""
-#define DOCS_core_ihsFun "ihsFun: return the function in the invocation history stack at i"
-T_sp core_ihsFun(int idx) {
-  InvocationHistoryFrameIterator_sp cur = core_getInvocationHistoryFrame(idx);
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("ihsFun: return the function in the invocation history stack at i");
+CL_DEFUN T_sp core__ihs_fun(int idx) {
+  InvocationHistoryFrameIterator_sp cur = core__get_invocation_history_frame(idx);
   if (!cur->isValid())
     return _Nil<T_O>();
   return cur->function();
 };
 
-#define ARGS_core_ihsArguments "(arg)"
-#define DECL_core_ihsArguments ""
-#define DOCS_core_ihsArguments "ihsArguments: return the arguments to the function in the invocation history stack at i"
-T_sp core_ihsArguments(int idx) {
-  InvocationHistoryFrameIterator_sp cur = core_getInvocationHistoryFrame(idx);
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("ihsArguments: return the arguments to the function in the invocation history stack at i");
+CL_DEFUN T_sp core__ihs_arguments(int idx) {
+  InvocationHistoryFrameIterator_sp cur = core__get_invocation_history_frame(idx);
   if (!cur->isValid())
     return _Nil<T_O>();
   return cur->arguments();
 };
 
-#define ARGS_core_ihsEnv "(cur)"
-#define DECL_core_ihsEnv ""
-#define DOCS_core_ihsEnv "ihsEnv"
-T_sp core_ihsEnv(int idx) {
-  InvocationHistoryFrameIterator_sp cur = core_getInvocationHistoryFrame(idx);
+LAMBDA(cur);
+DECLARE();
+DOCSTRING("ihsEnv");
+CL_DEFUN T_sp core__ihs_env(int idx) {
+  InvocationHistoryFrameIterator_sp cur = core__get_invocation_history_frame(idx);
   if (!cur->isValid())
     return _Nil<T_O>();
   return cur->environment();
 };
 
-#define ARGS_core_ihsBds "(cur)"
-#define DECL_core_ihsBds ""
-#define DOCS_core_ihsBds "ihsBds"
-int core_ihsBds(int idx) {
-  InvocationHistoryFrameIterator_sp cur = core_getInvocationHistoryFrame(idx);
+LAMBDA(cur);
+DECLARE();
+DOCSTRING("ihsBds");
+CL_DEFUN int core__ihs_bds(int idx) {
+  InvocationHistoryFrameIterator_sp cur = core__get_invocation_history_frame(idx);
   if (!cur->isValid())
     return 0;
   return cur->frame()->bds();
 };
 
-#define ARGS_core_ihsCurrentFrame "()"
-#define DECL_core_ihsCurrentFrame ""
-#define DOCS_core_ihsCurrentFrame "ihsCurrentFrame"
-int core_ihsCurrentFrame() {
+LAMBDA();
+DECLARE();
+DOCSTRING("ihsCurrentFrame");
+CL_DEFUN int core__ihs_current_frame() {
   _G();
   T_sp cf = _sym_STARihsCurrentSTAR->symbolValue();
   if (cf.nilp()) {
-    int icf = core_ihsTop();
-    return core_setIhsCurrentFrame(icf);
+    int icf = core__ihs_top();
+    return core__set_ihs_current_frame(icf);
   }
   int icf = unbox_fixnum(gc::As<Fixnum_sp>(cf));
   if (icf < 0) {
     _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(icf));
     return 0;
   }
-  if (icf >= core_ihsTop()) {
-    _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(core_ihsTop()));
-    return core_ihsTop();
+  if (icf >= core__ihs_top()) {
+    _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(core__ihs_top()));
+    return core__ihs_top();
   }
   return icf;
 }
 
-#define ARGS_core_setIhsCurrentFrame "()"
-#define DECL_core_setIhsCurrentFrame ""
-#define DOCS_core_setIhsCurrentFrame "setIhsCurrentFrame"
-int core_setIhsCurrentFrame(int icf) {
+LAMBDA();
+DECLARE();
+DOCSTRING("setIhsCurrentFrame");
+CL_DEFUN int core__set_ihs_current_frame(int icf) {
   _G();
   if (icf < 0)
     icf = 0;
-  else if (icf >= core_ihsTop())
-    icf = core_ihsTop();
+  else if (icf >= core__ihs_top())
+    icf = core__ihs_top();
   _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(icf));
   return icf;
 }
 
-#define ARGS_core_bdsTop "()"
-#define DECL_core_bdsTop ""
-#define DOCS_core_bdsTop "bdsTop"
-int core_bdsTop() {
+LAMBDA();
+DECLARE();
+DOCSTRING("bdsTop");
+CL_DEFUN int core__bds_top() {
   return _lisp->bindings().top();
 };
 
-#define ARGS_core_bdsVar "(idx)"
-#define DECL_core_bdsVar ""
-#define DOCS_core_bdsVar "bdsVar"
-Symbol_sp core_bdsVar(int idx) {
+LAMBDA(idx);
+DECLARE();
+DOCSTRING("bdsVar");
+CL_DEFUN Symbol_sp core__bds_var(int idx) {
   return _lisp->bindings().var(idx);
 };
 
-#define ARGS_core_bdsVal "(idx)"
-#define DECL_core_bdsVal ""
-#define DOCS_core_bdsVal "bdsVal"
-T_sp core_bdsVal(int idx) {
+LAMBDA(idx);
+DECLARE();
+DOCSTRING("bdsVal");
+CL_DEFUN T_sp core__bds_val(int idx) {
   return _lisp->bindings().val(idx);
 };
 
-#define ARGS_core_exceptionStack "()"
-#define DECL_core_exceptionStack ""
-#define DOCS_core_exceptionStack "exceptionStack"
-Vector_sp core_exceptionStack() {
+LAMBDA();
+DECLARE();
+DOCSTRING("exceptionStack");
+CL_DEFUN Vector_sp core__exception_stack() {
   return _lisp->exceptionStack().backtrace();
 }
 
-#define ARGS_core_exceptionStackDump "()"
-#define DECL_core_exceptionStackDump ""
-#define DOCS_core_exceptionStackDump "exceptionStackDump"
-void core_exceptionStackDump() {
+LAMBDA();
+DECLARE();
+DOCSTRING("exceptionStackDump");
+CL_DEFUN void core__exception_stack_dump() {
   _G();
   ExceptionStack &stack = _lisp->exceptionStack();
   printf("Exception stack size: %zu members\n", stack.size());
@@ -1900,20 +1962,20 @@ void core_exceptionStackDump() {
   printf("----Done----\n");
 };
 
-#define ARGS_core_dynamicBindingStackDump "()"
-#define DECL_core_dynamicBindingStackDump ""
-#define DOCS_core_dynamicBindingStackDump "dynamicBindingStackDump"
-void core_dynamicBindingStackDump(std::ostream &out) {
+LAMBDA();
+DECLARE();
+DOCSTRING("dynamicBindingStackDump");
+CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
   DynamicBindingStack &bd = _lisp->bindings();
   for (int i(0), iEnd(bd.size()); i < iEnd; ++i) {
     out << "  dbstack[" << i << " --> " << _rep_(bd.var(i)) << std::endl;
   };
 }
 
-#define ARGS_core_ihsBacktrace "(&optional (out t) msg)"
-#define DECL_core_ihsBacktrace ""
-#define DOCS_core_ihsBacktrace "ihsBacktrace"
-T_sp core_ihsBacktrace(T_sp outputDesignator, T_sp msg) {
+LAMBDA(&optional (out t) msg);
+DECLARE();
+DOCSTRING("ihsBacktrace");
+CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
   _G();
   T_sp ss;
   if (outputDesignator.nilp()) {
@@ -1938,17 +2000,13 @@ void initialize_primitives() {
   //
   // Define functions first because generics and methods depend on some of them
   //
-  CoreDefun(allRegisteredClassNames);
 
   SYMBOL_SC_(CorePkg, smartPointerDetails);
-  CoreDefun(smartPointerDetails);
   SYMBOL_EXPORT_SC_(ClPkg, null);
 
   SYMBOL_SC_(CorePkg, STARfset);
-  CoreDefun(STARfset);
 
   SYMBOL_SC_(CorePkg, unbound);
-  CoreDefun(unbound);
 
   SYMBOL_EXPORT_SC_(ClPkg, read);
 
@@ -1973,14 +2031,12 @@ void initialize_primitives() {
   SYMBOL_EXPORT_SC_(ClPkg, mapl);
 
   SYMBOL_SC_(CorePkg, mapappend);
-  CoreDefun(mapappend);
 
   SYMBOL_EXPORT_SC_(ClPkg, mapcan);
 
   SYMBOL_EXPORT_SC_(ClPkg, mapcon);
 
   SYMBOL_SC_(CorePkg, macroexpand_default);
-  CoreDefun(macroexpand_default);
 
   SYMBOL_EXPORT_SC_(ClPkg, append);
 
@@ -1991,18 +2047,13 @@ void initialize_primitives() {
   SYMBOL_EXPORT_SC_(ClPkg, constantp);
 
   SYMBOL_SC_(CorePkg, sequence_start_end);
-  CoreDefun(sequence_start_end);
 
   SYMBOL_EXPORT_SC_(ClPkg, ash);
 
   SYMBOL_SC_(CorePkg, type_to_symbol);
-  CoreDefun(type_to_symbol);
 
   SYMBOL_SC_(CorePkg, gdb);
-  CoreDefun(gdb);
-  CoreDefun(break);
   SYMBOL_SC_(CorePkg, gdbInspect);
-  CoreDefun(gdbInspect);
 
   defmacro(CorePkg, "backquote", &macro_backquote, ARGS_macro_backquote, DECL_macro_backquote, DOCS_macro_backquote, __FILE__, __LINE__);
 
@@ -2015,7 +2066,6 @@ void initialize_primitives() {
   SYMBOL_EXPORT_SC_(ClPkg, macroFunction);
 
   SYMBOL_SC_(CorePkg, separatePairList);
-  CoreDefun(separatePairList);
 
   SYMBOL_EXPORT_SC_(ClPkg, set);
 
@@ -2024,26 +2074,20 @@ void initialize_primitives() {
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
 
   SYMBOL_SC_(CorePkg, separatePairList);
-  CoreDefun(separatePairList);
 
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
 
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
 
-  //  CoreDefun(treatAsSpecialOperatorP);
 
   SYMBOL_SC_(CorePkg, separatePairList);
-  CoreDefun(separatePairList);
 
 
   SYMBOL_SC_(CorePkg, testMemoryError);
-  CoreDefun(testMemoryError);
 
   SYMBOL_SC_(CorePkg, functionBlockName);
-  CoreDefun(functionBlockName);
 
   SYMBOL_SC_(CorePkg, validFunctionNameP);
-  CoreDefun(validFunctionNameP);
 
   SYMBOL_EXPORT_SC_(ClPkg, fdefinition);
 
@@ -2052,65 +2096,31 @@ void initialize_primitives() {
   SYMBOL_EXPORT_SC_(ClPkg, fmakunbound);
 
   SYMBOL_EXPORT_SC_(ClPkg, values);
-  CoreDefun(valuesTesting);
 
   SYMBOL_EXPORT_SC_(ClPkg, values_list);
 
-  CoreDefun(isTrue);
 
 
-  SYMBOL_EXPORT_SC_(ExtPkg, getEnv);
-  ExtDefun(getEnv);
   SYMBOL_EXPORT_SC_(CorePkg, pointer);
 
 #if 0
   CoreDefun(describe_cxx_object);
   CoreDefun(setenv);
-  CoreDefun(pointer);
 #endif
   SYMBOL_EXPORT_SC_(CorePkg, toTaggedFixnum);
   SYMBOL_EXPORT_SC_(CorePkg, fromTaggedFixnum);
   SYMBOL_EXPORT_SC_(CorePkg, dumpTaggedFixnum);
-  CoreDefun(toTaggedFixnum);
-  CoreDefun(fromTaggedFixnum);
-  CoreDefun(dumpTaggedFixnum);
-  CoreDefun(dumpAddressOf);
-  CoreDefun(incompleteNextHigherPowerOf_2);
-  CoreDefun(argc);
-  CoreDefun(argv);
-  CoreDefun(lispImplementationId);
-  CoreDefun(create_tagged_immediate_value_or_nil);
 
   SYMBOL_SC_(CorePkg, ihsBacktrace);
-  CoreDefun(ihsBacktrace);
   SYMBOL_SC_(CorePkg, ihsTop);
-  CoreDefun(ihsTop);
   SYMBOL_SC_(CorePkg, ihsPrev);
-  CoreDefun(ihsPrev);
   SYMBOL_SC_(CorePkg, ihsNext);
-  CoreDefun(ihsNext);
   SYMBOL_SC_(CorePkg, ihsFun);
-  CoreDefun(ihsFun);
-  CoreDefun(ihsArguments);
   SYMBOL_SC_(CorePkg, ihsEnv);
-  CoreDefun(ihsEnv);
   SYMBOL_SC_(CorePkg, bdsTop);
-  CoreDefun(bdsTop);
   SYMBOL_SC_(CorePkg, bdsVar);
-  CoreDefun(bdsVar);
   SYMBOL_SC_(CorePkg, bdsVal);
-  CoreDefun(bdsVal);
-  CoreDefun(exceptionStack);
-  CoreDefun(exceptionStackDump);
-  CoreDefun(trapExecution);
 
-  CoreDefun(method_cache_status);
-  CoreDefun(slot_cache_status);
-  CoreDefun(single_dispatch_method_cache_status);
-  CoreDefun(method_cache_resize);
-  CoreDefun(slot_cache_resize);
-  CoreDefun(single_dispatch_method_cache_resize);
-  CoreDefun(cxx_lambda_list_handler_create_bindings_calls);
 }
 
 void initializePythonPrimitives(Lisp_sp lisp) {

@@ -66,10 +66,10 @@ T_sp clos_setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   SIMPLE_ERROR(BF("You can only setFuncallableInstanceFunction on instances - you tried to set it on a: %s") % _rep_(obj));
 };
 
-#define ARGS_core__instance_class_set "(instance func)"
-#define DECL_core__instance_class_set ""
-#define DOCS_core__instance_class_set "instanceClassSet"
-T_sp core__instance_class_set(T_sp obj, Class_sp mc) {
+LAMBDA(instance func);
+DECLARE();
+DOCSTRING("instanceClassSet");
+CL_DEFUN T_sp core__instance_class_set(T_sp obj, Class_sp mc) {
   _G();
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->instanceClassSet(mc);
@@ -79,10 +79,10 @@ T_sp core__instance_class_set(T_sp obj, Class_sp mc) {
   SIMPLE_ERROR(BF("You can only instanceClassSet on Instance_O or Class_O - you tried to set it on a: %s") % _rep_(mc));
 };
 
-#define ARGS_core_copyInstance "(obj)"
-#define DECL_core_copyInstance ""
-#define DOCS_core_copyInstance "copy-instance returns a shallow copy of the instance"
-Instance_sp core_copyInstance(Instance_sp obj) {
+LAMBDA(obj);
+DECLARE();
+DOCSTRING("copy-instance returns a shallow copy of the instance");
+CL_DEFUN Instance_sp core__copy_instance(Instance_sp obj) {
   _G();
   Instance_sp cp = obj->copyInstance();
   return cp;
@@ -199,8 +199,6 @@ void Instance_O::exposeCando(core::Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
   ClosDefun(setFuncallableInstanceFunction);
   SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
-  Core_temp_Defun(instance_class_set);
-  CoreDefun(copyInstance);
 }
 
 void Instance_O::exposePython(core::Lisp_sp lisp) {

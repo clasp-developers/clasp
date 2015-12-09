@@ -220,7 +220,7 @@ void assertion_failed(char const *expr, char const *function, char const *file, 
 extern "C" {
 
 void closure_dump(core::Closure *closureP) {
-  core::T_sp sourceFileInfo = core_sourceFileInfo(core::clasp_make_fixnum(closureP->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false);
+  core::T_sp sourceFileInfo = core__source_file_info(core::clasp_make_fixnum(closureP->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false);
   std::string namestring = gc::As<core::SourceFileInfo_sp>(sourceFileInfo)->namestring();
   printf("%s:%d  Closure %s  file: %s lineno: %d\n", __FILE__, __LINE__, _rep_(closureP->name).c_str(), namestring.c_str(), closureP->lineNumber());
 }
@@ -287,7 +287,7 @@ void Closure::setf_cleavir_ast(T_sp ast) {
 namespace core {
 
 // _global_debuggerOnSIGABRT
-// false == SIGABRT invokes debugger, true == terminate (used in core_exit)
+// false == SIGABRT invokes debugger, true == terminate (used in core__exit)
 bool _global_debuggerOnSIGABRT = true;
 
 int _global_signalTrap = 0;
@@ -412,10 +412,10 @@ bool lisp_search(T_sp seq, T_sp obj, int &index) {
     }
 #endif
 
-#define ARGS_core__lispify_name "(name)"
-#define DECL_core__lispify_name ""
-#define DOCS_core__lispify_name "lispifyName"
-Str_sp core__lispify_name(Str_sp name) {
+LAMBDA(name);
+DECLARE();
+DOCSTRING("lispifyName");
+CL_DEFUN Str_sp core__lispify_name(Str_sp name) {
   _G();
   ASSERT(name.notnilp());
   string lispified = lispify_symbol_name(name->get());
@@ -968,13 +968,13 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
     sym->exportYourself();
   LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]") % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport);
   Str_sp docStr = Str_O::create(docstring);
-  T_sp gfn = core_ensureSingleDispatchGenericFunction(sym, llhandler); // Ensure the single dispatch generic function exists
+  T_sp gfn = core__ensure_single_dispatch_generic_function(sym, llhandler); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
   LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  methoid@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(methoid)));
   methoid->finishSetup(llhandler, kw::_sym_function);
   Function_sp fn = Function_O::make(methoid);
   ASSERT(llhandler || llhandler.notnilp())
-  core_ensureSingleDispatchMethod(sym, receiver_class, llhandler, ldeclares, docStr, fn);
+  core__ensure_single_dispatch_method(sym, receiver_class, llhandler, ldeclares, docStr, fn);
 }
 
 void lisp_throwIfBuiltInClassesNotInitialized() {
@@ -1471,7 +1471,7 @@ T_sp lisp_createFixnum(int fn) {
 
 SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos, int lineno) {
   Str_sp fn = Str_O::create(fileName);
-  SourceFileInfo_mv sfi_mv = core_sourceFileInfo(fn);
+  SourceFileInfo_mv sfi_mv = core__source_file_info(fn);
   SourceFileInfo_sp sfi = sfi_mv;
   Fixnum_sp handle = gc::As<Fixnum_sp>(sfi_mv.valueGet(1));
   int sfindex = unbox_fixnum(handle);
@@ -1788,6 +1788,5 @@ void InitPython_Foundation() {
 
 void initialize_foundation() {
 
-  Core_temp_Defun(lispify_name);
 };
 };

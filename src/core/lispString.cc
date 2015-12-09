@@ -858,10 +858,10 @@ CL_DEFUN claspChar cl__schar(Str_sp str, int idx) {
   SIMPLE_ERROR(BF("index %d out of range (0,%d)") % idx % str->length());
 };
 
-#define ARGS_core_charSet "(str index c)"
-#define DECL_core_charSet ""
-#define DOCS_core_charSet "CLHS schar"
-claspChar core_charSet(Str_sp str, int idx, claspChar c) {
+LAMBDA(str index c);
+DECLARE();
+DOCSTRING("CLHS schar");
+CL_DEFUN claspChar core__char_set(Str_sp str, int idx, claspChar c) {
   if (idx >= 0 && idx < str->length()) {
     str->scharSet(idx, c);
     return c;
@@ -869,10 +869,10 @@ claspChar core_charSet(Str_sp str, int idx, claspChar c) {
   SIMPLE_ERROR(BF("index %d out of range (0,%d)") % idx % str->length());
 };
 
-#define ARGS_core_scharSet "(str index c)"
-#define DECL_core_scharSet ""
-#define DOCS_core_scharSet "CLHS schar"
-claspChar core_scharSet(Str_sp str, int idx, claspChar c) {
+LAMBDA(str index c);
+DECLARE();
+DOCSTRING("CLHS schar");
+CL_DEFUN claspChar core__schar_set(Str_sp str, int idx, claspChar c) {
   if (idx >= 0 && idx < str->length()) {
     str->scharSet(idx, c);
     return c;
@@ -1041,8 +1041,6 @@ void initialize_string()
 
 
   SYMBOL_EXPORT_SC_(ClPkg, make_string);
-  CoreDefun(scharSet);
-  CoreDefun(charSet);
   SYMBOL_EXPORT_SC_(ClPkg, parseInteger);
 };
 

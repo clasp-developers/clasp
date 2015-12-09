@@ -1251,42 +1251,42 @@ cl__integer_decode_float(T_sp x)
 }
 #endif
 
-#define ARGS_core_asin "(arg)"
-#define DECL_core_asin ""
-#define DOCS_core_asin "asinh"
-double core_asin(double x) {
+  LAMBDA(arg);
+  DECLARE();
+  DOCSTRING("asinh");
+CL_DEFUN double core__asin(double x) {
   _G();
   return asin(x);
 }
 
-#define ARGS_core_acos "(arg)"
-#define DECL_core_acos ""
-#define DOCS_core_acos "acosh"
-double core_acos(double x) {
+ LAMBDA(arg);
+ DECLARE();
+ DOCSTRING("acosh");
+CL_DEFUN double core__acos(double x) {
   _G();
   return acos(x);
 }
 
-#define ARGS_core_asinh "(arg)"
-#define DECL_core_asinh ""
-#define DOCS_core_asinh "asinh"
-double core_asinh(double x) {
+ LAMBDA(arg);
+ DECLARE();
+ DOCSTRING("asinh");
+CL_DEFUN double core__asinh(double x) {
   _G();
   return log(x + sqrt(1.0 + x * x));
 }
 
-#define ARGS_core_acosh "(arg)"
-#define DECL_core_acosh ""
-#define DOCS_core_acosh "acosh"
-double core_acosh(double x) {
+ LAMBDA(arg);
+ DECLARE();
+ DOCSTRING("acosh");
+CL_DEFUN double core__acosh(double x) {
   _G();
   return log(x + sqrt((x - 1) * (x + 1)));
 }
 
-#define ARGS_core_atanh "(arg)"
-#define DECL_core_atanh ""
-#define DOCS_core_atanh "atanh"
-double core_atanh(double x) {
+ LAMBDA(arg);
+ DECLARE();
+ DOCSTRING("atanh");
+CL_DEFUN double core__atanh(double x) {
   _G();
   return log((1 + x) / (1 - x)) / 2;
 }
@@ -1302,11 +1302,6 @@ void exposeCando_Numerics() {
   af_def(CorePkg, "randomNumber01", &randomNumber01);
   af_def(CorePkg, "randomNumberNormal01", &randomNumberNormal01);
   SYMBOL_EXPORT_SC_(ClPkg, getUniversalTime);
-  CoreDefun(asin);
-  CoreDefun(acos);
-  CoreDefun(asinh);
-  CoreDefun(acosh);
-  CoreDefun(atanh);
 
   SYMBOL_EXPORT_SC_(ClPkg, leastPositiveSingleFloat);
   SYMBOL_EXPORT_SC_(ClPkg, leastNegativeSingleFloat);

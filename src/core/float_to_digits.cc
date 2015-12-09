@@ -228,10 +228,10 @@ change_precision(float_approx *approx, T_sp tposition, T_sp relativep) {
   }
 }
 
-#define ARGS_core_float_to_digits "(digits number position relativep)"
-#define DECL_core_float_to_digits ""
-#define DOCS_core_float_to_digits "float_to_digits"
-T_mv core_float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
+LAMBDA(digits number position relativep);
+DECLARE();
+DOCSTRING("float_to_digits");
+CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
                           T_sp relativep) {
   gctools::Fixnum k;
   float_approx approx[1];
@@ -240,7 +240,7 @@ T_mv core_float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> po
   k = scale(approx);
   StrWithFillPtr_sp digits;
   if (tdigits.nilp()) {
-    digits = gc::As<StrWithFillPtr_sp>(core_make_vector(cl::_sym_base_char,
+    digits = gc::As<StrWithFillPtr_sp>(core__make_vector(cl::_sym_base_char,
                                                         10,
                                                         true /* adjustable */,
                                                         clasp_make_fixnum(0) /* fill pointer */,
@@ -257,6 +257,5 @@ T_mv core_float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> po
 
 void initialize_float_to_digits() {
   SYMBOL_EXPORT_SC_(CorePkg, float_to_digits);
-  CoreDefun(float_to_digits);
 }
 };

@@ -46,10 +46,10 @@ void throwIfNotValidClSymbol(const string &name) {
   ++it->second;
 }
 
-#define ARGS_core__calculate_missing_common_lisp_symbols "()"
-#define DECL_core__calculate_missing_common_lisp_symbols ""
-#define DOCS_core__calculate_missing_common_lisp_symbols "calculateMissingCommonLispSymbols"
-T_sp core__calculate_missing_common_lisp_symbols() {
+LAMBDA();
+DECLARE();
+DOCSTRING("calculateMissingCommonLispSymbols");
+CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
   Package_sp commonLispPackage = _lisp->commonLispPackage();
   List_sp missing = _Nil<T_O>();
   for (auto it : globalAllClSymbols) {
@@ -1050,7 +1050,6 @@ void initializeAllClSymbols(Package_sp commonLispPkg) {
 
 void initializeAllClSymbolsFunctions() {
   SYMBOL_EXPORT_SC_(CorePkg, calculateMissingCommonLispSymbols);
-  Core_temp_Defun(calculate_missing_common_lisp_symbols);
 };
 };
 #endif
