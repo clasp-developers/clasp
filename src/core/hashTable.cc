@@ -975,15 +975,12 @@ void HashTable_O::exposeCando(::core::Lisp_sp lisp) {
 void HashTable_O::exposePython(::core::Lisp_sp lisp) {
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(Pkg(), HashTable, "", "", _LISP)
-      //	.initArgs("(self)")
       .def("hash-table-count", &HashTable_O::hashTableCount)
       .def("hash-table-size", &HashTable_O::hashTableSize)
       .def("hash-table-rehash-size", &HashTable_O::hashTableRehashSize)
       .def("hash-table-rehash-threshold", &HashTable_O::hashTableRehashThreshold)
       .def("hash-table-test", &HashTable_O::hashTableTest)
-      //	    .def("gethash",&HashTable_O::gethash)
       .def("hash-table-dump", &HashTable_O::hash_table_dump)
-      //	    .def_raw("maphash",&HashTable_O::maphash)
       ;
 #endif
 }

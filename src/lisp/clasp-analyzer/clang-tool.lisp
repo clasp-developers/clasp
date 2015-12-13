@@ -19,6 +19,12 @@
 Relative paths will be converted to absolute ones using this pathname.")
 
 (defun load-compilation-database (pathname &key (main-source-filename "main.cc"))
+  "* Arguments
+- pathname :: The name of the file that contains the compilation database in JSON format.
+See http://clang.llvm.org/docs/JSONCompilationDatabase.html for the format
+- main-source-filename :: The name of the source file that is considered the main source file.  Default is main.cc.
+* Description
+Load the compilation database into the clang-tool:*db* dynamic variable."
   (setq *db* (ast-tooling:jsoncompilation-database-load-from-file
               (namestring (probe-file pathname))))
   (setq $* (map 'list #'identity (ast-tooling:get-all-files *db*)))

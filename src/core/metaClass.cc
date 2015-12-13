@@ -184,15 +184,7 @@ string Class_O::classNameAsString() const {
 }
 
 T_sp Class_O::allocate_newNil() {
-  _G();
-  if (!this->_theCreator) {
-    IMPLEMENT_MEF(BF("All allocation should be done through _creator"));
-    // if the newNil_callback is NULL then allocate an instance
-    int slots = unbox_fixnum(gc::As<Fixnum_sp>(this->_MetaClassSlots[REF_SIZE]));
-    printf("%s:%d:%s  Allocating new instance of %s with %d slots\n", __FILE__, __LINE__, __FUNCTION__, _rep_(this->asSmartPtr()).c_str(), slots);
-    return Instance_O::allocateInstance(this->asSmartPtr(), slots);
-    //	    SIMPLE_ERROR(BF("_creator for %s is NULL!!") % _rep_(this->asSmartPtr()) );
-  }
+  ASSERTF(this->_theCreator, BF("The class %s does not have a creator defined") % this->classNameAsString() );
   T_sp newObject = this->_theCreator->allocate();
   return newObject;
 }

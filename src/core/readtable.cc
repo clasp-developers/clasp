@@ -1082,8 +1082,6 @@ ReadTable_sp ReadTable_O::copyReadTable(gc::Nilable<ReadTable_sp> tdest) {
 void ReadTable_O::exposeCando(::core::Lisp_sp lisp) {
   _G();
   ::core::class_<ReadTable_O>()
-      //.def_accessor("readtable-case",&ReadTable_O::_Case,&ReadTable_O::setf_readtable_case)
-      //.def_readonly("readtable-syntax",&ReadTable_O::_Syntax)
       ;
   SYMBOL_EXPORT_SC_(ClPkg, setMacroCharacter);
   SYMBOL_SC_(CorePkg, reader_backquoted_expression);

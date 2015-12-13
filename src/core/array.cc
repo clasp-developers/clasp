@@ -308,8 +308,6 @@ void Array_O::exposePython(Lisp_sp lisp) {
   _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Array, "", "", _lisp)
-      //	.initArgs("(self)")
-      //	    .def_raw("aref",&Array_O::aref)
       .def("core:array-setf-aref", &Array_O::setf_aref)
       .def("core:index", &Array_O::index)
       .def("cl:array-dimension", &Array_O::arrayDimension)

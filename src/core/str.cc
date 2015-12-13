@@ -156,11 +156,6 @@ void Str_O::exposeCando(Lisp_sp lisp) {
       .def("core:countOccurances", &Str_O::countOccurances)
       .def("core:split", &Str_O::split)
       .def("core:splitAtWhiteSpace", &Str_O::splitAtWhiteSpace)
-//      .def("core:schar", &Str_O::schar)
-//      .def("core:scharSet", &Str_O::scharSet)
-      //		.def_raw("format", &Str_O::prim_format)
-      //		.def_raw("%", &Str_O::prim_format)
-      //		.def_raw("%%", &Str_O::prim_formatCons)
       ;
 
   SYMBOL_SC_(CorePkg, base_string_concatenate);

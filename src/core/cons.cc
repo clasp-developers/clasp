@@ -1345,11 +1345,6 @@ void Cons_O::exposeCando(Lisp_sp lisp) {
       .def("core:extend", &Cons_O::extend)
       .def("core:cons-setf-car", &Cons_O::setf_car)
       .def("core:cons-setf-cdr", &Cons_O::setf_cdr)
-      //	    .def("walkToFindParsePos",&Cons_O::walkToFindParsePos)
-      //	    .def("sourceFileInfo-lineno",&Cons_O::lineNumber)
-      //	    .def("sourceFileInfo-column",&Cons_O::column)
-      //	    .def("sourceFileInfo",&Cons_O::sourceFileInfo)
-      //        .def_raw("eval",&Cons_O::evaluateArgsAsExpression)
       ;
   SYMBOL_EXPORT_SC_(ClPkg, make_list);
   SYMBOL_EXPORT_SC_(ClPkg, cons);

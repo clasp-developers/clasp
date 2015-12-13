@@ -233,10 +233,7 @@ EXPOSE_CLASS(core, SingleDispatchGenericFunction_O);
 
 void SingleDispatchGenericFunction_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<SingleDispatchGenericFunction_O>()
-      //	    .def_readonly("single_dispatch_generic_function_methods",&SingleDispatchGenericFunction_O::_Methods,"Access the methods of the single-dispatch-generic-function")
-      //	.initArgs("(self)")
-      //	    .def("single-dispatch-generic-function-dispatch-on-index",&SingleDispatchGenericFunction_O::dispatch_on_index)
-      .def("SingleDispatchGenericFunction-methods", &SingleDispatchGenericFunction_O::methods);
+    .def("SingleDispatchGenericFunction-methods", &SingleDispatchGenericFunction_O::methods);
   SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchGenericFunction);
   SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchMethod);
 }
