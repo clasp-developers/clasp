@@ -59,7 +59,7 @@ THE SOFTWARE.
 // ------------------- include all headers for corePackage here
 
 #define HEADER_INCLUDES
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 
 //
 // Load the gctools::GcInfo<core-classes>::Kind specializers
@@ -74,7 +74,7 @@ namespace core {
 #define Use_ClPkg
 #define Use_ExtPkg
 #define EXTERN_REGISTER
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_ExtPkg
 #undef Use_ClPkg
@@ -137,6 +137,9 @@ SYMBOL_EXPORT_SC_(ClPkg, lambdaParametersLimit);
 SYMBOL_EXPORT_SC_(ClPkg, schar);
 SYMBOL_EXPORT_SC_(ClPkg, fixnum);
 SYMBOL_EXPORT_SC_(ClPkg, bit);
+SYMBOL_EXPORT_SC_(ClPkg, documentation);
+SYMBOL_EXPORT_SC_(CorePkg, single_dispatch_method);
+SYMBOL_EXPORT_SC_(CorePkg, setf_documentation);
 SYMBOL_EXPORT_SC_(CorePkg, STARcxxDocumentationSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, topLevel);
 SYMBOL_EXPORT_SC_(CorePkg, scharSet);
@@ -633,7 +636,7 @@ SYMBOL_SC_(KeywordPkg, changed);
 #define CorePkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) Symbol_sp cname; // = UNDEFINED_SYMBOL;
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef CorePkg_SYMBOLS
@@ -733,7 +736,7 @@ void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
 #define Use_ClPkg
 #define Use_ExtPkg
 #define INVOKE_REGISTER
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef INVOKE_REGISTER
 #undef Use_ExtPkg
 #undef Use_ClPkg
@@ -761,7 +764,7 @@ void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
 #define _DBG(x)
 #define EXPOSE_TO_PYTHON
 #define Use_CorePkg
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef Use_CorePkg
 #undef EXPOSE_TO_PYTHON
 #undef _DBG
@@ -796,7 +799,7 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
 #undef LOOKUP_SYMBOL
 #define LOOKUP_SYMBOL(pkgName, symName) bootStrapSymbolMap.lookupSymbol(pkgName, symName)
 #define Use_CorePkg
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef Use_CorePkg
 #undef LOOKUP_SYMBOL
     }
@@ -812,7 +815,7 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
 
 #define CREATE_CLASS
 #define Use_CorePkg
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef Use_CorePkg
   // Put core::Null_O::___staticClass into a global variable so that every
   // class can access it from the _class() virtual function
@@ -822,7 +825,7 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
     _BLOCK_TRACEF(BF("Dump info on classes"));
 #define DUMP_INFO_CLASS
 #define Use_CorePkg
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef Use_CorePkg
   }
 
@@ -839,7 +842,7 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
     _BLOCK_TRACEF(BF("Define base classes"));
 #define Use_CorePkg
 #define DEFINE_BASE_CLASSES
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef Use_CorePkg
   }
   gctools::tagged_pointer<CoreExposer> coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocateClass(_lisp);
@@ -863,7 +866,7 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
 #define DEFINE_CLASS_NAMES
     string NSPkg = CorePkg;
 #define Use_CorePkg
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef Use_CorePkg
   };
   //
@@ -885,7 +888,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 #define CorePkg_EXPORT
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) cname->exportYourself(export);
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef CorePkg_EXPORT
@@ -992,6 +995,8 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARtrace_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processErrorOutput_PLUS_));
   cl::_sym_STARdebug_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
   cl::_sym_STARquery_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
+  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), Str_O::create("help_file.dat")));
+  _sym_STARdocumentation_poolSTAR->exportYourself();
   TwoWayStream_sp terminal = TwoWayStream_O::make(stdin_stream, stdout_stream);
   _lisp->_Roots._TerminalIO = terminal;
   cl::_sym_STARterminal_ioSTAR->defparameter(terminal);
@@ -1178,6 +1183,6 @@ void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
 
 #define EXPAND_CLASS_MACROS
 #define _CLASS_MACRO(_T_) STATIC_CLASS_INFO(_T_);
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS

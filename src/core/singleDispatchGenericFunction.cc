@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/str.h>
 #include <clasp/core/executables.h>
+#include <clasp/core/documentation.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/singleDispatchEffectiveMethodFunction.h>
@@ -99,6 +100,9 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
                  _rep_(gfname) % gf_llh->numberOfRequiredArguments() % _rep_(gf->methods()) % _rep_(receiver_class) % lambda_list_handler->numberOfRequiredArguments());
   }
   gfc->addMethod(method);
+  if (docstring.notnilp()) {
+    core::ext__annotate(method,cl::_sym_documentation,core::_sym_single_dispatch_method, docstring );
+  }
 };
 
 // ----------------------------------------------------------------------

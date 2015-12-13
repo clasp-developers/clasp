@@ -58,6 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/write_object.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/documentation.h>
 #include <clasp/core/structureClass.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/str.h>
@@ -1024,7 +1025,6 @@ void lisp_defun(Symbol_sp sym,
                 bool autoExport,
                 int number_of_required_arguments,
                 const std::set<int> &skipIndices) {
-  _G();
   if (sym->getReadOnlyFunction()) {
     printf("%s:%d - The symbol[%s] has already been assigned a function and will not be redefined\n", __FILE__, __LINE__, _rep_(sym).c_str());
     return;
@@ -1054,6 +1054,9 @@ void lisp_defun(Symbol_sp sym,
     sym->exportYourself();
   else
     sym->setReadOnlyFunction(false);
+  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, core::Str_O::create(docstring));
+  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, core::Str_O::create(docstring));
+
 }
 
 void lisp_defmacro(Symbol_sp sym,

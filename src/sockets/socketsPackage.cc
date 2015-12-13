@@ -41,7 +41,7 @@ namespace sockets {
 #define EXPOSE_TO_CANDO
 #define Use_SocketsPkg
 #define EXTERN_REGISTER
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_SocketsPkg
 #undef EXPOSE_TO_CANDO
@@ -55,7 +55,7 @@ namespace sockets {
 #define SocketsPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef SocketsPkg_SYMBOLS
@@ -72,7 +72,7 @@ void SocketsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
     cname->exportYourself(exportp);                            \
   }
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef SocketsPkg_SYMBOLS
@@ -80,7 +80,7 @@ void SocketsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
 #define ALL_STAGES
 #define Use_SocketsPkg
 #define INVOKE_REGISTER
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef INVOKE_REGISTER
 #undef Use_SocketsPkg
 #undef ALL_STAGES
@@ -118,7 +118,7 @@ void SocketsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

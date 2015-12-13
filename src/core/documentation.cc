@@ -42,13 +42,11 @@ LAMBDA(record key sub-key);
 DECLARE();
 DOCSTRING("record_cons - see ECL helpfile.lsp>>record-cons");
 CL_DEFUN T_sp core__record_cons(List_sp record, T_sp key, T_sp sub_key) {
-  _G();
   Cons_sp cons = Cons_O::create(key, sub_key);
   for (auto cur : coerce_to_list(record)) {
     List_sp i = oCar(cur);
     T_sp obj = oCar(i);
-    if (T_sp(eval::funcall(cl::_sym_equalp, obj, cons)).isTrue())
-      return (i);
+    if (cl__equalp(obj, cons)) return i;
   }
   return (_Nil<T_O>());
 }
@@ -58,8 +56,7 @@ DECLARE();
 DOCSTRING("record_field see ecl>>helpfile.lsp>>record-field");
 CL_DEFUN T_sp core__record_field(List_sp record, T_sp key, T_sp sub_key) {
   _G();
-  List_sp cons = eval::funcall(_sym_record_cons, record, key, sub_key);
-  ;
+  List_sp cons = core__record_cons(record, key, sub_key);
   return oCdr(cons);
 }
 
@@ -68,7 +65,7 @@ DECLARE();
 DOCSTRING("set_record_field");
 CL_DEFUN T_sp core__set_record_field(List_sp record, T_sp key, T_sp sub_key, Str_sp value) {
   _G();
-  List_sp field = gc::As<List_sp>(eval::funcall(_sym_record_cons, record, key, sub_key));
+  List_sp field = gc::As<List_sp>(core__record_cons(record, key, sub_key));
   if (field.notnilp()) {
     field.asCons()->setCdr(value);
   } else {
@@ -102,12 +99,11 @@ LAMBDA(object key sub-key value);
 DECLARE();
 DOCSTRING("annotate - see ecl>>helpfile.lsp>>annotate; key is either 'documentation or 'setf-documentation and I currently think (object) must be a symbol so I'll trigger an exception if it isn't");
 CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value) {
-  _G();
   HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
   List_sp record = coerce_to_list(dict->gethash(object, _Nil<T_O>()));
   record = coerce_to_list(core__set_record_field(record, key, sub_key, value));
   T_sp result = dict->hash_table_setf_gethash(object, record);
-  return (Values(result));
+  return result;
 };
 SYMBOL_EXPORT_SC_(ClPkg, documentation);
 
@@ -128,8 +124,8 @@ void initialize_documentation_primitives(Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(ExtPkg, annotate);
   SYMBOL_SC_(CorePkg, ensure_documentation);
   // TODO move help_file.dat definition somewhere better
-  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), Str_O::create("help_file.dat")));
-  _sym_STARdocumentation_poolSTAR->exportYourself();
+//  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), Str_O::create("help_file.dat")));
+//  _sym_STARdocumentation_poolSTAR->exportYourself();
 }
 
 }; /* namespace */

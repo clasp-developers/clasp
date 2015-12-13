@@ -6,6 +6,7 @@
              (format stream "Bad C++ function name: ~a" (name condition)))))
 
 (defun group-expose-functions-by-namespace (tags)
+  (declare (optimize (debug 3)))
   (let ((ns-hashes (make-hash-table :test #'equal))
         current-namespace)
     (dolist (tag tags)
@@ -206,7 +207,7 @@
   (let ((init-functions (generate-code-for-init-functions tags))
         (source-info (generate-code-for-source-info tags))
         (symbol-info (generate-code-for-symbols tags)))
-    (write-if-changed init-functions main-path (gethash "INIT_FUNCTIONS_INC_H" app-config))
-    (write-if-changed source-info main-path (gethash "SOURCE_INFO_INC_H" app-config))
-    (write-if-changed symbol-info main-path (gethash "SYMBOLS_SCRAPED_INC_H" app-config))
+    (write-if-changed init-functions main-path (gethash :init_functions_inc_h app-config))
+    (write-if-changed source-info main-path (gethash :source_info_inc_h app-config))
+    (write-if-changed symbol-info main-path (gethash :symbols_scraped_inc_h app-config))
     (generate-tags-file (merge-pathnames #P"TAGS" (translate-logical-pathname main-path)) tags)))

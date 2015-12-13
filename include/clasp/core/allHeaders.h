@@ -222,7 +222,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolVector.fwd.h>
 #include <core/symbolVector.h>
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+    #include <generated/symbols_scraped_inc.h>
   #endif
 #include <clasp/core/sysprop.h>
 #include <core/tagged_intrusive_ptr.h>

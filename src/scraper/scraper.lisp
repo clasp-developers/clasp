@@ -8,17 +8,29 @@
 (defparameter *tags* nil)
 
 (load "foundation.lisp")
+(load "serialize.lisp")
 (load "tags.lisp")
 (load "compile-commands.lisp")
 (load "sourcepos.lisp")
 (load "interpret-tags.lisp")
 (load "code-generator.lisp")
 
-(defun read-all-tags-all-compile-commands (all-cc)
+(defun update-all-sif-files (all-cc)
+  "* Arguments
+- all-cc :: A list of all compile-commands.
+* Description
+Update all of the scraped info files that need updating."
   (loop for cc in all-cc
-     for bufs = (read-entire-file cc)
-     for tags = (process-all-recognition-elements bufs)
-     do (interpret-tags tags)
+     if (sif-file-needs-updating cc)
+     do (update-sif-file cc)))
+
+(defun read-all-tags-all-sif-files (all-cc)
+  "* Arguments
+- all-cc :: A list of all of the compile-commands.
+* Description
+Read all of the scraped info files and interpret their tags."
+  (loop for cc in all-cc
+     for tags = (read-sif-file cc)
      nconc tags))
 
 (defun do-scraping (args &key (run-preprocessor t))
@@ -40,10 +52,14 @@
             (unless (probe-file ifile)
               (format t "Could not find ~a~%" ifile)
               (run-cpp cc)))))
-      (let ((tags (read-all-tags-all-compile-commands all-cc)))
+      (update-all-sif-files all-cc)
+      (format t "Reading sif files~%")
+      (let ((tags (read-all-tags-all-sif-files all-cc)))
         (setq *tags* tags)
         (interpret-tags tags)
-        (generate-code tags main-path app-config)))))
+        (format t "Generating code~%")
+        (generate-code tags main-path app-config)
+        (format t "Done scraping code~%")))))
 
 
 #-testing-scraper

@@ -33,12 +33,12 @@
    (handler-code :initarg :handler-code :accessor handler-code)))
 
 (defclass lisp-base-tag ()
-  ((c++-base% :initarg :c++-base% :accessor c++-base%)))
+  ((c++-base% :initform nil :initarg :c++-base% :accessor c++-base%)))
 
 (defclass lisp-class-tag ()
-  ((namespace% :initarg :namespace% :accessor namespace%)
-   (package% :initarg :package% :accessor package%)
-   (c++-base% :initarg :c++-base% :accessor c++-base%)
+  ((namespace% :initform nil :initarg :namespace% :accessor namespace%)
+   (package% :initform nil :initarg :package% :accessor package%)
+   (c++-base% :initform nil :initarg :c++-base% :accessor c++-base%)
    (c++-class% :initarg :c++-class% :accessor c++-class%)
    (class-symbol% :initarg :class-symbol% :accessor class-symbol%)))
 
@@ -56,15 +56,15 @@
   ((declare-form :initarg :declare-form :accessor declare-form)))
 
 (defclass source-tag (code-tag)
-  ((character-offset :initarg :character-offset :accessor character-offset)))
+  ((character-offset :initform nil :initarg :character-offset :accessor character-offset)))
   
 (defclass expose-code-tag (source-tag)
   ((function-name :initarg :function-name :accessor function-name)
    (signature-text :initarg :signature-text :accessor signature-text)
-   (lambda-tag :initarg :lambda-tag :accessor lambda-tag)
-   (declare-tag :initarg :declare-tag :accessor declare-tag)
-   (docstring-tag :initarg :docstring-tag :accessor docstring-tag)
-   (namespace-tag :initarg :namespace-tag :accessor namespace-tag)))
+   (lambda-tag :initform nil :initarg :lambda-tag :accessor lambda-tag)
+   (declare-tag :initform nil :initarg :declare-tag :accessor declare-tag)
+   (docstring-tag :initform nil :initarg :docstring-tag :accessor docstring-tag)
+   (namespace-tag :initform nil :initarg :namespace-tag :accessor namespace-tag)))
 
 (defclass expose-function-tag (expose-code-tag) ())
 
@@ -76,9 +76,9 @@
    (file :initarg :file :accessor file)))
 
 (defclass symbol-tag ()
-  ((namespace% :initarg :namespace% :accessor namespace%)
-   (package% :initarg :package% :accessor package%)
-   (c++-name% :initarg :c++-name% :accessor c++-name%)
+  ((namespace% :initform nil :initarg :namespace% :accessor namespace%)
+   (package% :initform nil :initarg :package% :accessor package%)
+   (c++-name% :initform nil :initarg :c++-name% :accessor c++-name%)
    (name% :initarg :name% :accessor name%)
    (exported% :initarg :exported% :accessor exported%)))
 

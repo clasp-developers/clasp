@@ -100,7 +100,7 @@ public:
 #if !defined(RUNNING_GC_BUILDER)
 #define GC_ENUM
 typedef
-#include STATIC_ANALYZER_PRODUCT //"main/clasp_gc.cc"
+#include "clasp_gc.cc" //"main/clasp_gc.cc"
     GCKindEnum;
 #undef GC_ENUM
 #else
@@ -367,14 +367,14 @@ class ConstructorCreator;
 
 #ifndef RUNNING_GC_BUILDER
 #define DECLARE_FORWARDS
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef DECLARE_FORWARDS
 #endif
 
 namespace gctools {
 #if !defined(RUNNING_GC_BUILDER)
 #define GC_DYNAMIC_CAST
-#include STATIC_ANALYZER_PRODUCT // "main/clasp_gc.cc"
+#include "clasp_gc.cc" // "main/clasp_gc.cc"
 #undef GC_DYNAMIC_CAST
 #endif
 };

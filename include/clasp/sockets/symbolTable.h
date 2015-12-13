@@ -33,7 +33,7 @@ namespace kw {
 #define KeywordPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+    #include <generated/symbols_scraped_inc.h>
   #endif  
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
@@ -43,7 +43,7 @@ namespace sockets {
 #define SocketsPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+    #include <generated/symbols_scraped_inc.h>
   #endif  
 #undef DO_SYMBOL
 #undef SocketsPkg_SYMBOLS
