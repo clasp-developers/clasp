@@ -10,6 +10,7 @@
    (parts :initarg :parts :accessor parts)
    (output :initarg :output :accessor output)
    (cpp-name :initarg :cpp-name :accessor cpp-name)
+   (sif-name :initarg :sif-name :accessor sif-name)
    (input :initarg :input :accessor input)))
 
 ;;; Return s/<orig>/<replace>/  on eq
@@ -66,12 +67,14 @@
     (mapcar (lambda (l)
               (let* ((parts (split-line-using-read l))
                      (output (extract-after parts "-o"))
-                     (cpp-name (string-replace-once output ".o" ".i")))
+                     (cpp-name (string-replace-once output ".o" ".i"))
+                     (sif-name (string-replace-once output ".o" ".sif")))
                 (make-instance 'compile-command
                                :original l
                                :parts parts
                                :output output
                                :cpp-name cpp-name
+                               :sif-name sif-name
                                :input (car (last parts)))))
             lines)))
 
@@ -119,7 +122,7 @@
       nil
       (elt (buffer bufs) pos))))
 
-(defun read-entire-file (cc)
+(defun read-entire-cpp-file (cc)
   (format t "Scraping ~a~%" (cpp-name cc))
   (with-open-file (stream (pathname (cpp-name cc)))
     (let ((data (make-string (file-length stream))))
@@ -169,19 +172,18 @@
 
 (defun read-identifier (bufs)
   "Read a C++ identifier, assume we start on the first char"
-  (with-output-to-string (sout)
-    (block done
-      (let ((first-char (buffer-peek-char bufs)))
-        (when (or (alpha-char-p first-char) (char= #\_ first-char))
-          (princ first-char sout)
-          (skip-char bufs)
-          (loop
-             (let ((next-char (buffer-peek-char bufs)))
-               (if (or (alphanumericp next-char) (char= #\_ next-char))
-                   (progn
-                     (princ next-char sout)
-                     (skip-char bufs))
-                   (return-from done nil)))))))))
+  (declare (optimize (debug 3)))
+  (let* ((buffer (buffer bufs))
+         (start (file-position (buffer-stream bufs)))
+         (cur start))
+    (let ((first-char (elt buffer cur)))
+      (when (or (alpha-char-p first-char) (char= #\_ first-char))
+        (incf cur)
+        (loop for next-char = (elt buffer cur)
+           until (not (or (alphanumericp next-char) (char= #\_ next-char)))
+           do (incf cur))))
+    (file-position (buffer-stream bufs) cur)
+    (subseq buffer start cur)))
 
 (defun read-string-to-character (bufs ch &optional keep-last-char)
   "Read up to the character and keep it if (keep-last-char)"
@@ -279,3 +281,35 @@
          (file-position (buffer-stream bufs) nearest-after-pos)
          (setq tags (funcall (cdr rec-el) bufs tags))))))
 
+
+(defun sif-file-needs-updating (compile-command)
+  "* Arguments
+- compile-command :: The compile-command.
+* Description
+Return T if the scraped-info-file for this compile-command doesn't exist or if its write-date is earlier than the c-preprocessed file."
+  (let ((cpp-pathname (pathname (cpp-name compile-command)))
+        (sif-pathname (pathname (sif-name compile-command))))
+    (or (not (probe-file sif-pathname))
+        (< (file-write-date sif-pathname) (file-write-date cpp-pathname)))))
+
+(defun update-sif-file (compile-command)
+  "* Arguments
+- compile-command :: The compile-command.
+* Description
+Read the c-preprocessed file and scrape all of the tags.
+Then dump the tags into the sif-file."
+  (let* ((bufs (read-entire-cpp-file compile-command))
+         (tags (process-all-recognition-elements bufs))
+         (sif-pathname (pathname (sif-name compile-command))))
+    (with-open-file (fout sif-pathname :direction :output :if-exists :supersede)
+      (let ((*print-readably* t))
+        (prin1 tags fout)))))
+
+(defun read-sif-file (compile-command)
+  "* Arguments
+- compile-command :: The compile-command.
+* Description
+Read a list of tags from the sif file."
+  (let* ((sif-pathname (pathname (sif-name compile-command))))
+    (with-open-file (fin sif-pathname :direction :input)
+      (read fin))))

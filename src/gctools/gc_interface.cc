@@ -161,7 +161,7 @@ typedef bool _Bool;
 #include <clasp/asttooling/Marshallers.h>
 
 #define GC_INTERFACE_INCLUDE
-#include PROJECT_HEADERS_INCLUDE
+#include <project_headers.h>
 #undef GC_INTERFACE_INCLUDE
 
 #define NAMESPACE_gctools
@@ -190,7 +190,7 @@ void expose_function(const std::string& rawPkgName,
 
 #ifndef SCRAPING
   #define EXPOSE_FUNCTION_SIGNATURES
-  #include INIT_FUNCTIONS_INC_H
+  #include <generated/initFunctions_inc.h>
   #undef EXPOSE_FUNCTION_SIGNATURES
 #endif
 
@@ -198,7 +198,7 @@ void initialize_functions()
 {
 #ifndef SCRAPING
   #define EXPOSE_FUNCTION_BINDINGS
-  #include INIT_FUNCTIONS_INC_H
+  #include <generated/initFunctions_inc.h>
   #undef EXPOSE_FUNCTION_BINDINGS
 #endif
 };
@@ -216,7 +216,7 @@ struct SourceInfo {
 SourceInfo global_source_info[] = {
 #ifndef SCRAPING
 #define SOURCE_INFO
-#include SOURCE_INFO_INC_H
+#include <generated/sourceInfo_inc.h>
 #undef SOURCE_INFO
 #endif
     {NULL,NULL,NULL,0,0,NULL}
@@ -233,6 +233,8 @@ void initialize_source_info(core::T_sp documentation) {
     func->closure->setSourcePosInfo(sourceFile, global_source_info[i]._FilePos,
                                     global_source_info[i]._LineNumber, 0);
     core::Str_sp docs = core::Str_O::create(global_source_info[i]._Documentation);
+    ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, docs);
+    ext__annotate(func,cl::_sym_documentation,cl::_sym_function, docs);
     ht->setf_gethash(sym,docs);
   }
 };
@@ -262,22 +264,22 @@ char *obj_name(gctools::GCKindEnum kind) {
 #ifdef USE_BOEHM
 #ifndef USE_CXX_DYNAMIC_CAST
 #define GC_KIND_NAME_MAP_TABLE
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_KIND_NAME_MAP_TABLE
   goto *(KIND_NAME_MAP_table[kind]);
 #define GC_KIND_NAME_MAP
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_KIND_NAME_MAP
 #endif
 #endif
 #ifdef USE_MPS
 #ifndef RUNNING_GC_BUILDER
 #define GC_KIND_NAME_MAP_TABLE
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_KIND_NAME_MAP_TABLE
   goto *(KIND_NAME_MAP_table[kind]);
 #define GC_KIND_NAME_MAP
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_KIND_NAME_MAP
 #endif
 #endif
@@ -292,7 +294,7 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
   // The client must have a valid header
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_DEALLOCATOR_TABLE
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_DEALLOCATOR_TABLE
 #endif
 
@@ -303,7 +305,7 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 #ifndef RUNNING_GC_BUILDER
   goto *(OBJ_DEALLOCATOR_table[kind]);
 #define GC_OBJ_DEALLOCATOR
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_DEALLOCATOR
 #else
 // do nothing
@@ -322,7 +324,7 @@ void obj_dump_base(void *base) {
 #else
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_DUMP_MAP_TABLE
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_DUMP_MAP_TABLE
 #endif
 #endif
@@ -330,7 +332,7 @@ void obj_dump_base(void *base) {
 #ifdef USE_MPS
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_DUMP_MAP_TABLE
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_DUMP_MAP_TABLE
 #endif
 #endif
@@ -351,7 +353,7 @@ void obj_dump_base(void *base) {
 #ifndef USE_CXX_DYNAMIC_CAST
     goto *(OBJ_DUMP_MAP_table[kind]);
 #define GC_OBJ_DUMP_MAP
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_DUMP_MAP
 #else
     sout << "BOEHMDC_UNKNOWN"; // do nothing
@@ -361,7 +363,7 @@ void obj_dump_base(void *base) {
 #ifndef RUNNING_GC_BUILDER
     goto *(OBJ_DUMP_MAP_table[kind]);
 #define GC_OBJ_DUMP_MAP
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_DUMP_MAP
 #else
 // do nothing
@@ -395,7 +397,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
 // The client must have a valid header
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SKIP_TABLE
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_SKIP_TABLE
 #endif
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
@@ -405,7 +407,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #ifndef RUNNING_GC_BUILDER
     goto *(OBJ_SKIP_table[kind]);
 #define GC_OBJ_SKIP
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_SKIP
 #else
     return NULL;
@@ -435,7 +437,7 @@ int trap_obj_scan = 0;
 namespace gctools {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_HELPERS
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_SCAN_HELPERS
 #endif
 };
@@ -444,7 +446,7 @@ extern "C" {
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_TABLE
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_SCAN_TABLE
 #endif
 
@@ -464,7 +466,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #ifndef RUNNING_GC_BUILDER
         goto *(OBJ_SCAN_table[kind]);
 #define GC_OBJ_SCAN
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_SCAN
 #endif
       } else if (header->fwdP()) {
@@ -495,7 +497,7 @@ void obj_finalize(mps_addr_t client) {
   DEBUG_THROW_IF_INVALID_CLIENT(client);
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_FINALIZE_TABLE
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_FINALIZE_TABLE
 #endif
 
@@ -507,7 +509,7 @@ void obj_finalize(mps_addr_t client) {
 #ifndef RUNNING_GC_BUILDER
   goto *(OBJ_FINALIZE_table[kind]);
 #define GC_OBJ_FINALIZE
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_OBJ_FINALIZE
 #else
 // do nothing
@@ -539,14 +541,14 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 
 #ifndef RUNNING_GC_BUILDER
 #define GC_GLOBALS
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_GLOBALS
 #endif
 
 #ifndef RUNNING_GC_BUILDER
 #if USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
 #define GC_GLOBAL_SYMBOLS
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef GC_GLOBAL_SYMBOLS
 #else
 
@@ -594,7 +596,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 
 #define DO_SYMBOL(sym, id, pkg, name, exprt) SMART_PTR_FIX(pkg::sym)
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 
 #undef AstToolingPkg
@@ -647,7 +649,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 //
 #ifndef RUNNING_GC_gBUILDER
 #define HOUSEKEEPING_SCANNERS
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef HOUSEKEEPING_SCANNERS
 #endif
 

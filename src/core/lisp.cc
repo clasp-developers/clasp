@@ -453,13 +453,13 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     initialize_Lisp_O();
     initialize_functions();
     core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
+    initialize_documentation_primitives(_lisp);
     initialize_source_info(ht);
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
     initialize_object();
     initialize_foundation();
     initialize_primitives();
     initialize_stacks();
-    initialize_documentation_primitives(_lisp);
     initialize_compiler_primitives(_lisp);
     initialize_cache();
     initialize_backquote(_lisp);

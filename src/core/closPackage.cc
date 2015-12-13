@@ -39,7 +39,7 @@ namespace clos {
 #define ClosPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef ClosPkg_SYMBOLS

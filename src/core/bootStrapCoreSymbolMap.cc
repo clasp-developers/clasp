@@ -50,14 +50,14 @@ BootStrapCoreSymbolMap::BootStrapCoreSymbolMap() {
 #define ClPkg_SYMBOLS
 #define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) cl::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef ClPkg_SYMBOLS
 #define CorePkg_SYMBOLS
 #define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) core::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef CorePkg_SYMBOLS
@@ -65,7 +65,7 @@ BootStrapCoreSymbolMap::BootStrapCoreSymbolMap() {
 #define KeywordPkg_SYMBOLS
 #define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) kw::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
@@ -73,7 +73,7 @@ BootStrapCoreSymbolMap::BootStrapCoreSymbolMap() {
 #define ExtPkg_SYMBOLS
 #define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) ext::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef ExtPkg_SYMBOLS
@@ -81,7 +81,7 @@ BootStrapCoreSymbolMap::BootStrapCoreSymbolMap() {
 #define ClosPkg_SYMBOLS
 #define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) clos::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef ClosPkg_SYMBOLS
@@ -89,7 +89,7 @@ BootStrapCoreSymbolMap::BootStrapCoreSymbolMap() {
 #define CleavirPrimopsPkg_SYMBOLS
 #define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) cleavirPrimops::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef CleavirPrimopsPkg_SYMBOLS
@@ -97,7 +97,7 @@ BootStrapCoreSymbolMap::BootStrapCoreSymbolMap() {
 #define CleavirEnvPkg_SYMBOLS
 #define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) cleavirEnv::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef CleavirEnvPkg_SYMBOLS
@@ -105,7 +105,7 @@ BootStrapCoreSymbolMap::BootStrapCoreSymbolMap() {
 #define GrayPkg_SYMBOLS
 #define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) gray::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef GrayPkg_SYMBOLS
@@ -113,7 +113,7 @@ BootStrapCoreSymbolMap::BootStrapCoreSymbolMap() {
 #define CompPkg_SYMBOLS
 #define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) comp::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef CompPkg_SYMBOLS

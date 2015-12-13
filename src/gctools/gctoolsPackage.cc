@@ -62,7 +62,7 @@ bool _GlobalDebugAllocations = false;
 #define GcToolsPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef GcToolsPkg_SYMBOLS
@@ -80,7 +80,7 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
     gctools::cname->exportYourself(exportp);                            \
   }
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef GcToolsPkg_SYMBOLS
@@ -114,7 +114,7 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
 #define _CLASS_MACRO(_U_) \
   STATIC_CLASS_INFO(_U_); \
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_U_)
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

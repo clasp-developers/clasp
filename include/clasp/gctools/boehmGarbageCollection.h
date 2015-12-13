@@ -77,7 +77,7 @@ typedef enum { KIND_null = 0,
 #else
 typedef
 #define GC_ENUM
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
     GCKindEnum;
 #undef GC_ENUM
 #endif
@@ -205,14 +205,14 @@ class ConstructorCreator;
 
 #ifndef USE_CXX_DYNAMIC_CAST
 #define DECLARE_FORWARDS
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef DECLARE_FORWARDS
 #endif
 
 namespace gctools {
 #ifndef USE_CXX_DYNAMIC_CAST
 #define GC_DYNAMIC_CAST
-#include STATIC_ANALYZER_PRODUCT // "main/clasp_gc.cc"
+#include "clasp_gc.cc" // "main/clasp_gc.cc"
 #undef GC_DYNAMIC_CAST
 #endif
 };

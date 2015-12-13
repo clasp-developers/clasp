@@ -56,7 +56,7 @@ namespace kw {
 #define KeywordPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
@@ -69,7 +69,7 @@ namespace llvmo {
 #define LlvmoPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef LlvmoPkg_SYMBOLS
@@ -80,7 +80,7 @@ namespace llvmo {
 #define EXPOSE_TO_CANDO
 #define Use_LlvmoPkg
 #define EXTERN_REGISTER
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_LlvmoPkg
 #undef EXPOSE_TO_CANDO
@@ -311,7 +311,7 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
     cname->exportYourself(exportp);                            \
   }
   #ifndef SCRAPING
-    #include SYMBOLS_SCRAPED_INC_H
+#include <generated/symbols_scraped_inc.h>
   #endif
 #undef DO_SYMBOL
 #undef LlvmoPkg_SYMBOLS
@@ -320,7 +320,7 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
 #define Use_LlvmoPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(pkg, name) _lisp->internUniqueWithPackageName(pkg, name)
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_LlvmoPkg
@@ -372,7 +372,7 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
 //
 #ifndef RUNNING_GC_BUILDER
 #define NAMESPACE_llvmo
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef NAMESPACE_llvmo
 #endif
 #endif
@@ -387,7 +387,7 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
   STATIC_CLASS_INFO(_U_); \
   INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_U_)
 #endif
-#include INIT_CLASSES_INC_H
+#include <generated/initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif
