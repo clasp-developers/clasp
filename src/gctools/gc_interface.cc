@@ -257,8 +257,8 @@ char *obj_kind_name(core::T_O *tagged_ptr) {
   return obj_name(header->kind());
 }
 
-char *obj_name(gctools::GCKindEnum kind) {
-  if (kind == KIND_null) {
+char *obj_name(gctools::kind_t kind) {
+  if (kind == (gctools::kind_t)KIND_null || kind > (gctools::kind_t)KIND_max) {
     return "UNDEFINED";
   }
 #ifdef USE_BOEHM

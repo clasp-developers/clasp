@@ -3493,7 +3493,7 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
   core::SourceFileInfo_mv sfi = core__source_file_info(fileName);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1)));
   //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
-  gctools::tagged_pointer<CompiledClosure> functoid = gctools::ClassAllocator<CompiledClosure>::allocateClass(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, lambdaList, sfindex, filePos, linenumber, 0);
+  gctools::tagged_pointer<CompiledClosure> functoid = gctools::ClassAllocator<CompiledClosure>::allocate_class(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, lambdaList, sfindex, filePos, linenumber, 0);
   core::CompiledFunction_sp func = core::CompiledFunction_O::make(functoid);
   ASSERT(func);
   return func;

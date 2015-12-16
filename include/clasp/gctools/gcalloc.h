@@ -253,16 +253,22 @@ namespace gctools {
 /*! Allocate regular C++ classes that are considered roots */
 template <class T>
 struct RootClassAllocator {
+
   template <class... ARGS>
-  static gctools::tagged_pointer<T> allocate(ARGS &&... args) {
+  static gctools::tagged_pointer<T> allocate( ARGS &&... args) {
+    return allocate_kind(GCKind<T>::Kind,std::forward<ARGS>(args)...);
+  };
+
+  template <class... ARGS>
+  static gctools::tagged_pointer<T> allocate_kind(kind_t the_kind, ARGS &&... args) {
     size_t sz = sizeof_with_header<T>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
-    MONITOR_ALLOCATION(GCKind<T>::Kind, sz);
+    MONITOR_ALLOCATION(the_kind, sz);
 #endif
 #ifdef USE_BOEHM
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
-    new (base) Header_s(GCKind<T>::Kind);
+    new (base) Header_s(the_kind);
     T *obj = BasePtrToMostDerivedPtr<T>(base);
     new (obj) T(std::forward<ARGS>(args)...);
     POLL_SIGNALS();
@@ -282,13 +288,13 @@ struct RootClassAllocator {
       mps_res_t res = mps_reserve(&addr, obj_ap, sz);
 #pragma clang diagnostic pop
       HeadT *header = reinterpret_cast<HeadT *>(addr);
-      new (header) HeadT(GCKind<T>::Kind);
+      new (header) HeadT(the_kind);
       obj = BasePtrToMostDerivedPtr<T>(addr);
       new (obj) T(std::forward<ARGS>(args)...);
       tagged_obj = gctools::tagged_pointer<T>(obj);
     } while (!mps_commit(obj_ap, addr, sz));
     globalMpsMetrics.nonMovingAllocation(sz);
-    DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, gctools::GCKind<T>::Kind);
+    DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, the_kind);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     POLL_SIGNALS();
     return tagged_obj;
@@ -323,17 +329,22 @@ struct RootClassAllocator {
 
 template <class T>
 struct ClassAllocator {
+
+  template <class... ARGS>
+  static tagged_pointer<T> allocate_class(ARGS &&... args) {
+    return ClassAllocator<T>::allocate_class_kind(GCKind<T>::Kind,std::forward<ARGS>(args)...);
+  };
   /*! Allocate regular C++ classes that will be garbage collected as soon as nothing points to them */
   template <class... ARGS>
-  static tagged_pointer<T> allocateClass(ARGS &&... args) {
+  static tagged_pointer<T> allocate_class_kind(kind_t the_kind, ARGS &&... args) {
     size_t sz = sizeof_with_header<T>();
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
-    MONITOR_ALLOCATION(GCKind<T>::Kind, sz);
+    MONITOR_ALLOCATION(the_kind, sz);
 #endif
 #ifdef USE_BOEHM
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
-    new (base) Header_s(GCKind<T>::Kind);
+    new (base) Header_s(the_kind);
     T *obj = BasePtrToMostDerivedPtr<T>(base);
     new (obj) T(std::forward<ARGS>(args)...);
     POLL_SIGNALS();
@@ -352,13 +363,13 @@ struct ClassAllocator {
       mps_res_t res = mps_reserve(&addr, obj_ap, sz);
 #pragma clang diagnostic pop
       HeadT *header = reinterpret_cast<HeadT *>(addr);
-      new (header) HeadT(GCKind<T>::Kind);
+      new (header) HeadT(the_kind);
       obj = BasePtrToMostDerivedPtr<T>(addr);
       new (obj) T(std::forward<ARGS>(args)...);
       tagged_obj = tagged_pointer<T>(obj);
     } while (!mps_commit(obj_ap, addr, sz));
     globalMpsMetrics.unknownAllocation(sz);
-    DEBUG_MPS_ALLOCATION("AP", addr, obj, sz, gctools::GCKind<T>::Kind);
+    DEBUG_MPS_ALLOCATION("AP", addr, obj, sz, the_kind);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     POLL_SIGNALS();
     return tagged_obj;
@@ -375,17 +386,17 @@ namespace gctools {
       typedef OT *pointer_type;
       typedef smart_ptr<OT> smart_pointer_type;
       template <typename... ARGS>
-      static smart_pointer_type allocateInAppropriatePool(ARGS &&... args) {
+      static smart_pointer_type allocate_in_appropriate_pool_kind(kind_t the_kind, ARGS &&... args) {
         size_t size = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
         globalBytesAllocated += size;
-        MONITOR_ALLOCATION(GCKind<OT>::Kind, size);
+        MONITOR_ALLOCATION(the_kind, size);
 #endif
 #ifdef USE_BOEHM
     // By default allocate in the normal pool for objects that contain pointers
     // to other objects.
         Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
-        new (base) Header_s(GCKind<OT>::Kind);
+        new (base) Header_s(the_kind);
         pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
         new (ptr) OT(std::forward<ARGS>(args)...);
         smart_pointer_type sp = smart_ptr<value_type>(ptr);
@@ -403,13 +414,13 @@ namespace gctools {
           mps_res_t res = mps_reserve(&addr, obj_ap, size);
 #pragma clang diagnostic pop
           HeadT *header = reinterpret_cast<HeadT *>(addr);
-          new (header) HeadT(GCKind<OT>::Kind);
+          new (header) HeadT(the_kind);
           obj = BasePtrToMostDerivedPtr<OT>(addr);
           new (obj) OT(std::forward<ARGS>(args)...);
           sp = gctools::smart_ptr<value_type>(obj);
         } while (!mps_commit(obj_ap, addr, size));
         globalMpsMetrics.movingAllocation(size);
-        DEBUG_MPS_ALLOCATION("AMC", addr, obj, size, gctools::GCKind<OT>::Kind);
+        DEBUG_MPS_ALLOCATION("AMC", addr, obj, size, the_kind);
         DEBUG_MPS_UNDERSCANNING_TESTS();
         return sp;
 #endif
@@ -426,16 +437,16 @@ namespace gctools {
     typedef OT *pointer_type;
     typedef smart_ptr<OT> smart_pointer_type;
     template <typename... ARGS>
-      static smart_pointer_type allocateInAppropriatePool(ARGS &&... args) {
+      static smart_pointer_type allocate_in_appropriate_pool_kind( kind_t the_kind, ARGS &&... args) {
       size_t size = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
       globalBytesAllocated += size;
-      MONITOR_ALLOCATION(GCKind<OT>::Kind, size);
+      MONITOR_ALLOCATION(the_kind, size);
 #endif
 #ifdef USE_BOEHM
     // Atomic objects (do not contain pointers) are allocated in separate pool
       Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(size));
-      new (base) Header_s(GCKind<OT>::Kind);
+      new (base) Header_s(the_kind);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
       new (ptr) OT(std::forward<ARGS>(args)...);
       smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
@@ -453,13 +464,13 @@ namespace gctools {
         mps_res_t res = mps_reserve(&addr, obj_ap, size);
 #pragma clang diagnostic pop
         HeadT *header = reinterpret_cast<HeadT *>(addr);
-        new (header) HeadT(GCKind<OT>::Kind);
+        new (header) HeadT(the_kind);
         obj = BasePtrToMostDerivedPtr<OT>(addr);
         new (obj) OT(std::forward<ARGS>(args)...);
         sp = /*gctools::*/ smart_ptr<value_type>(obj);
       } while (!mps_commit(obj_ap, addr, size));
       globalMpsMetrics.movingZeroRankAllocation(size);
-      DEBUG_MPS_ALLOCATION("AMCZ", addr, obj, size, /*gctools::*/ GCKind<OT>::Kind);
+      DEBUG_MPS_ALLOCATION("AMCZ", addr, obj, size, /*gctools::*/ the_kind);
       DEBUG_MPS_UNDERSCANNING_TESTS();
       return sp;
 #endif
@@ -480,17 +491,17 @@ When would I ever want the GC to automatically collect objects but not move them
     typedef OT *pointer_type;
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
     template <typename... ARGS>
-      static smart_pointer_type allocateInAppropriatePool(ARGS &&... args) {
+      static smart_pointer_type allocate_in_appropriate_pool_kind( kind_t the_kind, ARGS &&... args) {
       size_t size = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
       globalBytesAllocated += size;
-      MONITOR_ALLOCATION(GCKind<OT>::Kind, size);
+      MONITOR_ALLOCATION(the_kind, size);
 #endif
 #ifdef USE_BOEHM
     // By default allocate in the normal pool for objects that contain pointers
     // to other objects.
       Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
-      new (base) Header_s(GCKind<OT>::Kind);
+      new (base) Header_s(the_kind);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
       new (ptr) OT(std::forward<ARGS>(args)...);
       smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
@@ -508,13 +519,13 @@ When would I ever want the GC to automatically collect objects but not move them
         mps_res_t res = mps_reserve(&addr, obj_ap, size);
 #pragma clang diagnostic pop
         HeadT *header = reinterpret_cast<HeadT *>(addr);
-        new (header) HeadT(GCKind<OT>::Kind);
+        new (header) HeadT(the_kind);
         obj = BasePtrToMostDerivedPtr<OT>(addr);
         new (obj) OT(std::forward<ARGS>(args)...);
         sp = /*gctools::*/ smart_ptr<value_type>(obj);
       } while (!mps_commit(obj_ap, addr, size));
       globalMpsMetrics.nonMovingAllocation(size);
-      DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, size, /*gctools::*/ GCKind<OT>::Kind);
+      DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, size, /*gctools::*/ the_kind);
       DEBUG_MPS_UNDERSCANNING_TESTS();
       return sp;
 #endif
@@ -535,15 +546,15 @@ should not be managed by the GC */
     typedef OT *pointer_type;
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
     template <typename... ARGS>
-      static smart_pointer_type allocateInAppropriatePool(ARGS &&... args) {
+      static smart_pointer_type allocate_in_appropriate_pool_kind( kind_t the_kind, ARGS &&... args) {
       size_t sz = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
       globalBytesAllocated += sz;
-      MONITOR_ALLOCATION(GCKind<OT>::Kind, sz);
+      MONITOR_ALLOCATION(the_kind, sz);
 #endif
 #ifdef USE_BOEHM
       Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
-      new (base) Header_s(GCKind<OT>::Kind);
+      new (base) Header_s(the_kind);
       OT *obj = BasePtrToMostDerivedPtr<OT>(base);
       new (obj) OT(std::forward<ARGS>(args)...);
       POLL_SIGNALS();
@@ -563,13 +574,13 @@ should not be managed by the GC */
         mps_res_t res = mps_reserve(&addr, obj_ap, sz);
 #pragma clang diagnostic pop
         HeadT *header = reinterpret_cast<HeadT *>(addr);
-        new (header) HeadT(GCKind<OT>::Kind);
+        new (header) HeadT(the_kind);
         obj = BasePtrToMostDerivedPtr<OT>(addr);
         new (obj) OT(std::forward<ARGS>(args)...);
         sp = gctools::smart_ptr<OT>(obj);
       } while (!mps_commit(obj_ap, addr, sz));
       globalMpsMetrics.nonMovingAllocation(sz);
-      DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, gctools::GCKind<OT>::Kind);
+      DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, the_kind);
       DEBUG_MPS_UNDERSCANNING_TESTS();
       POLL_SIGNALS();
       return sp;
@@ -640,18 +651,21 @@ public:
   typedef OT value_type;
   typedef OT *pointer_type;
   typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
-
 public:
   template <typename... ARGS>
-  static smart_pointer_type rootAllocate(ARGS &&... args) {
+    static smart_pointer_type root_allocate(ARGS &&... args) {
+    return root_allocate_kind(GCKind<OT>::Kind,std::forward<ARGS>(args)...);
+  }
+  template <typename... ARGS>
+    static smart_pointer_type root_allocate_kind(kind_t the_kind, ARGS &&... args) {
 #ifdef USE_BOEHM
     size_t sz = sizeof_with_header<OT>(); // USE HEADER FOR BOEHM ROOTS BUT NOT MPS
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
-    MONITOR_ALLOCATION(GCKind<OT>::Kind, sz);
+    MONITOR_ALLOCATION(the_kind, sz);
 #endif
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
-    new (base) Header_s(GCKind<OT>::Kind);
+    new (base) Header_s(the_kind);
     pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
     new (ptr) OT(std::forward<ARGS>(args)...);
     smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
@@ -660,7 +674,7 @@ public:
     return sp;
 #endif
 #ifdef USE_MPS
-    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocateInAppropriatePool(std::forward<ARGS>(args)...);
+    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_kind,std::forward<ARGS>(args)...);
     GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
     GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
@@ -670,9 +684,14 @@ public:
   };
 
   template <typename... ARGS>
-  static smart_pointer_type allocate(ARGS &&... args) {
+    static smart_pointer_type allocate( ARGS &&... args) {
+    return GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind,std::forward<ARGS>(args)...);
+  }
+
+  template <typename... ARGS>
+    static smart_pointer_type allocate_kind(kind_t the_kind, ARGS &&... args) {
 #ifdef USE_BOEHM
-    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocateInAppropriatePool(std::forward<ARGS>(args)...);
+    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_kind,std::forward<ARGS>(args)...);
     GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
     GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
@@ -680,7 +699,7 @@ public:
     return sp;
 #endif
 #ifdef USE_MPS
-    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocateInAppropriatePool(std::forward<ARGS>(args)...);
+    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind( the_kind, std::forward<ARGS>(args)...);
     GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
     GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
@@ -689,10 +708,14 @@ public:
 #endif
   };
 
-  static smart_pointer_type copy(const OT &that) {
+    static smart_pointer_type copy(const OT &that) {
+      return copy_kind(GCKind<OT>::Kind,that);
+    }
+
+  static smart_pointer_type copy_kind(kind_t the_kind, const OT &that) {
 #ifdef USE_BOEHM
     // Copied objects must be allocated in the appropriate pool
-    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocateInAppropriatePool(that);
+    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind( the_kind, that);
     // Copied objects are not initialized.
     // Copied objects are finalized if necessary
     GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
@@ -700,7 +723,7 @@ public:
 #endif
 #ifdef USE_MPS
     // Copied objects must be allocated in the appropriate pool
-    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocateInAppropriatePool(that);
+    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind( the_kind, that);
     // Copied objects are not initialized.
     // Copied objects are finalized if necessary
     GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
@@ -743,19 +766,24 @@ public:
     return std::numeric_limits<std::size_t>::max() / sizeof(value_type);
   }
 
-  // allocate but don't initialize num elements of type value_type
+    // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
+    return allocate_kind(GCKind<TY>::Kind,num);
+  }
+
+  // allocate but don't initialize num elements of type value_type
+  gc::tagged_pointer<container_type> allocate_kind(kind_t the_kind, size_type num, const void * = 0) {
     size_t size = sizeof_container_with_header<TY>(num);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
-    MONITOR_ALLOCATION(GCKind<TY>::Kind, size);
+    MONITOR_ALLOCATION(the_kind, size);
 #endif
 #ifdef USE_BOEHM
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
     if (!base)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
-    new (base) Header_s(GCKind<TY>::Kind);
+    new (base) Header_s(the_kind);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
     POLL_SIGNALS();
     return gctools::tagged_pointer<container_type>(myAddress);
@@ -771,14 +799,14 @@ public:
       if (res != MPS_RES_OK)
         THROW_HARD_ERROR(BF("Out of memory in GCContainerAllocator_mps"));
       HeadT *header = reinterpret_cast<HeadT *>(addr);
-      new (header) HeadT(GCKind<TY>::Kind);
+      new (header) HeadT(the_kind);
       myAddress = (BasePtrToMostDerivedPtr<TY>(addr));
       new (myAddress) TY(num);
       obj = gctools::tagged_pointer<container_type>(myAddress);
     } while (!mps_commit(obj_ap, addr, size));
     globalMpsMetrics.movingAllocation(size);
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
-    DEBUG_MPS_ALLOCATION("containerAMC", addr, myAddress, size, /*gctools::*/ GCKind<TY>::Kind);
+    DEBUG_MPS_ALLOCATION("containerAMC", addr, myAddress, size, /*gctools::*/ the_kind);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     POLL_SIGNALS();
     return obj;
@@ -838,18 +866,18 @@ public:
   }
 
   // allocate but don't initialize num elements of type value_type
-  gctools::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
+  gctools::tagged_pointer<container_type> allocate_kind( kind_t the_kind, size_type num, const void * = 0) {
     size_t size = sizeof_container_with_header<TY>(num);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
-    MONITOR_ALLOCATION(GCKind<TY>::Kind, size);
+    MONITOR_ALLOCATION(the_kind, size);
 #endif
 #ifdef USE_BOEHM
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
     if (!base)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
-    new (base) Header_s(GCKind<TY>::Kind);
+    new (base) Header_s(the_kind);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
     POLL_SIGNALS();
     return myAddress;
@@ -865,7 +893,7 @@ public:
       if (res != MPS_RES_OK)
         THROW_HARD_ERROR(BF("Out of memory in GCContainerNonMoveableAllocator_mps"));
       HeadT *header = reinterpret_cast<HeadT *>(addr);
-      new (header) HeadT(GCKind<TY>::Kind);
+      new (header) HeadT(the_kind);
       myAddress = (BasePtrToMostDerivedPtr<TY>(addr));
       new (myAddress) TY(num);
       obj = gctools::tagged_pointer<container_type>(myAddress);
@@ -873,7 +901,7 @@ public:
     globalMpsMetrics.nonMovingAllocation(size);
     GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
     POLL_SIGNALS();
-    DEBUG_MPS_ALLOCATION("container_MVFF", addr, myAddress, size, /*gctools::*/ GCKind<TY>::Kind);
+    DEBUG_MPS_ALLOCATION("container_MVFF", addr, myAddress, size, /*gctools::*/ the_kind);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     return obj;
 #endif
@@ -928,18 +956,18 @@ public:
   }
 
   // allocate but don't initialize num elements of type value_type
-  gctools::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
+  gctools::tagged_pointer<container_type> allocate_kind( kind_t the_kind, size_type num, const void * = 0) {
     size_t sz = sizeof_container_with_header<container_type>(num);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += sz;
-    MONITOR_ALLOCATION(GCKind<TY>::Kind, sz);
+    MONITOR_ALLOCATION(the_kind, sz);
 #endif
 #if defined(USE_BOEHM)
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(sz));
     if (!base)
       THROW_HARD_ERROR(BF("Out of memory in allocate"));
-    new (base) Header_s(GCKind<TY>::Kind);
+    new (base) Header_s(the_kind);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
     new (myAddress) TY(num);
     POLL_SIGNALS();
@@ -957,15 +985,15 @@ public:
       mps_res_t res = mps_reserve(&base, obj_ap, sz);
 #pragma clang diagnostic pop
       HeadT *header = reinterpret_cast<HeadT *>(base);
-      new (header) HeadT(GCKind<TY>::Kind);
-      //                header->kind._Kind = /*gctools::*/GCKind<container_type>::Kind;
+      new (header) HeadT(the_kind);
+      //                header->kind._Kind = /*gctools::*/the_kind;
       myAddress = BasePtrToMostDerivedPtr<TY>(base);
       obj = gctools::tagged_pointer<container_type>(myAddress);
     } while (!mps_commit(obj_ap, base, sz));
     globalMpsMetrics.movingZeroRankAllocation(sz);
     new (myAddress) TY(num);
     POLL_SIGNALS();
-    DEBUG_MPS_ALLOCATION("string_AMCZ", base, myAddress, sz, /*gctools::*/ GCKind<TY>::Kind);
+    DEBUG_MPS_ALLOCATION("string_AMCZ", base, myAddress, sz, /*gctools::*/ the_kind);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     return obj;
 #endif
@@ -1021,7 +1049,7 @@ public:
   }
 
   // allocate but don't initialize num elements of type value_type
-  static gctools::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
+  static gctools::tagged_pointer<container_type> allocate( size_type num, const void * = 0) {
     size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
@@ -1113,7 +1141,7 @@ public:
   }
 
   // allocate but don't initialize num elements of type value_type
-  static gctools::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
+  static gctools::tagged_pointer<container_type> allocate( size_type num, const void * = 0) {
     size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;
@@ -1197,7 +1225,7 @@ public:
   ~GCMappingAllocator() throw() {}
 
   // allocate but don't initialize num elements of type value_type
-  static gctools::tagged_pointer<container_type> allocate(const VT &val) {
+  static gctools::tagged_pointer<container_type> allocate( const VT &val) {
     size_t size = sizeof(container_type);
 #ifdef TRACK_ALLOCATIONS
     globalBytesAllocated += size;

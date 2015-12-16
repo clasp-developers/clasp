@@ -172,21 +172,21 @@ inline size_t sizeof_with_header();
 
 class Header_s {
 public:
-  static const uintptr_t tag_mask = BOOST_BINARY(11);
-  static const uintptr_t kind_tag = BOOST_BINARY(01); // KIND = tagged_value>>2
-  static const uintptr_t fwd_tag = BOOST_BINARY(10);
-  static const uintptr_t pad_mask = BOOST_BINARY(111);
-  static const uintptr_t pad_test = BOOST_BINARY(011);
-  static const uintptr_t pad_tag = BOOST_BINARY(011);
-  static const uintptr_t pad1_tag = BOOST_BINARY(111);
-  static const uintptr_t fwd_ptr_mask = ~tag_mask;
-  //        static const uintptr_t  fwd2_tag        = BOOST_BINARY(001);
+  static const tagged_kind_t tag_mask = BOOST_BINARY(11);
+  static const tagged_kind_t kind_tag = BOOST_BINARY(01); // KIND = tagged_value>>2
+  static const tagged_kind_t fwd_tag = BOOST_BINARY(10);
+  static const tagged_kind_t pad_mask = BOOST_BINARY(111);
+  static const tagged_kind_t pad_test = BOOST_BINARY(011);
+  static const tagged_kind_t pad_tag = BOOST_BINARY(011);
+  static const tagged_kind_t pad1_tag = BOOST_BINARY(111);
+  static const tagged_kind_t fwd_ptr_mask = ~tag_mask;
+  //        static const tagged_kind_t  fwd2_tag        = BOOST_BINARY(001);
 
 private:
-  uintptr_t header;
-  uintptr_t data[1]; // After this is where the client pointer starts
+  tagged_kind_t header;
+  tagged_kind_t data[1]; // After this is where the client pointer starts
 public:
-  Header_s(GCKindEnum k) : header((k << 2) | kind_tag), data{0xDEADBEEF01234567} {};
+ Header_s(GCKindEnum k) : header((((Kind_t)k) << 2) | kind_tag), data{0xDEADBEEF01234567} {};
 
   bool invalidP() const { return (this->header & tag_mask) == 0; };
   bool kindP() const { return (this->header & tag_mask) == kind_tag; };
@@ -201,17 +201,17 @@ public:
   /*! No sanity checking done - this function assumes fwdP == true */
   void *fwdPointer() const { return reinterpret_cast<void *>(this->header & fwd_ptr_mask); };
   /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
-  void setFwdPointer(void *ptr) { this->header = reinterpret_cast<uintptr_t>(ptr) | fwd_tag; };
-  uintptr_t fwdSize() const { return this->data[0]; };
-  /*! This writes into the first uintptr_t sized word of the client data. */
+  void setFwdPointer(void *ptr) { this->header = reinterpret_cast<tagged_kind_t>(ptr) | fwd_tag; };
+  tagged_kind_t fwdSize() const { return this->data[0]; };
+  /*! This writes into the first tagged_kind_t sized word of the client data. */
   void setFwdSize(size_t sz) { this->data[0] = sz; };
   /*! Define the header as a pad, pass pad_tag or pad1_tag */
-  void setPad(uintptr_t p) { this->header = p; };
+  void setPad(tagged_kind_t p) { this->header = p; };
   /*! Return the pad1 size */
-  uintptr_t pad1Size() const { return sizeof(Header_s); };
+  tagged_kind_t pad1Size() const { return sizeof(Header_s); };
   /*! Return the size of the pad block - without the header */
-  uintptr_t padSize() const { return data[0]; };
-  /*! This writes into the first uintptr_t sized word of the client data. */
+  tagged_kind_t padSize() const { return data[0]; };
+  /*! This writes into the first tagged_kind_t sized word of the client data. */
   void setPadSize(size_t sz) { this->data[0] = sz; };
   string description() const {
     if (this->kindP()) {

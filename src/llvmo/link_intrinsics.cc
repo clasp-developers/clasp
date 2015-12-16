@@ -507,7 +507,7 @@ void makeLongFloat(core::T_sp *fnP, LongFloat s) {
 core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, int *sourceFileInfoHandleP, size_t filePos, size_t lineno, size_t column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
   _G();
   // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
-  gctools::tagged_pointer<core::Closure> closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP, kw::_sym_function, funcPtr, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP, *sourceFileInfoHandleP, filePos, lineno, column);
+  gctools::tagged_pointer<core::Closure> closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocate_class(*functionNameP, kw::_sym_function, funcPtr, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP, *sourceFileInfoHandleP, filePos, lineno, column);
   core::CompiledFunction_sp compiledFunction = core::CompiledFunction_O::make(closure);
   return compiledFunction;
 };
@@ -1699,7 +1699,7 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
     vo = vf;
   }
   gctools::tagged_pointer<llvmo::CompiledClosure> functoid =
-      gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(tlambdaName // functionName - make this something useful!
+      gctools::ClassAllocator<llvmo::CompiledClosure>::allocate_class(tlambdaName // functionName - make this something useful!
                                                                      ,
                                                                      kw::_sym_function // fn-type
                                                                      ,

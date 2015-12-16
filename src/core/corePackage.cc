@@ -845,7 +845,7 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
 #include <generated/initClasses_inc.h>
 #undef Use_CorePkg
   }
-  gctools::tagged_pointer<CoreExposer> coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocateClass(_lisp);
+  gctools::tagged_pointer<CoreExposer> coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocate_class(_lisp);
   Package_sp corePackage = coreExposerPtr->package();
   _lisp->_Roots._CorePackage = corePackage;
   _lisp->_Roots._KeywordPackage = keywordPackage;

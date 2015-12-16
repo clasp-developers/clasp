@@ -276,7 +276,7 @@ T_sp Instance_O::copyInstance() const {
   iobj->_Slots = this->_Slots;
   if ((bool)(this->closure)) {
     auto ic = this->closure.as<InstanceClosure>();
-    iobj->closure = gctools::ClassAllocator<InstanceClosure>::allocateClass(*ic);
+    iobj->closure = gctools::ClassAllocator<InstanceClosure>::allocate_class(*ic);
   } else {
     iobj->closure.reset_();
   }
@@ -301,7 +301,7 @@ SYMBOL_SC_(ClosPkg, standardOptimizedWriterMethod);
 
 void Instance_O::ensureClosure(GenericFunctionPtr entryPoint) {
   if (!(bool)(this->closure)) {
-    this->closure = gctools::ClassAllocator<InstanceClosure>::allocateClass(this->GFUN_NAME(), entryPoint, this->asSmartPtr());
+    this->closure = gctools::ClassAllocator<InstanceClosure>::allocate_class(this->GFUN_NAME(), entryPoint, this->asSmartPtr());
   } else {
     auto ic = this->closure.as<InstanceClosure>();
     ic->entryPoint = entryPoint;

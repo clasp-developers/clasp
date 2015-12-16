@@ -1044,10 +1044,10 @@ ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
     if (Vector_sp vobj = obj.asOrNull<Vector_O>()) {
       if (cl__length(vobj) == 0)
         goto EMPTY;
-      gctools::tagged_pointer<VectorStepper> vP(gctools::ClassAllocator<VectorStepper>::allocateClass(vobj));
+      gctools::tagged_pointer<VectorStepper> vP(gctools::ClassAllocator<VectorStepper>::allocate_class(vobj));
       this->_Steppers.push_back(vP);
     } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      gctools::tagged_pointer<ConsStepper> cP(gctools::ClassAllocator<ConsStepper>::allocateClass(cobj));
+      gctools::tagged_pointer<ConsStepper> cP(gctools::ClassAllocator<ConsStepper>::allocate_class(cobj));
       this->_Steppers.push_back(cP);
     } else if (obj.nilp()) {
       goto EMPTY;
@@ -1093,7 +1093,7 @@ ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
   for (auto cur : sequences) {
     T_sp obj = oCar(cur);
     if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      gctools::tagged_pointer<ConsStepper> cP(gctools::ClassAllocator<ConsStepper>::allocateClass(cobj));
+      gctools::tagged_pointer<ConsStepper> cP(gctools::ClassAllocator<ConsStepper>::allocate_class(cobj));
       this->_Steppers.push_back(cP);
     } else {
       goto EMPTY;

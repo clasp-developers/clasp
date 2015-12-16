@@ -39,19 +39,19 @@ public:       // Simple default ctor/dtor
 
 public:
   static Record_sp create_encoder() {
-    Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(saving, false, _Nil<T_O>());
+    GC_ALLOCATE_VARIADIC(Record_O, record, saving, false, _Nil<T_O>());
     return record;
   }
   static Record_sp create_initializer(List_sp data) {
-    Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(initializing, false, data);
+    GC_ALLOCATE_VARIADIC( Record_O, record, initializing, false, data);
     return record;
   }
   static Record_sp create_decoder(List_sp data) {
-    Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(loading, false, data);
+    GC_ALLOCATE_VARIADIC( Record_O, record, loading, false, data);
     return record;
   }
   static Record_sp create_patcher(HashTable_sp replacement_table) {
-    Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(patching, replacement_table);
+    GC_ALLOCATE_VARIADIC( Record_O, record, patching, replacement_table);
     return record;
   }
 

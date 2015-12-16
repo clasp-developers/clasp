@@ -89,7 +89,7 @@ extern int globalBoehmMarker;
 #endif
 class Header_s {
 public:
-  Header_s(GCKindEnum k) : Kind(k)
+  Header_s(kind_t k) : Kind(k)
 #ifdef BIG_BOEHM_HEADER
                            ,
                            ValidStamp(0xDEADBEEF), TypeidName(name)
@@ -110,12 +110,7 @@ public:
   };
 
 private:
-#ifdef _ADDRESS_MODEL_64
-  uint64_t Kind;
-#endif
-#ifdef _ADDRESS_MODEL_32
-  uint32_t Kind;
-#endif
+  kind_t Kind;
 #ifdef BIG_BOEHM_HEADER
   uintptr_t ValidStamp;
   const char *TypeidName;

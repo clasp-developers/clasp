@@ -167,7 +167,7 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
     //gctools::StackRootedPointer<Creator> dup(aCxxAllocator->duplicateForClassName(this->name()));
     this->setCreator(dup); // this->setCreator(dup.get());
   } else {
-    gc::tagged_pointer<InstanceCreator> instanceAllocator = gctools::ClassAllocator<InstanceCreator>::allocateClass(this->name());
+    gc::tagged_pointer<InstanceCreator> instanceAllocator = gctools::ClassAllocator<InstanceCreator>::allocate_class(this->name());
     //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
     this->setCreator(instanceAllocator); // this->setCreator(instanceAllocator.get());
   }

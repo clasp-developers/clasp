@@ -196,7 +196,7 @@ Symbol_sp Symbol_O::create_at_boot(const string &nm) {
   _G();
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-  Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::rootAllocate();
+  Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::root_allocate();
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS
   if (nm.find("/dyn") != string::npos) {
@@ -211,7 +211,7 @@ Symbol_sp Symbol_O::create(const string &nm) {
   _G();
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-  Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::rootAllocate(true);
+  Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::root_allocate(true);
   Str_sp snm = Str_O::create(nm);
   n->setf_name(snm);
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));

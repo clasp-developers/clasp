@@ -655,14 +655,14 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   };
   {
     _BLOCK_TRACE("Creating Caches for SingleDispatchGenericFunctions");
-    this->_Roots._SingleDispatchMethodCachePtr = gctools::ClassAllocator<Cache>::allocateClass();
+    this->_Roots._SingleDispatchMethodCachePtr = gctools::ClassAllocator<Cache>::allocate_class();
     this->_Roots._SingleDispatchMethodCachePtr->setup(2, SingleDispatchMethodCacheSize);
   }
   {
     _BLOCK_TRACE("Creating Caches for CLOS");
-    this->_Roots._MethodCachePtr = gctools::ClassAllocator<Cache>::allocateClass();
+    this->_Roots._MethodCachePtr = gctools::ClassAllocator<Cache>::allocate_class();
     this->_Roots._MethodCachePtr->setup(MaxFunctionArguments, ClosCacheSize);
-    this->_Roots._SlotCachePtr = gctools::ClassAllocator<Cache>::allocateClass();
+    this->_Roots._SlotCachePtr = gctools::ClassAllocator<Cache>::allocate_class();
     this->_Roots._SlotCachePtr->setup(MaxClosSlots, ClosCacheSize);
   }
   {

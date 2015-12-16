@@ -249,7 +249,7 @@ void SingleDispatchGenericFunction_O::exposePython(::core::Lisp_sp lisp) {
 SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp name, LambdaListHandler_sp llh) {
   _G();
   GC_ALLOCATE(SingleDispatchGenericFunction_O, gf);
-  gctools::tagged_pointer<SingleDispatchGenericFunctionClosure> gfc = gctools::ClassAllocator<SingleDispatchGenericFunctionClosure>::allocateClass(name);
+  gctools::tagged_pointer<SingleDispatchGenericFunctionClosure> gfc = gctools::ClassAllocator<SingleDispatchGenericFunctionClosure>::allocate_class(name);
   gfc->finishSetup(llh, kw::_sym_function);
   gf->closure = gfc;
   return gf;

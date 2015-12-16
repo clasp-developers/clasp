@@ -75,7 +75,7 @@ void RegistryMaps::_registerMatcher(core::Symbol_sp MatcherName,
 #define REGISTER_OVERLOADED_2(name)                                                                                                                                                                                                                                                    \
   do {                                                                                                                                                                                                                                                                                 \
     gctools::tagged_pointer<MatcherDescriptor> Callbacks[] = {internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 0), core::lispify_intern_keyword(#name)), internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), core::lispify_intern_keyword(#name))}; \
-    _registerMatcher(core::lispify_intern_keyword(#name), gctools::ClassAllocator<internal::OverloadedMatcherDescriptor>::allocateClass(Callbacks) /*new internal::OverloadedMatcherDescriptor(Callbacks)*/);                                                                          \
+    _registerMatcher(core::lispify_intern_keyword(#name), gctools::ClassAllocator<internal::OverloadedMatcherDescriptor>::allocate_class(Callbacks) /*new internal::OverloadedMatcherDescriptor(Callbacks)*/);                                                                          \
   } while (0)
 
 /// \brief Generate a registry map with all the known matchers.

@@ -177,13 +177,11 @@ public:
   static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7);
   static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8);
   static Cons_sp create(T_sp car, T_sp cdr) {
-    Cons_sp ll = gctools::GCObjectAllocator<Cons_O>::allocate(car, cdr);
-    //            ll.unsafe_cons()->setCar(car);
-    //            ll->setOCdr(cdr);
+    GC_ALLOCATE_VARIADIC( Cons_O, ll, car, cdr );
     return ll;
   };
   static Cons_sp create(T_sp obj) {
-    Cons_sp ret = gctools::GCObjectAllocator<Cons_O>::allocate(obj, _Nil<T_O>());
+    GC_ALLOCATE_VARIADIC( Cons_O, ret, obj, _Nil<T_O>() );
     return ret;
   }
 

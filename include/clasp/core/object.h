@@ -985,7 +985,7 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
     LOG(BF("Setting staticClassSymbol for class to: %d") % classSymbol);
     oClass::___set_static_ClassSymbol(classSymbol);
     if (!oClass::static_creator) {
-      gctools::tagged_pointer<core::LispObjectCreator<oClass>> lispObjectCreator = gctools::ClassAllocator<core::LispObjectCreator<oClass>>::allocateClass();
+      gctools::tagged_pointer<core::LispObjectCreator<oClass>> lispObjectCreator = gctools::ClassAllocator<core::LispObjectCreator<oClass>>::allocate_class_kind(gctools::GCKind<core::LispObjectCreator<oClass>>::Kind);
       oClass::___set_static_creator(lispObjectCreator);
     }
   }

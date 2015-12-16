@@ -107,7 +107,7 @@ public:
     return retval;
   }
   gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
-    gc::tagged_pointer<Creator> allocator = gctools::ClassAllocator<DefaultConstructorCreator<T, Pointer>>::allocateClass(className, this->_Kind, this->_duplicationLevel + 1);
+    gc::tagged_pointer<Creator> allocator = gctools::ClassAllocator<DefaultConstructorCreator<T, Pointer>>::allocate_class(className, this->_Kind, this->_duplicationLevel + 1);
     return allocator;
   }
 };
@@ -173,7 +173,7 @@ public:
     return obj;
   }
   gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
-    return gctools::ClassAllocator<DerivableDefaultConstructorCreator<T>>::allocateClass(className, this->_Kind, this->_duplicationLevel + 1);
+    return gctools::ClassAllocator<DerivableDefaultConstructorCreator<T>>::allocate_class(className, this->_Kind, this->_duplicationLevel + 1);
   }
 };
 };

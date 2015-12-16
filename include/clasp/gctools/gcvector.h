@@ -273,7 +273,7 @@ public:
         printf("%s:%d gcvector capacity is larger than 65536\n", __FILE__, __LINE__);
       }
 #endif
-      vec = alloc.allocate(newCapacity);
+      vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
       new (&*vec) GCVector_moveable<T>(newCapacity);
       for (size_t zi(0); zi < this->_Contents->_End; ++zi) {
         // the array at newAddress is undefined - placement new to copy
@@ -301,7 +301,7 @@ public:
     if (!this->_Contents) {
       tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCVectorPad : n);
-      vec = alloc.allocate(newCapacity);
+      vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
       new (&*vec) GCVector_moveable<T>(newCapacity);
       // the array at newAddress is undefined - placement new to copy
       vec->_End = 0;
@@ -311,7 +311,7 @@ public:
     if (n > this->_Contents->_Capacity) {
       tagged_pointer_to_moveable vec(this->_Contents);
       size_t newCapacity = n;
-      vec = alloc.allocate(newCapacity);
+      vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
       new (&*vec) GCVector_moveable<T>(newCapacity);
       // the array at newAddress is undefined - placement new to copy
       for (size_t zi(0); zi < this->_Contents->_End; ++zi)
@@ -331,7 +331,7 @@ public:
     if (!this->_Contents) {
       tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCVectorPad : n * GCVectorGrow);
-      vec = alloc.allocate(newCapacity);
+      vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
       new (&*vec) GCVector_moveable<T>(newCapacity);
       // the array at newAddress is undefined - placement new to copy
       for (size_t i(0); i < n; ++i)
@@ -346,7 +346,7 @@ public:
       tagged_pointer_to_moveable vec(this->_Contents);
       if (n > this->_Contents->_Capacity) {
         size_t newCapacity = n * GCVectorGrow;
-        vec = alloc.allocate(newCapacity);
+        vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
         new (&*vec) GCVector_moveable<T>(newCapacity);
         // the array at newAddress is undefined - placement new to copy
         for (size_t zi(0); zi < this->_Contents->_End; ++zi)
@@ -406,7 +406,7 @@ public:
       size_t iposition = position - this->begin();
       size_t newCapacity = (this->_Contents->_End + 1) * GCVectorGrow;
       // Allocate a new vector_moveable
-      tagged_pointer_to_moveable vec = alloc.allocate(newCapacity);
+      tagged_pointer_to_moveable vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
       new (&*vec) GCVector_moveable<T>(newCapacity);
       // copy elements up to but not including iposition
       for (size_t zi(0); zi < iposition; ++zi)

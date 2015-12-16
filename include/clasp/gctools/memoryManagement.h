@@ -123,6 +123,14 @@ struct GCAllocationPoint;
 
 #include <clasp/gctools/tagged_cast.h>
 
+namespace gctools {
+    /*! This is the type of the tagged kind header that is the first
+word of every object in memory managed by the GC */
+  typedef uintptr_t kind_t;
+  typedef uintptr_t tagged_kind_t;
+
+};
+
 #ifdef USE_BOEHM
 #include <clasp/gctools/boehmGarbageCollection.h>
 #endif
@@ -143,7 +151,7 @@ struct MonitorAllocations {
 };
 extern MonitorAllocations global_monitorAllocations;
 
-extern void monitorAllocation(GCKindEnum k, size_t sz);
+extern void monitorAllocation(kind_t k, size_t sz);
 
 #ifdef GC_MONITOR_ALLOCATIONS
 #define MONITOR_ALLOCATION(k, sz)     \
@@ -155,7 +163,7 @@ extern void monitorAllocation(GCKindEnum k, size_t sz);
 #endif
 }
 extern "C" {
-char *obj_name(gctools::GCKindEnum kind);
+char *obj_name(gctools::kind_t kind);
 char *obj_kind_name(core::T_O *ptr);
 size_t obj_kind(core::T_O *ptr);
 extern void obj_dump_base(void *base);
@@ -254,10 +262,9 @@ GCStack *threadLocalStack();
 #include <clasp/gctools/gcStack.h>
 #include <clasp/gctools/gcalloc.h>
 
-#define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate()
-#define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate(__VA_ARGS__)
-
-#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::rootAllocate()
+#define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate_kind(gctools::GCKind<_class_>::Kind)
+#define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate_kind(gctools::GCKind<_class_>::Kind,__VA_ARGS__)
+#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::root_allocate_kind(gctools::GCKind<_class_>::Kind)
 
 #define GC_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::copy(_orig_)
 

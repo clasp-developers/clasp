@@ -425,7 +425,7 @@ T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   ss << "repl" << _lisp->nextReplCounter();
   Symbol_sp name = _lisp->intern(ss.str());
   gctools::tagged_pointer<InterpretedClosure> ic =
-      gctools::tagged_pointer<InterpretedClosure>(gctools::ClassAllocator<InterpretedClosure>::allocateClass(name, kw::_sym_function, llh, _Nil<T_O>(), _Nil<T_O>(), env, code, SOURCE_POS_INFO_FIELDS(sourcePosInfo)));
+      gctools::tagged_pointer<InterpretedClosure>(gctools::ClassAllocator<InterpretedClosure>::allocate_class(name, kw::_sym_function, llh, _Nil<T_O>(), _Nil<T_O>(), env, code, SOURCE_POS_INFO_FIELDS(sourcePosInfo)));
   Function_sp thunk = Function_O::make(ic);
   return eval::funcall(thunk);
 };

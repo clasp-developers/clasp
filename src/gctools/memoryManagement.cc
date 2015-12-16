@@ -67,7 +67,7 @@ size_t global_alignup_sizeof_header;
 
 MonitorAllocations global_monitorAllocations;
 
-void monitorAllocation(GCKindEnum k, size_t sz) {
+void monitorAllocation(kind_t k, size_t sz) {
   printf("%s:%d monitor allocation of %s with %zu bytes\n", __FILE__, __LINE__, obj_name(k), sz);
   if (global_monitorAllocations.counter >= global_monitorAllocations.start && global_monitorAllocations.counter < global_monitorAllocations.end) {
     core::core__clib_backtrace(global_monitorAllocations.backtraceDepth);
