@@ -1,3 +1,36 @@
+(provide :clang-tool)
+
+(defpackage #:clang-tool
+  (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
+  (:export
+   #:with-compilation-tool-database
+   #:main-pathname
+   #:clang-database
+   #:source-namestrings
+   #:main-source-filename
+   #:arguments-adjuster-list
+   #:load-compilation-tool-database
+   #:compile-matcher
+   #:select-source-namestrings
+   #:match-info
+   #:id-to-node-map
+   #:ast-context
+   #:source-manager
+   #:batch-run-multitool
+   #:make-multitool
+   #:multitool-add-matcher
+   #:multitool-results
+   #:code-match-callback
+   #:mtag-node
+   #:mtag-loc-start
+   #:mtag-source
+   #:mtag-name
+   #:mtag-result
+   #:source-loc-as-string
+   #:sub-match-run
+   #:cform-matcher
+   #:load-asts))
+
 (in-package :clang-tool)
 
 (use-package :ast-tooling)
@@ -11,7 +44,6 @@
        #+(or)(gctools:deallocate-unmanaged-instance ,var))))
 
 (defvar *compilation-tool-database*)
-(export '*compilation-tool-database*)
 
 (defmacro with-compilation-tool-database (compilation-tool-database &body body)
   "* Arguments
@@ -76,111 +108,9 @@ Select a subset (or all) source file names from the compilation database and ret
         (list-names (map 'list #'identity (ast-tooling:get-all-files (clang-database compilation-tool-database)))))
     (remove-if-not #'(lambda (x) (core:regex-matches re x)) list-names)))
 
-;;
-;; --------------------------------------------------
-;; 
-;; Install a reader macro to support insertion of C++ code into
-;; common lisp code using #q{ .... #}
-;;
-(defun get-delimiter (char)
-  (case char
-    (#\{ #\})
-    (#\( #\))
-    (#\[ #\])
-    (#\< #\>)
-    (t char)))
-
-(defun read-sharp-q (in c n)
-  (declare (ignore c n))
-  (let ((delimiter (get-delimiter (read-char in))))
-    (let ((string (make-array '(0) :element-type 'character
-                              :fill-pointer 0 :adjustable t)))
-      (with-output-to-string (string-stream string)
-        (loop :for char = (read-char in nil)
-           :while (and char (not (and (char-equal char #\#) (char-equal (peek-char nil in) delimiter))))
-           :do
-           (princ char string-stream)))
-      (read-char in nil)
-      string)))
-
-(set-dispatch-macro-character #\# #\q #'read-sharp-q)
-
-
-
-
-
-
-(defun compile-matcher-arguments* (args diagnostics)
-  (let ((arg-vec (make-array (length args))))
-    (do* ((i 0 (1+ i))
-          (rest args (cdr rest))
-          (arg (car rest) (car rest)))
-        ((null rest) arg-vec)
-      (setf (elt arg-vec i) (cond
-                              ((consp arg) (ast-tooling:new-parser-value rest (ast-tooling:new-variant-value-matcher (compile-matcher* arg diagnostics))))
-                              ((stringp arg) (ast-tooling:new-parser-value rest (ast-tooling:new-variant-value-string arg)))
-                              ((integerp arg) (ast-tooling:new-parser-value rest (ast-tooling:new-variant-value-unsigned arg)))
-                              (t (error "Illegal matcher argument type ~a" arg)))))))
-
-
-(defun compile-matcher* (sexp diagnostics)
-  (cond
-    ((eq (car sexp) :bind)
-     ;; (bind {name} {matcher-sexp})
-     (let* ((bind-name (cadr sexp))
-            (body (caddr sexp))
-            (bound-matcher-head (car body))
-            (bound-matcher-arguments (compile-matcher-arguments* (cdr body) diagnostics)))
-       (ast-tooling:construct-bound-matcher bound-matcher-head body (string bind-name) bound-matcher-arguments diagnostics)))
-    (t (let* ((matcher-head (car sexp))
-              (matcher-arguments (compile-matcher-arguments* (cdr sexp) diagnostics)))
-         (assert matcher-head)
-         (ast-tooling:construct-matcher matcher-head sexp matcher-arguments diagnostics)))))
-
-
-(defparameter *hint-environment* nil)
-(defun contains-hint-request-impl (sexp)
-  "Look for hint requests and print the hint"
-  (cond
-    ((atom sexp) nil)
-    ((eq (car sexp) :bind) (contains-hint-request-impl (caddr sexp)))
-    ((eq (car sexp) :?)
-     (provide-hint *hint-environment*)
-     (throw 'got-hint-request t))
-    (t
-     (let ((*hint-environment* (identify-hint-environment *hint-environment* sexp)))
-       (check-type *hint-environment* (or symbol list))
-       (dolist (i (cdr sexp))
-         (contains-hint-request-impl i))))))
-
-(defun contains-hint-request (sexp)
-  "Returns true if a hint-request was found in sexp and nil if not"
-  (catch 'got-hint-request
-    (contains-hint-request-impl sexp)
-    nil))
-
-
-(defun compile-matcher (sexp)
-  "Assemble an ASTMatcher from an s-expression.
- eg: (compile-matcher '(:bind :field (:field-decl (:has-type (:record-decl (:has-name \"TinyStruct\"))))))).
-Return nil if no matcher could be compiled."
-  (if (contains-hint-request sexp)
-      nil
-      (let* ((diag (ast-tooling:new-diagnostics))
-             (dyn-matcher (compile-matcher* sexp diag))
-             (single-matcher (ast-tooling:get-single-matcher dyn-matcher)))
-        (if (null single-matcher)
-            (error "Error while constructing matcher - diagnostics:~% ~a" (to-string-full diag))
-            single-matcher))))
-
-
-
-
 
 (defparameter *match-refactoring-tool* nil)
 (defparameter *run-and-save* nil)
-
-
 
 (defparameter *match-counter* 0)
 (defparameter *match-counter-limit* nil)
@@ -239,7 +169,6 @@ Return nil if no matcher could be compiled."
    (ast-context :initarg :ast-context :accessor ast-context)
    (source-manager :initarg :source-manager :accessor source-manager)))
 
-
 ;;Requires a lambda CODE that takes a single match-info argument
 (defclass code-match-callback (ast-tooling:match-callback)
   ((start-of-translation-unit-code :initarg :start-of-translation-unit-code :accessor start-of-translation-unit-code)
@@ -275,6 +204,12 @@ Return nil if no matcher could be compiled."
 
 
 (defun source-loc-equal (match-info source-loc-match-callback node)
+  "* Arguments
+- match-info :: The match info for the match.
+- source-loc-match-callback :: A source-loc-match-callback.
+- node :: The node that we are testing if its source location matches that described by source-loc-match-callback.
+* Description
+Return true if the node describes source code that matches source-loc-match-callback."
   (let ((comment (comment-for-decl match-info node))
         one-matches)
     (if comment
@@ -309,8 +244,11 @@ Return nil if no matcher could be compiled."
              (format stream "Could not find node for tag ~a" (no-node-for-tag-error-tag condition)))))
 
 (defun mtag-node (match-info tag)
-  "Get the source node for the current tag
-This can only be run in the context set up by the code-match-callback::run method"
+  "* Arguments
+- match-info :: The match-info.
+- tag :: The tag (symbol) that has been associated with a node in the match-info.
+* Description
+Get the AST node that has been associated with the tag."
   (let* ((node (gethash tag (id-to-node-map match-info))))
     (unless node
       (error (make-condition 'no-node-for-tag-error :tag tag)))
@@ -332,10 +270,14 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 
 (defgeneric mtag-name (match-info tag-node)
-  (:documentation "Get something that can represent the name of the node"))
+  (:documentation
+   "* Arguments
+- match-info :: The match-info.
+- tag :: The tag that has been associated with a node.
+* Description
+Return the name of the node that has been associated with a tag."))
 
 (defmethod mtag-name (match-info (tag symbol))
-  "Lookup node that corresponds to the tag SYMBOL and dispatch to its MTAG-NAME method"
   (when (null tag)
     (error "tag is nil - this should never happen"))
   (let ((node (mtag-node match-info tag)))
@@ -346,8 +288,6 @@ This can only be run in the context set up by the code-match-callback::run metho
   (if (cast:get-identifier node)
       (cast:get-name node)
       "NO-NAME"))
-
-
 
 (defgeneric mtag-source-impl (match-info node))
 
@@ -369,9 +309,13 @@ This can only be run in the context set up by the code-match-callback::run metho
          
 
 (defun mtag-source (match-info tag)
+  "* Arguments
+- match-info :: The match-info.
+- tag :: A tag (symbol) that has been associated with the node we are looking for.
+* Description
+Return the source code for the node that has been associated with the tag."
   (let* ((node (mtag-node match-info tag)))
     (mtag-source-impl match-info node)))
-
 
 (defun ploc-as-string (ploc)
   (declare (special *compilation-tool-database*))
@@ -389,6 +333,11 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 
 (defun source-loc-as-string (match-info sloc)
+  "* Arguments
+- match-info :: The match-info.
+- sloc :: The source-location object.
+* Description
+Return a string that describes the source location corresponding to sloc."
   (if (ast-tooling:is-file-id sloc)
       (ploc-as-string (ast-tooling:get-presumed-loc (source-manager match-info) sloc))
       (format nil "~a <Spelling=~a>"
@@ -398,8 +347,11 @@ This can only be run in the context set up by the code-match-callback::run metho
                                                             (ast-tooling:get-spelling-loc (source-manager match-info) sloc))))))
 
 (defun mtag-loc-start (match-info tag)
-  "Get the source code for the current tag
-This can only be run in the context set up by the code-match-callback::run method"
+  "* Arguments
+- match-info :: The match-info.
+- sloc :: The source location object.
+* Description 
+Return a string that describes the start of a source location."
   (let* ((node (mtag-node match-info tag))
          (begin-sloc (get-loc-start node)))
     (source-loc-as-string match-info begin-sloc)))
@@ -425,19 +377,29 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 
 (defun mtag-type-of-node (match-info tag)
-  "Get the source node for the current tag
-This can only be run in the context set up by the code-match-callback::run method"
+  "* Arguments
+- match-info :: The match-info.
+- tag :: A tag that has been associated with a node in the match-info.
+* Description
+Return the type of the node that corresponds to tag."
   (let* ((node (mtag-node match-info tag)))
     (type-of node)))
 
-(defmacro mtag-replace (match-info tag fmt &rest fmt-args)
+(defmacro mtag-replace (match-info tag replace-callback)
+  "* Arguments
+- match-info :: A match-info.
+- tag :: A tag that is associated with a node in match-info.
+- replace-callback :: A function that takes match-info and tag and returns a string.
+* Description
+Calls the replace-callback function (funcall replace-callback match-info tag) and generates a replacement
+for the node corresponding to tag in match-info."
   (let ((rep-src-gs (gensym))
         (node-gs (gensym))
         (begin-gs (gensym))
         (end-gs (gensym))
         (rep-range-gs (gensym))
         (rep-gs (gensym)))
-    `(let* ((,rep-src-gs (format nil ,fmt ,@fmt-args))
+    `(let* ((,rep-src-gs (funcall ,replace-callback match-info tag))
 	    (,node-gs (mtag-node ,match-info ,tag)) ;; (id-to-node-map match-info)))
 	    (,begin-gs (get-loc-start ,node-gs))
 	    (,end-gs (get-loc-end ,node-gs))
@@ -449,6 +411,12 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 (defparameter *match-results* nil)
 (defmacro mtag-result (match-info tag fmt &rest fmt-args)
+  "* Arguments
+- match-info :: A match-info.
+- tag :: A tag that is associated with a node in match-info.
+- replace-callback :: A function that takes match-info and tag and returns a string.
+* Description
+Generates a string using fmt/fmt-args and accumulates internally so that they can be accessed after the clang-tool runs."
   (let ((rep-src-gs (gensym))
         (node-gs (gensym))
         (begin-gs (gensym))
@@ -468,10 +436,15 @@ This can only be run in the context set up by the code-match-callback::run metho
 
 
 
-(defun load-asts (list-name &key compilation-tool-database arguments-adjuster )
-  (let* ((files list-name)
+(defun load-asts (compilation-tool-database)
+  "* Arguments
+- compilation-tool-database :: The compilation-tool-database that describes the source files to run the clang-tool over.
+* Description
+Load all of the ASTs into memory at once.  DANGER: This should not be done with too many source files or you will
+run out of memory. This function can be used to rapidly search ASTs for testing and ASTMatcher development."
+  (let* ((files (source-namestrings compilation-tool-database))
          (tool (ast-tooling:new-refactoring-tool
-                (clang-database compilation-database)
+                (clang-database compilation-tool-database)
                 files))
          (syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))
          (strip-output-adjuster (ast-tooling:get-clang-strip-output-adjuster)))
@@ -480,18 +453,15 @@ This can only be run in the context set up by the code-match-callback::run metho
     (ast-tooling:append-arguments-adjuster tool syntax-only-adjuster)
     (ast-tooling:append-arguments-adjuster tool strip-output-adjuster)
     (warn "The following line may error out - append-arguments-adjuster now takes an llvm::ArgumentsAdjuster which is just a function that takes a vector<string> and returns a vector<string>")
-    (when arguments-adjuster
-      (ast-tooling:append-arguments-adjuster tool arguments-adjuster))
-        ;;    (ast-tooling:run tool factory)
+    (dolist (aa (arguments-adjuster-list compilation-tool-database))
+      (ast-tooling:append-arguments-adjuster tool aa))
+    ;;    (ast-tooling:run tool factory)
     (format t "Loading ASTs for the files: ~a~%" files)
     (time 
      (multiple-value-bind (num asts)
          (ast-tooling:build-asts tool)
        (setq *asts* asts)
-       (format t "Built asts: ~a~%" asts)
-       )
-     )))
-
+       (format t "Built asts: ~a~%" asts)))))
 
 (defun batch-run-matcher (match-sexp &key compilation-tool-database callback run-and-save)
   (declare (type list match-sexp)
@@ -603,12 +573,26 @@ This can only be run in the context set up by the code-match-callback::run metho
     (format t "Number of matches ~a~%" *match-counter*)))
 
 (defun sub-match-run (compiled-matcher node ast-context code)
+  "* Arguments
+- compiled-matcher :: The matcher that you want to run on the node and everything under it.
+- node :: The node that you want to run the matcher on.
+- ast-context :: The AST context of the node.
+- code :: The code that should be run on the matches.
+* Description
+Run a matcher on a node and everything underneath it."
   (with-unmanaged-object (callback (make-instance 'code-match-callback :match-code code))
     (let ((sub-match-finder (ast-tooling:new-match-finder)))
       (ast-tooling:add-dynamic-matcher sub-match-finder compiled-matcher callback)
       (match sub-match-finder node ast-context))))
 
-(defun run-matcher (match-sexp &key callback counter-limit)
+(defun run-matcher-on-loaded-asts (match-sexp &key callback counter-limit)
+  "* Arguments
+- match-sexp :: A matcher in s-expression form.
+- callback :: A callback that is evaluated on matches.
+- counter-limit :: The maximum number of times to call the callback.
+* Description
+Compile the match-sexp and run it on the loaded ASTs and call the callback for each match. 
+Limit the number of times you call the callback with counter-limit."
   (unless (contains-hint-request match-sexp)
     (let* ((*match-counter* 0)
            (*match-counter-limit* counter-limit)
@@ -618,46 +602,76 @@ This can only be run in the context set up by the code-match-callback::run metho
       (ast-tooling:add-dynamic-matcher match-finder matcher callback)
       (catch 'match-counter-reached-limit
         (map 'list #'(lambda (x) (match-ast match-finder (get-astcontext x))) *asts*))
-      (format t "Number of matches ~a~%" *match-counter*)
-      )
-    )
-  )
+      (format t "Number of matches ~a~%" *match-counter*))))
 
-
-(defun match-count (match-sexp &key limit &allow-other-keys)
+(defun match-count-loaded-asts (match-sexp &key limit &allow-other-keys)
+  "* Arguments
+- match-sexp :: A matcher in s-expression form.
+- limit :: The maximum number of times to run the matcher.
+* Description
+Compile the match-sexp and run it on the loaded ASTs and count how many times it matches.
+Limit the number of times you match."
   (with-unmanaged-object (callback (make-instance 'count-match-callback))
          (time (run-matcher match-sexp
                             :callback callback
                             :counter-limit limit))))
 
 
-(defun match-dump (match-sexp &key limit (tag :whole) &allow-other-keys)
-  "Dump the matches - if :tag is supplied then dump the given tag, otherwise :whole"
+(defun match-dump-loaded-asts (match-sexp &key limit (tag :whole) &allow-other-keys)
+  "* Arguments
+- match-sexp :: A matcher in s-expression form.
+- limit :: The maximum number of times to run the matcher.
+- tag :: A tag for the node to dump the AST of.
+* Description
+Dump the matches - if :tag is supplied then dump the given tag, otherwise :whole"
   (with-unmanaged-object (callback (make-instance 'dump-match-callback))
     (let ((*match-dump-tag* tag))
       (time (run-matcher match-sexp
                          :callback callback
                          :counter-limit limit)))))
 
-(defun match-comments (match-sexp &key match-comments code &allow-other-keys)
-  (with-unmanaged-object (callback (make-instance 'source-loc-match-callback
-                                                  :comments-regex-list (if (atom match-comments)
-                                                                           (list (core:make-regex match-comments))
-                                                                           (mapcar #'(lambda (str) (core:make-regex str)) match-comments))
-                                                  :code code))
+(defun match-comments-loaded-asts (match-sexp &key match-comments code &allow-other-keys)
+  "* Arguments
+- match-sexp :: A matcher in s-expression form.
+- match-comments :: A regular expression to match to comments.
+- code :: A function to run.
+* Description
+I'm guessing at what this function does!!!!!
+Run the match-sexp on the loaded ASTs and for each match, extract the associated comments
+and match them to the match-comments regex.  If they match, run the code."
+  (with-unmanaged-object (callback (make-instance
+                                    'source-loc-match-callback
+                                    :comments-regex-list (if (atom match-comments)
+                                                             (list (core:make-regex match-comments))
+                                                             (mapcar #'(lambda (str) (core:make-regex str)) match-comments))
+                                    :code code))
     (let ((*match-source-location* nil))
       (time (run-matcher match-sexp
                          :callback callback))
       (format t "Matched the desired location: ~a~%" *match-source-location*))))
 
 
-(defun match-run (match-sexp &key limit the-code-match-callback)
-  "Run code on every match"
+(defun match-run-loaded-asts (match-sexp &key limit the-code-match-callback)
+  "* Arguments
+- match-sexp :: A matcher in s-expression form.
+- match-comments :: A regular expression to match to comments.
+* Description
+I'm guessing at what this function does!!!!!
+Run the-code-match-callback (a functionRun the match-sexp on the loaded ASTs and for each match, extract the associated comments
+and match them to the match-comments regex.  If they match, run the code."
   (time (run-matcher match-sexp
                      :callback the-code-match-callback
                      :counter-limit limit)))
 
 (defun batch-match-run (match-sexp &key compilation-tool-database limit the-code-match-callback run-and-save)
+  "* Arguments
+- match-sexp :: A matcher in s-expression form.
+- compilation-tool-database :: The compilation-tool-database.
+- the-code-match-callback :: A regular expression to match to comments.
+* Description
+I'm guessing at what this function does!!!!!
+Run the-code-match-callback (a functionRun the match-sexp on the loaded ASTs and for each match, extract the associated comments
+and match them to the match-comments regex.  If they match, run the code."
   "Run code on every match in every filename in batch mode"
   (or the-code-match-callback (error "You must provide the-code-match-callback to batch-match-run"))
   (time (batch-run-matcher match-sexp
@@ -666,38 +680,14 @@ This can only be run in the context set up by the code-match-callback::run metho
 			   :run-and-save run-and-save)))
 
 
+#| ----------------------------------------------------------------------
 
+Code for representing ASTMatchers as s-expressions
 
-
-#|
-
-(format t "Use (gather-asts [:test t]) - to gather the ASTs into *asts*~%")
-
-(format t "Run the *match-finder* on an AST with:~%(match-ast *match-finder* (get-astcontext (elt *asts* 0)))~%")
-
-
-
-
-
-(match-run (:goto-stmt) #'(lambda () (format t "~a~%" (mtag-source :whole))))
-(match-run (:if-stmt (:has-condition (:bind :cond (:expr)))) #'(lambda () (format t "~a~%" (mtag-source-start :cond))))
-
-
-;; Works
-
- (match-dump (:call-expr (:callee (:function-decl (:has-name "create"))) (:has-any-argument (:expr (:has-type (:qual-type (:as-string "Lisp_sp")))))) :tag :whole  )
-
-(match-dump (:call-expr (:callee (:function-decl (:bind :fn (:decl)) #|(:has-name "create")|#)) (:has-any-argument (:expr (:has-type (:qual-type (:bind :type (:type)) (:as-string "Lisp_sp")))))) :tag :type  )
 |#
-
 
 (defun keyword-everything (tree)
   (mapcar #'(lambda (l) (mapcar #'(lambda (x) (intern x :keyword)))) l) tree )
-
-
-(defun testk (tree)
-  (mapcar #'(lambda (l) l)))
-
 
 
 (defconstant +node-matchers+
@@ -869,8 +859,6 @@ This can only be run in the context set up by the code-match-callback::run metho
     (:VAR-DECL :IS-EXPLICIT-TEMPLATE-SPECIALIZATION)
     (:VAR-DECL :IS-TEMPLATE-INSTANTIATION)))
 
-
-
 ;;;
 ;;; traversal matchers of the type :* ... :* allow submatchers
 ;;; of any kind?????
@@ -995,31 +983,24 @@ This can only be run in the context set up by the code-match-callback::run metho
     (:VAR-DECL :HAS-INITIALIZER :EXPR)
     (:VARIABLE-ARRAY-TYPE :HAS-SIZE-EXPR :EXPR)
     (:WHILE-STMT :HAS-BODY :STMT)
-    (:WHILE-STMT :HAS-CONDITION :EXPR)
-    )) 
+    (:WHILE-STMT :HAS-CONDITION :EXPR))) 
 
 (defconstant +all-matchers+ (append +node-matchers+ +narrowing-matchers+ +traversal-matchers+))
-
-
 
 (defparameter +node-matcher-hints+ (make-hash-table :test #'eq))
 (dolist (i +node-matchers+)
   (setf (gethash (car i) +node-matcher-hints+) (cdr i)))
 
-
 (defparameter +narrowing-matcher-hints+ (make-hash-table :test #'eq))
 (dolist (i +narrowing-matchers+)
   (setf (gethash (car i) +narrowing-matcher-hints+) (cdr i)))
 
-
 (define-condition wrong-matcher (condition)
   ((node-type :initarg :node-type :accessor wrong-matcher-node-type )))
-
 
 (defun identify-node-type (node)
   (or (find-if #'(lambda (x) (eq node (second x))) +narrowing-matchers+)
       (find-if #'(lambda (x) (eq node (second x))) +traversal-matchers+)))
-
 
 (defun applicable-matcher-p (prev-env matcher-env)
   (check-type prev-env list)
@@ -1031,7 +1012,6 @@ This can only be run in the context set up by the code-match-callback::run metho
 (define-condition node-matcher-ambiguous-error (error)
   ((node-matchers :initarg :node-matchers :accessor node-matchers)))
 
-
 (defun identify-node-matcher-environment (prev-environment node)
   (check-type prev-environment list)
   (block match
@@ -1039,8 +1019,7 @@ This can only be run in the context set up by the code-match-callback::run metho
          (remove-if-not (lambda (x)  ;; select-only-entries-that-satisfy
                           (and (eq node (second x))
                                (or (not prev-environment)
-                                   (applicable-matcher-p prev-environment (first x)))
-                               ))
+                                   (applicable-matcher-p prev-environment (first x)))))
                         +node-matchers+)))
     (if node-matchers
         (progn
@@ -1052,8 +1031,6 @@ This can only be run in the context set up by the code-match-callback::run metho
                  (arg (third matcher)))
             (list arg)))
         nil))))
-
-        
 
 (defun identify-traversal-matcher-environment (prev-environment node)
   (check-type prev-environment list)
@@ -1078,7 +1055,6 @@ This can only be run in the context set up by the code-match-callback::run metho
                 )
               (list (caddr matcher))))
           nil))))
-
 
 (defun identify-narrowing-matcher-environment (prev-environment node)
   (check-type prev-environment list)
@@ -1114,9 +1090,6 @@ This can only be run in the context set up by the code-match-callback::run metho
       (return-from good t))
     (error "Invalid predicate ~a" p)))
 
-  
-
-
 (defun identify-hint-environment (prev-environment sexp)
   (check-type prev-environment list)
   (handler-case 
@@ -1138,14 +1111,10 @@ This can only be run in the context set up by the code-match-callback::run metho
                (if (eq prev-environment :*)
                    "ANYTHING"
                    (super-class-matchers prev-environment))
-               prev-environment node sexp)
-        )
+               prev-environment node sexp))
     (node-matcher-ambiguous-error (err)
       (error "Hint node environment is ambiguous prev-environment is ~a; node is ~a; sexp is ~a~%"
-             prev-environment (car sexp)  sexp))
-    ))
-
-
+             prev-environment (car sexp)  sexp))))
 
 (defun provide-hint (environment)
   (format t "Environment: ~a~%" environment)
@@ -1172,7 +1141,6 @@ This can only be run in the context set up by the code-match-callback::run metho
     (when (> (length some) 1)
       (format t "matcher: ~a  ~a~%" (cadr m) (map 'list (lambda (x) (caddr x)) some)))))
 
-
 (defgeneric super-class-matchers (x))
 
 (defmethod super-class-matchers ((environments list))
@@ -1181,7 +1149,6 @@ This can only be run in the context set up by the code-match-callback::run metho
     (loop :for env :in environments
        :do (setf super-classes (union super-classes (super-class-matchers env))))
     super-classes))
-
 
 (defmethod super-class-matchers ((node symbol))
   "Given a environment name as a keyword - generate a list of keyword environment names that
@@ -1199,8 +1166,6 @@ correspond to the environment names superclasses that are also part of the clang
           (mapcar #'(lambda (x) (intern (symbol-name (name-of-class x)) :keyword)) cast-cpl))
         (signal 'wrong-matcher :node-type (identify-node-type node)))))
 
-
-
 (defun narrowing-hint (environment)
   "For a list of valid environments give a hint for narrowing matchers that could narrow the number of matches"
   (check-type environment list)
@@ -1210,7 +1175,6 @@ correspond to the environment names superclasses that are also part of the clang
                       (format t "   ~a~%" (cdr i)))))
     (wrong-matcher (exception)
       (format t "Narrowing matchers aren't appropriate here - ~a~%" (wrong-matcher-node-type exception)))))
-
 
 (defun traversal-hint (environment)
   "For a list of valid environments, give a hint for traversal matchers that will move us from there"
@@ -1222,8 +1186,6 @@ correspond to the environment names superclasses that are also part of the clang
     (wrong-matcher (exception)
       (format t "Traversal matchers aren't appropriate here - ~a~%" (wrong-matcher-node-type exception)))))
 
-
-
 (defun arg-for-cmd (node)
   (dolist (i (append +node-matchers+ +narrowing-matchers+ +traversal-matchers+))
     (when (eq (cadr i) node)
@@ -1231,12 +1193,79 @@ correspond to the environment names superclasses that are also part of the clang
 
 
 
+
+
+
+(defun compile-matcher-arguments* (args diagnostics)
+  (let ((arg-vec (make-array (length args))))
+    (do* ((i 0 (1+ i))
+          (rest args (cdr rest))
+          (arg (car rest) (car rest)))
+        ((null rest) arg-vec)
+      (setf (elt arg-vec i)
+            (cond
+              ((consp arg) (ast-tooling:new-parser-value rest (ast-tooling:new-variant-value-matcher (compile-matcher* arg diagnostics))))
+              ((stringp arg) (ast-tooling:new-parser-value rest (ast-tooling:new-variant-value-string arg)))
+              ((integerp arg) (ast-tooling:new-parser-value rest (ast-tooling:new-variant-value-unsigned arg)))
+              (t (error "Illegal matcher argument type ~a" arg)))))))
+
+
+(defun compile-matcher* (sexp diagnostics)
+  (cond
+    ((eq (car sexp) :bind)
+     ;; (bind {name} {matcher-sexp})
+     (let* ((bind-name (cadr sexp))
+            (body (caddr sexp))
+            (bound-matcher-head (car body))
+            (bound-matcher-arguments (compile-matcher-arguments* (cdr body) diagnostics)))
+       (ast-tooling:construct-bound-matcher bound-matcher-head body (string bind-name) bound-matcher-arguments diagnostics)))
+    (t (let* ((matcher-head (car sexp))
+              (matcher-arguments (compile-matcher-arguments* (cdr sexp) diagnostics)))
+         (assert matcher-head)
+         (ast-tooling:construct-matcher matcher-head sexp matcher-arguments diagnostics)))))
+
+
+(defparameter *hint-environment* nil)
+(defun contains-hint-request-impl (sexp)
+  "Look for hint requests and print the hint"
+  (cond
+    ((atom sexp) nil)
+    ((eq (car sexp) :bind) (contains-hint-request-impl (caddr sexp)))
+    ((eq (car sexp) :?)
+     (provide-hint *hint-environment*)
+     (throw 'got-hint-request t))
+    (t
+     (let ((*hint-environment* (identify-hint-environment *hint-environment* sexp)))
+       (check-type *hint-environment* (or symbol list))
+       (dolist (i (cdr sexp))
+         (contains-hint-request-impl i))))))
+
+(defun contains-hint-request (sexp)
+  "Returns true if a hint-request was found in sexp and nil if not"
+  (catch 'got-hint-request
+    (contains-hint-request-impl sexp)
+    nil))
+
+
+(defun compile-matcher (sexp)
+  "* Arguments
+- sexp :: The S-expression that describes an ASTMatcher.
+* Description
+Compile an ASTMatcher from an S-expression.
+ eg: (compile-matcher '(:bind :field (:field-decl (:has-type (:record-decl (:has-name \"TinyStruct\"))))))).
+Return nil if no matcher could be compiled."
+  (if (contains-hint-request sexp)
+      nil
+      (let* ((diag (ast-tooling:new-diagnostics))
+             (dyn-matcher (compile-matcher* sexp diag))
+             (single-matcher (ast-tooling:get-single-matcher dyn-matcher)))
+        (if (null single-matcher)
+            (error "Error while constructing matcher - diagnostics:~% ~a" (to-string-full diag))
+            single-matcher))))
+
 ;;;
 ;;;  Convert my matchers back into C-style matchers
 ;;;
-
-
-
 
 (defparameter +matcher-names+
   '((:ACCESS-SPEC-DECL "accessSpecDecl")
@@ -1475,16 +1504,17 @@ correspond to the environment names superclasses that are also part of the clang
   (let ((ht (make-hash-table :test #'eq)))
     (dolist (e +matcher-names+)
       (setf (gethash (car e) ht) (cadr e)))
-    ht
-    ))
-
+    ht)) 
 
 (defun cform-matcher-name (sym)
   (let ((cm (gethash sym +matcher-hash-table+)))
-    (or cm (error "Could not find c-matcher for ~a" cm))))
-
+    (or cm (error "Could not find c-matcher for ~a" cm)))) 
 
 (defun cform-matcher (sexp)
+  "* Arguments
+- sexp :: An ASTMatcher in s-expression format.
+* Description
+Return a string representation of C++ code for the ASTMatcher."
   (cond
     ((typep sexp 'integer)
      (format nil "~a" sexp))
@@ -1503,6 +1533,3 @@ correspond to the environment names superclasses that are also part of the clang
        (format sout ")")))
     (t (error "Add support to cform-matcher for ~a" sexp))))
 
-
-(defun print-cform-matcher (sexp)
-  (format t "~a" (cform-matcher sexp)))

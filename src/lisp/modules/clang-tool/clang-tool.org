@@ -1,0 +1,48 @@
+* Loading a compilation database
+
+** Generating a compilation database
+
+The original instructions for generating a clang-tool compilation database in JSON format are here: http://clang.llvm.org/docs/JSONCompilationDatabase.html
+
+Clasp has a helper application written in Python that builds a compilation database from bjam output.  It takes the arguments:
+
+clasp/src/common/buildJSON.py <clang-executable-name> <input> <output>
+
+Arguments:
+- <clang-executable-name> :: Default clang
+- <input> :: A file containing the compilation commands for the project. This is the output of bjam -n.
+- <output> :: Where to write the compilation database.  In the example below the output file name is obtained by running a small clasp script.
+
+#+BEGIN_SRC bash
+	-bjam link=static gc=mps-prep program=clasp link=static -n -a >bjam.out
+	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
+	python ../common/buildJSON.py clang bjam.out `$(BCLASP_BOEHMDC) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
+#+END_SRC
+
+** Loading a compilation database.
+
+Within clasp you can use:
+
+#+BEGIN_SRC common-lisp
+(defparameter *db* nil)
+(defparameter *main-file-pathname* nil)
+(multiple-value-setq (*db* *main-file-pathname*) (clang-tool:load-compilation-database #P"APP-RESOURCES:build-databases;clasp_compile_commands.json"))
+#+END_SRC
+
+** Arguments adjusters
+Running clang tools means that you essentially need to run clang with all of the appropriate command line arguments on a collection of source files.  Most of the command line arguments will be provided by the compilation database but some arguments need adjustments to allow the clang tool to run properly.  I find that some relative include paths (eg: -I ./include) don't work properly because the clang tool may be run from a different directory than was used to generate the compilation database.
+
+This is where arguments adjusters come in handy.  An arguments-adjuster is a function that takes a vector of arguments (a vector of strings) and transforms them into another vector of strings that are passed to the clang tool invocation.
+
+An example of an arguments adjuster is below:
+
+#+BEGIN_SRC common-lisp
+(defun translate-include (args)
+  (dotimes (i (length args))
+    (when (string= (elt args i) "-Iinclude")
+      (setf (elt args i) "-I/Users/meister/Development/clasp/src/main/include")))
+  args)
+#+END_SRC
+
+
+
