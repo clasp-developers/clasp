@@ -191,4 +191,36 @@ struct gctools::GCInfo<core::Instance_O> {
 };
 TRANSLATE(core::Instance_O);
 
+
+namespace gctools {
+ /*! Specialize TaggedCast for Instance_O - always use dynamic_cast */
+ template <typename FROM>
+struct TaggedCast<core::Instance_O *, FROM> {
+  typedef core::Instance_O *ToType;
+  typedef FROM FromType;
+  inline static bool isA(FromType ptr) {
+    if (tagged_generalp(ptr)) {
+      // Maybe
+      FromType raw_client = untag_general<FromType>(ptr);
+      core::Instance_O* iptr = dynamic_cast<core::Instance_O*>(raw_client);
+      return iptr!=NULL;
+    }
+    return false;
+  }
+  inline static core::Instance_O* castOrNULL(FromType client) {
+    if ( tagged_generalp(client) ) {
+      // maybe
+      FromType raw_client = untag_general<FromType>(client);
+      core::Instance_O* iclient = dynamic_cast<core::Instance_O*>(raw_client);
+      if ( iclient ) return tag_general<ToType>(iclient);
+      return NULL;
+    }
+    return NULL;
+  }
+};
+};
+
+
+
+
 #endif /* _core_instance_H_ */

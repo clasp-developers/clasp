@@ -46,6 +46,8 @@ GCStack _ThreadLocalStack;
 
 void *_global_stack_marker;
 size_t _global_stack_max_size;
+/*! Keeps track of the next available header KIND value */
+kind_t global_next_header_kind = (kind_t)KIND_max+1;
 
 #if 0
     HeapRoot* 	rooted_HeapRoots = NULL;
@@ -148,6 +150,31 @@ int handleFatalCondition() {
 #endif
   return exitCode;
 }
+
+kind_t next_header_kind()
+{
+    kind_t next = global_next_header_kind;
+    ++global_next_header_kind;
+    return next;
+}
+
+core::Fixnum ensure_fixnum(kind_t val)
+{
+  if ( val > most_positive_fixnum || val < most_negative_fixnum ) {
+    SIMPLE_ERROR(BF("The value %lz cannot be converted into a FIXNUM") % val );
+  }
+  return (core::Fixnum)val;
+}
+
+LAMBDA();
+DOCSTRING(R"doc(Return the next available header KIND value and increment the global variable global_next_header_kind)doc");
+CL_DEFUN core::Fixnum gctools__next_header_kind()
+{
+    kind_t next = global_next_header_kind;
+    ++global_next_header_kind;
+    return ensure_fixnum(next);
+}
+
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
   void *stackMarker = NULL;

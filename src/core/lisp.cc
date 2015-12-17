@@ -146,7 +146,9 @@ extern "C" void add_history(char *line);
 #endif
 
 /*! A function that creates the source-main: host */
+#ifndef PROGRAM_CLBIND
 extern void create_source_main_host();
+#endif
 
 namespace core {
 
@@ -600,7 +602,9 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       core__pathname_translations(Str_O::create("cclasp-mps"), _lisp->_true(), p);
     }
     /* Call the function defined in main.cc that creates the source-main: host */
+#ifndef PROGRAM_CLBIND
     create_source_main_host();
+#endif
   }
   //
   //

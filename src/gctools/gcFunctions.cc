@@ -14,6 +14,7 @@ extern "C" {
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
+#include <clasp/core/instance.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/environment.h>
@@ -120,6 +121,7 @@ core::T_mv gc_bytes_allocated() {
   return Values(core::clasp_make_fixnum(gc_bytes), core::clasp_make_fixnum(my_bytes));
 }
 
+
 LAMBDA();
 DECLARE();
 DOCSTRING("Return the header kind for the object");
@@ -150,6 +152,16 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   }
   printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
   return core::clasp_make_fixnum(-1);
+}
+
+LAMBDA(obj);
+DOCSTRING(R"doc(Return true if the object inherits from core:instance based on its header value)doc");
+CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
+{
+  if (core::Instance_sp iobj = obj.asOrNull<core::Instance_O>() ) {
+    return true;
+  }
+  return false;
 }
 
 LAMBDA();
@@ -555,7 +567,7 @@ void af_mpsTelemetryFlush() {
 #define ARGS_af_mpsTelemetrySet "(flags)"
 #define DECL_af_mpsTelemetrySet ""
 #define DOCS_af_mpsTelemetrySet "mpsTelemetrySet"
-void af_mpsTelemetrySet(Fixnum_sp flags) {
+void af_mpsTelemetrySet(core::Fixnum_sp flags) {
   _G();
   mps_telemetry_set(unbox_fixnum(flags));
 };
@@ -563,7 +575,7 @@ void af_mpsTelemetrySet(Fixnum_sp flags) {
 #define ARGS_af_mpsTelemetryReset "(flags)"
 #define DECL_af_mpsTelemetryReset ""
 #define DOCS_af_mpsTelemetryReset "mpsTelemetryReset"
-void af_mpsTelemetryReset(Fixnum_sp flags) {
+void af_mpsTelemetryReset(core::Fixnum_sp flags) {
   _G();
   mps_telemetry_reset(unbox_fixnum(flags));
 };

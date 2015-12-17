@@ -202,12 +202,17 @@ compile-commands:
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
 	python ../common/buildJSON.py clang bjam.out `$(BCLASP_BOEHMDC) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
 
+compile-commands-cclasp:
+	-bjam link=static gc=mps-prep program=clasp link=static -n -a >bjam.out
+	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
+	python ../common/buildJSON.py clang bjam.out `$(CCLASP_BOEHM) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
+
 mps-interface-run:
 	$(BCLASP_BOEHMDC)  \
 		-e "(require :asdf)" \
 	        -e "(asdf:load-system \"clasp-analyzer\")" \
-		-e "(clasp-analyzer:load-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\")" \
-	        -e "(clasp-analyzer:serial-search-all-then-generate-code-and-quit)"
+		-e "(clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\"))"
+		-e "(quit)"
 
 mps-interface:
 	@echo Building mps-prep

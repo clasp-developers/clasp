@@ -110,7 +110,7 @@ typedef enum { KIND_null,
 };
 
 extern "C" {
-char *obj_name(gctools::GCKindEnum kind);
+char *obj_name(gctools::kind_t kind);
 extern void obj_dump_base(void *base);
 };
 
@@ -186,7 +186,7 @@ private:
   tagged_kind_t header;
   tagged_kind_t data[1]; // After this is where the client pointer starts
 public:
- Header_s(GCKindEnum k) : header((((Kind_t)k) << 2) | kind_tag), data{0xDEADBEEF01234567} {};
+ Header_s(kind_t k) : header((((kind_t)k) << 2) | kind_tag), data{0xDEADBEEF01234567} {};
 
   bool invalidP() const { return (this->header & tag_mask) == 0; };
   bool kindP() const { return (this->header & tag_mask) == kind_tag; };

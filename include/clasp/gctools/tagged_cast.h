@@ -62,7 +62,9 @@ struct TaggedCast {
     return NULL; // handle with specializations
   }
 };
+
 };
+
 
 namespace core {
 class Fixnum_I {};
@@ -74,11 +76,13 @@ class Rational_O;
 class Real_O;
 class Number_O;
 class T_O;
+ class Instance_O;
 class Float_O;
 typedef Fixnum_I Fixnum_O;
 typedef SingleFloat_I SingleFloat_O;
 typedef Character_I Character_O;
 };
+
 
 ////////////////////////////////////////////////////////////////////////
 //

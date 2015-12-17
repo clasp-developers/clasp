@@ -34,12 +34,6 @@
 ;;; --------------------------------------------------
 (defmacro gclog (fmt &rest args))
 
-(progn
-  (provide 'gcb)
-  (require :clang-tool)
-  (use-package :ast-tooling)
-  )
-
 
 ;; ----------------------------------------------------------------------
 ;;
@@ -615,7 +609,7 @@ can be saved and reloaded within the project for later analysis"
 ;; ----------------------------------------------------------------------
 
 (defun project-pathname (project-name project-type)
-  (make-pathname :name project-name :type project-type :defaults (main-directory-pathname)))
+  (make-pathname :name project-name :type project-type :defaults (clang-tool:main-pathname)))
 
 (defun save-data (run pathname)
   (let ((*print-readably* t)
@@ -630,15 +624,14 @@ can be saved and reloaded within the project for later analysis"
   (with-open-file (fin pathname :direction :input)
     (read fin)))
 
-(defun save-project ()
+(defun save-project (project)
   (core::with-print-readably
       (with-open-file (fout (project-pathname "project" "dat") :direction :output)
-        (prin1 *project* fout))))
+        (prin1 project fout))))
 
 (defun load-project ()
-  (setq *project* (load-data (project-pathname "project" "dat")))
-  *project*
-  )
+  (let ((project (load-data (project-pathname "project" "dat"))))
+    project))
         
 
 
@@ -655,11 +648,11 @@ can be saved and reloaded within the project for later analysis"
     (:record-decl
      ;; The class must be a definition
      (:is-definition))))
-(compile-matcher *class-matcher*)
+(clang-tool:compile-matcher *class-matcher*)
 
 
 (defparameter *base-class-submatcher*
-  (compile-matcher '(:record-decl
+  (clang-tool:compile-matcher '(:record-decl
                      (:is-derived-from
                       (:for-each
                        (:record-decl
@@ -674,7 +667,7 @@ can be saved and reloaded within the project for later analysis"
 
 
 (defparameter *field-submatcher*
-  (compile-matcher '(:record-decl
+  (clang-tool:compile-matcher '(:record-decl
                      (:for-each ;; -descendant
                       (:field-decl
                        (:bind :field (:field-decl))
@@ -685,7 +678,7 @@ can be saved and reloaded within the project for later analysis"
 
 
 (defparameter *metadata-submatcher*
-  (compile-matcher
+  (clang-tool:compile-matcher
    '(:record-decl
      (:for-each ;; -descendant
       (:record-decl
@@ -694,16 +687,16 @@ can be saved and reloaded within the project for later analysis"
 
 
 (defparameter *method-submatcher*
-  (compile-matcher '(:record-decl
+  (clang-tool:compile-matcher '(:record-decl
                      (:for-each ;; -descendant
                       (:method-decl
                        (:bind :method (:method-decl)))))))
 
 
 (defun setup-cclass-search (mtool)
-  (symbol-macrolet ((results (project-classes (multitool-results mtool))))
-    (labels ((%%new-class-callback (class-node record-key template-specializer)
-               (let ((cname (mtag-name :whole))
+  (symbol-macrolet ((results (project-classes (clang-tool:multitool-results mtool))))
+    (labels ((%%new-class-callback (match-info class-node record-key template-specializer)
+               (let ((cname (clang-tool:mtag-name match-info :whole))
                      bases vbases fields method-names metadata )
                  ;;
                  ;; Run a matcher to find the base classes and their namespaces
@@ -723,74 +716,75 @@ can be saved and reloaded within the project for later analysis"
                  ;;
                  ;; Run a matcher to find the GC-scannable fields of this class
                  ;;
-                 (sub-match-run *field-submatcher*
-                                (mtag-node :whole)
-                                (lambda ()
-                                  (let* ((field-node (mtag-node :field))
-                                         (type (to-canonical-type (cast:get-type field-node))))
-                                    (gclog "      >> Field: ~30a~%" field-node)
-                                    (handler-case
-                                        (push (make-instance-variable
-                                               :location (mtag-loc-start :field)
-                                               :field-name (mtag-name :field)
-                                               :ctype (let ((*debug-info* (make-debug-info :name (mtag-name :field)
-                                                                                           :location (mtag-loc-start :field))))
-                                                        (classify-ctype (to-canonical-type type))))
-                                              fields)
-                                      (unsupported-type (err)
-                                        (error "Add support for classifying type: ~a (type-of type): ~a  source: ~a"
-                                               type (type-of type) (mtag-source :field))))
-                                    )))
+                 (clang-tool:sub-match-run
+                  *field-submatcher*
+                  (clang-tool:mtag-node match-info :whole)
+                  (clang-tool:ast-context match-info)
+                  (lambda (minfo)
+                    (let* ((field-node (clang-tool:mtag-node minfo :field))
+                           (type (to-canonical-type (cast:get-type field-node))))
+                      (gclog "      >> Field: ~30a~%" field-node)
+                      (handler-case
+                          (push (make-instance-variable
+                                 :location (clang-tool:mtag-loc-start minfo :field)
+                                 :field-name (clang-tool:mtag-name minfo :field)
+                                 :ctype (let ((*debug-info* (make-debug-info :name (clang-tool:mtag-name minfo :field)
+                                                                             :location (clang-tool:mtag-loc-start minfo :field))))
+                                          (classify-ctype (to-canonical-type type))))
+                                fields)
+                        (unsupported-type (err)
+                          (error "Add support for classifying type: ~a (type-of type): ~a  source: ~a"
+                                 type (type-of type) (clang-tool:mtag-source minfo :field)))))))
                  ;;
                  ;; Run a matcher to find the scanGCRoot functions
                  ;;
-                 (sub-match-run *method-submatcher*
-                                (mtag-node :whole)
-                                (lambda ()
-                                  (let* ((method-node (mtag-node :method))
-                                         (location (mtag-loc-start :method))
-                                         (method-name (mtag-name :method)))
-                                    (gclog "      >> Method: ~30a~%" (mtag-source :method))
-                                    (push method-name method-names)
-                                    )))
-                 (sub-match-run *metadata-submatcher*
-                                class-node
-                                (lambda ()
-                                  (let* ((metadata-node (mtag-node :metadata))
-                                         (metadata-name (string-upcase (mtag-name :metadata))))
-                                    (push (intern metadata-name :keyword) metadata))))
+                 (clang-tool:sub-match-run
+                  *method-submatcher*
+                  (clang-tool:mtag-node match-info :whole)
+                  (clang-tool:ast-context match-info)
+                  (lambda (minfo)
+                    (let* ((method-node (clang-tool:mtag-node minfo :method))
+                           (location (clang-tool:mtag-loc-start minfo :method))
+                           (method-name (clang-tool:mtag-name minfo :method)))
+                      (gclog "      >> Method: ~30a~%" (clang-tool:mtag-source minfo :method))
+                      (push method-name method-names))))
+                 (clang-tool:sub-match-run
+                  *metadata-submatcher*
+                  class-node
+                  (clang-tool:ast-context match-info)
+                  (lambda (minfo)
+                    (let* ((metadata-node (clang-tool:mtag-node minfo :metadata))
+                           (metadata-name (string-upcase (clang-tool:mtag-name minfo :metadata))))
+                      (push (intern metadata-name :keyword) metadata))))
                  ;;                   (when (string= record-key "gctools::StackRootedPointer<class asttooling::BAR>") (break "Check fields"))
                  (when (search "gctools::GCVector_moveable<chem::(anonymous)>" record-key)
-                   (break "Check (mtag-node :whole)"))
+                   (break "Check (clang-tool:mtag-node :whole)"))
                  (setf (gethash record-key results)
                        (make-cclass :key record-key
                                     :template-specializer template-specializer
-                                    :location (mtag-loc-start :whole)
+                                    :location (clang-tool:mtag-loc-start match-info :whole)
                                     :bases bases
                                     :vbases vbases
                                     :method-names method-names
                                     :metadata metadata
-                                    :fields fields))
-                 ))
-             (%%class-callback ()
+                                    :fields fields))))
+             (%%class-callback (match-info)
                (gclog "MATCH: ------------------~%")
-               (gclog "    Start:~%~a~%" (mtag-loc-start :whole))
-               (gclog "    Name: ~a~%" (mtag-name :whole))
-               (let* ((class-node (mtag-node :whole)))
+               (gclog "    Start:~%~a~%" (clang-tool:mtag-loc-start match-info :whole))
+               (gclog "    Name: ~a~%" (clang-tool:mtag-name match-info :whole))
+               (let* ((class-node (clang-tool:mtag-node match-info :whole)))
                  (multiple-value-bind (record-key template-specializer)
                      (record-key class-node)
                    (unless (or (typep class-node 'cast:class-template-partial-specialization-decl) ; ignore partial specializations
                                (and (typep class-node 'cast:class-template-specialization-decl) ; ignore template specializations that have undeclared specialization alloc
                                     (eq (cast:get-specialization-kind class-node) 'ast-tooling:tsk-undeclared))
                                (gethash record-key results)) ; ignore if we've seen it before
-                     (%%new-class-callback class-node record-key template-specializer))
-                   ))))
-      (multitool-add-matcher mtool
+                     (%%new-class-callback match-info class-node record-key template-specializer))))))
+      (clang-tool:multitool-add-matcher mtool
                              :name :cclasses
-                             :matcher (compile-matcher *class-matcher*)
+                             :matcher (clang-tool:compile-matcher *class-matcher*)
                              :initializer (lambda () (setf results (make-hash-table :test #'equal)))
-                             :callback (make-instance 'code-match-callback :match-code (function %%class-callback)))
-      )))
+                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%class-callback))))))
 
 
 
@@ -813,35 +807,34 @@ can be saved and reloaded within the project for later analysis"
 (defun setup-lispalloc-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
-  (symbol-macrolet ((class-results (project-lispallocs (multitool-results mtool))))
-    (flet ((%%lispalloc-matcher-callback ()
+  (symbol-macrolet ((class-results (project-lispallocs (clang-tool:multitool-results mtool))))
+    (flet ((%%lispalloc-matcher-callback (match-info)
              "This function can only be called as a ASTMatcher callback"
-             (let* ((decl (mtag-node :whole))
+             (let* ((decl (clang-tool:mtag-node match-info :whole))
                     (args (cast:get-template-args decl))
                     (arg (cast:template-argument-list-get args 0))
                     (qtarg (cast:get-as-type arg))
                     (tsty-new (cast:get-type-ptr-or-null qtarg))
                     (class-key (record-key tsty-new))
                     (classified (classify-ctype tsty-new))
-                    (class-location (mtag-loc-start :whole))
+                    (class-location (clang-tool:mtag-loc-start match-info :whole))
                     (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
-                    (arg-location (source-loc-as-string (get-loc-start arg-decl)))
+                    (arg-location (clang-tool:source-loc-as-string match-info (get-loc-start arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
                  (gclog "Adding class name: ~a~%" class-name)
 ;;                 (break "Check locations")
                  (let ((lispalloc (make-lispalloc :key class-key
-                                                :name arg-name ;; XXXXXX (mtag-name :whole)
-                                                :location arg-location ;; class-location
-                                                :ctype classified)))
-                   (setf (gethash class-key class-results) lispalloc)
-                   )))))
+                                                  :name arg-name ;; XXXXXX (clang-tool:mtag-name :whole)
+                                                  :location arg-location ;; class-location
+                                                  :ctype classified)))
+                   (setf (gethash class-key class-results) lispalloc))))))
       ;; Initialize the class search
-      (multitool-add-matcher mtool
+      (clang-tool:multitool-add-matcher mtool
                              :name :lispallocs
-                             :matcher (compile-matcher `(:bind :whole ,*lispalloc-matcher*))
+                             :matcher (clang-tool:compile-matcher `(:bind :whole ,*lispalloc-matcher*))
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'code-match-callback :match-code (function %%lispalloc-matcher-callback))))))
+                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%lispalloc-matcher-callback))))))
 
 
 
@@ -864,34 +857,33 @@ and the inheritance hierarchy that the garbage collector will need"
 (defun setup-classalloc-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
-  (symbol-macrolet ((class-results (project-classallocs (multitool-results mtool))))
-    (flet ((%%classalloc-matcher-callback ()
+  (symbol-macrolet ((class-results (project-classallocs (clang-tool:multitool-results mtool))))
+    (flet ((%%classalloc-matcher-callback (match-info)
              "This function can only be called as a ASTMatcher callback"
-             (let* ((decl (mtag-node :whole))
+             (let* ((decl (clang-tool:mtag-node match-info :whole))
                     (args (cast:get-template-args decl))
                     (arg (cast:template-argument-list-get args 0))
                     (qtarg (cast:get-as-type arg))
                     (tsty-new (cast:get-type-ptr-or-null qtarg))
                     (class-key (record-key tsty-new))
                     (classified (classify-ctype tsty-new))
-                    (class-location (mtag-loc-start :whole))
+                    (class-location (clang-tool:mtag-loc-start match-info :whole))
                     (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
-                    (arg-location (source-loc-as-string (get-loc-start arg-decl)))
+                    (arg-location (clang-tool:source-loc-as-string match-info (get-loc-start arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
                  (gclog "Adding class name: ~a~%" class-name)
                  (let ((classalloc (make-classalloc :key class-key
-                                                  :name arg-name ;;(mtag-name :whole)
+                                                  :name arg-name ;;(clang-tool:mtag-name :whole)
                                                   :location arg-location ;;class-location
                                                   :ctype classified)))
-                   (setf (gethash class-key class-results) classalloc)
-                   )))))
+                   (setf (gethash class-key class-results) classalloc))))))
       ;; Initialize the class search
-      (multitool-add-matcher mtool
+      (clang-tool:multitool-add-matcher mtool
                              :name :classallocs
-                             :matcher (compile-matcher `(:bind :whole ,*classalloc-matcher*))
+                             :matcher (clang-tool:compile-matcher `(:bind :whole ,*classalloc-matcher*))
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'code-match-callback :match-code (function %%classalloc-matcher-callback))))))
+                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%classalloc-matcher-callback))))))
 
 
 
@@ -915,39 +907,33 @@ and the inheritance hierarchy that the garbage collector will need"
 (defun setup-rootclassalloc-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
-  (symbol-macrolet ((class-results (project-rootclassallocs (multitool-results mtool))))
-    (flet ((%%rootclassalloc-matcher-callback ()
+  (symbol-macrolet ((class-results (project-rootclassallocs (clang-tool:multitool-results mtool))))
+    (flet ((%%rootclassalloc-matcher-callback (match-info)
              "This function can only be called as a ASTMatcher callback"
-             (let* ((decl (mtag-node :whole))
+             (let* ((decl (clang-tool:mtag-node match-info :whole))
                     (args (cast:get-template-args decl))
                     (arg (cast:template-argument-list-get args 0))
                     (qtarg (cast:get-as-type arg))
                     (tsty-new (cast:get-type-ptr-or-null qtarg))
                     (class-key (record-key tsty-new))
                     (classified (classify-ctype tsty-new))
-                    (class-location (mtag-loc-start :whole))
+                    (class-location (clang-tool:mtag-loc-start match-info :whole))
                     (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
-                    (arg-location (source-loc-as-string (get-loc-start arg-decl)))
+                    (arg-location (clang-tool:source-loc-as-string match-info (get-loc-start arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
                  (gclog "Adding class name: ~a~%" class-name)
                  (let ((rootclassalloc (make-rootclassalloc :key class-key
-                                                  :name arg-name ;;(mtag-name :whole)
+                                                  :name arg-name ;;(clang-tool:mtag-name :whole)
                                                   :location arg-location ;;class-location
                                                   :ctype classified)))
-                   (setf (gethash class-key class-results) rootclassalloc)
-                   )))))
+                   (setf (gethash class-key class-results) rootclassalloc))))))
       ;; Initialize the class search
-      (multitool-add-matcher mtool
+      (clang-tool:multitool-add-matcher mtool
                              :name :rootclassallocs
-                             :matcher (compile-matcher `(:bind :whole ,*rootclassalloc-matcher*))
+                             :matcher (clang-tool:compile-matcher `(:bind :whole ,*rootclassalloc-matcher*))
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'code-match-callback :match-code (function %%rootclassalloc-matcher-callback))))))
-
-
-
-
-
+                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%rootclassalloc-matcher-callback))))))
 
 ;; ----------------------------------------------------------------------
 ;; ----------------------------------------------------------------------
@@ -955,7 +941,6 @@ and the inheritance hierarchy that the garbage collector will need"
 ;;
 ;; Search for containerallocs - they are template parameters for GCContainerAllocator
 ;;
-
 
 (defparameter *containeralloc-matcher*
   '(:record-decl
@@ -968,30 +953,29 @@ and the inheritance hierarchy that the garbage collector will need"
 (defun setup-containeralloc-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
-  (symbol-macrolet ((class-results (project-containerallocs (multitool-results mtool))))
-    (flet ((%%containeralloc-matcher-callback ()
+  (symbol-macrolet ((class-results (project-containerallocs (clang-tool:multitool-results mtool))))
+    (flet ((%%containeralloc-matcher-callback (match-info)
              "This function can only be called as a ASTMatcher callback"
-             (let* ((decl (mtag-node :whole))
+             (let* ((decl (clang-tool:mtag-node match-info :whole))
                     (args (cast:get-template-args decl))
                     (arg (cast:template-argument-list-get args 0))
                     (qtarg (cast:get-as-type arg))
                     (tsty-new (cast:get-type-ptr-or-null qtarg))
                     (class-key (record-key decl))
                     (classified (classify-decl decl))
-                    (class-location (mtag-loc-start :whole)))
+                    (class-location (clang-tool:mtag-loc-start match-info :whole)))
                (unless (gethash class-key class-results)
                  (let ((containeralloc (make-containeralloc :key class-key
-                                                          :name (mtag-name :whole)
-                                                          :location class-location
-                                                          :ctype classified)))
-                   (setf (gethash class-key class-results) containeralloc)))
-               )))
+                                                            :name (clang-tool:mtag-name match-info :whole)
+                                                            :location class-location
+                                                            :ctype classified)))
+                   (setf (gethash class-key class-results) containeralloc))))))
       ;; Initialize the class search
-      (multitool-add-matcher mtool
+      (clang-tool:multitool-add-matcher mtool
                              :name :containerallocs
-                             :matcher (compile-matcher `(:bind :whole ,*containeralloc-matcher*))
+                             :matcher (clang-tool:compile-matcher `(:bind :whole ,*containeralloc-matcher*))
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'code-match-callback :match-code (function %%containeralloc-matcher-callback))))))
+                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%containeralloc-matcher-callback))))))
 
 
 ;; ----------------------------------------------------------------------
@@ -1011,26 +995,24 @@ and the inheritance hierarchy that the garbage collector will need"
      (:unless (:has-ancestor (:function-decl)))
      (:unless (:parm-var-decl))
      (:unless
-         (:matches-name ".*_gc_safe")
-       )
-     )))
+         (:matches-name ".*_gc_safe")))))
 
 
-(compile-matcher *global-variable-matcher*)
+(clang-tool:compile-matcher *global-variable-matcher*)
 
 
 (defun setup-global-variable-search (mtool)
-  (symbol-macrolet ((global-variables (project-global-variables (multitool-results mtool))))
+  (symbol-macrolet ((global-variables (project-global-variables (clang-tool:multitool-results mtool))))
     ;; The matcher is going to match static locals and locals as well as globals - so we need to explicitly recognize and ignore them
-    (flet ((%%global-variable-callback ()
+    (flet ((%%global-variable-callback (match-info)
              (block matcher
                (gclog "VARIABLE MATCH: ------------------~%")
-               (gclog "    Start:~%~a~%" (mtag-loc-start :whole))
-               (gclog "    Name: ~a~%" (mtag-name :whole))
-               (gclog "    namespace: ~a~%" (mtag-name :ns))
-               (let* ((var-node (mtag-node :whole))
+               (gclog "    Start:~%~a~%" (clang-tool:mtag-loc-start match-info :whole))
+               (gclog "    Name: ~a~%" (clang-tool:mtag-name match-info :whole))
+               (gclog "    namespace: ~a~%" (clang-tool:mtag-name match-info :ns))
+               (let* ((var-node (clang-tool:mtag-node match-info :whole))
                       (varname (decl-name var-node))
-                      (location (mtag-loc-start :whole))
+                      (location (clang-tool:mtag-loc-start match-info :whole))
                       (var-kind (cond
                                   ((and (cast:has-global-storage var-node) (not (cast:is-static-local var-node))) :global)
                                   ((and (cast:has-global-storage var-node) (cast:is-static-local var-node)) :static-local)
@@ -1044,23 +1026,17 @@ and the inheritance hierarchy that the garbage collector will need"
                    (let* ((qtype (cast:get-type var-node))
                           (type (cast:get-type-ptr-or-null qtype))
                           (classified-type (let ((*debug-info* (make-debug-info :name varname :location location)))
-                                             (classify-ctype (to-canonical-type type))))
-                          )
+                                             (classify-ctype (to-canonical-type type)))))
                      (when (eq var-kind :global)
                        (setf (gethash key hash-table)
                              (make-global-variable :location location
                                                    :name varname
-                                                   :ctype classified-type))))
-                   )))))
-      (multitool-add-matcher mtool
+                                                   :ctype classified-type)))))))))
+      (clang-tool:multitool-add-matcher mtool
                              :name :global-variables
-                             :matcher (compile-matcher *global-variable-matcher*)
+                             :matcher (clang-tool:compile-matcher *global-variable-matcher*)
                              :initializer (lambda () (setf global-variables (make-hash-table :test #'equal)))
-                             :callback (make-instance 'code-match-callback :match-code (function %%global-variable-callback)))
-      )))
-
-
-
+                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%global-variable-callback)))))) 
 
 (defparameter *variable-matcher*
   '(:bind :whole
@@ -1071,29 +1047,23 @@ and the inheritance hierarchy that the garbage collector will need"
        (:bind :function (:function-decl))))
      (:unless (:parm-var-decl))
      (:unless
-         (:matches-name ".*_gc_safe")
-       )
-     )))
+         (:matches-name ".*_gc_safe"))))) 
 
-
-(compile-matcher *variable-matcher*)
-
-
-
+(clang-tool:compile-matcher *variable-matcher*)
 
 (defun setup-variable-search (mtool)
-  (symbol-macrolet ((static-local-variables (project-static-local-variables (multitool-results mtool)))
-                    (local-variables (project-local-variables (multitool-results mtool))))
+  (symbol-macrolet ((static-local-variables (project-static-local-variables (clang-tool:multitool-results mtool)))
+                    (local-variables (project-local-variables (clang-tool:multitool-results mtool))))
     ;; The matcher is going to match globals as well as static locals and locals - so we need to explicitly recognize and ignore globals
-    (flet ((%%variable-callback ()
+    (flet ((%%variable-callback (match-info)
              (block matcher
                (gclog "VARIABLE MATCH: ------------------~%")
-               (gclog "    Start:~%~a~%" (mtag-loc-start :whole))
-               (gclog "    Name: ~a~%" (mtag-name :whole))
-               (gclog "    namespace: ~a~%" (mtag-name :ns))
-               (let* ((var-node (mtag-node :whole))
+               (gclog "    Start:~%~a~%" (clang-tool:mtag-loc-start match-info :whole))
+               (gclog "    Name: ~a~%" (clang-tool:mtag-name match-info :whole))
+               (gclog "    namespace: ~a~%" (clang-tool:mtag-name match-info :ns))
+               (let* ((var-node (clang-tool:mtag-node match-info :whole))
                       (varname (decl-name var-node))
-                      (location (mtag-loc-start :whole))
+                      (location (clang-tool:mtag-loc-start match-info :whole))
                       (var-kind (cond
                                   ((and (cast:has-global-storage var-node) (not (cast:is-static-local var-node))) :global)
                                   ((and (cast:has-global-storage var-node) (cast:is-static-local var-node)) :static-local)
@@ -1107,8 +1077,7 @@ and the inheritance hierarchy that the garbage collector will need"
                    (let* ((qtype (cast:get-type var-node))
                           (type (cast:get-type-ptr-or-null qtype))
                           (classified-type (let ((*debug-info* (make-debug-info :name varname :location location)))
-                                             (classify-ctype (to-canonical-type type))))
-                          )
+                                             (classify-ctype (to-canonical-type type)))))
                      (ecase var-kind
                        (:global nil) ;; not recognized here - see setup-global-variable-search
                        (:static-local
@@ -1122,21 +1091,14 @@ and the inheritance hierarchy that the garbage collector will need"
                         (setf (gethash key hash-table)
                               (make-local-variable :location location
                                                    :name varname
-                                                   :ctype classified-type)))))
-                   )))))
-      (multitool-add-matcher mtool
+                                                   :ctype classified-type))))))))))
+      (clang-tool:multitool-add-matcher mtool
                              :name :variables
-                             :matcher (compile-matcher *variable-matcher*)
+                             :matcher (clang-tool:compile-matcher *variable-matcher*)
                              :initializer (lambda ()
                                             (setf static-local-variables (make-hash-table :test #'equal))
                                             (setf local-variables (make-hash-table :test #'equal)))
-                             :callback (make-instance 'code-match-callback :match-code (function %%variable-callback)))
-      )))
-
-
-
-
-
+                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%variable-callback)))))) 
 
 ;; ----------------------------------------------------------------------
 ;; ----------------------------------------------------------------------
@@ -1160,39 +1122,33 @@ and the inheritance hierarchy that the garbage collector will need"
 (defun setup-gcinfo-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
-  (symbol-macrolet ((class-results (project-gcinfos (multitool-results mtool))))
-    (flet ((%%gcinfo-matcher-callback ()
+  (symbol-macrolet ((class-results (project-gcinfos (clang-tool:multitool-results mtool))))
+    (flet ((%%gcinfo-matcher-callback (match-info)
              "This function can only be called as a ASTMatcher callback"
-             (let* ((decl (mtag-node :whole))
+             (let* ((decl (clang-tool:mtag-node match-info :whole))
                     (args (cast:get-template-args decl))
                     (arg (cast:template-argument-list-get args 0))
                     (qtarg (cast:get-as-type arg))
                     (tsty-new (cast:get-type-ptr-or-null qtarg))
                     (class-key (record-key tsty-new))
                     (classified (classify-ctype tsty-new))
-                    (class-location (mtag-loc-start :whole))
+                    (class-location (clang-tool:mtag-loc-start match-info :whole))
                     (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
-                    (arg-location (source-loc-as-string (get-loc-start arg-decl)))
+                    (arg-location (clang-tool:source-loc-as-string match-info (get-loc-start arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
                  (gclog "Adding class name: ~a~%" class-name)
                  (let ((gcinfo (make-gcinfo :key class-key
-                                            :name arg-name ;;(mtag-name :whole)
+                                            :name arg-name ;;(clang-tool:mtag-name :whole)
                                             :location arg-location ;;class-location
                                             :ctype classified)))
-                   (setf (gethash class-key class-results) gcinfo)
-                   )))))
+                   (setf (gethash class-key class-results) gcinfo))))))
       ;; Initialize the class search
-      (multitool-add-matcher mtool
+      (clang-tool:multitool-add-matcher mtool
                              :name :gcinfos
-                             :matcher (compile-matcher `(:bind :whole ,*gcinfo-matcher*))
+                             :matcher (clang-tool:compile-matcher `(:bind :whole ,*gcinfo-matcher*))
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'code-match-callback :match-code (function %%gcinfo-matcher-callback))))))
-
-
-
-
-
+                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%gcinfo-matcher-callback)))))) 
 
 ;; ----------------------------------------------------------------------
 ;; ----------------------------------------------------------------------
@@ -1949,7 +1905,7 @@ so that they don't have to be constantly recalculated"
 (defun string-left-matches (str sub)
   (eql (search str sub) 0))
 
-
+(defparameter *analysis* nil)
 (defun setup-manager ()
   (let* ((manager (make-manager)))
     (add-species manager (make-species :name :bootstrap
@@ -2044,21 +2000,20 @@ so that they don't have to be constantly recalculated"
 
 
 
-(defparameter *analysis* nil)
-(defun analyze-project (&key (project *project*) types-to-inline-mps-functions )
-  (setq *analysis* (make-analysis :project project
-                                  :manager (setup-manager)
-                                  :inline types-to-inline-mps-functions))
-  (organize-allocs-into-species-and-create-enums *analysis*)
-  (generate-forward-declarations *analysis*)
-  (analyze-hierarchy *analysis*)
-  (sort-enums-by-value *analysis*)
-  t
-  )
+(defun analyze-project (project &key types-to-inline-mps-functions )
+  (let ((*analysis* (make-analysis :project project
+                                 :inline types-to-inline-mps-functions))
+        (manager (setup-manager)))
+    (setf (analysis-manager *analysis*) manager)
+    (organize-allocs-into-species-and-create-enums *analysis*)
+    (generate-forward-declarations *analysis*)
+    (analyze-hierarchy *analysis*)
+    (sort-enums-by-value *analysis*)
+    *analysis*))
 
 
 
-
+(defvar *project*)
 (defun derived-from-cclass (child ancestor &optional (project *project*))
   (setq child (if (stringp child) (gethash child (project-classes project)) child))
   (setq ancestor (if (stringp ancestor) (gethash ancestor (project-classes project)) ancestor))
@@ -2108,8 +2063,7 @@ so that they don't have to be constantly recalculated"
 
 (defun generate-one-gckind-for-enum (stream enum)
   (let* ((enum-name (enum-name enum))
-         (species (enum-species enum))
-         )
+         (species (enum-species enum)))
     (when (species-preprocessor-guard species)
       (format stream "#if defined(~a)~%" (species-preprocessor-guard species)))
     (cond
@@ -2123,8 +2077,7 @@ so that they don't have to be constantly recalculated"
     (format stream "  static gctools::GCKindEnum const Kind = gctools::~a ;~%" enum-name)
     (format stream "};~%")
     (when (species-preprocessor-guard species)
-      (format stream "#endif // #if defined(~a)~%" (species-preprocessor-guard species)))
-    ))
+      (format stream "#endif // #if defined(~a)~%" (species-preprocessor-guard species)))))
 
 
 (defun generate-gckind-for-enums (fout anal)
@@ -2596,11 +2549,11 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 
 
-(defun generate-code (&key (analysis *analysis*) test )
+(defun generate-code (analysis &key test )
   (let ((filename (if test
                       "test_clasp_gc"
                     "clasp_gc")))
-    (with-open-file (stream (make-pathname :name filename :type "cc" :defaults (main-directory-pathname)) :direction :output :if-exists :supersede)
+    (with-open-file (stream (make-pathname :name filename :type "cc" :defaults (clang-tool:main-pathname)) :direction :output :if-exists :supersede)
                     (format stream "#ifdef DECLARE_FORWARDS~%")
                     (code-for-namespace-names stream (merge-forward-names-by-namespace analysis))
                     (format stream "#endif // DECLARE_FORWARDS~%")
@@ -2667,14 +2620,6 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                     (format stream "#endif // defined(GC_GLOBAL_SYMBOLS)~%")
                     )))
 
-;; ----------------------------------------------------------------------
-;;
-;; Setup the *tools* that will run over all of the source code and run
-;; several matchers that scrape the C++ AST for info requires to build
-;; garbage collection scanners.
-
-
-;;(load-compilation-database "app-resources:build-databases;clasp_compile_commands.json")
 
 (defun fix-path (root rel)
   (let* ((pnroot (pathname root))
@@ -2694,7 +2639,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 It converts relative -I../... arguments to absolute paths"
   (lambda (args) 
     (let ((new-args (copy-seq args))
-          (root-directory (make-pathname :name nil :type nil :defaults *main-pathname*)))
+          (root-directory (make-pathname :name nil :type nil :defaults (clang-tool:main-pathname))))
       (dotimes (i (length new-args))
         (let ((arg (elt new-args i)))
           (cond
@@ -2714,50 +2659,18 @@ It converts relative -I../... arguments to absolute paths"
         result))))
 
 
-(defvar *tools* nil)
-(defun setup-*tools* ()
-  (setf *tools* (make-multitool :arguments-adjuster (build-arguments-adjuster)))
-  (setup-cclass-search *tools*) ; search for all classes
-  (setup-lispalloc-search *tools*)
-  (setup-classalloc-search *tools*)
-  (setup-rootclassalloc-search *tools*)
-  (setup-containeralloc-search *tools*)
-  (setup-global-variable-search *tools*)
-  (setup-variable-search *tools*))
-
-
-;; ----------------------------------------------------------------------
-;; Test search
-;; ----------------------------------------------------------------------
-(progn
-  (lnew $test-search)
-  (setq $test-search (append
-                      (lsel $* ".*mol2\.cc$"))
-                      )
-  )
-
-
-(defvar *project* nil)
-(defun search-all (&key test tools (save t))
-  (multitool-activate-tools *tools* tools)
-  (setf (multitool-results *tools*) (make-project))
-  (let ((alljobs (if test
-                     test
-                     (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))))
-    (dolist (job alljobs)
-;;;      (core:system (format nil "heap ~a" (core:getpid)))
-;;;      (core:system (format nil "vmmap -w ~a" (core:getpid)))
-      (let ((somejobs (list job)))
-        (batch-run-multitool *tools* :filenames somejobs))
-      ;; Extract the results for easy access
-      (setq *project* (multitool-results *tools*))
-      ))
-  (when save (save-project))
-  )
-
-
-
-
+(defun setup-tools ()
+  "* Description
+Setup all of the ASTMatcher tools for the clasp-analyzer."
+  (let ((tools (clang-tool:make-multitool :arguments-adjuster (build-arguments-adjuster))))
+    (setup-cclass-search tools)         ; search for all classes
+    (setup-lispalloc-search tools)
+    (setup-classalloc-search tools)
+    (setup-rootclassalloc-search tools)
+    (setup-containeralloc-search tools)
+    (setup-global-variable-search tools)
+    (setup-variable-search tools)
+    tools))
 
 
 
@@ -2787,169 +2700,166 @@ It converts relative -I../... arguments to absolute paths"
 
 
 
-(defun run-job (proc job-list)
-  (setf (multitool-results *tools*) (make-project))
-  (format t "====== Running jobs in fork #~a: ~a~%" proc job-list)
-  (batch-run-multitool *tools* :filenames job-list)
-  (format t "------------ About to save-archive --------------~%")
-  (save-data (multitool-results *tools*) (project-pathname (format nil "project~a" proc) "dat"))
-  (core:exit))
+#+(or)(defun run-job (proc job-list compilation-tool-database)
+        (setf (clang-tool:multitool-results *tools*) (make-project))
+        (format t "====== Running jobs in fork #~a: ~a~%" proc job-list)
+        (clang-tool:batch-run-multitool *tools*
+                                        :compilation-tool-database compilation-tool-database)
+        (format t "------------ About to save-archive --------------~%")
+        (save-data (clang-tool:multitool-results *tools*)
+                   (merge-pathnames "project.dat" (clang-tool:main-pathname compilation-tool-database)))
+        (core:exit))
 
-(defvar *parallel-search-pids* nil)
-(defun parallel-search-all (&key test one-at-a-time)
-  "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
-  (setq *parallel-search-pids* nil)
-  (let ((all-jobs (split-jobs (if test
-                                  test
-                                  (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))
-                              *max-parallel-searches*
-                              ))
-        (spare-processes (if one-at-a-time 1 *max-parallel-searches*)))
-    (save-data all-jobs (project-pathname "project-all" "dat"))
-    (format t "all-jobs: ~a~%" all-jobs)
-    (dotimes (proc (length all-jobs))
-      (setq spare-processes (1- spare-processes))
-      (ext:system "sleep 1")
-      (let* ((job-list (elt all-jobs proc))
-             (pid (core:fork)))
-        (if (eql 0 pid)
-            (run-job proc job-list)
-            (when (eql spare-processes 0)
-              (core:waitpid -1 0)
-              (setq spare-processes (1+ spare-processes)))))
-      (format t "Bottom of loop proc: ~a~%" proc))
-    (dotimes (proc (1- *max-parallel-searches*))
-      (core:waitpid -1 0))
-    (format t "~%!~%!  Done ~%!~%")
-    (parallel-merge)))
-
-
-(defun serial-search-all (&key start-directory test one-at-a-time)
-  "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
-  (format t "serial-search-all --> current-dir: ~a~%" (core:current-dir))
-  (setq *parallel-search-pids* nil)
-  (let ((all-jobs (if test
-                      test
-                      (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))))
-    (save-data all-jobs (project-pathname "project-all" "dat"))
-    (format t "all-jobs: ~a~%" all-jobs)
-    (setf (multitool-results *tools*) (make-project))
-    (batch-run-multitool *tools* :filenames all-jobs)
-    (setq *project* (multitool-results *tools*))
-    (save-data *project* (project-pathname "project" "dat"))))
-
-
-
-(defun parallel-merge (&key end (start 0) restart)
-  "Merge the analyses generated from the parallel search"
-  (let* ((all-jobs (load-data (project-pathname "project-all" "dat")))
-         (merged (if restart
-                     (progn
-                       (format t "Loading existing project and restarting from ~a~%" start)
-                       (load-project)
-                       )
-                     (make-project)))
-         (endnum (if (null end)
-                      (length all-jobs)
-                      end))
-        )
-    (setq *project* merged)
-    (format t "Starting load/merge loop from ~a up to ~a~%" start endnum)
-    (do ((proc start (1+ proc)))
-        ((>= proc endnum) nil)
-      (format t "Marking memory with ~a~%" (1+ proc))
-      (gctools:gc-marker (1+ proc))
-      (format t "Loading project for job ~a~%" proc)
-      (let* ((project-dat-name (probe-file (project-pathname (format nil "project~a" proc) "dat")))
-             (one (if project-dat-name
-                      (load-data (project-pathname (format nil "project~a" proc) "dat"))
-                      nil)))
-        (if one
-            (progn
-              (format t "     merging...~%")
-              (merge-projects merged one))
-            (format t "File not found.~%"))))
-    (save-project)
-    merged))
+#+(or)(defvar *parallel-search-pids* nil)
+#+(or)(defun parallel-search-all (&key test one-at-a-time)
+        "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
+        (setq *parallel-search-pids* nil)
+        (let ((all-jobs (split-jobs (if test
+                                        test
+                                        (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))
+                                    *max-parallel-searches*
+                                    ))
+              (spare-processes (if one-at-a-time 1 *max-parallel-searches*)))
+          (save-data all-jobs (merge-pathnames "project-all.dat" (clang-tool:main-pathname compilation-tool-database)))
+          (format t "all-jobs: ~a~%" all-jobs)
+          (dotimes (proc (length all-jobs))
+            (setq spare-processes (1- spare-processes))
+            (ext:system "sleep 1")
+            (let* ((job-list (elt all-jobs proc))
+                   (pid (core:fork)))
+              (if (eql 0 pid)
+                  (run-job proc job-list)
+                  (when (eql spare-processes 0)
+                    (core:waitpid -1 0)
+                    (setq spare-processes (1+ spare-processes)))))
+            (format t "Bottom of loop proc: ~a~%" proc))
+          (dotimes (proc (1- *max-parallel-searches*))
+            (core:waitpid -1 0))
+          (format t "~%!~%!  Done ~%!~%")
+          (parallel-merge)))
 
 
 
 
 
-(progn
-  (lnew $tiny-test-search)
-  (setq $tiny-test-search (append
-                      (lsel $* ".*/lambdaListHandler\.cc")
-                      ))
-  )
+#+(or)(defun parallel-merge (compilation-tool-database &key end (start 0) restart)
+        "Merge the analyses generated from the parallel search"
+        (let* ((all-jobs (load-data (merge-pathnames "project-all.dat" (clang-tool:main-pathname compilation-tool-database))))
+               (merged (if restart
+                           (progn
+                             (format t "Loading existing project and restarting from ~a~%" start)
+                             (load-project)
+                             )
+                           (make-project)))
+               (endnum (if (null end)
+                           (length all-jobs)
+                           end))
+               )
+          (setq *project* merged)
+          (format t "Starting load/merge loop from ~a up to ~a~%" start endnum)
+          (do ((proc start (1+ proc)))
+              ((>= proc endnum) nil)
+            (format t "Marking memory with ~a~%" (1+ proc))
+            (gctools:gc-marker (1+ proc))
+            (format t "Loading project for job ~a~%" proc)
+            (let* ((project-dat-name (probe-file (project-pathname (format nil "project~a" proc) "dat")))
+                   (one (if project-dat-name
+                            (load-data (project-pathname (format nil "project~a" proc) "dat"))
+                            nil)))
+              (if one
+                  (progn
+                    (format t "     merging...~%")
+                    (merge-projects merged one))
+                  (format t "File not found.~%"))))
+          (save-project)
+          merged))
 
-
-
-
-
-(defun load-test-ast ()
-  (lnew $tiny-test-search)
-  (setq $tiny-test-search (lsel $* ".*/cons\.cc"))
-  (load-asts $tiny-test-search
-             :arguments-adjuster-code *arguments-adjuster*))
 
 (defun run-test ()
   (defparameter *test-matcher*
     '(:record-decl
       ;;        (:is-definition)
       ;;        (:is-template-instantiation)
-      (:matches-name ".*GCInfo.*"))
-    )
+      (:matches-name ".*GCInfo.*")))
   (match-count *test-matcher*
                :limit 100
                ;;              :tag :point
                :match-comments '( ".*mytest.*" )
-               :match-code #'(lambda ()
-                         (let* ((decl (mtag-node :whole))
-                                (args (cast:get-template-args decl))
-                                (arg (cast:template-argument-list-get args 0))
-                                (qtarg (cast:get-as-type arg))
-                                (tsty-new (cast:get-type-ptr-or-null qtarg))
-                                (key (record-key tsty-new))
-                                (classified (classify-ctype tsty-new))
-                                )
-                           (format t "MATCH: ------------------~%")
-                           (format t "        Start: ~a~%" (mtag-loc-start :whole))
-                           (format t "         Node: ~a~%" (mtag-node :whole))
-                           (format t "     type-of node: ~a~%" (type-of (mtag-node :whole)))
-                           (format t "         Name: ~a~%" (mtag-name :whole))
-                           (format t "          Arg: ~a~%" classified)
-                           (format t "          key: ~a~%" key)
-                           )
-                         )
-               )
-  )
+               :match-code #'(lambda (match-info)
+                               (let* ((decl (clang-tool:mtag-node match-info :whole))
+                                      (args (cast:get-template-args decl))
+                                      (arg (cast:template-argument-list-get args 0))
+                                      (qtarg (cast:get-as-type arg))
+                                      (tsty-new (cast:get-type-ptr-or-null qtarg))
+                                      (key (record-key tsty-new))
+                                      (classified (classify-ctype tsty-new)))
+                                 (format t "MATCH: ------------------~%")
+                                 (format t "        Start: ~a~%" (clang-tool:mtag-loc-start match-info :whole))
+                                 (format t "         Node: ~a~%" (clang-tool:mtag-node match-info :whole))
+                                 (format t "     type-of node: ~a~%" (type-of (clang-tool:mtag-node match-info :whole)))
+                                 (format t "         Name: ~a~%" (clang-tool:mtag-name match-info :whole))
+                                 (format t "          Arg: ~a~%" classified)
+                                 (format t "          key: ~a~%" key)))))
 
 
-(defun run-serial-search ()
-  (clasp-analyzer:load-compilation-database "app-resources:build-databases;clasp_compile_commands.json")
-  (clasp-analyzer::serial-search-all))
 
-
-(defun serial-search-only (&key test)
+(defun serial-search-only (&key test arguments-adjuster)
     (setup-*tools*)
-    (serial-search-all :test test))
+    (serial-search-all :test test :arguments-adjuster arguments-adjuster))
 (export 'serial-search-only)
-(export '$*)
 
-(defun serial-search-all-then-generate-code-and-quit (&key test)
-    (setup-*tools*)
-    (serial-search-all :test test)
-    (analyze-project)
-    (setf (analysis-inline *analysis*) '("core::Cons_O"))
-    (generate-code)
-    (quit))
+(defun serial-search-all (compilation-tool-database &key (save-project t))
+  "* Arguments
+- test :: A list of files to run the search on, or NIL for all of them.
+- arguments-adjuster :: The arguments adjuster.
+* Description
+Run searches in *tools* on the source files in the compilation database."
+  (format t "serial-search-all --> current-dir: ~a~%" (core:current-dir))
+  (let ((tools (setup-tools))
+        (all-jobs (clang-tool:source-namestrings compilation-tool-database)))
+    (save-data all-jobs (merge-pathnames #P"project-all.dat" (clang-tool:main-pathname compilation-tool-database)))
+    (format t "all-jobs: ~a~%" all-jobs)
+    (setf (clang-tool:multitool-results tools) (make-project))
+    (clang-tool:batch-run-multitool tools
+                         :compilation-tool-database compilation-tool-database)
+    (when save-project
+      (let ((project (clang-tool:multitool-results tools)))
+        (save-data project (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))))))
 
-(defun parallel-search-all-then-generate-code-and-quit ()
-    (setup-*tools*)
-    (parallel-search-all)
-    (analyze-project)
-    (setf (analysis-inline *analysis*) '("core::Cons_O"))
-    (generate-code)
-    (quit))
+(defun translate-include (args)
+  "* Arguments
+- args :: A vector of strings (compilation arguments)
+* Description
+Convert -Iinclude to -I<main-sourcefile-pathname>/include. Uses dynamic variable *main-directory-namestring*."
+  (let ((main-directory-namestring (namestring (make-pathname :name nil :type nil :defaults (clang-tool:main-pathname clang-tool:*compilation-tool-database*)))))
+    (declare (special clang-tool:*compilation-tool-database*))
+    (dotimes (i (length args))
+      (when (string= (elt args i) "-Iinclude")
+        (setf (elt args i) (format nil "-I~a/include" main-directory-namestring))))
+    args))
+
+(defun setup-clasp-analyzer-compilation-tool-database (pathname &key (selection-pattern ".*") arguments-adjuster)
+  "* Arguments
+- pathname :: The pathname to the compilation database for clasp analyzer.
+- selection-pattern : A regex pattern for selecting a subset of the source files for testing.
+* Description
+Return a compilation database for analyzing the clasp (or some other clasp derived project) source code.
+Two files (mps.c and gc_interface.cc) are removed from the list of files that clasp-analyzer will run on."
+  (let* ((compilation-tool-database (clang-tool:load-compilation-tool-database pathname))
+         (source-filenames (clang-tool:select-source-namestrings compilation-tool-database selection-pattern))
+         (regex-mps-dot-c (core:make-regex ".*mps\.c$"))
+         (removed-mps-dot-c (remove-if #'(lambda (x) (core:regex-matches regex-mps-dot-c x)) source-filenames))
+         (regex-gc_interface (core:make-regex ".gc_interface\.cc$"))
+         (removed-gc_interface (remove-if (lambda (x) (core:regex-matches regex-gc_interface x)) removed-mps-dot-c)))
+    (setf (clang-tool:source-namestrings compilation-tool-database) removed-gc_interface)
+    (push #'translate-include (clang-tool:arguments-adjuster-list compilation-tool-database))
+    (when arguments-adjuster (push arguments-adjuster (clang-tool:arguments-adjuster-list compilation-tool-database)))
+    compilation-tool-database))
+
+(defun search/generate-code (compilation-tool-database)
+  (clang-tool:with-compilation-tool-database compilation-tool-database
+    (let* ((*project* (serial-search-all compilation-tool-database))
+           (analysis (analyze-project *project*)))
+      (setf (analysis-inline analysis) '("core::Cons_O"))
+      (generate-code analysis))))
 
