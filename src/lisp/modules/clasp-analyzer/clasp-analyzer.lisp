@@ -1,3 +1,20 @@
+(provide :clasp-analyzer)
+
+(defpackage #:clasp-analyzer
+  (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
+  (:export
+   #:setup-clasp-analyzer-compilation-tool-database
+   #:search/generate-code
+   #:load-project
+   #:save-project
+   #:serial-search-all
+   #:search/generate-code
+   #:analyze-project
+   #:generate-code
+   #:build-arguments-adjuster))
+
+(require :clang-tool)
+
 (in-package #:clasp-analyzer)
 
 ;;(require :serialize)
@@ -2625,7 +2642,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (let* ((pnroot (pathname root))
          (pnrel (pathname rel))
          (merged (merge-pathnames pnrel pnroot))
-         (abs (uiop/filesystem:native-namestring merged)))
+         (abs #+(or)(uiop/filesystem:native-namestring merged) (namestring merged)))
     (format t "Fixed path path: ~a~%" abs)
     (or abs (error "Could not find absolute path for ~a + ~a" root rel))))
 
@@ -2831,8 +2848,7 @@ Run searches in *tools* on the source files in the compilation database."
 - args :: A vector of strings (compilation arguments)
 * Description
 Convert -Iinclude to -I<main-sourcefile-pathname>/include. Uses dynamic variable *main-directory-namestring*."
-  (let ((main-directory-namestring (namestring (make-pathname :name nil :type nil :defaults (clang-tool:main-pathname clang-tool:*compilation-tool-database*)))))
-    (declare (special clang-tool:*compilation-tool-database*))
+  (let ((main-directory-namestring (namestring (make-pathname :name nil :type nil :defaults (clang-tool:main-pathname)))))
     (dotimes (i (length args))
       (when (string= (elt args i) "-Iinclude")
         (setf (elt args i) (format nil "-I~a/include" main-directory-namestring))))

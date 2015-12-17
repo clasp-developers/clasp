@@ -1,5 +1,6 @@
 (print "Testing")
 (require :asdf)
+(require :clang-tool)
 (require :clasp-analyzer)
 (print "Done")
 
@@ -11,6 +12,14 @@
    :selection-pattern ".*cons\.cc.*$" ))
 
 (defparameter *project* (search/generate-code *db*))
+
+
+
+(defparameter *db*
+  (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+   #P"app-resources:build-databases;clasp_compile_commands.json"))
+
+(time (defparameter *project* (search/generate-code *db*)))
 
 
 
