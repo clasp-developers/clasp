@@ -213,7 +213,7 @@ mps-interface-run:
 		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\")))"
 		-e "(quit)"
 
-mps-interface-run:
+mps-interface-run-cclasp:
 	$(CCLASP_BOEHM)  \
 		-e "(require :clasp-analyzer)" \
 		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))"

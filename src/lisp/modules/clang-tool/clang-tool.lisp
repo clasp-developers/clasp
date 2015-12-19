@@ -25,7 +25,13 @@
    #:mtag-loc-start
    #:mtag-source
    #:mtag-name
+   #:mtag-replace
    #:mtag-result
+   #:match-count-loaded-asts
+   #:match-dump-loaded-asts
+   #:match-comments-loaded-asts
+   #:match-run-loaded-asts
+   #:dump-match-callback
    #:source-loc-as-string
    #:sub-match-run
    #:cform-matcher
@@ -35,6 +41,36 @@
 
 (use-package :ast-tooling)
 (use-package :clang-ast)
+
+
+
+
+(defconstant +isystem-dir+ 
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
+  #+target-os-linux "/usr/include/clang/3.6/include"
+  "Define the -isystem command line option for Clang compiler runs")
+
+(defconstant +resource-dir+ 
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
+  #+target-os-linux "/usr/lib/llvm-3.6/bin/../lib/clang/3.6.0/include"
+  #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
+  "Define the -resource-dir command line option for Clang compiler runs")
+(defconstant +additional-arguments+
+  #+target-os-darwin (vector
+                      "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include"
+                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
+                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0/include"
+                      "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks")
+  #-target-os-darwin (vector
+                      #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
+                      #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
+                      #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/tr1"
+                      #+(or)"-I/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include"))
+
+
+
+
+
 
 (defmacro with-unmanaged-object ((var obj) &body body)
   `(let ((,var ,obj))
@@ -66,6 +102,31 @@ Initialize the source-namestrings using all filenames in the database if they ha
   (unless (slot-boundp obj 'source-namestrings)
     (setf (source-namestrings obj) (select-source-namestrings obj))))
 
+(defun apply-arguments-adjusters (compilation-tool-database tool)
+  "* Arguments
+- compilation-tool-database :: The database.
+- tool :: The clang tool to apply the arguments-adjusters to.
+* Description
+Apply the compilation-tool-database's arguments-adjusters to the clang tool."
+  (ast-tooling:clear-arguments-adjusters tool)
+  (dolist (aa (arguments-adjuster-list compilation-tool-database))
+    (ast-tooling:append-arguments-adjuster tool aa)))
+
+(defun setup-default-arguments-adjusters (compilation-tool-database)
+  "* Arguments
+- compilation-tool-database :: The compilation-tool-database to add the arguments adjusters to.
+* Description
+Setup the default arguments adjusters."
+  (push (ast-tooling:get-clang-syntax-only-adjuster) (arguments-adjuster-list compilation-tool-database))
+  (push (ast-tooling:get-clang-strip-output-adjuster) (arguments-adjuster-list compilation-tool-database))
+  (push (lambda (args)
+          (concatenate 'vector
+                       args
+                       (vector "-isystem" +isystem-dir+
+                               "-resource-dir" +resource-dir+)
+                       +additional-arguments+))
+        (arguments-adjuster-list compilation-tool-database)))
+
 (defun load-compilation-tool-database (pathname &key (main-source-filename "main.cc"))
   "* Arguments
 - pathname :: The name of the file that contains the compilation database in JSON format.
@@ -75,11 +136,13 @@ See http://clang.llvm.org/docs/JSONCompilationDatabase.html for the format
 Load the compilation database and return it"
   (let* ((db (ast-tooling:jsoncompilation-database-load-from-file
               (namestring (probe-file pathname))))
-         (all-files (map 'list #'identity (ast-tooling:get-all-files db))))
+         (all-files (map 'list #'identity (ast-tooling:get-all-files db)))
+         (ctd (make-instance 'compilation-tool-database
+                             :clang-database db
+                             :main-source-filename main-source-filename)))
     (format t "Loaded database contains ~a source files~%" (length all-files))
-    (make-instance 'compilation-tool-database
-                   :clang-database db
-                   :main-source-filename main-source-filename)))
+    (setup-default-arguments-adjusters ctd)
+    ctd))
 
 (defun main-pathname (&optional (compilation-tool-database *compilation-tool-database*))
   "* Arguments
@@ -149,6 +212,7 @@ Select a subset (or all) source file names from the compilation database and ret
   (let* ((nodes (ast-tooling:nodes match))
          (id-to-node-map (ast-tooling:idto-node-map nodes))
          (node (gethash *match-dump-tag* id-to-node-map)))
+    (format t "*match-dump-tag* = ~a~%" *match-dump-tag*)
     (cast:dump node)
       (advance-match-counter)))
 
@@ -241,7 +305,7 @@ Return true if the node describes source code that matches source-loc-match-call
 (define-condition no-node-for-tag-error (error)
     ((tag :accessor no-node-for-tag-error-tag :initarg :tag))
   (:report (lambda (condition stream)
-             (format stream "Could not find node for tag ~a" (no-node-for-tag-error-tag condition)))))
+             (format stream "Could not find node for tag ~s" (no-node-for-tag-error-tag condition)))))
 
 (defun mtag-node (match-info tag)
   "* Arguments
@@ -295,7 +359,7 @@ Return the name of the node that has been associated with a tag."))
   (mtag-source-decl-stmt-impl match-info node))
 
 (defmethod mtag-source-impl (match-info (node clang-ast:stmt))
-  (mtag-source-decl-stmt-impl node))
+  (mtag-source-decl-stmt-impl match-info node))
 
 (defmethod mtag-source-impl (match-info (node clang-ast:qual-type))
   (get-as-string node))
@@ -398,15 +462,18 @@ for the node corresponding to tag in match-info."
         (begin-gs (gensym))
         (end-gs (gensym))
         (rep-range-gs (gensym))
-        (rep-gs (gensym)))
-    `(let* ((,rep-src-gs (funcall ,replace-callback match-info tag))
+        (rep-gs (gensym))
+        (replacements-gs (gensym)))
+    `(let* ((,rep-src-gs (funcall ,replace-callback ,match-info ,tag))
 	    (,node-gs (mtag-node ,match-info ,tag)) ;; (id-to-node-map match-info)))
 	    (,begin-gs (get-loc-start ,node-gs))
 	    (,end-gs (get-loc-end ,node-gs))
 	    (,rep-range-gs (new-char-source-range-get-token-range ,begin-gs ,end-gs))
-	    (,rep-gs (new-replacement (source-manager match-info) ,rep-range-gs ,rep-src-gs)))
-       (let ((replacements (ast-tooling:get-replacements *match-refactoring-tool*)))
-	 (ast-tooling:replacements-insert replacements ,rep-gs)))))
+	    (,rep-gs (new-replacement (source-manager ,match-info) ,rep-range-gs ,rep-src-gs)))
+       (if *match-refactoring-tool*
+           (let ((,replacements-gs (ast-tooling:get-replacements *match-refactoring-tool*)))
+             (ast-tooling:replacements-insert ,replacements-gs ,rep-gs))
+           (format t "Replacing: ~a~%     with: ~a~%" (clang-tool:mtag-source ,match-info ,tag) ,rep-src-gs)))))
 
 
 (defparameter *match-results* nil)
@@ -442,54 +509,37 @@ Generates a string using fmt/fmt-args and accumulates internally so that they ca
 * Description
 Load all of the ASTs into memory at once.  DANGER: This should not be done with too many source files or you will
 run out of memory. This function can be used to rapidly search ASTs for testing and ASTMatcher development."
-  (let* ((files (source-namestrings compilation-tool-database))
-         (tool (ast-tooling:new-refactoring-tool
-                (clang-database compilation-tool-database)
-                files))
-         (syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))
-         (strip-output-adjuster (ast-tooling:get-clang-strip-output-adjuster)))
-    ;;         (factory (new-frontend-action-factory match-finder)))
-    (ast-tooling:clear-arguments-adjusters tool)
-    (ast-tooling:append-arguments-adjuster tool syntax-only-adjuster)
-    (ast-tooling:append-arguments-adjuster tool strip-output-adjuster)
-    (warn "The following line may error out - append-arguments-adjuster now takes an llvm::ArgumentsAdjuster which is just a function that takes a vector<string> and returns a vector<string>")
-    (dolist (aa (arguments-adjuster-list compilation-tool-database))
-      (ast-tooling:append-arguments-adjuster tool aa))
-    ;;    (ast-tooling:run tool factory)
-    (format t "Loading ASTs for the files: ~a~%" files)
-    (time 
-     (multiple-value-bind (num asts)
-         (ast-tooling:build-asts tool)
-       (setq *asts* asts)
-       (format t "Built asts: ~a~%" asts)))))
+  (with-compilation-tool-database compilation-tool-database
+    (let* ((files (source-namestrings compilation-tool-database))
+           (tool (ast-tooling:new-refactoring-tool
+                  (clang-database compilation-tool-database)
+                  files)))
+      (apply-arguments-adjusters compilation-tool-database tool)
+      ;;    (ast-tooling:run tool factory)
+      (format t "Loading ASTs for the files: ~a~%" files)
+      (time 
+       (multiple-value-bind (num asts)
+           (ast-tooling:build-asts tool)
+         (setq *asts* asts)
+         (format t "Built asts: ~a~%" asts))))))
 
 (defun batch-run-matcher (match-sexp &key compilation-tool-database callback run-and-save)
   (declare (type list match-sexp)
            (type ast-tooling:match-callback callback))
-  (let* ((*match-refactoring-tool*
-	  (let ((temp (ast-tooling:new-refactoring-tool
-                       (clang-database compilation-tool-database)
-                       (source-namestrings compilation-tool-database)))
-		(syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))
-		(strip-output-adjuster (ast-tooling:get-clang-strip-output-adjuster)))
-	    (ast-tooling:clear-arguments-adjusters temp)
-	    (ast-tooling:append-arguments-adjuster temp syntax-only-adjuster)
-	    (ast-tooling:append-arguments-adjuster temp strip-output-adjuster)
-	    (warn "The following line may error out - append-arguments-adjuster now takes an llvm::ArgumentsAdjuster which is just a function that takes a vector<string> and returns a vector<string>")
-	    (dolist (aa (arguments-adjuster-list compilation-tool-database))
-	      (ast-tooling:append-arguments-adjuster temp aa))
-	    temp))
-	 (*run-and-save* run-and-save)
-         (matcher (compile-matcher `(:bind :whole ,match-sexp)))
-         (match-finder (let ((mf (ast-tooling:new-match-finder)))
-                         (ast-tooling:add-dynamic-matcher mf matcher callback)
-                         mf))
-         (factory (ast-tooling:new-frontend-action-factory match-finder)))
-    (time (if (not run-and-save)
-	      (ast-tooling:clang-tool-run *match-refactoring-tool* factory)
-	      (ast-tooling:run-and-save *match-refactoring-tool* factory)))
-    (format t "Number of matches ~a~%" *match-counter*))
-  )
+  (let* ((*match-refactoring-tool* (ast-tooling:new-refactoring-tool
+                                    (clang-database compilation-tool-database)
+                                    (source-namestrings compilation-tool-database))))
+    (apply-arguments-adjusters compilation-tool-database *match-refactoring-tool*)
+    (let ((*run-and-save* run-and-save)
+          (matcher (compile-matcher `(:bind :whole ,match-sexp)))
+          (match-finder (let ((mf (ast-tooling:new-match-finder)))
+                          (ast-tooling:add-dynamic-matcher mf matcher callback)
+                          mf))
+          (factory (ast-tooling:new-frontend-action-factory match-finder)))
+      (time (if (not run-and-save)
+                (ast-tooling:clang-tool-run *match-refactoring-tool* factory)
+                (ast-tooling:run-and-save *match-refactoring-tool* factory)))
+      (format t "Number of matches ~a~%" *match-counter*))))
 
 
 
@@ -540,37 +590,27 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
 
 
 (defun batch-run-multitool (mtool &key compilation-tool-database run-and-save)
-  (let* ((*match-refactoring-tool*
-          (let ((temp (ast-tooling:new-refactoring-tool
-                       (clang-database compilation-tool-database)
-                       (source-namestrings compilation-tool-database)))
-                (syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))
-                (strip-output-adjuster (ast-tooling:get-clang-strip-output-adjuster)))
-            (ast-tooling:clear-arguments-adjusters temp)
-            (ast-tooling:append-arguments-adjuster temp syntax-only-adjuster)
-            (ast-tooling:append-arguments-adjuster temp strip-output-adjuster)
-            (warn "The following line may error out - append-arguments-adjuster now takes an llvm::ArgumentsAdjuster which is just a function that takes a vector<string> and returns a vector<string>")
-            (when (multitool-arguments-adjuster mtool)
-              (ast-tooling:append-arguments-adjuster temp (multitool-arguments-adjuster mtool)))
-            (dolist (aa (arguments-adjuster-list compilation-tool-database))
-              (ast-tooling:append-arguments-adjuster temp aa))
-            temp))
-         (*run-and-save* run-and-save)
-         (tools (multitool-active-tools mtool))
-         (match-finder (let ((mf (ast-tooling:new-match-finder)))
-                         (dolist (tool tools)
-                           (ast-tooling:add-dynamic-matcher mf (single-tool-matcher tool) (single-tool-callback tool)))
-                         mf))
-         (factory (ast-tooling:new-frontend-action-factory match-finder)))
-    (dolist (tool tools)
-      (let ((initializer (single-tool-initializer tool)))
-        (unless initializer (error "You did not provide an initializer for ~a" (single-tool-name tool))
-                (funcall (single-tool-initializer tool)))))
-    (time (if run-and-save
-	      (ast-tooling:run-and-save *match-refactoring-tool* factory)
-	      (ast-tooling:clang-tool-run *match-refactoring-tool* factory)))
-    (format t "Ran tools: ~a~%" (multitool-active-tool-names mtool))
-    (format t "Number of matches ~a~%" *match-counter*)))
+  (let* ((*match-refactoring-tool* (ast-tooling:new-refactoring-tool
+                                    (clang-database compilation-tool-database)
+                                    (source-namestrings compilation-tool-database))))
+    (apply-arguments-adjusters compilation-tool-database *match-refactoring-tool*)
+    (when (multitool-arguments-adjuster mtool)
+      (ast-tooling:append-arguments-adjuster temp (multitool-arguments-adjuster mtool)))
+    (let* ((*run-and-save* run-and-save)
+           (tools (multitool-active-tools mtool))
+           (match-finder (let ((mf (ast-tooling:new-match-finder)))
+                           (dolist (tool tools)
+                             (ast-tooling:add-dynamic-matcher mf (single-tool-matcher tool) (single-tool-callback tool)))
+                           mf))
+           (factory (ast-tooling:new-frontend-action-factory match-finder)))
+      (dolist (tool tools)
+        (let ((initializer (single-tool-initializer tool)))
+          (when initializer (funcall (single-tool-initializer tool)))))
+      (time (if run-and-save
+                (ast-tooling:run-and-save *match-refactoring-tool* factory)
+                (ast-tooling:clang-tool-run *match-refactoring-tool* factory)))
+      (format t "Ran tools: ~a~%" (multitool-active-tool-names mtool))
+      (format t "Number of matches ~a~%" *match-counter*))))
 
 (defun sub-match-run (compiled-matcher node ast-context code)
   "* Arguments
@@ -612,7 +652,7 @@ Limit the number of times you call the callback with counter-limit."
 Compile the match-sexp and run it on the loaded ASTs and count how many times it matches.
 Limit the number of times you match."
   (with-unmanaged-object (callback (make-instance 'count-match-callback))
-         (time (run-matcher match-sexp
+         (time (run-matcher-on-loaded-asts match-sexp
                             :callback callback
                             :counter-limit limit))))
 
@@ -626,7 +666,7 @@ Limit the number of times you match."
 Dump the matches - if :tag is supplied then dump the given tag, otherwise :whole"
   (with-unmanaged-object (callback (make-instance 'dump-match-callback))
     (let ((*match-dump-tag* tag))
-      (time (run-matcher match-sexp
+      (time (run-matcher-on-loaded-asts match-sexp
                          :callback callback
                          :counter-limit limit)))))
 
@@ -646,21 +686,22 @@ and match them to the match-comments regex.  If they match, run the code."
                                                              (mapcar #'(lambda (str) (core:make-regex str)) match-comments))
                                     :code code))
     (let ((*match-source-location* nil))
-      (time (run-matcher match-sexp
+      (time (run-matcher-on-loaded-asts match-sexp
                          :callback callback))
       (format t "Matched the desired location: ~a~%" *match-source-location*))))
 
 
-(defun match-run-loaded-asts (match-sexp &key limit the-code-match-callback)
+(defun match-run-loaded-asts (match-sexp &key limit callback)
   "* Arguments
 - match-sexp :: A matcher in s-expression form.
-- match-comments :: A regular expression to match to comments.
+- limit :: Limit the number of callback calls.
+- callback :: The code evaluated for each match.
 * Description
 I'm guessing at what this function does!!!!!
 Run the-code-match-callback (a functionRun the match-sexp on the loaded ASTs and for each match, extract the associated comments
 and match them to the match-comments regex.  If they match, run the code."
-  (time (run-matcher match-sexp
-                     :callback the-code-match-callback
+  (time (run-matcher-on-loaded-asts match-sexp
+                     :callback callback
                      :counter-limit limit)))
 
 (defun batch-match-run (match-sexp &key compilation-tool-database limit the-code-match-callback run-and-save)

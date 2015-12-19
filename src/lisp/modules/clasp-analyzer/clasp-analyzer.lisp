@@ -2669,10 +2669,7 @@ It converts relative -I../... arguments to absolute paths"
             (t #| do nothing |# ))))
       (let ((result (concatenate 'vector #-quiet new-args #+quiet(remove "-v" new-args)
                                  (vector "-DUSE_MPS"
-                                         "-DRUNNING_GC_BUILDER"
-                                         "-isystem" +isystem-dir+
-                                         "-resource-dir" +resource-dir+)
-                                 +additional-arguments+)))
+                                         "-DRUNNING_GC_BUILDER"))))
         result))))
 
 

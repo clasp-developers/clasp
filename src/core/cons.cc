@@ -915,46 +915,9 @@ T_sp Cons_O::olistrefArgument(int idx) {
   return ((oCar(p)));
 };
 
-#define WARN_CONS_LENGTH 1000000
 void Cons_O::setCdr(T_sp c) {
-  _G();
   this->_Cdr = c;
-//	this->_CdrLength = c->cdrLength()+1;
-#if 0
-	if ( this->_CdrLength > WARN_CONS_LENGTH )
-	{
-	    string sss = _rep_(this->_Car).substr(0,30);
-	    _lisp->print(BF("WARNING@%s:%d  Cons length is > %d - its cdr length is(%d) : trunated head: %s") % __FILE__ % __LINE__ % WARN_CONS_LENGTH % this->_CdrLength % sss );
-	    LOG(BF("WARNING: Cons length is > %d it is %d cdr cells : truncated head: %s") % WARN_CONS_LENGTH % this->_CdrLength % _rep_(this->_Car).substr(0,30));
-	    SIMPLE_ERROR(BF("Cons length was too long length=%d") % this->_CdrLength );
-	}
-#endif
 }
-
-#if 0
-    void	Cons_O::setOCdr(T_sp c)
-    {_G();
-	this->_Cdr = c;
-	if ( cl_consp(c) )
-	{
-	    List_sp cc = c;
-//	    this->_CdrLength = cc->cdrLength()+1;
-	} else
-	{
-//	    if ( c.nilp() ) this->_CdrLength = 0;
-//	    else              this->_CdrLength = 1;
-	}
-#if 0
-	if ( this->_CdrLength > WARN_CONS_LENGTH )
-	{
-	    string sss = _rep_(this->_Car).substr(0,30);
-	    _lisp->print(BF("WARNING@%s:%d  Cons length is > %d - its cdr length is(%d) : trunated head: %s") % __FILE__ % __LINE__ % WARN_CONS_LENGTH % this->_CdrLength % sss );
-	    LOG(BF("WARNING: Cons length is > %d it is %d cdr cells : truncated head: %s") % WARN_CONS_LENGTH % this->_CdrLength % _rep_(this->_Car).substr(0,30));
-	    SIMPLE_ERROR(BF("Cons length was too long length=%d") % this->_CdrLength );
-	}
-#endif
-    }
-#endif
 
 T_sp Cons_O::olookupKeyObjectDefault(Symbol_sp keyword, T_sp dft) {
   _OF();

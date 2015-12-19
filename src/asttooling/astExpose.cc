@@ -1317,7 +1317,9 @@ void initialize_astExpose() {
     CLASS_STMT(ShuffleVectorExpr, Expr),
     CLASS_STMT(SizeOfPackExpr, Expr),
     CLASS_STMT(StmtExpr, Expr),
-    CLASS_STMT(StringLiteral, Expr),
+    CLASS_STMT(StringLiteral, Expr)
+    .def("getString",&clang::StringLiteral::getString)
+    ,
     CLASS_STMT(SubstNonTypeTemplateParmExpr, Expr),
     CLASS_STMT(SubstNonTypeTemplateParmPackExpr, Expr),
     CLASS_STMT(TypeTraitExpr, Expr),

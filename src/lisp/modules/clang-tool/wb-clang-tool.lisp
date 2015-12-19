@@ -1,2 +1,6 @@
 
-(load "or
+(load "sys:modules;clang-tool;clang-tool.lisp")
+
+
+
+
