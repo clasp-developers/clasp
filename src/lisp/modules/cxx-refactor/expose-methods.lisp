@@ -35,7 +35,7 @@ Setup the compilation-tool-database."
 ;;; Setup the ASTMatcher to recognize .def("foo",&Class_O::foo)
 ;;;
 (progn
-  (defconstant +source-path+ "/Users/meister/Development/clasp")
+  (defconstant +source-path+ (ext:getenv "CLASP_HOME"))
   (defconstant +source-path-length+ (length +source-path+))
   (defparameter *find-def-matcher*
     '(:member-call-expr

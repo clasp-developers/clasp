@@ -182,7 +182,7 @@ Otherwise the value of convert-relative-includes-to-absolute is used.
 * Description
 Load the compilation database and return it"
   (let* ((db (ast-tooling:jsoncompilation-database-load-from-file
-              (namestring (probe-file pathname))))
+              (namestring (or (probe-file pathname) (error "Could not find file: ~a" pathname)))))
          (all-files (map 'list #'identity (ast-tooling:get-all-files db)))
          (ctd (make-instance 'compilation-tool-database
                              :clang-database db
