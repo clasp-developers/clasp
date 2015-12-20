@@ -112,9 +112,42 @@ Apply the compilation-tool-database's arguments-adjusters to the clang tool."
   (dolist (aa (arguments-adjuster-list compilation-tool-database))
     (ast-tooling:append-arguments-adjuster tool aa)))
 
-(defun setup-default-arguments-adjusters (compilation-tool-database)
+(defun fix-path (root rel)
+  (let* ((pnroot (pathname root))
+         (pnrel (pathname rel))
+         (merged (merge-pathnames pnrel pnroot))
+         (abs #+(or)(uiop/filesystem:native-namestring merged) (namestring merged)))
+    (or abs (error "Could not find absolute path for ~a + ~a" root rel))))
+
+(defun ensure-directory (relpath)
+  (if (eq (elt relpath (1- (length relpath))) #\/)
+      relpath
+      (concatenate 'string relpath "/")))
+
+(defun convert-relative-includes-to-absolute (args absolute-root)
+  "Build a function that fixes up compile command arguments.
+It converts relative -I../... arguments to absolute paths"
+  (let ((new-args (copy-seq args))
+        (root-directory (make-pathname :name nil :type nil :defaults (pathname absolute-root))))
+    (dotimes (i (length new-args))
+      (let ((arg (elt new-args i)))
+        (cond
+          ((string= arg "-I.." :start1 0 :end1 4)
+           (let* ((fixed-path (fix-path root-directory (ensure-directory (subseq arg 2))))
+                  (new-arg (concatenate 'string "-I" fixed-path)))
+             (elt-set new-args i new-arg)))
+          ((string= arg "../" :start1 0 :end1 3)
+           (let ((fixed-path (fix-path root-directory arg)))
+             (elt-set new-args i fixed-path)))
+          (t #| do nothing |# ))))
+    new-args))
+
+(defun setup-default-arguments-adjusters (compilation-tool-database &key convert-relative-includes-to-absolute )
   "* Arguments
 - compilation-tool-database :: The compilation-tool-database to add the arguments adjusters to.
+- convert-relative-includes-to-absolute :: If T the main-pathname of the compilation-tool-database is used
+as the root of the absolute includes, if nil relative includes are left alone.
+Otherwise the value of convert-relative-includes-to-absolute is used.
 * Description
 Setup the default arguments adjusters."
   (push (ast-tooling:get-clang-syntax-only-adjuster) (arguments-adjuster-list compilation-tool-database))
@@ -125,13 +158,27 @@ Setup the default arguments adjusters."
                        (vector "-isystem" +isystem-dir+
                                "-resource-dir" +resource-dir+)
                        +additional-arguments+))
-        (arguments-adjuster-list compilation-tool-database)))
+        (arguments-adjuster-list compilation-tool-database))
+  (cond
+    ((eq convert-relative-includes-to-absolute t)
+     (push (lambda (args)
+             (convert-relative-includes-to-absolute args (main-pathname compilation-tool-database)))
+           (arguments-adjuster-list compilation-tool-database)))
+    (convert-relative-includes-to-absolute
+     (push (lambda (args)
+             (convert-relative-includes-to-absolute args convert-relative-includes-to-absolute))
+           (arguments-adjuster-list compilation-tool-database)))
+    (t #| Do nothing |#)))
 
-(defun load-compilation-tool-database (pathname &key (main-source-filename "main.cc"))
+(defun load-compilation-tool-database (pathname &key (main-source-filename "main.cc")
+                                                  convert-relative-includes-to-absolute)
   "* Arguments
 - pathname :: The name of the file that contains the compilation database in JSON format.
 See http://clang.llvm.org/docs/JSONCompilationDatabase.html for the format
 - main-source-filename :: The name of the source file that is considered the main source file.  Default is main.cc.
+- convert-relative-includes-to-absolute :: If T the main-pathname of the compilation-tool-database is used
+as the root of the absolute includes, if nil relative includes are left alone.
+Otherwise the value of convert-relative-includes-to-absolute is used.
 * Description
 Load the compilation database and return it"
   (let* ((db (ast-tooling:jsoncompilation-database-load-from-file
@@ -141,7 +188,7 @@ Load the compilation database and return it"
                              :clang-database db
                              :main-source-filename main-source-filename)))
     (format t "Loaded database contains ~a source files~%" (length all-files))
-    (setup-default-arguments-adjusters ctd)
+    (setup-default-arguments-adjusters ctd :convert-relative-includes-to-absolute convert-relative-includes-to-absolute)
     ctd))
 
 (defun main-pathname (&optional (compilation-tool-database *compilation-tool-database*))

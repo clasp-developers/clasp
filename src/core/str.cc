@@ -134,47 +134,6 @@ T_sp af_base_string_concatenate_(T_sp args) {
   return Str_O::create(ss.str());
 };
 
-EXPOSE_CLASS(core, Str_O);
-
-void Str_O::exposeCando(Lisp_sp lisp) {
-  _G();
-  class_<Str_O>()
-      //	.def("valueAsStr", &Str_O::valueAsString )
-      //	.def("setFromStr", &Str_O::setFromString )
-//      .def("core:asInt", &Str_O::asInt)
-      .def("core:parse-real", &Str_O::asReal)
-      .def("core:asReal", &Str_O::asReal)
-      .def("core:asSymbol", &Str_O::asSymbol)
-      .def("core:asKeywordSymbol", &Str_O::asKeywordSymbol)
-      //		.def("core:set", &Str_O::set)
-      .def("core:left", &Str_O::left)
-      .def("core:string-find", &Str_O::find)
-      .def("core:right", &Str_O::right)
-      .def("core:substr", &Str_O::substr)
-      //		.def("get", &Str_O::get)
-      .def("core:size", &Str_O::size)
-      .def("core:countOccurances", &Str_O::countOccurances)
-      .def("core:split", &Str_O::split)
-      .def("core:splitAtWhiteSpace", &Str_O::splitAtWhiteSpace)
-      ;
-
-  SYMBOL_SC_(CorePkg, base_string_concatenate);
-  core::af_def(CorePkg, "base_string_concatenate", &af_base_string_concatenate_, ARGS_af_base_string_concatenate_, DECL_af_base_string_concatenate_, DOCS_af_base_string_concatenate_);
-
-}
-
-void Str_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Str, "", "", _lisp)
-      .def("valueAsStr", &Str_O::valueAsString)
-      .def("setFromStr", &Str_O::setFromString)
-      //		.def("set", &Str_O::set)
-      //		.def("get", &Str_O::get)
-      ;
-#endif
-}
-
 Str_sp Str_O::create(char initial_element, int dimension, T_sp seq) {
   _G();
   GC_ALLOCATE(Str_O, str);
@@ -894,5 +853,47 @@ void Str_O::__write__(T_sp stream) const {
     clasp_write_char('"', stream);
   }
 }
+
+EXPOSE_CLASS(core, Str_O);
+
+void Str_O::exposeCando(Lisp_sp lisp) {
+  _G();
+  class_<Str_O>()
+      //	.def("valueAsStr", &Str_O::valueAsString )
+      //	.def("setFromStr", &Str_O::setFromString )
+//      .def("core:asInt", &Str_O::asInt)
+      .def("core:parse-real", &Str_O::asReal)
+      .def("core:asReal", &Str_O::asReal)
+      .def("core:asSymbol", &Str_O::asSymbol)
+      .def("core:asKeywordSymbol", &Str_O::asKeywordSymbol)
+      //		.def("core:set", &Str_O::set)
+      .def("core:left", &Str_O::left)
+      .def("core:string-find", &Str_O::find)
+      .def("core:right", &Str_O::right)
+      .def("core:substr", &Str_O::substr)
+      //		.def("get", &Str_O::get)
+      .def("core:size", &Str_O::size)
+      .def("core:countOccurances", &Str_O::countOccurances)
+      .def("core:split", &Str_O::split)
+      .def("core:splitAtWhiteSpace", &Str_O::splitAtWhiteSpace)
+      ;
+
+  SYMBOL_SC_(CorePkg, base_string_concatenate);
+  core::af_def(CorePkg, "base_string_concatenate", &af_base_string_concatenate_, ARGS_af_base_string_concatenate_, DECL_af_base_string_concatenate_, DOCS_af_base_string_concatenate_);
+
+}
+
+void Str_O::exposePython(Lisp_sp lisp) {
+  _G();
+#ifdef USEBOOSTPYTHON
+  PYTHON_CLASS(CorePkg, Str, "", "", _lisp)
+      .def("valueAsStr", &Str_O::valueAsString)
+      .def("setFromStr", &Str_O::setFromString)
+      //		.def("set", &Str_O::set)
+      //		.def("get", &Str_O::get)
+      ;
+#endif
+}
+
 
 }; /* core */

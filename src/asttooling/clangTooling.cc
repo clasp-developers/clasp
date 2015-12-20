@@ -147,7 +147,8 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
       gctools::tagged_pointer<core::Closure> closure = func->closure;
       if (auto compiledClosure = closure.asOrNull<llvmo::CompiledClosure>()) {
         core::CompiledClosure_fptr_type fptr = compiledClosure->fptr;
-        this->_v = [fptr](const clang::tooling::CommandLineArguments &args) -> clang::tooling::CommandLineArguments {
+        core::T_O* closedEnvironment = compiledClosure->closedEnvironment.raw_();
+        this->_v = [fptr,closedEnvironment](const clang::tooling::CommandLineArguments &args) -> clang::tooling::CommandLineArguments {
 			// Should resolve to vector<string>
 			core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
 			core::T_mv result;
@@ -156,7 +157,7 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
                         onearg[0] = targs.raw_();
                         core::VaList_S onearg_valist_s(onearg);
                         core::T_O* lcc_arglist = onearg_valist_s.asTaggedPtr();
-			result = fptr(LCC_PASS_ARGS1_VA_LIST(targs.raw_()));
+			result = fptr(LCC_PASS_ENV_ARGS1_VA_LIST(closedEnvironment,targs.raw_()));
 			// Should resolve to const vector<string>& 
 			translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
 			return cresult._v;

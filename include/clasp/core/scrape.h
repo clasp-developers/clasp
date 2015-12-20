@@ -2,6 +2,7 @@
 #ifdef SCRAPING
 #define BEGIN_TAG BEGIN_TAG_bfc54f90bafadf5
 #define END_TAG END_TAG_bfc54f90bafadf5
+#define CL_NAME(...) BEGIN_TAG CL_NAME_TAG ( :FILE __FILE__ :LINE __LINE__ :CL-NAME  #__VA_ARGS__ )
 #define LAMBDA(...) BEGIN_TAG LAMBDA_TAG ( :FILE __FILE__ :LINE __LINE__ :LAMBDA-LIST  #__VA_ARGS__ )
 #define DOCSTRING(...) BEGIN_TAG DOCSTRING_TAG ( :FILE __FILE__ :LINE __LINE__ )  __VA_ARGS__ END_TAG
 #define DECLARE(...) BEGIN_TAG DECLARE_TAG ( :FILE __FILE__ :LINE __LINE__ :DECLARE #__VA_ARGS__ )
@@ -16,10 +17,12 @@
 #define LISP_VIRTUAL_CLASS(n,p,c,s) BEGIN_TAG LISP_CLASS_TAG ( :NAMESPACE #n :PACKAGE #p :CLASS #c :CLASS-SYMBOL s )
 #define LISP_EXTERNAL_CLASS(n,p,l,c,s,b) BEGIN_TAG LISP_EXTERNAL_CLASS_TAG ( :NAMESPACE #n :PACKAGE #p :CXXCLASS #l :CLASS #c :CLASS-SYMBOL s :BASE #b )
 #else
+#define CL_NAME(...)
 #define LAMBDA(...)
 #define DOCSTRING(...)
 #define DECLARE(...)
 #define CL_DEFUN
+#define CL_DEFMETHOD
 #define SYMBOL_SC_(pkg,name)
 #define SYMBOL_EXPORT_SC_(pkg,name)
 #define INTERN_(ns,name) (ns::_sym_##name)

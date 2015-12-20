@@ -2637,40 +2637,14 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                     (format stream "#endif // defined(GC_GLOBAL_SYMBOLS)~%")
                     )))
 
-
-(defun fix-path (root rel)
-  (let* ((pnroot (pathname root))
-         (pnrel (pathname rel))
-         (merged (merge-pathnames pnrel pnroot))
-         (abs #+(or)(uiop/filesystem:native-namestring merged) (namestring merged)))
-    (format t "Fixed path path: ~a~%" abs)
-    (or abs (error "Could not find absolute path for ~a + ~a" root rel))))
-
-(defun ensure-directory (relpath)
-  (if (eq (elt relpath (1- (length relpath))) #\/)
-      relpath
-      (concatenate 'string relpath "/")))
-
 (defun build-arguments-adjuster ()
   "Build a function that fixes up compile command arguments.
 It converts relative -I../... arguments to absolute paths"
   (lambda (args) 
-    (let ((new-args (copy-seq args))
-          (root-directory (make-pathname :name nil :type nil :defaults (clang-tool:main-pathname))))
-      (dotimes (i (length new-args))
-        (let ((arg (elt new-args i)))
-          (cond
-            ((string= arg "-I.." :start1 0 :end1 4)
-             (let ((fixed-path (fix-path root-directory (ensure-directory (subseq arg 2)))))
-               (elt-set new-args i (concatenate 'string "-I" fixed-path))))
-            ((string= arg "../" :start1 0 :end1 3)
-             (let ((fixed-path (fix-path root-directory arg)))
-               (elt-set new-args i fixed-path)))
-            (t #| do nothing |# ))))
-      (let ((result (concatenate 'vector #-quiet new-args #+quiet(remove "-v" new-args)
-                                 (vector "-DUSE_MPS"
-                                         "-DRUNNING_GC_BUILDER"))))
-        result))))
+    (let ((result (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
+                               (vector "-DUSE_MPS"
+                                       "-DRUNNING_GC_BUILDER"))))
+      result)))
 
 
 (defun setup-tools ()
@@ -2858,7 +2832,9 @@ Convert -Iinclude to -I<main-sourcefile-pathname>/include. Uses dynamic variable
 * Description
 Return a compilation database for analyzing the clasp (or some other clasp derived project) source code.
 Two files (mps.c and gc_interface.cc) are removed from the list of files that clasp-analyzer will run on."
-  (let* ((compilation-tool-database (clang-tool:load-compilation-tool-database pathname))
+  (let* ((compilation-tool-database (clang-tool:load-compilation-tool-database
+                                     pathname
+                                     :convert-relative-includes-to-absolute t))
          (source-filenames (clang-tool:select-source-namestrings compilation-tool-database selection-pattern))
          (regex-mps-dot-c (core:make-regex ".*mps\.c$"))
          (removed-mps-dot-c (remove-if #'(lambda (x) (core:regex-matches regex-mps-dot-c x)) source-filenames))
