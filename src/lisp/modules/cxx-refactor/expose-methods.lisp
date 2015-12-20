@@ -119,32 +119,72 @@ Setup the compilation-tool-database."
   (format t "Done stage1~%"))
 
 
-(defparameter *fix-method-matcher*
-  '(:method-decl
-    (:is-definition)
-    (:bind :whole (:method-decl))))
-(defparameter *fixed* nil)
-(defun fix-method-initializer () (setf *fixed* (make-hash-table :test #'equal)))
-(defun fix-method-callback (match-info)
-  (when (string= (clang-tool:mtag-loc-start match-info :whole)
-                 +source-path+ :end1 +source-path-length+)
-    (let* ((node (clang-tool:mtag-node match-info :whole))
-           (source-pos (clang-tool:mtag-loc-start match-info :whole))
-           (method-name (cast:get-qualified-name-as-string node))
-           (def-info (gethash method-name *defs*))
-           (fixed-already (gethash method-name *fixed*)))
-      (when (and *verbose-callback*
-                 def-info
-                 (not fixed-already))
-        (format t "Method is exposed: ~a~%" method-name))
-      (when (and def-info (not fixed-already))
-        (setf (gethash method-name *fixed*) t)
-        (clang-tool:mtag-replace
-         match-info
-         :whole
-         (lambda (minfo tag)
-           (let ((source (clang-tool:mtag-source minfo tag)))
-             (format nil "CL_NAME(~s);~%CL_DEFMETHOD ~a" (exposed-name def-info) source))))))))
+(defun save-defs (filename defs)
+  (with-open-file (fout filename :direction :output :if-exists :supersede)
+    (format fout "(~%")
+    (maphash (lambda (k v)
+               (format fout "( ~s ~s ~s)~%" (method-name v)
+                       (exposed-name v)
+                       (source-location v)))
+             defs)
+    (format fout ")~%")))
+
+(setq *default-pathname-defaults* #P"/home/meister/Dev/clasp/src/lisp/modules/cxx-refactor/")
+(save-defs "exposed.dat" *defs*)
+
+(defparameter *defs* (make-hash-table :test #'equal))
+(defmacro one-def (method-name exposed-name source)
+  `(setf (gethash ,method-name *defs*) (make-instance 'def :method-name ,method-name
+                                                :exposed-name ,exposed-name
+                                                :source-location ,source)))
+
+(defun load-defs (filename)
+  (let ((defs-list (with-open-file (fin filename :direction :input)
+                     (read fin)))
+        (ht (make-hash-table :test #'equal)))
+    (dolist (e defs-list)
+      (let ((method-name (first e))
+            (exposed-name (second e))
+            (source (third e)))
+        (setf (gethash method-name ht) (make-instance 'def
+                                                      :method-name method-name
+                                                      :exposed-name exposed-name
+                                                      :source-location source))))
+    ht))
+
+(defparameter *defs* (load-defs "exposed.dat"))
+
+(progn
+  (defparameter *fix-method-matcher*
+    '(:method-decl
+      (:is-definition)
+      (:bind :whole (:method-decl))))
+  (defparameter *fixed* nil)
+  (defun fix-method-initializer () (setf *fixed* (make-hash-table :test #'equal)))
+  (defun fix-method-callback (match-info)
+    (when (string= (clang-tool:mtag-loc-start match-info :whole)
+                   +source-path+ :end1 +source-path-length+)
+      (let* ((node (clang-tool:mtag-node match-info :whole))
+             (source-pos (clang-tool:mtag-loc-start match-info :whole))
+             (method-name (cast:get-qualified-name-as-string node))
+             (def-info (gethash method-name *defs*))
+             (fixed-already (gethash method-name *fixed*)))
+        (when (and *verbose-callback*
+                   def-info
+                   (not fixed-already))
+          (format t "Method is exposed: ~a~%" method-name))
+        (when (and def-info (not fixed-already))
+          (setf (gethash method-name *fixed*) t)
+          (clang-tool:mtag-replace
+           match-info
+           :whole
+           (lambda (minfo tag)
+             (let ((source (clang-tool:mtag-source minfo tag)))
+               (format nil "CL_NAME(~s);~%CL_DEFMETHOD ~a" (exposed-name def-info) source)))))))))
+
+;;; Select just one of the source files for testing
+(setf (clang-tool:source-namestrings *db*)
+      (clang-tool:select-source-namestrings *db* ".*str\.cc.*$"))
 
 (progn
   (defparameter *tool* (clang-tool:make-multitool))
