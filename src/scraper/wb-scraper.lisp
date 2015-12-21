@@ -1,12 +1,19 @@
-(require :sb-sprof)
-
 (in-package :cscrape)
 
 (setf *default-pathname-defaults* (pathname "/Users/meister/Development/clasp/src/scraper/"))
 (push :testing-scraper *features*)
 (load "scraper.lisp")
 
-(do-scraping '("/Users/meister/Development/externals-clasp/build/release/bin/clang" "/Users/meister/Development/clasp/src/main/" "/Users/meister/Development/clasp/src/main/include/application.config" "bin/all-commands.txt" "bin/commands.txt") :run-preprocessor nil)
+(do-scraping
+    '("/Users/meister/Development/externals-clasp/build/release/bin/clang"
+      "/Users/meister/Development/clasp/src/main/"
+      "bin/all-commands.txt"
+      "bin/commands.txt")
+  :run-preprocessor t)
+
+;;; ----------------------------------------------------------------------
+
+(require :sb-sprof)
 
 
 (sb-sprof:with-profiling (:max-samples 10000
