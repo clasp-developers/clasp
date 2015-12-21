@@ -1,12 +1,17 @@
+
+;;; Make sure you run slime from clasp/src/main
+
+(defparameter *clasp-home* #P"/Users/meister/Development/clasp/")
+
 (in-package :cscrape)
 
-(setf *default-pathname-defaults* (pathname "/Users/meister/Development/clasp/src/scraper/"))
+(setf *default-pathname-defaults* (merge-pathnames "src/scraper/" *clasp-home*))
 (push :testing-scraper *features*)
 (load "scraper.lisp")
 
 (do-scraping
     '("/Users/meister/Development/externals-clasp/build/release/bin/clang"
-      "/Users/meister/Development/clasp/src/main/"
+      (namestring (merge-pathnames "src/main/" *clasp-home*))
       "bin/all-commands.txt"
       "bin/commands.txt")
   :run-preprocessor t)

@@ -91,7 +91,7 @@ lib clasp-clbind :
                 /internals/main//main
                 /externals//boostAndExpatLibs
 #       		/externals//llvm_lib_globbed
-                /internals/gctools//gclib
+#                /internals/gctools//gclib
                 ;
 
 package.install clasp-clbind-install :
