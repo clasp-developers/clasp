@@ -133,10 +133,6 @@ Setup the compilation-tool-database."
 (save-defs "exposed.dat" *defs*)
 
 (defparameter *defs* (make-hash-table :test #'equal))
-(defmacro one-def (method-name exposed-name source)
-  `(setf (gethash ,method-name *defs*) (make-instance 'def :method-name ,method-name
-                                                :exposed-name ,exposed-name
-                                                :source-location ,source)))
 
 (defun load-defs (filename)
   (let ((defs-list (with-open-file (fin filename :direction :input)
