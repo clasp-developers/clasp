@@ -11,8 +11,8 @@
 install -d bin
 bjam $* -n -a >bin/all-commands.txt
 bjam $* -n >bin/commands.txt
-echo Running $CLASP_SBCL --load $CLASP_HOME/src/scraper/scraper.lisp -- `$LLVM_CONFIG_RELEASE --bindir`/clang `pwd`/ `pwd`/include/application.config bin/all-commands.txt bin/commands.txt
-$CLASP_SBCL --load $CLASP_HOME/src/scraper/scraper.lisp -- `$LLVM_CONFIG_RELEASE --bindir`/clang `pwd`/ `pwd`/include/application.config bin/all-commands.txt bin/commands.txt
+echo Running $CLASP_SBCL --load $CLASP_HOME/src/scraper/scraper.lisp -- $CLASP_CLANG_PATH --bindir`/clang `pwd`/ `pwd`/include/application.config bin/all-commands.txt bin/commands.txt
+$CLASP_SBCL --load $CLASP_HOME/src/scraper/scraper.lisp -- $CLASP_CLANG_PATH `pwd`/ `pwd`/include/application.config bin/all-commands.txt bin/commands.txt
 
 #
 # run bjam to build app
