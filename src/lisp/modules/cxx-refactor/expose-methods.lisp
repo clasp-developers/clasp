@@ -361,7 +361,7 @@ Setup the compilation-tool-database."
     (let ((*verbose-callback* t))
       (clang-tool:batch-run-multitool *tool*
                                       :compilation-tool-database *db*
-                                      :run-and-save nil)))
+                                      :run-and-save t)))
   (format t "Done stage2~%"))
 
 
