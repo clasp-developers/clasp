@@ -460,9 +460,9 @@ Return a string that describes the source location corresponding to sloc."
 (defun mtag-loc-start (match-info tag)
   "* Arguments
 - match-info :: The match-info.
-- sloc :: The source location object.
+- tag :: The tag of the node.
 * Description 
-Return a string that describes the start of a source location."
+Return a string that describes the start of a source location for the node indicated by the tag."
   (let* ((node (mtag-node match-info tag))
          (begin-sloc (get-loc-start node)))
     (source-loc-as-string match-info begin-sloc)))
