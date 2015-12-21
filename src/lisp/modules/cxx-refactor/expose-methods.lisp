@@ -341,14 +341,14 @@ Setup the compilation-tool-database."
                    def-info
                    (not fixed-already))
           (format t "Exposed method: ( ~s ~s ~s)~%" method-name (exposed-name def-info) (clang-tool:mtag-loc-start minfo :whole))
-        (when (and def-info (not fixed-already))
-          (setf (gethash method-name *fixed*) t)
-          (clang-tool:mtag-replace
-           match-info
-           :whole
-           (lambda (minfo tag)
-             (let ((source (clang-tool:mtag-source minfo tag)))
-               (format nil "CL_NAME(~s);~%CL_DEFMETHOD ~a" (exposed-name def-info) source)))))))))
+          (when (and def-info (not fixed-already))
+            (setf (gethash method-name *fixed*) t)
+            (clang-tool:mtag-replace
+             match-info
+             :whole
+             (lambda (minfo tag)
+               (let ((source (clang-tool:mtag-source minfo tag)))
+                 (format nil "CL_NAME(~s);~%CL_DEFMETHOD ~a" (exposed-name def-info) source))))))))))
 
 (defun run-fix-matcher ()
   (defparameter *tool* (clang-tool:make-multitool))
