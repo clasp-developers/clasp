@@ -158,6 +158,15 @@ Setup the compilation-tool-database."
   (defparameter *fix-method-matcher*
     '(:method-decl
       (:is-definition)
+      (:any-of
+       (:matches-name "adapt::")
+       (:matches-name "asttooling::")
+       (:matches-name "cffi::")
+       (:matches-name "chem::")
+       (:matches-name "core::")
+       (:matches-name "geom::")
+       (:matches-name "llvmo::")
+       (:matches-name "units::"))
       (:bind :whole (:method-decl))))
   (defparameter *fixed* nil)
   (defun fix-method-initializer () (setf *fixed* (make-hash-table :test #'equal)))
@@ -182,10 +191,6 @@ Setup the compilation-tool-database."
              (let ((source (clang-tool:mtag-source minfo tag)))
                (format nil "CL_NAME(~s);~%CL_DEFMETHOD ~a" (exposed-name def-info) source)))))))))
 
-;;; Select just one of the source files for testing
-(setf (clang-tool:source-namestrings *db*)
-      (clang-tool:select-source-namestrings *db* ".*str\.cc.*$"))
-
 (progn
   (defparameter *tool* (clang-tool:make-multitool))
   (clang-tool:multitool-add-matcher
@@ -201,4 +206,5 @@ Setup the compilation-tool-database."
                                       :compilation-tool-database *db*
                                       :run-and-save nil)))
   (format t "Done stage2~%"))
+
 
