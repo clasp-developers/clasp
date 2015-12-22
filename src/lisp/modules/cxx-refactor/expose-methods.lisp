@@ -104,7 +104,7 @@ Setup the compilation-tool-database."
 
 ;;; Setup and run the multitool on the compilation-tool-database
 ;;; This will identify all of the class_<Foo_O>(...).def("bar",&Foo_O::bar);
-(defun setup-find-def ()
+(defun run-find-def ()
   (defparameter *tool* (clang-tool:make-multitool))
   (clang-tool:multitool-add-matcher
    *tool*
@@ -132,6 +132,9 @@ Setup the compilation-tool-database."
     (format fout ")~%")))
 
 (setq *default-pathname-defaults* #P"/home/meister/Dev/clasp/src/lisp/modules/cxx-refactor/")
+
+
+
 #+(or)(save-defs "exposed.dat" *defs*)
 
 (defparameter *defs* (make-hash-table :test #'equal))
@@ -152,7 +155,7 @@ Setup the compilation-tool-database."
 
 #+(or)(defparameter *defs* (load-defs "exposed.dat"))
 
-(defun setup-fix-method ()
+(progn
   (defparameter *fix-method-matcher*
     '(:method-decl
       (:is-definition)
@@ -340,7 +343,7 @@ Setup the compilation-tool-database."
         (when (and *verbose-callback*
                    def-info
                    (not fixed-already))
-          (format t "Exposed method: ( ~s ~s ~s)~%" method-name (exposed-name def-info) (clang-tool:mtag-loc-start minfo :whole))
+          (format t "Exposed method: ( ~s ~s ~s)~%" method-name (exposed-name def-info) (clang-tool:mtag-loc-start match-info :whole))
           (when (and def-info (not fixed-already))
             (setf (gethash method-name *fixed*) t)
             (clang-tool:mtag-replace
@@ -367,3 +370,8 @@ Setup the compilation-tool-database."
   (format t "Done stage2~%"))
 
 
+
+(defun run-all ()
+  (run-find-def)
+  (save-defs "exposed.dat" *defs*)
+  (run-fix-matcher))
