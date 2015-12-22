@@ -37,7 +37,7 @@
       (format t "Loaded file~%")
       (with-open-file (fout filename :direction :output :if-exists :supersede)
         (block write-file
-          (let ((line-number 1))
+          (let ((line-number 0))
             (dolist (rewrite rewrites)
               (format t "Applying rewrite ~s~%" rewrite)
               (block rewrite
@@ -47,7 +47,7 @@
                   (loop
                      (let ((line (read-line sin nil 'eof)))
                        (incf line-number)
-                       (format t "Read line[~d]: ~a~%" line-number line)
+;;                       (format t "Read line[~d]: ~a~%" line-number line)
                        (when (eq line 'eof) (return-from write-file nil))
                        (when (= line-number target-line)
                          (format t "Exposing function: ~a~%" method-name)
@@ -59,7 +59,7 @@
             (loop
                (let ((line (read-line sin nil 'eof)))
                  (incf line-number)
-                 (format t "Read line[~d]: ~a~%" line-number line)
+;;                 (format t "Read line[~d]: ~a~%" line-number line)
                  (when (eq line 'eof) (return-from write-file nil))
                  (format fout "~a~%" line)))))))))
 
