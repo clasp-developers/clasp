@@ -20,23 +20,49 @@
              (colon2 (position #\: source-loc :start (1+ colon1)))
              (source-file (subseq source-loc 0 colon1))
              (source-line (subseq source-loc (1+ colon1) colon2)))
-        (format t "source |~a| line |~a|~%" source-file source-line)))))
+        (format t "source |~a| line |~a|~%" source-file source-line)
+        (push (list method-name exposed-name (parse-integer source-line)) (gethash source-file ht))))
+    (maphash (lambda (k v) (setf (gethash k ht) (nreverse v))) ht)
+    ht))
 
+(defun read-entire-file (filename)
+  (with-open-file (stream filename)
+    (let ((data (make-string (file-length stream))))
+      (read-sequence data stream)
+      data)))
+
+(defun rewrite-source (filename rewrites)
+  (let ((file-in-string (read-entire-file filename)))
+    (with-input-from-string (sin file-in-string)
+      (with-open-file (fout filename :direction :output :if-exists :supersede)
+        (let ((line-number 0))
+          (dolist (rewrite rewrites)
+            (block rewrite
+              (let ((method-name (first rewrite))
+                    (exposed-name (second rewrite))
+                    (target-line (third rewrite)))
+                (declare (ignore method-name))
+                (loop
+                   (let ((line (read-line sin nil 'eof)))
+                     (when (eq line 'eof) (return-from rewrite-source nil))
+                     (when (= line-number target-line)
+                       (format fout "CL_NAME(~s);~%" exposed-name)
+                       (format fout "CL_DEFMETHOD ~a~%" line)
+                       (return-from rewrite nil))
+                     (format fout "~a~%" line)))))))))))
+
+
+                
 (setq *default-pathname-defaults* #P"/home/meister/Dev/clasp/src/lisp/modules/cxx-refactor/")
 
 (defparameter *rewrites* (read-rewrites "rewrites.txt"))
 
-(organize-rewrites *rewrites*)
+(defparameter *organized-rewrites* (organize-rewrites *rewrites*))
+
+(maphash (lambda (k v) (print (list k v))) *organized-rewrites*)
 
 
 
 
-(defun read-entire-cpp-file (cc)
-  (format t "Scraping ~a~%" (cpp-name cc))
-  (with-open-file (stream (pathname (cpp-name cc)))
-    (let ((data (make-string (file-length stream))))
-      (read-sequence data stream)
-      (make-instance 'buffer-stream
-                     :buffer data
-                     :buffer-pathname (pathname (input cc))
-                     :buffer-stream (make-string-input-stream data)))))
+
+
