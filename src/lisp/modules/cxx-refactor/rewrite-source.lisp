@@ -34,23 +34,34 @@
 (defun rewrite-source (filename rewrites)
   (let ((file-in-string (read-entire-file filename)))
     (with-input-from-string (sin file-in-string)
+      (format t "Loaded file~%")
       (with-open-file (fout filename :direction :output :if-exists :supersede)
-        (let ((line-number 0))
-          (dolist (rewrite rewrites)
-            (block rewrite
-              (let ((method-name (first rewrite))
-                    (exposed-name (second rewrite))
-                    (target-line (third rewrite)))
-                (declare (ignore method-name))
-                (loop
-                   (let ((line (read-line sin nil 'eof)))
-                     (when (eq line 'eof) (return-from rewrite-source nil))
-                     (when (= line-number target-line)
-                       (format fout "CL_NAME(~s);~%" exposed-name)
-                       (format fout "CL_DEFMETHOD ~a~%" line)
-                       (return-from rewrite nil))
-                     (format fout "~a~%" line)))))))))))
-
+        (block write-file
+          (let ((line-number 1))
+            (dolist (rewrite rewrites)
+              (format t "Applying rewrite ~s~%" rewrite)
+              (block rewrite
+                (let ((method-name (first rewrite))
+                      (exposed-name (second rewrite))
+                      (target-line (third rewrite)))
+                  (loop
+                     (let ((line (read-line sin nil 'eof)))
+                       (incf line-number)
+                       (format t "Read line[~d]: ~a~%" line-number line)
+                       (when (eq line 'eof) (return-from write-file nil))
+                       (when (= line-number target-line)
+                         (format t "Exposing function: ~a~%" method-name)
+                         (format fout "CL_NAME(~s);~%" exposed-name)
+                         (format fout "CL_DEFMETHOD ~a~%" line)
+                         (return-from rewrite nil))
+                       (format fout "~a~%" line))))))
+            (format t "Done rewrites~%")
+            (loop
+               (let ((line (read-line sin nil 'eof)))
+                 (incf line-number)
+                 (format t "Read line[~d]: ~a~%" line-number line)
+                 (when (eq line 'eof) (return-from write-file nil))
+                 (format fout "~a~%" line)))))))))
 
                 
 (setq *default-pathname-defaults* #P"/home/meister/Dev/clasp/src/lisp/modules/cxx-refactor/")
@@ -59,7 +70,11 @@
 
 (defparameter *organized-rewrites* (organize-rewrites *rewrites*))
 
-(maphash (lambda (k v) (print (list k v))) *organized-rewrites*)
+(maphash (lambda (k v) (print (list k v)) (if (search "cons.cc" k) (setq *cons* v)) ) *organized-rewrites*)
+
+(rewrite-source "/home/meister/Dev/clasp/src/core/cons.cc" *cons*)
+
+(maphash (lambda (k v) (rewrite-source k v)) *organized-rewrites*)
 
 
 
