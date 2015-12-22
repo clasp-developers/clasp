@@ -27,6 +27,8 @@
 (clasp-cleavir::cleavir-compile-file "sys:tests;targs.lsp")
 (load "sys:tests;targs.fasl")
 
+(defparameter *foo* 1)
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (let ((*foo* 2)) (print *foo*))) :debug t)
 
 
 (eval '(defmethod foo () (zzzzz)))
