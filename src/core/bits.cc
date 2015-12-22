@@ -299,11 +299,10 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
   return x;
 }
 
-LAMBDA(op x y &optional r);
-DECLARE();
-DOCSTRING("bitArrayOp");
+CL_LAMBDA(op x y &optional r);
+CL_DECLARE();
+CL_DOCSTRING("bitArrayOp");
 CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
-  _G();
   if (o.nilp()) {
     ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 1, o, cl::_sym_fixnum);
   }
@@ -691,11 +690,10 @@ cl_logbitp(Integer_sp p, Integer_sp x) {
 
 #endif
 
-LAMBDA(op arg1 arg2);
-DECLARE();
-DOCSTRING("boole");
+CL_LAMBDA(op arg1 arg2);
+CL_DECLARE();
+CL_DOCSTRING("boole");
 CL_DEFUN T_sp cl__boole(T_sp op, T_sp arg1, T_sp arg2) {
-  _G();
   if (op.nilp()) {
     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 1, op, cl::_sym_integer);
   }

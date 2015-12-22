@@ -38,11 +38,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-LAMBDA(regex-str);
-DECLARE();
-DOCSTRING("makeRegex");
+CL_LAMBDA(regex-str);
+CL_DECLARE();
+CL_DOCSTRING("makeRegex");
 CL_DEFUN Regex_sp core__make_regex(const string &str) {
-  _G();
   Regex_sp regex = Regex_O::make(str);
   return regex;
 };
@@ -59,7 +58,6 @@ void Regex_O::exposeCando(core::Lisp_sp lisp) {
 }
 
 void Regex_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Regex, "", "", _lisp)
       .def("regexMatches", &Regex_O::regexMatches)
@@ -71,7 +69,6 @@ void Regex_O::exposePython(core::Lisp_sp lisp) {
 }
 
 Regex_sp Regex_O::make(const string &regex) {
-  _G();
   GC_ALLOCATE(Regex_O, re);
   re->_Regex = regex;
   return re;
@@ -133,7 +130,6 @@ void RegexMatch_O::exposeCando(core::Lisp_sp lisp) {
 }
 
 void RegexMatch_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #if USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, RegexMatch, "", "", _lisp)
       .def("size", &RegexMatch_O::size)

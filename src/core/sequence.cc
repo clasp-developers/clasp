@@ -40,9 +40,9 @@ namespace core {
 SYMBOL_EXPORT_SC_(KeywordPkg, start);
 SYMBOL_EXPORT_SC_(KeywordPkg, end);
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("See CLHS length - works with SEQUENCES and ACTIVATION_FRAMEs");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS length - works with SEQUENCES and ACTIVATION_FRAMEs");
 CL_DEFUN uint cl__length(T_sp arg) {
   if (arg.nilp()) {
     return 0;
@@ -56,11 +56,10 @@ CL_DEFUN uint cl__length(T_sp arg) {
   TYPE_ERROR(arg, cl::_sym_sequence);
 };
 
-LAMBDA(sequence index);
-DECLARE();
-DOCSTRING("elt");
+CL_LAMBDA(sequence index);
+CL_DECLARE();
+CL_DOCSTRING("elt");
 CL_DEFUN T_sp cl__elt(T_sp sequence, int index) {
-  _G();
   if (sequence.nilp()) {
     TYPE_ERROR(sequence, cl::_sym_sequence);
   } else if (Cons_sp cseq = sequence.asOrNull<Cons_O>()) {
@@ -71,11 +70,10 @@ CL_DEFUN T_sp cl__elt(T_sp sequence, int index) {
   TYPE_ERROR(sequence, cl::_sym_sequence);
 };
 
-LAMBDA(type size &key (initial-element nil iesp));
-DECLARE();
-DOCSTRING("make_sequence");
+CL_LAMBDA(type size &key (initial-element nil iesp));
+CL_DECLARE();
+CL_DOCSTRING("make_sequence");
 CL_DEFUN T_mv cl__make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element, T_sp iesp) {
-  _G();
   IMPLEMENT_MEF(BF("make-sequence"));
 #if 0
 	Symbol_sp element_type;
@@ -95,11 +93,10 @@ CL_DEFUN T_mv cl__make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element,
 #endif
 };
 
-LAMBDA(seq);
-DECLARE();
-DOCSTRING("reverse");
+CL_LAMBDA(seq);
+CL_DECLARE();
+CL_DOCSTRING("reverse");
 CL_DEFUN T_sp cl__reverse(T_sp seq) {
-  _G();
   if (seq.nilp()) {
     return _Nil<T_O>();
   } else if (Vector_sp svec = seq.asOrNull<Vector_O>()) {
@@ -110,11 +107,10 @@ CL_DEFUN T_sp cl__reverse(T_sp seq) {
   TYPE_ERROR(seq, cl::_sym_sequence);
 };
 
-LAMBDA(seq);
-DECLARE((declare (locked)));
-DOCSTRING("nreverse");
+CL_LAMBDA(seq);
+CL_DECLARE((declare (locked)));
+CL_DOCSTRING("nreverse");
 CL_DEFUN T_sp cl__nreverse(T_sp seq) {
-  _G();
   if (seq.nilp()) {
     return _Nil<T_O>();
   } else if (Vector_sp svec = seq.asOrNull<Vector_O>()) {
@@ -125,11 +121,10 @@ CL_DEFUN T_sp cl__nreverse(T_sp seq) {
   TYPE_ERROR(seq, cl::_sym_sequence);
 };
 
-LAMBDA(sequence start &optional end);
-DECLARE();
-DOCSTRING("subseq");
+CL_LAMBDA(sequence start &optional end);
+CL_DECLARE();
+CL_DOCSTRING("subseq");
 CL_DEFUN T_sp cl__subseq(T_sp seq, int start, T_sp end) {
-  _G();
   if (seq.nilp()) {
     if (start == 0 && (end.nilp() || (end.fixnump() && unbox_fixnum(gc::As<Fixnum_sp>(end)) == 0))) {
       return _Nil<T_O>();
@@ -143,11 +138,10 @@ CL_DEFUN T_sp cl__subseq(T_sp seq, int start, T_sp end) {
   TYPE_ERROR(seq, cl::_sym_sequence);
 };
 
-LAMBDA(seq);
-DECLARE();
-DOCSTRING("copy_seq");
+CL_LAMBDA(seq);
+CL_DECLARE();
+CL_DOCSTRING("copy_seq");
 CL_DEFUN T_sp cl__copy_seq(T_sp seq) {
-  _G();
   if (seq.nilp()) {
     return _Nil<T_O>();
   } else if (Cons_sp cseq = seq.asOrNull<Cons_O>()) {
@@ -158,11 +152,10 @@ CL_DEFUN T_sp cl__copy_seq(T_sp seq) {
   TYPE_ERROR(seq, cl::_sym_sequence);
 };
 
-LAMBDA(sequence index value);
-DECLARE();
-DOCSTRING("setfElt");
+CL_LAMBDA(sequence index value);
+CL_DECLARE();
+CL_DOCSTRING("setfElt");
 CL_DEFUN T_sp core__setf_elt(T_sp sequence, int index, T_sp value) {
-  _G();
   if (sequence.nilp()) {
     TYPE_ERROR(sequence, cl::_sym_sequence);
   } else if (Vector_sp vsequence = sequence.asOrNull<Vector_O>()) {
@@ -175,19 +168,17 @@ CL_DEFUN T_sp core__setf_elt(T_sp sequence, int index, T_sp value) {
   TYPE_ERROR(sequence, cl::_sym_sequence);
 };
 
-LAMBDA(seq index val);
-DECLARE();
-DOCSTRING("eltSet");
+CL_LAMBDA(seq index val);
+CL_DECLARE();
+CL_DOCSTRING("eltSet");
 CL_DEFUN T_sp core__elt_set(T_sp sequence, int index, T_sp val) {
-  _G();
   return core__setf_elt(sequence, index, val);
 };
 
-LAMBDA(sequence start end subseq);
-DECLARE();
-DOCSTRING("setfSubseq");
+CL_LAMBDA(sequence start end subseq);
+CL_DECLARE();
+CL_DOCSTRING("setfSubseq");
 CL_DEFUN T_sp core__setf_subseq(T_sp sequence, int start, Fixnum_sp end, T_sp subseq) {
-  _G();
   if (sequence.nilp()) {
     TYPE_ERROR(sequence, cl::_sym_sequence);
   } else if (Vector_sp vsequence = sequence.asOrNull<Vector_O>()) {
@@ -204,7 +195,7 @@ CL_DEFUN T_sp core__setf_subseq(T_sp sequence, int start, Fixnum_sp end, T_sp su
     EXPOSE_CLASS(core,Sequence_O);
 
     void Sequence_O::exposeCando(::core::Lisp_sp lisp)
-    {_G();
+    {
 	::core::class_<Sequence_O>()
 //	.initArgs("(self)")
 	      .def("elt",&Sequence_O::elt)

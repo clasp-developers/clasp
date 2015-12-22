@@ -46,7 +46,6 @@ Create a Path object that maintains a system independant path to a file in the f
 __END_DOC
 */
 void Path_O::lispInitialize(Cons_sp keyed, Lisp_sp env) {
-  _G();
   string sp = keyed->getStringAndRemoveOrDefault("path", "");
   if (sp != "") {
     this->setPath(sp);
@@ -60,23 +59,19 @@ void Path_O::serialize(ArchiveP node) {
 #endif
 
 void Path_O::setPath(const string &pth) {
-  _G();
   bf::path p(pth);
   this->_Path = p;
 }
 
 string Path_O::string() {
-  _G();
   return this->_Path.string();
 }
 
 string Path_O::stem() {
-  _G();
   return this->_Path.stem();
 }
 
 string Path_O::extension() {
-  _G();
   return this->_Path.extension();
 }
 
@@ -85,7 +80,6 @@ bool Path_O::exists() {
 }
 
 Cons_sp directory(Path_sp rpath) {
-  _G();
   bf::path p(rpath->getPath());
   Cons_sp list, tail;
   Str_sp fileName;
@@ -100,22 +94,18 @@ Cons_sp directory(Path_sp rpath) {
 }
 
 void rename(Path_sp rpath1, Path_sp rpath2) {
-  _G();
   return bf::rename(rpath1->getPath(), rpath2->getPath());
 }
 
 bool delete_file(Path_sp rpath) {
-  _G();
   return bf::remove(rpath->getPath());
 }
 
 int removeAll(Path_sp rpath) {
-  _G();
   return bf::remove_all(rpath->getPath());
 }
 
 bool createDirectory(Path_sp rpath) {
-  _G();
   return bf::create_directory(rpath->getPath());
 }
 

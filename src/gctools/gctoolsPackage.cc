@@ -69,7 +69,6 @@ bool _GlobalDebugAllocations = false;
 #pragma GCC visibility pop
 
 void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
-  _G();
   switch (what) {
   case candoClasses: {
 

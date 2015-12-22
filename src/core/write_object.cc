@@ -169,11 +169,10 @@ OUTPUT:
   return x;
 }
 
-LAMBDA(obj &optional strm);
-DECLARE();
-DOCSTRING("writeObject");
+CL_LAMBDA(obj &optional strm);
+CL_DECLARE();
+CL_DOCSTRING("writeObject");
 CL_DEFUN T_sp core__write_object(T_sp obj, T_sp ostrm) {
-  _G();
   T_sp strm = coerce::outputStreamDesignator(ostrm);
   return write_object(obj, strm);
 };

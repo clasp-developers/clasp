@@ -44,11 +44,10 @@ THE SOFTWARE.
 
 namespace core {
 
-LAMBDA(source &optional verbose print external-format);
-DECLARE();
-DOCSTRING("loadSource");
+CL_LAMBDA(source &optional verbose print external-format);
+CL_DECLARE();
+CL_DOCSTRING("loadSource");
 CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, T_sp externalFormat) {
-  _G();
   T_sp strm;
   void *strmPointer;
   if (cl__streamp(source)) {
@@ -109,9 +108,9 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, T_sp exte
 }
 
 /*! Translated from from ecl::load.d */
-LAMBDA(source &key (verbose *load-verbose*) (print *load-print*) (if-does-not-exist :error) (external-format :default) (search-list core::*load-search-list*));
-DECLARE();
-DOCSTRING("CLHS: load");
+CL_LAMBDA(source &key (verbose *load-verbose*) (print *load-print*) (if-does-not-exist :error) (external-format :default) (search-list core::*load-search-list*));
+CL_DECLARE();
+CL_DOCSTRING("CLHS: load");
 CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_exist, T_sp external_format, T_sp search_list) {
   Pathname_sp pathname;
   T_sp pntype;

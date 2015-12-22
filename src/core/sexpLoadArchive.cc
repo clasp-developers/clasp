@@ -109,13 +109,11 @@ SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
 EXPOSE_CLASS(core, SexpLoadArchive_O);
 
 void SexpLoadArchive_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<SexpLoadArchive_O>("make-sexp-load-archive")
       .def("parseFromObject", &SexpLoadArchive_O::parseFromObject)
       .def("parseFromStream", &SexpLoadArchive_O::parseFromStream);
 }
 void SexpLoadArchive_O::exposePython(Lisp_sp lisp) {
-  _G();
 }
 
 CL_NAME("parseFromObject");

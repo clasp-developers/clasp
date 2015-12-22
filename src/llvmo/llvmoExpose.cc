@@ -106,7 +106,6 @@ void comp_setAssociatedFuncs(core::CompiledFunction_sp cf, core::List_sp associa
 #define DECL_af_llvm_value_p ""
 #define DOCS_af_llvm_value_p "llvm_value_p"
 bool af_llvm_value_p(core::T_sp o) {
-  _G();
   if (o.nilp())
     return false;
   if (Value_sp v = o.asOrNull<Value_O>()) {
@@ -117,7 +116,6 @@ bool af_llvm_value_p(core::T_sp o) {
 };
 
 LLVMContext_sp LLVMContext_O::get_global_context() {
-  _G();
   GC_ALLOCATE(LLVMContext_O, context);
   context->_ptr = &(llvm::getGlobalContext());
   return context;
@@ -128,13 +126,11 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, LLVMContext_O);
 
 void LLVMContext_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<LLVMContext_O>();
   af_def(LlvmoPkg, "get-global-context", &LLVMContext_O::get_global_context);
 };
 
 void LLVMContext_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -145,7 +141,6 @@ namespace llvmo {
 #define DECL_Linker_O_make ""
 #define DOCS_Linker_O_make "Linker_O_make"
 Linker_sp Linker_O::make(Module_sp module) {
-  _G();
   GC_ALLOCATE(Linker_O, self);
   self->_ptr = new llvm::Linker(module->wrappedPtr());
   return self;
@@ -155,7 +150,6 @@ Linker_sp Linker_O::make(Module_sp module) {
 #define DECL_llvm_sys__link_in_module ""
 #define DOCS_llvm_sys__link_in_module "link_in_module"
 core::T_mv llvm_sys__link_in_module(Linker_sp linker, Module_sp module) {
-  _G();
   std::string errorMsg = "llvm::Linker::linkInModule reported an error";
   bool res = linker->wrappedPtr()->linkInModule(module->wrappedPtr());
   return Values(_lisp->_boolean(res), core::Str_O::create(errorMsg));
@@ -164,7 +158,6 @@ core::T_mv llvm_sys__link_in_module(Linker_sp linker, Module_sp module) {
 EXPOSE_CLASS(llvmo, Linker_O);
 
 void Linker_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<Linker_O>()
       .def("getModule", &llvm::Linker::getModule);
   Defun_maker(LlvmoPkg, Linker);
@@ -172,7 +165,6 @@ void Linker_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void Linker_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -182,12 +174,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, Pass_O);
 
 void Pass_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<Pass_O>();
 };
 
 void Pass_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -196,13 +186,11 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, Target_O);
 
 void Target_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<Target_O>()
       .def("createTargetMachine", &llvm::Target::createTargetMachine);
 };
 
 void Target_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -313,7 +301,6 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
 }
 
 void TargetMachine_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<TargetMachine_O>()
       .def("getSubtargetImpl", (const llvm::TargetSubtargetInfo *(llvm::TargetMachine::*)() const) & llvm::TargetMachine::getSubtargetImpl)
       .def("addPassesToEmitFileAndRunPassManager", &TargetMachine_O::addPassesToEmitFileAndRunPassManager);
@@ -366,7 +353,6 @@ void TargetMachine_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void TargetMachine_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -378,14 +364,12 @@ EXPOSE_CLASS(llvmo, Triple_O);
 #define DECL_Triple_O_make ""
 #define DOCS_Triple_O_make "Triple_O_make"
 Triple_sp Triple_O::make(const string &triple) {
-  _G();
   GC_ALLOCATE(Triple_O, self);
   self->_ptr = new llvm::Triple(triple);
   return self;
 };
 
 void Triple_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<Triple_O>()
       .def("getTriple", &llvm::Triple::getTriple)
       .def("getArchName", &llvm::Triple::getArchName)
@@ -620,7 +604,6 @@ void Triple_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void Triple_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -631,7 +614,6 @@ namespace llvmo {
 #define DECL_TargetOptions_O_make ""
 #define DOCS_TargetOptions_O_make "TargetOptions_O_make"
 TargetOptions_sp TargetOptions_O::make() {
-  _G();
   GC_ALLOCATE(TargetOptions_O, self);
   self->_ptr = new llvm::TargetOptions();
   return self;
@@ -671,7 +653,6 @@ CL_DEFMETHOD void TargetOptions_O::setfJITEmitDebugInfoToDisk(bool val) {
 EXPOSE_CLASS(llvmo, TargetOptions_O);
 
 void TargetOptions_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<TargetOptions_O>()
       .def("NoFramePointerElim", &TargetOptions_O::NoFramePointerElim)
       .def("setfNoFramePointerElim", &TargetOptions_O::setfNoFramePointerElim)
@@ -683,7 +664,6 @@ void TargetOptions_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void TargetOptions_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -700,14 +680,12 @@ CL_DEFMETHOD bool LLVMTargetMachine_O::LLVMTargetMachine_addPassesToEmitFile(Pas
 EXPOSE_CLASS(llvmo, LLVMTargetMachine_O);
 
 void LLVMTargetMachine_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<LLVMTargetMachine_O>()
       .def("LLVMTargetMachine_addPassesToEmitFile", &LLVMTargetMachine_O::LLVMTargetMachine_addPassesToEmitFile);
   ;
 };
 
 void LLVMTargetMachine_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -716,12 +694,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, FunctionPass_O);
 
 void FunctionPass_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<FunctionPass_O>();
 };
 
 void FunctionPass_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -732,12 +708,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, ModulePass_O);
 
 void ModulePass_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ModulePass_O>();
 };
 
 void ModulePass_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -748,12 +722,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, ImmutablePass_O);
 
 void ImmutablePass_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ImmutablePass_O>();
 };
 
 void ImmutablePass_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -764,20 +736,17 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, PassManagerBase_O);
 
 void PassManagerBase_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<PassManagerBase_O>()
 
       ;
 };
 
 void PassManagerBase_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
 namespace llvmo {
 Value_sp Value_O::create(llvm::Value *ptr) {
-  _G();
   return core::RP_Create_wrapped<Value_O, llvm::Value *>(ptr);
 };
 }
@@ -786,7 +755,6 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, Value_O);
 
 void Value_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<Value_O>()
       .def("dump", &llvm::Value::dump)
       .def("getName", &llvm::Value::getName)
@@ -795,7 +763,6 @@ void Value_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void Value_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -806,13 +773,11 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, Metadata_O);
 
 void Metadata_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<Metadata_O>()
       .def("dump", &llvm::Metadata::dump);
 };
 
 void Metadata_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -821,12 +786,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, User_O);
 
 void User_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<User_O>();
 };
 
 void User_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -837,7 +800,6 @@ namespace llvmo {
 #define DECL_af_writeIrToFile ""
 #define DOCS_af_writeIrToFile "writeIrToFile"
 void af_writeIrToFile(Module_sp module, core::Str_sp path) {
-  _G();
   std::error_code errcode;
   string pathName = path->get();
   llvm::raw_fd_ostream OS(pathName.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
@@ -853,7 +815,6 @@ void af_writeIrToFile(Module_sp module, core::Str_sp path) {
 #define DECL_af_verifyModule ""
 #define DOCS_af_verifyModule "verifyModule returns (values result errorinfo)"
 core::T_mv af_verifyModule(Module_sp module, core::Symbol_sp action) {
-  _G();
   string errorInfo;
   llvm::raw_string_ostream ei(errorInfo);
   llvm::Module *m = module->wrappedPtr();
@@ -865,7 +826,6 @@ core::T_mv af_verifyModule(Module_sp module, core::Symbol_sp action) {
 #define DECL_af_verifyFunction ""
 #define DOCS_af_verifyFunction "verifyFunction"
 core::T_mv af_verifyFunction(Function_sp function) {
-  _G();
   llvm::Function *f = function->wrappedPtr();
   string errorInfo;
   llvm::raw_string_ostream ei(errorInfo);
@@ -877,7 +837,6 @@ core::T_mv af_verifyFunction(Function_sp function) {
 #define DECL_af_writeBitcodeToFile ""
 #define DOCS_af_writeBitcodeToFile "writeBitcodeToFile"
 void af_writeBitcodeToFile(Module_sp module, core::Str_sp pathname) {
-  _G();
   string pn = pathname->get();
   std::error_code errcode;
   llvm::raw_fd_ostream OS(pn.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
@@ -891,7 +850,6 @@ void af_writeBitcodeToFile(Module_sp module, core::Str_sp pathname) {
 #define DECL_af_parseBitcodeFile ""
 #define DOCS_af_parseBitcodeFile "parseBitcodeFile"
 Module_sp af_parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context) {
-  _G();
   //	printf("%s:%d af_parseBitcodeFile %s\n", __FILE__, __LINE__, filename->c_str() );
   llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(filename->get());
   if (std::error_code ec = eo_membuf.getError()) {
@@ -921,7 +879,6 @@ Module_sp af_parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context) {
 #define DECL_af_valuep ""
 #define DOCS_af_valuep "Return true if the arg is derived from llvm::Value"
 bool af_valuep(core::T_sp arg) {
-  _G();
   return gc::IsA<Value_sp>(arg);
 };
 
@@ -929,7 +886,7 @@ bool af_valuep(core::T_sp arg) {
     // Jan 31, 2013 - the Attribute/Argument api is changing fast and I'm not using it right now
     // and I don't want to mess with this code until it settles down
     Attribute_sp Attribute_O::get(LLVMContext_sp context, core::Cons_sp attribute_symbols)
-    {_G();
+    {
 	llvm::AttrBuilder attrBuilder;
 	core::SymbolToEnumConverter_sp converter = _sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
 	for ( core::Cons_sp cur=attribute_symbols;cur->notNil(); cur=cur->cdr() )
@@ -1016,7 +973,6 @@ void Attribute_O::exposeCando(core::Lisp_sp lisp) {
 }
 
 void Attribute_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(packageName, Attribute, "", "", _lisp);
 #endif
@@ -1032,7 +988,6 @@ void AttributeSet_O::exposeCando(core::Lisp_sp lisp) {
 }
 
 void AttributeSet_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(packageName, AttributeSet, "", "", _lisp);
 #endif
@@ -1042,7 +997,6 @@ void AttributeSet_O::exposePython(core::Lisp_sp lisp) {
 #define DECL_af_makeStringGlobal ""
 #define DOCS_af_makeStringGlobal "makeStringGlobal"
 Value_sp af_makeStringGlobal(Module_sp module, core::Str_sp svalue) {
-  _G();
   llvm::Module &M = *(module->wrappedPtr());
   llvm::Constant *StrConstant = llvm::ConstantDataArray::getString(M.getContext(), svalue->get());
   llvm::GlobalVariable *GV = new llvm::GlobalVariable(M, StrConstant->getType(),
@@ -1055,7 +1009,6 @@ Value_sp af_makeStringGlobal(Module_sp module, core::Str_sp svalue) {
 
 // Define Value_O::__repr__ which is prototyped in llvmoExpose.lisp
 string Value_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
   string str;
@@ -1075,7 +1028,6 @@ string Value_O::__repr__() const {
 }
 
 bool Value_O::valid() const {
-  _G();
   return this->wrappedPtr() != NULL;
 }
 
@@ -1083,7 +1035,6 @@ bool Value_O::valid() const {
 #define DECL_af_valid ""
 #define DOCS_af_valid "Return true if this is a valid LLMV value, meaning its pointer is not NULL"
 bool af_valid(core::T_sp value) {
-  _G();
   // nil is a valid
   if (value.nilp())
     return true;
@@ -1097,7 +1048,6 @@ bool af_valid(core::T_sp value) {
 namespace llvmo {
 
 void convert_sequence_types_to_vector(core::T_sp elements, vector<llvm::Type *> &velements) {
-  _G();
   core::T_sp save_elements = elements;
   if (elements.nilp()) {
     return;
@@ -1124,7 +1074,6 @@ namespace llvmo {
 #define DECL_Module_O_make ""
 #define DOCS_Module_O_make ""
 Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context) {
-  _G();
   GC_ALLOCATE(Module_O, self);
   ASSERT(&(llvm::getGlobalContext()) == context->wrappedPtr());
   self->_ptr = new llvm::Module(module_name, *(context->wrappedPtr()));
@@ -1148,7 +1097,6 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, Module_O);
 
 void Module_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   using namespace llvm;
   GlobalVariable *(llvm::Module::*getGlobalVariable_nc)(StringRef, bool) = &llvm::Module::getGlobalVariable;
   GlobalVariable *(Module::*getNamedGlobal_nc)(StringRef) = &Module::getNamedGlobal;
@@ -1193,13 +1141,11 @@ void Module_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void Module_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
 CL_NAME("getFunction");
 CL_DEFMETHOD llvm::Function *Module_O::getFunction(core::Str_sp dispatchName) {
-  _G();
   llvm::Module *module = this->wrappedPtr();
   string funcName = dispatchName->get();
   llvm::Function *func = module->getFunction(funcName);
@@ -1208,7 +1154,6 @@ CL_DEFMETHOD llvm::Function *Module_O::getFunction(core::Str_sp dispatchName) {
 
 CL_NAME("moduleValid");
 CL_DEFMETHOD bool Module_O::valid() const {
-  _G();
   return this->wrappedPtr() != NULL;
 }
 
@@ -1221,7 +1166,6 @@ CL_DEFMETHOD void Module_O::moduleDelete() {
 
 CL_NAME("dump_namedMDList");
 CL_DEFMETHOD void Module_O::dump_namedMDList() const {
-  _G();
   llvm::Module *M = this->wrappedPtr();
   for (llvm::Module::const_named_metadata_iterator it = M->named_metadata_begin();
        it != M->named_metadata_end(); it++) {
@@ -1269,7 +1213,6 @@ CL_DEFMETHOD GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable(
 
 CL_NAME("getGlobalList");
 CL_DEFMETHOD core::List_sp Module_O::getGlobalList() const {
-  _G();
   ql::list globals(_lisp);
   llvm::Module *m = this->wrappedPtr();
   for (llvm::Module::global_iterator it = m->global_begin(); it != m->global_end(); it++) {
@@ -1286,7 +1229,6 @@ void ExecutionEngine_O::initialize() {
 }
 
 string ExecutionEngine_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << " " << this->_ptr << " > ";
   return ss.str();
@@ -1294,7 +1236,6 @@ string ExecutionEngine_O::__repr__() const {
 
 CL_NAME("dependentModuleNames");
 CL_DEFMETHOD core::List_sp ExecutionEngine_O::dependentModuleNames() const {
-  _G();
   ql::list l;
   this->_DependentModules->mapHash([&l](core::T_sp key, core::T_sp val) {
                 l << key;
@@ -1303,7 +1244,6 @@ CL_DEFMETHOD core::List_sp ExecutionEngine_O::dependentModuleNames() const {
 }
 
 void ExecutionEngine_O::addNamedModule(const string &name, Module_sp module) {
-  _G();
   core::Str_sp key = core::Str_O::create(name);
   if (this->_DependentModules->contains(key)) {
     //	if ( this->_DependentModules.count(name) != 0 )
@@ -1318,14 +1258,12 @@ void ExecutionEngine_O::addNamedModule(const string &name, Module_sp module) {
 
 CL_NAME("hasNamedModule");
 CL_DEFMETHOD bool ExecutionEngine_O::hasNamedModule(const string &name) {
-  _G();
   if (this->_DependentModules->contains(core::Str_O::create(name)))
     return true;
   return false;
 }
 
 void ExecutionEngine_O::removeNamedModule(const string &name) {
-  _G();
   core::Str_sp key = core::Str_O::create(name);
   core::T_mv mi = this->_DependentModules->gethash(key);
   //	core::StringMap<Module_O>::iterator mi = this->_DependentModules.find(name);
@@ -1341,7 +1279,6 @@ void ExecutionEngine_O::removeNamedModule(const string &name) {
 
 CL_NAME("addGlobalMapping");
 CL_DEFMETHOD void ExecutionEngine_O::addGlobalMapping(GlobalValue_sp value, core::Pointer_sp ptr) {
-  _G();
   this->wrappedPtr()->addGlobalMapping(value->wrappedPtr(), ptr->ptr());
 }
 
@@ -1361,7 +1298,6 @@ CL_DEFMETHOD Function_sp ExecutionEngine_O::FindFunctionNamed(core::Str_sp name)
 EXPOSE_CLASS(llvmo, ExecutionEngine_O);
 
 void ExecutionEngine_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ExecutionEngine_O>()
       .def("clearAllGlobalMappings", &llvm::ExecutionEngine::clearAllGlobalMappings)
       .def("addModule", &ExecutionEngine_O::addModule) // Adds via std::unique_ptr<Module>
@@ -1378,7 +1314,6 @@ void ExecutionEngine_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void ExecutionEngine_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1387,12 +1322,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, MCSubtargetInfo_O);
 
 void MCSubtargetInfo_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<MCSubtargetInfo_O>();
 };
 
 void MCSubtargetInfo_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1401,13 +1334,11 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, TargetSubtargetInfo_O);
 
 void TargetSubtargetInfo_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<TargetSubtargetInfo_O>()
       .def("getDataLayout", &llvm::TargetSubtargetInfo::getDataLayout);
 };
 
 void TargetSubtargetInfo_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1415,7 +1346,6 @@ void TargetSubtargetInfo_O::exposePython(core::Lisp_sp lisp) {
 namespace llvmo {
 CL_NAME("DataLayoutCopy");
 CL_DEFMETHOD DataLayout_sp DataLayout_O::copy() const {
-  _G();
   GC_ALLOCATE(DataLayout_O, cp);
   cp->_ptr = new llvm::DataLayout(*(this->wrappedPtr()));
   return cp;
@@ -1424,14 +1354,12 @@ CL_DEFMETHOD DataLayout_sp DataLayout_O::copy() const {
 EXPOSE_CLASS(llvmo, DataLayout_O);
 
 void DataLayout_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<DataLayout_O>()
       .def("DataLayoutCopy", &DataLayout_O::copy)
       .def("DataLayout-getTypeAllocSize", &DataLayout_O::ExternalType::getTypeAllocSize);
 };
 
 void DataLayout_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1443,20 +1371,17 @@ EXPOSE_CLASS(llvmo, DataLayoutPass_O);
 #define DECL_DataLayoutPass_O_make ""
 #define DOCS_DataLayoutPass_O_make ""
 DataLayoutPass_sp DataLayoutPass_O::make() {
-  _G();
   GC_ALLOCATE(DataLayoutPass_O, self);
   self->_ptr = new llvm::DataLayoutPass();
   return self;
 };
 
 void DataLayoutPass_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<DataLayoutPass_O>();
   core::af_def(LlvmoPkg, "makeDataLayoutPass", &DataLayoutPass_O::make, ARGS_DataLayoutPass_O_make, DECL_DataLayoutPass_O_make, DOCS_DataLayoutPass_O_make);
 };
 
 void DataLayoutPass_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1470,7 +1395,6 @@ EXPOSE_CLASS(llvmo, TargetLibraryInfo_O);
 #define DECL_TargetLibraryInfo_O_make ""
 #define DOCS_TargetLibraryInfo_O_make ""
 TargetLibraryInfo_sp TargetLibraryInfo_O::make(llvm::Triple *tripleP) {
-  _G();
   GC_ALLOCATE(TargetLibraryInfo_O, self);
   self->_ptr = new llvm::TargetLibraryInfo(*tripleP);
   ASSERT(self->_ptr);
@@ -1478,13 +1402,11 @@ TargetLibraryInfo_sp TargetLibraryInfo_O::make(llvm::Triple *tripleP) {
 };
 
 void TargetLibraryInfo_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<TargetLibraryInfo_O>();
   core::af_def(LlvmoPkg, "makeTargetLibraryInfo", &TargetLibraryInfo_O::make, ARGS_TargetLibraryInfo_O_make, DECL_TargetLibraryInfo_O_make, DOCS_TargetLibraryInfo_O_make);
 };
 
 void TargetLibraryInfo_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1499,20 +1421,17 @@ EXPOSE_CLASS(llvmo, TargetLibraryInfoWrapperPass_O);
 #define DECL_TargetLibraryInfoWrapperPass_O_make ""
 #define DOCS_TargetLibraryInfoWrapperPass_O_make ""
 TargetLibraryInfoWrapperPass_sp TargetLibraryInfoWrapperPass_O::make(llvm::Triple *tripleP) {
-  _G();
   GC_ALLOCATE(TargetLibraryInfoWrapperPass_O, self);
   self->_ptr = new llvm::TargetLibraryInfoWrapperPass(*tripleP);
   return self;
 };
 
 void TargetLibraryInfoWrapperPass_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<TargetLibraryInfoWrapperPass_O>();
   core::af_def(LlvmoPkg, "makeTargetLibraryInfoWrapperPass", &TargetLibraryInfoWrapperPass_O::make, ARGS_TargetLibraryInfoWrapperPass_O_make, DECL_TargetLibraryInfoWrapperPass_O_make, DOCS_TargetLibraryInfoWrapperPass_O_make);
 };
 
 void TargetLibraryInfoWrapperPass_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1527,7 +1446,7 @@ namespace llvmo
 #define DECL_TargetData_O_copy ""
 #define DOCS_TargetData_O_copy ""
     TargetData_sp TargetData_O::copy(llvm::TargetData const & orig)
-    {_G();
+    {
         GC_ALLOCATE(TargetData_O,self );
 	self->_ptr = new llvm::TargetData(orig);
 	return self;
@@ -1535,7 +1454,7 @@ namespace llvmo
 
 
     void TargetData_O::exposeCando(core::Lisp_sp lisp)
-    {_G();
+    {
 	core::externalClass_<TargetData_O>()
 	    ;
         core::af_def(LlvmoPkg,"target-data-copy",&TargetData_O::copy,ARGS_TargetData_O_copy,DECL_TargetData_O_copy,DOCS_TargetData_O_copy);
@@ -1543,7 +1462,7 @@ namespace llvmo
     };
 
     void TargetData_O::exposePython(core::Lisp_sp lisp)
-    {_G();
+    {
 	IMPLEMENT_ME();
     };
 }; // llvmo
@@ -1558,7 +1477,6 @@ namespace llvmo {
 #define DECL_FunctionPassManager_O_make ""
 #define DOCS_FunctionPassManager_O_make ""
 FunctionPassManager_sp FunctionPassManager_O::make(llvm::Module *module) {
-  _G();
   GC_ALLOCATE(FunctionPassManager_O, self);
   self->_ptr = new llvm::FunctionPassManager(module);
   return self;
@@ -1576,7 +1494,6 @@ void FunctionPassManager_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void FunctionPassManager_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1588,7 +1505,6 @@ namespace llvmo {
 #define DECL_PassManager_O_make ""
 #define DOCS_PassManager_O_make ""
 PassManager_sp PassManager_O::make() {
-  _G();
   GC_ALLOCATE(PassManager_O, self);
   self->_ptr = new llvm::PassManager();
   return self;
@@ -1597,7 +1513,6 @@ PassManager_sp PassManager_O::make() {
 EXPOSE_CLASS(llvmo, PassManager_O);
 
 void PassManager_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<PassManager_O>()
       .def("passManagerAdd", &llvm::PassManager::add)
       .def("passManagerRun", &llvm::PassManager::run);
@@ -1605,7 +1520,6 @@ void PassManager_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void PassManager_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1617,7 +1531,6 @@ namespace llvmo {
 #define DECL_EngineBuilder_O_make ""
 #define DOCS_EngineBuilder_O_make ""
 EngineBuilder_sp EngineBuilder_O::make(Module_sp module) {
-  _G();
   GC_ALLOCATE(EngineBuilder_O, self);
   std::unique_ptr<llvm::Module> ownedModule(module->wrappedPtr());
   module->set_wrapped(NULL);
@@ -1628,7 +1541,6 @@ EngineBuilder_sp EngineBuilder_O::make(Module_sp module) {
 
 CL_NAME("setEngineKind");
 CL_DEFMETHOD void EngineBuilder_O::setEngineKind(core::Symbol_sp kind) {
-  _G();
   SYMBOL_EXPORT_SC_(LlvmoPkg, interpreter);
   SYMBOL_EXPORT_SC_(LlvmoPkg, jit);
   if (kind == _sym_interpreter) {
@@ -1646,7 +1558,7 @@ CL_DEFMETHOD void EngineBuilder_O::setEngineKind(core::Symbol_sp kind) {
 
 #if 0
     void EngineBuilder_O::setUseMCJIT(bool use_mcjit)
-    {_G();
+    {
 	this->wrappedPtr()->setUseMCJIT(use_mcjit);
 #if 0
 	if ( use_mcjit )
@@ -1664,14 +1576,12 @@ CL_DEFMETHOD void EngineBuilder_O::setEngineKind(core::Symbol_sp kind) {
 
 CL_NAME("setTargetOptions");
 CL_DEFMETHOD void EngineBuilder_O::setTargetOptions(TargetOptions_sp options) {
-  _G();
   this->wrappedPtr()->setTargetOptions(*options->wrappedPtr());
 }
 
 EXPOSE_CLASS(llvmo, EngineBuilder_O);
 
 void EngineBuilder_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
 
   //	llvm::ExecutionEngine* (llvm::EngineBuilder::*create)() = &llvm::EngineBuilder::create;
   //	llvm::ExecutionEngine* (llvm::EngineBuilder::*create_targetMachine)(llvm::TargetMachine*) = &llvm::EngineBuilder::create;
@@ -1689,13 +1599,11 @@ void EngineBuilder_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void EngineBuilder_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
 CL_NAME("create");
 CL_DEFMETHOD ExecutionEngine_sp EngineBuilder_O::createExecutionEngine() {
-  _G();
   llvm::ExecutionEngine *ee = this->wrappedPtr()->create();
   ExecutionEngine_sp eeo = core::RP_Create_wrapped<ExecutionEngine_O, llvm::ExecutionEngine *>(ee);
   return eeo;
@@ -1708,7 +1616,6 @@ namespace llvmo {
 #define DECL_PassManagerBuilder_O_make ""
 #define DOCS_PassManagerBuilder_O_make ""
 PassManagerBuilder_sp PassManagerBuilder_O::make() {
-  _G();
   GC_ALLOCATE(PassManagerBuilder_O, self);
   self->_ptr = new llvm::PassManagerBuilder();
   return self;
@@ -1750,7 +1657,6 @@ void PassManagerBuilder_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void PassManagerBuilder_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
@@ -1758,7 +1664,6 @@ void PassManagerBuilder_O::exposePython(core::Lisp_sp lisp) {
 
 namespace llvmo {
 Constant_sp Constant_O::create(llvm::Constant *ptr) {
-  _G();
   return core::RP_Create_wrapped<Constant_O, llvm::Constant *>(ptr);
 };
 }
@@ -1767,12 +1672,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, Constant_O);
 
 void Constant_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<Constant_O>();
 };
 
 void Constant_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1782,12 +1685,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, ConstantDataSequential_O);
 
 void ConstantDataSequential_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ConstantDataSequential_O>();
 };
 
 void ConstantDataSequential_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1799,7 +1700,6 @@ namespace llvmo {
 #define DECL_ConstantDataArray_O_getUInt32 ""
 #define DOCS_ConstantDataArray_O_getUInt32 "Docs for ConstantDataArray get"
 Constant_sp ConstantDataArray_O::getUInt32(LLVMContext_sp context, core::T_sp ovalues) {
-  _G();
   Constant_sp ca = ConstantDataArray_O::create();
   vector<uint32_t> vector_IdxList;
   if (core::Cons_sp cvalues = ovalues.asOrNull<core::Cons_O>()) {
@@ -1821,13 +1721,11 @@ Constant_sp ConstantDataArray_O::getUInt32(LLVMContext_sp context, core::T_sp ov
 EXPOSE_CLASS(llvmo, ConstantDataArray_O);
 
 void ConstantDataArray_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ConstantDataArray_O>();
   core::af_def(LlvmoPkg, "constant-data-array-get-uint32", &ConstantDataArray_O::getUInt32, ARGS_ConstantDataArray_O_getUInt32, DECL_ConstantDataArray_O_getUInt32, DOCS_ConstantDataArray_O_getUInt32);
 };
 
 void ConstantDataArray_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1839,7 +1737,6 @@ namespace llvmo {
 #define DECL_ConstantArray_O_get ""
 #define DOCS_ConstantArray_O_get "Docs for ConstantArray get"
 Constant_sp ConstantArray_O::get(ArrayType_sp type, core::List_sp values) {
-  _G();
   Constant_sp ca = ConstantArray_O::create();
   vector<llvm::Constant *> vector_IdxList;
   for (auto cur : values) {
@@ -1854,13 +1751,11 @@ Constant_sp ConstantArray_O::get(ArrayType_sp type, core::List_sp values) {
 EXPOSE_CLASS(llvmo, ConstantArray_O);
 
 void ConstantArray_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ConstantArray_O>();
   core::af_def(LlvmoPkg, "constant-array-get", &ConstantArray_O::get, ARGS_ConstantArray_O_get, DECL_ConstantArray_O_get, DOCS_ConstantArray_O_get);
 };
 
 void ConstantArray_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1872,7 +1767,6 @@ namespace llvmo {
 #define DECL_BlockAddress_O_get ""
 #define DOCS_BlockAddress_O_get "Docs for BlockAddress get"
 BlockAddress_sp BlockAddress_O::get(Function_sp func, BasicBlock_sp bb) {
-  _G();
   BlockAddress_sp basp = BlockAddress_O::create();
   llvm::BlockAddress *ba = llvm::BlockAddress::get(func->wrappedPtr(), bb->wrappedPtr());
   basp->set_wrapped(ba);
@@ -1882,13 +1776,11 @@ BlockAddress_sp BlockAddress_O::get(Function_sp func, BasicBlock_sp bb) {
 EXPOSE_CLASS(llvmo, BlockAddress_O);
 
 void BlockAddress_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<BlockAddress_O>();
   core::af_def(LlvmoPkg, "block-address-get", &BlockAddress_O::get, ARGS_BlockAddress_O_get, DECL_BlockAddress_O_get, DOCS_BlockAddress_O_get);
 };
 
 void BlockAddress_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1898,7 +1790,6 @@ namespace llvmo {
 namespace llvmo {
 
 Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(Constant_sp constant, core::List_sp idxList) {
-  _G();
   GC_ALLOCATE(Constant_O, res);
   vector<llvm::Constant *> vector_IdxList;
   for (auto cur : idxList) {
@@ -1913,13 +1804,11 @@ Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(Constant_sp constant, core:
 EXPOSE_CLASS(llvmo, ConstantExpr_O);
 
 void ConstantExpr_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ConstantExpr_O>();
   core::af_def(LlvmoPkg, "constant-expr-get-in-bounds-get-element-ptr", &ConstantExpr_O::getInBoundsGetElementPtr);
 };
 
 void ConstantExpr_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1930,12 +1819,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, GlobalValue_O);
 
 void GlobalValue_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<GlobalValue_O>();
 };
 
 void GlobalValue_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1948,7 +1835,6 @@ namespace llvmo {
 #define DECL_GlobalVariable_O_make ""
 #define DOCS_GlobalVariable_O_make "make GlobalVariable args: module type is-constant linkage initializer name"
 GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant, core::Symbol_sp linkage, /*Constant_sp*/ core::T_sp initializer, core::Str_sp name, /*GlobalVariable_sp*/ core::T_sp insertBefore, core::Symbol_sp threadLocalMode) {
-  _G();
   GC_ALLOCATE(GlobalVariable_O, me);
   translate::from_object<llvm::GlobalValue::LinkageTypes> llinkage(linkage);
   llvm::Constant *llvm_initializer = NULL;
@@ -1969,7 +1855,6 @@ GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isCon
 EXPOSE_CLASS(llvmo, GlobalVariable_O);
 
 void GlobalVariable_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<GlobalVariable_O>()
       .def("eraseFromParent", &llvm::GlobalVariable::eraseFromParent)
       .def("setInitializer", &llvm::GlobalVariable::setInitializer);
@@ -1977,7 +1862,6 @@ void GlobalVariable_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void GlobalVariable_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -1986,14 +1870,12 @@ namespace llvmo {
 
 CL_NAME("setMetadata");
 CL_DEFMETHOD void Instruction_O::setMetadata(core::Str_sp kind, MDNode_sp mdnode) {
-  _G();
   this->wrappedPtr()->setMetadata(kind->get(), mdnode->wrappedPtr());
 }
 
 EXPOSE_CLASS(llvmo, Instruction_O);
 
 void Instruction_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<Instruction_O>()
       .def("getParent", (llvm::BasicBlock * (llvm::Instruction::*)()) & llvm::Instruction::getParent)
       .def("setMetadata", &Instruction_O::setMetadata)
@@ -2001,13 +1883,11 @@ void Instruction_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void Instruction_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
 CL_NAME("terminatorInstP");
 CL_DEFMETHOD bool Instruction_O::terminatorInstP() const {
-  _G();
   return llvm::TerminatorInst::classof(this->wrappedPtr());
 }
 
@@ -2019,12 +1899,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, StoreInst_O);
 
 void StoreInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<StoreInst_O>();
 };
 
 void StoreInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2035,12 +1913,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, FenceInst_O);
 
 void FenceInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<FenceInst_O>();
 };
 
 void FenceInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2051,12 +1927,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, AtomicCmpXchgInst_O);
 
 void AtomicCmpXchgInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<AtomicCmpXchgInst_O>();
 };
 
 void AtomicCmpXchgInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2067,12 +1941,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, AtomicRMWInst_O);
 
 void AtomicRMWInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<AtomicRMWInst_O>();
 };
 
 void AtomicRMWInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2083,13 +1955,11 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, PHINode_O);
 
 void PHINode_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<PHINode_O>()
       .def("addIncoming", &llvm::PHINode::addIncoming);
 };
 
 void PHINode_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2100,12 +1970,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, CallInst_O);
 
 void CallInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<CallInst_O>();
 };
 
 void CallInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2116,7 +1984,6 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, LandingPadInst_O);
 
 void LandingPadInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<LandingPadInst_O>()
       .def("setCleanup", &llvm::LandingPadInst::setCleanup)
       .def("isCleanup", &llvm::LandingPadInst::isCleanup)
@@ -2124,7 +1991,6 @@ void LandingPadInst_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void LandingPadInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2135,12 +2001,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, UnaryInstruction_O);
 
 void UnaryInstruction_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<UnaryInstruction_O>();
 };
 
 void UnaryInstruction_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2151,13 +2015,11 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, AllocaInst_O);
 
 void AllocaInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<AllocaInst_O>()
       .def("setAlignment", &AllocaInst_O::ExternalType::setAlignment);
 };
 
 void AllocaInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2168,12 +2030,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, VAArgInst_O);
 
 void VAArgInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<VAArgInst_O>();
 };
 
 void VAArgInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2184,12 +2044,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, LoadInst_O);
 
 void LoadInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<LoadInst_O>();
 };
 
 void LoadInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2200,12 +2058,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, TerminatorInst_O);
 
 void TerminatorInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<TerminatorInst_O>();
 };
 
 void TerminatorInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2216,12 +2072,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, BranchInst_O);
 
 void BranchInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<BranchInst_O>();
 };
 
 void BranchInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2232,13 +2086,11 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, SwitchInst_O);
 
 void SwitchInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<SwitchInst_O>()
       .def("addCase", &SwitchInst_O::addCase);
 };
 
 void SwitchInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
@@ -2255,13 +2107,11 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, IndirectBrInst_O);
 
 void IndirectBrInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<IndirectBrInst_O>()
       .def("addDestination", &llvm::IndirectBrInst::addDestination);
 };
 
 void IndirectBrInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2272,12 +2122,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, InvokeInst_O);
 
 void InvokeInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<InvokeInst_O>();
 };
 
 void InvokeInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2288,12 +2136,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, ResumeInst_O);
 
 void ResumeInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ResumeInst_O>();
 };
 
 void ResumeInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2304,12 +2150,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, UnreachableInst_O);
 
 void UnreachableInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<UnreachableInst_O>();
 };
 
 void UnreachableInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2320,19 +2164,16 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, ReturnInst_O);
 
 void ReturnInst_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ReturnInst_O>();
 };
 
 void ReturnInst_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
 
 namespace llvmo {
 ConstantFP_sp ConstantFP_O::create(llvm::ConstantFP *ptr) {
-  _G();
   return core::RP_Create_wrapped<ConstantFP_O, llvm::ConstantFP *>(ptr);
 };
 }
@@ -2341,7 +2182,6 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, ConstantFP_O);
 
 void ConstantFP_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ConstantFP_O>();
   llvm::ConstantFP *(*fx1)(llvm::LLVMContext &, const llvm::APFloat &) = &llvm::ConstantFP::get;
   core::af_def(LlvmoPkg, "constantFpGet", fx1);
@@ -2352,12 +2192,10 @@ void ConstantFP_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void ConstantFP_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
 string ConstantFP_O::__repr__() const {
-  _G();
   stringstream ss;
   llvm::APFloat const &val = this->wrappedPtr()->getValueAPF();
   llvm::SmallVector<char, 100> svistr;
@@ -2373,26 +2211,22 @@ namespace llvmo {
 
 namespace llvmo {
 ConstantInt_sp ConstantInt_O::create(llvm::ConstantInt *ptr) {
-  _G();
   return core::RP_Create_wrapped<ConstantInt_O, llvm::ConstantInt *>(ptr);
 };
 
 EXPOSE_CLASS(llvmo, ConstantInt_O);
 
 void ConstantInt_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ConstantInt_O>();
   llvm::ConstantInt *(*fx1)(llvm::LLVMContext &, const llvm::APInt &) = &llvm::ConstantInt::get;
   core::af_def(LlvmoPkg, "constantIntGet", fx1);
 };
 
 void ConstantInt_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
 string ConstantInt_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << " " << this->wrappedPtr()->getValue().toString(10, true) << ">";
   return ss.str();
@@ -2401,21 +2235,18 @@ string ConstantInt_O::__repr__() const {
 
 namespace llvmo {
 ConstantStruct_sp ConstantStruct_O::create(llvm::ConstantStruct *ptr) {
-  _G();
   return core::RP_Create_wrapped<ConstantStruct_O, llvm::ConstantStruct *>(ptr);
 };
 
 EXPOSE_CLASS(llvmo, ConstantStruct_O);
 
 void ConstantStruct_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ConstantStruct_O>();
   llvm::Constant *(*get1)(llvm::StructType *T, llvm::ArrayRef<llvm::Constant *>) = &llvm::ConstantStruct::get;
   core::af_def(LlvmoPkg, "constantStructGet", get1);
 };
 
 void ConstantStruct_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
@@ -2423,25 +2254,21 @@ void ConstantStruct_O::exposePython(core::Lisp_sp lisp) {
 
 namespace llvmo {
 UndefValue_sp UndefValue_O::create(llvm::UndefValue *ptr) {
-  _G();
   return core::RP_Create_wrapped<UndefValue_O, llvm::UndefValue *>(ptr);
 };
 
 EXPOSE_CLASS(llvmo, UndefValue_O);
 
 void UndefValue_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<UndefValue_O>();
   core::af_def(LlvmoPkg, "UndefValueGet", llvm::UndefValue::get);
 };
 
 void UndefValue_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
 string UndefValue_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << ">";
   return ss.str();
@@ -2450,25 +2277,21 @@ string UndefValue_O::__repr__() const {
 
 namespace llvmo {
 ConstantPointerNull_sp ConstantPointerNull_O::create(llvm::ConstantPointerNull *ptr) {
-  _G();
   return core::RP_Create_wrapped<ConstantPointerNull_O, llvm::ConstantPointerNull *>(ptr);
 };
 
 EXPOSE_CLASS(llvmo, ConstantPointerNull_O);
 
 void ConstantPointerNull_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ConstantPointerNull_O>();
   core::af_def(LlvmoPkg, "ConstantPointerNullGet", llvm::ConstantPointerNull::get);
 };
 
 void ConstantPointerNull_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
 string ConstantPointerNull_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << ">";
   return ss.str();
@@ -2484,7 +2307,6 @@ namespace llvmo {
 #define DECL_APFloat_O_makeAPFloatFloat ""
 #define DOCS_APFloat_O_makeAPFloatFloat ""
 APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value) {
-  _G();
   GC_ALLOCATE(APFloat_O, self);
   self->_value = llvm::APFloat(unbox_single_float(value));
   return self;
@@ -2494,7 +2316,6 @@ APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value) {
 #define DECL_APFloat_O_makeAPFloatDouble ""
 #define DOCS_APFloat_O_makeAPFloatDouble ""
 APFloat_sp APFloat_O::makeAPFloatDouble(core::DoubleFloat_sp value) {
-  _G();
   GC_ALLOCATE(APFloat_O, self);
   self->_value = llvm::APFloat(value->get());
   return self;
@@ -2505,14 +2326,12 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, APFloat_O);
 
 void APFloat_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<APFloat_O>();
   core::af_def(LlvmoPkg, "makeAPFloatFloat", &APFloat_O::makeAPFloatFloat, ARGS_APFloat_O_makeAPFloatFloat, DECL_APFloat_O_makeAPFloatFloat, DOCS_APFloat_O_makeAPFloatFloat);
   core::af_def(LlvmoPkg, "makeAPFloatDouble", &APFloat_O::makeAPFloatDouble, ARGS_APFloat_O_makeAPFloatDouble, DECL_APFloat_O_makeAPFloatDouble, DOCS_APFloat_O_makeAPFloatDouble);
 };
 
 void APFloat_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -2529,7 +2348,6 @@ APInt_sp APInt_O::create(llvm::APInt api) {
 #define DECL_APInt_O_makeAPInt ""
 #define DOCS_APInt_O_makeAPInt ""
 APInt_sp APInt_O::makeAPInt(core::Integer_sp value) {
-  _G();
   GC_ALLOCATE(APInt_O, self);
   if (af_fixnumP(value)) {
     core::Fixnum_sp fixnum_value = gc::As<core::Fixnum_sp>(value);
@@ -2553,7 +2371,6 @@ namespace llvmo {
 #define DECL_APInt_O_makeAPInt1 ""
 #define DOCS_APInt_O_makeAPInt1 ""
 APInt_sp APInt_O::makeAPInt1(core::T_sp value) {
-  _G();
   GC_ALLOCATE(APInt_O, self);
   if (af_fixnumP(value)) {
     core::Fixnum_sp fixnum_value = gc::As<core::Fixnum_sp>(value);
@@ -2572,7 +2389,6 @@ APInt_sp APInt_O::makeAPInt1(core::T_sp value) {
 #define DECL_APInt_O_makeAPIntWidth ""
 #define DOCS_APInt_O_makeAPIntWidth ""
 APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bool sign) {
-  _G();
   GC_ALLOCATE(APInt_O, self);
   llvm::APInt apint;
   int numbits;
@@ -2612,7 +2428,6 @@ APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bool sign) 
 #define DECL_APInt_O_makeAPInt32 ""
 #define DOCS_APInt_O_makeAPInt32 ""
 APInt_sp APInt_O::makeAPInt32(core::Integer_sp value) {
-  _G();
   return APInt_O::makeAPIntWidth(value, 32, true);
 }
 
@@ -2620,7 +2435,6 @@ APInt_sp APInt_O::makeAPInt32(core::Integer_sp value) {
 #define DECL_APInt_O_makeAPInt64 ""
 #define DOCS_APInt_O_makeAPInt64 ""
 APInt_sp APInt_O::makeAPInt64(core::Integer_sp value) {
-  _G();
   return APInt_O::makeAPIntWidth(value, 64, true);
 }
 }
@@ -2629,7 +2443,6 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, APInt_O);
 
 void APInt_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<APInt_O>()
       .def("toString", &APInt_O::toString);
   SYMBOL_EXPORT_SC_(LlvmoPkg, makeAPInt1);
@@ -2645,7 +2458,6 @@ void APInt_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void APInt_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
@@ -2655,7 +2467,6 @@ CL_DEFMETHOD string APInt_O::toString(int radix, bool isigned) const {
 }
 
 string APInt_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
   ss << this->_value.toString(10, true);
@@ -2668,7 +2479,6 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, IRBuilderBase_O);
 
 void IRBuilderBase_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   void (llvm::IRBuilderBase::*SetInsertPoint_1)(llvm::BasicBlock *) = &llvm::IRBuilderBase::SetInsertPoint;
   void (llvm::IRBuilderBase::*SetInsertPoint_2)(llvm::Instruction *) = &llvm::IRBuilderBase::SetInsertPoint;
   //	void (llvm::IRBuilderBase::*SetInsertPoint_3)(llvm::Use&)  = &llvm::IRBuilderBase::SetInsertPoint;
@@ -2685,19 +2495,16 @@ void IRBuilderBase_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void IRBuilderBase_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
 CL_NAME("restoreIP");
 CL_DEFMETHOD void IRBuilderBase_O::restoreIP(InsertPoint_sp insertPoint) {
-  _G();
   this->wrappedPtr()->restoreIP(insertPoint->insertPoint());
 }
 
 CL_NAME("saveIP");
 CL_DEFMETHOD InsertPoint_sp IRBuilderBase_O::saveIP() {
-  _G();
   llvm::IRBuilderBase::InsertPoint ip = this->wrappedPtr()->saveIP();
   InsertPoint_sp oip = InsertPoint_O::create(ip);
   return oip;
@@ -2731,7 +2538,6 @@ namespace llvmo {
 #define DECL_IRBuilder_O_make ""
 #define DOCS_IRBuilder_O_make ""
 IRBuilder_sp IRBuilder_O::make(LLVMContext_sp context) {
-  _G();
   GC_ALLOCATE(IRBuilder_O, self);
   ASSERT(&(llvm::getGlobalContext()) == context->wrappedPtr());
   self->set_wrapped(new llvm::IRBuilder<>(*(context->wrappedPtr())));
@@ -3003,7 +2809,6 @@ void IRBuilder_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void IRBuilder_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -3012,7 +2817,6 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, Argument_O);
 
 void Argument_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<Argument_O>()
       .def("addAttr", &llvm::Argument::addAttr)
       .def("removeAttr", &llvm::Argument::removeAttr)
@@ -3023,7 +2827,6 @@ void Argument_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void Argument_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
@@ -3032,7 +2835,6 @@ void Argument_O::exposePython(core::Lisp_sp lisp) {
 namespace llvmo {
 
 MDNode_sp MDNode_O::get(LLVMContext_sp context, core::List_sp values) {
-  _G();
   vector<llvm::Metadata *> valvec;
   for (auto cur : values) {
     llvm::Metadata *val = gc::As<Metadata_sp>(oCar(cur))->wrappedPtr();
@@ -3046,14 +2848,12 @@ MDNode_sp MDNode_O::get(LLVMContext_sp context, core::List_sp values) {
 EXPOSE_CLASS(llvmo, MDNode_O);
 
 void MDNode_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<MDNode_O>();
   SYMBOL_EXPORT_SC_(LlvmoPkg, mdnodeGet);
   core::af_def(LlvmoPkg, "mdnodeGet", &MDNode_O::get);
 };
 
 void MDNode_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -3063,7 +2863,6 @@ namespace llvmo {
 namespace llvmo {
 
 MDString_sp MDString_O::get(LLVMContext_sp context, core::Str_sp str) {
-  _G();
   llvm::MDString *mdstr = llvm::MDString::get(*context->wrappedPtr(), str->get());
   MDString_sp omd = core::RP_Create_wrapped<llvmo::MDString_O, llvm::MDString *>(mdstr);
   return omd;
@@ -3072,14 +2871,12 @@ MDString_sp MDString_O::get(LLVMContext_sp context, core::Str_sp str) {
 EXPOSE_CLASS(llvmo, MDString_O);
 
 void MDString_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<MDString_O>();
   SYMBOL_EXPORT_SC_(LlvmoPkg, mdnodeGet);
   core::af_def(LlvmoPkg, "mdstringGet", &MDString_O::get);
 };
 
 void MDString_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -3089,7 +2886,6 @@ namespace llvmo {
 namespace llvmo {
 
 ValueAsMetadata_sp ValueAsMetadata_O::get(Value_sp val) {
-  _G();
   llvm::ValueAsMetadata *mdstr = llvm::ValueAsMetadata::get(val->wrappedPtr());
   ValueAsMetadata_sp omd = core::RP_Create_wrapped<llvmo::ValueAsMetadata_O, llvm::ValueAsMetadata *>(mdstr);
   return omd;
@@ -3098,14 +2894,12 @@ ValueAsMetadata_sp ValueAsMetadata_O::get(Value_sp val) {
 EXPOSE_CLASS(llvmo, ValueAsMetadata_O);
 
 void ValueAsMetadata_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ValueAsMetadata_O>();
   SYMBOL_EXPORT_SC_(LlvmoPkg, ValueAsMetadataGet);
   core::af_def(LlvmoPkg, "ValueAsMetadataGet", &ValueAsMetadata_O::get);
 };
 
 void ValueAsMetadata_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -3117,13 +2911,11 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, NamedMDNode_O);
 
 void NamedMDNode_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<NamedMDNode_O>()
       .def("addOperand", &NamedMDNode_O::addOperand);
 };
 
 void NamedMDNode_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -3144,14 +2936,12 @@ Function_sp af_FunctionCreate(FunctionType_sp tysp, llvm::GlobalValue::LinkageTy
 
 CL_NAME("getArgumentList");
 CL_DEFMETHOD core::List_sp Function_O::getArgumentList() {
-  _G();
   ql::list l(_lisp);
   llvm::Function::ArgumentListType &args = this->wrappedPtr()->getArgumentList();
   return translate::to_object<llvm::Function::ArgumentListType &>::convert(args);
 }
 
 string Function_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << ">";
   //this->wrappedPtr()->dump();
@@ -3166,7 +2956,6 @@ CL_DEFMETHOD void Function_O::appendBasicBlock(BasicBlock_sp basicBlock) {
 EXPOSE_CLASS(llvmo, Function_O);
 
 void Function_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<Function_O>()
       .def("getArgumentList", &Function_O::getArgumentList)
       .def("eraseFromParent", &llvm::Function::eraseFromParent)
@@ -3185,13 +2974,11 @@ void Function_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void Function_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
 CL_NAME("setLiterals");
 CL_DEFMETHOD void Function_O::setLiterals(core::LoadTimeValues_sp ltv) {
-  _G();
   this->_RunTimeValues = ltv;
 }
 
@@ -3206,7 +2993,6 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, BasicBlock_O);
 
 void BasicBlock_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   typedef llvm::Function *(llvm::BasicBlock::*getParent_type)();
   getParent_type getParent_notConst = &llvm::BasicBlock::getParent;
   core::externalClass_<BasicBlock_O>()
@@ -3217,19 +3003,16 @@ void BasicBlock_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void BasicBlock_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
 CL_NAME("BasicBlockEmpty");
 CL_DEFMETHOD bool BasicBlock_O::empty() {
-  _G();
   return this->wrappedPtr()->empty();
 }
 
 CL_NAME("BasicBlockBack");
 CL_DEFMETHOD Instruction_sp BasicBlock_O::back() {
-  _G();
   llvm::Instruction &inst = this->wrappedPtr()->back();
   return core::RP_Create_wrapped<Instruction_O, llvm::Instruction *>(&inst);
 }
@@ -3247,7 +3030,6 @@ bool Type_O::equal(core::T_sp obj) const {
 }
 
 string Type_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
   string str;
@@ -3262,7 +3044,6 @@ string Type_O::__repr__() const {
 #define DOCS_PointerType_O_getPointerTo "Return a PointerType to the llvm Type"
 CL_NAME("type-get-pointer-to");
 CL_DEFMETHOD PointerType_sp Type_O::getPointerTo(int addressSpace) {
-  _G();
   llvm::PointerType *ptrType = this->wrappedPtr()->getPointerTo();
   return translate::to_object<llvm::PointerType *>::convert(ptrType);
 }
@@ -3275,7 +3056,6 @@ CL_DEFMETHOD core::Integer_sp Type_O::getArrayNumElements() const {
 }
 
 void Type_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<Type_O>()
       .def("dump", &llvm::Type::dump)
       .def("type-get-pointer-to", &Type_O::getPointerTo, ARGS_PointerType_O_getPointerTo, DECL_PointerType_O_getPointerTo, DOCS_PointerType_O_getPointerTo)
@@ -3294,7 +3074,6 @@ void Type_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void Type_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
@@ -3307,7 +3086,6 @@ EXPOSE_CLASS(llvmo, FunctionType_O);
 #define DECL_FunctionType_O_get ""
 #define DOCS_FunctionType_O_get "Docs for FunctionType get"
 core::T_sp FunctionType_O::get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg) {
-  _G();
   translate::from_object<llvm::Type *> r(result_type);
   bool iva = is_var_arg.isTrue();
   llvm::FunctionType *result = NULL;
@@ -3323,13 +3101,11 @@ core::T_sp FunctionType_O::get(core::T_sp result_type, core::T_sp params, core::
 };
 
 void FunctionType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<FunctionType_O>();
   core::af_def(LlvmoPkg, "function-type-get", &FunctionType_O::get, ARGS_FunctionType_O_get, DECL_FunctionType_O_get, DOCS_FunctionType_O_get);
 };
 
 void FunctionType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 };
@@ -3338,12 +3114,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, IntegerType_O);
 
 void IntegerType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<IntegerType_O>();
 };
 
 void IntegerType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 };
@@ -3352,12 +3126,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, CompositeType_O);
 
 void CompositeType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<CompositeType_O>();
 };
 
 void CompositeType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 };
@@ -3369,7 +3141,6 @@ EXPOSE_CLASS(llvmo, StructType_O);
 #define DECL_StructType_O_make ""
 #define DOCS_StructType_O_make "make StructType args: context &key name elements is-packed"
 StructType_sp StructType_O::make(LLVMContext_sp context, core::T_sp elements, core::Str_sp name, core::T_sp isPacked) {
-  _G();
   llvm::StructType *result = NULL;
   translate::from_object<llvm::StringRef> srname(name);
   if (elements.notnilp()) {
@@ -3384,7 +3155,6 @@ StructType_sp StructType_O::make(LLVMContext_sp context, core::T_sp elements, co
 }
 
 StructType_sp StructType_O::get(LLVMContext_sp context, core::T_sp elements, bool isPacked) {
-  _G();
   llvm::StructType *result = NULL;
   if (elements.notnilp()) {
     vector<llvm::Type *> velements;
@@ -3399,7 +3169,6 @@ StructType_sp StructType_O::get(LLVMContext_sp context, core::T_sp elements, boo
 
 CL_NAME("setBody");
 CL_DEFMETHOD void StructType_O::setBody(core::T_sp elements, core::T_sp isPacked) {
-  _G();
   llvm::StructType *st = this->wrapped();
   if (elements.notnilp()) {
     vector<llvm::Type *> velements;
@@ -3410,7 +3179,6 @@ CL_DEFMETHOD void StructType_O::setBody(core::T_sp elements, core::T_sp isPacked
 }
 
 void StructType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<StructType_O>()
       .def("setBody", &StructType_O::setBody);
 
@@ -3419,7 +3187,6 @@ void StructType_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void StructType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 };
@@ -3428,12 +3195,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, SequentialType_O);
 
 void SequentialType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<SequentialType_O>();
 };
 
 void SequentialType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 };
@@ -3444,7 +3209,6 @@ namespace llvmo {
 #define DECL_ArrayType_O_get ""
 #define DOCS_ArrayType_O_get "Docs for ArrayType get"
 ArrayType_sp ArrayType_O::get(Type_sp elementType, uint64_t numElements) {
-  _G();
   ArrayType_sp at = ArrayType_O::create();
   llvm::ArrayType *llvm_at = llvm::ArrayType::get(elementType->wrappedPtr(), numElements);
   at->set_wrapped(llvm_at);
@@ -3454,13 +3218,11 @@ ArrayType_sp ArrayType_O::get(Type_sp elementType, uint64_t numElements) {
 EXPOSE_CLASS(llvmo, ArrayType_O);
 
 void ArrayType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<ArrayType_O>();
   core::af_def(LlvmoPkg, "array-type-get", &ArrayType_O::get, ARGS_ArrayType_O_get, DECL_ArrayType_O_get, DOCS_ArrayType_O_get);
 };
 
 void ArrayType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 };
@@ -3472,7 +3234,6 @@ EXPOSE_CLASS(llvmo, PointerType_O);
 #define DECL_PointerType_O_get ""
 #define DOCS_PointerType_O_get "Docs for PointerType get"
 PointerType_sp PointerType_O::get(Type_sp elementType, uint addressSpace) {
-  _G();
   PointerType_sp at = PointerType_O::create();
   llvm::PointerType *llvm_at = llvm::PointerType::get(elementType->wrappedPtr(), addressSpace);
   at->set_wrapped(llvm_at);
@@ -3480,13 +3241,11 @@ PointerType_sp PointerType_O::get(Type_sp elementType, uint addressSpace) {
 }
 
 void PointerType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<PointerType_O>();
   core::af_def(LlvmoPkg, "pointer-type-get", &PointerType_O::get, ARGS_PointerType_O_get, DECL_PointerType_O_get, DOCS_PointerType_O_get);
 };
 
 void PointerType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 };
@@ -3495,12 +3254,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, VectorType_O);
 
 void VectorType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::externalClass_<VectorType_O>();
 };
 
 void VectorType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 };
@@ -3560,7 +3317,7 @@ void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
                                                            , int linenumber
                                                            , core::Str_sp globalLoadTimeValueName
                                                            , core::Cons_sp args )
-  {_G();
+  {
 	//	vector<llvm::GenericValue> argValues;
     ASSERTF(oengine->wrappedPtr()!=NULL,BF("You asked to runFunction but the pointer to the function is NULL"));
     llvm::ExecutionEngine* engine = oengine->wrappedPtr();
@@ -3613,7 +3370,6 @@ core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Triple_sp tri
 }
 
 void initialize_llvmo_expose() {
-  _G();
   llvm::InitializeNativeTarget();
   llvm::InitializeNativeTargetAsmPrinter();
   llvm::InitializeNativeTargetAsmParser();

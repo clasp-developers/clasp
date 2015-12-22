@@ -43,7 +43,6 @@ namespace llvmo {
 #define DECL_af_dwTag ""
 #define DOCS_af_dwTag "Convert a DW_TAG and version to an integer"
 uint af_dwTag(core::Symbol_sp tagsym, uint debugVersion) {
-  _G();
   core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(_sym_STARdwarfConstantsSTAR->symbolValue());
   uint itag = converter->enumIndexForSymbol(tagsym);
   uint dwtag = itag + debugVersion;
@@ -51,7 +50,6 @@ uint af_dwTag(core::Symbol_sp tagsym, uint debugVersion) {
 }
 
 void initialize_dwarf_constants() {
-  _G();
   SYMBOL_EXPORT_SC_(LlvmoPkg, dwTag);
   core::af_def(LlvmoPkg, "dwTag", &af_dwTag, ARGS_af_dwTag, DECL_af_dwTag, DOCS_af_dwTag);
 

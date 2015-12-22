@@ -55,9 +55,9 @@ THE SOFTWARE.
 
 namespace core {
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("baseCharP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("baseCharP");
 CL_DEFUN bool core__base_char_p(T_sp arg) {
   if (Character_sp c = arg.asOrNull<Character_O>()) {
     (void)c;
@@ -87,23 +87,23 @@ bool af_stringP(T_sp obj) {
   return gc::IsA<String_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("Return true if argument is a simple-string");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("Return true if argument is a simple-string");
 CL_DEFUN bool core__simple_string_p(T_sp obj) {
   return gc::IsA<Str_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("doubleFloatP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("doubleFloatP");
 CL_DEFUN bool core__double_float_p(T_sp obj) {
   return gc::IsA<DoubleFloat_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("functionP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("functionP");
 CL_DEFUN bool cl__functionp(T_sp obj) {
   if (Instance_sp inst_obj = obj.asOrNull<Instance_O>()) {
     return inst_obj->isgf();
@@ -111,9 +111,9 @@ CL_DEFUN bool cl__functionp(T_sp obj) {
   return gc::IsA<Function_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("interpretedFunctionP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("interpretedFunctionP");
 CL_DEFUN bool core__interpreted_function_p(T_sp arg) {
   if (gc::IsA<Function_sp>(arg)) {
     if (auto intfunc = gc::As<Function_sp>(arg)->closure.asOrNull<InterpretedClosure>()) {
@@ -124,9 +124,9 @@ CL_DEFUN bool core__interpreted_function_p(T_sp arg) {
   return false;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("See CLHS packagep");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS packagep");
 CL_DEFUN bool cl__packagep(T_sp obj) {
   return gc::IsA<Package_sp>(obj);
 };
@@ -138,9 +138,9 @@ bool af_classp(T_sp obj) {
   return gc::IsA<Class_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("classp");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("classp");
 CL_DEFUN bool core__built_in_class_p(T_sp obj) {
   if (!af_classp(obj))
     return false;
@@ -148,9 +148,9 @@ CL_DEFUN bool core__built_in_class_p(T_sp obj) {
   return c->builtInClassP();
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("classp");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("classp");
 CL_DEFUN bool core__cxx_instance_p(T_sp obj) {
   if (Instance_sp ip = obj.asOrNull<Instance_O>()) {
     (void)ip;
@@ -159,18 +159,17 @@ CL_DEFUN bool core__cxx_instance_p(T_sp obj) {
   return false;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("lambda_list_handler_p");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("lambda_list_handler_p");
 CL_DEFUN bool core__lambda_list_handler_p(T_sp obj) {
   return gc::IsA<LambdaListHandler_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("numberP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("numberP");
 CL_DEFUN bool cl__numberp(T_sp obj) {
-  _G();
   return gc::IsA<Number_sp>(obj);
 };
 
@@ -178,21 +177,19 @@ CL_DEFUN bool cl__numberp(T_sp obj) {
 #define DECL_af_complexP ""
 #define DOCS_af_complexP "complexP"
 bool af_complexP(T_sp obj) {
-  _G();
   return gc::IsA<Complex_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("ratioP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("ratioP");
 CL_DEFUN bool core__ratio_p(T_sp obj) {
-  _G();
   return gc::IsA<Ratio_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("ratioP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("ratioP");
 CL_DEFUN bool cl__random_state_p(T_sp obj) {
   return gc::IsA<RandomState_sp>(obj);
 };
@@ -201,30 +198,27 @@ CL_DEFUN bool cl__random_state_p(T_sp obj) {
 #define DECL_af_rationalP ""
 #define DOCS_af_rationalP "rationalP"
 bool af_rationalP(T_sp obj) {
-  _G();
   return gc::IsA<Rational_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("longFloatP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("longFloatP");
 CL_DEFUN bool core__long_float_p(T_sp obj) {
   return gc::IsA<LongFloat_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("shortFloatP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("shortFloatP");
 CL_DEFUN bool core__short_float_p(T_sp obj) {
-  _G();
   return gc::IsA<ShortFloat_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("singleFloatP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("singleFloatP");
 CL_DEFUN bool core__single_float_p(T_sp obj) {
-  _G();
   return gc::IsA<SingleFloat_sp>(obj);
 };
 
@@ -232,7 +226,6 @@ CL_DEFUN bool core__single_float_p(T_sp obj) {
 #define DECL_af_realP ""
 #define DOCS_af_realP "realP"
 bool af_realP(T_sp obj) {
-  _G();
   return gc::IsA<Real_sp>(obj);
 };
 
@@ -274,23 +267,23 @@ bool af_keywordP(T_sp obj) {
   return false;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("pathP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("pathP");
 CL_DEFUN bool core__path_p(T_sp obj) {
   return gc::IsA<Path_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("bitVectorP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("bitVectorP");
 CL_DEFUN bool cl__bit_vector_p(T_sp obj) {
   return gc::IsA<BitVector_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("hashTableP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("hashTableP");
 CL_DEFUN bool cl__hash_table_p(T_sp obj) {
   if (HashTable_sp ht = obj.asOrNull<HashTable_O>()) {
     (void)ht;
@@ -299,16 +292,16 @@ CL_DEFUN bool cl__hash_table_p(T_sp obj) {
   return false;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("readtablep");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("readtablep");
 CL_DEFUN bool cl__readtablep(T_sp obj) {
   return gc::IsA<ReadTable_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("structureObjectP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("structureObjectP");
 CL_DEFUN bool core__structure_object_p(T_sp obj) {
   if (gc::IsA<StructureObject_sp>(obj))
     return true;
@@ -322,31 +315,30 @@ bool af_arrayP(T_sp obj) {
   return gc::IsA<Array_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("singleDispatchGenericFunctionP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("singleDispatchGenericFunctionP");
 CL_DEFUN bool core__single_dispatch_generic_function_p(T_sp obj) {
   return gc::IsA<SingleDispatchGenericFunction_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("activation_frame_p");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("activation_frame_p");
 CL_DEFUN bool core__activation_frame_p(T_sp obj) {
   return gc::IsA<ActivationFrame_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("externalObjectP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("externalObjectP");
 CL_DEFUN bool core__external_object_p(T_sp obj) {
-  _G();
   return gc::IsA<ExternalObject_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("simple_bit_vector_p");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("simple_bit_vector_p");
 CL_DEFUN bool cl__simple_bit_vector_p(T_sp o) {
   if (SimpleBitVector_sp sbv = o.asOrNull<SimpleBitVector_O>()) {
     (void)sbv;
@@ -355,9 +347,9 @@ CL_DEFUN bool cl__simple_bit_vector_p(T_sp o) {
   return false;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("simple_vector_p");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("simple_vector_p");
 CL_DEFUN bool cl__simple_vector_p(T_sp o) {
   if (VectorObjects_sp vo = o.asOrNull<VectorObjects_O>()) {
     (void)vo;
@@ -366,9 +358,9 @@ CL_DEFUN bool cl__simple_vector_p(T_sp o) {
   return false;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("compiled_function_p");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("compiled_function_p");
 CL_DEFUN bool cl__compiled_function_p(T_sp o) {
   if (Function_sp fn = o.asOrNull<Function_O>()) {
     (void)fn;
@@ -377,9 +369,9 @@ CL_DEFUN bool cl__compiled_function_p(T_sp o) {
   return false;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("genericFunctionP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("genericFunctionP");
 CL_DEFUN bool core__generic_function_p(T_sp o) {
   if (Function_sp cf = o.asOrNull<Function_O>()) {
     (void)cf;
@@ -389,9 +381,9 @@ CL_DEFUN bool core__generic_function_p(T_sp o) {
   return false;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("Return true if arg is a proper list");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("Return true if arg is a proper list");
 CL_DEFUN bool core__proper_list_p(T_sp arg) {
   T_sp fast, slow;
   bool test = true;
@@ -413,16 +405,16 @@ CL_DEFUN bool core__proper_list_p(T_sp arg) {
   return test;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("pathnamep");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("pathnamep");
 CL_DEFUN bool cl__pathnamep(T_sp obj) {
   return gc::IsA<Pathname_sp>(obj);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("logicalPathnameP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("logicalPathnameP");
 CL_DEFUN bool core__logical_pathname_p(T_sp obj) {
   return gc::IsA<LogicalPathname_sp>(obj);
 };

@@ -44,7 +44,6 @@ THE SOFTWARE.
 namespace core {
 
 StrWithFillPtr_sp StrWithFillPtr_O::create(char initial_element, int dimension, int fill_ptr, bool adjustable, T_sp initialContents) {
-  _G();
   GC_ALLOCATE(StrWithFillPtr_O, str);
   str->_Contents = string(dimension, initial_element);
   str->_FillPointer = fill_ptr;
@@ -58,13 +57,11 @@ StrWithFillPtr_sp StrWithFillPtr_O::create(char initial_element, int dimension, 
 EXPOSE_CLASS(core, StrWithFillPtr_O);
 
 void StrWithFillPtr_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<StrWithFillPtr_O>()
       .def("core:pushString", (void (StrWithFillPtr_O::*)(T_sp)) & StrWithFillPtr_O::pushString);
 }
 
 void StrWithFillPtr_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Str, "", "", _lisp);
 #endif

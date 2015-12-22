@@ -62,7 +62,6 @@ namespace sockets {
 #pragma GCC visibility pop
 
 void SocketsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
-  _G();
   switch (what) {
   case candoClasses: {
 #define SocketsPkg_SYMBOLS

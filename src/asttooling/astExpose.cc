@@ -1023,7 +1023,6 @@ core::T_sp mostDerivedType(const clang::Type *x) {
 #define DECL_af_getTypePtrOrNull ""
 #define DOCS_af_getTypePtrOrNull "getTypePtrOrNull - returns the most derived Type* ptr or NIL"
 core::T_sp af_getTypePtrOrNull(clang::QualType qt) {
-  _G();
   const clang::Type *tp = qt.getTypePtrOrNull();
   if (tp) {
     return mostDerivedType(tp);
@@ -1035,7 +1034,6 @@ core::T_sp af_getTypePtrOrNull(clang::QualType qt) {
 #define DECL_af_getAsCXXRecordDecl ""
 #define DOCS_af_getAsCXXRecordDecl "getAsCXXRecordDecl - returns the most derived CXXRecordDecl* ptr or NIL"
 core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
-  _G();
   const clang::CXXRecordDecl *declp = tp->getAsCXXRecordDecl();
   if (declp) {
     return mostDerivedDecl(declp);
@@ -1047,7 +1045,6 @@ core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
 #define DECL_af_getNameForDiagnostic ""
 #define DOCS_af_getNameForDiagnostic "getNameForDiagnostic"
 void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core::T_sp stream, LangOptions &langOps, bool qualified) {
-  _G();
   string str;
   llvm::raw_string_ostream ostr(str);
   decl->getNameForDiagnostic(ostr, langOps, qualified);
@@ -1059,7 +1056,6 @@ void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core:
 #define DECL_af_makeQualType ""
 #define DOCS_af_makeQualType "makeQualType"
 clang::QualType af_makeQualType(clang::Type *ty) {
-  _G();
   clang::QualType qt(ty, 0);
   return qt;
 };

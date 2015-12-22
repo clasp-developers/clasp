@@ -43,19 +43,18 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("vector");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("vector");
 CL_DEFUN Vector_sp cl__vector(List_sp args) {
-  _G();
   Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(), args, cl__length(args), false, cl::_sym_T_O);
   return vec;
 };
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 
-LAMBDA(element-type dimension &optional adjustable (fill-pointer t) displaced-to displaced-index-offset initial-element initial-contents);
-DECLARE();
-DOCSTRING("make_vector See si_make_vector in ecl>>array.d");
+CL_LAMBDA(element-type dimension &optional adjustable (fill-pointer t) displaced-to displaced-index-offset initial-element initial-contents);
+CL_DECLARE();
+CL_DOCSTRING("make_vector See si_make_vector in ecl>>array.d");
 CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
                            int dimension,
                            bool adjustable,
@@ -64,7 +63,6 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
                            T_sp displaced_index_offset,
                            T_sp initial_element,
                            T_sp initialContents) {
-  _G();
   ASSERTF(displaced_to.nilp(), BF("Add support for make-vector :displaced-to"));
   ASSERTF(displaced_index_offset.nilp() || unbox_fixnum(gc::As<Fixnum_sp>(displaced_index_offset)) == 0, BF("Add support for make-vector non-zero :displaced-index-offset "));
   if (element_type == cl::_sym_bit) {
@@ -118,11 +116,10 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
   SIMPLE_ERROR(BF("Handle make-vector :element-type %s") % _rep_(element_type));
 };
 
-LAMBDA(array dimensions initial-element initial-contents);
-DECLARE();
-DOCSTRING("adjustVector");
+CL_LAMBDA(array dimensions initial-element initial-contents);
+CL_DECLARE();
+CL_DOCSTRING("adjustVector");
 CL_DEFUN T_sp core__adjust_vector(T_sp array, int new_dimensions, T_sp initial_element, List_sp initial_contents) {
-  _G();
   if (VectorObjects_sp vo = array.asOrNull<VectorObjects_O>()) {
     vo->adjust(initial_element, initial_contents, new_dimensions);
     return vo;
@@ -224,26 +221,23 @@ T_sp Vector_O::nreverse() {
   return this->sharedThis<T_O>();
 }
 
-LAMBDA(newElement vector);
-DECLARE();
-DOCSTRING("vectorPush");
+CL_LAMBDA(newElement vector);
+CL_DECLARE();
+CL_DOCSTRING("vectorPush");
 CL_DEFUN T_sp cl__vector_push(T_sp newElement, Vector_sp vec) {
-  _G();
   return vec->vectorPush(newElement);
 };
 
-LAMBDA(newElement vector &optional (exension 16));
-DECLARE();
-DOCSTRING("vectorPushExtend");
+CL_LAMBDA(newElement vector &optional (exension 16));
+CL_DECLARE();
+CL_DOCSTRING("vectorPushExtend");
 CL_DEFUN Fixnum_sp cl__vector_push_extend(T_sp newElement, Vector_sp vec, int extension) {
-  _G();
   return vec->vectorPushExtend(newElement, extension);
 }
 
 EXPOSE_CLASS(core, Vector_O);
 
 void Vector_O::exposeCando(::core::Lisp_sp lisp) {
-  _G();
   ::core::class_<Vector_O>()
       .def("adjustableArrayP", &Vector_O::adjustableArrayP)
       //	.initArgs("(self)")

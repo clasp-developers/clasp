@@ -54,11 +54,10 @@ string str_get(T_sp str) {
 T_sp str_create(const string &str) { return Str_O::create(str); };
 T_sp str_create(const char *str) { return Str_O::create(str); };
 
-LAMBDA(str1 start1 end1 str2 start2 end2);
-DECLARE();
-DOCSTRING("searchString");
+CL_LAMBDA(str1 start1 end1 str2 start2 end2);
+CL_DECLARE();
+CL_DOCSTRING("searchString");
 CL_DEFUN T_sp core__search_string(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_sp str2, Fixnum_sp start2, T_sp end2) {
-  _G();
   string s1 = str1->get().substr(unbox_fixnum(start1), end1.nilp() ? str1->get().size() : unbox_fixnum(gc::As<Fixnum_sp>(end1)));
   string s2 = str2->get().substr(unbox_fixnum(start2), end2.nilp() ? str2->get().size() : unbox_fixnum(gc::As<Fixnum_sp>(end2)));
   //        printf("%s:%d Searching for \"%s\" in \"%s\"\n", __FILE__, __LINE__, s1.c_str(), s2.c_str());
@@ -104,7 +103,6 @@ Str_sp Str_O::create(int numChars) {
 };
 
 Bignum Str_O::stringToBignum(const char *str) {
-  _G();
   Bignum bn = 0;
   for (const unsigned char *cp = (const unsigned char *)str; *cp; ++cp) {
     bn = (bn << 7) | ((*cp) & 0x7f);
@@ -135,7 +133,6 @@ T_sp af_base_string_concatenate_(T_sp args) {
 };
 
 Str_sp Str_O::create(char initial_element, int dimension, T_sp seq) {
-  _G();
   GC_ALLOCATE(Str_O, str);
   str->_Contents = string(dimension, initial_element);
   if (seq.notnilp())
@@ -145,7 +142,6 @@ Str_sp Str_O::create(char initial_element, int dimension, T_sp seq) {
 
 #if defined(OLD_SERIALIZE)
 void Str_O::serialize(serialize::SNode node) {
-  _G();
   if (node->saving()) {
     // Do nothing
   } else {
@@ -797,7 +793,6 @@ claspChar Str_O::scharSet(gc::Fixnum index, claspChar c) {
 }
 
 void Str_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end) {
-  _G();
   char celement = clasp_as_char(gc::As<Character_sp>(element));
   uint istart = unbox_fixnum(start);
   uint last = this->size();
@@ -867,7 +862,6 @@ void Str_O::__write__(T_sp stream) const {
 EXPOSE_CLASS(core, Str_O);
 
 void Str_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<Str_O>()
       //	.def("valueAsStr", &Str_O::valueAsString )
       //	.def("setFromStr", &Str_O::setFromString )
@@ -894,7 +888,6 @@ void Str_O::exposeCando(Lisp_sp lisp) {
 }
 
 void Str_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Str, "", "", _lisp)
       .def("valueAsStr", &Str_O::valueAsString)

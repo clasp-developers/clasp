@@ -48,9 +48,9 @@ THE SOFTWARE.
 
 namespace core {
 
-LAMBDA(function);
-DECLARE();
-DOCSTRING("functionLambdaList");
+CL_LAMBDA(function);
+CL_DECLARE();
+CL_DOCSTRING("functionLambdaList");
 CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
     return Values(_Nil<T_O>(), _Nil<T_O>());
@@ -66,9 +66,9 @@ CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
   return Values(_Nil<T_O>(), _Nil<T_O>());
 }
 
-LAMBDA(function);
-DECLARE();
-DOCSTRING("functionSourcePosInfo");
+CL_LAMBDA(function);
+CL_DECLARE();
+CL_DOCSTRING("functionSourcePosInfo");
 CL_DEFUN gc::Nilable<SourcePosInfo_sp> core__function_source_pos_info(T_sp functionDesignator) {
   Function_sp func = coerce::functionDesignator(functionDesignator);
   gctools::tagged_pointer<Closure> closure = func->closure;
@@ -76,9 +76,9 @@ CL_DEFUN gc::Nilable<SourcePosInfo_sp> core__function_source_pos_info(T_sp funct
   return sourcePosInfo;
 }
 
-LAMBDA(fn kind);
-DECLARE();
-DOCSTRING("set the kind of a function object (:function|:macro)");
+CL_LAMBDA(fn kind);
+CL_DECLARE();
+CL_DOCSTRING("set the kind of a function object (:function|:macro)");
 CL_DEFUN void core__set_kind(Function_sp fn, Symbol_sp kind) {
   fn->closure->setKind(kind);
 };
@@ -244,11 +244,10 @@ void handleArgumentHandlingExceptions(gctools::tagged_pointer<Closure> closure) 
   }
 }
 
-LAMBDA(fn);
-DECLARE();
-DOCSTRING("functionLambdaExpression");
+CL_LAMBDA(fn);
+CL_DECLARE();
+CL_DOCSTRING("functionLambdaExpression");
 CL_DEFUN T_mv cl__function_lambda_expression(Function_sp fn) {
-  _G();
   List_sp code = _Nil<List_V>();
   if (gctools::tagged_pointer<InterpretedClosure> ic = fn->closure.asOrNull<InterpretedClosure>()) {
     code = ic->_code;
@@ -259,9 +258,9 @@ CL_DEFUN T_mv cl__function_lambda_expression(Function_sp fn) {
   return Values(tcode, _lisp->_boolean(closedp), name);
 };
 
-LAMBDA(fn);
-DECLARE();
-DOCSTRING("functionSourceCode");
+CL_LAMBDA(fn);
+CL_DECLARE();
+CL_DOCSTRING("functionSourceCode");
 CL_DEFUN T_sp core__function_source_code(Function_sp fn) {
   gctools::tagged_pointer<Closure> closure = fn->closure;
   if (auto ic = closure.as<InterpretedClosure>()) {
@@ -286,14 +285,12 @@ void Function_O::exposeCando(Lisp_sp lisp) {
 }
 
 void Function_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Function, "", "", _lisp);
 #endif
 }
 
 string Function_O::__repr__() const {
-  _G();
   if (!(this->closure)) {
     return "Function_O::__repr__ NULL closure";
   }
@@ -327,7 +324,6 @@ void CompiledFunction_O::exposeCando(core::Lisp_sp lisp) {
 }
 
 void CompiledFunction_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, CompiledFunction, "", "", _lisp);
 #endif

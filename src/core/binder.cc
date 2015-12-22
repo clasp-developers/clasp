@@ -58,7 +58,6 @@ void Binder_O::exposeCando(Lisp_sp lisp) {
 }
 
 void Binder_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Binder, "", "", _lisp)
       .def("contains", &Binder_O::contains)
@@ -74,14 +73,13 @@ void Binder_O::initialize() {
 }
 
 void Binder_O::archiveBase(ArchiveP node) {
-  _G();
   node->attribute("bindings", this->_Bindings);
   node->attribute("values", this->_Values);
 }
 
 #if 0
     Render_sp Binder_O::rendered(Cons_sp kargs)
-    {_G();
+    {
 	DisplayT_sp dl = _lisp->create<DisplayList_O>();
 	Binder_O::iterator	oi;
 	for ( oi=this->_Bindings.begin(); oi!=this->_Bindings.end(); oi++ )
@@ -110,7 +108,7 @@ void Binder_O::erase() {
  * and leave that to updateOrDefine
  */
     void Binder_O::update(Symbol_sp sym, T_sp val)
-    {_G();
+    {
 	Binder_O::iterator it = this->_Bindings.find(sym);
 	if ( it==this->_Bindings.end() )
 	{
@@ -121,13 +119,11 @@ void Binder_O::erase() {
 #endif
 
 T_sp Binder_O::extend(Symbol_sp sym, T_sp val) {
-  _G();
   this->_Bindings->setf_gethash(sym, val);
   return (val);
 }
 
 T_sp Binder_O::lookup(Symbol_sp sym) const {
-  _G();
   LOG(BF("Looking for symbol(%s)") % _rep_(sym));
   T_sp val = this->_Bindings->gethash(sym, _Unbound<T_O>());
   if (val.unboundp()) {
@@ -138,7 +134,7 @@ T_sp Binder_O::lookup(Symbol_sp sym) const {
 
 #if 0
     T_sp Binder_O::lookup(const string& rawpackage,const string& rawsymStr) const
-    {_G();
+    {
 	string package = lispify_symbol_name(rawpackage);
 	string symStr = lispify_symbol_name(rawsymStr);
 	Symbol_sp sym = _lisp->internWithPackageName(package,symStr);
@@ -148,7 +144,7 @@ T_sp Binder_O::lookup(Symbol_sp sym) const {
 
 #if 0
     Binder_O::const_iterator Binder_O::find(Symbol_sp sym) const
-    {_G();
+    {
 //    LOG(BF("Looking for symbol(%s)")%  sym->fullName() );
 	Binder_O::const_iterator it = this->_Bindings.find(sym);
 	return((it));
@@ -156,7 +152,7 @@ T_sp Binder_O::lookup(Symbol_sp sym) const {
 
 
     Binder_O::iterator Binder_O::find(Symbol_sp sym)
-    {_G();
+    {
 //    LOG(BF("Looking for symbol(%s)")%  sym->fullName() );
 	Binder_O::iterator it = this->_Bindings.find(sym);
 	return((it));
@@ -164,13 +160,11 @@ T_sp Binder_O::lookup(Symbol_sp sym) const {
 #endif
 
 bool Binder_O::contains(Symbol_sp sym) const {
-  _G();
   TESTING();
   return this->_Bindings->gethash(sym, _Nil<T_O>()).notnilp();
 }
 
 bool Binder_O::containsSymbolFromString(const string &str) {
-  _G();
   Symbol_sp sym = _lisp->findSymbol(str);
   if (sym.nilp())
     return ((false));
@@ -179,7 +173,7 @@ bool Binder_O::containsSymbolFromString(const string &str) {
 
 #if 0
     T_sp Binder_O::value(const string& str)
-    {_G();
+    {
 	Symbol_sp sym = _lisp->findSymbol(str);
 	return((this->value(sym)));
     }
@@ -239,7 +233,7 @@ int Binder_O::intValueOrDefault(Symbol_sp sym, int defVal) {
 
 
     Cons_sp Binder_O::allValuesAsCons() const
-    {_G();
+    {
 	Cons_sp first = Cons_O::create();
 	Cons_sp cur = first;
 	for ( Binder_O::const_iterator it=this->_Bindings.begin(); it!=this->_Bindings.end(); it++ )

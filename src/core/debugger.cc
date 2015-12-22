@@ -48,26 +48,22 @@ THE SOFTWARE.
 namespace core {
 
 void start_debugger() {
-  _G();
   LispDebugger dbg(_Nil<T_O>());
   dbg.invoke();
 }
 
 LispDebugger::LispDebugger(T_sp condition) : _CanContinue(false), _Condition(condition) {
-  _G();
   _lisp->incrementDebuggerLevel();
   af_gotoIhsTop();
 }
 
 LispDebugger::LispDebugger() : _CanContinue(true) {
-  _G();
   this->_Condition = _Nil<T_O>();
   _lisp->incrementDebuggerLevel();
   af_gotoIhsTop();
 }
 
 void LispDebugger::printExpression() {
-  _G();
   InvocationHistoryFrameIterator_sp frame = this->currentFrame();
   stringstream ss;
   ss << frame->frame()->asString();
@@ -83,7 +79,6 @@ InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
 }
 
 T_sp LispDebugger::invoke() {
-  _G();
   //	DebuggerIHF debuggerStack(_lisp->invocationHistoryStack(),_Nil<ActivationFrame_O>());
   if (this->_Condition.notnilp()) {
     _lisp->print(BF("Debugger entered with condition: %s") % _rep_(this->_Condition));
@@ -239,9 +234,9 @@ T_sp LispDebugger::invoke() {
   }
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("lowLevelBacktrace");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("lowLevelBacktrace");
 CL_DEFUN void core__low_level_backtrace() {
   InvocationHistoryStack &ihs = _lisp->invocationHistoryStack();
   InvocationHistoryFrame *top = ihs.top();
@@ -274,11 +269,10 @@ CL_DEFUN void core__low_level_backtrace() {
   printf("----Done\n");
 }
 
-LAMBDA(depth);
-DECLARE();
-DOCSTRING("backtrace");
+CL_LAMBDA(depth);
+CL_DECLARE();
+CL_DOCSTRING("backtrace");
 CL_DEFUN void core__clib_backtrace(int depth) {
-  _G();
 // Play with Unix backtrace(3)
 #define BACKTRACE_SIZE 1024
   printf("Entered core__clib_backtrace - symbol: %s\n", _rep_(INTERN_(core, theClibBacktraceFunctionSymbol)).c_str());
@@ -324,9 +318,9 @@ CL_DEFUN void core__clib_backtrace(int depth) {
     free(funcname);
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("framePointers");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("framePointers");
 CL_DEFUN void core__frame_pointers() {
   void *fp = __builtin_frame_address(0); // Constant integer only
   if (fp != NULL)
@@ -340,7 +334,6 @@ namespace core {
 #define DECL_af_gotoIhsTop ""
 #define DOCS_af_gotoIhsTop "gotoIhsTop"
 void af_gotoIhsTop() {
-  _G();
   _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(core__ihs_top()));
 };
 
@@ -348,7 +341,6 @@ void af_gotoIhsTop() {
 #define DECL_af_gotoIhsPrev ""
 #define DOCS_af_gotoIhsPrev "gotoIhsPrev"
 void af_gotoIhsPrev() {
-  _G();
   int ihsCur = core__ihs_current_frame();
   _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(core__ihs_prev(ihsCur)));
 };
@@ -357,7 +349,6 @@ void af_gotoIhsPrev() {
 #define DECL_af_gotoIhsNext ""
 #define DOCS_af_gotoIhsNext "gotoIhsNext"
 void af_gotoIhsNext() {
-  _G();
   int ihsCur = core__ihs_current_frame();
   _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(core__ihs_next(ihsCur)));
 };
@@ -366,7 +357,6 @@ void af_gotoIhsNext() {
 #define DECL_af_gotoIhsFrame ""
 #define DOCS_af_gotoIhsFrame "gotoIhsFrame"
 void af_gotoIhsFrame(int frame_index) {
-  _G();
   if (frame_index < 0)
     frame_index = 0;
   if (frame_index >= core__ihs_top())
@@ -379,15 +369,14 @@ void af_gotoIhsFrame(int frame_index) {
 #define DECL_af_printCurrentIhsFrame ""
 #define DOCS_af_printCurrentIhsFrame "printCurrentIhsFrame"
 void af_printCurrentIhsFrame() {
-  _G();
   int ihsCur = core__ihs_current_frame();
   Function_sp fun = core__ihs_fun(ihsCur);
   printf("Frame[%d] %s\n", ihsCur, _rep_(fun).c_str());
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("printCurrentIhsFrameEnvironment");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("printCurrentIhsFrameEnvironment");
 CL_DEFUN void core__print_current_ihs_frame_environment() {
   T_sp args = core__ihs_arguments(core__ihs_current_frame());
   if (args.notnilp()) {
@@ -410,7 +399,6 @@ CL_DEFUN void core__print_current_ihs_frame_environment() {
 #define DECL_af_evalPrint ""
 #define DOCS_af_evalPrint "evalPrint"
 void af_evalPrint(const string &expr) {
-  _G();
   printf("If this locks up then there was an error in the evaluation\n");
   printf("Figure out how to make debugger.cc>>af_evalPrint always return\n");
   int ihsCur = core__ihs_current_frame();

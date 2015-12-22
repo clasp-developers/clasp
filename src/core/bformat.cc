@@ -40,11 +40,10 @@ namespace core {
 
 /*! Boost-format interface - works like CL:format but uses boost format strings
  */
-LAMBDA(destination control &rest args);
-DECLARE();
-DOCSTRING("Like CL format but uses C/boost format strings");
+CL_LAMBDA(destination control &rest args);
+CL_DECLARE();
+CL_DOCSTRING("Like CL format but uses C/boost format strings");
 CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp args) {
-  _G();
   T_sp output;
   if (destination.nilp()) {
     output = _lisp->bformatStringOutputStream();
@@ -111,11 +110,10 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp arg
   return _Nil<T_O>();
 }
 
-LAMBDA(destination control &rest args);
-DECLARE();
-DOCSTRING("Subset of CL format - this does the job until the real format is installed");
+CL_LAMBDA(destination control &rest args);
+CL_DECLARE();
+CL_DOCSTRING("Subset of CL format - this does the job until the real format is installed");
 CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
-  _G();
   stringstream tf;
   if (cl__functionp(control)) {
     SIMPLE_ERROR(BF("Add support for functions as FORMAT controls"));
@@ -168,7 +166,6 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
 };
 
 void initialize_bformat(Lisp_sp lisp) {
-  _G();
   SYMBOL_SC_(CorePkg, bformat);
   SYMBOL_EXPORT_SC_(ClPkg, format);
 }

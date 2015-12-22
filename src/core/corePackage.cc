@@ -728,7 +728,6 @@ CoreExposer::CoreExposer(Lisp_sp lisp) : Exposer(lisp, CorePkg, CorePkg_nickname
 };
 
 void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
-  _G();
   switch (what) {
   case candoClasses:
 #define EXPOSE_TO_CANDO
@@ -781,7 +780,6 @@ void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
 }
 
 gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_classes() {
-  _G();
   LOG(BF("Initialize core classes by hand"));
   BootStrapCoreSymbolMap bootStrapSymbolMap;
   Symbol_sp startSymbol;
@@ -881,7 +879,6 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
 }
 
 void CoreExposer::define_essential_globals(Lisp_sp lisp) {
-  _G();
 
   {
     _BLOCK_TRACEF(BF("Exporting symbols in lisp"));
@@ -1173,7 +1170,6 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 }
 
 void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
-  _G();
   Cons_sp pair = Cons_O::create(access_fn, update_fn);
   List_sp list = _sym_STARsystem_defsetf_update_functionsSTAR->symbolValue();
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(Cons_O::create(pair, list));

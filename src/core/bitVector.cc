@@ -53,14 +53,12 @@ BitVector_O::BitVector_O(const BitVector_O &bv) {
 //
 
 void BitVector_O::rowMajorAset(cl_index idx, T_sp value) {
-  _G();
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
   Fixnum_sp fn = gc::As<Fixnum_sp>(value);
   this->setBit(idx, fn.unsafe_fixnum());
 }
 
 T_sp BitVector_O::rowMajorAref(cl_index idx) const {
-  _G();
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
   uint val = this->testBit(idx);
   return (val != 0) ? clasp_make_fixnum(1) : clasp_make_fixnum(0);
@@ -118,7 +116,6 @@ T_sp BitVectorWithFillPtr_O::subseq(int start, T_sp end) const {
 }
 
 void BitVector_O::getOnIndices(vector<uint> &res) {
-  _G();
   uint i;
   res.clear();
   for (i = 0; i != this->vector_length(); i++) {
@@ -341,7 +338,6 @@ void BitVector_O::exposeCando(Lisp_sp lisp) {
       .def("core:BitVector-asString", &BitVector_O::asString);
 }
 void BitVector_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp)
       //	.def("equal",&BitVector_O::equal)

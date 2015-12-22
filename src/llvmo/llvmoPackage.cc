@@ -105,7 +105,6 @@ void redirect_llvm_interface_addSymbol() {
 #define DECL_af_mangleSymbolName ""
 #define DOCS_af_mangleSymbolName "Mangle the LLVM symbol name so that it will be a legal symbol for ld"
 Str_sp af_mangleSymbolName(Str_sp name) {
-  _G();
   stringstream sout;
   const char *cur = name->get().c_str();
   bool first = true;
@@ -165,7 +164,6 @@ T_sp af_cxxDataStructuresInfo() {
 #define DECL_af_throwIfMismatchedStructureSizes ""
 #define DOCS_af_throwIfMismatchedStructureSizes "throwIfMismatchedStructureSizes"
 void af_throwIfMismatchedStructureSizes(Fixnum_sp tspSize, Fixnum_sp tmvSize, gc::Nilable<Fixnum_sp> givenIhfSize) {
-  _G();
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
     SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % unbox_fixnum(tspSize) % T_sp_size);
@@ -187,7 +185,7 @@ void af_throwIfMismatchedStructureSizes(Fixnum_sp tspSize, Fixnum_sp tmvSize, gc
 #define DECL_af_memoryLockedSymbolForLlvm ""
 #define DOCS_af_memoryLockedSymbolForLlvm "Lookup or create a boost::shared_ptr<Symbol_O> for a Symbol and return the pointer to it"
     core::Symbol_sp* getOrCreateMemoryLockedSymbolForLlvm(core::Symbol_sp sym)
-    {_G();
+    {
 	STATIC_ROOT_FRAME_BEGIN(MemoryLockedSymbols) {
 	    map<string,core::Symbol_sp*>	_Map;
 	    MemoryLockedSymbols() {this->attachToGCRoot();} // attach to MPS
@@ -221,7 +219,6 @@ void af_throwIfMismatchedStructureSizes(Fixnum_sp tspSize, Fixnum_sp tmvSize, gc
 #define DECL_af_getOrCreateExternalGlobal ""
 #define DOCS_af_getOrCreateExternalGlobal "getOrCreateExternalGlobal"
 llvmo::GlobalVariable_sp af_getOrCreateExternalGlobal(llvmo::Module_sp module, const string &name, llvmo::Type_sp data_type) {
-  _G();
   llvm::Module *llvm_module = module->wrappedPtr();
   llvm::Type *llvm_data_type = data_type->wrappedPtr();
   ASSERT(llvm_module != NULL);
@@ -266,7 +263,6 @@ void dump_funcs(core::Function_sp compiledFunction) {
 #define DECL_af_disassembleSTAR ""
 #define DOCS_af_disassembleSTAR "disassembleSTAR"
 void af_disassembleSTAR(core::Function_sp cf) {
-  _G();
   dump_funcs(cf);
 }
 
@@ -297,7 +293,6 @@ void af_viewCFG(core::T_sp funcDes, core::T_sp only) {
 ;
 
 void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
-  _G();
   //
   // Initialize the intrinsic functions in intrinsics.cc
   //

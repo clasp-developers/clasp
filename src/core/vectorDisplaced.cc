@@ -39,9 +39,9 @@ namespace core {
 
 EXPOSE_CLASS(core, VectorDisplaced_O);
 
-LAMBDA(dim element-type displaced-to displaced-offset);
-DECLARE();
-DOCSTRING("");
+CL_LAMBDA(dim element-type displaced-to displaced-offset);
+CL_DECLARE();
+CL_DOCSTRING("");
 CL_DEFUN VectorDisplaced_sp core__make_vector_displaced(T_sp dim, T_sp elementType, T_sp displacedTo, size_t displacedOffset) {
   GC_ALLOCATE(VectorDisplaced_O, vo);
   vo->_ElementType = elementType;
@@ -79,7 +79,6 @@ string VectorDisplaced_O::__repr__() const {
 }
 
 void VectorDisplaced_O::rowMajorAset(cl_index idx, T_sp value) {
-  _G();
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
   this->_Vector->setf_elt(idx,value);
 }
@@ -90,7 +89,6 @@ T_sp VectorDisplaced_O::rowMajorAref(cl_index idx) const {
 }
 
 T_sp VectorDisplaced_O::elt(int index) const {
-  _G();
   if (index >= this->length()) {
     SIMPLE_ERROR(BF("Index too large %d must be less than %d") % index % this->length());
   }
@@ -98,7 +96,6 @@ T_sp VectorDisplaced_O::elt(int index) const {
 }
 
 T_sp VectorDisplaced_O::aref(List_sp indices) const {
-  _G();
   ASSERTF(cl__length(indices) == 1, BF("Vectors only support one index - passed: %s") % _rep_(indices));
   return this->elt(clasp_to_int(gc::As<Integer_sp>(oCar(indices))));
 }
@@ -109,7 +106,6 @@ T_sp VectorDisplaced_O::setf_elt(int index, T_sp obj) {
 }
 
 T_sp VectorDisplaced_O::setf_aref(List_sp indices_val) {
-  _G();
   ASSERTF(cl__length(indices_val) == 2, BF("Vectors only support one index followed by a value - passed: %s") % _rep_(indices_val));
   return this->setf_elt(clasp_to_int(gc::As<Integer_sp>(oCar(indices_val))), oCadr(indices_val));
 }
@@ -129,7 +125,6 @@ void VectorDisplaced_O::swap(VectorDisplaced_sp other) {
 
 #if 0
 T_sp VectorDisplaced_O::subseq(int istart, T_sp end) const {
-  _G();
   int iend = (end.nilp()) ? this->length() : unbox_fixnum(gc::As<Fixnum_sp>(end));
   if (istart < 0 || iend > this->length()) {
     SIMPLE_ERROR(BF("out of bounds for subseq"));

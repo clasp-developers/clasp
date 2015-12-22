@@ -40,7 +40,6 @@ void SpecialForm_O::exposeCando(Lisp_sp lisp) {
 }
 
 void SpecialForm_O::exposePython(Lisp_sp lisp) {
-  _G();
 #if 0  // USEBOOSTPYTHON //[
 	PYTHON_CLASS(CorePkg,SpecialForm,"","",_lisp)
     ;

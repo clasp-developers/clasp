@@ -37,9 +37,9 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-LAMBDA(vec);
-DECLARE();
-DOCSTRING("Return the fill-pointer");
+CL_LAMBDA(vec);
+CL_DECLARE();
+CL_DOCSTRING("Return the fill-pointer");
 CL_DEFUN int cl__fill_pointer(Vector_sp vec) {
   return vec->fillPointer();
 }
@@ -50,7 +50,6 @@ EXPOSE_CLASS(core, VectorObjectsWithFillPtr_O);
 #define DECL_VectorObjectsWithFillPtr_O_make ""
 #define DOCS_VectorObjectsWithFillPtr_O_make "make VectorObjectsWithFillPtr args: initial-element initial-contents dimension"
 VectorObjectsWithFillPtr_sp VectorObjectsWithFillPtr_O::make(T_sp initialElement, T_sp initialContents, int dimension, Fixnum fillPtr, bool adjustable, T_sp elementType) {
-  _G();
   GC_ALLOCATE(VectorObjectsWithFillPtr_O, vo);
   if (fillPtr < 0)
     fillPtr = 0;
@@ -94,12 +93,10 @@ string VectorObjectsWithFillPtr_O::__repr__() const {
 }
 
 T_sp &VectorObjectsWithFillPtr_O::operator[](uint index) {
-  _G();
   return this->_Values[index];
 }
 
 T_sp VectorObjectsWithFillPtr_O::elt(int index) const {
-  _G();
   if (index >= this->_FillPtr) {
     //	    ERROR(make_condition(_sym_indexTooLargeError) << kw::_sym_datum << index << kw::_sym_expectedType << this->_FillPtr );
     SIMPLE_ERROR(BF("Index %d is too large - must be less than %d") % index % this->_FillPtr);
@@ -108,7 +105,6 @@ T_sp VectorObjectsWithFillPtr_O::elt(int index) const {
 }
 
 T_sp VectorObjectsWithFillPtr_O::setf_elt(int index, T_sp value) {
-  _G();
   if (index >= this->_FillPtr) {
     //	    ERROR(make_condition(_sym_indexTooLargeError) << kw::_sym_datum << index << kw::_sym_expectedType << this->_FillPtr );
     SIMPLE_ERROR(BF("Index %d is too large - must be less than %d") % index % this->_FillPtr);
@@ -117,7 +113,6 @@ T_sp VectorObjectsWithFillPtr_O::setf_elt(int index, T_sp value) {
 }
 
 T_sp VectorObjectsWithFillPtr_O::vectorPush(T_sp newElement) {
-  _G();
   if (this->_FillPtr < this->_Values.size()) {
     int idx = this->_FillPtr;
     this->_Values[idx] = newElement;
@@ -128,7 +123,6 @@ T_sp VectorObjectsWithFillPtr_O::vectorPush(T_sp newElement) {
 }
 
 Fixnum_sp VectorObjectsWithFillPtr_O::vectorPushExtend(T_sp newElement, int extension) {
-  _G();
   if (this->_FillPtr >= this->_Values.size()) {
     if (extension <= 0)
       extension = this->_Values.size();
@@ -142,7 +136,6 @@ Fixnum_sp VectorObjectsWithFillPtr_O::vectorPushExtend(T_sp newElement, int exte
 
 CL_NAME("setf_fillPointer");
 CL_DEFMETHOD void VectorObjectsWithFillPtr_O::setf_fillPointer(Fixnum fp) {
-  _G();
   if (fp >= this->_Values.size())
     fp = this->_Values.size();
   this->_FillPtr = fp;

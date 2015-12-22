@@ -39,7 +39,6 @@ namespace core {
 #define DECL_WeakKeyMapping_O_make ""
 #define DOCS_WeakKeyMapping_O_make "make WeakKeyMapping args: obj"
 WeakKeyMapping_sp WeakKeyMapping_O::make(T_sp key, T_sp tval) {
-  _G();
   T_sp val(tval);
   if (key == tval) {
     val = gctools::smart_ptr<T_O>(gctools::tag_sameAsKey<T_O *>());
@@ -58,7 +57,6 @@ void WeakKeyMapping_O::exposeCando(Lisp_sp lisp) {
 }
 
 void WeakKeyMapping_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, WeakKeyMapping, "", "", _lisp)
       .def("weakKeyMappingValid", &WeakKeyMapping_O::valid)

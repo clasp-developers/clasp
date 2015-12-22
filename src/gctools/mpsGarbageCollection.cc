@@ -588,7 +588,29 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create amc pool");
 
-  /*! Use an AWL pool rather than and AMS pool until the AMS bug gets fixed */
+  /* Objects that can not move but are managed by the garbage collector
+     go in the global_non_moving_pool.  
+     Use an AWL pool rather than an AMS pool until the AMS bug gets fixed */
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+    res = mps_pool_create_k(&global_unmanaged_pool, _global_arena, mps_class_mvff(), args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Could not create ams pool");
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+    res = mps_ap_create_k(&global_non_moving_ap, global_non_moving_pool, args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
+
+
+/* ------------------------------------------------------------------------
+   Create a pool for objects that aren't moved and arent managed by the GC.
+*/
+   
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
@@ -606,6 +628,8 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
 
+
+  
   // Create the AMCZ pool
   mps_pool_t _global_amcz_pool;
   MPS_ARGS_BEGIN(args) {

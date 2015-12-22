@@ -45,7 +45,10 @@
 (defclass code-tag ()
   ((file :initarg :file :accessor file)
    (line :initarg :line :accessor line)))
-  
+
+(defclass name-tag (code-tag)
+  ((name :initarg :name :accessor name)))
+
 (defclass lambda-tag (code-tag)
   ((lambda-list :initarg :lambda-list :accessor lambda-list)))
 
@@ -61,6 +64,7 @@
 (defclass expose-code-tag (source-tag)
   ((function-name :initarg :function-name :accessor function-name)
    (signature-text :initarg :signature-text :accessor signature-text)
+   (name-tag :initform nil :initarg :name-tag :accessor name-tag)
    (lambda-tag :initform nil :initarg :lambda-tag :accessor lambda-tag)
    (declare-tag :initform nil :initarg :declare-tag :accessor declare-tag)
    (docstring-tag :initform nil :initarg :docstring-tag :accessor docstring-tag)
@@ -118,7 +122,7 @@
                                             :c++-class% (getf plist :class)
                                             :class-symbol% (getf plist :class-symbol)
                                             :c++-base% (getf plist :base)))))
-    (add-tag-handler handlers "LAMBDA_TAG"
+    (add-tag-handler handlers "CL_NAME_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
                          (let ((plist (read (cscrape:buffer-stream bufs))))
                            (let ((lambda-list (getf plist :lambda-list)))
@@ -129,7 +133,18 @@
                                           :file (getf plist :file)
                                           :line (getf plist :line)
                                           :lambda-list lambda-list)))))
-    (add-tag-handler handlers "DOCSTRING_TAG"
+    (add-tag-handler handlers "CL_LAMBDA_TAG"
+                     #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
+                         (let ((plist (read (cscrape:buffer-stream bufs))))
+                           (let ((lambda-list (getf plist :lambda-list)))
+                             (when (and (> (length lambda-list) 1)
+                                        (char= (elt lambda-list 0) #\"))
+                               (setf lambda-list (read-from-string lambda-list)))
+                           (make-instance 'tags:lambda-tag
+                                          :file (getf plist :file)
+                                          :line (getf plist :line)
+                                          :lambda-list lambda-list)))))
+    (add-tag-handler handlers "CL_DOCSTRING_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name docstring-tag-handler))
                          (let ((plist (read (cscrape:buffer-stream bufs)))
                                (docstring (cscrape:read-string-to-tag bufs cscrape:*end-tag*)))
@@ -137,7 +152,7 @@
                                           :file (getf plist :file)
                                           :line (getf plist :line)
                                           :docstring docstring))))
-    (add-tag-handler handlers "DECLARE_TAG"
+    (add-tag-handler handlers "CL_DECLARE_TAG"
                      #'(lambda (bufs) ;(declare (core:lambda-name declare-tag-handler))
                          (let ((plist (read (cscrape:buffer-stream bufs))))
                            (make-instance 'tags:declare-tag

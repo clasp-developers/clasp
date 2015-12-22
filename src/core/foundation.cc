@@ -413,11 +413,10 @@ bool lisp_search(T_sp seq, T_sp obj, int &index) {
     }
 #endif
 
-LAMBDA(name);
-DECLARE();
-DOCSTRING("lispifyName");
+CL_LAMBDA(name);
+CL_DECLARE();
+CL_DOCSTRING("lispifyName");
 CL_DEFUN Str_sp core__lispify_name(Str_sp name) {
-  _G();
   ASSERT(name.notnilp());
   string lispified = lispify_symbol_name(name->get());
   return Str_O::create(lispified);
@@ -685,14 +684,13 @@ bool lisp_characterP(T_sp o) {
 
 #if 0
 T_sp lisp_apply(T_sp funcDesig, ActivationFrame_sp frame) {
-  _G();
   return eval::applyToActivationFrame(funcDesig, frame);
 }
 #endif
 
 #if 0
     string lisp_convertCNameToLispName(string const& cname, bool convertUnderscoreToDash)
-    {_G();
+    {
 	if ( convertUnderscoreToDash )
 	{
 	    string lispName = searchAndReplaceString(cname,"_","-",_lisp);
@@ -733,7 +731,6 @@ string _rep_(T_sp obj) {
 }
 
 void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId) {
-  _G();
   Symbol_sp offendingTypeId = offendingObject->_instanceClass()->className();
   SIMPLE_ERROR(BF("Expected %s of class[%s] to be subclass of class[%s]") % _rep_(offendingObject) % _rep_(offendingTypeId) % _rep_(expectedTypeId));
 }
@@ -743,12 +740,10 @@ string lisp_classNameAsString(Class_sp c) {
 }
 
 void lisp_throwLispError(const string &str) {
-  _G()
   SIMPLE_ERROR(BF("%s") % str);
 }
 
 void lisp_throwLispError(const boost::format &fmt) {
-  _G();
   TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
   SIMPLE_ERROR(BF(fmt_str));
 }
@@ -777,17 +772,14 @@ T_sp lisp_false() {
 }
 
 T_sp lisp_ocar(List_sp args) {
-  _G();
   return oCar(args);
 }
 
 T_sp lisp_ocadr(List_sp args) {
-  _G();
   return oCadr(args);
 }
 
 T_sp lisp_ocaddr(List_sp args) {
-  _G();
   return oCaddr(args);
 }
 
@@ -796,18 +788,16 @@ string lisp_rep(T_sp obj) {
 }
 
 bool lisp_CoreBuiltInClassesInitialized() {
-  _G();
   return _lisp->CoreBuiltInClassesInitialized();
 }
 
 bool lisp_BuiltInClassesInitialized() {
-  _G();
   return _lisp->BuiltInClassesInitialized();
 }
 
 #if 0
     bool lisp_NilsCreated()
-    {_G();
+    {
 	return lisp->NilsCreated();
     }
 
@@ -821,7 +811,6 @@ bool lisp_BuiltInClassesInitialized() {
 #endif
 
 void lisp_exposeClass(const string &className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction) {
-  _G();
   DEPRECIATED();
   //    ASSERTP(lisp.notnilp(),"In lisp_exposeClass env can not be nil");
   bool exposed = false;
@@ -835,13 +824,12 @@ void lisp_exposeClass(const string &className, ExposeCandoFunction exposeCandoFu
 }
 
 T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol) {
-  _G();
   Class_sp mc = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
   return mc;
 }
 
 // void lisp_defineInitializationArgumentsForClassSymbol(Lisp_sp lisp, const string& argumentString, uint classSymbol)
-// {_G();
+// {
 //     Class_sp mc = lisp->classFromClassSymbol(classSymbol);
 //     mc->__setLambdaListHandlerString(argumentString);
 // }
@@ -851,12 +839,10 @@ void lisp_addClass(Symbol_sp classSymbol,
                    Symbol_sp base1ClassSymbol,
                    Symbol_sp base2ClassSymbol,
                    Symbol_sp base3ClassSymbol) {
-  _G();
   _lisp->addClass(classSymbol, cb, base1ClassSymbol, base2ClassSymbol);
 }
 
 void lisp_addClass(Symbol_sp classSymbol) {
-  _G();
   DEPRECIATED();
   //	_lisp->addClass(classSymbol);
 }
@@ -867,7 +853,6 @@ void lisp_addClassAndInitialize(Symbol_sp classSymbol,
                                 Symbol_sp base1ClassSymbol,
                                 Symbol_sp base2ClassSymbol,
                                 Symbol_sp base3ClassSymbol) {
-  _G();
   _lisp->addClass(classSymbol, cb, base1ClassSymbol, base2ClassSymbol);
 }
 
@@ -886,7 +871,6 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args) {
 }
 
 List_sp lisp_parse_declares(const string &packageName, const string &declarestring) {
-  _G();
   if (declarestring == "")
     return _Nil<T_O>();
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
@@ -899,7 +883,6 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
 }
 
 LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues) {
-  _G();
   LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list, declares, cl::_sym_function, pureOutValues);
   return llh;
 }
@@ -917,7 +900,6 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
                                      bool autoExport,
                                      int number_of_required_arguments,
                                      const std::set<int> pureOutIndices) {
-  _G();
   Class_sp receiver_class = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
   Symbol_sp className = receiver_class->name();
 #if 0
@@ -983,12 +965,10 @@ void lisp_throwIfBuiltInClassesNotInitialized() {
 }
 
 string lisp_classNameFromClassSymbol(Symbol_sp classSymbol) {
-  _G();
   return _lisp->classNameFromClassSymbol(classSymbol);
 }
 
 Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {
-  _G();
   return gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
 }
 
@@ -1066,7 +1046,6 @@ void lisp_defmacro(Symbol_sp sym,
                    const string &declarestring,
                    const string &docstring,
                    bool autoExport) {
-  _G();
   LOG(BF("Adding form[%s] with arguments[%s]") % name % arguments);
   if (sym->getReadOnlyFunction()) {
     printf("%s:%d - The symbol[%s] has already been assigned a function and will not be redefined\n", __FILE__, __LINE__, _rep_(sym).c_str());
@@ -1091,7 +1070,6 @@ void lisp_defgeneric(const string &packageName,
                      const string &arguments,
                      const string &docstring,
                      bool autoExport) {
-  _G();
   // Remember to lock the function name
   IMPLEMENT_MEF(BF("implement-defgeneric"));
   string name = lispify_symbol_name(cname);
@@ -1170,7 +1148,7 @@ void lisp_installGlobalInitializationCallback(InitializationCallback initGlobals
 
 #if 0
     T_sp lisp_hiddenBinderLookup(Lisp_sp lisp, Symbol_sp sym)
-    {_G();
+    {
 	T_sp obj = lisp->hiddenBinder()->lookup(sym);
 	return obj;
     }
@@ -1278,7 +1256,7 @@ void lisp_logException(const char *file, const char *fn, int line, const char *s
     static bool printv_dangling_newline = true;
 
     void	printv( const char* fmt, ...)
-    {_G();
+    {
 // # p r a g m a omp critical ( printv )
 	{
             IMPLEMENT_MEF(BF("Make sure malloc works\n"));
@@ -1463,12 +1441,10 @@ string lisp_symbolNameAsString(Symbol_sp sym) {
 }
 
 T_sp lisp_createStr(const string &s) {
-  _G();
   return Str_O::create(s);
 }
 
 T_sp lisp_createFixnum(int fn) {
-  _G();
   return make_fixnum(fn);
 }
 
@@ -1549,7 +1525,6 @@ void lisp_error(T_sp datum, T_sp arguments) {
 }
 
 string stringUpper(const string &s) {
-  _G();
   LOG(BF("Converting string(%s) to uppercase") % s);
   stringstream ss;
   for (uint si = 0; si < s.length(); si++) {
@@ -1560,7 +1535,6 @@ string stringUpper(const string &s) {
 }
 
 string stringUpper(const char *s) {
-  _G();
   LOG(BF("Converting const char*(%s) to uppercase") % s);
   stringstream ss;
   for (; *s; s++) {
@@ -1609,7 +1583,6 @@ void tokenize(const string &str,
 }
 
 string searchAndReplaceString(const string &str, const string &search, const string &replace, Lisp_sp lisp) {
-  _G();
   string result;
   string::size_type pos = 0;
   result = str;
@@ -1769,12 +1742,10 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
 #endif
 
 void initializeCandoScript(Lisp_sp lisp) {
-  _G();
   DEPRECIATED();
 }
 
 void initializePythonScript(Lisp_sp lisp) {
-  _G();
   DEPRECIATED();
   //    initializeExposeClasses(false,true);
 }

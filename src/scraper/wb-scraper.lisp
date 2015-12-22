@@ -10,11 +10,13 @@
 (load "scraper.lisp")
 
 (do-scraping
-    '("/Users/meister/Development/externals-clasp/build/release/bin/clang"
-      (namestring (merge-pathnames "src/main/" *clasp-home*))
-      "bin/all-commands.txt"
-      "bin/commands.txt")
+    (list
+     "/Users/meister/Development/externals-clasp/build/release/bin/clang"
+     (namestring (merge-pathnames "src/main/" *clasp-home*))
+     "bin/all-commands.txt"
+     "bin/commands.txt")
   :run-preprocessor t)
+
 
 ;;; ----------------------------------------------------------------------
 ;;;

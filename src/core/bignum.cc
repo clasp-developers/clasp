@@ -55,19 +55,16 @@ unsigned int *BignumExportBuffer::getOrAllocate(const mpz_class &bignum, int nai
 #define DECL_Bignum_O_make ""
 #define DOCS_Bignum_O_make "make"
 Bignum_sp Bignum_O::make(const string &value_in_string) {
-  _G();
   GC_ALLOCATE(Bignum_O, bn);
   bn->_value = value_in_string;
   return ((bn));
 };
 
 Bignum Bignum_O::as_mpz_() const {
-  _G();
   return ((this->_value));
 }
 
 LongLongInt Bignum_O::as_LongLongInt_() const {
-  _G();
   if (this->_value.fits_sint_p()) {
     return ((this->_value.get_si()));
   }
@@ -75,7 +72,6 @@ LongLongInt Bignum_O::as_LongLongInt_() const {
 }
 
 unsigned long long Bignum_O::as_unsigned_long_long_() const {
-  _G();
   if (sizeof(unsigned long long) == sizeof(uint64_t)) {
     return this->as_uint64_();
   }
@@ -88,7 +84,6 @@ void Bignum_O::sxhash_(HashGenerator &hg) const {
 }
 
 gc::Fixnum Bignum_O::as_int_() const {
-  _G();
   IMPLEMENT_MEF(BF("Implement conversion of Bignum to Fixnum"));
   if (this->_value.fits_sint_p()) {
     return ((this->_value.get_si()));
@@ -99,7 +94,6 @@ gc::Fixnum Bignum_O::as_int_() const {
 static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 
 uint64_t Bignum_O::as_uint64_() const {
-  _G();
   unsigned int *valsP = static_Bignum_O_as_uint64_buffer.getOrAllocate(this->_value, 0);
   size_t count;
   valsP = (unsigned int *)::mpz_export(valsP, &count,
@@ -131,7 +125,6 @@ uint64_t Bignum_O::as_uint64_() const {
 /*! This helps us debug the as_uint64 function by returning a string representation of the uint64 */
 CL_NAME("core:asUint64String");
 CL_DEFMETHOD string Bignum_O::as_uint64_string() const {
-  _G();
   uint64_t ui64 = clasp_to_uint64(this->asSmartPtr());
   stringstream ss;
   ss << ui64;
@@ -140,7 +133,6 @@ CL_DEFMETHOD string Bignum_O::as_uint64_string() const {
 
 CL_NAME("core:fitsSintP");
 CL_DEFMETHOD bool Bignum_O::fits_sint_p() {
-  _G();
   return ((this->_value.fits_sint_p()));
 }
 
@@ -157,7 +149,6 @@ LongFloat Bignum_O::as_long_float_() const {
 }
 
 void Bignum_O::setFromString(const string &strVal) {
-  _G();
   this->_value = strVal;
 }
 
@@ -184,20 +175,18 @@ Integer_sp Bignum_O::shift_(gc::Fixnum bits) const {
 }
 
 string Bignum_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << this->_value;
   return ((ss.str()));
 }
 
 Bignum Bignum_O::get() const {
-  _G();
   return ((this->_value));
 }
 
 #if 0
     Number_sp Bignum_O::copy() const
-    {_G();
+    {
         GC_ALLOCATE(Bignum_O,cp );
         cp->_value = this->_value;
 	return((cp));
@@ -205,14 +194,12 @@ Bignum Bignum_O::get() const {
 #endif
 
 Number_sp Bignum_O::abs_() const {
-  _G();
   GC_ALLOCATE(Bignum_O, cp);
   cp->_value = this->_value * ::sgn(this->_value);
   return ((cp));
 }
 
 bool Bignum_O::eql_(T_sp o) const {
-  _G();
   if (o.fixnump()) {
     return (this->_value == clasp_to_mpz(gc::As<Fixnum_sp>(o)));
   } else if (Integer_sp oi = o.asOrNull<Integer_O>()) {
@@ -238,7 +225,6 @@ void Bignum_O::exposeCando(core::Lisp_sp lisp) {
 }
 
 void Bignum_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CurrentPkg, Bignum, "", "", _lisp);
 #endif

@@ -83,10 +83,8 @@ void Record_O::errorIfInvalidArguments() {
 }
 
 void Record_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<Record_O>();
 }
 void Record_O::exposePython(Lisp_sp lisp) {
-  _G();
 }
 };

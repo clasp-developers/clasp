@@ -62,9 +62,9 @@ int f(Environment_sp &e) {
   return 1;
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("Print info about booting");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Print info about booting");
 CL_DEFUN void core__help_booting() {
   printf("Useful *features*\n"
          ":ecl-min (should be clasp-min),  :bclasp, :cclasp  -- Tells Clasp what stage it's in and where to get its init file.\n"
@@ -82,9 +82,9 @@ CL_DEFUN void core__help_booting() {
          "(default-epilogue-form) - Returns an epilogue form for link-system\n");
 }
 
-LAMBDA(pow2);
-DECLARE();
-DOCSTRING("Evaluate a TaggedCast 2^pow2 times");
+CL_LAMBDA(pow2);
+CL_DECLARE();
+CL_DOCSTRING("Evaluate a TaggedCast 2^pow2 times");
 CL_DEFUN Fixnum_sp core__test_tagged_cast(Fixnum_sp pow2) __attribute__((optnone)) {
   Fixnum fpow2 = clasp_to_fixnum(pow2);
   Fixnum times = 1;
@@ -101,9 +101,9 @@ CL_DEFUN Fixnum_sp core__test_tagged_cast(Fixnum_sp pow2) __attribute__((optnone
   return Integer_O::create(v);
 }
 
-LAMBDA(reps num);
-DECLARE();
-DOCSTRING("Calculate the num Fibonacci number reps times");
+CL_LAMBDA(reps num);
+CL_DECLARE();
+CL_DOCSTRING("Calculate the num Fibonacci number reps times");
 CL_DEFUN Integer_sp core__cxx_fibn(Fixnum_sp reps, Fixnum_sp num) {
   long int freps = clasp_to_fixnum(reps);
   long int fnum = clasp_to_fixnum(num);
@@ -137,9 +137,9 @@ T_sp varArgsList(int n_args, ...) {
   return first;
 }
 
-LAMBDA(object &optional is_function);
-DECLARE();
-DOCSTRING("mangleName");
+CL_LAMBDA(object &optional is_function);
+CL_DECLARE();
+CL_DOCSTRING("mangleName");
 CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
   Str_sp name;
   if (!is_function) {
@@ -163,11 +163,10 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
   return Values(_Nil<T_O>(), Str_O::create("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cclasp-boehm, cclasp-mps based on *features* :ECL-MIN, :USE-MPS, :BCLASP");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cclasp-boehm, cclasp-mps based on *features* :ECL-MIN, :USE-MPS, :BCLASP");
 CL_DEFUN T_sp core__startup_image_pathname() {
-  _G();
   Cons_sp features = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue());
   List_sp min = features->memberEq(kw::_sym_ecl_min);
   List_sp mps = features->memberEq(kw::_sym_use_mps);
@@ -205,11 +204,10 @@ CL_DEFUN T_sp core__startup_image_pathname() {
   return pn;
 };
 
-LAMBDA(name &optional verbose print external-format);
-DECLARE();
-DOCSTRING("loadBundle");
+CL_LAMBDA(name &optional verbose print external-format);
+CL_DECLARE();
+CL_DOCSTRING("loadBundle");
 CL_DEFUN T_mv core__load_bundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
-  _G();
   /* Define the source file */
   SourceFileInfo_sp sfi = core__source_file_info(pathDesig);
   DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, sfi);
@@ -280,7 +278,6 @@ LOAD:
 #define DECL_af_dlload ""
 #define DOCS_af_dlload "dlload - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error))"
 T_mv af_dlload(T_sp pathDesig) {
-  _G();
   string lib_extension = ".dylib";
 #ifdef _TARGET_OS_DARWIN
   lib_extension = ".dylib";
@@ -327,11 +324,10 @@ T_mv af_dlload(T_sp pathDesig) {
 }
 #endif
 
-LAMBDA(pathDesig);
-DECLARE();
-DOCSTRING("dlopen - Open a dynamic library and return the handle. Returns (values returned-value error-message(or nil if no error))");
+CL_LAMBDA(pathDesig);
+CL_DECLARE();
+CL_DOCSTRING("dlopen - Open a dynamic library and return the handle. Returns (values returned-value error-message(or nil if no error))");
 CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
-  _G();
   string lib_extension = ".dylib";
   int mode = RTLD_NOW | RTLD_LOCAL;
   Path_sp path = coerce::pathDesignator(pathDesig);
@@ -345,11 +341,10 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 }
 
-LAMBDA(handle name);
-DECLARE();
-DOCSTRING("(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.");
+CL_LAMBDA(handle name);
+CL_DECLARE();
+CL_DOCSTRING("(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.");
 CL_DEFUN T_sp core__dlsym(T_sp ohandle, Str_sp name) {
-  _G();
   void *handle = NULL;
   if (ohandle.nilp()) {
     SIMPLE_ERROR(BF("Invalid ohandle passed -> nil"));
@@ -384,19 +379,18 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, Str_sp name) {
   return Pointer_O::create(ptr);
 }
 
-LAMBDA(addr);
-DECLARE();
-DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
+CL_LAMBDA(addr);
+CL_DECLARE();
+CL_DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
 CL_DEFUN void core__call_dl_main_function(Pointer_sp addr) {
   InitFnPtr mainFunctionPointer = (InitFnPtr)addr->ptr();
   (*mainFunctionPointer)(LCC_PASS_ARGS0_VA_LIST_INITFNPTR());
 }
 
-LAMBDA(addr);
-DECLARE();
-DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
+CL_LAMBDA(addr);
+CL_DECLARE();
+CL_DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
 CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
-  _G();
   uint64_t val = clasp_to_uint64(addr);
   void *ptr = (void *)val;
   Dl_info info;
@@ -415,7 +409,6 @@ CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
 #define DECL_compiler__implicit_compile_hook_default ""
 #define DOCS_compiler__implicit_compile_hook_default "implicit_compile_hook_default"
 T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
-  _G();
   // Convert the form into a thunk and return like COMPILE does
   LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
   Cons_sp code = Cons_O::create(form, _Nil<T_O>());
@@ -431,11 +424,10 @@ T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
 };
 
 #if 0
-LAMBDA(fn &rest args);
-DECLARE();
-DOCSTRING("applysPerSecond");
+CL_LAMBDA(fn &rest args);
+CL_DECLARE();
+CL_DOCSTRING("applysPerSecond");
 CL_DEFUN T_sp core__applys_per_second(T_sp fn, List_sp args) {
-  _G();
   LightTimer timer;
   int nargs = cl__length(args);
   ALLOC_STACK_VALUE_FRAME(frameImpl, frame, nargs);
@@ -502,11 +494,11 @@ __attribute__((noinline)) int callByConstRef(const core::T_sp &v1, const core::T
 namespace core {
 
 #if 0
-LAMBDA(stage fn &rest args);
-DECLARE();
-DOCSTRING("globalFuncallCyclesPerSecond");
+CL_LAMBDA(stage fn &rest args);
+CL_DECLARE();
+CL_DOCSTRING("globalFuncallCyclesPerSecond");
 CL_DEFUN     T_sp core__global_funcall_cycles_per_second(int stage, Symbol_sp fn, List_sp args )
-    {_G();
+    {
         LightTimer timer;
         int nargs = cl__length(args);
         T_sp v1, v2, v3;
@@ -575,11 +567,10 @@ CL_DEFUN     T_sp core__global_funcall_cycles_per_second(int stage, Symbol_sp fn
 #endif
 
 #if 0
-            LAMBDA(stage fn args);
-            DECLARE();
-            DOCSTRING("partialApplysPerSecond");
+CL_            LAMBDA(stage fn args);
+CL_            DECLARE();
+CL_            DOCSTRING("partialApplysPerSecond");
 CL_DEFUN T_sp core__partial_applys_per_second(int stage, T_sp fn, List_sp args) {
-  _G();
   LightTimer timer;
   int nargs = cl__length(args);
   T_sp v1, v2, v3, v4;
@@ -685,11 +676,10 @@ T_sp lexicalFrameLookup(T_sp fr, int depth, int index) {
 }
 
 #if 0
- LAMBDA(op &optional arg);
- DECLARE();
- DOCSTRING("operationsPerSecond");
+CL_ LAMBDA(op &optional arg);
+CL_ DECLARE();
+CL_ DOCSTRING("operationsPerSecond");
 CL_DEFUN T_mv core__operations_per_second(int op, T_sp arg) {
-  _G();
   gc::frame::Frame frame1(5);
   int val = 0;
   for (int i = 0; i < 5; ++i)
@@ -809,11 +799,10 @@ CL_DEFUN T_mv core__operations_per_second(int op, T_sp arg) {
 }
 #endif
 #if 0
- LAMBDA();
- DECLARE();
- DOCSTRING("callsByValuePerSecond");
+CL_ LAMBDA();
+CL_ DECLARE();
+CL_ DOCSTRING("callsByValuePerSecond");
 CL_DEFUN T_sp core__calls_by_value_per_second() {
-  _G();
   LightTimer timer;
   T_sp v1 = gc::make_tagged_fixnum<core::T_O>(1);
   T_sp v2 = gc::make_tagged_fixnum<core::T_O>(2);
@@ -842,11 +831,10 @@ CL_DEFUN T_sp core__calls_by_value_per_second() {
 }
 #endif
 #if 0
- LAMBDA();
- DECLARE();
- DOCSTRING("callsByConstantReferencePerSecond");
+CL_ LAMBDA();
+CL_ DECLARE();
+CL_ DOCSTRING("callsByConstantReferencePerSecond");
 CL_DEFUN T_sp core__calls_by_constant_reference_per_second() {
-  _G();
   LightTimer timer;
   T_sp v1 = gc::make_tagged_fixnum<core::T_O>(1);
   T_sp v2 = gc::make_tagged_fixnum<core::T_O>(2);
@@ -875,11 +863,10 @@ CL_DEFUN T_sp core__calls_by_constant_reference_per_second() {
 }
 #endif
 #if 0
- LAMBDA();
- DECLARE();
- DOCSTRING("callsByPointerPerSecond");
+CL_ LAMBDA();
+CL_ DECLARE();
+CL_ DOCSTRING("callsByPointerPerSecond");
 CL_DEFUN T_sp core__calls_by_pointer_per_second() {
-  _G();
   LightTimer timer;
   T_sp v1 = gc::make_tagged_fixnum<core::T_O>(1);
   T_sp v2 = gc::make_tagged_fixnum<core::T_O>(2);
@@ -907,18 +894,18 @@ CL_DEFUN T_sp core__calls_by_pointer_per_second() {
 }
 #endif
 
- LAMBDA(sym val thunk);
- DECLARE();
- DOCSTRING("callWithVariableBound");
+CL_ LAMBDA(sym val thunk);
+CL_ DECLARE();
+CL_ DOCSTRING("callWithVariableBound");
 CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, T_sp thunk) {
   DynamicScopeManager scope(sym, val);
   return eval::funcall(thunk);
   // Don't put anything in here - don't mess up the MV return
 }
 
- LAMBDA(protected-fn cleanup-fn);
- DECLARE();
- DOCSTRING("funwind_protect");
+CL_ LAMBDA(protected-fn cleanup-fn);
+CL_ DECLARE();
+CL_ DOCSTRING("funwind_protect");
 CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   T_mv result;
   try {
@@ -993,9 +980,9 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   return result;
 }
 
- LAMBDA(function-designator &rest functions);
- DECLARE();
- DOCSTRING("multipleValueFuncall");
+CL_ LAMBDA(function-designator &rest functions);
+CL_ DECLARE();
+CL_ DOCSTRING("multipleValueFuncall");
 CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp functions) {
   STACK_FRAME(buff, accArgs, MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
@@ -1019,9 +1006,9 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
   return T_mv(result);
 }
 
- LAMBDA(func1 func2);
- DECLARE();
- DOCSTRING("multipleValueProg1_Function - evaluate func1, save the multiple values and then evaluate func2 and restore the multiple values");
+CL_ LAMBDA(func1 func2);
+CL_ DECLARE();
+CL_ DOCSTRING("multipleValueProg1_Function - evaluate func1, save the multiple values and then evaluate func2 and restore the multiple values");
 CL_DEFUN T_mv core__multiple_value_prog1_function(Function_sp func1, Function_sp func2) {
   MultipleValues mvFunc1;
   T_mv result;
@@ -1041,9 +1028,9 @@ CL_DEFUN T_mv core__multiple_value_prog1_function(Function_sp func1, Function_sp
   return result;
 }
 
- LAMBDA(tag func);
- DECLARE();
- DOCSTRING("catchFunction");
+CL_ LAMBDA(tag func);
+CL_ DECLARE();
+CL_ DOCSTRING("catchFunction");
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
   int frame = _lisp->exceptionStack().push(CatchFrame, tag);
@@ -1085,9 +1072,9 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   return result;
 }
 
- LAMBDA(tag result);
- DECLARE();
- DOCSTRING("throwFunction TODO: The semantics are not followed here - only the first return value is returned!!!!!!!!");
+CL_ LAMBDA(tag result);
+CL_ DECLARE();
+CL_ DOCSTRING("throwFunction TODO: The semantics are not followed here - only the first return value is returned!!!!!!!!");
 CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   int frame = _lisp->exceptionStack().findKey(CatchFrame, tag);
   if (frame < 0) {
@@ -1108,9 +1095,9 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   throw CatchThrow(frame);
 }
 
- LAMBDA(symbols values func);
- DECLARE();
- DOCSTRING("progvFunction");
+CL_ LAMBDA(symbols values func);
+CL_ DECLARE();
+CL_ DOCSTRING("progvFunction");
 CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp func) {
   DynamicScopeManager manager;
   for (auto curSym : symbols) {
@@ -1124,7 +1111,6 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
 }
 
 void initialize_compiler_primitives(Lisp_sp lisp) {
-  _G();
   //	SYMBOL_SC_(CorePkg,processDeclarations);
   SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
   SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);

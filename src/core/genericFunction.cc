@@ -171,9 +171,9 @@ T_mv restricted_compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
   return (Values(methods, _lisp->_true()));
 }
 
-LAMBDA(args);
-DECLARE();
-DOCSTRING("maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame");
+CL_LAMBDA(args);
+CL_DECLARE();
+CL_DOCSTRING("maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame");
 CL_DEFUN T_sp core__maybe_expand_generic_function_arguments(T_sp args) {
   if (cl_consp(args)) {
     T_sp first = oCar(args);
@@ -336,11 +336,10 @@ LCC_RETURN notFuncallableDispatch(Instance_sp gf, VaList_sp vargs) {
   IMPLEMENT_MEF(BF("Implement notFuncallableDispatch"));
 }
 
-LAMBDA(what);
-DECLARE();
-DOCSTRING("See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the generic function call hashes selectively. If what=T then clear the hash completely.  If what=generic_function then clear only these entries.");
+CL_LAMBDA(what);
+CL_DECLARE();
+CL_DOCSTRING("See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the generic function call hashes selectively. If what=T then clear the hash completely.  If what=generic_function then clear only these entries.");
 CL_DEFUN void core__clear_gfun_hash(T_sp what) {
-  _G();
   ASSERT(_lisp->methodCachePtr());
   ASSERT(_lisp->slotCachePtr());
   _lisp->methodCachePtr()->removeOne(what);

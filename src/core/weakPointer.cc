@@ -39,7 +39,6 @@ namespace core {
 #define DECL_WeakPointer_O_make ""
 #define DOCS_WeakPointer_O_make "make WeakPointer args: obj"
 WeakPointer_sp WeakPointer_O::make(T_sp obj) {
-  _G();
   GC_ALLOCATE_VARIADIC(WeakPointer_O, me, obj);
   return me;
 };
@@ -54,7 +53,6 @@ void WeakPointer_O::exposeCando(Lisp_sp lisp) {
 }
 
 void WeakPointer_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, WeakPointer, "", "", _lisp)
       .def("weakPointerValid", &WeakPointer_O::valid)

@@ -144,7 +144,6 @@ Symbol_sp BootStrapCoreSymbolMap::lookupSymbol(string const &packageName, string
 }
 
 void BootStrapCoreSymbolMap::finish_setup_of_symbols() {
-  _G();
   //printf("%s:%d finish_setup_of_symbols\n", __FILE__, __LINE__ );
   int idxEnd = this->_SymbolNamesToIndex.size();
   for (map<string, int>::const_iterator it = this->_SymbolNamesToIndex.begin();

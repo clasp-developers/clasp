@@ -42,7 +42,6 @@ using namespace core;
 #define DECL_af_ll_fd_zero ""
 #define DOCS_af_ll_fd_zero "ll_fd_zero"
 void af_ll_fd_zero(core::ForeignData_sp fdset) {
-  _G();
   FD_ZERO(fdset->data<fd_set *>());
 }
 
@@ -50,7 +49,6 @@ void af_ll_fd_zero(core::ForeignData_sp fdset) {
 #define DECL_af_ll_fd_set ""
 #define DOCS_af_ll_fd_set "ll_fd_set"
 void af_ll_fd_set(int fd, core::ForeignData_sp fdset) {
-  _G();
   FD_SET(fd, fdset->data<fd_set *>());
 }
 
@@ -58,7 +56,6 @@ void af_ll_fd_set(int fd, core::ForeignData_sp fdset) {
 #define DECL_af_ll_fd_isset ""
 #define DOCS_af_ll_fd_isset "ll_fd_isset"
 int af_ll_fd_isset(int fd, core::ForeignData_sp fdset) {
-  _G();
   return FD_ISSET(fd, fdset->data<fd_set *>());
 }
 
@@ -66,7 +63,6 @@ int af_ll_fd_isset(int fd, core::ForeignData_sp fdset) {
 #define DECL_af_ll_fdset_size ""
 #define DOCS_af_ll_fdset_size "ll_fdset_size"
 int af_ll_fdset_size() {
-  _G();
   return sizeof(fd_set);
 }
 
@@ -74,7 +70,6 @@ int af_ll_fdset_size() {
 #define DECL_af_ll_serveEventNoTimeout ""
 #define DOCS_af_ll_serveEventNoTimeout "ll_serveEventNoTimeout"
 core::Integer_mv af_ll_serveEventNoTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1) {
-  _G();
   gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set *>(), wfd->data<fd_set *>(), NULL, NULL);
   return Values(Integer_O::create(selectRet), Integer_O::create((gc::Fixnum)errno));
 }
@@ -83,7 +78,6 @@ core::Integer_mv af_ll_serveEventNoTimeout(core::ForeignData_sp rfd, core::Forei
 #define DECL_af_ll_serveEventWithTimeout ""
 #define DOCS_af_ll_serveEventWithTimeout "ll_serveEventWithTimeout"
 Integer_mv af_ll_serveEventWithTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1, double seconds) {
-  _G();
   if (seconds < 0.0) {
     SIMPLE_ERROR(BF("Illegal timeout %lf seconds") % seconds);
   }

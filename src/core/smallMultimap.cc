@@ -42,11 +42,10 @@ THE SOFTWARE.
 
 namespace core {
 
-LAMBDA();
-DECLARE();
-DOCSTRING("makeSmallMultimap");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("makeSmallMultimap");
 CL_DEFUN SmallMultimap_sp core__make_small_multimap() {
-  _G();
   GC_ALLOCATE(SmallMultimap_O, sm);
   return sm;
 };
@@ -81,7 +80,6 @@ void SmallMultimap_O::exposeCando(Lisp_sp lisp) {
 }
 
 void SmallMultimap_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, SmallMultimap, "", "", _lisp);
 #endif

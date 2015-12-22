@@ -50,7 +50,6 @@ void Reader_O::exposeCando(Lisp_sp lisp) {
 }
 
 void Reader_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Reader, "", "", _lisp);
 #endif
@@ -76,12 +75,10 @@ string Reader_O::fileName() {
 
 SYMBOL_EXPORT_SC_(ClPkg, STARread_suppressSTAR);
 bool Reader_O::suppressRead() const {
-  _G();
   return cl::_sym_STARread_suppressSTAR->symbolValue().isTrue();
 }
 
 T_sp Reader_O::internSymbol(const string &chars) {
-  _G();
   Symbol_sp sym = _lisp->intern(chars);
   return sym;
 }
@@ -192,13 +189,11 @@ INTERPRET_SYMBOL:
 struct ReadSuppress {
   bool _SavedReadSuppress;
   ReadSuppress() {
-    _G();
     Symbol_sp rs = cl::_sym_STARread_suppressSTAR;
     this->_SavedReadSuppress = rs->symbolValue().isTrue();
     rs->setf_symbolValue(_lisp->_true());
   }
   virtual ~ReadSuppress() {
-    _G();
     cl::_sym_STARread_suppressSTAR->setf_symbolValue(_lisp->_boolean(this->_SavedReadSuppress));
   }
 };

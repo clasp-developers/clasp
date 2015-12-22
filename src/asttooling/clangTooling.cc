@@ -292,7 +292,6 @@ namespace asttooling {
 #define DECL_af_clangVersionString ""
 #define DOCS_af_clangVersionString "clangVersionString"
 core::Str_sp af_clangVersionString() {
-  _G();
   core::Str_sp version = core::Str_O::create(CLANG_VERSION_STRING);
   return version;
 };
@@ -301,7 +300,6 @@ core::Str_sp af_clangVersionString() {
 #define DECL_af_getSingleMatcher ""
 #define DOCS_af_getSingleMatcher "getSingleMatcher"
 core::T_sp af_getSingleMatcher(core::T_sp variantMatcher) {
-  _G();
   clang::ast_matchers::dynamic::VariantMatcher *vp = gc::As<core::WrappedPointer_sp>(variantMatcher)->cast<clang::ast_matchers::dynamic::VariantMatcher>();
   llvm::Optional<clang::ast_matchers::internal::DynTypedMatcher> dtm = vp->getSingleMatcher();
   if (dtm.hasValue()) {
@@ -314,7 +312,6 @@ core::T_sp af_getSingleMatcher(core::T_sp variantMatcher) {
 #define DECL_af_IDToNodeMap ""
 #define DOCS_af_IDToNodeMap "IDToNodeMap - returns a HashTable of bound keyword symbols to wrapped nodes"
 core::HashTable_sp af_IDToNodeMap(core::T_sp bn) {
-  _G();
   if (const clang::ast_matchers::BoundNodes *boundNodes = gc::As<core::WrappedPointer_sp>(bn)->cast<const clang::ast_matchers::BoundNodes>()) {
     core::HashTable_sp ht = core::HashTable_O::create(::cl::_sym_eq);
     const clang::ast_matchers::BoundNodes::IDToNodeMap &nodemap = boundNodes->getMap();
@@ -347,7 +344,6 @@ core::HashTable_sp af_IDToNodeMap(core::T_sp bn) {
 #define DECL_af_match ""
 #define DOCS_af_match "Run the MATCH-FINDER on the NODE. This will handle any kind of clang ast node."
 void af_match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp tastContext) {
-  _G();
   clang::ast_matchers::MatchFinder *matchFinder = gc::As<core::WrappedPointer_sp>(tmatchFinder)->cast<clang::ast_matchers::MatchFinder>();
   clang::ASTContext *astContext = gc::As<core::WrappedPointer_sp>(tastContext)->cast<clang::ASTContext>();
   core::WrappedPointer_sp wp_node = gc::As<core::WrappedPointer_sp>(tnode);
@@ -370,7 +366,6 @@ void af_match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp tastContext)
 #define DECL_af_newFrontendActionFactory ""
 #define DOCS_af_newFrontendActionFactory "newFrontendActionFactory"
 core::T_sp af_newFrontendActionFactory(core::T_sp consumerFactory) {
-  _G();
   if (clang::ast_matchers::MatchFinder *matchFinder = gc::As<core::WrappedPointer_sp>(consumerFactory)->cast<clang::ast_matchers::MatchFinder>()) {
     typedef clbind::Wrapper<clang::tooling::FrontendActionFactory, std::unique_ptr<clang::tooling::FrontendActionFactory>> wrapped_type;
     std::unique_ptr<clang::tooling::FrontendActionFactory> val = clang::tooling::newFrontendActionFactory(matchFinder);
@@ -389,7 +384,6 @@ core::T_sp af_newFrontendActionFactory(core::T_sp consumerFactory) {
 #define DECL_af_Replacements_insert ""
 #define DOCS_af_Replacements_insert "Replacements_insert - try to insert the Replacement, return true if successful"
 bool af_Replacements_insert(clang::tooling::Replacements &replacements, const clang::tooling::Replacement &one) {
-  _G();
   pair<clang::tooling::Replacements::iterator, bool> res = replacements.insert(one);
   return res.second;
 };
@@ -398,7 +392,6 @@ bool af_Replacements_insert(clang::tooling::Replacements &replacements, const cl
 #define DECL_af_deduplicate ""
 #define DOCS_af_deduplicate "deduplicate wraps and lispifys clang::tooling::deduplicate - it takes a Cons of replacements and returns (values replacements overlapping-ranges)"
 core::T_mv af_deduplicate(core::List_sp replacements) {
-  _G();
   core::List_sp creps = replacements;
   vector<clang::tooling::Replacement> vreps;
   for (; creps.notnilp(); creps = oCdr(creps)) {
@@ -434,7 +427,6 @@ core::T_mv af_deduplicate(core::List_sp replacements) {
 #define DECL_af_testDerivable ""
 #define DOCS_af_testDerivable "testDerivable"
 void af_testDerivable(clang::ast_matchers::MatchFinder::MatchCallback *ptr) {
-  _G();
   printf("%s:%d - got DerivableMatchCallback object --> %p\n", __FILE__, __LINE__, ptr);
   ptr->onEndOfTranslationUnit();
 };

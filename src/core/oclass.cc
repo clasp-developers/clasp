@@ -44,7 +44,6 @@ namespace core {
 */
     BuiltInClass_sp BuiltInClass_O::create(Lisp_sp lisp,const string name, int instanceClassId;
     {
-  _G();
   LOG(BF("Creating BuiltInClass_O name(%s) instanceClassId=%d") % name.c_str() % instanceClassId);
   GC_ALLOCATE(BuiltInClass_O, oclass);
   oclass->_Name = lisp->intern(name);
@@ -96,7 +95,6 @@ namespace core {
  */
     void	BuiltInClass_O::describe()
     {
-  _G();
   _lisp->print(BF("-------------  Class name: %s    instanceClassId: %s") % this->_Name->__repr__() % this->_InstanceClassId->__repr__());
   for (Class_O::baseClassIterator it = this->_DirectSuperClasses.begin();
        it != this->_DirectSuperClasses.end(); it++) {
@@ -113,7 +111,6 @@ namespace core {
 
     void	StandardClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)
     {
-  _G();
   if (node == NULL)
     return;
   this->_SlotSpecifiers.clear();
@@ -151,7 +148,6 @@ namespace core {
     */
     Cons_sp StandardClass_O::classListDesignator(T_sp baseClassesDesignator, Lisp_sp lisp)
     {
-  _G();
   Cons_sp baseClasses;
   if (baseClassesDesignator.nilp()) {
     baseClasses = Cons_O::create(lisp->classFromClassId(StandardObject_O::static_classId()), lisp);
@@ -189,7 +185,6 @@ namespace core {
 
     void	StandardClass_O::describe()
     {
-  _G();
   _lisp->print(BF("------------  StandardClass name: %s    instanceClassId: %d") % this->_Name->__repr__() % this->_InstanceClassId);
   //    _lisp->print(BF("Instance variables: %s") % this->_InstanceVariableNames->__repr__().c_str() );
   _lisp->print(BF("%s") % this->dumpInfo());
@@ -206,7 +201,6 @@ namespace core {
 
     string StandardClass_O::dumpInfo()
     {
-  _G();
   stringstream ss;
   ss << this->Base::dumpInfo();
   ss << "CoreBuiltInClass: " << this->_InstanceCoreClass->getPackagedName() << std::endl;
@@ -227,7 +221,6 @@ namespace core {
 
     StandardClass_O::slotIterator StandardClass_O::find(Symbol_sp sym)
     {
-  _G();
   ASSERTNOTNULL(sym);
   LOG(BF("Looking in StandardClass for slot for symbol: %s") % sym->fullName());
   slotIterator it;
@@ -247,7 +240,7 @@ namespace core {
 
 #if 0
     T_sp StandardClass_O::allocate_newNil()
-    {_G();
+    {
 	DEPRECIATED(); // Is this really?
 	T_sp obj = this->_InstanceCoreClass->new_instance(_Nil<Function_O>(), 
 							  _Nil<T_O>(),
@@ -261,7 +254,6 @@ namespace core {
 
     void StandardClass_O::resetSlots()
     {
-  _G();
   this->_SlotSpecifiers.clear();
     }
 
@@ -269,7 +261,6 @@ namespace core {
 
     void StandardClass_O::setupAccessors(List_sp slotNames)
     {
-  _G();
   IMPLEMENT_ME(); // Dont pass the slot names, use the slots already defined
 #if 0
 	this->_InstanceVariableNames = slotNames;
@@ -296,7 +287,6 @@ namespace core {
     }
     void BuiltInClass_O::exposePython(Lisp_sp lisp)
     {
-  _G();
   PYTHON_CLASS(CorePkg, BuiltInClass, "", "", _lisp);
     }
 
@@ -309,7 +299,6 @@ namespace core {
     }
     void StandardClass_O::exposePython(Lisp_sp lisp)
     {
-  _G();
   PYTHON_CLASS(CorePkg, StandardClass, "", "", _lisp);
     }
 

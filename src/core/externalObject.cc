@@ -47,27 +47,27 @@ namespace core {
     }
 
     void ExternalObjectManager_O::exposePython(Lisp_sp lisp)
-    {_G();
+    {
 #ifdef USEBOOSTPYTHON
 	PYTHON_CLASS(CorePkg,ExternalObjectManager,"","",_lisp)
             ;
 #endif
     }
     void ExternalObjectManager_O::initialize()
-    {_G();
+    {
         this->Base::initialize();
         this->_ExternalPointersToObjects.clear();
     }
 
 
     void ExternalObjectManager_O::registerExternal(void* ptr, ExternalObject_sp obj,Lisp_sp lisp)
-    {_G();
+    {
         LOG(BF("Registering external ptr@%p to correspond to object(%s)") % ptr % _rep_(obj) );
         this->_ExternalPointersToObjects[ptr] = obj;
     }
 
     bool ExternalObjectManager_O::recognizesExternal(void* ptr)
-    {_G();
+    {
         return this->_ExternalPointersToObjects.count(ptr)>0;
     }
 
@@ -91,7 +91,6 @@ void ExternalObject_O::exposeCando(Lisp_sp e) {
 }
 
 void ExternalObject_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON //[
   PYTHON_CLASS(CorePkg, ExternalObject, "", "", _lisp);
 #endif //]
@@ -106,7 +105,6 @@ void ExternalObject_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 bool ExternalObject_O::eql_(T_sp obj) const {
-  _G();
   if (core__external_object_p(obj)) {
     return (gc::As<ExternalObject_sp>(obj)->externalObject() == this->externalObject());
   }
@@ -138,7 +136,6 @@ void ForeignData_O::exposeCando(Lisp_sp lisp) {
 }
 
 void ForeignData_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON //[
   PYTHON_CLASS(CorePkg, ForeignData, "", "", _lisp);
 #endif //]

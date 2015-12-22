@@ -38,7 +38,6 @@ const char *global_HardcodedKinds[] = {
 #define DECL_gctools__max_bootstrap_kinds ""
 #define DOCS_gctools__max_bootstrap_kinds "maxBootstrapKinds"
 int gctools__max_bootstrap_kinds() {
-  _G();
   return sizeof(global_HardcodedKinds) / sizeof(global_HardcodedKinds[0]);
 }
 
@@ -73,7 +72,6 @@ void initialize_bootstrap_kinds() {
 #define DECL_gctools__bootstrap_kind_symbols ""
 #define DOCS_gctools__bootstrap_kind_symbols "bootstrapKindSymbols"
 core::Cons_sp gctools__bootstrap_kind_symbols() {
-  _G();
   core::Cons_sp list(_Nil<core::Cons_O>());
   for (int i(gctools__max_bootstrap_kinds() - 1); i > 0; --i) {
     string name = global_HardcodedKinds[i];
@@ -86,7 +84,6 @@ core::Cons_sp gctools__bootstrap_kind_symbols() {
 #define DECL_gctools__bootstrap_kind_p ""
 #define DOCS_gctools__bootstrap_kind_p "bootstrap-kind-p return a generalized boolean of the bootstrap-kind - either the boostrap kind index or nil"
 core::T_sp gctools__bootstrap_kind_p(const string &name) {
-  _G();
   for (int i(0), iEnd(gctools__max_bootstrap_kinds()); i < iEnd; ++i) {
     //            printf("%s:%d i[%d]Checking if %s == %s\n", __FILE__, __LINE__, i, global_HardcodedKinds[i], name.c_str());
     if (strcmp(global_HardcodedKinds[i], name.c_str()) == 0) {
@@ -122,9 +119,9 @@ core::T_mv gc_bytes_allocated() {
 }
 
 
-LAMBDA();
-DECLARE();
-DOCSTRING("Return the header kind for the object");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Return the header kind for the object");
 CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   if (obj.consp()) {
 #if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
@@ -154,8 +151,8 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   return core::clasp_make_fixnum(-1);
 }
 
-LAMBDA(obj);
-DOCSTRING(R"doc(Return true if the object inherits from core:instance based on its header value)doc");
+CL_LAMBDA(obj);
+CL_DOCSTRING(R"doc(Return true if the object inherits from core:instance based on its header value)doc");
 CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
 {
   if (core::Instance_sp iobj = obj.asOrNull<core::Instance_O>() ) {
@@ -164,9 +161,9 @@ CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
   return false;
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("Return the header kind for the object");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Return the header kind for the object");
 CL_DEFUN core::T_mv core__hardwired_kinds() {
   core::List_sp result = core::Cons_O::createList(core::Cons_O::create(core::Str_O::create("FIXNUM"), core::clasp_make_fixnum(kind_fixnum)),
                                                   core::Cons_O::create(core::Str_O::create("SINGLE_FLOAT"), core::clasp_make_fixnum(kind_single_float)),
@@ -180,7 +177,7 @@ CL_DEFUN core::T_mv core__hardwired_kinds() {
 #define DECL_af_testVec0 ""
 #define DOCS_af_testVec0 "testVec0"
     void af_testVec0()
-    {_G();
+    {
         int N = 4;
         printf("Creating vec(4)\n");
         gctools::Vec0<TestingClass> v;
@@ -229,7 +226,7 @@ CL_DEFUN core::T_mv core__hardwired_kinds() {
 #define DECL_af_testArray0 ""
 #define DOCS_af_testArray0 "testArray0"
     void af_testArray0()
-    {_G();
+    {
 //        int N = 4;
         printf("Creating Array0(4)\n");
         gctools::Array0<core::core::T_sp> v;
@@ -426,7 +423,6 @@ void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core:
 #define DECL_gctools__gc_marker ""
 #define DOCS_gctools__gc_marker "gcMarker"
 Fixnum gctools__gc_marker(core::Fixnum_sp marker) {
-  _G();
 #ifdef USE_BOEHM
 #ifdef USE_BOEHM_MEMORY_MARKER
   if (marker.nilp()) {
@@ -488,9 +484,9 @@ core::Symbol_sp gctools__alloc_pattern_end() {
   return pattern;
 };
 
-LAMBDA(&optional x (marker 0) msg);
-DECLARE();
-DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)");
+CL_LAMBDA(&optional x (marker 0) msg);
+CL_DECLARE();
+CL_DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)");
              CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tmsg) {
   string smsg = "Total";
   if (core::Str_sp msg = tmsg.asOrNull<core::Str_O>()) {
@@ -560,7 +556,6 @@ namespace gctools {
 #define DECL_af_mpsTelemetryFlush ""
 #define DOCS_af_mpsTelemetryFlush "mpsTelemetryFlush"
 void af_mpsTelemetryFlush() {
-  _G();
   mps_telemetry_flush();
 };
 
@@ -568,7 +563,6 @@ void af_mpsTelemetryFlush() {
 #define DECL_af_mpsTelemetrySet ""
 #define DOCS_af_mpsTelemetrySet "mpsTelemetrySet"
 void af_mpsTelemetrySet(core::Fixnum_sp flags) {
-  _G();
   mps_telemetry_set(unbox_fixnum(flags));
 };
 
@@ -576,7 +570,6 @@ void af_mpsTelemetrySet(core::Fixnum_sp flags) {
 #define DECL_af_mpsTelemetryReset ""
 #define DOCS_af_mpsTelemetryReset "mpsTelemetryReset"
 void af_mpsTelemetryReset(core::Fixnum_sp flags) {
-  _G();
   mps_telemetry_reset(unbox_fixnum(flags));
 };
 
@@ -596,7 +589,6 @@ core::T_sp gctools__stack_depth() {
 #define DECL_gctools__garbage_collect ""
 #define DOCS_gctools__garbage_collect "garbageCollect"
 void gctools__garbage_collect() {
-  _G();
 #ifdef USE_BOEHM
   GC_gcollect();
 #endif
@@ -613,7 +605,6 @@ void gctools__garbage_collect() {
 #define DECL_af_cleanup ""
 #define DOCS_af_cleanup "cleanup"
 void af_cleanup() {
-  _G();
 #ifdef USE_MPS
   processMpsMessages();
 #endif
@@ -623,7 +614,6 @@ void af_cleanup() {
 #define DECL_gctools__debug_allocations ""
 #define DOCS_gctools__debug_allocations "debugAllocations"
 void gctools__debug_allocations(core::T_sp debugOn) {
-  _G();
   _GlobalDebugAllocations = debugOn.isTrue();
 };
 
@@ -632,7 +622,6 @@ void gctools__debug_allocations(core::T_sp debugOn) {
 #define DECL_af_gcheader ""
 #define DOCS_af_gcheader "gcheader"
 void af_gcheader(core::Pointer_sp addr, const string &msg) {
-  _G();
   GCWrapper<core::T_O>::GCHeader *gch = reinterpret_cast<GCWrapper<core::T_O>::GCHeader *>(addr->ptr());
   //        printf("%s Kind = %lu   RefCount=%d\n", msg.c_str(), gch->_Kind, gch->_ReferenceCount);
 };
@@ -641,7 +630,6 @@ void af_gcheader(core::Pointer_sp addr, const string &msg) {
 #define DECL_af_gcaddress ""
 #define DOCS_af_gcaddress "gcaddress"
 core::Pointer_sp af_gcaddress(core::T_sp obj) {
-  _G();
   core::T_O *ptr = dynamic_cast<core::T_O *>(obj.get());
   void *hptr = reinterpret_cast<void *>(GCWrapper<core::T_O>::gcHeader(ptr));
   core::Pointer_sp po = core::Pointer_O::create(hptr);
@@ -652,7 +640,6 @@ core::Pointer_sp af_gcaddress(core::T_sp obj) {
 #define DECL_af_testReferenceCounting ""
 #define DOCS_af_testReferenceCounting "testReferenceCounting"
 void af_testReferenceCounting() {
-  _G();
   core::Pointer_sp p;
   {
     core::Fixnum_sp fn = core::make_fixnum(20);

@@ -72,7 +72,6 @@ namespace clbind {
 #pragma GCC visibility pop
 
 void ClbindExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
-  _G();
   switch (what) {
   case candoClasses: {
 #define ClbindPkg_SYMBOLS

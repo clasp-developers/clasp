@@ -45,7 +45,6 @@ THE SOFTWARE.
 namespace core {
 
 Bignum mixedBaseDigitsToBignum(const vector<int> &bases, const vector<int> &digits) {
-  _G();
   Bignum index;
   vector<int>::const_iterator bi, di;
   ASSERT(bases.size() == digits.size());
@@ -62,7 +61,6 @@ Bignum mixedBaseDigitsToBignum(const vector<int> &bases, const vector<int> &digi
 }
 
 Bignum numberOfIndicesForMixedBase(const vector<int> &bases) {
-  _G();
   vector<int>::const_iterator bi;
   Bignum numSeq;
   ASSERT(bases.size() >= 1);
@@ -79,7 +77,6 @@ Bignum numberOfIndicesForMixedBase(const vector<int> &bases) {
  * If the index can not be stored in a LongLongInt then return -1
  */
 vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &bases) {
-  _G();
   Bignum curIndex;
   vector<int> digits;
   vector<int>::const_reverse_iterator bi;
@@ -100,11 +97,10 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
   return digits;
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("getUniversalTime");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getUniversalTime");
 CL_DEFUN Integer_sp cl__get_universal_time() {
-  _G();
   time_t current_time;
   time(&current_time);
   Integer_sp offset = Integer_O::create(2208988800);
@@ -124,13 +120,11 @@ boost::variate_generator<boost::mt11213b &, boost::normal_distribution<double>>
     globalRandomRealNormal01Generator(globalRealRandomNormal01Producer, globalNormal01Distribution);
 
 void seedRandomNumberGenerators(uint i) {
-  _G();
   globalRealRandom01Producer.seed(static_cast<uint>(i));
   globalRealRandomNormal01Producer.seed(static_cast<uint>(i));
 }
 
 void seedRandomNumberGeneratorsUsingTime() {
-  _G();
   clock_t currentTime;
   int tt;
 #ifdef darwin
@@ -168,11 +162,11 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 
 #if 0
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("ceiling1");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("ceiling1");
 CL_DEFUN     Number_sp cl__ceiling1(Number_sp x)
-    {_G();
+    {
 	Number_sp v0, v1;
 	Number_mv mv_v1;
 	switch (clasp_t_of(x)) {
@@ -377,11 +371,11 @@ CL_DEFUN     Number_sp cl__ceiling1(Number_sp x)
 	ecl_return2(the_env, v0, v1);
     }
 
-LAMBDA(x &optional y);
-DECLARE();
-DOCSTRING("ceiling");
+CL_LAMBDA(x &optional y);
+CL_DECLARE();
+CL_DOCSTRING("ceiling");
 CL_DEFUN     Number_sp cl__ceiling(Number_sp x, Number_sp y)
-    {_G();
+    {
 	if ( y.nilp() ) return cl__ceiling1(x);
 	return cl__ceiling2(x,y);
     }
@@ -1251,43 +1245,38 @@ cl__integer_decode_float(T_sp x)
 }
 #endif
 
-  LAMBDA(arg);
-  DECLARE();
-  DOCSTRING("asinh");
+CL_  LAMBDA(arg);
+CL_  DECLARE();
+CL_  DOCSTRING("asinh");
 CL_DEFUN double core__asin(double x) {
-  _G();
   return asin(x);
 }
 
- LAMBDA(arg);
- DECLARE();
- DOCSTRING("acosh");
+CL_ LAMBDA(arg);
+CL_ DECLARE();
+CL_ DOCSTRING("acosh");
 CL_DEFUN double core__acos(double x) {
-  _G();
   return acos(x);
 }
 
- LAMBDA(arg);
- DECLARE();
- DOCSTRING("asinh");
+CL_ LAMBDA(arg);
+CL_ DECLARE();
+CL_ DOCSTRING("asinh");
 CL_DEFUN double core__asinh(double x) {
-  _G();
   return log(x + sqrt(1.0 + x * x));
 }
 
- LAMBDA(arg);
- DECLARE();
- DOCSTRING("acosh");
+CL_ LAMBDA(arg);
+CL_ DECLARE();
+CL_ DOCSTRING("acosh");
 CL_DEFUN double core__acosh(double x) {
-  _G();
   return log(x + sqrt((x - 1) * (x + 1)));
 }
 
- LAMBDA(arg);
- DECLARE();
- DOCSTRING("atanh");
+CL_ LAMBDA(arg);
+CL_ DECLARE();
+CL_ DOCSTRING("atanh");
 CL_DEFUN double core__atanh(double x) {
-  _G();
   return log((1 + x) / (1 - x)) / 2;
 }
 };
@@ -1295,7 +1284,6 @@ CL_DEFUN double core__atanh(double x) {
 namespace core {
 
 void exposeCando_Numerics() {
-  _G();
   LOG(BF("Initializing numerics random"));
   af_def(CorePkg, "seedRandomNumberGenerators", &seedRandomNumberGenerators);
   af_def(CorePkg, "seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);

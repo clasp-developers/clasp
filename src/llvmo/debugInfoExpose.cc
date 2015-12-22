@@ -78,12 +78,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DebugInfo_O);
 
 void DebugInfo_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DebugInfo_O>();
 };
 
 void DebugInfo_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -92,12 +90,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DIDescriptor_O);
 
 void DIDescriptor_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DIDescriptor_O>();
 };
 
 void DIDescriptor_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -106,12 +102,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DIScope_O);
 
 void DIScope_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DIScope_O>();
 };
 
 void DIScope_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -120,12 +114,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DIFile_O);
 
 void DIFile_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DIFile_O>();
 };
 
 void DIFile_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -134,12 +126,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DISubprogram_O);
 
 void DISubprogram_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DISubprogram_O>();
 };
 
 void DISubprogram_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -148,12 +138,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DIType_O);
 
 void DIType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DIType_O>();
 };
 
 void DIType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -162,12 +150,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DIBasicType_O);
 
 void DIBasicType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DIBasicType_O>();
 };
 
 void DIBasicType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -176,12 +162,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DIDerivedType_O);
 
 void DIDerivedType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DIDerivedType_O>();
 };
 
 void DIDerivedType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -190,12 +174,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DICompositeType_O);
 
 void DICompositeType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DICompositeType_O>();
 };
 
 void DICompositeType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -204,12 +186,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DISubroutineType_O);
 
 void DISubroutineType_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DISubroutineType_O>();
 };
 
 void DISubroutineType_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -218,12 +198,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DIArray_O);
 
 void DIArray_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DIArray_O>();
 };
 
 void DIArray_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -232,12 +210,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DITypeArray_O);
 
 void DITypeArray_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DITypeArray_O>();
 };
 
 void DITypeArray_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -246,12 +222,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DILexicalBlock_O);
 
 void DILexicalBlock_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DILexicalBlock_O>();
 };
 
 void DILexicalBlock_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -260,12 +234,10 @@ namespace llvmo {
 EXPOSE_CLASS(llvmo, DICompileUnit_O);
 
 void DICompileUnit_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<DICompileUnit_O>();
 };
 
 void DICompileUnit_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 }; // llvmo
@@ -276,7 +248,6 @@ namespace llvmo {
 #define DECL_DIBuilder_O_make ""
 #define DOCS_DIBuilder_O_make "make DIBuilder args: module"
 DIBuilder_sp DIBuilder_O::make(Module_sp module) {
-  _G();
   GC_ALLOCATE(DIBuilder_O, me);
   me->set_wrapped(new llvm::DIBuilder(*(module->wrappedPtr())));
   return me;
@@ -285,7 +256,6 @@ DIBuilder_sp DIBuilder_O::make(Module_sp module) {
 EXPOSE_CLASS(llvmo, DIBuilder_O);
 
 void DIBuilder_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   using namespace llvm;
   DISubprogram (DIBuilder::*createFunction_ptr)(DIDescriptor,    // Scope
                                                 StringRef,       // Name
@@ -317,13 +287,11 @@ void DIBuilder_O::exposeCando(core::Lisp_sp lisp) {
 };
 
 void DIBuilder_O::exposePython(core::Lisp_sp lisp) {
-  _G();
   IMPLEMENT_ME();
 };
 
 CL_NAME("getOrCreateArray");
 CL_DEFMETHOD DIArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements) {
-  _G();
   //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
   //		printf("     cons --> %s\n", cur->__repr__().c_str() );
   vector<llvm::Metadata *> vector_values;
@@ -351,7 +319,6 @@ CL_DEFMETHOD DIArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements) {
 
 CL_NAME("getOrCreateTypeArray");
 CL_DEFMETHOD DITypeArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp elements) {
-  _G();
   //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
   //		printf("     cons --> %s\n", cur->__repr__().c_str() );
   vector<llvm::Metadata *> vector_values;

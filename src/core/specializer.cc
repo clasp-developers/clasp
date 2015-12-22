@@ -40,7 +40,6 @@ void Specializer_O::exposeCando(Lisp_sp lisp) {
 }
 
 void Specializer_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Specializer, "", "", _lisp);
 #endif

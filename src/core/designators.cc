@@ -53,7 +53,6 @@ Function_sp functionDesignator(T_sp obj) {
 }
 
 Path_sp pathDesignator(T_sp obj) {
-  _G();
   if (core__simple_string_p(obj)) {
     return Path_O::create(gc::As<Str_sp>(obj)->get());
   } else if (gc::IsA<Path_sp>(obj)) {
@@ -86,7 +85,6 @@ PACKAGE_NAME:
 }
 
 string packageNameDesignator(T_sp obj) {
-  _G();
   if (cl__packagep(obj)) {
     return gc::As<Package_sp>(obj)->getName();
   }
@@ -95,7 +93,6 @@ string packageNameDesignator(T_sp obj) {
 }
 
 List_sp listOfPackageDesignators(T_sp obj) {
-  _G();
   if (obj.nilp())
     return _Nil<T_O>();
   if (obj.consp()) {
@@ -112,7 +109,6 @@ List_sp listOfPackageDesignators(T_sp obj) {
 }
 
 List_sp listOfSymbols(T_sp syms) {
-  _G();
   if (syms.nilp())
     return _Nil<List_V>();
   List_sp symbols;
@@ -138,7 +134,6 @@ Str_sp stringDesignator(T_sp obj) {
 }
 
 List_sp listOfStringDesignators(T_sp obj) {
-  _G();
   if (obj.nilp())
     return _Nil<List_V>();
   if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
@@ -158,7 +153,6 @@ List_sp listOfStringDesignators(T_sp obj) {
 }
 
 T_sp inputStreamDesignator(T_sp obj) {
-  _G();
   if (obj.nilp()) {
     return cl::_sym_STARstandard_inputSTAR->symbolValue();
   } else if (obj == _lisp->_true()) {
@@ -170,7 +164,6 @@ T_sp inputStreamDesignator(T_sp obj) {
 }
 
 T_sp outputStreamDesignator(T_sp obj) {
-  _G();
   if (obj.nilp()) {
     return cl::_sym_STARstandard_outputSTAR->symbolValue();
   } else if (obj == _lisp->_true()) {
@@ -184,7 +177,6 @@ T_sp outputStreamDesignator(T_sp obj) {
 }; /* desig */
 
 void initialize_designators() {
-  _G();
   af_def(CorePkg, "pathDesignator", &coerce::pathDesignator);
   af_def(CorePkg, "coerce-to-package", &coerce::packageDesignator);
 }

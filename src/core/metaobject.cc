@@ -42,7 +42,6 @@ void Metaobject_O::exposeCando(Lisp_sp lisp) {
 }
 
 void Metaobject_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Metaobject, "", "", _lisp);
 #endif

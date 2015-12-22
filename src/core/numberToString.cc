@@ -49,11 +49,10 @@ THE SOFTWARE.
 
 namespace core {
 
-LAMBDA(buffer x base);
-DECLARE();
-DOCSTRING("bignumToString");
+CL_LAMBDA(buffer x base);
+CL_DECLARE();
+CL_DOCSTRING("bignumToString");
 CL_DEFUN StrWithFillPtr_sp core__bignum_to_string(StrWithFillPtr_sp buffer, const Bignum &bn, Fixnum_sp base) {
-  _G();
   if (unbox_fixnum(base) < 2 || unbox_fixnum(base) > 36) {
     QERROR_WRONG_TYPE_NTH_ARG(3, base, Cons_O::createList(cl::_sym_integer, make_fixnum(2), make_fixnum(36)));
   }
@@ -92,9 +91,9 @@ static void write_base_prefix(StrWithFillPtr_sp buffer, int base) {
   }
 }
 
-LAMBDA(buffer integer base radix decimalp);
-DECLARE();
-DOCSTRING("integerToString");
+CL_LAMBDA(buffer integer base radix decimalp);
+CL_DECLARE();
+CL_DOCSTRING("integerToString");
 CL_DEFUN StrWithFillPtr_sp core__integer_to_string(StrWithFillPtr_sp buffer, Integer_sp integer,
                                        Fixnum_sp base, bool radix, bool decimalp) {
   if (radix) {

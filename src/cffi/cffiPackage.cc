@@ -61,7 +61,6 @@ namespace cffi {
 #pragma GCC visibility pop
 
 void CffiExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
-  _G();
   switch (what) {
   case candoClasses: {
 #define CffiPkg_SYMBOLS

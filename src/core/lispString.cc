@@ -80,35 +80,31 @@ static Str_sp string_trim0(bool left_trim, bool right_trim, T_sp char_bag, T_sp 
   return Str_O::create(strng->substr(i, (j - i)));
 }
 
-LAMBDA(charbag str);
-DECLARE();
-DOCSTRING("string_trim");
+CL_LAMBDA(charbag str);
+CL_DECLARE();
+CL_DOCSTRING("string_trim");
 CL_DEFUN Str_sp cl__string_trim(T_sp charbag, T_sp str) {
-  _G();
   return string_trim0(true, true, charbag, str);
 };
 
-LAMBDA(charbag str);
-DECLARE();
-DOCSTRING("string_left_trim");
+CL_LAMBDA(charbag str);
+CL_DECLARE();
+CL_DOCSTRING("string_left_trim");
 CL_DEFUN Str_sp cl__string_left_trim(T_sp charbag, T_sp str) {
-  _G();
   return string_trim0(true, false, charbag, str);
 };
 
-LAMBDA(charbag str);
-DECLARE();
-DOCSTRING("string_right_trim");
+CL_LAMBDA(charbag str);
+CL_DECLARE();
+CL_DOCSTRING("string_right_trim");
 CL_DEFUN Str_sp cl__string_right_trim(T_sp charbag, T_sp str) {
-  _G();
   return string_trim0(false, true, charbag, str);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("string_upcase");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("string_upcase");
 CL_DEFUN Str_sp cl__string_upcase(T_sp arg) {
-  _G();
   Str_sp str = coerce::stringDesignator(arg);
   Str_sp result = Str_O::create(str->get());
   for (Str_O::iterator it = result->begin(); it != result->end(); ++it) {
@@ -117,11 +113,10 @@ CL_DEFUN Str_sp cl__string_upcase(T_sp arg) {
   return (result);
 };
 
-LAMBDA(str idx);
-DECLARE();
-DOCSTRING("char");
+CL_LAMBDA(str idx);
+CL_DECLARE();
+CL_DOCSTRING("char");
 CL_DEFUN claspChar cl__char(T_sp ostr, int idx) {
-  _G();
 /* Return the character at idx - ignore fill pointers */
 #ifdef UNICODE
   IMPLEMENT_MEF(BF("Handle UNICODE"));
@@ -136,11 +131,10 @@ CL_DEFUN claspChar cl__char(T_sp ostr, int idx) {
   THROW_HARD_ERROR(BF("Should never reach here"));
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("string_downcase");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("string_downcase");
 CL_DEFUN Str_sp cl__string_downcase(T_sp arg) {
-  _G();
   Str_sp str = coerce::stringDesignator(arg);
   Str_sp result = Str_O::create(str->get());
   for (Str_O::iterator it = result->begin(); it != result->end(); ++it) {
@@ -149,11 +143,10 @@ CL_DEFUN Str_sp cl__string_downcase(T_sp arg) {
   return (result);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("string_upcase");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("string_upcase");
 CL_DEFUN Str_sp cl__nstring_upcase(T_sp arg) {
-  _G();
   Str_sp result = coerce::stringDesignator(arg);
   for (Str_O::iterator it = result->begin(); it != result->end(); ++it) {
     *it = toupper(*it);
@@ -161,11 +154,10 @@ CL_DEFUN Str_sp cl__nstring_upcase(T_sp arg) {
   return (result);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("string_downcase");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("string_downcase");
 CL_DEFUN Str_sp cl__nstring_downcase(T_sp arg) {
-  _G();
   Str_sp result = coerce::stringDesignator(arg);
   for (Str_O::iterator it = result->begin(); it != result->end(); ++it) {
     *it = tolower(*it);
@@ -173,17 +165,15 @@ CL_DEFUN Str_sp cl__nstring_downcase(T_sp arg) {
   return (result);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("string");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("string");
 CL_DEFUN Str_sp cl__string(T_sp arg) {
-  _G();
   Str_sp result = coerce::stringDesignator(arg);
   return (result);
 };
 
 bool clasp_memberChar(claspChar c, T_sp charBag) {
-  _G();
   if (Str_sp scharBag = charBag.asOrNull<Str_O>()) {
     for (size_t i = 0, iEnd(scharBag->size()); i < iEnd; ++i) {
       if ((*scharBag)[i] == c)
@@ -200,7 +190,6 @@ bool clasp_memberChar(claspChar c, T_sp charBag) {
 EXPOSE_CLASS(core, String_O);
 
 void String_O::exposeCando(::core::Lisp_sp lisp) {
-  _G();
   ::core::class_<String_O>()
       //	.initArgs("(self)")
       ;
@@ -644,7 +633,6 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
                                       Fixnum_sp start1, T_sp end1,
                                       Fixnum_sp start2, T_sp end2,
                                       int &istart1, int &iend1, int &istart2, int &iend2) {
-  _G();
   string1 = coerce::stringDesignator(string1_desig);
   string2 = coerce::stringDesignator(string2_desig);
   istart1 = MAX(unbox_fixnum(start1), 0);
@@ -669,11 +657,10 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
 
 
 
-LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
-DECLARE();
-DOCSTRING("string_EQ_");
+CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
+CL_DECLARE();
+CL_DOCSTRING("string_EQ_");
 CL_DEFUN T_sp cl__string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  _G();
   int istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -681,11 +668,10 @@ CL_DEFUN T_sp cl__string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_EQ_,istart1,iend1,istart2,iend2);
 }
 
-LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
-DECLARE();
-DOCSTRING("string_NE_");
+CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
+CL_DECLARE();
+CL_DOCSTRING("string_NE_");
 CL_DEFUN T_mv cl__string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  _G();
   int istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -693,11 +679,10 @@ CL_DEFUN T_mv cl__string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_NE_, istart1, iend1, istart2, iend2);
 }
 
-LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
-DECLARE();
-DOCSTRING("string_LT_");
+CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
+CL_DECLARE();
+CL_DOCSTRING("string_LT_");
 CL_DEFUN T_mv cl__string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  _G();
   int istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -705,11 +690,10 @@ CL_DEFUN T_mv cl__string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_LT_, istart1, iend1, istart2, iend2);
 }
 
-LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
-DECLARE();
-DOCSTRING("string_GT_");
+CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
+CL_DECLARE();
+CL_DOCSTRING("string_GT_");
 CL_DEFUN T_mv cl__string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  _G();
   int istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -717,11 +701,10 @@ CL_DEFUN T_mv cl__string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_GT_, istart1, iend1, istart2, iend2);
 }
 
-LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
-DECLARE();
-DOCSTRING("string_LE_");
+CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
+CL_DECLARE();
+CL_DOCSTRING("string_LE_");
 CL_DEFUN T_mv cl__string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  _G();
   int istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -729,11 +712,10 @@ CL_DEFUN T_mv cl__string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_LE_, istart1, iend1, istart2, iend2);
 }
 
-LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
-DECLARE();
-DOCSTRING("string_GE_");
+CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
+CL_DECLARE();
+CL_DOCSTRING("string_GE_");
 CL_DEFUN T_mv cl__string_GE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  _G();
   int istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -741,11 +723,10 @@ CL_DEFUN T_mv cl__string_GE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_GE_, istart1, iend1, istart2, iend2);
 }
 
-LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
-DECLARE();
-DOCSTRING("string_equal");
+CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
+CL_DECLARE();
+CL_DOCSTRING("string_equal");
 CL_DEFUN T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  _G();
   int istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -753,55 +734,50 @@ CL_DEFUN T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_s
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_equal, istart1, iend1, istart2, iend2);
 }
 
-LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
-DECLARE();
-DOCSTRING("string_not_equal");
+CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
+CL_DECLARE();
+CL_DOCSTRING("string_not_equal");
 CL_DEFUN T_mv cl__string_not_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  _G();
   int istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_not_equal, istart1, iend1, istart2, iend2);
 }
-LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
-DECLARE();
-DOCSTRING("string_lessp");
+CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
+CL_DECLARE();
+CL_DOCSTRING("string_lessp");
 CL_DEFUN T_mv cl__string_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  _G();
   int istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_lessp, istart1, iend1, istart2, iend2);
 }
-LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
-DECLARE();
-DOCSTRING("string_greaterp");
+CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
+CL_DECLARE();
+CL_DOCSTRING("string_greaterp");
 CL_DEFUN T_mv cl__string_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  _G();
   int istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_greaterp, istart1, iend1, istart2, iend2);
 }
-LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
-DECLARE();
-DOCSTRING("string_not_greaterp");
+CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
+CL_DECLARE();
+CL_DOCSTRING("string_not_greaterp");
 CL_DEFUN T_mv cl__string_not_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  _G();
   int istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
   TEMPLATE_STRING_MATCHER(string1,string2,template_string_not_greaterp, istart1, iend1, istart2, iend2);
 }
-LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
-DECLARE();
-DOCSTRING("string_not_lessp");
+CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
+CL_DECLARE();
+CL_DOCSTRING("string_not_lessp");
 CL_DEFUN T_mv cl__string_not_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  _G();
   int istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -830,11 +806,10 @@ bool String_O::equalp(T_sp obj) const {
 }
 
 
-LAMBDA("size &key initial-element (element-type 'character)");
-DECLARE();
-DOCSTRING("See CLHS: make_string");
+CL_LAMBDA("size &key initial-element (element-type 'character)");
+CL_DECLARE();
+CL_DOCSTRING("See CLHS: make_string");
 CL_DEFUN T_mv cl__make_string(Fixnum_sp size, T_sp initial_element, T_sp element_type) {
-  _G();
   stringstream ss;
   char ch(' ');
   if (initial_element.notnilp())
@@ -848,9 +823,9 @@ CL_DEFUN T_mv cl__make_string(Fixnum_sp size, T_sp initial_element, T_sp element
 
 
 
-LAMBDA(str index);
-DECLARE();
-DOCSTRING("CLHS schar");
+CL_LAMBDA(str index);
+CL_DECLARE();
+CL_DOCSTRING("CLHS schar");
 CL_DEFUN claspChar cl__schar(Str_sp str, int idx) {
   if (idx >= 0 && idx < str->length()) {
     return str->schar(idx);
@@ -858,9 +833,9 @@ CL_DEFUN claspChar cl__schar(Str_sp str, int idx) {
   SIMPLE_ERROR(BF("index %d out of range (0,%d)") % idx % str->length());
 };
 
-LAMBDA(str index c);
-DECLARE();
-DOCSTRING("CLHS schar");
+CL_LAMBDA(str index c);
+CL_DECLARE();
+CL_DOCSTRING("CLHS schar");
 CL_DEFUN claspChar core__char_set(Str_sp str, int idx, claspChar c) {
   if (idx >= 0 && idx < str->length()) {
     str->scharSet(idx, c);
@@ -869,9 +844,9 @@ CL_DEFUN claspChar core__char_set(Str_sp str, int idx, claspChar c) {
   SIMPLE_ERROR(BF("index %d out of range (0,%d)") % idx % str->length());
 };
 
-LAMBDA(str index c);
-DECLARE();
-DOCSTRING("CLHS schar");
+CL_LAMBDA(str index c);
+CL_DECLARE();
+CL_DOCSTRING("CLHS schar");
 CL_DEFUN claspChar core__schar_set(Str_sp str, int idx, claspChar c) {
   if (idx >= 0 && idx < str->length()) {
     str->scharSet(idx, c);
@@ -993,11 +968,10 @@ int fsmInteger(mpz_class &result, int &numDigits, bool &sawJunk, const string &s
 };
 
 
-LAMBDA(string &key (start 0) end (radix 10) junk-allowed);
-DECLARE();
-DOCSTRING("parseInteger");
+CL_LAMBDA(string &key (start 0) end (radix 10) junk-allowed);
+CL_DECLARE();
+CL_DOCSTRING("parseInteger");
 CL_DEFUN T_mv cl__parse_integer(Str_sp str, Fixnum start, T_sp end, uint radix, T_sp junkAllowed) {
-  _G();
   Fixnum istart = std::max((Fixnum)0, start);
   Fixnum iend = cl__length(str);
   if (end.notnilp()) {

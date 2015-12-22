@@ -42,11 +42,10 @@ THE SOFTWARE.
 
 namespace core {
 
-LAMBDA();
-DECLARE();
-DOCSTRING("makeSmallMap");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("makeSmallMap");
 CL_DEFUN SmallMap_sp core__make_small_map() {
-  _G();
   GC_ALLOCATE(SmallMap_O, sm);
   return sm;
 };
@@ -75,7 +74,6 @@ void SmallMap_O::exposeCando(Lisp_sp lisp) {
 }
 
 void SmallMap_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, SmallMap, "", "", _lisp);
 #endif

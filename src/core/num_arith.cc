@@ -80,11 +80,10 @@ Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
   UNREACHABLE();
 }
 
-LAMBDA(&rest nums);
-DECLARE();
-DOCSTRING("gcd");
+CL_LAMBDA(&rest nums);
+CL_DECLARE();
+CL_DOCSTRING("gcd");
 CL_DEFUN Integer_sp cl__gcd(List_sp nums) {
-  _G();
   if (nums.nilp())
     return clasp_make_fixnum(0);
   /* INV: clasp_gcd() checks types */
@@ -124,11 +123,10 @@ Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
   return _clasp_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y));
 }
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("lcm");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("lcm");
 CL_DEFUN Integer_sp cl__lcm(List_sp nums) {
-  _G();
   if (nums.nilp())
     return clasp_make_fixnum(1);
   /* INV: clasp_gcd() checks types. By placing `numi' before `lcm' in

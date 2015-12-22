@@ -52,9 +52,9 @@ RandomState_sp RandomState_O::make(T_sp state) {
   SIMPLE_ERROR(BF("Illegal argument for make-random-state: ~a") % _rep_(state));
 }
 
-LAMBDA(olimit &optional (random-state cl:*random-state*));
-DECLARE();
-DOCSTRING("random");
+CL_LAMBDA(olimit &optional (random-state cl:*random-state*));
+CL_DECLARE();
+CL_DOCSTRING("random");
 CL_DEFUN T_sp cl__random(T_sp olimit, RandomState_sp random_state) {
   if (olimit.fixnump()) {
     boost::random::uniform_int_distribution<> range(0, olimit.unsafe_fixnum() - 1);
@@ -80,7 +80,6 @@ void RandomState_O::exposeCando(core::Lisp_sp lisp) {
 }
 
 void RandomState_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CurrentPkg, RandomState, "", "", _lisp);
 #endif

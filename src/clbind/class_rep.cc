@@ -66,11 +66,9 @@ using namespace clbind::detail;
 namespace clbind {
 
 void ClassRep_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<ClassRep_O>();
 }
 void ClassRep_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, ClassRep, "", "", _lisp);
 #endif

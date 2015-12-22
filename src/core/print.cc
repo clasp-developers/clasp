@@ -134,9 +134,9 @@ bool clasp_print_circle(void) {
   return cl::_sym_STARprint_circleSTAR->symbolValue().isTrue();
 }
 
-LAMBDA(x &key ((:stream strm) nil) (array *print-array*) (base *print-base*) ((:case cas) *print-case*) (circle *print-circle*) (escape *print-escape*) (gensym *print-gensym*) (length *print-length*) (level *print-level*) (lines *print-lines*) (miser_width *print-miser-width*) (pprint_dispatch *print-pprint-dispatch*) (pretty *print-pretty*) (radix *print-radix*) (readably *print-readably*) (right_margin *print-right-margin*));
-DECLARE();
-DOCSTRING("write");
+CL_LAMBDA(x &key ((:stream strm) nil) (array *print-array*) (base *print-base*) ((:case cas) *print-case*) (circle *print-circle*) (escape *print-escape*) (gensym *print-gensym*) (length *print-length*) (level *print-level*) (lines *print-lines*) (miser_width *print-miser-width*) (pprint_dispatch *print-pprint-dispatch*) (pretty *print-pretty*) (radix *print-radix*) (readably *print-readably*) (right_margin *print-right-margin*));
+CL_DECLARE();
+CL_DOCSTRING("write");
 CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
               T_sp cas, T_sp circle, T_sp escape, T_sp gensym, T_sp length,
               T_sp level, T_sp lines, T_sp miser_width, T_sp pprint_dispatch,
@@ -167,7 +167,7 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
 #define DECL_af_writeAddr ""
 #define DOCS_af_writeAddr "writeAddr"
     void af_writeAddr(T_sp arg, T_sp stream)
-    {_G();
+    {
 	cl_intptr_t i = arg.intptr();
 	for ( int j=sizeof(i)*8-4; j>= 0; j-=4 ) {
 	    int k = (i>>j) &0xf;
@@ -179,11 +179,10 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
     }
 #endif
 
-LAMBDA(o stream type id function);
-DECLARE();
-DOCSTRING("printUnreadableObjectFunction - see ecl::print_unreadable.d");
+CL_LAMBDA(o stream type id function);
+CL_DECLARE();
+CL_DOCSTRING("printUnreadableObjectFunction - see ecl::print_unreadable.d");
 CL_DEFUN void core__print_unreadable_object_function(T_sp o, T_sp ostream, T_sp type, T_sp id, T_sp function) {
-  _G();
   if (clasp_print_readably()) {
     PRINT_NOT_READABLE_ERROR(o);
   } else if (o.unboundp()) {
@@ -212,11 +211,10 @@ CL_DEFUN void core__print_unreadable_object_function(T_sp o, T_sp ostream, T_sp 
   }
 };
 
-LAMBDA(obj &optional stream);
-DECLARE();
-DOCSTRING("pprint");
+CL_LAMBDA(obj &optional stream);
+CL_DECLARE();
+CL_DOCSTRING("pprint");
 CL_DEFUN void cl__pprint(T_sp obj, T_sp stream) {
-  _G();
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_prettySTAR, _lisp->_true());
   stream = coerce::outputStreamDesignator(stream);
@@ -225,33 +223,30 @@ CL_DEFUN void cl__pprint(T_sp obj, T_sp stream) {
   clasp_force_output(stream);
 }
 
-LAMBDA(obj &optional output-stream-desig);
-DECLARE();
-DOCSTRING("See CLHS: princ");
+CL_LAMBDA(obj &optional output-stream-desig);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS: princ");
 CL_DEFUN T_sp cl__princ(T_sp obj, T_sp output_stream_desig) {
-  _G();
   DynamicScopeManager scope1(cl::_sym_STARprint_escapeSTAR, _Nil<T_O>());
   DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR, _Nil<T_O>());
   eval::funcall(cl::_sym_write, obj, kw::_sym_stream, output_stream_desig);
   return obj;
 }
 
-LAMBDA(obj &optional output-stream-desig);
-DECLARE();
-DOCSTRING("See CLHS: prin1");
+CL_LAMBDA(obj &optional output-stream-desig);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS: prin1");
 CL_DEFUN T_sp cl__prin1(T_sp obj, T_sp output_stream_desig) {
-  _G();
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
   //  T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
   eval::funcall(cl::_sym_write, obj, kw::_sym_stream, output_stream_desig);
   return obj;
 }
 
-LAMBDA(obj &optional output-stream-desig);
-DECLARE();
-DOCSTRING("See CLHS: print");
+CL_LAMBDA(obj &optional output-stream-desig);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS: print");
 CL_DEFUN T_sp cl__print(T_sp obj, T_sp output_stream_desig) {
-  _G();
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
   T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
   clasp_write_string("\n", sout);

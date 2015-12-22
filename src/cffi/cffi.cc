@@ -77,7 +77,6 @@ static vector<void *> _library_handles;
 #define DECL_af_PERCENTload_foreign_library ""
 #define DOCS_af_PERCENTload_foreign_library "PERCENTload_foreign_library"
 Pointer_sp af_PERCENTload_foreign_library(core::Str_sp name) {
-  _G();
   const char *cname = name->get().c_str();
   void *handle = dlopen(cname, RTLD_LAZY);
   _library_handles.push_back(handle);
@@ -88,7 +87,6 @@ Pointer_sp af_PERCENTload_foreign_library(core::Str_sp name) {
 #define DECL_af_foreign_symbol_pointer ""
 #define DOCS_af_foreign_symbol_pointer "foreign_symbol_pointer"
 Pointer_sp af_foreign_symbol_pointer(core::Str_sp name) {
-  _G();
   const char *cname = name->get().c_str();
   void *ptr = NULL;
   for (vector<void *>::iterator it = _library_handles.begin(); it != _library_handles.end(); it++) {
@@ -105,7 +103,6 @@ GOT_IT:
 #define DECL_af_PERCENTforeign_type_alignment ""
 #define DOCS_af_PERCENTforeign_type_alignment "PERCENTforeign_type_alignment"
 core::Fixnum_sp af_PERCENTforeign_type_alignment(core::Symbol_sp atype) {
-  _G();
   uint align;
   if (atype == _sym_char) {
     align = boost::alignment_of<char>();
@@ -169,7 +166,6 @@ core::Fixnum_sp af_PERCENTforeign_type_alignment(core::Symbol_sp atype) {
 #define DECL_af_PERCENTforeign_type_size ""
 #define DOCS_af_PERCENTforeign_type_size "PERCENTforeign_type_size"
 core::Fixnum_sp af_PERCENTforeign_type_size(core::Symbol_sp atype) {
-  _G();
   uint align;
   if (atype == _sym_char) {
     align = sizeof(char);
@@ -234,7 +230,6 @@ core::Fixnum_sp af_PERCENTforeign_type_size(core::Symbol_sp atype) {
 #define DECL_af_foreign_alloc ""
 #define DOCS_af_foreign_alloc "foreign_alloc"
 Pointer_sp af_foreign_alloc(core::Integer_sp size) {
-  _G();
   int sz = clasp_to_int(size);
   void *ptr = malloc(sz);
   if (ptr == NULL) {
@@ -245,7 +240,6 @@ Pointer_sp af_foreign_alloc(core::Integer_sp size) {
 };
 
 Pointer_sp Pointer_O::create(void *ptr) {
-  _G();
   GC_ALLOCATE(Pointer_O, p);
   p->_ptr = ptr;
   return p;
@@ -255,7 +249,6 @@ Pointer_sp Pointer_O::create(void *ptr) {
 #define DECL_Pointer_O_make ""
 #define DOCS_Pointer_O_make "make"
 Pointer_sp Pointer_O::make(core::Number_sp arg) {
-  _G();
   if (af_fixnumP(arg)) {
     if (sizeof(unbox_fixnum(gc::As<core::Fixnum_sp>(arg))) != sizeof(void *)) {
       SIMPLE_ERROR(BF("You cannot make a pointer using an integer as the address sizeof(void*)=%d sizeof(Fixnum)=%d") % sizeof(void *) % sizeof(unbox_fixnum(gc::As<core::Fixnum_sp>(arg))));
@@ -272,7 +265,6 @@ Pointer_sp Pointer_O::make(core::Number_sp arg) {
 #define DECL_Pointer_O_null_pointer ""
 #define DOCS_Pointer_O_null_pointer "null_pointer"
 Pointer_sp Pointer_O::null_pointer() {
-  _G();
   GC_ALLOCATE(Pointer_O, res);
   res->_ptr = NULL;
   return res;
@@ -283,7 +275,6 @@ Pointer_sp Pointer_O::null_pointer() {
 #define DOCS_Pointer_O_PERCENTmem_ref "PERCENTmem_ref"
 CL_NAME("CFFI-SYS:PERCENTmem_ref");
 CL_DEFMETHOD core::T_sp Pointer_O::PERCENTmem_ref(core::Symbol_sp atype, core::Integer_sp offset) {
-  _G();
   void *ptr = ((char *)(this->_ptr) + clasp_to_int(offset));
   if (atype == _sym_char) {
     return core::clasp_make_character(*(char *)(ptr));
@@ -367,7 +358,6 @@ CL_DEFMETHOD core::T_sp Pointer_O::PERCENTmem_ref(core::Symbol_sp atype, core::I
 #define DOCS_Pointer_O_PERCENTsetf_mem_ref "PERCENTsetf_mem_ref"
 CL_NAME("CFFI-SYS:PERCENTsetf_mem_ref");
 CL_DEFMETHOD core::T_sp Pointer_O::PERCENTsetf_mem_ref(core::Symbol_sp atype, core::Cons_sp rest) {
-  _G();
   core::LongLongInt offset = 0;
   core::T_sp value;
   if (rest->length() == 1) {
@@ -475,7 +465,6 @@ Pointer_O::~Pointer_O(){};
 #define DOCS_Pointer_O_foreign_free "foreign_free"
 CL_NAME("CFFI-SYS:foreign_free");
 CL_DEFMETHOD void Pointer_O::foreign_free() {
-  _G();
   if (this->_ptr != NULL) {
     free(this->_ptr);
     this->_ptr = NULL;
@@ -484,13 +473,11 @@ CL_DEFMETHOD void Pointer_O::foreign_free() {
 
 CL_NAME("CFFI-SYS:inc-pointer");
 CL_DEFMETHOD Pointer_sp Pointer_O::inc_pointer(core::Integer_sp offset) {
-  _G();
   void *new_ptr = (void *)((char *)(this->_ptr) + clasp_to_int(offset));
   return Pointer_O::create(new_ptr);
 }
 
 string Pointer_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
   ss << this->_ptr << "> ";
@@ -520,14 +507,12 @@ void Pointer_O::exposeCando(core::Lisp_sp lisp) {
 }
 
 void Pointer_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CffiPkg, Pointer, "", "", _lisp);
 #endif
 }
 
 void initialize_cffi() {
-  _G();
   SYMBOL_EXPORT_SC_(CffiPkg, PERCENTforeign_type_alignment);
   Defun(PERCENTforeign_type_alignment);
   SYMBOL_EXPORT_SC_(CffiPkg, PERCENTforeign_type_size);

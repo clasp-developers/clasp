@@ -55,11 +55,10 @@ List_sp coerce_to_list(T_sp o) {
   TYPE_ERROR(o, cl::_sym_list);
 }
 
-LAMBDA(plist value indicator);
-DECLARE();
-DOCSTRING("putF");
+CL_LAMBDA(plist value indicator);
+CL_DECLARE();
+CL_DOCSTRING("putF");
 CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
-  _G();
   auto it = place.begin();
   auto end = place.end();
   List_sp cur;
@@ -81,19 +80,18 @@ CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
   return place;
 };
 
-LAMBDA(plist indicator &optional default-value);
-DECLARE();
-DOCSTRING("getf");
+CL_LAMBDA(plist indicator &optional default-value);
+CL_DECLARE();
+CL_DOCSTRING("getf");
 CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
-  _G();
   if (plist.nilp())
     return (default_value);
   return plist.asCons()->getf(indicator, default_value);
 };
 
-LAMBDA(plist indicator);
-DECLARE();
-DOCSTRING("Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found");
+CL_LAMBDA(plist indicator);
+CL_DECLARE();
+CL_DOCSTRING("Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found");
 CL_DEFUN T_mv core__rem_f(List_sp plist, Symbol_sp indicator) {
   if (oCar(plist) == indicator) {
     plist = oCddr(plist);
@@ -113,35 +111,33 @@ CL_DEFUN T_mv core__rem_f(List_sp plist, Symbol_sp indicator) {
   return (Values(tplist, _lisp->_false()));
 };
 
-LAMBDA(object1 object2);
-DECLARE();
-DOCSTRING("cons");
+CL_LAMBDA(object1 object2);
+CL_DECLARE();
+CL_DOCSTRING("cons");
 CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
-  _G();
   ASSERTNOTNULL(obj1);
   ASSERTNOTNULL(obj2);
   return Cons_O::create(obj1, obj2);
 };
 
-LAMBDA(c o);
-DECLARE();
-DOCSTRING("");
+CL_LAMBDA(c o);
+CL_DECLARE();
+CL_DOCSTRING("");
 CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) {
   return c->rplaca(o);
 };
 
-LAMBDA(c o);
-DECLARE();
-DOCSTRING("");
+CL_LAMBDA(c o);
+CL_DECLARE();
+CL_DOCSTRING("");
 CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
   return c->rplacd(o);
 };
 
-LAMBDA(osize &key initial_element);
-DECLARE();
-DOCSTRING("make_list");
+CL_LAMBDA(osize &key initial_element);
+CL_DECLARE();
+CL_DOCSTRING("make_list");
 CL_DEFUN List_sp cl__make_list(Integer_sp osize, T_sp initial_element) {
-  _G();
   int size = clasp_to_int(osize);
   if (size < 0) {
     SIMPLE_ERROR(BF("Illegal size %d for list") % size);
@@ -215,7 +211,6 @@ bool isAllDigits(const string &s) {
 }
 
 T_sp stringToObject(Lisp_sp e, const string &s) {
-  _G();
   if (isAllDigits(s)) {
     return ((make_fixnum(atoi(s.c_str()))));
   }
@@ -262,11 +257,10 @@ void Cons_O::appendInto(T_sp head, gctools::StackRootedPointerToSmartPtr<T_O> &t
 }
 #endif
 
-LAMBDA(l1 l2);
-DECLARE();
-DOCSTRING("append2 - append l2 to l1 by copying l1 and pointing the end of it to l2");
+CL_LAMBDA(l1 l2);
+CL_DECLARE();
+CL_DOCSTRING("append2 - append l2 to l1 by copying l1 and pointing the end of it to l2");
 CL_DEFUN T_sp core__append2(List_sp x, List_sp y) {
-  _G();
   return Cons_O::append(x, y);
 };
 
@@ -301,7 +295,6 @@ T_sp Cons_O::append(List_sp x, List_sp y) {
 #endif
 
 List_sp Cons_O::walkToFindParsePos() const {
-  _G();
   //	if ( this->hasParsePos() ) return((this->asSmartPtr()));
   if (this->_Cdr.notnilp() && cl_consp(this->_Cdr)) {
     List_sp wcdr = gc::As<Cons_sp>(this->_Cdr)->walkToFindParsePos();
@@ -335,7 +328,6 @@ struct Tester {
   }
 
   void setup(T_sp item, T_sp key, T_sp test, T_sp testNot, bool apply_key_to_item) {
-    _G();
     this->_test_pass = true;
     if (testNot.notnilp()) {
       if (test.notnilp()) {
@@ -359,7 +351,6 @@ struct Tester {
     }
   }
   bool test(T_sp obj) {
-    _G();
     if (this->_use_key_func) {
       obj = eval::funcall(this->_key_func, obj);
     }
@@ -370,7 +361,6 @@ struct Tester {
 
 CL_NAME("core:exactlyMatches");
 CL_DEFMETHOD bool Cons_O::exactlyMatches(List_sp other) const {
-  _G();
   List_sp me = this->asSmartPtr();
   while (me.notnilp()) {
     if (oCar(other) != oCar(me))
@@ -438,7 +428,6 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
 }
 
 List_sp Cons_O::subseq(int start, T_sp end) const {
-  _G();
   ql::list l(_lisp);
   int iend;
   if (end.nilp()) {
@@ -469,7 +458,7 @@ List_sp Cons_O::subseq(int start, T_sp end) const {
  * 	-> file: "xxx.yyy" entries: (: 1 2 3 4 5) to: "hello"
  */
     Vector_sp	Cons_O::createFromVectorStringsCommandLineArguments(const vector<string>& strings )
-    {_G();
+    {
 	vector<string>::const_iterator it;
 	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	Cons_sp args = first;
@@ -537,7 +526,6 @@ Cons_O::Cons_O() : T_O(), _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0
  * avoid excessive nesting
  */
 void Cons_O::archiveBase(ArchiveP node) {
-  _G();
 #if 1
   if (node->saving()) {
     core__stack_monitor(); // make sure the stack isn't exhausted.
@@ -643,7 +631,6 @@ CL_DEFMETHOD List_sp Cons_O::extend(List_sp rest) {
 }
 
 List_sp Cons_O::reverse() {
-  _G();
   List_sp reversed = _Nil<T_O>();
   List_sp cur = this->asSmartPtr();
   while (cur.notnilp()) {
@@ -654,7 +641,6 @@ List_sp Cons_O::reverse() {
 }
 
 List_sp Cons_O::revappend(T_sp tail) {
-  _G();
   List_sp reversed = _Nil<T_O>();
   List_sp cur = this->asSmartPtr();
   List_sp first_reversed;
@@ -729,7 +715,6 @@ T_sp Cons_O::setf_elt(int index, T_sp value) {
 
 CL_NAME("core:filterOutNil");
 CL_DEFMETHOD List_sp Cons_O::filterOutNil() {
-  _G();
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   List_sp newCur = first;
   for (auto cur : (List_sp) this->asSmartPtr()) {
@@ -744,7 +729,7 @@ CL_DEFMETHOD List_sp Cons_O::filterOutNil() {
 
 #if 0
     void	Cons_O::setOwnerOfAllEntries(T_sp obj)
-    {_G();
+    {
 	Cons_sp cur;
 	for ( cur=this->asSmartPtr(); cur.notnilp(); cur = cCdr(cur) )
 	{
@@ -867,7 +852,6 @@ List_sp Cons_O::copyTreeCar() const {
 }
 
 uint Cons_O::length() const {
-  _G();
   int sz = 1;
 #pragma GCC diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -878,7 +862,6 @@ uint Cons_O::length() const {
 };
 
 T_sp Cons_O::olistref(int idx) {
-  _G();
   int i = 0;
   List_sp p;
   LOG(BF("Evaluating the length of list: %s") % this->__repr__());
@@ -899,7 +882,6 @@ T_sp Cons_O::olistref(int idx) {
 };
 
 T_sp Cons_O::olistrefArgument(int idx) {
-  _G();
   int i = 0;
   List_sp p;
   p = this->asSmartPtr();
@@ -945,13 +927,11 @@ CL_DEFMETHOD T_sp Cons_O::olookupKeyObjectDefault(Symbol_sp keyword, T_sp dft) {
 
 CL_NAME("core:lookup");
 CL_DEFMETHOD T_sp Cons_O::olookupKeyObject(Symbol_sp key) {
-  _G();
   Cons_sp p;
   return ((this->olookupKeyObjectDefault(key, _Nil<T_O>())));
 }
 
 string Cons_O::__repr__() const {
-  _G();
   Cons_sp start = this->asSmartPtr();
   T_sp cdr = start;
   stringstream sout;
@@ -1119,12 +1099,12 @@ string Cons_O::__repr__() const {
 
 
     SourceFileInfo_sp SourceCodeCons_O::sourceFileInfo() const
-    {_G();
+    {
 	return((this->_SourceFileInfo));
     }
 
     string	SourceCodeCons_O::__repr__() const
-    {_G();
+    {
 	T_sp		op;
 	Cons_sp 	p;
 	stringstream	sout;
@@ -1187,14 +1167,14 @@ string Cons_O::__repr__() const {
 
 
     Cons_sp SourceCodeCons_O::walkToFindParsePos() const
-    {_G();
+    {
 	if ( this->hasParsePos() ) return((this->asSmartPtr()));
 	return((this->Base::walkToFindParsePos()));
     }
 
 #if defined(XML_ARCHIVE)
     void	SourceCodeCons_O::archiveBase(::core::ArchiveP node)
-    {_G();
+    {
 	this->Base::archiveBase(node);
 	node->attribute("ParsePosLineNumber",this->_ParsePosLineNumber);
 	node->attribute("ParsePosColumn",this->_ParsePosColumn);
@@ -1304,7 +1284,6 @@ string alist_asString(List_sp alist) {
 }
 
 void Cons_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<Cons_O>()
       .def("core:exactlyMatches", &Cons_O::exactlyMatches)
       .def("core:lookup", &Cons_O::olookupKeyObject)
@@ -1370,7 +1349,6 @@ void Cons_O::exposeCando(Lisp_sp lisp) {
 }
 
 void Cons_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON //[
   PYTHON_CLASS(CorePkg, Cons, "", "", _lisp)
       .def("__repr__", &Cons_O::__repr__);

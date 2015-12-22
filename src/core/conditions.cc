@@ -65,7 +65,6 @@ void CandoException_O::exposeCando(core::Lisp_sp lisp) {
 }
 
 void CandoException_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, CandoException, "", "", _lisp);
 #endif
@@ -104,11 +103,10 @@ void Condition::setConditionObject(T_sp co) {
   this->_ConditionObject = co;
 }
 
-LAMBDA(type &rest slot-initializations);
-DECLARE();
-DOCSTRING("make-condition while brcl is booting - replace this once ");
+CL_LAMBDA(type &rest slot-initializations);
+CL_DECLARE();
+CL_DOCSTRING("make-condition while brcl is booting - replace this once ");
 CL_DEFUN T_sp cl__make_condition(T_sp type, List_sp slot_initializations) {
-  _G();
   GC_ALLOCATE(CandoException_O, condition);
   Cons_sp all = Cons_O::createList(type, slot_initializations);
   Str_sp msg = gc::As<Str_sp>(core__bformat(_Nil<T_O>(), "%s %s", all));
@@ -116,9 +114,9 @@ CL_DEFUN T_sp cl__make_condition(T_sp type, List_sp slot_initializations) {
   return condition;
 };
 
-LAMBDA(c);
-DECLARE();
-DOCSTRING("conditionMessage");
+CL_LAMBDA(c);
+CL_DECLARE();
+CL_DOCSTRING("conditionMessage");
 CL_DEFUN string core__condition_message(T_sp condition) {
   if (CandoException_sp ce = condition.asOrNull<CandoException_O>()) {
     return ce->message();
@@ -129,11 +127,11 @@ CL_DEFUN string core__condition_message(T_sp condition) {
 }
 
 #if 0
-LAMBDA(cond file function line);
-DECLARE();
-DOCSTRING("setThrowPosition");
+CL_LAMBDA(cond file function line);
+CL_DECLARE();
+CL_DOCSTRING("setThrowPosition");
 CL_DEFUN     void core__set_throw_position(T_sp cond, Str_sp file, Str_sp function, Fixnum_sp line)
-    {_G();
+    {
 	if ( CandoException_sp ce = cond.asOrNull<CandoException_O>() )
 	{
 	    string ts = file->get();

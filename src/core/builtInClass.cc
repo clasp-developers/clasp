@@ -38,7 +38,6 @@ THE SOFTWARE.
 namespace core {
 
 BuiltInClass_sp BuiltInClass_O::create(Symbol_sp instanceClassSymbol) {
-  _G();
   LOG(BF("Creating BuiltInClass_O instanceClassSymbol=%d") % instanceClassSymbol);
   GC_ALLOCATE(BuiltInClass_O, oclass);
   oclass->setName(instanceClassSymbol);
@@ -46,7 +45,6 @@ BuiltInClass_sp BuiltInClass_O::create(Symbol_sp instanceClassSymbol) {
 }
 
 BuiltInClass_sp BuiltInClass_O::createUncollectable() {
-  _G();
   GC_ALLOCATE_UNCOLLECTABLE(BuiltInClass_O, oclass);
   return ((oclass));
 }
@@ -79,7 +77,6 @@ void BuiltInClass_O::exposeCando(Lisp_sp lisp) {
   class_<BuiltInClass_O>();
 }
 void BuiltInClass_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, BuiltInClass, "", "", _lisp);
 #endif

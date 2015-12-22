@@ -38,11 +38,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-LAMBDA(name);
-DECLARE();
-DOCSTRING("setRunTimeValuesVector - return true if its set and false if it was already set");
+CL_LAMBDA(name);
+CL_DECLARE();
+CL_DOCSTRING("setRunTimeValuesVector - return true if its set and false if it was already set");
 CL_DEFUN bool core__set_run_time_values_vector(const string &name) {
-  _G();
   if (globalTaggedRunTimeValues != NULL) {
     return false;
   }
@@ -53,20 +52,18 @@ CL_DEFUN bool core__set_run_time_values_vector(const string &name) {
   return true;
 };
 
-LAMBDA(name &optional (data-size 0) (symbol-size 0));
-DECLARE();
-DOCSTRING("loadTimeValueArray");
+CL_LAMBDA(name &optional (data-size 0) (symbol-size 0));
+CL_DECLARE();
+CL_DOCSTRING("loadTimeValueArray");
 CL_DEFUN LoadTimeValues_mv core__load_time_value_array(const string &name, int dataSize, int symbolSize) {
-  _G();
   LoadTimeValues_sp ltv = _lisp->getOrCreateLoadTimeValues(name, dataSize, symbolSize);
   return Values(ltv);
 };
 
-LAMBDA(name idx);
-DECLARE();
-DOCSTRING("Return the load-time-value associated with array NAME and IDX");
+CL_LAMBDA(name idx);
+CL_DECLARE();
+CL_DOCSTRING("Return the load-time-value associated with array NAME and IDX");
 CL_DEFUN T_sp core__lookup_load_time_value(const string &name, int idx) {
-  _G();
   int count = 0;
   LoadTimeValues_sp ltva = gc::As<LoadTimeValues_sp>(_lisp->findLoadTimeValuesWithNameContaining(name, count));
   if (count != 1) {
@@ -78,11 +75,10 @@ CL_DEFUN T_sp core__lookup_load_time_value(const string &name, int idx) {
   return ltva->data_element(idx);
 };
 
-LAMBDA(name idx);
-DECLARE();
-DOCSTRING("Return the load-time-value associated with array NAME and IDX");
+CL_LAMBDA(name idx);
+CL_DECLARE();
+CL_DOCSTRING("Return the load-time-value associated with array NAME and IDX");
 CL_DEFUN Symbol_sp core__lookup_load_time_symbol(const string &name, int idx) {
-  _G();
   int count = 0;
   T_sp tltva = _lisp->findLoadTimeValuesWithNameContaining(name, count);
   if (tltva.nilp()) {
@@ -98,11 +94,10 @@ CL_DEFUN Symbol_sp core__lookup_load_time_symbol(const string &name, int idx) {
   return ltva->symbols_element(idx);
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("Return a cons of the load-time-values ids");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Return a cons of the load-time-values ids");
 CL_DEFUN void core__load_time_values_ids() {
-  _G();
   List_sp names = _lisp->loadTimeValuesIds();
   for (auto cur : names) {
     Str_sp nm = gc::As<Str_sp>(oCar(cur));
@@ -132,11 +127,10 @@ void parseIndices(vector<gctools::Fixnum> &vec_indices, T_sp indices) {
   }
 }
 
-LAMBDA(name-or-ltv &optional indices);
-DECLARE();
-DOCSTRING("Dump the load-time-values for the id _name_(string).");
+CL_LAMBDA(name-or-ltv &optional indices);
+CL_DECLARE();
+CL_DOCSTRING("Dump the load-time-values for the id _name_(string).");
 CL_DEFUN void core__load_time_values_dump_values(T_sp nameOrLtv, T_sp indices) {
-  _G();
   LoadTimeValues_sp ltv;
   if (af_stringP(nameOrLtv)) {
     int count = 0;
@@ -152,11 +146,10 @@ CL_DEFUN void core__load_time_values_dump_values(T_sp nameOrLtv, T_sp indices) {
   ltv->dumpValues(vi);
 };
 
-LAMBDA(name-or-ltv &optional indices);
-DECLARE();
-DOCSTRING("Dump the load-time-values for the id _name_(string).");
+CL_LAMBDA(name-or-ltv &optional indices);
+CL_DECLARE();
+CL_DOCSTRING("Dump the load-time-values for the id _name_(string).");
 CL_DEFUN void core__load_time_values_dump_symbols(T_sp nameOrLtv, T_sp indices) {
-  _G();
   LoadTimeValues_sp ltv;
   if (af_stringP(nameOrLtv)) {
     int count = 0;
@@ -218,7 +211,6 @@ void dumpOneValue(stringstream &ss, T_sp val) {
 }
 
 void LoadTimeValues_O::dumpValues(vector<gctools::Fixnum> &indices) {
-  _G();
   printf("%s:%d Dumping Values LTV@%p  size %lu  LTS size %lu\n", __FILE__, __LINE__, this, this->_Objects.size(), this->_Symbols.size());
   if (indices.size() == 0) {
     for (int i = 0, iEnd(this->_Objects.size()); i < iEnd; i++) {
@@ -239,7 +231,6 @@ void LoadTimeValues_O::dumpValues(vector<gctools::Fixnum> &indices) {
 }
 
 void LoadTimeValues_O::dumpSymbols(vector<gctools::Fixnum> &indices) {
-  _G();
   printf("%s:%d  Dumping Symbols  LTV@%p  size %lu  LTS size %lu\n", __FILE__, __LINE__, this, this->_Objects.size(), this->_Symbols.size());
   if (indices.size() == 0) {
     for (int i = 0, iEnd(this->_Symbols.size()); i < iEnd; i++) {
@@ -268,7 +259,6 @@ CL_DEFMETHOD int LoadTimeValues_O::data_vectorPushExtend(T_sp val, int extension
 }
 
 void LoadTimeValues_O::symbols_setFillPointer(uint i) {
-  _G();
   ASSERT(i == 0);
   this->_Symbols.resize(i);
 }

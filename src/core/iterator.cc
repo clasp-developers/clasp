@@ -33,19 +33,17 @@ THE SOFTWARE.
 
 namespace core {
 
-LAMBDA(it);
-DECLARE();
-DOCSTRING("iteratorUnsafeElement");
+CL_LAMBDA(it);
+CL_DECLARE();
+CL_DOCSTRING("iteratorUnsafeElement");
 CL_DEFUN T_sp core__iterator_unsafe_element(Iterator_sp it) {
-  _G();
   return it->unsafeElement();
 };
 
-LAMBDA(it);
-DECLARE();
-DOCSTRING("iteratorStep");
+CL_LAMBDA(it);
+CL_DECLARE();
+CL_DOCSTRING("iteratorStep");
 CL_DEFUN Iterator_sp core__iterator_step(Iterator_sp it) {
-  _G();
   it->step();
   return it;
 };
@@ -71,7 +69,6 @@ void Iterator_O::exposeCando(Lisp_sp lisp) {
 }
 
 void Iterator_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON //[
   PYTHON_CLASS(CorePkg, Iterator, "", "", _lisp)
       .def("core:begin", &Iterator_O::first)

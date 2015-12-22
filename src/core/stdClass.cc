@@ -40,7 +40,6 @@ void StdClass_O::exposeCando(Lisp_sp lisp) {
 }
 
 void StdClass_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, StdClass, "", "", _lisp);
 #endif

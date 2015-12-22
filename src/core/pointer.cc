@@ -36,7 +36,6 @@ void Pointer_O::initialize() {
 }
 
 Pointer_sp Pointer_O::create(void *p) {
-  _G();
   GC_ALLOCATE(Pointer_O, ptr);
   ptr->_Pointer = p;
   return ptr;
@@ -49,7 +48,6 @@ void Pointer_O::exposeCando(core::Lisp_sp lisp) {
 }
 
 void Pointer_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Pointer, "", "", _lisp);
 #endif

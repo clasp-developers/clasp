@@ -109,7 +109,6 @@ void MultiStringBuffer_O::exposeCando(Lisp_sp e) {
 }
 
 void MultiStringBuffer_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON //[
   PYTHON_CLASS(CorePkg, MultiStringBuffer, "", "", _lisp);
 #endif //]
@@ -164,7 +163,6 @@ uint MultiStringBuffer_O::addNumberOfCharacters(const char *str, uint num) {
 }
 
 uint MultiStringBuffer_O::addCharacters(const char *str) {
-  _G();
   LOG(BF("Adding characters(%s)") % str);
   if (this->_Blocks.size() == 0) {
     MultiStringBlock *block = new MultiStringBlock(0);

@@ -45,7 +45,6 @@ namespace asttooling {
 #define DECL_af_makeAstVisitor ""
 #define DOCS_af_makeAstVisitor "makeAstVisitor"
 AstVisitor_sp af_makeAstVisitor(core::T_sp target) {
-  _G();
   return AstVisitor_O::create(target);
 };
 
@@ -56,7 +55,6 @@ void AstVisitor_O::exposeCando(core::Lisp_sp lisp) {
 }
 
 void AstVisitor_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, AstVisitor, "", "", _lisp);
 #endif

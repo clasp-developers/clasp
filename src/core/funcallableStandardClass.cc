@@ -58,7 +58,7 @@ void FuncallableStandardClass_O::archiveBase(ArchiveP node) {
 
 #if 0 // All functions
     void	FuncallableStandardClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)
-    {_G();
+    {
 	IMPLEMENT_ME(); // Create a forward-referenced-class
 	if ( node==NULL ) return;
 	this->_SlotSpecifiers.clear();
@@ -96,7 +96,7 @@ void FuncallableStandardClass_O::archiveBase(ArchiveP node) {
       [Cons of metaclasses] - return the cons of metaclasses.
     */
     Cons_sp FuncallableStandardClass_O::classListDesignator(T_sp baseClassesDesignator, Lisp_sp lisp)
-    {_G();
+    {
 	Cons_sp baseClasses;
 	if ( baseClassesDesignator.nilp() )
 	{
@@ -131,7 +131,7 @@ void FuncallableStandardClass_O::archiveBase(ArchiveP node) {
     }
 
     void	FuncallableStandardClass_O::describe()
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	_lisp->print(BF("------------  FuncallableStandardClass name: %s    instanceClassSymbol: %d") % this->_Name->__repr__() % this->_InstanceClassSymbol );
@@ -152,7 +152,7 @@ void FuncallableStandardClass_O::archiveBase(ArchiveP node) {
     }
 
     string FuncallableStandardClass_O::dumpInfo()
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	stringstream ss;
@@ -189,7 +189,7 @@ void FuncallableStandardClass_O::archiveBase(ArchiveP node) {
 
 #if 0
     FuncallableStandardClass_O::slotIterator FuncallableStandardClass_O::find(Symbol_sp sym)
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	ASSERTNOTNULL(sym);
@@ -215,7 +215,7 @@ void FuncallableStandardClass_O::archiveBase(ArchiveP node) {
 
 #if 0
     void FuncallableStandardClass_O::appendInstanceVariablesFromListOfSymbols(Cons_sp instanceVariableNames)
-    {_G();
+    {
 	FuncallableStandardClass_O::slotIterator si;
 	for (Cons_sp ci = instanceVariableNames; ci.notnilp(); ci=ci->cdr() )
 	{
@@ -229,7 +229,7 @@ void FuncallableStandardClass_O::archiveBase(ArchiveP node) {
 	}
     }
     void FuncallableStandardClass_O::appendInstanceVariablesFromFuncallableStandardClass(FuncallableStandardClass_sp cc)
-    {_G();
+    {
 	FuncallableStandardClass_O::slotIterator si;
 	for (si = cc->begin(); si!=cc->end(); si++ )
 	{
@@ -244,7 +244,7 @@ void FuncallableStandardClass_O::archiveBase(ArchiveP node) {
 
 
     void FuncallableStandardClass_O::resetSlots()
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	this->_SlotSpecifiers.clear();
@@ -254,7 +254,7 @@ void FuncallableStandardClass_O::archiveBase(ArchiveP node) {
 
 
     void FuncallableStandardClass_O::setupAccessors(Cons_sp slotNames)
-    {_G();
+    {
 	IMPLEMENT_ME(); // Dont pass the slot names, use the slots already defined
 #if 0
 	this->_InstanceVariableNames = slotNames;
@@ -280,7 +280,6 @@ void FuncallableStandardClass_O::exposeCando(Lisp_sp lisp) {
   class_<FuncallableStandardClass_O>();
 }
 void FuncallableStandardClass_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, FuncallableStandardClass, "", "", _lisp);
 #endif

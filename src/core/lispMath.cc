@@ -602,21 +602,21 @@ T_mv floor1(Real_sp x)
 	return Values(v0,v1);
     }
 
-LAMBDA(x &optional y);
-DECLARE();
-DOCSTRING("truncate");
+CL_LAMBDA(x &optional y);
+CL_DECLARE();
+CL_DOCSTRING("truncate");
 CL_DEFUN     T_mv cl__truncate(Real_sp x, Real_sp y)
-    {_G();
+    {
 	if (y.nilp())
 	    return truncate1(x);
 	return truncate2(x,y);
     };
 
-LAMBDA(x &optional y);
-DECLARE();
-DOCSTRING("ceiling");
+CL_LAMBDA(x &optional y);
+CL_DECLARE();
+CL_DOCSTRING("ceiling");
 CL_DEFUN     T_mv cl__ceiling(Real_sp x, Real_sp y)
-    {_G();
+    {
 	if ( y.nilp() )
 	{
 	    return ceiling1(x);
@@ -626,11 +626,11 @@ CL_DEFUN     T_mv cl__ceiling(Real_sp x, Real_sp y)
 	}
     }
 
-LAMBDA(numb &optional divisor );
-DECLARE();
-DOCSTRING("floor");
+CL_LAMBDA(numb &optional divisor );
+CL_DECLARE();
+CL_DOCSTRING("floor");
 CL_DEFUN T_mv cl__floor(Real_sp number, Real_sp divisor )
-{_G();
+{
     if ( divisor.nilp() )
     {
 	return floor1(number);
@@ -640,28 +640,27 @@ CL_DEFUN T_mv cl__floor(Real_sp number, Real_sp divisor )
     }
 };
 
-LAMBDA(num div);
-DECLARE();
-DOCSTRING("mod");
+CL_LAMBDA(num div);
+CL_DECLARE();
+CL_DOCSTRING("mod");
 CL_DEFUN     Real_mv cl__mod(Real_sp num, Real_sp div)
-{_G();
+{
     T_mv floor_mv = cl__floor(num,div);
     Real_sp res = floor_mv.valueGet(1).as<Real_O>();
     return(Values(res));
 };
 
-LAMBDA(numb divisor);
-DECLARE();
-DOCSTRING("rem");
+CL_LAMBDA(numb divisor);
+CL_DECLARE();
+CL_DOCSTRING("rem");
 CL_DEFUN T_sp cl__rem(Real_sp x, Real_sp y)
-    {_G();
+    {
 	T_mv v0v1 = truncate2(x,y);
 	return v0v1.valueGet(1);
     };
 
 #endif
 void initialize_math() {
-  _G();
 #if 0
 	SYMBOL_EXPORT_SC_(ClPkg,floor);
 	SYMBOL_EXPORT_SC_(ClPkg,mod);
