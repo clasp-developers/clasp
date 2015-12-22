@@ -118,14 +118,16 @@ void SexpLoadArchive_O::exposePython(Lisp_sp lisp) {
   _G();
 }
 
-void SexpLoadArchive_O::parseFromObject(T_sp object) {
+CL_NAME("parseFromObject");
+CL_DEFMETHOD void SexpLoadArchive_O::parseFromObject(T_sp object) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
   HashTable_sp objToNode = HashTable_O::create(cl::_sym_eq);
   this->_TopNode = gc::As<BranchSNode_sp>(parseNode(objToNode, object));
   this->createContents();
 };
 
-void SexpLoadArchive_O::parseFromStream(T_sp streamDesignator) {
+CL_NAME("parseFromStream");
+CL_DEFMETHOD void SexpLoadArchive_O::parseFromStream(T_sp streamDesignator) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
   // Don't track source code for archives
   scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());

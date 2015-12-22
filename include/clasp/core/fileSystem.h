@@ -66,7 +66,8 @@ public:
   /*! Comparison of paths */
   virtual bool lt(T_sp obj) const;
 
-  bool isAbsolute() const { return this->_Path.is_absolute(); };
+CL_NAME("isAbsolute");
+CL_DEFMETHOD   bool isAbsolute() const { return this->_Path.is_absolute(); };
 
   Path_sp copyPath() const;
 

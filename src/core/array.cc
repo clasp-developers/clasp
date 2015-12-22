@@ -139,7 +139,8 @@ int Array_O::checkedIndex(const string &filename, int lineno, const string &func
   UNREACHABLE();
 }
 
-gc::Fixnum Array_O::arrayTotalSize() const {
+CL_NAME("cl:arrayTotalSize");
+CL_DEFMETHOD gc::Fixnum Array_O::arrayTotalSize() const {
   gc::Fixnum sz = 1;
   for (int i = 0; i < this->rank(); i++) {
     sz *= this->arrayDimension(i);
@@ -162,7 +163,8 @@ Symbol_sp Array_O::element_type_as_symbol() const {
 #define ARGS_Array_O_aref "((core::self core::array) &rest core::indices)"
 #define DECL_Array_O_aref ""
 #define DOCS_Array_O_aref "See CLHS aref"
-T_sp Array_O::aref(List_sp indices) const {
+CL_NAME("cl:aref");
+CL_DEFMETHOD T_sp Array_O::aref(List_sp indices) const {
   _OF();
   SUBCLASS_MUST_IMPLEMENT();
 }
@@ -207,16 +209,19 @@ cl_index Array_O::index_val(List_sp indices, bool last_value_is_val, List_sp &va
   return ((offset));
 }
 
-gc::Fixnum Array_O::index(List_sp indices) const {
+CL_NAME("core:index");
+CL_DEFMETHOD gc::Fixnum Array_O::index(List_sp indices) const {
   List_sp dummy;
   return ((this->index_val(indices, false, dummy)));
 }
 
-gc::Fixnum Array_O::arrayRowMajorIndex(List_sp indices) const {
+CL_NAME("cl:arrayRowMajorIndex");
+CL_DEFMETHOD gc::Fixnum Array_O::arrayRowMajorIndex(List_sp indices) const {
   return ((this->index(indices)));
 }
 
-List_sp Array_O::arrayDimensions() const {
+CL_NAME("cl:array-dimensions");
+CL_DEFMETHOD List_sp Array_O::arrayDimensions() const {
   _OF();
   List_sp indices = _Nil<T_O>();
   for (int i = this->rank() - 1; i >= 0; i--) {
@@ -228,7 +233,8 @@ List_sp Array_O::arrayDimensions() const {
 #define ARGS_Array_O_setf_aref "((core::self array) &rest core::indices-val)"
 #define DECL_Array_O_setf_aref ""
 #define DOCS_Array_O_setf_aref "CLHS: setter for aref"
-T_sp Array_O::setf_aref(List_sp indices_val) {
+CL_NAME("core:array-setf-aref");
+CL_DEFMETHOD T_sp Array_O::setf_aref(List_sp indices_val) {
   _G();
   SUBCLASS_MUST_IMPLEMENT();
 };

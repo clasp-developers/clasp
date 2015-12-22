@@ -173,7 +173,8 @@ Rational_sp Str_O::parseInteger() {
   return Integer_O::create(this->get());
 }
 
-DoubleFloat_sp Str_O::asReal() const {
+CL_NAME("core:parse-real");
+CL_DEFMETHOD DoubleFloat_sp Str_O::asReal() const {
   DoubleFloat_sp n;
   n = DoubleFloat_O::create(atof(this->get().c_str()));
   return n;
@@ -219,7 +220,8 @@ T_sp Str_O::setf_aref(List_sp indices_val) {
   return this->setf_elt(index, oCadr(indices_val));
 }
 
-uint Str_O::countOccurances(const string &chars) {
+CL_NAME("core:countOccurances");
+CL_DEFMETHOD uint Str_O::countOccurances(const string &chars) {
   _OF();
   ASSERT_eq(chars.size(), 1);
   uint c = 0;
@@ -231,40 +233,47 @@ uint Str_O::countOccurances(const string &chars) {
   return c;
 }
 
-string Str_O::left(gc::Fixnum num) const {
+CL_NAME("core:left");
+CL_DEFMETHOD string Str_O::left(gc::Fixnum num) const {
   string res = this->get().substr(0, num);
   return res;
 }
 
-string Str_O::right(gc::Fixnum num) const {
+CL_NAME("core:right");
+CL_DEFMETHOD string Str_O::right(gc::Fixnum num) const {
   string res = this->get().substr(this->size() - num, num);
   return res;
 }
 
-T_sp Str_O::find(const string &substring, gc::Fixnum start) {
+CL_NAME("core:string-find");
+CL_DEFMETHOD T_sp Str_O::find(const string &substring, gc::Fixnum start) {
   size_t res = this->get().find(substring, start);
   if (res != string::npos)
     return Integer_O::create((gc::Fixnum)res);
   return _Nil<T_O>();
 }
 
-string Str_O::substr(gc::Fixnum start, gc::Fixnum num) const {
+CL_NAME("core:substr");
+CL_DEFMETHOD string Str_O::substr(gc::Fixnum start, gc::Fixnum num) const {
   string res = this->get().substr(start, num);
   return res;
 }
 
-Symbol_sp Str_O::asSymbol() const {
+CL_NAME("core:asSymbol");
+CL_DEFMETHOD Symbol_sp Str_O::asSymbol() const {
   Symbol_sp sym = _lisp->intern(this->get());
   return sym;
 }
 
-Symbol_sp Str_O::asKeywordSymbol() const {
+CL_NAME("core:asKeywordSymbol");
+CL_DEFMETHOD Symbol_sp Str_O::asKeywordSymbol() const {
   Symbol_sp sym = _lisp->internKeyword(this->get());
   return sym;
 }
 
 
-List_sp Str_O::splitAtWhiteSpace() {
+CL_NAME("core:splitAtWhiteSpace");
+CL_DEFMETHOD List_sp Str_O::splitAtWhiteSpace() {
   vector<string> parts = core::split(this->get(), " \n\t");
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   Cons_sp cur = first;
@@ -276,7 +285,8 @@ List_sp Str_O::splitAtWhiteSpace() {
   return oCdr(first);
 }
 
-List_sp Str_O::split(const string &chars) {
+CL_NAME("core:split");
+CL_DEFMETHOD List_sp Str_O::split(const string &chars) {
   TESTING();
   vector<string> parts = core::split(this->get(), chars);
   List_sp result(_Nil<T_O>());

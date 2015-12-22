@@ -129,7 +129,8 @@ uint64_t Bignum_O::as_uint64_() const {
 }
 
 /*! This helps us debug the as_uint64 function by returning a string representation of the uint64 */
-string Bignum_O::as_uint64_string() const {
+CL_NAME("core:asUint64String");
+CL_DEFMETHOD string Bignum_O::as_uint64_string() const {
   _G();
   uint64_t ui64 = clasp_to_uint64(this->asSmartPtr());
   stringstream ss;
@@ -137,7 +138,8 @@ string Bignum_O::as_uint64_string() const {
   return ((ss.str()));
 }
 
-bool Bignum_O::fits_sint_p() {
+CL_NAME("core:fitsSintP");
+CL_DEFMETHOD bool Bignum_O::fits_sint_p() {
   _G();
   return ((this->_value.fits_sint_p()));
 }

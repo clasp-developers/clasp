@@ -210,23 +210,32 @@ public:
 
   /*! Return true if the LambdaListHandler only has required arguments */
   bool requiredLexicalArgumentsOnlyP_() const;
-  inline bool requiredLexicalArgumentsOnlyP() const { return this->_RequiredLexicalArgumentsOnly; };
+CL_NAME("lambdaListHandlerRequiredLexicalArgumentsOnlyP");
+CL_DEFMETHOD   inline bool requiredLexicalArgumentsOnlyP() const { return this->_RequiredLexicalArgumentsOnly; };
 
-  inline int numberOfRequiredArguments() const { return this->_RequiredArguments.size(); };
-  int numberOfOptionalArguments() const { return this->_OptionalArguments.size(); };
-  int numberOfRestArguments() const { return this->_RestArgument._ArgTarget.nilp() ? 0 : 1; };
+CL_NAME("numberOfRequiredArguments");
+CL_DEFMETHOD   inline int numberOfRequiredArguments() const { return this->_RequiredArguments.size(); };
+CL_NAME("numberOfOptionalArguments");
+CL_DEFMETHOD   int numberOfOptionalArguments() const { return this->_OptionalArguments.size(); };
+CL_NAME("numberOfRestArguments");
+CL_DEFMETHOD   int numberOfRestArguments() const { return this->_RestArgument._ArgTarget.nilp() ? 0 : 1; };
   bool hasKeyFlag() const { return this->_KeyFlag.isTrue(); };
-  int numberOfKeyArguments() const { return this->_KeywordArguments.size(); };
-  int numberOfAuxArguments() const { return this->_AuxArguments.size(); };
-  bool allowOtherKeys() const { return this->_AllowOtherKeys.notnilp(); };
+CL_NAME("numberOfKeyArguments");
+CL_DEFMETHOD   int numberOfKeyArguments() const { return this->_KeywordArguments.size(); };
+CL_NAME("numberOfAuxArguments");
+CL_DEFMETHOD   int numberOfAuxArguments() const { return this->_AuxArguments.size(); };
+CL_NAME("allowOtherKeys");
+CL_DEFMETHOD   bool allowOtherKeys() const { return this->_AllowOtherKeys.notnilp(); };
 
   //	uint _numberOfRequiredArguments() const;
 
   /*! The total number of arguments that will be bound by this handler in a lexical ActivationFrame */
-  int numberOfLexicalVariables() const { return this->_NumberOfLexicalVariables; };
+CL_NAME("numberOfLexicalVariables");
+CL_DEFMETHOD   int numberOfLexicalVariables() const { return this->_NumberOfLexicalVariables; };
 
   /*! Return all of the symbols that this LambdaListHandler will fill classified as to whether they are special-var or lexical-var's */
-  List_sp classifiedSymbols() const { return this->_ClassifiedSymbolList; };
+CL_NAME("classifiedSymbols");
+CL_DEFMETHOD   List_sp classifiedSymbols() const { return this->_ClassifiedSymbolList; };
 
   /*! Return a Cons of all lexical variable names extracted from this->_ClassifiedSymbolList
 	  in the order that they appear in _ClassifiedSymbolList - this is used for
@@ -292,3 +301,4 @@ struct gctools::GCInfo<core::LambdaListHandler_O> {
 };
 
 #endif //]
+   

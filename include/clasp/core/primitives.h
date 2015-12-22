@@ -190,7 +190,8 @@ public:
     return cp;
   };
   /*! Return true if this points to a real InvocationHistoryFrame */
-  bool isValid() { return this->_Frame != NULL; };
+CL_NAME("frameIteratorIsValid");
+CL_DEFMETHOD   bool isValid() { return this->_Frame != NULL; };
 }; /* core */
 };
 TRANSLATE(core::InvocationHistoryFrameIterator_O);

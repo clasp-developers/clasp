@@ -56,7 +56,8 @@ GCPRIVATE:
 
 public:
   void insert(T_sp key, T_sp val);
-  int size() const { return this->map.size(); };
+CL_NAME("small_multimap_size");
+CL_DEFMETHOD   int size() const { return this->map.size(); };
   void erase(T_sp key);
   void describe();
   void describeRange(T_sp key);

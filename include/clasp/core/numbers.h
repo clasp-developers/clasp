@@ -418,7 +418,8 @@ class Float_O : public Real_O {
   LISP_CLASS(core, ClPkg, Float_O, "float");
 
 public:
-  virtual Integer_sp castToInteger() const { SUBIMP(); };
+CL_NAME("core:castToInteger");
+CL_DEFMETHOD   virtual Integer_sp castToInteger() const { SUBIMP(); };
 
   virtual bool isnan_() const { SUBIMP(); };
   virtual bool isinf_() const { SUBIMP(); };

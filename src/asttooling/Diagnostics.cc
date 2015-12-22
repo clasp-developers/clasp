@@ -239,7 +239,8 @@ void Diagnostics::printToStreamFull(llvm::raw_ostream &OS) const {
   }
 }
 
-std::string Diagnostics::toStringFull() const {
+CL_NAME("toStringFull");
+CL_DEFMETHOD std::string Diagnostics::toStringFull() const {
   std::string S;
   llvm::raw_string_ostream OS(S);
   printToStreamFull(OS);

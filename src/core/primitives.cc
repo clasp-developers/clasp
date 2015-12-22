@@ -1660,12 +1660,14 @@ InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum 
   return iterator;
 }
 
-InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::prev(T_sp test) {
+CL_NAME("frameIteratorPreviousFrame");
+CL_DEFMETHOD InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::prev(T_sp test) {
   nextInvocationHistoryFrameIteratorThatSatisfiesTest(1, this->asSmartPtr(), test);
   return this->asSmartPtr();
 }
 
-T_sp InvocationHistoryFrameIterator_O::functionName() {
+CL_NAME("frameIteratorFunctionName");
+CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
@@ -1676,7 +1678,8 @@ T_sp InvocationHistoryFrameIterator_O::functionName() {
   return closure->name;
 }
 
-T_sp InvocationHistoryFrameIterator_O::environment() {
+CL_NAME("frameIteratorEnvironment");
+CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::environment() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
@@ -1705,7 +1708,8 @@ Function_sp InvocationHistoryFrameIterator_O::function() {
   return Function_O::make(closure); // Should I really be creating a new Function object every time???
 }
 
-Vector_sp InvocationHistoryFrameIterator_O::arguments() {
+CL_NAME("frameIteratorArguments");
+CL_DEFMETHOD Vector_sp InvocationHistoryFrameIterator_O::arguments() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }

@@ -502,7 +502,8 @@ uint HashTable_O::resizeEmptyTable(uint sz) {
   return sz;
 }
 
-uint HashTable_O::hashTableCount() const {
+CL_NAME("hash-table-count");
+CL_DEFMETHOD uint HashTable_O::hashTableCount() const {
   return this->_HashTableCount;
 }
 
@@ -514,7 +515,8 @@ uint HashTable_O::calculateHashTableCount() const {
   return cnt;
 }
 
-uint HashTable_O::hashTableSize() const {
+CL_NAME("hash-table-size");
+CL_DEFMETHOD uint HashTable_O::hashTableSize() const {
   return cl__length(this->_HashTable);
 }
 
@@ -626,7 +628,8 @@ T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   return (Values(value, _lisp->_true()));
 }
 
-gc::Fixnum HashTable_O::hashIndex(T_sp key) const {
+CL_NAME("core:hashIndex");
+CL_DEFMETHOD gc::Fixnum HashTable_O::hashIndex(T_sp key) const {
   gc::Fixnum idx = this->sxhashKey(key, cl__length(this->_HashTable), false);
   return idx;
 }
@@ -663,7 +666,8 @@ bool HashTable_O::remhash(T_sp key) {
 #define ARGS_HashTable_O_hash_table_setf_gethash "(self key value)"
 #define DECL_HashTable_O_hash_table_setf_gethash ""
 #define DOCS_HashTable_O_hash_table_setf_gethash "setf into the hash-table"
-T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
+CL_NAME("core:hashTableSetfGethash");
+CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   List_sp keyValuePair = this->tableRef(key);
 #ifdef DEBUG_HASH_TABLE
   if (this->_DebugHashTable) {
@@ -842,7 +846,8 @@ void dump_one_entry(HashTable_sp ht, size_t it, stringstream &ss, List_sp first)
 #define ARGS_HashTable_O_hash_table_dump "(&optional (start 0) end)"
 #define DECL_HashTable_O_hash_table_dump ""
 #define DOCS_HashTable_O_hash_table_dump "Dump the hash-table"
-string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
+CL_NAME("core:hashTableDump");
+CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
   stringstream ss;
 #ifndef DUMP_LOW_LEVEL
   ss << "#<" << this->_instanceClass()->classNameAsString() << std::endl;
@@ -928,11 +933,13 @@ DONE:
   return;
 }
 
-int HashTable_O::hashTableNumberOfHashes() const {
+CL_NAME("core:hashTableNumberOfHashes");
+CL_DEFMETHOD int HashTable_O::hashTableNumberOfHashes() const {
   return cl__length(this->_HashTable);
 }
 
-List_sp HashTable_O::hashTableAlistAtHash(int hash) const {
+CL_NAME("core:hashTableAlistAtHash");
+CL_DEFMETHOD List_sp HashTable_O::hashTableAlistAtHash(int hash) const {
   ASSERTF(hash >= 0 && hash < cl__length(this->_HashTable), BF("Illegal hash value[%d] must between [0,%d)") % hash % cl__length(this->_HashTable));
   return this->_HashTable->operator[](hash);
 }

@@ -94,7 +94,8 @@ void PosixTime_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-PosixTime_sp PosixTime_O::setToLocalTime() {
+CL_NAME("setToLocalTime");
+CL_DEFMETHOD PosixTime_sp PosixTime_O::setToLocalTime() {
   _G();
   this->_Time = boost::posix_time::microsec_clock::local_time();
   return this->sharedThis<PosixTime_O>();
@@ -107,7 +108,8 @@ string PosixTime_O::toSimpleString() {
   return ss.str();
 }
 
-PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp t) {
+CL_NAME("sub");
+CL_DEFMETHOD PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp t) {
   _G();
   PosixTimeDuration_sp result = PosixTimeDuration_O::create();
   result->_Duration = this->_Time - t->_Time;
@@ -144,19 +146,22 @@ void PosixTimeDuration_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-PosixTimeDuration_sp PosixTimeDuration_O::sub(PosixTimeDuration_sp t) {
+CL_NAME("sub");
+CL_DEFMETHOD PosixTimeDuration_sp PosixTimeDuration_O::sub(PosixTimeDuration_sp t) {
   _G();
   PosixTimeDuration_sp result = PosixTimeDuration_O::create();
   result->_Duration = this->_Duration - t->_Duration;
   return result;
 }
 
-mpz_class PosixTimeDuration_O::totalSeconds() {
+CL_NAME("totalSeconds");
+CL_DEFMETHOD mpz_class PosixTimeDuration_O::totalSeconds() {
   _OF();
   return mpz_class(this->_Duration.total_seconds());
 }
 
-mpz_class PosixTimeDuration_O::totalMilliseconds() {
+CL_NAME("totalMilliseconds");
+CL_DEFMETHOD mpz_class PosixTimeDuration_O::totalMilliseconds() {
   _OF();
   stringstream ss;
   ss << this->_Duration.total_milliseconds();
@@ -177,27 +182,32 @@ mpz_class PosixTimeDuration_O::fractionalSeconds() {
   return mpz_class(ss.str());
 }
 
-uint PosixTimeDuration_O::seconds() {
+CL_NAME("posix-time-duration-seconds");
+CL_DEFMETHOD uint PosixTimeDuration_O::seconds() {
   _G();
   return this->_Duration.seconds();
 }
 
-uint PosixTimeDuration_O::minutes() {
+CL_NAME("minutes");
+CL_DEFMETHOD uint PosixTimeDuration_O::minutes() {
   _G();
   return this->_Duration.minutes();
 }
 
-uint PosixTimeDuration_O::hours() {
+CL_NAME("hours");
+CL_DEFMETHOD uint PosixTimeDuration_O::hours() {
   _G();
   return this->_Duration.hours();
 }
 
-string PosixTimeDuration_O::toSimpleString() {
+CL_NAME("toSimpleString");
+CL_DEFMETHOD string PosixTimeDuration_O::toSimpleString() {
   _G();
   return boost::posix_time::to_simple_string(this->_Duration);
 }
 
-string PosixTimeDuration_O::toIsoString() {
+CL_NAME("toIsoString");
+CL_DEFMETHOD string PosixTimeDuration_O::toIsoString() {
   _G();
   return boost::posix_time::to_iso_string(this->_Duration);
 }

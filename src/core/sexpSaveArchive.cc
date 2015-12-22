@@ -113,7 +113,8 @@ void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stre
   }
 }
 
-void SexpSaveArchive_O::sexpSaveArchiveWrite(T_sp streamDesignator) {
+CL_NAME("sexpSaveArchiveWrite");
+CL_DEFMETHOD void SexpSaveArchive_O::sexpSaveArchiveWrite(T_sp streamDesignator) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
   T_sp stream = coerce::outputStreamDesignator(streamDesignator);
   HashTable_sp sNodeToRef = HashTable_O::create(cl::_sym_eq);

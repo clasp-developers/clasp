@@ -87,7 +87,8 @@ public:
   //! Return the number of set bits
   uint countSet();
   //! Return true if the BitVector contains only 0's
-  bool isZero() { return (this->countSet() == 0); };
+CL_NAME("core:isZero");
+CL_DEFMETHOD   bool isZero() { return (this->countSet() == 0); };
 
   void do_subseq(BitVector_sp result, int start, int iend) const;
 

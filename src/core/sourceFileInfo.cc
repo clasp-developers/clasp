@@ -333,7 +333,8 @@ string SourceFileInfo_O::__repr__() const {
   return ss.str();
 }
 
-string SourceFileInfo_O::sourceDebugNamestring() const {
+CL_NAME("SourceFileInfo-sourceDebugNamestring");
+CL_DEFMETHOD string SourceFileInfo_O::sourceDebugNamestring() const {
   if (this->_SourceDebugNamestring.notnilp()) {
     return gc::As<Str_sp>(this->_SourceDebugNamestring)->get();
   }

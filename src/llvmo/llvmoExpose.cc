@@ -278,7 +278,8 @@ struct from_object<llvm::TargetMachine::CodeGenFileType, std::true_type> {
 namespace llvmo {
 EXPOSE_CLASS(llvmo, TargetMachine_O);
 
-void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
+CL_NAME("addPassesToEmitFileAndRunPassManager");
+CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
                                                            core::T_sp stream,
                                                            llvm::TargetMachine::CodeGenFileType FileType,
                                                            Module_sp module) {
@@ -636,28 +637,34 @@ TargetOptions_sp TargetOptions_O::make() {
   return self;
 };
 
-bool TargetOptions_O::NoFramePointerElim() {
+CL_NAME("NoFramePointerElim");
+CL_DEFMETHOD bool TargetOptions_O::NoFramePointerElim() {
   return this->wrappedPtr()->NoFramePointerElim;
 }
 
-void TargetOptions_O::setfNoFramePointerElim(bool val) {
+CL_NAME("setfNoFramePointerElim");
+CL_DEFMETHOD void TargetOptions_O::setfNoFramePointerElim(bool val) {
   // if val == true then turn OFF FramePointerElim
   this->wrappedPtr()->NoFramePointerElim = val;
 }
 
-bool TargetOptions_O::JITEmitDebugInfo() {
+CL_NAME("JITEmitDebugInfo");
+CL_DEFMETHOD bool TargetOptions_O::JITEmitDebugInfo() {
   return this->wrappedPtr()->JITEmitDebugInfo;
 }
 
-void TargetOptions_O::setfJITEmitDebugInfo(bool val) {
+CL_NAME("setfJITEmitDebugInfo");
+CL_DEFMETHOD void TargetOptions_O::setfJITEmitDebugInfo(bool val) {
   this->wrappedPtr()->JITEmitDebugInfo = val;
 }
 
-bool TargetOptions_O::JITEmitDebugInfoToDisk() {
+CL_NAME("JITEmitDebugInfoToDisk");
+CL_DEFMETHOD bool TargetOptions_O::JITEmitDebugInfoToDisk() {
   return this->wrappedPtr()->JITEmitDebugInfoToDisk;
 }
 
-void TargetOptions_O::setfJITEmitDebugInfoToDisk(bool val) {
+CL_NAME("setfJITEmitDebugInfoToDisk");
+CL_DEFMETHOD void TargetOptions_O::setfJITEmitDebugInfoToDisk(bool val) {
   this->wrappedPtr()->JITEmitDebugInfoToDisk = val;
 }
 
@@ -683,7 +690,8 @@ void TargetOptions_O::exposePython(core::Lisp_sp lisp) {
 
 namespace llvmo {
 
-bool LLVMTargetMachine_O::LLVMTargetMachine_addPassesToEmitFile(PassManagerBase_sp pm,
+CL_NAME("LLVMTargetMachine_addPassesToEmitFile");
+CL_DEFMETHOD bool LLVMTargetMachine_O::LLVMTargetMachine_addPassesToEmitFile(PassManagerBase_sp pm,
                                                                 core::T_sp stream,
                                                                 core::Symbol_sp fileType) {
   IMPLEMENT_ME();
@@ -1189,7 +1197,8 @@ void Module_O::exposePython(core::Lisp_sp lisp) {
   IMPLEMENT_ME();
 };
 
-llvm::Function *Module_O::getFunction(core::Str_sp dispatchName) {
+CL_NAME("getFunction");
+CL_DEFMETHOD llvm::Function *Module_O::getFunction(core::Str_sp dispatchName) {
   _G();
   llvm::Module *module = this->wrappedPtr();
   string funcName = dispatchName->get();
@@ -1197,18 +1206,21 @@ llvm::Function *Module_O::getFunction(core::Str_sp dispatchName) {
   return func;
 }
 
-bool Module_O::valid() const {
+CL_NAME("moduleValid");
+CL_DEFMETHOD bool Module_O::valid() const {
   _G();
   return this->wrappedPtr() != NULL;
 }
 
-void Module_O::moduleDelete() {
+CL_NAME("moduleDelete");
+CL_DEFMETHOD void Module_O::moduleDelete() {
   ASSERT(this->wrappedPtr() != NULL);
   delete this->wrappedPtr();
   this->set_wrapped(NULL);
 }
 
-void Module_O::dump_namedMDList() const {
+CL_NAME("dump_namedMDList");
+CL_DEFMETHOD void Module_O::dump_namedMDList() const {
   _G();
   llvm::Module *M = this->wrappedPtr();
   for (llvm::Module::const_named_metadata_iterator it = M->named_metadata_begin();
@@ -1222,7 +1234,8 @@ void Module_O::initialize() {
   this->_UniqueGlobalVariableStrings = core::HashTableEqual_O::create_default();
 }
 
-GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable(const string &value, const string &name) {
+CL_NAME("getOrCreateUniquedStringGlobalVariable");
+CL_DEFMETHOD GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable(const string &value, const string &name) {
   core::Str_sp nameKey = core::Str_O::create(name);
   core::List_sp it = this->_UniqueGlobalVariableStrings->gethash(nameKey);
   //	map<string,GlobalVariableStringHolder>::iterator it = this->_UniqueGlobalVariableStrings.find(name);
@@ -1254,7 +1267,8 @@ GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable(const string 
   return gc::As<GlobalVariable_sp>(oCdr(it)); // it->second._LlvmValue;
 }
 
-core::List_sp Module_O::getGlobalList() const {
+CL_NAME("getGlobalList");
+CL_DEFMETHOD core::List_sp Module_O::getGlobalList() const {
   _G();
   ql::list globals(_lisp);
   llvm::Module *m = this->wrappedPtr();
@@ -1278,7 +1292,8 @@ string ExecutionEngine_O::__repr__() const {
   return ss.str();
 }
 
-core::List_sp ExecutionEngine_O::dependentModuleNames() const {
+CL_NAME("dependentModuleNames");
+CL_DEFMETHOD core::List_sp ExecutionEngine_O::dependentModuleNames() const {
   _G();
   ql::list l;
   this->_DependentModules->mapHash([&l](core::T_sp key, core::T_sp val) {
@@ -1301,7 +1316,8 @@ void ExecutionEngine_O::addNamedModule(const string &name, Module_sp module) {
   this->wrappedPtr()->addModule(std::move(ownedModule));
 }
 
-bool ExecutionEngine_O::hasNamedModule(const string &name) {
+CL_NAME("hasNamedModule");
+CL_DEFMETHOD bool ExecutionEngine_O::hasNamedModule(const string &name) {
   _G();
   if (this->_DependentModules->contains(core::Str_O::create(name)))
     return true;
@@ -1323,19 +1339,22 @@ void ExecutionEngine_O::removeNamedModule(const string &name) {
   this->_DependentModules->remhash(key);
 }
 
-void ExecutionEngine_O::addGlobalMapping(GlobalValue_sp value, core::Pointer_sp ptr) {
+CL_NAME("addGlobalMapping");
+CL_DEFMETHOD void ExecutionEngine_O::addGlobalMapping(GlobalValue_sp value, core::Pointer_sp ptr) {
   _G();
   this->wrappedPtr()->addGlobalMapping(value->wrappedPtr(), ptr->ptr());
 }
 
-void ExecutionEngine_O::addModule(Module_sp module) {
+CL_NAME("addModule");
+CL_DEFMETHOD void ExecutionEngine_O::addModule(Module_sp module) {
   llvm::ExecutionEngine *ee = this->wrappedPtr();
   std::unique_ptr<llvm::Module> mod(module->wrappedPtr());
   module->set_wrapped(NULL);
   ee->addModule(std::move(mod));
 }
 
-Function_sp ExecutionEngine_O::FindFunctionNamed(core::Str_sp name) {
+CL_NAME("FindFunctionNamed");
+CL_DEFMETHOD Function_sp ExecutionEngine_O::FindFunctionNamed(core::Str_sp name) {
   return translate::to_object<llvm::Function *>::convert(this->wrappedPtr()->FindFunctionNamed(name->get().c_str()));
 }
 
@@ -1394,7 +1413,8 @@ void TargetSubtargetInfo_O::exposePython(core::Lisp_sp lisp) {
 }; // llvmo
 
 namespace llvmo {
-DataLayout_sp DataLayout_O::copy() const {
+CL_NAME("DataLayoutCopy");
+CL_DEFMETHOD DataLayout_sp DataLayout_O::copy() const {
   _G();
   GC_ALLOCATE(DataLayout_O, cp);
   cp->_ptr = new llvm::DataLayout(*(this->wrappedPtr()));
@@ -1606,7 +1626,8 @@ EngineBuilder_sp EngineBuilder_O::make(Module_sp module) {
   return self;
 };
 
-void EngineBuilder_O::setEngineKind(core::Symbol_sp kind) {
+CL_NAME("setEngineKind");
+CL_DEFMETHOD void EngineBuilder_O::setEngineKind(core::Symbol_sp kind) {
   _G();
   SYMBOL_EXPORT_SC_(LlvmoPkg, interpreter);
   SYMBOL_EXPORT_SC_(LlvmoPkg, jit);
@@ -1641,7 +1662,8 @@ void EngineBuilder_O::setEngineKind(core::Symbol_sp kind) {
     }
 #endif
 
-void EngineBuilder_O::setTargetOptions(TargetOptions_sp options) {
+CL_NAME("setTargetOptions");
+CL_DEFMETHOD void EngineBuilder_O::setTargetOptions(TargetOptions_sp options) {
   _G();
   this->wrappedPtr()->setTargetOptions(*options->wrappedPtr());
 }
@@ -1671,7 +1693,8 @@ void EngineBuilder_O::exposePython(core::Lisp_sp lisp) {
   IMPLEMENT_ME();
 };
 
-ExecutionEngine_sp EngineBuilder_O::createExecutionEngine() {
+CL_NAME("create");
+CL_DEFMETHOD ExecutionEngine_sp EngineBuilder_O::createExecutionEngine() {
   _G();
   llvm::ExecutionEngine *ee = this->wrappedPtr()->create();
   ExecutionEngine_sp eeo = core::RP_Create_wrapped<ExecutionEngine_O, llvm::ExecutionEngine *>(ee);
@@ -1961,7 +1984,8 @@ void GlobalVariable_O::exposePython(core::Lisp_sp lisp) {
 
 namespace llvmo {
 
-void Instruction_O::setMetadata(core::Str_sp kind, MDNode_sp mdnode) {
+CL_NAME("setMetadata");
+CL_DEFMETHOD void Instruction_O::setMetadata(core::Str_sp kind, MDNode_sp mdnode) {
   _G();
   this->wrappedPtr()->setMetadata(kind->get(), mdnode->wrappedPtr());
 }
@@ -1981,7 +2005,8 @@ void Instruction_O::exposePython(core::Lisp_sp lisp) {
   IMPLEMENT_ME();
 };
 
-bool Instruction_O::terminatorInstP() const {
+CL_NAME("terminatorInstP");
+CL_DEFMETHOD bool Instruction_O::terminatorInstP() const {
   _G();
   return llvm::TerminatorInst::classof(this->wrappedPtr());
 }
@@ -2217,7 +2242,8 @@ void SwitchInst_O::exposePython(core::Lisp_sp lisp) {
   IMPLEMENT_ME();
 };
 
-void SwitchInst_O::addCase(ConstantInt_sp onVal, BasicBlock_sp dest) {
+CL_NAME("addCase");
+CL_DEFMETHOD void SwitchInst_O::addCase(ConstantInt_sp onVal, BasicBlock_sp dest) {
   this->wrappedPtr()->addCase(onVal->wrappedPtr(), dest->wrappedPtr());
 }
 
@@ -2623,7 +2649,8 @@ void APInt_O::exposePython(core::Lisp_sp lisp) {
   IMPLEMENT_ME();
 };
 
-string APInt_O::toString(int radix, bool isigned) const {
+CL_NAME("toString");
+CL_DEFMETHOD string APInt_O::toString(int radix, bool isigned) const {
   return this->_value.toString(radix, isigned);
 }
 
@@ -2662,19 +2689,22 @@ void IRBuilderBase_O::exposePython(core::Lisp_sp lisp) {
   IMPLEMENT_ME();
 };
 
-void IRBuilderBase_O::restoreIP(InsertPoint_sp insertPoint) {
+CL_NAME("restoreIP");
+CL_DEFMETHOD void IRBuilderBase_O::restoreIP(InsertPoint_sp insertPoint) {
   _G();
   this->wrappedPtr()->restoreIP(insertPoint->insertPoint());
 }
 
-InsertPoint_sp IRBuilderBase_O::saveIP() {
+CL_NAME("saveIP");
+CL_DEFMETHOD InsertPoint_sp IRBuilderBase_O::saveIP() {
   _G();
   llvm::IRBuilderBase::InsertPoint ip = this->wrappedPtr()->saveIP();
   InsertPoint_sp oip = InsertPoint_O::create(ip);
   return oip;
 }
 
-void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
+CL_NAME("SetCurrentDebugLocation");
+CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
   //	llvm::DebugLoc dlold = this->wrappedPtr()->getCurrentDebugLocation();
   //	printf("                       old DebugLocation: %d\n", dlold.getLine() );
   this->_CurrentDebugLocationSet = true;
@@ -2685,7 +2715,8 @@ void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
   //	printf("                       new DebugLocation: %d\n", dlnew.getLine() );
 }
 
-void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope) {
+CL_NAME("SetCurrentDebugLocationToLineColumnScope");
+CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope) {
   this->_CurrentDebugLocationSet = true;
   llvm::DIDescriptor *didescriptor = scope->operator llvm::DIDescriptor *();
   llvm::MDNode *mdnode = didescriptor->operator llvm::MDNode *();
@@ -2707,7 +2738,8 @@ IRBuilder_sp IRBuilder_O::make(LLVMContext_sp context) {
   return self;
 };
 
-llvm::InvokeInst *IRBuilder_O::CreateInvoke(llvm::Value *Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::List_sp Args, const llvm::Twine &Name) {
+CL_NAME("CreateInvoke");
+CL_DEFMETHOD llvm::InvokeInst *IRBuilder_O::CreateInvoke(llvm::Value *Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::List_sp Args, const llvm::Twine &Name) {
   vector<llvm::Value *> vector_Args;
   for (auto cur : Args) {
     if (Value_sp val = oCar(cur).asOrNull<Value_O>()) {
@@ -2720,7 +2752,8 @@ llvm::InvokeInst *IRBuilder_O::CreateInvoke(llvm::Value *Callee, llvm::BasicBloc
   return this->wrappedPtr()->CreateInvoke(Callee, NormalDest, UnwindDest, array_ref_vector_Args, Name);
 }
 
-llvm::Value *IRBuilder_O::CreateInBoundsGEP(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name) {
+CL_NAME("CreateInBoundsGEP");
+CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateInBoundsGEP(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name) {
   vector<llvm::Value *> vector_IdxList;
   for (auto cur : IdxList) {
     vector_IdxList.push_back(gc::As<Value_sp>(oCar(cur))->wrappedPtr());
@@ -2729,7 +2762,8 @@ llvm::Value *IRBuilder_O::CreateInBoundsGEP(llvm::Value *Ptr, core::List_sp IdxL
   return this->wrappedPtr()->CreateInBoundsGEP(Ptr, array_ref_vector_IdxList, Name);
 }
 
-llvm::Value *IRBuilder_O::CreateExtractValue(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name) {
+CL_NAME("CreateExtractValue");
+CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateExtractValue(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name) {
   vector<unsigned int> vector_IdxList;
   for (auto cur : IdxList) {
     vector_IdxList.push_back(unbox_fixnum(gc::As<core::Fixnum_sp>(oCar(cur))));
@@ -2738,7 +2772,8 @@ llvm::Value *IRBuilder_O::CreateExtractValue(llvm::Value *Ptr, core::List_sp Idx
   return this->wrappedPtr()->CreateExtractValue(Ptr, array_ref_vector_IdxList, Name);
 }
 
-llvm::Value *IRBuilder_O::CreateInsertValue(llvm::Value *Agg, llvm::Value *Val, core::List_sp IdxList, const llvm::Twine &Name) {
+CL_NAME("CreateInsertValue");
+CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateInsertValue(llvm::Value *Agg, llvm::Value *Val, core::List_sp IdxList, const llvm::Twine &Name) {
   vector<unsigned int> vector_IdxList;
   for (auto cur : IdxList) {
     vector_IdxList.push_back(unbox_fixnum(gc::As<core::Fixnum_sp>(oCar(cur))));
@@ -3107,7 +3142,8 @@ Function_sp af_FunctionCreate(FunctionType_sp tysp, llvm::GlobalValue::LinkageTy
   return funcsp;
 };
 
-core::List_sp Function_O::getArgumentList() {
+CL_NAME("getArgumentList");
+CL_DEFMETHOD core::List_sp Function_O::getArgumentList() {
   _G();
   ql::list l(_lisp);
   llvm::Function::ArgumentListType &args = this->wrappedPtr()->getArgumentList();
@@ -3122,7 +3158,8 @@ string Function_O::__repr__() const {
   return ss.str();
 }
 
-void Function_O::appendBasicBlock(BasicBlock_sp basicBlock) {
+CL_NAME("appendBasicBlock");
+CL_DEFMETHOD void Function_O::appendBasicBlock(BasicBlock_sp basicBlock) {
   this->wrappedPtr()->getBasicBlockList().push_back(basicBlock->wrappedPtr());
 }
 
@@ -3152,12 +3189,14 @@ void Function_O::exposePython(core::Lisp_sp lisp) {
   IMPLEMENT_ME();
 };
 
-void Function_O::setLiterals(core::LoadTimeValues_sp ltv) {
+CL_NAME("setLiterals");
+CL_DEFMETHOD void Function_O::setLiterals(core::LoadTimeValues_sp ltv) {
   _G();
   this->_RunTimeValues = ltv;
 }
 
-core::LoadTimeValues_sp Function_O::literals() const {
+CL_NAME("literals");
+CL_DEFMETHOD core::LoadTimeValues_sp Function_O::literals() const {
   return this->_RunTimeValues;
 }
 
@@ -3182,12 +3221,14 @@ void BasicBlock_O::exposePython(core::Lisp_sp lisp) {
   IMPLEMENT_ME();
 };
 
-bool BasicBlock_O::empty() {
+CL_NAME("BasicBlockEmpty");
+CL_DEFMETHOD bool BasicBlock_O::empty() {
   _G();
   return this->wrappedPtr()->empty();
 }
 
-Instruction_sp BasicBlock_O::back() {
+CL_NAME("BasicBlockBack");
+CL_DEFMETHOD Instruction_sp BasicBlock_O::back() {
   _G();
   llvm::Instruction &inst = this->wrappedPtr()->back();
   return core::RP_Create_wrapped<Instruction_O, llvm::Instruction *>(&inst);
@@ -3219,13 +3260,15 @@ string Type_O::__repr__() const {
 #define ARGS_PointerType_O_getPointerTo "((self type) &optional (addressSpace 0))"
 #define DECL_PointerType_O_getPointerTo ""
 #define DOCS_PointerType_O_getPointerTo "Return a PointerType to the llvm Type"
-PointerType_sp Type_O::getPointerTo(int addressSpace) {
+CL_NAME("type-get-pointer-to");
+CL_DEFMETHOD PointerType_sp Type_O::getPointerTo(int addressSpace) {
   _G();
   llvm::PointerType *ptrType = this->wrappedPtr()->getPointerTo();
   return translate::to_object<llvm::PointerType *>::convert(ptrType);
 }
 
-core::Integer_sp Type_O::getArrayNumElements() const {
+CL_NAME("getArrayNumElements");
+CL_DEFMETHOD core::Integer_sp Type_O::getArrayNumElements() const {
   gc::Fixnum v64 = this->wrappedPtr()->getArrayNumElements();
   core::Integer_sp ival = core::Integer_O::create(v64);
   return ival;
@@ -3354,7 +3397,8 @@ StructType_sp StructType_O::get(LLVMContext_sp context, core::T_sp elements, boo
   return translate::to_object<llvm::StructType *>::convert(result);
 }
 
-void StructType_O::setBody(core::T_sp elements, core::T_sp isPacked) {
+CL_NAME("setBody");
+CL_DEFMETHOD void StructType_O::setBody(core::T_sp elements, core::T_sp isPacked) {
   _G();
   llvm::StructType *st = this->wrapped();
   if (elements.notnilp()) {

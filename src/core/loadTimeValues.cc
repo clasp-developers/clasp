@@ -260,7 +260,8 @@ void LoadTimeValues_O::dumpSymbols(vector<gctools::Fixnum> &indices) {
 }
 
 /*! Ignore extension */
-int LoadTimeValues_O::data_vectorPushExtend(T_sp val, int extension) {
+CL_NAME("data_vectorPushExtend");
+CL_DEFMETHOD int LoadTimeValues_O::data_vectorPushExtend(T_sp val, int extension) {
   int idx = this->_Objects.size();
   this->_Objects.push_back(val);
   return idx;
@@ -272,7 +273,8 @@ void LoadTimeValues_O::symbols_setFillPointer(uint i) {
   this->_Symbols.resize(i);
 }
 
-int LoadTimeValues_O::symbols_vectorPushExtend(Symbol_sp val, int extension) {
+CL_NAME("symbols_vectorPushExtend");
+CL_DEFMETHOD int LoadTimeValues_O::symbols_vectorPushExtend(Symbol_sp val, int extension) {
   int i = this->_Symbols.size();
   this->_Symbols.push_back(val);
   return i;

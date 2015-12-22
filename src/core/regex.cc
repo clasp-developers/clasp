@@ -90,12 +90,14 @@ void Regex_O::initialize() {
   this->Base::initialize();
 }
 
-bool Regex_O::regexMatches(const string &str) const {
+CL_NAME("regexMatches");
+CL_DEFMETHOD bool Regex_O::regexMatches(const string &str) const {
   _OF();
   return boost::regex_match(str, this->_Regex);
 }
 
-RegexMatch_sp Regex_O::regexMatch(const string &str) const {
+CL_NAME("regexMatch");
+CL_DEFMETHOD RegexMatch_sp Regex_O::regexMatch(const string &str) const {
   _OF();
   GC_ALLOCATE(RegexMatch_O, match);
   match->_CopyOfTextToMatch = str;
@@ -103,7 +105,8 @@ RegexMatch_sp Regex_O::regexMatch(const string &str) const {
   return match;
 }
 
-string Regex_O::regexSedReplace(const string &str, const string &replace) const {
+CL_NAME("regexSedReplace");
+CL_DEFMETHOD string Regex_O::regexSedReplace(const string &str, const string &replace) const {
   _OF();
   return boost::regex_replace(str, this->_Regex, replace,
                               boost::match_default | boost::format_sed);
@@ -112,7 +115,8 @@ string Regex_O::regexSedReplace(const string &str, const string &replace) const 
 #define ARGS_RegexMatch_O_matched "(regex-match &optional (idx 0))"
 #define DECL_RegexMatch_O_matched ""
 #define DOCS_RegexMatch_O_matched "Return true if this->_Match[idx].matched is true"
-bool RegexMatch_O::matched(int idx) const {
+CL_NAME("regex-match-matched");
+CL_DEFMETHOD bool RegexMatch_O::matched(int idx) const {
   ASSERTF(idx < (int)this->_Match.size(), BF("index[%d] exceeded max[%d]") % idx % this->_Match.size());
   return this->_Match[idx].matched;
 }
@@ -145,12 +149,14 @@ void RegexMatch_O::initialize() {
   this->Base::initialize();
 }
 
-int RegexMatch_O::size() const {
+CL_NAME("regex-match-length");
+CL_DEFMETHOD int RegexMatch_O::size() const {
   _OF();
   return this->_Match.size();
 }
 
-string RegexMatch_O::part(int idx) const {
+CL_NAME("regex-match-part");
+CL_DEFMETHOD string RegexMatch_O::part(int idx) const {
   _OF();
   ASSERTF(idx < (int)this->_Match.size(), BF("index[%d] exceeded max[%d]") % idx % this->_Match.size());
   string result = "";

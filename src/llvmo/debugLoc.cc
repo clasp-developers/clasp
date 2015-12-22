@@ -63,7 +63,8 @@ void DebugLoc_O::exposePython(core::Lisp_sp lisp) {
 #endif
 }
 
-MDNode_sp DebugLoc_O::getScope(LLVMContext_sp context) const {
+CL_NAME("getScope");
+CL_DEFMETHOD MDNode_sp DebugLoc_O::getScope(LLVMContext_sp context) const {
   _G();
   return translate::to_object<llvm::MDNode *>::convert(this->_DebugLoc.getScope(*(context->wrappedPtr())));
 }

@@ -369,7 +369,8 @@ SaveArchive_sp Archive_O::currentSaveArchive() {
   SIMPLE_ERROR(BF("The value of *serializer-archive* is not a save-archive"));
 }
 
-void SaveArchive_O::put(Symbol_sp name, T_sp val) {
+CL_NAME("put");
+CL_DEFMETHOD void SaveArchive_O::put(Symbol_sp name, T_sp val) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
   this->_TopNode->addAttribute(name, val);
 }
@@ -462,7 +463,8 @@ void LoadArchive_O::finalizeObjects() {
 #endif
 }
 
-bool LoadArchive_O::contains(Symbol_sp sym) {
+CL_NAME("loadArchive-contains");
+CL_DEFMETHOD bool LoadArchive_O::contains(Symbol_sp sym) {
   _G();
   if (this->_TopNode.unboundp())
     SIMPLE_ERROR(BF("No archive is loaded"));
@@ -474,7 +476,8 @@ bool LoadArchive_O::contains(Symbol_sp sym) {
   return true;
 }
 
-T_sp LoadArchive_O::get(Symbol_sp sym) {
+CL_NAME("loadArchive-get");
+CL_DEFMETHOD T_sp LoadArchive_O::get(Symbol_sp sym) {
   _G();
   if (this->_TopNode.unboundp())
     SIMPLE_ERROR(BF("No archive is loaded"));
@@ -487,7 +490,8 @@ T_sp LoadArchive_O::get(Symbol_sp sym) {
   return property->object();
 }
 
-List_sp LoadArchive_O::getContents() {
+CL_NAME("loadArchive-getContents");
+CL_DEFMETHOD List_sp LoadArchive_O::getContents() {
   _G();
   if (this->_TopNode.unboundp())
     SIMPLE_ERROR(BF("No archive is loaded"));
@@ -495,7 +499,8 @@ List_sp LoadArchive_O::getContents() {
   return bnode->_SNodePList;
 }
 
-List_sp LoadArchive_O::keys() const {
+CL_NAME("loadArchive-keys");
+CL_DEFMETHOD List_sp LoadArchive_O::keys() const {
   if (this->_TopNode.unboundp())
     SIMPLE_ERROR(BF("There is no archive loaded"));
   return this->_TopNode->keys();

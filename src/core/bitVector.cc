@@ -150,7 +150,8 @@ void BitVector_O::erase() {
   }
 }
 
-void BitVector_O::setBit(uint i, uint v) {
+CL_NAME("core:setBit");
+CL_DEFMETHOD void BitVector_O::setBit(uint i, uint v) {
   _OF();
   uint block;
   uint offset;
@@ -168,7 +169,8 @@ void BitVector_O::setBit(uint i, uint v) {
   this->bits[block] = (this->bits[block] & mask) | packedVal;
 }
 
-uint BitVector_O::testBit(uint i) const {
+CL_NAME("core:testBit");
+CL_DEFMETHOD uint BitVector_O::testBit(uint i) const {
   _OF();
   uint block;
   uint offset;
@@ -185,7 +187,8 @@ uint BitVector_O::testBit(uint i) const {
   return ((result ? 1 : 0));
 }
 
-void BitVector_O::inPlaceOr(BitVector_sp bv) {
+CL_NAME("core:inPlaceOr");
+CL_DEFMETHOD void BitVector_O::inPlaceOr(BitVector_sp bv) {
   _OF();
   uint i;
   if (this->vector_length() != bv->vector_length()) {
@@ -196,7 +199,8 @@ void BitVector_O::inPlaceOr(BitVector_sp bv) {
   }
 }
 
-void BitVector_O::inPlaceAnd(BitVector_sp bv) {
+CL_NAME("core:inPlaceAnd");
+CL_DEFMETHOD void BitVector_O::inPlaceAnd(BitVector_sp bv) {
   _OF();
   uint i;
   if (this->vector_length() != bv->vector_length()) {
@@ -207,7 +211,8 @@ void BitVector_O::inPlaceAnd(BitVector_sp bv) {
   }
 }
 
-void BitVector_O::inPlaceXor(BitVector_sp bv) {
+CL_NAME("core:inPlaceXor");
+CL_DEFMETHOD void BitVector_O::inPlaceXor(BitVector_sp bv) {
   _OF();
   uint i;
   if (this->vector_length() != bv->vector_length()) {
@@ -218,25 +223,29 @@ void BitVector_O::inPlaceXor(BitVector_sp bv) {
   }
 }
 
-BitVector_sp BitVector_O::bitOr(BitVector_sp bv) {
+CL_NAME("core:bitOr");
+CL_DEFMETHOD BitVector_sp BitVector_O::bitOr(BitVector_sp bv) {
   BitVector_sp res = gc::As<BitVector_sp>(this->deepCopy());
   res->inPlaceOr(bv);
   return ((res));
 }
 
-BitVector_sp BitVector_O::bitAnd(BitVector_sp bv) {
+CL_NAME("core:bitAnd");
+CL_DEFMETHOD BitVector_sp BitVector_O::bitAnd(BitVector_sp bv) {
   BitVector_sp res = gc::As<BitVector_sp>(this->deepCopy());
   res->inPlaceAnd(bv);
   return ((res));
 }
 
-BitVector_sp BitVector_O::bitXor(BitVector_sp bv) {
+CL_NAME("core:bitXor");
+CL_DEFMETHOD BitVector_sp BitVector_O::bitXor(BitVector_sp bv) {
   BitVector_sp res = gc::As<BitVector_sp>(this->deepCopy());
   res->inPlaceXor(bv);
   return ((res));
 }
 
-uint BitVector_O::countSet() {
+CL_NAME("core:countSet");
+CL_DEFMETHOD uint BitVector_O::countSet() {
   uint i;
   uint c;
   c = 0;
@@ -247,7 +256,8 @@ uint BitVector_O::countSet() {
   return ((c));
 }
 
-string BitVector_O::asString() {
+CL_NAME("core:BitVector-asString");
+CL_DEFMETHOD string BitVector_O::asString() {
   uint i;
   stringstream s;
 
@@ -287,7 +297,8 @@ std::ostream &BitVector_O::dumpToStream(std::ostream &out) {
 //
 //	Dump the BitVector to a stream
 //
-void BitVector_O::dump() {
+CL_NAME("core:dump");
+CL_DEFMETHOD void BitVector_O::dump() {
   this->dumpToStream(std::cout);
 }
 
@@ -301,7 +312,8 @@ void BitVector_O::sxhash_(HashGenerator &hg) const {
   hg.addPart(bn);
 }
 
-uint BitVector_O::lowestIndex() {
+CL_NAME("core:lowestIndex");
+CL_DEFMETHOD uint BitVector_O::lowestIndex() {
   uint i;
   for (i = 0; i < this->vector_length(); i++) {
     if (this->testBit(i)) {

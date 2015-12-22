@@ -173,7 +173,8 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
   }
 }
 
-Symbol_sp Class_O::className() const {
+CL_NAME("core:nameOfClass");
+CL_DEFMETHOD Symbol_sp Class_O::className() const {
   return this->name();
   //    SIMPLE_ERROR(BF("You should use instanceClassName rather than className for classes"));
 }
@@ -441,7 +442,8 @@ void Class_O::setInstanceBaseClasses(List_sp classes) {
   this->lowLevel_calculateClassPrecedenceList();
 }
 
-List_sp Class_O::directSuperclasses() const {
+CL_NAME("core:direct-superclasses");
+CL_DEFMETHOD List_sp Class_O::directSuperclasses() const {
   _OF();
   return coerce_to_list(this->instanceRef(REF_DIRECT_SUPERCLASSES));
 }

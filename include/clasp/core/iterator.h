@@ -60,20 +60,25 @@ public:
   virtual size_t templatedSizeof() const { SUBIMP(); };
 
   // Old way of doing things
-  virtual void first() {
+CL_NAME("core:begin");
+CL_DEFMETHOD   virtual void first() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
-  virtual void next() {
+CL_NAME("next");
+CL_DEFMETHOD   virtual void next() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
-  virtual bool isDone() {
+CL_NAME("isDone");
+CL_DEFMETHOD   virtual bool isDone() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
-  virtual bool notDone() { return !this->isDone(); };
-  virtual T_sp currentObject() {
+CL_NAME("notDone");
+CL_DEFMETHOD   virtual bool notDone() { return !this->isDone(); };
+CL_NAME("currentObject");
+CL_DEFMETHOD   virtual T_sp currentObject() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };

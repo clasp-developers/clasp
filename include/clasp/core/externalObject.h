@@ -67,7 +67,8 @@ GCPRIVATE:
 
 public:
   virtual bool eql_(T_sp obj) const;
-  virtual bool isUndefined() const { return this->externalObject() == NULL; };
+CL_NAME("isUndefined");
+CL_DEFMETHOD   virtual bool isUndefined() const { return this->externalObject() == NULL; };
   virtual void *externalObject() const {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();

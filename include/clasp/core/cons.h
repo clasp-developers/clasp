@@ -257,7 +257,8 @@ public:
     this->_Car = o;
   };
 
-  T_sp setf_car(T_sp o) {
+CL_NAME("core:cons-setf-car");
+CL_DEFMETHOD   T_sp setf_car(T_sp o) {
     ANN(o);
     this->_Car = o;
     return o;
@@ -299,7 +300,8 @@ public:
   /*! Set the next pointer for this element */
   void setCdr(T_sp o);
 
-  T_sp setf_cdr(T_sp o) {
+CL_NAME("core:cons-setf-cdr");
+CL_DEFMETHOD   T_sp setf_cdr(T_sp o) {
     this->setCdr(o);
     return o;
   };

@@ -77,12 +77,14 @@ void WeakPointer_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-bool WeakPointer_O::valid() const {
+CL_NAME("weakPointerValid");
+CL_DEFMETHOD bool WeakPointer_O::valid() const {
   return this->_WeakObject.valid();
 }
 
 /*! Return (values value t) or (values nil nil) */
-T_mv WeakPointer_O::value() const {
+CL_NAME("weakPointerValue");
+CL_DEFMETHOD T_mv WeakPointer_O::value() const {
   return this->_WeakObject.value();
 }
 

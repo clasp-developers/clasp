@@ -69,8 +69,10 @@ public: // info
   virtual bool leafSNodeP() { return false; };
   bool saving() const { return !this->loading(); };
   bool loading() const;
-  virtual T_sp object() const { SUBIMP(); };
-  virtual List_sp keys() const { SUBIMP(); };
+CL_NAME("core:object");
+CL_DEFMETHOD   virtual T_sp object() const { SUBIMP(); };
+CL_NAME("core:keys");
+CL_DEFMETHOD   virtual List_sp keys() const { SUBIMP(); };
   /*! Make the appropriate kind of SNode for the type of value */
 public:
   void incRefCount() { this->_RefCount++; };
@@ -88,14 +90,19 @@ public: // loading
     }
     return val;
   }
-  virtual Symbol_sp getKind() const { SUBIMP(); };
+CL_NAME("core:getNodeKind");
+CL_DEFMETHOD   virtual Symbol_sp getKind() const { SUBIMP(); };
   virtual void loadVectorSNodes(gctools::Vec0<T_sp> &vec) const { SUBIMP(); };
-  virtual List_sp getAttributes() const { SUBIMP(); };
+CL_NAME("core:getAttributes");
+CL_DEFMETHOD   virtual List_sp getAttributes() const { SUBIMP(); };
   virtual void addAttributeSNode(Symbol_sp name, SNode_sp node) { SUBIMP(); };
   virtual void addAttribute(Symbol_sp name, T_sp val) { SUBIMP(); };
-  virtual T_sp getUniqueId() const { return _Nil<T_O>(); };
-  virtual SNode_sp childWithUniqueId(Symbol_sp uid) const { return _Nil<SNode_O>(); };
-  virtual Vector_sp getVectorSNodes() const { SUBIMP(); };
+CL_NAME("core:getUniqueId");
+CL_DEFMETHOD   virtual T_sp getUniqueId() const { return _Nil<T_O>(); };
+CL_NAME("core:childWithUniqueId");
+CL_DEFMETHOD   virtual SNode_sp childWithUniqueId(Symbol_sp uid) const { return _Nil<SNode_O>(); };
+CL_NAME("core:getVectorSNodes");
+CL_DEFMETHOD   virtual Vector_sp getVectorSNodes() const { SUBIMP(); };
   virtual SNode_sp &operator[](size_t i) { SUBIMP(); };
   int vectorSize() const { return this->getVectorSNodes()->length(); }
   virtual void loadVector(gctools::Vec0<T_sp> &vec) { SUBIMP(); };
@@ -106,9 +113,12 @@ public: // loading
   void needsFinalization() const;
 
 public: // saving
-  virtual void setKind(Symbol_sp kind) { SUBIMP(); };
-  virtual void setVectorSNodesUnsafe(Vector_sp vec) { SUBIMP(); };
-  virtual void setAttributesUnsafe(List_sp plist) { SUBIMP(); };
+CL_NAME("core:setNodeKind");
+CL_DEFMETHOD   virtual void setKind(Symbol_sp kind) { SUBIMP(); };
+CL_NAME("core:setVectorSNodes");
+CL_DEFMETHOD   virtual void setVectorSNodesUnsafe(Vector_sp vec) { SUBIMP(); };
+CL_NAME("core:setAttributes");
+CL_DEFMETHOD   virtual void setAttributesUnsafe(List_sp plist) { SUBIMP(); };
 
   virtual void saveVector(gctools::Vec0<T_sp> const &vec) { SUBIMP(); };
   virtual void pushVectorSNode(SNode_sp obj) { SUBIMP(); };

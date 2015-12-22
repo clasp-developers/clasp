@@ -2099,7 +2099,8 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
-  string error_string() const { return this->_ErrorStr; };
+CL_NAME("error_string");
+CL_DEFMETHOD   string error_string() const { return this->_ErrorStr; };
 
   EngineBuilder_O() : Base(), _ptr(NULL){};
   ~EngineBuilder_O() {
@@ -2324,7 +2325,8 @@ public:
   void SetCurrentDebugLocation(DebugLoc_sp loc);
   /*! Set the current debug location by building a DebugLoc on the fly */
   void SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope);
-  core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
+CL_NAME("CurrentDebugLocation");
+CL_DEFMETHOD   core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
 }; // IRBuilderBase_O
 }; // llvmo
 TRANSLATE(llvmo::IRBuilderBase_O);
@@ -3571,7 +3573,8 @@ public:
 public:
   llvm::MDNode *getOperand(uint i) { return this->_ptr->getOperand(i); };
   uint getNumOperands() { return this->_ptr->getNumOperands(); };
-  void addOperand(llvm::MDNode *m) { this->_ptr->addOperand(m); };
+CL_NAME("addOperand");
+CL_DEFMETHOD   void addOperand(llvm::MDNode *m) { this->_ptr->addOperand(m); };
   string getName() { return this->_ptr->getName(); };
 
 }; // NamedMDNode_O

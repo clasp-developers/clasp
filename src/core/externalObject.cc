@@ -154,7 +154,8 @@ void ForeignData_O::allocate(T_sp kind, int ownershipFlags, size_t size) {
   this->_Data = (void *)malloc(size);
 }
 
-void ForeignData_O::freeForeignObject() {
+CL_NAME("freeForeignObject");
+CL_DEFMETHOD void ForeignData_O::freeForeignObject() {
   if (this->_Data) {
     free(this->_Data);
     this->_Data = NULL;

@@ -98,15 +98,18 @@ public: // Functions here
   virtual bool equalp(T_sp other) const;
 
   /*! See CLHS */
-  virtual T_sp hashTableTest() const { SUBIMP(); };
+CL_NAME("hash-table-test");
+CL_DEFMETHOD   virtual T_sp hashTableTest() const { SUBIMP(); };
 
   /*! Return a count of the number of keys */
   uint hashTableCount() const;
   size_t size() { return this->hashTableCount(); };
 
-  virtual Number_sp hashTableRehashSize() const { return this->_RehashSize; };
+CL_NAME("hash-table-rehash-size");
+CL_DEFMETHOD   virtual Number_sp hashTableRehashSize() const { return this->_RehashSize; };
 
-  double hashTableRehashThreshold() const { return this->_RehashThreshold; };
+CL_NAME("hash-table-rehash-threshold");
+CL_DEFMETHOD   double hashTableRehashThreshold() const { return this->_RehashThreshold; };
 
   uint hashTableSize() const;
 
