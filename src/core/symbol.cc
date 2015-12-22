@@ -230,7 +230,8 @@ bool Symbol_O::boundP() const {
   return !this->_Value.unboundp();
 }
 
-void Symbol_O::makunbound() {
+CL_NAME("makunbound");
+CL_DEFMETHOD void Symbol_O::makunbound() {
   this->_Value = _Unbound<T_O>();
 }
 
@@ -250,7 +251,8 @@ void Symbol_O::sxhash_(HashGenerator &hg) const {
 #define ARGS_Symbol_O_copy_symbol "(symbol &optional copy-properties)"
 #define DECL_Symbol_O_copy_symbol ""
 #define DOCS_Symbol_O_copy_symbol "copy_symbol"
-Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
+CL_NAME("cl:copy_symbol");
+CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   _G();
   Symbol_sp new_symbol = Symbol_O::create(this->_Name->get());
   if (copy_properties.isTrue()) {
@@ -298,7 +300,8 @@ void Symbol_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-Symbol_sp Symbol_O::asKeywordSymbol() {
+CL_NAME("core:asKeywordSymbol");
+CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
   _OF();
   if (this->_HomePackage.notnilp()) {
     Package_sp pkg = gc::As<Package_sp>(this->_HomePackage);
@@ -326,11 +329,13 @@ T_sp Symbol_O::setf_symbolValue(T_sp val) {
   return val;
 }
 
-void Symbol_O::makeSpecial() {
+CL_NAME("core:STARmakeSpecial");
+CL_DEFMETHOD void Symbol_O::makeSpecial() {
   this->_IsSpecial = true;
 }
 
-void Symbol_O::makeConstant(T_sp val) {
+CL_NAME("core:STARmakeConstant");
+CL_DEFMETHOD void Symbol_O::makeConstant(T_sp val) {
   _G();
   this->_Value = val;
   this->_IsSpecial = true;
@@ -369,7 +374,8 @@ T_sp Symbol_O::symbolValueUnsafe() const {
   return this->_Value;
 }
 
-void Symbol_O::setf_symbolFunction(T_sp exec) {
+CL_NAME("core:setf_symbolFunction");
+CL_DEFMETHOD void Symbol_O::setf_symbolFunction(T_sp exec) {
   _OF();
   this->_Function = exec;
 }
@@ -469,7 +475,8 @@ string Symbol_O::currentName() const {
   return formattedName;
 }
 
-string Symbol_O::fullName() const {
+CL_NAME("core:fullName");
+CL_DEFMETHOD string Symbol_O::fullName() const {
   string formattedName = this->formattedName(true);
   return formattedName;
 }

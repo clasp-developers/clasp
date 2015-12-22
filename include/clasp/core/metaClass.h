@@ -181,7 +181,8 @@ public:
   void inheritDefaultAllocator(List_sp directSuperclasses);
   void setCreator(gc::tagged_pointer<Creator> cb) { this->_theCreator = cb; };
   gc::tagged_pointer<Creator> getCreator() const { return this->_theCreator; };
-  bool hasCreator() const { return (bool)(this->_theCreator); };
+CL_NAME("core:hasCreator");
+CL_DEFMETHOD   bool hasCreator() const { return (bool)(this->_theCreator); };
 
   /*! I have GOT to clean up all this class-name stuff
 	  Reduce the clutter to one function to get the name and one to set the name */

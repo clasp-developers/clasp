@@ -199,14 +199,16 @@ void Path_O::sxhash_(HashGenerator &hg) const {
   hg.addPart(bn);
 }
 
-Integer_sp Path_O::last_write_time() const {
+CL_NAME("last_write_time");
+CL_DEFMETHOD Integer_sp Path_O::last_write_time() const {
   _G();
   std::time_t ttime = boost_filesystem::last_write_time(this->_Path);
   gc::Fixnum ui64 = ttime;
   return Integer_O::create(ui64);
 }
 
-Path_sp Path_O::path_append(string const &pp) {
+CL_NAME("path-append");
+CL_DEFMETHOD Path_sp Path_O::path_append(string const &pp) {
   _OF();
   LOG(BF("Appending string[%s] to the path") % pp);
   this->_Path /= pp;
@@ -238,7 +240,8 @@ void Path_O::setPath(const boost_filesystem::path &path) {
   this->_Path = path;
 }
 
-Path_sp Path_O::absolute() const {
+CL_NAME("path-absolute");
+CL_DEFMETHOD Path_sp Path_O::absolute() const {
   _G();
   if (this->_Path.is_absolute())
     return this->copyPath();
@@ -247,13 +250,15 @@ Path_sp Path_O::absolute() const {
   return abs;
 }
 
-Path_sp Path_O::copyPath() const {
+CL_NAME("copyPath");
+CL_DEFMETHOD Path_sp Path_O::copyPath() const {
   _OF();
   GC_COPY(Path_O, copy, *this);
   return copy;
 }
 
-void Path_O::setPathFromString(const string &pth) {
+CL_NAME("setPathFromString");
+CL_DEFMETHOD void Path_O::setPathFromString(const string &pth) {
   _G();
   bf::path p(pth);
   this->_Path = p;
@@ -262,7 +267,8 @@ void Path_O::setPathFromString(const string &pth) {
 #define ARGS_Path_O_parts "(self)"
 #define DECL_Path_O_parts ""
 #define DOCS_Path_O_parts "Returns a list of path parts as strings"
-List_sp Path_O::parts() const {
+CL_NAME("path-parts");
+CL_DEFMETHOD List_sp Path_O::parts() const {
   _G();
   bf::path::iterator it;
   ql::list l(_lisp);
@@ -272,7 +278,8 @@ List_sp Path_O::parts() const {
   return l.cons();
 }
 
-string Path_O::asString() const {
+CL_NAME("asString");
+CL_DEFMETHOD string Path_O::asString() const {
   _OF();
   return this->_Path.string();
 }
@@ -285,12 +292,14 @@ string Path_O::__repr__() const {
   return ss.str();
 }
 
-string Path_O::stem() {
+CL_NAME("path-stem");
+CL_DEFMETHOD string Path_O::stem() {
   _G();
   return this->_Path.stem().string();
 }
 
-string Path_O::extension() {
+CL_NAME("extension");
+CL_DEFMETHOD string Path_O::extension() {
   _G();
   return this->_Path.extension().string();
 }
@@ -302,24 +311,28 @@ void Path_O::appendToExtension(string const &str) {
   this->replaceExtension(newExtension.str());
 }
 
-Path_sp Path_O::replaceExtension(string const &str) {
+CL_NAME("replaceExtension");
+CL_DEFMETHOD Path_sp Path_O::replaceExtension(string const &str) {
   _OF();
   //	bf::path newExt(str);
   this->_Path.replace_extension(str);
   return this->sharedThis<Path_O>();
 }
 
-Path_sp Path_O::parent_path() {
+CL_NAME("parent_path");
+CL_DEFMETHOD Path_sp Path_O::parent_path() {
   _OF();
   return Path_O::create(this->_Path.parent_path());
 }
 
-string Path_O::fileName() const {
+CL_NAME("path-fileName");
+CL_DEFMETHOD string Path_O::fileName() const {
   _G();
   return this->_Path.filename().string();
 }
 
-bool Path_O::exists() {
+CL_NAME("exists");
+CL_DEFMETHOD bool Path_O::exists() {
   return boost_filesystem::exists(this->_Path);
 }
 
@@ -615,21 +628,24 @@ void DirectoryEntry_O::setEntry(const boost_filesystem::directory_entry &entry) 
   this->_Entry = new boost_filesystem::directory_entry(p, s, ss);
 }
 
-FileStatus_sp DirectoryEntry_O::fileStatus() {
+CL_NAME("fileStatus");
+CL_DEFMETHOD FileStatus_sp DirectoryEntry_O::fileStatus() {
   _OF();
   FileStatus_sp fs = _lisp->create<FileStatus_O>();
   fs->setFileStatus(this->_Entry->status());
   return fs;
 }
 
-FileStatus_sp DirectoryEntry_O::symlinkStatus() {
+CL_NAME("symlinkStatus");
+CL_DEFMETHOD FileStatus_sp DirectoryEntry_O::symlinkStatus() {
   _OF();
   FileStatus_sp fs = _lisp->create<FileStatus_O>();
   fs->setFileStatus(this->_Entry->symlink_status());
   return fs;
 }
 
-Path_sp DirectoryEntry_O::path() {
+CL_NAME("path");
+CL_DEFMETHOD Path_sp DirectoryEntry_O::path() {
   _OF();
   Path_sp path = _lisp->create<Path_O>();
   path->setPath(this->_Entry->path());
@@ -672,23 +688,28 @@ void FileStatus_O::setFileStatus(const boost_filesystem::file_status &fs) {
   this->_FileStatus = fs;
 }
 
-bool FileStatus_O::exists() {
+CL_NAME("exists");
+CL_DEFMETHOD bool FileStatus_O::exists() {
   _OF();
   return boost_filesystem::exists(this->_FileStatus);
 }
-bool FileStatus_O::isRegularFile() {
+CL_NAME("isRegularFile");
+CL_DEFMETHOD bool FileStatus_O::isRegularFile() {
   _OF();
   return boost_filesystem::is_regular_file(this->_FileStatus);
 }
-bool FileStatus_O::isDirectory() {
+CL_NAME("isDirectory");
+CL_DEFMETHOD bool FileStatus_O::isDirectory() {
   _OF();
   return boost_filesystem::is_directory(this->_FileStatus);
 }
-bool FileStatus_O::isSymlink() {
+CL_NAME("isSymlink");
+CL_DEFMETHOD bool FileStatus_O::isSymlink() {
   _OF();
   return boost_filesystem::is_symlink(this->_FileStatus);
 }
-bool FileStatus_O::isOther() {
+CL_NAME("isOther");
+CL_DEFMETHOD bool FileStatus_O::isOther() {
   _OF();
   return boost_filesystem::is_other(this->_FileStatus);
 }

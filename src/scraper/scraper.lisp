@@ -55,6 +55,7 @@ Read all of the scraped info files and interpret their tags."
       (update-all-sif-files all-cc)
       (format t "Reading sif files~%")
       (let ((tags (read-all-tags-all-sif-files all-cc)))
+        (format t "Interpreting tags~%")
         (setq *tags* tags)
         (interpret-tags tags)
         (format t "Generating code~%")

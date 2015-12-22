@@ -368,7 +368,8 @@ struct Tester {
   }
 };
 
-bool Cons_O::exactlyMatches(List_sp other) const {
+CL_NAME("core:exactlyMatches");
+CL_DEFMETHOD bool Cons_O::exactlyMatches(List_sp other) const {
   _G();
   List_sp me = this->asSmartPtr();
   while (me.notnilp()) {
@@ -618,7 +619,8 @@ bool Cons_O::equalp(T_sp obj) const {
   return cl__equalp(this_cdr, other_cdr);
 }
 
-List_sp Cons_O::extend(List_sp rest) {
+CL_NAME("core:extend");
+CL_DEFMETHOD List_sp Cons_O::extend(List_sp rest) {
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   Cons_sp nc = first;
   Cons_sp next, newCur;
@@ -725,7 +727,8 @@ T_sp Cons_O::setf_elt(int index, T_sp value) {
   return ((this->setf_nth(index, value)));
 }
 
-List_sp Cons_O::filterOutNil() {
+CL_NAME("core:filterOutNil");
+CL_DEFMETHOD List_sp Cons_O::filterOutNil() {
   _G();
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   List_sp newCur = first;
@@ -919,7 +922,8 @@ void Cons_O::setCdr(T_sp c) {
   this->_Cdr = c;
 }
 
-T_sp Cons_O::olookupKeyObjectDefault(Symbol_sp keyword, T_sp dft) {
+CL_NAME("core:lookupDefault");
+CL_DEFMETHOD T_sp Cons_O::olookupKeyObjectDefault(Symbol_sp keyword, T_sp dft) {
   _OF();
   ASSERTP(keyword->isKeywordSymbol(), "You can only search for keyword symbols");
   LOG(BF("lookup %s in %s") % _rep_(keyword) % this->__repr__());
@@ -939,7 +943,8 @@ T_sp Cons_O::olookupKeyObjectDefault(Symbol_sp keyword, T_sp dft) {
   return ((dft));
 }
 
-T_sp Cons_O::olookupKeyObject(Symbol_sp key) {
+CL_NAME("core:lookup");
+CL_DEFMETHOD T_sp Cons_O::olookupKeyObject(Symbol_sp key) {
   _G();
   Cons_sp p;
   return ((this->olookupKeyObjectDefault(key, _Nil<T_O>())));

@@ -64,7 +64,8 @@ public:
   //! dimension() ignores the fill pointer
   virtual gc::Fixnum dimension() const { return this->_Contents.size(); };
   //! size is subclassed by StrWithFillPtr_O and uses the fill-pointer
-  virtual gc::Fixnum size() const { return this->_Contents.size(); };
+CL_NAME("core:size");
+CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); };
   virtual void swapElements(uint i1, uint i2) {
     char t = this->_Contents[i2];
     this->_Contents[i2] = this->_Contents[i1];

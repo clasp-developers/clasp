@@ -140,7 +140,8 @@ Fixnum_sp VectorObjectsWithFillPtr_O::vectorPushExtend(T_sp newElement, int exte
   return make_fixnum(idx);
 }
 
-void VectorObjectsWithFillPtr_O::setf_fillPointer(Fixnum fp) {
+CL_NAME("setf_fillPointer");
+CL_DEFMETHOD void VectorObjectsWithFillPtr_O::setf_fillPointer(Fixnum fp) {
   _G();
   if (fp >= this->_Values.size())
     fp = this->_Values.size();

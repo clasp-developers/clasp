@@ -55,8 +55,10 @@ GCPRIVATE:
 public:
   T_sp find(T_sp key, T_sp defval);
   void setf(T_sp key, T_sp val);
-  int size() const { return this->map.size(); };
-  int capacity() const { return this->map.capacity(); };
+CL_NAME("map_size");
+CL_DEFMETHOD   int size() const { return this->map.size(); };
+CL_NAME("map_capacity");
+CL_DEFMETHOD   int capacity() const { return this->map.capacity(); };
 
   DEFAULT_CTOR_DTOR(SmallMap_O);
 };

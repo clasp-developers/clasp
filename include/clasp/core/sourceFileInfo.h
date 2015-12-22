@@ -69,12 +69,15 @@ public: // Functions here
   string fileName() const;
   string parentPathName() const;
   string namestring() const;
-  Pathname_sp pathname() const { return this->_pathname; };
+CL_NAME("SourceFileInfo-pathname");
+CL_DEFMETHOD   Pathname_sp pathname() const { return this->_pathname; };
   const char *permanentPathName();
   const char *permanentFileName();
 
-  bool useLineno() const { return this->_TrackLineno; };
-  size_t sourceDebugOffset() const { return this->_SourceDebugOffset; };
+CL_NAME("SourceFileInfo-useLineno");
+CL_DEFMETHOD   bool useLineno() const { return this->_TrackLineno; };
+CL_NAME("SourceFileInfo-sourceDebugOffset");
+CL_DEFMETHOD   size_t sourceDebugOffset() const { return this->_SourceDebugOffset; };
   string __repr__() const;
 }; // SourceFileInfo class
 

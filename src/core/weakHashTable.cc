@@ -87,7 +87,8 @@ void WeakKeyHashTable_O::describe(T_sp stream) {
   }
 }
 
-int WeakKeyHashTable_O::tableSize() const {
+CL_NAME("weakHashTableSize");
+CL_DEFMETHOD int WeakKeyHashTable_O::tableSize() const {
   return this->_HashTable.tableSize();
 }
 

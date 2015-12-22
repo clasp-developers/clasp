@@ -321,7 +321,8 @@ void DIBuilder_O::exposePython(core::Lisp_sp lisp) {
   IMPLEMENT_ME();
 };
 
-DIArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements) {
+CL_NAME("getOrCreateArray");
+CL_DEFMETHOD DIArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements) {
   _G();
   //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
   //		printf("     cons --> %s\n", cur->__repr__().c_str() );
@@ -348,7 +349,8 @@ DIArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements) {
   return obj;
 }
 
-DITypeArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp elements) {
+CL_NAME("getOrCreateTypeArray");
+CL_DEFMETHOD DITypeArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp elements) {
   _G();
   //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
   //		printf("     cons --> %s\n", cur->__repr__().c_str() );

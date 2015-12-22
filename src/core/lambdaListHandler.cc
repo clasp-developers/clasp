@@ -114,7 +114,8 @@ void throw_if_not_destructuring_context(T_sp context) {
   SIMPLE_ERROR(BF("Lambda list is destructuring_bind but context does not support it context[%s]") % _rep_(context));
 }
 
-T_sp LambdaListHandler_O::lambdaList() {
+CL_NAME("LambdaListHandler-lambdaList");
+CL_DEFMETHOD T_sp LambdaListHandler_O::lambdaList() {
   ql::list ll(_lisp);
   { // required arguments  req = ( num req1 req2 ...)
     for (gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
@@ -1011,7 +1012,8 @@ void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_s
   }
 }
 
-int LambdaListHandler_O::single_dispatch_on_argument(Symbol_sp target) {
+CL_NAME("single-dispatch-on-argument");
+CL_DEFMETHOD int LambdaListHandler_O::single_dispatch_on_argument(Symbol_sp target) {
   _G();
   for (auto &ri : this->_RequiredArguments) {
     if (ri._symbolP()) {
@@ -1090,7 +1092,8 @@ string LambdaListHandler_O::__repr__() const {
   return ss.str();
 }
 
-T_mv LambdaListHandler_O::processLambdaListHandler() const {
+CL_NAME("processLambdaListHandler");
+CL_DEFMETHOD T_mv LambdaListHandler_O::processLambdaListHandler() const {
   _G();
 
   ql::list reqs(_lisp);
@@ -1151,7 +1154,8 @@ bool LambdaListHandler_O::requiredLexicalArgumentsOnlyP_() const {
   return false;
 }
 
-List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
+CL_NAME("namesOfLexicalVariables");
+CL_DEFMETHOD List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
   _G();
   List_sp namesRev = _Nil<T_O>();
   for (auto cur : this->_ClassifiedSymbolList) {
@@ -1167,7 +1171,8 @@ void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging() {
   this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(), names, cl__length(names), false, cl::_sym_T_O);
 }
 
-VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
+CL_NAME("namesOfLexicalVariablesForDebugging");
+CL_DEFMETHOD VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
   _G();
   if (this->_LexicalVariableNamesForDebugging.nilp()) {
     this->calculateNamesOfLexicalVariablesForDebugging();
@@ -1213,3 +1218,4 @@ void LambdaListHandler_O::exposePython(Lisp_sp lisp) {
 }
 
 }; /* core */
+   

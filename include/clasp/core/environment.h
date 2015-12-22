@@ -92,9 +92,12 @@ public:
   uint environmentId() const { return this->_EnvId; };
   void setEnvironmentId(uint id) { this->_EnvId = id; };
   virtual bool environmentp() const { return true; }
-  virtual bool lexicalEnvironmentP() const { return false; };
-  virtual bool functionContainerEnvironmentP() const { return false; };
-  virtual bool unwindProtectEnvironmentP() const { return false; };
+CL_NAME("lexicalEnvironmentP");
+CL_DEFMETHOD   virtual bool lexicalEnvironmentP() const { return false; };
+CL_NAME("functionContainerEnvironmentP");
+CL_DEFMETHOD   virtual bool functionContainerEnvironmentP() const { return false; };
+CL_NAME("unwindProtectEnvironmentP");
+CL_DEFMETHOD   virtual bool unwindProtectEnvironmentP() const { return false; };
   virtual bool catchEnvironmentP() const { return false; };
 
   virtual void setupParent(T_sp environ);
@@ -108,14 +111,16 @@ public:
   virtual bool lexicalSpecialP(Symbol_sp sym) const;
 
   /*! Associate a symbol in the current environment to some meta-data */
-  virtual T_sp setf_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
+CL_NAME("setf_metadata");
+CL_DEFMETHOD   virtual T_sp setf_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
 
   /*! Gather a list of all metadata with the key ordered from outermost environment
 	  to the innermost one */
   virtual List_sp gather_metadata(Symbol_sp key) const;
 
   /*! Push metadata into a Cons associated with the symbol */
-  virtual List_sp push_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
+CL_NAME("push_metadata");
+CL_DEFMETHOD   virtual List_sp push_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
 
   /*! Lookup metadata - return two values
 	  The first is the value found or nil and the second is t if a value is found or nil if not */
@@ -515,7 +520,8 @@ public:
 
 public:
   virtual string summaryOfContents() const;
-  List_sp cleanupForm() const { return this->_CleanupForm; };
+CL_NAME("UnwindProtectEnvironment-cleanupForm");
+CL_DEFMETHOD   List_sp cleanupForm() const { return this->_CleanupForm; };
 
 public:
   DEFAULT_CTOR_DTOR(UnwindProtectEnvironment_O);

@@ -281,7 +281,8 @@ Pointer_sp Pointer_O::null_pointer() {
 #define ARGS_Pointer_O_PERCENTmem_ref "((self pointer) atype &optional ( offset 0) )"
 #define DECL_Pointer_O_PERCENTmem_ref ""
 #define DOCS_Pointer_O_PERCENTmem_ref "PERCENTmem_ref"
-core::T_sp Pointer_O::PERCENTmem_ref(core::Symbol_sp atype, core::Integer_sp offset) {
+CL_NAME("CFFI-SYS:PERCENTmem_ref");
+CL_DEFMETHOD core::T_sp Pointer_O::PERCENTmem_ref(core::Symbol_sp atype, core::Integer_sp offset) {
   _G();
   void *ptr = ((char *)(this->_ptr) + clasp_to_int(offset));
   if (atype == _sym_char) {
@@ -364,7 +365,8 @@ core::T_sp Pointer_O::PERCENTmem_ref(core::Symbol_sp atype, core::Integer_sp off
 #define ARGS_Pointer_O_PERCENTsetf_mem_ref "((self pointer) atype &rest rest)"
 #define DECL_Pointer_O_PERCENTsetf_mem_ref ""
 #define DOCS_Pointer_O_PERCENTsetf_mem_ref "PERCENTsetf_mem_ref"
-core::T_sp Pointer_O::PERCENTsetf_mem_ref(core::Symbol_sp atype, core::Cons_sp rest) {
+CL_NAME("CFFI-SYS:PERCENTsetf_mem_ref");
+CL_DEFMETHOD core::T_sp Pointer_O::PERCENTsetf_mem_ref(core::Symbol_sp atype, core::Cons_sp rest) {
   _G();
   core::LongLongInt offset = 0;
   core::T_sp value;
@@ -471,7 +473,8 @@ Pointer_O::~Pointer_O(){};
 #define ARGS_Pointer_O_foreign_free "()"
 #define DECL_Pointer_O_foreign_free ""
 #define DOCS_Pointer_O_foreign_free "foreign_free"
-void Pointer_O::foreign_free() {
+CL_NAME("CFFI-SYS:foreign_free");
+CL_DEFMETHOD void Pointer_O::foreign_free() {
   _G();
   if (this->_ptr != NULL) {
     free(this->_ptr);
@@ -479,7 +482,8 @@ void Pointer_O::foreign_free() {
   }
 };
 
-Pointer_sp Pointer_O::inc_pointer(core::Integer_sp offset) {
+CL_NAME("CFFI-SYS:inc-pointer");
+CL_DEFMETHOD Pointer_sp Pointer_O::inc_pointer(core::Integer_sp offset) {
   _G();
   void *new_ptr = (void *)((char *)(this->_ptr) + clasp_to_int(offset));
   return Pointer_O::create(new_ptr);

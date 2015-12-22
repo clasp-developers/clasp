@@ -88,7 +88,8 @@ Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_sp asym, Symbol_sp c
   return sym;
 }
 
-int SymbolToEnumConverter_O::enumIndexForSymbol(Symbol_sp sym) {
+CL_NAME("enumIndexForSymbol");
+CL_DEFMETHOD int SymbolToEnumConverter_O::enumIndexForSymbol(Symbol_sp sym) {
   _OF();
   if (!this->_SymbolToEnum->contains(sym)) {
     SIMPLE_ERROR(BF("Could not find %s in symbol-to-enum-converter: %s") % _rep_(sym) % _rep_(this->sharedThis<SymbolToEnumConverter_O>()));

@@ -198,7 +198,8 @@ uint MultiStringBuffer_O::addCharacters(const char *str) {
   return blockIndex + index;
 }
 
-uint MultiStringBuffer_O::addString(const string &str) {
+CL_NAME("addString");
+CL_DEFMETHOD uint MultiStringBuffer_O::addString(const string &str) {
   return this->addCharacters(str.c_str());
 }
 
@@ -214,7 +215,8 @@ const char *MultiStringBuffer_O::getCharacters(uint index) {
   return block.getString(offset);
 }
 
-string MultiStringBuffer_O::getString(uint index) {
+CL_NAME("getString");
+CL_DEFMETHOD string MultiStringBuffer_O::getString(uint index) {
   const char *chars = this->getCharacters(index);
   string result = chars;
   return result;
@@ -230,7 +232,8 @@ void MultiStringBuffer_O::dumpToStream(std::ostream &ss) {
   }
 }
 
-void MultiStringBuffer_O::dump() {
+CL_NAME("dump");
+CL_DEFMETHOD void MultiStringBuffer_O::dump() {
   stringstream ss;
   this->dumpToStream(ss);
   printf("%s\n", ss.str().c_str());
