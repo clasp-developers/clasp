@@ -37,7 +37,7 @@
 
     |#
 
-(defun read-application-config (filename)
+(defun setup-application-config ()
   (let ((config (make-hash-table :test #'eq)))
     (setf (gethash :init_functions_inc_h config) "generated/initFunctions_inc.h")
     (setf (gethash :source_info_inc_h config) "generated/sourceInfo_inc.h")
