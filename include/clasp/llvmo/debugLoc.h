@@ -42,8 +42,7 @@ THE SOFTWARE.
 
 namespace llvmo {
 class DebugLoc_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DebugLoc_O, "DebugLoc");
+  LISP_CLASS(llvmo, LlvmoPkg, DebugLoc_O, "DebugLoc",core::T_O);
 
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(DebugLoc_O);

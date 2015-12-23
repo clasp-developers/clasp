@@ -44,8 +44,7 @@ SMART(StringSet);
 SMART(StructureClass);
 class StructureClass_O : public Class_O {
   LISP_META_CLASS(StandardClass);
-  LISP_BASE1(Class_O);
-  LISP_CLASS(core, ClPkg, StructureClass_O, "structure-class");
+  LISP_CLASS(core, ClPkg, StructureClass_O, "structure-class",Class_O);
 
 public:
 #if defined(XML_ARCHIVE)

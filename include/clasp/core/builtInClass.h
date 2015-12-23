@@ -40,8 +40,7 @@ namespace core {
 SMART(BuiltInClass);
 class BuiltInClass_O : public Class_O {
   LISP_META_CLASS(StandardClass);
-  LISP_BASE1(Class_O);
-  LISP_CLASS(core, ClPkg, BuiltInClass_O, "BuiltInClass");
+  LISP_CLASS(core, ClPkg, BuiltInClass_O, "BuiltInClass",Class_O);
 
 private:
   //	string			_InitializationArgumentString;

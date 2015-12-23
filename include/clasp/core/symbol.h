@@ -66,8 +66,7 @@ private:
   friend class Class_O;
   friend class Package_O;
   friend class CoreExposer;
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Symbol_O, "Symbol");
+  LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",T_O);
 
 public:
 #if defined(XML_ARCHIVE)

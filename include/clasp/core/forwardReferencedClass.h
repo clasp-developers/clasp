@@ -40,8 +40,7 @@ FORWARD(ForwardReferencedClass);
 */
 class ForwardReferencedClass_O : public Class_O {
   LISP_META_CLASS(StandardClass);
-  LISP_BASE1(Class_O);
-  LISP_CLASS(core, CorePkg, ForwardReferencedClass_O, "ForwardReferencedClass");
+  LISP_CLASS(core, CorePkg, ForwardReferencedClass_O, "ForwardReferencedClass",Class_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(ForwardReferencedClass_O);

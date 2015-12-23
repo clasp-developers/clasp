@@ -60,8 +60,7 @@ namespace core {
 SMART(ExternalObject);
 class ExternalObject_O : public T_O // StandardObject_O
                          {
-  LISP_BASE1(T_O); // LISP_BASE1(StandardObject_O);
-  LISP_CLASS(core, CorePkg, ExternalObject_O, "ExternalObject");
+  LISP_CLASS(core, CorePkg, ExternalObject_O, "ExternalObject",StandardObject_O);
 GCPRIVATE:
   Class_sp _Class;
 
@@ -118,8 +117,7 @@ SMART(ForeignData);
 
 class ForeignData_O : public ExternalObject_O // StandardObject_O
                       {
-  LISP_BASE1(ExternalObject_O); // LISP_BASE1(StandardObject_O);
-  LISP_CLASS(core, CorePkg, ForeignData_O, "ForeignData");
+  LISP_CLASS(core, CorePkg, ForeignData_O, "ForeignData",StandardObject_O);
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)

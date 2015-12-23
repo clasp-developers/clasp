@@ -48,8 +48,7 @@ using namespace core;
 
 SMART(SmallMultimap);
 class SmallMultimap_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SmallMultimap_O, "SmallMultimap");
+  LISP_CLASS(core, CorePkg, SmallMultimap_O, "SmallMultimap",T_O);
 GCPRIVATE:
   typedef gctools::SmallMultimap<Symbol_sp, T_sp, SymbolComparer> map_type;
   map_type map;

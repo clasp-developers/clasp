@@ -37,8 +37,7 @@ namespace core {
 SMART(LightUserData);
 class LightUserData_O : public core::T_O // StandardObject_O
                         {
-  LISP_BASE1(core::T_O); // LISP_BASE1(StandardObject_O);
-  LISP_CLASS(core, CorePkg, LightUserData_O, "LightUserData");
+  LISP_CLASS(core, CorePkg, LightUserData_O, "LightUserData",StandardObject_O);
 
 public:
   void *_ptr;
@@ -68,8 +67,7 @@ typedef void (*DestructUserDataFn)(void *data);
 SMART(UserData);
 class UserData_O : public core::LightUserData_O // StandardObject_O
                    {
-  LISP_BASE1(core::LightUserData_O); // LISP_BASE1(StandardObject_O);
-  LISP_CLASS(core, CorePkg, UserData_O, "UserData");
+  LISP_CLASS(core, CorePkg, UserData_O, "UserData",StandardObject_O);
 
 private:
   DestructUserDataFn _Dtor;

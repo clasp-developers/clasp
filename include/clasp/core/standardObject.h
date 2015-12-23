@@ -45,8 +45,7 @@ SMART(StandardClass);
 SMART(StandardObject);
 class StandardObject_O : public T_O {
   LISP_META_CLASS(StandardClass);
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, StandardObject_O, "standard-object");
+  LISP_CLASS(core, ClPkg, StandardObject_O, "standard-object",T_O);
   DECLARE_INIT();
 
 public:

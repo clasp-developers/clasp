@@ -230,6 +230,8 @@ CL_DEFMETHOD List_sp Array_O::arrayDimensions() const {
 #define ARGS_Array_O_setf_aref "((core::self array) &rest core::indices-val)"
 #define DECL_Array_O_setf_aref ""
 #define DOCS_Array_O_setf_aref "CLHS: setter for aref"
+CL_LAMBDA((core::self array) &rest core::indices-val);
+CL_DOCSTRING("Setter for aref");
 CL_NAME("core:array-setf-aref");
 CL_DEFMETHOD T_sp Array_O::setf_aref(List_sp indices_val) {
   SUBCLASS_MUST_IMPLEMENT();

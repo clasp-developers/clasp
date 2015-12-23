@@ -40,6 +40,7 @@
 (defun setup-application-config ()
   (let ((config (make-hash-table :test #'eq)))
     (setf (gethash :init_functions_inc_h config) "generated/initFunctions_inc.h")
+    (setf (gethash :init_classes_and_methods_inc_h config) "generated/initClassesAndMethods_inc.h")
     (setf (gethash :source_info_inc_h config) "generated/sourceInfo_inc.h")
     (setf (gethash :symbols_scraped_inc_h config) "generated/symbols_scraped_inc.h")
     config))

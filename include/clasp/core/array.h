@@ -37,8 +37,7 @@ namespace core {
 FORWARD(Array);
 class Array_O : public T_O {
   friend class ArrayObjects_O;
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Array_O, "array");
+  LISP_CLASS(core, ClPkg, Array_O, "array",T_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)

@@ -34,8 +34,7 @@ THE SOFTWARE.
 
 namespace cffi {
 class Pointer_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(cffi, CffiPkg, Pointer_O, "Pointer");
+  LISP_CLASS(cffi, CffiPkg, Pointer_O, "Pointer",core::T_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor

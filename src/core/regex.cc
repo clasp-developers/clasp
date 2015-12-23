@@ -112,6 +112,7 @@ CL_DEFMETHOD string Regex_O::regexSedReplace(const string &str, const string &re
 #define ARGS_RegexMatch_O_matched "(regex-match &optional (idx 0))"
 #define DECL_RegexMatch_O_matched ""
 #define DOCS_RegexMatch_O_matched "Return true if this->_Match[idx].matched is true"
+CL_LAMBDA(regex-match &optional (idx 0));
 CL_NAME("regex-match-matched");
 CL_DEFMETHOD bool RegexMatch_O::matched(int idx) const {
   ASSERTF(idx < (int)this->_Match.size(), BF("index[%d] exceeded max[%d]") % idx % this->_Match.size());

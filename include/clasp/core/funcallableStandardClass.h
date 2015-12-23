@@ -45,8 +45,7 @@ SMART(StringSet);
 SMART(FuncallableStandardClass);
 class FuncallableStandardClass_O : public StdClass_O {
   LISP_META_CLASS(StandardClass);
-  LISP_BASE1(StdClass_O);
-  LISP_CLASS(core, ClosPkg, FuncallableStandardClass_O, "FuncallableStandardClass");
+  LISP_CLASS(core, ClosPkg, FuncallableStandardClass_O, "FuncallableStandardClass",StdClass_O);
 
 public:
 #if defined(XML_ARCHIVE)

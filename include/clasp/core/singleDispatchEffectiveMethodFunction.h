@@ -34,8 +34,7 @@ THE SOFTWARE.
 
 namespace core {
 class SingleDispatchEffectiveMethodFunction_O : public Function_O {
-  LISP_BASE1(Function_O);
-  LISP_CLASS(core, CorePkg, SingleDispatchEffectiveMethodFunction_O, "SingleDispatchEffectiveMethodFunction");
+  LISP_CLASS(core, CorePkg, SingleDispatchEffectiveMethodFunction_O, "SingleDispatchEffectiveMethodFunction",Function_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor

@@ -19,6 +19,10 @@
 (defpackage "TAGS"
   (:use :cl)
   (:export
+   #:*tag-handlers*
+   #:tag-code
+   #:tag-identifier
+   #:tag-source-pos
    #:unknown-tag
    #:handler-code
    #:lisp-base-tag
@@ -28,29 +32,33 @@
    #:package%
    #:c++-class%
    #:class-symbol%
+   #:name-tag
+   #:name%
    #:lambda-tag
    #:lambda-list
    #:docstring-tag
-   #:docstring
+   #:docstring%
    #:declare-tag
+   #:declare-form%
    #:source-tag
+   #:extern-defun-tag
+   #:extern-defmethod-tag
+   #:pointer%
+   #:type%
    #:expose-code-tag
    #:expose-method-tag
-   #:code-tag
-   #:file
-   #:line
-   #:character-offset
-   #:namespace
+   #:class-name%
+   #:method-name%
+   #:file%
+   #:line%
+   #:character-offset%
    #:expose-function-tag
-   #:function-name
-   #:signature-text
-   #:namespace-tag
+   #:function-name%
+   #:signature-text%
    #:symbol-tag
-   #:name%
    #:c++-name%
    #:class-symbol%
    #:exported%
    #:namespace-package-association-tag
-   #:package-var
-   #:make-handler-hash-table))
+   #:package-var))
            

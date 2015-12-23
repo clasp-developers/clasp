@@ -39,8 +39,7 @@ THE SOFTWARE.
 
 namespace core {
 class CandoException_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, CandoException_O, "CandoException");
+  LISP_CLASS(core, CorePkg, CandoException_O, "CandoException",T_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor

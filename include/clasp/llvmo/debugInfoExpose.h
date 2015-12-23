@@ -71,8 +71,7 @@ THE SOFTWARE.
 namespace llvmo {
 FORWARD(DebugInfo);
 class DebugInfo_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DebugInfo_O, "DebugInfo");
+  LISP_CLASS(llvmo, LlvmoPkg, DebugInfo_O, "DebugInfo",core::T_O);
 
 public:
   virtual operator llvm::DIDescriptor *() { SUBIMP(); };
@@ -86,8 +85,7 @@ TRANSLATE(llvmo::DebugInfo_O);
 namespace llvmo {
 FORWARD(DIDescriptor);
 class DIDescriptor_O : public DebugInfo_O, public llvm::DIDescriptor {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DIDescriptor_O, "DIDescriptor");
+  LISP_CLASS(llvmo, LlvmoPkg, DIDescriptor_O, "DIDescriptor",DebugInfo_O);
 
 public:
   typedef llvm::DIDescriptor OtherType;
@@ -124,8 +122,7 @@ struct from_object<llvm::DIDescriptor, std::true_type> {
 namespace llvmo {
 FORWARD(DIScope);
 class DIScope_O : public DebugInfo_O, public llvm::DIScope {
-  LISP_BASE1(DebugInfo_O)
-  LISP_CLASS(llvmo, LlvmoPkg, DIScope_O, "discope");
+    LISP_CLASS(llvmo, LlvmoPkg, DIScope_O, "discope",DebugInfo_O);
 
 private:
   typedef llvm::DIScope OtherType;
@@ -162,8 +159,7 @@ struct from_object<llvm::DIScope, std::true_type> {
 namespace llvmo {
 FORWARD(DIArray);
 class DIArray_O : public DebugInfo_O, public llvm::DIArray {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DIArray_O, "diarray");
+  LISP_CLASS(llvmo, LlvmoPkg, DIArray_O, "diarray",DebugInfo_O);
   typedef llvm::DIArray OtherType;
 
 public:
@@ -195,8 +191,7 @@ struct from_object<llvm::DIArray, std::true_type> {
 namespace llvmo {
 FORWARD(DITypeArray);
 class DITypeArray_O : public DebugInfo_O, public llvm::DITypeArray {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DITypeArray_O, "ditypearray");
+  LISP_CLASS(llvmo, LlvmoPkg, DITypeArray_O, "ditypearray",DebugInfo_O);
   typedef llvm::DITypeArray OtherType;
 
 public:
@@ -228,8 +223,7 @@ struct from_object<llvm::DITypeArray, std::true_type> {
 namespace llvmo {
 FORWARD(DIFile);
 class DIFile_O : public DebugInfo_O, public llvm::DIFile {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DIFile_O, "difile");
+  LISP_CLASS(llvmo, LlvmoPkg, DIFile_O, "difile",DebugInfo_O);
   typedef llvm::DIFile OtherType;
 
 private:
@@ -265,8 +259,7 @@ struct from_object<llvm::DIFile, std::true_type> {
 namespace llvmo {
 FORWARD(DISubprogram);
 class DISubprogram_O : public DebugInfo_O, public llvm::DISubprogram {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DISubprogram_O, "DISubprogram");
+  LISP_CLASS(llvmo, LlvmoPkg, DISubprogram_O, "DISubprogram",DebugInfo_O);
   typedef llvm::DISubprogram OtherType;
 
 private:
@@ -314,8 +307,7 @@ struct to_object<llvm::DISubprogram> {
 namespace llvmo {
 FORWARD(DIType);
 class DIType_O : public DebugInfo_O, public llvm::DIType {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DIType_O, "DIType");
+  LISP_CLASS(llvmo, LlvmoPkg, DIType_O, "DIType",DebugInfo_O);
   typedef llvm::DIType OtherType;
 
 private:
@@ -351,8 +343,7 @@ struct from_object<llvm::DIType, std::true_type> {
 namespace llvmo {
 FORWARD(DIDerivedType);
 class DIDerivedType_O : public DebugInfo_O, public llvm::DIDerivedType {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DIDerivedType_O, "DIDerivedType");
+  LISP_CLASS(llvmo, LlvmoPkg, DIDerivedType_O, "DIDerivedType",DebugInfo_O);
   typedef llvm::DIDerivedType OtherType;
 
 private:
@@ -391,8 +382,7 @@ struct from_object<llvm::DIDerivedType, std::true_type> {
 namespace llvmo {
 FORWARD(DIBasicType);
 class DIBasicType_O : public DebugInfo_O, public llvm::DIBasicType {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DIBasicType_O, "DIBasicType");
+  LISP_CLASS(llvmo, LlvmoPkg, DIBasicType_O, "DIBasicType",DebugInfo_O);
   typedef llvm::DIBasicType OtherType;
 
 private:
@@ -431,8 +421,7 @@ struct from_object<llvm::DIBasicType, std::true_type> {
 namespace llvmo {
 FORWARD(DICompositeType);
 class DICompositeType_O : public DebugInfo_O, public llvm::DICompositeType {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DICompositeType_O, "DICompositeType");
+  LISP_CLASS(llvmo, LlvmoPkg, DICompositeType_O, "DICompositeType",DebugInfo_O);
   typedef llvm::DICompositeType OtherType;
 
 private:
@@ -470,8 +459,7 @@ struct from_object<llvm::DICompositeType, std::true_type> {
 namespace llvmo {
 FORWARD(DISubroutineType);
 class DISubroutineType_O : public DebugInfo_O, public llvm::DISubroutineType {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DISubroutineType_O, "DISubroutineType");
+  LISP_CLASS(llvmo, LlvmoPkg, DISubroutineType_O, "DISubroutineType",DebugInfo_O);
   typedef llvm::DISubroutineType OtherType;
 
 private:
@@ -510,8 +498,7 @@ struct from_object<llvm::DISubroutineType, std::true_type> {
 namespace llvmo {
 FORWARD(DILexicalBlock);
 class DILexicalBlock_O : public DebugInfo_O, public llvm::DILexicalBlock {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DILexicalBlock_O, "DILexicalBlock");
+  LISP_CLASS(llvmo, LlvmoPkg, DILexicalBlock_O, "DILexicalBlock",DebugInfo_O);
   typedef llvm::DILexicalBlock OtherType;
 
 private:
@@ -548,8 +535,7 @@ struct from_object<llvm::DILexicalBlock, std::true_type> {
 namespace llvmo {
 FORWARD(DICompileUnit);
 class DICompileUnit_O : public DebugInfo_O, public llvm::DICompileUnit {
-  LISP_BASE1(DebugInfo_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DICompileUnit_O, "DICompileUnit");
+  LISP_CLASS(llvmo, LlvmoPkg, DICompileUnit_O, "DICompileUnit",DebugInfo_O);
   typedef llvm::DICompileUnit OtherType;
 
 private:

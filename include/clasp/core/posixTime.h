@@ -50,8 +50,7 @@ SMART(PosixTimeDuration);
 
 SMART(PosixTime);
 class PosixTime_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, PosixTime_O, "PosixTime");
+  LISP_CLASS(core, CorePkg, PosixTime_O, "PosixTime",T_O);
   DECLARE_INIT();
 
 public: // virtual functions inherited from Object
@@ -82,8 +81,7 @@ public:
 
 SMART(PosixTimeDuration);
 class PosixTimeDuration_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, PosixTimeDuration_O, "PosixTimeDuration");
+  LISP_CLASS(core, CorePkg, PosixTimeDuration_O, "PosixTimeDuration",T_O);
   DECLARE_INIT();
   friend class PosixTime_O;
 

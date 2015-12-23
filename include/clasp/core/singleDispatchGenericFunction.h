@@ -70,8 +70,7 @@ public:
 };
 
 class SingleDispatchGenericFunction_O : public Function_O {
-  LISP_BASE1(Function_O);
-  LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "single-dispatch-generic-function");
+  LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "single-dispatch-generic-function",Function_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
   friend class SingleDispatchGenericFunctoid;

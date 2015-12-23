@@ -40,8 +40,7 @@ THE SOFTWARE.
 
 namespace core {
 class SourceFileInfo_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SourceFileInfo_O, "SourceFileInfo");
+  LISP_CLASS(core, CorePkg, SourceFileInfo_O, "SourceFileInfo",T_O);
   DECLARE_INIT();
 
 public:
@@ -86,8 +85,7 @@ class SourcePosInfo_O : public T_O {
   friend class SourceManager_O;
   friend T_mv core__source_file_info(T_sp sourceFile, T_sp truename, size_t offset, bool useLineno);
 
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo");
+  LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo",T_O);
 
 public:
 public:                                                                                    // ctor/dtor for classes with shared virtual base
@@ -158,8 +156,7 @@ struct gctools::GCInfo<core::SourcePosInfo_O> {
 
 namespace core {
 class SourceManager_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SourceManager_O, "SourceManager");
+  LISP_CLASS(core, CorePkg, SourceManager_O, "SourceManager",T_O);
   DECLARE_INIT();
   void initialize();
 

@@ -39,8 +39,7 @@ FORWARD(Vector);
 /*! A one dimensional vector of objects */
 // class Vector_O : public Array_O, public T_O
 class Vector_O : public Array_O {
-  LISP_BASE1(Array_O);
-  LISP_CLASS(core, ClPkg, Vector_O, "vector");
+  LISP_CLASS(core, ClPkg, Vector_O, "vector",Array_O);
 
 public:
   void archiveBase(core::ArchiveP node);

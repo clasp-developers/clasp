@@ -577,8 +577,7 @@ public:
 
 SMART(LoadArchive);
 class LoadArchive_O : public Archive_O {
-  LISP_BASE1(Archive_O);
-  LISP_CLASS(core, CorePkg, LoadArchive_O, "LoadArchive");
+  LISP_CLASS(core, CorePkg, LoadArchive_O, "LoadArchive",Archive_O);
 
 public:
   void initialize();
@@ -620,8 +619,7 @@ struct gctools::GCInfo<core::LoadArchive_O> {
 namespace core {
 SMART(SaveArchive);
 class SaveArchive_O : public Archive_O {
-  LISP_BASE1(Archive_O);
-  LISP_CLASS(core, CorePkg, SaveArchive_O, "SaveArchive");
+  LISP_CLASS(core, CorePkg, SaveArchive_O, "SaveArchive",Archive_O);
 
 public:
   void initialize();

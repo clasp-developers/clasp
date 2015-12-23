@@ -36,8 +36,7 @@ namespace core {
 
 FORWARD(VectorObjects);
 class VectorObjects_O : public Vector_O {
-  LISP_BASE1(Vector_O);
-  LISP_CLASS(core, CorePkg, VectorObjects_O, "VectorObjects");
+  LISP_CLASS(core, CorePkg, VectorObjects_O, "VectorObjects",Vector_O);
   DECLARE_INIT();
 
   void archiveBase(SNode_sp node);

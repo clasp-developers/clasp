@@ -1101,8 +1101,7 @@ TRANSLATE(llvmo::User_O);
 
 namespace llvmo {
 class Attribute_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(llvmo, LlvmoPkg, Attribute_O, "Attribute");
+  LISP_CLASS(llvmo, LlvmoPkg, Attribute_O, "Attribute",core::T_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor

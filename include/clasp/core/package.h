@@ -42,8 +42,7 @@ namespace core {
 
 SMART(Package);
 class Package_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Package_O, "Package");
+  LISP_CLASS(core, ClPkg, Package_O, "Package",T_O);
 
 public: // virtual functions inherited from Object
   void initialize();

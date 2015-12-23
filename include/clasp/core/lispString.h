@@ -36,8 +36,7 @@ namespace core {
 
 FORWARD(String);
 class String_O : public Vector_O {
-  LISP_BASE1(Vector_O);
-  LISP_CLASS(core, ClPkg, String_O, "String");
+  LISP_CLASS(core, ClPkg, String_O, "String",Vector_O);
 
   DECLARE_INIT();
 #if defined(XML_ARCHIVE)

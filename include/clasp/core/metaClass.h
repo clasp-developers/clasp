@@ -70,8 +70,7 @@ class Class_O : public Specializer_O {
   struct metadata_gc_do_not_move {};
 
   LISP_META_CLASS(StandardClass);
-  LISP_BASE1(Specializer_O);
-  LISP_CLASS(core, ClPkg, Class_O, "class");
+  LISP_CLASS(core, ClPkg, Class_O, "class",Specializer_O);
   //
   // Friend functions for bootup
   //

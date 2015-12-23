@@ -141,8 +141,7 @@ TRANSLATE(core::ActivationFrame_O);
 
 namespace core {
 class ValueFrame_O : public ActivationFrame_O {
-  LISP_BASE1(ActivationFrame_O);
-  LISP_CLASS(core, CorePkg, ValueFrame_O, "ValueFrame");
+  LISP_CLASS(core, CorePkg, ValueFrame_O, "ValueFrame",ActivationFrame_O);
 GCPROTECTED:
   T_sp _ParentFrame;
   gctools::Frame0<T_sp> _Objects;
@@ -296,8 +295,7 @@ struct gctools::GCInfo<core::FunctionFrame_O> {
 
 namespace core {
 class FunctionFrame_O : public ActivationFrame_O {
-  LISP_BASE1(ActivationFrame_O);
-  LISP_CLASS(core, CorePkg, FunctionFrame_O, "FunctionFrame");
+  LISP_CLASS(core, CorePkg, FunctionFrame_O, "FunctionFrame",ActivationFrame_O);
 GCPRIVATE:
   T_sp _ParentFrame;
   gctools::Frame0<T_sp> _Objects;
@@ -394,8 +392,7 @@ public:
 
 namespace core {
 class TagbodyFrame_O : public ActivationFrame_O {
-  LISP_BASE1(ActivationFrame_O);
-  LISP_CLASS(core, CorePkg, TagbodyFrame_O, "TagbodyFrame");
+  LISP_CLASS(core, CorePkg, TagbodyFrame_O, "TagbodyFrame",ActivationFrame_O);
 GCPRIVATE:
   T_sp _ParentFrame;
 

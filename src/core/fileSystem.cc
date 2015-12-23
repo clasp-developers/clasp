@@ -257,6 +257,8 @@ CL_DEFMETHOD void Path_O::setPathFromString(const string &pth) {
 #define ARGS_Path_O_parts "(self)"
 #define DECL_Path_O_parts ""
 #define DOCS_Path_O_parts "Returns a list of path parts as strings"
+CL_LAMBDA(self);
+CL_DOCSTRING("Returns a list of path parts as strings");
 CL_NAME("path-parts");
 CL_DEFMETHOD List_sp Path_O::parts() const {
   bf::path::iterator it;

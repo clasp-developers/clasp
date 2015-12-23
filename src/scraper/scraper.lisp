@@ -33,6 +33,7 @@ Read all of the scraped info files and interpret their tags."
      for tags = (read-sif-file cc)
      nconc tags))
 
+(defparameter *exposed-classes* nil)
 (defun do-scraping (args &key (run-preprocessor t))
   (declare (optimize (debug 3)))
   (let* ((*clang-path* (first args))
@@ -55,10 +56,12 @@ Read all of the scraped info files and interpret their tags."
       (format t "Reading sif files~%")
       (let ((tags (read-all-tags-all-sif-files all-cc)))
         (format t "Interpreting tags~%")
-        (setq *tags* tags)
+        (setf *tags* tags)
         (interpret-tags tags)
-        (format t "Generating code~%")
-        (generate-code tags main-path app-config)
+        (let ((exposed-classes (interpret-exposed-classes tags)))
+          (setf *exposed-classes* exposed-classes)
+          (format t "Generating code~%")
+          (generate-code tags exposed-classes main-path app-config))
         (format t "Done scraping code~%")))))
 
 

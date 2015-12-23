@@ -40,8 +40,7 @@ namespace core {
 
 FORWARD(Str);
 class Str_O : public String_O {
-  LISP_BASE1(String_O);
-  LISP_CLASS(core, ClPkg, Str_O, "base-string");
+  LISP_CLASS(core, ClPkg, Str_O, "base-string",String_O);
  protected:
   typedef gctools::gcstring str_type;
   str_type _Contents;

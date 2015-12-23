@@ -3042,6 +3042,8 @@ string Type_O::__repr__() const {
 #define ARGS_PointerType_O_getPointerTo "((self type) &optional (addressSpace 0))"
 #define DECL_PointerType_O_getPointerTo ""
 #define DOCS_PointerType_O_getPointerTo "Return a PointerType to the llvm Type"
+CL_LAMBDA((self type) &optional (addressSpace 0));
+CL_DOCSTRING("Return a PointerType to the llvm Type");
 CL_NAME("type-get-pointer-to");
 CL_DEFMETHOD PointerType_sp Type_O::getPointerTo(int addressSpace) {
   llvm::PointerType *ptrType = this->wrappedPtr()->getPointerTo();
@@ -3054,6 +3056,12 @@ CL_DEFMETHOD core::Integer_sp Type_O::getArrayNumElements() const {
   core::Integer_sp ival = core::Integer_O::create(v64);
   return ival;
 }
+CL_TYPE(Type_O);
+CL_EXTERN_DEFMETHOD(&llvm::Type::dump);
+CL_EXTERN_DEFMETHOD(&llvm::Type::getSequentialElementType);
+
+CL_PKG_NAME(LlvmoPkg, "type-get-float-ty");
+CL_EXTERN_DEFUN(&llvm:Type::getFloatTy);
 
 void Type_O::exposeCando(core::Lisp_sp lisp) {
   core::externalClass_<Type_O>()

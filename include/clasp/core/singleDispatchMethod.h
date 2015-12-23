@@ -34,8 +34,7 @@ THE SOFTWARE.
 namespace core {
 class SingleDispatchMethod_O : public T_O {
   friend class SingleDispatchGenericFunctionClosure;
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SingleDispatchMethod_O, "SingleDispatchMethod");
+  LISP_CLASS(core, CorePkg, SingleDispatchMethod_O, "SingleDispatchMethod",T_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public:

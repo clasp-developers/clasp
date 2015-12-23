@@ -131,7 +131,6 @@
                    (princ buffer sout))
                  tags-data-ht)))))
 
-
 (defun generate-code-for-init-functions (tags)
   (declare (optimize (debug 3)))
   (with-output-to-string (sout)
@@ -139,6 +138,81 @@
       (generate-expose-function-signatures sout ns-grouped)
       (generate-expose-function-bindings sout ns-grouped))))
 
+(defun inherits-from (x y inheritance)
+    (let ((x-name (class-key-from-lisp-class-tag (class-tag x)))
+          (y-name (class-key-from-lisp-class-tag (class-tag y)))
+          ancestor)
+      (loop
+         (setf ancestor (gethash x-name inheritance))
+         (unless ancestor
+           (return-from inherits-from nil))
+         (if (string= ancestor y-name)
+             (return-from inherits-from t))
+         (setf x-name ancestor))))
+
+(defparameter *classes* nil)
+(defparameter *inheritance* nil)
+(defun sort-classes-by-inheritance (exposed-classes)
+  (let ((inheritance (make-hash-table :test #'equal))
+        (classes nil))
+    (maphash (lambda (k v)
+               (let ((base (tags::c++-base% (class-tag v))))
+                 (when base (setf (gethash k inheritance) base))
+                 (push v classes)))
+             exposed-classes)
+    (setf *classes* classes)
+    (setf *inheritance* inheritance)
+    (format t "About to sort classes~%")
+    (sort classes (lambda (x y)
+                    (inherits-from y x inheritance)))))
+
+
+(defun generate-code-for-init-classes-and-methods (exposed-classes)
+  (declare (optimize (debug 3)))
+  (with-output-to-string (sout)
+    (let ((sorted-classes (sort-classes-by-inheritance exposed-classes)))
+      (format sout "#ifdef EXPOSE_CLASSES~%")
+      (dolist (exposed-class sorted-classes)
+        (let ((class-tag (class-tag exposed-class)))
+          (format sout "DO_CLASS(~a,~a,~a,~a,~s);~%"
+                  (tags:namespace% class-tag)
+                  (tags:package% class-tag)
+                  (tags:c++-base% class-tag)
+                  (tags:c++-class% class-tag)
+                  (tags:class-symbol% class-tag))))
+      (format sout "#endif // EXPOSE_CLASSES~%")
+      (format sout "#ifdef EXPOSE_METHODS~%")
+      (dolist (exposed-class sorted-classes)
+        (let ((class-tag (class-tag exposed-class)))
+          (format sout "namespace ~a {~%" (tags:namespace% class-tag))
+          (format sout "void ~a::expose_to_clasp() {~%" (tags:c++-class% class-tag))
+          (format sout "    ~a<~a>()~%"
+                  (if (eq (tags:kind% class-tag) :external-class)
+                      "externalClass_"
+                      "class_")
+                  (tags:c++-class% class-tag))
+          (dolist (method-tag (methods exposed-class))
+            (let* ((name (tags:name (tags:name-tag method-tag)))
+                   (class-name (tags:class-name% method-tag))
+                   (method-name (tags:method-name method-tag))
+                   (lambda-tag (tags:lambda-tag method-tag))
+                   (lambda-list (if lambda-tag (tags:lambda-list lambda-tag) ""))
+                   (declare-tag (tags:declare-tag method-tag))
+                   (declare-form (if declare-tag (tags:declare-form declare-tag) ""))
+                   (docstring-tag (tags:docstring-tag method-tag))
+                   (docstring (if docstring-tag (tags:docstring docstring-tag) "")))
+              (format sout "        .def(~s,&~a::~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\",~a)~%"
+                      name
+                      class-name
+                      method-name
+                      lambda-list
+                      declare-form
+                      docstring)))
+          (format sout "     ;~%")
+          (format sout "}~%")
+          (format sout "};~%")))
+      (format sout "#endif // EXPOSE_METHODS~%"))))
+          
 (defun generate-code-for-source-info (tags)
   (with-output-to-string (sout)
     (let ((source-info-tags (extract-unique-source-info-tags tags)))
@@ -203,11 +277,13 @@
         (with-open-file (stream pn :direction :output :if-exists :supersede)
           (write-sequence code stream))))))
 
-(defun generate-code (tags main-path app-config)
+(defun generate-code (tags exposed-classes main-path app-config)
   (let ((init-functions (generate-code-for-init-functions tags))
+        (init-classes-and-methods (generate-code-for-init-classes-and-methods exposed-classes))
         (source-info (generate-code-for-source-info tags))
         (symbol-info (generate-code-for-symbols tags)))
     (write-if-changed init-functions main-path (gethash :init_functions_inc_h app-config))
+    (write-if-changed init-classes-and-methods main-path (gethash :init_classes_and_methods_inc_h app-config))
     (write-if-changed source-info main-path (gethash :source_info_inc_h app-config))
     (write-if-changed symbol-info main-path (gethash :symbols_scraped_inc_h app-config))
     (generate-tags-file (merge-pathnames #P"TAGS" (translate-logical-pathname main-path)) tags)))

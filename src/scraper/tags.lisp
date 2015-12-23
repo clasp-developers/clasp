@@ -14,215 +14,238 @@
 
 (defun extract-function-name-from-signature (sig)
   (declare (optimize (debug 3)))
-  (let* ((tsig (string-trim '(#\newline #\space #\tab) sig))
+  (let* ((tsig (string-trim '(#\newline #\space #\tab #\*) sig))
          (first-space (position-if
-                       (lambda (c) (or (char= c #\newline) (char= c #\space) (char= c #\tab)))
+                       (lambda (c) (or (char= c #\newline)
+                                       (char= c #\space)
+                                       (char= c #\tab)))
                        tsig))
          (open-paren (position #\( tsig :test #'char=)))
-    (string-trim '(#\newline #\space #\tab) (subseq tsig first-space open-paren))))
+    ;; trim * to avoid pointers
+    (string-trim '(#\newline #\space #\tab #\*) (subseq tsig first-space open-paren))))
     
 (defun extract-method-name-from-signature (sig)
-  (let* ((class-method-name (extract-function-name-from-signature sig))
-         (colon-colon-pos (search "::" class-method-name :test #'string=))
-         (class-name (subseq class-method-name 0 colon-colon-pos))
-         (method-name (subseq class-method-name (+ 2 colon-colon-pos) nil)))
-    (values class-name method-name)))
+  (declare (optimize debug))
+  (let* ((trimmed-sig (string-trim '(#\newline #\space #\tab) sig))
+         (just-sig (if (string= (subseq trimmed-sig 0 7) "virtual") ;; trim out virtual
+                       (subseq trimmed-sig 7)
+                       trimmed-sig))
+         (class-method-name (extract-function-name-from-signature just-sig)))
+   (let* ((colon-colon-pos (search "::" class-method-name :test #'string=))
+          (class-name (and colon-colon-pos (subseq class-method-name 0 colon-colon-pos)))
+          (method-name (if colon-colon-pos
+                           (subseq class-method-name (+ 2 colon-colon-pos) nil)
+                           class-method-name)))
+      (values class-name method-name))))
 
 (defclass tag-handler ()
   ((begin-tag :initarg :begin-tag)
    (handler-code :initarg :handler-code :accessor handler-code)))
 
-(defclass lisp-base-tag ()
-  ((c++-base% :initform nil :initarg :c++-base% :accessor c++-base%)))
+(defclass tags:tag ()
+  ((file% :initarg :file% :reader tags:file%)
+   (line% :initarg :line% :reader tags:line%)))
 
-(defclass lisp-class-tag ()
-  ((namespace% :initform nil :initarg :namespace% :accessor namespace%)
-   (package% :initform nil :initarg :package% :accessor package%)
-   (c++-base% :initform nil :initarg :c++-base% :accessor c++-base%)
-   (c++-class% :initarg :c++-class% :accessor c++-class%)
-   (class-symbol% :initarg :class-symbol% :accessor class-symbol%)))
+(defclass tags:lisp-base-tag (tag)
+  ((name% :initform nil :initarg :name% :reader tags:name%)))
 
-(defclass code-tag ()
-  ((file :initarg :file :accessor file)
-   (line :initarg :line :accessor line)))
+(defclass tags:source-tag (tag)
+  ((character-offset% :initform nil :initarg :character-offset% :reader tags:character-offset%)))
 
-(defclass name-tag (code-tag)
-  ((name :initarg :name :accessor name)))
+(defclass tags:lisp-class-tag (source-tag)
+  ((namespace% :initform nil :initarg :namespace% :reader tags:namespace%)
+   (package% :initform nil :initarg :package% :reader tags:package%)
+   (name% :initarg :name% :reader tags:name%)
+   (class-symbol% :initarg :class-symbol% :reader tags:class-symbol%)))
 
-(defclass lambda-tag (code-tag)
-  ((lambda-list :initarg :lambda-list :accessor lambda-list)))
+(defclass tags:lisp-internal-class-tag (lisp-class-tag) ())
 
-(defclass docstring-tag (code-tag)
-  ((docstring :initarg :docstring :accessor docstring)))
+(defclass tags:lisp-external-class-tag (lisp-class-tag)
+  ((c++-base% :initform nil :initarg :c++-base% :reader tags:c++-base%)))
 
-(defclass declare-tag (code-tag)
-  ((declare-form :initarg :declare-form :accessor declare-form)))
+(defclass tags:name-tag (tag)
+  ((name% :initarg :name% :reader tags:name%)))
 
-(defclass source-tag (code-tag)
-  ((character-offset :initform nil :initarg :character-offset :accessor character-offset)))
+(defclass tags:lambda-tag (tag)
+  ((lambda-list% :initarg :lambda-list% :reader tags:lambda-list%)))
+
+(defclass tags:docstring-tag (tag)
+  ((docstring% :initarg :docstring% :reader tags:docstring%)))
+
+(defclass tags:declare-tag (tag)
+  ((declare-form% :initarg :declare-form% :reader tags:declare-form%)))
+
+(defclass tags:extern-defun-tag (source-tag)
+  ((pointer% :initarg :pointer% :reader tags:pointer%)))
+
+(defclass tags:extern-defmethod-tag (extern-defun-tag)
+  ((type% :initarg :type% :reader tags:type%)))
   
-(defclass expose-code-tag (source-tag)
-  ((function-name :initarg :function-name :accessor function-name)
-   (signature-text :initarg :signature-text :accessor signature-text)
-   (name-tag :initform nil :initarg :name-tag :accessor name-tag)
-   (lambda-tag :initform nil :initarg :lambda-tag :accessor lambda-tag)
-   (declare-tag :initform nil :initarg :declare-tag :accessor declare-tag)
-   (docstring-tag :initform nil :initarg :docstring-tag :accessor docstring-tag)
-   (namespace-tag :initform nil :initarg :namespace-tag :accessor namespace-tag)))
+(defclass tags:expose-code-tag (source-tag)
+  ((signature-text% :initarg :signature-text% :reader tags:signature-text%)))
 
-(defclass expose-function-tag (expose-code-tag) ())
+(defclass tags:expose-function-tag (expose-code-tag)
+  ((function-name% :initarg :function-name% :reader tags:function-name%)))
 
-(defclass expose-method-tag (expose-code-tag)
-  ((class-tag :initarg :class-tag :accessor class-tag)))
+(defclass tags:expose-method-tag (expose-code-tag)
+  ((class-name% :initform nil :initarg :class-name% :reader tags:class-name%)
+   (method-name% :initarg :method-name% :reader tags:method-name%)))
 
-(defclass namespace-tag ()
-  ((namespace :initarg :namespace :accessor namespace)
-   (file :initarg :file :accessor file)))
+(defclass tags:namespace-tag (tag)
+  ((namespace% :initarg :namespace% :reader tags:namespace%)))
 
-(defclass symbol-tag ()
-  ((namespace% :initform nil :initarg :namespace% :accessor namespace%)
-   (package% :initform nil :initarg :package% :accessor package%)
-   (c++-name% :initform nil :initarg :c++-name% :accessor c++-name%)
-   (name% :initarg :name% :accessor name%)
-   (exported% :initarg :exported% :accessor exported%)))
+(defclass tags:symbol-tag (tag)
+  ((namespace% :initform nil :initarg :namespace% :reader tags:namespace%)
+   (package% :initform nil :initarg :package% :reader tags:package%)
+   (c++-name% :initform nil :initarg :c++-name% :reader tags:c++-name%)
+   (name% :initarg :name% :reader tags:name%)
+   (exported% :initarg :exported% :reader tags:exported%)))
 
-(defclass namespace-package-association-tag ()
-  ((namespace :initarg :namespace :accessor namespace)
-   (package-var :initarg :package-var :accessor package-var)
-   (package-str :initarg :package-str :accessor package-str)))
+(defclass tags:namespace-package-association-tag (tag)
+  ((namespace% :initarg :namespace% :reader tags:namespace%)
+   (package-var% :initarg :package-var% :reader tags:package-var%)
+   (package-str% :initarg :package-str% :reader tags:package-str%)))
 
-(defmacro add-tag-handler (tag-handlers begin-tag code)
-  `(setf (gethash ,begin-tag ,tag-handlers)
-         (make-instance 'tag-handler
-                        :begin-tag ,begin-tag
-                        :handler-code ,code)))
+(defmacro add-tag-handler (tag-handlers tag-class-symbol begin-tag code)
+  `(setf (gethash ,begin-tag ,tag-handlers) (make-instance 'tag-handler
+                                                           :begin-tag ,begin-tag
+                                                           :handler-code ,code)
+         (gethash (,tag-class-symbol *tag-codes*) ,begin-tag)))
 
-(defun make-handler-hash-table ()
-  (declare (optimize (debug 3)))
-  (let ((handlers (make-hash-table :test #'equal)))
-    (add-tag-handler handlers "LISP_BASE1_TAG"
-                     #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
-                         (let ((plist (read (cscrape:buffer-stream bufs))))
-                           (make-instance 'tags:lisp-base-tag
-                                          :c++-base% (getf plist :base)))))
-    (add-tag-handler handlers "LISP_CLASS_TAG"
-                     #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
-                         (let ((plist (read (cscrape:buffer-stream bufs))))
-                           (make-instance 'tags:lisp-class-tag
-                                          :namespace% (getf plist :namespace)
-                                          :package% (getf plist :package)
-                                          :c++-class% (getf plist :class)
-                                          :class-symbol% (getf plist :class-symbol)))))
-    (add-tag-handler handlers "LISP_EXTERNAL_CLASS_TAG"
-                     #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
-                         (let ((plist (read (cscrape:buffer-stream bufs))))
-                             (make-instance 'tags:lisp-class-tag
-                                            :namespace% (getf plist :namespace)
-                                            :package% (getf plist :package)
-                                            :c++-class% (getf plist :class)
-                                            :class-symbol% (getf plist :class-symbol)
-                                            :c++-base% (getf plist :base)))))
-    (add-tag-handler handlers "CL_NAME_TAG"
-                     #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
-                         (let ((plist (read (cscrape:buffer-stream bufs))))
-                           (let ((lambda-list (getf plist :lambda-list)))
-                             (when (and (> (length lambda-list) 1)
-                                        (char= (elt lambda-list 0) #\"))
-                               (setf lambda-list (read-from-string lambda-list)))
+(progn
+  (defparameter *tag-codes* (make-hash-table :test #'equal))
+  (defparameter *tag-handlers* (make-hash-table :test #'equal))
+  (add-tag-handler handlers 'lisp-base-tag "LISP_BASE1_TAG"
+                   #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
+                       (let ((plist (read (cscrape:buffer-stream bufs))))
+                         (make-instance 'tags:lisp-base-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :c++-base% (getf plist :base)))))
+  (add-tag-handler handlers 'lisp-internal-class-tag "LISP_CLASS_TAG"
+                   #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
+                       (let ((plist (read (cscrape:buffer-stream bufs))))
+                         (make-instance 'tags:lisp-internal-class-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :namespace% (getf plist :namespace)
+                                        :package% (getf plist :package)
+                                        :name% (getf plist :class)
+                                        :class-symbol% (getf plist :class-symbol)))))
+  (add-tag-handler handlers 'lisp-external-class-tag "LISP_EXTERNAL_CLASS_TAG"
+                   #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
+                       (let ((plist (read (cscrape:buffer-stream bufs))))
+                         (make-instance 'tags:lisp-external-class-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :namespace% (getf plist :namespace)
+                                        :package% (getf plist :package)
+                                        :name% (getf plist :class)
+                                        :class-symbol% (getf plist :class-symbol)
+                                        :c++-base% (getf plist :base)))))
+  (add-tag-handler handlers 'name-tag "NAME_TAG"
+                   #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
+                       (let ((plist (read (cscrape:buffer-stream bufs))))
+                         (let ((cl-name (getf plist :cl-name)))
+                           (make-instance 'tags:name-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :name% cl-name)))))
+  (add-tag-handler handlers 'lambda-tag "LAMBDA_TAG"
+                   #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
+                       (let ((plist (read (cscrape:buffer-stream bufs))))
+                         (let ((lambda-list (getf plist :lambda-list)))
+                           (when (and (> (length lambda-list) 1)
+                                      (char= (elt lambda-list 0) #\"))
+                             (setf lambda-list (read-from-string lambda-list)))
                            (make-instance 'tags:lambda-tag
-                                          :file (getf plist :file)
-                                          :line (getf plist :line)
-                                          :lambda-list lambda-list)))))
-    (add-tag-handler handlers "CL_LAMBDA_TAG"
-                     #'(lambda (bufs) ;(declare (core:lambda-name lambda-tag-handler))
-                         (let ((plist (read (cscrape:buffer-stream bufs))))
-                           (let ((lambda-list (getf plist :lambda-list)))
-                             (when (and (> (length lambda-list) 1)
-                                        (char= (elt lambda-list 0) #\"))
-                               (setf lambda-list (read-from-string lambda-list)))
-                           (make-instance 'tags:lambda-tag
-                                          :file (getf plist :file)
-                                          :line (getf plist :line)
-                                          :lambda-list lambda-list)))))
-    (add-tag-handler handlers "CL_DOCSTRING_TAG"
-                     #'(lambda (bufs) ;(declare (core:lambda-name docstring-tag-handler))
-                         (let ((plist (read (cscrape:buffer-stream bufs)))
-                               (docstring (cscrape:read-string-to-tag bufs cscrape:*end-tag*)))
-                           (make-instance 'tags:docstring-tag
-                                          :file (getf plist :file)
-                                          :line (getf plist :line)
-                                          :docstring docstring))))
-    (add-tag-handler handlers "CL_DECLARE_TAG"
-                     #'(lambda (bufs) ;(declare (core:lambda-name declare-tag-handler))
-                         (let ((plist (read (cscrape:buffer-stream bufs))))
-                           (make-instance 'tags:declare-tag
-                                          :file (getf plist :file)
-                                          :line (getf plist :line)
-                                          :declare-form (getf plist :declare)))))
-    (add-tag-handler handlers "EXPOSE_FUNCTION"
-                     #'(lambda (bufs) ;(declare (core:lambda-name expose-function-tag-handler))
-;;                         (format t "EXPOSE_FUNCTION ~a~%" (cscrape::buffer-peek bufs))
-                         (let* ((plist (read (cscrape:buffer-stream bufs)))
-                                (signature-text (cscrape:read-string-to-character bufs #\) t))
-                                (function-name (extract-function-name-from-signature signature-text)))
-                           (make-instance 'tags:expose-function-tag
-                                          :file (getf plist :file)
-                                          :line (getf plist :line)
-                                          :function-name function-name
-                                          :signature-text signature-text))))
-    (add-tag-handler handlers "EXPOSE_METHOD"
-                     #'(lambda (bufs) ;(declare (core:lambda-name expose-function-tag-handler))
-                         (let* ((plist (read (cscrape:buffer-stream bufs)))
-                                (signature-text (cscrape:read-string-to-character bufs #\) t)))
-                           (multiple-value-bind (class-name method-name)
-                               (extract-method-name-from-signature signature-text)
-                             (make-instance 'tags:expose-method-tag
-                                            :file (getf plist :file)
-                                            :line (getf plist :line)
-                                            :class-name class-name
-                                            :method-name method-name
-                                            :signature-text signature-text)))))
-    #+(or)(add-tag-handler handlers "NAMESPACE_TAG"
-                     #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
-                         (let* ((cur-pos (file-position (cscrape:buffer-stream bufs)))
-                                (c++namespace-keyword (let ((*package* (find-package :keyword)))
-                                                        (read (cscrape:buffer-stream bufs))))
-                                (namespace-name (string (let ((*readtable* (copy-readtable))
-                                                              (*package* (find-package :keyword)))
-                                                          (setf (readtable-case *readtable*) :preserve)
-                                                          (read (cscrape:buffer-stream bufs))))))
-                           (unless (eq c++namespace-keyword :namespace)
-                             (let ((cur-pos-context (subseq (cscrape:buffer bufs) cur-pos (+ cur-pos 128))))
-                               (error 'bad-tag :tag "NAMESPACE_TAG"
-                                      :context cur-pos-context )))
-                           (make-instance 'tags:namespace-tag
-                                          :namespace namespace-name))))
-    (add-tag-handler handlers "SYMBOL_INTERNAL"
-                     #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
-                         (let* ((plist (read (cscrape:buffer-stream bufs))))
-                           (make-instance 'tags:symbol-tag
-                                          :package% (getf plist :PACKAGE)
-                                          :exported% nil
-                                          :name% (getf plist :NAME)))))
-    (add-tag-handler handlers "SYMBOL_EXTERNAL"
-                     #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
-                         (let* ((plist (read (cscrape:buffer-stream bufs))))
-                           (make-instance 'tags:symbol-tag
-                                          :package% (getf plist :PACKAGE)
-                                          :exported% t
-                                          :name% (getf plist :NAME)))))
-    (add-tag-handler handlers "SYMBOL_INTERN"
-                     #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
-                         (let* ((plist (read (cscrape:buffer-stream bufs))))
-                           (make-instance 'tags:symbol-tag
-                                          :namespace% (getf plist :namespace)
-                                          :exported% t
-                                          :name% (getf plist :name)))))
-    (add-tag-handler handlers "NAMESPACE_PACKAGE_ASSOCIATION_TAG"
-                     #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
-                         (let* ((plist (read (cscrape:buffer-stream bufs))))
-                           (make-instance 'tags:namespace-package-association-tag
-                                          :namespace (getf plist :namespace)
-                                          :package-var (getf plist :package)
-                                          :package-str (getf plist :package-name)))))
-    handlers))
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :lambda-list% lambda-list)))))
+  (add-tag-handler handlers 'docstring-tag "DOCSTRING_TAG"
+                   #'(lambda (bufs) ;(declare (core:lambda-name docstring-tag-handler))
+                       (let ((plist (read (cscrape:buffer-stream bufs)))
+                             (docstring (cscrape:read-string-to-tag bufs cscrape:*end-tag*)))
+                         (make-instance 'tags:docstring-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :docstring% docstring))))
+  (add-tag-handler handlers 'declare-tag "DECLARE_TAG"
+                   #'(lambda (bufs) ;(declare (core:lambda-name declare-tag-handler))
+                       (let ((plist (read (cscrape:buffer-stream bufs))))
+                         (make-instance 'tags:declare-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :declare-form% (getf plist :declare)))))
+  (add-tag-handler handlers 'expose-function-tag "EXPOSE_FUNCTION"
+                   #'(lambda (bufs) ;(declare (core:lambda-name expose-function-tag-handler))
+                       ;;                         (format t "EXPOSE_FUNCTION ~a~%" (cscrape::buffer-peek bufs))
+                       (let* ((plist (read (cscrape:buffer-stream bufs)))
+                              (signature-text (cscrape:read-string-to-character bufs #\) t))
+                              (function-name (extract-function-name-from-signature signature-text)))
+                         (make-instance 'tags:expose-function-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :function-name% function-name
+                                        :signature-text% signature-text))))
+  (add-tag-handler handlers 'expose-method-tag "EXPOSE_METHOD"
+                   #'(lambda (bufs) ;(declare (core:lambda-name expose-function-tag-handler))
+                       (let* ((plist (read (cscrape:buffer-stream bufs)))
+                              (signature-text (cscrape:read-string-to-character bufs #\) t)))
+                         (multiple-value-bind (class-name method-name)
+                             (extract-method-name-from-signature signature-text)
+                           (make-instance 'tags:expose-method-tag
+                                          :file% (getf plist :file)
+                                          :line% (getf plist :line)
+                                          :class-name% class-name
+                                          :method-name% method-name
+                                          :signature-text% signature-text)))))
+  (add-tag-handler handlers 'symbol-internal-tag "SYMBOL_INTERNAL"
+                   #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
+                       (let* ((plist (read (cscrape:buffer-stream bufs))))
+                         (make-instance 'tags:symbol-internal-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :package% (getf plist :PACKAGE)
+                                        :name% (getf plist :NAME)))))
+  (add-tag-handler handlers 'symbol-external-tag "SYMBOL_EXTERNAL"
+                   #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
+                       (let* ((plist (read (cscrape:buffer-stream bufs))))
+                         (make-instance 'tags:symbol-external-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :package% (getf plist :PACKAGE)
+                                        :name% (getf plist :NAME)))))
+  (add-tag-handler handlers 'symbol-intern-tag "SYMBOL_INTERN"
+                   #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
+                       (let* ((plist (read (cscrape:buffer-stream bufs))))
+                         (make-instance 'tags:symbol-intern-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :namespace% (getf plist :namespace)
+                                        :name% (getf plist :name)))))
+  (add-tag-handler handlers 'namespace-package-association-tag
+                   "NAMESPACE_PACKAGE_ASSOCIATION_TAG"
+                   #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
+                       (let* ((plist (read (cscrape:buffer-stream bufs))))
+                         (make-instance 'tags:namespace-package-association-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :namespace% (getf plist :namespace)
+                                        :package-var% (getf plist :package)
+                                        :package-str% (getf plist :package-name))))))
+
+(defun tags:code (tag)
+  (let ((tag-class-symbol (class-name (class-of tag))))
+    (gethash tag-class-symbol *tag-codes*)))
+
+(defgeneric tags:identifier (tag))
+(defmethod identifier ((tag t)) "")
+(defmethod identifier ((tag lisp-class-tag))
+  "* Description 
+Return the name of the class for the tag."
+  (c++-class tag))
+
+(defgeneric tags:source-pos (tag))
+(defmethod source-pos ((tag tag))
+  (format nil "~a:~d" (file% tag) (line% tag)))

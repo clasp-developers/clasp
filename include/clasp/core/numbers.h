@@ -146,8 +146,7 @@ int basic_compare(Number_sp na, Number_sp nb);
 
 SMART(Number);
 class Number_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Number_O, "number");
+  LISP_CLASS(core, ClPkg, Number_O, "number",T_O);
 
 public:
   static Number_sp create(double val);
@@ -225,8 +224,7 @@ public:
 
 SMART(Real);
 class Real_O : public Number_O {
-  LISP_BASE1(Number_O);
-  LISP_CLASS(core, ClPkg, Real_O, "real");
+  LISP_CLASS(core, ClPkg, Real_O, "real",Number_O);
 
 public:
   virtual double as_double_() const { SUBIMP(); };
@@ -242,8 +240,7 @@ public:
 
 SMART(Rational);
 class Rational_O : public Real_O {
-  LISP_BASE1(Real_O);
-  LISP_CLASS(core, ClPkg, Rational_O, "rational");
+  LISP_CLASS(core, ClPkg, Rational_O, "rational",Real_O);
 
 public:
   static Rational_sp create(mpz_class const &num, mpz_class const &denom);
@@ -268,8 +265,7 @@ public:
 
 SMART(Integer);
 class Integer_O : public Rational_O {
-  LISP_BASE1(Rational_O);
-  LISP_CLASS(core, ClPkg, Integer_O, "integer");
+  LISP_CLASS(core, ClPkg, Integer_O, "integer",Rational_O);
 
 public:
   /*! Return a Cons (integer low high) */
@@ -322,8 +318,7 @@ Fixnum_sp make_fixnum(gc::Fixnum x);
 gc::Fixnum get_fixnum(Fixnum_sp x);
 
 class Fixnum_dummy_O : public Integer_O {
-  LISP_BASE1(Integer_O);
-  LISP_CLASS(core, ClPkg, Fixnum_dummy_O, "fixnum");
+  LISP_CLASS(core, ClPkg, Fixnum_dummy_O, "fixnum",Integer_O);
 #if 0
 
     public:
@@ -414,8 +409,7 @@ namespace core {
 
 SMART(Float);
 class Float_O : public Real_O {
-  LISP_BASE1(Real_O);
-  LISP_CLASS(core, ClPkg, Float_O, "float");
+  LISP_CLASS(core, ClPkg, Float_O, "float",Real_O);
 
 public:
 CL_NAME("core:castToInteger");
@@ -429,8 +423,7 @@ CL_DEFMETHOD   virtual Integer_sp castToInteger() const { SUBIMP(); };
 
 SMART(ShortFloat);
 class ShortFloat_O : public Float_O {
-  LISP_BASE1(Float_O);
-  LISP_CLASS(core, ClPkg, ShortFloat_O, "ShortFloat");
+  LISP_CLASS(core, ClPkg, ShortFloat_O, "ShortFloat",Float_O);
 
 public:
 #if defined(OLD_SERIALIZE)
@@ -489,8 +482,7 @@ public:
 };
 
 class SingleFloat_dummy_O : public Float_O {
-  LISP_BASE1(Float_O);
-  LISP_CLASS(core, ClPkg, SingleFloat_dummy_O, "SingleFloat");
+  LISP_CLASS(core, ClPkg, SingleFloat_dummy_O, "SingleFloat",Float_O);
 
 public:
 #if 0
@@ -567,8 +559,7 @@ inline float unbox_single_float(SingleFloat_sp x) { return x.unsafe_single_float
 namespace core {
 SMART(DoubleFloat);
 class DoubleFloat_O : public Float_O {
-  LISP_BASE1(Float_O);
-  LISP_CLASS(core, ClPkg, DoubleFloat_O, "double-float");
+  LISP_CLASS(core, ClPkg, DoubleFloat_O, "double-float",Float_O);
 
 public:
 #if defined(OLD_SERIALIZE)
@@ -650,8 +641,7 @@ struct gctools::GCInfo<core::DoubleFloat_O> {
 namespace core {
 SMART(LongFloat);
 class LongFloat_O : public Float_O {
-  LISP_BASE1(Float_O);
-  LISP_CLASS(core, ClPkg, LongFloat_O, "LongFloat");
+  LISP_CLASS(core, ClPkg, LongFloat_O, "LongFloat",Float_O);
 
 public:
 private:
@@ -728,8 +718,7 @@ public:
 namespace core {
 SMART(Complex);
 class Complex_O : public Number_O {
-  LISP_BASE1(Number_O);
-  LISP_CLASS(core, ClPkg, Complex_O, "complex");
+  LISP_CLASS(core, ClPkg, Complex_O, "complex",Number_O);
 
 public:
 #if defined(OLD_SERIALIZE)
@@ -812,8 +801,7 @@ public:
 
 SMART(Ratio);
 class Ratio_O : public Rational_O {
-  LISP_BASE1(Rational_O);
-  LISP_CLASS(core, ClPkg, Ratio_O, "ratio");
+  LISP_CLASS(core, ClPkg, Ratio_O, "ratio",Rational_O);
 
 public:
 #if defined(OLD_SERIALIZE)

@@ -42,8 +42,7 @@ typedef unsigned char BitBlockType;
 SMART(BitVector);
 class BitVector_O : public Vector_O {
   friend T_sp core__bit_array_op(T_sp o, T_sp x, T_sp y, T_sp r);
-  LISP_BASE1(Vector_O);
-  LISP_CLASS(core, ClPkg, BitVector_O, "bit-vector");
+  LISP_CLASS(core, ClPkg, BitVector_O, "bit-vector",Vector_O);
 
 protected:
   vector<unsigned char> bits;
@@ -123,8 +122,7 @@ public:
 
 SMART(SimpleBitVector);
 class SimpleBitVector_O : public BitVector_O {
-  LISP_BASE1(BitVector_O);
-  LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector");
+  LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector",BitVector_O);
 
 public:
   static SimpleBitVector_sp create(size_t size);
@@ -143,8 +141,7 @@ public:
 
 SMART(BitVectorWithFillPtr);
 class BitVectorWithFillPtr_O : public BitVector_O {
-  LISP_BASE1(BitVector_O);
-  LISP_CLASS(core, ClPkg, BitVectorWithFillPtr_O, "bit-vector-with-fill-ptr");
+  LISP_CLASS(core, ClPkg, BitVectorWithFillPtr_O, "bit-vector-with-fill-ptr",BitVector_O);
 
 public:
   static BitVectorWithFillPtr_sp create(size_t size, size_t fill_ptr, bool adjustable);

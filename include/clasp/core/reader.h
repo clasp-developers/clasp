@@ -144,8 +144,7 @@ typedef enum {
 
 SMART(Reader);
 class Reader_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, Reader_O, "Reader");
+  LISP_CLASS(core, CorePkg, Reader_O, "Reader",T_O);
 
 public: // ctors-dtors
   explicit Reader_O();

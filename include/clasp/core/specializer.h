@@ -44,8 +44,7 @@ namespace core {
 SMART(Specializer);
 class Specializer_O : public Metaobject_O {
   LISP_META_CLASS(StandardClass);
-  LISP_BASE1(Metaobject_O);
-  LISP_CLASS(core, CorePkg, Specializer_O, "specializer");
+  LISP_CLASS(core, CorePkg, Specializer_O, "specializer",Metaobject_O);
 
 public:
   explicit Specializer_O() : Base(){};

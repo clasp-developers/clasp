@@ -33,8 +33,7 @@ THE SOFTWARE.
 
 namespace core {
 class Pointer_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, Pointer_O, "Pointer");
+  LISP_CLASS(core, CorePkg, Pointer_O, "Pointer",T_O);
   //	DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor

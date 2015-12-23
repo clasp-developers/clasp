@@ -35,8 +35,7 @@ namespace core {
 
 FORWARD(ArrayObjects);
 class ArrayObjects_O : public Array_O {
-  LISP_BASE1(Array_O);
-  LISP_CLASS(core, CorePkg, ArrayObjects_O, "ArrayObjects");
+  LISP_CLASS(core, CorePkg, ArrayObjects_O, "ArrayObjects",Array_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)

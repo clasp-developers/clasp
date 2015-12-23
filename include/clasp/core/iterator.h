@@ -38,8 +38,7 @@ namespace core {
 
 SMART(Iterator);
 class Iterator_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, Iterator_O, "Iterator");
+  LISP_CLASS(core, CorePkg, Iterator_O, "Iterator",T_O);
 
 public:
 #if defined(XML_ARCHIVE)

@@ -122,8 +122,7 @@ struct gctools::GCInfo<core::Cons_O> {
 namespace core {
 
 class Cons_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Cons_O, "Cons");
+  LISP_CLASS(core, ClPkg, Cons_O, "Cons",T_O);
 #if defined(OLD_SERIALIZE)
   DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)
