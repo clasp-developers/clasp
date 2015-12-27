@@ -227,7 +227,7 @@ mps-interface:
 
 
 scrape:
-	echo $(shell $(LLVM_CONFIG) --bindir)/clang
+	echo $(CLASP_CLANG_PATH)
 	bjam toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n -a >bin/all-commands.txt
 	bjam toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n >bin/commands.txt
-	sbcl --load "../scraper/scraper.lisp" -- $(shell $(LLVM_CONFIG) --bindir)/clang $(CLASP_HOME)/include/ `pwd`/include/application.config bin/all-commands.txt bin/commands.txt
+	sbcl --load "../scraper/scraper.lisp" -- $(CLASP_CLANG_PATH) $(CLASP_HOME)/include/ `pwd`/include/application.config bin/all-commands.txt bin/commands.txt
