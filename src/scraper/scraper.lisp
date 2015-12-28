@@ -2,9 +2,8 @@
 ;; Might mean that non-SBCL implementations should not be used for fear of breaking UTF8...
 ;; Source: Quickdocs server.
 #+sbcl
-(progn
-  (setf sb-impl::*default-external-format* :utf-8)
-  (setf sb-alien::*default-c-string-external-format* :utf-8))
+(setf sb-impl::*default-external-format* :utf-8
+      sb-alien::*default-c-string-external-format* :utf-8)
 
 (let ((lt (or *compile-file-truename* *load-truename*)))
   (setf *default-pathname-defaults* (make-pathname :name nil :type nil :defaults lt)))
