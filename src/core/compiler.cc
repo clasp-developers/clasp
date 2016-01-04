@@ -408,7 +408,8 @@ CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
 #define ARGS_compiler__implicit_compile_hook_default "(form &optional environment)"
 #define DECL_compiler__implicit_compile_hook_default ""
 #define DOCS_compiler__implicit_compile_hook_default "implicit_compile_hook_default"
-T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
+CL_LAMBDA(form &optional environment);
+CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   // Convert the form into a thunk and return like COMPILE does
   LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
   Cons_sp code = Cons_O::create(form, _Nil<T_O>());
@@ -567,9 +568,9 @@ CL_DEFUN     T_sp core__global_funcall_cycles_per_second(int stage, Symbol_sp fn
 #endif
 
 #if 0
-CL_            LAMBDA(stage fn args);
-CL_            DECLARE();
-CL_            DOCSTRING("partialApplysPerSecond");
+CL_LAMBDA(stage fn args);
+CL_DECLARE();
+CL_DOCSTRING("partialApplysPerSecond");
 CL_DEFUN T_sp core__partial_applys_per_second(int stage, T_sp fn, List_sp args) {
   LightTimer timer;
   int nargs = cl__length(args);
@@ -676,9 +677,9 @@ T_sp lexicalFrameLookup(T_sp fr, int depth, int index) {
 }
 
 #if 0
-CL_ LAMBDA(op &optional arg);
-CL_ DECLARE();
-CL_ DOCSTRING("operationsPerSecond");
+CL_LAMBDA(op &optional arg);
+CL_DECLARE();
+CL_DOCSTRING("operationsPerSecond");
 CL_DEFUN T_mv core__operations_per_second(int op, T_sp arg) {
   gc::frame::Frame frame1(5);
   int val = 0;
@@ -799,9 +800,9 @@ CL_DEFUN T_mv core__operations_per_second(int op, T_sp arg) {
 }
 #endif
 #if 0
-CL_ LAMBDA();
-CL_ DECLARE();
-CL_ DOCSTRING("callsByValuePerSecond");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("callsByValuePerSecond");
 CL_DEFUN T_sp core__calls_by_value_per_second() {
   LightTimer timer;
   T_sp v1 = gc::make_tagged_fixnum<core::T_O>(1);
@@ -831,9 +832,9 @@ CL_DEFUN T_sp core__calls_by_value_per_second() {
 }
 #endif
 #if 0
-CL_ LAMBDA();
-CL_ DECLARE();
-CL_ DOCSTRING("callsByConstantReferencePerSecond");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("callsByConstantReferencePerSecond");
 CL_DEFUN T_sp core__calls_by_constant_reference_per_second() {
   LightTimer timer;
   T_sp v1 = gc::make_tagged_fixnum<core::T_O>(1);
@@ -863,9 +864,9 @@ CL_DEFUN T_sp core__calls_by_constant_reference_per_second() {
 }
 #endif
 #if 0
-CL_ LAMBDA();
-CL_ DECLARE();
-CL_ DOCSTRING("callsByPointerPerSecond");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("callsByPointerPerSecond");
 CL_DEFUN T_sp core__calls_by_pointer_per_second() {
   LightTimer timer;
   T_sp v1 = gc::make_tagged_fixnum<core::T_O>(1);
@@ -894,18 +895,18 @@ CL_DEFUN T_sp core__calls_by_pointer_per_second() {
 }
 #endif
 
-CL_ LAMBDA(sym val thunk);
-CL_ DECLARE();
-CL_ DOCSTRING("callWithVariableBound");
+CL_LAMBDA(sym val thunk);
+CL_DECLARE();
+CL_DOCSTRING("callWithVariableBound");
 CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, T_sp thunk) {
   DynamicScopeManager scope(sym, val);
   return eval::funcall(thunk);
   // Don't put anything in here - don't mess up the MV return
 }
 
-CL_ LAMBDA(protected-fn cleanup-fn);
-CL_ DECLARE();
-CL_ DOCSTRING("funwind_protect");
+CL_LAMBDA(protected-fn cleanup-fn);
+CL_DECLARE();
+CL_DOCSTRING("funwind_protect");
 CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   T_mv result;
   try {
@@ -980,9 +981,9 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   return result;
 }
 
-CL_ LAMBDA(function-designator &rest functions);
-CL_ DECLARE();
-CL_ DOCSTRING("multipleValueFuncall");
+CL_LAMBDA(function-designator &rest functions);
+CL_DECLARE();
+CL_DOCSTRING("multipleValueFuncall");
 CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp functions) {
   STACK_FRAME(buff, accArgs, MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
@@ -1006,9 +1007,9 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
   return T_mv(result);
 }
 
-CL_ LAMBDA(func1 func2);
-CL_ DECLARE();
-CL_ DOCSTRING("multipleValueProg1_Function - evaluate func1, save the multiple values and then evaluate func2 and restore the multiple values");
+CL_LAMBDA(func1 func2);
+CL_DECLARE();
+CL_DOCSTRING("multipleValueProg1_Function - evaluate func1, save the multiple values and then evaluate func2 and restore the multiple values");
 CL_DEFUN T_mv core__multiple_value_prog1_function(Function_sp func1, Function_sp func2) {
   MultipleValues mvFunc1;
   T_mv result;
@@ -1028,9 +1029,9 @@ CL_DEFUN T_mv core__multiple_value_prog1_function(Function_sp func1, Function_sp
   return result;
 }
 
-CL_ LAMBDA(tag func);
-CL_ DECLARE();
-CL_ DOCSTRING("catchFunction");
+CL_LAMBDA(tag func);
+CL_DECLARE();
+CL_DOCSTRING("catchFunction");
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
   int frame = _lisp->exceptionStack().push(CatchFrame, tag);
@@ -1072,9 +1073,9 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   return result;
 }
 
-CL_ LAMBDA(tag result);
-CL_ DECLARE();
-CL_ DOCSTRING("throwFunction TODO: The semantics are not followed here - only the first return value is returned!!!!!!!!");
+CL_LAMBDA(tag result);
+CL_DECLARE();
+CL_DOCSTRING("throwFunction TODO: The semantics are not followed here - only the first return value is returned!!!!!!!!");
 CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   int frame = _lisp->exceptionStack().findKey(CatchFrame, tag);
   if (frame < 0) {
@@ -1095,9 +1096,9 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   throw CatchThrow(frame);
 }
 
-CL_ LAMBDA(symbols values func);
-CL_ DECLARE();
-CL_ DOCSTRING("progvFunction");
+CL_LAMBDA(symbols values func);
+CL_DECLARE();
+CL_DOCSTRING("progvFunction");
 CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp func) {
   DynamicScopeManager manager;
   for (auto curSym : symbols) {
@@ -1115,10 +1116,10 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
   SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);
   SYMBOL_EXPORT_SC_(CompPkg, STARall_functions_for_one_compileSTAR);
-  af_def(CompPkg, "implicit_compile_hook_default", &compiler__implicit_compile_hook_default,
-         ARGS_compiler__implicit_compile_hook_default,
-         DECL_compiler__implicit_compile_hook_default,
-         DOCS_compiler__implicit_compile_hook_default);
+//  af_def(CompPkg, "implicit_compile_hook_default", &compiler__implicit_compile_hook_default,
+//         ARGS_compiler__implicit_compile_hook_default,
+//         DECL_compiler__implicit_compile_hook_default,
+//         DOCS_compiler__implicit_compile_hook_default);
   ASSERT(comp::_sym_implicit_compile_hook_default->symbolFunction().notnilp() && !comp::_sym_implicit_compile_hook_default->symbolFunction().unboundp());
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default->symbolFunction());
 

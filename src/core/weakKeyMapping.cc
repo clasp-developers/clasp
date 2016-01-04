@@ -79,13 +79,13 @@ void WeakKeyMapping_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-CL_NAME("weakKeyMappingValid");
+CL_LISPIFY_NAME("weakKeyMappingValid");
 CL_DEFMETHOD bool WeakKeyMapping_O::valid() const {
   return this->_WeakObject.valid();
 }
 
 /*! Return (values key value t) or (values nil nil nil) */
-CL_NAME("weakKeyMappingKeyValue");
+CL_LISPIFY_NAME("weakKeyMappingKeyValue");
 CL_DEFMETHOD T_mv WeakKeyMapping_O::keyValue() const {
   _OF();
   return this->_WeakObject.keyValue();

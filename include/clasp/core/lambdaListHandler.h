@@ -94,8 +94,7 @@ struct TargetClassifier {
 };
 
 class LambdaListHandler_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, LambdaListHandler_O, "LambdaListHandler");
+  LISP_CLASS(core, CorePkg, LambdaListHandler_O, "LambdaListHandler",T_O);
 
 public: // virtual functions inherited from Object
   void initialize();

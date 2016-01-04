@@ -305,9 +305,9 @@ CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultVa
   if (name.notnilp())
     return name;
   // Next check if there is a (lambda (...) (block XXX ...))
-  if (cl_consp(form) && cl__length(form) == 1) {
+  if (cl__consp(form) && cl__length(form) == 1) {
     T_sp first = oCar(form);
-    if (cl_consp(first)) {
+    if (cl__consp(first)) {
       if (oCar(first) == cl::_sym_block) {
         T_sp second = oCadr(first);
         Symbol_sp name = gc::As<Symbol_sp>(oCadr(first));
@@ -403,7 +403,7 @@ CL_DEFUN void core__evaluate_verbosity(Fixnum_sp level) {
   eval::_evaluateVerbosity = unbox_fixnum(level);
 };
 
-CL_LAMBDA(form &optional env stepping compiler-env-p (execute t));
+CL_LAMBDA(form &optional env);
 CL_DECLARE();
 CL_DOCSTRING("eval_with_env_default");
 CL_DEFUN T_mv core__eval_with_env_default(T_sp form, T_sp env) {
@@ -541,7 +541,7 @@ T_mv interpreter_case(List_sp args, T_sp environment) {
   LOG(BF("Evaluated test_key = %s\n") % _rep_(test_key));
   for (auto cur : clauses) {
     T_sp oclause = oCar(cur);
-    if (cl_consp(oclause)) {
+    if (cl__consp(oclause)) {
       List_sp clause = oclause;
       T_sp keys = oCar(clause);
       List_sp forms = oCdr(clause);
@@ -633,12 +633,12 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
   declares = _Nil<T_O>();
   specials = _Nil<T_O>();
   for (; body.notnilp(); body = oCdr(body)) {
-    if (!cl_listp(body)) {
+    if (!cl__listp(body)) {
       SIMPLE_ERROR(BF("Bad input to processDeclares: %s") % _rep_(inputBody));
     }
     T_sp form = oCar(body);
     // If we are expecting docstring and we hit a string, then we hit a possible docstring
-    if (expectDocString && af_stringP(form)) {
+    if (expectDocString && cl__stringp(form)) {
       // If there is something following the current element then treat it as a docstring
       if (oCdr(body).notnilp()) {
         // Here we are in undefined behavior CLHS 3.4.11
@@ -665,7 +665,7 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
         while (sentence.notnilp()) {
           T_sp v = oCar(sentence);
           sentence = oCdr(sentence);
-          if (!cl_symbolp(v)) {
+          if (!cl__symbolp(v)) {
             SIMPLE_ERROR(BF("Illegal object[%s] in declare special") % _rep_(v));
           }
           specials = Cons_O::create(v, specials);
@@ -878,7 +878,7 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   //
   for (auto cur : args) {
     T_sp tagOrForm = oCar(cur);
-    if (cl_symbolp(tagOrForm)) {
+    if (cl__symbolp(tagOrForm)) {
       Symbol_sp tag = gc::As<Symbol_sp>(tagOrForm);
       // The tag is associated with its position in list of forms
       tagbodyEnv->addTag(tag, cur);
@@ -891,7 +891,7 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   List_sp ip = args;
   while (ip.notnilp()) {
     T_sp tagOrForm = oCar(ip);
-    if (cl_consp(tagOrForm)) {
+    if (cl__consp(tagOrForm)) {
       try {
         eval::evaluate(tagOrForm, tagbodyEnv);
       } catch (LexicalGo &go) {
@@ -1291,7 +1291,7 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
   LambdaListHandler_sp llh;
   if (lambda_list.nilp()) {
     llh = lisp_function_lambda_list_handler(_Nil<List_V>(), declares);
-  } else if (cl_consp(lambda_list)) {
+  } else if (cl__consp(lambda_list)) {
     llh = lisp_function_lambda_list_handler(lambda_list, declares);
     LOG(BF("Passed lambdaList: %s") % lambda_list->__repr__());
   } else if (core__lambda_list_handler_p(lambda_list)) {
@@ -2079,14 +2079,14 @@ T_mv t1SymbolMacrolet(List_sp args, T_sp env) {
 }
 
 T_mv t1Evaluate(T_sp exp, T_sp environment) {
-  if (cl_consp(exp)) {
+  if (cl__consp(exp)) {
     T_sp head = oCar(exp);
     if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
       printf("%s:%d Checking if top-level head: %s  cl::_sym_eval_when: %s eq=%d    form: %s\n", __FILE__, __LINE__, _rep_(head).c_str(), _rep_(cl::_sym_eval_when).c_str(), (head == cl::_sym_eval_when), _rep_(exp).c_str());
     }
     // TODO: Deal with Compiler macros here
     T_sp macroFunction(_Nil<T_O>());
-    if (cl_symbolp(head)) {
+    if (cl__symbolp(head)) {
       macroFunction = eval::funcall(cl::_sym_macroFunction, head, environment);
       if (macroFunction.notnilp()) {
         T_sp expanded = eval::funcall(macroFunction, exp, environment);
@@ -2412,8 +2412,7 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   SYMBOL_EXPORT_SC_(ClPkg, funcall);
   SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
   SYMBOL_EXPORT_SC_(CorePkg, eval_with_env_default);
-  af_def(CorePkg, "eval_with_env_default",
-         &core__eval_with_env_default);
+//  af_def(CorePkg, "eval_with_env_default", &core__eval_with_env_default);
   core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_eval_with_env_default->symbolFunction());
 };
 };

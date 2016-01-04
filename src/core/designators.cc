@@ -52,7 +52,7 @@ Function_sp functionDesignator(T_sp obj) {
   SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(obj));
 }
 
-Path_sp pathDesignator(T_sp obj) {
+core::Path_sp pathDesignator(core::T_sp obj) {
   if (core__simple_string_p(obj)) {
     return Path_O::create(gc::As<Str_sp>(obj)->get());
   } else if (gc::IsA<Path_sp>(obj)) {
@@ -60,8 +60,19 @@ Path_sp pathDesignator(T_sp obj) {
   }
   SIMPLE_ERROR(BF("Illegal path designator[%s]") % _rep_(obj));
 }
+};
+};
 
-Package_sp packageDesignator(T_sp obj) {
+namespace core {
+CL_PKG_NAME(CorePkg,path-designator);
+CL_DEFUN core::Path_sp core__path_designator(core::T_sp obj) {
+  return coerce::pathDesignator(obj);
+}
+};
+
+namespace core {
+namespace coerce {
+core::Package_sp packageDesignator(core::T_sp obj) {
   // TODO: Add support for Unicode package names
   Str_sp packageName;
   if (Package_sp apkg = obj.asOrNull<Package_O>()) {
@@ -79,11 +90,22 @@ Package_sp packageDesignator(T_sp obj) {
     goto PACKAGE_NAME;
   }
   TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_String_O, cl::_sym_Symbol_O, cl::_sym_character));
-PACKAGE_NAME:
+ PACKAGE_NAME:
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName->get(), true));
   return pkg;
 }
+};
+};
 
+namespace core {
+CL_PKG_NAME(CorePkg,coerce-to-package);
+CL_DEFUN core::Package_sp coerce_to_package(core::T_sp obj) {
+  return coerce::packageDesignator(obj);
+}
+};
+
+namespace core {
+namespace coerce {
 string packageNameDesignator(T_sp obj) {
   if (cl__packagep(obj)) {
     return gc::As<Package_sp>(obj)->getName();
@@ -112,7 +134,7 @@ List_sp listOfSymbols(T_sp syms) {
   if (syms.nilp())
     return _Nil<List_V>();
   List_sp symbols;
-  if (cl_symbolp(syms)) {
+  if (cl__symbolp(syms)) {
     symbols = Cons_O::create(syms);
   } else {
     symbols = syms;
@@ -177,7 +199,7 @@ T_sp outputStreamDesignator(T_sp obj) {
 }; /* desig */
 
 void initialize_designators() {
-  af_def(CorePkg, "pathDesignator", &coerce::pathDesignator);
-  af_def(CorePkg, "coerce-to-package", &coerce::packageDesignator);
+//  af_def(CorePkg, "pathDesignator", &coerce::pathDesignator);
+//  af_def(CorePkg, "coerce-to-package", &coerce::packageDesignator);
 }
 }; /* core */

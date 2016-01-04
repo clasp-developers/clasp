@@ -41,85 +41,16 @@ string BootStrapCoreSymbolMap::fullSymbolName(string const &packageName, string 
   return ((fullName));
 }
 
-BootStrapCoreSymbolMap::BootStrapCoreSymbolMap() {
-//	this->attachToGCRoot();
-//#define LOOKUP_SYMBOL(pkgName,symName) bootStrapSymbolMap.lookupSymbol(pkgName,symName)
+BootStrapCoreSymbolMap::BootStrapCoreSymbolMap() {};
 
-//printf("%s:%d BootStrapCoreSymbolMap\n", __FILE__, __LINE__ );
+void BootStrapCoreSymbolMap::add_package_info(std::string const& pkg, list<std::string> const& used)
+{
+  this->_PackageUseInfo[pkg] = used;
+}
 
-#define ClPkg_SYMBOLS
-#define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) cl::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef ClPkg_SYMBOLS
-#define CorePkg_SYMBOLS
-#define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) core::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef CorePkg_SYMBOLS
-
-#define KeywordPkg_SYMBOLS
-#define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) kw::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef KeywordPkg_SYMBOLS
-
-#define ExtPkg_SYMBOLS
-#define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) ext::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef ExtPkg_SYMBOLS
-
-#define ClosPkg_SYMBOLS
-#define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) clos::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef ClosPkg_SYMBOLS
-
-#define CleavirPrimopsPkg_SYMBOLS
-#define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) cleavirPrimops::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef CleavirPrimopsPkg_SYMBOLS
-
-#define CleavirEnvPkg_SYMBOLS
-#define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) cleavirEnv::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef CleavirEnvPkg_SYMBOLS
-
-#define GrayPkg_SYMBOLS
-#define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) gray::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef GrayPkg_SYMBOLS
-
-#define CompPkg_SYMBOLS
-#define DO_SYMBOL(cname, rsid, pkgName, symName, exportp) comp::cname = this->allocate_unique_symbol(pkgName, core::lispify_symbol_name(symName), exportp);
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef CompPkg_SYMBOLS
-};
-
-Symbol_sp BootStrapCoreSymbolMap::allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp) {
+Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp) {
+  Symbol_sp found = this->lookupSymbol(pkgName,symbolName);
+  if ( found ) return found;
   string name = BootStrapCoreSymbolMap::fullSymbolName(pkgName, symbolName);
   map<string, int>::iterator it = this->_SymbolNamesToIndex.find(name);
   if (it != this->_SymbolNamesToIndex.end()) {
@@ -133,12 +64,23 @@ Symbol_sp BootStrapCoreSymbolMap::allocate_unique_symbol(string const &pkgName, 
   return (sym);
 }
 
-Symbol_sp BootStrapCoreSymbolMap::lookupSymbol(string const &packageName, string const &rawSymbolName) const {
-  string symbolName = rawSymbolName;
-  string fullName = BootStrapCoreSymbolMap::fullSymbolName(packageName, symbolName);
+Symbol_sp BootStrapCoreSymbolMap::lookupSymbol(string const &packageName, string const &rawSymbolName, bool inherited) const {
+  map<string,list<string>>::const_iterator found = this->_PackageUseInfo.find(packageName);
+  for ( auto used_pkg : found->second ) {
+      Symbol_sp found = this->lookupSymbol(used_pkg,rawSymbolName,true);
+      if (found) return found;
+  }
+  string fullName = BootStrapCoreSymbolMap::fullSymbolName(packageName, rawSymbolName);
   map<string, int>::const_iterator it = this->_SymbolNamesToIndex.find(fullName);
   if (it == this->_SymbolNamesToIndex.end()) {
-    THROW_HARD_ERROR(BF("In BootStrapCoreSymbolMap::lookupSymbol Unknown symbolName[%s]") % fullName);
+    Symbol_sp null;
+    return null;
+  }
+  if ( inherited ) {
+    if (this->_IndexToSymbol[it->second]._Export == false) {
+      Symbol_sp null;
+      return null;
+    }
   }
   return ((this->_IndexToSymbol[it->second]._Symbol));
 }
@@ -151,9 +93,9 @@ void BootStrapCoreSymbolMap::finish_setup_of_symbols() {
     int idx = it->second;
     SymbolStorage &ss = this->_IndexToSymbol[idx];
     string packageName = ss._PackageName;
-    //    printf("%s:%d  Adding symbol[%d/%d] to package: %s\n", __FILE__, __LINE__, idx, idxEnd, packageName.c_str());
+//    printf("%s:%d  Adding symbol(%s)[%d/%d] to package: %s\n", __FILE__, __LINE__, ss._SymbolName.c_str(), idx, idxEnd, packageName.c_str());
     Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
-    //    printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.raw_());
+//    printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.raw_());
     //            printf("%s:%d  The symbol index is %d\n", __FILE__, __LINE__, idx );
     ss._Symbol->finish_setup(pkg, ss._Export);
   }

@@ -119,12 +119,14 @@ boost::normal_distribution<double> globalNormal01Distribution(0, 1);
 boost::variate_generator<boost::mt11213b &, boost::normal_distribution<double>>
     globalRandomRealNormal01Generator(globalRealRandomNormal01Producer, globalNormal01Distribution);
 
-void seedRandomNumberGenerators(uint i) {
+CL_LISPIFY_NAME(seedRandomNumberGenerators);
+CL_DEFUN void seedRandomNumberGenerators(uint i) {
   globalRealRandom01Producer.seed(static_cast<uint>(i));
   globalRealRandomNormal01Producer.seed(static_cast<uint>(i));
 }
 
-void seedRandomNumberGeneratorsUsingTime() {
+CL_LISPIFY_NAME(seedRandomNumberGeneratorsUsingTime);
+CL_DEFUN void seedRandomNumberGeneratorsUsingTime() {
   clock_t currentTime;
   int tt;
 #ifdef darwin
@@ -137,11 +139,13 @@ void seedRandomNumberGeneratorsUsingTime() {
   seedRandomNumberGenerators(tt);
 }
 
-double randomNumber01() {
+CL_LISPIFY_NAME(randomNumber01);
+CL_DEFUN double randomNumber01() {
   return globalRandomReal01Generator();
 }
 
-double randomNumberNormal01() {
+CL_LISPIFY_NAME(randomNumberNormal01);
+CL_DEFUN double randomNumberNormal01() {
   return globalRandomRealNormal01Generator();
 }
 
@@ -1245,37 +1249,37 @@ cl__integer_decode_float(T_sp x)
 }
 #endif
 
-CL_  LAMBDA(arg);
-CL_  DECLARE();
-CL_  DOCSTRING("asinh");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("asinh");
 CL_DEFUN double core__asin(double x) {
   return asin(x);
 }
 
-CL_ LAMBDA(arg);
-CL_ DECLARE();
-CL_ DOCSTRING("acosh");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("acosh");
 CL_DEFUN double core__acos(double x) {
   return acos(x);
 }
 
-CL_ LAMBDA(arg);
-CL_ DECLARE();
-CL_ DOCSTRING("asinh");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("asinh");
 CL_DEFUN double core__asinh(double x) {
   return log(x + sqrt(1.0 + x * x));
 }
 
-CL_ LAMBDA(arg);
-CL_ DECLARE();
-CL_ DOCSTRING("acosh");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("acosh");
 CL_DEFUN double core__acosh(double x) {
   return log(x + sqrt((x - 1) * (x + 1)));
 }
 
-CL_ LAMBDA(arg);
-CL_ DECLARE();
-CL_ DOCSTRING("atanh");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("atanh");
 CL_DEFUN double core__atanh(double x) {
   return log((1 + x) / (1 - x)) / 2;
 }
@@ -1285,10 +1289,10 @@ namespace core {
 
 void exposeCando_Numerics() {
   LOG(BF("Initializing numerics random"));
-  af_def(CorePkg, "seedRandomNumberGenerators", &seedRandomNumberGenerators);
-  af_def(CorePkg, "seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
-  af_def(CorePkg, "randomNumber01", &randomNumber01);
-  af_def(CorePkg, "randomNumberNormal01", &randomNumberNormal01);
+//  af_def(CorePkg, "seedRandomNumberGenerators", &seedRandomNumberGenerators);
+//  af_def(CorePkg, "seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
+//  af_def(CorePkg, "randomNumber01", &randomNumber01);
+//  af_def(CorePkg, "randomNumberNormal01", &randomNumberNormal01);
   SYMBOL_EXPORT_SC_(ClPkg, getUniversalTime);
 
   SYMBOL_EXPORT_SC_(ClPkg, leastPositiveSingleFloat);

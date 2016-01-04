@@ -116,7 +116,7 @@ public:
   bool getReadOnlyFunction() const { return this->_ReadOnlyFunction; };
 
   /*! Return true if the symbol is dynamic/special */
-CL_NAME("core:specialp");
+CL_LISPIFY_NAME("core:specialp");
 CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   Symbol_sp copy_symbol(T_sp copy_properties) const;

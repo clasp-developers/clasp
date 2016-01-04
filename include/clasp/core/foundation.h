@@ -941,10 +941,13 @@ string _rep_(T_sp obj);
 /*! Convert underscores to "-" and "STAR" to "*" and "AMP" to "&"
       to convert a C++ name to a lisp symbol */
 string lispify_symbol_name(string const &name);
+ string magic_name(const string& name, const string& optional_package="");
+void colon_split(const string& name, string& package_part, string& symbol_part);
+ 
 Symbol_sp lispify_intern_keyword(string const &name);
 //    Symbol_sp lispify_intern2(string const& name, string const& packageName);
 // lisp_lispifyAndInternWithPackageNameIfNotGiven
-Symbol_sp lispify_intern(const string &name, const string &packageName, bool exportSymbol = true);
+Symbol_sp lispify_intern(const string &name, const string &packageName = "", bool exportSymbol = true);
 //    Symbol_sp lispify_intern_export(string const& name, string const& packageName);
 Symbol_sp lisp_upcase_intern(string const &name, string const &packageName);
 Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageName);
@@ -1368,6 +1371,7 @@ void initialize_foundation();
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
+
 
 namespace core {
 struct cl_env {};

@@ -32,14 +32,19 @@ THE SOFTWARE.
 
 namespace core {
 
-inline bool cl_symbolp(T_sp obj) {
+CL_DEFUN inline bool cl__symbolp(T_sp obj) {
   return gc::IsA<Symbol_sp>(obj);
 }
 
- LAMBDA(arg);
- DECLARE();
- DOCSTRING("endp");
-inline CL_DEFUN bool cl__endp(T_sp arg) {
+ CL_DEFUN inline bool core__fixnump(T_sp arg)
+ {
+   return arg.fixnump();
+ }
+ 
+ CL_LAMBDA(arg);
+ CL_DECLARE();
+ CL_DOCSTRING("endp");
+CL_DEFUN inline bool cl__endp(T_sp arg) {
   if (arg.consp())
     return false;
   if (arg.nilp())
@@ -47,74 +52,75 @@ inline CL_DEFUN bool cl__endp(T_sp arg) {
   TYPE_ERROR(arg, cl::_sym_list);
 };
 
- LAMBDA(arg);
- DECLARE();
- DOCSTRING("atom");
+ CL_LAMBDA(arg);
+ CL_DECLARE();
+ CL_DOCSTRING("atom");
 inline CL_DEFUN bool cl__atom(T_sp obj) {
   return !obj.consp();
 }
 
-inline bool cl_consp(T_sp obj) {
+CL_DEFUN inline bool cl__consp(T_sp obj) {
   return obj.consp();
 };
 
-inline bool cl_listp(T_sp obj) {
+ CL_DEFUN inline bool cl__characterp(T_sp obj) {
+   return obj.characterp();
+ }
+
+CL_DEFUN inline bool cl__listp(T_sp obj) {
   if (obj.consp())
     return true;
   return obj.nilp();
 }
 
-bool af_llvm_sys_value_p(T_sp obj);
-bool core__interpreted_function_p(T_sp obj);
-bool af_classp(T_sp obj);
-bool af_integerP(T_sp obj);
-bool af_realP(T_sp obj);
-bool cl_consp(T_sp obj);
-bool af_sourceCodeConsP(T_sp obj);
-bool af_vectorP(T_sp obj);
-bool af_vectorObjectsP(T_sp obj);
-bool core__lambda_list_handler_p(T_sp obj);
-bool af_compiled_bodyP(T_sp obj);
-bool af_keywordP(T_sp obj);
-bool af_standardObjectP(T_sp obj);
-//    bool core__structure_object_p(T_sp obj);
-bool af_executableP(T_sp obj);
-bool cl__functionp(T_sp obj);
-bool af_compiledFunctionP(T_sp obj);
-bool af_arrayP(T_sp obj);
-bool af_arrayObjectsP(T_sp obj);
-bool cl__numberp(T_sp obj);
-bool af_floatP(T_sp obj);
-bool core__short_float_p(T_sp obj);
-bool core__single_float_p(T_sp obj);
-bool core__double_float_p(T_sp obj);
-bool core__long_float_p(T_sp obj);
-bool af_complexP(T_sp obj);
-bool af_rationalP(T_sp obj);
-bool core__ratio_p(T_sp obj);
-bool af_pointerP(T_sp obj);
+
 bool cl__bit_vector_p(T_sp obj);
-bool af_fixnumP(T_sp obj);
-bool af_bignumP(T_sp obj);
-bool af_stringP(T_sp obj);
-bool af_simpleStringP(T_sp obj);
-bool core__simple_string_p(T_sp obj);
-bool cl__packagep(T_sp obj);
-bool af_booleanP(T_sp obj);
-bool af_specialFormP(T_sp obj);
+bool cl__classp(T_sp obj);
+bool cl__compiled_bodyP(T_sp obj);
+bool cl__compiled_function_p(T_sp obj);
+bool cl__complexp(T_sp obj);
+bool cl__consp(T_sp obj);
+bool cl__floatp(T_sp obj);
+bool cl__functionp(T_sp obj);
 bool cl__hash_table_p(T_sp obj);
-bool cl__readtablep(T_sp obj);
-bool af_characterP(T_sp obj);
-bool core__path_p(T_sp obj);
-bool cl__simple_bit_vector_p(T_sp obj);
-bool core__activation_frame_p(T_sp obj);
-bool af_single_dispatch_activation_frame_p(T_sp obj);
-bool core__single_dispatch_generic_function_p(T_sp obj);
-bool core__external_object_p(T_sp obj);
-
+bool cl__integerp(T_sp obj);
+bool cl__keywordp(T_sp obj);
+bool cl__numberp(T_sp obj);
+bool cl__packagep(T_sp obj);
 bool cl__pathnamep(T_sp obj);
+bool cl__rationalp(T_sp obj);
+bool cl__readtablep(T_sp obj);
+bool cl__realP(T_sp obj);
+bool cl__simple_bit_vector_p(T_sp obj);
+bool cl__simple_string_p(T_sp obj);
+bool cl__stringp(T_sp obj);
+bool cl__vectorp(T_sp obj);
+bool core__activation_frame_p(T_sp obj);
+bool core__array_objects_p(T_sp obj);
+bool core__arrayp(T_sp obj);
+bool core__bignump(T_sp obj);
+bool core__booleanp(T_sp obj);
+bool core__double_float_p(T_sp obj);
+bool core__executableP(T_sp obj);
+bool core__external_object_p(T_sp obj);
+bool core__fixnump(T_sp obj);
+bool core__interpreted_function_p(T_sp obj);
+bool core__lambda_list_handler_p(T_sp obj);
 bool core__logical_pathname_p(T_sp obj);
+bool core__long_float_p(T_sp obj);
+bool core__path_p(T_sp obj);
+bool core__pointerp(T_sp obj);
+bool core__ratio_p(T_sp obj);
+bool core__short_float_p(T_sp obj);
+bool core__simple_string_p(T_sp obj);
+bool core__single_dispatch_activation_frame_p(T_sp obj);
+bool core__single_dispatch_generic_function_p(T_sp obj);
+bool core__single_float_p(T_sp obj);
+bool core__special_form_p(T_sp obj);
+bool core__standardObjectP(T_sp obj);
+bool llvmo__llvm_sys_value_p(T_sp obj);
 
+ 
 void initialize_predicates();
 }
 

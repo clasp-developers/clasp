@@ -54,7 +54,7 @@ public:
 private: // instance variables here
 public:  // Functions here
   bool equalp(T_sp o) const;
-CL_NAME("adjustableArrayP");
+CL_LISPIFY_NAME("adjustableArrayP");
 CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
   gc::Fixnum vector_length() const { return this->dimension(); };
   virtual gc::Fixnum dimension() const { SUBIMP(); };

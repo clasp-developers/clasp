@@ -637,7 +637,7 @@ void Character_dummy_O::exposePython(::core::Lisp_sp lisp) {
 
     Character_sp Character_O::create(T_sp val)
     {
-	if ( af_fixnumP(val) )
+	if ( core__fixnump(val) )
 	{
 	    int v = unbox_fixnum(gc::As<Fixnum_sp>(val));
 	    return clasp_make_character(v);
@@ -813,7 +813,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
     bool StandardChar_O::operator>=(T_sp obj) const
     {_OF();
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -826,7 +826,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
     bool StandardChar_O::operator<=(T_sp obj) const
     {_OF();
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -838,7 +838,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
     bool StandardChar_O::operator<(T_sp obj) const
     {_OF();
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -851,7 +851,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
     {_OF();
 	if ( obj.nilp() ) return false;
 	if ( obj.get() == this ) return true;
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -873,7 +873,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
     bool StandardChar_O::operator>(T_sp obj) const
     {_OF();
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);

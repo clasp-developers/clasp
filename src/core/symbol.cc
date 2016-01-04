@@ -222,7 +222,7 @@ bool Symbol_O::boundP() const {
   return !this->_Value.unboundp();
 }
 
-CL_NAME("makunbound");
+CL_LISPIFY_NAME("makunbound");
 CL_DEFMETHOD void Symbol_O::makunbound() {
   this->_Value = _Unbound<T_O>();
 }
@@ -243,7 +243,7 @@ void Symbol_O::sxhash_(HashGenerator &hg) const {
 #define ARGS_Symbol_O_copy_symbol "(symbol &optional copy-properties)"
 #define DECL_Symbol_O_copy_symbol ""
 #define DOCS_Symbol_O_copy_symbol "copy_symbol"
-CL_NAME("cl:copy_symbol");
+CL_LISPIFY_NAME("cl:copy_symbol");
 CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   Symbol_sp new_symbol = Symbol_O::create(this->_Name->get());
   if (copy_properties.isTrue()) {
@@ -290,7 +290,7 @@ void Symbol_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-CL_NAME("core:asKeywordSymbol");
+CL_LISPIFY_NAME("core:asKeywordSymbol");
 CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
   _OF();
   if (this->_HomePackage.notnilp()) {
@@ -319,12 +319,12 @@ T_sp Symbol_O::setf_symbolValue(T_sp val) {
   return val;
 }
 
-CL_NAME("core:STARmakeSpecial");
+CL_LISPIFY_NAME("core:STARmakeSpecial");
 CL_DEFMETHOD void Symbol_O::makeSpecial() {
   this->_IsSpecial = true;
 }
 
-CL_NAME("core:STARmakeConstant");
+CL_LISPIFY_NAME("core:STARmakeConstant");
 CL_DEFMETHOD void Symbol_O::makeConstant(T_sp val) {
   this->_Value = val;
   this->_IsSpecial = true;
@@ -363,7 +363,7 @@ T_sp Symbol_O::symbolValueUnsafe() const {
   return this->_Value;
 }
 
-CL_NAME("core:setf_symbolFunction");
+CL_LISPIFY_NAME("core:setf_symbolFunction");
 CL_DEFMETHOD void Symbol_O::setf_symbolFunction(T_sp exec) {
   _OF();
   this->_Function = exec;
@@ -462,7 +462,7 @@ string Symbol_O::currentName() const {
   return formattedName;
 }
 
-CL_NAME("core:fullName");
+CL_LISPIFY_NAME("core:fullName");
 CL_DEFMETHOD string Symbol_O::fullName() const {
   string formattedName = this->formattedName(true);
   return formattedName;

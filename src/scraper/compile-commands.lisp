@@ -99,6 +99,7 @@
 
 (defun update-cpps (ccs)
   "Run the c-preprocessor on the commands"
+  (format t "Running ~d preprocessor jobs~%" (length ccs))
   (loop for cc in ccs
        do (run-cpp cc)))
 
@@ -229,8 +230,9 @@
     (declare (ignore pos pos2))
     (when (and (char= char2 #\{) (not (string= namespace-name "")))
       (push (make-instance 'tags:namespace-tag
-                           :namespace namespace-name
-                           :file (buffer-pathname bufs))
+                           :namespace% namespace-name
+                           :file% (buffer-pathname bufs)
+                           :line% 0)
             tags))
     tags))
 

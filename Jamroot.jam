@@ -26,13 +26,17 @@ feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # u
 ###
 ### Build clasp or cando
 ###
+path-constant TOP : . ;
+path-constant INCLUDE : $(TOP)/include ;
+path-constant CLASP-MAIN : $(TOP)/src/main/include ;
+path-constant CANDO-MAIN : $(TOP)/projects/cando/src/main/include ;
 
 feature.feature program : clasp cando clasp-clbind cando-clbind
                 : symmetric composite propagated link-incompatible ;
-feature.compose <program>clasp : <define>PROGRAM_CLASP <include>include <define>APPLICATION_CONFIG="\"<clasp/main/application.config>\"" ;
-feature.compose <program>clasp-clbind : <define>PROGRAM_CLASP <define>PROGRAM_CLBIND <include>include <define>APPLICATION_CONFIG="\"<clasp/main/application.config>\"" ;
-feature.compose <program>cando : <define>PROGRAM_CANDO <include>include <define>APPLICATION_CONFIG="\"<projects/cando/include/cando/main/application.config>\"" ;
-feature.compose <program>cando-clbind : <define>PROGRAM_CANDO <define>PROGRAM_CLBIND <include>include <define>APPLICATION_CONFIG="\"<projects/cando/include/cando/main/application.config>\"" ;
+feature.compose <program>clasp : <define>PROGRAM_CLASP <include>"$(CLASP-MAIN)" ;
+feature.compose <program>clasp-clbind : <define>PROGRAM_CLASP <define>PROGRAM_CLBIND <include>"$(CLASP-MAIN)" ;
+feature.compose <program>cando : <define>PROGRAM_CANDO <include>"$(CANDO-MAIN)" ;
+feature.compose <program>cando-clbind : <define>PROGRAM_CANDO <define>PROGRAM_CLBIND <include>"$(CANDO-MAIN)" ;
 feature.compose <program>other : <define>PROGRAM_OTHER ;   #  Define APPLICATION_CONFIG yourself
 
 GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
@@ -69,8 +73,8 @@ init clasp ;
 
 project clasp : requirements
         <include>"/usr/include"
+        <include>"$(INCLUDE)"
         <linkflags>"-L/usr/lib"
-        <include>include    #clasp/include/*
         <define>X86
 	<define>BUILDING_CLASP
 	<define>INHERITED_FROM_SRC
@@ -248,8 +252,6 @@ project clasp : requirements
 
 
 
-path-constant TOP : . ;
-path-constant INCLUDE : $(TOP)/include/clasp ;
 path-constant COMMON : src/common ;
 path-constant APPTOP : [ os.environ CLASP_INTERNAL_BUILD_TARGET_DIR ] ;
 path-constant APPCONT : $(APPTOP)/Contents ;
@@ -268,6 +270,7 @@ path-constant APPINC : $(APPRES)/include ;
 path-constant APPLIB : $(APPRES)/lib ;
 path-constant APP-DEBUG-LIB : $(APPLIB)/debug ;
 path-constant APP-RELEASE-LIB : $(APPLIB)/release ;
+
 
 use-project externals : ./externals ;
 use-project internals : src ;

@@ -57,7 +57,7 @@ void Cons_O::__write__(T_sp stream) const {
     write_object(x, stream);
     return;
   }
-  if (cl_consp(this->_Cdr) && oCdr(this->_Cdr).nilp()) {
+  if (cl__consp(this->_Cdr) && oCdr(this->_Cdr).nilp()) {
     if (this->_Car == cl::_sym_quote) {
       clasp_write_char('\'', stream);
       x = oCar(this->_Cdr);
@@ -128,7 +128,7 @@ void Cons_O::__write__(T_sp stream) const {
       }
       break;
     }
-    if (i == 0 && !y._NULLp() && cl_symbolp(y))
+    if (i == 0 && !y._NULLp() && cl__symbolp(y))
       clasp_write_char(' ', stream);
     else
       clasp_write_char(' ', stream);

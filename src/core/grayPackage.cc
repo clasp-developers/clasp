@@ -35,16 +35,6 @@ THE SOFTWARE.
 
 namespace gray {
 
-#pragma GCC visibility push(default)
-#define GrayPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef GrayPkg_SYMBOLS
-#pragma GCC visibility pop
-
 SYMBOL_SC_(GrayPkg, aSingleGraySymbol);
 SYMBOL_EXPORT_SC_(GrayPkg, open_stream_p);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_read_byte);

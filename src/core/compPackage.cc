@@ -35,16 +35,6 @@ THE SOFTWARE.
 
 namespace comp {
 
-#pragma GCC visibility push(default)
-#define CompPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef CompPkg_SYMBOLS
-#pragma GCC visibility pop
-
 SYMBOL_SC_(CompPkg, aSingleCompilerSymbol);
 SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTraceSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTracePrintSTAR);

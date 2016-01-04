@@ -221,11 +221,11 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
   gc::Fixnum n = clasp_to_int(in);
   T_sp r;
   T_sp l = ll;
-  for (r = l; n && cl_consp(r); --n, r = oCdr(r))
+  for (r = l; n && cl__consp(r); --n, r = oCdr(r))
     ;
   if (r.nilp())
     return _Nil<T_O>();
-  else if (!cl_listp(r)) {
+  else if (!cl__listp(r)) {
     if (r == l) {
       TYPE_ERROR_LIST(r);
     }
@@ -234,7 +234,7 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
     Cons_sp head;
     Cons_sp tail;
     head = tail = Cons_O::create(oCar(l));
-    while (l = oCdr(l), r = oCdr(r), cl_consp(r)) {
+    while (l = oCdr(l), r = oCdr(r), cl__consp(r)) {
       Cons_sp cons = Cons_O::create(oCar(l));
       tail->rplacd(cons);
       tail = cons;
@@ -248,13 +248,13 @@ CL_DOCSTRING("butlast");
 CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
   T_sp r;
   gc::Fixnum n = clasp_to_fixnum(in);
-  if (clasp_unlikely(!cl_listp(l)))
+  if (clasp_unlikely(!cl__listp(l)))
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_nbutlast, l, cl::_sym_list);
-  for (n++, r = l; n && cl_consp(r); n--, r = oCdr(r))
+  for (n++, r = l; n && cl__consp(r); n--, r = oCdr(r))
     ;
   if (n == 0) {
     Cons_sp tail = gc::As<Cons_sp>(l);
-    while (cl_consp(r)) {
+    while (cl__consp(r)) {
       tail = gc::As<Cons_sp>(oCdr(tail));
       r = oCdr(r);
     }

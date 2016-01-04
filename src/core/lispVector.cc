@@ -72,9 +72,9 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
         if (fill_pointer != cl::_sym_T_O)
           s_fill_ptr = MIN(dimension, std::abs(unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer))));
       }
-      return BitVectorWithFillPtr_O::create(dimension, s_fill_ptr, adjustable);
+      return BitVectorWithFillPtr_O::make(dimension, s_fill_ptr, adjustable);
     }
-    return SimpleBitVector_O::create(dimension);
+    return SimpleBitVector_O::make(dimension);
   } else if (element_type == cl::_sym_base_char
              || element_type == cl::_sym_character
              || element_type == cl::_sym_standard_char
@@ -95,7 +95,7 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
     }
     return (Str_O::create(' ', dimension, initialContents));
   } else {
-    if (cl_consp(element_type)) {
+    if (cl__consp(element_type)) {
       // For type = '(unsigned-byte XXX) set initial_element if it hasn't been set
       Cons_sp cet = gc::As<Cons_sp>(element_type);
       if (oCar(cet) == cl::_sym_UnsignedByte && initial_element.nilp()) {

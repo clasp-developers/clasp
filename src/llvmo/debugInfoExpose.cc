@@ -247,7 +247,8 @@ namespace llvmo {
 #define ARGS_DIBuilder_O_make "(module)"
 #define DECL_DIBuilder_O_make ""
 #define DOCS_DIBuilder_O_make "make DIBuilder args: module"
-DIBuilder_sp DIBuilder_O::make(Module_sp module) {
+CL_NAME(make-dibuilder);
+CL_DEFUN DIBuilder_sp DIBuilder_O::make(Module_sp module) {
   GC_ALLOCATE(DIBuilder_O, me);
   me->set_wrapped(new llvm::DIBuilder(*(module->wrappedPtr())));
   return me;
@@ -283,14 +284,14 @@ void DIBuilder_O::exposeCando(core::Lisp_sp lisp) {
       .def("createUnspecifiedParameter", &llvm::DIBuilder::createUnspecifiedParameter)
       .def("createSubroutineType", &llvm::DIBuilder::createSubroutineType)
       .def("finalize", &llvm::DIBuilder::finalize);
-  core::af_def(LlvmoPkg, "make-dibuilder", &DIBuilder_O::make, ARGS_DIBuilder_O_make, DECL_DIBuilder_O_make, DOCS_DIBuilder_O_make);
+//  core::af_def(LlvmoPkg, "make-dibuilder", &DIBuilder_O::make, ARGS_DIBuilder_O_make, DECL_DIBuilder_O_make, DOCS_DIBuilder_O_make);
 };
 
 void DIBuilder_O::exposePython(core::Lisp_sp lisp) {
   IMPLEMENT_ME();
 };
 
-CL_NAME("getOrCreateArray");
+CL_LISPIFY_NAME("getOrCreateArray");
 CL_DEFMETHOD DIArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements) {
   //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
   //		printf("     cons --> %s\n", cur->__repr__().c_str() );
@@ -317,7 +318,7 @@ CL_DEFMETHOD DIArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements) {
   return obj;
 }
 
-CL_NAME("getOrCreateTypeArray");
+CL_LISPIFY_NAME("getOrCreateTypeArray");
 CL_DEFMETHOD DITypeArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp elements) {
   //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
   //		printf("     cons --> %s\n", cur->__repr__().c_str() );

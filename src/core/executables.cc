@@ -156,64 +156,64 @@ T_mv Function_O::lambdaList() {
   return Values(this->closure->lambdaList(), _lisp->_true());
 }
 
-CL_NAME("core:cleavir_ast");
+CL_LISPIFY_NAME("core:cleavir_ast");
 CL_DEFMETHOD T_sp Function_O::cleavir_ast() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->cleavir_ast();
 }
 
-CL_NAME("core:setf_cleavir_ast");
+CL_LISPIFY_NAME("core:setf_cleavir_ast");
 CL_DEFMETHOD void Function_O::setf_cleavir_ast(T_sp ast) {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   this->closure->setf_cleavir_ast(ast);
 }
 
-CL_NAME("core:functionLambdaListHandler");
+CL_LISPIFY_NAME("core:functionLambdaListHandler");
 CL_DEFMETHOD T_sp Function_O::functionLambdaListHandler() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->lambdaListHandler();
 };
-CL_NAME("core:macrop");
+CL_LISPIFY_NAME("core:macrop");
 CL_DEFMETHOD bool Function_O::macroP() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->macroP();
 }
 
-CL_NAME("core:setFunctionKind");
+CL_LISPIFY_NAME("core:setFunctionKind");
 CL_DEFMETHOD void Function_O::setKind(Symbol_sp k) {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   this->closure->setKind(k);
 }
-CL_NAME("core:functionKind");
+CL_LISPIFY_NAME("core:functionKind");
 CL_DEFMETHOD Symbol_sp Function_O::functionKind() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->getKind();
 };
 
-CL_NAME("core:function_docstring");
+CL_LISPIFY_NAME("core:function_docstring");
 CL_DEFMETHOD T_sp Function_O::docstring() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->docstring();
 };
 
-CL_NAME("core:function_declares");
+CL_LISPIFY_NAME("core:function_declares");
 CL_DEFMETHOD List_sp Function_O::declares() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->declares();
 };
-CL_NAME("core:closedEnvironment");
+CL_LISPIFY_NAME("core:closedEnvironment");
 CL_DEFMETHOD T_sp Function_O::closedEnvironment() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->closedEnvironment;
 };
 
-CL_NAME("core:functionName");
+CL_LISPIFY_NAME("core:functionName");
 CL_DEFMETHOD T_sp Function_O::functionName() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->name;
 }
 
-CL_NAME("core:functionSourcePos");
+CL_LISPIFY_NAME("core:functionSourcePos");
 CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   T_sp spi = this->closure->sourcePosInfo();

@@ -30,6 +30,9 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clang/AST/DeclBase.h>
 
+PACKAGE_NICKNAME("CAST");
+NAMESPACE_PACKAGE_ASSOCIATION(clang_ast,ClangAstPkg,"CLANG-AST");
+
 namespace asttooling {
 
 core::T_sp mostDerivedDecl(const clang::Decl *d);

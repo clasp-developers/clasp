@@ -112,7 +112,7 @@ void throw_if_not_destructuring_context(T_sp context) {
   SIMPLE_ERROR(BF("Lambda list is destructuring_bind but context does not support it context[%s]") % _rep_(context));
 }
 
-CL_NAME("LambdaListHandler-lambdaList");
+CL_LISPIFY_NAME("LambdaListHandler-lambdaList");
 CL_DEFMETHOD T_sp LambdaListHandler_O::lambdaList() {
   ql::list ll(_lisp);
   { // required arguments  req = ( num req1 req2 ...)
@@ -184,7 +184,7 @@ HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecif
     ASSERTF(oCar(declareSpecifierList) != cl::_sym_declare, BF("The declareSpecifierList were not processed properly coming into this function - only declare specifiers should be passed - I got: %s") % _rep_(declareSpecifierList));
     for (auto cur : declareSpecifierList) {
       T_sp entry = oCar(cur);
-      if (cl_consp(entry) && oCar(entry) == cl::_sym_special) {
+      if (cl__consp(entry) && oCar(entry) == cl::_sym_special) {
         for (auto spcur : coerce_to_list(oCdr(entry))) {
           specials->insert(gc::As<Symbol_sp>(oCar(spcur)));
         }
@@ -218,12 +218,12 @@ T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, boo
   int idx = 0;
   for (auto cur : llprocessed) {
     T_sp arg = oCar(cur);
-    if (cl_symbolp(arg)) {
+    if (cl__symbolp(arg)) {
       if (gc::As<Symbol_sp>(arg)->amp_symbol_p()) {
         saw_amp = true;
         break;
       }
-    } else if (cl_consp(arg)) {
+    } else if (cl__consp(arg)) {
       List_sp carg = arg;
       if (cl__length(carg) != 2) {
         SYMBOL_SC_(CorePkg, singleDispatchWrongNumberArgumentsError);
@@ -711,7 +711,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
   while (cur.notnilp()) {
     LOG(BF("Handing argument: %s") % _rep_(oCar(cur)));
     T_sp oarg = oCar(cur);
-    if (cl_symbolp(oarg)) {
+    if (cl__symbolp(oarg)) {
       T_sp sym = oarg;
       if (switch_add_argument_mode(context, sym, add_argument_mode, key_flag)) {
         if (add_argument_mode == allowOtherKeys) {
@@ -734,7 +734,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
       T_sp sarg = _Nil<T_O>();
       T_sp defaultValue = _Nil<T_O>();
       T_sp supplied = _Nil<T_O>();
-      if (cl_consp(oarg)) {
+      if (cl__consp(oarg)) {
         List_sp carg = oarg;
         LOG(BF("Optional argument is a Cons: %s") % carg->__repr__());
         sarg = oCar(carg);
@@ -782,17 +782,17 @@ bool parse_lambda_list(List_sp original_lambda_list,
       T_sp localTarget = _Nil<T_O>();
       T_sp defaultValue = _Nil<T_O>();
       T_sp sensorSymbol = _Nil<T_O>();
-      if (cl_symbolp(oarg)) {
+      if (cl__symbolp(oarg)) {
         localTarget = oarg;
         keySymbol = gc::As<Symbol_sp>(localTarget)->asKeywordSymbol();
-      } else if (cl_consp(oarg)) {
+      } else if (cl__consp(oarg)) {
         List_sp carg = oarg;
         T_sp head = oCar(carg);
-        if (cl_consp(head)) {
+        if (cl__consp(head)) {
           List_sp namePart = head;
           keySymbol = gc::As<Symbol_sp>(oCar(namePart)); // This is the keyword name
           if (!keySymbol->isKeywordSymbol()) {
-            SIMPLE_ERROR(BF("With key arguments of the form ((:x y) ...) the first argument must be a keyword symbol - you gave: ") % _rep_(keySymbol));
+            SIMPLE_ERROR(BF("With key arguments of the form ((:x y) ...) the first argument must be a keyword symbol - you gave: %s") % _rep_(keySymbol));
           }
           localTarget = oCadr(namePart); // this is the symbol to rename it to
         } else {
@@ -823,7 +823,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     case aux: {
       T_sp localSymbol = _Nil<T_O>();
       T_sp expression = _Nil<T_O>();
-      if (cl_consp(oarg)) {
+      if (cl__consp(oarg)) {
         List_sp carg = oarg;
         localSymbol = gc::As<Symbol_sp>(oCar(carg));
         //
@@ -841,7 +841,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     }
   NEXT:
     T_sp ocur = oCdr(cur);
-    if (ocur.nilp() || cl_consp(ocur)) {
+    if (ocur.nilp() || cl__consp(ocur)) {
       // Advance to next element of the list
       cur = ocur;
       continue;
@@ -951,7 +951,9 @@ LambdaListHandler_sp LambdaListHandler_O::create(int numArgs, const std::set<int
 #define ARGS_LambdaListHandler_O_makeLambdaListHandler "(lambda-list &optional declares (context 'core::function))"
 #define DECL_LambdaListHandler_O_makeLambdaListHandler ""
 #define DOCS_LambdaListHandler_O_makeLambdaListHandler "makeLambdaListHandler"
-LambdaListHandler_sp LambdaListHandler_O::makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context) {
+CL_LAMBDA("lambda-list &optional declares (context 'core::function)");
+CL_LISPIFY_NAME(makeLambdaListHandler);
+CL_DEFUN LambdaListHandler_sp LambdaListHandler_O::makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context) {
   LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list, declares, context);
   return llh;
 }
@@ -966,7 +968,7 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
     classifier.classifyTarget(req);
   }
   this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-  ASSERTF(this->_ClassifiedSymbolList.nilp() || cl_consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
+  ASSERTF(this->_ClassifiedSymbolList.nilp() || cl__consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
   this->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
   this->_RequiredLexicalArgumentsOnly = this->requiredLexicalArgumentsOnlyP_();
 }
@@ -988,13 +990,13 @@ void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_s
   if (this->_CreatesBindings) {
     this->recursively_build_handlers_count_arguments(declareSpecifierList, context, classifier);
     this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-    ASSERTF(this->_ClassifiedSymbolList.nilp() || cl_consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
+    ASSERTF(this->_ClassifiedSymbolList.nilp() || cl__consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
   } else {
     this->_ClassifiedSymbolList = _Nil<T_O>();
   }
 }
 
-CL_NAME("single-dispatch-on-argument");
+CL_LISPIFY_NAME("single-dispatch-on-argument");
 CL_DEFMETHOD int LambdaListHandler_O::single_dispatch_on_argument(Symbol_sp target) {
   for (auto &ri : this->_RequiredArguments) {
     if (ri._symbolP()) {
@@ -1073,7 +1075,7 @@ string LambdaListHandler_O::__repr__() const {
   return ss.str();
 }
 
-CL_NAME("processLambdaListHandler");
+CL_LISPIFY_NAME("processLambdaListHandler");
 CL_DEFMETHOD T_mv LambdaListHandler_O::processLambdaListHandler() const {
 
   ql::list reqs(_lisp);
@@ -1133,7 +1135,7 @@ bool LambdaListHandler_O::requiredLexicalArgumentsOnlyP_() const {
   return false;
 }
 
-CL_NAME("namesOfLexicalVariables");
+CL_LISPIFY_NAME("namesOfLexicalVariables");
 CL_DEFMETHOD List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
   List_sp namesRev = _Nil<T_O>();
   for (auto cur : this->_ClassifiedSymbolList) {
@@ -1149,7 +1151,7 @@ void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging() {
   this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(), names, cl__length(names), false, cl::_sym_T_O);
 }
 
-CL_NAME("namesOfLexicalVariablesForDebugging");
+CL_LISPIFY_NAME("namesOfLexicalVariablesForDebugging");
 CL_DEFMETHOD VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
   if (this->_LexicalVariableNamesForDebugging.nilp()) {
     this->calculateNamesOfLexicalVariablesForDebugging();
@@ -1181,7 +1183,7 @@ void LambdaListHandler_O::exposeCando(Lisp_sp lisp) {
       .def("LambdaListHandler-lambdaList", &LambdaListHandler_O::lambdaList);
   SYMBOL_SC_(CorePkg, process_macro_lambda_list);
   SYMBOL_SC_(CorePkg, process_single_dispatch_lambda_list);
-  af_def(CorePkg, "makeLambdaListHandler", &LambdaListHandler_O::makeLambdaListHandler, ARGS_LambdaListHandler_O_makeLambdaListHandler, DECL_LambdaListHandler_O_makeLambdaListHandler, DOCS_LambdaListHandler_O_makeLambdaListHandler);
+//  af_def(CorePkg, "makeLambdaListHandler", &LambdaListHandler_O::makeLambdaListHandler, ARGS_LambdaListHandler_O_makeLambdaListHandler, DECL_LambdaListHandler_O_makeLambdaListHandler, DOCS_LambdaListHandler_O_makeLambdaListHandler);
   SYMBOL_SC_(CorePkg, makeLambdaListHandler);
   SYMBOL_SC_(CorePkg, processLambdaList);
 }

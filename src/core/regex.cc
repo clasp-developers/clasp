@@ -87,13 +87,13 @@ void Regex_O::initialize() {
   this->Base::initialize();
 }
 
-CL_NAME("regexMatches");
+CL_LISPIFY_NAME("regexMatches");
 CL_DEFMETHOD bool Regex_O::regexMatches(const string &str) const {
   _OF();
   return boost::regex_match(str, this->_Regex);
 }
 
-CL_NAME("regexMatch");
+CL_LISPIFY_NAME("regexMatch");
 CL_DEFMETHOD RegexMatch_sp Regex_O::regexMatch(const string &str) const {
   _OF();
   GC_ALLOCATE(RegexMatch_O, match);
@@ -102,7 +102,7 @@ CL_DEFMETHOD RegexMatch_sp Regex_O::regexMatch(const string &str) const {
   return match;
 }
 
-CL_NAME("regexSedReplace");
+CL_LISPIFY_NAME("regexSedReplace");
 CL_DEFMETHOD string Regex_O::regexSedReplace(const string &str, const string &replace) const {
   _OF();
   return boost::regex_replace(str, this->_Regex, replace,
@@ -113,7 +113,7 @@ CL_DEFMETHOD string Regex_O::regexSedReplace(const string &str, const string &re
 #define DECL_RegexMatch_O_matched ""
 #define DOCS_RegexMatch_O_matched "Return true if this->_Match[idx].matched is true"
 CL_LAMBDA(regex-match &optional (idx 0));
-CL_NAME("regex-match-matched");
+CL_LISPIFY_NAME("regex-match-matched");
 CL_DEFMETHOD bool RegexMatch_O::matched(int idx) const {
   ASSERTF(idx < (int)this->_Match.size(), BF("index[%d] exceeded max[%d]") % idx % this->_Match.size());
   return this->_Match[idx].matched;
@@ -146,13 +146,13 @@ void RegexMatch_O::initialize() {
   this->Base::initialize();
 }
 
-CL_NAME("regex-match-length");
+CL_LISPIFY_NAME("regex-match-length");
 CL_DEFMETHOD int RegexMatch_O::size() const {
   _OF();
   return this->_Match.size();
 }
 
-CL_NAME("regex-match-part");
+CL_LISPIFY_NAME("regex-match-part");
 CL_DEFMETHOD string RegexMatch_O::part(int idx) const {
   _OF();
   ASSERTF(idx < (int)this->_Match.size(), BF("index[%d] exceeded max[%d]") % idx % this->_Match.size());

@@ -143,9 +143,9 @@ T_sp cl__mapcar(T_sp op, List_sp lists);
 
 namespace core {
 
-  LAMBDA(x y);
-  DECLARE();
-  DOCSTRING(R"doc(add two numbers)doc");
+  CL_LAMBDA(x y);
+  CL_DECLARE();
+  CL_DOCSTRING(R"doc(add two numbers)doc");
   inline CL_DEFUN int core__test_add(int x, int y) {
     return x + y;
   }
@@ -189,7 +189,7 @@ public:
     return cp;
   };
   /*! Return true if this points to a real InvocationHistoryFrame */
-CL_NAME("frameIteratorIsValid");
+CL_LISPIFY_NAME("frameIteratorIsValid");
 CL_DEFMETHOD   bool isValid() { return this->_Frame != NULL; };
 }; /* core */
 };

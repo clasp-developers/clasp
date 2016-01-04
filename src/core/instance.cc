@@ -119,7 +119,8 @@ T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots) {
 }
 
 /*! See ECL>>instance.d>>si_allocate_raw_instance */
-T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, int numberOfSlots) {
+CL_LISPIFY_NAME(allocateRawInstance);
+CL_DEFUN T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, int numberOfSlots) {
   T_sp toutput = Instance_O::allocateInstance(theClass, numberOfSlots);
   Instance_sp output = toutput.asOrNull<Instance_O>();
   if (!output) {
@@ -192,7 +193,7 @@ EXPOSE_CLASS(core, Instance_O);
 void Instance_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<Instance_O>();
 
-  af_def(CorePkg, "allocateRawInstance", &Instance_O::allocateRawInstance);
+//  af_def(CorePkg, "allocateRawInstance", &Instance_O::allocateRawInstance);
   SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
   ClosDefun(setFuncallableInstanceFunction);
   SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
@@ -239,7 +240,7 @@ string Instance_O::__repr__() const {
       ss << "        :slot" << i << " ";
       if (obj) {
         stringstream sslot;
-        if (cl_consp(obj)) {
+        if (cl__consp(obj)) {
           sslot << "CONS...";
           ss << sslot.str() << std::endl;
         } else if (Instance_sp inst = obj.asOrNull<Instance_O>()) {

@@ -236,7 +236,8 @@ namespace llvmo {
 FORWARD(AttributeSet);
 class AttributeSet_O : public core::T_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::AttributeSet, AttributeSet_O, "AttributeSet", core::T_O);
-
+ public:
+  typedef llvm::AttributeSet ExternalType;
 protected:
   llvm::AttributeSet val;
 
@@ -599,6 +600,81 @@ struct to_object<const llvm::TargetSubtargetInfo *> {
   }
 };
 };
+
+
+
+namespace translate {
+template <>
+struct from_object<llvm::CodeGenOpt::Level, std::true_type> {
+  typedef llvm::CodeGenOpt::Level DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(llvm::CodeGenOpt::Default) {
+    if (object.nilp()) {
+      SIMPLE_ERROR(BF("You must pass a valid CodeGenOpt"));
+    }
+    if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
+      core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeGenOpt->symbolValue());
+      this->_v = converter->enumForSymbol<llvm::CodeGenOpt::Level>(so);
+    } else {
+      SIMPLE_ERROR(BF("You must pass a valid CodeGenOpt"));
+    }
+  }
+};
+
+template <>
+struct from_object<llvm::Reloc::Model, std::true_type> {
+  typedef llvm::Reloc::Model DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(llvm::Reloc::Default) {
+    if (object.nilp()) {
+      SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
+    }
+    if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
+      core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_RelocModel->symbolValue());
+      this->_v = converter->enumForSymbol<llvm::Reloc::Model>(so);
+    } else {
+      SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
+    }
+  }
+};
+
+template <>
+struct from_object<llvm::CodeModel::Model, std::true_type> {
+  typedef llvm::CodeModel::Model DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(llvm::CodeModel::Default) {
+    if (object.nilp()) {
+      SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
+    }
+    if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
+      core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeModel->symbolValue());
+      this->_v = converter->enumForSymbol<llvm::CodeModel::Model>(so);
+    } else {
+      SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
+    }
+  }
+};
+template <>
+struct from_object<llvm::TargetMachine::CodeGenFileType, std::true_type> {
+  typedef llvm::TargetMachine::CodeGenFileType DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(llvm::TargetMachine::CGFT_ObjectFile) {
+    if (object.notnilp()) {
+      if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
+        core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeGenFileType->symbolValue());
+        this->_v = converter->enumForSymbol<llvm::TargetMachine::CodeGenFileType>(so);
+        return;
+      }
+    }
+    SIMPLE_ERROR(BF("You must pass a valid "));
+  }
+};
+};
+
+
+
+
+
 
 namespace llvmo {
 FORWARD(TargetMachine);
@@ -2098,7 +2174,7 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
-CL_NAME("error_string");
+CL_LISPIFY_NAME("error_string");
 CL_DEFMETHOD   string error_string() const { return this->_ErrorStr; };
 
   EngineBuilder_O() : Base(), _ptr(NULL){};
@@ -2324,7 +2400,7 @@ public:
   void SetCurrentDebugLocation(DebugLoc_sp loc);
   /*! Set the current debug location by building a DebugLoc on the fly */
   void SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope);
-CL_NAME("CurrentDebugLocation");
+CL_LISPIFY_NAME("CurrentDebugLocation");
 CL_DEFMETHOD   core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
 }; // IRBuilderBase_O
 }; // llvmo
@@ -3572,7 +3648,7 @@ public:
 public:
   llvm::MDNode *getOperand(uint i) { return this->_ptr->getOperand(i); };
   uint getNumOperands() { return this->_ptr->getNumOperands(); };
-CL_NAME("addOperand");
+CL_LISPIFY_NAME("addOperand");
 CL_DEFMETHOD   void addOperand(llvm::MDNode *m) { this->_ptr->addOperand(m); };
   string getName() { return this->_ptr->getName(); };
 

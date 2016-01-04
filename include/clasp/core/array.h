@@ -59,15 +59,15 @@ public:
 public: // Functions here
   virtual bool equalp(T_sp other) const { SUBIMP(); };
   virtual T_sp aset_unsafe(int j, T_sp val) { SUBIMP(); };
-CL_NAME("cl:arrayHasFillPointerP");
+CL_LISPIFY_NAME("cl:arrayHasFillPointerP");
 CL_DEFMETHOD   virtual bool arrayHasFillPointerP() const { return false; };
   virtual gc::Fixnum arrayTotalSize() const;
   virtual T_sp aref_unsafe(cl_index index) const { SUBIMP(); };
   /*! For write_array */
   virtual std::vector<cl_index> dimensions() const { SUBIMP(); };
-CL_NAME("core:rowMajorAset");
+CL_LISPIFY_NAME("core:rowMajorAset");
 CL_DEFMETHOD   virtual void rowMajorAset(cl_index idx, T_sp value) { SUBIMP(); };
-CL_NAME("cl:rowMajorAref");
+CL_LISPIFY_NAME("cl:rowMajorAref");
 CL_DEFMETHOD   virtual T_sp rowMajorAref(cl_index idx) const { SUBIMP(); };
   virtual gc::Fixnum arrayRowMajorIndex(List_sp indices) const;
 
@@ -81,7 +81,7 @@ CL_DEFMETHOD   virtual T_sp rowMajorAref(cl_index idx) const { SUBIMP(); };
   virtual LongLongInt setDimensions(List_sp dimensions, T_sp initialElement) { SUBIMP(); };
 
   /*! Return the rank of the array */
-CL_NAME("cl:array-rank");
+CL_LISPIFY_NAME("cl:array-rank");
 CL_DEFMETHOD   virtual gc::Fixnum rank() const { SUBIMP(); };
 
   /*! Return the offset into a one-dimensional vector for the multidimensional index
@@ -98,7 +98,7 @@ CL_DEFMETHOD   virtual gc::Fixnum rank() const { SUBIMP(); };
   gc::Fixnum index(List_sp indices) const;
 
   /*! Return the type returned by this array */
-CL_NAME("cl:array-elementType");
+CL_LISPIFY_NAME("cl:array-elementType");
 CL_DEFMETHOD   virtual T_sp elementType() const {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
@@ -109,7 +109,7 @@ CL_DEFMETHOD   virtual T_sp elementType() const {
   Symbol_sp element_type_as_symbol() const;
 
   /*! Return the array dimension along the axis-number */
-CL_NAME("cl:array-dimension");
+CL_LISPIFY_NAME("cl:array-dimension");
 CL_DEFMETHOD   virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const { SUBIMP(); };
 
   /*! Return the array dimensions as a list of integers */
@@ -127,13 +127,13 @@ CL_DEFMETHOD   virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const { 
   /*! Setf the value at the indices - the val is at the end of the list of indices */
   virtual T_sp setf_aref(List_sp indices_val);
 
-CL_NAME("cl:svref");
+CL_LISPIFY_NAME("cl:svref");
 CL_DEFMETHOD   virtual T_sp svref(int idx) const { SUBIMP(); };
-CL_NAME("core:setf-svref");
+CL_LISPIFY_NAME("core:setf-svref");
 CL_DEFMETHOD   virtual T_sp setf_svref(int idx, T_sp val) { SUBIMP(); };
 
   /*! Return the value at the indices */
-CL_NAME("core:array-fill");
+CL_LISPIFY_NAME("core:array-fill");
 CL_DEFMETHOD   virtual void arrayFill(T_sp val) {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
@@ -141,7 +141,7 @@ CL_DEFMETHOD   virtual void arrayFill(T_sp val) {
 
   /*! Fill the range of elements of the array,
      if end is nil then fill to the end of the array*/
-CL_NAME("core:fill-array-with-elt");
+CL_LISPIFY_NAME("core:fill-array-with-elt");
 CL_DEFMETHOD   virtual void fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end) {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();

@@ -192,14 +192,14 @@ void Path_O::sxhash_(HashGenerator &hg) const {
   hg.addPart(bn);
 }
 
-CL_NAME("last_write_time");
+CL_LISPIFY_NAME("last_write_time");
 CL_DEFMETHOD Integer_sp Path_O::last_write_time() const {
   std::time_t ttime = boost_filesystem::last_write_time(this->_Path);
   gc::Fixnum ui64 = ttime;
   return Integer_O::create(ui64);
 }
 
-CL_NAME("path-append");
+CL_LISPIFY_NAME("path-append");
 CL_DEFMETHOD Path_sp Path_O::path_append(string const &pp) {
   _OF();
   LOG(BF("Appending string[%s] to the path") % pp);
@@ -232,7 +232,7 @@ void Path_O::setPath(const boost_filesystem::path &path) {
   this->_Path = path;
 }
 
-CL_NAME("path-absolute");
+CL_LISPIFY_NAME("path-absolute");
 CL_DEFMETHOD Path_sp Path_O::absolute() const {
   if (this->_Path.is_absolute())
     return this->copyPath();
@@ -241,14 +241,14 @@ CL_DEFMETHOD Path_sp Path_O::absolute() const {
   return abs;
 }
 
-CL_NAME("copyPath");
+CL_LISPIFY_NAME("copyPath");
 CL_DEFMETHOD Path_sp Path_O::copyPath() const {
   _OF();
   GC_COPY(Path_O, copy, *this);
   return copy;
 }
 
-CL_NAME("setPathFromString");
+CL_LISPIFY_NAME("setPathFromString");
 CL_DEFMETHOD void Path_O::setPathFromString(const string &pth) {
   bf::path p(pth);
   this->_Path = p;
@@ -259,7 +259,7 @@ CL_DEFMETHOD void Path_O::setPathFromString(const string &pth) {
 #define DOCS_Path_O_parts "Returns a list of path parts as strings"
 CL_LAMBDA(self);
 CL_DOCSTRING("Returns a list of path parts as strings");
-CL_NAME("path-parts");
+CL_LISPIFY_NAME("path-parts");
 CL_DEFMETHOD List_sp Path_O::parts() const {
   bf::path::iterator it;
   ql::list l(_lisp);
@@ -269,7 +269,7 @@ CL_DEFMETHOD List_sp Path_O::parts() const {
   return l.cons();
 }
 
-CL_NAME("asString");
+CL_LISPIFY_NAME("asString");
 CL_DEFMETHOD string Path_O::asString() const {
   _OF();
   return this->_Path.string();
@@ -283,12 +283,12 @@ string Path_O::__repr__() const {
   return ss.str();
 }
 
-CL_NAME("path-stem");
+CL_LISPIFY_NAME("path-stem");
 CL_DEFMETHOD string Path_O::stem() {
   return this->_Path.stem().string();
 }
 
-CL_NAME("extension");
+CL_LISPIFY_NAME("extension");
 CL_DEFMETHOD string Path_O::extension() {
   return this->_Path.extension().string();
 }
@@ -300,7 +300,7 @@ void Path_O::appendToExtension(string const &str) {
   this->replaceExtension(newExtension.str());
 }
 
-CL_NAME("replaceExtension");
+CL_LISPIFY_NAME("replaceExtension");
 CL_DEFMETHOD Path_sp Path_O::replaceExtension(string const &str) {
   _OF();
   //	bf::path newExt(str);
@@ -308,18 +308,18 @@ CL_DEFMETHOD Path_sp Path_O::replaceExtension(string const &str) {
   return this->sharedThis<Path_O>();
 }
 
-CL_NAME("parent_path");
+CL_LISPIFY_NAME("parent_path");
 CL_DEFMETHOD Path_sp Path_O::parent_path() {
   _OF();
   return Path_O::create(this->_Path.parent_path());
 }
 
-CL_NAME("path-fileName");
+CL_LISPIFY_NAME("path-fileName");
 CL_DEFMETHOD string Path_O::fileName() const {
   return this->_Path.filename().string();
 }
 
-CL_NAME("exists");
+CL_LISPIFY_NAME("exists");
 CL_DEFMETHOD bool Path_O::exists() {
   return boost_filesystem::exists(this->_Path);
 }
@@ -608,7 +608,7 @@ void DirectoryEntry_O::setEntry(const boost_filesystem::directory_entry &entry) 
   this->_Entry = new boost_filesystem::directory_entry(p, s, ss);
 }
 
-CL_NAME("fileStatus");
+CL_LISPIFY_NAME("fileStatus");
 CL_DEFMETHOD FileStatus_sp DirectoryEntry_O::fileStatus() {
   _OF();
   FileStatus_sp fs = _lisp->create<FileStatus_O>();
@@ -616,7 +616,7 @@ CL_DEFMETHOD FileStatus_sp DirectoryEntry_O::fileStatus() {
   return fs;
 }
 
-CL_NAME("symlinkStatus");
+CL_LISPIFY_NAME("symlinkStatus");
 CL_DEFMETHOD FileStatus_sp DirectoryEntry_O::symlinkStatus() {
   _OF();
   FileStatus_sp fs = _lisp->create<FileStatus_O>();
@@ -624,7 +624,7 @@ CL_DEFMETHOD FileStatus_sp DirectoryEntry_O::symlinkStatus() {
   return fs;
 }
 
-CL_NAME("path");
+CL_LISPIFY_NAME("path");
 CL_DEFMETHOD Path_sp DirectoryEntry_O::path() {
   _OF();
   Path_sp path = _lisp->create<Path_O>();
@@ -667,27 +667,27 @@ void FileStatus_O::setFileStatus(const boost_filesystem::file_status &fs) {
   this->_FileStatus = fs;
 }
 
-CL_NAME("exists");
+CL_LISPIFY_NAME("exists");
 CL_DEFMETHOD bool FileStatus_O::exists() {
   _OF();
   return boost_filesystem::exists(this->_FileStatus);
 }
-CL_NAME("isRegularFile");
+CL_LISPIFY_NAME("isRegularFile");
 CL_DEFMETHOD bool FileStatus_O::isRegularFile() {
   _OF();
   return boost_filesystem::is_regular_file(this->_FileStatus);
 }
-CL_NAME("isDirectory");
+CL_LISPIFY_NAME("isDirectory");
 CL_DEFMETHOD bool FileStatus_O::isDirectory() {
   _OF();
   return boost_filesystem::is_directory(this->_FileStatus);
 }
-CL_NAME("isSymlink");
+CL_LISPIFY_NAME("isSymlink");
 CL_DEFMETHOD bool FileStatus_O::isSymlink() {
   _OF();
   return boost_filesystem::is_symlink(this->_FileStatus);
 }
-CL_NAME("isOther");
+CL_LISPIFY_NAME("isOther");
 CL_DEFMETHOD bool FileStatus_O::isOther() {
   _OF();
   return boost_filesystem::is_other(this->_FileStatus);

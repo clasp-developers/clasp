@@ -86,7 +86,7 @@ Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_sp asym, Symbol_sp c
   return sym;
 }
 
-CL_NAME("enumIndexForSymbol");
+CL_LISPIFY_NAME("enumIndexForSymbol");
 CL_DEFMETHOD int SymbolToEnumConverter_O::enumIndexForSymbol(Symbol_sp sym) {
   _OF();
   if (!this->_SymbolToEnum->contains(sym)) {

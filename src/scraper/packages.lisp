@@ -14,51 +14,89 @@
      #:next-tag-name
      #:read-string-to-tag
      #:gather-source-files
-     ))
+     #:extract-function-name-from-signature
+     #:maybe-remove-one-prefix-from-start
+     #:extract-method-name-from-signature
+     #:extract-method-name-from-pointer
+     #:packaged-class-name
+     #:extract-function-name-from-pointer))
 
 (defpackage "TAGS"
   (:use :cl)
   (:export
+   #:tag
    #:*tag-handlers*
    #:tag-code
-   #:tag-identifier
-   #:tag-source-pos
+   #:identifier
+   #:source-pos
    #:unknown-tag
    #:handler-code
    #:lisp-base-tag
    #:lisp-class-tag
-   #:c++-base%
+   #:lisp-internal-class-tag
+   #:lisp-external-class-tag
+   #:begin-enum-tag
+   #:value-enum-tag
+   #:end-enum-tag
+   #:symbol%
+   #:description%
+   #:value%
+   #:base%
    #:namespace%
+   #:namespace
    #:package%
    #:c++-class%
    #:class-symbol%
+   #:name-base-tag
    #:name-tag
+   #:lispify-name-tag
+   #:packaged-name
+   #:internal-code-tag
+   #:external-code-tag
+   #:package-use-tag
+   #:package-nickname-tag
+   #:pkg-name-tag
    #:name%
+   #:full-name
+   #:meta-class-tag
+   #:meta-class%
+   #:maybe-meta-class
    #:lambda-tag
-   #:lambda-list
+   #:lambda-list%
    #:docstring-tag
    #:docstring%
    #:declare-tag
    #:declare-form%
    #:source-tag
-   #:extern-defun-tag
-   #:extern-defmethod-tag
+   #:external-code-tag
+   #:internal-code-tag
    #:pointer%
    #:type%
-   #:expose-code-tag
-   #:expose-method-tag
    #:class-name%
    #:method-name%
    #:file%
    #:line%
    #:character-offset%
-   #:expose-function-tag
+   #:expose-internal-function-tag
+   #:expose-internal-method-tag
+   #:expose-external-function-tag
+   #:expose-external-method-tag
    #:function-name%
    #:signature-text%
    #:symbol-tag
-   #:c++-name%
+   #:symbol-internal-tag
+   #:symbol-external-tag
+   #:detailed-symbol-external-tag
+   #:symbol-intern-tag
    #:class-symbol%
    #:exported%
+   #:c++-name%
+   #:lisp-name%
+   #:namespace-tag
    #:namespace-package-association-tag
-   #:package-var))
+   #:package%
+   #:package-str%
+   #:maybe-lambda-list
+   #:maybe-docstring
+   #:maybe-declare))
            

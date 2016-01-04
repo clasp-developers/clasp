@@ -41,9 +41,7 @@ T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_
 FORWARD(HashTable);
 class HashTable_O : public T_O {
   struct metadata_bootstrap_class {};
-
-  LISP_BASE1(T_O);
-  LISP_VIRTUAL_CLASS(core, ClPkg, HashTable_O, "HashTable");
+  LISP_VIRTUAL_CLASS(core, ClPkg, HashTable_O, "HashTable",core::T_O);
   bool fieldsp() const { return true; };
   void fields(Record_sp node);
 
@@ -98,17 +96,17 @@ public: // Functions here
   virtual bool equalp(T_sp other) const;
 
   /*! See CLHS */
-CL_NAME("hash-table-test");
+CL_LISPIFY_NAME("hash-table-test");
 CL_DEFMETHOD   virtual T_sp hashTableTest() const { SUBIMP(); };
 
   /*! Return a count of the number of keys */
   uint hashTableCount() const;
   size_t size() { return this->hashTableCount(); };
 
-CL_NAME("hash-table-rehash-size");
+CL_LISPIFY_NAME("hash-table-rehash-size");
 CL_DEFMETHOD   virtual Number_sp hashTableRehashSize() const { return this->_RehashSize; };
 
-CL_NAME("hash-table-rehash-threshold");
+CL_LISPIFY_NAME("hash-table-rehash-threshold");
 CL_DEFMETHOD   double hashTableRehashThreshold() const { return this->_RehashThreshold; };
 
   uint hashTableSize() const;

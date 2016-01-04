@@ -44,7 +44,7 @@ SMART(StringSet);
 
 SMART(FuncallableStandardClass);
 class FuncallableStandardClass_O : public StdClass_O {
-  LISP_META_CLASS(StandardClass);
+  LISP_META_CLASS(core::StandardClass_O);
   LISP_CLASS(core, ClosPkg, FuncallableStandardClass_O, "FuncallableStandardClass",StdClass_O);
 
 public:

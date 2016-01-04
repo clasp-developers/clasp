@@ -50,37 +50,12 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 
 using namespace core;
-#if 0
-namespace kw {
-#pragma GCC visibility push(default)
-#define KeywordPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef KeywordPkg_SYMBOLS
-#pragma GCC visibility pop
-};
-#endif
-namespace llvmo {
-
-#pragma GCC visibility push(default)
-#define LlvmoPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef LlvmoPkg_SYMBOLS
-#pragma GCC visibility pop
-};
 
 namespace llvmo {
 #define EXPOSE_TO_CANDO
 #define Use_LlvmoPkg
 #define EXTERN_REGISTER
-#include <generated/initClasses_inc.h>
+//#include <clasp/core/initClasses.h>
 #undef EXTERN_REGISTER
 #undef Use_LlvmoPkg
 #undef EXPOSE_TO_CANDO
@@ -244,7 +219,7 @@ void dump_funcs(core::Function_sp compiledFunction) {
   }
   auto cc = cb.as<llvmo::CompiledClosure>();
   core::T_sp funcs = cc->associatedFunctions;
-  if (cl_consp(funcs)) {
+  if (cl__consp(funcs)) {
     core::List_sp cfuncs = funcs;
     for (auto cur : cfuncs) {
       core::T_sp func = oCar(cur);
@@ -273,7 +248,7 @@ void af_viewCFG(core::T_sp funcDes, core::T_sp only) {
   core::Function_sp compiledFunction = core::coerce::functionDesignator(funcDes);
   if (auto cl = compiledFunction->closure.as<CompiledClosure>()) {
     core::T_sp funcs = cl->associatedFunctions;
-    if (cl_consp(funcs)) {
+    if (cl__consp(funcs)) {
       core::List_sp cfuncs = funcs;
       for (auto cur : cfuncs) {
         core::T_sp func = oCar(cur);
@@ -299,27 +274,17 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
 
   switch (what) {
   case candoClasses: {
-#define LlvmoPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkg, lispname, exportp)          \
-  {                                                            \
-    cname = _lisp->internUniqueWithPackageName(pkg, core::lispify_symbol_name(lispname)); \
-    cname->exportYourself(exportp);                            \
-  }
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef LlvmoPkg_SYMBOLS
-
+#if 0
 #define ALL_STAGES
 #define Use_LlvmoPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(pkg, name) _lisp->internUniqueWithPackageName(pkg, name)
-#include <generated/initClasses_inc.h>
+//#include <clasp/core/initClasses.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_LlvmoPkg
 #undef ALL_STAGES
+#endif
   } break;
   case candoFunctions: {
     SYMBOL_EXPORT_SC_(LlvmoPkg, getOrCreateExternalGlobal);
@@ -340,7 +305,7 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
     initialize_llvmo_expose();
     initialize_clbind_llvm_expose();
     initialize_dwarf_constants();
-    initialize_claspLinkPass();
+//    initialize_claspLinkPass();
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_ClaspMainFunctionName_PLUS_);
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsName_PLUS_);
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsNameSize_PLUS_);
@@ -372,17 +337,3 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
 #endif
 #endif
 
-#if USE_INTRUSIVE_SMART_PTR == 1
-#define EXPAND_CLASS_MACROS
-#if defined(USE_MPS) // MPS doesn't need INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS
-#define _CLASS_MACRO(_U_) \
-  STATIC_CLASS_INFO(_U_);
-#else
-#define _CLASS_MACRO(_U_) \
-  STATIC_CLASS_INFO(_U_); \
-  INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_U_)
-#endif
-#include <generated/initClasses_inc.h>
-#undef _CLASS_MACRO
-#undef EXPAND_CLASS_MACROS
-#endif

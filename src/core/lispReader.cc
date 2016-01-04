@@ -79,7 +79,7 @@ namespace core {
 #else
 #define TRAP_BAD_CONS(x)                                \
   {                                                     \
-    if (cl_consp(x)) {                                  \
+    if (cl__consp(x)) {                                  \
       LOG(BF("About to try trap bad cons"));            \
       string ssss = core__source_file_info(x)->fileName(); \
     }                                                   \

@@ -365,9 +365,9 @@ List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
 void make_str(stringstream &sout, List_sp cur_char, bool preserveCase = false) {
   while (cur_char.notnilp()) {
     T_sp obj = oCar(cur_char);
-    if (cl_consp(obj)) {
+    if (cl__consp(obj)) {
       make_str(sout, obj, preserveCase);
-    } else if (af_characterP(obj)) {
+    } else if (cl__characterp(obj)) {
       if (preserveCase)
         sout << clasp_as_char(gc::As<Character_sp>(obj));
       else
@@ -414,7 +414,7 @@ CL_DEFUN T_sp core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
                    sin);
     }
     T_sp result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), object, _Nil<T_O>());
-    if (cl_consp(result)) {
+    if (cl__consp(result)) {
       lisp_registerSourcePosInfo(result, spi);
     }
     return result;
@@ -509,7 +509,7 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
   }
   string bitPattern = pattern.str();
   char last = bitPattern.size() > 0 ? bitPattern[bitPattern.size() - 1] : '0';
-  SimpleBitVector_sp x = SimpleBitVector_O::create(dim);
+  SimpleBitVector_sp x = SimpleBitVector_O::make(dim);
   for (int i = 0; i < dim; i++) {
     char elt = (i < dimcount) ? bitPattern[i] : last;
     if (elt == '0')
@@ -648,7 +648,7 @@ CL_DEFUN T_sp core__reader_feature_p(T_sp feature_test) {
     return features_list.asCons()->member(gc::As<Symbol_sp>(feature_test),
                                           _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
   } else {
-    ASSERT(cl_listp(feature_test));
+    ASSERT(cl__listp(feature_test));
     List_sp features_cons = feature_test;
     T_sp features_head = oCar(features_cons);
     if (features_head == kw::_sym_not) {

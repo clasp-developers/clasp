@@ -221,7 +221,7 @@ CL_DEFUN int core__environment_id(T_sp tenv) {
   return 0;
 };
 
-CL_NAME("setRuntimeEnvironment");
+CL_LISPIFY_NAME("setRuntimeEnvironment");
 CL_DEFMETHOD void Environment_O::setRuntimeEnvironment(T_sp renv) {
   SIMPLE_ERROR(BF("Only RuntimeVisibleEnvironments support runtime environments"));
 }
@@ -230,7 +230,7 @@ T_sp Environment_O::runtimeEnvironment() const {
   SIMPLE_ERROR(BF("Only RuntimeVisibleEnvironments support runtime environments"));
 }
 
-CL_NAME("getParentEnvironment");
+CL_LISPIFY_NAME("getParentEnvironment");
 CL_DEFMETHOD T_sp Environment_O::getParentEnvironment() const {
   SUBIMP();
 }
@@ -279,7 +279,7 @@ void Environment_O::exposeCando(Lisp_sp lisp) {
     ;
   SYMBOL_SC_(CorePkg, environmentActivationFrame);
   SYMBOL_SC_(CorePkg, currentVisibleEnvironment);
-  af_def(CorePkg, "currentVisibleEnvironment", &Environment_O::clasp_currentVisibleEnvironment);
+//  af_def(CorePkg, "currentVisibleEnvironment", &Environment_O::clasp_currentVisibleEnvironment);
   SYMBOL_SC_(CorePkg, runtimeEnvironment);
   SYMBOL_SC_(CorePkg, environmentList);
   SYMBOL_SC_(CorePkg, environmentTypeList);
@@ -295,8 +295,8 @@ void Environment_O::exposePython(Lisp_sp lisp) {
 //
 // Constructor
 //
-
-T_sp Environment_O::clasp_currentVisibleEnvironment(T_sp env) {
+CL_NAME(CURRENT-VISIBLE-ENVIRONMENT);
+CL_DEFUN T_sp Environment_O::clasp_currentVisibleEnvironment(T_sp env) {
   if (env.nilp())
     return (_Nil<T_O>());
   if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
@@ -331,7 +331,7 @@ void Environment_O::_environmentStackFill(int level, stringstream &sout) {
   clasp_environmentStackFill(parent, level + 1, sout);
 }
 
-CL_NAME("environmentStackAsString");
+CL_LISPIFY_NAME("environmentStackAsString");
 CL_DEFMETHOD string Environment_O::environmentStackAsString() {
   _OF();
   stringstream sout;
@@ -354,14 +354,14 @@ List_sp Environment_O::clasp_gather_metadata(T_sp env, Symbol_sp key) {
   NOT_ENVIRONMENT_ERROR(env);
 }
 
-CL_NAME("gather_metadata");
+CL_LISPIFY_NAME("gather_metadata");
 CL_DEFMETHOD List_sp Environment_O::gather_metadata(Symbol_sp key) const {
   if (this->getParentEnvironment().nilp())
     return _Nil<T_O>();
   return clasp_gather_metadata(this->getParentEnvironment(), key);
 }
 
-CL_NAME("lookupMetadata");
+CL_LISPIFY_NAME("lookupMetadata");
 CL_DEFMETHOD T_mv Environment_O::lookupMetadata(Symbol_sp key) const {
   if (this->getParentEnvironment().nilp()) {
     return (Values(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()));
@@ -369,7 +369,7 @@ CL_DEFMETHOD T_mv Environment_O::lookupMetadata(Symbol_sp key) const {
   return Environment_O::clasp_lookupMetadata(this->getParentEnvironment(), key);
 }
 
-CL_NAME("localMetadata");
+CL_LISPIFY_NAME("localMetadata");
 CL_DEFMETHOD T_mv Environment_O::localMetadata(Symbol_sp key) const {
   SUBCLASS_MUST_IMPLEMENT();
 }
@@ -633,7 +633,7 @@ bool Environment_O::lexicalSpecialP(Symbol_sp sym) const {
   return clasp_lexicalSpecialP(this->getParentEnvironment(), sym);
 }
 
-CL_NAME("classifyVariable");
+CL_LISPIFY_NAME("classifyVariable");
 CL_DEFMETHOD List_sp Environment_O::classifyVariable(T_sp sym) const {
   int depth;
   int index;
@@ -658,7 +658,7 @@ CL_DEFMETHOD List_sp Environment_O::classifyVariable(T_sp sym) const {
   return _Nil<T_O>();
 }
 
-CL_NAME("classifyTag");
+CL_LISPIFY_NAME("classifyTag");
 CL_DEFMETHOD List_sp Environment_O::classifyTag(Symbol_sp tag) {
   int depth;
   int index;
@@ -674,7 +674,7 @@ CL_DEFMETHOD List_sp Environment_O::classifyTag(Symbol_sp tag) {
   SIMPLE_ERROR(BF("Could not find tag %s") % _rep_(tag));
 }
 
-CL_NAME("classifyFunctionLookup");
+CL_LISPIFY_NAME("classifyFunctionLookup");
 CL_DEFMETHOD List_sp Environment_O::classifyFunctionLookup(T_sp functionName) const {
   int depth;
   int index;
@@ -700,7 +700,7 @@ T_mv Environment_O::recognizesBlockSymbol(Symbol_sp sym, bool &interFunction) co
   return Environment_O::clasp_recognizesBlockSymbol(this->getParentEnvironment(), sym, interFunction);
 }
 
-CL_NAME("getBlockSymbolFrame");
+CL_LISPIFY_NAME("getBlockSymbolFrame");
 CL_DEFMETHOD int Environment_O::getBlockSymbolFrame(Symbol_sp sym) const {
   return Environment_O::clasp_getBlockSymbolFrame(this->getParentEnvironment(), sym);
 }
@@ -726,12 +726,12 @@ bool Environment_O::findTag(Symbol_sp sym, int &depth, int &index, bool &interFu
   return this->_findTag(sym, depth, index, interFunction, tagbodyEnv);
 }
 
-CL_NAME("countFunctionContainerEnvironments");
+CL_LISPIFY_NAME("countFunctionContainerEnvironments");
 CL_DEFMETHOD int Environment_O::countFunctionContainerEnvironments() const {
   return clasp_countFunctionContainerEnvironments(this->getParentEnvironment());
 }
 
-CL_NAME("find_block_named_environment");
+CL_LISPIFY_NAME("find_block_named_environment");
 CL_DEFMETHOD T_sp Environment_O::find_block_named_environment(Symbol_sp blockName) const {
   _OF();
   T_sp parent = this->getParentEnvironment();
@@ -741,13 +741,13 @@ CL_DEFMETHOD T_sp Environment_O::find_block_named_environment(Symbol_sp blockNam
   return gc::As<Environment_sp>(parent)->find_block_named_environment(blockName);
 }
 
-CL_NAME("find_unwindable_environment");
+CL_LISPIFY_NAME("find_unwindable_environment");
 CL_DEFMETHOD T_sp Environment_O::find_unwindable_environment() const {
   _OF();
   return Environment_O::clasp_find_unwindable_environment(this->getParentEnvironment());
 }
 
-CL_NAME("find_tagbody_tag_environment");
+CL_LISPIFY_NAME("find_tagbody_tag_environment");
 CL_DEFMETHOD T_sp Environment_O::find_tagbody_tag_environment(Symbol_sp tag) const {
   _OF();
   return Environment_O::clasp_find_tagbody_tag_environment(this->getParentEnvironment(), tag);
@@ -988,7 +988,7 @@ T_sp ValueEnvironment_O::_lookupValue(int depth, int index) {
   return Environment_O::clasp_lookupValue(parent, depth - 1, index);
 }
 
-CL_NAME("valueEnvironment_defineLexicalBinding");
+CL_LISPIFY_NAME("valueEnvironment_defineLexicalBinding");
 CL_DEFMETHOD void ValueEnvironment_O::defineLexicalBinding(Symbol_sp sym, int idx) {
   List_sp it = this->_SymbolIndex->find(sym);
   if (it.notnilp()) {
@@ -1002,7 +1002,7 @@ CL_DEFMETHOD void ValueEnvironment_O::defineLexicalBinding(Symbol_sp sym, int id
   this->_SymbolIndex->hash_table_setf_gethash(sym, make_fixnum(idx));
 }
 
-CL_NAME("valueEnvironment_defineSpecialBinding");
+CL_LISPIFY_NAME("valueEnvironment_defineSpecialBinding");
 CL_DEFMETHOD void ValueEnvironment_O::defineSpecialBinding(Symbol_sp sym) {
   List_sp it = this->_SymbolIndex->find(sym);
   if (it.notnilp()) {
@@ -1048,20 +1048,23 @@ bool ValueEnvironment_O::activationFrameElementBoundP(int idx) const {
   return this->_ActivationFrame->boundp_entry(idx);
 }
 
-ValueEnvironment_sp ValueEnvironment_O::createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent) {
+CL_LISPIFY_NAME(makeValueEnvironment);
+CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent) {
   ValueEnvironment_sp env(ValueEnvironment_O::create());
   env->setupForLambdaListHandler(llh, parent);
   return env;
 }
 
-ValueEnvironment_sp ValueEnvironment_O::createForNumberOfEntries(int numberOfArguments, T_sp parent) {
+CL_LISPIFY_NAME(makeValueEnvironmentForNumberOfEntries);
+CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForNumberOfEntries(int numberOfArguments, T_sp parent) {
   ValueEnvironment_sp env(ValueEnvironment_O::create());
   env->setupParent(parent);
   env->_ActivationFrame = ValueFrame_O::create(numberOfArguments, clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
   return env;
 }
 
-ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(List_sp specials, T_sp parent) {
+CL_LISPIFY_NAME(makeValueEnvironmentForLocallySpecialEntries);
+CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(List_sp specials, T_sp parent) {
   ValueEnvironment_sp env(ValueEnvironment_O::create());
   env->setupParent(parent);
   env->_ActivationFrame = ValueFrame_O::create(0, clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
@@ -1156,9 +1159,9 @@ void ValueEnvironment_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<ValueEnvironment_O>()
       .def("valueEnvironment_defineSpecialBinding", &ValueEnvironment_O::defineSpecialBinding)
       .def("valueEnvironment_defineLexicalBinding", &ValueEnvironment_O::defineLexicalBinding);
-  af_def(CorePkg, "makeValueEnvironment", &ValueEnvironment_O::createForLambdaListHandler);
-  af_def(CorePkg, "makeValueEnvironmentForNumberOfEntries", &ValueEnvironment_O::createForNumberOfEntries);
-  af_def(CorePkg, "makeValueEnvironmentForLocallySpecialEntries", &ValueEnvironment_O::createForLocallySpecialEntries);
+//  af_def(CorePkg, "makeValueEnvironment", &ValueEnvironment_O::createForLambdaListHandler);
+//  af_def(CorePkg, "makeValueEnvironmentForNumberOfEntries", &ValueEnvironment_O::createForNumberOfEntries);
+//  af_def(CorePkg, "makeValueEnvironmentForLocallySpecialEntries", &ValueEnvironment_O::createForLocallySpecialEntries);
 }
 
 void ValueEnvironment_O::exposePython(core::Lisp_sp lisp) {
@@ -1172,7 +1175,7 @@ EXPOSE_CLASS(core, FunctionValueEnvironment_O);
 void FunctionValueEnvironment_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<FunctionValueEnvironment_O>()
       .def("bindFunction", &FunctionValueEnvironment_O::bind_function);
-  af_def(CorePkg, "makeFunctionValueEnvironment", &FunctionValueEnvironment_O::createForEntries);
+//  af_def(CorePkg, "makeFunctionValueEnvironment", &FunctionValueEnvironment_O::createForEntries);
 }
 
 void FunctionValueEnvironment_O::exposePython(core::Lisp_sp lisp) {
@@ -1212,7 +1215,8 @@ FunctionValueEnvironment_sp FunctionValueEnvironment_O::createEmpty(T_sp parent)
   return environ;
 }
 
-FunctionValueEnvironment_sp FunctionValueEnvironment_O::createForEntries(int numEntries, T_sp parent) {
+CL_LISPIFY_NAME(makeFunctionValueEnvironment);
+CL_DEFUN FunctionValueEnvironment_sp FunctionValueEnvironment_O::createForEntries(int numEntries, T_sp parent) {
   FunctionValueEnvironment_sp environ(FunctionValueEnvironment_O::createEmpty(parent));
   environ->_FunctionFrame = FunctionFrame_O::create(numEntries, clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
   return environ;
@@ -1265,7 +1269,7 @@ string FunctionValueEnvironment_O::summaryOfContents() const {
   return ss.str();
 }
 
-CL_NAME("bindFunction");
+CL_LISPIFY_NAME("bindFunction");
 CL_DEFMETHOD int FunctionValueEnvironment_O::bind_function(T_sp functionName, Function_sp form) {
   ASSERT(form.notnilp());
   int nextIdx = this->_FunctionIndices->hashTableCount();
@@ -1304,7 +1308,8 @@ bool CompileTimeEnvironment_O::_findValue(T_sp sym, int &depth, int &index, Valu
   return clasp_findValue(parent, sym, depth, index, valueKind, value);
 }
 
-UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(List_sp cleanupForm, T_sp parent) {
+CL_LISPIFY_NAME(makeUnwindUnwindProtectEnvironment);
+CL_DEFUN UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(List_sp cleanupForm, T_sp parent) {
   UnwindProtectEnvironment_sp environ = UnwindProtectEnvironment_O::create();
   environ->_CleanupForm = cleanupForm;
   environ->setupParent(parent);
@@ -1316,7 +1321,7 @@ EXPOSE_CLASS(core, UnwindProtectEnvironment_O);
 void UnwindProtectEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<UnwindProtectEnvironment_O>()
       .def("UnwindProtectEnvironment-cleanupForm", &UnwindProtectEnvironment_O::cleanupForm);
-  af_def(CorePkg, "makeUnwindProtectEnvironment", &UnwindProtectEnvironment_O::make);
+//  af_def(CorePkg, "makeUnwindProtectEnvironment", &UnwindProtectEnvironment_O::make);
 }
 
 void UnwindProtectEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1354,7 +1359,8 @@ BlockEnvironment_sp BlockEnvironment_O::create(T_sp parent) {
   return environ;
 }
 
-BlockEnvironment_sp BlockEnvironment_O::make(Symbol_sp blockSymbol, T_sp parent) {
+CL_LISPIFY_NAME(makeBlockEnvironment);
+CL_DEFUN BlockEnvironment_sp BlockEnvironment_O::make(Symbol_sp blockSymbol, T_sp parent) {
   BlockEnvironment_sp environ = BlockEnvironment_O::create(parent);
   environ->setBlockSymbol(blockSymbol);
   return environ;
@@ -1364,7 +1370,7 @@ EXPOSE_CLASS(core, BlockEnvironment_O);
 
 void BlockEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<BlockEnvironment_O>();
-  af_def(CorePkg, "makeBlockEnvironment", &BlockEnvironment_O::make);
+//  af_def(CorePkg, "makeBlockEnvironment", &BlockEnvironment_O::make);
 }
 
 void BlockEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1416,7 +1422,8 @@ T_mv BlockEnvironment_O::recognizesBlockSymbol(Symbol_sp sym, bool &interFunctio
 
 #endif
 
-CatchEnvironment_sp CatchEnvironment_O::make(T_sp parent) {
+CL_LISPIFY_NAME(makeCatchEnvironment);
+CL_DEFUN CatchEnvironment_sp CatchEnvironment_O::make(T_sp parent) {
   CatchEnvironment_sp environ = CatchEnvironment_O::create();
   environ->setupParent(parent);
   return environ;
@@ -1426,7 +1433,7 @@ EXPOSE_CLASS(core, CatchEnvironment_O);
 
 void CatchEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<CatchEnvironment_O>();
-  af_def(CorePkg, "makeCatchEnvironment", &CatchEnvironment_O::make);
+//  af_def(CorePkg, "makeCatchEnvironment", &CatchEnvironment_O::make);
 }
 
 void CatchEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1458,7 +1465,8 @@ FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::create(T_sp pare
   return environ;
 }
 
-FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::make(T_sp parent) {
+CL_LISPIFY_NAME(makeFunctionCintainerEnvironment);
+CL_DEFUN FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::make(T_sp parent) {
   FunctionContainerEnvironment_sp environ = FunctionContainerEnvironment_O::create(parent);
   return environ;
 }
@@ -1467,7 +1475,7 @@ EXPOSE_CLASS(core, FunctionContainerEnvironment_O);
 
 void FunctionContainerEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<FunctionContainerEnvironment_O>();
-  af_def(CorePkg, "makeFunctionContainerEnvironment", &FunctionContainerEnvironment_O::make);
+//  af_def(CorePkg, "makeFunctionContainerEnvironment", &FunctionContainerEnvironment_O::make);
 }
 
 void FunctionContainerEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1519,7 +1527,8 @@ T_mv FunctionContainerEnvironment_O::recognizesBlockSymbol(Symbol_sp sym, bool &
 // Destructor
 //
 
-TagbodyEnvironment_sp TagbodyEnvironment_O::make(T_sp parent) {
+CL_LISPIFY_NAME(makeTagbodyEnvironment);
+CL_DEFUN TagbodyEnvironment_sp TagbodyEnvironment_O::make(T_sp parent) {
   TagbodyEnvironment_sp environ = TagbodyEnvironment_O::create();
   environ->setupParent(parent);
   environ->_ActivationFrame = TagbodyFrame_O::create(clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
@@ -1531,7 +1540,7 @@ EXPOSE_CLASS(core, TagbodyEnvironment_O);
 void TagbodyEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<TagbodyEnvironment_O>()
       .def("addTag", &TagbodyEnvironment_O::addTag);
-  af_def(CorePkg, "makeTagbodyEnvironment", &TagbodyEnvironment_O::make);
+//  af_def(CorePkg, "makeTagbodyEnvironment", &TagbodyEnvironment_O::make);
 }
 
 void TagbodyEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1556,7 +1565,7 @@ void TagbodyEnvironment_O::initialize() {
   this->_Tags = HashTableEq_O::create_default();
 }
 
-CL_NAME("addTag");
+CL_LISPIFY_NAME("addTag");
 CL_DEFMETHOD int TagbodyEnvironment_O::addTag(Symbol_sp tag, List_sp ip) {
   _OF();
   ASSERTF(this->_Tags->find(tag).nilp(), BF("The tag[%s] has already been defined in this tagbody"));
@@ -1635,7 +1644,8 @@ GlueEnvironment_sp GlueEnvironment_O::create(List_sp parts) {
 // Destructor
 //
 
-MacroletEnvironment_sp MacroletEnvironment_O::make(T_sp parent) {
+CL_LISPIFY_NAME(makeMacroletEnvironment);
+CL_DEFUN MacroletEnvironment_sp MacroletEnvironment_O::make(T_sp parent) {
   MacroletEnvironment_sp environ = MacroletEnvironment_O::create();
   environ->setupParent(parent);
   return environ;
@@ -1646,7 +1656,7 @@ EXPOSE_CLASS(core, MacroletEnvironment_O);
 void MacroletEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<MacroletEnvironment_O>()
       .def("addMacro", &MacroletEnvironment_O::addMacro);
-  af_def(CorePkg, "makeMacroletEnvironment", &MacroletEnvironment_O::make);
+//  af_def(CorePkg, "makeMacroletEnvironment", &MacroletEnvironment_O::make);
 }
 
 void MacroletEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1682,12 +1692,13 @@ bool MacroletEnvironment_O::_findMacro(Symbol_sp sym, int &depth, int &index, Fu
   return true;
 }
 
-CL_NAME("addMacro");
+CL_LISPIFY_NAME("addMacro");
 CL_DEFMETHOD void MacroletEnvironment_O::addMacro(Symbol_sp sym, Function_sp macro) {
   this->_Macros->hash_table_setf_gethash(sym, macro);
 }
 
-SymbolMacroletEnvironment_sp SymbolMacroletEnvironment_O::make(T_sp parent) {
+CL_LISPIFY_NAME(makeSymbolMacroletEnvironment);
+CL_DEFUN SymbolMacroletEnvironment_sp SymbolMacroletEnvironment_O::make(T_sp parent) {
   SymbolMacroletEnvironment_sp environ = SymbolMacroletEnvironment_O::create();
   environ->setupParent(parent);
   return environ;
@@ -1706,7 +1717,7 @@ bool SymbolMacroletEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, in
   return true;
 }
 
-CL_NAME("addSymbolMacro");
+CL_LISPIFY_NAME("addSymbolMacro");
 CL_DEFMETHOD void SymbolMacroletEnvironment_O::addSymbolMacro(Symbol_sp sym, Function_sp expansion) {
   this->_Macros->hash_table_setf_gethash(sym, expansion);
 }
@@ -1716,7 +1727,7 @@ EXPOSE_CLASS(core, SymbolMacroletEnvironment_O);
 void SymbolMacroletEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<SymbolMacroletEnvironment_O>()
       .def("addSymbolMacro", &SymbolMacroletEnvironment_O::addSymbolMacro);
-  af_def(CorePkg, "makeSymbolMacroletEnvironment", &SymbolMacroletEnvironment_O::make);
+//  af_def(CorePkg, "makeSymbolMacroletEnvironment", &SymbolMacroletEnvironment_O::make);
 }
 
 void SymbolMacroletEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1742,7 +1753,8 @@ string SymbolMacroletEnvironment_O::summaryOfContents() const {
   return ss.str();
 }
 
-StackValueEnvironment_sp StackValueEnvironment_O::make(T_sp parent) {
+CL_LISPIFY_NAME(makeStackValueEnvironment);
+CL_DEFUN StackValueEnvironment_sp StackValueEnvironment_O::make(T_sp parent) {
   StackValueEnvironment_sp environ = StackValueEnvironment_O::create();
   environ->setupParent(parent);
   return environ;
@@ -1772,7 +1784,7 @@ void StackValueEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<StackValueEnvironment_O>()
       //	    .def("addValue",&StackValueEnvironment_O::addValue)
       ;
-  af_def(CorePkg, "makeStackValueEnvironment", &StackValueEnvironment_O::make);
+//  af_def(CorePkg, "makeStackValueEnvironment", &StackValueEnvironment_O::make);
 }
 
 void StackValueEnvironment_O::exposePython(Lisp_sp lisp) {

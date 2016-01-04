@@ -493,7 +493,7 @@ uint HashTable_O::resizeEmptyTable(uint sz) {
   return sz;
 }
 
-CL_NAME("hash-table-count");
+CL_LISPIFY_NAME("hash-table-count");
 CL_DEFMETHOD uint HashTable_O::hashTableCount() const {
   return this->_HashTableCount;
 }
@@ -506,7 +506,7 @@ uint HashTable_O::calculateHashTableCount() const {
   return cnt;
 }
 
-CL_NAME("hash-table-size");
+CL_LISPIFY_NAME("hash-table-size");
 CL_DEFMETHOD uint HashTable_O::hashTableSize() const {
   return cl__length(this->_HashTable);
 }
@@ -618,7 +618,7 @@ T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   return (Values(value, _lisp->_true()));
 }
 
-CL_NAME("core:hashIndex");
+CL_LISPIFY_NAME("core:hashIndex");
 CL_DEFMETHOD gc::Fixnum HashTable_O::hashIndex(T_sp key) const {
   gc::Fixnum idx = this->sxhashKey(key, cl__length(this->_HashTable), false);
   return idx;
@@ -656,7 +656,7 @@ bool HashTable_O::remhash(T_sp key) {
 #define ARGS_HashTable_O_hash_table_setf_gethash "(self key value)"
 #define DECL_HashTable_O_hash_table_setf_gethash ""
 #define DOCS_HashTable_O_hash_table_setf_gethash "setf into the hash-table"
-CL_NAME("core:hashTableSetfGethash");
+CL_LISPIFY_NAME("core:hashTableSetfGethash");
 CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   List_sp keyValuePair = this->tableRef(key);
 #ifdef DEBUG_HASH_TABLE
@@ -712,9 +712,9 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
   LOG(BF("At start of expandHashTable current hash table size: %d") % startSize);
   gc::Fixnum newSize = 0;
   if (expandTable) {
-    if (af_integerP(this->_RehashSize)) {
+    if (cl__integerp(this->_RehashSize)) {
       newSize = cl__length(this->_HashTable) + clasp_to_int(gc::As<Integer_sp>(this->_RehashSize));
-    } else if (af_floatP(this->_RehashSize)) {
+    } else if (cl__floatp(this->_RehashSize)) {
       newSize = cl__length(this->_HashTable) * clasp_to_double(this->_RehashSize);
     }
   } else {
@@ -821,7 +821,7 @@ void dump_one_entry(HashTable_sp ht, size_t it, stringstream &ss, List_sp first)
     if (hi != it)
       ss << "!!!ERROR-wrong bucket!!! hi=" << hi;
     ss << "hashIndex(key)=" << ht->hashIndex(key) << " ";
-    if (cl_consp(key)) {
+    if (cl__consp(key)) {
       List_sp ckey = key;
       ss << "(cons " << oCar(ckey).raw_() << " . " << oCdr(ckey).raw_() << ")";
     } else {
@@ -836,7 +836,7 @@ void dump_one_entry(HashTable_sp ht, size_t it, stringstream &ss, List_sp first)
 #define ARGS_HashTable_O_hash_table_dump "(&optional (start 0) end)"
 #define DECL_HashTable_O_hash_table_dump ""
 #define DOCS_HashTable_O_hash_table_dump "Dump the hash-table"
-CL_NAME("core:hashTableDump");
+CL_LISPIFY_NAME("core:hashTableDump");
 CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
   stringstream ss;
 #ifndef DUMP_LOW_LEVEL
@@ -923,12 +923,12 @@ DONE:
   return;
 }
 
-CL_NAME("core:hashTableNumberOfHashes");
+CL_LISPIFY_NAME("core:hashTableNumberOfHashes");
 CL_DEFMETHOD int HashTable_O::hashTableNumberOfHashes() const {
   return cl__length(this->_HashTable);
 }
 
-CL_NAME("core:hashTableAlistAtHash");
+CL_LISPIFY_NAME("core:hashTableAlistAtHash");
 CL_DEFMETHOD List_sp HashTable_O::hashTableAlistAtHash(int hash) const {
   ASSERTF(hash >= 0 && hash < cl__length(this->_HashTable), BF("Illegal hash value[%d] must between [0,%d)") % hash % cl__length(this->_HashTable));
   return this->_HashTable->operator[](hash);

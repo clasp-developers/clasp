@@ -55,9 +55,9 @@ private: // instance variables here
 
 public: // Functions here
   llvm::DebugLoc &debugLoc() { return this->_DebugLoc; };
-CL_NAME("getLine");
+CL_LISPIFY_NAME("getLine");
 CL_DEFMETHOD   uint getLine() const { return this->_DebugLoc.getLine(); };
-CL_NAME("getCol");
+CL_LISPIFY_NAME("getCol");
 CL_DEFMETHOD   uint getCol() const { return this->_DebugLoc.getCol(); };
   MDNode_sp getScope(LLVMContext_sp context) const;
 }; // DebugLoc class

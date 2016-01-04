@@ -363,7 +363,7 @@ void Package_O::initialize() {
   this->_AmpPackage = false;
 }
 
-CL_NAME("core:PackageHashTables");
+CL_LISPIFY_NAME("core:PackageHashTables");
 CL_DEFMETHOD T_mv Package_O::hashTables() const {
   List_sp useList = _Nil<List_V>();
   for (auto ci = this->_UsingPackages.begin();

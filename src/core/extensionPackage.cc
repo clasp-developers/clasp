@@ -38,15 +38,6 @@ THE SOFTWARE.
 namespace ext {
 using namespace core;
 
-#pragma GCC visibility push(default)
-#define ExtPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef ExtPkg_SYMBOLS
-#pragma GCC visibility pop
 
 SYMBOL_EXPORT_SC_(ExtPkg, STARloadHooksSTAR);
 SYMBOL_SC_(ExtPkg, aSingleExtSymbol);
@@ -63,8 +54,8 @@ T_sp af_maybeQuote(T_sp form) {
       goto DONTQUOTEIT; // nil
     if (form == _lisp->_true())
       goto DONTQUOTEIT; // t
-    if (cl_symbolp(form)) {
-      if (af_keywordP(form)) {
+    if (cl__symbolp(form)) {
+      if (cl__keywordp(form)) {
         goto DONTQUOTEIT; // symbol keyword
       } else
         goto QUOTEIT; // symbol not keyword

@@ -201,7 +201,7 @@ translate_list_case(List_sp list, T_sp fromcase, T_sp tocase) {
   /* If the argument is really a list, translate all strings in it and
 	 * return this new list, else assume it is a string and translate it.
 	 */
-  if (!cl_consp(list)) {
+  if (!cl__consp(list)) {
     return translate_component_case(list, fromcase, tocase);
   } else {
     list = cl__copy_list(list);
@@ -210,7 +210,7 @@ translate_list_case(List_sp list, T_sp fromcase, T_sp tocase) {
 		 * because it will only transform strings, leaving other
 		 * object (such as symbols) unchanged.*/
       T_sp name = oCar(l);
-      name = cl_listp(name) ? translate_list_case(name, fromcase, tocase) : translate_component_case(name, fromcase, tocase);
+      name = cl__listp(name) ? translate_list_case(name, fromcase, tocase) : translate_component_case(name, fromcase, tocase);
       l->rplaca(name);
     }
     return list;
@@ -227,7 +227,7 @@ destructively_check_directory(List_sp directory, bool logical, bool delete_back)
 	 * 3) Redundant :back are removed.
 	 */
   /* INV: directory is always a list */
-  if (!cl_listp(directory)) {
+  if (!cl__listp(directory)) {
     //    printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
     return kw::_sym_error;
   }
@@ -274,7 +274,7 @@ BEGIN:
         //        printf("%s:%d %s error\n", __FILE__, __LINE__, __FUNCTION__ );
         return kw::_sym_error;
       }
-    } else if (af_stringP(item)) {
+    } else if (cl__stringp(item)) {
       size_t l = cl__length(item);
 #ifdef CLASP_UNICODE
 //		if (clasp_fits_in_base_string(item)) {
@@ -318,7 +318,7 @@ Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
   if (logical) {
     p = LogicalPathname_O::create();
   } else {
-    if (af_stringP(host)) {
+    if (cl__stringp(host)) {
       if (clasp_logical_hostname_p(host)) {
         p = LogicalPathname_O::create();
         logical = true;
@@ -334,23 +334,23 @@ Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
     }
   }
   if (device.notnilp() && device != kw::_sym_unspecific &&
-      !(!core__logical_pathname_p(p) && af_stringP(device))) {
+      !(!core__logical_pathname_p(p) && cl__stringp(device))) {
     x = device;
     component = kw::_sym_device;
     goto ERROR;
   }
-  if (name.notnilp() && name != kw::_sym_wild && !af_stringP(name)) {
+  if (name.notnilp() && name != kw::_sym_wild && !cl__stringp(name)) {
     x = name;
     component = kw::_sym_name;
     goto ERROR;
   }
-  if (type.notnilp() && type != kw::_sym_unspecific && type != kw::_sym_wild && !af_stringP(type)) {
+  if (type.notnilp() && type != kw::_sym_unspecific && type != kw::_sym_wild && !cl__stringp(type)) {
     x = type;
     component = kw::_sym_type;
     goto ERROR;
   }
   if (version != kw::_sym_unspecific && version != kw::_sym_newest &&
-      version != kw::_sym_wild && version.notnilp() && !af_fixnumP(version)) {
+      version != kw::_sym_wild && version.notnilp() && !core__fixnump(version)) {
     x = version;
     component = kw::_sym_version;
   ERROR : {
@@ -458,11 +458,11 @@ Pathname_sp Pathname_O::tilde_expand(Pathname_sp pathname) {
     return pathname;
   }
   directory = pathname->_Directory;
-  if (!cl_consp(directory) || CONS_CAR(directory) != kw::_sym_relative || CONS_CDR(directory).nilp()) {
+  if (!cl__consp(directory) || CONS_CAR(directory) != kw::_sym_relative || CONS_CDR(directory).nilp()) {
     return pathname;
   }
   head = oCadr(directory);
-  if (af_stringP(head) && cl__length(head) > 0 &&
+  if (cl__stringp(head) && cl__length(head) > 0 &&
       cl__char(head, 0) == '~') {
     /* Remove the tilde component */
     gc::As<Cons_sp>(directory)->rplacd(oCddr(directory));
@@ -621,7 +621,7 @@ parse_directories(T_sp s, int flags, size_t start, size_t end,
 }
 
 bool clasp_logical_hostname_p(T_sp host) {
-  if (!af_stringP(host))
+  if (!cl__stringp(host))
     return false;
   if (cl::_sym_assoc->fboundp()) {
     return T_sp(eval::funcall(cl::_sym_assoc, host, _lisp->pathnameTranslations(), kw::_sym_test, cl::_sym_string_equal)).notnilp();
@@ -691,7 +691,7 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
   logical = true;
   device = kw::_sym_unspecific;
   path = parse_directories(s, WORD_LOGICAL, *ep, end, ep);
-  if (cl_consp(path)) {
+  if (cl__consp(path)) {
     if (CONS_CAR(path) != kw::_sym_relative &&
         CONS_CAR(path) != kw::_sym_absolute)
       path = Cons_O::create(kw::_sym_absolute, path);
@@ -722,14 +722,14 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
                    *ep, end, ep);
   if (aux == kw::_sym_error) {
     return _Nil<Pathname_O>();
-  } else if (cl_symbolp(aux)) {
+  } else if (cl__symbolp(aux)) {
     version = aux;
   } else {
     T_mv version_mv = cl__parse_integer(gc::As<Str_sp>(aux), 0, _Nil<T_O>(), 10, _lisp->_true());
     T_sp tversion = version_mv;
     Fixnum_sp parsed_length = gc::As<Fixnum_sp>(version_mv.valueGet(1));
     if (unbox_fixnum(parsed_length) == cl__length(aux) &&
-        af_integerP(tversion) && clasp_plusp(gc::As<Integer_sp>(tversion))) {
+        cl__integerp(tversion) && clasp_plusp(gc::As<Integer_sp>(tversion))) {
       version = gc::As<Integer_sp>(tversion);
     } else if (cl__string_equal(aux, kw::_sym_newest).notnilp()) {
       version = kw::_sym_newest;
@@ -764,7 +764,7 @@ physical:
     host = _Nil<T_O>();
     goto done_device_and_host;
   }
-  if (!af_stringP(device)) {
+  if (!cl__stringp(device)) {
     return _Nil<Pathname_O>();
   }
 #if defined(CLASP_MS_WINDOWS_HOST)
@@ -782,7 +782,7 @@ maybe_parse_host:
     if (host == kw::_sym_error) {
       host = _Nil<T_O>();
     } else if (host.notnilp()) {
-      if (!af_stringP(host))
+      if (!cl__stringp(host))
         return _Nil<Pathname_O>();
       start = *ep;
       if (is_slash(cl__char(s, --start)))
@@ -793,7 +793,7 @@ maybe_parse_host:
     device = _Nil<T_O>();
 done_device_and_host:
   path = parse_directories(s, 0, *ep, end, ep);
-  if (cl_consp(path)) {
+  if (cl__consp(path)) {
     if (CONS_CAR(path) != kw::_sym_relative &&
         CONS_CAR(path) != kw::_sym_absolute)
       path = Cons_O::create(kw::_sym_relative, path);
@@ -1163,9 +1163,9 @@ T_sp clasp_namestring(T_sp tx, int flags) {
   }
 NO_DIRECTORY:
   if (unbox_fixnum(gc::As<Fixnum_sp>(clasp_file_position(buffer))) == 0) {
-    if ((af_stringP(x->_Name) &&
+    if ((cl__stringp(x->_Name) &&
          clasp_memberChar(':', x->_Name)) ||
-        (af_stringP(x->_Type) &&
+        (cl__stringp(x->_Type) &&
          clasp_memberChar(':', x->_Type)))
       clasp_write_string(":", buffer);
   }
@@ -1261,7 +1261,7 @@ CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum
   if (host.notnilp()) {
     host = cl__string(host);
   }
-  if (!af_stringP(thing)) {
+  if (!cl__stringp(thing)) {
     output = cl__pathname(thing);
   } else {
     T_sp default_host = host;
@@ -1485,7 +1485,7 @@ CL_DEFUN Str_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
 /* --------------- PATHNAME MATCHING ------------------ */
 
 bool clasp_wild_string_p(T_sp item) {
-  if (af_stringP(item)) {
+  if (cl__stringp(item)) {
     size_t i, l = cl__length(item);
     for (i = 0; i < l; i++) {
       claspChar c = cl__char(item, i);
@@ -1559,9 +1559,9 @@ path_item_match(T_sp a, T_sp mask) {
     return true;
   /* If a component in the tested path is a wildcard field, this
 	   can only be matched by the same wildcard field in the mask */
-  if (!af_stringP(a) || mask.nilp())
+  if (!cl__stringp(a) || mask.nilp())
     return (a == mask);
-  if (!af_stringP(mask)) {
+  if (!cl__stringp(mask)) {
     SIMPLE_ERROR(BF("%s is not supported as mask for pathname-match-p") % _rep_(mask));
   }
   return clasp_stringMatch(a, 0, cl__length(a),
@@ -1657,7 +1657,7 @@ CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
   size_t parsed_len, len;
   T_sp pair, l;
   /* Check that host is a valid host name */
-  if (clasp_unlikely(!af_stringP(host)))
+  if (clasp_unlikely(!cl__stringp(host)))
     QERROR_WRONG_TYPE_NTH_ARG(1, host, cl::_sym_string);
   host = cl__string_upcase(host);
   len = cl__length(host);
@@ -1680,7 +1680,7 @@ CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
     return (pair.nilp()) ? _Nil<T_O>() : oCadr(pair);
   }
   /* Set the new translation list */
-  if (clasp_unlikely(!cl_listp(set))) {
+  if (clasp_unlikely(!cl__listp(set))) {
     QERROR_WRONG_TYPE_NTH_ARG(2, set, cl::_sym_list);
   }
   if (pair.nilp()) {
@@ -1705,7 +1705,7 @@ find_wilds(T_sp l, T_sp source, T_sp match) {
 
   if (match == kw::_sym_wild)
     return Cons_O::create(source);
-  if (!af_stringP(match) || !af_stringP(source)) {
+  if (!cl__stringp(match) || !cl__stringp(source)) {
     if (match != source)
       return kw::_sym_error;
     return l;
@@ -1780,7 +1780,7 @@ copy_wildcards(T_sp *wilds_list, T_sp pattern) {
   }
   if (pattern == kw::_sym_wild_inferiors)
     return kw::_sym_error;
-  if (!af_stringP(pattern))
+  if (!cl__stringp(pattern))
     return pattern;
 
   new_string = false;
@@ -1824,7 +1824,7 @@ copy_list_wildcards(T_sp *wilds, T_sp to) {
         return kw::_sym_error;
       else {
         T_sp dirlist = CAR(list);
-        if (cl_consp(dirlist))
+        if (cl__consp(dirlist))
           l = Cons_O::append(CAR(list), l);
         else if (!(oCar(list).nilp()))
           return kw::_sym_error;
@@ -1838,7 +1838,7 @@ copy_list_wildcards(T_sp *wilds, T_sp to) {
     }
     to = CDR(to);
   }
-  if (cl_consp(l))
+  if (cl__consp(l))
     l = cl__nreverse(l);
   return l;
 }

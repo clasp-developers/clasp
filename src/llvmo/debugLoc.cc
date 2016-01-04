@@ -37,7 +37,8 @@ THE SOFTWARE.
 
 namespace llvmo {
 
-DebugLoc_sp DebugLoc_O::get(int lineno, int column, DebugInfo_sp debugInfo) {
+CL_NAME(debug-loc-get);
+CL_DEFUN DebugLoc_sp DebugLoc_O::get(int lineno, int column, DebugInfo_sp debugInfo) {
   GC_ALLOCATE(DebugLoc_O, oip);
   llvm::DIDescriptor *didescriptor = debugInfo->operator llvm::DIDescriptor *();
   llvm::DebugLoc dl = llvm::DebugLoc::get(lineno, column, didescriptor->operator llvm::MDNode *());
@@ -52,7 +53,7 @@ void DebugLoc_O::exposeCando(core::Lisp_sp lisp) {
       .def("getLine", &DebugLoc_O::getLine)
       .def("getCol", &DebugLoc_O::getCol)
       .def("getScope", &DebugLoc_O::getScope);
-  core::af_def(LlvmoPkg, "DebugLoc-get", &DebugLoc_O::get);
+//  core::af_def(LlvmoPkg, "DebugLoc-get", &DebugLoc_O::get);
 }
 
 void DebugLoc_O::exposePython(core::Lisp_sp lisp) {
@@ -61,7 +62,7 @@ void DebugLoc_O::exposePython(core::Lisp_sp lisp) {
 #endif
 }
 
-CL_NAME("getScope");
+CL_LISPIFY_NAME("getScope");
 CL_DEFMETHOD MDNode_sp DebugLoc_O::getScope(LLVMContext_sp context) const {
   return translate::to_object<llvm::MDNode *>::convert(this->_DebugLoc.getScope(*(context->wrappedPtr())));
 }

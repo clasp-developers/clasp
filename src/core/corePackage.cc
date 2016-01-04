@@ -58,8 +58,91 @@ THE SOFTWARE.
 
 // ------------------- include all headers for corePackage here
 
-#define HEADER_INCLUDES
-#include <generated/initClasses_inc.h>
+#include <clasp/core/object.h>
+#include <clasp/asttooling/astVisitor.h>
+#include <clasp/cffi/cffi.h>
+#include <clasp/clbind/class_registry.h>
+#include <clasp/core/serialize.h>
+#include <clasp/core/array.h>
+#include <clasp/core/binder.h>
+#include <clasp/core/conditions.h>
+#include <clasp/core/character.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/cxxObject.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/externalObject.h>
+#include <clasp/core/executables.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/intArray.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/iterator.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/userData.h>
+#include <clasp/core/loadTimeValues.h>
+#include <clasp/core/multiStringBuffer.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/package.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/pointer.h>
+#include <clasp/core/posixTime.h>
+#include <clasp/core/random.h>
+#include <clasp/core/readtable.h>
+#include <clasp/core/reader.h>
+#include <clasp/core/record.h>
+#include <clasp/core/regex.h>
+#include <clasp/core/singleDispatchMethod.h>
+#include <clasp/core/smallMap.h>
+#include <clasp/core/smallMultimap.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/standardObject.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/structureObject.h>
+#include <clasp/core/symbolToEnumConverter.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/lispList.h>
+#include <clasp/core/weakHashTable.h>
+#include <clasp/core/weakKeyMapping.h>
+#include <clasp/core/weakPointer.h>
+#include <clasp/core/wrappedPointer.h>
+#include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/debugInfoExpose.h>
+#include <clasp/llvmo/debugLoc.h>
+#include <clasp/llvmo/insertPoint.h>
+#include <clasp/core/activationFrame.h>
+#include <clasp/core/arrayDisplaced.h>
+#include <clasp/core/arrayObjects.h>
+#include <clasp/core/hashTableEq.h>
+#include <clasp/core/hashTableEql.h>
+#include <clasp/core/hashTableEqual.h>
+#include <clasp/core/hashTableEqualp.h>
+#include <clasp/core/instance.h>
+#include <clasp/core/metaobject.h>
+#include <clasp/core/null.h>
+#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
+#include <clasp/core/singleDispatchGenericFunction.h>
+#include <clasp/core/specialForm.h>
+#include <clasp/core/lispVector.h>
+#include <clasp/core/bitVector.h>
+#include <clasp/core/sexpLoadArchive.h>
+#include <clasp/core/sexpSaveArchive.h>
+#include <clasp/core/specializer.h>
+#include <clasp/core/lispString.h>
+#include <clasp/core/vectorDisplaced.h>
+#include <clasp/core/newVectorObjects.h>
+#include <clasp/core/metaClass.h>
+#include <clasp/core/str.h>
+#include <clasp/core/newVectorObjectsWithFillPtr.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/cxxClass.h>
+#include <clasp/core/forwardReferencedClass.h>
+#include <clasp/core/stdClass.h>
+#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/structureClass.h>
+#include <clasp/clbind/class_rep.h>
+#include <clasp/core/funcallableStandardClass.h>
+#include <clasp/core/standardClass.h>
 
 //
 // Load the gctools::GcInfo<core-classes>::Kind specializers
@@ -69,17 +152,19 @@ THE SOFTWARE.
 #undef NAMESPACE_core
 
 namespace core {
+#if 0
 #define EXPOSE_TO_CANDO
 #define Use_CorePkg
 #define Use_ClPkg
 #define Use_ExtPkg
 #define EXTERN_REGISTER
-#include <generated/initClasses_inc.h>
+#include <clasp/core/initClasses.h>
 #undef EXTERN_REGISTER
 #undef Use_ExtPkg
 #undef Use_ClPkg
 #undef Use_CorePkg
 #undef EXPOSE_TO_CANDO
+#endif
 };
 
 namespace core {
@@ -193,6 +278,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, if_exists);
 SYMBOL_EXPORT_SC_(KeywordPkg, io);
 SYMBOL_EXPORT_SC_(KeywordPkg, probe);
 
+SYMBOL_EXPORT_SC_(ClPkg, stream_element_type);
 SYMBOL_EXPORT_SC_(ClPkg, stream_external_format);
 SYMBOL_EXPORT_SC_(ClPkg, open_stream_p);
 SYMBOL_EXPORT_SC_(ClPkg, write_sequence);
@@ -632,19 +718,6 @@ SYMBOL_SC_(CorePkg, all_keys);
 
 SYMBOL_SC_(KeywordPkg, changed);
 
-#pragma GCC visibility push(default)
-#define CorePkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) Symbol_sp cname; // = UNDEFINED_SYMBOL;
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef CorePkg_SYMBOLS
-#pragma GCC visibility pop
-
-#pragma GCC visibility push(default)
-
-#pragma GCC visibility pop
 
 void testConses() {
   printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__);
@@ -735,7 +808,7 @@ void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
 #define Use_ClPkg
 #define Use_ExtPkg
 #define INVOKE_REGISTER
-#include <generated/initClasses_inc.h>
+//#include <clasp/core/initClasses.h>
 #undef INVOKE_REGISTER
 #undef Use_ExtPkg
 #undef Use_ClPkg
@@ -760,13 +833,6 @@ void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
   break;
   case pythonClasses: {
     IMPLEMENT_MEF(BF("Handle other packages"));
-#define _DBG(x)
-#define EXPOSE_TO_PYTHON
-#define Use_CorePkg
-#include <generated/initClasses_inc.h>
-#undef Use_CorePkg
-#undef EXPOSE_TO_PYTHON
-#undef _DBG
   } break;
   case pythonFunctions:
 #ifdef USEBOOSTPYTHON
@@ -778,11 +844,12 @@ void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
     break;
   }
 }
-
+#if 0
 gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_classes() {
-  LOG(BF("Initialize core classes by hand"));
   BootStrapCoreSymbolMap bootStrapSymbolMap;
-  Symbol_sp startSymbol;
+
+  initialize_clasp();
+
   // initialize classSymbol's only if they have not been done before
   if (IS_SYMBOL_UNDEFINED(T_O::static_classSymbol())) {
     _BLOCK_TRACE("Setting static classSymbols for core classes");
@@ -791,15 +858,9 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
 // The following will set the static_ClassSymbol to the Symbol created
 // by BootStrapCoreSymbolMap for each core class
 //
-#define SET_SYMBOL
     {
       _BLOCK_TRACEF(BF("LOOKUP Symbol"));
-#undef LOOKUP_SYMBOL
-#define LOOKUP_SYMBOL(pkgName, symName) bootStrapSymbolMap.lookupSymbol(pkgName, symName)
-#define Use_CorePkg
-#include <generated/initClasses_inc.h>
-#undef Use_CorePkg
-#undef LOOKUP_SYMBOL
+//      set_static_class_symbols(bootStrapSymbolMap);
     }
   } else {
     THROW_HARD_ERROR(BF("You cannot initializes classes twice"));
@@ -810,83 +871,80 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
 // it will also set its _WeakThis and _WeakLisp pointers
 // and set its InstanceClassSymbol variable
 // It will also put the Class instance into the Lisp class table
-
+#if 0
 #define CREATE_CLASS
 #define Use_CorePkg
-#include <generated/initClasses_inc.h>
+//#include <clasp/core/initClasses.h>
 #undef Use_CorePkg
-  // Put core::Null_O::___staticClass into a global variable so that every
-  // class can access it from the _class() virtual function
-  // See object.h definition of Null_O___staticClass
-  //	Null_O___staticClass = core::Null_O::___staticClass;
-  {
-    _BLOCK_TRACEF(BF("Dump info on classes"));
-#define DUMP_INFO_CLASS
-#define Use_CorePkg
-#include <generated/initClasses_inc.h>
-#undef Use_CorePkg
-  }
-
-  Package_sp commonLispPackage = cl::initialize_commonLispPackage();
-  initializeAllClSymbols(commonLispPackage);
-  Package_sp keywordPackage = kw::initialize_keywordPackage();
-
+#endif
+#if 0
+    Package_sp commonLispPackage = cl::initialize_commonLispPackage();
+    initializeAllClSymbols(commonLispPackage);
+    Package_sp keywordPackage = kw::initialize_keywordPackage();
+#endif
   //	ASSERT_lt(classesHandInitialized, get_nextGlobalClassSymbol())
   //
   // Define the base class for every hand initialized class
   //
   //	classObject->_DirectSuperClasses.clear();
-  {
-    _BLOCK_TRACEF(BF("Define base classes"));
+#if 0
+    {
+      _BLOCK_TRACEF(BF("Define base classes"));
 #define Use_CorePkg
 #define DEFINE_BASE_CLASSES
-#include <generated/initClasses_inc.h>
+//#include <clasp/core/initClasses.h>
 #undef Use_CorePkg
-  }
-  gctools::tagged_pointer<CoreExposer> coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocate_class(_lisp);
-  Package_sp corePackage = coreExposerPtr->package();
-  _lisp->_Roots._CorePackage = corePackage;
-  _lisp->_Roots._KeywordPackage = keywordPackage;
-  _lisp->_Roots._CommonLispPackage = commonLispPackage;
-  ext::initialize_extensionPackage();
-  comp::initialize_compPackage();
-  clos::initialize_closPackage();
-  cleavirPrimops::initialize_cleavirPrimopsPackage();
-  cleavirEnv::initialize_cleavirEnvPackage();
-  gray::initialize_grayPackage();
-  cluser::initialize_commonLispUserPackage();
-  {
-    _BLOCK_TRACEF(BF("Setup instance base classes for T_O"));
-    T_O::___staticClass->setInstanceBaseClasses(_Nil<T_O>());
-  }
-  {
-    _BLOCK_TRACEF(BF("Define class names"));
+        }
+    gctools::tagged_pointer<CoreExposer> coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocate_class(_lisp);
+    Package_sp corePackage = coreExposerPtr->package();
+    _lisp->_Roots._CorePackage = _lisp->findPackage(CorePkg);
+    _lisp->_Roots._KeywordPackage = _lisp->findPackage(KeywordPkg);
+    _lisp->_Roots._CommonLispPackage = _lisp->findPackage(ClPkg);
+#endif
+//  ext::initialize_extensionPackage();
+//  comp::initialize_compPackage();
+//  clos::initialize_closPackage();
+//  cleavirPrimops::initialize_cleavirPrimopsPackage();
+//  cleavirEnv::initialize_cleavirEnvPackage();
+//  gray::initialize_grayPackage();
+//  cluser::initialize_commonLispUserPackage();
+//  {
+//    _BLOCK_TRACEF(BF("Setup instance base classes for T_O"));
+//    T_O::___staticClass->setInstanceBaseClasses(_Nil<T_O>());
+//  }
+#if 0
+    {
+      _BLOCK_TRACEF(BF("Define class names"));
 #define DEFINE_CLASS_NAMES
-    string NSPkg = CorePkg;
+      string NSPkg = CorePkg;
 #define Use_CorePkg
-#include <generated/initClasses_inc.h>
+//#include <clasp/core/initClasses.h>
 #undef Use_CorePkg
-  };
+    };
+#endif
   //
   // Finish setting up the symbols
   //
-  bootStrapSymbolMap.finish_setup_of_symbols();
-  reg::lisp_registerClassSymbol<Character_I>(cl::_sym_character);
-  reg::lisp_registerClassSymbol<Fixnum_I>(cl::_sym_fixnum);
-  reg::lisp_registerClassSymbol<SingleFloat_I>(cl::_sym_single_float);
-
-  return coreExposerPtr;
+//  bootStrapSymbolMap.finish_setup_of_symbols();
+#if 0
+    reg::lisp_registerClassSymbol<Character_I>(cl::_sym_character);
+    reg::lisp_registerClassSymbol<Fixnum_I>(cl::_sym_fixnum);
+    reg::lisp_registerClassSymbol<SingleFloat_I>(cl::_sym_single_float);
+#endif
+//    return coreExposerPtr;
 }
+#endif
 
+
+  
 void CoreExposer::define_essential_globals(Lisp_sp lisp) {
-
   {
     _BLOCK_TRACEF(BF("Exporting symbols in lisp"));
 #define CorePkg_EXPORT
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) cname->exportYourself(export);
-  #ifndef SCRAPING
+#define DO_SYMBOL( ns, cname, idx, pkgName, lispName, export) cname->exportYourself(export);
+#ifndef SCRAPING
 #include <generated/symbols_scraped_inc.h>
-  #endif
+#endif
 #undef DO_SYMBOL
 #undef CorePkg_EXPORT
   };
@@ -1179,6 +1237,6 @@ void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
 
 #define EXPAND_CLASS_MACROS
 #define _CLASS_MACRO(_T_) STATIC_CLASS_INFO(_T_);
-#include <generated/initClasses_inc.h>
+//#include <clasp/core/initClasses.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS

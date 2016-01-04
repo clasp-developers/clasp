@@ -46,8 +46,7 @@ Fixnum clasp_digitp(int ch, int basis);
 bool cl__standard_char_p(Character_sp ch);
 
 class Character_dummy_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_VIRTUAL_CLASS(core, ClPkg, Character_dummy_O, "character");
+  LISP_VIRTUAL_CLASS(core, ClPkg, Character_dummy_O, "character",core::T_O);
 };
 };
 

@@ -422,6 +422,83 @@ CL_DEFUN Str_sp core__lispify_name(Str_sp name) {
   return Str_O::create(lispified);
 };
 
+/*!
+* Arguments
+- name :: A string.
+- package_str :: Return the package part.
+- symbol_str :: Return the symbol part.
+* Description
+Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, run them through lispify_symbol_name and then recombine them as pkg:name.
+*/
+void colon_split(const string& name, string& package_str, string& symbol_str)
+{
+  std::size_t found = name.find(":");
+  if ( found != std::string::npos ) {
+    package_str = name.substr(0,found);
+    symbol_str = name.substr(found+1,std::string::npos);
+    return;
+  }
+  SIMPLE_ERROR(BF("Could not convert %s into package:symbol_name") % name);
+}
+
+/*!
+* Arguments
+- name :: A string.
+- package_name :: A string
+* Description
+Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, run them through lispify_symbol_name and then recombine them as pkg:name. If
+package_name is not the empty string in either of the above cases, signal an error.
+If the name has neither of the above forms then use the package_name to construct package_name:name after lispifying name and return that.
+*/
+std::string magic_name(const std::string& name,const std::string& package_name)
+{
+  std::size_t found = name.find(":");
+  if ( found != std::string::npos ) {
+    if ( package_name != "" ) {
+      SIMPLE_ERROR(BF("Cannot convert %s into a symbol name because package_name %s was provided") % name % package_name);
+    }
+    std::string pkg_str = name.substr(0,found);
+    std::string symbol_str = name.substr(found+1,std::string::npos);
+    pkg_str = lispify_symbol_name(pkg_str);
+    symbol_str = lispify_symbol_name(symbol_str);
+    stringstream ss;
+    ss << pkg_str << ":" << symbol_str;
+    return ss.str();
+  }
+  std::size_t found2 = name.find("__");
+  if ( found2 != std::string::npos ) {
+    if ( package_name != "" ) {
+      SIMPLE_ERROR(BF("Cannot convert %s into a symbol name because package_name %s was provided") % name % package_name);
+    }
+    std::string pkg_str = name.substr(0,found2);
+    std::string symbol_str = name.substr(found2+2,std::string::npos);
+    pkg_str = lispify_symbol_name(pkg_str);
+    symbol_str = lispify_symbol_name(symbol_str);
+    stringstream ss;
+    ss << pkg_str << ":" << symbol_str;
+    return ss.str();
+  }
+  if ( package_name != "" ) {
+    std::string symbol_str = lispify_symbol_name(name);
+    stringstream ss;
+    ss << package_name << ":" << symbol_str;
+    return ss.str();
+  }
+  SIMPLE_ERROR(BF("Cannot convert %s into a package:name form because no package_name was provided") % name);
+}
+
+
+CL_LAMBDA(name);
+CL_DECLARE();
+CL_DOCSTRING(R"doc(* Arguments
+- name :: A string.
+* Description
+Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, run them through lispify_symbol_name and then recombine them as pkg:name.)doc");
+CL_DEFUN Str_sp core__magic_name(const std::string& name) {
+  std::string pkg_sym = magic_name(name);
+  return Str_O::create(pkg_sym);
+};
+
 void lisp_setThreadLocalInfoPtr(ThreadInfo *address) {
   threadLocalInfoPtr = address;
 }
@@ -462,19 +539,6 @@ Symbol_sp lispify_intern_keyword(string const &name) {
   return _lisp->internKeyword(lispName);
 }
 
-#if 0
-    Symbol_sp lispify_intern(string const& name, string const& packageName)
-    {
-	string lispName = lispify_symbol_name(name);
-	return _lisp->intern(lispName,packageName);
-    }
-    Symbol_sp lispify_intern_export(string const& name, string const& packageName)
-    {
-        Symbol_sp sym = lispify_intern(name,packageName);
-        sym->exportYourself();
-        return sym;
-    }
-#endif
 Symbol_sp lisp_upcase_intern(string const &name, string const &packageName) {
   string lispName = stringUpper(name);
   return _lisp->intern(lispName, packageName);
@@ -667,19 +731,19 @@ Class_sp lisp_static_class(T_sp o) {
 bool lisp_fixnumP(T_sp o) {
   if (o.fixnump())
     return true;
-  return af_fixnumP(o);
+  return core__fixnump(o);
 }
 
 Fixnum lisp_asFixnum(T_sp o) {
   if (o.fixnump())
     return o.unsafe_fixnum();
-  if (af_fixnumP(o))
+  if (core__fixnump(o))
     return unbox_fixnum(gc::As<Fixnum_sp>(o));
   SIMPLE_ERROR(BF("Not fixnum %s") % _rep_(o));
 }
 
 bool lisp_characterP(T_sp o) {
-  return af_characterP(o);
+  return cl__characterp(o);
 }
 
 #if 0
@@ -971,6 +1035,10 @@ string lisp_classNameFromClassSymbol(Symbol_sp classSymbol) {
 Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {
   return gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
 }
+
+
+  
+
 
 /*! If the name has the structure XXX:YYY or XXX::YYY then intern YYY in package XXX either
       exported or not respectively.   If there is no package prefix then use the defaultPackageName */

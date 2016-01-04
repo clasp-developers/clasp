@@ -383,7 +383,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
     return base_dir;
   } else if (subdir == kw::_sym_up) {
     aux = Str_O::create("..");
-  } else if (!af_stringP(subdir)) {
+  } else if (!cl__stringp(subdir)) {
     SIMPLE_ERROR(BF("Directory component %s found in pathname %s"
                     "is not allowed in TRUENAME or DIRECTORY") %
                  _rep_(subdir) % _rep_(base_dir));
@@ -920,7 +920,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
   for (;;) {
     if (hFind == NULL) {
       T_sp aux = make_constant_base_string(".\\*");
-      T_sp mask = af_base_string_concatenate(2, prefix, aux);
+      T_sp mask = base_string_concatenate(2, prefix, aux);
       hFind = FindFirstFile((char *)mask->c_str(), &fd);
       if (hFind == INVALID_HANDLE_VALUE) {
         out = _Nil<T_O>();
@@ -960,7 +960,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
     if (!string_match(text, text_mask))
       continue;
     component = Str_O::create(text);
-    component = af_base_string_concatenate(LCC_PASS_ARGS2_ELLIPSIS(prefix.raw_(), component.raw_()));
+    component = base_string_concatenate(LCC_PASS_ARGS2_ELLIPSIS(prefix.raw_(), component.raw_()));
     component_path = cl__pathname(component);
     if (!pathname_mask.nilp()) {
       if (!cl__pathname_match_p(component, pathname_mask)) // should this not be inverted?
@@ -985,9 +985,9 @@ OUTPUT:
   return cl__nreverse(out);
 }
 
-CL_  LAMBDA(template);
-CL_  DECLARE();
-CL_  DOCSTRING("mkstemp");
+CL_LAMBDA(template);
+CL_DECLARE();
+CL_DOCSTRING("mkstemp");
 CL_DEFUN T_sp core__mkstemp(Str_sp thetemplate) {
   //  cl_index l;
   int fd;
@@ -1213,9 +1213,9 @@ T_sp core__mkstemp(T_sp template)
 	}
 #endif // working
 
-CL_ LAMBDA(directory);
-CL_ DECLARE();
-CL_ DOCSTRING("Like unix rmdir");
+CL_LAMBDA(directory);
+CL_DECLARE();
+CL_DOCSTRING("Like unix rmdir");
 CL_DEFUN T_sp core__rmdir(T_sp directory) {
   return cl__delete_file(eval::funcall(cl::_sym_makePathname,
                                      kw::_sym_name, _Nil<T_O>(),
@@ -1223,9 +1223,9 @@ CL_DEFUN T_sp core__rmdir(T_sp directory) {
                                      kw::_sym_defaults, directory));
 }
 
-CL_ LAMBDA(file mode);
-CL_ DECLARE();
-CL_ DOCSTRING("chmod - use octal values for mode for convenience (eg #o777)");
+CL_LAMBDA(file mode);
+CL_DECLARE();
+CL_DOCSTRING("chmod - use octal values for mode for convenience (eg #o777)");
 CL_DEFUN void core__chmod(T_sp file, T_sp mode) {
   mode_t code = clasp_to_uint32_t(mode);
   T_sp filename = coerce_to_posix_filename(file);
@@ -1244,9 +1244,9 @@ CL_DEFUN void core__chmod(T_sp file, T_sp mode) {
   }
 }
 
-CL_ LAMBDA(orig dest);
-CL_ DECLARE();
-CL_ DOCSTRING("copy_file");
+CL_LAMBDA(orig dest);
+CL_DECLARE();
+CL_DOCSTRING("copy_file");
 CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
   FILE *in, *out;
   int ok = 0;
@@ -1394,9 +1394,9 @@ AGAIN:
   return output;
 }
 
-CL_ LAMBDA(mask &key (resolve-symlinks t) &allow-other-keys);
-CL_ DECLARE();
-CL_ DOCSTRING("directory");
+CL_LAMBDA(mask &key (resolve-symlinks t) &allow-other-keys);
+CL_DECLARE();
+CL_DOCSTRING("directory");
 CL_DEFUN T_sp cl__directory(T_sp mask, T_sp resolveSymlinks) {
   T_sp base_dir;
   T_sp output;
@@ -1408,18 +1408,18 @@ CL_DEFUN T_sp cl__directory(T_sp mask, T_sp resolveSymlinks) {
   return output;
 };
 
-CL_ LAMBDA(unix-time);
-CL_ DECLARE();
-CL_ DOCSTRING("unixDaylightSavingTime return true if in daylight saving time");
+CL_LAMBDA(unix-time);
+CL_DECLARE();
+CL_DOCSTRING("unixDaylightSavingTime return true if in daylight saving time");
 CL_DEFUN bool core__unix_daylight_saving_time(Integer_sp unix_time) {
   time_t when = clasp_to_uint64(unix_time);
   struct tm *ltm = localtime(&when);
   return ltm->tm_isdst;
 }
 
-CL_ LAMBDA();
-CL_ DECLARE();
-CL_ DOCSTRING("unixGetLocalTimeZone");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("unixGetLocalTimeZone");
 CL_DEFUN Ratio_sp core__unix_get_local_time_zone() {
   gctools::Fixnum mw;
 #if 0 && defined(HAVE_TZSET)
@@ -1442,9 +1442,9 @@ CL_DEFUN Ratio_sp core__unix_get_local_time_zone() {
   return Ratio_O::create(make_fixnum(mw), make_fixnum(60));
 }
 
-CL_ LAMBDA(dir mode);
-CL_ DECLARE();
-CL_ DOCSTRING("mkdir");
+CL_LAMBDA(dir mode);
+CL_DECLARE();
+CL_DOCSTRING("mkdir");
 CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
   int modeint = 0;
   int ok;

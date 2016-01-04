@@ -58,15 +58,15 @@ namespace core {
 
 // set this class up by hand
 SMART(ExternalObject);
-class ExternalObject_O : public T_O // StandardObject_O
-                         {
-  LISP_CLASS(core, CorePkg, ExternalObject_O, "ExternalObject",StandardObject_O);
+class ExternalObject_O : public T_O
+{
+  LISP_CLASS(core, CorePkg, ExternalObject_O, "ExternalObject",T_O);
 GCPRIVATE:
   Class_sp _Class;
 
 public:
   virtual bool eql_(T_sp obj) const;
-CL_NAME("isUndefined");
+CL_LISPIFY_NAME("isUndefined");
 CL_DEFMETHOD   virtual bool isUndefined() const { return this->externalObject() == NULL; };
   virtual void *externalObject() const {
     _OF();
@@ -94,10 +94,11 @@ gctools::smart_ptr<OT> RP_Create_wrapped(WT ptr) {
 
 #ifndef SCRAPING
 #define LISP_EXTERNAL_CLASS(oNamespace, oPackage, wrappedClass, o_nameOfWrappedClass, nameOfWrappedClass, o_nameOfWrappedClassBase)      \
-  /* */ LISP_BASE1(o_nameOfWrappedClassBase);                                                                                            \
+  public: \
+  typedef o_nameOfWrappedClassBase Base; \
+  typedef LispBases1<Base> Bases; \
   /* */ __COMMON_CLASS_PARTS(oNamespace, oPackage, o_nameOfWrappedClass, nameOfWrappedClass) public : typedef wrappedClass WrappedClass; \
-                                                                                                                                         \
-public:                                                                                                                                  \
+ public:                                                                                                                                  \
   /*Derived from StandardObject so it supports slots*/                                                                                   \
   static bool static_supportsSlots() { return true; };                                                                                   \
   /* end */
@@ -115,9 +116,9 @@ typedef enum { DeleteOnDtor = 1,
 SMART(ForeignData);
 /* Maintain a pointer to a block of Foreign data that we may or may not own depending on _OwnershipFlags */
 
-class ForeignData_O : public ExternalObject_O // StandardObject_O
-                      {
-  LISP_CLASS(core, CorePkg, ForeignData_O, "ForeignData",StandardObject_O);
+class ForeignData_O : public ExternalObject_O
+{
+  LISP_CLASS(core, CorePkg, ForeignData_O, "ForeignData",ExternalObject_O);
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)

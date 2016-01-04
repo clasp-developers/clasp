@@ -66,7 +66,7 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp arg
       } else if (fobj.single_floatp()) {
         SingleFloat_sp ff = gc::As<SingleFloat_sp>(fobj);
         fmter % unbox_single_float(ff);
-      } else if (af_bignumP(fobj)) {
+      } else if (core__bignump(fobj)) {
         Bignum_sp flli = gc::As<Bignum_sp>(fobj);
         stringstream ss;
         ss << clasp_to_mpz(flli);
@@ -118,7 +118,7 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
   if (cl__functionp(control)) {
     SIMPLE_ERROR(BF("Add support for functions as FORMAT controls"));
   }
-  if (!af_stringP(control)) {
+  if (!cl__stringp(control)) {
     SIMPLE_ERROR(BF("FORMAT control must be a string or a function - you gave: %s") % _rep_(control));
   }
   string ts = gc::As<Str_sp>(control)->get();

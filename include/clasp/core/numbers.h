@@ -412,7 +412,7 @@ class Float_O : public Real_O {
   LISP_CLASS(core, ClPkg, Float_O, "float",Real_O);
 
 public:
-CL_NAME("core:castToInteger");
+CL_LISPIFY_NAME("core:castToInteger");
 CL_DEFMETHOD   virtual Integer_sp castToInteger() const { SUBIMP(); };
 
   virtual bool isnan_() const { SUBIMP(); };
@@ -1060,7 +1060,8 @@ TRANSLATE(core::Complex_O); // superclass Number_O
 
 namespace core {
 
-inline bool clasp_plusp(Real_sp num) {
+  CL_PKG_NAME(ClPkg,plusp);
+  CL_DEFUN inline bool clasp_plusp(Real_sp num) {
   if (num.fixnump()) {
     return num.unsafe_fixnum() > 0;
   } else if (num.single_floatp()) {
@@ -1069,7 +1070,8 @@ inline bool clasp_plusp(Real_sp num) {
   return num->plusp_();
 }
 
-inline bool clasp_minusp(Real_sp num) {
+  CL_PKG_NAME(ClPkg,minusp);
+ CL_DEFUN inline bool clasp_minusp(Real_sp num) {
   if (num.fixnump()) {
     return num.unsafe_fixnum() < 0;
   } else if (num.single_floatp()) {
@@ -1078,21 +1080,24 @@ inline bool clasp_minusp(Real_sp num) {
   return num->minusp_();
 }
 
-inline bool clasp_evenp(Integer_sp num) {
+ CL_PKG_NAME(ClPkg,evenp);
+ CL_DEFUN inline bool clasp_evenp(Integer_sp num) {
   if (num.fixnump()) {
     return (num.unsafe_fixnum() % 2) == 0;
   }
   return num->evenp_();
 }
 
-inline bool clasp_oddp(Integer_sp num) {
+ CL_PKG_NAME(ClPkg,oddp);
+ CL_DEFUN inline bool clasp_oddp(Integer_sp num) {
   if (num.fixnump()) {
     return (num.unsafe_fixnum() % 2) == 1;
   }
   return num->oddp_();
 }
 
-inline Number_sp clasp_abs(Number_sp num) {
+ CL_PKG_NAME(ClPkg,abs);
+ CL_DEFUN inline Number_sp clasp_abs(Number_sp num) {
   if (num.fixnump()) {
     return immediate_fixnum<Number_O>(std::abs(num.unsafe_fixnum()));
   } else if (num.single_floatp()) {
@@ -1101,7 +1106,8 @@ inline Number_sp clasp_abs(Number_sp num) {
   return num->abs_();
 }
 
-inline Number_sp clasp_signum(Number_sp num) {
+ CL_PKG_NAME(ClPkg,signum);
+CL_DEFUN inline Number_sp clasp_signum(Number_sp num) {
   if (num.fixnump()) {
     Fixnum fn = num.unsafe_fixnum();
     if (fn == 0)
@@ -1120,7 +1126,8 @@ inline Number_sp clasp_signum(Number_sp num) {
   return num->signum_();
 }
 
-inline Number_sp clasp_one_plus(Number_sp num) {
+ CL_LISPIFY_NAME(onePlus);
+ CL_DEFUN inline Number_sp clasp_one_plus(Number_sp num) {
   if (num.fixnump()) {
     return immediate_fixnum<Number_O>(num.unsafe_fixnum() + 1);
   } else if (num.single_floatp()) {
@@ -1131,7 +1138,8 @@ inline Number_sp clasp_one_plus(Number_sp num) {
   return num->onePlus_();
 }
 
-inline Number_sp clasp_one_minus(Number_sp num) {
+ CL_LISPIFY_NAME(oneMinus);
+ CL_DEFUN inline Number_sp clasp_one_minus(Number_sp num) {
   if (num.fixnump()) {
     return immediate_fixnum<Number_O>(num.unsafe_fixnum() - 1);
   } else if (num.single_floatp()) {
@@ -1152,7 +1160,8 @@ inline bool clasp_zerop(Number_sp num) {
   return num->zerop_();
 }
 
-inline Number_sp clasp_negate(Number_sp num) {
+ CL_LISPIFY_NAME(negate);
+ CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
   if (num.fixnump()) {
     return immediate_fixnum<Number_O>(-num.unsafe_fixnum());
   } else if (num.single_floatp()) {

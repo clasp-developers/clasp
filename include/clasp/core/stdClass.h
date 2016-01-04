@@ -42,7 +42,7 @@ namespace core {
 
 SMART(StdClass);
 class StdClass_O : public Class_O {
-  LISP_META_CLASS(StandardClass);
+  LISP_META_CLASS(core::StandardClass_O);
   LISP_CLASS(core, ClosPkg, StdClass_O, "STD-CLASS",Class_O);
 
 public:

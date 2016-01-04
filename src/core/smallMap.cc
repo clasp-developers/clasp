@@ -50,7 +50,7 @@ CL_DEFUN SmallMap_sp core__make_small_map() {
   return sm;
 };
 
-CL_NAME("map_find");
+CL_LISPIFY_NAME("map_find");
 CL_DEFMETHOD T_sp SmallMap_O::find(T_sp key, T_sp defval) {
   map_type::iterator it = this->map.find(key);
   if (it == this->map.end()) {
@@ -59,7 +59,7 @@ CL_DEFMETHOD T_sp SmallMap_O::find(T_sp key, T_sp defval) {
   return (*it).second;
 }
 
-CL_NAME("map_setf");
+CL_LISPIFY_NAME("map_setf");
 CL_DEFMETHOD void SmallMap_O::setf(T_sp key, T_sp val) {
   pair<map_type::iterator, bool> found = this->map.insert(std::make_pair(key, val));
   found.first->second = val;

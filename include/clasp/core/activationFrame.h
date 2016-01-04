@@ -50,8 +50,7 @@ namespace core {
 // TODO: and it should inherit from Environment_O not RuntimeVisibleEnvironment_O
 class ActivationFrame_O : public Environment_O // RuntimeVisibleEnvironment_O
                           {
-  LISP_BASE1(Environment_O); // RuntimeVisibleEnvironment_O);
-  LISP_VIRTUAL_CLASS(core, CorePkg, ActivationFrame_O, "ActivationFrame");
+  LISP_VIRTUAL_CLASS(core, CorePkg, ActivationFrame_O, "ActivationFrame",Environment_O);
 
 protected:
 public:

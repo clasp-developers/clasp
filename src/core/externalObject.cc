@@ -118,8 +118,9 @@ EXPOSE_CLASS(core, ForeignData_O);
 #define ARGS_ForeignData_O_allocateForeignObject "(kind)"
 #define DECL_ForeignData_O_allocateForeignObject ""
 #define DOCS_ForeignData_O_allocateForeignObject "Allocate a chunk of memory for foreign-data"
-
-ForeignData_sp ForeignData_O::allocateForeignObject(T_sp kind) {
+CL_LISPIFY_NAME(allocateForeignObject);
+CL_DOCSTRING("Allocate a chunk of memory for foreign-data");
+CL_DEFUN ForeignData_sp ForeignData_O::allocateForeignObject(T_sp kind) {
   GC_ALLOCATE(ForeignData_O, obj);
   Cons_sp ckind = gc::As<Cons_sp>(kind);
   ASSERTF(oCar(ckind) == cl::_sym_array || oCar(ckind) == kw::_sym_array, BF("The first element of a foreign-data type must be ARRAY or :ARRAY"));
@@ -132,7 +133,7 @@ ForeignData_sp ForeignData_O::allocateForeignObject(T_sp kind) {
 void ForeignData_O::exposeCando(Lisp_sp lisp) {
   class_<ForeignData_O>()
       .def("freeForeignObject", &ForeignData_O::freeForeignObject);
-  af_def(CurrentPkg, "allocateForeignObject", &ForeignData_O::allocateForeignObject, ARGS_ForeignData_O_allocateForeignObject, DECL_ForeignData_O_allocateForeignObject, DOCS_ForeignData_O_allocateForeignObject);
+// af_def(CurrentPkg, "allocateForeignObject", &ForeignData_O::allocateForeignObject, ARGS_ForeignData_O_allocateForeignObject, DECL_ForeignData_O_allocateForeignObject, DOCS_ForeignData_O_allocateForeignObject);
 }
 
 void ForeignData_O::exposePython(Lisp_sp lisp) {
@@ -151,7 +152,7 @@ void ForeignData_O::allocate(T_sp kind, int ownershipFlags, size_t size) {
   this->_Data = (void *)malloc(size);
 }
 
-CL_NAME("freeForeignObject");
+CL_LISPIFY_NAME("freeForeignObject");
 CL_DEFMETHOD void ForeignData_O::freeForeignObject() {
   if (this->_Data) {
     free(this->_Data);

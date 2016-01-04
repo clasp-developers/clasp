@@ -406,13 +406,15 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   BuiltInClass_sp classDummy;
   {
     _BLOCK_TRACE("Initialize core classes");
-    coreExposerPtr = CoreExposer::create_core_packages_and_classes();
-    // TODO: Should this be a WeakKeyHashTable?
-    {
-      _BLOCK_TRACE("Define important predefined symbols for CorePkg");
-      coreExposerPtr->define_essential_globals(_lisp);
-      this->_PackagesInitialized = true;
-    }
+    initialize_clasp();
+    _lisp->_Roots._CorePackage = gc::As<Package_sp>(_lisp->findPackage(CorePkg));
+    _lisp->_Roots._KeywordPackage = gc::As<Package_sp>(_lisp->findPackage(KeywordPkg));
+    _lisp->_Roots._KeywordPackage->setKeywordPackage(true);
+    _lisp->_Roots._CommonLispPackage = gc::As<Package_sp>(_lisp->findPackage(ClPkg));
+    initializeAllClSymbols(_lisp->_Roots._CommonLispPackage);
+    coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocate_class(_lisp);
+    coreExposerPtr->define_essential_globals(_lisp);
+    this->_PackagesInitialized = true;
   }
   {
     _BLOCK_TRACE("Create some housekeeping objects");
@@ -420,12 +422,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_Roots._SetfDefinitions = HashTableEq_O::create_default();
     this->_Roots._SingleDispatchGenericFunctionTable = HashTableEq_O::create_default();
   }
-  {
-    _BLOCK_TRACE("Initialize special forms and macros");
-    this->_EnvironmentInitialized = true;
-    eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);
-    //	    this->createHiddenBinder();
-  }
+  this->_EnvironmentInitialized = true;
   this->_BuiltInClassesInitialized = true;
   //	LOG(BF("ALL CLASSES: %s")% this->dumpClasses() );
   //    this->createNils();
@@ -451,18 +448,21 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 
     //            testStrings();
     initialize_Lisp_O();
-    initialize_functions();
     core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
-    initialize_documentation_primitives(_lisp);
-    initialize_source_info(ht);
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
     initialize_object();
     initialize_foundation();
+    initialize_functions();
+    eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);
+    initialize_classes_and_methods();
+    initialize_source_info();
+    initialize_cache();
+    initialize_backquote(_lisp);
+
+    // Rest may be unnecessary after new boot-strapping approach is developed
     initialize_primitives();
     initialize_stacks();
     initialize_compiler_primitives(_lisp);
-    initialize_cache();
-    initialize_backquote(_lisp);
 #ifdef DEBUG_CL_SYMBOLS
     initializeAllClSymbolsFunctions();
 #endif
@@ -999,7 +999,6 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
     cnicknames = Cons_O::create(Str_O::create(nickName), cnicknames);
   }
   newPackage->setNicknames(cnicknames);
-
   for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
     Package_sp usePkg = gc::As<Package_sp>(this->findPackage(*jit, true));
     LOG(BF("Using package[%s]") % usePkg->getName());
@@ -1313,7 +1312,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
         this->print(BF(";;--read-%s-------------\n#|\n%s\n|#----------\n") % suppress.c_str() % _rep_(expression));
       }
       _BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__());
-      if (af_keywordP(expression)) {
+      if (cl__keywordp(expression)) {
         ql::list tplCmd;
         tplCmd << expression;
         while (T_sp exp = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>())) {
@@ -1598,7 +1597,7 @@ CL_LAMBDA(new-value name);
 CL_DECLARE();
 CL_DOCSTRING("setf_findClass");
 CL_DEFUN Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool errorp, T_sp env) {
-  if (!af_classp(newValue)) {
+  if (!cl__classp(newValue)) {
     SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
   }
   if (_lisp->bootClassTableIsValid()) {
@@ -1606,7 +1605,7 @@ CL_DEFUN Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool erro
   }
   HashTable_sp ht = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
   T_sp oldClass = eval::funcall(cl::_sym_findClass, name, _Nil<T_O>());
-  if (af_classp(oldClass)) {
+  if (cl__classp(oldClass)) {
     SIMPLE_ERROR(BF("The built-in class associated to the CL specifier %s cannot be changed") % _rep_(name));
   } else if (newValue.nilp()) {
     ht->remhash(name);
@@ -1705,7 +1704,7 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
     return form;
   } else if (Cons_sp cform = form.asOrNull<Cons_O>()) {
     T_sp head = oCar(cform);
-    if (cl_symbolp(head)) {
+    if (cl__symbolp(head)) {
       Symbol_sp headSymbol = gc::As<Symbol_sp>(head);
       if (env.nilp()) {
         expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
@@ -2128,7 +2127,7 @@ CL_LAMBDA(continue-string datum initializers);
 CL_DECLARE();
 CL_DOCSTRING("universalErrorHandler");
 CL_DEFUN T_mv core__universal_error_handler(T_sp continueString, T_sp datum, List_sp initializers) {
-  if (af_stringP(datum)) {
+  if (cl__stringp(datum)) {
     cl__format(_lisp->_true(), datum, initializers);
   } else {
     stringstream ss;
@@ -2320,7 +2319,7 @@ Symbol_sp Lisp_O::getClassSymbolForClassName(const string &name) {
 }
 
 T_sp Lisp_O::createObjectOfClass(T_sp mc) {
-  if (af_classp(mc)) {
+  if (cl__classp(mc)) {
     LOG(BF("createObjectOfClass(%s)") % _rep_(mc));
     IMPLEMENT_ME();
     T_sp obj = gc::As<Class_sp>(mc)->allocate_newNil();
@@ -2383,7 +2382,10 @@ void Lisp_O::switchToClassNameHashTable() {
 #define ARGS_Lisp_O_find_single_dispatch_generic_function "(gf-symbol &optional errorp)"
 #define DECL_Lisp_O_find_single_dispatch_generic_function ""
 #define DOCS_Lisp_O_find_single_dispatch_generic_function "Lookup a single dispatch generic function. If errorp is truen and the generic function isn't found throw an exception"
-SingleDispatchGenericFunction_sp Lisp_O::find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp) {
+CL_LAMBDA(gf-symbol &optional errorp);
+CL_DOCSTRING("Lookup a single dispatch generic function. If errorp is truen and the generic function isn't found throw an exception");
+CL_LISPIFY_NAME(find_single_dispatch_generic_function);
+CL_DEFUN SingleDispatchGenericFunction_sp Lisp_O::find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp) {
   T_sp fn = _lisp->_Roots._SingleDispatchGenericFunctionTable->gethash(gfSym, _Nil<T_O>());
   if (fn.nilp()) {
     if (errorp) {
@@ -2397,7 +2399,10 @@ SingleDispatchGenericFunction_sp Lisp_O::find_single_dispatch_generic_function(S
 #define ARGS_Lisp_O_setf_find_single_dispatch_generic_function "(gf-symbol gf)"
 #define DECL_Lisp_O_setf_find_single_dispatch_generic_function ""
 #define DOCS_Lisp_O_setf_find_single_dispatch_generic_function "Define a single dispatch generic function "
-SingleDispatchGenericFunction_sp Lisp_O::setf_find_single_dispatch_generic_function(Symbol_sp gfName, SingleDispatchGenericFunction_sp gf) {
+CL_LAMBDA(gf-symbol gf)
+CL_LISPIFY_NAME(setf_find_single_dispatch_generic_function);
+CL_DOCSTRING("Define a single dispatch generic function");
+CL_DEFUN SingleDispatchGenericFunction_sp Lisp_O::setf_find_single_dispatch_generic_function(Symbol_sp gfName, SingleDispatchGenericFunction_sp gf) {
   _lisp->_Roots._SingleDispatchGenericFunctionTable->setf_gethash(gfName, gf);
   return gf;
 }
@@ -2405,7 +2410,8 @@ SingleDispatchGenericFunction_sp Lisp_O::setf_find_single_dispatch_generic_funct
 #define ARGS_Lisp_O_forget_all_single_dispatch_generic_functions "()"
 #define DECL_Lisp_O_forget_all_single_dispatch_generic_functions ""
 #define DOCS_Lisp_O_forget_all_single_dispatch_generic_functions "Forget all single dispatch functions"
-void Lisp_O::forget_all_single_dispatch_generic_functions() {
+CL_LISPIFY_NAME(forget_all_single_dispatch_generic_functions);
+CL_DEFUN void Lisp_O::forget_all_single_dispatch_generic_functions() {
   _lisp->_Roots._SingleDispatchGenericFunctionTable->clrhash();
 }
 
@@ -2994,24 +3000,24 @@ ChangePackage::~ChangePackage() {
 void initialize_Lisp_O() {
   //	printf("%s:%d in core::Lisp_O::exposeCando\n", __FILE__, __LINE__ );
   SYMBOL_SC_(CorePkg, find_single_dispatch_generic_function);
-  af_def(CorePkg, "find-single-dispatch-generic-function",
-         &Lisp_O::find_single_dispatch_generic_function,
-         ARGS_Lisp_O_find_single_dispatch_generic_function,
-         DECL_Lisp_O_find_single_dispatch_generic_function,
-         DOCS_Lisp_O_find_single_dispatch_generic_function);
   SYMBOL_SC_(CorePkg, setf_find_single_dispatch_generic_function);
-  af_def(CorePkg, "setf-find-single-dispatch-generic-function",
-         &Lisp_O::setf_find_single_dispatch_generic_function,
-         ARGS_Lisp_O_setf_find_single_dispatch_generic_function,
-         DECL_Lisp_O_setf_find_single_dispatch_generic_function,
-         DOCS_Lisp_O_setf_find_single_dispatch_generic_function);
   SYMBOL_SC_(CorePkg, forget_all_single_dispatch_generic_functions);
-  af_def(CorePkg, "forget-all-single-dispatch-generic-functions",
-         &Lisp_O::forget_all_single_dispatch_generic_functions,
-         ARGS_Lisp_O_forget_all_single_dispatch_generic_functions,
-         DECL_Lisp_O_forget_all_single_dispatch_generic_functions,
-         DOCS_Lisp_O_forget_all_single_dispatch_generic_functions);
-
+//  af_def(CorePkg, "find-single-dispatch-generic-function",
+//         &Lisp_O::find_single_dispatch_generic_function,
+//         ARGS_Lisp_O_find_single_dispatch_generic_function,
+//         DECL_Lisp_O_find_single_dispatch_generic_function,
+//         DOCS_Lisp_O_find_single_dispatch_generic_function);
+//  af_def(CorePkg, "setf-find-single-dispatch-generic-function",
+//         &Lisp_O::setf_find_single_dispatch_generic_function,
+//         ARGS_Lisp_O_setf_find_single_dispatch_generic_function,
+//         DECL_Lisp_O_setf_find_single_dispatch_generic_function,
+//         DOCS_Lisp_O_setf_find_single_dispatch_generic_function);
+//  af_def(CorePkg, "forget-all-single-dispatch-generic-functions",
+//         &Lisp_O::forget_all_single_dispatch_generic_functions,
+//         ARGS_Lisp_O_forget_all_single_dispatch_generic_functions,
+//         DECL_Lisp_O_forget_all_single_dispatch_generic_functions,
+//         DOCS_Lisp_O_forget_all_single_dispatch_generic_functions);
+//
   SYMBOL_SC_(CorePkg, stackMonitor);
   SYMBOL_SC_(CorePkg, setupStackMonitor);
 

@@ -355,7 +355,7 @@ CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
   }
 L1:
   if (!r)
-    r = SimpleBitVector_O::create(d);
+    r = SimpleBitVector_O::make(d);
   rp = r->bytes();
   ro = r->offset();
   op = fixnum_operations[opval];
@@ -415,8 +415,7 @@ ERROR:
 }
 
 /*! Copied from ECL */
-T_sp
-cl_logbitp(Integer_sp p, Integer_sp x) {
+CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
   bool i;
   if (p.fixnump()) {
     cl_index n = clasp_to_size(p);
@@ -736,6 +735,6 @@ void initialize_bits() {
   cl::_sym_boole_set->defconstant(make_fixnum(boole_set));
   cl::_sym_boole_xor->defconstant(make_fixnum(boole_xor));
 
-  af_def(ClPkg, "logbitp", &cl_logbitp);
+//  af_def(ClPkg, "logbitp", &cl_logbitp);
 };
 };

@@ -263,7 +263,7 @@ size_t_pair sequenceStartEnd(const char *file, uint line, const char *functionNa
   size_t_pair p;
   size_t l;
   p.length = l = cl__length(sequence);
-  unlikely_if(!af_fixnumP(start) || clasp_minusp(start)) {
+  unlikely_if(!core__fixnump(start) || clasp_minusp(start)) {
     af_wrongTypeKeyArg(file, line, _lisp->internWithPackageName(functionName, packageName.c_str()),
                        kw::_sym_start, start, cl::_sym_UnsignedByte);
   }
@@ -271,7 +271,7 @@ size_t_pair sequenceStartEnd(const char *file, uint line, const char *functionNa
   if (end.nilp()) {
     p.end = l;
   } else {
-    unlikely_if(!af_fixnumP(end) || clasp_minusp(gc::As<Fixnum_sp>(end))) {
+    unlikely_if(!core__fixnump(end) || clasp_minusp(gc::As<Fixnum_sp>(end))) {
       af_wrongTypeKeyArg(file, line, _lisp->internWithPackageName(functionName, packageName.c_str()),
                          kw::_sym_end, end,
                          Cons_O::createList(cl::_sym_or, cl::_sym_null, cl::_sym_UnsignedByte));

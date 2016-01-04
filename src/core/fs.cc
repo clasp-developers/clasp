@@ -79,7 +79,7 @@ bool Path_O::exists() {
   return boost_filesystem::exists(this->_Path);
 }
 
-Cons_sp directory(Path_sp rpath) {
+CL_DEFUN Cons_sp core__directory(Path_sp rpath) {
   bf::path p(rpath->getPath());
   Cons_sp list, tail;
   Str_sp fileName;
@@ -93,19 +93,21 @@ Cons_sp directory(Path_sp rpath) {
   return list->cdr();
 }
 
-void rename(Path_sp rpath1, Path_sp rpath2) {
+void core__rename(Path_sp rpath1, Path_sp rpath2) {
   return bf::rename(rpath1->getPath(), rpath2->getPath());
 }
 
-bool delete_file(Path_sp rpath) {
+CL_DEFUN bool core__delete_file(Path_sp rpath) {
   return bf::remove(rpath->getPath());
 }
 
-int removeAll(Path_sp rpath) {
+CL_NAME(DELETE-FILE-ALL);
+CL_DEFUN int removeAll(Path_sp rpath) {
   return bf::remove_all(rpath->getPath());
 }
 
-bool createDirectory(Path_sp rpath) {
+CL_LISPIFY_NAME(createDirectory);
+CL_DEFUN bool createDirectory(Path_sp rpath) {
   return bf::create_directory(rpath->getPath());
 }
 
@@ -117,11 +119,11 @@ class Path_Exposer : public Exposer {
         .def("stem", &Path_O::stem)
         .def("extension", &Path_O::extension)
         .def("exists", &Path_O::exists);
-    af_def(CorePkg, "directory", &directory);
-    af_def(CorePkg, "delete-file", &delete_file);
-    af_def(CorePkg, "rename", &rename);
-    af_def(CorePkg, "delete-file-all", &removeAll);
-    af_def(CorePkg, "createDirectory", &createDirectory);
+//    af_def(CorePkg, "directory", &directory);
+//    af_def(CorePkg, "delete-file", &delete_file);
+//    af_def(CorePkg, "rename", &rename);
+//    af_def(CorePkg, "delete-file-all", &removeAll);
+//    af_def(CorePkg, "createDirectory", &createDirectory);
   }
 
   void exposePython() {

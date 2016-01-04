@@ -64,7 +64,7 @@ void dumpSourceInfo(core::T_sp exp) {
     } else {
       printf("     No source file info found\n");
     }
-    if (core::cl_consp(exp)) {
+    if (core::cl__consp(exp)) {
       dumpSourceInfo(oCar(exp));
       dumpSourceInfo(oCdr(exp));
     }
@@ -198,7 +198,7 @@ CL_DECLARE();
 CL_DOCSTRING("walkToFindSourceInfo");
 CL_DEFUN T_mv core__walk_to_find_source_info(T_sp obj) {
   if (_lisp->sourceDatabase().notnilp()) {
-    if (cl_consp(obj)) {
+    if (cl__consp(obj)) {
       T_sp tspi = gc::As<SourceManager_sp>(_lisp->sourceDatabase())->lookupSourcePosInfo(obj);
       if (SourcePosInfo_sp spi = tspi.asOrNull<SourcePosInfo_O>()) {
         SourceFileInfo_sp sfi = core__source_file_info(make_fixnum(spi->fileHandle()));
@@ -209,7 +209,7 @@ CL_DEFUN T_mv core__walk_to_find_source_info(T_sp obj) {
       }
       T_sp cur = obj;
       for (; cur.notnilp(); cur = oCdr(cur)) {
-        if (cl_consp(cur)) {
+        if (cl__consp(cur)) {
           T_mv sfisub = core__walk_to_find_source_info(oCar(cur));
           if (sfisub.notnilp())
             return sfisub;
@@ -227,7 +227,7 @@ CL_DECLARE();
 CL_DOCSTRING("Walk down the tree and carry source info down");
 CL_DEFUN void core__walk_to_assign_source_pos_info(T_sp obj, SourcePosInfo_sp topInfo, T_sp stream) {
   if (_lisp->sourceDatabase().notnilp()) {
-    if (cl_consp(obj)) {
+    if (cl__consp(obj)) {
       T_sp curInfo = gc::As<SourceManager_sp>(_lisp->sourceDatabase())->lookupSourcePosInfo(obj);
       if (curInfo.nilp()) {
         curInfo = topInfo;
@@ -241,10 +241,10 @@ CL_DEFUN void core__walk_to_assign_source_pos_info(T_sp obj, SourcePosInfo_sp to
         }
       }
       T_sp car = oCar(obj);
-      if (cl_consp(car))
+      if (cl__consp(car))
         core__walk_to_assign_source_pos_info(car, curInfo, stream);
       T_sp cdr = oCdr(obj);
-      if (cl_consp(cdr))
+      if (cl__consp(cdr))
         core__walk_to_assign_source_pos_info(cdr, curInfo, stream);
     }
   }
@@ -255,14 +255,14 @@ CL_DECLARE();
 CL_DOCSTRING("Walk down the tree and find the first source info you can");
 CL_DEFUN T_sp core__walk_to_find_source_pos_info(T_sp obj, T_sp defaultSpi) {
   if (_lisp->sourceDatabase().notnilp()) {
-    if (cl_consp(obj)) {
+    if (cl__consp(obj)) {
       T_sp spi = gc::As<SourceManager_sp>(_lisp->sourceDatabase())->lookupSourcePosInfo(obj);
       if (spi.notnilp()) {
         return spi;
       }
       T_sp cur = obj;
       for (; cur.notnilp(); cur = oCdr(cur)) {
-        if (cl_consp(cur)) {
+        if (cl__consp(cur)) {
           T_sp spisub = core__walk_to_find_source_pos_info(oCar(cur));
           if (spisub.notnilp())
             return spisub;
@@ -325,7 +325,7 @@ string SourceFileInfo_O::__repr__() const {
   return ss.str();
 }
 
-CL_NAME("SourceFileInfo-sourceDebugNamestring");
+CL_LISPIFY_NAME("SourceFileInfo-sourceDebugNamestring");
 CL_DEFMETHOD string SourceFileInfo_O::sourceDebugNamestring() const {
   if (this->_SourceDebugNamestring.notnilp()) {
     return gc::As<Str_sp>(this->_SourceDebugNamestring)->get();
@@ -502,7 +502,7 @@ T_sp SourceManager_O::duplicateSourcePosInfo(T_sp orig_obj, T_sp new_obj, T_sp m
     if (info.notnilp()) {
       this->registerSourcePosInfo(new_obj, info);
       return info;
-    } else if (cl_consp(orig_obj)) {
+    } else if (cl__consp(orig_obj)) {
       T_sp walkInfo = core__walk_to_find_source_pos_info(orig_obj);
       if (walkInfo.notnilp()) {
         this->registerSourcePosInfo(new_obj, walkInfo);

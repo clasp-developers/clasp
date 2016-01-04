@@ -35,16 +35,6 @@ THE SOFTWARE.
 
 namespace cleavirPrimops {
 
-#pragma GCC visibility push(default)
-#define CleavirPrimopsPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef CleavirPrimopsPkg_SYMBOLS
-#pragma GCC visibility pop
-
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, callWithVariableBound);
 
 void initialize_cleavirPrimopsPackage() {

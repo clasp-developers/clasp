@@ -63,7 +63,7 @@ public:
   //! dimension() ignores the fill pointer
   virtual gc::Fixnum dimension() const { return this->_Contents.size(); };
   //! size is subclassed by StrWithFillPtr_O and uses the fill-pointer
-CL_NAME("core:size");
+CL_LISPIFY_NAME("core:size");
 CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); };
   virtual void swapElements(uint i1, uint i2) {
     char t = this->_Contents[i2];
@@ -196,14 +196,14 @@ struct gctools::GCInfo<core::Str_O> {
 TRANSLATE(core::Str_O);
 
 namespace core {
-T_sp af_base_string_concatenate_(T_sp vargs);
+T_sp core__base_string_concatenate(T_sp vargs);
 
-inline T_sp af_base_string_concatenate(LCC_ARGS_ELLIPSIS) {
+inline T_sp base_string_concatenate(LCC_ARGS_ELLIPSIS) {
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
   VaList_sp valist_sp(&lcc_arglist_s);
-  return af_base_string_concatenate_(valist_sp);
+  return core__base_string_concatenate(valist_sp);
 };
 
 inline claspChar clasp_char(Str_sp s, Fixnum pos) { return s->schar(pos); };

@@ -91,11 +91,11 @@ public:
   uint environmentId() const { return this->_EnvId; };
   void setEnvironmentId(uint id) { this->_EnvId = id; };
   virtual bool environmentp() const { return true; }
-CL_NAME("lexicalEnvironmentP");
+CL_LISPIFY_NAME("lexicalEnvironmentP");
 CL_DEFMETHOD   virtual bool lexicalEnvironmentP() const { return false; };
-CL_NAME("functionContainerEnvironmentP");
+CL_LISPIFY_NAME("functionContainerEnvironmentP");
 CL_DEFMETHOD   virtual bool functionContainerEnvironmentP() const { return false; };
-CL_NAME("unwindProtectEnvironmentP");
+CL_LISPIFY_NAME("unwindProtectEnvironmentP");
 CL_DEFMETHOD   virtual bool unwindProtectEnvironmentP() const { return false; };
   virtual bool catchEnvironmentP() const { return false; };
 
@@ -110,7 +110,7 @@ public:
   virtual bool lexicalSpecialP(Symbol_sp sym) const;
 
   /*! Associate a symbol in the current environment to some meta-data */
-CL_NAME("setf_metadata");
+CL_LISPIFY_NAME("setf_metadata");
 CL_DEFMETHOD   virtual T_sp setf_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
 
   /*! Gather a list of all metadata with the key ordered from outermost environment
@@ -118,7 +118,7 @@ CL_DEFMETHOD   virtual T_sp setf_metadata(Symbol_sp key, T_sp val) { SUBIMP(); }
   virtual List_sp gather_metadata(Symbol_sp key) const;
 
   /*! Push metadata into a Cons associated with the symbol */
-CL_NAME("push_metadata");
+CL_LISPIFY_NAME("push_metadata");
 CL_DEFMETHOD   virtual List_sp push_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
 
   /*! Lookup metadata - return two values
@@ -513,7 +513,7 @@ public:
 
 public:
   virtual string summaryOfContents() const;
-CL_NAME("UnwindProtectEnvironment-cleanupForm");
+CL_LISPIFY_NAME("UnwindProtectEnvironment-cleanupForm");
 CL_DEFMETHOD   List_sp cleanupForm() const { return this->_CleanupForm; };
 
 public:

@@ -43,4 +43,5 @@
     (setf (gethash :init_classes_and_methods_inc_h config) "generated/initClassesAndMethods_inc.h")
     (setf (gethash :source_info_inc_h config) "generated/sourceInfo_inc.h")
     (setf (gethash :symbols_scraped_inc_h config) "generated/symbols_scraped_inc.h")
+    (setf (gethash :enum_inc_h config) "generated/enum_inc.h")
     config))

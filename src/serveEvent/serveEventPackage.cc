@@ -40,7 +40,7 @@ namespace serveEvent {
 #define EXPOSE_TO_CANDO
 #define Use_ServeEventPkg
 #define EXTERN_REGISTER
-#include <generated/initClasses_inc.h>
+//#include <clasp/core/initClasses.h>
 #undef EXTERN_REGISTER
 #undef Use_ServeEventPkg
 #undef EXPOSE_TO_CANDO
@@ -50,35 +50,14 @@ using namespace core;
 
 namespace serveEvent {
 
-#pragma GCC visibility push(default)
-#define ServeEventPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef ServeEventPkg_SYMBOLS
-#pragma GCC visibility pop
 
 void ServeEventExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
-#define ServeEventPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkg, lispname, exportp)          \
-  {                                                            \
-    cname = _lisp->internUniqueWithPackageName(pkg, core::lispify_symbol_name(lispname)); \
-    cname->exportYourself(exportp);                            \
-  }
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef ServeEventPkg_SYMBOLS
-
 #define ALL_STAGES
 #define Use_ServeEventPkg
 #define INVOKE_REGISTER
-#include <generated/initClasses_inc.h>
+//#include <clasp/core/initClasses.h>
 #undef INVOKE_REGISTER
 #undef Use_ServeEventPkg
 #undef ALL_STAGES
@@ -102,19 +81,3 @@ void ServeEventExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
 }
 };
 
-#if USE_INTRUSIVE_SMART_PTR == 1
-#define EXPAND_CLASS_MACROS
-
-#if defined(USE_MPS) // MPS doesn't require INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS
-#define _CLASS_MACRO(_T_) \
-  STATIC_CLASS_INFO(_T_);
-#else
-#define _CLASS_MACRO(_T_) \
-  STATIC_CLASS_INFO(_T_); \
-  INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
-#endif
-
-#include <generated/initClasses_inc.h>
-#undef _CLASS_MACRO
-#undef EXPAND_CLASS_MACROS
-#endif

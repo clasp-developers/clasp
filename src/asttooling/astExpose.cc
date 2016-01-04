@@ -47,6 +47,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/package.h>
 
+#include <clasp/asttooling/astExpose.h>
 #include <clasp/llvmo/translators.h>
 #include <clasp/asttooling/translators.h>
 #include <clasp/asttooling/symbolTable.h>
@@ -1066,12 +1067,11 @@ CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::TemplateSpecializationKind, asttooling::_
 
 namespace asttooling {
 
-#define ClangAstPkg "CLANG-AST"
 
 void initialize_astExpose() {
   SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateSpecializationKindSTAR);
   SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateArgumentArgKindSTAR);
-  core::Package_sp pkg = _lisp->makePackage(ClangAstPkg, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
+  core::Package_sp pkg = _lisp->findPackage(ClangAstPkg); //, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
   pkg->shadow(core::Str_O::create("TYPE"));
   package(ClangAstPkg)[ //,{"CAST"},{"CL","CORE","AST-TOOLING"}) [
     class_<clang::Decl>("Decl", no_default_constructor)

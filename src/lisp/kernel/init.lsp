@@ -7,7 +7,6 @@
 
 ;;(setq *features* (cons :dbg-print *features*))
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
-(export '*echo-repl-tpl-read*)
 (export '(*echo-repl-tpl-read* 
           run-repl 
           *load-current-source-file-info* 
@@ -56,8 +55,7 @@
 ;; Set up a few things for the CLOS package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :clos))
-(export '(standard-class
-          ))
+(export '(standard-class))
 
 ;; Setup a few things for the GRAY streams package
 (eval-when (:execute :compile-toplevel :load-toplevel)

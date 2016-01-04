@@ -60,7 +60,7 @@ class BootStrapCoreSymbolMap // : public gctools::StackRoot
 private:
   map<string, int> _SymbolNamesToIndex;
   gctools::Vec0<SymbolStorage> _IndexToSymbol;
-
+  map<string,list<string>> _PackageUseInfo;
 private:
   static string fullSymbolName(string const &packageName, string const &symbolName);
 
@@ -69,10 +69,12 @@ public:
 
   void finish_setup_of_symbols();
 
-  Symbol_sp allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp = false);
+  void add_package_info(std::string const& pkgName, list<std::string> const& packages_used);
+  
+  Symbol_sp maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp = false);
 
   /*! Throw an exception if symbol not found */
-  Symbol_sp lookupSymbol(string const &packageName, string const &symbolName) const;
+  Symbol_sp lookupSymbol(string const &packageName, string const &symbolName, bool inherited=false) const;
 
   void dump();
 };

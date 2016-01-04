@@ -59,11 +59,11 @@ public: // Functions here
   bool matched(int idx) const;
 
   /*! Return the prefix of the match */
-CL_NAME("regex-match-prefix");
+CL_LISPIFY_NAME("regex-match-prefix");
 CL_DEFMETHOD   string prefix() const { return this->_Match.prefix(); };
 
   /*! Return the suffix of the match */
-CL_NAME("regex-match-suffix");
+CL_LISPIFY_NAME("regex-match-suffix");
 CL_DEFMETHOD   string suffix() const { return this->_Match.suffix(); };
 };
 

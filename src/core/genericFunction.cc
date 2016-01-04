@@ -175,7 +175,7 @@ CL_LAMBDA(args);
 CL_DECLARE();
 CL_DOCSTRING("maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame");
 CL_DEFUN T_sp core__maybe_expand_generic_function_arguments(T_sp args) {
-  if (cl_consp(args)) {
+  if (cl__consp(args)) {
     T_sp first = oCar(args);
     if (first.nilp()) {
       return args;
@@ -229,7 +229,7 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
     // I'm duplicating the fix here - there is also a change in lisp.cc
     T_sp spec_position_arg = T_sp((gc::Tagged)va_arg(cargs, T_O *));
     List_sp eql_spec;
-    if (cl_listp(spec_type) &&
+    if (cl__listp(spec_type) &&
         (eql_spec = gc::As<Cons_sp>(spec_type)->memberEql(spec_position_arg)).notnilp()) {
 // For immediate types we need to make sure that EQL will be true
 #if 1

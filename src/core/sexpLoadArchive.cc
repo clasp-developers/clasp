@@ -116,7 +116,7 @@ void SexpLoadArchive_O::exposeCando(Lisp_sp lisp) {
 void SexpLoadArchive_O::exposePython(Lisp_sp lisp) {
 }
 
-CL_NAME("parseFromObject");
+CL_LISPIFY_NAME("parseFromObject");
 CL_DEFMETHOD void SexpLoadArchive_O::parseFromObject(T_sp object) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
   HashTable_sp objToNode = HashTable_O::create(cl::_sym_eq);
@@ -124,7 +124,7 @@ CL_DEFMETHOD void SexpLoadArchive_O::parseFromObject(T_sp object) {
   this->createContents();
 };
 
-CL_NAME("parseFromStream");
+CL_LISPIFY_NAME("parseFromStream");
 CL_DEFMETHOD void SexpLoadArchive_O::parseFromStream(T_sp streamDesignator) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
   // Don't track source code for archives

@@ -86,7 +86,7 @@ public:
   //! Return the number of set bits
   uint countSet();
   //! Return true if the BitVector contains only 0's
-CL_NAME("core:isZero");
+CL_LISPIFY_NAME("core:isZero");
 CL_DEFMETHOD   bool isZero() { return (this->countSet() == 0); };
 
   void do_subseq(BitVector_sp result, int start, int iend) const;
@@ -125,7 +125,7 @@ class SimpleBitVector_O : public BitVector_O {
   LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector",BitVector_O);
 
 public:
-  static SimpleBitVector_sp create(size_t size);
+  static SimpleBitVector_sp make(size_t size);
 
 private:
   size_t _length;
@@ -144,7 +144,7 @@ class BitVectorWithFillPtr_O : public BitVector_O {
   LISP_CLASS(core, ClPkg, BitVectorWithFillPtr_O, "bit-vector-with-fill-ptr",BitVector_O);
 
 public:
-  static BitVectorWithFillPtr_sp create(size_t size, size_t fill_ptr, bool adjustable);
+  static BitVectorWithFillPtr_sp make(size_t size, size_t fill_ptr, bool adjustable);
 
 private:
   size_t _fill_ptr;

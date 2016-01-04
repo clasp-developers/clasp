@@ -132,7 +132,7 @@ CL_DECLARE();
 CL_DOCSTRING("Dump the load-time-values for the id _name_(string).");
 CL_DEFUN void core__load_time_values_dump_values(T_sp nameOrLtv, T_sp indices) {
   LoadTimeValues_sp ltv;
-  if (af_stringP(nameOrLtv)) {
+  if (cl__stringp(nameOrLtv)) {
     int count = 0;
     ltv = _lisp->findLoadTimeValuesWithNameContaining(gc::As<Str_sp>(nameOrLtv)->get(), count);
     if (count != 1) {
@@ -151,7 +151,7 @@ CL_DECLARE();
 CL_DOCSTRING("Dump the load-time-values for the id _name_(string).");
 CL_DEFUN void core__load_time_values_dump_symbols(T_sp nameOrLtv, T_sp indices) {
   LoadTimeValues_sp ltv;
-  if (af_stringP(nameOrLtv)) {
+  if (cl__stringp(nameOrLtv)) {
     int count = 0;
     ltv = _lisp->findLoadTimeValuesWithNameContaining(gc::As<Str_sp>(nameOrLtv)->get(), count);
     if (count != 1) {
@@ -251,7 +251,7 @@ void LoadTimeValues_O::dumpSymbols(vector<gctools::Fixnum> &indices) {
 }
 
 /*! Ignore extension */
-CL_NAME("data_vectorPushExtend");
+CL_LISPIFY_NAME("data_vectorPushExtend");
 CL_DEFMETHOD int LoadTimeValues_O::data_vectorPushExtend(T_sp val, int extension) {
   int idx = this->_Objects.size();
   this->_Objects.push_back(val);
@@ -263,7 +263,7 @@ void LoadTimeValues_O::symbols_setFillPointer(uint i) {
   this->_Symbols.resize(i);
 }
 
-CL_NAME("symbols_vectorPushExtend");
+CL_LISPIFY_NAME("symbols_vectorPushExtend");
 CL_DEFMETHOD int LoadTimeValues_O::symbols_vectorPushExtend(Symbol_sp val, int extension) {
   int i = this->_Symbols.size();
   this->_Symbols.push_back(val);

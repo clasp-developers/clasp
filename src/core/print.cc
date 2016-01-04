@@ -44,7 +44,7 @@ namespace core {
 cl_index clasp_print_base(void) {
   T_sp object = cl::_sym_STARprint_baseSTAR->symbolValue();
   cl_index base;
-  if (!af_fixnumP(object) || (base = unbox_fixnum(gc::As<Fixnum_sp>(object))) < 2 || base > 36) {
+  if (!core__fixnump(object) || (base = unbox_fixnum(gc::As<Fixnum_sp>(object))) < 2 || base > 36) {
     SIMPLE_ERROR(BF("The value of *PRINT-BASE*\n %s\n"
                     "is not of the expected type (INTEGER 2 36)") %
                  _rep_(object));
@@ -57,7 +57,7 @@ cl_index clasp_print_level(void) {
   gctools::Fixnum level;
   if (object.nilp()) {
     level = MOST_POSITIVE_FIXNUM;
-  } else if (af_fixnumP(object)) {
+  } else if (core__fixnump(object)) {
     level = unbox_fixnum(gc::As<Fixnum_sp>(object));
     if (level < 0) {
     ERROR:
@@ -66,7 +66,7 @@ cl_index clasp_print_level(void) {
                       "is not of the expected type (or NULL (INTEGER 0 *))") %
                    _rep_(object));
     }
-  } else if (af_bignumP(object)) {
+  } else if (core__bignump(object)) {
     goto ERROR;
   } else {
     level = MOST_POSITIVE_FIXNUM;
@@ -79,7 +79,7 @@ cl_index clasp_print_length(void) {
   gctools::Fixnum length;
   if (object.nilp()) {
     length = MOST_POSITIVE_FIXNUM;
-  } else if (af_fixnumP(object)) {
+  } else if (core__fixnump(object)) {
     length = unbox_fixnum(gc::As<Fixnum_sp>(object));
     if (length < 0) {
     ERROR:
@@ -88,7 +88,7 @@ cl_index clasp_print_length(void) {
                       "is not of the expected type (or NULL (INTEGER 0 *))") %
                    _rep_(object));
     }
-  } else if (af_bignumP(object)) {
+  } else if (core__bignump(object)) {
     goto ERROR;
   } else {
     length = MOST_POSITIVE_FIXNUM;

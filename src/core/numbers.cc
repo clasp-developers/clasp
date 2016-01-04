@@ -304,7 +304,8 @@ CL_DEFUN T_mv cl__lognor(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
-Number_sp contagen_add(Number_sp na, Number_sp nb) {
+CL_NAME("TWO-ARG-+");
+CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
     Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
@@ -431,7 +432,8 @@ Number_sp contagen_add(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_END();
 };
 
-Number_sp contagen_sub(Number_sp na, Number_sp nb) {
+CL_NAME("TWO-ARG--");
+CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
     Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
@@ -553,7 +555,8 @@ Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_END();
 }
 
-Number_sp contagen_mul(Number_sp na, Number_sp nb) {
+CL_NAME("TWO-ARG-*");
+CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
     mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
@@ -681,7 +684,8 @@ Complex_sp complex_divide(double ar, double ai,
   return Complex_O::create(DoubleFloat_O::create(z1 / absB), DoubleFloat_O::create(z2 / absB));
 }
 
-Number_sp contagen_div(Number_sp na, Number_sp nb) {
+CL_NAME("TWO-ARG-/");
+CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum:
   case_Bignum_v_Fixnum:
@@ -1106,23 +1110,28 @@ T_sp numbers_monotonic(int s, int t, List_sp args) {
   return _lisp->_true();
 };
 
-bool two_arg__LT_(Number_sp x, Number_sp y) {
+CL_NAME("TWO-ARG-<");
+CL_DEFUN bool two_arg__LT_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) == -1;
 }
 
-bool two_arg__LE_(Number_sp x, Number_sp y) {
+CL_NAME("TWO-ARG-<=");
+CL_DEFUN bool two_arg__LE_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) != 1;
 }
 
-bool two_arg__GT_(Number_sp x, Number_sp y) {
+CL_NAME("TWO-ARG->");
+CL_DEFUN bool two_arg__GT_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) == 1;
 }
 
-bool two_arg__GE_(Number_sp x, Number_sp y) {
+CL_NAME("TWO-ARG->=");
+CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) != -1;
 }
 
-bool two_arg__EQ_(Number_sp x, Number_sp y) {
+CL_NAME("TWO-ARG-=");
+CL_DEFUN bool two_arg__EQ_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) == 0;
 }
 
@@ -1770,13 +1779,13 @@ bool Fixnum_O::eql_(T_sp obj) const {
 	{
 	    DoubleFloat_sp t = obj.as<DoubleFloat_O>();
 	    return this->get() == t->get();
-	} else if ( af_fixnumP(obj) )
+	} else if ( core__fixnump(obj) )
 	{
 	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    bool b = (this->get() == t->get());
 	    LOG(BF("Compared if %d == %d -> %d") % this->get() % t->get() % b  );
 	    return b;
-	} else if ( af_bignumP(obj) )
+	} else if ( core__bignump(obj) )
 	{
 	    IMPLEMENT_ME();
 #if 0
@@ -1901,7 +1910,7 @@ bool ShortFloat_O::eql_(T_sp obj) const {
 	{
 	    ShortFloat_sp t = obj.as<ShortFloat_O>();
 	    return this->get() == t->get();
-	} else if ( af_fixnumP(obj) )
+	} else if ( core__fixnump(obj) )
 	{
 	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
@@ -2031,7 +2040,7 @@ void ShortFloat_O::exposePython(Lisp_sp lisp) {
 	{
 	    SingleFloat_sp t = obj.as<SingleFloat_O>();
 	    return this->get() == t->get();
-	} else if ( af_fixnumP(obj) )
+	} else if ( core__fixnump(obj) )
 	{
 	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
@@ -2180,7 +2189,7 @@ bool DoubleFloat_O::eql_(T_sp obj) const {
 	{
 	    DoubleFloat_sp t = obj.as<DoubleFloat_O>();
 	    return this->get() == t->get();
-	} else if ( af_fixnumP(obj) )
+	} else if ( core__fixnump(obj) )
 	{
 	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
@@ -2307,7 +2316,7 @@ bool LongFloat_O::eqn(T_sp obj) const {
   if (core__long_float_p(obj)) {
     LongFloat_sp t = obj.as<LongFloat_O>();
     return this->get() == t->get();
-  } else if (af_fixnumP(obj)) {
+  } else if (core__fixnump(obj)) {
     Fixnum_sp t = gc::As<Fixnum_sp>(obj);
     return this->get() == t->get();
   }
@@ -3569,9 +3578,9 @@ cl_index clasp_toSize(T_sp f) {
 
 gctools::Fixnum
 fixint(T_sp x) {
-  if (af_fixnumP(x))
+  if (core__fixnump(x))
     return unbox_fixnum(gc::As<Fixnum_sp>(x));
-  if (af_bignumP(x)) {
+  if (core__bignump(x)) {
     IMPLEMENT_MEF(BF("Implement convert Bignum to fixint"));
 #if 0
         if (mpz_fits_slong_p(x->big.big_num)) {

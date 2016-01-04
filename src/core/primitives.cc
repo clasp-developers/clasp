@@ -512,11 +512,11 @@ CL_DEFUN T_mv cl__values_list(List_sp list) {
 }
 
 Symbol_sp functionBlockName(T_sp functionName) {
-  if (cl_symbolp(functionName))
+  if (cl__symbolp(functionName))
     return gc::As<Symbol_sp>(functionName);
-  if (cl_consp(functionName)) {
+  if (cl__consp(functionName)) {
     List_sp cfn = functionName;
-    if (oCar(cfn) == cl::_sym_setf && cl_symbolp(oCadr(cfn)) & oCadr(cfn).notnilp()) {
+    if (oCar(cfn) == cl::_sym_setf && cl__symbolp(oCadr(cfn)) & oCadr(cfn).notnilp()) {
       return gc::As<Symbol_sp>(oCadr(cfn));
     }
   }
@@ -565,7 +565,7 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
     if (cl__atom(element)) {
       firsts << element;
       seconds << _Nil<T_O>();
-    } else if (cl_consp(element)) {
+    } else if (cl__consp(element)) {
       List_sp pair = element;
       size_t pairlen = cl__length(pair);
       if (pairlen == 2 || pairlen == 1) {
@@ -748,17 +748,17 @@ CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
   // ignore env
   if (cl__numberp(obj))
     return true;
-  if (af_characterP(obj))
+  if (cl__characterp(obj))
     return true;
-  if (af_arrayP(obj))
+  if (core__arrayp(obj))
     return true;
   // TODO add various kinds of array
-  if (cl_consp(obj) && oCar(obj) == cl::_sym_quote)
+  if (cl__consp(obj) && oCar(obj) == cl::_sym_quote)
     return true;
   if (obj.nilp())
     return true;
-  if (cl_symbolp(obj)) {
-    if (af_keywordP(obj))
+  if (cl__symbolp(obj)) {
+    if (cl__keywordp(obj))
       return true;
     return gc::As<Symbol_sp>(obj)->isConstant();
   }
@@ -834,11 +834,11 @@ CL_DEFUN T_sp core__STARfset(T_sp functionName, Function_sp functionObject, T_sp
   if (comp::_sym_STARall_functions_for_one_compileSTAR->boundP()) {
     functionObject->closure->setAssociatedFunctions(comp::_sym_STARall_functions_for_one_compileSTAR->symbolValue());
   }
-  if (cl_symbolp(functionName)) {
+  if (cl__symbolp(functionName)) {
     Symbol_sp symbol = gc::As<Symbol_sp>(functionName);
     symbol->setf_symbolFunction(functionObject);
     return functionObject;
-  } else if (cl_consp(functionName)) {
+  } else if (cl__consp(functionName)) {
     SYMBOL_EXPORT_SC_(ClPkg, setf);
     List_sp cur = functionName;
     if (oCar(cur) == cl::_sym_setf) {
@@ -854,10 +854,10 @@ CL_LAMBDA(function-name);
 CL_DECLARE();
 CL_DOCSTRING("fdefinition");
 CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
-  if (cl_symbolp(functionName)) {
+  if (cl__symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
     return sym->symbolFunction();
-  } else if (cl_consp(functionName)) {
+  } else if (cl__consp(functionName)) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
@@ -876,10 +876,10 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
   if (functionName.nilp()) {
     return false;
   }
-  if (cl_symbolp(functionName)) {
+  if (cl__symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
     return sym->fboundp();
-  } else if (cl_consp(functionName)) {
+  } else if (cl__consp(functionName)) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
@@ -894,11 +894,11 @@ CL_LAMBDA(function-name);
 CL_DECLARE();
 CL_DOCSTRING("fmakunbound");
 CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
-  if (cl_symbolp(functionName)) {
+  if (cl__symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
     sym->setf_symbolFunction(_Unbound<Function_O>());
     return (Values(sym));
-  } else if (cl_consp(functionName)) {
+  } else if (cl__consp(functionName)) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
@@ -1340,12 +1340,12 @@ CL_DEFUN Symbol_mv cl__gensym(T_sp x) {
     cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter + 1));
     ss << "G";
     ss << counter;
-  } else if (af_stringP(x)) {
+  } else if (cl__stringp(x)) {
     int counter = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()));
     cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter + 1));
     ss << gc::As<Str_sp>(x)->get();
     ss << counter;
-  } else if (af_integerP(x)) {
+  } else if (cl__integerp(x)) {
     int counter = clasp_to_int(gc::As<Integer_sp>(x));
     ASSERTF(counter >= 0, BF("gensym argument %d must be >= 0") % counter);
     ss << "G";
@@ -1358,9 +1358,9 @@ CL_DEFUN Symbol_mv cl__gensym(T_sp x) {
   return (Values(sym));
 }
 
-CL_          LAMBDA(x);
-CL_          DECLARE();
-CL_          DOCSTRING("type_to_symbol");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("type_to_symbol");
 CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -1444,14 +1444,14 @@ T_sp type_of(T_sp x) {
       ql::list res(_lisp);
       res << cl::_sym_integer << ix << ix;
       return res.cons();
-    } else if (af_characterP(x)) {
+    } else if (cl__characterp(x)) {
       if (cl__standard_char_p(gc::As<Character_sp>(x)))
         return cl::_sym_standard_char;
       return cl::_sym_character;
     } else if (Symbol_sp symx = x.asOrNull<Symbol_O>()) {
       if (x == _lisp->_true())
         return cl::_sym_boolean;
-      if (af_keywordP(symx))
+      if (cl__keywordp(symx))
         return cl::_sym_keyword;
       return cl::_sym_symbol;
     } else if (String_sp sx = x.asOrNull<String_O>()) {
@@ -1588,13 +1588,13 @@ InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum 
   return iterator;
 }
 
-CL_NAME("frameIteratorPreviousFrame");
+CL_LISPIFY_NAME("frameIteratorPreviousFrame");
 CL_DEFMETHOD InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::prev(T_sp test) {
   nextInvocationHistoryFrameIteratorThatSatisfiesTest(1, this->asSmartPtr(), test);
   return this->asSmartPtr();
 }
 
-CL_NAME("frameIteratorFunctionName");
+CL_LISPIFY_NAME("frameIteratorFunctionName");
 CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
@@ -1606,7 +1606,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   return closure->name;
 }
 
-CL_NAME("frameIteratorEnvironment");
+CL_LISPIFY_NAME("frameIteratorEnvironment");
 CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::environment() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
@@ -1636,7 +1636,7 @@ Function_sp InvocationHistoryFrameIterator_O::function() {
   return Function_O::make(closure); // Should I really be creating a new Function object every time???
 }
 
-CL_NAME("frameIteratorArguments");
+CL_LISPIFY_NAME("frameIteratorArguments");
 CL_DEFMETHOD Vector_sp InvocationHistoryFrameIterator_O::arguments() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
@@ -1694,32 +1694,32 @@ CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_se
   SIMPLE_ERROR(BF("Direction argument must be one of NIL, :NEXT, :PREV - received %s") % _rep_(direction));
 }
 
-CL_          LAMBDA();
-CL_          DECLARE();
-CL_          DOCSTRING("getInvocationHistoryFrameSearch - Return an top InvocationHistoryFrame as an iterator.");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getInvocationHistoryFrameSearch - Return an top InvocationHistoryFrame as an iterator.");
 CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_top() {
   return core__get_invocation_history_frame_search(_Nil<T_O>(), _Nil<T_O>());
 }
 
-CL_          LAMBDA();
-CL_          DECLARE();
-CL_          DOCSTRING("getInvocationHistoryFrame - Return an indexed InvocationHistoryFrame as an iterator.");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getInvocationHistoryFrame - Return an indexed InvocationHistoryFrame as an iterator.");
 CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame(int idx) {
   Fixnum_sp fnidx = clasp_make_fixnum(idx);
   return core__get_invocation_history_frame_search(fnidx, _Nil<T_O>());
 }
 
-CL_          LAMBDA();
-CL_          DECLARE();
-CL_          DOCSTRING("getInvocationHistoryFramePrev - Return the prev InvocationHistoryFrame before index as an iterator.");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getInvocationHistoryFramePrev - Return the prev InvocationHistoryFrame before index as an iterator.");
 CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_prev(int idx) {
   Fixnum_sp fnidx = clasp_make_fixnum(idx);
   return core__get_invocation_history_frame_search(fnidx, kw::_sym_prev);
 }
 
-CL_          LAMBDA();
-CL_          DECLARE();
-CL_          DOCSTRING("getInvocationHistoryFrameNext - Return the next InvocationHistoryFrame after index as an iterator.");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getInvocationHistoryFrameNext - Return the next InvocationHistoryFrame after index as an iterator.");
 CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_next(int idx) {
   Fixnum_sp fnidx = clasp_make_fixnum(idx);
   return core__get_invocation_history_frame_search(fnidx, kw::_sym_next);

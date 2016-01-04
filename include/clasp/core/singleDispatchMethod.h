@@ -73,17 +73,17 @@ public: // Functions here
   LambdaListHandler_sp method_lambda_list_handler() const { return this->_argument_handler; };
   string __repr__() const;
 
-CL_NAME("singleDispatchMethodName");
+CL_LISPIFY_NAME("singleDispatchMethodName");
 CL_DEFMETHOD   Symbol_sp singleDispatchMethodName() const { return this->_name; };
-CL_NAME("singleDispatchMethodReceiverClass");
+CL_LISPIFY_NAME("singleDispatchMethodReceiverClass");
 CL_DEFMETHOD   Class_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class; };
-CL_NAME("singleDispatchMethodCode");
+CL_LISPIFY_NAME("singleDispatchMethodCode");
 CL_DEFMETHOD   Function_sp singleDispatchMethodCode() const { return this->code; };
-CL_NAME("singleDispatchMethodLambdaListHandler");
+CL_LISPIFY_NAME("singleDispatchMethodLambdaListHandler");
 CL_DEFMETHOD   LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_argument_handler; };
-CL_NAME("singleDispatchMethodDeclares");
+CL_LISPIFY_NAME("singleDispatchMethodDeclares");
 CL_DEFMETHOD   List_sp singleDispatchMethodDeclares() const { return this->_declares; };
-CL_NAME("singleDispatchMethodDocstring");
+CL_LISPIFY_NAME("singleDispatchMethodDocstring");
 CL_DEFMETHOD   T_sp singleDispatchMethodDocstring() const { return this->_docstring; };
 
 }; // SingleDispatchMethod class

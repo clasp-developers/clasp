@@ -40,7 +40,9 @@ namespace core {
 #define ARGS_RandomState_O_make "(&optional state)"
 #define DECL_RandomState_O_make ""
 #define DOCS_RandomState_O_make "getUniversalTime"
-RandomState_sp RandomState_O::make(T_sp state) {
+CL_LAMBDA(&optional state);
+CL_PKG_NAME(ClPkg,make-random-state);
+CL_DEFUN RandomState_sp RandomState_O::make(T_sp state) {
   if (RandomState_sp rs = state.asOrNull<RandomState_O>()) {
     return RandomState_O::create(rs);
   } else if (state.nilp()) {
@@ -76,7 +78,7 @@ EXPOSE_CLASS(core, RandomState_O);
 
 void RandomState_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<RandomState_O>();
-  af_def(ClPkg, "make-random-state", &RandomState_O::make, ARGS_RandomState_O_make, DECL_RandomState_O_make, DOCS_RandomState_O_make);
+//  af_def(ClPkg, "make-random-state", &RandomState_O::make, ARGS_RandomState_O_make, DECL_RandomState_O_make, DOCS_RandomState_O_make);
 }
 
 void RandomState_O::exposePython(core::Lisp_sp lisp) {
