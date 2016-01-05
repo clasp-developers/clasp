@@ -733,7 +733,13 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   printf("%s:%d   ... shutting down now\n", __FILE__, __LINE__);
   exit_code = 0;
 #else
+  #if 1
   exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
+  #else
+  printf("%s:%d Skipping startupFn\n", __FILE__, __LINE__ );
+  test_mps_allocation();
+  exit_code = 0;
+  #endif
 #endif
   processMpsMessages();
 

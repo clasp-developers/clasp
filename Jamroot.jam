@@ -115,9 +115,6 @@ project clasp : requirements
 # CONFIGURE CLASP BUILD
 #
 
-        <define>USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
-
-
 
 ### Print a message for every allocation - this can be turned on and off with (gctools:gc-monitor-allocations t/nil)
     <define>GC_MONITOR_ALLOCATIONS

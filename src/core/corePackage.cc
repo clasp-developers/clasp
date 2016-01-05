@@ -59,8 +59,9 @@ THE SOFTWARE.
 // ------------------- include all headers for corePackage here
 
 #define HEADER_INCLUDES
+#ifndef SCRAPING
 #include <generated/initClasses_inc.h>
-
+#endif
 //
 // Load the gctools::GcInfo<core-classes>::Kind specializers
 //

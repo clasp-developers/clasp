@@ -312,8 +312,8 @@ struct RootClassAllocator {
     GC_FREE(&*memory);
 #endif
 #if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
- #error "I need a way to deallocate MPS allocated objects that are not moveable or collectable"
-      GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
+    THROW_HARD_ERROR(BF("I need a way to deallocate MPS allocated objects that are not moveable or collectable"));
+    GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif
   };
 
@@ -593,7 +593,7 @@ should not be managed by the GC */
       GC_FREE(memory);
 #endif
 #if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
- #error "I need a way to deallocate MPS allocated objects that are not moveable or collectable"
+    THROW_HARD_ERROR(BF(" GCObjectAppropriatePoolAllocator<OT, unmanaged > I need a way to deallocate MPS allocated objects that are not moveable or collectable"));
       GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif
     };

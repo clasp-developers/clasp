@@ -24,12 +24,13 @@
 
 (apropos "cleavir-compile-file")
 
-(clasp-cleavir::cleavir-compile-file "sys:tests;targs.lsp")
+(print "Hello")
+(clasp-cleavir::cleavir-compile-file "sys:kernel;clos;print.lsp" :print t)
 (load "sys:tests;targs.fasl")
 
 (defparameter *foo* 1)
 (clasp-cleavir::cleavir-compile 'foo '(lambda () (let ((*foo* 2)) (print *foo*))) :debug t)
-
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (defmethod make-load-form ((object standard-object) &optional environment) (no-make-load-form object))) :debug t)
 
 (eval '(defmethod foo () (zzzzz)))
 (eval '(defmethod m () (undefined)))

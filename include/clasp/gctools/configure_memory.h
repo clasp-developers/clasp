@@ -30,4 +30,6 @@
 //        <define>MPS_RECOGNIZE_ZERO_TAG   # recognize #b000 as a tagged pointer
 #define ZERO_TAG_MASK 7 // goes with MPS_RECOGNIZE_ZERO_TAG
 
+
+//#define USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
 #endif
