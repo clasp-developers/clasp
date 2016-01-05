@@ -70,6 +70,7 @@ public:
   /*! Very low level - add to internal symbols unless keyword
 	  package, in that case add to external symbols */
   void add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp = false);
+  void bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp = false, bool shadowp = false);
 
 private:
   // This returns a NULL smart_ptr if it doesn't find a conflict

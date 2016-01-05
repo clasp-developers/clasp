@@ -743,8 +743,8 @@ T_mv sp_debug_message(List_sp args, T_sp env) {
 }
 
 T_mv sp_evalWhen(List_sp args, T_sp environment) {
-  SYMBOL_SC_(KeywordPkg, execute);
-  SYMBOL_SC_(KeywordPkg, load_toplevel);
+  SYMBOL_EXPORT_SC_(KeywordPkg, execute);
+  SYMBOL_EXPORT_SC_(KeywordPkg, load_toplevel);
   List_sp situations = oCar(args);
   List_sp body = oCdr(args);
   bool execute = false;

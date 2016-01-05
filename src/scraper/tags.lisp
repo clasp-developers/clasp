@@ -122,10 +122,11 @@
    (c++-name% :initform nil :initarg :c++-name% :reader tags:c++-name%)
    (lisp-name% :initarg :lisp-name% :reader tags:lisp-name%)))
 
-(defclass tags:detailed-symbol-external-tag (symbol-tag) ())
 (defclass tags:symbol-external-tag (symbol-tag) ())
+(defclass tags:symbol-shadow-external-tag (symbol-external-tag) ())
+(defclass tags:detailed-symbol-external-tag (symbol-external-tag) ())
+(defclass tags:symbol-intern-tag (symbol-external-tag) ())
 (defclass tags:symbol-internal-tag (symbol-tag) ())
-(defclass tags:symbol-intern-tag (symbol-tag) ())
 
 (defclass tags:namespace-package-association-tag (source-tag)
   ((namespace% :initarg :namespace% :reader tags:namespace%)
@@ -273,6 +274,15 @@
                    #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
                        (let* ((plist (read (cscrape:buffer-stream bufs))))
                          (make-instance 'tags:symbol-external-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :package% (getf plist :PACKAGE)
+                                        :lisp-name% (getf plist :NAME)
+                                        :c++-name% (getf plist :NAME)))))
+  (add-tag-handler *tag-handlers* 'symbol-shadow-external-tag "SYMBOL_SHADOW_EXTERNAL"
+                   #'(lambda (bufs) ;(declare (core:lambda-name namespace-tag-handler))
+                       (let* ((plist (read (cscrape:buffer-stream bufs))))
+                         (make-instance 'tags:symbol-shadow-external-tag
                                         :file% (getf plist :file)
                                         :line% (getf plist :line)
                                         :package% (getf plist :PACKAGE)

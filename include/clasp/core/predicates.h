@@ -75,7 +75,7 @@ CL_DEFUN inline bool cl__listp(T_sp obj) {
 
 
 bool cl__bit_vector_p(T_sp obj);
-bool cl__classp(T_sp obj);
+bool clos__classp(T_sp obj);
 bool cl__compiled_bodyP(T_sp obj);
 bool cl__compiled_function_p(T_sp obj);
 bool cl__complexp(T_sp obj);

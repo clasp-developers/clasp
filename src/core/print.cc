@@ -239,6 +239,7 @@ CL_DOCSTRING("See CLHS: prin1");
 CL_DEFUN T_sp cl__prin1(T_sp obj, T_sp output_stream_desig) {
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
   //  T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
+//  printf("%s:%d cl__prin1  kw::_sym_stream@%p\n", __FILE__, __LINE__, kw::_sym_stream.raw_());
   eval::funcall(cl::_sym_write, obj, kw::_sym_stream, output_stream_desig);
   return obj;
 }

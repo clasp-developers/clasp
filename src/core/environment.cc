@@ -1465,7 +1465,7 @@ FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::create(T_sp pare
   return environ;
 }
 
-CL_LISPIFY_NAME(makeFunctionCintainerEnvironment);
+CL_LISPIFY_NAME(makeFunctionContainerEnvironment);
 CL_DEFUN FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::make(T_sp parent) {
   FunctionContainerEnvironment_sp environ = FunctionContainerEnvironment_O::create(parent);
   return environ;

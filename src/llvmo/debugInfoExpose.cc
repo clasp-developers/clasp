@@ -247,7 +247,7 @@ namespace llvmo {
 #define ARGS_DIBuilder_O_make "(module)"
 #define DECL_DIBuilder_O_make ""
 #define DOCS_DIBuilder_O_make "make DIBuilder args: module"
-CL_NAME(make-dibuilder);
+CL_LISPIFY_NAME(make-dibuilder);
 CL_DEFUN DIBuilder_sp DIBuilder_O::make(Module_sp module) {
   GC_ALLOCATE(DIBuilder_O, me);
   me->set_wrapped(new llvm::DIBuilder(*(module->wrappedPtr())));
@@ -257,34 +257,44 @@ CL_DEFUN DIBuilder_sp DIBuilder_O::make(Module_sp module) {
 EXPOSE_CLASS(llvmo, DIBuilder_O);
 
 void DIBuilder_O::exposeCando(core::Lisp_sp lisp) {
-  using namespace llvm;
-  DISubprogram (DIBuilder::*createFunction_ptr)(DIDescriptor,    // Scope
-                                                StringRef,       // Name
-                                                StringRef,       // LinkageName
-                                                DIFile,          // File
-                                                unsigned,        // lineno
-                                                DICompositeType, // Ty
-                                                bool,
-                                                bool,
-                                                unsigned,
-                                                unsigned,
-                                                bool,
-                                                Function *,
-                                                MDNode *,
-                                                MDNode *) = &llvm::DIBuilder::createFunction;
   core::externalClass_<DIBuilder_O>()
-      .def("createCompileUnit", &llvm::DIBuilder::createCompileUnit)
-      .def("createFile", &llvm::DIBuilder::createFile)
-      .def("createFunction", createFunction_ptr)
-      .def("createLexicalBlock", &llvm::DIBuilder::createLexicalBlock)
-      .def("createBasicType", &llvm::DIBuilder::createBasicType)
-      .def("createNullPtrType", &llvm::DIBuilder::createNullPtrType)
-      .def("getOrCreateArray", &DIBuilder_O::getOrCreateArray)
-      .def("getOrCreateTypeArray", &DIBuilder_O::getOrCreateTypeArray)
-      .def("createUnspecifiedParameter", &llvm::DIBuilder::createUnspecifiedParameter)
-      .def("createSubroutineType", &llvm::DIBuilder::createSubroutineType)
-      .def("finalize", &llvm::DIBuilder::finalize);
-//  core::af_def(LlvmoPkg, "make-dibuilder", &DIBuilder_O::make, ARGS_DIBuilder_O_make, DECL_DIBuilder_O_make, DOCS_DIBuilder_O_make);
+    .def("getOrCreateArray", &DIBuilder_O::getOrCreateArray)
+    .def("getOrCreateTypeArray", &DIBuilder_O::getOrCreateTypeArray)
+    ;
+  CL_LISPIFY_NAME(createCompileUnit);
+  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createCompileUnit);
+  CL_LISPIFY_NAME(createFile);
+  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createFile);
+  CL_LISPIFY_NAME(createFunction);
+  CL_EXTERN_DEFMETHOD(DIBuilder_O,
+                      (llvm::DISubprogram
+                       (llvm::DIBuilder::*)
+                       ( llvm::DIDescriptor,    // Scope
+                         llvm::StringRef,       // Name
+                         llvm::StringRef,       // LinkageName
+                         llvm::DIFile,          // File
+                         unsigned,        // lineno
+                         llvm::DICompositeType, // Ty
+                         bool,
+                         bool,
+                         unsigned,
+                         unsigned,
+                         bool,
+                         llvm::Function *,
+                         llvm::MDNode *,
+                         llvm::MDNode *))&llvm::DIBuilder::createFunction );
+  CL_LISPIFY_NAME(createLexicalBlock);
+  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createLexicalBlock);
+  CL_LISPIFY_NAME(createBasicType);
+  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createBasicType);
+  CL_LISPIFY_NAME(createNullPtrType);
+  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createNullPtrType);
+  CL_LISPIFY_NAME(createUnspecifiedParameter);
+  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createUnspecifiedParameter);
+  CL_LISPIFY_NAME(createSubroutineType);
+  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createSubroutineType);
+  CL_LISPIFY_NAME(finalize);
+  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::finalize);
 };
 
 void DIBuilder_O::exposePython(core::Lisp_sp lisp) {

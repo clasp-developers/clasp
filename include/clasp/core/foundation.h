@@ -1359,10 +1359,6 @@ core::Symbol_sp lisp_classSymbol() {
 
 namespace boost_filesystem = boost::filesystem;
 
-namespace core {
-void initialize_foundation();
-}
-
 #define clasp_disable_interrupts()
 #define clasp_enable_interrupts()
 

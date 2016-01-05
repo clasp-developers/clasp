@@ -58,7 +58,7 @@ LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
 #define ARGS_clos_setFuncallableInstanceFunction "(instance func)"
 #define DECL_clos_setFuncallableInstanceFunction ""
 #define DOCS_clos_setFuncallableInstanceFunction "setFuncallableInstanceFunction"
-T_sp clos_setFuncallableInstanceFunction(T_sp obj, T_sp func) {
+CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->setFuncallableInstanceFunction(func);
   }
@@ -195,7 +195,7 @@ void Instance_O::exposeCando(core::Lisp_sp lisp) {
 
 //  af_def(CorePkg, "allocateRawInstance", &Instance_O::allocateRawInstance);
   SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
-  ClosDefun(setFuncallableInstanceFunction);
+//  ClosDefun(setFuncallableInstanceFunction);
   SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
 }
 

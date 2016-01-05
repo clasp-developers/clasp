@@ -42,6 +42,6 @@ extern List_sp core__backquote_attach_conses(T_sp items, T_sp result);
 extern T_sp core__backquote_simplify(T_sp x);
 extern T_sp core__backquote_remove_tokens(T_sp x);
 
-void initialize_backquote(Lisp_sp lisp);
+ void initialize_backquote();
 };
 #endif /* _backquote_H_ */

@@ -74,20 +74,25 @@
 
 
 
-(defun generate-expose-one-source-info (sout func)
-  (let* ((lisp-name (lisp-name% func))
-         (file (file% func))
-         (line (line% func))
-         (char-offset (character-offset% func))
-         (docstring (docstring% func)))
-    (format sout " define_source_info( ~a, ~s, ~d, ~d, ~a );~%"
-            lisp-name file char-offset line docstring )))
+(defun generate-expose-one-source-info (sout obj)
+  (let* ((lisp-name (lisp-name% obj))
+         (file (file% obj))
+         (line (line% obj))
+         (char-offset (character-offset% obj))
+         (docstring (docstring% obj))
+         (kind (cond
+                 ((typep obj 'function-mixin) "code_kind")
+                 ((typep obj 'method-mixin) "method_kind")
+                 ((typep obj 'exposed-class) "class_kind")
+                 (t "unknown_kind"))))
+    (format sout " define_source_info( ~a, ~a, ~s, ~d, ~d, ~a );~%"
+            kind lisp-name file char-offset line docstring )))
 
 (defun generate-expose-source-info (sout functions classes cppdefine)
   (format sout "#ifdef ~a~%" cppdefine)
   (dolist (f functions)
     (generate-expose-one-source-info sout f))
-  #+(or)(maphash (lambda (k class)
+  (maphash (lambda (k class)
              (generate-expose-one-source-info sout class)
              (dolist (method (methods% class))
                (generate-expose-one-source-info sout method)))
@@ -296,8 +301,7 @@
   (declare (optimize (debug 3)))
   ;; Uniqify the symbols
   (with-output-to-string (sout)
-    (let (unique-packages
-          (symbols-by-package (make-hash-table :test #'equal))
+    (let ((symbols-by-package (make-hash-table :test #'equal))
           (symbols-by-namespace (make-hash-table :test #'equal))
           (index 0))
       (setq *symbols-by-package* symbols-by-package)
@@ -357,14 +361,13 @@
           (maphash (lambda (namespace namespace-symbols)
                      (dolist (symbol namespace-symbols)
                        (when (string= (name% p) (package-str% symbol))
-                         (format sout " ~a::_sym_~a = bootStrapSymbolMap->maybe_allocate_unique_symbol(\"~a\",core::lispify_symbol_name(~s), ~a);~%"
+                         (format sout " ~a::_sym_~a = bootStrapSymbolMap->maybe_allocate_unique_symbol(\"~a\",core::lispify_symbol_name(~s), ~a,~a);~%"
                                  namespace
                                  (c++-name% symbol)
                                  (package-str% symbol)
                                  (lisp-name% symbol)
-                                 (if (typep symbol 'expose-internal-symbol)
-                                     "false"
-                                     "true")))))
+                                 (if (exported% symbol) "true" "false")
+                                 (if (shadow% symbol) "true" "false")))))
                    symbols-by-namespace))
         (format sout "#endif~%"))
       (progn

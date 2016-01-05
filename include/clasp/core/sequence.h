@@ -69,24 +69,23 @@ namespace core {
 //TRANSLATE(core::Sequence_O);
 
 namespace core {
-uint cl__length(T_sp arg);
+  uint cl__length(T_sp arg);
 
-T_sp cl__reverse(T_sp obj);
-T_sp cl__nreverse(T_sp obj);
+  T_sp cl__reverse(T_sp obj);
+  T_sp cl__nreverse(T_sp obj);
 
-T_sp cl__elt(T_sp sequence, int index);
-T_sp core_setf_elt(T_sp sequence, int index, T_sp value);
+  T_sp cl__elt(T_sp sequence, int index);
+  T_sp core_setf_elt(T_sp sequence, int index, T_sp value);
 
-T_sp cl__subseq(T_sp sequence, int start, T_sp end);
-T_sp core_setf_subseq(T_sp sequence, int start, T_sp end, T_sp newSubseq);
+  T_sp cl__subseq(T_sp sequence, int start, T_sp end);
+  T_sp core_setf_subseq(T_sp sequence, int start, T_sp end, T_sp newSubseq);
 
-T_sp cl__copy_seq(T_sp seq);
+  T_sp cl__copy_seq(T_sp seq);
 
 /* Return a valid start/end/length of a sequence or throw an error if invalid values are provided */
-size_t_pair sequenceStartEnd(const char *sourcefile, uint lineno, const char *functionName,
-                             const string &packageName,
-                             T_sp seq, Fixnum_sp start, T_sp end);
+  size_t_pair sequenceStartEnd(const char *sourcefile, uint lineno, const char *functionName,
+                               const string &packageName,
+                               T_sp seq, Fixnum_sp start, T_sp end);
 
-void initialize_sequence();
 };
 #endif /* _core_Sequence_H */

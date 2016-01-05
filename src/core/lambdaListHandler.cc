@@ -227,7 +227,7 @@ T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, boo
       List_sp carg = arg;
       if (cl__length(carg) != 2) {
         SYMBOL_SC_(CorePkg, singleDispatchWrongNumberArgumentsError);
-        SYMBOL_SC_(KeywordPkg, arguments);
+        SYMBOL_EXPORT_SC_(KeywordPkg, arguments);
         ERROR(_sym_singleDispatchWrongNumberArgumentsError,
               Cons_O::createList(kw::_sym_arguments, carg));
       }
@@ -468,6 +468,13 @@ void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va
   }
   if (UNLIKELY(this->_AuxArguments.size() != 0))
     bind_aux(this->_AuxArguments, scope);
+}
+
+void LambdaListHandler_O::dump_keywords()
+{
+  for ( int i = 0; i< this->_KeywordArguments.size(); ++i ) {
+    printf("%s:%d Keyword: %s@%p\n", __FILE__, __LINE__, _rep_(this->_KeywordArguments[i]._Keyword).c_str(), this->_KeywordArguments[i]._Keyword.raw_());
+  }
 }
 
 string argument_mode_as_string(ArgumentMode mode) {

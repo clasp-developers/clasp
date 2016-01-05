@@ -86,10 +86,12 @@
    #:symbol-tag
    #:symbol-internal-tag
    #:symbol-external-tag
+   #:symbol-shadow-external-tag
    #:detailed-symbol-external-tag
    #:symbol-intern-tag
    #:class-symbol%
    #:exported%
+   #:shadow%
    #:c++-name%
    #:lisp-name%
    #:namespace-tag

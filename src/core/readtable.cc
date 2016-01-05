@@ -147,8 +147,8 @@ CL_DEFUN T_mv cl__set_macro_character(Character_sp ch, T_sp func_desig, T_sp non
   return (Values(readtable->set_macro_character(ch, func_desig, non_terminating_p)));
 };
 
-SYMBOL_SC_(KeywordPkg, constituent_character);
-SYMBOL_SC_(KeywordPkg, whitespace_character);
+SYMBOL_EXPORT_SC_(KeywordPkg, constituent_character);
+SYMBOL_EXPORT_SC_(KeywordPkg, whitespace_character);
 SYMBOL_SC_(CorePkg, STARsharp_equal_alistSTAR);
 SYMBOL_SC_(CorePkg, STARsharp_sharp_alistSTAR);
 SYMBOL_SC_(CorePkg, STARconsing_dot_allowedSTAR);
@@ -738,8 +738,8 @@ DONE:
 }; // core__sharp_vertical_bar
 
 EXPOSE_CLASS(core, ReadTable_O);
-SYMBOL_SC_(KeywordPkg, syntax);
-SYMBOL_SC_(KeywordPkg, whitespace_character);
+SYMBOL_EXPORT_SC_(KeywordPkg, syntax);
+SYMBOL_EXPORT_SC_(KeywordPkg, whitespace_character);
 HashTable_sp ReadTable_O::create_standard_syntax_table() {
   HashTableEql_sp syntax = HashTableEql_O::create_default();
   syntax->setf_gethash(clasp_character_create_from_name("TAB"), kw::_sym_whitespace_character);
@@ -748,8 +748,8 @@ HashTable_sp ReadTable_O::create_standard_syntax_table() {
   syntax->setf_gethash(clasp_character_create_from_name("PAGE"), kw::_sym_whitespace_character);
   syntax->setf_gethash(clasp_character_create_from_name("RETURN"), kw::_sym_whitespace_character);
   syntax->setf_gethash(clasp_character_create_from_name("SPACE"), kw::_sym_whitespace_character);
-  SYMBOL_SC_(KeywordPkg, single_escape_character);
-  SYMBOL_SC_(KeywordPkg, multiple_escape_character);
+  SYMBOL_EXPORT_SC_(KeywordPkg, single_escape_character);
+  SYMBOL_EXPORT_SC_(KeywordPkg, multiple_escape_character);
   syntax->hash_table_setf_gethash(clasp_make_standard_character('\\'), kw::_sym_single_escape_character);
   syntax->hash_table_setf_gethash(clasp_make_standard_character('|'), kw::_sym_multiple_escape_character);
   return syntax;
@@ -836,10 +836,10 @@ ReadTable_sp ReadTable_O::create_standard_readtable() {
 #endif // defined(XML_ARCHIVE)
 #endif
 
-SYMBOL_SC_(KeywordPkg, upcase);
-SYMBOL_SC_(KeywordPkg, downcase);
-SYMBOL_SC_(KeywordPkg, preserve);
-SYMBOL_SC_(KeywordPkg, invert);
+SYMBOL_EXPORT_SC_(KeywordPkg, upcase);
+SYMBOL_EXPORT_SC_(KeywordPkg, downcase);
+SYMBOL_EXPORT_SC_(KeywordPkg, preserve);
+SYMBOL_EXPORT_SC_(KeywordPkg, invert);
 void ReadTable_O::initialize() {
   _OF();
   this->Base::initialize();
@@ -879,9 +879,9 @@ T_sp ReadTable_O::set_syntax_type(Character_sp ch, T_sp syntaxType) {
   return _lisp->_true();
 }
 
-SYMBOL_SC_(KeywordPkg, non_terminating_macro_character);
-SYMBOL_SC_(KeywordPkg, terminating_macro_character);
-SYMBOL_SC_(KeywordPkg, macro_function);
+SYMBOL_EXPORT_SC_(KeywordPkg, non_terminating_macro_character);
+SYMBOL_EXPORT_SC_(KeywordPkg, terminating_macro_character);
+SYMBOL_EXPORT_SC_(KeywordPkg, macro_function);
 
 #define ARGS_ReadTable_set_macro_character "(ch func_desig &optional non-terminating-p)"
 #define DECL_ReadTable_set_macro_character ""
@@ -930,10 +930,10 @@ T_sp ReadTable_O::make_dispatch_macro_character(Character_sp ch, T_sp non_termin
   this->_DispatchMacroCharacters->setf_gethash(ch, HashTableEql_O::create_default());
   return _lisp->_true();
 #if 0
-	HashTable_sp syntax = this->_Syntax;
+  HashTable_sp syntax = this->_Syntax;
 	List_sp plist = syntax->gethash(ch,_Nil<T_O>());
 	ql::list qplist(_lisp);
-	SYMBOL_SC_(KeywordPkg,dispatch_table);
+	SYMBOL_EXPORT_SC_(KeywordPkg,dispatch_table);
 	// add the :dispatch-table (make-hash-table) property
 	qplist << kw::_sym_dispatch_table
 	       << HashTableEql_O::create_default()

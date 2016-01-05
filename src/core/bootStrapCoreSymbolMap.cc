@@ -48,16 +48,18 @@ void BootStrapCoreSymbolMap::add_package_info(std::string const& pkg, list<std::
   this->_PackageUseInfo[pkg] = used;
 }
 
-Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp) {
-  Symbol_sp found = this->lookupSymbol(pkgName,symbolName);
-  if ( found ) return found;
+Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp, bool shadowp) {
   string name = BootStrapCoreSymbolMap::fullSymbolName(pkgName, symbolName);
-  map<string, int>::iterator it = this->_SymbolNamesToIndex.find(name);
-  if (it != this->_SymbolNamesToIndex.end()) {
-    return ((this->_IndexToSymbol[it->second]._Symbol));
+  if ( !shadowp ) {
+    Symbol_sp found = this->lookupSymbol(pkgName,symbolName);
+    if ( found ) return found;
+    map<string, int>::iterator it = this->_SymbolNamesToIndex.find(name);
+    if (it != this->_SymbolNamesToIndex.end()) {
+      return ((this->_IndexToSymbol[it->second]._Symbol));
+    }
   }
   Symbol_sp sym = Symbol_O::create(symbolName);
-  SymbolStorage store(pkgName, symbolName, sym, exportp);
+  SymbolStorage store(pkgName, symbolName, sym, exportp,shadowp);
   int index = this->_IndexToSymbol.size();
   this->_IndexToSymbol.push_back(store);
   this->_SymbolNamesToIndex[name] = index;
@@ -97,7 +99,7 @@ void BootStrapCoreSymbolMap::finish_setup_of_symbols() {
     Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
 //    printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.raw_());
     //            printf("%s:%d  The symbol index is %d\n", __FILE__, __LINE__, idx );
-    ss._Symbol->finish_setup(pkg, ss._Export);
+    ss._Symbol->finish_setup(pkg, ss._Export,ss._Shadow);
   }
 }
 

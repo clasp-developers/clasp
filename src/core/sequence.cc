@@ -206,26 +206,15 @@ CL_DEFUN T_sp core__setf_subseq(T_sp sequence, int start, Fixnum_sp end, T_sp su
     };
 #endif
 
-void initialize_sequence() {
   SYMBOL_EXPORT_SC_(CorePkg, setfElt);
-
   SYMBOL_EXPORT_SC_(CorePkg, eltSet);
-
-
   SYMBOL_EXPORT_SC_(CorePkg, setfSubseq);
-
   SYMBOL_EXPORT_SC_(ClPkg, make_sequence);
-
   SYMBOL_EXPORT_SC_(ClPkg, reverse);
-
   SYMBOL_EXPORT_SC_(ClPkg, nreverse);
-
   SYMBOL_EXPORT_SC_(ClPkg, subseq);
-
   SYMBOL_EXPORT_SC_(ClPkg, copySeq);
-
   SYMBOL_EXPORT_SC_(ClPkg, length);
-}
 
 #if 0
     void Sequence_O::exposePython(::core::Lisp_sp lisp)

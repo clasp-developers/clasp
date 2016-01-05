@@ -1136,7 +1136,4 @@ TRANSLATE(core::T_O);
 #include <clasp/core/tagged_cast_specializations.h>
 #include <clasp/core/cxxObject.h>
 
-namespace core {
-void initialize_object();
-};
 #endif //]

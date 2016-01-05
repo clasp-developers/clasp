@@ -76,6 +76,18 @@ T_mv macro_core__quasiquote(List_sp whole, T_sp env) {
   return core__backquote_completely_process(form);
 };
 
+
+#define ARGS_macro_backquote "(form env)"
+#define DECL_macro_backquote ""
+#define DOCS_macro_backquote "backquote"
+T_mv macro_backquote(List_sp form, T_sp env) {
+  T_sp arg = oCadr(form);
+  LOG(BF("Expanding backquote going in: %s") % _rep_(arg));
+  T_mv result = core__backquote_completely_process(arg);
+  LOG(BF("Expanded backquote result: %s") % _rep_(result));
+  return (result);
+}
+
 /*!
   Equivalent to Common Lisps append function
   (append a b c)
@@ -420,8 +432,6 @@ CL_DEFUN T_sp core__backquote_remove_tokens(T_sp x) {
   T_sp mapped = core__backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(), x);
   return mapped;
 }
-
-void initialize_backquote(Lisp_sp lisp) {
   SYMBOL_SC_(CorePkg, backquote_completely_process);
   SYMBOL_SC_(CorePkg, backquote_process);
   SYMBOL_SC_(CorePkg, backquote_bracket);
@@ -431,15 +441,15 @@ void initialize_backquote(Lisp_sp lisp) {
   SYMBOL_SC_(CorePkg, backquote_remove_tokens);
   SYMBOL_SC_(CorePkg, backquote_frob);
   SYMBOL_SC_(CorePkg, backquote_splicing_frob);
-
   SYMBOL_SC_(CorePkg, backquote_append);
-
   SYMBOL_SC_(CorePkg, quasiquote);
-  defmacro(CorePkg, "quasiquote", macro_core__quasiquote, ARGS_macro_core__quasiquote, DECL_macro_core__quasiquote, DOCS_macro_core__quasiquote, __FILE__, __LINE__, false);
-
   SYMBOL_SC_(CorePkg, STARbq_simplifySTAR);
-  _sym_STARbq_simplifySTAR->setf_symbolValue(_lisp->_true());
 
+void initialize_backquote() {
+  defmacro(CorePkg, "quasiquote", macro_core__quasiquote, ARGS_macro_core__quasiquote, DECL_macro_core__quasiquote, DOCS_macro_core__quasiquote, __FILE__, __LINE__, false);
+  defmacro(CorePkg, "backquote", &macro_backquote, ARGS_macro_backquote, DECL_macro_backquote, DOCS_macro_backquote, __FILE__, __LINE__);
+
+  _sym_STARbq_simplifySTAR->setf_symbolValue(_lisp->_true());
   _sym_STARbq_listSTAR->defconstant(_sym_STARbq_listSTAR);
   _sym_STARbq_appendSTAR->defconstant(_sym_STARbq_appendSTAR);
   _sym_STARbq_listSTARSTAR->defconstant(_sym_STARbq_listSTARSTAR);

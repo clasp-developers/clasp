@@ -618,10 +618,8 @@ EXPOSE_CLASS(core, T_O);
 
 #include <clasp/core/multipleValues.h>
 
-void initialize_object() {
-  SYMBOL_EXPORT_SC_(ClPkg, eq);
-  SYMBOL_EXPORT_SC_(ClPkg, eql);
-  SYMBOL_EXPORT_SC_(ClPkg, equal);
-  SYMBOL_EXPORT_SC_(ClPkg, equalp);
-};
+SYMBOL_EXPORT_SC_(ClPkg, eq);
+SYMBOL_EXPORT_SC_(ClPkg, eql);
+SYMBOL_EXPORT_SC_(ClPkg, equal);
+SYMBOL_EXPORT_SC_(ClPkg, equalp);
 };

@@ -951,9 +951,9 @@ LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List
   return llh;
 }
 
-SYMBOL_SC_(KeywordPkg, body);
-SYMBOL_SC_(KeywordPkg, lambda_list_handler);
-SYMBOL_SC_(KeywordPkg, docstring);
+SYMBOL_EXPORT_SC_(KeywordPkg, body);
+SYMBOL_EXPORT_SC_(KeywordPkg, lambda_list_handler);
+SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
 void lisp_defineSingleDispatchMethod(Symbol_sp sym,
                                      Symbol_sp classSymbol,
                                      gctools::tagged_pointer<BuiltinClosure> methoid,
@@ -1828,7 +1828,4 @@ void InitPython_Foundation() {
 }
 #endif
 
-void initialize_foundation() {
-
-};
 };

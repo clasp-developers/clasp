@@ -1264,16 +1264,7 @@ CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
   return (Values(result));
 };
 
-#define ARGS_macro_backquote "(form env)"
-#define DECL_macro_backquote ""
-#define DOCS_macro_backquote "backquote"
-T_mv macro_backquote(List_sp form, T_sp env) {
-  T_sp arg = oCadr(form);
-  LOG(BF("Expanding backquote going in: %s") % _rep_(arg));
-  T_mv result = core__backquote_completely_process(arg);
-  LOG(BF("Expanded backquote result: %s") % _rep_(result));
-  return (result);
-}
+
 
 /*!
   Equivalent to Common Lisps append function
@@ -1923,122 +1914,59 @@ CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
 };
 };
 
-namespace core {
-void initialize_primitives() {
-  //
-  // Define functions first because generics and methods depend on some of them
-  //
 
   SYMBOL_SC_(CorePkg, smartPointerDetails);
   SYMBOL_EXPORT_SC_(ClPkg, null);
-
   SYMBOL_SC_(CorePkg, STARfset);
-
   SYMBOL_SC_(CorePkg, unbound);
-
   SYMBOL_EXPORT_SC_(ClPkg, read);
-
   SYMBOL_EXPORT_SC_(ClPkg, read_preserving_whitespace);
-
   SYMBOL_EXPORT_SC_(ClPkg, read_delimited_list);
-
   SYMBOL_EXPORT_SC_(ClPkg, every);
-
   SYMBOL_EXPORT_SC_(ClPkg, some);
-
   SYMBOL_EXPORT_SC_(ClPkg, notevery);
-
   SYMBOL_EXPORT_SC_(ClPkg, notany);
-
   SYMBOL_EXPORT_SC_(ClPkg, mapcar);
-
   SYMBOL_EXPORT_SC_(ClPkg, mapc);
-
   SYMBOL_EXPORT_SC_(ClPkg, maplist);
-
   SYMBOL_EXPORT_SC_(ClPkg, mapl);
-
   SYMBOL_SC_(CorePkg, mapappend);
-
   SYMBOL_EXPORT_SC_(ClPkg, mapcan);
-
   SYMBOL_EXPORT_SC_(ClPkg, mapcon);
-
   SYMBOL_SC_(CorePkg, macroexpand_default);
-
   SYMBOL_EXPORT_SC_(ClPkg, append);
-
   SYMBOL_EXPORT_SC_(ClPkg, classOf);
-
   SYMBOL_EXPORT_SC_(ClPkg, identity);
-
   SYMBOL_EXPORT_SC_(ClPkg, constantp);
-
   SYMBOL_SC_(CorePkg, sequence_start_end);
-
   SYMBOL_EXPORT_SC_(ClPkg, ash);
-
   SYMBOL_SC_(CorePkg, type_to_symbol);
-
   SYMBOL_SC_(CorePkg, gdb);
   SYMBOL_SC_(CorePkg, gdbInspect);
-
-  defmacro(CorePkg, "backquote", &macro_backquote, ARGS_macro_backquote, DECL_macro_backquote, DOCS_macro_backquote, __FILE__, __LINE__);
-
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
-
   SYMBOL_EXPORT_SC_(ClPkg, specialOperatorP);
-
   SYMBOL_EXPORT_SC_(ClPkg, macroFunction);
-
   SYMBOL_SC_(CorePkg, separatePairList);
-
   SYMBOL_EXPORT_SC_(ClPkg, set);
-
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
-
   SYMBOL_SC_(CorePkg, separatePairList);
-
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
-
-
   SYMBOL_SC_(CorePkg, separatePairList);
-
-
   SYMBOL_SC_(CorePkg, testMemoryError);
-
   SYMBOL_SC_(CorePkg, functionBlockName);
-
   SYMBOL_SC_(CorePkg, validFunctionNameP);
-
   SYMBOL_EXPORT_SC_(ClPkg, fdefinition);
-
   SYMBOL_EXPORT_SC_(ClPkg, fboundp);
-
   SYMBOL_EXPORT_SC_(ClPkg, fmakunbound);
-
   SYMBOL_EXPORT_SC_(ClPkg, values);
-
   SYMBOL_EXPORT_SC_(ClPkg, values_list);
-
-
-
   SYMBOL_EXPORT_SC_(CorePkg, pointer);
-
-#if 0
-  CoreDefun(describe_cxx_object);
-  CoreDefun(setenv);
-#endif
   SYMBOL_EXPORT_SC_(CorePkg, toTaggedFixnum);
   SYMBOL_EXPORT_SC_(CorePkg, fromTaggedFixnum);
   SYMBOL_EXPORT_SC_(CorePkg, dumpTaggedFixnum);
-
   SYMBOL_SC_(CorePkg, ihsBacktrace);
   SYMBOL_SC_(CorePkg, ihsTop);
   SYMBOL_SC_(CorePkg, ihsPrev);
@@ -2049,15 +1977,12 @@ void initialize_primitives() {
   SYMBOL_SC_(CorePkg, bdsVar);
   SYMBOL_SC_(CorePkg, bdsVal);
 
+namespace core {
+void initialize_primitives() {
+  //
+  // Define functions first because generics and methods depend on some of them
+  //
+
 }
 
-void initializePythonPrimitives(Lisp_sp lisp) {
-#if 0
-	using namespace boost::python;
-	def_raw(CorePkg,"read",&fn_read,ARGS_fn_read,DOCS_fn_read,_LISP);
-#if 0
-	def_raw(CorePkg,"readDelimitedList",&fn_read_delimited_list,ARGS_fn_read_delimited_list,DOCS_fn_read_delimited_list,_LISP);
-#endif
-#endif
-}
 };

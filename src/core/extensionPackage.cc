@@ -44,6 +44,7 @@ SYMBOL_SC_(ExtPkg, aSingleExtSymbol);
 SYMBOL_SC_(ExtPkg, lambda_block);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinvokeDebuggerHookSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, compiledFunctionName);
+SYMBOL_EXPORT_SC_(ExtPkg, ansi_stream);
 
 #define ARGS_af_maybeQuote "(form)"
 #define DECL_af_maybeQuote ""

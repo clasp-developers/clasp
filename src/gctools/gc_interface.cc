@@ -197,6 +197,7 @@ void expose_function(const std::string& pkg_sym,
 
 void initialize_functions()
 {
+//  printf("%s:%d About to initialize_functions\n", __FILE__, __LINE__ );
 #ifndef SCRAPING
   #define EXPOSE_FUNCTION_BINDINGS
   #include <generated/initFunctions_inc.h>
@@ -204,23 +205,30 @@ void initialize_functions()
 #endif
 };
 
-void define_source_info(const string& lisp_name,
+typedef enum { code_kind, method_kind, class_kind, unknown_kind } source_info_kind;
+void define_source_info(source_info_kind kind,
+                        const string& lisp_name,
                         const string& file, size_t character_offset,
                         size_t line, const string& docstring ) {
   std::string package_part, symbol_part;
   core::colon_split(lisp_name,package_part,symbol_part);
   core::Symbol_sp sym = core::lisp_intern(symbol_part,package_part);
-  core::Function_sp func = core::coerce::functionDesignator(sym);
-  core::Str_sp sourceFile = core::Str_O::create(file);
-  func->closure->setSourcePosInfo(sourceFile, character_offset, line, 0 );
-  core::Str_sp docs = core::Str_O::create(docstring);
-  ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, docs);
-  ext__annotate(func,cl::_sym_documentation,cl::_sym_function, docs);
+  if ( kind == code_kind ) {
+    core::Function_sp func = core::coerce::functionDesignator(sym);
+    core::Str_sp sourceFile = core::Str_O::create(file);
+    func->closure->setSourcePosInfo(sourceFile, character_offset, line, 0 );
+    core::Str_sp docs = core::Str_O::create(docstring);
+    ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, docs);
+    ext__annotate(func,cl::_sym_documentation,cl::_sym_function, docs);
+  } else if ( kind == class_kind ) {
+  }
 }
 
 void initialize_source_info() {
 #define SOURCE_INFO
+#ifndef SCRAPING
 #include <generated/sourceInfo_inc.h>
+#endif
 #undef SOURCE_INFO
 };
 
@@ -687,7 +695,9 @@ void calculate_class_precedence_lists()
 #include <clasp/core/external_wrappers.h>
 
 #define EXPOSE_METHODS
-#include <generated/initClassesAndMethods_inc.h>
+#ifndef SCRAPING
+  #include <generated/initClassesAndMethods_inc.h>
+#endif
 #undef EXPOSE_METHODS
 
 void initialize_enums()

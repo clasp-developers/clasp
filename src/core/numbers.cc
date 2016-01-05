@@ -779,10 +779,11 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
   SIMPLE_ERROR(BF("Add support to div numbers %s[%s] and %s[%s]") % _rep_(na) % na->_instanceClass()->classNameAsString() % _rep_(nb) % nb->_instanceClass()->classNameAsString());
 }
 
-#define ARGS_af__PLUS_ "(&rest numbers)"
-#define DECL_af__PLUS_ ""
-#define DOCS_af__PLUS_ "See CLHS: +"
-T_mv af__PLUS_(List_sp numbers) {
+#define ARGS_cl___PLUS_ "(&rest numbers)"
+#define DECL_cl___PLUS_ ""
+#define DOCS_cl___PLUS_ "See CLHS: +"
+CL_LAMBDA(&rest numbers);
+CL_DEFUN T_mv cl___PLUS_(List_sp numbers) {
   if (numbers.nilp())
     return (Values(make_fixnum(0)));
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
@@ -819,10 +820,11 @@ CL_DEFUN T_mv cl___MINUS_(Number_sp num, List_sp numbers) {
   return (Values(result));
 }
 
-#define ARGS_af__DIVIDE_ "(num &rest numbers)"
-#define DECL_af__DIVIDE_ ""
-#define DOCS_af__DIVIDE_ "See CLHS: /"
-T_sp af__DIVIDE_(Number_sp num, List_sp numbers) {
+#define ARGS_cl___DIVIDE_ "(num &rest numbers)"
+#define DECL_cl___DIVIDE_ ""
+#define DOCS_cl___DIVIDE_ "See CLHS: /"
+CL_LAMBDA(num &rest numbers);
+CL_DEFUN T_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
   if (numbers.nilp()) {
     return (clasp_reciprocal(num));
   }
@@ -1135,31 +1137,35 @@ CL_DEFUN bool two_arg__EQ_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) == 0;
 }
 
-#define ARGS_af__LT_ "(&rest args)"
-#define DECL_af__LT_ ""
-#define DOCS_af__LT_ "LT less than function"
-T_sp af__LT_(List_sp args) {
+#define ARGS_cl___LT_ "(&rest args)"
+#define DECL_cl___LT_ ""
+#define DOCS_cl___LT_ "LT less than function"
+CL_LAMBDA(&rest args);
+CL_DEFUN T_sp cl___LT_(List_sp args) {
   return numbers_monotonic(-1, 1, args);
 };
 
-#define ARGS_af__GT_ "(&rest args)"
-#define DECL_af__GT_ ""
-#define DOCS_af__GT_ "GT less than function"
-T_mv af__GT_(List_sp args) {
+#define ARGS_cl___GT_ "(&rest args)"
+#define DECL_cl___GT_ ""
+#define DOCS_cl___GT_ "GT less than function"
+CL_LAMBDA(&rest args);
+CL_DEFUN T_mv cl___GT_(List_sp args) {
   return (Values(numbers_monotonic(1, 1, args)));
 };
 
-#define ARGS_af__LE_ "(&rest args)"
-#define DECL_af__LE_ ""
-#define DOCS_af__LE_ "LT less than function"
-T_mv af__LE_(List_sp args) {
+#define ARGS_cl___LE_ "(&rest args)"
+#define DECL_cl___LE_ ""
+#define DOCS_cl___LE_ "LT less than function"
+CL_LAMBDA(&rest args);
+CL_DEFUN T_mv cl___LE_(List_sp args) {
   return (Values(numbers_monotonic(-1, 0, args)));
 };
 
-#define ARGS_af__GE_ "(&rest args)"
-#define DECL_af__GE_ ""
-#define DOCS_af__GE_ "GT less than function"
-T_mv af__GE_(List_sp args) {
+#define ARGS_cl___GE_ "(&rest args)"
+#define DECL_cl___GE_ ""
+#define DOCS_cl___GE_ "GT less than function"
+CL_LAMBDA(&rest args);
+CL_DEFUN T_mv cl___GE_(List_sp args) {
   return (Values(numbers_monotonic(1, 0, args)));
 };
 
@@ -1313,20 +1319,20 @@ void Number_O::exposeCando(Lisp_sp lisp) {
       //	    .def("core:oneMinus",&Number_O::oneMinus)
       ;
   ;
-  af_def(CorePkg, "onePlus", &clasp_one_plus);
-  af_def(CorePkg, "oneMinus", &clasp_one_minus);
-  af_def(ClPkg, "abs", &clasp_abs);
-  af_def(ClPkg, "signum", &clasp_signum);
+//  af_def(CorePkg, "onePlus", &clasp_one_plus);
+//  af_def(CorePkg, "oneMinus", &clasp_one_minus);
+//  af_def(ClPkg, "abs", &clasp_abs);
+//  af_def(ClPkg, "signum", &clasp_signum);
   SYMBOL_EXPORT_SC_(ClPkg, max);
   SYMBOL_EXPORT_SC_(ClPkg, min);
   SYMBOL_EXPORT_SC_(ClPkg, zerop);
 
   SYMBOL_SC_(CorePkg, fixnum_number_of_bits);
 
-  Defun(_LT_);
-  Defun(_GT_);
-  Defun(_LE_);
-  Defun(_GE_);
+//  Defun(_LT_);
+//  Defun(_GT_);
+//  Defun(_LE_);
+//  Defun(_GE_);
 
   SYMBOL_EXPORT_SC_(ClPkg, _LT_);
   SYMBOL_EXPORT_SC_(ClPkg, _GT_);
@@ -1336,14 +1342,14 @@ void Number_O::exposeCando(Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(ClPkg, _NE_);
 
   SYMBOL_EXPORT_SC_(ClPkg, _PLUS_);
-  Defun(_PLUS_);
+//  Defun(_PLUS_);
 
   SYMBOL_EXPORT_SC_(ClPkg, _TIMES_);
 
   SYMBOL_EXPORT_SC_(ClPkg, _MINUS_);
 
   SYMBOL_EXPORT_SC_(ClPkg, _DIVIDE_);
-  Defun(_DIVIDE_);
+//  Defun(_DIVIDE_);
 }
 void Number_O::exposePython(Lisp_sp lisp) {
 #ifdef USEBOOSTPYTHON
@@ -1405,8 +1411,8 @@ void Real_O::exposeCando(Lisp_sp lisp) {
       //	    .def("minusp",&Real_O::minusp)
       //      .def("plusp",&Real_O::plusp)
       ;
-  af_def(ClPkg, "minusp", &clasp_minusp);
-  af_def(ClPkg, "plusp", &clasp_plusp);
+//  af_def(ClPkg, "minusp", &clasp_minusp);
+//  af_def(ClPkg, "plusp", &clasp_plusp);
 }
 
 void Real_O::exposePython(Lisp_sp lisp) {
@@ -1581,8 +1587,8 @@ void Integer_O::exposeCando(Lisp_sp lisp) {
       // .def("evenp",&Integer_O::evenp)
       // .def("oddp",&Integer_O::oddp)
       ;
-  af_def(ClPkg, "evenp", &clasp_evenp);
-  af_def(ClPkg, "oddp", &clasp_oddp);
+//  af_def(ClPkg, "evenp", &clasp_evenp);
+//  af_def(ClPkg, "oddp", &clasp_oddp);
   SYMBOL_EXPORT_SC_(ClPkg, logand);
   SYMBOL_EXPORT_SC_(ClPkg, logior);
   SYMBOL_EXPORT_SC_(ClPkg, logandc1);
@@ -3600,7 +3606,7 @@ CL_DEFUN gc::Fixnum cl__integer_length(Integer_sp i) {
 };
 
 void initialize_numbers() {
-  af_def(CorePkg, "negate", &clasp_negate);
+//  af_def(CorePkg, "negate", &clasp_negate);
   SYMBOL_EXPORT_SC_(ClPkg, sqrt);
   SYMBOL_EXPORT_SC_(ClPkg, sin);
   SYMBOL_EXPORT_SC_(ClPkg, cos);
@@ -3614,24 +3620,34 @@ void initialize_numbers() {
   SYMBOL_EXPORT_SC_(ClPkg, expt);
   SYMBOL_EXPORT_SC_(ClPkg, exp);
 
-  af_def(CorePkg, "two-arg-_PLUS_", &contagen_add);
-  af_def(CorePkg, "two-arg-_MINUS_", &contagen_sub);
-  af_def(CorePkg, "two-arg-_TIMES_", &contagen_mul);
-  af_def(CorePkg, "two-arg-_DIVIDE_", &contagen_div);
-  af_def(CorePkg, "two-arg-_LT_", &two_arg__LT_);
-  af_def(CorePkg, "two-arg-_LE_", &two_arg__LE_);
-  af_def(CorePkg, "two-arg-_GT_", &two_arg__GT_);
-  af_def(CorePkg, "two-arg-_GE_", &two_arg__GE_);
-  af_def(CorePkg, "two-arg-_EQ_", &two_arg__EQ_);
+//  af_def(CorePkg, "two-arg-_PLUS_", &contagen_add);
+//  af_def(CorePkg, "two-arg-_MINUS_", &contagen_sub);
+//  af_def(CorePkg, "two-arg-_TIMES_", &contagen_mul);
+//  af_def(CorePkg, "two-arg-_DIVIDE_", &contagen_div);
+//  af_def(CorePkg, "two-arg-_LT_", &two_arg__LT_);
+//  af_def(CorePkg, "two-arg-_LE_", &two_arg__LE_);
+//  af_def(CorePkg, "two-arg-_GT_", &two_arg__GT_);
+//  af_def(CorePkg, "two-arg-_GE_", &two_arg__GE_);
+//  af_def(CorePkg, "two-arg-_EQ_", &two_arg__EQ_);
 
-  af_def(CorePkg, "general-two-arg-_PLUS_", &contagen_add);
-  af_def(CorePkg, "general-two-arg-_MINUS_", &contagen_sub);
-  af_def(CorePkg, "general-two-arg-_TIMES_", &contagen_mul);
-  af_def(CorePkg, "general-two-arg-_DIVIDE_", &contagen_div);
-  af_def(CorePkg, "general-two-arg-_LT_", &two_arg__LT_);
-  af_def(CorePkg, "general-two-arg-_LE_", &two_arg__LE_);
-  af_def(CorePkg, "general-two-arg-_GT_", &two_arg__GT_);
-  af_def(CorePkg, "general-two-arg-_GE_", &two_arg__GE_);
-  af_def(CorePkg, "general-two-arg-_EQ_", &two_arg__EQ_);
+  CL_LISPIFY_NAME(general-two-arg-_PLUS_);
+  CL_EXTERN_DEFUN(&core::contagen_add);
+//  af_def(CorePkg, "general-two-arg-_PLUS_", &contagen_add);
+  CL_LISPIFY_NAME(general-two-arg-_MINUS_);
+  CL_EXTERN_DEFUN(&core::contagen_sub);
+  CL_LISPIFY_NAME(general-two-arg-_TIMES_);
+  CL_EXTERN_DEFUN(&core::contagen_mul);
+  CL_LISPIFY_NAME(general-two-arg-_DIVIDE_);
+  CL_EXTERN_DEFUN(&core::contagen_div);
+  CL_LISPIFY_NAME(general-two-arg-_LT_);
+  CL_EXTERN_DEFUN(&core::two_arg__LT_);
+  CL_LISPIFY_NAME(general-two-arg-_LE_);
+  CL_EXTERN_DEFUN(&core::two_arg__LE_);
+  CL_LISPIFY_NAME(general-two-arg-_GT_);
+  CL_EXTERN_DEFUN(&core::two_arg__GT_);
+  CL_LISPIFY_NAME(general-two-arg-_GE_);
+  CL_EXTERN_DEFUN(&core::two_arg__GE_);
+  CL_LISPIFY_NAME(general-two-arg-_EQ_);
+  CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 }
 };

@@ -17,6 +17,8 @@
 #define CL_EXTERN_DEFUN(pointer) BEGIN_TAG EXTERN_DEFUN (:FILE __FILE__ :LINE __LINE__ :POINTER #pointer ) 
 #define SYMBOL_SC_(pkg,name) BEGIN_TAG SYMBOL_INTERNAL ( :FILE __FILE__ :LINE __LINE__ :PACKAGE #pkg :NAME #name )
 #define SYMBOL_EXPORT_SC_(pkg,name) BEGIN_TAG SYMBOL_EXTERNAL ( :FILE __FILE__ :LINE __LINE__  :PACKAGE #pkg :NAME #name )
+//! Ensure that the symbol is present within the package - acts like CL:SHADOW
+#define SYMBOL_SHADOW_EXPORT_SC_(pkg,name) BEGIN_TAG SYMBOL_SHADOW_EXTERNAL ( :FILE __FILE__ :LINE __LINE__  :PACKAGE #pkg :NAME #name )
 #define DETAILED_SYMBOL_EXPORT_SC_(pkg,cxxname,name) BEGIN_TAG DETAILED_SYMBOL_EXTERNAL ( :FILE __FILE__ :LINE __LINE__  :PACKAGE #pkg :CXX-NAME #cxxname :NAME name )
 #define INTERN_(ns,name) BEGIN_TAG SYMBOL_INTERN ( :FILE __FILE__ :LINE __LINE__ :NAMESPACE #ns :NAME #name )
 #define PACKAGE_USE(name_str) BEGIN_TAG PACKAGE_USE_TAG ( :FILE __FILE__ :LINE __LINE__ :NAME name_str)
@@ -47,6 +49,7 @@
 #define CL_PKG_NAME(pkg,name)
 #define SYMBOL_SC_(pkg,name)
 #define SYMBOL_EXPORT_SC_(pkg,name)
+#define SYMBOL_SHADOW_EXPORT_SC_(pkg,name)
 #define INTERN_(ns,name) (ns::_sym_##name)
 #define PACKAGE_USE(name_str)
 #define PACKAGE_NICKNAME(name_str)

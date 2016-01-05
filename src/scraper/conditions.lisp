@@ -46,7 +46,7 @@
 (defun error-if-bad-expose-info-setup* (tag other-tag)
   (declare (optimize (debug 3)))
   (unless (and (string= (tags:file% tag) (tags:file% other-tag))
-               (< (- (tags:line% tag) (tags:line% other-tag)) 8))
+               (< (- (tags:line% tag) (tags:line% other-tag)) 20))
     (error 'bad-cl-defun/defmethod :tag tag :other-tag other-tag)))
                    
 (defun error-if-bad-expose-info-setup (tag cur-name cur-lambda cur-declare cur-docstring)

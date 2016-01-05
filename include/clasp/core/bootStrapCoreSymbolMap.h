@@ -35,21 +35,21 @@ public:
   string _SymbolName;
   Symbol_sp _Symbol;
   bool _Export;
-  SymbolStorage() : _PackageName(""), _SymbolName(""), _Export(false) {
+  bool _Shadow;
+ SymbolStorage() : _PackageName(""), _SymbolName(""), _Export(false), _Shadow(false) {
     this->_Symbol.reset_();
   }
 
-  SymbolStorage(string const &pkgName, string const &symbolName, Symbol_sp sym, bool exportp)
-      : _PackageName(pkgName), _SymbolName(symbolName), _Symbol(sym), _Export(exportp){};
+ SymbolStorage(string const &pkgName, string const &symbolName, Symbol_sp sym, bool exportp, bool shadowp)
+   : _PackageName(pkgName), _SymbolName(symbolName), _Symbol(sym), _Export(exportp), _Shadow(shadowp){};
 
   SymbolStorage(SymbolStorage const &orig) {
     this->_PackageName = orig._PackageName;
     this->_SymbolName = orig._SymbolName;
     this->_Symbol = orig._Symbol;
     this->_Export = orig._Export;
+    this->_Shadow = orig._Shadow;
   }
-
-  DECLARE_onHeapScanGCRoots();
 };
 };
 
@@ -71,7 +71,7 @@ public:
 
   void add_package_info(std::string const& pkgName, list<std::string> const& packages_used);
   
-  Symbol_sp maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp = false);
+  Symbol_sp maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp = false, bool shadowp = false);
 
   /*! Throw an exception if symbol not found */
   Symbol_sp lookupSymbol(string const &packageName, string const &symbolName, bool inherited=false) const;

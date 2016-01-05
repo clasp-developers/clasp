@@ -450,23 +450,19 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     initialize_Lisp_O();
     core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
-    initialize_object();
-    initialize_foundation();
     initialize_functions();
     eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);
     initialize_classes_and_methods();
     initialize_source_info();
     initialize_cache();
-    initialize_backquote(_lisp);
+    initialize_backquote();
+    initialize_compiler_primitives(_lisp);
 
     // Rest may be unnecessary after new boot-strapping approach is developed
-    initialize_primitives();
-    initialize_stacks();
-    initialize_compiler_primitives(_lisp);
+//    initialize_primitives();
 #ifdef DEBUG_CL_SYMBOLS
     initializeAllClSymbolsFunctions();
 #endif
-    initialize_sequence();
     initialize_list();
     initialize_bits();
     initialize_predicates();
@@ -1597,7 +1593,7 @@ CL_LAMBDA(new-value name);
 CL_DECLARE();
 CL_DOCSTRING("setf_findClass");
 CL_DEFUN Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool errorp, T_sp env) {
-  if (!cl__classp(newValue)) {
+  if (!clos__classp(newValue)) {
     SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
   }
   if (_lisp->bootClassTableIsValid()) {
@@ -1605,7 +1601,7 @@ CL_DEFUN Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool erro
   }
   HashTable_sp ht = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
   T_sp oldClass = eval::funcall(cl::_sym_findClass, name, _Nil<T_O>());
-  if (cl__classp(oldClass)) {
+  if (clos__classp(oldClass)) {
     SIMPLE_ERROR(BF("The built-in class associated to the CL specifier %s cannot be changed") % _rep_(name));
   } else if (newValue.nilp()) {
     ht->remhash(name);
@@ -2319,7 +2315,7 @@ Symbol_sp Lisp_O::getClassSymbolForClassName(const string &name) {
 }
 
 T_sp Lisp_O::createObjectOfClass(T_sp mc) {
-  if (cl__classp(mc)) {
+  if (clos__classp(mc)) {
     LOG(BF("createObjectOfClass(%s)") % _rep_(mc));
     IMPLEMENT_ME();
     T_sp obj = gc::As<Class_sp>(mc)->allocate_newNil();

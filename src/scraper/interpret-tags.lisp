@@ -71,9 +71,12 @@
    (c++-name% :initarg :c++-name% :accessor c++-name%)
    (namespace% :initarg :namespace% :accessor namespace%)
    (package% :initarg :package% :accessor package%)
-   (package-str% :initarg :package-str% :accessor package-str%)))
+   (package-str% :initarg :package-str% :accessor package-str%)
+   (exported% :initform t :initarg :exported% :accessor exported%)
+   (shadow% :initform nil :initarg :shadow% :accessor shadow%)))
 
 (defclass expose-external-symbol (expose-symbol) ())
+(defclass expose-shadow-external-symbol (expose-external-symbol) ())
 (defclass expose-internal-symbol (expose-symbol) ())
 (defclass expose-intern-symbol (expose-symbol) ())
 
@@ -456,7 +459,9 @@ If override-name-tag is not nil then return its value, otherwise return name"
                                 :c++-name% c++-name
                                 :namespace% namespace
                                 :package% package
-                                :package-str% (gethash package packages))
+                                :package-str% (gethash package packages)
+                                :exported% (typep tag 'tags:symbol-external-tag)
+                                :shadow% (typep tag 'tags:symbol-shadow-external-tag))
                  symbols)))))
     (values (order-packages-by-use packages-to-create) functions symbols classes enums)))
 

@@ -17,10 +17,11 @@
      (namestring (merge-pathnames "src/main/" cl-user::*clasp-home*))
      "bin/all-commands.txt"
      "bin/commands.txt")
-  :run-preprocessor t
+  :run-preprocessor nil
   :regenerate-sifs nil)
 
 *packages-to-create*
+
 
 
 

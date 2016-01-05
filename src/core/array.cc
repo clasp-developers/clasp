@@ -161,6 +161,7 @@ Symbol_sp Array_O::element_type_as_symbol() const {
 #define DECL_Array_O_aref ""
 #define DOCS_Array_O_aref "See CLHS aref"
 CL_LISPIFY_NAME("cl:aref");
+CL_LAMBDA((core::self core::array) &rest core::indices);
 CL_DEFMETHOD T_sp Array_O::aref(List_sp indices) const {
   _OF();
   SUBCLASS_MUST_IMPLEMENT();

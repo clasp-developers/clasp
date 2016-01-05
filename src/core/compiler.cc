@@ -274,10 +274,10 @@ LOAD:
 };
 
 #ifdef EXPOSE_DLLOAD
-#define ARGS_af_dlload "(pathDesig)"
-#define DECL_af_dlload ""
-#define DOCS_af_dlload "dlload - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error))"
-T_mv af_dlload(T_sp pathDesig) {
+#define ARGS_core__dlload "(pathDesig)"
+#define DECL_core__dlload ""
+CL_DOCSTRING("dlload - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error)");
+CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
   string lib_extension = ".dylib";
 #ifdef _TARGET_OS_DARWIN
   lib_extension = ".dylib";
@@ -289,7 +289,7 @@ T_mv af_dlload(T_sp pathDesig) {
   Path_sp path = coerce::pathDesignator(pathDesig);
   Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
   string ts = pathWithProperExtension->asString();
-  printf("%s:%d Loading with af_dlload %s\n", __FILE__, __LINE__, ts.c_str());
+  printf("%s:%d Loading with core__dlload %s\n", __FILE__, __LINE__, ts.c_str());
   void *handle = dlopen(ts.c_str(), mode);
   if (handle == NULL) {
     string error = dlerror();
@@ -352,10 +352,10 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, Str_sp name) {
     handle = phandle->ptr();
   } else if (gc::IsA<Symbol_sp>(ohandle)) {
     Symbol_sp sym = ohandle.asOrNull<Symbol_O>();
-    SYMBOL_SC_(KeywordPkg, rtld_default);
-    SYMBOL_SC_(KeywordPkg, rtld_next);
-    SYMBOL_SC_(KeywordPkg, rtld_self);
-    SYMBOL_SC_(KeywordPkg, rtld_main_only);
+    SYMBOL_EXPORT_SC_(KeywordPkg, rtld_default);
+    SYMBOL_EXPORT_SC_(KeywordPkg, rtld_next);
+    SYMBOL_EXPORT_SC_(KeywordPkg, rtld_self);
+    SYMBOL_EXPORT_SC_(KeywordPkg, rtld_main_only);
     if (sym == kw::_sym_rtld_default) {
       handle = RTLD_DEFAULT;
     } else if (sym == kw::_sym_rtld_next) {
@@ -1111,36 +1111,19 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
   return result;
 }
 
+ SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
+ SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);
+ SYMBOL_EXPORT_SC_(CompPkg, STARall_functions_for_one_compileSTAR);
+ SYMBOL_SC_(CorePkg, dlopen);
+ SYMBOL_SC_(CorePkg, dlsym);
+ SYMBOL_SC_(CorePkg, dladdr);
+ SYMBOL_SC_(CorePkg, loadBundle);
+ SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
+
 void initialize_compiler_primitives(Lisp_sp lisp) {
   //	SYMBOL_SC_(CorePkg,processDeclarations);
-  SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
-  SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);
-  SYMBOL_EXPORT_SC_(CompPkg, STARall_functions_for_one_compileSTAR);
-//  af_def(CompPkg, "implicit_compile_hook_default", &compiler__implicit_compile_hook_default,
-//         ARGS_compiler__implicit_compile_hook_default,
-//         DECL_compiler__implicit_compile_hook_default,
-//         DOCS_compiler__implicit_compile_hook_default);
-  ASSERT(comp::_sym_implicit_compile_hook_default->symbolFunction().notnilp() && !comp::_sym_implicit_compile_hook_default->symbolFunction().unboundp());
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default->symbolFunction());
-
-#ifdef EXPOSE_DLLOAD
-  SYMBOL_SC_(CorePkg, dlload);
-  Defun(dlload);
-#endif
-
-  SYMBOL_SC_(CorePkg, dlopen);
-
-  SYMBOL_SC_(CorePkg, dlsym);
-
-
-  SYMBOL_SC_(CorePkg, dladdr);
-
-  SYMBOL_SC_(CorePkg, loadBundle);
-#if 0
-#endif
-  SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
   cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
-
 }
 
 }; /* namespace */

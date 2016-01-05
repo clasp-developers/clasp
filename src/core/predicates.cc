@@ -122,8 +122,7 @@ CL_DEFUN bool cl__packagep(T_sp obj) {
   return gc::IsA<Package_sp>(obj);
 };
 
-CL_NAME("CLASSP");
-CL_DEFUN bool cl__classp(T_sp obj) {
+CL_DEFUN bool clos__classp(T_sp obj) {
   return gc::IsA<Class_sp>(obj);
 };
 
@@ -131,7 +130,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("classp");
 CL_DEFUN bool core__built_in_class_p(T_sp obj) {
-  if (!cl__classp(obj))
+  if (!clos__classp(obj))
     return false;
   Class_sp c = gc::As<Class_sp>(obj);
   return c->builtInClassP();

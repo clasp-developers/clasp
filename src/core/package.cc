@@ -664,10 +664,16 @@ void Package_O::add_symbol_to_package(const char *symName, Symbol_sp sym, bool e
   if (_lisp->_TrapIntern) {
     if (strcmp(this->_Name.c_str(), _lisp->_TrapInternPackage.c_str()) == 0) {
       if (strcmp(symName, _lisp->_TrapInternName.c_str()) == 0) {
-        printf("%s:%d TRAPPED INTERN of symbol %s in package %s\n", __FILE__, __LINE__, symName, this->_Name.c_str());
+        printf("%s:%d TRAPPED INTERN of symbol %s@%p in package %s\n", __FILE__, __LINE__, symName, sym.raw_(), this->_Name.c_str() );
       }
     }
   }
+#if 0
+  if ( strcmp(symName,"YES-OR-NO-P") == 0 ) {
+    printf("%s:%d Interning YES-OR-NO-P\n", __FILE__, __LINE__ );
+  }
+#endif
+//  printf("%s:%d Interning symbol %s@%p into %s exportp: %d\n", __FILE__, __LINE__, _rep_(sym).c_str(), sym.raw_(), this->_Name.c_str(), exportp);
 #if 0 // DEBUG_CL_SYMBOLS
   if (!exportp && sym.notnilp() && this == &(*(_lisp->commonLispPackage()))) {
     printf("%s:%d Interning an internal symbol %s within COMMON-LISP\n", __FILE__, __LINE__, symName );
@@ -687,6 +693,16 @@ void Package_O::add_symbol_to_package(const char *symName, Symbol_sp sym, bool e
   if (llvm_interface::addSymbol != NULL) {
     DEPRECIATED();
     llvm_interface::addSymbol(sym);
+  }
+}
+
+
+
+
+void Package_O::bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp, bool shadowp) {
+  this->add_symbol_to_package(symName,sym,exportp);
+  if ( shadowp ) {
+    this->_Shadowing->setf_gethash(sym,_lisp->_true());
   }
 }
 
@@ -826,7 +842,8 @@ void Package_O::mapInternals(KeyValueMapper *mapper) {
 void Package_O::dumpSymbols() {
   _OF();
   string all = this->allSymbols();
-  _lisp->print(BF("%s") % all);
+  printf("%s:%d Package %s\n", __FILE__, __LINE__, this->_Name.c_str());
+  printf("%s\n", all.c_str());
 }
 
 EXPOSE_CLASS(core, Package_O);

@@ -175,14 +175,13 @@ Symbol_O::Symbol_O() : Base(),
                         // nothing
                        };
 
-void Symbol_O::finish_setup(Package_sp pkg, bool exportp) {
+void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
-  //	printf("%s:%d finish_setup of symbol: %s:%s\n", __FILE__, __LINE__, pkg->getName().c_str(), this->_Name->get().c_str());
   this->_HomePackage = pkg;
   this->_Value = _Unbound<T_O>();
   this->_Function = _Unbound<Function_O>();
   this->_SetfFunction = _Unbound<Function_O>();
-  pkg->add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp);
+  pkg->bootstrap_add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp, shadowp);
   this->_PropertyList = _Nil<T_O>();
 }
 
@@ -244,6 +243,7 @@ void Symbol_O::sxhash_(HashGenerator &hg) const {
 #define DECL_Symbol_O_copy_symbol ""
 #define DOCS_Symbol_O_copy_symbol "copy_symbol"
 CL_LISPIFY_NAME("cl:copy_symbol");
+CL_LAMBDA(symbol &optional copy-properties);
 CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   Symbol_sp new_symbol = Symbol_O::create(this->_Name->get());
   if (copy_properties.isTrue()) {

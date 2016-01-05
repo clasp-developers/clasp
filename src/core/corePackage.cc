@@ -465,7 +465,7 @@ SYMBOL_EXPORT_SC_(ClPkg, char);
 
 SYMBOL_EXPORT_SC_(KeywordPkg, escape);
 SYMBOL_EXPORT_SC_(ClPkg, write);
-SYMBOL_SC_(KeywordPkg, capitalize);
+SYMBOL_EXPORT_SC_(KeywordPkg, capitalize);
 SYMBOL_EXPORT_SC_(ClPkg, STARreadDefaultFloatFormatSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARprint_escapeSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARprint_baseSTAR);
@@ -492,24 +492,24 @@ SYMBOL_EXPORT_SC_(ClPkg, break);
 SYMBOL_EXPORT_SC_(ClPkg, STARbreakOnSignalsSTAR);
 SYMBOL_SC_(CorePkg, STARnestedErrorDepthSTAR);
 SYMBOL_SC_(CorePkg, universalErrorHandler);
-SYMBOL_SC_(KeywordPkg, typeError);
-SYMBOL_SC_(KeywordPkg, datum);
-SYMBOL_SC_(KeywordPkg, expectedType);
+SYMBOL_EXPORT_SC_(KeywordPkg, typeError);
+SYMBOL_EXPORT_SC_(KeywordPkg, datum);
+SYMBOL_EXPORT_SC_(KeywordPkg, expectedType);
 SYMBOL_EXPORT_SC_(ClPkg, typeError);
 SYMBOL_EXPORT_SC_(ClPkg, printObject);
 SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
 SYMBOL_EXPORT_SC_(ClPkg, controlError);
-SYMBOL_SC_(KeywordPkg, print);
-SYMBOL_SC_(KeywordPkg, pathname);
+SYMBOL_EXPORT_SC_(KeywordPkg, print);
+SYMBOL_EXPORT_SC_(KeywordPkg, pathname);
 SYMBOL_SC_(CorePkg, setThrowPosition);
 SYMBOL_EXPORT_SC_(CorePkg, tooFewArgumentsError);
 SYMBOL_EXPORT_SC_(CorePkg, tooManyArgumentsError);
 SYMBOL_EXPORT_SC_(KeywordPkg, object);
-SYMBOL_SC_(KeywordPkg, formatControl);
-SYMBOL_SC_(KeywordPkg, formatArguments);
-SYMBOL_SC_(KeywordPkg, name);
-SYMBOL_SC_(KeywordPkg, stream);
-SYMBOL_SC_(KeywordPkg, package);
+SYMBOL_EXPORT_SC_(KeywordPkg, formatControl);
+SYMBOL_EXPORT_SC_(KeywordPkg, formatArguments);
+SYMBOL_EXPORT_SC_(KeywordPkg, name);
+SYMBOL_EXPORT_SC_(KeywordPkg, stream);
+SYMBOL_EXPORT_SC_(KeywordPkg, package);
 SYMBOL_SC_(CorePkg, unrecognizedKeywordArgumentError);
 SYMBOL_SC_(CorePkg, invalidKeywordArgumentError);
 SYMBOL_EXPORT_SC_(ClPkg, fileError);
@@ -569,9 +569,9 @@ SYMBOL_EXPORT_SC_(ClPkg, STARread_baseSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, compile);
 SYMBOL_EXPORT_SC_(ClPkg, load);
 SYMBOL_EXPORT_SC_(ClPkg, eval);
-SYMBOL_SC_(KeywordPkg, compile_toplevel);
-SYMBOL_SC_(KeywordPkg, load_toplevel);
-SYMBOL_SC_(KeywordPkg, execute);
+SYMBOL_EXPORT_SC_(KeywordPkg, compile_toplevel);
+SYMBOL_EXPORT_SC_(KeywordPkg, load_toplevel);
+SYMBOL_EXPORT_SC_(KeywordPkg, execute);
 
 SYMBOL_EXPORT_SC_(ClPkg, STARread_evalSTAR);
 SYMBOL_SC_(CorePkg, STARdocumentation_poolSTAR);
@@ -582,7 +582,7 @@ SYMBOL_EXPORT_SC_(ClPkg, deftype);
 SYMBOL_EXPORT_SC_(ClPkg, define_method_combination);
 SYMBOL_SC_(CorePkg, generic);
 SYMBOL_EXPORT_SC_(ClPkg, defsetf);
-SYMBOL_SC_(KeywordPkg, allow_other_keys);
+SYMBOL_EXPORT_SC_(KeywordPkg, allow_other_keys);
 SYMBOL_SC_(CorePkg, DOT);
 SYMBOL_EXPORT_SC_(ClPkg, AMPwhole);
 SYMBOL_EXPORT_SC_(ClPkg, AMPenvironment);
@@ -597,8 +597,8 @@ SYMBOL_EXPORT_SC_(ClPkg, integer);
 SYMBOL_EXPORT_SC_(ClPkg, sequence);
 SYMBOL_SC_(CorePkg, anonymous);
 SYMBOL_EXPORT_SC_(ClPkg, declare);
-SYMBOL_SC_(KeywordPkg, macro);
-SYMBOL_SC_(KeywordPkg, function);
+SYMBOL_EXPORT_SC_(KeywordPkg, macro);
+SYMBOL_EXPORT_SC_(KeywordPkg, function);
 SYMBOL_SC_(CorePkg, macro);
 SYMBOL_EXPORT_SC_(ClPkg, function);
 SYMBOL_EXPORT_SC_(ClPkg, variable);
@@ -611,11 +611,11 @@ SYMBOL_SC_(CorePkg, input_stream_designator);
 SYMBOL_SC_(CorePkg, STARprint_source_code_consSTAR);
 /*! Set to true if you want the repl to print what was read */
 SYMBOL_SC_(CorePkg, STARechoReplReadSTAR);
-SYMBOL_SC_(KeywordPkg, invalid_character);
-SYMBOL_SC_(KeywordPkg, brcl);
-SYMBOL_SC_(KeywordPkg, not);
-SYMBOL_SC_(KeywordPkg, and);
-SYMBOL_SC_(KeywordPkg, or );
+SYMBOL_EXPORT_SC_(KeywordPkg, invalid_character);
+SYMBOL_EXPORT_SC_(KeywordPkg, brcl);
+SYMBOL_EXPORT_SC_(KeywordPkg, not);
+SYMBOL_EXPORT_SC_(KeywordPkg, and);
+SYMBOL_EXPORT_SC_(KeywordPkg, or );
 SYMBOL_EXPORT_SC_(ClPkg, and);
 SYMBOL_EXPORT_SC_(ClPkg, or );
 SYMBOL_EXPORT_SC_(ClPkg, car);
@@ -658,24 +658,24 @@ SYMBOL_SC_(CorePkg, okey);
 SYMBOL_EXPORT_SC_(ClPkg, hash_table);
 SYMBOL_SC_(CorePkg, default);
 
-SYMBOL_SC_(KeywordPkg, class);
-SYMBOL_SC_(KeywordPkg, instance);
+SYMBOL_EXPORT_SC_(KeywordPkg, class);
+SYMBOL_EXPORT_SC_(KeywordPkg, instance);
 
-SYMBOL_SC_(KeywordPkg, output);
-SYMBOL_SC_(KeywordPkg, input);
-SYMBOL_SC_(KeywordPkg, io);
-SYMBOL_SC_(KeywordPkg, default);
-SYMBOL_SC_(KeywordPkg, internal);
-SYMBOL_SC_(KeywordPkg, external);
-SYMBOL_SC_(KeywordPkg, inherited);
-SYMBOL_SC_(KeywordPkg, changed);
+SYMBOL_EXPORT_SC_(KeywordPkg, output);
+SYMBOL_EXPORT_SC_(KeywordPkg, input);
+SYMBOL_EXPORT_SC_(KeywordPkg, io);
+SYMBOL_EXPORT_SC_(KeywordPkg, default);
+SYMBOL_EXPORT_SC_(KeywordPkg, internal);
+SYMBOL_EXPORT_SC_(KeywordPkg, external);
+SYMBOL_EXPORT_SC_(KeywordPkg, inherited);
+SYMBOL_EXPORT_SC_(KeywordPkg, changed);
 SYMBOL_SC_(CorePkg, dot);
 SYMBOL_EXPORT_SC_(ClPkg, STARfeaturesSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARload_printSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARload_verboseSTAR);
 SYMBOL_SC_(CorePkg, ifDoesNotExist);
-SYMBOL_SC_(KeywordPkg, debug);
-SYMBOL_SC_(KeywordPkg, direct_super_classes);
+SYMBOL_EXPORT_SC_(KeywordPkg, debug);
+SYMBOL_EXPORT_SC_(KeywordPkg, direct_super_classes);
 SYMBOL_EXPORT_SC_(ClPkg, lambda);
 SYMBOL_EXPORT_SC_(CorePkg, symbolMacroletLambda);
 SYMBOL_EXPORT_SC_(ExtPkg, lambda_block);
@@ -708,7 +708,7 @@ SYMBOL_EXPORT_SC_(ClPkg, list);
 SYMBOL_SC_(CorePkg, key);
 SYMBOL_SC_(CorePkg, test_not);
 
-SYMBOL_SC_(KeywordPkg, name);
+SYMBOL_EXPORT_SC_(KeywordPkg, name);
 SYMBOL_SC_(CorePkg, forward_referenced_class);
 SYMBOL_EXPORT_SC_(ClPkg, standard_class);
 SYMBOL_EXPORT_SC_(ClPkg, rest);
@@ -716,7 +716,7 @@ SYMBOL_EXPORT_SC_(ClPkg, rest);
 SYMBOL_SC_(CorePkg, instance);
 SYMBOL_SC_(CorePkg, all_keys);
 
-SYMBOL_SC_(KeywordPkg, changed);
+SYMBOL_EXPORT_SC_(KeywordPkg, changed);
 
 
 void testConses() {
@@ -1142,10 +1142,10 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 #if 0 //Old system checking
 	/*! Set up the features based on _TARGET_OS_xxxx and _ADDRESS_MODEL_ */
 #if defined(_TARGET_OS_DARWIN)
-	SYMBOL_SC_(KeywordPkg,target_os_darwin);
+	SYMBOL_EXPORT_SC_(KeywordPkg,target_os_darwin);
 	Symbol_sp target_os = kw::_sym_target_os_darwin;
 #elif defined(_TARGET_OS_LINUX)
-	SYMBOL_SC_(KeywordPkg,target_os_linux);
+	SYMBOL_EXPORT_SC_(KeywordPkg,target_os_linux);
 	Symbol_sp target_os = kw::_sym_target_os_linux;
 #endif
 
@@ -1153,7 +1153,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 
 #if defined(__x86_64__)
 
-  SYMBOL_SC_(KeywordPkg, address_model_64);
+  SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;
 
 #if defined(__APPLE__) && defined(__MACH__)
@@ -1163,7 +1163,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 #error Currently iPhone simulator and iOS are not supported
 #elif TARGET_OS_MAC == 1
 
-  SYMBOL_SC_(KeywordPkg, target_os_darwin);
+  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_darwin);
   Symbol_sp target_os = kw::_sym_target_os_darwin;
 
 #else
@@ -1172,7 +1172,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 
 #elif defined(__linux__)
 
-  SYMBOL_SC_(KeywordPkg, target_os_linux);
+  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_linux);
   Symbol_sp target_os = kw::_sym_target_os_linux;
 
 #else
@@ -1181,12 +1181,12 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 
 #elif defined(__i386__)
 
-  SYMBOL_SC_(KeywordPkg, address_model_32);
+  SYMBOL_EXPORT_SC_(KeywordPkg, address_model_32);
   Symbol_sp address_model = kw::_sym_address_model_32;
 
 #if defined(__linux__)
 
-  SYMBOL_SC_(KeywordPkg, target_os_linux);
+  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_linux);
   Symbol_sp target_os = kw::_sym_target_os_linux;
 
 #else
@@ -1207,10 +1207,10 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 #if 0 //Old System checking
 	/*! Set up the features based on _TARGET_OS_xxxx and _ADDRESS_MODEL_ */
 #if defined(_ADDRESS_MODEL_64)
-	SYMBOL_SC_(KeywordPkg,address_model_64);
+	SYMBOL_EXPORT_SC_(KeywordPkg,address_model_64);
 	Symbol_sp address_model = kw::_sym_address_model_64;
 #elif defined(_ADDRESS_MODEL_32)
-	SYMBOL_SC_(KeywordPkg,address_model_32);
+	SYMBOL_EXPORT_SC_(KeywordPkg,address_model_32);
 	Symbol_sp address_model = kw::_sym_address_model_32;
 #endif
 
