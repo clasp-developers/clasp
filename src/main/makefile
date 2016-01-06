@@ -7,6 +7,7 @@ project-directories = ../gctools ../core ../clbind ../cffi ../asttooling ../llvm
 
 
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
+  CLASP_BOEHMDC = $(CLASP_APP_EXECS)/boehmdc/release/bin/clasp
   BCLASP_BOEHMDC = $(CLASP_APP_EXECS)/boehmdc/release/bin/clasp -f bclasp
   BCLASP_BOEHM = $(CLASP_APP_EXECS)/boehm/release/bin/clasp -f bclasp
   CCLASP_BOEHMDC = $(CLASP_APP_EXECS)/boehmdc/release/bin/clasp
@@ -122,7 +123,7 @@ min-boehm:
 	$(BCLASP_BOEHM) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
 
 min-boehmdc:
-	$(BCLASP_BOEHMDC) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
+	$(CLASP_BOEHMDC) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
 
 bclasp-boehmdc-bitcode:
 	$(BCLASP_BOEHMDC) -f ecl-min -e "(compile-bclasp)" -e "(quit)"
