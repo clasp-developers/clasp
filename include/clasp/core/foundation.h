@@ -189,44 +189,6 @@ typedef std::size_t class_id;
 #endif //]
 #endif
 
-#if 0
-/*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-#define DEFUN(pkg, x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
-
-#define Defun(x) core::af_def(CurrentPkg, #x, &af_##x, ARGS_af_##x, DECL_af_##x, DOCS_af_##x, __FILE__, __LINE__);
-#define Defun_maker(pkg, x) core::af_def(pkg, "make-" #x, &(x##_O::make), ARGS_##x##_O_make, DECL_##x##_O_make, DOCS_##x##_O_make);
-
-#define ClDefun(x) core::af_def(CorePkg, "COMMON-LISP:" #x, &cl_##x, ARGS_cl_##x, DECL_cl_##x, DOCS_cl_##x, __FILE__, __LINE__);
-#define CompDefun(x) core::af_def(CompPkg, #x, &comp_##x, ARGS_comp_##x, DECL_comp_##x, DOCS_comp_##x, __FILE__, __LINE__);
-#define ExtDefun(x) core::af_def(ExtPkg, #x, &ext_##x, ARGS_ext_##x, DECL_ext_##x, DOCS_ext_##x, __FILE__, __LINE__);
-#define ClosDefun(x) core::af_def(ClosPkg, #x, &clos_##x, ARGS_clos_##x, DECL_clos_##x, DOCS_clos_##x, __FILE__, __LINE__);
-#define CoreDefun(x) core::af_def(CorePkg, #x, &core_##x, ARGS_core_##x, DECL_core_##x, DOCS_core_##x, __FILE__, __LINE__);
-#define SocketsDefun(x) core::af_def(SocketsPkg, #x, &sockets_##x, ARGS_sockets_##x, DECL_sockets_##x, DOCS_sockets_##x, __FILE__, __LINE__);
-
-#define Cl_temp_Defun(x) core::af_def(CorePkg, "COMMON-LISP:" #x, &cl__##x, ARGS_cl__##x, DECL_cl__##x, DOCS_cl__##x, __FILE__, __LINE__);
-#define Comp_temp_Defun(x) core::af_def(CompPkg, #x, &comp__##x, ARGS_comp__##x, DECL_comp__##x, DOCS_comp__##x, __FILE__, __LINE__);
-#define Gctools_temp_Defun(x) core::af_def(GcToolsPkg, #x, &gctools__##x, ARGS_gctools__##x, DECL_gctools__##x, DOCS_gctools__##x, __FILE__, __LINE__);
-#define Ext_temp_Defun(x) core::af_def(ExtPkg, #x, &ext__##x, ARGS_ext__##x, DECL_ext__##x, DOCS_ext__##x, __FILE__, __LINE__);
-#define Clos_temp_Defun(x) core::af_def(ClosPkg, #x, &clos__##x, ARGS_clos__##x, DECL_clos__##x, DOCS_clos__##x, __FILE__, __LINE__);
-#define Core_temp_Defun(x) core::af_def(CorePkg, #x, &core__##x, ARGS_core__##x, DECL_core__##x, DOCS_core__##x, __FILE__, __LINE__);
-#define Sockets_temp_Defun(x) core::af_def(SocketsPkg, #x, &sockets__##x, ARGS_sockets__##x, DECL_sockets__##x, DOCS_sockets__##x, __FILE__, __LINE__);
-#define Llvmo_temp_Defun(x) core::af_def(LlvmoPkg, #x, &llvm_sys__##x, ARGS_llvm_sys__##x, DECL_llvm_sys__##x, DOCS_llvm_sys__##x, __FILE__, __LINE__);
-
-
-/*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-//#define DEFUN_EXPORT(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
-
-/*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-//#define DEFUN_NAME(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp);
-
-/*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-//#define DEFUN_NAME_EXPORT(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
-
-#endif
-
-
-
-
 /*! Use this in initializeCandoPrimitives to define a function
   This is a little more complicated than it needs to be to try and avoid unused variable warnings */
 #define DEFGENERIC(pkg, x) defgeneric(pkg, #x, &gf_##x, ARGS_gf_##x, DOCS_gf_##x, _lisp);
@@ -342,24 +304,6 @@ const handleType UniqueIdHandle = 1;
  */
 /*@}*/
 
-//
-//
-//	For debugging memory
-//
-//
-#ifdef CDEBUG_FULL
-#define REFCOUNTDEBUG
-#endif
-
-#if 0
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <cstdio>
-#include <crtdbg.h>
-#define REFCOUNTDEBUG
-#endif
-#endif
 
 //
 // Trap failed BOOST_ASSERT invocations
@@ -999,11 +943,6 @@ T_sp lisp_apply(T_sp funcDesig, ActivationFrame_sp args);
 List_sp lisp_parse_arguments(const string &packageName, const string &args);
 List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
 LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues = std::set<int>());
-#if 0
-    void lisp_defun_lispify_name(const string& packageName, const string& name,
-				 Functoid*, const string& arguments="", const string& declarestring="",
-				 const string& docstring="", int locked=1, bool autoExport=true, int number_of_required_arguments=0 );
-#endif
 void lisp_defmacro(Symbol_sp name, const string &packageName,
                    gc::tagged_pointer<BuiltinClosure>, const string &arguments = "", const string &declarestring = "",
                    const string &docstring = "", bool autoExport = true);
@@ -1098,11 +1037,6 @@ core::Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal);
 /*! Register source info for the object in the current source database */
 core::T_sp lisp_registerSourceInfo(T_sp obj, SourceFileInfo_sp sfo, size_t filePos, int lineno, int column);
 core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
-#if 0    
-    core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
-                                                             , T_sp stream);
-
-#endif
 class Functoid {
   struct metadata_always_fix_pointers_to_derived_classes;
   FRIEND_GC_SCANNER(Functoid);
@@ -1310,13 +1244,6 @@ extern llvmAddSymbolCallbackType addSymbol;
 #include <clasp/core/clasp_gmpxx.h>
 
 namespace reg {
-#if 0
-    struct ClassSymbolsHolder {
-        gctools::Vec0<core::Symbol_sp>  _Symbols;
-    };
-
-    extern ClassSymbolsHolder   globalClassSymbolsVectorHolder;
-#endif
 
 void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym);
 

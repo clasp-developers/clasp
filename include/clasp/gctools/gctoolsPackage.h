@@ -54,7 +54,7 @@ public:
   DECLARE_onHeapScanGCRoots();
 };
 
-void af_cleanup();
+void gctools__cleanup();
 
 void initialize_bootstrap_kinds();
 };

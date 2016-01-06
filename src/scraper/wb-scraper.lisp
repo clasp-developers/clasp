@@ -17,9 +17,13 @@
      (namestring (merge-pathnames "src/main/" cl-user::*clasp-home*))
      "bin/all-commands.txt"
      "bin/commands.txt")
-  :run-preprocessor nil
+  :run-preprocessor t
   :regenerate-sifs nil)
 
+
+(split-cpps '(1 2 3 4 5 6 7) 2)
+(apropos "wait")
+(sb-posix:wait 
 *packages-to-create*
 
 
@@ -27,7 +31,7 @@
 
 (inherits-from* "core::Fixnum_dummy_O" "core::Integer_O" cscrape::*inheritance*)
 
-(print "Done")
+(print "Done2")
 
 (cscrape:extract-method-name-from-signature "inline T_sp Cons_O::setf_car(Cons_sp c)")
 (untrace)

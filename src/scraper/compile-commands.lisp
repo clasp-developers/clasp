@@ -79,10 +79,10 @@
             lines)))
 
 
-(defun run-cpp (cc &key print)
+(defun run-cpp (cc forki &key print)
   "Run the C-preprocessor on the compile-command"
   (let* ((cpp-cmd (generate-cpp-command cc)))
-    (format t "Running preprocessor to generate ~a~%" (cpp-name cc))
+    (format t "Child[~d] Running preprocessor to generate ~a~%" forki (cpp-name cc))
     (when print
       (format t "~a~%" (with-output-to-string (sout)
                          (loop for x in cpp-cmd
@@ -96,13 +96,35 @@
             (format t "error: ~a~%" (get-output-stream-string serr))))
         (values (get-output-stream-string sout) (get-output-stream-string serr))))))
 
+(defun split-cpps (ccs &optional (num 1))
+  "* Arguments
+- ccs :: A list of compile commands.
+- num :: A number
+* Description
+Split the list of ccs into a number of lists."
+  (let ((lists (make-array num :initial-element nil))
+        (i 0))
+    (dolist (c ccs)
+      (push c (elt lists i))
+      (incf i)
+      (when (>= i num) (setf i 0)))
+    (coerce lists 'list)))
 
 (defun update-cpps (ccs)
   "Run the c-preprocessor on the commands"
-  (format t "Running ~d preprocessor jobs~%" (length ccs))
-  (loop for cc in ccs
-       do (run-cpp cc)))
-
+  (when (> 0 (length ccs))
+    (let* ((pjobs (min (length ccs) (parse-integer (sb-posix:getenv "PJOBS"))))
+           (jobs (split-cpps ccs pjobs))
+           (forki 0))
+      (format t "Running ~d preprocessor jobs in ~d forks~%" (length ccs) pjobs)
+      (loop for job in jobs
+         for forki from 0 upto (length jobs)
+         do (when (= (sb-posix:fork) 0)
+              (loop for cc in job
+                 do (run-cpp cc forki))
+              (format t "Child done~%")
+              (sb-ext:exit))))
+    (sb-posix:wait)))
 
 (defclass buffer-stream ()
   ((buffer :initarg :buffer :accessor buffer)

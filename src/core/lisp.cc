@@ -190,10 +190,17 @@ public:
 //
 // Constructor
 //
-Lisp_O::GCRoots::GCRoots() : _BufferStringPool(_Nil<T_O>()), _MultipleValuesCur(NULL), _BignumRegister0(_Unbound<Bignum_O>()), _BignumRegister1(_Unbound<Bignum_O>()), _BignumRegister2(_Unbound<Bignum_O>())
-                             //                               , _TraceFunctions(_Unbound<HashTable_O>())
+Lisp_O::GCRoots::GCRoots() : _BufferStringPool(_Nil<T_O>()),
+                             _MultipleValuesCur(NULL),
+                             _BignumRegister0(_Unbound<Bignum_O>()),
+                             _BignumRegister1(_Unbound<Bignum_O>()),
+                             _BignumRegister2(_Unbound<Bignum_O>())
                              ,
-                             _SystemProperties(_Nil<T_O>()), _CatchInfo(_Nil<T_O>()), _SpecialForms(_Unbound<HashTableEq_O>()), _NullStream(_Nil<T_O>()), _PathnameTranslations(_Nil<T_O>()) {}
+                             _SystemProperties(_Nil<T_O>()),
+                             _CatchInfo(_Nil<T_O>()),
+                             _SpecialForms(_Unbound<HashTableEq_O>()),
+                             _NullStream(_Nil<T_O>()),
+                             _PathnameTranslations(_Nil<T_O>()) {}
 
 Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
@@ -211,7 +218,7 @@ Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB
                    _EmbeddedInPython(false),
                    _BootClassTableIsValid(true),
                    _PathMax(CLASP_MAXPATHLEN) {
-  this->_Roots._Bindings.reserve(1024);
+//  this->_Roots._Bindings.reserve(1024); // moved to Lisp_O::initialize()
   this->_TrapIntern = false;
   this->_TrapInternPackage = "";
   this->_TrapInternName = "";
@@ -248,8 +255,12 @@ void Lisp_O::lisp_initSymbols(Lisp_sp lisp) {
   Package_sp corePackage = lisp->_Roots._CorePackage;
 }
 
+/*! Allocations go here
+*/
 void Lisp_O::initialize() {
-  // do nothing
+//  printf("%s:%d Initializing _lisp\n", __FILE__, __LINE__ );
+  this->_Roots.charInfo.initialize();
+  this->_Roots._Bindings.reserve(1024);
 }
 
 void Lisp_O::addToStarModulesStar(Symbol_sp sym) {
