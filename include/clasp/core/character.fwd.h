@@ -35,7 +35,8 @@ struct CharacterInfo {
   gctools::Vec0<T_sp> gIndexedCharacters;
   gctools::Vec0<T_sp> gCharacterNames;
   const char *repr() const { return "CharacterInfo"; };
-  CharacterInfo();
+  CharacterInfo() {};
+  void initialize();
 };
 
 Character_sp clasp_make_character(claspCharacter c);

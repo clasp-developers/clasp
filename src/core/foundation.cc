@@ -319,7 +319,7 @@ void lisp_pollSignals() {
   ++_global_pollTicksGC;
   if (core::_sym_STARpollTicksPerGcSTAR && !core::_sym_STARpollTicksPerGcSTAR.unboundp() && !core::_sym_STARpollTicksPerGcSTAR->symbolValueUnsafe().unboundp() && _global_pollTicksGC >= unbox_fixnum(gc::As<Fixnum_sp>(core::_sym_STARpollTicksPerGcSTAR->symbolValue()))) {
     _global_pollTicksGC = 0;
-    gctools::af_cleanup();
+    gctools::gctools__cleanup();
   }
 #endif
 }

@@ -304,7 +304,7 @@ Character_sp clasp_character_create_from_name(string const &name) {
 };
 namespace core {
 
-CharacterInfo::CharacterInfo() {
+void CharacterInfo::initialize() {
   this->gCharacterNames.resize(256, _Nil<T_O>());
   this->gIndexedCharacters.resize(256, _Nil<T_O>());
 #define ADD_CHAR(name, char_index)                                      \

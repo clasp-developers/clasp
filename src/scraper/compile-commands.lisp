@@ -112,18 +112,19 @@ Split the list of ccs into a number of lists."
 
 (defun update-cpps (ccs)
   "Run the c-preprocessor on the commands"
-  (let* ((pjobs (min (length ccs) (parse-integer (sb-posix:getenv "PJOBS"))))
-         (jobs (split-cpps ccs pjobs))
-         (forki 0))
-    (format t "Running ~d preprocessor jobs in ~d forks~%" (length ccs) pjobs)
-    (loop for job in jobs
-       for forki from 0 upto (length jobs)
-       do (when (= (sb-posix:fork) 0)
-            (loop for cc in job
-               do (run-cpp cc forki))
-            (format t "Child done~%")
-            (sb-ext:exit))))
-  (sb-posix:wait))
+  (when (> 0 (length ccs))
+    (let* ((pjobs (min (length ccs) (parse-integer (sb-posix:getenv "PJOBS"))))
+           (jobs (split-cpps ccs pjobs))
+           (forki 0))
+      (format t "Running ~d preprocessor jobs in ~d forks~%" (length ccs) pjobs)
+      (loop for job in jobs
+         for forki from 0 upto (length jobs)
+         do (when (= (sb-posix:fork) 0)
+              (loop for cc in job
+                 do (run-cpp cc forki))
+              (format t "Child done~%")
+              (sb-ext:exit))))
+    (sb-posix:wait)))
 
 (defclass buffer-stream ()
   ((buffer :initarg :buffer :accessor buffer)

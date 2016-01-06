@@ -723,7 +723,11 @@ void initialize_classes_and_methods()
 #undef EXPOSE_CLASSES_AND_METHODS
 }
 
+#if 0
 #define MPS_LOG(x) printf("%s:%d %s\n", __FILE__, __LINE__, x);
+#else
+#define MPS_LOG(x)
+#endif
 
 void initialize_clasp()
 {

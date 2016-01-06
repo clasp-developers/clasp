@@ -11,6 +11,8 @@ ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
   BCLASP_BOEHM = $(CLASP_APP_EXECS)/boehm/release/bin/clasp -f bclasp
   CCLASP_BOEHMDC = $(CLASP_APP_EXECS)/boehmdc/release/bin/clasp
   CCLASP_BOEHM = $(CLASP_APP_EXECS)/boehm/release/bin/clasp
+  ACLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp -I -f ecl-min
+  BCLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp -f bclasp
   CCLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp
 else
   echo "ERROR CLASP_INTERNAL_BUILD_TARGET_DIR is not defined - what should I do now?"
@@ -70,9 +72,6 @@ link-cclasp-boehmdc-addons:
 cclasp-boehm-addons:
 	$(CCLASP_BOEHM) -l "build_addons.lsp"
 
-link-min-mps:
-	$(CCLASP_MPS) -I -f ecl-min -l link-min.lsp
-
 link-cclasp-mps-addons:
 	$(CCLASP_MPS) -l "link_addons.lsp"
 
@@ -107,6 +106,9 @@ boehm-debug-cxx-a:
 
 mps-debug-cxx:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/debug gc=mps debug clasp_install
+
+mps-debug-cxx-a:
+	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/debug gc=mps debug clasp_install -a
 
 
 min-boehm-clean:
@@ -145,6 +147,7 @@ bclasp-boehm-bitcode:
 bclasp-boehm-fasl:
 	$(BCLASP_BOEHM) -f ecl-min -e "(link-bclasp)" -e "(quit)"
 
+
 bclasp-boehm-addons:
 	$(BCLASP_BOEHM) -l "build_addons.lsp"
 
@@ -164,6 +167,15 @@ cclasp-boehm-bitcode:
 cclasp-boehm-fasl:
 	$(BCLASP_BOEHM) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
 
+
+aclasp-mps-fasl:
+	clasp_mps_o -I -f ecl-min -e "(link-min)" -e "(quit)"
+
+bclasp-mps-fasl:
+	$(CLASP_MPS) -f ecl-min -e "(link-bclasp)" -e "(quit)"
+
+cclasp-mps-fasl:
+	$(BCLASP_MPS) -f ecl-min -e "(link-cclasp)" -e "(quit)"
 
 
 
