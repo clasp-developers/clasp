@@ -27,6 +27,7 @@ THE SOFTWARE.
 #ifndef closPackage_fwd_H
 #define closPackage_fwd_H
 
+PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(clos, ClosPkg, "CLOS")
 
 #endif

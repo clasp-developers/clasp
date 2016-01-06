@@ -69,9 +69,8 @@ class Class_O : public Specializer_O {
   struct metadata_bootstrap_class {};
   struct metadata_gc_do_not_move {};
 
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(Specializer_O);
-  LISP_CLASS(core, ClPkg, Class_O, "class");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(core, ClPkg, Class_O, "class",Specializer_O);
   //
   // Friend functions for bootup
   //
@@ -181,7 +180,8 @@ public:
   void inheritDefaultAllocator(List_sp directSuperclasses);
   void setCreator(gc::tagged_pointer<Creator> cb) { this->_theCreator = cb; };
   gc::tagged_pointer<Creator> getCreator() const { return this->_theCreator; };
-  bool hasCreator() const { return (bool)(this->_theCreator); };
+CL_LISPIFY_NAME("core:hasCreator");
+CL_DEFMETHOD   bool hasCreator() const { return (bool)(this->_theCreator); };
 
   /*! I have GOT to clean up all this class-name stuff
 	  Reduce the clutter to one function to get the name and one to set the name */

@@ -35,6 +35,5 @@ namespace core {
 T_sp cl__format(T_sp dest, T_sp control, List_sp args);
 T_sp core__bformat(T_sp dest, const string &control, List_sp args);
 
-void initialize_bformat(Lisp_sp lisp);
 };
 #endif /* _bformat_H_ */

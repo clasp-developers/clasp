@@ -37,8 +37,7 @@ const char *global_HardcodedKinds[] = {
 #define ARGS_gctools__max_bootstrap_kinds "()"
 #define DECL_gctools__max_bootstrap_kinds ""
 #define DOCS_gctools__max_bootstrap_kinds "maxBootstrapKinds"
-int gctools__max_bootstrap_kinds() {
-  _G();
+CL_DEFUN int gctools__max_bootstrap_kinds() {
   return sizeof(global_HardcodedKinds) / sizeof(global_HardcodedKinds[0]);
 }
 
@@ -72,8 +71,7 @@ void initialize_bootstrap_kinds() {
 #define ARGS_gctools__bootstrap_kind_symbols "()"
 #define DECL_gctools__bootstrap_kind_symbols ""
 #define DOCS_gctools__bootstrap_kind_symbols "bootstrapKindSymbols"
-core::Cons_sp gctools__bootstrap_kind_symbols() {
-  _G();
+CL_DEFUN core::Cons_sp gctools__bootstrap_kind_symbols() {
   core::Cons_sp list(_Nil<core::Cons_O>());
   for (int i(gctools__max_bootstrap_kinds() - 1); i > 0; --i) {
     string name = global_HardcodedKinds[i];
@@ -85,8 +83,7 @@ core::Cons_sp gctools__bootstrap_kind_symbols() {
 #define ARGS_gctools__bootstrap_kind_p "(arg)"
 #define DECL_gctools__bootstrap_kind_p ""
 #define DOCS_gctools__bootstrap_kind_p "bootstrap-kind-p return a generalized boolean of the bootstrap-kind - either the boostrap kind index or nil"
-core::T_sp gctools__bootstrap_kind_p(const string &name) {
-  _G();
+CL_DEFUN core::T_sp gctools__bootstrap_kind_p(const string &name) {
   for (int i(0), iEnd(gctools__max_bootstrap_kinds()); i < iEnd; ++i) {
     //            printf("%s:%d i[%d]Checking if %s == %s\n", __FILE__, __LINE__, i, global_HardcodedKinds[i], name.c_str());
     if (strcmp(global_HardcodedKinds[i], name.c_str()) == 0) {
@@ -98,17 +95,17 @@ core::T_sp gctools__bootstrap_kind_p(const string &name) {
 
 
 
-#define ARGS_gc_deallocate_unmanaged_instance "()"
-#define DECL_gc_deallocate_unmanaged_instance ""
-#define DOCS_gc_deallocate_unmanaged_instance "Deallocate the memory for unmanaged instances and do nothing for other instances"
-void gc_deallocate_unmanaged_instance(core::T_sp obj) {
+#define ARGS_gctools__deallocate_unmanaged_instance "()"
+#define DECL_gctools__deallocate_unmanaged_instance ""
+#define DOCS_gctools__deallocate_unmanaged_instance "Deallocate the memory for unmanaged instances and do nothing for other instances"
+CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
   obj_deallocate_unmanaged_instance(obj);
 }
 
-#define ARGS_gc_bytes_allocated "()"
-#define DECL_gc_bytes_allocated ""
-#define DOCS_gc_bytes_allocated "Return the number of bytes allocated since Clasp started. Two values are returned the number reported by the GC and the number calculated by Clasp"
-core::T_mv gc_bytes_allocated() {
+#define ARGS_gctools__bytes_allocated "()"
+#define DECL_gctools__bytes_allocated ""
+#define DOCS_gctools__bytes_allocated "Return the number of bytes allocated since Clasp started. Two values are returned the number reported by the GC and the number calculated by Clasp"
+CL_DEFUN core::T_mv gctools__bytes_allocated() {
   size_t gc_bytes = 0;
 #ifdef USE_BOEHM
   gc_bytes = GC_get_total_bytes();
@@ -122,9 +119,9 @@ core::T_mv gc_bytes_allocated() {
 }
 
 
-LAMBDA();
-DECLARE();
-DOCSTRING("Return the header kind for the object");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Return the header kind for the object");
 CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   if (obj.consp()) {
 #if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
@@ -154,8 +151,8 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   return core::clasp_make_fixnum(-1);
 }
 
-LAMBDA(obj);
-DOCSTRING(R"doc(Return true if the object inherits from core:instance based on its header value)doc");
+CL_LAMBDA(obj);
+CL_DOCSTRING(R"doc(Return true if the object inherits from core:instance based on its header value)doc");
 CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
 {
   if (core::Instance_sp iobj = obj.asOrNull<core::Instance_O>() ) {
@@ -164,9 +161,9 @@ CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
   return false;
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("Return the header kind for the object");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Return the header kind for the object");
 CL_DEFUN core::T_mv core__hardwired_kinds() {
   core::List_sp result = core::Cons_O::createList(core::Cons_O::create(core::Str_O::create("FIXNUM"), core::clasp_make_fixnum(kind_fixnum)),
                                                   core::Cons_O::create(core::Str_O::create("SINGLE_FLOAT"), core::clasp_make_fixnum(kind_single_float)),
@@ -180,7 +177,7 @@ CL_DEFUN core::T_mv core__hardwired_kinds() {
 #define DECL_af_testVec0 ""
 #define DOCS_af_testVec0 "testVec0"
     void af_testVec0()
-    {_G();
+    {
         int N = 4;
         printf("Creating vec(4)\n");
         gctools::Vec0<TestingClass> v;
@@ -229,7 +226,7 @@ CL_DEFUN core::T_mv core__hardwired_kinds() {
 #define DECL_af_testArray0 ""
 #define DOCS_af_testArray0 "testArray0"
     void af_testArray0()
-    {_G();
+    {
 //        int N = 4;
         printf("Creating Array0(4)\n");
         gctools::Array0<core::core::T_sp> v;
@@ -396,7 +393,8 @@ namespace gctools {
 #define ARGS_gctools__gc_info "(&optional x (marker 0))"
 #define DECL_gctools__gc_info ""
 #define DOCS_gctools__gc_info "gcInfo - Return info about the reachable objects"
-core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
+CL_LAMBDA(&optional x (marker 0));
+CL_DEFUN core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
 #ifdef USE_MPS
   return Values(_Nil<core::T_O>());
 #endif
@@ -408,7 +406,8 @@ core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
 #define ARGS_gctools__monitor_allocations "(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6))"
 #define DECL_gctools__monitor_allocations ""
 #define DOCS_gctools__monitor_allocations "gcMonitorAllocations"
-void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core::Fixnum_sp backtraceCount, core::Fixnum_sp backtraceDepth) {
+CL_LAMBDA(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6));
+CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core::Fixnum_sp backtraceCount, core::Fixnum_sp backtraceDepth) {
   global_monitorAllocations.on = on;
   global_monitorAllocations.counter = 0;
   if (backtraceStart.unsafe_fixnum() < 0 ||
@@ -425,8 +424,8 @@ void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core:
 #define ARGS_gctools__gc_marker "(&optional marker)"
 #define DECL_gctools__gc_marker ""
 #define DOCS_gctools__gc_marker "gcMarker"
-Fixnum gctools__gc_marker(core::Fixnum_sp marker) {
-  _G();
+CL_LAMBDA(&optional marker);
+CL_DEFUN Fixnum gctools__gc_marker(core::Fixnum_sp marker) {
 #ifdef USE_BOEHM
 #ifdef USE_BOEHM_MEMORY_MARKER
   if (marker.nilp()) {
@@ -451,7 +450,7 @@ SYMBOL_EXPORT_SC_(GcToolsPkg, rampCollectAll);
 #define ARGS_gctools__alloc_pattern_begin "(pattern)"
 #define DECL_gctools__alloc_pattern_begin ""
 #define DOCS_gctools__alloc_pattern_begin "allocPatternBegin - pass either gctools:ramp or gctools:ramp-collect-all"
-void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
+CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
 #ifdef USE_MPS
   if (pattern == _sym_ramp || pattern == _sym_rampCollectAll) {
     core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
@@ -471,7 +470,7 @@ void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
 #define ARGS_gctools__alloc_pattern_end "()"
 #define DECL_gctools__alloc_pattern_end ""
 #define DOCS_gctools__alloc_pattern_end "allocPatternEnd - end the current alloc-pattern - return what it was"
-core::Symbol_sp gctools__alloc_pattern_end() {
+CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   core::Symbol_sp pattern(_Nil<core::Symbol_O>());
 #ifdef USE_MPS
   core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
@@ -488,9 +487,9 @@ core::Symbol_sp gctools__alloc_pattern_end() {
   return pattern;
 };
 
-LAMBDA(&optional x (marker 0) msg);
-DECLARE();
-DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)");
+CL_LAMBDA(&optional x (marker 0) msg);
+CL_DECLARE();
+CL_DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)");
              CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tmsg) {
   string smsg = "Total";
   if (core::Str_sp msg = tmsg.asOrNull<core::Str_O>()) {
@@ -555,28 +554,24 @@ void dbg_room() {
 namespace gctools {
 
 #ifdef USE_MPS
-
-#define ARGS_af_mpsTelemetryFlush "()"
-#define DECL_af_mpsTelemetryFlush ""
-#define DOCS_af_mpsTelemetryFlush "mpsTelemetryFlush"
-void af_mpsTelemetryFlush() {
-  _G();
+#define ARGS_gctools__mpsTelemetryFlush "()"
+#define DECL_gctools__mpsTelemetryFlush ""
+#define DOCS_gctools__mpsTelemetryFlush "mpsTelemetryFlush"
+CL_DEFUN void gctools__mpsTelemetryFlush() {
   mps_telemetry_flush();
 };
 
-#define ARGS_af_mpsTelemetrySet "(flags)"
-#define DECL_af_mpsTelemetrySet ""
-#define DOCS_af_mpsTelemetrySet "mpsTelemetrySet"
-void af_mpsTelemetrySet(core::Fixnum_sp flags) {
-  _G();
+#define ARGS_gctools__mpsTelemetrySet "(flags)"
+#define DECL_gctools__mpsTelemetrySet ""
+#define DOCS_gctools__mpsTelemetrySet "mpsTelemetrySet"
+CL_DEFUN void gctools__mpsTelemetrySet(core::Fixnum_sp flags) {
   mps_telemetry_set(unbox_fixnum(flags));
 };
 
-#define ARGS_af_mpsTelemetryReset "(flags)"
-#define DECL_af_mpsTelemetryReset ""
-#define DOCS_af_mpsTelemetryReset "mpsTelemetryReset"
-void af_mpsTelemetryReset(core::Fixnum_sp flags) {
-  _G();
+#define ARGS_gctools__mpsTelemetryReset "(flags)"
+#define DECL_gctools__mpsTelemetryReset ""
+#define DOCS_gctools__mpsTelemetryReset "mpsTelemetryReset"
+CL_DEFUN void gctools__mpsTelemetryReset(core::Fixnum_sp flags) {
   mps_telemetry_reset(unbox_fixnum(flags));
 };
 
@@ -585,7 +580,7 @@ void af_mpsTelemetryReset(core::Fixnum_sp flags) {
 #define ARGS_gctools__stack_depth "()"
 #define DECL_gctools__stack_depth ""
 #define DOCS_gctools__stack_depth "stackDepth"
-core::T_sp gctools__stack_depth() {
+CL_DEFUN core::T_sp gctools__stack_depth() {
   int z = 0;
   void *zp = &z;
   size_t stackDepth = (char *)_global_stack_marker - (char *)zp;
@@ -595,8 +590,7 @@ core::T_sp gctools__stack_depth() {
 #define ARGS_gctools__garbage_collect "()"
 #define DECL_gctools__garbage_collect ""
 #define DOCS_gctools__garbage_collect "garbageCollect"
-void gctools__garbage_collect() {
-  _G();
+CL_DEFUN void gctools__garbage_collect() {
 #ifdef USE_BOEHM
   GC_gcollect();
 #endif
@@ -609,11 +603,10 @@ void gctools__garbage_collect() {
   //        printf("Garbage collection done\n");
 };
 
-#define ARGS_af_cleanup "()"
-#define DECL_af_cleanup ""
-#define DOCS_af_cleanup "cleanup"
-void af_cleanup() {
-  _G();
+#define ARGS_gctools__cleanup "()"
+#define DECL_gctools__cleanup ""
+#define DOCS_gctools__cleanup "cleanup"
+CL_DEFUN void gctools__cleanup() {
 #ifdef USE_MPS
   processMpsMessages();
 #endif
@@ -622,8 +615,7 @@ void af_cleanup() {
 #define ARGS_gctools__debug_allocations "(arg)"
 #define DECL_gctools__debug_allocations ""
 #define DOCS_gctools__debug_allocations "debugAllocations"
-void gctools__debug_allocations(core::T_sp debugOn) {
-  _G();
+CL_DEFUN void gctools__debug_allocations(core::T_sp debugOn) {
   _GlobalDebugAllocations = debugOn.isTrue();
 };
 
@@ -632,7 +624,6 @@ void gctools__debug_allocations(core::T_sp debugOn) {
 #define DECL_af_gcheader ""
 #define DOCS_af_gcheader "gcheader"
 void af_gcheader(core::Pointer_sp addr, const string &msg) {
-  _G();
   GCWrapper<core::T_O>::GCHeader *gch = reinterpret_cast<GCWrapper<core::T_O>::GCHeader *>(addr->ptr());
   //        printf("%s Kind = %lu   RefCount=%d\n", msg.c_str(), gch->_Kind, gch->_ReferenceCount);
 };
@@ -641,7 +632,6 @@ void af_gcheader(core::Pointer_sp addr, const string &msg) {
 #define DECL_af_gcaddress ""
 #define DOCS_af_gcaddress "gcaddress"
 core::Pointer_sp af_gcaddress(core::T_sp obj) {
-  _G();
   core::T_O *ptr = dynamic_cast<core::T_O *>(obj.get());
   void *hptr = reinterpret_cast<void *>(GCWrapper<core::T_O>::gcHeader(ptr));
   core::Pointer_sp po = core::Pointer_O::create(hptr);
@@ -652,7 +642,6 @@ core::Pointer_sp af_gcaddress(core::T_sp obj) {
 #define DECL_af_testReferenceCounting ""
 #define DOCS_af_testReferenceCounting "testReferenceCounting"
 void af_testReferenceCounting() {
-  _G();
   core::Pointer_sp p;
   {
     core::Fixnum_sp fn = core::make_fixnum(20);
@@ -675,29 +664,29 @@ void initialize_gc_functions() {
 
   //            core::af_def(GcToolsPkg,"testVec0",&af_testVec0);
   //            core::af_def(GcToolsPkg,"testArray0",&af_testArray0);
-  core::af_def(GcToolsPkg, "gcInfo", &gctools__gc_info);
-  core::af_def(GcToolsPkg, "gcMarker", &gctools__gc_marker, ARGS_gctools__gc_marker, DECL_gctools__gc_marker, DOCS_gctools__gc_marker);
-  core::af_def(GcToolsPkg, "monitorAllocations", &gctools__monitor_allocations, ARGS_gctools__monitor_allocations, DECL_gctools__monitor_allocations, DOCS_gctools__monitor_allocations);
-  core::af_def(GcToolsPkg, "garbageCollect", &gctools__garbage_collect);
-  core::af_def(GcToolsPkg, "stackDepth", &gctools__stack_depth);
-  core::af_def(GcToolsPkg, "cleanup", &af_cleanup);
-  core::af_def(GcToolsPkg, "maxBootstrapKinds", &gctools__max_bootstrap_kinds);
-  core::af_def(GcToolsPkg, "bootstrapKindP", &gctools__bootstrap_kind_p);
-  core::af_def(GcToolsPkg, "bootstrapKindSymbols", &gctools__bootstrap_kind_symbols);
-  core::af_def(GcToolsPkg, "allocPatternBegin", &gctools__alloc_pattern_begin);
-  core::af_def(GcToolsPkg, "allocPatternEnd", &gctools__alloc_pattern_end);
-  core::af_def(GcToolsPkg, "bytes_allocated", &gc_bytes_allocated);
-  core::af_def(GcToolsPkg, "deallocate_unmanaged_instance", &gc_deallocate_unmanaged_instance );
+//  core::af_def(GcToolsPkg, "gcInfo", &gctools__gc_info);
+//  core::af_def(GcToolsPkg, "gcMarker", &gctools__gc_marker, ARGS_gctools__gc_marker, DECL_gctools__gc_marker, DOCS_gctools__gc_marker);
+//  core::af_def(GcToolsPkg, "monitorAllocations", &gctools__monitor_allocations, ARGS_gctools__monitor_allocations, DECL_gctools__monitor_allocations, DOCS_gctools__monitor_allocations);
+//  core::af_def(GcToolsPkg, "garbageCollect", &gctools__garbage_collect);
+//  core::af_def(GcToolsPkg, "stackDepth", &gctools__stack_depth);
+//  core::af_def(GcToolsPkg, "cleanup", &gctools__cleanup);
+//  core::af_def(GcToolsPkg, "maxBootstrapKinds", &gctools__max_bootstrap_kinds);
+//  core::af_def(GcToolsPkg, "bootstrapKindP", &gctools__bootstrap_kind_p);
+//  core::af_def(GcToolsPkg, "bootstrapKindSymbols", &gctools__bootstrap_kind_symbols);
+//  core::af_def(GcToolsPkg, "allocPatternBegin", &gctools__alloc_pattern_begin);
+//  core::af_def(GcToolsPkg, "allocPatternEnd", &gctools__alloc_pattern_end);
+//  core::af_def(GcToolsPkg, "bytes_allocated", &gctools__bytes_allocated);
+//  core::af_def(GcToolsPkg, "deallocate_unmanaged_instance", &gctools__deallocate_unmanaged_instance );
 
   _sym_STARallocPatternStackSTAR->defparameter(_Nil<core::T_O>());
 #ifdef USE_MPS
-  core::af_def(GcToolsPkg, "mpsTelemetrySet", &af_mpsTelemetrySet);
-  core::af_def(GcToolsPkg, "mpsTelemetryReset", &af_mpsTelemetryReset);
-  core::af_def(GcToolsPkg, "mpsTelemetryFlush", &af_mpsTelemetryFlush);
+//  core::af_def(GcToolsPkg, "mpsTelemetrySet", &gctools__mpsTelemetrySet);
+//  core::af_def(GcToolsPkg, "mpsTelemetryReset", &gctools__mpsTelemetryReset);
+//  core::af_def(GcToolsPkg, "mpsTelemetryFlush", &gctools__mpsTelemetryFlush);
 #endif
 
   //	    SYMBOL_EXPORT_SC_(GcTools,linkExternalGlobalsInModule);
   //	    Defun(linkExternalGlobalsInModule);
-  Gctools_temp_Defun(debug_allocations);
+//  Gctools_temp_Defun(debug_allocations);
 };
 };

@@ -46,9 +46,9 @@ namespace core {
 //    Symbol_sp 	_sym_nil;	// equivalent to _Nil<T_O>()
 //    Symbol_sp 	_sym_t;		// equivalent to _lisp->_true()
 
-LAMBDA(sym);
-DECLARE();
-DOCSTRING("Return the symbol plist");
+CL_LAMBDA(sym);
+CL_DECLARE();
+CL_DOCSTRING("Return the symbol plist");
 CL_DEFUN List_sp cl__symbol_plist(Symbol_sp sym) {
   if (sym.nilp()) {
     return _Nil<List_V>();
@@ -56,9 +56,9 @@ CL_DEFUN List_sp cl__symbol_plist(Symbol_sp sym) {
   return sym->plist();
 }
 
-LAMBDA(sym indicator &optional default);
-DECLARE();
-DOCSTRING("Return the symbol plist");
+CL_LAMBDA(sym indicator &optional default);
+CL_DECLARE();
+CL_DOCSTRING("Return the symbol plist");
 CL_DEFUN T_sp cl__get(Symbol_sp sym, T_sp indicator, T_sp defval) {
   if (sym.nilp()) {
     return cl__getf(coerce_to_list(cl::_sym_nil), indicator, defval);
@@ -66,9 +66,9 @@ CL_DEFUN T_sp cl__get(Symbol_sp sym, T_sp indicator, T_sp defval) {
   return cl__getf(sym->_PropertyList, indicator, defval);
 }
 
-LAMBDA(sym plist);
-DECLARE();
-DOCSTRING("Set the symbol plist");
+CL_LAMBDA(sym plist);
+CL_DECLARE();
+CL_DOCSTRING("Set the symbol plist");
 CL_DEFUN void core__setf_symbol_plist(Symbol_sp sym, List_sp plist) {
   if (sym.nilp()) {
     SIMPLE_ERROR(BF("You cannot set the plist of nil"));
@@ -76,9 +76,9 @@ CL_DEFUN void core__setf_symbol_plist(Symbol_sp sym, List_sp plist) {
   sym->setf_plist(plist);
 }
 
-LAMBDA(sym val indicator);
-DECLARE();
-DOCSTRING("Set the symbol plist");
+CL_LAMBDA(sym val indicator);
+CL_DECLARE();
+CL_DOCSTRING("Set the symbol plist");
 CL_DEFUN T_sp core__putprop(Symbol_sp sym, T_sp val, T_sp indicator) {
   if (sym.nilp()) {
     SIMPLE_ERROR(BF("You cannot set the plist of nil"));
@@ -87,46 +87,42 @@ CL_DEFUN T_sp core__putprop(Symbol_sp sym, T_sp val, T_sp indicator) {
   return val;
 }
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("boundp");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("boundp");
 CL_DEFUN bool cl__boundp(Symbol_sp arg) {
-  _G();
   if (arg.nilp())
     return true;
   return arg->boundP();
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("symbolPackage");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("symbolPackage");
 CL_DEFUN T_sp cl__symbol_package(Symbol_sp arg) {
-  _G();
   return arg->homePackage();
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("symbolFunction");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("symbolFunction");
 CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
-  _G();
   if (!sym->fboundp()) {
     SIMPLE_ERROR(BF("No function bound to %s") % _rep_(sym));
   }
   return sym->symbolFunction();
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("symbolName");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("symbolName");
 CL_DEFUN Str_sp cl__symbol_name(Symbol_sp arg) {
-  _G();
   return arg->symbolName();
 }
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("symbolValue");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("symbolValue");
 CL_DEFUN T_sp cl__symbol_value(const Symbol_sp arg) {
   if (!arg->boundP()) {
     SIMPLE_ERROR(BF("Symbol %s@%p is unbound") % _rep_(arg) % (void *)arg.raw_());
@@ -134,19 +130,17 @@ CL_DEFUN T_sp cl__symbol_value(const Symbol_sp arg) {
   return arg->symbolValue();
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("symbolValueAddress");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("symbolValueAddress");
 CL_DEFUN T_sp core__symbol_value_address(const Symbol_sp arg) {
-  _G();
   return Pointer_O::create(&arg->symbolValueRef());
 };
 
-LAMBDA(name);
-DECLARE();
-DOCSTRING("make_symbol");
+CL_LAMBDA(name);
+CL_DECLARE();
+CL_DOCSTRING("make_symbol");
 CL_DEFUN Symbol_mv cl__make_symbol(Str_sp name) {
-  _G();
   Symbol_sp sym = Symbol_O::create(name->get());
   return (Values(sym));
 };
@@ -181,19 +175,17 @@ Symbol_O::Symbol_O() : Base(),
                         // nothing
                        };
 
-void Symbol_O::finish_setup(Package_sp pkg, bool exportp) {
+void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
-  //	printf("%s:%d finish_setup of symbol: %s:%s\n", __FILE__, __LINE__, pkg->getName().c_str(), this->_Name->get().c_str());
   this->_HomePackage = pkg;
   this->_Value = _Unbound<T_O>();
   this->_Function = _Unbound<Function_O>();
   this->_SetfFunction = _Unbound<Function_O>();
-  pkg->add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp);
+  pkg->bootstrap_add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp, shadowp);
   this->_PropertyList = _Nil<T_O>();
 }
 
 Symbol_sp Symbol_O::create_at_boot(const string &nm) {
-  _G();
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
   Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::root_allocate();
@@ -208,7 +200,6 @@ Symbol_sp Symbol_O::create_at_boot(const string &nm) {
 };
 
 Symbol_sp Symbol_O::create(const string &nm) {
-  _G();
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
   Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::root_allocate(true);
@@ -230,7 +221,8 @@ bool Symbol_O::boundP() const {
   return !this->_Value.unboundp();
 }
 
-void Symbol_O::makunbound() {
+CL_LISPIFY_NAME("makunbound");
+CL_DEFMETHOD void Symbol_O::makunbound() {
   this->_Value = _Unbound<T_O>();
 }
 
@@ -250,8 +242,9 @@ void Symbol_O::sxhash_(HashGenerator &hg) const {
 #define ARGS_Symbol_O_copy_symbol "(symbol &optional copy-properties)"
 #define DECL_Symbol_O_copy_symbol ""
 #define DOCS_Symbol_O_copy_symbol "copy_symbol"
-Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
-  _G();
+CL_LISPIFY_NAME("cl:copy_symbol");
+CL_LAMBDA(symbol &optional copy-properties);
+CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   Symbol_sp new_symbol = Symbol_O::create(this->_Name->get());
   if (copy_properties.isTrue()) {
     ASSERT(this->_Function);
@@ -288,7 +281,6 @@ void Symbol_O::serialize(serialize::SNode node) {
 
 #if defined(XML_ARCHIVE)
 void Symbol_O::archiveBase(ArchiveP node) {
-  _G();
   if (node->loading()) {
     SIMPLE_ERROR(BF("You can't load symbols with archiveBase!! See Dumb_Node::createYourSymbol"));
   } else {
@@ -298,7 +290,8 @@ void Symbol_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-Symbol_sp Symbol_O::asKeywordSymbol() {
+CL_LISPIFY_NAME("core:asKeywordSymbol");
+CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
   _OF();
   if (this->_HomePackage.notnilp()) {
     Package_sp pkg = gc::As<Package_sp>(this->_HomePackage);
@@ -326,12 +319,13 @@ T_sp Symbol_O::setf_symbolValue(T_sp val) {
   return val;
 }
 
-void Symbol_O::makeSpecial() {
+CL_LISPIFY_NAME("core:STARmakeSpecial");
+CL_DEFMETHOD void Symbol_O::makeSpecial() {
   this->_IsSpecial = true;
 }
 
-void Symbol_O::makeConstant(T_sp val) {
-  _G();
+CL_LISPIFY_NAME("core:STARmakeConstant");
+CL_DEFMETHOD void Symbol_O::makeConstant(T_sp val) {
   this->_Value = val;
   this->_IsSpecial = true;
   this->_IsConstant = true;
@@ -369,7 +363,8 @@ T_sp Symbol_O::symbolValueUnsafe() const {
   return this->_Value;
 }
 
-void Symbol_O::setf_symbolFunction(T_sp exec) {
+CL_LISPIFY_NAME("core:setf_symbolFunction");
+CL_DEFMETHOD void Symbol_O::setf_symbolFunction(T_sp exec) {
   _OF();
   this->_Function = exec;
 }
@@ -431,7 +426,6 @@ bool Symbol_O::isExported() {
 }
 
 Symbol_sp Symbol_O::exportYourself(bool doit) {
-  _G();
   if (doit) {
     if (!this->isExported()) {
       if (this->_HomePackage.nilp())
@@ -447,7 +441,6 @@ Symbol_sp Symbol_O::exportYourself(bool doit) {
 
 #if 0
 T_sp Symbol_O::apply() {
-  _G();
   ValueFrame_sp frame = ValueFrame_O::create(0, _Nil<ActivationFrame_O>());
   T_sp result = lisp_apply(this->sharedThis<Symbol_O>(), frame);
   return result;
@@ -469,30 +462,35 @@ string Symbol_O::currentName() const {
   return formattedName;
 }
 
-string Symbol_O::fullName() const {
+CL_LISPIFY_NAME("core:fullName");
+CL_DEFMETHOD string Symbol_O::fullName() const {
   string formattedName = this->formattedName(true);
   return formattedName;
 }
 
 T_sp Symbol_O::getPackage() const {
-  _G();
   if (!this->_HomePackage)
     return _Nil<T_O>();
   return this->_HomePackage;
 }
 
 void Symbol_O::setPackage(T_sp p) {
-  _G();
   ASSERTF(p, BF("The package is UNDEFINED"));
   ASSERT(p.nilp() || p.asOrNull<Package_O>());
   this->_HomePackage = p;
 }
 
+SYMBOL_EXPORT_SC_(ClPkg, make_symbol);
+SYMBOL_EXPORT_SC_(ClPkg, symbolName);
+SYMBOL_EXPORT_SC_(ClPkg, symbolValue);
+SYMBOL_EXPORT_SC_(ClPkg, symbolPackage);
+SYMBOL_EXPORT_SC_(ClPkg, symbolFunction);
+SYMBOL_EXPORT_SC_(ClPkg, boundp);
+
 void Symbol_O::exposeCando(Lisp_sp lisp) {
-  _G();
   // TODO: By default these symbols like SPECIALP are being dumped into the COMMON-LISP package - don't do that.
   class_<Symbol_O>()
-      .def("core:specialp", &Symbol_O::specialP)
+    .def("core:specialp", &Symbol_O::specialP)
       .def("core:STARmakeSpecial", &Symbol_O::makeSpecial)
       .def("core:STARmakeConstant", &Symbol_O::makeConstant)
       .def("core:fullName", &Symbol_O::fullName)
@@ -503,16 +501,10 @@ void Symbol_O::exposeCando(Lisp_sp lisp) {
            ARGS_Symbol_O_copy_symbol,
            DECL_Symbol_O_copy_symbol,
            DOCS_Symbol_O_copy_symbol)
-      SYMBOL_EXPORT_SC_(ClPkg, make_symbol);
-  SYMBOL_EXPORT_SC_(ClPkg, symbolName);
-  SYMBOL_EXPORT_SC_(ClPkg, symbolValue);
-  SYMBOL_EXPORT_SC_(ClPkg, symbolPackage);
-  SYMBOL_EXPORT_SC_(ClPkg, symbolFunction);
-  SYMBOL_EXPORT_SC_(ClPkg, boundp);
+    ;
 }
 
 void Symbol_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Symbol, "", "", _lisp)
       .def("fullName", &Symbol_O::fullName)
@@ -522,7 +514,6 @@ void Symbol_O::exposePython(Lisp_sp lisp) {
 }
 
 void Symbol_O::dump() {
-  _G();
   stringstream ss;
   ss << "Symbol @" << (void *)this << " --->" << std::endl;
   {

@@ -38,9 +38,9 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-LAMBDA(record key sub-key);
-DECLARE();
-DOCSTRING("record_cons - see ECL helpfile.lsp>>record-cons");
+CL_LAMBDA(record key sub-key);
+CL_DECLARE();
+CL_DOCSTRING("record_cons - see ECL helpfile.lsp>>record-cons");
 CL_DEFUN T_sp core__record_cons(List_sp record, T_sp key, T_sp sub_key) {
   Cons_sp cons = Cons_O::create(key, sub_key);
   for (auto cur : coerce_to_list(record)) {
@@ -51,20 +51,18 @@ CL_DEFUN T_sp core__record_cons(List_sp record, T_sp key, T_sp sub_key) {
   return (_Nil<T_O>());
 }
 
-LAMBDA(record key sub-key);
-DECLARE();
-DOCSTRING("record_field see ecl>>helpfile.lsp>>record-field");
+CL_LAMBDA(record key sub-key);
+CL_DECLARE();
+CL_DOCSTRING("record_field see ecl>>helpfile.lsp>>record-field");
 CL_DEFUN T_sp core__record_field(List_sp record, T_sp key, T_sp sub_key) {
-  _G();
   List_sp cons = core__record_cons(record, key, sub_key);
   return oCdr(cons);
 }
 
-LAMBDA(record key sub-key value);
-DECLARE();
-DOCSTRING("set_record_field");
+CL_LAMBDA(record key sub-key value);
+CL_DECLARE();
+CL_DOCSTRING("set_record_field");
 CL_DEFUN T_sp core__set_record_field(List_sp record, T_sp key, T_sp sub_key, Str_sp value) {
-  _G();
   List_sp field = gc::As<List_sp>(core__record_cons(record, key, sub_key));
   if (field.notnilp()) {
     field.asCons()->setCdr(value);
@@ -76,11 +74,10 @@ CL_DEFUN T_sp core__set_record_field(List_sp record, T_sp key, T_sp sub_key, Str
   return record;
 };
 
-LAMBDA(record key sub-key);
-DECLARE();
-DOCSTRING("rem_record_field");
+CL_LAMBDA(record key sub-key);
+CL_DECLARE();
+CL_DOCSTRING("rem_record_field");
 CL_DEFUN T_sp core__rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
-  _G();
   List_sp x = core__record_cons(record, key, sub_key);
   if (x.notnilp()) {
     List_sp output = _Nil<T_O>();
@@ -95,9 +92,9 @@ CL_DEFUN T_sp core__rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
   return record;
 }
 
-LAMBDA(object key sub-key value);
-DECLARE();
-DOCSTRING("annotate - see ecl>>helpfile.lsp>>annotate; key is either 'documentation or 'setf-documentation and I currently think (object) must be a symbol so I'll trigger an exception if it isn't");
+CL_LAMBDA(object key sub-key value);
+CL_DECLARE();
+CL_DOCSTRING("annotate - see ecl>>helpfile.lsp>>annotate; key is either 'documentation or 'setf-documentation and I currently think (object) must be a symbol so I'll trigger an exception if it isn't");
 CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value) {
   HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
   List_sp record = coerce_to_list(dict->gethash(object, _Nil<T_O>()));
@@ -107,16 +104,14 @@ CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value) {
 };
 SYMBOL_EXPORT_SC_(ClPkg, documentation);
 
-LAMBDA(sub-key symbol value);
-DECLARE();
-DOCSTRING("ensure_documentation");
+CL_LAMBDA(sub-key symbol value);
+CL_DECLARE();
+CL_DOCSTRING("ensure_documentation");
 CL_DEFUN void core__ensure_documentation(T_sp sub_key, Symbol_sp symbol, Str_sp value) {
-  _G();
   ext__annotate(symbol, cl::_sym_documentation, sub_key, value);
 };
 
 void initialize_documentation_primitives(Lisp_sp lisp) {
-  _G();
   SYMBOL_SC_(CorePkg, record_cons);
   SYMBOL_SC_(CorePkg, record_field);
   SYMBOL_SC_(CorePkg, set_record_field);

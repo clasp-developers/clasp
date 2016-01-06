@@ -75,15 +75,13 @@ Pathname_sp core__coerce_to_physical_pathname(T_sp x);
 Str_sp core__coerce_to_filename(T_sp pathname_orig);
 Pathname_sp core__coerce_to_file_pathname(T_sp tpathname);
 
-void initialize_pathname();
 };
 
 namespace core {
 
 SMART(Pathname);
 class Pathname_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Pathname_O, "pathname");
+  LISP_CLASS(core, ClPkg, Pathname_O, "pathname",T_O);
 
   friend bool cl__wild_pathname_p(T_sp tpathname, T_sp component);
   friend Pathname_sp core__coerce_to_physical_pathname(T_sp x);
@@ -150,8 +148,7 @@ TRANSLATE(core::Pathname_O);
 namespace core {
 SMART(LogicalPathname);
 class LogicalPathname_O : public Pathname_O {
-  LISP_BASE1(Pathname_O);
-  LISP_CLASS(core, ClPkg, LogicalPathname_O, "logical-pathname");
+  LISP_CLASS(core, ClPkg, LogicalPathname_O, "logical-pathname",Pathname_O);
 
 public:
   LogicalPathname_O(const LogicalPathname_O &ss); //!< Copy constructor

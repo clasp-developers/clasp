@@ -88,8 +88,7 @@ public:
 #endif
 
 class Instance_O : public Function_O {
-  LISP_BASE1(Function_O);
-  LISP_CLASS(core, CorePkg, Instance_O, "Instance");
+  LISP_CLASS(core, CorePkg, Instance_O, "Instance",Function_O);
   friend class Class_O;
   void archiveBase(ArchiveP node);
 

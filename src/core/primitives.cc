@@ -81,11 +81,10 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-LAMBDA(seconds);
-DECLARE();
-DOCSTRING("sleep");
+CL_LAMBDA(seconds);
+CL_DECLARE();
+CL_DOCSTRING("sleep");
 CL_DEFUN void cl__sleep(T_sp oseconds) {
-  _G();
   SYMBOL_EXPORT_SC_(ClPkg, sleep);
   if (oseconds.nilp()) {
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_sleep, oseconds, cl::_sym_Number_O);
@@ -103,19 +102,17 @@ CL_DEFUN void cl__sleep(T_sp oseconds) {
   nanosleep(&ts, NULL);
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("lispImplementationType");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("lispImplementationType");
 CL_DEFUN T_sp cl__lisp_implementation_type() {
-  _G();
   return Str_O::create("Clasp");
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("lispImplementationVersion");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("lispImplementationVersion");
 CL_DEFUN T_sp cl__lisp_implementation_version() {
-  _G();
   stringstream ss;
   List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cclasp);
   if (cleavir.notnilp()) {
@@ -131,9 +128,9 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   return Str_O::create(ss.str());
 };
 
-LAMBDA(pow);
-DECLARE();
-DOCSTRING("cache_resize - Resize the cache to 2^pow");
+CL_LAMBDA(pow);
+CL_DECLARE();
+CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
 CL_DEFUN void core__method_cache_resize(Fixnum_sp pow) {
   if (pow < 2 || pow > 64) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
@@ -142,9 +139,9 @@ CL_DEFUN void core__method_cache_resize(Fixnum_sp pow) {
   return _lisp->_Roots._MethodCachePtr->setup(Lisp_O::MaxFunctionArguments, size);
 }
 
-LAMBDA(pow);
-DECLARE();
-DOCSTRING("cache_resize - Resize the cache to 2^pow");
+CL_LAMBDA(pow);
+CL_DECLARE();
+CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
 CL_DEFUN void core__slot_cache_resize(Fixnum_sp pow) {
   if (pow < 2 || pow > 64) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
@@ -153,9 +150,9 @@ CL_DEFUN void core__slot_cache_resize(Fixnum_sp pow) {
   return _lisp->_Roots._SlotCachePtr->setup(Lisp_O::MaxClosSlots, size);
 }
 
-LAMBDA(pow);
-DECLARE();
-DOCSTRING("cache_resize - Resize the cache to 2^pow");
+CL_LAMBDA(pow);
+CL_DECLARE();
+CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
 CL_DEFUN void core__single_dispatch_method_cache_resize(Fixnum_sp pow) {
   if (pow < 2 || pow > 64) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
@@ -164,37 +161,36 @@ CL_DEFUN void core__single_dispatch_method_cache_resize(Fixnum_sp pow) {
   return _lisp->_Roots._SingleDispatchMethodCachePtr->setup(2, size);
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("cache_status - (values searches misses total-depth)");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("cache_status - (values searches misses total-depth)");
 CL_DEFUN T_mv core__method_cache_status() {
   return Values(clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_searches),
                 clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_misses),
                 clasp_make_fixnum(_lisp->_Roots._MethodCachePtr->_total_depth));
 }
-LAMBDA();
-DECLARE();
-DOCSTRING("cache_status - (values searches misses total-depth)");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("cache_status - (values searches misses total-depth)");
 CL_DEFUN T_mv core__slot_cache_status() {
   return Values(clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_searches),
                 clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_misses),
                 clasp_make_fixnum(_lisp->_Roots._SlotCachePtr->_total_depth));
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("cache_status - (values searches misses total-depth)");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("cache_status - (values searches misses total-depth)");
 CL_DEFUN T_mv core__single_dispatch_method_cache_status() {
   return Values(clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_searches),
                 clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_misses),
                 clasp_make_fixnum(_lisp->_Roots._SingleDispatchMethodCachePtr->_total_depth));
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("lispImplementationId - the git commit sha1 code");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("lispImplementationId - the git commit sha1 code");
 CL_DEFUN T_sp core__lisp_implementation_id() {
-  _G();
   string all = CLASP_GIT_COMMIT;
 #define RIGHT_CHARS 8
   string rightChars;
@@ -206,9 +202,9 @@ CL_DEFUN T_sp core__lisp_implementation_id() {
   return Str_O::create(rightChars);
 };
 
-LAMBDA(obj);
-DECLARE();
-DOCSTRING("Convert an object, either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL");
+CL_LAMBDA(obj);
+CL_DECLARE();
+CL_DOCSTRING("Convert an object, either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL");
 CL_DEFUN T_sp core__create_tagged_immediate_value_or_nil(T_sp object) {
   if (object.fixnump() || object.characterp() || object.single_floatp()) {
     return Integer_O::create((gc::Fixnum)object.raw_());
@@ -216,67 +212,60 @@ CL_DEFUN T_sp core__create_tagged_immediate_value_or_nil(T_sp object) {
   return _Nil<T_O>();
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("softwareType");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("softwareType");
 CL_DEFUN T_sp cl__software_type() {
   return _Nil<T_O>();
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("softwareVersion");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("softwareVersion");
 CL_DEFUN T_sp cl__software_version() {
-  _G();
   string all = CLASP_VERSION;
   return Str_O::create(all);
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("machineType");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("machineType");
 CL_DEFUN T_sp cl__machine_type() {
-  _G();
   return _Nil<T_O>();
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("machineVersion");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("machineVersion");
 CL_DEFUN T_sp cl__machine_version() {
-  _G();
   return _Nil<T_O>();
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("machineInstance");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("machineInstance");
 CL_DEFUN T_sp cl__machine_instance() {
-  _G();
   return _Nil<T_O>();
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("argc");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("argc");
 CL_DEFUN int core__argc() {
-  _G();
   return _lisp->_Argc;
 };
 
-LAMBDA(idx);
-DECLARE();
-DOCSTRING("argv");
+CL_LAMBDA(idx);
+CL_DECLARE();
+CL_DOCSTRING("argv");
 CL_DEFUN Str_sp core__argv(int idx) {
-  _G();
   return Str_O::create(_lisp->_Argv[idx]);
 };
 
-LAMBDA(sym value);
-DECLARE();
-DOCSTRING("set");
+CL_LAMBDA(sym value);
+CL_DECLARE();
+CL_DOCSTRING("set");
 CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
-  _G();
   if (sym.nilp()) {
     SIMPLE_ERROR(BF("You cannot assign to the constant NIL"));
   }
@@ -284,30 +273,27 @@ CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
   return val;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("dumpAddressOf");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("dumpAddressOf");
 CL_DEFUN void core__dump_address_of(T_sp arg) {
-  _G();
   ASSERT(arg.objectp());
   void *ptr = &(*arg);
   printf("%s:%d  AddressOf = %p\n", __FILE__, __LINE__, ptr);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("incompleteNextHigherPowerOf_2 - see the incompleteNextHigherPowerOf_2 builtin - only works for Fixnums and not the full range; just for testing");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("incompleteNextHigherPowerOf_2 - see the incompleteNextHigherPowerOf_2 builtin - only works for Fixnums and not the full range; just for testing");
 CL_DEFUN int core__incomplete_next_higher_power_of_2(Fixnum_sp fn) {
-  _G();
   unsigned int f = unbox_fixnum(fn);
   return 1 << ((sizeof(f) * 8) - __builtin_clz(f));
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("allRegisteredClassNames");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("allRegisteredClassNames");
 CL_DEFUN Vector_sp core__all_registered_class_names() {
-  _G();
   VectorObjects_sp vo = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), _lisp->classSymbolsHolder().size(), false, cl::_sym_T_O);
   for (int i(0), iEnd(_lisp->classSymbolsHolder().size()); i < iEnd; ++i) {
     vo->setf_elt(i, _lisp->classSymbolsHolder()[i]);
@@ -315,30 +301,27 @@ CL_DEFUN Vector_sp core__all_registered_class_names() {
   return vo;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("toTaggedFixnum");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("toTaggedFixnum");
 CL_DEFUN T_sp core__to_tagged_fixnum(int val) {
-  _G();
   return gctools::smart_ptr<T_O>(val);
 };
 
-LAMBDA(val);
-DECLARE();
-DOCSTRING("fromTaggedFixnum");
+CL_LAMBDA(val);
+CL_DECLARE();
+CL_DOCSTRING("fromTaggedFixnum");
 CL_DEFUN gctools::Fixnum core__from_tagged_fixnum(T_sp val) {
-  _G();
   if (val.fixnump()) {
     return val.unsafe_fixnum();
   }
   SIMPLE_ERROR(BF("Not a fixnum"));
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("dumpTaggedFixnum");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("dumpTaggedFixnum");
 CL_DEFUN void core__dump_tagged_fixnum(T_sp val) {
-  _G();
   if (val.fixnump()) {
     printf("%s:%d Raw TaggedFixnum %p   Untagged %ld\n",
            __FILE__, __LINE__, val.raw_(), val.unsafe_fixnum());
@@ -346,19 +329,17 @@ CL_DEFUN void core__dump_tagged_fixnum(T_sp val) {
     printf("%s:%d Not a tagged fixnum\n", __FILE__, __LINE__);
 }
 
-LAMBDA(name value);
-DECLARE();
-DOCSTRING("Set environment variable NAME to VALUE");
+CL_LAMBDA(name value);
+CL_DECLARE();
+CL_DOCSTRING("Set environment variable NAME to VALUE");
 CL_DEFUN void ext__setenv(Str_sp name, Str_sp value) {
-  _G();
   setenv(name->get().c_str(), value->get().c_str(), 1);
 }
 
-LAMBDA(cmd);
-DECLARE();
-DOCSTRING("system");
+CL_LAMBDA(cmd);
+CL_DECLARE();
+CL_DOCSTRING("system");
 CL_DEFUN T_mv ext__system(Str_sp cmd) {
-  _G();
   string command = cmd->get();
   int ret = system(command.c_str());
   if (ret == 0) {
@@ -368,9 +349,9 @@ CL_DEFUN T_mv ext__system(Str_sp cmd) {
   }
 }
 
-LAMBDA(call-and-arguments);
-DECLARE();
-DOCSTRING("vfork_execvp");
+CL_LAMBDA(call-and-arguments);
+CL_DECLARE();
+CL_DOCSTRING("vfork_execvp");
 CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments) {
   if (call_and_arguments.nilp())
     return Values0<T_O>();
@@ -418,11 +399,10 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments) {
   }
 }
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("Get environment variable NAME");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("Get environment variable NAME");
 CL_DEFUN T_sp ext__getenv(Str_sp arg) {
-  _G();
   char *sres = getenv(arg->c_str());
   if (sres == NULL) {
     return _Nil<T_O>();
@@ -431,15 +411,15 @@ CL_DEFUN T_sp ext__getenv(Str_sp arg) {
 };
 
 
-DOCSTRING(R"doc(Return a string representing the llvm version (eg: 3.6.0))doc");
+CL_DOCSTRING(R"doc(Return a string representing the llvm version (eg: 3.6.0))doc");
 CL_DEFUN T_sp ext__llvm_version() {
   return core::Str_O::create(LLVM_VERSION);
 }
 
 
-LAMBDA(name &optional stream);
-DECLARE();
-DOCSTRING(R"doc(Describe a
+CL_LAMBDA(name &optional stream);
+CL_DECLARE();
+CL_DOCSTRING(R"doc(Describe a
 C++ object
 like CL:DESCRIBE)doc");
 CL_DEFUN void core__describe_cxx_object(T_sp obj, T_sp stream)
@@ -452,50 +432,45 @@ CL_DEFUN void core__describe_cxx_object(T_sp obj, T_sp stream)
   SIMPLE_ERROR(BF("Use the CL facilities to describe this object"));
 };
 
-LAMBDA(name arg overwrite);
-DECLARE();
-DOCSTRING(R"doc(Set an environment variable)doc");
+CL_LAMBDA(name arg overwrite);
+CL_DECLARE();
+CL_DOCSTRING(R"doc(Set an environment variable)doc");
 CL_DEFUN void core__setenv(Str_sp name, Str_sp arg, bool overwrite) {
   setenv(name->c_str(), arg->c_str(), overwrite);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("Return the value of the pointer - used by conditions.lsp");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("Return the value of the pointer - used by conditions.lsp");
 CL_DEFUN int core__pointer(T_sp obj) {
-  _G();
   return obj.intptr();
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("isTrue");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("isTrue");
 CL_DEFUN bool core__is_true(T_sp arg) {
-  _G();
   return arg.isTrue();
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("substitute");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("substitute");
 CL_DEFUN T_mv core__substitute() {
-  _G();
   IMPLEMENT_MEF(BF("Implement substitute"));
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("Return the UNBOUND value");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Return the UNBOUND value");
 CL_DEFUN T_sp core__unbound() {
-  _G();
   return _Unbound<T_O>();
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("smartPointerDetails - returns (values ptr-type px-offset px-size). The ptr-type is the type of pointer used to pass objects - either MPS-GARBAGE-COLLECTION or INTRUSIVE-REFERENCE-COUNTED-POINTER. The px-offset is the number of bytes offset of the smart_ptr data pointer from the start of the smart_ptr and px-size is the size of the data pointer");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("smartPointerDetails - returns (values ptr-type px-offset px-size). The ptr-type is the type of pointer used to pass objects - either MPS-GARBAGE-COLLECTION or INTRUSIVE-REFERENCE-COUNTED-POINTER. The px-offset is the number of bytes offset of the smart_ptr data pointer from the start of the smart_ptr and px-size is the size of the data pointer");
 CL_DEFUN T_mv core__smart_pointer_details() {
-  _G();
   SYMBOL_SC_(CorePkg, intrusiveReferenceCountedPointer);
   SYMBOL_SC_(CorePkg, sharedReferenceCountedPointer);
   SYMBOL_SC_(CorePkg, mpsGarbageCollection);
@@ -510,53 +485,48 @@ CL_DEFUN T_mv core__smart_pointer_details() {
   return Values(ptrType, pxOffset, pxSize);
 }
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("values");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("values");
 CL_DEFUN T_mv cl__values(List_sp args) {
-  _G();
   // returns multiple values
   T_mv result = ValuesFromCons(args);
   return result;
 }
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("values");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("values");
 CL_DEFUN T_mv core__values_testing(List_sp args) {
-  _G();
   // returns multiple values
   T_mv result = ValuesFromCons(args);
   printf("%s:%d core__values_testing: %s\n", __FILE__, __LINE__, _rep_(args).c_str());
   return result;
 }
 
-LAMBDA(list);
-DECLARE();
-DOCSTRING("values_list");
+CL_LAMBDA(list);
+CL_DECLARE();
+CL_DOCSTRING("values_list");
 CL_DEFUN T_mv cl__values_list(List_sp list) {
-  _G();
   return ValuesFromCons(list);
 }
 
 Symbol_sp functionBlockName(T_sp functionName) {
-  _G();
-  if (cl_symbolp(functionName))
+  if (cl__symbolp(functionName))
     return gc::As<Symbol_sp>(functionName);
-  if (cl_consp(functionName)) {
+  if (cl__consp(functionName)) {
     List_sp cfn = functionName;
-    if (oCar(cfn) == cl::_sym_setf && cl_symbolp(oCadr(cfn)) & oCadr(cfn).notnilp()) {
+    if (oCar(cfn) == cl::_sym_setf && cl__symbolp(oCadr(cfn)) & oCadr(cfn).notnilp()) {
       return gc::As<Symbol_sp>(oCadr(cfn));
     }
   }
   return _Nil<Symbol_O>();
 }
 
-LAMBDA(functionName);
-DECLARE();
-DOCSTRING("See CLHS glossary 'function block name'. If the functionName is a symbol return it.  If the functionName is a cons of the form (setf xxxx) return xxxx");
+CL_LAMBDA(functionName);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS glossary 'function block name'. If the functionName is a symbol return it.  If the functionName is a cons of the form (setf xxxx) return xxxx");
 CL_DEFUN Symbol_mv core__function_block_name(T_sp functionName) {
-  _G();
   Symbol_sp output = functionBlockName(functionName);
   if (output.nilp()) {
     SIMPLE_ERROR(BF("Invalid function name: %s") % _rep_(functionName));
@@ -564,33 +534,30 @@ CL_DEFUN Symbol_mv core__function_block_name(T_sp functionName) {
   return (Values(output));
 }
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("validFunctionNameP");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("validFunctionNameP");
 CL_DEFUN T_mv core__valid_function_name_p(T_sp arg) {
-  _G();
   T_sp name = functionBlockName(arg);
   if (name.nilp())
     return (Values(_Nil<T_O>()));
   return (Values(_lisp->_true()));
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("testMemoryError");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("testMemoryError");
 CL_DEFUN void core__test_memory_error() {
-  _G();
   int *h = (int *)malloc(sizeof(int));
   *h = 1;
   free(h);
   *h = 2;
 };
 
-LAMBDA(listOfPairs);
-DECLARE();
-DOCSTRING("Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element");
+CL_LAMBDA(listOfPairs);
+CL_DECLARE();
+CL_DOCSTRING("Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element");
 CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
-  _G();
   ql::list firsts(_lisp);
   ql::list seconds(_lisp);
   for (auto cur : listOfPairs) {
@@ -598,7 +565,7 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
     if (cl__atom(element)) {
       firsts << element;
       seconds << _Nil<T_O>();
-    } else if (cl_consp(element)) {
+    } else if (cl__consp(element)) {
       List_sp pair = element;
       size_t pairlen = cl__length(pair);
       if (pairlen == 2 || pairlen == 1) {
@@ -616,20 +583,18 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
 }
 
 #if DEPRECIATED_C_FUNCTION
-LAMBDA(sym);
-DECLARE();
-DOCSTRING("c_function");
+CL_LAMBDA(sym);
+CL_DECLARE();
+CL_DOCSTRING("c_function");
 CL_DEFUN Pointer_mv core__c_function(Symbol_sp sym) {
-  _G();
   return (Values(_lisp->lookup_c_function_ptr(sym)));
 };
 #endif
 
-LAMBDA(symbol &optional env);
-DECLARE();
-DOCSTRING("See CLHS: macroFunction");
+CL_LAMBDA(symbol &optional env);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS: macroFunction");
 CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
-  _G();
   T_sp func = _Nil<T_O>();
   if (env.nilp()) {
     func = af_interpreter_lookup_macro(symbol, env);
@@ -646,11 +611,10 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
   return func;
 }
 
-LAMBDA(symbol);
-DECLARE();
-DOCSTRING("See CLHS: special-operator-p");
+CL_LAMBDA(symbol);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS: special-operator-p");
 CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
-  _G();
   SYMBOL_EXPORT_SC_(ClPkg, let);
   SYMBOL_EXPORT_SC_(ClPkg, letSTAR);
   SYMBOL_EXPORT_SC_(ClPkg, return_from);
@@ -702,11 +666,10 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
 };
 
 #if 0
-LAMBDA(symbol);
-DECLARE();
-DOCSTRING("See CLHS: special-operator-p");
+CL_LAMBDA(symbol);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS: special-operator-p");
 CL_DEFUN T_sp core__treat_as_special_operator_p(T_sp sym) {
-  _G();
   SYMBOL_EXPORT_SC_(CorePkg, debug_message);
   if (sym == cl::_sym_unwind_protect)
     return _Nil<T_O>(); // All handled in macros
@@ -716,19 +679,18 @@ CL_DEFUN T_sp core__treat_as_special_operator_p(T_sp sym) {
 };
 #endif
 
-LAMBDA(integer count);
-DECLARE();
-DOCSTRING("CLHS: ash");
+CL_LAMBDA(integer count);
+CL_DECLARE();
+CL_DOCSTRING("CLHS: ash");
 CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
   int cnt = clasp_to_int(count);
   return clasp_shift(integer, cnt);
 }
 
-LAMBDA(&optional fmt-control &rest args);
-DECLARE();
-DOCSTRING("Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version");
+CL_LAMBDA(&optional fmt-control &rest args);
+CL_DECLARE();
+CL_DOCSTRING("Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version");
 CL_DEFUN void core__break(T_sp fmt, List_sp args) {
-  _G();
   if (fmt.notnilp()) {
     cl__format(_lisp->_true(), gc::As<Str_sp>(fmt), args);
   }
@@ -736,11 +698,10 @@ CL_DEFUN void core__break(T_sp fmt, List_sp args) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-LAMBDA(&optional msg);
-DECLARE();
-DOCSTRING("hook to invoke gdb");
+CL_LAMBDA(&optional msg);
+CL_DECLARE();
+CL_DOCSTRING("hook to invoke gdb");
 CL_DEFUN void core__gdb(T_sp msg) {
-  _G();
   T_sp obj = msg;
   string smsg = "No msg";
   if (obj.notnilp()) {
@@ -750,19 +711,18 @@ CL_DEFUN void core__gdb(T_sp msg) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("Return the number of times lambdaListHandler_createBindings");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Return the number of times lambdaListHandler_createBindings");
 CL_DEFUN Integer_sp core__cxx_lambda_list_handler_create_bindings_calls() {
   size_t calls = threadLocalInfoPtr->_lambda_list_handler_create_bindings_count;
   return Integer_O::create((Fixnum)calls);
 };
 
-LAMBDA(&optional msg);
-DECLARE();
-DOCSTRING("hook to invoke gdb");
+CL_LAMBDA(&optional msg);
+CL_DECLARE();
+CL_DOCSTRING("hook to invoke gdb");
 CL_DEFUN void core__trap_execution(T_sp msg) {
-  _G();
   T_sp obj = msg;
   string smsg = "No msg";
   if (obj.notnilp()) {
@@ -772,54 +732,50 @@ CL_DEFUN void core__trap_execution(T_sp msg) {
   fflush(stdout);
 };
 
-LAMBDA(msg o);
-DECLARE();
-DOCSTRING("hook to invoke gdb");
+CL_LAMBDA(msg o);
+CL_DECLARE();
+CL_DOCSTRING("hook to invoke gdb");
 CL_DEFUN void core__gdb_inspect(Str_sp msg, T_sp o) {
-  _G();
   printf("gdbInspect object: %s\n", _rep_(o).c_str());
   dbg_hook(msg->get().c_str());
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-LAMBDA(obj &optional env);
-DECLARE();
-DOCSTRING("constantp");
+CL_LAMBDA(obj &optional env);
+CL_DECLARE();
+CL_DOCSTRING("constantp");
 CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
-  _G();
   // ignore env
   if (cl__numberp(obj))
     return true;
-  if (af_characterP(obj))
+  if (cl__characterp(obj))
     return true;
-  if (af_arrayP(obj))
+  if (core__arrayp(obj))
     return true;
   // TODO add various kinds of array
-  if (cl_consp(obj) && oCar(obj) == cl::_sym_quote)
+  if (cl__consp(obj) && oCar(obj) == cl::_sym_quote)
     return true;
   if (obj.nilp())
     return true;
-  if (cl_symbolp(obj)) {
-    if (af_keywordP(obj))
+  if (cl__symbolp(obj)) {
+    if (cl__keywordp(obj))
       return true;
     return gc::As<Symbol_sp>(obj)->isConstant();
   }
   return false;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("identity");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("identity");
 CL_DEFUN T_mv cl__identity(T_sp arg) {
-  _G();
   return (Values(arg));
 };
 
-LAMBDA(macro_function form macro_env);
-DECLARE();
-DOCSTRING("macroexpand_default Default value of *macroexpand-hook*");
+CL_LAMBDA(macro_function form macro_env);
+CL_DECLARE();
+CL_DOCSTRING("macroexpand_default Default value of *macroexpand-hook*");
 CL_DEFUN T_mv core__macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_env) {
-  _G();
   Function_sp debugMacroFunction = macro_function;
   T_sp debugForm = form;
   T_sp debugEnvironment = macro_env;
@@ -845,21 +801,19 @@ CL_DEFUN T_mv core__macroexpand_default(Function_sp macro_function, T_sp form, T
   return (Values(result));
 };
 
-LAMBDA(obj);
-DECLARE();
-DOCSTRING("null test - return true if the object is the empty list otherwise return nil");
+CL_LAMBDA(obj);
+CL_DECLARE();
+CL_DOCSTRING("null test - return true if the object is the empty list otherwise return nil");
 CL_DEFUN T_mv cl__null(T_sp obj) {
-  _G();
   if (obj.nilp())
     return (Values(_lisp->_true()));
   return (Values(_Nil<T_O>()));
 };
 
-LAMBDA(obj);
-DECLARE();
-DOCSTRING("return class of object - see CLHS");
+CL_LAMBDA(obj);
+CL_DECLARE();
+CL_DOCSTRING("return class of object - see CLHS");
 CL_DEFUN Class_sp cl__class_of(T_sp obj) {
-  _G();
   Class_sp result = lisp_instance_class(obj);
 #if DEBUG_CLOS >= 3
   printf("\nMLOG classOf %s ---> %s\n", obj->__repr__().c_str(), result->__repr__().c_str());
@@ -867,9 +821,9 @@ CL_DEFUN Class_sp cl__class_of(T_sp obj) {
   return (result);
 }
 
-LAMBDA(function-name fn &optional macro);
-DECLARE();
-DOCSTRING("fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not.");
+CL_LAMBDA(function-name fn &optional macro);
+CL_DECLARE();
+CL_DOCSTRING("fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not.");
 CL_DEFUN T_sp core__STARfset(T_sp functionName, Function_sp functionObject, T_sp macro) {
   ASSERTF(functionObject, BF("function is undefined\n"));
   if (macro.isTrue()) {
@@ -880,11 +834,11 @@ CL_DEFUN T_sp core__STARfset(T_sp functionName, Function_sp functionObject, T_sp
   if (comp::_sym_STARall_functions_for_one_compileSTAR->boundP()) {
     functionObject->closure->setAssociatedFunctions(comp::_sym_STARall_functions_for_one_compileSTAR->symbolValue());
   }
-  if (cl_symbolp(functionName)) {
+  if (cl__symbolp(functionName)) {
     Symbol_sp symbol = gc::As<Symbol_sp>(functionName);
     symbol->setf_symbolFunction(functionObject);
     return functionObject;
-  } else if (cl_consp(functionName)) {
+  } else if (cl__consp(functionName)) {
     SYMBOL_EXPORT_SC_(ClPkg, setf);
     List_sp cur = functionName;
     if (oCar(cur) == cl::_sym_setf) {
@@ -896,14 +850,14 @@ CL_DEFUN T_sp core__STARfset(T_sp functionName, Function_sp functionObject, T_sp
   SIMPLE_ERROR(BF("Illegal name for function[%s]") % _rep_(functionName));
 };
 
-LAMBDA(function-name);
-DECLARE();
-DOCSTRING("fdefinition");
+CL_LAMBDA(function-name);
+CL_DECLARE();
+CL_DOCSTRING("fdefinition");
 CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
-  if (cl_symbolp(functionName)) {
+  if (cl__symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
     return sym->symbolFunction();
-  } else if (cl_consp(functionName)) {
+  } else if (cl__consp(functionName)) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
@@ -915,18 +869,17 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
   SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
 }
 
-LAMBDA(function-name);
-DECLARE();
-DOCSTRING("fboundp");
+CL_LAMBDA(function-name);
+CL_DECLARE();
+CL_DOCSTRING("fboundp");
 CL_DEFUN bool cl__fboundp(T_sp functionName) {
-  _G();
   if (functionName.nilp()) {
     return false;
   }
-  if (cl_symbolp(functionName)) {
+  if (cl__symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
     return sym->fboundp();
-  } else if (cl_consp(functionName)) {
+  } else if (cl__consp(functionName)) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
@@ -937,16 +890,15 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
   SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
 }
 
-LAMBDA(function-name);
-DECLARE();
-DOCSTRING("fmakunbound");
+CL_LAMBDA(function-name);
+CL_DECLARE();
+CL_DOCSTRING("fmakunbound");
 CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
-  _G();
-  if (cl_symbolp(functionName)) {
+  if (cl__symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
     sym->setf_symbolFunction(_Unbound<Function_O>());
     return (Values(sym));
-  } else if (cl_consp(functionName)) {
+  } else if (cl__consp(functionName)) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
@@ -959,11 +911,10 @@ CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
   SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
 }
 
-LAMBDA(char &optional input-stream-designator recursive-p);
-DECLARE();
-DOCSTRING("read a list up to a specific character - see CLHS");
+CL_LAMBDA(char &optional input-stream-designator recursive-p);
+CL_DECLARE();
+CL_DOCSTRING("read a list up to a specific character - see CLHS");
 CL_DEFUN T_mv cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p) {
-  _G();
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 #if 0
 	// I think it is safe to ignore recursive_p
@@ -979,9 +930,9 @@ CL_DEFUN T_mv cl__read_delimited_list(Character_sp chr, T_sp input_stream_design
   return (Values(result));
 }
 
-LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
-DECLARE();
-DOCSTRING("read an object from a stream - see CLHS");
+CL_LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
+CL_DECLARE();
+CL_DOCSTRING("read an object from a stream - see CLHS");
 CL_DEFUN T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   bool preserve_whitespace = true;
   if ( recursive_p.isTrue() ) {
@@ -994,9 +945,9 @@ CL_DEFUN T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_
   return read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.notnilp());
 }
 
-LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
-DECLARE();
-DOCSTRING("read an object from a stream while preserving whitespace - see CLHS");
+CL_LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
+CL_DECLARE();
+CL_DOCSTRING("read an object from a stream while preserving whitespace - see CLHS");
 CL_DEFUN T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   bool preserve_whitespace = true;
   if ( recursive_p.isTrue() ) {
@@ -1037,7 +988,6 @@ GC_RESULT ConsStepper::onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
 #endif
 
 ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
-  _G();
   this->_AtEnd = false;
   for (auto cur : sequences) {
     T_sp obj = oCar(cur);
@@ -1062,7 +1012,6 @@ ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
 }
 
 void ListOfSequenceSteppers::fillValueFrameUsingCurrentSteppers(ActivationFrame_sp frame) const {
-  _G();
   if (this->_AtEnd)
     SIMPLE_ERROR(BF("Tried to make list of ended stepper"));
   int idx = 0;
@@ -1089,7 +1038,6 @@ public:
 };
 
 ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
-  _G();
   for (auto cur : sequences) {
     T_sp obj = oCar(cur);
     if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
@@ -1107,7 +1055,6 @@ ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
 }
 
 bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp &retVal) {
-  _G();
   ListOfSequenceSteppers steppers(sequences);
   ValueFrame_sp frame(ValueFrame_O::create(steppers.size(), _Nil<ActivationFrame_O>()));
   if (steppers.atEnd())
@@ -1128,22 +1075,20 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
   return fallThroughReturn;
 }
 
-LAMBDA(predicate &rest sequences);
-DECLARE();
-DOCSTRING("See CLHS for every");
+CL_LAMBDA(predicate &rest sequences);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS for every");
 CL_DEFUN T_sp cl__every(T_sp predicate, List_sp sequences) {
-  _G();
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
   bool result = test_every_some_notevery_notany(op, sequences, false, false, true, dummy);
   return _lisp->_boolean(result);
 }
 
-LAMBDA(predicate &rest sequences);
-DECLARE();
-DOCSTRING("See CLHS for some");
+CL_LAMBDA(predicate &rest sequences);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS for some");
 CL_DEFUN T_sp cl__some(T_sp predicate, List_sp sequences) {
-  _G();
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp retVal;
   bool result = test_every_some_notevery_notany(op, sequences, true, true, false, retVal);
@@ -1152,22 +1097,20 @@ CL_DEFUN T_sp cl__some(T_sp predicate, List_sp sequences) {
   return _Nil<T_O>();
 }
 
-LAMBDA(predicate &rest sequences);
-DECLARE();
-DOCSTRING("See CLHS for notany");
+CL_LAMBDA(predicate &rest sequences);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS for notany");
 CL_DEFUN T_sp cl__notany(T_sp predicate, List_sp sequences) {
-  _G();
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
   bool result = test_every_some_notevery_notany(op, sequences, true, false, true, dummy);
   return _lisp->_boolean(result);
 }
 
-LAMBDA(predicate &rest sequences);
-DECLARE();
-DOCSTRING("See CLHS for notevery");
+CL_LAMBDA(predicate &rest sequences);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS for notevery");
 CL_DEFUN T_sp cl__notevery(T_sp predicate, List_sp sequences) {
-  _G();
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
   bool result = test_every_some_notevery_notany(op, sequences, false, true, false, dummy);
@@ -1180,11 +1123,10 @@ CL_DEFUN T_sp cl__notevery(T_sp predicate, List_sp sequences) {
 */
 SYMBOL_EXPORT_SC_(ClPkg, mapcar);
 
-LAMBDA(func_desig &rest lists);
-DECLARE();
-DOCSTRING("See CLHS for mapcar");
+CL_LAMBDA(func_desig &rest lists);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS for mapcar");
 CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
-  _G();
   Function_sp func = coerce::functionDesignator(func_desig);
   ListOfListSteppers steppers(lists);
   ValueFrame_sp frame(ValueFrame_O::create(steppers.size(), _Nil<ActivationFrame_O>()));
@@ -1202,11 +1144,10 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
   __BEGIN_DOC(candoScript.general.mapcar)
   __END_DOC
 */
-LAMBDA(op &rest lists);
-DECLARE();
-DOCSTRING("See CLHS mapc");
+CL_LAMBDA(op &rest lists);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS mapc");
 CL_DEFUN T_sp cl__mapc(T_sp top, List_sp lists) {
-  _G();
   Function_sp op = coerce::functionDesignator(top);
   VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 8, 0, true, cl::_sym_T_O));
   // Copy the arguments into argumentLists
@@ -1233,11 +1174,10 @@ CL_DEFUN T_sp cl__mapc(T_sp top, List_sp lists) {
   return oCar(lists);
 }
 
-LAMBDA(func_desig &rest lists);
-DECLARE();
-DOCSTRING("See CLHS maplist");
+CL_LAMBDA(func_desig &rest lists);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS maplist");
 CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
-  _G();
   //        printf("%s:%d maplist func_desig=%s   lists=%s\n", __FILE__, __LINE__, _rep_(func_desig).c_str(), _rep_(lists).c_str() );
   Function_sp op = coerce::functionDesignator(func_desig);
   VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
@@ -1278,21 +1218,19 @@ CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
   return oCdr(result);
 }
 
-LAMBDA(op &rest lists);
-DECLARE();
-DOCSTRING("See CLHS maplist");
+CL_LAMBDA(op &rest lists);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS maplist");
 CL_DEFUN T_sp cl__mapl(T_sp top, List_sp lists) {
-  _G();
   Function_sp op = coerce::functionDesignator(top);
   cl__maplist(op, lists);
   return oCar(lists);
 }
 
-LAMBDA(fun &rest cargs);
-DECLARE();
-DOCSTRING("mapappend is like mapcar except that the results are appended together - see AMOP 280");
+CL_LAMBDA(fun &rest cargs);
+CL_DECLARE();
+CL_DOCSTRING("mapappend is like mapcar except that the results are appended together - see AMOP 280");
 CL_DEFUN T_mv core__mapappend(Function_sp fun, List_sp cargs) {
-  _G();
   IMPLEMENT_MEF(BF("Fix me - I think I'm broken"));
   T_sp testNull = eval::funcall(cl::_sym_some, cl::_sym_null->symbolFunction(), cargs);
   if (testNull.nilp())
@@ -1304,21 +1242,19 @@ CL_DEFUN T_mv core__mapappend(Function_sp fun, List_sp cargs) {
   return eval::funcall(cl::_sym_append, appendHead, appendTail);
 };
 
-LAMBDA(op &rest lists);
-DECLARE();
-DOCSTRING("mapcon");
+CL_LAMBDA(op &rest lists);
+CL_DECLARE();
+CL_DOCSTRING("mapcon");
 CL_DEFUN T_mv cl__mapcon(T_sp op, List_sp lists) {
-  _G();
   List_sp parts = cl__maplist(op, lists);
   T_sp result = cl__nconc(parts);
   return (Values(result));
 };
 
-LAMBDA(op &rest lists);
-DECLARE();
-DOCSTRING("mapcan");
+CL_LAMBDA(op &rest lists);
+CL_DECLARE();
+CL_DOCSTRING("mapcan");
 CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
-  _G();
   List_sp parts = cl__mapcar(op, lists);
   T_sp result = cl__nconc(parts);
 #if 0
@@ -1328,17 +1264,7 @@ CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
   return (Values(result));
 };
 
-#define ARGS_macro_backquote "(form env)"
-#define DECL_macro_backquote ""
-#define DOCS_macro_backquote "backquote"
-T_mv macro_backquote(List_sp form, T_sp env) {
-  _G();
-  T_sp arg = oCadr(form);
-  LOG(BF("Expanding backquote going in: %s") % _rep_(arg));
-  T_mv result = core__backquote_completely_process(arg);
-  LOG(BF("Expanded backquote result: %s") % _rep_(result));
-  return (result);
-}
+
 
 /*!
   Equivalent to Common Lisps append function
@@ -1347,11 +1273,10 @@ T_mv macro_backquote(List_sp form, T_sp env) {
   them together into one list and then points the cdr of the last element of this new list
   to c.
 */
-LAMBDA(&rest lists);
-DECLARE();
-DOCSTRING("append as in clhs");
+CL_LAMBDA(&rest lists);
+CL_DECLARE();
+CL_DOCSTRING("append as in clhs");
 CL_DEFUN List_sp cl__append(List_sp lists) {
-  _G();
   ql::list list;
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
   auto it = lists.begin();
@@ -1374,11 +1299,10 @@ CL_DEFUN List_sp cl__append(List_sp lists) {
   return res;
 }
 
-LAMBDA(func sequence start end);
-DECLARE();
-DOCSTRING("Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence. I'm not sure what the func argument is for. If end is nil then it is set to the end of the sequence.  Return MultipleValues(start,end,length).");
+CL_LAMBDA(func sequence start end);
+CL_DECLARE();
+CL_DOCSTRING("Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence. I'm not sure what the func argument is for. If end is nil then it is set to the end of the sequence.  Return MultipleValues(start,end,length).");
 CL_DEFUN T_mv core__sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, T_sp end) {
-  _G();
   uint len = cl__length(sequence);
   if (end.nilp())
     end = make_fixnum(len);
@@ -1397,23 +1321,22 @@ CL_DEFUN T_mv core__sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start
 };
 
 
-LAMBDA(&optional x);
-DECLARE();
-DOCSTRING("See CLHS gensym");
+CL_LAMBDA(&optional x);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS gensym");
 CL_DEFUN Symbol_mv cl__gensym(T_sp x) {
-  _G();
   stringstream ss;
   if (x.nilp()) {
     int counter = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()));
     cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter + 1));
     ss << "G";
     ss << counter;
-  } else if (af_stringP(x)) {
+  } else if (cl__stringp(x)) {
     int counter = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()));
     cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter + 1));
     ss << gc::As<Str_sp>(x)->get();
     ss << counter;
-  } else if (af_integerP(x)) {
+  } else if (cl__integerp(x)) {
     int counter = clasp_to_int(gc::As<Integer_sp>(x));
     ASSERTF(counter >= 0, BF("gensym argument %d must be >= 0") % counter);
     ss << "G";
@@ -1426,11 +1349,10 @@ CL_DEFUN Symbol_mv cl__gensym(T_sp x) {
   return (Values(sym));
 }
 
-          LAMBDA(x);
-          DECLARE();
-          DOCSTRING("type_to_symbol");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("type_to_symbol");
 CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
-  _G();
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
   if (x.fixnump())
@@ -1480,7 +1402,6 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
 }
 
 T_sp type_of(T_sp x) {
-  _G();
   if (x.nilp())
     return cl::_sym_null;
 #ifdef CLOS
@@ -1514,14 +1435,14 @@ T_sp type_of(T_sp x) {
       ql::list res(_lisp);
       res << cl::_sym_integer << ix << ix;
       return res.cons();
-    } else if (af_characterP(x)) {
+    } else if (cl__characterp(x)) {
       if (cl__standard_char_p(gc::As<Character_sp>(x)))
         return cl::_sym_standard_char;
       return cl::_sym_character;
     } else if (Symbol_sp symx = x.asOrNull<Symbol_O>()) {
       if (x == _lisp->_true())
         return cl::_sym_boolean;
-      if (af_keywordP(symx))
+      if (cl__keywordp(symx))
         return cl::_sym_keyword;
       return cl::_sym_symbol;
     } else if (String_sp sx = x.asOrNull<String_O>()) {
@@ -1586,19 +1507,17 @@ T_sp type_of(T_sp x) {
   return core__type_to_symbol(x);
 }
 
-LAMBDA(obj);
-DECLARE();
-DOCSTRING("type_of");
+CL_LAMBDA(obj);
+CL_DECLARE();
+CL_DOCSTRING("type_of");
 CL_DEFUN T_sp cl__type_of(T_sp x) {
-  _G();
   return type_of(x);
 }
 
-LAMBDA(obj);
-DECLARE();
-DOCSTRING("sxhash");
+CL_LAMBDA(obj);
+CL_DECLARE();
+CL_DOCSTRING("sxhash");
 CL_DEFUN Integer_sp cl__sxhash(T_sp obj) {
-  _G();
   if (obj.nilp())
     return make_fixnum(1);
   HashGenerator hg;
@@ -1652,7 +1571,8 @@ void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationH
 #define ARGS_InvocationHistoryFrameIterator_O_make ""
 #define DECL_InvocationHistoryFrameIterator_O_make ""
 #define DOCS_InvocationHistoryFrameIterator_O_make "Return the InvocationHistoryFrameIterator for the frame that is the (first) that satisfies (test)"
-InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test) {
+CL_LISPIFY_NAME(make-invocation-history-frame-iterator);
+CL_DEFUN InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test) {
   InvocationHistoryFrame *cur = _lisp->invocationHistoryStack().top();
   InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create();
   iterator->setFrame(cur);
@@ -1660,12 +1580,14 @@ InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum 
   return iterator;
 }
 
-InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::prev(T_sp test) {
+CL_LISPIFY_NAME("frameIteratorPreviousFrame");
+CL_DEFMETHOD InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::prev(T_sp test) {
   nextInvocationHistoryFrameIteratorThatSatisfiesTest(1, this->asSmartPtr(), test);
   return this->asSmartPtr();
 }
 
-T_sp InvocationHistoryFrameIterator_O::functionName() {
+CL_LISPIFY_NAME("frameIteratorFunctionName");
+CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
@@ -1676,7 +1598,8 @@ T_sp InvocationHistoryFrameIterator_O::functionName() {
   return closure->name;
 }
 
-T_sp InvocationHistoryFrameIterator_O::environment() {
+CL_LISPIFY_NAME("frameIteratorEnvironment");
+CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::environment() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
@@ -1705,13 +1628,16 @@ Function_sp InvocationHistoryFrameIterator_O::function() {
   return Function_O::make(closure); // Should I really be creating a new Function object every time???
 }
 
-Vector_sp InvocationHistoryFrameIterator_O::arguments() {
+CL_LISPIFY_NAME("frameIteratorArguments");
+CL_DEFMETHOD Vector_sp InvocationHistoryFrameIterator_O::arguments() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
   InvocationHistoryFrame *frame = this->_Frame;
   return frame->arguments();
 }
+
+SYMBOL_SC_(CorePkg, makeInvocationHistoryFrameIterator);
 
 void InvocationHistoryFrameIterator_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<InvocationHistoryFrameIterator_O>()
@@ -1722,8 +1648,7 @@ void InvocationHistoryFrameIterator_O::exposeCando(::core::Lisp_sp lisp) {
       .def("frameIteratorPreviousFrame", &InvocationHistoryFrameIterator_O::prev)
       //	.initArgs("(self)")
       ;
-  SYMBOL_SC_(CorePkg, makeInvocationHistoryFrameIterator);
-  Defun_maker(CorePkg, InvocationHistoryFrameIterator);
+//  Defun_maker(CorePkg, InvocationHistoryFrameIterator);
 };
 
 void InvocationHistoryFrameIterator_O::exposePython(::core::Lisp_sp lisp) {
@@ -1732,9 +1657,9 @@ void InvocationHistoryFrameIterator_O::exposePython(::core::Lisp_sp lisp) {
 #endif
 }
 
-LAMBDA(idx direction);
-DECLARE();
-DOCSTRING("getInvocationHistoryFrameSearch - Return an InvocationHistoryFrame as an iterator. If idx == NIL return the top frame. If idx>=0 return the frame that satisfies *backtrace-frame-selector-hook* that has the index idx if direction==NIL, or if direction==:PREV return the frame previous to it (away from the top) or if direction==:NEXT the next frame (towards the top). *backtrace-frame-selector-hook* is a function that takes an invocation-history-frame-iterator and returns true if it should be in the backtrace. Test the result to make sure it is valid.");
+CL_LAMBDA(idx direction);
+CL_DECLARE();
+CL_DOCSTRING("getInvocationHistoryFrameSearch - Return an InvocationHistoryFrame as an iterator. If idx == NIL return the top frame. If idx>=0 return the frame that satisfies *backtrace-frame-selector-hook* that has the index idx if direction==NIL, or if direction==:PREV return the frame previous to it (away from the top) or if direction==:NEXT the next frame (towards the top). *backtrace-frame-selector-hook* is a function that takes an invocation-history-frame-iterator and returns true if it should be in the backtrace. Test the result to make sure it is valid.");
 CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_search(T_sp idx, Symbol_sp direction) {
   SYMBOL_EXPORT_SC_(CorePkg, STARbacktraceFrameSelectorHookSTAR);
   SYMBOL_EXPORT_SC_(KeywordPkg, next);
@@ -1762,32 +1687,32 @@ CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_se
   SIMPLE_ERROR(BF("Direction argument must be one of NIL, :NEXT, :PREV - received %s") % _rep_(direction));
 }
 
-          LAMBDA();
-          DECLARE();
-          DOCSTRING("getInvocationHistoryFrameSearch - Return an top InvocationHistoryFrame as an iterator.");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getInvocationHistoryFrameSearch - Return an top InvocationHistoryFrame as an iterator.");
 CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_top() {
   return core__get_invocation_history_frame_search(_Nil<T_O>(), _Nil<T_O>());
 }
 
-          LAMBDA();
-          DECLARE();
-          DOCSTRING("getInvocationHistoryFrame - Return an indexed InvocationHistoryFrame as an iterator.");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getInvocationHistoryFrame - Return an indexed InvocationHistoryFrame as an iterator.");
 CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame(int idx) {
   Fixnum_sp fnidx = clasp_make_fixnum(idx);
   return core__get_invocation_history_frame_search(fnidx, _Nil<T_O>());
 }
 
-          LAMBDA();
-          DECLARE();
-          DOCSTRING("getInvocationHistoryFramePrev - Return the prev InvocationHistoryFrame before index as an iterator.");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getInvocationHistoryFramePrev - Return the prev InvocationHistoryFrame before index as an iterator.");
 CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_prev(int idx) {
   Fixnum_sp fnidx = clasp_make_fixnum(idx);
   return core__get_invocation_history_frame_search(fnidx, kw::_sym_prev);
 }
 
-          LAMBDA();
-          DECLARE();
-          DOCSTRING("getInvocationHistoryFrameNext - Return the next InvocationHistoryFrame after index as an iterator.");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getInvocationHistoryFrameNext - Return the next InvocationHistoryFrame after index as an iterator.");
 CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_next(int idx) {
   Fixnum_sp fnidx = clasp_make_fixnum(idx);
   return core__get_invocation_history_frame_search(fnidx, kw::_sym_next);
@@ -1795,17 +1720,16 @@ CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_ne
 };
 
 namespace core {
-LAMBDA();
-DECLARE();
-DOCSTRING("ihsBacktraceNoArgs");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("ihsBacktraceNoArgs");
 CL_DEFUN void core__ihs_backtrace_no_args() {
-  _G();
   core__ihs_backtrace(_lisp->_true(), _Nil<core::T_O>());
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("ihsTop");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("ihsTop");
 CL_DEFUN int core__ihs_top() {
   InvocationHistoryFrameIterator_sp top = core__get_invocation_history_frame_top();
   if (!top->isValid())
@@ -1813,9 +1737,9 @@ CL_DEFUN int core__ihs_top() {
   return top->index();
 };
 
-LAMBDA(cur);
-DECLARE();
-DOCSTRING("ihsPrev");
+CL_LAMBDA(cur);
+CL_DECLARE();
+CL_DOCSTRING("ihsPrev");
 CL_DEFUN int core__ihs_prev(int idx) {
   InvocationHistoryFrameIterator_sp prev = core__get_invocation_history_frame_prev(idx);
   if (!prev->isValid())
@@ -1823,9 +1747,9 @@ CL_DEFUN int core__ihs_prev(int idx) {
   return prev->index();
 };
 
-LAMBDA(cur);
-DECLARE();
-DOCSTRING("ihsNext");
+CL_LAMBDA(cur);
+CL_DECLARE();
+CL_DOCSTRING("ihsNext");
 CL_DEFUN int core__ihs_next(int idx) {
   InvocationHistoryFrameIterator_sp next = core__get_invocation_history_frame_next(idx);
   if (!next->isValid())
@@ -1833,9 +1757,9 @@ CL_DEFUN int core__ihs_next(int idx) {
   return next->index();
 }
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("ihsFun: return the function in the invocation history stack at i");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("ihsFun: return the function in the invocation history stack at i");
 CL_DEFUN T_sp core__ihs_fun(int idx) {
   InvocationHistoryFrameIterator_sp cur = core__get_invocation_history_frame(idx);
   if (!cur->isValid())
@@ -1843,9 +1767,9 @@ CL_DEFUN T_sp core__ihs_fun(int idx) {
   return cur->function();
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("ihsArguments: return the arguments to the function in the invocation history stack at i");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("ihsArguments: return the arguments to the function in the invocation history stack at i");
 CL_DEFUN T_sp core__ihs_arguments(int idx) {
   InvocationHistoryFrameIterator_sp cur = core__get_invocation_history_frame(idx);
   if (!cur->isValid())
@@ -1853,9 +1777,9 @@ CL_DEFUN T_sp core__ihs_arguments(int idx) {
   return cur->arguments();
 };
 
-LAMBDA(cur);
-DECLARE();
-DOCSTRING("ihsEnv");
+CL_LAMBDA(cur);
+CL_DECLARE();
+CL_DOCSTRING("ihsEnv");
 CL_DEFUN T_sp core__ihs_env(int idx) {
   InvocationHistoryFrameIterator_sp cur = core__get_invocation_history_frame(idx);
   if (!cur->isValid())
@@ -1863,9 +1787,9 @@ CL_DEFUN T_sp core__ihs_env(int idx) {
   return cur->environment();
 };
 
-LAMBDA(cur);
-DECLARE();
-DOCSTRING("ihsBds");
+CL_LAMBDA(cur);
+CL_DECLARE();
+CL_DOCSTRING("ihsBds");
 CL_DEFUN int core__ihs_bds(int idx) {
   InvocationHistoryFrameIterator_sp cur = core__get_invocation_history_frame(idx);
   if (!cur->isValid())
@@ -1873,11 +1797,10 @@ CL_DEFUN int core__ihs_bds(int idx) {
   return cur->frame()->bds();
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("ihsCurrentFrame");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("ihsCurrentFrame");
 CL_DEFUN int core__ihs_current_frame() {
-  _G();
   T_sp cf = _sym_STARihsCurrentSTAR->symbolValue();
   if (cf.nilp()) {
     int icf = core__ihs_top();
@@ -1895,11 +1818,10 @@ CL_DEFUN int core__ihs_current_frame() {
   return icf;
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("setIhsCurrentFrame");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("setIhsCurrentFrame");
 CL_DEFUN int core__set_ihs_current_frame(int icf) {
-  _G();
   if (icf < 0)
     icf = 0;
   else if (icf >= core__ihs_top())
@@ -1908,39 +1830,38 @@ CL_DEFUN int core__set_ihs_current_frame(int icf) {
   return icf;
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("bdsTop");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("bdsTop");
 CL_DEFUN int core__bds_top() {
   return _lisp->bindings().top();
 };
 
-LAMBDA(idx);
-DECLARE();
-DOCSTRING("bdsVar");
+CL_LAMBDA(idx);
+CL_DECLARE();
+CL_DOCSTRING("bdsVar");
 CL_DEFUN Symbol_sp core__bds_var(int idx) {
   return _lisp->bindings().var(idx);
 };
 
-LAMBDA(idx);
-DECLARE();
-DOCSTRING("bdsVal");
+CL_LAMBDA(idx);
+CL_DECLARE();
+CL_DOCSTRING("bdsVal");
 CL_DEFUN T_sp core__bds_val(int idx) {
   return _lisp->bindings().val(idx);
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("exceptionStack");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("exceptionStack");
 CL_DEFUN Vector_sp core__exception_stack() {
   return _lisp->exceptionStack().backtrace();
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("exceptionStackDump");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("exceptionStackDump");
 CL_DEFUN void core__exception_stack_dump() {
-  _G();
   ExceptionStack &stack = _lisp->exceptionStack();
   printf("Exception stack size: %zu members\n", stack.size());
   for (int i(0); i < stack.size(); ++i) {
@@ -1964,9 +1885,9 @@ CL_DEFUN void core__exception_stack_dump() {
   printf("----Done----\n");
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("dynamicBindingStackDump");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("dynamicBindingStackDump");
 CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
   DynamicBindingStack &bd = _lisp->bindings();
   for (int i(0), iEnd(bd.size()); i < iEnd; ++i) {
@@ -1974,11 +1895,10 @@ CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
   };
 }
 
-LAMBDA(&optional (out t) msg);
-DECLARE();
-DOCSTRING("ihsBacktrace");
+CL_LAMBDA(&optional (out t) msg);
+CL_DECLARE();
+CL_DOCSTRING("ihsBacktrace");
 CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
-  _G();
   T_sp ss;
   if (outputDesignator.nilp()) {
     ss = clasp_make_string_output_stream();
@@ -1996,123 +1916,59 @@ CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
 };
 };
 
-namespace core {
-void initialize_primitives() {
-  _G();
-  //
-  // Define functions first because generics and methods depend on some of them
-  //
 
   SYMBOL_SC_(CorePkg, smartPointerDetails);
   SYMBOL_EXPORT_SC_(ClPkg, null);
-
   SYMBOL_SC_(CorePkg, STARfset);
-
   SYMBOL_SC_(CorePkg, unbound);
-
   SYMBOL_EXPORT_SC_(ClPkg, read);
-
   SYMBOL_EXPORT_SC_(ClPkg, read_preserving_whitespace);
-
   SYMBOL_EXPORT_SC_(ClPkg, read_delimited_list);
-
   SYMBOL_EXPORT_SC_(ClPkg, every);
-
   SYMBOL_EXPORT_SC_(ClPkg, some);
-
   SYMBOL_EXPORT_SC_(ClPkg, notevery);
-
   SYMBOL_EXPORT_SC_(ClPkg, notany);
-
   SYMBOL_EXPORT_SC_(ClPkg, mapcar);
-
   SYMBOL_EXPORT_SC_(ClPkg, mapc);
-
   SYMBOL_EXPORT_SC_(ClPkg, maplist);
-
   SYMBOL_EXPORT_SC_(ClPkg, mapl);
-
   SYMBOL_SC_(CorePkg, mapappend);
-
   SYMBOL_EXPORT_SC_(ClPkg, mapcan);
-
   SYMBOL_EXPORT_SC_(ClPkg, mapcon);
-
   SYMBOL_SC_(CorePkg, macroexpand_default);
-
   SYMBOL_EXPORT_SC_(ClPkg, append);
-
   SYMBOL_EXPORT_SC_(ClPkg, classOf);
-
   SYMBOL_EXPORT_SC_(ClPkg, identity);
-
   SYMBOL_EXPORT_SC_(ClPkg, constantp);
-
   SYMBOL_SC_(CorePkg, sequence_start_end);
-
   SYMBOL_EXPORT_SC_(ClPkg, ash);
-
   SYMBOL_SC_(CorePkg, type_to_symbol);
-
   SYMBOL_SC_(CorePkg, gdb);
   SYMBOL_SC_(CorePkg, gdbInspect);
-
-  defmacro(CorePkg, "backquote", &macro_backquote, ARGS_macro_backquote, DECL_macro_backquote, DOCS_macro_backquote, __FILE__, __LINE__);
-
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
-
   SYMBOL_EXPORT_SC_(ClPkg, specialOperatorP);
-
   SYMBOL_EXPORT_SC_(ClPkg, macroFunction);
-
   SYMBOL_SC_(CorePkg, separatePairList);
-
   SYMBOL_EXPORT_SC_(ClPkg, set);
-
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
-
   SYMBOL_SC_(CorePkg, separatePairList);
-
   SYMBOL_EXPORT_SC_(ClPkg, gensym);
-
   SYMBOL_EXPORT_SC_(ClPkg, type_of);
-
-
   SYMBOL_SC_(CorePkg, separatePairList);
-
-
   SYMBOL_SC_(CorePkg, testMemoryError);
-
   SYMBOL_SC_(CorePkg, functionBlockName);
-
   SYMBOL_SC_(CorePkg, validFunctionNameP);
-
   SYMBOL_EXPORT_SC_(ClPkg, fdefinition);
-
   SYMBOL_EXPORT_SC_(ClPkg, fboundp);
-
   SYMBOL_EXPORT_SC_(ClPkg, fmakunbound);
-
   SYMBOL_EXPORT_SC_(ClPkg, values);
-
   SYMBOL_EXPORT_SC_(ClPkg, values_list);
-
-
-
   SYMBOL_EXPORT_SC_(CorePkg, pointer);
-
-#if 0
-  CoreDefun(describe_cxx_object);
-  CoreDefun(setenv);
-#endif
   SYMBOL_EXPORT_SC_(CorePkg, toTaggedFixnum);
   SYMBOL_EXPORT_SC_(CorePkg, fromTaggedFixnum);
   SYMBOL_EXPORT_SC_(CorePkg, dumpTaggedFixnum);
-
   SYMBOL_SC_(CorePkg, ihsBacktrace);
   SYMBOL_SC_(CorePkg, ihsTop);
   SYMBOL_SC_(CorePkg, ihsPrev);
@@ -2123,16 +1979,12 @@ void initialize_primitives() {
   SYMBOL_SC_(CorePkg, bdsVar);
   SYMBOL_SC_(CorePkg, bdsVal);
 
+namespace core {
+void initialize_primitives() {
+  //
+  // Define functions first because generics and methods depend on some of them
+  //
+
 }
 
-void initializePythonPrimitives(Lisp_sp lisp) {
-  _G();
-#if 0
-	using namespace boost::python;
-	def_raw(CorePkg,"read",&fn_read,ARGS_fn_read,DOCS_fn_read,_LISP);
-#if 0
-	def_raw(CorePkg,"readDelimitedList",&fn_read_delimited_list,ARGS_fn_read_delimited_list,DOCS_fn_read_delimited_list,_LISP);
-#endif
-#endif
-}
 };

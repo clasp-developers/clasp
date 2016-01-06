@@ -39,9 +39,8 @@ namespace core {
 
 SMART(CxxClass);
 class CxxClass_O : public Class_O {
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(Class_O);
-  LISP_CLASS(core, CorePkg, CxxClass_O, "CxxClass");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(core, CorePkg, CxxClass_O, "CxxClass",Class_O);
 
 private:
   //	string			_InitializationArgumentString;

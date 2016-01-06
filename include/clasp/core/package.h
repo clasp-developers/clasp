@@ -42,8 +42,7 @@ namespace core {
 
 SMART(Package);
 class Package_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Package_O, "Package");
+  LISP_CLASS(core, ClPkg, Package_O, "Package",T_O);
 
 public: // virtual functions inherited from Object
   void initialize();
@@ -71,6 +70,7 @@ public:
   /*! Very low level - add to internal symbols unless keyword
 	  package, in that case add to external symbols */
   void add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp = false);
+  void bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp = false, bool shadowp = false);
 
 private:
   // This returns a NULL smart_ptr if it doesn't find a conflict

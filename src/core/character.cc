@@ -61,7 +61,6 @@ int clasp_string_case(Str_sp s) {
       +1 if a > b
     */
 int char_basic_compare(int na, int nb) {
-  _G();
   if (na < nb)
     return -1;
   if (na == nb)
@@ -70,7 +69,6 @@ int char_basic_compare(int na, int nb) {
 }
 
 T_sp monotonic(int s, int t, List_sp args, bool preserve_case = true) {
-  _G();
   char c = clasp_as_char(gc::As<Character_sp>(oCar(args)));
   if (!preserve_case)
     c = toupper(c);
@@ -90,33 +88,33 @@ T_sp monotonic(int s, int t, List_sp args, bool preserve_case = true) {
   return _lisp->_true();
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("lower_case_p");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("lower_case_p");
 CL_DEFUN bool cl__lower_case_p(Character_sp c) {
   claspCharacter x = clasp_char_code(c);
   return islower(x);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("upper_case_p");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("upper_case_p");
 CL_DEFUN bool cl__upper_case_p(Character_sp c) {
   claspCharacter x = clasp_char_code(c);
   return isupper(x);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("both_case_p");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("both_case_p");
 CL_DEFUN bool cl__both_case_p(Character_sp c) {
   claspCharacter x = clasp_char_code(c);
   return isupper(x) || islower(x);
 };
 
-LAMBDA(char);
-DECLARE();
-DOCSTRING("alphanumericp");
+CL_LAMBDA(char);
+CL_DECLARE();
+CL_DOCSTRING("alphanumericp");
 CL_DEFUN bool cl__alphanumericp(Character_sp ch) {
   claspCharacter x = clasp_char_code(ch);
   if (x < 128) {
@@ -125,91 +123,80 @@ CL_DEFUN bool cl__alphanumericp(Character_sp ch) {
   return false;
 };
 
-LAMBDA(char);
-DECLARE();
-DOCSTRING("charUpcase");
+CL_LAMBDA(char);
+CL_DECLARE();
+CL_DOCSTRING("charUpcase");
 CL_DEFUN char cl__char_upcase(Character_sp ch) {
-  _G();
   return toupper(clasp_as_char(ch));
 };
 
-LAMBDA(char);
-DECLARE();
-DOCSTRING("charDowncase");
+CL_LAMBDA(char);
+CL_DECLARE();
+CL_DOCSTRING("charDowncase");
 CL_DEFUN char cl__char_downcase(Character_sp ch) {
-  _G();
   return tolower(clasp_as_char(ch));
 };
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("Return true if characters are monotonically increasing");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically increasing");
 CL_DEFUN T_sp cl__char_LT_(List_sp args) {
-  _G();
   return ((monotonic(-1, 1, args)));
 };
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("Return true if characters are monotonically decreasing");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically decreasing");
 CL_DEFUN T_sp cl__char_GT_(List_sp args) {
-  _G();
   return ((monotonic(1, 1, args)));
 };
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("Return true if characters are monotonically non-decreasing");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically non-decreasing");
 CL_DEFUN T_sp cl__char_LE_(List_sp args) {
-  _G();
   return (Values(monotonic(-1, 0, args)));
 };
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("Return true if characters are monotonically non-increasing");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically non-increasing");
 CL_DEFUN T_mv cl__char_GE_(List_sp args) {
-  _G();
   return (Values(monotonic(1, 0, args)));
 };
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("Return true if characters are monotonically increasing, ignore case");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically increasing, ignore case");
 CL_DEFUN T_mv cl__char_lessp(List_sp args) {
-  _G();
   return (Values(monotonic(-1, 1, args, false)));
 };
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("Return true if characters are monotonically decreasing, ignore case");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically decreasing, ignore case");
 CL_DEFUN T_mv cl__char_greaterp(List_sp args) {
-  _G();
   return (Values(monotonic(1, 1, args, false)));
 };
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("Return true if characters are monotonically non-increasing, ignore case");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically non-increasing, ignore case");
 CL_DEFUN T_mv cl__char_not_greaterp(List_sp args) {
-  _G();
   return (Values(monotonic(-1, 0, args, false)));
 };
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("Return true if characters are monotonically non-decreasing, ignore case");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically non-decreasing, ignore case");
 CL_DEFUN T_sp cl__char_not_lessp(List_sp args) {
-  _G();
   return ((monotonic(1, 0, args, false)));
 };
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("NE_");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("NE_");
 CL_DEFUN T_sp cl__char_NE_(List_sp args) {
-  _G();
   while (args.notnilp()) {
     int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
     for (List_sp cur = oCdr(args); cur.notnilp(); cur = oCdr(cur)) {
@@ -222,11 +209,10 @@ CL_DEFUN T_sp cl__char_NE_(List_sp args) {
   return ((_lisp->_true()));
 }
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("EQ_");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("EQ_");
 CL_DEFUN T_sp cl__char_EQ_(List_sp args) {
-  _G();
   if (args.nilp())
     return ((_lisp->_true()));
   int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
@@ -240,11 +226,10 @@ CL_DEFUN T_sp cl__char_EQ_(List_sp args) {
   return ((_lisp->_true()));
 };
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("Like char_NE_ but ignore case");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Like char_NE_ but ignore case");
 CL_DEFUN T_mv cl__char_not_equal(List_sp args) {
-  _G();
   while (args.notnilp()) {
     int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
     a = toupper(a);
@@ -271,11 +256,10 @@ bool clasp_charEqual2(T_sp x, T_sp y) {
   return icx == icy;
 }
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("Like char_EQ_, ignore case");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Like char_EQ_, ignore case");
 CL_DEFUN bool cl__char_equal(List_sp args) {
-  _G();
   if (args.nilp())
     return true;
   int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
@@ -296,7 +280,6 @@ CL_DEFUN bool cl__char_equal(List_sp args) {
 #define RETURN_CHAR 13
 
 Character_sp clasp_character_create_from_name(string const &name) {
-  _G();
   Character_sp ch;
   string ssup = boost::to_upper_copy(name);
   if (ssup == "TAB")
@@ -465,11 +448,10 @@ CharacterInfo::CharacterInfo() {
   ADD_CHAR("Rubout", ci++);
 }
 
-LAMBDA(ch);
-DECLARE();
-DOCSTRING("See CLHS: standard_char_p");
+CL_LAMBDA(ch);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS: standard_char_p");
 CL_DEFUN bool cl__standard_char_p(Character_sp ch) {
-  _G();
   char c = clasp_as_char(ch);
   if (c == 10)
     return true; // NEWLINE
@@ -514,11 +496,10 @@ CL_DEFUN bool cl__standard_char_p(Character_sp ch) {
   return false;
 };
 
-LAMBDA(ch);
-DECLARE();
-DOCSTRING("alpha_char_p");
+CL_LAMBDA(ch);
+CL_DECLARE();
+CL_DOCSTRING("alpha_char_p");
 CL_DEFUN bool cl__alpha_char_p(Character_sp ch) {
-  _G();
   return isalpha(clasp_as_char(ch));
 };
 
@@ -535,11 +516,10 @@ Fixnum clasp_digitp(int ch, int basis) {
   return -1;
 }
 
-LAMBDA(c &optional (radix 10));
-DECLARE();
-DOCSTRING("digitCharP");
+CL_LAMBDA(c &optional (radix 10));
+CL_DECLARE();
+CL_DOCSTRING("digitCharP");
 CL_DEFUN T_sp cl__digit_char_p(Character_sp c, Fixnum_sp radix) {
-  _G();
   Fixnum basis = unbox_fixnum(radix);
   if (basis < 2 || basis > 36) {
     QERROR_WRONG_TYPE_NTH_ARG(2, radix, Integer_O::makeIntegerType(2, 36));
@@ -551,11 +531,10 @@ CL_DEFUN T_sp cl__digit_char_p(Character_sp c, Fixnum_sp radix) {
   return make_fixnum(value);
 };
 
-LAMBDA(sname);
-DECLARE();
-DOCSTRING("name_char");
+CL_LAMBDA(sname);
+CL_DECLARE();
+CL_DOCSTRING("name_char");
 CL_DEFUN T_mv cl__name_char(Str_sp sname) {
-  _G();
   Str_sp name = coerce::stringDesignator(sname);
   string upname = stringUpper(name->get());
   map<string, int>::const_iterator it = _lisp->characterInfo().gNamesToCharacterIndex.find(upname);
@@ -565,20 +544,18 @@ CL_DEFUN T_mv cl__name_char(Str_sp sname) {
   return (Values(_Nil<T_O>()));
 };
 
-LAMBDA(och);
-DECLARE();
-DOCSTRING("char_name");
+CL_LAMBDA(och);
+CL_DECLARE();
+CL_DOCSTRING("char_name");
 CL_DEFUN Str_sp cl__char_name(Character_sp och) {
-  _G();
   char ch = clasp_as_char(och);
   return (_lisp->characterInfo().gCharacterNames[ch]);
 };
 
-LAMBDA(och);
-DECLARE();
-DOCSTRING("char_code");
+CL_LAMBDA(och);
+CL_DECLARE();
+CL_DOCSTRING("char_code");
 CL_DEFUN Fixnum_sp cl__char_code(Character_sp och) {
-  _G();
   int ch = clasp_as_char(och);
   if (ch < CHAR_CODE_LIMIT) {
     return make_fixnum((int)ch);
@@ -586,20 +563,18 @@ CL_DEFUN Fixnum_sp cl__char_code(Character_sp och) {
   SIMPLE_ERROR(BF("Character is beyon CHAR_CODE_LIMIT: %d") % CHAR_CODE_LIMIT);
 };
 
-LAMBDA(och);
-DECLARE();
-DOCSTRING("char_int");
+CL_LAMBDA(och);
+CL_DECLARE();
+CL_DOCSTRING("char_int");
 CL_DEFUN Fixnum_sp cl__char_int(Character_sp och) {
-  _G();
   char ch = clasp_as_char(och);
   return make_fixnum((int)ch);
 };
 
-LAMBDA(och);
-DECLARE();
-DOCSTRING("code_char");
+CL_LAMBDA(och);
+CL_DECLARE();
+CL_DOCSTRING("code_char");
 CL_DEFUN Character_sp cl__code_char(Integer_sp ich) {
-  _G();
   int ii = clasp_to_int(ich);
   if (ii >= 0 && ii < CHAR_CODE_LIMIT) {
     return clasp_make_character(ii);
@@ -617,9 +592,6 @@ claspChar clasp_charCode(T_sp c) {
 
 EXPOSE_CLASS(core, Character_dummy_O);
 
-void Character_dummy_O::exposeCando(::core::Lisp_sp lisp) {
-  _G();
-  ::core::class_<Character_dummy_O>();
   SYMBOL_EXPORT_SC_(ClPkg, char_code);
   SYMBOL_EXPORT_SC_(ClPkg, code_char);
   SYMBOL_EXPORT_SC_(ClPkg, char_int);
@@ -644,6 +616,9 @@ void Character_dummy_O::exposeCando(::core::Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(ClPkg, charNotEqual);
   SYMBOL_EXPORT_SC_(ClPkg, charEqual);
   SYMBOL_EXPORT_SC_(ClPkg, digitCharP);
+
+void Character_dummy_O::exposeCando(::core::Lisp_sp lisp) {
+  ::core::class_<Character_dummy_O>();
 }
 
 void Character_dummy_O::exposePython(::core::Lisp_sp lisp) {
@@ -656,14 +631,14 @@ void Character_dummy_O::exposePython(::core::Lisp_sp lisp) {
 
 #if 0
     Character_sp Character_O::create(gctools::Fixnum c)
-    {_G();
+    {
 	StandardChar_sp sc = clasp_make_standard_character(CLASP_CHAR(c));
 	return sc;
     }
 
     Character_sp Character_O::create(T_sp val)
-    {_G();
-	if ( af_fixnumP(val) )
+    {
+	if ( core__fixnump(val) )
 	{
 	    int v = unbox_fixnum(gc::As<Fixnum_sp>(val));
 	    return clasp_make_character(v);
@@ -757,7 +732,7 @@ void Character_O::archiveBase(::core::ArchiveP node)
     }
 
     void StandardChar_O::exposePython(Lisp_sp lisp)
-    {_G();
+    {
 #ifdef USEBOOSTPYTHON
 	PYTHON_CLASS(CorePkg,StandardChar,"","",_lisp)
 	    ;
@@ -777,7 +752,7 @@ void Character_O::archiveBase(::core::ArchiveP node)
 
 #if defined(OLD_SERIALIZE)
     void StandardChar_O::serialize(serialize::SNode node)
-    {_G();
+    {
 	if ( node->saving() )
 	{
 //	    node.setObject(this->sharedThis<StandardChar_O>());
@@ -839,7 +814,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
     bool StandardChar_O::operator>=(T_sp obj) const
     {_OF();
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -852,7 +827,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
     bool StandardChar_O::operator<=(T_sp obj) const
     {_OF();
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -864,7 +839,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
     bool StandardChar_O::operator<(T_sp obj) const
     {_OF();
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -877,7 +852,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
     {_OF();
 	if ( obj.nilp() ) return false;
 	if ( obj.get() == this ) return true;
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -899,7 +874,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
     bool StandardChar_O::operator>(T_sp obj) const
     {_OF();
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -949,7 +924,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
     }
 
     bool StandardChar_O::graphicCharP() const
-    {_G();
+    {
 	return this->_Value!='\n';
     }
 

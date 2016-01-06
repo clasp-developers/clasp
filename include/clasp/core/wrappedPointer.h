@@ -38,8 +38,7 @@ namespace core {
 SMART(WrappedPointer);
 class WrappedPointer_O : public core::T_O {
   FRIEND_GC_SCANNER(core::WrappedPointer_O);
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(core, CorePkg, WrappedPointer_O, "WrappedPointer");
+  LISP_CLASS(core, CorePkg, WrappedPointer_O, "WrappedPointer",core::T_O);
 GCPROTECTED:
   core::Class_sp _Class;
 
@@ -50,7 +49,8 @@ public:
   void setInstanceClassUsingSymbol(core::Symbol_sp classSymbol);
 
 public:
-  virtual bool validp() const { SUBIMP(); };
+CL_LISPIFY_NAME("validp");
+CL_DEFMETHOD   virtual bool validp() const { SUBIMP(); };
   virtual size_t templatedSizeof() const { SUBIMP(); };
   virtual bool eql_(core::T_sp obj) const;
   virtual void *mostDerivedPointer() const {

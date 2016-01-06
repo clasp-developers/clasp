@@ -70,8 +70,7 @@ public:
 };
 
 class SingleDispatchGenericFunction_O : public Function_O {
-  LISP_BASE1(Function_O);
-  LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "single-dispatch-generic-function");
+  LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "single-dispatch-generic-function",Function_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
   friend class SingleDispatchGenericFunctoid;
@@ -87,7 +86,8 @@ public:
 
 public: // Functions here
   /*! Return the Cons of methods attached to this SingleDispatchGenericFunction */
-  List_sp methods() const {
+CL_LISPIFY_NAME("SingleDispatchGenericFunction-methods");
+CL_DEFMETHOD   List_sp methods() const {
     gctools::tagged_pointer<SingleDispatchGenericFunctionClosure> cl = this->closure.as<SingleDispatchGenericFunctionClosure>();
     return cl->_Methods;
   };

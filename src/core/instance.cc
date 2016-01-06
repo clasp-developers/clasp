@@ -58,19 +58,17 @@ LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
 #define ARGS_clos_setFuncallableInstanceFunction "(instance func)"
 #define DECL_clos_setFuncallableInstanceFunction ""
 #define DOCS_clos_setFuncallableInstanceFunction "setFuncallableInstanceFunction"
-T_sp clos_setFuncallableInstanceFunction(T_sp obj, T_sp func) {
-  _G();
+CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->setFuncallableInstanceFunction(func);
   }
   SIMPLE_ERROR(BF("You can only setFuncallableInstanceFunction on instances - you tried to set it on a: %s") % _rep_(obj));
 };
 
-LAMBDA(instance func);
-DECLARE();
-DOCSTRING("instanceClassSet");
+CL_LAMBDA(instance func);
+CL_DECLARE();
+CL_DOCSTRING("instanceClassSet");
 CL_DEFUN T_sp core__instance_class_set(T_sp obj, Class_sp mc) {
-  _G();
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->instanceClassSet(mc);
   } else if (Class_sp cobj = obj.asOrNull<Class_O>()) {
@@ -79,11 +77,10 @@ CL_DEFUN T_sp core__instance_class_set(T_sp obj, Class_sp mc) {
   SIMPLE_ERROR(BF("You can only instanceClassSet on Instance_O or Class_O - you tried to set it on a: %s") % _rep_(mc));
 };
 
-LAMBDA(obj);
-DECLARE();
-DOCSTRING("copy-instance returns a shallow copy of the instance");
+CL_LAMBDA(obj);
+CL_DECLARE();
+CL_DOCSTRING("copy-instance returns a shallow copy of the instance");
 CL_DEFUN Instance_sp core__copy_instance(Instance_sp obj) {
-  _G();
   Instance_sp cp = obj->copyInstance();
   return cp;
 };
@@ -122,7 +119,8 @@ T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots) {
 }
 
 /*! See ECL>>instance.d>>si_allocate_raw_instance */
-T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, int numberOfSlots) {
+CL_LISPIFY_NAME(allocateRawInstance);
+CL_DEFUN T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, int numberOfSlots) {
   T_sp toutput = Instance_O::allocateInstance(theClass, numberOfSlots);
   Instance_sp output = toutput.asOrNull<Instance_O>();
   if (!output) {
@@ -192,24 +190,22 @@ T_sp Instance_O::instanceSig() const {
 
 EXPOSE_CLASS(core, Instance_O);
 
+  SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
+  SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
 void Instance_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<Instance_O>();
 
-  af_def(CorePkg, "allocateRawInstance", &Instance_O::allocateRawInstance);
-  SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
-  ClosDefun(setFuncallableInstanceFunction);
-  SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
+//  af_def(CorePkg, "allocateRawInstance", &Instance_O::allocateRawInstance);
+//  ClosDefun(setFuncallableInstanceFunction);
 }
 
 void Instance_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Instance, "", "", _lisp);
 #endif
 }
 
 T_sp Instance_O::instanceClassSet(Class_sp mc) {
-  _G();
   this->_Class = mc;
   return (this->sharedThis<Instance_O>());
 }
@@ -244,7 +240,7 @@ string Instance_O::__repr__() const {
       ss << "        :slot" << i << " ";
       if (obj) {
         stringstream sslot;
-        if (cl_consp(obj)) {
+        if (cl__consp(obj)) {
           sslot << "CONS...";
           ss << sslot.str() << std::endl;
         } else if (Instance_sp inst = obj.asOrNull<Instance_O>()) {
@@ -285,7 +281,6 @@ T_sp Instance_O::copyInstance() const {
 }
 
 void Instance_O::reshapeInstance(int delta) {
-  _G();
   int size = this->_Slots.size() + delta;
   this->_Slots.resize(size, _Unbound<T_O>());
 }
@@ -309,7 +304,6 @@ void Instance_O::ensureClosure(GenericFunctionPtr entryPoint) {
 };
 
 T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
-  _G();
   if (this->_isgf == ECL_USER_DISPATCH) {
     this->reshapeInstance(-1);
     this->_isgf = ECL_NOT_FUNCALLABLE;

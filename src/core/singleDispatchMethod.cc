@@ -40,7 +40,6 @@ namespace core {
 /*! The argument list is: (args next-emfun)
 	  Use next-emfun to set up a FunctionValueEnvironment that defines call-next-method and next-method-p */
 void Lambda_method_function::LISP_INVOKE() {
-  _G();
 #if 0
 	    ASSERTF(this->_method->_body.notnilp(),BF("The method body should never by nil"));
 // TODO: Make this more efficient - this is crazy to put the arguments into a Cons and then
@@ -151,7 +150,6 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
                                                        List_sp declares,
                                                        gc::Nilable<Str_sp> docstr,
                                                        Function_sp body) {
-  _G();
   GC_ALLOCATE(SingleDispatchMethod_O, method);
   method->_name = name;
   method->_receiver_class = receiverClass;

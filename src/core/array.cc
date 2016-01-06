@@ -40,9 +40,9 @@ namespace core {
 //
 EXPOSE_CLASS(core, Array_O);
 
-LAMBDA(core::array);
-DECLARE();
-DOCSTRING("arrayDisplacement");
+CL_LAMBDA(core::array);
+CL_DECLARE();
+CL_DOCSTRING("arrayDisplacement");
 CL_DEFUN T_mv cl__array_displacement(T_sp array) {
   if (array.notnilp()) {
     if (Array_sp arr = array.asOrNull<Array_O>()) {
@@ -53,19 +53,17 @@ CL_DEFUN T_mv cl__array_displacement(T_sp array) {
   TYPE_ERROR(array, cl::_sym_array);
 }
 
-LAMBDA(core::type &optional core::env);
-DECLARE();
-DOCSTRING("upgradedArrayElementType");
+CL_LAMBDA(core::type &optional core::env);
+CL_DECLARE();
+CL_DOCSTRING("upgradedArrayElementType");
 CL_DEFUN T_mv cl__upgraded_array_element_type(T_sp type) {
-  _G();
   return (Values(T_O::___staticClass));
 };
 
-LAMBDA(out outStart in inStart len);
-DECLARE();
-DOCSTRING("copy_subarray");
+CL_LAMBDA(out outStart in inStart len);
+CL_DECLARE();
+CL_DOCSTRING("copy_subarray");
 CL_DEFUN void core__copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in, Fixnum_sp inStart, Fixnum_sp len) {
-  _G();
   // TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
   //       Currently this is very inefficient
   int iLen = unbox_fixnum(len);
@@ -96,11 +94,10 @@ CL_DEFUN void core__copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in,
   }
 }
 
-LAMBDA(array &rest indices-value);
-DECLARE();
-DOCSTRING("aset");
+CL_LAMBDA(array &rest indices-value);
+CL_DECLARE();
+CL_DOCSTRING("aset");
 CL_DEFUN T_sp core__aset(Array_sp array, List_sp indices_value) {
-  _G();
   int r = cl__length(indices_value) - 1;
   int j;
   if (Vector_sp vec = array.asOrNull<Vector_O>()) {
@@ -139,7 +136,8 @@ int Array_O::checkedIndex(const string &filename, int lineno, const string &func
   UNREACHABLE();
 }
 
-gc::Fixnum Array_O::arrayTotalSize() const {
+CL_LISPIFY_NAME("cl:arrayTotalSize");
+CL_DEFMETHOD gc::Fixnum Array_O::arrayTotalSize() const {
   gc::Fixnum sz = 1;
   for (int i = 0; i < this->rank(); i++) {
     sz *= this->arrayDimension(i);
@@ -162,7 +160,9 @@ Symbol_sp Array_O::element_type_as_symbol() const {
 #define ARGS_Array_O_aref "((core::self core::array) &rest core::indices)"
 #define DECL_Array_O_aref ""
 #define DOCS_Array_O_aref "See CLHS aref"
-T_sp Array_O::aref(List_sp indices) const {
+CL_LISPIFY_NAME("cl:aref");
+CL_LAMBDA((core::self core::array) &rest core::indices);
+CL_DEFMETHOD T_sp Array_O::aref(List_sp indices) const {
   _OF();
   SUBCLASS_MUST_IMPLEMENT();
 }
@@ -207,16 +207,19 @@ cl_index Array_O::index_val(List_sp indices, bool last_value_is_val, List_sp &va
   return ((offset));
 }
 
-gc::Fixnum Array_O::index(List_sp indices) const {
+CL_LISPIFY_NAME("core:index");
+CL_DEFMETHOD gc::Fixnum Array_O::index(List_sp indices) const {
   List_sp dummy;
   return ((this->index_val(indices, false, dummy)));
 }
 
-gc::Fixnum Array_O::arrayRowMajorIndex(List_sp indices) const {
+CL_LISPIFY_NAME("cl:arrayRowMajorIndex");
+CL_DEFMETHOD gc::Fixnum Array_O::arrayRowMajorIndex(List_sp indices) const {
   return ((this->index(indices)));
 }
 
-List_sp Array_O::arrayDimensions() const {
+CL_LISPIFY_NAME("cl:array-dimensions");
+CL_DEFMETHOD List_sp Array_O::arrayDimensions() const {
   _OF();
   List_sp indices = _Nil<T_O>();
   for (int i = this->rank() - 1; i >= 0; i--) {
@@ -228,8 +231,10 @@ List_sp Array_O::arrayDimensions() const {
 #define ARGS_Array_O_setf_aref "((core::self array) &rest core::indices-val)"
 #define DECL_Array_O_setf_aref ""
 #define DOCS_Array_O_setf_aref "CLHS: setter for aref"
-T_sp Array_O::setf_aref(List_sp indices_val) {
-  _G();
+CL_LAMBDA((core::self array) &rest core::indices-val);
+CL_DOCSTRING("Setter for aref");
+CL_LISPIFY_NAME("core:array-setf-aref");
+CL_DEFMETHOD T_sp Array_O::setf_aref(List_sp indices_val) {
   SUBCLASS_MUST_IMPLEMENT();
 };
 
@@ -268,7 +273,6 @@ struct RecursivePrint {
 };
 
 string Array_O::__repr__() const {
-  _G();
   RecursivePrint rp(this->asSmartPtr());
   rp.ss << "#" << this->rank() << "A(";
   rp.recurse(0);
@@ -276,8 +280,10 @@ string Array_O::__repr__() const {
   return ((rp.ss.str()));
 }
 
+SYMBOL_SC_(CorePkg, copy_subarray);
+SYMBOL_SC_(CorePkg, aset);
+
 void Array_O::exposeCando(::core::Lisp_sp lisp) {
-  _G();
   ::core::class_<Array_O>()
       .def("cl:aref", &Array_O::aref,
            ARGS_Array_O_aref,
@@ -300,12 +306,9 @@ void Array_O::exposeCando(::core::Lisp_sp lisp) {
       .def("cl:arrayHasFillPointerP", &Array_O::arrayHasFillPointerP)
 
       ;
-  SYMBOL_SC_(CorePkg, copy_subarray);
-  SYMBOL_SC_(CorePkg, aset);
 }
 
 void Array_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Array, "", "", _lisp)
       .def("core:array-setf-aref", &Array_O::setf_aref)

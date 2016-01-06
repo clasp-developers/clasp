@@ -109,23 +109,23 @@ SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
 EXPOSE_CLASS(core, SexpLoadArchive_O);
 
 void SexpLoadArchive_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<SexpLoadArchive_O>("make-sexp-load-archive")
       .def("parseFromObject", &SexpLoadArchive_O::parseFromObject)
       .def("parseFromStream", &SexpLoadArchive_O::parseFromStream);
 }
 void SexpLoadArchive_O::exposePython(Lisp_sp lisp) {
-  _G();
 }
 
-void SexpLoadArchive_O::parseFromObject(T_sp object) {
+CL_LISPIFY_NAME("parseFromObject");
+CL_DEFMETHOD void SexpLoadArchive_O::parseFromObject(T_sp object) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
   HashTable_sp objToNode = HashTable_O::create(cl::_sym_eq);
   this->_TopNode = gc::As<BranchSNode_sp>(parseNode(objToNode, object));
   this->createContents();
 };
 
-void SexpLoadArchive_O::parseFromStream(T_sp streamDesignator) {
+CL_LISPIFY_NAME("parseFromStream");
+CL_DEFMETHOD void SexpLoadArchive_O::parseFromStream(T_sp streamDesignator) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
   // Don't track source code for archives
   scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());

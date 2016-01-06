@@ -90,11 +90,10 @@ number_remainder(Number_sp x, Number_sp y, Number_sp q) {
 /* Coerce X to single-float if one arg,
    otherwise coerce to same float type as second arg */
 
-LAMBDA(x &optional y);
-DECLARE();
-DOCSTRING("float");
+CL_LAMBDA(x &optional y);
+CL_DECLARE();
+CL_DOCSTRING("float");
 CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
-  _G();
   NumberType ty, tx;
   if (y.notnilp()) {
     ty = clasp_t_of(gc::As<Float_sp>(y));
@@ -134,11 +133,10 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
   return gc::As<Float_sp>(x);
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("numerator");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("numerator");
 CL_DEFUN Number_sp cl__numerator(Number_sp x) {
-  _G();
   switch (clasp_t_of(x)) {
   case number_Ratio:
     x = gc::As<Ratio_sp>(x)->numerator();
@@ -152,11 +150,10 @@ CL_DEFUN Number_sp cl__numerator(Number_sp x) {
   return x;
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("denominator");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("denominator");
 CL_DEFUN Number_sp cl__denominator(Number_sp x) {
-  _G();
   switch (clasp_t_of(x)) {
   case number_Ratio:
     x = gc::As<Ratio_sp>(x)->denominator();
@@ -408,11 +405,10 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
   return Values(v0, v1);
 }
 
-LAMBDA(x &optional y);
-DECLARE();
-DOCSTRING("floor");
+CL_LAMBDA(x &optional y);
+CL_DECLARE();
+CL_DOCSTRING("floor");
 CL_DEFUN Real_mv cl__floor(Real_sp x, T_sp y) {
-  _G();
   if (y.nilp())
     return clasp_floor1(x);
   else
@@ -650,11 +646,10 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
   clasp_return2(the_env, v0, v1);
 }
 
-LAMBDA(x &optional y);
-DECLARE();
-DOCSTRING("ceiling");
+CL_LAMBDA(x &optional y);
+CL_DECLARE();
+CL_DOCSTRING("ceiling");
 CL_DEFUN Real_mv cl__ceiling(Real_sp x, T_sp y) {
-  _G();
   if (y.nilp())
     return clasp_ceiling1(x);
   else
@@ -713,11 +708,10 @@ Real_mv clasp_truncate2(Real_sp x, Real_sp y) {
     return clasp_floor2(x, y);
 }
 
-LAMBDA(x &optional y);
-DECLARE();
-DOCSTRING("truncate");
+CL_LAMBDA(x &optional y);
+CL_DECLARE();
+CL_DOCSTRING("truncate");
 CL_DEFUN Real_mv cl__truncate(Real_sp x, T_sp y) {
-  _G();
   if (y.nilp())
     return clasp_truncate1(x);
   else
@@ -838,40 +832,37 @@ Real_mv clasp_round2(Real_sp x, Real_sp y) {
   clasp_return2(the_env, v0, v1);
 }
 
-LAMBDA(x &optional y);
-DECLARE();
-DOCSTRING("round");
+CL_LAMBDA(x &optional y);
+CL_DECLARE();
+CL_DOCSTRING("round");
 CL_DEFUN Number_mv cl__round(Real_sp x, T_sp y) {
-  _G();
   if (y.nilp())
     return clasp_round1(x);
   else
     return clasp_round2(x, gc::As<Real_sp>(y));
 }
 
-LAMBDA(x y);
-DECLARE();
-DOCSTRING("mod");
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("mod");
 CL_DEFUN Real_sp cl__mod(Real_sp x, Real_sp y) {
   /* INV: #'floor always outputs two values */
   Real_mv mv_v = cl__floor(x, y);
   return gc::As<Real_sp>(mv_v.valueGet(1));
 }
 
-LAMBDA(x y);
-DECLARE();
-DOCSTRING("rem");
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("rem");
 CL_DEFUN Real_sp cl__rem(Real_sp x, Real_sp y) {
-  _G();
   Real_mv mv_v = cl__truncate(x, y);
   return gc::As<Real_sp>(mv_v.valueGet(1));
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("decodeFloat");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("decodeFloat");
 CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
-  _G();
   int e = 0, s = 0;
   NumberType tx = clasp_t_of(x);
   float f;
@@ -920,11 +911,10 @@ CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
   return Values(x, clasp_make_fixnum(e), clasp_make_single_float(s));
 }
 
-LAMBDA(x y);
-DECLARE();
-DOCSTRING("scaleFloat");
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("scaleFloat");
 CL_DEFUN Number_sp cl__scale_float(Number_sp x, Number_sp y) {
-  _G();
   Fixnum k;
   if (CLASP_FIXNUMP(y)) {
     k = clasp_fixnum(y);
@@ -969,11 +959,10 @@ int clasp_signbit(Number_sp x) {
   SIMPLE_ERROR(BF("Illegal argument for clasp_signbit: %s") % _rep_(x));
 }
 
-LAMBDA(x &optional (y x yp));
-DECLARE();
-DOCSTRING("floatSign");
+CL_LAMBDA(x &optional (y x yp));
+CL_DECLARE();
+CL_DOCSTRING("floatSign");
 CL_DEFUN Float_sp cl__float_sign(Float_sp x, Float_sp y, T_sp yp) {
-  _G();
   int negativep;
   if (yp.nilp()) {
     y = cl__float(clasp_make_fixnum(1), x);
@@ -1006,11 +995,10 @@ CL_DEFUN Float_sp cl__float_sign(Float_sp x, Float_sp y, T_sp yp) {
   return y;
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("floatDigits");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("floatDigits");
 CL_DEFUN Integer_sp cl__float_digits(Float_sp x) {
-  _G();
   Integer_sp ix(_Nil<Integer_O>());
   switch (clasp_t_of(x)) {
   case number_SingleFloat:
@@ -1030,11 +1018,10 @@ CL_DEFUN Integer_sp cl__float_digits(Float_sp x) {
   return ix;
 }
 
-LAMBDA(Float_sp x);
-DECLARE();
-DOCSTRING("floatPrecision");
+CL_LAMBDA(Float_sp x);
+CL_DECLARE();
+CL_DOCSTRING("floatPrecision");
 CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {
-  _G();
   int precision = 0;
   switch (clasp_t_of(x)) {
   case number_SingleFloat: {
@@ -1090,11 +1077,10 @@ CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {
   return clasp_make_fixnum(precision);
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("integer_decode_float");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("integer_decode_float");
 CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
-  _G();
   int e = 0, s = 1;
   Real_sp rx(_Nil<Real_O>());
   switch (clasp_t_of(x)) {
@@ -1155,19 +1141,17 @@ CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
   return Values(rx, clasp_make_fixnum(e), clasp_make_fixnum(s));
 }
 
-LAMBDA(r &optional (i 0));
-DECLARE();
-DOCSTRING("complex");
+CL_LAMBDA(r &optional (i 0));
+CL_DECLARE();
+CL_DOCSTRING("complex");
 CL_DEFUN Complex_sp cl__complex(Real_sp r, Real_sp i) {
-  _G();
   return Complex_O::create(r, i);
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("realpart");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("realpart");
 CL_DEFUN Real_sp cl__realpart(Number_sp x) {
-  _G();
   switch (clasp_t_of(x)) {
   case number_Fixnum:
   case number_Bignum:
@@ -1188,11 +1172,10 @@ CL_DEFUN Real_sp cl__realpart(Number_sp x) {
   return gc::As<Real_sp>(x);
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("imagpart");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("imagpart");
 CL_DEFUN Real_sp cl__imagpart(Number_sp x) {
-  _G();
   switch (clasp_t_of(x)) {
   case number_Fixnum:
   case number_Bignum:
@@ -1228,7 +1211,6 @@ CL_DEFUN Real_sp cl__imagpart(Number_sp x) {
   return gc::As<Real_sp>(x);
 }
 
-void initialize_num_co() {
   SYMBOL_EXPORT_SC_(ClPkg, float);
   SYMBOL_EXPORT_SC_(ClPkg, numerator);
   SYMBOL_EXPORT_SC_(ClPkg, denominator);
@@ -1247,5 +1229,5 @@ void initialize_num_co() {
   SYMBOL_EXPORT_SC_(ClPkg, complex);
   SYMBOL_EXPORT_SC_(ClPkg, realpart);
   SYMBOL_EXPORT_SC_(ClPkg, imagpart);
-};
+
 };

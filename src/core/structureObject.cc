@@ -43,11 +43,10 @@ namespace core {
 
 #define USE_INSTANCES_FOR_STRUCTURES
 
-LAMBDA(type &rest slot_values);
-DECLARE();
-DOCSTRING("makeStructure");
+CL_LAMBDA(type &rest slot_values);
+CL_DECLARE();
+CL_DOCSTRING("makeStructure");
 CL_DEFUN T_sp core__make_structure(T_sp type, List_sp slot_values) {
-  _G();
   if (type.nilp()) {
     SIMPLE_ERROR(BF("You cannot makeStructure of type nil"));
   }
@@ -69,11 +68,10 @@ CL_DEFUN T_sp core__make_structure(T_sp type, List_sp slot_values) {
   return so;
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("copyStructure");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("copyStructure");
 CL_DEFUN T_sp cl__copy_structure(T_sp arg) {
-  _G();
   if (arg.nilp()) {
     SIMPLE_ERROR(BF("You cannot copyStructure nil"));
   }
@@ -88,11 +86,10 @@ CL_DEFUN T_sp cl__copy_structure(T_sp arg) {
   SIMPLE_ERROR(BF("You cannot copy-structure a %s") % _rep_(arg));
 };
 
-LAMBDA(obj name idx);
-DECLARE();
-DOCSTRING("structureRef");
+CL_LAMBDA(obj name idx);
+CL_DECLARE();
+CL_DOCSTRING("structureRef");
 CL_DEFUN T_sp core__structure_ref(T_sp obj, Symbol_sp type, int idx) {
-  _G();
   if (obj.nilp()) {
     TYPE_ERROR(obj, type);
   }
@@ -114,11 +111,10 @@ CL_DEFUN T_sp core__structure_ref(T_sp obj, Symbol_sp type, int idx) {
   TYPE_ERROR(obj, type);
 };
 
-LAMBDA(struct type idx val);
-DECLARE();
-DOCSTRING("structureSet");
+CL_LAMBDA(struct type idx val);
+CL_DECLARE();
+CL_DOCSTRING("structureSet");
 CL_DEFUN T_sp core__structure_set(T_sp obj, Symbol_sp type, int idx, T_sp val) {
-  _G();
   if (obj.nilp()) {
     TYPE_ERROR(obj, type);
   }
@@ -140,11 +136,10 @@ CL_DEFUN T_sp core__structure_set(T_sp obj, Symbol_sp type, int idx, T_sp val) {
   TYPE_ERROR(obj, type);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("structurep");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("structurep");
 CL_DEFUN bool core__structurep(T_sp arg) {
-  _G();
   if (arg.nilp()) {
     return false;
   }
@@ -161,11 +156,10 @@ CL_DEFUN bool core__structurep(T_sp arg) {
   return false;
 };
 
-LAMBDA(x y);
-DECLARE();
-DOCSTRING("structureSubtypep checks if the structure type Y is a subtype of X");
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("structureSubtypep checks if the structure type Y is a subtype of X");
 CL_DEFUN bool core__structure_subtypep(T_sp x, Symbol_sp y) {
-  _G();
   if (x.nilp())
     return false;
 #ifdef CLOS
@@ -194,7 +188,6 @@ CL_DEFUN bool core__structure_subtypep(T_sp x, Symbol_sp y) {
 }
 
 StructureObject_sp StructureObject_O::create(T_sp type, List_sp slot_values) {
-  _G();
   StructureObject_sp co = StructureObject_O::create();
   co->_Type = type;
   co->_Slots.resize(cl__length(slot_values));
@@ -207,7 +200,6 @@ StructureObject_sp StructureObject_O::create(T_sp type, List_sp slot_values) {
 }
 
 void StructureObject_O::initialize() {
-  _G();
   LOG(BF("Initializing StructureObject"));
   this->Base::initialize();
   this->_Type = _Nil<T_O>();
@@ -271,7 +263,6 @@ void StructureObject_O::archiveBase(ArchiveP node) {
 }
 
 T_sp StructureObject_O::copyStructure() const {
-  _G();
   StructureObject_sp copy = gctools::GCObjectAllocator<StructureObject_O>::copy(*this);
   //GC_COPY(StructureObject_O,copy,*this);
   return copy;
@@ -319,19 +310,11 @@ string StructureObject_O::__repr__() const {
 
 #if 0
     void StructureObject_O::allocate_slot_storage(uint numSlots, T_sp initialValue )
-    {_G();
+    {
 	this->_Slots.resize(numSlots,initialValue);
     }
 #endif
 
-void StructureObject_O::exposeCando(Lisp_sp lisp) {
-  class_<StructureObject_O>()
-      //		.def("copy-structure",&StructureObject_O::copyStructure) // moved to primitives.cc
-      ;
-#if 0
-	    SYMBOL_SC_(CorePkg,make_structure);
-	    Defun(make_structure);
-#endif
   SYMBOL_EXPORT_SC_(CorePkg, structureRef);
   SYMBOL_EXPORT_SC_(CorePkg, structureSet);
   SYMBOL_EXPORT_SC_(CorePkg, makeStructure);
@@ -341,10 +324,18 @@ void StructureObject_O::exposeCando(Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(CorePkg, structurep);
 
   SYMBOL_EXPORT_SC_(CorePkg, structureSubtypep);
+
+void StructureObject_O::exposeCando(Lisp_sp lisp) {
+  class_<StructureObject_O>()
+      //		.def("copy-structure",&StructureObject_O::copyStructure) // moved to primitives.cc
+      ;
+#if 0
+	    SYMBOL_SC_(CorePkg,make_structure);
+	    Defun(make_structure);
+#endif
 }
 
 void StructureObject_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, StructureObject, "", "", _lisp);
 #endif

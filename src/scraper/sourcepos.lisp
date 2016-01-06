@@ -5,12 +5,12 @@
   (let ((source-files (make-hash-table :test #'equal)))
     (loop for tag in tags
          do (when (typep tag 'tags:source-tag)
-              (let* ((source-file (tags:file tag))
+              (let* ((source-file (tags:file% tag))
                      (entries (gethash source-file source-files)))
                 (push tag entries)
                 (setf (gethash source-file source-files) entries))))
     (maphash (lambda (file entries)
-               (let ((sorted-entries (sort entries #'< :key #'tags:line)))
+               (let ((sorted-entries (sort entries #'< :key #'tags:line%)))
                  (setf (gethash file source-files) sorted-entries)))
              source-files)
     source-files))
@@ -22,11 +22,11 @@
         (prev-char-offset 0))
     (with-open-file (fin source-file :direction :input)
       (dolist (tag tags)
-        (let ((search-line (tags:line tag)))
+        (let ((search-line (tags:line% tag)))
           (loop
              (if (>= cur-line search-line)
                  (progn
-                   (setf (tags:character-offset tag) (1+ prev-char-offset))
+                   (setf (tags:character-offset% tag) (1+ prev-char-offset))
                    (return nil))
                  (let ((l (read-line fin)))
                    (incf cur-line)

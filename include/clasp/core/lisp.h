@@ -302,8 +302,7 @@ class Lisp_O {
   friend T_mv core__get_sysprop(T_sp key, T_sp area);
 
   friend void core__clear_gfun_hash(T_sp what);
-  //	/* disable scrape */ LISP_BASE1(T_O);
-  //	/* disable scrape */ LISP_CLASS(core,CorePkg,Lisp_O,"Lisp");
+  //	/* disable scrape */ LISP_CLASS(core,CorePkg,Lisp_O,"Lisp",T_O);
 public:
   static void initializeGlobals(Lisp_sp lisp);
 

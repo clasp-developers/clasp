@@ -34,11 +34,10 @@ THE SOFTWARE.
 
 namespace core {
 
-LAMBDA(key area value);
-DECLARE();
-DOCSTRING("put_sysprop - returns value");
+CL_LAMBDA(key area value);
+CL_DECLARE();
+CL_DOCSTRING("put_sysprop - returns value");
 CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
-  _G();
   ASSERT(_lisp->_Roots._SystemProperties);
   if (_lisp->_Roots._SystemProperties.nilp()) {
     _lisp->_Roots._SystemProperties = HashTableEql_O::create_default();
@@ -58,11 +57,10 @@ CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
   return (retval);
 }
 
-LAMBDA(key area);
-DECLARE();
-DOCSTRING("get_sysprop - returns (values val foundp)");
+CL_LAMBDA(key area);
+CL_DECLARE();
+CL_DOCSTRING("get_sysprop - returns (values val foundp)");
 CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
-  _G();
   if (_lisp->_Roots._SystemProperties.notnilp()) {
     T_mv values = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->gethash(area, _Nil<T_O>());
     T_sp hashTable = values;
@@ -74,11 +72,10 @@ CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
   return (Values(_Nil<T_O>(), _Nil<T_O>()));
 }
 
-LAMBDA(key area);
-DECLARE();
-DOCSTRING("rem_sysprop");
+CL_LAMBDA(key area);
+CL_DECLARE();
+CL_DOCSTRING("rem_sysprop");
 CL_DEFUN T_sp core__rem_sysprop(T_sp key, T_sp area) {
-  _G();
   T_mv mv_values = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->gethash(area, _Nil<T_O>());
   HashTable_sp hashTable = gc::As<HashTable_sp>(mv_values);
   bool foundHashTable = gc::As<T_sp>(mv_values.valueGet(1)).isTrue();
@@ -89,12 +86,10 @@ CL_DEFUN T_sp core__rem_sysprop(T_sp key, T_sp area) {
   return _Nil<T_O>();
 }
 
-void initialize_sysprop() {
-  _G();
   SYMBOL_SC_(CorePkg, put_sysprop);
 
   SYMBOL_SC_(CorePkg, get_sysprop);
 
   SYMBOL_SC_(CorePkg, rem_sysprop);
-}
+
 };

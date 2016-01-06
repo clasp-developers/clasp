@@ -74,17 +74,16 @@ void clasp_deliver_fpe(int status) {
   }
 }
 
-LAMBDA(num);
-DECLARE();
-DOCSTRING("zerop");
+CL_LAMBDA(num);
+CL_DECLARE();
+CL_DOCSTRING("zerop");
 CL_DEFUN bool cl__zerop(T_sp num) {
-  _G();
   return clasp_zerop(gc::As<Number_sp>(num));
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("convert_overflow_result_to_bignum");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("convert_overflow_result_to_bignum");
 CL_DEFUN Integer_sp core__convert_overflow_result_to_bignum(Fixnum_sp z) {
   if ((Fixnum)z.raw_() > 0) {
     return contagen_sub(z, _lisp->_Roots._IntegerOverflowAdjust);
@@ -93,16 +92,15 @@ CL_DEFUN Integer_sp core__convert_overflow_result_to_bignum(Fixnum_sp z) {
   }
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("fixnum_number_of_bits");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("fixnum_number_of_bits");
 CL_DEFUN Fixnum_sp core__fixnum_number_of_bits() {
   int num = gc::fixnum_bits;
   return make_fixnum(num);
 };
 
 Real_sp clasp_max2(Real_sp x, Real_sp y) {
-  _G();
   Real_sp max = x;
   if (clasp_number_compare(max, y) < 0)
     max = y;
@@ -110,18 +108,16 @@ Real_sp clasp_max2(Real_sp x, Real_sp y) {
 }
 
 Real_sp clasp_min2(Real_sp x, Real_sp y) {
-  _G();
   Real_sp min = x;
   if (clasp_number_compare(min, y) > 0)
     min = y;
   return min;
 }
 
-LAMBDA(min &rest nums);
-DECLARE();
-DOCSTRING("min");
+CL_LAMBDA(min &rest nums);
+CL_DECLARE();
+CL_DOCSTRING("min");
 CL_DEFUN Real_sp cl__min(Real_sp min, List_sp nums) {
-  _G();
   /* INV: type check occurs in clasp_number_compare() for the rest of
 	   numbers, but for the first argument it happens in clasp_zerop(). */
   for (auto cur : nums) {
@@ -131,11 +127,10 @@ CL_DEFUN Real_sp cl__min(Real_sp min, List_sp nums) {
   return min;
 }
 
-LAMBDA(max &rest nums);
-DECLARE();
-DOCSTRING("max");
+CL_LAMBDA(max &rest nums);
+CL_DECLARE();
+CL_DOCSTRING("max");
 CL_DEFUN Real_sp cl__max(Real_sp max, List_sp nums) {
-  _G();
   /* INV: type check occurs in clasp_number_compare() for the rest of
 	   numbers, but for the first argument it happens in clasp_zerop(). */
   for (auto cur : nums) {
@@ -145,11 +140,10 @@ CL_DEFUN Real_sp cl__max(Real_sp max, List_sp nums) {
   return max;
 }
 
-LAMBDA(&rest integers);
-DECLARE();
-DOCSTRING("logand");
+CL_LAMBDA(&rest integers);
+CL_DECLARE();
+CL_DOCSTRING("logand");
 CL_DEFUN Integer_sp cl__logand(List_sp integers) {
-  _G();
   if (integers.nilp())
     return Integer_O::create((gc::Fixnum) - 1);
   mpz_class acc = clasp_to_mpz(gc::As<Integer_sp>(oCar(integers)));
@@ -162,11 +156,10 @@ CL_DEFUN Integer_sp cl__logand(List_sp integers) {
   return Integer_O::create(acc);
 };
 
-LAMBDA(&rest integers);
-DECLARE();
-DOCSTRING("logior");
+CL_LAMBDA(&rest integers);
+CL_DECLARE();
+CL_DOCSTRING("logior");
 CL_DEFUN Integer_sp cl__logior(List_sp integers) {
-  _G();
   if (integers.nilp())
     return Integer_O::create((gc::Fixnum)0);
   Integer_sp ifirst = gc::As<Integer_sp>(oCar(integers));
@@ -181,11 +174,10 @@ CL_DEFUN Integer_sp cl__logior(List_sp integers) {
   return Integer_O::create(acc);
 };
 
-LAMBDA(&rest integers);
-DECLARE();
-DOCSTRING("logxor");
+CL_LAMBDA(&rest integers);
+CL_DECLARE();
+CL_DOCSTRING("logxor");
 CL_DEFUN Integer_sp cl__logxor(List_sp integers) {
-  _G();
   if (integers.nilp())
     return Integer_O::create((gc::Fixnum)0);
   Integer_sp ifirst = gc::As<Integer_sp>(oCar(integers));
@@ -199,11 +191,10 @@ CL_DEFUN Integer_sp cl__logxor(List_sp integers) {
   return Integer_O::create(acc);
 };
 
-LAMBDA(&rest integers);
-DECLARE();
-DOCSTRING("logeqv");
+CL_LAMBDA(&rest integers);
+CL_DECLARE();
+CL_DOCSTRING("logeqv");
 CL_DEFUN Integer_mv cl__logeqv(List_sp integers) {
-  _G();
   if (integers.nilp())
     return Integer_O::create((gc::Fixnum) - 1);
   Integer_sp ifirst = gc::As<Integer_sp>(oCar(integers));
@@ -225,11 +216,10 @@ CL_DEFUN Integer_mv cl__logeqv(List_sp integers) {
   return (Values(Integer_O::create(x)));
 };
 
-LAMBDA(a b);
-DECLARE();
-DOCSTRING("logandc1");
+CL_LAMBDA(a b);
+CL_DECLARE();
+CL_DOCSTRING("logandc1");
 CL_DEFUN T_mv cl__logandc1(Integer_sp a, Integer_sp b) {
-  _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class zb = clasp_to_mpz(b);
   mpz_class cza;
@@ -239,11 +229,10 @@ CL_DEFUN T_mv cl__logandc1(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
-LAMBDA(a b);
-DECLARE();
-DOCSTRING("logandc2");
+CL_LAMBDA(a b);
+CL_DECLARE();
+CL_DOCSTRING("logandc2");
 CL_DEFUN T_mv cl__logandc2(Integer_sp a, Integer_sp b) {
-  _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class zb = clasp_to_mpz(b);
   mpz_class czb;
@@ -253,11 +242,10 @@ CL_DEFUN T_mv cl__logandc2(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
-LAMBDA(a b);
-DECLARE();
-DOCSTRING("logorc1");
+CL_LAMBDA(a b);
+CL_DECLARE();
+CL_DOCSTRING("logorc1");
 CL_DEFUN T_mv cl__logorc1(Integer_sp a, Integer_sp b) {
-  _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class zb = clasp_to_mpz(b);
   mpz_class cza;
@@ -267,11 +255,10 @@ CL_DEFUN T_mv cl__logorc1(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
-LAMBDA(a b);
-DECLARE();
-DOCSTRING("logorc2");
+CL_LAMBDA(a b);
+CL_DECLARE();
+CL_DOCSTRING("logorc2");
 CL_DEFUN T_mv cl__logorc2(Integer_sp a, Integer_sp b) {
-  _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class zb = clasp_to_mpz(b);
   mpz_class czb;
@@ -281,22 +268,20 @@ CL_DEFUN T_mv cl__logorc2(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
-LAMBDA(a);
-DECLARE();
-DOCSTRING("lognot");
+CL_LAMBDA(a);
+CL_DECLARE();
+CL_DOCSTRING("lognot");
 CL_DEFUN T_mv cl__lognot(Integer_sp a) {
-  _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class cza;
   mpz_com(cza.get_mpz_t(), za.get_mpz_t());
   return (Values(Integer_O::create(cza)));
 };
 
-LAMBDA(a b);
-DECLARE();
-DOCSTRING("lognand");
+CL_LAMBDA(a b);
+CL_DECLARE();
+CL_DOCSTRING("lognand");
 CL_DEFUN T_mv cl__lognand(Integer_sp a, Integer_sp b) {
-  _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class zb = clasp_to_mpz(b);
   mpz_class zand;
@@ -306,11 +291,10 @@ CL_DEFUN T_mv cl__lognand(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
-LAMBDA(a b);
-DECLARE();
-DOCSTRING("lognor");
+CL_LAMBDA(a b);
+CL_DECLARE();
+CL_DOCSTRING("lognor");
 CL_DEFUN T_mv cl__lognor(Integer_sp a, Integer_sp b) {
-  _G();
   mpz_class za = clasp_to_mpz(a);
   mpz_class zb = clasp_to_mpz(b);
   mpz_class zor;
@@ -320,7 +304,8 @@ CL_DEFUN T_mv cl__lognor(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
-Number_sp contagen_add(Number_sp na, Number_sp nb) {
+CL_NAME("TWO-ARG-+");
+CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
     Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
@@ -447,7 +432,8 @@ Number_sp contagen_add(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_END();
 };
 
-Number_sp contagen_sub(Number_sp na, Number_sp nb) {
+CL_NAME("TWO-ARG--");
+CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
     Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
@@ -569,7 +555,8 @@ Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_END();
 }
 
-Number_sp contagen_mul(Number_sp na, Number_sp nb) {
+CL_NAME("TWO-ARG-*");
+CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
     mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
@@ -697,7 +684,8 @@ Complex_sp complex_divide(double ar, double ai,
   return Complex_O::create(DoubleFloat_O::create(z1 / absB), DoubleFloat_O::create(z2 / absB));
 }
 
-Number_sp contagen_div(Number_sp na, Number_sp nb) {
+CL_NAME("TWO-ARG-/");
+CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum:
   case_Bignum_v_Fixnum:
@@ -791,11 +779,11 @@ Number_sp contagen_div(Number_sp na, Number_sp nb) {
   SIMPLE_ERROR(BF("Add support to div numbers %s[%s] and %s[%s]") % _rep_(na) % na->_instanceClass()->classNameAsString() % _rep_(nb) % nb->_instanceClass()->classNameAsString());
 }
 
-#define ARGS_af__PLUS_ "(&rest numbers)"
-#define DECL_af__PLUS_ ""
-#define DOCS_af__PLUS_ "See CLHS: +"
-T_mv af__PLUS_(List_sp numbers) {
-  _G();
+#define ARGS_cl___PLUS_ "(&rest numbers)"
+#define DECL_cl___PLUS_ ""
+#define DOCS_cl___PLUS_ "See CLHS: +"
+CL_LAMBDA(&rest numbers);
+CL_DEFUN T_mv cl___PLUS_(List_sp numbers) {
   if (numbers.nilp())
     return (Values(make_fixnum(0)));
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
@@ -805,11 +793,10 @@ T_mv af__PLUS_(List_sp numbers) {
   return (Values(result));
 }
 
-LAMBDA(&rest numbers);
-DECLARE();
-DOCSTRING("See CLHS: *");
+CL_LAMBDA(&rest numbers);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS: *");
 CL_DEFUN T_mv cl___TIMES_(List_sp numbers) {
-  _G();
   if (numbers.nilp())
     return (Values(make_fixnum(1)));
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
@@ -819,11 +806,10 @@ CL_DEFUN T_mv cl___TIMES_(List_sp numbers) {
   return (Values(result));
 }
 
-LAMBDA(num &rest numbers);
-DECLARE();
-DOCSTRING("See CLHS: +");
+CL_LAMBDA(num &rest numbers);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS: +");
 CL_DEFUN T_mv cl___MINUS_(Number_sp num, List_sp numbers) {
-  _G();
   if (numbers.nilp()) {
     return (Values(clasp_negate(num)));
   }
@@ -834,11 +820,11 @@ CL_DEFUN T_mv cl___MINUS_(Number_sp num, List_sp numbers) {
   return (Values(result));
 }
 
-#define ARGS_af__DIVIDE_ "(num &rest numbers)"
-#define DECL_af__DIVIDE_ ""
-#define DOCS_af__DIVIDE_ "See CLHS: /"
-T_sp af__DIVIDE_(Number_sp num, List_sp numbers) {
-  _G();
+#define ARGS_cl___DIVIDE_ "(num &rest numbers)"
+#define DECL_cl___DIVIDE_ ""
+#define DOCS_cl___DIVIDE_ "See CLHS: /"
+CL_LAMBDA(num &rest numbers);
+CL_DEFUN T_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
   if (numbers.nilp()) {
     return (clasp_reciprocal(num));
   }
@@ -1111,7 +1097,6 @@ int basic_compare(Number_sp na, Number_sp nb) {
 }
 
 T_sp numbers_monotonic(int s, int t, List_sp args) {
-  _G();
   Number_sp c = gc::As<Number_sp>(oCar(args));
   Number_sp d;
   int dir;
@@ -1127,61 +1112,65 @@ T_sp numbers_monotonic(int s, int t, List_sp args) {
   return _lisp->_true();
 };
 
-bool two_arg__LT_(Number_sp x, Number_sp y) {
+CL_NAME("TWO-ARG-<");
+CL_DEFUN bool two_arg__LT_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) == -1;
 }
 
-bool two_arg__LE_(Number_sp x, Number_sp y) {
+CL_NAME("TWO-ARG-<=");
+CL_DEFUN bool two_arg__LE_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) != 1;
 }
 
-bool two_arg__GT_(Number_sp x, Number_sp y) {
+CL_NAME("TWO-ARG->");
+CL_DEFUN bool two_arg__GT_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) == 1;
 }
 
-bool two_arg__GE_(Number_sp x, Number_sp y) {
+CL_NAME("TWO-ARG->=");
+CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) != -1;
 }
 
-bool two_arg__EQ_(Number_sp x, Number_sp y) {
+CL_NAME("TWO-ARG-=");
+CL_DEFUN bool two_arg__EQ_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) == 0;
 }
 
-#define ARGS_af__LT_ "(&rest args)"
-#define DECL_af__LT_ ""
-#define DOCS_af__LT_ "LT less than function"
-T_sp af__LT_(List_sp args) {
-  _G();
+#define ARGS_cl___LT_ "(&rest args)"
+#define DECL_cl___LT_ ""
+#define DOCS_cl___LT_ "LT less than function"
+CL_LAMBDA(&rest args);
+CL_DEFUN T_sp cl___LT_(List_sp args) {
   return numbers_monotonic(-1, 1, args);
 };
 
-#define ARGS_af__GT_ "(&rest args)"
-#define DECL_af__GT_ ""
-#define DOCS_af__GT_ "GT less than function"
-T_mv af__GT_(List_sp args) {
-  _G();
+#define ARGS_cl___GT_ "(&rest args)"
+#define DECL_cl___GT_ ""
+#define DOCS_cl___GT_ "GT less than function"
+CL_LAMBDA(&rest args);
+CL_DEFUN T_mv cl___GT_(List_sp args) {
   return (Values(numbers_monotonic(1, 1, args)));
 };
 
-#define ARGS_af__LE_ "(&rest args)"
-#define DECL_af__LE_ ""
-#define DOCS_af__LE_ "LT less than function"
-T_mv af__LE_(List_sp args) {
-  _G();
+#define ARGS_cl___LE_ "(&rest args)"
+#define DECL_cl___LE_ ""
+#define DOCS_cl___LE_ "LT less than function"
+CL_LAMBDA(&rest args);
+CL_DEFUN T_mv cl___LE_(List_sp args) {
   return (Values(numbers_monotonic(-1, 0, args)));
 };
 
-#define ARGS_af__GE_ "(&rest args)"
-#define DECL_af__GE_ ""
-#define DOCS_af__GE_ "GT less than function"
-T_mv af__GE_(List_sp args) {
-  _G();
+#define ARGS_cl___GE_ "(&rest args)"
+#define DECL_cl___GE_ ""
+#define DOCS_cl___GE_ "GT less than function"
+CL_LAMBDA(&rest args);
+CL_DEFUN T_mv cl___GE_(List_sp args) {
   return (Values(numbers_monotonic(1, 0, args)));
 };
 
 /*! Return true if two numbers are equal otherwise false */
 bool basic_equalp(Number_sp na, Number_sp nb) {
-  _G();
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
     gctools::Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
@@ -1287,11 +1276,10 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_END();
 }
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("NE");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("NE");
 CL_DEFUN T_sp cl___NE_(List_sp args) {
-  _G();
   if (args.nilp())
     return _lisp->_true();
   Number_sp a = gc::As<Number_sp>(oCar(args));
@@ -1304,11 +1292,10 @@ CL_DEFUN T_sp cl___NE_(List_sp args) {
   return _lisp->_true();
 }
 
-LAMBDA(&rest args);
-DECLARE();
-DOCSTRING("EQ_");
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("EQ_");
 CL_DEFUN T_sp cl___EQ_(List_sp args) {
-  _G();
   if (args.nilp())
     return (_lisp->_true());
   Number_sp a = gc::As<Number_sp>(oCar(args));
@@ -1323,8 +1310,22 @@ CL_DEFUN T_sp cl___EQ_(List_sp args) {
 
 EXPOSE_CLASS(core, Number_O);
 
+SYMBOL_EXPORT_SC_(ClPkg, max);
+SYMBOL_EXPORT_SC_(ClPkg, min);
+SYMBOL_EXPORT_SC_(ClPkg, zerop);
+SYMBOL_SC_(CorePkg, fixnum_number_of_bits);
+SYMBOL_EXPORT_SC_(ClPkg, _LT_);
+SYMBOL_EXPORT_SC_(ClPkg, _GT_);
+SYMBOL_EXPORT_SC_(ClPkg, _LE_);
+SYMBOL_EXPORT_SC_(ClPkg, _GE_);
+SYMBOL_EXPORT_SC_(ClPkg, _EQ_);
+SYMBOL_EXPORT_SC_(ClPkg, _NE_);
+SYMBOL_EXPORT_SC_(ClPkg, _PLUS_);
+SYMBOL_EXPORT_SC_(ClPkg, _TIMES_);
+SYMBOL_EXPORT_SC_(ClPkg, _MINUS_);
+SYMBOL_EXPORT_SC_(ClPkg, _DIVIDE_);
+
 void Number_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<Number_O>()
       //	    .def("core:zerop",&Number_O::zerop)
       //	    .def("signum",&Number_O::signum)
@@ -1332,41 +1333,8 @@ void Number_O::exposeCando(Lisp_sp lisp) {
       //	    .def("core:onePlus",&Number_O::onePlus)
       //	    .def("core:oneMinus",&Number_O::oneMinus)
       ;
-  ;
-  af_def(CorePkg, "onePlus", &clasp_one_plus);
-  af_def(CorePkg, "oneMinus", &clasp_one_minus);
-  af_def(ClPkg, "abs", &clasp_abs);
-  af_def(ClPkg, "signum", &clasp_signum);
-  SYMBOL_EXPORT_SC_(ClPkg, max);
-  SYMBOL_EXPORT_SC_(ClPkg, min);
-  SYMBOL_EXPORT_SC_(ClPkg, zerop);
-
-  SYMBOL_SC_(CorePkg, fixnum_number_of_bits);
-
-  Defun(_LT_);
-  Defun(_GT_);
-  Defun(_LE_);
-  Defun(_GE_);
-
-  SYMBOL_EXPORT_SC_(ClPkg, _LT_);
-  SYMBOL_EXPORT_SC_(ClPkg, _GT_);
-  SYMBOL_EXPORT_SC_(ClPkg, _LE_);
-  SYMBOL_EXPORT_SC_(ClPkg, _GE_);
-  SYMBOL_EXPORT_SC_(ClPkg, _EQ_);
-  SYMBOL_EXPORT_SC_(ClPkg, _NE_);
-
-  SYMBOL_EXPORT_SC_(ClPkg, _PLUS_);
-  Defun(_PLUS_);
-
-  SYMBOL_EXPORT_SC_(ClPkg, _TIMES_);
-
-  SYMBOL_EXPORT_SC_(ClPkg, _MINUS_);
-
-  SYMBOL_EXPORT_SC_(ClPkg, _DIVIDE_);
-  Defun(_DIVIDE_);
 }
 void Number_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Number, "", "", _lisp);
 #endif
@@ -1426,12 +1394,11 @@ void Real_O::exposeCando(Lisp_sp lisp) {
       //	    .def("minusp",&Real_O::minusp)
       //      .def("plusp",&Real_O::plusp)
       ;
-  af_def(ClPkg, "minusp", &clasp_minusp);
-  af_def(ClPkg, "plusp", &clasp_plusp);
+//  af_def(ClPkg, "minusp", &clasp_minusp);
+//  af_def(ClPkg, "plusp", &clasp_plusp);
 }
 
 void Real_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Real, "", "", _lisp);
 #endif
@@ -1445,14 +1412,12 @@ void Float_O::exposeCando(Lisp_sp lisp) {
 }
 
 void Float_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Float, "", "", _lisp);
 #endif
 };
 
 Rational_sp Rational_O::create(mpz_class const &num, mpz_class const &denom) {
-  _G();
   mpz_class q, r;
   ASSERT(denom != 0);
   if (denom == 1) {
@@ -1466,7 +1431,6 @@ Rational_sp Rational_O::create(mpz_class const &num, mpz_class const &denom) {
 }
 
 Rational_sp Rational_O::create(Integer_sp num, Integer_sp denom) {
-  _G();
   return Rational_O::create(clasp_to_mpz(num), clasp_to_mpz(denom));
 }
 
@@ -1477,17 +1441,15 @@ void Rational_O::exposeCando(Lisp_sp lisp) {
 }
 
 void Rational_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Rational, "", "", _lisp);
 #endif
 };
 
-LAMBDA(num);
-DECLARE();
-DOCSTRING("Return a number that is NAN");
+CL_LAMBDA(num);
+CL_DECLARE();
+CL_DOCSTRING("Return a number that is NAN");
 CL_DEFUN DoubleFloat_mv core__nan() {
-  _G();
   DoubleFloat_sp rnan = DoubleFloat_O::create(NAN);
   return (Values(rnan));
 }
@@ -1495,12 +1457,10 @@ CL_DEFUN DoubleFloat_mv core__nan() {
 // --------------------------------------------------------------------------------
 
 T_sp Integer_O::makeIntegerType(gc::Fixnum low, gc::Fixnum hi) {
-  _G();
   return Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(low), Integer_O::create(hi));
 }
 
 Integer_sp Integer_O::create(float v) {
-  _G();
   if (v > (float)(std::numeric_limits<int>::min()) && v < (float)(std::numeric_limits<int>::max())) {
     return make_fixnum((int)v);
   }
@@ -1510,7 +1470,6 @@ Integer_sp Integer_O::create(float v) {
 }
 
 Integer_sp Integer_O::create(double v) {
-  _G();
   if (v > (double)(std::numeric_limits<int>::min()) && v < (double)(std::numeric_limits<int>::max())) {
     return make_fixnum((int)v);
   }
@@ -1520,7 +1479,6 @@ Integer_sp Integer_O::create(double v) {
 }
 
 Integer_sp Integer_O::createLongFloat(LongFloat v) {
-  _G();
   if (v > (LongFloat)(std::numeric_limits<int>::min()) && v < (LongFloat)(std::numeric_limits<int>::max())) {
     return make_fixnum((int)v);
   }
@@ -1538,7 +1496,6 @@ Integer_sp Integer_O::create(const mpz_class &v) {
 }
 
 Integer_sp Integer_O::create(gctools::Fixnum v) {
-  _G();
   if (v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum) {
     return make_fixnum(v);
   }
@@ -1548,7 +1505,7 @@ Integer_sp Integer_O::create(gctools::Fixnum v) {
 
 #if 0 
     Integer_sp Integer_O::create(uint v)
-    {_G();
+    {
 	ASSERTF(sizeof(uint)<sizeof(gctools::Fixnum),BF("It is assumed that every uint is an element of Fixnum"));
 #if 1 // when every uint is a Fixnum...
 	return make_fixnum((gctools::Fixnum)v);
@@ -1563,7 +1520,7 @@ Integer_sp Integer_O::create(gctools::Fixnum v) {
     }
 
     Integer_sp Integer_O::create(size_t v)
-    {_G();
+    {
 	if ( v <= MOST_POSITIVE_FIXNUM )
 	{
 	    return make_fixnum((int)v);
@@ -1587,7 +1544,7 @@ Integer_sp Integer_O::create(uint64_t v) {
 #endif
 #if 0
     Integer_sp Integer_O::create(LongLongInt v)
-    {_G();
+    {
 	if ( v >= MOST_NEGATIVE_FIXNUM && v <= MOST_POSITIVE_FIXNUM )
 	{
 	    return Integer_O::create((uint)v);
@@ -1608,28 +1565,28 @@ uint64_t Integer_O::as_uint64_() const {
 
 EXPOSE_CLASS(core, Integer_O);
 
+SYMBOL_EXPORT_SC_(ClPkg, logand);
+SYMBOL_EXPORT_SC_(ClPkg, logior);
+SYMBOL_EXPORT_SC_(ClPkg, logandc1);
+SYMBOL_EXPORT_SC_(ClPkg, logandc2);
+SYMBOL_EXPORT_SC_(ClPkg, logeqv);
+SYMBOL_EXPORT_SC_(ClPkg, lognand);
+SYMBOL_EXPORT_SC_(ClPkg, lognor);
+SYMBOL_EXPORT_SC_(ClPkg, lognot);
+SYMBOL_EXPORT_SC_(ClPkg, logorc1);
+SYMBOL_EXPORT_SC_(ClPkg, logorc2);
+SYMBOL_EXPORT_SC_(ClPkg, logxor);
+
 void Integer_O::exposeCando(Lisp_sp lisp) {
   class_<Integer_O>()
       // .def("evenp",&Integer_O::evenp)
       // .def("oddp",&Integer_O::oddp)
       ;
-  af_def(ClPkg, "evenp", &clasp_evenp);
-  af_def(ClPkg, "oddp", &clasp_oddp);
-  SYMBOL_EXPORT_SC_(ClPkg, logand);
-  SYMBOL_EXPORT_SC_(ClPkg, logior);
-  SYMBOL_EXPORT_SC_(ClPkg, logandc1);
-  SYMBOL_EXPORT_SC_(ClPkg, logandc2);
-  SYMBOL_EXPORT_SC_(ClPkg, logeqv);
-  SYMBOL_EXPORT_SC_(ClPkg, lognand);
-  SYMBOL_EXPORT_SC_(ClPkg, lognor);
-  SYMBOL_EXPORT_SC_(ClPkg, lognot);
-  SYMBOL_EXPORT_SC_(ClPkg, logorc1);
-  SYMBOL_EXPORT_SC_(ClPkg, logorc2);
-  SYMBOL_EXPORT_SC_(ClPkg, logxor);
+//  af_def(ClPkg, "evenp", &clasp_evenp);
+//  af_def(ClPkg, "oddp", &clasp_oddp);
 }
 
 void Integer_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Integer, "", "", _lisp);
 #endif
@@ -1641,7 +1598,6 @@ void Fixnum_dummy_O::exposeCando(Lisp_sp lisp) {
   core::class_<Fixnum_dummy_O>();
 }
 void Fixnum_dummy_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Fixnum, "", "", _lisp)
       //	    .def("valueAsString", &Fixnum_O::valueAsString )
@@ -1656,7 +1612,6 @@ void Fixnum_dummy_O::exposePython(Lisp_sp lisp) {
 #ifdef USE_HEAP_FIXNUM
 
 string Fixnum_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << this->_Value;
   return ss.str();
@@ -1719,22 +1674,18 @@ Bignum Fixnum_O::as_mpz_() const {
 }
 
 float Fixnum_O::as_float_() const {
-  _G();
   return (float)this->_Value;
 }
 
 double Fixnum_O::as_double_() const {
-  _G();
   return (double)this->_Value;
 }
 
 LongFloat Fixnum_O::as_long_float_() const {
-  _G();
   return (LongFloat) this->_Value;
 }
 
 Number_sp Fixnum_O::signum_() const {
-  _G();
   if (this->_Value == 0)
     return make_fixnum(0);
   if (this->_Value > 0)
@@ -1751,7 +1702,6 @@ Number_sp Fixnum_O::signum_() const {
 
 #if defined(OLD_SERIALIZE)
 void Fixnum_O::serialize(serialize::SNode node) {
-  _G();
   if (node->saving()) {
     //	    node.setObject(this->sharedThis<Fixnum_O>());
   } else {
@@ -1767,20 +1717,19 @@ void Fixnum_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 Fixnum_sp Fixnum_O::createFn(gctools::Fixnum nm) {
-  _G();
   GC_ALLOCATE_VARIADIC(Fixnum_O, v, nm);
   //	v->set(nm);
   return v;
 }
 #if 0
     Fixnum_sp make_fixnum(int nm)
-    {_G();
+    {
 	GC_ALLOCATE(Fixnum_O,v );
 	v->set(nm);
 	return v;
     }
     Fixnum_sp make_fixnum(uint nm)
-    {_G();
+    {
 	if ( nm > MOST_POSITIVE_FIXNUM )
 	{
 	    SIMPLE_ERROR(BF("uint value(%d) was too large/small to cast to int") % nm );
@@ -1801,7 +1750,6 @@ string Fixnum_O::asChar_() const {
 }
 
 bool Fixnum_O::eql_(T_sp obj) const {
-  _G();
   if (this->eq(obj))
     return true;
   if (obj.fixnump()) { // Fixnum_sp fobj = obj.asOrNull<Fixnum_O>()) {
@@ -1815,19 +1763,19 @@ bool Fixnum_O::eql_(T_sp obj) const {
 
 #if 0
     bool	Fixnum_O::eqn(T_sp obj) const
-    {_G();
+    {
 	if ( this->eq(obj) ) return true;
 	if ( core__double_float_p(obj) )
 	{
 	    DoubleFloat_sp t = obj.as<DoubleFloat_O>();
 	    return this->get() == t->get();
-	} else if ( af_fixnumP(obj) )
+	} else if ( core__fixnump(obj) )
 	{
 	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    bool b = (this->get() == t->get());
 	    LOG(BF("Compared if %d == %d -> %d") % this->get() % t->get() % b  );
 	    return b;
-	} else if ( af_bignumP(obj) )
+	} else if ( core__bignump(obj) )
 	{
 	    IMPLEMENT_ME();
 #if 0
@@ -1878,7 +1826,7 @@ Integer_sp ShortFloat_O::castToInteger() const {
 
 #if 0
     Number_sp ShortFloat_O::reciprocal() const
-    {_G();
+    {
 	return ShortFloat_O::create(1.0/this->_Value);
     }
 
@@ -1889,14 +1837,13 @@ Integer_sp ShortFloat_O::castToInteger() const {
 #endif
 #if 0
     string ShortFloat_O::valueAsString() const
-    {_G();
+    {
 	stringstream ss;
 	ss << this->_Value;
 	return ss.str();
     }
 #endif
 Number_sp ShortFloat_O::abs_() const {
-  _G();
   return ShortFloat_O::create(fabs(this->_Value));
 }
 
@@ -1909,7 +1856,6 @@ Number_sp ShortFloat_O::abs_() const {
 
 #if defined(OLD_SERIALIZE)
 void ShortFloat_O::serialize(serialize::SNode node) {
-  _G();
   if (node->saving()) {
     // node.setObject(this->sharedThis<ShortFloat_O>());
   } else {
@@ -1927,7 +1873,7 @@ void ShortFloat_O::archiveBase(ArchiveP node) {
 
 #if 0
     void ShortFloat_O::setFromString(const string& str)
-    {_G();
+    {
 	this->_Value = atof(str.c_str());
     }
 #endif
@@ -1954,7 +1900,7 @@ bool ShortFloat_O::eql_(T_sp obj) const {
 	{
 	    ShortFloat_sp t = obj.as<ShortFloat_O>();
 	    return this->get() == t->get();
-	} else if ( af_fixnumP(obj) )
+	} else if ( core__fixnump(obj) )
 	{
 	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
@@ -1965,7 +1911,6 @@ bool ShortFloat_O::eql_(T_sp obj) const {
 #endif
 
 string ShortFloat_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << this->_Value;
   return ss.str();
@@ -1979,7 +1924,6 @@ void ShortFloat_O::exposeCando(Lisp_sp lisp) {
 }
 
 void ShortFloat_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Real, "", "", _lisp);
 #endif
@@ -2024,7 +1968,7 @@ void ShortFloat_O::exposePython(Lisp_sp lisp) {
 
 #if defined(OLD_SERIALIZE)
     void SingleFloat_O::serialize(serialize::SNode node)
-    {_G();
+    {
 	if ( node->saving() )
 	{
 	    // node.setObject(this->sharedThis<SingleFloat_O>());
@@ -2052,7 +1996,7 @@ void ShortFloat_O::exposePython(Lisp_sp lisp) {
 
 #if 0
     void SingleFloat_O::setFromString(const string& str)
-    {_G();
+    {
 	this->_Value = atof(str.c_str());
     }
 #endif
@@ -2086,7 +2030,7 @@ void ShortFloat_O::exposePython(Lisp_sp lisp) {
 	{
 	    SingleFloat_sp t = obj.as<SingleFloat_O>();
 	    return this->get() == t->get();
-	} else if ( af_fixnumP(obj) )
+	} else if ( core__fixnump(obj) )
 	{
 	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
@@ -2098,26 +2042,26 @@ void ShortFloat_O::exposePython(Lisp_sp lisp) {
 
 #if 0
     Number_sp SingleFloat_O::reciprocal() const
-    {_G();
+    {
 	return clasp_make_single_float(1.0/this->_Value);
     }
 #endif
 
 #if 0
     string SingleFloat_O::valueAsString() const
-    {_G();
+    {
 	stringstream ss;
 	ss << this->_Value;
 	return ss.str();
     }
 #endif
     Number_sp SingleFloat_O::abs_() const
-    {_G();
+    {
 	return clasp_make_single_float(fabs(this->_Value));
     }
 
     string SingleFloat_O::__repr__() const
-    {_G();
+    {
 	stringstream ss;
 	ss << this->_Value;
 	return ss.str();
@@ -2133,7 +2077,6 @@ void SingleFloat_dummy_O::exposeCando(Lisp_sp lisp) {
 }
 
 void SingleFloat_dummy_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Real, "", "", _lisp);
 #endif
@@ -2142,7 +2085,6 @@ void SingleFloat_dummy_O::exposePython(Lisp_sp lisp) {
 //--------------------------------------------------
 
 Number_sp DoubleFloat_O::reciprocal_() const {
-  _G();
   return DoubleFloat_O::create(1.0 / this->_Value);
 }
 
@@ -2178,7 +2120,6 @@ Integer_sp DoubleFloat_O::castToInteger() const {
 
 #if defined(OLD_SERIALIZE)
 void DoubleFloat_O::serialize(serialize::SNode node) {
-  _G();
   if (node->saving()) {
     // node.setObject(this->sharedThis<DoubleFloat_O>());
   } else {
@@ -2196,7 +2137,7 @@ void DoubleFloat_O::archiveBase(ArchiveP node) {
 
 #if 0
     string DoubleFloat_O::valueAsString() const
-    {_G();
+    {
 	stringstream ss;
 	ss << this->_Value;
 	return ss.str();
@@ -2205,7 +2146,7 @@ void DoubleFloat_O::archiveBase(ArchiveP node) {
 
 #if 0
     void DoubleFloat_O::setFromString(const string& str)
-    {_G();
+    {
 	this->_Value = atof(str.c_str());
     }
 #endif
@@ -2238,7 +2179,7 @@ bool DoubleFloat_O::eql_(T_sp obj) const {
 	{
 	    DoubleFloat_sp t = obj.as<DoubleFloat_O>();
 	    return this->get() == t->get();
-	} else if ( af_fixnumP(obj) )
+	} else if ( core__fixnump(obj) )
 	{
 	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
 	    return this->get() == t->get();
@@ -2249,7 +2190,6 @@ bool DoubleFloat_O::eql_(T_sp obj) const {
 #endif
 
 string DoubleFloat_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << this->_Value;
   return ss.str();
@@ -2266,7 +2206,6 @@ void DoubleFloat_O::exposeCando(Lisp_sp lisp) {
 }
 
 void DoubleFloat_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Real, "", "", _lisp)
       .def("valueAsString", &DoubleFloat_O::valueAsString)
@@ -2321,7 +2260,6 @@ void LongFloat_O::archiveBase(ArchiveP node) {
 
 #if defined(OLD_SERIALIZE)
 void LongFloat_O::serialize(serialize::SNode node) {
-  _G();
   if (node->saving()) {
     // node.setObject(this->sharedThis<DoubleFloat_O>());
   } else {
@@ -2331,24 +2269,20 @@ void LongFloat_O::serialize(serialize::SNode node) {
 #endif
 
 void LongFloat_O::setFromString(const string &str) {
-  _G();
   this->_Value = atof(str.c_str());
 }
 
 Number_sp LongFloat_O::reciprocal_() const {
-  _G();
   return LongFloat_O::create(1.0 / this->_Value);
 }
 
 string LongFloat_O::valueAsString() const {
-  _G();
   stringstream ss;
   ss << this->_Value;
   return ss.str();
 }
 
 Number_sp LongFloat_O::abs() const {
-  _G();
   return LongFloat_O::create(fabs(this->_Value));
 }
 
@@ -2372,7 +2306,7 @@ bool LongFloat_O::eqn(T_sp obj) const {
   if (core__long_float_p(obj)) {
     LongFloat_sp t = obj.as<LongFloat_O>();
     return this->get() == t->get();
-  } else if (af_fixnumP(obj)) {
+  } else if (core__fixnump(obj)) {
     Fixnum_sp t = gc::As<Fixnum_sp>(obj);
     return this->get() == t->get();
   }
@@ -2385,7 +2319,6 @@ Number_sp LongFloat_O::signum() const {
 }
 
 string LongFloat_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << this->_Value;
   return ss.str();
@@ -2400,7 +2333,6 @@ void LongFloat_O::exposeCando(Lisp_sp lisp) {
 }
 
 void LongFloat_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Real, "", "", _lisp);
 #endif
@@ -2409,26 +2341,22 @@ void LongFloat_O::exposePython(Lisp_sp lisp) {
 // --------------------------------------------------------------------------------
 
 float Ratio_O::as_float_() const {
-  _G();
   double d = this->as_double_();
   return d;
 }
 
 double Ratio_O::as_double_() const {
-  _G();
   double d = clasp_to_double(this->_numerator);
   d /= clasp_to_double(this->_denominator);
   return d;
 }
 
 LongFloat Ratio_O::as_long_float_() const {
-  _G();
   double d = this->as_double_();
   return d;
 }
 
 string Ratio_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << _rep_(this->_numerator) << "/" << _rep_(this->_denominator);
   return ss.str();
@@ -2436,23 +2364,20 @@ string Ratio_O::__repr__() const {
 
 #if 0
     string Ratio_O::valueAsString() const
-    {_G();
+    {
 	return this->__repr__();
     }
 #endif
 
 mpz_class Ratio_O::numerator_as_mpz() const {
-  _G();
   return clasp_to_mpz(this->_numerator);
 }
 
 mpz_class Ratio_O::denominator_as_mpz() const {
-  _G();
   return clasp_to_mpz(this->_denominator);
 }
 
 Number_sp Ratio_O::abs_() const {
-  _G();
   return Ratio_O::create(clasp_abs(gc::As<Integer_sp>(this->_numerator)), this->_denominator);
 }
 
@@ -2478,13 +2403,12 @@ bool Ratio_O::eql_(T_sp obj) const {
 
 #if 0
     Number_sp Ratio_O::copy() const
-    {_G();
+    {
 	return Ratio_O::create(this->_numerator,this->_denominator);
     }
 #endif
 
 void Ratio_O::sxhash_(HashGenerator &hg) const {
-  _G();
   if (hg.isFilling())
     hg.hashObject(this->_numerator);
   if (hg.isFilling())
@@ -2492,7 +2416,6 @@ void Ratio_O::sxhash_(HashGenerator &hg) const {
 }
 
 Number_sp Ratio_O::signum_() const {
-  _G();
   ASSERT(clasp_plusp(this->_denominator));
   return clasp_signum(this->_numerator);
 }
@@ -2514,7 +2437,6 @@ void Ratio_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 void Ratio_O::setFromString(const string &str) {
-  _G();
   vector<string> parts = split(str, "/");
   ASSERT(parts.size() == 2);
   this->_numerator = Integer_O::create(parts[0]);
@@ -2527,7 +2449,6 @@ void Ratio_O::exposeCando(Lisp_sp lisp) {
 }
 
 void Ratio_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Real, "", "", _lisp);
 #endif
@@ -2543,7 +2464,6 @@ void Ratio_O::exposePython(Lisp_sp lisp) {
 #endif
 
 Number_sp Complex_O::signum_() const {
-  _G();
   return Complex_O::create(clasp_signum(this->_real),
                            clasp_signum(this->_imaginary));
 }
@@ -2564,20 +2484,18 @@ void Complex_O::archiveBase(ArchiveP node) {
 
 #if 0
     void Complex_O::setFromString(const string& str)
-    {_G();
+    {
 	IMPLEMENT_ME();
     }
 #endif
 
 string Complex_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << "#C(" << _rep_(this->_real) << " " << _rep_(this->_imaginary) << ")";
   return ss.str();
 }
 
 void Complex_O::sxhash_(HashGenerator &hg) const {
-  _G();
   if (hg.isFilling())
     hg.hashObject(this->_real);
   if (hg.isFilling())
@@ -2614,7 +2532,6 @@ bool Complex_O::eql_(T_sp o) const {
 }
 
 Number_sp Complex_O::abs_() const {
-  _G();
   IMPLEMENT_ME();
 }
 
@@ -2626,7 +2543,6 @@ void Complex_O::exposeCando(Lisp_sp lisp) {
 }
 
 void Complex_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Real, "", "", _lisp);
 #endif
@@ -2691,11 +2607,10 @@ Number_sp Complex_O::sqrt_() const {
   return cl__expt(this->asSmartPtr(), _lisp->plusHalf());
 }
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("sqrt");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("sqrt");
 CL_DEFUN Number_sp cl__sqrt(Number_sp x) {
-  _G();
   return clasp_sqrt(x);
 };
 
@@ -2755,11 +2670,10 @@ Number_sp Complex_O::sin_() const {
   return Complex_O::create(gc::As<Real_sp>(a), gc::As<Real_sp>(b));
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("sin");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("sin");
 CL_DEFUN Number_sp cl__sin(Number_sp x) {
-  _G();
   return clasp_sin(x);
 }
 
@@ -2817,11 +2731,10 @@ Number_sp Complex_O::cos_() const {
   return Complex_O::create(gc::As<Real_sp>(a), gc::As<Real_sp>(b));       // clasp_make_complex(a, b);
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("cos");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("cos");
 CL_DEFUN Number_sp cl__cos(Number_sp x) {
-  _G();
   return clasp_cos(x);
 }
 
@@ -2884,11 +2797,10 @@ Number_sp Complex_O::tan_() const {
   return clasp_divide(a, b);
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("tan");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("tan");
 CL_DEFUN Number_sp cl__tan(Number_sp x) {
-  _G();
   return clasp_tan(x);
 }
 
@@ -2947,11 +2859,10 @@ Number_sp Complex_O::sinh_() const {
   return Complex_O::create(gc::As<Real_sp>(a), gc::As<Real_sp>(b)); // clasp_make_complex(a, b);
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("sinh");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("sinh");
 CL_DEFUN Number_sp cl__sinh(Number_sp x) {
-  _G();
   return clasp_sinh(x);
 }
 
@@ -3011,11 +2922,10 @@ Number_sp Complex_O::cosh_() const {
   return Complex_O::create(gc::As<Real_sp>(a), gc::As<Real_sp>(b)); // clasp_make_complex(a, b);
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("cosh");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("cosh");
 CL_DEFUN Number_sp cl__cosh(Number_sp x) {
-  _G();
   return clasp_cosh(x);
 }
 
@@ -3067,11 +2977,10 @@ Number_sp Complex_O::tanh_() const {
   return clasp_divide(a, b);
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("tanh");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("tanh");
 CL_DEFUN Number_sp cl__tanh(Number_sp x) {
-  _G();
   return clasp_tanh(x);
 }
 
@@ -3104,11 +3013,10 @@ Number_sp Complex_O::conjugate_() const {
   return Complex_O::create(this->_real, gc::As<Real_sp>(clasp_negate(this->_imaginary)));
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("conjugate");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("conjugate");
 CL_DEFUN Number_sp cl__conjugate(Number_sp x) {
-  _G();
   return clasp_conjugate(x);
 }
 
@@ -3167,11 +3075,10 @@ Number_sp Complex_O::exp_() const {
   return clasp_times(x, cy);
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("exp");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("exp");
 CL_DEFUN Number_sp cl__exp(Number_sp x) {
-  _G();
   return clasp_exp(x);
 }
 
@@ -3294,11 +3201,10 @@ clasp_expt(Number_sp x, Number_sp y) {
   return z;
 }
 
-LAMBDA(x y);
-DECLARE();
-DOCSTRING("expt");
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("expt");
 CL_DEFUN Number_sp cl__expt(Number_sp x, Number_sp y) {
-  _G();
   return clasp_expt(x, y);
 }
 
@@ -3444,11 +3350,10 @@ Number_sp clasp_atan1(Number_sp y) {
   }
 }
 
-LAMBDA(x &optional y);
-DECLARE();
-DOCSTRING("atan");
+CL_LAMBDA(x &optional y);
+CL_DECLARE();
+CL_DOCSTRING("atan");
 CL_DEFUN T_sp cl__atan(Number_sp x, T_sp y) {
-  _G();
   /* INV: type check in clasp_atan() & clasp_atan2() */
   /* FIXME clasp_atan() and clasp_atan2() produce generic errors
 	   without recovery and function information. */
@@ -3607,21 +3512,19 @@ Number_sp Complex_O::log1p_() const {
   return clasp_log1_complex_inner(clasp_one_plus(this->real()), this->imaginary());
 }
 
-LAMBDA(number &optional base);
-DECLARE();
-DOCSTRING("Calculate the log of (number) to base (base).");
+CL_LAMBDA(number &optional base);
+CL_DECLARE();
+CL_DOCSTRING("Calculate the log of (number) to base (base).");
 CL_DEFUN Number_sp cl__log(Number_sp number, T_sp base) {
-  _G();
   if (base.nilp())
     return clasp_log1(number);
   return clasp_log2(gc::As<Number_sp>(base), number);
 }
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("log1p");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("log1p");
 CL_DEFUN Number_sp core__log1p(Number_sp arg) {
-  _G();
   return clasp_log1p(arg);
 };
 
@@ -3665,9 +3568,9 @@ cl_index clasp_toSize(T_sp f) {
 
 gctools::Fixnum
 fixint(T_sp x) {
-  if (af_fixnumP(x))
+  if (core__fixnump(x))
     return unbox_fixnum(gc::As<Fixnum_sp>(x));
-  if (af_bignumP(x)) {
+  if (core__bignump(x)) {
     IMPLEMENT_MEF(BF("Implement convert Bignum to fixint"));
 #if 0
         if (mpz_fits_slong_p(x->big.big_num)) {
@@ -3679,47 +3582,42 @@ fixint(T_sp x) {
   UNREACHABLE();
 }
 
-LAMBDA(i);
-DECLARE();
-DOCSTRING("integerLength");
+CL_LAMBDA(i);
+CL_DECLARE();
+CL_DOCSTRING("integerLength");
 CL_DEFUN gc::Fixnum cl__integer_length(Integer_sp i) {
-  _G();
   return clasp_integer_length(i);
 };
 
-void initialize_numbers() {
-  af_def(CorePkg, "negate", &clasp_negate);
-  SYMBOL_EXPORT_SC_(ClPkg, sqrt);
-  SYMBOL_EXPORT_SC_(ClPkg, sin);
-  SYMBOL_EXPORT_SC_(ClPkg, cos);
-  SYMBOL_EXPORT_SC_(ClPkg, tan);
-  SYMBOL_EXPORT_SC_(ClPkg, sinh);
-  SYMBOL_EXPORT_SC_(ClPkg, cosh);
-  SYMBOL_EXPORT_SC_(ClPkg, tanh);
-  SYMBOL_EXPORT_SC_(ClPkg, conjugate);
-  SYMBOL_EXPORT_SC_(ClPkg, log);
-  SYMBOL_EXPORT_SC_(CorePkg, log1p);
-  SYMBOL_EXPORT_SC_(ClPkg, expt);
-  SYMBOL_EXPORT_SC_(ClPkg, exp);
+SYMBOL_EXPORT_SC_(ClPkg, sqrt);
+SYMBOL_EXPORT_SC_(ClPkg, sin);
+SYMBOL_EXPORT_SC_(ClPkg, cos);
+SYMBOL_EXPORT_SC_(ClPkg, tan);
+SYMBOL_EXPORT_SC_(ClPkg, sinh);
+SYMBOL_EXPORT_SC_(ClPkg, cosh);
+SYMBOL_EXPORT_SC_(ClPkg, tanh);
+SYMBOL_EXPORT_SC_(ClPkg, conjugate);
+SYMBOL_EXPORT_SC_(ClPkg, log);
+SYMBOL_EXPORT_SC_(CorePkg, log1p);
+SYMBOL_EXPORT_SC_(ClPkg, expt);
+SYMBOL_EXPORT_SC_(ClPkg, exp);
+CL_LISPIFY_NAME(general-two-arg-_PLUS_);
+CL_EXTERN_DEFUN(&core::contagen_add);
+CL_LISPIFY_NAME(general-two-arg-_MINUS_);
+CL_EXTERN_DEFUN(&core::contagen_sub);
+CL_LISPIFY_NAME(general-two-arg-_TIMES_);
+CL_EXTERN_DEFUN(&core::contagen_mul);
+CL_LISPIFY_NAME(general-two-arg-_DIVIDE_);
+CL_EXTERN_DEFUN(&core::contagen_div);
+CL_LISPIFY_NAME(general-two-arg-_LT_);
+CL_EXTERN_DEFUN(&core::two_arg__LT_);
+CL_LISPIFY_NAME(general-two-arg-_LE_);
+CL_EXTERN_DEFUN(&core::two_arg__LE_);
+CL_LISPIFY_NAME(general-two-arg-_GT_);
+CL_EXTERN_DEFUN(&core::two_arg__GT_);
+CL_LISPIFY_NAME(general-two-arg-_GE_);
+CL_EXTERN_DEFUN(&core::two_arg__GE_);
+CL_LISPIFY_NAME(general-two-arg-_EQ_);
+CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
-  af_def(CorePkg, "two-arg-_PLUS_", &contagen_add);
-  af_def(CorePkg, "two-arg-_MINUS_", &contagen_sub);
-  af_def(CorePkg, "two-arg-_TIMES_", &contagen_mul);
-  af_def(CorePkg, "two-arg-_DIVIDE_", &contagen_div);
-  af_def(CorePkg, "two-arg-_LT_", &two_arg__LT_);
-  af_def(CorePkg, "two-arg-_LE_", &two_arg__LE_);
-  af_def(CorePkg, "two-arg-_GT_", &two_arg__GT_);
-  af_def(CorePkg, "two-arg-_GE_", &two_arg__GE_);
-  af_def(CorePkg, "two-arg-_EQ_", &two_arg__EQ_);
-
-  af_def(CorePkg, "general-two-arg-_PLUS_", &contagen_add);
-  af_def(CorePkg, "general-two-arg-_MINUS_", &contagen_sub);
-  af_def(CorePkg, "general-two-arg-_TIMES_", &contagen_mul);
-  af_def(CorePkg, "general-two-arg-_DIVIDE_", &contagen_div);
-  af_def(CorePkg, "general-two-arg-_LT_", &two_arg__LT_);
-  af_def(CorePkg, "general-two-arg-_LE_", &two_arg__LE_);
-  af_def(CorePkg, "general-two-arg-_GT_", &two_arg__GT_);
-  af_def(CorePkg, "general-two-arg-_GE_", &two_arg__GE_);
-  af_def(CorePkg, "general-two-arg-_EQ_", &two_arg__EQ_);
-}
 };

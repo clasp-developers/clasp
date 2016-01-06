@@ -40,7 +40,6 @@ EXPOSE_CLASS(core, ForwardReferencedClass_O);
 
 void ForwardReferencedClass_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<ForwardReferencedClass_O>()
-      //	.initArgs("(self)")
       ;
 }
 

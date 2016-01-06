@@ -228,9 +228,9 @@ change_precision(float_approx *approx, T_sp tposition, T_sp relativep) {
   }
 }
 
-LAMBDA(digits number position relativep);
-DECLARE();
-DOCSTRING("float_to_digits");
+CL_LAMBDA(digits number position relativep);
+CL_DECLARE();
+CL_DOCSTRING("float_to_digits");
 CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
                           T_sp relativep) {
   gctools::Fixnum k;
@@ -255,7 +255,6 @@ CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<R
   return Values(clasp_make_fixnum(k), digits);
 }
 
-void initialize_float_to_digits() {
   SYMBOL_EXPORT_SC_(CorePkg, float_to_digits);
-}
+
 };

@@ -719,7 +719,6 @@ void Warn(T_sp datum, List_sp arguments);
 
 void clasp_internal_error(const char *error);
 
-void initialize_exceptions();
 };
 
 #endif

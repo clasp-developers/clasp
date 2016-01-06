@@ -76,11 +76,11 @@ Setup the compilation-tool-database."
                                                            :source-location source-pos))))))
 
 ;;; Load a subset of the ASTs for quick testing.
-(progn
+(defun load-subset-asts ()
   (setf (clang-tool:source-namestrings *db*) (clang-tool:select-source-namestrings *db* ".*str\.cc.*"))
   (clang-tool:load-asts *db*))
 ;;; Run the matcher on the subset of ASTs
-(progn
+(defun run-matcher-on-subset ()
   (clang-tool:with-compilation-tool-database *db*
     (let ((*verbose-callback* t))
       (funcall #'find-def-initializer)
@@ -97,16 +97,18 @@ Setup the compilation-tool-database."
 
 
 ;;; Select just one of the source files for testing
+#+(or)
 (setf (clang-tool:source-namestrings *db*)
       (clang-tool:select-source-namestrings *db* ".*str\.cc.*$"))
 
 ;;; Select all of the source files
+#+(or)
 (setf (clang-tool:source-namestrings *db*)
       (clang-tool:select-source-namestrings *db*))
 
 ;;; Setup and run the multitool on the compilation-tool-database
 ;;; This will identify all of the class_<Foo_O>(...).def("bar",&Foo_O::bar);
-(progn
+(defun run-find-def ()
   (defparameter *tool* (clang-tool:make-multitool))
   (clang-tool:multitool-add-matcher
    *tool*
@@ -152,7 +154,7 @@ Setup the compilation-tool-database."
                                                       :source-location source))))
     ht))
 
-(defparameter *defs* (load-defs "exposed.dat"))
+#+(or)(defparameter *defs* (load-defs "exposed.dat"))
 
 (progn
   (defparameter *fix-method-matcher*
@@ -343,17 +345,17 @@ Setup the compilation-tool-database."
         (when (and *verbose-callback*
                    def-info
                    (not fixed-already))
-          (format t "Method is exposed: ~a~%" method-name))
-        (when (and def-info (not fixed-already))
-          (setf (gethash method-name *fixed*) t)
-          (clang-tool:mtag-replace
-           match-info
-           :whole
-           (lambda (minfo tag)
-             (let ((source (clang-tool:mtag-source minfo tag)))
-               (format nil "CL_NAME(~s);~%CL_DEFMETHOD ~a" (exposed-name def-info) source)))))))))
+          (format t "Exposed method: ( ~s ~s ~s)~%" method-name (exposed-name def-info) (clang-tool:mtag-loc-start match-info :whole))
+          (when (and def-info (not fixed-already))
+            (setf (gethash method-name *fixed*) t)
+            (clang-tool:mtag-replace
+             match-info
+             :whole
+             (lambda (minfo tag)
+               (let ((source (clang-tool:mtag-source minfo tag)))
+                 (format nil "CL_NAME(~s);~%CL_DEFMETHOD ~a" (exposed-name def-info) source))))))))))
 
-(progn
+(defun run-fix-matcher ()
   (defparameter *tool* (clang-tool:make-multitool))
   (clang-tool:multitool-add-matcher
    *tool*
@@ -370,3 +372,8 @@ Setup the compilation-tool-database."
   (format t "Done stage2~%"))
 
 
+
+(defun run-all ()
+  (run-find-def)
+  (save-defs "exposed.dat" *defs*)
+  (run-fix-matcher))

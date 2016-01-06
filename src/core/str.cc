@@ -54,11 +54,10 @@ string str_get(T_sp str) {
 T_sp str_create(const string &str) { return Str_O::create(str); };
 T_sp str_create(const char *str) { return Str_O::create(str); };
 
-LAMBDA(str1 start1 end1 str2 start2 end2);
-DECLARE();
-DOCSTRING("searchString");
+CL_LAMBDA(str1 start1 end1 str2 start2 end2);
+CL_DECLARE();
+CL_DOCSTRING("searchString");
 CL_DEFUN T_sp core__search_string(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_sp str2, Fixnum_sp start2, T_sp end2) {
-  _G();
   string s1 = str1->get().substr(unbox_fixnum(start1), end1.nilp() ? str1->get().size() : unbox_fixnum(gc::As<Fixnum_sp>(end1)));
   string s2 = str2->get().substr(unbox_fixnum(start2), end2.nilp() ? str2->get().size() : unbox_fixnum(gc::As<Fixnum_sp>(end2)));
   //        printf("%s:%d Searching for \"%s\" in \"%s\"\n", __FILE__, __LINE__, s1.c_str(), s2.c_str());
@@ -104,7 +103,6 @@ Str_sp Str_O::create(int numChars) {
 };
 
 Bignum Str_O::stringToBignum(const char *str) {
-  _G();
   Bignum bn = 0;
   for (const unsigned char *cp = (const unsigned char *)str; *cp; ++cp) {
     bn = (bn << 7) | ((*cp) & 0x7f);
@@ -116,10 +114,12 @@ T_sp Str_O::elementType() const {
   return cl::_sym_base_char;
 }
 
-#define ARGS_af_base_string_concatenate_ "(&va-rest args)"
-#define DECL_af_base_string_concatenate_ ""
-#define DOCS_af_base_string_concatenate_ "base_string_concatenate"
-T_sp af_base_string_concatenate_(T_sp args) {
+#define ARGS_core__base_string_concatenate "(&va-rest args)"
+#define DECL_core__base_string_concatenate ""
+#define DOCS_core__base_string_concatenate "base_string_concatenate"
+CL_LAMBDA(&va-rest args);
+CL_LISPIFY_NAME(base_string_concatenate);
+CL_DEFUN T_sp core__base_string_concatenate(T_sp args) {
   if (!args.valistp()) {
     SIMPLE_ERROR(BF("arg must be valist"));
   }
@@ -135,7 +135,6 @@ T_sp af_base_string_concatenate_(T_sp args) {
 };
 
 Str_sp Str_O::create(char initial_element, int dimension, T_sp seq) {
-  _G();
   GC_ALLOCATE(Str_O, str);
   str->_Contents = string(dimension, initial_element);
   if (seq.notnilp())
@@ -145,7 +144,6 @@ Str_sp Str_O::create(char initial_element, int dimension, T_sp seq) {
 
 #if defined(OLD_SERIALIZE)
 void Str_O::serialize(serialize::SNode node) {
-  _G();
   if (node->saving()) {
     // Do nothing
   } else {
@@ -173,7 +171,8 @@ Rational_sp Str_O::parseInteger() {
   return Integer_O::create(this->get());
 }
 
-DoubleFloat_sp Str_O::asReal() const {
+CL_LISPIFY_NAME("core:parse-real");
+CL_DEFMETHOD DoubleFloat_sp Str_O::asReal() const {
   DoubleFloat_sp n;
   n = DoubleFloat_O::create(atof(this->get().c_str()));
   return n;
@@ -219,7 +218,8 @@ T_sp Str_O::setf_aref(List_sp indices_val) {
   return this->setf_elt(index, oCadr(indices_val));
 }
 
-uint Str_O::countOccurances(const string &chars) {
+CL_LISPIFY_NAME("core:countOccurances");
+CL_DEFMETHOD uint Str_O::countOccurances(const string &chars) {
   _OF();
   ASSERT_eq(chars.size(), 1);
   uint c = 0;
@@ -231,40 +231,47 @@ uint Str_O::countOccurances(const string &chars) {
   return c;
 }
 
-string Str_O::left(gc::Fixnum num) const {
+CL_LISPIFY_NAME("core:left");
+CL_DEFMETHOD string Str_O::left(gc::Fixnum num) const {
   string res = this->get().substr(0, num);
   return res;
 }
 
-string Str_O::right(gc::Fixnum num) const {
+CL_LISPIFY_NAME("core:right");
+CL_DEFMETHOD string Str_O::right(gc::Fixnum num) const {
   string res = this->get().substr(this->size() - num, num);
   return res;
 }
 
-T_sp Str_O::find(const string &substring, gc::Fixnum start) {
+CL_LISPIFY_NAME("core:string-find");
+CL_DEFMETHOD T_sp Str_O::find(const string &substring, gc::Fixnum start) {
   size_t res = this->get().find(substring, start);
   if (res != string::npos)
     return Integer_O::create((gc::Fixnum)res);
   return _Nil<T_O>();
 }
 
-string Str_O::substr(gc::Fixnum start, gc::Fixnum num) const {
+CL_LISPIFY_NAME("core:substr");
+CL_DEFMETHOD string Str_O::substr(gc::Fixnum start, gc::Fixnum num) const {
   string res = this->get().substr(start, num);
   return res;
 }
 
-Symbol_sp Str_O::asSymbol() const {
+CL_LISPIFY_NAME("core:asSymbol");
+CL_DEFMETHOD Symbol_sp Str_O::asSymbol() const {
   Symbol_sp sym = _lisp->intern(this->get());
   return sym;
 }
 
-Symbol_sp Str_O::asKeywordSymbol() const {
+CL_LISPIFY_NAME("core:asKeywordSymbol");
+CL_DEFMETHOD Symbol_sp Str_O::asKeywordSymbol() const {
   Symbol_sp sym = _lisp->internKeyword(this->get());
   return sym;
 }
 
 
-List_sp Str_O::splitAtWhiteSpace() {
+CL_LISPIFY_NAME("core:splitAtWhiteSpace");
+CL_DEFMETHOD List_sp Str_O::splitAtWhiteSpace() {
   vector<string> parts = core::split(this->get(), " \n\t");
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   Cons_sp cur = first;
@@ -276,7 +283,8 @@ List_sp Str_O::splitAtWhiteSpace() {
   return oCdr(first);
 }
 
-List_sp Str_O::split(const string &chars) {
+CL_LISPIFY_NAME("core:split");
+CL_DEFMETHOD List_sp Str_O::split(const string &chars) {
   TESTING();
   vector<string> parts = core::split(this->get(), chars);
   List_sp result(_Nil<T_O>());
@@ -787,7 +795,6 @@ claspChar Str_O::scharSet(gc::Fixnum index, claspChar c) {
 }
 
 void Str_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end) {
-  _G();
   char celement = clasp_as_char(gc::As<Character_sp>(element));
   uint istart = unbox_fixnum(start);
   uint last = this->size();
@@ -856,8 +863,9 @@ void Str_O::__write__(T_sp stream) const {
 
 EXPOSE_CLASS(core, Str_O);
 
+  SYMBOL_SC_(CorePkg, base_string_concatenate);
+
 void Str_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<Str_O>()
       //	.def("valueAsStr", &Str_O::valueAsString )
       //	.def("setFromStr", &Str_O::setFromString )
@@ -878,13 +886,11 @@ void Str_O::exposeCando(Lisp_sp lisp) {
       .def("core:splitAtWhiteSpace", &Str_O::splitAtWhiteSpace)
       ;
 
-  SYMBOL_SC_(CorePkg, base_string_concatenate);
-  core::af_def(CorePkg, "base_string_concatenate", &af_base_string_concatenate_, ARGS_af_base_string_concatenate_, DECL_af_base_string_concatenate_, DOCS_af_base_string_concatenate_);
+//  core::af_def(CorePkg, "base_string_concatenate", &af_base_string_concatenate_, ARGS_af_base_string_concatenate_, DECL_af_base_string_concatenate_, DOCS_af_base_string_concatenate_);
 
 }
 
 void Str_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Str, "", "", _lisp)
       .def("valueAsStr", &Str_O::valueAsString)

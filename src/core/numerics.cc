@@ -45,7 +45,6 @@ THE SOFTWARE.
 namespace core {
 
 Bignum mixedBaseDigitsToBignum(const vector<int> &bases, const vector<int> &digits) {
-  _G();
   Bignum index;
   vector<int>::const_iterator bi, di;
   ASSERT(bases.size() == digits.size());
@@ -62,7 +61,6 @@ Bignum mixedBaseDigitsToBignum(const vector<int> &bases, const vector<int> &digi
 }
 
 Bignum numberOfIndicesForMixedBase(const vector<int> &bases) {
-  _G();
   vector<int>::const_iterator bi;
   Bignum numSeq;
   ASSERT(bases.size() >= 1);
@@ -79,7 +77,6 @@ Bignum numberOfIndicesForMixedBase(const vector<int> &bases) {
  * If the index can not be stored in a LongLongInt then return -1
  */
 vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &bases) {
-  _G();
   Bignum curIndex;
   vector<int> digits;
   vector<int>::const_reverse_iterator bi;
@@ -100,11 +97,10 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
   return digits;
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("getUniversalTime");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getUniversalTime");
 CL_DEFUN Integer_sp cl__get_universal_time() {
-  _G();
   time_t current_time;
   time(&current_time);
   Integer_sp offset = Integer_O::create(2208988800);
@@ -123,14 +119,14 @@ boost::normal_distribution<double> globalNormal01Distribution(0, 1);
 boost::variate_generator<boost::mt11213b &, boost::normal_distribution<double>>
     globalRandomRealNormal01Generator(globalRealRandomNormal01Producer, globalNormal01Distribution);
 
-void seedRandomNumberGenerators(uint i) {
-  _G();
+CL_LISPIFY_NAME(seedRandomNumberGenerators);
+CL_DEFUN void seedRandomNumberGenerators(uint i) {
   globalRealRandom01Producer.seed(static_cast<uint>(i));
   globalRealRandomNormal01Producer.seed(static_cast<uint>(i));
 }
 
-void seedRandomNumberGeneratorsUsingTime() {
-  _G();
+CL_LISPIFY_NAME(seedRandomNumberGeneratorsUsingTime);
+CL_DEFUN void seedRandomNumberGeneratorsUsingTime() {
   clock_t currentTime;
   int tt;
 #ifdef darwin
@@ -143,11 +139,13 @@ void seedRandomNumberGeneratorsUsingTime() {
   seedRandomNumberGenerators(tt);
 }
 
-double randomNumber01() {
+CL_LISPIFY_NAME(randomNumber01);
+CL_DEFUN double randomNumber01() {
   return globalRandomReal01Generator();
 }
 
-double randomNumberNormal01() {
+CL_LISPIFY_NAME(randomNumberNormal01);
+CL_DEFUN double randomNumberNormal01() {
   return globalRandomRealNormal01Generator();
 }
 
@@ -168,11 +166,11 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 
 #if 0
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("ceiling1");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("ceiling1");
 CL_DEFUN     Number_sp cl__ceiling1(Number_sp x)
-    {_G();
+    {
 	Number_sp v0, v1;
 	Number_mv mv_v1;
 	switch (clasp_t_of(x)) {
@@ -377,11 +375,11 @@ CL_DEFUN     Number_sp cl__ceiling1(Number_sp x)
 	ecl_return2(the_env, v0, v1);
     }
 
-LAMBDA(x &optional y);
-DECLARE();
-DOCSTRING("ceiling");
+CL_LAMBDA(x &optional y);
+CL_DECLARE();
+CL_DOCSTRING("ceiling");
 CL_DEFUN     Number_sp cl__ceiling(Number_sp x, Number_sp y)
-    {_G();
+    {
 	if ( y.nilp() ) return cl__ceiling1(x);
 	return cl__ceiling2(x,y);
     }
@@ -1251,113 +1249,96 @@ cl__integer_decode_float(T_sp x)
 }
 #endif
 
-  LAMBDA(arg);
-  DECLARE();
-  DOCSTRING("asinh");
-CL_DEFUN double core__asin(double x) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("asin");
+CL_DEFUN double core__num_op_asin(double x) {
   return asin(x);
 }
 
- LAMBDA(arg);
- DECLARE();
- DOCSTRING("acosh");
-CL_DEFUN double core__acos(double x) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("num-op-acos");
+CL_DEFUN double core__num_op_acos(double x) {
   return acos(x);
 }
 
- LAMBDA(arg);
- DECLARE();
- DOCSTRING("asinh");
-CL_DEFUN double core__asinh(double x) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("asinh");
+CL_DEFUN double core__num_op_asinh(double x) {
   return log(x + sqrt(1.0 + x * x));
 }
 
- LAMBDA(arg);
- DECLARE();
- DOCSTRING("acosh");
-CL_DEFUN double core__acosh(double x) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("num_op_acosh");
+CL_DEFUN double core__num_op_acosh(double x) {
   return log(x + sqrt((x - 1) * (x + 1)));
 }
 
- LAMBDA(arg);
- DECLARE();
- DOCSTRING("atanh");
-CL_DEFUN double core__atanh(double x) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("atanh");
+CL_DEFUN double core__num_op_atanh(double x) {
   return log((1 + x) / (1 - x)) / 2;
 }
 };
 
 namespace core {
 
-void exposeCando_Numerics() {
-  _G();
-  LOG(BF("Initializing numerics random"));
-  af_def(CorePkg, "seedRandomNumberGenerators", &seedRandomNumberGenerators);
-  af_def(CorePkg, "seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
-  af_def(CorePkg, "randomNumber01", &randomNumber01);
-  af_def(CorePkg, "randomNumberNormal01", &randomNumberNormal01);
-  SYMBOL_EXPORT_SC_(ClPkg, getUniversalTime);
+SYMBOL_EXPORT_SC_(ClPkg, getUniversalTime);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveSingleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeSingleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostPositiveSingleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostNegativeSingleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveShortFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeShortFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostPositiveShortFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostNegativeShortFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveDoubleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeDoubleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostPositiveDoubleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostNegativeDoubleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostPositiveLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostNegativeLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedSingleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedShortFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedDoubleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedSingleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedShortFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedDoubleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, pi);
 
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveSingleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeSingleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostPositiveSingleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostNegativeSingleFloat);
+void exposeCando_Numerics() {
   cl::_sym_mostPositiveSingleFloat->defconstant(clasp_make_single_float(FLT_MAX));
   cl::_sym_mostNegativeSingleFloat->defconstant(clasp_make_single_float(-FLT_MAX));
   cl::_sym_leastPositiveSingleFloat->defconstant(clasp_make_single_float(FLT_MIN));
   cl::_sym_leastNegativeSingleFloat->defconstant(clasp_make_single_float(-FLT_MIN));
-
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveShortFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeShortFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostPositiveShortFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostNegativeShortFloat);
   cl::_sym_mostPositiveShortFloat->defconstant(ShortFloat_O::create(FLT_MAX));
   cl::_sym_mostNegativeShortFloat->defconstant(ShortFloat_O::create(-FLT_MAX));
   cl::_sym_leastPositiveShortFloat->defconstant(ShortFloat_O::create(FLT_MIN));
   cl::_sym_leastNegativeShortFloat->defconstant(ShortFloat_O::create(-FLT_MIN));
-
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveDoubleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeDoubleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostPositiveDoubleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostNegativeDoubleFloat);
   cl::_sym_mostPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MAX));
   cl::_sym_mostNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MAX));
   cl::_sym_leastPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
   cl::_sym_leastNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
-
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveLongFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeLongFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostPositiveLongFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostNegativeLongFloat);
   cl::_sym_mostPositiveLongFloat->defconstant(DoubleFloat_O::create(DBL_MAX));
   cl::_sym_mostNegativeLongFloat->defconstant(DoubleFloat_O::create(-DBL_MAX));
   cl::_sym_leastPositiveLongFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
   cl::_sym_leastNegativeLongFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
-
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedSingleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedShortFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedDoubleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedLongFloat);
   cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastNegativeNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
   cl::_sym_leastNegativeNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
-
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedSingleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedShortFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedDoubleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedLongFloat);
   cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastPositiveNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
   cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
-
-  SYMBOL_EXPORT_SC_(ClPkg, pi);
   cl::_sym_pi->defconstant(DoubleFloat_O::create(3.14159265358979323846264338));
 }
 

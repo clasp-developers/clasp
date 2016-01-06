@@ -70,11 +70,10 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("isString");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("isString");
 CL_DEFUN void core__is_string(T_sp arg) {
-  _G();
   if (Str_sp s = arg.asOrNull<Str_O>()) {
     printf("The object |%s| is a string\n", s->get().c_str());
   } else {
@@ -82,11 +81,10 @@ CL_DEFUN void core__is_string(T_sp arg) {
   }
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("isArray");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("isArray");
 CL_DEFUN void core__is_array(T_sp arg) {
-  _G();
   if (Array_sp s = arg.asOrNull<Array_O>()) {
     printf("The object |%s| is an array\n", _rep_(s).c_str());
   } else {
@@ -94,11 +92,10 @@ CL_DEFUN void core__is_array(T_sp arg) {
   }
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("testVal");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("testVal");
 CL_DEFUN T_sp core__test_val(T_sp v) {
-  _G();
   if (v.fixnump()) { // Fixnum_sp fn = v.asOrNull<Fixnum_O>() ) {
     return Str_O::create("val is fixnum");
   } else if (Symbol_sp sym = v.asOrNull<Symbol_O>()) {
@@ -108,10 +105,8 @@ CL_DEFUN T_sp core__test_val(T_sp v) {
   return Str_O::create("arg didn't match");
 };
 
-void initialize_testing() {
   SYMBOL_EXPORT_SC_(CorePkg, isString);
   SYMBOL_EXPORT_SC_(CorePkg, isArray);
   SYMBOL_EXPORT_SC_(CorePkg, testVal);
-}
 
 }; /* core */

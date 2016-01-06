@@ -27,6 +27,7 @@ THE SOFTWARE.
 #ifndef extensionPackage_fwd_H
 #define extensionPackage_fwd_H
 
+PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(ext, ExtPkg, "EXT")
 
 #endif

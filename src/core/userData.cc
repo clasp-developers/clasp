@@ -36,7 +36,6 @@ void LightUserData_O::exposeCando(core::Lisp_sp e) {
 }
 
 void LightUserData_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON //[
   PYTHON_CLASS(CorePkg, LightUserData, "", "", _lisp);
 #endif //]
@@ -49,7 +48,6 @@ void UserData_O::exposeCando(core::Lisp_sp e) {
 }
 
 void UserData_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON //[
   PYTHON_CLASS(CorePkg, UserData, "", "", _lisp);
 #endif //]

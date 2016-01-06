@@ -38,16 +38,6 @@ namespace kw {
 
 SYMBOL_EXPORT_SC_(KeywordPkg, eof);
 
-#pragma GCC visibility push(default)
-#define KeywordPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef KeywordPkg_SYMBOLS
-#pragma GCC visibility pop
-
 core::Package_sp initialize_keywordPackage() {
   list<string> lnicknames = {"KW"};
   ;

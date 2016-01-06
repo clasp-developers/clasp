@@ -50,7 +50,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, podSymbolMap);
 EXPOSE_CLASS(core, SNode_O);
 
 SNode_sp SNode_O::makeAppropriateSNode(T_sp val, HashTable_sp objToSNodeMap) {
-  _G();
   if (val.nilp() ||
       gc::IsA<Fixnum_sp>(val) ||
       gc::IsA<Number_sp>(val) ||
@@ -70,7 +69,6 @@ SNode_sp SNode_O::makeAppropriateSNode(T_sp val, HashTable_sp objToSNodeMap) {
 }
 
 void SNode_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<SNode_O>()
       .def("core:setNodeKind", &SNode_O::setKind)
       .def("core:getNodeKind", &SNode_O::getKind)
@@ -84,7 +82,10 @@ void SNode_O::exposeCando(Lisp_sp lisp) {
       .def("core:object", &SNode_O::object);
 }
 void SNode_O::exposePython(Lisp_sp lisp) {
-  _G();
+}
+
+CL_DEFUN BranchSNode_sp core__make_branch_snode() {
+  return BranchSNode_O::create();
 }
 
 SNode_sp SNode_O::createBranchSNode(Symbol_sp kind) {
@@ -104,13 +105,11 @@ void SNode_O::needsFinalization() const {
 }
 
 BranchSNode_sp BranchSNode_O::create() {
-  _G();
   GC_ALLOCATE(BranchSNode_O, v);
   return v;
 }
 
 BranchSNode_sp BranchSNode_O::create(Symbol_sp kind, List_sp plist, Vector_sp data) {
-  _G();
   GC_ALLOCATE(BranchSNode_O, v);
   v->_Kind = kind;
   v->_SNodePList = plist;
@@ -121,11 +120,9 @@ BranchSNode_sp BranchSNode_O::create(Symbol_sp kind, List_sp plist, Vector_sp da
 EXPOSE_CLASS(core, BranchSNode_O);
 
 void BranchSNode_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<BranchSNode_O>("core:make-branch-snode");
 }
 void BranchSNode_O::exposePython(Lisp_sp lisp) {
-  _G();
 }
 
 T_sp BranchSNode_O::object() const {
@@ -237,7 +234,6 @@ void BranchSNode_O::saveVector(gctools::Vec0<T_sp> const &vec) {
 }
 
 T_sp BranchSNode_O::createObject(HashTable_sp snodeToObject) {
-  _G();
   SYMBOL_EXPORT_SC_(CorePkg, serialize);
   Class_sp cl = cl__find_class(this->_Kind);
   BranchSNode_sp me = this->asSmartPtr();
@@ -290,7 +286,6 @@ SNode_sp BranchSNode_O::childWithUniqueId(Symbol_sp uid) const {
 }
 
 LeafSNode_sp LeafSNode_O::create(T_sp obj) {
-  _G();
   GC_ALLOCATE(LeafSNode_O, v);
   v->_Object = obj;
   return v;
@@ -299,11 +294,9 @@ LeafSNode_sp LeafSNode_O::create(T_sp obj) {
 EXPOSE_CLASS(core, LeafSNode_O);
 
 void LeafSNode_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<LeafSNode_O>();
 }
 void LeafSNode_O::exposePython(Lisp_sp lisp) {
-  _G();
 }
 
 string LeafSNode_O::__repr__() const {
@@ -315,11 +308,9 @@ Archive_O::Archive_O() : _Version(0), _TopNode(_Nil<T_O>()), _NextUniqueId(0){};
 EXPOSE_CLASS(core, Archive_O);
 
 void Archive_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<Archive_O>();
 }
 void Archive_O::exposePython(Lisp_sp lisp) {
-  _G();
 }
 
 string Archive_O::__repr__() const {
@@ -332,12 +323,10 @@ string Archive_O::__repr__() const {
 EXPOSE_CLASS(core, SaveArchive_O);
 
 void SaveArchive_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<SaveArchive_O>("make-save-archive")
       .def("put", &SaveArchive_O::put);
 }
 void SaveArchive_O::exposePython(Lisp_sp lisp) {
-  _G();
 }
 
 Archive_sp Archive_O::currentArchive() {
@@ -369,7 +358,8 @@ SaveArchive_sp Archive_O::currentSaveArchive() {
   SIMPLE_ERROR(BF("The value of *serializer-archive* is not a save-archive"));
 }
 
-void SaveArchive_O::put(Symbol_sp name, T_sp val) {
+CL_LISPIFY_NAME("put");
+CL_DEFMETHOD void SaveArchive_O::put(Symbol_sp name, T_sp val) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
   this->_TopNode->addAttribute(name, val);
 }
@@ -387,7 +377,6 @@ SNode_sp SaveArchive_O::getOrCreateSNodeForObjectIncRefCount(T_sp val) {
 EXPOSE_CLASS(core, LoadArchive_O);
 
 void LoadArchive_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<LoadArchive_O>()
       .def("loadArchive-keys", &LoadArchive_O::keys)
       .def("loadArchive-get", &LoadArchive_O::get)
@@ -395,7 +384,6 @@ void LoadArchive_O::exposeCando(Lisp_sp lisp) {
       .def("loadArchive-getContents", &LoadArchive_O::getContents);
 }
 void LoadArchive_O::exposePython(Lisp_sp lisp) {
-  _G();
 }
 
 void LoadArchive_O::initialize() {
@@ -405,7 +393,6 @@ void LoadArchive_O::initialize() {
 }
 
 void LoadArchive_O::addNodeToFinalize(SNode_sp node) {
-  _G();
   IMPLEMENT_ME();
 }
 
@@ -439,7 +426,6 @@ T_sp LoadArchive_O::loadObjectDirectly(SNode_sp node) {
 }
 
 void LoadArchive_O::createContents() {
-  _G();
   this->_ObjectForSNode = HashTable_O::create(cl::_sym_eq);
   this->loadObjectDirectly(this->_TopNode);
 }
@@ -449,7 +435,6 @@ void LoadArchive_O::needsFinalization(SNode_sp node) {
 }
 
 void LoadArchive_O::finalizeObjects() {
-  _G();
   T_sp obj;
   this->_NodesToFinalize->mapHash([&obj](T_sp node, T_sp dummy) {
                 gc::As<SNode_sp>(node)->object()->loadFinalize(gc::As<SNode_sp>(node));
@@ -462,8 +447,8 @@ void LoadArchive_O::finalizeObjects() {
 #endif
 }
 
-bool LoadArchive_O::contains(Symbol_sp sym) {
-  _G();
+CL_LISPIFY_NAME("loadArchive-contains");
+CL_DEFMETHOD bool LoadArchive_O::contains(Symbol_sp sym) {
   if (this->_TopNode.unboundp())
     SIMPLE_ERROR(BF("No archive is loaded"));
   BranchSNode_sp bnode = this->_TopNode;
@@ -474,8 +459,8 @@ bool LoadArchive_O::contains(Symbol_sp sym) {
   return true;
 }
 
-T_sp LoadArchive_O::get(Symbol_sp sym) {
-  _G();
+CL_LISPIFY_NAME("loadArchive-get");
+CL_DEFMETHOD T_sp LoadArchive_O::get(Symbol_sp sym) {
   if (this->_TopNode.unboundp())
     SIMPLE_ERROR(BF("No archive is loaded"));
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
@@ -487,15 +472,16 @@ T_sp LoadArchive_O::get(Symbol_sp sym) {
   return property->object();
 }
 
-List_sp LoadArchive_O::getContents() {
-  _G();
+CL_LISPIFY_NAME("loadArchive-getContents");
+CL_DEFMETHOD List_sp LoadArchive_O::getContents() {
   if (this->_TopNode.unboundp())
     SIMPLE_ERROR(BF("No archive is loaded"));
   BranchSNode_sp bnode = this->_TopNode;
   return bnode->_SNodePList;
 }
 
-List_sp LoadArchive_O::keys() const {
+CL_LISPIFY_NAME("loadArchive-keys");
+CL_DEFMETHOD List_sp LoadArchive_O::keys() const {
   if (this->_TopNode.unboundp())
     SIMPLE_ERROR(BF("There is no archive loaded"));
   return this->_TopNode->keys();

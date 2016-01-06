@@ -54,11 +54,11 @@ public:
   }
   List_sp classified() const;
   inline bool isDefined() const { return (this->_ArgTarget) && (this->_ArgTarget.notnilp()); };
-  inline bool _symbolP() const { return cl_symbolp(this->_ArgTarget); };
+  inline bool _symbolP() const { return cl__symbolp(this->_ArgTarget); };
   Symbol_sp symbol() const;
   inline bool _lambdaListHandlerP() const { return core__lambda_list_handler_p(this->_ArgTarget); };
   LambdaListHandler_sp lambdaListHandler() const;
-  inline bool _lambdaListP() const { return cl_consp(this->_ArgTarget); };
+  inline bool _lambdaListP() const { return cl__consp(this->_ArgTarget); };
   List_sp lambdaList() const;
   inline bool targetIsLexical() const { return this->_ArgTargetFrameIndex != SPECIAL_TARGET; }
   virtual string asString() const;

@@ -42,16 +42,16 @@ THE SOFTWARE.
 
 namespace core {
 
-LAMBDA();
-DECLARE();
-DOCSTRING("makeSmallMap");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("makeSmallMap");
 CL_DEFUN SmallMap_sp core__make_small_map() {
-  _G();
   GC_ALLOCATE(SmallMap_O, sm);
   return sm;
 };
 
-T_sp SmallMap_O::find(T_sp key, T_sp defval) {
+CL_LISPIFY_NAME("map_find");
+CL_DEFMETHOD T_sp SmallMap_O::find(T_sp key, T_sp defval) {
   map_type::iterator it = this->map.find(key);
   if (it == this->map.end()) {
     return defval;
@@ -59,7 +59,8 @@ T_sp SmallMap_O::find(T_sp key, T_sp defval) {
   return (*it).second;
 }
 
-void SmallMap_O::setf(T_sp key, T_sp val) {
+CL_LISPIFY_NAME("map_setf");
+CL_DEFMETHOD void SmallMap_O::setf(T_sp key, T_sp val) {
   pair<map_type::iterator, bool> found = this->map.insert(std::make_pair(key, val));
   found.first->second = val;
 }
@@ -73,7 +74,6 @@ void SmallMap_O::exposeCando(Lisp_sp lisp) {
 }
 
 void SmallMap_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, SmallMap, "", "", _lisp);
 #endif

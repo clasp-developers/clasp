@@ -109,7 +109,6 @@ void MultiStringBuffer_O::exposeCando(Lisp_sp e) {
 }
 
 void MultiStringBuffer_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON //[
   PYTHON_CLASS(CorePkg, MultiStringBuffer, "", "", _lisp);
 #endif //]
@@ -164,7 +163,6 @@ uint MultiStringBuffer_O::addNumberOfCharacters(const char *str, uint num) {
 }
 
 uint MultiStringBuffer_O::addCharacters(const char *str) {
-  _G();
   LOG(BF("Adding characters(%s)") % str);
   if (this->_Blocks.size() == 0) {
     MultiStringBlock *block = new MultiStringBlock(0);
@@ -198,7 +196,8 @@ uint MultiStringBuffer_O::addCharacters(const char *str) {
   return blockIndex + index;
 }
 
-uint MultiStringBuffer_O::addString(const string &str) {
+CL_LISPIFY_NAME("addString");
+CL_DEFMETHOD uint MultiStringBuffer_O::addString(const string &str) {
   return this->addCharacters(str.c_str());
 }
 
@@ -214,7 +213,8 @@ const char *MultiStringBuffer_O::getCharacters(uint index) {
   return block.getString(offset);
 }
 
-string MultiStringBuffer_O::getString(uint index) {
+CL_LISPIFY_NAME("getString");
+CL_DEFMETHOD string MultiStringBuffer_O::getString(uint index) {
   const char *chars = this->getCharacters(index);
   string result = chars;
   return result;
@@ -230,7 +230,8 @@ void MultiStringBuffer_O::dumpToStream(std::ostream &ss) {
   }
 }
 
-void MultiStringBuffer_O::dump() {
+CL_LISPIFY_NAME("dump");
+CL_DEFMETHOD void MultiStringBuffer_O::dump() {
   stringstream ss;
   this->dumpToStream(ss);
   printf("%s\n", ss.str().c_str());

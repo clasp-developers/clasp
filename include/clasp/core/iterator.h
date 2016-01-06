@@ -38,8 +38,7 @@ namespace core {
 
 SMART(Iterator);
 class Iterator_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, Iterator_O, "Iterator");
+  LISP_CLASS(core, CorePkg, Iterator_O, "Iterator",T_O);
 
 public:
 #if defined(XML_ARCHIVE)
@@ -60,20 +59,25 @@ public:
   virtual size_t templatedSizeof() const { SUBIMP(); };
 
   // Old way of doing things
-  virtual void first() {
+CL_LISPIFY_NAME("core:begin");
+CL_DEFMETHOD   virtual void first() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
-  virtual void next() {
+CL_LISPIFY_NAME("next");
+CL_DEFMETHOD   virtual void next() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
-  virtual bool isDone() {
+CL_LISPIFY_NAME("isDone");
+CL_DEFMETHOD   virtual bool isDone() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
-  virtual bool notDone() { return !this->isDone(); };
-  virtual T_sp currentObject() {
+CL_LISPIFY_NAME("notDone");
+CL_DEFMETHOD   virtual bool notDone() { return !this->isDone(); };
+CL_LISPIFY_NAME("currentObject");
+CL_DEFMETHOD   virtual T_sp currentObject() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };

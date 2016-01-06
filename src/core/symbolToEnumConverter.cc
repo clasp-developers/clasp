@@ -45,14 +45,12 @@ void SymbolToEnumConverter_O::exposeCando(Lisp_sp e) {
       .def("enumIndexForSymbol", &SymbolToEnumConverter_O::enumIndexForSymbol);
 }
 void SymbolToEnumConverter_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON //[
   PYTHON_CLASS(CorePkg, SymbolToEnumConverter, "", "", _lisp);
 #endif //]
 }
 
 SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string &whatDoesEnumRepresent) {
-  _G();
   SymbolToEnumConverter_sp c = SymbolToEnumConverter_O::create();
   c->setWhatTheEnumsRepresent(whatDoesEnumRepresent);
   return c;
@@ -88,7 +86,8 @@ Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_sp asym, Symbol_sp c
   return sym;
 }
 
-int SymbolToEnumConverter_O::enumIndexForSymbol(Symbol_sp sym) {
+CL_LISPIFY_NAME("enumIndexForSymbol");
+CL_DEFMETHOD int SymbolToEnumConverter_O::enumIndexForSymbol(Symbol_sp sym) {
   _OF();
   if (!this->_SymbolToEnum->contains(sym)) {
     SIMPLE_ERROR(BF("Could not find %s in symbol-to-enum-converter: %s") % _rep_(sym) % _rep_(this->sharedThis<SymbolToEnumConverter_O>()));
@@ -150,7 +149,6 @@ bool SymbolToEnumConverter_O::recognizesSymbol(Symbol_sp sym) {
 }
 
 string SymbolToEnumConverter_O::__repr__() const {
-  _G();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
   ss << " :info " << this->_WhatTheEnumsRepresent.c_str() << " ";

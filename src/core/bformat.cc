@@ -40,11 +40,10 @@ namespace core {
 
 /*! Boost-format interface - works like CL:format but uses boost format strings
  */
-LAMBDA(destination control &rest args);
-DECLARE();
-DOCSTRING("Like CL format but uses C/boost format strings");
+CL_LAMBDA(destination control &rest args);
+CL_DECLARE();
+CL_DOCSTRING("Like CL format but uses C/boost format strings");
 CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp args) {
-  _G();
   T_sp output;
   if (destination.nilp()) {
     output = _lisp->bformatStringOutputStream();
@@ -67,7 +66,7 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp arg
       } else if (fobj.single_floatp()) {
         SingleFloat_sp ff = gc::As<SingleFloat_sp>(fobj);
         fmter % unbox_single_float(ff);
-      } else if (af_bignumP(fobj)) {
+      } else if (core__bignump(fobj)) {
         Bignum_sp flli = gc::As<Bignum_sp>(fobj);
         stringstream ss;
         ss << clasp_to_mpz(flli);
@@ -111,16 +110,15 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp arg
   return _Nil<T_O>();
 }
 
-LAMBDA(destination control &rest args);
-DECLARE();
-DOCSTRING("Subset of CL format - this does the job until the real format is installed");
+CL_LAMBDA(destination control &rest args);
+CL_DECLARE();
+CL_DOCSTRING("Subset of CL format - this does the job until the real format is installed");
 CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
-  _G();
   stringstream tf;
   if (cl__functionp(control)) {
     SIMPLE_ERROR(BF("Add support for functions as FORMAT controls"));
   }
-  if (!af_stringP(control)) {
+  if (!cl__stringp(control)) {
     SIMPLE_ERROR(BF("FORMAT control must be a string or a function - you gave: %s") % _rep_(control));
   }
   string ts = gc::As<Str_sp>(control)->get();
@@ -167,10 +165,8 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
   return core__bformat(destination, tf.str(), args);
 };
 
-void initialize_bformat(Lisp_sp lisp) {
-  _G();
   SYMBOL_SC_(CorePkg, bformat);
   SYMBOL_EXPORT_SC_(ClPkg, format);
-}
+
 
 }; /* (>>>namespace<<<) */

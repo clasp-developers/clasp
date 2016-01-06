@@ -38,8 +38,7 @@ namespace core {
 
 FORWARD(WeakHashTable);
 class WeakHashTable_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, WeakHashTable_O, "WeakHashTable");
+  LISP_CLASS(core, CorePkg, WeakHashTable_O, "WeakHashTable",T_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
@@ -63,8 +62,7 @@ namespace core {
 
 FORWARD(WeakKeyHashTable);
 class WeakKeyHashTable_O : public WeakHashTable_O {
-  LISP_BASE1(WeakHashTable_O);
-  LISP_CLASS(core, CorePkg, WeakKeyHashTable_O, "WeakKeyHashTable");
+  LISP_CLASS(core, CorePkg, WeakKeyHashTable_O, "WeakKeyHashTable",WeakHashTable_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif  // defined(XML_ARCHIVE)

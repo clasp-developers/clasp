@@ -1,8 +1,8 @@
 #! /bin/bash -f
 #
 # grovel project directories for symbols and classes
-#
-(export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/classGroveler.py include/generated/initClasses_inc.h `cat ../../src/main/project-directories.config` 2>registerClasses.log)
+#  NOTE: As of Jan 4 2016 we don't need to use the python scraper anymore
+#(export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/classGroveler.py include/generated/initClasses_inc.h `cat ../../src/main/project-directories.config` 2>registerClasses.log)
 
 #
 # Run the new SBCL scraper

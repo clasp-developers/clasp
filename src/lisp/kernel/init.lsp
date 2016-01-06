@@ -7,7 +7,6 @@
 
 ;;(setq *features* (cons :dbg-print *features*))
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
-(export '*echo-repl-tpl-read*)
 (export '(*echo-repl-tpl-read* 
           run-repl 
           *load-current-source-file-info* 
@@ -56,8 +55,7 @@
 ;; Set up a few things for the CLOS package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :clos))
-(export '(standard-class
-          ))
+(export '(standard-class))
 
 ;; Setup a few things for the GRAY streams package
 (eval-when (:execute :compile-toplevel :load-toplevel)
@@ -225,9 +223,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
      *read-suppress*
      *readtable*
      si::*print-package*
-     si::*print-structure*
+     si:*print-structure*
      si::*sharp-eq-context*
-     si::*circle-counter*)
+     si:*circle-counter*)
    nil                              ;;  *pprint-dispatch-table*
    t                                ;;  *print-array*
    10                               ;;  *print-base*

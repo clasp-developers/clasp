@@ -171,11 +171,11 @@ T_mv restricted_compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
   return (Values(methods, _lisp->_true()));
 }
 
-LAMBDA(args);
-DECLARE();
-DOCSTRING("maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame");
+CL_LAMBDA(args);
+CL_DECLARE();
+CL_DOCSTRING("maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame");
 CL_DEFUN T_sp core__maybe_expand_generic_function_arguments(T_sp args) {
-  if (cl_consp(args)) {
+  if (cl__consp(args)) {
     T_sp first = oCar(args);
     if (first.nilp()) {
       return args;
@@ -229,7 +229,7 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
     // I'm duplicating the fix here - there is also a change in lisp.cc
     T_sp spec_position_arg = T_sp((gc::Tagged)va_arg(cargs, T_O *));
     List_sp eql_spec;
-    if (cl_listp(spec_type) &&
+    if (cl__listp(spec_type) &&
         (eql_spec = gc::As<Cons_sp>(spec_type)->memberEql(spec_position_arg)).notnilp()) {
 // For immediate types we need to make sure that EQL will be true
 #if 1
@@ -336,18 +336,16 @@ LCC_RETURN notFuncallableDispatch(Instance_sp gf, VaList_sp vargs) {
   IMPLEMENT_MEF(BF("Implement notFuncallableDispatch"));
 }
 
-LAMBDA(what);
-DECLARE();
-DOCSTRING("See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the generic function call hashes selectively. If what=T then clear the hash completely.  If what=generic_function then clear only these entries.");
+CL_LAMBDA(what);
+CL_DECLARE();
+CL_DOCSTRING("See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the generic function call hashes selectively. If what=T then clear the hash completely.  If what=generic_function then clear only these entries.");
 CL_DEFUN void core__clear_gfun_hash(T_sp what) {
-  _G();
   ASSERT(_lisp->methodCachePtr());
   ASSERT(_lisp->slotCachePtr());
   _lisp->methodCachePtr()->removeOne(what);
   _lisp->slotCachePtr()->removeOne(what);
 };
 
-void initialize_genericFunction() {
   SYMBOL_SC_(ClosPkg, clearGfunHash);
-}
+
 };

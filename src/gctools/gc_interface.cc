@@ -178,13 +178,14 @@ typedef bool _Bool;
  */
 
 template <typename RT, typename...ARGS>
-void expose_function(const std::string& rawPkgName,
-                     const std::string& symbolName,
+void expose_function(const std::string& pkg_sym,
                      bool exported,
                      RT (*fp)(ARGS...),
                      const std::string& lambdaList)
 {
-  std::string pkgName = core::lispify_symbol_name(rawPkgName);
+  std::string pkgName;
+  std::string symbolName;
+  core::colon_split(pkg_sym,pkgName,symbolName);
   core::wrap_function(pkgName,symbolName,fp,lambdaList);
 }
 
@@ -196,6 +197,7 @@ void expose_function(const std::string& rawPkgName,
 
 void initialize_functions()
 {
+//  printf("%s:%d About to initialize_functions\n", __FILE__, __LINE__ );
 #ifndef SCRAPING
   #define EXPOSE_FUNCTION_BINDINGS
   #include <generated/initFunctions_inc.h>
@@ -203,40 +205,31 @@ void initialize_functions()
 #endif
 };
 
-
-struct SourceInfo {
-  const char* _PackageName;
-  const char* _SymbolName;
-  const char* _File;
-  size_t _FilePos;
-  size_t _LineNumber;
-  const char* _Documentation;
-};
-
-SourceInfo global_source_info[] = {
-#ifndef SCRAPING
-#define SOURCE_INFO
-#include <generated/sourceInfo_inc.h>
-#undef SOURCE_INFO
-#endif
-    {NULL,NULL,NULL,0,0,NULL}
-};
-
-void initialize_source_info(core::T_sp documentation) {
-  core::HashTableEql_sp ht = gc::As<core::HashTableEql_sp>(documentation);
-  for ( int i=0; i<(sizeof(global_source_info)/sizeof(SourceInfo)-1); ++i ) {
-    std::string lispified = core::lispify_symbol_name(global_source_info[i]._SymbolName);
-    std::string packageName = core::lispify_symbol_name(global_source_info[i]._PackageName);
-    core::Symbol_sp sym = core::lisp_intern(lispified,packageName);
+typedef enum { code_kind, method_kind, class_kind, unknown_kind } source_info_kind;
+void define_source_info(source_info_kind kind,
+                        const string& lisp_name,
+                        const string& file, size_t character_offset,
+                        size_t line, const string& docstring ) {
+  std::string package_part, symbol_part;
+  core::colon_split(lisp_name,package_part,symbol_part);
+  core::Symbol_sp sym = core::lisp_intern(symbol_part,package_part);
+  if ( kind == code_kind ) {
     core::Function_sp func = core::coerce::functionDesignator(sym);
-    core::Str_sp sourceFile = core::Str_O::create(global_source_info[i]._File);
-    func->closure->setSourcePosInfo(sourceFile, global_source_info[i]._FilePos,
-                                    global_source_info[i]._LineNumber, 0);
-    core::Str_sp docs = core::Str_O::create(global_source_info[i]._Documentation);
+    core::Str_sp sourceFile = core::Str_O::create(file);
+    func->closure->setSourcePosInfo(sourceFile, character_offset, line, 0 );
+    core::Str_sp docs = core::Str_O::create(docstring);
     ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, docs);
     ext__annotate(func,cl::_sym_documentation,cl::_sym_function, docs);
-    ht->setf_gethash(sym,docs);
+  } else if ( kind == class_kind ) {
   }
+}
+
+void initialize_source_info() {
+#define SOURCE_INFO
+#ifndef SCRAPING
+#include <generated/sourceInfo_inc.h>
+#endif
+#undef SOURCE_INFO
 };
 
 
@@ -386,11 +379,22 @@ BOTTOM:
 }
 };
 
+// ----------------------------------------------------------------------
+//
+// Declare all global symbols
+//
+//
+#define DECLARE_ALL_SYMBOLS
+#ifndef SCRAPING
+#include <generated/symbols_scraped_inc.h>
+#endif
+#undef DECLARE_ALL_SYMBOLS
+
+
+
 #ifdef USE_MPS
 extern "C" {
-
 using namespace gctools;
-
 /*! I'm using a format_header so MPS gives me the object-pointer */
 mps_addr_t obj_skip(mps_addr_t client) {
   mps_addr_t oldClient = client;
@@ -429,11 +433,10 @@ DONE:
   return client;
 }
 };
+#endif // ifdef USE_MPS
 
+#ifdef USE_MPS
 int trap_obj_scan = 0;
-
-//core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR.notnilp()
-
 namespace gctools {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_HELPERS
@@ -441,7 +444,10 @@ namespace gctools {
 #undef GC_OBJ_SCAN_HELPERS
 #endif
 };
+#endif // #ifdef USE_MPS
 
+
+#ifdef USE_MPS
 extern "C" {
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #ifndef RUNNING_GC_BUILDER
@@ -449,7 +455,6 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #include "clasp_gc.cc"
 #undef GC_OBJ_SCAN_TABLE
 #endif
-
   GC_TELEMETRY2(telemetry::label_obj_scan_start,
                 (uintptr_t)client,
                 (uintptr_t)limit);
@@ -489,67 +494,73 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
   MPS_SCAN_END(GC_SCAN_STATE);
   return MPS_RES_OK;
 }
+};
+#endif // ifdef USE_MPS
 
+#ifdef USE_MPS
+extern "C" {
 /*! I'm using a format_header so MPS gives me the object-pointer */
-#define GC_FINALIZE_METHOD
+  #define GC_FINALIZE_METHOD
 void obj_finalize(mps_addr_t client) {
   // The client must have a valid header
   DEBUG_THROW_IF_INVALID_CLIENT(client);
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_FINALIZE_TABLE
-#include "clasp_gc.cc"
-#undef GC_OBJ_FINALIZE_TABLE
-#endif
-
+  #ifndef RUNNING_GC_BUILDER
+    #define GC_OBJ_FINALIZE_TABLE
+    #include "clasp_gc.cc"
+    #undef GC_OBJ_FINALIZE_TABLE
+  #endif // ifndef RUNNING_GC_BUILDER
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
   ASSERTF(header->kindP(), BF("obj_finalized called without a valid object"));
   gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
   GC_TELEMETRY1(telemetry::label_obj_finalize,
                 (uintptr_t)client);
-#ifndef RUNNING_GC_BUILDER
+  #ifndef RUNNING_GC_BUILDER
   goto *(OBJ_FINALIZE_table[kind]);
-#define GC_OBJ_FINALIZE
-#include "clasp_gc.cc"
-#undef GC_OBJ_FINALIZE
-#else
-// do nothing
-#endif
-};
-#undef GC_FINALIZE_METHOD
+    #define GC_OBJ_FINALIZE
+    #include "clasp_gc.cc"
+    #undef GC_OBJ_FINALIZE
+  #endif // ifndef RUNNING_GC_BUILDER
+}; // obj_finalize
+}; // extern "C"
+  #undef GC_FINALIZE_METHOD
+#endif // ifdef USE_MPS
 
 
-
+#ifdef USE_MPS
+extern "C" {
 vector<core::LoadTimeValues_O **> globalLoadTimeValuesRoots;
 
 void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr) {
   globalLoadTimeValuesRoots.push_back(ptr);
 }
+};
+#endif // ifdef USE_MPS
 
+#ifdef USE_MPS
+extern "C" {
 mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
     GC_TELEMETRY0(telemetry::label_root_scan_start);
     for (auto &it : globalLoadTimeValuesRoots) {
       SIMPLE_POINTER_FIX(*it);
     }
-//            printf("---------Done\n");
-
 // Do I need to fix these pointers explicitly???
 //gctools::global_Symbol_OP_nil       = symbol_nil.raw_();
 //gctools::global_Symbol_OP_unbound   = symbol_unbound.raw_();
 //gctools::global_Symbol_OP_deleted   = symbol_deleted.raw_();
 //gctools::global_Symbol_OP_sameAsKey = symbol_sameAsKey.raw_();
-
 #ifndef RUNNING_GC_BUILDER
 #define GC_GLOBALS
 #include "clasp_gc.cc"
 #undef GC_GLOBALS
 #endif
 
-#ifndef RUNNING_GC_BUILDER
 #if USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
-#define GC_GLOBAL_SYMBOLS
-#include "clasp_gc.cc"
-#undef GC_GLOBAL_SYMBOLS
+  #ifndef RUNNING_GC_BUILDER
+  #define GC_GLOBAL_SYMBOLS
+  #include "clasp_gc.cc"
+  #undef GC_GLOBAL_SYMBOLS
+  #endif // if RUNNING_GC_BUILDER
 #else
 
 //
@@ -557,100 +568,208 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 // every time we add or remove a symbol.  Every symbol that is scraped from
 // the source must be listed here and fixed for the garbage collector
 //
-
-#define AstToolingPkg_SYMBOLS
-#define CffiPkg_SYMBOLS
-#define ClPkg_SYMBOLS
-//#define ClangAstPkg_SYMBOLS    // symbols not declared global
-#define ClbindPkg_SYMBOLS
-#define ClosPkg_SYMBOLS
-#define CommonLispUserPkg_SYMBOLS
-#define CompPkg_SYMBOLS
-#define CorePkg_SYMBOLS
-#define ExtPkg_SYMBOLS
-#define GcToolsPkg_SYMBOLS
-#define GrayPkg_SYMBOLS
-#define KeywordPkg_SYMBOLS
-#define LlvmoPkg_SYMBOLS
-//#define MpiPkg_SYMBOLS
-#define ServeEventPkg_SYMBOLS
-#define SocketsPkg_SYMBOLS
-
-#define AstToolingPkg asttooling
-#define CffiPkg cffi
-#define ClPkg cl
-//#define ClangAstPkg clang
-#define ClbindPkg clbind
-#define ClosPkg clos
-#define CommonLispUserPkg
-#define CompPkg comp
-#define CorePkg core
-#define ExtPkg ext
-#define GcToolsPkg gctools
-#define GrayPkg gray
-#define KeywordPkg kw
-#define LlvmoPkg llvmo
-//#define MpiPkg mpi
-#define ServeEventPkg serveEvent
-#define SocketsPkg sockets
-
-#define DO_SYMBOL(sym, id, pkg, name, exprt) SMART_PTR_FIX(pkg::sym)
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-
-#undef AstToolingPkg
-#undef CffiPkg
-#undef ClPkg
-//#undef ClangAstPkg
-#undef ClbindPkg
-#undef ClosPkg
-#undef CommonLispUserPkg
-#undef CompPkg
-#undef CorePkg
-#undef ExtPkg
-#undef GcToolsPkg
-#undef GrayPkg
-#undef KeywordPkg
-#undef LlvmoPkg
-//#undef MpiPkg
-#undef ServeEventPkg
-#undef SocketsPkg
-
-#undef AstToolingPkg_SYMBOLS
-#undef CffiPkg_SYMBOLS
-#undef ClPkg_SYMBOLS
-//#undef ClangAstPkg_SYMBOLS
-#undef ClbindPkg_SYMBOLS
-#undef ClosPkg_SYMBOLS
-#undef CommonLispUserPkg_SYMBOLS
-#undef CompPkg_SYMBOLS
-#undef CorePkg_SYMBOLS
-#undef ExtPkg_SYMBOLS
-#undef GcToolsPkg_SYMBOLS
-#undef GrayPkg_SYMBOLS
-#undef KeywordPkg_SYMBOLS
-#undef LlvmoPkg_SYMBOLS
-//#undef MpiPkg_SYMBOLS
-#undef ServeEventPkg_SYMBOLS
-#undef SocketsPkg_SYMBOLS
-
-#endif
-#endif // RUNNING_GC_BUILDER
+  #define GARBAGE_COLLECT_ALL_SYMBOLS
+  #ifndef RUNNING_GC_BUILDER
+    #ifndef SCRAPING
+        #include <include/symbols_scraped_inc.h>
+    #endif
+  #endif // ifndef RUNNING_GC_BUILDER
+  #undef GARBAGE_COLLECT_ALL_SYMBOLS
+#endif // else ifndef USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
   }
   MPS_SCAN_END(GC_SCAN_STATE);
   GC_TELEMETRY0(telemetry::label_root_scan_stop);
   return MPS_RES_OK;
 }
 };
+#endif // USE_MPS
 
 //
 // We don't want the static analyzer gc-builder.lsp to see the generated scanners
 //
-#ifndef RUNNING_GC_gBUILDER
-#define HOUSEKEEPING_SCANNERS
-#include "clasp_gc.cc"
-#undef HOUSEKEEPING_SCANNERS
-#endif
-
+#ifdef USE_MPS
+  #ifndef RUNNING_GC_BUILDER
+    #ifndef SCRAPING
+      #define HOUSEKEEPING_SCANNERS
+      #include "clasp_gc.cc"
+      #undef HOUSEKEEPING_SCANNERS
+    #endif // ifdef USE_MPS
+  #endif // ifndef RUNNING_GC_BUILDER
 #endif // ifdef USE_MPS
+
+//
+// Bootstrapping
+//
+
+void setup_bootstrap_packages(core::BootStrapCoreSymbolMap* bootStrapSymbolMap)
+{
+  #define BOOTSTRAP_PACKAGES
+  #ifndef SCRAPING
+    #include <generated/symbols_scraped_inc.h>
+  #endif
+  #undef BOOTSTRAP_PACKAGES
+}
+
+template <class TheClass>
+void set_one_static_class_symbol(core::BootStrapCoreSymbolMap* symbols, const std::string& full_name )
+{
+  std::string package_part, symbol_part;
+  core::colon_split( full_name, package_part, symbol_part);
+  package_part = core::lispify_symbol_name(package_part);
+  symbol_part = core::lispify_symbol_name(symbol_part);
+//  printf("%s:%d set_one_static_class_symbol --> %s:%s\n", __FILE__, __LINE__, package_part.c_str(), symbol_part.c_str() );
+  core::SymbolStorage store;
+  bool found =  symbols->lookupSymbol(package_part,symbol_part, store );
+  if ( !found ) {
+    printf("%s:%d ERROR!!!! The static class symbol %s was not found!\n", __FILE__, __LINE__, full_name.c_str() );
+    abort();
+  }
+  TheClass::___set_static_ClassSymbol(store._Symbol);
+}
+
+void set_static_class_symbols(core::BootStrapCoreSymbolMap* bootStrapSymbolMap)
+{
+#define SET_CLASS_SYMBOLS
+#ifndef SCRAPING
+#include <generated/initClassesAndMethods_inc.h>
+#endif
+#undef SET_CLASS_SYMBOLS
+}
+
+void allocate_symbols(core::BootStrapCoreSymbolMap* bootStrapSymbolMap)
+{
+#define ALLOCATE_ALL_SYMBOLS
+  #ifndef SCRAPING
+    #include <generated/symbols_scraped_inc.h>
+  #endif
+#undef ALLOCATE_ALL_SYMBOLS
+};
+
+template <class TheClass, class Metaclass>
+  gc::smart_ptr<Metaclass> allocate_one_class()
+{
+  gc::smart_ptr<Metaclass> class_val = Metaclass::createUncollectable();
+  class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,_lisp,TheClass::static_classSymbol());
+  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
+  TheClass::___staticClass = class_val;
+  TheClass::static_Kind = gctools::GCKind<TheClass>::Kind;
+  core::core__setf_find_class(class_val,TheClass::static_classSymbol(),true,_Nil<core::T_O>());
+  gctools::tagged_pointer<core::LispObjectCreator<TheClass>> cb = gctools::ClassAllocator<core::LispObjectCreator<TheClass>>::allocate_class();
+  TheClass::___set_static_creator(cb);
+  class_val->setCreator(TheClass::static_creator);
+  return class_val;
+}
+
+template <class TheMetaClass>
+struct TempClass {
+  static gctools::smart_ptr<TheMetaClass> holder;
+};
+
+
+
+void create_packages()
+{
+  #define CREATE_ALL_PACKAGES
+  #ifndef SCRAPING
+    #include <generated/symbols_scraped_inc.h>
+  #endif
+  #undef CREATE_ALL_PACKAGES
+}
+
+
+void define_base_classes()
+{
+  IMPLEMENT_MEF(BF("define_base_classes"));
+}
+
+
+void calculate_class_precedence_lists()
+{
+  IMPLEMENT_MEF(BF("calculate_class_precendence_lists"));
+}
+
+// ----------------------------------------------------------------------
+//
+// Expose classes and methods
+//
+// Code generated by scraper
+//
+//
+#include <clasp/core/wrappers.h>
+#include <clasp/core/external_wrappers.h>
+
+#define EXPOSE_METHODS
+#ifndef SCRAPING
+  #include <generated/initClassesAndMethods_inc.h>
+#endif
+#undef EXPOSE_METHODS
+
+void initialize_enums()
+{
+  #define ALL_ENUMS
+  #ifndef SCRAPING
+    #include <generated/enum_inc.h>
+  #endif
+  #undef ALL_ENUMS
+};
+
+
+void initialize_classes_and_methods()
+{
+#define EXPOSE_CLASSES_AND_METHODS
+#ifndef SCRAPING
+  #include <generated/initClassesAndMethods_inc.h>
+#endif
+#undef EXPOSE_CLASSES_AND_METHODS
+}
+
+
+void initialize_clasp()
+{
+  // The bootStrapCoreSymbolMap keeps track of packages and symbols while they
+  // are half-way initialized.
+  core::BootStrapCoreSymbolMap bootStrapCoreSymbolMap;
+  setup_bootstrap_packages(&bootStrapCoreSymbolMap);
+    
+  allocate_symbols(&bootStrapCoreSymbolMap);
+  
+  set_static_class_symbols(&bootStrapCoreSymbolMap);
+
+  #define ALLOCATE_ALL_CLASSES
+  #ifndef SCRAPING
+    #include <generated/initClassesAndMethods_inc.h>
+  #endif
+  #undef ALLOCATE_ALL_CLASSES
+  
+  create_packages();
+
+  bootStrapCoreSymbolMap.finish_setup_of_symbols();
+
+  // Define base classes
+  #define SET_BASES_ALL_CLASSES
+  #ifndef SCRAPING
+    #include <generated/initClassesAndMethods_inc.h>
+  #endif
+  #undef SET_BASES_ALL_CLASSES
+
+    // Define base classes
+  #define CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
+  #ifndef SCRAPING
+    #include <generated/initClassesAndMethods_inc.h>
+  #endif
+  #undef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
+
+  reg::lisp_registerClassSymbol<core::Character_I>(cl::_sym_character);
+  reg::lisp_registerClassSymbol<core::Fixnum_I>(cl::_sym_fixnum);
+  reg::lisp_registerClassSymbol<core::SingleFloat_I>(cl::_sym_single_float);
+
+  initialize_enums();
+  
+// Moved to lisp.cc
+//  initialize_functions();
+  // initialize methods???
+//  initialize_source_info();
+};
+
+
+

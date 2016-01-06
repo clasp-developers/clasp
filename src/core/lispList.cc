@@ -151,9 +151,9 @@ setup_test(struct cl_test *t, T_sp item, T_sp test,
 //
 
 /*! Duplicated from ECL rassoc */
-LAMBDA(item a-list &key test test-not key);
-DECLARE();
-DOCSTRING("See CLHS rassoc");
+CL_LAMBDA(item a-list &key test test-not key);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS rassoc");
 CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_sp key) {
   struct cl_test t;
   if (test.notnilp())
@@ -178,11 +178,10 @@ CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_
   return a_list;
 }
 
-LAMBDA(idx arg);
-DECLARE();
-DOCSTRING("See CLHS nth");
+CL_LAMBDA(idx arg);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS nth");
 CL_DEFUN T_sp cl__nth(int idx, T_sp arg) {
-  _G();
   if (arg.nilp())
     return _Nil<T_O>();
   if (Cons_sp list = arg.asOrNull<Cons_O>()) {
@@ -191,11 +190,10 @@ CL_DEFUN T_sp cl__nth(int idx, T_sp arg) {
   TYPE_ERROR(arg, cl::_sym_list);
 };
 
-LAMBDA(idx arg);
-DECLARE();
-DOCSTRING("See CLHS nth");
+CL_LAMBDA(idx arg);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS nth");
 CL_DEFUN T_sp cl__nthcdr(int idx, T_sp arg) {
-  _G();
   if (arg.nilp())
     return arg;
   if (Cons_sp list = arg.asOrNull<Cons_O>()) {
@@ -204,11 +202,10 @@ CL_DEFUN T_sp cl__nthcdr(int idx, T_sp arg) {
   TYPE_ERROR(arg, cl::_sym_list);
 };
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("copyList");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("copyList");
 CL_DEFUN T_sp cl__copy_list(T_sp arg) {
-  _G();
   if (arg.nilp())
     return arg;
   if (Cons_sp l = arg.asOrNull<Cons_O>()) {
@@ -217,18 +214,18 @@ CL_DEFUN T_sp cl__copy_list(T_sp arg) {
   TYPE_ERROR(arg, cl::_sym_list);
 };
 /*! Code translated from ecl_butlast */
-LAMBDA(list &optional (n 1));
-DECLARE();
-DOCSTRING("butlast");
+CL_LAMBDA(list &optional (n 1));
+CL_DECLARE();
+CL_DOCSTRING("butlast");
 CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
   gc::Fixnum n = clasp_to_int(in);
   T_sp r;
   T_sp l = ll;
-  for (r = l; n && cl_consp(r); --n, r = oCdr(r))
+  for (r = l; n && cl__consp(r); --n, r = oCdr(r))
     ;
   if (r.nilp())
     return _Nil<T_O>();
-  else if (!cl_listp(r)) {
+  else if (!cl__listp(r)) {
     if (r == l) {
       TYPE_ERROR_LIST(r);
     }
@@ -237,7 +234,7 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
     Cons_sp head;
     Cons_sp tail;
     head = tail = Cons_O::create(oCar(l));
-    while (l = oCdr(l), r = oCdr(r), cl_consp(r)) {
+    while (l = oCdr(l), r = oCdr(r), cl__consp(r)) {
       Cons_sp cons = Cons_O::create(oCar(l));
       tail->rplacd(cons);
       tail = cons;
@@ -245,19 +242,19 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
     return head;
   }
 }
-LAMBDA(list &optional (n 1));
-DECLARE();
-DOCSTRING("butlast");
+CL_LAMBDA(list &optional (n 1));
+CL_DECLARE();
+CL_DOCSTRING("butlast");
 CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
   T_sp r;
   gc::Fixnum n = clasp_to_fixnum(in);
-  if (clasp_unlikely(!cl_listp(l)))
+  if (clasp_unlikely(!cl__listp(l)))
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_nbutlast, l, cl::_sym_list);
-  for (n++, r = l; n && cl_consp(r); n--, r = oCdr(r))
+  for (n++, r = l; n && cl__consp(r); n--, r = oCdr(r))
     ;
   if (n == 0) {
     Cons_sp tail = gc::As<Cons_sp>(l);
-    while (cl_consp(r)) {
+    while (cl__consp(r)) {
       tail = gc::As<Cons_sp>(oCdr(tail));
       r = oCdr(r);
     }
@@ -267,17 +264,16 @@ CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
   return _Nil<T_O>();
 }
 
-LAMBDA(&rest objects);
-DOCSTRING("See CLHS: list");
+CL_LAMBDA(&rest objects);
+CL_DOCSTRING("See CLHS: list");
 CL_DEFUN T_sp cl__list(T_sp objects) {
   return objects;
 };
 
-LAMBDA(&rest objects);
-DECLARE();
-DOCSTRING("list* see CLHS");
+CL_LAMBDA(&rest objects);
+CL_DECLARE();
+CL_DOCSTRING("list* see CLHS");
 CL_DEFUN T_sp cl__listSTAR(T_sp tobjects) {
-  _G();
   T_sp objects = tobjects;
   if (objects.nilp()) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),_Nil<T_O>());
   if (oCdr(objects).nilp())
@@ -293,9 +289,9 @@ CL_DEFUN T_sp cl__listSTAR(T_sp tobjects) {
   return result.cons();
 }
 
-LAMBDA(list &optional (on 1));
-DECLARE();
-DOCSTRING("last - see CLHS");
+CL_LAMBDA(list &optional (on 1));
+CL_DECLARE();
+CL_DOCSTRING("last - see CLHS");
 CL_DEFUN T_sp cl__last(T_sp list, int n) {
   if (list.nilp())
     return list;
@@ -309,11 +305,10 @@ CL_DEFUN T_sp cl__last(T_sp list, int n) {
 
 /* Adapted from ECL list.d nconc function */
 
-LAMBDA(&rest lists);
-DECLARE();
-DOCSTRING("tnconc");
+CL_LAMBDA(&rest lists);
+CL_DECLARE();
+CL_DOCSTRING("tnconc");
 CL_DEFUN T_sp cl__nconc(List_sp lists) {
-  _G();
   T_sp head = _Nil<T_O>();
   T_sp tail = _Nil<T_O>();
   for (auto cur : lists) {
@@ -351,21 +346,19 @@ T_sp clasp_nconc(T_sp l, T_sp y) {
   TYPE_ERROR(l, cl::_sym_list);
 }
 
-LAMBDA(list tail);
-DECLARE();
-DOCSTRING("revappend");
+CL_LAMBDA(list tail);
+CL_DECLARE();
+CL_DOCSTRING("revappend");
 CL_DEFUN T_sp cl__revappend(List_sp list, T_sp tail) {
-  _G();
   if (list.nilp())
     return (tail);
   return list.asCons()->revappend(tail);
 };
 
-LAMBDA(list tail);
-DECLARE();
-DOCSTRING("nreconc");
+CL_LAMBDA(list tail);
+CL_DECLARE();
+CL_DOCSTRING("nreconc");
 CL_DEFUN T_sp cl__nreconc(List_sp list, T_sp tail) {
-  _G();
   if (list.nilp())
     return (tail);
   return list.asCons()->nreconc(tail);
@@ -375,16 +368,12 @@ CL_DEFUN T_sp cl__nreconc(List_sp list, T_sp tail) {
     EXPOSE_CLASS(core,List_O);
 
     void List_O::exposeCando(Lisp_sp lisp)
-    {_G();
+    {
 	class_<List_O>()
-	    //	    .def("revappend",&List_O::revappend)    I need to wrap this
-	    //	    .def("nreconc",&List_O::nreconc)	I need to wrap this
-	    //	.initArgs("(self)")
 	    ;
     }
 #endif
 
-void initialize_list() {
   SYMBOL_EXPORT_SC_(ClPkg, revappend);
   SYMBOL_EXPORT_SC_(ClPkg, nreconc);
   SYMBOL_EXPORT_SC_(ClPkg, list);
@@ -395,7 +384,6 @@ void initialize_list() {
   SYMBOL_EXPORT_SC_(ClPkg, nthcdr);
   SYMBOL_EXPORT_SC_(ClPkg, copyList);
   SYMBOL_EXPORT_SC_(ClPkg, last);
-}
 
 #if 0
     void List_O::exposePython(::core::Lisp_sp lisp)

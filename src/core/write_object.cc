@@ -123,8 +123,8 @@ T_sp write_object(T_sp x, T_sp stream) {
   }
 #endif /* ECL_CMU_FORMAT */
   bool circle = clasp_print_circle();
-  if (circle && (x) && !x.fixnump() && !x.valistp() && !x.characterp() && !cl_symbolp(x) && !cl__numberp(x) // && !x.single_floatp()
-      && (cl_listp(x) || !cl_symbolp(x) || !gc::As<Symbol_sp>(x)->homePackage().nilp())) {
+  if (circle && (x) && !x.fixnump() && !x.valistp() && !x.characterp() && !cl__symbolp(x) && !cl__numberp(x) // && !x.single_floatp()
+      && (cl__listp(x) || !cl__symbolp(x) || !gc::As<Symbol_sp>(x)->homePackage().nilp())) {
     Fixnum code;
     T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
     if (circle_counter.nilp()) {
@@ -169,15 +169,12 @@ OUTPUT:
   return x;
 }
 
-LAMBDA(obj &optional strm);
-DECLARE();
-DOCSTRING("writeObject");
+CL_LAMBDA(obj &optional strm);
+CL_DECLARE();
+CL_DOCSTRING("writeObject");
 CL_DEFUN T_sp core__write_object(T_sp obj, T_sp ostrm) {
-  _G();
   T_sp strm = coerce::outputStreamDesignator(ostrm);
   return write_object(obj, strm);
 };
 
-void initialize_write_object() {
-}
 };

@@ -32,7 +32,7 @@ THE SOFTWARE.
 namespace gctools {
 
 #define GcToolsPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
+#define DO_SYMBOL( ns, cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
   #ifndef SCRAPING
     #include <generated/symbols_scraped_inc.h>
   #endif  
@@ -44,7 +44,7 @@ namespace gctools {
 namespace gctoolsTooling {
 
 #define GcToolsToolingPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
+#define DO_SYMBOL( ns, cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
   #ifndef SCRAPING
     #include <generated/symbols_scraped_inc.h>
   #endif  
@@ -56,7 +56,7 @@ namespace gctoolsTooling {
 namespace gctoolsMatching {
 
 #define GcToolsMatchingPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
+#define DO_SYMBOL( ns, cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
   #ifndef SCRAPING
     #include <generated/symbols_scraped_inc.h>
   #endif  

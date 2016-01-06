@@ -48,9 +48,9 @@ namespace clbind {
 class ConstructorCreator;
 };
 
-#define GC_INTERFACE_FORWARD
-#include <project_headers.h>
-#undef GC_INTERFACE_FORWARD
+//#define GC_INTERFACE_FORWARD
+//#include <project_headers.h>
+//#undef GC_INTERFACE_FORWARD
 
 #ifdef USE_MPS
 #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
@@ -97,9 +97,9 @@ extern void obj_dump_base(void *base);
 extern void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj);
 };
 
+void initialize_clasp();
+
 void initialize_functions();
-
-void initialize_source_info(core::T_sp);
-
-
+void initialize_source_info();
+void initialize_classes_and_methods();
 #endif

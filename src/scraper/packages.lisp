@@ -14,43 +14,91 @@
      #:next-tag-name
      #:read-string-to-tag
      #:gather-source-files
-     ))
+     #:extract-function-name-from-signature
+     #:maybe-remove-one-prefix-from-start
+     #:extract-method-name-from-signature
+     #:extract-method-name-from-pointer
+     #:packaged-class-name
+     #:extract-function-name-from-pointer))
 
 (defpackage "TAGS"
   (:use :cl)
   (:export
+   #:tag
+   #:*tag-handlers*
+   #:tag-code
+   #:identifier
+   #:source-pos
    #:unknown-tag
    #:handler-code
    #:lisp-base-tag
    #:lisp-class-tag
-   #:c++-base%
+   #:lisp-internal-class-tag
+   #:lisp-external-class-tag
+   #:begin-enum-tag
+   #:value-enum-tag
+   #:end-enum-tag
+   #:symbol%
+   #:description%
+   #:value%
+   #:base%
    #:namespace%
+   #:namespace
    #:package%
    #:c++-class%
    #:class-symbol%
-   #:lambda-tag
-   #:lambda-list
-   #:docstring-tag
-   #:docstring
-   #:declare-tag
-   #:source-tag
-   #:expose-code-tag
-   #:expose-method-tag
-   #:code-tag
-   #:file
-   #:line
-   #:character-offset
-   #:namespace
-   #:expose-function-tag
-   #:function-name
-   #:signature-text
-   #:namespace-tag
-   #:symbol-tag
+   #:name-base-tag
+   #:name-tag
+   #:lispify-name-tag
+   #:packaged-name
+   #:internal-code-tag
+   #:external-code-tag
+   #:package-use-tag
+   #:package-nickname-tag
+   #:pkg-name-tag
    #:name%
-   #:c++-name%
+   #:full-name
+   #:meta-class-tag
+   #:meta-class%
+   #:maybe-meta-class
+   #:lambda-tag
+   #:lambda-list%
+   #:docstring-tag
+   #:docstring%
+   #:declare-tag
+   #:declare-form%
+   #:source-tag
+   #:external-code-tag
+   #:internal-code-tag
+   #:pointer%
+   #:type%
+   #:class-name%
+   #:method-name%
+   #:file%
+   #:line%
+   #:character-offset%
+   #:expose-internal-function-tag
+   #:expose-internal-method-tag
+   #:expose-external-function-tag
+   #:expose-external-method-tag
+   #:function-name%
+   #:signature-text%
+   #:symbol-tag
+   #:symbol-internal-tag
+   #:symbol-external-tag
+   #:symbol-shadow-external-tag
+   #:detailed-symbol-external-tag
+   #:symbol-intern-tag
    #:class-symbol%
    #:exported%
+   #:shadow%
+   #:c++-name%
+   #:lisp-name%
+   #:namespace-tag
    #:namespace-package-association-tag
-   #:package-var
-   #:make-handler-hash-table))
+   #:package%
+   #:package-str%
+   #:maybe-lambda-list
+   #:maybe-docstring
+   #:maybe-declare))
            

@@ -41,7 +41,6 @@ void WeakHashTable_O::exposeCando(::core::Lisp_sp lisp) {
 }
 
 void WeakHashTable_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, WeakHashTable, "", "", _lisp);
 #endif
@@ -87,7 +86,8 @@ void WeakKeyHashTable_O::describe(T_sp stream) {
   }
 }
 
-int WeakKeyHashTable_O::tableSize() const {
+CL_LISPIFY_NAME("weakHashTableSize");
+CL_DEFMETHOD int WeakKeyHashTable_O::tableSize() const {
   return this->_HashTable.tableSize();
 }
 
@@ -204,64 +204,57 @@ void WeakKeyHashTable_O::clrhash() {
   this->_HashTable.clrhash();
 }
 
-LAMBDA(&optional (size 16));
-DECLARE();
-DOCSTRING("makeWeakKeyHashTable");
+CL_LAMBDA(&optional (size 16));
+CL_DECLARE();
+CL_DOCSTRING("makeWeakKeyHashTable");
 CL_DEFUN WeakKeyHashTable_sp core__make_weak_key_hash_table(Fixnum_sp size) {
-  _G();
   int sz = unbox_fixnum(size);
   WeakKeyHashTable_sp ht = gctools::GCObjectAllocator<WeakKeyHashTable_O>::allocate(sz);
   return ht;
 }
 
-LAMBDA(key hash-table &optional default-value);
-DECLARE();
-DOCSTRING("weakGethash");
+CL_LAMBDA(key hash-table &optional default-value);
+CL_DECLARE();
+CL_DOCSTRING("weakGethash");
 CL_DEFUN T_mv core__weak_gethash(T_sp tkey, WeakKeyHashTable_sp ht, T_sp defaultValue) {
-  _G();
   return ht->gethash(tkey, defaultValue);
 };
 
-LAMBDA(ht key value);
-DECLARE();
-DOCSTRING("weakSetfGethash");
+CL_LAMBDA(ht key value);
+CL_DECLARE();
+CL_DOCSTRING("weakSetfGethash");
 CL_DEFUN void core__weak_setf_gethash(T_sp key, WeakKeyHashTable_sp ht, T_sp val) {
-  _G();
   ht->setf_gethash(key, val);
 };
 
-LAMBDA(ht key);
-DECLARE();
-DOCSTRING("weakRemhash");
+CL_LAMBDA(ht key);
+CL_DECLARE();
+CL_DOCSTRING("weakRemhash");
 CL_DEFUN void core__weak_remhash(WeakKeyHashTable_sp ht, T_sp key) {
-  _G();
   ht->remhash(key);
 };
 
-LAMBDA(ht);
-DECLARE();
-DOCSTRING("weakClrhash");
+CL_LAMBDA(ht);
+CL_DECLARE();
+CL_DOCSTRING("weakClrhash");
 CL_DEFUN void core__weak_clrhash(WeakKeyHashTable_sp ht) {
-  _G();
   ht->clrhash();
 };
 
-LAMBDA(ht idx);
-DECLARE();
-DOCSTRING("weakSplat");
+CL_LAMBDA(ht idx);
+CL_DECLARE();
+CL_DOCSTRING("weakSplat");
 CL_DEFUN void core__weak_splat(WeakKeyHashTable_sp ht, Fixnum_sp idx) {
-  _G();
   T_sp splatted;     // This will be NULL
   splatted.reset_(); // This will force it to be NULL
   TESTING();         // Test the NULL value
   (*ht->_HashTable._Keys).set(unbox_fixnum(idx), WeakKeyHashTable_O::value_type(splatted));
 };
 
-LAMBDA(ht &optional sz);
-DECLARE();
-DOCSTRING("weakRehash");
+CL_LAMBDA(ht &optional sz);
+CL_DECLARE();
+CL_DOCSTRING("weakRehash");
 CL_DEFUN void core__weak_rehash(WeakKeyHashTable_sp ht, T_sp sz) {
-  _G();
   size_t newLength;
   if (sz.nilp()) {
     newLength = ht->_HashTable._Keys->length() * 2;
@@ -280,7 +273,6 @@ void WeakKeyHashTable_O::exposeCando(::core::Lisp_sp lisp) {
 }
 
 void WeakKeyHashTable_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, WeakKeyHashTable, "", "", _lisp);
 #endif

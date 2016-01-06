@@ -31,7 +31,7 @@ THE SOFTWARE.
 
 namespace kw {
 #define KeywordPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
+#define DO_SYMBOL( ns, cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
   #ifndef SCRAPING
     #include <generated/symbols_scraped_inc.h>
   #endif  
@@ -41,7 +41,7 @@ namespace kw {
 
 namespace asttooling {
 #define AstToolingPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
+#define DO_SYMBOL( ns, cname, idx, pkg, lispname, export) extern core::Symbol_sp cname;
   #ifndef SCRAPING
     #include <generated/symbols_scraped_inc.h>
   #endif  

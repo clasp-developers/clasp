@@ -62,8 +62,7 @@ FORWARD(ClassRep);
 
 FORWARD(ClassRegistry);
 class ClassRegistry_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(clbind, ClbindPkg, ClassRegistry_O, "ClassRegistry");
+  LISP_CLASS(clbind, ClbindPkg, ClassRegistry_O, "ClassRegistry",core::T_O);
   void initialize();
 
 public:

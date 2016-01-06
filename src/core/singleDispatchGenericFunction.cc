@@ -48,11 +48,10 @@ THE SOFTWARE.
 
 namespace core {
 
-LAMBDA(gfname llhandler);
-DECLARE();
-DOCSTRING("ensureSingleDispatchGenericFunction");
+CL_LAMBDA(gfname llhandler);
+CL_DECLARE();
+CL_DOCSTRING("ensureSingleDispatchGenericFunction");
 CL_DEFUN T_sp core__ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llhandler) {
-  _G();
   T_sp gfn = Lisp_O::find_single_dispatch_generic_function(gfname, false);
   //        printf("%s:%d find_single_dispatch_generic_function(%s) --> %p\n", __FILE__, __LINE__, _rep_(gfname).c_str(), gfn.raw_() );
   if (gfn.nilp()) {
@@ -73,9 +72,9 @@ CL_DEFUN T_sp core__ensure_single_dispatch_generic_function(Symbol_sp gfname, La
   return gfn;
 };
 
-LAMBDA("gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ");
-DECLARE();
-DOCSTRING("ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function");
+CL_LAMBDA("gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ");
+CL_DECLARE();
+CL_DOCSTRING("ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function");
 CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body) {
   //	string docstr = docstring->get();
   if (!gfname->fboundp()) {
@@ -231,11 +230,12 @@ Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc) 
 
 EXPOSE_CLASS(core, SingleDispatchGenericFunction_O);
 
+  SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchGenericFunction);
+  SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchMethod);
+
 void SingleDispatchGenericFunction_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<SingleDispatchGenericFunction_O>()
     .def("SingleDispatchGenericFunction-methods", &SingleDispatchGenericFunction_O::methods);
-  SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchGenericFunction);
-  SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchMethod);
 }
 
 void SingleDispatchGenericFunction_O::exposePython(::core::Lisp_sp lisp) {
@@ -247,7 +247,6 @@ void SingleDispatchGenericFunction_O::exposePython(::core::Lisp_sp lisp) {
 }
 
 SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp name, LambdaListHandler_sp llh) {
-  _G();
   GC_ALLOCATE(SingleDispatchGenericFunction_O, gf);
   gctools::tagged_pointer<SingleDispatchGenericFunctionClosure> gfc = gctools::ClassAllocator<SingleDispatchGenericFunctionClosure>::allocate_class(name);
   gfc->finishSetup(llh, kw::_sym_function);
@@ -328,7 +327,7 @@ SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp na
                    Symbol_sp emf_name,
                    SingleDispatchMethod_sp cur_method,
                    Cons_sp next_methods) : Functoid("Lambda_emf->"+name)
-        {_G();
+        {
             this->_name = emf_name;
             this->_method_function = cur_method->_chainable_method_function;
             ASSERTF(this->_method_function->getLambdaListHandler().notnilp()

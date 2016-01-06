@@ -46,8 +46,7 @@ namespace core {
 using namespace core;
 SMART(SmallMap);
 class SmallMap_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SmallMap_O, "SmallMap");
+  LISP_CLASS(core, CorePkg, SmallMap_O, "SmallMap",T_O);
 GCPRIVATE:
   typedef gctools::SmallMap<T_sp, T_sp> map_type;
   map_type map;
@@ -55,8 +54,10 @@ GCPRIVATE:
 public:
   T_sp find(T_sp key, T_sp defval);
   void setf(T_sp key, T_sp val);
-  int size() const { return this->map.size(); };
-  int capacity() const { return this->map.capacity(); };
+CL_LISPIFY_NAME("map_size");
+CL_DEFMETHOD   int size() const { return this->map.size(); };
+CL_LISPIFY_NAME("map_capacity");
+CL_DEFMETHOD   int capacity() const { return this->map.capacity(); };
 
   DEFAULT_CTOR_DTOR(SmallMap_O);
 };

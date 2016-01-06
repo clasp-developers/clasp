@@ -43,21 +43,19 @@ THE SOFTWARE.
 
 namespace core {
 
-LAMBDA();
-DECLARE();
-DOCSTRING("getInternalRealTime");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getInternalRealTime");
 CL_DEFUN T_sp cl__get_internal_real_time() {
-  _G();
   PosixTime_sp now = PosixTime_O::createNow();
   PosixTimeDuration_sp diff = now->sub(gc::As<PosixTime_sp>(_sym_STARstartRunTimeSTAR->symbolValue()));
   return Integer_O::create(diff->totalMilliseconds());
 };
 
-LAMBDA();
-DECLARE();
-DOCSTRING("getInternalRunTime");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getInternalRunTime");
 CL_DEFUN T_sp cl__get_internal_run_time() {
-  _G();
   struct rusage r;
   getrusage(RUSAGE_SELF, &r);
   size_t usec = r.ru_utime.tv_usec;
@@ -69,7 +67,6 @@ CL_DEFUN T_sp cl__get_internal_run_time() {
 };
 
 PosixTime_sp PosixTime_O::createNow() {
-  _G();
   PosixTime_sp now = PosixTime_O::create();
   now->setToLocalTime();
   return now;
@@ -94,21 +91,20 @@ void PosixTime_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-PosixTime_sp PosixTime_O::setToLocalTime() {
-  _G();
+CL_LISPIFY_NAME("setToLocalTime");
+CL_DEFMETHOD PosixTime_sp PosixTime_O::setToLocalTime() {
   this->_Time = boost::posix_time::microsec_clock::local_time();
   return this->sharedThis<PosixTime_O>();
 }
 
 string PosixTime_O::toSimpleString() {
-  _G();
   stringstream ss;
   ss << to_simple_string(this->_Time);
   return ss.str();
 }
 
-PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp t) {
-  _G();
+CL_LISPIFY_NAME("sub");
+CL_DEFMETHOD PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp t) {
   PosixTimeDuration_sp result = PosixTimeDuration_O::create();
   result->_Duration = this->_Time - t->_Time;
   return result;
@@ -116,7 +112,7 @@ PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp t) {
 
 #if 0
     PosixTimeDuration_sp PosixTimeDuration_O::make(uint hours, uint minutes, uint seconds, uint milliseconds )
-    {_G();
+    {
 	LongLongInt hours = env->lookup(CorePkg,"hours")->object().as<Rational_O>()->as_int();
     LongLongInt minutes = env->lookup(CorePkg,"minutes")->object().as<Rational_O>()->as_int();
     LongLongInt seconds = env->lookup(CorePkg,"seconds")->object().as<Rational_O>()->as_int();
@@ -144,19 +140,21 @@ void PosixTimeDuration_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-PosixTimeDuration_sp PosixTimeDuration_O::sub(PosixTimeDuration_sp t) {
-  _G();
+CL_LISPIFY_NAME("sub");
+CL_DEFMETHOD PosixTimeDuration_sp PosixTimeDuration_O::sub(PosixTimeDuration_sp t) {
   PosixTimeDuration_sp result = PosixTimeDuration_O::create();
   result->_Duration = this->_Duration - t->_Duration;
   return result;
 }
 
-mpz_class PosixTimeDuration_O::totalSeconds() {
+CL_LISPIFY_NAME("totalSeconds");
+CL_DEFMETHOD mpz_class PosixTimeDuration_O::totalSeconds() {
   _OF();
   return mpz_class(this->_Duration.total_seconds());
 }
 
-mpz_class PosixTimeDuration_O::totalMilliseconds() {
+CL_LISPIFY_NAME("totalMilliseconds");
+CL_DEFMETHOD mpz_class PosixTimeDuration_O::totalMilliseconds() {
   _OF();
   stringstream ss;
   ss << this->_Duration.total_milliseconds();
@@ -177,28 +175,28 @@ mpz_class PosixTimeDuration_O::fractionalSeconds() {
   return mpz_class(ss.str());
 }
 
-uint PosixTimeDuration_O::seconds() {
-  _G();
+CL_LISPIFY_NAME("posix-time-duration-seconds");
+CL_DEFMETHOD uint PosixTimeDuration_O::seconds() {
   return this->_Duration.seconds();
 }
 
-uint PosixTimeDuration_O::minutes() {
-  _G();
+CL_LISPIFY_NAME("minutes");
+CL_DEFMETHOD uint PosixTimeDuration_O::minutes() {
   return this->_Duration.minutes();
 }
 
-uint PosixTimeDuration_O::hours() {
-  _G();
+CL_LISPIFY_NAME("hours");
+CL_DEFMETHOD uint PosixTimeDuration_O::hours() {
   return this->_Duration.hours();
 }
 
-string PosixTimeDuration_O::toSimpleString() {
-  _G();
+CL_LISPIFY_NAME("toSimpleString");
+CL_DEFMETHOD string PosixTimeDuration_O::toSimpleString() {
   return boost::posix_time::to_simple_string(this->_Duration);
 }
 
-string PosixTimeDuration_O::toIsoString() {
-  _G();
+CL_LISPIFY_NAME("toIsoString");
+CL_DEFMETHOD string PosixTimeDuration_O::toIsoString() {
   return boost::posix_time::to_iso_string(this->_Duration);
 }
 
@@ -210,7 +208,6 @@ void PosixTime_O::exposeCando(Lisp_sp lisp) {
 }
 
 void PosixTime_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON //[
   PYTHON_CLASS(CorePkg, PosixTime, "", "", _lisp)
       .def("setToLocalTime", &PosixTime_O::setToLocalTime)
@@ -231,7 +228,6 @@ void PosixTimeDuration_O::exposeCando(Lisp_sp lisp) {
 }
 
 void PosixTimeDuration_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON //[
   PYTHON_CLASS(CorePkg, PosixTimeDuration, "", "", _lisp)
       .def("sub", &PosixTimeDuration_O::sub)

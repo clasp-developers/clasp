@@ -45,9 +45,8 @@ SMART(StandardClass);
 
 SMART(StructureObject);
 class StructureObject_O : public T_O {
-  LISP_META_CLASS(StructureClass);
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, StructureObject_O, "structure-object");
+  LISP_META_CLASS(core::StructureClass_O);
+  LISP_CLASS(core, ClPkg, StructureObject_O, "structure-object",T_O);
 
 public:
 #if defined(OLD_SERIALIZE)

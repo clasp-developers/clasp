@@ -14,9 +14,9 @@ void throw_if_invalid_global_telemetry_search() {
   }
 }
 
-LAMBDA(pathname);
-DECLARE();
-DOCSTRING("");
+CL_LAMBDA(pathname);
+CL_DECLARE();
+CL_DOCSTRING("");
 CL_DEFUN void core__telemetry_open(core::T_sp pathname) {
   core::Str_sp filename = core::cl__namestring(pathname);
   global_telemetry_search = new Telemetry();
@@ -26,9 +26,9 @@ CL_DEFUN void core__telemetry_open(core::T_sp pathname) {
 
 #define CANONICAL_POINTER(p) (p & (~0x7))
 
-LAMBDA(addresses);
-DECLARE();
-DOCSTRING("");
+CL_LAMBDA(addresses);
+CL_DECLARE();
+CL_DOCSTRING("");
 CL_DEFUN void core__telemetry_search(core::List_sp addresses) {
   throw_if_invalid_global_telemetry_search();
   global_telemetry_search->seek0();
@@ -66,9 +66,9 @@ CL_DEFUN void core__telemetry_search(core::List_sp addresses) {
   }
 }
 
-LAMBDA(label &optional (begin 0) end);
-DECLARE();
-DOCSTRING("");
+CL_LAMBDA(label &optional (begin 0) end);
+CL_DECLARE();
+CL_DOCSTRING("");
 CL_DEFUN void core__telemetry_search_labels(core::List_sp labels) {
   throw_if_invalid_global_telemetry_search();
   global_telemetry_search->seek0();
@@ -107,9 +107,9 @@ CL_DEFUN void core__telemetry_search_labels(core::List_sp labels) {
   }
 }
 
-LAMBDA(address);
-DECLARE();
-DOCSTRING("");
+CL_LAMBDA(address);
+CL_DECLARE();
+CL_DOCSTRING("");
 CL_DEFUN void core__telemetry_follow(core::T_sp address) {
   throw_if_invalid_global_telemetry_search();
   global_telemetry_search->seek0();
@@ -153,9 +153,9 @@ CL_DEFUN void core__telemetry_follow(core::T_sp address) {
   }
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("");
 CL_DEFUN void core__telemetry_labels() {
   throw_if_invalid_global_telemetry_search();
   for (int i(0); i < global_telemetry_search->_Labels.size(); ++i) {
@@ -163,9 +163,9 @@ CL_DEFUN void core__telemetry_labels() {
   }
 }
 
-LAMBDA(&optional (begin 0) end);
-DECLARE();
-DOCSTRING("");
+CL_LAMBDA(&optional (begin 0) end);
+CL_DECLARE();
+CL_DOCSTRING("");
 CL_DEFUN void core__telemetry_dump(core::T_sp begin, core::T_sp end) {
   throw_if_invalid_global_telemetry_search();
   if (!begin.fixnump()) {
@@ -201,9 +201,9 @@ CL_DEFUN void core__telemetry_dump(core::T_sp begin, core::T_sp end) {
   }
 }
 
-LAMBDA();
-DECLARE();
-DOCSTRING("");
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("");
 CL_DEFUN size_t core__telemetry_count() {
   throw_if_invalid_global_telemetry_search();
   global_telemetry_search->seek0();

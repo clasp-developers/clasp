@@ -41,7 +41,7 @@ namespace sockets {
 #define EXPOSE_TO_CANDO
 #define Use_SocketsPkg
 #define EXTERN_REGISTER
-#include <generated/initClasses_inc.h>
+//#include <clasp/core/initClasses.h>
 #undef EXTERN_REGISTER
 #undef Use_SocketsPkg
 #undef EXPOSE_TO_CANDO
@@ -51,36 +51,14 @@ using namespace core;
 
 namespace sockets {
 
-#pragma GCC visibility push(default)
-#define SocketsPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef SocketsPkg_SYMBOLS
-#pragma GCC visibility pop
 
 void SocketsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
-  _G();
   switch (what) {
   case candoClasses: {
-#define SocketsPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkg, lispname, exportp)          \
-  {                                                            \
-    cname = _lisp->internUniqueWithPackageName(pkg, core::lispify_symbol_name(lispname)); \
-    cname->exportYourself(exportp);                            \
-  }
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-  #endif
-#undef DO_SYMBOL
-#undef SocketsPkg_SYMBOLS
-
 #define ALL_STAGES
 #define Use_SocketsPkg
 #define INVOKE_REGISTER
-#include <generated/initClasses_inc.h>
+//#include <clasp/core/initClasses.h>
 #undef INVOKE_REGISTER
 #undef Use_SocketsPkg
 #undef ALL_STAGES
@@ -106,19 +84,3 @@ void SocketsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
 }
 };
 
-#if USE_INTRUSIVE_SMART_PTR == 1
-#define EXPAND_CLASS_MACROS
-
-#if defined(USE_MPS) // MPS doesn't require INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS
-#define _CLASS_MACRO(_T_) \
-  STATIC_CLASS_INFO(_T_);
-#else
-#define _CLASS_MACRO(_T_) \
-  STATIC_CLASS_INFO(_T_); \
-  INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
-#endif
-
-#include <generated/initClasses_inc.h>
-#undef _CLASS_MACRO
-#undef EXPAND_CLASS_MACROS
-#endif

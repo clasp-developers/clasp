@@ -33,8 +33,7 @@ THE SOFTWARE.
 namespace core {
 FORWARD(WeakPointer);
 class WeakPointer_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, WeakPointer_O, "WeakPointer");
+  LISP_CLASS(core, CorePkg, WeakPointer_O, "WeakPointer",T_O);
 #if defined(OLD_SERIALIZE)
   DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)

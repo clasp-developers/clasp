@@ -81,7 +81,6 @@ public:
 
 void af_backtrace();
 
-void initialize_debugging();
 
 extern "C" {
 void af_gotoIhsTop();

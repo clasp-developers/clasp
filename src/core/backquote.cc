@@ -71,11 +71,22 @@ namespace core {
 #define DECL_macro_core__quasiquote ""
 #define DOCS_macro_core__quasiquote ""
 T_mv macro_core__quasiquote(List_sp whole, T_sp env) {
-  _G();
   ASSERT(cl__length(whole) == 2);
   T_sp form = oCadr(whole);
   return core__backquote_completely_process(form);
 };
+
+
+#define ARGS_macro_backquote "(form env)"
+#define DECL_macro_backquote ""
+#define DOCS_macro_backquote "backquote"
+T_mv macro_backquote(List_sp form, T_sp env) {
+  T_sp arg = oCadr(form);
+  LOG(BF("Expanding backquote going in: %s") % _rep_(arg));
+  T_mv result = core__backquote_completely_process(arg);
+  LOG(BF("Expanded backquote result: %s") % _rep_(result));
+  return (result);
+}
 
 /*!
   Equivalent to Common Lisps append function
@@ -84,11 +95,10 @@ T_mv macro_core__quasiquote(List_sp whole, T_sp env) {
   them together into one list and then points the cdr of the last element of this new list
   to c.
 */
-LAMBDA(&rest lists);
-DECLARE();
-DOCSTRING("append as in clhs");
+CL_LAMBDA(&rest lists);
+CL_DECLARE();
+CL_DOCSTRING("append as in clhs");
 CL_DEFUN T_sp core__backquote_append(List_sp lists) {
-  _G();
   ql::list list; // (lists);
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
   List_sp appendArg = lists;
@@ -106,11 +116,10 @@ CL_DEFUN T_sp core__backquote_append(List_sp lists) {
   return result;
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("backquote_completely_process");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("backquote_completely_process");
 CL_DEFUN T_mv core__backquote_completely_process(T_sp x) {
-  _G();
   T_sp raw_result = core__backquote_process(x);
   if (_sym_STARbq_simplifySTAR->symbolValue().isTrue()) {
     T_sp process_result = core__backquote_simplify(raw_result);
@@ -121,11 +130,10 @@ CL_DEFUN T_mv core__backquote_completely_process(T_sp x) {
   return Values(result);
 }
 
-LAMBDA(ox);
-DECLARE();
-DOCSTRING("bq_process");
+CL_LAMBDA(ox);
+CL_DECLARE();
+CL_DOCSTRING("bq_process");
 CL_DEFUN T_sp core__backquote_process(T_sp ox) {
-  _G();
   // C-version if 0    Lisp-version if 1
   T_sp result = _Nil<T_O>();
   T_sp p;
@@ -192,11 +200,10 @@ DONE:
   return result;
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("bracket");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("bracket");
 CL_DEFUN T_sp core__backquote_bracket(T_sp x) {
-  _G();
 #if 0
 	// Call out to LISP for this one
 	SYMBOL_SC_(CorePkg,bq_bracket);
@@ -220,12 +227,11 @@ CL_DEFUN T_sp core__backquote_bracket(T_sp x) {
 #endif
 };
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("backquote_splicing_frob is true if a form that when read looked like ,@foo or ,.foo");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("backquote_splicing_frob is true if a form that when read looked like ,@foo or ,.foo");
 CL_DEFUN bool core__backquote_splicing_frob(T_sp x) {
-  _G();
-  if (cl_consp(x)) {
+  if (cl__consp(x)) {
     List_sp cx = x;
     T_sp head = oCar(cx);
     return ((((head == _sym_unquote_splice) || (head == _sym_unquote_nsplice))));
@@ -233,12 +239,11 @@ CL_DEFUN bool core__backquote_splicing_frob(T_sp x) {
   return ((false));
 };
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("backquote_frob is true if a form that when read looked like ,foo or ,@foo or ,.foo");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("backquote_frob is true if a form that when read looked like ,foo or ,@foo or ,.foo");
 CL_DEFUN bool core__backquote_frob(T_sp x) {
-  _G();
-  if (cl_consp(x)) {
+  if (cl__consp(x)) {
     List_sp cx = x;
     T_sp head = oCar(cx);
     return ((((head == _sym_unquote) || (head == _sym_unquote_splice) || (head == _sym_unquote_nsplice))));
@@ -248,11 +253,10 @@ CL_DEFUN bool core__backquote_frob(T_sp x) {
 
 SYMBOL_SC_(CorePkg, backquote_maptree);
 
-LAMBDA(op x);
-DECLARE();
-DOCSTRING("backquote_maptree");
+CL_LAMBDA(op x);
+CL_DECLARE();
+CL_DOCSTRING("backquote_maptree");
 CL_DEFUN T_sp core__backquote_maptree(Function_sp op, T_sp x) {
-  _G();
   if (cl__atom(x)) {
     T_sp result = eval::funcall(op, x);
     return result;
@@ -268,7 +272,7 @@ CL_DEFUN T_sp core__backquote_maptree(Function_sp op, T_sp x) {
 
 #if 0 //   Function pointer version - this should be faster than the version above
     T_sp backquote_maptree(T_sp (*op)(T_sp), T_sp x)
-    {_G();
+    {
 	if ( cl__atom(x) )
 	{
 	    T_sp result = op(x);
@@ -285,11 +289,10 @@ CL_DEFUN T_sp core__backquote_maptree(Function_sp op, T_sp x) {
     };
 #endif
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("temp_backquote_simplify");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("temp_backquote_simplify");
 CL_DEFUN T_sp core__backquote_simplify(T_sp x) {
-  _G();
   if (cl__atom(x))
     return (Values(x));
   List_sp cx = x;
@@ -307,11 +310,10 @@ CL_DEFUN T_sp core__backquote_simplify(T_sp x) {
   return (s);
 };
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("backquote_simplify_args");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("backquote_simplify_args");
 CL_DEFUN T_sp core__backquote_simplify_args(T_sp x) {
-  _G();
   List_sp cx = x;
   List_sp args = gc::As<Cons_sp>(oCdr(cx))->reverse();
   T_sp result = _Nil<T_O>();
@@ -336,7 +338,7 @@ CL_DEFUN T_sp core__backquote_simplify_args(T_sp x) {
                                                                      car_last_car_args,
                                                                      result));
     } else if ((oCaar(args) == _sym_STARbq_quoteSTAR) &&
-               (cl_consp(oCadar(args))) &&
+               (cl__consp(oCadar(args))) &&
                (!core__backquote_frob(oCadar(args))) &&
                (oCddar(args).nilp())) {
       Cons_sp tl = Cons_O::createList(_sym_STARbq_quoteSTAR, oCaadar(args));
@@ -351,14 +353,13 @@ CL_DEFUN T_sp core__backquote_simplify_args(T_sp x) {
   return (result);
 };
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("backquote_null_or_quoted");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("backquote_null_or_quoted");
 CL_DEFUN T_sp core__backquote_null_or_quoted(T_sp x) {
-  _G();
   if (x.nilp())
     return (Values(_lisp->_true()));
-  if (cl_consp(x)) {
+  if (cl__consp(x)) {
     List_sp cx = x;
     if (oCar(cx) == _sym_STARbq_quoteSTAR)
       return (_lisp->_true());
@@ -366,11 +367,10 @@ CL_DEFUN T_sp core__backquote_null_or_quoted(T_sp x) {
   return _Nil<T_O>();
 };
 
-LAMBDA(op item result);
-DECLARE();
-DOCSTRING("backquote_attach_append");
+CL_LAMBDA(op item result);
+CL_DECLARE();
+CL_DOCSTRING("backquote_attach_append");
 CL_DEFUN T_sp core__backquote_attach_append(T_sp op, T_sp item, T_sp result) {
-  _G();
   if (core__backquote_null_or_quoted(item).isTrue() && core__backquote_null_or_quoted(result).isTrue()) {
     List_sp tl = Cons_O::createList(oCadr(item), oCadr(result));
     return Cons_O::createList(_sym_STARbq_quoteSTAR,
@@ -380,24 +380,23 @@ CL_DEFUN T_sp core__backquote_attach_append(T_sp op, T_sp item, T_sp result) {
       return Cons_O::createList(op, item);
     } else
       return item;
-  } else if (cl_consp(result) && oCar(result) == op) {
+  } else if (cl__consp(result) && oCar(result) == op) {
     return Cons_O::create(oCar(result), Cons_O::create(item, oCdr(result)));
   }
   return Cons_O::createList(op, item, result);
 }
 
-LAMBDA(items result);
-DECLARE();
-DOCSTRING("backquote_attach_conses");
+CL_LAMBDA(items result);
+CL_DECLARE();
+CL_DOCSTRING("backquote_attach_conses");
 CL_DEFUN List_sp core__backquote_attach_conses(T_sp items, T_sp result) {
-  _G();
   if (cl__every(_sym_backquote_null_or_quoted, Cons_O::create(items)).isTrue() && core__backquote_null_or_quoted(result).isTrue()) {
     Cons_sp ti = Cons_O::create(items);
     Cons_sp tl = Cons_O::createList(cl__mapcar(cl::_sym_cadr, ti), oCadr(result));
     return Cons_O::createList(_sym_STARbq_quoteSTAR, core__backquote_append(tl));
   } else if (cl__equal(result, _sym_STARbq_quote_nilSTAR->symbolValue())) {
     return Cons_O::create(_sym_STARbq_listSTAR, items);
-  } else if (cl_consp(result) && ((oCar(result) == _sym_STARbq_listSTAR) || (oCar(result) == _sym_STARbq_listSTARSTAR))) {
+  } else if (cl__consp(result) && ((oCar(result) == _sym_STARbq_listSTAR) || (oCar(result) == _sym_STARbq_listSTARSTAR))) {
     List_sp tl = Cons_O::createList(items, oCdr(result));
     return Cons_O::create(oCar(result), core__backquote_append(tl));
   }
@@ -406,11 +405,10 @@ CL_DEFUN List_sp core__backquote_attach_conses(T_sp items, T_sp result) {
   return Cons_O::create(_sym_STARbq_listSTARSTAR, core__backquote_append(tr));
 }
 
-LAMBDA(x);
-DECLARE();
-DOCSTRING("backquote_remove_tokens");
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("backquote_remove_tokens");
 CL_DEFUN T_sp core__backquote_remove_tokens(T_sp x) {
-  _G();
   if (x == _sym_STARbq_listSTAR)
     return cl::_sym_list;
   if (x == _sym_STARbq_appendSTAR)
@@ -427,16 +425,13 @@ CL_DEFUN T_sp core__backquote_remove_tokens(T_sp x) {
   if (oCar(cx) == _sym_STARbq_clobberableSTAR) {
     return ((core__backquote_remove_tokens(oCadr(cx))));
   }
-  if ((oCar(cx) == _sym_STARbq_listSTARSTAR) && cl_consp(oCddr(cx)) && oCdddr(cx).nilp()) {
+  if ((oCar(cx) == _sym_STARbq_listSTARSTAR) && cl__consp(oCddr(cx)) && oCdddr(cx).nilp()) {
     return Cons_O::create(cl::_sym_cons,
                           core__backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(), oCdr(cx)));
   }
   T_sp mapped = core__backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(), x);
   return mapped;
 }
-
-void initialize_backquote(Lisp_sp lisp) {
-  _G();
   SYMBOL_SC_(CorePkg, backquote_completely_process);
   SYMBOL_SC_(CorePkg, backquote_process);
   SYMBOL_SC_(CorePkg, backquote_bracket);
@@ -446,15 +441,15 @@ void initialize_backquote(Lisp_sp lisp) {
   SYMBOL_SC_(CorePkg, backquote_remove_tokens);
   SYMBOL_SC_(CorePkg, backquote_frob);
   SYMBOL_SC_(CorePkg, backquote_splicing_frob);
-
   SYMBOL_SC_(CorePkg, backquote_append);
-
   SYMBOL_SC_(CorePkg, quasiquote);
-  defmacro(CorePkg, "quasiquote", macro_core__quasiquote, ARGS_macro_core__quasiquote, DECL_macro_core__quasiquote, DOCS_macro_core__quasiquote, __FILE__, __LINE__, false);
-
   SYMBOL_SC_(CorePkg, STARbq_simplifySTAR);
-  _sym_STARbq_simplifySTAR->setf_symbolValue(_lisp->_true());
 
+void initialize_backquote() {
+  defmacro(CorePkg, "quasiquote", macro_core__quasiquote, ARGS_macro_core__quasiquote, DECL_macro_core__quasiquote, DOCS_macro_core__quasiquote, __FILE__, __LINE__, false);
+  defmacro(CorePkg, "backquote", &macro_backquote, ARGS_macro_backquote, DECL_macro_backquote, DOCS_macro_backquote, __FILE__, __LINE__);
+
+  _sym_STARbq_simplifySTAR->setf_symbolValue(_lisp->_true());
   _sym_STARbq_listSTAR->defconstant(_sym_STARbq_listSTAR);
   _sym_STARbq_appendSTAR->defconstant(_sym_STARbq_appendSTAR);
   _sym_STARbq_listSTARSTAR->defconstant(_sym_STARbq_listSTARSTAR);

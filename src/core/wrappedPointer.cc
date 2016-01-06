@@ -29,11 +29,10 @@ THE SOFTWARE.
 
 namespace core {
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("pointerRelease");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("pointerRelease");
 CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
-  _G();
   if (ptr.nilp()) {
     return _Nil<Pointer_O>();
   };
@@ -43,11 +42,10 @@ CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
   SIMPLE_ERROR(BF("Could not release pointer for %s") % _rep_(ptr));
 }
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("pointerDelete");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("pointerDelete");
 CL_DEFUN void core__pointer_delete(T_sp ptr) {
-  _G();
   if (ptr.nilp()) {
     return;
   };
@@ -71,7 +69,6 @@ void WrappedPointer_O::setInstanceClassUsingSymbol(Symbol_sp classSymbol) {
 }
 
 bool WrappedPointer_O::eql_(T_sp obj) const {
-  _G();
   if (WrappedPointer_sp wo = obj.asOrNull<WrappedPointer_O>()) {
     return (wo->mostDerivedPointer() == this->mostDerivedPointer());
   }
@@ -79,16 +76,14 @@ bool WrappedPointer_O::eql_(T_sp obj) const {
 }
 
 Pointer_sp WrappedPointer_O::address() const {
-  _G();
   void *addr = this->mostDerivedPointer();
   return Pointer_O::create(addr);
 }
 
-LAMBDA(arg);
-DECLARE();
-DOCSTRING("pointerAddress");
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("pointerAddress");
 CL_DEFUN T_sp core__pointer_address(T_sp ptr) {
-  _G();
   if (ptr.nilp()) {
     return _Nil<Pointer_O>();
   };
@@ -104,7 +99,6 @@ void WrappedPointer_O::exposeCando(core::Lisp_sp e) {
 }
 
 void WrappedPointer_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON //[
   PYTHON_CLASS(CorePkg, WrappedPointer, "", "", _lisp);
 #endif //]

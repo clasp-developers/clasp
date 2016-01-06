@@ -39,8 +39,7 @@ FORWARD(Vector);
 /*! A one dimensional vector of objects */
 // class Vector_O : public Array_O, public T_O
 class Vector_O : public Array_O {
-  LISP_BASE1(Array_O);
-  LISP_CLASS(core, ClPkg, Vector_O, "vector");
+  LISP_CLASS(core, ClPkg, Vector_O, "vector",Array_O);
 
 public:
   void archiveBase(core::ArchiveP node);
@@ -55,7 +54,8 @@ public:
 private: // instance variables here
 public:  // Functions here
   bool equalp(T_sp o) const;
-  bool adjustableArrayP() const { return false; };
+CL_LISPIFY_NAME("adjustableArrayP");
+CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
   gc::Fixnum vector_length() const { return this->dimension(); };
   virtual gc::Fixnum dimension() const { SUBIMP(); };
 
@@ -80,7 +80,9 @@ public:  // Functions here
   virtual T_sp aref_unsafe(cl_index index) const { SUBIMP(); };
 
   virtual cl_index fillPointer() const { SUBIMP(); };
-  virtual void setFillPointer(size_t idx) { SUBIMP(); };
+
+  CL_NAME("FILL-POINTER-SET");
+  CL_DEFMETHOD virtual void setFillPointer(size_t idx) { SUBIMP(); };
 
   virtual void *addressOfBuffer() const { SUBIMP(); };
 

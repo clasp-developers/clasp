@@ -88,9 +88,8 @@ struct class_registration;
 struct conversion_storage;
 
 class ClassRep_O : public core::BuiltInClass_O {
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(core::BuiltInClass_O);
-  LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep",core::BuiltInClass_O);
 
   friend struct class_registration;
 

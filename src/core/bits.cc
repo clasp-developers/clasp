@@ -299,11 +299,10 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
   return x;
 }
 
-LAMBDA(op x y &optional r);
-DECLARE();
-DOCSTRING("bitArrayOp");
+CL_LAMBDA(op x y &optional r);
+CL_DECLARE();
+CL_DOCSTRING("bitArrayOp");
 CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
-  _G();
   if (o.nilp()) {
     ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 1, o, cl::_sym_fixnum);
   }
@@ -356,7 +355,7 @@ CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
   }
 L1:
   if (!r)
-    r = SimpleBitVector_O::create(d);
+    r = SimpleBitVector_O::make(d);
   rp = r->bytes();
   ro = r->offset();
   op = fixnum_operations[opval];
@@ -416,8 +415,7 @@ ERROR:
 }
 
 /*! Copied from ECL */
-T_sp
-cl_logbitp(Integer_sp p, Integer_sp x) {
+CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
   bool i;
   if (p.fixnump()) {
     cl_index n = clasp_to_size(p);
@@ -691,11 +689,10 @@ cl_logbitp(Integer_sp p, Integer_sp x) {
 
 #endif
 
-LAMBDA(op arg1 arg2);
-DECLARE();
-DOCSTRING("boole");
+CL_LAMBDA(op arg1 arg2);
+CL_DECLARE();
+CL_DOCSTRING("boole");
 CL_DEFUN T_sp cl__boole(T_sp op, T_sp arg1, T_sp arg2) {
-  _G();
   if (op.nilp()) {
     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 1, op, cl::_sym_integer);
   }
@@ -703,7 +700,6 @@ CL_DEFUN T_sp cl__boole(T_sp op, T_sp arg1, T_sp arg2) {
   return clasp_boole(unbox_fixnum(fnop), arg1, arg2);
 };
 
-void initialize_bits() {
   SYMBOL_EXPORT_SC_(ClPkg, boole_1);
   SYMBOL_EXPORT_SC_(ClPkg, boole_2);
   SYMBOL_EXPORT_SC_(ClPkg, boole_and);
@@ -721,6 +717,8 @@ void initialize_bits() {
   SYMBOL_EXPORT_SC_(ClPkg, boole_set);
   SYMBOL_EXPORT_SC_(ClPkg, boole_xor);
 
+
+void initialize_bits() {
   cl::_sym_boole_1->defconstant(make_fixnum(boole_1));
   cl::_sym_boole_2->defconstant(make_fixnum(boole_2));
   cl::_sym_boole_and->defconstant(make_fixnum(boole_and));
@@ -738,6 +736,6 @@ void initialize_bits() {
   cl::_sym_boole_set->defconstant(make_fixnum(boole_set));
   cl::_sym_boole_xor->defconstant(make_fixnum(boole_xor));
 
-  af_def(ClPkg, "logbitp", &cl_logbitp);
+//  af_def(ClPkg, "logbitp", &cl_logbitp);
 };
 };

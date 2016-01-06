@@ -219,7 +219,6 @@ void Bundle::findSubDirectories(boost_filesystem::path rootDir) {
 }
 
 string Bundle::describe() {
-  _G();
   stringstream ss;
   ss << "Root dir:        " << this->_RootDir.string() << std::endl;
   ss << "Application dir: " << this->_AppDir.string() << std::endl;

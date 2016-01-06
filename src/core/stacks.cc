@@ -333,8 +333,3 @@ GC_RESULT InvocationHistoryStack::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
 #endif
 }
 
-namespace core {
-
-void initialize_stacks() {
-}
-};

@@ -66,11 +66,9 @@ CLBIND_API void push_instance_metatable();
 EXPOSE_CLASS(clbind, ClassRegistry_O);
 
 void ClassRegistry_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<ClassRegistry_O>();
 }
 void ClassRegistry_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, ClassRegistry, "", "", _lisp);
 #endif

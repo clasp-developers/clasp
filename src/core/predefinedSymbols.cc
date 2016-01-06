@@ -35,7 +35,6 @@ namespace core {
 #include <clasp/core/predefinedSymbols_inc.h>
 
 void initializeAllPredefinedSymbols(Lisp_sp lisp) {
-  _G();
 #define PredefinedSymbol_code
 #include <clasp/core/predefinedSymbols_inc.h>
 }

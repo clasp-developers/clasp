@@ -36,8 +36,7 @@ namespace core {
 
 FORWARD(HashTableEql);
 class HashTableEql_O : public HashTable_O {
-  LISP_BASE1(HashTable_O);
-  LISP_CLASS(core, CorePkg, HashTableEql_O, "HashTableEql");
+  LISP_CLASS(core, CorePkg, HashTableEql_O, "HashTableEql",HashTable_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)

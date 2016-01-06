@@ -41,8 +41,8 @@ EXPOSE_CLASS(core, ArrayObjects_O);
 #define ARGS_ArrayObjects_O_make "(dimensions element-type initial-element adjustable)"
 #define DECL_ArrayObjects_O_make ""
 #define DOCS_ArrayObjects_O_make "make ArrayObjects args: dimensions element-type initial-element"
-ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp adjustable) {
-  _G();
+CL_LISPIFY_NAME(make-array-objects);
+CL_DEFUN ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp adjustable) {
   GC_ALLOCATE(ArrayObjects_O, array);
   array->_ElementType = elementType;
   List_sp dim;
@@ -60,11 +60,9 @@ ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp init
 
 void ArrayObjects_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<ArrayObjects_O>();
-  Defun_maker(CorePkg, ArrayObjects);
 }
 
 void ArrayObjects_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, ArrayObjects, "", "", _lisp);
 #endif
@@ -96,13 +94,11 @@ void ArrayObjects_O::initialize() {
 }
 
 void ArrayObjects_O::rowMajorAset(cl_index idx, T_sp value) {
-  _G();
   ASSERTF(idx < this->_Values.size(), BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size());
   this->_Values[idx] = value;
 }
 
 T_sp ArrayObjects_O::aset_unsafe(int idx, T_sp value) {
-  _G();
   this->_Values[idx] = value;
   return value;
 }
@@ -143,7 +139,6 @@ bool ArrayObjects_O::equalp(T_sp o) const {
 }
 
 T_sp ArrayObjects_O::rowMajorAref(cl_index idx) const {
-  _G();
   ASSERTF(idx < this->_Values.size(), BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size());
   return ((this->_Values[idx]));
 };
@@ -190,7 +185,6 @@ T_sp ArrayObjects_O::deepCopy() const {
 }
 
 T_sp ArrayObjects_O::svref(int index) const {
-  _G();
   if (this->_Dimensions.size() == 1) {
     ASSERT(index >= 0 && index < this->_Dimensions[0]);
     return ((this->_Values[index]));
@@ -199,7 +193,6 @@ T_sp ArrayObjects_O::svref(int index) const {
 }
 
 T_sp ArrayObjects_O::setf_svref(int index, T_sp value) {
-  _G();
   if (this->_Dimensions.size() == 1) {
     ASSERT(index >= 0 && index < this->_Dimensions[0]);
     this->_Values[index] = value;

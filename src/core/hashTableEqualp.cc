@@ -52,7 +52,6 @@ void HashTableEqualp_O::exposePython(::core::Lisp_sp lisp) {
 }
 
 HashTableEqualp_sp HashTableEqualp_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  _G();
   GC_ALLOCATE(HashTableEqualp_O, hashTable);
   hashTable->setup(sz, rehashSize, rehashThreshold);
   return hashTable;

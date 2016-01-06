@@ -42,7 +42,6 @@ Symbol_sp Argument::symbol() const {
 };
 
 List_sp Argument::classified() const {
-  _G();
   if (this->_ArgTargetFrameIndex == SPECIAL_TARGET) {
     return coerce_to_list(Cons_O::create(ext::_sym_specialVar, this->_ArgTarget));
   } else if (this->_ArgTargetFrameIndex >= 0) {

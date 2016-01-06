@@ -99,6 +99,7 @@
 
 (defun update-cpps (ccs)
   "Run the c-preprocessor on the commands"
+  (format t "Running ~d preprocessor jobs~%" (length ccs))
   (loop for cc in ccs
        do (run-cpp cc)))
 
@@ -229,19 +230,18 @@
     (declare (ignore pos pos2))
     (when (and (char= char2 #\{) (not (string= namespace-name "")))
       (push (make-instance 'tags:namespace-tag
-                           :namespace namespace-name
-                           :file (buffer-pathname bufs))
+                           :namespace% namespace-name
+                           :file% (buffer-pathname bufs)
+                           :line% 0)
             tags))
     tags))
-
-(defparameter *tag-handlers* (tags:make-handler-hash-table))
 
 (defun begin-tag-recognizer (bufs tags)
   (declare (optimize (debug 3)))
   ;; Recognize BEGIN_TAGxxxx <tag info>
   (let* ((pos (skip-white-space bufs))
          (tag-name (read-string-to-white-space bufs))
-         (parsed (parse-tag bufs tag-name *tag-handlers*)))
+         (parsed (parse-tag bufs tag-name tags:*tag-handlers*)))
     (declare (ignore pos))
     (when parsed
       (push parsed tags)))

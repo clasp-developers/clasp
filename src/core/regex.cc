@@ -38,16 +38,17 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-LAMBDA(regex-str);
-DECLARE();
-DOCSTRING("makeRegex");
+CL_LAMBDA(regex-str);
+CL_DECLARE();
+CL_DOCSTRING("makeRegex");
 CL_DEFUN Regex_sp core__make_regex(const string &str) {
-  _G();
   Regex_sp regex = Regex_O::make(str);
   return regex;
 };
 
 EXPOSE_CLASS(core, Regex_O);
+
+  SYMBOL_EXPORT_SC_(CorePkg, makeRegex);
 
 void Regex_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<Regex_O>()
@@ -55,11 +56,9 @@ void Regex_O::exposeCando(core::Lisp_sp lisp) {
       .def("regexMatch", &Regex_O::regexMatch)
       .def("regexSedReplace", &Regex_O::regexSedReplace) // Need to rethink exposing this function so result is returned
       ;
-  SYMBOL_EXPORT_SC_(CorePkg, makeRegex);
 }
 
 void Regex_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Regex, "", "", _lisp)
       .def("regexMatches", &Regex_O::regexMatches)
@@ -71,7 +70,6 @@ void Regex_O::exposePython(core::Lisp_sp lisp) {
 }
 
 Regex_sp Regex_O::make(const string &regex) {
-  _G();
   GC_ALLOCATE(Regex_O, re);
   re->_Regex = regex;
   return re;
@@ -90,12 +88,14 @@ void Regex_O::initialize() {
   this->Base::initialize();
 }
 
-bool Regex_O::regexMatches(const string &str) const {
+CL_LISPIFY_NAME("regexMatches");
+CL_DEFMETHOD bool Regex_O::regexMatches(const string &str) const {
   _OF();
   return boost::regex_match(str, this->_Regex);
 }
 
-RegexMatch_sp Regex_O::regexMatch(const string &str) const {
+CL_LISPIFY_NAME("regexMatch");
+CL_DEFMETHOD RegexMatch_sp Regex_O::regexMatch(const string &str) const {
   _OF();
   GC_ALLOCATE(RegexMatch_O, match);
   match->_CopyOfTextToMatch = str;
@@ -103,7 +103,8 @@ RegexMatch_sp Regex_O::regexMatch(const string &str) const {
   return match;
 }
 
-string Regex_O::regexSedReplace(const string &str, const string &replace) const {
+CL_LISPIFY_NAME("regexSedReplace");
+CL_DEFMETHOD string Regex_O::regexSedReplace(const string &str, const string &replace) const {
   _OF();
   return boost::regex_replace(str, this->_Regex, replace,
                               boost::match_default | boost::format_sed);
@@ -112,7 +113,9 @@ string Regex_O::regexSedReplace(const string &str, const string &replace) const 
 #define ARGS_RegexMatch_O_matched "(regex-match &optional (idx 0))"
 #define DECL_RegexMatch_O_matched ""
 #define DOCS_RegexMatch_O_matched "Return true if this->_Match[idx].matched is true"
-bool RegexMatch_O::matched(int idx) const {
+CL_LAMBDA(regex-match &optional (idx 0));
+CL_LISPIFY_NAME("regex-match-matched");
+CL_DEFMETHOD bool RegexMatch_O::matched(int idx) const {
   ASSERTF(idx < (int)this->_Match.size(), BF("index[%d] exceeded max[%d]") % idx % this->_Match.size());
   return this->_Match[idx].matched;
 }
@@ -129,7 +132,6 @@ void RegexMatch_O::exposeCando(core::Lisp_sp lisp) {
 }
 
 void RegexMatch_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #if USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, RegexMatch, "", "", _lisp)
       .def("size", &RegexMatch_O::size)
@@ -145,12 +147,14 @@ void RegexMatch_O::initialize() {
   this->Base::initialize();
 }
 
-int RegexMatch_O::size() const {
+CL_LISPIFY_NAME("regex-match-length");
+CL_DEFMETHOD int RegexMatch_O::size() const {
   _OF();
   return this->_Match.size();
 }
 
-string RegexMatch_O::part(int idx) const {
+CL_LISPIFY_NAME("regex-match-part");
+CL_DEFMETHOD string RegexMatch_O::part(int idx) const {
   _OF();
   ASSERTF(idx < (int)this->_Match.size(), BF("index[%d] exceeded max[%d]") % idx % this->_Match.size());
   string result = "";

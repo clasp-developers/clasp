@@ -79,7 +79,7 @@ namespace core {
 #else
 #define TRAP_BAD_CONS(x)                                \
   {                                                     \
-    if (cl_consp(x)) {                                  \
+    if (cl__consp(x)) {                                  \
       LOG(BF("About to try trap bad cons"));            \
       string ssss = core__source_file_info(x)->fileName(); \
     }                                                   \
@@ -139,16 +139,15 @@ LETTER:
   return result;
 }
 
-LAMBDA(sin &optional (eof-error-p t) eof-value);
-DECLARE();
-DOCSTRING("nread");
+CL_LAMBDA(sin &optional (eof-error-p t) eof-value);
+CL_DECLARE();
+CL_DOCSTRING("nread");
 CL_DEFUN T_mv core__nread(T_sp sin, T_sp eof_error_p, T_sp eof_value) {
   T_sp result = read_lisp_object(sin, eof_error_p.isTrue(), eof_value, false);
   return Values(result);
 };
 
 string fix_exponent_char(const char *cur) {
-  _G();
   stringstream ss;
   while (*cur) {
     if (isalpha(*cur)) {
@@ -263,7 +262,6 @@ string tokenStr(const vector<uint> &token, uint start = 0, uint end = UNDEF_UINT
 }
 
 T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) {
-  _G();
   ASSERTF(token.size() > 0, BF("The token is empty!"));
   const uint *start = token.data();
   const uint *cur = start;
@@ -590,7 +588,6 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
 #endif
 
 List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
-  _G();
   core__stack_monitor();
   bool got_dotted = false;
   T_sp dotted_object = _Nil<T_O>();
@@ -678,7 +675,6 @@ struct increment_read_lisp_object_recursion_depth {
   }
 };
 T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) {
-  _G();
   T_sp result = _Nil<T_O>();
   if (recursiveP) {
     increment_read_lisp_object_recursion_depth recurse;
@@ -719,7 +715,6 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
       stream until a complete symbol/number of macro is processed.
       Return the result in a MultipleValues object - if it is empty then nothing was read */
 T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) {
-  _G();
 #if 1
   static int monitorReaderStep = 0;
   if ((monitorReaderStep % 1000) == 0 && cl__member(_sym_monitorReader, _sym_STARdebugMonitorSTAR->symbolValue(), _Nil<T_O>()).notnilp()) {

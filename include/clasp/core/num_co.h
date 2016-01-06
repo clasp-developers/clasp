@@ -36,7 +36,6 @@ Real_mv cl__integer_decode_float(Float_sp x);
 
 int clasp_signbit(Number_sp x);
 
-void initialize_num_co();
 };
 
 #endif

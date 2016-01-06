@@ -34,8 +34,7 @@ THE SOFTWARE.
 namespace core {
 class SingleDispatchMethod_O : public T_O {
   friend class SingleDispatchGenericFunctionClosure;
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SingleDispatchMethod_O, "SingleDispatchMethod");
+  LISP_CLASS(core, CorePkg, SingleDispatchMethod_O, "SingleDispatchMethod",T_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public:
@@ -74,12 +73,18 @@ public: // Functions here
   LambdaListHandler_sp method_lambda_list_handler() const { return this->_argument_handler; };
   string __repr__() const;
 
-  Symbol_sp singleDispatchMethodName() const { return this->_name; };
-  Class_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class; };
-  Function_sp singleDispatchMethodCode() const { return this->code; };
-  LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_argument_handler; };
-  List_sp singleDispatchMethodDeclares() const { return this->_declares; };
-  T_sp singleDispatchMethodDocstring() const { return this->_docstring; };
+CL_LISPIFY_NAME("singleDispatchMethodName");
+CL_DEFMETHOD   Symbol_sp singleDispatchMethodName() const { return this->_name; };
+CL_LISPIFY_NAME("singleDispatchMethodReceiverClass");
+CL_DEFMETHOD   Class_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class; };
+CL_LISPIFY_NAME("singleDispatchMethodCode");
+CL_DEFMETHOD   Function_sp singleDispatchMethodCode() const { return this->code; };
+CL_LISPIFY_NAME("singleDispatchMethodLambdaListHandler");
+CL_DEFMETHOD   LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_argument_handler; };
+CL_LISPIFY_NAME("singleDispatchMethodDeclares");
+CL_DEFMETHOD   List_sp singleDispatchMethodDeclares() const { return this->_declares; };
+CL_LISPIFY_NAME("singleDispatchMethodDocstring");
+CL_DEFMETHOD   T_sp singleDispatchMethodDocstring() const { return this->_docstring; };
 
 }; // SingleDispatchMethod class
 

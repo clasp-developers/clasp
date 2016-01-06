@@ -143,9 +143,9 @@ T_sp cl__mapcar(T_sp op, List_sp lists);
 
 namespace core {
 
-  LAMBDA(x y);
-  DECLARE();
-  DOCSTRING(R"doc(add two numbers)doc");
+  CL_LAMBDA(x y);
+  CL_DECLARE();
+  CL_DOCSTRING(R"doc(add two numbers)doc");
   inline CL_DEFUN int core__test_add(int x, int y) {
     return x + y;
   }
@@ -162,8 +162,7 @@ void initializePythonPrimitives(Lisp_sp lisp);
 namespace core {
 FORWARD(InvocationHistoryFrameIterator);
 class InvocationHistoryFrameIterator_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator");
+  LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator",T_O);
 
 private: // instance variables here
   InvocationHistoryFrame *_Frame;
@@ -190,7 +189,8 @@ public:
     return cp;
   };
   /*! Return true if this points to a real InvocationHistoryFrame */
-  bool isValid() { return this->_Frame != NULL; };
+CL_LISPIFY_NAME("frameIteratorIsValid");
+CL_DEFMETHOD   bool isValid() { return this->_Frame != NULL; };
 }; /* core */
 };
 TRANSLATE(core::InvocationHistoryFrameIterator_O);

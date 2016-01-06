@@ -66,8 +66,7 @@ private:
   friend class Class_O;
   friend class Package_O;
   friend class CoreExposer;
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Symbol_O, "Symbol");
+  LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",T_O);
 
 public:
 #if defined(XML_ARCHIVE)
@@ -117,7 +116,8 @@ public:
   bool getReadOnlyFunction() const { return this->_ReadOnlyFunction; };
 
   /*! Return true if the symbol is dynamic/special */
-  bool specialP() const { return this->_IsSpecial; };
+CL_LISPIFY_NAME("core:specialp");
+CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();
@@ -198,7 +198,7 @@ public: // ctor/dtor for classes with shared virtual base
   /*! Special constructor used when starting up the Lisp environment */
   explicit Symbol_O(bool dummy); // string const &name);
   /*! Used to finish setting up symbol when created with the above constructor */
-  void finish_setup(Package_sp pkg, bool exportp);
+  void finish_setup(Package_sp pkg, bool exportp, bool shadowp);
 
   /*! Return -1, 0, 1 if this is <, ==, > other by name */
   inline int order(core::Symbol_O other) {

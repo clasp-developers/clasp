@@ -80,8 +80,7 @@ namespace core {
 SMART(LambdaListHandler);
 SMART(Function);
 class Function_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Function_O, "Function");
+  LISP_CLASS(core, ClPkg, Function_O, "Function",T_O);
 
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
@@ -179,8 +178,7 @@ namespace core {
 SMART(LambdaListHandler);
 SMART(Function);
 class CompiledFunction_O : public Function_O {
-  LISP_BASE1(Function_O);
-  LISP_CLASS(core, ClPkg, CompiledFunction_O, "CompiledFunction");
+  LISP_CLASS(core, ClPkg, CompiledFunction_O, "CompiledFunction",Function_O);
 
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);

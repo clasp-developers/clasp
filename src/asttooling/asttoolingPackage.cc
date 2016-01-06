@@ -40,55 +40,36 @@ THE SOFTWARE.
 #include <clasp/asttooling/Registry.h>
 
 namespace asttooling {
-
+#if 0
 #define EXPOSE_TO_CANDO
 #define Use_AstToolingPkg
 #define EXTERN_REGISTER
-#include <generated/initClasses_inc.h>
+#include <clasp/core/initClasses.h>
 #undef EXTERN_REGISTER
 #undef Use_AstToolingPkg
 #undef EXPOSE_TO_CANDO
+#endif
 };
 
 using namespace core;
 
 namespace asttooling {
 
-#pragma GCC visibility push(default)
-#define AstToolingPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-#endif
-#undef DO_SYMBOL
-#undef AstToolingPkg_SYMBOLS
-#pragma GCC visibility pop
-
 void AsttoolingExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
-  _G();
   switch (what) {
   case candoClasses: {
-#define AstToolingPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkg, lispname, exportp)          \
-  {                                                            \
-    cname = _lisp->internUniqueWithPackageName(pkg, core::lispify_symbol_name(lispname)); \
-    cname->exportYourself(exportp);                            \
-  }
-  #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
-#endif
-#undef DO_SYMBOL
-#undef AstToolingPkg_SYMBOLS
-
+    
+#if 0
 #define ALL_STAGES
 #define Use_AstToolingPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(s, p) DEFAULT_LOOKUP_SYMBOL(s, p)
-#include <generated/initClasses_inc.h>
+#include <clasp/core/initClasses.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_AstToolingPkg
 #undef ALL_STAGES
+#endif
 
   } break;
   case candoFunctions: {
@@ -111,19 +92,3 @@ void AsttoolingExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
 }
 };
 
-#if USE_INTRUSIVE_SMART_PTR == 1
-#define EXPAND_CLASS_MACROS
-
-#if defined(USE_MPS) // MPS doesn't require INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS
-#define _CLASS_MACRO(_T_) \
-  STATIC_CLASS_INFO(_T_);
-#else
-#define _CLASS_MACRO(_T_) \
-  STATIC_CLASS_INFO(_T_); \
-  INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
-#endif
-
-#include <generated/initClasses_inc.h>
-#undef _CLASS_MACRO
-#undef EXPAND_CLASS_MACROS
-#endif

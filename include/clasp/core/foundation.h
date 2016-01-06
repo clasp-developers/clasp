@@ -189,7 +189,7 @@ typedef std::size_t class_id;
 #endif //]
 #endif
 
-
+#if 0
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
 #define DEFUN(pkg, x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
 
@@ -221,6 +221,11 @@ typedef std::size_t class_id;
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
 //#define DEFUN_NAME_EXPORT(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
+
+#endif
+
+
+
 
 /*! Use this in initializeCandoPrimitives to define a function
   This is a little more complicated than it needs to be to try and avoid unused variable warnings */
@@ -856,22 +861,6 @@ public:
 //
 //
 
-//
-// These macros are scraped by an external program
-// and used to create "initClasses_inc.h" which includes
-// calls to initialize anything you want before the program
-// runs.
-//
-//		__INITIALIZE_PYTHON and __INITIALIZE_PYTHON_AFTER
-//		initialize the Python interface after all of the classes have been registered
-//
-//		__INITIALIZE and __INITIALIZE_AFTER
-//		initialize other stuff after all the Python interfaces have been registered
-#define __INITIALIZE_PYTHON(x)          // Do nothing
-#define __INITIALIZE_PYTHON_AFTER(x, y) // Do nothing
-#define __INITIALIZE(p, x)              // Do nothing
-#define __INITIALIZE_AFTER(x, y)        // Do nothing
-
 namespace core {
 
 /*! Create the class hierarchy
@@ -941,10 +930,13 @@ string _rep_(T_sp obj);
 /*! Convert underscores to "-" and "STAR" to "*" and "AMP" to "&"
       to convert a C++ name to a lisp symbol */
 string lispify_symbol_name(string const &name);
+ string magic_name(const string& name, const string& optional_package="");
+void colon_split(const string& name, string& package_part, string& symbol_part);
+ 
 Symbol_sp lispify_intern_keyword(string const &name);
 //    Symbol_sp lispify_intern2(string const& name, string const& packageName);
 // lisp_lispifyAndInternWithPackageNameIfNotGiven
-Symbol_sp lispify_intern(const string &name, const string &packageName, bool exportSymbol = true);
+Symbol_sp lispify_intern(const string &name, const string &packageName = "", bool exportSymbol = true);
 //    Symbol_sp lispify_intern_export(string const& name, string const& packageName);
 Symbol_sp lisp_upcase_intern(string const &name, string const &packageName);
 Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageName);
@@ -1356,10 +1348,6 @@ core::Symbol_sp lisp_classSymbol() {
 
 namespace boost_filesystem = boost::filesystem;
 
-namespace core {
-void initialize_foundation();
-}
-
 #define clasp_disable_interrupts()
 #define clasp_enable_interrupts()
 
@@ -1368,6 +1356,7 @@ void initialize_foundation();
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
+
 
 namespace core {
 struct cl_env {};

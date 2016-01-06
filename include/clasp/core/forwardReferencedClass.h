@@ -39,9 +39,8 @@ FORWARD(ForwardReferencedClass);
  http://clisp.podval.org/impnotes/mop-overview.html#forward-referenced-class-clisp
 */
 class ForwardReferencedClass_O : public Class_O {
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(Class_O);
-  LISP_CLASS(core, CorePkg, ForwardReferencedClass_O, "ForwardReferencedClass");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(core, CorePkg, ForwardReferencedClass_O, "ForwardReferencedClass",Class_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(ForwardReferencedClass_O);
