@@ -43,6 +43,7 @@ THE SOFTWARE.
 
 extern "C" {
 #include "clasp/mps/code/mpscawl.h" // MVFF pool
+#include "clasp/mps/code/mpscmvff.h" // MVFF pool
 #include "clasp/mps/code/mpscamc.h" // AMC pool
 #include "clasp/mps/code/mpscsnc.h" // SNC pool
 };

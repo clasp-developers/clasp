@@ -571,7 +571,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   #define GARBAGE_COLLECT_ALL_SYMBOLS
   #ifndef RUNNING_GC_BUILDER
     #ifndef SCRAPING
-        #include <include/symbols_scraped_inc.h>
+        #include <generated/symbols_scraped_inc.h>
     #endif
   #endif // ifndef RUNNING_GC_BUILDER
   #undef GARBAGE_COLLECT_ALL_SYMBOLS
@@ -723,18 +723,23 @@ void initialize_classes_and_methods()
 #undef EXPOSE_CLASSES_AND_METHODS
 }
 
+#define MPS_LOG(x) printf("%s:%d %s\n", __FILE__, __LINE__, x);
 
 void initialize_clasp()
 {
   // The bootStrapCoreSymbolMap keeps track of packages and symbols while they
   // are half-way initialized.
+  MPS_LOG("initialize_clasp");
   core::BootStrapCoreSymbolMap bootStrapCoreSymbolMap;
   setup_bootstrap_packages(&bootStrapCoreSymbolMap);
-    
+
+  MPS_LOG("initialize_clasp allocate_symbols");
   allocate_symbols(&bootStrapCoreSymbolMap);
   
+  MPS_LOG("initialize_clasp set_static_class_symbols");
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
+  MPS_LOG("initialize_clasp ALLOCATE_ALL_CLASSES");
   #define ALLOCATE_ALL_CLASSES
   #ifndef SCRAPING
     #include <generated/initClassesAndMethods_inc.h>
